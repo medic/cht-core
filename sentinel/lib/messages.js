@@ -1,7 +1,9 @@
 var _ = require('underscore'),
     template = require('./template'),
     utils = require('./utils'),
-    logger = require('./logger');
+    logger = require('./logger'),
+    messageUtils = require('./message-utils'),
+    config = require('../config');
 
 function extendedTemplateContext(doc, extras) {
     const templateContext = module.exports.extractTemplateContext(doc);
@@ -33,17 +35,53 @@ function extendedTemplateContext(doc, extras) {
 }
 
 /**
- * Expected opts :
- * - doc
- * - message : template for the message
- * - phone (optional, will get clinic phone if absent)
- * - templateContext (optional)
- * - registrations (optional)
- * - patient (optional)
- * - state (optional)
- * - taskFields (optional)
- * All other fields are ignored.
+ * TODO WRITE DOCUMENTATION
+ * TODO rename to addTask?
  */
+const GARETH_addMessage = (doc, messageConfig, recipient = 'clinic', templateContext = {}) => {
+    doc.tasks = doc.tasks || [];
+    const content = {
+        translationKey: messageConfig.translation_key,
+        message: messageConfig.message // deprecated usage
+    };
+    try {
+        const messages = messageUtils.generate(
+            config,
+            utils.translate,
+            doc,
+            content,
+            recipient,
+            templateContext
+        );
+        const task = {
+            // TODO probably more fields to add here! (particularly for scheduled tasks)
+            messages: messages
+        };
+        utils.setTaskState(task, utils.isOutgoingAllowed(doc.from) ? 'pending' : 'denied');
+        doc.tasks.push(task);
+        return task;
+    } catch(e) {
+        console.log('ERROR', e);
+        utils.addError(doc, {
+            message: e.message + ': ' + messageConfig.translation_key || messageConfig.messages,
+            code: 'parse_error'
+        });
+    }
+};
+
+
+// const GARETH_addMessage = (doc, ) => {
+//   const task = _.omit(options, 'message', 'phone', 'uuid', 'state');
+//   task.messages = messageUtils.generate(config, module.exports.translate, doc, task, options);
+//   setTaskState(task, options.state || 'pending');
+// };
+
+
+            // messages.GARETH_addMessage(doc, msg, msg.recipient, {
+            //     patient: patientContact,
+            //     registrations: registrations
+            // });
+
 function addMessage(opts) {
     var self = module.exports,
         doc = opts.doc,
@@ -72,8 +110,11 @@ function addMessage(opts) {
         logger.debug(`Adding message: ${outputOpts}`);
     }
     try {
+        console.log('adding message in utils');
         utils.addMessage(doc, outputOpts);
     } catch(e) {
+        console.log('adding error from utils');
+        console.error(e);
         utils.addError(doc, {
             message: e.message + ': ' + opts.message,
             code: 'parse_error'
@@ -87,6 +128,7 @@ function addMessage(opts) {
  * a `translation_key` property with a string.
  * Use locale if found otherwise defaults to 'en'.
  */
+ // TODO remove this too??
 function getMessage(configuration, locale) {
     if (!configuration) {
         return '';
@@ -130,22 +172,22 @@ module.exports = {
         return _.defaults(internal, doc.fields, doc);
     },
     scheduleMessage: function(doc, msg, phone, registrations, patient) {
-        var templateContext = extendedTemplateContext(doc, {
-            registrations: registrations,
-            patient: patient
-        });
-
-        phone = phone ? String(phone) : phone;
-
         try {
-            utils.addScheduledMessage(doc, {
+            const options = {
                 due: msg.due,
-                message: template.render(msg.message, templateContext),
                 group: msg.group,
                 phone: phone,
                 type: msg.type,
                 translation_key: msg.translation_key
-            });
+            };
+            if (!msg.translation_key) {
+                const templateContext = extendedTemplateContext(doc, {
+                    registrations: registrations,
+                    patient: patient
+                });
+                options.message = template.render(msg.message, templateContext);
+            }
+            utils.addScheduledMessage(doc, options);
         } catch(e) {
             utils.addError(doc, {
                 message: e.message + ': ' + msg.message,
@@ -158,6 +200,7 @@ module.exports = {
     * Assumes `parent` is a health_center and `grandparent` is a district,
     * which might not work in all setups.
     */
+    // TODO replace this with version from message-utils???
     getRecipientPhone: function(doc, recipient, _default) {
         if (!doc) {
             return;
@@ -184,34 +227,8 @@ module.exports = {
         return phone || _default || doc.from;
     },
     addMessage: addMessage,
+    GARETH_addMessage: GARETH_addMessage,
     getMessage: getMessage,
-    notifyGrandparent: function(doc, message, options) {
-        var self = module.exports;
-        addMessage({
-            doc: doc,
-            message: message,
-            phone: self.getRecipientPhone(doc, 'grandparent_phone'),
-            templateContext: options
-        });
-    },
-    notifyParent: function(doc, message, options) {
-        var self = module.exports;
-        addMessage({
-            doc: doc,
-            message: message,
-            phone: self.getRecipientPhone(doc, 'parent_phone'),
-            templateContext: options
-        });
-    },
-    addReply: function(doc, message, options) {
-        var self = module.exports;
-        addMessage({
-            doc: doc,
-            message: message,
-            phone: self.getRecipientPhone(doc, 'clinic'),
-            templateContext: options
-        });
-    },
     addErrors: function(doc, errors) {
         var self = module.exports;
         _.each(errors, function(error) {

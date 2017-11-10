@@ -104,7 +104,7 @@ module.exports = {
                 if (send_time.length >= 2) {
                     // set timezone first if specified
                     if (typeof send_time[2] !== 'undefined') {
-                        due.zone(send_time[2]);
+                        due.utcOffset(send_time[2]);
                     }
                     due.hours(send_time[0]);
                     due.minutes(send_time[1]);

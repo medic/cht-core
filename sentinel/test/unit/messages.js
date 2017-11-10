@@ -1,5 +1,4 @@
 var messages = require('../../lib/messages'),
-    moment = require('moment'),
     utils = require('../../lib/utils'),
     sinon = require('sinon');
 
@@ -50,62 +49,63 @@ exports['extractTemplateContext internal fields always override form fields'] = 
     test.done();
 };
 
-exports['scheduleMessage supports template variables on doc'] = function(test) {
-    var doc = {
-        form: 'x',
-        reported_date: '2050-03-13T13:06:22.002Z',
-        governor: 'arnold'
-    };
-    var msg = {
-        message: 'Governor {{governor}} wants to speak to you.',
-        due: moment().toISOString()
-    };
-    messages.scheduleMessage(doc, msg, '+13125551212');
-    test.equals(doc.scheduled_tasks.length, 1);
-    test.equals(
-        doc.scheduled_tasks[0].messages[0].message,
-        'Governor arnold wants to speak to you.'
-    );
-    test.done();
-};
+// TODO scheduled messages generate JIT now
+// exports['scheduleMessage supports template variables on doc'] = function(test) {
+//     var doc = {
+//         form: 'x',
+//         reported_date: '2050-03-13T13:06:22.002Z',
+//         governor: 'arnold'
+//     };
+//     var msg = {
+//         message: 'Governor {{governor}} wants to speak to you.',
+//         due: moment().toISOString()
+//     };
+//     messages.scheduleMessage(doc, msg, '+13125551212');
+//     test.equals(doc.scheduled_tasks.length, 1);
+//     test.equals(
+//         doc.scheduled_tasks[0].messages[0].message,
+//         'Governor arnold wants to speak to you.'
+//     );
+//     test.done();
+// };
 
-exports['scheduleMessage aliases patient.name to patient_name'] = test => {
-    var doc = {
-        form: 'x',
-        reported_date: '2050-03-13T13:06:22.002Z',
-    };
-    var msg = {
-        message: 'Hello {{patient_name}}.',
-        due: moment().toISOString()
-    };
-    messages.scheduleMessage(doc, msg, '+13125551212', [], {name: 'Sally'});
-    test.equals(doc.scheduled_tasks.length, 1);
-    test.equals(
-        doc.scheduled_tasks[0].messages[0].message,
-        'Hello Sally.'
-    );
-    test.done();
-};
+// exports['scheduleMessage aliases patient.name to patient_name'] = test => {
+//     var doc = {
+//         form: 'x',
+//         reported_date: '2050-03-13T13:06:22.002Z',
+//     };
+//     var msg = {
+//         message: 'Hello {{patient_name}}.',
+//         due: moment().toISOString()
+//     };
+//     messages.scheduleMessage(doc, msg, '+13125551212', [], {name: 'Sally'});
+//     test.equals(doc.scheduled_tasks.length, 1);
+//     test.equals(
+//         doc.scheduled_tasks[0].messages[0].message,
+//         'Hello Sally.'
+//     );
+//     test.done();
+// };
 
-exports['scheduleMessage adds registration details to message context'] = function(test) {
-    var doc = {
-        form: 'x',
-        reported_date: '2050-03-13T13:06:22.002Z',
-        governor: 'arnold'
-    };
-    var msg = {
-        message: 'Dear {{patient_name}}, Governor {{governor}} wants to speak to you.',
-        due: moment().toISOString()
-    };
-    var person = { _id: '123', name: 'Marc' };
-    messages.scheduleMessage(doc, msg, '+13125551212', [], person);
-    test.equals(doc.scheduled_tasks.length, 1);
-    test.equals(
-        doc.scheduled_tasks[0].messages[0].message,
-        'Dear Marc, Governor arnold wants to speak to you.'
-    );
-    test.done();
-};
+// exports['scheduleMessage adds registration details to message context'] = function(test) {
+//     var doc = {
+//         form: 'x',
+//         reported_date: '2050-03-13T13:06:22.002Z',
+//         governor: 'arnold'
+//     };
+//     var msg = {
+//         message: 'Dear {{patient_name}}, Governor {{governor}} wants to speak to you.',
+//         due: moment().toISOString()
+//     };
+//     var person = { _id: '123', name: 'Marc' };
+//     messages.scheduleMessage(doc, msg, '+13125551212', [], person);
+//     test.equals(doc.scheduled_tasks.length, 1);
+//     test.equals(
+//         doc.scheduled_tasks[0].messages[0].message,
+//         'Dear Marc, Governor arnold wants to speak to you.'
+//     );
+//     test.done();
+// };
 
 exports['addMessage supports template variables on doc'] = function(test) {
     var doc = {

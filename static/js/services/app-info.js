@@ -94,7 +94,9 @@ angular.module('inboxServices').factory('AppInfo',
           getForm: getForm,
           getMessage: getMessage,
           translate: translate,
-          formatDate: formatDate
+          formatDate: formatDate,
+          settings: settings,
+          mustache: require('mustache') // TODO this won't be required when messages is in an npm module
         };
       });
     };

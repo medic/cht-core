@@ -1,8 +1,9 @@
 const _ = require('underscore'),
       db = require('../db'),
-      uuid = require('uuid'),
       moment = require('moment'),
       gsm = require('gsm'),
+      uuid = require('uuid'),
+      messageUtils = require('./message-utils'),
       phoneUtil = require('google-libphonenumber').PhoneNumberUtil.getInstance(),
       config = require('../config');
 
@@ -148,18 +149,17 @@ const createTaskMessages = options => {
 /**
  * Options used:
  *  - phone
- *  - message
+ *  - message - array of messages for each locale
+ *  - message_key - translation key to get the message (overrides the `message` option)
  *  - state (optional)
  * Options filtered out and ignored:
  *  - 'uuid'
  * All other options will be added as-is to the task object.
  */
+ // TODO remove this?!
 const addMessage = (doc, options) => {
   options = options || {};
-
-  _.defaults(doc, {
-    tasks: []
-  });
+  doc.tasks = doc.tasks || [];
 
   if (!options.message) {
     return;
@@ -387,32 +387,25 @@ module.exports = {
     return 'health volunteer';
   },
   getScheduledTasksByType: getScheduledTasksByType,
-  updateScheduledMessage: (doc, options) => {
-    if (!options || !options.message || !options.type) {
-      return;
-    }
-    const msg = _.find(doc.scheduled_tasks, task => {
-      return task.type === options.type;
-    });
-    if (msg && msg.messages) {
-      _.first(msg.messages).message = options.message;
-    }
-  },
   addScheduledMessage: (doc, options) => {
+
+    console.log('adding scheduled', doc);
     options = options || {};
 
     if (options.due instanceof Date) {
       options.due = options.due.getTime();
     }
 
-    const task = _.omit(options, 'message', 'phone');
-    task.messages = createTaskMessages(options);
 
-    if (!isOutgoingAllowed(doc.from)) {
-      setTaskState(task, 'denied');
-    } else {
-      setTaskState(task, 'scheduled');
+    const task = _.omit(options, 'message', 'phone');
+    if (!task.translation_key) {
+      // no translation_key so generate now
+      const content = { message: options.message };
+      const recipient = task.recipient;
+      task.messages = messageUtils.generate(config, module.exports.translate, doc, content, recipient, {});
     }
+    const state = isOutgoingAllowed(doc.from) ? 'scheduled' : 'denied';
+    setTaskState(task, state);
 
     doc.scheduled_tasks = doc.scheduled_tasks || [];
     doc.scheduled_tasks.push(task);
@@ -448,7 +441,6 @@ module.exports = {
   getReportsWithSameClinicAndForm: getReportsWithSameClinicAndForm,
   setTaskState: setTaskState,
   setTasksStates: setTasksStates,
-  applyPhoneFilters: applyPhoneFilters,
   /*
   * Compares two objects; updateable if _rev is the same
   * and are different barring their `_rev` and `transitions` properties
@@ -476,7 +468,7 @@ module.exports = {
     } else {
       return callback(null, []);
     }
-    options.db.medic.view('medic', 'registered_patients', viewOptions, (err, data) => {
+    options.db.medic.view('medic-client', 'registered_patients', viewOptions, (err, data) => {
       if (err) {
         return callback(err);
       }
@@ -508,9 +500,9 @@ module.exports = {
   translate: (key, locale) => {
     const translations = config.getTranslations();
     const msg = (translations[locale] && translations[locale][key]) ||
-          (translations.en && translations.en[key]) ||
-          key;
-    return msg.trim();
+                (translations.en && translations.en[key]) ||
+                key;
+    return msg && msg.trim();
   },
   escapeRegex: string => {
     return string.replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&');

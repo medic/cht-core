@@ -292,21 +292,17 @@ exports['sendReminder saves doc with added task to clinic'] = function(test) {
         moment: now,
         db: db
     }, function() {
-        var clinic,
-            message,
-            task;
-
         test.ok(saveDoc.called);
 
-        clinic = saveDoc.getCall(0).args[0];
+        var clinic = saveDoc.getCall(0).args[0];
         test.ok(clinic.tasks);
 
-        task = _.first(clinic.tasks);
-        message = _.first(task.messages);
+        var task = _.first(clinic.tasks);
+        var message = _.first(task.messages);
         test.equals(message.to, '+1234');
-        test.ok(message.message.indexOf(now.format('YYYY')) > 0);
-        test.ok(message.message.indexOf(now.format('w')) > 0);
-
+        const year = now.format('YYYY');
+        const week = now.format('w');
+        test.equals(message.message, `hi ${year} ${week}`);
         test.equals(task.form, 'XXX');
         test.equals(task.ts, now.toISOString());
 

@@ -26,6 +26,7 @@ module.exports = function(db, audit, callback) {
 
         async.forEachSeries(objs, function(obj, cb) {
             // set task to pending for gateway to pick up
+            // TODO also generate the message and persist!
             utils.setTasksStates(obj.doc, 'pending', function(task) {
                 return task.due === obj.key;
             });

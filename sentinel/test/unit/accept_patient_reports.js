@@ -138,6 +138,7 @@ exports['handleReport with patient adds reply'] = function(test) {
             recipient: 'reporting_unit'
         }]
     };
+    console.log('doc.tasks', doc.tasks);
     transition.handleReport(
         null,
         null,

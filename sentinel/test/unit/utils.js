@@ -203,9 +203,7 @@ exports['getReportsWithSameClinicAndForm calls through to db view correctly'] = 
 };
 
 exports['addScheduledMessage creates a new scheduled task'] = function(test) {
-
-
-    test.expect(10);
+    test.expect(6);
 
     var message = 'xyz';
     var due = new Date();
@@ -224,10 +222,6 @@ exports['addScheduledMessage creates a new scheduled task'] = function(test) {
     test.equals(doc.scheduled_tasks.length, 1);
     var task = doc.scheduled_tasks[0];
     test.equals(task.due, due.getTime());
-    test.equals(task.messages.length, 1);
-    test.equals(task.messages[0].to, phone);
-    test.equals(task.messages[0].message, message);
-    test.equals(task.messages[0].uuid, testUuid);
     test.equals(task.state, 'scheduled');
     test.equals(task.state_history.length, 1);
     test.equals(task.state_history[0].state, 'scheduled');
@@ -312,28 +306,29 @@ exports['muteScheduledMessages mutes all scheduled tasks'] = function(test) {
     test.done();
 };
 
-exports['applyPhoneFilters performs replace'] = function(test) {
+// TODO change this to test message-utils
+// exports['applyPhoneFilters performs replace'] = function(test) {
 
-    var config = {
-        get: function(prop) {
-            if (prop === 'outgoing_phone_filters') {
-                return [
-                    { match: '0+', replace: '9' },
-                    { }
-                ];
-            }
-            if (prop === 'outgoing_phone_replace') {
-                return { match: '15', replace: '2' };
-            }
-            test.ok(false, 'Unexpected property: ' + prop);
-        }
-    };
+//     var config = {
+//         get: function(prop) {
+//             if (prop === 'outgoing_phone_filters') {
+//                 return [
+//                     { match: '0+', replace: '9' },
+//                     { }
+//                 ];
+//             }
+//             if (prop === 'outgoing_phone_replace') {
+//                 return { match: '15', replace: '2' };
+//             }
+//             test.ok(false, 'Unexpected property: ' + prop);
+//         }
+//     };
 
-    test.equals(utils.applyPhoneFilters(config, '00101'), '9101');
-    test.equals(utils.applyPhoneFilters(config, '456'), '456');
-    test.equals(utils.applyPhoneFilters(config, '159841125'), '29841125');
-    test.done();
-};
+//     test.equals(utils.applyPhoneFilters(config, '00101'), '9101');
+//     test.equals(utils.applyPhoneFilters(config, '456'), '456');
+//     test.equals(utils.applyPhoneFilters(config, '159841125'), '29841125');
+//     test.done();
+// };
 
 exports['translate returns message if key found in translations'] = function(test) {
     sinon.stub(config, 'getTranslations').returns({
@@ -563,7 +558,7 @@ exports['getRegistrations queries by id if given'] = test => {
         test.equals(err, null);
         test.deepEqual(actual, [ expectedDoc ]);
         test.equals(view.callCount, 1);
-        test.equals(view.args[0][0], 'medic');
+        test.equals(view.args[0][0], 'medic-client');
         test.equals(view.args[0][1], 'registered_patients');
         test.equals(view.args[0][2].key, given);
         test.equals(view.args[0][2].include_docs, true);
@@ -581,7 +576,7 @@ exports['getRegistrations queries by ids if given'] = test => {
         test.equals(err, null);
         test.deepEqual(actual, [expectedDoc1, expectedDoc2 ]);
         test.equals(view.callCount, 1);
-        test.equals(view.args[0][0], 'medic');
+        test.equals(view.args[0][0], 'medic-client');
         test.equals(view.args[0][1], 'registered_patients');
         test.equals(view.args[0][2].keys, given);
         test.equals(view.args[0][2].include_docs, true);

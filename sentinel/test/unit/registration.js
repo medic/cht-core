@@ -679,22 +679,22 @@ exports['add_patient trigger fails when patient_id_field is set to patient_id'] 
 };
 
 exports['addMessage prepops and passes the right information to messages.addMessage'] = test => {
-  const testPhone = '1234',
-        testMessage = 'A Test Message',
-        testRegistration = 'some registrations',
+  const testRegistration = 'some registrations',
         testPatient = 'a patient contact';
 
-  sinon.stub(messages, 'getRecipientPhone').returns(testPhone);
-  sinon.stub(messages, 'getMessage').returns(testMessage);
-  const addMessage = sinon.stub(messages, 'addMessage');
+  const addMessage = sinon.stub(messages, 'GARETH_addMessage');
 
   sinon.stub(utils, 'getRegistrations').callsArgWith(1, null, testRegistration);
   sinon.stub(utils, 'getPatientContact').callsArgWith(2, null, testPatient);
 
   const testConfig = {
     messages: [{
+      recipient: '+123456',
+      message: [{ content: '1', locale: 'en' }],
     },
     {
+      recipient: 'clinic',
+      message: [{ content: '2', locale: 'en' }],
       event_type: 'report_accepted'
     }]
   };
@@ -708,17 +708,20 @@ exports['addMessage prepops and passes the right information to messages.addMess
     test.equal(err, undefined);
     test.equal(addMessage.callCount, 2);
 
-    const expected = {
-      doc: testDoc,
-      phone: testPhone,
-      message: testMessage,
-      templateContext: { next_msg: { minutes: 0, hours: 0, days: 0, weeks: 0, months: 0, years: 0 } },
+    const expectedTemplateContext = {
+      next_msg: { minutes: 0, hours: 0, days: 0, weeks: 0, months: 0, years: 0 },
       registrations: testRegistration,
       patient: testPatient
     };
 
-    test.deepEqual(addMessage.args[0][0], expected);
-    test.deepEqual(addMessage.args[1][0], expected);
+    test.deepEqual(addMessage.args[0][0], testDoc);
+    test.deepEqual(addMessage.args[0][1], testConfig.messages[0]);
+    test.equals(addMessage.args[0][2], '+123456');
+    test.deepEqual(addMessage.args[0][3], expectedTemplateContext);
+    test.deepEqual(addMessage.args[1][0], testDoc);
+    test.deepEqual(addMessage.args[1][1], testConfig.messages[1]);
+    test.equals(addMessage.args[1][2], 'clinic');
+    test.deepEqual(addMessage.args[1][3], expectedTemplateContext);
     test.done();
   });
 };

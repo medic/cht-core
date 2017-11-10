@@ -73,34 +73,19 @@ module.exports = {
     _getConfig: function(key) {
         return config.get(key);
     },
-    _getLocale: function(doc) {
-        return utils.getLocale(doc);
-    },
-    _translate: function(key, locale) {
-        return utils.translate(key, locale);
-    },
-    _addMessage: function(doc, msg) {
-        var opts = {
-                doc: doc,
-                phone: doc.from,
-                message: msg
-            };
-        messages.addMessage(opts);
-    },
     onMatch: function(change, db, audit, callback) {
 
         var self = module.exports,
-            doc = change.doc,
-            locale = self._getLocale(doc);
+            doc = change.doc;
 
         if (self._isMessageEmpty(doc)) {
-            self._addMessage(doc, self._translate('empty', locale));
+            messages.GARETH_addMessage(doc, { translationKey: 'empty' });
         } else if (self._isConfigFormsOnlyMode() && self._isFormNotFound(doc)) {
-            self._addMessage(doc, self._translate('form_not_found', locale));
+            messages.GARETH_addMessage(doc, { translationKey: 'form_not_found' });
         } else if (self._isFormNotFound(doc)) {
-            self._addMessage(doc, self._translate('sms_received', locale));
+            messages.GARETH_addMessage(doc, { translationKey: 'sms_received' });
         } else if (self._isValidUnstructuredMessage(doc)) {
-            self._addMessage(doc, self._translate('sms_received', locale));
+            messages.GARETH_addMessage(doc, { translationKey: 'sms_received' });
         }
 
         callback(null, true);

@@ -204,7 +204,6 @@ exports['valid form adds patient_id and patient document'] = function(test) {
                 type: 'person',
                 patient_id: doc.patient_id
             });
-        test.equal(doc.tasks, undefined);
         test.done();
     });
 };

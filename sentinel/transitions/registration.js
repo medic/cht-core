@@ -32,6 +32,7 @@ const getRegistrations = (db, patientId, callback) => {
 const addValidationErrors = (registrationConfig, doc, errors) => {
   messages.addErrors(doc, errors);
   // join all errors into one response or respond with first error.
+  let reply;
   if (registrationConfig.validations.join_responses) {
     const msgs = [];
     _.each(errors, err => {
@@ -41,11 +42,12 @@ const addValidationErrors = (registrationConfig, doc, errors) => {
         msgs.push(err);
       }
     });
-    messages.addReply(doc, msgs.join('  '));
+    reply = msgs.join('  ');
   } else {
     const err = _.first(errors);
-    messages.addReply(doc, err.message || err);
+    reply = err.message || err;
   }
+  messages.GARETH_addMessage(doc, { message: reply }, 'clinic');
 };
 
 const getPatientNameField = params => {
@@ -335,11 +337,7 @@ module.exports = {
     }
   },
   addMessages: (db, config, doc, callback) => {
-    // send response if configured
-    const locale = utils.getLocale(doc),
-          now = moment(date.getDate()),
-          extra = {next_msg: schedules.getNextTimes(doc, now)},
-          patientId = doc.fields && doc.fields.patient_id;
+    const patientId = doc.fields && doc.fields.patient_id;
     if (!config.messages || !config.messages.length) {
       return callback();
     }
@@ -350,17 +348,14 @@ module.exports = {
       if (err) {
         return callback(err);
       }
-
+      const templateContext = {
+        next_msg: schedules.getNextTimes(doc, moment(date.getDate())),
+        patient: patient,
+        registrations: registrations
+      };
       config.messages.forEach(msg => {
         if (!msg.event_type || msg.event_type === 'report_accepted') {
-          messages.addMessage({
-            doc: doc,
-            phone: messages.getRecipientPhone(doc, msg.recipient),
-            message: messages.getMessage(msg, locale),
-            templateContext: extra,
-            registrations: registrations,
-            patient: patient
-          });
+          messages.GARETH_addMessage(doc, msg, msg.recipient, templateContext);
         }
       });
       callback();

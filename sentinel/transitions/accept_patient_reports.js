@@ -109,6 +109,8 @@ const validate = (config, doc, callback) => {
 
 const addErrorsToDoc = (errors, doc, config) => {
     messages.addErrors(doc, errors);
+    // TODO maybe move all of this code to messages.addErrors?
+    let reply;
     if (config.validations.join_responses) {
         var msgs = [];
         errors.forEach(err => {
@@ -118,20 +120,21 @@ const addErrorsToDoc = (errors, doc, config) => {
                 msgs.push(err);
             }
         });
-        messages.addReply(doc, msgs.join('  '));
+        reply = msgs.join('  ');
     } else {
-        messages.addReply(doc, errors[0].message || errors[0]);
+        reply = errors[0].message || errors[0];
     }
+
+    messages.GARETH_addMessage(doc, { message: reply }, 'clinic');
 };
 
 const addMessagesToDoc = (doc, config, registrations, patientContact) => {
-    const locale = utils.getLocale(doc);
+    // const locale = utils.getLocale(doc);
     config.messages.forEach(msg => {
         if (msg.event_type === 'report_accepted') {
-            messages.addMessage({
-                doc: doc,
-                message: messages.getMessage(msg, locale),
-                phone: messages.getRecipientPhone(doc, msg.recipient),
+            console.log('adding message');
+            // TODO maybe move fetching patient and registrations down into messages?
+            messages.GARETH_addMessage(doc, msg, msg.recipient, {
                 patient: patientContact,
                 registrations: registrations
             });

@@ -61,17 +61,9 @@ module.exports = {
                     module.exports._evaluateCondition(doc, alert, function(err, result) {
                         if (err) {
                             return callback(err);
-                        } else if(result) {
-                            var phone = messages.getRecipientPhone(
-                                doc,
-                                alert.recipient,
-                                alert.recipient
-                            );
-                            messages.addMessage({
-                                doc: doc,
-                                phone: phone,
-                                message: alert.message
-                            });
+                        }
+                        if (result) {
+                            messages.GARETH_addMessage(doc, alert, alert.recipient);
                             updated = true;
                         }
                         callback();

@@ -8,7 +8,7 @@ const findFirstMatchingMessage = (config, errorKey) => {
     return null;
   }
   const matches = config.messages.filter(msg => msg.event_type === errorKey);
-  return matches && matches[0];
+  return matches && matches.length && matches[0];
 };
 
 module.exports = {
@@ -19,25 +19,22 @@ module.exports = {
   addRejectionMessage: (doc, reportConfig, errorKey) => {
     const config = findFirstMatchingMessage(reportConfig, errorKey);
     let message;
+    let errorMessage;
     if (config) {
-      message = messages.getMessage(config, utils.getLocale(doc));
+      errorMessage = messages.getMessage(config, utils.getLocale(doc));
+      message = config;
     } else {
-      message = 'messages.generic.' + errorKey;
+      errorMessage = `messages.generic.${errorKey}`;
+      message = { translationKey: errorMessage };
     }
     const recipient = config && config.recipient || 'from';
-    const phone = messages.getRecipientPhone(doc, recipient);
-
     // A "message" ends up being a doc.task, which is something that is sent to
     // the caller via SMS
-    messages.addMessage({
-      doc: doc,
-      message: message,
-      phone: phone
-    });
+    messages.GARETH_addMessage(doc, message, recipient);
     // An "error" ends up being a doc.error, which is something that is shown
     // on the screen when you view the error. We need both
     messages.addError(doc, {
-      message: message,
+      message: errorMessage,
       code: errorKey
     });
   },
