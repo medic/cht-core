@@ -1,6 +1,12 @@
-var sinon = require('sinon'),
-    moment = require('moment'),
-    schedule = require('../../schedule/due_tasks');
+const sinon = require('sinon').sandbox.create(),
+      moment = require('moment'),
+      utils = require('../../lib/utils'),
+      schedule = require('../../schedule/due_tasks');
+
+exports.tearDown = function(callback) {
+  sinon.restore();
+  callback();
+};
 
 exports['due_tasks handles view returning no rows'] = function(test) {
   test.expect(3);
@@ -203,4 +209,81 @@ exports['set all due scheduled tasks to pending and handles nonrepeated rows'] =
     test.done();
   });
 
+};
+
+exports['generates the messages for all due scheduled tasks'] = test => {
+  const due = moment().toISOString();
+  const notDue = moment().add(7, 'days').toISOString();
+  const id = 'xyz';
+  const expectedPhone = '5556918';
+  const translate = sinon.stub(utils, 'translate').returns('Please visit {{patient_name}} asap');
+  const getRegistrations = sinon.stub(utils, 'getRegistrations').callsArgWith(1, null, []);
+  const getPatientContact = sinon.stub(utils, 'getPatientContact').callsArgWith(2, null, { name: 'jim' });
+
+  const db = {
+    view: () => {}
+  };
+  const view = sinon.stub(db, 'view').callsArgWith(3, null, {
+    rows: [
+      {
+        id: id,
+        key: due,
+        doc: {
+          fields: {
+            patient_id: '123'
+          },
+          contact: {
+            type: 'person',
+            parent: {
+              type: 'clinic',
+              contact: {
+                type: 'person',
+                phone: expectedPhone
+              }
+            }
+          },
+          scheduled_tasks: [
+            {
+              due: due,
+              state: 'scheduled',
+              message_key: 'visit-1',
+              recipient: 'clinic'
+            },
+            {
+              due: notDue,
+              state: 'scheduled',
+              message_key: 'visit-1',
+              recipient: 'clinic'
+            }
+          ]
+        }
+      }
+    ]
+  });
+
+  const audit = {
+    saveDoc: (doc, callback) => {
+      callback();
+    }
+  };
+  const saveDoc = sinon.spy(audit, 'saveDoc');
+
+  schedule({ medic: db }, audit, err => {
+    test.equals(err, undefined);
+  });
+
+  test.equals(view.callCount, 1);
+  test.equals(saveDoc.callCount, 1);
+  test.equals(translate.callCount, 1);
+  test.equals(translate.args[0][0], 'visit-1');
+  test.equals(getRegistrations.callCount, 1);
+  test.equals(getPatientContact.callCount, 1);
+  test.equals(getPatientContact.args[0][1], '123');
+  const saved = saveDoc.firstCall.args[0];
+  test.equals(saved.scheduled_tasks.length, 2);
+  test.equals(saved.scheduled_tasks[0].messages.length, 1);
+  test.equals(saved.scheduled_tasks[0].messages[0].to, expectedPhone);
+  test.equals(saved.scheduled_tasks[0].messages[0].message, 'Please visit jim asap');
+  test.equals(saved.scheduled_tasks[1].messages, undefined);
+  test.done();
 };

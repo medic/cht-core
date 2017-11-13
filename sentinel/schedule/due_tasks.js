@@ -4,7 +4,20 @@ var async = require('async'),
     _ = require('underscore'),
     moment = require('moment'),
     utils = require('../lib/utils'),
-    date = require('../date');
+    date = require('../date'),
+    config = require('../config'),
+    messageUtils = require('../lib/message-utils');
+
+const getTemplateContext = (db, doc, callback) => {
+    const patientId = doc.fields && doc.fields.patient_id;
+    if (!patientId) {
+        return callback();
+    }
+    async.parallel({
+        registrations: callback => utils.getRegistrations({ db: db, id: patientId }, callback),
+        patient: callback => utils.getPatientContact(db, patientId, callback)
+    }, callback);
+};
 
 module.exports = function(db, audit, callback) {
     var now = moment(date.getDate()),
@@ -25,15 +38,36 @@ module.exports = function(db, audit, callback) {
         });
 
         async.forEachSeries(objs, function(obj, cb) {
-            // set task to pending for gateway to pick up
-            // TODO also generate the message and persist!
-            utils.setTasksStates(obj.doc, 'pending', function(task) {
-                return task.due === obj.key;
+            const doc = obj.doc;
+            getTemplateContext(db, doc, (err, context) => {
+                if (err) {
+                    return cb(err);
+                }
+                // set task to pending for gateway to pick up
+                doc.scheduled_tasks.forEach(task => {
+                    if (task.due === obj.key) {
+                        utils.setTaskState(task, 'pending');
+                        const content = {
+                            translationKey: task.message_key,
+                            message: task.message
+                        };
+                        task.messages = messageUtils.generate(
+                            config.getAll(),
+                            utils.translate,
+                            doc,
+                            content,
+                            task.recipient,
+                            context
+                        );
+                    }
+                });
+                audit.saveDoc(obj.doc, cb);
             });
-            audit.saveDoc(obj.doc, cb);
         }, function(err) {
             callback(err);
         });
 
     });
 };
+
+
