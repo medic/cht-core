@@ -143,11 +143,8 @@ const addErrorsToDoc = (errors, doc, config) => {
 };
 
 const addMessagesToDoc = (doc, config, registrations, patientContact) => {
-    // const locale = utils.getLocale(doc);
     config.messages.forEach(msg => {
         if (msg.event_type === 'report_accepted') {
-            console.log('adding message');
-            // TODO maybe move fetching patient and registrations down into messages?
             messages.addMessage(doc, msg, msg.recipient, {
                 patient: patientContact,
                 registrations: registrations

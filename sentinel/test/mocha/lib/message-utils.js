@@ -144,6 +144,35 @@ describe('messageUtils', () => {
         done();
       });
 
+      it('applies the outgoing phone filters', done => {
+        const given = '00101';
+        const expected = '9101';
+        const doc = {
+          form: 'x',
+          from: given
+        };
+        const config = { outgoing_phone_filters: [
+            { match: '0+', replace: '9' },
+            { }
+        ] };
+        const actual = utils.generate(config, null, doc, { message: 'hello' }, 'greatgrandparent');
+        expect(actual[0].to).to.equal(expected);
+        done();
+      });
+
+      it('applies the outgoing phone replace', done => {
+        const given = '159841125';
+        const expected = '29841125';
+        const doc = {
+          form: 'x',
+          from: given
+        };
+        const config = { outgoing_phone_replace: { match: '15', replace: '2' } };
+        const actual = utils.generate(config, null, doc, { message: 'hello' }, 'greatgrandparent');
+        expect(actual[0].to).to.equal(expected);
+        done();
+      });
+
     });
 
   });

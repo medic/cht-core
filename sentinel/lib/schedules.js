@@ -97,7 +97,7 @@ module.exports = {
                 locale = utils.getLocale(doc),
                 offset = module.exports.getOffset(msg.offset),
                 send_time = module.exports.getSendTime(msg.send_time),
-                message = messages.getMessage(msg, locale); // TODO push this down
+                message = messages.getMessage(msg, locale);
 
             if (offset) {
                 due = start.clone().add(offset);

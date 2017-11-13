@@ -143,30 +143,6 @@ exports['muteScheduledMessages mutes all scheduled tasks'] = function(test) {
     test.done();
 };
 
-// TODO change this to test message-utils
-// exports['applyPhoneFilters performs replace'] = function(test) {
-
-//     var config = {
-//         get: function(prop) {
-//             if (prop === 'outgoing_phone_filters') {
-//                 return [
-//                     { match: '0+', replace: '9' },
-//                     { }
-//                 ];
-//             }
-//             if (prop === 'outgoing_phone_replace') {
-//                 return { match: '15', replace: '2' };
-//             }
-//             test.ok(false, 'Unexpected property: ' + prop);
-//         }
-//     };
-
-//     test.equals(utils.applyPhoneFilters(config, '00101'), '9101');
-//     test.equals(utils.applyPhoneFilters(config, '456'), '456');
-//     test.equals(utils.applyPhoneFilters(config, '159841125'), '29841125');
-//     test.done();
-// };
-
 exports['translate returns message if key found in translations'] = function(test) {
     sinon.stub(config, 'getTranslations').returns({
         en: { sms_received: 'got it!' }
