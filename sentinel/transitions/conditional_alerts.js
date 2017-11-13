@@ -63,7 +63,7 @@ module.exports = {
                             return callback(err);
                         }
                         if (result) {
-                            messages.GARETH_addMessage(doc, alert, alert.recipient);
+                            messages.addMessage(doc, alert, alert.recipient);
                             updated = true;
                         }
                         callback();

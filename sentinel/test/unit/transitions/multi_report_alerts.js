@@ -152,11 +152,11 @@ exports['if not enough reports pass the is_report_counted func, does nothing'] =
   sinon.stub(utils, 'getReportsWithinTimeWindow').returns(Promise.resolve(reports));
   stubFetchHydratedDocs();
   sinon.stub(messages, 'addError');
-  sinon.stub(messages, 'GARETH_addMessage');
+  sinon.stub(messages, 'addMessage');
 
   transition.onMatch({ doc: doc }, undefined, undefined, () => {
     test.equals(messages.addError.getCalls().length, 0);
-    test.equals(messages.GARETH_addMessage.getCalls().length, 0);
+    test.equals(messages.addMessage.getCalls().length, 0);
     test.done();
   });
 };
@@ -167,11 +167,11 @@ exports['if no reports in time window, does nothing'] = test => {
   sinon.stub(utils, 'getReportsWithinTimeWindow').returns(Promise.resolve([]));
   sinon.stub(lineage, 'hydrateDocs').returns(Promise.resolve([]));
   sinon.stub(messages, 'addError');
-  sinon.stub(messages, 'GARETH_addMessage');
+  sinon.stub(messages, 'addMessage');
 
   transition.onMatch({ doc: doc }, undefined, undefined, (err, docNeedsSaving) => {
     test.equals(messages.addError.getCalls().length, 0);
-    test.equals(messages.GARETH_addMessage.getCalls().length, 0);
+    test.equals(messages.addMessage.getCalls().length, 0);
     test.ok(!docNeedsSaving);
     test.done();
   });
@@ -188,7 +188,7 @@ const assertMessage = (test, messageArgs, recipient, message, alertName, num_rep
   test.equals(messageArgs[0], doc);
   test.equals(messageArgs[1].message, message);
   test.equals(messageArgs[2], recipient);
-  test.deepEqual(messageArgs[3], templateContext);
+  test.deepEqual(messageArgs[3], { templateContext: templateContext });
 };
 
 const assertMessages = (test, addMessageStub, alert) => {
@@ -202,13 +202,13 @@ exports['if enough reports pass the is_report_counted func, adds message'] = tes
   sinon.stub(utils, 'getReportsWithinTimeWindow').returns(Promise.resolve(reports));
   stubFetchHydratedDocs();
   sinon.stub(messages, 'addError');
-  sinon.stub(messages, 'GARETH_addMessage');
+  sinon.stub(messages, 'addMessage');
 
   transition.onMatch({ doc: doc }, undefined, undefined, (err, docNeedsSaving) => {
     test.equals(messages.addError.getCalls().length, 0);
 
-    test.equals(messages.GARETH_addMessage.getCalls().length, alertConfig.recipients.length);
-    assertMessages(test, messages.GARETH_addMessage, alertConfig);
+    test.equals(messages.addMessage.getCalls().length, alertConfig.recipients.length);
+    assertMessages(test, messages.addMessage, alertConfig);
     test.equals(doc.tasks[0].type, 'alert');
     test.equals(doc.tasks[0].alert_name, alertConfig.name);
     test.deepEqual(doc.tasks[0].counted_reports, [ doc._id, ...reports.map(report => report._id) ]);
@@ -228,10 +228,10 @@ exports['adds message when recipient is evaled'] = test => {
   sinon.stub(utils, 'getReportsWithinTimeWindow').returns(Promise.resolve([]));
   sinon.stub(lineage, 'hydrateDocs').returns(Promise.resolve([]));
   sinon.stub(messages, 'addError');
-  sinon.stub(messages, 'GARETH_addMessage');
+  sinon.stub(messages, 'addMessage');
 
   transition.onMatch({ doc: doc }, undefined, undefined, (err, docNeedsSaving) => {
-    test.equals(messages.GARETH_addMessage.getCalls().length, 1);
+    test.equals(messages.addMessage.getCalls().length, 1);
     test.equals(messages.addError.getCalls().length, 0);
 
     test.ok(docNeedsSaving);
@@ -246,11 +246,11 @@ exports['adds multiple messages when multiple recipients are evaled'] = test => 
   sinon.stub(utils, 'getReportsWithinTimeWindow').returns(Promise.resolve(reports));
   stubFetchHydratedDocs();
   sinon.stub(messages, 'addError');
-  sinon.stub(messages, 'GARETH_addMessage');
+  sinon.stub(messages, 'addMessage');
 
   transition.onMatch({ doc: doc }, undefined, undefined, (err, docNeedsSaving) => {
-    test.equals(messages.GARETH_addMessage.getCalls().length, 3); // 3 counted reports, one phone number each.
-    const actualPhones = messages.GARETH_addMessage.getCalls().map(call => call.args[2]);
+    test.equals(messages.addMessage.getCalls().length, 3); // 3 counted reports, one phone number each.
+    const actualPhones = messages.addMessage.getCalls().map(call => call.args[2]);
     const expectedPhones = [doc.contact.phone, hydratedReports[0].contact.phone, hydratedReports[1].contact.phone];
     test.deepEqual(actualPhones, expectedPhones);
 
@@ -269,11 +269,11 @@ exports['does not add message when recipient cannot be evaled'] = test => {
   sinon.stub(utils, 'getReportsWithinTimeWindow').returns(Promise.resolve(reports));
   stubFetchHydratedDocs();
   sinon.stub(messages, 'addError');
-  sinon.stub(messages, 'GARETH_addMessage');
+  sinon.stub(messages, 'addMessage');
 
   transition.onMatch({ doc: doc }, undefined, undefined, (err, docNeedsSaving) => {
     test.equals(messages.addError.getCalls().length, 3); // 3 countedReports, one failed recipient each
-    test.equals(messages.GARETH_addMessage.getCalls().length, 0);
+    test.equals(messages.addMessage.getCalls().length, 0);
 
     test.ok(docNeedsSaving);
     test.done();
@@ -288,10 +288,10 @@ exports['does not add message when recipient is bad'] = test => {
   sinon.stub(utils, 'getReportsWithinTimeWindow').returns(Promise.resolve(reports));
   stubFetchHydratedDocs();
   sinon.stub(messages, 'addError');
-  sinon.stub(messages, 'GARETH_addMessage');
+  sinon.stub(messages, 'addMessage');
 
   transition.onMatch({ doc: doc }, undefined, undefined, (err, docNeedsSaving) => {
-    test.equals(messages.GARETH_addMessage.getCalls().length, 0);
+    test.equals(messages.addMessage.getCalls().length, 0);
     test.equals(messages.addError.getCalls().length, 3); // 3 countedReports, one failed recipient each
 
     test.ok(docNeedsSaving);
@@ -307,10 +307,10 @@ exports['does not add message when recipient is not international phone number']
   sinon.stub(utils, 'getReportsWithinTimeWindow').returns(Promise.resolve(reports));
   stubFetchHydratedDocs();
   sinon.stub(messages, 'addError');
-  sinon.stub(messages, 'GARETH_addMessage');
+  sinon.stub(messages, 'addMessage');
 
   transition.onMatch({ doc: doc }, undefined, undefined, (err, docNeedsSaving) => {
-    test.equals(messages.GARETH_addMessage.getCalls().length, 0);
+    test.equals(messages.addMessage.getCalls().length, 0);
     test.equals(messages.addError.getCalls().length, 3); // 3 countedReports, one failed recipient each
 
     test.ok(docNeedsSaving);
@@ -351,12 +351,12 @@ exports['message only contains newReports'] = test => {
   sinon.stub(lineage, 'hydrateDocs').returns(Promise.resolve(hydratedReportsWithOneAlreadyMessaged));
 
   sinon.stub(messages, 'addError');
-  sinon.stub(messages, 'GARETH_addMessage');
+  sinon.stub(messages, 'addMessage');
 
   transition.onMatch({ doc: doc }, undefined, undefined, (err, docNeedsSaving) => {
-    test.equals(messages.GARETH_addMessage.getCalls().length, 1);
+    test.equals(messages.addMessage.getCalls().length, 1);
     test.equals(messages.addError.getCalls().length, 0);
-    test.deepEqual(messages.GARETH_addMessage.getCall(0).args[3].new_reports, [doc, hydratedReportsWithOneAlreadyMessaged[0] ]);
+    test.deepEqual(messages.addMessage.getCall(0).args[3].templateContext.new_reports, [doc, hydratedReportsWithOneAlreadyMessaged[0] ]);
     test.ok(docNeedsSaving);
     test.done();
   });
@@ -369,19 +369,19 @@ exports['adds multiple messages when mutiple recipients'] = test => {
   sinon.stub(utils, 'getReportsWithinTimeWindow').returns(Promise.resolve(reports));
   stubFetchHydratedDocs();
   sinon.stub(messages, 'addError');
-  sinon.stub(messages, 'GARETH_addMessage');
+  sinon.stub(messages, 'addMessage');
 
   transition.onMatch({ doc: doc }, undefined, undefined, () => {
     test.equals(messages.addError.getCalls().length, 0);
 
     // first recipient
-    assertMessage(test, messages.GARETH_addMessage.getCall(0).args, '+254111222333', alertConfig.message, alertConfig.name, alertConfig.num_reports_threshold, alertConfig.time_window_in_days);
+    assertMessage(test, messages.addMessage.getCall(0).args, '+254111222333', alertConfig.message, alertConfig.name, alertConfig.num_reports_threshold, alertConfig.time_window_in_days);
     // second recipient : matched 3 phones
-    assertMessage(test, messages.GARETH_addMessage.getCall(1).args, doc.contact.phone, alertConfig.message, alertConfig.name, alertConfig.num_reports_threshold, alertConfig.time_window_in_days);
-    assertMessage(test, messages.GARETH_addMessage.getCall(2).args, hydratedReports[0].contact.phone, alertConfig.message, alertConfig.name, alertConfig.num_reports_threshold, alertConfig.time_window_in_days);
-    assertMessage(test, messages.GARETH_addMessage.getCall(3).args, hydratedReports[1].contact.phone, alertConfig.message, alertConfig.name, alertConfig.num_reports_threshold, alertConfig.time_window_in_days);
+    assertMessage(test, messages.addMessage.getCall(1).args, doc.contact.phone, alertConfig.message, alertConfig.name, alertConfig.num_reports_threshold, alertConfig.time_window_in_days);
+    assertMessage(test, messages.addMessage.getCall(2).args, hydratedReports[0].contact.phone, alertConfig.message, alertConfig.name, alertConfig.num_reports_threshold, alertConfig.time_window_in_days);
+    assertMessage(test, messages.addMessage.getCall(3).args, hydratedReports[1].contact.phone, alertConfig.message, alertConfig.name, alertConfig.num_reports_threshold, alertConfig.time_window_in_days);
 
-    test.equals(messages.GARETH_addMessage.getCalls().length, 4);
+    test.equals(messages.addMessage.getCalls().length, 4);
 
     test.done();
   });
@@ -395,15 +395,15 @@ exports['dedups message recipients'] = test => {
   sinon.stub(utils, 'getReportsWithinTimeWindow').returns(Promise.resolve(reports));
   stubFetchHydratedDocs();
   sinon.stub(messages, 'addError');
-  sinon.stub(messages, 'GARETH_addMessage');
+  sinon.stub(messages, 'addMessage');
 
   transition.onMatch({ doc: doc }, undefined, undefined, () => {
     test.equals(messages.addError.getCalls().length, 0);
 
-    test.equals(messages.GARETH_addMessage.getCalls().length, 3); // 3 countedReports, 2 recipients specified for each, deduped to 1 for each.
-    test.equals(messages.GARETH_addMessage.getCall(0).args[2], doc.contact.phone);
-    test.equals(messages.GARETH_addMessage.getCall(1).args[2], hydratedReports[0].contact.phone);
-    test.equals(messages.GARETH_addMessage.getCall(2).args[2], hydratedReports[1].contact.phone);
+    test.equals(messages.addMessage.getCalls().length, 3); // 3 countedReports, 2 recipients specified for each, deduped to 1 for each.
+    test.equals(messages.addMessage.getCall(0).args[2], doc.contact.phone);
+    test.equals(messages.addMessage.getCall(1).args[2], hydratedReports[0].contact.phone);
+    test.equals(messages.addMessage.getCall(2).args[2], hydratedReports[1].contact.phone);
 
     test.done();
   });
@@ -442,15 +442,15 @@ exports['runs multiple alerts'] = test => {
   sinon.stub(utils, 'getReportsWithinTimeWindow').returns(Promise.resolve(reports));
   stubFetchHydratedDocs();
   sinon.stub(messages, 'addError');
-  sinon.stub(messages, 'GARETH_addMessage');
+  sinon.stub(messages, 'addMessage');
 
   transition.onMatch({ doc: doc }, undefined, undefined, (err, docNeedsSaving) => {
     test.equals(messages.addError.getCalls().length, 0);
 
-    test.equals(messages.GARETH_addMessage.getCalls().length, 3); // alert[0].recipients + alert[1].recipients
-    assertMessage(test, messages.GARETH_addMessage.getCall(0).args, twoAlerts[0].recipients[0], twoAlerts[0].message, twoAlerts[0].name, twoAlerts[0].num_reports_threshold, twoAlerts[0].time_window_in_days);
-    assertMessage(test, messages.GARETH_addMessage.getCall(1).args, twoAlerts[1].recipients[0], twoAlerts[1].message, twoAlerts[1].name, twoAlerts[1].num_reports_threshold, twoAlerts[1].time_window_in_days);
-    assertMessage(test, messages.GARETH_addMessage.getCall(2).args, twoAlerts[1].recipients[1], twoAlerts[1].message, twoAlerts[1].name, twoAlerts[1].num_reports_threshold, twoAlerts[1].time_window_in_days);
+    test.equals(messages.addMessage.getCalls().length, 3); // alert[0].recipients + alert[1].recipients
+    assertMessage(test, messages.addMessage.getCall(0).args, twoAlerts[0].recipients[0], twoAlerts[0].message, twoAlerts[0].name, twoAlerts[0].num_reports_threshold, twoAlerts[0].time_window_in_days);
+    assertMessage(test, messages.addMessage.getCall(1).args, twoAlerts[1].recipients[0], twoAlerts[1].message, twoAlerts[1].name, twoAlerts[1].num_reports_threshold, twoAlerts[1].time_window_in_days);
+    assertMessage(test, messages.addMessage.getCall(2).args, twoAlerts[1].recipients[1], twoAlerts[1].message, twoAlerts[1].name, twoAlerts[1].num_reports_threshold, twoAlerts[1].time_window_in_days);
 
     test.ok(!err);
     test.ok(docNeedsSaving);
@@ -465,11 +465,11 @@ exports['skips doc with wrong form if forms is present in config'] = test => {
   sinon.stub(utils, 'getReportsWithinTimeWindow').returns(Promise.resolve(reports));
   stubFetchHydratedDocs();
   sinon.stub(messages, 'addError');
-  sinon.stub(messages, 'GARETH_addMessage');
+  sinon.stub(messages, 'addMessage');
 
   transition.onMatch({ doc: doc }, undefined, undefined, (err, docNeedsSaving) => {
     test.equals(messages.addError.getCalls().length, 0);
-    test.equals(messages.GARETH_addMessage.getCalls().length, 0);
+    test.equals(messages.addMessage.getCalls().length, 0);
     test.ok(!err);
     test.ok(!docNeedsSaving);
     test.done();
@@ -489,11 +489,11 @@ exports['latest report has to go through is_report_counted function'] = test => 
   sinon.stub(utils, 'getReportsWithinTimeWindow').returns(Promise.resolve(reports));
   stubFetchHydratedDocs();
   sinon.stub(messages, 'addError');
-  sinon.stub(messages, 'GARETH_addMessage');
+  sinon.stub(messages, 'addMessage');
 
   transition.onMatch({ doc: doc }, undefined, undefined, (err, docNeedsSaving) => {
     test.equals(messages.addError.getCalls().length, 0);
-    test.equals(messages.GARETH_addMessage.getCalls().length, 0);
+    test.equals(messages.addMessage.getCalls().length, 0);
     test.ok(!err);
     test.ok(!docNeedsSaving);
     test.done();

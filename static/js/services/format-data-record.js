@@ -335,7 +335,7 @@ angular.module('inboxServices').factory('FormatDataRecord',
     /*
      * Take data record document and return nice formated JSON object.
      */
-    var makeDataRecordReadable = function(doc, appinfo, language, options) {
+    var makeDataRecordReadable = function(doc, appinfo, language, context) {
 
       var data_record = doc;
 
@@ -348,7 +348,6 @@ angular.module('inboxServices').factory('FormatDataRecord',
       }
 
       if(data_record.scheduled_tasks) {
-        console.log('doc', doc);
         data_record.scheduled_tasks_by_group = [];
         var groups = {};
         data_record.scheduled_tasks.forEach(function(t) {
@@ -358,14 +357,21 @@ angular.module('inboxServices').factory('FormatDataRecord',
           }
 
           var copy = _.clone(t);
+          var content = {
+            translationKey: t.message_key,
+            message: t.message
+          };
 
           if (copy.state === 'scheduled' && // not yet sent
             !copy.messages) { // backwards compatibility
-            copy.messages = messages.generate(appinfo, data_record, copy, options);
-          }
-          console.log('copy', copy);
-          if (t.due) {
-            copy.due = t.due;
+            copy.messages = messages.generate(
+              appinfo.settings,
+              appinfo.translate,
+              data_record,
+              content,
+              t.recipient,
+              context
+            );
           }
 
           // timestamp is used for sorting in the frontend
@@ -469,18 +475,16 @@ angular.module('inboxServices').factory('FormatDataRecord',
         promises.push(getPatient(patientId));
         promises.push(getRegistrations(patientId));
       }
-      console.log('patient id', patientId);
       return $q.all(promises)
         .then(function(results) {
           var appInfo = results[0];
           var language = results[1];
-          var options = {};
+          var context = {};
           if (results.length === 4) {
-            options.patient = results[2];
-            options.registrations = results[3];
+            context.patient = results[2];
+            context.registrations = results[3];
           }
-          console.log('options', options);
-          return makeDataRecordReadable(doc, appInfo, language, options);
+          return makeDataRecordReadable(doc, appInfo, language, context);
         });
     };
   }

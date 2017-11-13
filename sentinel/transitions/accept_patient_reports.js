@@ -31,6 +31,20 @@ const uniqueGroupTypeCombos = tasks => {
     return unique;
 };
 
+/*
+ * type is either a string or an array of strings
+ */
+const getScheduledTasksByType = (registration, type) => {
+  const types = typeof type === 'string' ? [type] : type;
+
+  const scheduled_tasks = registration && registration.scheduled_tasks;
+  if (!scheduled_tasks || !scheduled_tasks.length) {
+    return [];
+  }
+
+  return scheduled_tasks.filter(task => types.includes(task.type));
+};
+
 // find the messages to clear
 const findToClear = (registration, reported_date, config) => {
     // See: https://github.com/medic/medic-docs/blob/master/user/message-states.md#message-states-in-medic-webapp
@@ -41,7 +55,7 @@ const findToClear = (registration, reported_date, config) => {
     const reportedDateMoment = moment(reported_date);
     const taskTypes = config.silence_type.split(',').map(type => type.trim());
 
-    const tasksUnderReview = utils.getScheduledTasksByType(registration, taskTypes);
+    const tasksUnderReview = getScheduledTasksByType(registration, taskTypes);
 
     if (!config.silence_for) {
         // No range, all clearable tasks should be cleared
@@ -125,7 +139,7 @@ const addErrorsToDoc = (errors, doc, config) => {
         reply = errors[0].message || errors[0];
     }
 
-    messages.GARETH_addMessage(doc, { message: reply }, 'clinic');
+    messages.addMessage(doc, { message: reply }, 'clinic');
 };
 
 const addMessagesToDoc = (doc, config, registrations, patientContact) => {
@@ -134,7 +148,7 @@ const addMessagesToDoc = (doc, config, registrations, patientContact) => {
         if (msg.event_type === 'report_accepted') {
             console.log('adding message');
             // TODO maybe move fetching patient and registrations down into messages?
-            messages.GARETH_addMessage(doc, msg, msg.recipient, {
+            messages.addMessage(doc, msg, msg.recipient, {
                 patient: patientContact,
                 registrations: registrations
             });

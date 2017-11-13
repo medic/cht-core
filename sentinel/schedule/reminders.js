@@ -138,13 +138,15 @@ module.exports = {
             db = options.db,
             moment = options.moment,
             reminder = options.reminder,
-            templateContext = { templateContext: {
-                week: moment.format('w'),
-                year: moment.format('YYYY')
-            } };
+            context = {
+                templateContext: {
+                    week: moment.format('w'),
+                    year: moment.format('YYYY')
+                }
+            };
 
         // add a message to the tasks property with the form/ts markers
-        const task = messages.GARETH_addMessage(clinic, { message: [ { content: reminder.message } ] }, 'clinic', templateContext);
+        const task = messages.addMessage(clinic, { message: [ { content: reminder.message } ] }, 'clinic', context);
         if (task) {
             task.form = reminder.form;
             task.ts = moment.toISOString();

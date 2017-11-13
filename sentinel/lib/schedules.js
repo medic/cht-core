@@ -3,7 +3,8 @@ var _ = require('underscore'),
     date = require('../date'),
     moment = require('moment'),
     utils = require('../lib/utils'),
-    messages = require('../lib/messages');
+    messages = require('../lib/messages'),
+    messageUtils = require('./message-utils');
 
 module.exports = {
     // return [hour, minute, timezone]
@@ -95,9 +96,8 @@ module.exports = {
             var due,
                 locale = utils.getLocale(doc),
                 offset = module.exports.getOffset(msg.offset),
-                phone = messages.getRecipientPhone(doc, msg.recipient),
                 send_time = module.exports.getSendTime(msg.send_time),
-                message = messages.getMessage(msg, locale);
+                message = messages.getMessage(msg, locale); // TODO push this down
 
             if (offset) {
                 due = start.clone().add(offset);
@@ -120,13 +120,36 @@ module.exports = {
                 if (due < now || !message) {
                     return;
                 }
-                messages.scheduleMessage(doc, {
-                    due: due.toISOString(),
-                    message: message,
-                    group: msg.group,
-                    type: schedule.name,
-                    translation_key: schedule.translation_key
-                }, phone, registrations, patient);
+
+                try {
+                    const task = {
+                        due: due.toISOString(),
+                        group: msg.group,
+                        type: schedule.name,
+                        translation_key: schedule.translation_key,
+                        message_key: msg.translation_key,
+                        recipient: msg.recipient
+                    };
+                    if (!msg.translation_key) {
+                        // no translation_key so generate now
+                        task.messages = messageUtils.generate(config, utils.translate, doc, msg, msg.recipient, {
+                            registrations: registrations,
+                            patient: patient
+                        });
+                    }
+                    const state = messages.isOutgoingAllowed(doc.from) ? 'scheduled' : 'denied';
+                    utils.setTaskState(task, state);
+
+                    doc.scheduled_tasks = doc.scheduled_tasks || [];
+                    doc.scheduled_tasks.push(task);
+
+                } catch(e) {
+                    console.log('err', e);
+                    utils.addError(doc, {
+                        message: e.message + ': ' + msg.message,
+                        code: 'parse_error'
+                    });
+                }
             } else {
                 // bad offset, skip this msg
                 console.error(

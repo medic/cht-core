@@ -51,15 +51,17 @@ const generateMessages = (alert, phones, latestReport, countedReportsIds, newRep
       messages.addError(latestReport, phone.error);
       return;
     }
-    const templateContext = {
-      // use snake_case for consistency with other fields.
-      new_reports: newReports,
-      num_counted_reports: countedReportsIds.length,
-      alert_name: alert.name,
-      num_reports_threshold: alert.num_reports_threshold,
-      time_window_in_days: alert.time_window_in_days
+    const context = {
+      templateContext: {
+        // use snake_case for consistency with other fields.
+        new_reports: newReports,
+        num_counted_reports: countedReportsIds.length,
+        alert_name: alert.name,
+        num_reports_threshold: alert.num_reports_threshold,
+        time_window_in_days: alert.time_window_in_days
+      }
     };
-    const task = messages.GARETH_addMessage(latestReport, alert, phone, templateContext);
+    const task = messages.addMessage(latestReport, alert, phone, context);
     if (task) {
       task.type = 'alert';
       task.alert_name = alert.name;

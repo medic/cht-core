@@ -63,7 +63,7 @@ exports['when alert matches document send message'] = function(test) {
             recipient: '+6666666'
         }
     });
-    var messageFn = sinon.spy(messages, 'GARETH_addMessage');
+    var messageFn = sinon.spy(messages, 'addMessage');
     var doc = {
         form: 'STCK'
     };
@@ -93,7 +93,7 @@ exports['when alert matches multiple documents send message multiple times'] = f
             recipient: '+6666666'
         }
     });
-    var messageFn = sinon.spy(messages, 'GARETH_addMessage');
+    var messageFn = sinon.spy(messages, 'addMessage');
     var doc = {
         form: 'STCK'
     };
@@ -126,7 +126,7 @@ exports['when alert matches document and condition is true send message'] = func
             recipient: '+6666666'
         }
     });
-    var messageFn = sinon.spy(messages, 'GARETH_addMessage');
+    var messageFn = sinon.spy(messages, 'addMessage');
     var doc = {
         form: 'STCK'
     };
@@ -166,7 +166,7 @@ exports['when recent form condition is true send message'] = function(test) {
             }
         }]);
 
-    var messageFn = sinon.spy(messages, 'GARETH_addMessage');
+    var messageFn = sinon.spy(messages, 'addMessage');
 
     var doc = {
         form: 'STCK'
@@ -242,7 +242,7 @@ exports['when complex condition is true send message'] = function(test) {
             }
         }]);
 
-    var messageFn = sinon.spy(messages, 'GARETH_addMessage');
+    var messageFn = sinon.spy(messages, 'addMessage');
 
     var doc = {
         form: 'STCK'
@@ -290,7 +290,7 @@ exports['database records are sorted before condition evaluation'] = function(te
             }
         }]);
 
-    var messageFn = sinon.spy(messages, 'GARETH_addMessage');
+    var messageFn = sinon.spy(messages, 'addMessage');
     var doc = {
         form: 'STCK'
     };
@@ -316,7 +316,7 @@ exports['database records are sorted before condition evaluation'] = function(te
 //             recipient: 'grandparent'
 //         }
 //     });
-//     var messageFn = sinon.spy(messages, 'GARETH_addMessage');
+//     var messageFn = sinon.spy(messages, 'addMessage');
 //     var doc = {
 //         form: 'STCK',
 //         contact: {
@@ -353,7 +353,7 @@ exports['database records are sorted before condition evaluation'] = function(te
 //             recipient: 'reporting_unit'
 //         }
 //     });
-//     var messageFn = sinon.spy(messages, 'GARETH_addMessage');
+//     var messageFn = sinon.spy(messages, 'addMessage');
 //     var doc = {
 //         _id: '0b65f52b9c8ad5775f169cd5e07980fb',
 //         _rev: '9-38b241baf39b9d21203628281f5c2b2e',

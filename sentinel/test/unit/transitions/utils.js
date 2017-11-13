@@ -12,7 +12,7 @@ exports['addRejectionMessage handles no configured messages'] = test => {
   const doc = { _id: 'a' };
   const config = { };
   const errorKey = 'notfound';
-  const addMessage = sinon.stub(messages, 'GARETH_addMessage');
+  const addMessage = sinon.stub(messages, 'addMessage');
   const addError = sinon.stub(messages, 'addError');
   transitionUtils.addRejectionMessage(doc, config, errorKey);
   test.equals(addMessage.callCount, 1);
@@ -33,7 +33,7 @@ exports['addRejectionMessage finds configured message'] = test => {
     { event_type: 'found', message: 'some message', recipient: 'jim' }
   ] };
   const errorKey = 'found';
-  const addMessage = sinon.stub(messages, 'GARETH_addMessage');
+  const addMessage = sinon.stub(messages, 'addMessage');
   const addError = sinon.stub(messages, 'addError');
   const getMessage = sinon.stub(messages, 'getMessage').returns('some message');
   const getLocale = sinon.stub(utils, 'getLocale').returns('xyz');

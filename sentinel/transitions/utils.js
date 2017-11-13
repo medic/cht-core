@@ -30,7 +30,7 @@ module.exports = {
     const recipient = config && config.recipient || 'from';
     // A "message" ends up being a doc.task, which is something that is sent to
     // the caller via SMS
-    messages.GARETH_addMessage(doc, message, recipient);
+    messages.addMessage(doc, message, recipient);
     // An "error" ends up being a doc.error, which is something that is shown
     // on the screen when you view the error. We need both
     messages.addError(doc, {

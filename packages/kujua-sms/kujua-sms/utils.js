@@ -5,6 +5,45 @@ var utils = require('kujua-utils'),
     logger = utils.logger,
     _ = require('underscore');
 
+/**
+ * Determine locale/language of a record based on a locale value:
+ *  - Set on the document
+ *  - Reported in a form field named `locale`
+ *  - Configured in the gateway and set on message post
+ *  - Configured in the settings
+ *  - Defaults to 'en'
+ */
+function getLocale(record) {
+    return record.locale ||
+           (record.fields && record.fields.locale) ||
+           (record.sms_message && record.sms_message.locale) ||
+           exports.info.locale ||
+           'en';
+}
+
+/*
+ * @param {Object} record - data record
+ * @param {String|Object} error - error object or code matching key in messages
+ *
+ * @returns boolean
+ */
+exports.hasError = function(record, error) {
+    if (!record || !error) return;
+
+    if (_.isString(error)) {
+        error = {
+            code: error,
+            message: ''
+        };
+    }
+
+    var existing = _.findWhere(record.errors, {
+        code: error.code
+    });
+
+    return !!existing;
+};
+
 /*
  * Append error to data record if it doesn't already exist. we don't need
  * redundant errors. Error objects should always have a code and message

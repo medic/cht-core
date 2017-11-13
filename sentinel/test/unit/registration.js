@@ -682,7 +682,7 @@ exports['addMessage prepops and passes the right information to messages.addMess
   const testRegistration = 'some registrations',
         testPatient = 'a patient contact';
 
-  const addMessage = sinon.stub(messages, 'GARETH_addMessage');
+  const addMessage = sinon.stub(messages, 'addMessage');
 
   sinon.stub(utils, 'getRegistrations').callsArgWith(1, null, testRegistration);
   sinon.stub(utils, 'getPatientContact').callsArgWith(2, null, testPatient);
@@ -708,8 +708,8 @@ exports['addMessage prepops and passes the right information to messages.addMess
     test.equal(err, undefined);
     test.equal(addMessage.callCount, 2);
 
-    const expectedTemplateContext = {
-      next_msg: { minutes: 0, hours: 0, days: 0, weeks: 0, months: 0, years: 0 },
+    const context = {
+      templateContext: { next_msg: { minutes: 0, hours: 0, days: 0, weeks: 0, months: 0, years: 0 } },
       registrations: testRegistration,
       patient: testPatient
     };
@@ -717,11 +717,11 @@ exports['addMessage prepops and passes the right information to messages.addMess
     test.deepEqual(addMessage.args[0][0], testDoc);
     test.deepEqual(addMessage.args[0][1], testConfig.messages[0]);
     test.equals(addMessage.args[0][2], '+123456');
-    test.deepEqual(addMessage.args[0][3], expectedTemplateContext);
+    test.deepEqual(addMessage.args[0][3], context);
     test.deepEqual(addMessage.args[1][0], testDoc);
     test.deepEqual(addMessage.args[1][1], testConfig.messages[1]);
     test.equals(addMessage.args[1][2], 'clinic');
-    test.deepEqual(addMessage.args[1][3], expectedTemplateContext);
+    test.deepEqual(addMessage.args[1][3], context);
     test.done();
   });
 };

@@ -47,7 +47,7 @@ const addValidationErrors = (registrationConfig, doc, errors) => {
     const err = _.first(errors);
     reply = err.message || err;
   }
-  messages.GARETH_addMessage(doc, { message: reply }, 'clinic');
+  messages.addMessage(doc, { message: reply }, 'clinic');
 };
 
 const getPatientNameField = params => {
@@ -348,14 +348,16 @@ module.exports = {
       if (err) {
         return callback(err);
       }
-      const templateContext = {
-        next_msg: schedules.getNextTimes(doc, moment(date.getDate())),
+      const context = {
         patient: patient,
-        registrations: registrations
+        registrations: registrations,
+        templateContext: {
+          next_msg: schedules.getNextTimes(doc, moment(date.getDate()))
+        }
       };
       config.messages.forEach(msg => {
         if (!msg.event_type || msg.event_type === 'report_accepted') {
-          messages.GARETH_addMessage(doc, msg, msg.recipient, templateContext);
+          messages.addMessage(doc, msg, msg.recipient, context);
         }
       });
       callback();
@@ -376,7 +378,7 @@ module.exports = {
         const assigned = schedules.assignSchedule(
           options.doc, schedule, registrations, patient);
         if (!assigned) {
-          logger.error('Failed to add schedule please verify settings.');
+          logger.error(new Error('Failed to add schedule please verify settings.'));
         }
       });
       callback();

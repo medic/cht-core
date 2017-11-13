@@ -7,7 +7,7 @@ module.exports = function(grunt) {
   require('jit-grunt')(grunt, {
     'couch-compile': 'grunt-couch',
     'ngtemplates': 'grunt-angular-templates',
-    // 'notify_hooks': 'grunt-notify',
+    'notify_hooks': 'grunt-notify',
     'protractor': 'grunt-protractor-runner',
     'replace': 'grunt-text-replace',
   });
@@ -323,13 +323,13 @@ module.exports = function(grunt) {
         tasks: ['appcache', 'deploy']
       }
     },
-    // notify_hooks: {
-    //   options: {
-    //     enabled: true,
-    //     max_jshint_notifications: 1,
-    //     title: 'Medic Mobile'
-    //   }
-    // },
+    notify_hooks: {
+      options: {
+        enabled: true,
+        max_jshint_notifications: 1,
+        title: 'Medic Mobile'
+      }
+    },
     notify: {
       deployed: {
         options: {
@@ -364,15 +364,12 @@ module.exports = function(grunt) {
     },
     nodeunit: {
       all: [
-      // TODO put this back
-        // 'tests/nodeunit/unit/**/*.js',
-        // '!tests/nodeunit/unit/*/utils.js',
-        // 'api/tests/unit/**/*.js',
-        // '!api/tests/unit/utils.js',
-        // '!api/tests/unit/integration/**/*.js',
-        // '!api/tests/unit/e2e/**/*.js',
-        // 'sentinel/test/unit/**/*.js',
-        // 'sentinel/test/functional/**/*.js'
+        'tests/nodeunit/unit/**/*.js',
+        '!tests/nodeunit/unit/*/utils.js',
+        'api/tests/unit/**/*.js',
+        '!api/tests/unit/utils.js',
+        '!api/tests/unit/integration/**/*.js',
+        '!api/tests/unit/e2e/**/*.js',
         'sentinel/test/unit/**/*.js',
         'sentinel/test/functional/**/*.js'
       ]
@@ -489,7 +486,7 @@ module.exports = function(grunt) {
     }
   });
 
-  // grunt.task.run('notify_hooks');
+  grunt.task.run('notify_hooks');
 
   // Build tasks
   grunt.registerTask('mmnpm', 'Update and patch npm dependencies', [

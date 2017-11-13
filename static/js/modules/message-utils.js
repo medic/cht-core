@@ -1,10 +1,12 @@
-// NB: This code is identical to code in sentinel
+// NB: This code is identical to code in webapp
 // TODO: move into a shared library as part of #4021
-
 var _ = require('underscore'),
     uuid = require('uuid'),
     gsm = require('gsm'),
+    mustache = require('mustache'),
     objectPath = require('object-path'),
+    moment = require('moment'),
+    toBikramSambatLetters = require('bikram-sambat').toBik_text,
     SMS_TRUNCATION_SUFFIX = '...';
 
 var getParent = function(facility, type) {
@@ -42,8 +44,8 @@ var getDistrictPhone = function(doc) {
   return district && district.contact && district.contact.phone;
 };
 
-var applyPhoneReplacement = function(appinfo, phone) {
-  var replacement = appinfo.settings.outgoing_phone_replace;
+var applyPhoneReplacement = function(config, phone) {
+  var replacement = config.outgoing_phone_replace;
   if (!phone || !replacement || !replacement.match) {
     return phone;
   }
@@ -55,8 +57,8 @@ var applyPhoneReplacement = function(appinfo, phone) {
   return phone;
 };
 
-var applyPhoneFilters = function(appinfo, phone) {
-  var filters = appinfo.settings.outgoing_phone_filters;
+var applyPhoneFilters = function(config, phone) {
+  var filters = config.outgoing_phone_filters;
   if (!phone || !filters) {
     return phone;
   }
@@ -69,17 +71,18 @@ var applyPhoneFilters = function(appinfo, phone) {
   return phone;
 };
 
-var getRecipient = function(doc, task) {
+var getRecipient = function(doc, recipient) {
   if (!doc) {
     return;
   }
-  var recipient = task.recipient && task.recipient.trim();
+  recipient = recipient && recipient.trim();
+  var from = doc.from || (doc.contact && doc.contact.phone);
   if (!recipient) {
-    return doc.from;
+    return from;
   }
   var phone;
   if (recipient === 'reporting_unit') {
-    phone = doc.from;
+    phone = from;
   } else if (recipient === 'clinic') {
     phone = getClinicPhone(doc);
   } else if (recipient === 'parent') {
@@ -96,20 +99,20 @@ var getRecipient = function(doc, task) {
     // Or multiple layers by executing it as a statement
     phone = objectPath.get(doc, recipient);
   }
-  return phone || doc.from;
+  return phone || from || recipient;
 };
 
-var getPhone = function(appinfo, doc, task) {
-  var phone = getRecipient(doc, task);
-  phone = applyPhoneReplacement(appinfo, phone);
-  return applyPhoneFilters(appinfo, phone);
+var getPhone = function(config, doc, recipient) {
+  var phone = getRecipient(doc, recipient);
+  phone = applyPhoneReplacement(config, phone);
+  return applyPhoneFilters(config, phone);
 };
 
-var getLocale = function(appinfo, doc) {
+var getLocale = function(config, doc) {
   return  doc.locale ||
           (doc.sms_message && doc.sms_message.locale) ||
-          appinfo.locale_outgoing ||
-          appinfo.locale ||
+          config.locale_outgoing ||
+          config.locale ||
           'en';
 };
 
@@ -157,20 +160,36 @@ var extendedTemplateContext = function(doc, extras) {
   return templateContext;
 };
 
-// TODO pull out full template class form sentinel/lib/template
-var render = function(appinfo, template, view) {
-  return appinfo.mustache.render(template, view);
+mustache.escape = function(value) {
+  return value;
 };
 
-var getMessage = function(appinfo, doc, task, options) {
-  var template = appinfo.translate(task.message_key, getLocale(appinfo, doc));
-  if (!template) {
-    console.log('got nothing for', task.message_key);
-    return;
+var formatDate = function(config, text, view, formatString) {
+  var date = render(config, text, view);
+  if (!isNaN(date)) {
+    date = parseInt(date, 10);
   }
-  var context = extendedTemplateContext(doc, options);
-  console.log('rendering', template, context);
-  return render(appinfo, template, context);
+  return moment(date).format(formatString);
+};
+
+var render = function(config, template, view) {
+  return mustache.render(template, _.extend(view, {
+    bikram_sambat_date: function() {
+      return function(text) {
+        return toBikramSambatLetters(formatDate(config, text, view, 'YYYY-MM-DD'));
+      };
+    },
+    date: function() {
+      return function(text) {
+        return formatDate(config, text, view, config.date_format);
+      };
+    },
+    datetime: function() {
+      return function(text) {
+        return formatDate(config, text, view, config.reported_date_format);
+      };
+    }
+  }));
 };
 
 var truncateMessage = function(parts, max) {
@@ -178,18 +197,33 @@ var truncateMessage = function(parts, max) {
   return message.slice(0, -SMS_TRUNCATION_SUFFIX.length) + SMS_TRUNCATION_SUFFIX;
 };
 
-// TODO break up appinfo into just what we need
-exports.generate = function(appinfo, doc, task, options) {
+/**
+ * @param config A object of the entire app config
+ * @param translate A function which returns a localised string when given
+ *        a key and locale
+ * @param doc The couchdb document this message relates to
+ * @param content An object with one of `translationKey` or a `messages`
+ *        array for translation, or an already prepared `message` string.
+ * @param recipient A string to determine who the message should be sent to.
+ *        One of: 'reporting_unit', 'clinic', 'parent', 'grandparent',
+ *        the name of a property in `fields` or on the doc, a path to a
+ *        property on the doc.
+ * @param extraContext (optional) An object with additional values to
+ *        provide as a context for templating. Properties: `patient` (object),
+ *        `registrations` (array), and `templateContext` (object) for any
+ *        unstructured context additions.
+ */
+exports.generate = function(config, translate, doc, content, recipient, extraContext) {
   'use strict';
 
   var result = {
     uuid: uuid.v4(),
-    to: getPhone(appinfo, doc, task)
+    to: getPhone(config, doc, recipient)
   };
 
-  var message = getMessage(appinfo, doc, task, options);
+  var message = exports.template(config, translate, doc, content, extraContext);
   var parsed = gsm(message);
-  var max = appinfo.settings.multipart_sms_limit || 10;
+  var max = config.multipart_sms_limit || 10;
 
   if (parsed.sms_count <= max) {
     // no need to truncate
@@ -201,4 +235,26 @@ exports.generate = function(appinfo, doc, task, options) {
   }
 
   return [ result ];
+};
+
+exports.template = function(config, translate, doc, content, extraContext) {
+  extraContext = extraContext || {};
+  var locale = getLocale(config, doc);
+  var template;
+  if (_.isArray(content.message)) {
+    var message = _.findWhere(content.message, { locale: locale }) ||
+                  content.message[0];
+    if (message) {
+      template = message.content && message.content.trim();
+    }
+  } else if (content.message) {
+    template = content.message; // depecated - already generated message
+  } else {
+    template = translate(content.translationKey, locale);
+  }
+  if (!template) {
+    return '';
+  }
+  var context = extendedTemplateContext(doc, extraContext);
+  return render(config, template, context);
 };

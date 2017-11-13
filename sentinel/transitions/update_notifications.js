@@ -57,7 +57,7 @@ module.exports = {
                 registrations: registrations,
                 patient: patient
             };
-            messages.GARETH_addMessage(doc, msgConfig, msgConfig.recipient, templateContext);
+            messages.addMessage(doc, msgConfig, msgConfig.recipient, templateContext);
         } else {
             module.exports._addErr(event_type, config, doc);
         }
@@ -121,7 +121,7 @@ module.exports = {
                 } else {
                     reply = _.first(errors).message || _.first(errors);
                 }
-                messages.GARETH_addMessage(doc, { message: reply }, 'clinic');
+                messages.addMessage(doc, { message: reply }, 'clinic');
                 return callback(null, true);
             }
 

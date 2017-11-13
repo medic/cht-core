@@ -1,13 +1,12 @@
 // NB: This code is identical to code in webapp
 // TODO: move into a shared library as part of #4021
-
-// TODO update the api calls from webapp
-// TODO copy this into webapp to make them identical
 var _ = require('underscore'),
     uuid = require('uuid'),
     gsm = require('gsm'),
     mustache = require('mustache'),
     objectPath = require('object-path'),
+    moment = require('moment'),
+    toBikramSambatLetters = require('bikram-sambat').toBik_text,
     SMS_TRUNCATION_SUFFIX = '...';
 
 var getParent = function(facility, type) {
@@ -46,7 +45,7 @@ var getDistrictPhone = function(doc) {
 };
 
 var applyPhoneReplacement = function(config, phone) {
-  var replacement = config.get('outgoing_phone_replace');
+  var replacement = config.outgoing_phone_replace;
   if (!phone || !replacement || !replacement.match) {
     return phone;
   }
@@ -59,7 +58,7 @@ var applyPhoneReplacement = function(config, phone) {
 };
 
 var applyPhoneFilters = function(config, phone) {
-  var filters = config.get('outgoing_phone_filters');
+  var filters = config.outgoing_phone_filters;
   if (!phone || !filters) {
     return phone;
   }
@@ -73,7 +72,6 @@ var applyPhoneFilters = function(config, phone) {
 };
 
 var getRecipient = function(doc, recipient) {
-  console.log('~~~ getting recip', recipient, JSON.stringify(doc, null, 2));
   if (!doc) {
     return;
   }
@@ -101,7 +99,7 @@ var getRecipient = function(doc, recipient) {
     // Or multiple layers by executing it as a statement
     phone = objectPath.get(doc, recipient);
   }
-  return phone || recipient;
+  return phone || from || recipient;
 };
 
 var getPhone = function(config, doc, recipient) {
@@ -113,8 +111,8 @@ var getPhone = function(config, doc, recipient) {
 var getLocale = function(config, doc) {
   return  doc.locale ||
           (doc.sms_message && doc.sms_message.locale) ||
-          config.get('locale_outgoing') ||
-          config.get('locale') ||
+          config.locale_outgoing ||
+          config.locale ||
           'en';
 };
 
@@ -162,30 +160,36 @@ var extendedTemplateContext = function(doc, extras) {
   return templateContext;
 };
 
-// TODO pull out full template class form sentinel/lib/template
-var render = function(template, view) {
-  return mustache.render(template, view);
+mustache.escape = function(value) {
+  return value;
 };
 
-var getMessage = function(config, translate, doc, content, templateContext) {
-  var locale = getLocale(config, doc) || 'en';
-  var template = '';
-  if (_.isArray(content.message)) {
-    var message = _.findWhere(content.message, { locale: locale }) ||
-                  content.message[0];
-    if (message) {
-      template = message.content && message.content.trim();
+var formatDate = function(config, text, view, formatString) {
+  var date = render(config, text, view);
+  if (!isNaN(date)) {
+    date = parseInt(date, 10);
+  }
+  return moment(date).format(formatString);
+};
+
+var render = function(config, template, view) {
+  return mustache.render(template, _.extend(view, {
+    bikram_sambat_date: function() {
+      return function(text) {
+        return toBikramSambatLetters(formatDate(config, text, view, 'YYYY-MM-DD'));
+      };
+    },
+    date: function() {
+      return function(text) {
+        return formatDate(config, text, view, config.date_format);
+      };
+    },
+    datetime: function() {
+      return function(text) {
+        return formatDate(config, text, view, config.reported_date_format);
+      };
     }
-  } else if (content.message) {
-    return content.message; // depecated - already generated message
-  } else {
-    template = translate(content.translationKey, locale);
-  }
-  if (!template) {
-    return '';
-  }
-  var context = extendedTemplateContext(doc, templateContext);
-  return render(template, context);
+  }));
 };
 
 var truncateMessage = function(parts, max) {
@@ -194,22 +198,32 @@ var truncateMessage = function(parts, max) {
 };
 
 /**
+ * @param config A object of the entire app config
+ * @param translate A function which returns a localised string when given
+ *        a key and locale
+ * @param doc The couchdb document this message relates to
  * @param content An object with one of `translationKey` or a `messages`
  *        array for translation, or an already prepared `message` string.
+ * @param recipient A string to determine who the message should be sent to.
+ *        One of: 'reporting_unit', 'clinic', 'parent', 'grandparent',
+ *        the name of a property in `fields` or on the doc, a path to a
+ *        property on the doc.
+ * @param extraContext (optional) An object with additional values to
+ *        provide as a context for templating. Properties: `patient` (object),
+ *        `registrations` (array), and `templateContext` (object) for any
+ *        unstructured context additions.
  */
-exports.generate = function(config, translate, doc, content, recipient, templateContext) {
+exports.generate = function(config, translate, doc, content, recipient, extraContext) {
   'use strict';
-
-  templateContext = templateContext || {};
 
   var result = {
     uuid: uuid.v4(),
     to: getPhone(config, doc, recipient)
   };
 
-  var message = getMessage(config, translate, doc, content, templateContext);
+  var message = exports.template(config, translate, doc, content, extraContext);
   var parsed = gsm(message);
-  var max = config.get('multipart_sms_limit') || 10;
+  var max = config.multipart_sms_limit || 10;
 
   if (parsed.sms_count <= max) {
     // no need to truncate
@@ -221,4 +235,26 @@ exports.generate = function(config, translate, doc, content, recipient, template
   }
 
   return [ result ];
+};
+
+exports.template = function(config, translate, doc, content, extraContext) {
+  extraContext = extraContext || {};
+  var locale = getLocale(config, doc);
+  var template;
+  if (_.isArray(content.message)) {
+    var message = _.findWhere(content.message, { locale: locale }) ||
+                  content.message[0];
+    if (message) {
+      template = message.content && message.content.trim();
+    }
+  } else if (content.message) {
+    template = content.message; // depecated - already generated message
+  } else {
+    template = translate(content.translationKey, locale);
+  }
+  if (!template) {
+    return '';
+  }
+  var context = extendedTemplateContext(doc, extraContext);
+  return render(config, template, context);
 };

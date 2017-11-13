@@ -1,6 +1,5 @@
 var sinon = require('sinon').sandbox.create(),
     config = require('../../config'),
-    utils = require('../../lib/utils'),
     messages = require('../../lib/messages'),
     transition = require('../../transitions/default_responses');
 
@@ -45,7 +44,7 @@ exports['when doc has errors still pass filter'] = function(test) {
 };
 
 exports['filter passes when message is from gateway'] = function(test) {
-    sinon.stub(utils, '_isMessageFromGateway').returns(true);
+    sinon.stub(messages, '_isMessageFromGateway').returns(true);
     test.equals(transition.filter({
         from: 'x',
         type: 'data_record'
@@ -54,7 +53,7 @@ exports['filter passes when message is from gateway'] = function(test) {
 };
 
 exports['filter passes when message is not from gateway'] = function(test) {
-    sinon.stub(utils, '_isMessageFromGateway').returns(false);
+    sinon.stub(messages, '_isMessageFromGateway').returns(false);
     test.equals(transition.filter({
         from: 'x',
         type: 'data_record'
@@ -64,7 +63,7 @@ exports['filter passes when message is not from gateway'] = function(test) {
 
 exports['filter passes when response is allowed'] = function(test) {
     // Filter passes because message is added with a 'denied' state.
-    sinon.stub(utils, 'isOutgoingAllowed').returns(true);
+    sinon.stub(messages, 'isOutgoingAllowed').returns(true);
     test.equals(transition.filter({
         from: 'x',
         type: 'data_record'
@@ -145,7 +144,7 @@ exports['isReportedAfterStartDate returns false when reported date is before sta
 
 exports['add response if unstructured message and setting enabled'] = function(test) {
     sinon.stub(transition, '_isConfigFormsOnlyMode').returns(false);
-    var messageFn = sinon.spy(messages, 'GARETH_addMessage');
+    var messageFn = sinon.spy(messages, 'addMessage');
     var doc = {
         form: null,
         from: '+23',
@@ -163,7 +162,7 @@ exports['add response if unstructured message and setting enabled'] = function(t
 };
 
 exports['add response if unstructured message (form prop is undefined)'] = function(test) {
-    var messageFn = sinon.spy(messages, 'GARETH_addMessage');
+    var messageFn = sinon.spy(messages, 'addMessage');
     var doc = {
         from: '+23',
         type: 'data_record',
@@ -185,7 +184,7 @@ exports['add response if unstructured message (form prop is undefined)'] = funct
  * on different transition.
  */
 exports['do not add response if valid form'] = function(test) {
-    var messageFn = sinon.spy(messages, 'GARETH_addMessage');
+    var messageFn = sinon.spy(messages, 'addMessage');
     var doc = {
         form: 'V',
         from: '+23',
@@ -202,7 +201,7 @@ exports['do not add response if valid form'] = function(test) {
 
 exports['add response if form not found'] = function(test) {
     sinon.stub(transition, '_isConfigFormsOnlyMode').returns(false);
-    var messageFn = sinon.spy(messages, 'GARETH_addMessage');
+    var messageFn = sinon.spy(messages, 'addMessage');
     var doc = {
         from: '+23',
         type: 'data_record',
@@ -220,7 +219,7 @@ exports['add response if form not found'] = function(test) {
 
 exports['add response if form not found and forms_only_mode'] = function(test) {
     sinon.stub(config, 'get').withArgs('forms_only_mode').returns(true);
-    var messageFn = sinon.spy(messages, 'GARETH_addMessage');
+    var messageFn = sinon.spy(messages, 'addMessage');
     var doc = {
         from: '+444',
         type: 'data_record',
@@ -238,7 +237,7 @@ exports['add response if form not found and forms_only_mode'] = function(test) {
 
 exports['add response to empty message'] = function (test) {
     sinon.stub(config, 'get').withArgs('forms_only_mode').returns(true);
-    var messageFn = sinon.spy(messages, 'GARETH_addMessage');
+    var messageFn = sinon.spy(messages, 'addMessage');
     var doc = {
         from: '+23',
         type: 'data_record',

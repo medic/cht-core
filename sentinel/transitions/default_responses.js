@@ -79,13 +79,13 @@ module.exports = {
             doc = change.doc;
 
         if (self._isMessageEmpty(doc)) {
-            messages.GARETH_addMessage(doc, { translationKey: 'empty' });
+            messages.addMessage(doc, { translationKey: 'empty' });
         } else if (self._isConfigFormsOnlyMode() && self._isFormNotFound(doc)) {
-            messages.GARETH_addMessage(doc, { translationKey: 'form_not_found' });
+            messages.addMessage(doc, { translationKey: 'form_not_found' });
         } else if (self._isFormNotFound(doc)) {
-            messages.GARETH_addMessage(doc, { translationKey: 'sms_received' });
+            messages.addMessage(doc, { translationKey: 'sms_received' });
         } else if (self._isValidUnstructuredMessage(doc)) {
-            messages.GARETH_addMessage(doc, { translationKey: 'sms_received' });
+            messages.addMessage(doc, { translationKey: 'sms_received' });
         }
 
         callback(null, true);

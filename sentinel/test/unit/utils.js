@@ -1,10 +1,6 @@
-process.env.TEST_ENV = 'hello'; // required for ../../db.js
-
-var _ = require('underscore'),
-    db = require('../../db'),
+var db = require('../../db'),
     sinon = require('sinon').sandbox.create(),
     utils = require('../../lib/utils'),
-    uuid = require('uuid'),
     config = require('../../config');
 
 exports.tearDown = function(callback) {
@@ -40,82 +36,6 @@ exports['getVal supports dot notation'] = function(test) {
     test.done();
 };
 
-exports['updateable returns true when _rev the same'] = function(test) {
-    test.ok(utils.updateable({ _rev: '1' }, { _rev: '1', x: 1 }));
-    test.done();
-};
-
-exports['updateable returns false when _rev different'] = function(test) {
-    test.equals(utils.updateable({ _rev: '1' }, { _rev: '2', x: 1 }), false);
-    test.equals(utils.updateable({ _rev: '2' }, { _rev: '1', x: 1 }), false);
-    test.done();
-};
-
-exports['updateable returns false when objects the same'] = function(test) {
-    test.equals(utils.updateable({ _rev: '1', x: 1 }, { _rev: '1', x: 1 }), false);
-    test.done();
-};
-
-exports['getClinicContactName gets name'] = function(test) {
-    test.equal(utils.getClinicContactName({
-        contact: {
-            parent: {
-                type: 'clinic',
-                contact: {
-                    name: 'Y'
-                }
-            }
-        }
-    }), 'Y');
-    test.done();
-};
-
-exports['getClinicContactName gets returns health volunteer if miss'] = function(test) {
-    test.equals(utils.getClinicContactName({
-        contact: {
-            parent: { }
-        }
-    }), 'health volunteer');
-    test.done();
-};
-
-exports['getClinicContactName gets name if contact'] = function(test) {
-    test.equals(utils.getClinicContactName({
-        contact: {
-            name: 'Y'
-        }
-    }), 'Y');
-    test.done();
-};
-
-exports['getClinicName gets returns health volunteer if miss'] = function(test) {
-    test.equal(utils.getClinicName({
-        contact: {
-            parent: { type: 'clinic' }
-        }
-    }), 'health volunteer');
-    test.done();
-};
-
-exports['getClinicName gets name if contact'] = function(test) {
-    test.equal(utils.getClinicName({
-        name: 'Y'
-    }), 'Y');
-    test.done();
-};
-
-exports['getClinicName gets name'] = function(test) {
-    test.equal(utils.getClinicName({
-        contact: {
-            parent: {
-                type: 'clinic',
-                name: 'Y'
-            }
-        }
-    }), 'Y');
-    test.done();
-};
-
 exports['getClinicPhone gets phone'] = function(test) {
     test.equal(utils.getClinicPhone({
         contact: {
@@ -136,33 +56,6 @@ exports['getClinicPhone gets phone if contact'] = function(test) {
             phone: '123'
         }
     }), '123');
-    test.done();
-};
-
-exports['addMessage adds uuid'] = function(test) {
-    var doc = {},
-        message,
-        task;
-
-    utils.addMessage(doc, {
-        phone: '+1234',
-        message: 'xxx'
-    });
-
-    test.ok(doc.tasks);
-    task = _.first(doc.tasks);
-
-    test.ok(_.isArray(task.messages));
-    test.equals(task.state, 'pending');
-    test.ok(!!task.state_history);
-    test.equals(task.state_history.length, 1);
-    test.equals(task.state_history[0].state, 'pending');
-    test.ok(!!task.state_history[0].timestamp);
-
-    message = _.first(task.messages);
-    test.equals(message.to, '+1234');
-    test.equals(message.message, 'xxx');
-    test.ok(message.uuid);
     test.done();
 };
 
@@ -200,62 +93,6 @@ exports['getReportsWithSameClinicAndForm calls through to db view correctly'] = 
         test.equals(data, result);
         test.done();
     });
-};
-
-exports['addScheduledMessage creates a new scheduled task'] = function(test) {
-    test.expect(6);
-
-    var message = 'xyz';
-    var due = new Date();
-    var phone = '+123';
-    var testUuid = 'test-uuid';
-    var doc = {};
-
-    sinon.stub(uuid, 'v4').returns(testUuid);
-
-    utils.addScheduledMessage(doc, {
-        message: message,
-        due: due,
-        phone: phone
-    });
-
-    test.equals(doc.scheduled_tasks.length, 1);
-    var task = doc.scheduled_tasks[0];
-    test.equals(task.due, due.getTime());
-    test.equals(task.state, 'scheduled');
-    test.equals(task.state_history.length, 1);
-    test.equals(task.state_history[0].state, 'scheduled');
-    test.ok(!!task.state_history[0].timestamp);
-
-    test.done();
-};
-
-exports['clearScheduledMessages clears all matching tasks'] = function(test) {
-
-    test.expect(6);
-
-    var type = 'xyz';
-    var doc = {
-        scheduled_tasks: [
-            {
-                type: type,
-                state: 'scheduled'
-            }, {
-                type: 'miss',
-                state: 'scheduled'
-            }
-        ]
-    };
-
-    utils.clearScheduledMessages(doc, [type, 'othertype']);
-
-    test.equals(doc.scheduled_tasks.length, 2);
-    test.equals(doc.scheduled_tasks[0].state, 'cleared');
-    test.equals(doc.scheduled_tasks[0].state_history.length, 1);
-    test.equals(doc.scheduled_tasks[0].state_history[0].state, 'cleared');
-    test.ok(!!doc.scheduled_tasks[0].state_history[0].timestamp);
-    test.equals(doc.scheduled_tasks[1].state, 'scheduled');
-    test.done();
 };
 
 exports['unmuteScheduledMessages schedules all muted tasks'] = function(test) {
@@ -341,131 +178,6 @@ exports['translate returns message if key found in translations'] = function(tes
 exports['translate returns key if translations not found'] = function(test) {
     sinon.stub(config, 'getTranslations').returns({});
     test.equals(utils.translate('sms_received'), 'sms_received');
-    test.done();
-};
-
-exports['describe isOutgoingAllowed'] = function(test) {
-    /*
-     * Support comma separated string config to match an outgoing phone number
-     * or MNO (mobile network operator) defined string.
-     */
-    var tests = [
-      // denied
-      ['+123', '+123', false],
-      ['+123', '+123999999', false],
-      ['SAFARI', 'SAFARICOM', false],
-      ['Safari', 'SAFARICOM', false],
-      ['+123,+456,+789', '+456', false],
-      ['+123,+456,+789', '+4569999999', false],
-      ['SAFARI, ORANGE', 'ORANGE NET', false],
-      ['0', '0000123', false],
-      ['0', '0', false],
-      // allowed
-      ['+123', '+999', true],
-      ['SAFARI, ORANGE NET', 'ORANGE', true],
-      ['VIVO', 'EM VIVO', true],
-      ['0', '-1', true],
-      // allow falsey inputs
-      ['snarf', undefined, true],
-      ['snarf', null, true],
-      ['', '+123', true],
-      ['', '', true]
-    ];
-    _.each(tests, function(t) {
-      var s = sinon.stub(config, 'get');
-      s.withArgs('outgoing_deny_list').returns(t[0]);
-      test.equals(utils.isOutgoingAllowed(t[1]), t[2]);
-      s.restore();
-    });
-    test.done();
-};
-
-exports['describe _isMessageFromGateway'] = function(test) {
-    var tests = [
-      ['+774455558888', '77-44-5555-8888', true],
-      ['+774455558889', '77-44-5555-8888', false],
-      // missing country code matches
-      ['+41446681800', '446681800', true]
-    ];
-    _.each(tests, function(t) {
-      var s = sinon.stub(config, 'get');
-      s.withArgs('gateway_number').returns(t[0]);
-      test.equals(utils._isMessageFromGateway(t[1]), t[2]);
-      s.restore();
-    });
-    test.done();
-};
-
-var generateMessage = function(length, unicode) {
-    var result = [];
-    for (var i = 0; i < length; i++) {
-        result[i] = unicode ? '☃' : 'o';
-    }
-    return result.join('');
-};
-
-var MAX_GSM_LENGTH = 160;
-var MAX_UNICODE_LENGTH = 70;
-
-exports['addMessage does not truncate short sms'] = function(test) {
-    var doc = {};
-    var sms = generateMessage(MAX_GSM_LENGTH);
-    sinon.stub(config, 'get').withArgs('multipart_sms_limit').returns(10);
-
-    utils.addMessage(doc, { phone: '+1234', message: sms });
-
-    test.ok(doc.tasks);
-    var task = _.first(doc.tasks);
-    var message = _.first(task.messages);
-    test.equals(message.message, sms);
-    test.equals(message.original_message, undefined);
-    test.done();
-};
-
-exports['addMessage does not truncate short unicode sms'] = function(test) {
-    var doc = {};
-    var sms = generateMessage(MAX_UNICODE_LENGTH, true);
-    sinon.stub(config, 'get').withArgs('multipart_sms_limit').returns(10);
-
-    utils.addMessage(doc, { phone: '+1234', message: sms });
-
-    test.ok(doc.tasks);
-    var task = _.first(doc.tasks);
-    var message = _.first(task.messages);
-    test.equals(message.message, sms);
-    test.equals(message.original_message, undefined);
-    test.done();
-};
-
-exports['addMessage truncates long sms'] = function(test) {
-    var doc = {};
-    var sms = generateMessage(1000);
-    var expected = sms.substr(0, 150) + '...';
-    sinon.stub(config, 'get').withArgs('multipart_sms_limit').returns(1);
-
-    utils.addMessage(doc, { phone: '+1234', message: sms });
-
-    test.ok(doc.tasks);
-    var task = _.first(doc.tasks);
-    var message = _.first(task.messages);
-    test.equals(message.message, expected);
-    test.equals(message.original_message, sms);
-    test.done();
-};
-
-exports['addMessage truncates long unicode sms'] = function(test) {
-    var doc = {};
-    var sms = generateMessage(1000, true);
-    var expected = sms.substr(0, 64) + '...';
-    sinon.stub(config, 'get').withArgs('multipart_sms_limit').returns(1);
-
-    utils.addMessage(doc, { phone: '+1234', message: sms });
-
-    test.ok(doc.tasks);
-    var task = _.first(doc.tasks);
-    var message = _.first(task.messages);
-    test.equals(message.message, expected);
-    test.equals(message.original_message, sms);
     test.done();
 };
 

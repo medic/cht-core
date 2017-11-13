@@ -1,13 +1,7 @@
 const _ = require('underscore'),
       db = require('../db'),
       moment = require('moment'),
-      gsm = require('gsm'),
-      uuid = require('uuid'),
-      messageUtils = require('./message-utils'),
-      phoneUtil = require('google-libphonenumber').PhoneNumberUtil.getInstance(),
       config = require('../config');
-
-const SMS_TRUNCATION_SUFFIX = '...';
 
 /*
  * Get desired locale
@@ -62,52 +56,6 @@ const getDistrictPhone = doc => {
   return f && f.contact && f.contact.phone;
 };
 
-const getSMSPartLimit = () => {
-  return config.get('multipart_sms_limit') || 10;
-};
-
-const truncateMessage = (parts, max) => {
-  const message = parts.slice(0, max).join('');
-  return message.slice(0, -SMS_TRUNCATION_SUFFIX.length) + SMS_TRUNCATION_SUFFIX;
-};
-
-/*
- *
- * Apply phone number filters defined in configuration file.
- *
- * Example:
- *
- * "outgoing_phone_filters": [
- *      {
- *          "match": "\\+997",
- *          "replace": ""
- *      }
- * ]
- */
-const applyPhoneFilters = (_config, _phone) => {
-  if (!_phone) {
-    return _phone;
-  }
-  const replacement = _config.get('outgoing_phone_replace');
-  if (replacement && replacement.match) {
-    const match = replacement.match,
-      replace = replacement.replace || '';
-    if (_phone.indexOf(match) === 0) {
-      _phone = replace + _phone.substring(match.length);
-    }
-  }
-  const filters = _config.get('outgoing_phone_filters') || [];
-  filters.forEach(filter => {
-    // only supporting match and replace options for now
-    if (filter && filter.match && filter.replace ) {
-      _phone = _phone.replace(
-        new RegExp(filter.match), filter.replace
-      );
-    }
-  });
-  return _phone;
-};
-
 const setTaskState = (task, state) => {
   task.state = state;
   task.state_history = task.state_history || [];
@@ -124,51 +72,6 @@ const setTasksStates = (doc, state, predicate) => {
       setTaskState(task, state);
     }
   });
-};
-
-const createTaskMessages = options => {
-  const result = {
-    to: applyPhoneFilters(config, options.phone),
-    uuid: uuid.v4()
-  };
-  const parsed = gsm(options.message);
-  const max = getSMSPartLimit();
-
-  if (parsed.sms_count <= max) {
-    // no need to truncate
-    result.message = options.message;
-  } else {
-    // message too long - truncate
-    result.message = truncateMessage(parsed.parts, max);
-    result.original_message = options.message;
-  }
-
-  return [ result ];
-};
-
-/**
- * Options used:
- *  - phone
- *  - message - array of messages for each locale
- *  - message_key - translation key to get the message (overrides the `message` option)
- *  - state (optional)
- * Options filtered out and ignored:
- *  - 'uuid'
- * All other options will be added as-is to the task object.
- */
- // TODO remove this?!
-const addMessage = (doc, options) => {
-  options = options || {};
-  doc.tasks = doc.tasks || [];
-
-  if (!options.message) {
-    return;
-  }
-
-  const task = _.omit(options, 'message', 'phone', 'uuid', 'state');
-  _.extend(task, { messages: createTaskMessages(options) });
-  setTaskState(task, options.state || 'pending');
-  doc.tasks.push(task);
 };
 
 const addError = (doc, error) => {
@@ -304,62 +207,6 @@ const getPatient = (db, patientShortcodeId, includeDocs, callback) => {
   });
 };
 
-/*
- * type is either a string or an array of strings
- */
-const getScheduledTasksByType = (registration, type) => {
-  const types = typeof type === 'string' ? [type] : type;
-
-  const scheduled_tasks = registration && registration.scheduled_tasks;
-  if (!scheduled_tasks || !scheduled_tasks.length) {
-    return [];
-  }
-
-  return scheduled_tasks.filter(task => types.includes(task.type));
-};
-
-/*
- * Return false when the recipient phone matches the denied list.
- *
- * outgoing_deny_list is a comma separated list of strings. If a string in
- * that list matches the beginning of the phone then we set up a response
- * with a denied state. The pending message process will ignore these
- * messages and those reports will be left without an auto-reply. The
- * denied messages still show up in the messages export.
- *
- * @param {String} from - Recipient phone number
- * @returns {Boolean}
- */
-const isOutgoingAllowed = from => {
-  const conf = config.get('outgoing_deny_list') || '';
-  if (!from) {
-    return true;
-  }
-  if (_isMessageFromGateway(from)) {
-    return false;
-  }
-  return _.every(conf.split(','), s => {
-    // ignore falsey inputs
-    if (!s) {
-      return true;
-    }
-    // return false if we get a case insensitive starts with match
-    return from.toLowerCase().indexOf(s.trim().toLowerCase()) !== 0;
-  });
-};
-
-/*
- * Used to avoid infinite loops of auto-reply messages between gateway and
- * itself.
- */
-const _isMessageFromGateway = from => {
-  const gw = config.get('gateway_number');
-  if (typeof gw === 'string' && typeof from === 'string') {
-    return phoneUtil.isNumberMatch(gw, from) >= 3;
-  }
-  return false;
-};
-
 module.exports = {
   getVal: getVal,
   getLocale: getLocale,
@@ -367,54 +214,6 @@ module.exports = {
     const clinic = getClinic(doc);
     return (clinic && clinic.contact && clinic.contact.phone) ||
            (doc.contact && doc.contact.phone);
-  },
-  getClinicName: (doc, noDefault) => {
-    const clinic = getClinic(doc);
-    const name = (clinic && clinic.name) ||
-                 (doc && doc.name);
-    if (name || noDefault) {
-      return name;
-    }
-    return 'health volunteer';
-  },
-  getClinicContactName: (doc, noDefault) => {
-    const clinic = getClinic(doc);
-    const name = (clinic && clinic.contact && clinic.contact.name) ||
-                 (doc && doc.contact && doc.contact.name);
-    if (name || noDefault) {
-      return name;
-    }
-    return 'health volunteer';
-  },
-  getScheduledTasksByType: getScheduledTasksByType,
-  addScheduledMessage: (doc, options) => {
-
-    console.log('adding scheduled', doc);
-    options = options || {};
-
-    if (options.due instanceof Date) {
-      options.due = options.due.getTime();
-    }
-
-
-    const task = _.omit(options, 'message', 'phone');
-    if (!task.translation_key) {
-      // no translation_key so generate now
-      const content = { message: options.message };
-      const recipient = task.recipient;
-      task.messages = messageUtils.generate(config, module.exports.translate, doc, content, recipient, {});
-    }
-    const state = isOutgoingAllowed(doc.from) ? 'scheduled' : 'denied';
-    setTaskState(task, state);
-
-    doc.scheduled_tasks = doc.scheduled_tasks || [];
-    doc.scheduled_tasks.push(task);
-  },
-  clearScheduledMessages: (doc, types) => {
-    setTasksStates(doc, 'cleared', task => {
-      return _.contains(types, task.type);
-    });
-    return doc.scheduled_tasks;
   },
   unmuteScheduledMessages: doc => {
     setTasksStates(doc, 'scheduled', task => {
@@ -435,22 +234,11 @@ module.exports = {
   getDistrict: getDistrict,
   getHealthCenterPhone: getHealthCenterPhone,
   getDistrictPhone: getDistrictPhone,
-  addMessage: addMessage,
   addError: addError,
   getReportsWithinTimeWindow: getReportsWithinTimeWindow,
   getReportsWithSameClinicAndForm: getReportsWithSameClinicAndForm,
   setTaskState: setTaskState,
   setTasksStates: setTasksStates,
-  /*
-  * Compares two objects; updateable if _rev is the same
-  * and are different barring their `_rev` and `transitions` properties
-  */
-  updateable: (a, b) => {
-    return a._rev === b._rev && !_.isEqual(
-      _.omit(a, '_rev', 'transitions'),
-      _.omit(b, '_rev', 'transitions')
-    );
-  },
   /*
   * Gets registration documents for the given ids
   *
@@ -504,10 +292,6 @@ module.exports = {
                 key;
     return msg && msg.trim();
   },
-  escapeRegex: string => {
-    return string.replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&');
-  },
-  isOutgoingAllowed: isOutgoingAllowed,
   /*
    * Given a patient "shortcode" (as used in SMS reports), return the _id
    * of the patient's person contact to the caller
@@ -521,6 +305,5 @@ module.exports = {
    */
   getPatientContact: (db, patientShortcodeId, callback) => {
     getPatient(db, patientShortcodeId, true, callback);
-  },
-  _isMessageFromGateway: _isMessageFromGateway
+  }
 };
