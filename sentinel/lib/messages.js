@@ -102,11 +102,27 @@ module.exports = {
         return from.toLowerCase().indexOf(s.trim().toLowerCase()) !== 0;
       });
     },
-    addErrors: function(doc, errors) {
-        var self = module.exports;
-        _.each(errors, function(error) {
-            self.addError(doc, error);
-        });
+    addErrors: function(config, doc, errors) {
+        const self = module.exports;
+        
+        errors.forEach(error => self.addError(doc, error));
+        
+        let reply;
+        if (config.validations.join_responses) {
+            const msgs = [];
+            errors.forEach(err => {
+                if (err.message) {
+                    msgs.push(err.message);
+                } else if (err) {
+                    msgs.push(err);
+                }
+            });
+            reply = msgs.join('  ');
+        } else {
+            reply = errors[0].message || errors[0];
+        }
+
+        self.addMessage(doc, { message: reply }, 'clinic');
     },
     addError: function(doc, error) {
         if (_.isString(error)){

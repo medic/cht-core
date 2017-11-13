@@ -29,27 +29,6 @@ const getRegistrations = (db, patientId, callback) => {
   utils.getRegistrations({ db: db, id: patientId }, callback);
 };
 
-const addValidationErrors = (registrationConfig, doc, errors) => {
-  messages.addErrors(doc, errors);
-  // join all errors into one response or respond with first error.
-  let reply;
-  if (registrationConfig.validations.join_responses) {
-    const msgs = [];
-    _.each(errors, err => {
-      if (err.message) {
-        msgs.push(err.message);
-      } else if (err) {
-        msgs.push(err);
-      }
-    });
-    reply = msgs.join('  ');
-  } else {
-    const err = _.first(errors);
-    reply = err.message || err;
-  }
-  messages.addMessage(doc, { message: reply }, 'clinic');
-};
-
 const getPatientNameField = params => {
   if (Array.isArray(params) && params.length && params[0]) {
     return params[0];
@@ -229,7 +208,7 @@ module.exports = {
 
     self.validate(registrationConfig, doc, errors => {
       if (errors && errors.length > 0) {
-        addValidationErrors(registrationConfig, doc, errors, callback);
+        messages.addErrors(registrationConfig, doc, errors);
         return callback(null, true);
       }
 

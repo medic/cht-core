@@ -121,27 +121,6 @@ const validate = (config, doc, callback) => {
     return validation.validate(doc, validations, callback);
 };
 
-const addErrorsToDoc = (errors, doc, config) => {
-    messages.addErrors(doc, errors);
-    // TODO maybe move all of this code to messages.addErrors?
-    let reply;
-    if (config.validations.join_responses) {
-        var msgs = [];
-        errors.forEach(err => {
-            if (err.message) {
-                msgs.push(err.message);
-            } else if (err) {
-                msgs.push(err);
-            }
-        });
-        reply = msgs.join('  ');
-    } else {
-        reply = errors[0].message || errors[0];
-    }
-
-    messages.addMessage(doc, { message: reply }, 'clinic');
-};
-
 const addMessagesToDoc = (doc, config, registrations, patientContact) => {
     config.messages.forEach(msg => {
         if (msg.event_type === 'report_accepted') {
@@ -211,7 +190,7 @@ module.exports = {
 
         validate(config, doc, function(errors) {
             if (errors && errors.length > 0) {
-                addErrorsToDoc(errors, doc, config);
+                messages.addErrors(config, doc, errors);
                 return callback(null, true);
             }
 

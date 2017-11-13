@@ -106,22 +106,7 @@ module.exports = {
         self.validate(config, doc, function(errors) {
 
             if (errors && errors.length > 0) {
-                messages.addErrors(doc, errors);
-                let reply;
-                if (config.validations.join_responses) {
-                    var msgs = [];
-                    _.each(errors, function(err) {
-                        if (err.message) {
-                            msgs.push(err.message);
-                        } else if (err) {
-                            msgs.push(err);
-                        }
-                    });
-                    reply = msgs.join('  ');
-                } else {
-                    reply = _.first(errors).message || _.first(errors);
-                }
-                messages.addMessage(doc, { message: reply }, 'clinic');
+                messages.addErrors(config, doc, errors);
                 return callback(null, true);
             }
 
