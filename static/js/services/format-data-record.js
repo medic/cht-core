@@ -5,9 +5,10 @@ angular.module('inboxServices').factory('FormatDataRecord',
   function(
     $log,
     $q,
-    AppInfo,
+    $translate,
     DB,
-    Language
+    Language,
+    Settings
   ) {
 
     'ngInject';
@@ -43,18 +44,18 @@ angular.module('inboxServices').factory('FormatDataRecord',
         });
     };
 
-    var getLabel = function(appinfo, field, locale) {
-      return appinfo.getMessage(field.labels && field.labels.short, locale);
+    var getLabel = function(field, locale) {
+      return getMessage(field.labels && field.labels.short, locale);
     };
 
-    var fieldsToHtml = function(appinfo, keys, labels, data_record, def, locale) {
+    var fieldsToHtml = function(settings, keys, labels, data_record, def, locale) {
 
       if (!def && data_record && data_record.form) {
-        def = appinfo.getForm(data_record.form);
+        def = getForm(settings, data_record.form);
       }
 
       if (_.isString(def)) {
-        def = appinfo.getForm(def);
+        def = getForm(settings, def);
       }
 
       var fields = {
@@ -73,13 +74,13 @@ angular.module('inboxServices').factory('FormatDataRecord',
           ));
         } else {
           var label = labels.shift();
-          fields.headers.push({head: appinfo.getMessage(label)});
+          fields.headers.push({head: getMessage(label)});
           if (def && def[key]) {
             def = def[key];
           }
           fields.data.push({
             isArray: false,
-            value: prettyVal(appinfo, data, key, def, locale),
+            value: prettyVal(settings, data, key, def, locale),
             label: label
           });
         }
@@ -135,13 +136,13 @@ angular.module('inboxServices').factory('FormatDataRecord',
       return hashToArray(keys);
     };
 
-    var translateKey = function(appinfo, key, field, locale) {
+    var translateKey = function(settings, key, field, locale) {
       var label;
 
       if (field) {
-        label = getLabel(appinfo, field, locale);
+        label = getLabel(field, locale);
       } else {
-        label = appinfo.translate(key, locale);
+        label = translate(settings, key, locale);
       }
       // still haven't found a proper label; then titleize
       if (key === label) {
@@ -183,12 +184,21 @@ angular.module('inboxServices').factory('FormatDataRecord',
               });
     };
 
+    var formatDate = function(settings, date) {
+      if (!date) {
+          return;
+      }
+      var m = moment(date);
+      return m.format(settings.date_format) +
+        ' (' + m.fromNow() + ')';
+    };
+
     /*
      * @param {Object} data_record - typically a data record or portion (hash)
      * @param {String} key - key for field
      * @param {Object} def - form or field definition
      */
-    var prettyVal = function(appinfo, data_record, key, def, locale) {
+    var prettyVal = function(settings, data_record, key, def, locale) {
 
       if (!data_record || _.isUndefined(key) || _.isUndefined(data_record[key])) {
         return;
@@ -208,7 +218,7 @@ angular.module('inboxServices').factory('FormatDataRecord',
         return val === true ? 'True' : 'False';
       }
       if (def.type === 'date') {
-        return appinfo.formatDate(data_record[key]);
+        return formatDate(settings, data_record[key]);
       }
       if (def.type === 'integer') {
         // use list value for month
@@ -218,7 +228,7 @@ angular.module('inboxServices').factory('FormatDataRecord',
               if (def.list.hasOwnProperty(i)) {
                 var item = def.list[i];
                 if (item[0] === val) {
-                  return appinfo.translate(item[1], locale);
+                  return translate(settings, item[1], locale);
                 }
               }
             }
@@ -229,6 +239,21 @@ angular.module('inboxServices').factory('FormatDataRecord',
 
     };
 
+    var translate = function(settings, key, locale, ctx) {
+      if (_.isObject(locale)) {
+        ctx = locale;
+        locale = settings.locale;
+      } else {
+        ctx = ctx || {};
+        locale = locale || settings.locale;
+      }
+
+      if (_.isObject(key)) {
+        return getMessage(key, locale) || key;
+      }
+
+      return $translate.instant(key, ctx, 'no-interpolation');
+    };
 
     /*
      * With some forms like ORPT (patient registration), we add additional data to
@@ -236,7 +261,7 @@ angular.module('inboxServices').factory('FormatDataRecord',
      * create these fields and it is useful to show these new fields in the data
      * records screen/render even though they are not defined in the form.
      */
-    var includeNonFormFields = function(appinfo, doc, form_keys, locale) {
+    var includeNonFormFields = function(settings, doc, form_keys, locale) {
 
       var fields = [
         'mother_outcome',
@@ -255,7 +280,7 @@ angular.module('inboxServices').factory('FormatDataRecord',
       ];
 
       _.each(fields, function(field) {
-        var label = appinfo.translate(field, locale),
+        var label = translate(settings, field, locale),
             value = doc[field];
 
         // Only include the property if we find it on the doc and not as a form
@@ -265,7 +290,7 @@ angular.module('inboxServices').factory('FormatDataRecord',
         }
 
         if (_.contains(dateFields, field)) {
-          value = appinfo.formatDate(value);
+          value = formatDate(settings, value);
         }
 
         doc.fields.data.unshift({
@@ -289,10 +314,10 @@ angular.module('inboxServices').factory('FormatDataRecord',
       return task.type;
     };
 
-    var getGroupDisplayName = function(appinfo, task, language) {
+    var getGroupDisplayName = function(settings, task, language) {
       if (task.translation_key) {
-        return appinfo.translate(
-          task.translation_key, language, { group: task.group }
+        return translate(
+          settings, task.translation_key, language, { group: task.group }
         );
       }
       return getGroupName(task);
@@ -310,20 +335,20 @@ angular.module('inboxServices').factory('FormatDataRecord',
      *
      * @api private
      */
-    var getLabels = function(appinfo, keys, form, locale) {
+    var getLabels = function(settings, keys, form, locale) {
 
-      var def = appinfo.getForm(form),
+      var def = getForm(settings, form),
           fields = def && def.fields;
 
       return _.reduce(keys, function(memo, key) {
         var field = fields && fields[key];
 
         if (_.isString(key)) {
-          memo.push(translateKey(appinfo, key, field, locale));
+          memo.push(translateKey(settings, key, field, locale));
         } else if (_.isArray(key)) {
           _.each(unrollKey(key), function(key) {
             var field = fields && fields[key];
-            memo.push(translateKey(appinfo, key, field, locale));
+            memo.push(translateKey(settings, key, field, locale));
           });
         }
 
@@ -331,26 +356,78 @@ angular.module('inboxServices').factory('FormatDataRecord',
       }, []);
     };
 
+    var getForm = function(settings, code) {
+      return settings.forms && settings.forms[code];
+    };
+
+    var getMessage = function(value, locale) {
+      function _findTranslation(value, locale) {
+        if (value.translations) {
+          var translation = _.findWhere(
+            value.translations, { locale: locale }
+          );
+          return translation && translation.content;
+        } else {
+          // fallback to old translation definition to support
+          // backwards compatibility with existing forms
+          return value[locale];
+        }
+      }
+
+      if (!_.isObject(value)) {
+        return value;
+      }
+
+      var test = false;
+      if (locale === 'test') {
+        test = true;
+        locale = 'en';
+      }
+
+      var result =
+
+        // 1) Look for the requested locale
+        _findTranslation(value, locale) ||
+
+        // 2) Look for the default
+        value.default ||
+
+        // 3) Look for the English value
+        _findTranslation(value, 'en') ||
+
+        // 4) Look for the first translation
+        (value.translations && value.translations[0] &&
+            value.translations[0].content) ||
+
+        // 5) Look for the first value
+        value[_.first(_.keys(value))];
+
+      if (test) {
+        result = '-' + result + '-';
+      }
+
+      return result;
+    };
 
     /*
      * Take data record document and return nice formated JSON object.
      */
-    var makeDataRecordReadable = function(doc, appinfo, language, context) {
+    var makeDataRecordReadable = function(doc, settings, language, context) {
 
-      var data_record = doc;
+      var formatted = _.clone(doc);
 
       // adding a fields property for ease of rendering code
-      if(data_record.form && data_record.content_type !== 'xml') {
-        var keys = getFormKeys(appinfo.getForm(data_record.form));
-        var labels = getLabels(appinfo, keys, data_record.form, language);
-        data_record.fields = fieldsToHtml(appinfo, keys, labels, data_record, language);
-        includeNonFormFields(appinfo, data_record, keys, language);
+      if(formatted.form && formatted.content_type !== 'xml') {
+        var keys = getFormKeys(getForm(settings, formatted.form));
+        var labels = getLabels(settings, keys, formatted.form, language);
+        formatted.fields = fieldsToHtml(settings, keys, labels, formatted, language);
+        includeNonFormFields(settings, formatted, keys, language);
       }
 
-      if(data_record.scheduled_tasks) {
-        data_record.scheduled_tasks_by_group = [];
+      if(formatted.scheduled_tasks) {
+        formatted.scheduled_tasks_by_group = [];
         var groups = {};
-        data_record.scheduled_tasks.forEach(function(t) {
+        formatted.scheduled_tasks.forEach(function(t) {
           // avoid crash if item is falsey
           if (!t) {
             return;
@@ -365,9 +442,9 @@ angular.module('inboxServices').factory('FormatDataRecord',
           if (copy.state === 'scheduled' && // not yet sent
             !copy.messages) { // backwards compatibility
             copy.messages = messages.generate(
-              appinfo.settings,
-              appinfo.translate,
-              data_record,
+              settings,
+              _.partial(translate, settings),
+              doc,
               content,
               t.recipient,
               context
@@ -384,7 +461,7 @@ angular.module('inboxServices').factory('FormatDataRecord',
           // setup scheduled groups
 
           var groupName = getGroupName(t);
-          var displayName = getGroupDisplayName(appinfo, t, language);
+          var displayName = getGroupDisplayName(settings, t, language);
           var group = groups[groupName];
           if (!group) {
             groups[groupName] = group = {
@@ -398,7 +475,7 @@ angular.module('inboxServices').factory('FormatDataRecord',
           group.rows.push(copy);
         });
         Object.keys(groups).forEach(function(key) {
-          data_record.scheduled_tasks_by_group.push(groups[key]);
+          formatted.scheduled_tasks_by_group.push(groups[key]);
         });
       }
 
@@ -425,10 +502,10 @@ angular.module('inboxServices').factory('FormatDataRecord',
        *    }
        *  ]
        */
-      if (data_record.kujua_message) {
+      if (formatted.kujua_message) {
         var outgoing_messages = [],
             outgoing_messages_recipients = [];
-        _.each(data_record.tasks, function(task) {
+        _.each(formatted.tasks, function(task) {
           _.each(task.messages, function(msg) {
             var recipient = {
               to: msg.to,
@@ -461,15 +538,15 @@ angular.module('inboxServices').factory('FormatDataRecord',
             }
           });
         });
-        data_record.outgoing_messages = outgoing_messages;
-        data_record.outgoing_messages_recipients = outgoing_messages_recipients;
+        formatted.outgoing_messages = outgoing_messages;
+        formatted.outgoing_messages_recipients = outgoing_messages_recipients;
       }
 
-      return data_record;
+      return formatted;
     };
 
     return function(doc) {
-      var promises = [ AppInfo(), Language() ];
+      var promises = [ Settings(), Language() ];
       var patientId = doc.patient_id || (doc.fields && doc.fields.patient_id);
       if (doc.scheduled_tasks && patientId) {
         promises.push(getPatient(patientId));
@@ -477,14 +554,14 @@ angular.module('inboxServices').factory('FormatDataRecord',
       }
       return $q.all(promises)
         .then(function(results) {
-          var appInfo = results[0];
+          var settings = results[0];
           var language = results[1];
           var context = {};
           if (results.length === 4) {
             context.patient = results[2];
             context.registrations = results[3];
           }
-          return makeDataRecordReadable(doc, appInfo, language, context);
+          return makeDataRecordReadable(doc, settings, language, context);
         });
     };
   }

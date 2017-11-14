@@ -8,7 +8,6 @@
   require('./add-read-status');
   require('./analytics-modules');
   require('./android-api');
-  require('./app-info');
   require('./auth');
   require('./cache');
   require('./changes');
@@ -78,6 +77,7 @@
   require('./translate');
   require('./translate-from');
   require('./translation-loader');
+  require('./translation-null-interpolation');
   require('./unread-records');
   require('./update-facility');
   require('./update-settings');

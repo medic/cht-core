@@ -4,18 +4,6 @@ var _ = require('underscore'),
     messageUtils = require('./message-utils'),
     config = require('../config');
 
-/*
- * Used to avoid infinite loops of auto-reply messages between gateway and
- * itself.
- */
-const isMessageFromGateway = from => {
-  const gw = config.get('gateway_number');
-  if (typeof gw === 'string' && typeof from === 'string') {
-    return phoneUtil.isNumberMatch(gw, from) >= 3;
-  }
-  return false;
-};
-
 module.exports = {
     addMessage: (doc, messageConfig, recipient = 'clinic', context = {}) => {
         doc.tasks = doc.tasks || [];
@@ -90,7 +78,7 @@ module.exports = {
       if (!from) {
         return true;
       }
-      if (isMessageFromGateway(from)) {
+      if (module.exports.isMessageFromGateway(from)) {
         return false;
       }
       return _.every(conf.split(','), s => {
@@ -151,5 +139,15 @@ module.exports = {
             });
         }
     },
-    _isMessageFromGateway: isMessageFromGateway
+    /*
+     * Used to avoid infinite loops of auto-reply messages between gateway and
+     * itself.
+     */
+    isMessageFromGateway: from => {
+        const gw = config.get('gateway_number');
+        if (typeof gw === 'string' && typeof from === 'string') {
+            return phoneUtil.isNumberMatch(gw, from) >= 3;
+        }
+        return false;
+    }
 };

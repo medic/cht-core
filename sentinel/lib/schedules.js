@@ -144,7 +144,6 @@ module.exports = {
                     doc.scheduled_tasks.push(task);
 
                 } catch(e) {
-                    console.log('err', e);
                     utils.addError(doc, {
                         message: e.message + ': ' + msg.message,
                         code: 'parse_error'

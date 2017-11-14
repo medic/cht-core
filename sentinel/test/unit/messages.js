@@ -289,7 +289,7 @@ exports['describe isOutgoingAllowed'] = function(test) {
     test.done();
 };
 
-exports['describe _isMessageFromGateway'] = function(test) {
+exports['describe isMessageFromGateway'] = function(test) {
     var tests = [
       ['+774455558888', '77-44-5555-8888', true],
       ['+774455558889', '77-44-5555-8888', false],
@@ -299,7 +299,7 @@ exports['describe _isMessageFromGateway'] = function(test) {
     tests.forEach(function(t) {
       var s = sinon.stub(config, 'get');
       s.withArgs('gateway_number').returns(t[0]);
-      test.equals(messages._isMessageFromGateway(t[1]), t[2]);
+      test.equals(messages.isMessageFromGateway(t[1]), t[2]);
       s.restore();
     });
     test.done();

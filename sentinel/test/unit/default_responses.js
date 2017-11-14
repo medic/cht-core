@@ -44,7 +44,7 @@ exports['when doc has errors still pass filter'] = function(test) {
 };
 
 exports['filter passes when message is from gateway'] = function(test) {
-    sinon.stub(messages, '_isMessageFromGateway').returns(true);
+    sinon.stub(messages, 'isMessageFromGateway').returns(true);
     test.equals(transition.filter({
         from: 'x',
         type: 'data_record'
@@ -53,7 +53,7 @@ exports['filter passes when message is from gateway'] = function(test) {
 };
 
 exports['filter passes when message is not from gateway'] = function(test) {
-    sinon.stub(messages, '_isMessageFromGateway').returns(false);
+    sinon.stub(messages, 'isMessageFromGateway').returns(false);
     test.equals(transition.filter({
         from: 'x',
         type: 'data_record'
@@ -154,7 +154,7 @@ exports['add response if unstructured message and setting enabled'] = function(t
     transition.onMatch({ doc: doc }, {}, {}, function(err, changed) {
         test.ok(messageFn.calledOnce);
         test.equals(messageFn.args[0][0], doc);
-        test.equals(messageFn.args[0][1].translationKey, 'sms_received');
+        test.equals(messageFn.args[0][1].translation_key, 'sms_received');
         test.equals(err, null);
         test.equals(changed, true);
         test.done();
@@ -171,7 +171,7 @@ exports['add response if unstructured message (form prop is undefined)'] = funct
     transition.onMatch({ doc: doc }, {}, {}, function(err, changed) {
         test.ok(messageFn.calledOnce);
         test.equals(messageFn.args[0][0], doc);
-        test.equals(messageFn.args[0][1].translationKey, 'sms_received');
+        test.equals(messageFn.args[0][1].translation_key, 'sms_received');
         test.equals(err, null);
         test.equals(changed, true);
         test.done();
@@ -210,7 +210,7 @@ exports['add response if form not found'] = function(test) {
     transition.onMatch({ doc: doc }, {}, {}, function(err, changed) {
         test.ok(messageFn.calledOnce);
         test.equals(messageFn.args[0][0], doc);
-        test.equals(messageFn.args[0][1].translationKey, 'sms_received');
+        test.equals(messageFn.args[0][1].translation_key, 'sms_received');
         test.equals(err, null);
         test.equals(changed, true);
         test.done();
@@ -228,7 +228,7 @@ exports['add response if form not found and forms_only_mode'] = function(test) {
     transition.onMatch({ doc: doc }, {}, {}, function(err, changed) {
         test.ok(messageFn.calledOnce);
         test.equals(messageFn.args[0][0], doc);
-        test.equals(messageFn.args[0][1].translationKey, 'form_not_found');
+        test.equals(messageFn.args[0][1].translation_key, 'form_not_found');
         test.equals(err, null);
         test.equals(changed, true);
         test.done();
@@ -246,7 +246,7 @@ exports['add response to empty message'] = function (test) {
     transition.onMatch({ doc: doc }, {}, {}, function(err, changed) {
         test.ok(messageFn.calledOnce);
         test.equals(messageFn.args[0][0], doc);
-        test.equals(messageFn.args[0][1].translationKey, 'empty');
+        test.equals(messageFn.args[0][1].translation_key, 'empty');
         test.equals(err, null);
         test.equals(changed, true);
         test.done();

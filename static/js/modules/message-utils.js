@@ -241,16 +241,17 @@ exports.template = function(config, translate, doc, content, extraContext) {
   extraContext = extraContext || {};
   var locale = getLocale(config, doc);
   var template;
-  if (_.isArray(content.message)) {
+  if (content.translationKey) {
+    template = translate(content.translationKey, locale);
+  } else if (_.isArray(content.message)) {
     var message = _.findWhere(content.message, { locale: locale }) ||
                   content.message[0];
     if (message) {
       template = message.content && message.content.trim();
     }
-  } else if (content.message) {
-    template = content.message; // depecated - already generated message
   } else {
-    template = translate(content.translationKey, locale);
+    // depecated - already generated message
+    template = content.message;
   }
   if (!template) {
     return '';

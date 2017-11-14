@@ -146,7 +146,7 @@ module.exports = {
             };
 
         // add a message to the tasks property with the form/ts markers
-        const task = messages.addMessage(clinic, { message: [ { content: reminder.message } ] }, 'clinic', context);
+        const task = messages.addMessage(clinic, reminder, 'clinic', context);
         if (task) {
             task.form = reminder.form;
             task.ts = moment.toISOString();

@@ -1,7 +1,6 @@
 var _ = require('underscore'),
     moment = require('moment'),
     config = require('../config'),
-    utils = require('../lib/utils'),
     logger = require('../lib/logger'),
     messages = require('../lib/messages'),
     transitionUtils = require('./utils'),
@@ -26,7 +25,7 @@ module.exports = {
     _isMessageFromGateway: function(doc) {
         var from = doc.sms_message && doc.sms_message.from;
         if (typeof from === 'string') {
-            return utils._isMessageFromGateway(from);
+            return messages.isMessageFromGateway(from);
         }
         return false;
     },
@@ -76,16 +75,19 @@ module.exports = {
     onMatch: function(change, db, audit, callback) {
 
         var self = module.exports,
-            doc = change.doc;
+            doc = change.doc,
+            key;
 
         if (self._isMessageEmpty(doc)) {
-            messages.addMessage(doc, { translationKey: 'empty' });
+            key = 'empty';
         } else if (self._isConfigFormsOnlyMode() && self._isFormNotFound(doc)) {
-            messages.addMessage(doc, { translationKey: 'form_not_found' });
-        } else if (self._isFormNotFound(doc)) {
-            messages.addMessage(doc, { translationKey: 'sms_received' });
-        } else if (self._isValidUnstructuredMessage(doc)) {
-            messages.addMessage(doc, { translationKey: 'sms_received' });
+            key = 'form_not_found';
+        } else if (self._isFormNotFound(doc) || self._isValidUnstructuredMessage(doc)) {
+            key = 'sms_received';
+        }
+
+        if (key) {
+            messages.addMessage(doc, { translation_key: key });
         }
 
         callback(null, true);
