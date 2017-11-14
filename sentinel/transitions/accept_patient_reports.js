@@ -31,6 +31,20 @@ const uniqueGroupTypeCombos = tasks => {
     return unique;
 };
 
+/*
+ * type is either a string or an array of strings
+ */
+const getScheduledTasksByType = (registration, type) => {
+  const types = typeof type === 'string' ? [type] : type;
+
+  const scheduled_tasks = registration && registration.scheduled_tasks;
+  if (!scheduled_tasks || !scheduled_tasks.length) {
+    return [];
+  }
+
+  return scheduled_tasks.filter(task => types.includes(task.type));
+};
+
 // find the messages to clear
 const findToClear = (registration, reported_date, config) => {
     // See: https://github.com/medic/medic-docs/blob/master/user/message-states.md#message-states-in-medic-webapp
@@ -41,7 +55,7 @@ const findToClear = (registration, reported_date, config) => {
     const reportedDateMoment = moment(reported_date);
     const taskTypes = config.silence_type.split(',').map(type => type.trim());
 
-    const tasksUnderReview = utils.getScheduledTasksByType(registration, taskTypes);
+    const tasksUnderReview = getScheduledTasksByType(registration, taskTypes);
 
     if (!config.silence_for) {
         // No range, all clearable tasks should be cleared
@@ -107,23 +121,6 @@ const validate = (config, doc, callback) => {
     return validation.validate(doc, validations, callback);
 };
 
-const addErrorsToDoc = (errors, doc, config) => {
-    messages.addErrors(doc, errors);
-    if (config.validations.join_responses) {
-        var msgs = [];
-        errors.forEach(err => {
-            if (err.message) {
-                msgs.push(err.message);
-            } else if (err) {
-                msgs.push(err);
-            }
-        });
-        messages.addReply(doc, msgs.join('  '));
-    } else {
-        messages.addReply(doc, errors[0].message || errors[0]);
-    }
-};
-
 // NB: this is very similar to a function in accept_patient_reports, except
 //     they also allow for an empty event_type
 const messageRelevant = (msg, doc) => {
@@ -138,13 +135,9 @@ const messageRelevant = (msg, doc) => {
 };
 
 const addMessagesToDoc = (doc, config, registrations) => {
-    const locale = utils.getLocale(doc);
     config.messages.forEach(msg => {
         if (messageRelevant(msg, doc)) {
-            messages.addMessage({
-                doc: doc,
-                message: messages.getMessage(msg, locale),
-                phone: messages.getRecipientPhone(doc, msg.recipient),
+            messages.addMessage(doc, msg, msg.recipient, {
                 patient: doc.patient,
                 registrations: registrations
             });
@@ -197,7 +190,7 @@ module.exports = {
 
         validate(config, doc, function(errors) {
             if (errors && errors.length > 0) {
-                addErrorsToDoc(errors, doc, config);
+                messages.addErrors(config, doc, errors);
                 return callback(null, true);
             }
 

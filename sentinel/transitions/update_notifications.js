@@ -38,7 +38,6 @@ var getEventType = function(config, doc) {
 module.exports = {
     _addErr: function(event_type, config, doc) {
         var locale = utils.getLocale(doc),
-            err_msg = 'Failed to complete notification request, event type "%s" misconfigured.',
             evConf = _.findWhere(config.messages, {
                 event_type: event_type
             });
@@ -46,23 +45,19 @@ module.exports = {
         if (msg) {
             messages.addError(doc, msg);
         } else {
-            messages.addError(doc, err_msg.replace('%s', event_type));
+            messages.addError(doc, `Failed to complete notification request, event type "${event_type}" misconfigured.`);
         }
     },
     _addMsg: function(event_type, config, doc, registrations, patient) {
-        var locale = utils.getLocale(doc),
-            evConf = _.findWhere(config.messages, {
-                event_type: event_type
-            });
-        var msg = messages.getMessage(evConf, locale);
-        if (msg) {
-            messages.addMessage({
-                doc: doc,
-                message: msg,
-                phone: messages.getRecipientPhone(doc, msg.recipient),
+        const msgConfig = _.findWhere(config.messages, {
+            event_type: event_type
+        });
+        if (msgConfig) {
+            const templateContext = {
                 registrations: registrations,
                 patient: patient
-            });
+            };
+            messages.addMessage(doc, msgConfig, msgConfig.recipient, templateContext);
         } else {
             module.exports._addErr(event_type, config, doc);
         }
@@ -111,20 +106,7 @@ module.exports = {
         self.validate(config, doc, function(errors) {
 
             if (errors && errors.length > 0) {
-                messages.addErrors(doc, errors);
-                if (config.validations.join_responses) {
-                    var msgs = [];
-                    _.each(errors, function(err) {
-                        if (err.message) {
-                            msgs.push(err.message);
-                        } else if (err) {
-                            msgs.push(err);
-                        }
-                    });
-                    messages.addReply(doc, msgs.join('  '));
-                } else {
-                    messages.addReply(doc, _.first(errors).message || _.first(errors));
-                }
+                messages.addErrors(config, doc, errors);
                 return callback(null, true);
             }
 

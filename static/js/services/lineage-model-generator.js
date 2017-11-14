@@ -109,7 +109,8 @@ angular.module('inboxServices').factory('LineageModelGenerator',
        * Fetch a contact and its lineage by the given uuid. Returns a
        * report model.
        */
-      report: function(id) {
+      report: function(id, options) {
+        options = options || {};
         return get(id).then(function(docs) {
           return hydrate(docs).then(function(docs) {
             // the first row is the report
@@ -117,6 +118,9 @@ angular.module('inboxServices').factory('LineageModelGenerator',
             // the second row is the report's contact
             var contact = docs.shift();
             // everything else is the lineage
+            if (options.merge) {
+              mergeParents(doc.contact, docs);
+            }
             return {
               _id: id,
               doc: doc,

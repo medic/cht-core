@@ -1,8 +1,7 @@
 var _ = require('underscore'),
     async = require('async'),
     config = require('../config'),
-    utils = require('../lib/utils'),
-    i18n = require('../i18n'),
+    messages = require('../lib/messages'),
     later = require('later'),
     moment = require('moment');
 
@@ -138,20 +137,21 @@ module.exports = {
         var clinic = options.clinic,
             db = options.db,
             moment = options.moment,
-            reminder = options.reminder;
+            reminder = options.reminder,
+            context = {
+                templateContext: {
+                    week: moment.format('w'),
+                    year: moment.format('YYYY')
+                }
+            };
 
         // add a message to the tasks property with the form/ts markers
-        utils.addMessage(clinic, {
-            form: reminder.form,
-            ts: moment.toISOString(),
-            phone: utils.getClinicPhone(clinic),
-            message: i18n(reminder.message, {
-                week: moment.format('w'),
-                year: moment.format('YYYY')
-            }),
-            type: 'reminder'
-        });
-
+        const task = messages.addMessage(clinic, reminder, 'clinic', context);
+        if (task) {
+            task.form = reminder.form;
+            task.ts = moment.toISOString();
+            task.type = 'reminder';
+        }
         db.medic.insert(clinic, callback);
     },
     sendReminders: function(options, callback) {

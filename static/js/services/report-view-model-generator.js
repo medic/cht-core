@@ -73,16 +73,17 @@ angular.module('inboxServices').factory('ReportViewModelGenerator',
     };
 
     return function(id) {
-      return LineageModelGenerator.report(id).then(function(model) {
-        if (!model.doc) {
-          return model;
-        }
-        model.displayFields = getDisplayFields(model.doc);
-        return FormatDataRecord(model.doc).then(function(formatted) {
-          model.formatted = formatted;
-          return model;
+      return LineageModelGenerator.report(id, { merge: true })
+        .then(function(model) {
+          if (!model.doc) {
+            return model;
+          }
+          model.displayFields = getDisplayFields(model.doc);
+          return FormatDataRecord(model.doc).then(function(formatted) {
+            model.formatted = formatted;
+            return model;
+          });
         });
-      });
     };
   }
 );

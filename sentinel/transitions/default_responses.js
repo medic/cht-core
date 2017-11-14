@@ -1,7 +1,6 @@
 var _ = require('underscore'),
     moment = require('moment'),
     config = require('../config'),
-    utils = require('../lib/utils'),
     logger = require('../lib/logger'),
     messages = require('../lib/messages'),
     transitionUtils = require('./utils'),
@@ -26,7 +25,7 @@ module.exports = {
     _isMessageFromGateway: function(doc) {
         var from = doc.sms_message && doc.sms_message.from;
         if (typeof from === 'string') {
-            return utils._isMessageFromGateway(from);
+            return messages.isMessageFromGateway(from);
         }
         return false;
     },
@@ -73,34 +72,22 @@ module.exports = {
     _getConfig: function(key) {
         return config.get(key);
     },
-    _getLocale: function(doc) {
-        return utils.getLocale(doc);
-    },
-    _translate: function(key, locale) {
-        return utils.translate(key, locale);
-    },
-    _addMessage: function(doc, msg) {
-        var opts = {
-                doc: doc,
-                phone: doc.from,
-                message: msg
-            };
-        messages.addMessage(opts);
-    },
     onMatch: function(change, db, audit, callback) {
 
         var self = module.exports,
             doc = change.doc,
-            locale = self._getLocale(doc);
+            key;
 
         if (self._isMessageEmpty(doc)) {
-            self._addMessage(doc, self._translate('empty', locale));
+            key = 'empty';
         } else if (self._isConfigFormsOnlyMode() && self._isFormNotFound(doc)) {
-            self._addMessage(doc, self._translate('form_not_found', locale));
-        } else if (self._isFormNotFound(doc)) {
-            self._addMessage(doc, self._translate('sms_received', locale));
-        } else if (self._isValidUnstructuredMessage(doc)) {
-            self._addMessage(doc, self._translate('sms_received', locale));
+            key = 'form_not_found';
+        } else if (self._isFormNotFound(doc) || self._isValidUnstructuredMessage(doc)) {
+            key = 'sms_received';
+        }
+
+        if (key) {
+            messages.addMessage(doc, { translation_key: key });
         }
 
         callback(null, true);

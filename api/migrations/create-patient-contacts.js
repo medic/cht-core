@@ -142,7 +142,7 @@ module.exports = {
   name: 'create-patient-contacts',
   created: new Date(2017, 2, 13),
   run: function(callback) {
-    db.medic.view('medic', 'registered_patients', {}, function(err, results) {
+    db.medic.view('medic-client', 'registered_patients', {}, function(err, results) {
       if (err) {
         return callback(err);
       }
