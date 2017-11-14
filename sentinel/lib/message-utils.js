@@ -259,3 +259,5 @@ exports.template = function(config, translate, doc, content, extraContext) {
   var context = extendedTemplateContext(doc, extraContext);
   return render(config, template, context);
 };
+
+exports._getRecipient = getRecipient;

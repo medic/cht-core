@@ -1,6 +1,7 @@
 const sinon = require('sinon').sandbox.create(),
       moment = require('moment'),
       expect = require('chai').expect,
+      should = require('chai').should(),
       uuid = require('uuid'),
       utils = require('../../../lib/message-utils');
 
@@ -20,6 +21,87 @@ describe('messageUtils', () => {
   beforeEach(done => {
     sinon.restore();
     done();
+  });
+
+  describe('getRecipient', () => {
+    it('is undefined if no doc is passed', () => {
+      should.not.exist(utils._getRecipient());
+    });
+    it('is doc.from if no recipient', () => {
+      utils._getRecipient({from: 'foo'})
+        .should.equal('foo');
+    });
+    describe('recipient variations', () => {
+      const fromPhone = 'fromPhone',
+            clinicPhone = 'clinicPhone',
+            parentPhone = 'parentPhone',
+            grandparentPhone = 'grandParentPhone',
+            fieldsPhone = 'fieldsPhone',
+            inlinePhone = 'inlinePhone',
+            complexInlinePhone = 'complexInlinePhone';
+      const doc = {
+        form: 'x',
+        from: fromPhone,
+        fields: {
+          phone: fieldsPhone,
+        },
+        phone: inlinePhone,
+        contact: {
+          parent: {
+            type: 'clinic',
+            contact: {
+              phone: clinicPhone
+            },
+            parent: {
+              type: 'health_center',
+              contact: {
+                phone: parentPhone
+              },
+              parent: {
+                type: 'district_hospital',
+                contact: {
+                  phone: grandparentPhone
+                }
+              }
+            }
+          }
+        },
+        complex: { inline: { phone: complexInlinePhone }}
+      };
+
+      it('resolves reporting_unit correctly', () => {
+        utils._getRecipient(doc, 'reporting_unit')
+          .should.equal(fromPhone);
+      });
+      it('resolves clinic correctly', () => {
+        utils._getRecipient(doc, 'clinic')
+          .should.equal(clinicPhone);
+      });
+      it('resolves parent correctly', () => {
+        utils._getRecipient(doc, 'parent')
+          .should.equal(parentPhone);
+      });
+      it('resolves grandparent correctly', () => {
+        utils._getRecipient(doc, 'grandparent')
+          .should.equal(grandparentPhone);
+      });
+    });
+    it('tries to resolve the value from the fields property', () => {
+      utils._getRecipient({fields: {foo: 'bar'}}, 'foo')
+        .should.equal('bar');
+    });
+    it('tries to resolve simple values directly on the doc', () => {
+      utils._getRecipient({foo: 'bar'}, 'foo')
+        .should.equal('bar');
+    });
+    it('tries to resolve complex values directly on the doc', () => {
+      utils._getRecipient({foo: {bar: {smang: 'baz'}}}, 'foo.bar.smang')
+        .should.equal('baz');
+    });
+    it('is doc.from if the recipient cannot be resolved', () => {
+      utils._getRecipient({from: 'foo'}, 'a-recipient')
+        .should.equal('foo');
+    });
   });
 
   describe('generate', () => {
@@ -97,79 +179,6 @@ describe('messageUtils', () => {
         expect(messages.length).to.equal(1);
         expect(messages[0].message).to.equal(expected);
         expect(messages[0].original_message).to.equal(sms);
-        done();
-      });
-
-    });
-
-    describe('resolve recipient', () => {
-      
-      it('resolves "clinic" correctly', done => {
-        const phone = '+13125551213';
-        const doc = {
-          form: 'x',
-          contact: {
-            phone: phone,
-            parent: {
-              contact: {
-                phone: phone
-              }
-            }
-          }
-        };
-        const actual = utils.generate({}, null, doc, { message: 'hello' }, 'clinic');
-        expect(actual[0].to).to.equal(phone);
-        done();
-      });
-
-      it('defaults to doc.from if no recipient', done => {
-        const phone = '+13125551213';
-        const doc = {
-          form: 'x',
-          from: phone
-        };
-        const actual = utils.generate({}, null, doc, { message: 'hello' });
-        expect(actual[0].to).to.equal(phone);
-        done();
-      });
-
-      it('defaults to doc.from if no known recipient', done => {
-        const phone = '+13125551213';
-        const doc = {
-          form: 'x',
-          from: phone
-        };
-        const actual = utils.generate({}, null, doc, { message: 'hello' }, 'greatgrandparent');
-        expect(actual[0].to).to.equal(phone);
-        done();
-      });
-
-      it('applies the outgoing phone filters', done => {
-        const given = '00101';
-        const expected = '9101';
-        const doc = {
-          form: 'x',
-          from: given
-        };
-        const config = { outgoing_phone_filters: [
-            { match: '0+', replace: '9' },
-            { }
-        ] };
-        const actual = utils.generate(config, null, doc, { message: 'hello' }, 'greatgrandparent');
-        expect(actual[0].to).to.equal(expected);
-        done();
-      });
-
-      it('applies the outgoing phone replace', done => {
-        const given = '159841125';
-        const expected = '29841125';
-        const doc = {
-          form: 'x',
-          from: given
-        };
-        const config = { outgoing_phone_replace: { match: '15', replace: '2' } };
-        const actual = utils.generate(config, null, doc, { message: 'hello' }, 'greatgrandparent');
-        expect(actual[0].to).to.equal(expected);
         done();
       });
 
