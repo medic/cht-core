@@ -762,7 +762,7 @@ const couchDbNoAdminPartyModeCheck = callback => {
       callback();
     } else {
       console.error('Expected a 401 when accessing db without authentication.');
-      console.error(`Instead we got a ${statusCode}`).
+      console.error(`Instead we got a ${statusCode}`);
       callback(new Error('CouchDB security seems to be misconfigured, see: https://github.com/medic/medic-webapp#enabling-a-secure-couchdb'));
     }
   });
@@ -771,7 +771,7 @@ const couchDbNoAdminPartyModeCheck = callback => {
 const couchDbVersionCheck = callback =>
   db.getCouchDbVersion((err, version) => {
     if (err) {
-      callback(err);
+      return callback(err);
     }
 
     console.log(`CouchDB Version: ${version.major}.${version.minor}.${version.patch}`);
