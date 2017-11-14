@@ -21,7 +21,7 @@ inboxServices.factory('Markdown', [
       html = html.replace(/\*\*([^\s]([^*]*[^\s])?)\*\*/gm, '<strong>$1</strong>');
       html = html.replace(/_([^_\s]([^_]*[^_\s])?)_/gm, '<em>$1</em>');
       html = html.replace(/\*([^*\s]([^\*]*[^*\s])?)\*/gm, '<em>$1</em>');
-      html = html.replace(/\[([^\]]*)\]\(([^\)]+)\)/gm, '<a href="$2" target="_blank">$1</a>');
+      html = html.replace(/\[([^\]]*)\]\(([^\)]+)\)/gm, '<a href="$2" target="_blank" rel="noopener noreferrer">$1</a>');
       html = html.replace(/\n/gm, '<br />');
 
       // Convert embedded HTML

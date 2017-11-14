@@ -199,6 +199,13 @@ module.exports = function(grunt) {
       }
     },
     exec: {
+      blankLinkCheck: {
+        cmd: `echo "Checking for dangerous _blank links..." &&
+               ! (git grep -E  'target\\\\?="_blank"' -- templates/ translations/ static/ |
+                      grep -Ev 'target\\\\?="_blank" rel\\\\?="noopener noreferrer"' |
+                      grep -Ev '^\s*//' &&
+                  echo 'ERROR: Links found with target="_blank" but no rel="noopener noreferrer" set.  Please add required rel attribute.')`,
+      },
       deploy: {
         cmd: 'kanso push $COUCH_URL'
       },
@@ -588,6 +595,7 @@ module.exports = function(grunt) {
   grunt.registerTask('precommit', 'Static analysis checks', [
     'regex-check',
     'jshint',
+    'exec:blankLinkCheck',
   ]);
 
   grunt.registerTask('dev-no-npm', 'Build and deploy for dev, without reinstalling dependencies.', [

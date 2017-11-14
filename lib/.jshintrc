@@ -1,4 +1,5 @@
 {
   "extends"       : "../.jshintrc",
-  "couch"         : true
+  "couch"         : true,
+  "esversion"     : 5
 }

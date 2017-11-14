@@ -75,7 +75,7 @@ define( function( require, exports, module ) {
         var html = $el.html();
 
         html = html.replace( /\[([^\]]*)\]\(([^)]*<[^>]*\>[^)]*)\)/gm,
-                '<a class="live-link" href="#" target="_blank">$1<span class="href" style="display:none">$2</span></a>' );
+                '<a class="live-link" href="#" target="_blank" rel="noopener noreferrer">$1<span class="href" style="display:none">$2</span></a>' );
 
         $el.text( '' ).append( html );
     }
