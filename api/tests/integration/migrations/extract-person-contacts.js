@@ -8,27 +8,192 @@ describe('extract-person-contacts migration', function() {
     return utils.tearDown();
   });
 
+  it('converts and minifies a 0.4 structure into a 2.x one', () => {
+    const clinic = {
+      _id: 'clinic-id',
+      type: 'clinic',
+      name: 'The Clinic',
+      contact: {
+        name: 'Clinic Contact',
+        phone: '555 1000'
+      },
+      parent: {
+        _id: 'hc-id',
+        _rev: '15-0f2d0e53d04251e7171a51b76c881dbb',
+        type: 'health_center',
+        name: 'The Health Center',
+        contact: {
+          name: 'HC Contact',
+          phone: '555 2000'
+        },
+        parent: {
+          _id: 'dh-id',
+          _rev: '3-c2fd98be72a3ff7ececf452c67f68f5a',
+          type: 'district_hospital',
+          name: 'The District Hospital',
+          contact: {
+            name: 'DH Contact',
+            phone: '555 3000'
+          }
+        }
+      },
+      sent_forms: {
+        ANCR: '2015-12-12T11:00:18.886Z',
+        F: '2015-08-06T11:08:45.000Z'
+      }
+    };
+    const clinicContact = {
+      name: 'Clinic Contact',
+      phone: '555 1000',
+      reported_date: ANY_NUMBER,
+      type: 'person',
+      parent: {
+        _id: 'clinic-id',
+        parent: {
+          _id: 'hc-id',
+          parent: {
+            _id: 'dh-id',
+          }
+        }
+      }
+    };
+    const clinicFixed = {
+      _id: 'clinic-id',
+      type: 'clinic',
+      name: 'The Clinic',
+      contact: {
+        _id: ANY_STRING,
+        parent: {
+          _id: 'clinic-id',
+          parent: {
+            _id: 'hc-id',
+            parent: {
+              _id: 'dh-id',
+            }
+          }
+        }
+      },
+      parent: {
+        _id: 'hc-id',
+        parent: {
+          _id: 'dh-id',
+        }
+      },
+      sent_forms: {
+        ANCR: '2015-12-12T11:00:18.886Z',
+        F: '2015-08-06T11:08:45.000Z'
+      }
+    };
+    const healthCenter = {
+      _id: 'hc-id',
+      type: 'health_center',
+      name: 'The Health Center',
+      contact: {
+        name: 'HC Contact',
+        phone: '555 2000'
+      },
+      parent: {
+        _id: 'dh-id',
+        type: 'district_hospital',
+        name: 'The District Hospital',
+        parent: {},
+        contact: {
+          name: 'DH Contact',
+          phone: '555 3000'
+        }
+      }
+    };
+    const healthCenterContact = {
+      name: 'HC Contact',
+      phone: '555 2000',
+      reported_date: ANY_NUMBER,
+      type: 'person',
+      parent: {
+        _id: 'hc-id',
+        parent: {
+          _id: 'dh-id'
+        }
+      }
+    };
+    const healthCenterFixed = {
+      _id: 'hc-id',
+      type: 'health_center',
+      name: 'The Health Center',
+      contact: {
+        _id: ANY_STRING,
+        parent: {
+          _id: 'hc-id',
+          parent: {
+            _id: 'dh-id'
+          }
+        }
+      },
+      parent: {
+        _id: 'dh-id',
+      }
+    };
+    const districtHospital = {
+      _id: 'dh-id',
+      type: 'district_hospital',
+      name: 'The District Hospital',
+      parent: {},
+      contact: {
+        name: 'DH Contact',
+        phone: '555 3000'
+      }
+    };
+    const districtHospitalContact = {
+      name: 'DH Contact',
+      phone: '555 3000',
+      reported_date: ANY_NUMBER,
+      type: 'person',
+      parent: {
+        _id: 'dh-id',
+      }
+    };
+    const districtHospitalFixed = {
+      _id: 'dh-id',
+      type: 'district_hospital',
+      name: 'The District Hospital',
+      contact: {
+        _id: ANY_STRING,
+        parent: {
+          _id: 'dh-id',
+        }
+      }
+    };
+
+    let start;
+    return utils.initDb([clinic, healthCenter, districtHospital])
+      .then(() => start = new Date().getTime())
+      .then(() => utils.runMigration('extract-person-contacts'))
+      .then(() => console.log(new Date().getTime() - start))
+      .then(() => utils.assertDb([districtHospitalFixed, districtHospitalContact,
+                                  healthCenterFixed, healthCenterContact,
+                                  clinicFixed, clinicContact]));
+  });
+
   it('should create a new Person from facility.contact', function() {
     // given
-    return utils.initDb([
-      {
+    return utils.initDb([{
         _id: 'abc',
         type: 'district_hospital',
         name: 'myfacility',
-        contact: { name:'Alice', phone:'+123' },
-      },
-    ])
-    .then(function() {
+        contact: {
+          name: 'Alice',
+          phone: '+123'
+        },
+      }, ])
+      .then(function() {
 
-      // when
-      return utils.runMigration('extract-person-contacts');
+        // when
+        return utils.runMigration('extract-person-contacts');
 
-    })
-    .then(function() {
+      })
+      .then(function() {
 
-      // expect
-      return utils.assertDb([
-        {
+        // expect
+        return utils.assertDb([{
           _id: 'abc',
           type: 'district_hospital',
           name: 'myfacility',
@@ -38,8 +203,7 @@ describe('extract-person-contacts migration', function() {
               _id: 'abc'
             },
           },
-        },
-        {
+        }, {
           name: 'Alice',
           type: 'person',
           phone: '+123',
@@ -47,16 +211,14 @@ describe('extract-person-contacts migration', function() {
           parent: {
             _id: 'abc'
           },
-        },
-      ]);
+        }, ]);
 
-    });
+      });
   });
 
   it('should retain the rc code - #2970', function() {
     // given
-    return utils.initDb([
-      {
+    return utils.initDb([{
         _id: 'abc',
         type: 'district_hospital',
         name: 'myfacility',
@@ -65,19 +227,17 @@ describe('extract-person-contacts migration', function() {
           phone: '+123',
           rc_code: 'rc1'
         },
-      },
-    ])
-    .then(function() {
+      }, ])
+      .then(function() {
 
-      // when
-      return utils.runMigration('extract-person-contacts');
+        // when
+        return utils.runMigration('extract-person-contacts');
 
-    })
-    .then(function() {
+      })
+      .then(function() {
 
-      // expect
-      return utils.assertDb([
-        {
+        // expect
+        return utils.assertDb([{
           _id: 'abc',
           type: 'district_hospital',
           name: 'myfacility',
@@ -88,8 +248,7 @@ describe('extract-person-contacts migration', function() {
               _id: 'abc'
             },
           },
-        },
-        {
+        }, {
           name: 'Alice',
           type: 'person',
           phone: '+123',
@@ -97,16 +256,14 @@ describe('extract-person-contacts migration', function() {
           parent: {
             _id: 'abc'
           },
-        },
-      ]);
+        }, ]);
 
-    });
+      });
   });
 
   it('should not break if parent of contact not found', function() {
     // given
-    return utils.initDb([
-      {
+    return utils.initDb([{
         _id: 'abc',
         type: 'health_center',
         name: 'Homa Bay Health',
@@ -119,97 +276,22 @@ describe('extract-person-contacts migration', function() {
             phone: '+1234567890'
           }
         }
-      }
-    ])
-    .then(function() {
+      }])
+      .then(function() {
 
-      // when
-      return utils.runMigration('extract-person-contacts');
+        // when
+        return utils.runMigration('extract-person-contacts');
 
-    })
-    .then(function() {
+      })
+      .then(function() {
 
-      // expect
-      return utils.assertDb([
-        {
+        // expect
+        return utils.assertDb([{
           _id: 'abc',
           type: 'health_center',
           name: 'Homa Bay Health',
-        },
-      ]);
+        }, ]);
 
-    });
-  });
-
-  describe('Edge cases', () => {
-    it.only('https://github.com/medic/medic-webapp/issues/4031', () =>
-      utils.initDb([
-JSON.parse(`{
-   "_id": "42fbf87e-9857-8ad1-071fc2f9e15ac6b9",
-   "type": "clinic",
-   "name": "The Clinic",
-   "contact": {
-       "name": "Clinic Contact",
-       "phone": "555 1000"
-   },
-   "parent": {
-       "_id": "42fbf87e-9857-8ad1-071fc2f9e15a5e26",
-       "_rev": "15-0f2d0e53d04251e7171a51b76c881dbb",
-       "type": "health_center",
-       "name": "The Health Center",
-       "contact": {
-           "name": "HC Contact",
-           "phone": "555 2000"
-       },
-       "parent": {
-           "_id": "eec1f64b-b093-0a25-f0bd72d7f6d68010",
-           "_rev": "3-c2fd98be72a3ff7ececf452c67f68f5a",
-           "type": "district_hospital",
-           "name": "The District Hospital",
-           "contact": {
-               "name": "DH Contact",
-               "phone": "555 3000"
-           }
-       }
-   },
-   "sent_forms": {
-       "ANCR": "2015-12-12T11:00:18.886Z",
-       "F": "2015-08-06T11:08:45.000Z"
-   }
-}`),
-JSON.parse(`{
-   "_id": "42fbf87e-9857-8ad1-071fc2f9e15a5e26",
-   "type": "health_center",
-   "name": "The Health Center",
-   "contact": {
-       "name": "HC Contact",
-       "phone": "555 2000"
-   },
-   "parent": {
-       "_id": "eec1f64b-b093-0a25-f0bd72d7f6d68010",
-       "type": "district_hospital",
-       "name": "The District Hospital",
-       "parent": {
-       },
-       "contact": {
-           "name": "DH Contact",
-           "phone": "555 3000"
-       }
-   }
-}`),
-JSON.parse(`{
-   "_id": "eec1f64b-b093-0a25-f0bd72d7f6d68010",
-   "type": "district_hospital",
-   "name": "The District Hospital",
-   "parent": {
-   },
-   "contact": {
-       "name": "DH Contact",
-       "phone": "555 3000"
-   }
-}`)])
-      .then(() => utils.runMigration('extract-person-contacts'))
-      .then(() => utils.assertDb([]))
-    );
+      });
   });
 });

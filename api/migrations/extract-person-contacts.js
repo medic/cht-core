@@ -58,7 +58,12 @@ var async = require('async'),
  * Then we reset the contact field on that parent doc, with `places.updatePlace`.
  */
 var createPerson = function(id, callback) {
+  // console.log('CREATE PERSON OFF', id);
+
   var checkContact = function(facility, callback) {
+    // console.log('CP CHECK CONTACT');
+    // console.log(JSON.stringify(facility, null, 2));
+
     if (!facility.contact || facility.contact._id) {
       // no contact to migrate or contact already migrated
       return callback({ skip: true });
@@ -69,6 +74,9 @@ var createPerson = function(id, callback) {
   // Remove old-style contact field from the facility, so that the `person` we will create will not have a
   // loop (`person.parent.contact = person`!).
   var removeContact = function(facility, callback) {
+    // console.log('CP REMOVE CONTACT');
+    // console.log(JSON.stringify(facility, null, 2));
+
     delete facility.contact;
     db.medic.insert(facility, function(err) {
       if (err) {
@@ -81,6 +89,9 @@ var createPerson = function(id, callback) {
 
   // Create a new person doc to represent the contact.
   var createPerson = function(facilityId, oldContact, callback) {
+    // console.log('CP CREATE PERSON', facilityId);
+    // console.log(JSON.stringify(oldContact, null, 2));
+
     var person = {
       name: oldContact.name,
       phone: oldContact.phone,
@@ -132,7 +143,12 @@ var createPerson = function(id, callback) {
       return callback(err);
     }
 
+    // console.log('GOT');
+    // console.log(JSON.stringify(facility, null, 2));
+
     var oldContact = facility.contact;
+    // console.log('OLD CONTACT');
+    // console.log(JSON.stringify(oldContact, null, 2));
 
     async.waterfall(
       [
@@ -209,9 +225,21 @@ var createPerson = function(id, callback) {
 var updateParents = function(id, callback) {
   var checkParent = function(facility, callback) {
     console.log('checking parent for', facility._id);
-    if (!facility.parent || (Object.keys(facility.parent).length === 0)) {
-      console.log('skipping');
+    if (!facility.parent) {
+      // console.log('skipping');
       return callback({ skip: true });
+    }
+
+    // There have been cases of weird {} parents. Remove these, then skip
+    if (Object.keys(facility.parent).length === 0) {
+      delete facility.parent;
+      return db.medic.insert(facility, err => {
+        if (err) {
+          callback(err);
+        } else {
+          callback({ skip: true });
+        }
+      });
     }
 
     if (!facility.parent._id) {
@@ -220,25 +248,26 @@ var updateParents = function(id, callback) {
 
     if (!facility.parent.contact || !!facility.parent.contact._id) {
       // No contact, or already migrated.
+      // console.log('skipping');
       return callback({ skip: true });
     }
 
+    callback();
     // Check the parent exists before doing anything crazy.
-    db.medic.get(facility.parent._id, function(err) {
-      if (err) {
-        if (err.statusCode === 404) {
-          // TODO: why wouldn't we extract and create this facility at this point?
-          return callback(new Error('facility parent ' + facility.parent._id + ' not found.'));
-        }
-        return callback(err);
-      }
+    // db.medic.get(facility.parent._id, function(err) {
+    //   if (err) {
+    //     if (err.statusCode === 404) {
+    //       return callback(new Error('facility parent ' + facility.parent._id + ' not found.'));
+    //     }
+    //     return callback(err);
+    //   }
 
-      return callback();
-    });
+    //   return callback();
+    // });
   };
 
   var removeParent = function(facility, callback) {
-    console.log('removing parent of', facility._id);
+    // console.log('removing parent of', facility._id);
     var parentId = facility.parent._id;
     delete facility.parent;
     db.medic.insert(facility, function(err) {
@@ -251,16 +280,13 @@ var updateParents = function(id, callback) {
   };
 
   var resetParent = function(facilityId, parentId, callback) {
-    console.log('resetting parent of', facilityId);
+    // console.log('resetting parent of', facilityId, 'to', parentId);
     db.medic.get(parentId, function(err) {
       if (err) {
-        // How could we EVER get into this state, and why would we consider it
-        // safe!?!
-        // if (err.statusCode === 404) {
-        //   // Parent does not exist, so cannot be reset
-
-        //   return callback();
-        // }
+        if (err.statusCode === 404) {
+          // Parent does not exist, so cannot be reset
+          return callback();
+        }
         return callback(err);
       }
       // Why is this so complicated? Is it not just implanting the parent document
@@ -314,7 +340,7 @@ var migrateOneType = function(type, callback) {
     'contacts_by_type',
     { key: [ type ] },
     function(err, result) {
-      console.log('Migrating all', type);
+      // console.log('Migrating all', type);
       if (err) {
         return callback(err);
       }

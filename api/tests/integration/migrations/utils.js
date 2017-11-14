@@ -102,15 +102,15 @@ function matchDbs(expected, actual) {
       return actualDoc._id === expectedDoc._id;
     });
     if(!actualDoc) {
-      errors.push('Expected doc not found in the db: ' + JSON.stringify(expectedDoc));
+      errors.push('Expected doc not found in the db: ' + JSON.stringify(expectedDoc, null, 2));
       return;
     }
     actual = _.without(actual, actualDoc);
     if (!matches(expectedDoc, actualDoc)) {
       errors.push(
         'Expected doc did not match actual: ' +
-        '\n            Expected: ' + JSON.stringify(expectedDoc) +
-        '\n            Actual:   ' + JSON.stringify(actualDoc)
+        '\n            Expected: ' + JSON.stringify(expectedDoc, null, 2) +
+        '\n            Actual:   ' + JSON.stringify(actualDoc, null, 2)
       );
     }
   });
@@ -125,13 +125,13 @@ function matchDbs(expected, actual) {
     if(found) {
       actual = _.without(actual, found);
     } else {
-      errors.push('Expected doc not found in the db: ' + JSON.stringify(expectedDoc));
+      errors.push('Expected doc not found in the db: ' + JSON.stringify(expectedDoc, null, 2));
     }
   });
 
   if(actual.length) {
     errors.push('Some unexpected docs were found in the database: ' +
-        JSON.stringify(actual));
+        JSON.stringify(actual, null, 2));
   }
 
   if(errors.length) {

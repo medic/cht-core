@@ -10,7 +10,7 @@ const getPerson = (id, callback) => {
       message: msg || 'Failed to find person.'
     });
   };
-  db.medic.get(id, (err, doc) => {
+  places.fetchHydratedDoc(id, (err, doc) => {
     if (err) {
       if (err.statusCode === 404) {
         return error();
@@ -27,6 +27,7 @@ const getPerson = (id, callback) => {
 const isAPerson = obj => obj.type === 'person';
 
 const validatePerson = (obj, callback) => {
+  // console.log('validatePerson', obj);
   const err = (msg, code) => {
     return callback({
       code: code || 400,
@@ -61,6 +62,7 @@ const validatePerson = (obj, callback) => {
  * validate_doc_update. https://github.com/medic/medic-webapp/issues/2203
  */
 const createPerson = (data, callback) => {
+  // console.log('createPerson', data);
   data.type = 'person';
   const self = module.exports;
   self.validatePerson(data, err => {
@@ -94,6 +96,7 @@ const createPerson = (data, callback) => {
 const getOrCreatePerson = (data, callback) => {
   const self = module.exports;
   if (_.isString(data)) {
+    // console.log('getOrCreatePerson getting person', data);
     // fetch
     self.getPerson(data, (err, doc) => {
       if (err) {
@@ -102,6 +105,7 @@ const getOrCreatePerson = (data, callback) => {
       callback(null, doc);
     });
   } else if (_.isObject(data) && _.isUndefined(data._rev)) {
+    // console.log('getOrCreatePerson creating person', data);
     // create and fetch
     self.createPerson(data, (err, resp) => {
       if (err) {
