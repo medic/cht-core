@@ -372,7 +372,7 @@
           "name": "on_create",
           "trigger": "assign_schedule",
           "params": "Immunizations",
-          "bool_expr": "doc.fields.weeks_since_birth"
+          "bool_expr": "(doc.contact.parent && doc.contact.parent.parent && doc.contact.parent.parent.use_cases && doc.contact.parent.parent.use_cases.split(' ').indexOf('imm') !== -1) && doc.fields.weeks_since_birth"
         }
       ],
       "validations": {
@@ -417,7 +417,7 @@
           "name": "on_create",
           "trigger": "assign_schedule",
           "params": "Immunizations",
-          "bool_expr": "doc.fields.days_since_birth"
+          "bool_expr": "(doc.contact.parent && doc.contact.parent.parent && doc.contact.parent.parent.use_cases && doc.contact.parent.parent.use_cases.split(' ').indexOf('imm') !== -1) && doc.fields.days_since_birth"
         }
       ],
       "validations": {},
@@ -510,13 +510,13 @@
           "name": "on_create",
           "trigger": "assign_schedule",
           "params": "Postnatal Care",
-          "bool_expr": "doc.fields.days_since_birth && /^[0-9]+$/.test(doc.fields.days_since_birth) && !(doc.fields.delivery_code === 'f' || doc.fields.delivery_code === 'F')"
+          "bool_expr": "(doc.contact.parent && doc.contact.parent.parent && doc.contact.parent.parent.use_cases && doc.contact.parent.parent.use_cases.split(' ').indexOf('pnc') !== -1) && doc.fields.days_since_birth && /^[0-9]+$/.test(doc.fields.days_since_birth) && !(doc.fields.delivery_code === 'f' || doc.fields.delivery_code === 'F')"
         },
         {
           "name": "on_create",
           "trigger": "assign_schedule",
           "params": "Postnatal Care for Facility Birth",
-          "bool_expr": "doc.fields.days_since_birth && /^[0-9]+$/.test(doc.fields.days_since_birth) && (doc.fields.delivery_code === 'f' || doc.fields.delivery_code === 'F')"
+          "bool_expr": "(doc.contact.parent && doc.contact.parent.parent && doc.contact.parent.parent.use_cases && doc.contact.parent.parent.use_cases.split(' ').indexOf('pnc') !== -1) && doc.fields.days_since_birth && /^[0-9]+$/.test(doc.fields.days_since_birth) && (doc.fields.delivery_code === 'f' || doc.fields.delivery_code === 'F')"
         },
         {
           "name": "on_create",
@@ -6453,6 +6453,5 @@
         }
       ]
     }
-  ],
-  "_id": "0ba96f94b93899b06a4136ab5c42cdb7"
+  ]
 }
