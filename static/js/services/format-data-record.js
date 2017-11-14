@@ -1,4 +1,5 @@
 var _ = require('underscore'),
+    moment = require('moment'),
     messages = require('../modules/message-utils');
 
 angular.module('inboxServices').factory('FormatDataRecord',
