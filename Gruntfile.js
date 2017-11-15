@@ -7,7 +7,6 @@ module.exports = function(grunt) {
   require('jit-grunt')(grunt, {
     'couch-compile': 'grunt-couch',
     'ngtemplates': 'grunt-angular-templates',
-    'notify_hooks': 'grunt-notify',
     'protractor': 'grunt-protractor-runner',
     'replace': 'grunt-text-replace',
   });
@@ -323,13 +322,6 @@ module.exports = function(grunt) {
         tasks: ['appcache', 'deploy']
       }
     },
-    notify_hooks: {
-      options: {
-        enabled: true,
-        max_jshint_notifications: 1,
-        title: 'Medic Mobile'
-      }
-    },
     notify: {
       deployed: {
         options: {
@@ -489,8 +481,6 @@ module.exports = function(grunt) {
       'static/dist/templates.js': 'static/dist/templates.js',
     },
   });
-
-  grunt.task.run('notify_hooks');
 
   // Build tasks
   grunt.registerTask('mmnpm', 'Update and patch npm dependencies', [
