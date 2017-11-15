@@ -163,11 +163,8 @@ describe('extract-person-contacts migration', function() {
       }
     };
 
-    let start;
     return utils.initDb([clinic, healthCenter, districtHospital])
-      .then(() => start = new Date().getTime())
       .then(() => utils.runMigration('extract-person-contacts'))
-      .then(() => console.log(new Date().getTime() - start))
       .then(() => utils.assertDb([districtHospitalFixed, districtHospitalContact,
                                   healthCenterFixed, healthCenterContact,
                                   clinicFixed, clinicContact]));
@@ -261,12 +258,54 @@ describe('extract-person-contacts migration', function() {
       });
   });
 
-  it('should not break if parent of contact not found', function() {
-    // given
-    return utils.initDb([{
+  // NB: these are not necessarily required. For now we are testing these, but
+  //     not extensively testing the allowing of lax data. If we come across
+  //     a partner with very lax data and we want to allow it to migrate, we
+  //     can disable validation in places.js. Alternatively, if we want to block
+  //     it more extensively we would need to at least reverse these tests to
+  //     fail instead of pass
+  describe('re: parents', () => {
+    it('should not break if parent of place not found', function() {
+      // given
+      return utils.initDb([{
+          _id: 'abc',
+          type: 'health_center',
+          name: 'Homa Bay Health',
+          parent: {
+            _id: 'def',
+            type: 'district_hospital',
+            name: 'Kisumu',
+            contact: {
+              name: 'Madam Regina',
+              phone: '+1234567890'
+            }
+          }
+        }])
+        .then(function() {
+
+          // when
+          return utils.runMigration('extract-person-contacts');
+
+        })
+        .then(function() {
+
+          // expect
+          return utils.assertDb([{
+            _id: 'abc',
+            type: 'health_center',
+            name: 'Homa Bay Health',
+          }, ]);
+
+        });
+    });
+    it('should not break if parent of place not found, with a migrated contact', () =>
+      utils.initDb([{
         _id: 'abc',
         type: 'health_center',
         name: 'Homa Bay Health',
+        contact: {
+          _id: 'contact-id'
+        },
         parent: {
           _id: 'def',
           type: 'district_hospital',
@@ -278,20 +317,17 @@ describe('extract-person-contacts migration', function() {
         }
       }])
       .then(function() {
-
-        // when
         return utils.runMigration('extract-person-contacts');
-
       })
       .then(function() {
-
-        // expect
         return utils.assertDb([{
           _id: 'abc',
           type: 'health_center',
           name: 'Homa Bay Health',
-        }, ]);
-
-      });
+          contact: {
+            _id: 'contact-id'
+          }
+        }]);
+      }));
   });
 });

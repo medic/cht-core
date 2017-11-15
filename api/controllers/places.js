@@ -59,6 +59,10 @@ const fetchHydratedDoc = (id, callback) => {
       return callback(err);
     }
 
+    if (!lineage.rows.length) {
+      return callback({statusCode: 404});
+    }
+
     // console.log('WE LINEAGED NOW SON');
     // console.log(JSON.stringify(lineage, null, 2));
 

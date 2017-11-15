@@ -224,7 +224,6 @@ var createPerson = function(id, callback) {
  */
 var updateParents = function(id, callback) {
   var checkParent = function(facility, callback) {
-    console.log('checking parent for', facility._id);
     if (!facility.parent) {
       // console.log('skipping');
       return callback({ skip: true });
@@ -289,8 +288,6 @@ var updateParents = function(id, callback) {
         }
         return callback(err);
       }
-      // Why is this so complicated? Is it not just implanting the parent document
-      // into the outer document?
       places.updatePlace(facilityId, { parent: parentId },
         function(err) {
           if (err) {
@@ -340,7 +337,6 @@ var migrateOneType = function(type, callback) {
     'contacts_by_type',
     { key: [ type ] },
     function(err, result) {
-      // console.log('Migrating all', type);
       if (err) {
         return callback(err);
       }
