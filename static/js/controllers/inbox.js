@@ -126,7 +126,7 @@ var feedback = require('../modules/feedback'),
       $scope.baseUrl = Location.path;
       $scope.enketoStatus = { saving: false };
 
-      if ($window.medicmobile_android) {
+      if ($window.medicmobile_android && typeof $window.medicmobile_android.getAppVersion === 'function') {
         $scope.android_app_version = $window.medicmobile_android.getAppVersion();
       }
 

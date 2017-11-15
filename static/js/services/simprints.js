@@ -39,7 +39,7 @@ angular.module('inboxServices').service('Simprints',
       enabled: function() {
         return !!(
           $window.medicmobile_android &&
-          $window.medicmobile_android.simprints_available &&
+          typeof $window.medicmobile_android.simprints_available === 'function' &&
           $window.medicmobile_android.simprints_available()
         );
       },

@@ -101,12 +101,11 @@ function TimerAnimation(canvas, canvasW, canvasH, duration) {
     var audio = (function() {
         var cached;
 
-        if(!isAndroid()) {
-            cached = loadSound();
-        }
+        var androidSoundSupport = window.medicmobile_android &&
+                typeof window.medicmobile_android.playAlert === 'function';
 
-        function isAndroid() {
-            return typeof medicmobile_android !== 'undefined';
+        if(!androidSoundSupport) {
+            cached = loadSound();
         }
 
         function loadSound() {
@@ -115,7 +114,7 @@ function TimerAnimation(canvas, canvasW, canvasH, duration) {
 
         return {
             play: function() {
-                if(isAndroid()) {
+                if(androidSoundSupport) {
                     medicmobile_android.playAlert();
                 } else {
                     cached.play();

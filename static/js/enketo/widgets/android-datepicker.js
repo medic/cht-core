@@ -60,7 +60,7 @@ define( function( require, exports, module ) {
     Androiddatepicker.prototype.constructor = Androiddatepicker;
 
     Androiddatepicker.prototype._init = function() {
-        if ( !window.medicmobile_android || !window.medicmobile_android.datePicker ) {
+        if ( !window.medicmobile_android || typeof window.medicmobile_android.datePicker !== 'function' ) {
             return;
         }
 
