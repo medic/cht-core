@@ -320,6 +320,12 @@ var getOldestReport = function(reports) {
   return result;
 };
 
+var use_cases = {};
+use_cases.anc = isCoveredByUseCaseInLineage(lineage, 'anc');
+use_cases.pnc = isCoveredByUseCaseInLineage(lineage, 'pnc');
+use_cases.imm = isCoveredByUseCaseInLineage(lineage, 'imm');
+context.use_cases = use_cases;
+
 if (contact.type === 'person') {
   fields = [
     { label: 'patient_id', value: contact.patient_id, width: 4 },
@@ -369,10 +375,14 @@ if (contact.type === 'person') {
         }
 
         pastPregnancies.fields.push(
-          { label: 'contact.profile.delivery_code.' + getDeliveryCode(relevantDelivery), value: birthdate, filter: 'relativeDay', width: 4 },
-          { label: 'contact.profile.anc_visit', value: 'contact.profile.visits.of', translate: true, context: { count: visitsANC, total: 4 }, width: 4 },
-          { label: 'contact.profile.pnc_visit', value: 'contact.profile.visits.of', translate: true, context: { count: visitsPNC, total: 4 }, width: 4 }
+          { label: 'contact.profile.delivery_code.' + getDeliveryCode(relevantDelivery), value: birthdate, filter: 'relativeDay', width: 6 },
+          { label: 'contact.profile.anc_visit', value: 'contact.profile.visits.of', translate: true, context: { count: visitsANC, total: 4 }, width: 3 }
         );
+        if(use_cases.pnc){
+          pastPregnancies.fields.push(
+            { label: 'contact.profile.pnc_visit', value: 'contact.profile.visits.of', translate: true, context: { count: visitsPNC, total: 4 }, width: 3 }
+          );
+        }
         return;
       }
       
@@ -421,7 +431,7 @@ if (contact.type === 'person') {
   var newestPNCperiod = getPNCperiod(newestDelivery);
   var birthdate = getBirthDate(newestDelivery);
     
-  if (isCoveredByUseCaseInLineage(lineage, 'pnc') && now >= newestPNCperiod.start && now <= newestPNCperiod.end) {
+  if (use_cases.pnc && now >= newestPNCperiod.start && now <= newestPNCperiod.end) {
     context.in_pnc_period = true;
     var highRiskPostnatal = isHighRiskPostnatal(reports, newestPNCperiod);
     var relevantVisitsPNC = reports.filter(function(report2) {
@@ -452,7 +462,7 @@ if (contact.type === 'person') {
   if (pastPregnancies.fields.length > 0) {
     cards.push(pastPregnancies);
   }
-  if (typeof ageInMonths === 'number' && ageInMonths < 144 && isCoveredByUseCaseInLineage(lineage, 'imm')) {
+  if (typeof ageInMonths === 'number' && ageInMonths < 144 && use_cases.imm) {
     var imm_card = {
       label: 'contact.profile.immunizations',
       fields: []
@@ -495,13 +505,6 @@ if (contact.type === 'person') {
     fields.push({ label: 'contact.parent', value: lineage, filter: 'lineage' });
   }
 }
-
-var use_cases = {};
-use_cases.anc = isCoveredByUseCaseInLineage(lineage, 'anc');
-use_cases.pnc = isCoveredByUseCaseInLineage(lineage, 'pnc');
-use_cases.imm = isCoveredByUseCaseInLineage(lineage, 'imm');
-
-context.use_cases = use_cases;
 
 var result = {
   fields: fields,
