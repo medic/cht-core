@@ -327,7 +327,9 @@ var getOldestReport = function(reports) {
 };
 
 var isReportValid = function(report){
-  if (report && report.errors && report.errors.length === 0) {
+  // valid XForms won't have `errors` field
+  // valid JSON forms will have empty array `errors:[]`  
+  if (report && (!report.errors || (report.errors && report.errors.length === 0))) {
     return true;
   }
   else {
