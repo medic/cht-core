@@ -204,6 +204,7 @@ var isHighRiskPostnatal = function (reports, period) {
   var highRisk = false;
   if (period && period.start && period.end) {
     reports.forEach(function(report) {
+      if (!isReportValid(report)) { return; }
       if (isNonFacilityDelivery(report) 
           || (report.form.toUpperCase() === 'F' && report.reported_date >= period.end.getTime() && report.reported_date <= period.end.getTime())
           || (report.form === 'postnatal_visit' && report.fields && (report.fields.risk_factors || report.fields.danger_signs))) {
@@ -268,9 +269,11 @@ var isSingleDose = function(name) {
 };
 
 // from rules.nools.js https://github.com/medic/medic-projects/blob/4dafaeed547ea61d362662f136e1e1f7c7335e9c/standard/rules.nools.js#L219-L229
+// modified to exclude invalid reports, which is common with SMS reports
 var countReportsSubmittedInWindow = function(reports, form, start, end) {
   var reportsFound = 0;
   reports.forEach(function(report) {
+    if (!isReportValid(report)) { return; }
     if (form.indexOf(report.form) >= 0) {
       if (report.reported_date >= start && report.reported_date <= end) {
         reportsFound++;
@@ -281,9 +284,11 @@ var countReportsSubmittedInWindow = function(reports, form, start, end) {
 };
 
 // from nootils.js: https://github.com/medic/medic-webapp/blob/1cc25f2aeab60258065329bd1365ee1d316a1f50/static/js/modules/nootils.js
+// modified to exclude invalid reports, which is common with SMS reports
 var isFormSubmittedInWindow = function(reports, form, start, end, count) {
   var result = false;
   reports.forEach(function(report) {
+    if (!isReportValid(report)) { return; }
     if (!result && report.form === form) {
       if (report.reported_date >= start && report.reported_date <= end) {
         if (!count ||
@@ -313,11 +318,21 @@ var addDate = function(date, days) {
 var getOldestReport = function(reports) {
   var result;
   reports.forEach(function(report) {
+    if (!isReportValid(report)) { return; }
     if (!result || report.reported_date < result.reported_date) {
       result = report;
     }
   });
   return result;
+};
+
+var isReportValid = function(report){
+  if (report && report.errors && report.errors.length === 0) {
+    return true;
+  }
+  else {
+    return false;
+  }
 };
 
 var use_cases = {};
@@ -350,6 +365,7 @@ if (contact.type === 'person') {
   }
 
   reports.forEach(function(report) {
+    if (!isReportValid(report)) { return; }
     if (report.form === 'pregnancy' || report.form === 'P') {
       var subsequentDeliveries = reports.filter(function(report2) {
         return (report2.form === 'delivery' || report2.form === 'D') && report2.reported_date > report.reported_date;
