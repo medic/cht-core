@@ -71,7 +71,7 @@ var utils = require('kujua-utils');
   };
 
   var getDataUsage = function() {
-    if (window.medicmobile_android && window.medicmobile_android.getDataUsage) {
+    if (window.medicmobile_android && typeof window.medicmobile_android.getDataUsage === 'function') {
       return JSON.parse(window.medicmobile_android.getDataUsage());
     }
   };

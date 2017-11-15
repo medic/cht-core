@@ -38,7 +38,7 @@ angular.module('inboxControllers').controller('AboutCtrl',
     };
     $scope.$watch('enableDebugModel.val', Debug.set);
 
-    if (window.medicmobile_android && window.medicmobile_android.getDataUsage) {
+    if (window.medicmobile_android && typeof window.medicmobile_android.getDataUsage === 'function') {
       $scope.androidDataUsage = JSON.parse(window.medicmobile_android.getDataUsage());
 
       var dataUsageUpdate = $interval(function() {
