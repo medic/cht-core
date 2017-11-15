@@ -21,8 +21,6 @@ const minify = place => {
     minified = minified.parent;
     place = place.parent;
   }
-  // console.log('JUST MINIFIED BRO');
-  // console.log(JSON.stringify(result, null, 2));
   return result;
 };
 
@@ -63,8 +61,6 @@ const fetchHydratedDoc = (id, callback) => {
       return callback({statusCode: 404});
     }
 
-    // console.log('WE LINEAGED NOW SON');
-    // console.log(JSON.stringify(lineage, null, 2));
 
     const contactIds = lineage.rows
       .map(row => row.doc && row.doc.contact && row.doc.contact._id)
@@ -77,12 +73,7 @@ const fetchHydratedDoc = (id, callback) => {
       const resultRow = lineage.rows.shift();
       const result = resultRow && resultRow.doc;
 
-      // console.log('PRE BIND PARENTS');
-      // console.log(JSON.stringify(result, null, 2));
       bindParents(lineage, result);
-
-      // console.log('ALL FETCHED BRO');
-      // console.log(JSON.stringify(result, null, 2));
 
       callback(null, result);
     });
@@ -255,11 +246,6 @@ const updatePlace = (id, data, callback) => {
     });
   }
   self.getPlace(id, (err, doc) => {
-    // console.log('UPDATE PLACE');
-    // console.log(JSON.stringify(doc, null, 2));
-    // console.log('AND MY AX!');
-    // console.log(JSON.stringify(data, null, 2));
-
     if (err) {
       return callback(err);
     }
@@ -287,19 +273,12 @@ const updatePlace = (id, data, callback) => {
       });
     }
     series.push(cb => {
-      // console.log('What we got pre-validation');
-      // console.log(JSON.stringify(place, null, 2));
       self._validatePlace(place, err => {
         if (err) {
           return cb(err);
         }
 
-        // console.log('contact MAX');
-        // console.log(JSON.stringify(place.contact, null, 2));
         place.contact = minify(place.contact);
-        // console.log('contact MIN');
-        // console.log(JSON.stringify(place.contact, null, 2))
-
         place.parent = minify(place.parent);
 
         db.medic.insert(place, (err, resp) => {
