@@ -118,7 +118,7 @@ exports['validatePlace does not return error if national office is missing paren
 };
 
 exports['getPlace returns custom message on 404 errors.'] = test => {
-  sinon.stub(db.medic, 'view').callsArgWith(3, {statusCode: 404});
+  sinon.stub(db.medic, 'view').callsArgWith(3, null, {total_rows: 1000, offset: 0, rows: []});
   controller.getPlace('x', err => {
     test.equal(err.message, 'Failed to find place.');
     test.done();
@@ -206,7 +206,7 @@ exports['createPlaces supports objects with name and right type.'] = test => {
       return cb(null, {id: 'ghi'});
     }
   });
-  sinon.stub(controller, '_fetchHydratedDoc').callsFake((id, cb) => {
+  sinon.stub(controller, 'fetchHydratedDoc').callsFake((id, cb) => {
     if (id === 'abc') {
       return cb(null, {
         _id: 'abc',
@@ -268,7 +268,7 @@ exports['createPlaces creates contacts'] = test => {
       type: 'person'
     });
   });
-  sinon.stub(controller, '_fetchHydratedDoc').callsFake((id, cb) => {
+  sinon.stub(controller, 'fetchHydratedDoc').callsFake((id, cb) => {
     return cb(null, {
       _id: 'ad06d137',
       name: 'CHP Branch One',
@@ -294,7 +294,7 @@ exports['createPlaces supports parents defined as uuids.'] = test => {
     type: 'health_center',
     parent: 'ad06d137'
   };
-  sinon.stub(controller, '_fetchHydratedDoc').callsFake((id, cb) => {
+  sinon.stub(controller, 'fetchHydratedDoc').callsFake((id, cb) => {
     return cb(null, {
       _id: 'ad06d137',
       name: 'CHP Branch One',
@@ -453,4 +453,14 @@ exports['minify removes all unnecessary data'] = test => {
   const actual = controller.minify(given);
   test.deepEqual(actual, expected);
   test.done();
+};
+
+exports['fetchHydratedDoc returns a 404 if the document is not found'] = test => {
+  sinon.stub(db.medic, 'view').callsArgWith(3, null, {total_rows: 1000, offset: 0, rows: []});
+  controller.fetchHydratedDoc('non-existent-id', err => {
+    console.log(err);
+    test.ok(err);
+    test.equal(404, err.statusCode);
+    test.done();
+  });
 };

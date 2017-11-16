@@ -208,8 +208,20 @@ var createPerson = function(id, callback) {
  */
 var updateParents = function(id, callback) {
   var checkParent = function(facility, callback) {
-    if (!facility.parent || (Object.keys(facility.parent).length === 0)) {
+    if (!facility.parent) {
       return callback({ skip: true });
+    }
+
+    // There have been cases of weird {} parents. Remove these, then skip
+    if (Object.keys(facility.parent).length === 0) {
+      delete facility.parent;
+      return db.medic.insert(facility, err => {
+        if (err) {
+          callback(err);
+        } else {
+          callback({ skip: true });
+        }
+      });
     }
 
     if (!facility.parent._id) {
@@ -221,15 +233,7 @@ var updateParents = function(id, callback) {
       return callback({ skip: true });
     }
 
-    // Check the parent exists before doing anything crazy.
-    db.medic.get(facility.parent._id, function(err) {
-      if (err) {
-        if (err.statusCode !== 404) {
-          return callback(err);
-        }
-      }
-      return callback();
-    });
+    callback();
   };
 
   var removeParent = function(facility, callback) {

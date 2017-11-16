@@ -10,7 +10,7 @@ const getPerson = (id, callback) => {
       message: msg || 'Failed to find person.'
     });
   };
-  db.medic.get(id, (err, doc) => {
+  places.fetchHydratedDoc(id, (err, doc) => {
     if (err) {
       if (err.statusCode === 404) {
         return error();

@@ -6,16 +6,20 @@ const _ = require('underscore'),
       PLACE_EDITABLE_FIELDS = ['name', 'parent', 'contact', 'place_id'],
       PLACE_TYPES = ['national_office', 'district_hospital', 'health_center', 'clinic'];
 
-const minify = contact => {
-  if (!contact) {
-    return contact;
+// Minifies things you would attach to another doc:
+//   doc.parent = minify(doc.parent)
+// Not:
+//   minify(doc)
+const minify = place => {
+  if (!place || !place._id) {
+    return place;
   }
-  const result = { _id: contact._id };
+  const result = { _id: place._id };
   let minified = result;
-  while(contact.parent) {
-    minified.parent = { _id: contact.parent._id };
+  while(place.parent && place.parent._id) {
+    minified.parent = { _id: place.parent._id };
     minified = minified.parent;
-    contact = contact.parent;
+    place = place.parent;
   }
   return result;
 };
@@ -36,7 +40,7 @@ const bindContacts = (lineage, contacts) => {
 
 const bindParents = (lineage, result) => {
   let current = result;
-  while (current) {
+  while (current && current.parent && current.parent._id) {
     const row = lineage.rows.shift();
     current.parent = row && row.doc;
     current = current.parent;
@@ -52,6 +56,12 @@ const fetchHydratedDoc = (id, callback) => {
     if (err) {
       return callback(err);
     }
+
+    if (!lineage.rows.length) {
+      return callback({statusCode: 404});
+    }
+
+
     const contactIds = lineage.rows
       .map(row => row.doc && row.doc.contact && row.doc.contact._id)
       .filter(id => !!id);
@@ -62,14 +72,16 @@ const fetchHydratedDoc = (id, callback) => {
       bindContacts(lineage, contacts);
       const resultRow = lineage.rows.shift();
       const result = resultRow && resultRow.doc;
+
       bindParents(lineage, result);
+
       callback(null, result);
     });
   });
 };
 
 const getPlace = (id, callback) => {
-  module.exports._fetchHydratedDoc(id, (err, doc) => {
+  module.exports.fetchHydratedDoc(id, (err, doc) => {
     if (err) {
       if (err.statusCode === 404) {
         err.message  = 'Failed to find place.';
@@ -93,6 +105,9 @@ const isAPlace = place => PLACE_TYPES.indexOf(place.type) !== -1;
  * database if parent exists because the entire child-parent structure create
  * might be requested in one API call. Just checking `type` field values and
  * some required fields.
+ *
+ * NB: non-hydrated places may not be valid. You may wish to use
+ *     fetchHydratedDoc().
  */
 const validatePlace = (place, callback) => {
   const err = (msg, code) => {
@@ -159,11 +174,11 @@ const createPlace = (place, callback) => {
     }
     if (place.contact) {
       // also validates contact if creating
-      people.getOrCreatePerson(place.contact, (err, doc) => {
+      people.getOrCreatePerson(place.contact, (err, person) => {
         if (err) {
           return callback(err);
         }
-        place.contact = minify(doc);
+        place.contact = minify(person);
         db.medic.insert(place, callback);
       });
     } else {
@@ -237,22 +252,22 @@ const updatePlace = (id, data, callback) => {
     place = self._updateFields(doc, data);
     if (data.contact) {
       series.push(cb => {
-        people.getOrCreatePerson(data.contact, (err, doc) => {
+        people.getOrCreatePerson(data.contact, (err, contact) => {
           if (err) {
             return cb(err);
           }
-          place.contact = minify(doc);
+          place.contact = contact;
           cb();
         });
       });
     }
     if (data.parent) {
       series.push(cb => {
-        self.getOrCreatePlace(data.parent, (err, doc) => {
+        self.getOrCreatePlace(data.parent, (err, parent) => {
           if (err) {
             return cb(err);
           }
-          place.parent = minify(doc);
+          place.parent = parent;
           cb();
         });
       });
@@ -262,6 +277,10 @@ const updatePlace = (id, data, callback) => {
         if (err) {
           return cb(err);
         }
+
+        place.contact = minify(place.contact);
+        place.parent = minify(place.parent);
+
         db.medic.insert(place, (err, resp) => {
           if (err) {
             return cb(err);
@@ -313,9 +332,9 @@ module.exports._createPlace = createPlace;
 module.exports._createPlaces = createPlaces;
 module.exports._updateFields = updateFields;
 module.exports._validatePlace = validatePlace;
-module.exports._fetchHydratedDoc = fetchHydratedDoc;
 module.exports.createPlace = createPlaces;
 module.exports.getPlace = getPlace;
 module.exports.updatePlace = updatePlace;
 module.exports.getOrCreatePlace = getOrCreatePlace;
 module.exports.minify = minify;
+module.exports.fetchHydratedDoc = fetchHydratedDoc;

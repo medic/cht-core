@@ -59,7 +59,7 @@ exports['validatePerson returns error if name is an object.'] = test => {
 };
 
 exports['getPerson returns custom message on 404 errors.'] = test => {
-  sinon.stub(db.medic, 'get').callsArgWith(1, {statusCode: 404});
+  sinon.stub(places, 'fetchHydratedDoc').callsArgWith(1, {statusCode: 404});
   controller.getPerson('x', err => {
     test.equal(err.message, 'Failed to find person.');
     test.done();
@@ -67,7 +67,7 @@ exports['getPerson returns custom message on 404 errors.'] = test => {
 };
 
 exports['getPerson returns not found message if doc is wrong type.'] = test => {
-  sinon.stub(db.medic, 'get').callsArgWith(1, null, {type: 'clinic'});
+  sinon.stub(places, 'fetchHydratedDoc').callsArgWith(1, null, {type: 'clinic'});
   controller.getPerson('x', err => {
     test.equal(err.message, 'Failed to find person.');
     test.done();
@@ -75,7 +75,7 @@ exports['getPerson returns not found message if doc is wrong type.'] = test => {
 };
 
 exports['getPerson succeeds and returns doc when person type.'] = test => {
-  sinon.stub(db.medic, 'get').callsArgWith(1, null, {type: 'person'});
+  sinon.stub(places, 'fetchHydratedDoc').callsArgWith(1, null, {type: 'person'});
   controller.getPerson('x', (err, doc) => {
     test.equal(err, void 0);
     test.deepEqual(doc, { type: 'person' });
