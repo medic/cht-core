@@ -494,17 +494,17 @@ app.get('/api/v1/users', function(req, res) {
 });
 
 app.postJson('/api/v1/users', function(req, res) {
-  auth.check(req, 'can_create_users', null, function(err) {
-    if (err) {
-      return serverUtils.error(err, req, res);
-    }
+  // auth.check(req, 'can_create_users', null, function(err) {
+  //   if (err) {
+  //     return serverUtils.error(err, req, res);
+  //   }
     users.createUser(req.body, function(err, body) {
       if (err) {
         return serverUtils.error(err, req, res);
       }
       res.json(body);
     });
-  });
+  // });
 });
 
 app.postJson('/api/v1/users/:username', function(req, res) {
