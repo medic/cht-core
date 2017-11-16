@@ -11,7 +11,7 @@ var RAW_SCHEMAS = [
     type: 'district_hospital',
     isPlace: true,
     schema: {
-      icon: 'district_hospital',
+      icon: 'medic-district-hospital',
       addButtonLabel: 'contact.type.district_hospital.new',
       label: 'contact.type.district_hospital',
       pluralLabel: 'contact.type.district_hospital.plural',
@@ -35,7 +35,7 @@ var RAW_SCHEMAS = [
     type: 'health_center',
     isPlace: true,
     schema: {
-      icon: 'health_center',
+      icon: 'medic-health-center',
       addButtonLabel: 'contact.type.health_center.new',
       label: 'contact.type.health_center',
       pluralLabel: 'contact.type.health_center.plural',
@@ -63,7 +63,7 @@ var RAW_SCHEMAS = [
     type: 'clinic',
     isPlace: true,
     schema: {
-      icon: 'clinic',
+      icon: 'medic-clinic',
       addButtonLabel: 'contact.type.clinic.new',
       label: 'contact.type.clinic',
       pluralLabel: 'contact.type.clinic.plural',
@@ -93,7 +93,7 @@ var RAW_SCHEMAS = [
     type: 'person',
     isPlace: false,
     schema: {
-      icon: 'person',
+      icon: 'medic-person',
       addButtonLabel: 'contact.type.person.new',
       label: 'contact.type.person',
       pluralLabel: 'contact.type.person.plural',
