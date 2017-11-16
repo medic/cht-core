@@ -48,7 +48,7 @@ describe('ContactSchema service', function() {
           label: 'contact.type.person',
           pluralLabel: 'contact.type.person.plural',
           addButtonLabel: 'contact.type.person.new',
-          icon: 'person',
+          icon: 'medic-person',
           fields: {
             name: {
               type: 'string',
@@ -83,7 +83,7 @@ describe('ContactSchema service', function() {
           label: 'contact.type.district_hospital',
           pluralLabel: 'contact.type.district_hospital.plural',
           addButtonLabel: 'contact.type.district_hospital.new',
-          icon: 'district_hospital',
+          icon: 'medic-district-hospital',
           fields: {
             name: {
               type: 'string',
@@ -112,7 +112,7 @@ describe('ContactSchema service', function() {
           label: 'contact.type.health_center',
           pluralLabel: 'contact.type.health_center.plural',
           addButtonLabel: 'contact.type.health_center.new',
-          icon: 'health_center',
+          icon: 'medic-health-center',
           fields: {
             name: {
               type: 'string',
@@ -145,7 +145,7 @@ describe('ContactSchema service', function() {
           label: 'contact.type.clinic',
           pluralLabel: 'contact.type.clinic.plural',
           addButtonLabel: 'contact.type.clinic.new',
-          icon: 'clinic',
+          icon: 'medic-clinic',
           fields: {
             name: {
               type: 'string',

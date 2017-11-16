@@ -147,7 +147,7 @@
 
           <a class="mm-icon mm-icon-inverse mm-icon-caption" ng-show="actionBar.right.selected[0].type !== 'person'" ui-sref="contacts.addChild({ type: 'person', parent_id: actionBar.right.selected[0]._id })" mm-auth="can_create_people">
             <span class="fa-stack">
-              <i ng-bind-html="'person' | resourceIcon"></i>
+              <i ng-bind-html="'medic-person' | resourceIcon"></i>
               <i class="fa fa-plus fa-stack-1x"></i>
             </span>
             <p translate>action.person.add</p>
