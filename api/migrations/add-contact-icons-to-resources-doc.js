@@ -4,10 +4,10 @@ const fs = require('fs'),
       db = require('../db');
 
 const resources = [
-  { name: 'person', file: 'person.svg', type: 'image/svg+xml' },
-  { name: 'clinic', file: 'clinic.svg', type: 'image/svg+xml' },
-  { name: 'health_center', file: 'health_center.svg', type: 'image/svg+xml' },
-  { name: 'district_hospital', file: 'district_hospital.svg', type: 'image/svg+xml' }
+  { name: 'medic-person', file: 'medic-person.svg', type: 'image/svg+xml' },
+  { name: 'medic-clinic', file: 'medic-clinic.svg', type: 'image/svg+xml' },
+  { name: 'medic-health-center', file: 'medic-health-center.svg', type: 'image/svg+xml' },
+  { name: 'medic-district-hospital', file: 'medic-district-hospital.svg', type: 'image/svg+xml' }
 ];
 
 module.exports = {
