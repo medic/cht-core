@@ -28,6 +28,10 @@ var isDbAdmin = function(userCtx) {
   return hasRole(userCtx, '_admin');
 };
 
+var isNationalAdmin = function(userCtx) {
+  return hasRole(userCtx, 'national_admin');
+};
+
 var hasPermission = function(userCtx, permission) {
   var perm = _.findWhere(config.get('permissions'), { name: permission });
   if (!perm) {
@@ -63,6 +67,14 @@ module.exports = {
       }
 
       callback(null, isDbAdmin(userCtx));
+    });
+  },
+  canAccessAllData: function(req, callback) {
+    module.exports.getUserCtx(req, (err, userCtx) => {
+      if (err) {
+        return callback(err);
+      }
+      callback(null, isDbAdmin(userCtx) || isNationalAdmin(userCtx));
     });
   },
   hasAllPermissions: function(userCtx, permissions) {

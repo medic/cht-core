@@ -693,8 +693,40 @@ app.put(auditPath, audit);
 app.post(auditPath, audit);
 app.delete(auditPath, audit);
 
-app.all('*', function(req, res) {
+// let anyone access session information
+app.all('/_session', (req, res) => {
   proxy.web(req, res);
+});
+
+// public assets - allow anyone get
+app.get(`${appPrefix}static/dist/*`, (req, res) => {
+  proxy.web(req, res);
+});
+
+// accessing own meta database
+app.all('/medic-user-:user-meta*', (req, res) => {
+  auth.getUserCtx(req, (err, userCtx) => {
+    if (err) {
+      return serverUtils.error(err, req, res);
+    }
+    if (userCtx.name === req.params.user) {
+      return proxy.web(req, res);
+    }
+    serverUtils.error({ code: 403, message: 'Forbidden' }, req, res);
+  });
+});
+
+// unspecified endpoint - only let full access users through
+app.all('*', (req, res) => {
+  auth.canAccessAllData(req, (err, allowed) => {
+    if (err) {
+      return serverUtils.error(err, req, res);
+    }
+    if (allowed) {
+      return proxy.web(req, res);
+    }
+    serverUtils.error({ code: 403, message: 'Forbidden' }, req, res);
+  });
 });
 
 proxy.on('error', function(err, req, res) {
