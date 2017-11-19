@@ -1,5 +1,11 @@
 # Medic Mobile Release Notes
 
+## 2.15.0
+
+### Features
+
+- [#3627](https://github.com/medic/medic-webapp/issues/3627): Generate scheduled messages just-in-time so changes to contacts are reflected in yet to be sent messages. NB: This feature only works with the `translation_key` configuration and not with the deprecated `messages` array so now is a good time to update your configuration.
+
 ## 2.14.0
 
 _TBD_
