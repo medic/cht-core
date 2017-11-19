@@ -38,6 +38,9 @@ exports.logger = {
     }
 };
 
+
+// TODO move these 5 functions in to webapp!
+
 /* poorly named */
 exports.isUserAdmin = function(userCtx) {
     return exports.isUserNationalAdmin(userCtx) || exports.isDbAdmin(userCtx);
