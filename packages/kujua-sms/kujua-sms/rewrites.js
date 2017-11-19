@@ -35,23 +35,5 @@ exports.rules = [
             limit: ':limit'
         },
         method: 'GET'
-    },
-    {
-        from: '/duplicate_count/:form',
-        to:'_list/duplicate_form_submissions_with_count/duplicate_form_submissions',
-        query: {
-            group:'true',
-            startkey: [':form'],
-            endkey: [':form',{}]
-        }
-    },
-    {
-        from:'/duplicate_records/:form',
-        to:'_list/duplicate_individual_form_submissions/duplicate_form_submissions',
-        query:{
-            reduce: 'false',
-            startkey: [':form'],
-            endkey: [':form',{}]
-        }
     }
 ];
