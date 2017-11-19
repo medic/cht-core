@@ -271,14 +271,9 @@ exports['sendReminders calls sendReminder for each clinic'] = function(test) {
 };
 
 exports['sendReminder saves doc with added task to clinic'] = function(test) {
-    var db = {
-            medic: {
-                insert: function() {}
-            }
-        },
-        now = moment(),
-        saveDoc = sinon.stub(db.medic, 'insert').callsArgWithAsync(1, null);
-
+    const db = { medic: { insert: function() {} } };
+    const now = moment();
+    const saveDoc = sinon.stub(db.medic, 'insert').callsArgWithAsync(1, null);
     reminders.sendReminder({
         clinic: {
             contact: {
@@ -294,11 +289,11 @@ exports['sendReminder saves doc with added task to clinic'] = function(test) {
     }, function() {
         test.ok(saveDoc.called);
 
-        var clinic = saveDoc.getCall(0).args[0];
+        const clinic = saveDoc.getCall(0).args[0];
         test.ok(clinic.tasks);
 
-        var task = _.first(clinic.tasks);
-        var message = _.first(task.messages);
+        const task = _.first(clinic.tasks);
+        const message = _.first(task.messages);
         test.equals(message.to, '+1234');
         const year = now.format('YYYY');
         const week = now.format('w');

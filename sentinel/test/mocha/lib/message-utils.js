@@ -23,11 +23,11 @@ describe('messageUtils', () => {
     done();
   });
 
-  describe('getRecipient', () => {
-    it('is undefined if no doc is passed', () => {
+  describe('_getRecipient', () => {
+    it('returns undefined if no doc is passed', () => {
       should.not.exist(utils._getRecipient());
     });
-    it('is doc.from if no recipient', () => {
+    it('returns doc.from if no recipient', () => {
       utils._getRecipient({from: 'foo'})
         .should.equal('foo');
     });
@@ -98,7 +98,7 @@ describe('messageUtils', () => {
       utils._getRecipient({foo: {bar: {smang: 'baz'}}}, 'foo.bar.smang')
         .should.equal('baz');
     });
-    it('is doc.from if the recipient cannot be resolved', () => {
+    it('returns doc.from if the recipient cannot be resolved', () => {
       utils._getRecipient({from: 'foo'}, 'a-recipient')
         .should.equal('foo');
     });
@@ -106,7 +106,7 @@ describe('messageUtils', () => {
 
   describe('generate', () => {
 
-    it('adds uuid', done => {
+    it('adds uuid', () => {
       sinon.stub(uuid, 'v4').returns('some-uuid');
       const config = {};
       const translate = null;
@@ -119,12 +119,11 @@ describe('messageUtils', () => {
       expect(message.message).to.equal('xxx');
       expect(message.to).to.equal('+1234');
       expect(message.uuid).to.equal('some-uuid');
-      done();
     });
 
     describe('truncation', () => {
 
-      it('does not truncate short sms', done => {
+      it('does not truncate short sms', () => {
         const sms = generateMessage(MAX_GSM_LENGTH);
         const config = { multipart_sms_limit: 10 };
         const translate = null;
@@ -135,10 +134,9 @@ describe('messageUtils', () => {
         expect(messages.length).to.equal(1);
         expect(messages[0].message).to.equal(sms);
         expect(messages[0].original_message).to.equal(undefined);
-        done();
       });
 
-      it('does not truncate short unicode sms', done => {
+      it('does not truncate short unicode sms', () => {
         const sms = generateMessage(MAX_UNICODE_LENGTH, true);
         const config = { multipart_sms_limit: 10 };
         const translate = null;
@@ -149,10 +147,9 @@ describe('messageUtils', () => {
         expect(messages.length).to.equal(1);
         expect(messages[0].message).to.equal(sms);
         expect(messages[0].original_message).to.equal(undefined);
-        done();
       });
 
-      it('truncates long sms', done => {
+      it('truncates long sms', () => {
         const sms = generateMessage(1000);
         const expected = sms.substr(0, 150) + '...';
         const config = { multipart_sms_limit: 1 };
@@ -164,10 +161,9 @@ describe('messageUtils', () => {
         expect(messages.length).to.equal(1);
         expect(messages[0].message).to.equal(expected);
         expect(messages[0].original_message).to.equal(sms);
-        done();
       });
 
-      it('truncates long unicode sms', done => {
+      it('truncates long unicode sms', () => {
         const sms = generateMessage(1000, true);
         const expected = sms.substr(0, 64) + '...';
         const config = { multipart_sms_limit: 1 };
@@ -179,7 +175,6 @@ describe('messageUtils', () => {
         expect(messages.length).to.equal(1);
         expect(messages[0].message).to.equal(expected);
         expect(messages[0].original_message).to.equal(sms);
-        done();
       });
 
     });
@@ -188,79 +183,72 @@ describe('messageUtils', () => {
 
   describe('template', () => {
 
-    it('plain text', done => {
+    it('plain text', () => {
       const actual = utils.template({}, null, {}, { message: 'hello' });
       expect(actual).to.equal('hello');
-      done();
     });
 
-    it('variables', done => {
+    it('variables', () => {
       const actual = utils.template({}, null, { name: 'george' }, { message: 'hello {{name}}' });
       expect(actual).to.equal('hello george');
-      done();
     });
 
     describe('dates', () => {
 
-      it('string', done => {
+      it('string', () => {
         const date = '2016-03-06T03:45:41.000Z';
         const input = '{{#date}}{{reported_date}}{{/date}}';
         const doc = { reported_date: date };
         const config = { date_format: 'DD-MMM-YYYY' };
         const actual = utils.template(config, null, doc, { message: input });
         expect(actual).to.equal(moment(date).format(config.date_format));
-        done();
       });
 
-      it('integer', done => {
+      it('integer', () => {
         const date = 1457235941000;
         const input = '{{#date}}{{reported_date}}{{/date}}';
         const doc = { reported_date: date };
         const config = { date_format: 'DD-MMM-YYYY' };
         const actual = utils.template(config, null, doc, { message: input });
         expect(actual).to.equal(moment(date).format(config.date_format));
-        done();
       });
 
-      it('Date object', done => {
+      it('Date object', () => {
         const date = 1457235941000;
         const input = '{{#date}}Date({{reported_date}}){{/date}}';
         const doc = { reported_date: date };
         const config = { date_format: 'DD-MMM-YYYY' };
         const actual = utils.template(config, null, doc, { message: input });
         expect(actual).to.equal(moment(date).format(config.date_format));
-        done();
       });
 
     });
 
     describe('datetimes', () => {
 
-      it('integer', done => {
+      it('integer', () => {
         const date = 1457235941000;
         const input = '{{#datetime}}{{reported_date}}{{/datetime}}';
         const doc = { reported_date: date };
         const config = { reported_date_format: 'DD-MMMM-YYYY HH:mm:ss' };
         const actual = utils.template(config, null, doc, { message: input });
         expect(actual).to.equal(moment(date).format(config.reported_date_format));
-        done();
       });
 
-      it('Date object', done => {
+      it('Date object', () => {
         const date = 1457235941000;
         const input = '{{#datetime}}Date({{reported_date}}){{/datetime}}';
         const doc = { reported_date: date };
         const config = { reported_date_format: 'DD-MMMM-YYYY HH:mm:ss' };
         const actual = utils.template(config, null, doc, { message: input });
         expect(actual).to.equal(moment(date).format(config.reported_date_format));
-        done();
       });
 
     });
 
     describe('bikram sambat', () => {
 
-      it('integer', done => {
+      it('integer', () => {
         const date = 1457235941000;
         const expected = '२३ फाल्गुन २०७२';
         const input = '{{#bikram_sambat_date}}{{reported_date}}{{/bikram_sambat_date}}';
@@ -268,10 +256,9 @@ describe('messageUtils', () => {
         const config = { reported_date_format: 'DD-MMMM-YYYY HH:mm:ss' };
         const actual = utils.template(config, null, doc, { message: input });
         expect(actual).to.equal(expected);
-        done();
       });
 
-      it('Date object', done => {
+      it('Date object', () => {
         const date = 1457235941000;
         const expected = '२३ फाल्गुन २०७२';
         const input = '{{#bikram_sambat_date}}Date({{reported_date}}){{/bikram_sambat_date}}';
@@ -279,14 +266,13 @@ describe('messageUtils', () => {
         const config = { reported_date_format: 'DD-MMMM-YYYY HH:mm:ss' };
         const actual = utils.template(config, null, doc, { message: input });
         expect(actual).to.equal(expected);
-        done();
       });
 
     });
 
     describe('template context', () => {
 
-      it('supports template variables on doc', done => {
+      it('supports template variables on doc', () => {
         const doc = {
           form: 'x',
           reported_date: '2050-03-13T13:06:22.002Z',
@@ -302,10 +288,9 @@ describe('messageUtils', () => {
         };
         const actual = utils.template({}, null, doc, { message: '{{contact.phone}}, {{governor}}' });
         expect(actual).to.equal('123, arnold');
-        done();
       });
 
-      it('internal fields always override form fields', done => {
+      it('internal fields always override form fields', () => {
         const doc = {
           form: 'x',
           reported_date: '2050-03-13T13:06:22.002Z',
@@ -321,7 +306,6 @@ describe('messageUtils', () => {
         };
         const actual = utils.template({}, null, doc, { message: '{{contact.name}}, {{chw_name}}' });
         expect(actual).to.equal('Sally, Arnold');
-        done();
       });
 
     });

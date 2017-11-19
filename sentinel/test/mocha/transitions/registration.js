@@ -78,8 +78,6 @@ describe('registrations', () => {
             testRegistration = 'some registrations',
             testPatient = 'a patient contact';
 
-      // sinon.stub(messages, 'getRecipientPhone').returns(testPhone);
-      // sinon.stub(messages, 'getMessage').returns(testMessage);
       const addMessage = sinon.stub(messages, 'addMessage');
 
       sinon.stub(utils, 'getRegistrations').callsArgWith(1, null, testRegistration);

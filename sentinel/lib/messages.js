@@ -12,7 +12,7 @@ module.exports = {
             message: messageConfig.message // deprecated usage
         };
         try {
-            const messages = messageUtils.generate(
+            const generated = messageUtils.generate(
                 config.getAll(),
                 utils.translate,
                 doc,
@@ -20,7 +20,7 @@ module.exports = {
                 recipient,
                 context
             );
-            const task = { messages: messages };
+            const task = { messages: generated };
             utils.setTaskState(task, module.exports.isOutgoingAllowed(doc.from) ? 'pending' : 'denied');
             doc.tasks.push(task);
             return task;
@@ -73,12 +73,15 @@ module.exports = {
      * @returns {Boolean}
      */
     isOutgoingAllowed: from => {
-      const conf = config.get('outgoing_deny_list') || '';
       if (!from) {
         return true;
       }
       if (module.exports.isMessageFromGateway(from)) {
         return false;
+      }
+      const conf = config.get('outgoing_deny_list');
+      if (!conf) {
+        return true;
       }
       return _.every(conf.split(','), s => {
         // ignore falsey inputs
@@ -90,26 +93,17 @@ module.exports = {
       });
     },
     addErrors: function(config, doc, errors) {
-        const self = module.exports;
-        
-        errors.forEach(error => self.addError(doc, error));
-        
+        errors.forEach(error => module.exports.addError(doc, error));
         let reply;
         if (config.validations.join_responses) {
-            const msgs = [];
-            errors.forEach(err => {
-                if (err.message) {
-                    msgs.push(err.message);
-                } else if (err) {
-                    msgs.push(err);
-                }
-            });
-            reply = msgs.join('  ');
+            reply = errors
+                .filter(err => err)
+                .map(err => err.message || err)
+                .join('  ');
         } else {
             reply = errors[0].message || errors[0];
         }
-
-        self.addMessage(doc, { message: reply }, 'clinic');
+        module.exports.addMessage(doc, { message: reply }, 'clinic');
     },
     addError: function(doc, error) {
         if (_.isString(error)){

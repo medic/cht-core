@@ -73,5 +73,3 @@ module.exports = function(db, audit, callback) {
 
     });
 };
-
-
