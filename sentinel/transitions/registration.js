@@ -28,25 +28,6 @@ const getRegistrations = (db, patientId, callback) => {
   utils.getRegistrations({ db: db, id: patientId }, callback);
 };
 
-const addValidationErrors = (registrationConfig, doc, errors) => {
-  messages.addErrors(doc, errors);
-  // join all errors into one response or respond with first error.
-  if (registrationConfig.validations.join_responses) {
-    const msgs = [];
-    _.each(errors, err => {
-      if (err.message) {
-        msgs.push(err.message);
-      } else if (err) {
-        msgs.push(err);
-      }
-    });
-    messages.addReply(doc, msgs.join('  '));
-  } else {
-    const err = _.first(errors);
-    messages.addReply(doc, err.message || err);
-  }
-};
-
 const getPatientNameField = params => {
   if (Array.isArray(params) && params.length && params[0]) {
     return params[0];
@@ -239,7 +220,7 @@ module.exports = {
 
     self.validate(registrationConfig, doc, errors => {
       if (errors && errors.length > 0) {
-        addValidationErrors(registrationConfig, doc, errors, callback);
+        messages.addErrors(registrationConfig, doc, errors);
         return callback(null, true);
       }
 
@@ -358,11 +339,7 @@ module.exports = {
     }
   },
   addMessages: (db, config, doc, callback) => {
-    // send response if configured
-    const locale = utils.getLocale(doc),
-          now = moment(date.getDate()),
-          extra = {next_msg: schedules.getNextTimes(doc, now)},
-          patientId = doc.fields && doc.fields.patient_id;
+    const patientId = doc.fields && doc.fields.patient_id;
     if (!config.messages || !config.messages.length) {
       return callback();
     }
@@ -371,17 +348,16 @@ module.exports = {
       if (err) {
         return callback(err);
       }
-
+      const context = {
+        patient: doc.patient,
+        registrations: registrations,
+        templateContext: {
+          next_msg: schedules.getNextTimes(doc, moment(date.getDate()))
+        }
+      };
       config.messages.forEach(msg => {
         if (messageRelevant(msg, doc)) {
-          messages.addMessage({
-            doc: doc,
-            phone: messages.getRecipientPhone(doc, msg.recipient),
-            message: messages.getMessage(msg, locale),
-            templateContext: extra,
-            registrations: registrations,
-            patient: doc.patient
-          });
+          messages.addMessage(doc, msg, msg.recipient, context);
         }
       });
       callback();
@@ -399,7 +375,7 @@ module.exports = {
         const assigned = schedules.assignSchedule(
           options.doc, schedule, registrations, options.doc.patient);
         if (!assigned) {
-          logger.error('Failed to add schedule please verify settings.');
+          logger.error(new Error('Failed to add schedule please verify settings.'));
         }
       });
       callback();

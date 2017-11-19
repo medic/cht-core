@@ -1,110 +1,11 @@
 var messages = require('../../lib/messages'),
-    moment = require('moment'),
     utils = require('../../lib/utils'),
-    sinon = require('sinon');
+    config = require('../../config'),
+    sinon = require('sinon').sandbox.create();
 
 exports.tearDown = function(callback) {
-    if (utils.translate.restore) {
-        utils.translate.restore();
-    }
+    sinon.restore();
     callback();
-};
-
-exports['extractTemplateContext supports template variables on doc'] = function(test) {
-    var doc = {
-        form: 'x',
-        reported_date: '2050-03-13T13:06:22.002Z',
-        governor: 'arnold',
-        contact: {
-            phone: '123',
-            parent: {
-                contact: {
-                    phone: '123'
-                }
-            }
-        }
-    };
-    var templateContext = messages.extractTemplateContext(doc);
-    test.equals(templateContext.contact.phone, '123');
-    test.equals(templateContext.governor, 'arnold');
-    test.done();
-};
-
-exports['extractTemplateContext internal fields always override form fields'] = function(test) {
-    var doc = {
-        form: 'x',
-        reported_date: '2050-03-13T13:06:22.002Z',
-        chw_name: 'Arnold',
-        contact: {
-            name: 'Sally',
-            parent: {
-                contact: {
-                    name: 'Sally'
-                }
-            }
-        }
-    };
-    var templateContext = messages.extractTemplateContext(doc);
-    test.equals(templateContext.chw_name, 'Arnold');
-    test.equals(templateContext.contact.name, 'Sally');
-    test.done();
-};
-
-exports['scheduleMessage supports template variables on doc'] = function(test) {
-    var doc = {
-        form: 'x',
-        reported_date: '2050-03-13T13:06:22.002Z',
-        governor: 'arnold'
-    };
-    var msg = {
-        message: 'Governor {{governor}} wants to speak to you.',
-        due: moment().toISOString()
-    };
-    messages.scheduleMessage(doc, msg, '+13125551212');
-    test.equals(doc.scheduled_tasks.length, 1);
-    test.equals(
-        doc.scheduled_tasks[0].messages[0].message,
-        'Governor arnold wants to speak to you.'
-    );
-    test.done();
-};
-
-exports['scheduleMessage aliases patient.name to patient_name'] = test => {
-    var doc = {
-        form: 'x',
-        reported_date: '2050-03-13T13:06:22.002Z',
-    };
-    var msg = {
-        message: 'Hello {{patient_name}}.',
-        due: moment().toISOString()
-    };
-    messages.scheduleMessage(doc, msg, '+13125551212', [], {name: 'Sally'});
-    test.equals(doc.scheduled_tasks.length, 1);
-    test.equals(
-        doc.scheduled_tasks[0].messages[0].message,
-        'Hello Sally.'
-    );
-    test.done();
-};
-
-exports['scheduleMessage adds registration details to message context'] = function(test) {
-    var doc = {
-        form: 'x',
-        reported_date: '2050-03-13T13:06:22.002Z',
-        governor: 'arnold'
-    };
-    var msg = {
-        message: 'Dear {{patient_name}}, Governor {{governor}} wants to speak to you.',
-        due: moment().toISOString()
-    };
-    var person = { _id: '123', name: 'Marc' };
-    messages.scheduleMessage(doc, msg, '+13125551212', [], person);
-    test.equals(doc.scheduled_tasks.length, 1);
-    test.equals(
-        doc.scheduled_tasks[0].messages[0].message,
-        'Dear Marc, Governor arnold wants to speak to you.'
-    );
-    test.done();
 };
 
 exports['addMessage supports template variables on doc'] = function(test) {
@@ -113,11 +14,7 @@ exports['addMessage supports template variables on doc'] = function(test) {
         reported_date: '2050-03-13T13:06:22.002Z',
         governor: 'Schwarzenegger'
     };
-    messages.addMessage({
-        doc: doc,
-        phone: '+13125551212',
-        message: 'Governor {{governor}} wants to speak to you.'
-    });
+    messages.addMessage(doc, { message: 'Governor {{governor}} wants to speak to you.' }, '+13125551212');
     test.equals(doc.tasks.length, 1);
     test.equals(
         doc.tasks[0].messages[0].message,
@@ -132,11 +29,7 @@ exports['addMessage does not escape characters - #3795'] = function(test) {
         reported_date: '2050-03-13T13:06:22.002Z',
         place: 'Sharon\'s Place &<>"/`='
     };
-    messages.addMessage({
-        doc: doc,
-        phone: '+13125551212',
-        message: 'You\'re from {{place}}'
-    });
+    messages.addMessage(doc, { message: 'You\'re from {{place}}' }, '+13125551212');
     test.equals(doc.tasks.length, 1);
     test.equals(
         doc.tasks[0].messages[0].message,
@@ -157,11 +50,7 @@ exports['addMessage template supports contact obj'] = function(test) {
             }
         }
     };
-    messages.addMessage({
-        doc: doc,
-        phone: '+13125551212',
-        message: 'Thank you {{contact.name}}.'
-    });
+    messages.addMessage(doc, { message: 'Thank you {{contact.name}}.' }, '+13125551212');
     test.equals(doc.tasks.length, 1);
     test.equals(
         doc.tasks[0].messages[0].message,
@@ -182,11 +71,7 @@ exports['addMessage supports clinic dot template variables'] = function(test) {
             }
         }
     };
-    messages.addMessage({
-        doc: doc,
-        phone: '+13125551212',
-        message: 'Thank you {{contact.name}}.'
-    });
+    messages.addMessage(doc, { message: 'Thank you {{contact.name}}.' }, '+13125551212');
     test.equals(doc.tasks.length, 1);
     test.equals(
         doc.tasks[0].messages[0].message,
@@ -209,11 +94,7 @@ exports['addMessage template supports health_center object'] = function(test) {
             }
         }
     };
-    messages.addMessage({
-        doc: doc,
-        phone: '+13125551212',
-        message: 'Thank you {{health_center.contact.name}}.'
-    });
+    messages.addMessage(doc, { message: 'Thank you {{health_center.contact.name}}.' }, '+13125551212');
     test.equals(doc.tasks.length, 1);
     test.equals(
         doc.tasks[0].messages[0].message,
@@ -238,11 +119,7 @@ exports['addMessage template supports district object'] = function(test) {
             }
         }
     };
-    messages.addMessage({
-        doc: doc,
-        phone: '+13125551212',
-        message: 'Thank you {{district.contact.name}}.'
-    });
+    messages.addMessage(doc, { message: 'Thank you {{district.contact.name}}.' }, '+13125551212');
     test.equals(doc.tasks.length, 1);
     test.equals(
         doc.tasks[0].messages[0].message,
@@ -258,11 +135,7 @@ exports['addMessage template supports fields'] = function(test) {
             patient_name: 'Sally'
         }
     };
-    messages.addMessage({
-        doc: doc,
-        phone: '+13125551212',
-        message: 'Thank you {{patient_name}}.'
-    });
+    messages.addMessage(doc, { message: 'Thank you {{patient_name}}.' }, '+13125551212');
     test.equals(doc.tasks.length, 1);
     test.equals(
         doc.tasks[0].messages[0].message,
@@ -273,12 +146,12 @@ exports['addMessage template supports fields'] = function(test) {
 
 exports['addMessage aliases patient.name to patient_name'] = test => {
     const doc = {};
-    messages.addMessage({
-        doc: doc,
-        phone: '123',
-        patient: {name: 'Sally'},
-        message: 'Thank you {{patient_name}}.',
-    });
+    messages.addMessage(
+        doc,
+        { message: 'Thank you {{patient_name}}.' },
+        '123',
+        { patient: {name: 'Sally'} }
+    );
     test.equals(doc.tasks.length, 1);
     test.equals(
         doc.tasks[0].messages[0].message,
@@ -376,5 +249,58 @@ exports['getMessage uses translation_key instead of messages'] = function(test) 
     test.equal(translate.callCount, 1);
     test.equal(translate.args[0][0], 'some.key');
     test.equal(translate.args[0][1], 'es');
+    test.done();
+};
+
+
+exports['describe isOutgoingAllowed'] = function(test) {
+    /*
+     * Support comma separated string config to match an outgoing phone number
+     * or MNO (mobile network operator) defined string.
+     */
+    var tests = [
+      // denied
+      ['+123', '+123', false],
+      ['+123', '+123999999', false],
+      ['SAFARI', 'SAFARICOM', false],
+      ['Safari', 'SAFARICOM', false],
+      ['+123,+456,+789', '+456', false],
+      ['+123,+456,+789', '+4569999999', false],
+      ['SAFARI, ORANGE', 'ORANGE NET', false],
+      ['0', '0000123', false],
+      ['0', '0', false],
+      // allowed
+      ['+123', '+999', true],
+      ['SAFARI, ORANGE NET', 'ORANGE', true],
+      ['VIVO', 'EM VIVO', true],
+      ['0', '-1', true],
+      // allow falsey inputs
+      ['snarf', undefined, true],
+      ['snarf', null, true],
+      ['', '+123', true],
+      ['', '', true]
+    ];
+    tests.forEach(function(t) {
+      var s = sinon.stub(config, 'get');
+      s.withArgs('outgoing_deny_list').returns(t[0]);
+      test.equals(messages.isOutgoingAllowed(t[1]), t[2]);
+      s.restore();
+    });
+    test.done();
+};
+
+exports['describe isMessageFromGateway'] = function(test) {
+    var tests = [
+      ['+774455558888', '77-44-5555-8888', true],
+      ['+774455558889', '77-44-5555-8888', false],
+      // missing country code matches
+      ['+41446681800', '446681800', true]
+    ];
+    tests.forEach(function(t) {
+      var s = sinon.stub(config, 'get');
+      s.withArgs('gateway_number').returns(t[0]);
+      test.equals(messages.isMessageFromGateway(t[1]), t[2]);
+      s.restore();
+    });
     test.done();
 };

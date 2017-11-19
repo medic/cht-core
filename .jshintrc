@@ -77,7 +77,6 @@
     // Custom Globals
     "globals"       : {         // additional predefined global variables
         "angular"   : true,
-        "moment"    : true,
         "medicmobile_android": true,
         "Tour"      : true,
         "unescape"  : true

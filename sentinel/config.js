@@ -70,6 +70,7 @@ module.exports = {
   get: key => {
     return config[key];
   },
+  getAll: () => config,
   getTranslations: () => {
     return translations;
   },

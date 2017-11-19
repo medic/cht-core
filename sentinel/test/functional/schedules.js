@@ -142,7 +142,7 @@ exports['registration sets up schedule'] = function(test) {
 
 exports['registration sets up schedule using translation_key'] = function(test) {
 
-    test.expect(15);
+    test.expect(13);
     sinon.stub(transition, 'getConfig').returns([{
         form: 'PATR',
         events: [{
@@ -206,21 +206,9 @@ exports['registration sets up schedule using translation_key'] = function(test) 
             });
         }
 
-        /*
-         * Also checks that recipient using doc property value is resolved
-         * correctly.
-         * */
-        var msg1 = getScheduledMessage(doc, 0);
-        test.ok(msg1);
-        test.ok(msg1.to);
-        test.ok(msg1.message);
-        if (msg1) {
-            test.deepEqual(msg1, {
-                to: '+1234',
-                message: 'Mustaches.  Overrated or underrated?',
-                uuid: 'test-uuid'
-            });
-        }
+        // check that message generation is deferred until later
+        test.equals(doc.scheduled_tasks.length, 1);
+        test.equals(doc.scheduled_tasks[0].messages, undefined);
         test.done();
     });
 };

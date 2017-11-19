@@ -178,29 +178,22 @@ exports['if no reports in time window, does nothing'] = test => {
 };
 
 const assertMessage = (test, messageArgs, recipient, message, alertName, num_reports_threshold, time_window_in_days) => {
-  const expected = {
-    doc: doc,
-    phone: recipient,
-    message: message,
-    templateContext: {
-      new_reports: [doc, ...hydratedReports],
-      num_counted_reports: [doc, ...hydratedReports].length,
-      alert_name: alertName,
-      num_reports_threshold: num_reports_threshold,
-      time_window_in_days: time_window_in_days
-    },
-    taskFields: {
-      type: 'alert',
-      alert_name: alertName,
-      counted_reports: [ doc._id, hydratedReports[0]._id, hydratedReports[1]._id ]
-    }
+  const templateContext = {
+    new_reports: [doc, ...hydratedReports],
+    num_counted_reports: [doc, ...hydratedReports].length,
+    alert_name: alertName,
+    num_reports_threshold: num_reports_threshold,
+    time_window_in_days: time_window_in_days
   };
-  test.deepEqual(messageArgs, expected);
+  test.equals(messageArgs[0], doc);
+  test.equals(messageArgs[1].message, message);
+  test.equals(messageArgs[2], recipient);
+  test.deepEqual(messageArgs[3], { templateContext: templateContext });
 };
 
 const assertMessages = (test, addMessageStub, alert) => {
   addMessageStub.getCalls().forEach((call, i) => {
-    assertMessage(test, call.args[0], alert.recipients[i], alert.message, alert.name, alert.num_reports_threshold, alert.time_window_in_days);
+    assertMessage(test, call.args, alert.recipients[i], alert.message, alert.name, alert.num_reports_threshold, alert.time_window_in_days);
   });
 };
 
@@ -216,6 +209,9 @@ exports['if enough reports pass the is_report_counted func, adds message'] = tes
 
     test.equals(messages.addMessage.getCalls().length, alertConfig.recipients.length);
     assertMessages(test, messages.addMessage, alertConfig);
+    test.equals(doc.tasks[0].type, 'alert');
+    test.equals(doc.tasks[0].alert_name, alertConfig.name);
+    test.deepEqual(doc.tasks[0].counted_reports, [ doc._id, ...reports.map(report => report._id) ]);
 
     test.ok(!err);
     test.ok(docNeedsSaving);
@@ -254,7 +250,7 @@ exports['adds multiple messages when multiple recipients are evaled'] = test => 
 
   transition.onMatch({ doc: doc }, undefined, undefined, (err, docNeedsSaving) => {
     test.equals(messages.addMessage.getCalls().length, 3); // 3 counted reports, one phone number each.
-    const actualPhones = messages.addMessage.getCalls().map(call => call.args[0].phone);
+    const actualPhones = messages.addMessage.getCalls().map(call => call.args[2]);
     const expectedPhones = [doc.contact.phone, hydratedReports[0].contact.phone, hydratedReports[1].contact.phone];
     test.deepEqual(actualPhones, expectedPhones);
 
@@ -360,26 +356,7 @@ exports['message only contains newReports'] = test => {
   transition.onMatch({ doc: doc }, undefined, undefined, (err, docNeedsSaving) => {
     test.equals(messages.addMessage.getCalls().length, 1);
     test.equals(messages.addError.getCalls().length, 0);
-
-    const expected = {
-      doc: doc,
-      phone: alertConfig.recipients[0],
-      message: alertConfig.message,
-      templateContext: {
-        new_reports: [doc, hydratedReportsWithOneAlreadyMessaged[0] ],
-        num_counted_reports: [doc, ...hydratedReportsWithOneAlreadyMessaged].length,
-        alert_name: alertConfig.name,
-        num_reports_threshold: alertConfig.num_reports_threshold,
-        time_window_in_days: alertConfig.time_window_in_days
-      },
-      taskFields: {
-        type: 'alert',
-        alert_name: alertConfig.name,
-        counted_reports: [ doc._id, hydratedReportsWithOneAlreadyMessaged[0]._id, hydratedReportsWithOneAlreadyMessaged[1]._id ]
-      }
-    };
-    test.deepEqual(messages.addMessage.getCall(0).args[0], expected);
-
+    test.deepEqual(messages.addMessage.getCall(0).args[3].templateContext.new_reports, [doc, hydratedReportsWithOneAlreadyMessaged[0] ]);
     test.ok(docNeedsSaving);
     test.done();
   });
@@ -398,11 +375,11 @@ exports['adds multiple messages when mutiple recipients'] = test => {
     test.equals(messages.addError.getCalls().length, 0);
 
     // first recipient
-    assertMessage(test, messages.addMessage.getCall(0).args[0], '+254111222333', alertConfig.message, alertConfig.name, alertConfig.num_reports_threshold, alertConfig.time_window_in_days);
+    assertMessage(test, messages.addMessage.getCall(0).args, '+254111222333', alertConfig.message, alertConfig.name, alertConfig.num_reports_threshold, alertConfig.time_window_in_days);
     // second recipient : matched 3 phones
-    assertMessage(test, messages.addMessage.getCall(1).args[0], doc.contact.phone, alertConfig.message, alertConfig.name, alertConfig.num_reports_threshold, alertConfig.time_window_in_days);
-    assertMessage(test, messages.addMessage.getCall(2).args[0], hydratedReports[0].contact.phone, alertConfig.message, alertConfig.name, alertConfig.num_reports_threshold, alertConfig.time_window_in_days);
-    assertMessage(test, messages.addMessage.getCall(3).args[0], hydratedReports[1].contact.phone, alertConfig.message, alertConfig.name, alertConfig.num_reports_threshold, alertConfig.time_window_in_days);
+    assertMessage(test, messages.addMessage.getCall(1).args, doc.contact.phone, alertConfig.message, alertConfig.name, alertConfig.num_reports_threshold, alertConfig.time_window_in_days);
+    assertMessage(test, messages.addMessage.getCall(2).args, hydratedReports[0].contact.phone, alertConfig.message, alertConfig.name, alertConfig.num_reports_threshold, alertConfig.time_window_in_days);
+    assertMessage(test, messages.addMessage.getCall(3).args, hydratedReports[1].contact.phone, alertConfig.message, alertConfig.name, alertConfig.num_reports_threshold, alertConfig.time_window_in_days);
 
     test.equals(messages.addMessage.getCalls().length, 4);
 
@@ -424,9 +401,9 @@ exports['dedups message recipients'] = test => {
     test.equals(messages.addError.getCalls().length, 0);
 
     test.equals(messages.addMessage.getCalls().length, 3); // 3 countedReports, 2 recipients specified for each, deduped to 1 for each.
-    test.equals(messages.addMessage.getCall(0).args[0].phone, doc.contact.phone);
-    test.equals(messages.addMessage.getCall(1).args[0].phone, hydratedReports[0].contact.phone);
-    test.equals(messages.addMessage.getCall(2).args[0].phone, hydratedReports[1].contact.phone);
+    test.equals(messages.addMessage.getCall(0).args[2], doc.contact.phone);
+    test.equals(messages.addMessage.getCall(1).args[2], hydratedReports[0].contact.phone);
+    test.equals(messages.addMessage.getCall(2).args[2], hydratedReports[1].contact.phone);
 
     test.done();
   });
@@ -471,9 +448,9 @@ exports['runs multiple alerts'] = test => {
     test.equals(messages.addError.getCalls().length, 0);
 
     test.equals(messages.addMessage.getCalls().length, 3); // alert[0].recipients + alert[1].recipients
-    assertMessage(test, messages.addMessage.getCall(0).args[0], twoAlerts[0].recipients[0], twoAlerts[0].message, twoAlerts[0].name, twoAlerts[0].num_reports_threshold, twoAlerts[0].time_window_in_days);
-    assertMessage(test, messages.addMessage.getCall(1).args[0], twoAlerts[1].recipients[0], twoAlerts[1].message, twoAlerts[1].name, twoAlerts[1].num_reports_threshold, twoAlerts[1].time_window_in_days);
-    assertMessage(test, messages.addMessage.getCall(2).args[0], twoAlerts[1].recipients[1], twoAlerts[1].message, twoAlerts[1].name, twoAlerts[1].num_reports_threshold, twoAlerts[1].time_window_in_days);
+    assertMessage(test, messages.addMessage.getCall(0).args, twoAlerts[0].recipients[0], twoAlerts[0].message, twoAlerts[0].name, twoAlerts[0].num_reports_threshold, twoAlerts[0].time_window_in_days);
+    assertMessage(test, messages.addMessage.getCall(1).args, twoAlerts[1].recipients[0], twoAlerts[1].message, twoAlerts[1].name, twoAlerts[1].num_reports_threshold, twoAlerts[1].time_window_in_days);
+    assertMessage(test, messages.addMessage.getCall(2).args, twoAlerts[1].recipients[1], twoAlerts[1].message, twoAlerts[1].name, twoAlerts[1].num_reports_threshold, twoAlerts[1].time_window_in_days);
 
     test.ok(!err);
     test.ok(docNeedsSaving);
