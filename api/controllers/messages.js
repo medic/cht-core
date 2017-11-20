@@ -5,10 +5,7 @@ const getTaskMessages = function(options, callback) {
   db.medic.view('medic', 'tasks_messages', options, callback);
 };
 
-// copied from kujua-sms, webapp, and sentinel
-// TODO: get rid of this copy once Milan's refactor is complete
-// See: https://github.com/medic/medic-webapp/issues/3019
-// Specifically, this should be in a new repo that we can pull in via npm
+// TODO Use a shared library for this duplicated code #4021
 const setTaskState = function(task, state, details) {
   task.state = state;
   task.state_details = details;

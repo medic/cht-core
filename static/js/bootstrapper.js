@@ -81,6 +81,7 @@
     return callback(err);
   };
 
+  // TODO Use a shared library for this duplicated code #4021
   var hasRole = function(userCtx, role) {
     if (userCtx.roles) {
       for (var i = 0; i < userCtx.roles.length; i++) {

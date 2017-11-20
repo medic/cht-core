@@ -64,6 +64,7 @@ var COOKIE_NAME = 'userCtx',
         KansoPackages.session.on('change', checkCurrentSession);
       };
 
+      // TODO Use a shared library for this duplicated code #4021
       var hasRole = function(userCtx, role) {
         return _.contains(userCtx && userCtx.roles, role);
       };
