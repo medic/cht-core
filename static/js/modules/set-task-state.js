@@ -1,4 +1,4 @@
-exports = function(task, state) {
+module.exports = function(task, state) {
   task.state = state;
   task.state_history = task.state_history || [];
   task.state_history.push({

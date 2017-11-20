@@ -38,7 +38,9 @@ var _ = require('underscore'),
             _.pairs(parsed).filter(function(pair) {
               return pair && pair[0] && pair[1];
             }).forEach(function(pair) {
-              var setting = objectpath.get(settings, pair[0]);
+              // objectpath uses `array.1.property` instead of `array[1].property`
+              var path = pair[0].replace(/\[([0-9]*)\]/g, '.$1');
+              var setting = objectpath.get(settings, path);
               if (setting) {
                 mergeTranslation(setting.message, locale, pair[1]);
                 updated = true;
