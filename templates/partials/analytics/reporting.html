@@ -7,14 +7,16 @@
       <label translate>analytics.reporting.form</label>
       <button class="btn btn-default dropdown-toggle" type="button" id="form-select" data-toggle="dropdown" aria-haspopup="true" aria-expanded="true">
         <span ng-repeat="form in forms track by form.meta.code" ng-if="filters.form === form.meta.code">
-          {{form.meta.label | translateFrom}}
+          <span ng-if="form.meta.translation_key" translate>{{form.meta.translation_key}}</span>
+          <span ng-if="!form.meta.translation_key">{{form.meta.label | translateFrom}}</span>
         </span>
         <span class="caret"></span>
       </button>
       <ul class="dropdown-menu" aria-labelledby="form-select">
         <li ng-class="{ disabled: filters.form === form.meta.code }" ng-repeat="form in forms track by form.meta.code">
           <a ui-sref="analytics.reporting.detail({ form: form.meta.code, place: filters.place })">
-            {{form.meta.label | translateFrom}}
+            <span ng-if="form.meta.translation_key" translate>{{form.meta.translation_key}}</span>
+            <span ng-if="!form.meta.translation_key">{{form.meta.label | translateFrom}}</span>
           </a>
         </li>
       </ul>
