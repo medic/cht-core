@@ -1,5 +1,13 @@
 # Medic Mobile Release Notes
 
+## 2.13.1
+
+_November 20, 2017_
+
+### Bug Fixes
+- [#4031](https://github.com/medic/medic-webapp/issues/4031) Fix bug in extract-person-contacts migration introduced in 2.13.0
+- [#4033](https://github.com/medic/medic-webapp/issues/4033) Remove the now invalid erlang migrations
+
 ## 2.13.0
 
 _October 2, 2017_
