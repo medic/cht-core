@@ -1,5 +1,5 @@
 var _ = require('underscore'),
-    objectpath = require('views/lib/objectpath');
+    objectpath = require('object-path');
 
 (function () {
 

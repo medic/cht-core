@@ -7,15 +7,10 @@ var info = proxyquire('../../../../packages/kujua-sms/views/lib/appinfo', {
     'duality/utils': { getBaseURL: function() { return 'BASEURL'; } },
     'underscore': require('underscore')
 });
-var kujua_utils = proxyquire('../../../../packages/kujua-utils/kujua-utils', {
-    'cookies': {}
-});
 var kujua_sms_utils = proxyquire('../../../../packages/kujua-sms/kujua-sms/utils', {
-    'kujua-utils': kujua_utils,
     'views/lib/objectpath': {}
 });
 var lists = proxyquire('../../../../packages/kujua-sms/kujua-sms/lists', {
-    'kujua-utils': kujua_utils,
     './utils': kujua_sms_utils,
     'views/lib/appinfo': info,
     'duality/core': { getDBURL: function() { return 'BASEURL/_db'; } }

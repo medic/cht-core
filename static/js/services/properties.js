@@ -1,6 +1,6 @@
 var _ = require('underscore'),
     properties = require('properties'),
-    objectpath = require('views/lib/objectpath'),
+    objectpath = require('object-path'),
     APPLICATION_TEXT_SECTION_NAME = 'Application Text',
     OUTGOING_MESSAGES_SECTION_NAME = 'Outgoing Messages';
 

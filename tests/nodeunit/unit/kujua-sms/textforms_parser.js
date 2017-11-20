@@ -1,10 +1,6 @@
 var proxyquire = require('proxyquire').noCallThru();
 
-var kujua_utils = proxyquire('../../../../packages/kujua-utils/kujua-utils', {
-    'cookies': {}
-});
 var kujua_sms_utils = proxyquire('../../../../packages/kujua-sms/kujua-sms/utils', {
-    'kujua-utils': kujua_utils,
     'views/lib/objectpath': {},
     'underscore': require('underscore')
 });

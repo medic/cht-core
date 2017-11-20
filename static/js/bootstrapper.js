@@ -1,5 +1,3 @@
-var utils = require('kujua-utils');
-
 (function () {
 
   'use strict';
@@ -83,6 +81,22 @@ var utils = require('kujua-utils');
     return callback(err);
   };
 
+  var hasRole = function(userCtx, role) {
+    if (userCtx.roles) {
+      for (var i = 0; i < userCtx.roles.length; i++) {
+        if (userCtx.roles[i] === role) {
+          return true;
+        }
+      }
+    }
+    return false;
+  };
+
+  var hasFullDataAccess = function(userCtx) {
+    return hasRole(userCtx, '_admin') ||
+           hasRole(userCtx, 'national_admin');
+  };
+
   module.exports = function(POUCHDB_OPTIONS, callback) {
     var dbInfo = getDbInfo();
     var userCtx = getUserCtx();
@@ -91,7 +105,7 @@ var utils = require('kujua-utils');
       err.status = 401;
       return redirectToLogin(dbInfo, err, callback);
     }
-    if (utils.isUserAdmin(userCtx)) {
+    if (hasFullDataAccess(userCtx)) {
       return callback();
     }
 

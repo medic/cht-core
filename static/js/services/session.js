@@ -1,5 +1,5 @@
 var COOKIE_NAME = 'userCtx',
-    utils = require('kujua-utils');
+    _ = require('underscore');
 
 (function () {
 
@@ -64,6 +64,10 @@ var COOKIE_NAME = 'userCtx',
         KansoPackages.session.on('change', checkCurrentSession);
       };
 
+      var hasRole = function(userCtx, role) {
+        return _.contains(userCtx && userCtx.roles, role);
+      };
+
       return {
         logout: logout,
 
@@ -80,8 +84,23 @@ var COOKIE_NAME = 'userCtx',
           listenForSessionChanges();
         },
 
-        isAdmin: function() {
-          return utils.isUserAdmin(getUserCtx());
+        /**
+         * Returns true if the logged in user has the db or national admin role.
+         * @param {userCtx} (optional) Will get the current userCtx if not provided.
+         */
+        isAdmin: function(userCtx) {
+          userCtx = userCtx || getUserCtx();
+          return hasRole(userCtx, '_admin') ||
+                 hasRole(userCtx, 'national_admin');
+        },
+
+        /**
+         * Returns true if the logged in user has the district admin role.
+         * @param {userCtx} (optional) Will get the current userCtx if not provided.
+         */
+        isDistrictAdmin: function(userCtx) {
+          userCtx = userCtx || getUserCtx();
+          return hasRole(userCtx, 'district_admin');
         }
       };
 

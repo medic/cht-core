@@ -5,7 +5,7 @@ const getTaskMessages = function(options, callback) {
   db.medic.view('medic', 'tasks_messages', options, callback);
 };
 
-// copied from kujua-utils
+// copied from kujua-sms, webapp, and sentinel
 // TODO: get rid of this copy once Milan's refactor is complete
 // See: https://github.com/medic/medic-webapp/issues/3019
 // Specifically, this should be in a new repo that we can pull in via npm

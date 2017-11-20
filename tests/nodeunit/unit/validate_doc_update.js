@@ -1,8 +1,5 @@
 var _ = require('underscore'),
-    proxyquire = require('proxyquire').noCallThru(),
-    serverValidateDocUpdate = proxyquire('../../../lib/validate_doc_update', {
-      'kujua-utils': require('../../../packages/kujua-utils/kujua-utils')
-    });
+    serverValidateDocUpdate = require('../../../lib/validate_doc_update');
 
 var fs = require('fs'),
     clientValidateDocUpdateString = fs.readFileSync('./ddocs/medic-client/validate_doc_update.js'),

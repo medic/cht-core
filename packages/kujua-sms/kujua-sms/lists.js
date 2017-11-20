@@ -1,6 +1,5 @@
 var _ = require('underscore'),
     utils = require('./utils'),
-    kutils = require('kujua-utils'),
     appinfo = require('views/lib/appinfo');
 
 var json_headers = {
@@ -46,7 +45,7 @@ exports.tasks_pending = function (head, req) {
                 _.each(task.messages, function(msg) {
                     // if to and message is defined then append messages
                     if (msg.to && msg.message) {
-                        kutils.setTaskState(task, 'sent');
+                        utils.setTaskState(task, 'sent');
                         task.timestamp = new Date().toISOString();
                         // append outgoing message data payload for smsssync
                         respBody.payload.messages.push(msg);
@@ -63,7 +62,7 @@ exports.tasks_pending = function (head, req) {
                     _.each(task.messages, function(msg) {
                         // if to and message is defined then append messages
                         if (msg.to && msg.message) {
-                            kutils.setTaskState(task, 'sent');
+                            utils.setTaskState(task, 'sent');
                             task.timestamp = new Date().toISOString();
                             // append outgoing message data payload for smsssync
                             respBody.payload.messages.push(msg);

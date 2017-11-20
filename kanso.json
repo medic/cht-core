@@ -42,7 +42,6 @@
         "settings": null,
         "libphonenumber": null,
         "kujua-sms": null,
-        "kujua-utils": null,
         "cookies": null,
         "kanso-app-settings": null,
         "app-settings": ">=0.0.2",
