@@ -7,11 +7,7 @@ var info = proxyquire('../../../../packages/kujua-sms/views/lib/appinfo', {
     'duality/utils': { getBaseURL: function() {} },
     'underscore': _
 });
-var kujua_utils = proxyquire('../../../../packages/kujua-utils/kujua-utils', {
-    'cookies': {}
-});
 var utils = proxyquire('../../../../packages/kujua-sms/kujua-sms/utils', {
-    'kujua-utils': kujua_utils,
     'views/lib/objectpath': {},
     'views/lib/appinfo': info
 });

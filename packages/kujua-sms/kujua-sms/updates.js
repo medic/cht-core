@@ -4,7 +4,6 @@
 
 var _ = require('underscore'),
     moment = require('moment'),
-    kutils = require('kujua-utils'),
     info = require('views/lib/appinfo'),
     smsparser = require('views/lib/smsparser'),
     libphonenumber = require('libphonenumber/utils'),
@@ -216,7 +215,7 @@ var add_json = exports.add_json = function(doc, request) {
     try {
         data = JSON.parse(req.body);
     } catch(e) {
-        kutils.logger.error(req.body);
+        utils.logger.error(req.body);
         return [null, getErrorResponse('Error: request body not valid JSON.', 400)];
     }
 

@@ -20,6 +20,7 @@ var get = function(path, headers, callback) {
   });
 };
 
+// TODO Use a shared library for this duplicated code #4021
 var hasRole = function(userCtx, role) {
   return _.contains(userCtx && userCtx.roles, role);
 };

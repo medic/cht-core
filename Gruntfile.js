@@ -50,11 +50,8 @@ module.exports = function(grunt) {
           transform: ['browserify-ngannotate'],
           alias: {
             'db': './packages/db/db',
-            'kujua-utils': './packages/kujua-utils/kujua-utils',
             'cookies': './packages/cookies/cookies',
             'session': './packages/session/session',
-            'kujua-sms/utils': './packages/kujua-sms/kujua-sms/utils',
-            'views/lib/objectpath': './packages/kujua-sms/views/lib/objectpath',
             'enketo-config': './static/js/enketo/config.json',
             'widgets': './static/js/enketo/widgets',
             './xpath-evaluator-binding':'./static/js/enketo/OpenrosaXpathEvaluatorBinding',

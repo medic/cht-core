@@ -1,5 +1,5 @@
 var _ = require('underscore'),
-    objectpath = require('views/lib/objectpath');
+    objectpath = require('object-path');
 
 (function () {
 
@@ -40,7 +40,9 @@ var _ = require('underscore'),
         var trunk = $scope.configuration.path.split('.')[0].replace(/\[[0-9]*\]/, '');
         var updated = {};
         updated[trunk] = settings[trunk];
-        var leaf = objectpath.get(updated, $scope.configuration.path);
+        // objectpath uses `array.1.property` instead of `array[1].property`
+        var path = $scope.configuration.path.replace(/\[([0-9]*)\]/g, '.$1');
+        var leaf = objectpath.get(updated, path);
         leaf.message = $scope.configuration.translations;
         return UpdateSettings(updated);
       };

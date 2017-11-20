@@ -1,8 +1,7 @@
-var utils = require('kujua-utils'),
-    mp_parser = require('./mp_parser'),
+var mp_parser = require('./mp_parser'),
     javarosa_parser = require('./javarosa_parser'),
     textforms_parser = require('./textforms_parser'),
-    sms_utils = require('kujua-sms/utils');
+    utils = require('kujua-sms/utils');
 
 var MUVUKU_REGEX = /^\s*([A-Za-z]?\d)!.+!.+/;
 
@@ -138,7 +137,7 @@ exports.parseField = function (field, raw) {
                 for (var i in field.list) {
                     var item = field.list[i];
                     if (String(item[0]) === String(raw)) {
-                        return sms_utils.info.translate(item[1]);
+                        return utils.info.translate(item[1]);
                     }
                 }
                 utils.logger.warn('Option not available for '+JSON.stringify(raw)+' in list.');
@@ -154,12 +153,12 @@ exports.parseField = function (field, raw) {
                 for (var i in field.list) {
                     var item = field.list[i];
                     if (item[0] === raw) {
-                        return sms_utils.info.translate(item[1]);
+                        return utils.info.translate(item[1]);
                     }
                 }
                 utils.logger.warn('Option not available for '+raw+' in list.');
             }
-            return sms_utils.info.translate(raw);
+            return utils.info.translate(raw);
         case 'date':
             if (!raw) { return null; }
             // YYYY-MM-DD assume muvuku format for now
@@ -228,7 +227,7 @@ exports.parse = function (def, doc) {
 
             // replace tiny labels with field keys for textforms
             for (var j in def.fields) {
-                var label = lower(sms_utils.info.getMessage(
+                var label = lower(utils.info.getMessage(
                     def.fields[j].labels.tiny, doc.locale
                 ));
                 if (j !== label && msg_data[label]) {
