@@ -50,16 +50,27 @@ module.exports = {
 
   adminDb: db,
 
-  apiRequest: (endpoint, queryParams) => {
-    var url = urlLib.parse(module.exports.API_URL);
-    url.pathname = endpoint;
-    url = urlLib.format(url);
-    return request({
-      uri: url,
-      json: true,
-      qs: queryParams
-    });
-  },
+  apiRequest: (endpoint, queryParams) =>
+      request({
+        uri: apiUrl(endpoint),
+        json: true,
+        qs: queryParams,
+      }),
+
+  apiGet: path =>
+      request({
+        method: 'GET',
+        uri: apiUrl(path),
+      })
+      .then(JSON.parse),
+
+  apiPost: (path, jsonData) =>
+      request({
+        method: 'POST',
+        uri: apiUrl(path),
+        json: true,
+        body: jsonData,
+      }),
 
   cleanDb: function() {
     // delete all docs from DB except for standard medic docs
@@ -91,3 +102,9 @@ module.exports = {
       });
   },
 };
+
+function apiUrl(path) {
+  const url = urlLib.parse(module.exports.API_URL);
+  url.pathname = path;
+  return urlLib.format(url);
+}
