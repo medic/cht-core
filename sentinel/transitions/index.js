@@ -413,18 +413,51 @@ const applyTransitions = (options, callback) => {
     }, callback));
 };
 
+const migrateOldMetaDoc = (doc, callback) => {
+  const stub = {
+    _id: doc._id,
+    _rev: doc._rev,
+    _deleted: true
+  };
+  logger.info('Deleting old metadata document', doc);
+  return db.medic.insert(stub, err => {
+    if (err) {
+      callback(err);
+    } else {
+      doc._id = METADATA_DOCUMENT;
+      delete doc._rev;
+      callback(null, doc);
+    }
+  });
+};
+
 const getMetaData = callback =>
   db.medic.get(METADATA_DOCUMENT, (err, doc) => {
-    if (err) {
-      if (err.statusCode !== 404) {
+    if (!err) {
+      // Doc exists in correct location
+      return callback(null, doc);
+    } else if (err.statusCode !== 404) {
+      return callback(err);
+    }
+
+    // Doc doesn't exist.
+    // Maybe we have the doc in the old location?
+    db.medic.get('sentinel-meta-data', (err, doc) => {
+      if (!err) {
+        // Old doc exists, delete it and return the base doc to be saved later
+        return migrateOldMetaDoc(doc, callback);
+      } else if (err.statusCode !== 404) {
         return callback(err);
       }
+
+      // No doc at all, create and return default
       doc = {
         _id: METADATA_DOCUMENT,
         processed_seq: 0
       };
-    }
-    callback(null, doc);
+
+      callback(null, doc);
+    });
   });
 
 const getProcessedSeq = callback =>
