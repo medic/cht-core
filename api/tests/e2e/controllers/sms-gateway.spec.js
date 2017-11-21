@@ -105,6 +105,7 @@ function assertGood(response) {
 
 function assertMessagesExist(...messages) {
   // TODO
+  console.log('stop warning me for not using', messages);
 }
 
 function assertNoMessagesExist() {
