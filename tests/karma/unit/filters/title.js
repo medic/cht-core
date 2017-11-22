@@ -15,9 +15,9 @@ describe('title filter', function() {
 
   it('should render nothing when no message', function() {
     scope.forms = [
-      { code: 'A', name: 'aye' },
-      { code: 'B', name: 'bee' },
-      { code: 'C', name: 'sea' }
+      { code: 'A', title: 'aye' },
+      { code: 'B', title: 'bee' },
+      { code: 'C', title: 'sea' }
     ];
     scope.message = undefined;
 
@@ -28,9 +28,9 @@ describe('title filter', function() {
 
   it('should render Incoming Message when no form', function() {
     scope.forms = [
-      { code: 'A', name: 'aye' },
-      { code: 'B', name: 'bee' },
-      { code: 'C', name: 'sea' }
+      { code: 'A', title: 'aye' },
+      { code: 'B', title: 'bee' },
+      { code: 'C', title: 'sea' }
     ];
     scope.message = {};
 
@@ -41,9 +41,9 @@ describe('title filter', function() {
 
   it('should render Outgoing Message when no form and kujua_message is set', function() {
     scope.forms = [
-      { code: 'A', name: 'aye' },
-      { code: 'B', name: 'bee' },
-      { code: 'C', name: 'sea' }
+      { code: 'A', title: 'aye' },
+      { code: 'B', title: 'bee' },
+      { code: 'C', title: 'sea' }
     ];
     scope.message = {
       kujua_message: true
@@ -54,11 +54,11 @@ describe('title filter', function() {
     chai.expect(element.html()).to.equal('Outgoing Message');
   });
 
-  it('should render form name when form', function() {
+  it('should render form title when form', function() {
     scope.forms = [
-      { code: 'A', name: 'aye' },
-      { code: 'B', name: 'bee' },
-      { code: 'C', name: 'sea' }
+      { code: 'A', title: 'aye' },
+      { code: 'B', title: 'bee' },
+      { code: 'C', title: 'sea' }
     ];
     scope.message = {
       form: 'B'

@@ -15,9 +15,9 @@ describe('summary filter', function() {
 
   it('should render nothing when no message', function() {
     scope.forms = [
-      { code: 'A', name: 'aye' },
-      { code: 'B', name: 'bee' },
-      { code: 'C', name: 'sea' }
+      { code: 'A', title: 'aye' },
+      { code: 'B', title: 'bee' },
+      { code: 'C', title: 'sea' }
     ];
     scope.message = undefined;
 
@@ -28,9 +28,9 @@ describe('summary filter', function() {
 
   it('should render Message when no form', function() {
     scope.forms = [
-      { code: 'A', name: 'aye' },
-      { code: 'B', name: 'bee' },
-      { code: 'C', name: 'sea' }
+      { code: 'A', title: 'aye' },
+      { code: 'B', title: 'bee' },
+      { code: 'C', title: 'sea' }
     ];
     scope.message = {};
 
@@ -39,11 +39,11 @@ describe('summary filter', function() {
     chai.expect(element.html()).to.equal('tasks.0.messages.0.message');
   });
 
-  it('should render form name when form', function() {
+  it('should render form title when form', function() {
     scope.forms = [
-      { code: 'A', name: 'aye' },
-      { code: 'B', name: 'bee' },
-      { code: 'C', name: 'sea' }
+      { code: 'A', title: 'aye' },
+      { code: 'B', title: 'bee' },
+      { code: 'C', title: 'sea' }
     ];
     scope.message = {
       form: 'B'

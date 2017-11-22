@@ -41,6 +41,7 @@ var feedback = require('../modules/feedback'),
       Settings,
       Snackbar,
       Tour,
+      TranslateFrom,
       UnreadRecords,
       UpdateSettings,
       UpdateUser,
@@ -286,36 +287,59 @@ var feedback = require('../modules/feedback'),
         $scope.unreadCount = data;
       });
 
+      /**
+       * Translates using the key if truthy using the old style label
+       * array as a fallback.
+       */
+      var translateTitle = function(key, label) {
+        return key ? $translate.instant(key) : TranslateFrom(label);
+      };
+
       // get the forms for the forms filter
-      JsonForms()
-        .then(function(jsonForms) {
-          XmlForms('FormsFilter', { contactForms: false, ignoreContext: true }, function(err, xForms) {
-            if (err) {
-              return $log.error('Error fetching form definitions', err);
-            }
-            var xFormSummaries = xForms.map(function(xForm) {
+      $translate.onReady(function() {
+        JsonForms()
+          .then(function(jsonForms) {
+            var jsonFormSummaries = jsonForms.map(function(jsonForm) {
               return {
-                code: xForm.internalId,
-                name: xForm.title,
-                icon: xForm.icon
+                code: jsonForm.code,
+                title: translateTitle(jsonForm.translation_key, jsonForm.name),
+                icon: jsonForm.icon
               };
             });
-            $scope.forms = xFormSummaries.concat(jsonForms);
+            XmlForms('FormsFilter', { contactForms: false, ignoreContext: true }, function(err, xForms) {
+              if (err) {
+                return $log.error('Error fetching form definitions', err);
+              }
+              var xFormSummaries = xForms.map(function(xForm) {
+                return {
+                  code: xForm.internalId,
+                  title: translateTitle(xForm.translation_key, xForm.title),
+                  icon: xForm.icon
+                };
+              });
+              $scope.forms = xFormSummaries.concat(jsonFormSummaries);
+              $rootScope.$broadcast('formLoadingComplete');
+            });
+          })
+          .catch(function(err) {
             $rootScope.$broadcast('formLoadingComplete');
+            $log.error('Failed to retrieve forms', err);
           });
-        })
-        .catch(function(err) {
-          $rootScope.$broadcast('formLoadingComplete');
-          $log.error('Failed to retrieve forms', err);
-        });
 
-      // get the forms for the Add Report menu
-      XmlForms('AddReportMenu', { contactForms: false }, function(err, xForms) {
-        if (err) {
-          return $log.error('Error fetching form definitions', err);
-        }
-        Enketo.clearXmlCache();
-        $scope.nonContactForms = xForms;
+        // get the forms for the Add Report menu
+        XmlForms('AddReportMenu', { contactForms: false }, function(err, xForms) {
+          if (err) {
+            return $log.error('Error fetching form definitions', err);
+          }
+          Enketo.clearXmlCache();
+          $scope.nonContactForms = xForms.map(function(xForm) {
+            return {
+              code: xForm.internalId,
+              icon: xForm.icon,
+              title: translateTitle(xForm.translation_key, xForm.title)
+            };
+          });
+        });
       });
 
       $scope.showMedicReporter = function(jsonformCode) {

@@ -102,7 +102,7 @@ angular.module('inboxServices').factory('LiveListConfig',
           scope.icon = form && form.icon;
           scope.heading = report.contact || report.from;
           scope.date = report.reported_date;
-          scope.summary = form ? TranslateFrom(form.name) : report.form;
+          scope.summary = form ? form.title : report.form;
           scope.showStatus = true;
           scope.valid = report.valid;
           scope.verified = report.verified;
@@ -130,6 +130,15 @@ angular.module('inboxServices').factory('LiveListConfig',
         orderBy: reports_config.orderBy,
         listItem: reports_config.listItem,
       });
+
+      var translateProperty = function(property, task) {
+        if (_.isString(property)) {
+          // new translation key style
+          return $translate.instant(property, task);
+        }
+        // old message array style
+        return TranslateFrom(property, task);
+      };
 
       LiveList.$listFor('tasks', {
         selector: '#tasks-list ul',
@@ -161,8 +170,8 @@ angular.module('inboxServices').factory('LiveListConfig',
           scope.due = !scope.overdue && (dueDate - startOfToday) < TASK_DUE_PERIOD;
           scope.icon = task.icon;
           scope.heading = task.contact && task.contact.name;
-          scope.summary = TranslateFrom(task.title, task);
-          scope.warning = TranslateFrom(task.priorityLabel, task);
+          scope.summary = translateProperty(task.title, task);
+          scope.warning = translateProperty(task.priorityLabel, task);
           scope.hideTime = true;
           return renderTemplate(scope);
         },

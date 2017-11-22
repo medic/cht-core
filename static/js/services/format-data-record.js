@@ -45,10 +45,6 @@ angular.module('inboxServices').factory('FormatDataRecord',
         });
     };
 
-    var getLabel = function(field, locale) {
-      return getMessage(field.labels && field.labels.short, locale);
-    };
-
     var fieldsToHtml = function(settings, keys, labels, data_record, def, locale) {
 
       if (!def && data_record && data_record.form) {
@@ -75,7 +71,7 @@ angular.module('inboxServices').factory('FormatDataRecord',
           ));
         } else {
           var label = labels.shift();
-          fields.headers.push({head: getMessage(label)});
+          fields.headers.push({head: getMessage(settings, label)});
           if (def && def[key]) {
             def = def[key];
           }
@@ -139,9 +135,8 @@ angular.module('inboxServices').factory('FormatDataRecord',
 
     var translateKey = function(settings, key, field, locale) {
       var label;
-
       if (field) {
-        label = getLabel(field, locale);
+        label = getMessage(settings, field.labels && field.labels.short, locale);
       } else {
         label = translate(settings, key, locale);
       }
@@ -240,20 +235,12 @@ angular.module('inboxServices').factory('FormatDataRecord',
 
     };
 
-    var translate = function(settings, key, locale, ctx) {
-      if (_.isObject(locale)) {
-        ctx = locale;
-        locale = settings.locale;
-      } else {
-        ctx = ctx || {};
-        locale = locale || settings.locale;
-      }
-
+    var translate = function(settings, key, locale, ctx, skipInterpolation) {
       if (_.isObject(key)) {
-        return getMessage(key, locale) || key;
+        return getMessage(settings, key, locale) || key;
       }
-
-      return $translate.instant(key, ctx, 'no-interpolation');
+      var interpolation = skipInterpolation ? 'no-interpolation' : null;
+      return $translate.instant(key, ctx, interpolation);
     };
 
     /*
@@ -361,7 +348,7 @@ angular.module('inboxServices').factory('FormatDataRecord',
       return settings.forms && settings.forms[code];
     };
 
-    var getMessage = function(value, locale) {
+    var getMessage = function(settings, value, locale) {
       function _findTranslation(value, locale) {
         if (value.translations) {
           var translation = _.findWhere(
@@ -386,6 +373,9 @@ angular.module('inboxServices').factory('FormatDataRecord',
       }
 
       var result =
+
+        // 0) does it have a translation_key
+        (value.translation_key && translate(settings, value.translation_key, locale)) ||
 
         // 1) Look for the requested locale
         _findTranslation(value, locale) ||
@@ -444,7 +434,7 @@ angular.module('inboxServices').factory('FormatDataRecord',
             !copy.messages) { // backwards compatibility
             copy.messages = messages.generate(
               settings,
-              _.partial(translate, settings),
+              _.partial(translate, settings, _, null, null, true),
               doc,
               content,
               t.recipient,

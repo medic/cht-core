@@ -1226,8 +1226,13 @@
                                                 "title": "Task type",
                                                 "type": "string"
                                             },
+                                            "title_key": {
+                                                "title": "Title (translation key)",
+                                                "type": "string",
+                                                "description": "User-displayed title of the task. Templating is supported."
+                                            },
                                             "title": {
-                                                "title": "Title",
+                                                "title": "Title (deprecated: use the translation key option above)",
                                                 "type": "array",
                                                 "description": "User-displayed title of the task. Mustache templating is supported",
                                                 "default": [],
@@ -1246,8 +1251,13 @@
                                                     }
                                                 }
                                             },
+                                            "description_key": {
+                                                "title": "Description (translation key)",
+                                                "type": "string",
+                                                "description": "User-displayed description of the task. Templating is supported."
+                                            },
                                             "description": {
-                                                "title": "Description",
+                                                "title": "Description (deprecated: use the translation key option above)",
                                                 "type": "array",
                                                 "description": "User-displayed description of the task. Mustache templating is supported",
                                                 "default": [],

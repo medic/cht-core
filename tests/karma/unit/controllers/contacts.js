@@ -58,12 +58,14 @@ describe('Contacts controller', () => {
     contactSchema.getChildPlaceType.returns(childType);
     contactSchema.getPlaceTypes.returns(['district_hospital']);
     xmlForms = sinon.stub();
-    forms = 'forms';
+    forms = [{ internalId: 'a-form', icon: 'an-icon', title: 'A Form' }];
     xmlForms.callsArgWith(2, null, forms); // call the callback
     userSettings = KarmaUtils.promiseService(null, { facility_id: district._id });
     contactsLiveList = deadList();
     getDataRecords = KarmaUtils.promiseService(null, district);
     searchResults = [];
+    var $translate = key => Promise.resolve(key + 'translated');
+    $translate.instant = key => key + 'translated';
 
     createController = () => {
       searchService = sinon.stub();
@@ -77,7 +79,7 @@ describe('Contacts controller', () => {
         '$q': Q,
         '$state': { includes: sinon.stub() },
         '$timeout': work => work(),
-        '$translate': key => Promise.resolve(key + 'translated'),
+        '$translate': $translate,
         'ContactSchema': contactSchema,
         'GetDataRecords': getDataRecords,
         'LiveList': { contacts: contactsLiveList },
@@ -95,7 +97,8 @@ describe('Contacts controller', () => {
           return { unsubscribe: () => {} };
         },
         'Tour': () => {},
-        'Export': () => {}
+        'Export': () => {},
+        'TranslateFrom': key => `TranslateFrom:${key}`
       });
     };
   }));
@@ -132,8 +135,8 @@ describe('Contacts controller', () => {
 
     it('for the New Place button', () => {
       return testRightActionBar({ doc: district }, actionBarArgs => {
-        assert.deepEqual(actionBarArgs.selected[0].child.type, childType);
-        assert.deepEqual(actionBarArgs.selected[0].child.icon, icon);
+        assert.equal(actionBarArgs.selected[0].child.type, childType);
+        assert.equal(actionBarArgs.selected[0].child.icon, icon);
         assert.equal(actionBarArgs.selected[0].child.addPlaceLabel, buttonLabel);
       });
     });
@@ -141,11 +144,12 @@ describe('Contacts controller', () => {
     it('no New Place button if no child type', () => {
       contactSchema.getChildPlaceType.returns(undefined);
       return testRightActionBar({ doc: person }, actionBarArgs => {
-        assert.deepEqual(actionBarArgs.selected[0].child, undefined);
+        assert.equal(actionBarArgs.selected[0].child, undefined);
         // But the other buttons are there!
-        assert.deepEqual(actionBarArgs.relevantForms, forms);
+        assert.equal(actionBarArgs.relevantForms.length, 1);
+        assert.equal(actionBarArgs.relevantForms[0].code, 'a-form');
         assert.deepEqual(actionBarArgs.sendTo, person);
-        assert.deepEqual(actionBarArgs.selected[0]._id, person._id);
+        assert.equal(actionBarArgs.selected[0]._id, person._id);
       });
     });
 
@@ -157,24 +161,25 @@ describe('Contacts controller', () => {
 
     it('no Message and Call buttons if doc is not person', () => {
       return testRightActionBar({ doc: district }, actionBarArgs => {
-        assert.deepEqual(actionBarArgs.sendTo, '');
+        assert.equal(actionBarArgs.sendTo, '');
       });
     });
 
     it('for the New Action button', () => {
       return testRightActionBar({ doc: person }, actionBarArgs => {
-        assert.deepEqual(actionBarArgs.relevantForms, forms);
+        assert.equal(actionBarArgs.relevantForms.length, 1);
+        assert.equal(actionBarArgs.relevantForms[0].code, 'a-form');
       });
     });
 
     it('sets the actionbar partially if it couldn\'t get forms', () => {
       xmlForms.callsArgWith(2, { error: 'no forms brew'}); // call the callback
       return testRightActionBar({ doc: person }, actionBarArgs => {
-        assert.deepEqual(actionBarArgs.relevantForms, undefined);
+        assert.equal(actionBarArgs.relevantForms, undefined);
         assert.deepEqual(actionBarArgs.sendTo, person);
-        assert.deepEqual(actionBarArgs.selected[0]._id, person._id);
-        assert.deepEqual(actionBarArgs.selected[0].child.type, childType);
-        assert.deepEqual(actionBarArgs.selected[0].child.icon, icon);
+        assert.equal(actionBarArgs.selected[0]._id, person._id);
+        assert.equal(actionBarArgs.selected[0].child.type, childType);
+        assert.equal(actionBarArgs.selected[0].child.icon, icon);
         assert.equal(actionBarArgs.selected[0].child.addPlaceLabel, buttonLabel);
       });
     });
@@ -206,6 +211,38 @@ describe('Contacts controller', () => {
     it('enables deleting for leaf nodes', () => {
       return testRightActionBar({ doc: district, children: { persons: [], places: [] } }, actionBarArgs => {
         assert.equal(actionBarArgs.canDelete, true);
+      });
+    });
+
+    describe('translates form titles', () => {
+
+      const testTranslation = (form, expectedTitle) => {
+        xmlForms.callsArgWith(2, null, [ form ]);
+        return createController().getSetupPromiseForTesting()
+          .then(() => {
+            return scope.setSelected({ doc: district });
+          })
+          .then(() => {
+            assert(scope.setRightActionBar.called, 'right actionBar should be set');
+            const actionBarArgs = scope.setRightActionBar.getCall(0).args[0];
+            assert.deepEqual(actionBarArgs.relevantForms.length, 1);
+            assert.equal(actionBarArgs.relevantForms[0].title, expectedTitle);
+          });
+      };
+
+      it('uses the translation_key', () => {
+        const form = { internalId: 'a', icon: 'a-icon', translation_key: 'a.form.key' };
+        return testTranslation(form, 'a.form.keytranslated');
+      });
+
+      it('uses the title', () => {
+        const form = { internalId: 'a', icon: 'a-icon', title: 'My Form' };
+        return testTranslation(form, 'TranslateFrom:My Form');
+      });
+
+      it('uses the translation_key in preference to the title', () => {
+        const form = { internalId: 'a', icon: 'a-icon', translation_key: 'a.form.key', title: 'My Form' };
+        return testTranslation(form, 'a.form.keytranslated');
       });
     });
   });

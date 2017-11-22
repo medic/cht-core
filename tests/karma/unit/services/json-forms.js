@@ -29,20 +29,20 @@ describe('JsonForms service', function() {
       .catch(done);
   });
 
-  it('returns forms with old style labels', function(done) {
+  it('returns forms with names and translation keys', function(done) {
     Settings.returns(Promise.resolve({ forms: {
       A: { meta: { code: 'A', label: 'First',  icon: 'a' } },
       B: { meta: { code: 'B', label: 'Second', icon: 'b' } },
       C: { meta: { code: 'C', label: 'Third',  icon: 'c' } },
-      D: { meta: { code: 'D', label: 'Fourth', icon: 'd' } }
+      D: { meta: { code: 'D', translation_key: 'Fourth', icon: 'd' } }
     } }));
     service()
       .then(function(actual) {
         chai.expect(actual).to.deep.equal([
-          { code: 'A', name: 'First',  icon: 'a' },
-          { code: 'B', name: 'Second', icon: 'b' },
-          { code: 'C', name: 'Third',  icon: 'c' },
-          { code: 'D', name: 'Fourth', icon: 'd' }
+          { code: 'A', name: 'First',   translation_key: undefined, icon: 'a' },
+          { code: 'B', name: 'Second',  translation_key: undefined, icon: 'b' },
+          { code: 'C', name: 'Third',   translation_key: undefined, icon: 'c' },
+          { code: 'D', name: undefined, translation_key: 'Fourth' , icon: 'd' }
         ]);
         done();
       })
@@ -59,10 +59,10 @@ describe('JsonForms service', function() {
     service()
       .then(function(actual) {
         chai.expect(actual).to.deep.equal([
-          { code: 'A', name: undefined, icon: undefined },
-          { code: 'B', name: undefined, icon: 'b' },
-          { code: 'C', name: 'Third',   icon: undefined },
-          { code: 'D', name: undefined, icon: undefined }
+          { code: 'A', name: undefined, translation_key: undefined, icon: undefined },
+          { code: 'B', name: undefined, translation_key: undefined, icon: 'b' },
+          { code: 'C', name: 'Third',   translation_key: undefined, icon: undefined },
+          { code: 'D', name: undefined, translation_key: undefined, icon: undefined }
         ]);
         done();
       })
