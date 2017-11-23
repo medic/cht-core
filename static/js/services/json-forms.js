@@ -13,6 +13,7 @@ angular.module('inboxServices').factory('JsonForms',
         return {
           code: form.meta.code,
           name: form.meta.label,
+          translation_key: form.meta.translation_key,
           icon: form.meta.icon
         };
       });

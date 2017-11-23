@@ -7,17 +7,16 @@ var format = require('../modules/format'),
 
   var module = angular.module('inboxFilters');
 
-  var getFormName = function(TranslateFrom, record, forms) {
+  var getFormName = function(record, forms) {
     var form = _.findWhere(forms, { code: record.form });
     if (form) {
-      return TranslateFrom(form.name);
+      return form.title;
     }
     return record.form;
   };
 
   module.filter('summary', function(
-    $translate,
-    TranslateFrom
+    $translate
   ) {
     'ngInject';
     return function(record, forms) {
@@ -25,7 +24,7 @@ var format = require('../modules/format'),
         return '';
       }
       if (record.form) {
-        return getFormName(TranslateFrom, record, forms);
+        return getFormName(record, forms);
       }
       if (record.message && record.message.message) {
         return record.message.message;
@@ -41,8 +40,7 @@ var format = require('../modules/format'),
   });
 
   module.filter('title', function(
-    $translate,
-    TranslateFrom
+    $translate
   ) {
     'ngInject';
     return function(record, forms) {
@@ -50,7 +48,7 @@ var format = require('../modules/format'),
         return '';
       }
       if (record.form) {
-        return getFormName(TranslateFrom, record, forms);
+        return getFormName(record, forms);
       }
       if (record.kujua_message) {
         return $translate.instant('Outgoing Message');

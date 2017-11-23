@@ -256,15 +256,6 @@
           }
         }
       })
-      .state('configuration.translation.messages', {
-        url: '/messages',
-        views: {
-          tab: {
-            controller: 'ConfigurationTranslationMessagesCtrl',
-            templateUrl: 'templates/partials/configuration_translation_messages.html'
-          }
-        }
-      })
       .state('configuration.forms', {
         url: '/forms',
         views: {

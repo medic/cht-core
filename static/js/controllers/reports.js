@@ -19,8 +19,7 @@ angular.module('inboxControllers').controller('ReportsCtrl',
     Search,
     SearchFilters,
     Session,
-    Tour,
-    TranslateFrom
+    Tour
   ) {
     'use strict';
     'ngInject';
@@ -71,11 +70,12 @@ angular.module('inboxControllers').controller('ReportsCtrl',
     };
 
     var setTitle = function(model) {
-      var form = _.findWhere($scope.forms, { code: model.form });
+      var formInternalId = model.formInternalId || model.form;
+      var form = _.findWhere($scope.forms, { code: formInternalId });
       var name = (form && form.name) ||
                  (form && form.title) ||
                  model.form;
-      $scope.setTitle(TranslateFrom(name));
+      $scope.setTitle(name);
     };
 
     var setRightActionBar = function() {

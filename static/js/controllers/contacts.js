@@ -28,6 +28,7 @@ var _ = require('underscore'),
       Session,
       Simprints,
       Tour,
+      TranslateFrom,
       UserSettings,
       XmlForms
     ) {
@@ -150,6 +151,10 @@ var _ = require('underscore'),
           });
       };
 
+      var translateTitle = function(key, label) {
+        return key ? $translate.instant(key) : TranslateFrom(label);
+      };
+
       $scope.setSelected = function(selected) {
         liveList.setSelected(selected.doc._id);
         $scope.selected = selected;
@@ -180,13 +185,20 @@ var _ = require('underscore'),
               if (err) {
                 $log.error('Error fetching relevant forms', err);
               }
+              var formSummaries = forms && forms.map(function(xForm) {
+                return {
+                  code: xForm.internalId,
+                  title: translateTitle(xForm.translation_key, xForm.title),
+                  icon: xForm.icon
+                };
+              });
               var canDelete = !selected.children || (
                                 (!selected.children.places  || selected.children.places.length === 0) &&
                                 (!selected.children.persons || selected.children.persons.length === 0)
                               );
               $scope.setRightActionBar({
                 selected: [ selectedDoc ],
-                relevantForms: forms,
+                relevantForms: formSummaries,
                 sendTo: selectedDoc.type === 'person' ? selectedDoc : '',
                 canEdit: canEdit,
                 canDelete: canDelete

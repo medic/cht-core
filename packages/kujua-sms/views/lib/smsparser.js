@@ -227,9 +227,13 @@ exports.parse = function (def, doc) {
 
             // replace tiny labels with field keys for textforms
             for (var j in def.fields) {
-                var label = lower(utils.info.getMessage(
-                    def.fields[j].labels.tiny, doc.locale
-                ));
+                var label = def.fields[j].labels.tiny;
+                if (typeof label === 'string') {
+                    label = utils.info.translate(label, doc.locale);
+                } else {
+                    label = utils.info.getMessage(label, doc.locale);
+                }
+                label = lower(label);
                 if (j !== label && msg_data[label]) {
                     msg_data[j] = msg_data[label];
                     msg_data[label] = undefined;
