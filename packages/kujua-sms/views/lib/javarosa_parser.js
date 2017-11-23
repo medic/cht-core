@@ -47,7 +47,12 @@ exports.parse = function(def, doc) {
         if (!field.labels || !field.labels.tiny) {
             return;
         }
-        var label = sms_utils.info.getMessage(field.labels.tiny);
+        var label = field.labels.tiny;
+        if (typeof label === 'string') {
+            label = sms_utils.info.translate(label);
+        } else {
+            label = sms_utils.info.getMessage(label);
+        }
         for (var i = 0; i < labels.length && i < vals.length; i++) {
             if (labels[i].match(new RegExp('^' + label + '$', 'i'))) {
                 obj[key] = vals[i].replace(/\\#/g, '#');

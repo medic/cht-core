@@ -245,6 +245,13 @@ exports.parseCompact = function(def, msg) {
     return results;
 };
 
+var translateLabel = function(label, locale) {
+    if (typeof label === 'string') {
+        return sms_utils.info.translate(label, locale);
+    }
+    return sms_utils.info.getMessage(label, locale);
+};
+
 /**
  * @param {Object} def The form definition for this msg
  * @param {String|Object} msg The message or an object with a 'message'
@@ -264,8 +271,8 @@ exports.isCompact = function(def, msg, locale) {
     }
     var labels = _.flatten(_.map(_.values(def.fields), function(field) {
         return [
-            sms_utils.info.getMessage(field.labels.tiny, locale),
-            sms_utils.info.getMessage(field.labels.short, locale)
+            translateLabel(field.labels.tiny, locale),
+            translateLabel(field.labels.short, locale)
         ];
     }));
     return !_.some(labels, function(label) {

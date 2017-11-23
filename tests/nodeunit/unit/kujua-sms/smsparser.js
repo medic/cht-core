@@ -21,16 +21,14 @@ var smsparser = proxyquire('../../../../packages/kujua-sms/views/lib/smsparser',
 
 var utils = {
         info: {
-            getForm: function() {}
+            getForm: function() {},
         }
     },
-    sinon = require('sinon'),
+    sinon = require('sinon').sandbox.create();
     definitions = require('../../form_definitions');
 
 exports.tearDown = function(callback) {
-    if (utils.info.getForm.restore) {
-        utils.info.getForm.restore();
-    }
+    sinon.restore();
     callback();
 };
 
@@ -1437,6 +1435,62 @@ exports['support textforms locale on tiny labels'] = function(test) {
     };
     var data = smsparser.parse(def, doc, doc.locale);
     test.same(data, {name: 'n jane'});
+
+    // textforms with locale match parses correctly
+    doc = {
+        message: 'R j jane',
+        locale: 'sw'
+    };
+    data = smsparser.parse(def, doc);
+    test.same(data, {name: 'jane'});
+
+    // same thing but case insensitive check
+    doc = {
+        message: 'r J jane',
+        locale: 'sw'
+    };
+    data = smsparser.parse(def, doc);
+    test.same(data, {name: 'jane'});
+
+    // compact parses correctly
+    doc = {
+        message: 'R jane'
+    };
+    data = smsparser.parse(def, doc);
+    test.same(data, {name: 'jane'});
+
+    // muvuku parses correctly
+    doc = {
+        message: '1!R!jane'
+    };
+    data = smsparser.parse(def, doc);
+    test.same(data, {name: 'jane'});
+
+    test.done();
+
+};
+
+exports['support translation keys on tiny labels'] = function(test) {
+
+    var def = {
+        meta: {
+            code: 'R'
+        },
+        fields: {
+            name: {
+                type: 'string',
+                labels: {
+                    short: 'Name',
+                    tiny: 'form.r.name.tiny'
+                }
+            }
+        }
+    };
+
+    sinon.stub(kujua_sms_utils.info, 'translate')
+        .withArgs('form.r.name.tiny', 'sw').returns('J')
+        .withArgs('Name', 'sw').returns('Name')
+        .withArgs('jane').returns('jane');
 
     // textforms with locale match parses correctly
     doc = {
