@@ -24,7 +24,7 @@ var utils = {
             getForm: function() {},
         }
     },
-    sinon = require('sinon').sandbox.create();
+    sinon = require('sinon').sandbox.create(),
     definitions = require('../../form_definitions');
 
 exports.tearDown = function(callback) {
@@ -1493,11 +1493,11 @@ exports['support translation keys on tiny labels'] = function(test) {
         .withArgs('jane').returns('jane');
 
     // textforms with locale match parses correctly
-    doc = {
+    var doc = {
         message: 'R j jane',
         locale: 'sw'
     };
-    data = smsparser.parse(def, doc);
+    var data = smsparser.parse(def, doc);
     test.same(data, {name: 'jane'});
 
     // same thing but case insensitive check

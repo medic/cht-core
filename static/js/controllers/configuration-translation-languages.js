@@ -9,24 +9,12 @@ angular.module('inboxControllers').controller('ConfigurationTranslationLanguages
     DB,
     ExportProperties,
     Modal,
-    OutgoingMessagesConfiguration,
     Settings,
     UpdateSettings
   ) {
 
     'use strict';
     'ngInject';
-
-    var countMissingOutgoingMessages = function(settings, locale) {
-      var messages = _.flatten(
-        _.pluck(OutgoingMessagesConfiguration(settings), 'translations'),
-        true
-      );
-      var missing =  _.filter(messages, function(message) {
-        return !_.findWhere(message.translations, { locale: locale.code });
-      });
-      return missing.length;
-    };
 
     var createLocaleModel = function(settings, doc, totalTranslations) {
       var result = {
@@ -42,9 +30,7 @@ angular.module('inboxControllers').controller('ConfigurationTranslationLanguages
         };
       }
 
-      var missingTranslations = totalTranslations - Object.keys(doc.values).length;
-      var missingMessages = countMissingOutgoingMessages(settings, doc);
-      result.missing = missingTranslations + missingMessages;
+      result.missing = totalTranslations - Object.keys(doc.values).length;
 
       return result;
     };

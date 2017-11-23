@@ -56,7 +56,6 @@
   require('./message-state');
   require('./modal');
   require('./moment-locale-data');
-  require('./outgoing-messages-configuration');
   require('./place-hierarchy');
   require('./properties');
   require('./report-view-model-generator');
