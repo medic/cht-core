@@ -1,5 +1,4 @@
-const _ = require('underscore'),
-      utils = require('../utils'),
+const utils = require('../utils'),
       auth = require('../auth')();
 
 describe('Integration', () => {
@@ -86,22 +85,4 @@ describe('Integration', () => {
           .then(done, done);
       });
   });
-
-  it('can download messages using basic auth', () => {
-    const flow = protractor.promise.controlFlow();
-    flow.execute(() => {
-      return utils.request({
-        path: '/api/v1/messages',
-        method: 'GET'
-      });
-    }).then(result => {
-      const doc = _.findWhere(result, { _record_id: savedUuid });
-      expect(doc._record_id).toEqual(savedUuid);
-      expect(doc.message).toEqual('hello!');
-    }, err => {
-      console.error(err);
-      expect(true).toEqual(false);
-    });
-  });
 });
-
