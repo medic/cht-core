@@ -1,11 +1,4 @@
-var proxyquire = require('proxyquire').noCallThru();
-
-var kujua_utils = proxyquire('../../../../packages/kujua-utils/kujua-utils', {
-    'cookies': {}
-});
-var validate = proxyquire('../../../../packages/kujua-sms/kujua-sms/validate', {
-    'kujua-utils': kujua_utils
-});
+var validate = require('../../../../packages/kujua-sms/kujua-sms/validate');
 
 /*
  * check that missing fields are logged as errors.

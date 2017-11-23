@@ -1,9 +1,5 @@
 var proxyquire = require('proxyquire').noCallThru();
-var kujua_utils = proxyquire('../../../../packages/kujua-utils/kujua-utils', {
-    'cookies': {}
-});
 var kujua_sms_utils = proxyquire('../../../../packages/kujua-sms/kujua-sms/utils', {
-    'kujua-utils': kujua_utils,
     'views/lib/objectpath': {}
 });
 var textforms_parser = proxyquire('../../../../packages/kujua-sms/views/lib/textforms_parser', {
@@ -13,7 +9,6 @@ var javarosa_parser = proxyquire('../../../../packages/kujua-sms/views/lib/javar
     'kujua-sms/utils': kujua_sms_utils
 });
 var smsparser = proxyquire('../../../../packages/kujua-sms/views/lib/smsparser', {
-    'kujua-utils': kujua_utils,
     'kujua-sms/utils': kujua_sms_utils,
     './javarosa_parser': javarosa_parser,
     './textforms_parser': textforms_parser

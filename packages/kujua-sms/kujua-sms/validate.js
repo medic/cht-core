@@ -1,5 +1,4 @@
-var _ = require('underscore')._,
-    logger = require('kujua-utils').logger;
+var _ = require('underscore')._;
 
 /*
  *  return array of errors or empty array.

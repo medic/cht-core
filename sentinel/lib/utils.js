@@ -57,6 +57,7 @@ const getDistrictPhone = doc => {
   return f && f.contact && f.contact.phone;
 };
 
+// TODO Use a shared library for this duplicated code #4021
 const setTaskState = (task, state) => {
   task.state = state;
   task.state_history = task.state_history || [];

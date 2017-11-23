@@ -1,5 +1,3 @@
-var utils = require('kujua-utils');
-
 (function () {
 
   'use strict';
@@ -31,10 +29,10 @@ var utils = require('kujua-utils');
         if (!userCtx || !userCtx.name) {
           return $q.reject(new Error('Not logged in'));
         }
-        if (Session.isAdmin()) {
+        if (Session.isAdmin(userCtx)) {
           return $q.resolve();
         }
-        if (!utils.isUserDistrictAdmin(userCtx)) {
+        if (!Session.isDistrictAdmin(userCtx)) {
           return $q.reject(new Error('The administrator needs to give you additional privileges to use this site.'));
         }
         return getWithRemoteFallback(DB, 'org.couchdb.user:' + userCtx.name)

@@ -1,15 +1,7 @@
-var proxyquire = require('proxyquire').noCallThru(),
-    bootstrapper = proxyquire('../../../static/js/bootstrapper', {
-      'kujua-utils': {
-        isUserAdmin: function() {
-          return isAdmin;
-        }
-      }
-    }),
+var bootstrapper = require('../../../static/js/bootstrapper'),
     sinon = require('sinon'),
     originalDocument,
     originalWindow,
-    isAdmin,
     pouchDb,
     pouchDbOptions = {
       local: { auto_compaction: true },
@@ -19,7 +11,6 @@ var proxyquire = require('proxyquire').noCallThru(),
 // ignore "Read Only" jshint error for overwriting `document` and `window`
 // jshint -W020
 exports.setUp = function(cb) {
-  isAdmin = false;
   pouchDb = sinon.stub();
   if (typeof document !== 'undefined') {
     originalDocument = document;
@@ -58,8 +49,7 @@ exports.tearDown = function(cb) {
 // jshint +W020
 
 exports['does nothing for admins'] = function(test) {
-  setUserCtxCookie({ name: 'jim' });
-  isAdmin = true;
+  setUserCtxCookie({ name: 'jimbo', roles: [ '_admin' ] });
   bootstrapper(pouchDbOptions, function(err) {
     test.equal(null, err);
     test.equal(pouchDb.callCount, 0);

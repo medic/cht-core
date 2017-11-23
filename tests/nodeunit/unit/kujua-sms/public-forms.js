@@ -8,14 +8,8 @@ var info = proxyquire('../../../../packages/kujua-sms/views/lib/appinfo', {
     'duality/utils': { getBaseURL: function() { return 'BASEURL'; } },
     'underscore': require('underscore')
 });
-var kujua_utils = proxyquire('../../../../packages/kujua-utils/kujua-utils', {
-    'cookies': {}
-});
-var validate = proxyquire('../../../../packages/kujua-sms/kujua-sms/validate', {
-    'kujua-utils': kujua_utils
-});
+var validate = require('../../../../packages/kujua-sms/kujua-sms/validate');
 var kujua_sms_utils = proxyquire('../../../../packages/kujua-sms/kujua-sms/utils', {
-    'kujua-utils': kujua_utils,
     'views/lib/objectpath': {},
     'underscore': require('underscore')
 });
@@ -26,7 +20,6 @@ var javarosa_parser = proxyquire('../../../../packages/kujua-sms/views/lib/javar
     'kujua-sms/utils': kujua_sms_utils
 });
 var smsparser = proxyquire('../../../../packages/kujua-sms/views/lib/smsparser', {
-    'kujua-utils': kujua_utils,
     'kujua-sms/utils': kujua_sms_utils,
     './javarosa_parser': javarosa_parser,
     './textforms_parser': textforms_parser
@@ -36,7 +29,6 @@ var libphonenumber = proxyquire('../../../../packages/libphonenumber/libphonenum
 });
 var updates = proxyquire('../../../../packages/kujua-sms/kujua-sms/updates', {
     'moment': require('../../../../packages/moment/moment'),
-    'kujua-utils': kujua_utils,
     'views/lib/appinfo': info,
     'views/lib/smsparser': smsparser,
     'libphonenumber/utils': libphonenumber,

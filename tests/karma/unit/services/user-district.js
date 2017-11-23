@@ -6,11 +6,13 @@ describe('UserDistrict service', function() {
       user,
       userCtx,
       get,
-      isAdmin;
+      isAdmin,
+      isDistrictAdmin;
 
   beforeEach(function() {
     get = sinon.stub();
     isAdmin = sinon.stub();
+    isDistrictAdmin = sinon.stub();
     module('inboxApp');
     module(function ($provide) {
       $provide.factory('DB', KarmaUtils.mockDB({ get: get }));
@@ -22,7 +24,8 @@ describe('UserDistrict service', function() {
         userCtx: function() {
           return userCtx;
         },
-        isAdmin: isAdmin
+        isAdmin: isAdmin,
+        isDistrictAdmin: isDistrictAdmin
       });
     });
     inject(function($injector) {
@@ -33,7 +36,7 @@ describe('UserDistrict service', function() {
   });
 
   afterEach(function() {
-    KarmaUtils.restore(get, isAdmin);
+    KarmaUtils.restore(get, isAdmin, isDistrictAdmin);
   });
 
   it('returns nothing for db admin', function() {
@@ -72,6 +75,7 @@ describe('UserDistrict service', function() {
       roles: ['district_admin']
     };
     isAdmin.returns(false);
+    isDistrictAdmin.returns(true);
 
     user = {
       name: 'jeff',
@@ -99,6 +103,7 @@ describe('UserDistrict service', function() {
       roles: ['district_admin']
     };
     isAdmin.returns(false);
+    isDistrictAdmin.returns(true);
 
     user = {
       name: 'jeff',
@@ -124,6 +129,7 @@ describe('UserDistrict service', function() {
       roles: ['district_admin']
     };
     isAdmin.returns(false);
+    isDistrictAdmin.returns(true);
 
     user = {
       name: 'jeff',
@@ -154,6 +160,7 @@ describe('UserDistrict service', function() {
       roles: ['analytics']
     };
     isAdmin.returns(false);
+    isDistrictAdmin.returns(false);
 
     return service()
       .then(function() {
@@ -168,7 +175,6 @@ describe('UserDistrict service', function() {
   it('returns error for not logged in', function() {
 
     userCtx = {};
-    isAdmin.returns(false);
 
     return service()
       .then(function() {
