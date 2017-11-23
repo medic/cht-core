@@ -1,5 +1,5 @@
 const _ = require('underscore'),
-      db = require('../db'),
+      db = require('./db'),
       taskUtils = require('task-utils');
 
 const getTaskMessages = function(options, callback) {
@@ -63,23 +63,6 @@ const applyTaskStateChangesToDocs = (taskStateChanges, docs) => {
 
 module.exports = {
   /*
-   * Gets a message given an id
-   */
-  getMessage: function(id, callback) {
-    if (!id) {
-      return callback({ code: 500, message: 'Missing "id" parameter.' });
-    }
-    getTaskMessages({ key: id }, function(err, data) {
-      if (err) {
-        return callback(err);
-      }
-      if (data.rows.length === 0) {
-        return callback({ code: 404, message: 'Not Found' });
-      }
-      callback(null, data.rows[0].value);
-    });
-  },
-  /*
    * Returns `options.limit` messages, optionally filtering by state.
    */
   getMessages: function(options, callback) {
@@ -117,12 +100,6 @@ module.exports = {
       msgs.sort(sortFunc);
       callback(null, msgs);
     });
-  },
-  /*
-   * See: updateMessageTaskStates
-   */
-  updateMessageTaskState: function(taskStateChange, callback) {
-    module.exports.updateMessageTaskStates([taskStateChange], callback);
   },
   /*
    * taskStateChanges: a collection of:
