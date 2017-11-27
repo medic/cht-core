@@ -54,19 +54,12 @@ const _exists = (doc, fields, options, callback) => {
                 return callback(err);
             }
             // filter out docs with errors
-            const rows = result.rows.filter(row => {
-                return (!row.doc.errors || row.doc.errors.length === 0);
+            const found = result.rows.some(row => {
+                const doc = row.doc;
+                return (!doc.errors || doc.errors.length === 0) &&
+                       (!options.startDate || doc.reported_date >= options.startDate);
             });
-            if (!rows.length) {
-                return callback(null, false);
-            }
-            if (!options.startDate) {
-                return callback(null, true);
-            }
-            // the views all respond with the reported_date as the value
-            // and in ascending order so check the last value in the intersection
-            const latestReportedDate = rows[rows.length - 1].doc.reported_date;
-            callback(null, latestReportedDate >= options.startDate);
+            return callback(null, found);
         });
     });
 };
