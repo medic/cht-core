@@ -61,19 +61,26 @@ module.exports = {
     });
   },
 
-  cleanDb: function() {
+  /**
+   * Removes unneeded docs from the db. By default keeps "core" medic docs.
+   *
+   * @param      {Array[Regex]}  notLike array of regexs of document names to not delete
+   * @return     {Promise}  completion promise
+   */
+  cleanDb: function(notLike) {
     // delete all docs from DB except for standard medic docs
     return db.allDocs()
       .then(function(res) {
         return _.chain(res.rows)
             .reject(function(row) {
               var id = row.id;
-              return id.indexOf('_design/') === 0 ||
-                  id.indexOf('org.couchdb.user:') === 0 ||
-                  ['appcache', 'messages', 'resources', 'PARENT_PLACE']
-                      .indexOf(id) !== -1 ||
-                  id.indexOf('messages-') === 0 ||
-                  id.indexOf('fixture:') === 0;
+              return [
+                /^_design\//,
+                /^org.couchdb.user:/,
+                /^appcache$/,
+                /^messages$/,
+                /^resouces$/,
+              ].concat(notLike).find(r => r.test(id));
             })
             .map(function(row) {
               return {
