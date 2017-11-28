@@ -90,9 +90,9 @@ define( function( require, exports, module ) {
                     $el.attr( 'data-mm-android-dp', randomId );
 
                     if ( val ) {
-                        medicmobile_android.datePicker( selector, val );
+                        window.medicmobile_android.datePicker( selector, val );
                     } else {
-                        medicmobile_android.datePicker( selector );
+                        window.medicmobile_android.datePicker( selector );
                     }
                 });
             });

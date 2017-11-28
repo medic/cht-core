@@ -115,7 +115,7 @@ function TimerAnimation(canvas, canvasW, canvasH, duration) {
         return {
             play: function() {
                 if(androidSoundSupport) {
-                    medicmobile_android.playAlert();
+                    window.medicmobile_android.playAlert();
                 } else {
                     cached.play();
                 }
