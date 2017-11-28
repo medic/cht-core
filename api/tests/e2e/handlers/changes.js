@@ -98,11 +98,23 @@ var AppSettings = {
 
 describe('changes handler', function() {
 
+  const DOCS_TO_KEEP = [
+    /^PARENT_PLACE$/,
+    /^messages-/,
+    /^fixture/
+  ];
+
+  // before(done => {
+
+  // });
+
+  after(done => utils.cleanDb().then(done));
+
   beforeEach(function(done) {
     AppSettings.modified = false;
     delete AppSettings.original;
 
-    utils.cleanDb()
+    utils.cleanDb(DOCS_TO_KEEP)
       .then(function() {
         done();
       })
