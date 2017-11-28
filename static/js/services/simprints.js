@@ -23,6 +23,7 @@ angular.module('inboxServices').service('Simprints',
         id: requestId,
         deferred: $q.defer()
       };
+      // `call` needed to specify context: #3511
       endpoint.call($window.medicmobile_android, currentRequest.id);
       return currentRequest.deferred.promise;
     };
