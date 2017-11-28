@@ -241,17 +241,40 @@ exports['fail uniqueWithin validation on new doc'] = function(test) {
     test.expect(1);
     clock = sinon.useFakeTimers();
     sinon.stub(db.medic, 'view').callsArgWith(3, null, {
-        rows: [{ id: 'different' }]
+        rows: [
+            { id: 'different1' },
+            { id: 'different2' },
+            { id: 'different3' }
+        ]
     });
+    // rows are sorted based on uuid not on date, so we have to check all docs
     sinon.stub(db.medic, 'fetch').callsArgWith(1, null, {
-        rows: [{
-            id: 'different',
-            doc: {
-                _id: 'different',
-                errors: [],
-                reported_date: moment().subtract(1, 'weeks').valueOf()
+        rows: [
+            {
+                id: 'different1',
+                doc: {
+                    _id: 'different1',
+                    errors: [],
+                    reported_date: moment().subtract(3, 'weeks').valueOf()
+                }
+            },
+            {
+                id: 'different2',
+                doc: {
+                    _id: 'different2',
+                    errors: [],
+                    reported_date: moment().subtract(1, 'weeks').valueOf()
+                }
+            },
+            {
+                id: 'different3',
+                doc: {
+                    _id: 'different3',
+                    errors: [],
+                    reported_date: moment().subtract(10, 'weeks').valueOf()
+                }
             }
-        }]
+        ]
     });
     var validations = [{
         property: 'xyz',
