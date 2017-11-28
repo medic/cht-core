@@ -33,7 +33,9 @@
                 {{appointment.contact.name}}
               </a>
             </td>
-            <td ng-bind-html="appointment.date | relativeDate"></td>
+            <td>
+              <relative-date date="appointment.date"></relative-date>
+            </td>
             <td ng-class="{'no-visits': appointment.visits === 0}">
               <span>{{appointment.visits}}</span>
             </td>

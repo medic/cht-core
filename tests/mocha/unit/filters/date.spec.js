@@ -3,17 +3,11 @@ const assert = require('chai').assert;
 const mockAngular = require('../mock-angular');
 require('../../../../static/js/filters/date');
 const filter = mockAngular.modules.inboxFilters.filters;
+const renderDateModule = require('../../../../static/js/modules/render-date');
 
 describe('date filter', function() {
-  
-  const TEST_DATE = new Date(2398472085558);
 
-  const TEST_TASK = {
-    messages: [
-      { message: 'MESSAGE' },
-    ],
-    state: 'STATE',
-  };
+  const TEST_DATE = new Date(2398472085558);
 
   const FormatDate = {
     age: momentDate => `${momentDate.year() - 1970} years`,
@@ -21,35 +15,25 @@ describe('date filter', function() {
     datetime: d => `${d.toISOString()}`,
     relative: d => `${Math.floor((d - TEST_DATE) / 86400000)} days`,
   };
-  const $translate = {
-    instant: x => x,
-  };
+  const RenderDate = renderDateModule;
 
   describe('age', function() {
 
-    const age = filter.age(FormatDate);
+    const age = filter.age(FormatDate, RenderDate);
 
     it('should return nicely-formatted output', function() {
       // expect
-      assert.equal(age(TEST_DATE), '<span class="relative-date future" title="2046-01-02"><span class="relative-date-content">76 years</span></span>');
-    });
-
-  });
-
-  describe('autoreply', function() {
-
-    const autoreply = filter.autoreply(FormatDate, $translate);
-
-    it('should return nicely-formatted output', function() {
-      // expect
-      assert.equal(autoreply(TEST_TASK), '<span><span class="state STATE">state.STATE</span>&nbsp;<span class="autoreply" title="MESSAGE"><span class="autoreply-content">autoreply</span></span>&nbsp</span>');
+      assert.equal(
+        age(TEST_DATE),
+        '<span class="relative-date future" title="2046-01-02"><span class="relative-date-content">76 years</span></span>'
+      );
     });
 
   });
 
   describe('dayMonth', function() {
 
-    const dayMonth = filter.dayMonth(FormatDate, $translate);
+    const dayMonth = filter.dayMonth();
 
     it('should return nicely-formatted output', function() {
       // expect
@@ -58,20 +42,9 @@ describe('date filter', function() {
 
   });
 
-  describe('fullDate', function() {
-
-    const fullDate = filter.fullDate(FormatDate);
-
-    it('should return nicely-formatted output', function() {
-      // expect
-      assert.equal(fullDate(TEST_DATE), '<div class="relative-date-content">0 days</div><div class="full-date">2046-01-02T02:14:45.558Z</div>');
-    });
-
-  });
-
   describe('relativeDate', function() {
 
-    const relativeDate = filter.relativeDate(FormatDate);
+    const relativeDate = filter.relativeDate(FormatDate, RenderDate);
 
     it('should return nicely-formatted output', function() {
       // expect
@@ -82,7 +55,7 @@ describe('date filter', function() {
 
   describe('relativeDay', function() {
 
-    const relativeDay = filter.relativeDay(FormatDate);
+    const relativeDay = filter.relativeDay(FormatDate, RenderDate);
 
     it('should return nicely-formatted output', function() {
       // expect
@@ -109,17 +82,6 @@ describe('date filter', function() {
     it('should return nicely-formatted output', function() {
       // expect
       assert.equal(simpleDateTime(TEST_DATE), '2046-01-02T02:14:45.558Z');
-    });
-
-  });
-
-  describe('state', function() {
-
-    const state = filter.state(FormatDate, $translate);
-
-    it('should return nicely-formatted output', function() {
-      // expect
-      assert.equal(state(TEST_TASK), '<span><span class="state STATE">state.STATE</span>&nbsp;</span>');
     });
 
   });

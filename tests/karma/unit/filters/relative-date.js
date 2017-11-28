@@ -3,11 +3,11 @@ describe('relativeDate filter', function() {
   'use strict';
 
   var compile,
-      scope;
+    scope;
 
   beforeEach(function() {
     module('inboxApp');
-    module(function ($provide) {
+    module(function($provide) {
       $provide.value('FormatDate', {
         datetime: function() {
           return 'day 0';
@@ -42,7 +42,7 @@ describe('relativeDate filter', function() {
     chai.expect(element.text()).to.equal('somerelativetime');
   });
 
-  it('should render a time when the date is today', () => {
+  it('should render a time when the date is today', function() {
     //           today
     scope.date = moment().valueOf();
     var element = compile('<div ng-bind-html="date | relativeDate"></div>')(scope);

@@ -1,0 +1,9 @@
+<span ng-if="task">
+  <task-state state="task.state"></task-state>
+  {{' '}}
+  <relative-date date="taskDate"></relative-date>
+  {{' '}}
+  <span ng-if="recipient" class="recipient">
+    {{recipientContent}}
+  </span>
+</span>

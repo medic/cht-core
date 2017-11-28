@@ -3,13 +3,13 @@ describe('relativeDay filter', function() {
   'use strict';
 
   var compile,
-      scope,
-      date = sinon.stub(),
-      relative = sinon.stub();
+    scope,
+    date = sinon.stub(),
+    relative = sinon.stub();
 
   beforeEach(function() {
     module('inboxApp');
-    module(function ($provide) {
+    module(function($provide) {
       $provide.value('FormatDate', {
         date: date,
         relative: relative

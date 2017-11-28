@@ -25,7 +25,9 @@
           <i class="fa fa-minus-circle"></i>
         </a>
         <div class="detail">
-          <div class="time small-font" ng-bind-html="summary.reported_date | fullDate"></div>
+          <div class="time small-font">
+            <full-date date="summary.reported_date"></full-date>
+          </div>
           <div class="status">
             <i ng-show="valid && !summary.verified" class="fa fa-circle green-dot"></i>
             <i ng-show="!valid && !summary.verified" class="fa fa-circle red-dot"></i>
@@ -78,7 +80,9 @@
                     <p>{{selection.formatted.kujua_message ? message.to : message.message}}</p>
                   </li>
                 </ul>
-                <span class="task-state" ng-bind-html="task | state"></span>
+                <span class="task-state">
+                  <task-state-with-recipient task="task"></task-state-with-recipient>
+                </span>
               </li>
               <li class="clear"></li>
             </ul>
@@ -104,7 +108,9 @@
                       <p>{{message.message}}</p>
                     </li>
                   </ul>
-                  <span class="task-state" ng-bind-html="task | state"></span>
+                  <span class="task-state">
+                    <task-state-with-recipient task="task"></task-state-with-recipient>
+                  </span>
                 </li>
                 <li class="clear"></li>
               </ul>

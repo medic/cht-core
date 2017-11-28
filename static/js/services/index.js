@@ -25,6 +25,7 @@
   require('./db-sync');
   require('./debug');
   require('./delete-docs');
+  require('./dom-mutators');
   require('./download-url');
   require('./edit-group');
   require('./enketo');
@@ -42,6 +43,7 @@
   require('./geolocation');
   require('./get-contact-summaries');
   require('./get-data-records');
+  require('./get-task-date');
   require('./import-contacts');
   require('./kanso-packages');
   require('./language');
@@ -58,6 +60,8 @@
   require('./moment-locale-data');
   require('./place-hierarchy');
   require('./properties');
+  require('./recurring-processes-manager');
+  require('./render-date');
   require('./report-view-model-generator');
   require('./resource-icons');
   require('./rules-engine');

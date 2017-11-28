@@ -62,7 +62,9 @@
         <ul ng-show="versions.branches.length" class="table table-striped">
           <li ng-repeat="release in versions.branches" class="row">
             <div class="col-xs-5"><code>{{release.id}}</code></div>
-            <div class="col-xs-4" ng-bind-html="release.value.build_time | relativeDate"></div>
+            <div class="col-xs-4">
+              <relative-date date="release.value.build_time"></relative-date>
+            </div>
             <div class="col-xs-3">
               <button class="btn btn-primary" ng-click="upgrade(release.id)" translate>upgrade</button>
             </div>

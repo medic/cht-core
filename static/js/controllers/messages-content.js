@@ -1,4 +1,5 @@
 var _ = require('underscore');
+var UPDATE_RELATIVE_TIME = require('../modules/constants').UPDATE_RELATIVE_TIME;
 
 angular.module('inboxControllers').controller('MessagesContentCtrl',
   function (
@@ -13,6 +14,7 @@ angular.module('inboxControllers').controller('MessagesContentCtrl',
     MarkRead,
     MessageContacts,
     Modal,
+    RecurringProcessesManager,
     SendMessage,
     Session
   ) {
@@ -213,7 +215,12 @@ angular.module('inboxControllers').controller('MessagesContentCtrl',
       }
     });
 
-    $scope.$on('$destroy', changeListener.unsubscribe);
+    $scope.$on('$destroy', function() {
+      changeListener.unsubscribe();
+      RecurringProcessesManager.stopProcessByName(
+        UPDATE_RELATIVE_TIME
+      );
+    });
 
     $('.tooltip').remove();
     selectContact($stateParams.id);
@@ -235,5 +242,8 @@ angular.module('inboxControllers').controller('MessagesContentCtrl',
       }
     });
 
+    RecurringProcessesManager.startProcessByName(
+      UPDATE_RELATIVE_TIME
+    );
   }
 );
