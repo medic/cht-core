@@ -129,8 +129,8 @@
               date="task.date"
               overdue="task.isLate"
               hide-time="true"
-              heading="selected.doc.type === 'clinic' ? (task.contact && task.contact.name) : (task.title | translateFrom:task)"
-              summary="selected.doc.type === 'clinic' ? (task.title | translateFrom:task) : ''"
+              heading="selected.doc.type === 'clinic' ? (task.contact && task.contact.name) : task.title"
+              summary="selected.doc.type === 'clinic' ? task.title : ''"
               warning="task.priorityLabel | translateFrom:task"
             />
           </ul>
