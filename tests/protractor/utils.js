@@ -11,6 +11,12 @@ const _ = require('underscore'),
 let originalSettings;
 
 const request = (options, debug) => {
+  if (typeof options === 'string') {
+    options = {
+      path: options
+    };
+  }
+
   const deferred = protractor.promise.defer();
 
   options.hostname = constants.API_HOST;
@@ -48,8 +54,13 @@ const request = (options, debug) => {
   });
 
   if (options.body) {
-    req.write(options.body);
+    if (typeof options.body === 'string') {
+      req.write(options.body);
+    } else {
+      req.write(JSON.stringify(options.body));
+    }
   }
+
   req.end();
 
   return deferred.promise;
@@ -164,7 +175,7 @@ const revertDb = () => {
 module.exports = {
 
   request: request,
-  
+
   reporter: new htmlScreenshotReporter({
     reportTitle: 'e2e Test Report',
     inlineImages: true,
@@ -180,14 +191,18 @@ module.exports = {
   }),
 
   requestOnTestDb: (options, debug) => {
-    options.path = '/' + constants.DB_NAME + options.path;
+    if (typeof options === 'string') {
+      options = {
+        path: options
+      };
+    }
+    options.path = '/' + constants.DB_NAME + (options.path || '');
     return request(options, debug);
   },
 
   saveDoc: doc => {
     const postData = JSON.stringify(doc);
-    return request({
-      path: '/' + constants.DB_NAME,
+    return module.exports.requestOnTestDb({
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -198,15 +213,15 @@ module.exports = {
   },
 
   getDoc: id => {
-    return request({
-      path: `/${constants.DB_NAME}/${id}`,
+    return module.exports.requestOnTestDb({
+      path: `/${id}`,
       method: 'GET'
     });
   },
 
   getAuditDoc: id => {
-    return request({
-      path: `/${constants.DB_NAME}-audit/${id}-audit`,
+    return module.exports.requestOnTestDb({
+      path: `-audit/${id}-audit`,
       method: 'GET'
     });
   },

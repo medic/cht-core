@@ -1,8 +1,6 @@
-const assert = require('chai').assert,
-  utils = require('../utils');
+const utils = require('../../../utils');
 
 const pendingId = 'ff827d04-7083-4ff3-e53807a03a54d8af';
-
 const data_record = {
   _id: 'my_data_record',
   errors: [],
@@ -70,90 +68,77 @@ const data_record = {
   }]
 };
 
-describe('messages controller', function() {
-  var data_record_rev;
-  beforeEach(() =>
-    utils.cleanDb()
-      .then(() => utils.adminDb.put(data_record))
-      .then((result) => {
-        data_record_rev = result.rev;
-      }));
+describe('messages controller', () => {
 
-  afterEach(() => utils.adminDb.remove(data_record._id, data_record_rev));
+  let data_record_rev;
+
+  beforeEach(done =>
+    utils.saveDoc(data_record)
+    .then(result => {
+      data_record_rev = result.rev;
+    })
+    .then(done));
+
+  afterEach(utils.afterEach);
 
   it('should fetch all messages', () =>
-    utils.apiRequest('/api/v1/messages')
+    utils.request('/api/v1/messages', true)
       .then((result) => {
         // TODO stop emitting everything twice : https://github.com/medic/medic-webapp/issues/3400
         // assert.equal(result.length, 3);
-        assert.equal(result.length, 6);
+        expect(result.length).toBe(6);
       }));
 
   it('should fetch messages in ascending order', () =>
-    utils.apiRequest('/api/v1/messages')
+    utils.request('/api/v1/messages')
       .then((result) => {
         assertSortedByAscendingDate(result);
       }));
 
   it('should fetch messages in descending order', () =>
-    utils.apiRequest('/api/v1/messages', {
-        descending: true
-      })
-      .then((result) => {
-        assertSortedByDescendingDate(result);
-      }));
+    utils.request('/api/v1/messages?descending=true')
+    .then((result) => {
+      assertSortedByDescendingDate(result);
+    }));
 
   it('should fetch messages by state', () =>
-    utils.apiRequest('/api/v1/messages', {
-        state: 'pending'
-      })
+    utils.request('/api/v1/messages?state=pending')
       .then((result) => {
-        assert.equal(result.length, 1);
-        assert.equal(result[0].id, pendingId);
+        expect(result.length).toBe(1);
+        expect(result[0].id).toBe(pendingId);
       }));
 
   it('should fetch messages by multiple states', () =>
-    utils.apiRequest('/api/v1/messages', {
-        states: ['pending', 'sent']
-      })
+    utils.request('/api/v1/messages?states=pending&states=sent')
       .then((result) => {
-        assert.equal(result.length, 3); // fetches all
+        expect(result.length).toBe(3); // fetches all
       }));
 
   it('should fetch messages by state in descending order', () =>
-    utils.apiRequest('/api/v1/messages', {
-        state: 'pending',
-        descending: true
-      })
+    utils.request('/api/v1/messages?state=pending&descending=true')
       .then((result) => {
         assertSortedByDescendingDate(result);
       }));
 
   it('should fetch messages by multiple states in descending order', () =>
-    utils.apiRequest('/api/v1/messages', {
-        states: ['pending', 'sent'],
-        descending: true
-      })
+    utils.request('/api/v1/messages?states=pending&states=sent&descending=true')
       .then((result) => {
         assertSortedByDescendingDate(result);
       }));
 
   const assertSortedByDescendingDate = arr => {
     for (let i = 1; i < arr.length; i++) {
-      assert.ok(
+      expect(
         arr[i - 1].sending_due_date >=
-        arr[i].sending_due_date,
-        'Expected ' + arr[i - 1].sending_due_date + ' >= ' + arr[i].sending_due_date);
+        arr[i].sending_due_date).toBeTruthy();
     }
   };
 
   const assertSortedByAscendingDate = arr => {
     for (let i = 1; i < arr.length; i++) {
-      assert.ok(
+      expect(
         arr[i - 1].sending_due_date <=
-        arr[i].sending_due_date,
-        'Expected ' + arr[i - 1].sending_due_date + ' <= ' + arr[i].sending_due_date);
+        arr[i].sending_due_date).toBeTruthy();
     }
   };
-
 });
