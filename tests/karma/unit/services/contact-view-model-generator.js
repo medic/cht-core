@@ -7,6 +7,7 @@ describe('ContactViewModelGenerator service', () => {
       contactSchema,
       lineageModelGenerator,
       childContactPerson,
+      deceasedChildPerson,
       childPerson,
       childPerson2,
       childPlace,
@@ -77,6 +78,7 @@ describe('ContactViewModelGenerator service', () => {
       const parentId = 'districtsdistrict';
       const contactId = 'mario';
       childContactPerson = { _id: contactId, name: 'sandy', type: 'person', parent: { _id: parentId } };
+      deceasedChildPerson = { _id: 'deceaseduuid', name: 'casper', type: 'person', date_of_death: 123456789, parent: { _id: parentId } };
       childPerson = { _id: 'peach', type: 'person', name: 'Peach', date_of_birth: '1986-01-01' };
       childPerson2 = { _id: 'zelda', type: 'person', name: 'Zelda', date_of_birth: '1985-01-01' };
       childPlace = { _id: 'happyplace', type: 'mushroom', name: 'Happy Place', contact: { _id: contactId } };
@@ -201,6 +203,16 @@ describe('ContactViewModelGenerator service', () => {
         assert.equal(model.children.places[0].doc.contact.name, childContactPerson.name);
       });
     });
+
+    it('child places and persons get displayed separately', () => {
+      return runPlaceTest([childContactPerson, deceasedChildPerson]).then(model => {
+        assert.equal(model.children.persons.length, 1);
+        assert.deepEqual(model.children.persons[0].doc, childContactPerson);
+        assert.equal(model.children.deceased.length, 1);
+        assert.deepEqual(model.children.deceased[0].doc, deceasedChildPerson);
+      });
+    });
+
   });
 
   describe('Person', () => {
@@ -211,6 +223,7 @@ describe('ContactViewModelGenerator service', () => {
     };
 
     describe('isPrimaryContact flag', () => {
+
 
       it('if selected doc is primary contact, the isPrimaryContact flag should be true', () => {
         return runPersonTest(doc).then(model => {

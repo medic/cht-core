@@ -14,11 +14,12 @@
     <div class="material">
       <div class="body meta">
         <div class="card">
-          <div class="row heading">
+          <div class="row heading" ng-class="{ 'deceased': selected.doc.date_of_death }">
             <span ng-bind-html="selected.icon | resourceIcon"></span>
             <div class="heading-content">
               <h2>{{selected.doc.name}}</h2>
-              <div class="primary-contact" ng-if="selected.isPrimaryContact">
+              <div ng-if="selected.doc.date_of_death" translate>contact.deceased</div>
+              <div class="primary-contact">
                 <i class="fa fa-star primary" translate translate-attr-title="Primary contact"></i>
                 <span ng-if="selected.doc.parent.type !== 'clinic'" translate>Primary contact</span>
                 <span ng-if="selected.doc.parent.type === 'clinic'" translate>clinic.field.contact</span>
@@ -62,7 +63,7 @@
         </div>
       </div>
 
-      <div ng-if="selected.children.persons.length">
+      <div ng-if="selected.children.persons.length || selected.children.deceased.length">
         <div class="card children persons">
           <div class="action-header cell">
             <div ng-show="selected.doc.type !== 'clinic'" class="col-xs-12">
@@ -91,6 +92,9 @@
               primary-contact="child.isPrimaryContact"
               task-count="child.taskCount"
             />
+          </ul>
+          <ul ng-if="selected.children.deceased.length">
+            <li translate translate-values="{ count: selected.children.deceased.length }">view.deceased</li>
           </ul>
         </div>
       </div>

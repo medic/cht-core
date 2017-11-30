@@ -60,6 +60,7 @@ angular.module('inboxServices').factory('LiveListConfig',
           scope.heading = contact.name;
           scope.primary = contact.home;
           scope.simprintsTier = contact.simprints && contact.simprints.tierNumber;
+          scope.dateOfDeath = contact.date_of_death;
           if (contact.type !== 'person') {
             scope.summary = $translate.instant('contact.primary_contact_name', { name: contact.contact });
           }
