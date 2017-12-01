@@ -3,7 +3,7 @@ const assert = require('chai').assert,
 
 const utils = require('../../../../protractor/utils');
 
-describe.only('Protractor utils', () => {
+describe('Protractor utils', () => {
 
   afterEach(() => {
     sinon.restore();
