@@ -230,9 +230,6 @@ module.exports = function(grunt) {
       setup_api_integration: {
         cmd: 'cd api && npm install',
       },
-      setup_api_e2e: {
-        cmd: 'node api/server.js & sleep 20 && ./api/scripts/e2e/setup_fixtures',
-      },
       check_env_vars:
         'if [ -z $COUCH_URL ] || [ -z $API_URL ] || [ -z $COUCH_NODE_NAME ]; then ' +
             'echo "Missing required env var.  Check that all are set: ' +
@@ -358,7 +355,6 @@ module.exports = function(grunt) {
         'api/tests/unit/**/*.js',
         '!api/tests/unit/utils.js',
         '!api/tests/unit/integration/**/*.js',
-        '!api/tests/unit/e2e/**/*.js',
         'sentinel/test/unit/**/*.js',
         'sentinel/test/functional/**/*.js'
       ]
@@ -375,16 +371,7 @@ module.exports = function(grunt) {
         options: {
           timeout: 10000
         }
-      },
-      api_e2e: {
-        src: [
-          'api/tests/e2e/*.spec.js',
-          'api/tests/e2e/**/*.js',
-        ],
-        options: {
-          timeout: 20000,
-        },
-      },
+      }
     },
     ngtemplates: {
       inboxApp: {
@@ -525,13 +512,6 @@ module.exports = function(grunt) {
     'protractor:default'
   ]);
 
-  grunt.registerTask('api_e2e', 'Deploy app for testing and run api e2e tests', [
-    'exec:check_env_vars',
-    'exec:deploytest',
-    'exec:setup_api_e2e',
-    'mochaTest:api_e2e'
-  ]);
-
   grunt.registerTask('unit_continuous', 'Lint, karma unit tests running on a loop', [
     'jshint',
     'karma:unit_continuous'
@@ -581,8 +561,7 @@ module.exports = function(grunt) {
   grunt.registerTask('ci_after', '', [
     'exec:deploy',
     'test_api_integration',
-    'e2e',
-    'api_e2e',
+    'e2e'
   ]);
 
   grunt.registerTask('ci1', 'Lint, build, minify, deploy and test for CI [CouchDB 1.x]', [

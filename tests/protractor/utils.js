@@ -21,11 +21,14 @@ const request = (options, debug) => {
 
   options.hostname = constants.API_HOST;
   options.port = constants.API_PORT;
-  options.auth = auth.user + ':' + auth.pass;
+  options.auth = options.auth || auth.user + ':' + auth.pass;
 
   if (debug) {
-    console.log('REQUEST');
+    console.log('!!!!!!!REQUEST!!!!!!!');
+    console.log('!!!!!!!REQUEST!!!!!!!');
     console.log(JSON.stringify(options));
+    console.log('!!!!!!!REQUEST!!!!!!!');
+    console.log('!!!!!!!REQUEST!!!!!!!');
   }
 
   const req = http.request(options, res => {
@@ -44,13 +47,13 @@ const request = (options, debug) => {
         }
       } catch (e) {
         console.log('Error parsing response: ' + body);
-        deferred.reject();
+        deferred.reject(body);
       }
     });
   });
   req.on('error', e => {
     console.log('Request failed: ' + e.message);
-    deferred.reject();
+    deferred.reject(e);
   });
 
   if (options.body) {
@@ -66,6 +69,10 @@ const request = (options, debug) => {
   return deferred.promise;
 };
 
+// Update both ddocs, to avoid instability in tests.
+// Note that API will be copying changes to medic over to medic-client, so change
+// medic-client first (api does nothing) and medic after (api copies changes over to
+// medic-client, but the changes are already there.)
 const updateSettings = updates => {
   if (originalSettings) {
     throw new Error('A previous test did not call revertSettings');
@@ -109,27 +116,46 @@ const revertSettings = () => {
   });
 };
 
-const deleteAll = () => {
-  const typesToIgnore = ['translations', 'translations-backup', 'user-settings', 'info'];
-  const idsToIgnore = ['appcache', 'migration-log', 'resources', '_local/sentinel-meta-data'];
-  return request({
+const deleteAll = (except = []) => {
+  // Generate a list of functions to filter documents over
+  const ignorables = except.concat(
+    doc => ['translations', 'translations-backup', 'user-settings', 'info'].includes(doc.type),
+    'appcache',
+    'migration-log',
+    'resources',
+    /^_design/
+  );
+  const ignoreFns = [];
+  const ignoreStrings = [];
+  const ignoreRegex = [];
+  ignorables.forEach(i => {
+    if (typeof i === 'function') {
+      ignoreFns.push(i);
+    } else if (typeof i === 'object') {
+      ignoreRegex.push(i);
+    } else {
+      ignoreStrings.push(i);
+    }
+  });
+
+  ignoreFns.push(doc => ignoreStrings.includes(doc._id));
+  ignoreFns.push(doc => ignoreRegex.find(r => doc._id.match(r)));
+
+  // Get, filter and delete documents
+  return module.exports.request({
     path: path.join('/', constants.DB_NAME, '_all_docs?include_docs=true'),
     method: 'GET'
   })
-    .then(response => {
-      return response.rows.filter(row => {
-        return !row.id.startsWith('_design/') &&
-          !idsToIgnore.includes(row.id) &&
-          !typesToIgnore.includes(row.doc.type);
-      }).map(row => {
-        row.doc._deleted = true;
-        return row.doc;
-      });
-    })
+    .then(({rows}) => rows
+      .filter(({doc}) => !ignoreFns.find(fn => fn(doc)))
+      .map(({doc}) => {
+        doc._deleted = true;
+        return doc;
+      }))
     .then(toDelete => {
       const ids = toDelete.map(doc => doc._id);
       console.log(`Deleting docs: ${ids}`);
-      return request({
+      return module.exports.request({
         path: path.join('/', constants.DB_NAME, '_bulk_docs'),
         method: 'POST',
         body: JSON.stringify({ docs: toDelete }),
@@ -161,11 +187,11 @@ const refreshToGetNewSettings = () => {
     });
 };
 
-const revertDb = () => {
+const revertDb = (except, ignoreRefresh) => {
   return revertSettings().then(needsRefresh => {
-    return deleteAll().then(() => {
+    return deleteAll(except).then(() => {
       // only need to refresh if the settings were changed
-      if (needsRefresh) {
+      if (!ignoreRefresh && needsRefresh) {
         return refreshToGetNewSettings();
       }
     });
@@ -234,14 +260,48 @@ module.exports = {
       });
   },
 
-  updateSettings: updates => {
-    // Update both ddocs, to avoid instability in tests.
-    // Note that API will be copying changes to medic over to medic-client, so change
-    // medic-client first (api does nothing) and medic after (api copies changes over to
-    // medic-client, but the changes are already there.)
-    return updateSettings(updates)
-      .then(refreshToGetNewSettings);
-  },
+  /**
+   * Deletes all docs in the database, except some core docs (read the code) and
+   * any docs that you specify.
+   *
+   * NB: this is back-end only, it does *not* care about the front-end, and will
+   * not detect if it needs to refresh
+   *
+   * @param      {Array}    except  array of: exact document name; or regex; or
+   *                                predicate function that returns true if you
+   *                                wish to keep the document
+   * @return     {Promise}  completion promise
+   */
+  deleteAllDocs: deleteAll,
+
+  /**
+   * Update settings and refresh if required
+   *
+   * @param      {Object}   updates  Object containing all updates you wish to
+   *                                 make
+   * @param      {Boolean}  ignoreRefresh  don't bother refreshing
+   * @return     {Promise}  completion promise
+   */
+  updateSettings: (updates, ignoreRefresh) => updateSettings(updates)
+      .then(() => {
+        if (!ignoreRefresh) {
+          return refreshToGetNewSettings();
+        }
+      }),
+
+  /**
+   * Revert settings and refresh if required
+   *
+   * @param      {Boolean}  ignoreRefresh  don't bother refreshing
+   * @return     {Promise}  completion promise
+   */
+  revertSettings: ignoreRefresh => revertSettings()
+    .then(() => {
+      if (!ignoreRefresh) {
+        return refreshToGetNewSettings();
+      }
+    }),
+
 
   seedTestData: (done, contactId, documents) => {
     protractor.promise
@@ -274,6 +334,15 @@ module.exports = {
         }
       });
   },
+
+ /**
+   * Reverts the db's settings and documents
+   *
+   * @param      {Array}  except         documents to ignore, see deleteAllDocs
+   * @param      {Boolean}  ignoreRefresh  don't bother refreshing
+   * @return     {Promise}  promise
+   */
+  revertDb: revertDb,
 
   resetBrowser: () => {
     browser.driver.navigate().refresh().then(() => {

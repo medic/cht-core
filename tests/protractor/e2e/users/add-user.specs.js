@@ -9,7 +9,13 @@ const addedUser = 'fulltester' + new Date().getTime(),
 
 describe('Add user  : ', () => {
 
-  afterAll(utils.afterEach);
+  afterAll(done =>
+    utils.request(`/_users/${addedUser}`)
+    .then(doc => utils.request({
+      path: `/_users/${addedUser}?rev=${doc._rev}`,
+      method: 'DELETE'
+    }))
+    .then(() => utils.afterEach(done)));
 
   it('should add user with valid password', () => {
     usersPage.openAddUserModal();

@@ -113,9 +113,3 @@ exports.config = {
   },
   onCleanUp: () => modules.forEach(module => module.kill()),
 };
-
-// TODO: extract this stuff so we can use it properly from other places as a generic utility to start servers
-// exports._startModules = startModules;
-// exports._startApi = startApi;
-// exports._startSentinel = startSentinel;
-// exports._kill = () => modules.forEach(module => module.kill());
