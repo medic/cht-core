@@ -1,0 +1,51 @@
+<div class="content-pane right-pane">
+
+  <div class="col-sm-8 item-content empty-selection" ng-show="loadingContent">
+    <div>
+      <div class="loader"></div>
+    </div>
+  </div>
+
+  <div class="col-sm-8 item-content empty-selection" ng-show="!selected && !loadingContent">
+    <div translate>No contact selected</div>
+  </div>
+
+  <div class="col-sm-8 item-content" ng-show="selected && !loadingContent">
+    <div class="material">
+      <div ng-if="selected.children.persons.length || selected.children.deceased.length">
+        <div class="card children persons">
+          <div class="action-header cell">
+            <div ng-show="selected.doc.type !== 'clinic'" class="col-xs-12">
+              <h3 translate>People</h3>
+            </div>
+            <div ng-show="selected.doc.type === 'clinic'" class="col-xs-10">
+              <h3 translate>clinic.field.children</h3>
+            </div>
+            <div ng-show="selected.doc.type === 'clinic'" mm-auth="can_view_tasks" class="col-xs-2 tasks-title" translate>Tasks</div>
+          </div>
+          <ul ng-if="selected.doc.type !== 'clinic'">
+            <mm-content-row ng-repeat="child in selected.children.persons"
+              id="child.doc._id"
+              route="'contacts'"
+              heading="child.doc.name"
+              summary="child.doc.title"
+              primary-contact="child.isPrimaryContact"
+            />
+          </ul>
+          <ul ng-if="selected.doc.type === 'clinic'">
+            <mm-content-row ng-repeat="child in selected.children.persons"
+              id="child.doc._id"
+              route="'contacts'"
+              heading="child.doc.name"
+              dob="child.doc.date_of_birth"
+              primary-contact="child.isPrimaryContact"
+              task-count="child.taskCount"
+            />
+          </ul>
+        </div>
+      </div>
+
+      <div class="padding"></div>
+    </div>
+  </div>
+</div>
