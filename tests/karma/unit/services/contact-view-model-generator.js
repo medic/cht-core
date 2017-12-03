@@ -224,7 +224,6 @@ describe('ContactViewModelGenerator service', () => {
 
     describe('isPrimaryContact flag', () => {
 
-
       it('if selected doc is primary contact, the isPrimaryContact flag should be true', () => {
         return runPersonTest(doc).then(model => {
           assert(model.isPrimaryContact, 'isPrimaryContact flag should be true');
