@@ -16,7 +16,7 @@ var _ = require('underscore'),
 
   var getRelativeDateString = function(date, options) {
     if (options.age) {
-      return options.FormatDate.age(date);
+      return options.FormatDate.age(date, options);
     } else if (!options.withoutTime && moment(date).isSame(moment(), 'day')) {
       return options.FormatDate.time(date);
     } else {
@@ -113,13 +113,27 @@ var _ = require('underscore'),
     };
   });
 
+  module.filter('dateOfDeath', function(FormatDate, $translate) {
+    'ngInject';
+    return function (dod) {
+      if (!dod) {
+        return '';
+      }
+      return getRelativeDate(dod, {
+        FormatDate: FormatDate,
+        prefix: $translate.instant('contact.died') + '&nbsp;'
+      });
+    };
+  });
+
   module.filter('age', function(FormatDate) {
     'ngInject';
-    return function (date) {
-      return getRelativeDate(date, {
+    return function (dob, dod) {
+      return getRelativeDate(dob, {
         FormatDate: FormatDate,
         withoutTime: true,
-        age: true
+        age: true,
+        end: dod
       });
     };
   });

@@ -95,7 +95,7 @@
           </ul>
           <ul class="action deceased">
             <li ng-if="selected.children.deceased.length" class="content-row deceased">
-              <a ui-sref="contacts.detail.deceased">
+              <a ui-sref="contacts.deceased({ id: selected._id })">
                 <span translate translate-values="{ count: selected.children.deceased.length }">view.deceased</span>
                 <i class="fa fa-chevron-right"></i>
               </a>

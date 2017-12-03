@@ -34,6 +34,9 @@ angular.module('inboxDirectives').directive('mmContentRow', function() {
       // date: (optional) the date of birth
       dob: '=',
 
+      // date: (optional) the date of death
+      dod: '=',
+
       // string: (optional) warning information for the row
       warning: '=',
 

@@ -100,6 +100,18 @@ describe('FormatDate service', function() {
       done();
     });
 
+    it('calculates age at death if known', function(done) {
+      relativeTime.returns('100 years');
+      var dob = moment().subtract(120, 'years');
+      var dod = moment().subtract(20, 'years');
+      var actual = service.age(dob, { end: dod });
+      chai.expect(actual).to.equal('100 years');
+      chai.expect(relativeTime.args[0][0]).to.equal(100);
+      chai.expect(relativeTime.args[0][1]).to.equal(true);
+      chai.expect(relativeTime.args[0][2]).to.equal('yy');
+      done();
+    });
+
   });
 
   describe('relative without time', function() {
