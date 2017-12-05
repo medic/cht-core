@@ -18,7 +18,7 @@
             <span ng-bind-html="selected.icon | resourceIcon"></span>
             <div class="heading-content">
               <h2>{{selected.doc.name}}</h2>
-              <div ng-if="selected.doc.date_of_death" translate>contact.deceased</div>
+              <div ng-if="selected.doc.date_of_death" translate>contact.deceased.title</div>
               <div class="primary-contact">
                 <i class="fa fa-star primary" translate translate-attr-title="Primary contact"></i>
                 <span ng-if="selected.doc.parent.type !== 'clinic'" translate>Primary contact</span>
@@ -96,7 +96,7 @@
           <ul class="action deceased">
             <li ng-if="selected.children.deceased.length" class="content-row deceased">
               <a ui-sref="contacts.deceased({ id: selected._id })">
-                <span translate translate-values="{ count: selected.children.deceased.length }">view.deceased</span>
+                <span translate translate-values="{ count: selected.children.deceased.length }">contact.deceased.view</span>
                 <i class="fa fa-chevron-right"></i>
               </a>
             </li>

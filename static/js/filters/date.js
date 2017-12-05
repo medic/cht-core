@@ -121,7 +121,7 @@ var _ = require('underscore'),
       }
       return getRelativeDate(dod, {
         FormatDate: FormatDate,
-        prefix: $translate.instant('contact.died') + '&nbsp;'
+        prefix: $translate.instant('contact.deceased.date.prefix') + '&nbsp;'
       });
     };
   });
