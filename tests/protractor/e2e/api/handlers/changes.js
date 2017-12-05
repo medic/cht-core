@@ -164,7 +164,7 @@ describe('changes handler', () => {
       })
     .then(done));
 
-  afterEach(done => utils.revertDb(DOCS_TO_KEEP, true).then(done));
+  afterEach(done => utils.revertDb(DOCS_TO_KEEP).then(done));
 
   it('should filter the changes to relevant ones', () =>
     utils.saveDoc({ type:'clinic', parent:{ _id:'nowhere' } })
