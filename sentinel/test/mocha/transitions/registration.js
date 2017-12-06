@@ -34,11 +34,14 @@ describe('registrations', () => {
 
     it('trigger creates a new patient', done => {
       const patientName = 'jack';
-      const submitterId = 'papa';
+      const submitterId = 'abc';
+      const parentId = 'papa';
       const patientId = '05649';
+      const reportId = 'def';
       const senderPhoneNumber = '+555123';
       const dob = '2017-03-31T01:15:09.000Z';
       const change = { doc: {
+        _id: reportId,
         type: 'data_record',
         form: 'R',
         reported_date: 53,
@@ -47,7 +50,10 @@ describe('registrations', () => {
         birth_date: dob
       } };
       // return expected view results when searching for contacts_by_phone
-      const view = sinon.stub().callsArgWith(3, null, { rows: [ { doc: { parent: { _id: submitterId } } } ] });
+      const view = sinon.stub().callsArgWith(3, null, { rows: [ { doc: {
+        _id: submitterId,
+        parent: { _id: parentId }
+      } } ] });
       const getPatientContactUuid = sinon.stub(utils, 'getPatientContactUuid').callsArgWith(2);
       const db = { medic: { view: view } };
       const saveDoc = sinon.stub().callsArgWith(1);
@@ -73,11 +79,13 @@ describe('registrations', () => {
         view.args[0][2].include_docs.should.equal(true);
         saveDoc.callCount.should.equal(1);
         saveDoc.args[0][0].name.should.equal(patientName);
-        saveDoc.args[0][0].parent._id.should.equal(submitterId);
+        saveDoc.args[0][0].parent._id.should.equal(parentId);
         saveDoc.args[0][0].reported_date.should.equal(53);
         saveDoc.args[0][0].type.should.equal('person');
         saveDoc.args[0][0].patient_id.should.equal(patientId);
         saveDoc.args[0][0].date_of_birth.should.equal(dob);
+        saveDoc.args[0][0].source_id.should.equal(reportId);
+        saveDoc.args[0][0].created_by.should.equal(submitterId);
         done();
       });
     });
