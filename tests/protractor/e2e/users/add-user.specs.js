@@ -1,4 +1,4 @@
-const //utils = require('../../utils'),
+const utils = require('../../utils'),
       usersPage = require('../../page-objects/users/users.po.js'),
       helper = require('../../helper'),
       addUserModal = require('../../page-objects/users/add-user-modal.po.js');
@@ -9,13 +9,13 @@ const addedUser = 'fulltester' + new Date().getTime(),
 
 describe('Add user  : ', () => {
 
-  // afterAll(done =>
-  //   utils.request(`/_users/${addedUser}`)
-  //   .then(doc => utils.request({
-  //     path: `/_users/${addedUser}?rev=${doc._rev}`,
-  //     method: 'DELETE'
-  //   }))
-  //   .then(() => utils.afterEach(done)));
+  afterAll(done =>
+    utils.request(`/_users/${addedUser}`)
+    .then(doc => utils.request({
+      path: `/_users/${addedUser}?rev=${doc._rev}`,
+      method: 'DELETE'
+    }))
+    .then(() => utils.afterEach(done)));
 
   it('should add user with valid password', () => {
     usersPage.openAddUserModal();
