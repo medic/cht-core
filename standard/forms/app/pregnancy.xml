@@ -334,7 +334,7 @@
             <value>Bleeding or fluid leaking from vagina or vaginal discharge with bad odour</value>
           </text>
           <text id="/pregnancy/group_lmp/g_lmp_approx/183:label">
-            <value>beween 5 to 6 months ago</value>
+            <value>between 5 to 6 months ago</value>
           </text>
           <text id="/pregnancy/group_lmp/g_lmp_method/approx:label">
             <value>No</value>
@@ -444,7 +444,7 @@
             <value>One of the following conditions: heart conditions, asthma, high blood pressure, known diabetes</value>
           </text>
           <text id="/pregnancy/group_lmp/g_lmp_approx/244:label">
-            <value>beween 7 to 8 months ago</value>
+            <value>between 7 to 8 months ago</value>
           </text>
           <text id="/pregnancy/group_danger_signs/g_danger_signs/d8:label">
             <value>Blood in the urine or painful, burning urination</value>
@@ -895,7 +895,7 @@ Tanggal taksiran persalinan: <output value=" /pregnancy/group_lmp/g_edd "/></val
         </translation>
       </itext>
       <instance>
-        <pregnancy delimiter="#" id="pregnancy" prefix="J1!pregnancy!" version="2017-10-16_12-07">
+        <pregnancy delimiter="#" id="pregnancy" prefix="J1!pregnancy!" version="2017-12-06  16-13">
           <inputs>
             <meta tag="hidden">
               <location>
@@ -1043,7 +1043,7 @@ Tanggal taksiran persalinan: <output value=" /pregnancy/group_lmp/g_edd "/></val
  'highrisk',
  'default'
 )" nodeset="/pregnancy/group_note/default_chw_sms" type="select1"/>
-      <bind nodeset="/pregnancy/group_note/is_sms_edited" relevant="false()" required="true()" type="select1"/>
+      <bind nodeset="/pregnancy/group_note/is_sms_edited" relevant="0" required="true()" type="select1"/>
       <bind calculate="jr:choice-name( /pregnancy/group_note/default_chw_sms ,' /pregnancy/group_note/default_chw_sms ')" constraint="string-length(.) &lt;= 715" jr:constraintMsg="jr:itext('/pregnancy/group_note/g_chw_sms:jr:constraintMsg')" nodeset="/pregnancy/group_note/g_chw_sms" type="string"/>
       <bind nodeset="/pregnancy/group_review/submit" readonly="true()" type="string"/>
       <bind nodeset="/pregnancy/group_review/r_summary" readonly="true()" type="string"/>
