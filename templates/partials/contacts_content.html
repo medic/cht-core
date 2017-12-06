@@ -46,7 +46,7 @@
             <div class="action-header cell">
               <h3 translate>{{card.label}}</h3>
             </div>
-            <div class="row grid">
+            <div class="row flex grid">
               <div class="col col-xs-12 col-sm-{{field.width || 12}}" ng-repeat="field in card.fields">
                 <div class="cell">
                   <span ng-if="field.icon" class="field-icon" ng-bind-html="field.icon | resourceIcon"></span>
