@@ -122,7 +122,7 @@ describe('accept_patient_reports', () => {
 
     it('adding silence_type to handleReport calls _silenceReminders', done => {
       sinon.stub(transition, '_silenceReminders').callsArgWith(4);
-      const doc = { _id: 'a', fields: { patient_id: 'x'}};
+      const doc = { _id: 'a', fields: { patient_id: 'x' } };
       const config = { silence_type: 'x', messages: [] };
       const registrations = [
         { id: 'a' }, // should not be silenced as it's the doc being processed
@@ -134,7 +134,9 @@ describe('accept_patient_reports', () => {
         complete.should.equal(true);
         transition._silenceReminders.callCount.should.equal(2);
         transition._silenceReminders.args[0][1].id.should.equal('b');
+        transition._silenceReminders.args[0][2]._id.should.equal('a');
         transition._silenceReminders.args[1][1].id.should.equal('c');
+        transition._silenceReminders.args[1][2]._id.should.equal('a');
         done();
       });
     });
@@ -143,18 +145,17 @@ describe('accept_patient_reports', () => {
 
   describe('silenceReminders', () => {
     it('Sets tasks to cleared and saves them', done => {
+      const reportId = 'reportid';
+      const report = {
+        _id: reportId,
+        reported_date: 123
+      };
       const registration = {
         _id: 'test-registration',
         scheduled_tasks: [
-          {
-            state: 'scheduled'
-          },
-          {
-            state: 'scheduled'
-          },
-          {
-            state: 'pending'
-          },
+          { state: 'scheduled' },
+          { state: 'scheduled' },
+          { state: 'pending' }
         ]
       };
 
@@ -165,13 +166,16 @@ describe('accept_patient_reports', () => {
           registration._id.should.equal('test-registration');
           registration.scheduled_tasks.length.should.equal(3);
           registration.scheduled_tasks[0].state.should.equal('cleared');
+          registration.scheduled_tasks[0].cleared_by.should.equal(reportId);
           registration.scheduled_tasks[1].state.should.equal('cleared');
+          registration.scheduled_tasks[1].cleared_by.should.equal(reportId);
           registration.scheduled_tasks[2].state.should.equal('cleared');
+          registration.scheduled_tasks[2].cleared_by.should.equal(reportId);
           done();
         }
       };
 
-      transition._silenceReminders(audit, registration);
+      transition._silenceReminders(audit, registration, report);
     });
   });
 
