@@ -7,7 +7,7 @@ const should = require('chai').should(),
       config = require('../../../config'),
       transitionUtils = require('../../../transitions/utils');
 
-describe.only('registrations', () => {
+describe('registrations', () => {
 
   afterEach(done => {
     sinon.restore();
