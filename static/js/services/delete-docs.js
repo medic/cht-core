@@ -63,9 +63,6 @@ var _ = require('underscore');
         } else {
           docs = _.clone(docs);
         }
-        docs.forEach(function(doc) {
-          doc._deleted = true;
-        });
         return $q.all(docs.map(function(doc) {
           return getParent(doc)
             .then(function(parent) {
@@ -78,8 +75,15 @@ var _ = require('underscore');
             return checkForDuplicates(docs);
           })
           .then(function() {
-            return DB().bulkDocs(docs);
+            return docs.map(function(doc) {
+              return {
+                _id: doc._id,
+                _rev: doc._rev,
+                _deleted: true,
+              };
+            });
           })
+          .then(DB().bulkDocs)
           // No silent fails! Throw on error.
           .then(function(results) {
             var errors = _.filter(results, function(result) {
