@@ -127,7 +127,6 @@ describe('DeleteDocs service', function() {
     var expected = {
       _id: 'xyz',
       _rev: '123',
-      type: 'data_record',
       _deleted: true
     };
     return service(record).then(function() {
@@ -152,13 +151,11 @@ describe('DeleteDocs service', function() {
     var expected1 = {
       _id: 'xyz',
       _rev: '123',
-      type: 'data_record',
       _deleted: true
     };
     var expected2 = {
       _id: 'abc',
       _rev: '456',
-      type: 'data_record',
       _deleted: true
     };
     return service([ record1, record2 ]).then(function() {
@@ -197,7 +194,7 @@ describe('DeleteDocs service', function() {
       chai.expect(bulkDocs.args[0][0][0]._id).to.equal(person._id);
       chai.expect(bulkDocs.args[0][0][0]._deleted).to.equal(true);
       chai.expect(bulkDocs.args[0][0][1]._id).to.equal(clinic._id);
-      chai.expect(bulkDocs.args[0][0][1].contact).to.equal(null);
+      chai.expect(bulkDocs.args[0][0][1].contact).to.equal(undefined);
     });
   });
 
