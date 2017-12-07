@@ -3,29 +3,42 @@ const async = require('async'),
       passwordTester = require('simple-password-tester'),
       people  = require('./people'),
       places = require('./places'),
-      db = require('../db'),
-      PASSWORD_MINIMUM_LENGTH = 8,
+      db = require('../db');
+
+const PASSWORD_MINIMUM_LENGTH = 8,
       PASSWORD_MINIMUM_SCORE = 50,
       USERNAME_WHITELIST = /^[a-z0-9_-]+$/;
 
-const USER_EDITABLE_FIELDS = [
+const RESTRICTED_USER_EDITABLE_FIELDS = [
   'password',
-  'known',
-  'place',
-  'type'
+  'known'
 ];
 
-const SETTINGS_EDITABLE_FIELDS = [
+const USER_EDITABLE_FIELDS = RESTRICTED_USER_EDITABLE_FIELDS.concat([
+  'place',
+  'type'
+]);
+
+const RESTRICTED_SETTINGS_EDITABLE_FIELDS = [
   'fullname',
   'email',
   'phone',
   'language',
   'known',
+];
+
+const SETTINGS_EDITABLE_FIELDS = RESTRICTED_SETTINGS_EDITABLE_FIELDS.concat([
   'place',
   'contact',
   'external_id',
   'type'
-];
+]);
+
+const ALLOWED_RESTRICTED_EDITABLE_FIELDS =
+  RESTRICTED_SETTINGS_EDITABLE_FIELDS.concat(RESTRICTED_USER_EDITABLE_FIELDS);
+
+const illegalDataModificationAttempts = data =>
+  Object.keys(data).filter(k => !ALLOWED_RESTRICTED_EDITABLE_FIELDS.includes(k));
 
 /*
  * Set error codes to 400 to minimize 500 errors and stacktraces in the logs.
@@ -166,11 +179,11 @@ var validateNewUsername = function(username, callback) {
   ], callback);
 };
 
-var updateUser = function(id, user, callback) {
+var storeUpdatedUser = function(id, user, callback) {
   db._users.insert(user, id, callback);
 };
 
-var updateUserSettings = function(id, settings, callback) {
+var storeUpdatedUserSettings = function(id, settings, callback) {
   db.medic.insert(settings, id, callback);
 };
 
@@ -233,7 +246,7 @@ var createPlace = function(data, response, callback) {
   });
 };
 
-var updatePlace = function(data, response, callback) {
+var storeUpdatedPlace = function(data, response, callback) {
   data.place.contact = places.minify(data.contact);
   data.place.parent = places.minify(data.place.parent);
   db.medic.insert(data.place, function(err) {
@@ -308,6 +321,7 @@ var mapUsers = function(users, settings, facilities) {
   });
 };
 
+// TODO: this should be pulled from somewhere, not hardcoded!
 var rolesMap = {
   'national-manager': ['kujua_user', 'data_entry', 'national_admin'],
   'district-manager': ['kujua_user', 'data_entry', 'district_admin'],
@@ -323,13 +337,19 @@ var getRoles = function(type) {
 };
 
 var getSettingsUpdates = function(username, data) {
-  var settings = {},
-      ignore = ['place', 'contact'];
+  const ignore = ['type', 'place', 'contact'];
+
+  const settings = {
+    name: username,
+    type: 'user-settings'
+  };
+
   _.forEach(SETTINGS_EDITABLE_FIELDS , function(key) {
     if (!_.isUndefined(data[key]) && ignore.indexOf(key) === -1) {
       settings[key] = data[key];
     }
   });
+
   if (data.type) {
     settings.roles = getRoles(data.type);
   }
@@ -342,27 +362,31 @@ var getSettingsUpdates = function(username, data) {
   if (data.language && data.language.code) {
     settings.language = data.language.code;
   }
-  settings.name = username;
-  settings.type = 'user-settings';
+
   return settings;
 };
 
 var getUserUpdates = function(username, data) {
-  var user = {},
-      ignore = ['place'];
+  const ignore = ['type', 'place'];
+
+  const user = {
+    name: username,
+    type: 'user'
+  };
+
   _.forEach(USER_EDITABLE_FIELDS , function(key) {
     if (!_.isUndefined(data[key]) && ignore.indexOf(key) === -1) {
       user[key] = data[key];
     }
   });
+
   if (data.type) {
     user.roles = getRoles(data.type);
   }
   if (data.place) {
     user.facility_id = getDocID(data.place);
   }
-  user.name = username;
-  user.type = 'user';
+
   return user;
 };
 
@@ -429,9 +453,9 @@ module.exports = {
   _getUserUpdates: getUserUpdates,
   _hasParent: hasParent,
   _setContactParent: setContactParent,
-  _updatePlace: updatePlace,
-  _updateUser: updateUser,
-  _updateUserSettings: updateUserSettings,
+  _storeUpdatedPlace: storeUpdatedPlace,
+  _storeUpdatedUser: storeUpdatedUser,
+  _storeUpdatedUserSettings: storeUpdatedUserSettings,
   _validateContact: validateContact,
   _validateNewUsername: validateNewUsername,
   _validateUser: validateUser,
@@ -486,7 +510,7 @@ module.exports = {
         self._createPlace,
         self._setContactParent,
         self._createContact,
-        self._updatePlace,
+        self._storeUpdatedPlace,
         self._createUser,
         self._createUserSettings,
       ], function(err, result, responseBody) {
@@ -494,7 +518,35 @@ module.exports = {
       });
     });
   },
-  updateUser: function(username, data, callback) {
+
+  /**
+   * Updates the given user.
+   *
+   * If fullAccess is passed as false we should restrict them from updating
+   * anything that elevates or changes their priviledge (such as roles or
+   * permissions.)
+   *
+   * NB: once we have gotten to this point it is presumed that the user has
+   * already been authenticated. For restricted users updating themselves
+   * (!fullAccess) this is especially important.
+   *
+   * @param      {String}    username    raw username (without org.couch)
+   * @param      {Object}    data        Changes to make
+   * @param      {Boolean}   fullAccess  Are we allowed to update
+   *                                     security-related things?
+   * @param      {Function}  callback    callback
+   */
+  updateUser: function(username, data, fullAccess, callback) {
+    // Reject update attempts that try to modify data they're not allowed to
+    if (!fullAccess) {
+      const illegalAttempts = illegalDataModificationAttempts(data);
+      if (illegalAttempts.length) {
+        const err = Error('You do not have permission to modify: ' + illegalAttempts.join(','));
+        err.statusCode = 401;
+        return callback(err);
+      }
+    }
+
     const self = this,
           userID = createID(username);
     const props = _.uniq(USER_EDITABLE_FIELDS.concat(SETTINGS_EDITABLE_FIELDS));
@@ -534,7 +586,7 @@ module.exports = {
           });
         }
         series.push(function(cb) {
-          self._updateUser(userID, user, function(err, resp) {
+          self._storeUpdatedUser(userID, user, function(err, resp) {
             if (err) {
               return cb(err);
             }
@@ -548,7 +600,7 @@ module.exports = {
           });
         });
         series.push(function(cb) {
-          self._updateUserSettings(userID, settings, function(err, resp) {
+          self._storeUpdatedUserSettings(userID, settings, function(err, resp) {
             if (err) {
               return cb(err);
             }

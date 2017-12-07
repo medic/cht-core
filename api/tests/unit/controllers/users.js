@@ -449,27 +449,12 @@ exports['createUserSettings sets up response'] = function(test) {
   });
 };
 
-exports['_updateUser returns response'] = function(test) {
-  sinon.stub(db._users, 'insert').callsArgWith(2, null, {
-    id: 'abc',
-    rev: '1-xyz'
-  });
-  controller._updateUser('john', userData, function(err, body) {
-    test.ok(!err);
-    test.deepEqual(body, {
-      id: 'abc',
-      rev: '1-xyz'
-    });
-    test.done();
-  });
-};
-
-exports['_updateUserSettings returns response'] = function(test) {
+exports['_storeUpdatedUserSettings returns response'] = function(test) {
   sinon.stub(db.medic, 'insert').callsArgWith(2, null, {
     id: 'abc',
     rev: '1-xyz'
   });
-  controller._updateUserSettings('john', userData, function(err, body) {
+  controller._storeUpdatedUserSettings('john', userData, function(err, body) {
     test.ok(!err);
     test.deepEqual(body, {
       id: 'abc',
@@ -689,7 +674,7 @@ exports['createUser succeeds if contact and place are the same.'] = function(tes
   sinon.stub(controller, '_createPlace').callsArgWith(2, null, userData, {});
   sinon.stub(controller, '_createUser').callsArgWith(2, null, {}, {});
   sinon.stub(controller, '_createContact').callsArgWith(2, null, {}, {});
-  sinon.stub(controller, '_updatePlace').callsArgWith(2, null, {}, {});
+  sinon.stub(controller, '_storeUpdatedPlace').callsArgWith(2, null, {}, {});
   sinon.stub(controller, '_createUserSettings').callsArgWith(2, null, {}, {});
   sinon.stub(places, 'getPlace').callsArgWith(1, null, {
     '_id': 'foo'
@@ -706,7 +691,7 @@ exports['createUser succeeds if contact is within place.'] = function(test) {
   sinon.stub(controller, '_createPlace').callsArgWith(2, null, userData, {});
   sinon.stub(controller, '_createUser').callsArgWith(2, null, {}, {});
   sinon.stub(controller, '_createContact').callsArgWith(2, null, {}, {});
-  sinon.stub(controller, '_updatePlace').callsArgWith(2, null, {}, {});
+  sinon.stub(controller, '_storeUpdatedPlace').callsArgWith(2, null, {}, {});
   sinon.stub(controller, '_createUserSettings').callsArgWith(2, null, {}, {});
   sinon.stub(places, 'getPlace').callsArgWith(1, null, {
     '_id': 'miami',
@@ -727,7 +712,7 @@ exports['createUser returns response object'] = function(test) {
   sinon.stub(controller, '_createPlace').callsArgWith(2, null, userData, {});
   sinon.stub(controller, '_createUser').callsArgWith(2, null, {}, {});
   sinon.stub(controller, '_createContact').callsArgWith(2, null, {}, {});
-  sinon.stub(controller, '_updatePlace').callsArgWith(2, null, {}, {});
+  sinon.stub(controller, '_storeUpdatedPlace').callsArgWith(2, null, {}, {});
   sinon.stub(controller, '_createUserSettings').callsArgWith(2, null, {}, {
     biz: 'baz'
   });
@@ -813,14 +798,14 @@ exports['updatePlace resolves place\'s contact in waterfall'] = function(test) {
 };
 
 exports['updateUser errors if place, type and password is undefined'] = function(test) {
-  controller.updateUser('paul', {}, function(err) {
+  controller.updateUser('paul', {}, true, function(err) {
     test.ok(err);
     test.done();
   });
 };
 
 exports['updateUser errors on unknown property'] = function(test) {
-  controller.updateUser('paul', {foo: 'bar'}, function(err) {
+  controller.updateUser('paul', {foo: 'bar'}, true, function(err) {
     test.ok(err);
     test.done();
   });
@@ -833,9 +818,9 @@ exports['updateUser fails if place fetch fails'] = function(test) {
   sinon.stub(controller, '_validateUser').callsArgWith(1, null, {});
   sinon.stub(controller, '_validateUserSettings').callsArgWith(1, null, {});
   sinon.stub(places, 'getPlace').callsArgWith(1, 'Not today pal.');
-  var update = sinon.stub(controller, '_updateUser');
-  var updateSettings = sinon.stub(controller, '_updateUserSettings');
-  controller.updateUser('paul', data, function(err) {
+  var update = sinon.stub(controller, '_storeUpdatedUser');
+  var updateSettings = sinon.stub(controller, '_storeUpdatedUserSettings');
+  controller.updateUser('paul', data, true, function(err) {
     test.ok(err);
     test.same(update.callCount, 0);
     test.same(updateSettings.callCount, 0);
@@ -848,9 +833,9 @@ exports['updateUser fails if user not found'] = function(test) {
     type: 'x'
   };
   sinon.stub(controller, '_validateUser').callsArgWith(1, 'not found');
-  var update = sinon.stub(controller, '_updateUser');
-  var updateSettings = sinon.stub(controller, '_updateUserSettings');
-  controller.updateUser('paul', data, function(err) {
+  var update = sinon.stub(controller, '_storeUpdatedUser');
+  var updateSettings = sinon.stub(controller, '_storeUpdatedUserSettings');
+  controller.updateUser('paul', data, true, function(err) {
     test.ok(err);
     test.same(update.callCount, 0);
     test.same(updateSettings.callCount, 0);
@@ -864,9 +849,9 @@ exports['updateUser fails if user settings not found'] = function(test) {
   };
   sinon.stub(controller, '_validateUser').callsArgWith(1, null, {});
   sinon.stub(controller, '_validateUserSettings').callsArgWith(1, 'too rainy today');
-  var update = sinon.stub(controller, '_updateUser');
-  var updateSettings = sinon.stub(controller, '_updateUserSettings');
-  controller.updateUser('paul', data, function(err) {
+  var update = sinon.stub(controller, '_storeUpdatedUser');
+  var updateSettings = sinon.stub(controller, '_storeUpdatedUserSettings');
+  controller.updateUser('paul', data, true, function(err) {
     test.ok(err);
     test.same(update.callCount, 0);
     test.same(updateSettings.callCount, 0);
@@ -879,7 +864,7 @@ exports['updateUser fails if _users db insert fails'] = function(test) {
   sinon.stub(controller, '_validateUserSettings').callsArgWith(1, null, {});
   sinon.stub(db.medic, 'insert').callsArgWith(2, null, {});
   sinon.stub(db._users, 'insert').callsArgWith(2, 'shiva was here');
-  controller.updateUser('georgi', {type: 'x'}, function(err) {
+  controller.updateUser('georgi', {type: 'x'}, true, function(err) {
     test.ok(err);
     test.done();
   });
@@ -890,7 +875,7 @@ exports['updateUser fails if medic db insert fails'] = function(test) {
   sinon.stub(controller, '_validateUserSettings').callsArgWith(1, null, {});
   sinon.stub(db.medic, 'insert').callsArgWith(2, 'shiva strikes again');
   sinon.stub(db._users, 'insert').callsArgWith(2, null, {});
-  controller.updateUser('georgi', {type: 'x'}, function(err) {
+  controller.updateUser('georgi', {type: 'x'}, true, function(err) {
     test.ok(err);
     test.done();
   });
@@ -902,9 +887,9 @@ exports['updateUser succeeds if type is defined'] = function(test) {
   };
   sinon.stub(controller, '_validateUser').callsArgWith(1, null, {});
   sinon.stub(controller, '_validateUserSettings').callsArgWith(1, null, {});
-  var update = sinon.stub(controller, '_updateUser').callsArg(2);
-  var updateSettings = sinon.stub(controller, '_updateUserSettings').callsArg(2);
-  controller.updateUser('paul', data, function(err) {
+  var update = sinon.stub(controller, '_storeUpdatedUser').callsArg(2);
+  var updateSettings = sinon.stub(controller, '_storeUpdatedUserSettings').callsArg(2);
+  controller.updateUser('paul', data, true, function(err) {
     test.ok(!err);
     test.same(update.callCount, 1);
     test.same(updateSettings.callCount, 1);
@@ -918,9 +903,9 @@ exports['updateUser succeeds if password is defined'] = function(test) {
   };
   sinon.stub(controller, '_validateUser').callsArgWith(1, null, {});
   sinon.stub(controller, '_validateUserSettings').callsArg(1);
-  var update = sinon.stub(controller, '_updateUser').callsArg(2);
-  var updateSettings = sinon.stub(controller, '_updateUserSettings').callsArg(2);
-  controller.updateUser('paul', data, function(err) {
+  var update = sinon.stub(controller, '_storeUpdatedUser').callsArg(2);
+  var updateSettings = sinon.stub(controller, '_storeUpdatedUserSettings').callsArg(2);
+  controller.updateUser('paul', data, true, function(err) {
     test.ok(!err);
     test.same(update.callCount, 1);
     test.same(updateSettings.callCount, 1);
@@ -935,9 +920,9 @@ exports['updateUser succeeds if place is defined and found'] = function(test) {
   sinon.stub(controller, '_validateUser').callsArgWith(1, null, {});
   sinon.stub(controller, '_validateUserSettings').callsArgWith(1, null, {});
   sinon.stub(places, 'getPlace').callsArg(1);
-  var update = sinon.stub(controller, '_updateUser').callsArg(2);
-  var updateSettings = sinon.stub(controller, '_updateUserSettings').callsArg(2);
-  controller.updateUser('paul', data, function(err) {
+  var update = sinon.stub(controller, '_storeUpdatedUser').callsArg(2);
+  var updateSettings = sinon.stub(controller, '_storeUpdatedUserSettings').callsArg(2);
+  controller.updateUser('paul', data, true, function(err) {
     test.ok(!err);
     test.same(update.callCount, 1);
     test.same(updateSettings.callCount, 1);
@@ -952,15 +937,15 @@ exports['updateUser type param updates roles on user and user-settings doc'] = f
   };
   sinon.stub(controller, '_validateUser').callsArgWith(1, null, {});
   sinon.stub(controller, '_validateUserSettings').callsArgWith(1, null, {});
-  var update = sinon.stub(controller, '_updateUser').callsFake(function(id, data, callback) {
+  var update = sinon.stub(controller, '_storeUpdatedUser').callsFake(function(id, data, callback) {
     test.deepEqual(data.roles, ['rebel', undefined]);
     callback();
   });
-  var updateSettings = sinon.stub(controller, '_updateUserSettings').callsFake(function(id, data, callback) {
+  var updateSettings = sinon.stub(controller, '_storeUpdatedUserSettings').callsFake(function(id, data, callback) {
     test.deepEqual(data.roles, ['rebel', undefined]);
     callback();
   });
-  controller.updateUser('paul', data, function(err) {
+  controller.updateUser('paul', data, true, function(err) {
     test.ok(!err);
     test.same(update.callCount, 1);
     test.same(updateSettings.callCount, 1);
@@ -976,12 +961,12 @@ exports['updateUser updates password on user doc'] = function(test) {
   sinon.stub(controller, '_validateUser').callsArgWith(1, null, {});
   sinon.stub(controller, '_validateUserSettings').callsArgWith(1, null, {});
   sinon.stub(places, 'getPlace').callsArg(1);
-  var update = sinon.stub(controller, '_updateUser').callsFake(function(id, data, callback) {
+  var update = sinon.stub(controller, '_storeUpdatedUser').callsFake(function(id, data, callback) {
     test.equal(data.password, COMPLEX_PASSWORD);
     callback();
   });
-  var updateSettings = sinon.stub(controller, '_updateUserSettings').callsArg(2);
-  controller.updateUser('paul', data, function(err) {
+  var updateSettings = sinon.stub(controller, '_storeUpdatedUserSettings').callsArg(2);
+  controller.updateUser('paul', data, true, function(err) {
     test.ok(!err);
     test.same(update.callCount, 1);
     test.same(updateSettings.callCount, 1);
@@ -993,9 +978,9 @@ exports['updateUser returns error if short password.'] = test => {
   var data = {
     password: 'short'
   };
-  var update = sinon.stub(controller, '_updateUser');
-  var updateSettings = sinon.stub(controller, '_updateUserSettings');
-  controller.updateUser('paul', data, function(err) {
+  var update = sinon.stub(controller, '_storeUpdatedUser');
+  var updateSettings = sinon.stub(controller, '_storeUpdatedUserSettings');
+  controller.updateUser('paul', data, true, function(err) {
     test.ok(err);
     test.equal(err.code, 400);
     test.equal(err.message, 'The password must be at least 8 characters long.');
@@ -1009,9 +994,9 @@ exports['updateUser returns error if weak password.'] = test => {
   var data = {
     password: 'aaaaaaaa'
   };
-  var update = sinon.stub(controller, '_updateUser');
-  var updateSettings = sinon.stub(controller, '_updateUserSettings');
-  controller.updateUser('paul', data, function(err) {
+  var update = sinon.stub(controller, '_storeUpdatedUser');
+  var updateSettings = sinon.stub(controller, '_storeUpdatedUserSettings');
+  controller.updateUser('paul', data, true, function(err) {
     test.ok(err);
     test.equal(err.code, 400);
     test.equal(err.message, 'The password is too easy to guess. Include a range of types of characters to increase the score.');
@@ -1033,15 +1018,15 @@ exports['updateUser updates facility_id on user and user settings'] = function(t
     facility_id: 'maine'
   });
   sinon.stub(places, 'getPlace').callsArg(1);
-  var update = sinon.stub(controller, '_updateUser').callsFake(function(id, user, cb) {
+  var update = sinon.stub(controller, '_storeUpdatedUser').callsFake(function(id, user, cb) {
     test.equal(user.facility_id, 'paris');
     cb();
   });
-  var updateSettings = sinon.stub(controller, '_updateUserSettings').callsFake(function(id, settings, cb) {
+  var updateSettings = sinon.stub(controller, '_storeUpdatedUserSettings').callsFake(function(id, settings, cb) {
     test.equal(settings.facility_id, 'paris');
     cb();
   });
-  controller.updateUser('paul', data, function(err) {
+  controller.updateUser('paul', data, true, function(err) {
     test.ok(!err);
     test.same(update.callCount, 1);
     test.same(updateSettings.callCount, 1);
@@ -1067,7 +1052,7 @@ exports['updateUser updates user and user settings doc'] = function(test) {
     known: false
   });
   sinon.stub(places, 'getPlace').callsArg(1);
-  var update = sinon.stub(controller, '_updateUser').callsFake(function(id, user, cb) {
+  var update = sinon.stub(controller, '_storeUpdatedUser').callsFake(function(id, user, cb) {
     test.equal(user.facility_id, 'el paso');
     test.deepEqual(user.roles, ['rambler', undefined]);
     test.equal(user.shoes, 'dusty boots');
@@ -1075,14 +1060,14 @@ exports['updateUser updates user and user settings doc'] = function(test) {
     test.equal(user.type, 'user');
     cb();
   });
-  var updateSettings = sinon.stub(controller, '_updateUserSettings').callsFake(function(id, settings, cb) {
+  var updateSettings = sinon.stub(controller, '_storeUpdatedUserSettings').callsFake(function(id, settings, cb) {
     test.equal(settings.facility_id, 'el paso');
     test.equal(settings.phone, '123');
     test.equal(settings.known, false);
     test.equal(settings.type, 'user-settings');
     cb();
   });
-  controller.updateUser('paul', data, function(err) {
+  controller.updateUser('paul', data, true, function(err) {
     test.ok(!err);
     test.same(update.callCount, 1);
     test.same(updateSettings.callCount, 1);
@@ -1104,7 +1089,7 @@ exports['updateUser sets up response'] = function(test) {
     id: 'def',
     rev: '1-uvw'
   });
-  controller.updateUser('georgi', data, function(err, resp) {
+  controller.updateUser('georgi', data, true, function(err, resp) {
     test.ok(!err);
     test.deepEqual(resp.user, {
       id: 'def',

@@ -133,7 +133,7 @@ See [`migrations.js`](https://github.com/medic/medic-api/blob/master/migrations.
 
 Importantly, the record of which migrations have been run is stored in the `migrations` array of an arbitrarily named document in CouchDB with the `.type` of `meta`. Because of this it can be a hard document to find, but you can get it using `curl`, and pretty print it with `jq`:
 
-```bash
+```
 curl 'http://admin:pass@localhost:5984/medic/_design/medic-client/_view/doc_by_type?key=\["meta"\]&include_docs=true' | jq .rows[].doc
 ```
 
@@ -1176,6 +1176,8 @@ through the user is not supported, see People section.
 ### Permissions
 
 `can_update_users`, `can_update_places`, `can_update_people`
+
+NB: You are allowed to update yourself even if you do not have the permissions described below, as long as you authenticate using HTTP basic auth (not a cookie).
 
 ### URL Parameters
 

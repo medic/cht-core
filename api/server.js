@@ -508,18 +508,60 @@ app.postJson('/api/v1/users', function(req, res) {
 });
 
 app.postJson('/api/v1/users/:username', function(req, res) {
-  auth.check(req, 'can_update_users', null, function(err) {
-    if (err) {
-      return serverUtils.error(err, req, res);
-    }
-    if (_.isEmpty(req.body)) {
-      return emptyJSONBodyError(req, res);
-    }
-    users.updateUser(req.params.username, req.body, function(err, body) {
+  const username = req.params.username;
+
+  const updateUser = fullAccess =>
+    users.updateUser(username, req.body, fullAccess, function(err, body) {
       if (err) {
-        return serverUtils.error(err, req, res);
+        return serverUtils.error(err, req, res, true);
       }
       res.json(body);
+    });
+
+  if (_.isEmpty(req.body)) {
+    return emptyJSONBodyError(req, res);
+  }
+
+  auth.check(req, 'can_update_users', null, function(err) {
+    if (err && err.statusCode === 503) {
+      return serverUtils.error(err, req, res);
+    }
+
+    if (!err) {
+      // Full access regardless
+      return updateUser(true);
+    }
+
+    // Not full access, but maybe we're both updating ourselves and have the
+    // right initial password
+    let credentials;
+    try {
+      credentials = auth.basicAuthCredentials(req);
+    } catch (err) {
+      err.statusCode = 401;
+      return serverUtils.error(err, req, res, true);
+    }
+
+    if (username !== credentials.username) {
+      // Not updating ourselves, and we don't have permission to update others
+      return serverUtils.error({
+        message: 'You do not have permissions to modify this person',
+        code: 401
+      }, req, res, true);
+    }
+
+    auth.validateBasicAuth(credentials, err => {
+      if (err) {
+        console.error(`Invalid authorization attempt on /api/v1/users/${username}`);
+        console.error(err);
+        return serverUtils.error({
+          message: 'To modifiy yourself you must provide valid Basic Auth credentials',
+          code: 401
+        }, req, res, true);
+      }
+
+      // We're validly trying to update ourselves
+      return updateUser(false);
     });
   });
 });
