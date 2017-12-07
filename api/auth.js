@@ -187,12 +187,11 @@ module.exports = {
    *                                     error if there was a problem
    */
   validateBasicAuth: ({username, password}, callback) => {
-    const authUrl = new url.URL(process.env.COUCH_URL);
-    authUrl.pathname = '';
-    authUrl.username = username;
-    authUrl.password = password;
+    const authUrl = url.parse(process.env.COUCH_URL);
+    delete authUrl.pathname;
+    authUrl.auth = `${username}:${password}`;
 
-    request({ uri: authUrl.toString(), method: 'HEAD'}, (err, res) => {
+    request({ uri: url.format(authUrl), method: 'HEAD'}, (err, res) => {
       if (err) {
         return callback(err);
       }
