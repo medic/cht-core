@@ -1,4 +1,6 @@
-const utils = require('../../../utils');
+const constants = require('../../../constants'),
+      http = require('http'),
+      utils = require('../../../utils');
 
 const user = n => `org.couchdb.user:${n}`;
 
@@ -21,6 +23,8 @@ describe('Users API', () => {
 
     const newPlaceId = 'NewPlaceId';
 
+    let cookie;
+
     const medicData = [
       {
         _id: user(username),
@@ -41,6 +45,7 @@ describe('Users API', () => {
       }
 
     ];
+
     beforeAll(() =>
       utils.request({
         path: '/_users',
@@ -49,7 +54,49 @@ describe('Users API', () => {
           'Content-Type': 'application/json'
         },
         body: _usersUser
-      }).then(() => utils.saveDocs(medicData)));
+      })
+      .then(() => utils.saveDocs(medicData))
+      .then(() => {
+        const deferred = protractor.promise.defer();
+
+        const options = {
+          hostname: constants.API_HOST,
+          port: constants.API_PORT,
+          path: '/_session',
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          auth: `${username}:${password}`
+        };
+
+        // Use http service to extract cookie
+        const req = http.request(options, res => {
+          if (res.statusCode !== 200) {
+            return deferred.reject('Expected 200 from _session authing');
+          }
+
+          // Example header:
+          // AuthSession=cm9vdDo1MEJDMDEzRTp7Vu5GKCkTxTVxwXbpXsBARQWnhQ; Version=1; Path=/; HttpOnly
+          try {
+            console.log('TRYING HEADERS NOW');
+            console.log(JSON.stringify(res.headers));
+            cookie = res.headers['set-cookie'][0].match(/^(AuthSession=[^;]+)/)[0];
+          } catch (err) {
+            return deferred.reject(err);
+          }
+
+          deferred.fulfill(cookie);
+        });
+
+        req.write(JSON.stringify({
+            name: username,
+            password: password
+        }));
+        req.end();
+
+        return deferred.promise;
+      }));
 
     afterAll(() =>
       utils.request(`/_users/${user(username)}`)
@@ -117,12 +164,13 @@ describe('Users API', () => {
         expect(err).toBe('not logged in');
       }));
 
-    it('Allows for users to modify themselves', () =>
+    it('Allows for users to modify themselves with a cookie', () =>
       utils.request({
         path: `/api/v1/users/${username}`,
         method: 'POST',
         headers: {
-          'Content-Type': 'application/json'
+          'Content-Type': 'application/json',
+          'Cookie': cookie
         },
         body: {
           fullname: 'Awesome Guy'
@@ -133,5 +181,55 @@ describe('Users API', () => {
       .then(doc => {
         expect(doc.fullname).toBe('Awesome Guy');
       }));
+
+    it('Does not allow users to update their password with only a cookie', () =>
+        utils.request({
+          path: `/api/v1/users/${username}`,
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Cookie': cookie
+          },
+          body: {
+            password: 'swizzlesticks'
+          },
+        })
+        .then(() => fail('You should get an error in this situation'))
+        .catch(err => {
+          expect(err).toBe('not logged in');
+        }));
+
+    it('Does allow users to update their password with a cookie and also basic auth', () =>
+        utils.request({
+          path: `/api/v1/users/${username}`,
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Cookie': cookie
+          },
+          body: {
+            password: password // keeping it the same, but the security check will be equivilent,
+                               // our code can't know it's the same!
+          },
+          auth: `${username}:${password}`
+        })
+        .catch(() => fail('This should not result in an error')));
+
+    it('Does allow users to update their password with just basic auth', () =>
+        utils.request({
+          path: `/api/v1/users/${username}`,
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: {
+            password: password // keeping it the same, but the security check will be equivilent,
+                               // our code can't know it's the same!
+          },
+          auth: `${username}:${password}`
+        })
+        .catch(() => fail('This should not result in an error')));
+
   });
-});
+
+}) ;
