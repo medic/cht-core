@@ -12,6 +12,7 @@ var _ = require('underscore');
       $state,
       $stateParams,
       $timeout,
+      $translate,
       LiveList,
       RulesEngine,
       Tour,
@@ -22,6 +23,13 @@ var _ = require('underscore');
       var setSelectedTask = function(task) {
         LiveList.tasks.setSelected(task._id);
         $scope.selected = task;
+        if (_.isString(task.title)) {
+          // new translation key style
+          task.title = $translate.instant(task.title, task);
+        } else {
+          // old message array style
+          task.title = TranslateFrom(task.title, task);
+        }
         $scope.setTitle(TranslateFrom(task.title, task));
         $scope.setShowContent(true);
       };

@@ -63,7 +63,11 @@ angular.module('inboxControllers').controller('TasksContentCtrl',
               .then(function(formInstance) {
                 $scope.form = formInstance;
                 $scope.loadingForm = false;
-                $scope.setTitle(TranslateFrom(formDoc.doc.title));
+                if (formDoc.doc.translation_key) {
+                  $scope.setTitle($translate.instant(formDoc.doc.translation_key));
+                } else {
+                  $scope.setTitle(TranslateFrom(formDoc.doc.title));
+                }
               });
           })
           .catch(function(err) {

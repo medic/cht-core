@@ -13,6 +13,7 @@ angular.module('inboxControllers').controller('ContactsContentCtrl',
     ContactViewModelGenerator,
     Snackbar,
     TasksForContact,
+    TranslateFrom,
     UserSettings
   ) {
 
@@ -64,6 +65,15 @@ angular.module('inboxControllers').controller('ContactsContentCtrl',
             'ContactsContentCtrl',
             function(areTasksEnabled, tasks) {
               if ($scope.selected) {
+                tasks.forEach(function(task) {
+                  if (_.isString(task.title)) {
+                    // new translation key style
+                    task.title = $translate.instant(task.title, task);
+                  } else {
+                    // old message array style
+                    task.title = TranslateFrom(task.title, task);
+                  }
+                });
                 $scope.selected.areTasksEnabled = areTasksEnabled;
                 $scope.selected.tasks = tasks;
                 children.forEach(function(child) {
