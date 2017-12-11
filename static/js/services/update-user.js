@@ -142,7 +142,7 @@ var _ = require('underscore');
         return $http({
           method: 'POST',
           url: url,
-          data: updates,
+          data: updates || {},
           headers: {
             'Content-Type': 'application/json'
           }

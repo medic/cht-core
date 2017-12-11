@@ -348,8 +348,17 @@ var passwordTester = require('simple-password-tester'),
         $scope.setProcessing();
         $scope.errors = {};
         computeFields();
+
         if (validateName()) {
-          saveEdit('#edit-user-settings', $scope.editUserModel.id, getSettingsUpdates(true));
+          changedUpdates($scope.editUserModel).then(function(updates) {
+            UpdateUserV2(nameFromId($scope.editUserModel.id), updates)
+              .then(function() {
+                $scope.setFinished();
+              })
+              .catch(function(err) {
+                $scope.setError(err, 'Error updating user');
+              });
+          });
         } else {
           $scope.setError();
         }
