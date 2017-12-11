@@ -16,6 +16,7 @@ var _ = require('underscore');
     cache.remove('/_users/_all_docs?include_docs=true');
   };
 
+  // TODO delete this
   inboxServices.factory('UpdateUser',
     function(
       $cacheFactory,
@@ -101,6 +102,53 @@ var _ = require('underscore');
       };
     }
   );
+
+  inboxServices.factory('UpdateUserV2',
+    function(
+      $http,
+      $location,
+      $log
+    ) {
+      'ngInject';
+
+
+      /**
+       * Uses the user api to store user updates.
+       *
+       * Updates are in the style of the /api/v1/users/{username} service, see
+       * its documentation for more details.
+       *
+       * If you pass a username as password this will be used as Basic Auth to
+       * the api (required for password updates). Otherwise it will use your
+       * existing cookie.
+       *
+       * @param      {String}  username       The user you wish to update, without org.couchdb.user:
+       * @param      {Object}  updates        Updates you wish to make
+       * @param      {String}  basicAuthUser  Optional username for Basic Auth
+       * @param      {String}  basicAuthPass  Optional password for Basic Auth
+       */
+      return function(username, updates, basicAuthUser, basicAuthPass) {
+        var url = '/api/v1/users/' + username;
+
+        if (basicAuthUser) {
+          url = [
+            $location.protocol(), '://', basicAuthUser, ':', basicAuthPass, '@',
+            $location.host(), ':', $location.port(), url
+          ].join('');
+        }
+
+        $log.debug('UpdateUser', url);
+
+        return $http({
+          method: 'POST',
+          url: url,
+          data: updates,
+          headers: {
+            'Content-Type': 'application/json'
+          }
+        });
+      };
+  });
 
   inboxServices.factory('DeleteUser',
     function(
