@@ -50,7 +50,9 @@ angular.module('inboxServices').factory('Modal',
       scope.setError = function(err, message) {
         $log.error('Error submitting modal', err);
         scope.status.processing = false;
-        scope.status.error = message;
+        if (message) {
+          scope.status.error = message;
+        }
       };
       return scope;
     };

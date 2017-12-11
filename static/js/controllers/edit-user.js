@@ -157,6 +157,7 @@ var passwordTester = require('simple-password-tester'),
 
       var validatePasswordFields = function() {
         return validateRequired('password', 'Password') &&
+          validateRequired('currentPassword', 'Current Password') &&
           validatePasswordStrength() &&
           validateConfirmPasswordMatches();
       };
@@ -328,7 +329,14 @@ var passwordTester = require('simple-password-tester'),
               $window.location.reload(true);
             })
             .catch(function(err) {
-              $scope.setError(err, 'Error updating user');
+              if (err.status === 401) {
+                Translate('password.incorrect').then(function(value) {
+                  $scope.errors.currentPassword = value;
+                  $scope.setError();
+                });
+              } else {
+                $scope.setError(err, 'Error updating user');
+              }
             });
         } else {
           $scope.setError();
