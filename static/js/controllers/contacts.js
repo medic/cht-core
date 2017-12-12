@@ -77,7 +77,9 @@ var _ = require('underscore'),
 
         if (options.skip) {
           $scope.appending = true;
-          options.skip = liveList.count();
+
+          // Round down to the nearest standard page size
+          options.skip = Math.floor(liveList.count() / options.limit) * options.limit;
         } else if (!options.silent) {
           liveList.set([]);
         }
