@@ -3,20 +3,36 @@ describe('Simprints service', () => {
   'use strict';
 
   let service,
+      medicmobile_android,
       simprints_reg,
       simprints_ident;
 
+  const assertCalledOnCorrectObject = function() {
+    // If the medicmobile_android functions are not called with `this` parameter
+    // correctly set, we receive the cryptic error:
+    //   Java bridge method cannot be invoked on a non-injected object
+    // This function ensures that stubbed functions are being called on the
+    // correct object.
+    if(this !== medicmobile_android) {
+      throw new Error('Java bridge method cannot be invoked on a non-injected object');
+    }
+  };
+
   beforeEach(() => {
     module('inboxApp');
-    simprints_reg = sinon.stub();
-    simprints_ident = sinon.stub();
+
+    simprints_reg = sinon.stub().callsFake(assertCalledOnCorrectObject);
+    simprints_ident = sinon.stub().callsFake(assertCalledOnCorrectObject);
+
+    medicmobile_android = {
+      simprints_reg: simprints_reg,
+      simprints_ident: simprints_ident
+    };
+
     module($provide => {
       $provide.value('$q', Q); // bypass $q so we don't have to digest
       $provide.value('$window', {
-        medicmobile_android: {
-          simprints_reg: simprints_reg,
-          simprints_ident: simprints_ident
-        }
+        medicmobile_android: medicmobile_android,
       });
     });
     inject(_Simprints_ => {
