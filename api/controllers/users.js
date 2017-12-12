@@ -5,6 +5,8 @@ const async = require('async'),
       places = require('./places'),
       db = require('../db');
 
+const USER_PREFIX = 'org.couchdb.user:';
+
 const PASSWORD_MINIMUM_LENGTH = 8,
       PASSWORD_MINIMUM_SCORE = 50,
       USERNAME_WHITELIST = /^[a-z0-9_-]+$/;
@@ -300,7 +302,7 @@ var hasParent = function(facility, id) {
  */
 var mapUsers = function(users, settings, facilities) {
   var filtered = _.filter(users, function(user) {
-    return user.id.indexOf(getPrefix() + ':') === 0;
+    return user.id.indexOf(USER_PREFIX) === 0;
   });
   return _.map(filtered, function(user) {
     var setting = getDoc(user.id, settings) || {};
@@ -390,12 +392,8 @@ var getUserUpdates = function(username, data) {
   return user;
 };
 
-var getPrefix = function() {
-  return 'org.couchdb.user';
-};
-
 var createID = function(name) {
-  return [getPrefix(), name].join(':');
+  return USER_PREFIX + name;
 };
 
 var deleteUser = function(id, callback) {

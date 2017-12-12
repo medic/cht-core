@@ -90,6 +90,9 @@ app.use(function(req, res, next) {
   next();
 });
 
+
+// TODO: investigate blocking writes to _users from the outside. Reads maybe as well, though may be harder
+
 app.get('/', function(req, res) {
   if (req.headers.accept === 'application/json') {
     // couchdb request - let it go
@@ -584,7 +587,7 @@ app.postJson('/api/v1/users/:username', function(req, res) {
   });
 });
 
-app.deleteJson('/api/v1/users/:username', function(req, res) {
+app.delete('/api/v1/users/:username', function(req, res) {
   auth.check(req, 'can_delete_users', null, function(err) {
     if (err) {
       return serverUtils.error(err, req, res);

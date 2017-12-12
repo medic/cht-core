@@ -49,9 +49,8 @@ angular.module('inboxControllers').controller('UserLanguageModalCtrl',
         $log.error(err);
         return $q.reject(err);
       }
-      var id = 'org.couchdb.user:' + Session.userCtx().name;
       $scope.setProcessing();
-      return UpdateUser(id, { language: $scope.selectedLanguage })
+      return UpdateUser(Session.userCtx().name, { language: $scope.selectedLanguage })
         .then(function() {
           $scope.setFinished();
           $uibModalInstance.close();

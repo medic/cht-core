@@ -9,10 +9,10 @@
 >
   <form action="" method="POST">
 
-    <div class="form-group required" ng-class="{'has-error': errors.name}">
-      <label for="name" translate>User Name</label>
-      <input id="name" type="text" class="form-control" ng-model="editUserModel.name" ng-disabled="editUserModel.id" />
-      <span class="help-block">{{errors.name}}</span>
+    <div class="form-group required" ng-class="{'has-error': errors.username}">
+      <label for="username" translate>User Name</label>
+      <input id="username" type="text" class="form-control" ng-model="editUserModel.username" ng-disabled="editUserModel.id" />
+      <span class="help-block">{{errors.username}}</span>
     </div>
 
     <div class="form-group">
@@ -54,18 +54,18 @@
     </div>
 
     <div class="form-group" mm-auth="can_configure" ng-class="{'has-error': errors.facility_id, 'required': editUserModel.type === 'district-manager'}">
-      <label for="facility" translate>Facility</label>
-      <select id="facility" name="facility">
-        <option ng-value="editUserModel.facility" ng-if="editUserModel.facility"></option>
+      <label for="facilitySelect" translate>Facility</label>
+      <select id="facilitySelect" name="facilitySelect">
+        <option ng-value="editUserModel.facilitySelect" ng-if="editUserModel.facilitySelect"></option>
       </select>
       <span class="help-block">{{errors.facility_id}}</span>
     </div>
 
     <div class="form-group" mm-auth="can_configure" ng-class="{'has-error': errors.contact_id, 'required': editUserModel.type === 'district-manager'}">
-      <label for="contact" translate>associated.contact</label>
+      <label for="contactSelect" translate>associated.contact</label>
       <div class="text-muted" translate>associated.contact.help</div>
-      <select id="contact" name="contact" autocomplete="off">
-        <option ng-value="editUserModel.contact" ng-if="editUserModel.contact"></option>
+      <select id="contactSelect" name="contactSelect" autocomplete="off">
+        <option ng-value="editUserModel.contactSelect" ng-if="editUserModel.contactSelect"></option>
       </select>
       <span class="help-block">{{errors.contact_id}}</span>
     </div>

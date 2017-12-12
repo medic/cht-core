@@ -1,3 +1,4 @@
+// TODO: probably remove most of this
 describe('DeleteUser service', function() {
 
   'use strict';
