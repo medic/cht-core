@@ -431,7 +431,10 @@ module.exports = function(grunt) {
     },
     'regex-check': {
       only_in_tests: {
-        files: [ { src: [ 'tests/**/*.js' ] } ],
+        files: [ { src: [
+          'tests/**/*.js',
+          'sentinel/test/mocha/**/*.js'
+        ] } ],
         options: {
           pattern: /\.only\(/g
         }

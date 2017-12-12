@@ -1,6 +1,8 @@
 require('chai').should();
 const sinon = require('sinon').sandbox.create(),
-      moment = require('moment');
+      moment = require('moment'),
+      utils = require('../../../lib/utils'),
+      config = require('../../../config');
 
 describe('accept_patient_reports', () => {
   const transition = require('../../../transitions/accept_patient_reports'),
@@ -9,6 +11,134 @@ describe('accept_patient_reports', () => {
   afterEach(done => {
     sinon.restore();
     done();
+  });
+
+  describe('filter', () => {
+    it('validation', () => {
+      transition.filter({}).should.equal(false);
+      transition.filter({ form: 'x' }).should.equal(false);
+    });
+  });
+
+  describe('onMatch', () => {
+
+    it('callback empty if form not included', done => {
+      sinon.stub(config, 'get').returns([ { form: 'x' }, { form: 'z' } ]);
+
+      transition.onMatch({
+        doc: {
+          form: 'y'
+        }
+      }, {}, {}, (err, changed) => {
+        (typeof err).should.equal('undefined');
+        (typeof changed).should.equal('undefined');
+        done();
+      });
+    });
+
+    it('with no patient id adds error msg and response', done => {
+      sinon.stub(config, 'get').returns([ { form: 'x' }, { form: 'z' } ]);
+      sinon.stub(utils, 'getRegistrations').callsArgWith(1, null, []);
+
+      const doc = {
+        form: 'x',
+        fields: { patient_id: 'x' }
+      };
+
+      transition.onMatch({
+        doc: doc
+      }, {}, {}, () => {
+        doc.errors.length.should.equal(1);
+        doc.errors[0].message.should.equal('messages.generic.registration_not_found');
+        done();
+      });
+    });
+
+  });
+
+  describe('handleReport', () => {
+
+    // Because patients can be created through the UI and not neccessarily have
+    // a registration at all
+    it('with no registrations does not error', done => {
+      const doc = {
+        fields: { patient_id: 'x' },
+        from: '+123'
+      };
+      sinon.stub(utils, 'getRegistrations').callsArgWith(1, null, []);
+
+      const config = {
+        messages: [{
+          event_type: 'registration_not_found',
+          message: [{
+            content: 'not found {{patient_id}}',
+            locale: 'en'
+          }],
+          recipient: 'reporting_unit'
+        }]
+      };
+
+      transition._handleReport(null, null, doc, config, () => {
+        (typeof doc.errors).should.equal('undefined');
+        (typeof doc.tasks).should.equal('undefined');
+        done();
+      });
+    });
+
+    it('with patient adds reply', done => {
+      const patient = { patient_name: 'Archibald' };
+      const doc = {
+        fields: { patient_id: '559' },
+        contact: {
+          phone: '+1234',
+          name: 'woot',
+          parent: {
+            contact: {
+              phone: '+1234',
+              name: 'woot'
+            }
+          }
+        },
+        patient: patient
+      };
+      sinon.stub(utils, 'getRegistrations').callsArgWith(1, null, []);
+      const config = {
+        messages: [{
+          event_type: 'report_accepted',
+          message: [{
+            content: 'Thank you, {{contact.name}}. ANC visit for {{patient_name}} ({{patient_id}}) has been recorded.',
+            locale: 'en'
+          }],
+          recipient: 'reporting_unit'
+        }]
+      };
+      transition._handleReport(null, null, doc, config, () => {
+        doc.tasks[0].messages[0].message.should.equal(
+          'Thank you, woot. ANC visit for Archibald (559) has been recorded.'
+        );
+        done();
+      });
+    });
+
+    it('adding silence_type to handleReport calls _silenceReminders', done => {
+      sinon.stub(transition, '_silenceReminders').callsArgWith(4);
+      const doc = { _id: 'a', fields: { patient_id: 'x'}};
+      const config = { silence_type: 'x', messages: [] };
+      const registrations = [
+        { id: 'a' }, // should not be silenced as it's the doc being processed
+        { id: 'b' }, // should be silenced
+        { id: 'c' }  // should be silenced
+      ];
+      sinon.stub(utils, 'getRegistrations').callsArgWith(1, null, registrations);
+      transition._handleReport(null, null, doc, config, (err, complete) => {
+        complete.should.equal(true);
+        transition._silenceReminders.callCount.should.equal(2);
+        transition._silenceReminders.args[0][1].id.should.equal('b');
+        transition._silenceReminders.args[1][1].id.should.equal('c');
+        done();
+      });
+    });
+
   });
 
   describe('silenceReminders', () => {
@@ -44,6 +174,7 @@ describe('accept_patient_reports', () => {
       transition._silenceReminders(audit, registration);
     });
   });
+
   describe('findToClear', () => {
     const ids = ts => ts.map(t => t._id);
 
@@ -107,6 +238,7 @@ describe('accept_patient_reports', () => {
       });
     });
   });
+
   describe('addMessageToDoc', () => {
     it('Does not add a message if the bool_expr fails', () => {
       const doc = {};

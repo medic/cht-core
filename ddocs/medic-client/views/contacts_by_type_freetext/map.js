@@ -31,9 +31,10 @@ function(doc) {
   };
 
   var types = [ 'district_hospital', 'health_center', 'clinic', 'person' ];
+  var dead = !!doc.date_of_death;
   var idx = types.indexOf(doc.type);
   if (idx !== -1) {
-    var order = idx + ' ' + (doc.name && doc.name.toLowerCase());
+    var order = dead + ' ' + idx + ' ' + (doc.name && doc.name.toLowerCase());
     Object.keys(doc).forEach(function(key) {
       emitField(key, doc[key], order);
     });

@@ -6,8 +6,16 @@ const translator = require('../../../../static/js/enketo/translator');
 describe('enketo translator', () => {
 
   /*global document:true*/
-  document = {};
-  require('../mock-angular');
+  beforeEach(done => {
+    document = {};
+    require('../mock-angular');
+    done();
+  });
+
+  afterEach(done => {
+    document = null;
+    done();
+  });
 
   describe('#t()', () => {
 

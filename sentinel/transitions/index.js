@@ -41,7 +41,8 @@ const AVAILABLE_TRANSITIONS = [
   'update_notifications',
   'update_scheduled_reports',
   'update_sent_forms',
-  'generate_patient_id_on_people'
+  'generate_patient_id_on_people',
+  'death_reporting'
 ];
 
 /*

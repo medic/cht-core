@@ -136,6 +136,15 @@
           }
         }
       })
+      .state('contacts.deceased', {
+        url: '/:id/deceased',
+        views: {
+          content: {
+            controller: 'ContactsDeceasedCtrl',
+            templateUrl: 'templates/partials/contacts_deceased.html'
+          }
+        }
+      })
       .state('contacts.detail', {
         url: '/:id',
         views: {

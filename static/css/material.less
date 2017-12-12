@@ -32,8 +32,11 @@
       flex-grow: 100;
     }
   }
-  mm-content-row:last-child li {
-    border-bottom: 0;
+  ul:last-child mm-content-row:last-child,
+  .deceased {
+    li {
+      border-bottom: 0;
+    }
   }
   .meta .heading {
     padding: 20px;
@@ -41,9 +44,10 @@
     align-items: center;
     img,
     svg {
-      width: 60px;
-      height: 60px;
+      width: @icon-large;
+      height: @icon-large;
       margin-left: -10px;
+      margin-right: 5px;
     }
   }
   .field-icon {
@@ -67,10 +71,9 @@
   h2 {
     margin: 0;
   }
-  h2,
-  .primary-contact {
+  .heading-content > * {
     display: inline-block;
-    margin-left: 5px;
+    margin-right: 30px;
   }
   .action-header {
     border-bottom: 3px solid @seperator-color;
@@ -158,9 +161,9 @@
       margin-left: 10px;
       order: 1;
     }
-    h2,
-    .primary-contact {
+    .heading-content > * {
       display: inherit;
+      margin-right: 0;
     }
   }
   #snackbar .snackbar-content {

@@ -40,11 +40,12 @@ var moment = require('moment');
         return moment(date).format(config[key]);
       };
 
-      var getDateDiff = function(date) {
-        var now = moment().startOf('day'); // remove the time component
+      var getDateDiff = function(date, options) {
+        var end = options.end ? moment(options.end) : moment(); // default to now
+        end = end.startOf('day'); // remove the time component
         for (var i = 0; i < config.ageBreaks.length; i++) {
           var ageBreak = config.ageBreaks[i];
-          var diff = date.diff(now, ageBreak.unit);
+          var diff = date.diff(end, ageBreak.unit);
           if (Math.abs(diff) > ageBreak.min) {
             return { quantity: diff, key: ageBreak.key };
           }
@@ -53,8 +54,7 @@ var moment = require('moment');
       };
 
       var relativeDate = function(date, options) {
-        options = options || {};
-        var diff = getDateDiff(moment(date).startOf('day'));
+        var diff = getDateDiff(moment(date).startOf('day'), options);
         if (options.humanize) {
           if (diff.quantity === 0) {
             return $translate.instant('today');
@@ -89,8 +89,9 @@ var moment = require('moment');
           }
           return moment(date).fromNow();
         },
-        age: function(date) {
-          return relativeDate(date);
+        age: function(date, options) {
+          options = options || {};
+          return relativeDate(date, options);
         },
         time: function(date) {
           return format(date, 'time');

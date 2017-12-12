@@ -196,7 +196,9 @@ var feedback = require('../modules/feedback'),
        * Clear the selected item - may update the URL
        */
       $scope.clearSelected = function() {
-        if ($stateParams.id) {
+        if ($state.current.name === 'contacts.deceased') {
+          $state.go('contacts.detail', { id: $stateParams.id });
+        } else if ($stateParams.id) {
           $state.go($state.current.name, { id: null });
         } else {
           $scope.unsetSelected();

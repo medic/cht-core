@@ -35,6 +35,7 @@
   require('./configuration-users');
   require('./contacts');
   require('./contacts-content');
+  require('./contacts-deceased');
   require('./contacts-edit');
   require('./contacts-report');
   require('./delete-doc-confirm');

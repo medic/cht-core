@@ -51,9 +51,10 @@
       align-self: start;
       margin: 5px;
       margin-left: -10px;
-      img {
-        max-height: 30px;
-        max-width: 30px;
+      img,
+      svg {
+        height: @icon-small;
+        width: @icon-small;
       }
     }
 
@@ -115,6 +116,23 @@
         white-space: nowrap;
       }
     }
+  }
+}
+
+.action {
+  background-color: @seperator-color;
+}
+
+.contacts .action .content-row > a {
+  min-height: inherit;
+
+  &:hover {
+    border-left-color: transparent;
+  }
+
+  .fa {
+    right: 10px;
+    position: absolute;
   }
 }
 

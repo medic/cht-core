@@ -82,6 +82,9 @@ angular.module('inboxServices').factory('ContactViewModelGenerator',
     var splitContactsByType = function(children) {
       return _.groupBy(children, function(child) {
         if (child.doc.type === 'person') {
+          if (child.doc.date_of_death) {
+            return 'deceased';
+          }
           return 'persons';
         }
         return 'places';
