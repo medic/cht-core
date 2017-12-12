@@ -93,7 +93,7 @@ var passwordTester = require('simple-password-tester'),
           $scope.editUserModel = model;
         })
         .catch(function(err) {
-          console.error('Error determining user model', err);
+          $log.error('Error determining user model', err);
         });
 
       $uibModalInstance.rendered.then(function() {
