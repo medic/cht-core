@@ -1,254 +1,131 @@
-// TODO: probably delete all of this?
 describe('UpdateUser service', function() {
 
   'use strict';
 
   var scope,
       service,
-      cacheRemove,
-      $httpBackend,
-      get,
-      put;
+      $http;
 
   beforeEach(function() {
-    get = sinon.stub();
-    put = sinon.stub();
-    cacheRemove = sinon.stub();
+    $http = sinon.stub();
+    $http.returns(Promise.resolve());
     module('inboxApp');
-    module(function ($provide) {
-      $provide.factory('DB', KarmaUtils.mockDB({ get: get, put: put }));
+    module($provide => {
+      $provide.value('$http', $http);
     });
     inject(function($injector) {
-      $httpBackend = $injector.get('$httpBackend');
-      var $cacheFactory = $injector.get('$cacheFactory');
-      $cacheFactory.get = function(name) {
-        if (name !== '$http') {
-          throw new Error('requesting the wrong cache');
-        }
-        return { remove: cacheRemove };
-      };
       scope = $injector.get('$rootScope');
       service = $injector.get('UpdateUser');
     });
   });
 
   afterEach(function() {
-    $httpBackend.verifyNoOutstandingExpectation();
-    $httpBackend.verifyNoOutstandingRequest();
-    KarmaUtils.restore(cacheRemove, get, put);
+    KarmaUtils.restore($http);
   });
 
-  it('creates a user', function(done) {
+  it('POSTs changes to the api', () =>
+    service('user', {some: 'updates'})
+      .then(() => {
+        chai.expect($http.callCount).to.equal(1);
+        chai.expect($http.args[0][0]).to.deep.equal({
+          method: 'POST',
+          url: '/api/v1/users/user',
+          data: {some: 'updates'},
+          headers: {
+            'Content-Type': 'application/json'
+          }
+        });
+      }));
 
-    var settings = {
-      name: 'sally',
-      favcolour: 'aqua',
-      starsign: 'libra'
-    };
+  it('Uses Basic Auth if provided', () =>
+    service('user', {some: 'updates'}, 'user', 'pass')
+      .then(() => {
+        chai.expect($http.callCount).to.equal(1);
+        chai.expect($http.args[0][0]).to.deep.equal({
+          method: 'POST',
+          url: 'http://user:pass@server:80/api/v1/users/user',
+          data: {some: 'updates'},
+          headers: {
+            'Content-Type': 'application/json'
+          }
+        });
+      }));
+});
 
-    var user = {
-      name: 'sally',
-      facility_id: 'b'
-    };
+describe('CreateUser service', function() {
 
-    var expectedUser = {
-      _id: 'org.couchdb.user:sally',
-      type: 'user',
-      name: 'sally',
-      facility_id: 'b'
-    };
+  'use strict';
 
-    var expectedSettings = {
-      _id: 'org.couchdb.user:sally',
-      type: 'user-settings',
-      name: 'sally',
-      favcolour: 'aqua',
-      starsign: 'libra'
-    };
+  var scope,
+      service,
+      $http;
 
-    $httpBackend
-      .expect('PUT', '/_users/org.couchdb.user%3Asally', JSON.stringify(expectedUser))
-      .respond(201, '');
-
-    put.returns(Promise.resolve());
-
-    service(null, settings, user);
-
-    setTimeout(function() {
-      scope.$apply(); // needed to resolve the promises
-
-      chai.expect(cacheRemove.callCount).to.equal(2);
-      chai.expect(cacheRemove.firstCall.args[0]).to.equal('/_users/org.couchdb.user%3Asally');
-      chai.expect(cacheRemove.secondCall.args[0]).to.equal('/_users/_all_docs?include_docs=true');
-      chai.expect(put.callCount).to.equal(1);
-      chai.expect(put.firstCall.args[0]).to.deep.equal(expectedSettings);
-      done();
+  beforeEach(function() {
+    $http = sinon.stub();
+    $http.returns(Promise.resolve());
+    module('inboxApp');
+    module($provide => {
+      $provide.value('$http', $http);
+      $provide.value('$Q', Q);
     });
-
-    $httpBackend.flush();
-  });
-
-  it('updates the user', function(done) {
-
-    var user = {
-      name: 'jerome',
-      facility_id: 'b'
-    };
-
-    var settings = {
-      name: 'jerome',
-      favcolour: 'aqua',
-      starsign: 'libra'
-    };
-
-    var expectedUser = {
-      _id: 'org.couchdb.user:jerome',
-      name: 'jerome',
-      facility_id: 'b'
-    };
-
-    var expectedSettings = {
-      _id: 'org.couchdb.user:jerome',
-      type: 'user-settings',
-      name: 'jerome',
-      favcolour: 'aqua',
-      starsign: 'libra'
-    };
-
-    $httpBackend
-      .expect('GET', '/_users/org.couchdb.user%3Ajerome')
-      .respond({ _id: 'org.couchdb.user:jerome', name: 'jerome', facility_id: 'a' });
-
-    $httpBackend
-      .expect('PUT', '/_users/org.couchdb.user%3Ajerome', JSON.stringify(expectedUser))
-      .respond(201, '');
-
-    get.returns(Promise.resolve({
-      _id: 'org.couchdb.user:jerome',
-      type: 'user-settings',
-      name: 'jerome',
-      favcolour: 'teal'
-    }));
-    put.returns(Promise.resolve());
-
-    service('org.couchdb.user:jerome', settings, user);
-
-    setTimeout(function() {
-      scope.$apply(); // needed to resolve the promises
-      chai.expect(cacheRemove.callCount).to.equal(2);
-      chai.expect(cacheRemove.firstCall.args[0]).to.equal('/_users/org.couchdb.user%3Ajerome');
-      chai.expect(cacheRemove.secondCall.args[0]).to.equal('/_users/_all_docs?include_docs=true');
-      chai.expect(get.callCount).to.equal(1);
-      chai.expect(get.firstCall.args[0]).to.deep.equal('org.couchdb.user:jerome');
-      chai.expect(put.callCount).to.equal(1);
-      chai.expect(put.firstCall.args[0]).to.deep.equal(expectedSettings);
-      done();
-    });
-
-    $httpBackend.flush();
-  });
-
-  it('updates the password', function(done) {
-
-    var updates = {
-      favcolour: 'aqua',
-      starsign: 'libra',
-      password: 'xyz'
-    };
-
-    var expected = {
-      _id: 'org.couchdb.user:jerome',
-      name: 'jerome',
-      favcolour: 'aqua',
-      starsign: 'libra',
-      password: 'xyz'
-    };
-
-    $httpBackend
-      .expect('GET', '/_users/org.couchdb.user%3Ajerome')
-      .respond({ _id: 'org.couchdb.user:jerome', name: 'jerome', favcolour: 'turquoise', derived_key: 'abc', salt: 'def' });
-
-    $httpBackend
-      .expect('PUT', '/_users/org.couchdb.user%3Ajerome', JSON.stringify(expected))
-      .respond(201, '');
-
-    service('org.couchdb.user:jerome', null, updates)
-      .then(function() {
-        chai.expect(cacheRemove.callCount).to.equal(2);
-        chai.expect(cacheRemove.firstCall.args[0]).to.equal('/_users/org.couchdb.user%3Ajerome');
-        chai.expect(cacheRemove.secondCall.args[0]).to.equal('/_users/_all_docs?include_docs=true');
-        done();
-      });
-
-    setTimeout(function() {
-      scope.$apply(); // needed to resolve the promises
-      setTimeout(function() {
-        scope.$apply(); // needed to resolve the promises
-      });
-    });
-
-    $httpBackend.flush();
-  });
-
-  it('returns errors', function(done) {
-
-    $httpBackend
-      .expect('GET', '/_users/org.couchdb.user%3Ajerome')
-      .respond(503, 'Server error');
-
-    var updates = {
-      favcolour: 'aqua',
-      starsign: 'libra'
-    };
-
-    service('org.couchdb.user:jerome', null, updates)
-      .catch(function(err) {
-        chai.expect(err.data).to.equal('Server error');
-        chai.expect(cacheRemove.callCount).to.equal(0);
-        done();
-      });
-    setTimeout(function() {
-      scope.$apply(); // needed to resolve the promises
-    });
-
-    $httpBackend.flush();
-  });
-
-  it('can update settings only', function() {
-
-    var updates = {
-      favcolour: 'aqua',
-      starsign: 'libra'
-    };
-
-    var expectedSettings = {
-      _id: 'org.couchdb.user:jerome',
-      type: 'user-settings',
-      name: 'jerome',
-      favcolour: 'aqua',
-      starsign: 'libra'
-    };
-
-    get.returns(Promise.resolve({
-      _id: 'org.couchdb.user:jerome',
-      type: 'user-settings',
-      name: 'jerome',
-      favcolour: 'teal'
-    }));
-    put.returns(Promise.resolve());
-
-    setTimeout(function() {
-      scope.$apply(); // needed to resolve the promises
-      setTimeout(function() {
-        scope.$apply(); // needed to resolve the promises
-      });
-    });
-
-    return service('org.couchdb.user:jerome', updates).then(function() {
-      chai.expect(get.callCount).to.equal(1);
-      chai.expect(get.firstCall.args[0]).to.deep.equal('org.couchdb.user:jerome');
-      chai.expect(put.callCount).to.equal(1);
-      chai.expect(put.firstCall.args[0]).to.deep.equal(expectedSettings);
+    inject(function($injector) {
+      scope = $injector.get('$rootScope');
+      service = $injector.get('CreateUser');
     });
   });
+
+  afterEach(function() {
+    KarmaUtils.restore($http);
+  });
+
+  it('POSTs new users via changes to the api', () =>
+    service({username: 'user', some: 'updates'})
+      .then(() => {
+        chai.expect($http.callCount).to.equal(1);
+        chai.expect($http.args[0][0]).to.deep.equal({
+          method: 'POST',
+          url: '/api/v1/users',
+          data: {username: 'user', some: 'updates'},
+          headers: {
+            'Content-Type': 'application/json'
+          }
+        });
+      }));
+});
+
+describe('DeleteUser service', function() {
+
+  'use strict';
+
+  var scope,
+      service,
+      $http;
+
+  beforeEach(function() {
+    $http = sinon.stub();
+    $http.returns(Promise.resolve());
+    module('inboxApp');
+    module($provide => {
+      $provide.value('$http', $http);
+      $provide.value('$Q', Q);
+    });
+    inject(function($injector) {
+      scope = $injector.get('$rootScope');
+      service = $injector.get('DeleteUser');
+    });
+  });
+
+  afterEach(function() {
+    KarmaUtils.restore($http);
+  });
+
+  it('DELETEs the given user via the api', () =>
+    service('user')
+      .then(() => {
+        chai.expect($http.callCount).to.equal(1);
+        chai.expect($http.args[0][0]).to.deep.equal({
+          method: 'DELETE',
+          url: '/api/v1/users/user'
+        });
+      }));
 });

@@ -53,21 +53,21 @@
       <span class="help-block">{{errors.type}}</span>
     </div>
 
-    <div class="form-group" mm-auth="can_configure" ng-class="{'has-error': errors.facility_id, 'required': editUserModel.type === 'district-manager'}">
+    <div class="form-group" mm-auth="can_configure" ng-class="{'has-error': errors.place, 'required': editUserModel.type === 'district-manager'}">
       <label for="facilitySelect" translate>Facility</label>
       <select id="facilitySelect" name="facilitySelect">
         <option ng-value="editUserModel.facilitySelect" ng-if="editUserModel.facilitySelect"></option>
       </select>
-      <span class="help-block">{{errors.facility_id}}</span>
+      <span class="help-block">{{errors.place}}</span>
     </div>
 
-    <div class="form-group" mm-auth="can_configure" ng-class="{'has-error': errors.contact_id, 'required': editUserModel.type === 'district-manager'}">
+    <div class="form-group" mm-auth="can_configure" ng-class="{'has-error': errors.contact, 'required': editUserModel.type === 'district-manager'}">
       <label for="contactSelect" translate>associated.contact</label>
       <div class="text-muted" translate>associated.contact.help</div>
       <select id="contactSelect" name="contactSelect" autocomplete="off">
         <option ng-value="editUserModel.contactSelect" ng-if="editUserModel.contactSelect"></option>
       </select>
-      <span class="help-block">{{errors.contact_id}}</span>
+      <span class="help-block">{{errors.contact}}</span>
     </div>
 
     <div class="form-group" ng-class="{'has-error': errors.password, 'required': !editUserModel.id}">

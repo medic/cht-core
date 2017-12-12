@@ -1,7 +1,6 @@
 describe('UserLanguageModalCtrl controller', function() {
   'use strict';
 
-// TODO: fix stubUpdateUser for slightly different api
   var createController,
       scope,
       stubSetLanguage,

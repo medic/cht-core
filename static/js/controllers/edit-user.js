@@ -78,6 +78,8 @@ var passwordTester = require('simple-password-tester'),
                   phone: user.phone,
                   language: { code: user.language }
                 };
+              } else {
+                return {};
               }
             })
             .catch(function(err) {
@@ -86,9 +88,13 @@ var passwordTester = require('simple-password-tester'),
         }
       };
 
-      determineEditUserModel().then(function(model) {
-        $scope.editUserModel = model;
-      });
+      determineEditUserModel()
+        .then(function(model) {
+          $scope.editUserModel = model;
+        })
+        .catch(function(err) {
+          console.error('Error determining user model', err);
+        });
 
       $uibModalInstance.rendered.then(function() {
         // only the #edit-user-profile modal has these fields
@@ -210,7 +216,11 @@ var passwordTester = require('simple-password-tester'),
 
             var updates = {};
             dk.forEach(function(k) {
-              updates[k] = model[k];
+              if (k === 'language') {
+                updates[k] = model[k].code;
+              } else {
+                updates[k] = model[k];
+              }
             });
 
             return updates;
@@ -264,7 +274,7 @@ var passwordTester = require('simple-password-tester'),
           changedUpdates($scope.editUserModel).then(function(updates) {
             $q.resolve().then(function() {
               if (haveUpdates(updates)) {
-                return UpdateUser($scope.editUserModel.username, updates)
+                return UpdateUser($scope.editUserModel.username, updates);
               }
             })
               .then(function() {
