@@ -228,7 +228,6 @@ var passwordTester = require('simple-password-tester'),
       };
 
       var computeFields = function() {
-        // $scope.editUserModel.roles = getRoles($scope.editUserModel.type, true);
         $scope.editUserModel.place = $('#edit-user-profile [name=facilitySelect]').val();
         $scope.editUserModel.contact = $('#edit-user-profile [name=contactSelect]').val();
       };
