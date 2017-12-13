@@ -209,6 +209,10 @@ var createUser = function(data, response, callback) {
 };
 
 var createContact = function(data, response, callback) {
+  if (!data.contact) {
+    return callback(null, data, response);
+  }
+
   response = response || {};
   people.getOrCreatePerson(data.contact, function(err, doc) {
     if (err) {
@@ -242,6 +246,10 @@ var createUserSettings = function(data, response, callback) {
 };
 
 var createPlace = function(data, response, callback) {
+  if (!data.place) {
+    return callback(null, data, response);
+  }
+
   places.getOrCreatePlace(data.place, function(err, doc) {
     data.place = doc;
     callback(err, data, response);
@@ -249,6 +257,10 @@ var createPlace = function(data, response, callback) {
 };
 
 var storeUpdatedPlace = function(data, response, callback) {
+  if (!data.place) {
+    return callback(null, data, response);
+  }
+
   data.place.contact = places.minify(data.contact);
   data.place.parent = places.minify(data.place.parent);
   db.medic.insert(data.place, function(err) {
@@ -257,6 +269,10 @@ var storeUpdatedPlace = function(data, response, callback) {
 };
 
 var setContactParent = function(data, response, callback) {
+  if (!data.contact) {
+    return callback(null, data, response);
+  }
+
   if (data.contact.parent) {
     // contact parent must exist
     places.getPlace(data.contact.parent, function(err, place) {
@@ -483,14 +499,25 @@ module.exports = {
    * @api public
    */
   createUser: function(data, callback) {
-    const self = this,
-          required = ['username', 'password', 'place', 'contact'];
-    const missing = required.filter(prop => !data[prop]);
+    const missingFields = data => {
+      const required = ['username', 'password'];
+      if (data.type === 'district-manager' || (data.roles && data.roles.includes('district-manager'))) {
+        required.push('place', 'contact');
+      }
+
+      const missing = required.filter(prop => !data[prop]);
+
+      if (!data.type && !data.roles) {
+        missing.push('type or roles');
+      }
+
+      return missing;
+    };
+
+    const self = this;
+    const missing = missingFields(data);
     if (missing.length > 0) {
       return callback(error400('Missing required fields: ' + missing.join(', ')));
-    }
-    if (!data.contact.parent && !data.place) {
-      return callback(error400('Contact parent or place is required.'));
     }
     var passwordError = validatePassword(data.password);
     if (passwordError) {

@@ -79,8 +79,6 @@ describe('Users API', () => {
           // Example header:
           // AuthSession=cm9vdDo1MEJDMDEzRTp7Vu5GKCkTxTVxwXbpXsBARQWnhQ; Version=1; Path=/; HttpOnly
           try {
-            console.log('TRYING HEADERS NOW');
-            console.log(JSON.stringify(res.headers));
             cookie = res.headers['set-cookie'][0].match(/^(AuthSession=[^;]+)/)[0];
           } catch (err) {
             return deferred.reject(err);

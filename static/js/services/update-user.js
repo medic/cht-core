@@ -54,7 +54,6 @@
   inboxServices.factory('CreateUser',
     function(
       $http,
-      $location,
       $log,
       $q
     ) {
@@ -93,7 +92,6 @@
   inboxServices.factory('DeleteUser',
     function(
       $http,
-      $location,
       $log,
       $q
     ) {

@@ -26,7 +26,8 @@ exports.setUp = function(callback) {
     username: 'x',
     password: COMPLEX_PASSWORD,
     place: { name: 'x' },
-    contact: { 'parent': 'x' }
+    contact: { 'parent': 'x' },
+    type: 'national-manager'
   };
 
   callback();
@@ -610,6 +611,7 @@ exports['createUser returns error if short password.'] = test => {
     username: 'x',
     place: 'x',
     contact: { parent: 'x' },
+    type: 'national-manager',
     password: 'short'
   }, function(err) {
     test.ok(err);
@@ -624,6 +626,7 @@ exports['createUser returns error if weak password.'] = test => {
     username: 'x',
     place: 'x',
     contact: { parent: 'x' },
+    type: 'national-manager',
     password: 'password'
   }, function(err) {
     test.ok(err);
