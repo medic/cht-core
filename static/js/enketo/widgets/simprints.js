@@ -33,7 +33,7 @@ define( function( require, exports, module ) {
     Simprintswidget.prototype._init = function() {
         var $el = $( this.element );
         var $input = $el.find( 'input' );
-        $input.hide();
+        $input.attr( 'disabled', true );
         var angularServices = angular.element( document.body ).injector();
         var $translate = angularServices.get( '$translate' );
         var service = angularServices.get( 'Simprints' );
