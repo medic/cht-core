@@ -134,7 +134,7 @@ var _ = require('underscore'),
       };
 
       var simprintsRequest = function(filters) {
-        if (!filters.simprintsIdentities || !filters.simprintsIdentities.length) {
+        if (!filters.simprintsIdentities) {
           return;
         }
         var keys = filters.simprintsIdentities.map(function(identity) {
@@ -180,7 +180,7 @@ var _ = require('underscore'),
         },
         contacts: function(filters) {
           var simprints = simprintsRequest(filters);
-          if (simprints && simprints.params.keys.length) {
+          if (simprints) {
             return [ simprints ];
           }
 
