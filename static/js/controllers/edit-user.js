@@ -81,9 +81,6 @@ var passwordTester = require('simple-password-tester'),
               } else {
                 return {};
               }
-            })
-            .catch(function(err) {
-              $log.error('Error fetching user settings', err);
             });
         }
       };
@@ -196,32 +193,32 @@ var passwordTester = require('simple-password-tester'),
       var changedUpdates = function(model) {
         return determineEditUserModel()
           .then(function(existingModel) {
-            var dk = Object.keys(model).filter(function(k) {
-              if (k === 'id') {
-                return false;
-              }
-              if (k === 'language') {
-                return existingModel[k].code !== (model[k] && model[k].code);
-              }
-              if (k === 'password') {
-                return model[k] && model[k] !== '';
-              }
-              if (['currentPassword', 'passwordConfirm', 'facilitySelect', 'contactSelect'].indexOf(k) !== -1) {
-                // We don't want to return these 'meta' fields
-                return false;
-              }
-
-              return existingModel[k] !== model[k];
-            });
-
             var updates = {};
-            dk.forEach(function(k) {
-              if (k === 'language') {
-                updates[k] = model[k].code;
-              } else {
-                updates[k] = model[k];
-              }
-            });
+            Object.keys(model)
+              .filter(function(k) {
+                if (k === 'id') {
+                  return false;
+                }
+                if (k === 'language') {
+                  return existingModel[k].code !== (model[k] && model[k].code);
+                }
+                if (k === 'password') {
+                  return model[k] && model[k] !== '';
+                }
+                if (['currentPassword', 'passwordConfirm', 'facilitySelect', 'contactSelect'].indexOf(k) !== -1) {
+                  // We don't want to return these 'meta' fields
+                  return false;
+                }
+
+                return existingModel[k] !== model[k];
+              })
+              .forEach(function(k) {
+                if (k === 'language') {
+                  updates[k] = model[k].code;
+                } else {
+                  updates[k] = model[k];
+                }
+              });
 
             return updates;
           });
@@ -314,7 +311,8 @@ var passwordTester = require('simple-password-tester'),
             })
               .then(function() {
                 $scope.setFinished();
-                // REVIEWER: Why do I need to do this? Shouldn't this be caught by the changes feed?
+                // TODO: change this from a broadcast to a changes watcher
+                //       https://github.com/medic/medic-webapp/issues/4094
                 $rootScope.$broadcast('UsersUpdated', $scope.editUserModel.id);
                 $uibModalInstance.close();
               })

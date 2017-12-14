@@ -511,6 +511,10 @@ app.postJson('/api/v1/users', function(req, res) {
   });
 });
 
+/*
+ * TODO: move this logic out of here
+ *       https://github.com/medic/medic-webapp/issues/4092
+ */
 app.postJson('/api/v1/users/:username', function(req, res) {
   const username = req.params.username;
 

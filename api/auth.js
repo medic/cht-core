@@ -163,14 +163,14 @@ module.exports = {
   basicAuthCredentials: req => {
     const authHeader = req && req.headers && req.headers.authorization;
     if (!authHeader || !authHeader.startsWith('Basic ')) {
-      return Error('No Basic Auth header provided');
+      throw Error('No Basic Auth header provided');
     }
 
     let username, password;
     try {
       [username, password] = new Buffer(authHeader.split(' ')[1], 'base64').toString().split(':');
     } catch (err) {
-      return Error('Corrupted Auth header');
+      throw Error('Corrupted Auth header');
     }
 
     return {
