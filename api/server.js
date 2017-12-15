@@ -521,7 +521,7 @@ app.postJson('/api/v1/users/:username', function(req, res) {
   const updateUser = fullAccess =>
     users.updateUser(username, req.body, fullAccess, (err, body) => {
       if (err) {
-        return serverUtils.error(err, req, res, true);
+        return serverUtils.error(err, req, res);
       }
 
       res.json(body);
@@ -548,7 +548,7 @@ app.postJson('/api/v1/users/:username', function(req, res) {
         return serverUtils.error({
           message: 'You do not have permissions to modify this person',
           code: 401
-        }, req, res, true);
+        }, req, res);
       }
 
       // We're updating ourselves, but if we are updating our password we need
@@ -560,7 +560,7 @@ app.postJson('/api/v1/users/:username', function(req, res) {
           credentials = auth.basicAuthCredentials(req);
         } catch (err) {
           err.statusCode = 401;
-          return serverUtils.error(err, req, res, true);
+          return serverUtils.error(err, req, res);
         }
 
         if (username !== credentials.username) {
@@ -568,7 +568,7 @@ app.postJson('/api/v1/users/:username', function(req, res) {
           return serverUtils.error({
             message: 'You do not have permissions to modify this person',
             code: 401
-          }, req, res, true);
+          }, req, res);
         }
 
         auth.validateBasicAuth(credentials, err => {
@@ -576,9 +576,9 @@ app.postJson('/api/v1/users/:username', function(req, res) {
             console.error(`Invalid authorization attempt on /api/v1/users/${username}`);
             console.error(err);
             return serverUtils.error({
-              message: 'To modifiy yourself you must provide valid Basic Auth credentials',
+              message: 'Invalid Basic Auth password',
               code: 401
-            }, req, res, true);
+            }, req, res);
           }
 
           // We have valid basic auth and can update ourselves

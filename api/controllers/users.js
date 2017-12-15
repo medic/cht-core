@@ -11,6 +11,11 @@ const PASSWORD_MINIMUM_LENGTH = 8,
       PASSWORD_MINIMUM_SCORE = 50,
       USERNAME_WHITELIST = /^[a-z0-9_-]+$/;
 
+// TODO: sort out whether or not we can pass roles in instead of type.
+//       The code makes it look like you can sort of, but the existing docs
+//       don't mention it. Align docs and code, one way or another
+// https://github.com/medic/medic-webapp/issues/4096
+
 const RESTRICTED_USER_EDITABLE_FIELDS = [
   'password',
   'known'
@@ -350,6 +355,8 @@ var mapUsers = function(users, settings, facilities) {
  *  This may need to change once we makes roles more flexible, if the end result is that
  *  types are initial collections of roles but users can gain or lose any role manually.
  *
+ *  NB: these are also documented in /api/README.md
+ *
  *  Related to: https://github.com/medic/medic-webapp/issues/2583
  */
 var rolesMap = {
@@ -603,6 +610,12 @@ module.exports = {
       if (err) {
         return callback(err);
       }
+
+      // TODO log out what is going to happen
+      //      we need the authenticated username as well
+      //      as the given username and data we already have
+      // https://github.com/medic/medic-webapp/issues/4097
+
       const user = _.extend(doc, self._getUserUpdates(username, data));
       self._validateUserSettings(userID, function(err, doc) {
         if (err) {

@@ -28,11 +28,12 @@ describe('UpdateUser service', function() {
       .then(() => {
         chai.expect($http.callCount).to.equal(1);
         chai.expect($http.args[0][0]).to.deep.equal({
-          method: 'POST',
           url: '/api/v1/users/user',
+          method: 'POST',
           data: {some: 'updates'},
           headers: {
-            'Content-Type': 'application/json'
+            'Content-Type': 'application/json',
+            'Accept': 'application/json'
           }
         });
       }));
@@ -42,11 +43,13 @@ describe('UpdateUser service', function() {
       .then(() => {
         chai.expect($http.callCount).to.equal(1);
         chai.expect($http.args[0][0]).to.deep.equal({
+          url: '/api/v1/users/user',
           method: 'POST',
-          url: 'http://user:pass@server:80/api/v1/users/user',
           data: {some: 'updates'},
           headers: {
-            'Content-Type': 'application/json'
+            'Content-Type': 'application/json',
+            'Accept': 'application/json',
+            'Authorization': 'Basic ' + btoa('user:pass')
           }
         });
       }));
@@ -87,6 +90,7 @@ describe('CreateUser service', function() {
           url: '/api/v1/users',
           data: {username: 'user', some: 'updates'},
           headers: {
+            'Accept': 'application/json',
             'Content-Type': 'application/json'
           }
         });
@@ -125,7 +129,10 @@ describe('DeleteUser service', function() {
         chai.expect($http.callCount).to.equal(1);
         chai.expect($http.args[0][0]).to.deep.equal({
           method: 'DELETE',
-          url: '/api/v1/users/user'
+          url: '/api/v1/users/user',
+          headers: {
+            'Accept': 'application/json'
+          }
         });
       }));
 });

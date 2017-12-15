@@ -1012,21 +1012,40 @@ will be undefined.
 | -------- | -----------------
 | username | String identifier used for authentication.
 | password | Password string used for authentication.  Only allowed to be set, not retrieved.
-| place    | Place identifier string (UUID) or object this user resides in.
-| contact  | A person object based on the form configured in the app.
+
+#### Conditional
+
+| Key | Description | Details
+| -------- | ----------------- | ------
+| type     | User permission type, maps to a collection of roles | You must provide either a type or a collection of roles
+| roles    | Speciofic collection of roles  |  
+| place    | Place identifier string (UUID) or object this user resides in. | Required if your type / roles contain `district-manager`
+| contact  | A person object based on the form configured in the app. | Required if your type / roles contain `district-manager
 
 #### Optional
 
 | Key | Description
 | -------- | -----------------
-| type     | User permission type, default: district-manager
 | fullname | Full name
 | email    | Email address
 | phone    | Phone number
 | language | Language preference. e.g. "sw" for Swahili
 | known    | Boolean to define if the user has logged in before.  Used mainly to determine whether or not to start a tour on first login.
 
-#### Permission Types
+#### Types and Roles
+
+Types map to a collection of roles like so:
+
+| Type | roles
+| --- | ----
+| national-manager | ['national-manager', kujua_user', 'data_entry', 'national_admin'],
+| district-manager | ['district-manager', kujua_user', 'data_entry', 'district_admin'],
+| facility-manager | ['facility-manager', kujua_user', 'data_entry'],
+| data-entry | ['data-entry', data_entry'],
+| analytics | ['analytics', kujua_analytics'],
+| gateway | ['gateway', kujua_gateway']
+
+Roles roughly map to the following permissions, though these can be configured in-app.
 
 | Key | Description
 | -------- | -----------------
@@ -1177,7 +1196,11 @@ through the user is not supported, see People section.
 
 `can_update_users`, `can_update_places`, `can_update_people`
 
-NB: You are allowed to update yourself even if you do not have the permissions described below, as long as you authenticate using HTTP basic auth (not a cookie).
+### Updating yourself
+
+You do not need any of the above permissions if the user you are modifying is yourself. However, you are not allowed to modify your `type`, `roles`, `contact` or `place`.
+
+Further more, if you're updating your `password` you must be authenticating via Basic Auth (either the header or in the URL). This is to ensure the password is known at time of request, and no one is hijacking a cookie.
 
 ### URL Parameters
 

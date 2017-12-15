@@ -31,11 +31,13 @@
       return function(username, updates, basicAuthUser, basicAuthPass) {
         var url = '/api/v1/users/' + username;
 
+        var headers = {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json',
+        };
+
         if (basicAuthUser) {
-          url = [
-            $location.protocol(), '://', basicAuthUser, ':', basicAuthPass, '@',
-            $location.host(), ':', $location.port(), url
-          ].join('');
+          headers.Authorization = 'Basic ' + window.btoa(basicAuthUser + ':' + basicAuthPass);
         }
 
         $log.debug('UpdateUser', url, updates);
@@ -44,9 +46,7 @@
           method: 'POST',
           url: url,
           data: updates || {},
-          headers: {
-            'Content-Type': 'application/json'
-          }
+          headers: headers
         });
       };
   });
@@ -82,7 +82,8 @@
           url: url,
           data: updates,
           headers: {
-            'Content-Type': 'application/json'
+            'Content-Type': 'application/json',
+            'Accept': 'application/json'
           }
         });
       };
@@ -116,7 +117,10 @@
 
         return $http({
           method: 'DELETE',
-          url: url
+          url: url,
+          headers: {
+            'Accept': 'application/json'
+          }
         });
       };
     }
