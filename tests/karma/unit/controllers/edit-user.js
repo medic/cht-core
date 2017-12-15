@@ -9,6 +9,7 @@ describe('EditUserCtrl controller', () => {
       scope,
       translationsDbQuery,
       UpdateUser,
+      CreateUser,
       UserSettings,
       Translate,
       userToEdit;
@@ -22,6 +23,9 @@ describe('EditUserCtrl controller', () => {
       { value: { code: 'fr' } }
     ] }));
     UpdateUser = sinon.stub();
+    UpdateUser.returns(Promise.resolve());
+    CreateUser = sinon.stub();
+    CreateUser.returns(Promise.resolve());
     UserSettings = sinon.stub();
     userToEdit = {
       _id: 'user.id',
@@ -51,6 +55,7 @@ describe('EditUserCtrl controller', () => {
       });
       $provide.factory('DB', KarmaUtils.mockDB({ query: translationsDbQuery }));
       $provide.value('UpdateUser', UpdateUser);
+      $provide.value('CreateUser', CreateUser);
       $provide.value('UserSettings', UserSettings);
       $provide.value('Translate', Translate);
 
@@ -66,6 +71,7 @@ describe('EditUserCtrl controller', () => {
         return $controller('EditUserCtrl', {
           '$scope': scope,
           '$rootScope': $rootScope,
+          '$q': Q,
           'Language': sinon.stub(),
           'ContactSchema': { getPlaceTypes: () => { return []; } },
           'Search': sinon.stub(),
@@ -81,19 +87,16 @@ describe('EditUserCtrl controller', () => {
       };
       mockEditCurrentUser = user => {
         UserSettings.returns(Promise.resolve(user));
-        UpdateUser.returns(Promise.resolve());
         createController();
       };
 
       mockEditAUser = user => {
         // Don't mock UserSettings, we're not fetching current user.
-        UpdateUser.returns(Promise.resolve());
         createController(user);
       };
 
       mockCreateNewUser = () => {
         // Don't mock UserSettings, we're not fetching current user.
-        UpdateUser.returns(Promise.resolve());
         createController({});
       };
     });
@@ -108,11 +111,11 @@ describe('EditUserCtrl controller', () => {
   });
 
   const mockFacility = (facility_id) => {
-      window.$.withArgs('#edit-user-profile [name=facility]')
+      window.$.withArgs('#edit-user-profile [name=facilitySelect]')
         .returns({ val: () => facility_id });
   };
   const mockContact = (contact_id) => {
-      window.$.withArgs('#edit-user-profile [name=contact]')
+      window.$.withArgs('#edit-user-profile [name=contactSelect]')
         .returns({ val: () => contact_id });
   };
 
@@ -130,13 +133,15 @@ describe('EditUserCtrl controller', () => {
         chai.expect(translationsDbQuery.args[0][1].key[1]).to.equal(true);
         chai.expect(scope.editUserModel).to.deep.equal({
           id: userToEdit._id,
-          name: userToEdit.name,
+          username: userToEdit.name,
           fullname: userToEdit.fullname,
           email: userToEdit.email,
           phone: userToEdit.phone,
-          facility: userToEdit.facility_id,
+          facilitySelect: userToEdit.facility_id,
+          place: userToEdit.facility_id,
           type: userToEdit.roles[0],
           language: { code: userToEdit.language },
+          contactSelect: userToEdit.contact_id,
           contact: userToEdit.contact_id
         });
         done();
@@ -149,7 +154,7 @@ describe('EditUserCtrl controller', () => {
       setTimeout(() => {
         chai.expect(scope.editUserModel).to.deep.equal({
           id: currentUser._id,
-          name: currentUser.name,
+          username: currentUser.name,
           fullname: currentUser.fullname,
           email: currentUser.email,
           phone: currentUser.phone,
@@ -224,6 +229,7 @@ describe('EditUserCtrl controller', () => {
       const password = '1QrAs$$3%%kkkk445234234234';
 
       setTimeout(() => {
+        scope.editUserModel.currentPassword = 'something';
         scope.editUserModel.password = password;
         scope.editUserModel.passwordConfirm = password;
 
@@ -231,8 +237,10 @@ describe('EditUserCtrl controller', () => {
 
         setTimeout(() => {
           chai.expect(UpdateUser.called).to.equal(true);
-          chai.expect(UpdateUser.getCall(0).args[0]).to.equal('user.id');
-          chai.expect(UpdateUser.getCall(0).args[2].password).to.equal(password);
+          chai.expect(UpdateUser.getCall(0).args[0]).to.equal('user.name');
+          chai.expect(UpdateUser.getCall(0).args[1].password).to.equal(password);
+          chai.expect(UpdateUser.getCall(0).args[2]).to.equal('user.name');
+          chai.expect(UpdateUser.getCall(0).args[3]).to.equal('something');
           done();
         });
       });
@@ -240,80 +248,76 @@ describe('EditUserCtrl controller', () => {
   });
 
   describe('$scope.editUserSettings', () => {
-    it('name must be present', done => {
+    it('username must be present', done => {
       mockEditAUser(userToEdit);
       Translate.withArgs('User Name').returns(Promise.resolve('uname'));
       Translate.withArgs('field is required', { field: 'uname' }).returns(Promise.resolve('uname req'));
       setTimeout(() => {
         scope.editUserModel.id = undefined;
-        scope.editUserModel.name = '';
+        scope.editUserModel.username = '';
         scope.editUserSettings();
         setTimeout(() => {
-          chai.expect(scope.errors.name).to.equal('uname req');
+          chai.expect(scope.errors.username).to.equal('uname req');
           done();
         });
       });
     });
 
-    it('name cannot contact invalid characters', done => {
+    it('username cannot contact invalid characters', done => {
       mockEditAUser(userToEdit);
       Translate.withArgs('username.invalid').returns(Promise.resolve('invalid'));
       setTimeout(() => {
         scope.editUserModel.id = undefined;
-        scope.editUserModel.name = 'someinvalidname?';
+        scope.editUserModel.username = 'someinvalidname?';
         scope.editUserSettings();
         setTimeout(() => {
-          chai.expect(scope.errors.name).to.equal('invalid');
+          chai.expect(scope.errors.username).to.equal('invalid');
           done();
         });
       });
     });
 
     it('user is updated', done => {
-      UpdateUser.returns(Promise.resolve());
       mockEditAUser(userToEdit);
 
-      scope.editUserSettings();
-
       setTimeout(() => {
-        chai.expect(UpdateUser.called).to.equal(true);
-        const updateUserArgs = UpdateUser.getCall(0).args;
-        chai.expect(updateUserArgs[0]).to.equal('user.id');
+        scope.editUserModel.fullname = 'Changed fullname';
+        scope.editUserModel.email = 'Changed email';
+        scope.editUserModel.phone = 'Changed phone';
+        scope.editUserModel.language.code = 'Changed language.code';
 
-        const settingsUpdates = updateUserArgs[1];
-        ['name', 'fullname', 'email', 'phone', 'language']
-          .forEach(field => {
-            chai.expect(settingsUpdates).to.have.property(field);
-          });
-        // users don't have permission to change their own roles, facility, or contact
-        ['roles', 'facility_id', 'contact_id']
-          .forEach(field => {
-            chai.expect(settingsUpdates).to.not.have.property(field);
-          });
-        chai.expect(settingsUpdates.name).to.equal(scope.editUserModel.name);
-        chai.expect(settingsUpdates.fullname).to.equal(scope.editUserModel.fullname);
-        chai.expect(settingsUpdates.email).to.equal(scope.editUserModel.email);
-        chai.expect(settingsUpdates.phone).to.equal(scope.editUserModel.phone);
-        chai.expect(settingsUpdates.facility_id).to.equal(scope.editUserModel.facility._id);
-        chai.expect(settingsUpdates.language).to.equal(scope.editUserModel.language.code);
-        done();
+        scope.editUserSettings();
+
+        setTimeout(() => {
+          chai.expect(UpdateUser.called).to.equal(true);
+          const updateUserArgs = UpdateUser.getCall(0).args;
+          chai.expect(updateUserArgs[0]).to.equal('user.name');
+
+          const updates = updateUserArgs[1];
+          chai.expect(updates.fullname).to.equal(scope.editUserModel.fullname);
+          chai.expect(updates.email).to.equal(scope.editUserModel.email);
+          chai.expect(updates.phone).to.equal(scope.editUserModel.phone);
+          chai.expect(updates.language).to.equal(scope.editUserModel.language.code);
+          done();
+        });
       });
     });
   });
 
   describe('$scope.editUser', () => {
-    it('name must be present', done => {
+    it('username must be present', done => {
       mockEditAUser(userToEdit);
       Translate.withArgs('User Name').returns(Promise.resolve('uname'));
       Translate.withArgs('field is required', { field: 'uname' }).returns(Promise.resolve('uname req'));
       setTimeout(() => {
         scope.editUserModel.id = null;
-        scope.editUserModel.name = '';
+        scope.editUserModel.username = '';
+
         scope.editUserModel.password = '1QrAs$$3%%kkkk445234234234';
         scope.editUserModel.passwordConfirm = scope.editUserModel.password;
         scope.editUser();
         setTimeout(() => {
-          chai.expect(scope.errors.name).to.equal('uname req');
+          chai.expect(scope.errors.username).to.equal('uname req');
           done();
         });
       });
@@ -321,15 +325,17 @@ describe('EditUserCtrl controller', () => {
 
     it('password must be filled when creating new user', done => {
       mockCreateNewUser();
-      scope.editUserModel.name = 'newuser';
-      scope.editUserModel.type = 'data-entry';
-      Translate.withArgs('Password').returns(Promise.resolve('pswd'));
-      Translate.withArgs('field is required', { field: 'pswd' }).returns(Promise.resolve('pswd field must be filled'));
       setTimeout(() => {
-        scope.editUser();
+        scope.editUserModel.username = 'newuser';
+        scope.editUserModel.type = 'data-entry';
+        Translate.withArgs('Password').returns(Promise.resolve('pswd'));
+        Translate.withArgs('field is required', { field: 'pswd' }).returns(Promise.resolve('pswd field must be filled'));
         setTimeout(() => {
-          chai.expect(scope.errors.password).to.equal('pswd field must be filled');
-          done();
+          scope.editUser();
+          setTimeout(() => {
+            chai.expect(scope.errors.password).to.equal('pswd field must be filled');
+            done();
+          });
         });
       });
     });
@@ -349,152 +355,168 @@ describe('EditUserCtrl controller', () => {
 
     it('error if password and confirm do not match when creating new user', done => {
       mockEditCurrentUser();
-      scope.editUserModel.name = 'newuser';
-      scope.editUserModel.type = 'data-entry';
-      Translate.withArgs('Passwords must match').returns(Promise.resolve('wrong'));
+
       setTimeout(() => {
-        const password = '1QrAs$$3%%kkkk445234234234';
-        scope.editUserModel.password = password;
-        scope.editUser();
+        scope.editUserModel.username = 'newuser';
+        scope.editUserModel.type = 'data-entry';
+        Translate.withArgs('Passwords must match').returns(Promise.resolve('wrong'));
         setTimeout(() => {
-          chai.expect(scope.errors.password).to.equal('wrong');
-          done();
+          const password = '1QrAs$$3%%kkkk445234234234';
+          scope.editUserModel.password = password;
+          scope.editUser();
+          setTimeout(() => {
+            chai.expect(scope.errors.password).to.equal('wrong');
+            done();
+          });
         });
       });
     });
 
     it('should not change password when none is supplied', done => {
       // given
-      UpdateUser.returns(Promise.resolve());
       mockEditAUser(userToEdit);
       mockContact(userToEdit.contact_id);
       mockFacility(userToEdit.facility_id);
-      scope.editUserModel.password = '';
-      scope.editUserModel.passwordConfirm = '';
 
-      // when
-      scope.editUser();
-
-      // then
       setTimeout(() => {
-        chai.expect(UpdateUser.called).to.equal(true);
+        scope.editUserModel.currentPassword = 'blah';
+        scope.editUserModel.password = '';
+        scope.editUserModel.passwordConfirm = '';
 
-        const userUpdates = UpdateUser.getCall(0).args[2];
-        chai.expect(userUpdates).not.to.have.property('password');
+        // when
+        scope.editUser();
 
-        done();
+        // then
+        setTimeout(() => {
+          chai.expect(UpdateUser.called).to.equal(false);
+
+          done();
+        });
       });
     });
 
     it('must have associated place if user type is restricted user', done => {
       mockEditAUser(userToEdit);
-      scope.editUserModel.type = 'district-manager';
-      mockFacility(null);
-      mockContact(userToEdit.contact_id);
-      Translate.withArgs('Facility').returns(Promise.resolve('fac'));
-      Translate.withArgs('field is required', { field: 'fac' }).returns(Promise.resolve('fac req'));
 
-      // when
-      scope.editUser();
-
-      // expect
       setTimeout(() => {
-        chai.expect(scope.errors.facility_id).to.equal('fac req');
-        done();
+        scope.editUserModel.type = 'district-manager';
+        mockFacility(null);
+        mockContact(userToEdit.contact_id);
+        Translate.withArgs('Facility').returns(Promise.resolve('fac'));
+        Translate.withArgs('field is required', { field: 'fac' }).returns(Promise.resolve('fac req'));
+
+        // when
+        scope.editUser();
+
+        // expect
+        setTimeout(() => {
+          chai.expect(scope.errors.place).to.equal('fac req');
+          done();
+        });
       });
     });
 
     it('must have associated contact if user type is restricted user', done => {
       mockEditAUser(userToEdit);
-      scope.editUserModel.type = 'district-manager';
-      mockFacility(userToEdit.facility_id);
-      mockContact(null);
-      Translate.withArgs('associated.contact').returns(Promise.resolve('con'));
-      Translate.withArgs('field is required', { field: 'con' }).returns(Promise.resolve('con req'));
 
-      // when
-      scope.editUser();
-
-      // expect
       setTimeout(() => {
-        chai.expect(scope.errors.contact_id).to.equal('con req');
-        done();
+        scope.editUserModel.type = 'district-manager';
+        mockFacility(userToEdit.facility_id);
+        mockContact(null);
+        Translate.withArgs('associated.contact').returns(Promise.resolve('con'));
+        Translate.withArgs('field is required', { field: 'con' }).returns(Promise.resolve('con req'));
+
+        // when
+        scope.editUser();
+
+        // expect
+        setTimeout(() => {
+          chai.expect(scope.errors.contact).to.equal('con req');
+          done();
+        });
       });
     });
 
     it('must have associated place and contact if user type is restricted user', done => {
       mockEditAUser(userToEdit);
-      scope.editUserModel.type = 'district-manager';
-      mockFacility(null);
-      mockContact(null);
-      Translate.withArgs('associated.contact').returns(Promise.resolve('con'));
-      Translate.withArgs('field is required', { field: 'con' }).returns(Promise.resolve('con req'));
-      Translate.withArgs('Facility').returns(Promise.resolve('fac'));
-      Translate.withArgs('field is required', { field: 'fac' }).returns(Promise.resolve('fac req'));
 
-      // when
-      scope.editUser();
-
-      // expect
       setTimeout(() => {
-        chai.expect(scope.errors.facility_id).to.equal('fac req');
-        chai.expect(scope.errors.contact_id).to.equal('con req');
+        scope.editUserModel.type = 'district-manager';
+        mockFacility(null);
+        mockContact(null);
+        Translate.withArgs('associated.contact').returns(Promise.resolve('con'));
+        Translate.withArgs('field is required', { field: 'con' }).returns(Promise.resolve('con req'));
+        Translate.withArgs('Facility').returns(Promise.resolve('fac'));
+        Translate.withArgs('field is required', { field: 'fac' }).returns(Promise.resolve('fac req'));
+
+        // when
+        scope.editUser();
+
+        // expect
+        setTimeout(() => {
+          chai.expect(scope.errors.place).to.equal('fac req');
+          chai.expect(scope.errors.contact).to.equal('con req');
+          done();
+        });
+      });
+    });
+
+    it('doesn\'t need associated place and contact if user type is not restricted user', done => {
+      mockEditAUser(userToEdit);
+
+      setTimeout(() => {
+        scope.editUserModel.type = 'some-other-type';
+        mockFacility(null);
+        mockContact(null);
+
+        // when
+        scope.editUser();
+
+        // expect
+        chai.expect(scope.errors).not.to.have.property('facility_id');
+        chai.expect(scope.errors).not.to.have.property('contact_id');
         done();
       });
     });
 
-    it('doesn\'t need associated place and contact if user type is not restricted user', () => {
-      mockEditAUser(userToEdit);
-      scope.editUserModel.type = 'some-other-type';
-      mockFacility(null);
-      mockContact(null);
-
-      // when
-      scope.editUser();
-
-      // expect
-      chai.expect(scope.errors).not.to.have.property('facility_id');
-      chai.expect(scope.errors).not.to.have.property('contact_id');
-    });
-
-    it('user is updated', () => {
+    it('user is updated', done => {
       mockEditAUser(userToEdit);
       mockContact(userToEdit.contact_id);
       mockFacility(userToEdit.facility_id);
-      const password = '234lkjsdlf9u)*)(OJKJDfiyer';
-      scope.editUserModel.password = password;
-      scope.editUserModel.passwordConfirm = password;
 
-      scope.editUser();
+      setTimeout(() => {
+        scope.editUserModel.fullname = 'fullname';
+        scope.editUserModel.email = 'email';
+        scope.editUserModel.phone = 'phone';
+        scope.editUserModel.facilitySelect = 'facility_id';
+        scope.editUserModel.contactSelect = 'contact_id';
+        scope.editUserModel.language.code = 'language-code';
+        scope.editUserModel.password = 'medic.1234';
+        scope.editUserModel.passwordConfirm = 'medic.1234';
+        scope.editUserModel.type = 'not-district-manager';
 
-      chai.expect(UpdateUser.called).to.equal(true);
-      const updateUserArgs = UpdateUser.getCall(0).args;
+        scope.editUser();
 
-      chai.expect(updateUserArgs[0]).to.equal('user.id');
+        setTimeout(() => {
+          chai.expect(UpdateUser.called).to.equal(true);
+          const updateUserArgs = UpdateUser.getCall(0).args;
 
-      const settingsUpdates = updateUserArgs[1];
-      ['name', 'fullname', 'email', 'phone', 'roles', 'language', 'facility_id', 'contact_id']
-        .forEach(field => {
-          chai.expect(settingsUpdates).to.have.property(field);
+          chai.expect(updateUserArgs[0]).to.equal('user.name');
+
+          const updates = updateUserArgs[1];
+          console.log('LLLLLLLLLLLLLLLLLL');
+          console.log(JSON.stringify(updates, null, 2));
+          chai.expect(updates.fullname).to.equal(scope.editUserModel.fullname);
+          chai.expect(updates.email).to.equal(scope.editUserModel.email);
+          chai.expect(updates.phone).to.equal(scope.editUserModel.phone);
+          chai.expect(updates.place).to.equal(scope.editUserModel.facility_id);
+          chai.expect(updates.contact).to.equal(scope.editUserModel.contact_id);
+          chai.expect(updates.language).to.equal(scope.editUserModel.language.code);
+          chai.expect(updates.type).to.equal(scope.editUserModel.type);
+          chai.expect(updates.password).to.deep.equal(scope.editUserModel.password);
+          done();
         });
-      chai.expect(settingsUpdates.name).to.equal(scope.editUserModel.name);
-      chai.expect(settingsUpdates.fullname).to.equal(scope.editUserModel.fullname);
-      chai.expect(settingsUpdates.email).to.equal(scope.editUserModel.email);
-      chai.expect(settingsUpdates.phone).to.equal(scope.editUserModel.phone);
-      chai.expect(settingsUpdates.facility_id).to.equal(scope.editUserModel.facility_id);
-      chai.expect(settingsUpdates.contact_id).to.equal(scope.editUserModel.contact_id);
-      chai.expect(settingsUpdates.language).to.equal(scope.editUserModel.language.code);
-      chai.expect(settingsUpdates.roles).to.deep.equal(['district-manager', 'kujua_user', 'data_entry', 'district_admin']);
-
-      const userUdates = updateUserArgs[2];
-      ['name', 'password', 'roles', 'facility_id']
-        .forEach(field => {
-          chai.expect(userUdates).to.have.property(field);
-        });
-      chai.expect(userUdates.name).to.equal(scope.editUserModel.name);
-      chai.expect(userUdates.password).to.equal(scope.editUserModel.password);
-      chai.expect(userUdates.facility_id).to.equal(scope.editUserModel.facility_id);
-      chai.expect(userUdates.roles).to.deep.equal(['district-manager', 'kujua_user', 'data_entry', 'district_admin']);
+      });
     });
   });
 });

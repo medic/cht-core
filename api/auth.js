@@ -152,6 +152,55 @@ module.exports = {
       }
       callback(null, res && { status: res.statusCode } );
     });
-  }
+  },
 
+  /**
+   * Extract Basic Auth credentials from a request
+   *
+   * @param      {Object}  req     The request
+   * @return     {Object}  {username: username, password: password}
+   */
+  basicAuthCredentials: req => {
+    const authHeader = req && req.headers && req.headers.authorization;
+    if (!authHeader || !authHeader.startsWith('Basic ')) {
+      throw Error('No Basic Auth header provided');
+    }
+
+    let username, password;
+    try {
+      [username, password] = new Buffer(authHeader.split(' ')[1], 'base64').toString().split(':');
+    } catch (err) {
+      throw Error('Corrupted Auth header');
+    }
+
+    return {
+      username: username,
+      password: password
+    };
+  },
+
+  /**
+   * Validates given Basic Auth credentials against the server
+   *
+   * @param      {Object}    Credentials object as created by basicAuthCredentials
+   * @param      {Function}  callback    returns the validated username or an
+   *                                     error if there was a problem
+   */
+  validateBasicAuth: ({username, password}, callback) => {
+    const authUrl = url.parse(process.env.COUCH_URL);
+    delete authUrl.pathname;
+    authUrl.auth = `${username}:${password}`;
+
+    request({ uri: url.format(authUrl), method: 'HEAD'}, (err, res) => {
+      if (err) {
+        return callback(err);
+      }
+
+      if (res.statusCode !== 200) {
+        return callback(Error(`Expected 200 got ${res.statusCode}`));
+      }
+
+      callback(null, username);
+    });
+  }
 };

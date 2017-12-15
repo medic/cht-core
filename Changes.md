@@ -2,9 +2,17 @@
 
 ## 2.15.0
 
+### Migration notes
+
+- [#3910](https://github.com/medic/medic-webapp/issues/3910): the `POST /api/v1/users/{username}` API has had some significant changes. Importantly for scripting, an arguable bug was fixed where you didn't need to provide a user `type`. Check your scripts!
+
 ### Features
 
 - [#3627](https://github.com/medic/medic-webapp/issues/3627): Generate scheduled messages just-in-time so changes to contacts are reflected in yet to be sent messages. NB: This feature only works with the `translation_key` configuration and not with the deprecated `messages` array so now is a good time to update your configuration.
+
+### UI/UX Improvements
+
+- [#3910](https://github.com/medic/medic-webapp/issues/3910): users are required to provide their current password if they wish to change it
 
 ## 2.14.0
 

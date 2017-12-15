@@ -3,29 +3,49 @@ const async = require('async'),
       passwordTester = require('simple-password-tester'),
       people  = require('./people'),
       places = require('./places'),
-      db = require('../db'),
-      PASSWORD_MINIMUM_LENGTH = 8,
+      db = require('../db');
+
+const USER_PREFIX = 'org.couchdb.user:';
+
+const PASSWORD_MINIMUM_LENGTH = 8,
       PASSWORD_MINIMUM_SCORE = 50,
       USERNAME_WHITELIST = /^[a-z0-9_-]+$/;
 
-const USER_EDITABLE_FIELDS = [
+// TODO: sort out whether or not we can pass roles in instead of type.
+//       The code makes it look like you can sort of, but the existing docs
+//       don't mention it. Align docs and code, one way or another
+// https://github.com/medic/medic-webapp/issues/4096
+
+const RESTRICTED_USER_EDITABLE_FIELDS = [
   'password',
-  'known',
-  'place',
-  'type'
+  'known'
 ];
 
-const SETTINGS_EDITABLE_FIELDS = [
+const USER_EDITABLE_FIELDS = RESTRICTED_USER_EDITABLE_FIELDS.concat([
+  'place',
+  'type'
+]);
+
+const RESTRICTED_SETTINGS_EDITABLE_FIELDS = [
   'fullname',
   'email',
   'phone',
   'language',
   'known',
+];
+
+const SETTINGS_EDITABLE_FIELDS = RESTRICTED_SETTINGS_EDITABLE_FIELDS.concat([
   'place',
   'contact',
   'external_id',
   'type'
-];
+]);
+
+const ALLOWED_RESTRICTED_EDITABLE_FIELDS =
+  RESTRICTED_SETTINGS_EDITABLE_FIELDS.concat(RESTRICTED_USER_EDITABLE_FIELDS);
+
+const illegalDataModificationAttempts = data =>
+  Object.keys(data).filter(k => !ALLOWED_RESTRICTED_EDITABLE_FIELDS.includes(k));
 
 /*
  * Set error codes to 400 to minimize 500 errors and stacktraces in the logs.
@@ -166,11 +186,11 @@ var validateNewUsername = function(username, callback) {
   ], callback);
 };
 
-var updateUser = function(id, user, callback) {
+var storeUpdatedUser = function(id, user, callback) {
   db._users.insert(user, id, callback);
 };
 
-var updateUserSettings = function(id, settings, callback) {
+var storeUpdatedUserSettings = function(id, settings, callback) {
   db.medic.insert(settings, id, callback);
 };
 
@@ -194,6 +214,10 @@ var createUser = function(data, response, callback) {
 };
 
 var createContact = function(data, response, callback) {
+  if (!data.contact) {
+    return callback(null, data, response);
+  }
+
   response = response || {};
   people.getOrCreatePerson(data.contact, function(err, doc) {
     if (err) {
@@ -227,13 +251,21 @@ var createUserSettings = function(data, response, callback) {
 };
 
 var createPlace = function(data, response, callback) {
+  if (!data.place) {
+    return callback(null, data, response);
+  }
+
   places.getOrCreatePlace(data.place, function(err, doc) {
     data.place = doc;
     callback(err, data, response);
   });
 };
 
-var updatePlace = function(data, response, callback) {
+var storeUpdatedPlace = function(data, response, callback) {
+  if (!data.place) {
+    return callback(null, data, response);
+  }
+
   data.place.contact = places.minify(data.contact);
   data.place.parent = places.minify(data.place.parent);
   db.medic.insert(data.place, function(err) {
@@ -242,6 +274,10 @@ var updatePlace = function(data, response, callback) {
 };
 
 var setContactParent = function(data, response, callback) {
+  if (!data.contact) {
+    return callback(null, data, response);
+  }
+
   if (data.contact.parent) {
     // contact parent must exist
     places.getPlace(data.contact.parent, function(err, place) {
@@ -287,7 +323,7 @@ var hasParent = function(facility, id) {
  */
 var mapUsers = function(users, settings, facilities) {
   var filtered = _.filter(users, function(user) {
-    return user.id.indexOf(getPrefix() + ':') === 0;
+    return user.id.indexOf(USER_PREFIX) === 0;
   });
   return _.map(filtered, function(user) {
     var setting = getDoc(user.id, settings) || {};
@@ -308,6 +344,21 @@ var mapUsers = function(users, settings, facilities) {
   });
 };
 
+/*
+ * TODO: formalise this relationship in a shared library
+ *
+ * Specifically:
+ *  - getRoles converts a supposed "type" in a collection of roles (that includes itself)
+ *  - By convention, the type is always the first role
+ *  - Thus, you can get the original type (in theory) back out by getting the first role
+ *
+ *  This may need to change once we makes roles more flexible, if the end result is that
+ *  types are initial collections of roles but users can gain or lose any role manually.
+ *
+ *  NB: these are also documented in /api/README.md
+ *
+ *  Related to: https://github.com/medic/medic-webapp/issues/2583
+ */
 var rolesMap = {
   'national-manager': ['kujua_user', 'data_entry', 'national_admin'],
   'district-manager': ['kujua_user', 'data_entry', 'district_admin'],
@@ -323,13 +374,19 @@ var getRoles = function(type) {
 };
 
 var getSettingsUpdates = function(username, data) {
-  var settings = {},
-      ignore = ['place', 'contact'];
+  const ignore = ['type', 'place', 'contact'];
+
+  const settings = {
+    name: username,
+    type: 'user-settings'
+  };
+
   _.forEach(SETTINGS_EDITABLE_FIELDS , function(key) {
     if (!_.isUndefined(data[key]) && ignore.indexOf(key) === -1) {
       settings[key] = data[key];
     }
   });
+
   if (data.type) {
     settings.roles = getRoles(data.type);
   }
@@ -342,36 +399,36 @@ var getSettingsUpdates = function(username, data) {
   if (data.language && data.language.code) {
     settings.language = data.language.code;
   }
-  settings.name = username;
-  settings.type = 'user-settings';
+
   return settings;
 };
 
 var getUserUpdates = function(username, data) {
-  var user = {},
-      ignore = ['place'];
+  const ignore = ['type', 'place'];
+
+  const user = {
+    name: username,
+    type: 'user'
+  };
+
   _.forEach(USER_EDITABLE_FIELDS , function(key) {
     if (!_.isUndefined(data[key]) && ignore.indexOf(key) === -1) {
       user[key] = data[key];
     }
   });
+
   if (data.type) {
     user.roles = getRoles(data.type);
   }
   if (data.place) {
     user.facility_id = getDocID(data.place);
   }
-  user.name = username;
-  user.type = 'user';
+
   return user;
 };
 
-var getPrefix = function() {
-  return 'org.couchdb.user';
-};
-
 var createID = function(name) {
-  return [getPrefix(), name].join(':');
+  return USER_PREFIX + name;
 };
 
 var deleteUser = function(id, callback) {
@@ -429,9 +486,9 @@ module.exports = {
   _getUserUpdates: getUserUpdates,
   _hasParent: hasParent,
   _setContactParent: setContactParent,
-  _updatePlace: updatePlace,
-  _updateUser: updateUser,
-  _updateUserSettings: updateUserSettings,
+  _storeUpdatedPlace: storeUpdatedPlace,
+  _storeUpdatedUser: storeUpdatedUser,
+  _storeUpdatedUserSettings: storeUpdatedUserSettings,
   _validateContact: validateContact,
   _validateNewUsername: validateNewUsername,
   _validateUser: validateUser,
@@ -461,14 +518,25 @@ module.exports = {
    * @api public
    */
   createUser: function(data, callback) {
-    const self = this,
-          required = ['username', 'password', 'place', 'contact'];
-    const missing = required.filter(prop => !data[prop]);
+    const missingFields = data => {
+      const required = ['username', 'password'];
+      if (data.type === 'district-manager' || (data.roles && data.roles.includes('district-manager'))) {
+        required.push('place', 'contact');
+      }
+
+      const missing = required.filter(prop => !data[prop]);
+
+      if (!data.type && !data.roles) {
+        missing.push('type or roles');
+      }
+
+      return missing;
+    };
+
+    const self = this;
+    const missing = missingFields(data);
     if (missing.length > 0) {
       return callback(error400('Missing required fields: ' + missing.join(', ')));
-    }
-    if (!data.contact.parent && !data.place) {
-      return callback(error400('Contact parent or place is required.'));
     }
     var passwordError = validatePassword(data.password);
     if (passwordError) {
@@ -486,7 +554,7 @@ module.exports = {
         self._createPlace,
         self._setContactParent,
         self._createContact,
-        self._updatePlace,
+        self._storeUpdatedPlace,
         self._createUser,
         self._createUserSettings,
       ], function(err, result, responseBody) {
@@ -494,7 +562,35 @@ module.exports = {
       });
     });
   },
-  updateUser: function(username, data, callback) {
+
+  /**
+   * Updates the given user.
+   *
+   * If fullAccess is passed as false we should restrict them from updating
+   * anything that elevates or changes their priviledge (such as roles or
+   * permissions.)
+   *
+   * NB: once we have gotten to this point it is presumed that the user has
+   * already been authenticated. For restricted users updating themselves
+   * (!fullAccess) this is especially important.
+   *
+   * @param      {String}    username    raw username (without org.couch)
+   * @param      {Object}    data        Changes to make
+   * @param      {Boolean}   fullAccess  Are we allowed to update
+   *                                     security-related things?
+   * @param      {Function}  callback    callback
+   */
+  updateUser: function(username, data, fullAccess, callback) {
+    // Reject update attempts that try to modify data they're not allowed to
+    if (!fullAccess) {
+      const illegalAttempts = illegalDataModificationAttempts(data);
+      if (illegalAttempts.length) {
+        const err = Error('You do not have permission to modify: ' + illegalAttempts.join(','));
+        err.statusCode = 401;
+        return callback(err);
+      }
+    }
+
     const self = this,
           userID = createID(username);
     const props = _.uniq(USER_EDITABLE_FIELDS.concat(SETTINGS_EDITABLE_FIELDS));
@@ -514,6 +610,12 @@ module.exports = {
       if (err) {
         return callback(err);
       }
+
+      // TODO log out what is going to happen
+      //      we need the authenticated username as well
+      //      as the given username and data we already have
+      // https://github.com/medic/medic-webapp/issues/4097
+
       const user = _.extend(doc, self._getUserUpdates(username, data));
       self._validateUserSettings(userID, function(err, doc) {
         if (err) {
@@ -534,7 +636,7 @@ module.exports = {
           });
         }
         series.push(function(cb) {
-          self._updateUser(userID, user, function(err, resp) {
+          self._storeUpdatedUser(userID, user, function(err, resp) {
             if (err) {
               return cb(err);
             }
@@ -548,7 +650,7 @@ module.exports = {
           });
         });
         series.push(function(cb) {
-          self._updateUserSettings(userID, settings, function(err, resp) {
+          self._storeUpdatedUserSettings(userID, settings, function(err, resp) {
             if (err) {
               return cb(err);
             }

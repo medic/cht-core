@@ -238,6 +238,19 @@ module.exports = {
     });
   },
 
+  saveDocs: docs => module.exports.requestOnTestDb({
+    path: '/_bulk_docs',
+    method: 'POST',
+    body: { docs: docs },
+    headers: { 'content-type': 'application/json' }
+  }).then(results => {
+    if (results.find(r => !r.ok)) {
+      throw Error(results);
+    } else {
+      return results;
+    }
+  }),
+
   getDoc: id => {
     return module.exports.requestOnTestDb({
       path: `/${id}`,

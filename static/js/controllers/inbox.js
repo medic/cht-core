@@ -421,8 +421,7 @@ var feedback = require('../modules/feedback'),
           render: function() {
             return $scope.openTourSelect()
               .then(function() {
-                var id = 'org.couchdb.user:' + Session.userCtx().name;
-                return UpdateUser(id, { known: true });
+                return UpdateUser(Session.userCtx().name, { known: true });
               })
               .catch(function(err) {
                 $log.error('Error updating user', err);

@@ -90,6 +90,10 @@ app.use(function(req, res, next) {
   next();
 });
 
+
+// TODO: investigate blocking writes to _users from the outside. Reads maybe as well, though may be harder
+//       https://github.com/medic/medic-webapp/issues/4089
+
 app.get('/', function(req, res) {
   if (req.headers.accept === 'application/json') {
     // couchdb request - let it go
@@ -507,24 +511,88 @@ app.postJson('/api/v1/users', function(req, res) {
   });
 });
 
+/*
+ * TODO: move this logic out of here
+ *       https://github.com/medic/medic-webapp/issues/4092
+ */
 app.postJson('/api/v1/users/:username', function(req, res) {
-  auth.check(req, 'can_update_users', null, function(err) {
-    if (err) {
-      return serverUtils.error(err, req, res);
-    }
-    if (_.isEmpty(req.body)) {
-      return emptyJSONBodyError(req, res);
-    }
-    users.updateUser(req.params.username, req.body, function(err, body) {
+  const username = req.params.username;
+
+  const updateUser = fullAccess =>
+    users.updateUser(username, req.body, fullAccess, (err, body) => {
       if (err) {
         return serverUtils.error(err, req, res);
       }
+
       res.json(body);
+    });
+
+  if (_.isEmpty(req.body)) {
+    return emptyJSONBodyError(req, res);
+  }
+
+  auth.check(req, 'can_update_users', null, err => {
+    if (err && err.statusCode === 503) {
+      return serverUtils.error(err, req, res);
+    }
+
+    if (!err) {
+      // Full access
+      return updateUser(true);
+    }
+
+    // Not full access, but maybe we're updating ourselves
+    auth.getUserCtx(req, (err, userCtx) => {
+      if (userCtx.name !== username) {
+        // Not updating ourselves, and we don't have permission to update others
+        return serverUtils.error({
+          message: 'You do not have permissions to modify this person',
+          code: 401
+        }, req, res);
+      }
+
+      // We're updating ourselves, but if we are updating our password we need
+      // to provide Basic Auth credentials to indicate we're entering the password
+      // fresh as of this connection
+      if (Object.keys(req.body).includes('password')) {
+        let credentials;
+        try {
+          credentials = auth.basicAuthCredentials(req);
+        } catch (err) {
+          err.statusCode = 401;
+          return serverUtils.error(err, req, res);
+        }
+
+        if (username !== credentials.username) {
+          // Make sure the Basic Auth credentials are actually for the same person
+          return serverUtils.error({
+            message: 'You do not have permissions to modify this person',
+            code: 401
+          }, req, res);
+        }
+
+        auth.validateBasicAuth(credentials, err => {
+          if (err) {
+            console.error(`Invalid authorization attempt on /api/v1/users/${username}`);
+            console.error(err);
+            return serverUtils.error({
+              message: 'Invalid Basic Auth password',
+              code: 401
+            }, req, res);
+          }
+
+          // We have valid basic auth and can update ourselves
+          return updateUser(false);
+        });
+      } else {
+        // Not trying to update password
+        return updateUser(false);
+      }
     });
   });
 });
 
-app.deleteJson('/api/v1/users/:username', function(req, res) {
+app.delete('/api/v1/users/:username', function(req, res) {
   auth.check(req, 'can_delete_users', null, function(err) {
     if (err) {
       return serverUtils.error(err, req, res);

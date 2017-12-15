@@ -17,7 +17,7 @@ angular.module('inboxControllers').controller('DeleteUserCtrl',
 
     $scope.submit = function() {
       $scope.setProcessing();
-      DeleteUser($scope.model)
+      DeleteUser($scope.model.name)
         .then(function() {
           $scope.setFinished();
           $rootScope.$broadcast('UsersUpdated');

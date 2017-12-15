@@ -15,6 +15,7 @@ describe('Add user  : ', () => {
       path: `/_users/${addedUser}?rev=${doc._rev}`,
       method: 'DELETE'
     }))
+    .catch(() => {}) // If this fails we don't care
     .then(() => utils.afterEach(done)));
 
   it('should add user with valid password', () => {
@@ -77,7 +78,7 @@ describe('Add user  : ', () => {
     addUserModal.fillForm('restricted', 'Not Saved', '%4wbbygxkgdwvdwT65');
     helper.selectDropdownByValue(element(by.id('type')), 'district-manager');
     addUserModal.submit();
-    expect(element(by.css('#facility ~ .help-block')).getText()).toBe('Place is a required field.');
-    expect(element(by.css('#contact ~ .help-block')).getText()).toBe('Associated contact is a required field.');
+    expect(element(by.css('#facilitySelect ~ .help-block')).getText()).toBe('Place is a required field.');
+    expect(element(by.css('#contactSelect ~ .help-block')).getText()).toBe('Associated contact is a required field.');
   });
 });

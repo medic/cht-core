@@ -1,7 +1,7 @@
 const helper = require('../../helper');
 
 const getUsernameField = () => {
-  return element(by.id('name'));
+  return element(by.id('username'));
 };
 
 const getFullNameField = () => {
