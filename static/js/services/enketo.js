@@ -472,7 +472,12 @@ angular.module('inboxServices').service('Enketo',
     };
 
     var forceRecalculate = function(form) {
+      // Work-around for stale jr:choice-name() references in labels.  ref #3870
       form.calc.update();
+
+      // Force forms to update jr:itext references in output fields that contain
+      // calculated values.  ref #4111
+      form.output.update();
     };
 
     this.save = function(formInternalId, form, geolocation, docId) {
