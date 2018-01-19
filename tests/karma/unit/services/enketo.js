@@ -93,6 +93,10 @@ describe('Enketo service', function() {
     EnketoForm.returns({
       init: enketoInit,
       calc: { update: function() {} },
+      output: { update: function() {} },
+      pages: {
+        flipToFirst: sinon.stub(),
+      },
     });
 
     XmlForm.returns(Promise.resolve({ id: 'abc' }));
