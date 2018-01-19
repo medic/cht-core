@@ -477,6 +477,7 @@ angular.module('inboxServices').service('Enketo',
 
     var forceRecalculate = function(form) {
       form.calc.update();
+      form.output.update();
     };
 
     this.save = function(formInternalId, form, docId) {
