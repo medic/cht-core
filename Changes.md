@@ -1,5 +1,12 @@
 # Medic Mobile Release Notes
 
+## 2.13.2
+
+_January 19, 2018_
+
+### Bug Fixes
+- [#4111](https://github.com/medic/medic-webapp/issues/4111) Force outputs to recalc on form load
+
 ## 2.13.1
 
 _November 20, 2017_
