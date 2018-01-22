@@ -1,5 +1,12 @@
 # Medic Mobile Release Notes
 
+## 2.13.3
+
+_January 22, 2018_
+
+### Features
+- Bump libphonenumber
+
 ## 2.13.2
 
 _January 19, 2018_
