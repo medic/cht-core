@@ -220,7 +220,7 @@ exports['attach handles missing meta data doc'] = test => {
   transitions._attach();
   test.equal(feed.callCount, 1);
   test.equal(feed.args[0][0].since, 0);
-  test.equal(on.callCount, 2);
+  test.equal(on.callCount, 3);
   test.equal(on.args[0][0], 'change');
   test.equal(on.args[1][0], 'error');
   test.equal(start.callCount, 1);
@@ -259,7 +259,7 @@ exports['attach handles old meta data doc'] = test => {
   transitions._attach();
   test.equal(feed.callCount, 1);
   test.equal(feed.args[0][0].since, 22);
-  test.equal(on.callCount, 2);
+  test.equal(on.callCount, 3);
   test.equal(on.args[0][0], 'change');
   test.equal(on.args[1][0], 'error');
   test.equal(start.callCount, 1);
@@ -293,7 +293,7 @@ exports['attach handles existing meta data doc'] = test => {
   transitions._attach();
   test.equal(feed.callCount, 1);
   test.equal(feed.args[0][0].since, 22);
-  test.equal(on.callCount, 2);
+  test.equal(on.callCount, 3);
   test.equal(on.args[0][0], 'change');
   test.equal(on.args[1][0], 'error');
   test.equal(start.callCount, 1);

@@ -17,6 +17,9 @@ const _ = require('underscore'),
 
 let changesFeed;
 
+// We log the first time we catch up to the changes feed
+let caughtUpOnce;
+
 /*
  * Add new transitions here to make them available for configuration and execution.
  *
@@ -519,6 +522,12 @@ const attach = () => {
     });
     changesFeed.on('error', err => {
       logger.error('transitions: error from changes feed', err);
+    });
+    changesFeed.on('catchup', seq => {
+      if (!caughtUpOnce) {
+        caughtUpOnce = true;
+        logger.info(`Sentinel caught up to ${seq}`);
+      }
     });
     changesFeed.follow();
   });
