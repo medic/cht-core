@@ -1,5 +1,12 @@
 # Medic Mobile Release Notes
 
+## 2.13.4
+
+_January 23, 2018_
+
+### Features
+- Bump libphonenumber for Nepal Smart Telecom.
+
 ## 2.13.3
 
 _January 22, 2018_
