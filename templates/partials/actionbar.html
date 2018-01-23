@@ -153,15 +153,15 @@
             <p translate>action.person.add</p>
           </a>
 
-          <a class="mm-icon mm-icon-inverse mm-icon-caption mobile-only" href="tel:{{actionBar.right.sendTo.phone}}" ng-class="{'mm-icon-disabled': !actionBar.right.sendTo.phone}" ng-show="actionBar.right.sendTo">
+          <a class="mm-icon mm-icon-inverse mm-icon-caption mobile-only" href="tel:{{actionBar.right.sendTo.phone}}" ng-class="{'mm-icon-disabled': !actionBar.right.sendTo.phone}" ng-show="actionBar.right.sendTo" mm-auth="can_view_call_action">
             <span class="fa fa-phone"></span>
             <p translate>call</p>
           </a>
-          <a class="mm-icon mm-icon-inverse mm-icon-caption mobile-only" href="sms:{{actionBar.right.sendTo.phone}}" ng-class="{'mm-icon-disabled': !actionBar.right.sendTo.phone}" ng-show="actionBar.right.sendTo">
+          <a class="mm-icon mm-icon-inverse mm-icon-caption mobile-only" href="sms:{{actionBar.right.sendTo.phone}}" ng-class="{'mm-icon-disabled': !actionBar.right.sendTo.phone}" ng-show="actionBar.right.sendTo" mm-auth="can_view_message_action">
             <span class="fa fa-envelope"></span>
             <p translate>Send Message</p>
           </a>
-          <a class="mm-icon mm-icon-inverse mm-icon-caption send-message desktop-only" data-send-to="{{actionBar.right.sendTo._id}}" ng-class="{'mm-icon-disabled': !actionBar.right.sendTo.phone}" ng-show="actionBar.right.sendTo">
+          <a class="mm-icon mm-icon-inverse mm-icon-caption send-message desktop-only" data-send-to="{{actionBar.right.sendTo._id}}" ng-class="{'mm-icon-disabled': !actionBar.right.sendTo.phone}" ng-show="actionBar.right.sendTo" mm-auth="can_view_message_action">
             <span class="fa fa-envelope"></span>
             <p translate>Send Message</p>
           </a>
