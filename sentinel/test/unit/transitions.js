@@ -206,7 +206,7 @@ exports['attach handles missing meta data doc'] = test => {
   sinon.stub(audit, 'withNano');
   // wait for the queue processor
   transitions._changeQueue.drain = () => {
-    test.equal(get.callCount, 6);
+    test.equal(get.callCount, 4);
     test.equal(fetchHydratedDoc.callCount, 1);
     test.equal(fetchHydratedDoc.args[0][0], 'abc');
     test.equal(applyTransitions.callCount, 1);
