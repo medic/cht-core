@@ -119,7 +119,7 @@ module.exports = {
                     return callback(err);
                 }
 
-                if (registrations.length) {
+                if (registrations.length && patient) {
                     if (eventType.mute) {
                         if (config.confirm_deactivation) {
                             self._addErr('confirm_deactivation', config, doc);
