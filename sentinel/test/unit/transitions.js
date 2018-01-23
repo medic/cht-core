@@ -201,12 +201,12 @@ exports['attach handles missing meta data doc'] = test => {
   const insert = sinon.stub(db.medic, 'insert').callsArg(1);
   const on = sinon.stub();
   const start = sinon.stub();
-  sinon.stub(follow, 'Feed').returns({ on: on, follow: start, stop: () => {} });
+  const feed = sinon.stub(follow, 'Feed').returns({ on: on, follow: start, stop: () => {} });
   const applyTransitions = sinon.stub(transitions, 'applyTransitions').callsArg(1);
   sinon.stub(audit, 'withNano');
   // wait for the queue processor
   transitions._changeQueue.drain = () => {
-    test.equal(get.callCount, 4);
+    test.equal(get.callCount, 6);
     test.equal(fetchHydratedDoc.callCount, 1);
     test.equal(fetchHydratedDoc.args[0][0], 'abc');
     test.equal(applyTransitions.callCount, 1);
@@ -218,6 +218,12 @@ exports['attach handles missing meta data doc'] = test => {
     test.done();
   };
   transitions._attach();
+  test.equal(feed.callCount, 1);
+  test.equal(feed.args[0][0].since, 0);
+  test.equal(on.callCount, 3);
+  test.equal(on.args[0][0], 'change');
+  test.equal(on.args[1][0], 'error');
+  test.equal(start.callCount, 1);
   // invoke the change handler
   on.args[0][1]({ id: 'abc', seq: 55 });
 };
@@ -230,7 +236,7 @@ exports['attach handles old meta data doc'] = test => {
   const insert = sinon.stub(db.medic, 'insert').callsArg(1);
   const on = sinon.stub();
   const start = sinon.stub();
-  sinon.stub(follow, 'Feed').returns({ on: on, follow: start, stop: () => {} });
+  const feed = sinon.stub(follow, 'Feed').returns({ on: on, follow: start, stop: () => {} });
   const applyTransitions = sinon.stub(transitions, 'applyTransitions').callsArg(1);
   sinon.stub(audit, 'withNano');
   // wait for the queue processor
@@ -251,6 +257,12 @@ exports['attach handles old meta data doc'] = test => {
     test.done();
   };
   transitions._attach();
+  test.equal(feed.callCount, 1);
+  test.equal(feed.args[0][0].since, 22);
+  test.equal(on.callCount, 3);
+  test.equal(on.args[0][0], 'change');
+  test.equal(on.args[1][0], 'error');
+  test.equal(start.callCount, 1);
   // invoke the change handler
   on.args[0][1]({ id: 'abc', seq: 55 });
 };
@@ -262,7 +274,7 @@ exports['attach handles existing meta data doc'] = test => {
   const insert = sinon.stub(db.medic, 'insert').callsArg(1);
   const on = sinon.stub();
   const start = sinon.stub();
-  sinon.stub(follow, 'Feed').returns({ on: on, follow: start, stop: () => {} });
+  const feed = sinon.stub(follow, 'Feed').returns({ on: on, follow: start, stop: () => {} });
   const applyTransitions = sinon.stub(transitions, 'applyTransitions').callsArg(1);
   sinon.stub(audit, 'withNano');
   // wait for the queue processor
@@ -279,6 +291,12 @@ exports['attach handles existing meta data doc'] = test => {
     test.done();
   };
   transitions._attach();
+  test.equal(feed.callCount, 1);
+  test.equal(feed.args[0][0].since, 22);
+  test.equal(on.callCount, 3);
+  test.equal(on.args[0][0], 'change');
+  test.equal(on.args[1][0], 'error');
+  test.equal(start.callCount, 1);
   // invoke the change handler
   on.args[0][1]({ id: 'abc', seq: 55 });
 };
