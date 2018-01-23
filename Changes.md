@@ -1,5 +1,12 @@
 # Medic Mobile Release Notes
 
+## 2.13.5
+
+_January 23, 2018_
+
+### Bug Fixes
+- [#4121](https://github.com/medic/medic-webapp/issues/4121) Update Notification transition crashes sentinel if the patient id is misconfigured
+
 ## 2.13.4
 
 _January 23, 2018_
