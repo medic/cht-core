@@ -11,6 +11,7 @@
     "start": "nf start"
   },
   "dependencies": {
+    "@medic/google-libphonenumber": "^3.0.11",
     "angular": "^1.6.6",
     "angular-cookie": "^4.1.0",
     "angular-nvd3": "^1.0.9",
@@ -28,7 +29,6 @@
     "bootstrap-tour": "^0.12.0",
     "enketo-core": "^4.41.2",
     "font-awesome": "^4.7.0",
-    "google-libphonenumber": "^3.0.10",
     "gsm": "^0.1.4",
     "jquery": "^3.2.1",
     "json2xml": "^0.1.3",
