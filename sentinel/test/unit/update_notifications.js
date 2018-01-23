@@ -209,6 +209,48 @@ exports['registration not found adds error and response'] = function(test) {
     });
 };
 
+exports['patient not found adds error and response'] = function(test) {
+    var doc = {
+        form: 'on',
+        type: 'data_record',
+        fields: { patient_id: 'x' },
+        contact: { phone: 'x' }
+    };
+
+    sinon.stub(transition, 'getConfig').returns({
+        messages: [{
+            event_type: 'on_unmute',
+            message: [{
+                content: 'Thank you {{contact.name}}',
+                locale: 'en'
+            }]
+        }, {
+            event_type: 'patient_not_found',
+            message: [{
+                content: 'not found {{patient_id}}',
+                locale: 'en'
+            }]
+        }],
+        on_form: 'on'
+    });
+    sinon.stub(utils, 'getRegistrations').callsArgWithAsync(1, null, ['a registration']);
+    sinon.stub(utils, 'getPatientContact').callsArgWithAsync(2, null, null);
+
+    transition.onMatch({
+        doc: doc,
+        form: 'on'
+    }, {}, {}, function(err, complete) {
+        test.equals(err, null);
+        test.equals(complete, true);
+        test.equals(doc.errors.length, 1);
+        test.equals(doc.errors[0].message, 'not found x');
+        test.equals(doc.tasks.length, 1);
+        test.equals(doc.tasks[0].messages[0].message, 'not found x');
+        test.equals(doc.tasks[0].messages[0].to, 'x');
+        test.done();
+    });
+};
+
 exports['validation failure adds error and response'] = function(test) {
 
     var doc = {
