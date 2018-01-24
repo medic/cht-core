@@ -143,20 +143,14 @@ var DEFAULT_PERMISSIONS = [
     name: 'can_view_message_action',
     roles: [
       'national_admin',
-      'district_admin',
-      'data_entry',
-      'analytics',
-      'gateway'
+      'district_admin'
     ]
   },
   {
     name: 'can_view_call_action',
     roles: [
       'national_admin',
-      'district_admin',
-      'data_entry',
-      'analytics',
-      'gateway'
+      'district_admin'
     ]
   }
 ];
