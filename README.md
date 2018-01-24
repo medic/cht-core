@@ -33,9 +33,11 @@ The setup described below doesn't use [Medic OS](https://github.com/medic/medic-
 
 You will need to install the following:
 
-[Node.js](http://nodejs.org) 6.10.x and above ideally
+[Node.js](https://nodejs.org) 6.10.x and above
 
-[CouchDB](http://couchdb.apache.org) v2.x
+[npm](https://npmjs.com) 5.x.x and above (to support `package-lock.json`)
+
+[CouchDB](https://couchdb.apache.org) v2.x
 
 [couchdb-lucene](https://github.com/rnewson/couchdb-lucene) v2.x (optional, only required for some in-app analytics)
 
