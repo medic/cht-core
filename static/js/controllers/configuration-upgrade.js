@@ -1,5 +1,5 @@
 var IS_PROD_URL = /^https:\/\/[^.]+.app.medicmobile.org\//,
-    BUILDS_DB = 'https://staging.dev.medicmobile.org/_couch/builds';
+  BUILDS_DB = 'https://staging.dev.medicmobile.org/_couch/builds';
 
 angular.module('inboxControllers').controller('ConfigurationUpgradeCtrl',
   function(
@@ -10,7 +10,8 @@ angular.module('inboxControllers').controller('ConfigurationUpgradeCtrl',
     DB,
     pouchDB,
     Translate,
-    Version
+    Version,
+    Modal
   ) {
 
     'use strict';
@@ -89,14 +90,29 @@ angular.module('inboxControllers').controller('ConfigurationUpgradeCtrl',
       });
 
     $scope.upgrade = function(version) {
-      $scope.error = false;
-      $scope.upgrading = version;
+      $scope.versionCandidate = version;
+      Modal({
+        templateUrl: 'templates/modals/configuration_upgrade_confirm.html',
+        controller: 'ConfigurationUpgradeConfirmCtrl'
+      })
+        .catch(function() {})
+        .then(function(confirmed) {
+          if (confirmed) {
+            upgrade();
+          }
+        });
+    };
 
-      $http.post('/api/v1/upgrade', { build: {
-        namespace: 'medic',
-        application: 'medic',
-        version: version
-      }})
+    var upgrade = function() {
+      $scope.error = false;
+      $scope.upgrading = $scope.versionCandidate;
+
+      $http
+        .post('/api/v1/upgrade', { build: {
+          namespace: 'medic',
+          application: 'medic',
+          version: $scope.versionCandidate
+        }})
         .catch(function(err) {
           err = err.responseText || err.statusText;
 
@@ -108,6 +124,7 @@ angular.module('inboxControllers').controller('ConfigurationUpgradeCtrl',
         })
         .then(function() {
           $scope.upgrading = false;
+          $scope.versionCandidate = false;
         });
     };
 

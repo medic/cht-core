@@ -31,6 +31,7 @@
   require('./configuration-translation-application');
   require('./configuration-translation-languages');
   require('./configuration-upgrade');
+  require('./configuration-upgrade-confirm');
   require('./configuration-user');
   require('./configuration-users');
   require('./contacts');
