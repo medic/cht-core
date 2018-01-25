@@ -247,6 +247,11 @@ var passwordTester = require('simple-password-tester'),
                   $scope.errors.currentPassword = value;
                   $scope.setError();
                 });
+              } else if (err.status === 404) {
+                Translate('online.action.message').then(function(value) {
+                  $scope.errors.currentPassword = value;
+                  $scope.setError();
+                });
               } else {
                 $scope.setError(err, 'Error updating user');
               }
