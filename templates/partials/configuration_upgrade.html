@@ -1,11 +1,15 @@
-<div class="upgrade-config col-sm-12" ng-hide="deployInfo">
+<div class="col-sm-12" ng-show="loading || upgrading">
+  <div class="loader"></div>
+</div>
+
+<div class="upgrade-config col-sm-12" ng-hide="deployInfo || loading">
   <legend translate>instance.upgrade.no_horti</legend>
   <p translate>instance.upgrade.no_horti.detail</p>
 </div>
+
 <div class="upgrade-config col-sm-12" ng-show="deployInfo">
-  <div ng-show="loading || upgrading">
-    <div class="loader"></div>
-    <p class="status" ng-show="upgrading"
+  <div ng-show="upgrading">
+    <p class="status"
       translate="instance.upgrade.upgrading"
       translate-values="{ before: deployInfo.version, after: upgrading }"></p>
   </div>
@@ -14,7 +18,7 @@
     <p class="error">{{error}}</p>
   </div>
 
-  <div ng-hide="loading || upgrading">
+  <div ng-hide="upgrading">
 
     <div>
       <legend translate>instance.upgrade.current_version</legend>
