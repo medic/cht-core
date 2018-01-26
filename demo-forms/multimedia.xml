@@ -1,0 +1,26 @@
+<h:html xmlns="http://www.w3.org/2002/xforms" xmlns:h="http://www.w3.org/1999/xhtml" xmlns:ev="http://www.w3.org/2001/xml-events" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:jr="http://openrosa.org/javarosa">
+	<h:head>
+		<h:title>Multimedia - Demo Form</h:title>
+		<model>
+			<itext>
+        <translation lang="en">
+					<text id="somevideo">
+						<value form="video">jr://video.mp4</value>
+					</text>
+				</translation>
+			</itext>
+			<instance>
+				<media id="multimedia">
+					<meta>
+						<instanceID/>
+					</meta>
+				</media>
+			</instance>
+		</model>
+	</h:head>
+	<h:body class="pages">
+		<input ref="q2">
+		  <label ref="jr:itext('somevideo')"/>
+		</input>
+	</h:body>
+</h:html>
