@@ -112,8 +112,11 @@ angular.module('inboxControllers').controller('ConfigurationUpgradeCtrl',
     };
 
     var stripIds = function(releases) {
-      releases.forEach(function(release) {
+      releases.forEach(function(release, key, releases) {
         release.id = release.id.replace(/^medic:medic:/, '');
+        if (release.id === 'master') {
+          releases.splice(0, 0, releases.splice(key, 1)[0]);
+        }
       });
 
       return releases;
