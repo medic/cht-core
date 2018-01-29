@@ -4,9 +4,11 @@
       <div class="loader"></div>
     </div>
   </div>
+
   <div class="col-sm-8 item-content empty-selection" ng-show="!loadingContent && contentError">
-    <div translate>error.loading.form</div>
+    <div translate>{{ errorTranslationKey }}</div>
   </div>
+
   <div class="col-sm-8 item-content" ng-show="!loadingContent && !contentError">
     <div class="body">
       <mm-enketo id="'report-form'" status="enketoStatus" on-submit="save()"on-cancel="navigationCancel()" />

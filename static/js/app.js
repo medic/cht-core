@@ -92,6 +92,7 @@ _.templateSettings = {
     remote: { skip_setup: true, ajax: { timeout: 30000 }}
   };
   app.constant('POUCHDB_OPTIONS', POUCHDB_OPTIONS);
+  app.constant('NO_ASSOCIATED_CONTACT_ERROR', 'NO_ASSOCIATED_CONTACT');
 
   if (window.location.href === 'http://localhost:9876/context.html') {
     // karma unit testing - do not bootstrap
