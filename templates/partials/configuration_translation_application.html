@@ -15,7 +15,7 @@
   </div>
   <div class="row translation selection" ng-repeat="translation in translationModels track by translation.key" ng-click="editTranslation(translation.key)">
     <div class="col-xs-6">
-      {{ localeModel.lhs === 'keys' ? translation.key : translation.lhs }}
+      {{translation.lhs}}
     </div>
     <div class="col-xs-6">
       {{translation.rhs}}
