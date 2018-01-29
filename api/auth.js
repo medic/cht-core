@@ -163,7 +163,7 @@ module.exports = {
   basicAuthCredentials: req => {
     const authHeader = req && req.headers && req.headers.authorization;
     if (!authHeader || !authHeader.startsWith('Basic ')) {
-      throw Error('No Basic Auth header provided');
+      return false;
     }
 
     let username, password;
