@@ -576,7 +576,6 @@ app.postJson('/api/v1/users/:username', function(req, res) {
     });
   const isChangingPassword = () => Object.keys(req.body).includes('password');
 
-  // This logic is complicated but self-documenting (hopefully!)
   Promise.all([hasFullPermission(), isUpdatingSelf(), basicAuthValid(), isChangingPassword()])
     .then(([fullPermission, updatingSelf, basic, changingPassword]) => {
 
