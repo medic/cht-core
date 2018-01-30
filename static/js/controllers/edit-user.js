@@ -242,13 +242,13 @@ var passwordTester = require('simple-password-tester'),
               $window.location.reload(true);
             })
             .catch(function(err) {
-              if (err.status === 401) {
-                Translate('password.incorrect').then(function(value) {
+              if (err.status === -1) { //Offline Status
+                Translate('online.action.message').then(function(value) {
                   $scope.errors.currentPassword = value;
                   $scope.setError();
                 });
-              } else if (err.status === 404) {
-                Translate('online.action.message').then(function(value) {
+              } else if (err.status === 401) {
+                Translate('password.incorrect').then(function(value) {
                   $scope.errors.currentPassword = value;
                   $scope.setError();
                 });
