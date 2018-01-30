@@ -63,7 +63,6 @@ describe('Enketo service', function() {
     </model>`;
 
   var service,
-      NO_ASSOCIATED_CONTACT_ERROR,
       enketoInit = sinon.stub(),
       transform = sinon.stub(),
       dbGetAttachment = sinon.stub(),
@@ -123,9 +122,8 @@ describe('Enketo service', function() {
       $provide.value('XmlForm', XmlForm);
       $provide.value('$q', Q); // bypass $q so we don't have to digest
     });
-    inject(function(_Enketo_, _NO_ASSOCIATED_CONTACT_ERROR_) {
+    inject(function(_Enketo_) {
       service = _Enketo_;
-      NO_ASSOCIATED_CONTACT_ERROR = _NO_ASSOCIATED_CONTACT_ERROR_;
     });
     Language.returns(Promise.resolve('en'));
     TranslateFrom.returns('translated');
@@ -146,7 +144,7 @@ describe('Enketo service', function() {
         })
         .catch(function(actual) {
           chai.expect(actual.message).to.equal('Your user does not have an associated contact, or does not have access to the associated contact. Talk to your administrator to correct this.');
-          chai.expect(actual.type).to.equal(NO_ASSOCIATED_CONTACT_ERROR);
+          chai.expect(actual.translationKey).to.equal('error.loading.form.no_contact');
           done();
         });
     });
