@@ -452,7 +452,9 @@ angular.module('inboxServices').service('Enketo',
     var getUserContact = function() {
       return UserContact().then(function(contact) {
         if (!contact) {
-          throw new Error('Your user does not have an associated contact, or does not have access to the associated contact. Talk to your administrator to correct this.');
+          var err = new Error('Your user does not have an associated contact, or does not have access to the associated contact. Talk to your administrator to correct this.');
+          err.translationKey = 'error.loading.form.no_contact';
+          throw err;
         }
         return contact;
       });

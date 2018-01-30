@@ -11,7 +11,7 @@
   </div>
 
   <div class="col-sm-8 item-content empty-selection" ng-show="!loadingContent && !loadingForm && contentError">
-    <div translate>error.loading.form</div>
+    <div translate>{{ errorTranslationKey }}</div>
   </div>
 
   <div class="col-sm-8 item-content" ng-show="selected && !form && !loadingContent && !loadingForm && !contentError">

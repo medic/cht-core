@@ -144,6 +144,7 @@ describe('Enketo service', function() {
         })
         .catch(function(actual) {
           chai.expect(actual.message).to.equal('Your user does not have an associated contact, or does not have access to the associated contact. Talk to your administrator to correct this.');
+          chai.expect(actual.translationKey).to.equal('error.loading.form.no_contact');
           done();
         });
     });

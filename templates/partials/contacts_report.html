@@ -1,5 +1,4 @@
 <div class="content-pane right-pane">
-
   <div class="col-sm-8 item-content empty-selection" ng-show="loadingForm">
     <div>
       <div class="loader"></div>
@@ -7,7 +6,7 @@
   </div>
 
   <div class="col-sm-8 item-content empty-selection" ng-show="!loadingForm && contentError">
-    <div translate>error.loading.form</div>
+    <div translate>{{ errorTranslationKey }}</div>
   </div>
 
   <div class="col-sm-8 item-content material" ng-show="selected && form && !loadingForm">
@@ -15,5 +14,4 @@
       <mm-enketo id="'contact-report'" status="enketoStatus" on-submit="save()" on-cancel="navigationCancel()" />
     </div>
   </div>
-
 </div>

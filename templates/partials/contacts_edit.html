@@ -5,7 +5,7 @@
     </div>
   </div>
   <div class="col-sm-8 item-content empty-selection" ng-show="!loadingContent && contentError">
-    <div translate>error.loading.form</div>
+    <div translate>{{ errorTranslationKey }}</div>
   </div>
   <div class="col-sm-8 item-content material" ng-show="!loadingContent && !contentError">
     <div class="card">
