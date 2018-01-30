@@ -91,11 +91,22 @@ dl.horizontal {
   }
 }
 
-.mb-50 {
-  margin-bottom: 50px;
-}
-
-.page.configuration .label {
+.page.configuration .label.label-upgrade {
   color: white;
   font-size: 100%;
+}
+
+.page.configuration .upgrade-section {
+  legend {
+    margin-top: 50px;
+  }
+  &:first-child {
+    legend {
+      margin-top: 0;
+    }
+  }
+}
+
+.page.configuration .upgrade-config hr {
+  border-top-color: @seperator-color;
 }
