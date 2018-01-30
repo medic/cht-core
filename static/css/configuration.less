@@ -91,22 +91,18 @@ dl.horizontal {
   }
 }
 
-.page.configuration .label.label-upgrade {
-  color: white;
-  font-size: 100%;
-}
-
-.page.configuration .upgrade-section {
+.page.configuration .upgrade-config {
   legend {
     margin-top: 50px;
   }
-  &:first-child {
-    legend {
-      margin-top: 0;
-    }
+  .upgrade-section:first-child legend {
+    margin-top: 0;
   }
-}
-
-.page.configuration .upgrade-config hr {
-  border-top-color: @seperator-color;
+  hr {
+    border-top-color: @seperator-color;
+  }
+  .label {
+    color: white;
+    font-size: 100%;
+  }
 }
