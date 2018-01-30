@@ -139,8 +139,7 @@
     {
       "name": "can_view_users",
       "roles": [
-        "national_admin",
-        "district_admin"
+        "national_admin"
       ]
     },
     {
