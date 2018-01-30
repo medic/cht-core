@@ -7,7 +7,6 @@ angular.module('inboxControllers').controller('ContactsReportCtrl',
     ContactViewModelGenerator,
     Enketo,
     Geolocation,
-    NO_ASSOCIATED_CONTACT_ERROR,
     Snackbar,
     TranslateFrom,
     XmlForm
@@ -53,13 +52,6 @@ angular.module('inboxControllers').controller('ContactsReportCtrl',
         });
     };
 
-    var getErrorTranslationKey = function(err) {
-      if (err.type === NO_ASSOCIATED_CONTACT_ERROR) {
-        return 'error.loading.form.no_contact';
-      }
-      return 'error.loading.form';
-    };
-
     $scope.save = function() {
       if ($scope.enketoStatus.saving) {
         $log.debug('Attempted to call contacts-report:$scope.save more than once');
@@ -93,7 +85,7 @@ angular.module('inboxControllers').controller('ContactsReportCtrl',
       .then(render)
       .catch(function(err) {
         $log.error('Error loading form', err);
-        $scope.errorTranslationKey = getErrorTranslationKey(err);
+        $scope.errorTranslationKey = err.translationKey || 'error.loading.form';
         $scope.contentError = true;
         $scope.loadingForm = false;
       });

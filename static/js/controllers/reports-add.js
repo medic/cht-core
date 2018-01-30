@@ -9,7 +9,6 @@ angular.module('inboxControllers').controller('ReportsAddCtrl',
     Enketo,
     FileReader,
     Geolocation,
-    NO_ASSOCIATED_CONTACT_ERROR,
     Snackbar,
     XmlForm
   ) {
@@ -76,13 +75,6 @@ angular.module('inboxControllers').controller('ReportsAddCtrl',
       $scope.enketoStatus.edited = true;
     };
 
-    var getErrorTranslationKey = function(err) {
-      if (err.type === NO_ASSOCIATED_CONTACT_ERROR) {
-        return 'error.loading.form.no_contact';
-      }
-      return 'error.loading.form';
-    };
-
     getSelected()
       .then(function(model) {
         $log.debug('setting selected', model);
@@ -121,7 +113,7 @@ angular.module('inboxControllers').controller('ReportsAddCtrl',
                 }));
             })
             .catch(function(err) {
-              $scope.errorTranslationKey = getErrorTranslationKey(err);
+              $scope.errorTranslationKey = err.translationKey || 'error.loading.form';
               $scope.loadingContent = false;
               $scope.contentError = true;
               $log.error('Error loading form.', err);
