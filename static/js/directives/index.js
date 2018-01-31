@@ -10,5 +10,6 @@
   require('./modal');
   require('./report-image');
   require('./sender');
+  require('./enter');
 
 }());
