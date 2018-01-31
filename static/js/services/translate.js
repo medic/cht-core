@@ -3,6 +3,7 @@
  */
 angular.module('inboxServices').service('Translate',
   function(
+    $log,
     $translate
   ) {
 
@@ -10,7 +11,11 @@ angular.module('inboxServices').service('Translate',
     'ngInject';
 
     return function(translationId, interpolateParams) {
-      return $translate(translationId, interpolateParams);
+      return $translate(translationId, interpolateParams)
+        .catch(function() {
+          $log.warn('Translation service could not find a translation for ' + translationId);
+          return translationId;
+        });
     };
   }
 );

@@ -71,6 +71,7 @@ angular.module('inboxControllers').controller('TasksContentCtrl',
               });
           })
           .catch(function(err) {
+            $scope.errorTranslationKey = err.translationKey || 'error.loading.form';
             $scope.contentError = true;
             $scope.loadingForm = false;
             $log.error('Error loading form.', err);

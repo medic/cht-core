@@ -95,7 +95,7 @@ var DEFAULT_PERMISSIONS = [
     roles: [
       'national_admin',
       'district_admin',
-      'date_entry',
+      'data_entry',
       'gateway'
     ]
   },
@@ -134,6 +134,20 @@ var DEFAULT_PERMISSIONS = [
   },
   {
     name: 'can_view_contacts_tab',
+    roles: [
+      'national_admin',
+      'district_admin'
+    ]
+  },
+  {
+    name: 'can_view_message_action',
+    roles: [
+      'national_admin',
+      'district_admin'
+    ]
+  },
+  {
+    name: 'can_view_call_action',
     roles: [
       'national_admin',
       'district_admin'

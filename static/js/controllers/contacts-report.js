@@ -85,6 +85,7 @@ angular.module('inboxControllers').controller('ContactsReportCtrl',
       .then(render)
       .catch(function(err) {
         $log.error('Error loading form', err);
+        $scope.errorTranslationKey = err.translationKey || 'error.loading.form';
         $scope.contentError = true;
         $scope.loadingForm = false;
       });

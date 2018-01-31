@@ -113,6 +113,7 @@ angular.module('inboxControllers').controller('ReportsAddCtrl',
                 }));
             })
             .catch(function(err) {
+              $scope.errorTranslationKey = err.translationKey || 'error.loading.form';
               $scope.loadingContent = false;
               $scope.contentError = true;
               $log.error('Error loading form.', err);

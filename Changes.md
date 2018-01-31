@@ -9,6 +9,11 @@
 ### Features
 
 - [#3627](https://github.com/medic/medic-webapp/issues/3627): Generate scheduled messages just-in-time so changes to contacts are reflected in yet to be sent messages. NB: This feature only works with the `translation_key` configuration and not with the deprecated `messages` array so now is a good time to update your configuration.
+- [#3657](https://github.com/medic/medic-webapp/issues/3657): Add permissions to control whether or not users see the call and message buttons on mobile.
+
+### Bug fixes
+
+- [#1359](https://github.com/medic/medic-webapp/issues/1359): Helpful error message not shown if no contact associated with current user when trying to submit a report.
 
 ### UI/UX Improvements
 

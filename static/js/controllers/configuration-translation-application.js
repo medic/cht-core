@@ -1,5 +1,8 @@
 var _ = require('underscore');
 
+var TRANSLATION_KEYS_OPTION = { doc: {code: 'keys', name: 'Translation Keys'} };
+var DEFAULT_LANGUAGE = 'en';
+
 angular.module('inboxControllers').controller('ConfigurationTranslationApplicationCtrl',
   function (
     $log,
@@ -18,8 +21,8 @@ angular.module('inboxControllers').controller('ConfigurationTranslationApplicati
         return translation.doc.code !== language;
       });
       $scope.localeModel = {
-        lhs: language || 'en',
-        rhs: rhs && rhs.doc.code || 'en'
+        lhs: language || DEFAULT_LANGUAGE,
+        rhs: rhs && rhs.doc.code || DEFAULT_LANGUAGE
       };
     };
 
@@ -31,14 +34,16 @@ angular.module('inboxControllers').controller('ConfigurationTranslationApplicati
     };
 
     var updateTranslationModels = function() {
-      var lhsTranslation = findTranslation($scope.localeModel.lhs);
+      var showKeys = $scope.localeModel.lhs === TRANSLATION_KEYS_OPTION.doc.code;
+      var lhsOption =  showKeys ? DEFAULT_LANGUAGE : $scope.localeModel.lhs;
+      var lhsTranslation = findTranslation(lhsOption);
       var rhsTranslation = findTranslation($scope.localeModel.rhs);
       var lhs = (lhsTranslation && lhsTranslation.values) || {};
       var rhs = (rhsTranslation && rhsTranslation.values) || {};
       $scope.translationModels = Object.keys(lhs).map(function(key) {
         return {
           key: key,
-          lhs: lhs[key],
+          lhs: showKeys ? key : lhs[key],
           rhs: rhs[key]
         };
       });
@@ -53,6 +58,7 @@ angular.module('inboxControllers').controller('ConfigurationTranslationApplicati
         })
         .then(function(results) {
           $scope.translations = results.rows;
+          $scope.translationOptions = _.union([TRANSLATION_KEYS_OPTION], $scope.translations);
         })
         .catch(function(err) {
           $log.error('Error fetching translation documents', err);
