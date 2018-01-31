@@ -10,7 +10,8 @@ var _ = require('underscore');
     function(
       $log,
       $q,
-      DB
+      DB,
+      ExtractLineage
     ) {
 
       'ngInject';
@@ -51,6 +52,14 @@ var _ = require('underscore');
         }
       };
 
+      var minifyLineage = function (docs) {
+        docs.forEach(function (doc) {
+          if (doc.type === 'data_record' && doc.contact) {
+            doc.contact = ExtractLineage(doc.contact);
+          }
+        });
+      };
+
       /**
        * Delete the given docs. If 'person' type then also fix the
        * contact hierarchy.
@@ -76,6 +85,9 @@ var _ = require('underscore');
           }))
           .then(function() {
             return checkForDuplicates(docs);
+          })
+          .then(function() {
+            return minifyLineage(docs);
           })
           .then(function() {
             return DB().bulkDocs(docs);
