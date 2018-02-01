@@ -504,8 +504,6 @@ describe('EditUserCtrl controller', () => {
           chai.expect(updateUserArgs[0]).to.equal('user.name');
 
           const updates = updateUserArgs[1];
-          console.log('LLLLLLLLLLLLLLLLLL');
-          console.log(JSON.stringify(updates, null, 2));
           chai.expect(updates.fullname).to.equal(scope.editUserModel.fullname);
           chai.expect(updates.email).to.equal(scope.editUserModel.email);
           chai.expect(updates.phone).to.equal(scope.editUserModel.phone);
