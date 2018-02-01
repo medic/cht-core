@@ -21,7 +21,7 @@
 
 ## 2.14.0
 
-_TBD_
+_February 5, 2017_
 
 ### Migration notes
 
@@ -33,6 +33,7 @@ _TBD_
 
 - [#3096](https://github.com/medic/medic-webapp/issues/3096): Allow users to take a photo while filling in an xform in Enketo and upload the photo with the form.
 - [#3459](https://github.com/medic/medic-webapp/issues/3459): Add format-date-tr() to our custom xpath functions to support translations of days and months in xforms.
+- [#3450](https://github.com/medic/medic-webapp/issues/3450): Show the logout button in the hamburger menu for android users who have the new `can_log_out_on_android` permission set.
 
 ### Bug fixes
 
@@ -67,7 +68,6 @@ _TBD_
 
 - [#3873](https://github.com/medic/medic-webapp/issues/3873): Escape output to defend against javascript injection.
 - [#3239](https://github.com/medic/medic-webapp/issues/3239): Accessing webapp without logging in is possible.
-
 
 ## 2.13.0
 
