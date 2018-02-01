@@ -181,7 +181,7 @@ var cleanUp = function(feed) {
 var getChanges = function(feed) {
   var startTime = startTimer();
 
-  const allIds = _.union(feed.requestedIds, feed.validatedIds);
+  const allIds = _.intersection(feed.requestedIds, feed.validatedIds);
   const chunks = [];
 
   if (feed.req.query.feed === 'longpoll') {
