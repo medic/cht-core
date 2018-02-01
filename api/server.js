@@ -47,8 +47,7 @@ var _ = require('underscore'),
     pathPrefix = '/' + db.settings.db + '/',
     appPrefix = pathPrefix + '_design/' + db.settings.ddoc + '/_rewrite/',
     serverUtils = require('./server-utils'),
-    apiPort = process.env.API_PORT || 5988,
-    helloWorld = require('hello-world');
+    apiPort = process.env.API_PORT || 5988;
 
 // requires content-type application/json header
 var jsonParser = bodyParser.json({limit: '32mb'});
@@ -872,8 +871,6 @@ const couchDbVersionCheck = callback =>
   });
 
 const asyncLog = message => async.asyncify(() => console.log(message));
-
-helloWorld();
 
 async.series([
   nodeVersionCheck,
