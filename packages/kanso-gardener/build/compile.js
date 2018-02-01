@@ -1,6 +1,6 @@
 var path = require('path'),
     exec = require('child_process').exec,
-    fs = require('fs.extra'),
+    fs = require('fs-extra'),
     _ = require('underscore'),
     npm_cmd = "npm pack ";
 
@@ -56,7 +56,7 @@ module.exports = {
 };
 
 function get_folder_names(kanso_json) {
-    var node_module_folders = 
+    var node_module_folders =
             kanso_json.node_module_folder || kanso_json.node_module_folders;
     if (!node_module_folders) {
         return ['node_module'];
@@ -69,13 +69,13 @@ function generate_full_command(package_folder) {
 }
 
 function copy_node_dir(from, to, callback) {
-    fs.copyRecursive(from, to, callback);
+    fs.copy(from, to, {preserveTimestamps: true}, callback);
 }
 
 function clean_up(dir, tgz_file, callback) {
     async.parallel([
         function(cb) {
-            fs.rmrf(dir, cb);
+            fs.remove(dir, cb);
         },
         function(cb) {
             if (tgz_file) {
