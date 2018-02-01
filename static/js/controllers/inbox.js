@@ -20,6 +20,7 @@ var feedback = require('../modules/feedback'),
       $translate,
       $window,
       APP_CONFIG,
+      Auth,
       Changes,
       CheckDate,
       ContactSchema,
@@ -130,8 +131,22 @@ var feedback = require('../modules/feedback'),
         $scope.android_app_version = $window.medicmobile_android.getAppVersion();
       }
 
+      $scope.canLogOut = false;
+      if ($scope.android_app_version) {
+        Auth('can_log_out_on_android')
+          .then(function() {
+            $scope.canLogOut = true;
+          })
+          .catch(function() {}); // not permitted to log out
+      } else {
+        $scope.canLogOut = true;
+      }
       $scope.logout = function() {
-        Session.logout();
+        Modal({
+          templateUrl: 'templates/modals/logout_confirm.html',
+          controller: 'LogoutConfirmCtrl',
+          singleton: true
+        });
       };
 
       $scope.isMobile = function() {
