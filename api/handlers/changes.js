@@ -129,7 +129,7 @@ var bindValidatedDocIds = function(feed, callback) {
 };
 
 var bindRequestedIds = function(feed, callback) {
-  var ids = [];
+  let ids;
   if (feed.req.body && feed.req.body.doc_ids) {
     // POST request
     ids = feed.req.body.doc_ids;
@@ -181,7 +181,9 @@ var cleanUp = function(feed) {
 var getChanges = function(feed) {
   var startTime = startTimer();
 
-  const allIds = _.intersection(feed.requestedIds, feed.validatedIds);
+  const allIds = feed.requestedIds ?
+      _.intersection(feed.requestedIds, feed.validatedIds) :
+      feed.validatedIds;
   const chunks = [];
 
   if (feed.req.query.feed === 'longpoll') {
