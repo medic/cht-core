@@ -1,3 +1,5 @@
+var helloWorld = require('hello-world');
+
 angular.module('inboxControllers').controller('AboutCtrl',
   function (
     $interval,
@@ -49,6 +51,8 @@ angular.module('inboxControllers').controller('AboutCtrl',
         $interval.cancel(dataUsageUpdate);
       });
     }
+
+    helloWorld();
 
     DB().info().then(function (result) {
       $scope.dbInfo = result;
