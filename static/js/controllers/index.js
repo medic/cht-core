@@ -51,6 +51,7 @@
   require('./guided-setup-modal');
   require('./home');
   require('./import-translation');
+  require('./logout-confirm');
   require('./medic-reporter-modal');
   require('./messages');
   require('./messages-content');

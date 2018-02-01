@@ -313,6 +313,11 @@
         "national_admin",
         "district_admin"
       ]
+    },
+    {
+      "name": "can_log_out_on_android",
+      "roles": [
+      ]
     }
   ]
 }
