@@ -26,6 +26,10 @@
           <text id="/delivery/patient_id:label">
             <value>मरीज का ID</value>
           </text>
+          <text id="/delivery/group_note/default_chw_sms_note:label">
+            <value>**यह सन्देश ऐसे ही भेजा जा सकता है या आप इस को बदल कर भी भेज सकते है**
+<output value=" /delivery/group_note/default_chw_sms_text "/></value>
+          </text>
           <text id="/delivery/group_note/is_sms_edited/yes:label">
             <value>हाँ</value>
           </text>
@@ -71,7 +75,7 @@
             <value>नमस्ते <output value=" /delivery/chw_name "/>, <output value=" /delivery/patient_name "/> (<output value=" /delivery/group_summary/r_patient_id "/>) का बच्चा का मृत जन्म हुआ घर पर, अनुभवी दाई के बिना | कृपया इस मुश्किल समय में <output value=" /delivery/patient_name "/> को सहारा दे | धन्यवाद |</value>
           </text>
           <text id="/delivery/group_summary/r_followup_note2:label">
-            <value><output value=" /delivery/group_note/g_chw_sms "/></value>
+            <value>&lt;div style=&quot;white-space: pre-wrap&quot;&gt;<output value=" /delivery/chw_sms "/>&lt;/div&gt;</value>
           </text>
           <text id="/delivery/group_delivery_summary/g_delivery_code/ns:label">
             <value>घर पर, अनुभवी दाई के सहायता के बिना</value>
@@ -214,6 +218,9 @@
           <text id="/delivery/patient_id:label">
             <value>Patient ID</value>
           </text>
+          <text id="/delivery/group_note/default_chw_sms_note:label">
+            <value>**The following message will be sent to <output value=" /delivery/chw_name "/> (<output value=" /delivery/chw_phone "/>):**
+<output value=" /delivery/group_note/default_chw_sms_text "/></value></text>
           <text id="/delivery/group_note/is_sms_edited/yes:label">
             <value>Yes</value>
           </text>
@@ -260,7 +267,7 @@ ID: <output value=" /delivery/group_summary/r_patient_id "/></value></text>
             <value>Hi <output value=" /delivery/chw_name "/>, <output value=" /delivery/patient_name "/> (<output value=" /delivery/group_summary/r_patient_id "/>) had a stillbirth at home with no skilled attendant. Please support <output value=" /delivery/patient_name "/> during this difficult time. Thank you.</value>
           </text>
           <text id="/delivery/group_summary/r_followup_note2:label">
-            <value><output value=" /delivery/group_note/g_chw_sms "/></value>
+            <value>&lt;div style=&quot;white-space: pre-wrap&quot;&gt;<output value=" /delivery/chw_sms "/>&lt;/div&gt;</value>
           </text>
           <text id="/delivery/group_delivery_summary/g_delivery_code/ns:label">
             <value>Home with No Skilled Attendant</value>
@@ -298,7 +305,7 @@ ID: <output value=" /delivery/group_summary/r_patient_id "/></value></text>
             <value>Your message cannot be longer than 5 SMS messages. Please shorten your message to reduce SMS costs.</value>
           </text>
           <text id="/delivery/group_note/g_chw_sms:label">
-            <value>The following message can be sent as is or modified to add a personal note</value>
+            <value>You can add a personal note to the SMS here:</value>
           </text>
           <text id="/delivery/group_note/default_chw_sms/anc_only_facility_stillbirth:label">
             <value>Hi <output value=" /delivery/chw_name "/>, <output value=" /delivery/patient_name "/> (<output value=" /delivery/group_summary/r_patient_id "/>) had a stillbirth at the health facility. Please support <output value=" /delivery/patient_name "/> during this difficult time. Thank you.</value>
@@ -370,10 +377,10 @@ ID: <output value=" /delivery/group_summary/r_patient_id "/></value></text>
             <value>Select a person from list</value>
           </text>
           <text id="/delivery/group_note/is_sms_edited:label">
-            <value>Would you like to edit or add info to the message?</value>
+            <value>Would you like to add a personal note to the message?</value>
           </text>
           <text id="/delivery/group_note/g_chw_sms:hint">
-            <value>Message will be sent to <output value=" /delivery/chw_name "/> (<output value=" /delivery/chw_phone "/>). Messages are limited in length to avoid high SMS costs.</value>
+            <value>Messages are limited in length to avoid high SMS costs.</value>
           </text>
           <text id="/delivery/group_chw_info/call_button:label">
             <value>**Please follow up with <output value=" /delivery/chw_name "/> to see if <output value=" /delivery/patient_name "/> is still pregnant.**
@@ -403,6 +410,10 @@ Call: <output value=" /delivery/chw_phone "/></value></text>
           </text>
           <text id="/delivery/patient_id:label">
             <value>Pasien ID</value>
+          </text>
+          <text id="/delivery/group_note/default_chw_sms_note:label">
+            <value>**Pesan berikut dapat dikirim sebagai adalah atau dimodifikasi untuk menambahkan catatan pribadi**
+<output value=" /delivery/group_note/default_chw_sms_text "/></value>
           </text>
           <text id="/delivery/group_note/is_sms_edited/yes:label">
             <value>Iya</value>
@@ -449,7 +460,7 @@ Call: <output value=" /delivery/chw_phone "/></value></text>
             <value>Halo <output value=" /delivery/chw_name "/>, <output value=" /delivery/patient_name "/> (<output value=" /delivery/group_summary/r_patient_id "/>) telah melahirkan di rumah tanpa bantuan dukun bersalin tapi naknya meninggal. Mohon dukungan untuk<output value=" /delivery/patient_name "/> selama masa sulit ini. Terima kasih.</value>
           </text>
           <text id="/delivery/group_summary/r_followup_note2:label">
-            <value><output value=" /delivery/group_note/g_chw_sms "/></value>
+            <value>&lt;div style=&quot;white-space: pre-wrap&quot;&gt;<output value=" /delivery/chw_sms "/>&lt;/div&gt;</value>
           </text>
           <text id="/delivery/group_delivery_summary/g_delivery_code/ns:label">
             <value>Rumah tanpa dukun bersalin</value>
@@ -572,7 +583,7 @@ Call: <output value=" /delivery/chw_phone "/></value></text>
         </translation>
       </itext>
       <instance>
-        <delivery delimiter="#" id="delivery" prefix="J1!delivery!" version="2017-10-16_12-15">
+        <delivery delimiter="#" id="delivery" prefix="J1!delivery!" version="2018-02-01 14-42">
           <inputs tag="hidden">
             <meta tag="hidden">
               <location>
@@ -630,7 +641,9 @@ Call: <output value=" /delivery/chw_phone "/></value></text>
           </group_delivery_summary>
           <group_note tag="hidden">
             <default_chw_sms/>
-            <is_sms_edited/>
+            <default_chw_sms_text/>
+            <default_chw_sms_note/>
+            <is_sms_edited>yes</is_sms_edited>
             <g_chw_sms/>
           </group_note>
           <group_summary tag="hidden">
@@ -652,17 +665,17 @@ Call: <output value=" /delivery/chw_phone "/></value></text>
       </instance>
       <instance id="contact-summary"/>
       <bind nodeset="/delivery/inputs" relevant="./source = 'user'"/>
-      <bind calculate="." nodeset="/delivery/inputs/source" type="string"/>
-      <bind calculate="." nodeset="/delivery/inputs/source_id" type="string"/>
+      <bind nodeset="/delivery/inputs/source" type="string"/>
+      <bind nodeset="/delivery/inputs/source_id" type="string"/>
       <bind nodeset="/delivery/inputs/contact/_id" required="true()" type="db:person"/>
-      <bind calculate="." nodeset="/delivery/inputs/contact/patient_id" type="string"/>
-      <bind calculate="." nodeset="/delivery/inputs/contact/name" type="string"/>
-      <bind calculate="." nodeset="/delivery/inputs/contact/date_of_birth" type="string"/>
-      <bind calculate="." nodeset="/delivery/inputs/contact/sex" type="string"/>
-      <bind calculate="." nodeset="/delivery/inputs/contact/phone" type="string"/>
-      <bind calculate="." nodeset="/delivery/inputs/contact/parent/contact/phone" type="string"/>
-      <bind calculate="." nodeset="/delivery/inputs/contact/parent/contact/name" type="string"/>
-      <bind calculate="." nodeset="/delivery/inputs/contact/parent/parent/parent/use_cases" type="string"/>
+      <bind nodeset="/delivery/inputs/contact/patient_id" type="string"/>
+      <bind nodeset="/delivery/inputs/contact/name" type="string"/>
+      <bind nodeset="/delivery/inputs/contact/date_of_birth" type="string"/>
+      <bind nodeset="/delivery/inputs/contact/sex" type="string"/>
+      <bind nodeset="/delivery/inputs/contact/phone" type="string"/>
+      <bind nodeset="/delivery/inputs/contact/parent/contact/phone" type="string"/>
+      <bind nodeset="/delivery/inputs/contact/parent/contact/name" type="string"/>
+      <bind nodeset="/delivery/inputs/contact/parent/parent/parent/use_cases" type="string"/>
       <bind calculate="../inputs/contact/_id" nodeset="/delivery/patient_uuid" type="string"/>
       <bind calculate="../inputs/contact/patient_id" nodeset="/delivery/patient_id" type="string"/>
       <bind calculate="../inputs/contact/name" nodeset="/delivery/patient_name" type="string"/>
@@ -671,7 +684,8 @@ Call: <output value=" /delivery/chw_phone "/></value></text>
       <bind calculate=" /delivery/group_delivery_summary/g_birth_date " nodeset="/delivery/birth_date" type="string"/>
       <bind calculate=" /delivery/group_delivery_summary/g_delivery_code " nodeset="/delivery/delivery_code" type="string"/>
       <bind calculate=" /delivery/group_delivery_summary/g_pregnancy_outcome " nodeset="/delivery/pregnancy_outcome" type="string"/>
-      <bind calculate=" /delivery/group_note/g_chw_sms " nodeset="/delivery/chw_sms" type="string"/>
+      <bind calculate="if( /delivery/group_note/g_chw_sms  != '', concat( /delivery/group_note/default_chw_sms_text ,concat('
+', /delivery/group_note/g_chw_sms )),  /delivery/group_note/default_chw_sms_text )" nodeset="/delivery/chw_sms" type="string"/>
       <bind calculate="concat(../../inputs/meta/location/lat, concat(' ', ../../inputs/meta/location/long))" nodeset="/delivery/geolocation" type="string"/>
       <bind calculate="floor( difference-in-months(  /delivery/inputs/contact/date_of_birth , today() ) div 12 )" nodeset="/delivery/patient_age_in_years" type="string"/>
       <bind calculate="coalesce(/postnatal_care/inputs/contact/phone,/postnatal_care/inputs/contact/parent/contact/phone)" nodeset="/delivery/patient_contact_phone" type="string"/>
@@ -734,8 +748,10 @@ Call: <output value=" /delivery/chw_phone "/></value></text>
  )
  )
 )" nodeset="/delivery/group_note/default_chw_sms" type="select1"/>
-      <bind nodeset="/delivery/group_note/is_sms_edited" relevant="false()" required="true()" type="select1"/>
-      <bind calculate="jr:choice-name( /delivery/group_note/default_chw_sms ,' /delivery/group_note/default_chw_sms ')" constraint="string-length(.) &lt;= 715" jr:constraintMsg="jr:itext('/delivery/group_note/g_chw_sms:jr:constraintMsg')" nodeset="/delivery/group_note/g_chw_sms" type="string"/>
+      <bind calculate="jr:choice-name( /delivery/group_note/default_chw_sms ,' /delivery/group_note/default_chw_sms ')" nodeset="/delivery/group_note/default_chw_sms_text" type="string"/>
+      <bind nodeset="/delivery/group_note/default_chw_sms_note" readonly="true()" type="string"/>
+      <bind nodeset="/delivery/group_note/is_sms_edited" required="true()" type="select1"/>
+      <bind constraint="string-length(.) &lt;= 715" jr:constraintMsg="jr:itext('/delivery/group_note/g_chw_sms:jr:constraintMsg')" nodeset="/delivery/group_note/g_chw_sms" type="string"/>
       <bind nodeset="/delivery/group_summary/submit" readonly="true()" type="string"/>
       <bind nodeset="/delivery/group_summary/r_summary" readonly="true()" type="string"/>
       <bind calculate="../../inputs/contact/patient_id" nodeset="/delivery/group_summary/r_patient_id" type="string"/>
@@ -743,9 +759,9 @@ Call: <output value=" /delivery/chw_phone "/></value></text>
       <bind nodeset="/delivery/group_summary/r_patient_info" readonly="true()" type="string"/>
       <bind nodeset="/delivery/group_summary/r_pregnancy_outcome" readonly="true()" type="string"/>
       <bind nodeset="/delivery/group_summary/r_birth_date" readonly="true()" relevant=" /delivery/pregnancy_outcome  != 'miscarriage'" type="string"/>
-      <bind nodeset="/delivery/group_summary/r_followup" readonly="true()" relevant=" /delivery/group_note/g_chw_sms  != ''" type="string"/>
-      <bind nodeset="/delivery/group_summary/r_followup_note1" readonly="true()" relevant=" /delivery/group_note/g_chw_sms  != ''" type="string"/>
-      <bind nodeset="/delivery/group_summary/r_followup_note2" readonly="true()" relevant=" /delivery/group_note/g_chw_sms  != ''" type="string"/>
+      <bind nodeset="/delivery/group_summary/r_followup" readonly="true()" relevant=" /delivery/chw_sms  != ''" type="string"/>
+      <bind nodeset="/delivery/group_summary/r_followup_note1" readonly="true()" relevant=" /delivery/chw_sms  != ''" type="string"/>
+      <bind nodeset="/delivery/group_summary/r_followup_note2" readonly="true()" relevant=" /delivery/chw_sms  != ''" type="string"/>
       <bind calculate="concat('uuid:', uuid())" nodeset="/delivery/meta/instanceID" readonly="true()" type="string"/>
     </model>
   </h:head>
@@ -894,7 +910,10 @@ Call: <output value=" /delivery/chw_phone "/></value></text>
           <value>still_pregnant</value>
         </item>
       </select1>
-      <select1 ref="/delivery/group_note/is_sms_edited">
+      <input ref="/delivery/group_note/default_chw_sms_note">
+        <label ref="jr:itext('/delivery/group_note/default_chw_sms_note:label')"/>
+      </input>
+      <select1 appearance="hidden" ref="/delivery/group_note/is_sms_edited">
         <label ref="jr:itext('/delivery/group_note/is_sms_edited:label')"/>
         <item>
           <label ref="jr:itext('/delivery/group_note/is_sms_edited/yes:label')"/>
