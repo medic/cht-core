@@ -305,7 +305,6 @@ describe('DeleteDocs service', function() {
     };
 
     var docs = [ report ];
-    get.returns(Promise.resolve(person));
     bulkDocs.returns(Promise.resolve());
     var isCircularBefore = false;
     var isCircularAfter = false;
