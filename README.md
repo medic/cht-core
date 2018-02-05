@@ -150,32 +150,51 @@ exports.env = {
 };
 ```
 
-### Deploy the webapp
+### Deploy all the apps
+Create a `.env` file in the app directory with the following contents
+```
+COUCH_URL=http://admin:pass@localhost:5984/medic
+COUCH_NODE_NAME=couchdb@localhost
+```
+Then install api and sentinel dependencies
+```
+cd api && npm install && cd ..
+cd sentinel && npm install && cd ..
+```
+Then run
+```
+npm start
+```
+which should start the webapp, api, and sentinel, and watch for changes in each app.
+
+### Deploy apps individually
+If `npm start` is not to your taste for whatever reason, the apps can be deployed individually.
+
+#### Deploy the webapp
 
 `grunt dev` will build and deploy the webapp, then watch for changes and redeploy when necessary.
 
-
-### Start medic-sentinel
+#### Start medic-sentinel
 
 ```
 cd sentinel
 npm install
 export COUCH_NODE_NAME=couchdb@localhost
 export COUCH_URL=http://admin:pass@localhost:5984/medic
-node ./server.js
 ```
+Then run either `node ./server.js` from the sentinel directory or `grunt dev-sentinel` from the repository directory (which will watch for changes).
 
 See [Medic Sentinel](https://github.com/medic/medic-sentinel) for more information.
 
-### Start medic-api
+#### Start medic-api
 
 ```
 cd api
 npm install
 export COUCH_NODE_NAME=couchdb@localhost
 export COUCH_URL=http://admin:pass@localhost:5984/medic
-node ./server.js
 ```
+Then run either `node ./server.js` from the api directory or `grunt dev-api` from the repository directory (which will watch for changes).
 
 See [Medic API](https://github.com/medic/medic-api) for more information.
 

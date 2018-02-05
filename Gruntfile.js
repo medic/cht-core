@@ -199,6 +199,12 @@ module.exports = function(grunt) {
       }
     },
     exec: {
+      apiDev: {
+        cmd: './node_modules/.bin/nodemon --watch api api/server.js'
+      },
+      sentinelDev: {
+        cmd: './node_modules/.bin/nodemon --watch sentinel sentinel/server.js'
+      },
       blankLinkCheck: {
         cmd: `echo "Checking for dangerous _blank links..." &&
                ! (git grep -E  'target\\\\?="_blank"' -- templates/ translations/ static/ |
@@ -602,6 +608,14 @@ module.exports = function(grunt) {
     'build',
     'deploy',
     'watch'
+  ]);
+
+  grunt.registerTask('dev-api', 'Run api and watch for file changes', [
+    'exec:apiDev'
+  ]);
+
+  grunt.registerTask('dev-sentinel', 'Run sentinel and watch for file changes', [
+    'exec:sentinelDev'
   ]);
 
   grunt.registerTask('default', 'Build and deploy for dev', [

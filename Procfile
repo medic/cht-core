@@ -10,6 +10,6 @@
 #
 # Alternatively, these values can be set as normal environment variables.
 
-api: cd api && node server.js
+api: grunt dev-api
 webapp: grunt dev-no-npm
-sentinel: cd sentinel && node server.js
+sentinel: grunt dev-sentinel
