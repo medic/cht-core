@@ -96,7 +96,11 @@ const _silenceReminders = (audit, registration, report, config, callback) => {
 
 const addRegistrationToDoc = (doc, registrations) => {
     if (registrations.length) {
-        doc.registration_id = registrations[registrations.length - 1]._id;
+        const latest = _.max(
+            registrations,
+            registration => moment(registration.reported_date)
+        );
+        doc.registration_id = latest._id;
     }
 };
 

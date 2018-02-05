@@ -276,7 +276,7 @@ describe('accept_patient_reports', () => {
       sinon.stub(transition, '_silenceReminders').callsArgWith(4, null, true);
       const doc = { _id: 'z', fields: { patient_id: 'x' } };
       const config = { silence_type: 'x', messages: [] };
-      const registrations = [ { _id: 'a' } ];
+      const registrations = [ { _id: 'a', reported_date: '2017-02-05T09:23:07.853Z' } ];
       transition.silenceRegistrations(null, config, doc, registrations, (err, complete) => {
         complete.should.equal(true);
         doc.registration_id.should.equal(registrations[0]._id);
@@ -284,11 +284,15 @@ describe('accept_patient_reports', () => {
       });
     });
 
-    it('if there are multiple registrations uses the last one', done => {
+    it('if there are multiple registrations uses the latest one', done => {
       sinon.stub(transition, '_silenceReminders').callsArgWith(4, null, true);
       const doc = { _id: 'z', fields: { patient_id: 'x' } };
       const config = { silence_type: 'x', messages: [] };
-      const registrations = [ { _id: 'a' }, { _id: 'b' } ];
+      const registrations = [
+        { _id: 'a', reported_date: '2017-02-05T09:23:07.853Z' },
+        { _id: 'c', reported_date: '2018-02-05T09:23:07.853Z' },
+        { _id: 'b', reported_date: '2016-02-05T09:23:07.853Z' }
+      ];
       transition.silenceRegistrations(null, config, doc, registrations, (err, complete) => {
         complete.should.equal(true);
         doc.registration_id.should.equal(registrations[1]._id);
