@@ -125,17 +125,17 @@ describe('accept_patient_reports', () => {
       const doc = { _id: 'a', fields: { patient_id: 'x' } };
       const config = { silence_type: 'x', messages: [] };
       const registrations = [
-        { id: 'a' }, // should not be silenced as it's the doc being processed
-        { id: 'b' }, // should be silenced
-        { id: 'c' }  // should be silenced
+        { _id: 'a' }, // should not be silenced as it's the doc being processed
+        { _id: 'b' }, // should be silenced
+        { _id: 'c' }  // should be silenced
       ];
       sinon.stub(utils, 'getRegistrations').callsArgWith(1, null, registrations);
       transition._handleReport(null, null, doc, config, (err, complete) => {
         complete.should.equal(true);
         transition._silenceReminders.callCount.should.equal(2);
-        transition._silenceReminders.args[0][1].id.should.equal('b');
+        transition._silenceReminders.args[0][1]._id.should.equal('b');
         transition._silenceReminders.args[0][2]._id.should.equal('a');
-        transition._silenceReminders.args[1][1].id.should.equal('c');
+        transition._silenceReminders.args[1][1]._id.should.equal('c');
         transition._silenceReminders.args[1][2]._id.should.equal('a');
         done();
       });
@@ -268,5 +268,33 @@ describe('accept_patient_reports', () => {
       transition._addMessageToDoc(doc, config, [], patient);
       stub.callCount.should.equal(1);
     });
+  });
+
+  describe('silenceRegistrations', () => {
+
+    it('adds registration_id property', done => {
+      sinon.stub(transition, '_silenceReminders').callsArgWith(4, null, true);
+      const doc = { _id: 'z', fields: { patient_id: 'x' } };
+      const config = { silence_type: 'x', messages: [] };
+      const registrations = [ { _id: 'a' } ];
+      transition.silenceRegistrations(null, config, doc, registrations, (err, complete) => {
+        complete.should.equal(true);
+        doc.registration_id.should.equal(registrations[0]._id);
+        done();
+      });
+    });
+
+    it('if there are multiple registrations uses the last one', done => {
+      sinon.stub(transition, '_silenceReminders').callsArgWith(4, null, true);
+      const doc = { _id: 'z', fields: { patient_id: 'x' } };
+      const config = { silence_type: 'x', messages: [] };
+      const registrations = [ { _id: 'a' }, { _id: 'b' } ];
+      transition.silenceRegistrations(null, config, doc, registrations, (err, complete) => {
+        complete.should.equal(true);
+        doc.registration_id.should.equal(registrations[1]._id);
+        done();
+      });
+    });
+
   });
 });

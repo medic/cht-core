@@ -94,6 +94,12 @@ const _silenceReminders = (audit, registration, report, config, callback) => {
     audit.saveDoc(registration, callback);
 };
 
+const addRegistrationToDoc = (doc, registrations) => {
+    if (registrations.length) {
+        doc.registration_id = registrations[registrations.length - 1]._id;
+    }
+};
+
 const silenceRegistrations = (
             audit,
             config,
@@ -103,10 +109,11 @@ const silenceRegistrations = (
     if (!config.silence_type) {
         return callback(null, true);
     }
+    addRegistrationToDoc(doc, registrations);
     async.forEach(
         registrations,
         function(registration, callback) {
-            if (doc._id === registration.id) {
+            if (doc._id === registration._id) {
                 // don't silence the registration you're processing
                 return callback();
             }
