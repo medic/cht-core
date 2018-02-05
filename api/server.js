@@ -880,13 +880,22 @@ async.series([
   envVarsCheck,
   couchDbNoAdminPartyModeCheck,
   couchDbVersionCheck,
+
+  asyncLog('Extracting ddoc…'),
   ddocExtraction.run,
   asyncLog('DDoc extraction completed successfully'),
+
+  asyncLog('Loading configuration…'),
   config.load,
   asyncLog('Configuration loaded successfully'),
+
   async.asyncify(config.listen),
+
+  asyncLog('Merging translations…'),
   translations.run,
   asyncLog('Translations merged successfully'),
+
+  asyncLog('Running db migrations…'),
   migrations.run,
   asyncLog('Database migrations completed successfully'),
 ], err => {
