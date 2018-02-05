@@ -97,12 +97,6 @@
       ]
     },
     {
-      "name": "can_access_directly",
-      "roles": [
-        "national_admin"
-      ]
-    },
-    {
       "name": "can_view_data_records",
       "roles": [
         "national_admin",
