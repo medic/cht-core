@@ -29,6 +29,7 @@
     "pouchdb-core": "^6.4.3",
     "properties": "^1.2.1",
     "request": "^2.83.0",
+    "search": "file:../shared-libs/search",
     "simple-password-tester": "^1.0.0",
     "underscore": "^1.8.3",
     "url": "^0.11.0",
