@@ -13,7 +13,6 @@ var unescape = function(s) {
 };
 
 var post = function(url, payload, callback) {
-  console.log('post....');
   var xmlhttp = new XMLHttpRequest();
   xmlhttp.onreadystatechange = function() {
     if (xmlhttp.readyState === XMLHttpRequest.DONE) {
