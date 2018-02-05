@@ -445,10 +445,12 @@ module.exports = {
         // create a new patient with this patient_id
         const patient = {
           name: doc.fields[patientNameField],
+          created_by: contact && contact._id,
           parent: contact && contact.parent,
           reported_date: doc.reported_date,
           type: 'person',
-          patient_id: patientShortcode
+          patient_id: patientShortcode,
+          source_id: doc._id
         };
         // include the DOB if it was generated on report
         if (doc.birth_date) {

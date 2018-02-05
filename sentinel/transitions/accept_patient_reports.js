@@ -81,14 +81,27 @@ const getConfig = function(form) {
     return _.findWhere(fullConfig, { form: form });
 };
 
-const _silenceReminders = (audit, registration, reported_date, config, callback) => {
-    var toClear = module.exports._findToClear(registration, reported_date, config);
+const _silenceReminders = (audit, registration, report, config, callback) => {
+    var toClear = module.exports._findToClear(registration, report.reported_date, config);
     if (!toClear.length) {
         return callback();
     }
 
-    toClear.forEach(task => utils.setTaskState(task, 'cleared'));
+    toClear.forEach(task => {
+        utils.setTaskState(task, 'cleared');
+        task.cleared_by = report._id;
+    });
     audit.saveDoc(registration, callback);
+};
+
+const addRegistrationToDoc = (doc, registrations) => {
+    if (registrations.length) {
+        const latest = _.max(
+            registrations,
+            registration => moment(registration.reported_date)
+        );
+        doc.registration_id = latest._id;
+    }
 };
 
 const silenceRegistrations = (
@@ -100,15 +113,16 @@ const silenceRegistrations = (
     if (!config.silence_type) {
         return callback(null, true);
     }
+    addRegistrationToDoc(doc, registrations);
     async.forEach(
         registrations,
         function(registration, callback) {
-            if (doc._id === registration.id) {
+            if (doc._id === registration._id) {
                 // don't silence the registration you're processing
                 return callback();
             }
             module.exports._silenceReminders(
-                audit, registration, doc.reported_date, config, callback);
+                audit, registration, doc, config, callback);
         },
         function(err) {
             callback(err, true);
