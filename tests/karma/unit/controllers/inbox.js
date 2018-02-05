@@ -48,7 +48,7 @@ describe('InboxCtrl controller', () => {
       });
       $provide.value('ReadMessages', sinon.stub());
       $provide.value('SendMessage', sinon.stub());
-      $provide.value('Session', { init: sinon.stub() });
+      $provide.value('Session', { init: sinon.stub(), isAdmin: sinon.stub() });
       $provide.value('SetLanguageCookie', sinon.stub());
       $provide.value('Settings', () => KarmaUtils.nullPromise());
       $provide.value('Snackbar', () => snackbar);
