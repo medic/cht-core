@@ -13,6 +13,7 @@ var unescape = function(s) {
 };
 
 var post = function(url, payload, callback) {
+  console.log('post....');
   var xmlhttp = new XMLHttpRequest();
   xmlhttp.onreadystatechange = function() {
     if (xmlhttp.readyState === XMLHttpRequest.DONE) {
@@ -25,7 +26,9 @@ var post = function(url, payload, callback) {
 };
 
 var handleResponse = function(xmlhttp) {
-  if (xmlhttp.status === 200) {
+  if (xmlhttp.readyState === XMLHttpRequest.DONE && xmlhttp.status < 200) {
+    setState('loginoffline');
+  } else if (xmlhttp.status === 200) {
     window.location = unescape(document.getElementById('redirect').value);
   } else if (xmlhttp.status === 401) {
     setState('loginincorrect');
