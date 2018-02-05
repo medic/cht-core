@@ -107,11 +107,12 @@ angular.module('inboxServices').factory('LiveListConfig',
           var form = _.findWhere($scope.forms, { code: report.form });
           scope.route = 'reports';
           scope.icon = form && form.icon;
-          scope.heading = report.contact || report.from;
+          scope.heading =
+            report.valid_subject ? report.subject.value : $translate.instant('report.subject.unknown');
           scope.date = report.reported_date;
           scope.summary = form ? form.title : report.form;
           scope.showStatus = true;
-          scope.valid = report.valid;
+          scope.valid = report.valid && report.valid_subject;
           scope.verified = report.verified;
           scope.lineage = report.lineage;
           scope.unread = !report.read;

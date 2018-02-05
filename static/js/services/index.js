@@ -42,6 +42,7 @@
   require('./geolocation');
   require('./get-contact-summaries');
   require('./get-data-records');
+  require('./get-subject-summaries');
   require('./import-contacts');
   require('./kanso-packages');
   require('./language');
