@@ -86,9 +86,17 @@ If you're using couchdb-lucene in any configuration other than the standard (on 
 export LUCENE_URL='http://somewherelse'
 ```
 
+If you want to allow cross-origin requests, add the flag `--allow-cors` when starting api.  E.g.
+
+	node server.js --allow-cors
+
 ## Run
 
 `grunt deploy`
+
+or
+
+	node server.js
 
 ## Test
 
