@@ -207,9 +207,17 @@ angular.module('inboxServices').service('Enketo',
           if (!summary) {
             return;
           }
+
+          var xmlStr;
+          try {
+            xmlStr = json2xml({ context: summary.context });
+          } catch (e) {
+            xmlStr = json2xml({ context: [] });
+          }
+
           return {
             id: 'contact-summary',
-            xmlStr: json2xml({ context: summary.context })
+            xmlStr: xmlStr
           };
         });
     };

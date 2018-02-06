@@ -414,6 +414,37 @@ describe('Enketo service', function() {
         chai.expect(LineageModelGenerator.contact.callCount).to.equal(0);
       });
     });
+
+    it('does not crash when context has an `undefined` element #4125', function() {
+      var data = '<data><patient_id>123</patient_id></data>';
+      UserContact.returns(Promise.resolve({
+        _id: '456',
+        contact_id: '123',
+        facility_id: '789'
+      }));
+      dbGet.returns(Promise.resolve(mockEnketoDoc('myform')));
+      dbGetAttachment.returns(Promise.resolve('xmlblob'));
+      enketoInit.returns([]);
+      FileReader.utf8.returns(Promise.resolve('<some-blob name="xml"/>'));
+      EnketoPrepopulationData.returns(Promise.resolve(data));
+      transform
+        .onFirstCall().returns(Promise.resolve($('<div>my form</div>')))
+        .onSecondCall().returns(Promise.resolve(VISIT_MODEL_WITH_CONTACT_SUMMARY));
+      var instanceData = {
+        contact: {
+          _id: 'fffff',
+          patient_id: '44509'
+        },
+        inputs: {
+          patient_id: 123,
+          name: 'sharon'
+        }
+      };
+      ContactSummary.returns(Promise.resolve({ context: [undefined] }));
+      Search.returns(Promise.resolve([ { _id: 'somereport' }]));
+      LineageModelGenerator.contact.returns(Promise.resolve({ lineage: [ { _id: 'someparent' } ] }));
+      return service.render($('<div></div>'), 'ok', instanceData);
+    });
   });
 
   describe('save', function() {

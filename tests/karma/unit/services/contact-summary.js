@@ -67,4 +67,30 @@ describe('ContactSummary service', () => {
       chai.expect(actual.cards.length).to.equal(0);
     });
   });
+
+  it('does not crash when contact-summary function returns arrays with undefined elements #4125', () => {
+    const script = `
+                   return {
+                     fields: [undefined],
+                     cards: [undefined]
+                   }
+                   `;
+    Settings.returns(Promise.resolve({ contact_summary: script }));
+    const contact = {};
+    const reports = [];
+    return service(contact, reports);
+  });
+
+  it('does not crash when contact-summary function returns non-array elements #4125', () => {
+    const script = `
+                   return {
+                     fields: 'alpha',
+                     cards: { fields: 'beta' }
+                   }
+                   `;
+    Settings.returns(Promise.resolve({ contact_summary: script }));
+    const contact = {};
+    const reports = [];
+    return service(contact, reports);
+  });
 });
