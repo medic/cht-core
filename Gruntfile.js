@@ -288,7 +288,7 @@ module.exports = function(grunt) {
         }
       },
       apiDev: {
-        cmd: 'TZ=UTC ./node_modules/.bin/nodemon --watch api api/server.js'
+        cmd: 'TZ=UTC ./node_modules/.bin/nodemon --watch api api/server.js -- --allow-cors'
       },
       sentinelDev: {
         cmd: 'TZ=UTC ./node_modules/.bin/nodemon --watch sentinel sentinel/server.js'

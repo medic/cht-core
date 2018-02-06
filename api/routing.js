@@ -56,6 +56,19 @@ var formParser = bodyParser.urlencoded({limit: '32mb', extended: false});
 
 app.set('strict routing', true);
 
+// When testing random stuff in-browser, it can be useful to access the database
+// from different domains (e.g. localhost:5988 vs localhost:8080).  Adding the
+// --allow-cors commandline switch will enable this from within a web browser.
+if(process.argv.slice(2).includes('--allow-cors')) {
+  console.log('WARNING: allowing CORS requests to API!');
+  app.use((req, res, next) => {
+    res.setHeader('Access-Control-Allow-Origin', req.headers.origin || req.headers.host);
+    res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, OPTIONS, HEAD, DELETE');
+    res.setHeader('Access-Control-Allow-Credentials', 'true');
+    next();
+  });
+}
+
 app.use(morgan('combined', {
   immediate: true
 }));
