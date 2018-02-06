@@ -13,16 +13,16 @@ function(doc) {
   var getSubject = function(doc) {
     var subject = {};
 
-    if (doc.fields && 'patient_uuid' in doc.fields) {
+    if (doc.fields && doc.fields.hasOwnProperty('patient_uuid')) {
       subject.value = doc.fields.patient_uuid;
       subject.type = 'uuid';
-    } else if (doc.fields && 'place_id' in doc.fields) {
+    } else if (doc.fields && doc.fields.hasOwnProperty('place_id')) {
       subject.value = doc.fields.place_id;
       subject.type = 'uuid';
-    } else if ('patient_id' in doc || (doc.fields && 'patient_id' in doc.fields)) {
+    } else if (doc.hasOwnProperty('patient_id') || (doc.fields && doc.fields.hasOwnProperty('patient_id'))) {
       subject.value = doc.patient_id || (doc.fields && doc.fields.patient_id);
       subject.type = 'patient_id';
-    } else if (doc.fields && 'patient_name' in doc.fields) {
+    } else if (doc.fields && doc.fields.hasOwnProperty('patient_name')) {
       subject.value = doc.fields.patient_name;
       subject.type = 'patient_name';
     }
