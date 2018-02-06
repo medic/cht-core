@@ -42,7 +42,7 @@ exports['get returns errors from second fti'] = function(test) {
         doc: {
           patient_id: 1,
           form: 'R',
-          reported_dated: moment().subtract(60, 'weeks')
+          reported_dated: moment.utc().subtract(60, 'weeks')
         }
       }
     ]

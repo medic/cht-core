@@ -19,12 +19,12 @@ var formatDates = function(dates) {
     return moment.utc(date).startOf('month').toISOString();
   });
   addMissingData(counts);
-  var sorted = _.sortBy(_.pairs(counts), function(count) { 
+  var sorted = _.sortBy(_.pairs(counts), function(count) {
     return count[0];
   });
   return _.map(sorted, function(elem) {
     return {
-      month: moment(elem[0]).format('MMM YYYY'),
+      month: moment.utc(elem[0]).format('MMM YYYY'),
       count: elem[1]
     };
   });
@@ -54,7 +54,7 @@ var getDeliveries = function(options, results, callback) {
       return callback(err);
     }
     _.each(deliveries, function(delivery) {
-      var edd = moment(delivery.doc.reported_date).startOf('month');
+      var edd = moment.utc(delivery.doc.reported_date).startOf('month');
       results[delivery.doc.fields.patient_id] = edd;
     });
     callback(null, results);
@@ -63,7 +63,7 @@ var getDeliveries = function(options, results, callback) {
 
 module.exports = {
   get: function(options, callback) {
-    options.endDate = moment().startOf('month');
+    options.endDate = moment.utc().startOf('month');
     options.startDate = options.endDate.clone().subtract(1, 'years');
 
     var results = {};

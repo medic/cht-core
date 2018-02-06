@@ -3,7 +3,7 @@ var _ = require('underscore'),
     utils = require('./utils');
 
 var addMissingData = function(counts) {
-  var end = moment().startOf('month');
+  var end = moment.utc().startOf('month');
   var date = end.clone().subtract(1, 'years');
   while(date.isBefore(end)) {
     var key = date.toISOString();
@@ -16,15 +16,15 @@ var addMissingData = function(counts) {
 
 var formatRegistrations = function(registrations) {
   var counts = _.countBy(registrations, function(registration) {
-    return moment(registration.doc.reported_date).startOf('month').toISOString();
+    return moment.utc(registration.doc.reported_date).startOf('month').toISOString();
   });
   addMissingData(counts);
-  var sorted = _.sortBy(_.pairs(counts), function(count) { 
+  var sorted = _.sortBy(_.pairs(counts), function(count) {
     return count[0];
   });
   return _.map(sorted, function(elem) {
     return {
-      month: moment(elem[0]).format('MMM YYYY'),
+      month: moment.utc(elem[0]).format('MMM YYYY'),
       count: elem[1]
     };
   });
@@ -32,7 +32,7 @@ var formatRegistrations = function(registrations) {
 
 module.exports = {
   get: function(options, callback) {
-    var endDate = moment().startOf('month');
+    var endDate = moment.utc().startOf('month');
     var startDate = endDate.clone().subtract(1, 'years');
     var query = 'errors<int>:0 AND ' +
               'form:(' + utils.getFormCode('registration') + ' OR ' + utils.getFormCode('registrationLmp') + ') AND ' +

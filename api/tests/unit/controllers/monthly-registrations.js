@@ -31,9 +31,9 @@ exports['get returns monthly registrations count'] = function(test) {
   test.expect(2);
   var fti = sinon.stub(db, 'fti').callsArgWith(2, null, {
     rows: [
-      { doc: { reported_date: moment().subtract(1, 'months').valueOf() } },
-      { doc: { reported_date: moment().subtract(3, 'months').valueOf() } },
-      { doc: { reported_date: moment().subtract(1, 'months').valueOf() } }
+      { doc: { reported_date: moment.utc().subtract(1, 'months').valueOf() } },
+      { doc: { reported_date: moment.utc().subtract(3, 'months').valueOf() } },
+      { doc: { reported_date: moment.utc().subtract(1, 'months').valueOf() } }
     ]
   });
   controller.get({}, function(err, results) {

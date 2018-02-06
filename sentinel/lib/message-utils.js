@@ -169,7 +169,7 @@ var formatDate = function(config, text, view, formatString) {
   if (!isNaN(date)) {
     date = parseInt(date, 10);
   }
-  return moment(date).format(formatString);
+  return moment.utc(date).format(formatString);
 };
 
 var render = function(config, template, view) {
