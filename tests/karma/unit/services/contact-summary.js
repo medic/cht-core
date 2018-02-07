@@ -78,7 +78,7 @@ describe('ContactSummary service', () => {
     Settings.returns(Promise.resolve({ contact_summary: script }));
     const contact = {};
     const reports = [];
-    return service(contact, reports).then(function(actual) {
+    return service(contact, reports).then(actual => {
       chai.expect(actual.fields).to.deep.equal([undefined]);
       chai.expect(actual.cards).to.deep.equal([undefined]);
     });
@@ -94,11 +94,12 @@ describe('ContactSummary service', () => {
     Settings.returns(Promise.resolve({ contact_summary: script }));
     const contact = {};
     const reports = [];
-    return service(contact, reports).then(function(actual) {
+    return service(contact, reports).then(actual => {
       chai.expect(actual.fields).to.be.an('array');
       chai.expect(actual.fields.length).to.equal(0);
       chai.expect(actual.cards).to.be.an('array');
       chai.expect(actual.cards.length).to.equal(1);
+      chai.expect(actual.cards[0].fields).to.equal('beta');
     });
   });
 });
