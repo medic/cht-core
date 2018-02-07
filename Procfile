@@ -11,5 +11,5 @@
 # Alternatively, these values can be set as normal environment variables.
 
 api: grunt dev-api
-webapp: grunt dev-no-npm
+webapp: grunt dev-webapp-no-npm
 sentinel: grunt dev-sentinel

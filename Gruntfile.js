@@ -593,9 +593,9 @@ module.exports = function(grunt) {
   ]);
 
   // Dev tasks
-  grunt.registerTask('dev', 'Build and deploy for dev', [
+  grunt.registerTask('dev-webapp', 'Build and deploy the webapp for dev', [
     'mmnpm',
-    'dev-no-npm'
+    'dev-webapp-no-npm'
   ]);
 
   grunt.registerTask('precommit', 'Static analysis checks', [
@@ -604,7 +604,7 @@ module.exports = function(grunt) {
     'exec:blankLinkCheck',
   ]);
 
-  grunt.registerTask('dev-no-npm', 'Build and deploy for dev, without reinstalling dependencies.', [
+  grunt.registerTask('dev-webapp-no-npm', 'Build and deploy the webapp for dev, without reinstalling dependencies.', [
     'build',
     'deploy',
     'watch'
@@ -618,7 +618,7 @@ module.exports = function(grunt) {
     'exec:sentinelDev'
   ]);
 
-  grunt.registerTask('default', 'Build and deploy for dev', [
-    'dev'
+  grunt.registerTask('default', 'Build and deploy the webapp for dev', [
+    'dev-webapp'
   ]);
 };
