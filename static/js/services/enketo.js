@@ -215,7 +215,7 @@ angular.module('inboxServices').service('Enketo',
             };
           } catch (e) {
             $log.error('Error while converting app_summary.contact_summary.context to xml.');
-            throw new Error('ContactSummary context is misconfigured');
+            throw new Error('contact_summary context is misconfigured');
           }
         });
     };
