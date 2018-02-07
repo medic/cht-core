@@ -38,7 +38,6 @@
   require('./format-data-record');
   require('./format-date');
   require('./generate-lucene-query');
-  require('./generate-search-requests');
   require('./geolocation');
   require('./get-contact-summaries');
   require('./get-data-records');
