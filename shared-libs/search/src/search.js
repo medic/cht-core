@@ -70,18 +70,20 @@ module.exports = function(Promise, DB) {
   };
 
   return function(type, filters, options) {
-    options = options || {};
-    _.defaults(options, {
-      limit: 50,
-      skip: 0
-    });
-
-    var requests = GenerateSearchRequests.generate(type, filters);
-
-    return getRows(type, requests, options)
-      .then(function(results) {
-        return _.pluck(results, 'id');
+    return Promise.resolve().then(function() {
+      options = options || {};
+      _.defaults(options, {
+        limit: 50,
+        skip: 0
       });
+
+      var requests = GenerateSearchRequests.generate(type, filters);
+
+      return getRows(type, requests, options)
+        .then(function(results) {
+          return _.pluck(results, 'id');
+        });
+    });
   };
 };
 

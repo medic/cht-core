@@ -32,6 +32,7 @@ var _ = require('underscore'),
     monthlyRegistrations = require('./controllers/monthly-registrations'),
     monthlyDeliveries = require('./controllers/monthly-deliveries'),
     exportData = require('./controllers/export-data'),
+    exportData2 = require('./controllers/export-data-2'),
     messages = require('./controllers/messages'),
     records = require('./controllers/records'),
     forms = require('./controllers/forms'),
@@ -367,6 +368,31 @@ app.all([
         res.send(exportDataResult);
       }
     });
+  });
+});
+
+// TODO: consider security of this new api
+//       How do we check to make sure people aren't passing search requests
+app.postJson('/api/v2/export/:type', (req, res) => {
+  const type = req.params.type,
+        filters = req.body.filters,
+        options = req.body.options;
+
+  auth.check(req, getExportPermission(req.params.type), null, function(err, ctx) {
+    // TODO: determine root of search:
+    //  - If they are online then it's normal
+    //  - If they are offline it's scoped to their facility
+
+    // TODO: support streaming, presumably by passing the response down? Or
+    // changing the api to return some kind of streaming thing?
+
+    exportData2.export(type, filters, options).pipe(res);
+      // .then(results => {
+      //   res.json(results);
+      // })
+      // .catch(err => {
+      //   return serverUtils.error(err, req, res);
+      // });
   });
 });
 
