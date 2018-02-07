@@ -449,7 +449,7 @@ describe('Enketo service', function() {
           done(new Error('Should throw error'));
         })
         .catch(function(err) {
-          chai.expect(err.message).to.equal('ContactSummary context is misconfigured');
+          chai.expect(err.message).to.equal('contact_summary context is misconfigured');
           done();
         });
     });
@@ -488,7 +488,7 @@ describe('Enketo service', function() {
           done(new Error('Should throw error'));
         })
         .catch(function(err) {
-          chai.expect(err.message).to.equal('ContactSummary context is misconfigured');
+          chai.expect(err.message).to.equal('contact_summary context is misconfigured');
           done();
         });
     });
