@@ -17,7 +17,7 @@ exports.tearDown = function (callback) {
   callback();
 };
 
-exports['allows "can_access_directly" users direct access'] = function(test) {
+exports['allows "admin" and "national_admin" users direct access'] = function(test) {
   test.expect(2);
 
   var testReq = { query:{} };
@@ -25,7 +25,7 @@ exports['allows "can_access_directly" users direct access'] = function(test) {
 
   var userCtx = 'fake userCtx';
   sinon.stub(auth, 'getUserCtx').callsArgWith(1, null, userCtx);
-  sinon.stub(auth, 'hasAllPermissions').callsFake(function() { return true; });
+  sinon.stub(auth, 'isAdmin').returns(true);
 
   var proxy = {web: function(req, res) {
     test.equals(req, testReq);
@@ -58,6 +58,7 @@ exports['filters the changes to relevant ones'] = function(test) {
   };
 
   sinon.stub(auth, 'getUserCtx').callsArgWith(1, null, userCtx);
+  sinon.stub(auth, 'isAdmin').returns(false);
   sinon.stub(auth, 'hasAllPermissions').returns(false);
   sinon.stub(auth, 'getFacilityId').callsArgWith(2, null, 'facilityId');
   sinon.stub(auth, 'getContactId').callsArgWith(1, null, 'contactId');
@@ -152,9 +153,8 @@ exports['allows unallocated access when it is configured and the user has permis
   var subjectId = 'zyx';
 
   sinon.stub(auth, 'getUserCtx').callsArgWith(1, null, userCtx);
-  var hasAllPermissions = sinon.stub(auth, 'hasAllPermissions');
-  hasAllPermissions.withArgs(userCtx, 'can_access_directly').returns(false);
-  hasAllPermissions.withArgs(userCtx, 'can_view_unallocated_data_records').returns(true);
+  sinon.stub(auth, 'isAdmin').returns(false);
+  sinon.stub(auth, 'hasAllPermissions').returns(true);
   sinon.stub(auth, 'getFacilityId').callsArgWith(2, null, 'facilityId');
   sinon.stub(auth, 'getContactId').callsArgWith(1, null, 'contactId');
   sinon.stub(config, 'get').returns(true);
@@ -227,8 +227,7 @@ exports['respects replication depth when it is configured and the user has permi
   var subjectId = 'zyx';
 
   sinon.stub(auth, 'getUserCtx').callsArgWith(1, null, userCtx);
-  var hasAllPermissions = sinon.stub(auth, 'hasAllPermissions');
-  hasAllPermissions.withArgs(userCtx, 'can_access_directly').returns(false);
+  sinon.stub(auth, 'isAdmin').returns(false);
   sinon.stub(auth, 'getFacilityId').callsArgWith(2, null, 'facilityId');
   sinon.stub(auth, 'getContactId').callsArgWith(1, null, 'contactId');
   var get = sinon.stub(config, 'get');
@@ -298,8 +297,7 @@ exports['correctly handles depth of 0'] = function(test) {
   var subjectId = 'zyx';
 
   sinon.stub(auth, 'getUserCtx').callsArgWith(1, null, userCtx);
-  var hasAllPermissions = sinon.stub(auth, 'hasAllPermissions');
-  hasAllPermissions.withArgs(userCtx, 'can_access_directly').returns(false);
+  sinon.stub(auth, 'isAdmin').returns(false);
   sinon.stub(auth, 'getFacilityId').callsArgWith(2, null, 'facilityId');
   sinon.stub(auth, 'getContactId').callsArgWith(1, null, 'contactId');
   var get = sinon.stub(config, 'get');
@@ -365,8 +363,7 @@ exports['no configured depth defaults to Ininite depth'] = function(test) {
   var subjectId = 'zyx';
 
   sinon.stub(auth, 'getUserCtx').callsArgWith(1, null, userCtx);
-  var hasAllPermissions = sinon.stub(auth, 'hasAllPermissions');
-  hasAllPermissions.withArgs(userCtx, 'can_access_directly').returns(false);
+  sinon.stub(auth, 'isAdmin').returns(false);
   sinon.stub(auth, 'getFacilityId').callsArgWith(2, null, 'facilityId');
   sinon.stub(auth, 'getContactId').callsArgWith(1, null, 'contactId');
   var get = sinon.stub(config, 'get');
@@ -432,8 +429,7 @@ exports['no roles (eg: admin) defaults to Ininite depth'] = function(test) {
   var subjectId = 'zyx';
 
   sinon.stub(auth, 'getUserCtx').callsArgWith(1, null, userCtx);
-  var hasAllPermissions = sinon.stub(auth, 'hasAllPermissions');
-  hasAllPermissions.withArgs(userCtx, 'can_access_directly').returns(false);
+  sinon.stub(auth, 'isAdmin').returns(false);
   sinon.stub(auth, 'getFacilityId').callsArgWith(2, null, 'facilityId');
   sinon.stub(auth, 'getContactId').callsArgWith(1, null, 'contactId');
   var get = sinon.stub(config, 'get');
@@ -499,8 +495,7 @@ exports['does not return reports about you or your place by someone above you in
   var contactId = 'wsa';
 
   sinon.stub(auth, 'getUserCtx').callsArgWith(1, null, userCtx);
-  var hasAllPermissions = sinon.stub(auth, 'hasAllPermissions');
-  hasAllPermissions.withArgs(userCtx, 'can_access_directly').returns(false);
+  sinon.stub(auth, 'isAdmin').returns(false);
   sinon.stub(auth, 'getFacilityId').callsArgWith(2, null, facilityId);
   sinon.stub(auth, 'getContactId').callsArgWith(1, null, contactId);
   var get = sinon.stub(config, 'get');
@@ -577,6 +572,7 @@ exports['filters out undeleted docs they are not allowed to see'] = function(tes
   };
 
   sinon.stub(auth, 'getUserCtx').callsArgWith(1, null, userCtx);
+  sinon.stub(auth, 'isAdmin').returns(false);
   sinon.stub(auth, 'hasAllPermissions').returns(false);
   sinon.stub(auth, 'getFacilityId').callsArgWith(2, null, 'facilityId');
   sinon.stub(auth, 'getContactId').callsArgWith(1, null, 'contactId');
@@ -643,6 +639,7 @@ exports['updates the feed when the doc is updated'] = function(test) {
   };
 
   sinon.stub(auth, 'getUserCtx').callsArgWith(1, null, userCtx);
+  sinon.stub(auth, 'isAdmin').returns(false);
   sinon.stub(auth, 'hasAllPermissions').returns(false);
   sinon.stub(auth, 'getFacilityId').callsArgWith(2, null, 'facilityId');
   sinon.stub(auth, 'getContactId').callsArgWith(1, null, 'contactId');
@@ -742,6 +739,7 @@ exports['replicates new docs to relevant feeds'] = function(test) {
   sinon.stub(auth, 'getUserCtx')
     .onCall(0).callsArgWith(1, null, userCtx1)
     .onCall(1).callsArgWith(1, null, userCtx2);
+  sinon.stub(auth, 'isAdmin').returns(false);
   sinon.stub(auth, 'hasAllPermissions').returns(false);
   var getFacilityId = sinon.stub(auth, 'getFacilityId');
   getFacilityId.onCall(0).callsArgWith(2, null, 'a');
@@ -887,6 +885,7 @@ exports['cleans up when the client connection is closed - #2476'] = function(tes
   };
 
   sinon.stub(auth, 'getUserCtx').callsArgWith(1, null, userCtx);
+  sinon.stub(auth, 'isAdmin').returns(false);
   sinon.stub(auth, 'hasAllPermissions').returns(false);
   sinon.stub(auth, 'getFacilityId').callsArgWith(2, null, 'facilityId');
   sinon.stub(auth, 'getContactId').callsArgWith(1, null, 'contactId');
@@ -943,6 +942,7 @@ exports['makes multiple requests when you can see more than 100 docs - #3508'] =
   };
 
   sinon.stub(auth, 'getUserCtx').callsArgWith(1, null, userCtx);
+  sinon.stub(auth, 'isAdmin').returns(false);
   sinon.stub(auth, 'hasAllPermissions').returns(false);
   sinon.stub(auth, 'getFacilityId').callsArgWith(2, null, 'facilityId');
   sinon.stub(auth, 'getContactId').callsArgWith(1, null, 'contactId');
@@ -1033,6 +1033,7 @@ exports['test sorting by couchdb 2 sequence style'] = test => {
   };
 
   sinon.stub(auth, 'getUserCtx').callsArgWith(1, null, userCtx);
+  sinon.stub(auth, 'isAdmin').returns(false);
   sinon.stub(auth, 'hasAllPermissions').returns(false);
   sinon.stub(auth, 'getFacilityId').callsArgWith(2, null, 'facilityId');
   sinon.stub(auth, 'getContactId').callsArgWith(1, null, 'contactId');

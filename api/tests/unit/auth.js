@@ -190,3 +190,11 @@ exports['checkUrl requests the given url and returns status'] = function(test) {
     test.done();
   });
 };
+
+exports['isAdmin checks for "admin" and "national_admin" roles'] = function(test) {
+  test.expect(3);
+  test.equal(auth.isAdmin({ roles: ['_admin'] }), true);
+  test.equal(auth.isAdmin({ roles: ['national_admin'] }), true);
+  test.equal(auth.isAdmin({ roles: ['district_admin'] }), false);
+  test.done();
+};

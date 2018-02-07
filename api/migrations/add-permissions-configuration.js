@@ -44,12 +44,6 @@ var DEFAULT_PERMISSIONS = [
     ]
   },
   {
-    name: 'can_access_directly',
-    roles: [
-      'national_admin'
-    ]
-  },
-  {
     name: 'can_view_analytics',
     roles: [
       'national_admin',

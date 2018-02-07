@@ -1,6 +1,6 @@
 var _ = require('underscore');
 
-angular.module('inboxControllers').controller('MessagesCtrl', 
+angular.module('inboxControllers').controller('MessagesCtrl',
   function (
     $log,
     $scope,

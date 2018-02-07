@@ -82,7 +82,6 @@ describe('ReportsCtrl controller', () => {
         'Search': Search,
         'SearchFilters': () => {},
         'Settings': KarmaUtils.nullPromise(),
-        'Session': {isAdmin: () => {}},
         'Tour': () => {},
         'UpdateFacility': {},
         'UserDistrict': UserDistrict,

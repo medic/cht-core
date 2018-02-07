@@ -447,7 +447,7 @@ module.exports = {
         res.setHeader('X-Accel-Buffering', 'no');
       }
 
-      if (auth.hasAllPermissions(userCtx, 'can_access_directly')) {
+      if (auth.isAdmin(userCtx)) {
         proxy.web(req, res);
       } else {
         var feed = {
