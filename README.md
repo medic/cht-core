@@ -165,7 +165,7 @@ Then run
 ```
 npm start
 ```
-which should start the webapp, api, and sentinel, and watch for changes in each app.
+which will start the webapp, api, and sentinel, and watch for changes in each app.
 
 ### Deploy apps individually
 If `npm start` is not to your taste for whatever reason, the apps can be deployed individually.
