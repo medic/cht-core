@@ -1,6 +1,7 @@
 var _ = require('underscore'),
     async = require('async'),
     bodyParser = require('body-parser'),
+    domain = require('domain');
     express = require('express'),
     morgan = require('morgan'),
     moment = require('moment'),
@@ -383,16 +384,13 @@ app.postJson('/api/v2/export/:type', (req, res) => {
     //  - If they are online then it's normal
     //  - If they are offline it's scoped to their facility
 
-    // TODO: support streaming, presumably by passing the response down? Or
-    // changing the api to return some kind of streaming thing?
-
-    exportData2.export(type, filters, options).pipe(res);
-      // .then(results => {
-      //   res.json(results);
-      // })
-      // .catch(err => {
-      //   return serverUtils.error(err, req, res);
-      // });
+    // TODO: pipe through a zip creation?
+    const d = domain.create();
+    d.on('error', err => serverUtils.error(err, req, res));
+    d.run(() =>
+      exportData2
+        .export(type, filters, options)
+        .pipe(res));
   });
 });
 

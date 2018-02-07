@@ -7,7 +7,7 @@ const db = new PouchDB(process.env.COUCH_URL);
 const { Readable } = require('stream'),
       search = require('search')(Promise, db);
 
-const BATCH = 1000;
+const SEARCH_BATCH = 1000;
 
 class SearchResultReader extends Readable {
 
@@ -18,25 +18,33 @@ class SearchResultReader extends Readable {
     this.filters = filters;
     this.options = searchOptions;
 
-    this.more = true;
+    // TODO: do we want people to be able to specify this externally?
+    //       Skip doesn't make any sense, but being able to define your own
+    //       batch size might be useful for debugging / getting out of sticky
+    //       situations in prod
+    this.options.skip = 0;
+    this.options.limit = SEARCH_BATCH;
+
+    this.tempRound = 10;
   }
 
   _read() {
-    if (!this.more) {
-      return this.push(null);
-    }
-
-    this.more = false;
     search(this.type, this.filters, this.options)
       .then(ids => {
-        console.log('IDS', JSON.stringify(ids, null, 2));
+        if (!ids.length || this.tempRound === 0) {
+          return this.push(null);
+        }
 
-        // TODO: write this so we stream the ids back in BATCH amounts
+        this.tempRound -= 1;
+        this.options.skip += SEARCH_BATCH;
+
+        // TODO: determine CSV mapper:
+        //       Contacts - fn to run over each batch
+        //       Reports - needs bootup fn to work out what rows are required,
+        //         which in turn returns a fn to run over each batch
         // TODO: resolve into documents
         // TODO: convert into a CSV
-        // TODO: stream the above process, including searching in pages
-        // TODO: pipe through a zip creation?
-        this.push(JSON.stringify(ids, null, 2));
+        this.push(ids.join('\n') + '\n');
       })
       .catch(err => {
         process.nextTick(() => this.emit('error', err));
