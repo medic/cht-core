@@ -62,6 +62,7 @@ form {
   display: none;
 }
 .loading .loader,
+.loginoffline .error.offline,
 .loginincorrect .error.incorrect,
 .loginerror .error.unknown {
   display: block;
