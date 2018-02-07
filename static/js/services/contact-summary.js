@@ -34,7 +34,7 @@ angular.module('inboxServices').service('ContactSummary',
     };
 
     var applyFilter = function(field) {
-      if (field.filter) {
+      if (field && field.filter) {
         try {
           field.value = $filter(field.filter)(field.value);
         } catch(e) {
@@ -45,14 +45,16 @@ angular.module('inboxServices').service('ContactSummary',
 
     var applyFilters = function(summary) {
       $log.debug('contact summary eval result', summary);
-      
+
       summary = summary || {};
-      summary.fields = summary.fields || [];
-      summary.cards = summary.cards || [];
+      summary.fields = (summary.fields && Array.isArray(summary.fields)) ? summary.fields : [];
+      summary.cards = (summary.cards && Array.isArray(summary.cards)) ? summary.cards : [];
 
       summary.fields.forEach(applyFilter);
       summary.cards.forEach(function(card) {
-        card.fields.forEach(applyFilter);
+        if (card && card.fields && Array.isArray(card.fields)) {
+          card.fields.forEach(applyFilter);
+        }
       });
       return summary;
     };

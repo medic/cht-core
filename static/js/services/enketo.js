@@ -207,10 +207,16 @@ angular.module('inboxServices').service('Enketo',
           if (!summary) {
             return;
           }
-          return {
-            id: 'contact-summary',
-            xmlStr: json2xml({ context: summary.context })
-          };
+
+          try {
+            return {
+              id: 'contact-summary',
+              xmlStr: json2xml({ context: summary.context })
+            };
+          } catch (e) {
+            $log.error('Error while converting app_summary.contact_summary.context to xml.');
+            throw new Error('contact_summary context is misconfigured');
+          }
         });
     };
 
