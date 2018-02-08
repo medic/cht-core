@@ -73,14 +73,20 @@ describe('Contacts controller', () => {
 
       return $controller('ContactsCtrl', {
         '$element': sinon.stub(),
-        '$scope': scope,
-        '$rootScope': $rootScope,
         '$log': { error: sinon.stub() },
         '$q': Q,
+        '$scope': scope,
         '$state': { includes: sinon.stub() },
         '$timeout': work => work(),
         '$translate': $translate,
+        'Changes': () => {
+          return { unsubscribe: () => {} };
+        },
         'ContactSchema': contactSchema,
+        'ContactSummary': () => {
+          return Promise.resolve({});
+        },
+        'Export': () => {},
         'GetDataRecords': getDataRecords,
         'LiveList': { contacts: contactsLiveList },
         'Search': searchService,
@@ -88,17 +94,11 @@ describe('Contacts controller', () => {
         'Session': {
           isAdmin: () => { return isAdmin; }
         },
-        'UserSettings': userSettings,
-        'XmlForms': xmlForms,
-        'ContactSummary': () => {
-          return Promise.resolve({});
-        },
-        'Changes': () => {
-          return { unsubscribe: () => {} };
-        },
+        'Simprints': { enabled: () => false },
         'Tour': () => {},
-        'Export': () => {},
-        'TranslateFrom': key => `TranslateFrom:${key}`
+        'TranslateFrom': key => `TranslateFrom:${key}`,
+        'UserSettings': userSettings,
+        'XmlForms': xmlForms
       });
     };
   }));

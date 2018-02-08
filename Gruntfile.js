@@ -104,9 +104,7 @@ module.exports = function(grunt) {
         ignores: [
           'static/js/modules/xpath-element-path.js',
           'tests/karma/q.js',
-          'node_modules/**',
-          'api/node_modules/**',
-          'sentinel/node_modules/**',
+          '**/node_modules/**',
           'sentinel/lib/pupil/**',
         ]
       },
@@ -118,6 +116,7 @@ module.exports = function(grunt) {
         'lib/**/*.js',
         'api/**/*.js',
         'sentinel/**/*.js',
+        'shared-libs/**/*.js',
       ]
     },
     less: {
@@ -267,6 +266,13 @@ module.exports = function(grunt) {
           }).join(' & ');
         }
       },
+      sharedLibUnit: {
+        cmd:  function() {
+          // When we have more than one sharedLib we can make this code iterate
+          // through the libs and execute the ones that have npm test
+          return 'cd shared-libs/search && npm install && npm test';
+        }
+      },
       // To monkey patch a library...
       // 1. copy the file you want to change
       // 2. make the changes
@@ -309,7 +315,7 @@ module.exports = function(grunt) {
         tasks: ['mmcss', 'appcache', 'deploy']
       },
       js: {
-        files: ['templates/**/*', 'static/js/**/*', 'packages/kujua-*/**/*', 'packages/libphonenumber/**/*'],
+        files: ['templates/**/*', 'static/js/**/*', 'packages/kujua-*/**/*', 'packages/libphonenumber/**/*', 'shared-libs/**'],
         tasks: ['mmjs', 'appcache', 'deploy']
       },
       other: {
@@ -542,6 +548,7 @@ module.exports = function(grunt) {
   grunt.registerTask('unit', 'Lint and unit tests', [
     'jshint',
     'karma:unit',
+    'exec:sharedLibUnit',
     'env:test',
     'nodeunit',
     'mochaTest:unit',
