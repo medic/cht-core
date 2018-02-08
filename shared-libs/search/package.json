@@ -4,7 +4,7 @@
   "description": "Our implemenation of search using (C|P)ouchDB views.",
   "main": "src/search.js",
   "scripts": {
-    "test": "./node_modules/.bin/mocha ./test"
+    "test": "mocha ./test"
   },
   "author": "",
   "license": "Apache-2.0",
