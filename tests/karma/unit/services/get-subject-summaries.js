@@ -126,8 +126,8 @@ describe('GetSubjectSummaries service', () => {
       chai.expect(actual[1]).to.deep.equal({
         form: 'a',
         subject: {
-          type: 'helen',
-          value: 'tom'
+          type: 'name',
+          value: 'helen'
         },
         valid_subject: true
       });
@@ -249,9 +249,9 @@ describe('GetSubjectSummaries service', () => {
         valid_subject: true
       });
 
-      chai.expect(actual[0]).to.deep.equal({
+      chai.expect(actual[1]).to.deep.equal({
         form: 'a',
-        contact: 'helen',
+        from: 'helen',
         subject: {
           value: 'helen'
         },
