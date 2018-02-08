@@ -15,7 +15,6 @@
     "express": "^4.16.2",
     "fast-csv": "^2.4.1",
     "follow": "^1.0.0",
-    "hello-world": "../shared-libs/hello-world",
     "http-proxy": "^1.11.1",
     "jszip": "^3.1.4",
     "lucene-query-generator": "^0.2.0",
