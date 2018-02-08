@@ -90,6 +90,7 @@
     "karma-ng-html2js-preprocessor": "^1.0.0",
     "karma-spec-reporter": "0.0.31",
     "mocha": "^4.0.1",
+    "nodemon": "^1.14.12",
     "pouchdb-adapter-http": "^6.4.3",
     "pouchdb-core": "^6.4.3",
     "protractor-jasmine2-screenshot-reporter": "^0.5.0",
