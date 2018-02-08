@@ -548,10 +548,10 @@ module.exports = function(grunt) {
   grunt.registerTask('unit', 'Lint and unit tests', [
     'jshint',
     'karma:unit',
+    'exec:sharedLibUnit',
     'env:test',
     'nodeunit',
     'mochaTest:unit',
-    'exec:sharedLibUnit',
     'env:dev',
   ]);
 
