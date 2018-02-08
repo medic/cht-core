@@ -10,6 +10,6 @@
 #
 # Alternatively, these values can be set as normal environment variables.
 
-api: cd api && node server.js
+api: cd api && node server.js --allow-cors
 webapp: grunt dev-no-npm
 sentinel: cd sentinel && node server.js

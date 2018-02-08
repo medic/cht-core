@@ -95,6 +95,18 @@ app.use(function(req, res, next) {
 // TODO: investigate blocking writes to _users from the outside. Reads maybe as well, though may be harder
 //       https://github.com/medic/medic-webapp/issues/4089
 
+// When testing random stuff in-browser, it can be useful to access the database
+// from different domains (e.g. localhost:5988 vs localhost:8080).  Adding the
+// --allow-cors commandline switch will enable this from within a web browser.
+if(process.argv.slice(2).includes('--allow-cors')) {
+  app.use((req, res, next) => {
+    res.setHeader('Access-Control-Allow-Origin', req.headers.origin || req.headers.host);
+    res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, OPTIONS, HEAD, DELETE');
+    res.setHeader('Access-Control-Allow-Credentials', 'true');
+    next();
+  });
+}
+
 app.get('/', function(req, res) {
   if (req.headers.accept === 'application/json') {
     // couchdb request - let it go
