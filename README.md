@@ -172,7 +172,7 @@ If `npm start` is not to your taste for whatever reason, the apps can be deploye
 
 #### Deploy the webapp
 
-`grunt dev` will build and deploy the webapp, then watch for changes and redeploy when necessary.
+`grunt dev-webapp` will build and deploy the webapp, then watch for changes and redeploy when necessary.
 
 #### Start medic-sentinel
 
