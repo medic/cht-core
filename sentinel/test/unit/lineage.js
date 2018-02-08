@@ -565,8 +565,7 @@ exports['hydrateDocs binds contacts and parents'] = test => {
     test.equals(hydratedReport.contact.parent.contact.name, report_parentContact.name);
     test.equals(hydratedReport.contact.parent.parent.name, report_grandparent.name);
     test.equals(hydratedReport.contact.parent.parent.contact.name, report_grandparentContact.name);
-    // TODO: https://github.com/medic/medic-webapp/issues/4003
-    // test.equals(hydratedReport.patient._id, report_patient._id);
+    test.equals(hydratedReport.patient._id, report_patient._id);
 
     test.equals(hydratedPlace.contact.name, place_contact.name);
     test.equals(hydratedPlace.parent.name, place_parent.name);
@@ -653,4 +652,3 @@ exports['hydrateDocs ignores db-fetch errors'] = test => {
   }).catch(test.done);
 
 };
-

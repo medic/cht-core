@@ -2,6 +2,52 @@ const _ = require('underscore'),
     db = require('../db'),
     utils = require('./utils');
 
+const fetchPatientLineage = record => {
+  const patientId = findPatientId(record);
+  if(!patientId) {
+    return Promise.resolve([]);
+  }
+  return patientLineageByShortcode(patientId);
+};
+
+const mergeLineages = (lineage, patientLineage) => {
+  const lineages = lineage.concat(patientLineage);
+  const contactIds = _.uniq(
+    lineages
+      .map(doc => doc && doc.contact && doc.contact._id)
+      .filter(id => !!id)
+  );
+
+  // Only fetch docs that are new to us
+  const lineageContacts = [],
+        contactsToFetch = [];
+  contactIds.forEach(id => {
+    const contact = lineage.find(d => d && d._id === id);
+    if (contact) {
+      lineageContacts.push(contact);
+    } else {
+      contactsToFetch.push(id);
+    }
+  });
+
+  return fetchDocs(contactsToFetch)
+    .then(fetchedContacts => {
+      const allContacts = lineageContacts.concat(fetchedContacts);
+      fillContactsInDocs(lineages, allContacts);
+
+      const doc = lineage.shift();
+      buildHydratedDoc(doc, lineage);
+
+      if (patientLineage.length) {
+        const patientDoc = patientLineage.shift();
+        buildHydratedDoc(patientDoc, patientLineage);
+        doc.patient = patientDoc;
+      }
+
+      return doc;
+    });
+};
+
 const findPatientId = doc =>
   doc.type === 'data_record' &&
   ((doc.fields && doc.fields.patient_id) || doc.patient_id);
@@ -75,6 +121,7 @@ const lineageById = id =>
       }
     }));
 
+
 const fetchHydratedDoc = id =>
   lineageById(id).then(lineage => {
     if (lineage.length === 0) {
@@ -89,47 +136,8 @@ const fetchHydratedDoc = id =>
           }));
     }
 
-    const patientId = findPatientId(lineage[0]);
-    const patientLineagePromise =
-      patientId ? patientLineageByShortcode(patientId) : Promise.resolve([]);
-
-    return patientLineagePromise.then(patientLineage => {
-      const lineages = lineage.concat(patientLineage);
-
-      const contactIds = _.uniq(
-        lineages
-          .map(doc => doc && doc.contact && doc.contact._id)
-          .filter(id => !!id)
-      );
-
-      // Only fetch docs that are new to us
-      const lineageContacts = [],
-            contactsToFetch = [];
-      contactIds.forEach(id => {
-        const contact = lineage.find(d => d && d._id === id);
-        if (contact) {
-          lineageContacts.push(contact);
-        } else {
-          contactsToFetch.push(id);
-        }
-      });
-
-      return fetchDocs(contactsToFetch)
-        .then(fetchedContacts => {
-          const allContacts = lineageContacts.concat(fetchedContacts);
-          fillContactsInDocs(lineages, allContacts);
-
-          const doc = lineage.shift();
-          buildHydratedDoc(doc, lineage);
-
-          if (patientLineage.length) {
-            const patientDoc = patientLineage.shift();
-            buildHydratedDoc(patientDoc, patientLineage);
-            doc.patient = patientDoc;
-          }
-
-          return doc;
-        });
+    return fetchPatientLineage(lineage[0]).then(patientLineage => {
+      return mergeLineages(lineage, patientLineage);
     });
   });
 
@@ -235,6 +243,29 @@ const hydrateLeafContacts = (docs, contacts) => {
   return docs;
 };
 
+const hydratePatient = doc => {
+  return fetchPatientLineage(doc)
+      .then(patientLineage => {
+        if (patientLineage.length) {
+          const patientDoc = patientLineage.shift();
+          buildHydratedDoc(patientDoc, patientLineage);
+          doc.patient = patientDoc;
+        }
+        return doc;
+      });
+};
+
+const hydratePatients = docs => {
+  return new Promise(resolve => {
+    let promises = [];
+    docs.forEach(doc => {
+      promises.push(hydratePatient(doc));
+    });
+    return Promise.all(promises)
+      .then(resolve(docs));
+  });
+};
+
 const hydrateDocs = docs => {
   if (!docs.length) {
     return Promise.resolve([]);
@@ -248,7 +279,7 @@ const hydrateDocs = docs => {
     })
     .then(contacts => {
       hydrateLeafContacts(hydratedDocs, contacts);
-      return hydratedDocs;
+      return hydratePatients(hydratedDocs);
     });
 };
 
