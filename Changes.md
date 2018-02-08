@@ -14,6 +14,7 @@
 ### Bug fixes
 
 - [#1359](https://github.com/medic/medic-webapp/issues/1359): Helpful error message not shown if no contact associated with current user when trying to submit a report.
+- [#4144](https://github.com/medic/medic-webapp/issues/4144): Remove `can_access_directly` permission.
 
 ### UI/UX Improvements
 
