@@ -25,7 +25,7 @@ describe('GetSubjectSummaries service', () => {
     });
   });
 
-  it('does nothing when input has no `subject` (not a report)', () => {
+  it('does nothing when input has no `form` (not a report)', () => {
     const given = [
       { id: 'a', type: 'person' }
     ];
@@ -39,8 +39,8 @@ describe('GetSubjectSummaries service', () => {
 
   it('does nothing when summaries not found', () => {
     const given = [
-      { subject: { type: 'patient_id', value: '12345' } },
-      { subject: { type: 'uuid', value: 'a' } }
+      { form: 'a', subject: { type: 'reference', value: '12345' } },
+      { form: 'a', subject: { type: 'id', value: 'a' } }
     ];
 
     query.returns(Promise.resolve({ rows: [] }));
@@ -49,11 +49,11 @@ describe('GetSubjectSummaries service', () => {
     });
   });
 
-  it('replaces `patient_ids` with `uuids`', () => {
+  it('replaces `references` with `ids`', () => {
     const given = [
-      { subject: { type: 'patient_id', value: '12345' } },
-      { subject: { type: 'patient_id', value: '67890' } },
-      { subject: { type: 'patient_id', value: '11111' } }
+      { form: 'a', subject: { type: 'reference', value: '12345' } },
+      { form: 'a', subject: { type: 'reference', value: '67890' } },
+      { form: 'a', subject: { type: 'reference', value: '11111' } }
     ];
 
     const contactReferences = [
@@ -69,6 +69,7 @@ describe('GetSubjectSummaries service', () => {
       .returns(Promise.resolve({ rows: [] }));
 
     return service(given).then(actual => {
+      console.log(JSON.stringify(actual));
       chai.expect(actual[0].subject.value).to.equal('a');
       chai.expect(actual[1].subject.value).to.equal('b');
       chai.expect(actual[2].subject.value).to.equal('11111');
@@ -79,11 +80,11 @@ describe('GetSubjectSummaries service', () => {
     });
   });
 
-  it('replaces `uuids` with names', () => {
+  it('replaces `id` with names', () => {
     const given = [
-      { subject: { type: 'uuid', value: 'a' } },
-      { subject: { type: 'uuid', value: 'b' } },
-      { subject: { type: 'uuid', value: 'c' } }
+      { form: 'a', subject: { type: 'id', value: 'a' } },
+      { form: 'a', subject: { type: 'id', value: 'b' } },
+      { form: 'a', subject: { type: 'id', value: 'c' } }
     ];
 
     const summaries = [
@@ -96,7 +97,7 @@ describe('GetSubjectSummaries service', () => {
       chai.expect(actual[0].subject.value).to.equal('tom');
       chai.expect(actual[1].subject.value).to.equal('helen');
       chai.expect(actual[2].subject.value).to.equal('c');
-      chai.expect(actual[2].subject.type).to.equal('uuid');
+      chai.expect(actual[2].subject.type).to.equal('id');
       chai.expect(actual[0].valid_subject).to.equal(true);
       chai.expect(actual[1].valid_subject).to.equal(true);
       chai.expect(actual[2].valid_subject).to.equal(false);
@@ -106,23 +107,23 @@ describe('GetSubjectSummaries service', () => {
 
   it('returns provided `patient_name`', () => {
     const given = [
-      { subject: { type: 'patient_name', value: 'tom' } },
+      { form: 'a', subject: { type: 'name', value: 'tom' } },
     ];
 
     query.returns(Promise.resolve({ rows: [] }));
     return service(given).then(actual => {
-      chai.expect(actual[0].subject).to.deep.equal({ type: 'patient_name', value: 'tom' });
+      chai.expect(actual[0].subject).to.deep.equal({ type: 'name', value: 'tom' });
       chai.expect(actual[0].valid_subject).to.equal(true);
       chai.expect(query.callCount).to.equal(0);
     });
   });
 
-  it('replaces `patient_ids` with `names`', () => {
+  it('replaces `references` with `names`', () => {
     const given = [
-      { subject: { type: 'patient_id', value: '12345' } },
-      { subject: { type: 'patient_id', value: '56789' } },
-      { subject: { type: 'patient_id', value: '00000' } },
-      { subject: { type: 'patient_id', value: '11111' } },
+      { form: 'a', subject: { type: 'reference', value: '12345' } },
+      { form: 'a', subject: { type: 'reference', value: '56789' } },
+      { form: 'a', subject: { type: 'reference', value: '00000' } },
+      { form: 'a', subject: { type: 'reference', value: '11111' } },
     ];
 
     const contactReferences = [
@@ -147,9 +148,9 @@ describe('GetSubjectSummaries service', () => {
       chai.expect(actual[0].subject.value).to.equal('tom');
       chai.expect(actual[1].subject.value).to.equal('helen');
       chai.expect(actual[2].subject.value).to.equal('c');
-      chai.expect(actual[2].subject.type).to.equal('uuid');
+      chai.expect(actual[2].subject.type).to.equal('id');
       chai.expect(actual[3].subject.value).to.equal('11111');
-      chai.expect(actual[3].subject.type).to.equal('patient_id');
+      chai.expect(actual[3].subject.type).to.equal('reference');
       chai.expect(actual[0].valid_subject).to.equal(true);
       chai.expect(actual[1].valid_subject).to.equal(true);
       chai.expect(actual[2].valid_subject).to.equal(false);
@@ -161,8 +162,8 @@ describe('GetSubjectSummaries service', () => {
 
   it('uses `contact.name` or `from` when subject is empty', () => {
     const given = [
-      { contact: 'tom', subject: {} },
-      { from: 'helen', subject: {} }
+      { form: 'a', contact: 'tom', subject: {} },
+      { form: 'a', from: 'helen', subject: {} }
     ];
 
     query.returns(Promise.resolve({ rows: [] }));
@@ -177,9 +178,9 @@ describe('GetSubjectSummaries service', () => {
 
   it('invalidates subject when info is missing', () => {
     const given = [
-      { contact: 'a', subject: { type: 'patient_id', value: null } },
-      { contact: 'b', subject: { type: 'patient_name', value: null } },
-      { contact: 'c', subject: { type: 'uuid', value: null } }
+      { form: 'a', contact: 'a', subject: { type: 'reference', value: null } },
+      { form: 'a', contact: 'b', subject: { type: 'name', value: null } },
+      { form: 'a', contact: 'c', subject: { type: 'id', value: null } }
     ];
 
     query.returns(Promise.resolve({ rows: [] }));

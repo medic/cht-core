@@ -15,16 +15,19 @@ function(doc) {
 
     if (doc.fields && doc.fields.hasOwnProperty('patient_uuid')) {
       subject.value = doc.fields.patient_uuid;
-      subject.type = 'uuid';
-    } else if (doc.fields && doc.fields.hasOwnProperty('place_id')) {
-      subject.value = doc.fields.place_id;
-      subject.type = 'uuid';
+      subject.type = 'id';
     } else if (doc.hasOwnProperty('patient_id') || (doc.fields && doc.fields.hasOwnProperty('patient_id'))) {
       subject.value = doc.patient_id || (doc.fields && doc.fields.patient_id);
-      subject.type = 'patient_id';
+      subject.type = 'reference';
+    } else if (doc.fields && doc.fields.hasOwnProperty('place_id')) {
+      subject.value = doc.fields.place_id;
+      subject.type = 'id';
+    } else if (doc.hasOwnProperty('place_id')) {
+      subject.value = doc.place_id;
+      subject.type = 'reference';
     } else if (doc.fields && doc.fields.hasOwnProperty('patient_name')) {
       subject.value = doc.fields.patient_name;
-      subject.type = 'patient_name';
+      subject.type = 'name';
     }
 
     return subject;

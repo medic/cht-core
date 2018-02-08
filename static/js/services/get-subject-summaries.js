@@ -9,26 +9,21 @@ angular.module('inboxServices').factory('GetSubjectSummaries',
     'use strict';
     'ngInject';
 
-    var findSubjectName = function(response, id) {
-      var parent = _.findWhere(response.rows, { id: id });
-      return (parent && parent.value && parent.value.name) || null;
-    };
-
-    var findSubjectUuid = function(response, id) {
+    var findSubjectId = function(response, id) {
       var parent = _.find(response.rows, function(row) {
         return id && row.key[1] === id.toString() || false;
       });
       return (parent && parent.id) || null;
     };
 
-    var replacePatientIdsWithUuids = function(summaries, response) {
+    var replaceReferencesWithIds = function(summaries, response) {
       summaries.forEach(function(summary) {
-        if (summary.subject.type === 'patient_id' && summary.subject.value) {
-          var result = findSubjectUuid(response, summary.subject.value);
-          if (result) {
+        if (summary.subject.type === 'reference' && summary.subject.value) {
+          var id = findSubjectId(response, summary.subject.value);
+          if (id) {
             summary.subject = {
-              value: result,
-              type: 'uuid'
+              value: id,
+              type: 'id'
             };
           }
         }
@@ -37,25 +32,29 @@ angular.module('inboxServices').factory('GetSubjectSummaries',
       return summaries;
     };
 
-    var replaceUuidsWithNames = function(summaries, response) {
+    var findSubjectName = function(response, id) {
+      var parent = _.findWhere(response.rows, { id: id });
+      return (parent && parent.value && parent.value.name) || null;
+    };
+
+    var replaceIdsWithNames = function(summaries, response) {
       summaries.forEach(function(summary) {
-        if (summary.subject.type === 'uuid' && summary.subject.value) {
-          var result = findSubjectName(response, summary.subject.value);
-          if (result) {
+        if (summary.subject && summary.subject.type === 'id' && summary.subject.value) {
+          var name = findSubjectName(response, summary.subject.value);
+          if (name) {
             summary.subject = {
-              value: result,
-              type: 'patient_name'
+              value: name,
+              type: 'name'
             };
           }
         }
       });
-
       return summaries;
     };
 
-    var processUuids = function(summaries) {
+    var processContactIds = function(summaries) {
       var ids = _.uniq(_.compact(_.flatten(summaries.map(function(summary) {
-        if (summary.subject && summary.subject.type === 'uuid') {
+        if (summary.subject && summary.subject.type === 'id') {
           return summary.subject.value;
         }
       }))));
@@ -67,52 +66,65 @@ angular.module('inboxServices').factory('GetSubjectSummaries',
       return DB()
         .query('medic-client/doc_summaries_by_id', { keys: ids })
         .then(function(response) {
-          return replaceUuidsWithNames(summaries, response);
+          return replaceIdsWithNames(summaries, response);
         });
     };
 
-    var processPatientIds = function(summaries) {
-      var patient_ids = _.uniq(_.compact(_.flatten(summaries.map(function(summary) {
-        if (summary.subject && summary.subject.type === 'patient_id') {
-          return summary.subject.value;
-        }
-      }))));
-
-      if (!patient_ids.length) {
-        return $q.resolve(summaries);
-      }
-
-      patient_ids.forEach(function(patient_id, key) {
-        patient_ids[key] = ['shortcode', patient_id];
-      });
-
-      return DB()
-        .query('medic-client/contacts_by_reference', { keys: patient_ids })
-        .then(function(response) {
-          return replacePatientIdsWithUuids(summaries, response);
-        });
-    };
 
     var validateSubjects = function(summaries) {
       summaries.forEach(function(summary) {
-        if (summary.subject) {
-          summary.valid_subject = true;
-          var subject = summary.subject;
+        if (!summary.subject) {
+          return;
+        }
 
-          if (!subject.type) {
-            summary.subject.value = summary.contact || summary.from;
-          } else if (subject.type !== 'patient_name' || !subject.value) {
-            summary.valid_subject = false;
-          }
+        summary.valid_subject = true;
+
+        if (!summary.subject.type) {
+          summary.subject.value = summary.contact || summary.from;
+        } else if (summary.subject.type !== 'name' || !summary.subject.value) {
+          summary.valid_subject = false;
         }
       });
 
       return summaries;
     };
 
+    var processReferences = function(summaries) {
+      var references = _.uniq(_.compact(_.flatten(summaries.map(function(summary) {
+        if (summary.subject && summary.subject.type === 'reference') {
+          return summary.subject.value;
+        }
+      }))));
+
+      if (!references.length) {
+        return $q.resolve(summaries);
+      }
+
+      references.forEach(function(reference, key) {
+        references[key] = ['shortcode', reference];
+      });
+
+      return DB()
+        .query('medic-client/contacts_by_reference', { keys: references })
+        .then(function(response) {
+          return replaceReferencesWithIds(summaries, response);
+        });
+    };
+
     return function(summaries) {
-      return processPatientIds(summaries)
-        .then(processUuids)
+      var containsReports = false;
+      summaries.forEach(function (summary) {
+        if (summary.form) {
+          containsReports = true;
+        }
+      });
+
+      if (!containsReports) {
+        return $q.resolve(summaries);
+      }
+
+      return processReferences(summaries)
+        .then(processContactIds)
         .then(validateSubjects);
     };
   }

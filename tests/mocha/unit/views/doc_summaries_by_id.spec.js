@@ -67,7 +67,7 @@ const householdVisit = {
       _id: '1a1aac55-04d6-40dc-aae2-e67a75a1496d'
     }
   },
-  from: '+40755364696',
+  from: '+111232543221',
   fields: {
     place_id: '09f62048-ac69-4066-bf8b-bcaf534ef8b1',
     place_name: 'some area',
@@ -201,6 +201,26 @@ const jsonDBis = Object.assign({}, jsonD, {
   })
 });
 
+
+const jsonHousehold = {
+  _id: '5294b4c0-7499-41d5-b8d9-c548381799c0',
+  _rev: '2-25a86f61d544f9254b6c738ca6f644ad',
+  type: 'data_record',
+  from: '+13125551212',
+  form: 'H',
+  fields: {
+    delivery_code: 'F',
+    notes: 'note'
+  },
+  place_id: '111111',
+  reported_date: 1517408179956,
+};
+
+const jsonHouseholdBis = Object.assign({}, jsonHousehold, {
+  _id: '5294b4c0-7499-41d5-b8d9-c548381799c0-bis',
+  place_id: null
+});
+
 describe('doc_summaries_by_id view', () => {
   it('indexes name, phone, type, contact, lineage, simprints, dod for non-data-records', () => {
     const map = loadMedicClientViewValues('doc_summaries_by_id');
@@ -247,7 +267,9 @@ describe('doc_summaries_by_id view', () => {
       jsonOth,
       communityEvent,
       jsonD,
-      jsonDBis
+      jsonDBis,
+      jsonHousehold,
+      jsonHouseholdBis
     ];
 
     let emitted = true;
@@ -259,7 +281,7 @@ describe('doc_summaries_by_id view', () => {
       key: '5294b4c0-7499-41d5-b8d9-c548381799c0',
       value: {
         _rev: '2-25a86f61d544f9254b6c738ca6f644ad',
-        from: '+40755364696',
+        from: '+111232543221',
         phone: undefined,
         form: 'household_visit',
         read: undefined,
@@ -269,7 +291,7 @@ describe('doc_summaries_by_id view', () => {
         contact: 'df28f38e-cd3c-475f-96b5-48080d863e34',
         lineage: ['1a1aac55-04d6-40dc-aae2-e67a75a1496d'],
         subject: {
-          type: 'uuid',
+          type: 'id',
           value: '09f62048-ac69-4066-bf8b-bcaf534ef8b1'
         }
       }
@@ -279,7 +301,7 @@ describe('doc_summaries_by_id view', () => {
       key: '5294b4c0-7499-41d5-b8d9-c548381799c0-bis',
       value: {
         _rev: '2-25a86f61d544f9254b6c738ca6f644ad',
-        from: '+40755364696',
+        from: '+111232543221',
         phone: undefined,
         form: 'household_visit',
         read: undefined,
@@ -289,7 +311,7 @@ describe('doc_summaries_by_id view', () => {
         contact: 'df28f38e-cd3c-475f-96b5-48080d863e34',
         lineage: ['1a1aac55-04d6-40dc-aae2-e67a75a1496d'],
         subject: {
-          type: 'uuid',
+          type: 'id',
           value: null
         }
       }
@@ -309,7 +331,7 @@ describe('doc_summaries_by_id view', () => {
         contact: 'df28f38e-cd3c-475f-96b5-48080d863e34',
         lineage: ['1a1aac55-04d6-40dc-aae2-e67a75a1496d'],
         subject: {
-          type: 'uuid',
+          type: 'id',
           value: 'a29c933c-90cb-4cb0-9e25-36403499aee4'
         }
       }
@@ -329,7 +351,7 @@ describe('doc_summaries_by_id view', () => {
         contact: 'df28f38e-cd3c-475f-96b5-48080d863e34',
         lineage: ['1a1aac55-04d6-40dc-aae2-e67a75a1496d'],
         subject: {
-          type: 'uuid',
+          type: 'id',
           value: null
         }
       }
@@ -349,7 +371,7 @@ describe('doc_summaries_by_id view', () => {
         contact: undefined,
         lineage: [],
         subject: {
-          type: 'patient_name',
+          type: 'name',
           value: 'test'
         }
       }
@@ -369,7 +391,7 @@ describe('doc_summaries_by_id view', () => {
         contact: undefined,
         lineage: [],
         subject: {
-          type: 'patient_name',
+          type: 'name',
           value: null
         }
       }
@@ -423,7 +445,7 @@ describe('doc_summaries_by_id view', () => {
         contact: undefined,
         lineage: [],
         subject: {
-          type: 'patient_id',
+          type: 'reference',
           value: '22323'
         }
       }
@@ -443,10 +465,51 @@ describe('doc_summaries_by_id view', () => {
         contact: undefined,
         lineage: [],
         subject: {
-          type: 'patient_id',
+          type: 'reference',
           value: null
         }
       }
     });
+
+    assert.deepEqual(emitted[10], {
+      key: '5294b4c0-7499-41d5-b8d9-c548381799c0',
+      value: {
+        _rev: '2-25a86f61d544f9254b6c738ca6f644ad',
+        from: '+13125551212',
+        phone: undefined,
+        form: 'H',
+        read: undefined,
+        valid: true,
+        verified: undefined,
+        reported_date: 1517408179956,
+        contact: undefined,
+        lineage: [],
+        subject: {
+          type: 'reference',
+          value: '111111'
+        }
+      }
+    });
+
+    assert.deepEqual(emitted[11], {
+      key: '5294b4c0-7499-41d5-b8d9-c548381799c0-bis',
+      value: {
+        _rev: '2-25a86f61d544f9254b6c738ca6f644ad',
+        from: '+13125551212',
+        phone: undefined,
+        form: 'H',
+        read: undefined,
+        valid: true,
+        verified: undefined,
+        reported_date: 1517408179956,
+        contact: undefined,
+        lineage: [],
+        subject: {
+          type: 'reference',
+          value: null
+        }
+      }
+    });
+
   });
 });
