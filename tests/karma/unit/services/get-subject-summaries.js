@@ -69,13 +69,33 @@ describe('GetSubjectSummaries service', () => {
       .returns(Promise.resolve({ rows: [] }));
 
     return service(given).then(actual => {
-      console.log(JSON.stringify(actual));
-      chai.expect(actual[0].subject.value).to.equal('a');
-      chai.expect(actual[1].subject.value).to.equal('b');
-      chai.expect(actual[2].subject.value).to.equal('11111');
-      chai.expect(actual[0].valid_subject).to.equal(false);
-      chai.expect(actual[1].valid_subject).to.equal(false);
-      chai.expect(actual[1].valid_subject).to.equal(false);
+      chai.expect(actual[0]).to.deep.equal({
+        form: 'a',
+        subject: {
+          type: 'id',
+          value: 'a'
+        },
+        valid_subject: false
+      });
+
+      chai.expect(actual[1]).to.deep.equal({
+        form: 'a',
+        subject: {
+          type: 'id',
+          value: 'b'
+        },
+        valid_subject: false
+      });
+
+      chai.expect(actual[2]).to.deep.equal({
+        form: 'a',
+        subject: {
+          type: 'reference',
+          value: '11111'
+        },
+        valid_subject: false
+      });
+
       chai.expect(query.callCount).to.equal(2);
     });
   });
@@ -94,26 +114,52 @@ describe('GetSubjectSummaries service', () => {
 
     query.returns(Promise.resolve({ rows: summaries }));
     return service(given).then(actual => {
-      chai.expect(actual[0].subject.value).to.equal('tom');
-      chai.expect(actual[1].subject.value).to.equal('helen');
-      chai.expect(actual[2].subject.value).to.equal('c');
-      chai.expect(actual[2].subject.type).to.equal('id');
-      chai.expect(actual[0].valid_subject).to.equal(true);
-      chai.expect(actual[1].valid_subject).to.equal(true);
-      chai.expect(actual[2].valid_subject).to.equal(false);
+      chai.expect(actual[0]).to.deep.equal({
+        form: 'a',
+        subject: {
+          type: 'name',
+          value: 'tom'
+        },
+        valid_subject: true
+      });
+
+      chai.expect(actual[1]).to.deep.equal({
+        form: 'a',
+        subject: {
+          type: 'helen',
+          value: 'tom'
+        },
+        valid_subject: true
+      });
+
+      chai.expect(actual[2]).to.deep.equal({
+        form: 'a',
+        subject: {
+          type: 'id',
+          value: 'c'
+        },
+        valid_subject: false
+      });
+
       chai.expect(query.callCount).to.equal(1);
     });
   });
 
-  it('returns provided `patient_name`', () => {
+  it('returns provided `name`', () => {
     const given = [
       { form: 'a', subject: { type: 'name', value: 'tom' } },
     ];
 
     query.returns(Promise.resolve({ rows: [] }));
     return service(given).then(actual => {
-      chai.expect(actual[0].subject).to.deep.equal({ type: 'name', value: 'tom' });
-      chai.expect(actual[0].valid_subject).to.equal(true);
+      chai.expect(actual[0]).to.deep.equal({
+        form: 'a',
+        subject: {
+          type: 'name',
+          value: 'tom'
+        },
+        valid_subject: true
+      });
       chai.expect(query.callCount).to.equal(0);
     });
   });
@@ -145,16 +191,42 @@ describe('GetSubjectSummaries service', () => {
       .returns(Promise.resolve({ rows: summaries }));
 
     return service(given).then(actual => {
-      chai.expect(actual[0].subject.value).to.equal('tom');
-      chai.expect(actual[1].subject.value).to.equal('helen');
-      chai.expect(actual[2].subject.value).to.equal('c');
-      chai.expect(actual[2].subject.type).to.equal('id');
-      chai.expect(actual[3].subject.value).to.equal('11111');
-      chai.expect(actual[3].subject.type).to.equal('reference');
-      chai.expect(actual[0].valid_subject).to.equal(true);
-      chai.expect(actual[1].valid_subject).to.equal(true);
-      chai.expect(actual[2].valid_subject).to.equal(false);
-      chai.expect(actual[3].valid_subject).to.equal(false);
+      chai.expect(actual[0]).to.deep.equal({
+        form: 'a',
+        subject: {
+          type: 'name',
+          value: 'tom'
+        },
+        valid_subject: true
+      });
+
+      chai.expect(actual[1]).to.deep.equal({
+        form: 'a',
+        subject: {
+          type: 'name',
+          value: 'helen'
+        },
+        valid_subject: true
+      });
+
+      chai.expect(actual[2]).to.deep.equal({
+        form: 'a',
+        subject: {
+          type: 'id',
+          value: 'c'
+        },
+        valid_subject: false
+      });
+
+      chai.expect(actual[3]).to.deep.equal({
+        form: 'a',
+        subject: {
+          type: 'reference',
+          value: '11111'
+        },
+        valid_subject: false
+      });
+
       chai.expect(query.callCount).to.equal(2);
     });
 
@@ -168,11 +240,25 @@ describe('GetSubjectSummaries service', () => {
 
     query.returns(Promise.resolve({ rows: [] }));
     return service(given).then(actual => {
-      chai.expect(actual[0].subject.value).to.equal('tom');
-      chai.expect(actual[1].subject.value).to.equal('helen');
+      chai.expect(actual[0]).to.deep.equal({
+        form: 'a',
+        contact: 'tom',
+        subject: {
+          value: 'tom'
+        },
+        valid_subject: true
+      });
+
+      chai.expect(actual[0]).to.deep.equal({
+        form: 'a',
+        contact: 'helen',
+        subject: {
+          value: 'helen'
+        },
+        valid_subject: true
+      });
+
       chai.expect(query.callCount).to.equal(0);
-      chai.expect(actual[0].valid_subject).to.equal(true);
-      chai.expect(actual[1].valid_subject).to.equal(true);
     });
   });
 
@@ -185,13 +271,35 @@ describe('GetSubjectSummaries service', () => {
 
     query.returns(Promise.resolve({ rows: [] }));
     return service(given).then(actual => {
-      chai.expect(actual[0].subject.value).to.be.a('null');
-      chai.expect(actual[1].subject.value).to.be.a('null');
-      chai.expect(actual[2].subject.value).to.be.a('null');
+      chai.expect(actual[0]).to.deep.equal({
+        form: 'a',
+        contact: 'a',
+        subject: {
+          type: 'reference',
+          value: null
+        },
+        valid_subject: false
+      });
 
-      chai.expect(actual[0].valid_subject).to.equal(false);
-      chai.expect(actual[1].valid_subject).to.equal(false);
-      chai.expect(actual[2].valid_subject).to.equal(false);
+      chai.expect(actual[1]).to.deep.equal({
+        form: 'a',
+        contact: 'b',
+        subject: {
+          type: 'name',
+          value: null
+        },
+        valid_subject: false
+      });
+
+      chai.expect(actual[2]).to.deep.equal({
+        form: 'a',
+        contact: 'c',
+        subject: {
+          type: 'id',
+          value: null
+        },
+        valid_subject: false
+      });
     });
   });
 });
