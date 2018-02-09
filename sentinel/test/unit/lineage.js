@@ -613,6 +613,12 @@ exports['hydrateDocs+minify is noop'] = test => {
   fetch.onCall(0).callsArgWith(1, null, rowify(fetchedParents));
   fetch.onCall(1).callsArgWith(1, null, rowify(fetchedContacts));
 
+  sinon.stub(utils, 'getPatientContactUuid').callsArgWith(2, null, report_patient._id);
+  const viewStub = sinon.stub(db.medic, 'view');
+  viewStub.onCall(0).callsArgWith(3, null, { rows: [
+    { doc: report_patient }
+  ] });
+
   lineage.hydrateDocs(docs).then(([ hydratedReport, hydratedPlace ]) => {
     lineage.minify(hydratedReport);
     lineage.minify(hydratedPlace);
@@ -637,6 +643,12 @@ exports['hydrateDocs ignores db-fetch errors'] = test => {
   const fetch = sinon.stub(db.medic, 'fetch');
   fetch.onCall(0).callsArgWith(1, null, fetchedParentsRows);
   fetch.onCall(1).callsArgWith(1, null, fetchedContactsRows);
+
+  sinon.stub(utils, 'getPatientContactUuid').callsArgWith(2, null, report_patient._id);
+  const viewStub = sinon.stub(db.medic, 'view');
+  viewStub.onCall(0).callsArgWith(3, null, { rows: [
+    { doc: report_patient }
+  ] });
 
   lineage.hydrateDocs(docs).then(([ hydratedReport, hydratedPlace ]) => {
     test.equals(hydratedReport.contact.name, report_contact.name);
