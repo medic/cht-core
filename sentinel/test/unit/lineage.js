@@ -554,6 +554,12 @@ exports['hydrateDocs binds contacts and parents'] = test => {
   fetch.onCall(0).callsArgWith(1, null, rowify(fetchedParents));
   fetch.onCall(1).callsArgWith(1, null, rowify(fetchedContacts));
 
+  sinon.stub(utils, 'getPatientContactUuid').callsArgWith(2, null, report_patient._id);
+  const viewStub = sinon.stub(db.medic, 'view');
+  viewStub.onCall(0).callsArgWith(3, null, { rows: [
+    { doc: report_patient }
+  ] });
+
   lineage.hydrateDocs(docs).then(([ hydratedReport, hydratedPlace ]) => {
     test.equals(fetch.callCount, 2);
     test.deepEqual(fetch.args[0][0].keys.sort(), fetchedParents.map(doc => doc._id).sort());

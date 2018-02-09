@@ -256,14 +256,8 @@ const hydratePatient = doc => {
 };
 
 const hydratePatients = docs => {
-  return new Promise(resolve => {
-    let promises = [];
-    docs.forEach(doc => {
-      promises.push(hydratePatient(doc));
-    });
-    return Promise.all(promises)
-      .then(resolve(docs));
-  });
+  return Promise.all(docs.map(hydratePatient))
+      .then(() => docs);
 };
 
 const hydrateDocs = docs => {
@@ -297,8 +291,6 @@ module.exports = {
    * @param docs The array of docs to hydrate
    * @returns Promise
    */
-   // TODO: add patient hydration support for consistency
-   //       https://github.com/medic/medic-webapp/issues/4003
   hydrateDocs: hydrateDocs,
 
   /**
