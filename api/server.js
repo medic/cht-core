@@ -1,7 +1,7 @@
 var _ = require('underscore'),
     async = require('async'),
     bodyParser = require('body-parser'),
-    domain = require('domain');
+    domain = require('domain'),
     express = require('express'),
     morgan = require('morgan'),
     moment = require('moment'),
@@ -372,24 +372,35 @@ app.all([
   });
 });
 
-// TODO: consider security of this new api
-//       How do we check to make sure people aren't passing search requests
 app.postJson('/api/v2/export/:type', (req, res) => {
   const type = req.params.type,
         filters = req.body.filters,
         options = req.body.options;
 
-  auth.check(req, getExportPermission(req.params.type), null, function(err, ctx) {
-    // TODO: determine root of search:
-    //  - If they are online then it's normal
-    //  - If they are offline it's scoped to their facility
+  if (!exportData2.supportedExports.includes(type)) {
+    return serverUtils.error({
+      message: 'v2 export only supports forms and contacts',
+      code: 404
+    }, req, res);
+  }
 
-    // TODO: pipe through a zip creation?
+  // We currently only support online users (CouchDB admins and National Admisn)
+  // If we want to support offline users we should either:
+  //  - Forcibly scope their search object to their facility, which is returned
+  //    by the following auth check in ctx.district (maybe?)
+  //  - Still don't let offilne users use this API, and instead refactor the
+  //    export logic so it can be used in webapp, and have exports workn offline
+  auth.check(req, ['national_admin', getExportPermission(req.params.type)], null, function(err) {
+    if (err) {
+      return serverUtils.error(err, req, res);
+    }
+
     const d = domain.create();
     d.on('error', err => serverUtils.error(err, req, res));
     d.run(() =>
       exportData2
         .export(type, filters, options)
+        // Do we want to create a zip here?
         .pipe(res));
   });
 });

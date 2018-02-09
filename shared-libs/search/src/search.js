@@ -1,3 +1,6 @@
+// TODO: consider rewriting to not support skip and limit.
+// Skip and Limit are not considered fast:
+//    http://docs.couchdb.org/en/latest/ddocs/views/pagination.html
 var _ = require('underscore'),
     GenerateSearchRequests = require('./generate-search-requests');
 

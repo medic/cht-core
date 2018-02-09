@@ -1,13 +1,31 @@
+const _ = require('underscore');
+
 const PouchDB = require('pouchdb-core');
 PouchDB.plugin(require('pouchdb-adapter-http'));
 PouchDB.plugin(require('pouchdb-mapreduce'));
 
-const db = new PouchDB(process.env.COUCH_URL);
+const DB = new PouchDB(process.env.COUCH_URL);
 
 const { Readable } = require('stream'),
-      search = require('search')(Promise, db);
+      search = require('search')(Promise, DB);
 
-const SEARCH_BATCH = 1000;
+const SEARCH_BATCH = 100;
+
+const JOIN_COL = ',';
+const JOIN_ROW = '\n';
+
+const CSV_MAPPER = {
+  forms: (filters, options) => {
+    // TODO: determine what CSV mapping strategy we need based on what forms we have
+    //
+    // for now just…
+    return CSV_MAPPER.contacts();
+  },
+  contacts: () => Promise.resolve({
+    header: ['id', 'rev'],
+    fn: record => [record._id, record._rev/*, ...*/]
+  })
+};
 
 class SearchResultReader extends Readable {
 
@@ -18,33 +36,54 @@ class SearchResultReader extends Readable {
     this.filters = filters;
     this.options = searchOptions;
 
-    // TODO: do we want people to be able to specify this externally?
-    //       Skip doesn't make any sense, but being able to define your own
-    //       batch size might be useful for debugging / getting out of sticky
-    //       situations in prod
+    // There is no reason for a user to pass a skip, but we're going to allow
+    // users to pass a limit. This could be useful as an escape hatch / tweak in
+    // production.
     this.options.skip = 0;
-    this.options.limit = SEARCH_BATCH;
-
-    this.tempRound = 10;
+    this.options.limit = this.options.limit || SEARCH_BATCH;
   }
 
   _read() {
-    search(this.type, this.filters, this.options)
+    const thisTime = Math.random();
+    console.log('======================');
+    console.log(this.filters, this.options, thisTime);
+
+    let printHeader;
+
+    let p = Promise.resolve();
+    if (!this.csvFn) {
+      p = p
+        .then(() => CSV_MAPPER[this.type](this.filters, this.options))
+        .then(({ header, fn }) => {
+          this.csvFn = fn;
+          printHeader = header;
+        });
+    }
+    p = p
+      .then(() => search(this.type, this.filters, this.options))
       .then(ids => {
-        if (!ids.length || this.tempRound === 0) {
+        console.log(ids, thisTime);
+        console.log('======================');
+
+        if (!ids.length) {
           return this.push(null);
         }
 
-        this.tempRound -= 1;
-        this.options.skip += SEARCH_BATCH;
+        this.options.skip += this.options.limit;
 
-        // TODO: determine CSV mapper:
-        //       Contacts - fn to run over each batch
-        //       Reports - needs bootup fn to work out what rows are required,
-        //         which in turn returns a fn to run over each batch
-        // TODO: resolve into documents
-        // TODO: convert into a CSV
-        this.push(ids.join('\n') + '\n');
+        return DB.allDocs({
+          keys: ids,
+          include_docs: true
+        })
+        .then(results => {
+          this.push(
+            printHeader ? printHeader.join(JOIN_COL) + JOIN_ROW : '' +
+            _.pluck(results.rows, 'doc')
+             .map(this.csvFn)
+             .map(csvLine => csvLine.join(JOIN_COL))
+             .map(lines => lines + JOIN_ROW).join('')
+          );
+        });
       })
       .catch(err => {
         process.nextTick(() => this.emit('error', err));
@@ -54,5 +93,6 @@ class SearchResultReader extends Readable {
 
 module.exports = {
   export: (type, filters, options) =>
-    new SearchResultReader(type, filters, options)
+    new SearchResultReader(type, filters, options),
+  supportedExports: ['forms', 'contacts']
 };
