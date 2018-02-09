@@ -675,6 +675,76 @@ app.postJson('/api/v1/people', function(req, res) {
   });
 });
 
+app.postJson('/api/v1/bulk-delete', function(req, res) {
+  auth.getUserCtx(req, function(err, userCtx) {
+    if (err) {
+      return serverUtils.error(err, req, res);
+    } else if (!auth.isAdmin(userCtx)) {
+      // TODO: return some kind of error
+      console.log('oh no');
+    }
+
+    const keys = req.body.docs.map(doc => doc._id);
+    db.medic.fetch({ keys }, function(err, data) {
+      if (err) {
+        return serverUtils.error(err, req, res);
+      }
+
+      const docs = data.rows
+        .map(row => {
+          const doc = row.doc;
+          if (doc) {
+            doc._deleted = true;
+            return doc;
+          }
+        })
+        .filter(doc => doc);
+      const total = docs.length;
+
+      const generateBatchPromise = (batch, count) => {
+        return new Promise((resolve, reject) => {
+          db.medic.bulk({ docs: batch }, function (err, body) {
+            if (err) {
+              reject(err);
+            }
+
+            res.write(`${count}/${total}\n`);
+            resolve(body);
+          });
+        });
+      };
+
+      const BATCH_SIZE = 100;
+      const batches = [];
+      while (docs.length > 0) {
+        const batch = docs.splice(0, BATCH_SIZE);
+        batches.push(batch);
+      }
+
+      let count = 0;
+      const sendBatches = batches.reduce((promise, batch) => {
+        return promise.then(batchResponses => {
+          count += batch.length;
+          return generateBatchPromise(batch, count).then(batchResponse => batchResponses.concat(batchResponse));
+        });
+      }, Promise.resolve([]));
+
+      res.write(`0/${total}\n`);
+      sendBatches
+        .then(batchResponses => {
+          const mergedResponses = batchResponses.reduce((mergedResponses, response) => {
+            return mergedResponses.concat(response);
+          }, []);
+          res.write(JSON.stringify(mergedResponses));
+          res.end();
+        })
+        .catch(err => {
+          serverUtils.error(err, req, res);
+        });
+    });
+  });
+});
+
 // DB replication endpoint
 var changesHander = _.partial(require('./handlers/changes').request, proxy);
 app.get(pathPrefix + '_changes', changesHander);
