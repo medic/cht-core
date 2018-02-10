@@ -4,327 +4,158 @@
     {
       "type": "count",
       "id": "active-pregnancies",
-      "icon": "pregnancy-4",
+      "icon": "pregnancy-60",
       "goal": -1,
-      "name": [
-        {
-          "locale": "en",
-          "content": "Active pregnancies"
-        },
-        {
-          "locale": "hi",
-          "content": "मौजूदा गर्भावस्था"
-        },
-        {
-          "locale": "id",
-          "content": "Kehamilan Aktif"
-        }
-      ]
+      "translation_key": "targets.active_pregnancies.title",
+      "subtitle_translation_key": "targets.all_time.subtitle"
     },
     {
       "type": "count",
       "id": "pregnancy-registrations-this-month",
-      "icon": "pregnancy-4",
+      "icon": "pregnancy-60",
       "goal": -1,
-      "name": [
-        {
-          "locale": "en",
-          "content": "New pregnancies this month"
-        },
-        {
-          "locale": "hi",
-          "content": "इस महीने में दर्ज किये गए गर्भावस्था"
-        },
-        {
-          "locale": "id",
-          "content": "Kehamilan terdaftar bulan ini"
-        }
-      ]
+      "translation_key": "targets.pregnancy_registrations.title",
+      "subtitle_translation_key": "targets.this_month.subtitle"
     },
     {
       "type": "count",
       "id": "births-this-month",
-      "icon": "infant",
+      "icon": "infant-60",
       "goal": -1,
-      "name": [
-        {
-          "locale": "en",
-          "content": "Births this month"
-        },
-        {
-          "locale": "hi",
-          "content": "इस महीने में जन्म"
-        },
-        {
-          "locale": "id",
-          "content": "Kelahiran bulan ini"
-        }
-      ]
+      "translation_key": "targets.births.title",
+      "subtitle_translation_key": "targets.this_month.subtitle"
     },
     {
       "type": "percent",
       "id": "delivery-with-min-1-visit",
-      "icon": "nurse",
+      "icon": "nurse-60",
       "goal": 100,
-      "name": [
-        {
-          "locale": "en",
-          "content": "Deliveries with 1+ visits"
-        },
-        {
-          "locale": "hi",
-          "content": "1+ जांच के साथ डिलिवरी"
-        },
-        {
-          "locale": "id",
-          "content": "Kelahiran dengan 1+ kunjungan"
-        }
-      ]
+      "translation_key": "targets.delivery_1_visit.title",
+      "subtitle_translation_key": "targets.all_time.subtitle"
     },
     {
       "type": "percent",
       "id": "delivery-with-min-4-visits",
-      "icon": "nurse",
+      "icon": "nurse-60",
       "goal": 100,
-      "name": [
-        {
-          "locale": "en",
-          "content": "Deliveries with 4+ visits"
-        },
-        {
-          "locale": "hi",
-          "content": "4+ जांच के साथ डिलिवरी"
-        },
-        {
-          "locale": "id",
-          "content": "Kelahiran dengan 4+ kunjungan"
-        }
-      ]
+      "translation_key": "targets.delivery_4_visits.title",
+      "subtitle_translation_key": "targets.all_time.subtitle"
     },
     {
       "type": "percent",
       "id": "delivery-at-facility-total",
-      "icon": "clinic",
+      "icon": "medic-district-hospital",
       "goal": 100,
-      "name": [
-        {
-          "locale": "en",
-          "content": "Deliveries at facility"
-        },
-        {
-          "locale": "hi",
-          "content": "अब तक के स्वास्थ्य केंद्र में डिलीवरी"
-        },
-        {
-          "locale": "id",
-          "content": "Kelahiran total di fasilitas"
-        }
-      ]
+      "translation_key": "targets.facility_deliveries.title",
+      "subtitle_translation_key": "targets.all_time.subtitle"
     },
     {
       "type": "count",
       "id": "pnc-active",
-      "icon": "mother-child",
+      "icon": "mother-child-60",
       "goal": -1,
-      "context": "(user.parent.use_cases && user.parent.use_cases.split(' ').indexOf('pnc') !== -1) || (user.parent.parent.use_cases && user.parent.parent.use_cases.split(' ').indexOf('pnc') !== -1)",
-      "name": [
-        {
-          "locale": "en",
-          "content": "Women in active PNC period"
-        },
-        {
-          "locale": "hi",
-          "content": ""
-        },
-        {
-          "locale": "id",
-          "content": ""
-        }
-      ]
+      "translation_key": "targets.active_pnc.title",
+      "subtitle_translation_key": "targets.all_time.subtitle",
+      "context": "(user.parent.use_cases && user.parent.use_cases.split(' ').indexOf('pnc') !== -1) || (user.parent.parent.use_cases && user.parent.parent.use_cases.split(' ').indexOf('pnc') !== -1)"
     },
     {
       "type": "count",
       "id": "pnc-registered-this-month",
-      "icon": "infant",
+      "icon": "infant-60",
       "goal": -1,
-      "context": "(user.parent.use_cases && user.parent.use_cases.split(' ').indexOf('pnc') !== -1) || (user.parent.parent.use_cases && user.parent.parent.use_cases.split(' ').indexOf('pnc') !== -1)",
-      "name": [
-        {
-          "locale": "en",
-          "content": "Registrations for PNC this month"
-        },
-        {
-          "locale": "hi",
-          "content": ""
-        },
-        {
-          "locale": "id",
-          "content": ""
-        }
-      ]
+      "translation_key": "targets.pnc_registrations.title",
+      "subtitle_translation_key": "targets.all_time.subtitle",
+      "context": "(user.parent.use_cases && user.parent.use_cases.split(' ').indexOf('pnc') !== -1) || (user.parent.parent.use_cases && user.parent.parent.use_cases.split(' ').indexOf('pnc') !== -1)"
     },
     {
       "type": "count",
       "id": "pnc-visits-this-month",
-      "icon": "infant",
+      "icon": "infant-60",
       "goal": -1,
-      "context": "(user.parent.use_cases && user.parent.use_cases.split(' ').indexOf('pnc') !== -1) || (user.parent.parent.use_cases && user.parent.parent.use_cases.split(' ').indexOf('pnc') !== -1)",
-      "name": [
-        {
-          "locale": "en",
-          "content": "Visits for PNC this month"
-        },
-        {
-          "locale": "hi",
-          "content": ""
-        },
-        {
-          "locale": "id",
-          "content": ""
-        }
-      ]
+      "translation_key": "targets.pnc_visits.title",
+      "subtitle_translation_key": "targets.this_month.subtitle",
+      "context": "(user.parent.use_cases && user.parent.use_cases.split(' ').indexOf('pnc') !== -1) || (user.parent.parent.use_cases && user.parent.parent.use_cases.split(' ').indexOf('pnc') !== -1)"
     },
     {
       "type": "count",
       "id": "pnc-homebirth-0-visits",
-      "icon": "household",
+      "icon": "household-60",
       "goal": -1,
-      "context": "(user.parent.use_cases && user.parent.use_cases.split(' ').indexOf('pnc') !== -1) || (user.parent.parent.use_cases && user.parent.parent.use_cases.split(' ').indexOf('pnc') !== -1)",
-      "name": [
-        {
-          "locale": "en",
-          "content": "Homebirths with 0 PNC visits"
-        },
-        {
-          "locale": "hi",
-          "content": ""
-        },
-        {
-          "locale": "id",
-          "content": ""
-        }
-      ]
+      "translation_key": "targets.homebirth_no_visits.title",
+      "subtitle_translation_key": "targets.all_time.subtitle",
+      "context": "(user.parent.use_cases && user.parent.use_cases.split(' ').indexOf('pnc') !== -1) || (user.parent.parent.use_cases && user.parent.parent.use_cases.split(' ').indexOf('pnc') !== -1)"
     },
     {
       "type": "percent",
       "id": "pnc-homebirth-min-1-visit",
-      "icon": "nurse",
+      "icon": "nurse-60",
       "goal": 100,
-      "context": "(user.parent.use_cases && user.parent.use_cases.split(' ').indexOf('pnc') !== -1) || (user.parent.parent.use_cases && user.parent.parent.use_cases.split(' ').indexOf('pnc') !== -1)",
-      "name": [
-        {
-          "locale": "en",
-          "content": "Homebirths with 1+ PNC visit"
-        },
-        {
-          "locale": "hi",
-          "content": ""
-        },
-        {
-          "locale": "id",
-          "content": ""
-        }
-      ]
+      "translation_key": "targets.homebirth_1_visit.title",
+      "subtitle_translation_key": "targets.all_time.subtitle",
+      "context": "(user.parent.use_cases && user.parent.use_cases.split(' ').indexOf('pnc') !== -1) || (user.parent.parent.use_cases && user.parent.parent.use_cases.split(' ').indexOf('pnc') !== -1)"
     },
     {
       "type": "percent",
       "id": "pnc-3-visits",
-      "icon": "nurse",
+      "icon": "nurse-60",
       "goal": 50,
-      "context": "(user.parent.use_cases && user.parent.use_cases.split(' ').indexOf('pnc') !== -1) || (user.parent.parent.use_cases && user.parent.parent.use_cases.split(' ').indexOf('pnc') !== -1)",
-      "name": [
-        {
-          "locale": "en",
-          "content": "Deliveries with 3 PNC visits"
-        },
-        {
-          "locale": "hi",
-          "content": ""
-        },
-        {
-          "locale": "id",
-          "content": ""
-        }
-      ]
+      "translation_key": "targets.birth_3_visits.title",
+      "subtitle_translation_key": "targets.all_time.subtitle",
+      "context": "(user.parent.use_cases && user.parent.use_cases.split(' ').indexOf('pnc') !== -1) || (user.parent.parent.use_cases && user.parent.parent.use_cases.split(' ').indexOf('pnc') !== -1)"
     },
     {
       "type": "count",
       "id": "imm-children-under-5-years",
-      "icon": "children",
+      "icon": "children-60",
       "goal": -1,
-      "context": "(user.parent.use_cases && user.parent.use_cases.split(' ').indexOf('imm') !== -1) || (user.parent.parent.use_cases && user.parent.parent.use_cases.split(' ').indexOf('imm') !== -1)",
-      "name": [
-        {
-          "locale": "en",
-          "content": "Children under 5 years old"
-        }
-      ]
+      "translation_key": "targets.children_u5.title",
+      "subtitle_translation_key": "targets.all_time.subtitle",
+      "context": "(user.parent.use_cases && user.parent.use_cases.split(' ').indexOf('imm') !== -1) || (user.parent.parent.use_cases && user.parent.parent.use_cases.split(' ').indexOf('imm') !== -1)"
     },
     {
       "type": "count",
       "id": "imm-children-registered-this-month",
-      "icon": "child",
+      "icon": "child-60",
       "goal": -1,
-      "context": "(user.parent.use_cases && user.parent.use_cases.split(' ').indexOf('imm') !== -1) || (user.parent.parent.use_cases && user.parent.parent.use_cases.split(' ').indexOf('imm') !== -1)",
-      "name": [
-        {
-          "locale": "en",
-          "content": "New children under 5 this month"
-        }
-      ]
+      "translation_key": "targets.children_registered.title",
+      "subtitle_translation_key": "targets.this_month.subtitle",
+      "context": "(user.parent.use_cases && user.parent.use_cases.split(' ').indexOf('imm') !== -1) || (user.parent.parent.use_cases && user.parent.parent.use_cases.split(' ').indexOf('imm') !== -1)"
     },
     {
       "type": "count",
       "id": "imm-vaccines-given-this-month",
-      "icon": "immunization",
+      "icon": "immunization-60",
       "goal": -1,
-      "context": "(user.parent.use_cases && user.parent.use_cases.split(' ').indexOf('imm') !== -1) || (user.parent.parent.use_cases && user.parent.parent.use_cases.split(' ').indexOf('imm') !== -1)",
-      "name": [
-        {
-          "locale": "en",
-          "content": "Vaccines given this month"
-        }
-      ]
+      "translation_key": "targets.vaccines_given.title",
+      "subtitle_translation_key": "targets.this_month.subtitle",
+      "context": "(user.parent.use_cases && user.parent.use_cases.split(' ').indexOf('imm') !== -1) || (user.parent.parent.use_cases && user.parent.parent.use_cases.split(' ').indexOf('imm') !== -1)"
     },
     {
       "type": "count",
       "id": "imm-children-vaccinated-prev-3-months",
-      "icon": "chw",
+      "icon": "chw-60",
       "goal": -1,
-      "context": "(user.parent.use_cases && user.parent.use_cases.split(' ').indexOf('imm') !== -1) || (user.parent.parent.use_cases && user.parent.parent.use_cases.split(' ').indexOf('imm') !== -1)",
-      "name": [
-        {
-          "locale": "en",
-          "content": "Children vaccinated in past 3 months"
-        }
-      ]
+      "translation_key": "targets.children_vaccinated.title",
+      "subtitle_translation_key": "targets.past_3mos.subtitle",
+      "context": "(user.parent.use_cases && user.parent.use_cases.split(' ').indexOf('imm') !== -1) || (user.parent.parent.use_cases && user.parent.parent.use_cases.split(' ').indexOf('imm') !== -1)"
     },
     {
       "type": "count",
       "id": "imm-no-vaccine-reported",
-      "icon": "risk",
+      "icon": "risk-60",
       "goal": -1,
-      "context": "(user.parent.use_cases && user.parent.use_cases.split(' ').indexOf('imm') !== -1) || (user.parent.parent.use_cases && user.parent.parent.use_cases.split(' ').indexOf('imm') !== -1)",
-      "name": [
-        {
-          "locale": "en",
-          "content": "Children with no vaccines reported"
-        }
-      ]
+      "translation_key": "targets.children_not_vaccinated.title",
+      "subtitle_translation_key": "targets.all_time.subtitle",
+      "context": "(user.parent.use_cases && user.parent.use_cases.split(' ').indexOf('imm') !== -1) || (user.parent.parent.use_cases && user.parent.parent.use_cases.split(' ').indexOf('imm') !== -1)"
     },
     {
       "type": "percent",
       "id": "imm-children-with-bcg-reported",
-      "icon": "child",
+      "icon": "child-60",
       "goal": 100,
-      "context": "(user.parent.use_cases && user.parent.use_cases.split(' ').indexOf('imm') !== -1) || (user.parent.parent.use_cases && user.parent.parent.use_cases.split(' ').indexOf('imm') !== -1)",
-      "name": [
-        {
-          "locale": "en",
-          "content": "Children with BCG reported"
-        }
-      ]
+      "translation_key": "targets.bcg_reported.title",
+      "subtitle_translation_key": "targets.all_time.subtitle",
+      "context": "(user.parent.use_cases && user.parent.use_cases.split(' ').indexOf('imm') !== -1) || (user.parent.parent.use_cases && user.parent.parent.use_cases.split(' ').indexOf('imm') !== -1)"
     }
   ]
 }
-
