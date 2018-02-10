@@ -583,7 +583,7 @@ Call: <output value=" /delivery/chw_phone "/></value></text>
         </translation>
       </itext>
       <instance>
-        <delivery delimiter="#" id="delivery" prefix="J1!delivery!" version="2018-02-01 14-42">
+        <delivery delimiter="#" id="delivery" prefix="J1!delivery!" version="2018-02-06 12-24">
           <inputs tag="hidden">
             <meta tag="hidden">
               <location>
@@ -679,8 +679,8 @@ Call: <output value=" /delivery/chw_phone "/></value></text>
       <bind calculate="../inputs/contact/_id" nodeset="/delivery/patient_uuid" type="string"/>
       <bind calculate="../inputs/contact/patient_id" nodeset="/delivery/patient_id" type="string"/>
       <bind calculate="../inputs/contact/name" nodeset="/delivery/patient_name" type="string"/>
-      <bind calculate="../inputs/contact/parent/contact/name" nodeset="/delivery/chw_name" type="string"/>
-      <bind calculate="../inputs/contact/parent/contact/phone" nodeset="/delivery/chw_phone" type="string"/>
+      <bind calculate="coalesce(../inputs/contact/parent/contact/name,instance('contact-summary')/context/chw_name)" nodeset="/delivery/chw_name" type="string"/>
+      <bind calculate="coalesce(../inputs/contact/parent/contact/phone,instance('contact-summary')/context/chw_phone)" nodeset="/delivery/chw_phone" type="string"/>
       <bind calculate=" /delivery/group_delivery_summary/g_birth_date " nodeset="/delivery/birth_date" type="string"/>
       <bind calculate=" /delivery/group_delivery_summary/g_delivery_code " nodeset="/delivery/delivery_code" type="string"/>
       <bind calculate=" /delivery/group_delivery_summary/g_pregnancy_outcome " nodeset="/delivery/pregnancy_outcome" type="string"/>
