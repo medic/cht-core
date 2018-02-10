@@ -48,13 +48,7 @@
       "reporting_freq": "monthly"
     }
   ],
-  "anc_forms": {
-    "registration": "R",
-    "registrationLmp": "P",
-    "visit": "V",
-    "delivery": "D",
-    "flag": "F"
-  },
+  "anc_forms": {},
   "schedule_morning_hours": 6,
   "schedule_morning_minutes": 0,
   "schedule_evening_hours": 20,
@@ -148,6 +142,12 @@
         "national_admin",
         "district_admin",
         "gateway"
+      ]
+    },
+    {
+      "name": "can_log_out_on_android",
+      "roles": [
+        "district_admin"
       ]
     },
     {
@@ -5929,7 +5929,7 @@
             "type": "pregnancy-1",
             "title": [
               {
-                "content": "{{contact.name}} missing pregnancy visit",
+                "content": "Missing pregnancy visit",
                 "locale": "en"
               }
             ],
@@ -5953,7 +5953,7 @@
             "type": "mother-child",
             "title": [
               {
-                "content": "{{contact.name}} pregnancy visit needed",
+                "content": "Pregnancy visit needed",
                 "locale": "en"
               }
             ],
@@ -5977,7 +5977,7 @@
             "type": "mother-child",
             "title": [
               {
-                "content": "{{contact.name}} missing birth report",
+                "content": "Missing birth report",
                 "locale": "en"
               }
             ],
@@ -6001,7 +6001,7 @@
             "type": "mother-child",
             "title": [
               {
-                "content": "{{contact.name}} postnatal visit needed",
+                "content": "Postnatal visit needed",
                 "locale": "en"
               }
             ],
@@ -6025,7 +6025,7 @@
             "type": "mother-child",
             "title": [
               {
-                "content": "{{contact.name}} postnatal visit needed",
+                "content": "Postnatal visit needed",
                 "locale": "en"
               }
             ],
@@ -6049,7 +6049,7 @@
             "type": "mother-child",
             "title": [
               {
-                "content": "{{contact.name}} missing postnatal visit",
+                "content": "Missing postnatal visit",
                 "locale": "en"
               }
             ],
@@ -6073,7 +6073,7 @@
             "type": "immunization",
             "title": [
               {
-                "content": "{{contact.name}} missing immunization visit",
+                "content": "Missing immunization visit",
                 "locale": "en"
               }
             ]
@@ -6087,333 +6087,165 @@
         {
           "type": "count",
           "id": "active-pregnancies",
-          "icon": "pregnancy-4",
+          "icon": "pregnancy-60",
           "goal": -1,
-          "name": [
-            {
-              "locale": "en",
-              "content": "Active pregnancies"
-            },
-            {
-              "locale": "hi",
-              "content": "मौजूदा गर्भावस्था"
-            },
-            {
-              "locale": "id",
-              "content": "Kehamilan Aktif"
-            }
-          ]
+          "translation_key": "targets.active_pregnancies.title",
+          "subtitle_translation_key": "targets.all_time.subtitle"
         },
         {
           "type": "count",
           "id": "pregnancy-registrations-this-month",
-          "icon": "pregnancy-4",
+          "icon": "pregnancy-60",
           "goal": -1,
-          "name": [
-            {
-              "locale": "en",
-              "content": "New pregnancies this month"
-            },
-            {
-              "locale": "hi",
-              "content": "इस महीने में दर्ज किये गए गर्भावस्था"
-            },
-            {
-              "locale": "id",
-              "content": "Kehamilan terdaftar bulan ini"
-            }
-          ]
+          "translation_key": "targets.pregnancy_registrations.title",
+          "subtitle_translation_key": "targets.this_month.subtitle"
         },
         {
           "type": "count",
           "id": "births-this-month",
-          "icon": "infant",
+          "icon": "infant-60",
           "goal": -1,
-          "name": [
-            {
-              "locale": "en",
-              "content": "Births this month"
-            },
-            {
-              "locale": "hi",
-              "content": "इस महीने में जन्म"
-            },
-            {
-              "locale": "id",
-              "content": "Kelahiran bulan ini"
-            }
-          ]
+          "translation_key": "targets.births.title",
+          "subtitle_translation_key": "targets.this_month.subtitle"
         },
         {
           "type": "percent",
           "id": "delivery-with-min-1-visit",
-          "icon": "nurse",
+          "icon": "nurse-60",
           "goal": 100,
-          "name": [
-            {
-              "locale": "en",
-              "content": "Deliveries with 1+ visits"
-            },
-            {
-              "locale": "hi",
-              "content": "1+ जांच के साथ डिलिवरी"
-            },
-            {
-              "locale": "id",
-              "content": "Kelahiran dengan 1+ kunjungan"
-            }
-          ]
+          "translation_key": "targets.delivery_1_visit.title",
+          "subtitle_translation_key": "targets.all_time.subtitle"
         },
         {
           "type": "percent",
           "id": "delivery-with-min-4-visits",
-          "icon": "nurse",
+          "icon": "nurse-60",
           "goal": 100,
-          "name": [
-            {
-              "locale": "en",
-              "content": "Deliveries with 4+ visits"
-            },
-            {
-              "locale": "hi",
-              "content": "4+ जांच के साथ डिलिवरी"
-            },
-            {
-              "locale": "id",
-              "content": "Kelahiran dengan 4+ kunjungan"
-            }
-          ]
+          "translation_key": "targets.delivery_4_visits.title",
+          "subtitle_translation_key": "targets.all_time.subtitle"
         },
         {
           "type": "percent",
           "id": "delivery-at-facility-total",
-          "icon": "clinic",
+          "icon": "medic-district-hospital",
           "goal": 100,
-          "name": [
-            {
-              "locale": "en",
-              "content": "Deliveries at facility"
-            },
-            {
-              "locale": "hi",
-              "content": "अब तक के स्वास्थ्य केंद्र में डिलीवरी"
-            },
-            {
-              "locale": "id",
-              "content": "Kelahiran total di fasilitas"
-            }
-          ]
+          "translation_key": "targets.facility_deliveries.title",
+          "subtitle_translation_key": "targets.all_time.subtitle"
         },
         {
           "type": "count",
           "id": "pnc-active",
-          "icon": "mother-child",
+          "icon": "mother-child-60",
           "goal": -1,
-          "context": "(user.parent.use_cases && user.parent.use_cases.split(' ').indexOf('pnc') !== -1) || (user.parent.parent.use_cases && user.parent.parent.use_cases.split(' ').indexOf('pnc') !== -1)",
-          "name": [
-            {
-              "locale": "en",
-              "content": "Women in active PNC period"
-            },
-            {
-              "locale": "hi",
-              "content": ""
-            },
-            {
-              "locale": "id",
-              "content": ""
-            }
-          ]
+          "translation_key": "targets.active_pnc.title",
+          "subtitle_translation_key": "targets.all_time.subtitle",
+          "context": "(user.parent.use_cases && user.parent.use_cases.split(' ').indexOf('pnc') !== -1) || (user.parent.parent.use_cases && user.parent.parent.use_cases.split(' ').indexOf('pnc') !== -1)"
         },
         {
           "type": "count",
           "id": "pnc-registered-this-month",
-          "icon": "infant",
+          "icon": "infant-60",
           "goal": -1,
-          "context": "(user.parent.use_cases && user.parent.use_cases.split(' ').indexOf('pnc') !== -1) || (user.parent.parent.use_cases && user.parent.parent.use_cases.split(' ').indexOf('pnc') !== -1)",
-          "name": [
-            {
-              "locale": "en",
-              "content": "Registrations for PNC this month"
-            },
-            {
-              "locale": "hi",
-              "content": ""
-            },
-            {
-              "locale": "id",
-              "content": ""
-            }
-          ]
+          "translation_key": "targets.pnc_registrations.title",
+          "subtitle_translation_key": "targets.all_time.subtitle",
+          "context": "(user.parent.use_cases && user.parent.use_cases.split(' ').indexOf('pnc') !== -1) || (user.parent.parent.use_cases && user.parent.parent.use_cases.split(' ').indexOf('pnc') !== -1)"
         },
         {
           "type": "count",
           "id": "pnc-visits-this-month",
-          "icon": "infant",
+          "icon": "infant-60",
           "goal": -1,
-          "context": "(user.parent.use_cases && user.parent.use_cases.split(' ').indexOf('pnc') !== -1) || (user.parent.parent.use_cases && user.parent.parent.use_cases.split(' ').indexOf('pnc') !== -1)",
-          "name": [
-            {
-              "locale": "en",
-              "content": "Visits for PNC this month"
-            },
-            {
-              "locale": "hi",
-              "content": ""
-            },
-            {
-              "locale": "id",
-              "content": ""
-            }
-          ]
+          "translation_key": "targets.pnc_visits.title",
+          "subtitle_translation_key": "targets.this_month.subtitle",
+          "context": "(user.parent.use_cases && user.parent.use_cases.split(' ').indexOf('pnc') !== -1) || (user.parent.parent.use_cases && user.parent.parent.use_cases.split(' ').indexOf('pnc') !== -1)"
         },
         {
           "type": "count",
           "id": "pnc-homebirth-0-visits",
-          "icon": "household",
+          "icon": "household-60",
           "goal": -1,
-          "context": "(user.parent.use_cases && user.parent.use_cases.split(' ').indexOf('pnc') !== -1) || (user.parent.parent.use_cases && user.parent.parent.use_cases.split(' ').indexOf('pnc') !== -1)",
-          "name": [
-            {
-              "locale": "en",
-              "content": "Homebirths with 0 PNC visits"
-            },
-            {
-              "locale": "hi",
-              "content": ""
-            },
-            {
-              "locale": "id",
-              "content": ""
-            }
-          ]
+          "translation_key": "targets.homebirth_no_visits.title",
+          "subtitle_translation_key": "targets.all_time.subtitle",
+          "context": "(user.parent.use_cases && user.parent.use_cases.split(' ').indexOf('pnc') !== -1) || (user.parent.parent.use_cases && user.parent.parent.use_cases.split(' ').indexOf('pnc') !== -1)"
         },
         {
           "type": "percent",
           "id": "pnc-homebirth-min-1-visit",
-          "icon": "nurse",
+          "icon": "nurse-60",
           "goal": 100,
-          "context": "(user.parent.use_cases && user.parent.use_cases.split(' ').indexOf('pnc') !== -1) || (user.parent.parent.use_cases && user.parent.parent.use_cases.split(' ').indexOf('pnc') !== -1)",
-          "name": [
-            {
-              "locale": "en",
-              "content": "Homebirths with 1+ PNC visit"
-            },
-            {
-              "locale": "hi",
-              "content": ""
-            },
-            {
-              "locale": "id",
-              "content": ""
-            }
-          ]
+          "translation_key": "targets.homebirth_1_visit.title",
+          "subtitle_translation_key": "targets.all_time.subtitle",
+          "context": "(user.parent.use_cases && user.parent.use_cases.split(' ').indexOf('pnc') !== -1) || (user.parent.parent.use_cases && user.parent.parent.use_cases.split(' ').indexOf('pnc') !== -1)"
         },
         {
           "type": "percent",
           "id": "pnc-3-visits",
-          "icon": "nurse",
+          "icon": "nurse-60",
           "goal": 50,
-          "context": "(user.parent.use_cases && user.parent.use_cases.split(' ').indexOf('pnc') !== -1) || (user.parent.parent.use_cases && user.parent.parent.use_cases.split(' ').indexOf('pnc') !== -1)",
-          "name": [
-            {
-              "locale": "en",
-              "content": "Deliveries with 3 PNC visits"
-            },
-            {
-              "locale": "hi",
-              "content": ""
-            },
-            {
-              "locale": "id",
-              "content": ""
-            }
-          ]
+          "translation_key": "targets.birth_3_visits.title",
+          "subtitle_translation_key": "targets.all_time.subtitle",
+          "context": "(user.parent.use_cases && user.parent.use_cases.split(' ').indexOf('pnc') !== -1) || (user.parent.parent.use_cases && user.parent.parent.use_cases.split(' ').indexOf('pnc') !== -1)"
         },
         {
           "type": "count",
           "id": "imm-children-under-5-years",
-          "icon": "children",
+          "icon": "children-60",
           "goal": -1,
-          "context": "(user.parent.use_cases && user.parent.use_cases.split(' ').indexOf('imm') !== -1) || (user.parent.parent.use_cases && user.parent.parent.use_cases.split(' ').indexOf('imm') !== -1)",
-          "name": [
-            {
-              "locale": "en",
-              "content": "Children under 5 years old"
-            }
-          ]
+          "translation_key": "targets.children_u5.title",
+          "subtitle_translation_key": "targets.all_time.subtitle",
+          "context": "(user.parent.use_cases && user.parent.use_cases.split(' ').indexOf('imm') !== -1) || (user.parent.parent.use_cases && user.parent.parent.use_cases.split(' ').indexOf('imm') !== -1)"
         },
         {
           "type": "count",
           "id": "imm-children-registered-this-month",
-          "icon": "child",
+          "icon": "child-60",
           "goal": -1,
-          "context": "(user.parent.use_cases && user.parent.use_cases.split(' ').indexOf('imm') !== -1) || (user.parent.parent.use_cases && user.parent.parent.use_cases.split(' ').indexOf('imm') !== -1)",
-          "name": [
-            {
-              "locale": "en",
-              "content": "New children under 5 this month"
-            }
-          ]
+          "translation_key": "targets.children_registered.title",
+          "subtitle_translation_key": "targets.this_month.subtitle",
+          "context": "(user.parent.use_cases && user.parent.use_cases.split(' ').indexOf('imm') !== -1) || (user.parent.parent.use_cases && user.parent.parent.use_cases.split(' ').indexOf('imm') !== -1)"
         },
         {
           "type": "count",
           "id": "imm-vaccines-given-this-month",
-          "icon": "immunization",
+          "icon": "immunization-60",
           "goal": -1,
-          "context": "(user.parent.use_cases && user.parent.use_cases.split(' ').indexOf('imm') !== -1) || (user.parent.parent.use_cases && user.parent.parent.use_cases.split(' ').indexOf('imm') !== -1)",
-          "name": [
-            {
-              "locale": "en",
-              "content": "Vaccines given this month"
-            }
-          ]
+          "translation_key": "targets.vaccines_given.title",
+          "subtitle_translation_key": "targets.this_month.subtitle",
+          "context": "(user.parent.use_cases && user.parent.use_cases.split(' ').indexOf('imm') !== -1) || (user.parent.parent.use_cases && user.parent.parent.use_cases.split(' ').indexOf('imm') !== -1)"
         },
         {
           "type": "count",
           "id": "imm-children-vaccinated-prev-3-months",
-          "icon": "chw",
+          "icon": "chw-60",
           "goal": -1,
-          "context": "(user.parent.use_cases && user.parent.use_cases.split(' ').indexOf('imm') !== -1) || (user.parent.parent.use_cases && user.parent.parent.use_cases.split(' ').indexOf('imm') !== -1)",
-          "name": [
-            {
-              "locale": "en",
-              "content": "Children vaccinated in past 3 months"
-            }
-          ]
+          "translation_key": "targets.children_vaccinated.title",
+          "subtitle_translation_key": "targets.past_3mos.subtitle",
+          "context": "(user.parent.use_cases && user.parent.use_cases.split(' ').indexOf('imm') !== -1) || (user.parent.parent.use_cases && user.parent.parent.use_cases.split(' ').indexOf('imm') !== -1)"
         },
         {
           "type": "count",
           "id": "imm-no-vaccine-reported",
-          "icon": "risk",
+          "icon": "risk-60",
           "goal": -1,
-          "context": "(user.parent.use_cases && user.parent.use_cases.split(' ').indexOf('imm') !== -1) || (user.parent.parent.use_cases && user.parent.parent.use_cases.split(' ').indexOf('imm') !== -1)",
-          "name": [
-            {
-              "locale": "en",
-              "content": "Children with no vaccines reported"
-            }
-          ]
+          "translation_key": "targets.children_not_vaccinated.title",
+          "subtitle_translation_key": "targets.all_time.subtitle",
+          "context": "(user.parent.use_cases && user.parent.use_cases.split(' ').indexOf('imm') !== -1) || (user.parent.parent.use_cases && user.parent.parent.use_cases.split(' ').indexOf('imm') !== -1)"
         },
         {
           "type": "percent",
           "id": "imm-children-with-bcg-reported",
-          "icon": "child",
+          "icon": "child-60",
           "goal": 100,
-          "context": "(user.parent.use_cases && user.parent.use_cases.split(' ').indexOf('imm') !== -1) || (user.parent.parent.use_cases && user.parent.parent.use_cases.split(' ').indexOf('imm') !== -1)",
-          "name": [
-            {
-              "locale": "en",
-              "content": "Children with BCG reported"
-            }
-          ]
+          "translation_key": "targets.bcg_reported.title",
+          "subtitle_translation_key": "targets.all_time.subtitle",
+          "context": "(user.parent.use_cases && user.parent.use_cases.split(' ').indexOf('imm') !== -1) || (user.parent.parent.use_cases && user.parent.parent.use_cases.split(' ').indexOf('imm') !== -1)"
         }
       ]
     }
   },
   "outgoing_deny_list": "",
   "multipart_sms_limit": 10,
-  "contact_summary": "var cards = [];var context = {};var fields = [];var now = new Date();var MS_IN_DAY = 24*60*60*1000;var MAX_DAYS_IN_PREGNANCY = 44*7;var DAYS_IN_PNC = 45;var deliveryForms = ['D','delivery'];var immunizationForms = ['V','IMM','immunization_visit','DT1','DT2','DT3','BCG','OPV0','OPV1','OPV2','OPV3','PCV1','PCV2','PCV3','RV1','RV2','RV3','VA','MTV1','MTV2','MMR1','MMR2','MMRV1','MMRV2','MN1','MN2','MN3','MN4','FLU','HA1','HA2','JE','YF','TY1','TY2','HPV1','HPV2','HPV3','CH1','CH2','CH3','RB1','RB2','RB3','TBE'];var IMMUNIZATION_DOSES = [['bcg','BCG'],['cholera_1','CH1'],['cholera_2','CH2'],['cholera_3','CH3'],['hep_a_1','HA1'],['hep_a_2','HA2'],['hpv_1','HPV1'],['hpv_2','HPV2'],['hpv_3','HPV3'],['flu','FLU'],['jap_enc','JE'],['meningococcal_1','MN1'],['meningococcal_2','MN2'],['meningococcal_3','MN3'],['meningococcal_4','MN4'],['mmr_1','MMR1'],['mmr_2','MMR2'],['mmrv_1','MMRV1'],['mmrv_2','MMRV2'],['polio_0','OPV0'],['polio_1','OPV1'],['polio_2','OPV2'],['polio_3','OPV3'],['penta_1','PEN1'],['penta_2','PEN2'],['penta_3','PEN3'],['pneumococcal_1','PCV1'],['pneumococcal_2','PCV2'],['pneumococcal_3','PCV3'],['pneumococcal_4','PCV4'],['rotavirus_1','RV1'],['rotavirus_2','RV2'],['rotavirus_3','RV3'],['typhoid_1','TY1'],['typhoid_2','TY2'],['vitamin_a','VA'],['yellow_fever','YF']];var IMMUNIZATION_LIST = ['bcg','cholera','hep_a','hpv','flu','jap_enc','meningococcal','mmr','mmrv','polio','penta','pneumococcal','rotavirus','typhoid','vitamin_a','yellow_fever'];var isVaccineInLineage = function(lineage, vaccine) {if (Array.isArray(lineage)) {for (var i=0; i < lineage.length; i++) {if (lineage[i] && lineage[i].vaccines && lineage[i].vaccines.split(' ').indexOf(vaccine) !== -1) {return true;}}}return false;};var isCoveredByUseCaseInLineage = function(lineage, usecase) {if (Array.isArray(lineage)) {for (var i=0; i < lineage.length; i++) {if (lineage[i] && lineage[i].use_cases && lineage[i].use_cases.split(' ').indexOf(usecase) !== -1) {return true;}}}return false;};var isCoveredByUseCase = function(contact, usecase) {if (!contact) {return false;}else if (contact && contact.parent && contact.parent.use_cases && contact.parent.use_cases.split(' ').indexOf(usecase) !== -1) {return true;}else {return isCoveredByUseCase(contact.parent, usecase);}};var isFacilityDelivery = function(report) {return report && report.fields && report.fields.delivery_code.toLowerCase() === 'f';};var isNonFacilityDelivery = function(report) {return report && deliveryForms.indexOf(report.form) && report.fields && report.fields.delivery_code && report.fields.delivery_code.toLowerCase() !== 'f';};var getBirthDate = function(report) {var rawDate = report && (report.birth_date || report.fields.birth_date || report.reported_date);return new Date(rawDate);};var getPNCperiod = function(deliveryReport){var obj = {};obj.start = getBirthDate(deliveryReport);obj.end = new Date(obj.start.getFullYear(), obj.start.getMonth(), obj.start.getDate() + DAYS_IN_PNC);return obj;};var isHighRiskPregnancy = function(reports, pregnancy) {return (pregnancy.form === 'pregnancy' && pregnancy.fields && (pregnancy.fields.risk_factors || pregnancy.fields.danger_signs))|| isFormSubmittedInWindow(reports, 'F', pregnancy.reported_date, addDate(new Date(pregnancy.reported_date), MAX_DAYS_IN_PREGNANCY).getTime());};var isHighRiskPostnatal = function (reports, period) {var highRisk = false;if (period && period.start && period.end) {reports.forEach(function(report) {if (!isReportValid(report)) { return; }if (isNonFacilityDelivery(report)|| (report.form.toUpperCase() === 'F' && report.reported_date >= period.end.getTime() && report.reported_date <= period.end.getTime())|| (report.form === 'postnatal_visit' && report.fields && (report.fields.risk_factors || report.fields.danger_signs))) {highRisk = true;}});}return highRisk;};var getDeliveryCode = function(report) {var code = ((report && report.fields) && ((report.fields.group_note && report.fields.group_note.default_chw_sms) || report.fields.delivery_code)) || 'unknown';code = code.replace('anc_only_', '').toLowerCase();return code;};var initImmunizations = function() {var master = {};IMMUNIZATION_DOSES.forEach(function(dose) {master[dose[0]] = false;});return master;};var addImmunizations = function(master, vaccines_received) {IMMUNIZATION_DOSES.forEach(function(dose) {master[dose[0]] = master[dose[0]] || ( vaccines_received['received_' + dose[0]] == 'yes' ) || ( typeof(vaccines_received) === 'string' && vaccines_received.toUpperCase() === dose[1] );});};var countDosesReceived = function(master, name) {var count = 0;IMMUNIZATION_DOSES.forEach(function(dose) {if (master[dose[0]] && dose[0].indexOf(name + '_') === 0) {count++;}});return count;};var countDosesPossible = function(name) {var count = 0;IMMUNIZATION_DOSES.forEach(function(dose) {if (dose[0].indexOf(name + '_') === 0) {count++;}});return count;};var isSingleDose = function(name) {var singleDose = true;IMMUNIZATION_DOSES.forEach(function(dose) {if (dose[0].indexOf(name + '_') === 0) {singleDose = false;}});return singleDose;};var countReportsSubmittedInWindow = function(reports, form, start, end) {var reportsFound = 0;reports.forEach(function(report) {if (!isReportValid(report)) { return; }if (form.indexOf(report.form) >= 0) {if (report.reported_date >= start && report.reported_date <= end) {reportsFound++;}}});return reportsFound;};var isFormSubmittedInWindow = function(reports, form, start, end, count) {var result = false;reports.forEach(function(report) {if (!isReportValid(report)) { return; }if (!result && report.form === form) {if (report.reported_date >= start && report.reported_date <= end) {if (!count ||(count && report.fields && report.fields.follow_up_count > count)) {result = true;}}}});return result;};var addDate = function(date, days) {var result;if (date) {result = new Date(date.getTime());} else {result = new Date();}result.setUTCDate(result.getUTCDate() + days);result.setUTCHours(0, 0, 0, 0);return result;};var getOldestReport = function(reports) {var result;reports.forEach(function(report) {if (!isReportValid(report)) { return; }if (!result || report.reported_date < result.reported_date) {result = report;}});return result;};var isReportValid = function(report){if (report && (!report.errors || (report.errors && report.errors.length === 0))) {return true;}else {return false;}};var use_cases = {};use_cases.anc = isCoveredByUseCaseInLineage(lineage, 'anc');use_cases.pnc = isCoveredByUseCaseInLineage(lineage, 'pnc');use_cases.imm = isCoveredByUseCaseInLineage(lineage, 'imm');context.use_cases = use_cases;if (contact.type === 'person') {fields = [{ label: 'patient_id', value: contact.patient_id, width: 4 },{ label: 'contact.age', value: contact.date_of_birth, width: 4, filter: 'age' },{ label: 'Phone Number', value: contact.phone, width: 4, filter: 'phone' },{ label: 'Notes', value: contact.notes, width: 12 },{ label: 'contact.parent', value: lineage, filter: 'lineage' }];var pregnancy;var pregnancyDate;var pastPregnancies = { label: 'contact.profile.past_pregnancies', fields: [] };var immunizations = initImmunizations();var birthDate, ageInMs, ageInMonths, newestDelivery;if (contact.date_of_birth && contact.date_of_birth !== '') {birthDate = new Date(contact.date_of_birth);ageInMs = new Date(Date.now() - birthDate.getTime());ageInMonths = (Math.abs(ageInMs.getFullYear() - 1970) * 12) + ageInMs.getMonth();}reports.forEach(function(report) {if (!isReportValid(report)) { return; }if (report.form === 'pregnancy' || report.form === 'P') {var subsequentDeliveries = reports.filter(function(report2) {return (report2.form === 'delivery' || report2.form === 'D') && report2.reported_date > report.reported_date;});if (subsequentDeliveries.length > 0) {var relevantDelivery = getOldestReport(subsequentDeliveries);var birthdate = getBirthDate(relevantDelivery);var relevantVisitsANC = reports.filter(function(report2) {return (report2.form === 'V' || report2.form === 'pregnancy_visit') && report2.reported_date > report.reported_date && report2.reported_date < birthdate.getTime();});var relevantVisitsPNC = reports.filter(function(report2) {return (report2.form === 'M' || report2.form === 'postnatal_visit') && report2.reported_date > birthdate.getTime() && report2.reported_date < (birthdate.getTime() + DAYS_IN_PNC*MS_IN_DAY);});var visitsANC = relevantVisitsANC.length;var visitsPNC = relevantVisitsPNC.length;if (isFacilityDelivery(relevantDelivery)) {visitsPNC++;}pastPregnancies.fields.push({ label: 'contact.profile.delivery_code.' + getDeliveryCode(relevantDelivery), value: birthdate, filter: 'relativeDay', width: 6 },{ label: 'contact.profile.anc_visit', value: 'contact.profile.visits.of', translate: true, context: { count: visitsANC, total: 4 }, width: 3 });if(use_cases.pnc){pastPregnancies.fields.push({ label: 'contact.profile.pnc_visit', value: 'contact.profile.visits.of', translate: true, context: { count: visitsPNC, total: 4 }, width: 3 });}return;}var subsequentVisits = reports.filter(function(report2) {return (report2.form === 'pregnancy_visit' || report2.form === 'V') && report2.reported_date > report.reported_date;});context.pregnant = true;var edd = report.expected_date || report.fields.edd_8601;var highRiskPregnancy = isHighRiskPregnancy(reports, report);if (!pregnancy || pregnancyDate < report.reported_date) {pregnancyDate = report.reported_date;pregnancy = {label: 'contact.profile.pregnancy',fields: [{ label: 'contact.profile.edd', value: edd, filter: 'relativeDay', width: 12 },{ label: 'contact.profile.visit', value: 'contact.profile.visits.of', translate: true, context: { count: subsequentVisits.length, total: 4 }, width: 6 },{ label: 'contact.profile.risk.title', value: highRiskPregnancy ? 'contact.profile.risk.high':'contact.profile.risk.normal', translate: true, width: 5},{ label: '', value: highRiskPregnancy ? 'risk':'', filter: 'resourceIcon', width: 1}]};}}else if (report.form === 'immunization_visit') {if (report && report.fields && report.fields.vaccines_received) {addImmunizations(immunizations, report.fields.vaccines_received);}}else if (report.form === 'IMM') {addImmunizations(immunizations, report.fields);}else if (report.form === 'D' || report.form === 'delivery') {if (!newestDelivery || (report.fields && newestDelivery.fields && report.fields.date_of_birth > newestDelivery.fields.date_of_birth)) {newestDelivery = report;}}else {addImmunizations(immunizations, report.form);}});var newestPNCperiod = getPNCperiod(newestDelivery);var birthdate = getBirthDate(newestDelivery);if (use_cases.pnc && now >= newestPNCperiod.start && now <= newestPNCperiod.end) {context.in_pnc_period = true;var highRiskPostnatal = isHighRiskPostnatal(reports, newestPNCperiod);var relevantVisitsPNC = reports.filter(function(report2) {return (report2.form === 'M' || report2.form === 'postnatal_visit') && report2.reported_date > birthdate.getTime() && report2.reported_date < (birthdate.getTime() + DAYS_IN_PNC*MS_IN_DAY);});var visitsPNC = relevantVisitsPNC.length;if (isFacilityDelivery(newestDelivery)) {visitsPNC++;}var postnatal_card = {label: 'contact.profile.postnatal',fields: [{ label: 'contact.profile.delivery_code.' + getDeliveryCode(newestDelivery), value: birthdate.getTime(), filter: 'relativeDay', width: 12 },{ label: 'contact.profile.pnc_visit', value: 'contact.profile.visits.of', translate: true, context: { count: visitsPNC, total: 4 }, width: 6 },{ label: 'contact.profile.risk.title', value: highRiskPostnatal ? 'contact.profile.risk.high':'contact.profile.risk.normal', translate: true, width: 5},{ label: '', value: highRiskPostnatal ? 'risk':'', filter: 'resourceIcon', width: 1}]};cards.push(postnatal_card);}if (pregnancy) {cards.push(pregnancy);}if (pastPregnancies.fields.length > 0) {cards.push(pastPregnancies);}if (typeof ageInMonths === 'number' && ageInMonths < 144 && use_cases.imm) {var imm_card = {label: 'contact.profile.immunizations',fields: []};IMMUNIZATION_LIST.forEach(function(imm) {if (isVaccineInLineage(lineage, imm)) {var field = {};field.label = 'contact.profile.imm.' + imm;field.translate = true;field.width = 6;if (isSingleDose(imm)) {field.value = immunizations[imm] ? 'yes' : 'no';}else {field.value = 'contact.profile.imm.doses';field.context = {};field.context.count = countDosesReceived(immunizations, imm);field.context.total = countDosesPossible(imm);}imm_card.fields.push(field);}});if (imm_card.fields.length == 0) {imm_card.fields.push({label: 'contact.profile.imm.generic',translate: true,value: countReportsSubmittedInWindow(reports, immunizationForms, null, Date.now()),width: 12,});}cards.push(imm_card);}} else {fields = [{ label: 'Notes', value: contact.notes, width: 12 }];if (contact.parent) {fields.push({ label: 'contact.parent', value: lineage, filter: 'lineage' });}}var result = {fields: fields,cards: cards,context: context};return result;",
+  "contact_summary": "var cards = [];var context = {};var fields = [];var now = new Date();var MS_IN_DAY = 24*60*60*1000;var MAX_DAYS_IN_PREGNANCY = 44*7;var DAYS_IN_PNC = 45;var deliveryForms = ['D','delivery'];var immunizationForms = ['V','IMM','immunization_visit','DT1','DT2','DT3','BCG','OPV0','OPV1','OPV2','OPV3','PCV1','PCV2','PCV3','RV1','RV2','RV3','VA','MTV1','MTV2','MMR1','MMR2','MMRV1','MMRV2','MN1','MN2','MN3','MN4','FLU','HA1','HA2','JE','YF','TY1','TY2','HPV1','HPV2','HPV3','CH1','CH2','CH3','RB1','RB2','RB3','TBE'];var IMMUNIZATION_DOSES = [['bcg','BCG'],['cholera_1','CH1'],['cholera_2','CH2'],['cholera_3','CH3'],['hep_a_1','HA1'],['hep_a_2','HA2'],['hpv_1','HPV1'],['hpv_2','HPV2'],['hpv_3','HPV3'],['flu','FLU'],['jap_enc','JE'],['meningococcal_1','MN1'],['meningococcal_2','MN2'],['meningococcal_3','MN3'],['meningococcal_4','MN4'],['mmr_1','MMR1'],['mmr_2','MMR2'],['mmrv_1','MMRV1'],['mmrv_2','MMRV2'],['polio_0','OPV0'],['polio_1','OPV1'],['polio_2','OPV2'],['polio_3','OPV3'],['penta_1','PEN1'],['penta_2','PEN2'],['penta_3','PEN3'],['pneumococcal_1','PCV1'],['pneumococcal_2','PCV2'],['pneumococcal_3','PCV3'],['pneumococcal_4','PCV4'],['rotavirus_1','RV1'],['rotavirus_2','RV2'],['rotavirus_3','RV3'],['typhoid_1','TY1'],['typhoid_2','TY2'],['vitamin_a','VA'],['yellow_fever','YF']];var IMMUNIZATION_LIST = ['bcg','cholera','hep_a','hpv','flu','jap_enc','meningococcal','mmr','mmrv','polio','penta','pneumococcal','rotavirus','typhoid','vitamin_a','yellow_fever'];var isVaccineInLineage = function(lineage, vaccine) {if (Array.isArray(lineage)) {for (var i=0; i < lineage.length; i++) {if (lineage[i] && lineage[i].vaccines && lineage[i].vaccines.split(' ').indexOf(vaccine) !== -1) {return true;}}}return false;};var isCoveredByUseCaseInLineage = function(lineage, usecase) {if (Array.isArray(lineage)) {for (var i=0; i < lineage.length; i++) {if (lineage[i] && lineage[i].use_cases && lineage[i].use_cases.split(' ').indexOf(usecase) !== -1) {return true;}}}return false;};var isCoveredByUseCase = function(contact, usecase) {if (!contact) {return false;}else if (contact && contact.parent && contact.parent.use_cases && contact.parent.use_cases.split(' ').indexOf(usecase) !== -1) {return true;}else {return isCoveredByUseCase(contact.parent, usecase);}};var isFacilityDelivery = function(report) {return report && report.fields && report.fields.delivery_code.toLowerCase() === 'f';};var isNonFacilityDelivery = function(report) {return report && deliveryForms.indexOf(report.form) && report.fields && report.fields.delivery_code && report.fields.delivery_code.toLowerCase() !== 'f';};var getBirthDate = function(report) {var rawDate = report && (report.birth_date || report.fields.birth_date || report.reported_date);return new Date(rawDate);};var getPNCperiod = function(deliveryReport){var obj = {};obj.start = getBirthDate(deliveryReport);obj.end = new Date(obj.start.getFullYear(), obj.start.getMonth(), obj.start.getDate() + DAYS_IN_PNC);return obj;};var isHighRiskPregnancy = function(reports, pregnancy) {return (pregnancy.form === 'pregnancy' && pregnancy.fields && (pregnancy.fields.risk_factors || pregnancy.fields.danger_signs))|| isFormSubmittedInWindow(reports, 'F', pregnancy.reported_date, addDate(new Date(pregnancy.reported_date), MAX_DAYS_IN_PREGNANCY).getTime());};var isHighRiskPostnatal = function (reports, period) {var highRisk = false;if (period && period.start && period.end) {reports.forEach(function(report) {if (!isReportValid(report)) { return; }if (isNonFacilityDelivery(report)|| (report.form.toUpperCase() === 'F' && report.reported_date >= period.end.getTime() && report.reported_date <= period.end.getTime())|| (report.form === 'postnatal_visit' && report.fields && (report.fields.risk_factors || report.fields.danger_signs))) {highRisk = true;}});}return highRisk;};var getDeliveryCode = function(report) {var code = ((report && report.fields) && ((report.fields.group_note && report.fields.group_note.default_chw_sms) || report.fields.delivery_code)) || 'unknown';code = code.replace('anc_only_', '').toLowerCase();return code;};var initImmunizations = function() {var master = {};IMMUNIZATION_DOSES.forEach(function(dose) {master[dose[0]] = false;});return master;};var addImmunizations = function(master, vaccines_received) {IMMUNIZATION_DOSES.forEach(function(dose) {master[dose[0]] = master[dose[0]] || ( vaccines_received['received_' + dose[0]] == 'yes' ) || ( typeof(vaccines_received) === 'string' && vaccines_received.toUpperCase() === dose[1] );});};var countDosesReceived = function(master, name) {var count = 0;IMMUNIZATION_DOSES.forEach(function(dose) {if (master[dose[0]] && dose[0].indexOf(name + '_') === 0) {count++;}});return count;};var countDosesPossible = function(name) {var count = 0;IMMUNIZATION_DOSES.forEach(function(dose) {if (dose[0].indexOf(name + '_') === 0) {count++;}});return count;};var isSingleDose = function(name) {var singleDose = true;IMMUNIZATION_DOSES.forEach(function(dose) {if (dose[0].indexOf(name + '_') === 0) {singleDose = false;}});return singleDose;};var countReportsSubmittedInWindow = function(reports, form, start, end) {var reportsFound = 0;reports.forEach(function(report) {if (!isReportValid(report)) { return; }if (form.indexOf(report.form) >= 0) {if (report.reported_date >= start && report.reported_date <= end) {reportsFound++;}}});return reportsFound;};var isFormSubmittedInWindow = function(reports, form, start, end, count) {var result = false;reports.forEach(function(report) {if (!isReportValid(report)) { return; }if (!result && report.form === form) {if (report.reported_date >= start && report.reported_date <= end) {if (!count ||(count && report.fields && report.fields.follow_up_count > count)) {result = true;}}}});return result;};var addDate = function(date, days) {var result;if (date) {result = new Date(date.getTime());} else {result = new Date();}result.setUTCDate(result.getUTCDate() + days);result.setUTCHours(0, 0, 0, 0);return result;};var getOldestReport = function(reports) {var result;reports.forEach(function(report) {if (!isReportValid(report)) { return; }if (!result || report.reported_date < result.reported_date) {result = report;}});return result;};var isReportValid = function(report){if (report && (!report.errors || (report.errors && report.errors.length === 0))) {return true;}else {return false;}};var use_cases = {};use_cases.anc = isCoveredByUseCaseInLineage(lineage, 'anc');use_cases.pnc = isCoveredByUseCaseInLineage(lineage, 'pnc');use_cases.imm = isCoveredByUseCaseInLineage(lineage, 'imm');context.use_cases = use_cases;if (contact.type === 'person') {fields = [{ label: 'patient_id', value: contact.patient_id, width: 4 },{ label: 'contact.age', value: contact.date_of_birth, width: 4, filter: 'age' },{ label: 'Phone Number', value: contact.phone, width: 4, filter: 'phone' },{ label: 'Notes', value: contact.notes, width: 12 },{ label: 'contact.parent', value: lineage, filter: 'lineage' }];var pregnancy;var pregnancyDate;var pastPregnancies = { label: 'contact.profile.past_pregnancies', fields: [] };var immunizations = initImmunizations();var birthDate, ageInMs, ageInMonths, newestDelivery;if (contact.date_of_birth && contact.date_of_birth !== '') {birthDate = new Date(contact.date_of_birth);ageInMs = new Date(Date.now() - birthDate.getTime());ageInMonths = (Math.abs(ageInMs.getFullYear() - 1970) * 12) + ageInMs.getMonth();}reports.forEach(function(report) {if (!isReportValid(report)) { return; }if (report.form === 'pregnancy' || report.form === 'P') {var subsequentDeliveries = reports.filter(function(report2) {return (report2.form === 'delivery' || report2.form === 'D') && report2.reported_date > report.reported_date;});if (subsequentDeliveries.length > 0) {var relevantDelivery = getOldestReport(subsequentDeliveries);var birthdate = getBirthDate(relevantDelivery);var relevantVisitsANC = reports.filter(function(report2) {return (report2.form === 'V' || report2.form === 'pregnancy_visit') && report2.reported_date > report.reported_date && report2.reported_date < birthdate.getTime();});var relevantVisitsPNC = reports.filter(function(report2) {return (report2.form === 'M' || report2.form === 'postnatal_visit') && report2.reported_date > birthdate.getTime() && report2.reported_date < (birthdate.getTime() + DAYS_IN_PNC*MS_IN_DAY);});var visitsANC = relevantVisitsANC.length;var visitsPNC = relevantVisitsPNC.length;if (isFacilityDelivery(relevantDelivery)) {visitsPNC++;}pastPregnancies.fields.push({ label: 'contact.profile.delivery_code.' + getDeliveryCode(relevantDelivery), value: birthdate, filter: 'relativeDay', width: 6 },{ label: 'contact.profile.anc_visit', value: 'contact.profile.visits.of', translate: true, context: { count: visitsANC, total: 4 }, width: 3 });if(use_cases.pnc){pastPregnancies.fields.push({ label: 'contact.profile.pnc_visit', value: 'contact.profile.visits.of', translate: true, context: { count: visitsPNC, total: 4 }, width: 3 });}return;}var subsequentVisits = reports.filter(function(report2) {return (report2.form === 'pregnancy_visit' || report2.form === 'V') && report2.reported_date > report.reported_date;});context.pregnant = true;var edd = report.expected_date || report.fields.edd_8601;var highRiskPregnancy = isHighRiskPregnancy(reports, report);if (!pregnancy || pregnancyDate < report.reported_date) {pregnancyDate = report.reported_date;pregnancy = {label: 'contact.profile.pregnancy',fields: [{ label: 'contact.profile.edd', value: edd, filter: 'relativeDay', width: 12 },{ label: 'contact.profile.visit', value: 'contact.profile.visits.of', translate: true, context: { count: subsequentVisits.length, total: 4 }, width: 6 },{ label: 'contact.profile.risk.title', value: highRiskPregnancy ? 'contact.profile.risk.high':'contact.profile.risk.normal', translate: true, width: 5, icon: highRiskPregnancy ? 'risk':''}]};}}else if (report.form === 'immunization_visit') {if (report && report.fields && report.fields.vaccines_received) {addImmunizations(immunizations, report.fields.vaccines_received);}}else if (report.form === 'IMM') {addImmunizations(immunizations, report.fields);}else if (report.form === 'D' || report.form === 'delivery') {if (!newestDelivery || (report.fields && newestDelivery.fields && report.fields.date_of_birth > newestDelivery.fields.date_of_birth)) {newestDelivery = report;}}else {addImmunizations(immunizations, report.form);}});var newestPNCperiod = getPNCperiod(newestDelivery);var birthdate = getBirthDate(newestDelivery);if (use_cases.pnc && now >= newestPNCperiod.start && now <= newestPNCperiod.end) {context.in_pnc_period = true;var highRiskPostnatal = isHighRiskPostnatal(reports, newestPNCperiod);var relevantVisitsPNC = reports.filter(function(report2) {return (report2.form === 'M' || report2.form === 'postnatal_visit') && report2.reported_date > birthdate.getTime() && report2.reported_date < (birthdate.getTime() + DAYS_IN_PNC*MS_IN_DAY);});var visitsPNC = relevantVisitsPNC.length;if (isFacilityDelivery(newestDelivery)) {visitsPNC++;}var postnatal_card = {label: 'contact.profile.postnatal',fields: [{ label: 'contact.profile.delivery_code.' + getDeliveryCode(newestDelivery), value: birthdate.getTime(), filter: 'relativeDay', width: 12 },{ label: 'contact.profile.pnc_visit', value: 'contact.profile.visits.of', translate: true, context: { count: visitsPNC, total: 4 }, width: 6 },{ label: 'contact.profile.risk.title', value: highRiskPostnatal ? 'contact.profile.risk.high':'contact.profile.risk.normal', translate: true, width: 5, icon: highRiskPostnatal ? 'risk':''}]};cards.push(postnatal_card);}if (pregnancy) {cards.push(pregnancy);}if (pastPregnancies.fields.length > 0) {cards.push(pastPregnancies);}if (typeof ageInMonths === 'number' && ageInMonths < 144 && use_cases.imm) {var imm_card = {label: 'contact.profile.immunizations',fields: []};IMMUNIZATION_LIST.forEach(function(imm) {if (isVaccineInLineage(lineage, imm)) {var field = {};field.label = 'contact.profile.imm.' + imm;field.translate = true;field.width = 6;if (isSingleDose(imm)) {field.value = immunizations[imm] ? 'yes' : 'no';}else {field.value = 'contact.profile.imm.doses';field.context = {};field.context.count = countDosesReceived(immunizations, imm);field.context.total = countDosesPossible(imm);}imm_card.fields.push(field);}});if (imm_card.fields.length == 0) {imm_card.fields.push({label: 'contact.profile.imm.generic',translate: true,value: countReportsSubmittedInWindow(reports, immunizationForms, null, Date.now()),width: 12,});}cards.push(imm_card);}} else {fields = [{ label: 'Notes', value: contact.notes, width: 12 }];if (contact.parent && lineage[0]) {fields.push({ label: 'contact.parent', value: lineage, filter: 'lineage' });}}if(lineage[0] && lineage[0].contact) {context.chw_name = lineage[0].contact.name;context.chw_phone = lineage[0].contact.phone;}var result = {fields: fields,cards: cards,context: context};return result;",
   "multi_report_alerts": [],
   "translations": [
     {

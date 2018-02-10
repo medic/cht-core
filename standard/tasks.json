@@ -10,7 +10,7 @@
         "type": "pregnancy-1",
         "title": [
           {
-            "content": "{{contact.name}} missing pregnancy visit",
+            "content": "Missing pregnancy visit",
             "locale": "en"
           }
         ],
@@ -34,7 +34,7 @@
         "type": "mother-child",
         "title": [
           {
-            "content": "{{contact.name}} pregnancy visit needed",
+            "content": "Pregnancy visit needed",
             "locale": "en"
           }
         ],
@@ -58,7 +58,7 @@
         "type": "mother-child",
         "title": [
           {
-            "content": "{{contact.name}} missing birth report",
+            "content": "Missing birth report",
             "locale": "en"
           }
         ],
@@ -82,7 +82,7 @@
         "type": "mother-child",
         "title": [
           {
-            "content": "{{contact.name}} postnatal visit needed",
+            "content": "Postnatal visit needed",
             "locale": "en"
           }
         ],
@@ -106,7 +106,7 @@
         "type": "mother-child",
         "title": [
           {
-            "content": "{{contact.name}} postnatal visit needed",
+            "content": "Postnatal visit needed",
             "locale": "en"
           }
         ],
@@ -130,7 +130,7 @@
         "type": "mother-child",
         "title": [
           {
-            "content": "{{contact.name}} missing postnatal visit",
+            "content": "Missing postnatal visit",
             "locale": "en"
           }
         ],
@@ -154,7 +154,7 @@
         "type": "immunization",
         "title": [
           {
-            "content": "{{contact.name}} missing immunization visit",
+            "content": "Missing immunization visit",
             "locale": "en"
           }
         ]
