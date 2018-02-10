@@ -421,8 +421,7 @@ if (contact.type === 'person') {
           fields: [
             { label: 'contact.profile.edd', value: edd, filter: 'relativeDay', width: 12 },
             { label: 'contact.profile.visit', value: 'contact.profile.visits.of', translate: true, context: { count: subsequentVisits.length, total: 4 }, width: 6 },
-            { label: 'contact.profile.risk.title', value: highRiskPregnancy ? 'contact.profile.risk.high':'contact.profile.risk.normal', translate: true, width: 5},
-            { label: '', value: highRiskPregnancy ? 'risk':'', filter: 'resourceIcon', width: 1}
+            { label: 'contact.profile.risk.title', value: highRiskPregnancy ? 'contact.profile.risk.high':'contact.profile.risk.normal', translate: true, width: 5, icon: highRiskPregnancy ? 'risk':''}
           ]
         };
       }
@@ -466,8 +465,7 @@ if (contact.type === 'person') {
       fields: [
         { label: 'contact.profile.delivery_code.' + getDeliveryCode(newestDelivery), value: birthdate.getTime(), filter: 'relativeDay', width: 12 },
         { label: 'contact.profile.pnc_visit', value: 'contact.profile.visits.of', translate: true, context: { count: visitsPNC, total: 4 }, width: 6 },
-        { label: 'contact.profile.risk.title', value: highRiskPostnatal ? 'contact.profile.risk.high':'contact.profile.risk.normal', translate: true, width: 5},
-        { label: '', value: highRiskPostnatal ? 'risk':'', filter: 'resourceIcon', width: 1}
+        { label: 'contact.profile.risk.title', value: highRiskPostnatal ? 'contact.profile.risk.high':'contact.profile.risk.normal', translate: true, width: 5, icon: highRiskPostnatal ? 'risk':''}
       ]
     };
     cards.push(postnatal_card);
@@ -519,9 +517,15 @@ if (contact.type === 'person') {
   fields = [
     { label: 'Notes', value: contact.notes, width: 12 }
   ];
-  if (contact.parent) {
+  if (contact.parent && lineage[0]) {
     fields.push({ label: 'contact.parent', value: lineage, filter: 'lineage' });
   }
+}
+
+// Added to ensure CHW info is pulled into forms accessed via tasks
+if(lineage[0] && lineage[0].contact) {
+  context.chw_name = lineage[0].contact.name;
+  context.chw_phone = lineage[0].contact.phone;
 }
 
 var result = {
