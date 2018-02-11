@@ -184,11 +184,9 @@ export COUCH_URL=http://admin:pass@localhost:5984/medic
 ```
 Then run either `node ./server.js` from the sentinel directory or `grunt dev-sentinel` from the repository directory (which will watch for changes).
 
-See [Medic Sentinel](https://github.com/medic/medic-sentinel) for more information.
-
 #### Start medic-api
 
-```
+```shell
 cd api
 npm install
 export COUCH_NODE_NAME=couchdb@localhost
@@ -196,11 +194,9 @@ export COUCH_URL=http://admin:pass@localhost:5984/medic
 ```
 Then run either `node ./server.js` from the api directory or `grunt dev-api` from the repository directory (which will watch for changes).
 
-See [Medic API](https://github.com/medic/medic-api) for more information.
-
 ### Try it out
 
-Navigate your browser to `http://localhost:5988/medic/login`
+Navigate your browser to [`http://localhost:5988/medic/login`](http://localhost:5988/medic/login).
 
 ### Data
 
@@ -208,7 +204,7 @@ To fill your app with generated data, you can batch-load messages from a CSV fil
 
 Use `curl` to submit a single message:
 
-```
+```shell
 curl -i -u gateway:123qwe \
     --data-urlencode 'message=Test One two' \
     --data-urlencode 'from=+13125551212' \
