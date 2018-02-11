@@ -90,7 +90,7 @@ $ curl http://localhost:5984 # should fail
 
 [Kanso](http://kan.so) and [Grunt](http://gruntjs.com) are required to build and deploy the webapp.
 
-```
+```shell
 npm install -g kanso grunt-cli
 ```
 
@@ -117,7 +117,7 @@ curl http://localhost:5985
 
 ### Build the webapp
 
-```
+```shell
 git clone --recursive https://github.com/medic/medic-webapp
 cd medic-webapp
 npm install
@@ -127,13 +127,13 @@ npm install
 
 Add a precommit hook to do static analysis before you commit to pick up issues before the build fails.
 
-```
+```shell
 cp .git/hooks/pre-commit.sample .git/hooks/pre-commit
 ```
 
 Then edit `.git/hooks/pre-commit` and add the following at the top just below the comments:
 
-```
+```shell
 exec grunt precommit
 ```
 
@@ -152,17 +152,17 @@ exports.env = {
 
 ### Deploy all the apps
 Create a `.env` file in the app directory with the following contents
-```
+```shell
 COUCH_URL=http://admin:pass@localhost:5984/medic
 COUCH_NODE_NAME=couchdb@localhost
 ```
 Then install api and sentinel dependencies
-```
+```shell
 cd api && npm install && cd ..
 cd sentinel && npm install && cd ..
 ```
 Then run
-```
+```shell
 npm start
 ```
 which will start the webapp, api, and sentinel, and watch for changes in each app.
@@ -176,7 +176,7 @@ If `npm start` is not to your taste for whatever reason, the apps can be deploye
 
 #### Start medic-sentinel
 
-```
+```shell
 cd sentinel
 npm install
 export COUCH_NODE_NAME=couchdb@localhost
@@ -254,19 +254,19 @@ To use it locally:
 
 Now use the `horti` tool to bootstrap Medic and launch it:
 
-```sh
+```shell
 COUCH_NODE_NAME=couchdb@localhost COUCH_URL=http://admin:pass@localhost:5984/medic horti --local --bootstrap
 ```
 
 This will download, configure and install the latest Master build of medic. If you're looking to deploy a specific version, provide it to the `bootstrap` command:
 
-```sh
+```shell
 COUCH_NODE_NAME=couchdb@localhost COUCH_URL=http://admin:pass@localhost:5984/medic horti --local --bootstrap=3.0.0-beta.1
 ```
 
 To kill Horti hit CTRL+C. To start Horti (and Medic) again, run the same command as above, but this time don't bootstrap:
 
-```sh
+```shell
 COUCH_NODE_NAME=couchdb@localhost COUCH_URL=http://admin:pass@localhost:5984/medic horti --local
 ```
 
@@ -274,7 +274,7 @@ If you wish to change the version of Medic installed, you can either bootstrap a
 
 **NB**: Horticulturalist doesn't wipe your database when it bootstraps, it just installs the provided version (or master) over whatever you already have. To completely start again, stop Horti and delete the `medic` database, either using Futon / Fauxton, or from the command line:
 
-```sh
+```shell
 curl -X DELETE $COUCH_URL
 ```
 
@@ -297,14 +297,14 @@ If you want to download the app that someone else pushed to a Market, then you n
 To install Dashboard, first change the CouchDB's `secure_rewrites` configuration
 parameter to false:
 
-```
+```shell
 curl -X PUT http://admin:pass@localhost:5986/_config/httpd/secure_rewrites \
   -d '"false"' -H "Content-Type: application/json"
 ```
 
 Next, download, build, and push the dashboard application to CouchDB:
 
-```
+```shell
 git clone https://github.com/garden20/dashboard
 cd dashboard
 git checkout develop
@@ -351,7 +351,7 @@ mv new.json kanso.json
 Finally, push to the [Medic Alpha
 Market](https://staging.dev.medicmobile.org/markets-alpha/):
 
-```sh
+```shell
 kanso push https://staging.dev.medicmobile.org/markets-alpha/upload
 ```
 
