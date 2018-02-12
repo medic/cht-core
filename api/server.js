@@ -680,8 +680,7 @@ app.postJson('/api/v1/bulk-delete', function(req, res) {
     if (err) {
       return serverUtils.error(err, req, res);
     } else if (!auth.isAdmin(userCtx)) {
-      // TODO: return some kind of error
-      console.log('oh no');
+      return serverUtils.error({ code: 401 }, req, res);
     }
 
     const keys = req.body.docs.map(doc => doc._id);

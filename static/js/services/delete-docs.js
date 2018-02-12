@@ -105,17 +105,11 @@ var _ = require('underscore');
                 if (this.status >= 200 && this.status < 300) {
                   resolve(xhr.response);
                 } else {
-                  reject({
-                    status: this.status,
-                    statusText: xhr.statusText
-                  });
+                  reject(new Error('Server responded with ' + this.status + ': ' + xhr.statusText));
                 }
               };
               xhr.onerror = function() {
-                reject({
-                  status: this.status,
-                  statusText: xhr.statusText
-                });
+                reject(new Error('Server responded with ' + this.status + ': ' + xhr.statusText));
               };
               xhr.open('POST', '/api/v1/bulk-delete', true);
               xhr.setRequestHeader('Content-type', 'application/json');
