@@ -94,6 +94,19 @@ exports['filters the changes to relevant ones'] = function(test) {
       { id: allowedId, key: 'subjectId', value: { submitter: 'contactId' } }
     ]
   });
+  // returns the list of subjects the user is allowed to see
+  db.medic.view.onCall(2).callsArgWith(3, null, {
+    rows: [
+      { id: subjectId, value: patientId }
+    ]
+  });
+  // returns the list of doc ids the user is allowed to see
+  db.medic.view.onCall(3).callsArgWith(3, null, {
+    rows: [
+      { id: unchangedId, key: 'subjectId', value: { submitter: 'contactId' } },
+      { id: allowedId, key: 'subjectId', value: { submitter: 'contactId' } }
+    ]
+  });
 
   var result = '';
 
@@ -119,12 +132,12 @@ exports['filters the changes to relevant ones'] = function(test) {
         test.equals(db.request.args[0][0].qs.since, 1);
         test.equals(db.request.args[0][0].qs.heartbeat, 10000);
         test.equals(db.request.args[0][0].qs.feed, 'not-longpoll');
-        test.equals(auth.getFacilityId.callCount, 1);
+        test.equals(auth.getFacilityId.callCount, 2);
         test.equals(auth.getFacilityId.args[0][0], testReq);
         test.equals(auth.getFacilityId.args[0][1], userCtx);
-        test.equals(auth.getContactId.callCount, 1);
+        test.equals(auth.getContactId.callCount, 2);
         test.equals(auth.getContactId.args[0][0], userCtx);
-        test.equals(db.medic.view.callCount, 2);
+        test.equals(db.medic.view.callCount, 4);
         test.equals(db.medic.view.args[0][0], 'medic');
         test.equals(db.medic.view.args[0][1], 'contacts_by_depth');
         test.equals(db.medic.view.args[0][2].keys.length, 1);
@@ -184,6 +197,18 @@ exports['allows unallocated access when it is configured and the user has permis
   });
   // returns the list of doc ids the user is allowed to see
   db.medic.view.onCall(1).callsArgWith(3, null, {
+    rows: [
+      { id: unchangedId, key: 'subjectId', value: { submitter: 'contactId' } },
+      { id: allowedId, key: 'subjectId', value: { submitter: 'contactId' } }
+    ]
+  });
+  db.medic.view.onCall(2).callsArgWith(3, null, {
+    rows: [
+      { id: subjectId }
+    ]
+  });
+  // returns the list of doc ids the user is allowed to see
+  db.medic.view.onCall(3).callsArgWith(3, null, {
     rows: [
       { id: unchangedId, key: 'subjectId', value: { submitter: 'contactId' } },
       { id: allowedId, key: 'subjectId', value: { submitter: 'contactId' } }
@@ -264,6 +289,19 @@ exports['respects replication depth when it is configured and the user has permi
       { id: allowedId, key: 'subjectId', value: { submitter: 'contactId' } }
     ]
   });
+  // returns the list of subjects the user is allowed to see
+  db.medic.view.onCall(2).callsArgWith(3, null, {
+    rows: [
+      { id: subjectId }
+    ]
+  });
+  // returns the list of doc ids the user is allowed to see
+  db.medic.view.onCall(3).callsArgWith(3, null, {
+    rows: [
+      { id: unchangedId, key: 'subjectId', value: { submitter: 'contactId' } },
+      { id: allowedId, key: 'subjectId', value: { submitter: 'contactId' } }
+    ]
+  });
 
   var result = '';
 
@@ -274,7 +312,7 @@ exports['respects replication depth when it is configured and the user has permi
       result += slice;
     },
     end: function() {
-      test.equals(get.callCount, 2);
+      test.equals(get.callCount, 4);
       test.equals(get.args[0][0], 'replication_depth');
       test.equals(get.args[1][0], 'district_admins_access_unallocated_messages');
       test.equals(db.medic.view.args[0][2].keys.length, 2);
@@ -329,6 +367,19 @@ exports['correctly handles depth of 0'] = function(test) {
   });
   // returns the list of doc ids the user is allowed to see
   db.medic.view.onCall(1).callsArgWith(3, null, {
+    rows: [
+      { id: unchangedId, key: 'subjectId', value: { submitter: 'contactId' } },
+      { id: allowedId, key: 'subjectId', value: { submitter: 'contactId' } }
+    ]
+  });
+  // returns the list of subjects the user is allowed to see
+  db.medic.view.onCall(2).callsArgWith(3, null, {
+    rows: [
+      { id: subjectId }
+    ]
+  });
+  // returns the list of doc ids the user is allowed to see
+  db.medic.view.onCall(3).callsArgWith(3, null, {
     rows: [
       { id: unchangedId, key: 'subjectId', value: { submitter: 'contactId' } },
       { id: allowedId, key: 'subjectId', value: { submitter: 'contactId' } }
@@ -400,6 +451,19 @@ exports['no configured depth defaults to Ininite depth'] = function(test) {
       { id: allowedId, key: 'subjectId', value: { submitter: 'contactId' } }
     ]
   });
+  db.medic.view.onCall(2).callsArgWith(3, null, {
+    rows: [
+      { id: subjectId }
+    ]
+  });
+  // returns the list of doc ids the user is allowed to see
+  db.medic.view.onCall(3).callsArgWith(3, null, {
+    rows: [
+      { id: unchangedId, key: 'subjectId', value: { submitter: 'contactId' } },
+      { id: allowedId, key: 'subjectId', value: { submitter: 'contactId' } }
+    ]
+  });
+
 
   var result = '';
 
@@ -465,6 +529,19 @@ exports['no roles (eg: admin) defaults to Ininite depth'] = function(test) {
       { id: allowedId, key: 'subjectId', value: { submitter: 'contactId' } }
     ]
   });
+  // returns the list of subjects the user is allowed to see
+  db.medic.view.onCall(2).callsArgWith(3, null, {
+    rows: [
+      { id: subjectId }
+    ]
+  });
+  // returns the list of doc ids the user is allowed to see
+  db.medic.view.onCall(3).callsArgWith(3, null, {
+    rows: [
+      { id: unchangedId, key: 'subjectId', value: { submitter: 'contactId' } },
+      { id: allowedId, key: 'subjectId', value: { submitter: 'contactId' } }
+    ]
+  });
 
   var result = '';
 
@@ -482,7 +559,6 @@ exports['no roles (eg: admin) defaults to Ininite depth'] = function(test) {
   };
   handler.request({}, testReq, testRes);
 };
-
 
 exports['does not return reports about you or your place by someone above you in the hierarchy'] = function(test) {
   test.expect(2);
@@ -527,6 +603,23 @@ exports['does not return reports about you or your place by someone above you in
   });
   // returns the list of doc ids the user is allowed to see
   db.medic.view.onCall(1).callsArgWith(3, null, {
+    rows: [
+      // submitted by your boss about your facility - don't show
+      { id: unpermittedId, key: facilityId, value: { submitter: 'yourboss' } },
+
+      // submitted by you about your facility - show
+      { id: allowedId, key: facilityId, value: { submitter: contactId } }
+    ]
+  });
+  // returns the list of subjects the user is allowed to see
+  db.medic.view.onCall(2).callsArgWith(3, null, {
+    rows: [
+      { id: facilityId }, // their place
+      { id: contactId } // their contact
+    ]
+  });
+  // returns the list of doc ids the user is allowed to see
+  db.medic.view.onCall(3).callsArgWith(3, null, {
     rows: [
       // submitted by your boss about your facility - don't show
       { id: unpermittedId, key: facilityId, value: { submitter: 'yourboss' } },
@@ -662,6 +755,19 @@ exports['updates the feed when the doc is updated'] = function(test) {
       { id: allowedId, key: 'subjectId', value: { submitter: 'contactId' } }
     ]
   });
+  // returns the list of subjects the user is allowed to see
+  db.medic.view.onCall(2).callsArgWith(3, null, {
+    rows: [
+      { id: subjectId }
+    ]
+  });
+  // returns the list of doc ids the user is allowed to see
+  db.medic.view.onCall(3).callsArgWith(3, null, {
+    rows: [
+      { id: unchangedId, key: 'subjectId', value: { submitter: 'contactId' } },
+      { id: allowedId, key: 'subjectId', value: { submitter: 'contactId' } }
+    ]
+  });
 
   var result = '';
 
@@ -688,10 +794,10 @@ exports['updates the feed when the doc is updated'] = function(test) {
         test.equals(db.request.args[0][0].qs.since, 1);
         test.equals(db.request.args[0][0].qs.heartbeat, 10000);
         test.equals(db.request.args[0][0].qs.feed, 'longpoll');
-        test.equals(auth.getFacilityId.callCount, 1);
+        test.equals(auth.getFacilityId.callCount, 2);
         test.equals(auth.getFacilityId.args[0][0], testReq);
         test.equals(auth.getFacilityId.args[0][1], userCtx);
-        test.equals(db.medic.view.callCount, 2);
+        test.equals(db.medic.view.callCount, 4);
         test.done();
       });
     }
@@ -715,8 +821,126 @@ exports['updates the feed when the doc is updated'] = function(test) {
   });
 };
 
+exports['do not respond with new lastSeq unless sure we have all relevant changes - #4166'] = test => {
+  test.expect(8);
+
+  const userCtx = { name: 'jim', roles: [ 'district_admin' ] };
+  const newId = 'abc';
+  const unchangedId = 'klm';
+
+  const testReq = {
+    query: {
+      since: 1,
+      heartbeat: 10000,
+      feed: 'longpoll',
+      doc_ids: JSON.stringify([ unchangedId ])
+    },
+    on: function() {}
+  };
+
+  sinon.stub(auth, 'getUserCtx').onCall(0).callsArgWith(1, null, userCtx);
+  sinon.stub(auth, 'isAdmin').returns(false);
+  sinon.stub(auth, 'hasAllPermissions').returns(false);
+  const getFacilityId = sinon.stub(auth, 'getFacilityId');
+  getFacilityId.callsArgWith(2, null, 'a');
+  sinon.stub(auth, 'getContactId').callsArgWith(1, null, 'contactId');
+  sinon.stub(config, 'get').returns(false);
+
+  // individual change logs
+  const changeLog = sinon.stub(db, 'request');
+
+  sinon.stub(db.medic, 'view');
+  // returns the list of subjects the user is allowed to see
+  db.medic.view.onCall(0).callsArgWith(3, null, {
+    rows: [
+      { id: 'some-subject' }
+    ]
+  });
+  // returns the list of doc ids the user is allowed to see
+  db.medic.view.onCall(1).callsArgWith(3, null, {
+    rows: [
+      { id: unchangedId, key: 'subjectId', value: { submitter: 'contactId' } }
+    ]
+  });
+  // returns the updated list of subjects the user is allowed to see
+  db.medic.view.onCall(2).callsArgWith(3, null, {
+    rows: [
+      { id: 'new-subject' }
+    ]
+  });
+  // returns the updated list of doc ids the user is allowed to see
+  db.medic.view.onCall(3).callsArgWith(3, null, {
+    rows: [
+      { id: unchangedId, key: 'subjectId', value: { submitter: 'contactId' } },
+      { id: newId, key: 'subjectId', value: { submitter: 'contactId' } }
+    ]
+  });
+  // returns the same list of subjects the user is allowed to see
+  db.medic.view.onCall(4).callsArgWith(3, null, {
+    rows: [
+      { id: 'new-subject' }
+    ]
+  });
+  // returns the same list of doc ids the user is allowed to see
+  db.medic.view.onCall(5).callsArgWith(3, null, {
+    rows: [
+      { id: unchangedId, key: 'subjectId', value: { submitter: 'contactId' } },
+      { id: newId, key: 'subjectId', value: { submitter: 'contactId' } }
+    ]
+  });
+
+  let result = '';
+
+  const testRes = {
+    type: function() {},
+    writeHead: function() {},
+    write: function(slice) {
+      result += slice;
+    },
+    end: function() {
+      setTimeout(function() { // timeout to make sure nothing else tries to respond
+        result = JSON.parse(result);
+        test.equals(result.results.length, 1);
+        test.equals(result.results[0].seq, 4);
+        test.equals(result.results[0].id, newId);
+        test.equals(changeLog.callCount, 2);
+        test.equals(changeLog.args[0][0].qs.since, 1);
+        test.ok(!changeLog.args[0][0].body.doc_ids.includes(newId));
+        test.equals(changeLog.args[1][0].qs.since, 1); // retries from same point
+        test.ok(changeLog.args[1][0].body.doc_ids.includes(newId));
+        test.done();
+      });
+    },
+    setHeader: function() {},
+  };
+  handler.request({}, testReq, testRes);
+
+  // some time later a change happens - call the callback
+  changeLog.args[0][1](null, {
+    results: [
+      {
+        seq: 4,
+        id: newId // we don't know they're allowed to see this yet
+      }
+    ],
+    last_seq: 5
+  });
+  setTimeout(() => {
+    // later again we've reestablished the changelog and now it's ready
+    changeLog.args[1][1](null, {
+      results: [
+        {
+          seq: 4,
+          id: newId // we don't know they're allowed to see this yet
+        }
+      ],
+      last_seq: 5
+    });
+  });
+};
+
 exports['replicates new docs to relevant feeds'] = function(test) {
- test.expect(10);
+  test.expect(10);
 
   var userCtx1 = { name: 'jim', roles: [ 'district_admin' ] };
   var userCtx2 = { name: 'bob', roles: [ 'district_admin' ] };
@@ -738,13 +962,15 @@ exports['replicates new docs to relevant feeds'] = function(test) {
 
   sinon.stub(auth, 'getUserCtx')
     .onCall(0).callsArgWith(1, null, userCtx1)
-    .onCall(1).callsArgWith(1, null, userCtx2);
+    .onCall(1).callsArgWith(1, null, userCtx2)
+    .onCall(2).callsArgWith(1, null, userCtx2);
   sinon.stub(auth, 'isAdmin').returns(false);
   sinon.stub(auth, 'hasAllPermissions').returns(false);
   var getFacilityId = sinon.stub(auth, 'getFacilityId');
   getFacilityId.onCall(0).callsArgWith(2, null, 'a');
   getFacilityId.onCall(1).callsArgWith(2, null, 'b');
   getFacilityId.onCall(2).callsArgWith(2, null, 'b');
+  getFacilityId.onCall(3).callsArgWith(2, null, 'b');
   sinon.stub(auth, 'getContactId').callsArgWith(1, null, 'contactId');
   sinon.stub(config, 'get').returns(false);
   var abort1 = sinon.stub();
@@ -802,6 +1028,19 @@ exports['replicates new docs to relevant feeds'] = function(test) {
       { id: newId, key: 'subjectId', value: { submitter: 'contactId' } }
     ]
   });
+  // returns the list of subjects the second user is allowed to see
+  db.medic.view.onCall(6).callsArgWith(3, null, {
+    rows: [
+      { id: subjectId }
+    ]
+  });
+  // returns the list of doc ids the second user is allowed to see
+  db.medic.view.onCall(7).callsArgWith(3, null, {
+    rows: [
+      { id: unchangedId, key: 'subjectId', value: { submitter: 'contactId' } },
+      { id: newId, key: 'subjectId', value: { submitter: 'contactId' } }
+    ]
+  });
 
   var testRes1 = {
     type: function() {},
@@ -831,7 +1070,7 @@ exports['replicates new docs to relevant feeds'] = function(test) {
         test.deepEqual(db.request.args[0][0].body.doc_ids.sort(), [ unchangedId, userId1, DDOC_ID ].sort());
         test.deepEqual(db.request.args[1][0].body.doc_ids.sort(), [ unchangedId, userId2, DDOC_ID ].sort());
         test.deepEqual(db.request.args[2][0].body.doc_ids.sort(), [ unchangedId, userId2, newId, DDOC_ID ].sort());
-        test.equals(db.medic.view.callCount, 6);
+        test.equals(db.medic.view.callCount, 8);
         test.equals(abort1.callCount, 0);
         test.equals(abort2.callCount, 1); // only the request from the second user should be aborted
         test.done();
@@ -974,6 +1213,13 @@ exports['makes multiple requests when you can see more than 100 docs - #3508'] =
   });
   // returns the list of doc ids the user is allowed to see
   db.medic.view.onCall(1).callsArgWith(3, null, { rows: allowedDocIds });
+  db.medic.view.onCall(2).callsArgWith(3, null, {
+    rows: [
+      { id: subjectId, value: patientId }
+    ]
+  });
+  // returns the list of doc ids the user is allowed to see
+  db.medic.view.onCall(3).callsArgWith(3, null, { rows: allowedDocIds });
 
   let result = '';
 
@@ -1065,6 +1311,13 @@ exports['test sorting by couchdb 2 sequence style'] = test => {
   });
   // returns the list of doc ids the user is allowed to see
   db.medic.view.onCall(1).callsArgWith(3, null, { rows: allowedDocIds });
+  db.medic.view.onCall(2).callsArgWith(3, null, {
+    rows: [
+      { id: subjectId, value: patientId }
+    ]
+  });
+  // returns the list of doc ids the user is allowed to see
+  db.medic.view.onCall(3).callsArgWith(3, null, { rows: allowedDocIds });
 
   let result = '';
 
