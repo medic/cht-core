@@ -729,6 +729,7 @@ app.postJson('/api/v1/bulk-delete', function(req, res) {
         });
       }, Promise.resolve([]));
 
+      res.setHeader('X-Content-Type-Options', 'nosniff');
       res.write(`0/${total}\n`);
       sendBatches
         .then(batchResponses => {
