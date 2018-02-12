@@ -8,10 +8,12 @@ var _ = require('underscore');
 
   inboxServices.factory('DeleteDocs',
     function(
+      $http,
       $log,
       $q,
       DB,
-      ExtractLineage
+      ExtractLineage,
+      Session
     ) {
 
       'ngInject';
@@ -90,7 +92,35 @@ var _ = require('underscore');
             return minifyLineage(docs);
           })
           .then(function() {
-            return DB().bulkDocs(docs);
+            if (!Session.isAdmin()) {
+              return DB().bulkDocs(docs);
+            }
+            return $q(function(resolve, reject) {
+              var xhr = new XMLHttpRequest();
+              xhr.onprogress = function() {
+                // TODO update UI
+                console.log('PROGRESS:', xhr.responseText);
+              };
+              xhr.onload = function() {
+                if (this.status >= 200 && this.status < 300) {
+                  resolve(xhr.response);
+                } else {
+                  reject({
+                    status: this.status,
+                    statusText: xhr.statusText
+                  });
+                }
+              };
+              xhr.onerror = function() {
+                reject({
+                  status: this.status,
+                  statusText: xhr.statusText
+                });
+              };
+              xhr.open('POST', '/api/v1/bulk-delete', true);
+              xhr.setRequestHeader('Content-type', 'application/json');
+              xhr.send(JSON.stringify({ docs: docs }));
+            });
           })
           // No silent fails! Throw on error.
           .then(function(results) {
