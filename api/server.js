@@ -698,44 +698,39 @@ app.postJson('/api/v1/bulk-delete', function(req, res) {
           }
         })
         .filter(doc => doc);
-      const total = docs.length;
 
-      const generateBatchPromise = (batch, count) => {
-        return new Promise((resolve, reject) => {
-          db.medic.bulk({ docs: batch }, function (err, body) {
-            if (err) {
-              reject(err);
-            }
-
-            res.write(`${count}/${total}\n`);
-            resolve(body);
-          });
-        });
-      };
-
-      const BATCH_SIZE = 100;
+      const BATCH_SIZE = 10;
       const batches = [];
       while (docs.length > 0) {
         const batch = docs.splice(0, BATCH_SIZE);
         batches.push(batch);
       }
 
-      let count = 0;
-      const sendBatches = batches.reduce((promise, batch) => {
-        return promise.then(batchResponses => {
-          count += batch.length;
-          return generateBatchPromise(batch, count).then(batchResponse => batchResponses.concat(batchResponse));
+      const generateBatchPromise = (batch, isFinal) => {
+        return new Promise((resolve, reject) => {
+          db.medic.bulk({ docs: batch }, function (err, body) {
+            if (err) {
+              reject(err);
+            }
+
+            let resString = JSON.stringify(body);
+            resString += isFinal ? '' : ',';
+            res.write(resString);
+            resolve(body);
+          });
         });
+      };
+
+      const sendBatches = batches.reduce((promise, batch, index) => {
+        return promise.then(() => generateBatchPromise(batch, index === batches.length - 1));
       }, Promise.resolve([]));
 
+      res.type('application/json');
       res.setHeader('X-Content-Type-Options', 'nosniff');
-      res.write(`0/${total}\n`);
+      res.write('[');
       sendBatches
-        .then(batchResponses => {
-          const mergedResponses = batchResponses.reduce((mergedResponses, response) => {
-            return mergedResponses.concat(response);
-          }, []);
-          res.write(JSON.stringify(mergedResponses));
+        .then(() => {
+          res.write(']');
           res.end();
         })
         .catch(err => {
