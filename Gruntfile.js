@@ -382,6 +382,7 @@ module.exports = function(grunt) {
       unit: {
         src: [
           'tests/mocha/unit/**/*.spec.js',
+          'api/tests/mocha/**/*.js',
           'sentinel/test/mocha/**/*.js'
         ],
       },

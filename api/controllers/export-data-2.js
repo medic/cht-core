@@ -14,16 +14,89 @@ const SEARCH_BATCH = 100;
 const JOIN_COL = ',';
 const JOIN_ROW = '\n';
 
+const SUPPORTED_EXPORTS = ['reports'];
+
+const flatten = (fields, prepend=[]) =>
+  Object.keys(fields).reduce((acc, k) => {
+    const path = [...prepend, k];
+    if (typeof fields[k] === 'object' && fields[k]) {
+      return _.extend(acc, flatten(fields[k], path));
+    } else {
+      acc[path.join('.')] = fields[k] || '';
+      return acc;
+    }
+  }, {});
+
 const CSV_MAPPER = {
-  forms: (filters, options) => {
-    // TODO: determine what CSV mapping strategy we need based on what forms we have
-    //
-    // for now just…
-    return CSV_MAPPER.contacts();
+  reports: (filters) => {
+    const forms = (
+      filters &&
+      filters.forms &&
+      filters.forms.selected &&
+      _.pluck(filters.forms.selected, 'code'));
+
+    let p = Promise.resolve();
+    // If they have not selected any forms we need to get all available ones
+    if (!forms) {
+      p = p.then(() => {
+        // TODO: look at the XmlForms and JsonForms code and use those to work
+        //   this out. You may need to pull these out into a shared library,
+        //   or just copy what they do.
+        console.warn('****************************');
+        console.warn('****************************');
+        console.warn('Exporting ALL forms is not yet supported');
+        console.warn('****************************');
+        console.warn('****************************');
+        return DB.query('medic-client/forms')
+          .then(results => _.pluck(results.rows, 'key'));
+        });
+    } else {
+      p = p.then(() => forms);
+    }
+
+    // Determine the fields for each form we care about
+    return p.then(forms =>
+      Promise.all(forms.map(form =>
+        DB.query('medic-client/reports_by_form', {
+          key: [form],
+          limit: 1,
+          include_docs: true
+        })
+        .then(results =>
+          results.rows[0] &&
+          results.rows[0].doc &&
+          results.rows[0].doc.fields
+        ))
+      ).then(allFields => {
+        const fieldColumns = _.union(
+          ...allFields.filter(f => f).map(f => Object.keys(flatten(f)))
+        ).sort();
+
+        const allColumns = [
+          '_id',
+          // TODO: defaults
+        ].concat(fieldColumns);
+
+        return {
+          header: allColumns,
+          fn: record => {
+            const flattened = flatten(record.fields);
+
+            return [
+              record._id,
+              // TODO: defaults
+            ].concat(fieldColumns.map(c => flattened[c]));
+          }
+        };
+      }));
   },
+
+
+  // NB: we don't actually support this (note SUPPORTED_EXPORTS above), it's
+  // here in the code to show a simpler examplen than the complicated forms one
   contacts: () => Promise.resolve({
-    header: ['id', 'rev'],
-    fn: record => [record._id, record._rev/*, ...*/]
+    header: ['id', 'rev', 'name', 'patient_id', 'type'],
+    fn: record => [record._id, record._rev, record.name, record.patient_id, record.type]
   })
 };
 
@@ -34,7 +107,7 @@ class SearchResultReader extends Readable {
 
     this.type = type;
     this.filters = filters;
-    this.options = searchOptions;
+    this.options = searchOptions || {};
 
     // There is no reason for a user to pass a skip, but we're going to allow
     // users to pass a limit. This could be useful as an escape hatch / tweak in
@@ -44,10 +117,6 @@ class SearchResultReader extends Readable {
   }
 
   _read() {
-    const thisTime = Math.random();
-    console.log('======================');
-    console.log(this.filters, this.options, thisTime);
-
     let printHeader;
 
     let p = Promise.resolve();
@@ -62,8 +131,6 @@ class SearchResultReader extends Readable {
     p = p
       .then(() => search(this.type, this.filters, this.options))
       .then(ids => {
-        console.log(ids, thisTime);
-        console.log('======================');
 
         if (!ids.length) {
           return this.push(null);
@@ -92,7 +159,7 @@ class SearchResultReader extends Readable {
 }
 
 module.exports = {
-  export: (type, filters, options) =>
-    new SearchResultReader(type, filters, options),
-  supportedExports: ['forms', 'contacts']
+  export: (type, filters, options) => new SearchResultReader(type, filters, options),
+  supportedExports: SUPPORTED_EXPORTS,
+  _flatten: flatten
 };

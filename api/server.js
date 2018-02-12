@@ -379,7 +379,7 @@ app.postJson('/api/v2/export/:type', (req, res) => {
 
   if (!exportData2.supportedExports.includes(type)) {
     return serverUtils.error({
-      message: 'v2 export only supports forms and contacts',
+      message: `v2 export only supports ${exportData2.supportedExports}`,
       code: 404
     }, req, res);
   }
