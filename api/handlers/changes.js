@@ -217,6 +217,7 @@ const getChanges = feed => {
         }
         if (!containsAll(originalValidatedIds, feed.validatedIds)) {
           // getChanges again with the updated ids
+          abortAllChangesRequests(feed);
           // setTimeout to stop recursive stack overflow
           setTimeout(() => {
             getChanges(feed);
