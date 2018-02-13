@@ -62,13 +62,50 @@ var _ = require('underscore');
         });
       };
 
+      var bulkDeleteRemoteDocs = function (docs, eventListeners) {
+        var concatResponses = function(batchResponses) {
+          return batchResponses.reduce(function(concattedResponses, batchResponse) {
+            return concattedResponses.concat(batchResponse);
+          }, []);
+        };
+
+        return $q(function(resolve, reject) {
+          var xhr = new XMLHttpRequest();
+          xhr.onprogress = function() {
+            if (xhr.responseText) {
+              var currentResponse = xhr.responseText.replace(/,\s*$/, ']').replace(/}\s*]\s*$/, '}]]');
+              var totalDocsDeleted = concatResponses(JSON.parse(currentResponse)).length;
+              if (eventListeners.progress) {
+                eventListeners.progress(totalDocsDeleted);
+              }
+            }
+          };
+          xhr.onload = function() {
+            if (this.status >= 200 && this.status < 300) {
+              resolve(concatResponses(JSON.parse(xhr.response)));
+            } else {
+              reject(new Error('Server responded with ' + this.status + ': ' + xhr.statusText));
+            }
+          };
+          xhr.onerror = function() {
+            reject(new Error('Server responded with ' + this.status + ': ' + xhr.statusText));
+          };
+          xhr.open('POST', '/api/v1/bulk-delete', true);
+          xhr.setRequestHeader('Content-type', 'application/json');
+          xhr.send(JSON.stringify({ docs: docs }));
+        });
+      };
+
       /**
        * Delete the given docs. If 'person' type then also fix the
        * contact hierarchy.
        *
        * @param docs {Object|Array} Document or array of documents to delete.
+       * @param eventListeners {Object} Map of event listeners to callback functions.
+       *    Available events are: 'progress'.
        */
-      return function(docs) {
+      return function(docs, eventListeners) {
+        eventListeners = eventListeners || {};
         if (!_.isArray(docs)) {
           docs = [ docs ];
         } else {
@@ -92,29 +129,10 @@ var _ = require('underscore');
             return minifyLineage(docs);
           })
           .then(function() {
-            if (!Session.isAdmin()) {
-              return DB().bulkDocs(docs);
+            if (Session.isAdmin()) {
+              return bulkDeleteRemoteDocs(docs, eventListeners);
             }
-            return $q(function(resolve, reject) {
-              var xhr = new XMLHttpRequest();
-              xhr.onprogress = function() {
-                // TODO update UI
-                console.log('PROGRESS:', xhr.responseText);
-              };
-              xhr.onload = function() {
-                if (this.status >= 200 && this.status < 300) {
-                  resolve(xhr.response);
-                } else {
-                  reject(new Error('Server responded with ' + this.status + ': ' + xhr.statusText));
-                }
-              };
-              xhr.onerror = function() {
-                reject(new Error('Server responded with ' + this.status + ': ' + xhr.statusText));
-              };
-              xhr.open('POST', '/api/v1/bulk-delete', true);
-              xhr.setRequestHeader('Content-type', 'application/json');
-              xhr.send(JSON.stringify({ docs: docs }));
-            });
+            return DB().bulkDocs(docs);
           })
           // No silent fails! Throw on error.
           .then(function(results) {
