@@ -9,10 +9,16 @@ angular.module('inboxControllers').controller('DeleteDocConfirm',
     'use strict';
     'ngInject';
 
+    function updateTotalDocsDeleted(totalDocsDeleted) {
+      $scope.totalDocsDeleted = totalDocsDeleted;
+    }
+
     $scope.submit = function() {
-      $scope.setProcessing();
       var docs = $scope.model.docs;
-      DeleteDocs(docs)
+      $scope.totalDocsSelected = docs.length;
+      $scope.totalDocsDeleted = 0;
+      $scope.setProcessing();
+      DeleteDocs(docs, { progress: updateTotalDocsDeleted })
         .then(function() {
           $scope.setFinished();
           var key = docs.length === 1 ? 'document.deleted' : 'document.deleted.plural';

@@ -10,4 +10,5 @@
 >
   <p ng-show="model.docs.length === 1" translate>confirm.delete</p>
   <p ng-show="model.docs.length !== 1" translate translate-values="{ number: {{model.docs.length}} }">confirm.delete.plural</p>
+  <p ng-show="status.processing">{{totalDocsDeleted}}/{{totalDocsSelected}}...</p>
 </mm-modal>
