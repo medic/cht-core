@@ -1,5 +1,4 @@
-var db = require('../db'),
-    serverUtils = require('./server-utils');
+var db = require('../db');
 
 const extractDocs = data => {
   return data.rows
@@ -33,7 +32,7 @@ const generateBatchPromise = (batch, res, options) => {
       let resString = JSON.stringify(body);
       resString += options.isFinal ? '' : ',';
       res.write(resString);
-      resolve(body);
+      resolve();
     });
   });
 };
@@ -45,16 +44,17 @@ const setupBatchPromises = (batches, res) => {
 };
 
 module.exports = {
-  bulkDelete: (req, res) => {
+  bulkDelete: (req, res, callback, options) => {
+    options = options || {};
+    options.batchSize = options.batchSize || 100;
     const keys = req.body.docs.map(doc => doc._id);
     db.medic.fetch({ keys }, function(err, data) {
       if (err) {
-        return serverUtils.error(err, req, res);
+        return callback(err);
       }
 
-      const BATCH_SIZE = 100;
       const docs = extractDocs(data);
-      const batches = generateBatches(docs, BATCH_SIZE);
+      const batches = generateBatches(docs, options.batchSize);
       const sendBatches = setupBatchPromises(batches, res);
 
       res.type('application/json');
@@ -64,9 +64,10 @@ module.exports = {
         .then(() => {
           res.write(']');
           res.end();
+          callback();
         })
         .catch(err => {
-          serverUtils.error(err, req, res);
+          return callback(err);
         });
     });
   }

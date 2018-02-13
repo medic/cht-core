@@ -684,7 +684,12 @@ app.postJson('/api/v1/bulk-delete', function(req, res) {
       return serverUtils.error({ code: 401 }, req, res);
     }
 
-    bulkDocs.bulkDelete(req, res);
+    const options = { batchSize: 100 };
+    bulkDocs.bulkDelete(req, res, function(err) {
+      if (err) {
+        return serverUtils.error(err, req, res);
+      }
+    }, options);
   });
 });
 
