@@ -72,7 +72,7 @@ var _ = require('underscore');
           var xhr = new XMLHttpRequest();
           xhr.onprogress = function() {
             if (xhr.responseText) {
-              var currentResponse = xhr.responseText.replace(/,\s*$/, ']').replace(/}\s*]\s*$/, '}]]');
+              var currentResponse = xhr.responseText.replace(/}\s*]\s*,?\s*$/, '}]]');
               var totalDocsDeleted = concatResponses(JSON.parse(currentResponse)).length;
               if (eventListeners.progress) {
                 eventListeners.progress(totalDocsDeleted);
