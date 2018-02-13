@@ -7,28 +7,25 @@ angular.module('inboxServices').factory('RecurringProcessManager',
     'ngInject';
 
     var recurringProcesses = {
-      updateRelativeDates: {
-        interval: false,
-        timeDelta: 10 * 60 * 1000,
-        callback: RelativeDate.updateRelativeDates
-      }
+      updateRelativeDates: false
     };
 
     return {
       startUpdateRelativeDate: function() {
-        if (recurringProcesses.updateRelativeDates.interval) {
-          $interval.cancel(recurringProcesses.updateRelativeDates.interval);
+        if (recurringProcesses.updateRelativeDates) {
+          $interval.cancel(recurringProcesses.updateRelativeDates);
         }
 
-        recurringProcesses.updateRelativeDates.interval = $interval(
-          recurringProcesses.updateRelativeDates.callback,
-          recurringProcesses.updateRelativeDates.timeDelta,
+        recurringProcesses.updateRelativeDates = $interval(
+          RelativeDate.updateRelativeDates,
+          10 * 60 * 1000,
           false //don't digest
         );
       },
       stopUpdateRelativeDate: function() {
-        if (recurringProcesses.updateRelativeDates.interval) {
-          $interval.cancel(recurringProcesses.updateRelativeDates.interval);
+        if (recurringProcesses.updateRelativeDates) {
+          $interval.cancel(recurringProcesses.updateRelativeDates);
+          recurringProcesses.updateRelativeDates = false;
         }
       }
     };
