@@ -62,18 +62,12 @@ var _ = require('underscore');
       };
 
       var bulkDeleteRemoteDocs = function (docs, eventListeners) {
-        var concatResponses = function(batchResponses) {
-          return batchResponses.reduce(function(concattedResponses, batchResponse) {
-            return concattedResponses.concat(batchResponse);
-          }, []);
-        };
-
         return $q(function(resolve, reject) {
           var xhr = new XMLHttpRequest();
           xhr.onprogress = function() {
             if (xhr.responseText) {
               var currentResponse = xhr.responseText.replace(/}\s*]\s*,?\s*$/, '}]]');
-              var totalDocsDeleted = concatResponses(JSON.parse(currentResponse)).length;
+              var totalDocsDeleted = _.flatten(JSON.parse(currentResponse)).length;
               if (eventListeners.progress) {
                 eventListeners.progress(totalDocsDeleted);
               }
@@ -81,7 +75,7 @@ var _ = require('underscore');
           };
           xhr.onload = function() {
             if (this.status >= 200 && this.status < 300) {
-              resolve(concatResponses(JSON.parse(xhr.response)));
+              resolve(_.flatten(JSON.parse(xhr.response)));
             } else {
               reject(new Error('Server responded with ' + this.status + ': ' + xhr.statusText));
             }
