@@ -8,7 +8,6 @@ var _ = require('underscore');
 
   inboxServices.factory('DeleteDocs',
     function(
-      $http,
       $log,
       $q,
       DB,
