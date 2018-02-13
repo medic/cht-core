@@ -57,8 +57,6 @@ angular.module('inboxServices').factory('RelativeDate',
             element.textContent = FormatDate.relative(timestamp, options);
           }
         });
-
-        return elements;
       }
     };
   }
