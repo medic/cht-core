@@ -13,18 +13,13 @@ angular.module('inboxServices').factory('DB',
     Location,
     pouchDB,
     POUCHDB_OPTIONS,
-    Session,
-    WebWorker
+    Session
   ) {
 
     'use strict';
     'ngInject';
 
     var cache = {};
-
-    var pouchWorker = WebWorker(require('worker-pouch/workerified'));
-
-    $window.PouchDB.adapter('worker', require('worker-pouch/client'));
 
     var getUsername = function(remote) {
       var username = Session.userCtx().name;
@@ -62,10 +57,6 @@ angular.module('inboxServices').factory('DB',
         }
         _.defaults(params, POUCHDB_OPTIONS.remote);
       } else {
-        params.adapter = 'worker';
-        params.worker = function () {
-          return pouchWorker;
-        };
         _.defaults(params, POUCHDB_OPTIONS.local);
       }
       return params;

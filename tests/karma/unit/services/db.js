@@ -27,8 +27,6 @@ describe('DB service', () => {
         return {
           angular: { callbacks: [] },
           PouchDB: {
-            // stub for pouch registering the worker adapter
-            adapter: () => {},
             // stub for registering validation plugin
             plugin: () => {}
           }
@@ -154,10 +152,8 @@ describe('DB service', () => {
       chai.expect(pouchDB.callCount).to.equal(2);
       chai.expect(actual.id).to.equal(expected.id);
       chai.expect(pouchDB.args[0][0]).to.equal('medicdb-user-johnny');
-      chai.expect(pouchDB.args[0][1].adapter).to.equal('worker');
       chai.expect(pouchDB.args[0][1].auto_compaction).to.equal(true);
       chai.expect(pouchDB.args[1][0]).to.equal('medicdb-user-johnny-meta');
-      chai.expect(pouchDB.args[1][1].adapter).to.equal('worker');
       chai.expect(pouchDB.args[1][1].auto_compaction).to.equal(true);
       chai.expect(expected.viewCleanup.callCount).to.equal(2);
     });
