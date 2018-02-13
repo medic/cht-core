@@ -28,6 +28,19 @@ const updatePatient = (audit, patient, doc, callback) => {
   });
 };
 
+const getPatient = (db, patientId, callback) => {
+  db.medic.get(patientId, (err, patient) => {
+    if (err && err.statusCode !== 404) {
+      callback(err);
+    }
+    if (patient) {
+      return callback(null, patient);
+    }
+    // no patient found - maybe the ID is a shortcode...
+    utils.getPatientContact(db, patientId, callback);
+  });
+};
+
 module.exports = {
   init: () => {
     const forms = getConfirmFormCodes();
@@ -46,9 +59,12 @@ module.exports = {
   },
   onMatch: (change, db, audit, callback) => {
     const doc = change.doc;
-    utils.getPatientContact(db, doc.fields.patient_id, (err, patient) => {
+    getPatient(db, doc.fields.patient_id, (err, patient) => {
       if (err) {
         return callback(err);
+      }
+      if (!patient) {
+        return callback(null, false);
       }
       updatePatient(audit, patient, doc, callback);
     });
