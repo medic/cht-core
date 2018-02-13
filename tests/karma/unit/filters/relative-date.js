@@ -42,12 +42,12 @@ describe('relativeDate filter', function() {
     chai.expect(element.text()).to.equal('somerelativetime');
   });
 
-  it('should render a time when the date is today', () => {
+  it('should render a relative date when the date is today', () => {
     //           today
     scope.date = moment().valueOf();
     var element = compile('<div ng-bind-html="date | relativeDate"></div>')(scope);
     scope.$digest();
     chai.expect(element.find('span').attr('title')).to.equal('day 0');
-    chai.expect(element.text()).to.equal('sometime');
+    chai.expect(element.text()).to.equal('somerelativetime');
   });
 });

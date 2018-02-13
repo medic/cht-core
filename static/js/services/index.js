@@ -57,6 +57,8 @@
   require('./moment-locale-data');
   require('./place-hierarchy');
   require('./properties');
+  require('./recurring-process-manager');
+  require('./relative-date');
   require('./report-view-model-generator');
   require('./resource-icons');
   require('./rules-engine');

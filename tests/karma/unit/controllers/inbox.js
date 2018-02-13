@@ -66,6 +66,10 @@ describe('InboxCtrl controller', () => {
       $provide.value('UserSettings', sinon.stub());
       $provide.value('Tour', { getTours: () => Promise.resolve([]) });
       $provide.value('RulesEngine', { init: KarmaUtils.nullPromise()() });
+      $provide.value('RecurringProcessManager', {
+          startUpdateRelativeDate: sinon.stub(),
+          stopUpdateRelativeDate: sinon.stub()
+      });
       $provide.constant('APP_CONFIG', {
         name: 'name',
         version: 'version'

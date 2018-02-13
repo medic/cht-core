@@ -47,7 +47,8 @@ var feedback = require('../modules/feedback'),
       UpdateSettings,
       UpdateUser,
       UserSettings,
-      XmlForms
+      XmlForms,
+      RecurringProcessManager
     ) {
       'ngInject';
 
@@ -646,6 +647,11 @@ var feedback = require('../modules/feedback'),
           }
         });
       }
+
+      RecurringProcessManager.startUpdateRelativeDate();
+      $scope.$on('$destroy', function() {
+        RecurringProcessManager.stopUpdateRelativeDate();
+      });
 
     }
   );
