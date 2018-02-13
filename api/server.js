@@ -699,7 +699,7 @@ app.postJson('/api/v1/bulk-delete', function(req, res) {
         })
         .filter(doc => doc);
 
-      const BATCH_SIZE = 10;
+      const BATCH_SIZE = 100;
       const batches = [];
       while (docs.length > 0) {
         const batch = docs.splice(0, BATCH_SIZE);
