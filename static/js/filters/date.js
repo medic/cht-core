@@ -17,8 +17,8 @@ var _ = require('underscore'),
   var getRelativeDateString = function(date, options) {
     if (options.age) {
       return options.FormatDate.age(date, options);
-    //} else if (!options.withoutTime && moment(date).isSame(moment(), 'day')) {
-    //  return options.FormatDate.time(date);
+    } else if (!options.withoutTime && moment(date).isSame(moment(), 'day')) {
+      return options.FormatDate.time(date);
     } else {
       return options.FormatDate.relative(date, options);
     }
@@ -52,7 +52,7 @@ var _ = require('underscore'),
            '<span class="' + classes.join(' ') + '" title="' + absolute + '">' +
              '<span ' +
                'class="relative-date-content '+ options.RelativeDate.getCssSelector() +'" ' +
-                options.RelativeDate.generateDataset(date, options) +
+                options.RelativeDate.generateDataset(date, options, true) +
              '>' +
                 relative +
              '</span>' +

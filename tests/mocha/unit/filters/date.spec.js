@@ -15,36 +15,22 @@ describe('date filter', function() {
     state: 'STATE',
   };
 
-  const camelCaseToDash = function(string) {
-    return string.replace(/[A-Z]/g, function(match) {
-      return '-' + match[0].toLowerCase();
-    });
-  };
-
   const FormatDate = {
     age: momentDate => `${momentDate.year() - 1970} years`,
     date: d => `${d.toISOString().split('T')[0]}`,
     datetime: d => `${d.toISOString()}`,
     relative: d => `${Math.floor((d - TEST_DATE) / 86400000)} days`,
   };
+
   const RelativeDate = {
     getCssSelector: () => {
       return 'update-relative-date';
     },
-    generateDataset: (date, options) => {
-      let dataset = [];
-      dataset.push(`data-date="${date.valueOf()}"`);
-
-      let allowedKeys = ['age', 'withoutTime', 'end'];
-      for (let key in options) {
-        if (allowedKeys.indexOf(key) !== -1 && options[key]) {
-          dataset.push(`data-${camelCaseToDash(key)}="${options[key]}"`);
-        }
-      }
-
-      return dataset.join(' ');
+    generateDataset: () => {
+      return 'data-date-options="someOptions"';
     }
   };
+
   const $translate = {
     instant: x => x,
   };
@@ -54,16 +40,13 @@ describe('date filter', function() {
 
 
   describe('age', function() {
-
     const age = filter.age(FormatDate, RelativeDate, $sce);
 
     it('should return nicely-formatted output', function() {
       // expect
       const expected = '<span class="relative-date future" title="2046-01-02">' +
                          '<span class="relative-date-content update-relative-date" ' +
-                           'data-date="'+ TEST_DATE.valueOf() +'" ' +
-                           'data-without-time="true" ' +
-                           'data-age="true"' +
+                           'data-date-options="someOptions"' +
                          '>' +
                            '76 years' +
                          '</span>' +
@@ -101,8 +84,10 @@ describe('date filter', function() {
 
     it('should return nicely-formatted output', function() {
       // expect
-      const expected = '<div class="relative-date-content update-relative-date" data-date="' + TEST_DATE.valueOf() + '">' +
-                       '0 days' +
+      const expected = '<div class="relative-date-content update-relative-date" ' +
+                         'data-date-options="someOptions"' +
+                       '>' +
+                         '0 days' +
                        '</div>' +
                        '<div class="full-date">2046-01-02T02:14:45.558Z</div>';
       assert.equal(fullDate(TEST_DATE), expected);
@@ -117,7 +102,7 @@ describe('date filter', function() {
     it('should return nicely-formatted output', function() {
       // expect
       const expected = '<span class="relative-date future" title="2046-01-02T02:14:45.558Z">' +
-                         '<span class="relative-date-content update-relative-date" data-date="' + TEST_DATE.valueOf() + '">0 days</span>' +
+                         '<span class="relative-date-content update-relative-date" data-date-options="someOptions">0 days</span>' +
                        '</span>';
       assert.equal(relativeDate(TEST_DATE), expected);
     });
@@ -132,8 +117,7 @@ describe('date filter', function() {
       // expect
       const expected = '<span class="relative-date future" title="2046-01-02">' +
                          '<span class="relative-date-content update-relative-date" ' +
-                           'data-date="' + TEST_DATE.valueOf() + '" ' +
-                           'data-without-time="true"' +
+                           'data-date-options="someOptions"' +
                          '>' +
                            '0 days' +
                          '</span>' +

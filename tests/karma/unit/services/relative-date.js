@@ -4,7 +4,8 @@ describe('RelativeDate Service', () => {
   let service;
   let formatDateRelativeDay = sinon.stub(),
     formatDateRelativeTime = sinon.stub(),
-    formatDateAge = sinon.stub();
+    formatDateAge = sinon.stub(),
+    formatDateTime = sinon.stub();
 
   const resetStubs = () => {
     formatDateAge.reset();
@@ -15,6 +16,9 @@ describe('RelativeDate Service', () => {
 
     formatDateRelativeTime.reset();
     formatDateRelativeTime.returns('somerelativetime');
+
+    formatDateTime.reset();
+    formatDateTime.returns('someabsolutetime');
   };
 
   const TEST_DATE = 2398472085558;
@@ -29,7 +33,8 @@ describe('RelativeDate Service', () => {
           }
           return formatDateRelativeTime();
         },
-        age: formatDateAge
+        age: formatDateAge,
+        time: formatDateTime
       });
     });
     inject((_RelativeDate_) => {
@@ -66,7 +71,9 @@ describe('RelativeDate Service', () => {
     };
 
     let actual = service.generateDataset(TEST_DATE, options);
-    chai.expect(actual).to.equal('data-date="2398472085558" data-camel-case="123456" data-text="string"');
+    chai.expect(actual).to.equal(`data-date-options='{"date":${TEST_DATE.valueOf()},"camelCase":123456,"text":"string"}'`);
+    actual = service.generateDataset(TEST_DATE, options, true);
+    chai.expect(actual).to.equal(`data-date-options='{"date":${TEST_DATE.valueOf()},"absoluteToday":true,"camelCase":123456,"text":"string"}'`);
     done();
   });
 
@@ -78,30 +85,38 @@ describe('RelativeDate Service', () => {
   });
 
   it('does not update relative date when no date is present, date is undefined or incorrect', done => {
-    let spanNoDate = document.createElement('span');
-    spanNoDate.appendChild(document.createTextNode('sometext'));
-    spanNoDate.setAttribute('id', 'spanNoDate');
-    spanNoDate.className += 'update-relative-date';
-    document.body.appendChild(spanNoDate);
+    let spanNoData = document.createElement('span');
+    spanNoData.appendChild(document.createTextNode('sometext'));
+    spanNoData.setAttribute('id', 'spanNoData');
+    spanNoData.className += 'update-relative-date';
+    document.body.appendChild(spanNoData);
 
-    let spanUndefDate = document.createElement('span');
-    spanUndefDate.appendChild(document.createTextNode('sometext'));
-    spanUndefDate.setAttribute('id', 'spanUndefDate');
-    spanUndefDate.setAttribute('data-date', '');
-    spanUndefDate.className += 'update-relative-date';
-    document.body.appendChild(spanUndefDate);
+    let spanEmptyData = document.createElement('span');
+    spanEmptyData.appendChild(document.createTextNode('sometext'));
+    spanEmptyData.setAttribute('id', 'spanEmptyData');
+    spanEmptyData.setAttribute('data-date-options', '');
+    spanEmptyData.className += 'update-relative-date';
+    document.body.appendChild(spanEmptyData);
+
+    let spanBadData = document.createElement('span');
+    spanBadData.appendChild(document.createTextNode('sometext'));
+    spanBadData.setAttribute('id', 'spanBadData');
+    spanBadData.setAttribute('data-date-options', 'alpha');
+    spanBadData.className += 'update-relative-date';
+    document.body.appendChild(spanBadData);
 
     let spanBadDate = document.createElement('span');
     spanBadDate.appendChild(document.createTextNode('sometext'));
     spanBadDate.setAttribute('id', 'spanBadDate');
-    spanBadDate.setAttribute('data-date', 'alpha');
+    spanBadDate.setAttribute('data-date-options', '{"date":"something"}');
     spanBadDate.className += 'update-relative-date';
     document.body.appendChild(spanBadDate);
 
     service.updateRelativeDates();
 
-    chai.expect(document.getElementById('spanNoDate').innerHTML).to.equal('sometext');
-    chai.expect(document.getElementById('spanUndefDate').innerHTML).to.equal('sometext');
+    chai.expect(document.getElementById('spanNoData').innerHTML).to.equal('sometext');
+    chai.expect(document.getElementById('spanEmptyData').innerHTML).to.equal('sometext');
+    chai.expect(document.getElementById('spanBadData').innerHTML).to.equal('sometext');
     chai.expect(document.getElementById('spanBadDate').innerHTML).to.equal('sometext');
 
     chai.expect(formatDateRelativeTime.callCount).to.equal(0);
@@ -113,15 +128,14 @@ describe('RelativeDate Service', () => {
     let spanAge = document.createElement('span');
     spanAge.appendChild(document.createTextNode('sometext'));
     spanAge.setAttribute('id', 'spanAge');
-    spanAge.setAttribute('data-date', '123456789');
-    spanAge.setAttribute('data-age', 'true');
+    spanAge.setAttribute('data-date-options', JSON.stringify({date: 123456789, age: true}));
     spanAge.className += 'update-relative-date';
     document.body.appendChild(spanAge);
 
     let spanNoAge = document.createElement('span');
     spanNoAge.appendChild(document.createTextNode('sometext'));
     spanNoAge.setAttribute('id', 'spanNoAge');
-    spanNoAge.setAttribute('data-date', '123456789');
+    spanNoAge.setAttribute('data-date-options', JSON.stringify({date: 123456789}));
     spanNoAge.className += 'update-relative-date';
     document.body.appendChild(spanNoAge);
 
@@ -139,14 +153,13 @@ describe('RelativeDate Service', () => {
   it('processes withoutTime option correctly', done => {
     let spanWithoutTime = document.createElement('span');
     spanWithoutTime.setAttribute('id', 'spanWithoutTime');
-    spanWithoutTime.setAttribute('data-date', '123456789');
-    spanWithoutTime.setAttribute('data-without-time', 'true');
+    spanWithoutTime.setAttribute('data-date-options', JSON.stringify({date: 123456789, withoutTime: true}));
     spanWithoutTime.className += 'update-relative-date';
     document.body.appendChild(spanWithoutTime);
 
     let spanNoWithoutTime = document.createElement('span');
     spanNoWithoutTime.setAttribute('id', 'spanNoWithoutTime');
-    spanNoWithoutTime.setAttribute('data-date', '123456789');
+    spanNoWithoutTime.setAttribute('data-date-options', JSON.stringify({date: 123456789}));
     spanNoWithoutTime.className += 'update-relative-date';
     document.body.appendChild(spanNoWithoutTime);
 
@@ -157,6 +170,54 @@ describe('RelativeDate Service', () => {
     chai.expect(formatDateRelativeTime.callCount).to.equal(1);
     chai.expect(formatDateRelativeDay.callCount).to.equal(1);
 
+    done();
+  });
+
+  it('processes absoluteToday option correctly', done => {
+    let timeToday = new Date().valueOf();
+    let timeSomeOtherDay = 123456789;
+
+    let spanTodayNoAbsolute = document.createElement('span');
+    spanTodayNoAbsolute.setAttribute('id', 'spanTodayNoAbsolute');
+    spanTodayNoAbsolute.setAttribute('data-date-options', JSON.stringify({date: timeToday}));
+    spanTodayNoAbsolute.className += 'update-relative-date';
+    document.body.appendChild(spanTodayNoAbsolute);
+
+    let spanTodayAbsolute = document.createElement('span');
+    spanTodayAbsolute.setAttribute('id', 'spanTodayAbsolute');
+    spanTodayAbsolute.setAttribute('data-date-options', JSON.stringify({date: timeToday, absoluteToday: true}));
+    spanTodayAbsolute.className += 'update-relative-date';
+    document.body.appendChild(spanTodayAbsolute);
+
+    let spanOtherDayNoAbsolute = document.createElement('span');
+    spanOtherDayNoAbsolute.setAttribute('id', 'spanOtherDayNoAbsolute');
+    spanOtherDayNoAbsolute.setAttribute('data-date-options', JSON.stringify({date: timeSomeOtherDay}));
+    spanOtherDayNoAbsolute.className += 'update-relative-date';
+    document.body.appendChild(spanOtherDayNoAbsolute);
+
+    let spanOtherDayAbsolute = document.createElement('span');
+    spanOtherDayAbsolute.setAttribute('id', 'spanOtherDayAbsolute');
+    spanOtherDayAbsolute.setAttribute('data-date-options', JSON.stringify({date: timeSomeOtherDay, absoluteToday: true}));
+    spanOtherDayAbsolute.className += 'update-relative-date';
+    document.body.appendChild(spanOtherDayAbsolute);
+
+    let spanTodayAbsoluteWitoutTime = document.createElement('span');
+    spanTodayAbsoluteWitoutTime.setAttribute('id', 'spanTodayAbsoluteWitoutTime');
+    spanTodayAbsoluteWitoutTime.setAttribute('data-date-options', JSON.stringify({date: timeToday, absoluteToday: true, withoutTime: true}));
+    spanTodayAbsoluteWitoutTime.className += 'update-relative-date';
+    document.body.appendChild(spanTodayAbsoluteWitoutTime);
+
+
+    service.updateRelativeDates();
+    chai.expect(document.getElementById('spanTodayNoAbsolute').innerHTML).to.equal('somerelativetime');
+    chai.expect(document.getElementById('spanTodayAbsolute').innerHTML).to.equal('someabsolutetime');
+    chai.expect(document.getElementById('spanOtherDayNoAbsolute').innerHTML).to.equal('somerelativetime');
+    chai.expect(document.getElementById('spanOtherDayAbsolute').innerHTML).to.equal('somerelativetime');
+    chai.expect(document.getElementById('spanTodayAbsoluteWitoutTime').innerHTML).to.equal('somerelativeday');
+
+    chai.expect(formatDateRelativeTime.callCount).to.equal(3);
+    chai.expect(formatDateTime.callCount).to.equal(1);
+    chai.expect(formatDateRelativeDay.callCount).to.equal(1);
     done();
   });
 });

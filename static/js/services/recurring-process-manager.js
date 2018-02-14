@@ -18,7 +18,8 @@ angular.module('inboxServices').factory('RecurringProcessManager',
 
         recurringProcesses.updateRelativeDates = $interval(
           RelativeDate.updateRelativeDates,
-          10 * 60 * 1000,
+          RelativeDate.getUpdateTimeDelta || 10 * 60 * 1000,
+          0,
           false //don't digest
         );
       },
