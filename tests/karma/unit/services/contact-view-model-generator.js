@@ -267,10 +267,10 @@ describe('ContactViewModelGenerator service', () => {
       });
     });
 
-    it('includes reports from child places', () => {
+    it('includes reports from children', () => {
       stubSearch(null, [ { _id: 'ab' },{ _id: 'cd' } ]);
-      return runReportsTest([childPerson, childPerson2]).then(model => {
-        chai.expect(search.args[0][1].subjectIds).to.deep.equal([ doc._id, childPerson2._id, childPerson._id ]);
+      return runReportsTest([childPerson, childPerson2, deceasedChildPerson]).then(model => {
+        chai.expect(search.args[0][1].subjectIds).to.deep.equal([ doc._id, childPerson2._id, childPerson._id, deceasedChildPerson._id ]);
         chai.expect(search.callCount).to.equal(1);
         chai.expect(model.reports.length).to.equal(2);
         chai.expect(model.reports[0]._id).to.equal('ab');
