@@ -373,9 +373,10 @@ app.all([
 });
 
 const exportDataV2 = (req, res) => {
+  req.body = req.body || (req.query.body && JSON.parse(req.query.body)) || {};
   const type = req.params.type,
-        filters = req.body && req.body.filters || {},
-        options = req.body && req.body.options || {};
+        filters = req.body.filters || {},
+        options = req.body.options || {};
 
   if (!exportData2.supportedExports.includes(type)) {
     return serverUtils.error({
