@@ -227,11 +227,13 @@ angular.module('inboxServices').factory('ContactViewModelGenerator',
 
     var setReports = function(model) {
       var contacts = [ model.doc ];
-      if (model.children.persons) {
-        model.children.persons.forEach(function(child) {
-          contacts.push(child.doc);
-        });
-      }
+      [ 'persons', 'deceased' ].forEach(function(type) {
+        if (model.children[type]) {
+          model.children[type].forEach(function(child) {
+            contacts.push(child.doc);
+          });
+        }
+      });
       return getReports(contacts)
         .then(function(reports) {
           addPatientName(reports, contacts);
