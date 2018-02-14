@@ -12,7 +12,39 @@ describe('death_reporting', () => {
   });
 
   describe('onMatch', () => {
-    it('marks a patient deceased', done => {
+
+    it('marks a patient deceased with uuid', done => {
+      const patientId = 'some-uuid';
+      const dateOfDeath = 15612321;
+      const patient = { name: 'greg' };
+      const change = {
+        doc: {
+          reported_date: dateOfDeath,
+          form: 'death-confirm',
+          fields: { patient_id: patientId }
+        }
+      };
+      sinon.stub(config, 'get').returns({
+        mark_deceased_forms: ['death-confirm'],
+        undo_deceased_forms: ['death-undo']
+      });
+      const getPatientContact = sinon.stub(utils, 'getPatientContact').callsArgWith(2, null, patient);
+      const saveDoc = sinon.stub().callsArg(1);
+      const get = sinon.stub().callsArgWith(1, null, patient);
+      const db = { medic: { get: get } };
+      const audit = { saveDoc: saveDoc };
+      transition.onMatch(change, db, audit, (err, updated) => {
+        updated.should.equal(true);
+        get.callCount.should.equal(1);
+        get.args[0][0].should.equal(patientId);
+        getPatientContact.callCount.should.equal(0);
+        saveDoc.callCount.should.equal(1);
+        saveDoc.args[0][0].should.deep.equal({ name: 'greg', date_of_death: dateOfDeath });
+        done();
+      });
+    });
+
+    it('marks a patient deceased with shortcode', done => {
       const patientId = '00001';
       const dateOfDeath = 15612321;
       const patient = { name: 'greg' };
@@ -29,7 +61,8 @@ describe('death_reporting', () => {
       });
       const getPatientContact = sinon.stub(utils, 'getPatientContact').callsArgWith(2, null, patient);
       const saveDoc = sinon.stub().callsArg(1);
-      const db = 'some-db';
+      const get = sinon.stub().callsArgWith(1, { statusCode: 404 });
+      const db = { medic: { get: get } };
       const audit = { saveDoc: saveDoc };
       transition.onMatch(change, db, audit, (err, updated) => {
         updated.should.equal(true);
@@ -57,7 +90,8 @@ describe('death_reporting', () => {
       });
       const getPatientContact = sinon.stub(utils, 'getPatientContact').callsArgWith(2, null, patient);
       const saveDoc = sinon.stub().callsArg(1);
-      const db = 'some-db';
+      const get = sinon.stub().callsArgWith(1, { statusCode: 404 });
+      const db = { medic: { get: get } };
       const audit = { saveDoc: saveDoc };
       transition.onMatch(change, db, audit, (err, updated) => {
         updated.should.equal(true);
@@ -85,7 +119,8 @@ describe('death_reporting', () => {
       });
       const getPatientContact = sinon.stub(utils, 'getPatientContact').callsArgWith(2, null, patient);
       const saveDoc = sinon.stub().callsArg(1);
-      const db = 'some-db';
+      const get = sinon.stub().callsArgWith(1, { statusCode: 404 });
+      const db = { medic: { get: get } };
       const audit = { saveDoc: saveDoc };
       transition.onMatch(change, db, audit, (err, updated) => {
         updated.should.equal(false);
@@ -96,6 +131,33 @@ describe('death_reporting', () => {
         done();
       });
     });
+
+    it('does nothing if patient not found', done => {
+      const patientId = '00001';
+      const change = {
+        doc: {
+          form: 'death-confirm',
+          fields: { patient_id: patientId }
+        }
+      };
+      sinon.stub(config, 'get').returns({
+        mark_deceased_forms: ['death-confirm'],
+        undo_deceased_forms: ['death-undo']
+      });
+      const getPatientContact = sinon.stub(utils, 'getPatientContact').callsArgWith(2);
+      const saveDoc = sinon.stub().callsArg(1);
+      const get = sinon.stub().callsArgWith(1, { statusCode: 404 });
+      const db = { medic: { get: get } };
+      const audit = { saveDoc: saveDoc };
+      transition.onMatch(change, db, audit, (err, updated) => {
+        updated.should.equal(false);
+        get.callCount.should.equal(1);
+        getPatientContact.callCount.should.equal(1);
+        saveDoc.callCount.should.equal(0);
+        done();
+      });
+    });
+
   });
 
 });
