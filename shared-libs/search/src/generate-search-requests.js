@@ -63,7 +63,7 @@ var reportedDateRequest = function(filters) {
 };
 
 var formRequest = function(filters) {
-  return getRequestForMultidropdown(
+  var req = getRequestForMultidropdown(
     'medic-client/reports_by_form',
     filters.forms,
     function(forms) {
@@ -71,6 +71,12 @@ var formRequest = function(filters) {
         return [ form.code ];
       });
     });
+
+  if (req) {
+    req.params.reduce = false;
+  }
+
+  return req;
 };
 
 var validityRequest = function(filters) {

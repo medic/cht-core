@@ -38,18 +38,11 @@ const CSV_MAPPER = {
     let p = Promise.resolve();
     // If they have not selected any forms we need to get all available ones
     if (!forms) {
-      p = p.then(() => {
-        // TODO: look at the XmlForms and JsonForms code and use those to work
-        //   this out. You may need to pull these out into a shared library,
-        //   or just copy what they do.
-        console.warn('****************************');
-        console.warn('****************************');
-        console.warn('Exporting ALL forms is not yet supported');
-        console.warn('****************************');
-        console.warn('****************************');
-        return DB.query('medic-client/forms')
-          .then(results => _.pluck(results.rows, 'key'));
-        });
+      p = p.then(() =>
+        DB.query('medic-client/reports_by_form', {
+          group: true
+        }).then(results => results.rows.map(r => r.key[0]))
+      );
     } else {
       p = p.then(() => forms);
     }
@@ -60,7 +53,8 @@ const CSV_MAPPER = {
         DB.query('medic-client/reports_by_form', {
           key: [form],
           limit: 1,
-          include_docs: true
+          include_docs: true,
+          reduce: false
         })
         .then(results =>
           results.rows[0] &&

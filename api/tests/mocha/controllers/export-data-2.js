@@ -1,5 +1,6 @@
 require('chai').should();
 
+const sinon = require('sinon').sandbox.create();
 const controller = require('../../../controllers/export-data-2');
 
 describe('Export Data 2.0', () => {

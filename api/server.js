@@ -372,10 +372,10 @@ app.all([
   });
 });
 
-app.postJson('/api/v2/export/:type', (req, res) => {
+const exportDataV2 = (req, res) => {
   const type = req.params.type,
-        filters = req.body.filters,
-        options = req.body.options;
+        filters = req.body && req.body.filters || {},
+        options = req.body && req.body.options || {};
 
   if (!exportData2.supportedExports.includes(type)) {
     return serverUtils.error({
@@ -395,6 +395,14 @@ app.postJson('/api/v2/export/:type', (req, res) => {
       return serverUtils.error(err, req, res);
     }
 
+    const format = formats.csv;
+    const filename = req.params.type + '-' +
+                   moment().format('YYYYMMDDHHmm') +
+                   '.' + format.extension;
+    res
+      .set('Content-Type', format.contentType)
+      .set('Content-Disposition', 'attachment; filename=' + filename);
+
     const d = domain.create();
     d.on('error', err => serverUtils.error(err, req, res));
     d.run(() =>
@@ -403,7 +411,10 @@ app.postJson('/api/v2/export/:type', (req, res) => {
         // Do we want to create a zip here?
         .pipe(res));
   });
-});
+};
+
+app.get('/api/v2/export/:type', exportDataV2);
+app.postJson('/api/v2/export/:type', exportDataV2);
 
 app.get('/api/v1/fti/:view', function(req, res) {
   auth.check(req, 'can_view_data_records', null, function(err) {
