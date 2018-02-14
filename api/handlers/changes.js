@@ -408,6 +408,14 @@ var getReplicationKey = function(doc) {
 };
 
 var updateFeeds = function(changes) {
+  if (!changes || !changes.results) {
+    // See: https://github.com/medic/medic-webapp/issues/3099
+    // This should never happen, but apparently it does sometimes.
+    // Attempting to log out the response usefully to see what's occuring
+    console.error('No _changes error, but malformed response:', JSON.stringify(changes));
+    return;
+  }
+
   var modifiedChanges = changes.results.map(function(change) {
     var result = {
       id: change.id,
