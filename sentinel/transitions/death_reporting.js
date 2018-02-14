@@ -31,7 +31,7 @@ const updatePatient = (audit, patient, doc, callback) => {
 const getPatient = (db, patientId, callback) => {
   db.medic.get(patientId, (err, patient) => {
     if (err && err.statusCode !== 404) {
-      callback(err);
+      return callback(err);
     }
     if (patient) {
       return callback(null, patient);
