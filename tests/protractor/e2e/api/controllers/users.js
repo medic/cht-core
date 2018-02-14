@@ -142,7 +142,7 @@ describe('Users API', () => {
       }, true)
       .then(() => fail('You should get a 401 in this situation'))
       .catch(err => {
-        expect(err).toBe('not logged in');
+        expect(err).toBe('You do not have permissions to modify this person');
       }));
 
     it('Errors if a user edits themselves but attempts to change their roles', () =>
@@ -194,7 +194,7 @@ describe('Users API', () => {
         })
         .then(() => fail('You should get an error in this situation'))
         .catch(err => {
-          expect(err).toBe('not logged in');
+          expect(err).toBe('You do not have permissions to modify this person');
         }));
 
     it('Does allow users to update their password with a cookie and also basic auth', () =>

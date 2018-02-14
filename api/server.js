@@ -521,6 +521,8 @@ app.postJson('/api/v1/users/:username', function(req, res) {
   }
 
   const username = req.params.username;
+  const credentials = auth.basicAuthCredentials(req);
+
   const updateUser = fullAccess =>
     users.updateUser(username, req.body, fullAccess, (err, body) => {
       if (err) {
@@ -544,24 +546,16 @@ app.postJson('/api/v1/users/:username', function(req, res) {
     new Promise((resolve, reject) => auth.getUserCtx(req, (err, userCtx) => {
       if (err) {
         reject(err);
-      } else if (userCtx.name === username) {
+      } else if (userCtx.name === username && (!credentials || credentials.username === username)) {
         resolve(true);
       } else {
         resolve(false);
       }
     }));
   const basicAuthValid = () =>
-    new Promise((resolve, reject) => {
-      const credentials = auth.basicAuthCredentials(req);
-
+    new Promise(resolve => {
       if (!credentials) {
         resolve(null); // Not attempting basic auth
-      } else if (username !== credentials.username) {
-        // Make sure the Basic Auth credentials are actually for the same person
-        reject({
-          message: 'Basic Auth user does not match the passed username',
-          code: 403
-        });
       } else {
         auth.validateBasicAuth(credentials, err => {
           if (err) {
