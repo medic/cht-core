@@ -15,7 +15,6 @@ describe('Users API', () => {
       password: password,
       facility_id: null,
       roles: [
-        'national-manager',
         'kujua_user',
         'data_entry',
       ]
@@ -34,7 +33,6 @@ describe('Users API', () => {
         fullname: 'Test Apiuser',
         type: 'user-settings',
         roles: [
-          'national-manager',
           'kujua_user',
           'data_entry',
         ]
@@ -191,10 +189,10 @@ describe('Users API', () => {
           body: {
             password: 'swizzlesticks'
           },
-        })
+        }, false, true)
         .then(() => fail('You should get an error in this situation'))
         .catch(err => {
-          expect(err).toBe('You do not have permissions to modify this person');
+          expect(err).toBe('You must authenticate with Basic Auth to modify your password');
         }));
 
     it('Does allow users to update their password with a cookie and also basic auth', () =>
