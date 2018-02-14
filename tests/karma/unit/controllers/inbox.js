@@ -7,11 +7,18 @@ describe('InboxCtrl controller', () => {
       snackbar,
       spyState,
       stubModal,
-      dummyId = 'dummydummy';
+      dummyId = 'dummydummy',
+      RecurringProcessManager
+  ;
 
   beforeEach(() => {
     snackbar = sinon.stub();
     module('inboxApp');
+
+    RecurringProcessManager = {
+      startUpdateRelativeDate: sinon.stub(),
+      stopUpdateRelativeDate: sinon.stub()
+    };
 
     module($provide => {
       $provide.value('ActiveRequests', sinon.stub());
@@ -66,6 +73,7 @@ describe('InboxCtrl controller', () => {
       $provide.value('UserSettings', sinon.stub());
       $provide.value('Tour', { getTours: () => Promise.resolve([]) });
       $provide.value('RulesEngine', { init: KarmaUtils.nullPromise()() });
+      $provide.value('RecurringProcessManager', RecurringProcessManager);
       $provide.constant('APP_CONFIG', {
         name: 'name',
         version: 'version'
@@ -128,4 +136,16 @@ describe('InboxCtrl controller', () => {
     });
   });
 
+  it('should start the relative date update recurring process', () => {
+    setTimeout(() => {
+      scope.$apply();
+
+      chai.expect(RecurringProcessManager.startUpdateRelativeDate.callCount).to.equal(1);
+    });
+  });
+
+  it('should cancel the relative date update recurring process when destroyed', () => {
+    scope.$destroy();
+    chai.expect(RecurringProcessManager.stopUpdateRelativeDate.callCount).to.equal(1);
+  });
 });

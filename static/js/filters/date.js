@@ -50,7 +50,12 @@ var _ = require('underscore'),
 
     return options.prefix +
            '<span class="' + classes.join(' ') + '" title="' + absolute + '">' +
-             '<span class="relative-date-content">' + relative + '</span>' +
+             '<span ' +
+               'class="relative-date-content '+ options.RelativeDate.getCssSelector() +'" ' +
+                options.RelativeDate.generateDataset(date, options, true) +
+             '>' +
+                relative +
+             '</span>' +
            '</span>' +
            options.suffix;
   };
@@ -73,7 +78,7 @@ var _ = require('underscore'),
     return '<span class="state ' + state + '">' + label + '</span>';
   };
 
-  module.filter('autoreply', function(FormatDate, $translate) {
+  module.filter('autoreply', function(FormatDate, RelativeDate, $translate, $sce) {
     'ngInject';
     return function (task) {
       if (!task || !task.state) {
@@ -83,10 +88,11 @@ var _ = require('underscore'),
         '<span class="autoreply" title="' + task.messages[0].message + '">' +
           '<span class="autoreply-content">' + $translate.instant('autoreply') + '</span>' +
         '</span>&nbsp';
-      return getRelativeDate(getTaskDate(task), {
+      return $sce.trustAsHtml(getRelativeDate(getTaskDate(task), {
         FormatDate: FormatDate,
-        prefix: content
-      });
+        RelativeDate: RelativeDate,
+        prefix: content,
+      }));
     };
   });
 
@@ -99,42 +105,45 @@ var _ = require('underscore'),
     return '';
   };
 
-  module.filter('state', function(FormatDate, $translate) {
+  module.filter('state', function(FormatDate, RelativeDate, $translate, $sce) {
     'ngInject';
     return function (task) {
       if (!task) {
         return '';
       }
-      return getRelativeDate(getTaskDate(task), {
+      return $sce.trustAsHtml(getRelativeDate(getTaskDate(task), {
         FormatDate: FormatDate,
+        RelativeDate: RelativeDate,
         prefix: getState(task.state || 'received', $translate) + '&nbsp;',
-        suffix: getRecipient(task, $translate)
-      });
+        suffix: getRecipient(task, $translate),
+      }));
     };
   });
 
-  module.filter('dateOfDeath', function(FormatDate, $translate) {
+  module.filter('dateOfDeath', function(FormatDate, RelativeDate, $translate, $sce) {
     'ngInject';
     return function (dod) {
       if (!dod) {
         return '';
       }
-      return getRelativeDate(dod, {
+      return $sce.trustAsHtml(getRelativeDate(dod, {
         FormatDate: FormatDate,
+        RelativeDate: RelativeDate,
         prefix: $translate.instant('contact.deceased.date.prefix') + '&nbsp;'
-      });
+      }));
     };
   });
 
-  module.filter('age', function(FormatDate) {
+  module.filter('age', function(FormatDate, RelativeDate, $sce) {
     'ngInject';
     return function (dob, dod) {
-      return getRelativeDate(dob, {
+      return $sce.trustAsHtml(getRelativeDate(dob, {
         FormatDate: FormatDate,
+        RelativeDate: RelativeDate,
         withoutTime: true,
         age: true,
         end: dod
-      });
+      }));
     };
   });
 
@@ -145,20 +154,24 @@ var _ = require('underscore'),
     };
   });
 
-  module.filter('relativeDate', function(FormatDate) {
+  module.filter('relativeDate', function(FormatDate, RelativeDate, $sce) {
     'ngInject';
     return function (date) {
-      return getRelativeDate(date, { FormatDate: FormatDate });
+      return $sce.trustAsHtml(getRelativeDate(date, {
+        FormatDate: FormatDate,
+        RelativeDate: RelativeDate
+      }));
     };
   });
 
-  module.filter('relativeDay', function(FormatDate) {
+  module.filter('relativeDay', function(FormatDate, RelativeDate, $sce) {
     'ngInject';
     return function (date) {
-      return getRelativeDate(date, {
+      return $sce.trustAsHtml(getRelativeDate(date, {
         FormatDate: FormatDate,
+        RelativeDate: RelativeDate,
         withoutTime: true
-      });
+      }));
     };
   });
 
@@ -174,13 +187,20 @@ var _ = require('underscore'),
     };
   });
 
-  module.filter('fullDate', function(FormatDate) {
+  module.filter('fullDate', function(FormatDate, RelativeDate, $sce) {
     return function (date) {
       if (!date) {
         return '';
       }
-      return '<div class="relative-date-content">' + FormatDate.relative(date) + '</div>' +
-             '<div class="full-date">' + FormatDate.datetime(date) + '</div>';
+      var result = '<div ' +
+                      'class="relative-date-content '+ RelativeDate.getCssSelector() +'" ' +
+                      RelativeDate.generateDataset(date) +
+                   '>' +
+                      FormatDate.relative(date) +
+                   '</div>' +
+                   '<div class="full-date">' + FormatDate.datetime(date) + '</div>';
+
+      return $sce.trustAsHtml(result);
     };
   });
 
