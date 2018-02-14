@@ -53,11 +53,11 @@ angular.module('inboxServices').factory('GetSubjectSummaries',
     };
 
     var processContactIds = function(summaries) {
-      var ids = _.uniq(_.compact(_.flatten(summaries.map(function(summary) {
+      var ids = _.uniq(_.compact(summaries.map(function(summary) {
         if (summary.subject && summary.subject.type === 'id') {
           return summary.subject.value;
         }
-      }))));
+      })));
 
       if (!ids.length) {
         return $q.resolve(summaries);
@@ -77,12 +77,12 @@ angular.module('inboxServices').factory('GetSubjectSummaries',
           return;
         }
 
-        summary.valid_subject = true;
+        summary.validSubject = true;
 
         if (!summary.subject.type) {
           summary.subject.value = summary.contact || summary.from;
         } else if (summary.subject.type !== 'name' || !summary.subject.value) {
-          summary.valid_subject = false;
+          summary.validSubject = false;
         }
       });
 
@@ -90,11 +90,11 @@ angular.module('inboxServices').factory('GetSubjectSummaries',
     };
 
     var processReferences = function(summaries) {
-      var references = _.uniq(_.compact(_.flatten(summaries.map(function(summary) {
+      var references = _.uniq(_.compact(summaries.map(function(summary) {
         if (summary.subject && summary.subject.type === 'reference') {
           return summary.subject.value;
         }
-      }))));
+      })));
 
       if (!references.length) {
         return $q.resolve(summaries);

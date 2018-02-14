@@ -75,7 +75,7 @@ describe('GetSubjectSummaries service', () => {
           type: 'id',
           value: 'a'
         },
-        valid_subject: false
+        validSubject: false
       });
 
       chai.expect(actual[1]).to.deep.equal({
@@ -84,7 +84,7 @@ describe('GetSubjectSummaries service', () => {
           type: 'id',
           value: 'b'
         },
-        valid_subject: false
+        validSubject: false
       });
 
       chai.expect(actual[2]).to.deep.equal({
@@ -93,7 +93,7 @@ describe('GetSubjectSummaries service', () => {
           type: 'reference',
           value: '11111'
         },
-        valid_subject: false
+        validSubject: false
       });
 
       chai.expect(query.callCount).to.equal(2);
@@ -120,7 +120,7 @@ describe('GetSubjectSummaries service', () => {
           type: 'name',
           value: 'tom'
         },
-        valid_subject: true
+        validSubject: true
       });
 
       chai.expect(actual[1]).to.deep.equal({
@@ -129,7 +129,7 @@ describe('GetSubjectSummaries service', () => {
           type: 'name',
           value: 'helen'
         },
-        valid_subject: true
+        validSubject: true
       });
 
       chai.expect(actual[2]).to.deep.equal({
@@ -138,7 +138,7 @@ describe('GetSubjectSummaries service', () => {
           type: 'id',
           value: 'c'
         },
-        valid_subject: false
+        validSubject: false
       });
 
       chai.expect(query.callCount).to.equal(1);
@@ -158,7 +158,7 @@ describe('GetSubjectSummaries service', () => {
           type: 'name',
           value: 'tom'
         },
-        valid_subject: true
+        validSubject: true
       });
       chai.expect(query.callCount).to.equal(0);
     });
@@ -197,7 +197,7 @@ describe('GetSubjectSummaries service', () => {
           type: 'name',
           value: 'tom'
         },
-        valid_subject: true
+        validSubject: true
       });
 
       chai.expect(actual[1]).to.deep.equal({
@@ -206,7 +206,7 @@ describe('GetSubjectSummaries service', () => {
           type: 'name',
           value: 'helen'
         },
-        valid_subject: true
+        validSubject: true
       });
 
       chai.expect(actual[2]).to.deep.equal({
@@ -215,7 +215,7 @@ describe('GetSubjectSummaries service', () => {
           type: 'id',
           value: 'c'
         },
-        valid_subject: false
+        validSubject: false
       });
 
       chai.expect(actual[3]).to.deep.equal({
@@ -224,7 +224,7 @@ describe('GetSubjectSummaries service', () => {
           type: 'reference',
           value: '11111'
         },
-        valid_subject: false
+        validSubject: false
       });
 
       chai.expect(query.callCount).to.equal(2);
@@ -246,7 +246,7 @@ describe('GetSubjectSummaries service', () => {
         subject: {
           value: 'tom'
         },
-        valid_subject: true
+        validSubject: true
       });
 
       chai.expect(actual[1]).to.deep.equal({
@@ -255,7 +255,7 @@ describe('GetSubjectSummaries service', () => {
         subject: {
           value: 'helen'
         },
-        valid_subject: true
+        validSubject: true
       });
 
       chai.expect(query.callCount).to.equal(0);
@@ -278,7 +278,7 @@ describe('GetSubjectSummaries service', () => {
           type: 'reference',
           value: null
         },
-        valid_subject: false
+        validSubject: false
       });
 
       chai.expect(actual[1]).to.deep.equal({
@@ -288,7 +288,7 @@ describe('GetSubjectSummaries service', () => {
           type: 'name',
           value: null
         },
-        valid_subject: false
+        validSubject: false
       });
 
       chai.expect(actual[2]).to.deep.equal({
@@ -298,7 +298,7 @@ describe('GetSubjectSummaries service', () => {
           type: 'id',
           value: null
         },
-        valid_subject: false
+        validSubject: false
       });
     });
   });

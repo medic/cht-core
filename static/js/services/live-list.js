@@ -108,11 +108,11 @@ angular.module('inboxServices').factory('LiveListConfig',
           scope.route = 'reports';
           scope.icon = form && form.icon;
           scope.heading =
-            report.valid_subject ? report.subject.value : $translate.instant('report.subject.unknown');
+            report.validSubject ? report.subject.value : $translate.instant('report.subject.unknown');
           scope.date = report.reported_date;
           scope.summary = form ? form.title : report.form;
           scope.showStatus = true;
-          scope.valid = report.valid && report.valid_subject;
+          scope.valid = report.valid;
           scope.verified = report.verified;
           scope.lineage = report.lineage;
           scope.unread = !report.read;
