@@ -2,10 +2,6 @@ const controller = require('../../../controllers/bulk-docs'),
       db = require('../../../db'),
       sinon = require('sinon').sandbox.create();
 
-exports.setUp = callback => {
-  callback();
-};
-
 exports.tearDown = callback => {
   sinon.restore();
   callback();
@@ -37,6 +33,29 @@ exports['bulkDelete calls db fetch with correct args'] = test => {
   controller.bulkDelete(testReq, {}, () => {
     test.equals(fetchDocs.callCount, 1);
     test.deepEqual(fetchDocs.firstCall.args[0], { keys: ['a', 'b', 'c'] });
+    test.done();
+  });
+};
+
+exports['bulkDelete returns error from db bulk'] = test => {
+  test.expect(5);
+
+  const docA = { _id: 'a', _rev: '1' };
+  const fetchDocs = sinon.stub(db.medic, 'fetch').callsArgWith(1, null, { rows: [{ doc: docA }] });
+  const bulk = sinon.stub(db.medic, 'bulk').callsArgWith(1, 'oh no');
+
+  const testRes = {
+    write: sinon.stub(),
+    end: sinon.stub(),
+    type: () => {},
+    setHeader: () => {}
+  };
+  controller.bulkDelete(testReq, testRes, err => {
+    test.equals(err, 'oh no');
+    test.equals(fetchDocs.callCount, 1);
+    test.equals(bulk.callCount, 1);
+    test.equals(testRes.write.callCount, 1);
+    test.equals(testRes.end.callCount, 0);
     test.done();
   });
 };

@@ -26,7 +26,7 @@ const generateBatchPromise = (batch, res, options) => {
   return new Promise((resolve, reject) => {
     db.medic.bulk({ docs: batch }, function (err, body) {
       if (err) {
-        reject(err);
+        return reject(err);
       }
 
       let resString = JSON.stringify(body);
