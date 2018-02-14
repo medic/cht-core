@@ -9,13 +9,89 @@ const DB = new PouchDB(process.env.COUCH_URL);
 const { Readable } = require('stream'),
       search = require('search')(Promise, DB);
 
-const SEARCH_BATCH = 100;
+const BATCH = 100;
 
 const JOIN_COL = ',';
 const JOIN_ROW = '\n';
 
 const SUPPORTED_EXPORTS = ['reports'];
 
+
+//
+// TODO: these functions is copied from `export-data.js`, and modified to use
+// PouchDB / promises. We should remove both copies of these functions and create
+// a shared lineage library that we can use here, as well as in the rest of api,
+// sentinel and webapp.
+//
+// lineage.js in sentinel is probably the most comprehensive lineage library
+// right now, though it would need to be ES5-a-fied if we wanted to use it on
+// the front end.
+//
+// https://github.com/medic/medic-webapp/issues/XXXX
+//
+const findContact = (contactRows, id) => {
+  return id && contactRows.find(contactRow => contactRow.id === id);
+};
+const hydrateDataRecords = result => {
+  const rows = result.rows;
+
+  const contactIds = [];
+  rows.forEach(row => {
+    let parent = row.doc.contact;
+    while(parent) {
+      if (parent._id) {
+        contactIds.push(parent._id);
+      }
+      parent = parent.parent;
+    }
+  });
+
+  if (!contactIds.length) {
+    return Promise.resolve();
+  }
+
+  return DB.allDocs({
+    keys: contactIds,
+    include_docs: true
+  }).then(results => {
+    rows.forEach(row => {
+      const contactId = row.doc.contact && row.doc.contact._id;
+      const contact = findContact(results.rows, contactId);
+      if (contact) {
+        row.doc.contact = contact.doc;
+      }
+      let parent = row.doc.contact;
+      while(parent) {
+        const parentId = parent.parent && parent.parent._id;
+        const found = findContact(results.rows, parentId);
+        if (found) {
+          parent.parent = found.doc;
+        }
+        parent = parent.parent;
+      }
+    });
+
+    return result;
+  });
+};
+
+
+/**
+ * Flattens a given object into an object where the keys are dot-notation
+ * paths to the flattened values:
+ * {
+ *   "foo": {
+ *     "bar": "smang"
+ *   }
+ * }
+ *
+ * becomes:
+ *
+ * {
+ *   "foo.bar": "smang"
+ * }
+ */
+// TODO: is there really not a utility that does this?
 const flatten = (fields, prepend=[]) =>
   Object.keys(fields).reduce((acc, k) => {
     const path = [...prepend, k];
@@ -26,6 +102,18 @@ const flatten = (fields, prepend=[]) =>
       return acc;
     }
   }, {});
+
+// TODO: is there really not a utility that does this?
+const safeGet = (obj, fields) => {
+  let v = obj;
+  for (const f of fields) {
+    v = v[f];
+    if (!v) {
+      return undefined;
+    }
+  }
+  return v;
+};
 
 const CSV_MAPPER = {
   reports: (filters) => {
@@ -68,7 +156,13 @@ const CSV_MAPPER = {
 
         const allColumns = [
           '_id',
-          // TODO: defaults
+          'patient_id',
+          'reported_date',
+          'from',
+          'contact.name',
+          'contact.parent.name',
+          'contact.parent.parent.name',
+          'contact.parent.parent.parent.name'
         ].concat(fieldColumns);
 
         return {
@@ -78,7 +172,13 @@ const CSV_MAPPER = {
 
             return [
               record._id,
-              // TODO: defaults
+              record.patient_id,
+              record.reported_date,
+              record.from,
+              safeGet(record, ['contact', 'name']),
+              safeGet(record, ['contact', 'parent', 'name']),
+              safeGet(record, ['contact', 'parent', 'parent', 'name']),
+              safeGet(record, ['contact', 'parent', 'parent', 'parent', 'name'])
             ].concat(fieldColumns.map(c => flattened[c]));
           }
         };
@@ -101,13 +201,13 @@ class SearchResultReader extends Readable {
 
     this.type = type;
     this.filters = filters;
-    this.options = searchOptions || {};
+    this.options = searchOptions;
 
     // There is no reason for a user to pass a skip, but we're going to allow
     // users to pass a limit. This could be useful as an escape hatch / tweak in
     // production.
     this.options.skip = 0;
-    this.options.limit = this.options.limit || SEARCH_BATCH;
+    this.options.limit = this.options.limit || BATCH;
   }
 
   _read() {
@@ -136,15 +236,16 @@ class SearchResultReader extends Readable {
           keys: ids,
           include_docs: true
         })
-        .then(results => {
+        .then(hydrateDataRecords)
+        .then(results =>
           this.push(
             printHeader ? printHeader.join(JOIN_COL) + JOIN_ROW : '' +
             _.pluck(results.rows, 'doc')
              .map(this.csvFn)
              .map(csvLine => csvLine.join(JOIN_COL))
              .map(lines => lines + JOIN_ROW).join('')
-          );
-        });
+          )
+        );
       })
       .catch(err => {
         process.nextTick(() => this.emit('error', err));
