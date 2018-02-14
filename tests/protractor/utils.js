@@ -10,7 +10,7 @@ const _ = require('underscore'),
 
 let originalSettings;
 
-const request = (options, debug) => {
+const request = (options, debug, noAuth) => {
   if (typeof options === 'string') {
     options = {
       path: options
@@ -21,7 +21,9 @@ const request = (options, debug) => {
 
   options.hostname = constants.API_HOST;
   options.port = constants.API_PORT;
-  options.auth = options.auth || auth.user + ':' + auth.pass;
+  if (!noAuth) {
+    options.auth = options.auth || auth.user + ':' + auth.pass;
+  }
 
   if (debug) {
     console.log('!!!!!!!REQUEST!!!!!!!');

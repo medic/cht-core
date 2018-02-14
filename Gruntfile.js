@@ -584,7 +584,7 @@ module.exports = function(grunt) {
   grunt.registerTask('ci_after', '', [
     'exec:deploy',
     'test_api_integration',
-    // 'e2e'
+    'e2e'
   ]);
 
   grunt.registerTask('ci1', 'Lint, build, minify, deploy and test for CI [CouchDB 1.x]', [
