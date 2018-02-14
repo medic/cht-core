@@ -554,6 +554,12 @@ exports['hydrateDocs binds contacts and parents'] = test => {
   fetch.onCall(0).callsArgWith(1, null, rowify(fetchedParents));
   fetch.onCall(1).callsArgWith(1, null, rowify(fetchedContacts));
 
+  sinon.stub(utils, 'getPatientContactUuid').callsArgWith(2, null, report_patient._id);
+  const viewStub = sinon.stub(db.medic, 'view');
+  viewStub.onCall(0).callsArgWith(3, null, { rows: [
+    { doc: report_patient }
+  ] });
+
   lineage.hydrateDocs(docs).then(([ hydratedReport, hydratedPlace ]) => {
     test.equals(fetch.callCount, 2);
     test.deepEqual(fetch.args[0][0].keys.sort(), fetchedParents.map(doc => doc._id).sort());
@@ -565,8 +571,7 @@ exports['hydrateDocs binds contacts and parents'] = test => {
     test.equals(hydratedReport.contact.parent.contact.name, report_parentContact.name);
     test.equals(hydratedReport.contact.parent.parent.name, report_grandparent.name);
     test.equals(hydratedReport.contact.parent.parent.contact.name, report_grandparentContact.name);
-    // TODO: https://github.com/medic/medic-webapp/issues/4003
-    // test.equals(hydratedReport.patient._id, report_patient._id);
+    test.equals(hydratedReport.patient._id, report_patient._id);
 
     test.equals(hydratedPlace.contact.name, place_contact.name);
     test.equals(hydratedPlace.parent.name, place_parent.name);
@@ -608,6 +613,12 @@ exports['hydrateDocs+minify is noop'] = test => {
   fetch.onCall(0).callsArgWith(1, null, rowify(fetchedParents));
   fetch.onCall(1).callsArgWith(1, null, rowify(fetchedContacts));
 
+  sinon.stub(utils, 'getPatientContactUuid').callsArgWith(2, null, report_patient._id);
+  const viewStub = sinon.stub(db.medic, 'view');
+  viewStub.onCall(0).callsArgWith(3, null, { rows: [
+    { doc: report_patient }
+  ] });
+
   lineage.hydrateDocs(docs).then(([ hydratedReport, hydratedPlace ]) => {
     lineage.minify(hydratedReport);
     lineage.minify(hydratedPlace);
@@ -633,6 +644,12 @@ exports['hydrateDocs ignores db-fetch errors'] = test => {
   fetch.onCall(0).callsArgWith(1, null, fetchedParentsRows);
   fetch.onCall(1).callsArgWith(1, null, fetchedContactsRows);
 
+  sinon.stub(utils, 'getPatientContactUuid').callsArgWith(2, null, report_patient._id);
+  const viewStub = sinon.stub(db.medic, 'view');
+  viewStub.onCall(0).callsArgWith(3, null, { rows: [
+    { doc: report_patient }
+  ] });
+
   lineage.hydrateDocs(docs).then(([ hydratedReport, hydratedPlace ]) => {
     test.equals(hydratedReport.contact.name, report_contact.name);
     test.equals(hydratedReport.parent, null);
@@ -653,4 +670,3 @@ exports['hydrateDocs ignores db-fetch errors'] = test => {
   }).catch(test.done);
 
 };
-
