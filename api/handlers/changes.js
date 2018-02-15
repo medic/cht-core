@@ -17,10 +17,6 @@ var _ = require('underscore'),
  */
 const MAX_DOC_IDS = 100;
 
-var error = function(code, message) {
-  return JSON.stringify({ code: code, message: message });
-};
-
 var getDepth = function(userCtx) {
   if (!userCtx.roles || !userCtx.roles.length) {
     return -1;
@@ -41,90 +37,68 @@ var getDepth = function(userCtx) {
   return depth;
 };
 
-var bindSubjectIds = function(feed, callback) {
-  var startTime = startTimer();
-
-  auth.getFacilityId(feed.req, feed.userCtx, function(err, facilityId) {
+const getSubjectIds = (facilityId, userCtx, callback) => {
+  const keys = [];
+  const depth = getDepth(userCtx);
+  if (depth >= 0) {
+    for (let i = 0; i <= depth; i++) {
+      keys.push([ facilityId, i ]);
+    }
+  } else {
+    // no configured depth limit
+    keys.push([ facilityId ]);
+  }
+  db.medic.view('medic', 'contacts_by_depth', { keys: keys }, (err, result) => {
     if (err) {
       return callback(err);
     }
-    if (!facilityId) {
-      feed.subjectIds = [];
-      return callback();
-    }
-    feed.facilityId = facilityId;
-    auth.getContactId(feed.userCtx, function(err, contactId) {
-      if (err) {
-        return callback(err);
+    const subjectIds = [];
+    result.rows.forEach(row => {
+      subjectIds.push(row.id);
+      if (row.value) {
+        subjectIds.push(row.value);
       }
-      feed.contactId = contactId;
-
-      var keys = [];
-      var depth = getDepth(feed.userCtx);
-      if (depth >= 0) {
-        for (var i = 0; i <= depth; i++) {
-          keys.push([ facilityId, i ]);
-        }
-      } else {
-        // no configured depth limit
-        keys.push([ facilityId ]);
-      }
-
-      db.medic.view('medic', 'contacts_by_depth', { keys: keys }, function(err, result) {
-        if (err) {
-          return callback(err);
-        }
-        var subjectIds = [];
-        result.rows.forEach(function(row) {
-          subjectIds.push(row.id);
-          if (row.value) {
-            subjectIds.push(row.value);
-          }
-        });
-        subjectIds.push(ALL_KEY);
-        if (config.get('district_admins_access_unallocated_messages') &&
-            auth.hasAllPermissions(feed.userCtx, 'can_view_unallocated_data_records')) {
-          subjectIds.push(UNASSIGNED_KEY);
-        }
-        feed.subjectIds = subjectIds;
-        endTimer('bindSubjectIds().before-callback', startTime);
-        callback();
-      });
     });
+    subjectIds.push(ALL_KEY);
+    if (config.get('district_admins_access_unallocated_messages') &&
+        auth.hasAllPermissions(userCtx, 'can_view_unallocated_data_records')) {
+      subjectIds.push(UNASSIGNED_KEY);
+    }
+    callback(null, subjectIds);
   });
 };
 
 /**
  * Method to ensure users don't see reports submitted by their boss about the user
  */
-var isSensitive = function(feed, subject, submitter) {
+var isSensitive = function(contactId, facilityId, subjectIds, subject, submitter) {
   if (!subject || !submitter) {
     // either not sure who it's about, or who submitted it - not sensitive
     return false;
   }
-  if (subject !== feed.contactId && subject !== feed.facilityId) {
+  if (subject !== contactId && subject !== facilityId) {
     // must be about a descendant - not sensitive
     return false;
   }
   // submitted by someone the user can't see
-  return feed.subjectIds.indexOf(submitter) === -1;
+  return subjectIds.indexOf(submitter) === -1;
 };
 
-var bindValidatedDocIds = function(feed, callback) {
-  var startTime = startTimer();
-  db.medic.view('medic', 'docs_by_replication_key', { keys: feed.subjectIds }, function(err, viewResult) {
+const getValidatedDocIds = (contactId, facilityId, subjectIds, userCtx, callback) => {
+  const startTime = startTimer();
+  db.medic.view('medic', 'docs_by_replication_key', { keys: subjectIds }, function(err, viewResult) {
     endTimer('bindValidatedDocIds().docs_by_replication_key', startTime);
     if (err) {
       return callback(err);
     }
-    feed.validatedIds = viewResult.rows.reduce(function(ids, row) {
-      if (!isSensitive(feed, row.key, row.value.submitter)) {
+    const validatedIds = viewResult.rows.reduce(function(ids, row) {
+      if (!isSensitive(contactId, facilityId, subjectIds, row.key, row.value.submitter)) {
         ids.push(row.id);
       }
       return ids;
-    }, [ '_design/medic-client', 'org.couchdb.user:' + feed.userCtx.name ]);
+    }, [ '_design/medic-client', 'org.couchdb.user:' + userCtx.name ]);
     endTimer('bindValidatedDocIds().before-callback', startTime);
-    callback();
+    callback(null, validatedIds);
   });
 };
 
@@ -154,6 +128,11 @@ var defibrillator = function(feed) {
 };
 
 var prepareResponse = function(feed, changes) {
+  if (feed.res.finished) {
+    // Don't write to the response if it has already ended. The change
+    // will be picked up in the subsequent changes request.
+    return;
+  }
   // filter out records the user isn't allowed to see
   changes.results = changes.results.filter(function(change) {
     return change.deleted || _.contains(feed.validatedIds, change.id);
@@ -178,8 +157,26 @@ var cleanUp = function(feed) {
   abortAllChangesRequests(feed);
 };
 
-var getChanges = function(feed) {
-  var startTime = startTimer();
+// returns true if superset contains all elements in subset
+const containsAll = (superset, subset) =>
+  subset.every(element => superset.indexOf(element) !== -1);
+
+const errorResponse = (feed, message) => {
+  cleanUp(feed);
+  if (feed.res.finished) {
+    // Don't write to the response if it has already ended. The change
+    // will be picked up in the subsequent changes request.
+    return;
+  }
+  feed.res.write(JSON.stringify({
+    code: 503,
+    message: message || 'Error processing your changes'
+  }));
+  feed.res.end();
+};
+
+const getChanges = feed => {
+  const startTime = startTimer();
 
   const allIds = _.union(feed.requestedIds, feed.validatedIds);
   const chunks = [];
@@ -208,25 +205,34 @@ var getChanges = function(feed) {
     },
     (err, responses) => {
       endTimer(`getChanges().requests:${chunks.length}`, startTime);
-
-      if (feed.res.finished) {
-        // Don't write to the response if it has already ended. The change
-        // will be picked up in the subsequent changes request.
-        return;
-      }
-      cleanUp(feed);
       if (err) {
-        feed.res.write(error(503, 'Error processing your changes'));
-      } else {
-        const changes = mergeChangesResponses(responses);
-        if (changes) {
-          prepareResponse(feed, changes);
-        } else {
-          feed.res.write(error(503, 'No _changes error, but malformed response.'));
-        }
+        return errorResponse(feed);
       }
-      feed.res.end();
-      endTimer('getChanges().end', startTime);
+
+      // if relevant ids have changed, update validated ids, getChanges again
+      const originalValidatedIds = feed.validatedIds;
+      bindServerIds(feed, err => {
+        if (err) {
+          return errorResponse(feed);
+        }
+        if (!containsAll(originalValidatedIds, feed.validatedIds)) {
+          // getChanges again with the updated ids
+          abortAllChangesRequests(feed);
+          // setTimeout to stop recursive stack overflow
+          setTimeout(() => {
+            getChanges(feed);
+          });
+          return;
+        }
+        const changes = mergeChangesResponses(responses);
+        if (!changes) {
+          return errorResponse(feed, 'No _changes error, but malformed response.');
+        }
+        cleanUp(feed);
+        prepareResponse(feed, changes);
+        feed.res.end();
+        endTimer('getChanges().end', startTime);
+      });
     }
   );
 };
@@ -272,12 +278,31 @@ const mergeChangesResponses = responses => {
 
 const numericSeqFrom = seq => typeof seq === 'number' ? seq : Number.parseInt(seq.split('-')[0]);
 
-var bindServerIds = function(feed, callback) {
-  bindSubjectIds(feed, function(err) {
+const bindServerIds = (feed, callback) => {
+  const startTime = startTimer();
+  async.parallel([
+    callback => auth.getFacilityId(feed.req, feed.userCtx, callback),
+    callback => auth.getContactId(feed.userCtx, callback)
+  ], (err, [facilityId, contactId]) => {
     if (err) {
       return callback(err);
     }
-    bindValidatedDocIds(feed, callback);
+    getSubjectIds(facilityId, feed.userCtx, (err, subjectIds) => {
+      if (err) {
+        return callback(err);
+      }
+      getValidatedDocIds(contactId, facilityId, subjectIds, feed.userCtx, (err, validatedIds) => {
+        if (err) {
+          return callback(err);
+        }
+        feed.contactId = contactId;
+        feed.facilityId = facilityId;
+        feed.subjectIds = subjectIds;
+        feed.validatedIds = validatedIds;
+        endTimer('bindServerIds().before-callback', startTime);
+        callback();
+      });
+    });
   });
 };
 
@@ -383,6 +408,14 @@ var getReplicationKey = function(doc) {
 };
 
 var updateFeeds = function(changes) {
+  if (!changes || !changes.results) {
+    // See: https://github.com/medic/medic-webapp/issues/3099
+    // This should never happen, but apparently it does sometimes.
+    // Attempting to log out the response usefully to see what's occuring
+    console.error('No _changes error, but malformed response:', JSON.stringify(changes));
+    return;
+  }
+
   var modifiedChanges = changes.results.map(function(change) {
     var result = {
       id: change.id,
@@ -447,7 +480,7 @@ module.exports = {
         res.setHeader('X-Accel-Buffering', 'no');
       }
 
-      if (auth.hasAllPermissions(userCtx, 'can_access_directly')) {
+      if (auth.isAdmin(userCtx)) {
         proxy.web(req, res);
       } else {
         var feed = {

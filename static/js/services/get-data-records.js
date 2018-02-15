@@ -20,7 +20,8 @@ angular.module('inboxServices').factory('GetDataRecords',
   function(
     $q,
     DB,
-    GetContactSummaries
+    GetContactSummaries,
+    GetSubjectSummaries
   ) {
 
     'use strict';
@@ -45,7 +46,8 @@ angular.module('inboxServices').factory('GetDataRecords',
       return DB()
         .query('medic-client/doc_summaries_by_id', { keys: ids })
         .then(getResponseValues)
-        .then(GetContactSummaries);
+        .then(GetContactSummaries)
+        .then(GetSubjectSummaries);
     };
 
     return function(ids, options) {

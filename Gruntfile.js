@@ -104,9 +104,7 @@ module.exports = function(grunt) {
         ignores: [
           'static/js/modules/xpath-element-path.js',
           'tests/karma/q.js',
-          'node_modules/**',
-          'api/node_modules/**',
-          'sentinel/node_modules/**',
+          '**/node_modules/**',
           'sentinel/lib/pupil/**',
         ]
       },
@@ -118,6 +116,7 @@ module.exports = function(grunt) {
         'lib/**/*.js',
         'api/**/*.js',
         'sentinel/**/*.js',
+        'shared-libs/**/*.js',
       ]
     },
     less: {
@@ -182,7 +181,7 @@ module.exports = function(grunt) {
           {
             expand: true,
             flatten: true,
-            src: [ 'node_modules/@medic/google-libphonenumber/dist/libphonenumber.js' ],
+            src: [ 'node_modules/google-libphonenumber/dist/libphonenumber.js' ],
             dest: 'packages/libphonenumber/libphonenumber/'
           }
         ]
@@ -199,6 +198,12 @@ module.exports = function(grunt) {
       }
     },
     exec: {
+      apiDev: {
+        cmd: './node_modules/.bin/nodemon --watch api api/server.js'
+      },
+      sentinelDev: {
+        cmd: './node_modules/.bin/nodemon --watch sentinel sentinel/server.js'
+      },
       blankLinkCheck: {
         cmd: `echo "Checking for dangerous _blank links..." &&
                ! (git grep -E  'target\\\\?="_blank"' -- templates/ translations/ static/ |
@@ -261,6 +266,13 @@ module.exports = function(grunt) {
           }).join(' & ');
         }
       },
+      sharedLibUnit: {
+        cmd:  function() {
+          // When we have more than one sharedLib we can make this code iterate
+          // through the libs and execute the ones that have npm test
+          return 'cd shared-libs/search && npm install && npm test';
+        }
+      },
       // To monkey patch a library...
       // 1. copy the file you want to change
       // 2. make the changes
@@ -303,7 +315,7 @@ module.exports = function(grunt) {
         tasks: ['mmcss', 'appcache', 'deploy']
       },
       js: {
-        files: ['templates/**/*', 'static/js/**/*', 'packages/kujua-*/**/*', 'packages/libphonenumber/**/*'],
+        files: ['templates/**/*', 'static/js/**/*', 'packages/kujua-*/**/*', 'packages/libphonenumber/**/*', 'shared-libs/**'],
         tasks: ['mmjs', 'appcache', 'deploy']
       },
       other: {
@@ -536,6 +548,7 @@ module.exports = function(grunt) {
   grunt.registerTask('unit', 'Lint and unit tests', [
     'jshint',
     'karma:unit',
+    'exec:sharedLibUnit',
     'env:test',
     'nodeunit',
     'mochaTest:unit',
@@ -571,7 +584,7 @@ module.exports = function(grunt) {
   grunt.registerTask('ci_after', '', [
     'exec:deploy',
     'test_api_integration',
-    // 'e2e'
+    'e2e'
   ]);
 
   grunt.registerTask('ci1', 'Lint, build, minify, deploy and test for CI [CouchDB 1.x]', [
@@ -587,9 +600,9 @@ module.exports = function(grunt) {
   ]);
 
   // Dev tasks
-  grunt.registerTask('dev', 'Build and deploy for dev', [
+  grunt.registerTask('dev-webapp', 'Build and deploy the webapp for dev', [
     'mmnpm',
-    'dev-no-npm'
+    'dev-webapp-no-npm'
   ]);
 
   grunt.registerTask('precommit', 'Static analysis checks', [
@@ -598,13 +611,21 @@ module.exports = function(grunt) {
     'exec:blankLinkCheck',
   ]);
 
-  grunt.registerTask('dev-no-npm', 'Build and deploy for dev, without reinstalling dependencies.', [
+  grunt.registerTask('dev-webapp-no-npm', 'Build and deploy the webapp for dev, without reinstalling dependencies.', [
     'build',
     'deploy',
     'watch'
   ]);
 
-  grunt.registerTask('default', 'Build and deploy for dev', [
-    'dev'
+  grunt.registerTask('dev-api', 'Run api and watch for file changes', [
+    'exec:apiDev'
+  ]);
+
+  grunt.registerTask('dev-sentinel', 'Run sentinel and watch for file changes', [
+    'exec:sentinelDev'
+  ]);
+
+  grunt.registerTask('default', 'Build and deploy the webapp for dev', [
+    'dev-webapp'
   ]);
 };

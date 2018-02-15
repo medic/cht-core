@@ -47,7 +47,8 @@ var feedback = require('../modules/feedback'),
       UpdateSettings,
       UpdateUser,
       UserSettings,
-      XmlForms
+      XmlForms,
+      RecurringProcessManager
     ) {
       'ngInject';
 
@@ -127,6 +128,7 @@ var feedback = require('../modules/feedback'),
       $scope.tours = [];
       $scope.baseUrl = Location.path;
       $scope.enketoStatus = { saving: false };
+      $scope.isAdmin = Session.isAdmin();
 
       if ($window.medicmobile_android && typeof $window.medicmobile_android.getAppVersion === 'function') {
         $scope.android_app_version = $window.medicmobile_android.getAppVersion();
@@ -645,6 +647,11 @@ var feedback = require('../modules/feedback'),
           }
         });
       }
+
+      RecurringProcessManager.startUpdateRelativeDate();
+      $scope.$on('$destroy', function() {
+        RecurringProcessManager.stopUpdateRelativeDate();
+      });
 
     }
   );

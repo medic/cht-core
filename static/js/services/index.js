@@ -38,10 +38,10 @@
   require('./format-data-record');
   require('./format-date');
   require('./generate-lucene-query');
-  require('./generate-search-requests');
   require('./geolocation');
   require('./get-contact-summaries');
   require('./get-data-records');
+  require('./get-subject-summaries');
   require('./import-contacts');
   require('./kanso-packages');
   require('./language');
@@ -58,6 +58,8 @@
   require('./moment-locale-data');
   require('./place-hierarchy');
   require('./properties');
+  require('./recurring-process-manager');
+  require('./relative-date');
   require('./report-view-model-generator');
   require('./resource-icons');
   require('./rules-engine');

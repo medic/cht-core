@@ -25,7 +25,9 @@ var post = function(url, payload, callback) {
 };
 
 var handleResponse = function(xmlhttp) {
-  if (xmlhttp.status === 200) {
+  if (xmlhttp.status < 200) {
+    setState('loginoffline');
+  } else if (xmlhttp.status === 200) {
     window.location = unescape(document.getElementById('redirect').value);
   } else if (xmlhttp.status === 401) {
     setState('loginincorrect');

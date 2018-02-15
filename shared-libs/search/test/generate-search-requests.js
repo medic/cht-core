@@ -1,18 +1,12 @@
+var chai = require('chai'),
+    service = require('../src/generate-search-requests').generate;
+
 describe('GenerateSearchRequests service', function() {
 
   'use strict';
 
-  var service;
-
   var date20130208 = 1360321199999;
   var date20130612 = 1371038399999;
-
-  beforeEach(function() {
-    module('inboxApp');
-    inject(function(_GenerateSearchRequests_) {
-      service = _GenerateSearchRequests_;
-    });
-  });
 
   it('creates unfiltered request for no filter', function() {
     var result = service('reports', {});

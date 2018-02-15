@@ -150,6 +150,7 @@ exports['valid form adds patient_id and patient document'] = function(test) {
     });
 
     var doc = {
+        _id: 'docid',
         form: 'PATR',
         fields: { patient_name: 'abc' },
         reported_date: 'now'
@@ -160,6 +161,7 @@ exports['valid form adds patient_id and patient document'] = function(test) {
             view: sinon.stub().callsArgWith(3, null, {rows: [
                 {
                     doc: {
+                        _id: 'the-contact',
                         parent: {
                             _id: 'the-parent'
                         }
@@ -189,7 +191,9 @@ exports['valid form adds patient_id and patient document'] = function(test) {
                 },
                 reported_date: 'now',
                 type: 'person',
-                patient_id: doc.patient_id
+                patient_id: doc.patient_id,
+                created_by: 'the-contact',
+                source_id: 'docid'
             });
         test.done();
     });

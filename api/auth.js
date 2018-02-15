@@ -66,6 +66,12 @@ module.exports = {
       callback(null, isDbAdmin(userCtx));
     });
   },
+
+  isAdmin: function(userCtx) {
+    return hasRole(userCtx, '_admin') ||
+           hasRole(userCtx, 'national_admin');
+  },
+
   hasAllPermissions: function(userCtx, permissions) {
     if (isDbAdmin(userCtx)) {
       return true;

@@ -75,6 +75,7 @@ const renderLogin = (redirect, callback) => {
         login: config.translate('login'),
         loginerror: config.translate('login.error'),
         loginincorrect: config.translate('login.incorrect'),
+        loginoffline: config.translate('online.action.message'),
         username: config.translate('User Name'),
         password: config.translate('Password')
       }
