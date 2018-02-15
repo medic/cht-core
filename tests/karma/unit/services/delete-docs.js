@@ -4,23 +4,31 @@ describe('DeleteDocs service', function() {
 
   var service,
       get,
-      bulkDocs;
+      bulkDocs,
+      isAdmin,
+      server;
 
   beforeEach(function() {
     get = sinon.stub();
     bulkDocs = sinon.stub();
+    isAdmin = sinon.stub();
+    isAdmin.returns(false);
     module('inboxApp');
     module(function ($provide) {
       $provide.factory('DB', KarmaUtils.mockDB({ bulkDocs: bulkDocs, get: get }));
       $provide.value('$q', Q); // bypass $q so we don't have to digest
+      $provide.value('Session', { isAdmin: isAdmin });
     });
     inject(function(_DeleteDocs_) {
       service = _DeleteDocs_;
     });
+    server = sinon.fakeServer.create();
+    server.respondImmediately = true;
   });
 
   afterEach(function() {
     KarmaUtils.restore(get, bulkDocs);
+    server.restore();
   });
 
   it('returns bulkDocs errors', function(done) {
@@ -170,6 +178,36 @@ describe('DeleteDocs service', function() {
     });
   });
 
+  it('sends a direct request to the server when user is an admin', function() {
+    var record1 = { _id: 'xyz' };
+    var record2 = { _id: 'abc' };
+    var expected1 = { _id: 'xyz', _deleted: true };
+    var expected2 = { _id: 'abc', _deleted: true };
+    server.respondWith([200, { 'Content-Type': 'application/json' }, '{ "hello": "there" }']);
+    isAdmin.returns(true);
+    return service([ record1, record2 ]).then(function() {
+      chai.expect(server.requests).to.have.lengthOf(1);
+      chai.expect(server.requests[0].url).to.equal('/api/v1/bulk-delete');
+      chai.expect(server.requests[0].requestBody).to.equal(JSON.stringify({
+        docs: [expected1, expected2]
+      }));
+      chai.expect(bulkDocs.callCount).to.equal(0);
+    });
+  });
+
+  it('fires the progress event handler on progress events', function() {
+    var record1 = { _id: 'xyz' };
+    var record2 = { _id: 'abc' };
+    var onProgress = sinon.spy();
+    var response = '[[{"ok": true}, {"ok": true}],'; // progress should handle partial json but load will error out
+    server.respondWith([200, { 'Content-Type': 'application/json' }, response]);
+    isAdmin.returns(true);
+    return service([ record1, record2 ], { progress: onProgress }).catch(function() {
+      chai.expect(onProgress.callCount).to.equal(1);
+      chai.expect(onProgress.getCall(0).args[0]).to.equal(2);
+    });
+  });
+
   it('updates clinic deleted person is contact for', function() {
     var clinic = {
       _id: 'b',
@@ -280,7 +318,6 @@ describe('DeleteDocs service', function() {
       chai.expect(bulkDocs.args[0][0].length).to.equal(2);
     });
   });
-
 
   it('minifies lineage for circular referenced report #4076', function() {
     var clinic = {
