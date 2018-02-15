@@ -1,4 +1,5 @@
 var _ = require('underscore');
+var partialParse = require('partial-json-parser');
 
 (function () {
 
@@ -62,31 +63,31 @@ var _ = require('underscore');
       };
 
       var bulkDeleteRemoteDocs = function (docs, eventListeners) {
-        return $q(function(resolve, reject) {
-          var xhr = new XMLHttpRequest();
-          xhr.onprogress = function() {
-            if (xhr.responseText) {
-              var currentResponse = xhr.responseText.replace(/}\s*]\s*,?\s*$/, '}]]');
-              var totalDocsDeleted = _.flatten(JSON.parse(currentResponse)).length;
-              if (eventListeners.progress) {
-                eventListeners.progress(totalDocsDeleted);
-              }
+        var deferred = $q.defer();
+        var xhr = new XMLHttpRequest();
+        xhr.onprogress = function() {
+          if (xhr.responseText) {
+            var currentResponse = partialParse(xhr.responseText);
+            var totalDocsDeleted = _.flatten(currentResponse).length;
+            if (eventListeners.progress && Array.isArray(currentResponse)) {
+              eventListeners.progress(totalDocsDeleted);
             }
-          };
-          xhr.onload = function() {
-            if (this.status >= 200 && this.status < 300) {
-              resolve(_.flatten(JSON.parse(xhr.response)));
-            } else {
-              reject(new Error('Server responded with ' + this.status + ': ' + xhr.statusText));
-            }
-          };
-          xhr.onerror = function() {
-            reject(new Error('Server responded with ' + this.status + ': ' + xhr.statusText));
-          };
-          xhr.open('POST', '/api/v1/bulk-delete', true);
-          xhr.setRequestHeader('Content-type', 'application/json');
-          xhr.send(JSON.stringify({ docs: docs }));
-        });
+          }
+        };
+        xhr.onload = function() {
+          if (this.status >= 200 && this.status < 300) {
+            deferred.resolve(_.flatten(JSON.parse(xhr.response)));
+          } else {
+            deferred.reject(new Error('Server responded with ' + this.status + ': ' + xhr.statusText));
+          }
+        };
+        xhr.onerror = function() {
+          deferred.reject(new Error('Server responded with ' + this.status + ': ' + xhr.statusText));
+        };
+        xhr.open('POST', '/api/v1/bulk-delete', true);
+        xhr.setRequestHeader('Content-type', 'application/json');
+        xhr.send(JSON.stringify({ docs: docs }));
+        return deferred.promise;
       };
 
       /**
