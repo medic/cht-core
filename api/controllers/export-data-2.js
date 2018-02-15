@@ -47,7 +47,7 @@ const hydrateDataRecords = result => {
   });
 
   if (!contactIds.length) {
-    return Promise.resolve();
+    return Promise.resolve(result);
   }
 
   return DB.allDocs({
