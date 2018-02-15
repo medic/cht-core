@@ -1,5 +1,5 @@
 var _ = require('underscore'),
-    setTaskState = require('../modules/set-task-state');
+    taskUtils = require('task-utils');
 
 (function () {
 
@@ -23,7 +23,7 @@ var _ = require('underscore'),
               _.each(doc.scheduled_tasks, function(task) {
                 if (task.group === group && task.state === fromState) {
                   changed = true;
-                  setTaskState(task, toState);
+                  taskUtils.setTaskState(task, toState);
                 }
               });
               if (!changed) {

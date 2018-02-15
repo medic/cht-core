@@ -257,3 +257,119 @@ exports['updateMessageTaskStates re-applies changes if it errored'] = test => {
     test.done();
   });
 };
+
+exports['updateMessageTaskStates does not apply the same state'] = test => {
+  const view = sinon
+    .stub(db.medic, 'view')
+    .callsArgWith(3, null, {
+      rows: [
+        {id: 'testMessageId1'},
+        {id: 'testMessageId2'},
+        {id: 'testMessageId3'}]
+    });
+
+  var date = new Date().toISOString();
+
+  sinon
+    .stub(db.medic, 'fetch')
+    .callsArgWith(1, null, {
+      rows: [
+        {
+          doc: {
+            _id: 'testDoc',
+            tasks: [{
+              messages: [{
+                uuid: 'testMessageId1',
+              }],
+              state: 'testState1',
+              state_details: 'somedetails',
+              state_history: [{
+                state: 'testState1',
+                state_details: 'somedetails',
+                timestamp: date
+              }]
+            }]
+          }
+        },
+        {
+          doc: {
+            _id: 'testDoc2',
+            tasks: [{
+              messages: [{
+                uuid: 'testMessageId2'
+              }],
+              state: 'testState1',
+              state_details: 'somedetails',
+              state_history: [{
+                state: 'testState1',
+                state_details: 'somedetails',
+                timestamp: date
+              }]
+            }]
+          }
+        },
+        {
+          doc: {
+            _id: 'testDoc3',
+            tasks: [{
+              messages: [{
+                uuid: 'testMessageId3'
+              }],
+            }]
+          }
+        }
+      ]
+    });
+
+  const bulk = sinon
+    .stub(db.medic, 'bulk')
+    .callsArgWith(1, null, [
+      {id: 'testDoc', ok: true},
+      {id: 'testDoc2', ok: true},
+      {id: 'testDoc3', ok: true}]);
+
+  controller.updateMessageTaskStates([
+    {
+      messageId: 'testMessageId1',
+      state: 'testState1',
+      details: 'somedetails'
+    },
+    {
+      messageId: 'testMessageId2',
+      state: 'testState2',
+      details: 'somedetails'
+    },
+    {
+      messageId: 'testMessageId3',
+      state: 'testState2',
+      details: 'details'
+    }
+  ], (err, result) => {
+    test.equal(err, null);
+    test.deepEqual(result, {success: true});
+
+    test.equal(view.callCount, 1);
+    test.equal(bulk.args[0][0].docs.length, 3);
+
+    test.equal(bulk.args[0][0].docs[0]._id, 'testDoc');
+    test.equal(bulk.args[0][0].docs[0].tasks[0].state_history.length, 1);
+    test.equal(bulk.args[0][0].docs[0].tasks[0].state, 'testState1');
+    test.equal(bulk.args[0][0].docs[0].tasks[0].state_details, 'somedetails');
+
+    test.equal(bulk.args[0][0].docs[1]._id, 'testDoc2');
+    test.equal(bulk.args[0][0].docs[1].tasks[0].state_history.length, 2);
+    test.equal(bulk.args[0][0].docs[1].tasks[0].state, 'testState2');
+    test.equal(bulk.args[0][0].docs[1].tasks[0].state_history[0].state, 'testState1');
+    test.equal(bulk.args[0][0].docs[1].tasks[0].state_history[0].state_details, 'somedetails');
+    test.equal(bulk.args[0][0].docs[1].tasks[0].state_history[1].state, 'testState2');
+    test.equal(bulk.args[0][0].docs[1].tasks[0].state_history[1].state_details, 'somedetails');
+
+    test.equal(bulk.args[0][0].docs[2]._id, 'testDoc3');
+    test.equal(bulk.args[0][0].docs[2].tasks[0].state_history.length, 1);
+    test.equal(bulk.args[0][0].docs[2].tasks[0].state, 'testState2');
+    test.equal(bulk.args[0][0].docs[2].tasks[0].state_history[0].state, 'testState2');
+    test.equal(bulk.args[0][0].docs[2].tasks[0].state_history[0].state_details, 'details');
+
+    test.done();
+  });
+};

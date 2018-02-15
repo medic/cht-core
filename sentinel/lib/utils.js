@@ -2,7 +2,8 @@ const _ = require('underscore'),
       vm = require('vm'),
       db = require('../db'),
       moment = require('moment'),
-      config = require('../config');
+      config = require('../config'),
+      taskUtils = require('task-utils');
 
 /*
  * Get desired locale
@@ -57,21 +58,11 @@ const getDistrictPhone = doc => {
   return f && f.contact && f.contact.phone;
 };
 
-// TODO Use a shared library for this duplicated code #4021
-const setTaskState = (task, state) => {
-  task.state = state;
-  task.state_history = task.state_history || [];
-  task.state_history.push({
-    state: state,
-    timestamp: moment().toISOString()
-  });
-};
-
 const setTasksStates = (doc, state, predicate) => {
   doc.scheduled_tasks = doc.scheduled_tasks || [];
   _.each(doc.scheduled_tasks, task => {
     if (predicate.call(this, task)) {
-      setTaskState(task, state);
+      taskUtils.setTaskState(task, state);
     }
   });
 };
@@ -239,7 +230,7 @@ module.exports = {
   addError: addError,
   getReportsWithinTimeWindow: getReportsWithinTimeWindow,
   getReportsWithSameClinicAndForm: getReportsWithSameClinicAndForm,
-  setTaskState: setTaskState,
+  setTaskState: taskUtils.setTaskState,
   setTasksStates: setTasksStates,
   /*
   * Gets registration documents for the given ids
