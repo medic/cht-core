@@ -211,18 +211,16 @@ class SearchResultReader extends Readable {
   }
 
   _read() {
-    let printHeader;
-
-    let p = Promise.resolve();
     if (!this.csvFn) {
-      p = p
+      return Promise.resolve()
         .then(() => CSV_MAPPER[this.type](this.filters, this.options))
         .then(({ header, fn }) => {
           this.csvFn = fn;
-          printHeader = header;
+          this.push(header.join(JOIN_COL) + JOIN_ROW);
         });
     }
-    p = p
+
+    return Promise.resolve()
       .then(() => search(this.type, this.filters, this.options))
       .then(ids => {
 
@@ -239,7 +237,6 @@ class SearchResultReader extends Readable {
         .then(hydrateDataRecords)
         .then(results =>
           this.push(
-            printHeader ? printHeader.join(JOIN_COL) + JOIN_ROW : '' +
             _.pluck(results.rows, 'doc')
              .map(this.csvFn)
              .map(csvLine => csvLine.join(JOIN_COL))
