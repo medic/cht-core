@@ -28,7 +28,8 @@
       };
 
       var buildV2Url = function(type, body) {
-        return '/api/v2/export/' + type + '?' + $.param(body);
+        var params = body ? '?' + $.param(body) : '';
+        return '/api/v2/export/' + type + params;
       };
 
       var getParams = function(type, language, filters) {
@@ -51,7 +52,7 @@
         }
 
         if (type.v2) {
-          return $q.resolve(buildV2Url(type.name, {filters: filters}));
+          return $q.resolve(buildV2Url(type.name, filters ? {filters: filters} : null));
         } else {
           return Language().then(function(language) {
             return buildV1Url(type, language, filters);

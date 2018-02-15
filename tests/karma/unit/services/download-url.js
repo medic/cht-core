@@ -50,12 +50,12 @@ describe('DownloadUrl service', function() {
     });
   });
 
-  it('builds url for forms', function() {
+  it('builds url for reports', function() {
     Language.returns(Promise.resolve('en'));
     GenerateLuceneQuery.returns({ query: 'form:P' });
     return service(null, 'reports').then(function(actual) {
       chai.expect(decodeURIComponent(actual))
-          .to.equal('/api/v1/export/forms?format=xml&locale=en&query="form:P"&schema=');
+          .to.equal('/api/v2/export/reports');
     });
   });
 
