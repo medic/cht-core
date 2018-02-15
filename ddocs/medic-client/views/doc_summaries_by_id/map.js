@@ -10,24 +10,41 @@ function(doc) {
     return parts;
   };
 
+  var isMissingSubjectError = function(error) {
+    if (error.code !== 'sys.missing_fields' || !error.fields) {
+      return false;
+    }
+
+    if (error.fields.indexOf('patient_id') !== -1 ||
+      error.fields.indexOf('patient_name') !== -1 ||
+      error.fields.indexOf('place_id') !== -1) {
+      return true;
+    }
+
+    return false;
+  };
+
   var getSubject = function(doc) {
     var subject = {};
 
-    if (doc.fields && doc.fields.hasOwnProperty('patient_uuid')) {
+    if (doc.fields && doc.fields.patient_uuid) {
       subject.value = doc.fields.patient_uuid;
       subject.type = 'id';
-    } else if (doc.hasOwnProperty('patient_id') || (doc.fields && doc.fields.hasOwnProperty('patient_id'))) {
-      subject.value = doc.patient_id || (doc.fields && doc.fields.patient_id);
+    } else if (doc.patient_id || (doc.fields && doc.fields.patient_id) || doc.place_id) {
+      subject.value = doc.patient_id || (doc.fields && doc.fields.patient_id) || doc.place_id;
       subject.type = 'reference';
-    } else if (doc.fields && doc.fields.hasOwnProperty('place_id')) {
+    } else if (doc.fields && doc.fields.place_id) {
       subject.value = doc.fields.place_id;
       subject.type = 'id';
-    } else if (doc.hasOwnProperty('place_id')) {
-      subject.value = doc.place_id;
-      subject.type = 'reference';
-    } else if (doc.fields && doc.fields.hasOwnProperty('patient_name')) {
+    } else if (doc.fields && doc.fields.patient_name) {
       subject.value = doc.fields.patient_name;
       subject.type = 'name';
+    } else if (doc.errors) {
+      doc.errors.forEach(function(error) {
+        if (isMissingSubjectError(error)) {
+          subject.type = 'unknown';
+        }
+      });
     }
 
     return subject;

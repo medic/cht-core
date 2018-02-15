@@ -79,6 +79,10 @@ const householdVisit = {
 
 const householdVisitBis = Object.assign({}, householdVisit, {
   _id: '5294b4c0-7499-41d5-b8d9-c548381799c0-bis',
+  errors: [{
+    code: 'sys.missing_fields',
+    fields: ['place_id']
+  }],
   fields: Object.assign({}, householdVisit.fields, {
     place_id: null
   })
@@ -133,7 +137,10 @@ const jsonR = {
 
 const jsonRBis = Object.assign({}, jsonR, {
   _id: '60f2df4791ea8f83b531cdcf30003abe-bis',
-  errors: [true],
+  errors: [{
+    code: 'sys.missing_fields',
+    fields: ['patient_name']
+  }],
   fields: Object.assign({}, jsonR.fields, {
     patient_name: null
   })
@@ -195,7 +202,10 @@ const jsonD = {
 
 const jsonDBis = Object.assign({}, jsonD, {
   _id: '60f2df4791ea8f83b531cdcf3000c44a-bis',
-  errors: [true],
+  errors: [{
+    code: 'sys.missing_fields',
+    fields: ['patient_id']
+  }],
   fields: Object.assign({}, jsonD.fields, {
     patient_id: null,
   })
@@ -218,6 +228,10 @@ const jsonHousehold = {
 
 const jsonHouseholdBis = Object.assign({}, jsonHousehold, {
   _id: '5294b4c0-7499-41d5-b8d9-c548381799c0-bis',
+  errors: [{
+    code: 'sys.missing_fields',
+    fields: ['place_id']
+  }],
   place_id: null
 });
 
@@ -305,15 +319,12 @@ describe('doc_summaries_by_id view', () => {
         phone: undefined,
         form: 'household_visit',
         read: undefined,
-        valid: true,
+        valid: false,
         verified: undefined,
         reported_date: 1517418915669,
         contact: 'df28f38e-cd3c-475f-96b5-48080d863e34',
         lineage: ['1a1aac55-04d6-40dc-aae2-e67a75a1496d'],
-        subject: {
-          type: 'id',
-          value: null
-        }
+        subject: { type: 'unknown'}
       }
     });
 
@@ -351,8 +362,8 @@ describe('doc_summaries_by_id view', () => {
         contact: 'df28f38e-cd3c-475f-96b5-48080d863e34',
         lineage: ['1a1aac55-04d6-40dc-aae2-e67a75a1496d'],
         subject: {
-          type: 'id',
-          value: null
+          type: 'name',
+          value: 'mother'
         }
       }
     });
@@ -390,10 +401,7 @@ describe('doc_summaries_by_id view', () => {
         reported_date: 1517405737096,
         contact: undefined,
         lineage: [],
-        subject: {
-          type: 'name',
-          value: null
-        }
+        subject: { type: 'unknown' }
       }
     });
 
@@ -410,7 +418,7 @@ describe('doc_summaries_by_id view', () => {
         reported_date: 1517491485049,
         contact: undefined,
         lineage: [],
-        subject: {}
+        subject: { }
       }
     });
 
@@ -464,10 +472,7 @@ describe('doc_summaries_by_id view', () => {
         reported_date: 1517408179956,
         contact: undefined,
         lineage: [],
-        subject: {
-          type: 'reference',
-          value: null
-        }
+        subject: { type: 'unknown' }
       }
     });
 
@@ -499,15 +504,12 @@ describe('doc_summaries_by_id view', () => {
         phone: undefined,
         form: 'H',
         read: undefined,
-        valid: true,
+        valid: false,
         verified: undefined,
         reported_date: 1517408179956,
         contact: undefined,
         lineage: [],
-        subject: {
-          type: 'reference',
-          value: null
-        }
+        subject: { type: 'unknown' }
       }
     });
 
