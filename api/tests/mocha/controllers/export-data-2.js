@@ -19,20 +19,15 @@ describe('Export Data 2.0', () => {
         'bars.smang.smong': 'smongVal'
       });
     });
-    it('Handles arrays', () => {
-      // TODO: do we want it to work this way? Does it matter?
+    it('assigns arrays to a single cell', () => {
       controller._flatten({
         foo: [1,2,3],
         bar: {
           smang:['a','b','c']
         }
       }).should.deep.equal({
-        'foo.0': 1,
-        'foo.1': 2,
-        'foo.2': 3,
-        'bar.smang.0': 'a',
-        'bar.smang.1': 'b',
-        'bar.smang.2': 'c'
+        foo: [1,2,3],
+        'bar.smang': ['a', 'b', 'c']
       });
     });
   });
