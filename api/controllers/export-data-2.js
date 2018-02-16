@@ -27,7 +27,7 @@ const SUPPORTED_EXPORTS = ['reports'];
 // right now, though it would need to be ES5-a-fied if we wanted to use it on
 // the front end.
 //
-// https://github.com/medic/medic-webapp/issues/XXXX
+// https://github.com/medic/medic-webapp/issues/3826
 //
 const findContact = (contactRows, id) => {
   return id && contactRows.find(contactRow => contactRow.id === id);
