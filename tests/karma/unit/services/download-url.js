@@ -50,12 +50,25 @@ describe('DownloadUrl service', function() {
     });
   });
 
-  it('builds url for reports', function() {
-    Language.returns(Promise.resolve('en'));
-    GenerateLuceneQuery.returns({ query: 'form:P' });
-    return service(null, 'reports').then(function(actual) {
-      chai.expect(decodeURIComponent(actual))
-          .to.equal('/api/v2/export/reports');
+  describe('urls for reports', function() {
+    it('builds base url', function() {
+      Language.returns(Promise.resolve('en'));
+      GenerateLuceneQuery.returns({ query: 'form:P' });
+      return service(null, 'reports').then(function(actual) {
+        chai.expect(decodeURIComponent(actual))
+            .to.equal('/api/v2/export/reports');
+
+        // We no longer use translate or use lucence
+        chai.expect(Language.callCount).to.equal(0);
+        chai.expect(GenerateLuceneQuery.callCount).to.equal(0);
+      });
+    });
+    it('attaches filter object as params', function() {
+      return service({forms: {selected: [{code: 'foo-form'}]}}, 'reports').then(function(actual) {
+        chai.expect(decodeURIComponent(actual)).to.equal(
+          '/api/v2/export/reports?filters[forms][selected][0][code]=foo-form'
+        );
+      });
     });
   });
 

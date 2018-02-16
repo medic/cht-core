@@ -73,20 +73,23 @@ module.exports = function(Promise, DB) {
   };
 
   return function(type, filters, options) {
-    return Promise.resolve().then(function() {
-      options = options || {};
-      _.defaults(options, {
-        limit: 50,
-        skip: 0
-      });
-
-      var requests = GenerateSearchRequests.generate(type, filters);
-
-      return getRows(type, requests, options)
-        .then(function(results) {
-          return _.pluck(results, 'id');
-        });
+    options = options || {};
+    _.defaults(options, {
+      limit: 50,
+      skip: 0
     });
+
+    var requests;
+    try {
+      requests = GenerateSearchRequests.generate(type, filters);
+    } catch (err) {
+      return Promise.reject(err);
+    }
+
+    return getRows(type, requests, options)
+      .then(function(results) {
+        return _.pluck(results, 'id');
+      });
   };
 };
 

@@ -227,6 +227,10 @@ class SearchResultReader extends Readable {
           this.push(
             _.pluck(results.rows, 'doc')
              .map(this.csvFn)
+             // TODO: pass this through a better CSV generator:
+             //  - quote things
+             //  - escape quotes
+             //  - ???
              .map(csvLine => csvLine.join(JOIN_COL))
              .join(JOIN_ROW) + JOIN_ROW // new line at the end
           )

@@ -1,3 +1,3 @@
-function(keys, values) {
+function() {
   return true;
 }
