@@ -12,9 +12,6 @@ const { Readable } = require('stream'),
 
 const BATCH = 100;
 
-const JOIN_COL = ',';
-const JOIN_ROW = '\n';
-
 const SUPPORTED_EXPORTS = ['reports'];
 
 
@@ -95,7 +92,11 @@ const hydrateDataRecords = result => {
 const flatten = (fields, prepend=[]) =>
   Object.keys(fields).reduce((acc, k) => {
     const path = [...prepend, k];
-    if (typeof fields[k] === 'object' && fields[k]) {
+    if (typeof fields[k] === 'object' && fields[k] && !Array.isArray(fields[k])) {
+      // Recurse into valid objects. We ignore arrays as they are variable
+      // length, so you can't generate a stable header out of them. Instead,
+      // when we convert them into CSV we JSON.stringify them and treat them as
+      // one cell.
       return _.extend(acc, flatten(fields[k], path));
     } else {
       acc[path.join('.')] = fields[k];
@@ -184,6 +185,8 @@ const CSV_MAPPER = {
   })
 };
 
+const JOIN_COL = ',';
+const JOIN_ROW = '\n';
 class SearchResultReader extends Readable {
 
   constructor(type, filters, searchOptions, readableOptions) {
@@ -198,6 +201,27 @@ class SearchResultReader extends Readable {
     // production.
     this.options.skip = 0;
     this.options.limit = this.options.limit || BATCH;
+  }
+
+  static csvLineToString(csvLine) {
+    const escapedCsvLine = csvLine.map(cell => {
+      let escaped;
+
+      // Strings and arrays (because they might contain strings etc) need to
+      // be quoted and escaped
+      if (typeof cell === 'string') {
+        escaped = cell.replace(/"/g, '\\"');
+      } else if (Array.isArray(cell)) {
+        escaped = JSON.stringify(cell).replace(/"/g, '\\"');
+      } else {
+        // We don't need to escape this
+        return cell;
+      }
+
+      return `"${escaped}"`;
+    });
+
+    return escapedCsvLine.join(JOIN_COL);
   }
 
   _read() {
@@ -227,11 +251,7 @@ class SearchResultReader extends Readable {
           this.push(
             _.pluck(results.rows, 'doc')
              .map(this.csvFn)
-             // TODO: pass this through a better CSV generator:
-             //  - quote things
-             //  - escape quotes
-             //  - ???
-             .map(csvLine => csvLine.join(JOIN_COL))
+             .map(SearchResultReader.csvLineToString)
              .join(JOIN_ROW) + JOIN_ROW // new line at the end
           )
         );
