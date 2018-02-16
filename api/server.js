@@ -54,7 +54,7 @@ var _ = require('underscore'),
 var jsonParser = bodyParser.json({limit: '32mb'});
 
 const handleJsonRequest = (method, path, callback) => {
-  app[method](path, jsonParser, (req, res) => {
+  app[method](path, jsonParser, (req, res, next) => {
     const contentType = req.headers['content-type'];
     if (!contentType || contentType !== 'application/json') {
       return serverUtils.error({
@@ -62,7 +62,7 @@ const handleJsonRequest = (method, path, callback) => {
         message: 'Content-Type must be application/json'
       }, req, res);
     } else {
-      callback(req, res);
+      callback(req, res, next);
     }
   });
 };
@@ -676,7 +676,7 @@ app.postJson('/api/v1/people', function(req, res) {
   });
 });
 
-app.postJson('/api/v1/bulk-delete', function(req, res) {
+app.postJson('/api/v1/bulk-delete', function(req, res, next) {
   auth.getUserCtx(req, function(err, userCtx) {
     if (err) {
       return serverUtils.error(err, req, res);
@@ -687,7 +687,7 @@ app.postJson('/api/v1/bulk-delete', function(req, res) {
     const options = { batchSize: 100 };
     bulkDocs.bulkDelete(req, res, function(err) {
       if (err) {
-        return serverUtils.error(err, req, res);
+        return next(err);
       }
     }, options);
   });
@@ -921,5 +921,8 @@ async.series([
 // Define error-handling middleware last.
 // http://expressjs.com/guide/error-handling.html
 app.use((err, req, res, next) => { // jshint ignore:line
+  if (res.headersSent) {
+    return next(err);
+  }
   serverUtils.serverError(err, req, res);
 });
