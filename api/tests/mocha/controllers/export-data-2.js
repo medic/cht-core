@@ -19,17 +19,6 @@ describe('Export Data 2.0', () => {
         'bars.smang.smong': 'smongVal'
       });
     });
-    it('Converts null / undefined into empty string', () => {
-      controller._flatten({
-        foo: '',
-        bar: null,
-        smang: undefined
-      }).should.deep.equal({
-        foo: '',
-        bar: '',
-        smang: ''
-      });
-    });
     it('Handles arrays', () => {
       // TODO: do we want it to work this way? Does it matter?
       controller._flatten({

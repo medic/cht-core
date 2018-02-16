@@ -321,6 +321,13 @@ var formats = {
   }
 };
 
+const writeExportHeaders = (res, type, format) => {
+  const filename = `${type}-${moment().format('YYYYMMDDHHmm')}.${format.extension}`;
+  res
+    .set('Content-Type', format.contentType)
+    .set('Content-Disposition', 'attachment; filename=' + filename);
+};
+
 var getExportPermission = function(type) {
   if (type === 'audit') {
     return 'can_export_audit';
@@ -353,13 +360,7 @@ app.all([
         return serverUtils.error(err, req, res);
       }
 
-      var format = formats[req.query.format] || formats.csv;
-      var filename = req.params.type + '-' +
-                     moment().format('YYYYMMDDHHmm') +
-                     '.' + format.extension;
-      res
-        .set('Content-Type', format.contentType)
-        .set('Content-Disposition', 'attachment; filename=' + filename);
+      writeExportHeaders(res, req.params.type, formats[req.query.format] || formats.csv);
 
       if (_.isFunction(exportDataResult)) {
         // wants to stream the result back
@@ -397,20 +398,13 @@ const exportDataV2 = (req, res) => {
       return serverUtils.error(err, req, res);
     }
 
-    const format = formats.csv;
-    const filename = req.params.type + '-' +
-                   moment().format('YYYYMMDDHHmm') +
-                   '.' + format.extension;
-    res
-      .set('Content-Type', format.contentType)
-      .set('Content-Disposition', 'attachment; filename=' + filename);
+    writeExportHeaders(res, req.params.type, formats.csv);
 
     const d = domain.create();
     d.on('error', err => serverUtils.error(err, req, res));
     d.run(() =>
       exportData2
         .export(type, filters, options)
-        // Do we want to create a zip here?
         .pipe(res));
   });
 };

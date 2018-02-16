@@ -1,4 +1,5 @@
-const _ = require('underscore');
+const _ = require('underscore'),
+      objectPath = require('object-path');
 
 const PouchDB = require('pouchdb-core');
 PouchDB.plugin(require('pouchdb-adapter-http'));
@@ -91,52 +92,42 @@ const hydrateDataRecords = result => {
  *   "foo.bar": "smang"
  * }
  */
-// TODO: is there really not a utility that does this?
 const flatten = (fields, prepend=[]) =>
   Object.keys(fields).reduce((acc, k) => {
     const path = [...prepend, k];
     if (typeof fields[k] === 'object' && fields[k]) {
       return _.extend(acc, flatten(fields[k], path));
     } else {
-      acc[path.join('.')] = fields[k] || '';
+      acc[path.join('.')] = fields[k];
       return acc;
     }
   }, {});
 
-// TODO: is there really not a utility that does this?
-const safeGet = (obj, fields) => {
-  let v = obj;
-  for (const f of fields) {
-    v = v[f];
-    if (!v) {
-      return undefined;
-    }
-  }
-  return v;
-};
-
 const CSV_MAPPER = {
   reports: (filters) => {
-    const forms = (
-      filters &&
-      filters.forms &&
-      filters.forms.selected &&
-      _.pluck(filters.forms.selected, 'code'));
+    // Either selected forms or all currently used forms
+    const getForms = () => {
+      const forms = (
+        filters &&
+        filters.forms &&
+        filters.forms.selected &&
+        _.pluck(filters.forms.selected, 'code'));
 
-    let p = Promise.resolve();
-    // If they have not selected any forms we need to get all available ones
-    if (!forms) {
-      p = p.then(() =>
-        DB.query('medic-client/reports_by_form', {
-          group: true
-        }).then(results => results.rows.map(r => r.key[0]))
-      );
-    } else {
-      p = p.then(() => forms);
-    }
+      if (forms) {
+        return Promise.resolve(forms);
+      } else {
+        return DB.query('medic-client/reports_by_form', {group: true})
+                .then(results => results.rows.map(r => r.key[0]));
+      }
+    };
 
-    // Determine the fields for each form we care about
-    return p.then(forms =>
+    // Take an array of the fields property of reports and generate a unique
+    // list of sorted CSV columns
+    const uniqueColumns = allFields => _.union(
+      ...allFields.map(f => Object.keys(flatten(f)))
+    ).sort();
+
+    return getForms().then(forms =>
       Promise.all(forms.map(form =>
         DB.query('medic-client/reports_by_form', {
           key: [form],
@@ -150,12 +141,12 @@ const CSV_MAPPER = {
           results.rows[0].doc.fields
         ))
       ).then(allFields => {
-        const fieldColumns = _.union(
-          ...allFields.filter(f => f).map(f => Object.keys(flatten(f)))
-        ).sort();
+        // Filter on identity as you can select forms that have no reports
+        const fieldColumns = uniqueColumns(allFields.filter(_.identity));
 
         const allColumns = [
           '_id',
+          'form',
           'patient_id',
           'reported_date',
           'from',
@@ -168,18 +159,17 @@ const CSV_MAPPER = {
         return {
           header: allColumns,
           fn: record => {
-            const flattened = flatten(record.fields);
-
             return [
               record._id,
+              record.form,
               record.patient_id,
               record.reported_date,
               record.from,
-              safeGet(record, ['contact', 'name']),
-              safeGet(record, ['contact', 'parent', 'name']),
-              safeGet(record, ['contact', 'parent', 'parent', 'name']),
-              safeGet(record, ['contact', 'parent', 'parent', 'parent', 'name'])
-            ].concat(fieldColumns.map(c => flattened[c]));
+              objectPath.get(record, ['contact', 'name']),
+              objectPath.get(record, ['contact', 'parent', 'name']),
+              objectPath.get(record, ['contact', 'parent', 'parent', 'name']),
+              objectPath.get(record, ['contact', 'parent', 'parent', 'parent', 'name'])
+            ].concat(fieldColumns.map(c => objectPath.get(record.fields, c)));
           }
         };
       }));
@@ -212,16 +202,14 @@ class SearchResultReader extends Readable {
 
   _read() {
     if (!this.csvFn) {
-      return Promise.resolve()
-        .then(() => CSV_MAPPER[this.type](this.filters, this.options))
+      return CSV_MAPPER[this.type](this.filters, this.options)
         .then(({ header, fn }) => {
           this.csvFn = fn;
           this.push(header.join(JOIN_COL) + JOIN_ROW);
         });
     }
 
-    return Promise.resolve()
-      .then(() => search(this.type, this.filters, this.options))
+    return search(this.type, this.filters, this.options)
       .then(ids => {
 
         if (!ids.length) {
@@ -240,7 +228,7 @@ class SearchResultReader extends Readable {
             _.pluck(results.rows, 'doc')
              .map(this.csvFn)
              .map(csvLine => csvLine.join(JOIN_COL))
-             .map(lines => lines + JOIN_ROW).join('')
+             .join(JOIN_ROW) + JOIN_ROW // new line at the end
           )
         );
       })
