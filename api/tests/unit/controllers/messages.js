@@ -258,7 +258,7 @@ exports['updateMessageTaskStates re-applies changes if it errored'] = test => {
   });
 };
 
-exports['updateMessageTaskStates does not apply the same state'] = test => {
+exports['updateMessageTaskStates does not duplicate state history'] = test => {
   const view = sinon
     .stub(db.medic, 'view')
     .callsArgWith(3, null, {
@@ -280,6 +280,8 @@ exports['updateMessageTaskStates does not apply the same state'] = test => {
             tasks: [{
               messages: [{
                 uuid: 'testMessageId1',
+              }, {
+                uuid: 'testMessageId2',
               }],
               state: 'testState1',
               state_details: 'somedetails',
@@ -296,7 +298,9 @@ exports['updateMessageTaskStates does not apply the same state'] = test => {
             _id: 'testDoc2',
             tasks: [{
               messages: [{
-                uuid: 'testMessageId2'
+                uuid: 'testMessageId3'
+              }, {
+                uuid: 'testMessageId4'
               }],
               state: 'testState1',
               state_details: 'somedetails',
@@ -313,7 +317,9 @@ exports['updateMessageTaskStates does not apply the same state'] = test => {
             _id: 'testDoc3',
             tasks: [{
               messages: [{
-                uuid: 'testMessageId3'
+                uuid: 'testMessageId5'
+              }, {
+                uuid: 'testMessageId6'
               }],
             }]
           }
@@ -329,21 +335,12 @@ exports['updateMessageTaskStates does not apply the same state'] = test => {
       {id: 'testDoc3', ok: true}]);
 
   controller.updateMessageTaskStates([
-    {
-      messageId: 'testMessageId1',
-      state: 'testState1',
-      details: 'somedetails'
-    },
-    {
-      messageId: 'testMessageId2',
-      state: 'testState2',
-      details: 'somedetails'
-    },
-    {
-      messageId: 'testMessageId3',
-      state: 'testState2',
-      details: 'details'
-    }
+    { messageId: 'testMessageId1', state: 'testState1', details: 'somedetails' },
+    { messageId: 'testMessageId2', state: 'testState1', details: 'somedetails' },
+    { messageId: 'testMessageId3', state: 'testState2', details: 'somedetails' },
+    { messageId: 'testMessageId4', state: 'testState2', details: 'somedetails' },
+    { messageId: 'testMessageId5', state: 'testState2', details: 'details' },
+    { messageId: 'testMessageId6', state: 'testState2', details: 'details' }
   ], (err, result) => {
     test.equal(err, null);
     test.deepEqual(result, {success: true});

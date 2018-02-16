@@ -8,6 +8,7 @@
         "modules": null,
         "moment": null,
         "underscore": null,
-        "properties": null
+        "properties": null,
+        "task-utils": null
     }
 }

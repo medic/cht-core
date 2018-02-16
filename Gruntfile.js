@@ -195,6 +195,16 @@ module.exports = function(grunt) {
             dest: 'static/dist/xslt/'
           }
         ]
+      },
+      taskutils: {
+        files: [
+          {
+            expand: true,
+            flatten: true,
+            src: [ 'shared-libs/task-utils/src/task-utils.js' ],
+            dest: 'packages/task-utils/'
+          }
+        ]
       }
     },
     exec: {
@@ -504,6 +514,7 @@ module.exports = function(grunt) {
 
   grunt.registerTask('mmjs', 'Build the JS resources', [
     'copy:libphonenumber',
+    'copy:taskutils',
     'browserify:dist',
     'replace:hardcodeappsettings',
     'ngtemplates'
