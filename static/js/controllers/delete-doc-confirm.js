@@ -9,6 +9,8 @@ angular.module('inboxControllers').controller('DeleteDocConfirm',
     'use strict';
     'ngInject';
 
+    $scope.totalDocsSelected = 0;
+    $scope.totalDocsDeleted = 0;
     function updateTotalDocsDeleted(totalDocsDeleted) {
       $scope.totalDocsDeleted = totalDocsDeleted;
     }
