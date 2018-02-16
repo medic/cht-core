@@ -108,25 +108,33 @@ var partialParse = require('partial-json-parser');
         docs.forEach(function(doc) {
           doc._deleted = true;
         });
+        var parents = [];
         return $q.all(docs.map(function(doc) {
           return getParent(doc)
             .then(function(parent) {
               if (parent) {
-                docs.push(parent);
+                parents.push(parent);
               }
             });
           }))
           .then(function() {
-            return checkForDuplicates(docs);
-          })
-          .then(function() {
-            return minifyLineage(docs);
-          })
-          .then(function() {
-            if (Session.isAdmin()) {
-              return bulkDeleteRemoteDocs(docs, eventListeners);
+            var docsWithParents = docs.concat(parents);
+            checkForDuplicates(docsWithParents);
+
+            if (!Session.isAdmin()) {
+              minifyLineage(docsWithParents);
+              return DB().bulkDocs(docsWithParents);
             }
-            return DB().bulkDocs(docs);
+
+            var docIds = docs.map(function(doc) {
+              return { _id: doc._id };
+            });
+            return $q.all([
+              parents.length > 0 ? DB().bulkDocs(parents) : $q.resolve([]),
+              bulkDeleteRemoteDocs(docIds, eventListeners)
+            ]).then(function(results) {
+              return results[0].concat(results[1]);
+            });
           })
           // No silent fails! Throw on error.
           .then(function(results) {

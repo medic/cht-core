@@ -179,10 +179,10 @@ describe('DeleteDocs service', function() {
   });
 
   it('sends a direct request to the server when user is an admin', function() {
-    var record1 = { _id: 'xyz' };
-    var record2 = { _id: 'abc' };
-    var expected1 = { _id: 'xyz', _deleted: true };
-    var expected2 = { _id: 'abc', _deleted: true };
+    var record1 = { _id: 'xyz', _rev: '1' };
+    var record2 = { _id: 'abc', _rev: '1' };
+    var expected1 = { _id: 'xyz' };
+    var expected2 = { _id: 'abc' };
     server.respondWith([200, { 'Content-Type': 'application/json' }, '{ "hello": "there" }']);
     isAdmin.returns(true);
     return service([ record1, record2 ]).then(function() {
