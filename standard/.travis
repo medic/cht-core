@@ -1,5 +1,0 @@
-#!/bin/bash -eu
-# TODO contact-summary-test-lib should be a lib, perhaps in medic-projects/lib/,
-# or installed from `npm`, so that it can be included in multiple projects with-
-# out copy/pasting all over this project.
-(cd test && (cd contact-summary-test-lib && npm install) && npm install && npm test)
