@@ -6087,7 +6087,7 @@
         {
           "type": "count",
           "id": "active-pregnancies",
-          "icon": "pregnancy-60",
+          "icon": "pregnancy-1",
           "goal": -1,
           "translation_key": "targets.active_pregnancies.title",
           "subtitle_translation_key": "targets.all_time.subtitle"
@@ -6095,7 +6095,7 @@
         {
           "type": "count",
           "id": "pregnancy-registrations-this-month",
-          "icon": "pregnancy-60",
+          "icon": "pregnancy-1",
           "goal": -1,
           "translation_key": "targets.pregnancy_registrations.title",
           "subtitle_translation_key": "targets.this_month.subtitle"
@@ -6103,7 +6103,7 @@
         {
           "type": "count",
           "id": "births-this-month",
-          "icon": "infant-60",
+          "icon": "infant",
           "goal": -1,
           "translation_key": "targets.births.title",
           "subtitle_translation_key": "targets.this_month.subtitle"
@@ -6111,7 +6111,7 @@
         {
           "type": "percent",
           "id": "delivery-with-min-1-visit",
-          "icon": "nurse-60",
+          "icon": "nurse",
           "goal": 100,
           "translation_key": "targets.delivery_1_visit.title",
           "subtitle_translation_key": "targets.all_time.subtitle"
@@ -6119,7 +6119,7 @@
         {
           "type": "percent",
           "id": "delivery-with-min-4-visits",
-          "icon": "nurse-60",
+          "icon": "nurse",
           "goal": 100,
           "translation_key": "targets.delivery_4_visits.title",
           "subtitle_translation_key": "targets.all_time.subtitle"
@@ -6127,7 +6127,7 @@
         {
           "type": "percent",
           "id": "delivery-at-facility-total",
-          "icon": "medic-district-hospital",
+          "icon": "clinic",
           "goal": 100,
           "translation_key": "targets.facility_deliveries.title",
           "subtitle_translation_key": "targets.all_time.subtitle"
@@ -6135,7 +6135,7 @@
         {
           "type": "count",
           "id": "pnc-active",
-          "icon": "mother-child-60",
+          "icon": "mother-child",
           "goal": -1,
           "translation_key": "targets.active_pnc.title",
           "subtitle_translation_key": "targets.all_time.subtitle",
@@ -6144,7 +6144,7 @@
         {
           "type": "count",
           "id": "pnc-registered-this-month",
-          "icon": "infant-60",
+          "icon": "infant",
           "goal": -1,
           "translation_key": "targets.pnc_registrations.title",
           "subtitle_translation_key": "targets.all_time.subtitle",
@@ -6153,7 +6153,7 @@
         {
           "type": "count",
           "id": "pnc-visits-this-month",
-          "icon": "infant-60",
+          "icon": "infant",
           "goal": -1,
           "translation_key": "targets.pnc_visits.title",
           "subtitle_translation_key": "targets.this_month.subtitle",
@@ -6162,7 +6162,7 @@
         {
           "type": "count",
           "id": "pnc-homebirth-0-visits",
-          "icon": "household-60",
+          "icon": "household",
           "goal": -1,
           "translation_key": "targets.homebirth_no_visits.title",
           "subtitle_translation_key": "targets.all_time.subtitle",
@@ -6171,7 +6171,7 @@
         {
           "type": "percent",
           "id": "pnc-homebirth-min-1-visit",
-          "icon": "nurse-60",
+          "icon": "nurse",
           "goal": 100,
           "translation_key": "targets.homebirth_1_visit.title",
           "subtitle_translation_key": "targets.all_time.subtitle",
@@ -6180,7 +6180,7 @@
         {
           "type": "percent",
           "id": "pnc-3-visits",
-          "icon": "nurse-60",
+          "icon": "nurse",
           "goal": 50,
           "translation_key": "targets.birth_3_visits.title",
           "subtitle_translation_key": "targets.all_time.subtitle",
@@ -6189,7 +6189,7 @@
         {
           "type": "count",
           "id": "imm-children-under-5-years",
-          "icon": "children-60",
+          "icon": "children",
           "goal": -1,
           "translation_key": "targets.children_u5.title",
           "subtitle_translation_key": "targets.all_time.subtitle",
@@ -6198,7 +6198,7 @@
         {
           "type": "count",
           "id": "imm-children-registered-this-month",
-          "icon": "child-60",
+          "icon": "child",
           "goal": -1,
           "translation_key": "targets.children_registered.title",
           "subtitle_translation_key": "targets.this_month.subtitle",
@@ -6207,7 +6207,7 @@
         {
           "type": "count",
           "id": "imm-vaccines-given-this-month",
-          "icon": "immunization-60",
+          "icon": "immunization",
           "goal": -1,
           "translation_key": "targets.vaccines_given.title",
           "subtitle_translation_key": "targets.this_month.subtitle",
@@ -6216,7 +6216,7 @@
         {
           "type": "count",
           "id": "imm-children-vaccinated-prev-3-months",
-          "icon": "chw-60",
+          "icon": "chw",
           "goal": -1,
           "translation_key": "targets.children_vaccinated.title",
           "subtitle_translation_key": "targets.past_3mos.subtitle",
@@ -6225,7 +6225,7 @@
         {
           "type": "count",
           "id": "imm-no-vaccine-reported",
-          "icon": "risk-60",
+          "icon": "risk",
           "goal": -1,
           "translation_key": "targets.children_not_vaccinated.title",
           "subtitle_translation_key": "targets.all_time.subtitle",
@@ -6234,7 +6234,7 @@
         {
           "type": "percent",
           "id": "imm-children-with-bcg-reported",
-          "icon": "child-60",
+          "icon": "child",
           "goal": 100,
           "translation_key": "targets.bcg_reported.title",
           "subtitle_translation_key": "targets.all_time.subtitle",
