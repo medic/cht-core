@@ -387,12 +387,12 @@ const exportDataV2 = (req, res) => {
     }, req, res);
   }
 
-  // We currently only support online users (CouchDB admins and National Admisn)
+  // We currently only support online users (CouchDB admins and National Admins)
   // If we want to support offline users we should either:
   //  - Forcibly scope their search object to their facility, which is returned
   //    by the following auth check in ctx.district (maybe?)
-  //  - Still don't let offilne users use this API, and instead refactor the
-  //    export logic so it can be used in webapp, and have exports workn offline
+  //  - Still don't let offline users use this API, and instead refactor the
+  //    export logic so it can be used in webapp, and have exports works offline
   auth.check(req, ['national_admin', getExportPermission(req.params.type)], null, function(err) {
     if (err) {
       return serverUtils.error(err, req, res);

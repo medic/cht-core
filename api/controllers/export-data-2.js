@@ -16,7 +16,7 @@ const SUPPORTED_EXPORTS = ['reports'];
 
 
 //
-// TODO: these functions is copied from `export-data.js`, and modified to use
+// TODO: these functions are copied from `export-data.js`, and modified to use
 // PouchDB / promises. We should remove both copies of these functions and create
 // a shared lineage library that we can use here, as well as in the rest of api,
 // sentinel and webapp.
