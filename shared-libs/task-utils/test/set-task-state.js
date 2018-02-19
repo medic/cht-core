@@ -2,7 +2,7 @@ var chai = require('chai'),
   sinon = require('sinon').sandbox.create(),
   taskUtils = require('../src/task-utils');
 
-describe('SetTaskState Service', function() {
+describe('TaskUtils shared lib - setTaskState function', function() {
   'use strict';
 
   var dateStub;
