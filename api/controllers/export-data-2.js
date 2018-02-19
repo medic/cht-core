@@ -90,7 +90,7 @@ const hydrateDataRecords = result => {
  * }
  */
 const flatten = (fields, prepend=[]) => {
-  Object.keys(fields).reduce((acc, k) => {
+  return Object.keys(fields).reduce((acc, k) => {
     const path = [...prepend, k];
 
     if (typeof fields[k] === 'object' && fields[k] && !Array.isArray(fields[k])) {
