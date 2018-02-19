@@ -10,7 +10,9 @@ const _ = require('underscore'),
 
 let originalSettings;
 
-const request = (options, debug, noAuth) => {
+// First Object is passed to http.request, second is for specific options / flags
+// for this wrapper
+const request = (options, {debug, noAuth, notJson} = {}) => {
   if (typeof options === 'string') {
     options = {
       path: options
@@ -41,6 +43,10 @@ const request = (options, debug, noAuth) => {
     });
     res.on('end', () => {
       try {
+        if (notJson) {
+          return deferred.fulfill(body);
+        }
+
         body = JSON.parse(body);
         if (body.error) {
           deferred.reject(new Error(`Request failed: ${options.path},\n  body: ${JSON.stringify(options.body)}\n  response: ${JSON.stringify(body)}`));
@@ -225,7 +231,7 @@ module.exports = {
       };
     }
     options.path = '/' + constants.DB_NAME + (options.path || '');
-    return request(options, debug);
+    return request(options, {debug: debug});
   },
 
   saveDoc: doc => {

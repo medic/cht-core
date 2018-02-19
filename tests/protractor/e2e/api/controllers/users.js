@@ -137,7 +137,7 @@ describe('Users API', () => {
           place: 'NewPlaceId'
         },
         auth: `${username}:${password}`
-      }, true)
+      })
       .then(() => fail('You should get a 401 in this situation'))
       .catch(err => {
         expect(err).toBe('You do not have permissions to modify this person');
@@ -189,7 +189,7 @@ describe('Users API', () => {
           body: {
             password: 'swizzlesticks'
           },
-        }, false, true)
+        }, {noAuth: true})
         .then(() => fail('You should get an error in this situation'))
         .catch(err => {
           expect(err).toBe('You must authenticate with Basic Auth to modify your password');

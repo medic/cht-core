@@ -18,6 +18,7 @@ const findRegistrations = () => {
       startkey: [ pCode ],
       endkey: [ pCode + '\ufff0'],
       include_docs: true,
+      reduce: false,
       limit: 5000
     }).then(data => {
       return data.rows.map(row => row.id);

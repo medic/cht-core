@@ -131,7 +131,7 @@ describe('changes handler', () => {
           'Content-Type': 'application/json'
         },
         body: user
-      }, true));
+      }));
     });
 
     return promises.then(done);

@@ -24,6 +24,7 @@ var _ = require('underscore'),
 
   inboxServices.factory('Search',
     function(
+      $log,
       $q,
       GetDataRecords,
       SearchFactory
@@ -49,6 +50,8 @@ var _ = require('underscore'),
       var _search = SearchFactory();
 
       return function(type, filters, options) {
+        $log.debug('Doing Search', type, filters, options);
+
         options = options || {};
         _.defaults(options, {
           limit: 50,
