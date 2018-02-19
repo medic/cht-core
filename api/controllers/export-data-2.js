@@ -89,20 +89,23 @@ const hydrateDataRecords = result => {
  *   "foo.bar": "smang"
  * }
  */
-const flatten = (fields, prepend=[]) =>
+const flatten = (fields, prepend=[]) => {
   Object.keys(fields).reduce((acc, k) => {
     const path = [...prepend, k];
+
     if (typeof fields[k] === 'object' && fields[k] && !Array.isArray(fields[k])) {
       // Recurse into valid objects. We ignore arrays as they are variable
       // length, so you can't generate a stable header out of them. Instead,
       // when we convert them into CSV we JSON.stringify them and treat them as
       // one cell.
-      return _.extend(acc, flatten(fields[k], path));
+      _.extend(acc, flatten(fields[k], path));
     } else {
       acc[path.join('.')] = fields[k];
-      return acc;
     }
+
+    return acc;
   }, {});
+};
 
 const CSV_MAPPER = {
   reports: (filters) => {
@@ -207,8 +210,8 @@ class SearchResultReader extends Readable {
     const escapedCsvLine = csvLine.map(cell => {
       let escaped;
 
-      // Strings and arrays (because they might contain strings etc) need to
-      // be quoted and escaped
+      // Strings and arrays (because they contain commas, might contain strings
+      // etc) need to be quoted and escaped
       if (typeof cell === 'string') {
         escaped = cell.replace(/"/g, '\\"');
       } else if (Array.isArray(cell)) {
