@@ -1,5 +1,5 @@
-var controller = require('../../../controllers/messages'),
-    db = require('../../../db'),
+var controller = require('../../message-utils'),
+    db = require('../../db'),
     sinon = require('sinon').sandbox.create();
 
 exports.tearDown = function (callback) {
@@ -75,30 +75,6 @@ exports['getMessages sorts results'] = function(test) {
     test.ok(!err);
     test.equals(getView.callCount, 1);
     test.deepEqual(['happy', 'angry'], getView.getCall(0).args[2].keys);
-    test.done();
-  });
-};
-
-exports['getMessage returns 404 if view returns empty rows'] = function(test) {
-  test.expect(3);
-  var getView = sinon.stub(db.medic, 'view').callsArgWith(3, null, {rows: []});
-  controller.getMessage('foo', function(err) {
-    test.equals(err.code, 404);
-    test.equals(err.message, 'Not Found');
-    test.equals(getView.callCount, 1);
-    test.done();
-  });
-};
-
-exports['getMessage returns view data'] = function(test) {
-  test.expect(3);
-  var getView = sinon.stub(db.medic, 'view').callsArgWith(3, null, {rows: [{
-    value: {message: 'test'}
-  }]});
-  controller.getMessage('foo', function(err, results) {
-    test.ok(!err);
-    test.equals(getView.callCount, 1);
-    test.deepEqual({ message: 'test' }, results);
     test.done();
   });
 };
