@@ -122,4 +122,30 @@ describe('MessageState service', function() {
     });
   });
 
+  it('does not duplicate state history - task-utils integration', function(done) {
+    var doc = {
+      scheduled_tasks: [
+        { group: 1, state: 'scheduled', timestamp: '000' },
+        { group: 1, state: 'scheduled', state_history: [{ state: 'scheduled', timestamp: '000' }] },
+      ]
+    };
+
+    get.returns(Promise.resolve(doc));
+    put.returns(Promise.resolve());
+
+    service.set('id', 1, 'scheduled', 'scheduled').then(function() {
+      var actual = put.args[0][0];
+      chai.expect(actual.scheduled_tasks[0].state).to.equal('scheduled');
+      chai.expect(actual.scheduled_tasks[0].timestamp).to.not.equal('000');
+      chai.expect(actual.scheduled_tasks[0].state_history.length).to.equal(1);
+
+      chai.expect(actual.scheduled_tasks[1].state).to.equal('scheduled');
+      chai.expect(actual.scheduled_tasks[1].timestamp).to.not.equal('000');
+      chai.expect(actual.scheduled_tasks[1].state_history.length).to.equal(1);
+      chai.expect(actual.scheduled_tasks[1].state_history[0].timestamp).to.not.equal('000');
+      chai.expect(actual.scheduled_tasks[1].state_history[0].state).to.equal('scheduled');
+
+      done();
+    });
+  });
 });
