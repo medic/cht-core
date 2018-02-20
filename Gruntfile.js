@@ -61,8 +61,6 @@ module.exports = function(grunt) {
             '../../js/dropdown.jquery': 'bootstrap/js/dropdown', // enketo currently duplicates bootstrap's dropdown code.  working to resolve this upstream https://github.com/enketo/enketo-core/issues/454
             'libphonenumber/utils': './packages/libphonenumber/libphonenumber/utils',
             'libphonenumber/libphonenumber': './packages/libphonenumber/libphonenumber/libphonenumber',
-            'pouchdb-generate-replication-id': './static/js/modules/pouchdb-generate-replication-id-patched',
-            'pouchdb-generate-replication-id-original': './node_modules/pouchdb-generate-replication-id',
             'angular-translate-interpolation-messageformat': './node_modules/angular-translate/dist/angular-translate-interpolation-messageformat/angular-translate-interpolation-messageformat',
             'angular-translate-handler-log':  './node_modules/angular-translate/dist/angular-translate-handler-log/angular-translate-handler-log',
           },
@@ -169,7 +167,7 @@ module.exports = function(grunt) {
               'enketo-core/**',
               'font-awesome/**',
               'moment/**',
-              'pouchdb-adapter-idb/**',
+              'pouchdb-browser/**',
             ],
             dest: 'node_modules_backup'
           }
@@ -252,7 +250,7 @@ module.exports = function(grunt) {
             'enketo-core',
             'font-awesome',
             'moment',
-            'pouchdb-adapter-idb',
+            'pouchdb-browser',
           ];
           return modulesToPatch.map(function(module) {
             var backupPath = 'node_modules_backup/' + module;
@@ -291,9 +289,10 @@ module.exports = function(grunt) {
             // patch moment.js to use western arabic (european) numerals in Hindi
             'patch node_modules/moment/locale/hi.js < patches/moment-hindi-use-euro-numerals.patch',
 
-            // patch pouch to improve safari checks
-            // https://github.com/medic/medic-webapp/issues/2797
-            'patch node_modules/pouchdb-adapter-idb/lib/index.js < patches/pouchdb-ignore-safari-check.patch',
+            // patch pouch to:
+            // * ignore doc_ids when generating replication id (https://github.com/medic/medic-webapp/issues/2404)
+            // * improve safari checks (https://github.com/medic/medic-webapp/issues/2797)
+            'patch node_modules/pouchdb-browser/lib/index.js < patches/pouchdb-browser.patch',
           ];
           return patches.join(' && ');
         }
