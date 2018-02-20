@@ -1,0 +1,29 @@
+*** node_modules/pouchdb-browser/lib/index.js	2018-02-02 13:46:02.000000000 +0100
+--- pouchdb-browser-patched.js	2018-02-20 13:09:14.000000000 +0100
+***************
+*** 6503,6508 ****
+--- 6503,6509 ----
+    var isSafari = typeof openDatabase !== 'undefined' &&
+      /(Safari|iPhone|iPad|iPod)/.test(navigator.userAgent) &&
+      !/Chrome/.test(navigator.userAgent) &&
++     !/TECNO/.test(navigator.userAgent) && // MEDIC PATCH #2797
+      !/BlackBerry/.test(navigator.platform);
+  
+    // Safari <10.1 does not meet our requirements for IDB support (#5572)
+***************
+*** 11505,11511 ****
+  // Generate a unique id particular to this replication.
+  // Not guaranteed to align perfectly with CouchDB's rep ids.
+  function generateReplicationId(src, target, opts) {
+!   var docIds = opts.doc_ids ? opts.doc_ids.sort(collate) : '';
+    var filterFun = opts.filter ? opts.filter.toString() : '';
+    var queryParams = '';
+    var filterViewName =  '';
+--- 11506,11512 ----
+  // Generate a unique id particular to this replication.
+  // Not guaranteed to align perfectly with CouchDB's rep ids.
+  function generateReplicationId(src, target, opts) {
+!   var docIds = ''; // MEDIC PATCH #2404
+    var filterFun = opts.filter ? opts.filter.toString() : '';
+    var queryParams = '';
+    var filterViewName =  '';
