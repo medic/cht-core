@@ -374,11 +374,26 @@ app.all([
 });
 
 const exportDataV2 = (req, res) => {
+
+  /**
+   * Integer values get parsed in by express as strings. This will not do!
+   */
+  const correctFilterTypes = filters => {
+    if (filters.date && filters.date.from) {
+      filters.date.from = parseInt(filters.date.from);
+    }
+    if (filters.date && filters.date.to) {
+      filters.date.to = parseInt(filters.date.to);
+    }
+  };
+
   const type = req.params.type,
         filters = (req.body && req.body.filters) ||
                   (req.query && req.query.filters) || {},
         options = (req.body && req.body.options) ||
                   (req.query && req.query.options) || {};
+
+  correctFilterTypes(filters);
 
   if (!exportData2.supportedExports.includes(type)) {
     return serverUtils.error({
