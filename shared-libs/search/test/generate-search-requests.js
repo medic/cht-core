@@ -51,7 +51,8 @@ describe('GenerateSearchRequests service', function() {
       chai.expect(result.length).to.equal(1);
       chai.expect(result[0].view).to.equal('medic-client/reports_by_form');
       chai.expect(result[0].params).to.deep.equal({
-        keys: [ [ 'P' ], [ 'R' ] ]
+        keys: [ [ 'P' ], [ 'R' ] ],
+        reduce: false
       });
     });
 

@@ -5,7 +5,7 @@
   var inboxServices = angular.module('inboxServices');
 
   var TYPES = {
-    reports:  { name: 'reports', apiName: 'forms', format: 'xml', lucene: true },
+    reports:  { name: 'reports', v2: true },
     contacts: { name: 'contacts', format: 'json', lucene: true },
     messages: { name: 'messages', format: 'xml' },
     audit:    { name: 'audit', format: 'xml' },
@@ -21,10 +21,15 @@
     ) {
       'ngInject';
 
-      var buildUrl = function(type, language, filters) {
+      var buildV1Url = function(type, language, filters) {
         var name = type.apiName || type.name;
         var params = getParams(type, language, filters);
         return '/api/v1/export/' + name + '?' + $.param(params);
+      };
+
+      var buildV2Url = function(type, body) {
+        var params = body ? '?' + $.param(body) : '';
+        return '/api/v2/export/' + type + params;
       };
 
       var getParams = function(type, language, filters) {
@@ -45,9 +50,15 @@
         if (!type) {
           return $q.reject(new Error('Unknown download type'));
         }
-        return Language().then(function(language) {
-          return buildUrl(type, language, filters);
-        });
+
+        if (type.v2) {
+          return $q.resolve(buildV2Url(type.name, filters ? {filters: filters} : null));
+        } else {
+          return Language().then(function(language) {
+            return buildV1Url(type, language, filters);
+          });
+        }
+
       };
     }
   );

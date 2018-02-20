@@ -1,6 +1,7 @@
 var _ = require('underscore'),
     async = require('async'),
     bodyParser = require('body-parser'),
+    domain = require('domain'),
     express = require('express'),
     morgan = require('morgan'),
     moment = require('moment'),
@@ -32,6 +33,7 @@ var _ = require('underscore'),
     monthlyRegistrations = require('./controllers/monthly-registrations'),
     monthlyDeliveries = require('./controllers/monthly-deliveries'),
     exportData = require('./controllers/export-data'),
+    exportData2 = require('./controllers/export-data-2'),
     messages = require('./controllers/messages'),
     records = require('./controllers/records'),
     forms = require('./controllers/forms'),
@@ -320,6 +322,13 @@ var formats = {
   }
 };
 
+const writeExportHeaders = (res, type, format) => {
+  const filename = `${type}-${moment().format('YYYYMMDDHHmm')}.${format.extension}`;
+  res
+    .set('Content-Type', format.contentType)
+    .set('Content-Disposition', 'attachment; filename=' + filename);
+};
+
 var getExportPermission = function(type) {
   if (type === 'audit') {
     return 'can_export_audit';
@@ -352,13 +361,7 @@ app.all([
         return serverUtils.error(err, req, res);
       }
 
-      var format = formats[req.query.format] || formats.csv;
-      var filename = req.params.type + '-' +
-                     moment().format('YYYYMMDDHHmm') +
-                     '.' + format.extension;
-      res
-        .set('Content-Type', format.contentType)
-        .set('Content-Disposition', 'attachment; filename=' + filename);
+      writeExportHeaders(res, req.params.type, formats[req.query.format] || formats.csv);
 
       if (_.isFunction(exportDataResult)) {
         // wants to stream the result back
@@ -370,6 +373,60 @@ app.all([
     });
   });
 });
+
+const exportDataV2 = (req, res) => {
+
+  /**
+   * Integer values get parsed in by express as strings. This will not do!
+   */
+  const correctFilterTypes = filters => {
+    if (filters.date && filters.date.from) {
+      filters.date.from = parseInt(filters.date.from);
+    }
+    if (filters.date && filters.date.to) {
+      filters.date.to = parseInt(filters.date.to);
+    }
+  };
+
+  const type = req.params.type,
+        filters = (req.body && req.body.filters) ||
+                  (req.query && req.query.filters) || {},
+        options = (req.body && req.body.options) ||
+                  (req.query && req.query.options) || {};
+
+  correctFilterTypes(filters);
+
+  if (!exportData2.supportedExports.includes(type)) {
+    return serverUtils.error({
+      message: `v2 export only supports ${exportData2.supportedExports}`,
+      code: 404
+    }, req, res);
+  }
+
+  // We currently only support online users (CouchDB admins and National Admins)
+  // If we want to support offline users we should either:
+  //  - Forcibly scope their search object to their facility, which is returned
+  //    by the following auth check in ctx.district (maybe?)
+  //  - Still don't let offline users use this API, and instead refactor the
+  //    export logic so it can be used in webapp, and have exports works offline
+  auth.check(req, ['national_admin', getExportPermission(req.params.type)], null, function(err) {
+    if (err) {
+      return serverUtils.error(err, req, res);
+    }
+
+    writeExportHeaders(res, req.params.type, formats.csv);
+
+    const d = domain.create();
+    d.on('error', err => serverUtils.error(err, req, res));
+    d.run(() =>
+      exportData2
+        .export(type, filters, options)
+        .pipe(res));
+  });
+};
+
+app.get('/api/v2/export/:type', exportDataV2);
+app.postJson('/api/v2/export/:type', exportDataV2);
 
 app.get('/api/v1/fti/:view', function(req, res) {
   auth.check(req, 'can_view_data_records', null, function(err) {

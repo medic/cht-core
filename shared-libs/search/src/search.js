@@ -1,3 +1,7 @@
+// TODO: consider rewriting to not support skip and limit.
+// Skip and Limit are not considered fast:
+//    http://docs.couchdb.org/en/latest/ddocs/views/pagination.html
+//    https://github.com/medic/medic-webapp/issues/4206
 var _ = require('underscore'),
     GenerateSearchRequests = require('./generate-search-requests');
 
@@ -76,7 +80,12 @@ module.exports = function(Promise, DB) {
       skip: 0
     });
 
-    var requests = GenerateSearchRequests.generate(type, filters);
+    var requests;
+    try {
+      requests = GenerateSearchRequests.generate(type, filters);
+    } catch (err) {
+      return Promise.reject(err);
+    }
 
     return getRows(type, requests, options)
       .then(function(results) {

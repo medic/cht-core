@@ -82,7 +82,7 @@ describe('messages controller', () => {
   afterEach(utils.afterEach);
 
   it('should fetch all messages', () =>
-    utils.request('/api/v1/messages', true)
+    utils.request('/api/v1/messages')
       .then((result) => {
         // TODO stop emitting everything twice : https://github.com/medic/medic-webapp/issues/3400
         // assert.equal(result.length, 3);

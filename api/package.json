@@ -26,6 +26,7 @@
     "pass-stream": "^1.0.0",
     "pouchdb-adapter-http": "^6.4.3",
     "pouchdb-core": "^6.4.3",
+    "pouchdb-mapreduce": "^6.4.3",
     "properties": "^1.2.1",
     "request": "^2.83.0",
     "search": "file:../shared-libs/search",

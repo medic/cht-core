@@ -10,13 +10,12 @@ var getKeysArray = function(keys) {
 
 // filter = { selected: [...], options: [...]}
 var getRequestForMultidropdown = function(view, filter, mapKeysFunc) {
-  if (!filter || !filter.selected || !filter.options) {
+  if (!filter || !filter.selected) {
     return;
   }
 
-  // If everything is selected, no filter to apply.
-  var everythingSelected = filter.selected.length === filter.options.length;
-  if (everythingSelected) {
+  // If we know everything is selected, no filter to apply.
+  if (filter.options && filter.selected.length === filter.options.length) {
     return;
   }
 
@@ -64,7 +63,7 @@ var reportedDateRequest = function(filters) {
 };
 
 var formRequest = function(filters) {
-  return getRequestForMultidropdown(
+  var req = getRequestForMultidropdown(
     'medic-client/reports_by_form',
     filters.forms,
     function(forms) {
@@ -72,6 +71,12 @@ var formRequest = function(filters) {
         return [ form.code ];
       });
     });
+
+  if (req) {
+    req.params.reduce = false;
+  }
+
+  return req;
 };
 
 var validityRequest = function(filters) {

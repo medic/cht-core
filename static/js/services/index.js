@@ -41,6 +41,7 @@
   require('./geolocation');
   require('./get-contact-summaries');
   require('./get-data-records');
+  require('./get-subject-summaries');
   require('./import-contacts');
   require('./kanso-packages');
   require('./language');
@@ -85,7 +86,6 @@
   require('./user');
   require('./user-contact');
   require('./version');
-  require('./web-worker');
   require('./xml-form');
   require('./xml-forms');
   require('./xml-forms-context-utils');
