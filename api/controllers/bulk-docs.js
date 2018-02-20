@@ -1,6 +1,6 @@
-var db = require('../db');
+const db = require('../db');
 
-const extractDocs = data => {
+const markAsDeleted = data => {
   return data.rows
     .map(row => {
       const doc = row.doc;
@@ -21,8 +21,7 @@ const generateBatches = (docs, batchSize) => {
   return batches;
 };
 
-const generateBatchPromise = (batch, res, options) => {
-  options = options || {};
+const generateBatchPromise = (batch, res, options = {}) => {
   return new Promise((resolve, reject) => {
     db.medic.bulk({ docs: batch }, function (err, body) {
       if (err) {
@@ -44,17 +43,15 @@ const setupBatchPromises = (batches, res) => {
 };
 
 module.exports = {
-  bulkDelete: (req, res, callback, options) => {
-    options = options || {};
-    options.batchSize = options.batchSize || 100;
+  bulkDelete: (req, res, callback, { batchSize = 100 } = {}) => {
     const keys = req.body.docs.map(doc => doc._id);
     db.medic.fetch({ keys }, function(err, data) {
       if (err) {
         return callback(err);
       }
 
-      const docs = extractDocs(data);
-      const batches = generateBatches(docs, options.batchSize);
+      const docs = markAsDeleted(data);
+      const batches = generateBatches(docs, batchSize);
       const sendBatches = setupBatchPromises(batches, res);
 
       res.type('application/json');

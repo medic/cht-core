@@ -20,19 +20,27 @@ var partialParse = require('partial-json-parser');
 
       var getParent = function(doc) {
         if (doc.type === 'person' && doc.parent && doc.parent._id) {
-          return DB()
-            .get(doc.parent._id)
+          return DB().get(doc.parent._id);
+        }
+        return $q.resolve();
+      };
+
+      var getParentsToUpdate = function(docs) {
+        return $q.all(docs.map(function(doc) {
+          return getParent(doc)
             .then(function(parent) {
-              if (parent.contact &&
-                  parent.contact._id &&
-                  parent.contact._id === doc._id) {
-                // this doc is the contact for the parent - update parent
+              var shouldUpdateParentContact = parent && parent.contact && parent.contact._id && parent.contact._id === doc._id;
+              if (shouldUpdateParentContact) {
                 parent.contact = null;
                 return parent;
               }
             });
-        }
-        return $q.resolve();
+          }))
+          .then(function(parents) {
+            return parents.filter(function(parent) {
+              return typeof parent !== 'undefined';
+            });
+          });
       };
 
       var checkForDuplicates = function(docs) {
@@ -60,6 +68,29 @@ var partialParse = require('partial-json-parser');
             doc.contact = ExtractLineage(doc.contact);
           }
         });
+      };
+
+      var deleteAndUpdateDocs = function (docsToDelete, docsToUpdate, eventListeners) {
+        var onlineUser = Session.isAdmin();
+        if (onlineUser) {
+          var docIds = docsToDelete.map(function(doc) {
+            return { _id: doc._id };
+          });
+
+          return $q.all([
+            docsToUpdate.length > 0 ? DB().bulkDocs(docsToUpdate) : $q.resolve([]),
+            bulkDeleteRemoteDocs(docIds, eventListeners)
+          ]).then(function(results) {
+            return results[0].concat(results[1]);
+          });
+        } else {
+          docsToDelete.forEach(function(doc) {
+            doc._deleted = true;
+          });
+          var allDocs = docsToDelete.concat(docsToUpdate);
+          minifyLineage(allDocs);
+          return DB().bulkDocs(allDocs);
+        }
       };
 
       var bulkDeleteRemoteDocs = function (docs, eventListeners) {
@@ -92,7 +123,9 @@ var partialParse = require('partial-json-parser');
 
       /**
        * Delete the given docs. If 'person' type then also fix the
-       * contact hierarchy.
+       * contact hierarchy by updating the case when doc.parent.contact == doc
+       * for one of the docs to be deleted (simply removes doc.parent.contact
+       * in this case).
        *
        * @param docs {Object|Array} Document or array of documents to delete.
        * @param eventListeners {Object} Map of event listeners to callback functions.
@@ -105,36 +138,11 @@ var partialParse = require('partial-json-parser');
         } else {
           docs = _.clone(docs);
         }
-        docs.forEach(function(doc) {
-          doc._deleted = true;
-        });
-        var parents = [];
-        return $q.all(docs.map(function(doc) {
-          return getParent(doc)
-            .then(function(parent) {
-              if (parent) {
-                parents.push(parent);
-              }
-            });
-          }))
-          .then(function() {
-            var docsWithParents = docs.concat(parents);
-            checkForDuplicates(docsWithParents);
 
-            if (!Session.isAdmin()) {
-              minifyLineage(docsWithParents);
-              return DB().bulkDocs(docsWithParents);
-            }
-
-            var docIds = docs.map(function(doc) {
-              return { _id: doc._id };
-            });
-            return $q.all([
-              parents.length > 0 ? DB().bulkDocs(parents) : $q.resolve([]),
-              bulkDeleteRemoteDocs(docIds, eventListeners)
-            ]).then(function(results) {
-              return results[0].concat(results[1]);
-            });
+        return getParentsToUpdate(docs)
+          .then(function(parentsToUpdate) {
+            checkForDuplicates(docs.concat(parentsToUpdate));
+            return deleteAndUpdateDocs(docs, parentsToUpdate, eventListeners);
           })
           // No silent fails! Throw on error.
           .then(function(results) {
