@@ -9,6 +9,12 @@ const config = require('./config'),
 
 const apiPort = process.env.API_PORT || 5988;
 
+const {jsonParser, formParser, init: initRouting} = require('./routing/app');
+const app = initRouting();
+const pathPrefix = '/' + db.settings.db + '/';
+const proxy = require('./routing/proxy').setupProxy(app, {pathPrefix});
+require('./routing/routing').route(app, proxy, {pathPrefix, jsonParser, formParser});
+
 const nodeVersionCheck = callback => {
   try {
     const [major, minor, patch] = process.versions.node.split('.').map(Number);
@@ -113,12 +119,6 @@ async.series([
     console.error(err);
     process.exit(1);
   }
-
-  const {jsonParser, formParser, init: initRouting} = require('./routing/app');
-  const app = initRouting();
-  const pathPrefix = '/' + db.settings.db + '/';
-  const proxy = require('./routing/proxy').setupProxy(app, {pathPrefix});
-  require('./routing/routing').route(app, proxy, {pathPrefix, jsonParser, formParser});
 
   app.listen(apiPort, () =>
     console.log('Medic API listening on port ' + apiPort));
