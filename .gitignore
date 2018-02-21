@@ -12,6 +12,7 @@ node_modules
 /static/dist/
 /static/fonts/
 /packages/libphonenumber/libphonenumber/libphonenumber.js
+/packages/task-utils/task-utils.js
 /ddocs/compiled.json
 logs
 /config.js
