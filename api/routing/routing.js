@@ -1,15 +1,11 @@
 const _ = require('underscore'),
       auth = require('../auth'),
-      createDomain = require('domain').create,
       db = require('../db'),
-      moment = require('moment'),
       serverUtils = require('../server-utils');
 
 // TODO: move these controller links to not dominate the whole file
 const activePregnancies = require('../controllers/active-pregnancies'),
       deliveryLocation = require('../controllers/delivery-location'),
-      exportData = require('../controllers/export-data'),
-      exportData2 = require('../controllers/export-data-2'),
       forms = require('../controllers/forms'),
       fti = require('../controllers/fti'),
       highRisk = require('../controllers/high-risk'),
@@ -25,15 +21,34 @@ const activePregnancies = require('../controllers/active-pregnancies'),
       totalBirths = require('../controllers/total-births'),
       upcomingAppointments = require('../controllers/upcoming-appointments'),
       upcomingDueDates = require('../controllers/upcoming-due-dates'),
-      upgrade = require('../controllers/upgrade'),
       users = require('../controllers/users'),
       visitsCompleted = require('../controllers/visits-completed'),
       visitsDuring = require('../controllers/visits-during');
 
-// TODO: use and refine this
-// TODO: consider an api for what is passed through to controllers, so instead
-// you just pass the requires in and it knows how to hook it up.
-// const route = (method, path, permissions, fn) => undefined;
+// TODO: documentation
+const route = (appMethod, path, permissions, route) =>
+  appMethod(path, function(req, res) {
+    const district = req.query && req.query.district;
+
+    if (typeof permissions === 'function') {
+      permissions = permissions(res, req);
+    }
+
+    auth.check(req, permissions, district, (err, userCtx) => {
+      if (err) {
+        return serverUtils.error(err, req, res);
+      }
+
+      try {
+        (typeof route === 'function' ?
+          route({req, res, userCtx}) :
+          route.routed({req, res, userCtx})
+        ).catch(err => serverUtils.error(err, req, res));
+      } catch (err) {
+        serverUtils.error(err, req, res);
+      }
+    });
+  });
 
 module.exports = {
   route: (app, proxy, {jsonParser, formParser, pathPrefix}) => {
@@ -76,25 +91,7 @@ module.exports = {
       });
     });
 
-    app.postJson('/api/v1/upgrade', (req, res) => {
-      auth.check(req, '_admin', null, (err, userCtx) => {
-        if (err) {
-          return serverUtils.error(err, req, res);
-        }
-
-        var buildInfo = req.body.build;
-        if (!buildInfo) {
-          return serverUtils.error({
-            message: 'You must provide a build info body',
-            status: 400
-          }, req, res);
-        }
-
-        upgrade(req.body.build, userCtx.user)
-          .then(() => res.json({ ok: true }))
-          .catch(err => serverUtils.error(err, req, res));
-      });
-    });
+    route(app.postJson, '/api/v1/upgrade', '_admin', require('./controller/upgrade'));
 
     var handleAnalyticsCall = function(req, res, controller) {
       auth.check(req, 'can_view_analytics', req.query.district, function(err, ctx) {
@@ -199,115 +196,20 @@ module.exports = {
       handleAnalyticsCall(req, res, monthlyDeliveries);
     });
 
-    var formats = {
-      xml: {
-        extension: 'xml',
-        contentType: 'application/vnd.ms-excel'
-      },
-      csv: {
-        extension: 'csv',
-        contentType: 'text/csv'
-      },
-      json: {
-        extension: 'json',
-        contentType: 'application/json'
-      },
-      zip: {
-        extension: 'zip',
-        contentType: 'application/zip'
-      }
-    };
+    const exportData = require('./controllers/export-data');
+    route(app.all,
+      ['/api/v1/export/:type/:form?', '/' + db.getPath() + '/export/:type/:form?'],
+      req => exportData.exportPermission(req.params.type),
+      exportData.v1);
 
-    const writeExportHeaders = (res, type, format) => {
-      const filename = `${type}-${moment().format('YYYYMMDDHHmm')}.${format.extension}`;
-      res
-        .set('Content-Type', format.contentType)
-        .set('Content-Disposition', 'attachment; filename=' + filename);
-    };
-
-    var getExportPermission = function(type) {
-      if (type === 'audit') {
-        return 'can_export_audit';
-      }
-      if (type === 'feedback') {
-        return 'can_export_feedback';
-      }
-      if (type === 'contacts') {
-        return 'can_export_contacts';
-      }
-      if (type === 'logs') {
-        return 'can_export_server_logs';
-      }
-      return 'can_export_messages';
-    };
-
-    app.all([
-      '/api/v1/export/:type/:form?',
-      '/' + db.getPath() + '/export/:type/:form?'
-    ], function(req, res) {
-      auth.check(req, getExportPermission(req.params.type), req.query.district, function(err, ctx) {
-        if (err) {
-          return serverUtils.error(err, req, res, true);
-        }
-        req.query.type = req.params.type;
-        req.query.form = req.params.form || req.query.form;
-        req.query.district = ctx.district;
-        exportData.get(req.query, function(err, exportDataResult) {
-          if (err) {
-            return serverUtils.error(err, req, res);
-          }
-
-          writeExportHeaders(res, req.params.type, formats[req.query.format] || formats.csv);
-
-          if (_.isFunction(exportDataResult)) {
-            // wants to stream the result back
-            exportDataResult(res.write.bind(res), res.end.bind(res));
-          } else {
-            // has already generated result to return
-            res.send(exportDataResult);
-          }
-        });
-      });
-    });
-
-    const exportDataV2 = (req, res) => {
-      const type = req.params.type,
-            filters = (req.body && req.body.filters) ||
-                      (req.query && req.query.filters) || {},
-            options = (req.body && req.body.options) ||
-                      (req.query && req.query.options) || {};
-
-      if (!exportData2.supportedExports.includes(type)) {
-        return serverUtils.error({
-          message: `v2 export only supports ${exportData2.supportedExports}`,
-          code: 404
-        }, req, res);
-      }
-
-      // We currently only support online users (CouchDB admins and National Admins)
-      // If we want to support offline users we should either:
-      //  - Forcibly scope their search object to their facility, which is returned
-      //    by the following auth check in ctx.district (maybe?)
-      //  - Still don't let offline users use this API, and instead refactor the
-      //    export logic so it can be used in webapp, and have exports works offline
-      auth.check(req, ['national_admin', getExportPermission(req.params.type)], null, function(err) {
-        if (err) {
-          return serverUtils.error(err, req, res);
-        }
-
-        writeExportHeaders(res, req.params.type, formats.csv);
-
-        const d = createDomain();
-        d.on('error', err => serverUtils.error(err, req, res));
-        d.run(() =>
-          exportData2
-            .export(type, filters, options)
-            .pipe(res));
-      });
-    };
-
-    app.get('/api/v2/export/:type', exportDataV2);
-    app.postJson('/api/v2/export/:type', exportDataV2);
+    route(app.get,
+      '/api/v2/export/:type',
+      req => (['national_admin', exportData.exportPermission(req.params.type)]),
+      exportData.v2);
+    route(app.post,
+      '/api/v2/export/:type',
+      req => (['national_admin', exportData.exportPermission(req.params.type)]),
+      exportData.v2);
 
     app.get('/api/v1/fti/:view', function(req, res) {
       auth.check(req, 'can_view_data_records', null, function(err) {

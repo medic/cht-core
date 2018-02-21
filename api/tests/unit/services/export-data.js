@@ -1,4 +1,4 @@
-const controller = require('../../../controllers/export-data'),
+const services = require('../../../services/export-data'),
       db = require('../../../db'),
       config = require('../../../config'),
       fti = require('../../../controllers/fti'),
@@ -32,7 +32,7 @@ exports.tearDown = callback => {
 exports['get returns errors from getView'] = test => {
   test.expect(2);
   var getView = sinon.stub(db.medic, 'view').callsArgWith(3, 'bang');
-  controller.get({ type: 'messages' }, err => {
+  services.get({ type: 'messages' }, err => {
     test.equals(err, 'bang');
     test.equals(getView.callCount, 1);
     test.done();
@@ -44,7 +44,7 @@ exports['get handles empty db'] = test => {
   var getView = sinon.stub(db.medic, 'view').callsArgWith(3, null, {
     rows: []
   });
-  controller.get({ type: 'messages' }, (err, results) => {
+  services.get({ type: 'messages' }, (err, results) => {
     test.equals(results, '{_id:en},{patient_id:en},{reported_date:en},{from:en},{contact.name:en},{contact.parent.name:en},{contact.parent.parent.name:en},{contact.parent.parent.parent.name:en},{task.type:en},{task.state:en},{received:en},{scheduled:en},{pending:en},{sent:en},{cleared:en},{muted:en},{Message UUID:en},{Sent By:en},{To Phone:en},{Message Body:en}');
     test.equals(getView.callCount, 1);
     test.done();
@@ -72,7 +72,7 @@ exports['get formats responses'] = test => {
   var expected = '{_id:en},{patient_id:en},{reported_date:en},{from:en},{contact.name:en},{contact.parent.name:en},{contact.parent.parent.name:en},{contact.parent.parent.parent.name:en},{task.type:en},{task.state:en},{received:en},{scheduled:en},{pending:en},{sent:en},{cleared:en},{muted:en},{Message UUID:en},{Sent By:en},{To Phone:en},{Message Body:en}\n' +
                  'abc,123456,"02, Jan 1970, 10:17:36 +00:00",,,,,,{Automated Reply:en},sent,,,,"02, Jan 1970, 10:17:36 +00:00",,,,+123456789,,hello\n' +
                  'def,654321,"12, Jan 1970, 10:20:54 +00:00",,,,,,{Automated Reply:en},sent,,,,"12, Jan 1970, 10:20:54 +00:00",,,,+987654321,,hi';
-  controller.get({ type: 'messages', tz: '0' }, (err, results) => {
+  services.get({ type: 'messages', tz: '0' }, (err, results) => {
     test.equals(results, expected);
     test.equals(getView.callCount, 1);
     test.done();
@@ -108,7 +108,7 @@ exports['get includes tasks and scheduled tasks'] = test => {
                  'abc,123456,"02, Jan 1970, 10:17:36 +00:00",,,,,,{Task Message:en},,,,,,,,,,+123456788,goodbye\n' +
                  'def,654321,"12, Jan 1970, 10:20:54 +00:00",,,,,,{Task Message:en},,,,,,,,,,+223456789,hi\n' +
                  'def,654321,"12, Jan 1970, 10:20:54 +00:00",,,,,,{Task Message:en},,,,,,,,,,+223456788,bye';
-  controller.get({ type: 'messages', tz: '0' }, (err, results) => {
+  services.get({ type: 'messages', tz: '0' }, (err, results) => {
     test.equals(results, expected);
     test.equals(getView.callCount, 1);
     test.done();
@@ -138,7 +138,7 @@ exports['get formats incoming messages'] = test => {
   var expected = '{_id:en},{patient_id:en},{reported_date:en},{from:en},{contact.name:en},{contact.parent.name:en},{contact.parent.parent.name:en},{contact.parent.parent.parent.name:en},{task.type:en},{task.state:en},{received:en},{scheduled:en},{pending:en},{sent:en},{cleared:en},{muted:en},{Message UUID:en},{Sent By:en},{To Phone:en},{Message Body:en}\n' +
                  'abc,123456,"02, Jan 1970, 10:17:36 +00:00",+123456789,,,,,{sms_message.message:en},received,"02, Jan 1970, 10:17:36 +00:00",,,,,,,+123456789,,hello\n' +
                  'def,654321,"12, Jan 1970, 10:20:54 +00:00",+987654321,,,,,{sms_message.message:en},received,"12, Jan 1970, 10:20:54 +00:00",,,,,,,+987654321,,hi';
-  controller.get({ type: 'messages', tz: '0' }, (err, results) => {
+  services.get({ type: 'messages', tz: '0' }, (err, results) => {
     test.equals(results, expected);
     test.equals(getView.callCount, 1);
     test.done();
@@ -191,7 +191,7 @@ exports['get exports messages in xml'] = test => {
                     '<Row><Cell><Data ss:Type="String">def</Data></Cell><Cell><Data ss:Type="String">654321</Data></Cell><Cell><Data ss:Type="String">12, Jan 1970, 10:20:54 +00:00</Data></Cell><Cell><Data ss:Type="String"/></Cell><Cell><Data ss:Type="String"/></Cell><Cell><Data ss:Type="String"/></Cell><Cell><Data ss:Type="String"/></Cell><Cell><Data ss:Type="String"/></Cell><Cell><Data ss:Type="String">{Task Message:en}</Data></Cell><Cell><Data ss:Type="String"/></Cell><Cell><Data ss:Type="String"/></Cell><Cell><Data ss:Type="String"/></Cell><Cell><Data ss:Type="String"/></Cell><Cell><Data ss:Type="String"/></Cell><Cell><Data ss:Type="String"/></Cell><Cell><Data ss:Type="String"/></Cell><Cell><Data ss:Type="String"/></Cell><Cell><Data ss:Type="String"/></Cell><Cell><Data ss:Type="String">+223456788</Data></Cell><Cell><Data ss:Type="String">bye</Data></Cell></Row>' +
                     '<Row><Cell><Data ss:Type="String">klm</Data></Cell><Cell><Data ss:Type="String">654321</Data></Cell><Cell><Data ss:Type="String">12, Jan 1970, 10:20:54 +00:00</Data></Cell><Cell><Data ss:Type="String">+987654321</Data></Cell><Cell><Data ss:Type="String"/></Cell><Cell><Data ss:Type="String"/></Cell><Cell><Data ss:Type="String"/></Cell><Cell><Data ss:Type="String"/></Cell><Cell><Data ss:Type="String">{sms_message.message:en}</Data></Cell><Cell><Data ss:Type="String">received</Data></Cell><Cell><Data ss:Type="String">12, Jan 1970, 10:20:54 +00:00</Data></Cell><Cell><Data ss:Type="String"/></Cell><Cell><Data ss:Type="String"/></Cell><Cell><Data ss:Type="String"/></Cell><Cell><Data ss:Type="String"/></Cell><Cell><Data ss:Type="String"/></Cell><Cell><Data ss:Type="String"/></Cell><Cell><Data ss:Type="String">+987654321</Data></Cell><Cell><Data ss:Type="String"/></Cell><Cell><Data ss:Type="String">hi</Data></Cell></Row>' +
                   '</Table></Worksheet></Workbook>';
-  controller.get({ type: 'messages', tz: '0', format: 'xml' }, function(err, streamFn) {
+  services.get({ type: 'messages', tz: '0', format: 'xml' }, function(err, streamFn) {
     readStream(streamFn, function(results) {
       test.equals(results, expected);
       test.equals(getView.callCount, 1);
@@ -271,7 +271,7 @@ exports['get exports reports in xml with each type on a separate tab'] = test =>
                       '<Row><Cell><Data ss:Type="String">def</Data></Cell><Cell><Data ss:Type="String">ok</Data></Cell></Row>' +
                     '</Table></Worksheet>' +
                   '</Workbook>';
-  controller.get({ type: 'forms', tz: '0', format: 'xml', columns: '[ "_id" ]' }, function(err, streamFn) {
+  services.get({ type: 'forms', tz: '0', format: 'xml', columns: '[ "_id" ]' }, function(err, streamFn) {
     readStream(streamFn, function(results) {
       test.equals(results, expected);
       test.equals(getView.callCount, 1);
@@ -355,7 +355,7 @@ exports['if form definition not found then cannot add specific columns'] = test 
                       '<Row><Cell><Data ss:Type="String">def</Data></Cell><Cell><Data ss:Type="String">ok</Data></Cell></Row>' +
                     '</Table></Worksheet>' +
                   '</Workbook>';
-  controller.get({ type: 'forms', tz: '0', format: 'xml', columns: '[ "_id" ]' }, function(err, streamFn) {
+  services.get({ type: 'forms', tz: '0', format: 'xml', columns: '[ "_id" ]' }, function(err, streamFn) {
     readStream(streamFn, function(results) {
       test.equals(results, expected);
       test.equals(getView.callCount, 1);
@@ -380,7 +380,7 @@ exports['get uses locale param'] = test => {
 
   var expected =  '{_id:fr};{patient_id:fr};{reported_date:fr};{from:fr};{contact.name:fr};{contact.parent.name:fr};{contact.parent.parent.name:fr};{contact.parent.parent.parent.name:fr};{task.type:fr};{task.state:fr};{received:fr};{scheduled:fr};{pending:fr};{sent:fr};{cleared:fr};{muted:fr};{Message UUID:fr};{Sent By:fr};{To Phone:fr};{Message Body:fr}\n' +
                   'abc;123456;02, Jan 1970, 10:17:36 +00:00;;;;;;{Automated Reply:fr};sent;;;;02, Jan 1970, 10:17:36 +00:00;;;;+123456789;;hello';
-  controller.get({ type: 'messages', tz: '0', locale: 'fr' }, (err, results) => {
+  services.get({ type: 'messages', tz: '0', locale: 'fr' }, (err, results) => {
     test.equals(results, expected);
     test.equals(getView.callCount, 1);
     test.done();
@@ -401,7 +401,7 @@ exports['get uses tz param'] = test => {
   });
   var expected =  '{_id:en},{patient_id:en},{reported_date:en},{from:en},{contact.name:en},{contact.parent.name:en},{contact.parent.parent.name:en},{contact.parent.parent.parent.name:en},{task.type:en},{task.state:en},{received:en},{scheduled:en},{pending:en},{sent:en},{cleared:en},{muted:en},{Message UUID:en},{Sent By:en},{To Phone:en},{Message Body:en}\n' +
                   'abc,123456,"02, Jan 1970, 12:17:36 +02:00",,,,,,{Automated Reply:en},sent,,,,"02, Jan 1970, 12:17:36 +02:00",,,,+123456789,,hello';
-  controller.get({ type: 'messages', tz: '-120' }, (err, results) => {
+  services.get({ type: 'messages', tz: '-120' }, (err, results) => {
     test.equals(results, expected);
     test.equals(getView.callCount, 1);
     test.done();
@@ -421,7 +421,7 @@ exports['get uses skip_header_row param'] = test => {
     ]
   });
   var expected = 'abc,123456,"02, Jan 1970, 10:17:36 +00:00",,,,,,{Automated Reply:en},sent,,,,"02, Jan 1970, 10:17:36 +00:00",,,,+123456789,,hello';
-  controller.get({ type: 'messages', tz: '0', skip_header_row: true }, (err, results) => {
+  services.get({ type: 'messages', tz: '0', skip_header_row: true }, (err, results) => {
     test.equals(results, expected);
     test.equals(getView.callCount, 1);
     test.done();
@@ -441,7 +441,7 @@ exports['get uses columns param'] = test => {
     ]
   });
 
-  controller.get({ type: 'messages', tz: '0', columns: '["reported_date","from","contact.parent.name"]' }, (err, results) => {
+  services.get({ type: 'messages', tz: '0', columns: '["reported_date","from","contact.parent.name"]' }, (err, results) => {
     test.equals(results, '{reported_date:en},{from:en},{contact.parent.name:en},{Message UUID:en},{Sent By:en},{To Phone:en},{Message Body:en}\n"02, Jan 1970, 10:17:36 +00:00",,,,+123456789,,hello');
     test.equals(getView.callCount, 1);
     test.done();
@@ -542,7 +542,7 @@ exports['get uses filter state params'] = test => {
     ]
   });
 
-  controller.get({ type: 'messages', columns: '["_id"]', tz: '0', filter_state: 'pending', filter_state_from: '-20', filter_state_to: '-10' }, (err, results) => {
+  services.get({ type: 'messages', columns: '["_id"]', tz: '0', filter_state: 'pending', filter_state_from: '-20', filter_state_to: '-10' }, (err, results) => {
     test.equals(results, '{_id:en},{Message UUID:en},{Sent By:en},{To Phone:en},{Message Body:en}\nb\nc');
     test.equals(getView.callCount, 1);
     test.done();
@@ -589,7 +589,7 @@ exports['get reports formats responses'] = test => {
   var expected = '{_id:en},{patient_id:en},{reported_date:en},{from:en},{contact.name:en},{contact.parent.name:en},{contact.parent.parent.name:en},{contact.parent.parent.parent.name:en},{form:en}\n' +
                  'abc,123456,"02, Jan 1970, 10:17:36 +00:00",,,,,,STCK\n' +
                  'def,654321,"12, Jan 1970, 10:20:54 +00:00",,,,,,V';
-  controller.get({ type: 'forms', tz: '0' }, (err, results) => {
+  services.get({ type: 'forms', tz: '0' }, (err, results) => {
     test.equals(results, expected);
     test.equals(getView.callCount, 1);
     test.equals(getView.firstCall.args[1], 'data_records');
@@ -640,7 +640,7 @@ exports['get reports filters by form'] = test => {
   var expected = '{_id:en},{patient_id:en},{reported_date:en},{from:en},{contact.name:en},{contact.parent.name:en},{contact.parent.parent.name:en},{contact.parent.parent.parent.name:en},1st,2nd\n' +
                  'abc,123456,"02, Jan 1970, 10:17:36 +00:00",,,,,,a,b\n' +
                  'def,654321,"12, Jan 1970, 10:20:54 +00:00",,,,,,1,2';
-  controller.get({ type: 'forms', tz: '0', form: 'P' }, (err, results) => {
+  services.get({ type: 'forms', tz: '0', form: 'P' }, (err, results) => {
     test.equals(results, expected);
     test.equals(getView.callCount, 1);
     test.equals(getView.firstCall.args[1], 'data_records');
@@ -701,7 +701,7 @@ exports['get reports works for enketo reports'] = test => {
   sinon.stub(db.medic, 'fetch').callsArgWith(1, null, { rows: [] });
   var expected = '{_id:en},{contact._id:en},{fields.patient_id:en},{reported_date:en}\n' +
                  'B87FEE75-D435-A648-BDEA-0A1B61021AA3,DFEF75F5-4D25-EA47-8706-2B12500EFD8F,406701BD-7318-B2BB-AB23-8FF2DB83BB67,"24, Dec 2015, 12:12:30 +00:00"';
-  controller.get({ type: 'forms', tz: '0', form: 'assessment', columns: '[ "_id", "contact._id", "fields.patient_id", "reported_date" ]' }, (err, results) => {
+  services.get({ type: 'forms', tz: '0', form: 'assessment', columns: '[ "_id", "contact._id", "fields.patient_id", "reported_date" ]' }, (err, results) => {
     test.equals(results, expected);
     test.equals(getView.callCount, 1);
     test.equals(getView.firstCall.args[1], 'data_records');
@@ -769,7 +769,7 @@ exports['get reports hydrates contacts'] = test => {
   ] });
   const expected = '{_id:en},{contact.name:en},{contact.parent.name:en},{contact.parent.parent.name:en}\n' +
                    'B87FEE75-D435-A648-BDEA-0A1B61021AA3,mr one,mz two,dr three';
-  controller.get({ type: 'forms', tz: '0', form: 'assessment', columns: '[ "_id", "contact.name", "contact.parent.name", "contact.parent.parent.name" ]' }, (err, results) => {
+  services.get({ type: 'forms', tz: '0', form: 'assessment', columns: '[ "_id", "contact.name", "contact.parent.name", "contact.parent.parent.name" ]' }, (err, results) => {
     test.equals(results, expected);
     test.equals(getView.callCount, 1);
     test.equals(getView.firstCall.args[1], 'data_records');
@@ -814,7 +814,7 @@ exports['get reports with query calls fti'] = test => {
   var expected = '{_id:en},{patient_id:en},{reported_date:en},{from:en},{contact.name:en},{contact.parent.name:en},{contact.parent.parent.name:en},{contact.parent.parent.parent.name:en},{form:en}\n' +
                  'abc,123456,"02, Jan 1970, 10:17:36 +00:00",,,,,,P\n' +
                  'def,654321,"12, Jan 1970, 10:20:54 +00:00",,,,,,P';
-  controller.get({ type: 'forms', query: 'form:P', tz: '0' }, (err, results) => {
+  services.get({ type: 'forms', query: 'form:P', tz: '0' }, (err, results) => {
     test.equals(err, null);
     test.equals(results, expected);
     test.equals(getView.callCount, 0);
@@ -868,7 +868,7 @@ exports['get audit log'] = test => {
                  'abc,data_record,"01, Jan 1970, 03:25:45 +00:00",gareth,update,"{""type"":""data_record"",""number"":1}"\n' +
                  'abc,data_record,"01, Jan 1970, 03:25:45 +00:00",milan,create,"{""type"":""data_record"",""number"":2}"\n' +
                  'def,feedback,"01, Jan 1970, 03:25:45 +00:00",gareth,create,"{""type"":""feedback"",""description"":""broken""}"';
-  controller.get({ type: 'audit', tz: '0' }, (err, results) => {
+  services.get({ type: 'audit', tz: '0' }, (err, results) => {
     test.equals(results, expected);
     test.equals(list.callCount, 1);
     test.done();
@@ -894,7 +894,7 @@ exports['get audit log handles special characters'] = test => {
     ]
   });
   var expected = '<?xml version="1.0" encoding="UTF-8"?><Workbook xmlns="urn:schemas-microsoft-com:office:spreadsheet" xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:x="urn:schemas-microsoft-com:office:excel" xmlns:html="http://www.w3.org/TR/REC-html140" xmlns:ss="urn:schemas-microsoft-com:office:spreadsheet"><?mso-application progid="Excel.Sheet"?><Worksheet ss:Name="{Audit:en}"><Table><Row><Cell><Data ss:Type="String">{_id:en}</Data></Cell><Cell><Data ss:Type="String">{Type:en}</Data></Cell><Cell><Data ss:Type="String">{Timestamp:en}</Data></Cell><Cell><Data ss:Type="String">{Author:en}</Data></Cell><Cell><Data ss:Type="String">{Action:en}</Data></Cell><Cell><Data ss:Type="String">{Document:en}</Data></Cell></Row><Row><Cell><Data ss:Type="String">def</Data></Cell><Cell><Data ss:Type="String">feedback</Data></Cell><Cell><Data ss:Type="String">01, Jan 1970, 03:25:45 +00:00</Data></Cell><Cell><Data ss:Type="String">gareth</Data></Cell><Cell><Data ss:Type="String">create</Data></Cell><Cell><Data ss:Type="String">{"type":"feedback","description":"😎😎😎"}</Data></Cell></Row></Table></Worksheet></Workbook>';
-  controller.get({ type: 'audit', tz: '0', format: 'xml' }, function(err, streamFn) {
+  services.get({ type: 'audit', tz: '0', format: 'xml' }, function(err, streamFn) {
     readStream(streamFn, function(results) {
       test.equals(results, expected);
       test.equals(list.callCount, 1);
@@ -934,7 +934,7 @@ exports['get feedback'] = test => {
   var expected = '{_id:en},{reported_date:en},{User:en},{App Version:en},{URL:en},{Info:en}\n' +
                  'abc,"02, Jan 1970, 10:17:36 +00:00",gareth,4.3.0,#/messages,"{""description"":""Button doesnt work""}"\n' +
                  'def,"05, Jan 1970, 21:37:36 +00:00",milan,4.2.0,#/reports,"{""description"":""Filters bar should be orange not yellow""}"';
-  controller.get({ type: 'feedback', tz: '0' }, (err, results) => {
+  services.get({ type: 'feedback', tz: '0' }, (err, results) => {
     test.equals(results, expected);
     test.equals(getView.callCount, 1);
     test.equals(getView.firstCall.args[1], 'feedback');
@@ -963,7 +963,7 @@ exports['get contacts'] = test => {
     rows: [ { doc: contact1 }, { doc: contact2 } ]
   });
 
-  controller.get({ type: 'contacts', query: 'district:2', format: 'json', tz: '0' }, (err, results) => {
+  services.get({ type: 'contacts', query: 'district:2', format: 'json', tz: '0' }, (err, results) => {
     test.deepEqual(JSON.parse(results), [ contact1, contact2 ]);
     test.equals(ftiGet.callCount, 1);
     test.equals(ftiGet.firstCall.args[0], 'contacts');
@@ -984,7 +984,7 @@ exports['get logs returns error from child process'] = test => {
 
   var spawn = sinon.stub(childProcess, 'spawn').returns(child);
 
-  controller.get({ type: 'logs', format: 'zip' }, err => {
+  services.get({ type: 'logs', format: 'zip' }, err => {
     test.equals(spawn.callCount, 1);
     test.equals(child.stdin.end.callCount, 1);
     test.equals(err.message, 'Log export exited with non-zero status 1');
@@ -1004,7 +1004,7 @@ exports['get logs returns zip file'] = test => {
 
   var spawn = sinon.stub(childProcess, 'spawn').returns(child);
 
-  controller.get({ type: 'logs', format: 'zip' }, (err, results) => {
+  services.get({ type: 'logs', format: 'zip' }, (err, results) => {
     test.equals(spawn.callCount, 1);
     test.equals(child.stdin.end.callCount, 1);
     test.equals(spawn.firstCall.args[0], 'sudo');

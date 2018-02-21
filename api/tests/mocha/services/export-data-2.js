@@ -1,6 +1,6 @@
 require('chai').should();
 
-const controller = require('../../../controllers/export-data-2');
+const controller = require('../../../services/export-data-2');
 
 describe('Export Data 2.0', () => {
   describe('Extract fields', () => {
