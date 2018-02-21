@@ -28,7 +28,7 @@ var associateContact = function(audit, doc, contact, callback) {
     }
 };
 
-var getContactID = function(db, doc, callback) {
+var getContact = function(db, doc, callback) {
     if (doc.refid) { // use reference id to find clinic if defined
         let params = {
             key: [ 'external', doc.refid ],
@@ -72,8 +72,8 @@ var getContactID = function(db, doc, callback) {
     }
 };
 
-var getContact = function(db, doc, callback) {
-    getContactID(db, doc, function(err, contact) {
+var getHydratedContact = function(db, doc, callback) {
+    getContact(db, doc, function(err, contact) {
       if (err) {
         return callback(err);
       }
@@ -108,7 +108,7 @@ module.exports = {
         );
     },
     onMatch: function(change, db, audit, callback) {
-        getContact(db, change.doc, function(err, contact) {
+        getHydratedContact(db, change.doc, function(err, contact) {
             if (err) {
                 return callback(err);
             }
