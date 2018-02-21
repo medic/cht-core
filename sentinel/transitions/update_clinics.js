@@ -1,6 +1,7 @@
 var _ = require('underscore'),
     logger = require('../lib/logger'),
     transitionUtils = require('./utils'),
+    lineage = require('../lib/lineage'),
     NAME = 'update_clinics';
 
 var associateContact = function(audit, doc, contact, callback) {
@@ -27,7 +28,7 @@ var associateContact = function(audit, doc, contact, callback) {
     }
 };
 
-var getContact = function(db, doc, callback) {
+var getContactID = function(db, doc, callback) {
     if (doc.refid) { // use reference id to find clinic if defined
         let params = {
             key: [ 'external', doc.refid ],
@@ -50,7 +51,7 @@ var getContact = function(db, doc, callback) {
                 if (!id) {
                     return callback(null, result.contact || { parent: result });
                 }
-                return db.medic.get(id, callback);
+              return db.medic.get(id, callback);
             }
             callback();
         });
@@ -69,6 +70,24 @@ var getContact = function(db, doc, callback) {
     } else {
         callback();
     }
+};
+
+var getContact = function(db, doc, callback) {
+    getContactID(db, doc, function(err, contact) {
+      if (err) {
+        return callback(err);
+      }
+
+      if (contact && contact._id) {
+        return lineage
+          .fetchHydratedDoc(contact._id)
+          .then(function (contact) {
+            callback(null, contact);
+          });
+      }
+
+      return callback(null, contact);
+    });
 };
 
 /**
