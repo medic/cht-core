@@ -1,0 +1,10 @@
+{
+    "name": "task-utils",
+    "version": "1.0.0",
+    "categories": ["node.js", "utils"],
+    "modules": "task-utils.js",
+    "dependencies": {
+        "modules": ">=0.0.8"
+    },
+    "description": "Shared library that exposes common task utility functions"
+}

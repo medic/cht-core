@@ -2,13 +2,18 @@ var proxyquire = require('proxyquire').noCallThru(),
     fakerequest = require('../../couch-fakerequest'),
     baseURL = 'BASEURL';
 
+var setTaskState = function(obj) {
+  obj.state = 'sent';
+  obj.state_history = [{ state: 'sent' }];
+};
+
 var info = proxyquire('../../../../packages/kujua-sms/views/lib/appinfo', {
     'cookies': {},
     'duality/utils': { getBaseURL: function() { return 'BASEURL'; } },
     'underscore': require('underscore')
 });
 var kujua_sms_utils = proxyquire('../../../../packages/kujua-sms/kujua-sms/utils', {
-    'views/lib/objectpath': {}
+    'task-utils': { setTaskState: setTaskState }
 });
 var lists = proxyquire('../../../../packages/kujua-sms/kujua-sms/lists', {
     './utils': kujua_sms_utils,
@@ -27,6 +32,7 @@ var port = function() {
 
 exports.tasks_pending_callback = function(test) {
     test.expect(3);
+
     var req = {
         headers: { Host: 'localhost:5988' }
     };
@@ -83,10 +89,6 @@ exports.tasks_pending_callback = function(test) {
 
     var resp = fakerequest.list(lists.tasks_pending, viewdata, req);
     var resp_body = JSON.parse(resp.body);
-
-    // remove timestamp for this test
-    delete resp_body.callback.data.docs[0].tasks[0].timestamp;
-    delete resp_body.callback.data.docs[0].tasks[0].state_history[0].timestamp;
 
     test.same(expResp.callback.data, resp_body.callback.data);
     test.same(expResp.callback.options, resp_body.callback.options);
@@ -167,7 +169,7 @@ exports['do not process scheduled messages on docs with errors'] = function(test
 
     var row1 = {
         doc: {
-            _id: '0b5586', 
+            _id: '0b5586',
             scheduled_tasks: [
                 {
                   state: 'pending',

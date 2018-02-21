@@ -1,7 +1,8 @@
 /*
  * Utility functions for Medic Mobile
  */
-var _ = require('underscore');
+var _ = require('underscore'),
+    taskUtils = require('task-utils');
 
 /**
  * Determine locale/language of a record based on a locale value:
@@ -119,26 +120,6 @@ exports.logger = {
     }
 };
 
-/**
- * Update task/message object in-place.  Used by message update functions when
- * a message's state changes. Also adds new values to state history.
- *
- * @param {Object} task
- * @param {String} state
- * @param {Any} details (optional)
- * @api public
- */
-exports.setTaskState = function(task, state, details) {
-    task.state = state;
-    task.state_details = details;
-    task.state_history = task.state_history || [];
-    task.state_history.push({
-        state: state,
-        state_details: details,
-        timestamp: new Date().toISOString()
-    });
-};
-
 // placeholder function that will be replaced with appInfo from the calling
 // update/show/list function
 exports.info = {
@@ -159,3 +140,5 @@ exports.info = {
         return key;
     }
 };
+
+exports.setTaskState = taskUtils.setTaskState;

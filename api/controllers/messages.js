@@ -1,20 +1,9 @@
 const _ = require('underscore'),
-      db = require('../db');
+      db = require('../db'),
+      taskUtils = require('task-utils');
 
 const getTaskMessages = function(options, callback) {
   db.medic.view('medic', 'tasks_messages', options, callback);
-};
-
-// TODO Use a shared library for this duplicated code #4021
-const setTaskState = function(task, state, details) {
-  task.state = state;
-  task.state_details = details;
-  task.state_history = task.state_history || [];
-  task.state_history.push({
-    state: state,
-    state_details: details,
-    timestamp: new Date().toISOString()
-  });
 };
 
 const getTaskForMessage = function(uuid, doc) {
@@ -66,7 +55,7 @@ const applyTaskStateChangesToDocs = (taskStateChanges, docs) => {
     }
 
     fillTaskStateChangeByDocId(taskStateChange, docId);
-    setTaskState(task, taskStateChange.state, taskStateChange.details);
+    taskUtils.setTaskState(task, taskStateChange.state, taskStateChange.details);
   });
 
   return taskStateChangesByDocId;

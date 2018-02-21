@@ -192,6 +192,16 @@ module.exports = function(grunt) {
             dest: 'static/dist/xslt/'
           }
         ]
+      },
+      taskutils: {
+        files: [
+          {
+            expand: true,
+            flatten: true,
+            src: [ 'shared-libs/task-utils/src/task-utils.js' ],
+            dest: 'packages/task-utils/'
+          }
+        ]
       }
     },
     exec: {
@@ -265,9 +275,15 @@ module.exports = function(grunt) {
       },
       sharedLibUnit: {
         cmd:  function() {
-          // When we have more than one sharedLib we can make this code iterate
-          // through the libs and execute the ones that have npm test
-          return 'cd shared-libs/search && npm install && npm test';
+          var sharedLibs = [
+            'search',
+            'task-utils'
+          ];
+          return sharedLibs.map(function(lib) {
+            return 'cd shared-libs/' + lib +
+              ' && if [ $(npm run | grep "^\\s\\stest$" | wc -l) -gt 0 ]; then npm install && npm test; fi' +
+              ' && cd ../../';
+          }).join(' ; ');
         }
       },
       // To monkey patch a library...
@@ -497,6 +513,7 @@ module.exports = function(grunt) {
 
   grunt.registerTask('mmjs', 'Build the JS resources', [
     'copy:libphonenumber',
+    'copy:taskutils',
     'browserify:dist',
     'replace:hardcodeappsettings',
     'ngtemplates'

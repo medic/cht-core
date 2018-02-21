@@ -36,10 +36,8 @@ var setStateOnTasks = function(tasks, state) {
     var updated = false;
     state = state || 'sent';
     _.each(tasks, function(task) {
-        if (task.state !== state) {
-            utils.setTaskState(task, state);
-            task.timestamp = new Date().toISOString();
-            updated = true;
+        if (utils.setTaskState(task, state)) {
+          updated = true;
         }
     });
     return updated;
