@@ -25,7 +25,7 @@ var partialParse = require('partial-json-parser');
         return $q.resolve();
       };
 
-      var getParentsToUpdate = function(docs) {
+      var updateParentContacts = function(docs) {
         return $q.all(docs.map(function(doc) {
           return getParent(doc)
             .then(function(parent) {
@@ -38,7 +38,7 @@ var partialParse = require('partial-json-parser');
           }))
           .then(function(parents) {
             return parents.filter(function(parent) {
-              return typeof parent !== 'undefined';
+              return parent;
             });
           });
       };
@@ -139,17 +139,15 @@ var partialParse = require('partial-json-parser');
           docs = _.clone(docs);
         }
 
-        return getParentsToUpdate(docs)
+        return updateParentContacts(docs)
           .then(function(parentsToUpdate) {
             checkForDuplicates(docs.concat(parentsToUpdate));
             return deleteAndUpdateDocs(docs, parentsToUpdate, eventListeners);
           })
           // No silent fails! Throw on error.
           .then(function(results) {
-            var errors = _.filter(results, function(result) {
-              if (result.error) {
-                return result;
-              }
+            var errors = results.filter(function(result) {
+              return result.error;
             });
             if (errors.length) {
               $log.error('Deletion errors', errors);
