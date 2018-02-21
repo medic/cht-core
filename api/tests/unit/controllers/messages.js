@@ -1,6 +1,7 @@
 var controller = require('../../../controllers/messages'),
     db = require('../../../db'),
-    sinon = require('sinon').sandbox.create();
+    sinon = require('sinon').sandbox.create(),
+    taskUtils = require('task-utils');
 
 exports.tearDown = function (callback) {
   sinon.restore();
@@ -125,6 +126,7 @@ exports['updateMessageTaskStates takes a collection of state changes and saves i
   ]});
 
   const bulk = sinon.stub(db.medic, 'bulk').callsArgWith(1, null, []);
+  const setTaskState = sinon.stub(taskUtils, 'setTaskState');
 
   controller.updateMessageTaskStates([
     {
@@ -139,12 +141,12 @@ exports['updateMessageTaskStates takes a collection of state changes and saves i
   ], (err, result) => {
     test.equal(err, null);
     test.deepEqual(result, {success: true});
+    test.equal(setTaskState.callCount, 2);
+    test.deepEqual(setTaskState.getCall(0).args, [{ messages: [{uuid: 'testMessageId1'}]}, 'testState1', undefined]);
+    test.deepEqual(setTaskState.getCall(1).args, [{ messages: [{uuid: 'testMessageId2'}]}, 'testState2', 'Just because.']);
 
     const doc = bulk.args[0][0].docs[0];
     test.equal(doc._id, 'testDoc');
-    test.equal(doc.tasks[0].state, 'testState1');
-    test.equal(doc.scheduled_tasks[0].state, 'testState2');
-    test.equal(doc.scheduled_tasks[0].state_details, 'Just because.');
 
     test.done();
   });
@@ -253,119 +255,6 @@ exports['updateMessageTaskStates re-applies changes if it errored'] = test => {
     test.equal(bulk.args[0][0].docs[1]._id, 'testDoc2');
     test.equal(bulk.args[1][0].docs.length, 1);
     test.equal(bulk.args[1][0].docs[0]._id, 'testDoc2');
-
-    test.done();
-  });
-};
-
-exports['updateMessageTaskStates does not duplicate state history'] = test => {
-  const view = sinon
-    .stub(db.medic, 'view')
-    .callsArgWith(3, null, {
-      rows: [
-        {id: 'testMessageId1'},
-        {id: 'testMessageId2'},
-        {id: 'testMessageId3'}]
-    });
-
-  var date = new Date().toISOString();
-
-  sinon
-    .stub(db.medic, 'fetch')
-    .callsArgWith(1, null, {
-      rows: [
-        {
-          doc: {
-            _id: 'testDoc',
-            tasks: [{
-              messages: [{
-                uuid: 'testMessageId1',
-              }, {
-                uuid: 'testMessageId2',
-              }],
-              state: 'testState1',
-              state_details: 'somedetails',
-              state_history: [{
-                state: 'testState1',
-                state_details: 'somedetails',
-                timestamp: date
-              }]
-            }]
-          }
-        },
-        {
-          doc: {
-            _id: 'testDoc2',
-            tasks: [{
-              messages: [{
-                uuid: 'testMessageId3'
-              }, {
-                uuid: 'testMessageId4'
-              }],
-              state: 'testState1',
-              state_details: 'somedetails',
-              state_history: [{
-                state: 'testState1',
-                state_details: 'somedetails',
-                timestamp: date
-              }]
-            }]
-          }
-        },
-        {
-          doc: {
-            _id: 'testDoc3',
-            tasks: [{
-              messages: [{
-                uuid: 'testMessageId5'
-              }, {
-                uuid: 'testMessageId6'
-              }],
-            }]
-          }
-        }
-      ]
-    });
-
-  const bulk = sinon
-    .stub(db.medic, 'bulk')
-    .callsArgWith(1, null, [
-      {id: 'testDoc', ok: true},
-      {id: 'testDoc2', ok: true},
-      {id: 'testDoc3', ok: true}]);
-
-  controller.updateMessageTaskStates([
-    { messageId: 'testMessageId1', state: 'testState1', details: 'somedetails' },
-    { messageId: 'testMessageId2', state: 'testState1', details: 'somedetails' },
-    { messageId: 'testMessageId3', state: 'testState2', details: 'somedetails' },
-    { messageId: 'testMessageId4', state: 'testState2', details: 'somedetails' },
-    { messageId: 'testMessageId5', state: 'testState2', details: 'details' },
-    { messageId: 'testMessageId6', state: 'testState2', details: 'details' }
-  ], (err, result) => {
-    test.equal(err, null);
-    test.deepEqual(result, {success: true});
-
-    test.equal(view.callCount, 1);
-    test.equal(bulk.args[0][0].docs.length, 3);
-
-    test.equal(bulk.args[0][0].docs[0]._id, 'testDoc');
-    test.equal(bulk.args[0][0].docs[0].tasks[0].state_history.length, 1);
-    test.equal(bulk.args[0][0].docs[0].tasks[0].state, 'testState1');
-    test.equal(bulk.args[0][0].docs[0].tasks[0].state_details, 'somedetails');
-
-    test.equal(bulk.args[0][0].docs[1]._id, 'testDoc2');
-    test.equal(bulk.args[0][0].docs[1].tasks[0].state_history.length, 2);
-    test.equal(bulk.args[0][0].docs[1].tasks[0].state, 'testState2');
-    test.equal(bulk.args[0][0].docs[1].tasks[0].state_history[0].state, 'testState1');
-    test.equal(bulk.args[0][0].docs[1].tasks[0].state_history[0].state_details, 'somedetails');
-    test.equal(bulk.args[0][0].docs[1].tasks[0].state_history[1].state, 'testState2');
-    test.equal(bulk.args[0][0].docs[1].tasks[0].state_history[1].state_details, 'somedetails');
-
-    test.equal(bulk.args[0][0].docs[2]._id, 'testDoc3');
-    test.equal(bulk.args[0][0].docs[2].tasks[0].state_history.length, 1);
-    test.equal(bulk.args[0][0].docs[2].tasks[0].state, 'testState2');
-    test.equal(bulk.args[0][0].docs[2].tasks[0].state_history[0].state, 'testState2');
-    test.equal(bulk.args[0][0].docs[2].tasks[0].state_history[0].state_details, 'details');
 
     test.done();
   });

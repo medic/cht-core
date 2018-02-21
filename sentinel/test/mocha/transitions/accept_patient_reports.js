@@ -160,90 +160,20 @@ describe('accept_patient_reports', () => {
       };
 
       sinon.stub(transition, '_findToClear').returns(registration.scheduled_tasks);
+      const setTaskState = sinon.stub(utils, 'setTaskState');
 
       const audit = {
         saveDoc: registration => {
           registration._id.should.equal('test-registration');
           registration.scheduled_tasks.length.should.equal(3);
-          registration.scheduled_tasks[0].state.should.equal('cleared');
+          setTaskState.callCount.should.equal(3);
+          setTaskState.getCall(0).args.should.deep.equal([{ state: 'scheduled', cleared_by: reportId }, 'cleared']);
+          setTaskState.getCall(1).args.should.deep.equal([{ state: 'scheduled', cleared_by: reportId }, 'cleared']);
+          setTaskState.getCall(2).args.should.deep.equal([{ state: 'pending', cleared_by: reportId }, 'cleared']);
+
           registration.scheduled_tasks[0].cleared_by.should.equal(reportId);
-          registration.scheduled_tasks[1].state.should.equal('cleared');
           registration.scheduled_tasks[1].cleared_by.should.equal(reportId);
-          registration.scheduled_tasks[2].state.should.equal('cleared');
           registration.scheduled_tasks[2].cleared_by.should.equal(reportId);
-          done();
-        }
-      };
-
-      transition._silenceReminders(audit, registration, report);
-    });
-
-    it('Does not duplicate task state history - task-utils integration', done => {
-      const reportId = 'reportid';
-      const report = {
-        _id: reportId,
-        reported_date: 123
-      };
-      const registration = {
-        _id: 'test-registration',
-        scheduled_tasks: [
-          {
-            state: 'scheduled',
-            timestamp: '000',
-          },
-          {
-            state: 'scheduled',
-            timestamp: '000',
-            state_history: [{
-              state: 'scheduled',
-              timestamp: '000'
-            }]
-          },
-          {
-            state: 'cleared',
-            timestamp: '000',
-          },
-          {
-            state: 'cleared',
-            timestamp: '000',
-            state_history: [{
-              state: 'cleared',
-              timestamp: '000'
-            }]
-          }
-        ]
-      };
-
-      sinon.stub(transition, '_findToClear').returns(registration.scheduled_tasks);
-
-      const audit = {
-        saveDoc: registration => {
-          registration._id.should.equal('test-registration');
-          registration.scheduled_tasks.length.should.equal(4);
-          registration.scheduled_tasks[0].state.should.equal('cleared');
-          registration.scheduled_tasks[0].timestamp.should.not.equal('000');
-          registration.scheduled_tasks[0].state_history.length.should.equal(1);
-          registration.scheduled_tasks[0].state_history[0].state.should.equal('cleared');
-          registration.scheduled_tasks[0].cleared_by.should.equal(reportId);
-
-          registration.scheduled_tasks[1].state.should.equal('cleared');
-          registration.scheduled_tasks[1].timestamp.should.not.equal('000');
-          registration.scheduled_tasks[1].state_history.length.should.equal(2);
-          registration.scheduled_tasks[1].state_history[1].state.should.equal('cleared');
-          registration.scheduled_tasks[1].cleared_by.should.equal(reportId);
-
-          registration.scheduled_tasks[2].state.should.equal('cleared');
-          registration.scheduled_tasks[2].timestamp.should.not.equal('000');
-          registration.scheduled_tasks[2].state_history.length.should.equal(1);
-          registration.scheduled_tasks[2].state_history[0].state.should.equal('cleared');
-          registration.scheduled_tasks[2].cleared_by.should.equal(reportId);
-
-          registration.scheduled_tasks[3].state.should.equal('cleared');
-          registration.scheduled_tasks[3].timestamp.should.not.equal('000');
-          registration.scheduled_tasks[3].state_history.length.should.equal(1);
-          registration.scheduled_tasks[3].state_history[0].state.should.equal('cleared');
-          registration.scheduled_tasks[3].state_history[0].timestamp.should.not.equal('000');
-          registration.scheduled_tasks[3].cleared_by.should.equal(reportId);
           done();
         }
       };
