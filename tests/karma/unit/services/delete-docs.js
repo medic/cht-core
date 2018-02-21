@@ -126,7 +126,7 @@ describe('DeleteDocs service', function() {
   });
 
   it('marks the record deleted', function() {
-    bulkDocs.returns(Promise.resolve());
+    bulkDocs.returns(Promise.resolve([]));
     var record = {
       _id: 'xyz',
       _rev: '123',
@@ -146,7 +146,7 @@ describe('DeleteDocs service', function() {
   });
 
   it('marks multiple records deleted', function() {
-    bulkDocs.returns(Promise.resolve());
+    bulkDocs.returns(Promise.resolve([]));
     var record1 = {
       _id: 'xyz',
       _rev: '123',
@@ -226,7 +226,7 @@ describe('DeleteDocs service', function() {
       }
     };
     get.returns(Promise.resolve(clinic));
-    bulkDocs.returns(Promise.resolve());
+    bulkDocs.returns(Promise.resolve([]));
     return service(person).then(function() {
       chai.expect(get.callCount).to.equal(1);
       chai.expect(get.args[0][0]).to.equal(clinic._id);
@@ -257,7 +257,7 @@ describe('DeleteDocs service', function() {
       }
     };
     get.returns(Promise.resolve(clinic));
-    bulkDocs.returns(Promise.resolve());
+    bulkDocs.returns(Promise.resolve([]));
     return service(person).then(function() {
       chai.expect(get.callCount).to.equal(1);
       chai.expect(get.args[0][0]).to.equal(clinic._id);
@@ -282,7 +282,7 @@ describe('DeleteDocs service', function() {
       }
     };
     get.returns(Promise.resolve(clinic));
-    bulkDocs.returns(Promise.resolve());
+    bulkDocs.returns(Promise.resolve([]));
     return service(person).then(function() {
       chai.expect(get.callCount).to.equal(1);
       chai.expect(get.args[0][0]).to.equal(clinic._id);
@@ -312,7 +312,7 @@ describe('DeleteDocs service', function() {
     };
     var docs = [ person ];
     get.returns(Promise.resolve(clinic));
-    bulkDocs.returns(Promise.resolve());
+    bulkDocs.returns(Promise.resolve([]));
     return service(docs).then(function() {
       chai.expect(docs.length).to.equal(1);
       chai.expect(bulkDocs.args[0][0].length).to.equal(2);
@@ -342,7 +342,7 @@ describe('DeleteDocs service', function() {
     };
 
     var docs = [ report ];
-    bulkDocs.returns(Promise.resolve());
+    bulkDocs.returns(Promise.resolve([]));
     var isCircularBefore = false;
     var isCircularAfter = false;
     try {
