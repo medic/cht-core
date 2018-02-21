@@ -1,13 +1,13 @@
-const login = require('./controllers/login'),
-      db = require('./db');
+const login = require('../controllers/login'),
+      db = require('../db');
 
 const target = 'http://' + db.settings.host + ':' + db.settings.port,
       proxy = require('http-proxy').createProxyServer({ target: target }),
       proxyForAuditing = require('http-proxy').createProxyServer({ target: target });
 
-const AuditProxy = require('./audit-proxy'),
-      isClientHuman = require('./is-client-human'),
-      serverUtils = require('./server-utils');
+const AuditProxy = require('../audit-proxy'),
+      isClientHuman = require('../is-client-human'),
+      serverUtils = require('../server-utils');
 
 const appcacheManifest = /\/manifest\.appcache$/,
       favicon = /\/icon_\d+.ico$/,
