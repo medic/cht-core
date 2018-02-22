@@ -110,19 +110,18 @@ module.exports = {
     //    by the following auth check in ctx.district (maybe?)
     //  - Still don't let offline users use this API, and instead refactor the
     //    export logic so it can be used in webapp, and have exports works offline
-    auth.check(req, ['national_admin', getExportPermission(req.params.type)], null, function(err) {
-      if (err) {
-        return serverUtils.error(err, req, res);
-      }
+    auth.check(req, ['national_admin', getExportPermission(req.params.type)])
+      .then(() => {
+        writeExportHeaders(res, req.params.type, formats.csv);
 
-      writeExportHeaders(res, req.params.type, formats.csv);
-
-      const d = domain.create();
-      d.on('error', err => serverUtils.error(err, req, res));
-      d.run(() =>
-        exportDataV2
-          .export(type, filters, options)
-          .pipe(res));
-    });
+        const d = domain.create();
+        d.on('error', err => serverUtils.error(err, req, res));
+        d.run(() =>
+          exportDataV2
+            .export(type, filters, options)
+            .pipe(res));
+      }).catch(err => serverUtils.error(err, req, res));
+      // TODO: ^^^ it would be nice to just return the Promise chain and have
+      //       express deal with it
   }
 };

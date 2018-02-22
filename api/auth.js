@@ -114,28 +114,36 @@ module.exports = {
   },
 
   check: function(req, permissions, districtId, callback) {
-    module.exports.getUserCtx(req, function(err, userCtx) {
-      if (err) {
-        return callback(err);
-      }
-      if (isDbAdmin(userCtx)) {
-        return callback(null, { user: userCtx.name });
-      }
-      if (!module.exports.hasAllPermissions(userCtx, permissions)) {
-        return callback({ code: 403, message: 'Insufficient privileges' });
-      }
-      module.exports.getFacilityId(req, userCtx, function(err, facilityId) {
+    const doIt = (resolve, reject) => {
+      module.exports.getUserCtx(req, function(err, userCtx) {
         if (err) {
-          return callback({ code: 500, message: err });
+          return reject(err);
         }
-        checkDistrict(districtId, facilityId, function(err, district) {
+        if (isDbAdmin(userCtx)) {
+          return resolve({ user: userCtx.name });
+        }
+        if (!module.exports.hasAllPermissions(userCtx, permissions)) {
+          return reject({ code: 403, message: 'Insufficient privileges' });
+        }
+        module.exports.getFacilityId(req, userCtx, function(err, facilityId) {
           if (err) {
-            return callback(err);
+            return reject({ code: 500, message: err });
           }
-          callback(null, { user: userCtx.name, district: district });
+          checkDistrict(districtId, facilityId, function(err, district) {
+            if (err) {
+              return reject(err);
+            }
+            resolve({ user: userCtx.name, district: district });
+          });
         });
       });
-    });
+    };
+
+    if (!callback) {
+      return new Promise(doIt);
+    } else {
+      doIt(_.partial(callback, null), callback);
+    }
   },
 
   checkUrl: function(req, callback) {
