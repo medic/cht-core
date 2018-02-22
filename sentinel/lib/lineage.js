@@ -73,25 +73,45 @@ const buildHydratedDoc = (doc, lineage) => {
   if (!doc || !lineage.length) {
     return doc;
   }
-  let currentParent = doc;
+
+  // Parent hierarchy starts at the contact for data_records, or the first
+  // parent if it exists
+  let currentParent;
   if (doc.type === 'data_record') {
     const hydratedContact = lineage.shift();
     if (hydratedContact) {
       doc.contact = hydratedContact;
     }
     currentParent = doc.contact;
+  } else if (doc.parent){
+    currentParent = doc.parent;
+  } else {
+    return doc;
   }
-  let currentStub = currentParent.parent;
+
   while (true) {
-    // if the parent doc isn't found the element in lineage is null,
-    // so retain the stub.
-    const parent = lineage.shift() || currentStub;
-    if (!parent) {
+    const next = lineage.shift();
+
+    if (next) {
+      // Use the hydrated parent
+
+      // But first make sure we haven't shifted incorrectly
+      if (!(currentParent && currentParent.parent && currentParent.parent._id)) {
+        throw Error(`Parent lineage doesn't line up with stub lineage: on ${doc._id} trying to hydrate ${next._id} onto a non-existant stub`);
+      }
+      if (next._id !== currentParent.parent._id) {
+        throw Error(`Parent lineage doesn't line up with stub lineage: on ${doc._id} trying to hydrate ${next._id} onto ${currentParent.parent._id}`);
+      }
+
+      currentParent.parent = next;
+      currentParent = currentParent.parent;
+    } else if (currentParent.parent) {
+      // For safety / continuity, use the stub
+      currentParent = currentParent.parent;
+    } else {
+      // No more hydrated or stub parents
       break;
     }
-    currentParent.parent = parent;
-    currentParent = currentParent.parent;
-    currentStub = currentStub.parent;
   }
 };
 
