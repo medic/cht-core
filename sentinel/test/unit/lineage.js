@@ -186,13 +186,24 @@ exports['fetchHydratedDoc handles non-lineage types with empty lineages'] = test
   });
 };
 
-exports['fetchHydratedDoc handles doc with deleted parent'] = test => {
+exports['fetchHydratedDoc handles doc with unknown parent by leaving just the stub'] = test => {
   const docId = 'abc';
-  sinon.stub(db.medic, 'view').callsArgWith(3, null, { rows: [ { doc: { _id: 'abc', contact: { _id: 'def' } } }, { doc: null } ] });
-  sinon.stub(db.medic, 'fetch').callsArgWith(1, null, { rows: [ { doc: { _id: 'cba' } }, { doc: { _id: 'def' } } ] });
+  sinon.stub(db.medic, 'view').callsArgWith(3, null, { rows: [
+    { doc: { _id: 'abc', contact: { _id: 'def' }, parent: { _id: 'ghi', parent: { _id: 'jkl' } } } },
+    { doc: null },
+    { doc: { _id: 'jkl', name: 'district' } }
+  ] });
+  sinon.stub(db.medic, 'fetch').callsArgWith(1, null, { rows: [
+    { doc: { _id: 'cba' } },
+    { doc: { _id: 'def' } }
+  ] });
   lineage.fetchHydratedDoc(docId)
   .then(actual => {
-    test.deepEqual(actual, { _id: 'abc', contact: { _id: 'def' }, parent: null });
+    test.deepEqual(actual, {
+      _id: 'abc',
+      contact: { _id: 'def' },
+      parent: { _id: 'ghi', parent: { _id: 'jkl', name: 'district' } }
+    });
     test.done();
   })
   .catch(err => {
@@ -206,7 +217,7 @@ exports['fetchHydratedDoc handles missing contacts'] = test => {
   sinon.stub(db.medic, 'view').callsArgWith(3, null, { rows: [ { doc: { _id: 'abc', contact: { _id: 'xyz' } } } ] });
   sinon.stub(db.medic, 'fetch').callsArgWith(1, null, { rows: [ { doc: null }] });
   lineage.fetchHydratedDoc(docId).then(actual => {
-    test.deepEqual(actual, { _id: 'abc', contact: { _id: 'xyz' }, parent: undefined });
+    test.deepEqual(actual, { _id: 'abc', contact: { _id: 'xyz' } });
     test.done();
   });
 };

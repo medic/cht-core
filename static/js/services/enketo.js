@@ -432,14 +432,21 @@ angular.module('inboxServices').service('Enketo',
     };
 
     var saveDocs = function(docs) {
-      return $q.all(docs.map(function(doc) {
-        return DB()
-          .put(doc)
-          .then(function(res) {
-            doc._rev = res.rev;
-            return doc;
+      return DB().bulkDocs(docs)
+        .then(function(results) {
+          results.forEach(function(result) {
+            if (result.error) {
+              $log.error('Error saving report', result);
+              throw new Error('Error saving report');
+            }
+            docs.forEach(function(doc) {
+              if (doc._id === result.id) {
+                doc._rev = result.rev;
+              }
+            });
           });
-      }));
+          return docs;
+        });
     };
 
     var update = function(docId) {
