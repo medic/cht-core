@@ -57,7 +57,7 @@
           </ul>
         </div>
       </div>
-      <div id="message-footer" class="reply message-form" ng-if="selected.messages[0]">
+      <div id="message-footer" class="reply message-form" ng-if="selected.messages[0] && selected.contact.doc">
         <div class="control-group">
           <div class="controls">
             <textarea name="message" ng-model="send.message" translate translate-attr-placeholder="Reply to name" translate-values="{ contact: (selected.contact.doc.name || selected.contact.name) }"></textarea>

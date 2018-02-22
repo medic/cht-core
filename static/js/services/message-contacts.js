@@ -1,3 +1,5 @@
+var _ = require('underscore');
+
 angular.module('inboxServices').factory('MessageContacts',
   function(
     AddReadStatus,
@@ -28,12 +30,7 @@ angular.module('inboxServices').factory('MessageContacts',
     };
 
     var getSummaries = function(result) {
-      // set the key
-      result = result.map(function(item) {
-        var value = item.value;
-        value.from = value.key = item.key[0];
-        return value;
-      });
+      result = _.pluck(result, 'value');
       // populate the summaries of the result values then return the result
       return GetContactSummaries(result);
     };

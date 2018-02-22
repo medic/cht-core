@@ -12,9 +12,12 @@ function(doc) {
   };
 
   var emitMessage = function(doc, contact, phone, message) {
-    var id = (contact && contact._id) || phone || doc._id;
+    var from = (contact && contact._id) || phone;
+    var id = from || doc._id;
     emit([ id, doc.reported_date ], {
       id: doc._id,
+      key: id,
+      from: from,
       date: doc.reported_date,
       message: message,
       contact: contact && contact._id,
