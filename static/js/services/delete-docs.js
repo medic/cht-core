@@ -19,7 +19,7 @@ var utilsFactory = require('bulk-docs-utils');
       'ngInject';
       var utils = utilsFactory({
         Promise: $q,
-        DB: DB,
+        DB: DB(),
         log: $log
       });
 
