@@ -679,5 +679,38 @@ exports['hydrateDocs ignores db-fetch errors'] = test => {
 
     test.done();
   }).catch(test.done);
+};
+
+exports['fetchHydratedDoc works for SMS reports'] = test => {
+  const view = sinon.stub(db.medic, 'view');
+  let doc = {
+    _id: 'some_id',
+    type: 'data_record',
+    from: '123',
+    form: 'D',
+    fields: {},
+    sms_message: {
+      message_id: '76992',
+      message: 'somemessage',
+      from: '123',
+      type: 'sms_message',
+      form: 'D'
+    }
+  };
+
+  view.onCall(0).callsArgWith(3, null, { rows: [{ doc: doc }] });
+  lineage
+    .fetchHydratedDoc(doc._id)
+    .then(() => {
+      test.equals(view.callCount, 1);
+      test.done();
+    })
+    .catch(err => {
+      test.equals(err instanceof TypeError, true);
+      test.equals(err.message, 'Cannot read property \'parent\' of undefined');
+      test.equals(view.callCount, 1);
+      test.ok(false, 'fails with error: '+ err.message);
+      test.done();
+    });
 
 };

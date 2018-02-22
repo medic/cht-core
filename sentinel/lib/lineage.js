@@ -70,7 +70,7 @@ const fillContactsInDocs = (docs, contacts) => {
 };
 
 const buildHydratedDoc = (doc, lineage) => {
-  if (!doc) {
+  if (!doc || !lineage.length) {
     return doc;
   }
   let currentParent = doc;
