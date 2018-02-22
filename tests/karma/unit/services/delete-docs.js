@@ -80,24 +80,6 @@ describe('DeleteDocs service', function() {
       });
   });
 
-  it('does not allow deleting duplicate docs', function(done) {
-    var clinic = {
-      _id: 'b',
-      type: 'clinic',
-      contact: {
-        name: 'sally',
-        phone: '+555'
-      }
-    };
-    service([ clinic, clinic ])
-      .then(function() {
-        done(new Error('expected error to be thrown'));
-      })
-      .catch(function() {
-        done();
-      });
-  });
-
   it('does not allow deleting child and parent that will conflict', function(done) {
     var clinic = {
       _id: 'b',
@@ -195,101 +177,21 @@ describe('DeleteDocs service', function() {
     });
   });
 
-  it('fires the progress event handler on progress events', function() {
+  it('fires the progress event handler on progress events', function(done) {
     var record1 = { _id: 'xyz' };
     var record2 = { _id: 'abc' };
     var onProgress = sinon.spy();
-    var response = '[[{"ok": true}, {"ok": true}],'; // progress should handle partial json but load will error out
+    var response = '[[{"ok": true}, {"ok": true}],';
     server.respondWith([200, { 'Content-Type': 'application/json' }, response]);
     isAdmin.returns(true);
-    return service([ record1, record2 ], { progress: onProgress }).catch(function() {
-      chai.expect(onProgress.callCount).to.equal(1);
-      chai.expect(onProgress.getCall(0).args[0]).to.equal(2);
-    });
-  });
-
-  it('updates clinic deleted person is contact for', function() {
-    var clinic = {
-      _id: 'b',
-      type: 'clinic',
-      contact: {
-        _id: 'a',
-        name: 'sally'
-      }
-    };
-    var person = {
-      _id: 'a',
-      type: 'person',
-      name: 'sally',
-      parent: {
-        _id: 'b'
-      }
-    };
-    get.returns(Promise.resolve(clinic));
-    bulkDocs.returns(Promise.resolve([]));
-    return service(person).then(function() {
-      chai.expect(get.callCount).to.equal(1);
-      chai.expect(get.args[0][0]).to.equal(clinic._id);
-      chai.expect(bulkDocs.callCount).to.equal(1);
-      chai.expect(bulkDocs.args[0][0].length).to.equal(2);
-      chai.expect(bulkDocs.args[0][0][0]._id).to.equal(person._id);
-      chai.expect(bulkDocs.args[0][0][0]._deleted).to.equal(true);
-      chai.expect(bulkDocs.args[0][0][1]._id).to.equal(clinic._id);
-      chai.expect(bulkDocs.args[0][0][1].contact).to.equal(null);
-    });
-  });
-
-  it('does not update clinic when id does not match', function() {
-    var clinic = {
-      _id: 'b',
-      type: 'clinic',
-      contact: {
-        _id: 'c',
-        name: 'sally'
-      }
-    };
-    var person = {
-      _id: 'a',
-      type: 'person',
-      name: 'sally',
-      parent: {
-        _id: 'b'
-      }
-    };
-    get.returns(Promise.resolve(clinic));
-    bulkDocs.returns(Promise.resolve([]));
-    return service(person).then(function() {
-      chai.expect(get.callCount).to.equal(1);
-      chai.expect(get.args[0][0]).to.equal(clinic._id);
-      chai.expect(bulkDocs.callCount).to.equal(1);
-      chai.expect(bulkDocs.args[0][0].length).to.equal(1);
-      chai.expect(bulkDocs.args[0][0][0]._id).to.equal(person._id);
-      chai.expect(bulkDocs.args[0][0][0]._deleted).to.equal(true);
-    });
-  });
-
-  it('handles the parents contact being null - #2416', function() {
-    var clinic = {
-      _id: 'b',
-      type: 'clinic'
-    };
-    var person = {
-      _id: 'a',
-      type: 'person',
-      name: 'sally',
-      parent: {
-        _id: 'b'
-      }
-    };
-    get.returns(Promise.resolve(clinic));
-    bulkDocs.returns(Promise.resolve([]));
-    return service(person).then(function() {
-      chai.expect(get.callCount).to.equal(1);
-      chai.expect(get.args[0][0]).to.equal(clinic._id);
-      chai.expect(bulkDocs.callCount).to.equal(1);
-      chai.expect(bulkDocs.args[0][0].length).to.equal(1);
-      chai.expect(bulkDocs.args[0][0][0]._id).to.equal(person._id);
-      chai.expect(bulkDocs.args[0][0][0]._deleted).to.equal(true);
+    service([ record1, record2 ], { progress: onProgress })
+      .then(() => {
+        done(Error('Should have thrown')); // The onload handler should throw an error due to partial json
+      })
+      .catch(function() {
+        chai.expect(onProgress.callCount).to.equal(1);
+        chai.expect(onProgress.getCall(0).args[0]).to.equal(2);
+        done();
     });
   });
 

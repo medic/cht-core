@@ -19,9 +19,16 @@ var utilsFactory = require('bulk-docs-utils');
       'ngInject';
       var utils = utilsFactory({
         Promise: $q,
-        DB: DB(),
-        log: $log
+        DB: DB()
       });
+
+      var checkForDuplicates = function (docs) {
+        var errors = utils.getDuplicateErrors(docs);
+        if (errors.length > 0) {
+          $log.error('Deletion errors', errors);
+          throw new Error('Deletion error');
+        }
+      };
 
       var minifyLineage = function (docs) {
         docs.forEach(function (doc) {
@@ -46,7 +53,7 @@ var utilsFactory = require('bulk-docs-utils');
           return utils.updateParentContacts(docsToDelete)
             .then(function(updatedParents) {
               var allDocs = docsToDelete.concat(updatedParents);
-              utils.checkForDuplicates(allDocs);
+              checkForDuplicates(allDocs);
               minifyLineage(allDocs);
               return DB().bulkDocs(allDocs);
             });

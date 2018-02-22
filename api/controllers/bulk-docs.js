@@ -6,8 +6,7 @@ const DB = new PouchDB(process.env.COUCH_URL);
 
 const utils = require('bulk-docs-utils')({
   Promise: Promise,
-  DB: DB,
-  log: console
+  DB: DB
 });
 
 const markAsDeleted = data => {
@@ -20,6 +19,15 @@ const markAsDeleted = data => {
       }
     })
     .filter(doc => doc);
+};
+
+const checkForDuplicates = docs => {
+  const duplicateErrors = utils.getDuplicateErrors(docs);
+  if (duplicateErrors.length > 0) {
+    console.error('Deletion errors', duplicateErrors);
+    const ids = duplicateErrors.map(error => error.id);
+    throw new Error(`Duplicate documents when deleting: ${ids.join(',')}`);
+  }
 };
 
 const generateBatches = (docs, batchSize) => {
@@ -50,7 +58,7 @@ module.exports = {
       })
       .then(docsToUpdate => {
         const allDocs = docsToDelete.concat(docsToUpdate);
-        utils.checkForDuplicates(allDocs);
+        checkForDuplicates(allDocs);
         const batches = generateBatches(allDocs, batchSize);
 
         res.type('application/json');
