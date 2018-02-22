@@ -702,11 +702,13 @@ exports['fetchHydratedDoc works for SMS reports'] = test => {
   lineage
     .fetchHydratedDoc(doc._id)
     .then(() => {
+      test.equals(view.callCount, 1);
       test.done();
     })
     .catch(err => {
       test.equals(err instanceof TypeError, true);
       test.equals(err.message, 'Cannot read property \'parent\' of undefined');
+      test.equals(view.callCount, 1);
       test.ok(false, 'fails with error: '+ err.message);
       test.done();
     });
