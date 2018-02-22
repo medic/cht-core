@@ -1,5 +1,6 @@
 var _ = require('underscore');
 var partialParse = require('partial-json-parser');
+var utilsFactory = require('bulk-docs-utils');
 
 (function () {
 
@@ -15,52 +16,12 @@ var partialParse = require('partial-json-parser');
       ExtractLineage,
       Session
     ) {
-
       'ngInject';
-
-      var getParent = function(doc) {
-        if (doc.type === 'person' && doc.parent && doc.parent._id) {
-          return DB().get(doc.parent._id);
-        }
-        return $q.resolve();
-      };
-
-      var updateParentContacts = function(docs) {
-        return $q.all(docs.map(function(doc) {
-          return getParent(doc)
-            .then(function(parent) {
-              var shouldUpdateParentContact = parent && parent.contact && parent.contact._id && parent.contact._id === doc._id;
-              if (shouldUpdateParentContact) {
-                parent.contact = null;
-                return parent;
-              }
-            });
-          }))
-          .then(function(parents) {
-            return parents.filter(function(parent) {
-              return parent;
-            });
-          });
-      };
-
-      var checkForDuplicates = function(docs) {
-        var errors = [];
-        var dedup = [];
-        docs.forEach(function(doc) {
-          if (dedup.indexOf(doc._id) !== -1) {
-            errors.push({
-              error: 'conflict',
-              message : 'Duplicate documents to delete, with id ' + doc._id + '. Not deleting to avoid conflict.',
-              id: doc._id
-            });
-          }
-          dedup.push(doc._id);
-        });
-        if (errors.length) {
-          $log.error('Deletion errors', errors);
-          throw new Error('Deletion error');
-        }
-      };
+      var utils = utilsFactory({
+        Promise: $q,
+        DB: DB,
+        log: $log
+      });
 
       var minifyLineage = function (docs) {
         docs.forEach(function (doc) {
@@ -70,26 +31,25 @@ var partialParse = require('partial-json-parser');
         });
       };
 
-      var deleteAndUpdateDocs = function (docsToDelete, docsToUpdate, eventListeners) {
+      var deleteAndUpdateDocs = function (docsToDelete, eventListeners) {
         var onlineUser = Session.isAdmin();
         if (onlineUser) {
           var docIds = docsToDelete.map(function(doc) {
             return { _id: doc._id };
           });
 
-          return $q.all([
-            docsToUpdate.length > 0 ? DB().bulkDocs(docsToUpdate) : $q.resolve([]),
-            bulkDeleteRemoteDocs(docIds, eventListeners)
-          ]).then(function(results) {
-            return results[0].concat(results[1]);
-          });
+          return bulkDeleteRemoteDocs(docIds, eventListeners);
         } else {
           docsToDelete.forEach(function(doc) {
             doc._deleted = true;
           });
-          var allDocs = docsToDelete.concat(docsToUpdate);
-          minifyLineage(allDocs);
-          return DB().bulkDocs(allDocs);
+          return utils.updateParentContacts(docsToDelete)
+            .then(function(updatedParents) {
+              var allDocs = docsToDelete.concat(updatedParents);
+              utils.checkForDuplicates(allDocs);
+              minifyLineage(allDocs);
+              return DB().bulkDocs(allDocs);
+            });
         }
       };
 
@@ -139,11 +99,7 @@ var partialParse = require('partial-json-parser');
           docs = _.clone(docs);
         }
 
-        return updateParentContacts(docs)
-          .then(function(parentsToUpdate) {
-            checkForDuplicates(docs.concat(parentsToUpdate));
-            return deleteAndUpdateDocs(docs, parentsToUpdate, eventListeners);
-          })
+        return deleteAndUpdateDocs(docs, eventListeners)
           // No silent fails! Throw on error.
           .then(function(results) {
             var errors = results.filter(function(result) {

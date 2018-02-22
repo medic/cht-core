@@ -1,0 +1,11 @@
+{
+  "name": "bulk-docs-utils",
+  "version": "1.0.0",
+  "description": "Common utility functions for bulk docs operations",
+  "main": "src/bulk-docs-utils.js",
+  "scripts": {},
+  "author": "",
+  "license": "Apache-2.0",
+  "devDependencies": {},
+  "dependencies": {}
+}

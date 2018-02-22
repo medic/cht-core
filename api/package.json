@@ -11,6 +11,7 @@
     "async": "^2.5.0",
     "body-parser": "^1.18.2",
     "buffer-shims": "^1.0.0",
+    "bulk-docs-utils": "file:../shared-libs/bulk-docs-utils",
     "couchdb-audit": "^1.1.1",
     "express": "^4.16.2",
     "fast-csv": "^2.4.1",

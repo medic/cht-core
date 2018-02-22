@@ -1,4 +1,14 @@
-const db = require('../db');
+const PouchDB = require('pouchdb-core');
+PouchDB.plugin(require('pouchdb-adapter-http'));
+PouchDB.plugin(require('pouchdb-mapreduce'));
+
+const DB = new PouchDB(process.env.COUCH_URL);
+
+const utils = require('bulk-docs-utils')({
+  Promise: Promise,
+  DB: DB,
+  log: console
+});
 
 const markAsDeleted = data => {
   return data.rows
@@ -21,51 +31,39 @@ const generateBatches = (docs, batchSize) => {
   return batches;
 };
 
-const generateBatchPromise = (batch, res, options = {}) => {
-  return new Promise((resolve, reject) => {
-    db.medic.bulk({ docs: batch }, function (err, body) {
-      if (err) {
-        return reject(err);
-      }
-
-      let resString = JSON.stringify(body);
-      resString += options.isFinal ? '' : ',';
-      res.write(resString);
-      resolve();
-    });
+const generateBatchPromise = (batch, res, { isFinal } = {}) => {
+  return DB.bulkDocs(batch).then(result => {
+    let resString = JSON.stringify(result);
+    resString += isFinal ? '' : ',';
+    res.write(resString);
   });
 };
 
-const setupBatchPromises = (batches, res) => {
-  return batches.reduce((promise, batch, index) => {
-    return promise.then(() => generateBatchPromise(batch, res, { isFinal: index === batches.length - 1 }));
-  }, Promise.resolve([]));
-};
-
 module.exports = {
-  bulkDelete: (req, res, callback, { batchSize = 100 } = {}) => {
+  bulkDelete: (req, res, { batchSize = 100 } = {}) => {
+    let docsToDelete;
     const keys = req.body.docs.map(doc => doc._id);
-    db.medic.fetch({ keys }, function(err, data) {
-      if (err) {
-        return callback(err);
-      }
+    return DB.allDocs({ keys, include_docs: true })
+      .then(result => {
+        docsToDelete = markAsDeleted(result);
+        return utils.updateParentContacts(docsToDelete);
+      })
+      .then(docsToUpdate => {
+        const allDocs = docsToDelete.concat(docsToUpdate);
+        utils.checkForDuplicates(allDocs);
+        const batches = generateBatches(allDocs, batchSize);
 
-      const docs = markAsDeleted(data);
-      const batches = generateBatches(docs, batchSize);
-      const sendBatches = setupBatchPromises(batches, res);
+        res.type('application/json');
+        res.setHeader('X-Content-Type-Options', 'nosniff');
+        res.write('[');
 
-      res.type('application/json');
-      res.setHeader('X-Content-Type-Options', 'nosniff');
-      res.write('[');
-      sendBatches
-        .then(() => {
-          res.write(']');
-          res.end();
-          callback();
-        })
-        .catch(err => {
-          return callback(err);
-        });
-    });
+        return batches.reduce((promise, batch, index) => {
+          return promise.then(() => generateBatchPromise(batch, res, { isFinal: index === batches.length - 1 }));
+        }, Promise.resolve([]));
+      })
+      .then(() => {
+        res.write(']');
+        res.end();
+      });
   }
 };
