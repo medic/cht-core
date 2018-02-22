@@ -81,7 +81,7 @@ exports['should update clinic by phone'] = function(test) {
     }
   };
 
-  sinon.stub(fakedb.medic, 'view').callsArgWith(3, null, {rows: [{ doc: contact }]});
+  sinon.stub(fakedb.medic, 'view').callsArgWith(3, null, {rows: [{ id: contact._id }]});
   lineageStub.returns(Promise.resolve(contact));
 
   transition.onMatch({
@@ -277,4 +277,23 @@ exports['from field is cast to string in view query'] = function(test) {
     }
   };
   transition.onMatch(change, db, {}, function(){});
+};
+
+exports['handles lineage rejection properly'] = function(test) {
+  test.expect(2);
+  var doc = {
+    from: '123',
+    type: 'data_record'
+  };
+
+  sinon.stub(fakedb.medic, 'view').callsArgWith(3, null, { rows: [{id: 'someID'}] });
+  lineageStub.withArgs('someID').returns(Promise.reject('some error'));
+
+  transition.onMatch({
+    doc: doc
+  }, fakedb, fakeaudit, function(err, complete) {
+    test.equal(err, 'some error');
+    test.equal(complete, undefined);
+    test.done();
+  });
 };
