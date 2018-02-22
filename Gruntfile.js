@@ -267,9 +267,9 @@ module.exports = function(grunt) {
       },
       sharedLibUnit: {
         cmd:  function() {
-          // When we have more than one sharedLib we can make this code iterate
-          // through the libs and execute the ones that have npm test
-          return 'cd shared-libs/search && npm install && npm test';
+          return this.file.expand('shared-libs/*').map(function(libDir) {
+            return 'cd ' + libDir + ' && npm install && npm test && cd ../..';
+          }).join(' && ');
         }
       },
       // To monkey patch a library...
