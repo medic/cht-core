@@ -53,8 +53,18 @@ angular.module('inboxControllers').controller('MessagesContentCtrl',
       return LineageModelGenerator.contact(id)
         .catch(function(err) {
           if (err.code === 404) {
-            // might be an unknown contact so do the best we can
-            return { name: id };
+            // We can have messages with no from number, and thus no contact
+
+            // !!!!!!!!Dirty hack!!!!!!!!!!
+            // A 404ing ID could be a phone number, or the ID of a message
+            // with no phone number. If we think it's a phone number return
+            // it as a template so you can reply to it
+            if (id.length >= 32 && id.length <=36) {
+              // Non-existant number
+              return {};
+            } else {
+              return {name: id};
+            }
           }
           throw err;
         });
@@ -93,9 +103,8 @@ angular.module('inboxControllers').controller('MessagesContentCtrl',
           $scope.firstUnread = _.min(unread, function(message) {
             return message.doc.reported_date;
           });
-          $scope.selected.contact = contactModel.doc ? contactModel : { name: id };
+          $scope.selected.contact = contactModel;
           $scope.selected.messages = conversation;
-          $scope.setTitle((contactModel.doc && contactModel.doc.name) || id);
           markAllRead();
           $timeout(scrollToUnread);
         })
