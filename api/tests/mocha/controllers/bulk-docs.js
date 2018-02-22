@@ -1,5 +1,5 @@
 const controller = require('../../../controllers/bulk-docs');
-const db = require('../../../db');
+const db = require('../../../db-pouch');
 const sinon = require('sinon').sandbox.create();
 require('chai').should();
 
@@ -12,79 +12,57 @@ const testReq = {
     ]
   }
 };
+let testRes;
 
 describe('Bulk Docs', function () {
+  beforeEach(function() {
+    testRes = {
+      write: sinon.stub(),
+      end: sinon.stub(),
+      type: () => {},
+      setHeader: () => {}
+    };
+  });
+
   afterEach(function() {
     sinon.restore();
   });
 
   describe('Bulk Delete', function () {
-    it('returns errors from db fetch', function () {
-      const fetchDocs = sinon.stub(db.medic, 'fetch').callsArgWith(1, 'oh no');
-      return controller.bulkDelete(testReq, {}, err => {
-        err.should.equal('oh no');
-        fetchDocs.callCount.should.equal(1);
-      });
-    });
-
-    it('calls db fetch with correct args', function () {
-      const fetchDocs = sinon.stub(db.medic, 'fetch').callsArgWith(1, 'oh no');
-      return controller.bulkDelete(testReq, {}, () => {
-        fetchDocs.callCount.should.equal(1);
-        fetchDocs.firstCall.args[0].should.deep.equal({ keys: ['a', 'b', 'c'] });
-      });
-    });
-
-    it('returns error from db bulk', function () {
-      const docA = { _id: 'a', _rev: '1' };
-      const fetchDocs = sinon.stub(db.medic, 'fetch').callsArgWith(1, null, { rows: [{ doc: docA }] });
-      const bulk = sinon.stub(db.medic, 'bulk').callsArgWith(1, 'oh no');
-
-      const testRes = {
-        write: sinon.stub(),
-        end: sinon.stub(),
-        type: () => {},
-        setHeader: () => {}
-      };
-      return controller.bulkDelete(testReq, testRes, err => {
-        err.should.equal('oh no');
-        fetchDocs.callCount.should.equal(1);
-        bulk.callCount.should.equal(1);
-        testRes.write.callCount.should.equal(1);
-        testRes.end.callCount.should.equal(0);
-      });
+    it('calls allDocs with correct args', function () {
+      const allDocs = sinon.stub(db.medic, 'allDocs').resolves({ rows: [] });
+      return controller.bulkDelete(testReq, testRes)
+        .then(() => {
+          allDocs.callCount.should.equal(1);
+          allDocs.firstCall.args[0].should.deep.equal({ keys: ['a', 'b', 'c'], include_docs: true });
+        });
     });
 
     it('writes chunked response', function () {
       const docA = { _id: 'a', _rev: '1' };
       const docB = { _id: 'b', _rev: '1' };
       const docC = { _id: 'c', _rev: '1' };
-      const fetchDocs = sinon.stub(db.medic, 'fetch').callsArgWith(1, null, {
+      const allDocs = sinon.stub(db.medic, 'allDocs').resolves({
         rows: [{ doc: docA }, { doc: docB }, { doc: docC }]
       });
 
-      const bulk = sinon.stub(db.medic, 'bulk');
-      bulk.onCall(0).callsArgWith(1, null, [{ ok: true }, { ok: true }]);
-      bulk.onCall(1).callsArgWith(1, null, [{ ok: true }]);
+      const bulkDocs = sinon.stub(db.medic, 'bulkDocs');
+      bulkDocs.onCall(0).resolves([{ ok: true }, { ok: true }]);
+      bulkDocs.onCall(1).resolves([{ ok: true }]);
 
-      const testRes = {
-        write: sinon.stub(),
-        end: sinon.stub(),
-        type: () => {},
-        setHeader: () => {}
-      };
-      return controller.bulkDelete(testReq, testRes, () => {
-        fetchDocs.callCount.should.equal(1);
-        bulk.callCount.should.equal(2);
-        bulk.firstCall.args[0].should.deep.equal({ docs: [docA, docB] });
-        bulk.secondCall.args[0].should.deep.equal({ docs: [docC] });
-        testRes.write.callCount.should.equal(4);
-        testRes.write.getCall(0).args[0].should.equal('[');
-        testRes.write.getCall(1).args[0].should.equal('[{"ok":true},{"ok":true}],');
-        testRes.write.getCall(2).args[0].should.equal('[{"ok":true}]');
-        testRes.write.getCall(3).args[0].should.equal(']');
-        testRes.end.callCount.should.equal(1);
-      }, { batchSize: 2 });
+      return controller.bulkDelete(testReq, testRes, { batchSize: 2 })
+        .then(() => {
+          allDocs.callCount.should.equal(1);
+          bulkDocs.callCount.should.equal(2);
+          bulkDocs.firstCall.args[0].should.deep.equal([docA, docB]);
+          bulkDocs.secondCall.args[0].should.deep.equal([docC]);
+          testRes.write.callCount.should.equal(4);
+          testRes.write.getCall(0).args[0].should.equal('[');
+          testRes.write.getCall(1).args[0].should.equal('[{"ok":true},{"ok":true}],');
+          testRes.write.getCall(2).args[0].should.equal('[{"ok":true}]');
+          testRes.write.getCall(3).args[0].should.equal(']');
+          testRes.end.callCount.should.equal(1);
+        });
     });
   });
 });

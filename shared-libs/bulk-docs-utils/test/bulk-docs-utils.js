@@ -9,7 +9,7 @@ describe('Bulk Docs utils', function() {
 
   beforeEach(function() {
     get = sinon.stub();
-    DB = { get: get, query: sinon.stub() };
+    DB = { get };
     utils = utilsFactory({ Promise, DB });
   });
 
