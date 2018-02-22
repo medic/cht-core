@@ -212,6 +212,43 @@ exports['fetchHydratedDoc handles doc with unknown parent by leaving just the st
   });
 };
 
+exports['fetchHydratedDoc handles doc with unknown contact by leaving just the stub'] = test => {
+  const docId = 'abc';
+  sinon.stub(db.medic, 'view').callsArgWith(3, null, { rows: [
+    { doc: { _id: 'abc', type: 'data_record', contact: { _id: 'def', parent: { _id: 'ghi', parent: { _id: 'jkl' } } } } },
+    { doc: null },
+    { doc: { _id: 'ghi', name: 'clinic' } },
+    { doc: { _id: 'jkl', name: 'district' } }
+  ] });
+  sinon.stub(db.medic, 'fetch').callsArgWith(1, null, { rows: [
+    { doc: { _id: 'cba' } },
+    { doc: { _id: 'def', parent: { _id: 'ghi', parent: { _id: 'jkl' } } } }
+  ] });
+  lineage.fetchHydratedDoc(docId)
+    .then(actual => {
+      test.deepEqual(actual, {
+        _id: 'abc',
+        type: 'data_record',
+        contact: {
+          _id: 'def',
+          parent: {
+            _id: 'ghi',
+            name: 'clinic',
+            parent: {
+              _id: 'jkl',
+              name: 'district'
+            }
+          }
+        }
+      });
+      test.done();
+    })
+    .catch(err => {
+      test.fail(err);
+      test.done();
+    });
+};
+
 exports['fetchHydratedDoc handles missing contacts'] = test => {
   const docId = 'abc';
   sinon.stub(db.medic, 'view').callsArgWith(3, null, { rows: [ { doc: { _id: 'abc', contact: { _id: 'xyz' } } } ] });

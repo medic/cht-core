@@ -75,7 +75,10 @@ const buildHydratedDoc = (doc, lineage) => {
   }
   let currentParent = doc;
   if (doc.type === 'data_record') {
-    doc.contact = lineage.shift();
+    const hydratedContact = lineage.shift();
+    if (hydratedContact) {
+      doc.contact = hydratedContact;
+    }
     currentParent = doc.contact;
   }
   let currentStub = currentParent.parent;
