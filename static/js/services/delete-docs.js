@@ -67,7 +67,11 @@ var utilsFactory = require('bulk-docs-utils');
         };
         xhr.onload = function() {
           if (this.status >= 200 && this.status < 300) {
-            deferred.resolve(_.flatten(JSON.parse(xhr.response)));
+            try {
+              deferred.resolve(_.flatten(JSON.parse(xhr.response)));
+            } catch (err) {
+              deferred.reject(err);
+            }
           } else {
             deferred.reject(new Error('Server responded with ' + this.status + ': ' + xhr.statusText));
           }
