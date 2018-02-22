@@ -1,6 +1,7 @@
 var _ = require('underscore'),
     logger = require('../lib/logger'),
     transitionUtils = require('./utils'),
+    lineage = require('../lib/lineage'),
     NAME = 'update_clinics';
 
 var associateContact = function(audit, doc, contact, callback) {
@@ -27,6 +28,17 @@ var associateContact = function(audit, doc, contact, callback) {
     }
 };
 
+var getHydratedContact = function(id, callback) {
+  return lineage
+    .fetchHydratedDoc(id)
+    .then(function(contact) {
+      callback(null, contact);
+    })
+    .catch(function(err) {
+      callback(err);
+    });
+};
+
 var getContact = function(db, doc, callback) {
     if (doc.refid) { // use reference id to find clinic if defined
         let params = {
@@ -43,28 +55,34 @@ var getContact = function(db, doc, callback) {
             }
             var result = data.rows[0].doc;
             if (result.type === 'person') {
-                return callback(null, result);
+              return getHydratedContact(result._id, callback);
             }
             if (result.type === 'clinic') {
                 var id = result.contact && result.contact._id;
                 if (!id) {
                     return callback(null, result.contact || { parent: result });
                 }
-                return db.medic.get(id, callback);
+
+                return getHydratedContact(id, callback);
             }
             callback();
         });
     } else if (doc.from) {
         let params = {
             key: String(doc.from),
-            include_docs: true,
+            include_docs: false,
             limit: 1
         };
         db.medic.view('medic-client', 'contacts_by_phone', params, function(err, data) {
             if (err) {
                 return callback(err);
             }
-            callback(null, data.rows.length && data.rows[0].doc);
+
+            if (data.rows.length && data.rows[0].id) {
+              return getHydratedContact(data.rows[0].id, callback);
+            }
+
+            return callback();
         });
     } else {
         callback();
