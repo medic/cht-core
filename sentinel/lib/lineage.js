@@ -73,22 +73,22 @@ const buildHydratedDoc = (doc, lineage) => {
   if (!doc) {
     return doc;
   }
-  let current = doc;
+  let currentParent = doc;
   if (doc.type === 'data_record') {
     doc.contact = lineage.shift();
-    current = doc.contact;
+    currentParent = doc.contact;
   }
-  let stub = doc.parent;
+  let currentStub = currentParent.parent;
   while (true) {
-    const parent = lineage.shift() || stub;
+    // if the parent doc isn't found the element in lineage is null,
+    // so retain the stub.
+    const parent = lineage.shift() || currentStub;
     if (!parent) {
       break;
     }
-    current.parent = parent;
-    current = current.parent;
-    if (stub) {
-      stub = stub.parent;
-    }
+    currentParent.parent = parent;
+    currentParent = currentParent.parent;
+    currentStub = currentStub.parent;
   }
 };
 
