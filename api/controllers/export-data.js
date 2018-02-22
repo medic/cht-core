@@ -110,7 +110,7 @@ module.exports = {
     //    by the following auth check in ctx.district (maybe?)
     //  - Still don't let offline users use this API, and instead refactor the
     //    export logic so it can be used in webapp, and have exports works offline
-    auth.check(req, ['national_admin', getExportPermission(req.params.type)])
+    return auth.check(req, ['national_admin', getExportPermission(req.params.type)])
       .then(() => {
         writeExportHeaders(res, req.params.type, formats.csv);
 

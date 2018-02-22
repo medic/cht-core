@@ -2,7 +2,7 @@ require('chai').should();
 
 const service = require('../../../services/export-data-2');
 
-describe('Export Data 2.0', () => {
+describe('Export Data Service 2.0', () => {
   describe('Extract fields', () => {
     it('flattens fields', () => {
       service._flatten({
