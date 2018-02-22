@@ -45,7 +45,7 @@ angular.module('inboxServices').service('ContactSave',
 
           return {
             docId: doc._id,
-            preparedDocs: [].concat(repeated, siblings, doc)
+            preparedDocs: [ doc ].concat(repeated, siblings) // NB: order matters: #4200
           };
         });
     }

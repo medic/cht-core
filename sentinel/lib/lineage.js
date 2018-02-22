@@ -78,9 +78,17 @@ const buildHydratedDoc = (doc, lineage) => {
     doc.contact = lineage.shift();
     current = doc.contact;
   }
-  while (current) {
-    current.parent = lineage.shift();
+  let stub = doc.parent;
+  while (true) {
+    const parent = lineage.shift() || stub;
+    if (!parent) {
+      break;
+    }
+    current.parent = parent;
     current = current.parent;
+    if (stub) {
+      stub = stub.parent;
+    }
   }
 };
 
