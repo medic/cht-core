@@ -1,14 +1,9 @@
 const _ = require('underscore'),
-      objectPath = require('object-path');
-
-const PouchDB = require('pouchdb-core');
-PouchDB.plugin(require('pouchdb-adapter-http'));
-PouchDB.plugin(require('pouchdb-mapreduce'));
-
-const DB = new PouchDB(process.env.COUCH_URL);
+      objectPath = require('object-path'),
+      db = require('../db-pouch');
 
 const { Readable } = require('stream'),
-      search = require('search')(Promise, DB);
+      search = require('search')(Promise, db.medic);
 
 const BATCH = 100;
 
@@ -48,7 +43,7 @@ const hydrateDataRecords = result => {
     return Promise.resolve(result);
   }
 
-  return DB.allDocs({
+  return db.medic.allDocs({
     keys: contactIds,
     include_docs: true
   }).then(results => {
@@ -120,7 +115,7 @@ const CSV_MAPPER = {
       if (forms) {
         return Promise.resolve(forms);
       } else {
-        return DB.query('medic-client/reports_by_form', {group: true})
+        return db.medic.query('medic-client/reports_by_form', {group: true})
                 .then(results => results.rows.map(r => r.key[0]));
       }
     };
@@ -133,7 +128,7 @@ const CSV_MAPPER = {
 
     return getForms().then(forms =>
       Promise.all(forms.map(form =>
-        DB.query('medic-client/reports_by_form', {
+        db.medic.query('medic-client/reports_by_form', {
           key: [form],
           limit: 1,
           include_docs: true,
@@ -245,7 +240,7 @@ class SearchResultReader extends Readable {
 
         this.options.skip += this.options.limit;
 
-        return DB.allDocs({
+        return db.medic.allDocs({
           keys: ids,
           include_docs: true
         })

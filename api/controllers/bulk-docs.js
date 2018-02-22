@@ -1,12 +1,8 @@
-const PouchDB = require('pouchdb-core');
-PouchDB.plugin(require('pouchdb-adapter-http'));
-PouchDB.plugin(require('pouchdb-mapreduce'));
-
-const DB = new PouchDB(process.env.COUCH_URL);
+const db = require('../db-pouch');
 
 const utils = require('bulk-docs-utils')({
   Promise: Promise,
-  DB: DB
+  DB: db.medic
 });
 
 const markAsDeleted = data => {
@@ -40,7 +36,7 @@ const generateBatches = (docs, batchSize) => {
 };
 
 const generateBatchPromise = (batch, res, { isFinal } = {}) => {
-  return DB.bulkDocs(batch).then(result => {
+  return db.medic.bulkDocs(batch).then(result => {
     let resString = JSON.stringify(result);
     resString += isFinal ? '' : ',';
     res.write(resString);
@@ -51,7 +47,7 @@ module.exports = {
   bulkDelete: (req, res, { batchSize = 100 } = {}) => {
     let docsToDelete;
     const keys = req.body.docs.map(doc => doc._id);
-    return DB.allDocs({ keys, include_docs: true })
+    return db.medic.allDocs({ keys, include_docs: true })
       .then(result => {
         docsToDelete = markAsDeleted(result);
         return utils.updateParentContacts(docsToDelete);
