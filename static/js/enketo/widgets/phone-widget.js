@@ -82,6 +82,7 @@ define( function( require, exports, module ) {
         // TODO(estellecomment): format the visible field onBlur to user-friendly format.
         var $proxyInput = $input.clone();
         $proxyInput.addClass('ignore');
+        $proxyInput.removeAttr('data-relevant');
         $proxyInput.removeAttr('name');
         $input.before( $proxyInput );
         $proxyInput.val( $input.val() );
