@@ -1,18 +1,17 @@
 const auth = require('../auth');
-const serverUtils = require('../server-utils');
 const bulkDocs = require('../services/bulk-docs');
 
 module.exports = {
   bulkDelete: (req, res, next) => {
-    auth.getUserCtx(req, function(err, userCtx) {
-      if (err) {
-        return serverUtils.error(err, req, res);
-      } else if (!auth.isAdmin(userCtx)) {
-        return serverUtils.error({ code: 401 }, req, res);
-      }
-
-      bulkDocs.bulkDelete(req.body.docs, res, { batchSize: 100 })
-        .catch(err => next(err));
-    });
+    return auth.getUserCtx(req)
+      .then(userCtx => {
+        if (!auth.isAdmin(userCtx)) {
+          const error = Error();
+          error.code = 401;
+          throw error;
+        }
+      })
+      .then(() => bulkDocs.bulkDelete(req.body.docs, res, { batchSize: 100 }))
+      .catch(err => next(err));
   }
 };

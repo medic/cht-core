@@ -86,15 +86,23 @@ module.exports = {
   },
 
   getUserCtx: function(req, callback) {
-    get('/_session', req.headers, function(err, auth) {
-      if (err) {
-        return callback({ code: 401, message: 'Not logged in', err: err });
-      }
-      if (auth && auth.userCtx && auth.userCtx.name) {
-        return callback(null, auth.userCtx);
-      }
-      callback({ code: 401, message: 'Not logged in' });
-    });
+    const _getUserCtx = (resolve, reject) => {
+      get('/_session', req.headers, function(err, auth) {
+        if (err) {
+          return reject({ code: 401, message: 'Not logged in', err: err });
+        }
+        if (auth && auth.userCtx && auth.userCtx.name) {
+          return resolve(auth.userCtx);
+        }
+        reject({ code: 401, message: 'Not logged in' });
+      });
+    };
+
+    if (!callback) {
+      return new Promise(_getUserCtx);
+    } else {
+      _getUserCtx(_.partial(callback, null), callback);
+    }
   },
 
   getFacilityId: function(req, userCtx, callback) {
