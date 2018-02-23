@@ -6,9 +6,10 @@ module.exports = {
     return auth.getUserCtx(req)
       .then(userCtx => {
         if (!auth.isAdmin(userCtx)) {
-          const error = Error();
-          error.code = 401;
-          throw error;
+          throw {
+            code: 401,
+            message: 'User is not an admin'
+          };
         }
       })
       .then(() => bulkDocs.bulkDelete(req.body.docs, res, { batchSize: 100 }))
