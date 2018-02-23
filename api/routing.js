@@ -604,18 +604,7 @@ app.postJson('/api/v1/people', function(req, res) {
   });
 });
 
-app.postJson('/api/v1/bulk-delete', function(req, res, next) {
-  auth.getUserCtx(req, function(err, userCtx) {
-    if (err) {
-      return serverUtils.error(err, req, res);
-    } else if (!auth.isAdmin(userCtx)) {
-      return serverUtils.error({ code: 401 }, req, res);
-    }
-
-    bulkDocs.bulkDelete(req, res, { batchSize: 100 })
-      .catch(err => next(err));
-  });
-});
+app.postJson('/api/v1/bulk-delete', bulkDocs.bulkDelete);
 
 // DB replication endpoint
 var changesHander = _.partial(require('./handlers/changes').request, proxy);
