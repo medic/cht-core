@@ -1,20 +1,16 @@
-const controller = require('../../../controllers/bulk-docs');
+const service = require('../../../services/bulk-docs');
 const db = require('../../../db-pouch');
 const sinon = require('sinon').sandbox.create();
 require('chai').should();
 
-const testReq = {
-  body: {
-    docs: [
-      { _id: 'a' },
-      { _id: 'b' },
-      { _id: 'c' }
-    ]
-  }
-};
+const testDocs = [
+  { _id: 'a' },
+  { _id: 'b' },
+  { _id: 'c' }
+];
 let testRes;
 
-describe('Bulk Docs', function () {
+describe('Bulk Docs Service', function () {
   beforeEach(function() {
     testRes = {
       write: sinon.stub(),
@@ -31,7 +27,7 @@ describe('Bulk Docs', function () {
   describe('Bulk Delete', function () {
     it('calls allDocs with correct args', function () {
       const allDocs = sinon.stub(db.medic, 'allDocs').resolves({ rows: [] });
-      return controller.bulkDelete(testReq, testRes)
+      return service.bulkDelete(testDocs, testRes)
         .then(() => {
           allDocs.callCount.should.equal(1);
           allDocs.firstCall.args[0].should.deep.equal({ keys: ['a', 'b', 'c'], include_docs: true });
@@ -50,7 +46,7 @@ describe('Bulk Docs', function () {
       bulkDocs.onCall(0).resolves([{ ok: true }, { ok: true }]);
       bulkDocs.onCall(1).resolves([{ ok: true }]);
 
-      return controller.bulkDelete(testReq, testRes, { batchSize: 2 })
+      return service.bulkDelete(testDocs, testRes, { batchSize: 2 })
         .then(() => {
           allDocs.callCount.should.equal(1);
           bulkDocs.callCount.should.equal(2);
