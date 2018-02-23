@@ -6,6 +6,7 @@ function(key, values) {
     }
   });
   if (latest.message) {
+    latest.message = latest.message.replace(/\n+/g, '\n');
     var code = latest.message.charCodeAt(99);
     var endPoint = 100;
     if (0xD800 <= code && code <= 0xDBFF) {
