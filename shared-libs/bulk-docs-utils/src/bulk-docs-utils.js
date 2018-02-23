@@ -11,7 +11,7 @@ module.exports = function(dependencies) {
   }
 
   return {
-    updateParentContacts: function updateParentContacts(docs) {
+    updateParentContacts: function(docs) {
       return Promise.all(docs.map(function(doc) {
         return getParent(doc)
           .then(function(parent) {
@@ -29,7 +29,7 @@ module.exports = function(dependencies) {
         });
     },
 
-    getDuplicateErrors: function getDuplicateErrors(docs) {
+    getDuplicateErrors: function(docs) {
       var errors = [];
       var dedup = [];
       docs.forEach(function(doc) {
