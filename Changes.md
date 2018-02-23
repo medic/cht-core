@@ -22,7 +22,7 @@
 
 ## 2.14.0
 
-_February 5, 2017_
+_February 22, 2017_
 
 ### Migration notes
 
@@ -41,6 +41,10 @@ _February 5, 2017_
 - [#3944](https://github.com/medic/medic-webapp/issues/3944): Unread reports bubble not working with deleted docs.
 - [#3563](https://github.com/medic/medic-webapp/issues/3563): Sentinel scheduling EDDs on a Sunday for all ANC registrations.
 - [#3821](https://github.com/medic/medic-webapp/issues/3821): Export api doesn't handle errors during export gracefully.
+- [#4111](https://github.com/medic/medic-webapp/issues/4111): Enketo or-output never shows initial value.
+- [#4166](https://github.com/medic/medic-webapp/issues/4166): People created via sentinel transitions are not replicated.
+- [#4200](https://github.com/medic/medic-webapp/issues/4200): Sentinel nulls out parent when multiple docs generated from one form submission.
+- [#4201](https://github.com/medic/medic-webapp/issues/4201): PNC schedule is not generated when a delivery report is submitted.
 
 ### UI/UX improvements
 
@@ -64,6 +68,7 @@ _February 5, 2017_
 
 - [#3950](https://github.com/medic/medic-webapp/issues/3950): Remove stats collection in API as it's no longer used.
 - [#3913](https://github.com/medic/medic-webapp/issues/3913): Sentinel's fetchHydratedDoc function should use only fetch contacts that aren't already present in the lineage list.
+- [#4174](https://github.com/medic/medic-webapp/issues/4174): Remove WebWorker for improved client database performance.
 
 ### Security
 

@@ -67,7 +67,7 @@ const booleanExpressionFails = (doc, expr) => {
     } catch (err) {
       // TODO should this count as a fail or as a real error
       logger.warn('Failed to eval boolean expression:');
-      logger.warn(err);
+      console.log(err);
       result = true;
     }
   }

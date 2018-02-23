@@ -140,15 +140,15 @@ describe('ContactSave service', () => {
 
         const savedDocs = bulkDocs.args[0][0];
 
-        assert.equal(savedDocs[0]._id, 'kid1');
-        assert.equal(savedDocs[0].parent._id, 'main1');
-        assert.equal(savedDocs[0].parent.extracted, true);
+        assert.equal(savedDocs[0]._id, 'main1');
 
-        assert.equal(savedDocs[1]._id, 'sis1');
+        assert.equal(savedDocs[1]._id, 'kid1');
         assert.equal(savedDocs[1].parent._id, 'main1');
         assert.equal(savedDocs[1].parent.extracted, true);
 
-        assert.equal(savedDocs[2]._id, 'main1');
+        assert.equal(savedDocs[2]._id, 'sis1');
+        assert.equal(savedDocs[2].parent._id, 'main1');
+        assert.equal(savedDocs[2].parent.extracted, true);
 
         assert.equal(ExtractLineage.callCount, 3);
       });

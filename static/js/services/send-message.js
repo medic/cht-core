@@ -1,6 +1,6 @@
 var _ = require('underscore'),
     uuid = require('uuid/v4'),
-    setTaskState = require('../modules/set-task-state'),
+    taskUtils = require('task-utils'),
     libphonenumber = require('libphonenumber/utils');
 
 angular.module('inboxServices').factory('SendMessage',
@@ -132,7 +132,7 @@ angular.module('inboxServices').factory('SendMessage',
           uuid: uuid()
         }]
       };
-      setTaskState(task, 'pending');
+      taskUtils.setTaskState(task, 'pending');
       return task;
     };
 

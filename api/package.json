@@ -32,6 +32,7 @@
     "request": "^2.83.0",
     "search": "file:../shared-libs/search",
     "simple-password-tester": "^1.0.0",
+    "task-utils": "file:../shared-libs/task-utils",
     "underscore": "^1.8.3",
     "url": "^0.11.0",
     "uuid": "^3.1.0",

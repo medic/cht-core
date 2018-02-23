@@ -1,6 +1,7 @@
 var controller = require('../../../controllers/messages'),
     db = require('../../../db'),
-    sinon = require('sinon').sandbox.create();
+    sinon = require('sinon').sandbox.create(),
+    taskUtils = require('task-utils');
 
 exports.tearDown = function (callback) {
   sinon.restore();
@@ -125,6 +126,7 @@ exports['updateMessageTaskStates takes a collection of state changes and saves i
   ]});
 
   const bulk = sinon.stub(db.medic, 'bulk').callsArgWith(1, null, []);
+  const setTaskState = sinon.stub(taskUtils, 'setTaskState');
 
   controller.updateMessageTaskStates([
     {
@@ -139,12 +141,12 @@ exports['updateMessageTaskStates takes a collection of state changes and saves i
   ], (err, result) => {
     test.equal(err, null);
     test.deepEqual(result, {success: true});
+    test.equal(setTaskState.callCount, 2);
+    test.deepEqual(setTaskState.getCall(0).args, [{ messages: [{uuid: 'testMessageId1'}]}, 'testState1', undefined]);
+    test.deepEqual(setTaskState.getCall(1).args, [{ messages: [{uuid: 'testMessageId2'}]}, 'testState2', 'Just because.']);
 
     const doc = bulk.args[0][0].docs[0];
     test.equal(doc._id, 'testDoc');
-    test.equal(doc.tasks[0].state, 'testState1');
-    test.equal(doc.scheduled_tasks[0].state, 'testState2');
-    test.equal(doc.scheduled_tasks[0].state_details, 'Just because.');
 
     test.done();
   });

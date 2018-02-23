@@ -71,6 +71,7 @@ exports['set all due scheduled tasks to pending'] = function(test) {
   };
   var saveDoc = sinon.spy(audit, 'saveDoc');
   var hydrate = sinon.stub(lineage, 'hydrateDocs').returns(Promise.resolve([ doc ]));
+  var setTaskState = sinon.stub(utils, 'setTaskState');
 
   schedule({ medic: db }, audit, function(err) {
     test.equals(err, undefined);
@@ -78,13 +79,9 @@ exports['set all due scheduled tasks to pending'] = function(test) {
     test.equals(saveDoc.callCount, 1);
     var saved = saveDoc.firstCall.args[0];
     test.equals(saved.scheduled_tasks.length, 2);
-    test.equals(saved.scheduled_tasks[0].due, due);
-    test.equals(saved.scheduled_tasks[0].state, 'pending');
-    test.equals(saved.scheduled_tasks[0].state_history.length, 1);
-    test.equals(saved.scheduled_tasks[0].state_history[0].state, 'pending');
-    test.ok(!!saved.scheduled_tasks[0].state_history[0].timestamp);
-    test.equals(saved.scheduled_tasks[1].due, notDue);
-    test.equals(saved.scheduled_tasks[1].state, 'scheduled');
+    test.equals(setTaskState.callCount, 1);
+    test.ok(setTaskState.calledWithMatch({due: due, state: 'scheduled'}, 'pending'));
+
     test.equals(hydrate.callCount, 1);
     test.deepEqual(hydrate.args[0][0], [ doc ]);
     test.done();
@@ -93,7 +90,7 @@ exports['set all due scheduled tasks to pending'] = function(test) {
 };
 
 exports['set all due scheduled tasks to pending and handles repeated rows'] = function(test) {
-  test.expect(9);
+  test.expect(7);
 
   var due = moment().toISOString();
   var notDue = moment().add(7, 'days').toISOString();
@@ -135,25 +132,24 @@ exports['set all due scheduled tasks to pending and handles repeated rows'] = fu
     }
   };
   var saveDoc = sinon.spy(audit, 'saveDoc');
+  var setTaskState = sinon.stub(utils, 'setTaskState');
 
   schedule({ medic: db }, audit, function(err) {
     test.equals(err, undefined);
     test.equals(view.callCount, 1);
     test.equals(saveDoc.callCount, 1);
     test.equals(hydrate.callCount, 1);
+    test.equals(setTaskState.callCount, 1);
+    test.ok(setTaskState.calledWithMatch({ due: due, state: 'scheduled'}, 'pending'));
     var saved = saveDoc.firstCall.args[0];
     test.equals(saved.scheduled_tasks.length, 2);
-    test.equals(saved.scheduled_tasks[0].due, due);
-    test.equals(saved.scheduled_tasks[0].state, 'pending');
-    test.equals(saved.scheduled_tasks[1].due, notDue);
-    test.equals(saved.scheduled_tasks[1].state, 'scheduled');
     test.done();
   });
 
 };
 
 exports['set all due scheduled tasks to pending and handles nonrepeated rows'] = function(test) {
-  test.expect(9);
+  test.expect(5);
 
   var due = moment().toISOString();
   var id1 = 'xyz';
@@ -201,19 +197,14 @@ exports['set all due scheduled tasks to pending and handles nonrepeated rows'] =
     }
   };
   var saveDoc = sinon.spy(audit, 'saveDoc');
+  var setTaskState = sinon.stub(utils, 'setTaskState');
 
   schedule({ medic: db }, audit, function(err) {
     test.equals(err, undefined);
     test.equals(view.callCount, 1);
     test.equals(saveDoc.callCount, 2);
-    var saved1 = saveDoc.firstCall.args[0];
-    test.equals(saved1.scheduled_tasks.length, 1);
-    test.equals(saved1.scheduled_tasks[0].due, due);
-    test.equals(saved1.scheduled_tasks[0].state, 'pending');
-    var saved2 = saveDoc.secondCall.args[0];
-    test.equals(saved2.scheduled_tasks.length, 1);
-    test.equals(saved2.scheduled_tasks[0].due, due);
-    test.equals(saved2.scheduled_tasks[0].state, 'pending');
+    test.equals(setTaskState.callCount, 2);
+    test.ok(setTaskState.alwaysCalledWithMatch({ due: due, state: 'scheduled'}));
     test.done();
   });
 
@@ -227,6 +218,7 @@ exports['generates the messages for all due scheduled tasks'] = test => {
   const translate = sinon.stub(utils, 'translate').returns('Please visit {{patient_name}} asap');
   const getRegistrations = sinon.stub(utils, 'getRegistrations').callsArgWith(1, null, []);
   const getPatientContact = sinon.stub(utils, 'getPatientContact').callsArgWith(2, null, { name: 'jim' });
+  const setTaskState = sinon.stub(utils, 'setTaskState');
 
   const db = {
     view: () => {}
@@ -314,6 +306,7 @@ exports['generates the messages for all due scheduled tasks'] = test => {
     test.equals(getRegistrations.callCount, 1);
     test.equals(getPatientContact.callCount, 1);
     test.equals(getPatientContact.args[0][1], '123');
+    test.equals(setTaskState.callCount, 1);
     const saved = saveDoc.firstCall.args[0];
     test.equals(saved.scheduled_tasks.length, 2);
     test.equals(saved.scheduled_tasks[0].messages.length, 1);

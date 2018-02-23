@@ -186,13 +186,24 @@ exports['fetchHydratedDoc handles non-lineage types with empty lineages'] = test
   });
 };
 
-exports['fetchHydratedDoc handles doc with deleted parent'] = test => {
+exports['fetchHydratedDoc handles doc with unknown parent by leaving just the stub'] = test => {
   const docId = 'abc';
-  sinon.stub(db.medic, 'view').callsArgWith(3, null, { rows: [ { doc: { _id: 'abc', contact: { _id: 'def' } } }, { doc: null } ] });
-  sinon.stub(db.medic, 'fetch').callsArgWith(1, null, { rows: [ { doc: { _id: 'cba' } }, { doc: { _id: 'def' } } ] });
+  sinon.stub(db.medic, 'view').callsArgWith(3, null, { rows: [
+    { doc: { _id: 'abc', contact: { _id: 'def' }, parent: { _id: 'ghi', parent: { _id: 'jkl' } } } },
+    { doc: null },
+    { doc: { _id: 'jkl', name: 'district' } }
+  ] });
+  sinon.stub(db.medic, 'fetch').callsArgWith(1, null, { rows: [
+    { doc: { _id: 'cba' } },
+    { doc: { _id: 'def' } }
+  ] });
   lineage.fetchHydratedDoc(docId)
   .then(actual => {
-    test.deepEqual(actual, { _id: 'abc', contact: { _id: 'def' }, parent: null });
+    test.deepEqual(actual, {
+      _id: 'abc',
+      contact: { _id: 'def' },
+      parent: { _id: 'ghi', parent: { _id: 'jkl', name: 'district' } }
+    });
     test.done();
   })
   .catch(err => {
@@ -201,12 +212,49 @@ exports['fetchHydratedDoc handles doc with deleted parent'] = test => {
   });
 };
 
+exports['fetchHydratedDoc handles doc with unknown contact by leaving just the stub'] = test => {
+  const docId = 'abc';
+  sinon.stub(db.medic, 'view').callsArgWith(3, null, { rows: [
+    { doc: { _id: 'abc', type: 'data_record', contact: { _id: 'def', parent: { _id: 'ghi', parent: { _id: 'jkl' } } } } },
+    { doc: null },
+    { doc: { _id: 'ghi', name: 'clinic' } },
+    { doc: { _id: 'jkl', name: 'district' } }
+  ] });
+  sinon.stub(db.medic, 'fetch').callsArgWith(1, null, { rows: [
+    { doc: { _id: 'cba' } },
+    { doc: { _id: 'def', parent: { _id: 'ghi', parent: { _id: 'jkl' } } } }
+  ] });
+  lineage.fetchHydratedDoc(docId)
+    .then(actual => {
+      test.deepEqual(actual, {
+        _id: 'abc',
+        type: 'data_record',
+        contact: {
+          _id: 'def',
+          parent: {
+            _id: 'ghi',
+            name: 'clinic',
+            parent: {
+              _id: 'jkl',
+              name: 'district'
+            }
+          }
+        }
+      });
+      test.done();
+    })
+    .catch(err => {
+      test.fail(err);
+      test.done();
+    });
+};
+
 exports['fetchHydratedDoc handles missing contacts'] = test => {
   const docId = 'abc';
   sinon.stub(db.medic, 'view').callsArgWith(3, null, { rows: [ { doc: { _id: 'abc', contact: { _id: 'xyz' } } } ] });
   sinon.stub(db.medic, 'fetch').callsArgWith(1, null, { rows: [ { doc: null }] });
   lineage.fetchHydratedDoc(docId).then(actual => {
-    test.deepEqual(actual, { _id: 'abc', contact: { _id: 'xyz' }, parent: undefined });
+    test.deepEqual(actual, { _id: 'abc', contact: { _id: 'xyz' } });
     test.done();
   });
 };
@@ -668,5 +716,38 @@ exports['hydrateDocs ignores db-fetch errors'] = test => {
 
     test.done();
   }).catch(test.done);
+};
+
+exports['fetchHydratedDoc works for SMS reports'] = test => {
+  const view = sinon.stub(db.medic, 'view');
+  let doc = {
+    _id: 'some_id',
+    type: 'data_record',
+    from: '123',
+    form: 'D',
+    fields: {},
+    sms_message: {
+      message_id: '76992',
+      message: 'somemessage',
+      from: '123',
+      type: 'sms_message',
+      form: 'D'
+    }
+  };
+
+  view.onCall(0).callsArgWith(3, null, { rows: [{ doc: doc }] });
+  lineage
+    .fetchHydratedDoc(doc._id)
+    .then(() => {
+      test.equals(view.callCount, 1);
+      test.done();
+    })
+    .catch(err => {
+      test.equals(err instanceof TypeError, true);
+      test.equals(err.message, 'Cannot read property \'parent\' of undefined');
+      test.equals(view.callCount, 1);
+      test.ok(false, 'fails with error: '+ err.message);
+      test.done();
+    });
 
 };
