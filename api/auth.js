@@ -114,7 +114,7 @@ module.exports = {
   },
 
   check: function(req, permissions, districtId, callback) {
-    const doIt = (resolve, reject) => {
+    const _check = (resolve, reject) => {
       module.exports.getUserCtx(req, function(err, userCtx) {
         if (err) {
           return reject(err);
@@ -140,9 +140,9 @@ module.exports = {
     };
 
     if (!callback) {
-      return new Promise(doIt);
+      return new Promise(_check);
     } else {
-      doIt(_.partial(callback, null), callback);
+      _check(_.partial(callback, null), callback);
     }
   },
 
