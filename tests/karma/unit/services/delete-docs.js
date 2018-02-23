@@ -4,23 +4,31 @@ describe('DeleteDocs service', function() {
 
   var service,
       get,
-      bulkDocs;
+      bulkDocs,
+      isAdmin,
+      server;
 
   beforeEach(function() {
     get = sinon.stub();
     bulkDocs = sinon.stub();
+    isAdmin = sinon.stub();
+    isAdmin.returns(false);
     module('inboxApp');
     module(function ($provide) {
       $provide.factory('DB', KarmaUtils.mockDB({ bulkDocs: bulkDocs, get: get }));
       $provide.value('$q', Q); // bypass $q so we don't have to digest
+      $provide.value('Session', { isAdmin: isAdmin });
     });
     inject(function(_DeleteDocs_) {
       service = _DeleteDocs_;
     });
+    server = sinon.fakeServer.create();
+    server.respondImmediately = true;
   });
 
   afterEach(function() {
     KarmaUtils.restore(get, bulkDocs);
+    server.restore();
   });
 
   it('returns bulkDocs errors', function(done) {
@@ -72,24 +80,6 @@ describe('DeleteDocs service', function() {
       });
   });
 
-  it('does not allow deleting duplicate docs', function(done) {
-    var clinic = {
-      _id: 'b',
-      type: 'clinic',
-      contact: {
-        name: 'sally',
-        phone: '+555'
-      }
-    };
-    service([ clinic, clinic ])
-      .then(function() {
-        done(new Error('expected error to be thrown'));
-      })
-      .catch(function() {
-        done();
-      });
-  });
-
   it('does not allow deleting child and parent that will conflict', function(done) {
     var clinic = {
       _id: 'b',
@@ -118,7 +108,7 @@ describe('DeleteDocs service', function() {
   });
 
   it('marks the record deleted', function() {
-    bulkDocs.returns(Promise.resolve());
+    bulkDocs.returns(Promise.resolve([]));
     var record = {
       _id: 'xyz',
       _rev: '123',
@@ -138,7 +128,7 @@ describe('DeleteDocs service', function() {
   });
 
   it('marks multiple records deleted', function() {
-    bulkDocs.returns(Promise.resolve());
+    bulkDocs.returns(Promise.resolve([]));
     var record1 = {
       _id: 'xyz',
       _rev: '123',
@@ -170,88 +160,38 @@ describe('DeleteDocs service', function() {
     });
   });
 
-  it('updates clinic deleted person is contact for', function() {
-    var clinic = {
-      _id: 'b',
-      type: 'clinic',
-      contact: {
-        _id: 'a',
-        name: 'sally'
-      }
-    };
-    var person = {
-      _id: 'a',
-      type: 'person',
-      name: 'sally',
-      parent: {
-        _id: 'b'
-      }
-    };
-    get.returns(Promise.resolve(clinic));
-    bulkDocs.returns(Promise.resolve());
-    return service(person).then(function() {
-      chai.expect(get.callCount).to.equal(1);
-      chai.expect(get.args[0][0]).to.equal(clinic._id);
-      chai.expect(bulkDocs.callCount).to.equal(1);
-      chai.expect(bulkDocs.args[0][0].length).to.equal(2);
-      chai.expect(bulkDocs.args[0][0][0]._id).to.equal(person._id);
-      chai.expect(bulkDocs.args[0][0][0]._deleted).to.equal(true);
-      chai.expect(bulkDocs.args[0][0][1]._id).to.equal(clinic._id);
-      chai.expect(bulkDocs.args[0][0][1].contact).to.equal(null);
+  it('sends a direct request to the server when user is an admin', function() {
+    var record1 = { _id: 'xyz', _rev: '1' };
+    var record2 = { _id: 'abc', _rev: '1' };
+    var expected1 = { _id: 'xyz' };
+    var expected2 = { _id: 'abc' };
+    server.respondWith([200, { 'Content-Type': 'application/json' }, '{ "hello": "there" }']);
+    isAdmin.returns(true);
+    return service([ record1, record2 ]).then(function() {
+      chai.expect(server.requests).to.have.lengthOf(1);
+      chai.expect(server.requests[0].url).to.equal('/api/v1/bulk-delete');
+      chai.expect(server.requests[0].requestBody).to.equal(JSON.stringify({
+        docs: [expected1, expected2]
+      }));
+      chai.expect(bulkDocs.callCount).to.equal(0);
     });
   });
 
-  it('does not update clinic when id does not match', function() {
-    var clinic = {
-      _id: 'b',
-      type: 'clinic',
-      contact: {
-        _id: 'c',
-        name: 'sally'
-      }
-    };
-    var person = {
-      _id: 'a',
-      type: 'person',
-      name: 'sally',
-      parent: {
-        _id: 'b'
-      }
-    };
-    get.returns(Promise.resolve(clinic));
-    bulkDocs.returns(Promise.resolve());
-    return service(person).then(function() {
-      chai.expect(get.callCount).to.equal(1);
-      chai.expect(get.args[0][0]).to.equal(clinic._id);
-      chai.expect(bulkDocs.callCount).to.equal(1);
-      chai.expect(bulkDocs.args[0][0].length).to.equal(1);
-      chai.expect(bulkDocs.args[0][0][0]._id).to.equal(person._id);
-      chai.expect(bulkDocs.args[0][0][0]._deleted).to.equal(true);
-    });
-  });
-
-  it('handles the parents contact being null - #2416', function() {
-    var clinic = {
-      _id: 'b',
-      type: 'clinic'
-    };
-    var person = {
-      _id: 'a',
-      type: 'person',
-      name: 'sally',
-      parent: {
-        _id: 'b'
-      }
-    };
-    get.returns(Promise.resolve(clinic));
-    bulkDocs.returns(Promise.resolve());
-    return service(person).then(function() {
-      chai.expect(get.callCount).to.equal(1);
-      chai.expect(get.args[0][0]).to.equal(clinic._id);
-      chai.expect(bulkDocs.callCount).to.equal(1);
-      chai.expect(bulkDocs.args[0][0].length).to.equal(1);
-      chai.expect(bulkDocs.args[0][0][0]._id).to.equal(person._id);
-      chai.expect(bulkDocs.args[0][0][0]._deleted).to.equal(true);
+  it('fires the progress event handler on progress events', function(done) {
+    var record1 = { _id: 'xyz' };
+    var record2 = { _id: 'abc' };
+    var onProgress = sinon.spy();
+    var response = '[[{"ok": true}, {"ok": true}],';
+    server.respondWith([200, { 'Content-Type': 'application/json' }, response]);
+    isAdmin.returns(true);
+    service([ record1, record2 ], { progress: onProgress })
+      .then(() => {
+        done(Error('Should have thrown')); // The onload handler should throw an error due to partial json
+      })
+      .catch(function() {
+        chai.expect(onProgress.callCount).to.equal(1);
+        chai.expect(onProgress.getCall(0).args[0]).to.equal(2);
+        done();
     });
   });
 
@@ -274,13 +214,12 @@ describe('DeleteDocs service', function() {
     };
     var docs = [ person ];
     get.returns(Promise.resolve(clinic));
-    bulkDocs.returns(Promise.resolve());
+    bulkDocs.returns(Promise.resolve([]));
     return service(docs).then(function() {
       chai.expect(docs.length).to.equal(1);
       chai.expect(bulkDocs.args[0][0].length).to.equal(2);
     });
   });
-
 
   it('minifies lineage for circular referenced report #4076', function() {
     var clinic = {
@@ -305,7 +244,7 @@ describe('DeleteDocs service', function() {
     };
 
     var docs = [ report ];
-    bulkDocs.returns(Promise.resolve());
+    bulkDocs.returns(Promise.resolve([]));
     var isCircularBefore = false;
     var isCircularAfter = false;
     try {

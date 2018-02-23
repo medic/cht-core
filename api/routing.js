@@ -33,6 +33,7 @@ const _ = require('underscore'),
       people = require('./controllers/people'),
       upgrade = require('./controllers/upgrade'),
       fti = require('./controllers/fti'),
+      bulkDocs = require('./controllers/bulk-docs'),
       createDomain = require('domain').create,
       staticResources = /\/(templates|static)\//,
       favicon = /\/icon_\d+.ico$/,
@@ -602,6 +603,8 @@ app.postJson('/api/v1/people', function(req, res) {
     });
   });
 });
+
+app.postJson('/api/v1/bulk-delete', bulkDocs.bulkDelete);
 
 // DB replication endpoint
 var changesHander = _.partial(require('./handlers/changes').request, proxy);

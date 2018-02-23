@@ -276,6 +276,7 @@ module.exports = function(grunt) {
       sharedLibUnit: {
         cmd:  function() {
           var sharedLibs = [
+            'bulk-docs-utils',
             'search',
             'task-utils'
           ];

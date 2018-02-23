@@ -56,6 +56,8 @@ audit history where required.
   - [POST /api/v1/users](#post-apiv1users)
   - [POST /api/v1/users/{{username}}](#post-apiv1usersusername)
   - [DELETE /api/v1/users/{{username}}](#delete-apiv1usersusername)
+- [Bulk Operations](#bulk)
+ - [POST /api/v1/bulk-delete](#post-apiv1bulkdelete)
 
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
 
@@ -1018,7 +1020,7 @@ will be undefined.
 | Key | Description | Details
 | -------- | ----------------- | ------
 | type     | User permission type, maps to a collection of roles | You must provide either a type or a collection of roles
-| roles    | Speciofic collection of roles  |  
+| roles    | Speciofic collection of roles  |
 | place    | Place identifier string (UUID) or object this user resides in. | Required if your type / roles contain `district-manager`
 | contact  | A person object based on the form configured in the app. | Required if your type / roles contain `district-manager
 
@@ -1261,6 +1263,65 @@ DELETE /api/v1/users/mary
 
 ```
 HTTP/1.1 200 OK
+```
+
+# Bulk Operations
+
+## POST /api/v1/bulk-delete
+
+Bulk delete endpoint for deleting large numbers of documents. Docs will be batched into groups of 100 and will be sent sequentially to couch (new batch sent after the previous one has returned). The response will be chunked JSON (one batch at a time), so if you wish to get an indication of progress you will need to parse incomplete JSON (with a library such as this one https://github.com/indgov/partial-json-parser).
+
+### Permissions
+
+Available to users with role `_admin` or `national_admin`.
+
+
+### Parameters
+
+| Parameter | Description
+| --------- | -----------------
+| docs      | Array of JSON objects with `_id` properties
+
+An array of objects each with an `_id` property is required (rather than an array of strings representing ids) to ensure forwards compatibility if we choose to require that any additional document information (such as `_rev`) also be passed in to this endpoint.
+
+### Errors
+
+If an error is encountered part-way through the response (eg on the third batch), it's impossible to send new headers to indicate a 5xx error, so the connection will simply be terminated (as recommended here https://github.com/expressjs/express/issues/2700).
+
+### Examples
+
+```
+POST /api/v1/bulk-delete
+Content-Type: application/json
+
+{
+  "docs": [
+    { "_id": "id1" },
+    { "_id": "id2" },
+    ...
+    { "_id": "id150" }
+  ]
+}
+```
+
+```
+HTTP/1.1 200 OK
+Content-Type: application/json
+
+[
+  [
+    { "ok": true, "id": "id1", "rev": "1-rev1" },
+    { "ok": true, "id": "id2", "rev": "1-rev2" },
+    ...
+    { "ok": true, "id": "id100", "rev": "1-rev100" }
+  ],
+  [
+    { "ok": true, "id": "id101", "rev": "1-rev101" },
+    { "ok": true, "id": "id102", "rev": "1-rev102" },
+    ...
+    { "ok": true, "id": "id150", "rev": "1-rev150" }
+  ]
+]
 ```
 
 # Upgrades
