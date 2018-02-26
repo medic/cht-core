@@ -6,15 +6,37 @@ module.exports = function(dependencies) {
   dependencies = dependencies || {};
   var Promise = dependencies.Promise;
 
-  var fetchPatientLineage = function fetchPatientLineage(record) {
-    var patientId = findPatientId(record);
-    if (!patientId) {
-      return Promise.resolve([]);
+  var buildHydratedDoc = function(doc, lineage) {
+    if (!doc) {
+      return doc;
     }
-    return patientLineageByShortcode(patientId);
+    var current = doc;
+    if (doc.type === 'data_record') {
+      doc.contact = lineage.shift();
+      current = doc.contact;
+    }
+    while (current) {
+      current.parent = lineage.shift();
+      current = current.parent;
+    }
   };
 
-  var mergeLineages = function mergeLineages(lineage, patientLineage) {
+  var fillContactsInDocs = function(docs, contacts) {
+    if (!contacts || !contacts.length) {
+      return docs;
+    }
+    contacts.forEach(function(contactDoc) {
+      docs.forEach(function(doc) {
+        var id = doc && doc.contact && doc.contact._id;
+        if (id === contactDoc._id) {
+          doc.contact = contactDoc;
+        }
+      });
+    });
+    return docs;
+  };
+
+  var mergeLineages = function(lineage, patientLineage) {
     var lineages = lineage.concat(patientLineage);
     var contactIds = _.uniq(
       lineages
@@ -57,58 +79,7 @@ module.exports = function(dependencies) {
     });
   };
 
-  var findPatientId = function findPatientId(doc) {
-    return (
-      doc.type === 'data_record' &&
-      ((doc.fields && doc.fields.patient_id) || doc.patient_id)
-    );
-  };
-
-  var fillContactsInDocs = function fillContactsInDocs(docs, contacts) {
-    if (!contacts || !contacts.length) {
-      return docs;
-    }
-    contacts.forEach(function(contactDoc) {
-      docs.forEach(function(doc) {
-        var id = doc && doc.contact && doc.contact._id;
-        if (id === contactDoc._id) {
-          doc.contact = contactDoc;
-        }
-      });
-    });
-    return docs;
-  };
-
-  var buildHydratedDoc = function buildHydratedDoc(doc, lineage) {
-    if (!doc) {
-      return doc;
-    }
-    var current = doc;
-    if (doc.type === 'data_record') {
-      doc.contact = lineage.shift();
-      current = doc.contact;
-    }
-    while (current) {
-      current.parent = lineage.shift();
-      current = current.parent;
-    }
-  };
-
-  var minifyContact = function minifyContact(contact) {
-    if (!contact) {
-      return contact;
-    }
-    var result = { _id: contact._id };
-    var minified = result;
-    while (contact.parent) {
-      minified.parent = { _id: contact.parent._id };
-      minified = minified.parent;
-      contact = contact.parent;
-    }
-    return result;
-  };
-
-  var patientLineageByShortcode = function patientLineageByShortcode(shortcode) {
+  var patientLineageByShortcode = function(shortcode) {
     return new Promise(function(resolve, reject) {
       return utils.getPatientContactUuid(db, shortcode, function(err, uuid) {
         if (err) {
@@ -122,7 +93,22 @@ module.exports = function(dependencies) {
     });
   };
 
-  var lineageById = function lineageById(id) {
+  var findPatientId = function(doc) {
+    return (
+      doc.type === 'data_record' &&
+      ((doc.fields && doc.fields.patient_id) || doc.patient_id)
+    );
+  };
+
+  var fetchPatientLineage = function(record) {
+    var patientId = findPatientId(record);
+    if (!patientId) {
+      return Promise.resolve([]);
+    }
+    return patientLineageByShortcode(patientId);
+  };
+
+  var lineageById = function(id) {
     return new Promise(function(resolve, reject) {
       return db.medic.view(
         'medic-client',
@@ -147,7 +133,7 @@ module.exports = function(dependencies) {
     });
   };
 
-  var fetchHydratedDoc = function fetchHydratedDoc(id) {
+  var fetchHydratedDoc = function(id) {
     return lineageById(id).then(function(lineage) {
       if (lineage.length === 0) {
         // Not a doc that has lineage, just do a normal fetch.
@@ -169,7 +155,7 @@ module.exports = function(dependencies) {
   };
 
   // for data_records, include the first-level contact.
-  var collectParentIds = function collectParentIds(docs) {
+  var collectParentIds = function(docs) {
     var ids = [];
     docs.forEach(function(doc) {
       var parent = doc.parent;
@@ -192,9 +178,7 @@ module.exports = function(dependencies) {
   };
 
   // for data_records, doesn't include the first-level contact (it counts as a parent).
-  var collectLeafContactIds = function collectLeafContactIds(
-    partiallyHydratedDocs
-  ) {
+  var collectLeafContactIds = function(partiallyHydratedDocs) {
     var ids = [];
     partiallyHydratedDocs.forEach(function(doc) {
       var current = doc;
@@ -212,7 +196,7 @@ module.exports = function(dependencies) {
     return _.uniq(ids);
   };
 
-  var fetchDocs = function fetchDocs(ids) {
+  var fetchDocs = function(ids) {
     return new Promise(function(resolve, reject) {
       if (!ids || !ids.length) {
         return resolve([]);
@@ -234,7 +218,7 @@ module.exports = function(dependencies) {
     });
   };
 
-  var hydrateParents = function hydrateParents(docs, parents) {
+  var hydrateParents = function(docs, parents) {
     if (!parents || !parents.length) {
       return docs;
     }
@@ -268,7 +252,7 @@ module.exports = function(dependencies) {
     return docs;
   };
 
-  var hydrateLeafContacts = function hydrateLeafContacts(docs, contacts) {
+  var hydrateLeafContacts = function(docs, contacts) {
     var subDocsToHydrate = [];
     docs.forEach(function(doc) {
       var current = doc;
@@ -284,7 +268,7 @@ module.exports = function(dependencies) {
     return docs;
   };
 
-  var hydratePatient = function hydratePatient(doc) {
+  var hydratePatient = function(doc) {
     return fetchPatientLineage(doc).then(function(patientLineage) {
       if (patientLineage.length) {
         var patientDoc = patientLineage.shift();
@@ -295,13 +279,13 @@ module.exports = function(dependencies) {
     });
   };
 
-  var hydratePatients = function hydratePatients(docs) {
+  var hydratePatients = function(docs) {
     return Promise.all(docs.map(hydratePatient)).then(function() {
       return docs;
     });
   };
 
-  var hydrateDocs = function hydrateDocs(docs) {
+  var hydrateDocs = function(docs) {
     if (!docs.length) {
       return Promise.resolve([]);
     }
@@ -316,6 +300,20 @@ module.exports = function(dependencies) {
         hydrateLeafContacts(hydratedDocs, contacts);
         return hydratePatients(hydratedDocs);
       });
+  };
+
+  var minifyContact = function(contact) {
+    if (!contact) {
+      return contact;
+    }
+    var result = { _id: contact._id };
+    var minified = result;
+    while (contact.parent) {
+      minified.parent = { _id: contact.parent._id };
+      minified = minified.parent;
+      contact = contact.parent;
+    }
+    return result;
   };
 
   return {
