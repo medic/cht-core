@@ -118,6 +118,7 @@
       .get('_design/medic-client')
       .then(function() {
         // ddoc found - bootstrap immediately
+        localDb.close();
         callback();
       })
       .catch(function() {
@@ -128,10 +129,14 @@
           .then(function() {
             // replication complete - bootstrap angular
             $('.bootstrap-layer .status').text('Starting app…');
-            callback();
           })
           .catch(function(err) {
-            if (err.status === 401) {
+            return err;
+          })
+          .then(function(err) {
+            localDb.close();
+            remoteDb.close();
+            if (err && err.status === 401) {
               return redirectToLogin(dbInfo, err, callback);
             }
             callback(err);
