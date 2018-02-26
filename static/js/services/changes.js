@@ -63,7 +63,8 @@ angular.module('inboxServices').factory('Changes',
           live: true,
           since: meta ? dbs.meta.lastSeq : dbs.medic.lastSeq,
           timeout: false,
-          include_docs: true
+          include_docs: true,
+          return_docs: false,
         })
         .on('change', function(change) {
           notifyAll(meta, change);
