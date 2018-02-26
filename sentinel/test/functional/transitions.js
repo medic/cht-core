@@ -45,7 +45,7 @@ exports['transitions are only executed once if successful'] = function(test) {
     var change2 = {
       id: 'abc',
       seq: '45',
-      doc: saveDoc.args[0][0]
+      doc: saved
     };
     transitions.applyTransitions({ audit: audit, change: change2 }, function() {
       // not updated

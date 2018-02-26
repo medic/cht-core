@@ -13,7 +13,7 @@ const _ = require('underscore'),
       db = require('../db'),
       PROCESSING_DELAY = 50, // ms
       PROGRESS_REPORT_INTERVAL = 500, // items
-      transitions = {};
+      transitions = [];
 
 let changesFeed;
 
@@ -22,6 +22,7 @@ let caughtUpOnce;
 
 /*
  * Add new transitions here to make them available for configuration and execution.
+ * Transitions are executed in the order they appear in this array.
  *
  * (For security reasons, we want to avoid doing a `require` based on random input,
  *  hence we maintain this index of transitions.)
@@ -250,7 +251,7 @@ const loadTransition = key => {
   if (transition.init) {
     transition.init();
   }
-  transitions[key] = transition;
+  transitions.push({ key: key, module: transition });
 };
 
 /*
@@ -258,11 +259,8 @@ const loadTransition = key => {
  * repeatable logic, assuming all transitions are repeatable without adverse
  * effects.
  */
-const canRun = options => {
-  const key = options.key,
-        change = options.change,
-        doc = change.doc,
-        transition = options.transition;
+const canRun = ({ key, change, transition }) => {
+  const doc = change.doc;
 
   const isRevSame = () => {
     if (doc.transitions && doc.transitions[key]) {
@@ -280,14 +278,11 @@ const canRun = options => {
    * equal to transition rev.  If revs are the same then transition just ran.
    */
   return Boolean(
+    change &&
+    !change.deleted &&
     doc &&
-    options &&
-    options.change &&
-    !options.change.deleted &&
-    transition &&
-    typeof transition.filter === 'function' &&
-    transition.filter(doc) &&
-    !isRevSame()
+    !isRevSame(doc) &&
+    transition.filter(doc)
   );
 };
 
@@ -296,11 +291,7 @@ const canRun = options => {
  * did nothing and saving is unnecessary.  If results has a true value in
  * it then a change was made.
  */
-const finalize = (options, callback) => {
-  const change = options.change,
-        audit = options.audit,
-        results = options.results;
-
+const finalize = ({ change, audit, results }, callback) => {
   logger.debug(`transition results: ${JSON.stringify(results)}`);
 
   const changed = _.some(results, i => Boolean(i));
@@ -333,13 +324,7 @@ const finalize = (options, callback) => {
  * transitions (updates) to a document with the cost of a single database
  * change/write.
  */
-const applyTransition = (options, callback) => {
-
-  const key = options.key,
-        change = options.change,
-        transition = options.transition,
-        audit = options.audit,
-        db = options.db;
+const applyTransition = ({ key, change, transition, audit, db }, callback) => {
 
   const _setProperty = (property, value) => {
     const doc = change.doc;
@@ -385,23 +370,24 @@ const applyTransition = (options, callback) => {
   });
 };
 
-const applyTransitions = (options, callback) => {
-  const operations = [];
-  _.each(transitions, (transition, key) => {
-    const opts = {
-      key: key,
-      change: options.change,
-      transition: transition,
-      audit: options.audit,
-      db: options.db
-    };
-    if (!canRun(opts)) {
-      logger.debug(
-        `canRun test failed on transition ${key} for seq ${options.change.seq} doc ${options.change.id}`);
-      return;
-    }
-    operations.push(cb => applyTransition(opts, cb));
-  });
+const applyTransitions = ({ change, audit, db }, callback) => {
+  const operations = transitions
+    .map(transition => {
+      const opts = {
+        key: transition.key,
+        change: change,
+        transition: transition.module,
+        audit: audit,
+        db: db
+      };
+      if (!canRun(opts)) {
+        logger.debug(
+          `canRun test failed on transition ${transition.key} for seq ${change.seq} doc ${change.id}`);
+        return;
+      }
+      return _.partial(applyTransition, opts, _);
+    })
+    .filter(transition => !!transition);
 
   /*
    * Run transitions in series and finalize. We ignore err here
@@ -411,8 +397,8 @@ const applyTransitions = (options, callback) => {
    */
   async.series(operations, (err, results) =>
     finalize({
-      change: options.change,
-      audit: options.audit,
+      change: change,
+      audit: audit,
       results: results
     }, callback));
 };
