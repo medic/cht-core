@@ -120,11 +120,9 @@ angular.module('inboxControllers').controller('ConfigurationUpgradeCtrl',
             .then(function(msg) {
               $log.error(msg, err);
               $scope.error = msg;
+              $scope.upgrading = false;
+              $scope.versionCandidate = false;
             });
-        })
-        .then(function() {
-          $scope.upgrading = false;
-          $scope.versionCandidate = false;
         });
     };
 
