@@ -449,7 +449,8 @@ var init = function(since) {
     since: since,
     heartbeat: true,
     feed: 'longpoll',
-    include_docs: true
+    include_docs: true,
+    return_docs: false,
   };
   db.medic.changes(options, function(err, changes) {
     if (!err) {
