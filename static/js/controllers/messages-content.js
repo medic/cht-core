@@ -85,7 +85,7 @@ angular.module('inboxControllers').controller('MessagesContentCtrl',
       }
       $q.all([
         getContact(id),
-        MessageContacts({ id: id })
+        MessageContacts.conversation(id)
       ])
         .then(function(results) {
           var contactModel = results[0];
@@ -118,15 +118,14 @@ angular.module('inboxControllers').controller('MessagesContentCtrl',
     var updateConversation = function(options) {
       var selectedId = $scope.selected && $scope.selected.id;
       if (selectedId) {
-        options = options || {};
-        var opts = { id: selectedId };
-        if (options.skip) {
-          opts.skip = $scope.selected.messages.length;
+        var skip = options.skip && $scope.selected.messages.length;
+        if (skip) {
           $timeout(function() {
             $scope.loadingMoreContent = true;
           });
         }
-        MessageContacts(opts)
+
+        MessageContacts.conversation(selectedId, skip)
           .then(function(data) {
             $scope.loadingMoreContent = false;
             var contentElem = $('.message-content-wrapper');

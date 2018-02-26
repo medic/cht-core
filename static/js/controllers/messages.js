@@ -66,7 +66,7 @@ angular.module('inboxControllers').controller('MessagesCtrl',
       if (!options.changes) {
         $scope.loading = true;
       }
-      return MessageContacts().then(function(data) {
+      return MessageContacts.list().then(function(data) {
         options.messages = data;
         setMessages(options);
         $scope.loading = false;
