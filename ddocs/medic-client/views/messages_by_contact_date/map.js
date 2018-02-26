@@ -16,7 +16,6 @@ function(doc) {
     var id = from || doc._id;
     emit([ id, doc.reported_date ], {
       id: doc._id,
-      key: id,
       from: from,
       date: doc.reported_date,
       message: message,

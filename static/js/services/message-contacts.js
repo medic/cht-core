@@ -27,23 +27,43 @@ angular.module('inboxServices').factory('MessageContacts',
       };
     };
 
+    /**
+     * We want to keep CouchDB view "values" as small as possible to keep
+     * CouchDB as efficient as possible. This adds some redundant information we
+     * don't need to pass down.
+     */
+    var addDetail = function(messages) {
+      messages.forEach(function(message) {
+        message.value.key = message.key[0];
+
+        if (message.value.contact) {
+          message.value.type = 'contact';
+        } else if (message.key[0] === message.value.from) {
+          message.value.type = 'phone';
+        } else {
+          message.value.type = 'unknown';
+        }
+      });
+    };
+
     var getMessages = function(params) {
       return DB().query('medic-client/messages_by_contact_date', params)
         .then(function(response) {
-          return response.rows;
+          var messages = response.rows;
+          addDetail(messages);
+          return messages;
         });
     };
 
-    var getSummaries = function(result) {
-      result = _.pluck(result, 'value');
-      // populate the summaries of the result values then return the result
-      return GetContactSummaries(result);
+    var getContactSummaries = function(messages) {
+      messages = _.pluck(messages, 'value');
+      return GetContactSummaries(messages);
     };
 
     return {
       list: function() {
         return getMessages(listParams())
-          .then(getSummaries)
+          .then(getContactSummaries)
           .then(AddReadStatus.messages);
       },
       conversation: function(id, skip) {

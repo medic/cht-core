@@ -33,6 +33,17 @@ angular.module('inboxControllers').controller('MessagesCtrl',
       }
     };
 
+    // TODO: write unit test for removeDeletedMessages before using this
+    // var betterRemoveDeletedMessages = function(updatedMessages) {
+    //   $scope.messages.forEach(function(message, i, scoped) {
+    //     if (!_.some(updatedMessages, function(updated) {
+    //       return message.key === updated.key;
+    //     })) {
+    //       scoped.splice(i, 1);
+    //     }
+    //   });
+    // };
+
     var mergeUpdatedMessages = function(messages) {
       _.each(messages, function(updated) {
         var match = _.find($scope.messages, function(existing) {
@@ -63,11 +74,12 @@ angular.module('inboxControllers').controller('MessagesCtrl',
     };
 
     var updateConversations = function(options) {
+      options = options || {};
       if (!options.changes) {
         $scope.loading = true;
       }
-      return MessageContacts.list().then(function(data) {
-        options.messages = data;
+      return MessageContacts.list().then(function(messages) {
+        options.messages = messages;
         setMessages(options);
         $scope.loading = false;
       });
@@ -89,16 +101,19 @@ angular.module('inboxControllers').controller('MessagesCtrl',
       $scope.settingSelected(refreshing);
     };
 
-    setMessages();
-    updateConversations({ })
+    updateConversations()
       .then(function() {
         if (!$state.params.id &&
             $scope.messages.length &&
             !$scope.isMobile() &&
             $state.is('messages.detail')) {
           $timeout(function() {
-            var id = $('.inbox-items li').first().attr('data-record-id');
-            $state.go('messages.detail', { id: id }, { location: 'replace' });
+            var first = $('.inbox-items li').first();
+            var state = {
+              id: first.attr('data-record-id'),
+              type: first.attr('data-record-type')
+            };
+            $state.go('messages.detail', state, { location: 'replace' });
           });
         }
       })
