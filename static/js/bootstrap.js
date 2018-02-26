@@ -88,6 +88,7 @@ var utils = require('kujua-utils');
       .get('_design/medic-client')
       .then(function() {
         // ddoc found - bootstrap immediately
+        localDb.close();
         callback();
       })
       .catch(function() {
@@ -98,15 +99,22 @@ var utils = require('kujua-utils');
           .then(function() {
             // replication complete - bootstrap angular
             $('.bootstrap-layer .status').text('Starting app…');
-            callback();
           })
           .catch(function(err) {
-            if (err.status === 401) {
-              console.warn('User must reauthenticate');
-              err.redirect = '/' + dbInfo.name + '/login?redirect=' +
-                encodeURIComponent(window.location.href);
+            return err;
+          })
+          .then(function(err) {
+            localDb.close();
+            remoteDb.close();
+            if (err) {
+              if (err.status === 401) {
+                console.warn('User must reauthenticate');
+                err.redirect = '/' + dbInfo.name + '/login?redirect=' +
+                  encodeURIComponent(window.location.href);
+              }
+              return callback(err);
             }
-            callback(err);
+            callback();
           });
       });
 
