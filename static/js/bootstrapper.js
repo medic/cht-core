@@ -118,6 +118,7 @@
       .get('_design/medic-client')
       .then(function() {
         // ddoc found - bootstrap immediately
+        localDb.close();
         callback();
       })
       .catch(function() {
@@ -135,6 +136,10 @@
               return redirectToLogin(dbInfo, err, callback);
             }
             callback(err);
+          })
+          .then(function() {
+            localDb.close();
+            remoteDb.close();
           });
       });
 
