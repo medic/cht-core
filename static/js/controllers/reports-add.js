@@ -24,7 +24,7 @@ angular.module('inboxControllers').controller('ReportsAddCtrl',
           .then(function(position) {
             geolocation = position;
           })
-          .catch($log);
+          .catch($log.warn);
 
         return $q.resolve({
           formInternalId: $state.params.formId
