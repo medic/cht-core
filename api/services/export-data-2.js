@@ -1,6 +1,7 @@
 const _ = require('underscore'),
       objectPath = require('object-path'),
-      db = require('../db-pouch');
+      db = require('../db-pouch'),
+      lineageUtils = require('lineage')({ Promise, DB: db.medic });
 
 const { Readable } = require('stream'),
       search = require('search')(Promise, db.medic);
@@ -8,66 +9,6 @@ const { Readable } = require('stream'),
 const BATCH = 100;
 
 const SUPPORTED_EXPORTS = ['reports'];
-
-
-//
-// TODO: these functions are copied from `export-data.js`, and modified to use
-// PouchDB / promises. We should remove both copies of these functions and create
-// a shared lineage library that we can use here, as well as in the rest of api,
-// sentinel and webapp.
-//
-// lineage.js in sentinel is probably the most comprehensive lineage library
-// right now, though it would need to be ES5-a-fied if we wanted to use it on
-// the front end.
-//
-// https://github.com/medic/medic-webapp/issues/3826
-//
-const findContact = (contactRows, id) => {
-  return id && contactRows.find(contactRow => contactRow.id === id);
-};
-const hydrateDataRecords = result => {
-  const rows = result.rows;
-
-  const contactIds = [];
-  rows.forEach(row => {
-    let parent = row.doc.contact;
-    while(parent) {
-      if (parent._id) {
-        contactIds.push(parent._id);
-      }
-      parent = parent.parent;
-    }
-  });
-
-  if (!contactIds.length) {
-    return Promise.resolve(result);
-  }
-
-  return db.medic.allDocs({
-    keys: contactIds,
-    include_docs: true
-  }).then(results => {
-    rows.forEach(row => {
-      const contactId = row.doc.contact && row.doc.contact._id;
-      const contact = findContact(results.rows, contactId);
-      if (contact) {
-        row.doc.contact = contact.doc;
-      }
-      let parent = row.doc.contact;
-      while(parent) {
-        const parentId = parent.parent && parent.parent._id;
-        const found = findContact(results.rows, parentId);
-        if (found) {
-          parent.parent = found.doc;
-        }
-        parent = parent.parent;
-      }
-    });
-
-    return result;
-  });
-};
-
 
 /**
  * Flattens a given object into an object where the keys are dot-notation
@@ -244,10 +185,11 @@ class SearchResultReader extends Readable {
           keys: ids,
           include_docs: true
         })
-        .then(hydrateDataRecords)
-        .then(results =>
+        .then(result => result.rows.map(row => row.doc))
+        .then(lineageUtils.hydrateDocs)
+        .then(docs =>
           this.push(
-            _.pluck(results.rows, 'doc')
+            docs
              .map(this.csvFn)
              .map(SearchResultReader.csvLineToString)
              .join(JOIN_ROW) + JOIN_ROW // new line at the end
