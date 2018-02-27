@@ -2,82 +2,33 @@ const _ = require('underscore'),
       async = require('async'),
       people = require('./people'),
       utils = require('./utils'),
-      db = require('../db'),
+      db = require('../db-pouch'),
+      lineageUtils = require('lineage')({ Promise, DB: db.medic }),
       PLACE_EDITABLE_FIELDS = ['name', 'parent', 'contact', 'place_id'],
       PLACE_TYPES = ['national_office', 'district_hospital', 'health_center', 'clinic'];
 
-// Minifies things you would attach to another doc:
-//   doc.parent = minify(doc.parent)
-// Not:
-//   minify(doc)
-const minify = place => {
-  if (!place || !place._id) {
-    return place;
-  }
-  const result = { _id: place._id };
-  let minified = result;
-  while(place.parent && place.parent._id) {
-    minified.parent = { _id: place.parent._id };
-    minified = minified.parent;
-    place = place.parent;
-  }
-  return result;
-};
-
-const bindContacts = (lineage, contacts) => {
-  contacts.rows.forEach(contactRow => {
-    const stub = lineage.rows.find(lineageRow => {
-      const id = lineageRow.doc &&
-                 lineageRow.doc.contact &&
-                 lineageRow.doc.contact._id;
-      return id === (contactRow.doc && contactRow.doc._id);
-    });
-    if (stub && stub.doc) {
-      stub.doc.contact = contactRow.doc;
-    }
-  });
-};
-
-const bindParents = (lineage, result) => {
-  let current = result;
-  while (current && current.parent && current.parent._id) {
-    const row = lineage.rows.shift();
-    current.parent = row && row.doc;
-    current = current.parent;
-  }
-};
-
-const fetchHydratedDoc = (id, callback) => {
-  db.medic.view('medic-client', 'docs_by_id_lineage', {
-    startkey: [ id ],
-    endkey: [ id, {} ],
-    include_docs: true
-  }, (err, lineage) => {
-    if (err) {
-      return callback(err);
-    }
-
-    if (!lineage.rows.length) {
-      return callback({statusCode: 404});
-    }
-
-
-    const contactIds = lineage.rows
-      .map(row => row.doc && row.doc.contact && row.doc.contact._id)
-      .filter(id => !!id);
-    db.medic.fetch({ keys: contactIds }, (err, contacts) => {
-      if (err) {
-        return callback(err);
+const fetchHydratedDoc = id => {
+  let lineage;
+  return lineageUtils.lineageById(id)
+    .then(function(result) {
+      lineage = result;
+      if (!lineage.length) {
+        throw { statusCode: 404 }; // TODO this function can be deleted except for this line!
       }
-      bindContacts(lineage, contacts);
-      const resultRow = lineage.rows.shift();
-      const result = resultRow && resultRow.doc;
 
-      bindParents(lineage, result);
+      const contactIds = lineage
+        .map(doc => doc && doc.contact && doc.contact._id)
+        .filter(id => !!id);
+      return db.medic.allDocs({ keys: contactIds, include_docs: true });
+    })
+    .then(contacts => contacts.rows.map(contactRow => contactRow.doc))
+    .then(contacts => {
+      lineageUtils.fillContactsInDocs(lineage, contacts);
+      const doc = lineage.shift();
+      lineageUtils.buildHydratedDoc(doc, lineage);
 
-      callback(null, result);
+      return doc;
     });
-  });
 };
 
 const getPlace = (id, callback) => {
@@ -278,8 +229,8 @@ const updatePlace = (id, data, callback) => {
           return cb(err);
         }
 
-        place.contact = minify(place.contact);
-        place.parent = minify(place.parent);
+        place.contact = lineageUtils.minifyLineage(place.contact);
+        place.parent = lineageUtils.minifyLineage(place.parent);
 
         db.medic.insert(place, (err, resp) => {
           if (err) {
@@ -336,5 +287,4 @@ module.exports.createPlace = createPlaces;
 module.exports.getPlace = getPlace;
 module.exports.updatePlace = updatePlace;
 module.exports.getOrCreatePlace = getOrCreatePlace;
-module.exports.minify = minify;
 module.exports.fetchHydratedDoc = fetchHydratedDoc;

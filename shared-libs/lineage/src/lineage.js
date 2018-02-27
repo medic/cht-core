@@ -1,21 +1,21 @@
 var _ = require('underscore'),
-  db = require('../db'),
-  utils = require('./utils');
+    utils = require('./utils');
 
 module.exports = function(dependencies) {
   dependencies = dependencies || {};
   var Promise = dependencies.Promise;
+  var DB = dependencies.DB;
 
   var buildHydratedDoc = function(doc, lineage) {
     if (!doc) {
-      return doc;
+      return;
     }
     var current = doc;
     if (doc.type === 'data_record') {
       doc.contact = lineage.shift();
       current = doc.contact;
     }
-    while (current) {
+    while (current && current.parent && current.parent._id) {
       current.parent = lineage.shift();
       current = current.parent;
     }
@@ -23,7 +23,7 @@ module.exports = function(dependencies) {
 
   var fillContactsInDocs = function(docs, contacts) {
     if (!contacts || !contacts.length) {
-      return docs;
+      return;
     }
     contacts.forEach(function(contactDoc) {
       docs.forEach(function(doc) {
@@ -33,10 +33,9 @@ module.exports = function(dependencies) {
         }
       });
     });
-    return docs;
   };
 
-  var mergeLineages = function(lineage, patientLineage) {
+  var fetchContacts = function(lineage, patientLineage) {
     var lineages = lineage.concat(patientLineage);
     var contactIds = _.uniq(
       lineages
@@ -49,11 +48,11 @@ module.exports = function(dependencies) {
     );
 
     // Only fetch docs that are new to us
-    var lineageContacts = [],
-      contactsToFetch = [];
+    var lineageContacts = [];
+    var contactsToFetch = [];
     contactIds.forEach(function(id) {
-      var contact = lineage.find(function(d) {
-        return d && d._id === id;
+      var contact = lineage.find(function(doc) {
+        return doc && doc._id === id;
       });
       if (contact) {
         lineageContacts.push(contact);
@@ -62,30 +61,35 @@ module.exports = function(dependencies) {
       }
     });
 
-    return fetchDocs(contactsToFetch).then(function(fetchedContacts) {
-      var allContacts = lineageContacts.concat(fetchedContacts);
-      fillContactsInDocs(lineages, allContacts);
+    return fetchDocs(contactsToFetch)
+      .then(function(fetchedContacts) {
+        return lineageContacts.concat(fetchedContacts);
+      });
+  };
 
-      var doc = lineage.shift();
-      buildHydratedDoc(doc, lineage);
+  var mergeLineages = function(lineage, patientLineage, contacts) {
+    var lineages = lineage.concat(patientLineage);
+    fillContactsInDocs(lineages, contacts);
 
-      if (patientLineage.length) {
-        var patientDoc = patientLineage.shift();
-        buildHydratedDoc(patientDoc, patientLineage);
-        doc.patient = patientDoc;
-      }
+    var doc = lineage.shift();
+    buildHydratedDoc(doc, lineage);
 
-      return doc;
-    });
+    if (patientLineage.length) {
+      var patientDoc = patientLineage.shift();
+      buildHydratedDoc(patientDoc, patientLineage);
+      doc.patient = patientDoc;
+    }
+
+    return doc;
   };
 
   var patientLineageByShortcode = function(shortcode) {
     return new Promise(function(resolve, reject) {
-      return utils.getPatientContactUuid(db, shortcode, function(err, uuid) {
+      return utils.getPatientContactUuid(shortcode, function(err, uuid) {
         if (err) {
           reject(err);
         } else {
-          lineageById(uuid)
+          fetchLineageById(uuid)
             .then(resolve)
             .catch(reject);
         }
@@ -108,50 +112,40 @@ module.exports = function(dependencies) {
     return patientLineageByShortcode(patientId);
   };
 
-  var lineageById = function(id) {
-    return new Promise(function(resolve, reject) {
-      return db.medic.view(
-        'medic-client',
-        'docs_by_id_lineage',
-        {
-          startkey: [id],
-          endkey: [id, {}],
-          include_docs: true
-        },
-        function(err, result) {
-          if (err) {
-            reject(err);
-          } else {
-            resolve(
-              result.rows.map(function(row) {
-                return row.doc;
-              })
-            );
-          }
-        }
-      );
-    });
+  var fetchLineageById = function(id) {
+    var options = {
+      startkey: [id],
+      endkey: [id, {}],
+      include_docs: true
+    };
+    return DB.query('medic-client/docs_by_id_lineage', options)
+      .then(function(result) {
+        return result.rows.map(function(row) {
+          return row.doc;
+        });
+      });
   };
 
   var fetchHydratedDoc = function(id) {
-    return lineageById(id).then(function(lineage) {
-      if (lineage.length === 0) {
-        // Not a doc that has lineage, just do a normal fetch.
-        return new Promise(function(resolve, reject) {
-          return db.medic.get(id, function(err, doc) {
-            if (err) {
-              reject(err);
-            } else {
-              resolve(doc);
-            }
-          });
-        });
-      }
+    var lineage;
+    var patientLineage;
+    return fetchLineageById(id)
+      .then(function(result) {
+        lineage = result;
+        if (lineage.length === 0) {
+          // Not a doc that has lineage, just do a normal fetch.
+          return DB.get(id);
+        }
 
-      return fetchPatientLineage(lineage[0]).then(function(patientLineage) {
-        return mergeLineages(lineage, patientLineage);
+        return fetchPatientLineage(lineage[0])
+          .then(function(result) {
+            patientLineage = result;
+            return fetchContacts(lineage, patientLineage);
+          })
+          .then(function(contacts) {
+            mergeLineages(lineage, patientLineage, contacts);
+          });
       });
-    });
   };
 
   // for data_records, include the first-level contact.
@@ -197,25 +191,19 @@ module.exports = function(dependencies) {
   };
 
   var fetchDocs = function(ids) {
-    return new Promise(function(resolve, reject) {
-      if (!ids || !ids.length) {
-        return resolve([]);
-      }
-      db.medic.fetch({ keys: ids }, function(err, results) {
-        if (err) {
-          return reject(err);
-        }
-        return resolve(
-          results.rows
-            .map(function(row) {
-              return row.doc;
-            })
-            .filter(function(doc) {
-              return !!doc;
-            })
-        );
+    if (!ids || !ids.length) {
+      return Promise.resolve([]);
+    }
+    return DB.allDocs({ keys: ids, include_docs: true })
+      .then(function(results) {
+        return results.rows
+          .map(function(row) {
+            return row.doc;
+          })
+          .filter(function(doc) {
+            return !!doc;
+          });
       });
-    });
   };
 
   var hydrateParents = function(docs, parents) {
@@ -223,7 +211,7 @@ module.exports = function(dependencies) {
       return docs;
     }
 
-    var findById = function findById(id, docs) {
+    var findById = function(id, docs) {
       return docs.find(function(doc) {
         return doc._id === id;
       });
@@ -302,16 +290,20 @@ module.exports = function(dependencies) {
       });
   };
 
-  var minifyContact = function(contact) {
-    if (!contact) {
-      return contact;
+  // Minifies things you would attach to another doc:
+  //   doc.parent = minify(doc.parent)
+  // Not:
+  //   minify(doc)
+  var minifyLineage = function(parent) {
+    if (!parent || !parent._id) {
+      return parent;
     }
-    var result = { _id: contact._id };
-    var minified = result;
-    while (contact.parent) {
-      minified.parent = { _id: contact.parent._id };
-      minified = minified.parent;
-      contact = contact.parent;
+
+    var result = { _id: parent._id };
+    while (parent.parent && parent.parent._id) {
+      result.parent = { _id: parent.parent._id };
+      result = result.parent;
+      parent = parent.parent;
     }
     return result;
   };
@@ -336,23 +328,28 @@ module.exports = function(dependencies) {
      * Remove all hyrdrated items and leave just the ids
      * @param doc The doc to minify
      */
-    minify: function minify(doc) {
+    minify: function(doc) {
       if (!doc) {
         return;
       }
       if (doc.parent) {
-        doc.parent = minifyContact(doc.parent);
+        doc.parent = minifyLineage(doc.parent);
       }
       if (doc.contact && doc.contact._id) {
         var miniContact = { _id: doc.contact._id };
         if (doc.contact.parent) {
-          miniContact.parent = minifyContact(doc.contact.parent);
+          miniContact.parent = minifyLineage(doc.contact.parent);
         }
         doc.contact = miniContact;
       }
       if (doc.type === 'data_record') {
         delete doc.patient;
       }
-    }
+    },
+
+    fetchLineageById: fetchLineageById,
+    minifyLineage: minifyLineage,
+    fillContactsInDocs: fillContactsInDocs,
+    buildHydratedDoc: buildHydratedDoc
   };
 };
