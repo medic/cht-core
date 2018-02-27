@@ -27,8 +27,8 @@ describe('MessageContacts service', () => {
 
     it('builds list', () => {
       const given = [
-        { id: 'a', key: [ '1234' ], value: { from: '1234' } },
-        { id: 'b', key: [ '4321' ], value: { from: '4321' } },
+        { key: [ '1234' ], value: { id: 'a', from: '1234' } },
+        { key: [ '4321' ], value: { id: 'b', from: '4321' } },
       ];
       query.returns(Promise.resolve({ rows: given }));
       getContactSummaries.returns(Promise.resolve([]));
@@ -65,18 +65,16 @@ describe('MessageContacts service', () => {
       const expected = [{
         id: 'a',
         key: ['a'],
-        'value': {
+        value: {
           key: 'a',
-          'id': 'a',
-          'type': 'unknown'
+          type: 'unknown'
         }
       }, {
-        'id': 'b',
+        id: 'b',
         key: ['b'],
-        'value': {
+        value: {
           key: 'b',
-          'id': 'b',
-          'type': 'unknown'
+          type: 'unknown'
         }
       }];
       query.returns(Promise.resolve({ rows: given }));
@@ -90,6 +88,9 @@ describe('MessageContacts service', () => {
           startkey: [ 'abc', {} ],
           endkey: [ 'abc' ]
         });
+        console.log('=========================================================');
+        console.log(JSON.stringify(actual, null, 2));
+        console.log('=========================================================');
         chai.expect(actual).to.deep.equal(expected);
       });
     });
@@ -99,18 +100,16 @@ describe('MessageContacts service', () => {
       const expected = [{
         id: 'a',
         key: ['a'],
-        'value': {
+        value: {
           key: 'a',
-          'id': 'a',
-          'type': 'unknown'
+          type: 'unknown'
         }
       }, {
-        'id': 'b',
+        id: 'b',
         key: ['b'],
-        'value': {
+        value: {
           key: 'b',
-          'id': 'b',
-          'type': 'unknown'
+          type: 'unknown'
         }
       }];
       query.returns(Promise.resolve({ rows: given }));
