@@ -35,7 +35,6 @@ angular.module('inboxServices').factory('MessageContacts',
     var addDetail = function(messages) {
       messages.forEach(function(message) {
         message.value.key = message.key[0];
-        message.value.id = message.id;
 
         if (message.value.contact) {
           message.value.type = 'contact';

@@ -1,7 +1,7 @@
 <div class="sender" ng-if="message">
   <div>
     <span class="name"
-    ng-bind="message.doc.name || message.contact.name || message.contact || (!message.form && message.name) || message.from || message.sent_by || 'Unknown sender' | translate"></span>
+    ng-bind="message.doc.name || message.contact.name || message.contact || (!message.form && message.name) || message.from || message.sent_by || 'messages.unknown.sender' | translate"></span>
     <span class="phone"
     ng-hide="message.name && message.name === message.facility.contact.phone"
     ng-bind="message.doc.phone || message.contact.phone || message.phone"></span>

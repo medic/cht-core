@@ -4,7 +4,7 @@
       <a href="#messages/{{message.type}}/{{message.key}}">
         <div class="content">
           <div class="heading">
-            <h4>{{message.contact || message.from || "Unknown sender" | translate}}</h4>
+            <h4>{{message.contact || message.from || "messages.unknown.sender" | translate}}</h4>
             <div class="date">
               <span ng-bind-html="message.date | relativeDate"></span>
             </div>
