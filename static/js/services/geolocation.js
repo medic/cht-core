@@ -5,10 +5,10 @@ angular.module('inboxServices').service('Geolocation',
     'use strict';
     'ngInject';
 
-    return function(callback) {
+    return function() {
 
       if (!navigator.geolocation) {
-        return callback({
+        return $q.reject({
           code: -1,
           message: 'Geolocation API unavailable.',
         });
@@ -22,8 +22,18 @@ angular.module('inboxServices').service('Geolocation',
 
       return $q(function(resolve, reject) {
         navigator.geolocation.getCurrentPosition(resolve, reject, options);
+      })
+      .then(function(coordinates) {
+        return {
+          latitude: coordinates.latitude,
+          longitude: coordinates.longitude,
+          altitude: coordinates.altitude,
+          accuracy: coordinates.accuracy,
+          altitudeAccuracy: coordinates.altitudeAccuracy,
+          heading: coordinates.heading,
+          speed: coordinates.speed
+        };
       });
-
     };
 
   }

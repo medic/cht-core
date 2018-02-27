@@ -20,7 +20,7 @@ angular.module('inboxControllers').controller('TasksContentCtrl',
       .then(function(position) {
         geolocation = position;
       })
-      .catch($log);
+      .catch($log.warn);
 
     var hasOneFormAndNoFields = function(task) {
       return Boolean(

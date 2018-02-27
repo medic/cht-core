@@ -20,7 +20,7 @@ angular.module('inboxControllers').controller('ContactsReportCtrl',
       .then(function(position) {
         geolocation = position;
       })
-      .catch($log);
+      .catch($log.warn);
 
     var markFormEdited = function() {
       $scope.enketoStatus.edited = true;
