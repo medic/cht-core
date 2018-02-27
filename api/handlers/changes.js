@@ -224,11 +224,20 @@ const getChanges = feed => {
           });
           return;
         }
-        const changes = mergeChangesResponses(responses);
-        if (!changes) {
+        const malformedResponse = responses.find(response => {
+          if (!response || !response.results) {
+            // See: https://github.com/medic/medic-webapp/issues/3099
+            // This should never happen, but apparently it does sometimes.
+            // Attempting to log out the response usefully to see what's occuring
+            console.error('No _changes error, but malformed response:', JSON.stringify(responses));
+            return true;
+          }
+        });
+        if (malformedResponse) {
           return errorResponse(feed, 'No _changes error, but malformed response.');
         }
         cleanUp(feed);
+        const changes = responses.length === 1 ? responses[0] : mergeChangesResponses(responses);
         prepareResponse(feed, changes);
         feed.res.end();
         endTimer('getChanges().end', startTime);
@@ -240,32 +249,16 @@ const getChanges = feed => {
 const mergeChangesResponses = responses => {
   let lastSeqNum = 0;
   let lastSeq;
-  let err = false;
   const results = [];
 
   responses.forEach(changes => {
-    if (err) {
-      return;
-    }
-    if (!changes || !changes.results) {
-      // See: https://github.com/medic/medic-webapp/issues/3099
-      // This should never happen, but apparently it does sometimes.
-      // Attempting to log out the response usefully to see what's occuring
-      console.error('No _changes error, but malformed response:', JSON.stringify(changes));
-      err = true;
-    } else {
-      results.push(changes.results);
-      const numericSeq = numericSeqFrom(changes.last_seq);
-      if (numericSeq > lastSeqNum) {
-        lastSeq = changes.last_seq;
-        lastSeqNum = numericSeq;
-      }
+    results.push(changes.results);
+    const numericSeq = numericSeqFrom(changes.last_seq);
+    if (numericSeq > lastSeqNum) {
+      lastSeq = changes.last_seq;
+      lastSeqNum = numericSeq;
     }
   });
-
-  if (err) {
-    return;
-  }
 
   const merged = Array.prototype.concat(...results); // flatten the result sets
   merged.sort((a, b) => numericSeqFrom(a.seq) - numericSeqFrom(b.seq));
