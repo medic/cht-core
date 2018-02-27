@@ -1,4 +1,4 @@
-describe.only('Message list utils', () => {
+describe('Message list utils', () => {
   'use strict';
 
   let service;
