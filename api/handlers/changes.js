@@ -229,16 +229,16 @@ const getChanges = feed => {
             // See: https://github.com/medic/medic-webapp/issues/3099
             // This should never happen, but apparently it does sometimes.
             // Attempting to log out the response usefully to see what's occuring
-            console.error('No _changes error, but malformed response:', JSON.stringify(changes));
+            console.error('No _changes error, but malformed response:', JSON.stringify(responses));
             return true;
           }
         });
         if (malformedResponse) {
           return errorResponse(feed, 'No _changes error, but malformed response.');
         }
+        cleanUp(feed);
         const changes = responses.length === 1 ? responses[0] : mergeChangesResponses(responses);
         prepareResponse(feed, changes);
-        cleanUp(feed);
         feed.res.end();
         endTimer('getChanges().end', startTime);
       });
