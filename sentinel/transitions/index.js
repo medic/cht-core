@@ -207,6 +207,8 @@ const loadTransitions = (autoEnableSystemTransitions = true) => {
   const transitionsConfig = config.get('transitions') || [];
   let loadError = false;
 
+  transitions.splice(0, transitions.length);
+
   // Load all system or configured transitions
   AVAILABLE_TRANSITIONS.forEach(transition => {
     const conf = transitionsConfig[transition];
