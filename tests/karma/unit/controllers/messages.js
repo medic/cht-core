@@ -25,7 +25,10 @@ describe('MessagesCtrl controller', () => {
           return { unsubscribe: () => {} };
         },
         'MarkAllRead': {},
-        'MessageContacts': KarmaUtils.nullPromise(),
+        'MessageContacts': {
+          list: KarmaUtils.nullPromise(),
+          conversation: KarmaUtils.nullPromise()
+        },
         'Export': () => {},
         'Tour': () => {}
       });

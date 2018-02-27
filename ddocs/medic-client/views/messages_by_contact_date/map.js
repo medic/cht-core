@@ -15,7 +15,6 @@ function(doc) {
     var from = (contact && contact._id) || phone;
     var id = from || doc._id;
     emit([ id, doc.reported_date ], {
-      id: doc._id,
       from: from,
       date: doc.reported_date,
       message: message,

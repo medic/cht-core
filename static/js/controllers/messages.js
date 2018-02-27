@@ -10,6 +10,7 @@ angular.module('inboxControllers').controller('MessagesCtrl',
     Changes,
     Export,
     MessageContacts,
+    MessageListUtils,
     Tour
   ) {
     'use strict';
@@ -20,54 +21,16 @@ angular.module('inboxControllers').controller('MessagesCtrl',
     $scope.selected = null;
     $scope.loading = true;
 
-    var removeDeletedMessages = function(messages) {
-      var existingKey;
-      var checkExisting = function(updated) {
-        return existingKey === updated.key;
-      };
-      for (var i = $scope.messages.length - 1; i >= 0; i--) {
-        existingKey = $scope.messages[i].key;
-        if (!_.some(messages, checkExisting)) {
-          $scope.messages.splice(i, 1);
-        }
-      }
-    };
-
-    // TODO: write unit test for removeDeletedMessages before using this
-    // var betterRemoveDeletedMessages = function(updatedMessages) {
-    //   $scope.messages.forEach(function(message, i, scoped) {
-    //     if (!_.some(updatedMessages, function(updated) {
-    //       return message.key === updated.key;
-    //     })) {
-    //       scoped.splice(i, 1);
-    //     }
-    //   });
-    // };
-
-    var mergeUpdatedMessages = function(messages) {
-      _.each(messages, function(updated) {
-        var match = _.find($scope.messages, function(existing) {
-          return existing.key === updated.key;
-        });
-        if (match) {
-          if (!_.isEqual(updated.message, match.message)) {
-            match.message = updated.message;
-            match.read = false;
-          }
-        } else {
-          $scope.messages.push(updated);
-        }
-        if ($scope.selected && $scope.selected.id === updated.key) {
-          $scope.$broadcast('UpdateContactConversation', { silent: true });
-        }
-      });
-    };
-
     var setMessages = function(options) {
       options = options || {};
       if (options.changes) {
-        removeDeletedMessages(options.messages);
-        mergeUpdatedMessages(options.messages);
+        MessageListUtils.removeDeleted($scope.messages, options.messages);
+        var selectedChanged = MessageListUtils.mergeUpdated(
+          $scope.messages, options.messages, $scope.selected && $scope.selected.id
+        );
+        if (selectedChanged) {
+          $scope.$broadcast('UpdateContactConversation', { silent: true });
+        }
       } else {
         $scope.messages = options.messages || [];
       }
@@ -151,6 +114,8 @@ angular.module('inboxControllers').controller('MessagesCtrl',
     if ($stateParams.tour) {
       Tour.start($stateParams.tour);
     }
-
   }
 );
+
+
+
