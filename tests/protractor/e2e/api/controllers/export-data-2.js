@@ -10,7 +10,7 @@ fdescribe('Export Data V2.0', () => {
       form: 'a',
       type: 'data_record',
       patient_id: 'abc123',
-      reported_date: new Date(2018, 1, 1).getTime(),
+      reported_date: Date.UTC(2018, 1, 1),
       fields: {
         foo: 'fooVal',
         bar: 'barVal',
@@ -23,7 +23,7 @@ fdescribe('Export Data V2.0', () => {
       form: 'a',
       type: 'data_record',
       patient_id: 'abc124',
-      reported_date: new Date(2018, 1, 2).getTime(),
+      reported_date: Date.UTC(2018, 1, 2),
       fields: {
         foo: 'fooVal2',
         bar: 'barVal2',
@@ -36,7 +36,7 @@ fdescribe('Export Data V2.0', () => {
       form: 'b',
       type: 'data_record',
       patient_id: 'abc125',
-      reported_date: new Date(2018, 1, 3).getTime(),
+      reported_date: Date.UTC(2018, 1, 3),
       fields: {
         baz: 'bazVal',
       }
@@ -85,8 +85,8 @@ fdescribe('Export Data V2.0', () => {
           expect(rows).toEqual(expected);
         }));
     it('GET Filters by date', () => {
-      const from = new Date(2018,1,2,12).getTime();
-      const to = new Date(2018,1,3,12).getTime();
+      const from = Date.UTC(2018,1,2,12);
+      const to = Date.UTC(2018,1,3,12);
       utils.request(`/api/v2/export/reports?filters%5Bsearch%5D=&filters%5Bdate%5D%5Bfrom%5D=${from}&filters%5Bdate%5D%5Bto%5D=${to}`, {notJson: true}).then(result => {
           const rows = result.split('\n');
           rows.pop(); // Last row is empty string, discard
