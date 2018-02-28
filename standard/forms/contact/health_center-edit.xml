@@ -766,7 +766,7 @@
         </translation>
       </itext>
       <instance>
-        <data delimiter="#" id="contact:health_center:edit" prefix="J1!contact:health_center:edit!" version="2017-10-11_11-39">
+        <data delimiter="#" id="contact:health_center:edit" prefix="J1!contact:health_center:edit!" version="2018-02-27_18-15">
           <inputs>
             <meta>
               <location>
@@ -822,9 +822,9 @@
       <bind nodeset="/data/inputs/user/contact_id" type="string"/>
       <bind nodeset="/data/inputs/user/facility_id" type="string"/>
       <bind nodeset="/data/inputs/user/name" type="string"/>
-      <bind calculate="." nodeset="/data/health_center/parent" readonly="true()" type="string"/>
-      <bind calculate="." nodeset="/data/health_center/type" readonly="true()" type="string"/>
-      <bind calculate="." nodeset="/data/health_center/contact/name" type="string"/>
+      <bind nodeset="/data/health_center/parent" readonly="true()" type="string"/>
+      <bind nodeset="/data/health_center/type" readonly="true()" type="string"/>
+      <bind nodeset="/data/health_center/contact/name" type="string"/>
       <bind calculate="../name" nodeset="/data/health_center/contact/contact_name" type="string"/>
       <bind nodeset="/data/health_center/contact/_id" type="db:person"/>
       <bind calculate="if(  /data/health_center/generated_name  = ../name, 'true', 'false')" nodeset="/data/health_center/is_name_generated" readonly="boolean( /data/health_center/contact/_id )" relevant="not( /data/health_center/contact/_id ) or selected( . , 'true') or boolean( /data/health_center/contact/_id )" required="true()" type="select1"/>
@@ -835,9 +835,9 @@
       <bind nodeset="/data/health_center/vaccines" relevant="../type = 'health_center' and selected( /data/health_center/use_cases ,'imm')" type="select"/>
       <bind nodeset="/data/health_center/notes" type="string"/>
       <bind calculate="concat(../../inputs/meta/location/lat, concat(' ', ../../inputs/meta/location/long))" nodeset="/data/health_center/geolocation" type="string"/>
-      <bind calculate="." nodeset="/data/health_center/meta/created_by" readonly="true()" type="string"/>
-      <bind calculate="." nodeset="/data/health_center/meta/created_by_person_uuid" readonly="true()" type="string"/>
-      <bind calculate="." nodeset="/data/health_center/meta/created_by_place_uuid" type="string"/>
+      <bind nodeset="/data/health_center/meta/created_by" readonly="true()" type="string"/>
+      <bind nodeset="/data/health_center/meta/created_by_person_uuid" readonly="true()" type="string"/>
+      <bind nodeset="/data/health_center/meta/created_by_place_uuid" type="string"/>
       <bind calculate="../../../inputs/user/name" nodeset="/data/health_center/meta/last_edited_by" type="string"/>
       <bind calculate="../../../inputs/user/contact_id" nodeset="/data/health_center/meta/last_edited_by_person_uuid" type="string"/>
       <bind calculate="../../../inputs/user/facility_id" nodeset="/data/health_center/meta/last_edited_by_place_uuid" type="string"/>
