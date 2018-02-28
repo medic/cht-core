@@ -8,7 +8,8 @@
     "url": "git://github.com/medic/medic-webapp.git"
   },
   "scripts": {
-    "start": "nf start"
+    "start": "nf start",
+    "webdriver": "webdriver-manager update && webdriver-manager start"
   },
   "dependencies": {
     "angular": "^1.6.6",
