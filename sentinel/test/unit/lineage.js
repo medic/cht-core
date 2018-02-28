@@ -173,7 +173,7 @@ exports['fetchHydratedDoc handles no lineage and no contact'] = test => {
   lineage.fetchHydratedDoc(docId).then(actual => {
     test.deepEqual(actual, expected);
     test.done();
-  });
+  }).catch(test.done);
 };
 
 exports['fetchHydratedDoc handles non-lineage types with empty lineages'] = test => {
@@ -183,7 +183,7 @@ exports['fetchHydratedDoc handles non-lineage types with empty lineages'] = test
   lineage.fetchHydratedDoc(expected._id).then(actual => {
     test.deepEqual(actual, expected);
     test.done();
-  });
+  }).catch(test.done);
 };
 
 exports['fetchHydratedDoc handles doc with unknown parent by leaving just the stub'] = test => {
@@ -256,7 +256,7 @@ exports['fetchHydratedDoc handles missing contacts'] = test => {
   lineage.fetchHydratedDoc(docId).then(actual => {
     test.deepEqual(actual, { _id: 'abc', contact: { _id: 'xyz' } });
     test.done();
-  });
+  }).catch(test.done);
 };
 
 exports['fetchHydratedDoc attaches the lineage'] = test => {
@@ -293,7 +293,7 @@ exports['fetchHydratedDoc attaches the lineage'] = test => {
     test.equals(actual.parent.name, 'jack');
     test.equals(actual.parent.parent.name, 'jim');
     test.done();
-  });
+  }).catch(test.done);
 };
 
 exports['fetchHydratedDoc attaches the full lineage for reports'] = test => {
@@ -339,7 +339,7 @@ exports['fetchHydratedDoc attaches the full lineage for reports'] = test => {
 
     test.equals(fetch.callCount, 1);
     test.done();
-  }).catch(console.error);
+  }).catch(test.done);
 };
 
 exports['fetchHydratedDoc attaches the contacts'] = test => {
@@ -369,7 +369,7 @@ exports['fetchHydratedDoc attaches the contacts'] = test => {
     test.equals(fetch.callCount, 1);
     test.deepEqual(fetch.args[0][0].keys, [ place_contact._id, place_parentContact._id, place_grandparentContact._id ]);
     test.done();
-  });
+  }).catch(test.done);
 };
 
 // This is a classic use-case: report from CHW who is the contact for their own area
@@ -565,7 +565,7 @@ exports['fetchHydratedDoc+minify is noop on a report'] = test => {
     lineage.minify(actual);
     test.deepEqual(actual, report);
     test.done();
-  });
+  }).catch(test.done);
 };
 
 exports['fetchHydratedDoc+minify is noop on a place'] = test => {
@@ -588,7 +588,7 @@ exports['fetchHydratedDoc+minify is noop on a place'] = test => {
     lineage.minify(actual);
     test.deepEqual(actual, place);
     test.done();
-  });
+  }).catch(test.done);
 };
 
 exports['hydrateDocs binds contacts and parents'] = test => {
@@ -636,7 +636,7 @@ exports['hydrateDocs works on empty array'] = test => {
   lineage.hydrateDocs(docs).then((hydratedDocs) => {
     test.equals(hydratedDocs.length, 0);
     test.done();
-  });
+  }).catch(test.done);
 };
 
 exports['hydrateDocs works on docs without contacts or parents'] = test => {
@@ -647,7 +647,7 @@ exports['hydrateDocs works on docs without contacts or parents'] = test => {
   lineage.hydrateDocs(docs).then((hydratedDocs) => {
     test.deepEqual(hydratedDocs, docs);
     test.done();
-  });
+  }).catch(test.done);
 };
 
 exports['hydrateDocs+minify is noop'] = test => {
@@ -673,7 +673,7 @@ exports['hydrateDocs+minify is noop'] = test => {
     test.deepEqual(hydratedReport, report);
     test.deepEqual(hydratedPlace, place);
     test.done();
-  });
+  }).catch(test.done);
 };
 
 exports['hydrateDocs ignores db-fetch errors'] = test => {

@@ -69,30 +69,35 @@ const fillContactsInDocs = (docs, contacts) => {
   return docs;
 };
 
+const extractParentIds = currentParent => {
+  const ids = [];
+  while (currentParent) {
+    ids.push(currentParent._id);
+    currentParent = currentParent.parent;
+  }
+  return ids;
+};
+
 const buildHydratedDoc = (doc, lineage) => {
   if (!doc || !lineage.length) {
     return doc;
   }
-  let currentParent = doc;
+
+  // Parent hierarchy starts at the contact for data_records
+  let currentParent;
   if (doc.type === 'data_record') {
-    const hydratedContact = lineage.shift();
-    if (hydratedContact) {
-      doc.contact = hydratedContact;
-    }
-    currentParent = doc.contact;
+    currentParent = doc.contact = (lineage.shift() || doc.contact);
+  } else {
+    // It's a contact
+    currentParent = doc;
   }
-  let currentStub = currentParent.parent;
-  while (true) {
-    // if the parent doc isn't found the element in lineage is null,
-    // so retain the stub.
-    const parent = lineage.shift() || currentStub;
-    if (!parent) {
-      break;
-    }
-    currentParent.parent = parent;
-    currentParent = currentParent.parent;
-    currentStub = currentStub.parent;
-  }
+
+  const parentIds = extractParentIds(currentParent.parent);
+  lineage.forEach((l, i) => {
+    currentParent = currentParent.parent = (l || {_id: parentIds[i]});
+  });
+
+  return doc;
 };
 
 const minifyContact = contact => {
