@@ -6,6 +6,7 @@ angular.module('inboxControllers').controller('ContactsContentCtrl',
     $log,
     $q,
     $scope,
+    $state,
     $stateParams,
     $translate,
     Auth,
@@ -14,14 +15,18 @@ angular.module('inboxControllers').controller('ContactsContentCtrl',
     Snackbar,
     TasksForContact,
     TranslateFrom,
-    UserSettings
+    UserSettings,
+    ContactChangeFilter
   ) {
 
     'use strict';
     'ngInject';
 
     var taskEndDate,
-        reportStartDate;
+      reportStartDate,
+      changes = false,
+      debounceWait = 500,
+      debouncedApplyChanges;
 
     $scope.filterTasks = function(task) {
       return !taskEndDate || taskEndDate.isAfter(task.date);
@@ -94,8 +99,10 @@ angular.module('inboxControllers').controller('ContactsContentCtrl',
         });
     };
 
-    var selectContact = function(id, silent) {
-      $scope.setLoadingContent(id);
+    var selectContact = function(id, silent, noLoadingThrobber) {
+      if (!noLoadingThrobber) {
+        $scope.setLoadingContent(id);
+      }
       return ContactViewModelGenerator(id)
         .then(function(model) {
           var refreshing = ($scope.selected && $scope.selected.doc._id) === id;
@@ -114,6 +121,12 @@ angular.module('inboxControllers').controller('ContactsContentCtrl',
 
     // exposed solely for testing purposes
     this.setupPromise = $q.resolve().then(function() {
+      if ($stateParams.noDebounce) {
+        debouncedApplyChanges = applyChanges;
+      } else if ($stateParams.debounceWait) {
+        debouncedApplyChanges = _.debounce(applyChanges, $stateParams.debounceWait);
+      }
+
       if ($stateParams.id) {
         return selectContact($stateParams.id);
       }
@@ -128,32 +141,53 @@ angular.module('inboxControllers').controller('ContactsContentCtrl',
       });
     });
 
+    var applyChanges = function() {
+      if (!changes) {
+        return;
+      }
+
+      changes = false;
+      return selectContact($scope.selected.doc._id, true, true);
+    };
+    debouncedApplyChanges = _.debounce(applyChanges, debounceWait);
+
     var changeListener = Changes({
       key: 'contacts-content',
-      filter: function(change) {
-        return $scope.selected && $scope.selected.doc._id === change.id;
-      },
       callback: function(change) {
-        if (change.deleted) {
-          var parentId = $scope.selected &&
-                         $scope.selected.doc &&
-                         $scope.selected.doc.parent &&
-                         $scope.selected.doc.parent._id;
-          if (parentId) {
-            // select the parent
-            selectContact(parentId, true);
+        if (!$scope.selected || !$scope.selected.doc || !change) {
+          return;
+        }
+
+        if (ContactChangeFilter.matchSelected(change, $scope.selected)) {
+          if (ContactChangeFilter.isDeleted(change)) {
+            var parentId = $scope.selected.doc.parent && $scope.selected.doc.parent._id;
+            changes = false;
+            if (parentId) {
+              // redirect to the parent
+              $state.go($state.current.name, { id: parentId });
+            } else {
+              // top level contact deleted - clear selection
+              $scope.clearSelected();
+            }
           } else {
-            // top level contact deleted - clear selection
-            $scope.clearSelected();
+            // refresh the updated contact
+            changes = true;
+            return debouncedApplyChanges();
           }
-        } else {
-          // refresh the updated contact
-          selectContact(change.id, true);
+        } else if (ContactChangeFilter.isRelevantContact(change, $scope.selected)) {
+          //either a new child, an old child or a parent
+          changes = true;
+          return debouncedApplyChanges();
+        } else if (ContactChangeFilter.isRelevantReport(change, $scope.selected)) {
+          changes = true;
+          return debouncedApplyChanges();
         }
       }
     });
 
-    $scope.$on('$destroy', changeListener.unsubscribe);
-
+    $scope.$on('$destroy', function() {
+      changeListener.unsubscribe();
+      changes = false;
+    });
   }
 );
