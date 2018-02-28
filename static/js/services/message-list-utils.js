@@ -7,13 +7,16 @@ angular.module('inboxServices').factory('MessageListUtils',
     'ngInject';
 
     var removeDeleted = function(allMessages, changedMessages) {
-      allMessages.forEach(function(message, i, scoped) {
-        if (!_.some(changedMessages, function(updated) {
-          return message.key === updated.key;
-        })) {
-          scoped.splice(i, 1);
+      var existingKey;
+      var checkExisting = function(updated) {
+        return existingKey === updated.key;
+      };
+      for (var i = allMessages.length - 1; i >= 0; i--) {
+        existingKey = allMessages[i].key;
+        if (!_.some(changedMessages, checkExisting)) {
+          allMessages.splice(i, 1);
         }
-      });
+      }
     };
 
     var mergeUpdated = function(allMessages, changedMessages, selectedId) {

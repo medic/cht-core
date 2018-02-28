@@ -5,23 +5,23 @@ describe('GetDataRecords service', () => {
   let service,
       allDocs,
       query,
-      GetContactSummaries;
+      HydrateContactNames;
 
   beforeEach(() => {
     allDocs = sinon.stub();
     query = sinon.stub();
-    GetContactSummaries = sinon.stub();
+    HydrateContactNames = sinon.stub();
     module('inboxApp');
     module($provide => {
       $provide.factory('DB', KarmaUtils.mockDB({ allDocs: allDocs, query: query }));
       $provide.value('$q', Q); // bypass $q so we don't have to digest
-      $provide.value('GetContactSummaries', GetContactSummaries);
+      $provide.value('HydrateContactNames', HydrateContactNames);
     });
     inject($injector => service = $injector.get('GetDataRecords'));
   });
 
   afterEach(() => {
-    KarmaUtils.restore(allDocs, query, GetContactSummaries);
+    KarmaUtils.restore(allDocs, query, HydrateContactNames);
   });
 
   it('returns empty array when given no ids', () => {
@@ -45,7 +45,7 @@ describe('GetDataRecords service', () => {
 
     it('no result', () => {
       query.returns(Promise.resolve({ rows: [] }));
-      GetContactSummaries.returns(Promise.resolve([ ]));
+      HydrateContactNames.returns(Promise.resolve([ ]));
       return service('5').then(actual => {
         chai.expect(actual).to.equal(null);
         chai.expect(query.callCount).to.equal(1);
@@ -72,15 +72,15 @@ describe('GetDataRecords service', () => {
           }
         }
       ] }));
-      GetContactSummaries.returns(Promise.resolve([ expected ]));
+      HydrateContactNames.returns(Promise.resolve([ expected ]));
       return service('5').then(actual => {
         chai.expect(actual).to.deep.equal(expected);
         chai.expect(query.callCount).to.equal(1);
         chai.expect(query.args[0][0]).to.equal('medic-client/doc_summaries_by_id');
         chai.expect(query.args[0][1]).to.deep.equal({ keys: [ '5' ] });
         chai.expect(allDocs.callCount).to.equal(0);
-        chai.expect(GetContactSummaries.callCount).to.equal(1);
-        chai.expect(GetContactSummaries.args[0][0]).to.deep.equal([{
+        chai.expect(HydrateContactNames.callCount).to.equal(1);
+        chai.expect(HydrateContactNames.args[0][0]).to.deep.equal([{
           _id: '5',
           name: 'five',
           contact: 'a',
@@ -100,7 +100,7 @@ describe('GetDataRecords service', () => {
         { id: '6', value: { name: 'six' } },
         { id: '7', value: { name: 'seven' } }
       ] }));
-      GetContactSummaries.returns(Promise.resolve(expected));
+      HydrateContactNames.returns(Promise.resolve(expected));
       return service([ '5', '6', '7' ]).then(actual => {
         chai.expect(actual).to.deep.equal(expected);
         chai.expect(query.callCount).to.equal(1);

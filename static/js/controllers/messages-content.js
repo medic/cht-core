@@ -107,6 +107,7 @@ angular.module('inboxControllers').controller('MessagesContentCtrl',
           });
           $scope.selected.contact = contactModel;
           $scope.selected.messages = conversation;
+          $scope.setTitle((contactModel.doc && contactModel.doc.name) || id);
           markAllRead();
           $timeout(scrollToUnread);
         })

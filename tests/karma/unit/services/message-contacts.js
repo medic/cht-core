@@ -4,12 +4,12 @@ describe('MessageContacts service', () => {
 
   let service,
       query,
-      getContactSummaries,
+      hydrateContactNames,
       addReadStatus;
 
   beforeEach(() => {
     query = sinon.stub();
-    getContactSummaries = sinon.stub();
+    hydrateContactNames = sinon.stub();
     addReadStatus = {
       messages: sinon.stub()
     };
@@ -17,7 +17,7 @@ describe('MessageContacts service', () => {
     module('inboxApp');
     module($provide => {
       $provide.factory('DB', KarmaUtils.mockDB({ query: query }));
-      $provide.value('GetContactSummaries', getContactSummaries);
+      $provide.value('HydrateContactNames', hydrateContactNames);
       $provide.value('AddReadStatus', addReadStatus);
     });
     inject($injector => service = $injector.get('MessageContacts'));
@@ -31,12 +31,12 @@ describe('MessageContacts service', () => {
         { key: [ '4321' ], value: { id: 'b', from: '4321' } },
       ];
       query.returns(Promise.resolve({ rows: given }));
-      getContactSummaries.returns(Promise.resolve([]));
+      hydrateContactNames.returns(Promise.resolve([]));
       return service.list().then(() => {
         chai.expect(query.args[0][1]).to.deep.equal({
           group_level: 1
         });
-        chai.expect(getContactSummaries.args[0][0]).to.deep.equal([
+        chai.expect(hydrateContactNames.args[0][0]).to.deep.equal([
           { id: 'a', from: '1234', key: '1234', type: 'phone' },
           { id: 'b', from: '4321', key: '4321', type: 'phone' },
         ]);

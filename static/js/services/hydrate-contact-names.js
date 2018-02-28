@@ -1,9 +1,6 @@
 var _ = require('underscore');
 
-// TODO: GetContactSummaries is not a name that accurately reflects what this
-// does. It literally just replaces ids with names. HydrateContactSummaries?
-// AddContactNames?
-angular.module('inboxServices').factory('GetContactSummaries',
+angular.module('inboxServices').factory('HydrateContactNames',
   function(
     $q,
     DB

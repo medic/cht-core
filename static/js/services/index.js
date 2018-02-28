@@ -37,9 +37,9 @@
   require('./format-date');
   require('./generate-lucene-query');
   require('./geolocation');
-  require('./get-contact-summaries');
   require('./get-data-records');
   require('./get-subject-summaries');
+  require('./hydrate-contact-names');
   require('./import-contacts');
   require('./json-forms');
   require('./json-parse');

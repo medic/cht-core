@@ -1,4 +1,4 @@
-describe('GetContactSummaries service', () => {
+describe('HydrateContactNames service', () => {
 
   'use strict';
 
@@ -12,7 +12,7 @@ describe('GetContactSummaries service', () => {
       $provide.factory('DB', KarmaUtils.mockDB({ query: query }));
       $provide.value('$q', Q); // bypass $q so we don't have to digest
     });
-    inject($injector => service = $injector.get('GetContactSummaries'));
+    inject($injector => service = $injector.get('HydrateContactNames'));
   });
 
   afterEach(() => {

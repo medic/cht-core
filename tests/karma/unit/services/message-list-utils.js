@@ -15,18 +15,20 @@ describe('Message list utils', () => {
       const allMessages = [
         {key: 'a', message: {inAllMessages: true}},
         {key: 'b', message: {inAllMessages: true}},
-        {key: 'c', message: {inAllMessages: true}}
+        {key: 'c', message: {inAllMessages: true}},
+        {key: 'd', message: {inAllMessages: true}},
+        {key: 'e', message: {inAllMessages: true}},
       ];
       const updatedMessages = [
         {key: 'a', message: {updatedMessage: true}},
-        {key: 'c', message: {updatedMessage: true}}
+        {key: 'c', message: {updatedMessage: true}},
       ];
 
       service.removeDeleted(allMessages, updatedMessages);
 
       chai.expect(allMessages).to.deep.equal([
         {key: 'a', message: {inAllMessages: true}},
-        {key: 'c', message: {inAllMessages: true}}
+        {key: 'c', message: {inAllMessages: true}},
       ]);
     });
   });

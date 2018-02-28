@@ -4,7 +4,7 @@ angular.module('inboxServices').factory('MessageContacts',
   function(
     AddReadStatus,
     DB,
-    GetContactSummaries
+    HydrateContactNames
   ) {
     'use strict';
     'ngInject';
@@ -55,15 +55,15 @@ angular.module('inboxServices').factory('MessageContacts',
         });
     };
 
-    var getContactSummaries = function(messages) {
+    var hydrateContactNames = function(messages) {
       messages = _.pluck(messages, 'value');
-      return GetContactSummaries(messages);
+      return HydrateContactNames(messages);
     };
 
     return {
       list: function() {
         return getMessages(listParams())
-          .then(getContactSummaries)
+          .then(hydrateContactNames)
           .then(AddReadStatus.messages);
       },
       conversation: function(id, skip) {
