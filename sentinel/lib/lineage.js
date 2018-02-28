@@ -69,50 +69,35 @@ const fillContactsInDocs = (docs, contacts) => {
   return docs;
 };
 
+const extractParentIds = currentParent => {
+  const ids = [];
+  while (currentParent) {
+    ids.push(currentParent._id);
+    currentParent = currentParent.parent;
+  }
+  return ids;
+};
+
 const buildHydratedDoc = (doc, lineage) => {
   if (!doc || !lineage.length) {
     return doc;
   }
 
-  // Parent hierarchy starts at the contact for data_records, or the first
-  // parent if it exists
+  // Parent hierarchy starts at the contact for data_records
   let currentParent;
   if (doc.type === 'data_record') {
-    const hydratedContact = lineage.shift();
-    if (hydratedContact) {
-      doc.contact = hydratedContact;
-    }
-    currentParent = doc.contact;
-  } else if (doc.parent){
-    currentParent = doc.parent;
+    currentParent = doc.contact = (lineage.shift() || doc.contact);
   } else {
-    return doc;
+    // It's a contact
+    currentParent = doc;
   }
 
-  while (true) {
-    const next = lineage.shift();
+  const parentIds = extractParentIds(currentParent.parent);
+  lineage.forEach((l, i) => {
+    currentParent = currentParent.parent = (l || {_id: parentIds[i]});
+  });
 
-    if (next) {
-      // Use the hydrated parent
-
-      // But first make sure we haven't shifted incorrectly
-      if (!(currentParent && currentParent.parent && currentParent.parent._id)) {
-        throw Error(`Parent lineage doesn't line up with stub lineage: on ${doc._id} trying to hydrate ${next._id} onto a non-existant stub`);
-      }
-      if (next._id !== currentParent.parent._id) {
-        throw Error(`Parent lineage doesn't line up with stub lineage: on ${doc._id} trying to hydrate ${next._id} onto ${currentParent.parent._id}`);
-      }
-
-      currentParent.parent = next;
-      currentParent = currentParent.parent;
-    } else if (currentParent.parent) {
-      // For safety / continuity, use the stub
-      currentParent = currentParent.parent;
-    } else {
-      // No more hydrated or stub parents
-      break;
-    }
-  }
+  return doc;
 };
 
 const minifyContact = contact => {
