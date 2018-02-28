@@ -384,13 +384,13 @@ module.exports = function(grunt) {
     },
     nodeunit: {
       all: [
-        // 'tests/nodeunit/unit/**/*.js',
+        'tests/nodeunit/unit/**/*.js',
         '!tests/nodeunit/unit/*/utils.js',
-        // 'api/tests/unit/**/*.js',
+        'api/tests/unit/**/*.js',
         '!api/tests/unit/utils.js',
         '!api/tests/unit/integration/**/*.js',
-        'sentinel/test/unit/lineage.js',
-        // 'sentinel/test/functional/**/*.js'
+        'sentinel/test/unit/**/*.js',
+        'sentinel/test/functional/**/*.js'
       ]
     },
     mochaTest: {
