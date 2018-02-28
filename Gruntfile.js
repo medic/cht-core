@@ -206,10 +206,10 @@ module.exports = function(grunt) {
     },
     exec: {
       apiDev: {
-        cmd: './node_modules/.bin/nodemon --watch api api/server.js'
+        cmd: 'TZ=UTC ./node_modules/.bin/nodemon --watch api api/server.js'
       },
       sentinelDev: {
-        cmd: './node_modules/.bin/nodemon --watch sentinel sentinel/server.js'
+        cmd: 'TZ=UTC ./node_modules/.bin/nodemon --watch sentinel sentinel/server.js'
       },
       blankLinkCheck: {
         cmd: `echo "Checking for dangerous _blank links..." &&
