@@ -197,10 +197,8 @@ exports['fetchHydratedDoc handles doc with unknown parent by leaving just the st
     { doc: { _id: 'cba' } },
     { doc: { _id: 'def' } }
   ] });
-  console.log('GOTTA BE STARTING SOMETHIN');
   lineage.fetchHydratedDoc(docId)
   .then(actual => {
-    console.log('GOTTA BE STOPPING SOMETHIN');
     test.deepEqual(actual, {
       _id: 'abc',
       contact: { _id: 'def' },
