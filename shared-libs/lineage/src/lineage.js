@@ -1,12 +1,11 @@
-var _ = require('underscore'),
-    utils = require('./utils');
+var _ = require('underscore');
 
 module.exports = function(dependencies) {
   dependencies = dependencies || {};
   var Promise = dependencies.Promise;
   var DB = dependencies.DB;
 
-  var buildHydratedDoc = function(doc, lineage) {
+  var fillParentsInDocs = function(doc, lineage) {
     if (!doc) {
       return;
     }
@@ -35,10 +34,9 @@ module.exports = function(dependencies) {
     });
   };
 
-  var fetchContacts = function(lineage, patientLineage) {
-    var lineages = lineage.concat(patientLineage);
+  var fetchContacts = function(lineage) {
     var contactIds = _.uniq(
-      lineages
+      lineage
         .map(function(doc) {
           return doc && doc.contact && doc.contact._id;
         })
@@ -67,34 +65,21 @@ module.exports = function(dependencies) {
       });
   };
 
-  var mergeLineages = function(lineage, patientLineage, contacts) {
+  var mergeLineagesIntoDoc = function(lineage, contacts, patientLineage) {
+    patientLineage = patientLineage || [];
     var lineages = lineage.concat(patientLineage);
     fillContactsInDocs(lineages, contacts);
 
     var doc = lineage.shift();
-    buildHydratedDoc(doc, lineage);
+    fillParentsInDocs(doc, lineage);
 
     if (patientLineage.length) {
       var patientDoc = patientLineage.shift();
-      buildHydratedDoc(patientDoc, patientLineage);
+      fillParentsInDocs(patientDoc, patientLineage);
       doc.patient = patientDoc;
     }
 
     return doc;
-  };
-
-  var patientLineageByShortcode = function(shortcode) {
-    return new Promise(function(resolve, reject) {
-      return utils.getPatientContactUuid(shortcode, function(err, uuid) {
-        if (err) {
-          reject(err);
-        } else {
-          fetchLineageById(uuid)
-            .then(resolve)
-            .catch(reject);
-        }
-      });
-    });
   };
 
   var findPatientId = function(doc) {
@@ -126,24 +111,35 @@ module.exports = function(dependencies) {
       });
   };
 
+  var fetchDoc = function(id) {
+    return DB.get(id)
+      .catch(function(err) {
+        if (err.status === 404) {
+          err.statusCode = 404;
+        }
+        throw err;
+      });
+  };
+
   var fetchHydratedDoc = function(id) {
     var lineage;
     var patientLineage;
     return fetchLineageById(id)
       .then(function(result) {
         lineage = result;
+
         if (lineage.length === 0) {
           // Not a doc that has lineage, just do a normal fetch.
-          return DB.get(id);
+          return fetchDoc(id);
         }
 
         return fetchPatientLineage(lineage[0])
           .then(function(result) {
             patientLineage = result;
-            return fetchContacts(lineage, patientLineage);
+            return fetchContacts(lineage.concat(patientLineage));
           })
           .then(function(contacts) {
-            mergeLineages(lineage, patientLineage, contacts);
+            mergeLineagesIntoDoc(lineage, contacts, patientLineage);
           });
       });
   };
@@ -260,7 +256,7 @@ module.exports = function(dependencies) {
     return fetchPatientLineage(doc).then(function(patientLineage) {
       if (patientLineage.length) {
         var patientDoc = patientLineage.shift();
-        buildHydratedDoc(patientDoc, patientLineage);
+        fillParentsInDocs(patientDoc, patientLineage);
         doc.patient = patientDoc;
       }
       return doc;
@@ -350,6 +346,7 @@ module.exports = function(dependencies) {
     fetchLineageById: fetchLineageById,
     minifyLineage: minifyLineage,
     fillContactsInDocs: fillContactsInDocs,
-    buildHydratedDoc: buildHydratedDoc
+    fillParentsInDocs: fillParentsInDocs,
+    fetchContacts: fetchContacts
   };
 };

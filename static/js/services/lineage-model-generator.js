@@ -1,3 +1,5 @@
+var lineageFactory = require('lineage');
+
 /**
  * Hydrates the given doc by uuid and creates a model which holds
  * the doc and associated contacts. eg:
@@ -15,70 +17,29 @@ angular.module('inboxServices').factory('LineageModelGenerator',
   ) {
     'ngInject';
     'use strict';
+    var lineageUtils = lineageFactory({ Promise: $q, DB: DB() });
 
     var get = function(id) {
-      return DB()
-        .query('medic-client/docs_by_id_lineage', {
-          startkey: [ id ],
-          endkey: [ id, {} ],
-          include_docs: true
-        })
-        .then(function(result) {
-          if (!result.rows.length) {
+      return lineageUtils.fetchLineageById(id)
+        .then(function(docs) {
+          if (!docs.length) {
             var err = new Error('Document not found');
             err.code = 404;
             throw err;
           }
-          return result.rows.map(function(row) {
-            return row && row.doc;
-          });
-        });
-    };
-
-    var hydrate = function(docs) {
-      var contactIds = docs
-        .map(function(parent) {
-          return parent && parent.contact && parent.contact._id;
-        })
-        .filter(function(id) {
-          return !!id;
-        });
-      if (!contactIds.length) {
-        return $q.resolve(docs);
-      }
-      return DB().allDocs({ keys: contactIds, include_docs: true })
-        .then(function(response) {
-          docs.forEach(function(parent) {
-            var contactId = parent && parent.contact && parent.contact._id;
-            if (contactId) {
-              response.rows.forEach(function(row) {
-                if (row.doc && (row.doc._id === contactId)) {
-                  parent.contact = row.doc;
-                  return;
-                }
-              });
-            }
-          });
           return docs;
         });
     };
 
-    var mergeParents = function(doc, lineage) {
-      var current = doc;
-      lineage.forEach(function(hydrated) {
-        if (!current) {
-          return;
-        }
-        if (hydrated) {
-          current.parent = hydrated;
-        }
-        current = current.parent;
-      });
-      return doc;
+    var hydrate = function(docs) {
+      return lineageUtils.fetchContacts(docs)
+        .then(function(contacts) {
+          lineageUtils.fillContactsInDocs(docs, contacts);
+          return docs;
+        });
     };
 
     return {
-
       /**
        * Fetch a contact and its lineage by the given uuid. Returns a
        * contact model, or if options.merge is true the doc with the
@@ -86,8 +47,11 @@ angular.module('inboxServices').factory('LineageModelGenerator',
        */
       contact: function(id, options) {
         options = options || {};
-        return get(id).then(function(docs) {
-          return hydrate(docs).then(function(docs) {
+        return get(id)
+          .then(function(docs) {
+            return hydrate(docs);
+          })
+          .then(function(docs) {
             // the first row is the contact
             var doc = docs.shift();
             // everything else is the lineage
@@ -96,13 +60,12 @@ angular.module('inboxServices').factory('LineageModelGenerator',
               lineage: docs
             };
             if (options.merge) {
-              result.doc = mergeParents(doc, docs);
+              result.doc = lineageUtils.fillParentsInDocs(doc, docs);
             } else {
               result.doc = doc;
             }
             return result;
           });
-        });
       },
 
       /**
@@ -111,15 +74,18 @@ angular.module('inboxServices').factory('LineageModelGenerator',
        */
       report: function(id, options) {
         options = options || {};
-        return get(id).then(function(docs) {
-          return hydrate(docs).then(function(docs) {
+        return get(id)
+          .then(function(docs) {
+            return hydrate(docs);
+          })
+          .then(function(docs) {
             // the first row is the report
             var doc = docs.shift();
             // the second row is the report's contact
             var contact = docs.shift();
             // everything else is the lineage
             if (options.merge) {
-              mergeParents(doc.contact, docs);
+              lineageUtils.fillParentsInDocs(doc.contact, docs);
             }
             return {
               _id: id,
@@ -128,7 +94,6 @@ angular.module('inboxServices').factory('LineageModelGenerator',
               lineage: docs
             };
           });
-        });
       }
     };
 
