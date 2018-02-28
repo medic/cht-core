@@ -28,6 +28,7 @@ const startNodeModule = (dir, startOutput) => {
     const module = spawn('node', ['server.js'], {
       cwd: dir,
       env: {
+        TZ: 'UTC',
         API_PORT: constants.API_PORT,
         COUCH_URL: utils.getCouchUrl(),
         COUCH_NODE_NAME: process.env.COUCH_NODE_NAME,
