@@ -571,7 +571,7 @@
         </translation>
       </itext>
       <instance>
-        <data delimiter="#" id="contact:person:create" prefix="J1!contact:person:create!" version="2017-09-13_13-50">
+        <data delimiter="#" id="contact:person:create" prefix="J1!contact:person:create!" version="2018-02-27_18-16">
           <inputs>
             <meta>
               <location>
@@ -622,12 +622,12 @@
       <bind nodeset="/data/inputs/user/facility_id" type="string"/>
       <bind nodeset="/data/inputs/user/name" type="string"/>
       <bind calculate=" /data/person/parent " nodeset="/data/init/parent_id" readonly="true()" type="string"/>
-      <bind calculate="." nodeset="/data/init/name" type="string"/>
-      <bind calculate="." nodeset="/data/init/type" type="string"/>
+      <bind nodeset="/data/init/name" type="string"/>
+      <bind nodeset="/data/init/type" type="string"/>
       <bind calculate="../type" nodeset="/data/init/type_selector" type="select1"/>
       <bind calculate="jr:choice-name( /data/init/type_selector ,' /data/init/type_selector ')" nodeset="/data/init/type_label" type="string"/>
-      <bind calculate="." nodeset="/data/person/parent" type="string"/>
-      <bind calculate="." nodeset="/data/person/type" type="string"/>
+      <bind nodeset="/data/person/parent" type="string"/>
+      <bind nodeset="/data/person/type" type="string"/>
       <bind nodeset="/data/person/name" required="true()" type="string"/>
       <bind nodeset="/data/person/date_of_birth" type="date"/>
       <bind constraint="true()" jr:constraintMsg="jr:itext('/data/person/phone:jr:constraintMsg')" nodeset="/data/person/phone" type="tel"/>

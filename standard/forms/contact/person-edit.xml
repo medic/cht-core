@@ -661,7 +661,7 @@
         </translation>
       </itext>
       <instance>
-        <data delimiter="#" id="contact:person:edit" prefix="J1!contact:person:edit!" version="2017-09-13_13-50">
+        <data delimiter="#" id="contact:person:edit" prefix="J1!contact:person:edit!" version="2018-02-27_19-44">
           <inputs>
             <meta>
               <location>
@@ -724,17 +724,17 @@
       <bind calculate="../../person/name" nodeset="/data/init/person_name" type="string"/>
       <bind calculate="../name" nodeset="/data/init/person_place_name" type="string"/>
       <bind calculate=" /data/person/parent " nodeset="/data/init/person_parent" readonly="true()" type="db:district_hospital"/>
-      <bind calculate="." nodeset="/data/init/type" type="string"/>
-      <bind calculate="." nodeset="/data/init/name" type="string"/>
+      <bind nodeset="/data/init/type" type="string"/>
+      <bind nodeset="/data/init/name" type="string"/>
       <bind nodeset="/data/init/note_place" readonly="true()" type="string"/>
       <bind nodeset="/data/init/change_parent" required="true()" type="select1"/>
-      <bind calculate="../type" nodeset="/data/init/edited_place_type" relevant="selected( /data/init/change_parent , 'true')" required="true()" type="select1"/>
+      <bind nodeset="/data/init/edited_place_type" relevant="selected( /data/init/change_parent , 'true')" required="true()" type="select1"/>
       <bind nodeset="/data/init/id_district_hospital" relevant="selected( /data/init/change_parent , 'true') and selected( /data/init/edited_place_type , 'district_hospital')" required="true()" type="db:district_hospital"/>
       <bind nodeset="/data/init/id_health_center" relevant="selected( /data/init/change_parent , 'true') and selected( /data/init/edited_place_type , 'health_center')" required="true()" type="db:health_center"/>
       <bind nodeset="/data/init/id_clinic" relevant="selected( /data/init/change_parent , 'true') and selected( /data/init/edited_place_type , 'clinic')" required="true()" type="db:clinic"/>
       <bind calculate="coalesce(coalesce(coalesce( /data/init/id_district_hospital ,  /data/init/id_health_center ),  /data/init/id_clinic ), /data/person/parent )" nodeset="/data/person/parent" type="string"/>
-      <bind calculate="." nodeset="/data/person/_id" readonly="true()" type="string"/>
-      <bind calculate="." nodeset="/data/person/type" readonly="true()" type="string"/>
+      <bind nodeset="/data/person/_id" readonly="true()" type="string"/>
+      <bind nodeset="/data/person/type" readonly="true()" type="string"/>
       <bind nodeset="/data/person/name" required="true()" type="string"/>
       <bind nodeset="/data/person/date_of_birth" type="date"/>
       <bind constraint="true()" jr:constraintMsg="jr:itext('/data/person/phone:jr:constraintMsg')" nodeset="/data/person/phone" type="tel"/>
@@ -744,9 +744,9 @@
       <bind nodeset="/data/person/role_other" relevant="selected(  /data/person/role ,'other')" required="true()" type="string"/>
       <bind nodeset="/data/person/external_id" type="string"/>
       <bind nodeset="/data/person/notes" type="string"/>
-      <bind calculate="." nodeset="/data/person/meta/created_by" readonly="true()" type="string"/>
-      <bind calculate="." nodeset="/data/person/meta/created_by_person_uuid" readonly="true()" type="string"/>
-      <bind calculate="." nodeset="/data/person/meta/created_by_place_uuid" readonly="true()" type="string"/>
+      <bind nodeset="/data/person/meta/created_by" readonly="true()" type="string"/>
+      <bind nodeset="/data/person/meta/created_by_person_uuid" readonly="true()" type="string"/>
+      <bind nodeset="/data/person/meta/created_by_place_uuid" readonly="true()" type="string"/>
       <bind calculate="../../../inputs/user/name" nodeset="/data/person/meta/last_edited_by" type="string"/>
       <bind calculate="../../../inputs/user/contact_id" nodeset="/data/person/meta/last_edited_by_person_uuid" type="string"/>
       <bind calculate="../../../inputs/user/facility_id" nodeset="/data/person/meta/last_edited_by_place_uuid" type="string"/>

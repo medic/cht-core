@@ -1096,7 +1096,7 @@
         </translation>
       </itext>
       <instance>
-        <data delimiter="#" id="contact:health_center:create" prefix="J1!contact:health_center:create!" version="2017-10-11_11-39">
+        <data delimiter="#" id="contact:health_center:create" prefix="J1!contact:health_center:create!" version="2018-02-27_21-45">
           <inputs>
             <meta>
               <location>
@@ -1169,7 +1169,7 @@
       <bind nodeset="/data/inputs/user/name" type="string"/>
       <bind nodeset="/data/init/create_new_person" required="true()" type="select1"/>
       <bind nodeset="/data/init/select_person" relevant="selected( /data/init/create_new_person ,'old_person')" required="true()" type="db:person"/>
-      <bind calculate="." nodeset="/data/init/name" type="string"/>
+      <bind nodeset="/data/init/name" type="string"/>
       <bind calculate="coalesce(../name, ../../contact/name)" nodeset="/data/init/contact_name" type="string"/>
       <bind calculate="&quot;name&quot;" nodeset="/data/init/custom_place_name_label_translator" relevant="selected( /data/init/create_new_person ,'none')" type="select1"/>
       <bind calculate="jr:choice-name( /data/init/custom_place_name_label_translator ,' /data/init/custom_place_name_label_translator ')" nodeset="/data/init/custom_place_name_label" type="string"/>
@@ -1179,8 +1179,8 @@
       <bind nodeset="/data/init/generated_name" type="select1"/>
       <bind calculate="jr:choice-name( /data/init/generated_name ,' /data/init/generated_name ')" nodeset="/data/init/generated_name_translation" type="string"/>
       <bind nodeset="/data/contact" relevant="selected( /data/init/create_new_person ,'new_person')"/>
-      <bind calculate="." nodeset="/data/contact/parent" type="string"/>
-      <bind calculate="." nodeset="/data/contact/type" type="string"/>
+      <bind nodeset="/data/contact/parent" type="string"/>
+      <bind nodeset="/data/contact/type" type="string"/>
       <bind nodeset="/data/contact/name" required="true()" type="string"/>
       <bind constraint="true()" jr:constraintMsg="Please enter a valid local number, or use the standard international format, which includes a plus sign (+) and country code. For example: +254712345678" nodeset="/data/contact/phone" type="tel"/>
       <bind constraint="true()" jr:constraintMsg="Please enter a valid local number, or use the standard international format, which includes a plus sign (+) and country code. For example: +254712345678" nodeset="/data/contact/phone_alternate" type="tel"/>
@@ -1191,8 +1191,8 @@
       <bind calculate="../../../inputs/user/name" nodeset="/data/contact/meta/created_by" type="string"/>
       <bind calculate="../../../inputs/user/contact_id" nodeset="/data/contact/meta/created_by_person_uuid" type="string"/>
       <bind calculate="../../../inputs/user/facility_id" nodeset="/data/contact/meta/created_by_place_uuid" type="string"/>
-      <bind calculate="." nodeset="/data/health_center/parent" type="string"/>
-      <bind calculate="." nodeset="/data/health_center/type" type="string"/>
+      <bind nodeset="/data/health_center/parent" type="string"/>
+      <bind nodeset="/data/health_center/type" type="string"/>
       <bind nodeset="/data/health_center/is_name_generated" relevant="not(selected( /data/init/create_new_person ,'none'))" required="true()" type="select1"/>
       <bind calculate="if(  /data/health_center/is_name_generated  = 'true',  /data/init/generated_name_translation ,  /data/init/custom_place_name )" nodeset="/data/health_center/name" required="true()" type="string"/>
       <bind nodeset="/data/health_center/external_id" type="string"/>
