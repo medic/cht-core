@@ -26,7 +26,7 @@
         templateUrl: 'templates/partials/messages.html'
       })
       .state('messages.detail', {
-        url: '/:type/:id',
+        url: '/{type}:{id}',
         views: {
           content: {
             controller: 'MessagesContentCtrl',

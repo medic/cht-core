@@ -88,9 +88,6 @@ describe('MessageContacts service', () => {
           startkey: [ 'abc', {} ],
           endkey: [ 'abc' ]
         });
-        console.log('=========================================================');
-        console.log(JSON.stringify(actual, null, 2));
-        console.log('=========================================================');
         chai.expect(actual).to.deep.equal(expected);
       });
     });
