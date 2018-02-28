@@ -73,6 +73,7 @@ _.templateSettings = {
     $urlRouterProvider.otherwise('/error/404');
     router($stateProvider);
     $urlRouterProvider.when('', '/home');
+    $urlRouterProvider.when('/messages/{uuid}', '/messages/contact:{uuid}');
     $translateProvider.useLoader('TranslationLoader', {});
     $translateProvider.useSanitizeValueStrategy('escape');
     $translateProvider.addInterpolation('$translateMessageFormatInterpolation');

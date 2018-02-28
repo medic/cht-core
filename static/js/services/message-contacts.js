@@ -1,21 +1,21 @@
+var _ = require('underscore');
+
 angular.module('inboxServices').factory('MessageContacts',
   function(
     AddReadStatus,
     DB,
-    GetContactSummaries
+    HydrateContactNames
   ) {
     'use strict';
     'ngInject';
 
     var listParams = function() {
       return {
-        group_level: 1,
-        startkey: [],
-        endkey: [{}]
+        group_level: 1
       };
     };
 
-    var getParams = function(id, skip) {
+    var conversationParams = function(id, skip) {
       return {
         reduce: false,
         descending: true,
@@ -27,31 +27,49 @@ angular.module('inboxServices').factory('MessageContacts',
       };
     };
 
-    var getSummaries = function(result) {
-      // set the key
-      result = result.map(function(item) {
-        var value = item.value;
-        value.from = value.key = item.key[0];
-        return value;
+    /**
+     * We want to keep CouchDB view "values" as small as possible to keep
+     * CouchDB as efficient as possible. This adds some redundant information we
+     * don't need to pass down.
+     */
+    var addDetail = function(messages) {
+      messages.forEach(function(message) {
+        message.value.key = message.key[0];
+
+        if (message.value.contact) {
+          message.value.type = 'contact';
+        } else if (message.key[0] === message.value.from) {
+          message.value.type = 'phone';
+        } else {
+          message.value.type = 'unknown';
+        }
       });
-      // populate the summaries of the result values then return the result
-      return GetContactSummaries(result);
     };
 
-    return function(options) {
-      options = options || {};
-      var params = options.id ? getParams(options.id, options.skip) : listParams();
+    var getMessages = function(params) {
       return DB().query('medic-client/messages_by_contact_date', params)
         .then(function(response) {
-          var result = response.rows;
-          if (options.id) {
-            return result;
-          }
-          return getSummaries(result);
-        })
-        .then(function(summaries) {
-          return AddReadStatus.messages(summaries);
+          var messages = response.rows;
+          addDetail(messages);
+          return messages;
         });
+    };
+
+    var hydrateContactNames = function(messages) {
+      messages = _.pluck(messages, 'value');
+      return HydrateContactNames(messages);
+    };
+
+    return {
+      list: function() {
+        return getMessages(listParams())
+          .then(hydrateContactNames)
+          .then(AddReadStatus.messages);
+      },
+      conversation: function(id, skip) {
+        return getMessages(conversationParams(id, skip || 0))
+          .then(AddReadStatus.messages);
+      }
     };
   }
 );

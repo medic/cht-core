@@ -1,5 +1,11 @@
 var _ = require('underscore');
 
+// In this context $stateParams.id (the id in the url) can be:
+//  - the _id of the contact who is sending these messages
+//  - the phone number if it couldn't be resolved into a contact
+//  - the _id of the data_record if there is no discernable phone number
+//  This is determined by its $stateParams.type: 'contact', 'phone' or 'unknown'
+//  respectively
 angular.module('inboxControllers').controller('MessagesContentCtrl',
   function (
     $log,
@@ -24,6 +30,12 @@ angular.module('inboxControllers').controller('MessagesContentCtrl',
       message: ''
     };
 
+    var checkScroll = function() {
+      if (this.scrollTop === 0 && !$scope.allLoaded) {
+        updateConversation({ skip: true });
+      }
+    };
+
     var scrollToUnread = function() {
       var content = $('.message-content-wrapper');
       var markers = content.find('.marker');
@@ -34,7 +46,7 @@ angular.module('inboxControllers').controller('MessagesContentCtrl',
         scrollTo = content[0].scrollHeight;
       }
       content.scrollTop(scrollTo);
-      $('.message-content-wrapper').on('scroll', _checkScroll);
+      $('.message-content-wrapper').on('scroll', checkScroll);
     };
 
     var markAllRead = function() {
@@ -49,18 +61,18 @@ angular.module('inboxControllers').controller('MessagesContentCtrl',
       }
     };
 
-    var getContact = function(id) {
-      return LineageModelGenerator.contact(id)
-        .catch(function(err) {
-          if (err.code === 404) {
-            // might be an unknown contact so do the best we can
-            return { name: id };
-          }
-          throw err;
-        });
+    // See $stateParams.id note at top of file
+    var getContactable = function(id, type) {
+      if (type === 'contact') {
+        return LineageModelGenerator.contact(id);
+      } else if (type === 'phone') {
+        return {name: id};
+      } else {
+        return {};
+      }
     };
 
-    var selectContact = function(id, options) {
+    var selectContact = function(id, type, options) {
       options = options || {};
       if (!id) {
         $scope.error = false;
@@ -68,14 +80,14 @@ angular.module('inboxControllers').controller('MessagesContentCtrl',
         $scope.clearSelected();
         return;
       }
-      $('.message-content-wrapper').off('scroll', _checkScroll);
+      $('.message-content-wrapper').off('scroll', checkScroll);
       $scope.setSelected({ id: id, messages: [] });
       if (!options.silent) {
         $scope.setLoadingContent(id);
       }
       $q.all([
-        getContact(id),
-        MessageContacts({ id: id })
+        getContactable(id, type),
+        MessageContacts.conversation(id)
       ])
         .then(function(results) {
           var contactModel = results[0];
@@ -93,7 +105,7 @@ angular.module('inboxControllers').controller('MessagesContentCtrl',
           $scope.firstUnread = _.min(unread, function(message) {
             return message.doc.reported_date;
           });
-          $scope.selected.contact = contactModel.doc ? contactModel : { name: id };
+          $scope.selected.contact = contactModel;
           $scope.selected.messages = conversation;
           $scope.setTitle((contactModel.doc && contactModel.doc.name) || id);
           markAllRead();
@@ -109,21 +121,20 @@ angular.module('inboxControllers').controller('MessagesContentCtrl',
     var updateConversation = function(options) {
       var selectedId = $scope.selected && $scope.selected.id;
       if (selectedId) {
-        options = options || {};
-        var opts = { id: selectedId };
-        if (options.skip) {
-          opts.skip = $scope.selected.messages.length;
+        var skip = options.skip && $scope.selected.messages.length;
+        if (skip) {
           $timeout(function() {
             $scope.loadingMoreContent = true;
           });
         }
-        MessageContacts(opts)
-          .then(function(data) {
+
+        MessageContacts.conversation(selectedId, skip)
+          .then(function(conversation) {
             $scope.loadingMoreContent = false;
             var contentElem = $('.message-content-wrapper');
             var scrollToBottom = contentElem.scrollTop() + contentElem.height() + 30 > contentElem[0].scrollHeight;
             var first = $('.item-content .body > ul > li').filter(':first');
-            data.forEach(function(updated) {
+            conversation.forEach(function(updated) {
               var match = _.findWhere($scope.selected.messages, { id: updated.id });
               if (match) {
                 angular.extend(match, updated);
@@ -134,7 +145,7 @@ angular.module('inboxControllers').controller('MessagesContentCtrl',
                 }
               }
             });
-            $scope.allLoaded = data.length < 50;
+            $scope.allLoaded = conversation.length < 50;
             if (options.skip) {
               delete $scope.firstUnread;
             }
@@ -143,7 +154,7 @@ angular.module('inboxControllers').controller('MessagesContentCtrl',
               var scroll = false;
               if (options.skip) {
                 var spinnerHeight = 102;
-                scroll = $('.message-content-wrapper li')[data.length].offsetTop - spinnerHeight;
+                scroll = $('.message-content-wrapper li')[conversation.length].offsetTop - spinnerHeight;
               } else if (first.length && scrollToBottom) {
                 scroll = $('.message-content-wrapper')[0].scrollHeight;
               }
@@ -155,12 +166,6 @@ angular.module('inboxControllers').controller('MessagesContentCtrl',
           .catch(function(err) {
             $log.error('Error fetching contact conversation', err);
           });
-      }
-    };
-
-    var _checkScroll = function() {
-      if (this.scrollTop === 0 && !$scope.allLoaded) {
-        updateConversation({ skip: true });
       }
     };
 
@@ -216,9 +221,12 @@ angular.module('inboxControllers').controller('MessagesContentCtrl',
     $scope.$on('$destroy', changeListener.unsubscribe);
 
     $('.tooltip').remove();
-    selectContact($stateParams.id);
+
+
+    // See $stateParams.id note at top of file
+    selectContact($stateParams.id, $stateParams.type);
     $scope.$on('UpdateContactConversation', function(e, options) {
-      selectContact($stateParams.id, options);
+      selectContact($stateParams.id, $stateParams.type, options);
     });
 
     $('body')

@@ -1,10 +1,10 @@
 <div id="message-list" class="col-sm-4 inbox-items left-pane">
   <ul ng-show="!loading || appending">
-    <li ng-repeat="message in messages | orderBy:'-date'" data-record-id="{{message.key}}" class="content-row" ng-class="{ 'selected': message.key === loadingContent || !loadingContent && message.key === selected.id, 'unread': !message.read }">
-      <a href="#messages/{{message.key}}">
+    <li ng-repeat="message in messages | orderBy:'-date'" data-record-id="{{message.key}}" data-record-type="{{message.type}}" class="content-row" ng-class="{ 'selected': message.key === loadingContent || !loadingContent && message.key === selected.id, 'unread': !message.read }">
+      <a href="#messages/{{message.type}}:{{message.key}}">
         <div class="content">
           <div class="heading">
-            <h4>{{message.contact || message.from}}</h4>
+            <h4>{{message.contact || message.from || "messages.unknown.sender" | translate}}</h4>
             <div class="date">
               <span ng-bind-html="message.date | relativeDate"></span>
             </div>
