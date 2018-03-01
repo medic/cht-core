@@ -2,6 +2,7 @@ const controller = require('../../../controllers/people'),
       places = require('../../../controllers/places'),
       cutils = require('../../../controllers/utils'),
       db = require('../../../db'),
+      lineageUtils = require('lineage').init({ Promise, DB: db.medic }),
       sinon = require('sinon').sandbox.create();
 
 let example;
@@ -59,7 +60,7 @@ exports['validatePerson returns error if name is an object.'] = test => {
 };
 
 exports['getPerson returns custom message on 404 errors.'] = test => {
-  sinon.stub(places, 'fetchHydratedDoc').callsArgWith(1, {statusCode: 404});
+  sinon.stub(lineageUtils, 'fetchHydratedDoc').callsArgWith(1, {statusCode: 404});
   controller.getPerson('x', err => {
     test.equal(err.message, 'Failed to find person.');
     test.done();
@@ -67,7 +68,7 @@ exports['getPerson returns custom message on 404 errors.'] = test => {
 };
 
 exports['getPerson returns not found message if doc is wrong type.'] = test => {
-  sinon.stub(places, 'fetchHydratedDoc').callsArgWith(1, null, {type: 'clinic'});
+  sinon.stub(lineageUtils, 'fetchHydratedDoc').callsArgWith(1, null, {type: 'clinic'});
   controller.getPerson('x', err => {
     test.equal(err.message, 'Failed to find person.');
     test.done();
@@ -75,7 +76,7 @@ exports['getPerson returns not found message if doc is wrong type.'] = test => {
 };
 
 exports['getPerson succeeds and returns doc when person type.'] = test => {
-  sinon.stub(places, 'fetchHydratedDoc').callsArgWith(1, null, {type: 'person'});
+  sinon.stub(lineageUtils, 'fetchHydratedDoc').callsArgWith(1, null, {type: 'person'});
   controller.getPerson('x', (err, doc) => {
     test.equal(err, void 0);
     test.deepEqual(doc, { type: 'person' });
@@ -163,14 +164,14 @@ exports['createPerson minifies the given parent'] = test => {
     }
   };
   sinon.stub(places, 'getOrCreatePlace').callsArgWith(1, null, place);
-  sinon.stub(places, 'minify').returns(minified);
+  sinon.stub(lineageUtils, 'minifyLineage').returns(minified);
   sinon.stub(db.medic, 'insert').callsFake(doc => {
     test.ok(!doc.place);
     test.deepEqual(doc.parent, minified);
     test.equals(places.getOrCreatePlace.callCount, 1);
     test.equals(places.getOrCreatePlace.args[0][0], 'a');
-    test.equals(places.minify.callCount, 1);
-    test.deepEqual(places.minify.args[0][0], place);
+    test.equals(lineageUtils.minifyLineage.callCount, 1);
+    test.deepEqual(lineageUtils.minifyLineage.args[0][0], place);
     test.done();
   });
   controller.createPerson(person);
