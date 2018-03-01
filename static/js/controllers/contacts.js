@@ -302,9 +302,10 @@ var _ = require('underscore'),
         key: 'contacts-list',
         callback: function(change) {
           if (change.deleted) {
+            var initialCount = liveList.count();
             liveList.remove(change.doc);
-            if ($scope.moreItems) {
-              _query({limit: liveList.count() + 1, silent: true});
+            if ($scope.moreItems && initialCount > liveList.count()) {
+              _query({limit: initialCount, silent: true});
             }
           } else {
             _query({limit: liveList.count(), silent: true});
