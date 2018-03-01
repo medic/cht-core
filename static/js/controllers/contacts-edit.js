@@ -9,8 +9,8 @@ angular.module('inboxControllers').controller('ContactsEditCtrl',
     ContactForm,
     ContactSave,
     ContactSchema,
-    DB,
     Enketo,
+    LineageModelGenerator,
     Snackbar
   ) {
 
@@ -53,10 +53,14 @@ angular.module('inboxControllers').controller('ContactsEditCtrl',
     };
 
     var getContact = function() {
-      if ($state.params.id) {
-        return DB().get($state.params.id);
+      var id = $state.params.id;
+      if (!id) {
+        return $q.resolve();
       }
-      return $q.resolve();
+      return LineageModelGenerator.contact(id, { merge: true })
+        .then(function(result) {
+          return result.doc;
+        });
     };
 
     var getCategory = function(type) {
