@@ -16,6 +16,16 @@ fdescribe('/sms', function() {
   });
 
   describe('POST', function() {
+
+    it('should accept requests with missing fields', function() {
+      // when
+      return post({})
+        .then(response => {
+          // then
+          expect(response).toEqual({ messages:[] });
+        });
+    });
+
   });
 });
 
@@ -24,5 +34,14 @@ function get() {
     path: '/api/sms',
     method: 'GET',
     headers: { 'Content-Type':'application/json' },
+  });
+}
+
+function post(body) {
+  return utils.request({
+    path: '/api/sms',
+    method: 'POST',
+    headers: { 'Content-Type':'application/json' },
+    body: body,
   });
 }
