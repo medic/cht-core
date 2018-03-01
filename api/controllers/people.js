@@ -1,7 +1,9 @@
 const _ = require('underscore'),
       db = require('../db'),
+      dbPouch = require('../db-pouch'),
       utils = require('./utils'),
-      places = require('./places');
+      places = require('./places'),
+      lineageUtils = require('lineage')({ Promise, DB: dbPouch.medic });
 
 const getPerson = (id, callback) => {
   const error = (msg, code) => {
@@ -10,7 +12,7 @@ const getPerson = (id, callback) => {
       message: msg || 'Failed to find person.'
     });
   };
-  places.fetchHydratedDoc(id, (err, doc) => {
+  lineageUtils.fetchHydratedDoc(id, (err, doc) => {
     if (err) {
       if (err.statusCode === 404) {
         return error();
