@@ -8,6 +8,10 @@ const _ = require('underscore'),
   mainDdocName = 'medic',
   userSettingsDocId = `org.couchdb.user:${auth.user}`;
 
+const PouchDB = require('pouchdb-core');
+PouchDB.plugin(require('pouchdb-adapter-http'));
+const db = new PouchDB(`http://${auth.user}:${auth.pass}@${constants.COUCH_HOST}:${constants.COUCH_PORT}/${constants.DB_NAME}`);
+
 let originalSettings;
 
 // First Object is passed to http.request, second is for specific options / flags
@@ -207,6 +211,8 @@ const revertDb = (except, ignoreRefresh) => {
 };
 
 module.exports = {
+
+  db: db,
 
   request: request,
 
