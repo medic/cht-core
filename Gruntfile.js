@@ -472,8 +472,8 @@ module.exports = function(grunt) {
         ] } ],
         options: {
           // in Mocha, .only() is used
-          // in Jasmine, fdescribe() is used
-          pattern: /(\.only\()|(fdescribe\()/g,
+          // in Jasmine, fdescribe() and fit() are used
+          pattern: /(\.only\()|(fdescribe\()|(fit\()/g,
         }
       },
       console_in_angular: {
