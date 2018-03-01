@@ -6,7 +6,8 @@ var async = require('async'),
     utils = require('../lib/utils'),
     date = require('../date'),
     config = require('../config'),
-    lineage = require('../lib/lineage'),
+    dbPouch = require('../db-pouch'),
+    lineage = require('lineage')({ Promise, DB: dbPouch.medic }),
     messageUtils = require('../lib/message-utils');
 
 const getTemplateContext = (db, doc, callback) => {

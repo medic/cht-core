@@ -1,8 +1,9 @@
 const _ = require('underscore'),
       logger = require('../lib/logger'),
       transitionUtils = require('./utils'),
-      lineage = require('../lib/lineage'),
       db = require('../db'),
+      dbPouch = require('../db-pouch'),
+      lineage = require('lineage')({ Promise, DB: dbPouch.medic }),
       NAME = 'update_clinics';
 
 const associateContact = (doc, contact, callback) => {
