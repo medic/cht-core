@@ -95,6 +95,11 @@ fdescribe('/sms', function() {
       5. confirm that the response was OK, and the message state is still correct, but that the history has not been updated
     `));
 
+    it('should return as quickly as possible', () => TODO(`
+      1. make a POST with lots of stuff in it
+      2. check that the response is received reeeeal fast
+    `));
+
   });
 });
 
