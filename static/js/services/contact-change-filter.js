@@ -4,7 +4,7 @@
 var _ = require('underscore');
 
 angular.module('inboxServices').factory('ContactChangeFilter',
-  function() {
+  function(ContactSchema) {
     'ngInject';
     'use strict';
 
@@ -14,7 +14,7 @@ angular.module('inboxServices').factory('ContactChangeFilter',
 
     var isContact = function(change) {
       var isValidDocType = function() {
-        return ['person', 'clinic', 'health_center', 'district_hospital'].indexOf(change.doc.type) !== -1;
+        return ContactSchema.getTypes().indexOf(change.doc.type) !== -1;
       };
       return !!change.doc.type && isValidDocType();
     };
