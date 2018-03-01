@@ -79,7 +79,7 @@ const createPerson = (data, callback) => {
         if (err) {
           return callback(err);
         }
-        data.parent = places.minify(place);
+        data.parent = lineageUtils.minifyLineage(place);
         delete data.place;
         db.medic.insert(data, callback);
       });
