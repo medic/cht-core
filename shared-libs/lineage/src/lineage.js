@@ -5,19 +5,35 @@ module.exports = function(dependencies) {
   var Promise = dependencies.Promise;
   var DB = dependencies.DB;
 
+  var extractParentIds = function(currentParent) {
+    var ids = [];
+    while (currentParent) {
+      ids.push(currentParent._id);
+      currentParent = currentParent.parent;
+    }
+    return ids;
+  };
+
   var fillParentsInDocs = function(doc, lineage) {
-    if (!doc) {
-      return;
+    if (!doc || !lineage.length) {
+      return doc;
     }
-    var current = doc;
+
+    // Parent hierarchy starts at the contact for data_records
+    var currentParent;
     if (doc.type === 'data_record') {
-      doc.contact = lineage.shift();
-      current = doc.contact;
+      currentParent = doc.contact = lineage.shift() || doc.contact;
+    } else {
+      // It's a contact
+      currentParent = doc;
     }
-    while (current && current.parent && current.parent._id) {
-      current.parent = lineage.shift();
-      current = current.parent;
-    }
+
+    var parentIds = extractParentIds(currentParent.parent);
+    lineage.forEach(function(l, i) {
+      currentParent = currentParent.parent = l || { _id: parentIds[i] };
+    });
+
+    return doc;
   };
 
   var fillContactsInDocs = function(docs, contacts) {
@@ -94,7 +110,19 @@ module.exports = function(dependencies) {
     if (!patientId) {
       return Promise.resolve([]);
     }
-    return patientLineageByShortcode(patientId);
+    return Promise.resolve([]);
+    // TODO figure out how to have getPatientContactUuid accessible here
+    // return new Promise(function(resolve, reject) {
+    //   return utils.getPatientContactUuid(patientId, function(err, uuid) {
+    //     if (err) {
+    //       reject(err);
+    //     } else {
+    //       fetchLineageById(uuid)
+    //         .then(resolve)
+    //         .catch(reject);
+    //     }
+    //   });
+    // });
   };
 
   var fetchLineageById = function(id) {
@@ -121,7 +149,7 @@ module.exports = function(dependencies) {
       });
   };
 
-  var fetchHydratedDoc = function(id) {
+  var fetchHydratedDoc = function(id, callback) {
     var lineage;
     var patientLineage;
     return fetchLineageById(id)
@@ -139,8 +167,20 @@ module.exports = function(dependencies) {
             return fetchContacts(lineage.concat(patientLineage));
           })
           .then(function(contacts) {
-            mergeLineagesIntoDoc(lineage, contacts, patientLineage);
+            return mergeLineagesIntoDoc(lineage, contacts, patientLineage);
           });
+      })
+      .then(function(result) {
+        if (callback) {
+          callback(null, result);
+        }
+        return result;
+      })
+      .catch(function(err) {
+        if (callback) {
+          callback(err);
+        }
+        throw err;
       });
   };
 
