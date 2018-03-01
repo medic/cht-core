@@ -238,20 +238,16 @@ rule GenerateEvents {
     };
 
     var isCoveredByUseCase = function (contact, usecase) {      
+      // The use case should only be set at the health_center level, but allow checking throughout the lineage.
+      // A facility can override a parent's use case setting, but not the other way around.
+      // If no use_case is set in lineage they are covered by default.
       if (!contact) {
-        // we have reached past the top parent, and have not found a parent with the use case
-        return false;
-      }
-      else if (!contact.parent && !contact.hasOwnProperty('use_cases')) {
-        // default is to show all use cases if the top parent doesn't have `use_cases`
         return true;
       }
-      else if (contact.parent && contact.parent.use_cases && contact.parent.use_cases.split(' ').indexOf(usecase) !== -1) {
-        // found parent with the use case, meaning person is covered by the use case
-        return true;
+      else if (contact && typeof(contact.use_cases) === 'string') {
+        return (contact.use_cases.split(' ').indexOf(usecase) !== -1);
       }
       else {
-        // the parent place isn't covered by use case, but perhaps their parent is
         return isCoveredByUseCase(contact.parent, usecase);
       }
     };
