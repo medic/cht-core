@@ -1,6 +1,6 @@
 const utils = require('../../../utils');
 
-fdescribe('Export Data V2.0', () => {
+describe('Export Data V2.0', () => {
 
   afterAll(utils.deleteAllDocs);
 

@@ -471,7 +471,9 @@ module.exports = function(grunt) {
           'sentinel/test/mocha/**/*.js'
         ] } ],
         options: {
-          pattern: /\.only\(/g
+          // in Mocha, .only() is used
+          // in Jasmine, fdescribe() is used
+          pattern: /(\.only\()|(fdescribe\()/g,
         }
       },
       console_in_angular: {
