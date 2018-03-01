@@ -175,7 +175,7 @@ describe('ContactsContentCtrl', () => {
 
     it('updates information when selected contact is updated', () => {
       return runChangeFeedProcessTest({ doc }).then(() => {
-        stubContactChangeFilter({ matchSelected: true, isDeleted: false });
+        stubContactChangeFilter({ matchContact: true, isDeleted: false });
         return changesCallback({ doc: {} }).then(() => {
           chai.assert.equal(contactViewModelGenerator.callCount, 2);
           chai.assert.equal(contactViewModelGenerator.getCall(1).args[0], doc._id);
@@ -188,9 +188,9 @@ describe('ContactsContentCtrl', () => {
       doc.parent = { _id: 'parent_id' };
 
       return runChangeFeedProcessTest({ doc }).then(() => {
-        stubContactChangeFilter({ matchSelected: true, isDeleted: true });
+        stubContactChangeFilter({ matchContact: true, isDeleted: true });
         changesCallback({ doc: {} });
-        chai.assert.equal(contactChangeFilter.matchSelected.callCount, 1);
+        chai.assert.equal(contactChangeFilter.matchContact.callCount, 1);
         chai.assert.equal(contactViewModelGenerator.callCount, 1);
         chai.assert.equal(state.go.callCount, 1);
         chai.assert.equal(state.go.getCall(0).args[1].id, doc.parent._id);
@@ -199,7 +199,7 @@ describe('ContactsContentCtrl', () => {
 
     it('clears when selected contact is deleted and has no parent', () => {
       return runChangeFeedProcessTest({ doc }).then(() => {
-        stubContactChangeFilter({ matchSelected: true, isDeleted: true });
+        stubContactChangeFilter({ matchContact: true, isDeleted: true });
         changesCallback({ doc: {} });
         chai.assert.equal(contactViewModelGenerator.callCount, 1);
         chai.assert.equal(scope.clearSelected.callCount, 1);
@@ -208,9 +208,9 @@ describe('ContactsContentCtrl', () => {
 
     it('updates information when relevant contact change is received', () => {
       return runChangeFeedProcessTest({ doc }).then(() => {
-        stubContactChangeFilter({ matchSelected: false, isRelevantContact: true });
+        stubContactChangeFilter({ matchContact: false, isRelevantContact: true });
         return changesCallback({ doc: {} }).then(() => {
-          chai.assert.equal(contactChangeFilter.matchSelected.callCount, 1);
+          chai.assert.equal(contactChangeFilter.matchContact.callCount, 1);
           chai.assert.equal(contactViewModelGenerator.callCount, 2);
           chai.assert.equal(contactViewModelGenerator.getCall(1).args, doc._id);
           chai.assert.equal(scope.clearSelected.callCount, 0);
@@ -220,9 +220,9 @@ describe('ContactsContentCtrl', () => {
 
     it('updates information when relevant report change is received', () => {
       return runChangeFeedProcessTest({ doc }).then(() => {
-        stubContactChangeFilter({ matchSelected: false, isRelevantReport: true, isRelevantContact: false });
+        stubContactChangeFilter({ matchContact: false, isRelevantReport: true, isRelevantContact: false });
         return changesCallback({ doc: {} }).then(() => {
-          chai.assert.equal(contactChangeFilter.matchSelected.callCount, 1);
+          chai.assert.equal(contactChangeFilter.matchContact.callCount, 1);
           chai.assert.equal(contactViewModelGenerator.callCount, 2);
           chai.assert.equal(contactViewModelGenerator.getCall(1).args, doc._id);
           chai.assert.equal(scope.clearSelected.callCount, 0);
@@ -232,7 +232,7 @@ describe('ContactsContentCtrl', () => {
 
     it('does not update information when irrelevant change is received', () => {
       return runChangeFeedProcessTest({ doc }).then(() => {
-        stubContactChangeFilter({ matchSelected: false, isRelevantReport: false, isRelevantContact: false });
+        stubContactChangeFilter({ matchContact: false, isRelevantReport: false, isRelevantContact: false });
         changesCallback({ doc: {} });
         chai.assert.equal(contactViewModelGenerator.callCount, 1);
         chai.assert.equal(scope.clearSelected.callCount, 0);
@@ -242,7 +242,7 @@ describe('ContactsContentCtrl', () => {
     it('debounces the update call', (done) => {
       runChangeFeedProcessTest({ doc, noDebounce: false }).then(() => {
         stubContactChangeFilter({
-          matchSelected: [ true, false, false, false ],
+          matchContact: [ true, false, false, false ],
           isDeleted: false,
           isRelevantReport: true,
           isRelevantContact: [true, true]

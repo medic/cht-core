@@ -12,7 +12,18 @@ angular.module('inboxServices').factory('ContactChangeFilter',
       return !!change && !!change.doc && !!contact && !!contact.doc;
     };
 
-    var isReportSubject = function(report, contact) {
+    var isContact = function(change) {
+      var isValidDocType = function() {
+        return ['person', 'clinic', 'health_center', 'district_hospital'].indexOf(change.doc.type) !== -1;
+      };
+      return !!change.doc.type && isValidDocType();
+    };
+
+    var isReport = function(change) {
+      return change.doc.form && change.doc.type === 'data_record';
+    };
+
+    var matchReportSubject = function(report, contact) {
       if (report.doc.fields && (
           (report.doc.fields.patient_uuid && report.doc.fields.patient_uuid === contact.doc._id) ||
           (report.doc.fields.patient_id && report.doc.fields.patient_id === contact.doc.patient_id) ||
@@ -30,13 +41,6 @@ angular.module('inboxServices').factory('ContactChangeFilter',
       return false;
     };
 
-    var isContact = function(change) {
-      var isValidDocType = function() {
-        return ['person', 'clinic', 'health_center', 'district_hospital'].indexOf(change.doc.type) !== -1;
-      };
-      return !!change.doc.type && isValidDocType();
-    };
-
     var isChild = function(change, contact) {
       return !!change.doc.parent && change.doc.parent._id === contact.doc._id;
     };
@@ -52,7 +56,7 @@ angular.module('inboxServices').factory('ContactChangeFilter',
       });
     };
 
-    var isParent = function(change, contact) {
+    var isAncestor = function(change, contact) {
       if (!contact.lineage || !contact.lineage.length) {
         return false;
       }
@@ -64,7 +68,7 @@ angular.module('inboxServices').factory('ContactChangeFilter',
 
 
     return {
-      matchSelected: function(change, contact) {
+      matchContact: function(change, contact) {
         if (!isValidInput(change, contact)) {
           return false;
         }
@@ -72,11 +76,11 @@ angular.module('inboxServices').factory('ContactChangeFilter',
         return contact.doc._id === change.doc._id;
       },
       isRelevantReport: function(change, contact) {
-        if (!isValidInput(change, contact) || change.doc.type !== 'data_record' || !change.doc.form) {
+        if (!isValidInput(change, contact) || !isReport(change)) {
           return false;
         }
 
-        if (isReportSubject(change, contact)) {
+        if (matchReportSubject(change, contact)) {
           return true;
         }
 
@@ -86,7 +90,7 @@ angular.module('inboxServices').factory('ContactChangeFilter',
 
         return !!_.find(contact.children, function(children) {
           return children instanceof Array && _.find(children, function(child) {
-            return isReportSubject(change, child);
+            return matchReportSubject(change, child);
           });
         });
       },
@@ -96,10 +100,10 @@ angular.module('inboxServices').factory('ContactChangeFilter',
         }
 
         return isContact(change) &&
-          (isParent(change, contact) || isChild(change, contact) || wasChild(change, contact));
+          (isAncestor(change, contact) || isChild(change, contact) || wasChild(change, contact));
       },
       isDeleted: function(change) {
-        return !!change.deleted;
+        return !!change && !!change.deleted;
       }
     };
   }

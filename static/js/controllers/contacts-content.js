@@ -23,10 +23,10 @@ angular.module('inboxControllers').controller('ContactsContentCtrl',
     'ngInject';
 
     var taskEndDate,
-      reportStartDate,
-      changes = false,
-      debounceWait = 500,
-      debouncedApplyChanges;
+        reportStartDate,
+        hasChanges = false,
+        debounceWait = 500,
+        debouncedReloadContact;
 
     $scope.filterTasks = function(task) {
       return !taskEndDate || taskEndDate.isAfter(task.date);
@@ -122,9 +122,9 @@ angular.module('inboxControllers').controller('ContactsContentCtrl',
     // exposed solely for testing purposes
     this.setupPromise = $q.resolve().then(function() {
       if ($stateParams.noDebounce) {
-        debouncedApplyChanges = applyChanges;
+        debouncedReloadContact = reloadContact;
       } else if ($stateParams.debounceWait) {
-        debouncedApplyChanges = _.debounce(applyChanges, $stateParams.debounceWait);
+        debouncedReloadContact = _.debounce(reloadContact, $stateParams.debounceWait);
       }
 
       if ($stateParams.id) {
@@ -141,15 +141,20 @@ angular.module('inboxControllers').controller('ContactsContentCtrl',
       });
     });
 
-    var applyChanges = function() {
-      if (!changes) {
+    var reloadContact = function() {
+      if (!hasChanges) {
         return;
       }
 
-      changes = false;
+      hasChanges = false;
       return selectContact($scope.selected.doc._id, true, true);
     };
-    debouncedApplyChanges = _.debounce(applyChanges, debounceWait);
+    debouncedReloadContact = _.debounce(reloadContact, debounceWait);
+
+    var receiveChanges = function() {
+      hasChanges = true;
+      return debouncedReloadContact();
+    };
 
     var changeListener = Changes({
       key: 'contacts-content',
@@ -158,10 +163,10 @@ angular.module('inboxControllers').controller('ContactsContentCtrl',
           return;
         }
 
-        if (ContactChangeFilter.matchSelected(change, $scope.selected)) {
+        if (ContactChangeFilter.matchContact(change, $scope.selected)) {
           if (ContactChangeFilter.isDeleted(change)) {
             var parentId = $scope.selected.doc.parent && $scope.selected.doc.parent._id;
-            changes = false;
+            hasChanges = false;
             if (parentId) {
               // redirect to the parent
               $state.go($state.current.name, { id: parentId });
@@ -171,23 +176,19 @@ angular.module('inboxControllers').controller('ContactsContentCtrl',
             }
           } else {
             // refresh the updated contact
-            changes = true;
-            return debouncedApplyChanges();
+            return receiveChanges();
           }
         } else if (ContactChangeFilter.isRelevantContact(change, $scope.selected)) {
-          //either a new child, an old child or a parent
-          changes = true;
-          return debouncedApplyChanges();
+          return receiveChanges();
         } else if (ContactChangeFilter.isRelevantReport(change, $scope.selected)) {
-          changes = true;
-          return debouncedApplyChanges();
+          return receiveChanges();
         }
       }
     });
 
     $scope.$on('$destroy', function() {
       changeListener.unsubscribe();
-      changes = false;
+      hasChanges = false;
     });
   }
 );

@@ -10,22 +10,24 @@ describe('ContactChangeFilter service', () => {
   });
 
   it('checks for invalid input', () => {
-    chai.assert.equal(service.matchSelected(), false);
-    chai.assert.equal(service.matchSelected({}, { something: true }), false);
+    chai.assert.equal(service.matchContact(), false);
+    chai.assert.equal(service.matchContact({}, { something: true }), false);
+    chai.assert.equal(service.matchContact('notAnObject', undefined), false);
+    chai.assert.equal(service.isDeleted(undefined), false);
   });
 
-  describe('matchSelected', () => {
+  describe('matchContact', () => {
     it('returns true for same ID', () => {
       const change = { doc: { _id: '123' } };
       const contact = { doc: { _id: '123' } };
-      chai.expect(service.matchSelected(change, contact)).to.equal(true);
+      chai.expect(service.matchContact(change, contact)).to.equal(true);
     });
 
     it('returns false for different ID', () => {
       const change = { doc: { _id: '456' } };
       const contact = { doc: { _id: '123' } };
 
-      chai.expect(service.matchSelected(change, contact)).to.equal(false);
+      chai.expect(service.matchContact(change, contact)).to.equal(false);
     });
   });
 
@@ -54,7 +56,7 @@ describe('ContactChangeFilter service', () => {
       chai.expect(service.isRelevantContact(change4, contact)).to.equal(true);
     });
 
-    it('returns true for old children', () => {
+    it('returns true for previous children', () => {
       const change1 = { doc: { _id: 'p1', type: 'person' } };
       const change2 = { doc: { _id: 'o1', type: 'district_hospital' } };
       const change3 = { doc: { _id: 'p2', type: 'clinic' } };
@@ -78,7 +80,7 @@ describe('ContactChangeFilter service', () => {
       chai.expect(service.isRelevantContact(change3, contact)).to.equal(true);
     });
 
-    it('returns true for parent', () => {
+    it('returns true for ancestor', () => {
       const change1 = { doc: { _id: '123', type: 'clinic'} };
       const change2 = { doc: { _id: '456', type: 'district_hospital'} };
       const change3 = { doc: { _id: '789', type: 'health_center'} };
