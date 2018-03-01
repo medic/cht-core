@@ -5,7 +5,7 @@ const async = require('async'),
       places = require('./places'),
       db = require('../db'),
       dbPouch = require('../db-pouch'),
-      lineageUtils = require('lineage')({ Promise, DB: dbPouch.medic });
+      lineageUtils = require('lineage').init({ Promise, DB: dbPouch.medic });
 
 const USER_PREFIX = 'org.couchdb.user:';
 

@@ -8,7 +8,7 @@ var _ = require('underscore'),
     config = require('../config'),
     db = require('../db-pouch'),
     fti = require('../controllers/fti'),
-    lineageUtils = require('lineage')({ Promise, DB: db.medic });
+    lineageUtils = require('lineage').init({ Promise, DB: db.medic });
 
 var createColumnModels = function(values, options) {
   return _.map(values, function(value) {

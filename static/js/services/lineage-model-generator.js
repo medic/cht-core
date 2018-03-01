@@ -1,4 +1,4 @@
-var lineageFactory = require('lineage');
+var lineageUtils = require('lineage');
 
 /**
  * Hydrates the given doc by uuid and creates a model which holds
@@ -17,7 +17,7 @@ angular.module('inboxServices').factory('LineageModelGenerator',
   ) {
     'ngInject';
     'use strict';
-    var lineageUtils = lineageFactory({ Promise: $q, DB: DB() });
+    lineageUtils.init({ Promise: $q, DB: DB() });
 
     var get = function(id) {
       return lineageUtils.fetchLineageById(id)

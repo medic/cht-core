@@ -4,7 +4,7 @@ const _ = require('underscore'),
       utils = require('./utils'),
       db = require('../db'),
       dbPouch = require('../db-pouch'),
-      lineageUtils = require('lineage')({ Promise, DB: dbPouch.medic }),
+      lineageUtils = require('lineage').init({ Promise, DB: dbPouch.medic }),
       PLACE_EDITABLE_FIELDS = ['name', 'parent', 'contact', 'place_id'],
       PLACE_TYPES = ['national_office', 'district_hospital', 'health_center', 'clinic'];
 

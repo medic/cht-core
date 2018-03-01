@@ -1,7 +1,7 @@
 const _ = require('underscore'),
       objectPath = require('object-path'),
       db = require('../db-pouch'),
-      lineageUtils = require('lineage')({ Promise, DB: db.medic });
+      lineageUtils = require('lineage').init({ Promise, DB: db.medic });
 
 const { Readable } = require('stream'),
       search = require('search')(Promise, db.medic);

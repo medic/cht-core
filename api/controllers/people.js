@@ -3,7 +3,7 @@ const _ = require('underscore'),
       dbPouch = require('../db-pouch'),
       utils = require('./utils'),
       places = require('./places'),
-      lineageUtils = require('lineage')({ Promise, DB: dbPouch.medic });
+      lineageUtils = require('lineage').init({ Promise, DB: dbPouch.medic });
 
 const getPerson = (id, callback) => {
   const error = (msg, code) => {

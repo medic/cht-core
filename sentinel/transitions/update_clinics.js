@@ -3,7 +3,7 @@ const _ = require('underscore'),
       transitionUtils = require('./utils'),
       db = require('../db'),
       dbPouch = require('../db-pouch'),
-      lineage = require('lineage')({ Promise, DB: dbPouch.medic }),
+      lineage = require('lineage').init({ Promise, DB: dbPouch.medic }),
       NAME = 'update_clinics';
 
 const associateContact = (doc, contact, callback) => {
