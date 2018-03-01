@@ -2,37 +2,14 @@ const _ = require('underscore'),
       async = require('async'),
       people = require('./people'),
       utils = require('./utils'),
-      db = require('../db-pouch'),
-      lineageUtils = require('lineage')({ Promise, DB: db.medic }),
+      db = require('../db'),
+      dbPouch = require('../db-pouch'),
+      lineageUtils = require('lineage')({ Promise, DB: dbPouch.medic }),
       PLACE_EDITABLE_FIELDS = ['name', 'parent', 'contact', 'place_id'],
       PLACE_TYPES = ['national_office', 'district_hospital', 'health_center', 'clinic'];
 
-const fetchHydratedDoc = id => {
-  let lineage;
-  return lineageUtils.lineageById(id)
-    .then(function(result) {
-      lineage = result;
-      if (!lineage.length) {
-        throw { statusCode: 404 }; // TODO this function can be deleted except for this line!
-      }
-
-      const contactIds = lineage
-        .map(doc => doc && doc.contact && doc.contact._id)
-        .filter(id => !!id);
-      return db.medic.allDocs({ keys: contactIds, include_docs: true });
-    })
-    .then(contacts => contacts.rows.map(contactRow => contactRow.doc))
-    .then(contacts => {
-      lineageUtils.fillContactsInDocs(lineage, contacts);
-      const doc = lineage.shift();
-      lineageUtils.buildHydratedDoc(doc, lineage);
-
-      return doc;
-    });
-};
-
 const getPlace = (id, callback) => {
-  module.exports.fetchHydratedDoc(id, (err, doc) => {
+  lineageUtils.fetchHydratedDoc(id, (err, doc) => {
     if (err) {
       if (err.statusCode === 404) {
         err.message  = 'Failed to find place.';
@@ -121,7 +98,7 @@ const createPlace = (place, callback) => {
       place.reported_date = utils.parseDate(place.reported_date).valueOf();
     }
     if (place.parent) {
-      place.parent = minify(place.parent);
+      place.parent = lineageUtils.minifyLineage(place.parent);
     }
     if (place.contact) {
       // also validates contact if creating
@@ -129,7 +106,7 @@ const createPlace = (place, callback) => {
         if (err) {
           return callback(err);
         }
-        place.contact = minify(person);
+        place.contact = lineageUtils.minifyLineage(person);
         db.medic.insert(place, callback);
       });
     } else {
@@ -287,4 +264,3 @@ module.exports.createPlace = createPlaces;
 module.exports.getPlace = getPlace;
 module.exports.updatePlace = updatePlace;
 module.exports.getOrCreatePlace = getOrCreatePlace;
-module.exports.fetchHydratedDoc = fetchHydratedDoc;
