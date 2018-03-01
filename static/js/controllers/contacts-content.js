@@ -25,7 +25,7 @@ angular.module('inboxControllers').controller('ContactsContentCtrl',
     var taskEndDate,
         reportStartDate,
         hasChanges = false,
-        debounceWait = 500,
+        debounceWait = 1000,
         debouncedReloadContact;
 
     $scope.filterTasks = function(task) {
@@ -151,38 +151,31 @@ angular.module('inboxControllers').controller('ContactsContentCtrl',
     };
     debouncedReloadContact = _.debounce(reloadContact, debounceWait);
 
-    var receiveChanges = function() {
-      hasChanges = true;
-      return debouncedReloadContact();
-    };
-
     var changeListener = Changes({
       key: 'contacts-content',
+      filter: function(change) {
+        return ContactChangeFilter.matchContact(change, $scope.selected) ||
+          ContactChangeFilter.isRelevantContact(change, $scope.selected) ||
+          ContactChangeFilter.isRelevantReport(change, $scope.selected);
+      },
       callback: function(change) {
-        if (!$scope.selected || !$scope.selected.doc || !change) {
-          return;
-        }
-
         if (ContactChangeFilter.matchContact(change, $scope.selected)) {
           if (ContactChangeFilter.isDeleted(change)) {
             var parentId = $scope.selected.doc.parent && $scope.selected.doc.parent._id;
             hasChanges = false;
             if (parentId) {
               // redirect to the parent
-              $state.go($state.current.name, { id: parentId });
+              $state.go($state.current.name, {id: parentId});
             } else {
               // top level contact deleted - clear selection
               $scope.clearSelected();
             }
-          } else {
-            // refresh the updated contact
-            return receiveChanges();
+            return;
           }
-        } else if (ContactChangeFilter.isRelevantContact(change, $scope.selected)) {
-          return receiveChanges();
-        } else if (ContactChangeFilter.isRelevantReport(change, $scope.selected)) {
-          return receiveChanges();
         }
+
+        hasChanges = true;
+        return debouncedReloadContact();
       }
     });
 

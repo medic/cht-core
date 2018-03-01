@@ -11,6 +11,7 @@ describe('ContactsContentCtrl', () => {
     reportsForContact,
     changes,
     changesCallback,
+    changesFilter,
     contactChangeFilter = sinon.stub();
 
   const childPerson = {
@@ -84,6 +85,7 @@ describe('ContactsContentCtrl', () => {
     tasksForContact = sinon.stub();
     reportsForContact = sinon.stub();
     changes = (options) => {
+      changesFilter = options.filter;
       changesCallback = options.callback;
       return { unsubscribe: () => {} };
     };
@@ -140,7 +142,8 @@ describe('ContactsContentCtrl', () => {
 
   describe('Change feed process', () => {
     let debounceWait = 2,
-        doc;
+        doc,
+        change;
 
     beforeEach(() => {
       doc = {
@@ -149,6 +152,8 @@ describe('ContactsContentCtrl', () => {
         contact: { _id: 'mario' },
         children: { persons: [ ] }
       };
+
+      change = { doc: {} };
     });
 
     const runChangeFeedProcessTest = ({ childrenArray = [], doc, noDebounce = true}) => {
@@ -176,7 +181,9 @@ describe('ContactsContentCtrl', () => {
     it('updates information when selected contact is updated', () => {
       return runChangeFeedProcessTest({ doc }).then(() => {
         stubContactChangeFilter({ matchContact: true, isDeleted: false });
-        return changesCallback({ doc: {} }).then(() => {
+        chai.assert.equal(changesFilter(change), true);
+        return changesCallback(change).then(() => {
+          chai.assert.equal(contactChangeFilter.matchContact.callCount, 2);
           chai.assert.equal(contactViewModelGenerator.callCount, 2);
           chai.assert.equal(contactViewModelGenerator.getCall(1).args[0], doc._id);
           chai.assert.equal(scope.clearSelected.callCount, 0);
@@ -189,8 +196,9 @@ describe('ContactsContentCtrl', () => {
 
       return runChangeFeedProcessTest({ doc }).then(() => {
         stubContactChangeFilter({ matchContact: true, isDeleted: true });
-        changesCallback({ doc: {} });
-        chai.assert.equal(contactChangeFilter.matchContact.callCount, 1);
+        chai.assert.equal(changesFilter(change), true);
+        changesCallback(change);
+        chai.assert.equal(contactChangeFilter.matchContact.callCount, 2);
         chai.assert.equal(contactViewModelGenerator.callCount, 1);
         chai.assert.equal(state.go.callCount, 1);
         chai.assert.equal(state.go.getCall(0).args[1].id, doc.parent._id);
@@ -200,7 +208,9 @@ describe('ContactsContentCtrl', () => {
     it('clears when selected contact is deleted and has no parent', () => {
       return runChangeFeedProcessTest({ doc }).then(() => {
         stubContactChangeFilter({ matchContact: true, isDeleted: true });
-        changesCallback({ doc: {} });
+        chai.assert.equal(changesFilter(change), true);
+        changesCallback(changes);
+        chai.assert.equal(contactChangeFilter.matchContact.callCount, 2);
         chai.assert.equal(contactViewModelGenerator.callCount, 1);
         chai.assert.equal(scope.clearSelected.callCount, 1);
       });
@@ -209,8 +219,10 @@ describe('ContactsContentCtrl', () => {
     it('updates information when relevant contact change is received', () => {
       return runChangeFeedProcessTest({ doc }).then(() => {
         stubContactChangeFilter({ matchContact: false, isRelevantContact: true });
-        return changesCallback({ doc: {} }).then(() => {
-          chai.assert.equal(contactChangeFilter.matchContact.callCount, 1);
+        chai.assert.equal(changesFilter(change), true);
+        return changesCallback(change).then(() => {
+          chai.assert.equal(contactChangeFilter.matchContact.callCount, 2);
+          chai.assert.equal(contactChangeFilter.isRelevantContact.callCount, 1);
           chai.assert.equal(contactViewModelGenerator.callCount, 2);
           chai.assert.equal(contactViewModelGenerator.getCall(1).args, doc._id);
           chai.assert.equal(scope.clearSelected.callCount, 0);
@@ -221,8 +233,11 @@ describe('ContactsContentCtrl', () => {
     it('updates information when relevant report change is received', () => {
       return runChangeFeedProcessTest({ doc }).then(() => {
         stubContactChangeFilter({ matchContact: false, isRelevantReport: true, isRelevantContact: false });
-        return changesCallback({ doc: {} }).then(() => {
-          chai.assert.equal(contactChangeFilter.matchContact.callCount, 1);
+        chai.assert.equal(changesFilter(change), true);
+        return changesCallback(change).then(() => {
+          chai.assert.equal(contactChangeFilter.matchContact.callCount, 2);
+          chai.assert.equal(contactChangeFilter.isRelevantContact.callCount, 1);
+          chai.assert.equal(contactChangeFilter.isRelevantReport.callCount, 1);
           chai.assert.equal(contactViewModelGenerator.callCount, 2);
           chai.assert.equal(contactViewModelGenerator.getCall(1).args, doc._id);
           chai.assert.equal(scope.clearSelected.callCount, 0);
@@ -233,7 +248,10 @@ describe('ContactsContentCtrl', () => {
     it('does not update information when irrelevant change is received', () => {
       return runChangeFeedProcessTest({ doc }).then(() => {
         stubContactChangeFilter({ matchContact: false, isRelevantReport: false, isRelevantContact: false });
-        changesCallback({ doc: {} });
+        chai.assert.equal(changesFilter(change), false);
+        chai.assert.equal(contactChangeFilter.matchContact.callCount, 1);
+        chai.assert.equal(contactChangeFilter.isRelevantContact.callCount, 1);
+        chai.assert.equal(contactChangeFilter.isRelevantReport.callCount, 1);
         chai.assert.equal(contactViewModelGenerator.callCount, 1);
         chai.assert.equal(scope.clearSelected.callCount, 0);
       });
@@ -242,17 +260,26 @@ describe('ContactsContentCtrl', () => {
     it('debounces the update call', (done) => {
       runChangeFeedProcessTest({ doc, noDebounce: false }).then(() => {
         stubContactChangeFilter({
-          matchContact: [ true, false, false, false ],
+          matchContact: [ true, true, false, false, false, false, false, false ],
           isDeleted: false,
           isRelevantReport: true,
-          isRelevantContact: [true, true]
+          isRelevantContact: [ true, true, false ]
         });
-        changesCallback({ doc: {} });
-        changesCallback({ doc: {} });
-        changesCallback({ doc: {} });
-        changesCallback({ doc: {} });
+        chai.assert.equal(changesFilter(changes), true);
+        changesCallback(change);
+        chai.assert.equal(changesFilter(changes), true);
+        changesCallback(change);
+        chai.assert.equal(changesFilter(changes), true);
+        changesCallback(change);
+        chai.assert.equal(changesFilter(changes), true);
+        changesCallback(change);
+
         setTimeout(() => {
           chai.assert.equal(contactViewModelGenerator.callCount, 2);
+          chai.assert.equal(contactChangeFilter.matchContact.callCount, 8);
+          chai.assert.equal(contactChangeFilter.isDeleted.callCount, 1);
+          chai.assert.equal(contactChangeFilter.isRelevantContact.callCount, 3);
+          chai.assert.equal(contactChangeFilter.isRelevantReport.callCount, 1);
           done();
         }, debounceWait * 4 + 2);
       });
