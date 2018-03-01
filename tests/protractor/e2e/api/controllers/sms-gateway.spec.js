@@ -23,14 +23,30 @@ fdescribe('/sms', function() {
     });
 
     it('should save supplied messages to DB', function() {
-      TODO(`
-        1. send POST containing a couple of well-formed messages
-        2. check that the messages eventually appear in the DB
-      `);
+      return postMessages(
+        {
+          id: 'test-sms-1',
+          from: '+111-test',
+          content: 'test 1',
+          sms_sent: 1511179010577,
+          sms_received: 1511189010577,
+        },
+        {
+          id: 'test-sms-2',
+          from: '+222-test',
+          content: 'test 2',
+          sms_sent: 1511179020577,
+          sms_received: 1511189020577,
+        },
+      )
+        .then(expectResponse({ messages:[] }))
+        .then(() => {
+          TODO('check that the messages eventually appear in the DB');
+        });
     });
 
     it('should not reject bad message content', function() {
-      post({ messages: [ { missing_fields:true } ] })
+      postMessage({ missing_fields:true })
         .then(expectResponse({ messages:[] }));
     });
 
@@ -97,6 +113,14 @@ function post(body) {
     headers: { 'Content-Type':'application/json' },
     body: body,
   });
+}
+
+function postMessage(message) {
+  return postMessages(message);
+}
+
+function postMessages(...messages) {
+  return post({ messages });
 }
 
 function TODO(message = 'this test') {
