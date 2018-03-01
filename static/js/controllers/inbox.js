@@ -92,11 +92,11 @@ var feedback = require('../modules/feedback'),
         }
       });
 
+      $('.bootstrap-layer .status').html('Loading rules…');
+
       RulesEngine.init
+        .catch(function() {})
         .then(function() {
-          $scope.dbWarmedUp = true;
-        })
-        .catch(function() {
           $scope.dbWarmedUp = true;
         });
 
