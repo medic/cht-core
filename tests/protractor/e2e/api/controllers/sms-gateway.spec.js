@@ -18,20 +18,20 @@ fdescribe('/sms', function() {
   describe('POST', function() {
 
     it('should accept requests with missing fields', function() {
-      // when
       return post({})
-        .then(response => {
-          // then
-          expect(response).toEqual({ messages:[] });
-        });
+        .then(expectResponse({ messages:[] }));
     });
 
     it('should save supplied messages to DB', function() {
-      TODO();
+      TODO(`
+        1. send POST containing a couple of well-formed messages
+        2. check that the messages eventually appear in the DB
+      `);
     });
 
     it('should not reject bad message content', function() {
-      TODO();
+      post({ messages: [ { missing_fields:true } ] })
+        .then(expectResponse({ messages:[] }));
     });
 
     it('should save all good messages in a request containing some good and some bad', () => TODO(`
@@ -101,4 +101,8 @@ function post(body) {
 
 function TODO(message = 'this test') {
   expect(message).toBe('implemented');
+}
+
+function expectResponse(expected) {
+  return response => expect(response).toEqual(expected);
 }
