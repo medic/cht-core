@@ -9,6 +9,7 @@ angular.module('inboxControllers').controller('ReportsAddCtrl',
     Enketo,
     FileReader,
     Geolocation,
+    LineageModelGenerator,
     Snackbar,
     XmlForm
   ) {
@@ -31,12 +32,11 @@ angular.module('inboxControllers').controller('ReportsAddCtrl',
         });
       }
       if ($state.params.reportId) { // editing
-        return DB()
-          .get($state.params.reportId)
-          .then(function(doc) {
+        return LineageModelGenerator.report($state.params.reportId, { merge: true })
+          .then(function(result) {
             return {
-              doc: doc,
-              formInternalId: doc.form
+              doc: result.doc,
+              formInternalId: result.doc && result.doc.form
             };
           });
       }
