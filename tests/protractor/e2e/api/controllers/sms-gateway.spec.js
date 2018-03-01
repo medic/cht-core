@@ -17,6 +17,8 @@ fdescribe('/sms', function() {
 
   describe('POST', function() {
 
+    afterAll(utils.revertDb);
+
     it('should accept requests with missing fields', function() {
       return post({})
         .then(expectResponse({ messages:[] }));
