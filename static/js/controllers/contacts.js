@@ -42,6 +42,7 @@ var _ = require('underscore'),
       $scope.filters = {};
       var defaultTypeFilter = {};
       var usersHomePlace;
+      var additionalListItem = false;
 
       var getUserHomePlaceSummary = function() {
         return UserSettings()
@@ -80,6 +81,15 @@ var _ = require('underscore'),
           options.skip = liveList.count();
         } else if (!options.silent) {
           liveList.set([]);
+          additionalListItem = false;
+        }
+
+        if (additionalListItem) {
+          if (options.skip) {
+            options.skip -= 1;
+          } else {
+            options.limit -= 1;
+          }
         }
 
         var actualFilter = defaultTypeFilter;
@@ -98,6 +108,7 @@ var _ = require('underscore'),
               contacts.splice(homeIndex, 1);
               contacts.unshift(usersHomePlace);
             } else if (!$scope.filters.search && !$scope.filters.simprintsIdentities) {
+              additionalListItem = true;
               contacts.unshift(usersHomePlace);
             }
             if ($scope.filters.simprintsIdentities) {
@@ -289,8 +300,15 @@ var _ = require('underscore'),
 
       var changeListener = Changes({
         key: 'contacts-list',
-        callback: function() {
-          _query({ limit: liveList.count(), silent: true });
+        callback: function(change) {
+          if (change.deleted) {
+            liveList.remove(change.doc);
+            if ($scope.moreItems) {
+              _query({limit: liveList.count() + 1, silent: true});
+            }
+          } else {
+            _query({limit: liveList.count(), silent: true});
+          }
         },
         filter: function(change) {
           return ContactSchema.getTypes().indexOf(change.doc.type) !== -1;
