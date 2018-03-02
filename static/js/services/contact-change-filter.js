@@ -13,14 +13,11 @@ angular.module('inboxServices').factory('ContactChangeFilter',
     };
 
     var isContact = function(change) {
-      var isValidDocType = function() {
-        return ContactSchema.getTypes().indexOf(change.doc.type) !== -1;
-      };
-      return !!change.doc.type && isValidDocType();
+      return !!change.doc.type && ContactSchema.getTypes().indexOf(change.doc.type) !== -1;
     };
 
     var isReport = function(change) {
-      return change.doc.form && change.doc.type === 'data_record';
+      return !!change.doc.form && change.doc.type === 'data_record';
     };
 
     var matchReportSubject = function(report, contact) {
@@ -65,7 +62,6 @@ angular.module('inboxServices').factory('ContactChangeFilter',
         return lineage._id === change.doc._id;
       });
     };
-
 
     return {
       matchContact: function(change, contact) {
