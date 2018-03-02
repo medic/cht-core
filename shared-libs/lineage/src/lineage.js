@@ -335,9 +335,10 @@ var minifyLineage = function(parent) {
   }
 
   var result = { _id: parent._id };
+  var minified = result;
   while (parent.parent && parent.parent._id) {
-    result.parent = { _id: parent.parent._id };
-    result = result.parent;
+    minified.parent = { _id: parent.parent._id };
+    minified = minified.parent;
     parent = parent.parent;
   }
   return result;
