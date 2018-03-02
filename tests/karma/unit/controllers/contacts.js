@@ -332,7 +332,7 @@ describe('Contacts controller', () => {
       });
     });
 
-    it('when paginating, does not skip the extra place for admins', () => {
+    it('when paginating, does not skip the extra place for admins #4085', () => {
       isAdmin = true;
       userSettings = KarmaUtils.promiseService(null, { facility_id: undefined });
       const searchResult = { _id: 'search-result' };
@@ -344,7 +344,7 @@ describe('Contacts controller', () => {
       });
     });
 
-    it('when paginating, does skip the extra place for non-admins', () => {
+    it('when paginating, does modify skip for non-admins #4085', () => {
       const searchResult = { _id: 'search-result' };
       searchResults = Array(50).fill(searchResult);
 
@@ -356,7 +356,7 @@ describe('Contacts controller', () => {
       });
     });
 
-    it('when refreshing list as admin, does not reduce limit because of extra place', () => {
+    it('when refreshing list as admin, does not modify limit #4085', () => {
       isAdmin = true;
       userSettings = KarmaUtils.promiseService(null, { facility_id: undefined });
       const searchResult = { _id: 'search-result' };
@@ -370,7 +370,7 @@ describe('Contacts controller', () => {
       });
     });
 
-    it('when refreshing list as non-admin, does reduce limit because of extra place', () => {
+    it('when refreshing list as non-admin, does modify limit #4085', () => {
       const searchResult = { _id: 'search-result' };
       searchResults = Array(10).fill(searchResult);
 
@@ -382,7 +382,7 @@ describe('Contacts controller', () => {
       });
     });
 
-    it('resets the extra top limit reducer when filtering', (done) => {
+    it('resets limit/skip modifier when filtering #4085', (done) => {
       let lhs;
       const searchResult = { _id: 'search-result' };
       searchResults = Array(10).fill(searchResult);
@@ -398,7 +398,7 @@ describe('Contacts controller', () => {
         setTimeout(() => {
           lhs = contactSearchLiveList.getList();
           assert.equal(lhs.length, 50);
-          //aand paginate the search results, also not skipping
+          //aand paginate the search results, also not skipping the extra place
           scrollLoaderCallback();
           assert.equal(searchService.args[2][2].skip, 50);
           done();
