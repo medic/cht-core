@@ -287,6 +287,7 @@ describe('Lineage', function() {
   });
 
   it('fetchHydratedDoc attaches the full lineage for reports', function() {
+    // TODO uncomment this when getPatientContactUuid is available in the lineage library
     // sinon.stub(utils, 'getPatientContactUuid').callsArgWith(2, null, report_patient._id);
     query.onCall(0).resolves({ rows: [
       { doc: report },
@@ -512,6 +513,7 @@ describe('Lineage', function() {
   });
 
   it('fetchHydratedDoc+minify is noop on a report', function() {
+    // TODO uncomment this when getPatientContactUuid is available in the lineage library
     // sinon.stub(utils, 'getPatientContactUuid').callsArgWith(2, null, report_patient._id);
     query.onCall(0).resolves({ rows: [
       { doc: JSON.parse(JSON.stringify(report)) },
@@ -561,7 +563,7 @@ describe('Lineage', function() {
     });
   });
 
-  it.only('hydrateDocs binds contacts and parents', function() {
+  it('hydrateDocs binds contacts and parents', function() {
     const docs = [ report, place ];
 
     const fetchedParents = [ report_parent, report_grandparent, report_contact, place_parent, place_grandparent ];
@@ -571,6 +573,7 @@ describe('Lineage', function() {
     allDocs.onCall(0).resolves(rowify(fetchedParents));
     allDocs.onCall(1).resolves(rowify(fetchedContacts));
 
+    // TODO uncomment this when getPatientContactUuid is available in the lineage library
     // sinon.stub(utils, 'getPatientContactUuid').callsArgWith(2, null, report_patient._id);
     query.onCall(0).resolves({ rows: [
       { doc: report_patient }
@@ -579,10 +582,10 @@ describe('Lineage', function() {
     return lineage.hydrateDocs(docs).then(([ hydratedReport, hydratedPlace ]) => {
       chai.expect(allDocs.callCount).to.equal(2);
       chai.expect(allDocs.getCall(0).args[0].keys.sort()).to.deep.equal(fetchedParents.map(doc => doc._id).sort());
-      chai.expect(allDocs.getCall(0).args[0].keys.sort()).to.deep.equal(fetchedContacts.map(doc => doc._id).sort());
+      chai.expect(allDocs.getCall(1).args[0].keys.sort()).to.deep.equal(fetchedContacts.map(doc => doc._id).sort());
 
       chai.expect(hydratedReport.contact.name).to.equal(report_contact.name);
-      chai.expect(hydratedReport.parent).to.equal(null);
+      chai.expect(hydratedReport.parent).to.not.exist;
       chai.expect(hydratedReport.contact.parent.name).to.equal(report_parent.name);
       chai.expect(hydratedReport.contact.parent.contact.name).to.equal(report_parentContact.name);
       chai.expect(hydratedReport.contact.parent.parent.name).to.equal(report_grandparent.name);
@@ -624,6 +627,7 @@ describe('Lineage', function() {
     allDocs.onCall(0).resolves(rowify(fetchedParents));
     allDocs.onCall(1).resolves(rowify(fetchedContacts));
 
+    // TODO uncomment this when getPatientContactUuid is available in the lineage library
     // sinon.stub(utils, 'getPatientContactUuid').callsArgWith(2, null, report_patient._id);
     query.onCall(0).resolves({ rows: [
       { doc: report_patient }
@@ -652,6 +656,7 @@ describe('Lineage', function() {
     allDocs.onCall(0).resolves(fetchedParentsRows);
     allDocs.onCall(1).resolves(fetchedContactsRows);
 
+    // TODO uncomment this when getPatientContactUuid is available in the lineage library
     // sinon.stub(utils, 'getPatientContactUuid').callsArgWith(2, null, report_patient._id);
     query.onCall(0).resolves({ rows: [
       { doc: report_patient }
