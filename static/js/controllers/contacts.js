@@ -290,9 +290,9 @@ var _ = require('underscore'),
         return $scope.search();
       });
 
-      this.getSetupPromiseForTesting = function(scrollLoaderStub) {
-        if (scrollLoaderStub) {
-          scrollLoader = scrollLoaderStub;
+      this.getSetupPromiseForTesting = function(options) {
+        if (options && options.scrollLoaderStub) {
+          scrollLoader = options.scrollLoaderStub;
         }
         return setupPromise;
       };

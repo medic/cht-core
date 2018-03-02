@@ -338,7 +338,7 @@ describe('Contacts controller', () => {
       const searchResult = { _id: 'search-result' };
       searchResults = Array(50).fill(searchResult);
 
-      return createController().getSetupPromiseForTesting(scrollLoaderStub).then(() => {
+      return createController().getSetupPromiseForTesting({ scrollLoaderStub }).then(() => {
         const lhs = contactsLiveList.getList();
         assert.equal(lhs.length, 50);
         scrollLoaderCallback();
@@ -351,7 +351,7 @@ describe('Contacts controller', () => {
       const searchResult = { _id: 'search-result' };
       searchResults = Array(50).fill(searchResult);
 
-      return createController().getSetupPromiseForTesting(scrollLoaderStub).then(() => {
+      return createController().getSetupPromiseForTesting({ scrollLoaderStub }).then(() => {
         const lhs = contactsLiveList.getList();
         assert.equal(lhs.length, 51);
         scrollLoaderCallback();
@@ -366,7 +366,7 @@ describe('Contacts controller', () => {
       const searchResult = { _id: 'search-result' };
       searchResults = Array(10).fill(searchResult);
 
-      return createController().getSetupPromiseForTesting(scrollLoaderStub).then(() => {
+      return createController().getSetupPromiseForTesting({ scrollLoaderStub }).then(() => {
         const lhs = contactsLiveList.getList();
         changesCallback();
         assert.equal(lhs.length, 10);
@@ -379,7 +379,7 @@ describe('Contacts controller', () => {
       const searchResult = { _id: 'search-result' };
       searchResults = Array(10).fill(searchResult);
 
-      return createController().getSetupPromiseForTesting(scrollLoaderStub).then(() => {
+      return createController().getSetupPromiseForTesting({ scrollLoaderStub }).then(() => {
         const lhs = contactsLiveList.getList();
         assert.equal(lhs.length, 11);
         changesCallback();
@@ -393,7 +393,7 @@ describe('Contacts controller', () => {
       const searchResult = { _id: 'search-result' };
       searchResults = Array(10).fill(searchResult);
 
-      createController().getSetupPromiseForTesting(scrollLoaderStub).then(() => {
+      createController().getSetupPromiseForTesting({ scrollLoaderStub }).then(() => {
         lhs = contactsLiveList.getList();
         assert.equal(lhs.length, 11);
         scope.filters = { search: true };
