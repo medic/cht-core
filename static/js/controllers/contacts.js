@@ -300,16 +300,8 @@ var _ = require('underscore'),
 
       var changeListener = Changes({
         key: 'contacts-list',
-        callback: function(change) {
-          if (change.deleted) {
-            var initialCount = liveList.count();
-            liveList.remove(change.doc);
-            if ($scope.moreItems && initialCount > liveList.count()) {
-              _query({limit: initialCount, silent: true});
-            }
-          } else {
-            _query({limit: liveList.count(), silent: true});
-          }
+        callback: function() {
+          _query({ limit: liveList.count(), silent: true });
         },
         filter: function(change) {
           return ContactSchema.getTypes().indexOf(change.doc.type) !== -1;
