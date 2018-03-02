@@ -339,8 +339,11 @@ describe('Contacts controller', () => {
       searchResults = Array(50).fill(searchResult);
 
       return createController().getSetupPromiseForTesting(scrollLoaderStub).then(() => {
+        const lhs = contactsLiveList.getList();
+        assert.equal(lhs.length, 50);
         scrollLoaderCallback();
         assert.equal(searchService.args[1][2].skip, 50);
+        assert.equal(searchService.args[1][2].limit, 50);
       });
     });
 
@@ -350,9 +353,10 @@ describe('Contacts controller', () => {
 
       return createController().getSetupPromiseForTesting(scrollLoaderStub).then(() => {
         const lhs = contactsLiveList.getList();
-        scrollLoaderCallback();
         assert.equal(lhs.length, 51);
+        scrollLoaderCallback();
         assert.equal(searchService.args[1][2].skip, 50);
+        assert.equal(searchService.args[1][2].limit, 50);
       });
     });
 
@@ -367,6 +371,7 @@ describe('Contacts controller', () => {
         changesCallback();
         assert.equal(lhs.length, 10);
         assert.equal(searchService.args[1][2].limit, 10);
+        assert.equal(searchService.args[1][2].skip, undefined);
       });
     });
 
@@ -376,9 +381,10 @@ describe('Contacts controller', () => {
 
       return createController().getSetupPromiseForTesting(scrollLoaderStub).then(() => {
         const lhs = contactsLiveList.getList();
-        changesCallback();
         assert.equal(lhs.length, 11);
+        changesCallback();
         assert.equal(searchService.args[1][2].limit, 10);
+        assert.equal(searchService.args[1][2].skip, undefined);
       });
     });
 
@@ -395,12 +401,14 @@ describe('Contacts controller', () => {
         searchService.returns(Promise.resolve(searchResults));
         scope.search();
         assert.equal(searchService.args[1][2].limit, 50);
+        assert.equal(searchService.args[1][2].skip, undefined);
         setTimeout(() => {
           lhs = contactSearchLiveList.getList();
           assert.equal(lhs.length, 50);
           //aand paginate the search results, also not skipping the extra place
           scrollLoaderCallback();
           assert.equal(searchService.args[2][2].skip, 50);
+          assert.equal(searchService.args[2][2].limit, 50);
           done();
         });
       }).catch(e => {
