@@ -36,6 +36,10 @@ var _ = require('underscore'),
       'ngInject';
 
       var liveList = LiveList.contacts;
+      var debounceWait = 1000;
+      var liveListMaxCount = 0;
+      var changes = false;
+      var debouncedReloadList;
 
       $scope.loading = true;
       $scope.selected = null;
@@ -309,13 +313,31 @@ var _ = require('underscore'),
         }
       });
 
+      var reloadList = function() {
+        if (!changes) {
+          return;
+        }
+
+        var limit = liveListMaxCount || liveList.count();
+        changes = false;
+        liveListMaxCount = 0;
+        _query({ limit: limit, silent: true });
+      };
+      debouncedReloadList = _.debounce(reloadList, debounceWait);
+
       var changeListener = Changes({
         key: 'contacts-list',
-        callback: function() {
-          _query({ limit: liveList.count(), silent: true });
+        callback: function(change) {
+          if (change.deleted) {
+            if (liveList.remove(change.doc)) {
+              liveListMaxCount = liveListMaxCount || liveList.count() + 1;
+            }
+          }
+          changes = true;
+          debouncedReloadList();
         },
         filter: function(change) {
-          return ContactSchema.getTypes().indexOf(change.doc.type) !== -1;
+          return !!change && !!change.doc && ContactSchema.getTypes().indexOf(change.doc.type) !== -1;
         }
       });
 
