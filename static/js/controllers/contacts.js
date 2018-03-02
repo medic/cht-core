@@ -290,7 +290,12 @@ var _ = require('underscore'),
         return $scope.search();
       });
 
-      this.getSetupPromiseForTesting = function() { return setupPromise; };
+      this.getSetupPromiseForTesting = function(scrollLoaderStub) {
+        if (scrollLoaderStub) {
+          scrollLoader = scrollLoaderStub;
+        }
+        return setupPromise;
+      };
 
       $scope.$on('$stateChangeStart', function(event, toState) {
         if (toState.name.indexOf('contacts') === -1) {
