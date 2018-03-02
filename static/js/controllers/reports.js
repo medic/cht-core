@@ -424,7 +424,13 @@ angular.module('inboxControllers').controller('ReportsCtrl',
 
     $scope.setLeftActionBar({
       exportFn: function() {
-        Export($scope.filters, 'reports');
+        var exportFilters = _.extendOwn({}, $scope.filters);
+        ['forms', 'facilities'].forEach(function(type) {
+          if (exportFilters[type]) {
+            delete exportFilters[type].options;
+          }
+        });
+        Export(exportFilters, 'reports');
       }
     });
 
