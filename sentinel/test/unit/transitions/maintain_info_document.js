@@ -1,20 +1,10 @@
-const sinon = require('sinon');
+const sinon = require('sinon').sandbox.create(),
+      transition = require('../../../transitions/maintain_info_document'),
+      db = require('../../../db');
 
-const transition = require('../../../transitions/maintain_info_document');
-
-let db, audit;
-exports.setUp = cb => {
-  db = {
-    medic: {
-      get: sinon.stub(),
-      insert: sinon.stub()
-    }
-  };
-  audit = {
-    get: sinon.stub()
-  };
-
-  cb();
+exports.tearDown = callback => {
+  sinon.restore();
+  callback();
 };
 
 exports['Does not create info documents for design documents'] = test => {
@@ -37,11 +27,10 @@ exports['Updates an existing document with a new sync date'] = test => {
     initial_replication_date: new Date()
   };
 
-  db.medic.get.callsArgWith(1, null, infoDoc);
-  db.medic.insert.callsArgWith(1, null, {});
+  sinon.stub(db.medic, 'get').callsArgWith(1, null, infoDoc);
+  sinon.stub(db.medic, 'insert').callsArgWith(1, null, {});
 
-  transition.onMatch(change, db, audit, (err, changed) => {
-    test.ok(!err);
+  transition.onMatch(change).then(changed => {
     test.ok(!changed);
     test.ok(db.medic.get.calledWith(infoDoc._id));
     test.ok(infoDoc.latest_replication_date);
@@ -63,15 +52,14 @@ exports['If no info doc exists, create one from audit records'] = test => {
     }]
   };
 
-  db.medic.get.callsArgWith(1, {statusCode: 404});
-  audit.get.callsArgWith(1, null, {doc: auditDoc});
-  db.medic.insert.callsArgWith(1, null, {});
+  sinon.stub(db.medic, 'get').callsArgWith(1, {statusCode: 404});
+  sinon.stub(db.audit, 'get').callsArgWith(1, null, {doc: auditDoc});
+  sinon.stub(db.medic, 'insert').callsArgWith(1, null, {});
 
-  transition.onMatch(change, db, audit, (err, changed) => {
-    test.ok(!err);
+  transition.onMatch(change).then(changed => {
     test.ok(!changed);
     test.ok(db.medic.get.calledWith('foo-info'));
-    test.ok(audit.get.calledWith('foo'));
+    test.ok(db.audit.get.calledWith('foo'));
     test.equal(db.medic.insert.callCount, 1);
     const infoDoc = db.medic.insert.args[0][0];
     test.equal(infoDoc._id, 'foo-info');

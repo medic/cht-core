@@ -258,7 +258,7 @@ const runOneAlert = (alert, latestReport) => {
   });
 };
 
-const onMatch = (change, db, audit, callback) => {
+const onMatch = change => {
   const latestReport = change.doc;
   const alertConfig = getAlertConfig();
   const errors = [];
@@ -273,14 +273,14 @@ const onMatch = (change, db, audit, callback) => {
         .catch(errors.push);
     });
   });
-  promiseSeries.then(() => {
+  return promiseSeries.then(() => {
     if (errors.length) {
-      return callback(errors, true);
+      const err = new Error(`${TRANSITION_NAME} threw errors`);
+      err.errors = errors;
+      err.changed = true;
+      throw err;
     }
-    callback(null, docNeedsSaving);
-  })
-  .catch((err) => {
-    callback(err, false);
+    return docNeedsSaving;
   });
 };
 

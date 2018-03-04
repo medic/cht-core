@@ -49,7 +49,6 @@ exports.tearDown = function(callback) {
 
 exports['registration sets up schedule'] = function(test) {
 
-    test.expect(15);
     sinon.stub(transition, 'getConfig').returns([{
         form: 'PATR',
         events: [
@@ -98,10 +97,7 @@ exports['registration sets up schedule'] = function(test) {
         contact: contact
     };
 
-    transition.onMatch({
-        doc: doc
-    }, {}, {}, function(err, complete) {
-        test.equals(err, null);
+    transition.onMatch({ doc: doc }).then(complete => {
         test.equals(complete, true);
         test.ok(doc.tasks);
         test.equals(doc.tasks && doc.tasks.length, 1);
@@ -142,7 +138,6 @@ exports['registration sets up schedule'] = function(test) {
 
 exports['registration sets up schedule using translation_key'] = function(test) {
 
-    test.expect(13);
     sinon.stub(transition, 'getConfig').returns([{
         form: 'PATR',
         events: [{
@@ -183,10 +178,7 @@ exports['registration sets up schedule using translation_key'] = function(test) 
         contact: contact
     };
 
-    transition.onMatch({
-        doc: doc
-    }, {}, {}, function(err, complete) {
-        test.equals(err, null);
+    transition.onMatch({ doc: doc }).then(complete => {
         test.equals(complete, true);
         test.ok(doc.tasks);
         test.equals(doc.tasks && doc.tasks.length, 1);
@@ -215,7 +207,6 @@ exports['registration sets up schedule using translation_key'] = function(test) 
 
 exports['registration sets up schedule using bool_expr'] = function(test) {
 
-    test.expect(15);
     sinon.stub(transition, 'getConfig').returns([{
         form: 'PATR',
         events: [
@@ -266,10 +257,7 @@ exports['registration sets up schedule using bool_expr'] = function(test) {
         foo: 'baz'
     };
 
-    transition.onMatch({
-        doc: doc
-    }, {}, {}, function(err, complete) {
-        test.equals(err, null);
+    transition.onMatch({ doc: doc }).then(complete => {
         test.equals(complete, true);
         test.ok(doc.tasks);
         test.equals(doc.tasks && doc.tasks.length, 1);
@@ -310,7 +298,6 @@ exports['registration sets up schedule using bool_expr'] = function(test) {
 
 exports['two phase registration sets up schedule using bool_expr'] = function(test) {
 
-    test.expect(17);
     sinon.stub(transition, 'getConfig').returns([{
         form: 'PATR',
         events: [
@@ -365,10 +352,7 @@ exports['two phase registration sets up schedule using bool_expr'] = function(te
         }
     };
 
-    transition.onMatch({
-        doc: doc
-    }, {}, {}, function(err, complete) {
-        test.equals(err, null);
+    transition.onMatch({ doc: doc }).then(complete => {
         test.equals(complete, true);
         test.ok(doc.tasks);
         test.equals(doc.tasks && doc.tasks.length, 1);
@@ -412,7 +396,6 @@ exports['two phase registration sets up schedule using bool_expr'] = function(te
 
 exports['no schedule using false bool_expr'] = function(test) {
 
-    test.expect(10);
     sinon.stub(transition, 'getConfig').returns([{
         form: 'PATR',
         events: [
@@ -461,10 +444,7 @@ exports['no schedule using false bool_expr'] = function(test) {
         foo: 'baz'
     };
 
-    transition.onMatch({
-        doc: doc
-    }, {}, {}, function(err, complete) {
-        test.equals(err, null);
+    transition.onMatch({ doc: doc }).then(complete => {
         test.equals(complete, true);
         test.ok(doc.tasks);
         test.equals(doc.tasks && doc.tasks.length, 1);

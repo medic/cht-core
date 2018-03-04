@@ -2,6 +2,7 @@ var _ = require('underscore'),
     moment = require('moment'),
     config = require('../config'),
     logger = require('../lib/logger'),
+    db = require('../db'),
     transitionUtils = require('./utils'),
     NAME = 'update_sent_forms';
 
@@ -35,40 +36,41 @@ module.exports = {
                 doc.form.match(new RegExp('^\\s*'+obj.form+'\\s*$','i'));
         });
     },
-    onMatch: function(change, db, audit, callback) {
-        var doc = change.doc,
-            form = doc.form,
-            reported_date = doc.reported_date,
-            clinic = doc.contact && doc.contact.parent,
-            clinicId = clinic && clinic._id;
+    onMatch: change => {
+        return new Promise((resolve, reject) => {
+            var doc = change.doc,
+                form = doc.form,
+                reported_date = doc.reported_date,
+                clinic = doc.contact && doc.contact.parent,
+                clinicId = clinic && clinic._id;
 
-        db.medic.get(clinicId, function(err, clinic) {
-            var latest,
-                reported = moment(reported_date);
+            db.medic.get(clinicId, function(err, clinic) {
 
-            if (err) {
-                logger.error('update_sent_forms: failed to get facility %s', err);
-                return callback(err);
-            }
-            _.defaults(clinic, {
-                sent_forms: {}
-            });
-
-            latest = clinic.sent_forms[form];
-
-            if (!latest || moment(latest) < reported) {
-                clinic.sent_forms[form] = moment(reported_date).toISOString();
-            } else {
-                // nothing to do here
-                return callback();
-            }
-
-            audit.saveDoc(clinic, function(err) {
                 if (err) {
-                    callback(err);
-                } else {
-                    callback(null, true);
+                    logger.error('update_sent_forms: failed to get facility %s', err);
+                    return reject(err);
                 }
+                _.defaults(clinic, {
+                    sent_forms: {}
+                });
+
+                const latest = clinic.sent_forms[form];
+                const reported = moment(reported_date);
+
+                if (!latest || moment(latest) < reported) {
+                    clinic.sent_forms[form] = moment(reported_date).toISOString();
+                } else {
+                    // nothing to do here
+                    return resolve();
+                }
+
+                db.audit.saveDoc(clinic, function(err) {
+                    if (err) {
+                        reject(err);
+                    } else {
+                        resolve(true);
+                    }
+                });
             });
         });
     }

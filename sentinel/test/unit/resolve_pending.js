@@ -1,10 +1,5 @@
 var transition = require('../../transitions/resolve_pending');
 
-exports.tearDown = function(callback) {
-    callback();
-};
-
-
 exports['filter fails on undefined tasks or scheduled_tasks'] = function(test) {
     test.equals(transition.filter({}), false);
     test.done();
@@ -76,7 +71,7 @@ exports['onMatch does not cause update if message is already sent'] = function(t
             state: 'sent'
         }]
     };
-    transition.onMatch({ doc: doc }, {}, {}, function(err, changed) {
+    transition.onMatch({ doc: doc }).then(changed => {
         test.equals(changed, false);
         test.done();
     });

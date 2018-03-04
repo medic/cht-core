@@ -34,9 +34,7 @@ exports['patient id failing validation adds error'] = function(test) {
         form: 'x'
     }]);
 
-    transition.onMatch({
-        doc: doc
-    }, {}, {}, function(err, complete) {
+    transition.onMatch({ doc: doc }).then(complete => {
         test.equals(complete, true);
         test.ok(doc.errors);
         test.equals(doc.errors[0].message, 'bad id xxxx');
@@ -66,9 +64,7 @@ exports['validations use translation_key'] = function(test) {
         form: 'x'
     }]);
 
-    transition.onMatch({
-        doc: doc
-    }, {}, {}, function(err, complete) {
+    transition.onMatch({ doc: doc }).then(complete => {
         test.equals(complete, true);
         test.ok(doc.errors);
         test.equals(doc.errors[0].message, 'bad id xxxx');
@@ -111,9 +107,7 @@ exports['join responses concats validation response msgs'] = function(test) {
         form: 'x'
     }]);
 
-    transition.onMatch({
-        doc: doc
-    }, {}, {}, function(err, complete) {
+    transition.onMatch({ doc: doc }).then(complete => {
         test.equals(complete, true);
         test.ok(doc.errors);
         // check errors array
@@ -170,9 +164,7 @@ exports['false join_responses does not concat validation msgs'] = function(test)
         form: 'x'
     }]);
 
-    transition.onMatch({
-        doc: doc
-    }, {}, {}, function(err, complete) {
+    transition.onMatch({ doc: doc }).then(complete => {
         test.equals(complete, true);
         test.ok(doc.errors);
         // check errors array
@@ -227,9 +219,7 @@ exports['undefined join_responses does not concat validation msgs'] = function(t
         form: 'x'
     }]);
 
-    transition.onMatch({
-        doc: doc
-    }, {}, {}, function(err, complete) {
+    transition.onMatch({ doc: doc }).then(complete => {
         test.equals(complete, true);
         test.ok(doc.errors);
         // check errors array

@@ -7,6 +7,7 @@ var _ = require('underscore'),
     utils = require('../lib/utils'),
     transitionUtils = require('./utils'),
     date = require('../date'),
+    db = require('../db'),
     NAME = 'accept_patient_reports';
 
 const _hasConfig = (doc) => {
@@ -81,7 +82,7 @@ const getConfig = function(form) {
     return _.findWhere(fullConfig, { form: form });
 };
 
-const _silenceReminders = (audit, registration, report, config, callback) => {
+const _silenceReminders = (registration, report, config, callback) => {
     var toClear = module.exports._findToClear(registration, report.reported_date, config);
     if (!toClear.length) {
         return callback();
@@ -91,7 +92,7 @@ const _silenceReminders = (audit, registration, report, config, callback) => {
         utils.setTaskState(task, 'cleared');
         task.cleared_by = report._id;
     });
-    audit.saveDoc(registration, callback);
+    db.audit.saveDoc(registration, callback);
 };
 
 const addRegistrationToDoc = (doc, registrations) => {
@@ -105,7 +106,6 @@ const addRegistrationToDoc = (doc, registrations) => {
 };
 
 const silenceRegistrations = (
-            audit,
             config,
             doc,
             registrations,
@@ -121,8 +121,7 @@ const silenceRegistrations = (
                 // don't silence the registration you're processing
                 return callback();
             }
-            module.exports._silenceReminders(
-                audit, registration, doc, config, callback);
+            module.exports._silenceReminders(registration, doc, config, callback);
         },
         function(err) {
             callback(err, true);
@@ -159,7 +158,7 @@ const addMessagesToDoc = (doc, config, registrations) => {
     });
 };
 
-const handleReport = (db, audit, doc, config, callback) => {
+const handleReport = (doc, config, callback) => {
     utils.getRegistrations({
         db: db,
         id: doc.fields.patient_id
@@ -171,7 +170,6 @@ const handleReport = (db, audit, doc, config, callback) => {
         addMessagesToDoc(doc, config, registrations);
 
         module.exports.silenceRegistrations(
-            audit,
             config,
             doc,
             registrations,
@@ -193,27 +191,34 @@ module.exports = {
     },
     // also used by registrations transition.
     silenceRegistrations: silenceRegistrations,
-    onMatch: function(change, db, audit, callback) {
+    onMatch: change => {
         const doc = change.doc;
 
         const config = getConfig(doc.form);
 
         if (!config) {
-            return callback();
+            return Promise.resolve();
         }
 
-        validate(config, doc, function(errors) {
-            if (errors && errors.length > 0) {
-                messages.addErrors(config, doc, errors);
-                return callback(null, true);
-            }
+        return new Promise((resolve, reject) => {
+            validate(config, doc, function(errors) {
+                if (errors && errors.length > 0) {
+                    messages.addErrors(config, doc, errors);
+                    return resolve(true);
+                }
 
-            if (!doc.patient) {
-                transitionUtils.addRegistrationNotFoundError(doc, config);
-                return callback(null, true);
-            }
+                if (!doc.patient) {
+                    transitionUtils.addRegistrationNotFoundError(doc, config);
+                    return resolve(true);
+                }
 
-            handleReport(db, audit, doc, config, callback);
+                handleReport(doc, config, (err, changed) => {
+                    if (err) {
+                        return reject(err);
+                    }
+                    return resolve(changed);
+                });
+            });
         });
     },
     _silenceReminders: _silenceReminders,

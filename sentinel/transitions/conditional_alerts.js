@@ -50,33 +50,37 @@ module.exports = {
             !transitionUtils.hasRun(doc, NAME)
         );
     },
-    onMatch: function(change, db, audit, cb) {
-        var doc = change.doc,
-            config = module.exports._getConfig(),
-            updated = false;
+    onMatch: change => {
+        return new Promise((resolve, reject) => {
+            var doc = change.doc,
+                config = module.exports._getConfig(),
+                updated = false;
 
-        async.each(
-            _.values(config),
-            function(alert, callback) {
-                if (alert.form === doc.form) {
-                    evaluateCondition(doc, alert, function(err, result) {
-                        if (err) {
-                            return callback(err);
-                        }
-                        if (result) {
-                            messages.addMessage(doc, alert, alert.recipient);
-                            updated = true;
-                        }
+            async.each(
+                _.values(config),
+                function(alert, callback) {
+                    if (alert.form === doc.form) {
+                        evaluateCondition(doc, alert, function(err, result) {
+                            if (err) {
+                                return callback(err);
+                            }
+                            if (result) {
+                                messages.addMessage(doc, alert, alert.recipient);
+                                updated = true;
+                            }
+                            callback();
+                        });
+                    } else {
                         callback();
-                    });
-                } else {
-                    callback();
+                    }
+                },
+                function(err) {
+                    if (err) {
+                        return reject(err);
+                    }
+                    resolve(updated);
                 }
-            },
-            function(err) {
-                cb(err, updated);
-            }
-        );
-
+            );
+        });
     }
 };

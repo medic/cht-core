@@ -2,6 +2,7 @@ const _ = require('underscore'),
       config = require('../config'),
       utils = require('../lib/utils'),
       transitionUtils = require('./utils'),
+      db = require('../db'),
       TRANSITION_NAME = 'death_reporting',
       CONFIG_NAME = 'death_reporting',
       MARK_PROPERTY_NAME = 'mark_deceased_forms',
@@ -13,7 +14,7 @@ const getUndoFormCodes = () => getConfig()[UNDO_PROPERTY_NAME] || [];
 const isConfirmForm = form => getConfirmFormCodes().includes(form);
 const isUndoForm = form => getUndoFormCodes().includes(form);
 
-const updatePatient = (audit, patient, doc, callback) => {
+const updatePatient = (patient, doc, callback) => {
   if (isConfirmForm(doc.form) && !patient.date_of_death) {
     patient.date_of_death = doc.reported_date;
   } else if (isUndoForm(doc.form) && patient.date_of_death) {
@@ -22,13 +23,13 @@ const updatePatient = (audit, patient, doc, callback) => {
     // no update required - patient already in required state
     return callback(null, false);
   }
-  audit.saveDoc(patient, err => {
+  db.audit.saveDoc(patient, err => {
     // return true so the transition is marked as executed
     callback(err, true);
   });
 };
 
-const getPatient = (db, patientId, callback) => {
+const getPatient = (patientId, callback) => {
   db.medic.get(patientId, (err, patient) => {
     if (err && err.statusCode !== 404) {
       return callback(err);
@@ -57,16 +58,23 @@ module.exports = {
       doc.fields.patient_id &&
       !transitionUtils.hasRun(doc, TRANSITION_NAME);
   },
-  onMatch: (change, db, audit, callback) => {
-    const doc = change.doc;
-    getPatient(db, doc.fields.patient_id, (err, patient) => {
-      if (err) {
-        return callback(err);
-      }
-      if (!patient) {
-        return callback(null, false);
-      }
-      updatePatient(audit, patient, doc, callback);
+  onMatch: change => {
+    return new Promise((resolve, reject) => {
+      const doc = change.doc;
+      getPatient(doc.fields.patient_id, (err, patient) => {
+        if (err) {
+          return reject(err);
+        }
+        if (!patient) {
+          return resolve();
+        }
+        updatePatient(patient, doc, (err, changed) => {
+          if (err) {
+            return reject(err);
+          }
+          resolve(changed);
+        });
+      });
     });
   }
 };
