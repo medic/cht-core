@@ -23,7 +23,8 @@ angular.module('inboxServices').service('Geolocation',
       return $q(function(resolve, reject) {
         navigator.geolocation.getCurrentPosition(resolve, reject, options);
       })
-      .then(function(coordinates) {
+      .then(function(position) {
+        var coordinates = position.coords;
         return {
           latitude: coordinates.latitude,
           longitude: coordinates.longitude,
