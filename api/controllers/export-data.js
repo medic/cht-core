@@ -32,6 +32,8 @@ const writeExportHeaders = (res, type, format) => {
   res
     .set('Content-Type', format.contentType)
     .set('Content-Disposition', 'attachment; filename=' + filename);
+  // To respond as quickly to the request as possible
+  res.flushHeaders();
 };
 
 const getExportPermission = function(type) {
