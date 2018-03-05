@@ -69,36 +69,35 @@ describe('ContactsContentCtrl', () => {
   beforeEach(module('inboxApp'));
 
   beforeEach(inject((_$rootScope_, $controller) => {
-      scope = _$rootScope_.$new();
-      scope.setLoadingContent = sinon.stub();
-      scope.setSelected = selected => scope.selected = selected;
-      scope.clearSelected = sinon.stub();
-      scope.settingSelected = sinon.stub();
-      state = {
-        current: {
-          name: 'something'
-        },
-        go: sinon.stub()
-      };
+    scope = _$rootScope_.$new();
+    scope.setLoadingContent = sinon.stub();
+    scope.setSelected = selected => scope.selected = selected;
+    scope.clearSelected = sinon.stub();
+    scope.settingSelected = sinon.stub();
+    state = {
+      current: {
+        name: 'something'
+      },
+      go: sinon.stub()
+    };
 
-      controller = $controller;
+    controller = $controller;
 
-      contactViewModelGenerator = sinon.stub();
-      tasksForContact = sinon.stub();
-      reportsForContact = sinon.stub();
-      changes = (options) => {
-        changesFilter = options.filter;
-        changesCallback = options.callback;
-        return {unsubscribe: () => {}};
-      };
+    contactViewModelGenerator = sinon.stub();
+    tasksForContact = sinon.stub();
+    reportsForContact = sinon.stub();
+    changes = (options) => {
+      changesFilter = options.filter;
+      changesCallback = options.callback;
+      return {unsubscribe: () => {}};
+    };
 
-      debounce = (func) => {
-        var fn = func;
-        fn.cancel = () => {};
-        return fn;
-      };
-    }
-  ));
+    debounce = (func) => {
+      var fn = func;
+      fn.cancel = () => {};
+      return fn;
+    };
+  }));
 
   describe('Tasks', () => {
     const runTasksTest = childrenArray => {
