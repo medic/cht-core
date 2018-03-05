@@ -20,7 +20,12 @@ describe('Contacts controller', () => {
       getDataRecords,
       typeLabel,
       xmlForms,
-      $rootScope;
+      $rootScope,
+      scrollLoaderStub,
+      scrollLoaderCallback,
+      changes,
+      changesCallback,
+      contactSearchLiveList;
 
   beforeEach(module('inboxApp'));
 
@@ -35,7 +40,11 @@ describe('Contacts controller', () => {
       count: () => elements.length,
       insert: e => elements.push(e),
       set: es => elements = es,
-      update: e => elements.push(e)
+      update: e => {
+        if (e !== district || elements[0] !== district) {
+          elements.push(e);
+        }
+      }
     };
   };
 
@@ -62,10 +71,21 @@ describe('Contacts controller', () => {
     xmlForms.callsArgWith(2, null, forms); // call the callback
     userSettings = KarmaUtils.promiseService(null, { facility_id: district._id });
     contactsLiveList = deadList();
+    contactSearchLiveList = deadList();
     getDataRecords = KarmaUtils.promiseService(null, district);
     searchResults = [];
     var $translate = key => Promise.resolve(key + 'translated');
     $translate.instant = key => key + 'translated';
+    scrollLoaderStub = {
+      init: callback => {
+        scrollLoaderCallback = callback;
+      }
+    };
+
+    changes = (options) =>  {
+      changesCallback = options.callback;
+      return { unsubscribe: () => {} };
+    };
 
     createController = () => {
       searchService = sinon.stub();
@@ -79,16 +99,14 @@ describe('Contacts controller', () => {
         '$state': { includes: sinon.stub() },
         '$timeout': work => work(),
         '$translate': $translate,
-        'Changes': () => {
-          return { unsubscribe: () => {} };
-        },
+        'Changes': changes,
         'ContactSchema': contactSchema,
         'ContactSummary': () => {
           return Promise.resolve({});
         },
         'Export': () => {},
         'GetDataRecords': getDataRecords,
-        'LiveList': { contacts: contactsLiveList },
+        'LiveList': { contacts: contactsLiveList, 'contact-search': contactSearchLiveList },
         'Search': searchService,
         'SearchFilters': { freetext: sinon.stub(), reset: sinon.stub()},
         'Session': {
@@ -316,6 +334,137 @@ describe('Contacts controller', () => {
         const lhs = contactsLiveList.getList();
         assert.equal(lhs.length, 1, 'both home place and search results are shown');
       });
+    });
+
+    it('when paginating, does not skip the extra place for admins #4085', () => {
+      isAdmin = true;
+      userSettings = KarmaUtils.promiseService(null, { facility_id: undefined });
+      const searchResult = { _id: 'search-result' };
+      searchResults = Array(50).fill(searchResult);
+
+      return createController().getSetupPromiseForTesting({ scrollLoaderStub }).then(() => {
+        const lhs = contactsLiveList.getList();
+        assert.equal(lhs.length, 50);
+        scrollLoaderCallback();
+        assert.equal(searchService.args[1][2].skip, 50);
+        assert.equal(searchService.args[1][2].limit, 50);
+      });
+    });
+
+    it('when paginating, does modify skip for non-admins #4085', () => {
+      const searchResult = { _id: 'search-result' };
+      searchResults = Array(50).fill(searchResult);
+
+      return createController().getSetupPromiseForTesting({ scrollLoaderStub }).then(() => {
+        const lhs = contactsLiveList.getList();
+        assert.equal(lhs.length, 51);
+        scrollLoaderCallback();
+        assert.equal(searchService.args[1][2].skip, 50);
+        assert.equal(searchService.args[1][2].limit, 50);
+      });
+    });
+
+    it('when refreshing list as admin, does not modify limit #4085', () => {
+      isAdmin = true;
+      userSettings = KarmaUtils.promiseService(null, { facility_id: undefined });
+      const searchResult = { _id: 'search-result' };
+      searchResults = Array(10).fill(searchResult);
+
+      return createController().getSetupPromiseForTesting({ scrollLoaderStub }).then(() => {
+        const lhs = contactsLiveList.getList();
+        changesCallback();
+        assert.equal(lhs.length, 10);
+        assert.equal(searchService.args[1][2].limit, 10);
+        assert.equal(searchService.args[1][2].skip, undefined);
+      });
+    });
+
+    it('when refreshing list as non-admin, does modify limit #4085', () => {
+      const searchResult = { _id: 'search-result' };
+      searchResults = Array(10).fill(searchResult);
+
+      return createController().getSetupPromiseForTesting({ scrollLoaderStub }).then(() => {
+        const lhs = contactsLiveList.getList();
+        assert.equal(lhs.length, 11);
+        changesCallback();
+        assert.equal(searchService.args[1][2].limit, 10);
+        assert.equal(searchService.args[1][2].skip, undefined);
+      });
+    });
+
+    it('resets limit/skip modifier when filtering #4085', () => {
+      let lhs;
+      const searchResult = { _id: 'search-result' };
+      searchResults = Array(10).fill(searchResult);
+
+      return createController()
+        .getSetupPromiseForTesting({ scrollLoaderStub })
+        .then(() => {
+          lhs = contactsLiveList.getList();
+          assert.equal(lhs.length, 11);
+          scope.filters = {search: true};
+          searchResults = Array(50).fill(searchResult);
+          searchService.returns(Promise.resolve(searchResults));
+          scope.search();
+          assert.equal(searchService.args[1][2].limit, 50);
+          assert.equal(searchService.args[1][2].skip, undefined);
+          return Promise.resolve();
+        })
+        .then(() => {
+          lhs = contactSearchLiveList.getList();
+          assert.equal(lhs.length, 50);
+          //aand paginate the search results, also not skipping the extra place
+          scrollLoaderCallback();
+          assert.equal(searchService.args[2][2].skip, 50);
+          assert.equal(searchService.args[2][2].limit, 50);
+        });
+    });
+
+    it('when paginating, does not modify the skip when it finds homeplace #4085', () => {
+      const searchResult = { _id: 'search-result' };
+      searchResults = Array(49).fill(searchResult);
+      searchResults.push(district);
+
+      return createController().getSetupPromiseForTesting({ scrollLoaderStub }).then(() => {
+        const lhs = contactsLiveList.getList();
+        assert.equal(lhs.length, 50);
+        scrollLoaderCallback();
+        assert.equal(searchService.args[1][2].skip, 50);
+        assert.equal(searchService.args[1][2].limit, 50);
+      });
+    });
+
+    it('when paginating, does not modify the skip when it finds homeplace on subsequent pages #4085', () => {
+      const searchResult = { _id: 'search-result' };
+      searchResults = Array(50).fill(searchResult);
+
+      return createController()
+        .getSetupPromiseForTesting({ scrollLoaderStub })
+        .then(() => {
+          const lhs = contactsLiveList.getList();
+          assert.equal(lhs.length, 51);
+          searchResults = Array(49).fill(searchResult);
+          searchResults.push(district);
+          searchService.returns(Promise.resolve(searchResults));
+          scrollLoaderCallback();
+          assert.equal(searchService.args[1][2].skip, 50);
+          assert.equal(searchService.args[1][2].limit, 50);
+          return Promise.resolve();
+        })
+        .then(() => {
+          const lhs = contactsLiveList.getList();
+          assert.equal(lhs.length, 100);
+          searchResults = Array(50).fill(searchResult);
+          searchService.returns(Promise.resolve(searchResults));
+          scrollLoaderCallback();
+          assert.equal(searchService.args[2][2].skip, 100);
+          assert.equal(searchService.args[2][2].limit, 50);
+          return Promise.resolve();
+        })
+        .then(() => {
+          const lhs = contactsLiveList.getList();
+          assert.equal(lhs.length, 150);
+        });
     });
   });
 });
