@@ -16,7 +16,8 @@ angular.module('inboxControllers').controller('ContactsContentCtrl',
     TasksForContact,
     TranslateFrom,
     UserSettings,
-    ContactChangeFilter
+    ContactChangeFilter,
+    Debounce
   ) {
 
     'use strict';
@@ -24,7 +25,6 @@ angular.module('inboxControllers').controller('ContactsContentCtrl',
 
     var taskEndDate,
         reportStartDate,
-        hasChanges = false,
         debounceWait = 1000,
         debouncedReloadContact;
 
@@ -121,12 +121,6 @@ angular.module('inboxControllers').controller('ContactsContentCtrl',
 
     // exposed solely for testing purposes
     this.setupPromise = $q.resolve().then(function() {
-      if ($stateParams.noDebounce) {
-        debouncedReloadContact = reloadContact;
-      } else if ($stateParams.debounceWait) {
-        debouncedReloadContact = _.debounce(reloadContact, $stateParams.debounceWait);
-      }
-
       if ($stateParams.id) {
         return selectContact($stateParams.id);
       }
@@ -142,14 +136,9 @@ angular.module('inboxControllers').controller('ContactsContentCtrl',
     });
 
     var reloadContact = function() {
-      if (!hasChanges) {
-        return;
-      }
-
-      hasChanges = false;
       return selectContact($scope.selected.doc._id, true);
     };
-    debouncedReloadContact = _.debounce(reloadContact, debounceWait);
+    debouncedReloadContact = Debounce(reloadContact, debounceWait);
 
     var changeListener = Changes({
       key: 'contacts-content',
@@ -161,7 +150,7 @@ angular.module('inboxControllers').controller('ContactsContentCtrl',
       callback: function(change) {
         if (ContactChangeFilter.matchContact(change, $scope.selected) && ContactChangeFilter.isDeleted(change)) {
           var parentId = $scope.selected.doc.parent && $scope.selected.doc.parent._id;
-          hasChanges = false;
+          debouncedReloadContact.cancel();
           if (parentId) {
             // redirect to the parent
             $state.go($state.current.name, {id: parentId});
@@ -172,14 +161,13 @@ angular.module('inboxControllers').controller('ContactsContentCtrl',
           return;
         }
 
-        hasChanges = true;
         return debouncedReloadContact();
       }
     });
 
     $scope.$on('$destroy', function() {
       changeListener.unsubscribe();
-      hasChanges = false;
+      debouncedReloadContact.cancel();
     });
   }
 );

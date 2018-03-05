@@ -24,6 +24,7 @@
   require('./count-messages');
   require('./db');
   require('./db-sync');
+  require('./debounce');
   require('./debug');
   require('./delete-docs');
   require('./download-url');
