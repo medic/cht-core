@@ -99,25 +99,31 @@ var _ = require('underscore'),
 
         Search('contacts', actualFilter, options).then(function(contacts) {
           // If you have a home place make sure its at the top
-          if (usersHomePlace && !$scope.appending) {
+          if (usersHomePlace) {
             var homeIndex = _.findIndex(contacts, function(contact) {
               return contact._id === usersHomePlace._id;
             });
-            if (homeIndex !== -1) {
-              // move it to the top
-              contacts.splice(homeIndex, 1);
-              contacts.unshift(usersHomePlace);
-            } else if (!$scope.filters.search && !$scope.filters.simprintsIdentities) {
-              additionalListItem = true;
-              contacts.unshift(usersHomePlace);
-            }
-            if ($scope.filters.simprintsIdentities) {
-              contacts.forEach(function(contact) {
-                var identity = $scope.filters.simprintsIdentities.find(function(identity) {
-                  return identity.id === contact.simprints_id;
+
+            additionalListItem = !$scope.filters.search &&
+                                 (additionalListItem || !$scope.appending) &&
+                                 homeIndex === -1;
+
+            if (!$scope.appending) {
+              if (homeIndex !== -1) {
+                // move it to the top
+                contacts.splice(homeIndex, 1);
+                contacts.unshift(usersHomePlace);
+              } else if (!$scope.filters.search && !$scope.filters.simprintsIdentities) {
+                contacts.unshift(usersHomePlace);
+              }
+              if ($scope.filters.simprintsIdentities) {
+                contacts.forEach(function(contact) {
+                  var identity = $scope.filters.simprintsIdentities.find(function(identity) {
+                    return identity.id === contact.simprints_id;
+                  });
+                  contact.simprints = identity || { confidence: 0, tierNumber: 5 };
                 });
-                contact.simprints = identity || { confidence: 0, tierNumber: 5 };
-              });
+              }
             }
           }
 

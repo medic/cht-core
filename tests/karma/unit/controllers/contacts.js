@@ -3,29 +3,29 @@ describe('Contacts controller', () => {
   'use strict';
 
   let assert = chai.assert,
-      buttonLabel,
-      contactsLiveList,
-      childType,
-      contactSchema,
-      createController,
-      district,
-      forms,
-      icon,
-      isAdmin = false,
-      person,
-      scope,
-      userSettings,
-      searchResults,
-      searchService,
-      getDataRecords,
-      typeLabel,
-      xmlForms,
-      $rootScope,
-      scrollLoaderStub,
-      scrollLoaderCallback,
-      changes,
-      changesCallback,
-      contactSearchLiveList;
+    buttonLabel,
+    contactsLiveList,
+    childType,
+    contactSchema,
+    createController,
+    district,
+    forms,
+    icon,
+    isAdmin = false,
+    person,
+    scope,
+    userSettings,
+    searchResults,
+    searchService,
+    getDataRecords,
+    typeLabel,
+    xmlForms,
+    $rootScope,
+    scrollLoaderStub,
+    scrollLoaderCallback,
+    changes,
+    changesCallback,
+    contactSearchLiveList;
 
   beforeEach(module('inboxApp'));
 
@@ -40,7 +40,11 @@ describe('Contacts controller', () => {
       count: () => elements.length,
       insert: e => elements.push(e),
       set: es => elements = es,
-      update: e => elements.push(e)
+      update: e => {
+        if (e !== district || elements[0] !== district) {
+          elements.push(e);
+        }
+      }
     };
   };
 
@@ -388,32 +392,80 @@ describe('Contacts controller', () => {
       });
     });
 
-    it('resets limit/skip modifier when filtering #4085', (done) => {
+    it('resets limit/skip modifier when filtering #4085', () => {
       let lhs;
       const searchResult = { _id: 'search-result' };
       searchResults = Array(10).fill(searchResult);
 
-      createController().getSetupPromiseForTesting({ scrollLoaderStub }).then(() => {
-        lhs = contactsLiveList.getList();
-        assert.equal(lhs.length, 11);
-        scope.filters = { search: true };
-        searchResults = Array(50).fill(searchResult);
-        searchService.returns(Promise.resolve(searchResults));
-        scope.search();
-        assert.equal(searchService.args[1][2].limit, 50);
-        assert.equal(searchService.args[1][2].skip, undefined);
-        setTimeout(() => {
+      return createController()
+        .getSetupPromiseForTesting({ scrollLoaderStub })
+        .then(() => {
+          lhs = contactsLiveList.getList();
+          assert.equal(lhs.length, 11);
+          scope.filters = {search: true};
+          searchResults = Array(50).fill(searchResult);
+          searchService.returns(Promise.resolve(searchResults));
+          scope.search();
+          assert.equal(searchService.args[1][2].limit, 50);
+          assert.equal(searchService.args[1][2].skip, undefined);
+          return Promise.resolve();
+        })
+        .then(() => {
           lhs = contactSearchLiveList.getList();
           assert.equal(lhs.length, 50);
           //aand paginate the search results, also not skipping the extra place
           scrollLoaderCallback();
           assert.equal(searchService.args[2][2].skip, 50);
           assert.equal(searchService.args[2][2].limit, 50);
-          done();
         });
-      }).catch(e => {
-        done(e);
+    });
+
+    it('when paginating, does not modify the skip when it finds homeplace #4085', () => {
+      const searchResult = { _id: 'search-result' };
+      searchResults = Array(49).fill(searchResult);
+      searchResults.push(district);
+
+      return createController().getSetupPromiseForTesting({ scrollLoaderStub }).then(() => {
+        const lhs = contactsLiveList.getList();
+        assert.equal(lhs.length, 50);
+        scrollLoaderCallback();
+        assert.equal(searchService.args[1][2].skip, 50);
+        assert.equal(searchService.args[1][2].limit, 50);
       });
+    });
+
+    it('when paginating, does not modify the skip when it finds homeplace on subsequent pages #4085', () => {
+      const searchResult = { _id: 'search-result' };
+      searchResults = Array(50).fill(searchResult);
+
+      return createController()
+        .getSetupPromiseForTesting({ scrollLoaderStub })
+        .then(() => {
+          const lhs = contactsLiveList.getList();
+          assert.equal(lhs.length, 51);
+          searchResults = Array(49).fill(searchResult);
+          searchResults.push(district);
+          searchService.returns(Promise.resolve(searchResults));
+          scrollLoaderCallback();
+          assert.equal(searchService.args[1][2].skip, 50);
+          assert.equal(searchService.args[1][2].limit, 50);
+          return Promise.resolve();
+        })
+        .then(() => {
+          const lhs = contactsLiveList.getList();
+          assert.equal(lhs.length, 100);
+          searchResults = Array(50).fill(searchResult);
+          searchService.returns(Promise.resolve(searchResults));
+          scrollLoaderCallback();
+          assert.equal(searchService.args[2][2].skip, 100);
+          assert.equal(searchService.args[2][2].limit, 50);
+          return Promise.resolve();
+        })
+        .then(() => {
+          const lhs = contactsLiveList.getList();
+          assert.equal(lhs.length, 150);
+        });
     });
   });
 });
+
