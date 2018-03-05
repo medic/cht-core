@@ -3,29 +3,29 @@ describe('Contacts controller', () => {
   'use strict';
 
   let assert = chai.assert,
-    buttonLabel,
-    contactsLiveList,
-    childType,
-    contactSchema,
-    createController,
-    district,
-    forms,
-    icon,
-    isAdmin = false,
-    person,
-    scope,
-    userSettings,
-    searchResults,
-    searchService,
-    getDataRecords,
-    typeLabel,
-    xmlForms,
-    $rootScope,
-    scrollLoaderStub,
-    scrollLoaderCallback,
-    changes,
-    changesCallback,
-    contactSearchLiveList;
+      buttonLabel,
+      contactsLiveList,
+      childType,
+      contactSchema,
+      createController,
+      district,
+      forms,
+      icon,
+      isAdmin = false,
+      person,
+      scope,
+      userSettings,
+      searchResults,
+      searchService,
+      getDataRecords,
+      typeLabel,
+      xmlForms,
+      $rootScope,
+      scrollLoaderStub,
+      scrollLoaderCallback,
+      changes,
+      changesCallback,
+      contactSearchLiveList;
 
   beforeEach(module('inboxApp'));
 
@@ -468,4 +468,3 @@ describe('Contacts controller', () => {
     });
   });
 });
-
