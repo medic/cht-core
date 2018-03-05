@@ -1,6 +1,5 @@
 var sinon = require('sinon').sandbox.create(),
-    fakedb = require('../fake-db'),
-    fakeaudit = require('../fake-audit'),
+    db = require('../../db'),
     transition = require('../../transitions/update_clinics'),
     lineage = require('../../lib/lineage'),
     phone = '+34567890123',
@@ -81,13 +80,12 @@ exports['should update clinic by phone'] = function(test) {
     }
   };
 
-  sinon.stub(fakedb.medic, 'view').callsArgWith(3, null, {rows: [{ id: contact._id }]});
+  sinon.stub(db.medic, 'view').callsArgWith(3, null, {rows: [{ id: contact._id }]});
+  sinon.stub(db.audit, 'saveDoc').callsArg(1);
   lineageStub.returns(Promise.resolve(contact));
 
-  transition.onMatch({
-    doc: doc
-  }, fakedb, fakeaudit, function(err, complete) {
-    test.ok(complete);
+  transition.onMatch({ doc: doc }).then(changed => {
+    test.ok(changed);
     test.ok(doc.contact);
     test.equal(doc.contact.phone, phone);
     test.done();
@@ -99,11 +97,9 @@ exports['should not update clinic with wrong phone'] = function(test) {
     type: 'data_record',
     from: 'WRONG'
   };
-  sinon.stub(fakedb.medic, 'view').callsArgWith(3, null, {rows: []});
-  transition.onMatch({
-    doc: doc
-  }, fakedb, fakeaudit, function(err, complete) {
-    test.ok(!complete);
+  sinon.stub(db.medic, 'view').callsArgWith(3, null, {rows: []});
+  transition.onMatch({ doc: doc }).then(changed => {
+    test.ok(!changed);
     test.ok(!doc.contact);
     test.done();
   });
@@ -115,11 +111,9 @@ exports['handles clinic ref id not found - medic/medic-webapp#2636'] = function(
     from: '+12345',
     refid: '1000'
   };
-  sinon.stub(fakedb.medic, 'view').callsArgWith(3, null, {rows: []});
-  transition.onMatch({
-    doc: doc
-  }, fakedb, fakeaudit, function(err, complete) {
-    test.ok(!complete);
+  sinon.stub(db.medic, 'view').callsArgWith(3, null, {rows: []});
+  transition.onMatch({ doc: doc }).then(changed => {
+    test.ok(!changed);
     test.ok(!doc.contact);
     test.done();
   });
@@ -167,11 +161,10 @@ exports['should update clinic by refid and fix number'] = function(test) {
   };
 
   lineageStub.returns(Promise.resolve(contact));
-  sinon.stub(fakedb.medic, 'view').callsArgWith(3, null, {rows: [{ doc: contact}]});
-  transition.onMatch({
-    doc: doc
-  }, fakedb, fakeaudit, function(err, complete) {
-    test.ok(complete);
+  sinon.stub(db.medic, 'view').callsArgWith(3, null, {rows: [{ doc: contact}]});
+  sinon.stub(db.audit, 'saveDoc').callsArg(1);
+  transition.onMatch({ doc: doc }).then(changed => {
+    test.ok(changed);
     test.ok(doc.contact);
     test.equal(doc.contact.phone, '+12345');
     test.done();
@@ -221,14 +214,12 @@ exports['should update clinic by refid and get latest contact'] = function(test)
     name: 'zenith',
     phone: '+12345'
   };
-  sinon.stub(fakedb.medic, 'view').callsArgWith(3, null, { rows: [{ doc: clinic }] });
-  sinon.stub(fakedb.medic, 'get').callsArgWith(1, null, contact);
+  sinon.stub(db.medic, 'view').callsArgWith(3, null, { rows: [{ doc: clinic }] });
+  sinon.stub(db.medic, 'get').callsArgWith(1, null, contact);
+  sinon.stub(db.audit, 'saveDoc').callsArg(1);
   lineageStub.returns(Promise.resolve(contact));
-  transition.onMatch({
-    doc: doc
-  }, fakedb, fakeaudit, function(err, complete) {
-    test.equal(err, null);
-    test.ok(complete);
+  transition.onMatch({ doc: doc }).then(changed => {
+    test.ok(changed);
     test.ok(doc.contact);
     test.equal(doc.contact._rev, '2');
     test.equal(doc.contact.name, 'zenith');
@@ -248,16 +239,12 @@ exports['refid field is cast to a string in view query'] = function(test) {
       type: 'data_record'
     }
   };
-  var db = {
-    medic: {
-      view: function(ddoc, view, q) {
-        test.equals(q.key[0], 'external');
-        test.equals(q.key[1], '123');
-        test.done();
-      }
-    }
-  };
-  transition.onMatch(change, db, {}, function(){});
+  const view = sinon.stub(db.medic, 'view').callsArgWith(3, null, { rows: [] });
+  transition.onMatch(change).then(() => {
+    test.equals(view.args[0][2].key[0], 'external');
+    test.equals(view.args[0][2].key[1], '123');
+    test.done();
+  });
 };
 
 exports['from field is cast to string in view query'] = function(test) {
@@ -268,32 +255,24 @@ exports['from field is cast to string in view query'] = function(test) {
       type: 'data_record'
     }
   };
-  var db = {
-    medic: {
-      view: function(ddoc, view, q) {
-        test.equals(q.key, '123');
-        test.done();
-      }
-    }
-  };
-  transition.onMatch(change, db, {}, function(){});
+  const view = sinon.stub(db.medic, 'view').callsArgWith(3, null, { rows: [] });
+  transition.onMatch(change).then(() => {
+    test.equals(view.args[0][2].key, '123');
+    test.done();
+  });
 };
 
 exports['handles lineage rejection properly'] = function(test) {
-  test.expect(2);
   var doc = {
     from: '123',
     type: 'data_record'
   };
 
-  sinon.stub(fakedb.medic, 'view').callsArgWith(3, null, { rows: [{id: 'someID'}] });
+  sinon.stub(db.medic, 'view').callsArgWith(3, null, { rows: [{id: 'someID'}] });
   lineageStub.withArgs('someID').returns(Promise.reject('some error'));
 
-  transition.onMatch({
-    doc: doc
-  }, fakedb, fakeaudit, function(err, complete) {
+  transition.onMatch({ doc: doc }).catch(err => {
     test.equal(err, 'some error');
-    test.equal(complete, undefined);
     test.done();
   });
 };

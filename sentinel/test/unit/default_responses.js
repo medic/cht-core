@@ -151,11 +151,10 @@ exports['add response if unstructured message and setting enabled'] = function(t
         type: 'data_record',
         errors: []
     };
-    transition.onMatch({ doc: doc }, {}, {}, function(err, changed) {
+    transition.onMatch({ doc: doc }).then(changed => {
         test.ok(messageFn.calledOnce);
         test.equals(messageFn.args[0][0], doc);
         test.equals(messageFn.args[0][1].translation_key, 'sms_received');
-        test.equals(err, null);
         test.equals(changed, true);
         test.done();
     });
@@ -168,11 +167,10 @@ exports['add response if unstructured message (form prop is undefined)'] = funct
         type: 'data_record',
         errors: []
     };
-    transition.onMatch({ doc: doc }, {}, {}, function(err, changed) {
+    transition.onMatch({ doc: doc }).then(changed => {
         test.ok(messageFn.calledOnce);
         test.equals(messageFn.args[0][0], doc);
         test.equals(messageFn.args[0][1].translation_key, 'sms_received');
-        test.equals(err, null);
         test.equals(changed, true);
         test.done();
     });
@@ -191,9 +189,8 @@ exports['do not add response if valid form'] = function(test) {
         type: 'data_record',
         errors: []
     };
-    transition.onMatch({ doc: doc }, {}, {}, function(err, changed) {
+    transition.onMatch({ doc: doc }).then(changed => {
         test.equals(messageFn.called, false);
-        test.equals(err, null);
         test.equals(changed, true);
         test.done();
     });
@@ -207,11 +204,10 @@ exports['add response if form not found'] = function(test) {
         type: 'data_record',
         errors: [ { code: 'sys.form_not_found' } ]
     };
-    transition.onMatch({ doc: doc }, {}, {}, function(err, changed) {
+    transition.onMatch({ doc: doc }).then(changed => {
         test.ok(messageFn.calledOnce);
         test.equals(messageFn.args[0][0], doc);
         test.equals(messageFn.args[0][1].translation_key, 'sms_received');
-        test.equals(err, null);
         test.equals(changed, true);
         test.done();
     });
@@ -225,11 +221,10 @@ exports['add response if form not found and forms_only_mode'] = function(test) {
         type: 'data_record',
         errors: [ { code: 'sys.form_not_found' } ]
     };
-    transition.onMatch({ doc: doc }, {}, {}, function(err, changed) {
+    transition.onMatch({ doc: doc }).then(changed => {
         test.ok(messageFn.calledOnce);
         test.equals(messageFn.args[0][0], doc);
         test.equals(messageFn.args[0][1].translation_key, 'form_not_found');
-        test.equals(err, null);
         test.equals(changed, true);
         test.done();
     });
@@ -243,11 +238,10 @@ exports['add response to empty message'] = function (test) {
         type: 'data_record',
         errors: [ { code: 'sys.empty' } ]
     };
-    transition.onMatch({ doc: doc }, {}, {}, function(err, changed) {
+    transition.onMatch({ doc: doc }).then(changed => {
         test.ok(messageFn.calledOnce);
         test.equals(messageFn.args[0][0], doc);
         test.equals(messageFn.args[0][1].translation_key, 'empty');
-        test.equals(err, null);
         test.equals(changed, true);
         test.done();
     });

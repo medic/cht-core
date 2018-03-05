@@ -1,6 +1,5 @@
 const sinon = require('sinon').sandbox.create(),
       follow = require('follow'),
-      audit = require('couchdb-audit'),
       _ = require('underscore'),
       config = require('../../config'),
       db = require('../../db'),
@@ -203,15 +202,14 @@ exports['attach handles missing meta data doc'] = test => {
   const start = sinon.stub();
   const feed = sinon.stub(follow, 'Feed').returns({ on: on, follow: start, stop: () => {} });
   const applyTransitions = sinon.stub(transitions, 'applyTransitions').callsArg(1);
-  sinon.stub(audit, 'withNano');
   // wait for the queue processor
   transitions._changeQueue.drain = () => {
     test.equal(get.callCount, 4);
     test.equal(fetchHydratedDoc.callCount, 1);
     test.equal(fetchHydratedDoc.args[0][0], 'abc');
     test.equal(applyTransitions.callCount, 1);
-    test.equal(applyTransitions.args[0][0].change.id, 'abc');
-    test.equal(applyTransitions.args[0][0].change.seq, 55);
+    test.equal(applyTransitions.args[0][0].id, 'abc');
+    test.equal(applyTransitions.args[0][0].seq, 55);
     test.equal(insert.callCount, 1);
     test.equal(insert.args[0][0]._id, '_local/sentinel-meta-data');
     test.equal(insert.args[0][0].processed_seq, 55);
@@ -238,15 +236,14 @@ exports['attach handles old meta data doc'] = test => {
   const start = sinon.stub();
   const feed = sinon.stub(follow, 'Feed').returns({ on: on, follow: start, stop: () => {} });
   const applyTransitions = sinon.stub(transitions, 'applyTransitions').callsArg(1);
-  sinon.stub(audit, 'withNano');
   // wait for the queue processor
   transitions._changeQueue.drain = () => {
     test.equal(get.callCount, 4);
     test.equal(fetchHydratedDoc.callCount, 1);
     test.equal(fetchHydratedDoc.args[0][0], 'abc');
     test.equal(applyTransitions.callCount, 1);
-    test.equal(applyTransitions.args[0][0].change.id, 'abc');
-    test.equal(applyTransitions.args[0][0].change.seq, 55);
+    test.equal(applyTransitions.args[0][0].id, 'abc');
+    test.equal(applyTransitions.args[0][0].seq, 55);
     test.equal(insert.callCount, 3);
     test.equal(insert.args[0][0]._id, 'sentinel-meta-data');
     test.equal(insert.args[0][0]._rev, '1-123');
@@ -276,15 +273,14 @@ exports['attach handles existing meta data doc'] = test => {
   const start = sinon.stub();
   const feed = sinon.stub(follow, 'Feed').returns({ on: on, follow: start, stop: () => {} });
   const applyTransitions = sinon.stub(transitions, 'applyTransitions').callsArg(1);
-  sinon.stub(audit, 'withNano');
   // wait for the queue processor
   transitions._changeQueue.drain = () => {
     test.equal(get.callCount, 2);
     test.equal(fetchHydratedDoc.callCount, 1);
     test.equal(fetchHydratedDoc.args[0][0], 'abc');
     test.equal(applyTransitions.callCount, 1);
-    test.equal(applyTransitions.args[0][0].change.id, 'abc');
-    test.equal(applyTransitions.args[0][0].change.seq, 55);
+    test.equal(applyTransitions.args[0][0].id, 'abc');
+    test.equal(applyTransitions.args[0][0].seq, 55);
     test.equal(insert.callCount, 1);
     test.equal(insert.args[0][0]._id, '_local/sentinel-meta-data');
     test.equal(insert.args[0][0].processed_seq, 55);
@@ -302,7 +298,7 @@ exports['attach handles existing meta data doc'] = test => {
 };
 
 const requiredFunctions = {
-  onMatch: 4,
+  onMatch: 1,
   filter: 1
 };
 

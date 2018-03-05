@@ -1,5 +1,6 @@
 require('chai').should();
 const sinon = require('sinon').sandbox.create(),
+      db = require('../../../db'),
       transition = require('../../../transitions/death_reporting'),
       utils = require('../../../lib/utils'),
       config = require('../../../config');
@@ -29,12 +30,10 @@ describe('death_reporting', () => {
         undo_deceased_forms: ['death-undo']
       });
       const getPatientContact = sinon.stub(utils, 'getPatientContact').callsArgWith(2, null, patient);
-      const saveDoc = sinon.stub().callsArg(1);
-      const get = sinon.stub().callsArgWith(1, null, patient);
-      const db = { medic: { get: get } };
-      const audit = { saveDoc: saveDoc };
-      transition.onMatch(change, db, audit, (err, updated) => {
-        updated.should.equal(true);
+      const saveDoc = sinon.stub(db.audit, 'saveDoc').callsArg(1);
+      const get = sinon.stub(db.medic, 'get').callsArgWith(1, null, patient);
+      transition.onMatch(change).then(changed => {
+        changed.should.equal(true);
         get.callCount.should.equal(1);
         get.args[0][0].should.equal(patientId);
         getPatientContact.callCount.should.equal(0);
@@ -60,12 +59,10 @@ describe('death_reporting', () => {
         undo_deceased_forms: ['death-undo']
       });
       const getPatientContact = sinon.stub(utils, 'getPatientContact').callsArgWith(2, null, patient);
-      const saveDoc = sinon.stub().callsArg(1);
-      const get = sinon.stub().callsArgWith(1, { statusCode: 404 });
-      const db = { medic: { get: get } };
-      const audit = { saveDoc: saveDoc };
-      transition.onMatch(change, db, audit, (err, updated) => {
-        updated.should.equal(true);
+      const saveDoc = sinon.stub(db.audit, 'saveDoc').callsArg(1);
+      sinon.stub(db.medic, 'get').callsArgWith(1, { statusCode: 404 });
+      transition.onMatch(change).then(changed => {
+        changed.should.equal(true);
         getPatientContact.callCount.should.equal(1);
         getPatientContact.args[0][0].should.equal(db);
         getPatientContact.args[0][1].should.equal(patientId);
@@ -89,12 +86,10 @@ describe('death_reporting', () => {
         undo_deceased_forms: ['death-undo']
       });
       const getPatientContact = sinon.stub(utils, 'getPatientContact').callsArgWith(2, null, patient);
-      const saveDoc = sinon.stub().callsArg(1);
-      const get = sinon.stub().callsArgWith(1, { statusCode: 404 });
-      const db = { medic: { get: get } };
-      const audit = { saveDoc: saveDoc };
-      transition.onMatch(change, db, audit, (err, updated) => {
-        updated.should.equal(true);
+      const saveDoc = sinon.stub(db.audit, 'saveDoc').callsArg(1);
+      sinon.stub(db.medic, 'get').callsArgWith(1, { statusCode: 404 });
+      transition.onMatch(change).then(changed => {
+        changed.should.equal(true);
         getPatientContact.callCount.should.equal(1);
         getPatientContact.args[0][0].should.equal(db);
         getPatientContact.args[0][1].should.equal(patientId);
@@ -118,12 +113,10 @@ describe('death_reporting', () => {
         undo_deceased_forms: ['death-undo']
       });
       const getPatientContact = sinon.stub(utils, 'getPatientContact').callsArgWith(2, null, patient);
-      const saveDoc = sinon.stub().callsArg(1);
-      const get = sinon.stub().callsArgWith(1, { statusCode: 404 });
-      const db = { medic: { get: get } };
-      const audit = { saveDoc: saveDoc };
-      transition.onMatch(change, db, audit, (err, updated) => {
-        updated.should.equal(false);
+      const saveDoc = sinon.stub(db.audit, 'saveDoc').callsArg(1);
+      sinon.stub(db.medic, 'get').callsArgWith(1, { statusCode: 404 });
+      transition.onMatch(change).then(changed => {
+        changed.should.equal(false);
         getPatientContact.callCount.should.equal(1);
         getPatientContact.args[0][0].should.equal(db);
         getPatientContact.args[0][1].should.equal(patientId);
@@ -145,12 +138,11 @@ describe('death_reporting', () => {
         undo_deceased_forms: ['death-undo']
       });
       const getPatientContact = sinon.stub(utils, 'getPatientContact').callsArgWith(2);
-      const saveDoc = sinon.stub().callsArg(1);
-      const get = sinon.stub().callsArgWith(1, { statusCode: 404 });
-      const db = { medic: { get: get } };
-      const audit = { saveDoc: saveDoc };
-      transition.onMatch(change, db, audit, (err, updated) => {
-        updated.should.equal(false);
+      const saveDoc = sinon.stub(db.audit, 'saveDoc').callsArg(1);
+      const get = sinon.stub(db.medic, 'get').callsArgWith(1, { statusCode: 404 });
+      transition.onMatch(change).then(changed => {
+        console.log('!!!!!!!!!!!!!');
+        (!!changed).should.equal(false);
         get.callCount.should.equal(1);
         getPatientContact.callCount.should.equal(1);
         saveDoc.callCount.should.equal(0);

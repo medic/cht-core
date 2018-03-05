@@ -4,6 +4,7 @@ var async = require('async'),
     utils = require('../lib/utils'),
     messages = require('../lib/messages'),
     validation = require('../lib/validation'),
+    db = require('../db'),
     transitionUtils = require('./utils'),
     NAME = 'update_notifications';
 
@@ -78,77 +79,77 @@ module.exports = {
     },
     modifyRegistration: function(options, callback) {
         var mute = options.mute,
-            registration = options.registration,
-            audit = options.audit;
+            registration = options.registration;
 
         if (mute) {
             utils.muteScheduledMessages(registration);
         } else {
             utils.unmuteScheduledMessages(registration);
         }
-        audit.saveDoc(registration, callback);
+        db.audit.saveDoc(registration, callback);
     },
     validate: function(config, doc, callback) {
         var validations = config.validations && config.validations.list;
         return validation.validate(doc, validations, callback);
     },
-    onMatch: function(change, db, audit, callback) {
-        var self = module.exports,
-            doc = change.doc,
-            patient_id = doc.fields && doc.fields.patient_id,
-            config = module.exports.getConfig(),
-            eventType = getEventType(config, doc);
+    onMatch: change => {
+        return new Promise((resolve, reject) => {
+            var self = module.exports,
+                doc = change.doc,
+                patient_id = doc.fields && doc.fields.patient_id,
+                config = module.exports.getConfig(),
+                eventType = getEventType(config, doc);
 
-        if (!eventType) {
-            return callback(null, false);
-        }
-
-        self.validate(config, doc, function(errors) {
-
-            if (errors && errors.length > 0) {
-                messages.addErrors(config, doc, errors);
-                return callback(null, true);
+            if (!eventType) {
+                return resolve();
             }
 
-            async.parallel({
-              registrations: _.partial(utils.getRegistrations, {db: db, id: patient_id}),
-              patient: _.partial(utils.getPatientContact, db, patient_id)
-            }, (err, {registrations, patient}) => {
+            self.validate(config, doc, function(errors) {
 
-                if (err) {
-                    return callback(err);
+                if (errors && errors.length > 0) {
+                    messages.addErrors(config, doc, errors);
+                    return resolve(true);
                 }
 
-                if (patient && registrations.length) {
-                    if (eventType.mute) {
-                        if (config.confirm_deactivation) {
-                            self._addErr('confirm_deactivation', config, doc);
-                            self._addMsg('confirm_deactivation', config, doc, registrations, patient);
-                            return callback(null, true);
-                        } else {
-                            self._addMsg('on_mute', config, doc, registrations, patient);
-                        }
-                    } else {
-                        self._addMsg('on_unmute', config, doc, registrations, patient);
+                async.parallel({
+                  registrations: _.partial(utils.getRegistrations, {db: db, id: patient_id}),
+                  patient: _.partial(utils.getPatientContact, db, patient_id)
+                }, (err, {registrations, patient}) => {
+
+                    if (err) {
+                        return reject(err);
                     }
-                    async.each(registrations, function(registration, callback) {
-                        self.modifyRegistration({
-                            audit: audit,
-                            mute: eventType.mute,
-                            registration: registration
-                        }, callback);
-                    }, function(err) {
-                        if (err) {
-                            callback(err);
+
+                    if (patient && registrations.length) {
+                        if (eventType.mute) {
+                            if (config.confirm_deactivation) {
+                                self._addErr('confirm_deactivation', config, doc);
+                                self._addMsg('confirm_deactivation', config, doc, registrations, patient);
+                                return resolve(true);
+                            } else {
+                                self._addMsg('on_mute', config, doc, registrations, patient);
+                            }
                         } else {
-                            callback(null, true);
+                            self._addMsg('on_unmute', config, doc, registrations, patient);
                         }
-                    });
-                } else {
-                    self._addErr('patient_not_found', config, doc);
-                    self._addMsg('patient_not_found', config, doc);
-                    callback(null, true);
-                }
+                        async.each(registrations, function(registration, callback) {
+                            self.modifyRegistration({
+                                mute: eventType.mute,
+                                registration: registration
+                            }, callback);
+                        }, function(err) {
+                            if (err) {
+                                reject(err);
+                            } else {
+                                resolve(true);
+                            }
+                        });
+                    } else {
+                        self._addErr('patient_not_found', config, doc);
+                        self._addMsg('patient_not_found', config, doc);
+                        resolve(true);
+                    }
+                });
             });
         });
     }

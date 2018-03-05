@@ -2,9 +2,10 @@ const _ = require('underscore'),
       logger = require('../lib/logger'),
       transitionUtils = require('./utils'),
       lineage = require('../lib/lineage'),
+      db = require('../db'),
       NAME = 'update_clinics';
 
-const associateContact = (audit, doc, contact, callback) => {
+const associateContact = (doc, contact, callback) => {
   const self = module.exports;
 
   // reporting phone stayed the same and contact data is up to date
@@ -16,7 +17,7 @@ const associateContact = (audit, doc, contact, callback) => {
 
   if (contact.phone !== doc.from) {
     contact.phone = doc.from;
-    audit.saveDoc(contact, err => {
+    db.audit.saveDoc(contact, err => {
       if (err) {
         logger.error('Error updating contact: ' + JSON.stringify(err, null, 2));
         return callback(err);
@@ -39,7 +40,7 @@ const getHydratedContact = (id, callback) => {
     });
 };
 
-const getContact = (db, doc, callback) => {
+const getContact = (doc, callback) => {
   if (doc.refid) { // use reference id to find clinic if defined
     let params = {
       key: [ 'external', doc.refid ],
@@ -104,15 +105,22 @@ module.exports = {
       !transitionUtils.hasRun(doc, NAME)
     );
   },
-  onMatch: (change, db, audit, callback) => {
-    getContact(db, change.doc, (err, contact) => {
-      if (err) {
-        return callback(err);
-      }
-      if (!contact) {
-        return callback();
-      }
-      associateContact(audit, change.doc, contact, callback);
+  onMatch: change => {
+    return new Promise((resolve, reject) => {
+      getContact(change.doc, (err, contact) => {
+        if (err) {
+          return reject(err);
+        }
+        if (!contact) {
+          return resolve();
+        }
+        associateContact(change.doc, contact, (err, changed) => {
+          if (err) {
+            return reject(err);
+          }
+          resolve(changed);
+        });
+      });
     });
   },
   setContact: (doc, contact, callback) => {

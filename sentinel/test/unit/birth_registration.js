@@ -107,15 +107,11 @@ exports['valid form adds patient_id and expected_date'] = function(test) {
             weeks_since_birth: 1
         }
     };
-
-    transition.onMatch({
-        doc: doc
-    }, {}, {}, function(err, complete) {
-        test.equal(err, null);
-        test.equal(complete, true);
+    transition.onMatch({ doc: doc }).then(changed => {
+        test.equal(changed, true);
         test.ok(doc.patient_id);
         test.ok(doc.birth_date);
         test.equal(doc.tasks, undefined);
         test.done();
-    });
+    }).catch(test.done);
 };

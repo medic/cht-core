@@ -24,9 +24,7 @@ exports['when document type matches pass filter'] = function(test) {
 
 exports['when no alerts are registered do nothing'] = function(test) {
     sinon.stub(transition, '_getConfig').returns([]);
-    test.expect(2);
-    transition.onMatch({}, {}, {}, function(err, changed) {
-        test.equals(err, null);
+    transition.onMatch({}).then(changed => {
         test.equals(changed, false);
         test.done();
     });
@@ -37,12 +35,10 @@ exports['when no alerts match document do nothing'] = function(test) {
         form: 'STCK',
         condition: 'false'
     }]);
-    test.expect(2);
     var doc = {
         form: 'PINK'
     };
-    transition.onMatch({ doc: doc }, {}, {}, function(err, changed) {
-        test.equals(err, null);
+    transition.onMatch({ doc: doc }).then(changed => {
         test.equals(changed, false);
         test.done();
     });
@@ -67,12 +63,11 @@ exports['when alert matches document send message'] = function(test) {
     var doc = {
         form: 'STCK'
     };
-    transition.onMatch({ doc: doc }, {}, {}, function(err, changed) {
+    transition.onMatch({ doc: doc }).then(changed => {
         test.ok(messageFn.calledOnce);
         test.equals(messageFn.args[0][0], doc);
         test.equals(messageFn.args[0][1].message, 'hello world');
         test.equals(messageFn.args[0][2], '+5555555');
-        test.equals(err, null);
         test.equals(changed, true);
         test.done();
     });
@@ -97,7 +92,7 @@ exports['when alert matches multiple documents send message multiple times'] = f
     var doc = {
         form: 'STCK'
     };
-    transition.onMatch({ doc: doc }, {}, {}, function(err, changed) {
+    transition.onMatch({ doc: doc }).then(changed => {
         test.ok(messageFn.calledTwice);
         test.equals(messageFn.args[0][0], doc);
         test.equals(messageFn.args[0][1].message, 'hello world');
@@ -105,7 +100,6 @@ exports['when alert matches multiple documents send message multiple times'] = f
         test.equals(messageFn.args[1][0], doc);
         test.equals(messageFn.args[1][1].message, 'goodbye world');
         test.equals(messageFn.args[1][2], '+6666666');
-        test.equals(err, null);
         test.equals(changed, true);
         test.done();
     });
@@ -130,12 +124,11 @@ exports['when alert matches document and condition is true send message'] = func
     var doc = {
         form: 'STCK'
     };
-    transition.onMatch({ doc: doc }, {}, {}, function(err, changed) {
+    transition.onMatch({ doc: doc }).then(changed => {
         test.ok(messageFn.calledOnce);
         test.equals(messageFn.args[0][0], doc);
         test.equals(messageFn.args[0][1].message, 'hello world');
         test.equals(messageFn.args[0][2], '+5555555');
-        test.equals(err, null);
         test.equals(changed, true);
         test.done();
     });
@@ -171,12 +164,11 @@ exports['when recent form condition is true send message'] = function(test) {
     var doc = {
         form: 'STCK'
     };
-    transition.onMatch({ doc: doc }, {}, {}, function(err, changed) {
+    transition.onMatch({ doc: doc }).then(changed => {
         test.equals(messageFn.callCount, 1);
         test.equals(messageFn.args[0][0], doc);
         test.equals(messageFn.args[0][1].message, 'out of units');
         test.equals(messageFn.args[0][2], '+5555555');
-        test.equals(err, null);
         test.equals(changed, true);
         test.done();
     });
@@ -203,9 +195,9 @@ exports['handle missing condition reference gracefully'] = function(test) {
         form: 'STCK'
     };
     test.expect(2);
-    transition.onMatch({ doc: doc }, {}, {}, function(err, changed) {
+    transition.onMatch({ doc: doc }).catch(err => {
         test.ok(err.match(/Cannot read property 's1_avail' of undefined/));
-        test.equals(changed, false);
+        test.equals(!!err.changed, false);
         test.done();
     });
 };
@@ -247,12 +239,11 @@ exports['when complex condition is true send message'] = function(test) {
     var doc = {
         form: 'STCK'
     };
-    transition.onMatch({ doc: doc }, {}, {}, function(err, changed) {
+    transition.onMatch({ doc: doc }).then(changed => {
         test.equals(messageFn.callCount, 1);
         test.equals(messageFn.args[0][0], doc);
         test.equals(messageFn.args[0][1].message, 'low on units');
         test.equals(messageFn.args[0][2], '+5555555');
-        test.equals(err, null);
         test.equals(changed, true);
         test.done();
     });
@@ -294,12 +285,11 @@ exports['database records are sorted before condition evaluation'] = function(te
     var doc = {
         form: 'STCK'
     };
-    transition.onMatch({ doc: doc }, {}, {}, function(err, changed) {
+    transition.onMatch({ doc: doc }).then(changed => {
         test.equals(messageFn.callCount, 1);
         test.equals(messageFn.args[0][0], doc);
         test.equals(messageFn.args[0][1].message, 'low on units');
         test.equals(messageFn.args[0][2], '+5555555');
-        test.equals(err, null);
         test.equals(changed, true);
         test.done();
     });

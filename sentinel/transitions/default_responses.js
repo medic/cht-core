@@ -72,7 +72,7 @@ module.exports = {
     _getConfig: function(key) {
         return config.get(key);
     },
-    onMatch: function(change, db, audit, callback) {
+    onMatch: change => {
 
         var self = module.exports,
             doc = change.doc,
@@ -90,6 +90,6 @@ module.exports = {
             messages.addMessage(doc, { translation_key: key });
         }
 
-        callback(null, true);
+        return Promise.resolve(true);
     }
 };

@@ -5,14 +5,16 @@
  * during builds where we don't want any outgoing messages queued for sending.
  * It is disabled by default in the default configuration.
  */
-var _ = require('underscore'),
-    utils = require('../lib/utils');
+const utils = require('../lib/utils');
 
-var getPendingTasks = function(tasks) {
-    var ret = [];
-    _.each(tasks || [], function(task) {
+const getPendingTasks = function(tasks) {
+    if (!tasks) {
+        return [];
+    }
+    const ret = [];
+    tasks.forEach(task => {
         if (task.state === 'pending') {
-            _.each(task.messages, function(msg) {
+            task.messages.forEach(msg => {
                 // if to and message is defined then append messages
                 if (msg.to && msg.message) {
                     ret.push(task);
@@ -23,8 +25,8 @@ var getPendingTasks = function(tasks) {
     return ret;
 };
 
-var getAllPendingTasks = function(doc) {
-    var tasks = getPendingTasks(doc.tasks);
+const getAllPendingTasks = function(doc) {
+    let tasks = getPendingTasks(doc.tasks);
     // scheduled tasks are ignored if doc has errors
     if (!doc.errors || doc.errors.length === 0) {
         tasks = tasks.concat(getPendingTasks(doc.scheduled_tasks));
@@ -32,10 +34,10 @@ var getAllPendingTasks = function(doc) {
     return tasks;
 };
 
-var setStateOnTasks = function(tasks, state) {
-    var updated = false;
+const setStateOnTasks = function(tasks, state) {
     state = state || 'sent';
-    _.each(tasks, function(task) {
+    let updated = false;
+    tasks.forEach(task => {
         if (utils.setTaskState(task, state)) {
           updated = true;
         }
@@ -43,16 +45,10 @@ var setStateOnTasks = function(tasks, state) {
     return updated;
 };
 
-var onMatch = function(change, db, audit, callback) {
-    callback(null, setStateOnTasks(all_pending));
-};
-
-var all_pending;
 module.exports = {
-    onMatch: onMatch,
-    filter: function(doc) {
-        all_pending = getAllPendingTasks(doc);
-        return Boolean(all_pending.length);
+    filter: doc => Boolean(getAllPendingTasks(doc).length),
+    onMatch: change => {
+        return Promise.resolve(setStateOnTasks(getAllPendingTasks(change.doc)));
     },
     _setStateOnTasks: setStateOnTasks,
     _getPendingTasks: getPendingTasks,

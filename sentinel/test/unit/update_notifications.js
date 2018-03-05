@@ -1,5 +1,6 @@
 var sinon = require('sinon').sandbox.create(),
     transition = require('../../transitions/update_notifications'),
+    db = require('../../db'),
     utils = require('../../lib/utils');
 
 exports.tearDown = function(callback) {
@@ -55,29 +56,29 @@ exports['returns false if not on or off form'] = function(test) {
         on_form: 'x',
         off_form: 'y'
     });
-
-    transition.onMatch({
+    const change = {
         doc: {
             form: 'z',
             type: 'data_record'
         }
-    }, {}, {}, function(err, complete) {
-        test.equals(complete, false);
+    };
+    transition.onMatch(change).then(changed => {
+        test.equals(!!changed, false);
         test.done();
     });
 };
 
 exports['no configured on or off form returns false'] = function(test) {
     sinon.stub(transition, 'getConfig').returns({});
-    transition.onMatch({
+    const change = {
         doc: {
             form: 'on',
             type: 'data_record',
             fields: { patient_id: 'x' }
         }
-    }, {}, {}, function(err, complete) {
-        test.equals(err, null);
-        test.equals(complete, false);
+    };
+    transition.onMatch(change).then(changed => {
+        test.equals(!!changed, false);
         test.done();
     });
 };
@@ -154,15 +155,15 @@ exports['add error when event type message not found'] = function(test) {
 
 exports['no configured on or off message returns false'] = function(test) {
     sinon.stub(transition, 'getConfig').returns({ off_form: 'off' });
-    transition.onMatch({
+    const change = {
         doc: {
             form: 'off',
             type: 'data_record',
             fields: { patient_id: 'x' }
         }
-    }, {}, {}, function(err, complete) {
-        test.equals(err, null);
-        test.equals(complete, false);
+    };
+    transition.onMatch(change).then(changed => {
+        test.equals(!!changed, false);
         test.done();
     });
 };
@@ -194,12 +195,12 @@ exports['registration not found adds error and response'] = function(test) {
     sinon.stub(utils, 'getRegistrations').callsArgWithAsync(1, null, []);
     sinon.stub(utils, 'getPatientContact').callsArgWithAsync(2, null, {});
 
-    transition.onMatch({
+    const change = {
         doc: doc,
         form: 'on'
-    }, {}, {}, function(err, complete) {
-        test.equals(err, null);
-        test.equals(complete, true);
+    };
+    transition.onMatch(change).then(changed => {
+        test.equals(changed, true);
         test.equals(doc.errors.length, 1);
         test.equals(doc.errors[0].message, 'not found x');
         test.equals(doc.tasks.length, 1);
@@ -236,12 +237,12 @@ exports['patient not found adds error and response'] = function(test) {
     sinon.stub(utils, 'getRegistrations').callsArgWithAsync(1, null, ['a registration']);
     sinon.stub(utils, 'getPatientContact').callsArgWithAsync(2, null, null);
 
-    transition.onMatch({
+    const change = {
         doc: doc,
         form: 'on'
-    }, {}, {}, function(err, complete) {
-        test.equals(err, null);
-        test.equals(complete, true);
+    };
+    transition.onMatch(change).then(changed => {
+        test.equals(changed, true);
         test.equals(doc.errors.length, 1);
         test.equals(doc.errors[0].message, 'not found x');
         test.equals(doc.tasks.length, 1);
@@ -288,12 +289,12 @@ exports['validation failure adds error and response'] = function(test) {
         _id: 'x'
     }]);
 
-    transition.onMatch({
+    const change = {
         doc: doc,
         form: 'on'
-    }, {}, {}, function(err, complete) {
-        test.equals(err, null);
-        test.equals(complete, true);
+    };
+    transition.onMatch(change).then(changed => {
+        test.equals(changed, true);
         test.equals(doc.errors.length, 1);
         test.equals(doc.errors[0].message, 'patient id needs 5 numbers.');
         test.equals(doc.tasks.length, 1);
@@ -337,19 +338,14 @@ exports['mute responds correctly'] = function(test) {
 
     sinon.stub(utils, 'getRegistrations').callsArgWithAsync(1, null, [regDoc]);
     sinon.stub(utils, 'getPatientContact').callsArgWithAsync(2, null, []);
+    sinon.stub(db.audit, 'saveDoc').callsArg(1);
 
-    var audit = {
-        saveDoc: function(doc, callback) {
-            callback();
-        }
-    };
-
-    transition.onMatch({
+    const change = {
         doc: doc,
         form: 'off'
-    }, {}, audit, function(err, complete) {
-        test.equals(err, null);
-        test.equals(complete, true);
+    };
+    transition.onMatch(change).then(changed => {
+        test.equals(changed, true);
         test.equals(doc.errors, undefined);
         test.equals(doc.tasks.length, 1);
         test.equals(

@@ -1,5 +1,5 @@
-var _ = require('underscore'),
-    utils = require('../lib/utils'),
+var utils = require('../lib/utils'),
+    db = require('../db'),
     logger = require('../lib/logger');
 
 module.exports = {
@@ -22,56 +22,57 @@ module.exports = {
      * GET  /scheduled_reports/:form/:year/:week|month/:clinic_id (look for dups)
      *
      */
-    onMatch: function(change, db, audit, callback) {
-        var self = module.exports;
-        self._getDuplicates(db, change.doc, function(err, rows) {
+    onMatch: change => {
+        return new Promise(resolve => {
+            var self = module.exports;
+            self._getDuplicates(change.doc, function(err, rows) {
 
-            // only one record in duplicates, mark transition complete
-            if (rows && rows.length === 1) {
-                return callback(null, true);
-            }
-
-            // remove duplicates and replace with latest doc
-            var found_target,
-                docs = [];
-
-            _.each(rows, function(row) {
-                var doc = row.doc;
-                if (doc._id === change.doc._id) {
-                    doc._deleted = true;
-                } else if (!found_target) {
-                    var id = doc._id,
-                        rev = doc._rev;
-                    found_target = true;
-                    // overwrite data except _rev and _id fields
-                    doc = change.doc;
-                    doc._id = id;
-                    doc._rev = rev;
-                } else {
-                    doc._deleted = true;
+                // only one record in duplicates, mark transition complete
+                if (rows && rows.length === 1) {
+                    return resolve(true);
                 }
-                docs.push(doc);
-            });
 
-            audit.bulkSave(docs, {
-                all_or_nothing: true,
-                docs: docs
-            }, function(err) {
-                // cancels transition and marks as incomplete
-                if (err) {
-                    logger.error('error doing bulk save', err);
-                    return callback(null, false);
-                }
-                callback(null, true);
+                // remove duplicates and replace with latest doc
+                var found_target,
+                    docs = [];
+
+                rows.forEach(row => {
+                    var doc = row.doc;
+                    if (doc._id === change.doc._id) {
+                        doc._deleted = true;
+                    } else if (!found_target) {
+                        var id = doc._id,
+                            rev = doc._rev;
+                        found_target = true;
+                        // overwrite data except _rev and _id fields
+                        doc = change.doc;
+                        doc._id = id;
+                        doc._rev = rev;
+                    } else {
+                        doc._deleted = true;
+                    }
+                    docs.push(doc);
+                });
+
+                db.audit.bulkSave(docs, {
+                    all_or_nothing: true,
+                    docs: docs
+                }, function(err) {
+                    // cancels transition and marks as incomplete
+                    if (err) {
+                        logger.error('error doing bulk save', err);
+                        return resolve();
+                    }
+                    return resolve(true);
+                });
             });
         });
-
     },
     //
     // look for duplicate from same year, month/week and reporting unit
     // also includes changed doc
     //
-    _getDuplicates: function(db, doc, callback) {
+    _getDuplicates: function(doc, callback) {
         var q = { include_docs: true },
             view,
             clinic_id = utils.getClinicID(doc);

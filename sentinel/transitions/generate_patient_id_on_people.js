@@ -1,11 +1,15 @@
 var transitionUtils = require('./utils');
 
 module.exports = {
-  filter: function(doc) {
-    return doc.type === 'person' &&
-           !doc.patient_id;
-  },
-  onMatch: function(change, db, audit, callback) {
-    transitionUtils.addUniqueId(change.doc, err => callback(err, !err));
+  filter: doc => doc.type === 'person' && !doc.patient_id,
+  onMatch: change => {
+    return new Promise((resolve, reject) => {
+      transitionUtils.addUniqueId(change.doc, err => {
+        if (err) {
+          return reject(err);
+        }
+        resolve(true);
+      });
+    });
   }
 };

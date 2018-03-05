@@ -1,6 +1,7 @@
-const infoDocId = id => id + '-info';
+const db = require('../db'),
+      infoDocId = id => id + '-info';
 
-const getSisterInfoDoc = (db, docId, callback) =>
+const getSisterInfoDoc = (docId, callback) =>
   db.medic.get(infoDocId(docId), (err, body) => {
     if (err && err.statusCode !== 404) {
       callback(err);
@@ -18,8 +19,8 @@ const createInfoDoc = (docId, initialReplicationDate) => {
   };
 };
 
-const generateInfoDocFromAuditTrail = (audit, docId, callback) =>
-  audit.get(docId, (err, result) => {
+const generateInfoDocFromAuditTrail = (docId, callback) =>
+  db.audit.get(docId, (err, result) => {
     if (err && err.statusCode !== 404) {
       callback(err);
     } else {
@@ -39,32 +40,40 @@ const generateInfoDocFromAuditTrail = (audit, docId, callback) =>
 module.exports = {
   filter: doc => !(doc._id.startsWith('_design') ||
                    doc.type === 'info'),
-  onMatch: (change, db, audit, callback) =>
-    getSisterInfoDoc(db, change.id, (err, infoDoc) => {
-      // If we pass callback directly to other functions they may return a
-      // second parameter that is considered truthy and invoke
-      // index.js:applyTransition() to call _setProperty and write to the
-      // document needlessly
-      const done = (err) => callback(err);
+  onMatch: change => {
+    return new Promise((resolve, reject) => {
+      getSisterInfoDoc(change.id, (err, infoDoc) => {
+        // If we pass callback directly to other functions they may return a
+        // second parameter that is considered truthy and invoke
+        // index.js:applyTransition() to call _setProperty and write to the
+        // document needlessly
+        const done = err => {
+          if (err) {
+            return reject(err);
+          }
+          resolve();
+        };
 
-      if (err) {
-        return callback(err);
-      }
-
-      if (infoDoc) {
-        infoDoc.latest_replication_date = new Date();
-        return db.medic.insert(infoDoc, done);
-      }
-
-      generateInfoDocFromAuditTrail(audit, change.id, (err, infoDoc) => {
         if (err) {
-          return done(err);
+          return reject(err);
         }
 
-        infoDoc = infoDoc || createInfoDoc(change.id, 'unknown');
+        if (infoDoc) {
+          infoDoc.latest_replication_date = new Date();
+          return db.medic.insert(infoDoc, done);
+        }
 
-        infoDoc.latest_replication_date = new Date();
-        return db.medic.insert(infoDoc, done);
+        generateInfoDocFromAuditTrail(change.id, (err, infoDoc) => {
+          if (err) {
+            return done(err);
+          }
+
+          infoDoc = infoDoc || createInfoDoc(change.id, 'unknown');
+
+          infoDoc.latest_replication_date = new Date();
+          return db.medic.insert(infoDoc, done);
+        });
       });
-    })
+    });
+  }
 };

@@ -105,13 +105,7 @@ const processChange = (change, callback) => {
   lineage.fetchHydratedDoc(change.id)
     .then(doc => {
       change.doc = doc;
-      const audit = require('couchdb-audit')
-            .withNano(db, db.settings.db, db.settings.auditDb, db.settings.ddoc, db.settings.username);
-      module.exports.applyTransitions({
-        change: change,
-        audit: audit,
-        db: db
-      }, () => {
+      module.exports.applyTransitions(change, () => {
         processed++;
         updateMetaData(change.seq, callback);
       });
@@ -293,7 +287,7 @@ const canRun = ({ key, change, transition }) => {
  * did nothing and saving is unnecessary.  If results has a true value in
  * it then a change was made.
  */
-const finalize = ({ change, audit, results }, callback) => {
+const finalize = ({ change, results }, callback) => {
   logger.debug(`transition results: ${JSON.stringify(results)}`);
 
   const changed = _.some(results, i => Boolean(i));
@@ -306,7 +300,7 @@ const finalize = ({ change, audit, results }, callback) => {
     `calling audit.saveDoc on doc ${change.id} seq ${change.seq}`);
 
   lineage.minify(change.doc);
-  audit.saveDoc(change.doc, err => {
+  db.audit.saveDoc(change.doc, err => {
     // todo: how to handle a failed save? for now just
     // waiting until next change and try again.
     if (err) {
@@ -326,17 +320,18 @@ const finalize = ({ change, audit, results }, callback) => {
  * transitions (updates) to a document with the cost of a single database
  * change/write.
  */
-const applyTransition = ({ key, change, transition, audit, db }, callback) => {
+const applyTransition = ({ key, change, transition }, callback) => {
 
-  const _setProperty = (property, value) => {
+  const _setResult = ok => {
     const doc = change.doc;
     if (!doc.transitions) {
       doc.transitions = {};
     }
-    if (!doc.transitions[key]) {
-      doc.transitions[key] = {};
-    }
-    doc.transitions[key][property] = value;
+    doc.transitions[key] = {
+      last_rev: parseInt(change.doc._rev) + 1,
+      seq: change.seq,
+      ok: ok
+    };
   };
 
   logger.debug(
@@ -347,40 +342,42 @@ const applyTransition = ({ key, change, transition, audit, db }, callback) => {
    * changed.  If a transition errors then log the error, but don't return it
    * because that will stop the series and the other transitions won't run.
    */
-  transition.onMatch(change, db, audit, (err, changed) => {
-    logger.debug(
-      `finished transition ${key} for seq ${change.seq} doc ${change.id} is ` +
-      changed ? 'changed' : 'unchanged'
-    );
-    if (changed) {
-      _setProperty('last_rev', parseInt(change.doc._rev) + 1);
-      _setProperty('seq', change.seq);
-      _setProperty('ok', !err);
-    }
-    if (err) {
+  transition.onMatch(change)
+    .then(changed => {
+      logger.debug(
+        `finished transition ${key} for seq ${change.seq} doc ${change.id} is ` +
+        changed ? 'changed' : 'unchanged'
+      );
+      if (changed) {
+        _setResult(true);
+      }
+      return changed;
+    })
+    .catch(err => {
       // adds an error to the doc but it will only get saved if there are
       // other changes too.
+      const message = err.message || JSON.stringify(err);
       utils.addError(change.doc, {
         code: `${key}_error'`,
-        message: `Transition error on ${key}: ` +
-          err.message ? err.message: JSON.stringify(err)
+        message: `Transition error on ${key}: ${message}`
       });
-      logger.error(
-        `transition ${key} errored on doc ${change.id} seq ${change.seq}: ${JSON.stringify(err)}`);
-    }
-    callback(null, changed);
-  });
+      logger.error(`transition ${key} errored on doc ${change.id} seq ${change.seq}: ${JSON.stringify(err)}`);
+      if (err.changed) {
+        _setResult(false);
+        return true;
+      }
+      return false;
+    })
+    .then(changed => callback(null, changed)); // return the promise instead
 };
 
-const applyTransitions = ({ change, audit, db }, callback) => {
+const applyTransitions = (change, callback) => {
   const operations = transitions
     .map(transition => {
       const opts = {
         key: transition.key,
         change: change,
-        transition: transition.module,
-        audit: audit,
-        db: db
+        transition: transition.module
       };
       if (!canRun(opts)) {
         logger.debug(
@@ -400,7 +397,6 @@ const applyTransitions = ({ change, audit, db }, callback) => {
   async.series(operations, (err, results) =>
     finalize({
       change: change,
-      audit: audit,
       results: results
     }, callback));
 };

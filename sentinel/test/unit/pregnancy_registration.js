@@ -5,12 +5,12 @@ var _ = require('underscore'),
     transitionUtils = require('../../transitions/utils'),
     utils = require('../../lib/utils');
 
-function getMessage(doc) {
+const getMessage = doc => {
     if (!doc || !doc.tasks) {
         return;
     }
     return _.first(_.first(doc.tasks).messages).message;
-}
+};
 
 exports.setUp = function(callback) {
     sinon.stub(transition, 'getConfig').returns([{
@@ -180,9 +180,7 @@ exports['setExpectedBirthDate sets lmp_date and expected_date correctly for lmp:
 };
 
 exports['valid adds lmp_date and patient_id'] = function(test) {
-    test.expect(5);
-    var doc,
-        start = moment().startOf('day').subtract(5, 'weeks');
+    var start = moment().startOf('day').subtract(5, 'weeks');
 
     sinon.stub(utils, 'getPatientContactUuid').callsArgWith(2, null, {_id: 'uuid'});
 
@@ -191,7 +189,7 @@ exports['valid adds lmp_date and patient_id'] = function(test) {
         callback();
     });
 
-    doc = {
+    const doc = {
         form: 'p',
         type: 'data_record',
         fields: {
@@ -200,10 +198,7 @@ exports['valid adds lmp_date and patient_id'] = function(test) {
         }
     };
 
-    transition.onMatch({
-        doc: doc
-    }, {}, {}, function(err, changed) {
-        test.equals(err, null);
+    transition.onMatch({ doc: doc }).then(function(changed) {
         test.equals(changed, true);
         test.equals(doc.lmp_date, start.toISOString());
         test.ok(doc.patient_id);
@@ -216,7 +211,7 @@ exports['pregnancies on existing patients fail without valid patient id'] = func
     sinon.stub(utils, 'getRegistrations').callsArgWith(1, null, []);
     sinon.stub(utils, 'getPatientContactUuid').callsArgWith(2);
 
-    var doc = {
+    const doc = {
         form: 'ep',
         type: 'data_record',
         fields: {
@@ -225,10 +220,7 @@ exports['pregnancies on existing patients fail without valid patient id'] = func
         }
     };
 
-    transition.onMatch({
-        doc: doc
-    }, {}, {}, function(err, changed) {
-        test.equals(err, null);
+    transition.onMatch({ doc: doc }).then(function(changed) {
         test.equals(changed, true);
         test.equals(doc.errors.length, 1);
         test.equals(doc.errors[0].message, 'messages.generic.registration_not_found');
@@ -240,7 +232,7 @@ exports['pregnancies on existing patients succeeds with a valid patient id'] = f
     sinon.stub(utils, 'getRegistrations').callsArgWith(1, null, []);
     sinon.stub(utils, 'getPatientContactUuid').callsArgWith(2, null, {_id: 'uuid'});
 
-    var doc = {
+    const doc = {
         form: 'ep',
         type: 'data_record',
         fields: {
@@ -249,10 +241,7 @@ exports['pregnancies on existing patients succeeds with a valid patient id'] = f
         }
     };
 
-    transition.onMatch({
-        doc: doc
-    }, {}, {}, function(err, changed) {
-        test.equals(err, null);
+    transition.onMatch({ doc: doc }).then(function(changed) {
         test.equals(changed, true);
         test.ok(!doc.errors);
         test.done();
@@ -268,7 +257,7 @@ exports['zero lmp value only registers patient'] = function(test) {
         callback();
     });
 
-    var doc = {
+    const doc = {
         form: 'p',
         type: 'data_record',
         fields: {
@@ -277,10 +266,7 @@ exports['zero lmp value only registers patient'] = function(test) {
         }
     };
 
-    transition.onMatch({
-        doc: doc
-    }, {}, {}, function(err, changed) {
-        test.equals(err, null);
+    transition.onMatch({ doc: doc }).then(function(changed) {
         test.equals(changed, true);
         test.equals(doc.lmp_date, null);
         test.ok(doc.patient_id);
@@ -290,8 +276,6 @@ exports['zero lmp value only registers patient'] = function(test) {
 };
 
 exports['id only logic with valid name'] = function(test) {
-    var doc;
-
     sinon.stub(utils, 'getPatientContactUuid').callsArgWith(2, null, {_id: 'uuid'});
 
     sinon.stub(transitionUtils, 'addUniqueId').callsFake((doc, callback) => {
@@ -299,7 +283,7 @@ exports['id only logic with valid name'] = function(test) {
         callback();
     });
 
-    doc = {
+    const doc = {
         form: 'p',
         type: 'data_record',
         fields: {
@@ -309,10 +293,7 @@ exports['id only logic with valid name'] = function(test) {
         getid: 'x'
     };
 
-    transition.onMatch({
-        doc: doc
-    }, {}, {}, function(err, changed) {
-        test.equals(err, null);
+    transition.onMatch({ doc: doc }).then(function(changed) {
         test.equals(changed, true);
         test.equals(doc.lmp_date, undefined);
         test.ok(doc.patient_id);
@@ -322,13 +303,10 @@ exports['id only logic with valid name'] = function(test) {
 };
 
 exports['id only logic with invalid name'] = function(test) {
-    test.expect(5);
-    var doc;
-
     sinon.stub(utils, 'getRegistrations').callsArgWith(1, null, []);
     sinon.stub(utils, 'getPatientContactUuid').callsArgWith(2, null, {_id: 'uuid'});
 
-    doc = {
+    const doc = {
         form: 'p',
         from: '+12345',
         type: 'data_record',
@@ -339,10 +317,7 @@ exports['id only logic with invalid name'] = function(test) {
         getid: 'x'
     };
 
-    transition.onMatch({
-        doc: doc
-    }, {}, {}, function(err, changed) {
-        test.equals(err, null);
+    transition.onMatch({ doc: doc }).then(function(changed) {
         test.equals(changed, true);
         test.equals(doc.patient_id, undefined);
         test.ok(doc.tasks);
@@ -352,11 +327,7 @@ exports['id only logic with invalid name'] = function(test) {
 };
 
 exports['invalid name valid LMP logic'] = function(test) {
-    test.expect(4);
-
-    var doc;
-
-    doc = {
+    const doc = {
         form: 'p',
         from: '+1234',
         type: 'data_record',
@@ -366,10 +337,7 @@ exports['invalid name valid LMP logic'] = function(test) {
         }
     };
 
-    transition.onMatch({
-        doc: doc
-    }, {}, {}, function(err, changed) {
-        test.equals(err, null);
+    transition.onMatch({ doc: doc }).then(function(changed) {
         test.equals(changed, true);
         test.equals(doc.patient_id, undefined);
         test.equals(getMessage(doc), 'Invalid patient name.');
@@ -379,9 +347,7 @@ exports['invalid name valid LMP logic'] = function(test) {
 };
 
 exports['valid name invalid LMP logic'] = function(test) {
-    var doc;
-
-    doc = {
+    const doc = {
         form: 'p',
         from: '+1234',
         type: 'data_record',
@@ -391,10 +357,7 @@ exports['valid name invalid LMP logic'] = function(test) {
         }
     };
 
-    transition.onMatch({
-        doc: doc
-    }, {}, {}, function(err, changed) {
-        test.equals(err, null);
+    transition.onMatch({ doc: doc }).then(function(changed) {
         test.equals(changed, true);
         test.equals(doc.patient_id, undefined);
         test.equals(getMessage(doc), 'Invalid LMP; must be between 0-40 weeks.');
@@ -404,9 +367,7 @@ exports['valid name invalid LMP logic'] = function(test) {
 };
 
 exports['invalid name invalid LMP logic'] = function(test) {
-    var doc;
-
-    doc = {
+    const doc = {
         form: 'p',
         from: '+123',
         type: 'data_record',
@@ -416,10 +377,7 @@ exports['invalid name invalid LMP logic'] = function(test) {
         }
     };
 
-    transition.onMatch({
-        doc: doc
-    }, {}, {}, function(err, changed) {
-        test.equals(err, null);
+    transition.onMatch({ doc: doc }).then(function(changed) {
         test.equals(changed, true);
         test.equals(doc.patient_id, undefined);
         test.equals(getMessage(doc), 'Invalid patient name.  Invalid LMP; must be between 0-40 weeks.');
@@ -429,27 +387,23 @@ exports['invalid name invalid LMP logic'] = function(test) {
 };
 
 exports['mismatched form returns false'] = function(test) {
-    transition.onMatch({
-        doc: {
-            form: 'x',
-            type: 'data_record'
-        }
-    }, {}, {}, function(err, changed) {
-        test.equals(changed, undefined);
+    const doc = {
+        form: 'x',
+        type: 'data_record'
+    };
+    transition.onMatch({ doc: doc }).catch(function() {
         test.done();
     });
 };
 
 exports['missing all fields returns validation errors'] = function(test) {
     test.expect(2);
-    var doc = {
+    const doc = {
         form: 'p',
         from: '+123',
         type: 'data_record'
     };
-    transition.onMatch({
-        doc: doc
-    }, {}, {}, function(err, changed) {
+    transition.onMatch({ doc: doc }).then(function(changed) {
         test.equals(changed, true);
         test.equals(
             getMessage(doc),

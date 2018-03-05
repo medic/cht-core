@@ -11,6 +11,7 @@ const _ = require('underscore'),
       moment = require('moment'),
       config = require('../config'),
       date = require('../date'),
+      db = require('../db'),
       NAME = 'registration',
       XFORM_CONTENT_TYPE = 'xml';
 
@@ -21,7 +22,7 @@ const findFirstDefinedValue = (doc, fields) => {
   return definedField && doc.fields[definedField];
 };
 
-const getRegistrations = (db, patientId, callback) => {
+const getRegistrations = (patientId, callback) => {
   if (!patientId) {
     return callback();
   }
@@ -78,14 +79,14 @@ const booleanExpressionFails = (doc, expr) => {
 // NB: this is very similar to a function in accept_patient_reports, except
 //     we also allow for an empty event_type
 const messageRelevant = (msg, doc) => {
-    if (!msg.event_type || msg.event_type === 'report_accepted') {
-        const expr = msg.bool_expr;
-        if (utils.isNonEmptyString(expr)) {
-            return utils.evalExpression(expr, {doc: doc});
-        } else {
-            return true;
-        }
+  if (!msg.event_type || msg.event_type === 'report_accepted') {
+    const expr = msg.bool_expr;
+    if (utils.isNonEmptyString(expr)) {
+      return utils.evalExpression(expr, {doc: doc});
+    } else {
+      return true;
     }
+  }
 };
 
 module.exports = {
@@ -209,81 +210,80 @@ module.exports = {
     const validations = config.validations && config.validations.list;
     return validation.validate(doc, validations, callback);
   },
-  onMatch: (change, db, audit, callback) => {
+  onMatch: change => {
     const self = module.exports,
           doc = change.doc,
           registrationConfig = self.getRegistrationConfig(self.getConfig(), doc.form);
 
-    if (!registrationConfig) {
-      return callback();
-    }
+    return new Promise((resolve, reject) => {
+      self.validate(registrationConfig, doc, errors => {
+        if (errors && errors.length > 0) {
+          messages.addErrors(registrationConfig, doc, errors);
+          return resolve(true);
+        }
 
-    self.validate(registrationConfig, doc, errors => {
-      if (errors && errors.length > 0) {
-        messages.addErrors(registrationConfig, doc, errors);
-        return callback(null, true);
-      }
+        const patientId = doc.fields && doc.fields.patient_id;
 
-      if (doc.fields && doc.fields.patient_id) {
+        if (!patientId) {
+          return self.fireConfiguredTriggers(registrationConfig, doc)
+            .then(resolve).catch(reject);
+        }
+
         // We're attaching this registration to an existing patient, let's
         // make sure it's valid
-        return utils.getPatientContactUuid(db, doc.fields.patient_id, (err, patientContactId) => {
+        return utils.getPatientContactUuid(db, patientId, (err, patientContactId) => {
           if (err) {
-            return callback(err);
+            return reject(err);
           }
 
           if (!patientContactId) {
             transitionUtils.addRegistrationNotFoundError(doc, registrationConfig);
-            return callback(null, true);
+            return resolve(true);
           }
-
-          return self.fireConfiguredTriggers(db, audit, registrationConfig, doc, callback);
+          return self.fireConfiguredTriggers(registrationConfig, doc)
+            .then(resolve)
+            .catch(reject);
         });
-      } else {
-        return self.fireConfiguredTriggers(db, audit, registrationConfig, doc, callback);
-      }
+      });
     });
   },
-  fireConfiguredTriggers: (db, audit, registrationConfig, doc, callback) => {
-    const self = module.exports,
-          series = [];
+  fireConfiguredTriggers: (registrationConfig, doc) => {
+    const self = module.exports;
 
-    _.each(registrationConfig.events, event => {
-      series.push(cb => {
+    return new Promise((resolve, reject) => {
+
+      const series = registrationConfig.events.map(event => cb => {
         const trigger = self.triggers[event.trigger];
-        if (!trigger) {
+        if (!trigger || event.name !== 'on_create') {
+          return;
+        }
+        const obj = _.defaults({}, doc, doc.fields);
+
+        if (booleanExpressionFails(obj, event.bool_expr)) {
           return cb();
         }
-        if (event.name === 'on_create') {
-          const obj = _.defaults({}, doc, doc.fields);
 
-          if (booleanExpressionFails(obj, event.bool_expr)) {
-            return cb();
-          }
+        const options = {
+          doc: doc,
+          registrationConfig: registrationConfig,
+          params: parseParams(event.params)
+        };
+        logger.debug(`Parsed params for form "${options.form}", trigger "${event.trigger}, params: ${options.params}"`);
+        trigger.apply(null, [ options, cb ]);
+      }).filter(item => !!item);
 
-          const options = {
-            db: db,
-            audit: audit,
-            doc: doc,
-            registrationConfig: registrationConfig,
-            params: parseParams(event.params)
-          };
-          logger.debug(`Parsed params for form "${options.form}", trigger "${event.trigger}, params: ${options.params}"`);
-          trigger.apply(null, [ options, cb ]);
+      async.series(series, err => {
+        if (err) {
+          return reject(err);
         }
-      });
-    });
 
-    async.series(series, (err, changed) => {
-      if (err) {
-        return callback(err, changed);
-      }
-
-      // add messages is done last so data on doc can be used in
-      // messages
-      self.addMessages(db, registrationConfig, doc, () => {
-        callback(null, true);
+        // add messages is done last so data on doc can be used in
+        // messages
+        self.addMessages(registrationConfig, doc, () => {
+          resolve(true);
+        });
       });
+
     });
   },
   triggers: {
@@ -322,7 +322,7 @@ module.exports = {
       };
 
       utils.getRegistrations({
-        db: options.db,
+        db: db,
         id: options.doc.fields && options.doc.fields.patient_id
       }, (err, registrations) => {
         if (err) {
@@ -330,21 +330,21 @@ module.exports = {
         }
 
         acceptPatientReports.silenceRegistrations(
-          options.audit,
           config,
           options.doc,
           registrations,
-          cb);
+          cb
+        );
       });
     }
   },
-  addMessages: (db, config, doc, callback) => {
+  addMessages: (config, doc, callback) => {
     const patientId = doc.fields && doc.fields.patient_id;
     if (!config.messages || !config.messages.length) {
       return callback();
     }
 
-    getRegistrations(db, patientId, (err, registrations) => {
+    getRegistrations(patientId, (err, registrations) => {
       if (err) {
         return callback(err);
       }
@@ -366,7 +366,7 @@ module.exports = {
   assignSchedule: (options, callback) => {
     const patientId = options.doc.fields && options.doc.fields.patient_id;
 
-    getRegistrations(options.db, patientId, (err, registrations) => {
+    getRegistrations(patientId, (err, registrations) => {
       if (err) {
         return callback(err);
       }
@@ -383,7 +383,6 @@ module.exports = {
   },
   setId: (options, callback) => {
     const doc = options.doc,
-          db = options.db,
           patientIdField = options.params.patient_id_field;
 
     if (patientIdField) {
@@ -419,8 +418,6 @@ module.exports = {
   },
   addPatient: (options, callback) => {
     const doc = options.doc,
-          db = options.db,
-          audit = options.audit,
           patientShortcode = doc.patient_id,
           patientNameField = getPatientNameField(options.params);
 
@@ -456,7 +453,7 @@ module.exports = {
         if (doc.birth_date) {
           patient.date_of_birth = doc.birth_date;
         }
-        audit.saveDoc(patient, callback);
+        db.audit.saveDoc(patient, callback);
       });
     });
   },
