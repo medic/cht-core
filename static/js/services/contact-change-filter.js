@@ -43,22 +43,15 @@ angular.module('inboxServices').factory('ContactChangeFilter',
     };
 
     var wasChild = function(change, contact) {
-      if (!contact.children) {
-        return false;
-      }
-      return !!_.find(contact.children, function(children) {
-        return children instanceof Array && _.find(children, function(child) {
+      return _.some(contact.children, function(children) {
+        return children instanceof Array && _.some(children, function(child) {
           return child.doc._id === change.doc._id;
         });
       });
     };
 
     var isAncestor = function(change, contact) {
-      if (!contact.lineage || !contact.lineage.length) {
-        return false;
-      }
-
-      return !!_.find(contact.lineage, function(lineage) {
+     return _.some(contact.lineage, function(lineage) {
         return lineage._id === change.doc._id;
       });
     };
@@ -80,23 +73,16 @@ angular.module('inboxServices').factory('ContactChangeFilter',
           return true;
         }
 
-        if (!contact.children) {
-          return false;
-        }
-
-        return !!_.find(contact.children, function(children) {
-          return children instanceof Array && _.find(children, function(child) {
+        return _.some(contact.children, function(children) {
+          return children instanceof Array && _.some(children, function(child) {
             return matchReportSubject(change, child);
           });
         });
       },
       isRelevantContact: function(change, contact) {
-        if (!isValidInput(change, contact)) {
-          return false;
-        }
-
-        return isContact(change) &&
-          (isAncestor(change, contact) || isChild(change, contact) || wasChild(change, contact));
+        return isValidInput(change, contact) &&
+               isContact(change) &&
+               (isAncestor(change, contact) || isChild(change, contact) || wasChild(change, contact));
       },
       isDeleted: function(change) {
         return !!change && !!change.deleted;

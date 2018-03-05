@@ -2,17 +2,17 @@ describe('ContactsContentCtrl', () => {
   'use strict';
 
   let assert = chai.assert,
-    controller,
-    stateParams,
-    scope,
-    state,
-    contactViewModelGenerator,
-    tasksForContact,
-    reportsForContact,
-    changes,
-    changesCallback,
-    changesFilter,
-    contactChangeFilter = sinon.stub();
+      controller,
+      stateParams,
+      scope,
+      state,
+      contactViewModelGenerator,
+      tasksForContact,
+      reportsForContact,
+      changes,
+      changesCallback,
+      changesFilter,
+      contactChangeFilter = sinon.stub();
 
   const childPerson = {
     _id: 'peach',

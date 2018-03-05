@@ -99,8 +99,8 @@ angular.module('inboxControllers').controller('ContactsContentCtrl',
         });
     };
 
-    var selectContact = function(id, silent, noLoadingThrobber) {
-      if (!noLoadingThrobber) {
+    var selectContact = function(id, silent) {
+      if (!silent) {
         $scope.setLoadingContent(id);
       }
       return ContactViewModelGenerator(id)
@@ -147,7 +147,7 @@ angular.module('inboxControllers').controller('ContactsContentCtrl',
       }
 
       hasChanges = false;
-      return selectContact($scope.selected.doc._id, true, true);
+      return selectContact($scope.selected.doc._id, true);
     };
     debouncedReloadContact = _.debounce(reloadContact, debounceWait);
 
@@ -155,23 +155,21 @@ angular.module('inboxControllers').controller('ContactsContentCtrl',
       key: 'contacts-content',
       filter: function(change) {
         return ContactChangeFilter.matchContact(change, $scope.selected) ||
-          ContactChangeFilter.isRelevantContact(change, $scope.selected) ||
-          ContactChangeFilter.isRelevantReport(change, $scope.selected);
+               ContactChangeFilter.isRelevantContact(change, $scope.selected) ||
+               ContactChangeFilter.isRelevantReport(change, $scope.selected);
       },
       callback: function(change) {
-        if (ContactChangeFilter.matchContact(change, $scope.selected)) {
-          if (ContactChangeFilter.isDeleted(change)) {
-            var parentId = $scope.selected.doc.parent && $scope.selected.doc.parent._id;
-            hasChanges = false;
-            if (parentId) {
-              // redirect to the parent
-              $state.go($state.current.name, {id: parentId});
-            } else {
-              // top level contact deleted - clear selection
-              $scope.clearSelected();
-            }
-            return;
+        if (ContactChangeFilter.matchContact(change, $scope.selected) && ContactChangeFilter.isDeleted(change)) {
+          var parentId = $scope.selected.doc.parent && $scope.selected.doc.parent._id;
+          hasChanges = false;
+          if (parentId) {
+            // redirect to the parent
+            $state.go($state.current.name, {id: parentId});
+          } else {
+            // top level contact deleted - clear selection
+            $scope.clearSelected();
           }
+          return;
         }
 
         hasChanges = true;
