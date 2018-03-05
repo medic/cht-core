@@ -104,7 +104,7 @@ var _ = require('underscore'),
               return contact._id === usersHomePlace._id;
             });
 
-            additionalListItem = !$scope.filters.search &&
+            additionalListItem = (!$scope.filters.search && !$scope.filters.simprintsIdentities) &&
                                  (additionalListItem || !$scope.appending) &&
                                  homeIndex === -1;
 
