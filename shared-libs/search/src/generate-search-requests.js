@@ -259,6 +259,8 @@ var requestBuilders = {
 //     options: [ 'person', 'clinic', 'district_hospital' ]
 //   }
 //  };
+//
+// NB: options is not required: it is an optimisation shortcut
 module.exports = {
   generate: function(type, filters) {
     var builder = requestBuilders[type];
