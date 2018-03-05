@@ -287,8 +287,6 @@ describe('Lineage', function() {
   });
 
   it('fetchHydratedDoc attaches the full lineage for reports', function() {
-    // TODO uncomment this when getPatientContactUuid is available in the lineage library
-    // sinon.stub(utils, 'getPatientContactUuid').callsArgWith(2, null, report_patient._id);
     query.onCall(0).resolves({ rows: [
       { doc: report },
       { doc: report_contact },
@@ -296,12 +294,15 @@ describe('Lineage', function() {
       { doc: report_grandparent }
     ] });
     query.onCall(1).resolves({ rows: [
+      { id: report_patient._id }
+    ]});
+    query.onCall(2).resolves({ rows: [
       { doc: report_patient },
       { doc: report_contact },
       { doc: report_parent },
       { doc: report_grandparent }
     ] });
-    query.onCall(3).rejects('Too many calls!');
+    query.onCall(4).rejects('Too many calls!');
 
     allDocs.callsFake((options) => {
       const contactDocs = options.keys.map(id => {
@@ -513,8 +514,6 @@ describe('Lineage', function() {
   });
 
   it('fetchHydratedDoc+minify is noop on a report', function() {
-    // TODO uncomment this when getPatientContactUuid is available in the lineage library
-    // sinon.stub(utils, 'getPatientContactUuid').callsArgWith(2, null, report_patient._id);
     query.onCall(0).resolves({ rows: [
       { doc: JSON.parse(JSON.stringify(report)) },
       { doc: report_contact },
@@ -522,6 +521,9 @@ describe('Lineage', function() {
       { doc: report_grandparent }
     ] });
     query.onCall(1).resolves({ rows: [
+      { id: report_patient._id }
+    ]});
+    query.onCall(2).resolves({ rows: [
       { doc: report_patient },
       { doc: report_contact },
       { doc: report_parent },
@@ -573,9 +575,10 @@ describe('Lineage', function() {
     allDocs.onCall(0).resolves(rowify(fetchedParents));
     allDocs.onCall(1).resolves(rowify(fetchedContacts));
 
-    // TODO uncomment this when getPatientContactUuid is available in the lineage library
-    // sinon.stub(utils, 'getPatientContactUuid').callsArgWith(2, null, report_patient._id);
     query.onCall(0).resolves({ rows: [
+      { id: report_patient._id }
+    ]});
+    query.onCall(1).resolves({ rows: [
       { doc: report_patient }
     ] });
 
@@ -627,9 +630,10 @@ describe('Lineage', function() {
     allDocs.onCall(0).resolves(rowify(fetchedParents));
     allDocs.onCall(1).resolves(rowify(fetchedContacts));
 
-    // TODO uncomment this when getPatientContactUuid is available in the lineage library
-    // sinon.stub(utils, 'getPatientContactUuid').callsArgWith(2, null, report_patient._id);
     query.onCall(0).resolves({ rows: [
+      { id: report_patient._id }
+    ]});
+    query.onCall(1).resolves({ rows: [
       { doc: report_patient }
     ] });
 
@@ -656,9 +660,10 @@ describe('Lineage', function() {
     allDocs.onCall(0).resolves(fetchedParentsRows);
     allDocs.onCall(1).resolves(fetchedContactsRows);
 
-    // TODO uncomment this when getPatientContactUuid is available in the lineage library
-    // sinon.stub(utils, 'getPatientContactUuid').callsArgWith(2, null, report_patient._id);
     query.onCall(0).resolves({ rows: [
+      { id: report_patient._id }
+    ]});
+    query.onCall(1).resolves({ rows: [
       { doc: report_patient }
     ] });
 

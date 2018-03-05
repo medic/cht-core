@@ -105,22 +105,27 @@ var findPatientId = function(doc) {
 
 var fetchPatientLineage = function(record) {
   var patientId = findPatientId(record);
+
   if (!patientId) {
     return Promise.resolve([]);
   }
-  return Promise.resolve([]);
-  // TODO figure out how to have getPatientContactUuid accessible here
-  // return new Promise(function(resolve, reject) {
-  //   return utils.getPatientContactUuid(patientId, function(err, uuid) {
-  //     if (err) {
-  //       reject(err);
-  //     } else {
-  //       fetchLineageById(uuid)
-  //         .then(resolve)
-  //         .catch(reject);
-  //     }
-  //   });
-  // });
+
+  return contactUuidByPatientId(patientId)
+    .then(function(uuid) {
+      return fetchLineageById(uuid);
+    });
+};
+
+var contactUuidByPatientId = function(patientId) {
+  return DB.query('medic-client/contacts_by_reference', {
+    key: [ 'shortcode', patientId ]
+  }).then(function(results) {
+    if (results.rows.length > 1) {
+      console.warn('More than one patient person document for shortcode ' + patientId);
+    }
+
+    return results.rows[0] && results.rows[0].id;
+  });
 };
 
 var fetchLineageById = function(id) {
