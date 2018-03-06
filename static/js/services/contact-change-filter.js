@@ -9,7 +9,7 @@ angular.module('inboxServices').factory('ContactChangeFilter',
     'use strict';
 
     var isValidInput = function(change, contact) {
-      return !!change && !!change.doc && !!contact && !!contact.doc;
+      return !!(change && change.doc && contact && contact.doc);
     };
 
     var isContact = function(change) {
@@ -56,28 +56,22 @@ angular.module('inboxServices').factory('ContactChangeFilter',
       });
     };
 
+    var matchChildReportSubject = function(change, contact) {
+      return _.some(contact.children, function(children) {
+        return children instanceof Array && _.some(children, function(child) {
+          return matchReportSubject(change, child);
+        });
+      });
+    };
+
     return {
       matchContact: function(change, contact) {
-        if (!isValidInput(change, contact)) {
-          return false;
-        }
-
-        return contact.doc._id === change.doc._id;
+        return isValidInput(change, contact) && contact.doc._id === change.doc._id;
       },
       isRelevantReport: function(change, contact) {
-        if (!isValidInput(change, contact) || !isReport(change)) {
-          return false;
-        }
-
-        if (matchReportSubject(change, contact)) {
-          return true;
-        }
-
-        return _.some(contact.children, function(children) {
-          return children instanceof Array && _.some(children, function(child) {
-            return matchReportSubject(change, child);
-          });
-        });
+        return isValidInput(change, contact) &&
+               isReport(change) &&
+               (matchReportSubject(change, contact) || matchChildReportSubject(change, contact));
       },
       isRelevantContact: function(change, contact) {
         return isValidInput(change, contact) &&

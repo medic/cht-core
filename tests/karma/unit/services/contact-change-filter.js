@@ -13,6 +13,7 @@ describe('ContactChangeFilter service', () => {
     chai.assert.equal(service.matchContact(), false);
     chai.assert.equal(service.matchContact({}, { something: true }), false);
     chai.assert.equal(service.matchContact('notAnObject', undefined), false);
+    chai.assert.equal(service.matchContact([undefined], 11), false);
     chai.assert.equal(service.isDeleted(undefined), false);
   });
 
@@ -25,6 +26,13 @@ describe('ContactChangeFilter service', () => {
 
     it('returns false for different ID', () => {
       const change = { doc: { _id: '456' } };
+      const contact = { doc: { _id: '123' } };
+
+      chai.expect(service.matchContact(change, contact)).to.equal(false);
+    });
+
+    it('returns false for missing ID', () => {
+      const change = { doc: { } };
       const contact = { doc: { _id: '123' } };
 
       chai.expect(service.matchContact(change, contact)).to.equal(false);
