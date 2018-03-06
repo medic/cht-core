@@ -2,6 +2,12 @@ const utils = require('../../../utils');
 
 fdescribe('/sms', function() {
 
+  describe('test setup', function() {
+    fit('should make PouchDB instance available', function() {
+      expect(utils.db.query).toBeDefined();
+    });
+  });
+
   describe('GET', function() {
 
     it('should respond with valid JSON', function() {
@@ -17,14 +23,15 @@ fdescribe('/sms', function() {
 
   describe('POST', function() {
 
-    afterAll(utils.revertDb);
+    // FIXME uncomment utils.revertDb call!
+    //afterAll(utils.revertDb);
 
     it('should accept requests with missing fields', function() {
       return post({})
         .then(expectResponse({ messages:[] }));
     });
 
-    it('should save supplied messages to DB', function() {
+    fit('should save supplied messages to DB', function() {
       return postMessages(
         {
           id: 'test-sms-1',
@@ -40,11 +47,17 @@ fdescribe('/sms', function() {
           sms_sent: 1511179020577,
           sms_received: 1511189020577,
         },
+        {
+          id: 'test-sms-3',
+          from: '+333-test',
+          content: 'test 3',
+          sms_sent: 1511179030577,
+          sms_received: 1511189030577,
+        },
       )
         .then(expectResponse({ messages:[] }))
-        .then(() => {
-          TODO('check that the messages eventually appear in the DB');
-        });
+
+        .then(expectMessagesInDb('test 1', 'test 2'));
     });
 
     it('should not reject bad message content', function() {
@@ -122,8 +135,8 @@ function post(body) {
   });
 }
 
-function postMessage(message) {
-  return postMessages(message);
+function postMessage(...messages) {
+  return postMessages(...messages);
 }
 
 function postMessages(...messages) {
@@ -136,4 +149,42 @@ function TODO(message = 'this test') {
 
 function expectResponse(expected) {
   return response => expect(response).toEqual(expected);
+}
+
+function expectMessageInDb(...contents) {
+  return expectMessagesInDb(...contents);
+}
+
+function expectMessagesInDb(...expectedContents) {
+  const limit = 10000; //expectedContents.length + 1;
+  expectedContents = JSON.stringify(expectedContents);
+
+  return () => new Promise((resolve, reject) => {
+    const endTime = Date.now() + 30000;
+
+    check();
+
+    function check() {
+      utils.db.query('medic-client/messages_by_contact_date', { reduce:false })
+        .then(response => {
+          const actualContents = JSON.stringify(
+              response); // &&
+//              response.rows &&
+//              response.rows.map(row => row.value && row.value.message));
+
+          console.log('comparing', expectedContents, 'with', actualContents);
+
+          if(JSON.stringify(actualContents) === JSON.stringify(expectedContents)) {
+            resolve();
+          } else if(Date.now() < endTime) {
+            console.log('Scheduling next check…');
+            setTimeout(check, 500);
+          } else {
+            expect(actualContents).toEqual(expectedContents);
+            reject();
+          }
+        })
+        .catch(reject);
+    }
+  });
 }
