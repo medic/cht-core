@@ -6,6 +6,7 @@ angular.module('inboxControllers').controller('ContactsContentCtrl',
     $log,
     $q,
     $scope,
+    $state,
     $stateParams,
     $translate,
     Auth,
@@ -14,7 +15,9 @@ angular.module('inboxControllers').controller('ContactsContentCtrl',
     Snackbar,
     TasksForContact,
     TranslateFrom,
-    UserSettings
+    UserSettings,
+    ContactChangeFilter,
+    Debounce
   ) {
 
     'use strict';
@@ -95,7 +98,9 @@ angular.module('inboxControllers').controller('ContactsContentCtrl',
     };
 
     var selectContact = function(id, silent) {
-      $scope.setLoadingContent(id);
+      if (!silent) {
+        $scope.setLoadingContent(id);
+      }
       return ContactViewModelGenerator(id)
         .then(function(model) {
           var refreshing = ($scope.selected && $scope.selected.doc._id) === id;
@@ -128,32 +133,34 @@ angular.module('inboxControllers').controller('ContactsContentCtrl',
       });
     });
 
+    var debouncedReloadContact = Debounce(selectContact, 1000, 10 * 1000);
+
     var changeListener = Changes({
       key: 'contacts-content',
       filter: function(change) {
-        return $scope.selected && $scope.selected.doc._id === change.id;
+        return ContactChangeFilter.matchContact(change, $scope.selected) ||
+               ContactChangeFilter.isRelevantContact(change, $scope.selected) ||
+               ContactChangeFilter.isRelevantReport(change, $scope.selected);
       },
       callback: function(change) {
-        if (change.deleted) {
-          var parentId = $scope.selected &&
-                         $scope.selected.doc &&
-                         $scope.selected.doc.parent &&
-                         $scope.selected.doc.parent._id;
+        if (ContactChangeFilter.matchContact(change, $scope.selected) && ContactChangeFilter.isDeleted(change)) {
+          debouncedReloadContact.cancel();
+          var parentId = $scope.selected.doc.parent && $scope.selected.doc.parent._id;
           if (parentId) {
-            // select the parent
-            selectContact(parentId, true);
+            // redirect to the parent
+            return $state.go($state.current.name, {id: parentId});
           } else {
             // top level contact deleted - clear selection
-            $scope.clearSelected();
+            return $scope.clearSelected();
           }
-        } else {
-          // refresh the updated contact
-          selectContact(change.id, true);
         }
+        return debouncedReloadContact($scope.selected.doc._id, true);
       }
     });
 
-    $scope.$on('$destroy', changeListener.unsubscribe);
-
+    $scope.$on('$destroy', function() {
+      changeListener.unsubscribe();
+      debouncedReloadContact.cancel();
+    });
   }
 );

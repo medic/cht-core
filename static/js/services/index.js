@@ -14,6 +14,7 @@
   require('./check-date');
   require('./child-facility');
   require('./clean-etag');
+  require('./contact-change-filter');
   require('./contact-form');
   require('./contact-save');
   require('./contact-schema');
@@ -23,6 +24,7 @@
   require('./count-messages');
   require('./db');
   require('./db-sync');
+  require('./debounce');
   require('./debug');
   require('./delete-docs');
   require('./download-url');
