@@ -61,6 +61,7 @@ module.exports = {
       req.query.type = req.params.type;
       req.query.form = req.params.form || req.query.form;
       req.query.district = ctx.district;
+
       exportDataV1.get(req.query, function(err, exportDataResult) {
         if (err) {
           return serverUtils.error(err, req, res);
@@ -105,6 +106,10 @@ module.exports = {
         code: 404
       }, req, res);
     }
+
+    console.log('v2 export requested for', type);
+    console.log('params:', JSON.stringify(filters, null, 2));
+    console.log('options:', JSON.stringify(options, null, 2));
 
     // We currently only support online users (CouchDB admins and National Admins)
     // If we want to support offline users we should either:
