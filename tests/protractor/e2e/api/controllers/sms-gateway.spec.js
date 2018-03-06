@@ -23,8 +23,7 @@ fdescribe('/sms', function() {
 
   describe('POST', function() {
 
-    // FIXME uncomment utils.revertDb call!
-    //afterAll(utils.revertDb);
+    afterAll(() => utils.revertDb());
 
     it('should accept requests with missing fields', function() {
       return post({})
@@ -46,13 +45,6 @@ fdescribe('/sms', function() {
           content: 'test 2',
           sms_sent: 1511179020577,
           sms_received: 1511189020577,
-        },
-        {
-          id: 'test-sms-3',
-          from: '+333-test',
-          content: 'test 3',
-          sms_sent: 1511179030577,
-          sms_received: 1511189030577,
         },
       )
         .then(expectResponse({ messages:[] }))
@@ -160,7 +152,7 @@ function expectMessagesInDb(...expectedContents) {
   expectedContents = JSON.stringify(expectedContents);
 
   return () => new Promise((resolve, reject) => {
-    const endTime = Date.now() + 30000;
+    const endTime = Date.now() + 10000;
 
     check();
 
@@ -168,20 +160,16 @@ function expectMessagesInDb(...expectedContents) {
       utils.db.query('medic-client/messages_by_contact_date', { reduce:false })
         .then(response => {
           const actualContents = JSON.stringify(
-              response); // &&
-//              response.rows &&
-//              response.rows.map(row => row.value && row.value.message));
-
-          console.log('comparing', expectedContents, 'with', actualContents);
+              response &&
+              response.rows &&
+              response.rows.map(row => row.value && row.value.message));
 
           if(JSON.stringify(actualContents) === JSON.stringify(expectedContents)) {
             resolve();
           } else if(Date.now() < endTime) {
-            console.log('Scheduling next check…');
             setTimeout(check, 500);
           } else {
-            expect(actualContents).toEqual(expectedContents);
-            reject();
+            reject(`Expected:\n      ${actualContents}\n    to equal:\n      ${expectedContents}`);
           }
         })
         .catch(reject);
