@@ -1,8 +1,7 @@
 const utils = require('./utils'),
-      spawn = require('child_process').spawn,
       constants = require('./constants'),
-      auth = require('./auth')(),
-      modules = [];
+      auth = require('./auth')();
+const moduleManager = require('./module-manager');
 
 if (!process.env.COUCH_NODE_NAME) {
   throw new Error('Missing required env var: COUCH_NODE_NAME');
@@ -21,33 +20,6 @@ const login = browser => {
   // Login takes some time, so wait until it's done.
   const bootstrappedCheck = () => element(by.css('body.bootstrapped')).isPresent();
   return browser.driver.wait(bootstrappedCheck, 20 * 1000, 'Login should be complete within 20 seconds');
-};
-
-const startNodeModule = (dir, startOutput) => {
-  return new Promise(resolve => {
-    const module = spawn('node', ['server.js'], {
-      cwd: dir,
-      env: {
-        TZ: 'UTC',
-        API_PORT: constants.API_PORT,
-        COUCH_URL: utils.getCouchUrl(),
-        COUCH_NODE_NAME: process.env.COUCH_NODE_NAME,
-        PATH: process.env.PATH
-      }
-    });
-    let started = false;
-    module.stdout.on('data', data => {
-      if (!started && data.toString().includes(startOutput)) {
-        started = true;
-        resolve();
-      }
-      console.log(`[${dir}] ${data}`);
-    });
-    module.stderr.on('data', data => {
-      console.error(`[${dir}] ${data}`);
-    });
-    modules.push(module);
-  });
 };
 
 const startApi = () => startNodeModule('api', 'Medic API listening on port');
@@ -76,9 +48,7 @@ const setupUser = () => {
 };
 
 // From orbit, just to be sure
-process.on('exit', () => {
-  modules.forEach(module => module.kill());
-});
+process.on('exit', moduleManager.stopAll);
 
 exports.config = {
   seleniumAddress: 'http://localhost:4444/wd/hub',
@@ -104,14 +74,19 @@ exports.config = {
   },
   onPrepare: () => {
     jasmine.getEnv().addReporter(utils.reporter);
-    const startup = startModules();
     browser.waitForAngularEnabled(false);
-    browser.driver.wait(startup, 60 * 1000, 'API and Sentinel should start within 60 seconds');
-    browser.driver.sleep(1000);
+
+    if(module.exports.manageModules) {
+      const startup = startModules();
+      browser.driver.wait(startup, 60 * 1000, 'API and Sentinel should start within 60 seconds');
+      browser.driver.sleep(1000);
+    }
+
     browser.driver.wait(setupSettings, 5 * 1000, 'Settings should be setup within 5 seconds');
     browser.driver.wait(setupUser, 5 * 1000, 'User should be setup within 5 seconds');
     browser.driver.sleep(1000);
     return login(browser);
   },
-  onCleanUp: () => modules.forEach(module => module.kill())
+  onCleanUp: moduleManager.stopAll,
+  manageModules: true,
 };
