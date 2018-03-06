@@ -62,7 +62,7 @@ describe('Debounce Service', () => {
       debounced();
       $timeout.flush(40);
       debounced();
-      $timeout.flush(50);
+      $timeout.flush(150);
       chai.expect(callback.callCount).to.equal(2);
     });
 
@@ -75,7 +75,7 @@ describe('Debounce Service', () => {
       debounced();
       $timeout.flush(40);
       debounced();
-      $timeout.flush(50);
+      $timeout.flush(100);
       chai.expect(callback.callCount).to.equal(1);
     });
 
@@ -85,7 +85,7 @@ describe('Debounce Service', () => {
         debounced();
         $timeout.flush(9);
       }
-      $timeout.flush(10);
+      $timeout.flush(50);
       chai.expect(callback.callCount).to.equal(4);
     });
 
@@ -122,7 +122,7 @@ describe('Debounce Service', () => {
       debounced();
       $timeout.flush(25);
       debounced.cancel();
-      $timeout.flush(50);
+      $timeout.flush(100);
       chai.expect(callback.callCount).to.equal(0);
 
     });
@@ -136,7 +136,7 @@ describe('Debounce Service', () => {
       debounced();
       $timeout.flush(15);
       debounced.cancel();
-      $timeout.flush(50);
+      $timeout.flush(100);
       chai.expect(callback.callCount).to.equal(0);
     });
 
@@ -149,7 +149,7 @@ describe('Debounce Service', () => {
       debounced();
       $timeout.flush(15);
       debounced.cancel();
-      $timeout.flush(50);
+      $timeout.flush(150);
       chai.expect(callback.callCount).to.equal(0);
     });
 
@@ -163,7 +163,7 @@ describe('Debounce Service', () => {
       debounced();
       $timeout.flush(49);
       debounced();
-      $timeout.flush(50);
+      $timeout.flush(150);
       chai.expect(callback.callCount).to.equal(1);
     });
 
@@ -186,7 +186,7 @@ describe('Debounce Service', () => {
       debounced(2);
       $timeout.flush(43);
       debounced(3);
-      $timeout.flush(50);
+      $timeout.flush(100);
       chai.expect(callback.callCount).to.equal(1);
       chai.expect(callback.args[0][0]).to.equal(3);
     });
@@ -200,7 +200,7 @@ describe('Debounce Service', () => {
       debounced(3);
       $timeout.flush(40);
       debounced(4);
-      $timeout.flush(50);
+      $timeout.flush(150);
       chai.expect(callback.callCount).to.equal(2);
       chai.expect(callback.args[0][0]).to.equal(3);
       chai.expect(callback.args[1][0]).to.equal(4);
@@ -213,7 +213,7 @@ describe('Debounce Service', () => {
       debounced(11);
       $timeout.flush(43);
       debounced(12);
-      $timeout.flush(50);
+      $timeout.flush(100);
       chai.expect(callback.callCount).to.equal(1);
       chai.expect(callback.args[0][0]).to.equal(10);
     });
@@ -226,7 +226,7 @@ describe('Debounce Service', () => {
       chai.expect(debounced(11)).to.equal(10);
       $timeout.flush(43);
       chai.expect(debounced(12)).to.equal(10);
-      $timeout.flush(50);
+      $timeout.flush(100);
       chai.expect(callback.callCount).to.equal(1);
     });
 
@@ -237,7 +237,7 @@ describe('Debounce Service', () => {
       debounced2(2);
       debounced1(1);
       debounced2(2);
-      $timeout.flush(50);
+      $timeout.flush(100);
       chai.expect(callback.callCount).to.equal(2);
       chai.expect(callback.args[0][0]).to.equal(1);
       chai.expect(callback.args[1][0]).to.equal(2);
