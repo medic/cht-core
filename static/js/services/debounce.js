@@ -2,7 +2,7 @@ angular.module('inboxServices').factory('Debounce',
   function($timeout) {
     'use strict';
 
-    return function(func, wait, invokeApply, immediate) {
+    return function(func, wait, immediate, invokeApply) {
       var timeout,
           result,
           args,

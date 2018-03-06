@@ -135,10 +135,7 @@ angular.module('inboxControllers').controller('ContactsContentCtrl',
       });
     });
 
-    var reloadContact = function() {
-      return selectContact($scope.selected.doc._id, true);
-    };
-    debouncedReloadContact = Debounce(reloadContact, debounceWait);
+    debouncedReloadContact = Debounce(selectContact, debounceWait);
 
     var changeListener = Changes({
       key: 'contacts-content',
@@ -149,19 +146,17 @@ angular.module('inboxControllers').controller('ContactsContentCtrl',
       },
       callback: function(change) {
         if (ContactChangeFilter.matchContact(change, $scope.selected) && ContactChangeFilter.isDeleted(change)) {
-          var parentId = $scope.selected.doc.parent && $scope.selected.doc.parent._id;
           debouncedReloadContact.cancel();
+          var parentId = $scope.selected.doc.parent && $scope.selected.doc.parent._id;
           if (parentId) {
             // redirect to the parent
-            $state.go($state.current.name, {id: parentId});
+            return $state.go($state.current.name, {id: parentId});
           } else {
             // top level contact deleted - clear selection
-            $scope.clearSelected();
+            return $scope.clearSelected();
           }
-          return;
         }
-
-        return debouncedReloadContact();
+        return debouncedReloadContact($scope.selected.doc._id, true);
       }
     });
 

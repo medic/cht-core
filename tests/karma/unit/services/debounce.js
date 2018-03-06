@@ -50,7 +50,7 @@ describe('Debounce Service', () => {
     });
 
     it('should call immediately when using immediate', () => {
-      service(callback, 50, false, true)();
+      service(callback, 50, true)();
       chai.expect(callback.callCount).to.equal(1);
       $timeout.flush(50);
       chai.expect(callback.callCount).to.equal(1);
@@ -58,7 +58,7 @@ describe('Debounce Service', () => {
     });
 
     it('should only callback once for multiple within-wait-interval calls when using immediate', () => {
-      const debounced = service(callback, 50, false, true);
+      const debounced = service(callback, 50, true);
       debounced();
       chai.expect(callback.callCount).to.equal(1);
       $timeout.flush(25);
@@ -93,7 +93,7 @@ describe('Debounce Service', () => {
     });
 
     it('should not callback if canceled, when using immediate', () => {
-      const debounced = service(callback, 50, false, true);
+      const debounced = service(callback, 50, true);
       debounced(1);
       debounced.cancel();
       chai.expect(callback.callCount).to.equal(1);
@@ -118,7 +118,7 @@ describe('Debounce Service', () => {
     });
 
     it('should pass the arguments from the first call to the callback, when using immediate', () => {
-      const debounced = service(callback, 50, false, true);
+      const debounced = service(callback, 50, true);
       debounced(10);
       $timeout.flush(25);
       debounced(11);
@@ -130,7 +130,7 @@ describe('Debounce Service', () => {
     });
 
     it('should return the result from the first call, when using immediate', () => {
-      const debounced = service(callback, 50, false, true);
+      const debounced = service(callback, 50, true);
       callback.returnsArg(0);
       chai.expect(debounced(10)).to.equal(10);
       $timeout.flush(25);
@@ -176,16 +176,21 @@ describe('Debounce Service', () => {
     });
 
     it('$timeout should receive correct arguments', () => {
-      let debounced = service(callback, 50, true);
+      let debounced = service(callback, 50, false, true);
       debounced();
       chai.expect($timeout.callCount).to.equal(1);
       chai.expect($timeout.args[0][1]).to.equal(50);
       chai.expect($timeout.args[0][2]).to.equal(true);
-      debounced = service(callback, 10, false);
+      debounced = service(callback, 10, false, false);
       debounced();
       chai.expect($timeout.callCount).to.equal(2);
       chai.expect($timeout.args[1][1]).to.equal(10);
       chai.expect($timeout.args[1][2]).to.equal(false);
+      debounced = service(callback, 12, false);
+      debounced();
+      chai.expect($timeout.callCount).to.equal(3);
+      chai.expect($timeout.args[2][1]).to.equal(12);
+      chai.expect($timeout.args[2][2]).to.equal(undefined);
     });
   });
 });
