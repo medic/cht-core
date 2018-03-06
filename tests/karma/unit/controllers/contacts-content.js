@@ -28,7 +28,7 @@ describe('ContactsContentCtrl', () => {
     children: { persons: [ ] }
   };
 
-  const stubContactViewModelGenerator = (doc, childArray = []) => {
+  const stubContactViewModelGenerator = (doc, childArray) => {
     const childRows = childArray.map(child => {
       return { id: child._id, doc: child };
     });
@@ -159,9 +159,9 @@ describe('ContactsContentCtrl', () => {
       change = { doc: {} };
     });
 
-    const runChangeFeedProcessTest = ({ childrenArray = [], doc }) => {
+    const runChangeFeedProcessTest = () => {
       stateParams = { id: doc._id};
-      stubContactViewModelGenerator(doc, childrenArray);
+      stubContactViewModelGenerator(doc,  []);
       return createController().setupPromise.then(() => {
         assert(scope.selected, 'selected should be set on the scope');
         return scope.selected;
@@ -182,7 +182,7 @@ describe('ContactsContentCtrl', () => {
     };
 
     it('updates information when selected contact is updated', () => {
-      return runChangeFeedProcessTest({ doc }).then(() => {
+      return runChangeFeedProcessTest().then(() => {
         stubContactChangeFilter({ matchContact: true, isDeleted: false });
         chai.assert.equal(changesFilter(change), true);
         return changesCallback(change).then(() => {
@@ -197,7 +197,7 @@ describe('ContactsContentCtrl', () => {
     it('redirects to parent when selected contact is deleted', () => {
       doc.parent = { _id: 'parent_id' };
 
-      return runChangeFeedProcessTest({ doc }).then(() => {
+      return runChangeFeedProcessTest().then(() => {
         stubContactChangeFilter({ matchContact: true, isDeleted: true });
         chai.assert.equal(changesFilter(change), true);
         changesCallback(change);
@@ -209,7 +209,7 @@ describe('ContactsContentCtrl', () => {
     });
 
     it('clears when selected contact is deleted and has no parent', () => {
-      return runChangeFeedProcessTest({ doc }).then(() => {
+      return runChangeFeedProcessTest().then(() => {
         stubContactChangeFilter({ matchContact: true, isDeleted: true });
         chai.assert.equal(changesFilter(change), true);
         changesCallback(changes);
@@ -220,7 +220,7 @@ describe('ContactsContentCtrl', () => {
     });
 
     it('updates information when relevant contact change is received', () => {
-      return runChangeFeedProcessTest({ doc }).then(() => {
+      return runChangeFeedProcessTest().then(() => {
         stubContactChangeFilter({ matchContact: false, isRelevantContact: true });
         chai.assert.equal(changesFilter(change), true);
         return changesCallback(change).then(() => {
@@ -234,7 +234,7 @@ describe('ContactsContentCtrl', () => {
     });
 
     it('updates information when relevant report change is received', () => {
-      return runChangeFeedProcessTest({ doc }).then(() => {
+      return runChangeFeedProcessTest().then(() => {
         stubContactChangeFilter({ matchContact: false, isRelevantReport: true, isRelevantContact: false });
         chai.assert.equal(changesFilter(change), true);
         return changesCallback(change).then(() => {
@@ -249,7 +249,7 @@ describe('ContactsContentCtrl', () => {
     });
 
     it('does not update information when irrelevant change is received', () => {
-      return runChangeFeedProcessTest({ doc }).then(() => {
+      return runChangeFeedProcessTest().then(() => {
         stubContactChangeFilter({ matchContact: false, isRelevantReport: false, isRelevantContact: false });
         chai.assert.equal(changesFilter(change), false);
         chai.assert.equal(contactChangeFilter.matchContact.callCount, 1);
