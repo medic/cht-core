@@ -1,5 +1,5 @@
 /**
- * Service to identify relevant changes from Changes feed for contacts
+ * Service to identify relevant changes in relation to a Contact document.
  */
 var _ = require('underscore');
 
