@@ -376,11 +376,16 @@ module.exports = function(grunt) {
       }
     },
     protractor: {
-      default: {
+      tests_and_services: {
         options: {
-          configFile: 'tests/protractor/conf.js'
+          configFile: 'tests/protractor/tests-and-services.conf.js',
         }
-      }
+      },
+      tests_only: {
+        options: {
+          configFile: 'tests/protractor/tests-only.conf.js',
+        }
+      },
     },
     nodeunit: {
       all: [
@@ -550,7 +555,7 @@ module.exports = function(grunt) {
   // Test tasks
   grunt.registerTask('e2e', 'Deploy app for testing and run e2e tests', [
     'exec:deploytest',
-    'protractor:default'
+    'protractor:tests_and_services',
   ]);
 
   grunt.registerTask('unit_continuous', 'Lint, karma unit tests running on a loop', [
