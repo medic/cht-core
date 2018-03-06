@@ -9,21 +9,23 @@ const _ = require('underscore'),
       PLACE_TYPES = ['national_office', 'district_hospital', 'health_center', 'clinic'];
 
 const getPlace = (id, callback) => {
-  lineageUtils.fetchHydratedDoc(id, (err, doc) => {
-    if (err) {
+  lineageUtils.fetchHydratedDoc(id)
+    .then(doc => {
+      if (!isAPlace(doc)) {
+        throw {
+          statusCode: 404,
+        };
+      }
+
+      callback(null, doc);
+    })
+    .catch(err => {
       if (err.statusCode === 404) {
         err.message  = 'Failed to find place.';
       }
-      return callback(err);
-    }
-    if (!isAPlace(doc)) {
-      return callback({
-        code: 404,
-        message: 'Failed to find place.'
-      });
-    }
-    callback(null, doc);
-  });
+
+      callback(err);
+    });
 };
 
 const isAPlace = place => PLACE_TYPES.indexOf(place.type) !== -1;
@@ -37,6 +39,7 @@ const isAPlace = place => PLACE_TYPES.indexOf(place.type) !== -1;
  * NB: non-hydrated places may not be valid. You may wish to use
  *     fetchHydratedDoc().
  */
+ // TODO: remove the callback pattern. It doesn't call the DB, there is no need.
 const validatePlace = (place, callback) => {
   const err = (msg, code) => {
     return callback({
@@ -256,6 +259,7 @@ const getOrCreatePlace = (place, callback) => {
   }
 };
 
+module.exports._lineageUtils = lineageUtils;
 module.exports._createPlace = createPlace;
 module.exports._createPlaces = createPlaces;
 module.exports._updateFields = updateFields;
