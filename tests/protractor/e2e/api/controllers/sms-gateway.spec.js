@@ -45,26 +45,39 @@ fdescribe('/sms', function() {
           content: 'test 2',
           sms_sent: 1511179020577,
           sms_received: 1511189020577,
-        },
+        }
       )
         .then(expectResponse({ messages:[] }))
 
         .then(expectMessagesInDb('test 1', 'test 2'));
     });
 
-    it('should not reject bad message content', function() {
+    fit('should not reject bad message content', function() {
       postMessage({ missing_fields:true })
         .then(expectResponse({ messages:[] }));
     });
 
-    it('should save all good messages in a request containing some good and some bad', () => TODO(`
-      1. send POST request containing some message JSON for some good and some bad
-         messages
-      2. check that no error is returned
-      3. check that only good messages were created in DB
-      4. if the endpoint is supposed to be non-blocking, add a waiting loop around
-         the relevant assertions.
-    `));
+    fit('should save all good messages in a request containing some good and some bad', function() {
+      return postMessages(
+        {
+          bad_message: true,
+        },
+        {
+          good_message: true,
+          id: 'abc-123',
+          content: 'should be saved',
+          sms_sent: 1520354329376,
+          sms_received: 1520354329386,
+        },
+        {
+          good_message: false,
+        }
+      )
+        .then(expectResponse({ messages:[] }))
+
+        .then(expectMessagesInDb('should be saved'));
+      // TODO if the endpoint is supposed to be non-blocking, add a waiting loop around the relevant assertions.
+    });
 
     it('should update message in DB when status update is received', () => TODO(`
       1. save a message in the DB
@@ -148,7 +161,6 @@ function expectMessageInDb(...contents) {
 }
 
 function expectMessagesInDb(...expectedContents) {
-  const limit = 10000; //expectedContents.length + 1;
   expectedContents = JSON.stringify(expectedContents);
 
   return () => new Promise((resolve, reject) => {
