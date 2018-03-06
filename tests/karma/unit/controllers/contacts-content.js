@@ -8,7 +8,6 @@ describe('ContactsContentCtrl', () => {
       state,
       contactViewModelGenerator,
       tasksForContact,
-      reportsForContact,
       changes,
       changesCallback,
       changesFilter,
@@ -59,7 +58,6 @@ describe('ContactsContentCtrl', () => {
       },
       'ContactViewModelGenerator': contactViewModelGenerator,
       'TasksForContact': tasksForContact,
-      'ReportsForContact': reportsForContact,
       'UserSettings': KarmaUtils.promiseService(null, ''),
       'ContactChangeFilter': contactChangeFilter,
       'Debounce': debounce
@@ -85,7 +83,6 @@ describe('ContactsContentCtrl', () => {
 
     contactViewModelGenerator = sinon.stub();
     tasksForContact = sinon.stub();
-    reportsForContact = sinon.stub();
     changes = (options) => {
       changesFilter = options.filter;
       changesCallback = options.callback;
@@ -93,7 +90,7 @@ describe('ContactsContentCtrl', () => {
     };
 
     debounce = (func) => {
-      var fn = func;
+      const fn = func;
       fn.cancel = () => {};
       return fn;
     };
