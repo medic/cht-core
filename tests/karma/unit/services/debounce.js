@@ -277,7 +277,7 @@ describe('Debounce Service', () => {
       chai.expect($timeout.args[1][2]).to.equal(undefined);
     });
 
-    it('$timeout should receive correct invokeApply argument', () => {
+    it('$timeout should receive correct invokeApply value - true', () => {
       service(callback, 50, 100, false, true)();
       chai.expect($timeout.callCount).to.equal(2);
       chai.expect($timeout.args[0][1]).to.equal(50);
@@ -286,7 +286,7 @@ describe('Debounce Service', () => {
       chai.expect($timeout.args[1][2]).to.equal(true);
     });
 
-    it('$timeout should receive correct invokeApply argument', () => {
+    it('$timeout should receive correct invokeApply value - false', () => {
       service(callback, 50, 100, false, false)();
       chai.expect($timeout.callCount).to.equal(2);
       chai.expect($timeout.args[0][1]).to.equal(50);
