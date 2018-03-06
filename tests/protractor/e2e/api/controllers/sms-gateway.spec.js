@@ -25,9 +25,18 @@ fdescribe('/sms', function() {
 
     afterAll(() => utils.revertDb());
 
-    describe('webapp-terminating messages', function() {
+    afterEach(() => {
+      // TODO delete WO messages
 
-      it('should accept requests with missing fields', function() {
+      // delete WT messages
+      return utils.db.query('medic-client/messages_by_contact_date',
+          { reduce:false, include_docs:true })
+        .then(res => Promise.all(res.rows.map(row => utils.db.remove(row.doc))));
+    });
+
+    describe('for webapp-terminating message processing', function() {
+
+      fit('should accept requests with missing fields', function() {
         return post({})
           .then(expectResponse({ messages:[] }));
       });
@@ -67,6 +76,7 @@ fdescribe('/sms', function() {
           {
             good_message: true,
             id: 'abc-123',
+            from: '+1',
             content: 'should be saved',
             sms_sent: 1520354329376,
             sms_received: 1520354329386,
@@ -81,16 +91,35 @@ fdescribe('/sms', function() {
         // TODO if the endpoint is supposed to be non-blocking, add a waiting loop around the relevant assertions.
       });
 
-      it('should not save a message again if it\'s been seen before', () => TODO(`
-        1. POST a message to the endpoint
-        2. confirm that the message was saved to the DB
-        3. POST the same message to the endpoint again
-        4. confirm that the response was OK, and the message was _not_ saved again
-      `));
+      fit('should not save a message if its id has been seen before', function() {
+        return postMessage(
+          {
+            id: 'a-1',
+            content: 'once-only',
+            from: '+1',
+            sms_sent: 1520354329379,
+            sms_received: 1520354329389,
+          }
+        )
+          .then(expectResponse({ messages:[] }))
+          .then(expectMessageInDb('once-only'))
+
+          .then(() => postMessage(
+            {
+              id: 'a-1',
+              content: 'not-again',
+              from: '+2',
+              sms_sent: 1520354329382,
+              sms_received: 1520354329392,
+            }
+          ))
+          .then(expectResponse({ messages:[] }))
+          .then(expectMessageInDb('once-only'));
+      });
 
     });
 
-    describe('webapp-originating messages', function() {
+    describe('for webapp-originating message processing', function() {
 
       it('should update message in DB when status update is received', () => TODO(`
         1. save a message in the DB
