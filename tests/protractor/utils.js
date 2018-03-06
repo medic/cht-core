@@ -10,6 +10,7 @@ const _ = require('underscore'),
 
 const PouchDB = require('pouchdb-core');
 PouchDB.plugin(require('pouchdb-adapter-http'));
+PouchDB.plugin(require('pouchdb-mapreduce'));
 const db = new PouchDB(`http://${auth.user}:${auth.pass}@${constants.COUCH_HOST}:${constants.COUCH_PORT}/${constants.DB_NAME}`);
 
 let originalSettings;
