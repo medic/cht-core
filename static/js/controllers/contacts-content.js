@@ -24,9 +24,7 @@ angular.module('inboxControllers').controller('ContactsContentCtrl',
     'ngInject';
 
     var taskEndDate,
-        reportStartDate,
-        debounceWait = 1000,
-        debouncedReloadContact;
+        reportStartDate;
 
     $scope.filterTasks = function(task) {
       return !taskEndDate || taskEndDate.isAfter(task.date);
@@ -135,7 +133,7 @@ angular.module('inboxControllers').controller('ContactsContentCtrl',
       });
     });
 
-    debouncedReloadContact = Debounce(selectContact, debounceWait);
+    var debouncedReloadContact = Debounce(selectContact, 1000, 10 * 1000);
 
     var changeListener = Changes({
       key: 'contacts-content',
