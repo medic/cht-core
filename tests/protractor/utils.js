@@ -60,7 +60,11 @@ const request = (options, {debug, noAuth, notJson} = {}) => {
         }
       } catch (e) {
         console.log('Error parsing response: ' + body);
-        deferred.reject(body);
+        if(body === 'Server error') {
+          deferred.reject(new Error('Server returned an error.  Check medic-api logs for details.'));
+        } else {
+          deferred.reject(new Error(`Server returned an error.  Response body: ${body}`));
+        }
       }
     });
   });
