@@ -11,7 +11,8 @@ angular.module('inboxServices').factory('MessageContacts',
 
     var listParams = function() {
       return {
-        group_level: 1
+        group_level: 1,
+        reduce: true,
       };
     };
 
