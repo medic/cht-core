@@ -22,9 +22,9 @@ const login = browser => {
   return browser.driver.wait(bootstrappedCheck, 20 * 1000, 'Login should be complete within 20 seconds');
 };
 
-const startApi = () => startNodeModule('api', 'Medic API listening on port');
+const startApi = () => moduleManager.startNodeModule('api', 'Medic API listening on port');
 
-const startSentinel = () => startNodeModule('sentinel', 'startup complete.');
+const startSentinel = () => moduleManager.startNodeModule('sentinel', 'startup complete.');
 
 // start sentinel serially because it relies on api.
 const startModules = () => startApi().then(startSentinel);
