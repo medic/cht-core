@@ -59,8 +59,17 @@ const request = (options, {debug, noAuth, notJson} = {}) => {
           deferred.fulfill(body);
         }
       } catch (e) {
-        console.log('Error parsing response: ' + body);
-        deferred.reject(body);
+        let errorMessage;
+
+        if(body === 'Server error') {
+          errorMessage = 'Server returned an error.  Check medic-api logs for details.';
+        } else {
+          errorMessage = `Server returned an error.  Response body: ${body}`;
+        }
+
+        const err = new Error(errorMessage);
+        err.responseBody = body;
+        deferred.reject(err);
       }
     });
   });
