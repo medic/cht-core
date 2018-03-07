@@ -423,13 +423,18 @@ angular.module('inboxControllers').controller('ReportsCtrl',
     };
 
     $scope.setLeftActionBar({
-      exportFn: function() {
+      exportFn: function(e) {
         var exportFilters = _.extendOwn({}, $scope.filters);
         ['forms', 'facilities'].forEach(function(type) {
           if (exportFilters[type]) {
             delete exportFilters[type].options;
           }
         });
+        var a = $(e.target).closest('a')[0];
+        a.classList.add('mm-icon-disabled');
+        $timeout(function() {
+          a.classList.remove('mm-icon-disabled');
+        }, 2000);
         Export(exportFilters, 'reports');
       }
     });
