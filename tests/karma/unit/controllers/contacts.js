@@ -27,7 +27,8 @@ describe('Contacts controller', () => {
       changesCallback,
       changesFilter,
       contactSearchLiveList,
-      deadListFind = sinon.stub();
+      deadListFind = sinon.stub(),
+      debounce;
 
   beforeEach(module('inboxApp'));
 
@@ -97,15 +98,15 @@ describe('Contacts controller', () => {
     };
 
     changes = (options) =>  {
+      changesFilter = options.filter;
       changesCallback = options.callback;
       return { unsubscribe: () => {} };
     };
 
-    changes = (options) => {
-      changesFilter = options.filter;
-      changesCallback = options.callback;
-
-      return { unsubscribe: () => {} };
+    debounce = (func) => {
+      const fn = func;
+      fn.cancel = () => {};
+      return fn;
     };
 
     createController = () => {
@@ -125,6 +126,7 @@ describe('Contacts controller', () => {
         'ContactSummary': () => {
           return Promise.resolve({});
         },
+        'Debounce': debounce,
         'Export': () => {},
         'GetDataRecords': getDataRecords,
         'LiveList': { contacts: contactsLiveList, 'contact-search': contactSearchLiveList },
@@ -393,7 +395,7 @@ describe('Contacts controller', () => {
 
       return createController().getSetupPromiseForTesting({ scrollLoaderStub }).then(() => {
         const lhs = contactsLiveList.getList();
-        changesCallback();
+        changesCallback({});
         assert.equal(lhs.length, 10);
         assert.equal(searchService.args[1][2].limit, 10);
         assert.equal(searchService.args[1][2].skip, undefined);
@@ -407,7 +409,7 @@ describe('Contacts controller', () => {
       return createController().getSetupPromiseForTesting({ scrollLoaderStub }).then(() => {
         const lhs = contactsLiveList.getList();
         assert.equal(lhs.length, 11);
-        changesCallback();
+        changesCallback({});
         assert.equal(searchService.args[1][2].limit, 10);
         assert.equal(searchService.args[1][2].skip, undefined);
       });
@@ -489,7 +491,7 @@ describe('Contacts controller', () => {
     });
   });
 
-  describe('Changes feed', () => {
+  describe('Changes feed filtering', () => {
     it('filtering returns true for `contact` type documents', () => {
       return createController().getSetupPromiseForTesting().then(() => {
         assert.equal(changesFilter({ doc: { type: 'person' } }), true);
@@ -501,11 +503,11 @@ describe('Contacts controller', () => {
 
     it('filtering returns false for non-`contact` type documents', () => {
       return createController().getSetupPromiseForTesting().then(() => {
-        assert.equal(changesFilter({}), false);
-        assert.equal(changesFilter({ something: true }), false);
-        assert.equal(changesFilter({ doc: { notype: true } }), false);
-        assert.equal(changesFilter({ doc: { type: 'data_record' } }), false);
-        assert.equal(changesFilter({ doc: { type: '' } }), false);
+        assert.isNotOk(changesFilter({}));
+        assert.isNotOk(changesFilter({ something: true }));
+        assert.isNotOk(changesFilter({ doc: { notype: true } }));
+        assert.isNotOk(changesFilter({ doc: { type: 'data_record' } }));
+        assert.isNotOk(changesFilter({ doc: { type: '' } }));
       });
     });
 
@@ -519,68 +521,59 @@ describe('Contacts controller', () => {
         }
       ];
 
-      return createController().getSetupPromiseForTesting({ noDebounce: true }).then(() => {
+      return createController().getSetupPromiseForTesting().then(() => {
         changesCallback({ doc: { _id: '123'} });
         assert.equal(searchService.callCount, 2);
         assert.equal(searchService.args[1][2].limit, 2);
       });
     });
+  });
 
-    it('debounces the list refresh when multiple updates are received', (done) => {
-      const debounceWait = 1;
-      searchResults = [
-        {
-          _id: 'search-result'
-        },
-        {
-          _id: district._id
-        }
-      ];
-      createController().getSetupPromiseForTesting({ debounceWait }).then(() => {
-        changesCallback({ doc: { _id: '123'} });
-        changesCallback({ doc: { _id: '123'} });
-        changesCallback({ doc: { _id: '123'} });
-        changesCallback({ doc: { _id: '123'} });
-        changesCallback({ doc: { _id: '123'} });
-        changesCallback({ doc: { _id: '123'} });
-        setTimeout(() => {
-          assert.equal(searchService.callCount, 2);
-          assert.equal(searchService.args[1][2].limit, 2);
-          done();
-        }, debounceWait * 6 + 2);
-      }).catch(e => {
-        done(e);
-      });
+  describe('Changes feed debounce',  () => {
+    let query,
+        realQuery;
+    beforeEach(() => {
+      debounce = (func) => {
+        realQuery = func;
+        query = sinon.stub();
+        query.cancel = () => {};
+        return query;
+      };
     });
 
-    it('handles multiple deletes within one debounce and the list does not get shorter as items are deleted', (done) => {
-      const debounceWait = 1;
-      const searchResult = { _id: 'search-result' };
-      searchResults = Array(30).fill(searchResult);
+    it('when handling multiple deletes, does not shorten the LiveList and resets limit after Search query', () => {
+      const searchResult = { _id: 'search-result' },
+            limit1 = 30,
+            limit2 = 10;
+      searchResults = Array(limit1).fill(searchResult);
 
       isAdmin = true;
       userSettings = KarmaUtils.promiseService(null, { facility_id: undefined });
 
-      createController().getSetupPromiseForTesting({ debounceWait }).then(() => {
-        deadListFind.returns(true);
-        changesCallback({ deleted: true });
-        changesCallback({ doc: { _id: '123'} });
-        deadListFind.returns(false);
-        changesCallback({ deleted: true });
-        changesCallback({ doc: { _id: '123'} });
-        deadListFind.returns(true);
-        changesCallback({ deleted: true });
-        changesCallback({ deleted: true });
-        changesCallback({ doc: { _id: '123'} });
-        setTimeout(() => {
-          assert.equal(searchService.callCount, 2);
-          assert.equal(searchService.args[1][2].limit, 30);
-          done();
-        }, debounceWait * 7 + 2);
-      }).catch(e => {
-        done(e);
-      });
+      return createController()
+        .getSetupPromiseForTesting()
+        .then(() => {
+          deadListFind.returns(true);
+          changesCallback({ deleted: true });
+          changesCallback({ doc: { _id: '123'} }); //LiveList.count--
+          deadListFind.returns(false);
+          changesCallback({ deleted: true });
+          changesCallback({ doc: { _id: '123'} });
+          deadListFind.returns(true);
+          changesCallback({ deleted: true }); //LiveList.count--
+          changesCallback({ deleted: true }); //LiveList.count--
+          changesCallback({ doc: { _id: '123'} });
+          assert.equal(query.args[6][0].limit, limit1);
 
+          searchResults = Array(limit2).fill(searchResult);
+          searchService.returns(Promise.resolve(searchResults));
+          realQuery(query.args[6][0]);
+          return Promise.resolve();
+        })
+        .then(() => {
+          changesCallback({});
+          assert.equal(query.args[7][0].limit, limit1 + limit2 - 3);
+        });
     });
   });
 });
