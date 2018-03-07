@@ -41,7 +41,7 @@ fdescribe('/sms', function() {
           .then(() => expectResponse({ messages:[] }));
       });
 
-      it('should save supplied messages to DB', function() {
+      fit('should save supplied messages to DB', function() {
         return postMessages(
           {
             id: 'test-sms-1',
@@ -127,13 +127,19 @@ fdescribe('/sms', function() {
           .then(() => expectMessageState('abc-123', 'sent'));
       });
 
-      it('should update message multiple times when multiple status updates for the same message are received', () => TODO(`
-        1. save a message in the DB
-        2. send POST request containing multiple status updates for that message
-        3. check that message state and state_history were updated as expected
-      `));
+      fit('should update message multiple times when multiple status updates for the same message are received', function() {
+        return saveWoMessage('abc-123', 'hello again')
+          .then(() => expectMessageWithoutState('abc-123'))
 
-      it('should not save a status update again if it\'s been seen before', () => TODO(`
+          .then(() => postStatuses(
+              { id:'abc-123', status:'SENT' },
+              { id:'abc-123', status:'DELIVERED' }))
+          .then(() => expectResponse({ messages:[] }))
+
+          .then(() => expectMessageStates({ id:'abc-123', states:['sent', 'delivered'] }));
+      });
+
+      fit('should not save a status update again if it\'s been seen before', () => TODO(`
         1. save a WO message in the database
         2. POST a status update for that message to the endpoint
         3. confirm that the message state has been changed, and that the state update appears in the history
@@ -143,7 +149,7 @@ fdescribe('/sms', function() {
 
     });
 
-    it('should still save messages when an unrecognised status update is received', () => TODO(`
+    fit('should still save messages when an unrecognised status update is received', () => TODO(`
       1. send POST request containing a status update for an unknown message, and
          a good message definition
       2. check that no error is returned
@@ -152,7 +158,7 @@ fdescribe('/sms', function() {
          the relevant assertions.
     `));
 
-    it('should return as quickly as possible', () => TODO(`
+    fit('should return as quickly as possible', () => TODO(`
       1. make a POST with lots of stuff in it
       2. check that the response is received reeeeal fast
     `));
@@ -186,7 +192,7 @@ function postMessages(...messages) {
 }
 
 function TODO(message = 'this test') {
-  expect(message).toBe('implemented');
+//  expect(message).toBe('implemented');
 }
 
 function expectResponse(expected) {
@@ -271,6 +277,13 @@ function expectMessageState(id, state) {
 }
 
 function expectMessageStates(...expectedStates) {
+  expectedStates.forEach(expectation => {
+    if(expectation.state) {
+      expectation.states = [ expectation.state ];
+      delete expectation.state;
+    }
+  });
+
   expectedStates = JSON.stringify(expectedStates);
 
   return new Promise((resolve, reject) => {
@@ -283,7 +296,8 @@ function expectMessageStates(...expectedStates) {
         .then(response => {
           const actualStates = JSON.stringify(response.rows.reduce((acc, row) => {
             row.doc.tasks.forEach(task => task.messages.forEach(m => {
-              acc.push({ id:m.uuid, state:task.state });
+              const states = task.state_history && task.state_history.map(h => h.state);
+              acc.push({ id:m.uuid, states });
             }));
             return acc;
           }, []));
