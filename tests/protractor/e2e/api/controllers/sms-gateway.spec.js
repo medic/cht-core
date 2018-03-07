@@ -38,7 +38,7 @@ fdescribe('/sms', function() {
 
       fit('should accept requests with missing fields', function() {
         return post({})
-          .then(() => expectResponse({ messages:[] }));
+          .then(expectResponse({ messages:[] }));
       });
 
       fit('should save supplied messages to DB', function() {
@@ -58,14 +58,14 @@ fdescribe('/sms', function() {
             sms_received: 1511189020577,
           }
         )
-          .then(() => expectResponse({ messages:[] }))
+          .then(expectResponse({ messages:[] }))
 
           .then(() => expectMessagesInDb('test 1', 'test 2'));
       });
 
       fit('should not reject bad message content', function() {
         postMessage({ missing_fields:true })
-          .then(() => expectResponse({ messages:[] }));
+          .then(expectResponse({ messages:[] }));
       });
 
       fit('should save all good messages in a request containing some good and some bad', function() {
@@ -81,7 +81,7 @@ fdescribe('/sms', function() {
           },
           { good_message:false }
         )
-          .then(() => expectResponse({ messages:[] }))
+          .then(expectResponse({ messages:[] }))
 
           .then(() => expectMessagesInDb('should be saved'));
         // TODO if the endpoint is supposed to be non-blocking, add a waiting loop around the relevant assertions.
@@ -97,7 +97,7 @@ fdescribe('/sms', function() {
             sms_received: 1520354329389,
           }
         )
-          .then(() => expectResponse({ messages:[] }))
+          .then(expectResponse({ messages:[] }))
           .then(() => expectMessageInDb('once-only'))
 
           .then(() => postMessage(
@@ -109,7 +109,7 @@ fdescribe('/sms', function() {
               sms_received: 1520354329392,
             }
           ))
-          .then(() => expectResponse({ messages:[] }))
+          .then(expectResponse({ messages:[] }))
           .then(() => expectMessageInDb('once-only'));
       });
 
@@ -122,7 +122,7 @@ fdescribe('/sms', function() {
           .then(() => expectMessageWithoutState('abc-123'))
 
           .then(() => postStatus('abc-123', 'SENT'))
-          .then(() => expectResponse({ messages:[] }))
+          .then(expectResponse({ messages:[] }))
 
           .then(() => expectMessageState('abc-123', 'sent'));
       });
@@ -134,7 +134,7 @@ fdescribe('/sms', function() {
           .then(() => postStatuses(
               { id:'abc-123', status:'SENT' },
               { id:'abc-123', status:'DELIVERED' }))
-          .then(() => expectResponse({ messages:[] }))
+          .then(expectResponse({ messages:[] }))
 
           .then(() => expectMessageStates({ id:'abc-123', states:['sent', 'delivered'] }));
       });
@@ -144,11 +144,11 @@ fdescribe('/sms', function() {
           .then(() => expectMessageWithoutState('abc-123'))
 
           .then(() => postStatus('abc-123', 'SENT'))
-          .then(() => expectResponse({ messages:[] }))
+          .then(expectResponse({ messages:[] }))
           .then(() => expectMessageStates({ id:'abc-123', states:['sent'] }))
 
           .then(() => postStatus('abc-123', 'SENT'))
-          .then(() => expectResponse({ messages:[] }))
+          .then(expectResponse({ messages:[] }))
           .then(() => expectMessageStates({ id:'abc-123', states:['sent'] }));
       });
 
@@ -161,7 +161,7 @@ fdescribe('/sms', function() {
           .then(() => postStatuses(
               { id:'abc-123', status:'SENT' },
               { id:'def-456', status:'DELIVERED' }))
-          .then(() => expectResponse({ messages:[] }))
+          .then(expectResponse({ messages:[] }))
           .then(() => expectMessageStates({ id:'abc-123', states:['sent'] }))
     });
 
