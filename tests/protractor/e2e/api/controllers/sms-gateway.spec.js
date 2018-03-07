@@ -1,5 +1,7 @@
 const utils = require('../../../utils');
 
+const CHW_CONTACT_NUMBER = '+32049832049';
+
 fdescribe('/sms', function() {
 
   describe('test setup', function() {
@@ -10,7 +12,7 @@ fdescribe('/sms', function() {
 
   describe('GET', function() {
 
-    it('should respond with valid JSON', function() {
+    fit('should respond with valid JSON', function() {
       // when
       return get()
         .then(response => {
@@ -26,9 +28,7 @@ fdescribe('/sms', function() {
     afterAll(() => utils.revertDb());
 
     afterEach(() => {
-      // TODO delete WO messages
-
-      // delete WT messages
+      // delete WO and WT messages
       return utils.db.query('medic-client/messages_by_contact_date',
           { reduce:false, include_docs:true })
         .then(res => Promise.all(res.rows.map(row => utils.db.remove(row.doc))));
@@ -38,10 +38,10 @@ fdescribe('/sms', function() {
 
       fit('should accept requests with missing fields', function() {
         return post({})
-          .then(expectResponse({ messages:[] }));
+          .then(() => expectResponse({ messages:[] }));
       });
 
-      fit('should save supplied messages to DB', function() {
+      it('should save supplied messages to DB', function() {
         return postMessages(
           {
             id: 'test-sms-1',
@@ -58,21 +58,19 @@ fdescribe('/sms', function() {
             sms_received: 1511189020577,
           }
         )
-          .then(expectResponse({ messages:[] }))
+          .then(() => expectResponse({ messages:[] }))
 
-          .then(expectMessagesInDb('test 1', 'test 2'));
+          .then(() => expectMessagesInDb('test 1', 'test 2'));
       });
 
       fit('should not reject bad message content', function() {
         postMessage({ missing_fields:true })
-          .then(expectResponse({ messages:[] }));
+          .then(() => expectResponse({ messages:[] }));
       });
 
       fit('should save all good messages in a request containing some good and some bad', function() {
         return postMessages(
-          {
-            bad_message: true,
-          },
+          { bad_message:true },
           {
             good_message: true,
             id: 'abc-123',
@@ -81,13 +79,11 @@ fdescribe('/sms', function() {
             sms_sent: 1520354329376,
             sms_received: 1520354329386,
           },
-          {
-            good_message: false,
-          }
+          { good_message:false }
         )
-          .then(expectResponse({ messages:[] }))
+          .then(() => expectResponse({ messages:[] }))
 
-          .then(expectMessagesInDb('should be saved'));
+          .then(() => expectMessagesInDb('should be saved'));
         // TODO if the endpoint is supposed to be non-blocking, add a waiting loop around the relevant assertions.
       });
 
@@ -101,8 +97,8 @@ fdescribe('/sms', function() {
             sms_received: 1520354329389,
           }
         )
-          .then(expectResponse({ messages:[] }))
-          .then(expectMessageInDb('once-only'))
+          .then(() => expectResponse({ messages:[] }))
+          .then(() => expectMessageInDb('once-only'))
 
           .then(() => postMessage(
             {
@@ -113,19 +109,23 @@ fdescribe('/sms', function() {
               sms_received: 1520354329392,
             }
           ))
-          .then(expectResponse({ messages:[] }))
-          .then(expectMessageInDb('once-only'));
+          .then(() => expectResponse({ messages:[] }))
+          .then(() => expectMessageInDb('once-only'));
       });
 
     });
 
     describe('for webapp-originating message processing', function() {
 
-      it('should update message in DB when status update is received', () => TODO(`
-        1. save a message in the DB
-        2. send POST request containing a status update for that message
-        3. check that message state was updated as expected
-      `));
+      fit('should update message in DB when status update is received', function() {
+        return saveWoMessage('abc-123', 'hello from webapp')
+          .then(() => expectMessageWithoutState('abc-123'))
+
+          .then(() => postStatus('abc-123', 'SENT'))
+          .then(() => expectResponse({ messages:[] }))
+
+          .then(() => expectMessageState('abc-123', 'sent'));
+      });
 
       it('should update message multiple times when multiple status updates for the same message are received', () => TODO(`
         1. save a message in the DB
@@ -200,7 +200,7 @@ function expectMessageInDb(...contents) {
 function expectMessagesInDb(...expectedContents) {
   expectedContents = JSON.stringify(expectedContents);
 
-  return () => new Promise((resolve, reject) => {
+  return new Promise((resolve, reject) => {
     const endTime = Date.now() + 10000;
 
     check();
@@ -219,6 +219,81 @@ function expectMessagesInDb(...expectedContents) {
             setTimeout(check, 500);
           } else {
             reject(`Expected:\n      ${actualContents}\n    to equal:\n      ${expectedContents}`);
+          }
+        })
+        .catch(reject);
+    }
+  });
+}
+
+function saveWoMessage(id, content) {
+  const task = {
+    messages: [
+      {
+        from: '+123',
+        sent_by: 'some name',
+        to: CHW_CONTACT_NUMBER,
+        contact: {},
+        message: content,
+        uuid: id,
+      }
+    ]
+  };
+
+  const messageDoc = {
+    errors: [],
+    form: null,
+    from: '+123',
+    reported_date: 1520416423761,
+    tasks: [ task ],
+    kujua_message: true,
+    type: 'data_record',
+    sent_by: 'some name',
+  };
+
+  return utils.db.post(messageDoc);
+}
+
+function postStatus(messageId, newStatus) {
+  return postStatuses({ id:messageId, status:newStatus });
+}
+
+function postStatuses(...updates) {
+  return post({ updates });
+}
+
+function expectMessageWithoutState(id) {
+  return expectMessageStates({ id });
+}
+
+function expectMessageState(id, state) {
+  return expectMessageStates({ id, state });
+}
+
+function expectMessageStates(...expectedStates) {
+  expectedStates = JSON.stringify(expectedStates);
+
+  return new Promise((resolve, reject) => {
+    const endTime = Date.now() + 10000;
+
+    check();
+
+    function check() {
+      utils.db.query('medic-client/messages_by_contact_date', { reduce:false, include_docs:true })
+        .then(response => {
+          const actualStates = JSON.stringify(response.rows.reduce((acc, row) => {
+            row.doc.tasks.forEach(task => task.messages.forEach(m => {
+              acc.push({ id:m.uuid, state:task.state });
+            }));
+            return acc;
+          }, []));
+
+          if(actualStates === expectedStates) {
+            resolve();
+          } else if(Date.now() < endTime) {
+            setTimeout(check, 500);
+          } else {
+            reject(`Expected:\n      ${actualStates}\n    to equal:\n      ${expectedStates}`);
           }
         })
         .catch(reject);

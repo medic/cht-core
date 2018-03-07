@@ -1,6 +1,5 @@
 #!/usr/bin/env node
 const moduleManager = require('../tests/protractor/module-manager');
 
-Promise.resolve()
-  .then(() => moduleManager.startNodeModule('api'))
-  .then(() => moduleManager.startNodeModule('sentinel'));
+moduleManager.startNodeModule('api', 'Medic API listening on port');
+moduleManager.startNodeModule('sentinel', 'startup complete.');
