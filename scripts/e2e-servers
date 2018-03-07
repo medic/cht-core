@@ -1,5 +1,8 @@
 #!/usr/bin/env node
 const moduleManager = require('../tests/protractor/module-manager');
 
-moduleManager.startNodeModule('api', 'Medic API listening on port');
-moduleManager.startNodeModule('sentinel', 'startup complete.');
+Promise.all([
+  moduleManager.startNodeModule('api', 'Medic API listening on port'),
+  moduleManager.startNodeModule('sentinel', 'startup complete.'),
+])
+  .then(() => console.log('[e2e] ALL SERVICES STARTED.  READY TO RUN TESTS.'));
