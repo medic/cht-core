@@ -139,13 +139,18 @@ fdescribe('/sms', function() {
           .then(() => expectMessageStates({ id:'abc-123', states:['sent', 'delivered'] }));
       });
 
-      fit('should not save a status update again if it\'s been seen before', () => TODO(`
-        1. save a WO message in the database
-        2. POST a status update for that message to the endpoint
-        3. confirm that the message state has been changed, and that the state update appears in the history
-        4. POST the same status update to the endpoint again
-        5. confirm that the response was OK, and the message state is still correct, but that the history has not been updated
-      `));
+      fit('should not save a status update again if it\'s been seen before', function() {
+        return saveWoMessage('abc-123', 'hello again')
+          .then(() => expectMessageWithoutState('abc-123'))
+
+          .then(() => postStatus('abc-123', 'SENT'))
+          .then(() => expectResponse({ messages:[] }))
+          .then(() => expectMessageStates({ id:'abc-123', states:['sent'] }))
+
+          .then(() => postStatus('abc-123', 'SENT'))
+          .then(() => expectResponse({ messages:[] }))
+          .then(() => expectMessageStates({ id:'abc-123', states:['sent'] }));
+      });
 
     });
 
