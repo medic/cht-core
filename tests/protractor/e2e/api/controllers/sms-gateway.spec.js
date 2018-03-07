@@ -170,14 +170,26 @@ fdescribe('/sms', function() {
           .then(() => expectMessageWithoutState('abc-123'))
 
           .then(() => postStatus('abc-123', 'WTF'))
-          .then(() => expectResponse({ messages:[] }))
+          .then(expectResponse({ messages:[] }))
           .then(() => expectMessageStates({ id:'abc-123', states:['unrecognised'] }))
     });
 
-    fit('should return as quickly as possible', () => TODO(`
-      1. make a POST with lots of stuff in it
-      2. check that the response is received reeeeal fast
-    `));
+    fit('should return within a reasonable time', function() {
+      const start = Date.now();
+      return post({
+        messages: oneHundredMessages(),
+        updates: oneHundredUpdates(),
+      })
+        .then(response => {
+          const end = Date.now();
+          const maxMillis = 200;
+          if(end > start + maxMillis) {
+            const seconds = (end - start) / 1000;
+            fail(`It took ${seconds}s to respond to the message request.  The endpoint should respond within ${maxMillis}ms.`);
+          }
+          expect(response).toEqual({ messages:[] });
+        });
+    });
 
   });
 });
@@ -329,4 +341,41 @@ function expectMessageStates(...expectedStates) {
         .catch(reject);
     }
   });
+}
+
+function oneHundredMessages() {
+  const messages = [];
+  let i;
+
+  for(i=0; i<100; ++i) {
+    messages.push({
+      id: `test-message-${i}`,
+      from: `+447890123${i}`,
+      content: `message number ${i}`,
+      sms_sent: 1520429025403 + (i * 2),
+      sms_received: 1520429025403 + (i * 3),
+    });
+  }
+
+  return messages;
+}
+
+function oneHundredUpdates() {
+  const STATUS = ['PENDING', 'SENT', 'DELIVERED', 'FAILED'];
+  const updates = [];
+
+  for(i=0; i<100; ++i) {
+    const update = {
+      id: `unmatched-id`,
+      status: STATUS[i%4],
+    };
+
+    if(update.status === 'FAILED') {
+      update.reason = `excuse #${i}`;
+    }
+
+    updates.push(update);
+  }
+
+  return updates;
 }
