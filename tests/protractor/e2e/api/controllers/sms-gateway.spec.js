@@ -154,14 +154,25 @@ fdescribe('/sms', function() {
 
     });
 
-    fit('should still save messages when an unrecognised status update is received', () => TODO(`
-      1. send POST request containing a status update for an unknown message, and
-         a good message definition
-      2. check that no error is returned
-      3. check that message was created in DB
-      4. if the endpoint is supposed to be non-blocking, add a waiting loop around
-         the relevant assertions.
-    `));
+    fit('should still save messages when a status update for an unknown message is received', function() {
+        return saveWoMessage('abc-123', 'hello again')
+          .then(() => expectMessageWithoutState('abc-123'))
+
+          .then(() => postStatuses(
+              { id:'abc-123', status:'SENT' },
+              { id:'def-456', status:'DELIVERED' }))
+          .then(() => expectResponse({ messages:[] }))
+          .then(() => expectMessageStates({ id:'abc-123', states:['sent'] }))
+    });
+
+    fit('should still save messages when an unrecognised status update is received', function() {
+        return saveWoMessage('abc-123', 'hello again')
+          .then(() => expectMessageWithoutState('abc-123'))
+
+          .then(() => postStatus('abc-123', 'WTF'))
+          .then(() => expectResponse({ messages:[] }))
+          .then(() => expectMessageStates({ id:'abc-123', states:['unrecognised'] }))
+    });
 
     fit('should return as quickly as possible', () => TODO(`
       1. make a POST with lots of stuff in it
