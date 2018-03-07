@@ -27,8 +27,7 @@ describe('Contacts controller', () => {
       changesCallback,
       changesFilter,
       contactSearchLiveList,
-      deadListFind = sinon.stub(),
-      debounce;
+      deadListFind = sinon.stub();
 
   beforeEach(module('inboxApp'));
 
@@ -103,12 +102,6 @@ describe('Contacts controller', () => {
       return { unsubscribe: () => {} };
     };
 
-    debounce = (func) => {
-      const fn = func;
-      fn.cancel = () => {};
-      return fn;
-    };
-
     createController = () => {
       searchService = sinon.stub();
       searchService.returns(Promise.resolve(searchResults));
@@ -126,7 +119,6 @@ describe('Contacts controller', () => {
         'ContactSummary': () => {
           return Promise.resolve({});
         },
-        'Debounce': debounce,
         'Export': () => {},
         'GetDataRecords': getDataRecords,
         'LiveList': { contacts: contactsLiveList, 'contact-search': contactSearchLiveList },
@@ -492,7 +484,7 @@ describe('Contacts controller', () => {
   });
 
   describe('Changes feed filtering', () => {
-    it('filtering returns true for `contact` type documents', () => {
+    it('filtering returns true for `contact` type documents #4080', () => {
       return createController().getSetupPromiseForTesting().then(() => {
         assert.equal(changesFilter({ doc: { type: 'person' } }), true);
         assert.equal(changesFilter({ doc: { type: 'clinic' } }), true);
@@ -501,7 +493,7 @@ describe('Contacts controller', () => {
       });
     });
 
-    it('filtering returns false for non-`contact` type documents', () => {
+    it('filtering returns false for non-`contact` type documents #4080', () => {
       return createController().getSetupPromiseForTesting().then(() => {
         assert.isNotOk(changesFilter({}));
         assert.isNotOk(changesFilter({ something: true }));
@@ -511,7 +503,7 @@ describe('Contacts controller', () => {
       });
     });
 
-    it('refreshes contacts list when receiving a contact change', () => {
+    it('refreshes contacts list when receiving a contact change #4080', () => {
       searchResults = [
         {
           _id: 'search-result'
@@ -527,25 +519,10 @@ describe('Contacts controller', () => {
         assert.equal(searchService.args[1][2].limit, 2);
       });
     });
-  });
 
-  describe('Changes feed debounce',  () => {
-    let query,
-        realQuery;
-    beforeEach(() => {
-      debounce = (func) => {
-        realQuery = func;
-        query = sinon.stub();
-        query.cancel = () => {};
-        return query;
-      };
-    });
-
-    it('when handling multiple deletes, does not shorten the LiveList and resets limit after Search query', () => {
-      const searchResult = { _id: 'search-result' },
-            limit1 = 30,
-            limit2 = 10;
-      searchResults = Array(limit1).fill(searchResult);
+    it('when handling deletes, does not shorten the LiveList #4080', () => {
+      const searchResult = { _id: 'search-result' };
+      searchResults = Array(30).fill(searchResult);
 
       isAdmin = true;
       userSettings = KarmaUtils.promiseService(null, { facility_id: undefined });
@@ -555,24 +532,7 @@ describe('Contacts controller', () => {
         .then(() => {
           deadListFind.returns(true);
           changesCallback({ deleted: true });
-          changesCallback({ doc: { _id: '123'} }); //LiveList.count--
-          deadListFind.returns(false);
-          changesCallback({ deleted: true });
-          changesCallback({ doc: { _id: '123'} });
-          deadListFind.returns(true);
-          changesCallback({ deleted: true }); //LiveList.count--
-          changesCallback({ deleted: true }); //LiveList.count--
-          changesCallback({ doc: { _id: '123'} });
-          assert.equal(query.args[6][0].limit, limit1);
-
-          searchResults = Array(limit2).fill(searchResult);
-          searchService.returns(Promise.resolve(searchResults));
-          realQuery(query.args[6][0]);
-          return Promise.resolve();
-        })
-        .then(() => {
-          changesCallback({});
-          assert.equal(query.args[7][0].limit, limit1 + limit2 - 3);
+          assert.equal(searchService.args[1][2].limit, 30);
         });
     });
   });

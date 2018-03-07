@@ -30,14 +30,12 @@ var _ = require('underscore'),
       Tour,
       TranslateFrom,
       UserSettings,
-      XmlForms,
-      Debounce
+      XmlForms
     ) {
 
       'ngInject';
 
       var liveList = LiveList.contacts;
-      var liveListCount;
 
       $scope.loading = true;
       $scope.selected = null;
@@ -100,7 +98,6 @@ var _ = require('underscore'),
         }
 
         Search('contacts', actualFilter, options).then(function(contacts) {
-          liveListCount = null;
           // If you have a home place make sure its at the top
           if (usersHomePlace) {
             var homeIndex = _.findIndex(contacts, function(contact) {
@@ -312,26 +309,21 @@ var _ = require('underscore'),
         }
       });
 
-      var debouncedQuery = Debounce(_query, 1000, 10 * 1000, false, false);
-
       var changeListener = Changes({
         key: 'contacts-list',
         callback: function(change) {
-          liveListCount =  liveListCount || liveList.count();
+          var limit = liveList.count();
           if (change.deleted) {
             liveList.remove(change.doc);
           }
-          debouncedQuery({ limit: liveListCount, silent: true });
+          _query({ limit: limit, silent: true });
         },
         filter: function(change) {
           return change && change.doc && ContactSchema.getTypes().indexOf(change.doc.type) !== -1;
         }
       });
 
-      $scope.$on('$destroy', function() {
-        changeListener.unsubscribe();
-        debouncedQuery.cancel();
-      });
+      $scope.$on('$destroy', changeListener.unsubscribe);
 
       if ($stateParams.tour) {
         Tour.start($stateParams.tour);
