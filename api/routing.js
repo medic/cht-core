@@ -100,6 +100,7 @@ app.get('/', function(req, res) {
 
 app.use(express.static(path.join(__dirname, 'public')));
 app.get(pathPrefix + 'login', login.get);
+app.get(pathPrefix + 'login/identity', login.getIdentity);
 app.postJson(pathPrefix + 'login', login.post);
 
 var UNAUDITED_ENDPOINTS = [
