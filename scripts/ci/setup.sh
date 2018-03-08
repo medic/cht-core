@@ -15,5 +15,3 @@ fi
 npm install -g json && \
 cat kanso.json | json -o json-4 -e "$ARGS" > tmp.json && \
 mv tmp.json kanso.json
-
-exit 0;
