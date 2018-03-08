@@ -12,6 +12,6 @@ fi
 
 # Install npm deps in module directories and tweak kanso gardener related
 # configs so it knows.
-npm install -g json && \
-cat kanso.json | json -o json-4 -e "$ARGS" > tmp.json && \
+npm install -g json
+cat kanso.json | json -o json-4 -e "$ARGS" > tmp.json
 mv tmp.json kanso.json
