@@ -1,4 +1,4 @@
-#!/bin/bash -x
+#!/bin/bash -eux
 
 ARGS='this.dependencies["kanso-gardener"] = null;'
 ARGS+='this.dependencies_included = true;'
