@@ -3,7 +3,7 @@ const uuid = require('uuid/v4');
 
 const CHW_CONTACT_NUMBER = '+32049832049';
 
-describe('/sms', function() {
+fdescribe('/sms', function() {
 
   describe('test setup', function() {
     it('should make PouchDB instance available', function() {
@@ -119,12 +119,12 @@ describe('/sms', function() {
           .then(() => expectMessageInDb('once-only'));
       });
 
-      fit('should return within a reasonable time', function() {
+      it('should return within a reasonable time', function() {
         const start = Date.now();
         return postMessages(...oneHundredMessages())
           .then(response => {
             const end = Date.now();
-            const maxMillis = 5;
+            const maxMillis = 5000;
             if(end > start + maxMillis) {
               const seconds = (end - start) / 1000;
               fail(`It took ${seconds}s to respond to the request.  The endpoint should respond within ${maxMillis}ms.`);
@@ -172,22 +172,34 @@ describe('/sms', function() {
           .then(() => expectMessageStates({ id:'abc-123', states:['sent'] }));
       });
 
-      fit('should return within a reasonable time', function() {
-        return saveWoMessages(oneHundredWoMessages())
+      it('should return within a reasonable time', function() {
+        return saveWoMessages(...oneHundredWoMessages())
+//          .then(() => expectMessageStates({ id:'idk*100' }))
           .then(() => {
 
             const start = Date.now();
-            return postStatuses(oneHundredUpdates())
+            return postStatuses(...oneHundredUpdates())
               .then(response => {
                 const end = Date.now();
-                const maxMillis = 5;
+                const maxMillis = 5000;
                 if(end > start + maxMillis) {
                   const seconds = (end - start) / 1000;
                   fail(`It took ${seconds}s to respond to the request.  The endpoint should respond within ${maxMillis}ms.`);
                 }
                 expect(response).toEqual({ messages:[] });
               })
-              .then(() => expectMessageStates({ id:'abc-123', states:['sent * 100'] }))
+
+              .then(() => getMessageStates())
+              .then(states => {
+                expect(states.length).toBe(100);
+
+                // expect: 1 state update per message
+                expect(
+                    states
+                      .map(s => s.states)
+                      .every(stateHistory => stateHistory.length === 1))
+                  .toBe(true);
+              });
           });
       });
 
@@ -201,7 +213,7 @@ describe('/sms', function() {
               { id:'abc-123', status:'SENT' },
               { id:'def-456', status:'DELIVERED' }))
           .then(expectResponse({ messages:[] }))
-          .then(() => expectMessageStates({ id:'abc-123', states:['sent'] }))
+          .then(() => expectMessageStates({ id:'abc-123', states:['sent'] }));
     });
 
     it('should still save messages when an unrecognised status update is received', function() {
@@ -210,7 +222,7 @@ describe('/sms', function() {
 
           .then(() => postStatus('abc-123', 'WTF'))
           .then(expectResponse({ messages:[] }))
-          .then(() => expectMessageStates({ id:'abc-123', states:['unrecognised'] }))
+          .then(() => expectMessageStates({ id:'abc-123', states:['unrecognised'] }));
     });
 
   });
@@ -239,10 +251,6 @@ function postMessage(...messages) {
 
 function postMessages(...messages) {
   return post({ messages });
-}
-
-function TODO(message = 'this test') {
-//  expect(message).toBe('implemented');
 }
 
 function expectResponse(expected) {
@@ -282,12 +290,12 @@ function expectMessagesInDb(...expectedContents) {
   });
 }
 
-function saveWoMessages(...details) {
-  return utils.db.bulkDocs(details.map(d => createWoMessage(d.id, d.content)));
+function saveWoMessage(id, content) {
+  return saveWoMessages({ id, content });
 }
 
-function saveWoMessage(id, content) {
-  return utils.db.post(createWoMessage(id, content));
+function saveWoMessages(...details) {
+  return utils.db.bulkDocs(details.map(d => createWoMessage(d.id, d.content)));
 }
 
 function createWoMessage(id, content) {
@@ -328,7 +336,13 @@ function postStatuses(...updates) {
 }
 
 function expectMessageWithoutState(id) {
-  return expectMessageStates({ id });
+  console.log('expectMessageWithoutState()', id); // FIXME
+  return expectMessagesWithoutState(id);
+}
+
+function expectMessagesWithoutState(...ids) {
+  console.log('expectMessagesWithoutState()', ids, ids.map(id => ({ id }))); // FIXME
+  return expectMessageStates(...ids.map(id => ({ id })));
 }
 
 function expectMessageState(id, state) {
@@ -344,6 +358,7 @@ function expectMessageStates(...expectedStates) {
   });
 
   expectedStates = JSON.stringify(expectedStates);
+console.log('expectedStates', expectedStates, '\n', new Error()); // FIXME
 
   return new Promise((resolve, reject) => {
     const endTime = Date.now() + 10000;
@@ -351,15 +366,9 @@ function expectMessageStates(...expectedStates) {
     check();
 
     function check() {
-      utils.db.query('medic-client/messages_by_contact_date', { reduce:false, include_docs:true })
-        .then(response => {
-          const actualStates = JSON.stringify(response.rows.reduce((acc, row) => {
-            row.doc.tasks.forEach(task => task.messages.forEach(m => {
-              const states = task.state_history && task.state_history.map(h => h.state);
-              acc.push({ id:m.uuid, states });
-            }));
-            return acc;
-          }, []));
+      getMessageStates()
+        .then(actualStates => {
+          actualStates = JSON.stringify(actualStates);
 
           if(actualStates === expectedStates) {
             resolve();
@@ -374,11 +383,22 @@ function expectMessageStates(...expectedStates) {
   });
 }
 
+function getMessageStates() {
+  return utils.db.query('medic-client/messages_by_contact_date', { reduce:false, include_docs:true })
+    .then(response => response.rows.reduce((acc, row) => {
+      row.doc.tasks.forEach(task => task.messages.forEach(m => {
+        const states = task.state_history &&
+                       task.state_history.map(h => h.state);
+        acc.push({ id:m.uuid, states });
+      }));
+      return acc;
+    }, []));
+}
+
 function oneHundredMessages() {
   const messages = [];
-  let i;
 
-  for(i=0; i<100; ++i) {
+  for(let i=0; i<100; ++i) {
     messages.push({
       id: `test-message-${i}`,
       from: `+447890123${i}`,
@@ -394,7 +414,7 @@ function oneHundredMessages() {
 function oneHundredWoMessages() {
   const messages = [];
 
-  for(i=0; i<100; ++i) {
+  for(let i=0; i<100; ++i) {
     messages.push({
       id: `wo-message-${i}`,
       content: `wo message ${i}`,
@@ -408,7 +428,7 @@ function oneHundredUpdates() {
   const STATUS = ['PENDING', 'SENT', 'DELIVERED', 'FAILED'];
   const updates = [];
 
-  for(i=0; i<100; ++i) {
+  for(let i=0; i<100; ++i) {
     const update = {
       id: `wo-message-${i}`,
       status: STATUS[i%4],
