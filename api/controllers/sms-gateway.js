@@ -27,6 +27,7 @@ function saveToDb(message, callback) {
     return callback(new Error('All SMS messages must contain a from and content field'));
   }
 
+  // TODO have to bulk save here now and no longer pass callback
   recordUtils.createByForm({
     from: message.from,
     message: message.content,

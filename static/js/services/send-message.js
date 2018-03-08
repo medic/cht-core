@@ -1,7 +1,7 @@
 var _ = require('underscore'),
     uuid = require('uuid/v4'),
     taskUtils = require('task-utils'),
-    libphonenumber = require('libphonenumber/utils');
+    phoneNumber = require('phone-number');
 
 angular.module('inboxServices').factory('SendMessage',
   function(
@@ -126,7 +126,7 @@ angular.module('inboxServices').factory('SendMessage',
         messages: [{
           from: user && user.phone,
           sent_by: user && user.name || 'unknown',
-          to: libphonenumber.normalize(settings, recipient.phone) || recipient.phone,
+          to: phoneNumber.normalize(settings, recipient.phone) || recipient.phone,
           contact: ExtractLineage(recipient.contact),
           message: message,
           uuid: uuid()

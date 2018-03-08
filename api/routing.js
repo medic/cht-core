@@ -321,7 +321,7 @@ app.post('/api/v1/records', [jsonParser, formParser], function(req, res) {
     if (err) {
       return serverUtils.error(err, req, res, true);
     }
-    records.create(req.body, req.is(['json','urlencoded']), function(err, result) {
+    records.create(req, req.is(['json','urlencoded']), function(err, result) {
       if (err) {
         return serverUtils.serverError(err, req, res);
       }

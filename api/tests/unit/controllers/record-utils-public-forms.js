@@ -1,6 +1,6 @@
 var proxyquire = require('proxyquire').noCallThru(),
     sinon = require('sinon'),
-    definitions = require('../../form_definitions'),
+    definitions = require('../../form-definitions'),
     appInfo;
 
 var info = proxyquire('../../../../packages/kujua-sms/views/lib/appinfo', {

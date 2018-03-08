@@ -1,4 +1,4 @@
-var libphonenumber = require('libphonenumber/utils'),
+var phoneNumber = require('phone-number'),
     countries = require('../modules/countries');
 
 // TODO convert this controller to use angular more and jquery less
@@ -21,7 +21,7 @@ angular.module('inboxControllers').controller('GuidedSetupModalCtrl',
       var countryCode = $('#guided-setup [name=default-country-code]').val();
       var gatewayNumber = $('#guided-setup [name=gateway-number]').val();
       if (gatewayNumber &&
-          !libphonenumber.validate({ default_country_code: countryCode }, gatewayNumber)) {
+          !phoneNumber.validate({ default_country_code: countryCode }, gatewayNumber)) {
         return {
           valid: false,
           error: 'Phone number not valid'

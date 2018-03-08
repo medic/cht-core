@@ -40,8 +40,6 @@
         "properties": null,
         "attachments": null,
         "settings": null,
-        "libphonenumber": null,
-        "kujua-sms": null,
         "cookies": null,
         "kanso-app-settings": null,
         "app-settings": ">=0.0.2",

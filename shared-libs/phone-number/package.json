@@ -1,0 +1,12 @@
+{
+  "name": "phone-number",
+  "version": "1.0.0",
+  "description": "Our phone number validation and formatting utilities",
+  "main": "src/phone-number.js",
+  "author": "",
+  "license": "Apache-2.0",
+  "devDependencies": {},
+  "dependencies": {
+    "google-libphonenumber": "^3.1.0"
+  }
+}

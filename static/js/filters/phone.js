@@ -1,4 +1,4 @@
-var libphonenumber = require('libphonenumber/utils');
+var phoneNumber = require('phone-number');
 
 angular.module('inboxFilters').filter('phone',
   function(
@@ -17,7 +17,7 @@ angular.module('inboxFilters').filter('phone',
       if (settings) {
         // if valid return the formatted number,
         // if invalid return the given string
-        return libphonenumber.format(settings, phone) || phone;
+        return phoneNumber.format(settings, phone) || phone;
       }
       return phone; // unformatted placeholder
     };

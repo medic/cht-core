@@ -20,7 +20,7 @@ var utils = {
         }
     },
     sinon = require('sinon').sandbox.create(),
-    definitions = require('../../form_definitions');
+    definitions = require('../../form-definitions');
 
 exports.tearDown = function(callback) {
     sinon.restore();

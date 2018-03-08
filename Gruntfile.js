@@ -59,8 +59,6 @@ module.exports = function(grunt) {
             'openrosa-xpath-extensions': './node_modules/openrosa-xpath-evaluator/src/openrosa-xpath-extensions',
             'translator': './static/js/enketo/translator', // translator for enketo's internal i18n
             '../../js/dropdown.jquery': 'bootstrap/js/dropdown', // enketo currently duplicates bootstrap's dropdown code.  working to resolve this upstream https://github.com/enketo/enketo-core/issues/454
-            'libphonenumber/utils': './packages/libphonenumber/libphonenumber/utils',
-            'libphonenumber/libphonenumber': './packages/libphonenumber/libphonenumber/libphonenumber',
             'angular-translate-interpolation-messageformat': './node_modules/angular-translate/dist/angular-translate-interpolation-messageformat/angular-translate-interpolation-messageformat',
             'angular-translate-handler-log':  './node_modules/angular-translate/dist/angular-translate-handler-log/angular-translate-handler-log',
           },
@@ -170,16 +168,6 @@ module.exports = function(grunt) {
               'pouchdb-browser/**',
             ],
             dest: 'node_modules_backup'
-          }
-        ]
-      },
-      libphonenumber: {
-        files: [
-          {
-            expand: true,
-            flatten: true,
-            src: [ 'node_modules/google-libphonenumber/dist/libphonenumber.js' ],
-            dest: 'packages/libphonenumber/libphonenumber/'
           }
         ]
       },
@@ -323,7 +311,7 @@ module.exports = function(grunt) {
         tasks: ['mmcss', 'appcache', 'deploy']
       },
       js: {
-        files: ['templates/**/*', 'static/js/**/*', 'packages/kujua-*/**/*', 'packages/libphonenumber/**/*', 'shared-libs/**'],
+        files: ['templates/**/*', 'static/js/**/*', 'packages/kujua-*/**/*', 'shared-libs/**'],
         tasks: ['mmjs', 'appcache', 'deploy']
       },
       other: {
@@ -518,7 +506,6 @@ module.exports = function(grunt) {
   ]);
 
   grunt.registerTask('mmjs', 'Build the JS resources', [
-    'copy:libphonenumber',
     'copy:taskutils',
     'browserify:dist',
     'replace:hardcodeappsettings',

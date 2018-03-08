@@ -9,7 +9,7 @@ define( function( require, exports, module ) {
     var FormModel = require( 'enketo-core/src/js/Form-model' );
     var Widget = require( 'enketo-core/src/js/Widget' );
     var $ = require( 'jquery' );
-    var libphonenumber = require( 'libphonenumber/utils' );
+    var phoneNumber = require('phone-number');
     require( 'enketo-core/src/js/plugins' );
 
     var pluginName = 'phonewidget';
@@ -22,10 +22,10 @@ define( function( require, exports, module ) {
 
             return Settings()
                 .then( function( settings ) {
-                    if ( !libphonenumber.validate( settings, fieldValue ) ) {
+                    if ( !phoneNumber.validate( settings, fieldValue ) ) {
                         throw new Error( 'invalid phone number: "' + fieldValue + '"' );
                     }
-                    return libphonenumber.normalize( settings, fieldValue );
+                    return phoneNumber.normalize( settings, fieldValue );
                 } )
                 .then( function( phoneNumber ) {
                     // Check the phone number is unique.  N.B. this makes the
@@ -108,7 +108,7 @@ define( function( require, exports, module ) {
     function getFormattedValue( settings, value ) {
         // If invalid, return the non-formatted value,
         // so that the "invalid value" error can display.
-        return libphonenumber.normalize( settings, value ) || value;
+        return phoneNumber.normalize( settings, value ) || value;
     }
 
     PhoneWidget.prototype.destroy = function( /* element */) {};

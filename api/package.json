@@ -29,6 +29,7 @@
     "object-path": "^0.11.1",
     "openrosa-formlist": "github:medic/openrosa-formlist#sax",
     "pass-stream": "^1.0.0",
+    "phone-number": "file:../shared-libs/phone-number",
     "pouchdb-adapter-http": "^6.4.3",
     "pouchdb-core": "^6.4.3",
     "pouchdb-mapreduce": "^6.4.3",

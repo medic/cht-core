@@ -95,7 +95,7 @@ var loadTranslations = function() {
 
 module.exports = {
   get: function(key) {
-    return settings[key];
+    return key ? settings[key] : settings;
   },
   translate: function(key, locale, ctx) {
     if (_.isObject(locale)) {

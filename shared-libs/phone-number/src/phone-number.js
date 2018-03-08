@@ -1,7 +1,7 @@
 /**
 * Our wrapper around google's libphonenumber.
 */
-var phonenumber = require('libphonenumber/libphonenumber'),
+var phonenumber = require('google-libphonenumber'),
     CHARACTER_REGEX = /[a-z]/i;
 
 var _init = function(settings, phone) {
@@ -60,6 +60,18 @@ exports.format = function(settings, phone) {
 exports.validate = function(settings, phone) {
   try {
     return _init(settings, phone).validate();
+  } catch (e) {}
+  return false;
+};
+
+/**
+ * Returns true if the two given numbers match.
+ */
+exports.same = function(a, b) {
+  try {
+    var match = phonenumber.PhoneNumberUtil.getInstance().isNumberMatch(a, b);
+    return match === phonenumber.PhoneNumberUtil.MatchType.NSN_MATCH ||
+           match === phonenumber.PhoneNumberUtil.MatchType.EXACT_MATCH;
   } catch (e) {}
   return false;
 };

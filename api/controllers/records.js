@@ -1,12 +1,14 @@
 var recordUtils = require('./record-utils');
 
 module.exports = {
-  create: function(data, contentType, callback) {
+  create: function(req, contentType, callback) {
+    // TODO need to save to db here now and no longer pass callback
     if (contentType === 'urlencoded') {
-      return recordUtils.createByForm(data, callback);
+      const options = { locale: req.query && req.query.locale };
+      return recordUtils.createByForm(req.body, options, callback);
     }
     if (contentType === 'json') {
-      return recordUtils.createRecordByJSON(data, callback);
+      return recordUtils.createRecordByJSON(req.body, callback);
     }
     return callback(new Error('Content type not supported.'));
   }

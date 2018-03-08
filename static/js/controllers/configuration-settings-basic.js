@@ -1,4 +1,4 @@
-var libphonenumber = require('libphonenumber/utils'),
+var phoneNumber = require('phone-number'),
     countries = require('../modules/countries');
 
 angular.module('inboxControllers').controller('ConfigurationSettingsBasicCtrl',
@@ -44,13 +44,13 @@ angular.module('inboxControllers').controller('ConfigurationSettingsBasicCtrl',
 
       // must be a valid phone number
       var info = { default_country_code: $('#default-country-code').val() };
-      if (!libphonenumber.validate(info, gatewayNumber)) {
+      if (!phoneNumber.validate(info, gatewayNumber)) {
         $scope.basicSettingsModel.error.gateway_number = $translate.instant('Phone number not valid');
         return false;
       }
 
       // normalise value
-      $scope.basicSettingsModel.gateway_number = libphonenumber.normalize(info, gatewayNumber);
+      $scope.basicSettingsModel.gateway_number = phoneNumber.normalize(info, gatewayNumber);
 
       return true;
     };
