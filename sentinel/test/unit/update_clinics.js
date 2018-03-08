@@ -1,7 +1,7 @@
 var sinon = require('sinon').sandbox.create(),
     db = require('../../db'),
     transition = require('../../transitions/update_clinics'),
-    lineage = require('../../lib/lineage'),
+    lineage = require('lineage'),
     phone = '+34567890123',
     lineageStub;
 

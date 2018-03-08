@@ -1,7 +1,7 @@
 const sinon = require('sinon').sandbox.create(),
       moment = require('moment'),
       utils = require('../../lib/utils'),
-      lineage = require('../../lib/lineage'),
+      lineage = require('lineage'),
       schedule = require('../../schedule/due_tasks');
 
 exports.tearDown = function(callback) {

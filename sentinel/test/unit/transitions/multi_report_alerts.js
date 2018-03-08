@@ -1,6 +1,6 @@
 const _ = require('underscore'),
       config = require('../../../config'),
-      lineage = require('../../../lib/lineage'),
+      lineage = require('lineage'),
       messages = require('../../../lib/messages'),
       sinon = require('sinon').sandbox.create(),
       transition = require('../../../transitions/multi_report_alerts'),

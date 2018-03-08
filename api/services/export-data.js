@@ -6,9 +6,10 @@ var _ = require('underscore'),
     moment = require('moment'),
     xmlbuilder = require('xmlbuilder'),
     config = require('../config'),
-    db = require('../db-pouch'),
+    db = require('../db'),
+    dbPouch = require('../db-pouch'),
     fti = require('../controllers/fti'),
-    lineageUtils = require('lineage').init({ Promise, DB: db.medic });
+    lineageUtils = require('lineage').init({ Promise, DB: dbPouch.medic });
 
 var createColumnModels = function(values, options) {
   return _.map(values, function(value) {
@@ -32,7 +33,7 @@ var exportTypes = {
     view: 'data_records',
     index: 'data_records',
     orderBy: '\\reported_date<date>',
-    hydrate: lineageUtils.hydrateDocs,
+    hydrate: (docs, callback) => lineageUtils.hydrateDocs(docs, callback),
     generate: function(rows, options) {
 
       var userDefinedColumns = !!options.columns;
@@ -114,7 +115,7 @@ var exportTypes = {
     view: 'data_records',
     index: 'data_records',
     orderBy: '\\reported_date<date>',
-    hydrate: lineageUtils.hydrateDocs,
+    hydrate: (docs, callback) => lineageUtils.hydrateDocs(docs, callback),
     generate: function(rows, options) {
       if (!options.columns) {
         options.columns = createColumnModels([
@@ -151,11 +152,11 @@ var exportTypes = {
     }
   },
   audit: {
-    getRecords: function() {
-      return db.audit.allDocs({
+    getRecords: function(callback) {
+      db.audit.list({
         limit: 1000,
         include_docs: true
-      });
+      }, callback);
     },
     generate: function(rows, options) {
       if (!options.columns) {
@@ -230,29 +231,27 @@ var exportTypes = {
   },
   logs: {
     lowlevel: true,
-    generate: function() {
-      return new Promise((resolve, reject) => {
-        var rv = [];
-        var child = childProcess.spawn(
-          'sudo',
-          [ '/boot/print-logs' ],
-          { stdio: 'pipe' }
-        );
-        child.on('exit', function(code) {
-          if (code !== 0) {
-            return reject(new Error(
-              'Log export exited with non-zero status ' + code
-            ));
-          }
-          createLogZip(rv).then(function(content) {
-            resolve(content);
-          });
+    generate: function(callback) {
+      var rv = [];
+      var child = childProcess.spawn(
+        'sudo',
+        [ '/boot/print-logs' ],
+        { stdio: 'pipe' }
+      );
+      child.on('exit', function(code) {
+        if (code !== 0) {
+          return callback(new Error(
+            'Log export exited with non-zero status ' + code
+          ));
+        }
+        createLogZip(rv).then(function(content) {
+          callback(null, content);
         });
-        child.stdout.on('data', function(buffer) {
-          rv.push(buffer);
-        });
-        child.stdin.end();
       });
+      child.stdout.on('data', function(buffer) {
+        rv.push(buffer);
+      });
+      child.stdin.end();
     }
   }
 };
@@ -430,12 +429,12 @@ var generateTaskModels = function(doc, options) {
   return rows;
 };
 
-var outputToJson = function(options, tabs) {
+var outputToJson = function(options, tabs, callback) {
   // json doesn't support tabs
-  return Promise.resolve(JSON.stringify(tabs[0].data));
+  callback(null, JSON.stringify(tabs[0].data));
 };
 
-var outputToCsv = function(options, tabs) {
+var outputToCsv = function(options, tabs, callback) {
   var opts = { headers: true };
   if (options.locale === 'fr') {
     opts.delimiter = ';';
@@ -449,18 +448,16 @@ var outputToCsv = function(options, tabs) {
     data.unshift(_.pluck(tab.columns, 'label'));
   }
 
-  return new Promise((resolve, reject) => {
-    csv.writeToString(data, opts, function(err, result) {
-      if (err) {
-        return reject(err);
-      }
-      resolve(result);
-    });
+  csv.writeToString(data, opts, function(err, result) {
+    if (err) {
+      return callback(err);
+    }
+    callback(null, result);
   });
 };
 
-var outputToXml = function(options, tabs) {
-  return Promise.resolve(function(write, done) {
+var outputToXml = function(options, tabs, callback) {
+  callback(null, function(write, done) {
     var workbook = xmlbuilder.begin({ allowSurrogateChars: true, allowEmpty: true }, write)
       .dec({ encoding: 'UTF-8' })
       .ele('Workbook')
@@ -507,24 +504,17 @@ var outputToXml = function(options, tabs) {
   });
 };
 
-var getRecordsFti = function(type, params) {
+var getRecordsFti = function(type, params, callback) {
   var options = {
     q: params.query,
     schema: params.schema,
     sort: type.orderBy,
     include_docs: true
   };
-  return new Promise((resolve, reject) => {
-    fti.get(type.index, options, params.district, (err, response) => {
-      if (err) {
-        reject(err);
-      }
-      resolve(response);
-    });
-  });
+  fti.get(type.index, options, params.district, callback);
 };
 
-var getRecordsView = function(type, params) {
+var getRecordsView = function(type, params, callback) {
   var districtId = params.district;
   var options = {
     include_docs: true,
@@ -551,36 +541,41 @@ var getRecordsView = function(type, params) {
     options.startkey = [9999999999999, {}];
     options.endkey = [0];
   }
-  return db.medic.query(`${type.ddoc || 'medic'}/${type.view}`, options);
+  var actual = type.db || db.medic;
+  actual.view(type.ddoc || 'medic', type.view, options, callback);
 };
 
-const hydrate = (type, rows) => {
+const hydrate = (type, rows, callback) => {
   if (type.hydrate) {
-    return type.hydrate(rows);
+    return type.hydrate(rows, callback);
   }
-  return Promise.resolve(rows);
+  callback(null, rows);
 };
 
-var getRecords = function(type, params) {
+var getRecords = function(type, params, callback) {
   if (_.isFunction(type.getRecords)) {
-    return type.getRecords();
+    return type.getRecords(callback);
   }
   if (params.query) {
     if (!type.index) {
-      throw new Error('This export cannot handle "query" param');
+      return callback(new Error('This export cannot handle "query" param'));
     }
-    return getRecordsFti(type, params)
-      .then(response => {
-        return hydrate(type, response.rows);
-      });
+    return getRecordsFti(type, params, (err, response) => {
+      if (err) {
+        return callback(err);
+      }
+      hydrate(type, response.rows, err => callback(err, response));
+    });
   }
   if (!type.view) {
-    throw new Error('This export must have a "query" param');
+    return callback(new Error('This export must have a "query" param'));
   }
-  return getRecordsView(type, params)
-    .then(response => {
-      return hydrate(type, response.rows);
-    });
+  getRecordsView(type, params, (err, response) => {
+    if (err) {
+      return callback(err);
+    }
+    hydrate(type, response.rows, err => callback(err, response));
+  });
 };
 
 var getOptions = function(params) {
@@ -619,30 +614,34 @@ var getOptions = function(params) {
 };
 
 module.exports = {
-  get: function(params) {
+  get: function(params, callback) {
     var type = exportTypes[params.type];
     if (!type) {
-      throw { code: 404 };
+      return callback({ code: 404 });
     }
     if (!_.isFunction(type.generate)) {
-      throw new Error('Export type must provide a "generate" method');
+      return callback(new Error('Export type must provide a "generate" method'));
     }
     if (type.lowlevel) {
-      return type.generate();
+      return type.generate(callback);
     }
 
-    return getRecords(type, params)
-      .then(response => {
-        var options = getOptions(params);
-        var tabs = type.generate(response, options);
+    getRecords(type, params, function(err, response) {
+      if (err) {
+        return callback(err);
+      }
+      var options = getOptions(params);
+      var tabs = type.generate(response.rows, options);
 
-        if (params.format === 'xml') {
-          return outputToXml(options, tabs);
-        } else if (params.format === 'json') {
-          return outputToJson(options, tabs);
-        } else {
-          return outputToCsv(options, tabs);
-        }
-      });
-  }
+      if (params.format === 'xml') {
+        outputToXml(options, tabs, callback);
+      } else if (params.format === 'json') {
+        outputToJson(options, tabs, callback);
+      } else {
+        outputToCsv(options, tabs, callback);
+      }
+
+    });
+  },
+  _lineageUtils: () => lineageUtils
 };

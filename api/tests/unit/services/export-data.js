@@ -7,6 +7,8 @@ const service = require('../../../services/export-data'),
       sinon = require('sinon').sandbox.create(),
       moment = require('moment');
 
+let hydrateDocs;
+
 function readStream(dataHook, callback) {
   var data = '';
 
@@ -18,6 +20,9 @@ function readStream(dataHook, callback) {
 }
 
 exports.setUp = callback => {
+  hydrateDocs = sinon.stub(service._lineageUtils(), 'hydrateDocs');
+  hydrateDocs.callsArg(1);
+
   sinon.stub(config, 'translate').callsFake((key, locale) => {
     return `{${key}:${locale}}`;
   });
@@ -713,7 +718,7 @@ exports['get reports works for enketo reports'] = test => {
 };
 
 exports['get reports hydrates contacts'] = test => {
-  test.expect(8);
+  test.expect(7);
   const contactId = 'DFEF75F5-4D25-EA47-8706-2B12500EFD8F';
   const parentId = '6850E77F-5FFC-9B01-8D5B-3D6E33DFA73E';
   const grandparentId = '6AC7CDAA-A9CB-2AC0-A4C6-5B27A714D5ED';
@@ -762,11 +767,14 @@ exports['get reports hydrates contacts'] = test => {
   });
   // enketo forms aren't stored in app_settings
   const configGet = sinon.stub(config, 'get').returns({});
-  const dbFetch = sinon.stub(db.medic, 'fetch').callsArgWith(1, null, { rows: [
-    { id: contactId, doc: { name: 'mr one', parent: { _id: parentId, parent: { _id: grandparentId } } }},
-    { id: parentId, doc: { name: 'mz two', parent: { _id: grandparentId } }},
-    { id: grandparentId, doc: { name: 'dr three' }}
-  ] });
+
+  hydrateDocs.onFirstCall().callsFake(([{doc}], cb) => {
+    doc.contact.name = 'mr one';
+    doc.contact.parent.name = 'mz two';
+    doc.contact.parent.parent.name = 'dr three';
+    cb();
+  });
+
   const expected = '{_id:en},{contact.name:en},{contact.parent.name:en},{contact.parent.parent.name:en}\n' +
                    'B87FEE75-D435-A648-BDEA-0A1B61021AA3,mr one,mz two,dr three';
   service.get({ type: 'forms', tz: '0', form: 'assessment', columns: '[ "_id", "contact.name", "contact.parent.name", "contact.parent.parent.name" ]' }, (err, results) => {
@@ -776,8 +784,7 @@ exports['get reports hydrates contacts'] = test => {
     test.same(getView.firstCall.args[2].startkey, [true, 'assessment', {}]);
     test.same(getView.firstCall.args[2].endkey, [true, 'assessment', 0]);
     test.equals(configGet.callCount, 1);
-    test.equals(dbFetch.callCount, 1);
-    test.deepEqual(dbFetch.args[0][0].keys, [ contactId, parentId, grandparentId ]);
+    test.equals(hydrateDocs.callCount, 1);
     test.done();
   });
 };
