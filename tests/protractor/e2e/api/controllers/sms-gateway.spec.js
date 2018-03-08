@@ -336,12 +336,10 @@ function postStatuses(...updates) {
 }
 
 function expectMessageWithoutState(id) {
-  console.log('expectMessageWithoutState()', id); // FIXME
   return expectMessagesWithoutState(id);
 }
 
 function expectMessagesWithoutState(...ids) {
-  console.log('expectMessagesWithoutState()', ids, ids.map(id => ({ id }))); // FIXME
   return expectMessageStates(...ids.map(id => ({ id })));
 }
 
@@ -358,7 +356,6 @@ function expectMessageStates(...expectedStates) {
   });
 
   expectedStates = JSON.stringify(expectedStates);
-console.log('expectedStates', expectedStates, '\n', new Error()); // FIXME
 
   return new Promise((resolve, reject) => {
     const endTime = Date.now() + 10000;
