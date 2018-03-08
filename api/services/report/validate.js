@@ -38,7 +38,7 @@ exports.validate = (def, form_data) => {
 
     const errors = [];
 
-    for (let k of def.validations) {
+    for (let k of Object.keys(def.validations)) {
       if (typeof def.validations[k] !== 'string') {
         continue;
       }

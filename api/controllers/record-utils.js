@@ -224,11 +224,11 @@ const createByForm = (data, { locale }={}) => {
 
   const options = {
     type: 'sms_message',
-    content: content,
     message: content.message,
     form: smsparser.getFormCode(content.message),
     sent_timestamp: data.sent_timestamp,
-    locale: data.locale || locale
+    locale: data.locale || locale,
+    from: content.from
   };
   const formDefinition = getForm(options.form);
   let formData;

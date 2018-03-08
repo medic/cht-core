@@ -69,7 +69,8 @@ exports['POST data is saved on sms_message attr'] = test => {
     message: '1!YYYY!facility#2011#11#0#1#2#3#4#5#6#9#8#7#6#5#4'
   };
   const doc = recordUtils.createByForm(body);
-  test.same(doc.sms_message.content, body);
+  test.equals(doc.sms_message.message, body.message);
+  test.equals(doc.sms_message.from, body.from);
   test.done();
 };
 
@@ -402,3 +403,4 @@ exports['JSON POST: support reported_date _meta property'] = test => {
   test.equals(doc.fields.month, 8);
   test.done();
 };
+
