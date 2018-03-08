@@ -656,13 +656,16 @@ var feedback = require('../modules/feedback'),
       Changes({
         key: 'inbox-user-context',
         filter: function (change) {
+          var userCtx = Session.userCtx();
           return change &&
                  change.doc &&
                  change.doc.type === 'user-settings' &&
-                 change.doc.name === Session.userCtx().name;
+                 userCtx &&
+                 userCtx.name &&
+                 change.doc.name === userCtx.name;
         },
         callback: function () {
-          Session.checkCurrentSession();
+          Session.checkCurrentSession(showUpdateReady);
         }
       });
     }
