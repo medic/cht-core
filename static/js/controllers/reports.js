@@ -430,11 +430,13 @@ angular.module('inboxControllers').controller('ReportsCtrl',
             delete exportFilters[type].options;
           }
         });
-        var a = $(e.target).closest('a')[0];
-        a.classList.add('mm-icon-disabled');
+
+        var $link = $(e.target).closest('a');
+        $link.addClass('mm-icon-disabled');
         $timeout(function() {
-          a.classList.remove('mm-icon-disabled');
+          $link.removeClass('mm-icon-disabled');
         }, 2000);
+
         Export(exportFilters, 'reports');
       }
     });
