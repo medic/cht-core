@@ -2,17 +2,17 @@ const utils = require('../../../utils');
 
 const CHW_CONTACT_NUMBER = '+32049832049';
 
-fdescribe('/sms', function() {
+describe('/sms', function() {
 
   describe('test setup', function() {
-    fit('should make PouchDB instance available', function() {
+    it('should make PouchDB instance available', function() {
       expect(utils.db.query).toBeDefined();
     });
   });
 
   describe('GET', function() {
 
-    fit('should respond with valid JSON', function() {
+    it('should respond with valid JSON', function() {
       // when
       return get()
         .then(response => {
@@ -36,12 +36,12 @@ fdescribe('/sms', function() {
 
     describe('for webapp-terminating message processing', function() {
 
-      fit('should accept requests with missing fields', function() {
+      it('should accept requests with missing fields', function() {
         return post({})
           .then(expectResponse({ messages:[] }));
       });
 
-      fit('should save supplied messages to DB', function() {
+      it('should save supplied messages to DB', function() {
         return postMessages(
           {
             id: 'test-sms-1',
@@ -63,12 +63,12 @@ fdescribe('/sms', function() {
           .then(() => expectMessagesInDb('test 1', 'test 2'));
       });
 
-      fit('should not reject bad message content', function() {
+      it('should not reject bad message content', function() {
         postMessage({ missing_fields:true })
           .then(expectResponse({ messages:[] }));
       });
 
-      fit('should save all good messages in a request containing some good and some bad', function() {
+      it('should save all good messages in a request containing some good and some bad', function() {
         return postMessages(
           { bad_message:true },
           {
@@ -87,7 +87,7 @@ fdescribe('/sms', function() {
         // TODO if the endpoint is supposed to be non-blocking, add a waiting loop around the relevant assertions.
       });
 
-      fit('should not save a message if its id has been seen before', function() {
+      it('should not save a message if its id has been seen before', function() {
         return postMessage(
           {
             id: 'a-1',
@@ -113,11 +113,25 @@ fdescribe('/sms', function() {
           .then(() => expectMessageInDb('once-only'));
       });
 
+      fit('should return within a reasonable time', function() {
+        const start = Date.now();
+        return postMessages(...oneHundredMessages())
+          .then(response => {
+            const end = Date.now();
+            const maxMillis = 5;
+            if(end > start + maxMillis) {
+              const seconds = (end - start) / 1000;
+              fail(`It took ${seconds}s to respond to the request.  The endpoint should respond within ${maxMillis}ms.`);
+            }
+            expect(response).toEqual({ messages:[] });
+          });
+      });
+
     });
 
     describe('for webapp-originating message processing', function() {
 
-      fit('should update message in DB when status update is received', function() {
+      it('should update message in DB when status update is received', function() {
         return saveWoMessage('abc-123', 'hello from webapp')
           .then(() => expectMessageWithoutState('abc-123'))
 
@@ -127,7 +141,7 @@ fdescribe('/sms', function() {
           .then(() => expectMessageState('abc-123', 'sent'));
       });
 
-      fit('should update message multiple times when multiple status updates for the same message are received', function() {
+      it('should update message multiple times when multiple status updates for the same message are received', function() {
         return saveWoMessage('abc-123', 'hello again')
           .then(() => expectMessageWithoutState('abc-123'))
 
@@ -139,7 +153,7 @@ fdescribe('/sms', function() {
           .then(() => expectMessageStates({ id:'abc-123', states:['sent', 'delivered'] }));
       });
 
-      fit('should not save a status update again if it\'s been seen before', function() {
+      it('should not save a status update again if it\'s been seen before', function() {
         return saveWoMessage('abc-123', 'hello again')
           .then(() => expectMessageWithoutState('abc-123'))
 
@@ -152,9 +166,28 @@ fdescribe('/sms', function() {
           .then(() => expectMessageStates({ id:'abc-123', states:['sent'] }));
       });
 
+      fit('should return within a reasonable time', function() {
+        return saveWoMessages(oneHundredWoMessages())
+          .then(() => {
+
+            const start = Date.now();
+            return postStatuses(oneHundredUpdates())
+              .then(response => {
+                const end = Date.now();
+                const maxMillis = 5;
+                if(end > start + maxMillis) {
+                  const seconds = (end - start) / 1000;
+                  fail(`It took ${seconds}s to respond to the request.  The endpoint should respond within ${maxMillis}ms.`);
+                }
+                expect(response).toEqual({ messages:[] });
+              })
+              .then(() => expectMessageStates({ id:'abc-123', states:['sent * 100'] }))
+          });
+      });
+
     });
 
-    fit('should still save messages when a status update for an unknown message is received', function() {
+    it('should still save messages when a status update for an unknown message is received', function() {
         return saveWoMessage('abc-123', 'hello again')
           .then(() => expectMessageWithoutState('abc-123'))
 
@@ -165,30 +198,13 @@ fdescribe('/sms', function() {
           .then(() => expectMessageStates({ id:'abc-123', states:['sent'] }))
     });
 
-    fit('should still save messages when an unrecognised status update is received', function() {
+    it('should still save messages when an unrecognised status update is received', function() {
         return saveWoMessage('abc-123', 'hello again')
           .then(() => expectMessageWithoutState('abc-123'))
 
           .then(() => postStatus('abc-123', 'WTF'))
           .then(expectResponse({ messages:[] }))
           .then(() => expectMessageStates({ id:'abc-123', states:['unrecognised'] }))
-    });
-
-    fit('should return within a reasonable time', function() {
-      const start = Date.now();
-      return post({
-        messages: oneHundredMessages(),
-        updates: oneHundredUpdates(),
-      })
-        .then(response => {
-          const end = Date.now();
-          const maxMillis = 200;
-          if(end > start + maxMillis) {
-            const seconds = (end - start) / 1000;
-            fail(`It took ${seconds}s to respond to the message request.  The endpoint should respond within ${maxMillis}ms.`);
-          }
-          expect(response).toEqual({ messages:[] });
-        });
     });
 
   });
@@ -258,6 +274,11 @@ function expectMessagesInDb(...expectedContents) {
         .catch(reject);
     }
   });
+}
+
+// TODO use bulkDocs for this
+function saveWoMessages(...details) {
+  return Promise.all(details.map(d => saveWoMessage(d.id, d.content)));
 }
 
 function saveWoMessage(id, content) {
@@ -360,13 +381,26 @@ function oneHundredMessages() {
   return messages;
 }
 
+function oneHundredWoMessages() {
+  const messages = [];
+
+  for(i=0; i<100; ++i) {
+    messages.push({
+      id: `wo-message-${i}`,
+      content: `wo message ${i}`,
+    });
+  }
+
+  return messages;
+}
+
 function oneHundredUpdates() {
   const STATUS = ['PENDING', 'SENT', 'DELIVERED', 'FAILED'];
   const updates = [];
 
   for(i=0; i<100; ++i) {
     const update = {
-      id: `unmatched-id`,
+      id: `wo-message-${i}`,
       status: STATUS[i%4],
     };
 
