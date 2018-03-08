@@ -1,8 +1,5 @@
 const assert = require('chai').assert;
-const proxyquire = require('proxyquire').noCallThru();
-const phonenumber = proxyquire('../../../packages/libphonenumber/libphonenumber/utils', {
-  'libphonenumber/libphonenumber': require('../../../packages/libphonenumber/libphonenumber/libphonenumber')
-});
+const phonenumber = require('../src/phone-number');
 
 const NZ_DOMESTIC_VALID = '0275552636';
 const NZ_DOMESTIC_INVALID = '5155556442123'; // right number of digits but invalid number!

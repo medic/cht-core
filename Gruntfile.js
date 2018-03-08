@@ -259,7 +259,8 @@ module.exports = function(grunt) {
           var sharedLibs = [
             'bulk-docs-utils',
             'search',
-            'task-utils'
+            'task-utils',
+            'phone-number'
           ];
           return sharedLibs.map(function(lib) {
             return 'cd shared-libs/' + lib +
