@@ -634,7 +634,7 @@ module.exports = {
     return getRecords(type, params)
       .then(response => {
         var options = getOptions(params);
-        var tabs = type.generate(response.rows, options);
+        var tabs = type.generate(response, options);
 
         if (params.format === 'xml') {
           return outputToXml(options, tabs);
