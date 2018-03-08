@@ -1,4 +1,5 @@
 const utils = require('../../../utils');
+const uuid = require('uuid/v4');
 
 const CHW_CONTACT_NUMBER = '+32049832049';
 
@@ -31,7 +32,12 @@ describe('/sms', function() {
       // delete WO and WT messages
       return utils.db.query('medic-client/messages_by_contact_date',
           { reduce:false, include_docs:true })
-        .then(res => Promise.all(res.rows.map(row => utils.db.remove(row.doc))));
+        .then(res => res.rows.map(row => {
+          const doc = row.doc;
+          doc._deleted = true;
+          return doc;
+        }))
+        .then(docs => utils.db.bulkDocs(docs));
     });
 
     describe('for webapp-terminating message processing', function() {
@@ -276,12 +282,15 @@ function expectMessagesInDb(...expectedContents) {
   });
 }
 
-// TODO use bulkDocs for this
 function saveWoMessages(...details) {
-  return Promise.all(details.map(d => saveWoMessage(d.id, d.content)));
+  return utils.db.bulkDocs(details.map(d => createWoMessage(d.id, d.content)));
 }
 
 function saveWoMessage(id, content) {
+  return utils.db.post(createWoMessage(id, content));
+}
+
+function createWoMessage(id, content) {
   const task = {
     messages: [
       {
@@ -296,6 +305,7 @@ function saveWoMessage(id, content) {
   };
 
   const messageDoc = {
+    _id: uuid(),
     errors: [],
     form: null,
     from: '+123',
@@ -306,7 +316,7 @@ function saveWoMessage(id, content) {
     sent_by: 'some name',
   };
 
-  return utils.db.post(messageDoc);
+  return messageDoc;
 }
 
 function postStatus(messageId, newStatus) {
