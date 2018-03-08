@@ -380,7 +380,12 @@ module.exports = function(grunt) {
         options: {
           configFile: 'tests/protractor/conf.js'
         }
-      }
+      },
+      tests_only: {
+        options: {
+          configFile: 'tests/protractor/tests-only.conf.js'
+        }
+      },
     },
     nodeunit: {
       all: [
