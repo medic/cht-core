@@ -1,7 +1,7 @@
 const config = require('../../config'),
-      mp_parser = require('./mp_parser'),
-      javarosa_parser = require('./javarosa_parser'),
-      textforms_parser = require('./textforms_parser');
+      mpParser = require('./mp-parser'),
+      javarosaParser = require('./javarosa-parser'),
+      textformsParser = require('./textforms-parser');
 
 const MUVUKU_REGEX = /^\s*([A-Za-z]?\d)!.+!.+/;
 
@@ -23,7 +23,7 @@ const standardiseDigits = original => {
  * @api private
  */
 const isMuvukuFormat = exports.isMuvukuFormat = msg => {
-  return (typeof msg === 'string') && msg.match(MUVUKU_REGEX);
+  return (typeof msg === 'string') && MUVUKU_REGEX.test(msg);
 };
 
 /*
@@ -68,18 +68,18 @@ const getParser = exports.getParser = (def, doc) => {
   if (match && match[1]) {
     switch(match[1].toUpperCase()) {
       case '1':
-        return mp_parser.parse;
+        return mpParser.parse;
       case 'J1':
-        return javarosa_parser.parse;
+        return javarosaParser.parse;
       default:
         return;
     }
   }
   msg = stripFormCode(code, msg);
-  if (textforms_parser.isCompact(def, msg, doc.locale)) {
-    return textforms_parser.parseCompact;
+  if (textformsParser.isCompact(def, msg, doc.locale)) {
+    return textformsParser.parseCompact;
   } else {
-    return textforms_parser.parse;
+    return textformsParser.parse;
   }
 };
 
@@ -133,13 +133,12 @@ exports.parseField = (field, raw) => {
       // TODO we don't have locale data inside this function so calling
       // translate does not resolve locale.
       if (field.list) {
-        for (let i of field.list) {
-          const item = field.list[i];
-          if (String(item[0]) === String(raw)) {
-            return config.translate(item[1]);
-          }
+        const item = field.list.find(item => String(item[0]) === String(raw));
+        if (!item) {
+          console.warn(`Option not available for ${JSON.stringify(raw)} in list.`);
+          return null;
         }
-        console.warn(`Option not available for ${JSON.stringify(raw)} in list.`);
+        return config.translate(item[1]);
       }
       return parseNum(raw);
     case 'string':
@@ -163,7 +162,9 @@ exports.parseField = (field, raw) => {
       }
       return config.translate(raw);
     case 'date':
-      if (!raw) { return null; }
+      if (!raw) {
+        return null;
+      }
       // YYYY-MM-DD assume muvuku format for now
       // store in milliseconds since Epoch
       return new Date(raw).valueOf();
@@ -200,9 +201,9 @@ exports.parseField = (field, raw) => {
  */
 exports.parse = (def, doc) => {
 
-  let msg_data,
+  let msgData,
       parser,
-      form_data = {},
+      formData = {},
       addOmittedFields = false;
 
   if (!def || !doc || !doc.message || !def.fields) {
@@ -217,22 +218,21 @@ exports.parse = (def, doc) => {
   }
 
   if (isMuvukuFormat(doc.message)) {
-    msg_data = parser(def, doc);
+    msgData = parser(def, doc);
     addOmittedFields = true;
   } else {
     const code = def && def.meta && def.meta.code,
           msg = stripFormCode(code, doc.message || doc);
-    if (textforms_parser.isCompact(def, msg, doc.locale)) {
-      msg_data = parser(def, msg);
+    if (textformsParser.isCompact(def, msg, doc.locale)) {
+      msgData = parser(def, msg);
     } else {
-      msg_data = parser(msg);
-
+      msgData = parser(msg);
       // replace tiny labels with field keys for textforms
-      for (let j of def.fields) {
+      for (let j of Object.keys(def.fields)) {
         const label = lower(config.translate(def.fields[j].labels.tiny, doc.locale));
-        if (j !== label && msg_data[label]) {
-          msg_data[j] = msg_data[label];
-          msg_data[label] = undefined;
+        if (j !== label && msgData[label]) {
+          msgData[j] = msgData[label];
+          msgData[label] = undefined;
         }
       }
     }
@@ -240,18 +240,18 @@ exports.parse = (def, doc) => {
 
   // parse field types and resolve dot notation keys
   for (let k of Object.keys(def.fields)) {
-    if (msg_data[k] || addOmittedFields) {
-      const value = exports.parseField(def.fields[k], msg_data[k]);
-      createDeepKey(form_data, k.split('.'), value);
+    if (msgData[k] || addOmittedFields) {
+      const value = exports.parseField(def.fields[k], msgData[k]);
+      createDeepKey(formData, k.split('.'), value);
     }
   }
 
   // pass along some system generated fields
-  if (msg_data._extra_fields === true) {
-    form_data._extra_fields = true;
+  if (msgData._extra_fields === true) {
+    formData._extra_fields = true;
   }
 
-  return form_data;
+  return formData;
 };
 
 /**
@@ -268,10 +268,7 @@ exports.parseArray = (def, doc) => {
   if (!def || !def.fields) { return []; }
 
   // collect field keys into array
-  const arr = [];
-  for (let k of def.fields) {
-    arr.push(obj[k]);
-  }
+  const arr = Object.keys(def.fields).map(k => obj[k]);
 
   // The fields sent_timestamp and from are set by the gateway, so they are
   // not included in the raw sms message and added manually.
@@ -315,23 +312,23 @@ exports.getFormCode = msg => {
  * @param {String} form         - form id
  * @param {Array}  key          - key of the field separated by '.'
  * @param {Object} data_record  - record into which the data is merged
- * @param {Object} form_data    - data from the SMS
+ * @param {Object} formData    - data from the SMS
  *                                to be merged into the data record
  * @api public
  */
-exports.merge = (form, key, data_record, form_data) => {
+exports.merge = (form, key, data_record, formData) => {
   // support creating subobjects on the record if form defines key with dot
   // notation.
   if(key.length > 1) {
     const tmp = key.shift();
-    if(form_data[tmp]) {
+    if(formData[tmp]) {
       if(!data_record[tmp]) {
         data_record[tmp] = {};
       }
-      exports.merge(form, key, data_record[tmp], form_data[tmp]);
+      exports.merge(form, key, data_record[tmp], formData[tmp]);
     }
   } else {
-    data_record[key[0]] = form_data[key[0]];
+    data_record[key[0]] = formData[key[0]];
   }
 };
 

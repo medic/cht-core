@@ -5,10 +5,10 @@ const _ = require('underscore'),
           .replace(new RegExp('^\\/'), '')
           .replace(new RegExp('\\/$'), '');
       },
-      reDecimal = /\\./,
-      reBoundary = /\\s*#\\s*/,
-      reDate = /[\\d]{4}[-/][\\d]{1,2}[-/][\\d]{1,2}/,
-      reNumeric = /[1-9][0-9]*(?:\\.(?:\\d+)?)?/,
+      reDecimal = new RegExp('\\.'),
+      reBoundary = new RegExp('\\s*#\\s*'),
+      reDate = new RegExp('[\\d]{4}[-/][\\d]{1,2}[-/][\\d]{1,2}'),
+      reNumeric = new RegExp('[1-9][0-9]*(?:\\.(?:\\d+)?)?'),
       reNumericOnly = new RegExp(`^\\s*${embedRe(reNumeric)}\\s*$`),
       reField = new RegExp(
         '\\s*([A-Za-z_\\.\\*.]+)' +
