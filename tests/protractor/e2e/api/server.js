@@ -12,7 +12,7 @@ describe('server', () => {
       return utils.requestOnTestDb(opts, true)
         .then(fail)
         .catch(e => {
-          expect(e).toBe('Content-Type must be application/json');
+          expect(e.responseBody).toBe('Content-Type must be application/json');
         });
     });
   });
