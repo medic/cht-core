@@ -5,7 +5,7 @@ describe('extract-translations', function() {
     return utils.tearDown();
   });
 
-  it('should update existing translations and remove them from app_settings', function() {
+  it.skip('should update existing translations and remove them from app_settings', function() {
 
     // given
     return utils.initDb([
