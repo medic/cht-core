@@ -259,7 +259,6 @@ const getOrCreatePlace = (place, callback) => {
   }
 };
 
-module.exports._lineageUtils = lineageUtils;
 module.exports._createPlace = createPlace;
 module.exports._createPlaces = createPlaces;
 module.exports._updateFields = updateFields;

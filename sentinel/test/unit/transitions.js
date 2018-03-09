@@ -178,6 +178,7 @@ exports['loadTransitions load throws detach is called'] = test => {
 
 exports['loadTransitions loads system transitions by default'] = test => {
   sinon.stub(config, 'get').returns({});
+  sinon.stub(transitions, '_attach');
   const stub = sinon.stub(transitions, '_loadTransition');
   transitions.loadTransitions();
   test.equal(stub.calledWith('maintain_info_document'), true);
@@ -186,6 +187,7 @@ exports['loadTransitions loads system transitions by default'] = test => {
 
 exports['loadTransitions does not load system transistions that have been explicitly disabled'] = test => {
   sinon.stub(config, 'get').returns({maintain_info_document: {disable: true}});
+  sinon.stub(transitions, '_attach');
   const stub = sinon.stub(transitions, '_loadTransition');
   transitions.loadTransitions();
   test.equal(stub.calledWith('maintain_info_document'), false);

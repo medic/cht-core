@@ -1,9 +1,10 @@
-var sinon = require('sinon').sandbox.create(),
-    db = require('../../db'),
-    transition = require('../../transitions/update_clinics'),
-    lineage = require('lineage'),
-    phone = '+34567890123',
-    lineageStub;
+const sinon = require('sinon').sandbox.create(),
+      db = require('../../db'),
+      transition = require('../../transitions/update_clinics'),
+      lineage = require('lineage'),
+      phone = '+34567890123';
+
+let lineageStub;
 
 exports.setUp = function(callback) {
   process.env.TEST_ENV = true;

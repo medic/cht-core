@@ -1,71 +1,66 @@
-var fs = require('fs'),
-    _ = require('underscore'),
-    async = require('async'),
-    moment = require('moment');
+const async = require('async'),
+      moment = require('moment'),
+      date = require('../date'),
+      config = require('../config'),
+      logger = require('../lib/logger'),
+      db = require('../db');
 
-var date = require('../date'),
-    config = require('../config'),
-    logger = require('../lib/logger'),
-    tasks;
+const tasks = {
+  dueTasks: require('./due_tasks'),
+  reminders: require('./reminders'),
+};
 
-tasks = _.compact(_.map(fs.readdirSync(__dirname), function(file) {
-    try {
-        if (!/(^index\.|^\.)/.test(file)) {
-            return require('./' + file);
-        }
-    } catch(e) {
-        logger.error(e); // carry on ...
-    }
-}));
+function getTime(_hour, _minute) {
+  return moment(0).hours(_hour).minutes(_minute);
+}
 
 /*
  * Return true if within time window to set outgoing/pending tasks/messages.
  */
-exports.sendable = function(_config, _now) {
-    var afterHours = _config.get('schedule_morning_hours') || 0,
-        afterMinutes = _config.get('schedule_morning_minutes') || 0,
-        untilHours = _config.get('schedule_evening_hours') || 23,
-        untilMinutes = _config.get('schedule_evening_minutes') || 0;
+exports.sendable = function(config, now) {
+  const afterHours = config.get('schedule_morning_hours') || 0,
+        afterMinutes = config.get('schedule_morning_minutes') || 0,
+        untilHours = config.get('schedule_evening_hours') || 23,
+        untilMinutes = config.get('schedule_evening_minutes') || 0;
 
-    var now = _getTime(_now.hours(), _now.minutes());
-    var after = _getTime(afterHours, afterMinutes);
-    var until = _getTime(untilHours, untilMinutes);
+  now = getTime(now.hours(), now.minutes());
+  const after = getTime(afterHours, afterMinutes);
+  const until = getTime(untilHours, untilMinutes);
 
-    return now >= after && now <= until;
+  return now >= after && now <= until;
 };
 
 exports.checkSchedule = function() {
-    var db = require('../db'),
-        now = moment(date.getDate());
+  const now = moment(date.getDate());
 
-    async.forEachSeries(tasks, function(task, callback) {
-        if (_.isFunction(task.execute)) {
-            task.execute({
-                db: db,
-                audit: db.audit
-            }, callback);
-        } else if (exports.sendable(config, now)) {
-            task(db, db.audit, callback);
-        } else {
-            callback();
-        }
-    }, function(err) {
-        if (err) {
-            logger.error('Error running tasks: ' + JSON.stringify(err));
-        }
-        _reschedule();
-    });
+  async.series([
+    cb => {
+      tasks.reminders.execute({
+        db: db,
+        audit: db.audit
+      }, cb);
+    },
+    cb => {
+      if (exports.sendable(config, now)) {
+        tasks.dueTasks.execute(db, db.audit, cb);
+      } else {
+        cb();
+      }
+    }
+  ], err => {
+    if (err) {
+      logger.error('Error running tasks: ' + JSON.stringify(err));
+    }
+    _reschedule();
+  });
 };
 
 function _reschedule() {
-    var now = moment(),
+  const now = moment(),
         heartbeat = now.clone().startOf('minute').add(5, 'minutes'),
         duration = moment.duration(heartbeat.valueOf() - now.valueOf());
 
-    logger.info('checking schedule again in', moment.duration(duration).humanize());
-    setTimeout(exports.checkSchedule, duration.asMilliseconds());
+  logger.info('checking schedule again in', moment.duration(duration).humanize());
+  setTimeout(exports.checkSchedule, duration.asMilliseconds());
 }
 
-function _getTime(_hour, _minute) {
-    return moment(0).hours(_hour).minutes(_minute);
-}

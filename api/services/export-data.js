@@ -642,6 +642,5 @@ module.exports = {
       }
 
     });
-  },
-  _lineageUtils: () => lineageUtils
+  }
 };

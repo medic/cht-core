@@ -2,6 +2,7 @@ const service = require('../../../services/export-data'),
       db = require('../../../db'),
       config = require('../../../config'),
       fti = require('../../../controllers/fti'),
+      lineage = require('lineage'),
       childProcess = require('child_process'),
       JSZip = require('jszip'),
       sinon = require('sinon').sandbox.create(),
@@ -20,7 +21,7 @@ function readStream(dataHook, callback) {
 }
 
 exports.setUp = callback => {
-  hydrateDocs = sinon.stub(service._lineageUtils(), 'hydrateDocs');
+  hydrateDocs = sinon.stub(lineage, 'hydrateDocs');
   hydrateDocs.callsArg(1);
 
   sinon.stub(config, 'translate').callsFake((key, locale) => {

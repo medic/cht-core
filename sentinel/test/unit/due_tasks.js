@@ -25,7 +25,7 @@ exports['due_tasks handles view returning no rows'] = function(test) {
   });
   var saveDoc = sinon.stub(audit, 'saveDoc').callsArgWith(1, null);
 
-  schedule({ medic: db }, {}, function(err) {
+  schedule.execute({ medic: db }, {}, function(err) {
     test.equals(err, undefined);
   });
 
@@ -73,7 +73,7 @@ exports['set all due scheduled tasks to pending'] = function(test) {
   var hydrate = sinon.stub(lineage, 'hydrateDocs').returns(Promise.resolve([ doc ]));
   var setTaskState = sinon.stub(utils, 'setTaskState');
 
-  schedule({ medic: db }, audit, function(err) {
+  schedule.execute({ medic: db }, audit, function(err) {
     test.equals(err, undefined);
     test.equals(view.callCount, 1);
     test.equals(saveDoc.callCount, 1);
@@ -134,7 +134,7 @@ exports['set all due scheduled tasks to pending and handles repeated rows'] = fu
   var saveDoc = sinon.spy(audit, 'saveDoc');
   var setTaskState = sinon.stub(utils, 'setTaskState');
 
-  schedule({ medic: db }, audit, function(err) {
+  schedule.execute({ medic: db }, audit, function(err) {
     test.equals(err, undefined);
     test.equals(view.callCount, 1);
     test.equals(saveDoc.callCount, 1);
@@ -199,7 +199,7 @@ exports['set all due scheduled tasks to pending and handles nonrepeated rows'] =
   var saveDoc = sinon.spy(audit, 'saveDoc');
   var setTaskState = sinon.stub(utils, 'setTaskState');
 
-  schedule({ medic: db }, audit, function(err) {
+  schedule.execute({ medic: db }, audit, function(err) {
     test.equals(err, undefined);
     test.equals(view.callCount, 1);
     test.equals(saveDoc.callCount, 2);
@@ -297,7 +297,7 @@ exports['generates the messages for all due scheduled tasks'] = test => {
   };
   const saveDoc = sinon.spy(audit, 'saveDoc');
 
-  schedule({ medic: db }, audit, err => {
+  schedule.execute({ medic: db }, audit, err => {
     test.equals(err, undefined);
     test.equals(view.callCount, 1);
     test.equals(saveDoc.callCount, 1);
