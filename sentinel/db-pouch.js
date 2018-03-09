@@ -7,3 +7,5 @@ const { COUCH_URL } = process.env;
 const couchUrl = COUCH_URL && COUCH_URL.replace(/\/$/, '');
 
 module.exports.medic = new PouchDB(couchUrl);
+module.exports.audit = new PouchDB(`${couchUrl}-audit`);
+module.exports._url = couchUrl;

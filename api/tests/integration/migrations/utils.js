@@ -1,8 +1,10 @@
 var _ = require('underscore'),
     async = require('async'),
     db = require('../../../db'),
-    DB_PREFIX = 'medic_api_integration_tests__',
-    dbBackups;
+    dbPouch = require('../../../db-pouch'),
+    DB_PREFIX = 'medic_api_integration_tests__';
+
+const PouchDB = require('pouchdb-core');
 
 function byId(a, b) {
   if(a._id === b._id) {
@@ -139,113 +141,115 @@ function matchDbs(expected, actual) {
   }
 }
 
-function initDb(content) {
-  dbBackups = {
-    audit: db.audit,
-    medic: db.medic,
-    request: db.request
-  };
+
+const dbPath = db.getPath,
+      dbRequest = db.request;
+const switchToRealDbs = () => {
+  // db.request = dbRequest;
+  db.getPath = dbPath;
+  db.audit = db.use('audit');
+  db.medic = db.use('medic');
+  dbPouch.medic = new PouchDB(dbPouch._url);
+};
+
+const switchToTestDbs = () => {
   db.audit = db.use(DB_PREFIX + 'audit');
   db.medic = db.use(DB_PREFIX + 'medic');
+  dbPouch.medic = new PouchDB(dbPouch._url.replace(/medic$/, DB_PREFIX + 'medic'));
 
   // hijack calls to db.request and make sure that they are made to the correct
   // database.
-  var realRequest = db.request;
   db.request = function() {
     var args = Array.prototype.slice.call(arguments);
     var targetDb = args[0].db;
     if(targetDb && targetDb.indexOf(DB_PREFIX) !== 0) {
       args[0].db = DB_PREFIX + targetDb;
     }
-    return realRequest.apply(db, args);
+    return dbRequest.apply(db, args);
   };
 
+  db.getPath = function() {
+    return DB_PREFIX + 'medic/_design/medic/_rewrite';
+  };
+};
+
+function initDb(content) {
   if(Array.isArray(content)) {
     content = {
       medic: content,
     };
   }
 
+  switchToTestDbs();
+
+  var realMedicDb = db.use('medic');
+
   return _resetDb()
     .then(function() {
       // copy ddocs from non-test db
-      var nonTestDb = db.use('medic');
       return new Promise(function(resolve, reject) {
-        nonTestDb.get('_design/medic', function(err, medicDdoc) {
+        realMedicDb.get('_design/medic', function(err, medicDdoc) {
           if(err) { return reject(new Error('Error getting _design/medic: ' + err.message)); }
           resolve(medicDdoc);
         });
-      })
-      .then(function(medicDdoc) {
-        delete medicDdoc._rev;
-        delete medicDdoc._attachments;
-        return new Promise(function(resolve, reject) {
-          db.medic.insert(medicDdoc, function(err) {
-            if(err) { return reject(new Error('Error inserting _design/medic: ' + err.message)); }
-            resolve();
-          });
+      });
+    })
+    .then(function(medicDdoc) {
+      delete medicDdoc._rev;
+      delete medicDdoc._attachments;
+      return new Promise(function(resolve, reject) {
+        db.medic.insert(medicDdoc, function(err) {
+          if(err) { return reject(new Error('Error inserting _design/medic: ' + err.message)); }
+          resolve();
         });
-      })
-      .then(function() {
-        db.audit = db.use('audit');
-        db.medic = db.use('medic');
-      })
-      .then(function() {
-        return new Promise(function(resolve, reject) {
-          db.medic.insert({
-            _id: 'org.couchdb.user:admin',
-            name: 'admin',
-            roles: [],
-            type: 'user-settings',
-            language: 'en',
-            known: true,
-            facility_id: null,
-            contact_id: null,
-          }, function(err) {
-            // Assume that if the doc already exists, then it's properly set up
-            // This may be risky, but hopefully it was done as part of a
-            // previous test, or has been set up correctly on a local machine.
-            if(err && err.error !== 'conflict') { return reject(new Error('Error inserting admin user: ' + err.message)); }
-            resolve();
-          });
+      });
+    })
+    .then(function() {
+      switchToRealDbs();
+
+      return new Promise(function(resolve, reject) {
+        db.medic.insert({
+          _id: 'org.couchdb.user:admin',
+          name: 'admin',
+          roles: [],
+          type: 'user-settings',
+          language: 'en',
+          known: true,
+          facility_id: null,
+          contact_id: null,
+        }, function(err) {
+          // Assume that if the doc already exists, then it's properly set up
+          // This may be risky, but hopefully it was done as part of a
+          // previous test, or has been set up correctly on a local machine.
+          if(err && err.error !== 'conflict') { return reject(new Error('Error inserting admin user: ' + err.message)); }
+          resolve();
         });
-      })
-      .then(function() {
-        return new Promise(function(resolve, reject) {
-          require('../../../ddoc-extraction').run(function(err) {
-            if(err) { return reject(new Error('Error running ddoc-extraction: ' + err.message)); }
-            resolve();
-          });
+      });
+    })
+    .then(function() {
+      return new Promise(function(resolve, reject) {
+        require('../../../ddoc-extraction').run(function(err) {
+          if(err) { return reject(new Error('Error running ddoc-extraction: ' + err.message)); }
+          resolve();
         });
-      })
-      .then(function() {
-        // reinstate test DBs
-        dbBackups = {
-          audit: db.audit,
-          medic: db.medic,
-          getPath: db.getPath
-        };
-        db.audit = db.use(DB_PREFIX + 'audit');
-        db.medic = db.use(DB_PREFIX + 'medic');
-        db.getPath = function() {
-          return DB_PREFIX + 'medic/_design/medic/_rewrite';
-        };
-      })
-      .then(function() {
-        return new Promise(function(resolve, reject) {
-          nonTestDb.get('_design/medic-client', function(err, medicClientDdoc) {
-            if(err) { return reject(new Error('Error getting _design/medic-client: ' + err.message)); }
-            resolve(medicClientDdoc);
-          });
+      });
+    })
+    .then(function() {
+      switchToTestDbs();
+
+      return new Promise(function(resolve, reject) {
+        realMedicDb.get('_design/medic-client', function(err, medicClientDdoc) {
+          if(err) { return reject(new Error('Error getting _design/medic-client: ' + err.message)); }
+          resolve(medicClientDdoc);
         });
-      })
-      .then(function(medicClientDdoc) {
-        delete medicClientDdoc._rev;
-        return new Promise(function(resolve, reject) {
-          db.medic.insert(medicClientDdoc, function(err) {
-            if(err) { return reject(new Error('Error inserting _design/medic-client: ' + err.message)); }
-            resolve();
-          });
+      });
+    })
+    .then(function(medicClientDdoc) {
+      delete medicClientDdoc._rev;
+      return new Promise(function(resolve, reject) {
+        db.medic.insert(medicClientDdoc, function(err) {
+          if(err) { return reject(new Error('Error inserting _design/medic-client: ' + err.message)); }
+          resolve();
         });
       });
     })
@@ -295,9 +299,7 @@ function _resetDb() {
 }
 
 function tearDown() {
-  db.audit = dbBackups.audit;
-  db.medic = dbBackups.medic;
-  db.getPath = dbBackups.getPath;
+  switchToRealDbs();
 }
 
 function runMigration(migration) {
