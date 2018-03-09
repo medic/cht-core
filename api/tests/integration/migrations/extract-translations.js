@@ -117,9 +117,9 @@ describe('extract-translations', function() {
       if (ddoc.app_settings.locales) {
         throw new Error('`locales` should be empty');
       }
-      // if (ddoc.app_settings._id) {
-      //   throw new Error('`_id` should be empty');
-      // }
+      if (ddoc.app_settings._id) {
+        throw new Error('`_id` should be empty');
+      }
       if (ddoc.app_settings.test !== 'unchanged') {
         throw new Error('Migration changed unexpected property');
       }
