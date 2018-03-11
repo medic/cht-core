@@ -453,7 +453,15 @@ module.exports = function(grunt) {
     },
     auto_install: {
       npm: {
-        bower: false
+        options: {
+          bower: false
+        }
+      },
+      phone_number: {
+        options: {
+          bower: false,
+          cwd: 'shared-libs/phone-number'
+        }
       }
     },
     'regex-check': {
@@ -501,6 +509,7 @@ module.exports = function(grunt) {
   // Build tasks
   grunt.registerTask('mmnpm', 'Update and patch npm dependencies', [
     'exec:undopatches',
+    'auto_install:phone_number',
     'auto_install:npm',
     'copy:librariestopatch',
     'exec:applypatches'
