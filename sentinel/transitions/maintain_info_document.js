@@ -2,8 +2,16 @@ const db = require('../db'),
       infoDocId = id => id + '-info';
 
 const getSisterInfoDoc = (docId, callback) =>
-  db.medic.get(infoDocId(docId), (err, body) => {
-    if (err && err.statusCode !== 404) {
+  db.sentinel.get(infoDocId(docId), (err, body) => {
+    if (err && err.statusCode === 404) {
+      db.medic.get(infoDocId(docId), (err, body) => {
+        if (err && err.statusCode !== 404) {
+          callback(err);
+        } else {
+          callback(null, body);
+        }
+      });
+    } else if (err && err.statusCode !== 404) {
       callback(err);
     } else {
       callback(null, body);
@@ -60,7 +68,7 @@ module.exports = {
 
         if (infoDoc) {
           infoDoc.latest_replication_date = new Date();
-          return db.medic.insert(infoDoc, done);
+          return db.sentinel.insert(infoDoc, done);
         }
 
         generateInfoDocFromAuditTrail(change.id, (err, infoDoc) => {
@@ -69,9 +77,8 @@ module.exports = {
           }
 
           infoDoc = infoDoc || createInfoDoc(change.id, 'unknown');
-
           infoDoc.latest_replication_date = new Date();
-          return db.medic.insert(infoDoc, done);
+          return db.sentinel.insert(infoDoc, done);
         });
       });
     });

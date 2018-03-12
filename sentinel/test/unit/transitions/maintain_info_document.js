@@ -27,15 +27,15 @@ exports['Updates an existing document with a new sync date'] = test => {
     initial_replication_date: new Date()
   };
 
-  sinon.stub(db.medic, 'get').callsArgWith(1, null, infoDoc);
-  sinon.stub(db.medic, 'insert').callsArgWith(1, null, {});
+  sinon.stub(db.sentinel, 'get').callsArgWith(1, null, infoDoc);
+  sinon.stub(db.sentinel, 'insert').callsArgWith(1, null, {});
 
   transition.onMatch(change).then(changed => {
     test.ok(!changed);
-    test.ok(db.medic.get.calledWith(infoDoc._id));
+    test.ok(db.sentinel.get.calledWith(infoDoc._id));
     test.ok(infoDoc.latest_replication_date);
     test.ok(infoDoc.latest_replication_date instanceof Date);
-    test.ok(db.medic.insert.calledWith(infoDoc));
+    test.ok(db.sentinel.insert.calledWith(infoDoc));
     test.done();
   });
 };
@@ -52,16 +52,18 @@ exports['If no info doc exists, create one from audit records'] = test => {
     }]
   };
 
+  sinon.stub(db.sentinel, 'get').callsArgWith(1, {statusCode: 404});
   sinon.stub(db.medic, 'get').callsArgWith(1, {statusCode: 404});
   sinon.stub(db.audit, 'get').callsArgWith(1, null, {doc: auditDoc});
-  sinon.stub(db.medic, 'insert').callsArgWith(1, null, {});
+  sinon.stub(db.sentinel, 'insert').callsArgWith(1, null, {});
 
   transition.onMatch(change).then(changed => {
     test.ok(!changed);
+    test.ok(db.sentinel.get.calledWith('foo-info'));
     test.ok(db.medic.get.calledWith('foo-info'));
     test.ok(db.audit.get.calledWith('foo'));
-    test.equal(db.medic.insert.callCount, 1);
-    const infoDoc = db.medic.insert.args[0][0];
+    test.equal(db.sentinel.insert.callCount, 1);
+    const infoDoc = db.sentinel.insert.args[0][0];
     test.equal(infoDoc._id, 'foo-info');
     test.equal(infoDoc.type, 'info');
     test.ok(infoDoc.initial_replication_date);

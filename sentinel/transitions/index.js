@@ -117,7 +117,7 @@ const processChange = (change, callback) => {
 };
 
 const deleteInfoDoc = (change, callback) => {
-  db.medic.get(`${change.id}-info`, (err, doc) => {
+  db.sentinel.get(`${change.id}-info`, (err, doc) => {
     if (err) {
       if (err.statusCode === 404) {
         // don't worry about deleting a non-existant doc
@@ -126,7 +126,7 @@ const deleteInfoDoc = (change, callback) => {
       return callback(err);
     }
     doc._deleted = true;
-    db.medic.insert(doc, callback);
+    db.sentinel.insert(doc, callback);
   });
 };
 
@@ -408,7 +408,7 @@ const migrateOldMetaDoc = (doc, callback) => {
     _deleted: true
   };
   logger.info('Deleting old metadata document', doc);
-  return db.medic.insert(stub, err => {
+  return db.sentinel.insert(stub, err => {
     if (err) {
       callback(err);
     } else {
@@ -420,32 +420,41 @@ const migrateOldMetaDoc = (doc, callback) => {
 };
 
 const getMetaData = callback =>
-  db.medic.get(METADATA_DOCUMENT, (err, doc) => {
+  db.sentinel.get(METADATA_DOCUMENT, (err, doc) => {
     if (!err) {
-      // Doc exists in correct location
+      // Doc exists in sentinel db
       return callback(null, doc);
+    } else if (err.statusCode === 404) {
+      db.medic.get(METADATA_DOCUMENT, (err, doc) => {
+        if (!err) {
+          // Old doc exists, delete it and return the base doc to be saved later
+          return migrateOldMetaDoc(doc, callback);
+        } else if (err.statusCode !== 404) {
+          return callback(err);
+        }
+
+        // Doc doesn't exist.
+        // Maybe we have the doc in the old location?
+        db.medic.get('sentinel-meta-data', (err, doc) => {
+          if (!err) {
+            // Old doc exists, delete it and return the base doc to be saved later
+            return migrateOldMetaDoc(doc, callback);
+          } else if (err.statusCode !== 404) {
+            return callback(err);
+          }
+
+          // No doc at all, create and return default
+          doc = {
+            _id: METADATA_DOCUMENT,
+            processed_seq: 0
+          };
+
+          callback(null, doc);
+        });
+      });
     } else if (err.statusCode !== 404) {
       return callback(err);
     }
-
-    // Doc doesn't exist.
-    // Maybe we have the doc in the old location?
-    db.medic.get('sentinel-meta-data', (err, doc) => {
-      if (!err) {
-        // Old doc exists, delete it and return the base doc to be saved later
-        return migrateOldMetaDoc(doc, callback);
-      } else if (err.statusCode !== 404) {
-        return callback(err);
-      }
-
-      // No doc at all, create and return default
-      doc = {
-        _id: METADATA_DOCUMENT,
-        processed_seq: 0
-      };
-
-      callback(null, doc);
-    });
   });
 
 const getProcessedSeq = callback =>
@@ -464,7 +473,7 @@ const updateMetaData = (seq, callback) =>
       return callback();
     }
     metaData.processed_seq = seq;
-    db.medic.insert(metaData, err => {
+    db.sentinel.insert(metaData, err => {
       if (err) {
         logger.error('Error updating metaData', err);
       }

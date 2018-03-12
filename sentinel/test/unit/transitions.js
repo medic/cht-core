@@ -193,17 +193,20 @@ exports['loadTransitions does not load system transistions that have been explic
 };
 
 exports['attach handles missing meta data doc'] = test => {
+  const sentinelget = sinon.stub(db.sentinel, 'get');
+  sentinelget.withArgs('_local/sentinel-meta-data').callsArgWith(1, { statusCode: 404 });
   const get = sinon.stub(db.medic, 'get');
   get.withArgs('_local/sentinel-meta-data').callsArgWith(1, { statusCode: 404 });
   get.withArgs('sentinel-meta-data').callsArgWith(1, { statusCode: 404 });
   const fetchHydratedDoc = sinon.stub(lineage, 'fetchHydratedDoc').returns(Promise.resolve({ type: 'data_record' }));
-  const insert = sinon.stub(db.medic, 'insert').callsArg(1);
+  const insert = sinon.stub(db.sentinel, 'insert').callsArg(1);
   const on = sinon.stub();
   const start = sinon.stub();
   const feed = sinon.stub(follow, 'Feed').returns({ on: on, follow: start, stop: () => {} });
   const applyTransitions = sinon.stub(transitions, 'applyTransitions').callsArg(1);
   // wait for the queue processor
   transitions._changeQueue.drain = () => {
+    test.equal(sentinelget.callCount, 2);
     test.equal(get.callCount, 4);
     test.equal(fetchHydratedDoc.callCount, 1);
     test.equal(fetchHydratedDoc.args[0][0], 'abc');
@@ -227,17 +230,20 @@ exports['attach handles missing meta data doc'] = test => {
 };
 
 exports['attach handles old meta data doc'] = test => {
+  const sentinelget = sinon.stub(db.sentinel, 'get');
+  sentinelget.withArgs('_local/sentinel-meta-data').callsArgWith(1, { statusCode: 404 });
   const get = sinon.stub(db.medic, 'get');
   get.withArgs('_local/sentinel-meta-data').callsArgWith(1, { statusCode: 404 });
   get.withArgs('sentinel-meta-data').callsArgWith(1, null, { _id: 'sentinel-meta-data', _rev: '1-123', processed_seq: 22});
   const fetchHydratedDoc = sinon.stub(lineage, 'fetchHydratedDoc').returns(Promise.resolve({ type: 'data_record' }));
-  const insert = sinon.stub(db.medic, 'insert').callsArg(1);
+  const insert = sinon.stub(db.sentinel, 'insert').callsArg(1);
   const on = sinon.stub();
   const start = sinon.stub();
   const feed = sinon.stub(follow, 'Feed').returns({ on: on, follow: start, stop: () => {} });
   const applyTransitions = sinon.stub(transitions, 'applyTransitions').callsArg(1);
   // wait for the queue processor
   transitions._changeQueue.drain = () => {
+    test.equal(sentinelget.callCount, 2);
     test.equal(get.callCount, 4);
     test.equal(fetchHydratedDoc.callCount, 1);
     test.equal(fetchHydratedDoc.args[0][0], 'abc');
@@ -265,16 +271,17 @@ exports['attach handles old meta data doc'] = test => {
 };
 
 exports['attach handles existing meta data doc'] = test => {
-  const get = sinon.stub(db.medic, 'get');
+  const get = sinon.stub(db.sentinel, 'get');
   get.withArgs('_local/sentinel-meta-data').callsArgWith(1, null, { _id: '_local/sentinel-meta-data', processed_seq: 22 });
   const fetchHydratedDoc = sinon.stub(lineage, 'fetchHydratedDoc').returns(Promise.resolve({ type: 'data_record' }));
-  const insert = sinon.stub(db.medic, 'insert').callsArg(1);
+  const insert = sinon.stub(db.sentinel, 'insert').callsArg(1);
   const on = sinon.stub();
   const start = sinon.stub();
   const feed = sinon.stub(follow, 'Feed').returns({ on: on, follow: start, stop: () => {} });
   const applyTransitions = sinon.stub(transitions, 'applyTransitions').callsArg(1);
   // wait for the queue processor
   transitions._changeQueue.drain = () => {
+    // test.equal(sentinelget.callCount, 2);
     test.equal(get.callCount, 2);
     test.equal(fetchHydratedDoc.callCount, 1);
     test.equal(fetchHydratedDoc.args[0][0], 'abc');
@@ -315,6 +322,7 @@ transitions.availableTransitions().forEach(name => {
 
 exports['deleteInfo doc handles missing info doc'] = test => {
   const given = { id: 'abc' };
+  sinon.stub(db.sentinel, 'get').callsArgWith(1, { statusCode: 404 });
   sinon.stub(db.medic, 'get').callsArgWith(1, { statusCode: 404 });
   transitions._deleteInfoDoc(given, err => {
     test.equal(err, undefined);
@@ -324,8 +332,8 @@ exports['deleteInfo doc handles missing info doc'] = test => {
 
 exports['deleteInfoDoc deletes info doc'] = test => {
   const given = { id: 'abc' };
-  const get = sinon.stub(db.medic, 'get').callsArgWith(1, null, { _id: 'abc', _rev: '123' });
-  const insert = sinon.stub(db.medic, 'insert').callsArg(1);
+  const get = sinon.stub(db.sentinel, 'get').callsArgWith(1, null, { _id: 'abc', _rev: '123' });
+  const insert = sinon.stub(db.sentinel, 'insert').callsArg(1);
   transitions._deleteInfoDoc(given, err => {
     test.equal(err, undefined);
     test.equal(get.callCount, 1);
