@@ -24,7 +24,6 @@ describe('TaskUtils shared lib - setTaskState function', function() {
     chai.expect(result).to.equal(true);
     chai.expect(task.state).to.equal('newState');
     chai.expect(task.state_details).to.equal('details');
-    chai.expect(task.timestamp).to.equal('000');
     chai.expect(task.state_history.length).to.equal(1);
     chai.expect(task.state_history[0]).to.deep.equal({ state: 'newState', state_details: 'details', timestamp: '000'});
   });
@@ -45,7 +44,6 @@ describe('TaskUtils shared lib - setTaskState function', function() {
     chai.expect(result).to.equal(true);
     chai.expect(task.state).to.equal('newState');
     chai.expect(task.state_details).to.equal('details');
-    chai.expect(task.timestamp).to.equal('000');
     chai.expect(task.state_history.length).to.equal(2);
     chai.expect(task.state_history[0]).to.deep.equal({ state: 'oldState', state_details: 'oldDetails', timestamp: '111'});
     chai.expect(task.state_history[1]).to.deep.equal({ state: 'newState', state_details: 'details', timestamp: '000'});
@@ -82,14 +80,12 @@ describe('TaskUtils shared lib - setTaskState function', function() {
     chai.expect(result1).to.equal(true);
     chai.expect(task1.state).to.equal('oldState');
     chai.expect(task1.state_details).to.equal('details');
-    chai.expect(task1.timestamp).to.equal('000');
     chai.expect(task1.state_history[0]).to.deep.equal({ state: 'oldState', state_details: 'oldDetails', timestamp: '111'});
     chai.expect(task1.state_history[1]).to.deep.equal({ state: 'oldState', state_details: 'details', timestamp: '000'});
 
     chai.expect(result2).to.equal(true);
     chai.expect(task2.state).to.equal('newState');
     chai.expect(task2.state_details).to.equal('oldDetails');
-    chai.expect(task2.timestamp).to.equal('000');
     chai.expect(task2.state_history[0]).to.deep.equal({ state: 'oldState', state_details: 'oldDetails', timestamp: '111'});
     chai.expect(task2.state_history[1]).to.deep.equal({ state: 'newState', state_details: 'oldDetails', timestamp: '000'});
   });
@@ -122,14 +118,12 @@ describe('TaskUtils shared lib - setTaskState function', function() {
 
     chai.expect(result1).to.equal(false);
     chai.expect(task1.state).to.equal('oldState');
-    chai.expect(task1.timestamp).to.equal('111');
     chai.expect(task1.state_details).to.equal('oldDetails');
     chai.expect(task1.state_history.length).to.equal(1);
     chai.expect(task1.state_history[0]).to.deep.equal({ state: 'oldState', state_details: 'oldDetails', timestamp: '111'});
 
     chai.expect(result2).to.equal(false);
     chai.expect(task2.state).to.equal('oldState');
-    chai.expect(task2.timestamp).to.equal('111');
     chai.expect(task2.state_details).to.equal('oldDetails');
     chai.expect(task2.state_history).to.deep.equal([{ state: 'oldState', state_details: 'oldDetails', timestamp: '111'}]);
   });
@@ -146,7 +140,6 @@ describe('TaskUtils shared lib - setTaskState function', function() {
     chai.expect(result).to.equal(true);
     chai.expect(task.state).to.equal('oldState');
     chai.expect(task.state_details).to.equal('oldDetails');
-    chai.expect(task.timestamp).to.equal('000');
     chai.expect(task.state_history.length).to.equal(1);
     chai.expect(task.state_history[0]).to.deep.equal({ state: 'oldState', state_details: 'oldDetails', timestamp: '000' });
   });

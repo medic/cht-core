@@ -90,6 +90,10 @@ exports.tasks_pending_callback = function(test) {
     var resp = fakerequest.list(lists.tasks_pending, viewdata, req);
     var resp_body = JSON.parse(resp.body);
 
+    // remove timestamp for this test
+    delete resp_body.callback.data.docs[0].tasks[0].timestamp;
+    delete resp_body.callback.data.docs[0].tasks[0].state_history[0].timestamp;
+
     test.same(expResp.callback.data, resp_body.callback.data);
     test.same(expResp.callback.options, resp_body.callback.options);
     test.same(expResp.callback, resp_body.callback);
