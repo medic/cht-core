@@ -366,7 +366,6 @@ var normalizeTasks = function(doc, options) {
   return tasks;
 };
 
-//this seems broken. should I fix it ?
 var getStateDate = function(state, task, history) {
   if (state === 'scheduled' && task.due) {
     return task.due;
