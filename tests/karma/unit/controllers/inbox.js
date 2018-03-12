@@ -8,7 +8,11 @@ describe('InboxCtrl controller', () => {
       spyState,
       stubModal,
       dummyId = 'dummydummy',
-      RecurringProcessManager
+      RecurringProcessManager,
+      changes,
+      changesListener = {},
+      changesSpy,
+      session
   ;
 
   beforeEach(() => {
@@ -18,6 +22,18 @@ describe('InboxCtrl controller', () => {
     RecurringProcessManager = {
       startUpdateRelativeDate: sinon.stub(),
       stopUpdateRelativeDate: sinon.stub()
+    };
+
+    changes = (options) => {
+      changesListener[options.key] = options;
+    };
+    changesSpy = sinon.spy(changes);
+
+    session = {
+      init: sinon.stub(),
+      isAdmin: sinon.stub(),
+      userCtx: sinon.stub(),
+      checkCurrentSession: sinon.stub()
     };
 
     module($provide => {
@@ -34,7 +50,7 @@ describe('InboxCtrl controller', () => {
       });
       $provide.value('WatchDesignDoc', sinon.stub());
       $provide.value('DBSync', sinon.stub());
-      $provide.value('Changes', sinon.stub());
+      $provide.value('Changes', changes);
       $provide.value('CheckDate', sinon.stub());
       $provide.value('Contact', sinon.stub());
       $provide.value('CountMessages', { init: sinon.stub() });
@@ -55,7 +71,7 @@ describe('InboxCtrl controller', () => {
       });
       $provide.value('ReadMessages', sinon.stub());
       $provide.value('SendMessage', sinon.stub());
-      $provide.value('Session', { init: sinon.stub(), isAdmin: sinon.stub() });
+      $provide.value('Session', session);
       $provide.value('SetLanguageCookie', sinon.stub());
       $provide.value('Settings', () => KarmaUtils.nullPromise());
       $provide.value('Snackbar', () => snackbar);
@@ -147,5 +163,29 @@ describe('InboxCtrl controller', () => {
   it('should cancel the relative date update recurring process when destroyed', () => {
     scope.$destroy();
     chai.expect(RecurringProcessManager.stopUpdateRelativeDate.callCount).to.equal(1);
+  });
+
+  it('should watch changes in facilities, translations, ddoc and user context', () => {
+    chai.expect(changesListener['inbox-facilities']).to.be.an('object');
+    chai.expect(changesListener['inbox-translations']).to.be.an('object');
+    chai.expect(changesListener['inbox-ddoc']).to.be.an('object');
+    chai.expect(changesListener['inbox-user-context']).to.be.an('object');
+  });
+
+  it('InboxUserContent Changes listener should filter only logged in user, if exists', () => {
+    session.userCtx.returns({ name: 'adm', roles: ['alpha', 'omega'] });
+    chai.expect(changesListener['inbox-user-context'].filter({ doc: {} })).to.equal(false);
+    chai.expect(changesListener['inbox-user-context'].filter({ doc: { type: 'person'} })).to.equal(false);
+    chai.expect(changesListener['inbox-user-context'].filter({ doc: { type: 'user-settings'} })).to.equal(false);
+    chai.expect(changesListener['inbox-user-context'].filter({ doc: { type: 'user-settings', name: 'a'} })).to.equal(false);
+    chai.expect(changesListener['inbox-user-context'].filter({ doc: { type: 'user-settings', name: 'adm'} })).to.equal(true);
+
+    session.userCtx.returns(false);
+    chai.expect(changesListener['inbox-user-context'].filter({ doc: { type: 'user-settings', name: 'a'} })).to.equal(false);
+  });
+
+  it('InboxUserContent Changes listener callback should check current session', () => {
+    changesListener['inbox-user-context'].callback();
+    chai.expect(session.checkCurrentSession.callCount).to.equal(1);
   });
 });

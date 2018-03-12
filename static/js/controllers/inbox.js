@@ -657,9 +657,7 @@ var feedback = require('../modules/feedback'),
         key: 'inbox-user-context',
         filter: function (change) {
           var userCtx = Session.userCtx();
-          return change &&
-                 change.doc &&
-                 change.doc.type === 'user-settings' &&
+          return change.doc.type === 'user-settings' &&
                  userCtx &&
                  userCtx.name &&
                  change.doc.name === userCtx.name;

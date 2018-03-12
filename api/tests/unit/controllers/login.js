@@ -199,3 +199,38 @@ exports['post logs in successfully'] = test => {
   test.deepEqual(cookie.args[1][2], { sameSite: 'lax', secure: false, maxAge: 31536000000 });
   test.done();
 };
+
+exports['refreshes user cookie on valid identity call'] = test => {
+  res.type = sinon.stub();
+  const userCtx = { name: 'alpha', roles: [ 'omega' ] };
+  const getUserCtx = sinon.stub(auth, 'getUserCtx').callsArgWith(1, null, userCtx);
+  const cookie = sinon.stub(res, 'cookie').returns(res);
+  const send = sinon.stub(res, 'send');
+
+  controller.getIdentity(req, res);
+  test.equals(cookie.callCount, 1);
+  test.equals(cookie.args[0][0], 'userCtx');
+  test.equals(cookie.args[0][1], JSON.stringify(userCtx));
+  test.deepEqual(cookie.args[0][2], { sameSite: 'lax', secure: false, maxAge: 31536000000 });
+  test.equals(res.type.args[0][0], 'application/json');
+  test.equals(getUserCtx.callCount, 1);
+  test.equals(send.callCount, 1);
+  test.deepEqual(send.args[0][0], { success: true });
+  test.done();
+};
+
+exports['does not set cookie on invalid identity call'] = test => {
+  res.type = sinon.stub();
+  res.status = sinon.stub();
+  const getUserCtx = sinon.stub(auth, 'getUserCtx').callsArgWith(1, true);
+  const cookie = sinon.stub(res, 'cookie').returns(res);
+  const send = sinon.stub(res, 'send');
+
+  controller.getIdentity(req, res);
+  test.equals(cookie.callCount, 0);
+  test.equals(getUserCtx.callCount, 1);
+  test.equals(res.status.callCount, 1);
+  test.equals(res.status.args[0][0], 401);
+  test.equals(send.callCount, 1);
+  test.done();
+};
