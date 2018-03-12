@@ -25,6 +25,9 @@ angular.module('inboxServices').factory('GetSubjectSummaries',
               value: id,
               type: 'id'
             };
+          } else {
+            //update the type only, in case patient_id contains a doc UUID
+            summary.subject.type = 'id';
           }
         }
       });
