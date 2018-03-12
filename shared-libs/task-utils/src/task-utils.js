@@ -11,8 +11,6 @@ var matchedLastHistory = function(task, state) {
  * @returns {boolean} Returns true if task state or task history is changed, otherwise returns false.
  */
 var setTaskState = function(task, state, details) {
-  var timestamp = (new Date()).toISOString();
-
   task.state_history = task.state_history || [];
 
   if (task.state === state && (!details || task.state_details === details) && matchedLastHistory(task, state)) {
@@ -20,12 +18,11 @@ var setTaskState = function(task, state, details) {
   }
 
   task.state = state;
-  task.timestamp = timestamp;
   task.state_details = details;
   task.state_history.push({
     state: state,
     state_details: details,
-    timestamp: timestamp
+    timestamp: (new Date()).toISOString()
   });
 
   return true;

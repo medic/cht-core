@@ -39,6 +39,7 @@ const setStateOnTasks = function(tasks, state) {
     let updated = false;
     tasks.forEach(task => {
         if (utils.setTaskState(task, state)) {
+          task.timestamp = new Date().toISOString();
           updated = true;
         }
     });

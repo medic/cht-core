@@ -46,6 +46,7 @@ exports.tasks_pending = function (head, req) {
                     // if to and message is defined then append messages
                     if (msg.to && msg.message) {
                         utils.setTaskState(task, 'sent');
+                        task.timestamp = new Date().toISOString();
                         // append outgoing message data payload for smsssync
                         respBody.payload.messages.push(msg);
                         includeDoc = true;
@@ -62,6 +63,7 @@ exports.tasks_pending = function (head, req) {
                         // if to and message is defined then append messages
                         if (msg.to && msg.message) {
                             utils.setTaskState(task, 'sent');
+                            task.timestamp = new Date().toISOString();
                             // append outgoing message data payload for smsssync
                             respBody.payload.messages.push(msg);
                             includeDoc = true;
