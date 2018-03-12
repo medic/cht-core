@@ -235,12 +235,7 @@ app.get('/api/sms', function(req, res) {
     if (err) {
       return serverUtils.error(err, req, res);
     }
-    smsGateway.get(function(err, obj) {
-      if (err) {
-        return serverUtils.error(err, req, res);
-      }
-      res.json(obj);
-    });
+    res.json(smsGateway.get());
   });
 });
 
@@ -252,12 +247,13 @@ app.postJson('/api/sms', function(req, res) {
     if (err) {
       return serverUtils.error(err, req, res);
     }
-    smsGateway.post(req, function(err, obj) {
-      if (err) {
-        return serverUtils.error(err, req, res);
-      }
-      res.json(obj);
-    });
+    smsGateway.post(req)
+      .then(results => {
+        res.json(results);
+      })
+      .catch(err => {
+        serverUtils.error(err, req, res);
+      });
   });
 });
 
@@ -321,12 +317,11 @@ app.post('/api/v1/records', [jsonParser, formParser], function(req, res) {
     if (err) {
       return serverUtils.error(err, req, res, true);
     }
-    records.create(req, req.is(['json','urlencoded']), function(err, result) {
-      if (err) {
-        return serverUtils.serverError(err, req, res);
-      }
-      res.json(result);
-    });
+    records.create(req, req.is(['json','urlencoded']))
+      .then(res.json)
+      .catch(err => {
+        serverUtils.serverError(err, req, res);
+      });
   });
 });
 

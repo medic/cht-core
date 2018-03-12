@@ -2,9 +2,7 @@
  * This module implements GET and POST to support medic-gateway's API
  * @see https://github.com/medic/medic-gateway
  */
-
-const _ = require('underscore'),
-      async = require('async'),
+const db = require('../db-pouch'),
       messageUtils = require('../message-utils'),
       recordUtils = require('./record-utils'),
 
@@ -17,111 +15,106 @@ const _ = require('underscore'),
         FAILED: 'failed',
       };
 
-// TODO: once Milan's refactor is complete this code will be out of couch, and
-//       we can make this a bulk update.
-//
-// See: https://github.com/medic/medic-webapp/issues/3019
-// Specifically, this should be in a new repo that we can pull in via npm
-function saveToDb(message, callback) {
-  if (message.from === undefined || message.content === undefined) {
-    return callback(new Error('All SMS messages must contain a from and content field'));
-  }
-
-  // TODO have to bulk save here now and no longer pass callback
-  recordUtils.createByForm({
-    from: message.from,
-    message: message.content,
-    gateway_ref: message.id,
-  }, callback);
-}
-
-function mapStateFields(update) {
+const mapStateFields = update => {
   const result = {
     messageId: update.id
   };
   result.state = STATUS_MAP[update.status];
   if (result.state) {
-    if(update.reason) {
+    if (update.reason) {
       result.details = { reason: update.reason };
     }
   } else {
     result.state = 'unrecognised';
     result.details = { gateway_status: update.status };
   }
-
   return result;
-}
+};
 
-function markMessagesForwarded(messages, callback) {
+const markMessagesForwarded = messages => {
   const taskStateChanges = messages.map(message => ({
     messageId: message.id,
     state: 'forwarded-to-gateway'
   }));
-
-  messageUtils.updateMessageTaskStates(taskStateChanges, callback);
-}
-
-function getOutgoing(callback) {
-  messageUtils.getMessages({ states: ['pending', 'forwarded-to-gateway'] },
-    (err, pendingMessages) => {
+  return new Promise((resolve, reject) => {
+    messageUtils.updateMessageTaskStates(taskStateChanges, err => {
       if (err) {
-        return callback(err);
+        reject(err);
+      } else {
+        resolve(messages);
       }
+    });
+  });
+};
 
-      const messages = pendingMessages.map(message => {
-        return {
+const getOutgoing = () => {
+  return new Promise((resolve, reject) => {
+    messageUtils.getMessages({ states: ['pending', 'forwarded-to-gateway'] },
+      (err, pendingMessages) => {
+        if (err) {
+          return reject(err);
+        }
+        resolve(pendingMessages.map(message => ({
           id: message.id,
           to: message.to,
           content: message.message,
-        };
-      });
-
-      markMessagesForwarded(messages, (err) => {
-        if (err) {
-          callback(err);
-        } else {
-          callback(null, messages);
-        }
-      });
+        })));
+    });
   });
-}
+};
 
 // Process webapp-terminating messages
-function addNewMessages(req, callback) {
-  if (!req.body.messages) {
-    return callback();
+const addNewMessages = req => {
+  const messages = req.body.messages;
+  if (!messages || !messages.length) {
+    return Promise.resolve();
   }
-
-  async.eachSeries(req.body.messages, saveToDb, callback);
-}
+  const valid = messages.every(message =>
+    !(message.from === undefined || message.content === undefined)
+  );
+  if (!valid) {
+    throw new Error('All SMS messages must contain a from and content field');
+  }
+  const docs = messages.map(message => recordUtils.createByForm({
+    from: message.from,
+    message: message.content,
+    gateway_ref: message.id,
+  }));
+  return db.medic.bulkDocs(docs)
+    .then(results => {
+      const allOk = results.every(result => result.ok);
+      if (!allOk) {
+        console.error('Failed saving all the new docs', results);
+        throw new Error('Failed saving all the new docs');
+      }
+    });
+};
 
 // Process message status updates
-function processTaskStateUpdates(req, callback) {
+const processTaskStateUpdates = req => {
   if (!req.body.updates) {
-    return callback();
+    return Promise.resolve();
   }
-
   const taskStateChanges = req.body.updates.map(mapStateFields);
-
-  messageUtils.updateMessageTaskStates(taskStateChanges, callback);
-}
+  return new Promise((resolve, reject) => {
+    messageUtils.updateMessageTaskStates(taskStateChanges, err => {
+      if (err) {
+        return reject(err);
+      }
+      resolve();
+    });
+  });
+};
 
 module.exports = {
-  get: function(callback) {
-    callback(null, { 'medic-gateway': true });
+  get: () => {
+    return { 'medic-gateway': true };
   },
-  post: function(req, callback) {
-    async.series([
-      _.partial(addNewMessages, req),
-      _.partial(processTaskStateUpdates, req),
-      getOutgoing
-    ], (err, [,,outgoingMessages]) => {
-      if (err) {
-        console.error('There was an error processing the following SMS POST request');
-        console.error(JSON.stringify(req.body));
-        return callback(err);
-      }
-      callback(null, { messages: outgoingMessages });
-    });
+  post: req => {
+    return addNewMessages(req)
+      .then(() => processTaskStateUpdates(req))
+      .then(getOutgoing)
+      .then(markMessagesForwarded)
+      .then(outgoingMessages => ({ messages: outgoingMessages }));
   },
 };

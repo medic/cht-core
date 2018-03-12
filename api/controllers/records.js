@@ -1,15 +1,22 @@
-var recordUtils = require('./record-utils');
+const db = require('../db-pouch'),
+      recordUtils = require('./record-utils');
+
+const generate = (req, contentType) => {
+  if (contentType === 'urlencoded') {
+    const options = { locale: req.query && req.query.locale };
+    return recordUtils.createByForm(req.body, options);
+  }
+  if (contentType === 'json') {
+    return recordUtils.createRecordByJSON(req.body);
+  }
+};
 
 module.exports = {
-  create: function(req, contentType, callback) {
-    // TODO need to save to db here now and no longer pass callback
-    if (contentType === 'urlencoded') {
-      const options = { locale: req.query && req.query.locale };
-      return recordUtils.createByForm(req.body, options, callback);
+  create: (req, contentType) => {
+    const doc = generate(req, contentType);
+    if (!doc) {
+      return Promise.reject(new Error('Content type not supported.'));
     }
-    if (contentType === 'json') {
-      return recordUtils.createRecordByJSON(req.body, callback);
-    }
-    return callback(new Error('Content type not supported.'));
+    return db.medic.put(doc).then(() => ({ success: true }));
   }
 };
