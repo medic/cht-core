@@ -10,7 +10,7 @@ class BaseConfig {
       // This is currently restricted to just medic-api e2e tests, because the
       // webapp suite is unreliable.
       
-      specs: ['e2e/api/**/*.js'],
+      specs: ['e2e/**/*.js'],
       exclude: ['e2e/**/registration-by-sms.js'], 
 
       framework: 'jasmine2',
