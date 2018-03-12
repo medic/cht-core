@@ -54,7 +54,7 @@ describe('Add user  : ', () => {
     addUserModal.fillForm('user0', 'Not Saved', '%4wbbygxkgdwvdwT65');
     element(by.id('password-confirm')).sendKeys('abc');
     addUserModal.submit();
-    expect(errorMessagePassword.getText()).toBe('Passwords must match.');
+    expect(errorMessagePassword.getText()).toMatch('Passwords must match');
   });
 
   it('should require password', () => {
@@ -70,7 +70,7 @@ describe('Add user  : ', () => {
     addUserModal.submit();
     const errorMessageUserName = element.all(by.css('span.help-block.ng-binding')).get(0);
     helper.waitUntilReady(errorMessageUserName);
-    expect(errorMessageUserName.getText()).toBe('User name is a required field.');
+    expect(errorMessageUserName.getText()).toMatch('User name is a required field');
   });
 
   it('should require place and contact for restricted user', () => {
