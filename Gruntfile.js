@@ -592,7 +592,6 @@ module.exports = function(grunt) {
     'exec:bundlesize'
   ]);
 
-
   grunt.registerTask('ci-build', 'build and minify for CI', [
     'mmnpm',
     'build',
