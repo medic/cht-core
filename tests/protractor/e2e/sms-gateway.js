@@ -205,7 +205,7 @@ describe('sms-gateway api', () => {
       utils.deleteDoc(savedDoc).then(done).catch(done.fail);
     });
 
-    it('- shows content', () => {
+    xit('- shows content', () => {
       commonElements.goToReports();
       browser.wait(() => {
         return element(by.css('#reports-list li:first-child')).isPresent();
