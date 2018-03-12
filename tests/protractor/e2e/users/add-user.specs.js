@@ -61,7 +61,7 @@ describe('Add user  : ', () => {
     usersPage.openAddUserModal();
     addUserModal.fillForm('user0', 'Not Saved', '');
     addUserModal.submit();
-    expect(errorMessagePassword.getText()).toBe('Password is a required field.');
+    expect(errorMessagePassword.getText()).toMatch('Password is a required field.');
   });
 
   it('should require username', () => {
@@ -78,7 +78,7 @@ describe('Add user  : ', () => {
     addUserModal.fillForm('restricted', 'Not Saved', '%4wbbygxkgdwvdwT65');
     helper.selectDropdownByValue(element(by.id('type')), 'district-manager');
     addUserModal.submit();
-    expect(element(by.css('#facilitySelect ~ .help-block')).getText()).toBe('Place is a required field.');
-    expect(element(by.css('#contactSelect ~ .help-block')).getText()).toBe('Associated contact is a required field.');
+    expect(element(by.css('#facilitySelect ~ .help-block')).getText()).toMatch('Place is a required field.');
+    expect(element(by.css('#contactSelect ~ .help-block')).getText()).toMatch('Associated contact is a required field.');
   });
 });
