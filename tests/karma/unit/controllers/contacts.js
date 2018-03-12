@@ -25,7 +25,9 @@ describe('Contacts controller', () => {
       scrollLoaderCallback,
       changes,
       changesCallback,
-      contactSearchLiveList;
+      changesFilter,
+      contactSearchLiveList,
+      deadListFind = sinon.stub();
 
   beforeEach(module('inboxApp'));
 
@@ -44,6 +46,12 @@ describe('Contacts controller', () => {
         if (e !== district || elements[0] !== district) {
           elements.push(e);
         }
+      },
+      remove: () => {
+        if (deadListFind()) {
+          return elements.pop();
+        }
+        return false;
       }
     };
   };
@@ -62,10 +70,16 @@ describe('Contacts controller', () => {
     scope.clearCancelTarget = sinon.stub();
     scope.setRightActionBar = sinon.stub();
     scope.setLeftActionBar = sinon.stub();
-    contactSchema = { get: sinon.stub(), getChildPlaceType: sinon.stub(), getPlaceTypes: sinon.stub()};
+    contactSchema = {
+      get: sinon.stub(),
+      getChildPlaceType: sinon.stub(),
+      getPlaceTypes: sinon.stub(),
+      getTypes: sinon.stub()
+    };
     contactSchema.get.returns({ icon: icon, addButtonLabel : buttonLabel, label: typeLabel });
     contactSchema.getChildPlaceType.returns(childType);
     contactSchema.getPlaceTypes.returns(['district_hospital']);
+    contactSchema.getTypes.returns(['person', 'district_hospital', 'clinic', 'health_center']);
     xmlForms = sinon.stub();
     forms = [{ internalId: 'a-form', icon: 'an-icon', title: 'A Form' }];
     xmlForms.callsArgWith(2, null, forms); // call the callback
@@ -83,6 +97,7 @@ describe('Contacts controller', () => {
     };
 
     changes = (options) =>  {
+      changesFilter = options.filter;
       changesCallback = options.callback;
       return { unsubscribe: () => {} };
     };
@@ -372,7 +387,7 @@ describe('Contacts controller', () => {
 
       return createController().getSetupPromiseForTesting({ scrollLoaderStub }).then(() => {
         const lhs = contactsLiveList.getList();
-        changesCallback();
+        changesCallback({});
         assert.equal(lhs.length, 10);
         assert.equal(searchService.args[1][2].limit, 10);
         assert.equal(searchService.args[1][2].skip, undefined);
@@ -386,7 +401,7 @@ describe('Contacts controller', () => {
       return createController().getSetupPromiseForTesting({ scrollLoaderStub }).then(() => {
         const lhs = contactsLiveList.getList();
         assert.equal(lhs.length, 11);
-        changesCallback();
+        changesCallback({});
         assert.equal(searchService.args[1][2].limit, 10);
         assert.equal(searchService.args[1][2].skip, undefined);
       });
@@ -464,6 +479,58 @@ describe('Contacts controller', () => {
         .then(() => {
           const lhs = contactsLiveList.getList();
           assert.equal(lhs.length, 150);
+        });
+    });
+  });
+
+  describe('Changes feed filtering', () => {
+    it('filtering returns true for `contact` type documents #4080', () => {
+      return createController().getSetupPromiseForTesting().then(() => {
+        assert.equal(changesFilter({ doc: { type: 'person' } }), true);
+        assert.equal(changesFilter({ doc: { type: 'clinic' } }), true);
+        assert.equal(changesFilter({ doc: { type: 'health_center' } }), true);
+        assert.equal(changesFilter({ doc: { type: 'district_hospital' } }), true);
+      });
+    });
+
+    it('filtering returns false for non-`contact` type documents #4080', () => {
+      return createController().getSetupPromiseForTesting().then(() => {
+        assert.isNotOk(changesFilter({ doc: { } }));
+        assert.isNotOk(changesFilter({ doc: { type: 'data_record' } }));
+        assert.isNotOk(changesFilter({ doc: { type: '' } }));
+      });
+    });
+
+    it('refreshes contacts list when receiving a contact change #4080', () => {
+      searchResults = [
+        {
+          _id: 'search-result'
+        },
+        {
+          _id: district._id
+        }
+      ];
+
+      return createController().getSetupPromiseForTesting().then(() => {
+        changesCallback({ doc: { _id: '123'} });
+        assert.equal(searchService.callCount, 2);
+        assert.equal(searchService.args[1][2].limit, 2);
+      });
+    });
+
+    it('when handling deletes, does not shorten the LiveList #4080', () => {
+      const searchResult = { _id: 'search-result' };
+      searchResults = Array(30).fill(searchResult);
+
+      isAdmin = true;
+      userSettings = KarmaUtils.promiseService(null, { facility_id: undefined });
+
+      return createController()
+        .getSetupPromiseForTesting()
+        .then(() => {
+          deadListFind.returns(true);
+          changesCallback({ deleted: true });
+          assert.equal(searchService.args[1][2].limit, 30);
         });
     });
   });

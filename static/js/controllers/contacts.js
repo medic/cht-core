@@ -311,8 +311,12 @@ var _ = require('underscore'),
 
       var changeListener = Changes({
         key: 'contacts-list',
-        callback: function() {
-          _query({ limit: liveList.count(), silent: true });
+        callback: function(change) {
+          var limit = liveList.count();
+          if (change.deleted) {
+            liveList.remove(change.doc);
+          }
+          _query({ limit: limit, silent: true });
         },
         filter: function(change) {
           return ContactSchema.getTypes().indexOf(change.doc.type) !== -1;
