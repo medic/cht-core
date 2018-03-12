@@ -495,9 +495,7 @@ describe('Contacts controller', () => {
 
     it('filtering returns false for non-`contact` type documents #4080', () => {
       return createController().getSetupPromiseForTesting().then(() => {
-        assert.isNotOk(changesFilter({}));
-        assert.isNotOk(changesFilter({ something: true }));
-        assert.isNotOk(changesFilter({ doc: { notype: true } }));
+        assert.isNotOk(changesFilter({ doc: { } }));
         assert.isNotOk(changesFilter({ doc: { type: 'data_record' } }));
         assert.isNotOk(changesFilter({ doc: { type: '' } }));
       });
