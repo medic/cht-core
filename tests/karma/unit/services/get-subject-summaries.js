@@ -90,7 +90,7 @@ describe('GetSubjectSummaries service', () => {
       chai.expect(actual[2]).to.deep.equal({
         form: 'a',
         subject: {
-          type: 'reference',
+          type: 'id',
           value: '11111'
         },
         validSubject: false
@@ -221,7 +221,7 @@ describe('GetSubjectSummaries service', () => {
       chai.expect(actual[3]).to.deep.equal({
         form: 'a',
         subject: {
-          type: 'reference',
+          type: 'id',
           value: '11111'
         },
         validSubject: false
