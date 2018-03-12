@@ -145,7 +145,7 @@ function matchDbs(expected, actual) {
 const dbPath = db.getPath,
       dbRequest = db.request;
 const switchToRealDbs = () => {
-  // db.request = dbRequest;
+  db.request = dbRequest;
   db.getPath = dbPath;
   db.audit = db.use('audit');
   db.medic = db.use('medic');

@@ -39,7 +39,6 @@ const isAPlace = place => PLACE_TYPES.indexOf(place.type) !== -1;
  * NB: non-hydrated places may not be valid. You may wish to use
  *     fetchHydratedDoc().
  */
- // TODO: remove the callback pattern. It doesn't call the DB, there is no need.
 const validatePlace = (place, callback) => {
   const err = (msg, code) => {
     return callback({
