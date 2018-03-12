@@ -319,7 +319,7 @@ var _ = require('underscore'),
           _query({ limit: limit, silent: true });
         },
         filter: function(change) {
-          return change && change.doc && ContactSchema.getTypes().indexOf(change.doc.type) !== -1;
+          return ContactSchema.getTypes().indexOf(change.doc.type) !== -1;
         }
       });
 
