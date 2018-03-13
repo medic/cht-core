@@ -61,7 +61,7 @@ describe('Add user  : ', () => {
     usersPage.openAddUserModal();
     addUserModal.fillForm('user0', 'Not Saved', '');
     addUserModal.submit();
-    expect(errorMessagePassword.getText()).toMatch('Password is a required field.');
+    expect(errorMessagePassword.getText()).toContain('required');
   });
 
   it('should require username', () => {
