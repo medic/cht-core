@@ -28,7 +28,6 @@ module.exports = {
     browser.get(utils.getBaseUrl() + 'configuration/users');
     helper.waitElementToBeClickable(getAddUserButton());
     getAddUserButton().click();
-    browser.driver.sleep(1000);
   },
 
   getUsersList: () => {
