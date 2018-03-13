@@ -1,7 +1,7 @@
 const _ = require('underscore'),
       objectPath = require('object-path'),
       db = require('../db-pouch'),
-      lineageUtils = require('lineage').init({ Promise, DB: db.medic });
+      lineage = require('lineage')(Promise, db.medic);
 
 const { Readable } = require('stream'),
       search = require('search')(Promise, db.medic);
@@ -186,7 +186,7 @@ class SearchResultReader extends Readable {
           include_docs: true
         })
         .then(result => result.rows.map(row => row.doc))
-        .then(lineageUtils.hydrateDocs)
+        .then(lineage.hydrateDocs)
         .then(docs =>
           this.push(
             docs
@@ -205,5 +205,6 @@ class SearchResultReader extends Readable {
 module.exports = {
   export: (type, filters, options) => new SearchResultReader(type, filters, options),
   supportedExports: SUPPORTED_EXPORTS,
-  _flatten: flatten
+  _flatten: flatten,
+  _lineage: lineage
 };

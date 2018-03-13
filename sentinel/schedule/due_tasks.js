@@ -7,7 +7,7 @@ var async = require('async'),
     date = require('../date'),
     config = require('../config'),
     dbPouch = require('../db-pouch'),
-    lineage = require('lineage').init({ Promise, DB: dbPouch.medic }),
+    lineage = require('lineage')(Promise, dbPouch.medic),
     messageUtils = require('../lib/message-utils');
 
 const getTemplateContext = (db, doc, callback) => {
@@ -74,5 +74,6 @@ module.exports = {
             }, callback);
 
         });
-    }
+    },
+    _lineage: lineage
 };

@@ -1,6 +1,5 @@
 const _ = require('underscore'),
       config = require('../../../config'),
-      lineage = require('lineage'),
       messages = require('../../../lib/messages'),
       sinon = require('sinon').sandbox.create(),
       transition = require('../../../transitions/multi_report_alerts'),
@@ -27,7 +26,7 @@ exports.setUp = callback => {
 };
 
 const stubFetchHydratedDocs = () => {
-  sinon.stub(lineage, 'hydrateDocs').returns(Promise.resolve(hydratedReports));
+  sinon.stub(transition._lineage, 'hydrateDocs').returns(Promise.resolve(hydratedReports));
 };
 
 // doc is hydrated before being passed to the transition.
@@ -137,11 +136,11 @@ exports['fetches reports within time window'] = test => {
 exports['filters reports by form if forms is present in config'] = test => {
   sinon.stub(config, 'get').returns([_.extend({forms: ['A']} , alertConfig)]);
   sinon.stub(utils, 'getReportsWithinTimeWindow').returns(Promise.resolve(reports));
-  sinon.stub(lineage, 'hydrateDocs').returns(Promise.resolve([hydratedReports[0]]));
+  sinon.stub(transition._lineage, 'hydrateDocs').returns(Promise.resolve([hydratedReports[0]]));
   transition.onMatch({ doc: doc }).then(() => {
-    test.equals(lineage.hydrateDocs.callCount, 1);
-    test.equals(lineage.hydrateDocs.args[0][0].length, 1);
-    test.equals(lineage.hydrateDocs.args[0][0][0]._id, reports[0]._id);
+    test.equals(transition._lineage.hydrateDocs.callCount, 1);
+    test.equals(transition._lineage.hydrateDocs.args[0][0].length, 1);
+    test.equals(transition._lineage.hydrateDocs.args[0][0][0]._id, reports[0]._id);
     test.done();
   });
 };
@@ -165,7 +164,7 @@ exports['if no reports in time window, does nothing'] = test => {
   sinon.stub(config, 'get').returns([alertConfig]);
   // No reports
   sinon.stub(utils, 'getReportsWithinTimeWindow').returns(Promise.resolve([]));
-  sinon.stub(lineage, 'hydrateDocs').returns(Promise.resolve([]));
+  sinon.stub(transition._lineage, 'hydrateDocs').returns(Promise.resolve([]));
   sinon.stub(messages, 'addError');
   sinon.stub(messages, 'addMessage');
 
@@ -225,7 +224,7 @@ exports['adds message when recipient is evaled'] = test => {
   sinon.stub(config, 'get').returns([alertConfig]);
 
   sinon.stub(utils, 'getReportsWithinTimeWindow').returns(Promise.resolve([]));
-  sinon.stub(lineage, 'hydrateDocs').returns(Promise.resolve([]));
+  sinon.stub(transition._lineage, 'hydrateDocs').returns(Promise.resolve([]));
   sinon.stub(messages, 'addError');
   sinon.stub(messages, 'addMessage');
 
@@ -347,7 +346,7 @@ exports['message only contains newReports'] = test => {
       ]
     }
   ];
-  sinon.stub(lineage, 'hydrateDocs').returns(Promise.resolve(hydratedReportsWithOneAlreadyMessaged));
+  sinon.stub(transition._lineage, 'hydrateDocs').returns(Promise.resolve(hydratedReportsWithOneAlreadyMessaged));
 
   sinon.stub(messages, 'addError');
   sinon.stub(messages, 'addMessage');
@@ -501,7 +500,7 @@ exports['getCountedReportsAndPhones batches properly'] = test => {
   const firstBatch = [...Array(100).keys()].map(report);
   const secondBatch = [...Array(50).keys()].map(report);
 
-  const hdStub = sinon.stub(lineage, 'hydrateDocs');
+  const hdStub = sinon.stub(transition._lineage, 'hydrateDocs');
   hdStub.onCall(0).returns(Promise.resolve(firstBatch));
   hdStub.onCall(1).returns(Promise.resolve(secondBatch));
   const grwtwStub = sinon.stub(utils, 'getReportsWithinTimeWindow');

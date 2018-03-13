@@ -5,7 +5,7 @@ const async = require('async'),
       places = require('./places'),
       db = require('../db'),
       dbPouch = require('../db-pouch'),
-      lineageUtils = require('lineage').init({ Promise, DB: dbPouch.medic });
+      lineage = require('lineage')(Promise, dbPouch.medic);
 
 const USER_PREFIX = 'org.couchdb.user:';
 
@@ -268,8 +268,8 @@ var storeUpdatedPlace = function(data, response, callback) {
     return callback(null, data, response);
   }
 
-  data.place.contact = lineageUtils.minifyLineage(data.contact);
-  data.place.parent = lineageUtils.minifyLineage(data.place.parent);
+  data.place.contact = lineage.minifyLineage(data.contact);
+  data.place.parent = lineage.minifyLineage(data.place.parent);
   db.medic.insert(data.place, function(err) {
     callback(err, data, response);
   });
@@ -290,11 +290,11 @@ var setContactParent = function(data, response, callback) {
         return callback(error400('Contact is not within place.'));
       }
       // save result to contact object
-      data.contact.parent = lineageUtils.minifyLineage(place);
+      data.contact.parent = lineage.minifyLineage(place);
       callback(null, data, response);
     });
   } else {
-    data.contact.parent = lineageUtils.minifyLineage(data.place);
+    data.contact.parent = lineage.minifyLineage(data.place);
     callback(null, data, response);
   }
 };
@@ -487,6 +487,7 @@ module.exports = {
   _getSettingsUpdates: getSettingsUpdates,
   _getUserUpdates: getUserUpdates,
   _hasParent: hasParent,
+  _lineage: lineage,
   _setContactParent: setContactParent,
   _storeUpdatedPlace: storeUpdatedPlace,
   _storeUpdatedUser: storeUpdatedUser,

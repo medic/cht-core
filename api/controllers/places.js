@@ -4,12 +4,12 @@ const _ = require('underscore'),
       utils = require('./utils'),
       db = require('../db'),
       dbPouch = require('../db-pouch'),
-      lineageUtils = require('lineage').init({ Promise, DB: dbPouch.medic }),
+      lineage = require('lineage')(Promise, dbPouch.medic),
       PLACE_EDITABLE_FIELDS = ['name', 'parent', 'contact', 'place_id'],
       PLACE_TYPES = ['national_office', 'district_hospital', 'health_center', 'clinic'];
 
 const getPlace = (id, callback) => {
-  lineageUtils.fetchHydratedDoc(id)
+  lineage.fetchHydratedDoc(id)
     .then(doc => {
       if (!isAPlace(doc)) {
         throw {
@@ -100,7 +100,7 @@ const createPlace = (place, callback) => {
       place.reported_date = utils.parseDate(place.reported_date).valueOf();
     }
     if (place.parent) {
-      place.parent = lineageUtils.minifyLineage(place.parent);
+      place.parent = lineage.minifyLineage(place.parent);
     }
     if (place.contact) {
       // also validates contact if creating
@@ -108,7 +108,7 @@ const createPlace = (place, callback) => {
         if (err) {
           return callback(err);
         }
-        place.contact = lineageUtils.minifyLineage(person);
+        place.contact = lineage.minifyLineage(person);
         db.medic.insert(place, callback);
       });
     } else {
@@ -208,8 +208,8 @@ const updatePlace = (id, data, callback) => {
           return cb(err);
         }
 
-        place.contact = lineageUtils.minifyLineage(place.contact);
-        place.parent = lineageUtils.minifyLineage(place.parent);
+        place.contact = lineage.minifyLineage(place.contact);
+        place.parent = lineage.minifyLineage(place.parent);
 
         db.medic.insert(place, (err, resp) => {
           if (err) {
@@ -258,11 +258,15 @@ const getOrCreatePlace = (place, callback) => {
   }
 };
 
-module.exports._createPlace = createPlace;
-module.exports._createPlaces = createPlaces;
-module.exports._updateFields = updateFields;
-module.exports._validatePlace = validatePlace;
-module.exports.createPlace = createPlaces;
-module.exports.getPlace = getPlace;
-module.exports.updatePlace = updatePlace;
-module.exports.getOrCreatePlace = getOrCreatePlace;
+module.exports = {
+  _createPlace: createPlace,
+  _createPlaces: createPlaces,
+  _lineage: lineage,
+  _updateFields: updateFields,
+  _validatePlace: validatePlace,
+  createPlace: createPlaces,
+  getPlace: getPlace,
+  updatePlace: updatePlace,
+  getOrCreatePlace: getOrCreatePlace,
+};
+

@@ -3,7 +3,7 @@ const _ = require('underscore'),
       transitionUtils = require('./utils'),
       db = require('../db'),
       dbPouch = require('../db-pouch'),
-      lineage = require('lineage').init({ Promise, DB: dbPouch.medic }),
+      lineage = require('lineage')(Promise, dbPouch.medic),
       NAME = 'update_clinics';
 
 const associateContact = (doc, contact, callback) => {
@@ -131,5 +131,6 @@ module.exports = {
       return error.code === 'sys.facility_not_found';
     });
     callback(null, true);
-  }
+  },
+  _lineage: lineage
 };

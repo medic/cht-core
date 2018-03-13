@@ -1,4 +1,4 @@
-var lineageUtils = require('lineage');
+var lineageFactory = require('lineage');
 
 /**
  * Hydrates the given doc by uuid and creates a model which holds
@@ -17,10 +17,10 @@ angular.module('inboxServices').factory('LineageModelGenerator',
   ) {
     'ngInject';
     'use strict';
-    lineageUtils.init({ Promise: $q, DB: DB() });
+    var lineage = lineageFactory($q,DB());
 
     var get = function(id) {
-      return lineageUtils.fetchLineageById(id)
+      return lineage.fetchLineageById(id)
         .then(function(docs) {
           if (!docs.length) {
             var err = new Error('Document not found');
@@ -32,9 +32,9 @@ angular.module('inboxServices').factory('LineageModelGenerator',
     };
 
     var hydrate = function(docs) {
-      return lineageUtils.fetchContacts(docs)
+      return lineage.fetchContacts(docs)
         .then(function(contacts) {
-          lineageUtils.fillContactsInDocs(docs, contacts);
+          lineage.fillContactsInDocs(docs, contacts);
           return docs;
         });
     };
@@ -60,7 +60,7 @@ angular.module('inboxServices').factory('LineageModelGenerator',
               lineage: docs
             };
             if (options.merge) {
-              result.doc = lineageUtils.fillParentsInDocs(doc, docs);
+              result.doc = lineage.fillParentsInDocs(doc, docs);
             } else {
               result.doc = doc;
             }
@@ -85,7 +85,7 @@ angular.module('inboxServices').factory('LineageModelGenerator',
             var contact = docs.shift();
             // everything else is the lineage
             if (options.merge) {
-              lineageUtils.fillParentsInDocs(doc.contact, docs);
+              lineage.fillParentsInDocs(doc.contact, docs);
             }
             return {
               _id: id,

@@ -2,7 +2,6 @@ const controller = require('../../../controllers/places'),
       people = require('../../../controllers/people'),
       cutils = require('../../../controllers/utils'),
       db = require('../../../db'),
-      lineage = require('lineage'),
       sinon = require('sinon').sandbox.create();
 
 let examplePlace;
@@ -119,7 +118,7 @@ exports['validatePlace does not return error if national office is missing paren
 };
 
 exports['getPlace returns custom message on 404 errors.'] = test => {
-  sinon.stub(lineage, 'fetchHydratedDoc').returns(Promise.reject({statusCode: 404}));
+  sinon.stub(controller._lineage, 'fetchHydratedDoc').returns(Promise.reject({statusCode: 404}));
   controller.getPlace('x', err => {
     test.equal(err.message, 'Failed to find place.');
     test.done();
@@ -207,7 +206,7 @@ exports['createPlaces supports objects with name and right type.'] = test => {
       return cb(null, {id: 'ghi'});
     }
   });
-  sinon.stub(lineage, 'fetchHydratedDoc').callsFake(id => {
+  sinon.stub(controller._lineage, 'fetchHydratedDoc').callsFake(id => {
     if (id === 'abc') {
       return Promise.resolve({
         _id: 'abc',
@@ -269,7 +268,7 @@ exports['createPlaces creates contacts'] = test => {
       type: 'person'
     });
   });
-  sinon.stub(lineage, 'fetchHydratedDoc').returns(Promise.resolve({
+  sinon.stub(controller._lineage, 'fetchHydratedDoc').returns(Promise.resolve({
     _id: 'ad06d137',
     name: 'CHP Branch One',
     type: 'district_hospital'
@@ -293,7 +292,7 @@ exports['createPlaces supports parents defined as uuids.'] = test => {
     type: 'health_center',
     parent: 'ad06d137'
   };
-  sinon.stub(lineage, 'fetchHydratedDoc').returns(Promise.resolve({
+  sinon.stub(controller._lineage, 'fetchHydratedDoc').returns(Promise.resolve({
     _id: 'ad06d137',
     name: 'CHP Branch One',
     type: 'district_hospital'

@@ -4,7 +4,7 @@ const _ = require('underscore'),
       transitionUtils = require('./utils'),
       logger = require('../lib/logger'),
       dbPouch = require('../db-pouch'),
-      lineage = require('lineage').init({ Promise, DB: dbPouch.medic }),
+      lineage = require('lineage')(Promise, dbPouch.medic),
       messages = require('../lib/messages'),
       validation = require('../lib/validation'),
       schedules = require('../lib/schedules'),
@@ -458,5 +458,6 @@ module.exports = {
       });
     });
   },
-  _booleanExpressionFails: booleanExpressionFails
+  _booleanExpressionFails: booleanExpressionFails,
+  _lineage: lineage
 };

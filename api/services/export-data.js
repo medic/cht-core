@@ -9,7 +9,7 @@ var _ = require('underscore'),
     db = require('../db'),
     dbPouch = require('../db-pouch'),
     fti = require('../controllers/fti'),
-    lineageUtils = require('lineage').init({ Promise, DB: dbPouch.medic });
+    lineage = require('lineage')(Promise, dbPouch.medic);
 
 var createColumnModels = function(values, options) {
   return _.map(values, function(value) {
@@ -33,7 +33,7 @@ var exportTypes = {
     view: 'data_records',
     index: 'data_records',
     orderBy: '\\reported_date<date>',
-    hydrate: (docs, callback) => lineageUtils.hydrateDocs(docs, callback),
+    hydrate: (docs, callback) => lineage.hydrateDocs(docs, callback),
     generate: function(rows, options) {
 
       var userDefinedColumns = !!options.columns;
@@ -115,7 +115,7 @@ var exportTypes = {
     view: 'data_records',
     index: 'data_records',
     orderBy: '\\reported_date<date>',
-    hydrate: (docs, callback) => lineageUtils.hydrateDocs(docs, callback),
+    hydrate: (docs, callback) => lineage.hydrateDocs(docs, callback),
     generate: function(rows, options) {
       if (!options.columns) {
         options.columns = createColumnModels([
@@ -642,5 +642,6 @@ module.exports = {
       }
 
     });
-  }
+  },
+  _lineage: lineage
 };

@@ -3,7 +3,6 @@ const sinon = require('sinon').sandbox.create(),
       _ = require('underscore'),
       config = require('../../config'),
       db = require('../../db'),
-      lineage = require('lineage'),
       transitions = require('../../transitions');
 
 exports.tearDown = callback => {
@@ -198,7 +197,7 @@ exports['attach handles missing meta data doc'] = test => {
   const get = sinon.stub(db.medic, 'get');
   get.withArgs('_local/sentinel-meta-data').callsArgWith(1, { statusCode: 404 });
   get.withArgs('sentinel-meta-data').callsArgWith(1, { statusCode: 404 });
-  const fetchHydratedDoc = sinon.stub(lineage, 'fetchHydratedDoc').returns(Promise.resolve({ type: 'data_record' }));
+  const fetchHydratedDoc = sinon.stub(transitions._lineage, 'fetchHydratedDoc').returns(Promise.resolve({ type: 'data_record' }));
   const insert = sinon.stub(db.medic, 'insert').callsArg(1);
   const on = sinon.stub();
   const start = sinon.stub();
@@ -232,7 +231,7 @@ exports['attach handles old meta data doc'] = test => {
   const get = sinon.stub(db.medic, 'get');
   get.withArgs('_local/sentinel-meta-data').callsArgWith(1, { statusCode: 404 });
   get.withArgs('sentinel-meta-data').callsArgWith(1, null, { _id: 'sentinel-meta-data', _rev: '1-123', processed_seq: 22});
-  const fetchHydratedDoc = sinon.stub(lineage, 'fetchHydratedDoc').returns(Promise.resolve({ type: 'data_record' }));
+  const fetchHydratedDoc = sinon.stub(transitions._lineage, 'fetchHydratedDoc').returns(Promise.resolve({ type: 'data_record' }));
   const insert = sinon.stub(db.medic, 'insert').callsArg(1);
   const on = sinon.stub();
   const start = sinon.stub();
@@ -269,7 +268,7 @@ exports['attach handles old meta data doc'] = test => {
 exports['attach handles existing meta data doc'] = test => {
   const get = sinon.stub(db.medic, 'get');
   get.withArgs('_local/sentinel-meta-data').callsArgWith(1, null, { _id: '_local/sentinel-meta-data', processed_seq: 22 });
-  const fetchHydratedDoc = sinon.stub(lineage, 'fetchHydratedDoc').returns(Promise.resolve({ type: 'data_record' }));
+  const fetchHydratedDoc = sinon.stub(transitions._lineage, 'fetchHydratedDoc').returns(Promise.resolve({ type: 'data_record' }));
   const insert = sinon.stub(db.medic, 'insert').callsArg(1);
   const on = sinon.stub();
   const start = sinon.stub();

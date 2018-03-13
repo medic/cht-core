@@ -2,7 +2,7 @@ const vm = require('vm'),
       _ = require('underscore'),
       config = require('../config'),
       dbPouch = require('../db-pouch'),
-      lineage = require('lineage').init({ Promise, DB: dbPouch.medic }),
+      lineage = require('lineage')(Promise, dbPouch.medic),
       logger = require('../lib/logger'),
       messages = require('../lib/messages'),
       utils = require('../lib/utils'),
@@ -294,5 +294,6 @@ module.exports = {
   ),
   onMatch: onMatch,
   init: validateConfig,
-  _getCountedReportsAndPhones: getCountedReportsAndPhones
+  _getCountedReportsAndPhones: getCountedReportsAndPhones,
+  _lineage: lineage
 };
