@@ -167,14 +167,22 @@ describe('ContactChangeFilter service', () => {
       };
     });
 
-    it('returns true for direct contact with matching uuid', () => {
-      change1.doc.fields.patient_uuid = 'id';
+    it('returns true for direct contact with matching doc ID', () => {
+      change1.doc.fields.patient_id = 'id';
       chai.expect(service.isRelevantReport(change1, contact)).to.equal(true);
     });
 
     it('returns true for direct contact with matching patient_id', () => {
       change1.doc.fields.patient_id = 'patient';
       change2.doc.patient_id = 'patient';
+
+      chai.expect(service.isRelevantReport(change1, contact)).to.equal(true);
+      chai.expect(service.isRelevantReport(change2, contact)).to.equal(true);
+    });
+
+    it('returns true for direct contact with matching place_id doc ID', () => {
+      change1.doc.fields.place_id = 'id';
+      change2.doc.place_id = 'id';
 
       chai.expect(service.isRelevantReport(change1, contact)).to.equal(true);
       chai.expect(service.isRelevantReport(change2, contact)).to.equal(true);
@@ -188,10 +196,15 @@ describe('ContactChangeFilter service', () => {
       chai.expect(service.isRelevantReport(change2, contact)).to.equal(true);
     });
 
-    it('returns true for child contact with matching uuid', () => {
-      change1.doc.fields.patient_uuid = 'child_id2';
+    it('returns true for child contact with matching doc ID', () => {
+      change1.doc.fields.patient_id = 'child_id2';
       chai.expect(service.isRelevantReport(change1, contact)).to.equal(true);
-      change1.doc.fields.patient_uuid = 'child_id3';
+      change1.doc.fields.patient_id = 'child_id3';
+      chai.expect(service.isRelevantReport(change1, contact)).to.equal(true);
+
+      change1.doc.patient_id = 'child_id2';
+      chai.expect(service.isRelevantReport(change1, contact)).to.equal(true);
+      change1.doc.patient_id = 'child_id3';
       chai.expect(service.isRelevantReport(change1, contact)).to.equal(true);
     });
 
@@ -207,6 +220,18 @@ describe('ContactChangeFilter service', () => {
       chai.expect(service.isRelevantReport(change2, contact)).to.equal(true);
     });
 
+    it('returns true for child contact with matching place_id doc ID', () => {
+      change1.doc.fields.place_id = 'child_id2';
+      chai.expect(service.isRelevantReport(change1, contact)).to.equal(true);
+      change1.doc.fields.place_id = 'child_id3';
+      chai.expect(service.isRelevantReport(change1, contact)).to.equal(true);
+
+      change2.doc.place_id = 'child_id2';
+      chai.expect(service.isRelevantReport(change2, contact)).to.equal(true);
+      change2.doc.place_id = 'child_id3';
+      chai.expect(service.isRelevantReport(change2, contact)).to.equal(true);
+    });
+
     it('returns true for child contact with matching place_id', () => {
       change1.doc.fields.place_id = 'child_place2';
       chai.expect(service.isRelevantReport(change1, contact)).to.equal(true);
@@ -219,9 +244,12 @@ describe('ContactChangeFilter service', () => {
       chai.expect(service.isRelevantReport(change2, contact)).to.equal(true);
     });
 
-    it('returns false for direct contact with different uuid', () => {
-      change1.doc.fields.patient_uuid = 'nid';
+    it('returns false for direct contact with different doc id', () => {
+      change1.doc.fields.patient_id = 'nid';
       chai.expect(service.isRelevantReport(change1, contact)).to.equal(false);
+
+      change2.doc.patient_id = 'nid';
+      chai.expect(service.isRelevantReport(change2, contact)).to.equal(false);
     });
 
     it('returns false for direct contact with different patient_id', () => {
@@ -240,11 +268,16 @@ describe('ContactChangeFilter service', () => {
       chai.expect(service.isRelevantReport(change2, contact)).to.equal(false);
     });
 
-    it('returns false for child contact with different uuid', () => {
-      change1.doc.fields.patient_uuid = 'nchild_id2';
+    it('returns false for child contact with different doc ID', () => {
+      change1.doc.fields.patient_id = 'nchild_id2';
       chai.expect(service.isRelevantReport(change1,  contact)).to.equal(false);
-      change1.doc.fields.patient_uuid = 'nchild_id3';
+      change1.doc.fields.patient_id = 'nchild_id3';
       chai.expect(service.isRelevantReport(change1, contact)).to.equal(false);
+
+      change2.doc.patient_id = 'nchild_id2';
+      chai.expect(service.isRelevantReport(change2,  contact)).to.equal(false);
+      change2.doc.patient_id = 'nchild_id3';
+      chai.expect(service.isRelevantReport(change2, contact)).to.equal(false);
     });
 
     it('returns false for child contact with different patient_id', () => {
@@ -270,7 +303,6 @@ describe('ContactChangeFilter service', () => {
       change2.doc.place_id = 'nchild_place3';
       chai.expect(service.isRelevantReport(change2, contact)).to.equal(false);
     });
-
   });
 
   describe('isDeleted', () => {

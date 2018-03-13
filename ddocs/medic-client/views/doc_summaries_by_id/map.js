@@ -27,10 +27,7 @@ function(doc) {
   var getSubject = function(doc) {
     var subject = {};
 
-    if (doc.fields && doc.fields.patient_uuid) {
-      subject.value = doc.fields.patient_uuid;
-      subject.type = 'id';
-    } else if (doc.patient_id || (doc.fields && doc.fields.patient_id) || doc.place_id) {
+    if (doc.patient_id || (doc.fields && doc.fields.patient_id) || doc.place_id) {
       subject.value = doc.patient_id || (doc.fields && doc.fields.patient_id) || doc.place_id;
       subject.type = 'reference';
     } else if (doc.fields && doc.fields.place_id) {
