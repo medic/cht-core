@@ -70,7 +70,7 @@ describe('Add user  : ', () => {
     addUserModal.submit();
     const errorMessageUserName = element.all(by.css('span.help-block.ng-binding')).get(0);
     helper.waitUntilReady(errorMessageUserName);
-    expect(errorMessageUserName.getText()).ttoContain('required');
+    expect(errorMessageUserName.getText()).toContain('required');
   });
 
   it('should require place and contact for restricted user', () => {
