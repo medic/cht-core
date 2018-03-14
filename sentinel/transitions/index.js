@@ -11,6 +11,7 @@ const _ = require('underscore'),
       logger = require('../lib/logger'),
       config = require('../config'),
       db = require('../db'),
+      infoUtils = require('../lib/info-utils'),
       PROCESSING_DELAY = 50, // ms
       PROGRESS_REPORT_INTERVAL = 500, // items
       transitions = [];
@@ -33,7 +34,6 @@ let caughtUpOnce;
  *    medic-docs
  */
 const AVAILABLE_TRANSITIONS = [
-  'maintain_info_document',
   'update_clinics',
   'registration',
   'accept_patient_reports',
@@ -62,7 +62,6 @@ const AVAILABLE_TRANSITIONS = [
  * expectations, not just because you think most will want them to run.
  */
 const SYSTEM_TRANSITIONS = [
-  'maintain_info_document'
 ];
 
 // Init assertion that all SYSTEM_TRANSITIONS are also in AVAILABLE_TRANSITIONS
@@ -91,7 +90,7 @@ const processChange = (change, callback) => {
   if (change.deleted) {
     // don't run transitions on deleted docs, but do clean up
     async.parallel([
-      async.apply(deleteInfoDoc, change),
+      async.apply(infoUtils.deleteInfoDoc, change),
       async.apply(deleteReadDocs, change)
     ], err => {
       if (err) {
@@ -102,31 +101,26 @@ const processChange = (change, callback) => {
     });
     return;
   }
+
   lineage.fetchHydratedDoc(change.id)
     .then(doc => {
       change.doc = doc;
-      module.exports.applyTransitions(change, () => {
-        processed++;
-        updateMetaData(change.seq, callback);
-      });
-    })
-    .catch(err => {
-      logger.error(`transitions: fetch failed for ${change.id} (${err})`);
-      return callback();
-    });
-};
-
-const deleteInfoDoc = (change, callback) => {
-  db.sentinel.get(`${change.id}-info`, (err, doc) => {
-    if (err) {
-      if (err.statusCode === 404) {
-        // don't worry about deleting a non-existant doc
+      infoUtils.getInfoDoc(change)
+      .then(infoDoc => {
+        change.info = infoDoc;
+        module.exports.applyTransitions(change, () => {
+          processed++;
+          updateMetaData(change.seq, callback);
+        });
+      })
+      .catch(err => {
+        logger.error(`transitions: fetch failed for ${change.id} (${err})`);
         return callback();
-      }
-      return callback(err);
-    }
-    doc._deleted = true;
-    db.sentinel.insert(doc, callback);
+      });
+  })
+  .catch(err => {
+    logger.error(`transitions: fetch failed for ${change.id} (${err})`);
+    return callback();
   });
 };
 
@@ -257,8 +251,12 @@ const loadTransition = key => {
  */
 const canRun = ({ key, change, transition }) => {
   const doc = change.doc;
+  const info = change.info;
 
-  const isRevSame = () => {
+  const isRevSame = (doc, info) => {
+    if (info.transitions && info.transitions[key]) {
+      return parseInt(doc._rev) === parseInt(info.transitions[key].last_rev);
+    }
     if (doc.transitions && doc.transitions[key]) {
       return parseInt(doc._rev) === parseInt(doc.transitions[key].last_rev);
     }
@@ -277,8 +275,8 @@ const canRun = ({ key, change, transition }) => {
     change &&
     !change.deleted &&
     doc &&
-    !isRevSame(doc) &&
-    transition.filter(doc)
+    !isRevSame(doc, info) &&
+    transition.filter(doc, info)
   );
 };
 
@@ -323,15 +321,21 @@ const finalize = ({ change, results }, callback) => {
 const applyTransition = ({ key, change, transition }, callback) => {
 
   const _setResult = ok => {
-    const doc = change.doc;
-    if (!doc.transitions) {
-      doc.transitions = {};
+    const info = change.info;
+    if (!info.transitions) {
+      info.transitions = {};
     }
-    doc.transitions[key] = {
-      last_rev: parseInt(change.doc._rev) + 1,
+    info.transitions[key] = {
+      // last_rev: parseInt(change.doc._rev) + 1,
+      last_rev: parseInt(change.doc._rev),
       seq: change.seq,
       ok: ok
     };
+    db.sentinel.insert(info, err => {
+      if (err) {
+        logger.error('Error updating metaData', err);
+      }
+    });
   };
 
   logger.debug(
@@ -508,7 +512,7 @@ const attach = () => {
     });
     changesFeed.on('change', change => {
       // skip uninteresting documents
-      if (change.id.match(/^_design\//) || change.id === METADATA_DOCUMENT) {
+      if (change.id.match(/^_design\//)) {
         return;
       }
       changeQueue.push(change);
@@ -535,7 +539,6 @@ module.exports = {
   _changeQueue: changeQueue,
   _attach: attach,
   _detach: detach,
-  _deleteInfoDoc: deleteInfoDoc,
   _deleteReadDocs: deleteReadDocs,
   availableTransitions: availableTransitions,
   loadTransitions: loadTransitions,

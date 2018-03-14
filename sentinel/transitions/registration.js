@@ -117,13 +117,13 @@ module.exports = {
       }
     });
   },
-  filter: doc => {
+  filter: (doc, info={}) => {
     const self = module.exports,
           form = utils.getForm(doc && doc.form);
     return Boolean(
       doc.type === 'data_record' &&
       self.getRegistrationConfig(self.getConfig(), doc.form) &&
-      !transitionUtils.hasRun(doc, NAME) &&
+      !transitionUtils.hasRun(info, NAME) &&
       (
         (doc && doc.content_type === XFORM_CONTENT_TYPE) || // xform submission
         (form && utils.getClinicPhone(doc)) || // json submission by known submitter

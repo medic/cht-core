@@ -4,6 +4,7 @@ const sinon = require('sinon').sandbox.create(),
       config = require('../../config'),
       db = require('../../db'),
       lineage = require('../../lib/lineage'),
+      infoUtils = require('../../lib/info-utils'),
       transitions = require('../../transitions');
 
 exports.tearDown = callback => {
@@ -16,7 +17,7 @@ exports.tearDown = callback => {
 exports['canRun returns false if filter returns false'] = test => {
   test.equals(transitions.canRun({
     change: {
-      doc: {}
+      doc: {}, info: {}
     },
     transition: {
       filter: () => false
@@ -28,7 +29,7 @@ exports['canRun returns false if filter returns false'] = test => {
 exports['canRun returns true if filter returns true'] = test => {
   test.equals(transitions.canRun({
     change: {
-      doc: {}
+      doc: {}, info: {}
     },
     transition: {
       filter: () => true
@@ -41,6 +42,7 @@ exports['canRun returns false if change is deletion'] = test => {
   test.equals(transitions.canRun({
     change: {
       doc: {},
+      info: {},
       deleted: true
     },
     transition: {
@@ -55,7 +57,9 @@ exports['canRun returns false if rev is same'] = test => {
     key: 'x',
     change: {
       doc: {
-        _rev: '1',
+        _rev: '1'
+      },
+      info: {
         transitions: {
           x: {
             last_rev: '1'
@@ -76,6 +80,8 @@ exports['canRun returns true if rev is different'] = test => {
     change: {
       doc: {
         _rev: '1',
+      },
+      info: {
         transitions: {
           x: {
             last_rev: '2'
@@ -97,6 +103,8 @@ exports['canRun returns true if transition is not defined'] = test => {
     change: {
       doc: {
         _rev: '1',
+      },
+      info: {
         transitions: {
           baz: {
             last_rev: '2'
@@ -113,6 +121,8 @@ exports['canRun returns true if transition is not defined'] = test => {
     change: {
       doc: {
         _rev: '1',
+      },
+      info: {
         transitions: {}
       }
     },
@@ -180,25 +190,26 @@ exports['loadTransitions loads system transitions by default'] = test => {
   sinon.stub(config, 'get').returns({});
   const stub = sinon.stub(transitions, '_loadTransition');
   transitions.loadTransitions();
-  test.equal(stub.calledWith('maintain_info_document'), true);
+  test.equal(stub.callCount, 0);
   test.done();
 };
 
 exports['loadTransitions does not load system transistions that have been explicitly disabled'] = test => {
-  sinon.stub(config, 'get').returns({maintain_info_document: {disable: true}});
+  sinon.stub(config, 'get').returns({death_reporting: {disable: true}});
   const stub = sinon.stub(transitions, '_loadTransition');
   transitions.loadTransitions();
-  test.equal(stub.calledWith('maintain_info_document'), false);
+  test.equal(stub.calledWith('death_reporting'), false);
   test.done();
 };
 
 exports['attach handles missing meta data doc'] = test => {
-  const sentinelget = sinon.stub(db.sentinel, 'get');
-  sentinelget.withArgs('_local/sentinel-meta-data').callsArgWith(1, { statusCode: 404 });
+  const sentinel = sinon.stub(db.sentinel, 'get');
+  sentinel.withArgs('_local/sentinel-meta-data').callsArgWith(1, { statusCode: 404 });
   const get = sinon.stub(db.medic, 'get');
   get.withArgs('_local/sentinel-meta-data').callsArgWith(1, { statusCode: 404 });
   get.withArgs('sentinel-meta-data').callsArgWith(1, { statusCode: 404 });
   const fetchHydratedDoc = sinon.stub(lineage, 'fetchHydratedDoc').returns(Promise.resolve({ type: 'data_record' }));
+  sinon.stub(infoUtils, 'getInfoDoc').returns(Promise.resolve({}));
   const insert = sinon.stub(db.sentinel, 'insert').callsArg(1);
   const on = sinon.stub();
   const start = sinon.stub();
@@ -206,7 +217,7 @@ exports['attach handles missing meta data doc'] = test => {
   const applyTransitions = sinon.stub(transitions, 'applyTransitions').callsArg(1);
   // wait for the queue processor
   transitions._changeQueue.drain = () => {
-    test.equal(sentinelget.callCount, 2);
+    test.equal(sentinel.callCount, 2);
     test.equal(get.callCount, 4);
     test.equal(fetchHydratedDoc.callCount, 1);
     test.equal(fetchHydratedDoc.args[0][0], 'abc');
@@ -230,12 +241,13 @@ exports['attach handles missing meta data doc'] = test => {
 };
 
 exports['attach handles old meta data doc'] = test => {
-  const sentinelget = sinon.stub(db.sentinel, 'get');
-  sentinelget.withArgs('_local/sentinel-meta-data').callsArgWith(1, { statusCode: 404 });
+  const sentinel = sinon.stub(db.sentinel, 'get');
+  sentinel.withArgs('_local/sentinel-meta-data').callsArgWith(1, { statusCode: 404 });
   const get = sinon.stub(db.medic, 'get');
   get.withArgs('_local/sentinel-meta-data').callsArgWith(1, { statusCode: 404 });
   get.withArgs('sentinel-meta-data').callsArgWith(1, null, { _id: 'sentinel-meta-data', _rev: '1-123', processed_seq: 22});
   const fetchHydratedDoc = sinon.stub(lineage, 'fetchHydratedDoc').returns(Promise.resolve({ type: 'data_record' }));
+  sinon.stub(infoUtils, 'getInfoDoc').returns(Promise.resolve({}));
   const insert = sinon.stub(db.sentinel, 'insert').callsArg(1);
   const on = sinon.stub();
   const start = sinon.stub();
@@ -243,7 +255,7 @@ exports['attach handles old meta data doc'] = test => {
   const applyTransitions = sinon.stub(transitions, 'applyTransitions').callsArg(1);
   // wait for the queue processor
   transitions._changeQueue.drain = () => {
-    test.equal(sentinelget.callCount, 2);
+    test.equal(sentinel.callCount, 2);
     test.equal(get.callCount, 4);
     test.equal(fetchHydratedDoc.callCount, 1);
     test.equal(fetchHydratedDoc.args[0][0], 'abc');
@@ -274,6 +286,7 @@ exports['attach handles existing meta data doc'] = test => {
   const get = sinon.stub(db.sentinel, 'get');
   get.withArgs('_local/sentinel-meta-data').callsArgWith(1, null, { _id: '_local/sentinel-meta-data', processed_seq: 22 });
   const fetchHydratedDoc = sinon.stub(lineage, 'fetchHydratedDoc').returns(Promise.resolve({ type: 'data_record' }));
+  const info = sinon.stub(infoUtils, 'getInfoDoc').returns(Promise.resolve({}));
   const insert = sinon.stub(db.sentinel, 'insert').callsArg(1);
   const on = sinon.stub();
   const start = sinon.stub();
@@ -281,8 +294,8 @@ exports['attach handles existing meta data doc'] = test => {
   const applyTransitions = sinon.stub(transitions, 'applyTransitions').callsArg(1);
   // wait for the queue processor
   transitions._changeQueue.drain = () => {
-    // test.equal(sentinelget.callCount, 2);
     test.equal(get.callCount, 2);
+    test.equal(info.callCount, 1);
     test.equal(fetchHydratedDoc.callCount, 1);
     test.equal(fetchHydratedDoc.args[0][0], 'abc');
     test.equal(applyTransitions.callCount, 1);
@@ -319,30 +332,6 @@ transitions.availableTransitions().forEach(name => {
     };
   });
 });
-
-exports['deleteInfo doc handles missing info doc'] = test => {
-  const given = { id: 'abc' };
-  sinon.stub(db.sentinel, 'get').callsArgWith(1, { statusCode: 404 });
-  sinon.stub(db.medic, 'get').callsArgWith(1, { statusCode: 404 });
-  transitions._deleteInfoDoc(given, err => {
-    test.equal(err, undefined);
-    test.done();
-  });
-};
-
-exports['deleteInfoDoc deletes info doc'] = test => {
-  const given = { id: 'abc' };
-  const get = sinon.stub(db.sentinel, 'get').callsArgWith(1, null, { _id: 'abc', _rev: '123' });
-  const insert = sinon.stub(db.sentinel, 'insert').callsArg(1);
-  transitions._deleteInfoDoc(given, err => {
-    test.equal(err, undefined);
-    test.equal(get.callCount, 1);
-    test.equal(get.args[0][0], 'abc-info');
-    test.equal(insert.callCount, 1);
-    test.equal(insert.args[0][0]._deleted, true);
-    test.done();
-  });
-};
 
 exports['deleteReadDocs handles missing meta db'] = test => {
   const given = { id: 'abc' };

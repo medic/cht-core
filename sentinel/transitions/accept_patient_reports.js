@@ -178,13 +178,13 @@ const handleReport = (doc, config, callback) => {
 };
 
 module.exports = {
-    filter: function(doc) {
+    filter: function(doc, info={}) {
         return Boolean(
             doc &&
             doc.type === 'data_record' &&
             doc.form &&
             doc.reported_date &&
-            !transitionUtils.hasRun(doc, NAME) &&
+            !transitionUtils.hasRun(info, NAME) &&
             _hasConfig(doc) &&
             utils.getClinicPhone(doc)
         );

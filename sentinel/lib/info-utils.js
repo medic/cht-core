@@ -46,9 +46,7 @@ const generateInfoDocFromAuditTrail = (docId, callback) =>
   });
 
 module.exports = {
-  filter: doc => !(doc._id.startsWith('_design') ||
-                   doc.type === 'info'),
-  onMatch: change => {
+  getInfoDoc: change => {
     return new Promise((resolve, reject) => {
       getSisterInfoDoc(change.id, (err, infoDoc) => {
         // If we pass callback directly to other functions they may return a
@@ -59,15 +57,16 @@ module.exports = {
           if (err) {
             return reject(err);
           }
-          resolve();
+          return resolve(infoDoc);
         };
-
         if (err) {
           return reject(err);
         }
-
         if (infoDoc) {
           infoDoc.latest_replication_date = new Date();
+          if(!infoDoc.transitions) {
+            infoDoc.transitions = change.doc.transitions || {};
+          }
           return db.sentinel.insert(infoDoc, done);
         }
 
@@ -75,12 +74,24 @@ module.exports = {
           if (err) {
             return done(err);
           }
-
           infoDoc = infoDoc || createInfoDoc(change.id, 'unknown');
           infoDoc.latest_replication_date = new Date();
           return db.sentinel.insert(infoDoc, done);
         });
       });
+    });
+  },
+  deleteInfoDoc: (change, callback) => {
+    db.sentinel.get(`${change.id}-info`, (err, doc) => {
+      if (err) {
+        if (err.statusCode === 404) {
+          // don't worry about deleting a non-existant doc
+          return callback();
+        }
+        return callback(err);
+      }
+      doc._deleted = true;
+      db.sentinel.insert(doc, callback);
     });
   }
 };
