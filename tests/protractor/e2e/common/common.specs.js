@@ -5,7 +5,7 @@ describe('Navigation tests : ', () => {
   it('should open Messages tab', () => {
     commonElements.goToMessages();
     expect(commonElements.isAt('message-list'));
-    expect(browser.getCurrentUrl()).toEqual(utils.getBaseUrl() + 'messages/');
+    expect(browser.getCurrentUrl()).toMatch(utils.getBaseUrl() + 'messages/');
   });
 
   it('should open tasks tab', () => {

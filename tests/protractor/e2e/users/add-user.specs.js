@@ -54,14 +54,14 @@ describe('Add user  : ', () => {
     addUserModal.fillForm('user0', 'Not Saved', '%4wbbygxkgdwvdwT65');
     element(by.id('password-confirm')).sendKeys('abc');
     addUserModal.submit();
-    expect(errorMessagePassword.getText()).toBe('Passwords must match.');
+    expect(errorMessagePassword.getText()).toMatch('Passwords must match');
   });
 
   it('should require password', () => {
     usersPage.openAddUserModal();
     addUserModal.fillForm('user0', 'Not Saved', '');
     addUserModal.submit();
-    expect(errorMessagePassword.getText()).toBe('Password is a required field.');
+    expect(errorMessagePassword.getText()).toContain('required');
   });
 
   it('should require username', () => {
@@ -70,7 +70,7 @@ describe('Add user  : ', () => {
     addUserModal.submit();
     const errorMessageUserName = element.all(by.css('span.help-block.ng-binding')).get(0);
     helper.waitUntilReady(errorMessageUserName);
-    expect(errorMessageUserName.getText()).toBe('User name is a required field.');
+    expect(errorMessageUserName.getText()).toContain('required');
   });
 
   it('should require place and contact for restricted user', () => {
@@ -78,7 +78,7 @@ describe('Add user  : ', () => {
     addUserModal.fillForm('restricted', 'Not Saved', '%4wbbygxkgdwvdwT65');
     helper.selectDropdownByValue(element(by.id('type')), 'district-manager');
     addUserModal.submit();
-    expect(element(by.css('#facilitySelect ~ .help-block')).getText()).toBe('Place is a required field.');
-    expect(element(by.css('#contactSelect ~ .help-block')).getText()).toBe('Associated contact is a required field.');
+    expect(element(by.css('#facilitySelect ~ .help-block')).getText()).toContain('required');
+    expect(element(by.css('#contactSelect ~ .help-block')).getText()).toContain('required');
   });
 });
