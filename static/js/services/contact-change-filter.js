@@ -22,16 +22,17 @@ angular.module('inboxServices').factory('ContactChangeFilter',
 
     var matchReportSubject = function(report, contact) {
       if (report.doc.fields && (
-          (report.doc.fields.patient_uuid && report.doc.fields.patient_uuid === contact.doc._id) ||
+          (report.doc.fields.patient_id && report.doc.fields.patient_id === contact.doc._id) ||
           (report.doc.fields.patient_id && report.doc.fields.patient_id === contact.doc.patient_id) ||
           (report.doc.fields.place_id && report.doc.fields.place_id === contact.doc._id) ||
-          (report.doc.fields.place_id && report.doc.fields.place_id === contact.doc.place_id)
-        )) {
+          (report.doc.fields.place_id && report.doc.fields.place_id === contact.doc.place_id))) {
         return true;
       }
 
       if ((report.doc.patient_id && report.doc.patient_id === contact.doc.patient_id) ||
-        (report.doc.place_id && report.doc.place_id === contact.doc.place_id)) {
+          (report.doc.patient_id && report.doc.patient_id === contact.doc._id) ||
+          (report.doc.place_id && report.doc.place_id === contact.doc.place_id) ||
+          (report.doc.place_id && report.doc.place_id === contact.doc._id)) {
         return true;
       }
 

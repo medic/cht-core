@@ -106,7 +106,7 @@ const postNatalVisit = {
     patient_age_in_years: '25',
     patient_phone: '',
     patient_uuid: 'a29c933c-90cb-4cb0-9e25-36403499aee4',
-    patient_id: '',
+    patient_id: 'a29c933c-90cb-4cb0-9e25-36403499aee4',
     patient_name: 'mother',
     meta: {
       instanceID: 'uuid:a53c23dc-eedb-433c-a81d-30c495ce7602'
@@ -117,7 +117,7 @@ const postNatalVisit = {
 const postNatalVisitBis = Object.assign({}, postNatalVisit, {
   _id: '4971a859-bde7-4ff0-a0ed-326925b83038-bis',
   fields: Object.assign({}, postNatalVisit.fields, {
-    patient_uuid: null
+    patient_id: null
   })
 });
 
@@ -342,7 +342,7 @@ describe('doc_summaries_by_id view', () => {
         contact: 'df28f38e-cd3c-475f-96b5-48080d863e34',
         lineage: ['1a1aac55-04d6-40dc-aae2-e67a75a1496d'],
         subject: {
-          type: 'id',
+          type: 'reference',
           value: 'a29c933c-90cb-4cb0-9e25-36403499aee4'
         }
       }
