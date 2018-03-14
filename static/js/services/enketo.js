@@ -251,6 +251,11 @@ angular.module('inboxServices').service('Enketo',
 
       return getEnketoOptions(doc, instanceData).then(function(options) {
         var form = new EnketoForm(wrapper.find('form').first(), options);
+        // Set the current form model as a global so that db-object widget
+        // Can directly alter the form contents, as opposed to altering the
+        // dom.
+        // It would be great if we did not have to do this.
+        window.currentForm = form;
         var loadErrors = form.init();
         if (loadErrors && loadErrors.length) {
           return $q.reject(new Error(JSON.stringify(loadErrors)));
