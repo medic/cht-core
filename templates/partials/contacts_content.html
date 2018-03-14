@@ -19,7 +19,7 @@
             <div class="heading-content">
               <h2>{{selected.doc.name}}</h2>
               <div ng-if="selected.doc.date_of_death" translate>contact.deceased.title</div>
-              <div class="primary-contact">
+              <div class="primary-contact" ng-show="selected.isPrimaryContact">
                 <i class="fa fa-star primary" translate translate-attr-title="Primary contact"></i>
                 <span ng-if="selected.doc.parent.type !== 'clinic'" translate>Primary contact</span>
                 <span ng-if="selected.doc.parent.type === 'clinic'" translate>clinic.field.contact</span>
