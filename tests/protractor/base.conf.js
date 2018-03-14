@@ -7,8 +7,8 @@ class BaseConfig {
     this.config = {
       seleniumAddress: 'http://localhost:4444/wd/hub',
 
-      // This is currently restricted to just medic-api e2e tests, because the
-      // webapp suite is unreliable.
+      // Excludes registration-by-sms, because the feature has changed and there is an issue around it:
+      // ttps://github.com/medic/medic-webapp/issues/4053.
       
       specs: ['e2e/**/*.js'],
       exclude: ['e2e/**/registration-by-sms.js'], 
