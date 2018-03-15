@@ -221,14 +221,7 @@ module.exports = function(grunt) {
       deploy: {
         cmd: 'kanso push $COUCH_URL'
       },
-      setupAdmin1: {
-        cmd: 'curl -X PUT http://localhost:5984/_config/admins/admin -d \'"pass"\'' +
-             ' && curl -X POST http://admin:pass@localhost:5984/_users ' +
-                 ' -H "Content-Type: application/json" ' +
-                 ' -d \'{"_id": "org.couchdb.user:admin", "name": "admin", "password":"pass", "type":"user", "roles":[]}\' ' +
-             ' && curl -X PUT --data \'"true"\' http://admin:pass@localhost:5984/_config/couch_httpd_auth/require_valid_user'
-      },
-      setupAdmin2: {
+      setupAdmin: {
         cmd: 'curl -X PUT http://localhost:5984/_node/${COUCH_NODE_NAME}/_config/admins/admin -d \'"pass"\'' +
              ' && curl -X POST http://admin:pass@localhost:5984/_users ' +
                  ' -H "Content-Type: application/json" ' +
@@ -593,7 +586,7 @@ module.exports = function(grunt) {
     'exec:bundlesize'
   ]);
 
-  grunt.registerTask('ci_before', '', [
+  grunt.registerTask('ci', 'Lint, build, minify, deploy and test for CI', [
     'precommit',
     'mmnpm',
     'build',
@@ -603,24 +596,10 @@ module.exports = function(grunt) {
     'nodeunit',
     'mochaTest:unit',
     'env:dev',
-  ]);
-
-  grunt.registerTask('ci_after', '', [
+    'exec:setupAdmin',
     'exec:deploy',
     'test_api_integration',
     'e2e'
-  ]);
-
-  grunt.registerTask('ci1', 'Lint, build, minify, deploy and test for CI [CouchDB 1.x]', [
-    'ci_before',
-    'exec:setupAdmin1',
-    'ci_after'
-  ]);
-
-  grunt.registerTask('ci2', 'Lint, build, minify, deploy and test for CI [CouchDB 2.x]', [
-    'ci_before',
-    'exec:setupAdmin2',
-    'ci_after'
   ]);
 
   // Dev tasks
