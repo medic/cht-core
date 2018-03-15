@@ -228,7 +228,7 @@ describe('registration transition', () => {
 
     const checkAutoResponse = () => {
       const taskElement = element(by.css('#reports-content .details > ul'));
-      expect(taskElement.element(by.css('.task-list > li > ul > li')).getText()).toBe('Thank you for registering Siobhan');
+      expect(taskElement.element(by.css('.task-list > li > ul > li')).getText()).toBe('Thank you '+ CAROL.name +' for registering Siobhan');
       expect(taskElement.element(by.css('.task-list .task-state .state.pending')).isDisplayed()).toBeTruthy();
       expect(taskElement.element(by.css('.task-list .task-state .recipient')).getText()).toBe(' to +64271234567');
     };
@@ -245,7 +245,7 @@ describe('registration transition', () => {
       commonElements.goToReports();
       helper.waitElementToBeClickable(element(by.css('.action-container .general-actions:not(.ng-hide) .fa-plus')));
       helper.waitElementToBeVisible(element(by.css('#reports-list .unfiltered li:first-child')));
-      browser.wait(() => element(by.cssContainingText('#reports-list .unfiltered li:first-child h4 span', CAROL.name)).isPresent(), 10000);
+      browser.wait(() => element(by.cssContainingText('#reports-list .unfiltered li:first-child h4 span', 'Siobhan')).isPresent(), 10000);
 
       helper.clickElement(element(by.css('#reports-list .unfiltered li:first-child .summary')));
 
