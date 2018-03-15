@@ -3,6 +3,8 @@
 ## 3.0.0
 
 ### Migration notes
+ - [#3971](https://github.com/medic/medic-webapp/issues/3971) the `/api/v1/messages` endpoint has been removed as it was no longer actively used, and contained bugs.
+ 
 ### Features
 ### Bug fixes
 ### UI/UX Improvements

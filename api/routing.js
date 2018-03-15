@@ -25,7 +25,6 @@ const _ = require('underscore'),
       monthlyRegistrations = require('./controllers/monthly-registrations'),
       monthlyDeliveries = require('./controllers/monthly-deliveries'),
       exportData = require('./controllers/export-data'),
-      messages = require('./controllers/messages'),
       records = require('./controllers/records'),
       forms = require('./controllers/forms'),
       users = require('./controllers/users'),
@@ -313,54 +312,6 @@ app.get('/api/v1/fti/:view', function(req, res) {
         }
         res.json(result);
       });
-    });
-  });
-});
-
-app.get('/api/v1/messages', function(req, res) {
-  auth.check(req, ['can_view_data_records','can_view_unallocated_data_records'], null, function(err) {
-    if (err) {
-      return serverUtils.error(err, req, res, true);
-    }
-    var opts = _.pick(req.query, 'limit', 'start', 'descending', 'state', 'states');
-    messages.getMessages(opts, function(err, result) {
-      if (err) {
-        return serverUtils.serverError(err.message, req, res);
-      }
-      res.json(result);
-    });
-  });
-});
-
-app.get('/api/v1/messages/:id', function(req, res) {
-  auth.check(req, ['can_view_data_records','can_view_unallocated_data_records'], null, function(err) {
-    if (err) {
-      return serverUtils.error(err, req, res, true);
-    }
-    messages.getMessage(req.params.id, function(err, result) {
-      if (err) {
-        return serverUtils.serverError(err.message, req, res);
-      }
-      res.json(result);
-    });
-  });
-});
-
-app.putJson('/api/v1/messages/state/:id', function(req, res) {
-  auth.check(req, 'can_update_messages', null, function(err) {
-    if (err) {
-      return serverUtils.error(err, req, res, true);
-    }
-    messages.updateMessageTaskState({
-      messageId: req.params.id,
-      state: req.body.state,
-      details: req.body.details
-    }, function(err, result) {
-      if (err) {
-        return serverUtils.serverError(err.message, req, res);
-      }
-      result.id = req.params.id;
-      res.json(result);
     });
   });
 });

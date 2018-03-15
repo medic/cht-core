@@ -1,5 +1,5 @@
 const controller = require('../../../controllers/sms-gateway'),
-      messageUtils = require('../../../controllers/messages'),
+      messageUtils = require('../../../message-utils'),
       recordUtils = require('../../../controllers/record-utils'),
       sinon = require('sinon').sandbox.create();
 

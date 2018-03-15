@@ -5,7 +5,7 @@
 
 const _ = require('underscore'),
       async = require('async'),
-      messageUtils = require('./messages'),
+      messageUtils = require('../message-utils'),
       recordUtils = require('./record-utils'),
 
       // map from the medic-gateway state to the medic-webapp state
