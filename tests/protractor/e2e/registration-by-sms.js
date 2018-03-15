@@ -197,6 +197,7 @@ describe('registration transition', () => {
   };
 
   describe('submits new sms messages', () => {
+
     beforeEach(done => {
       const body = {
         messages: [{
