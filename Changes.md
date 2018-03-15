@@ -1,5 +1,12 @@
 # Medic Mobile Release Notes
 
+## 3.0.0
+
+### Migration notes
+### Features
+### Bug fixes
+### UI/UX Improvements
+
 ## 2.15.0
 
 ### Migration notes
