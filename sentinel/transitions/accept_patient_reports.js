@@ -113,7 +113,6 @@ const silenceRegistrations = (
     if (!config.silence_type) {
         return callback(null, true);
     }
-    addRegistrationToDoc(doc, registrations);
     async.forEach(
         registrations,
         function(registration, callback) {
@@ -168,6 +167,7 @@ const handleReport = (doc, config, callback) => {
         }
 
         addMessagesToDoc(doc, config, registrations);
+        addRegistrationToDoc(doc, registrations);
 
         module.exports.silenceRegistrations(
             config,
