@@ -211,7 +211,7 @@ describe('registration transition', () => {
         .then(() => submit(body))
         .then(() => {
           // delay by a second to allow sentinel to process the message
-          setTimeout(done, 2000);
+          setTimeout(done, 1000);
         })
         .catch(done.fail);
     });
@@ -250,7 +250,7 @@ describe('registration transition', () => {
       helper.clickElement(element(by.css('#reports-list .unfiltered li:first-child .summary')));
 
       // wait for content to load
-      browser.wait(() => element(by.cssContainingText('#reports-content .item-summary .name', CAROL.name)).isPresent(), 12000);
+      browser.wait(() => element(by.cssContainingText('#reports-content .item-summary .name', CAROL.name)).isPresent(), 10000);
 
       checkItemSummary();
       checkAutoResponse();
