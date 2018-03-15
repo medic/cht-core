@@ -285,11 +285,11 @@ const onMatch = change => {
 };
 
 module.exports = {
-  filter: doc => !!(
+  filter: (doc, info={}) => !!(
     doc &&
     doc.form &&
     doc.type === 'data_record' &&
-    !transitionUtils.hasRun(doc, TRANSITION_NAME)
+    !transitionUtils.hasRun(info, TRANSITION_NAME)
   ),
   onMatch: onMatch,
   init: validateConfig,

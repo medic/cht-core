@@ -1,5 +1,5 @@
 var nano = require('nano'),
-	url = require('url');
+     url = require('url');
 
 var couchUrl = process.env.COUCH_URL;
 if (couchUrl) {
@@ -17,11 +17,15 @@ if (couchUrl) {
         db: dbName,
         ddoc: ddocName
     };
+    var sentinelAuth = '';
     if (parsedUrl.auth) {
         var index = parsedUrl.auth.indexOf(':');
         module.exports.settings.username = parsedUrl.auth.substring(0, index);
         module.exports.settings.password = parsedUrl.auth.substring(index + 1);
+        sentinelAuth = `${parsedUrl.auth}@`;
     }
+    var sentinelUrl = `${parsedUrl.protocol}//${sentinelAuth}${parsedUrl.host}/sentinel`;
+    module.exports.sentinel = nano(sentinelUrl);
     module.exports.medic = nano(couchUrl);
     module.exports.audit = require('couchdb-audit')
         .withNano(module.exports, dbName, auditName, ddocName, module.exports.settings.username);
@@ -39,6 +43,10 @@ if (couchUrl) {
             get: function() {},
             insert: function() {},
             fetch: function() {}
+        },
+        sentinel: {
+            get: function() {},
+            insert: function() {}
         },
         settings: {}
     };

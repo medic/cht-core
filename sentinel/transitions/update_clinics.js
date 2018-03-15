@@ -97,12 +97,12 @@ const getContact = (doc, callback) => {
  * good place to get phone numbers from.
  */
 module.exports = {
-  filter: doc => {
+  filter: (doc, info={}) => {
     return Boolean(
       doc &&
       doc.type === 'data_record' &&
       !doc.contact &&
-      !transitionUtils.hasRun(doc, NAME)
+      !transitionUtils.hasRun(info, NAME)
     );
   },
   onMatch: change => {
