@@ -7,7 +7,9 @@ var _ = require('underscore'),
     xmlbuilder = require('xmlbuilder'),
     config = require('../config'),
     db = require('../db'),
-    fti = require('../controllers/fti');
+    dbPouch = require('../db-pouch'),
+    fti = require('../controllers/fti'),
+    lineage = require('lineage')(Promise, dbPouch.medic);
 
 var createColumnModels = function(values, options) {
   return _.map(values, function(value) {
@@ -26,54 +28,12 @@ var safeStringify = function(obj) {
   }
 };
 
-const findContact = (contactRows, id) => {
-  return id && contactRows.find(contactRow => contactRow.id === id);
-};
-
-const hydrateDataRecords = (rows, callback) => {
-  const contactIds = [];
-  rows.forEach(row => {
-    let parent = row.doc.contact;
-    while(parent) {
-      if (parent._id) {
-        contactIds.push(parent._id);
-      }
-      parent = parent.parent;
-    }
-  });
-  if (!contactIds.length) {
-    return callback();
-  }
-  db.medic.fetch({ keys: contactIds }, (err, contactResponse) => {
-    if (err) {
-      return callback(err);
-    }
-    rows.forEach(row => {
-      const contactId = row.doc.contact && row.doc.contact._id;
-      const contact = findContact(contactResponse.rows, contactId);
-      if (contact) {
-        row.doc.contact = contact.doc;
-      }
-      let parent = row.doc.contact;
-      while(parent) {
-        const parentId = parent.parent && parent.parent._id;
-        const found = findContact(contactResponse.rows, parentId);
-        if (found) {
-          parent.parent = found.doc;
-        }
-        parent = parent.parent;
-      }
-    });
-    callback();
-  });
-};
-
 var exportTypes = {
   forms: {
     view: 'data_records',
     index: 'data_records',
     orderBy: '\\reported_date<date>',
-    hydrate: hydrateDataRecords,
+    hydrate: (docs, callback) => lineage.hydrateDocs(docs, callback),
     generate: function(rows, options) {
 
       var userDefinedColumns = !!options.columns;
@@ -155,7 +115,7 @@ var exportTypes = {
     view: 'data_records',
     index: 'data_records',
     orderBy: '\\reported_date<date>',
-    hydrate: hydrateDataRecords,
+    hydrate: (docs, callback) => lineage.hydrateDocs(docs, callback),
     generate: function(rows, options) {
       if (!options.columns) {
         options.columns = createColumnModels([
@@ -682,5 +642,6 @@ module.exports = {
       }
 
     });
-  }
+  },
+  _lineage: lineage
 };

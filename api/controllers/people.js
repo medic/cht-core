@@ -1,7 +1,9 @@
 const _ = require('underscore'),
       db = require('../db'),
+      dbPouch = require('../db-pouch'),
       utils = require('./utils'),
-      places = require('./places');
+      places = require('./places'),
+      lineage = require('lineage')(Promise, dbPouch.medic);
 
 const getPerson = (id, callback) => {
   const error = (msg, code) => {
@@ -10,7 +12,7 @@ const getPerson = (id, callback) => {
       message: msg || 'Failed to find person.'
     });
   };
-  places.fetchHydratedDoc(id, (err, doc) => {
+  lineage.fetchHydratedDoc(id, (err, doc) => {
     if (err) {
       if (err.statusCode === 404) {
         return error();
@@ -77,7 +79,7 @@ const createPerson = (data, callback) => {
         if (err) {
           return callback(err);
         }
-        data.parent = places.minify(place);
+        data.parent = lineage.minifyLineage(place);
         delete data.place;
         db.medic.insert(data, callback);
       });
@@ -122,3 +124,5 @@ module.exports.createPerson = createPerson;
 module.exports.getPerson = getPerson;
 module.exports.getOrCreatePerson = getOrCreatePerson;
 module.exports.validatePerson = validatePerson;
+
+module.exports._lineage = lineage;

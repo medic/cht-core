@@ -1,13 +1,13 @@
-var sinon = require('sinon').sandbox.create(),
-    db = require('../../db'),
-    transition = require('../../transitions/update_clinics'),
-    lineage = require('../../lib/lineage'),
-    phone = '+34567890123',
-    lineageStub;
+const sinon = require('sinon').sandbox.create(),
+      db = require('../../db'),
+      transition = require('../../transitions/update_clinics'),
+      phone = '+34567890123';
+
+let lineageStub;
 
 exports.setUp = function(callback) {
   process.env.TEST_ENV = true;
-  lineageStub = sinon.stub(lineage, 'fetchHydratedDoc');
+  lineageStub = sinon.stub(transition._lineage, 'fetchHydratedDoc');
   callback();
 };
 

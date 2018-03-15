@@ -1,3 +1,13 @@
+// Because we're doing DB switching we need invalidate the cache so the require
+// gets processed again
+[
+  'migrations/extract-person-contacts.js',
+  'controllers/people.js',
+  'controllers/places.js'
+].forEach(k => {
+  delete require.cache[require.resolve('../../../' + k)];
+});
+
 var utils = require('./utils');
 
 var ANY_STRING = new RegExp('^.*$');
