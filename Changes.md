@@ -22,7 +22,7 @@
 
 ## 2.14.0
 
-_February 22, 2017_
+_March 15, 2018_
 
 ### Migration notes
 

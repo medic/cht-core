@@ -38,6 +38,10 @@ if [ "$TRAVIS_BRANCH" == "master" ]; then
 elif [[ "$TRAVIS_TAG" =~ ^0\.[0-9]+\.[0-9]+$ ]]; then
     push 'release'
 
+# match tags of the form "2.14.n"
+elif [[ "$TRAVIS_TAG" =~ ^2\.14\.[0-9]+$ ]]; then
+    push 'release-v214'
+
 # match tags of the form "2.n.n"
 elif [[ "$TRAVIS_TAG" =~ ^2\.[0-9]+\.[0-9]+$ ]]; then
     push 'release-v2'
