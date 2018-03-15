@@ -39,13 +39,16 @@ define( function( require, exports, module ) {
         construct( this.element );
     };
 
+    function service(serviceName) {
+        return angular.element(document.body).injector().get(serviceName);
+    }
+
     function construct( element ) {
         // timeout needed to let setting the value complete before rendering
         setTimeout(function() {
             var $question = $( element );
 
-            var angularServices = angular.element(document.body).injector();
-            var Select2Search = angularServices.get('Select2Search');
+            var Select2Search = service('Select2Search');
 
             var $textInput = $question.find('input');
 
@@ -77,33 +80,36 @@ define( function( require, exports, module ) {
         var selected = $this.select2('data');
         var doc = selected && selected[0] && selected[0].doc;
         if (doc) {
-            // find the nearest repeat section, or form if not in a repeat
-            var parent = $this.closest('.or-repeat,form.or');
             var field = $this.attr('name');
-            var objectRoot = field.substring(0, field.lastIndexOf('/'));
-            updateFields(parent, doc, objectRoot, field);
+            var keyRoot = field.substring(0, field.lastIndexOf('/'));
+            updateFields(doc, keyRoot, field);
         }
     };
 
-    var updateFields = function(parent, doc, objectRoot, keyPath) {
-        Object.keys(doc).forEach(function(key) {
-            var path = objectRoot + '/' + key;
-            if (path === keyPath) {
+    var updateFields = function(data, keyRoot, originatingKeyPath) {
+        var Enketo = service('Enketo');
+
+        Object.keys(data).forEach(function(key) {
+            var path = keyRoot + '/' + key;
+            if (path === originatingKeyPath) {
                 // don't update the field that fired the update
                 return;
             }
-            var value = doc[key];
+            var value = data[key];
             if (_.isArray(value)) {
                 // arrays aren't currently handled
                 return;
             }
             if (_.isObject(value)) {
                 // recursively set fields for children
-                return updateFields(parent, value, path, keyPath);
+                return updateFields(value, path, originatingKeyPath);
             }
-            parent.find('[name="' + path + '"]')
-                .val(value)
-                .trigger('change');
+            var node = Enketo.getCurrentForm().model.node(path);
+            // Non-existant nodes still return a value, it's just an empty array
+            // Real nodes have a value, or at minimum [""]
+            if (node.getVal().length) {
+                node.setVal(value);
+            }
         });
     };
 

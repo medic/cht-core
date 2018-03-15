@@ -32,6 +32,11 @@ angular.module('inboxServices').service('Enketo',
     var FORM_ATTACHMENT_NAME = 'xml';
     var REPORT_ATTACHMENT_NAME = this.REPORT_ATTACHMENT_NAME = 'content';
 
+    var currentForm;
+    this.getCurrentForm = function() {
+      return currentForm;
+    };
+
     var replaceJavarosaMediaWithLoaders = function(id, form) {
       form.find('img,video,audio').each(function() {
         var elem = $(this);
@@ -250,8 +255,8 @@ angular.module('inboxServices').service('Enketo',
       formContainer.html(doc.html);
 
       return getEnketoOptions(doc, instanceData).then(function(options) {
-        var form = new EnketoForm(wrapper.find('form').first(), options);
-        var loadErrors = form.init();
+        currentForm = new EnketoForm(wrapper.find('form').first(), options);
+        var loadErrors = currentForm.init();
         if (loadErrors && loadErrors.length) {
           return $q.reject(new Error(JSON.stringify(loadErrors)));
         }
@@ -261,11 +266,11 @@ angular.module('inboxServices').service('Enketo',
 
         // handle page turning using browser history
         window.history.replaceState({ enketo_page_number: 0 }, '');
-        overrideNavigationButtons(form, wrapper);
-        addPopStateHandler(form, wrapper);
-        forceRecalculate(form);
+        overrideNavigationButtons(currentForm, wrapper);
+        addPopStateHandler(currentForm, wrapper);
+        forceRecalculate(currentForm);
 
-        return form;
+        return currentForm;
       });
     };
 
