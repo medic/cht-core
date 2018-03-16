@@ -29,8 +29,8 @@ before_install:
   - docker run -d -p 5984:5984 --name couch couchdb:2
   - echo "Starting CouchDB 2.x"
   - until nc -z localhost 5984; do sleep 1; done
-  - echo -n "CouchDB Started, version "
-  - curl http://localhost:5984 2> /dev/null | jq .version
+  - echo "CouchDB Started, version "
+  - curl http://localhost:5984 # 2> /dev/null | jq .version
   - pip install --user awscli
   - export PATH=$PATH:$HOME/.local/bin
 
