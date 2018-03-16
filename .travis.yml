@@ -26,7 +26,7 @@ env:
 
 before_install:
   # start couchdb 2.x docker instance
-  - docker run -d -p 5984:5984 --name couch klaemo/couchdb:2
+  - docker run -d -p 5984:5984 --name couch couchdb:2
   - echo "Starting CouchDB 2.x"
   - until nc -z localhost 5984; do sleep 1; done
   - echo -n "CouchDB Started, version "
