@@ -9,26 +9,17 @@ const async = require('async'),
 
 const app = require('./routing');
 
-const nodeVersionCheck = callback => {
+const MIN_MAJOR = 8;
+const nodeVersionCheck = (cb) => {
   try {
     const [major, minor, patch] = process.versions.node.split('.').map(Number);
-    const environment = app.get('env');
-
-    console.log(`Node Version: ${major}.${minor}.${patch} running in ${environment} mode`);
-
-    if (major < 5) {
-      // 5 seems to be where the majority of ES6 was added without flags.
-      // Seems safeist to not allow api to run
-      callback(new Error(`Node version ${major}.${minor}.${patch} is not supported`));
+    if (major < MIN_MAJOR) {
+      throw new Error(`Node version ${major}.${minor}.${patch} is not supported, minimum is ${MIN_MAJOR}.0.0`);
     }
-
-    if (major < 6 || ( major === 6 && minor < 5)) {
-      console.error('We recommend nodejs 6.5 or higher.');
-    }
-
-    callback();
-  } catch (error) {
-    callback(error);
+    console.log(`Node Version: ${major}.${minor}.${patch}`);
+    cb();
+  } catch (err) {
+    cb(err);
   }
 };
 
