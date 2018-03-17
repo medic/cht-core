@@ -42,12 +42,12 @@ module.exports = {
     _getConfig: function() {
         return _.extend({}, config.get('alerts'));
     },
-    filter: function(doc) {
+    filter: function(doc, info={}) {
         return Boolean(
             doc &&
             doc.form &&
             doc.type === 'data_record' &&
-            !transitionUtils.hasRun(doc, NAME)
+            !transitionUtils.hasRun(info, NAME)
         );
     },
     onMatch: change => {
