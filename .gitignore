@@ -9,6 +9,7 @@ npm-debug.log
 node_modules
 /node_modules_backup/
 /scripts/node_modules/
+/scripts/changelog-generator/token.json
 /static/dist/
 /static/fonts/
 /packages/libphonenumber/libphonenumber/libphonenumber.js

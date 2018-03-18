@@ -4,7 +4,9 @@
   "description": "",
   "main": "bundle_templates.js",
   "dependencies": {
+    "@octokit/rest": "^15.2.2",
     "fs": "0.0.2",
+    "github": "^14.0.0",
     "mkdirp": "^0.5.1",
     "nodemailer": "^2.3.2",
     "pouchdb": "^5.3.2",
