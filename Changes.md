@@ -4,12 +4,10 @@
 
 ### Migration notes
  - [#3971](https://github.com/medic/medic-webapp/issues/3971) the `/api/v1/messages` endpoint has been removed as it was no longer actively used, and contained bugs.
- 
-### Features
-### Bug fixes
-### UI/UX Improvements
 
 ## 2.15.0
+
+_TBD_
 
 ### Migration notes
 
@@ -17,17 +15,82 @@
 
 ### Features
 
-- [#3627](https://github.com/medic/medic-webapp/issues/3627): Generate scheduled messages just-in-time so changes to contacts are reflected in yet to be sent messages. NB: This feature only works with the `translation_key` configuration and not with the deprecated `messages` array so now is a good time to update your configuration.
+- [#3594](https://github.com/medic/medic-webapp/issues/3594): Add support for csv exports
+- [#3412](https://github.com/medic/medic-webapp/issues/3412): Make it possible for CHWs to receive SMS notifications when a nurse confirms a visit or delivery via SMS
+- [#3956](https://github.com/medic/medic-webapp/issues/3956): Add support for death reporting workflow
+
+### Improvements
+
+- [#4302](https://github.com/medic/medic-webapp/issues/4302): Remove `messages` from `medic-api` documentation
 - [#3657](https://github.com/medic/medic-webapp/issues/3657): Add permissions to control whether or not users see the call and message buttons on mobile.
+- [#4053](https://github.com/medic/medic-webapp/issues/4053): History tab: Change name displayed to be patient name instead of submitter name
+- [#3936](https://github.com/medic/medic-webapp/issues/3936): Make bulk importing available to non-developers
+- [#3959](https://github.com/medic/medic-webapp/issues/3959): Increase linkages between SMS reports and other docs to streamline analytics queries
+- [#2309](https://github.com/medic/medic-webapp/issues/2309): Confirm with Enter, Cancel with Escape
+- [#3190](https://github.com/medic/medic-webapp/issues/3190): Use translation keys for all labels in app settings
+- [#3627](https://github.com/medic/medic-webapp/issues/3627): Generate scheduled messages just-in-time so changes to contacts are reflected in yet to be sent messages. NB: This feature only works with the `translation_key` configuration and not with the deprecated `messages` array so now is a good time to update your configuration.
+- [#4063](https://github.com/medic/medic-webapp/issues/4063): Report page: restrict the size of icons that appear in "Submit report" list
+- [#4000](https://github.com/medic/medic-webapp/issues/4000): Update styling for tasks due today
+- [#3902](https://github.com/medic/medic-webapp/issues/3902): Make it possible to see `clinic` places in the places filter on the Reports tab
+- [#3721](https://github.com/medic/medic-webapp/issues/3721): Add a new date filter that allows for display of dates in DD Month format
+- [#3961](https://github.com/medic/medic-webapp/issues/3961): Minor updates to Enketo UI
+- [#3997](https://github.com/medic/medic-webapp/issues/3997): Adjust the buffer space around RHS header icons
+- [#3613](https://github.com/medic/medic-webapp/issues/3613): Change time listed on Reports tab to be more fine-grained
+- [#2753](https://github.com/medic/medic-webapp/issues/2753): Status time for messages does not update automatically
+- [#4247](https://github.com/medic/medic-webapp/issues/4247): Place icons in the LHS action bar should be 30x30
+- [#4003](https://github.com/medic/medic-webapp/issues/4003): Support patient hydration in `hydrateDocs`
+- [#4130](https://github.com/medic/medic-webapp/issues/4130): Add extra loading spinner text for Rules loading
+- [#3967](https://github.com/medic/medic-webapp/issues/3967): Horticulturalist Web UI drops the upgrading throbber once api has done its part instead of waiting until a new ddoc is ready
+- [#4140](https://github.com/medic/medic-webapp/issues/4140): Permissions issue
+- [#3887](https://github.com/medic/medic-webapp/issues/3887): Show warning before starting upgrade
+- [#3022](https://github.com/medic/medic-webapp/issues/3022): Option to compare against the translation keys
+- [#4150](https://github.com/medic/medic-webapp/issues/4150): Unhelpful error message displays when trying to log in while offline
+- [#4095](https://github.com/medic/medic-webapp/issues/4095): Show a useful error message when an offline user tries to change their password
+- [#4006](https://github.com/medic/medic-webapp/issues/4006): Horticulturalist in-app UI - small suggested fixes
+
+### Performance fixes
+
+- [#3565](https://github.com/medic/medic-webapp/issues/3565): Sentinel can make multiple db writes to complete the transitions
+- [#4120](https://github.com/medic/medic-webapp/issues/4120): Understand pouch checkpointing better
+- [#3966](https://github.com/medic/medic-webapp/issues/3966): Horticulturalist Web UI is slow to detect if this is a horticulturalist-enabled server
 
 ### Bug fixes
 
-- [#1359](https://github.com/medic/medic-webapp/issues/1359): Helpful error message not shown if no contact associated with current user when trying to submit a report.
 - [#4144](https://github.com/medic/medic-webapp/issues/4144): Remove `can_access_directly` permission.
+- [#4301](https://github.com/medic/medic-webapp/issues/4301): Wrong "add place" button on the RHS at certain levels of the hierarchy
+- [#4113](https://github.com/medic/medic-webapp/issues/4113): Bulk Delete often fails when using select all to delete the maximum
+- [#4300](https://github.com/medic/medic-webapp/issues/4300): Strange black bar appears on LHS when a restricted user doesn't have permission to create places
+- [#4110](https://github.com/medic/medic-webapp/issues/4110): Intermittent connectivity for medic-gateway causes duplicate messages
+- [#4248](https://github.com/medic/medic-webapp/issues/4248): Fields to be populated by a `db-object` must have UI inputs, or `calculate="."`
+- [#4178](https://github.com/medic/medic-webapp/issues/4178): PouchDB's server side checkpoint files always have the same name for the same user
+- [#4109](https://github.com/medic/medic-webapp/issues/4109): Denial of Service caused by medic gateway status history
+- [#651](https://github.com/medic/medic-webapp/issues/651): confirm validation can catch duplicate registrations
+- [#1359](https://github.com/medic/medic-webapp/issues/1359): Helpful error message not shown if no contact associated with current user when trying to submit a report.
+- [#3910](https://github.com/medic/medic-webapp/issues/3910): Users are required to provide their current password if they wish to change it.
+- [#2079](https://github.com/medic/medic-webapp/issues/2079): Can remove permissions from "Full Access" user
+- [#4032](https://github.com/medic/medic-webapp/issues/4032): Enketo: Date-time rendering is not ideal
+- [#3969](https://github.com/medic/medic-webapp/issues/3969): "no more reports" shown just before reports load
+- [#4101](https://github.com/medic/medic-webapp/issues/4101): Denial of service caused by malformed messages
+- [#4080](https://github.com/medic/medic-webapp/issues/4080): Live list not updated when place's contact is deleted
+- [#4274](https://github.com/medic/medic-webapp/issues/4274): Misaligned default language icons
+- [#4090](https://github.com/medic/medic-webapp/issues/4090): Updates needed to the existing in-app tour text on Messages
+- [#4288](https://github.com/medic/medic-webapp/issues/4288): Everyone is a primary contact
+- [#4281](https://github.com/medic/medic-webapp/issues/4281): `Outgoing messages` sorting broken 
+- [#4085](https://github.com/medic/medic-webapp/issues/4085): Contact pagination is broken for restricted-to-place users
+- [#3530](https://github.com/medic/medic-webapp/issues/3530): Reports view on person page doesn't live update
+- [#4125](https://github.com/medic/medic-webapp/issues/4125): Presence of an undefined element in contact-summary result object crashes all form loading
+- [#4024](https://github.com/medic/medic-webapp/issues/4024): Message sent with 'from' field empty not opening in the UI
+- [#4250](https://github.com/medic/medic-webapp/issues/4250): e2e tests only pass if timezone is GMT
+- [#4045](https://github.com/medic/medic-webapp/issues/4045): Contact summary card should left align every row
+- [#4076](https://github.com/medic/medic-webapp/issues/4076): Cannot delete record
 
-### UI/UX Improvements
+### Technical issues
 
-- [#3910](https://github.com/medic/medic-webapp/issues/3910): users are required to provide their current password if they wish to change it
+- [#3909](https://github.com/medic/medic-webapp/issues/3909): Check our auditing coverage
+- [#3588](https://github.com/medic/medic-webapp/issues/3588): Remove local copy of bm.js when moment releases Bambara
+- [#3359](https://github.com/medic/medic-webapp/issues/3359): Merge api and sentinel into webapp in git
+- [#3738](https://github.com/medic/medic-webapp/issues/3738): Write e2e tests against medic-api for medic-gateway endpoint
+- [#4123](https://github.com/medic/medic-webapp/issues/4123): Revert to "official" google-libphonenumber dependency
 
 ## 2.14.0
 
