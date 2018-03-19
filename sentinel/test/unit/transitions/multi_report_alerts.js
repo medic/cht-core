@@ -72,9 +72,8 @@ exports['filter validation'] = test => {
 exports['filter validation hasRun'] = test => {
   test.equal(transition.filter({
     form: 'x',
-    type: 'data_record',
-    transitions : { multi_report_alerts: 'hi' }
-  }), false);
+    type: 'data_record'
+  }, {transitions : { multi_report_alerts: 'hi' }}), false);
   test.done();
 };
 

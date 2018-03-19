@@ -35,6 +35,7 @@ exports['save is called if transition results have changes'] = test => {
 exports['applyTransition creates transitions property'] = test => {
   test.expect(7);
   const doc = { _rev: '1' };
+  const info = {};
   const audit = sinon.stub(db.audit, 'saveDoc').callsArg(1);
   const transition = {
     onMatch: change => {
@@ -46,6 +47,7 @@ exports['applyTransition creates transitions property'] = test => {
     key: 'x',
     change: {
       doc: doc,
+      info: info,
       seq: 1
     },
     transition: transition,
@@ -53,9 +55,9 @@ exports['applyTransition creates transitions property'] = test => {
   }, (err, changed) => {
     test.ok(!err);
     test.ok(changed);
-    test.ok(doc.transitions.x.ok);
-    test.ok(doc.transitions.x.last_rev);
-    test.ok(doc.transitions.x.seq);
+    test.ok(info.transitions.x.ok);
+    test.ok(info.transitions.x.last_rev);
+    test.ok(info.transitions.x.seq);
     test.equals(doc.errors, undefined);
     test.equals(doc.foo, 'bar');
     test.done();
