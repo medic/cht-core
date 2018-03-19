@@ -63,7 +63,6 @@
     "grunt": "^1.0.0",
     "grunt-angular-templates": "^1.0.3",
     "grunt-appcache": "^0.2.0",
-    "grunt-auto-install": "^0.3.1",
     "grunt-browserify": "^5.2.0",
     "grunt-contrib-copy": "^1.0.0",
     "grunt-contrib-cssmin": "^2.2.1",

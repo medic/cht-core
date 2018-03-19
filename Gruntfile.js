@@ -230,6 +230,12 @@ module.exports = function(grunt) {
       setup_api_integration: {
         cmd: 'cd api && npm install',
       },
+      npm_install: {
+        cmd: 'npm install' +
+             ' && npm --prefix api install' +
+             ' && npm --prefix sentinel install' +
+             ' && npm --prefix shared-libs/phone-number install'
+      },
       check_env_vars:
         'if [ -z $COUCH_URL ] || [ -z $API_URL ] || [ -z $COUCH_NODE_NAME ]; then ' +
             'echo "Missing required env var.  Check that all are set: ' +
@@ -451,13 +457,6 @@ module.exports = function(grunt) {
         extDot: 'last'
       },
     },
-    auto_install: {
-      npm: {
-        options: {
-          bower: false
-        }
-      }
-    },
     'regex-check': {
       only_in_tests: {
         files: [ { src: [
@@ -503,7 +502,7 @@ module.exports = function(grunt) {
   // Build tasks
   grunt.registerTask('mmnpm', 'Update and patch npm dependencies', [
     'exec:undopatches',
-    'auto_install:npm',
+    'exec:npm_install',
     'copy:librariestopatch',
     'exec:applypatches'
   ]);

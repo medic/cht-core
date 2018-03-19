@@ -93,7 +93,7 @@ SETTINGS_OLD_FILE="$DIR/app_settings[$(date +"%Y-%m-%d_%H-%M-%S")].json.old.bak"
 TASKS_TMP_FILE="$DIR/tasks.json.tmp"
 
 # Get app_settings to make sure we dont overwrite someone else's changes
-curl ${DB}/_design/medic/_rewrite/app_settings/medic | jq .settings > "$SETTINGS_BAK_FILE"
+curl ${DB}/api/v1/settings > "$SETTINGS_BAK_FILE"
 
 if $upload_only
 then
@@ -148,6 +148,7 @@ else
   rm "$SETTINGS_TMP_FILE"
 fi
 
+# TODO fix this
 # Upload app_setting.json
 test $upload && curl -v -d @"$SETTINGS_FILE" -X PUT -H "Content-Type: application/json" ${DB}/_design/medic/_rewrite/update_settings/medic?replace=1
 

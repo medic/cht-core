@@ -7,9 +7,6 @@ describe('UpdateSettings service', function() {
 
   beforeEach(function() {
     module('inboxApp');
-    module(function ($provide) {
-      $provide.value('Location', { path: 'BASEURL' });
-    });
     inject(function($injector) {
       $httpBackend = $injector.get('$httpBackend');
       service = $injector.get('UpdateSettings');
@@ -27,7 +24,7 @@ describe('UpdateSettings service', function() {
       isString: 'hello'
     };
     $httpBackend
-      .expect('PUT', 'BASEURL/update_settings/medic', JSON.stringify(updates))
+      .expect('PUT', '/api/v1/settings', JSON.stringify(updates))
       .respond({ success: true });
     setTimeout($httpBackend.flush);
     return service(updates);
@@ -39,7 +36,7 @@ describe('UpdateSettings service', function() {
       isString: 'hello'
     };
     $httpBackend
-      .expect('PUT', 'BASEURL/update_settings/medic?replace=true', JSON.stringify(updates))
+      .expect('PUT', '/api/v1/settings?replace=true', JSON.stringify(updates))
       .respond({ success: true });
     setTimeout($httpBackend.flush);
     return service(updates, { replace: true });
@@ -51,7 +48,7 @@ describe('UpdateSettings service', function() {
       isString: 'hello'
     };
     $httpBackend
-      .expect('PUT', 'BASEURL/update_settings/medic', JSON.stringify(updates))
+      .expect('PUT', '/api/v1/settings', JSON.stringify(updates))
       .respond(404, 'Not found');
     service(updates)
       .then(function() {

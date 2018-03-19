@@ -12,5 +12,6 @@ module.exports = {
 
   // test database to avoid writing to the dev db
   DB_NAME: 'medic-test',
+  MAIN_DDOC_NAME: 'medic'
 
 };

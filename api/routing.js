@@ -31,6 +31,7 @@ const _ = require('underscore'),
       places = require('./controllers/places'),
       people = require('./controllers/people'),
       upgrade = require('./controllers/upgrade'),
+      settings = require('./controllers/settings'),
       fti = require('./controllers/fti'),
       bulkDocs = require('./controllers/bulk-docs'),
       createDomain = require('domain').create,
@@ -104,7 +105,6 @@ app.postJson(pathPrefix + 'login', login.post);
 var UNAUDITED_ENDPOINTS = [
   // This takes arbitrary JSON, not whole documents with `_id`s, so it's not
   // auditable in our current framework
-  '_design/' + db.settings.ddoc + '/_rewrite/update_settings/*',
   // Replication machinery we don't care to audit
   '_local/*',
   '_revs_diff',
@@ -551,6 +551,12 @@ app.postJson('/api/v1/people', function(req, res) {
 });
 
 app.postJson('/api/v1/bulk-delete', bulkDocs.bulkDelete);
+
+app.get(appPrefix + 'app_settings/' + db.settings.ddoc, settings.getIncludingSchema); // deprecated
+app.get('/api/v1/settings', settings.get);
+
+app.putJson(appPrefix + 'update_settings/' + db.settings.ddoc, settings.put); // deprecated
+app.putJson('/api/v1/settings', settings.put);
 
 // DB replication endpoint
 var changesHander = _.partial(require('./handlers/changes').request, proxy);

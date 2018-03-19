@@ -4,6 +4,7 @@ var _ = require('underscore'),
     ddocExtraction = require('./ddoc-extraction'),
     translations = require('./translations'),
     defaults = require('./config.default.json'),
+    settingsService = require('./services/settings'),
     settings = {},
     translationCache = {};
 
@@ -76,7 +77,9 @@ var loadSettings = function(callback) {
       return callback();
     }
     console.log('Updating settings with new defaults');
-    db.updateSettings(settings, callback);
+    settingsService.update(settings)
+      .then(() => callback())
+      .catch(callback);
   });
 };
 

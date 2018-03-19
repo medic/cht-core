@@ -56,7 +56,7 @@ module.exports = BaseConfig;
 
 
 const getLoginUrl = () => {
-  const redirectUrl = encodeURIComponent(`/${constants.DB_NAME}/_design/medic/_rewrite/#/messages`);
+  const redirectUrl = encodeURIComponent(`/${constants.DB_NAME}/_design/${constants.MAIN_DDOC_NAME}/_rewrite/#/messages`);
   return `http://${constants.API_HOST}:${constants.API_PORT}/${constants.DB_NAME}/login?redirect=${redirectUrl}`;
 };
 
@@ -72,9 +72,10 @@ const login = browser => {
 
 const setupSettings = () => {
   return utils.request({
-    path: `/${constants.DB_NAME}/_design/medic/_rewrite/update_settings/medic`,
+    path: '/api/v1/settings',
     method: 'PUT',
-    body: JSON.stringify({ setup_complete: true })
+    body: JSON.stringify({ setup_complete: true }),
+    headers: { 'Content-Type': 'application/json' }
   });
 };
 

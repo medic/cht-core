@@ -3,8 +3,7 @@ const _ = require('underscore'),
       db = require('./db-nano'),
       logger = require('./lib/logger'),
       defaults = require('./defaults'),
-      translations = {},
-      SETTINGS_PATH = '_design/medic/_rewrite/app_settings/medic';
+      translations = {};
 
 let config = require('./defaults');
 
@@ -43,13 +42,13 @@ const initFeed = () => {
 
 const initConfig = () => {
   return new Promise((resolve, reject) => {
-    db.medic.get(SETTINGS_PATH, (err, data) => {
+    db.medic.get('/api/v1/settings', (err, settings) => {
       if (err) {
         console.error(err);
         return reject(new Error('Error loading configuration'));
       }
-      _.defaults(data.settings, defaults);
-      config = data.settings;
+      _.defaults(settings, defaults);
+      config = settings;
       logger.debug(
         'Reminder messages allowed between %s:%s and %s:%s',
         config.schedule_morning_hours,

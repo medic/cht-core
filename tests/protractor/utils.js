@@ -4,9 +4,7 @@ const _ = require('underscore'),
       http = require('http'),
       path = require('path'),
       htmlScreenshotReporter = require('protractor-jasmine2-screenshot-reporter'),
-  // The app_settings and update_settings modules are on the main ddoc.
-  mainDdocName = 'medic',
-  userSettingsDocId = `org.couchdb.user:${auth.user}`;
+      userSettingsDocId = `org.couchdb.user:${auth.user}`;
 
 const PouchDB = require('pouchdb-core');
 PouchDB.plugin(require('pouchdb-adapter-http'));
@@ -100,7 +98,7 @@ const updateSettings = updates => {
     throw new Error('A previous test did not call revertSettings');
   }
   return request({
-    path: path.join('/', constants.DB_NAME, '_design', mainDdocName, '_rewrite/app_settings', mainDdocName),
+    path: '/api/v1/settings',
     method: 'GET'
   }).then(result => {
     originalSettings = result.settings;
@@ -114,9 +112,10 @@ const updateSettings = updates => {
     return;
   }).then(() => {
     return request({
-      path: path.join('/', constants.DB_NAME, '_design', mainDdocName, '_rewrite/update_settings', mainDdocName, '?replace=1'),
+      path: '/api/v1/settings?replace=1',
       method: 'PUT',
-      body: JSON.stringify(updates)
+      body: JSON.stringify(updates),
+      headers: { 'Content-Type': 'application/json' }
     });
   });
 };
@@ -125,13 +124,11 @@ const revertSettings = () => {
   if (!originalSettings) {
     return Promise.resolve(false);
   }
-
-  console.log(`Reverting settings`);
-
   return request({
-    path: path.join('/', constants.DB_NAME, '_design', mainDdocName, '_rewrite/update_settings', mainDdocName, '?replace=1'),
+    path: '/api/v1/settings?replace=1',
     method: 'PUT',
-    body: JSON.stringify(originalSettings)
+    body: JSON.stringify(originalSettings),
+    headers: { 'Content-Type': 'application/json' }
   }).then(() => {
     originalSettings = null;
     return true;
