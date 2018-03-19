@@ -32,8 +32,6 @@ const writeExportHeaders = (res, type, format) => {
   res
     .set('Content-Type', format.contentType)
     .set('Content-Disposition', 'attachment; filename=' + filename);
-  // To respond as quickly to the request as possible
-  res.flushHeaders();
 };
 
 const getExportPermission = function(type) {
@@ -61,19 +59,22 @@ module.exports = {
       req.query.type = req.params.type;
       req.query.form = req.params.form || req.query.form;
       req.query.district = ctx.district;
-      exportDataV1.get(req.query)
-        .then(exportDataResult => {
-          writeExportHeaders(res, req.params.type, formats[req.query.format] || formats.csv);
 
-          if (_.isFunction(exportDataResult)) {
-            // wants to stream the result back
-            exportDataResult(res.write.bind(res), res.end.bind(res));
-          } else {
-            // has already generated result to return
-            res.send(exportDataResult);
-          }
-        })
-        .catch(err => serverUtils.error(err, req, res));
+      exportDataV1.get(req.query, function(err, exportDataResult) {
+        if (err) {
+          return serverUtils.error(err, req, res);
+        }
+
+        writeExportHeaders(res, req.params.type, formats[req.query.format] || formats.csv);
+
+        if (_.isFunction(exportDataResult)) {
+          // wants to stream the result back
+          exportDataResult(res.write.bind(res), res.end.bind(res));
+        } else {
+          // has already generated result to return
+          res.send(exportDataResult);
+        }
+      });
     });
   },
   routeV2: (req, res) => {
@@ -118,14 +119,23 @@ module.exports = {
       .then(() => {
         writeExportHeaders(res, req.params.type, formats.csv);
 
+        // To respond as quickly to the request as possible
+        res.flushHeaders();
+
         const d = domain.create();
-        d.on('error', err => serverUtils.error(err, req, res));
+        d.on('error', err => {
+          // Because we've already flushed the headers above we can't use
+          // serverUtils anymore, we just have to close the connection
+          console.error('Error exporting v2 data for', type);
+          console.error('params:', JSON.stringify(filters, null, 2));
+          console.error('options:', JSON.stringify(options, null, 2));
+          console.error(err);
+          res.end(`--ERROR--\nError exporting data: ${err.message}\n`);
+        });
         d.run(() =>
           exportDataV2
             .export(type, filters, options)
             .pipe(res));
       }).catch(err => serverUtils.error(err, req, res));
-      // TODO: ^^^ it would be nice to just return the Promise chain and have
-      //       express deal with it
   }
 };
