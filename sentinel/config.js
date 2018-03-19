@@ -42,13 +42,13 @@ const initFeed = () => {
 
 const initConfig = () => {
   return new Promise((resolve, reject) => {
-    db.medic.get('/api/v1/settings', (err, settings) => {
+    db.medic.get('_design/medic', (err, ddoc) => {
       if (err) {
         console.error(err);
         return reject(new Error('Error loading configuration'));
       }
-      _.defaults(settings, defaults);
-      config = settings;
+      _.defaults(ddoc.app_settings, defaults);
+      config = ddoc.app_settings;
       logger.debug(
         'Reminder messages allowed between %s:%s and %s:%s',
         config.schedule_morning_hours,

@@ -11,7 +11,7 @@ module.exports = {
         var rules = settings.tasks && settings.tasks.rules;
         if (!rules) {
           // no rules configured
-          return callback();
+          return;
         }
 
         if (rules.indexOf('_complete') !== -1) {

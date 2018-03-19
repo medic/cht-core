@@ -100,9 +100,8 @@ const updateSettings = updates => {
   return request({
     path: '/api/v1/settings',
     method: 'GET'
-  }).then(result => {
-    originalSettings = result.settings;
-
+  }).then(settings => {
+    originalSettings = settings;
     // Make sure all updated fields are present in originalSettings, to enable reverting later.
     Object.keys(updates).forEach(updatedField => {
       if (!_.has(originalSettings, updatedField)) {
