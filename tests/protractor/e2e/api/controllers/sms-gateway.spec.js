@@ -105,35 +105,35 @@ describe('/sms', function() {
       // of build servers. Move this test into our testing suite once we
       // build it.
       // https://github.com/medic/medic-webapp/issues/4244
-      // it('should return within a reasonable time', function() {
-      //   return saveWoMessages(...oneHundredWoMessages())
-      //     .then(() => {
+      xit('should return within a reasonable time', function() {
+        return saveWoMessages(...oneHundredWoMessages())
+          .then(() => {
 
-      //       const start = Date.now();
-      //       return postStatuses(...oneHundredUpdates())
-      //         .then(response => {
-      //           const end = Date.now();
-      //           const maxMillis = 10000; // TODO a _reasonable_ time would hopefully be less than 1s, not less than 10!
-      //           if(end > start + maxMillis) {
-      //             const seconds = (end - start) / 1000;
-      //             fail(`It took ${seconds}s to respond to the request.  The endpoint should respond within ${maxMillis}ms.`);
-      //           }
-      //           expect(response).toEqual({ messages:[] });
-      //         })
+            const start = Date.now();
+            return postStatuses(...oneHundredUpdates())
+              .then(response => {
+                const end = Date.now();
+                const maxMillis = 10000; // TODO a _reasonable_ time would hopefully be less than 1s, not less than 10!
+                if(end > start + maxMillis) {
+                  const seconds = (end - start) / 1000;
+                  fail(`It took ${seconds}s to respond to the request.  The endpoint should respond within ${maxMillis}ms.`);
+                }
+                expect(response).toEqual({ messages:[] });
+              })
 
-      //         .then(() => getMessageStates())
-      //         .then(states => {
-      //           expect(states.length).toBe(100);
+              .then(() => getMessageStates())
+              .then(states => {
+                expect(states.length).toBe(100);
 
-      //           // expect: 1 state update per message
-      //           expect(
-      //               states
-      //                 .map(s => s.states)
-      //                 .every(stateHistory => stateHistory.length === 1))
-      //             .toBe(true);
-      //         });
-      //     });
-      // });
+                // expect: 1 state update per message
+                expect(
+                    states
+                      .map(s => s.states)
+                      .every(stateHistory => stateHistory.length === 1))
+                  .toBe(true);
+              });
+          });
+      });
 
     });
 
