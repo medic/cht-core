@@ -30,6 +30,7 @@
     "bulk-docs-utils": "file:shared-libs/bulk-docs-utils",
     "enketo-core": "^4.41.2",
     "font-awesome": "^4.7.0",
+    "google-libphonenumber": "^3.1.2",
     "gsm": "^0.1.4",
     "jquery": "^3.2.1",
     "json2xml": "^0.1.3",

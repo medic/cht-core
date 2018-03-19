@@ -12,7 +12,5 @@
     "chai": "^4.1.2",
     "mocha": "^5.0.0"
   },
-  "dependencies": {
-    "google-libphonenumber": "^3.1.1"
-  }
+  "dependencies": {}
 }

@@ -231,10 +231,9 @@ module.exports = function(grunt) {
         cmd: 'cd api && npm install',
       },
       npm_install: {
-        cmd: 'npm install' +
-             ' && npm --prefix api install' +
-             ' && npm --prefix sentinel install' +
-             ' && npm --prefix shared-libs/phone-number install'
+        cmd: '    echo "[webapp]"   && npm install' +
+             ' && echo "[api]"      && npm --prefix api install' +
+             ' && echo "[sentinel]" && npm --prefix sentinel install'
       },
       check_env_vars:
         'if [ -z $COUCH_URL ] || [ -z $API_URL ] || [ -z $COUCH_NODE_NAME ]; then ' +

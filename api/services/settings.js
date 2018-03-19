@@ -26,7 +26,7 @@ const doExtend = (target, source) => {
 };
 
 module.exports = {
-  get: ({ includeSchema }) => {
+  get: ({ includeSchema }={}) => {
     return getDdoc().then(ddoc => {
         if (includeSchema) {
           const meta = ddoc.kanso || ddoc.couchapp;
