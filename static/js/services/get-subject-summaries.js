@@ -10,7 +10,6 @@ angular.module('inboxServices').factory('GetSubjectSummaries',
     'use strict';
     'ngInject';
 
-    var detailedLineage = false;
     var findSubjectId = function(response, id) {
       var parent = _.find(response.rows, function(row) {
         return id && row.key[1] === id.toString() || false;
@@ -132,13 +131,9 @@ angular.module('inboxServices').factory('GetSubjectSummaries',
       return $q
         .all(promises)
         .then(function() {
-          if (detailedLineage) {
-            return summaries;
-          }
-
           return $q.resolve(_.each(summaries, function(summary) {
             if (summary.subject && summary.subject.lineage) {
-              summary.subject.lineage = _.compact(_.map(summary.subject.lineage, function(parent) {
+              summary.subject.compactLineage = _.compact(_.map(summary.subject.lineage, function(parent) {
                 return parent && parent.name;
               }));
             }
@@ -146,8 +141,7 @@ angular.module('inboxServices').factory('GetSubjectSummaries',
         });
     };
 
-    return function(summaries, detailed) {
-      detailedLineage = detailed;
+    return function(summaries) {
       var containsReports = false;
       summaries.forEach(function (summary) {
         if (summary.form) {

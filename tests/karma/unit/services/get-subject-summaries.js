@@ -6,6 +6,7 @@ describe('GetSubjectSummaries service', () => {
       query,
       lineageModelGenerator;
 
+  const doc = { _id: 'result' };
   const lineage = [
     { _id: '1', name: 'one' },
     { _id: '2', name: 'two' },
@@ -17,7 +18,7 @@ describe('GetSubjectSummaries service', () => {
     lineageModelGenerator = {
       reportPatient: sinon.stub()
     };
-    lineageModelGenerator.reportPatient.returns(Promise.resolve({ doc: {}, lineage: [] }));
+    lineageModelGenerator.reportPatient.returns(Promise.resolve({ doc: doc, lineage: lineage }));
 
     module('inboxApp');
     module($provide => {
@@ -134,8 +135,9 @@ describe('GetSubjectSummaries service', () => {
           id: 'a',
           type: 'name',
           value: 'tom',
-          lineage: [],
-          doc: {}
+          lineage: lineage,
+          compactLineage: ['one', 'two', 'three'],
+          doc: doc
         },
         validSubject: true
       });
@@ -146,8 +148,9 @@ describe('GetSubjectSummaries service', () => {
           id: 'b',
           type: 'name',
           value: 'helen',
-          lineage: [],
-          doc: {}
+          lineage: lineage,
+          compactLineage: ['one', 'two', 'three'],
+          doc: doc
         },
         validSubject: true
       });
@@ -217,8 +220,9 @@ describe('GetSubjectSummaries service', () => {
           id: 'a',
           type: 'name',
           value: 'tom',
-          lineage: [],
-          doc: {}
+          lineage: lineage,
+          compactLineage: ['one', 'two', 'three'],
+          doc: doc
         },
         validSubject: true
       });
@@ -229,8 +233,9 @@ describe('GetSubjectSummaries service', () => {
           id: 'b',
           type: 'name',
           value: 'helen',
-          lineage: [],
-          doc: {}
+          lineage: lineage,
+          compactLineage: ['one', 'two', 'three'],
+          doc: doc
         },
         validSubject: true
       });
@@ -326,114 +331,6 @@ describe('GetSubjectSummaries service', () => {
         },
         validSubject: false
       });
-    });
-  });
-
-  it('hydrate report lineage - names only', () => {
-    const given = [
-      { form: 'a', subject: { type: 'id', value: 'a' } },
-      { form: 'a', subject: { type: 'id', value: 'b' } },
-      { form: 'a', subject: { type: 'id', value: 'c' } }
-    ];
-
-    const summaries = [
-      {id: 'a', value: { name: 'tom' } },
-      {id: 'b', value: { name: 'helen' } }
-    ];
-
-    const doc = {_id: 'result'};
-
-    query.returns(Promise.resolve({ rows: summaries }));
-    lineageModelGenerator.reportPatient.returns(Promise.resolve({ doc, lineage }));
-    return service(given).then(actual => {
-      chai.expect(actual[0]).to.deep.equal({
-        form: 'a',
-        subject: {
-          id: 'a',
-          type: 'name',
-          value: 'tom',
-          lineage: ['one', 'two', 'three'],
-          doc: doc
-        },
-        validSubject: true
-      });
-
-      chai.expect(actual[1]).to.deep.equal({
-        form: 'a',
-        subject: {
-          id: 'b',
-          type: 'name',
-          value: 'helen',
-          lineage: ['one', 'two', 'three'],
-          doc: doc
-        },
-        validSubject: true
-      });
-
-      chai.expect(actual[2]).to.deep.equal({
-        form: 'a',
-        subject: {
-          type: 'id',
-          value: 'c'
-        },
-        validSubject: false
-      });
-
-      chai.expect(query.callCount).to.equal(1);
-    });
-  });
-
-  it('hydrate report lineage - detailed', () => {
-    const given = [
-      { form: 'a', subject: { type: 'id', value: 'a' } },
-      { form: 'a', subject: { type: 'id', value: 'b' } },
-      { form: 'a', subject: { type: 'id', value: 'c' } }
-    ];
-
-    const summaries = [
-      {id: 'a', value: { name: 'tom' } },
-      {id: 'b', value: { name: 'helen' } }
-    ];
-
-    const doc = {_id: 'result'};
-
-    query.returns(Promise.resolve({ rows: summaries }));
-    lineageModelGenerator.reportPatient.returns(Promise.resolve({ doc, lineage }));
-    return service(given, true).then(actual => {
-      chai.expect(actual[0]).to.deep.equal({
-        form: 'a',
-        subject: {
-          id: 'a',
-          type: 'name',
-          value: 'tom',
-          lineage: lineage,
-          doc: doc
-        },
-        validSubject: true
-      });
-
-      chai.expect(actual[1]).to.deep.equal({
-        form: 'a',
-        subject: {
-          id: 'b',
-          type: 'name',
-          value: 'helen',
-          lineage: lineage,
-          doc: doc
-        },
-        validSubject: true
-      });
-
-      chai.expect(actual[2]).to.deep.equal({
-        form: 'a',
-        subject: {
-          type: 'id',
-          value: 'c'
-        },
-        validSubject: false
-      });
-
-      chai.expect(query.callCount).to.equal(1);
     });
   });
 });

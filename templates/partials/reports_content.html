@@ -33,7 +33,7 @@
             <i ng-show="!valid && summary.verified" class="fa fa-check-circle red-dot"></i>
           </div>
 
-          <div ng-if="summary.subject.type">
+          <div ng-if="summary.subject.type" class="subject">
             <span class="name"
                   ng-bind="(summary.subject.type === 'name' && summary.subject.value) || ('report.subject.unknown' | translate)"></span>
           </div>

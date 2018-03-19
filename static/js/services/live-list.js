@@ -114,7 +114,7 @@ angular.module('inboxServices').factory('LiveListConfig',
           scope.showStatus = true;
           scope.valid = report.valid;
           scope.verified = report.verified;
-          scope.lineage = report.subject && report.subject.lineage || report.lineage;
+          scope.lineage = report.subject && report.subject.compactLineage || report.lineage;
           scope.unread = !report.read;
           var element = renderTemplate(scope);
           if (removedDomElement &&

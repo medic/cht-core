@@ -1,4 +1,4 @@
-<div class="ng-class: {sender, 'small-font': sentBy}" ng-if="message">
+<div ng-class="{sender: true, 'small-font': sentBy}" ng-if="message">
   <div>
     <span ng-if="sentBy" ng-bind="'report.sent.by' | translate"></span>
     <span class="name"
