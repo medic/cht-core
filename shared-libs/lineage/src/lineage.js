@@ -250,15 +250,17 @@ module.exports = function(Promise, DB) {
     }
 
     var findById = function(id, docs) {
-      return docs.find(function(doc) {
-        return doc._id === id;
-      });
+      if (id) {
+        return docs.find(function(doc) {
+          return doc._id === id;
+        });
+      }
     };
 
     docs.forEach(function(doc) {
       var current = doc;
       if (doc.type === 'data_record') {
-        var contactDoc = findById(current.contact._id, parents);
+        var contactDoc = findById(current.contact && current.contact._id, parents);
         if (contactDoc) {
           doc.contact = contactDoc;
         }
