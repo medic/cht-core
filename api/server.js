@@ -14,7 +14,9 @@ const nodeVersionCheck = (cb) => {
   try {
     const [major, minor, patch] = process.versions.node.split('.').map(Number);
     if (major < MIN_MAJOR) {
-      throw new Error(`Node version ${major}.${minor}.${patch} is not supported, minimum is ${MIN_MAJOR}.0.0`);
+      // TODO: re-enable this before releasing 3.0
+      // throw new Error(`Node version ${major}.${minor}.${patch} is not supported, minimum is ${MIN_MAJOR}.0.0`);
+      console.warn(`Node version ${major}.${minor}.${patch} is not supported, minimum is ${MIN_MAJOR}.0.0`);
     }
     console.log(`Node Version: ${major}.${minor}.${patch}`);
     cb();
