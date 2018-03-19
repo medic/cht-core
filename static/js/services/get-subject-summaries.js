@@ -3,12 +3,14 @@ var _ = require('underscore');
 angular.module('inboxServices').factory('GetSubjectSummaries',
   function(
     $q,
-    DB
+    DB,
+    LineageModelGenerator
   ) {
 
     'use strict';
     'ngInject';
 
+    var detailedLineage = false;
     var findSubjectId = function(response, id) {
       var parent = _.find(response.rows, function(row) {
         return id && row.key[1] === id.toString() || false;
@@ -46,6 +48,7 @@ angular.module('inboxServices').factory('GetSubjectSummaries',
           var name = findSubjectName(response, summary.subject.value);
           if (name) {
             summary.subject = {
+              id: summary.subject.value,
               value: name,
               type: 'name'
             };
@@ -114,7 +117,37 @@ angular.module('inboxServices').factory('GetSubjectSummaries',
         });
     };
 
-    return function(summaries) {
+    var processPatientLineage = function(summaries) {
+      var promises = summaries.map(function(summary) {
+        if (summary.subject.id) {
+          return LineageModelGenerator
+            .reportPatient(summary.subject.id)
+            .then(function(result) {
+              summary.subject.doc = result.doc;
+              summary.subject.lineage = result.lineage;
+            });
+        }
+      });
+
+      return $q
+        .all(promises)
+        .then(function() {
+          if (detailedLineage) {
+            return summaries;
+          }
+
+          return $q.resolve(_.each(summaries, function(summary) {
+            if (summary.subject && summary.subject.lineage) {
+              summary.subject.lineage = _.compact(_.map(summary.subject.lineage, function(parent) {
+                return parent && parent.name;
+              }));
+            }
+          }));
+        });
+    };
+
+    return function(summaries, detailed) {
+      detailedLineage = detailed;
       var containsReports = false;
       summaries.forEach(function (summary) {
         if (summary.form) {
@@ -128,6 +161,7 @@ angular.module('inboxServices').factory('GetSubjectSummaries',
 
       return processReferences(summaries)
         .then(processContactIds)
+        .then(processPatientLineage)
         .then(validateSubjects);
     };
   }

@@ -94,6 +94,14 @@ angular.module('inboxServices').factory('LineageModelGenerator',
               lineage: docs
             };
           });
+      },
+      reportPatient: function(id) {
+        return get(id).then(function(docs) {
+            return {
+              doc: docs.shift(),
+              lineage: docs
+            };
+          });
       }
     };
 
