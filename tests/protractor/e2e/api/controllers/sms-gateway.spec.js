@@ -100,7 +100,12 @@ describe('/sms', function() {
           .then(() => expectMessageStates({ id:'abc-123', states:['sent'] }));
       });
 
-      it('should return within a reasonable time', function() {
+      // TODO: performance tests should definitely happen, but they can't happen
+      // on travis where we do not get to control performance characteristics
+      // of build servers. Move this test into our testing suite once we
+      // build it.
+      // https://github.com/medic/medic-webapp/issues/4244
+      it.skip('should return within a reasonable time', function() {
         return saveWoMessages(...oneHundredWoMessages())
           .then(() => {
 
