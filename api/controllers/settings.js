@@ -30,10 +30,8 @@ module.exports = {
         }
       })
       .then(() => {
-        return settingsService.update({
-          body: req.body,
-          replace: req.query && req.query.replace
-        });
+        const replace = req.query && req.query.replace;
+        return settingsService.update(req.body, replace);
       })
       .then(() => {
         res.json({ success: true });
