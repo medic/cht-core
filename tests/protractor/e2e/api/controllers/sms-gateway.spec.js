@@ -100,41 +100,6 @@ describe('/sms', function() {
           .then(() => expectMessageStates({ id:'abc-123', states:['sent'] }));
       });
 
-      // TODO: performance tests should definitely happen, but they can't happen
-      // on travis where we do not get to control performance characteristics
-      // of build servers. Move this test into our testing suite once we
-      // build it.
-      // https://github.com/medic/medic-webapp/issues/4244
-      xit('should return within a reasonable time', function() {
-        return saveWoMessages(...oneHundredWoMessages())
-          .then(() => {
-
-            const start = Date.now();
-            return postStatuses(...oneHundredUpdates())
-              .then(response => {
-                const end = Date.now();
-                const maxMillis = 10000; // TODO a _reasonable_ time would hopefully be less than 1s, not less than 10!
-                if(end > start + maxMillis) {
-                  const seconds = (end - start) / 1000;
-                  fail(`It took ${seconds}s to respond to the request.  The endpoint should respond within ${maxMillis}ms.`);
-                }
-                expect(response).toEqual({ messages:[] });
-              })
-
-              .then(() => getMessageStates())
-              .then(states => {
-                expect(states.length).toBe(100);
-
-                // expect: 1 state update per message
-                expect(
-                    states
-                      .map(s => s.states)
-                      .every(stateHistory => stateHistory.length === 1))
-                  .toBe(true);
-              });
-          });
-      });
-
     });
 
     it('should still save messages when a status update for an unknown message is received', function() {
@@ -311,39 +276,6 @@ function getMessageStates() {
       }));
       return acc;
     }, []));
-}
-
-function oneHundredWoMessages() {
-  const messages = [];
-
-  for(let i=0; i<100; ++i) {
-    messages.push({
-      id: `wo-message-${i}`,
-      content: `wo message ${i}`,
-    });
-  }
-
-  return messages;
-}
-
-function oneHundredUpdates() {
-  const STATUS = ['PENDING', 'SENT', 'DELIVERED', 'FAILED'];
-  const updates = [];
-
-  for(let i=0; i<100; ++i) {
-    const update = {
-      id: `wo-message-${i}`,
-      status: STATUS[i%4],
-    };
-
-    if(update.status === 'FAILED') {
-      update.reason = `excuse #${i}`;
-    }
-
-    updates.push(update);
-  }
-
-  return updates;
 }
 
 function getMessageContents() {
