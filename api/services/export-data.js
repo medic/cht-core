@@ -28,14 +28,19 @@ var safeStringify = function(obj) {
   }
 };
 
+const hydrateDocs = (docs, callback) => {
+  lineage.hydrateDocs(docs)
+    .then(results => callback(null, results))
+    .catch(callback);
+};
+
 var exportTypes = {
   forms: {
     view: 'data_records',
     index: 'data_records',
     orderBy: '\\reported_date<date>',
-    hydrate: (docs, callback) => lineage.hydrateDocs(docs, callback),
+    hydrate: hydrateDocs,
     generate: function(rows, options) {
-
       var userDefinedColumns = !!options.columns;
       var tabs = [];
 
@@ -115,7 +120,7 @@ var exportTypes = {
     view: 'data_records',
     index: 'data_records',
     orderBy: '\\reported_date<date>',
-    hydrate: (docs, callback) => lineage.hydrateDocs(docs, callback),
+    hydrate: hydrateDocs,
     generate: function(rows, options) {
       if (!options.columns) {
         options.columns = createColumnModels([
