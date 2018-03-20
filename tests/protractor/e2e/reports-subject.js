@@ -336,56 +336,56 @@ describe('Reports Summary', () => {
     return element(by.css('#reports-list .unfiltered li[data-record-id="'+ report._id +'"]'));
   };
 
-  const compareLineage = (lineageListElement, expectedLineage, links) => {
-    let element = 'li';
+  const compareLineage = (report, expectedLineage, links) => {
     if (links) {
-      element = 'a';
+      expectedLineage.forEach((parent, key) => {
+        expect(element(by.css('#reports-content .item-summary .position .lineage')).all(by.css('a')).get(key).getText()).toBe(parent);
+      });
+    } else {
+      expectedLineage.forEach((parent, key) => {
+        expect(getListElement(report).all(by.css('li')).get(key).getText()).toBe(parent);
+      });
     }
-    lineageListElement.all(by.css(element)).each((item, key) => {
-      expect(item.getText()).toBe(expectedLineage[key]);
-    });
   };
 
   const checkItemListSummary = (report) => {
-    const listElement = getListElement(report);
-
     switch (report._id) {
       case REF_REF_V1._id:
       case REF_REF_V2._id:
-        expect(listElement.element(by.css('.content .heading h4 span')).getText()).toBe(MARIA.name);
-        expect(listElement.element(by.css('.content .summary p')).getText()).toBe('REF_REF');
+        expect(getListElement(report).element(by.css('.content .heading h4 span')).getText()).toBe(MARIA.name);
+        expect(getListElement(report).element(by.css('.content .summary p')).getText()).toBe('REF_REF');
         //shows subject lineage breadcrumbs
-        compareLineage(listElement.element(by.css('.content .detail ol.lineage')), ['TAG Place', 'Health Center', 'District']);
+        compareLineage(report, ['TAG Place', 'Health Center', 'District']);
         break;
       case REF_REF_I._id:
-        expect(listElement.element(by.css('.content .heading h4 span')).getText()).toBe('Unknown subject');
-        expect(listElement.element(by.css('.content .summary p')).getText()).toBe('REF_REF');
+        expect(getListElement(report).element(by.css('.content .heading h4 span')).getText()).toBe('Unknown subject');
+        expect(getListElement(report).element(by.css('.content .summary p')).getText()).toBe('REF_REF');
         //shows submitter lineage breadcrumbs
-        compareLineage(listElement.element(by.css('.content .detail ol.lineage')), ['Bob Place', 'Health Center', 'District']);
+        compareLineage(report, ['Bob Place', 'Health Center', 'District']);
         break;
       case NAM_NAM_V._id:
-        expect(listElement.element(by.css('.content .heading h4 span')).getText()).toBe(GEORGE.name);
-        expect(listElement.element(by.css('.content .summary p')).getText()).toBe('NAM_NAM');
+        expect(getListElement(report).element(by.css('.content .heading h4 span')).getText()).toBe(GEORGE.name);
+        expect(getListElement(report).element(by.css('.content .summary p')).getText()).toBe('NAM_NAM');
         //shows submitter lineage breadcrumbs
-        compareLineage(listElement.element(by.css('.content .detail ol.lineage')), ['Bob Place', 'Health Center', 'District']);
+        compareLineage(report, ['Bob Place', 'Health Center', 'District']);
         break;
       case NAM_NAM_I._id:
-        expect(listElement.element(by.css('.content .heading h4 span')).getText()).toBe('Unknown subject');
-        expect(listElement.element(by.css('.content .summary p')).getText()).toBe('NAM_NAM');
+        expect(getListElement(report).element(by.css('.content .heading h4 span')).getText()).toBe('Unknown subject');
+        expect(getListElement(report).element(by.css('.content .summary p')).getText()).toBe('NAM_NAM');
         //shows submitter lineage breadcrumbs
-        compareLineage(listElement.element(by.css('.content .detail ol.lineage')), ['Bob Place', 'Health Center', 'District']);
+        compareLineage(report, ['Bob Place', 'Health Center', 'District']);
         break;
       case PREF_PREF_V._id:
-        expect(listElement.element(by.css('.content .heading h4 span')).getText()).toBe(TAG_PLACE.name);
-        expect(listElement.element(by.css('.content .summary p')).getText()).toBe('PID_PID');
+        expect(getListElement(report).element(by.css('.content .heading h4 span')).getText()).toBe(TAG_PLACE.name);
+        expect(getListElement(report).element(by.css('.content .summary p')).getText()).toBe('PID_PID');
         //shows subject lineage breadcrumbs
-        compareLineage(listElement.element(by.css('.content .detail ol.lineage')), ['Health Center', 'District']);
+        compareLineage(report, ['Health Center', 'District']);
         break;
       case PREF_PREF_I._id:
-        expect(listElement.element(by.css('.content .heading h4 span')).getText()).toBe('Unknown subject');
-        expect(listElement.element(by.css('.content .summary p')).getText()).toBe('PID_PID');
+        expect(getListElement(report).element(by.css('.content .heading h4 span')).getText()).toBe('Unknown subject');
+        expect(getListElement(report).element(by.css('.content .summary p')).getText()).toBe('PID_PID');
         //shows submitter lineage breadcrumbs
-        compareLineage(listElement.element(by.css('.content .detail ol.lineage')), ['Bob Place', 'Health Center', 'District']);
+        compareLineage(report, ['Bob Place', 'Health Center', 'District']);
         break;
     }
   };
@@ -400,9 +400,9 @@ describe('Reports Summary', () => {
         expect(summaryElement.element(by.css('.subject .name')).getText()).toBe(MARIA.name);
         expect(summaryElement.element(by.css('.subject + div')).getText()).toBe('REF_REF');
 
-        compareLineage(summaryElement.element(by.css('.position .lineage')), ['TAG Place', 'Health Center', 'District'], true);
+        compareLineage(report, ['TAG Place', 'Health Center', 'District'], true);
 
-        browser.wait(() => element(by.cssContainingText('#reports-content .item-summary .name', CAROL.name)).isPresent(), 10000);
+        browser.wait(() => element(by.cssContainingText('#reports-content .item-summary .name', CAROL.name)).isPresent(), 20000);
         expect(summaryElement.element(by.css('.sender .name')).getText()).toBe(CAROL.name);
         expect(summaryElement.element(by.css('.sender .phone')).getText()).toBe(CAROL.phone);
         break;
@@ -410,8 +410,8 @@ describe('Reports Summary', () => {
         expect(summaryElement.element(by.css('.subject .name')).getText()).toBe('Unknown subject');
         expect(summaryElement.element(by.css('.subject + div')).getText()).toBe('REF_REF');
 
-        browser.wait(() => element(by.cssContainingText('#reports-content .item-summary .name', CAROL.name)).isPresent(), 10000);
-        compareLineage(summaryElement.element(by.css('.position .lineage')), ['Bob Place', 'Health Center', 'District'], true);
+        browser.wait(() => element(by.cssContainingText('#reports-content .item-summary .name', CAROL.name)).isPresent(), 20000);
+        compareLineage(report, ['Bob Place', 'Health Center', 'District'], true);
         expect(summaryElement.element(by.css('.sender .name')).getText()).toBe(CAROL.name);
         expect(summaryElement.element(by.css('.sender .phone')).getText()).toBe(CAROL.phone);
         break;
@@ -419,8 +419,8 @@ describe('Reports Summary', () => {
         expect(summaryElement.element(by.css('.subject .name')).getText()).toBe(GEORGE.name);
         expect(summaryElement.element(by.css('.subject + div')).getText()).toBe('NAM_NAM');
 
-        browser.wait(() => element(by.cssContainingText('#reports-content .item-summary .name', CAROL.name)).isPresent(), 10000);
-        compareLineage(summaryElement.element(by.css('.position .lineage')), ['Bob Place', 'Health Center', 'District'], true);
+        browser.wait(() => element(by.cssContainingText('#reports-content .item-summary .name', CAROL.name)).isPresent(), 20000);
+        compareLineage(report, ['Bob Place', 'Health Center', 'District'], true);
         expect(summaryElement.element(by.css('.sender .name')).getText()).toBe(CAROL.name);
         expect(summaryElement.element(by.css('.sender .phone')).getText()).toBe(CAROL.phone);
         break;
@@ -428,8 +428,8 @@ describe('Reports Summary', () => {
         expect(summaryElement.element(by.css('.subject .name')).getText()).toBe('Unknown subject');
         expect(summaryElement.element(by.css('.subject + div')).getText()).toBe('NAM_NAM');
 
-        browser.wait(() => element(by.cssContainingText('#reports-content .item-summary .name', CAROL.name)).isPresent(), 10000);
-        compareLineage(summaryElement.element(by.css('.position .lineage')), ['Bob Place', 'Health Center', 'District'], true);
+        browser.wait(() => element(by.cssContainingText('#reports-content .item-summary .name', CAROL.name)).isPresent(), 20000);
+        compareLineage(report, ['Bob Place', 'Health Center', 'District'], true);
         expect(summaryElement.element(by.css('.sender .name')).getText()).toBe(CAROL.name);
         expect(summaryElement.element(by.css('.sender .phone')).getText()).toBe(CAROL.phone);
         break;
@@ -437,9 +437,9 @@ describe('Reports Summary', () => {
         expect(summaryElement.element(by.css('.subject .name')).getText()).toBe(TAG_PLACE.name);
         expect(summaryElement.element(by.css('.subject + div')).getText()).toBe('PID_PID');
 
-        compareLineage(summaryElement.element(by.css('.position .lineage')), ['Health Center', 'District'], true);
+        compareLineage(report, ['Health Center', 'District'], true);
 
-        browser.wait(() => element(by.cssContainingText('#reports-content .item-summary .name', CAROL.name)).isPresent(), 10000);
+        browser.wait(() => element(by.cssContainingText('#reports-content .item-summary .name', CAROL.name)).isPresent(), 20000);
         expect(summaryElement.element(by.css('.sender .name')).getText()).toBe(CAROL.name);
         expect(summaryElement.element(by.css('.sender .phone')).getText()).toBe(CAROL.phone);
         break;
@@ -447,8 +447,8 @@ describe('Reports Summary', () => {
         expect(summaryElement.element(by.css('.subject .name')).getText()).toBe('Unknown subject');
         expect(summaryElement.element(by.css('.subject + div')).getText()).toBe('PID_PID');
 
-        browser.wait(() => element(by.cssContainingText('#reports-content .item-summary .name', CAROL.name)).isPresent(), 10000);
-        compareLineage(summaryElement.element(by.css('.position .lineage')), ['Bob Place', 'Health Center', 'District'], true);
+        browser.wait(() => element(by.cssContainingText('#reports-content .item-summary .name', CAROL.name)).isPresent(), 20000);
+        compareLineage(report, ['Bob Place', 'Health Center', 'District'], true);
         expect(summaryElement.element(by.css('.sender .name')).getText()).toBe(CAROL.name);
         expect(summaryElement.element(by.css('.sender .phone')).getText()).toBe(CAROL.phone);
         break;
