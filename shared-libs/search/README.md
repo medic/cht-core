@@ -70,7 +70,7 @@ Basic example of all the options:
     "to": 1518825599999
   },
   "valid": true,
-  "verified": true
+  "verified": true,
   "search": "your search terms"
 }
 ```
