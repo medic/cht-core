@@ -49,14 +49,14 @@ module.exports = {
       throw new Error(`Configuration error. Config must define have a '${CONFIG_NAME}.${MARK_PROPERTY_NAME}' array defined.`);
     }
   },
-  filter: doc => {
+  filter: (doc, info={}) => {
     return doc &&
       doc.from &&
       doc.type === 'data_record' &&
       (isConfirmForm(doc.form) || isUndoForm(doc.form)) &&
       doc.fields &&
       doc.fields.patient_id &&
-      !transitionUtils.hasRun(doc, TRANSITION_NAME);
+      !transitionUtils.hasRun(info, TRANSITION_NAME);
   },
   onMatch: change => {
     return new Promise((resolve, reject) => {

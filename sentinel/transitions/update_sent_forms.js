@@ -11,7 +11,7 @@ var _ = require('underscore'),
  * specific forms.
  */
 module.exports = {
-    filter: function(doc) {
+    filter: function(doc, info={}) {
         var self = module.exports;
         return Boolean(
             doc &&
@@ -22,7 +22,7 @@ module.exports = {
             doc.contact.parent._id &&
             doc.type === 'data_record' &&
             self._hasConfig(doc) &&
-            !transitionUtils.hasRun(doc, NAME)
+            !transitionUtils.hasRun(info, NAME)
         );
     },
     _getConfig: function() {
