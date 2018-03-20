@@ -9,7 +9,7 @@ audit history where required.
 
 # Table of contents
 
-<!-- To update table of contents run: `npx doctoc --github --maxlevel 2 README.md` -->
+<!-- To update table of contents run: `npm run toc` -->
 
 <!-- START doctoc generated TOC please keep comment here to allow auto update -->
 <!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
@@ -181,7 +181,7 @@ These are identical to the JS objects passed to the shared library, as if you we
 
 You may either pass JSON in the request body using `POST`:
 
-```
+```json
 POST /api/v2/export/reports
 {
   "filters": {

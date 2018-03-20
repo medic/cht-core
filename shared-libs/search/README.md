@@ -31,7 +31,7 @@ The first parameter is the type, the second parameter is the query params descri
 
 ### Contacts
 
-There is only one query option in contacts: search:
+There is only one query option in contacts: `search`:
 
 ```js
 Search('contact', {search: "your search terms"})
@@ -44,7 +44,7 @@ These search terms are broken up and used on tokens pulled from contacts. Names,
 
 Basic example of all the options:
 
-```js
+```json
 {
   "forms": {
     "selected": [
@@ -75,7 +75,7 @@ Basic example of all the options:
 }
 ```
 
-`forms.selected` is an array of `{code: "foo"}` objects where `"foo"` is the form code.
+`forms.selected` is an array of `{code: "foo"}` objects where `foo` is the form code.
 
 `facilities.selected` is an array of `_id` values for those facilities.
 
