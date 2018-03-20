@@ -22,7 +22,7 @@ function readStream(dataHook, callback) {
 
 exports.setUp = callback => {
   hydrateDocs = sinon.stub(lineage, 'hydrateDocs');
-  hydrateDocs.callsArg(1);
+  hydrateDocs.returns(Promise.resolve());
 
   sinon.stub(config, 'translate').callsFake((key, locale) => {
     return `{${key}:${locale}}`;
@@ -769,11 +769,11 @@ exports['get reports hydrates contacts'] = test => {
   // enketo forms aren't stored in app_settings
   const configGet = sinon.stub(config, 'get').returns({});
 
-  hydrateDocs.onFirstCall().callsFake(([{doc}], cb) => {
+  hydrateDocs.onFirstCall().callsFake(([{doc}]) => {
     doc.contact.name = 'mr one';
     doc.contact.parent.name = 'mz two';
     doc.contact.parent.parent.name = 'dr three';
-    cb();
+    return Promise.resolve();
   });
 
   const expected = '{_id:en},{contact.name:en},{contact.parent.name:en},{contact.parent.parent.name:en}\n' +
