@@ -324,17 +324,13 @@ describe('Reports Summary', () => {
 
   const testListLineage = (expected) => {
     expected.forEach((parent, key) => {
-      element(by.css('#reports-list .unfiltered li .detail .lineage li:nth-child('+ (key + 1) +')'))
-        .getText()
-        .then(text => expect(text).toBe(parent));
+      expect(element(by.css('#reports-list .unfiltered li .detail .lineage li:nth-child('+ (key + 1) +')')).getText()).toBe(parent);
     });
   };
 
   const testSummaryLineage = (expected) => {
     expected.forEach((parent, key) => {
-      element(by.css('#reports-content .item-summary .position .lineage li:nth-child('+ (key + 1) +')'))
-        .getText()
-        .then(text => expect(text).toBe(parent));
+      expect(element(by.css('#reports-content .item-summary .position .lineage li:nth-child('+ (key + 1) +')')).getText()).toBe(parent);
     });
   };
 
