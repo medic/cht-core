@@ -124,21 +124,18 @@ angular.module('inboxServices').factory('GetSubjectSummaries',
             .then(function(result) {
               summary.subject.doc = result.doc;
               summary.subject.lineage = result.lineage;
-            });
-        }
-      });
-
-      return $q
-        .all(promises)
-        .then(function() {
-          return _.each(summaries, function(summary) {
-            if (summary.subject && summary.subject.lineage) {
-              summary.subject.compactLineage = _.compact(_.map(summary.subject.lineage, function(parent) {
+              summary.subject.compactLineage = result.lineage && _.compact(_.map(result.lineage, function (parent) {
                 return parent && parent.name;
               }));
-            }
-          });
-        });
+
+              return summary;
+            });
+        }
+
+        return summary;
+      });
+
+      return $q.all(promises);
     };
 
     return function(summaries) {

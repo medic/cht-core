@@ -190,147 +190,17 @@ describe('Reports Summary', () => {
     registrations: []
   };
 
-  const REF_REF_V1 = {
-    _id: 'REF_REF_V1',
-    form: 'RR',
-    type: 'data_record',
-    from: PHONE,
-    fields: {
-      patient_id: MARIA.patient_id
-    },
-    sms_message: {
-      message_id: 23,
-      from: PHONE,
-      message: `1!RR!${MARIA.patient_id}`,
-      form: 'RR',
-      locale: 'en'
-    },
-    reported_date: moment().subtract(10, 'minutes').valueOf()
-  };
-
-  const REF_REF_V2 = {
-    _id: 'REF_REF_V2',
-    form: 'RR',
-    type: 'data_record',
-    from: PHONE,
-    fields: {
-      patient_id: MARIA._id
-    },
-    sms_message: {
-      message_id: 23,
-      from: PHONE,
-      message: `1!RR!${MARIA._id}`,
-      form: 'RR',
-      locale: 'en'
-    },
-    reported_date: moment().subtract(20, 'minutes').valueOf()
-  };
-
-  const REF_REF_I = {
-    _id: 'REF_REF_I',
-    form: 'RR',
-    type: 'data_record',
-    from: PHONE,
-    fields: {
-      patient_id: '111111'
-    },
-    sms_message: {
-      message_id: 23,
-      from: PHONE,
-      message: `1!RR!${MARIA.patient_id}`,
-      form: 'RR',
-      locale: 'en'
-    },
-    reported_date: moment().subtract(30, 'minutes').valueOf()
-  };
-
-  const NAM_NAM_V = {
-    _id: 'NAM_NAM_V',
-    form: 'NN',
-    type: 'data_record',
-    from: PHONE,
-    fields: {
-      patient_name: GEORGE.name
-    },
-    sms_message: {
-      message_id: 23,
-      from: PHONE,
-      message: `1!NN!${GEORGE.name}`,
-      form: 'NN',
-      locale: 'en'
-    },
-    reported_date: moment().subtract(40, 'minutes').valueOf()
-  };
-
-  const NAM_NAM_I = {
-    _id: 'NAM_NAM_I',
-    form: 'NN',
-    type: 'data_record',
-    from: PHONE,
-    errors: [
-      {
-        fields: 'patient_name',
-        code: 'sys.missing_fields'
-      }
-    ],
-    fields: {
-      patient_name: ''
-    },
-    sms_message: {
-      message_id: 23,
-      from: PHONE,
-      message: `1!RR!${MARIA._id}`,
-      form: 'NN',
-      locale: 'en'
-    },
-    reported_date: moment().subtract(50, 'minutes').valueOf()
-  };
-
-  const PREF_PREF_V = {
-    _id: 'PREF_PREF_V',
-    form: 'P',
-    type: 'data_record',
-    from: PHONE,
-    fields: {
-      place_id: TAG_PLACE._id
-    },
-    sms_message: {
-      message_id: 23,
-      from: PHONE,
-      message: `1!P!${TAG_PLACE._id}`,
-      form: 'RR',
-      locale: 'en'
-    },
-    reported_date: moment().subtract(60, 'minutes').valueOf()
-  };
-
-  const PREF_PREF_I = {
-    _id: 'PREF_PREF_I',
-    form: 'P',
-    type: 'data_record',
-    from: PHONE,
-    fields: {
-      place_id: '12'
-    },
-    sms_message: {
-      message_id: 23,
-      from: PHONE,
-      message: `1!P!12`,
-      form: 'RR',
-      locale: 'en'
-    },
-    reported_date: moment().subtract(2, 'hours').valueOf()
-  };
-
   const testListLineage = (expected) => {
     expected.forEach((parent, key) => {
-      expect(element(by.css('#reports-list .unfiltered li .detail .lineage li:nth-child('+ (key + 1) +')')).getText()).toBe(parent);
+      expect(getElementText('#reports-list .unfiltered li .detail .lineage li:nth-child('+ (key + 1) +')'))
+        .toBe(parent);
     });
   };
 
   const testSummaryLineage = (expected) => {
     expected.forEach((parent, key) => {
-      expect(element(by.css('#reports-content .item-summary .position .lineage li:nth-child('+ (key + 1) +')')).getText()).toBe(parent);
+      expect(getElementText('#reports-content .item-summary .position .lineage li:nth-child('+ (key + 1) +')'))
+        .toBe(parent);
     });
   };
 
@@ -349,14 +219,33 @@ describe('Reports Summary', () => {
     return Promise.resolve();
   };
 
+  // wait till report was seen by sentinel
+  // Sometimes, sentinel processes the report after the report is set as selected, but before the report-content
+  // controller change feed listener is set up. Result is that the report-content is never updated with the new data
+  // To counter this, we reload the page after we wait for the change for the first time.
   const waitForSentinel = () => {
-    // wait till report was seen by sentinel
-    // Sometimes, sentinel processes the report after the report is set as selected, but before the report-content
-    // controller change feed listener is set up. Result is that the report-content is never updated with the new data
-    // To counter this, we reload the page after we wait for the change for the first time.
     return browser
-      .wait(() => element(by.cssContainingText('#reports-content .item-summary .sender .name', CAROL.name)).isPresent(), 10000)
+      .wait(() => element(
+        by.cssContainingText('#reports-content .item-summary .sender .name', CAROL.name)).isPresent(),
+        10000
+      )
       .catch(loadReport);
+  };
+
+  // since the LHS might be refreshed, random StaleElementReferenceErrors were frequent enough
+  // to do something about them.
+  const getElementText = (css, attempt) => {
+    attempt = attempt || 0;
+
+    return element(by.css(css)).getText()
+      .then((text) => {
+        return text;
+      }, (err) => {
+        if (attempt < 3) {
+          return getElementText(css, attempt++);
+        }
+        throw err;
+      });
   };
 
   beforeAll(done => {
@@ -364,7 +253,7 @@ describe('Reports Summary', () => {
       .then(() => protractor.promise.all(CONTACTS.map(utils.saveDoc)))
       .then(() => {
         //wait till change feed receives all the contacts we created
-        setTimeout(done, 10000);
+        setTimeout(done, 15000);
       })
       .catch(done.fail);
   });
@@ -379,143 +268,276 @@ describe('Reports Summary', () => {
 
   describe('Displays correct LHS and RHS summary', () => {
     it('Concerning reports using patient_id', () => {
-      return saveReport(REF_REF_V1)
+      const REPORT = {
+        _id: 'REF_REF_V1',
+        form: 'RR',
+        type: 'data_record',
+        from: PHONE,
+        fields: {
+          patient_id: MARIA.patient_id
+        },
+        sms_message: {
+          message_id: 23,
+          from: PHONE,
+          message: `1!RR!${MARIA.patient_id}`,
+          form: 'RR',
+          locale: 'en'
+        },
+        reported_date: moment().subtract(10, 'minutes').valueOf()
+      };
+
+      return saveReport(REPORT)
         .then(loadReport)
         .then(waitForSentinel)
         .then(() => {
           //LHS
-          expect(element(by.css('#reports-list .unfiltered li .content .heading h4 span')).getText()).toBe(MARIA.name);
-          expect(element(by.css('#reports-list .unfiltered li .summary')).getText()).toBe('REF_REF');
+          expect(getElementText('#reports-list .unfiltered li .content .heading h4 span')).toBe(MARIA.name);
+          expect(getElementText('#reports-list .unfiltered li .summary')).toBe('REF_REF');
           //shows subject lineage breadcrumbs
           testListLineage(['TAG Place', 'Health Center', 'District']);
 
           //RHS
-          expect(element(by.css('#reports-content .item-summary .subject .name')).getText()).toBe(MARIA.name);
-          expect(element(by.css('#reports-content .item-summary .subject + div')).getText()).toBe('REF_REF');
+          expect(getElementText('#reports-content .item-summary .subject .name')).toBe(MARIA.name);
+          expect(getElementText('#reports-content .item-summary .subject + div')).toBe('REF_REF');
           testSummaryLineage(['TAG Place', 'Health Center', 'District']);
-          expect(element(by.css('#reports-content .item-summary .sender .name')).getText()).toBe(CAROL.name);
-          expect(element(by.css('#reports-content .item-summary .sender .phone')).getText()).toBe(CAROL.phone);
+          expect(getElementText('#reports-content .item-summary .sender .name')).toBe(CAROL.name);
+          expect(getElementText('#reports-content .item-summary .sender .phone')).toBe(CAROL.phone);
         });
     });
 
     it('Concerning reports using doc id', () => {
-      return saveReport(REF_REF_V2)
+      const REPORT = {
+        _id: 'REF_REF_V2',
+        form: 'RR',
+        type: 'data_record',
+        from: PHONE,
+        fields: {
+          patient_id: MARIA._id
+        },
+        sms_message: {
+          message_id: 23,
+          from: PHONE,
+          message: `1!RR!${MARIA._id}`,
+          form: 'RR',
+          locale: 'en'
+        },
+        reported_date: moment().subtract(20, 'minutes').valueOf()
+      };
+
+      return saveReport(REPORT)
         .then(loadReport)
         .then(waitForSentinel)
         .then(() => {
           //LHS
-          expect(element(by.css('#reports-list .unfiltered li .content .heading h4 span')).getText()).toBe(MARIA.name);
-          expect(element(by.css('#reports-list .unfiltered li .summary')).getText()).toBe('REF_REF');
+          expect(getElementText('#reports-list .unfiltered li .content .heading h4 span')).toBe(MARIA.name);
+          expect(getElementText('#reports-list .unfiltered li .summary')).toBe('REF_REF');
           //shows subject lineage breadcrumbs
           testListLineage(['TAG Place', 'Health Center', 'District']);
 
           //RHS
-          expect(element(by.css('#reports-content .item-summary .subject .name')).getText()).toBe(MARIA.name);
-
-          expect(element(by.css('#reports-content .item-summary .subject + div')).getText()).toBe('REF_REF');
+          expect(getElementText('#reports-content .item-summary .subject .name')).toBe(MARIA.name);
+          expect(getElementText('#reports-content .item-summary .subject + div')).toBe('REF_REF');
           testSummaryLineage(['TAG Place', 'Health Center', 'District']);
-          expect(element(by.css('#reports-content .item-summary .sender .name')).getText()).toBe(CAROL.name);
-          expect(element(by.css('#reports-content .item-summary .sender .phone')).getText()).toBe(CAROL.phone);
+          expect(getElementText('#reports-content .item-summary .sender .name')).toBe(CAROL.name);
+          expect(getElementText('#reports-content .item-summary .sender .phone')).toBe(CAROL.phone);
+
         });
     });
 
     it('Concerning reports with unknown patient_id', () => {
-      return saveReport(REF_REF_I)
+      const REPORT = {
+        _id: 'REF_REF_I',
+        form: 'RR',
+        type: 'data_record',
+        from: PHONE,
+        fields: {
+          patient_id: '111111'
+        },
+        sms_message: {
+          message_id: 23,
+          from: PHONE,
+          message: `1!RR!${MARIA.patient_id}`,
+          form: 'RR',
+          locale: 'en'
+        },
+        reported_date: moment().subtract(30, 'minutes').valueOf()
+      };
+
+      return saveReport(REPORT)
         .then(loadReport)
         .then(waitForSentinel)
         .then(() => {
           //LHS
-          expect(element(by.css('#reports-list .unfiltered li .content .heading h4 span')).getText()).toBe('Unknown subject');
-          expect(element(by.css('#reports-list .unfiltered li .summary')).getText()).toBe('REF_REF');
+          expect(getElementText('#reports-list .unfiltered li .content .heading h4 span')).toBe('Unknown subject');
+          expect(getElementText('#reports-list .unfiltered li .summary')).toBe('REF_REF');
           //shows submitter lineage breadcrumbs
           testListLineage(['Bob Place', 'Health Center', 'District']);
 
           //RHS
-          expect(element(by.css('#reports-content .item-summary .subject .name')).getText()).toBe('Unknown subject');
-          expect(element(by.css('#reports-content .item-summary .subject + div')).getText()).toBe('REF_REF');
+          expect(getElementText('#reports-content .item-summary .subject .name')).toBe('Unknown subject');
+          expect(getElementText('#reports-content .item-summary .subject + div')).toBe('REF_REF');
           testSummaryLineage(['Bob Place', 'Health Center', 'District']);
-          expect(element(by.css('#reports-content .item-summary .sender .name')).getText()).toBe(CAROL.name);
-          expect(element(by.css('#reports-content .item-summary .sender .phone')).getText()).toBe(CAROL.phone);
+          expect(getElementText('#reports-content .item-summary .sender .name')).toBe(CAROL.name);
+          expect(getElementText('#reports-content .item-summary .sender .phone')).toBe(CAROL.phone);
         });
     });
 
     it('Concerning reports using patient name', () => {
-      return saveReport(NAM_NAM_V)
+      const REPORT = {
+        _id: 'NAM_NAM_V',
+        form: 'NN',
+        type: 'data_record',
+        from: PHONE,
+        fields: {
+          patient_name: GEORGE.name
+        },
+        sms_message: {
+          message_id: 23,
+          from: PHONE,
+          message: `1!NN!${GEORGE.name}`,
+          form: 'NN',
+          locale: 'en'
+        },
+        reported_date: moment().subtract(40, 'minutes').valueOf()
+      };
+
+
+      return saveReport(REPORT)
         .then(loadReport)
         .then(waitForSentinel)
         .then(() => {
           //LHS
-          expect(element(by.css('#reports-list .unfiltered li .content .heading h4 span')).getText()).toBe(GEORGE.name);
-          expect(element(by.css('#reports-list .unfiltered li .summary')).getText()).toBe('NAM_NAM');
+          expect(getElementText('#reports-list .unfiltered li .content .heading h4 span')).toBe(GEORGE.name);
+          expect(getElementText('#reports-list .unfiltered li .summary')).toBe('NAM_NAM');
           //shows submitter lineage breadcrumbs
           testListLineage(['Bob Place', 'Health Center', 'District']);
 
           //RHS
-          expect(element(by.css('#reports-content .item-summary .subject .name')).getText()).toBe(GEORGE.name);
-          expect(element(by.css('#reports-content .item-summary .subject + div')).getText()).toBe('NAM_NAM');
+          expect(getElementText('#reports-content .item-summary .subject .name')).toBe(GEORGE.name);
+          expect(getElementText('#reports-content .item-summary .subject + div')).toBe('NAM_NAM');
           testSummaryLineage(['Bob Place', 'Health Center', 'District']);
-          expect(element(by.css('#reports-content .item-summary .sender .name')).getText()).toBe(CAROL.name);
-          expect(element(by.css('#reports-content .item-summary .sender .phone')).getText()).toBe(CAROL.phone);
+          expect(getElementText('#reports-content .item-summary .sender .name')).toBe(CAROL.name);
+          expect(getElementText('#reports-content .item-summary .sender .phone')).toBe(CAROL.phone);
         });
     });
 
     it('Concerning reports using missing required patient name', () => {
-      return saveReport(NAM_NAM_I)
+      const REPORT = {
+        _id: 'NAM_NAM_I',
+        form: 'NN',
+        type: 'data_record',
+        from: PHONE,
+        errors: [
+          {
+            fields: 'patient_name',
+            code: 'sys.missing_fields'
+          }
+        ],
+        fields: {
+          patient_name: ''
+        },
+        sms_message: {
+          message_id: 23,
+          from: PHONE,
+          message: `1!RR!${MARIA._id}`,
+          form: 'NN',
+          locale: 'en'
+        },
+        reported_date: moment().subtract(50, 'minutes').valueOf()
+      };
+
+      return saveReport(REPORT)
         .then(loadReport)
         .then(waitForSentinel)
         .then(() => {
           //LHS
-          expect(element(by.css('#reports-list .unfiltered li .content .heading h4 span')).getText()).toBe('Unknown subject');
-          expect(element(by.css('#reports-list .unfiltered li .summary')).getText()).toBe('NAM_NAM');
+          expect(getElementText('#reports-list .unfiltered li .content .heading h4 span')).toBe('Unknown subject');
+          expect(getElementText('#reports-list .unfiltered li .summary')).toBe('NAM_NAM');
           //shows subject lineage breadcrumbs
           testListLineage(['Bob Place', 'Health Center', 'District']);
 
           //RHS
-          expect(element(by.css('#reports-content .item-summary .subject .name')).getText()).toBe('Unknown subject');
-          expect(element(by.css('#reports-content .item-summary .subject + div')).getText()).toBe('NAM_NAM');
+          expect(getElementText('#reports-content .item-summary .subject .name')).toBe('Unknown subject');
+          expect(getElementText('#reports-content .item-summary .subject + div')).toBe('NAM_NAM');
           testSummaryLineage(['Bob Place', 'Health Center', 'District']);
-          expect(element(by.css('#reports-content .item-summary .sender .name')).getText()).toBe(CAROL.name);
-          expect(element(by.css('#reports-content .item-summary .sender .phone')).getText()).toBe(CAROL.phone);
+          expect(getElementText('#reports-content .item-summary .sender .name')).toBe(CAROL.name);
+          expect(getElementText('#reports-content .item-summary .sender .phone')).toBe(CAROL.phone);
         });
     });
 
     it('Concerning reports using place_id', () => {
-      return saveReport(PREF_PREF_V)
+      const REPORT = {
+        _id: 'PREF_PREF_V',
+        form: 'P',
+        type: 'data_record',
+        from: PHONE,
+        fields: {
+          place_id: TAG_PLACE._id
+        },
+        sms_message: {
+          message_id: 23,
+          from: PHONE,
+          message: `1!P!${TAG_PLACE._id}`,
+          form: 'RR',
+          locale: 'en'
+        },
+        reported_date: moment().subtract(60, 'minutes').valueOf()
+      };
+
+      return saveReport(REPORT)
         .then(loadReport)
         .then(waitForSentinel)
         .then(() => {
           //LHS
-          expect(element(by.css('#reports-list .unfiltered li .content .heading h4 span')).getText()).toBe(TAG_PLACE.name);
-          expect(element(by.css('#reports-list .unfiltered li .summary')).getText()).toBe('PID_PID');
+          expect(getElementText('#reports-list .unfiltered li .content .heading h4 span')).toBe(TAG_PLACE.name);
+          expect(getElementText('#reports-list .unfiltered li .summary')).toBe('PID_PID');
           //shows subject lineage breadcrumbs
           testListLineage(['Health Center', 'District']);
 
           //RHS
-          expect(element(by.css('#reports-content .item-summary .subject .name')).getText()).toBe(TAG_PLACE.name);
-          expect(element(by.css('#reports-content .item-summary .subject + div')).getText()).toBe('PID_PID');
+          expect(getElementText('#reports-content .item-summary .subject .name')).toBe(TAG_PLACE.name);
+          expect(getElementText('#reports-content .item-summary .subject + div')).toBe('PID_PID');
           testSummaryLineage(['Health Center', 'District']);
-          expect(element(by.css('#reports-content .item-summary .sender .name')).getText()).toBe(CAROL.name);
-          expect(element(by.css('#reports-content .item-summary .sender .phone')).getText()).toBe(CAROL.phone);
+          expect(getElementText('#reports-content .item-summary .sender .name')).toBe(CAROL.name);
+          expect(getElementText('#reports-content .item-summary .sender .phone')).toBe(CAROL.phone);
         });
     });
 
     it('Concerning reports using unknown place_id', () => {
-      return saveReport(PREF_PREF_I)
+      const REPORT = {
+        _id: 'PREF_PREF_I',
+        form: 'P',
+        type: 'data_record',
+        from: PHONE,
+        fields: {
+          place_id: '12'
+        },
+        sms_message: {
+          message_id: 23,
+          from: PHONE,
+          message: `1!P!12`,
+          form: 'RR',
+          locale: 'en'
+        },
+        reported_date: moment().subtract(2, 'hours').valueOf()
+      };
+
+      return saveReport(REPORT)
         .then(loadReport)
         .then(waitForSentinel)
         .then(() => {
           //LHS
-          expect(element(by.css('#reports-list .unfiltered li .content .heading h4 span')).getText()).toBe('Unknown subject');
-          expect(element(by.css('#reports-list .unfiltered li .summary')).getText()).toBe('PID_PID');
+          expect(getElementText('#reports-list .unfiltered li .content .heading h4 span')).toBe('Unknown subject');
+          expect(getElementText('#reports-list .unfiltered li .summary')).toBe('PID_PID');
           //shows submitter lineage breadcrumbs
           testListLineage(['Bob Place', 'Health Center', 'District']);
 
           //RHS
-          expect(element(by.css('#reports-content .item-summary .subject .name')).getText()).toBe('Unknown subject');
-          expect(element(by.css('#reports-content .item-summary .subject + div')).getText()).toBe('PID_PID');
+          expect(getElementText('#reports-content .item-summary .subject .name')).toBe('Unknown subject');
+          expect(getElementText('#reports-content .item-summary .subject + div')).toBe('PID_PID');
           testSummaryLineage(['Bob Place', 'Health Center', 'District']);
-          expect(element(by.css('#reports-content .item-summary .sender .name')).getText()).toBe(CAROL.name);
-          expect(element(by.css('#reports-content .item-summary .sender .phone')).getText()).toBe(CAROL.phone);
+          expect(getElementText('#reports-content .item-summary .sender .name')).toBe(CAROL.name);
+          expect(getElementText('#reports-content .item-summary .sender .phone')).toBe(CAROL.phone);
         });
     });
   });
