@@ -349,11 +349,22 @@ describe('Reports Summary', () => {
     return Promise.resolve();
   };
 
+  const waitForSentinel = () => {
+    // wait till report was seen by sentinel
+    // Sometimes, sentinel processes the report after the report is set as selected, but before the report-content
+    // controller change feed listener is set up. Result is that the report-content is never updated with the new data
+    // To counter this, we reload the page after we wait for the change for the first time.
+    return browser
+      .wait(() => element(by.cssContainingText('#reports-content .item-summary .sender .name', CAROL.name)).isPresent(), 10000)
+      .then(Promise.resolve)
+      .catch(loadReport);
+  };
+
   beforeAll(done => {
     utils.updateSettings(CONFIG)
       .then(() => protractor.promise.all(CONTACTS.map(utils.saveDoc)))
       .then(() => {
-        //wait till change feed sends all the contacts we created
+        //wait till change feed receives all the contacts we created
         setTimeout(done, 10000);
       })
       .catch(done.fail);
@@ -371,13 +382,7 @@ describe('Reports Summary', () => {
     it('Concerning reports using patient_id', () => {
       return saveReport(REF_REF_V1)
         .then(loadReport)
-        .then(() => {
-          //wait till report was seen by sentinel
-          return browser
-            .wait(() => element(by.cssContainingText('#reports-content .item-summary .sender .name', CAROL.name)).isPresent(), 10000)
-            .then(Promise.resolve)
-            .catch(loadReport);
-        })
+        .then(waitForSentinel)
         .then(() => {
           //LHS
           expect(element(by.css('#reports-list .unfiltered li .content .heading h4 span')).getText()).toBe(MARIA.name);
@@ -397,13 +402,7 @@ describe('Reports Summary', () => {
     it('Concerning reports using doc id', () => {
       return saveReport(REF_REF_V2)
         .then(loadReport)
-        .then(() => {
-          //wait till report was seen by sentinel
-          return browser
-            .wait(() => element(by.cssContainingText('#reports-content .item-summary .sender .name', CAROL.name)).isPresent(), 10000)
-            .then(Promise.resolve)
-            .catch(loadReport);
-        })
+        .then(waitForSentinel)
         .then(() => {
           //LHS
           expect(element(by.css('#reports-list .unfiltered li .content .heading h4 span')).getText()).toBe(MARIA.name);
@@ -424,13 +423,7 @@ describe('Reports Summary', () => {
     it('Concerning reports with unknown patient_id', () => {
       return saveReport(REF_REF_I)
         .then(loadReport)
-        .then(() => {
-          //wait till report was seen by sentinel
-          return browser
-            .wait(() => element(by.cssContainingText('#reports-content .item-summary .sender .name', CAROL.name)).isPresent(), 10000)
-            .then(Promise.resolve)
-            .catch(loadReport);
-        })
+        .then(waitForSentinel)
         .then(() => {
           //LHS
           expect(element(by.css('#reports-list .unfiltered li .content .heading h4 span')).getText()).toBe('Unknown subject');
@@ -450,13 +443,7 @@ describe('Reports Summary', () => {
     it('Concerning reports using patient name', () => {
       return saveReport(NAM_NAM_V)
         .then(loadReport)
-        .then(() => {
-          //wait till report was seen by sentinel
-          return browser
-            .wait(() => element(by.cssContainingText('#reports-content .item-summary .sender .name', CAROL.name)).isPresent(), 10000)
-            .then(Promise.resolve)
-            .catch(loadReport);
-        })
+        .then(waitForSentinel)
         .then(() => {
           //LHS
           expect(element(by.css('#reports-list .unfiltered li .content .heading h4 span')).getText()).toBe(GEORGE.name);
@@ -476,13 +463,7 @@ describe('Reports Summary', () => {
     it('Concerning reports using missing required patient name', () => {
       return saveReport(NAM_NAM_I)
         .then(loadReport)
-        .then(() => {
-          //wait till report was seen by sentinel
-          return browser
-            .wait(() => element(by.cssContainingText('#reports-content .item-summary .sender .name', CAROL.name)).isPresent(), 10000)
-            .then(Promise.resolve)
-            .catch(loadReport);
-        })
+        .then(waitForSentinel)
         .then(() => {
           //LHS
           expect(element(by.css('#reports-list .unfiltered li .content .heading h4 span')).getText()).toBe('Unknown subject');
@@ -502,13 +483,7 @@ describe('Reports Summary', () => {
     it('Concerning reports using place_id', () => {
       return saveReport(PREF_PREF_V)
         .then(loadReport)
-        .then(() => {
-          //wait till report was seen by sentinel
-          return browser
-            .wait(() => element(by.cssContainingText('#reports-content .item-summary .sender .name', CAROL.name)).isPresent(), 10000)
-            .then(Promise.resolve)
-            .catch(loadReport);
-        })
+        .then(waitForSentinel)
         .then(() => {
           //LHS
           expect(element(by.css('#reports-list .unfiltered li .content .heading h4 span')).getText()).toBe(TAG_PLACE.name);
@@ -528,13 +503,7 @@ describe('Reports Summary', () => {
     it('Concerning reports using unknown place_id', () => {
       return saveReport(PREF_PREF_I)
         .then(loadReport)
-        .then(() => {
-          //wait till report was seen by sentinel
-          return browser
-            .wait(() => element(by.cssContainingText('#reports-content .item-summary .sender .name', CAROL.name)).isPresent(), 10000)
-            .then(Promise.resolve)
-            .catch(loadReport);
-        })
+        .then(waitForSentinel)
         .then(() => {
           //LHS
           expect(element(by.css('#reports-list .unfiltered li .content .heading h4 span')).getText()).toBe('Unknown subject');
