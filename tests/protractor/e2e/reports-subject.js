@@ -356,7 +356,6 @@ describe('Reports Summary', () => {
     // To counter this, we reload the page after we wait for the change for the first time.
     return browser
       .wait(() => element(by.cssContainingText('#reports-content .item-summary .sender .name', CAROL.name)).isPresent(), 10000)
-      .then(Promise.resolve)
       .catch(loadReport);
   };
 

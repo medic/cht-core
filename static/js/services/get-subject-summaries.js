@@ -131,13 +131,13 @@ angular.module('inboxServices').factory('GetSubjectSummaries',
       return $q
         .all(promises)
         .then(function() {
-          return $q.resolve(_.each(summaries, function(summary) {
+          return _.each(summaries, function(summary) {
             if (summary.subject && summary.subject.lineage) {
               summary.subject.compactLineage = _.compact(_.map(summary.subject.lineage, function(parent) {
                 return parent && parent.name;
               }));
             }
-          }));
+          });
         });
     };
 
