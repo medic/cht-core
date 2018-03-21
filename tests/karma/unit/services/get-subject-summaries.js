@@ -31,7 +31,6 @@ describe('GetSubjectSummaries service', () => {
 
   afterEach(() => {
     KarmaUtils.restore(query);
-    KarmaUtils.restore(lineageModelGenerator);
   });
 
   it('returns empty array when given no summaries', () => {

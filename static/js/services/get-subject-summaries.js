@@ -124,7 +124,7 @@ angular.module('inboxServices').factory('GetSubjectSummaries',
             .then(function(result) {
               summary.subject.doc = result.doc;
               summary.subject.lineage = result.lineage;
-              summary.subject.compactLineage = result.lineage && _.compact(_.map(result.lineage, function (parent) {
+              summary.subject.compactLineage = _.compact(_.map(result.lineage, function (parent) {
                 return parent && parent.name;
               }));
 
