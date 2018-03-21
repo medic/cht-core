@@ -41,10 +41,6 @@ angular.module('inboxServices').factory('GetSubjectSummaries',
       return (parent && parent.value && parent.value.name) || null;
     };
 
-    var findSubjectLineage = function(lineage, id) {
-      return _.findWhere(lineage, {_id: id});
-    };
-
     var replaceIdsWithNames = function(summaries, response) {
       summaries.forEach(function(summary) {
         if (summary.subject && summary.subject.type === 'id' && summary.subject.value) {
@@ -123,10 +119,7 @@ angular.module('inboxServices').factory('GetSubjectSummaries',
     var hydrateSubjectLineages = function(summaries, response) {
       summaries.forEach(function(summary) {
         if (summary.subject && summary.subject._id) {
-          var lineage = findSubjectLineage(response, summary.subject._id);
-          if (lineage) {
-            _.extend(summary.subject, lineage);
-          }
+          _.extend(summary.subject, _.findWhere(response, {_id: summary.subject._id}));
         }
       });
       return summaries;
