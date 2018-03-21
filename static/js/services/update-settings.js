@@ -8,7 +8,10 @@ angular.module('inboxServices').factory('UpdateSettings',
 
     return function(updates, options) {
       options = options || {};
-      var config = { params: { replace: options.replace } };
+      var config = {
+        params: { replace: options.replace },
+        headers: { 'Content-Type': 'application/json' }
+      };
       return $http.put('/api/v1/settings', updates, config)
         .then(function() {
           // clear cached settings

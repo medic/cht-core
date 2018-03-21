@@ -2,6 +2,7 @@ describe('MedicReporterModalCtrl', function() {
   'use strict';
 
   var createController,
+      dbName,
       formCode,
       http,
       language,
@@ -45,6 +46,11 @@ describe('MedicReporterModalCtrl', function() {
         language = sinon.stub();
         language.returns(Promise.resolve(userLocale));
         return language;
+      });
+
+      dbName = 'bestdbever';
+      $provide.factory('Location', function() {
+        return { dbName: dbName };
       });
 
       $provide.factory('Settings', function() {
@@ -169,13 +175,13 @@ describe('MedicReporterModalCtrl', function() {
 
   it('Uses the current db\'s _forms_list_path', function(done) {
     runTest(done, function() {
-      chai.expect(merge.args[0][1]._forms_list_path).to.equal('/api/v1/settings');
+      chai.expect(merge.args[0][1]._forms_list_path).to.equal('/' + dbName + '/_design/medic/_rewrite/app_settings/medic-client/forms');
     });
   });
 
   it('Uses the current db\'s _sync_url', function(done) {
     runTest(done, function() {
-      chai.expect(merge.args[0][1]._sync_url).to.equal('/api/sms');
+      chai.expect(merge.args[0][1]._sync_url).to.equal('/' + dbName + '/_design/medic/_rewrite/add');
     });
   });
 

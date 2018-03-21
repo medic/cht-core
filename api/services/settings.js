@@ -26,18 +26,8 @@ const doExtend = (target, source) => {
 };
 
 module.exports = {
-  get: ({ includeSchema }={}) => {
-    return getDdoc().then(ddoc => {
-      if (includeSchema) {
-        const meta = ddoc.kanso || ddoc.couchapp;
-        return {
-          settings: ddoc.app_settings,
-          meta: meta,
-          schema: meta && meta.config && meta.config.settings_schema
-        };
-      }
-      return ddoc.app_settings;
-    });
+  get: () => {
+    return getDdoc().then(ddoc => ddoc.app_settings);
   },
   update: (body, replace) => {
     return getDdoc().then(ddoc => {

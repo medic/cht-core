@@ -1,23 +1,34 @@
 const auth = require('../auth'),
       serverUtils = require('../server-utils'),
-      settingsService = require('../services/settings');
+      settingsService = require('../services/settings'),
+      objectPath = require('object-path');
 
-const doGet = (req, res, includeSchema) => {
-  auth.getUserCtx(req) // make sure they're logged in
-    .then(() => settingsService.get({ includeSchema: includeSchema }))
-    .then(settings => res.json(settings))
-    .catch(err => {
-      serverUtils.error(err, req, res, true);
-    });
-};
+const doGet = req => auth.getUserCtx(req).then(() => settingsService.get());
 
 module.exports = {
   get: (req, res) => {
-    doGet(req, res);
+    doGet(req, res)
+      .then(settings => res.json(settings))
+      .catch(err => {
+        serverUtils.error(err, req, res, true);
+      });
   },
   // deprecated
-  getIncludingSchema: (req, res) => {
-    doGet(req, res, true);
+  getV0: (req, res) => {
+    doGet(req, res)
+      .then(settings => {
+        if (req.params.path) {
+          settings = objectPath.get(settings, req.params.path) || {};
+        }
+        res.json({
+          settings: settings,
+          meta: {},
+          schema: {}
+        });
+      })
+      .catch(err => {
+        serverUtils.error(err, req, res, true);
+      });
   },
   put: (req, res) => {
     auth.getUserCtx(req)
