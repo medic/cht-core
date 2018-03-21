@@ -322,187 +322,237 @@ describe('Reports Summary', () => {
     reported_date: moment().subtract(2, 'hours').valueOf()
   };
 
-  const REPORTS = [
-    REF_REF_V1,
-    REF_REF_V2,
-    REF_REF_I,
-    NAM_NAM_V,
-    NAM_NAM_I,
-    PREF_PREF_V,
-    PREF_PREF_I
-  ];
-
-  const getListElement = (report) => {
-    return element(by.css('#reports-list .unfiltered li[data-record-id="'+ report._id +'"]'));
+  const testListLineage = (expected) => {
+    expected.forEach((parent, key) => {
+      element(by.css('#reports-list .unfiltered li .detail .lineage li:nth-child('+ (key + 1) +')'))
+        .getText()
+        .then(text => expect(text).toBe(parent));
+    });
   };
 
-  const compareLineage = (report, expectedLineage, links) => {
-    if (links) {
-      expectedLineage.forEach((parent, key) => {
-        expect(element(by.css('#reports-content .item-summary .position .lineage')).all(by.css('a')).get(key).getText()).toBe(parent);
-      });
-    } else {
-      expectedLineage.forEach((parent, key) => {
-        expect(getListElement(report).all(by.css('li')).get(key).getText()).toBe(parent);
-      });
-    }
+  const testSummaryLineage = (expected) => {
+    expected.forEach((parent, key) => {
+      element(by.css('#reports-content .item-summary .position .lineage li:nth-child('+ (key + 1) +')'))
+        .getText()
+        .then(text => expect(text).toBe(parent));
+    });
   };
 
-  const checkItemListSummary = (report) => {
-    switch (report._id) {
-      case REF_REF_V1._id:
-      case REF_REF_V2._id:
-        expect(getListElement(report).element(by.css('.content .heading h4 span')).getText()).toBe(MARIA.name);
-        expect(getListElement(report).element(by.css('.content .summary p')).getText()).toBe('REF_REF');
-        //shows subject lineage breadcrumbs
-        compareLineage(report, ['TAG Place', 'Health Center', 'District']);
-        break;
-      case REF_REF_I._id:
-        expect(getListElement(report).element(by.css('.content .heading h4 span')).getText()).toBe('Unknown subject');
-        expect(getListElement(report).element(by.css('.content .summary p')).getText()).toBe('REF_REF');
-        //shows submitter lineage breadcrumbs
-        compareLineage(report, ['Bob Place', 'Health Center', 'District']);
-        break;
-      case NAM_NAM_V._id:
-        expect(getListElement(report).element(by.css('.content .heading h4 span')).getText()).toBe(GEORGE.name);
-        expect(getListElement(report).element(by.css('.content .summary p')).getText()).toBe('NAM_NAM');
-        //shows submitter lineage breadcrumbs
-        compareLineage(report, ['Bob Place', 'Health Center', 'District']);
-        break;
-      case NAM_NAM_I._id:
-        expect(getListElement(report).element(by.css('.content .heading h4 span')).getText()).toBe('Unknown subject');
-        expect(getListElement(report).element(by.css('.content .summary p')).getText()).toBe('NAM_NAM');
-        //shows submitter lineage breadcrumbs
-        compareLineage(report, ['Bob Place', 'Health Center', 'District']);
-        break;
-      case PREF_PREF_V._id:
-        expect(getListElement(report).element(by.css('.content .heading h4 span')).getText()).toBe(TAG_PLACE.name);
-        expect(getListElement(report).element(by.css('.content .summary p')).getText()).toBe('PID_PID');
-        //shows subject lineage breadcrumbs
-        compareLineage(report, ['Health Center', 'District']);
-        break;
-      case PREF_PREF_I._id:
-        expect(getListElement(report).element(by.css('.content .heading h4 span')).getText()).toBe('Unknown subject');
-        expect(getListElement(report).element(by.css('.content .summary p')).getText()).toBe('PID_PID');
-        //shows submitter lineage breadcrumbs
-        compareLineage(report, ['Bob Place', 'Health Center', 'District']);
-        break;
-    }
+  const saveReport = (report) => {
+    return protractor.promise.all(utils.saveDoc(report));
   };
 
-  const checkItemContentSummary = (report) => {
-    const summaryElement = element(by.css('#reports-content .item-summary'));
-    browser.wait(() => summaryElement.isPresent(), 10000);
-
-    switch (report._id) {
-      case REF_REF_V1._id:
-      case REF_REF_V2._id:
-        expect(summaryElement.element(by.css('.subject .name')).getText()).toBe(MARIA.name);
-        expect(summaryElement.element(by.css('.subject + div')).getText()).toBe('REF_REF');
-
-        compareLineage(report, ['TAG Place', 'Health Center', 'District'], true);
-
-        browser.wait(() => element(by.cssContainingText('#reports-content .item-summary .name', CAROL.name)).isPresent(), 20000);
-        expect(summaryElement.element(by.css('.sender .name')).getText()).toBe(CAROL.name);
-        expect(summaryElement.element(by.css('.sender .phone')).getText()).toBe(CAROL.phone);
-        break;
-      case REF_REF_I._id:
-        expect(summaryElement.element(by.css('.subject .name')).getText()).toBe('Unknown subject');
-        expect(summaryElement.element(by.css('.subject + div')).getText()).toBe('REF_REF');
-
-        browser.wait(() => element(by.cssContainingText('#reports-content .item-summary .name', CAROL.name)).isPresent(), 20000);
-        compareLineage(report, ['Bob Place', 'Health Center', 'District'], true);
-        expect(summaryElement.element(by.css('.sender .name')).getText()).toBe(CAROL.name);
-        expect(summaryElement.element(by.css('.sender .phone')).getText()).toBe(CAROL.phone);
-        break;
-      case NAM_NAM_V._id:
-        expect(summaryElement.element(by.css('.subject .name')).getText()).toBe(GEORGE.name);
-        expect(summaryElement.element(by.css('.subject + div')).getText()).toBe('NAM_NAM');
-
-        browser.wait(() => element(by.cssContainingText('#reports-content .item-summary .name', CAROL.name)).isPresent(), 20000);
-        compareLineage(report, ['Bob Place', 'Health Center', 'District'], true);
-        expect(summaryElement.element(by.css('.sender .name')).getText()).toBe(CAROL.name);
-        expect(summaryElement.element(by.css('.sender .phone')).getText()).toBe(CAROL.phone);
-        break;
-      case NAM_NAM_I._id:
-        expect(summaryElement.element(by.css('.subject .name')).getText()).toBe('Unknown subject');
-        expect(summaryElement.element(by.css('.subject + div')).getText()).toBe('NAM_NAM');
-
-        browser.wait(() => element(by.cssContainingText('#reports-content .item-summary .name', CAROL.name)).isPresent(), 20000);
-        compareLineage(report, ['Bob Place', 'Health Center', 'District'], true);
-        expect(summaryElement.element(by.css('.sender .name')).getText()).toBe(CAROL.name);
-        expect(summaryElement.element(by.css('.sender .phone')).getText()).toBe(CAROL.phone);
-        break;
-      case PREF_PREF_V._id:
-        expect(summaryElement.element(by.css('.subject .name')).getText()).toBe(TAG_PLACE.name);
-        expect(summaryElement.element(by.css('.subject + div')).getText()).toBe('PID_PID');
-
-        compareLineage(report, ['Health Center', 'District'], true);
-
-        browser.wait(() => element(by.cssContainingText('#reports-content .item-summary .name', CAROL.name)).isPresent(), 20000);
-        expect(summaryElement.element(by.css('.sender .name')).getText()).toBe(CAROL.name);
-        expect(summaryElement.element(by.css('.sender .phone')).getText()).toBe(CAROL.phone);
-        break;
-      case PREF_PREF_I._id:
-        expect(summaryElement.element(by.css('.subject .name')).getText()).toBe('Unknown subject');
-        expect(summaryElement.element(by.css('.subject + div')).getText()).toBe('PID_PID');
-
-        browser.wait(() => element(by.cssContainingText('#reports-content .item-summary .name', CAROL.name)).isPresent(), 20000);
-        compareLineage(report, ['Bob Place', 'Health Center', 'District'], true);
-        expect(summaryElement.element(by.css('.sender .name')).getText()).toBe(CAROL.name);
-        expect(summaryElement.element(by.css('.sender .phone')).getText()).toBe(CAROL.phone);
-        break;
-    }
-  };
-
-  const runTest = (report) => {
+  const loadReport = () => {
     commonElements.goToReports();
 
     helper.waitElementToBeClickable(element(by.css('.action-container .general-actions:not(.ng-hide) .fa-plus')));
-    helper.waitElementToBeClickable(getListElement(report).element(by.css('.summary')));
+    helper.waitElementToBeClickable(element(by.css('#reports-list .unfiltered li .summary')));
 
-    helper.clickElement(getListElement(report).element(by.css('.summary')));
-    checkItemListSummary(report);
-    checkItemContentSummary(report);
+    helper.clickElement(element(by.css('#reports-list .unfiltered li .summary')));
+    browser.wait(() => element(by.css('#reports-content .item-summary')).isPresent(), 10000);
+    return Promise.resolve();
   };
 
   beforeAll(done => {
     utils.updateSettings(CONFIG)
       .then(() => protractor.promise.all(CONTACTS.map(utils.saveDoc)))
-      .then(() => protractor.promise.all(REPORTS.map(utils.saveDoc)))
-      .then(done)
+      .then(() => {
+        //wait till change feed sends all the contacts we created
+        setTimeout(done, 10000);
+      })
       .catch(done.fail);
   });
 
   afterAll(utils.afterEach);
 
+  afterEach((done) => {
+    utils
+      .deleteAllDocs(CONTACTS.map(contact => contact._id))
+      .then(done);
+  });
+
   describe('Displays correct LHS and RHS summary', () => {
     it('Concerning reports using patient_id', () => {
-      runTest(REF_REF_V1);
+      return saveReport(REF_REF_V1)
+        .then(loadReport)
+        .then(() => {
+          //wait till report was seen by sentinel
+          return browser
+            .wait(() => element(by.cssContainingText('#reports-content .item-summary .sender .name', CAROL.name)).isPresent(), 10000)
+            .then(Promise.resolve)
+            .catch(loadReport);
+        })
+        .then(() => {
+          //LHS
+          expect(element(by.css('#reports-list .unfiltered li .content .heading h4 span')).getText()).toBe(MARIA.name);
+          expect(element(by.css('#reports-list .unfiltered li .summary')).getText()).toBe('REF_REF');
+          //shows subject lineage breadcrumbs
+          testListLineage(['TAG Place', 'Health Center', 'District']);
+
+          //RHS
+          expect(element(by.css('#reports-content .item-summary .subject .name')).getText()).toBe(MARIA.name);
+          expect(element(by.css('#reports-content .item-summary .subject + div')).getText()).toBe('REF_REF');
+          testSummaryLineage(['TAG Place', 'Health Center', 'District']);
+          expect(element(by.css('#reports-content .item-summary .sender .name')).getText()).toBe(CAROL.name);
+          expect(element(by.css('#reports-content .item-summary .sender .phone')).getText()).toBe(CAROL.phone);
+        });
     });
 
     it('Concerning reports using doc id', () => {
-      runTest(REF_REF_V2);
+      return saveReport(REF_REF_V2)
+        .then(loadReport)
+        .then(() => {
+          //wait till report was seen by sentinel
+          return browser
+            .wait(() => element(by.cssContainingText('#reports-content .item-summary .sender .name', CAROL.name)).isPresent(), 10000)
+            .then(Promise.resolve)
+            .catch(loadReport);
+        })
+        .then(() => {
+          //LHS
+          expect(element(by.css('#reports-list .unfiltered li .content .heading h4 span')).getText()).toBe(MARIA.name);
+          expect(element(by.css('#reports-list .unfiltered li .summary')).getText()).toBe('REF_REF');
+          //shows subject lineage breadcrumbs
+          testListLineage(['TAG Place', 'Health Center', 'District']);
+
+          //RHS
+          expect(element(by.css('#reports-content .item-summary .subject .name')).getText()).toBe(MARIA.name);
+
+          expect(element(by.css('#reports-content .item-summary .subject + div')).getText()).toBe('REF_REF');
+          testSummaryLineage(['TAG Place', 'Health Center', 'District']);
+          expect(element(by.css('#reports-content .item-summary .sender .name')).getText()).toBe(CAROL.name);
+          expect(element(by.css('#reports-content .item-summary .sender .phone')).getText()).toBe(CAROL.phone);
+        });
     });
 
     it('Concerning reports with unknown patient_id', () => {
-      runTest(REF_REF_I);
+      return saveReport(REF_REF_I)
+        .then(loadReport)
+        .then(() => {
+          //wait till report was seen by sentinel
+          return browser
+            .wait(() => element(by.cssContainingText('#reports-content .item-summary .sender .name', CAROL.name)).isPresent(), 10000)
+            .then(Promise.resolve)
+            .catch(loadReport);
+        })
+        .then(() => {
+          //LHS
+          expect(element(by.css('#reports-list .unfiltered li .content .heading h4 span')).getText()).toBe('Unknown subject');
+          expect(element(by.css('#reports-list .unfiltered li .summary')).getText()).toBe('REF_REF');
+          //shows submitter lineage breadcrumbs
+          testListLineage(['Bob Place', 'Health Center', 'District']);
+
+          //RHS
+          expect(element(by.css('#reports-content .item-summary .subject .name')).getText()).toBe('Unknown subject');
+          expect(element(by.css('#reports-content .item-summary .subject + div')).getText()).toBe('REF_REF');
+          testSummaryLineage(['Bob Place', 'Health Center', 'District']);
+          expect(element(by.css('#reports-content .item-summary .sender .name')).getText()).toBe(CAROL.name);
+          expect(element(by.css('#reports-content .item-summary .sender .phone')).getText()).toBe(CAROL.phone);
+        });
     });
 
     it('Concerning reports using patient name', () => {
-      runTest(NAM_NAM_V);
+      return saveReport(NAM_NAM_V)
+        .then(loadReport)
+        .then(() => {
+          //wait till report was seen by sentinel
+          return browser
+            .wait(() => element(by.cssContainingText('#reports-content .item-summary .sender .name', CAROL.name)).isPresent(), 10000)
+            .then(Promise.resolve)
+            .catch(loadReport);
+        })
+        .then(() => {
+          //LHS
+          expect(element(by.css('#reports-list .unfiltered li .content .heading h4 span')).getText()).toBe(GEORGE.name);
+          expect(element(by.css('#reports-list .unfiltered li .summary')).getText()).toBe('NAM_NAM');
+          //shows submitter lineage breadcrumbs
+          testListLineage(['Bob Place', 'Health Center', 'District']);
+
+          //RHS
+          expect(element(by.css('#reports-content .item-summary .subject .name')).getText()).toBe(GEORGE.name);
+          expect(element(by.css('#reports-content .item-summary .subject + div')).getText()).toBe('NAM_NAM');
+          testSummaryLineage(['Bob Place', 'Health Center', 'District']);
+          expect(element(by.css('#reports-content .item-summary .sender .name')).getText()).toBe(CAROL.name);
+          expect(element(by.css('#reports-content .item-summary .sender .phone')).getText()).toBe(CAROL.phone);
+        });
     });
 
     it('Concerning reports using missing required patient name', () => {
-      runTest(NAM_NAM_I);
+      return saveReport(NAM_NAM_I)
+        .then(loadReport)
+        .then(() => {
+          //wait till report was seen by sentinel
+          return browser
+            .wait(() => element(by.cssContainingText('#reports-content .item-summary .sender .name', CAROL.name)).isPresent(), 10000)
+            .then(Promise.resolve)
+            .catch(loadReport);
+        })
+        .then(() => {
+          //LHS
+          expect(element(by.css('#reports-list .unfiltered li .content .heading h4 span')).getText()).toBe('Unknown subject');
+          expect(element(by.css('#reports-list .unfiltered li .summary')).getText()).toBe('NAM_NAM');
+          //shows subject lineage breadcrumbs
+          testListLineage(['Bob Place', 'Health Center', 'District']);
+
+          //RHS
+          expect(element(by.css('#reports-content .item-summary .subject .name')).getText()).toBe('Unknown subject');
+          expect(element(by.css('#reports-content .item-summary .subject + div')).getText()).toBe('NAM_NAM');
+          testSummaryLineage(['Bob Place', 'Health Center', 'District']);
+          expect(element(by.css('#reports-content .item-summary .sender .name')).getText()).toBe(CAROL.name);
+          expect(element(by.css('#reports-content .item-summary .sender .phone')).getText()).toBe(CAROL.phone);
+        });
     });
 
     it('Concerning reports using place_id', () => {
-      runTest(PREF_PREF_V);
+      return saveReport(PREF_PREF_V)
+        .then(loadReport)
+        .then(() => {
+          //wait till report was seen by sentinel
+          return browser
+            .wait(() => element(by.cssContainingText('#reports-content .item-summary .sender .name', CAROL.name)).isPresent(), 10000)
+            .then(Promise.resolve)
+            .catch(loadReport);
+        })
+        .then(() => {
+          //LHS
+          expect(element(by.css('#reports-list .unfiltered li .content .heading h4 span')).getText()).toBe(TAG_PLACE.name);
+          expect(element(by.css('#reports-list .unfiltered li .summary')).getText()).toBe('PID_PID');
+          //shows subject lineage breadcrumbs
+          testListLineage(['Health Center', 'District']);
+
+          //RHS
+          expect(element(by.css('#reports-content .item-summary .subject .name')).getText()).toBe(TAG_PLACE.name);
+          expect(element(by.css('#reports-content .item-summary .subject + div')).getText()).toBe('PID_PID');
+          testSummaryLineage(['Health Center', 'District']);
+          expect(element(by.css('#reports-content .item-summary .sender .name')).getText()).toBe(CAROL.name);
+          expect(element(by.css('#reports-content .item-summary .sender .phone')).getText()).toBe(CAROL.phone);
+        });
     });
 
     it('Concerning reports using unknown place_id', () => {
-      runTest(PREF_PREF_I);
+      return saveReport(PREF_PREF_I)
+        .then(loadReport)
+        .then(() => {
+          //wait till report was seen by sentinel
+          return browser
+            .wait(() => element(by.cssContainingText('#reports-content .item-summary .sender .name', CAROL.name)).isPresent(), 10000)
+            .then(Promise.resolve)
+            .catch(loadReport);
+        })
+        .then(() => {
+          //LHS
+          expect(element(by.css('#reports-list .unfiltered li .content .heading h4 span')).getText()).toBe('Unknown subject');
+          expect(element(by.css('#reports-list .unfiltered li .summary')).getText()).toBe('PID_PID');
+          //shows submitter lineage breadcrumbs
+          testListLineage(['Bob Place', 'Health Center', 'District']);
+
+          //RHS
+          expect(element(by.css('#reports-content .item-summary .subject .name')).getText()).toBe('Unknown subject');
+          expect(element(by.css('#reports-content .item-summary .subject + div')).getText()).toBe('PID_PID');
+          testSummaryLineage(['Bob Place', 'Health Center', 'District']);
+          expect(element(by.css('#reports-content .item-summary .sender .name')).getText()).toBe(CAROL.name);
+          expect(element(by.css('#reports-content .item-summary .sender .phone')).getText()).toBe(CAROL.phone);
+        });
     });
   });
 });

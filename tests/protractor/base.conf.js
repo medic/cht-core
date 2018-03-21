@@ -7,7 +7,8 @@ class BaseConfig {
     this.config = {
       seleniumAddress: 'http://localhost:4444/wd/hub',
 
-      specs: ['e2e/**/*.js'],
+      //specs: ['e2e/**/*.js'],
+      specs: ['e2e/**/reports-subject.js'],
 
       framework: 'jasmine2',
       capabilities: {
