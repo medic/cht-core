@@ -1,5 +1,5 @@
 var _ = require('underscore'),
-    serverValidateDocUpdate = require('../../../lib/validate_doc_update');
+    serverValidateDocUpdate = require('../../../ddocs/medic/validate_doc_update');
 
 var fs = require('fs'),
     clientValidateDocUpdateString = fs.readFileSync('./ddocs/medic-client/validate_doc_update.js'),
@@ -40,7 +40,7 @@ var disallowed = function (reason) {
   return { forbidden: reason };
 };
 
-var allowedOnServer = _.partial(checkFn, serverValidateDocUpdate.validate_doc_update);
+var allowedOnServer = _.partial(checkFn, serverValidateDocUpdate);
 var allowedOnClient = _.partial(checkFn, clientValidateDocUpdate);
 
 exports['only db and national admins are allowed change ddocs'] = function(test) {
