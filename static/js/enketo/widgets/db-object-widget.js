@@ -81,12 +81,13 @@ define( function( require, exports, module ) {
         var doc = selected && selected[0] && selected[0].doc;
         if (doc) {
             var field = $this.attr('name');
+            var index = $('[name="' + field + '"]').index(this);
             var keyRoot = field.substring(0, field.lastIndexOf('/'));
-            updateFields(doc, keyRoot, field);
+            updateFields(doc, keyRoot, index, field);
         }
     };
 
-    var updateFields = function(data, keyRoot, originatingKeyPath) {
+    var updateFields = function(data, keyRoot, index, originatingKeyPath) {
         var Enketo = service('Enketo');
 
         Object.keys(data).forEach(function(key) {
@@ -102,9 +103,11 @@ define( function( require, exports, module ) {
             }
             if (_.isObject(value)) {
                 // recursively set fields for children
-                return updateFields(value, path, originatingKeyPath);
+                return updateFields(value, path, index, originatingKeyPath);
             }
-            var node = Enketo.getCurrentForm().model.node(path);
+
+            var node = Enketo.getCurrentForm().model.node(path, index);
+
             // Non-existant nodes still return a value, it's just an empty array
             // Real nodes have a value, or at minimum [""]
             if (node.getVal().length) {
