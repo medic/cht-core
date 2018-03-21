@@ -18,7 +18,7 @@ describe('GetSubjectSummaries service', () => {
     lineageModelGenerator = {
       reportPatient: sinon.stub()
     };
-    lineageModelGenerator.reportPatient.returns(Promise.resolve({ doc: doc, lineage: lineage }));
+    lineageModelGenerator.reportPatient.returns(Promise.resolve({ _id: 'lid', doc: doc, lineage: lineage }));
 
     module('inboxApp');
     module($provide => {
@@ -128,15 +128,13 @@ describe('GetSubjectSummaries service', () => {
 
     query.returns(Promise.resolve({ rows: summaries }));
     return service(given).then(actual => {
+      console.log(actual[0].subject);
       chai.expect(actual[0]).to.deep.equal({
         form: 'a',
         subject: {
-          id: 'a',
+          _id: 'a',
           type: 'name',
           value: 'tom',
-          lineage: lineage,
-          compactLineage: ['one', 'two', 'three'],
-          doc: doc
         },
         validSubject: true
       });
@@ -144,12 +142,9 @@ describe('GetSubjectSummaries service', () => {
       chai.expect(actual[1]).to.deep.equal({
         form: 'a',
         subject: {
-          id: 'b',
+          _id: 'b',
           type: 'name',
           value: 'helen',
-          lineage: lineage,
-          compactLineage: ['one', 'two', 'three'],
-          doc: doc
         },
         validSubject: true
       });
@@ -216,12 +211,9 @@ describe('GetSubjectSummaries service', () => {
       chai.expect(actual[0]).to.deep.equal({
         form: 'a',
         subject: {
-          id: 'a',
+          _id: 'a',
           type: 'name',
           value: 'tom',
-          lineage: lineage,
-          compactLineage: ['one', 'two', 'three'],
-          doc: doc
         },
         validSubject: true
       });
@@ -229,12 +221,9 @@ describe('GetSubjectSummaries service', () => {
       chai.expect(actual[1]).to.deep.equal({
         form: 'a',
         subject: {
-          id: 'b',
+          _id: 'b',
           type: 'name',
           value: 'helen',
-          lineage: lineage,
-          compactLineage: ['one', 'two', 'three'],
-          doc: doc
         },
         validSubject: true
       });
@@ -330,6 +319,78 @@ describe('GetSubjectSummaries service', () => {
         },
         validSubject: false
       });
+    });
+  });
+
+  it('hydrates subject lineage', () => {
+    const given = [
+      { form: 'a', subject: { type: 'reference', value: '12345' } },
+      { form: 'a', subject: { type: 'reference', value: '56789' } },
+      { form: 'a', subject: { type: 'reference', value: '00000' } },
+      { form: 'a', subject: { type: 'reference', value: '11111' } },
+    ];
+
+    const contactReferences = [
+      { key: ['shortcode', '12345'], id: 'lid' },
+      { key: ['shortcode', '56789'], id: 'b' },
+      { key: ['shortcode', '00000'], id: 'c' }
+    ];
+
+    const summaries = [
+      {id: 'lid', value: { name: 'tom' } },
+      {id: 'b', value: { name: 'helen' } }
+    ];
+
+    query
+      .withArgs('medic-client/contacts_by_reference')
+      .returns(Promise.resolve({ rows: contactReferences }));
+    query
+      .withArgs('medic-client/doc_summaries_by_id')
+      .returns(Promise.resolve({ rows: summaries }));
+
+    return service(given).then(actual => {
+      chai.expect(actual[0]).to.deep.equal({
+        form: 'a',
+        subject: {
+          _id: 'lid',
+          type: 'name',
+          value: 'tom',
+          lineage: lineage,
+          doc: doc,
+          compactLineage: ['one', 'two', 'three']
+        },
+        validSubject: true
+      });
+
+      chai.expect(actual[1]).to.deep.equal({
+        form: 'a',
+        subject: {
+          _id: 'b',
+          type: 'name',
+          value: 'helen',
+        },
+        validSubject: true
+      });
+
+      chai.expect(actual[2]).to.deep.equal({
+        form: 'a',
+        subject: {
+          type: 'id',
+          value: 'c'
+        },
+        validSubject: false
+      });
+
+      chai.expect(actual[3]).to.deep.equal({
+        form: 'a',
+        subject: {
+          type: 'id',
+          value: '11111'
+        },
+        validSubject: false
+      });
+
+      chai.expect(query.callCount).to.equal(2);
     });
   });
 });

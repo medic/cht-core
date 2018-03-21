@@ -41,13 +41,17 @@ angular.module('inboxServices').factory('GetSubjectSummaries',
       return (parent && parent.value && parent.value.name) || null;
     };
 
+    var findSubjectLineage = function(lineage, id) {
+      return _.findWhere(lineage, {_id: id});
+    };
+
     var replaceIdsWithNames = function(summaries, response) {
       summaries.forEach(function(summary) {
         if (summary.subject && summary.subject.type === 'id' && summary.subject.value) {
           var name = findSubjectName(response, summary.subject.value);
           if (name) {
             summary.subject = {
-              id: summary.subject.value,
+              _id: summary.subject.value,
               value: name,
               type: 'name'
             };
@@ -116,26 +120,44 @@ angular.module('inboxServices').factory('GetSubjectSummaries',
         });
     };
 
-    var processPatientLineage = function(summaries) {
-      var promises = summaries.map(function(summary) {
-        if (summary.subject.id) {
-          return LineageModelGenerator
-            .reportPatient(summary.subject.id)
-            .then(function(result) {
-              summary.subject.doc = result.doc;
-              summary.subject.lineage = result.lineage;
-              summary.subject.compactLineage = _.compact(_.map(result.lineage, function (parent) {
-                return parent && parent.name;
-              }));
-
-              return summary;
-            });
+    var hydrateSubjectLineages = function(summaries, response) {
+      summaries.forEach(function(summary) {
+        if (summary.subject && summary.subject._id) {
+          var lineage = findSubjectLineage(response, summary.subject._id);
+          if (lineage) {
+            _.extend(summary.subject, lineage);
+          }
         }
+      });
+      return summaries;
+    };
 
-        return summary;
+    var processPatientLineage = function(summaries) {
+      var subjectIds = _.uniq(_.compact(summaries.map(function(summary) {
+        return summary.subject && summary.subject._id;
+      })));
+
+      if (!subjectIds.length) {
+        return $q.resolve(summaries);
+      }
+
+      var promises = subjectIds.map(function(id) {
+        return LineageModelGenerator
+          .reportPatient(id)
+          .then(function(result) {
+            result.compactLineage = _.compact(_.map(result.lineage, function(parent) {
+              return parent && parent.name;
+            }));
+
+            return result;
+          });
       });
 
-      return $q.all(promises);
+      return $q
+        .all(promises)
+        .then(function(response) {
+          return hydrateSubjectLineages(summaries, response);
+        });
     };
 
     return function(summaries) {
