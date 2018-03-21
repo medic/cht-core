@@ -128,7 +128,6 @@ describe('GetSubjectSummaries service', () => {
 
     query.returns(Promise.resolve({ rows: summaries }));
     return service(given).then(actual => {
-      console.log(actual[0].subject);
       chai.expect(actual[0]).to.deep.equal({
         form: 'a',
         subject: {
