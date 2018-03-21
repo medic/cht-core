@@ -1,3 +1,9 @@
+/*************************************************
+ *          !!! DEPRECATION WARNING !!!          *
+ * Please use db-pouch in preference to db-nano! *
+ *          !!! DEPRECATION WARNING !!!          *
+ *************************************************/
+
 var nano = require('nano'),
 	url = require('url');
 
