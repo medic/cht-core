@@ -1,6 +1,6 @@
 var async = require('async'),
     _ = require('underscore'),
-    db = require('./db'),
+    db = require('./db-nano'),
     DDOC_ATTACHMENT_ID = '_design/medic/ddocs/compiled.json',
     APPCACHE_ATTACHMENT_NAME = 'static/dist/manifest.appcache',
     APPCACHE_DOC_ID = 'appcache',

@@ -4,7 +4,7 @@ var async = require('async'),
     utils = require('../lib/utils'),
     messages = require('../lib/messages'),
     validation = require('../lib/validation'),
-    db = require('../db'),
+    db = require('../db-nano'),
     transitionUtils = require('./utils'),
     NAME = 'update_notifications';
 

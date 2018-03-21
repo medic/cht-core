@@ -1,6 +1,6 @@
 var async = require('async'),
     _ = require('underscore'),
-    db = require('../db'),
+    db = require('../db-nano'),
     BATCH_SIZE = 100;
 
 var getClinic = function(id, callback) {

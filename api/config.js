@@ -1,6 +1,6 @@
 var _ = require('underscore'),
     follow = require('follow'),
-    db = require('./db'),
+    db = require('./db-nano'),
     ddocExtraction = require('./ddoc-extraction'),
     translations = require('./translations'),
     defaults = require('./config.default.json'),

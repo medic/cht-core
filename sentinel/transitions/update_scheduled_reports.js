@@ -1,5 +1,5 @@
 var utils = require('../lib/utils'),
-    db = require('../db'),
+    db = require('../db-nano'),
     logger = require('../lib/logger');
 
 module.exports = {

@@ -1,6 +1,6 @@
 const should = require('chai').should(),
       sinon = require('sinon').sandbox.create(),
-      db = require('../../../db'),
+      db = require('../../../db-nano'),
       transition = require('../../../transitions/registration'),
       schedules = require('../../../lib/schedules'),
       messages = require('../../../lib/messages'),

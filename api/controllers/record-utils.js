@@ -1,5 +1,5 @@
 var _ = require('underscore'),
-    db = require('../db'),
+    db = require('../db-nano'),
     PublicError = require('../public-error');
 
 var empty = function(val) {

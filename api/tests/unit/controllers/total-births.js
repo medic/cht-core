@@ -1,5 +1,5 @@
 var controller = require('../../../controllers/total-births'),
-    db = require('../../../db'),
+    db = require('../../../db-nano'),
     config = require('../../../config'),
     sinon = require('sinon').sandbox.create();
 

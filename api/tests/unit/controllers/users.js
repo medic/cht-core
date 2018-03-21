@@ -1,7 +1,7 @@
 const controller = require('../../../controllers/users'),
       people = require('../../../controllers/people'),
       places = require('../../../controllers/places'),
-      db = require('../../../db'),
+      db = require('../../../db-nano'),
       sinon = require('sinon').sandbox.create(),
       COMPLEX_PASSWORD = '23l4ijk3nSDELKSFnwekirh';
 

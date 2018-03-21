@@ -1,5 +1,5 @@
 var lib = require('../../../lib/user-db'),
-    db = require('../../../db'),
+    db = require('../../../db-nano'),
     sinon = require('sinon').sandbox.create();
 
 exports.tearDown = callback => {

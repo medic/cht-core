@@ -1,4 +1,4 @@
-const db = require('../../db'),
+const db = require('../../db-nano'),
       sinon = require('sinon').sandbox.create(),
       serverUtils = require('../../server-utils'),
       req = {

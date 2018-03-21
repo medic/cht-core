@@ -1,6 +1,6 @@
 var sinon = require('sinon').sandbox.create(),
     transition = require('../../transitions/update_notifications'),
-    db = require('../../db'),
+    db = require('../../db-nano'),
     utils = require('../../lib/utils');
 
 exports.tearDown = function(callback) {

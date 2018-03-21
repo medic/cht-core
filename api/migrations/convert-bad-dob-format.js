@@ -1,4 +1,4 @@
-var db = require('../db'),
+var db = require('../db-nano'),
     moment = require('moment');
 
 var map = function(doc) {

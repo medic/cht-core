@@ -1,5 +1,5 @@
 var doWhilst = require('async/doWhilst'),
-    db = require('../db'),
+    db = require('../db-nano'),
     BATCH_SIZE = 100;
 
 var update = function(docs, callback) {

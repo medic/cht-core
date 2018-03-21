@@ -1,4 +1,4 @@
-var db = require('../db'),
+var db = require('../db-nano'),
     async = require('async'),
     moment = require('moment'),
     uuidV4 = require('uuid/v4'),

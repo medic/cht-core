@@ -1,5 +1,5 @@
 const _ = require('underscore'),
-      db = require('../db'),
+      db = require('../db-nano'),
       dbPouch = require('../db-pouch'),
       utils = require('./utils'),
       places = require('./places'),

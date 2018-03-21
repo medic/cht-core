@@ -1,7 +1,7 @@
 const _ = require('underscore'),
       logger = require('../lib/logger'),
       transitionUtils = require('./utils'),
-      db = require('../db'),
+      db = require('../db-nano'),
       dbPouch = require('../db-pouch'),
       lineage = require('lineage')(Promise, dbPouch.medic),
       NAME = 'update_clinics';

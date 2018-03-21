@@ -1,5 +1,5 @@
 const async = require('async'),
-      db = require('./db'),
+      db = require('./db-nano'),
       config = require('./config'),
       migrations = require('./migrations'),
       ddocExtraction = require('./ddoc-extraction'),

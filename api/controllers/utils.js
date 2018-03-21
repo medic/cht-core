@@ -1,7 +1,7 @@
 var _ = require('underscore'),
     moment = require('moment'),
     async = require('async'),
-    db = require('../db'),
+    db = require('../db-nano'),
     config = require('../config'),
     luceneConditionalLimit = 1000,
     noLmpDateModifier = 4;

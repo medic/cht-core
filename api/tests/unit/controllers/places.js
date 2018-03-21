@@ -1,7 +1,7 @@
 const controller = require('../../../controllers/places'),
       people = require('../../../controllers/people'),
       cutils = require('../../../controllers/utils'),
-      db = require('../../../db'),
+      db = require('../../../db-nano'),
       sinon = require('sinon').sandbox.create();
 
 let examplePlace;

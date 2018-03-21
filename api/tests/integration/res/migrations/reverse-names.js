@@ -1,5 +1,5 @@
 var _ = require('underscore'),
-    db = require('../../../../db');
+    db = require('../../../../db-nano');
 
 module.exports = {
   name: 'extract-person-contacts',

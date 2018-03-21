@@ -1,6 +1,6 @@
 require('chai').should();
 const sinon = require('sinon').sandbox.create(),
-      db = require('../../../db'),
+      db = require('../../../db-nano'),
       transition = require('../../../transitions/death_reporting'),
       utils = require('../../../lib/utils'),
       config = require('../../../config');

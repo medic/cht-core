@@ -1,4 +1,4 @@
-var db = require('../../db'),
+var db = require('../../db-nano'),
     sinon = require('sinon').sandbox.create(),
     utils = require('../../lib/utils'),
     config = require('../../config');

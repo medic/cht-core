@@ -1,5 +1,5 @@
 var async = require('async'),
-    db = require('../db'),
+    db = require('../db-nano'),
     DDOCS_TO_REMOVE = ['_design/kujua-sentinel', '_design/erlang_filters'];
 
 module.exports = {

@@ -1,4 +1,4 @@
-const db = require('../db'),
+const db = require('../db-nano'),
       infoDocId = id => id + '-info';
 
 const getSisterInfoDoc = (docId, callback) =>

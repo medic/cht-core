@@ -1,6 +1,6 @@
 const service = require('../../../services/export-data'),
       lineage = service._lineage,
-      db = require('../../../db'),
+      db = require('../../../db-nano'),
       config = require('../../../config'),
       fti = require('../../../controllers/fti'),
       childProcess = require('child_process'),

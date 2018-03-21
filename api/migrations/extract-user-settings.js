@@ -1,6 +1,6 @@
 var async = require('async'),
     _ = require('underscore'),
-    db = require('../db');
+    db = require('../db-nano');
 
 var fieldsToIncludeInBoth = [ '_id', 'name', 'facility_id', 'roles' ];
 var fieldsToOmitFromSettings = [ '_rev', 'salt', 'derived_key', 'password_scheme', 'iterations', 'type' ];

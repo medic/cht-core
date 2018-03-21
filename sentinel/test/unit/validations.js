@@ -1,6 +1,6 @@
 var moment = require('moment'),
     validation = require('../../lib/validation'),
-    db = require('../../db'),
+    db = require('../../db-nano'),
     sinon = require('sinon').sandbox.create(),
     clock;
 
