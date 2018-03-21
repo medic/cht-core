@@ -81,10 +81,9 @@ define( function( require, exports, module ) {
         var doc = selected && selected[0] && selected[0].doc;
         if (doc) {
             var field = $this.attr('name');
-            var domIndex = $('[name="' + field + '"]').index(this);
-            var xmlIndex = domIndex + 1;
+            var index = $('[name="' + field + '"]').index(this);
             var keyRoot = field.substring(0, field.lastIndexOf('/'));
-            updateFields(doc, keyRoot, xmlIndex, field);
+            updateFields(doc, keyRoot, index, field);
         }
     };
 
@@ -107,7 +106,7 @@ define( function( require, exports, module ) {
                 return updateFields(value, path, index, originatingKeyPath);
             }
 
-            var node = Enketo.getCurrentForm().model.node('(' + path + ')[' + index + ']');
+            var node = Enketo.getCurrentForm().model.node(path, index);
 
             // Non-existant nodes still return a value, it's just an empty array
             // Real nodes have a value, or at minimum [""]
