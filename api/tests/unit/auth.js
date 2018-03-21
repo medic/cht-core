@@ -36,7 +36,6 @@ exports['auth returns error when not logged in'] = function(test) {
     test.equals(format.args[0][0].hostname, 'hostname');
     test.equals(format.args[0][0].port, 'port');
     test.equals(format.args[0][0].pathname, '/_session');
-    console.log('~~~~~~~~~~~~~~:' + JSON.stringify(get.args, null, 2));
     test.equals(get.callCount, 1);
     test.equals(get.args[0][0].url, 'http://abc.com');
     test.equals(err.message, 'Not logged in');

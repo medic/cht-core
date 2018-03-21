@@ -1,5 +1,5 @@
 // WARNING: If updating this function also update the getReplicationKey function in api/handlers/changes.js
-function(doc) {
+function (doc) {
   if (doc._id === 'resources' ||
       doc._id === 'appcache' ||
       doc._id === 'zscore-charts' ||
