@@ -7,7 +7,7 @@
         "days": 7,
         "start": 0,
         "end": 6,
-        "type": "pregnancy-1",
+        "icon": "pregnancy-1",
         "title": [
           {
             "content": "Missing pregnancy visit",
@@ -31,7 +31,7 @@
         "days": 0,
         "start": 0,
         "end": 6,
-        "type": "mother-child",
+        "icon": "mother-child",
         "title": [
           {
             "content": "Pregnancy visit needed",
@@ -55,7 +55,7 @@
         "days": 7,
         "start": 1,
         "end": 13,
-        "type": "mother-child",
+        "icon": "mother-child",
         "title": [
           {
             "content": "Missing birth report",
@@ -79,7 +79,7 @@
         "days": 0,
         "start": 0,
         "end": 6,
-        "type": "mother-child",
+        "icon": "mother-child",
         "title": [
           {
             "content": "Postnatal visit needed",
@@ -103,7 +103,7 @@
         "days": 0,
         "start": 0,
         "end": 4,
-        "type": "mother-child",
+        "icon": "mother-child",
         "title": [
           {
             "content": "Postnatal visit needed",
@@ -127,7 +127,7 @@
         "days": 1,
         "start": 0,
         "end": 3,
-        "type": "mother-child",
+        "icon": "mother-child",
         "title": [
           {
             "content": "Missing postnatal visit",
@@ -151,7 +151,7 @@
         "days": 1,
         "start": 0,
         "end": 13,
-        "type": "immunization",
+        "icon": "immunization",
         "title": [
           {
             "content": "Missing immunization visit",

@@ -86,8 +86,8 @@
           <text id="/data/init/id_health_center:label">
             <value></value>
           </text>
-          <text id="/data/person/phone:jr:constraintMsg">
-            <value>-</value>
+          <text id="/data/init/name:label">
+            <value></value>
           </text>
           <text id="/data/init/change_parent/false:label">
             <value>Siyo</value>
@@ -109,6 +109,12 @@
           </text>
           <text id="/data/person/role/chw_supervisor:label">
             <value>Mkuu wa wahudumu wa afya</value>
+          </text>
+          <text id="/data/init/type:label">
+            <value></value>
+          </text>
+          <text id="/data/person/phone:jr:constraintMsg">
+            <value>-</value>
           </text>
           <text id="/data/inputs:label">
             <value></value>
@@ -217,8 +223,8 @@
           <text id="/data/init/id_health_center:label">
             <value></value>
           </text>
-          <text id="/data/person/phone:jr:constraintMsg">
-            <value>-</value>
+          <text id="/data/init/name:label">
+            <value></value>
           </text>
           <text id="/data/init/change_parent/false:label">
             <value>नहीं</value>
@@ -240,6 +246,12 @@
           </text>
           <text id="/data/person/role/chw_supervisor:label">
             <value>सामुदायिक स्वास्थ्य कर्मी के मैनेजर</value>
+          </text>
+          <text id="/data/init/type:label">
+            <value></value>
+          </text>
+          <text id="/data/person/phone:jr:constraintMsg">
+            <value>-</value>
           </text>
           <text id="/data/inputs:label">
             <value></value>
@@ -351,6 +363,9 @@
           <text id="/data/init/id_health_center:label">
             <value></value>
           </text>
+          <text id="/data/init/name:label">
+            <value></value>
+          </text>
           <text id="/data/init/change_parent/false:label">
             <value>No</value>
           </text>
@@ -371,6 +386,9 @@
           </text>
           <text id="/data/person/role/chw_supervisor:label">
             <value>CHW Supervisor</value>
+          </text>
+          <text id="/data/init/type:label">
+            <value></value>
           </text>
           <text id="/data/inputs:label">
             <value></value>
@@ -479,8 +497,8 @@
           <text id="/data/init/id_health_center:label">
             <value></value>
           </text>
-          <text id="/data/person/phone:jr:constraintMsg">
-            <value>-</value>
+          <text id="/data/init/name:label">
+            <value></value>
           </text>
           <text id="/data/init/change_parent/false:label">
             <value>होइन</value>
@@ -502,6 +520,12 @@
           </text>
           <text id="/data/person/role/chw_supervisor:label">
             <value>महिला स्वास्थ्य स्वयम् सेविकाको सुपरभाइजर</value>
+          </text>
+          <text id="/data/init/type:label">
+            <value></value>
+          </text>
+          <text id="/data/person/phone:jr:constraintMsg">
+            <value>-</value>
           </text>
           <text id="/data/inputs:label">
             <value></value>
@@ -610,8 +634,8 @@
           <text id="/data/init/id_health_center:label">
             <value></value>
           </text>
-          <text id="/data/person/phone:jr:constraintMsg">
-            <value>-</value>
+          <text id="/data/init/name:label">
+            <value></value>
           </text>
           <text id="/data/init/change_parent/false:label">
             <value>Tidak</value>
@@ -633,6 +657,12 @@
           </text>
           <text id="/data/person/role/chw_supervisor:label">
             <value>Kader Pengawas</value>
+          </text>
+          <text id="/data/init/type:label">
+            <value></value>
+          </text>
+          <text id="/data/person/phone:jr:constraintMsg">
+            <value>-</value>
           </text>
           <text id="/data/inputs:label">
             <value></value>
@@ -661,7 +691,7 @@
         </translation>
       </itext>
       <instance>
-        <data delimiter="#" id="contact:person:edit" prefix="J1!contact:person:edit!" version="2018-02-27_19-44">
+        <data delimiter="#" id="contact:person:edit" prefix="J1!contact:person:edit!" version="2018-02-28_20-34">
           <inputs>
             <meta>
               <location>
@@ -723,7 +753,7 @@
       <bind nodeset="/data/inputs/user/name" type="string"/>
       <bind calculate="../../person/name" nodeset="/data/init/person_name" type="string"/>
       <bind calculate="../name" nodeset="/data/init/person_place_name" type="string"/>
-      <bind calculate=" /data/person/parent " nodeset="/data/init/person_parent" readonly="true()" type="db:district_hospital"/>
+      <bind calculate=" /data/person/parent " nodeset="/data/init/person_parent" readonly="true()" type="string"/>
       <bind nodeset="/data/init/type" type="string"/>
       <bind nodeset="/data/init/name" type="string"/>
       <bind nodeset="/data/init/note_place" readonly="true()" type="string"/>
@@ -773,6 +803,12 @@
       <label ref="jr:itext('/data/init:label')"/>
       <input appearance="db-object hidden" ref="/data/init/person_parent">
         <label ref="jr:itext('/data/init/person_parent:label')"/>
+      </input>
+      <input appearance="hidden" ref="/data/init/type">
+        <label ref="jr:itext('/data/init/type:label')"/>
+      </input>
+      <input appearance="hidden" ref="/data/init/name">
+        <label ref="jr:itext('/data/init/name:label')"/>
       </input>
       <input ref="/data/init/note_place">
         <label ref="jr:itext('/data/init/note_place:label')"/>

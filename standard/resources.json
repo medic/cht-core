@@ -18,9 +18,9 @@
    "pregnancy-1": "icon-people-woman-pregnant@2x.png",
    "pregnancy-4": "icon-people-woman-pregnant@2x.png",
    "risk": "icon-healthcare-warning@2x.png",
-   "chw": "icon-people-CHW-female.png",
-   "medic-clinic": "medic-health-center.svg",
-   "medic-health-center": "medic-clinic.svg",
+   "chw": "icon-people-CHW-female@2x.png",
+   "medic-clinic": "medic-clinic.svg",
+   "medic-health-center": "medic-health-center.svg",
    "medic-district-hospital": "medic-district-hospital.svg",
    "medic-person": "medic-person.svg"
 }
