@@ -1,4 +1,4 @@
-var db = require('../db-pouch');
+var db = require('../db-pouch').medic;
 
 module.exports = {
   name: 'remove-can-access-directly-permission',
@@ -7,12 +7,12 @@ module.exports = {
     db.get('_design/medic')
       .then(ddoc => {
         if(ddoc.permissions) {
-          ddoc.permissions = ddoc.permissions
-                                 .filter(p => p.name !== 'can_access_directly');
+          ddoc.permissions =
+              ddoc.permissions.filter(p => p.name !== 'can_access_directly');
+          return db.save(ddoc);
         }
-        return db.save(ddoc);
       })
-      .then(() => callback());
+      .then(() => callback())
       .catch(callback);
-  }
+  },
 };
