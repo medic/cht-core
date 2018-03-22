@@ -669,7 +669,7 @@ module.exports = function(grunt) {
     'mochaTest:unit',
     'env:dev',
     'exec:setupAdmin',
-    'couch-push',
+    'deploy',
     'test_api_integration',
     'e2e'
   ]);
