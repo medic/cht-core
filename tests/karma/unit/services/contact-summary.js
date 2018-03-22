@@ -102,4 +102,17 @@ describe('ContactSummary service', () => {
       chai.expect(actual.cards[0].fields).to.equal('beta');
     });
   });
+
+  it('does not crash when contact-summary function references `contact.parent.parent` while `contact.parent` is undefined #4301', () => {
+    const script = `return contact.parent.parent;`;
+
+    Settings.returns(Promise.resolve({ contact_summary: script }));
+    const contact = {};
+    return service(contact).then(actual => {
+      chai.expect(actual.fields).to.be.an('array');
+      chai.expect(actual.fields.length).to.equal(0);
+      chai.expect(actual.cards).to.be.an('array');
+      chai.expect(actual.cards.length).to.equal(0);
+    });
+  });
 });

@@ -60,6 +60,7 @@ angular.module('inboxServices').service('ContactSummary',
     };
 
     return function(contact, reports, lineage) {
+      contact.parent = contact.parent || '';
       return getGeneratorFunction()
         .then(function(fn) {
           return fn(contact, reports || [], lineage || []);
