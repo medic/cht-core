@@ -1,11 +1,14 @@
 var _ = require('underscore'),
-    serverValidateDocUpdate = require('../../../ddocs/medic/validate_doc_update');
-
-var fs = require('fs'),
-    clientValidateDocUpdateString = fs.readFileSync('./ddocs/medic-client/validate_doc_update.js'),
+    fs = require('fs'),
     clientValidateDocUpdate = function() {
       /*jshint -W061 */
-      eval('('+clientValidateDocUpdateString+')').apply(null, arguments);
+      var fn = fs.readFileSync('./ddocs/medic-client/validate_doc_update.js');
+      eval('(' + fn + ')').apply(null, arguments);
+    },
+    serverValidateDocUpdate = function() {
+      /*jshint -W061 */
+      var fn = fs.readFileSync('./ddocs/medic/validate_doc_update.js');
+      eval('(' + fn + ')').apply(null, arguments);
     };
 var userSettings;
 
