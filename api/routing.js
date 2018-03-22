@@ -552,7 +552,7 @@ app.postJson('/api/v1/people', function(req, res) {
 
 app.postJson('/api/v1/bulk-delete', bulkDocs.bulkDelete);
 
-app.get(`${appPrefix}app_settings/${db.settings.ddoc}/:path`, settings.getV0); // deprecated
+app.get(`${appPrefix}app_settings/${db.settings.ddoc}/:path?`, settings.getV0); // deprecated
 app.get('/api/v1/settings', settings.get);
 
 app.putJson(`${appPrefix}update_settings/${db.settings.ddoc}`, settings.put); // deprecated
