@@ -55,6 +55,55 @@ describe('/sms', function() {
           .then(() => assert.messagesInDb('test 1', 'test 2'));
       });
 
+      it('should not reject bad message content', function() {
+        api.postMessage({ missing_fields:true })
+          .then(assert.response({ messages:[] }));
+      });
+
+      it('should save all good messages in a request containing some good and some bad', function() {
+        return api.postMessages(
+          { bad_message:true },
+          {
+            good_message: true,
+            id: 'abc-123',
+            from: '+1',
+            content: 'should be saved',
+            sms_sent: 1520354329376,
+            sms_received: 1520354329386,
+          },
+          { good_message:false }
+        )
+          .then(assert.response({ messages:[] }))
+
+          .then(() => assert.messageInDb('should be saved'));
+      });
+
+      it('should not save a message if its id has been seen before', function() {
+        return api.postMessage(
+          {
+            id: 'a-1',
+            content: 'once-only',
+            from: '+1',
+            sms_sent: 1520354329379,
+            sms_received: 1520354329389,
+          }
+        )
+          .then(assert.response({ messages:[] }))
+          .then(() => assert.messageInDb('once-only'))
+
+          .then(() => api.postMessage(
+            {
+              id: 'a-1',
+              content: 'not-again',
+              from: '+2',
+              sms_sent: 1520354329382,
+              sms_received: 1520354329392,
+            }
+          ))
+          .then(assert.response({ messages:[] }))
+          .then(() => assert.messageInDb('once-only'));
+      });
+
     });
 
     describe('for webapp-originating message processing', function() {
@@ -143,6 +192,10 @@ const assert = {
 
   response: (expected) => {
     return response => expect(response).toEqual(expected);
+  },
+
+  messageInDb: (...contents) => {
+    return assert.messagesInDb(...contents);
   },
 
   messagesInDb: (...expectedContents) => {

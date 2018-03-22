@@ -217,25 +217,21 @@ const createByForm = (data, { locale }={}) => {
     throw new PublicError('Missing required field: message');
   }
 
-  const fields = ['from', 'message', 'reported_date', 'locale', 'gateway_ref'];
-
-  // filter out any unwanted fields
-  const content = _.pick(data, fields);
-
-  const options = {
+  const content = {
     type: 'sms_message',
-    message: content.message,
-    form: smsparser.getFormCode(content.message),
+    message: data.message,
+    form: smsparser.getFormCode(data.message),
     sent_timestamp: data.sent_timestamp,
     locale: data.locale || locale,
-    from: content.from
+    from: data.from,
+    gateway_ref: data.gateway_ref,
   };
-  const formDefinition = getForm(options.form);
+  const formDefinition = getForm(content.form);
   let formData;
-  if (options.form && formDefinition) {
+  if (content.form && formDefinition) {
     formData = smsparser.parse(formDefinition, data);
   }
-  return getDataRecord(formData, options);
+  return getDataRecord(formData, content);
 };
 
 const createRecordByJSON = data => {

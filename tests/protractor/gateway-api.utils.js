@@ -7,6 +7,7 @@ module.exports = {
   api: {
     get: get,
     post: post,
+    postMessage: postMessage,
     postMessages: postMessages,
     postStatus: postStatus,
     postStatuses: postStatuses,
@@ -47,6 +48,10 @@ function post(body) {
     headers: { 'Content-Type':'application/json' },
     body: body,
   });
+}
+
+function postMessage(...messages) {
+  return postMessages(...messages);
 }
 
 function postMessages(...messages) {
