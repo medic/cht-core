@@ -62,7 +62,7 @@ script:
   - |
     if [[ "$TEST_SUITE" = 'normal' ]]; then
       node --stack_size=10000 `which grunt` ci
-    elsif [[ "$TEST_SUITE" = 'performance' ]]; then
+    elif [[ "$TEST_SUITE" = 'performance' ]]; then
       node --stack_size=10000 `which grunt` ci-performance
     else
       echo "ERROR No or unknown value for TEST_SUITE env var ('${TEST_SUITE}')."
