@@ -60,8 +60,15 @@ before_script:
 
 script:
   - |
-    [[ "$TEST_SUITE" != 'normal' ]]      || node --stack_size=10000 `which grunt` ci
-    [[ "$TEST_SUITE" != 'performance' ]] || node --stack_size=10000 `which grunt` ci-performance
+    if [[ "$TEST_SUITE" = 'normal' ]]; then
+      node --stack_size=10000 `which grunt` ci
+    elif [[ "$TEST_SUITE" = 'performance' ]]; then
+      node --stack_size=10000 `which grunt` ci-performance
+    else
+      echo "ERROR No or unknown value for TEST_SUITE env var ('${TEST_SUITE}')."
+      exit 1
+    fi
+    
 
 after_success:
  - python ./scripts/ci/travis_after_all.py
