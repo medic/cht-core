@@ -65,22 +65,35 @@ const getOutgoing = () => {
 
 // Process webapp-terminating messages
 const addNewMessages = req => {
-  const messages = req.body.messages;
+  let messages = req.body.messages;
   if (!messages || !messages.length) {
     return Promise.resolve();
   }
-  const valid = messages.every(message =>
-    !(message.from === undefined || message.content === undefined)
-  );
-  if (!valid) {
-    throw new Error('All SMS messages must contain a from and content field');
-  }
-  const docs = messages.map(message => recordUtils.createByForm({
-    from: message.from,
-    message: message.content,
-    gateway_ref: message.id,
-  }));
-  return db.medic.bulkDocs(docs)
+
+  messages = messages.filter(message => {
+    if(message.from !== undefined && message.content !== undefined) {
+      return true;
+    }
+    console.log('Message missing required field', JSON.stringify(message));
+  });
+
+  const ids = messages.map(m => m.id);
+
+  return db.medic.query('medic-sms/sms-messages', { keys:ids })
+    .then(res => res.rows.map(r => r.key))
+    .then(seenIds => messages.filter(m => {
+      if (seenIds.includes(m.id)) {
+        console.log(`Ignoring message (ID already seen): ${m.id}`);
+      } else {
+        return true;
+      }
+    }))
+    .then(messages => messages.map(message => recordUtils.createByForm({
+      from: message.from,
+      message: message.content,
+      gateway_ref: message.id,
+    })))
+    .then(docs => db.medic.bulkDocs(docs))
     .then(results => {
       const allOk = results.every(result => result.ok);
       if (!allOk) {
