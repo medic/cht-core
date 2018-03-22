@@ -49,6 +49,11 @@ module.exports = function(grunt) {
         files: {
           'http://localhost:5984/medic': 'ddocs/medic.json'
         }
+      },
+      test: {
+        files: {
+          'http://localhost:5984/medic-test': 'ddocs/medic.json'
+        }
       }
     },
     browserify: {
@@ -280,13 +285,11 @@ module.exports = function(grunt) {
                  ' -d \'{"_id": "org.couchdb.user:admin", "name": "admin", "password":"pass", "type":"user", "roles":[]}\' ' +
              ' && curl -X PUT --data \'"true"\' http://admin:pass@localhost:5984/_node/${COUCH_NODE_NAME}/_config/chttpd/require_valid_user'
       },
-      deploytest: {
+      deleteTestDatabases: {
         stderr: false,
-        cmd: 'cd api && npm install --only=prod --no-package-lock && cd .. ' +
-             ' && cd sentinel && npm install --only=prod --no-package-lock && cd .. ' +
-             ' && curl -X DELETE http://admin:pass@localhost:5984/medic-test' +
-             ' && curl -X DELETE http://admin:pass@localhost:5984/medic-audit-test' +
-             ' && kanso push http://admin:pass@localhost:5984/medic-test'
+        cmd: ['medic-test', 'medic-audit-test']
+                .map(name => `curl -X DELETE http://admin:pass@localhost:5984/${name}`)
+                .join(' && ')
       },
       bundlesize: {
         cmd: 'node ./node_modules/bundlesize/index.js'
@@ -595,29 +598,43 @@ module.exports = function(grunt) {
   grunt.registerTask('deploy', 'Deploy the webapp', [
     'exec:cleanDdocs',
     'exec:packNodeModules',
-    'deployDev'
+    'deployCommon',
+    'couch-push:localhost'
+  ]);
+
+  grunt.registerTask('deployTest', 'Deploy the webapp for testing', [
+    'exec:cleanDdocs',
+    'exec:packNodeModules',
+    'deployCommon',
+    'couch-push:test'
   ]);
 
   grunt.registerTask('deployDev', 'Deploy the webapp without packing node modules', [
     'exec:cleanDdocs',
+    'deployCommon',
+    'couch-push:localhost',
+    'notify:deployed'
+  ]);
+
+  grunt.registerTask('deployCommon', 'Common tasks of dev and prod deployment', [
     'exec:setDdocVersion',
     'copy:ddocAttachments',
     'couch-compile:client',
     'couch-compile:app',
-    'exec:ddocAppSettings',
-    'couch-push',
-    'notify:deployed'
+    'exec:ddocAppSettings'
   ]);
 
   // Test tasks
   grunt.registerTask('e2e', 'Deploy app for testing and run e2e tests', [
-    'exec:deploytest',
-    'protractor:e2e_tests_and_services',
+    'exec:deleteTestDatabases',
+    'deployTest',
+    'protractor:e2e_tests_and_services'
   ]);
 
   grunt.registerTask('test_perf', 'Run performance-specific tests', [
-    'exec:deploytest',
-    'protractor:performance_tests_and_services',
+    'exec:deleteTestDatabases',
+    'deployTest',
+    'protractor:performance_tests_and_services'
   ]);
 
   grunt.registerTask('unit_continuous', 'Lint, karma unit tests running on a loop', [
@@ -669,7 +686,7 @@ module.exports = function(grunt) {
     'mochaTest:unit',
     'env:dev',
     'exec:setupAdmin',
-    'deploy',
+    'deployTest',
     'test_api_integration',
     'e2e'
   ]);
