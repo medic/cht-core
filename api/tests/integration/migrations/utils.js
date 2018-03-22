@@ -2,8 +2,7 @@ var _ = require('underscore'),
     async = require('async'),
     db = require('../../../db-nano'),
     dbPouch = require('../../../db-pouch'),
-    DB_PREFIX = 'medic_api_integration_tests__',
-    dbBackups;
+    DB_PREFIX = 'medic_api_integration_tests__';
 
 const PouchDB = require('pouchdb-core');
 PouchDB.plugin(require('pouchdb-adapter-http'));
