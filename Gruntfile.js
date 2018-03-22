@@ -694,7 +694,7 @@ module.exports = function(grunt) {
     'precommit',
     'env:dev',
     'exec:setupAdmin',
-    'exec:deploy',
+    'deploy',
     'test_perf',
   ]);
 
