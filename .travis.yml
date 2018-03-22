@@ -50,7 +50,7 @@ before_script:
   - npm --prefix api install
   - npm --prefix sentinel install
   - ./node_modules/.bin/webdriver-manager update
-  - ./node_modules/.bin/webdriver-manager start &
+  - ./node_modules/.bin/webdriver-manager start > webdriver.log.txt &
   - until nc -z localhost 4444; do sleep 1; done
 
 script:
@@ -58,11 +58,6 @@ script:
 
 after_script:
 - |
-  if [${TRAVIS_PULL_REQUEST}=\"true\"]; then
-   aws s3 cp tests/results s3://medic-e2e/PR_$TRAVIS_PULL_REQUEST/  --recursive
-  else
-   aws s3 cp tests/results s3://medic-e2e/BUILD_$TRAVIS_BUILD_NUMBER/JOB_$TRAVIS_JOB_NUMBER/  --recursive
-  fi
 
 after_success:
  - python ./scripts/ci/travis_after_all.py
@@ -79,8 +74,20 @@ after_success:
      fi
 
 after_failure:
-  - docker ps -a
-  - docker logs couch
+  - |
+      echo "Uploading logs and screenshots to ${S3_PATH}..."
+
+      if [[ "$TRAVIS_PULL_REQUEST" = true ]]; then
+        S3_PATH=s3://medic-e2e/PR_$TRAVIS_PULL_REQUEST
+      else
+        S3_PATH=s3://medic-e2e/BUILD_$TRAVIS_BUILD_NUMBER/JOB_$TRAVIS_JOB_NUMBER
+      fi
+
+      aws s3 cp tests/results "$S3_PATH"/test-results --recursive
+      aws s3 cp webdriver.log.txt "$S3_PATH"/
+
+      docker logs couch >couch.log.txt 2>&1
+      aws s3 cp couch.log.txt "$S3_PATH"/
 
 notifications:
   webhooks:
