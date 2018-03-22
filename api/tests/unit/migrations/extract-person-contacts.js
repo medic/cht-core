@@ -1,5 +1,5 @@
 var sinon = require('sinon').sandbox.create(),
-    db = require('../../../db'),
+    db = require('../../../db-nano'),
     people = require('../../../controllers/people'),
     places = require('../../../controllers/places'),
     migration = require('../../../migrations/extract-person-contacts');

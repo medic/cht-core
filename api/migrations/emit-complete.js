@@ -1,5 +1,5 @@
 var path = require('path'),
-    db = require('../db'),
+    db = require('../db-nano'),
     SETTINGS_REGEX = /(.*)(\}[ \n\t]*\}[ \n\t]*)$/,
     COMPLETE_EVENT_CONFIG = 'emit(\'_complete\', { _id: true });';
 

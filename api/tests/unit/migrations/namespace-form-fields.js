@@ -1,5 +1,5 @@
 var sinon = require('sinon').sandbox.create(),
-    db = require('../../../db'),
+    db = require('../../../db-nano'),
     config = require('../../../config'),
     migration = require('../../../migrations/namespace-form-fields');
 

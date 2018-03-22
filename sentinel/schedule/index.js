@@ -3,7 +3,7 @@ const async = require('async'),
       date = require('../date'),
       config = require('../config'),
       logger = require('../lib/logger'),
-      db = require('../db');
+      db = require('../db-nano');
 
 const tasks = {
   dueTasks: require('./due_tasks'),

@@ -1,7 +1,7 @@
 const fs = require('fs'),
       path = require('path'),
       async = require('async'),
-      db = require('./db'),
+      db = require('./db-nano'),
       MIGRATION_LOG_ID = 'migration-log',
       MIGRATION_LOG_TYPE = 'meta';
 

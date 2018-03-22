@@ -2,7 +2,7 @@ var sinon = require('sinon').sandbox.create(),
     auth = require('../../../auth'),
     config = require('../../../config'),
     handler = require('../../../handlers/changes'),
-    db = require('../../../db'),
+    db = require('../../../db-nano'),
     DDOC_ID = '_design/medic-client',
     changes;
 

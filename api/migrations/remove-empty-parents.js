@@ -1,4 +1,4 @@
-var db = require('../db');
+var db = require('../db-nano');
 
 var emptyParentsView = function(doc) {
   if (['district_hospital', 'health_center', 'clinic', 'person'].indexOf(doc.type) === -1 ||

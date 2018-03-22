@@ -2,7 +2,7 @@ const sinon = require('sinon').sandbox.create(),
       follow = require('follow'),
       _ = require('underscore'),
       config = require('../../config'),
-      db = require('../../db'),
+      db = require('../../db-nano'),
       transitions = require('../../transitions');
 
 exports.tearDown = callback => {

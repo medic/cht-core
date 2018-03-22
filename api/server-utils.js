@@ -1,6 +1,6 @@
 var url = require('url'),
     path = require('path'),
-    db = require('./db'),
+    db = require('./db-nano'),
     isClientHuman = require('./is-client-human'),
     MEDIC_BASIC_AUTH = 'Basic realm="Medic Mobile Web Services"';
 

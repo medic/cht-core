@@ -1,6 +1,6 @@
 var moment = require('moment'),
     sinon = require('sinon').sandbox.create(),
-    db = require('../../db'),
+    db = require('../../db-nano'),
     transition = require('../../transitions/update_sent_forms');
 
 exports.setUp = function(callback) {

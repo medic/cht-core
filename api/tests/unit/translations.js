@@ -1,6 +1,6 @@
 var sinon = require('sinon').sandbox.create(),
     properties = require('properties'),
-    db = require('../../db'),
+    db = require('../../db-nano'),
     translations = require('../../translations');
 
 exports.tearDown = function (callback) {

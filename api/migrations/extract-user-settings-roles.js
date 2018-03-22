@@ -2,7 +2,7 @@ var async = require('async'),
     request = require('request'),
     url = require('url'),
     _ = require('underscore'),
-    db = require('../db'),
+    db = require('../db-nano'),
     DB_ADMIN_ROLE = '_admin';
 
 var updateUser = function(admins, row, callback) {

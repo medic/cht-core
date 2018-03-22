@@ -1,5 +1,5 @@
 var controller = require('../../../controllers/visits-completed'),
-    db = require('../../../db'),
+    db = require('../../../db-nano'),
     config = require('../../../config'),
     sinon = require('sinon').sandbox.create();
 

@@ -4,7 +4,7 @@
 
 var async = require('async'),
     _ = require('underscore'),
-    db = require('../db'),
+    db = require('../db-nano'),
     config = require('../config'),
     forms;
 

@@ -3,7 +3,7 @@ var EventEmitter = require('events').EventEmitter,
     passStream = require('pass-stream'),
     _ = require('underscore'),
     auth = require('./auth'),
-    db = require('./db'),
+    db = require('./db-nano'),
     couchdbAudit = require('couchdb-audit');
 
 module.exports = AuditProxy;

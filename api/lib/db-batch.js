@@ -1,6 +1,6 @@
 const async = require('async'),
       _ = require('underscore'),
-      db = require('../db'),
+      db = require('../db-nano'),
       DEFAULT_BATCH_LIMIT = 100; // 100 is a good compromise of performance and stability
 
 const runBatch = (ddocName, viewName, viewParams, iteratee, callback) => {

@@ -1,5 +1,5 @@
 var _ = require('underscore'),
-    db = require('../db'),
+    db = require('../db-nano'),
     async = require('async');
 
 var BATCH_SIZE = 100;

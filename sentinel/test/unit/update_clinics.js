@@ -1,5 +1,5 @@
 const sinon = require('sinon').sandbox.create(),
-      db = require('../../db'),
+      db = require('../../db-nano'),
       transition = require('../../transitions/update_clinics'),
       phone = '+34567890123';
 

@@ -3,7 +3,7 @@ const request = require('request'),
       sinon = require('sinon').sandbox.create(),
       auth = require('../../auth'),
       config = require('../../config'),
-      db = require('../../db');
+      db = require('../../db-nano');
 
 let originalDbSettings;
 

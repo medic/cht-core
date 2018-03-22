@@ -1,5 +1,5 @@
 var controller = require('../../../controllers/monthly-registrations'),
-    db = require('../../../db'),
+    db = require('../../../db-nano'),
     config = require('../../../config'),
     moment = require('moment'),
     sinon = require('sinon').sandbox.create();

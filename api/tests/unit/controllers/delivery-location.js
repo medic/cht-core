@@ -1,5 +1,5 @@
 var controller = require('../../../controllers/delivery-location'),
-    db = require('../../../db'),
+    db = require('../../../db-nano'),
     sinon = require('sinon').sandbox.create();
 
 exports.tearDown = function (callback) {

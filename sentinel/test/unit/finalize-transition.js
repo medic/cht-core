@@ -1,5 +1,5 @@
 const sinon = require('sinon').sandbox.create(),
-      db = require('../../db'),
+      db = require('../../db-nano'),
       transitions = require('../../transitions/index');
 
 exports.tearDown = function(callback) {

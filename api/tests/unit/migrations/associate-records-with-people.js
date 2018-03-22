@@ -1,5 +1,5 @@
 var sinon = require('sinon').sandbox.create(),
-    db = require('../../../db'),
+    db = require('../../../db-nano'),
     migration = require('../../../migrations/associate-records-with-people');
 
 exports.tearDown = function (callback) {

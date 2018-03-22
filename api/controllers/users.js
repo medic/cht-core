@@ -3,7 +3,7 @@ const async = require('async'),
       passwordTester = require('simple-password-tester'),
       people  = require('./people'),
       places = require('./places'),
-      db = require('../db'),
+      db = require('../db-nano'),
       dbPouch = require('../db-pouch'),
       lineage = require('lineage')(Promise, dbPouch.medic);
 

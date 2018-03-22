@@ -1,4 +1,4 @@
-const db = require('../db'),
+const db = require('../db-nano'),
       async = require('async');
 
 // Regex to test for characters that are invalid in db names

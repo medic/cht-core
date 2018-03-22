@@ -1,4 +1,4 @@
-var db = require('../db');
+var db = require('../db-nano');
 
 var RESOURCES_ID = 'resources';
 

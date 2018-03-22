@@ -5,7 +5,7 @@ var _ = require('underscore'),
     messages = require('./messages'),
     utils = require('./utils'),
     logger = require('./logger'),
-    db = require('../db');
+    db = require('../db-nano');
 
 var _parseDuration = function(duration) {
     var parts = duration.split(' ');

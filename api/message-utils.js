@@ -1,5 +1,5 @@
 const _ = require('underscore'),
-      db = require('./db'),
+      db = require('./db-nano'),
       taskUtils = require('task-utils');
 
 const getTaskMessages = function(options, callback) {

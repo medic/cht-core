@@ -1,6 +1,6 @@
 const _ = require('underscore'),
       follow = require('follow'),
-      db = require('./db'),
+      db = require('./db-nano'),
       logger = require('./lib/logger'),
       defaults = require('./defaults'),
       translations = {},

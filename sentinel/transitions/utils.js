@@ -1,4 +1,4 @@
-const db = require('../db'),
+const db = require('../db-nano'),
       messages = require('../lib/messages'),
       utils = require('../lib/utils'),
       idGenerator = require('../lib/ids').generator(db);
