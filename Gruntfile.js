@@ -587,7 +587,6 @@ module.exports = function(grunt) {
   grunt.registerTask('build', 'Build the static resources', [
     'mmcss',
     'mmjs',
-    'couch-compile:client',
     'enketoxslt',
     'copy:inbox',
     'appcache'
@@ -603,6 +602,7 @@ module.exports = function(grunt) {
     'exec:cleanDdocs',
     'exec:setDdocVersion',
     'copy:ddocAttachments',
+    'couch-compile:client',
     'couch-compile:app',
     'exec:ddocAppSettings',
     'couch-push',
