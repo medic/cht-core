@@ -7,6 +7,7 @@ const _ = require('underscore'),
       async = require('async'),
       messageUtils = require('./messages'),
       recordUtils = require('./record-utils'),
+      db = require('../db-pouch'),
 
       // map from the medic-gateway state to the medic-webapp state
       STATUS_MAP = {
@@ -87,11 +88,25 @@ function getOutgoing(callback) {
 
 // Process webapp-terminating messages
 function addNewMessages(req, callback) {
-  if (!req.body.messages) {
+  const messages = req.body.messages;
+
+  if (!messages) {
     return callback();
   }
 
-  async.eachSeries(req.body.messages, saveToDb, callback);
+  const ids = messages.map(m => m.id);
+
+  db.medic.query('medic/sms_messages', { keys:ids })
+    .then(res => res.rows.map(r => r.key))
+    .then(seenIds => messages.filter(m => {
+      if (seenIds.includes(m.id)) {
+        console.log(`Ignoring message (ID already seen): ${m.id}`);
+      } else {
+        return true;
+      }
+    }))
+    .then(messages => async.eachSeries(messages, saveToDb, callback))
+    .catch(callback);
 }
 
 // Process message status updates

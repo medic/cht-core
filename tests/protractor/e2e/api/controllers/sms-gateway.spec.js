@@ -61,6 +61,32 @@ describe('/sms', function() {
           .then(() => expectMessagesInDb('test 1', 'test 2'));
       });
 
+      it('should not save a message if its id has been seen before', function() {
+        return postMessage(
+          {
+            id: 'a-1',
+            content: 'once-only',
+            from: '+1',
+            sms_sent: 1520354329379,
+            sms_received: 1520354329389,
+          }
+        )
+          .then(expectResponse({ messages:[] }))
+          .then(() => expectMessageInDb('once-only'))
+
+          .then(() => postMessage(
+            {
+              id: 'a-1',
+              content: 'not-again',
+              from: '+2',
+              sms_sent: 1520354329382,
+              sms_received: 1520354329392,
+            }
+          ))
+          .then(expectResponse({ messages:[] }))
+          .then(() => expectMessageInDb('once-only'));
+      });
+
     });
 
     describe('for webapp-originating message processing', function() {
@@ -172,12 +198,20 @@ function post(body) {
   });
 }
 
+function postMessage(...messages) {
+  return postMessages(...messages);
+}
+
 function postMessages(...messages) {
   return post({ messages });
 }
 
 function expectResponse(expected) {
   return response => expect(response).toEqual(expected);
+}
+
+function expectMessageInDb(...expectedContents) {
+  return expectMessagesInDb(...expectedContents);
 }
 
 function expectMessagesInDb(...expectedContents) {
