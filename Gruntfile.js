@@ -620,13 +620,19 @@ module.exports = function(grunt) {
   // Test tasks
   grunt.registerTask('e2e', 'Deploy app for testing and run e2e tests', [
     'exec:resetTestDatabases',
-    'deploy',
+    'exec:cleanDdocs',
+    'exec:packNodeModules',
+    'deployCommon',
+    'couch-push:test',
     'protractor:e2e_tests_and_services'
   ]);
 
   grunt.registerTask('test_perf', 'Run performance-specific tests', [
     'exec:resetTestDatabases',
-    'deploy',
+    'exec:cleanDdocs',
+    'exec:packNodeModules',
+    'deployCommon',
+    'couch-push:test',
     'protractor:performance_tests_and_services'
   ]);
 
