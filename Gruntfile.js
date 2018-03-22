@@ -369,14 +369,19 @@ module.exports = function(grunt) {
       }
     },
     protractor: {
-      tests_and_services: {
+      e2e_tests_and_services: {
         options: {
-          configFile: 'tests/protractor/tests-and-services.conf.js',
+          configFile: 'tests/protractor/e2e.tests-and-services.conf.js',
         }
       },
-      tests_only: {
+      e2e_tests_only: {
         options: {
-          configFile: 'tests/protractor/tests-only.conf.js',
+          configFile: 'tests/protractor/e2e.tests-only.conf.js',
+        }
+      },
+      performance_tests_and_services: {
+        options: {
+          configFile: 'tests/protractor/performance.tests-and-services.conf.js',
         }
       },
     },
@@ -548,7 +553,12 @@ module.exports = function(grunt) {
   // Test tasks
   grunt.registerTask('e2e', 'Deploy app for testing and run e2e tests', [
     'exec:deploytest',
-    'protractor:tests_and_services',
+    'protractor:e2e_tests_and_services',
+  ]);
+
+  grunt.registerTask('test_perf', 'Run performance-specific tests', [
+    'exec:deploytest',
+    'protractor:performance_tests_and_services',
   ]);
 
   grunt.registerTask('unit_continuous', 'Lint, karma unit tests running on a loop', [
@@ -600,6 +610,17 @@ module.exports = function(grunt) {
     'exec:deploy',
     'test_api_integration',
     'e2e'
+  ]);
+
+  grunt.registerTask('ci-performance', 'Run performance tests on CI', [
+    'precommit',
+    'mmnpm',
+    'build',
+    'minify',
+    'env:dev',
+    'exec:setupAdmin',
+    'exec:deploy',
+    'test_perf',
   ]);
 
   // Dev tasks
