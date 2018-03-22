@@ -20,6 +20,9 @@
           <text id="/data/clinic:hint">
             <value>lazima</value>
           </text>
+          <text id="/data/clinic/contact/name:label">
+            <value></value>
+          </text>
           <text id="/data/clinic/vaccines/jap_enc:label">
             <value>-</value>
           </text>
@@ -172,6 +175,9 @@
           <text id="/data/clinic:hint">
             <value>ज़रूरी</value>
           </text>
+          <text id="/data/clinic/contact/name:label">
+            <value></value>
+          </text>
           <text id="/data/clinic/vaccines/jap_enc:label">
             <value>Japanese Encephalitis</value>
           </text>
@@ -241,6 +247,9 @@
           <text id="/data/clinic/use_cases:hint">
             <value>इस <output value=" /data/init/place_type_translation "/> के लिए आवश्यक सभी का चयन करें</value>
           </text>
+          <text id="/data/clinic/vaccines:label">
+            <value>टीकाकरण चुनें</value>
+          </text>
           <text id="/data/clinic/vaccines/mmr:label">
             <value>MMR (Measles, Mumps, Rubella)</value>
           </text>
@@ -295,17 +304,14 @@
           <text id="/data/clinic/vaccines/hpv:label">
             <value>HPV (Human Papillomavirus)</value>
           </text>
-          <text id="/data/clinic/vaccines:label">
-            <value>टीकाकरण चुनें</value>
+          <text id="/data/inputs/user/contact_id:label">
+            <value>Contact ID of the logged in user</value>
           </text>
           <text id="/data/clinic/vaccines/polio:label">
             <value>Polio</value>
           </text>
           <text id="/data/clinic/vaccines/meningococcal:label">
             <value>Meningococcal</value>
-          </text>
-          <text id="/data/inputs/user/contact_id:label">
-            <value>Contact ID of the logged in user</value>
           </text>
         </translation>
         <translation lang="en">
@@ -323,6 +329,9 @@
           </text>
           <text id="/data/clinic:hint">
             <value>mandatory</value>
+          </text>
+          <text id="/data/clinic/contact/name:label">
+            <value></value>
           </text>
           <text id="/data/clinic/vaccines/jap_enc:label">
             <value>Japanese Encephalitis</value>
@@ -393,6 +402,9 @@
           <text id="/data/clinic/use_cases:hint">
             <value>Select all needed for this <output value=" /data/init/place_type_translation "/></value>
           </text>
+          <text id="/data/clinic/vaccines:label">
+            <value>Select vaccines</value>
+          </text>
           <text id="/data/clinic/vaccines/mmr:label">
             <value>MMR (Measles, Mumps, Rubella)</value>
           </text>
@@ -447,17 +459,14 @@
           <text id="/data/clinic/vaccines/hpv:label">
             <value>HPV (Human Papillomavirus)</value>
           </text>
-          <text id="/data/clinic/vaccines:label">
-            <value>Select vaccines</value>
+          <text id="/data/inputs/user/contact_id:label">
+            <value>Contact ID of the logged in user</value>
           </text>
           <text id="/data/clinic/vaccines/polio:label">
             <value>Polio</value>
           </text>
           <text id="/data/clinic/vaccines/meningococcal:label">
             <value>Meningococcal</value>
-          </text>
-          <text id="/data/inputs/user/contact_id:label">
-            <value>Contact ID of the logged in user</value>
           </text>
         </translation>
         <translation lang="ne">
@@ -475,6 +484,9 @@
           </text>
           <text id="/data/clinic:hint">
             <value>जरुरी</value>
+          </text>
+          <text id="/data/clinic/contact/name:label">
+            <value></value>
           </text>
           <text id="/data/clinic/vaccines/jap_enc:label">
             <value>-</value>
@@ -628,6 +640,9 @@
           <text id="/data/clinic:hint">
             <value>diperlukan</value>
           </text>
+          <text id="/data/clinic/contact/name:label">
+            <value></value>
+          </text>
           <text id="/data/clinic/vaccines/jap_enc:label">
             <value>Japanese Encephalitis</value>
           </text>
@@ -697,6 +712,9 @@
           <text id="/data/clinic/use_cases:hint">
             <value>Pilih semua yang diperlukan untuk ini <output value=" /data/init/place_type_translation "/></value>
           </text>
+          <text id="/data/clinic/vaccines:label">
+            <value>Pilih Jenis Vaksin</value>
+          </text>
           <text id="/data/clinic/vaccines/mmr:label">
             <value>MMR (Measles, Mumps, Rubella)</value>
           </text>
@@ -751,8 +769,8 @@
           <text id="/data/clinic/vaccines/hpv:label">
             <value>HPV (Human Papillomavirus)</value>
           </text>
-          <text id="/data/clinic/vaccines:label">
-            <value>Pilih Jenis Vaksin</value>
+          <text id="/data/inputs/user/contact_id:label">
+            <value>Contact ID of the logged in user</value>
           </text>
           <text id="/data/clinic/vaccines/polio:label">
             <value>Polio</value>
@@ -760,13 +778,10 @@
           <text id="/data/clinic/vaccines/meningococcal:label">
             <value>Meningococcal</value>
           </text>
-          <text id="/data/inputs/user/contact_id:label">
-            <value>Contact ID of the logged in user</value>
-          </text>
         </translation>
       </itext>
       <instance>
-        <data delimiter="#" id="contact:clinic:edit" prefix="J1!contact:clinic:edit!" version="2018-02-27_18-15">
+        <data delimiter="#" id="contact:clinic:edit" prefix="J1!contact:clinic:edit!" version="2018-03-01_16-38">
           <inputs>
             <meta>
               <location>
@@ -868,6 +883,9 @@
       <label ref="jr:itext('/data/clinic:label')"/>
       <group ref="/data/clinic/contact">
         <label ref="jr:itext('/data/clinic/contact:label')"/>
+        <input appearance="hidden" ref="/data/clinic/contact/name">
+          <label ref="jr:itext('/data/clinic/contact/name:label')"/>
+        </input>
         <input appearance="db-object" ref="/data/clinic/contact/_id">
           <label ref="jr:itext('/data/clinic/contact/_id:label')"/>
           <hint ref="jr:itext('/data/clinic/contact/_id:hint')"/>

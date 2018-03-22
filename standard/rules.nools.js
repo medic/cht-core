@@ -48,7 +48,6 @@ rule GenerateEvents {
         icon: schedule.icon,
         priority: schedule.description ? 'high' : null,
         priorityLabel: schedule.description ? schedule.description : '',
-        icon: schedule.type,
         date: null,
         title: schedule.title,
         resolved: false,
