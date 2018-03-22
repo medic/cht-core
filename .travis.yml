@@ -63,9 +63,6 @@ script:
     [[ "$TEST_SUITE" != 'normal' ]]      || node --stack_size=10000 `which grunt` ci
     [[ "$TEST_SUITE" != 'performance' ]] || node --stack_size=10000 `which grunt` ci-performance
 
-after_script:
-- |
-
 after_success:
  - python ./scripts/ci/travis_after_all.py
  - export $(cat .to_export_back)
