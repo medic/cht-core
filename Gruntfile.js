@@ -285,7 +285,7 @@ module.exports = function(grunt) {
                  ' -d \'{"_id": "org.couchdb.user:admin", "name": "admin", "password":"pass", "type":"user", "roles":[]}\' ' +
              ' && curl -X PUT --data \'"true"\' http://admin:pass@localhost:5984/_node/${COUCH_NODE_NAME}/_config/chttpd/require_valid_user'
       },
-      deleteTestDatabases: {
+      resetTestDatabases: {
         stderr: false,
         cmd: ['medic-test', 'medic-audit-test']
                 .map(name => `curl -X DELETE http://admin:pass@localhost:5984/${name}`)
@@ -602,13 +602,6 @@ module.exports = function(grunt) {
     'couch-push:localhost'
   ]);
 
-  grunt.registerTask('deployTest', 'Deploy the webapp for testing', [
-    'exec:cleanDdocs',
-    'exec:packNodeModules',
-    'deployCommon',
-    'couch-push:test'
-  ]);
-
   grunt.registerTask('deployDev', 'Deploy the webapp without packing node modules', [
     'exec:cleanDdocs',
     'deployCommon',
@@ -626,14 +619,14 @@ module.exports = function(grunt) {
 
   // Test tasks
   grunt.registerTask('e2e', 'Deploy app for testing and run e2e tests', [
-    'exec:deleteTestDatabases',
-    'deployTest',
+    'exec:resetTestDatabases',
+    'deploy',
     'protractor:e2e_tests_and_services'
   ]);
 
   grunt.registerTask('test_perf', 'Run performance-specific tests', [
-    'exec:deleteTestDatabases',
-    'deployTest',
+    'exec:resetTestDatabases',
+    'deploy',
     'protractor:performance_tests_and_services'
   ]);
 
