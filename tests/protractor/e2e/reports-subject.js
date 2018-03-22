@@ -185,6 +185,35 @@ describe('Reports Summary', () => {
         },
         public_form: true,
         use_sentinel: true
+      },
+      S: {
+        meta: {
+          code: 'S',
+          label: {
+            en: 'SURVEY'
+          }
+        },
+        fields: {
+          survey_subject: {
+            labels: {
+              tiny: {
+                en: 'S'
+              },
+              description: {
+                en: 'Survey subject'
+              },
+              short: {
+                en: 'Subject'
+              }
+            },
+            position: 0,
+            type: 'string',
+            length: [1, 30],
+            required: true
+          },
+        },
+        public_form: true,
+        use_sentinel: true
       }
     },
     registrations: []
@@ -241,8 +270,8 @@ describe('Reports Summary', () => {
       .then((text) => {
         return text;
       }, (err) => {
-        if (attempt < 3) {
-          return getElementText(css, attempt++);
+        if (attempt < 2) {
+          return getElementText(css, attempt+1);
         }
         throw err;
       });
@@ -538,6 +567,43 @@ describe('Reports Summary', () => {
           testSummaryLineage(['Bob Place', 'Health Center', 'District']);
           expect(getElementText('#reports-content .item-summary .sender .name')).toBe(CAROL.name);
           expect(getElementText('#reports-content .item-summary .sender .phone')).toBe(CAROL.phone);
+        });
+    });
+
+    it('Concerning reports which do not have a subject', () => {
+      const REPORT = {
+        _id: 'SURVEY_REPORT',
+        form: 'S',
+        type: 'data_record',
+        from: PHONE,
+        fields: {
+          survey_subject: 'something'
+        },
+        sms_message: {
+          message_id: 23,
+          from: PHONE,
+          message: `1!S!something`,
+          form: 'S',
+          locale: 'en'
+        },
+        reported_date: moment().subtract(10, 'hours').valueOf()
+      };
+
+      return saveReport(REPORT)
+        .then(loadReport)
+        .then(waitForSentinel)
+        .then(() => {
+          //LHS - shows submitter information when report has no subject
+          expect(getElementText('#reports-list .unfiltered li .content .heading h4 span')).toBe(CAROL.name);
+          expect(getElementText('#reports-list .unfiltered li .summary')).toBe('SURVEY');
+          testListLineage(['Bob Place', 'Health Center', 'District']);
+
+          //RHS - shows submitter information when report has no subject
+          expect(getElementText('#reports-content .item-summary .sender .name')).toBe(CAROL.name);
+          expect(getElementText('#reports-content .item-summary .sender .phone')).toBe(CAROL.phone);
+          expect(getElementText('#reports-content .item-summary mm-sender + div')).toBe('SURVEY');
+          testSummaryLineage(['Bob Place', 'Health Center', 'District']);
+          expect(element(by.css('#reports-content .item-summary .subject')).isPresent()).toBe(false);
         });
     });
   });

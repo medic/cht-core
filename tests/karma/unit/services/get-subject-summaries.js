@@ -16,9 +16,9 @@ describe('GetSubjectSummaries service', () => {
   beforeEach(() => {
     query = sinon.stub();
     lineageModelGenerator = {
-      reportPatient: sinon.stub()
+      reportSubject: sinon.stub()
     };
-    lineageModelGenerator.reportPatient.returns(Promise.resolve({ _id: 'lid', doc: doc, lineage: lineage }));
+    lineageModelGenerator.reportSubject.returns(Promise.resolve({ _id: 'lid', doc: doc, lineage: lineage }));
 
     module('inboxApp');
     module($provide => {
@@ -133,7 +133,7 @@ describe('GetSubjectSummaries service', () => {
         subject: {
           _id: 'a',
           type: 'name',
-          value: 'tom',
+          value: 'tom'
         },
         validSubject: true
       });
@@ -143,7 +143,7 @@ describe('GetSubjectSummaries service', () => {
         subject: {
           _id: 'b',
           type: 'name',
-          value: 'helen',
+          value: 'helen'
         },
         validSubject: true
       });
@@ -212,7 +212,7 @@ describe('GetSubjectSummaries service', () => {
         subject: {
           _id: 'a',
           type: 'name',
-          value: 'tom',
+          value: 'tom'
         },
         validSubject: true
       });
@@ -222,7 +222,7 @@ describe('GetSubjectSummaries service', () => {
         subject: {
           _id: 'b',
           type: 'name',
-          value: 'helen',
+          value: 'helen'
         },
         validSubject: true
       });
@@ -324,20 +324,51 @@ describe('GetSubjectSummaries service', () => {
   it('hydrates subject lineage', () => {
     const given = [
       { form: 'a', subject: { type: 'reference', value: '12345' } },
-      { form: 'a', subject: { type: 'reference', value: '56789' } },
-      { form: 'a', subject: { type: 'reference', value: '00000' } },
-      { form: 'a', subject: { type: 'reference', value: '11111' } },
     ];
 
     const contactReferences = [
       { key: ['shortcode', '12345'], id: 'lid' },
-      { key: ['shortcode', '56789'], id: 'b' },
-      { key: ['shortcode', '00000'], id: 'c' }
     ];
 
     const summaries = [
       {id: 'lid', value: { name: 'tom' } },
-      {id: 'b', value: { name: 'helen' } }
+    ];
+
+    query
+      .withArgs('medic-client/contacts_by_reference')
+      .returns(Promise.resolve({ rows: contactReferences }));
+    query
+      .withArgs('medic-client/doc_summaries_by_id')
+      .returns(Promise.resolve({ rows: summaries }));
+
+    return service(given, true).then(actual => {
+      chai.expect(actual[0]).to.deep.equal({
+        form: 'a',
+        subject: {
+          _id: 'lid',
+          type: 'name',
+          value: 'tom',
+          lineage: lineage,
+          doc: doc
+        },
+        validSubject: true
+      });
+
+      chai.expect(query.callCount).to.equal(2);
+    });
+  });
+
+  it('compacts subject lineage', () => {
+    const given = [
+      { form: 'a', subject: { type: 'reference', value: '12345' } },
+    ];
+
+    const contactReferences = [
+      { key: ['shortcode', '12345'], id: 'lid' },
+    ];
+
+    const summaries = [
+      {id: 'lid', value: { name: 'tom' } },
     ];
 
     query
@@ -354,39 +385,10 @@ describe('GetSubjectSummaries service', () => {
           _id: 'lid',
           type: 'name',
           value: 'tom',
-          lineage: lineage,
           doc: doc,
-          compactLineage: ['one', 'two', 'three']
+          lineage: ['one', 'two', 'three']
         },
         validSubject: true
-      });
-
-      chai.expect(actual[1]).to.deep.equal({
-        form: 'a',
-        subject: {
-          _id: 'b',
-          type: 'name',
-          value: 'helen',
-        },
-        validSubject: true
-      });
-
-      chai.expect(actual[2]).to.deep.equal({
-        form: 'a',
-        subject: {
-          type: 'id',
-          value: 'c'
-        },
-        validSubject: false
-      });
-
-      chai.expect(actual[3]).to.deep.equal({
-        form: 'a',
-        subject: {
-          type: 'id',
-          value: '11111'
-        },
-        validSubject: false
       });
 
       chai.expect(query.callCount).to.equal(2);

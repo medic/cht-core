@@ -117,15 +117,24 @@ angular.module('inboxServices').factory('GetSubjectSummaries',
     };
 
     var hydrateSubjectLineages = function(summaries, response) {
-      summaries.forEach(function(summary) {
+      return _.each(summaries, function(summary) {
         if (summary.subject && summary.subject._id) {
           _.extend(summary.subject, _.findWhere(response, {_id: summary.subject._id}));
         }
       });
-      return summaries;
     };
 
-    var processPatientLineage = function(summaries) {
+    var compactSubjectLineage = function(summaries) {
+      return _.each(summaries, function(summary) {
+        if (summary.subject && summary.subject.lineage) {
+          summary.subject.lineage = _.compact(_.map(summary.subject.lineage, function(parent) {
+            return parent && parent.name;
+          }));
+        }
+      });
+    };
+
+    var processSubjectLineage = function(summaries) {
       var subjectIds = _.uniq(_.compact(summaries.map(function(summary) {
         return summary.subject && summary.subject._id;
       })));
@@ -135,15 +144,7 @@ angular.module('inboxServices').factory('GetSubjectSummaries',
       }
 
       var promises = subjectIds.map(function(id) {
-        return LineageModelGenerator
-          .reportPatient(id)
-          .then(function(result) {
-            result.compactLineage = _.compact(_.map(result.lineage, function(parent) {
-              return parent && parent.name;
-            }));
-
-            return result;
-          });
+        return LineageModelGenerator.reportSubject(id);
       });
 
       return $q
@@ -153,7 +154,7 @@ angular.module('inboxServices').factory('GetSubjectSummaries',
         });
     };
 
-    return function(summaries) {
+    return function(summaries, hydratedLineage) {
       var containsReports = false;
       summaries.forEach(function (summary) {
         if (summary.form) {
@@ -167,7 +168,13 @@ angular.module('inboxServices').factory('GetSubjectSummaries',
 
       return processReferences(summaries)
         .then(processContactIds)
-        .then(processPatientLineage)
+        .then(processSubjectLineage)
+        .then(function(summaries) {
+          if (!hydratedLineage) {
+            return compactSubjectLineage(summaries);
+          }
+          return summaries;
+        })
         .then(validateSubjects);
     };
   }

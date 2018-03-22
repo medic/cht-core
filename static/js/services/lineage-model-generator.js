@@ -95,7 +95,7 @@ angular.module('inboxServices').factory('LineageModelGenerator',
             };
           });
       },
-      reportPatient: function(id) {
+      reportSubject: function(id) {
         return get(id).then(function(docs) {
             return {
               _id: id,
