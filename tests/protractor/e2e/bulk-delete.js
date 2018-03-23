@@ -119,7 +119,7 @@ describe('Bulk delete reports', () => {
     element(by.css('.action-container .select-all')).click();
     browser.wait(() => {
       return element(by.css('#reports-content .selection-count > span:nth-child(2)')).isDisplayed();
-    }, 1000);
+    }, 5000);
     expect(element.all(by.css('#reports-content .report-body')).count()).toBe(3);
 
     // deselect all

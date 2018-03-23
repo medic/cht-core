@@ -282,7 +282,7 @@ describe('Reports Summary', () => {
       .then(() => protractor.promise.all(CONTACTS.map(utils.saveDoc)))
       .then(() => {
         //wait till change feed receives all the contacts we created
-        setTimeout(done, 15000);
+        setTimeout(done, 5000);
       })
       .catch(done.fail);
   });
