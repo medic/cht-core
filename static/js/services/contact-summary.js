@@ -60,10 +60,14 @@ angular.module('inboxServices').service('ContactSummary',
     };
 
     return function(contact, reports, lineage) {
-      contact.parent = contact.parent || '';
       return getGeneratorFunction()
         .then(function(fn) {
-          return fn(contact, reports || [], lineage || []);
+          try {
+            return fn(contact, reports || [], lineage || []);
+          } catch (e) {
+            $log.error('Configuration error in contact-summary function: ' + e.message);
+            throw new Error('Configuration error');
+          }
         })
         .then(applyFilters);
     };

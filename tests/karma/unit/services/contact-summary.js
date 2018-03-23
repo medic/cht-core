@@ -103,16 +103,17 @@ describe('ContactSummary service', () => {
     });
   });
 
-  it('does not crash when contact-summary function references `contact.parent.parent` while `contact.parent` is undefined #4301', () => {
-    const script = `return contact.parent.parent;`;
+  it('does crash when contact summary throws an error', () => {
+    const script = `return contact.some.field;`;
 
     Settings.returns(Promise.resolve({ contact_summary: script }));
     const contact = {};
-    return service(contact).then(actual => {
-      chai.expect(actual.fields).to.be.an('array');
-      chai.expect(actual.fields.length).to.equal(0);
-      chai.expect(actual.cards).to.be.an('array');
-      chai.expect(actual.cards.length).to.equal(0);
-    });
+    return service(contact)
+      .then(function() {
+        throw new Error('Expected error to be thrown');
+      })
+      .catch(function(err) {
+        chai.expect(err.message).to.equal('Configuration error');
+      });
   });
 });
