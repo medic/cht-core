@@ -255,7 +255,7 @@ describe('Reports Summary', () => {
   const waitForSentinel = () => {
     return browser
       .wait(() => element(
-        by.cssContainingText('#reports-content .item-summary .sender .name', CAROL.name)).isPresent(),
+        by.cssContainingText('#reports-content .item-summary .sender .phone', CAROL.phone)).isPresent(),
         10000
       )
       .catch(loadReport);
@@ -329,7 +329,7 @@ describe('Reports Summary', () => {
           expect(getElementText('#reports-content .item-summary .subject .name')).toBe(MARIA.name);
           expect(getElementText('#reports-content .item-summary .subject + div')).toBe('REF_REF');
           testSummaryLineage(['TAG Place', 'Health Center', 'District']);
-          expect(getElementText('#reports-content .item-summary .sender .name')).toBe(CAROL.name);
+          expect(getElementText('#reports-content .item-summary .sender .name')).toBe(`Sent by ${CAROL.name}`);
           expect(getElementText('#reports-content .item-summary .sender .phone')).toBe(CAROL.phone);
         });
     });
@@ -367,7 +367,7 @@ describe('Reports Summary', () => {
           expect(getElementText('#reports-content .item-summary .subject .name')).toBe(MARIA.name);
           expect(getElementText('#reports-content .item-summary .subject + div')).toBe('REF_REF');
           testSummaryLineage(['TAG Place', 'Health Center', 'District']);
-          expect(getElementText('#reports-content .item-summary .sender .name')).toBe(CAROL.name);
+          expect(getElementText('#reports-content .item-summary .sender .name')).toBe(`Sent by ${CAROL.name}`);
           expect(getElementText('#reports-content .item-summary .sender .phone')).toBe(CAROL.phone);
 
         });
@@ -406,7 +406,7 @@ describe('Reports Summary', () => {
           expect(getElementText('#reports-content .item-summary .subject .name')).toBe('Unknown subject');
           expect(getElementText('#reports-content .item-summary .subject + div')).toBe('REF_REF');
           testSummaryLineage(['Bob Place', 'Health Center', 'District']);
-          expect(getElementText('#reports-content .item-summary .sender .name')).toBe(CAROL.name);
+          expect(getElementText('#reports-content .item-summary .sender .name')).toBe(`Sent by ${CAROL.name}`);
           expect(getElementText('#reports-content .item-summary .sender .phone')).toBe(CAROL.phone);
         });
     });
@@ -445,7 +445,7 @@ describe('Reports Summary', () => {
           expect(getElementText('#reports-content .item-summary .subject .name')).toBe(GEORGE.name);
           expect(getElementText('#reports-content .item-summary .subject + div')).toBe('NAM_NAM');
           testSummaryLineage(['Bob Place', 'Health Center', 'District']);
-          expect(getElementText('#reports-content .item-summary .sender .name')).toBe(CAROL.name);
+          expect(getElementText('#reports-content .item-summary .sender .name')).toBe(`Sent by ${CAROL.name}`);
           expect(getElementText('#reports-content .item-summary .sender .phone')).toBe(CAROL.phone);
         });
     });
@@ -489,7 +489,7 @@ describe('Reports Summary', () => {
           expect(getElementText('#reports-content .item-summary .subject .name')).toBe('Unknown subject');
           expect(getElementText('#reports-content .item-summary .subject + div')).toBe('NAM_NAM');
           testSummaryLineage(['Bob Place', 'Health Center', 'District']);
-          expect(getElementText('#reports-content .item-summary .sender .name')).toBe(CAROL.name);
+          expect(getElementText('#reports-content .item-summary .sender .name')).toBe(`Sent by ${CAROL.name}`);
           expect(getElementText('#reports-content .item-summary .sender .phone')).toBe(CAROL.phone);
         });
     });
@@ -527,7 +527,7 @@ describe('Reports Summary', () => {
           expect(getElementText('#reports-content .item-summary .subject .name')).toBe(TAG_PLACE.name);
           expect(getElementText('#reports-content .item-summary .subject + div')).toBe('PID_PID');
           testSummaryLineage(['Health Center', 'District']);
-          expect(getElementText('#reports-content .item-summary .sender .name')).toBe(CAROL.name);
+          expect(getElementText('#reports-content .item-summary .sender .name')).toBe(`Sent by ${CAROL.name}`);
           expect(getElementText('#reports-content .item-summary .sender .phone')).toBe(CAROL.phone);
         });
     });
@@ -565,7 +565,7 @@ describe('Reports Summary', () => {
           expect(getElementText('#reports-content .item-summary .subject .name')).toBe('Unknown subject');
           expect(getElementText('#reports-content .item-summary .subject + div')).toBe('PID_PID');
           testSummaryLineage(['Bob Place', 'Health Center', 'District']);
-          expect(getElementText('#reports-content .item-summary .sender .name')).toBe(CAROL.name);
+          expect(getElementText('#reports-content .item-summary .sender .name')).toBe(`Sent by ${CAROL.name}`);
           expect(getElementText('#reports-content .item-summary .sender .phone')).toBe(CAROL.phone);
         });
     });
@@ -604,6 +604,43 @@ describe('Reports Summary', () => {
           expect(getElementText('#reports-content .item-summary mm-sender + div')).toBe('SURVEY');
           testSummaryLineage(['Bob Place', 'Health Center', 'District']);
           expect(element(by.css('#reports-content .item-summary .subject')).isPresent()).toBe(false);
+        });
+    });
+
+    it('Concerning reports which have an unknown sender and have a known subject', () => {
+      const REPORT = {
+        _id: 'PID_US',
+        form: 'P',
+        type: 'data_record',
+        from: '555',
+        fields: {
+          place_id: BOB_PLACE._id
+        },
+        sms_message: {
+          message_id: 23,
+          from: '555',
+          message: `1!P!${BOB_PLACE._id}`,
+          form: 'RR',
+          locale: 'en'
+        },
+        reported_date: moment().subtract(6, 'hours').valueOf()
+      };
+
+      return saveReport(REPORT)
+        .then(loadReport)
+        .then(() => {
+          //LHS
+          expect(getElementText('#reports-list .unfiltered li .content .heading h4 span')).toBe(BOB_PLACE.name);
+          expect(getElementText('#reports-list .unfiltered li .summary')).toBe('PID_PID');
+          //shows submitter lineage breadcrumbs
+          testListLineage(['Health Center', 'District']);
+
+          //RHS
+          expect(getElementText('#reports-content .item-summary .subject .name')).toBe(BOB_PLACE.name);
+          expect(getElementText('#reports-content .item-summary .subject + div')).toBe('PID_PID');
+          testSummaryLineage(['Health Center', 'District']);
+          expect(getElementText('#reports-content .item-summary .sender .name')).toBe('Unknown sender');
+          expect(getElementText('#reports-content .item-summary .sender .phone')).toBe('');
         });
     });
   });
