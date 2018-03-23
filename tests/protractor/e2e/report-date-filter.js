@@ -126,7 +126,7 @@ describe('Filters reports', () => {
         .all(by.css('#reports-list .filtered li:nth-child(3)'))
         .isPresent()
         .then((present) => { return !present; });
-    }, 5000); //allow new filtered list to load....fails at times on Travis with count = 4
+    }, 3000); //allow new filtered list to load....fails at times on Travis with count = 4
 
     expect(element.all(by.css('#reports-list .filtered li')).count()).toBe(2);
     expect(element.all(by.css('#reports-list .filtered li[data-record-id="' + savedUuids[1] + '"]')).count()).toBe(1);
