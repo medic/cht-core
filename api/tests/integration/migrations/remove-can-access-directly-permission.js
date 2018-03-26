@@ -2,6 +2,8 @@ const utils = require('./utils');
 
 describe('remove-can-access-directly-permission migration', function() {
 
+  afterEach(utils.tearDown);
+
   it('should throw a 404 error if ddoc not found', function() {
 
     // given
