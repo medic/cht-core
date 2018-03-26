@@ -596,11 +596,15 @@ module.exports = function(grunt) {
     'exec:bundlesize'
   ]);
 
-  grunt.registerTask('ci', 'Lint, build, minify, deploy and test for CI', [
-    'precommit',
+
+  grunt.registerTask('ci-build', 'build and minify for CI', [
     'mmnpm',
     'build',
     'minify',
+  ]);
+
+  grunt.registerTask('ci-test', 'Lint, deploy and test for CI', [
+    'precommit',
     'karma:unit_ci',
     'env:test',
     'nodeunit',
@@ -614,9 +618,6 @@ module.exports = function(grunt) {
 
   grunt.registerTask('ci-performance', 'Run performance tests on CI', [
     'precommit',
-    'mmnpm',
-    'build',
-    'minify',
     'env:dev',
     'exec:setupAdmin',
     'exec:deploy',

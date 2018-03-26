@@ -57,11 +57,12 @@ before_script:
   - ./node_modules/.bin/webdriver-manager update
   - ./node_modules/.bin/webdriver-manager start > webdriver.log.txt &
   - until nc -z localhost 4444; do sleep 1; done
+  - node --stack_size=10000 `which grunt` ci-build
 
 script:
   - |
     if [[ "$TEST_SUITE" = 'normal' ]]; then
-      node --stack_size=10000 `which grunt` ci
+      node --stack_size=10000 `which grunt` ci-test
     elif [[ "$TEST_SUITE" = 'performance' ]]; then
       node --stack_size=10000 `which grunt` ci-performance
     else
@@ -69,23 +70,18 @@ script:
       exit 1
     fi
     
-
-after_success:
- - python ./scripts/ci/travis_after_all.py
- - export $(cat .to_export_back)
- - |
-     if [ "$BUILD_LEADER" = "YES" ]; then
-       if [ "$BUILD_AGGREGATE_STATUS" = "others_succeeded" ]; then
-         echo "All jobs succeeded! Publishing..."
-         ./scripts/ci/push_to_staging.sh
-         bash ./scripts/ci/push_to_market.sh
-       else
-         echo "Some jobs failed. Not publishing."
-       fi
-     fi
+jobs:
+  include:
+    - stage: "Publish binaries"
+      script: ./scripts/ci/push_to_staging.sh
+      env: NODE_VERSION=8 PUBLISH_TO=horti
+    - script: bash ./scripts/ci/push_to_market.sh
+      env: NODE_VERSION=8 PUBLISH_TO=garden-market
 
 after_failure:
   - |
+      [[ "$TRAVIS_BUILD_STAGE_NAME" = "Test" ]] || return
+
       echo "Uploading logs and screenshots to ${S3_PATH}..."
 
       if [[ "$TRAVIS_PULL_REQUEST" = true ]]; then
