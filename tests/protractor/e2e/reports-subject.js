@@ -234,7 +234,7 @@ describe('Reports Summary', () => {
   };
 
   const saveReport = (report) => {
-    return protractor.promise.all(utils.saveDoc(report));
+    return utils.saveDoc(report);
   };
 
   const loadReport = () => {
@@ -282,7 +282,7 @@ describe('Reports Summary', () => {
       .then(() => protractor.promise.all(CONTACTS.map(utils.saveDoc)))
       .then(() => {
         //wait till change feed receives all the contacts we created
-        setTimeout(done, 3000);
+        setTimeout(done, 2000);
       })
       .catch(done.fail);
   });

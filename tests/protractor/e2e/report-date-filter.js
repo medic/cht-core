@@ -104,7 +104,7 @@ describe('Filters reports', () => {
     commonElements.goToReports();
 
     browser.wait(() => {
-      return element(by.css('#reports-list li:first-child')).isPresent();
+      return element(by.css('#reports-list .unfiltered li:first-child')).isPresent();
     }, 10000);
 
     let clear = '';
@@ -118,15 +118,12 @@ describe('Filters reports', () => {
     element(by.css('#freetext')).click(); // blur the datepicker
 
     browser.wait(() => {
-      return element(by.css('#reports-list .filtered li:first-child')).isPresent();
+      return element(by.css('#reports-list .loader')).isPresent();
     }, 10000);
 
     browser.wait(() => {
-      return element
-        .all(by.css('#reports-list .filtered li:nth-child(3)'))
-        .isPresent()
-        .then(present => !present);
-    }, 3000); //allow new filtered list to load....fails at times on Travis with count = 4
+      return element(by.css('#reports-list .filtered li:first-child')).isPresent();
+    }, 10000);
 
     expect(element.all(by.css('#reports-list .filtered li')).count()).toBe(2);
     expect(element.all(by.css('#reports-list .filtered li[data-record-id="' + savedUuids[1] + '"]')).count()).toBe(1);
