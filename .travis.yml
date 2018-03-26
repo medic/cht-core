@@ -72,9 +72,8 @@ script:
 jobs:
   include:
     - stage: "Publish binaries"
-      script: |
-        ./scripts/ci/push_to_staging.sh
-        bash ./scripts/ci/push_to_market.sh
+      script: ./scripts/ci/push_to_staging.sh
+    - script: bash ./scripts/ci/push_to_market.sh
 
 after_failure:
   - |
