@@ -2,7 +2,7 @@ var db = require('../db-pouch').medic;
 
 module.exports = {
   name: 'remove-can-access-directly-permission',
-  created: new Date(2016, 11, 1),
+  created: new Date(2018, 3, 26),
   run: function(callback) {
     db.get('_design/medic')
       .then(ddoc => {
