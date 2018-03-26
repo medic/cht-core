@@ -57,11 +57,12 @@ before_script:
   - ./node_modules/.bin/webdriver-manager update
   - ./node_modules/.bin/webdriver-manager start > webdriver.log.txt &
   - until nc -z localhost 4444; do sleep 1; done
+  - node --stack_size=10000 `which grunt` ci-build
 
 script:
   - |
     if [[ "$TEST_SUITE" = 'normal' ]]; then
-      node --stack_size=10000 `which grunt` ci
+      node --stack_size=10000 `which grunt` ci-test
     elif [[ "$TEST_SUITE" = 'performance' ]]; then
       node --stack_size=10000 `which grunt` ci-performance
     else
