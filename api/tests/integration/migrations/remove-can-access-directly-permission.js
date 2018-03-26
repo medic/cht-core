@@ -14,6 +14,12 @@ describe('remove-can-access-directly-permission migration', function() {
 
   afterEach(() =>
     db.get('_design/medic')
+      .catch(err => {
+        if(err.status !== 404) {
+          throw err;
+        }
+        return {};
+      })
       .then(ddoc => {
         ddocBackup._rev = ddoc._rev;
         return db.put(ddocBackup);
