@@ -233,16 +233,6 @@ module.exports = function(grunt) {
             dest: 'static/dist/xslt/'
           }
         ]
-      },
-      taskutils: {
-        files: [
-          {
-            expand: true,
-            flatten: true,
-            src: [ 'shared-libs/task-utils/src/task-utils.js' ],
-            dest: 'packages/task-utils/'
-          }
-        ]
       }
     },
     exec: {
@@ -393,23 +383,19 @@ module.exports = function(grunt) {
       },
       css: {
         files: ['static/css/**/*'],
-        tasks: ['mmcss', 'appcache', 'deployDev']
+        tasks: ['mmcss', 'appcache', 'build-ddoc', 'deploy']
       },
       js: {
         files: ['templates/**/*', 'static/js/**/*', 'packages/kujua-*/**/*', 'shared-libs/**'],
-        tasks: ['mmjs', 'appcache', 'deployDev']
+        tasks: ['mmjs', 'appcache', 'build-ddoc', 'deploy']
       },
       other: {
-        files: ['lib/**/*'],
-        tasks: ['appcache', 'deployDev']
+        files: ['lib/**/*', 'translations/*'],
+        tasks: ['appcache', 'build-ddoc', 'deploy']
       },
       compiledddocs: {
         files: ['ddocs/**/*', '!ddocs/medic/_attachments/**/*'],
-        tasks: ['couch-compile:client', 'deployDev']
-      },
-      translations: {
-        files: ['translations/*'],
-        tasks: ['appcache', 'deployDev']
+        tasks: ['build-ddoc', 'deploy']
       }
     },
     notify: {
@@ -582,7 +568,6 @@ module.exports = function(grunt) {
   ]);
 
   grunt.registerTask('mmjs', 'Build the JS resources', [
-    'copy:taskutils',
     'browserify:dist',
     'replace:hardcodeappsettings',
     'ngtemplates'
@@ -600,33 +585,30 @@ module.exports = function(grunt) {
   ]);
 
   grunt.registerTask('build', 'Build the static resources', [
+    'exec:cleanDdocs',
+    'exec:packNodeModules',
+    'build-dev',
+  ]);
+
+  grunt.registerTask('build-dev', 'Build the static resources', [
     'mmcss',
     'mmjs',
     'enketoxslt',
     'copy:inbox',
-    'appcache'
-  ]);
-
-  grunt.registerTask('deploy', 'Deploy the webapp', [
-    'exec:cleanDdocs',
-    'exec:packNodeModules',
-    'deployCommon',
-    'couch-push:localhost'
-  ]);
-
-  grunt.registerTask('deployDev', 'Deploy the webapp without packing node modules', [
-    'exec:cleanDdocs',
-    'deployCommon',
-    'couch-push:localhost',
-    'notify:deployed'
-  ]);
-
-  grunt.registerTask('deployCommon', 'Common tasks of dev and prod deployment', [
+    'appcache',
     'exec:setDdocVersion',
+    'build-ddoc',
+  ]);
+
+  grunt.registerTask('build-ddoc', 'Build the main ddoc', [
     'copy:ddocAttachments',
     'couch-compile:client',
     'couch-compile:app',
-    'exec:ddocAppSettings'
+  ]);
+
+  grunt.registerTask('deploy', 'Deploy the webapp', [
+    'couch-push:localhost',
+    'notify:deployed',
   ]);
 
   // Test tasks
@@ -634,7 +616,6 @@ module.exports = function(grunt) {
     'exec:resetTestDatabases',
     'exec:cleanDdocs',
     'exec:packNodeModules',
-    'deployCommon',
     'couch-push:test',
     'protractor:e2e_tests_and_services'
   ]);
@@ -643,7 +624,6 @@ module.exports = function(grunt) {
     'exec:resetTestDatabases',
     'exec:cleanDdocs',
     'exec:packNodeModules',
-    'deployCommon',
     'couch-push:test',
     'protractor:performance_tests_and_services'
   ]);
@@ -723,8 +703,8 @@ module.exports = function(grunt) {
   ]);
 
   grunt.registerTask('dev-webapp-no-npm', 'Build and deploy the webapp for dev, without reinstalling dependencies.', [
-    'build',
-    'deployDev',
+    'build-dev',
+    'deploy',
     'watch'
   ]);
 
