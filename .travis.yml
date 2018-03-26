@@ -73,9 +73,9 @@ jobs:
   include:
     - stage: "Publish binaries"
       script: ./scripts/ci/push_to_staging.sh
-      env: PUBLISH_TO=horti
+      env: NODE_VERSION=8 PUBLISH_TO=horti
     - script: bash ./scripts/ci/push_to_market.sh
-      env: PUBLISH_TO=garden-market
+      env: NODE_VERSION=8 PUBLISH_TO=garden-market
 
 after_failure:
   - |
