@@ -44,6 +44,7 @@ class MatrixElement(object):
         self.is_succeeded = json_raw['result'] == 0
         self.number = json_raw['number']
         self.is_leader = is_leader(self.number)
+        self.allow_failure = json_raw['allow_failure']
 
 
 def matrix_snapshot():
@@ -82,16 +83,16 @@ try:
     wait_others_to_finish()
 
     final_snapshot = matrix_snapshot()
-    log.info("Final Results: {0}".format([(e.number, e.is_succeeded) for e in final_snapshot]))
+    log.info("Final Results: {0}".format([(e.number, e.is_succeeded, e.allow_failure) for e in final_snapshot]))
 
     BUILD_AGGREGATE_STATUS = 'BUILD_AGGREGATE_STATUS'
     others_snapshot = [el for el in final_snapshot if not el.is_leader]
     if not others_snapshot:
     # no other builds
         os.environ[BUILD_AGGREGATE_STATUS] = "others_succeeded"
-    elif reduce(lambda a, b: a and b, [e.is_succeeded for e in others_snapshot]):
+    elif reduce(lambda a, b: a and b, [e.is_succeeded or e.allow_failure for e in others_snapshot]):
         os.environ[BUILD_AGGREGATE_STATUS] = "others_succeeded"
-    elif reduce(lambda a, b: a and b, [not e.is_succeeded for e in others_snapshot]):
+    elif reduce(lambda a, b: a and b, [not (e.is_succeeded or e.allow_failure) for e in others_snapshot]):
         log.error("Others Failed")
         os.environ[BUILD_AGGREGATE_STATUS] = "others_failed"
     else:
