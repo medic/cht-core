@@ -5,26 +5,13 @@ if [ "$TRAVIS_PULL_REQUEST" != "false" ]; then
     exit
 fi
 
-# Attempt to reduce size of api and sentinel artifacts
-(cd sentinel &&
-    npm install --production &&
-    rm -rf test &&
-    rm -rf ./node_modules/*/test &&
-    rm -rf ./node_modules/*/tests)
-(cd api &&
-    npm install --production &&
-    rm -rf tests &&
-    rm -rf ./node_modules/*/test &&
-    rm -rf ./node_modules/*/tests)
-
 echo 'Building build for builds database...'
 if [[ -n "$TRAVIS_TAG" ]]; then
-    node --stack_size=10000 `which kanso` push --minify \
-            --id="medic:medic:$TRAVIS_TAG" \
-            "$UPLOAD_URL"/_couch/builds
+    sed -i -e 's|"_id": "_design/medic"|"_id": "medic:medic:'$TRAVIS_TAG'"|g' ddocs/medic.json
 else
-    node --stack_size=10000 `which kanso` push --minify \
-            --id="medic:medic:$TRAVIS_BRANCH" \
-            "$UPLOAD_URL"/_couch/builds
+    sed -i -e 's|"_id": "_design/medic"|"_id": "medic:medic:'$TRAVIS_BRANCH'"|g' ddocs/medic.json
 fi
+
+node --stack_size=10000 `which grunt` couch-push:staging
+
 echo 'Build for build database built.'

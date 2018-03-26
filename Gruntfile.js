@@ -41,20 +41,32 @@ module.exports = function(grunt) {
       }
     },
     'couch-push': {
-      options: {
-        user: 'admin',
-        pass: 'pass'
-      },
       localhost: {
+        options: {
+          user: 'admin',
+          pass: 'pass'
+        },
         files: {
           'http://localhost:5984/medic': 'ddocs/medic.json'
         }
       },
       test: {
+        options: {
+          user: 'admin',
+          pass: 'pass'
+        },
         files: {
           'http://localhost:5984/medic-test': 'ddocs/medic.json'
         }
-      }
+      },
+      staging: {
+        files: [
+          {
+            src: 'ddocs/medic.json',
+            dest: process.env.UPLOAD_URL + '/_couch/builds'
+          },
+        ],
+      },
     },
     browserify: {
       options: {
