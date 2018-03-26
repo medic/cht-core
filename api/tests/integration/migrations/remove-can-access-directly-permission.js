@@ -1,9 +1,6 @@
-const db = require('../../../db-pouch').medic;
 const utils = require('./utils');
 
 describe('remove-can-access-directly-permission migration', function() {
-
-  let ddocBackup;
 
   it('should throw a 404 error if ddoc not found', function() {
 
