@@ -15,7 +15,9 @@ var _ = require('underscore');
 angular.module('inboxServices').factory('ReportViewModelGenerator',
   function(
     FormatDataRecord,
-    LineageModelGenerator
+    LineageModelGenerator,
+    DB,
+    GetSubjectSummaries
   ) {
     'ngInject';
     'use strict';
@@ -83,6 +85,20 @@ angular.module('inboxServices').factory('ReportViewModelGenerator',
             model.formatted = formatted;
             return model;
           });
+        })
+        .then(function(model) {
+          return DB()
+            .query('medic-client/doc_summaries_by_id', { keys: [model.doc._id] })
+            .then(function(results) {
+              return GetSubjectSummaries(results.rows.map(function(row) { return row.value; }), true);
+            })
+            .then(function(summaries) {
+              if (summaries && summaries.length) {
+                model.formatted.subject = summaries.pop().subject;
+              }
+
+              return model;
+            });
         });
     };
   }
