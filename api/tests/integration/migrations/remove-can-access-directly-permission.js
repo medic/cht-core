@@ -9,7 +9,7 @@ describe('remove-can-access-directly-permission migration', function() {
     db.get('_design/medic')
       .then(ddoc => {
         ddocBackup = ddoc;
-        db.remove(ddoc);
+        return db.remove(ddoc);
       }));
 
   afterEach(() =>
