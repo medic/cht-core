@@ -34,11 +34,9 @@ describe('remove-can-access-directly-permission migration', function() {
       .then(() => { throw new Error('Expected migration to throw an error'); })
 
       .catch(err => {
-        if(err.status === 404) {
-          // expected
-        } else {
+        if(err.status !== 404) {
           throw err;
-        }
+        } // else expected
       });
 
   });
