@@ -220,8 +220,9 @@ describe('registration transition', () => {
 
     const checkItemSummary = () => {
       const summaryElement = element(by.css('#reports-content .item-summary'));
-      expect(summaryElement.element(by.css('.name')).getText()).toBe(CAROL.name);
-      expect(summaryElement.element(by.css('.phone')).getText()).toBe(CAROL.phone);
+      expect(summaryElement.element(by.css('.sender .name')).getText()).toBe(`Sent by ${CAROL.name}`);
+      expect(summaryElement.element(by.css('.subject .name')).getText()).toBe('Siobhan');
+      expect(summaryElement.element(by.css('.sender .phone')).getText()).toBe(CAROL.phone);
       expect(summaryElement.element(by.css('.position a')).getText()).toBe(BOB_PLACE.name);
       expect(summaryElement.element(by.css('.detail .status .fa-circle.green-dot')).isDisplayed()).toBeTruthy();
     };
@@ -244,13 +245,13 @@ describe('registration transition', () => {
     it('shows content', () => {
       commonElements.goToReports();
       helper.waitElementToBeClickable(element(by.css('.action-container .general-actions:not(.ng-hide) .fa-plus')));
-      helper.waitElementToBeVisible(element(by.css('#reports-list .unfiltered li:first-child')));
-      browser.wait(() => element(by.cssContainingText('#reports-list .unfiltered li:first-child h4 span', CAROL.name)).isPresent(), 10000);
+      helper.waitElementToBeClickable(element(by.css('#reports-list .unfiltered li:first-child')));
+      browser.wait(() => element(by.cssContainingText('#reports-list .unfiltered li:first-child h4 span', 'Siobhan')).isPresent(), 10000);
 
       helper.clickElement(element(by.css('#reports-list .unfiltered li:first-child .summary')));
 
       // wait for content to load
-      browser.wait(() => element(by.cssContainingText('#reports-content .item-summary .name', CAROL.name)).isPresent(), 10000);
+      browser.wait(() => element(by.cssContainingText('#reports-content .item-summary .name', `Sent by ${CAROL.name}`)).isPresent(), 10000);
 
       checkItemSummary();
       checkAutoResponse();

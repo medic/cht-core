@@ -3,14 +3,28 @@ describe('GetSubjectSummaries service', () => {
   'use strict';
 
   let service,
-    query;
+      query,
+      lineageModelGenerator;
+
+  const doc = { _id: 'result' };
+  const lineage = [
+    { _id: '1', name: 'one' },
+    { _id: '2', name: 'two' },
+    { _id: '3', name: 'three'}
+  ];
 
   beforeEach(() => {
     query = sinon.stub();
+    lineageModelGenerator = {
+      reportSubject: sinon.stub()
+    };
+    lineageModelGenerator.reportSubject.returns(Promise.resolve({ _id: 'lid', doc: doc, lineage: lineage }));
+
     module('inboxApp');
     module($provide => {
       $provide.factory('DB', KarmaUtils.mockDB({ query: query }));
       $provide.value('$q', Q); // bypass $q so we don't have to digest
+      $provide.value('LineageModelGenerator', lineageModelGenerator);
     });
     inject($injector => service = $injector.get('GetSubjectSummaries'));
   });
@@ -117,6 +131,7 @@ describe('GetSubjectSummaries service', () => {
       chai.expect(actual[0]).to.deep.equal({
         form: 'a',
         subject: {
+          _id: 'a',
           type: 'name',
           value: 'tom'
         },
@@ -126,6 +141,7 @@ describe('GetSubjectSummaries service', () => {
       chai.expect(actual[1]).to.deep.equal({
         form: 'a',
         subject: {
+          _id: 'b',
           type: 'name',
           value: 'helen'
         },
@@ -194,6 +210,7 @@ describe('GetSubjectSummaries service', () => {
       chai.expect(actual[0]).to.deep.equal({
         form: 'a',
         subject: {
+          _id: 'a',
           type: 'name',
           value: 'tom'
         },
@@ -203,6 +220,7 @@ describe('GetSubjectSummaries service', () => {
       chai.expect(actual[1]).to.deep.equal({
         form: 'a',
         subject: {
+          _id: 'b',
           type: 'name',
           value: 'helen'
         },
@@ -300,6 +318,80 @@ describe('GetSubjectSummaries service', () => {
         },
         validSubject: false
       });
+    });
+  });
+
+  it('hydrates subject lineage', () => {
+    const given = [
+      { form: 'a', subject: { type: 'reference', value: '12345' } },
+    ];
+
+    const contactReferences = [
+      { key: ['shortcode', '12345'], id: 'lid' },
+    ];
+
+    const summaries = [
+      {id: 'lid', value: { name: 'tom' } },
+    ];
+
+    query
+      .withArgs('medic-client/contacts_by_reference')
+      .returns(Promise.resolve({ rows: contactReferences }));
+    query
+      .withArgs('medic-client/doc_summaries_by_id')
+      .returns(Promise.resolve({ rows: summaries }));
+
+    return service(given, true).then(actual => {
+      chai.expect(actual[0]).to.deep.equal({
+        form: 'a',
+        subject: {
+          _id: 'lid',
+          type: 'name',
+          value: 'tom',
+          lineage: lineage,
+          doc: doc
+        },
+        validSubject: true
+      });
+
+      chai.expect(query.callCount).to.equal(2);
+    });
+  });
+
+  it('compacts subject lineage', () => {
+    const given = [
+      { form: 'a', subject: { type: 'reference', value: '12345' } },
+    ];
+
+    const contactReferences = [
+      { key: ['shortcode', '12345'], id: 'lid' },
+    ];
+
+    const summaries = [
+      {id: 'lid', value: { name: 'tom' } },
+    ];
+
+    query
+      .withArgs('medic-client/contacts_by_reference')
+      .returns(Promise.resolve({ rows: contactReferences }));
+    query
+      .withArgs('medic-client/doc_summaries_by_id')
+      .returns(Promise.resolve({ rows: summaries }));
+
+    return service(given).then(actual => {
+      chai.expect(actual[0]).to.deep.equal({
+        form: 'a',
+        subject: {
+          _id: 'lid',
+          type: 'name',
+          value: 'tom',
+          doc: doc,
+          lineage: ['one', 'two', 'three']
+        },
+        validSubject: true
+      });
+
+      chai.expect(query.callCount).to.equal(2);
     });
   });
 });

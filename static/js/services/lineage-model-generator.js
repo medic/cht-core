@@ -129,6 +129,15 @@ angular.module('inboxServices').factory('LineageModelGenerator',
             };
           });
         });
+      },
+      reportSubject: function(id) {
+        return get(id).then(function(docs) {
+          return {
+            _id: id,
+            doc: docs.shift(),
+            lineage: docs
+          };
+        });
       }
     };
 
