@@ -79,6 +79,8 @@ jobs:
 
 after_failure:
   - |
+      [[ "$TRAVIS_BUILD_STAGE_NAME" = "Test" ]] || return
+
       echo "Uploading logs and screenshots to ${S3_PATH}..."
 
       if [[ "$TRAVIS_PULL_REQUEST" = true ]]; then
