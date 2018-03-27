@@ -86,14 +86,6 @@ $ curl http://localhost:5984 # should fail
 {"error":"unauthorized","reason":"Authentication required."}
 ```
 
-### Build dependenceis
-
-[Kanso](http://kan.so) and [Grunt](http://gruntjs.com) are required to build and deploy the webapp.
-
-```shell
-npm install -g kanso grunt-cli
-```
-
 ### Configure Lucene
 
 Lucene is used for some in-app analytics. You probably do not need to install this for general development, but it is part of a proper production deployment.
@@ -135,19 +127,6 @@ Then edit `.git/hooks/pre-commit` and add the following at the top just below th
 
 ```shell
 exec grunt precommit
-```
-
-### Configure kanso
-
-Create a `.kansorc` file in the app directory with your CouchDB credentials, e.g.:
-
-```
-exports.env = {
-  default: {
-    db: "http://admin:pass@localhost:5984/medic",
-    overrides: {loglevel:"debug"}
-  }
-};
 ```
 
 ### Deploy all the apps
@@ -232,9 +211,6 @@ They live in [tests/protractor](tests/protractor). To run them:
 ### API integration tests
 `grunt api_e2e`
 
-### Kanso tests
-Some kanso tests are run in-browser; you can run them manually if you browse to `/medic/_design/medic/_rewrite/test`.
-
 ### Integration tests
 [Travis](https://travis-ci.org/medic/medic-webapp) runs `grunt ci` every time some new code is pushed to github.
 
@@ -285,92 +261,9 @@ For development, you can find it useful to [run Medic OS on a VM](https://github
 
 You can also use Medic-OS for production instances.
 
-## Push the dashboard (optional)
-
-[Garden Dashboard](https://github.com/garden20/dashboard) is used to download the couchapp onto a couchdb server, and later to update it.
-
-If you just want to build and run locally for development, you don't need
-Dashboard, because `grunt dev` will push the app to your local couchdb server.
-If you want to download the app that someone else pushed to a Market, then you need Dashboard.
-
-To install Dashboard, first change the CouchDB's `secure_rewrites` configuration
-parameter to false:
-
-```shell
-curl -X PUT http://admin:pass@localhost:5986/_config/httpd/secure_rewrites \
-  -d '"false"' -H "Content-Type: application/json"
-```
-
-Next, download, build, and push the dashboard application to CouchDB:
-
-```shell
-git clone https://github.com/garden20/dashboard
-cd dashboard
-git checkout develop
-kanso install
-kanso push http://admin:pass@localhost:5984/dashboard
-```
-
-Finally install our app in the dashboard.
-- Go to [http://localhost:5984/dashboard/_design/dashboard/_rewrite/install](http://localhost:5984/dashboard/_design/dashboard/_rewrite/install)
-- Type this in the input "https://staging.dev.medicmobile.org/markets-alpha/details/medic" and click next
-- Follow the instructions to install the app
-
-Now you've just overwritten your development installation so you probably want to do another `grunt dev` to overwrite it again.
-
-## Deploy to Market (optional)
-
-For your app to be accessible easily to other server instances, you can push it to an online Market.
-Each instance, through its local Dashboard, will pull the app down.
-
-When deploying to the market, include the sentinel package in the couchapp so
-[gardener](https://github.com/garden20/gardener) can manage the process. This
-is already automated in the CI scripts (and runs on Travis CI), but here is the
-manual process:
-
-First clone the repo recursively so you get both submodules `api` and
-`sentinel`, then change directories:
-
-```
-git clone --depth=50 --recursive https://github.com/medic/medic-webapp
-cd medic-webapp
-```
-
-Then edit `kanso.json`, and add `"kanso-gardener":null` to the end of the list
-of dependencies.  You can use a text editor, or
-[jsontool](https://github.com/trentm/json) has an edit mode that works:
-
-```
-cat kanso.json | json -e \
-  'this.dependencies["kanso-gardener"] = null; this.dependencies_included = true;' \
-    > new.json && \
-mv new.json kanso.json
-```
-
-Finally, push to the [Medic Alpha
-Market](https://staging.dev.medicmobile.org/markets-alpha/):
-
-```shell
-kanso push https://staging.dev.medicmobile.org/markets-alpha/upload
-```
-
 ## Automated Deployment on Travis
 
-Code is automatically deployed via [Travis CI](https://travis-ci.org/medic/medic-webapp) to the [Garden 2.0
-Markets](https://github.com/garden20/garden-market) hosted at
-[staging.dev](https://staging.dev.medicmobile.org/).  We maintain several markets
-there for ease of testing and development, you can set your Garden Dashboard to
-use any one of them.
-
-The deployment is based on the following git tags and branches:
-
-Market  | Branch/Tag
-------------- | -------------
-Alpha | master
-Beta | tagged `n.n.n-beta.n`
-RC | tagged `n.n.n-rc.n`
-Release | tagged `0.n.n`
-Release v2 | tagged `2.n.n`
+Code is automatically published via [Travis CI](https://travis-ci.org/medic/medic-webapp) to the [staging server](https://staging.dev.medicmobile.org).
 
 ## Help
 
