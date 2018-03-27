@@ -395,7 +395,7 @@ module.exports = function(grunt) {
         tasks: ['mmcss', 'appcache', 'build-ddoc', 'deploy']
       },
       js: {
-        files: ['templates/**/*', 'static/js/**/*', 'packages/kujua-*/**/*', 'shared-libs/**'],
+        files: ['templates/**/*', 'static/js/**/*', 'shared-libs/**'],
         tasks: ['mmjs', 'appcache', 'build-ddoc', 'deploy']
       },
       other: {
