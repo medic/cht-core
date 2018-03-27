@@ -685,7 +685,6 @@ module.exports = function(grunt) {
   grunt.registerTask('ci-build', 'build and minify for CI', [
     'mmnpm',
     'build',
-    'deploy',
   ]);
 
   grunt.registerTask('ci-test', 'Lint, deploy and test for CI', [
