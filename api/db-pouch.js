@@ -16,6 +16,3 @@ if (couchUrl) {
 }
 
 module.exports = db;
-
-// exposed for testing
-module.exports._setMedic = mock => db.medic = mock;

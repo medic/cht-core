@@ -33,7 +33,7 @@ exports['create calls createRecordByJSON if json type'] = test => {
   const createRecordByJSON = sinon.stub(recordUtils, 'createRecordByJSON').returns({ message: 'one' });
   const createByForm = sinon.stub(recordUtils, 'createByForm');
   const put = sinon.stub().returns(Promise.resolve({ ok: true }));
-  db._setMedic({ put: put });
+  db.medic = { put: put };
   const req = {
     body: {
       message: 'test',
@@ -55,7 +55,7 @@ exports['create calls createByForm if urlencoded type'] = test => {
   const createRecordByJSON = sinon.stub(recordUtils, 'createRecordByJSON');
   const createByForm = sinon.stub(recordUtils, 'createByForm').returns({ message: 'one' });
   const put = sinon.stub().returns(Promise.resolve({ ok: true }));
-  db._setMedic({ put: put });
+  db.medic = { put: put };
   const req = {
     body: {
       message: 'test',
