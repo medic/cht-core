@@ -102,4 +102,18 @@ describe('ContactSummary service', () => {
       chai.expect(actual.cards[0].fields).to.equal('beta');
     });
   });
+
+  it('does crash when contact summary throws an error', () => {
+    const script = `return contact.some.field;`;
+
+    Settings.returns(Promise.resolve({ contact_summary: script }));
+    const contact = {};
+    return service(contact)
+      .then(function() {
+        throw new Error('Expected error to be thrown');
+      })
+      .catch(function(err) {
+        chai.expect(err.message).to.equal('Configuration error');
+      });
+  });
 });
