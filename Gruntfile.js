@@ -267,6 +267,15 @@ module.exports = function(grunt) {
           return `echo "${version}" > ddocs/medic/version`;
         }
       },
+      'change-ddoc-id-for-publish': {
+        cmd: () => {
+          const name = process.env.TRAVIS_TAG || process.env.TRAVIS_BRANCH;
+          if (!name) {
+            return;
+          }
+          return `sed -i -e 's|"_id": "_design/medic"|"_id": "medic:medic:${name}"|g' ddocs/medic.json`;
+        }
+      },
       apiDev: {
         cmd: 'TZ=UTC ./node_modules/.bin/nodemon --watch api api/server.js'
       },
@@ -716,6 +725,11 @@ module.exports = function(grunt) {
 
   grunt.registerTask('dev-sentinel', 'Run sentinel and watch for file changes', [
     'exec:sentinelDev'
+  ]);
+
+  grunt.registerTask('publish', 'Publish the ddoc to the staging server', [
+    'exec:change-ddoc-id-for-publish',
+    'couch-push:staging',
   ]);
 
   grunt.registerTask('default', 'Build and deploy the webapp for dev', [

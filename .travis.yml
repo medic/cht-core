@@ -71,8 +71,9 @@ script:
     
 jobs:
   include:
-    - stage: "Publish binaries"
-      script: ./scripts/ci/push_to_staging.sh
+    - if: "$TRAVIS_PULL_REQUEST": "false"
+      stage: "Publish binaries"
+      script: node --stack_size=10000 `which grunt` publish
       env: NODE_VERSION=8 PUBLISH_TO=horti
 
 after_failure:
