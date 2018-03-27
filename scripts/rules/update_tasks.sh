@@ -148,7 +148,6 @@ else
   rm "$SETTINGS_TMP_FILE"
 fi
 
-# TODO fix this
 # Upload app_setting.json
 test $upload && curl -v -d @"$SETTINGS_FILE" -X PUT -H "Content-Type: application/json" ${DB}/_design/medic/_rewrite/update_settings/medic?replace=1
 

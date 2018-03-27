@@ -236,7 +236,7 @@ module.exports = function(grunt) {
       }
     },
     exec: {
-      cleanDdocs: {
+      cleanDdocBuildDirectory: {
         cmd: 'rm -rf ddocs/medic/_attachments && mkdir ddocs/medic/_attachments'
       },
       packNodeModules: {
@@ -594,7 +594,7 @@ module.exports = function(grunt) {
   ]);
 
   grunt.registerTask('build', 'Build the static resources', [
-    'exec:cleanDdocs',
+    'exec:cleanDdocBuildDirectory',
     'exec:packNodeModules',
     'mmcss',
     'mmjs',
@@ -632,7 +632,7 @@ module.exports = function(grunt) {
   // Test tasks
   grunt.registerTask('e2e', 'Deploy app for testing and run e2e tests', [
     'exec:resetTestDatabases',
-    'exec:cleanDdocs',
+    'exec:cleanDdocBuildDirectory',
     'exec:packNodeModules',
     'build-ddoc',
     'couch-push:test',
@@ -641,7 +641,7 @@ module.exports = function(grunt) {
 
   grunt.registerTask('test_perf', 'Run performance-specific tests', [
     'exec:resetTestDatabases',
-    'exec:cleanDdocs',
+    'exec:cleanDdocBuildDirectory',
     'exec:packNodeModules',
     'build-ddoc',
     'couch-push:test',

@@ -13,7 +13,7 @@ module.exports = {
         serverUtils.error(err, req, res, true);
       });
   },
-  // deprecated
+  // deprecated - used by medic-configurer, medic-reporter, etc
   getV0: (req, res) => {
     doGet(req, res)
       .then(settings => {

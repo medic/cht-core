@@ -9,14 +9,14 @@ const generate = (req, contentType) => {
   if (contentType === 'json') {
     return recordUtils.createRecordByJSON(req.body);
   }
+  throw new Error('Content type not supported.');
 };
 
 module.exports = {
   create: (req, contentType) => {
-    const doc = generate(req, contentType);
-    if (!doc) {
-      return Promise.reject(new Error('Content type not supported.'));
-    }
-    return db.medic.put(doc).then(() => ({ success: true }));
+    return Promise.resolve()
+      .then(() => generate(req, contentType))
+      .then(doc => db.medic.put(doc))
+      .then(() => ({ success: true }));
   }
 };
