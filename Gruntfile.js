@@ -616,6 +616,7 @@ module.exports = function(grunt) {
     'exec:resetTestDatabases',
     'exec:cleanDdocs',
     'exec:packNodeModules',
+    'build-ddoc',
     'couch-push:test',
     'protractor:e2e_tests_and_services'
   ]);
@@ -624,6 +625,7 @@ module.exports = function(grunt) {
     'exec:resetTestDatabases',
     'exec:cleanDdocs',
     'exec:packNodeModules',
+    'build-ddoc',
     'couch-push:test',
     'protractor:performance_tests_and_services'
   ]);
