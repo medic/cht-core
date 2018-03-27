@@ -71,7 +71,7 @@ script:
     
 jobs:
   include:
-    - if: type = pull_request
+    - if: type != pull_request
       stage: "Publish binaries"
       script: node --stack_size=10000 `which grunt` publish
       env: NODE_VERSION=8 PUBLISH_TO=horti
