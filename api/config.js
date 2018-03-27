@@ -66,12 +66,16 @@ var loadSettings = function(callback) {
     var original = JSON.stringify(settings);
     _.defaults(settings, defaults);
     // add any missing permissions
-    defaults.permissions.forEach(function(def) {
-      var configured = _.findWhere(settings.permissions, { name: def.name });
-      if (!configured) {
-        settings.permissions.push(def);
-      }
-    });
+    if (settings.permissions) {
+      defaults.permissions.forEach(function(def) {
+        var configured = _.findWhere(settings.permissions, { name: def.name });
+        if (!configured) {
+          settings.permissions.push(def);
+        }
+      });
+    } else {
+      settings.permissions = defaults.permissions;
+    }
     var changed = JSON.stringify(settings) !== original;
     if (!changed) {
       return callback();
