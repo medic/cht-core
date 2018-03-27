@@ -31,6 +31,9 @@ module.exports = {
   },
   update: (body, replace) => {
     return getDdoc().then(ddoc => {
+      if (!ddoc.app_settings) {
+        ddoc.app_settings = {};
+      }
       if (replace) {
         doReplace(ddoc.app_settings, body);
       } else {
