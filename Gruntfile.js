@@ -596,13 +596,21 @@ module.exports = function(grunt) {
   grunt.registerTask('build', 'Build the static resources', [
     'exec:cleanDdocs',
     'exec:packNodeModules',
-    'build-dev',
+    'mmcss',
+    'mmjs',
+    'enketoxslt',
+    'minify',
+    'build-common',
   ]);
 
   grunt.registerTask('build-dev', 'Build the static resources', [
     'mmcss',
     'mmjs',
     'enketoxslt',
+    'build-common',
+  ]);
+
+  grunt.registerTask('build-common', 'Build the static resources', [
     'copy:inbox',
     'appcache',
     'exec:setDdocVersion',
@@ -677,7 +685,7 @@ module.exports = function(grunt) {
   grunt.registerTask('ci-build', 'build and minify for CI', [
     'mmnpm',
     'build',
-    'minify',
+    'deploy',
   ]);
 
   grunt.registerTask('ci-test', 'Lint, deploy and test for CI', [
