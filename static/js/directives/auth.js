@@ -30,7 +30,7 @@ angular.module('inboxDirectives').directive('mmAuth', function($log, Auth, $pars
         return element.removeClass('hidden');
       }
 
-      var permissions = mmAuthAny
+      var permissionsGroups = mmAuthAny
         .filter(function(element) {
           return _.isArray(element) || _.isString(element);
         })
@@ -38,12 +38,12 @@ angular.module('inboxDirectives').directive('mmAuth', function($log, Auth, $pars
           return (_.isArray(element) && _.flatten(element)) || [ element ];
         });
 
-      if (!permissions.length) {
+      if (!permissionsGroups.length) {
         return;
       }
 
       Auth
-        .any(permissions)
+        .any(permissionsGroups)
         .then(function() {
           element.removeClass('hidden');
         });

@@ -131,7 +131,7 @@ angular.module('inboxServices').factory('Auth',
         }
 
         return Settings().then(function(settings) {
-          var checks = permissionsList
+          var validPermissions = permissionsList
             .map(function(permissions, key) {
               return checkPermissions(requiredPermissions[key], disallowedPermissions[key], roles, settings);
             })
@@ -139,7 +139,7 @@ angular.module('inboxServices').factory('Auth',
               return result === true;
             });
 
-          if (!_.any(checks)) {
+          if (!validPermissions.length) {
             return authFail('no matching permissions', permissionsList, roles);
           }
 
