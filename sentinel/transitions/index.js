@@ -301,18 +301,22 @@ const finalize = ({ change, results }, callback) => {
 const applyTransition = ({ key, change, transition }, callback) => {
 
   const _setResult = ok => {
-    const info = change.info;
-    if (!info.transitions) {
-      info.transitions = {};
-    }
-    info.transitions[key] = {
-      last_rev: change.doc._rev,
-      seq: change.seq,
-      ok: ok
-    };
-    dbPouch.sentinel.put(info)
-    .catch(err => {
-      logger.error('Error updating metaData', err);
+    return new Promise(resolve => {
+      const info = change.info;
+      if (!info.transitions) {
+        info.transitions = {};
+      }
+      info.transitions[key] = {
+        last_rev: change.doc._rev,
+        seq: change.seq,
+        ok: ok
+      };
+      dbPouch.sentinel.put(info, err => {
+        if(err) {
+          logger.error('Error updating metaData', err);
+        }
+        return resolve();
+      });
     });
   };
 
@@ -326,29 +330,34 @@ const applyTransition = ({ key, change, transition }, callback) => {
    */
   transition.onMatch(change)
     .then(changed => {
-      logger.debug(
-        `finished transition ${key} for seq ${change.seq} doc ${change.id} is ` +
-        changed ? 'changed' : 'unchanged'
-      );
-      if (changed) {
-        _setResult(true);
-      }
-      return changed;
+      return new Promise(resolve => {
+        logger.debug(
+          `finished transition ${key} for seq ${change.seq} doc ${change.id} is ` +
+          changed ? 'changed' : 'unchanged'
+        );
+        if (!changed) {
+          return resolve(changed);
+        }
+        _setResult(true).then(() => {return resolve(changed);});        
+      });
     })
     .catch(err => {
-      // adds an error to the doc but it will only get saved if there are
-      // other changes too.
-      const message = err.message || JSON.stringify(err);
-      utils.addError(change.doc, {
-        code: `${key}_error'`,
-        message: `Transition error on ${key}: ${message}`
+      return new Promise(resolve => {
+        // adds an error to the doc but it will only get saved if there are
+        // other changes too.
+        const message = err.message || JSON.stringify(err);
+        utils.addError(change.doc, {
+          code: `${key}_error'`,
+          message: `Transition error on ${key}: ${message}`
+        });
+        logger.error(`transition ${key} errored on doc ${change.id} seq ${change.seq}: ${JSON.stringify(err)}`);
+        if (!err.changed) {
+          return resolve(false);
+        }
+        _setResult(false).then(() => {
+          return resolve(true);
+        });
       });
-      logger.error(`transition ${key} errored on doc ${change.id} seq ${change.seq}: ${JSON.stringify(err)}`);
-      if (err.changed) {
-        _setResult(false);
-        return true;
-      }
-      return false;
     })
     .then(changed => callback(null, changed)); // return the promise instead
 };
