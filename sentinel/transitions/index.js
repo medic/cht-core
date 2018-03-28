@@ -306,15 +306,13 @@ const applyTransition = ({ key, change, transition }, callback) => {
       info.transitions = {};
     }
     info.transitions[key] = {
-      // last_rev: parseInt(change.doc._rev) + 1,
-      last_rev: parseInt(change.doc._rev),
+      last_rev: change.doc._rev,
       seq: change.seq,
       ok: ok
     };
-    dbPouch.sentinel.put(info, err => {
-      if (err) {
-        logger.error('Error updating metaData', err);
-      }
+    dbPouch.sentinel.put(info)
+    .catch(err => {
+      logger.error('Error updating metaData', err);
     });
   };
 

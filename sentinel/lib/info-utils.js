@@ -17,8 +17,9 @@ const getSisterInfoDoc = docId => {
           }
           return reject(err);
         });
+      } else {
+        return reject(err);
       }
-      return reject(err);
     });
   });
 };
@@ -36,7 +37,7 @@ const generateInfoDocFromAuditTrail = docId => {
   return new Promise((resolve, reject) => {
     db.audit.get(docId, (err, result) => {
       if (err && err.status !== 404) {
-        reject(err);
+        return reject(err);
       }
       const create = result &&
                      result.doc &&
