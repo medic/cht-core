@@ -2,22 +2,26 @@ const db = require('../db'),
       dbPouch = require('../db-pouch'),
       infoDocId = id => id + '-info';
 
-const getSisterInfoDoc = (docId, callback) =>
-  dbPouch.sentinel.get(infoDocId(docId), (err, body) => {
-    if (err && err.statusCode === 404) {
-      db.medic.get(infoDocId(docId), (err, body) => {
-        if (err && err.statusCode !== 404) {
-          callback(err);
-        } else {
-          callback(null, body);
-        }
-      });
-    } else if (err) {
-      callback(err);
-    } else {
-      callback(null, body);
-    }
+const getSisterInfoDoc = docId => {
+  const id = infoDocId(docId);
+  return new Promise((resolve, reject) => {
+    dbPouch.sentinel.get(id)
+    .then(doc => resolve(doc))
+    .catch(err => {
+      if (err.status === 404) {
+        dbPouch.medic.get(id)
+        .then(doc => resolve(doc))
+        .catch(err => {
+          if (err.status === 404) {
+            return resolve();
+          }
+          return reject(err);
+        });
+      }
+      return reject(err);
+    });
   });
+};
 
 const createInfoDoc = (docId, initialReplicationDate) => {
   return  {
@@ -28,71 +32,76 @@ const createInfoDoc = (docId, initialReplicationDate) => {
   };
 };
 
-const generateInfoDocFromAuditTrail = (docId, callback) =>
-  db.audit.get(docId, (err, result) => {
-    if (err && err.statusCode !== 404) {
-      callback(err);
-    } else {
+const generateInfoDocFromAuditTrail = docId => {
+  return new Promise((resolve, reject) => {
+    db.audit.get(docId, (err, result) => {
+      if (err && err.status !== 404) {
+        reject(err);
+      }
       const create = result &&
                      result.doc &&
                      result.doc.history &&
                      result.doc.history.find(el => el.action === 'create');
 
       if (create) {
-        callback(null, createInfoDoc(docId, create.timestamp));
-      } else {
-        callback();
+        return resolve(createInfoDoc(docId, create.timestamp));
       }
-    }
+      return resolve();
+    });
   });
+};
 
 module.exports = {
   getInfoDoc: change => {
     return new Promise((resolve, reject) => {
-      getSisterInfoDoc(change.id, (err, infoDoc) => {
-        // If we pass callback directly to other functions they may return a
-        // second parameter that is considered truthy and invoke
-        // index.js:applyTransition() to call _setProperty and write to the
-        // document needlessly
-        const done = err => {
-          if (err) {
-            return reject(err);
-          }
-          return resolve(infoDoc);
-        };
-        if (err) {
-          return reject(err);
-        }
+      getSisterInfoDoc(change.id)
+      .catch(err => reject(err))
+      .then(infoDoc => {
         if (infoDoc) {
           if(!infoDoc.transitions) {
-            infoDoc.transitions = change.doc.transitions || {};
+            infoDoc.transitions = (change.doc && change.doc.transitions) || {};
           }
           infoDoc.latest_replication_date = new Date();
-          return dbPouch.sentinel.put(infoDoc, done);
+          dbPouch.sentinel.put(infoDoc)
+          .then(() => {
+            return resolve(infoDoc);
+          })
+          .catch(err => {
+            return reject(err);
+          });
         }
-
-        generateInfoDocFromAuditTrail(change.id, (err, infoDoc) => {
-          if (err) {
-            return done(err);
-          }
+        generateInfoDocFromAuditTrail(change.id)
+        .catch(err => reject(err))
+        .then(infoDoc => {
           infoDoc = infoDoc || createInfoDoc(change.id, 'unknown');
           infoDoc.latest_replication_date = new Date();
-          return dbPouch.sentinel.put(infoDoc, done);
+          dbPouch.sentinel.put(infoDoc)
+          .then(doc => {
+            return resolve(doc);
+          })
+          .catch(err => {
+            return reject(err);
+          });
         });
       });
     });
   },
-  deleteInfoDoc: (change, callback) => {
-    dbPouch.sentinel.get(`${change.id}-info`, (err, doc) => {
-      if (err) {
-        if (err.statusCode === 404) {
-          // don't worry about deleting a non-existant doc
-          return callback();
+  deleteInfoDoc: (change) => {
+    return new Promise((resolve, reject) => {
+      dbPouch.sentinel.get(`${change.id}-info`)
+      .then(doc => {
+        doc._deleted = true;
+        dbPouch.sentinel.put(doc)
+        .then(() => resolve())
+        .catch(err => reject(err));
+      })
+      .catch(err => {
+        if (err && err.status !== 404) {
+          reject(err);
         }
-        return callback(err);
-      }
-      doc._deleted = true;
-      dbPouch.sentinel.put(doc, callback);
+        // don't worry about deleting a non-existant doc
+        resolve();
+      });
     });
   }
 };

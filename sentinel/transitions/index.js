@@ -50,28 +50,6 @@ const AVAILABLE_TRANSITIONS = [
   'resolve_pending'
 ];
 
-/*
- * Add transitions here to have them execute by default.
- *
- * Transitions on this list:
- *  - must still be in the above master list
- *  - can still be configured to be explicitly disabled if needed
- *  - should not expect any particular configuration (as they run by default)
- *  - do not necessarily need to be documented externally
- *
- * Only add transitions here whose lack of running would break data / system
- * expectations, not just because you think most will want them to run.
- */
-const SYSTEM_TRANSITIONS = [
-];
-
-// Init assertion that all SYSTEM_TRANSITIONS are also in AVAILABLE_TRANSITIONS
-(() => {
-  if (SYSTEM_TRANSITIONS.filter(transition => !AVAILABLE_TRANSITIONS.includes(transition)).length) {
-    logger.error('FATAL: All SYSTEM_TRANSITIONS must also be in AVAILABLE_TRANSITIONS');
-    process.exit(1);
-  }
-})();
 
 const METADATA_DOCUMENT = '_local/sentinel-meta-data';
 
@@ -193,9 +171,8 @@ const deleteReadDocs = (change, callback) => {
  * constant and what is enabled in the `transitions` property in the settings
  * data.  Log warnings on failure.
  *
- * Tests can diabled autoEnableSystemTransitions for more control.
  */
-const loadTransitions = (autoEnableSystemTransitions = true) => {
+const loadTransitions = () => {
 
   const self = module.exports;
   const transitionsConfig = config.get('transitions') || [];
@@ -203,16 +180,13 @@ const loadTransitions = (autoEnableSystemTransitions = true) => {
 
   transitions.splice(0, transitions.length);
 
-  // Load all system or configured transitions
+  // Load all configured transitions
   AVAILABLE_TRANSITIONS.forEach(transition => {
     const conf = transitionsConfig[transition];
 
-    const system =
-      autoEnableSystemTransitions && SYSTEM_TRANSITIONS.includes(transition);
-
     const disabled = conf && conf.disable;
 
-    if ((system && disabled) || (!system && !conf || disabled)) {
+    if (!conf || disabled) {
       return logger.warn(`Disabled transition "${transition}"`);
     }
 

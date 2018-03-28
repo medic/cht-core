@@ -166,7 +166,7 @@ loadTests.forEach(loadTest => {
     const load = sinon.stub(transitions, '_loadTransition');
     const attach = sinon.stub(transitions, '_attach');
     const detach = sinon.stub(transitions, '_detach');
-    transitions.loadTransitions(false);
+    transitions.loadTransitions();
     test.equal(load.callCount, loadTest.expectedCalls.load ? 1 : 0);
     test.equal(attach.callCount, loadTest.expectedCalls.attach ? 1 : 0);
     test.equal(detach.callCount, loadTest.expectedCalls.attach ? 0 : 1);
@@ -179,7 +179,7 @@ exports['loadTransitions load throws detach is called'] = test => {
   const load = sinon.stub(transitions, '_loadTransition').throws(new Error('some config error'));
   const attach = sinon.stub(transitions, '_attach');
   const detach = sinon.stub(transitions, '_detach');
-  transitions.loadTransitions(false);
+  transitions.loadTransitions();
   test.equal(load.callCount, 1);
   test.equal(attach.callCount, 0);
   test.equal(detach.callCount, 1);
