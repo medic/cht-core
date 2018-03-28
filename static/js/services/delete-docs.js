@@ -12,6 +12,7 @@ var utilsFactory = require('bulk-docs-utils');
     function(
       $log,
       $q,
+      Changes,
       DB,
       ExtractLineage,
       Session
@@ -61,6 +62,14 @@ var utilsFactory = require('bulk-docs-utils');
       };
 
       var bulkDeleteRemoteDocs = function (docs, eventListeners) {
+        // TODO: we're temporarily (?) killing the changes feed here for performance
+        // Having the changes feed watching and then disseminating changes to the whole
+        // page causes massive performance issues while large deletes are occurring.
+        // We need to fix this either by improving performance in this area or by
+        // radically change how we follow changes for online users
+        // https://github.com/medic/medic-webapp/issues/4327
+        Changes({die: true});
+
         var deferred = $q.defer();
         var xhr = new XMLHttpRequest();
         xhr.onprogress = function() {

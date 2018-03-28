@@ -1,6 +1,7 @@
 angular.module('inboxControllers').controller('DeleteDocConfirm',
   function(
     $scope,
+    $timeout,
     $translate,
     $uibModalInstance,
     DeleteDocs,
@@ -12,20 +13,30 @@ angular.module('inboxControllers').controller('DeleteDocConfirm',
     $scope.totalDocsSelected = 0;
     $scope.totalDocsDeleted = 0;
     function updateTotalDocsDeleted(totalDocsDeleted) {
-      $scope.totalDocsDeleted = totalDocsDeleted;
+      $timeout(function() {
+        $scope.totalDocsDeleted = totalDocsDeleted;
+      });
     }
 
+    $scope.$on('modal.closing', function(e) {
+      if ($scope.deleteComplete) {
+        return window.location.reload();
+      }
+    })
+
     $scope.submit = function() {
+      if ($scope.deleteComplete) {
+        return window.location.reload();
+      }
+
       var docs = $scope.model.docs;
       $scope.totalDocsSelected = docs.length;
       $scope.totalDocsDeleted = 0;
       $scope.setProcessing();
       DeleteDocs(docs, { progress: updateTotalDocsDeleted })
         .then(function() {
+          $scope.deleteComplete = true;
           $scope.setFinished();
-          var key = docs.length === 1 ? 'document.deleted' : 'document.deleted.plural';
-          $translate(key, { number: docs.length }).then(Snackbar);
-          $uibModalInstance.close();
         })
         .catch(function(err) {
           $scope.setError(err, 'Error deleting document');

@@ -27,6 +27,7 @@ var feedback = require('../modules/feedback'),
       CountMessages,
       DB,
       DBSync,
+      Debug,
       Enketo,
       PlaceHierarchy,
       JsonForms,
@@ -53,6 +54,13 @@ var feedback = require('../modules/feedback'),
       'ngInject';
 
       Session.init();
+
+      if (window.location.href.indexOf('localhost') !== -1) {
+        // Local development
+        Debug.set(true);
+      } else {
+        Debug.set(false);
+      }
 
       $scope.replicationStatus = {
         disabled: false,
