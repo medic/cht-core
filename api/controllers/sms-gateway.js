@@ -111,7 +111,8 @@ module.exports = {
     return { 'medic-gateway': true };
   },
   post: req => {
-    return addNewMessages(req)
+    return Promise.resolve()
+      .then(() => addNewMessages(req))
       .then(() => processTaskStateUpdates(req))
       .then(getOutgoing)
       .then(markMessagesForwarded)
