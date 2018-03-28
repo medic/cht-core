@@ -5,6 +5,8 @@ var _ = require('underscore'),
     DB_PREFIX = 'medic_api_integration_tests__';
 
 const PouchDB = require('pouchdb-core');
+PouchDB.plugin(require('pouchdb-adapter-http'));
+PouchDB.plugin(require('pouchdb-mapreduce'));
 
 function byId(a, b) {
   if(a._id === b._id) {
@@ -140,7 +142,6 @@ function matchDbs(expected, actual) {
     throw new Error('Database contents not as expected: \n\t' + errors.join(';\n\t'));
   }
 }
-
 
 const dbPath = db.getPath,
       dbRequest = db.request;

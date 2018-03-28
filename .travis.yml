@@ -49,11 +49,10 @@ before_script:
   # Create couchdb system tables (this has to be done manually on couchdb 2.0)
   - curl -X PUT http://127.0.0.1:5984/{_users,_replicator,_global_changes,_metadata,admins}
   - curl -X PUT localhost:5984/medic
-  - bash ./scripts/ci/setup.sh
-  - npm install kanso -g
   - npm install grunt-cli -g
   - npm --prefix api install
   - npm --prefix sentinel install
+  - npm --prefix shared-libs/phone-number install
   - ./node_modules/.bin/webdriver-manager update
   - ./node_modules/.bin/webdriver-manager start > webdriver.log.txt &
   - until nc -z localhost 4444; do sleep 1; done
@@ -72,11 +71,10 @@ script:
     
 jobs:
   include:
-    - stage: "Publish binaries"
-      script: ./scripts/ci/push_to_staging.sh
+    - if: type != pull_request
+      stage: "Publish binaries"
+      script: node --stack_size=10000 `which grunt` publish
       env: NODE_VERSION=8 PUBLISH_TO=horti
-    - script: bash ./scripts/ci/push_to_market.sh
-      env: NODE_VERSION=8 PUBLISH_TO=garden-market
 
 after_failure:
   - |

@@ -1,9 +1,8 @@
 var utils = require('./utils');
 
 describe('emit-complete', function() {
-  afterEach(function() {
-    return utils.tearDown();
-  });
+  beforeEach(() => utils.initDb([]));
+  afterEach(() => utils.tearDown());
 
   it('should do nothing when tasks not configured', function() {
     // given

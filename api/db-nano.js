@@ -97,16 +97,6 @@ if (couchUrl) {
     return path.join(module.exports.settings.db, '_design',
                      module.exports.settings.ddoc, '_rewrite');
   };
-  module.exports.getSettings = function(cb) {
-    var uri = path.join(module.exports.getPath(), 'app_settings',
-                        module.exports.settings.ddoc);
-    module.exports.request({ path: uri }, cb);
-  };
-  module.exports.updateSettings = function(updates, cb) {
-    var uri = path.join(module.exports.getPath(), 'update_settings',
-                        module.exports.settings.ddoc);
-    module.exports.request({ path: uri, method: 'put', body: updates }, cb);
-  };
   module.exports.getCouchDbVersion = function(cb) {
     db.request({}, function(err, body) {
       if (err) {
@@ -136,8 +126,6 @@ if (couchUrl) {
       db: 'medic',
       ddoc: 'medic'
     },
-    getSettings: function() {},
-    updateSettings: function() {},
     sanitizeResponse: sanitizeResponse,
     use: function() {},
     medic: {

@@ -1,32 +1,29 @@
-const assert = require('chai').assert;
-const views = require('../../../../lib/views');
+const assert = require('chai').assert,
+      utils = require('./utils');
+
+let view;
 
 describe('tasks_pending view', () => {
 
-  let emitted;
-  emit = function(e) {
-    emitted.push(e);
-  };
-
-  beforeEach(() => emitted = []);
+  beforeEach(() => {
+    view = utils.loadView('medic', 'tasks_pending');
+  });
 
   it('No emit on empty doc', () => {
-    views.tasks_pending.map({});
-
+    const emitted = view({});
     assert.deepEqual(emitted, []);
   });
 
   it('No emit for empty tasks', () => {
-    views.tasks_pending.map({
+    const emitted = view({
       tasks: [],
       scheduled_tasks: []
     });
-
     assert.deepEqual(emitted, []);
   });
 
   it('No emit when tasks missing messages', () => {
-    views.tasks_pending.map({
+    const emitted = view({
       tasks: [{
         state: 'pending',
         messages: []
@@ -36,21 +33,19 @@ describe('tasks_pending view', () => {
         messages: []
       }]
     });
-
     assert.deepEqual(emitted, []);
 
-    views.tasks_pending.map({
+    const emitted2 = view({
       tasks: [{
         state: 'pending',
         messages: null
       }]
     });
-
-    assert.deepEqual(emitted, []);
+    assert.deepEqual(emitted2, []);
   });
 
   it('Emits only for pending tasks', () => {
-    views.tasks_pending.map({
+    const emitted = view({
       tasks: [{
         state: 'notpending',
         messages: [
@@ -70,12 +65,11 @@ describe('tasks_pending view', () => {
         ]
       }]
     });
-
     assert.deepEqual(emitted, []);
   });
 
   it('Emits when message is valid on pending task', () => {
-    views.tasks_pending.map({
+    const emitted = view({
       tasks: [{
         state: 'pending',
         messages: [
@@ -88,12 +82,11 @@ describe('tasks_pending view', () => {
       reported_date: 'test',
       refid: 'passed'
     });
-
     assert.deepEqual(emitted, [['test', 'passed']]);
   });
 
   it('Emits only when message is valid on pending scheduled task with no errors', () => {
-    views.tasks_pending.map({
+    const emitted = view({
       scheduled_tasks: [{
         state: 'pending',
         messages: [
@@ -110,7 +103,7 @@ describe('tasks_pending view', () => {
 
     assert.deepEqual(emitted, []);
 
-    views.tasks_pending.map({
+    const emitted2 = view({
       scheduled_tasks: [{
         state: 'pending',
         messages: [
@@ -124,12 +117,12 @@ describe('tasks_pending view', () => {
       refid: 'passed'
     });
 
-    assert.deepEqual(emitted, [['test', 'passed']]);
+    assert.deepEqual(emitted2, [['test', 'passed']]);
   });
 
 
   it('any of the tasks can be valid for the emit to occur', () => {
-    views.tasks_pending.map({
+    const emitted = view({
       tasks: [{},{},{},
       {
         state: 'pending',
@@ -148,7 +141,7 @@ describe('tasks_pending view', () => {
   });
 
   it('any of the scheduled_tasks can be valid for the emit to occur', () => {
-    views.tasks_pending.map({
+    const emitted = view({
       scheduled_tasks: [{},{},{},
       {
         state: 'pending',
@@ -167,7 +160,7 @@ describe('tasks_pending view', () => {
   });
 
   it('any of the tasks messages can be valid for the emit to occur', () => {
-    views.tasks_pending.map({
+    const emitted = view({
       tasks: [{},{},{},
       {
         state: 'pending',
@@ -186,7 +179,7 @@ describe('tasks_pending view', () => {
   });
 
   it('any of the scheduled_tasks messages can be valid for the emit to occur', () => {
-    views.tasks_pending.map({
+    const emitted = view({
       scheduled_tasks: [{},{},{},
       {
         state: 'pending',

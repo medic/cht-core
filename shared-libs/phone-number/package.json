@@ -1,0 +1,16 @@
+{
+  "name": "phone-number",
+  "version": "1.0.0",
+  "description": "Our phone number validation and formatting utilities",
+  "main": "src/phone-number.js",
+  "author": "",
+  "license": "Apache-2.0",
+  "scripts": {
+    "test": "mocha ./test"
+  },
+  "devDependencies": {
+    "chai": "^4.1.2",
+    "mocha": "^5.0.0"
+  },
+  "dependencies": {}
+}

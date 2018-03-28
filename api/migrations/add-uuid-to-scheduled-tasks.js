@@ -2,6 +2,7 @@ var db = require('../db-nano'),
     async = require('async'),
     moment = require('moment'),
     uuidV4 = require('uuid/v4'),
+    settingsService = require('../services/settings'),
     BATCH_SIZE = 100;
 
 var updateMessage = function(message) {
@@ -72,27 +73,26 @@ module.exports = {
   name: 'add-uuid-to-scheduled-tasks',
   created: new Date(2017, 1, 5),
   run: function(callback) {
-    db.getSettings(function(err, data) {
-      if (err) {
-        return callback(err);
-      }
-      var schedules = data.settings.schedules;
-      if (!schedules ||
-          !schedules.length ||
-          (schedules.length === 1 && !schedules[0].name)) {
-        return callback();
-      }
-      var currentSkip = 0;
-      async.doWhilst(
-        function(callback) {
-          runBatch(currentSkip, callback);
-        },
-        function(more) {
-          currentSkip += BATCH_SIZE;
-          return more;
-        },
-        callback
-      );
-    });
+    settingsService.get()
+      .then(settings => {
+        var schedules = settings.schedules;
+        if (!schedules ||
+            !schedules.length ||
+            (schedules.length === 1 && !schedules[0].name)) {
+          return callback();
+        }
+        var currentSkip = 0;
+        async.doWhilst(
+          function(callback) {
+            runBatch(currentSkip, callback);
+          },
+          function(more) {
+            currentSkip += BATCH_SIZE;
+            return more;
+          },
+          callback
+        );
+      })
+      .catch(callback);
   }
 };

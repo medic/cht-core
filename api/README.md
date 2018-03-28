@@ -165,6 +165,22 @@ on a Javascript Date object.
   - 2016-07-01T13:48:24Z
   - 1467383343484 (MS since Epoch)
 
+# Settings
+
+Get and update the app settings.
+
+## GET /api/v1/settings
+
+Returns the settings in JSON format.
+
+## PUT /api/v1/settings
+
+### Query Parameters
+
+| Variable           | Description
+| ------------------ | -------------
+| replace            | Whether to replace existing settings for the given properties or to merge. Defaults to false (merging).
+
 # Export
 
 Request different types of data in various formats.

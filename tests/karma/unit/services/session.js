@@ -8,10 +8,8 @@ describe('Session service', function() {
       location,
       appCache,
       appCacheListener,
-      Location,
-      kansoLogout,
-      kansoInfo,
-      kansoSessionListener;
+      $httpBackend,
+      Location;
 
   beforeEach(function () {
     module('inboxApp');
@@ -20,9 +18,6 @@ describe('Session service', function() {
     appCacheListener = sinon.stub();
     ipCookie.remove = ipCookieRemove;
     Location = {};
-    kansoLogout = sinon.stub();
-    kansoInfo = sinon.stub();
-    kansoSessionListener = sinon.stub();
     location = {};
     appCache = {
       DOWNLOADING: 3,
@@ -41,21 +36,15 @@ describe('Session service', function() {
           applicationCache: appCache
         };
       });
-      $provide.value('KansoPackages', {
-        session: {
-          logout: kansoLogout,
-          info: kansoInfo,
-          on: kansoSessionListener
-        }
-      });
     });
-    inject(function($injector) {
-      service = $injector.get('Session');
+    inject(function(_Session_, _$httpBackend_) {
+      service = _Session_;
+      $httpBackend = _$httpBackend_;
     });
   });
 
   afterEach(function() {
-    KarmaUtils.restore(ipCookie, ipCookieRemove, kansoLogout, kansoInfo, kansoSessionListener, appCacheListener);
+    KarmaUtils.restore(ipCookie, ipCookieRemove, appCacheListener);
   });
 
   it('gets the user context', function(done) {
@@ -70,9 +59,11 @@ describe('Session service', function() {
   it('logs out', function(done) {
     location.href = 'CURRENT_URL';
     Location.dbName = 'DB_NAME';
-    kansoLogout.callsArg(0);
+    $httpBackend
+      .expect('DELETE', '/_session')
+      .respond(200);
     service.logout();
-    chai.expect(kansoLogout.callCount).to.equal(1);
+    $httpBackend.flush();
     chai.expect(location.href).to.equal('/DB_NAME/login?redirect=CURRENT_URL');
     chai.expect(ipCookieRemove.args[0][0]).to.equal('userCtx');
     done();
@@ -82,9 +73,11 @@ describe('Session service', function() {
     ipCookie.returns({});
     location.href = 'CURRENT_URL';
     Location.dbName = 'DB_NAME';
-    kansoLogout.callsArg(0);
+    $httpBackend
+      .expect('DELETE', '/_session')
+      .respond(200);
     service.init();
-    chai.expect(kansoLogout.callCount).to.equal(1);
+    $httpBackend.flush();
     chai.expect(location.href).to.equal('/DB_NAME/login?redirect=CURRENT_URL');
     chai.expect(ipCookieRemove.args[0][0]).to.equal('userCtx');
     done();
@@ -94,9 +87,11 @@ describe('Session service', function() {
     ipCookie.returns({ name: 'bryan' });
     location.href = 'CURRENT_URL';
     Location.dbName = 'DB_NAME';
-    kansoInfo.callsArgWith(0, { status: 401 });
+    $httpBackend
+      .expect('GET', '/_session')
+      .respond(401);
     service.init();
-    chai.expect(kansoLogout.callCount).to.equal(0);
+    $httpBackend.flush();
     chai.expect(location.href).to.equal('/DB_NAME/login?redirect=CURRENT_URL');
     chai.expect(ipCookieRemove.args[0][0]).to.equal('userCtx');
     done();
@@ -104,10 +99,11 @@ describe('Session service', function() {
 
   it('does not log out if server not found', function(done) {
     ipCookie.returns({ name: 'bryan' });
-    kansoLogout.callsArg(0);
-    kansoInfo.callsArgWith(0, { status: 404 });
+    $httpBackend
+      .expect('GET', '/_session')
+      .respond(0);
     service.init();
-    chai.expect(kansoLogout.callCount).to.equal(0);
+    $httpBackend.flush();
     chai.expect(ipCookieRemove.callCount).to.equal(0);
     done();
   });
@@ -116,10 +112,14 @@ describe('Session service', function() {
     ipCookie.returns({ name: 'bryan' });
     location.href = 'CURRENT_URL';
     Location.dbName = 'DB_NAME';
-    kansoLogout.callsArg(0);
-    kansoInfo.callsArgWith(0, null, { userCtx: { name: 'jimmy' } });
+    $httpBackend
+      .expect('GET', '/_session')
+      .respond(200, { data: { userCtx: { name: 'jimmy' } } });
+    $httpBackend
+      .expect('DELETE', '/_session')
+      .respond(200);
     service.init();
-    chai.expect(kansoLogout.callCount).to.equal(1);
+    $httpBackend.flush();
     chai.expect(location.href).to.equal('/DB_NAME/login?redirect=CURRENT_URL');
     chai.expect(ipCookieRemove.args[0][0]).to.equal('userCtx');
     done();
@@ -127,43 +127,11 @@ describe('Session service', function() {
 
   it('does not log out if remote userCtx consistent', function(done) {
     ipCookie.returns({ name: 'bryan' });
-    kansoLogout.callsArg(0);
-    kansoInfo.callsArgWith(0, null, { userCtx: { name: 'bryan' } });
+    $httpBackend
+      .expect('GET', '/_session')
+      .respond(200, { userCtx: { name: 'bryan' } });
     service.init();
-    chai.expect(kansoLogout.callCount).to.equal(0);
-    chai.expect(ipCookieRemove.callCount).to.equal(0);
-    chai.expect(kansoSessionListener.callCount).to.equal(1);
-    chai.expect(kansoSessionListener.args[0][0]).to.equal('change');
-    done();
-  });
-
-  it('redirects to login on remote session change', function(done) {
-    ipCookie.returns({ name: 'bryan' });
-    location.href = 'CURRENT_URL';
-    Location.dbName = 'DB_NAME';
-    kansoLogout.callsArg(0);
-    kansoInfo
-      .onFirstCall().callsArgWith(0, null, { userCtx: { name: 'bryan' } })
-      .onSecondCall().callsArgWith(0, null, { userCtx: { name: 'dave' } });
-    service.init();
-    kansoSessionListener.args[0][1]({});
-    chai.expect(kansoLogout.callCount).to.equal(1);
-    chai.expect(location.href).to.equal('/DB_NAME/login?redirect=CURRENT_URL');
-    chai.expect(ipCookieRemove.args[0][0]).to.equal('userCtx');
-    chai.expect(kansoSessionListener.args[0][0]).to.equal('change');
-    done();
-  });
-
-  it('does not redirect to login on remote session change if offline', function(done) {
-    ipCookie.returns({ name: 'bryan' });
-    location.href = 'CURRENT_URL';
-    Location.dbName = 'DB_NAME';
-    kansoInfo
-      .onFirstCall().callsArgWith(0, null, { userCtx: { name: 'bryan' } })
-      .onSecondCall().callsArgWith(0, { status: 404 });
-    service.init();
-    kansoSessionListener.args[0][1]({});
-    chai.expect(kansoLogout.callCount).to.equal(0);
+    $httpBackend.flush();
     chai.expect(ipCookieRemove.callCount).to.equal(0);
     done();
   });
@@ -172,13 +140,15 @@ describe('Session service', function() {
     ipCookie.returns({});
     location.href = 'CURRENT_URL';
     Location.dbName = 'DB_NAME';
-    kansoLogout.callsArg(0);
+    $httpBackend
+      .expect('DELETE', '/_session')
+      .respond(200);
     appCache.status = 3;
     service.init();
+    $httpBackend.flush();
     appCacheListener.args[0][1](); // fire the appcache callback
     chai.expect(appCacheListener.callCount).to.equal(1);
     chai.expect(appCacheListener.args[0][0]).to.equal('updateready');
-    chai.expect(kansoLogout.callCount).to.equal(1);
     chai.expect(location.href).to.equal('/DB_NAME/login?redirect=CURRENT_URL');
     chai.expect(ipCookieRemove.args[0][0]).to.equal('userCtx');
     done();

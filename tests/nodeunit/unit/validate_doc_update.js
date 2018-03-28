@@ -1,11 +1,14 @@
 var _ = require('underscore'),
-    serverValidateDocUpdate = require('../../../lib/validate_doc_update');
-
-var fs = require('fs'),
-    clientValidateDocUpdateString = fs.readFileSync('./ddocs/medic-client/validate_doc_update.js'),
+    fs = require('fs'),
     clientValidateDocUpdate = function() {
       /*jshint -W061 */
-      eval('('+clientValidateDocUpdateString+')').apply(null, arguments);
+      var fn = fs.readFileSync('./ddocs/medic-client/validate_doc_update.js');
+      eval('(' + fn + ')').apply(null, arguments);
+    },
+    serverValidateDocUpdate = function() {
+      /*jshint -W061 */
+      var fn = fs.readFileSync('./ddocs/medic/validate_doc_update.js');
+      eval('(' + fn + ')').apply(null, arguments);
     };
 var userSettings;
 
@@ -40,7 +43,7 @@ var disallowed = function (reason) {
   return { forbidden: reason };
 };
 
-var allowedOnServer = _.partial(checkFn, serverValidateDocUpdate.validate_doc_update);
+var allowedOnServer = _.partial(checkFn, serverValidateDocUpdate);
 var allowedOnClient = _.partial(checkFn, clientValidateDocUpdate);
 
 exports['only db and national admins are allowed change ddocs'] = function(test) {

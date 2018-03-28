@@ -4,6 +4,7 @@ var _ = require('underscore'),
     ddocExtraction = require('./ddoc-extraction'),
     translations = require('./translations'),
     defaults = require('./config.default.json'),
+    settingsService = require('./services/settings'),
     settings = {},
     translationCache = {};
 
@@ -61,22 +62,28 @@ var loadSettings = function(callback) {
     if (err) {
       return callback(err);
     }
-    settings = ddoc.app_settings;
+    settings = ddoc.app_settings || {};
     var original = JSON.stringify(settings);
     _.defaults(settings, defaults);
     // add any missing permissions
-    defaults.permissions.forEach(function(def) {
-      var configured = _.findWhere(settings.permissions, { name: def.name });
-      if (!configured) {
-        settings.permissions.push(def);
-      }
-    });
+    if (settings.permissions) {
+      defaults.permissions.forEach(function(def) {
+        var configured = _.findWhere(settings.permissions, { name: def.name });
+        if (!configured) {
+          settings.permissions.push(def);
+        }
+      });
+    } else {
+      settings.permissions = defaults.permissions;
+    }
     var changed = JSON.stringify(settings) !== original;
     if (!changed) {
       return callback();
     }
     console.log('Updating settings with new defaults');
-    db.updateSettings(settings, callback);
+    settingsService.update(settings)
+      .then(() => callback())
+      .catch(callback);
   });
 };
 
@@ -95,7 +102,7 @@ var loadTranslations = function() {
 
 module.exports = {
   get: function(key) {
-    return settings[key];
+    return key ? settings[key] : settings;
   },
   translate: function(key, locale, ctx) {
     if (_.isObject(locale)) {

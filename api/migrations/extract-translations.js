@@ -1,5 +1,6 @@
 var _ = require('underscore'),
     db = require('../db-nano'),
+    settingsService = require('../services/settings'),
     DOC_TYPE = 'translations';
 
 var getDocs = function(callback) {
@@ -43,17 +44,24 @@ var mergeTranslations = function(settings, docs) {
   });
 };
 
-var updateDocs = function(settings, callback) {
-  getDocs(function(err, docs) {
-    if (err) {
-      return callback(err);
-    }
-    if (!docs.length) {
-      return callback();
-    }
-    mergeEnabled(settings.locales, docs);
-    mergeTranslations(settings.translations, docs);
-    db.medic.bulk({ docs: docs }, callback);
+var updateDocs = settings => {
+  return new Promise((resolve, reject) => {
+    getDocs(function(err, docs) {
+      if (err) {
+        return reject(err);
+      }
+      if (!docs.length) {
+        return resolve();
+      }
+      mergeEnabled(settings.locales, docs);
+      mergeTranslations(settings.translations, docs);
+      db.medic.bulk({ docs: docs }, err => {
+        if (err) {
+          return reject(err);
+        }
+        resolve();
+      });
+    });
   });
 };
 
@@ -61,20 +69,16 @@ module.exports = {
   name: 'extract-translations',
   created: new Date(2016, 6, 29),
   run: function(callback) {
-    db.getSettings(function(err, data) {
-      if (err) {
-        return callback(err);
-      }
-      var settings = data.settings;
-      if (!settings.translations || !settings.translations.length) {
-        return callback();
-      }
-      updateDocs(settings, function(err) {
-        if (err) {
-          return callback(err);
+    settingsService.get()
+      .then(settings => {
+        if (!settings.translations || !settings.translations.length) {
+          return;
         }
-        db.updateSettings({ translations: null, locales: null }, callback);
-      });
-    });
+        return updateDocs(settings).then(() => {
+          return settingsService.update({ translations: null, locales: null });
+        });
+      })
+      .then(() => callback())
+      .catch(callback);
   }
 };

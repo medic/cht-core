@@ -1,5 +1,5 @@
 var _ = require('underscore'),
-    phoneUtil = require('google-libphonenumber').PhoneNumberUtil.getInstance(),
+    phoneNumber = require('phone-number'),
     utils = require('./utils'),
     messageUtils = require('./message-utils'),
     config = require('../config');
@@ -137,10 +137,9 @@ module.exports = {
      * itself.
      */
     isMessageFromGateway: from => {
-        const gw = config.get('gateway_number');
-        if (typeof gw === 'string' && typeof from === 'string') {
-            return phoneUtil.isNumberMatch(gw, from) >= 3;
-        }
-        return false;
+        const gateway = config.get('gateway_number');
+        return typeof gateway === 'string' &&
+               typeof from === 'string' &&
+               phoneNumber.same(gateway, from);
     }
 };
