@@ -1,17 +1,17 @@
 var _ = require('underscore');
 
 /*
- Auth service returns a promise that will be resolved if
- the current user's role has all the permissions passed
- in as arguments. If a permission has a '!' prefix this
- will resolve only if the user doesn't have the permission.
+  Auth service returns a promise that will be resolved if
+  the current user's role has all the permissions passed
+  in as arguments. If a permission has a '!' prefix this
+  will resolve only if the user doesn't have the permission.
 
- DB admins automatically have all permissions.
+  DB admins automatically have all permissions.
 
- Auth.any function receives a list of groups of permissions
- and returns a promise that will be resolved if the current
- user's role has all the permissions of any of the provided
- groups.
+  Auth.any function receives a list of groups of permissions
+  and returns a promise that will be resolved if the current
+  user's role has all the permissions of any of the provided
+  groups.
  */
 
 angular.module('inboxServices').factory('Auth',
