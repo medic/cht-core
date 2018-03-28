@@ -1,4 +1,6 @@
-const packageJson = require('./package.json');
+const packageJson = require('./package.json'),
+      releaseName = process.env.TRAVIS_TAG || process.env.TRAVIS_BRANCH || 'medic';
+
 
 module.exports = function(grunt) {
 
@@ -26,7 +28,15 @@ module.exports = function(grunt) {
           from: /@@APP_CONFIG.name/g,
           to: packageJson.name
         }]
-      }
+      },
+      'change-ddoc-id-for-publish': {
+        src: [ 'ddocs/medic.json' ],
+        overwrite: true,
+        replacements: [{
+          from: '"_id": "_design/medic"',
+          to: `"_id": "medic:medic:${releaseName}"`
+        }]
+      },
     },
     'couch-compile': {
       client: {
@@ -243,12 +253,22 @@ module.exports = function(grunt) {
         cmd: ['api', 'sentinel'].map(module => [
               `cd ${module}`,
               `npm --production install`,
-              `sed -i -e 's/"dependencies"/"bundledDependencies"/g' package.json`,
               `npm pack`,
               `mv medic-*.tgz ../ddocs/medic/_attachments/`,
-              `sed -i -e 's/"bundledDependencies"/"dependencies"/g' package.json`,
               `cd ..`,
             ].join(' && ')).join(' && ')
+      },
+      'bundle-dependencies': {
+        cmd: () => {
+          ['api', 'sentinel'].forEach(module => {
+            const filePath = `${module}/package.json`;
+            const pkg = this.file.readJSON(filePath);
+            pkg.bundledDependencies = Object.keys(pkg.dependencies);
+            this.file.write(filePath, JSON.stringify(pkg, undefined, '  '));
+            console.log(`Updated 'bundledDependencies' for ${filePath}`);
+          });
+          return 'echo "Node module dependencies updated"';
+        }
       },
       ddocAppSettings: {
         cmd: 'node ./scripts/merge-app-settings $COUCH_URL/_design/medic ddocs/medic.json'
@@ -265,15 +285,6 @@ module.exports = function(grunt) {
             }
           }
           return `echo "${version}" > ddocs/medic/version`;
-        }
-      },
-      'change-ddoc-id-for-publish': {
-        cmd: () => {
-          const name = process.env.TRAVIS_TAG || process.env.TRAVIS_BRANCH;
-          if (!name) {
-            return;
-          }
-          return `sed -i -e 's|"_id": "_design/medic"|"_id": "medic:medic:${name}"|g' ddocs/medic.json`;
         }
       },
       apiDev: {
@@ -594,8 +605,7 @@ module.exports = function(grunt) {
   ]);
 
   grunt.registerTask('build', 'Build the static resources', [
-    'exec:cleanDdocBuildDirectory',
-    'exec:packNodeModules',
+    'build-node-modules',
     'mmcss',
     'mmjs',
     'enketoxslt',
@@ -629,11 +639,16 @@ module.exports = function(grunt) {
     'notify:deployed',
   ]);
 
+  grunt.registerTask('build-node-modules', 'Build and pack api and sentinel bundles', [
+    'exec:cleanDdocBuildDirectory',
+    'exec:bundle-dependencies',
+    'exec:packNodeModules',
+  ]);
+
   // Test tasks
   grunt.registerTask('e2e', 'Deploy app for testing and run e2e tests', [
     'exec:resetTestDatabases',
-    'exec:cleanDdocBuildDirectory',
-    'exec:packNodeModules',
+    'build-node-modules',
     'build-ddoc',
     'couch-push:test',
     'protractor:e2e_tests_and_services'
@@ -641,8 +656,7 @@ module.exports = function(grunt) {
 
   grunt.registerTask('test_perf', 'Run performance-specific tests', [
     'exec:resetTestDatabases',
-    'exec:cleanDdocBuildDirectory',
-    'exec:packNodeModules',
+    'build-node-modules',
     'build-ddoc',
     'couch-push:test',
     'protractor:performance_tests_and_services'
@@ -717,8 +731,8 @@ module.exports = function(grunt) {
 
   grunt.registerTask('precommit', 'Static analysis checks', [
     'regex-check',
-    'jshint',
     'exec:blankLinkCheck',
+    'jshint',
   ]);
 
   grunt.registerTask('dev-webapp-no-npm', 'Build and deploy the webapp for dev, without reinstalling dependencies.', [
@@ -736,7 +750,7 @@ module.exports = function(grunt) {
   ]);
 
   grunt.registerTask('publish', 'Publish the ddoc to the staging server', [
-    'exec:change-ddoc-id-for-publish',
+    'replace:change-ddoc-id-for-publish',
     'couch-push:staging',
   ]);
 
