@@ -334,7 +334,7 @@ describe('Reports Summary', () => {
         });
     });
 
-    it('Concerning reports using doc id', () => {
+    xit('Concerning reports using doc id', () => {
       const REPORT = {
         _id: 'REF_REF_V2',
         form: 'RR',
