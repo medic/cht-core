@@ -1,4 +1,5 @@
 const constants = require('./constants');
+const fs = require('fs');
 const spawn = require('child_process').spawn;
 const utils = require('./utils');
 
@@ -14,10 +15,21 @@ const stopAll = (code) => {
   process.exit(code);
 };
 
-const startServer = (dir, startOutput) => {
+const startServer = (serviceName, startOutput, options={}) => {
+  if(!fs.existsSync('logs')) {
+    fs.mkdirSync('logs');
+  }
+  const logStream = fs.createWriteStream(`logs/${serviceName}.e2e.log`, { flags:'w' });
+  const log = data => {
+    if (options.logTimestamps) {
+      data = `${new Date().toISOString()} ${data}`;
+    }
+    logStream.write(data);
+  };
+
   return new Promise(resolve => {
     const child = spawn('node', ['server.js'], {
-      cwd: dir,
+      cwd: serviceName,
       env: {
         TZ: 'UTC',
         API_PORT: constants.API_PORT,
@@ -32,14 +44,15 @@ const startServer = (dir, startOutput) => {
         started = true;
         resolve();
       }
-      console.log(`[${dir}] ${data}`);
+      log(data);
     });
     child.stderr.on('data', data => {
-      console.error(`[${dir}] ${data}`);
+      log(data);
     });
 
     child.on('exit', code => {
-      console.log(`[${dir}] exited with code ${code}`);
+      logStream.end(`Exited with code ${code}.`);
+      console.log(`[${serviceName}] exited with code ${code}`);
       if(!stoppingAll) {
         console.log('[e2e] Sending kill signals to all servers…');
         stopAll(code);
@@ -52,7 +65,7 @@ const startServer = (dir, startOutput) => {
 
 // start sentinel serially because it relies on api
 const startAll = () => startServer('api', 'Medic API listening on port')
-           .then(() => startServer('sentinel', 'startup complete.'));
+           .then(() => startServer('sentinel', 'startup complete.', { logTimestamps:true }));
 
 module.exports = {
   startAll: startAll,

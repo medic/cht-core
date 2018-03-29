@@ -15,7 +15,7 @@ node_modules
 /ddocs/*.json
 /ddocs/medic/_attachments
 /ddocs/medic/version
-logs
+/logs/
 /config.js
 /build/
 tests/results
