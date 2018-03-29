@@ -186,6 +186,6 @@ describe('InboxCtrl controller', () => {
 
   it('InboxUserContent Changes listener callback should check current session', () => {
     changesListener['inbox-user-context'].callback();
-    chai.expect(session.checkCurrentSession.callCount).to.equal(1);
+    chai.expect(session.init.callCount).to.equal(2);
   });
 });

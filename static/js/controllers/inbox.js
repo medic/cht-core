@@ -663,7 +663,7 @@ var feedback = require('../modules/feedback'),
                  change.doc.name === userCtx.name;
         },
         callback: function () {
-          Session.checkCurrentSession(showUpdateReady);
+          Session.init(showUpdateReady);
         }
       });
     }
