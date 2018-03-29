@@ -81,6 +81,26 @@ describe('/sms', function() {
           .then(() => assert.messageStates({ id:'abc-123', states:['sent', 'delivered'] }));
       });
 
+      it('should not reject messages with unexpected status values', function() {
+        return setup.saveWoMessage('abc-123', 'hello from webapp')
+          .then(() => assert.messageWithoutState('abc-123'))
+
+          .then(() => api.postStatus('abc-123', 'WEIRD_STATUS'))
+          .then(assert.response({ messages:[] }))
+
+          .then(() => assert.messageState('abc-123', 'unrecognised'));
+      });
+
+      it('should not reject messages with missing status values', function() {
+        return setup.saveWoMessage('abc-123', 'hello from webapp')
+          .then(() => assert.messageWithoutState('abc-123'))
+
+          .then(() => api.post({ updates:[ { id:'abc-123' } ] }))
+          .then(assert.response({ messages:[] }))
+
+          .then(() => assert.messageState('abc-123', 'unrecognised'));
+      });
+
       it('should not save a status update again if it\'s been seen before', function() {
         return setup.saveWoMessage('abc-123', 'hello again')
           .then(() => assert.messageWithoutState('abc-123'))
