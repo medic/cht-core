@@ -338,7 +338,7 @@ const applyTransition = ({ key, change, transition }, callback) => {
         if (!changed) {
           return resolve(changed);
         }
-        _setResult(true).then(() => {return resolve(changed);});        
+        _setResult(true).then(() => {return resolve(changed);});
       });
     })
     .catch(err => {
@@ -415,7 +415,7 @@ const getMetaData = callback =>
     if (!err) {
       // Doc exists in sentinel db
       return callback(null, doc);
-    } else if (err.statusCode === 404) {
+    } else if (err.status === 404) {
       db.medic.get(METADATA_DOCUMENT, (err, doc) => {
         if (!err) {
           // Old doc exists, delete it and return the base doc to be saved later
@@ -443,7 +443,7 @@ const getMetaData = callback =>
           callback(null, doc);
         });
       });
-    } else if (err.statusCode !== 404) {
+    } else if (err.status !== 404) {
       return callback(err);
     }
   });
