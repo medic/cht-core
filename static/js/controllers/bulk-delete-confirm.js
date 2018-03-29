@@ -4,8 +4,7 @@ angular.module('inboxControllers').controller('BulkDeleteConfirm',
     $timeout,
     $translate,
     $uibModalInstance,
-    DeleteDocs,
-    Snackbar
+    DeleteDocs
   ) {
     'use strict';
     'ngInject';
@@ -18,11 +17,11 @@ angular.module('inboxControllers').controller('BulkDeleteConfirm',
       });
     }
 
-    $scope.$on('modal.closing', function(e) {
+    $scope.$on('modal.closing', function() {
       if ($scope.deleteComplete) {
         return window.location.reload();
       }
-    })
+    });
 
     $scope.submit = function() {
       if ($scope.deleteComplete) {

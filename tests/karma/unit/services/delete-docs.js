@@ -18,6 +18,7 @@ describe('DeleteDocs service', function() {
       $provide.factory('DB', KarmaUtils.mockDB({ bulkDocs: bulkDocs, get: get }));
       $provide.value('$q', Q); // bypass $q so we don't have to digest
       $provide.value('Session', { isAdmin: isAdmin });
+      $provide.value('Changes', () => undefined);
     });
     inject(function(_DeleteDocs_) {
       service = _DeleteDocs_;

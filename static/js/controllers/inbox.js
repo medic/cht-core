@@ -531,7 +531,7 @@ var feedback = require('../modules/feedback'),
             $state.go($state.current.name, { id: null });
           }
         });
-      }
+      };
 
       $scope.bulkDelete = function(docs) {
         if (!docs) {
