@@ -33,7 +33,6 @@ describe('InboxCtrl controller', () => {
       init: sinon.stub(),
       isAdmin: sinon.stub(),
       userCtx: sinon.stub(),
-      checkCurrentSession: sinon.stub()
     };
 
     module($provide => {
