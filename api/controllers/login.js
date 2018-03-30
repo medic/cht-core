@@ -184,8 +184,7 @@ module.exports = {
     auth.getUserCtx(req, (err, userCtx) => {
       if (!err) {
         setUserCtxCookie(res, userCtx);
-        res.send({ success: true });
-        return;
+        return res.send({ success: true });
       }
       res.status(401);
       res.send();

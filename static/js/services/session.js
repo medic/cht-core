@@ -72,7 +72,7 @@ var COOKIE_NAME = 'userCtx',
             }
             if (_.difference(userCtx.roles, response.data.userCtx.roles).length ||
                 _.difference(response.data.userCtx.roles, userCtx.roles).length) {
-              refreshUserCtx(callback);
+              return refreshUserCtx(callback);
             }
           })
           .catch(function(response) {
@@ -118,7 +118,7 @@ var COOKIE_NAME = 'userCtx',
         isDistrictAdmin: function(userCtx) {
           userCtx = userCtx || getUserCtx();
           return hasRole(userCtx, 'district_admin');
-        },
+        }
       };
 
     }
