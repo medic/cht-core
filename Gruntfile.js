@@ -520,7 +520,6 @@ module.exports = function(grunt) {
             'static/dist/**/*',
             'static/fonts/**/*',
             'static/img/**/*',
-            '!static/img/promo/**/*',
           ]
         }
       }
