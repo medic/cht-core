@@ -206,7 +206,7 @@ exports['loadTransitions does not load system transistions that have been explic
 
 exports['attach handles missing meta data doc'] = test => {
   const sentinel = sinon.stub(dbPouch.sentinel, 'get');
-  sentinel.withArgs('_local/sentinel-meta-data').callsArgWith(1, { statusCode: 404 });
+  sentinel.withArgs('_local/sentinel-meta-data').callsArgWith(1, { status: 404 });
   const get = sinon.stub(db.medic, 'get');
   get.withArgs('_local/sentinel-meta-data').callsArgWith(1, { statusCode: 404 });
   get.withArgs('sentinel-meta-data').callsArgWith(1, { statusCode: 404 });
@@ -245,13 +245,14 @@ exports['attach handles missing meta data doc'] = test => {
 
 exports['attach handles old meta data doc'] = test => {
   const sentinel = sinon.stub(dbPouch.sentinel, 'get');
-  sentinel.withArgs('_local/sentinel-meta-data').callsArgWith(1, { statusCode: 404 });
+  sentinel.withArgs('_local/sentinel-meta-data').callsArgWith(1, { status: 404 });
   const get = sinon.stub(db.medic, 'get');
   get.withArgs('_local/sentinel-meta-data').callsArgWith(1, { statusCode: 404 });
   get.withArgs('sentinel-meta-data').callsArgWith(1, null, { _id: 'sentinel-meta-data', _rev: '1-123', processed_seq: 22});
   const fetchHydratedDoc = sinon.stub(transitions._lineage, 'fetchHydratedDoc').returns(Promise.resolve({ type: 'data_record' }));
   sinon.stub(infoUtils, 'getInfoDoc').returns(Promise.resolve({}));
-  const insert = sinon.stub(dbPouch.sentinel, 'put').callsArg(1);
+  const insert = sinon.stub(db.medic, 'insert').callsArg(1);
+  const put = sinon.stub(dbPouch.sentinel, 'put').callsArg(1);
   const on = sinon.stub();
   const start = sinon.stub();
   const feed = sinon.stub(follow, 'Feed').returns({ on: on, follow: start, stop: () => {} });
@@ -265,13 +266,15 @@ exports['attach handles old meta data doc'] = test => {
     test.equal(applyTransitions.callCount, 1);
     test.equal(applyTransitions.args[0][0].id, 'abc');
     test.equal(applyTransitions.args[0][0].seq, 55);
-    test.equal(insert.callCount, 3);
+
+    test.equal(insert.callCount, 2);
     test.equal(insert.args[0][0]._id, 'sentinel-meta-data');
     test.equal(insert.args[0][0]._rev, '1-123');
     test.equal(insert.args[0][0]._deleted, true);
-    // args[1] is a second incorrect call to delete that is an artifact of how Sinon works
-    test.equal(insert.args[2][0]._id, '_local/sentinel-meta-data');
-    test.equal(insert.args[2][0].processed_seq, 55);
+    test.equal(insert.args[1][0]._id, '_local/sentinel-meta-data');
+    test.equal(put.callCount, 1);
+    test.equal(put.args[0][0]._id, '_local/sentinel-meta-data');
+    test.equal(put.args[0][0].processed_seq, 55);
     test.done();
   };
   transitions._attach();

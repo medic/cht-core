@@ -85,27 +85,27 @@ const processChange = (change, callback) => {
     .then(doc => {
       change.doc = doc;
       infoUtils.getInfoDoc(change)
-      .then(infoDoc => {
-        change.info = infoDoc;
-        // Remove transitions from doc since those
-        // will be handled by the info doc(sentinel db) after this
-        if(change.doc.transitions) {
-          delete change.doc.transitions;
-        }
-        module.exports.applyTransitions(change, () => {
-          processed++;
-          updateMetaData(change.seq, callback);
+        .then(infoDoc => {
+          change.info = infoDoc;
+          // Remove transitions from doc since those
+          // will be handled by the info doc(sentinel db) after this
+          if(change.doc.transitions) {
+            delete change.doc.transitions;
+          }
+          module.exports.applyTransitions(change, () => {
+            processed++;
+            updateMetaData(change.seq, callback);
+          });
+        })
+        .catch(err => {
+          logger.error(`transitions: fetch failed for ${change.id} (${err})`);
+          return callback();
         });
-      })
-      .catch(err => {
-        logger.error(`transitions: fetch failed for ${change.id} (${err})`);
-        return callback();
-      });
-  })
-  .catch(err => {
-    logger.error(`transitions: fetch failed for ${change.id} (${err})`);
-    return callback();
-  });
+    })
+    .catch(err => {
+      logger.error(`transitions: fetch failed for ${change.id} (${err})`);
+      return callback();
+    });
 };
 
 const getAdminNames = callback => {
@@ -303,9 +303,9 @@ const applyTransition = ({ key, change, transition }, callback) => {
   const _setResult = ok => {
     return new Promise(resolve => {
       const info = change.info;
-      if (!info.transitions) {
-        info.transitions = {};
-      }
+      info._id = info._id || `${change.id}-info`;
+      delete info._rev;
+      info.transitions = info.transitions || {};
       info.transitions[key] = {
         last_rev: change.doc._rev,
         seq: change.seq,
@@ -399,7 +399,7 @@ const migrateOldMetaDoc = (doc, callback) => {
     _deleted: true
   };
   logger.info('Deleting old metadata document', doc);
-  return dbPouch.sentinel.put(stub, err => {
+  return db.medic.insert(stub, err => {
     if (err) {
       callback(err);
     } else {
@@ -443,7 +443,7 @@ const getMetaData = callback =>
           callback(null, doc);
         });
       });
-    } else if (err.status !== 404) {
+    } else {
       return callback(err);
     }
   });
