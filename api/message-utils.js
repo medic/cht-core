@@ -102,10 +102,10 @@ module.exports = {
     });
   },
   /*
-   * taskStateChanges: a collection of:
-   * {
-   *  messageId, state, details
-   * }
+   * taskStateChanges: an Array of: { messageId, state, details }
+   *
+   * These state updates are prone to failing due to update conflicts, so this
+   * function will retry up to three times for any updates which fail.
    */
   updateMessageTaskStates: function(taskStateChanges, callback, retriesLeft=3) {
     getTaskMessages({ keys: taskStateChanges.map(change => change.messageId)}, (err, taskMessageResults) => {
