@@ -8,6 +8,5 @@ var proj_id = token_and_project.proj_id;
 
 langs.forEach(function(lang){
     var url = `https://poeditor.com/api/webhooks/github?api_token=${api_token}&id_project=${proj_id}&language=${lang}&operation=export_terms_and_translations`;
-    console.log(url);
-    //https.get(url);
+    https.get(url);
 });
