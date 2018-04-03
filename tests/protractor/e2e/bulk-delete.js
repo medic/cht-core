@@ -135,16 +135,16 @@ describe('Bulk delete reports', () => {
 
     // delete all selected
     element(by.css('.action-container .detail-actions .delete-all')).click();
-    const confirmButton = element(by.css('#delete-confirm .submit:not(.ng-hide)'));
+    const confirmButton = element(by.css('#bulk-delete-confirm .submit:not(.ng-hide)'));
     browser.wait(protractor.ExpectedConditions.elementToBeClickable(confirmButton), 5000);
     confirmButton.click();
 
-    browser.wait(() => {
-      return element.all(by.css('#reports-list li')).count().then(utils.countOf(1));
-    }, 10000);
+    browser.wait(protractor.ExpectedConditions.elementToBeClickable(confirmButton), 5000);
+    confirmButton.click();
+
+    browser.wait(() => element(by.css('#reports-list li')).isPresent(), 30000);
 
     // make sure the reports are deleted
     expect(element.all(by.css('#reports-list li[data-record-id="' + savedUuids[1] + '"]')).count()).toBe(1);
-
   });
 });

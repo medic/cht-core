@@ -12,7 +12,7 @@
             <span class="fa fa-square-o"></span>
             <p translate>select.mode.deselect.all</p>
           </a>
-          <a class="mm-icon mm-icon-inverse mm-icon-caption delete-all" mm-auth="can_bulk_delete_reports" ng-click="deleteDoc(actionBar.right.selected)" ng-class="{'mm-icon-disabled': !actionBar.right.selected.length}">
+          <a class="mm-icon mm-icon-inverse mm-icon-caption delete-all" mm-auth="can_bulk_delete_reports" ng-click="bulkDelete(actionBar.right.selected)" ng-class="{'mm-icon-disabled': !actionBar.right.selected.length}">
             <span class="fa fa-trash-o"></span>
             <p translate>select.mode.delete.all</p>
           </a>
@@ -80,7 +80,7 @@
       <div class="col-sm-8 detail-actions right-pane" ng-show="currentTab === 'reports'">
         <div ng-show="selectMode">
           <div class="actions dropup" ng-show="showActionBar && actionBar.right.selected.length && (!loadingContent) && 'reports.detail' | isState">
-            <a class="mm-icon mm-icon-inverse mm-icon-caption delete-all" mm-auth="can_bulk_delete_reports" ng-click="deleteDoc(actionBar.right.selected)">
+            <a class="mm-icon mm-icon-inverse mm-icon-caption delete-all" mm-auth="can_bulk_delete_reports" ng-click="bulkDelete(actionBar.right.selected)">
               <span class="fa fa-trash-o"></span>
               <p translate>select.mode.delete.all</p>
             </a>
@@ -113,7 +113,7 @@
               <span class="fa fa-pencil"></span>
               <p translate>Update Facility</p>
             </a>
-            <a class="mm-icon mm-icon-inverse mm-icon-caption" ng-click="deleteDoc(actionBar.right.selected)" mm-auth="can_delete_reports">
+            <a class="mm-icon mm-icon-inverse mm-icon-caption" ng-click="deleteDoc(actionBar.right.selected[0])" mm-auth="can_delete_reports">
               <span class="fa fa-trash-o"></span>
               <p translate>Delete</p>
             </a>
@@ -171,7 +171,7 @@
             <p translate>Edit</p>
           </a>
 
-          <a class="mm-icon mm-icon-inverse mm-icon-caption" ng-click="deleteDoc(actionBar.right.selected)" ng-class="{'mm-icon-disabled': !actionBar.right.canDelete}" mm-auth="can_delete_contacts">
+          <a class="mm-icon mm-icon-inverse mm-icon-caption" ng-click="deleteDoc(actionBar.right.selected[0])" ng-class="{'mm-icon-disabled': !actionBar.right.canDelete}" mm-auth="can_delete_contacts">
             <span class="fa fa-trash-o"></span>
             <p translate>Delete</p>
           </a>

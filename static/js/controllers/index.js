@@ -12,6 +12,7 @@
   require('./analytics-reporting');
   require('./analytics-reporting-detail');
   require('./analytics-targets');
+  require('./bulk-delete-confirm');
   require('./check-date');
   require('./configuration');
   require('./configuration-export-audit-logs');
