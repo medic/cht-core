@@ -131,6 +131,34 @@ describe('ContactChangeFilter service', () => {
 
       chai.expect(service.isRelevantContact(change, contact)).to.equal(false);
     });
+
+    it('does not crash when lineage is undefined', () => {
+      const change = { doc: { _id: 'oid', parent: { _id: 'opid' } } };
+
+      const contact = {
+        doc: {_id: 'id', parent: {_id: 'pid'}},
+        children: {
+          persons: [
+            {doc: {_id: 'p1'}},
+            {doc: {_id: 'p2'}}
+          ],
+          other: [
+            {doc: {_id: 'o1'}},
+            {doc: {_id: 'o2'}}
+          ],
+          someProperty: 'someValue'
+        },
+        lineage: [
+          {_id: '123'},
+          {_id: '456'},
+          {_id: '789'},
+          undefined,
+          undefined
+        ]
+      };
+
+      chai.expect(service.isRelevantContact(change, contact)).to.equal(false);
+    });
   });
 
   describe('isRelevantReport', () => {
