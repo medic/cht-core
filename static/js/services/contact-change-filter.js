@@ -53,7 +53,7 @@ angular.module('inboxServices').factory('ContactChangeFilter',
 
     var isAncestor = function(change, contact) {
      return _.some(contact.lineage, function(lineage) {
-        return lineage._id === change.doc._id;
+        return !!lineage && lineage._id === change.doc._id;
       });
     };
 
