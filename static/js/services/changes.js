@@ -104,18 +104,10 @@ angular.module('inboxServices').factory('Changes',
 
     var initPromise = init();
 
-    return function(options) {
+    var service = function(options) {
       // Test hook, so we can know when watchChanges is up and running
       if (!options) {
         return initPromise;
-      }
-
-      if (options.die) {
-        watches.forEach(function(watch) {
-          watch.cancel();
-        });
-
-        return;
       }
 
       var db = options.metaDb ? dbs.meta : dbs.medic;
@@ -127,6 +119,13 @@ angular.module('inboxServices').factory('Changes',
         }
       };
     };
-  }
 
+    service.killWatchers = function() {
+      watches.forEach(function(watch) {
+        watch.cancel();
+      });
+    };
+
+    return service;
+  }
 );

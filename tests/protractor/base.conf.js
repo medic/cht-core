@@ -9,15 +9,15 @@ class BaseConfig {
 
       // Excludes registration-by-sms, because the feature has changed and there is an issue around it:
       // https://github.com/medic/medic-webapp/issues/4053.
-      
+
       specs: ['e2e/**/*.js'],
-      exclude: ['e2e/**/registration-by-sms.js'], 
+      exclude: ['e2e/**/registration-by-sms.js'],
 
       framework: 'jasmine2',
       capabilities: {
         browserName: 'chrome',
         chromeOptions: {
-          args: ['--headless', '--disable-gpu', '--window-size=1024,768']
+          args: ['--disable-gpu', '--window-size=1024,768']
         }
         // browserName: 'firefox',
         // 'marionette':'true'
