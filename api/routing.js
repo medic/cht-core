@@ -566,7 +566,7 @@ proxy.on('proxyReq', function(proxyReq, req, res) {
   appPrefix,
   pathPrefix
 ].forEach(function(url) {
-  var urlSansTrailingSlash = url.slice(0, - 1);
+  var urlSansTrailingSlash = url.slice(0, -1);
   app.get(urlSansTrailingSlash, function(req, res) {
     res.redirect(url);
   });
