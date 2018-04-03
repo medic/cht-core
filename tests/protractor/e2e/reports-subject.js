@@ -373,7 +373,7 @@ describe('Reports Summary', () => {
         });
     });
 
-    it('Concerning reports with unknown patient_id', () => {
+    xit('Concerning reports with unknown patient_id', () => {
       const REPORT = {
         _id: 'REF_REF_I',
         form: 'RR',
