@@ -3,7 +3,8 @@
 ## 3.0.0
 
 ### Migration notes
- - [#3971](https://github.com/medic/medic-webapp/issues/3971) the `/api/v1/messages` endpoint has been removed as it was no longer actively used, and contained bugs.
+- [#3971](https://github.com/medic/medic-webapp/issues/3971): The `/api/v1/messages` endpoint has been removed as it was no longer actively used, and contained bugs.
+- [#1002](https://github.com/medic/medic-webapp/issues/1002): The ANC analytics page and the following APIs have been removed as they are no longer used: `/api/active-pregnancies`, `/api/upcoming-appointments`, `/api/missed-appointments`, `/api/upcoming-due-dates`, `/api/high-risk`, `/api/total-births`, `/api/missing-delivery-reports`, `/api/delivery-location`, `/api/visits-completed`, `/api/visits-during`, `/api/monthly-registrations`, `/api/monthly-deliveries`.
 
 ## 2.15.0
 
