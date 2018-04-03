@@ -12,7 +12,7 @@ module.exports = {
           };
         }
       })
-      .then(() => bulkDocs.bulkDelete(req.body.docs, res, { batchSize: 100 }))
+      .then(() => bulkDocs.bulkDelete(req.body.docs, res, { batchSize: 50}))
       .catch(err => next(err));
   }
 };

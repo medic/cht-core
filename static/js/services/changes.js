@@ -56,9 +56,11 @@ angular.module('inboxServices').factory('Changes',
       });
     };
 
+    var watches = [];
+
     var watchChanges = function(meta) {
       $log.info('Initiating changes watch');
-      DB({ meta: meta })
+      var watch = DB({ meta: meta })
         .changes({
           live: true,
           since: meta ? dbs.meta.lastSeq : dbs.medic.lastSeq,
@@ -76,10 +78,13 @@ angular.module('inboxServices').factory('Changes',
             watchChanges(meta);
           }, RETRY_MILLIS);
         });
+
+      watches.push(watch);
     };
 
     var init = function() {
       $log.info('Initiating changes service');
+      watches = [];
       return $q.all([
         DB().info(),
         DB({ meta: true }).info()
@@ -99,7 +104,7 @@ angular.module('inboxServices').factory('Changes',
 
     var initPromise = init();
 
-    return function(options) {
+    var service = function(options) {
       // Test hook, so we can know when watchChanges is up and running
       if (!options) {
         return initPromise;
@@ -114,6 +119,13 @@ angular.module('inboxServices').factory('Changes',
         }
       };
     };
-  }
 
+    service.killWatchers = function() {
+      watches.forEach(function(watch) {
+        watch.cancel();
+      });
+    };
+
+    return service;
+  }
 );

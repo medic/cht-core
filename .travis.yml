@@ -47,6 +47,7 @@ before_script:
   - npm install -g npm@^5.3.0
   - npm -v
   - npm install
+  - npm ls || true
   # Create couchdb system tables (this has to be done manually on couchdb 2.0)
   - curl -X PUT http://127.0.0.1:5984/{_users,_replicator,_global_changes,_metadata,admins}
   - curl -X PUT localhost:5984/medic
@@ -69,7 +70,7 @@ script:
       echo "ERROR No or unknown value for TEST_SUITE env var ('${TEST_SUITE}')."
       exit 1
     fi
-    
+
 jobs:
   include:
     - if: type != pull_request

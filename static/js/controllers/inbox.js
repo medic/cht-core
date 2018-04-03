@@ -27,6 +27,7 @@ var feedback = require('../modules/feedback'),
       CountMessages,
       DB,
       DBSync,
+      Debug,
       Enketo,
       PlaceHierarchy,
       JsonForms,
@@ -53,6 +54,13 @@ var feedback = require('../modules/feedback'),
       'ngInject';
 
       Session.init();
+
+      if (window.location.href.indexOf('localhost') !== -1) {
+        // Local development
+        Debug.set(true);
+      } else {
+        Debug.set(false);
+      }
 
       $scope.replicationStatus = {
         disabled: false,
@@ -512,27 +520,32 @@ var feedback = require('../modules/feedback'),
         $rootScope.$broadcast.apply($rootScope, arguments);
       };
 
-      $scope.deleteDoc = function(docs) {
+      $scope.deleteDoc = function(doc) {
+        Modal({
+          templateUrl: 'templates/modals/delete_doc_confirm.html',
+          controller: 'DeleteDocConfirm',
+          model: { doc: doc }
+        }).then(function() {
+          if (!$scope.selectMode &&
+              ($state.includes('contacts') || $state.includes('reports'))) {
+            $state.go($state.current.name, { id: null });
+          }
+        });
+      };
+
+      $scope.bulkDelete = function(docs) {
         if (!docs) {
           $log.warn('Trying to delete empty object', docs);
           return;
-        }
-        if (!_.isArray(docs)) {
-          docs = [ docs ];
         }
         if (!docs.length) {
           $log.warn('Trying to delete empty array', docs);
           return;
         }
         Modal({
-          templateUrl: 'templates/modals/delete_doc_confirm.html',
-          controller: 'DeleteDocConfirm',
+          templateUrl: 'templates/modals/bulk_delete_confirm.html',
+          controller: 'BulkDeleteConfirm',
           model: { docs: docs }
-        }).then(function() {
-          if (!$scope.selectMode &&
-              ($state.includes('contacts') || $state.includes('reports'))) {
-            $state.go($state.current.name, { id: null });
-          }
         });
       };
 

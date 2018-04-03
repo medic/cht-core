@@ -14,10 +14,14 @@ describe('DeleteDocs service', function() {
     isAdmin = sinon.stub();
     isAdmin.returns(false);
     module('inboxApp');
+    const Changes = () => undefined;
+    Changes.killWatchers = () => undefined;
+
     module(function ($provide) {
       $provide.factory('DB', KarmaUtils.mockDB({ bulkDocs: bulkDocs, get: get }));
       $provide.value('$q', Q); // bypass $q so we don't have to digest
       $provide.value('Session', { isAdmin: isAdmin });
+      $provide.value('Changes', Changes);
     });
     inject(function(_DeleteDocs_) {
       service = _DeleteDocs_;
