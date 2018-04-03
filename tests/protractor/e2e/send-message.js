@@ -167,7 +167,7 @@ describe('Send message', () => {
   };
 
   describe('Send message modal', () => {
-    it('can send messages to raw phone numbers', () => {
+    xit('can send messages to raw phone numbers', () => {
       element(by.id('messages-tab')).click();
       expect(element(by.css(messageInList(RAW_PH))).isPresent()).toBeFalsy();
 
@@ -246,7 +246,7 @@ describe('Send message', () => {
         lastMessageIs('Additional Message');
       };
 
-      it('For raw contacts', () => {
+      xit('For raw contacts', () => {
         addAnAdditionalMessage(RAW_PH);
       });
       it('For real contacts', () => {
@@ -254,7 +254,7 @@ describe('Send message', () => {
       });
     });
     describe('Can add recipients', () => {
-      it('For raw contacts', () => {
+      xit('For raw contacts', () => {
         openMessageContent(RAW_PH);
         enterMessageText('A third message');
 
