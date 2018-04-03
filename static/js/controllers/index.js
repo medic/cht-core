@@ -8,7 +8,6 @@
 
   require('./about');
   require('./analytics');
-  require('./analytics-anc');
   require('./analytics-reporting');
   require('./analytics-reporting-detail');
   require('./analytics-targets');

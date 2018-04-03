@@ -1,5 +1,4 @@
-var _ = require('underscore'),
-    ANC_FORM_CONFIGURATION_PROPERTIES = [ 'registration', 'registrationLmp', 'visit', 'delivery', 'flag' ];
+var _ = require('underscore');
 
 (function () {
 
@@ -16,19 +15,6 @@ var _ = require('underscore'),
     ) {
 
       'ngInject';
-
-      var getAncModule = function(settings) {
-        return {
-          label: 'Antenatal Care',
-          state: 'analytics.anc',
-          available: function() {
-            return ANC_FORM_CONFIGURATION_PROPERTIES.every(function(prop) {
-              var formCode = settings.anc_forms[prop];
-              return formCode && settings.forms && settings.forms[formCode];
-            });
-          }
-        };
-      };
 
       var getTargetsModule = function(settings) {
         return {
@@ -54,9 +40,8 @@ var _ = require('underscore'),
 
       var getModules = function(settings, scheduledForms) {
         return _.filter([
-          getAncModule(settings, scheduledForms),
           getReportingRatesModule(settings, scheduledForms),
-          getTargetsModule(settings, scheduledForms)
+          getTargetsModule(settings)
         ], function(module) {
           return module.available();
         });

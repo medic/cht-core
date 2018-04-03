@@ -75,15 +75,6 @@
         controller: 'AnalyticsCtrl',
         templateUrl: 'templates/partials/analytics.html'
       })
-      .state('analytics.anc', {
-        url: '/anc',
-        views: {
-          content: {
-            controller: 'AnalyticsAncCtrl',
-            templateUrl: 'templates/partials/analytics/anc.html'
-          }
-        }
-      })
       .state('analytics.reporting', {
         url: '/reporting',
         views: {

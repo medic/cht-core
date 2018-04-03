@@ -11,19 +11,7 @@ const _ = require('underscore'),
       proxy = require('http-proxy').createProxyServer({ target: target }),
       proxyForAuditing = require('http-proxy').createProxyServer({ target: target }),
       login = require('./controllers/login'),
-      activePregnancies = require('./controllers/active-pregnancies'),
-      upcomingAppointments = require('./controllers/upcoming-appointments'),
-      missedAppointments = require('./controllers/missed-appointments'),
-      upcomingDueDates = require('./controllers/upcoming-due-dates'),
       smsGateway = require('./controllers/sms-gateway'),
-      highRisk = require('./controllers/high-risk'),
-      totalBirths = require('./controllers/total-births'),
-      missingDeliveryReports = require('./controllers/missing-delivery-reports'),
-      deliveryLocation = require('./controllers/delivery-location'),
-      visitsCompleted = require('./controllers/visits-completed'),
-      visitsDuring = require('./controllers/visits-during'),
-      monthlyRegistrations = require('./controllers/monthly-registrations'),
-      monthlyDeliveries = require('./controllers/monthly-deliveries'),
       exportData = require('./controllers/export-data'),
       records = require('./controllers/records'),
       forms = require('./controllers/forms'),
@@ -190,42 +178,12 @@ app.post('/api/v1/upgrade', jsonParser, (req, res) => {
   });
 });
 
-var handleAnalyticsCall = function(req, res, controller) {
-  auth.check(req, 'can_view_analytics', req.query.district, function(err, ctx) {
-    if (err) {
-      return serverUtils.error(err, req, res);
-    }
-    controller.get({ district: ctx.district }, function(err, obj) {
-      if (err) {
-        return serverUtils.serverError(err, req, res);
-      }
-      res.json(obj);
-    });
-  });
-};
-
 var emptyJSONBodyError = function(req, res) {
   return serverUtils.error({
     code: 400,
     message: 'Request body is empty or Content-Type header was not set to application/json.'
   }, req, res);
 };
-
-app.get('/api/active-pregnancies', function(req, res) {
-  handleAnalyticsCall(req, res, activePregnancies);
-});
-
-app.get('/api/upcoming-appointments', function(req, res) {
-  handleAnalyticsCall(req, res, upcomingAppointments);
-});
-
-app.get('/api/missed-appointments', function(req, res) {
-  handleAnalyticsCall(req, res, missedAppointments);
-});
-
-app.get('/api/upcoming-due-dates', function(req, res) {
-  handleAnalyticsCall(req, res, upcomingDueDates);
-});
 
 app.get('/api/sms/', function(req, res) {
   res.redirect(301, '/api/sms');
@@ -255,38 +213,6 @@ app.postJson('/api/sms', function(req, res) {
         serverUtils.error(err, req, res);
       });
   });
-});
-
-app.get('/api/high-risk', function(req, res) {
-  handleAnalyticsCall(req, res, highRisk);
-});
-
-app.get('/api/total-births', function(req, res) {
-  handleAnalyticsCall(req, res, totalBirths);
-});
-
-app.get('/api/missing-delivery-reports', function(req, res) {
-  handleAnalyticsCall(req, res, missingDeliveryReports);
-});
-
-app.get('/api/delivery-location', function(req, res) {
-  handleAnalyticsCall(req, res, deliveryLocation);
-});
-
-app.get('/api/visits-completed', function(req, res) {
-  handleAnalyticsCall(req, res, visitsCompleted);
-});
-
-app.get('/api/visits-during', function(req, res) {
-  handleAnalyticsCall(req, res, visitsDuring);
-});
-
-app.get('/api/monthly-registrations', function(req, res) {
-  handleAnalyticsCall(req, res, monthlyRegistrations);
-});
-
-app.get('/api/monthly-deliveries', function(req, res) {
-  handleAnalyticsCall(req, res, monthlyDeliveries);
 });
 
 app.all('/api/v1/export/:type/:form?', exportData.routeV1);
