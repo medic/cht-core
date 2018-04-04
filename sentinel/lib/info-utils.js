@@ -8,20 +8,18 @@ const getSisterInfoDoc = docId => {
     dbPouch.sentinel.get(id)
       .then(doc => { return resolve(doc); })
       .catch(err => {
-        if (err.status !== 404) {
+        if (err && err.status !== 404) {
           return reject(err);
         } else {
-          dbPouch.medic.get(id)
-            .then(doc => { return resolve(doc); })
-            .catch(err => {
-              if (err.status !== 404) {
-                return reject(err);
-              }
-              return resolve();
-            });
+          db.medic.get(id, (err, body) => {
+            if (err.statusCode !== 404) {
+              return reject(err);
+            }
+            return resolve(body);
+          });
         }
+      });
     });
-  });
 };
 
 const createInfoDoc = (docId, initialReplicationDate) => {
@@ -66,16 +64,17 @@ module.exports = {
           dbPouch.sentinel.put(infoDoc)
           .then(() => { return resolve(infoDoc); })
           .catch(err => { return reject(err); });
+        } else {
+          generateInfoDocFromAuditTrail(change.id)
+          .catch(err => { return reject(err); } )
+          .then(infoDoc => {
+            infoDoc = infoDoc || createInfoDoc(change.id, 'unknown');
+            infoDoc.latest_replication_date = new Date();
+            dbPouch.sentinel.put(infoDoc)
+            .then(() => { return resolve(infoDoc); })
+            .catch(err => { return reject(err); });
+          });
         }
-        generateInfoDocFromAuditTrail(change.id)
-        .catch(err => { return reject(err); } )
-        .then(infoDoc => {
-          infoDoc = infoDoc || createInfoDoc(change.id, 'unknown');
-          infoDoc.latest_replication_date = new Date();
-          dbPouch.sentinel.put(infoDoc)
-          .then(doc => { return resolve(doc); })
-          .catch(err => { return reject(err); });
-        });
       });
     });
   },
@@ -85,15 +84,15 @@ module.exports = {
       .then(doc => {
         doc._deleted = true;
         dbPouch.sentinel.put(doc)
-        .then(() => resolve())
-        .catch(err => reject(err));
+        .then(() => { return resolve(); })
+        .catch(err => { return reject(err); });
       })
       .catch(err => {
         if (err && err.status !== 404) {
-          reject(err);
+          return reject(err);
         }
         // don't worry about deleting a non-existant doc
-        resolve();
+        return resolve();
       });
     });
   }

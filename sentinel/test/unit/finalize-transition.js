@@ -1,5 +1,6 @@
 const sinon = require('sinon').sandbox.create(),
       db = require('../../db'),
+      dbPouch = require('../../db-pouch'),
       transitions = require('../../transitions/index');
 
 exports.tearDown = function(callback) {
@@ -36,6 +37,7 @@ exports['applyTransition creates transitions property'] = test => {
   test.expect(7);
   const doc = { _rev: '1' };
   const info = {};
+  sinon.stub(dbPouch.sentinel, 'get').rejects({ status: 404 });
   const audit = sinon.stub(db.audit, 'saveDoc').callsArg(1);
   const transition = {
     onMatch: change => {
@@ -46,6 +48,7 @@ exports['applyTransition creates transitions property'] = test => {
   transitions.applyTransition({
     key: 'x',
     change: {
+      id: '123',
       doc: doc,
       info: info,
       seq: 1

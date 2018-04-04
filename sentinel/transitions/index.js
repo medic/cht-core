@@ -69,7 +69,11 @@ const processChange = (change, callback) => {
   if (change.deleted) {
     // don't run transitions on deleted docs, but do clean up
     async.parallel([
-      async.apply(infoUtils.deleteInfoDoc, change),
+      function(callback) {
+        infoUtils.deleteInfoDoc(change)
+        .then(() => { callback(); })
+        .catch(err => { callback(err); });
+      },
       async.apply(deleteReadDocs, change)
     ], err => {
       if (err) {
@@ -301,21 +305,29 @@ const finalize = ({ change, results }, callback) => {
 const applyTransition = ({ key, change, transition }, callback) => {
 
   const _setResult = ok => {
-    return new Promise(resolve => {
+    return new Promise((resolve, reject) => {
       const info = change.info;
       info._id = info._id || `${change.id}-info`;
-      delete info._rev;
-      info.transitions = info.transitions || {};
-      info.transitions[key] = {
-        last_rev: change.doc._rev,
-        seq: change.seq,
-        ok: ok
-      };
-      dbPouch.sentinel.put(info, err => {
-        if(err) {
-          logger.error('Error updating metaData', err);
-        }
-        return resolve();
+
+      dbPouch.sentinel.get(info._id)
+      .then(doc => { return doc; })
+      .catch(err => {
+        if(err.status === 404) { return info; }
+        return reject(err);
+      })
+      .then(doc => {
+        doc.transitions = doc.transitions || {};
+        doc.transitions[key] = {
+          last_rev: change.doc._rev,
+          seq: change.seq,
+          ok: ok
+        };
+        dbPouch.sentinel.put(doc, err => {
+          if(err) {
+            logger.error('Error updating metaData', err);
+          }
+          return resolve();
+        });
       });
     });
   };
