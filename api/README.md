@@ -28,11 +28,10 @@ audit history where required.
   - [Timestamps](#timestamps)
 - [Export](#export)
   - [GET /api/v2/export/reports](#get-apiv2exportreports)
-  - [GET /api/v1/export/messages](#get-apiv1exportmessages)
+  - [GET /api/v2/export/messages](#get-apiv2exportmessages)
   - [GET /api/v1/export/audit](#get-apiv1exportaudit)
   - [GET /api/v1/export/feedback](#get-apiv1exportfeedback)
-  - [GET /api/v1/export/contacts](#get-apiv1exportcontacts)
-  - [[DEPRECATED] GET /api/v1/export/forms/{formcode}](#deprecated-get-apiv1exportformsformcode)
+  - [GET /api/v2/export/contacts](#get-apiv2exportcontacts)
 - [Forms](#forms)
   - [GET /api/v1/forms](#get-apiv1forms)
   - [GET /api/v1/forms/{{id}}.{{format}}](#get-apiv1formsidformat)
@@ -195,8 +194,6 @@ Request different types of data in various formats.
 
 ## GET /api/v2/export/reports
 
-This is a replacement for [/api/v1/export/forms](#deprecated-get-apiv1exportformsformcode).
-
 It uses the [search shared library](shared-libs/search) to ensure identical results in the export and the front-end. It also only supports exporting CSV so we can efficiently stream infinitely large exports.
 
 ### Query parameters
@@ -228,22 +225,9 @@ GET /api/v2/export/reports?filters[search]=&filters[forms][selected][0][code]=im
 
 **NB:** this API is bound directly to this library. For more information on what queries you can perform with the search library, see [its documentation](/shared-lib/search).
 
-## GET /api/v1/export/messages
+## GET /api/v2/export/messages
 
 Download messages.
-
-### Query Parameters
-
-| Variable           | Description
-| ------------------ | -------------
-| format             | The format of the returned file, either 'csv' or 'xml'. Defaults to 'csv'.
-| locale             | Locale for translatable data. Defaults to 'en'.
-| tz                 | The timezone to show date values in, as an offset in minutes from GMT, for example '-120'.
-| skip_header_row    | 'true' to omit the column headings. Defaults to 'false'.
-| columns            | An orderered array of columns to export, eg: ["reported_date","from","related_entities.clinic.name"]
-| filter_state       | Used in conjunction with the parameters below to only return messages that were in a given state. Possible values are 'received', 'scheduled', 'pending', 'sent', 'cleared', or 'muted'.
-| filter_state_from  | The number of days from now to use as a lower bound on the date that the message is in the given state. Defaults to no lower bound. Ignored if filter_state is not provided.
-| filter_state_to    | The number of days from now to use as an upper bound on the date that the message is in the given state. Defaults to no upper bound. Ignored if filter_state is not provided.
 
 ### Output
 
@@ -264,10 +248,8 @@ Download messages.
 
 ### Examples
 
-Return only rows that are scheduled to be sent in the next ten days.
-
 ```
-/export/messages?filter_state=scheduled&filter_state_to=10
+/api/v1/export/messages
 ```
 
 
@@ -299,72 +281,30 @@ Export a file containing the user feedback.
 | skip_header_row    | 'true' to omit the column headings. Defaults to 'false'.
 
 
-## GET /api/v1/export/contacts
+## GET /api/v2/export/contacts
 
 Returns a JSON array of contacts.
 
-### Query Parameters (required)
+### Query parameters
 
-| Variable           | Description
-| ------------------ | -------------
-| format             | The desired format of the file. Only 'json' is supported.
-| query              | The query parameters in lucene query generator format.
+These are identical to the JS objects passed to the shared library, as if you were using it directly in Javascript.
 
-### Examples
+You may either pass JSON in the request body using `POST`:
 
-Get all contacts
-
-```
-GET /api/v1/export/contacts?query={"$operands":[{"type":["person","clinic","health_center","district_hospital"]}]}&format=json
-```
-
-```
-HTTP/1.1 200
-Content-Type: application/json; charset=utf-8
-
-[
-  {
-    "_rev":"1-e39081e9217eb0d99b8bcc4c64f33905",
-    "_id":"a483e2e88487da478c7ad9e2a51bf785",
-    "name":"Gareth",
-    "type":"person"
-  },
-  {
-    "_rev":"1-e39081e9217eb0d99b8bcc4c64f33905",
-    "_id":"a483e2e88487da478c7ad9e2a51bf786",
-    "name":"Dunedin",
-    "type":"district_hospital"
+```json
+POST /api/v2/export/contacts
+{
+  "filters": {
+    "search": "jim"
   }
-]
+}
 ```
 
+Or using form-style parameters as `GET`:
 
-## [DEPRECATED] GET /api/v1/export/forms/{formcode}
-
-Download reports.
-
-**NB**: this has been deprecated and will be removed in 4.0. Use [GET /api/v2/export/reports](#get-apiv2exportreports) instead.
-
-### Query Parameters
-
-| Variable           | Description
-| ------------------ | -------------
-| format             | The format of the returned file, either 'csv' or 'xml'. Defaults to 'csv'.
-| locale             | Locale for translatable data. Defaults to 'en'.
-| tz                 | The timezone to show date values in, as an offset in minutes from GMT, for example '-120'.
-| skip_header_row    | 'true' to omit the column headings. Defaults to 'false'.
-| columns            | An orderered array of columns to export, eg: ["reported_date","from","related_entities.clinic.name"]
-
-### Output
-
-| Column             | Description
-| ------------------ | -------------
-| Record UUID        | The unique ID for the report in the database.
-| Patient ID         | The generated short patient ID for use in SMS.
-| Reported Date      | The date the report was received.
-| From               | The phone number the report was sent from.
-| Contact Name       | The name of the user this report is assigned to.
-| Form               | The form code for this report.
+```
+GET /api/v2/export/contacts?filters[search]=jim
+```
 
 # Forms
 

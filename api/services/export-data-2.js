@@ -1,4 +1,5 @@
 const _ = require('underscore'),
+      moment = require('moment'),
       objectPath = require('object-path'),
       db = require('../db-pouch'),
       lineage = require('lineage')(Promise, db.medic);
@@ -8,7 +9,7 @@ const { Readable } = require('stream'),
 
 const BATCH = 100;
 
-const SUPPORTED_EXPORTS = ['reports'];
+const SUPPORTED_EXPORTS = [ 'reports', 'contacts', 'messages' ];
 
 /**
  * Flattens a given object into an object where the keys are dot-notation
@@ -99,29 +100,163 @@ const CSV_MAPPER = {
         return {
           header: allColumns,
           fn: record => {
-            return [
+            return [[
               record._id,
               record.form,
               record.patient_id,
-              record.reported_date,
+              formatDate(record.reported_date),
               record.from,
               objectPath.get(record, ['contact', 'name']),
               objectPath.get(record, ['contact', 'parent', 'name']),
               objectPath.get(record, ['contact', 'parent', 'parent', 'name']),
               objectPath.get(record, ['contact', 'parent', 'parent', 'parent', 'name'])
-            ].concat(fieldColumns.map(c => objectPath.get(record.fields, c)));
+            ].concat(fieldColumns.map(c => objectPath.get(record.fields, c)))];
           }
         };
       }));
   },
 
-
-  // NB: we don't actually support this (note SUPPORTED_EXPORTS above), it's
-  // here in the code to show a simpler examplen than the complicated forms one
   contacts: () => Promise.resolve({
     header: ['id', 'rev', 'name', 'patient_id', 'type'],
-    fn: record => [record._id, record._rev, record.name, record.patient_id, record.type]
+    fn: record => [[record._id, record._rev, record.name, record.patient_id, record.type]]
+  }),
+
+  messages: () => Promise.resolve({
+    header: [
+      'id',
+      'patient_id',
+      'reported_date',
+      'from',
+      'type',
+      'state',
+      'received',
+      'scheduled',
+      'pending',
+      'sent',
+      'cleared',
+      'muted',
+      'message_id',
+      'sent_by',
+      'to_phone',
+      'content'
+    ],
+    fn: record => {
+      const tasks = normalizeTasks(record);
+      return _.flatten(tasks.map(task => {
+        const history = buildHistory(task);
+        return task.messages.map(message => [
+          record._id,
+          record.patient_id,
+          formatDate(record.reported_date),
+          record.from,
+          task.type || 'Task Message',
+          task.state,
+          getStateDate('received', task, history),
+          getStateDate('scheduled', task, history),
+          getStateDate('pending', task, history),
+          getStateDate('sent', task, history),
+          getStateDate('cleared', task, history),
+          getStateDate('muted', task, history),
+          message.uuid,
+          message.sent_by,
+          message.to,
+          message.message
+        ]);
+      }), true);
+    }
   })
+};
+
+const normalizeResponse = doc => {
+  return {
+    type: 'Automated Reply',
+    state: 'sent',
+    timestamp: doc.reported_date,
+    state_history: [{
+      state: 'sent',
+      timestamp: doc.reported_date
+    }],
+    messages: doc.responses
+  };
+};
+
+const normalizeIncoming = doc => {
+  return {
+    type: 'Message',
+    state: 'received',
+    timestamp: doc.reported_date,
+    state_history: [{
+      state: 'received',
+      timestamp: doc.reported_date
+    }],
+    messages: [{
+      sent_by: doc.from,
+      message: doc.sms_message.message
+    }]
+  };
+};
+
+/*
+  Normalize and combine incoming messages, responses, tasks and
+  scheduled_tasks into one array Note, auto responses will likely get
+  deprecated soon in favor of sentinel based messages.
+
+  Normalized form:
+  {
+  type: ['Auto Response', 'Incoming Message', <schedule name>, 'Task Message'],
+  state: ['received', 'sent', 'pending', 'muted', 'scheduled', 'cleared'],
+  timestamp/due: <date string>,
+  messages: [{
+      uuid: <uuid>,
+      to: <phone>,
+      message: <message body>
+  }]
+  }
+*/
+const normalizeTasks = doc => {
+  let tasks = [];
+  if (doc.responses && doc.responses.length > 0) {
+    tasks.push(normalizeResponse(doc));
+  }
+  if (doc.tasks && doc.tasks.length > 0) {
+    tasks = tasks.concat(doc.tasks);
+  }
+  if (doc.scheduled_tasks && doc.scheduled_tasks.length > 0) {
+    tasks = tasks.concat(doc.scheduled_tasks);
+  }
+  if (doc.sms_message && doc.sms_message.message) {
+    tasks.push(normalizeIncoming(doc));
+  }
+  return tasks;
+};
+
+const buildHistory = task => {
+  const history = {};
+  if (task.state_history) {
+    task.state_history.forEach(item => {
+      history[item.state] = item.timestamp;
+    });
+  }
+  return history;
+};
+
+const getStateDate = (state, task, history) => {
+  let date;
+  if (state === 'scheduled' && task.due) {
+    date = task.due;
+  } else if (history[state]) {
+    date = history[state];
+  } else if (task.state === state) {
+    date = task.timestamp;
+  }
+  return formatDate(date);
+};
+
+const formatDate = date => {
+  if (!date) {
+    return '';
+  }
+  return moment(date).utc().format('DD, MMM YYYY, HH:mm:ss Z');
 };
 
 const JOIN_COL = ',';
@@ -163,6 +298,15 @@ class SearchResultReader extends Readable {
     return escapedCsvLine.join(JOIN_COL);
   }
 
+  getDocIds() {
+    if (this.type === 'messages') {
+      return db.medic.query('medic/tasks_messages', this.options)
+        .then(result => result.rows)
+        .then(rows => rows.map(row => row.id));
+    }
+    return module.exports._search(this.type, this.filters, this.options);
+  }
+
   _read() {
     if (!this.csvFn) {
       return CSV_MAPPER[this.type](this.filters, this.options)
@@ -172,7 +316,7 @@ class SearchResultReader extends Readable {
         });
     }
 
-    return search(this.type, this.filters, this.options)
+    return this.getDocIds()
       .then(ids => {
 
         if (!ids.length) {
@@ -187,14 +331,13 @@ class SearchResultReader extends Readable {
         })
         .then(result => result.rows.map(row => row.doc))
         .then(lineage.hydrateDocs)
-        .then(docs =>
-          this.push(
-            docs
-             .map(this.csvFn)
-             .map(SearchResultReader.csvLineToString)
-             .join(JOIN_ROW) + JOIN_ROW // new line at the end
-          )
-        );
+        .then(docs => {
+          this.push(docs.map(doc => {
+            return this.csvFn(doc)
+              .map(SearchResultReader.csvLineToString)
+              .join(JOIN_ROW);
+          }).join(JOIN_ROW) + JOIN_ROW); // new line at the end
+        });
       })
       .catch(err => {
         process.nextTick(() => this.emit('error', err));
@@ -205,6 +348,7 @@ class SearchResultReader extends Readable {
 module.exports = {
   export: (type, filters, options) => new SearchResultReader(type, filters, options),
   supportedExports: SUPPORTED_EXPORTS,
+  _search: search,
   _flatten: flatten,
   _lineage: lineage
 };
