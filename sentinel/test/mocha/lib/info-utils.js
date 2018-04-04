@@ -63,7 +63,6 @@ describe('infoUtils', () => {
     });
   });
 
-
   describe('Delete info doc', () => {
     it('deleteInfo doc ignores unexistent info doc', () => {
       const given = { id: 'abc' };
