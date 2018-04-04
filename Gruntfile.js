@@ -461,15 +461,19 @@ module.exports = function(grunt) {
       },
     },
     nodeunit: {
-      all: [
+      webapp: [
         'tests/nodeunit/unit/**/*.js',
         '!tests/nodeunit/unit/*/utils.js',
+      ],
+      api: [
         'api/tests/unit/**/*.js',
         '!api/tests/unit/utils.js',
         '!api/tests/unit/integration/**/*.js',
+      ],
+      sentinel: [
         'sentinel/test/unit/**/*.js',
-        'sentinel/test/functional/**/*.js'
-      ]
+        'sentinel/test/functional/**/*.js',
+      ],
     },
     mochaTest: {
       unit: {
