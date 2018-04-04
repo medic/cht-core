@@ -182,12 +182,13 @@ module.exports = {
   getIdentity: (req, res) => {
     res.type('application/json');
     auth.getUserCtx(req, (err, userCtx) => {
-      if (!err) {
-        setUserCtxCookie(res, userCtx);
-        return res.send({ success: true });
+      if (err) {
+        res.status(401);
+        return res.send();
       }
-      res.status(401);
-      res.send();
+
+      setUserCtxCookie(res, userCtx);
+      res.send({ success: true });
     });
   }
 };

@@ -653,10 +653,10 @@ var feedback = require('../modules/feedback'),
         RecurringProcessManager.stopUpdateRelativeDate();
       });
 
+      var userCtx = Session.userCtx();
       Changes({
         key: 'inbox-user-context',
         filter: function (change) {
-          var userCtx = Session.userCtx();
           return change.doc.type === 'user-settings' &&
                  userCtx &&
                  userCtx.name &&
