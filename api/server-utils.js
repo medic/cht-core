@@ -80,7 +80,7 @@ module.exports = {
         pathname: path.join('/', db.settings.db, 'login'),
         query: { redirect: req.url }
       });
-      res.redirect(301, redirectUrl);
+      res.redirect(302, redirectUrl);
     } else {
       promptForBasicAuth(res);
     }
