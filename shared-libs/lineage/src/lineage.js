@@ -26,7 +26,8 @@ module.exports = function(Promise, DB) {
 
     var parentIds = extractParentIds(currentParent.parent);
     lineage.forEach(function(l, i) {
-      currentParent = currentParent.parent = l || { _id: parentIds[i] };
+      currentParent.parent = l || { _id: parentIds[i] };
+      currentParent = currentParent.parent;
     });
 
     return doc;
@@ -46,7 +47,8 @@ module.exports = function(Promise, DB) {
     });
   };
 
-  var fetchContacts = function(lineage) {
+  var fetchContacts = function(lineage, options) {
+    options = options || {};
     var contactIds = _.uniq(
       lineage
         .map(function(doc) {
@@ -65,7 +67,7 @@ module.exports = function(Promise, DB) {
         return doc && doc._id === id;
       });
       if (contact) {
-        lineageContacts.push(contact);
+        lineageContacts.push(options.generateNewContactObjects ? JSON.parse(JSON.stringify(contact)) : contact);
       } else {
         contactsToFetch.push(id);
       }
