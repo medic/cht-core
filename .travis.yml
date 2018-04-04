@@ -44,6 +44,7 @@ before_script:
   # Create couchdb system tables (this has to be done manually on couchdb 2.0)
   - curl -X PUT http://127.0.0.1:5984/{_users,_replicator,_global_changes,_metadata,admins}
   - curl -X PUT localhost:5984/medic
+  - curl -X PUT localhost:5984/medic-sentinel
   - bash ./scripts/ci/setup.sh
   - npm install kanso -g
   - npm install grunt-cli -g
