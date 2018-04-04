@@ -98,8 +98,8 @@ describe('Export Data Service 2.0', () => {
         }
       ]));
       const expected = 'id,patient_id,reported_date,from,type,state,received,scheduled,pending,sent,cleared,muted,message_id,sent_by,to_phone,content\n' +
-                       '"abc","123456","02, Jan 1970, 10:17:36 +00:00",,"Automated Reply","sent","","","","02, Jan 1970, 10:17:36 +00:00","","",,"+123456789",,"hello"\n' +
-                       '"def","654321","12, Jan 1970, 10:20:54 +00:00",,"Automated Reply","sent","","","","12, Jan 1970, 10:20:54 +00:00","","",,"+987654321",,"hi"\n';
+                       '"abc","123456",123456789,,"Automated Reply","sent","","","",123456789,"","",,"+123456789",,"hello"\n' +
+                       '"def","654321",987654321,,"Automated Reply","sent","","","",987654321,"","",,"+987654321",,"hi"\n';
       return mockRequest('messages').then(actual => {
         actual.should.equal(expected);
         query.callCount.should.equal(2);
@@ -155,10 +155,10 @@ describe('Export Data Service 2.0', () => {
         }
       ]));
       const expected = 'id,patient_id,reported_date,from,type,state,received,scheduled,pending,sent,cleared,muted,message_id,sent_by,to_phone,content\n' +
-                       '"abc","123456","02, Jan 1970, 10:17:36 +00:00",,"Task Message",,"","","","","","",,,"+123456789","hello"\n' +
-                       '"abc","123456","02, Jan 1970, 10:17:36 +00:00",,"Task Message",,"","","","","","",,,"+123456788","goodbye"\n' +
-                       '"def","654321","12, Jan 1970, 10:20:54 +00:00",,"Task Message",,"","","","","","",,,"+223456789","hi"\n' +
-                       '"def","654321","12, Jan 1970, 10:20:54 +00:00",,"Task Message",,"","","","","","",,,"+223456788","bye"\n';
+                       '"abc","123456",123456789,,"Task Message",,"","","","","","",,,"+123456789","hello"\n' +
+                       '"abc","123456",123456789,,"Task Message",,"","","","","","",,,"+123456788","goodbye"\n' +
+                       '"def","654321",987654321,,"Task Message",,"","","","","","",,,"+223456789","hi"\n' +
+                       '"def","654321",987654321,,"Task Message",,"","","","","","",,,"+223456788","bye"\n';
       return mockRequest('messages').then(actual => {
         actual.should.equal(expected);
       });
@@ -204,8 +204,8 @@ describe('Export Data Service 2.0', () => {
         }
       ]));
       const expected = 'id,patient_id,reported_date,from,type,state,received,scheduled,pending,sent,cleared,muted,message_id,sent_by,to_phone,content\n' +
-                       '"abc","123456","02, Jan 1970, 10:17:36 +00:00","+123456789","Message","received","02, Jan 1970, 10:17:36 +00:00","","","","","",,"+123456789",,"hello"\n' +
-                       '"def","654321","12, Jan 1970, 10:20:54 +00:00","+987654321","Message","received","12, Jan 1970, 10:20:54 +00:00","","","","","",,"+987654321",,"hi"\n';
+                       '"abc","123456",123456789,"+123456789","Message","received",123456789,"","","","","",,"+123456789",,"hello"\n' +
+                       '"def","654321",987654321,"+987654321","Message","received",987654321,"","","","","",,"+987654321",,"hi"\n';
       return mockRequest('messages').then(actual => {
         actual.should.equal(expected);
       });
@@ -253,8 +253,8 @@ describe('Export Data Service 2.0', () => {
         visitReport
       ]));
       const expected = '_id,form,patient_id,reported_date,from,contact.name,contact.parent.name,contact.parent.parent.name,contact.parent.parent.parent.name,name\n' +
-                       '"abc","STCK","123456","02, Jan 1970, 10:17:36 +00:00",,,,,,\n' +
-                       '"def","V","654321","12, Jan 1970, 10:20:54 +00:00",,,,,,"Sally"\n';
+                       '"abc","STCK","123456",123456789,,,,,,\n' +
+                       '"def","V","654321",987654321,,,,,,"Sally"\n';
       return mockRequest('reports').then(actual => {
         actual.should.equal(expected);
         service._search.callCount.should.equal(2);
@@ -318,7 +318,7 @@ describe('Export Data Service 2.0', () => {
         }
       ]));
       const expected = '_id,form,patient_id,reported_date,from,contact.name,contact.parent.name,contact.parent.parent.name,contact.parent.parent.parent.name,patient_name\n' +
-                       '"B87FEE75-D435-A648-BDEA-0A1B61021AA3","assessment",,"24, Dec 2015, 12:12:30 +00:00","+256 787 123 456","my contact","my contacts parent","my contacts grandparent",,"Babyale Elaijah"\n';
+                       '"B87FEE75-D435-A648-BDEA-0A1B61021AA3","assessment",,1450959150540,"+256 787 123 456","my contact","my contacts parent","my contacts grandparent",,"Babyale Elaijah"\n';
       return mockRequest('reports').then(actual => {
         actual.should.equal(expected);
         service._search.callCount.should.equal(2);

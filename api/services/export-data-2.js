@@ -256,7 +256,7 @@ const formatDate = date => {
   if (!date) {
     return '';
   }
-  return moment(date).utc().format('DD, MMM YYYY, HH:mm:ss Z');
+  return moment(date).valueOf();
 };
 
 const JOIN_COL = ',';
