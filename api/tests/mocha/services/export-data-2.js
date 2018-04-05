@@ -2,41 +2,14 @@ require('chai').should();
 
 const db = require('../../../db-pouch'),
       service = require('../../../services/export-data-2'),
+      reportMapper = require('../../../services/export/report-mapper'),
+      contactMapper = require('../../../services/export/contact-mapper'),
       sinon = require('sinon').sandbox.create();
 
 describe('Export Data Service 2.0', () => {
 
   afterEach(() => {
     sinon.restore();
-  });
-
-  describe('Extract fields', () => {
-    it('flattens fields', () => {
-      service._flatten({
-        foo: 'fooVal',
-        bars: {
-          bar1: 'bar1Val',
-          smang: {
-            smong: 'smongVal'
-          }
-        }
-      }).should.deep.equal({
-        foo: 'fooVal',
-        'bars.bar1': 'bar1Val',
-        'bars.smang.smong': 'smongVal'
-      });
-    });
-    it('assigns arrays to a single cell', () => {
-      service._flatten({
-        foo: [1,2,3],
-        bar: {
-          smang:['a','b','c']
-        }
-      }).should.deep.equal({
-        foo: [1,2,3],
-        'bar.smang': ['a', 'b', 'c']
-      });
-    });
   });
 
   const mockRequest = (type, filters={}, options={}) => {
@@ -229,9 +202,9 @@ describe('Export Data Service 2.0', () => {
         reported_date: 987654321,
         form: 'V'
       };
-      service._search = sinon.stub();
-      service._search.onCall(0).returns(Promise.resolve([ 'abc', 'def' ]));
-      service._search.onCall(1).returns(Promise.resolve([]));
+      reportMapper.getDocIds = sinon.stub();
+      reportMapper.getDocIds.onCall(0).returns(Promise.resolve([ 'abc', 'def' ]));
+      reportMapper.getDocIds.onCall(1).returns(Promise.resolve([]));
       const query = sinon.stub();
       query.onCall(0).returns(Promise.resolve({
         rows: [
@@ -257,7 +230,7 @@ describe('Export Data Service 2.0', () => {
                        '"def","V","654321",987654321,,,,,,"Sally"\n';
       return mockRequest('reports').then(actual => {
         actual.should.equal(expected);
-        service._search.callCount.should.equal(2);
+        reportMapper.getDocIds.callCount.should.equal(2);
       });
     });
   
@@ -283,9 +256,9 @@ describe('Export Data Service 2.0', () => {
         hidden_fields: [
         ]
       };
-      service._search = sinon.stub();
-      service._search.onCall(0).returns(Promise.resolve([ 'B87FEE75-D435-A648-BDEA-0A1B61021AA3' ]));
-      service._search.onCall(1).returns(Promise.resolve([]));
+      reportMapper.getDocIds = sinon.stub();
+      reportMapper.getDocIds.onCall(0).returns(Promise.resolve([ 'B87FEE75-D435-A648-BDEA-0A1B61021AA3' ]));
+      reportMapper.getDocIds.onCall(1).returns(Promise.resolve([]));
       const query = sinon.stub();
       query.onCall(0).returns(Promise.resolve({ rows: [ { key: [ 'assessment' ] } ] }));
       query.onCall(1).returns(Promise.resolve({ rows: [ { doc: report } ] }));
@@ -321,7 +294,7 @@ describe('Export Data Service 2.0', () => {
                        '"B87FEE75-D435-A648-BDEA-0A1B61021AA3","assessment",,1450959150540,"+256 787 123 456","my contact","my contacts parent","my contacts grandparent",,"Babyale Elaijah"\n';
       return mockRequest('reports').then(actual => {
         actual.should.equal(expected);
-        service._search.callCount.should.equal(2);
+        reportMapper.getDocIds.callCount.should.equal(2);
       });
     });
   });
@@ -342,9 +315,9 @@ describe('Export Data Service 2.0', () => {
         parent: { _id: contact2._id }
       };
 
-      service._search = sinon.stub();
-      service._search.onCall(0).returns(Promise.resolve([ contact2._id, contact1._id ]));
-      service._search.onCall(1).returns(Promise.resolve([]));
+      contactMapper.getDocIds = sinon.stub();
+      contactMapper.getDocIds.onCall(0).returns(Promise.resolve([ contact2._id, contact1._id ]));
+      contactMapper.getDocIds.onCall(1).returns(Promise.resolve([]));
       const allDocs = sinon.stub().returns(Promise.resolve({ rows: [ { doc: contact2 }, { doc: contact1 } ] }));
       db.medic = { allDocs: allDocs };
       sinon.stub(service._lineage, 'hydrateDocs').returns(Promise.resolve([

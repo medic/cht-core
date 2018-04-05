@@ -98,7 +98,7 @@ module.exports = {
 
     correctFilterTypes(filters);
 
-    if (!exportDataV2.supportedExports.includes(type)) {
+    if (!exportDataV2.isSupported(type)) {
       return serverUtils.error({
         message: `v2 export only supports ${exportDataV2.supportedExports}`,
         code: 404
