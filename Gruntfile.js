@@ -1,3 +1,5 @@
+require('dotenv').config();
+
 const packageJson = require('./package.json'),
       releaseName = process.env.TRAVIS_TAG || process.env.TRAVIS_BRANCH || 'medic';
 
