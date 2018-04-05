@@ -203,7 +203,7 @@ module.exports = {
         return new Promise((resolve, reject) => {
             validate(config, doc, function(errors) {
                 if (errors && errors.length > 0) {
-                    messages.addErrors(config, doc, errors);
+                    messages.addErrors(config, doc, errors, { patient: doc.patient });
                     return resolve(true);
                 }
 
