@@ -92,8 +92,8 @@ module.exports = {
         return from.toLowerCase().indexOf(s.trim().toLowerCase()) !== 0;
       });
     },
-    addErrors: function(config, doc, errors) {
-        errors.forEach(error => module.exports.addError(doc, error));
+    addErrors: function(config, doc, errors, context) {
+        errors.forEach(error => module.exports.addError(doc, error, context));
         let reply;
         if (config.validations.join_responses) {
             reply = errors
@@ -105,7 +105,7 @@ module.exports = {
         }
         module.exports.addMessage(doc, { message: reply }, 'clinic');
     },
-    addError: function(doc, error) {
+    addError: function(doc, error, context) {
         if (_.isString(error)){
             error = {
                 message: error
@@ -123,7 +123,7 @@ module.exports = {
         }
         // support mustache template syntax in error messages
         try {
-            error.message = messageUtils.template(config, utils.translate, doc, error);
+            error.message = messageUtils.template(config, utils.translate, doc, error, context);
             utils.addError(doc, error);
         } catch(e) {
             utils.addError(doc, {
