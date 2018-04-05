@@ -39,8 +39,6 @@ You will need to install the following:
 
 [CouchDB](https://couchdb.apache.org) v2.x
 
-[couchdb-lucene](https://github.com/rnewson/couchdb-lucene) v2.x (optional, only required for some in-app analytics)
-
 ### Setup CouchDB on a single node
 
 NB: multiple CouchDB nodes will be more complicated, but the general pattern outlined below will be the same.
@@ -84,25 +82,6 @@ $ curl http://admin:pass@localhost:5984 # should work
 {"couchdb":"Welcome","version":"2.0.0","vendor":{"name":"The Apache Software Foundation"}}
 $ curl http://localhost:5984 # should fail
 {"error":"unauthorized","reason":"Authentication required."}
-```
-
-### Configure Lucene
-
-Lucene is used for some in-app analytics. You probably do not need to install this for general development, but it is part of a proper production deployment.
-
-Update `$lucene_home/conf/couchdb-lucene.ini` (if you installed with homebrew, `$lucene_home` is something like `/usr/local/Cellar/couchdb-lucene/1.0.2/libexec/`) so the URL has credentials, e.g.:
-
-```
-url=http://admin:pass@localhost:5984/
-```
-
-Start lucene using the `$lucene_home/bin/run` script.
-
-You should now see an identical welcome message at two different URLs:
-
-```
-curl http://localhost:5985
-{"couchdb-lucene":"Welcome","version":"1.0.2"}
 ```
 
 ## Build and run
