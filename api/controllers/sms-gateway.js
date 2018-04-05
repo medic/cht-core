@@ -146,6 +146,6 @@ module.exports = {
       .then(chain => checkpoint('getOutgoing() returned') || chain)
       .then(markMessagesForwarded)
       .then(chain => checkpoint('markMessagesForwarded() returned') || chain)
-      .then(outgoingMessages => ({ messages: outgoingMessages }))
+      .then(outgoingMessages => ({ messages: outgoingMessages }));
   },
 };

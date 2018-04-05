@@ -12,5 +12,5 @@ module.exports = function(taskName) {
     const duration = next - last;
     log(`${duration}ms`, message);
     last = next;
-  }
+  };
 };
