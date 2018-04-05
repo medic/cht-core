@@ -141,7 +141,6 @@ describe('death_reporting', () => {
       const saveDoc = sinon.stub(db.audit, 'saveDoc').callsArg(1);
       const get = sinon.stub(db.medic, 'get').callsArgWith(1, { statusCode: 404 });
       transition.onMatch(change).then(changed => {
-        console.log('!!!!!!!!!!!!!');
         (!!changed).should.equal(false);
         get.callCount.should.equal(1);
         getPatientContact.callCount.should.equal(1);
