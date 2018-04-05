@@ -5,7 +5,7 @@ const serviceManager = require('./service-manager');
 
 
 class BaseConfig {
-  constructor(testSrcDir, options) {
+  constructor(testSrcDir, options={}) {
     this.config = {
       seleniumAddress: 'http://localhost:4444/wd/hub',
 
