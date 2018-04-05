@@ -459,6 +459,11 @@ module.exports = function(grunt) {
           configFile: 'tests/protractor/performance.tests-and-services.conf.js',
         }
       },
+      performance_tests_only: {
+        options: {
+          configFile: 'tests/protractor/performance.tests-only.conf.js',
+        }
+      },
     },
     nodeunit: {
       webapp: [
