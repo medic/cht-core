@@ -44,13 +44,13 @@ describe('infoUtils', () => {
         }]
       };
       sinon.stub(dbPouch.sentinel, 'get').rejects({ status: 404 });
-      sinon.stub(db.medic, 'get').callsArgWith(1, {statusCode: 404});
+      sinon.stub(dbPouch.medic, 'get').rejects({status: 404});
       sinon.stub(db.audit, 'get').callsArgWith(1, null, {doc: auditDoc});
       sinon.stub(dbPouch.sentinel, 'put').resolves({doc: auditDoc});
       return infoUtils.getInfoDoc(change).then(info => {
         expect(info).to.not.equal(null);
         expect(dbPouch.sentinel.get.calledWith('foo-info')).to.equal(true);
-        expect(db.medic.get.calledWith('foo-info')).to.equal(true);
+        expect(dbPouch.medic.get.calledWith('foo-info')).to.equal(true);
         expect(db.audit.get.calledWith('foo')).to.equal(true);
         expect(dbPouch.sentinel.put.callCount).to.equal(1);
         const infoDoc = dbPouch.sentinel.put.args[0][0];

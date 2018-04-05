@@ -304,34 +304,6 @@ const finalize = ({ change, results }, callback) => {
  */
 const applyTransition = ({ key, change, transition }, callback) => {
 
-  const _setResult = ok => {
-    return new Promise((resolve, reject) => {
-      const info = change.info;
-      info._id = info._id || `${change.id}-info`;
-
-      dbPouch.sentinel.get(info._id)
-      .then(doc => { return doc; })
-      .catch(err => {
-        if(err.status === 404) { return info; }
-        return reject(err);
-      })
-      .then(doc => {
-        doc.transitions = doc.transitions || {};
-        doc.transitions[key] = {
-          last_rev: change.doc._rev,
-          seq: change.seq,
-          ok: ok
-        };
-        dbPouch.sentinel.put(doc, err => {
-          if(err) {
-            logger.error('Error updating metaData', err);
-          }
-          return resolve();
-        });
-      });
-    });
-  };
-
   logger.debug(
     `calling transition.onMatch for doc ${change.id} seq ${change.seq} and transition ${key}`);
 
@@ -342,34 +314,30 @@ const applyTransition = ({ key, change, transition }, callback) => {
    */
   transition.onMatch(change)
     .then(changed => {
-      return new Promise(resolve => {
-        logger.debug(
-          `finished transition ${key} for seq ${change.seq} doc ${change.id} is ` +
-          changed ? 'changed' : 'unchanged'
-        );
-        if (!changed) {
-          return resolve(changed);
-        }
-        _setResult(true).then(() => {return resolve(changed);});
-      });
+      logger.debug(
+        `finished transition ${key} for seq ${change.seq} doc ${change.id} is ` +
+        changed ? 'changed' : 'unchanged'
+      );
+      if (!changed) {
+        return changed;
+      }
+      return infoUtils.updateTransition(change, key, true)
+        .then(() => { return changed; });
     })
     .catch(err => {
-      return new Promise(resolve => {
-        // adds an error to the doc but it will only get saved if there are
-        // other changes too.
-        const message = err.message || JSON.stringify(err);
-        utils.addError(change.doc, {
-          code: `${key}_error'`,
-          message: `Transition error on ${key}: ${message}`
-        });
-        logger.error(`transition ${key} errored on doc ${change.id} seq ${change.seq}: ${JSON.stringify(err)}`);
-        if (!err.changed) {
-          return resolve(false);
-        }
-        _setResult(false).then(() => {
-          return resolve(true);
-        });
+      // adds an error to the doc but it will only get saved if there are
+      // other changes too.
+      const message = err.message || JSON.stringify(err);
+      utils.addError(change.doc, {
+        code: `${key}_error'`,
+        message: `Transition error on ${key}: ${message}`
       });
+      logger.error(`transition ${key} errored on doc ${change.id} seq ${change.seq}: ${JSON.stringify(err)}`);
+      if (!err.changed) {
+        return false;
+      }
+      return infoUtils.updateTransition(change, key, false)
+        .then(() => { return true; });
     })
     .then(changed => callback(null, changed)); // return the promise instead
 };
