@@ -21,11 +21,13 @@ exports['post() should save WT messages to DB'] = test => {
     .onCall(0).returns({ message: 'one' })
     .onCall(1).returns({ message: 'two' })
     .onCall(2).returns({ message: 'three' });
-  const bulkDocs = sinon.stub().returns(Promise.resolve([ { ok: true, id: 'some-id' } ]));
-  db.medic = { bulkDocs: bulkDocs, query: () => Promise.resolve({ rows: [] }) };
+  const bulkDocs = sinon.stub(db.medic, 'bulkDocs').returns(Promise.resolve([ { ok: true, id: 'some-id' } ]));
   const getMessages = sinon.stub(messageUtils, 'getMessages').callsArgWith(1, null, []);
   const updateMessageTaskStates = sinon.stub(messageUtils, 'updateMessageTaskStates');
   updateMessageTaskStates.callsArgWith(1, null, {});
+
+  sinon.stub(db.medic, 'query')
+      .returns(Promise.resolve({ offset:0, total_rows:0, rows:[] }));
 
   const req = { body: {
     messages: [
@@ -143,8 +145,9 @@ exports['post() should provide WO messages in response'] = test => {
 exports['post() returns err if something goes wrong'] = test => {
   sinon.stub(recordUtils, 'createByForm')
     .onCall(0).returns({ message: 'one' });
-  const bulkDocs = sinon.stub().returns(Promise.reject(new Error('oh no!')));
-  db.medic = { bulkDocs: bulkDocs, query: () => Promise.resolve({ rows: [] }) };
+  sinon.stub(db.medic, 'bulkDocs').returns(Promise.reject(new Error('oh no!')));
+  sinon.stub(db.medic, 'query')
+      .returns(Promise.resolve({ offset:0, total_rows:0, rows:[] }));
   sinon.stub(messageUtils, 'getMessages').callsArgWith(1, null, []);
   const updateMessageTaskStates = sinon.stub(messageUtils, 'updateMessageTaskStates');
   updateMessageTaskStates.callsArgWith(1, null, {});
