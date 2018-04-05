@@ -16,7 +16,7 @@ module.exports = {
         }
 
         return service.upgrade(req.body.build, userCtx.user)
-          .then(started => res.json({ ok: started }));
+          .then(() => res.json({ ok: true }));
       })
       .catch(err => serverUtils.error(err, req, res));
   }
