@@ -6,6 +6,7 @@ const dbPouch = require('./db-pouch').medic;
 
 const getTaskMessages = function(options, callback) {
   console.log('getTaskMessages() options=', JSON.stringify(options));
+  //db.medic.view('medic', 'tasks_messages', options, callback);
   dbPouch.query('medic/tasks_messages', options, callback);
 };
 
@@ -126,16 +127,16 @@ module.exports = {
 
       const idsToFetch = _.uniq(_.pluck(taskMessageResults.rows, 'id'));
 
-      //dbPouch.allDocs({ keys:idsToFetch }, (err, docResults) => {
-      db.medic.fetch({keys: idsToFetch}, (err, docResults) => {
+      dbPouch.allDocs({ keys:idsToFetch }, (err, docResults) => {
+      //db.medic.fetch({keys: idsToFetch}, (err, docResults) => {
         checkpoint('db.medic.fetch() returned');
 
         const docs = _.pluck(docResults.rows, 'doc');
 
         const stateChangesByDocId = applyTaskStateChangesToDocs(taskStateChanges, docs);
 
-        //dbPouch.bulkDocs(docs, (err, results) => {
-        db.medic.bulk({docs: docs}, (err, results) => {
+        dbPouch.bulkDocs(docs, (err, results) => {
+        //db.medic.bulk({docs: docs}, (err, results) => {
           checkpoint('db.medic.bulk() returned');
 
           if (err) {
