@@ -47,8 +47,7 @@ module.exports = function(Promise, DB) {
     });
   };
 
-  var fetchContacts = function(lineage, options) {
-    options = options || {};
+  var fetchContacts = function(lineage) {
     var contactIds = _.uniq(
       lineage
         .map(function(doc) {
@@ -67,7 +66,7 @@ module.exports = function(Promise, DB) {
         return doc && doc._id === id;
       });
       if (contact) {
-        lineageContacts.push(options.generateNewContactObjects ? JSON.parse(JSON.stringify(contact)) : contact);
+        lineageContacts.push(JSON.parse(JSON.stringify(contact)));
       } else {
         contactsToFetch.push(id);
       }

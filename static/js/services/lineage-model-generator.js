@@ -32,7 +32,7 @@ angular.module('inboxServices').factory('LineageModelGenerator',
     };
 
     var hydrate = function(docs) {
-      return lineage.fetchContacts(docs, { generateNewContactObjects: true })
+      return lineage.fetchContacts(docs)
         .then(function(contacts) {
           lineage.fillContactsInDocs(docs, contacts);
           return docs;
