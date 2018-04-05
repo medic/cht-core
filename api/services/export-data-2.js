@@ -38,7 +38,6 @@ class SearchResultReader extends Readable {
   constructor(type, filters, searchOptions, readableOptions) {
     super(readableOptions);
 
-    this.type = type;
     this.filters = filters;
     this.options = searchOptions;
     this.mapper = MAPPERS[type];
