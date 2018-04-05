@@ -1,7 +1,7 @@
 const fs = require('fs'),
       path = require('path'),
       asyncEach = require('async/each'),
-      db = require('../db');
+      db = require('../db-nano');
 
 const resources = [
   { name: 'medic-person', file: 'medic-person.svg', type: 'image/svg+xml' },

@@ -1,6 +1,6 @@
 var _ = require('underscore'),
     format = require('../modules/format'),
-    libphonenumber = require('libphonenumber/utils');
+    phoneNumber = require('phone-number');
 
 angular.module('inboxServices').factory('Select2Search',
   function(
@@ -124,7 +124,7 @@ angular.module('inboxServices').factory('Select2Search',
             // multiple is not an existing use case for us
             value = value[0];
           }
-          if (libphonenumber.validate(Settings, value)) {
+          if (phoneNumber.validate(Settings, value)) {
             // Raw phone number, don't resolve from DB
             var text = templateSelection({ text: value });
             selectEl.select2('data')[0].text = text;

@@ -45,7 +45,7 @@ describe('AnalyticsCtrl controller', function() {
   it('set up controller with no modules', function(done) {
     AnalyticsModules.returns(Promise.resolve([]));
     stateIs.returns(false);
-    createController('anc');
+    createController('targets');
     scope.$digest();
     setTimeout(function() {
       chai.expect(scope.selected).to.equal(undefined);
@@ -56,27 +56,27 @@ describe('AnalyticsCtrl controller', function() {
   it('renders specified module', function(done) {
     AnalyticsModules.returns(Promise.resolve([
       { state: 'reporting' },
-      { state: 'anc' }
+      { state: 'targets' }
     ]));
     stateIs.returns(false);
-    createController('anc');
+    createController('targets');
     scope.$digest();
     setTimeout(function() {
-      chai.expect(scope.selected.state).to.equal('anc');
+      chai.expect(scope.selected.state).to.equal('targets');
       done();
     });
   });
 
   it('jumps to child state if single module present', function(done) {
     AnalyticsModules.returns(Promise.resolve([
-      { state: 'anc' }
+      { state: 'targets' }
     ]));
     stateIs.returns(true);
     createController('analytics');
     scope.$digest();
     setTimeout(function() {
       chai.expect(stateGo.callCount).to.equal(1);
-      chai.expect(stateGo.calledWith('anc')).to.equal(true);
+      chai.expect(stateGo.calledWith('targets')).to.equal(true);
       done();
     });
   });
@@ -84,7 +84,7 @@ describe('AnalyticsCtrl controller', function() {
   it('does not jump to child state if multiple modules present', function(done) {
     AnalyticsModules.returns(Promise.resolve([
       { state: 'reporting' },
-      { state: 'anc' }
+      { state: 'targets' }
     ]));
     stateIs.returns(true);
     createController('analytics');
@@ -95,4 +95,3 @@ describe('AnalyticsCtrl controller', function() {
     });
   });
 });
-

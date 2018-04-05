@@ -1,4 +1,4 @@
-const db = require('../../db'),
+const db = require('../../db-nano'),
       sinon = require('sinon').sandbox.create(),
       serverUtils = require('../../server-utils'),
       req = {
@@ -99,7 +99,7 @@ exports['notLoggedIn redirects to login page for human user'] = test => {
   req.headers = { 'user-agent': 'Mozilla/1.0' };
   serverUtils.notLoggedIn(req, res);
   test.equals(redirect.callCount, 1);
-  test.equals(redirect.args[0][0], 301);
+  test.equals(redirect.args[0][0], 302);
   test.equals(redirect.args[0][1], '/medic/login?redirect=someurl');
   test.done();
 };

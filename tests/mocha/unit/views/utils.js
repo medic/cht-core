@@ -5,10 +5,12 @@ const vm = require('vm');
 
 const MAP_ARG_NAME = 'doc';
 
-module.exports.loadMedicClientView = (viewName) => {
+module.exports.loadView = (ddocName, viewName) => {
   const mapString = fs.readFileSync(path.join(
     __dirname,
-    '../../../../ddocs/medic-client/views/',
+    '../../../../ddocs',
+    ddocName,
+    'views',
     viewName,
     '/map.js'), 'utf8');
 

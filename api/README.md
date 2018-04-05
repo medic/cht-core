@@ -9,7 +9,7 @@ audit history where required.
 
 # Table of contents
 
-<!-- To update table of contents run: `npm run-script updatetoc` -->
+<!-- To update table of contents run: `npm run toc` -->
 
 <!-- START doctoc generated TOC please keep comment here to allow auto update -->
 <!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
@@ -27,11 +27,12 @@ audit history where required.
 - [API Overview](#api-overview)
   - [Timestamps](#timestamps)
 - [Export](#export)
-  - [GET /api/v1/export/forms/{formcode}](#get-apiv1exportformsformcode)
+  - [GET /api/v2/export/reports](#get-apiv2exportreports)
   - [GET /api/v1/export/messages](#get-apiv1exportmessages)
   - [GET /api/v1/export/audit](#get-apiv1exportaudit)
   - [GET /api/v1/export/feedback](#get-apiv1exportfeedback)
   - [GET /api/v1/export/contacts](#get-apiv1exportcontacts)
+  - [[DEPRECATED] GET /api/v1/export/forms/{formcode}](#deprecated-get-apiv1exportformsformcode)
 - [Forms](#forms)
   - [GET /api/v1/forms](#get-apiv1forms)
   - [GET /api/v1/forms/{{id}}.{{format}}](#get-apiv1formsidformat)
@@ -52,8 +53,10 @@ audit history where required.
   - [POST /api/v1/users](#post-apiv1users)
   - [POST /api/v1/users/{{username}}](#post-apiv1usersusername)
   - [DELETE /api/v1/users/{{username}}](#delete-apiv1usersusername)
-- [Bulk Operations](#bulk)
- - [POST /api/v1/bulk-delete](#post-apiv1bulkdelete)
+- [Bulk Operations](#bulk-operations)
+  - [POST /api/v1/bulk-delete](#post-apiv1bulk-delete)
+- [Upgrades](#upgrades)
+  - [Example](#example)
 
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
 
@@ -83,9 +86,17 @@ If you're using couchdb-lucene in any configuration other than the standard (on 
 export LUCENE_URL='http://somewherelse'
 ```
 
+If you want to allow cross-origin requests, add the flag `--allow-cors` when starting api.  E.g.
+
+	node server.js --allow-cors
+
 ## Run
 
 `grunt deploy`
+
+or
+
+	node server.js
 
 ## Test
 
@@ -162,35 +173,60 @@ on a Javascript Date object.
   - 2016-07-01T13:48:24Z
   - 1467383343484 (MS since Epoch)
 
-# Export
+# Settings
 
-Request different types of data in various formats.
+Get and update the app settings.
 
-## GET /api/v1/export/forms/{formcode}
+## GET /api/v1/settings
 
-Download reports.
+Returns the settings in JSON format.
+
+## PUT /api/v1/settings
 
 ### Query Parameters
 
 | Variable           | Description
 | ------------------ | -------------
-| format             | The format of the returned file, either 'csv' or 'xml'. Defaults to 'csv'.
-| locale             | Locale for translatable data. Defaults to 'en'.
-| tz                 | The timezone to show date values in, as an offset in minutes from GMT, for example '-120'.
-| skip_header_row    | 'true' to omit the column headings. Defaults to 'false'.
-| columns            | An orderered array of columns to export, eg: ["reported_date","from","related_entities.clinic.name"]
+| replace            | Whether to replace existing settings for the given properties or to merge. Defaults to false (merging).
 
-### Output
+# Export
 
-| Column             | Description
-| ------------------ | -------------
-| Record UUID        | The unique ID for the report in the database.
-| Patient ID         | The generated short patient ID for use in SMS.
-| Reported Date      | The date the report was received.
-| From               | The phone number the report was sent from.
-| Contact Name       | The name of the user this report is assigned to.
-| Form               | The form code for this report.
+Request different types of data in various formats.
 
+## GET /api/v2/export/reports
+
+This is a replacement for [/api/v1/export/forms](#deprecated-get-apiv1exportformsformcode).
+
+It uses the [search shared library](shared-libs/search) to ensure identical results in the export and the front-end. It also only supports exporting CSV so we can efficiently stream infinitely large exports.
+
+### Query parameters
+
+These are identical to the JS objects passed to the shared library, as if you were using it directly in Javascript.
+
+You may either pass JSON in the request body using `POST`:
+
+```json
+POST /api/v2/export/reports
+{
+  "filters": {
+    "forms": {
+      "selected": [
+        {
+          "code": "immunization_visit"
+        }
+      ]
+    }
+  }
+}
+```
+
+Or using form-style parameters as `GET`:
+
+```
+GET /api/v2/export/reports?filters[search]=&filters[forms][selected][0][code]=immunization_visit
+```
+
+**NB:** this API is bound directly to this library. For more information on what queries you can perform with the search library, see [its documentation](/shared-lib/search).
 
 ## GET /api/v1/export/messages
 
@@ -302,6 +338,33 @@ Content-Type: application/json; charset=utf-8
 ]
 ```
 
+
+## [DEPRECATED] GET /api/v1/export/forms/{formcode}
+
+Download reports.
+
+**NB**: this has been deprecated and will be removed in 4.0. Use [GET /api/v2/export/reports](#get-apiv2exportreports) instead.
+
+### Query Parameters
+
+| Variable           | Description
+| ------------------ | -------------
+| format             | The format of the returned file, either 'csv' or 'xml'. Defaults to 'csv'.
+| locale             | Locale for translatable data. Defaults to 'en'.
+| tz                 | The timezone to show date values in, as an offset in minutes from GMT, for example '-120'.
+| skip_header_row    | 'true' to omit the column headings. Defaults to 'false'.
+| columns            | An orderered array of columns to export, eg: ["reported_date","from","related_entities.clinic.name"]
+
+### Output
+
+| Column             | Description
+| ------------------ | -------------
+| Record UUID        | The unique ID for the report in the database.
+| Patient ID         | The generated short patient ID for use in SMS.
+| Reported Date      | The date the report was received.
+| From               | The phone number the report was sent from.
+| Contact Name       | The name of the user this report is assigned to.
+| Form               | The form code for this report.
 
 # Forms
 

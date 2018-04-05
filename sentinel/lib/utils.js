@@ -1,6 +1,6 @@
 const _ = require('underscore'),
       vm = require('vm'),
-      db = require('../db'),
+      db = require('../db-nano'),
       moment = require('moment'),
       config = require('../config'),
       taskUtils = require('task-utils');

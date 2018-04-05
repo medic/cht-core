@@ -12,7 +12,7 @@ const _ = require('underscore'),
       moment = require('moment'),
       config = require('../config'),
       date = require('../date'),
-      db = require('../db'),
+      db = require('../db-nano'),
       NAME = 'registration',
       XFORM_CONTENT_TYPE = 'xml';
 
@@ -48,7 +48,7 @@ const parseParams = params => {
   }
   if (params instanceof Object) {
     // We support raw JSON even if we can't specify that
-    // correctly in kanso.json
+    // correctly in app_settings
     return params;
   }
   const firstCharacter = params.trim()[0];

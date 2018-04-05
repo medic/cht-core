@@ -1,5 +1,5 @@
 var async = require('async'),
-    db = require('../db'),
+    db = require('../db-nano'),
     people = require('../controllers/people'),
     places = require('../controllers/places');
 

@@ -1,7 +1,7 @@
 /* jshint unused: false */
 
 var controller = require('../../../controllers/forms'),
-    db = require('../../../db'),
+    db = require('../../../db-nano'),
     sinon = require('sinon').sandbox.create();
 
 exports.tearDown = function (callback) {

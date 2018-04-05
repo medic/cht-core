@@ -2,7 +2,7 @@ const _ = require('underscore'),
       bodyParser = require('body-parser'),
       express = require('express'),
       morgan = require('morgan'),
-      db = require('./db'),
+      db = require('./db-nano'),
       path = require('path'),
       auth = require('./auth'),
       isClientHuman = require('./is-client-human'),
@@ -11,19 +11,7 @@ const _ = require('underscore'),
       proxy = require('http-proxy').createProxyServer({ target: target }),
       proxyForAuditing = require('http-proxy').createProxyServer({ target: target }),
       login = require('./controllers/login'),
-      activePregnancies = require('./controllers/active-pregnancies'),
-      upcomingAppointments = require('./controllers/upcoming-appointments'),
-      missedAppointments = require('./controllers/missed-appointments'),
-      upcomingDueDates = require('./controllers/upcoming-due-dates'),
       smsGateway = require('./controllers/sms-gateway'),
-      highRisk = require('./controllers/high-risk'),
-      totalBirths = require('./controllers/total-births'),
-      missingDeliveryReports = require('./controllers/missing-delivery-reports'),
-      deliveryLocation = require('./controllers/delivery-location'),
-      visitsCompleted = require('./controllers/visits-completed'),
-      visitsDuring = require('./controllers/visits-during'),
-      monthlyRegistrations = require('./controllers/monthly-registrations'),
-      monthlyDeliveries = require('./controllers/monthly-deliveries'),
       exportData = require('./controllers/export-data'),
       records = require('./controllers/records'),
       forms = require('./controllers/forms'),
@@ -31,6 +19,7 @@ const _ = require('underscore'),
       places = require('./controllers/places'),
       people = require('./controllers/people'),
       upgrade = require('./controllers/upgrade'),
+      settings = require('./controllers/settings'),
       fti = require('./controllers/fti'),
       bulkDocs = require('./controllers/bulk-docs'),
       createDomain = require('domain').create,
@@ -66,6 +55,19 @@ app.putJson    = (path, callback) => handleJsonRequest('put',    path, callback)
 var formParser = bodyParser.urlencoded({limit: '32mb', extended: false});
 
 app.set('strict routing', true);
+
+// When testing random stuff in-browser, it can be useful to access the database
+// from different domains (e.g. localhost:5988 vs localhost:8080).  Adding the
+// --allow-cors commandline switch will enable this from within a web browser.
+if(process.argv.slice(2).includes('--allow-cors')) {
+  console.log('WARNING: allowing CORS requests to API!');
+  app.use((req, res, next) => {
+    res.setHeader('Access-Control-Allow-Origin', req.headers.origin || req.headers.host);
+    res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, OPTIONS, HEAD, DELETE');
+    res.setHeader('Access-Control-Allow-Credentials', 'true');
+    next();
+  });
+}
 
 app.use(morgan('combined', {
   immediate: true
@@ -104,7 +106,6 @@ app.postJson(pathPrefix + 'login', login.post);
 var UNAUDITED_ENDPOINTS = [
   // This takes arbitrary JSON, not whole documents with `_id`s, so it's not
   // auditable in our current framework
-  '_design/' + db.settings.ddoc + '/_rewrite/update_settings/*',
   // Replication machinery we don't care to audit
   '_local/*',
   '_revs_diff',
@@ -190,42 +191,12 @@ app.post('/api/v1/upgrade', jsonParser, (req, res) => {
   });
 });
 
-var handleAnalyticsCall = function(req, res, controller) {
-  auth.check(req, 'can_view_analytics', req.query.district, function(err, ctx) {
-    if (err) {
-      return serverUtils.error(err, req, res);
-    }
-    controller.get({ district: ctx.district }, function(err, obj) {
-      if (err) {
-        return serverUtils.serverError(err, req, res);
-      }
-      res.json(obj);
-    });
-  });
-};
-
 var emptyJSONBodyError = function(req, res) {
   return serverUtils.error({
     code: 400,
     message: 'Request body is empty or Content-Type header was not set to application/json.'
   }, req, res);
 };
-
-app.get('/api/active-pregnancies', function(req, res) {
-  handleAnalyticsCall(req, res, activePregnancies);
-});
-
-app.get('/api/upcoming-appointments', function(req, res) {
-  handleAnalyticsCall(req, res, upcomingAppointments);
-});
-
-app.get('/api/missed-appointments', function(req, res) {
-  handleAnalyticsCall(req, res, missedAppointments);
-});
-
-app.get('/api/upcoming-due-dates', function(req, res) {
-  handleAnalyticsCall(req, res, upcomingDueDates);
-});
 
 app.get('/api/sms/', function(req, res) {
   res.redirect(301, '/api/sms');
@@ -235,12 +206,7 @@ app.get('/api/sms', function(req, res) {
     if (err) {
       return serverUtils.error(err, req, res);
     }
-    smsGateway.get(function(err, obj) {
-      if (err) {
-        return serverUtils.error(err, req, res);
-      }
-      res.json(obj);
-    });
+    res.json(smsGateway.get());
   });
 });
 
@@ -252,45 +218,14 @@ app.postJson('/api/sms', function(req, res) {
     if (err) {
       return serverUtils.error(err, req, res);
     }
-    smsGateway.post(req, function(err, obj) {
-      if (err) {
-        return serverUtils.error(err, req, res);
-      }
-      res.json(obj);
-    });
+    smsGateway.post(req)
+      .then(results => {
+        res.json(results);
+      })
+      .catch(err => {
+        serverUtils.error(err, req, res);
+      });
   });
-});
-
-app.get('/api/high-risk', function(req, res) {
-  handleAnalyticsCall(req, res, highRisk);
-});
-
-app.get('/api/total-births', function(req, res) {
-  handleAnalyticsCall(req, res, totalBirths);
-});
-
-app.get('/api/missing-delivery-reports', function(req, res) {
-  handleAnalyticsCall(req, res, missingDeliveryReports);
-});
-
-app.get('/api/delivery-location', function(req, res) {
-  handleAnalyticsCall(req, res, deliveryLocation);
-});
-
-app.get('/api/visits-completed', function(req, res) {
-  handleAnalyticsCall(req, res, visitsCompleted);
-});
-
-app.get('/api/visits-during', function(req, res) {
-  handleAnalyticsCall(req, res, visitsDuring);
-});
-
-app.get('/api/monthly-registrations', function(req, res) {
-  handleAnalyticsCall(req, res, monthlyRegistrations);
-});
-
-app.get('/api/monthly-deliveries', function(req, res) {
-  handleAnalyticsCall(req, res, monthlyDeliveries);
 });
 
 app.all('/api/v1/export/:type/:form?', exportData.routeV1);
@@ -321,12 +256,11 @@ app.post('/api/v1/records', [jsonParser, formParser], function(req, res) {
     if (err) {
       return serverUtils.error(err, req, res, true);
     }
-    records.create(req.body, req.is(['json','urlencoded']), function(err, result) {
-      if (err) {
-        return serverUtils.serverError(err, req, res);
-      }
-      res.json(result);
-    });
+    records.create(req, req.is(['json','urlencoded']))
+      .then(res.json)
+      .catch(err => {
+        serverUtils.serverError(err, req, res);
+      });
   });
 });
 
@@ -557,6 +491,12 @@ app.postJson('/api/v1/people', function(req, res) {
 
 app.postJson('/api/v1/bulk-delete', bulkDocs.bulkDelete);
 
+app.get(`${appPrefix}app_settings/${db.settings.ddoc}/:path?`, settings.getV0); // deprecated
+app.get('/api/v1/settings', settings.get);
+
+app.putJson(`${appPrefix}update_settings/${db.settings.ddoc}`, settings.put); // deprecated
+app.putJson('/api/v1/settings', settings.put);
+
 // DB replication endpoint
 var changesHander = _.partial(require('./handlers/changes').request, proxy);
 app.get(pathPrefix + '_changes', changesHander);
@@ -639,7 +579,7 @@ proxy.on('proxyReq', function(proxyReq, req, res) {
   appPrefix,
   pathPrefix
 ].forEach(function(url) {
-  var urlSansTrailingSlash = url.slice(0, - 1);
+  var urlSansTrailingSlash = url.slice(0, -1);
   app.get(urlSansTrailingSlash, function(req, res) {
     res.redirect(url);
   });

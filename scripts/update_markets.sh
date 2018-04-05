@@ -60,6 +60,7 @@ Description:
 
     release
     release_v2
+    release_v214
     rc
     beta
     alpha
@@ -95,7 +96,7 @@ _to_release_market () {
     sed -i.bak 's/markets-rc/markets-release/g' "$file" && \
     sed -i.bak 's/markets-beta/markets-release/g' "$file" && \
     sed -i.bak 's/markets-alpha/markets-release/g' "$file" && \
-    sed -i.bak 's/markets-diy/markets-release/g' "$file" && \
+    sed -i.bak 's/markets-release-v214/markets-release/g' "$file" && \
     sed -i.bak 's/markets-release-v2/markets-release/g' "$file" 
 }
 
@@ -110,7 +111,7 @@ _to_release_v2_market () {
     sed -i.bak 's/markets-rc/markets-release-v2/g' "$file" && \
     sed -i.bak 's/markets-beta/markets-release-v2/g' "$file" && \
     sed -i.bak 's/markets-alpha/markets-release-v2/g' "$file" && \
-    sed -i.bak 's/markets-diy/markets-release-v2/g' "$file" 
+    sed -i.bak 's/markets-release-v214/markets-release-v2/g' "$file" 
 }
 
 _to_rc_market () {
@@ -124,21 +125,21 @@ _to_rc_market () {
     sed -i.bak 's/markets-release-v2\//markets-rc\//g' "$file" && \
     sed -i.bak 's/markets-beta/markets-rc/g' "$file" && \
     sed -i.bak 's/markets-alpha/markets-rc/g' "$file" && \
-    sed -i.bak 's/markets-diy/markets-rc/g' "$file" 
+    sed -i.bak 's/markets-release-v214/markets-rc/g' "$file" 
 }
 
-_to_diy_market () {
+_to_release_v214_market () {
     local file=$1
     sed -i.bak 's/market\/_db/market_4\/_db/g' "$file" && \
     sed -i.bak 's/market_1\/_db/market_4\/_db/g' "$file" && \
     sed -i.bak 's/market_2\/_db/market_4\/_db/g' "$file" && \
     sed -i.bak 's/market_3\/_db/market_4\/_db/g' "$file" && \
     sed -i.bak 's/market_5\/_db/market_4\/_db/g' "$file" && \
-    sed -i.bak 's/markets-release\//markets-diy\//g' "$file" && \
-    sed -i.bak 's/markets-release-v2\//markets-diy\//g' "$file" && \
-    sed -i.bak 's/markets-beta/markets-diy/g' "$file" && \
-    sed -i.bak 's/markets-alpha/markets-diy/g' "$file" && \
-    sed -i.bak 's/markets-rc/markets-diy/g' "$file" 
+    sed -i.bak 's/markets-release\//markets-release-v214\//g' "$file" && \
+    sed -i.bak 's/markets-release-v2\//markets-release-v214\//g' "$file" && \
+    sed -i.bak 's/markets-beta/markets-release-v214/g' "$file" && \
+    sed -i.bak 's/markets-alpha/markets-release-v214/g' "$file" && \
+    sed -i.bak 's/markets-rc/markets-release-v214/g' "$file" 
 }
 
 _to_beta_market () {
@@ -152,7 +153,7 @@ _to_beta_market () {
     sed -i.bak 's/markets-release-v2\//markets-beta\//g' "$file" && \
     sed -i.bak 's/markets-rc/markets-beta/g' "$file" && \
     sed -i.bak 's/markets-alpha/markets-beta/g' "$file" && \
-    sed -i.bak 's/markets-diy/markets-beta/g' "$file" 
+    sed -i.bak 's/markets-release-v214/markets-beta/g' "$file" 
 }
 
 _to_alpha_market () {
@@ -166,7 +167,7 @@ _to_alpha_market () {
     sed -i.bak 's/markets-release-v2\//markets-alpha\//g' "$file" && \
     sed -i.bak 's/markets-rc/markets-alpha/g' "$file" && \
     sed -i.bak 's/markets-beta/markets-alpha/g' "$file" && \
-    sed -i.bak 's/markets-diy/markets-alpha/g' "$file" 
+    sed -i.bak 's/markets-release-v214/markets-alpha/g' "$file" 
 }
 
 curl -k -s -S -f "$COUCH_URL/dashboard/_design/dashboard/_view/get_markets" > \

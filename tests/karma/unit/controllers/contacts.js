@@ -27,7 +27,8 @@ describe('Contacts controller', () => {
       changesCallback,
       changesFilter,
       contactSearchLiveList,
-      deadListFind = sinon.stub();
+      deadListFind = sinon.stub(),
+      contactSummary;
 
   beforeEach(module('inboxApp'));
 
@@ -102,6 +103,9 @@ describe('Contacts controller', () => {
       return { unsubscribe: () => {} };
     };
 
+    contactSummary = sinon.stub();
+    contactSummary.returns(Promise.resolve({ context: {} }));
+
     createController = () => {
       searchService = sinon.stub();
       searchService.returns(Promise.resolve(searchResults));
@@ -116,9 +120,7 @@ describe('Contacts controller', () => {
         '$translate': $translate,
         'Changes': changes,
         'ContactSchema': contactSchema,
-        'ContactSummary': () => {
-          return Promise.resolve({});
-        },
+        'ContactSummary': contactSummary,
         'Export': () => {},
         'GetDataRecords': getDataRecords,
         'LiveList': { contacts: contactsLiveList, 'contact-search': contactSearchLiveList },
@@ -145,6 +147,38 @@ describe('Contacts controller', () => {
         assert(scope.setTitle.called, 'title should be set');
         assert.equal(scope.setTitle.getCall(0).args[0], typeLabel + 'translated');
       });
+  });
+
+  describe('selecting contacts', () => {
+    const testContactSelection = (selected) => {
+      return createController().getSetupPromiseForTesting()
+        .then(() => {
+          return scope.setSelected(selected);
+        });
+    };
+
+    it('set selected contact', () => {
+      return testContactSelection({ doc: district })
+        .then(() => {
+          assert.deepEqual(scope.selected.doc, district);
+          assert(scope.setRightActionBar.called);
+          assert(scope.setRightActionBar.args[0][0].selected);
+        });
+    });
+
+    it('throws an error, sets a scope variable and resets the action bar when contact cannot be selected', () => {
+      contactSummary.returns(Promise.reject());
+      return testContactSelection({ doc: district })
+        .then(() => {
+          throw new Error('Expected error to be thrown');
+        })
+        .catch(() => {
+          assert.deepEqual(scope.selected, { doc: district, error: true });
+          assert(scope.setRightActionBar.called);
+          assert.deepEqual(scope.setRightActionBar.args[0], []);
+        });
+    });
+
   });
 
   describe('sets right actionBar', () => {

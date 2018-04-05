@@ -1,4 +1,4 @@
-var db = require('../db'),
+var db = require('../db-nano'),
     async = require('async'),
     _ = require('underscore'),
     DDOC_ID = '_design/medic',

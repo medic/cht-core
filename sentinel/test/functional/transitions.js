@@ -1,6 +1,6 @@
 var transitions = require('../../transitions/index'),
     sinon = require('sinon').sandbox.create(),
-    db = require('../../db'),
+    db = require('../../db-nano'),
     dbPouch = require('../../db-pouch'),
     config = require('../../config'),
     configGet;

@@ -1,30 +1,30 @@
 angular.module('inboxControllers').controller('DeleteDocConfirm',
-  function(
+  function (
     $scope,
     $translate,
     $uibModalInstance,
-    DeleteDocs,
+    DB,
+    ExtractLineage,
     Snackbar
   ) {
+
     'use strict';
     'ngInject';
 
-    $scope.totalDocsSelected = 0;
-    $scope.totalDocsDeleted = 0;
-    function updateTotalDocsDeleted(totalDocsDeleted) {
-      $scope.totalDocsDeleted = totalDocsDeleted;
-    }
-
     $scope.submit = function() {
-      var docs = $scope.model.docs;
-      $scope.totalDocsSelected = docs.length;
-      $scope.totalDocsDeleted = 0;
-      $scope.setProcessing();
-      DeleteDocs(docs, { progress: updateTotalDocsDeleted })
+      var doc = $scope.model.doc;
+
+      doc._deleted = true;
+      if (doc.type === 'data_record' && doc.contact) {
+        doc.contact = ExtractLineage(doc.contact);
+      }
+
+      DB().put(doc)
         .then(function() {
-          $scope.setFinished();
-          var key = docs.length === 1 ? 'document.deleted' : 'document.deleted.plural';
-          $translate(key, { number: docs.length }).then(Snackbar);
+          return $translate('document.deleted');
+        })
+        .then(Snackbar)
+        .then(function() {
           $uibModalInstance.close();
         })
         .catch(function(err) {
@@ -35,5 +35,6 @@ angular.module('inboxControllers').controller('DeleteDocConfirm',
     $scope.cancel = function() {
       $uibModalInstance.dismiss();
     };
+
   }
 );

@@ -225,6 +225,8 @@ var _ = require('underscore'),
           .catch(function(e) {
             $log.error('Error setting selected contact');
             $log.error(e);
+            $scope.selected.error = true;
+            $scope.setRightActionBar();
           });
       };
 

@@ -45,7 +45,6 @@
   require('./import-contacts');
   require('./json-forms');
   require('./json-parse');
-  require('./kanso-packages');
   require('./language');
   require('./languages');
   require('./lineage-model-generator');

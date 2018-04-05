@@ -1,5 +1,5 @@
 var controller = require('../../message-utils'),
-    db = require('../../db'),
+    db = require('../../db-nano'),
     sinon = require('sinon').sandbox.create(),
     taskUtils = require('task-utils');
 

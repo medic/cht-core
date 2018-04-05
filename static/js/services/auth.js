@@ -7,7 +7,12 @@ var _ = require('underscore');
   will resolve only if the user doesn't have the permission.
 
   DB admins automatically have all permissions.
-*/
+
+  Auth.any function receives a list of groups of permissions
+  and returns a promise that will be resolved if the current
+  user's role has all the permissions of any of the provided
+  groups.
+ */
 
 angular.module('inboxServices').factory('Auth',
   function(
@@ -52,36 +57,97 @@ angular.module('inboxServices').factory('Auth',
       return $q.reject();
     };
 
-    return function(permissions) {
-      if (!_.isArray(permissions)) {
-        permissions = [ permissions ];
+    var checkPermissions = function(required, disallowed, roles, settings) {
+      if (!check(required, roles, settings, true)) {
+        return 'missing required permission(s)';
       }
+
+      if (!check(disallowed, roles, settings, false)) {
+        return 'found disallowed permission(s)';
+      }
+
+      return true;
+    };
+
+    var getRoles = function() {
       var userCtx = Session.userCtx();
       if (!userCtx) {
         return $q.reject(new Error('Not logged in'));
       }
       var roles = userCtx.roles;
       if (!roles || roles.length === 0) {
-        return authFail('user has no roles', permissions, roles);
+        return authFail('user has no roles');
       }
-      var requiredPermissions = getRequired(permissions);
-      var disallowedPermissions = getDisallowed(permissions);
-      if (_.contains(roles, '_admin')) {
-        if (disallowedPermissions.length > 0) {
-          return authFail('disallowed permission(s) found for admin', permissions, roles);
+
+      return $q.resolve(roles);
+    };
+
+    var auth = function(permissions) {
+      return getRoles().then(function(roles) {
+        if (!_.isArray(permissions)) {
+          permissions = [ permissions ];
         }
-        return $q.resolve();
-      }
-      return Settings().then(function(settings) {
-        if (!check(requiredPermissions, roles, settings, true)) {
-          return authFail('missing required permission(s)', permissions, roles);
+
+        var requiredPermissions = getRequired(permissions);
+        var disallowedPermissions = getDisallowed(permissions);
+
+        if (_.contains(roles, '_admin')) {
+          if (disallowedPermissions.length > 0) {
+            return authFail('disallowed permission(s) found for admin', permissions, roles);
+          }
+          return $q.resolve();
         }
-        if (!check(disallowedPermissions, roles, settings, false)) {
-          return authFail('found disallowed permission(s)', permissions, roles);
-        }
-        return $q.resolve();
+
+        return Settings().then(function(settings) {
+          var result = checkPermissions(requiredPermissions, disallowedPermissions, roles, settings);
+          if (result !== true) {
+            return authFail(result, permissions, roles);
+          }
+
+          return $q.resolve();
+        });
       });
     };
 
+    auth.any = function(permissionsList) {
+      return getRoles().then(function(roles) {
+        if (!_.isArray(permissionsList)) {
+          return auth(permissionsList);
+        }
+
+        var requiredPermissions = _.map(permissionsList, function(permissions) {
+          return getRequired(permissions);
+        });
+        var disallowedPermissions = _.map(permissionsList, function(permissions) {
+          return getDisallowed(permissions);
+        });
+
+        if (_.contains(roles, '_admin')) {
+          if (_.every(disallowedPermissions, function(permissions) { return permissions.length; })) {
+            return authFail('missing required permission(s)', permissionsList, roles);
+          }
+
+          return $q.resolve();
+        }
+
+        return Settings().then(function(settings) {
+          var validPermissions = permissionsList
+            .map(function(permissions, key) {
+              return checkPermissions(requiredPermissions[key], disallowedPermissions[key], roles, settings);
+            })
+            .filter(function(result) {
+              return result === true;
+            });
+
+          if (!validPermissions.length) {
+            return authFail('no matching permissions', permissionsList, roles);
+          }
+
+          return $q.resolve();
+        });
+      });
+    };
+
+    return auth;
   }
 );

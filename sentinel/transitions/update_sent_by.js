@@ -1,5 +1,5 @@
 const transitionUtils = require('./utils'),
-      db = require('../db'),
+      db = require('../db-nano'),
       NAME = 'update_sent_by';
 
 module.exports = {

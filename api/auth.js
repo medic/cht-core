@@ -1,7 +1,7 @@
 var request = require('request'),
     url = require('url'),
     _ = require('underscore'),
-    db = require('./db'),
+    db = require('./db-nano'),
     config = require('./config');
 
 var get = function(path, headers, callback) {

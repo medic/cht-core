@@ -1,13 +1,15 @@
 const utils = require('./utils'),
       constants = require('./constants'),
       auth = require('./auth')();
+const serviceManager = require('./service-manager');
+
 
 class BaseConfig {
-  constructor() {
+  constructor(testSrcDir, options={}) {
     this.config = {
       seleniumAddress: 'http://localhost:4444/wd/hub',
 
-      specs: ['e2e/**/*.js'],
+      specs: [`${testSrcDir}/**/*.js`],
 
       framework: 'jasmine2',
       capabilities: {
@@ -31,8 +33,9 @@ class BaseConfig {
         jasmine.getEnv().addReporter(utils.reporter);
         browser.waitForAngularEnabled(false);
 
-        if(this.beforePrepareWebapp) {
-          this.beforePrepareWebapp();
+        if(options.manageServices) {
+          browser.driver.wait(serviceManager.startAll(), 60 * 1000, 'API and Sentinel should start within 60 seconds');
+          browser.driver.sleep(1); // block until previous command has completed
         }
 
         browser.driver.wait(setupSettings, 5 * 1000, 'Settings should be setup within 5 seconds');
@@ -42,6 +45,10 @@ class BaseConfig {
         return login(browser);
       },
     };
+
+    if(options.manageServices) {
+      this.onCleanUp = serviceManager.stopAll;
+    }
   }
 }
 
@@ -49,7 +56,7 @@ module.exports = BaseConfig;
 
 
 const getLoginUrl = () => {
-  const redirectUrl = encodeURIComponent(`/${constants.DB_NAME}/_design/medic/_rewrite/#/messages`);
+  const redirectUrl = encodeURIComponent(`/${constants.DB_NAME}/_design/${constants.MAIN_DDOC_NAME}/_rewrite/#/messages`);
   return `http://${constants.API_HOST}:${constants.API_PORT}/${constants.DB_NAME}/login?redirect=${redirectUrl}`;
 };
 
@@ -65,9 +72,10 @@ const login = browser => {
 
 const setupSettings = () => {
   return utils.request({
-    path: `/${constants.DB_NAME}/_design/medic/_rewrite/update_settings/medic`,
+    path: '/api/v1/settings',
     method: 'PUT',
-    body: JSON.stringify({ setup_complete: true })
+    body: JSON.stringify({ setup_complete: true }),
+    headers: { 'Content-Type': 'application/json' }
   });
 };
 

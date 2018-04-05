@@ -5,7 +5,7 @@ var _ = require('underscore'),
     messages = require('./messages'),
     utils = require('./utils'),
     logger = require('./logger'),
-    db = require('../db');
+    db = require('../db-nano');
 
 var _parseDuration = function(duration) {
     var parts = duration.split(' ');
@@ -29,16 +29,18 @@ const _executeExistsRequest = (options, callback) => {
     );
 };
 
+const lowerCaseString = obj => typeof obj === 'string' ? obj.toLowerCase() : obj;
+
 const _exists = (doc, fields, options, callback) => {
     options = options || {};
     if (!fields.length) {
         return callback(new Error('No arguments provided to "exists" validation function'));
     }
     const requestOptions = fields.map(field => {
-        return { key: [ `${field}:${doc[field]}` ] };
+        return { key: [ `${field}:${lowerCaseString(doc[field])}` ] };
     });
     if (options.additionalFilter) {
-        requestOptions.push({ key: [ options.additionalFilter ] });
+        requestOptions.push({ key: [ lowerCaseString(options.additionalFilter) ] });
     }
     async.map(requestOptions, _executeExistsRequest, (err, responses) => {
         if (err) {

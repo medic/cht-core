@@ -1,5 +1,5 @@
 var _ = require('underscore'),
-    libphonenumber = require('libphonenumber/utils'),
+    phoneNumber = require('phone-number'),
     format = require('../modules/format');
 
 angular.module('inboxControllers').controller('SendMessageCtrl',
@@ -41,9 +41,9 @@ angular.module('inboxControllers').controller('SendMessageCtrl',
       }
       if (data.doc) {
         var contact = data.doc.contact || data.doc;
-        return contact && libphonenumber.validate(settings, contact.phone);
+        return contact && phoneNumber.validate(settings, contact.phone);
       }
-      return libphonenumber.validate(settings, data.id);
+      return phoneNumber.validate(settings, data.id);
     };
 
     var validatePhoneNumbers = function(settings, recipients) {

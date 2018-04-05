@@ -1,5 +1,6 @@
 var sinon = require('sinon').sandbox.create(),
-    db = require('../../../db'),
+    db = require('../../../db-nano'),
+    settingsService = require('../../../services/settings'),
     migration = require('../../../migrations/extract-translations'),
     originalDbSettings;
 
@@ -16,7 +17,7 @@ exports.tearDown = function (callback) {
 
 exports['returns errors from getSettings'] = function(test) {
   test.expect(2);
-  var getSettings = sinon.stub(db, 'getSettings').callsArgWith(0, 'boom');
+  var getSettings = sinon.stub(settingsService, 'get').returns(Promise.reject('boom'));
   migration.run(function(err) {
     test.equals(err, 'boom');
     test.equals(getSettings.callCount, 1);
@@ -28,7 +29,7 @@ exports['does nothing if no configured translations'] = function(test) {
   test.expect(4);
   var translations = [];
   var locales = [];
-  var getSettings = sinon.stub(db, 'getSettings').callsArgWith(0, null, { settings: { translations: translations, locales: locales } });
+  var getSettings = sinon.stub(settingsService, 'get').returns(Promise.resolve({ translations: translations, locales: locales }));
   var view = sinon.stub(db.medic, 'view');
   var bulk = sinon.stub(db.medic, 'bulk');
   migration.run(function(err) {
@@ -55,7 +56,7 @@ exports['returns errors from view'] = function(test) {
     { code: 'en', name: 'English' },
     { code: 'es', name: 'Español (Spanish)' }
   ];
-  var getSettings = sinon.stub(db, 'getSettings').callsArgWith(0, null, { settings: { translations: translations, locales: locales } });
+  var getSettings = sinon.stub(settingsService, 'get').returns(Promise.resolve({ translations: translations, locales: locales }));
   var view = sinon.stub(db.medic, 'view').callsArgWith(3, 'boom');
   var bulk = sinon.stub(db.medic, 'bulk');
   migration.run(function(err) {
@@ -84,10 +85,10 @@ exports['does nothing if no docs'] = function(test) {
     { code: 'es', name: 'Español (Spanish)' }
   ];
   var docs = { rows: [] };
-  var getSettings = sinon.stub(db, 'getSettings').callsArgWith(0, null, { settings: { translations: translations, locales: locales } });
+  var getSettings = sinon.stub(settingsService, 'get').returns(Promise.resolve({ translations: translations, locales: locales }));
   var view = sinon.stub(db.medic, 'view').callsArgWith(3, null, docs);
   var bulk = sinon.stub(db.medic, 'bulk');
-  var updateSettings = sinon.stub(db, 'updateSettings').callsArgWith(1);
+  var updateSettings = sinon.stub(settingsService, 'update').returns(Promise.resolve());
   migration.run(function(err) {
     test.equals(err, undefined);
     test.equals(getSettings.callCount, 1);
@@ -128,10 +129,10 @@ exports['returns errors from bulk'] = function(test) {
       }
     } }
   ] };
-  var getSettings = sinon.stub(db, 'getSettings').callsArgWith(0, null, { settings: { translations: translations, locales: locales } });
+  var getSettings = sinon.stub(settingsService, 'get').returns(Promise.resolve({ translations: translations, locales: locales }));
   var view = sinon.stub(db.medic, 'view').callsArgWith(3, null, docs);
   var bulk = sinon.stub(db.medic, 'bulk').callsArgWith(1, 'boom');
-  var updateSettings = sinon.stub(db, 'updateSettings');
+  var updateSettings = sinon.stub(settingsService, 'update');
   migration.run(function(err) {
     test.equals(err, 'boom');
     test.equals(getSettings.callCount, 1);
@@ -170,10 +171,10 @@ exports['returns errors from settings update'] = function(test) {
       }
     } }
   ] };
-  var getSettings = sinon.stub(db, 'getSettings').callsArgWith(0, null, { settings: { translations: translations, locales: locales } });
+  var getSettings = sinon.stub(settingsService, 'get').returns(Promise.resolve({ translations: translations, locales: locales }));
   var view = sinon.stub(db.medic, 'view').callsArgWith(3, null, docs);
   var bulk = sinon.stub(db.medic, 'bulk').callsArgWith(1);
-  var updateSettings = sinon.stub(db, 'updateSettings').callsArgWith(1, 'boom');
+  var updateSettings = sinon.stub(settingsService, 'update').returns(Promise.reject('boom'));
   migration.run(function(err) {
     test.equals(err, 'boom');
     test.equals(getSettings.callCount, 1);
@@ -236,10 +237,10 @@ exports['merges configuration into docs'] = function(test) {
       }
     } }
   ] };
-  var getSettings = sinon.stub(db, 'getSettings').callsArgWith(0, null, { settings: { translations: translations, locales: locales } });
+  var getSettings = sinon.stub(settingsService, 'get').returns(Promise.resolve({ translations: translations, locales: locales }));
   var view = sinon.stub(db.medic, 'view').callsArgWith(3, null, docs);
   var bulk = sinon.stub(db.medic, 'bulk').callsArgWith(1);
-  var updateSettings = sinon.stub(db, 'updateSettings').callsArgWith(1);
+  var updateSettings = sinon.stub(settingsService, 'update').returns(Promise.resolve());
   migration.run(function(err) {
     test.equals(err, undefined);
     test.equals(getSettings.callCount, 1);

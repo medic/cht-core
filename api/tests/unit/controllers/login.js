@@ -1,6 +1,6 @@
 const controller = require('../../../controllers/login'),
       _ = require('underscore'),
-      db = require('../../../db'),
+      db = require('../../../db-nano'),
       auth = require('../../../auth'),
       sinon = require('sinon').sandbox.create(),
       config = require('../../../config'),

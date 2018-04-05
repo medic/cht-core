@@ -3,7 +3,8 @@ var _ = require('underscore');
 angular.module('inboxServices').factory('GetSubjectSummaries',
   function(
     $q,
-    DB
+    DB,
+    LineageModelGenerator
   ) {
 
     'use strict';
@@ -46,6 +47,7 @@ angular.module('inboxServices').factory('GetSubjectSummaries',
           var name = findSubjectName(response, summary.subject.value);
           if (name) {
             summary.subject = {
+              _id: summary.subject.value,
               value: name,
               type: 'name'
             };
@@ -114,7 +116,45 @@ angular.module('inboxServices').factory('GetSubjectSummaries',
         });
     };
 
-    return function(summaries) {
+    var hydrateSubjectLineages = function(summaries, response) {
+      return _.each(summaries, function(summary) {
+        if (summary.subject && summary.subject._id) {
+          _.extend(summary.subject, _.findWhere(response, {_id: summary.subject._id}));
+        }
+      });
+    };
+
+    var compactSubjectLineage = function(summaries) {
+      return _.each(summaries, function(summary) {
+        if (summary.subject && summary.subject.lineage) {
+          summary.subject.lineage = _.compact(_.map(summary.subject.lineage, function(parent) {
+            return parent && parent.name;
+          }));
+        }
+      });
+    };
+
+    var processSubjectLineage = function(summaries) {
+      var subjectIds = _.uniq(_.compact(summaries.map(function(summary) {
+        return summary.subject && summary.subject._id;
+      })));
+
+      if (!subjectIds.length) {
+        return $q.resolve(summaries);
+      }
+
+      var promises = subjectIds.map(function(id) {
+        return LineageModelGenerator.reportSubject(id);
+      });
+
+      return $q
+        .all(promises)
+        .then(function(response) {
+          return hydrateSubjectLineages(summaries, response);
+        });
+    };
+
+    return function(summaries, hydratedLineage) {
       var containsReports = false;
       summaries.forEach(function (summary) {
         if (summary.form) {
@@ -128,6 +168,13 @@ angular.module('inboxServices').factory('GetSubjectSummaries',
 
       return processReferences(summaries)
         .then(processContactIds)
+        .then(processSubjectLineage)
+        .then(function(summaries) {
+          if (!hydratedLineage) {
+            return compactSubjectLineage(summaries);
+          }
+          return summaries;
+        })
         .then(validateSubjects);
     };
   }

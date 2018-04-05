@@ -1,5 +1,5 @@
 const _ = require('underscore'),
-      db = require('../db'),
+      db = require('../db-nano'),
       series = require('async/series');
 
 const DEFAULT_STRUCTURE = {

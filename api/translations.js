@@ -1,7 +1,7 @@
 var async = require('async'),
     _ = require('underscore'),
     properties = require('properties'),
-    db = require('./db'),
+    db = require('./db-nano'),
     DDOC_ID = '_design/medic',
     TRANSLATION_FILE_NAME_REGEX = /translations\/messages\-([a-z]*)\.properties/,
     DOC_TYPE = 'translations',

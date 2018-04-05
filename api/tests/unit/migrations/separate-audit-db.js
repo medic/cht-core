@@ -1,5 +1,5 @@
 var sinon = require('sinon').sandbox.create(),
-    db = require('../../../db'),
+    db = require('../../../db-nano'),
     migration = require('../../../migrations/separate-audit-db.js'),
     originalDbSettings;
 

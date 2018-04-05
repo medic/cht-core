@@ -1,5 +1,5 @@
 const sinon = require('sinon').sandbox.create(),
-      db = require('../../db'),
+      db = require('../../db-nano'),
       dbPouch = require('../../db-pouch'),
       transitions = require('../../transitions/index');
 

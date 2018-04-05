@@ -1,6 +1,6 @@
 var moment = require('moment'),
     validation = require('../../lib/validation'),
-    db = require('../../db'),
+    db = require('../../db-nano'),
     sinon = require('sinon').sandbox.create(),
     clock;
 
@@ -183,7 +183,7 @@ exports['fail multiple field unique validation on doc with no errors'] = functio
     var doc = {
         _id: 'same',
         xyz: '444',
-        abc: 'cheese'
+        abc: 'CHeeSE' // value is lowercased as it is in the view map definition
     };
     validation.validate(doc, validations, function(errors) {
         test.equal(view.callCount, 2);
@@ -364,7 +364,7 @@ exports['pass exists validation when matching document'] = function(test) {
         test.deepEqual(view.args[0][2], { key: ['patient_id:444'] });
         test.equal(view.args[1][0], 'medic-client');
         test.equal(view.args[1][1], 'reports_by_freetext');
-        test.deepEqual(view.args[1][2], { key: ['form:REGISTRATION'] });
+        test.deepEqual(view.args[1][2], { key: ['form:registration'] });
         test.deepEqual(errors, []);
         test.done();
     });

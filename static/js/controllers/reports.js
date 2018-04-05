@@ -86,20 +86,25 @@ angular.module('inboxControllers').controller('ReportsCtrl',
                 model.selected &&
                 model.selected.length === 1 &&
                 model.selected[0];
-      if (doc) {
-        model.verified = doc.verified;
-        model.type = doc.content_type;
-        if (doc.contact && doc.contact._id) {
-          DB().get(doc.contact._id).then(function(contact) {
-            model.sendTo = contact;
-            $scope.setRightActionBar(model);
-          });
-        } else {
-          $scope.setRightActionBar(model);
-        }
-      } else {
-        $scope.setRightActionBar(model);
+      if (!doc) {
+        return $scope.setRightActionBar(model);
       }
+      model.verified = doc.verified;
+      model.type = doc.content_type;
+      if (!doc.contact || !doc.contact._id) {
+        return $scope.setRightActionBar(model);
+      }
+
+      DB()
+        .get(doc.contact._id)
+        .then(function(contact) {
+          model.sendTo = contact;
+          $scope.setRightActionBar(model);
+        })
+        .catch(function(err) {
+          $scope.setRightActionBar(model);
+          throw err;
+        });
     };
 
     $scope.setSelected = function(model) {

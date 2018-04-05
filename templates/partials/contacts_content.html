@@ -10,7 +10,11 @@
     <div translate>No contact selected</div>
   </div>
 
-  <div class="col-sm-8 item-content" ng-show="selected && !loadingContent">
+  <div class="col-sm-8 item-content empty-selection" ng-show="selected && selected.error && !loadingContent">
+    <div translate>contact.select.error</div>
+  </div>
+
+  <div class="col-sm-8 item-content" ng-show="selected && !selected.error && !loadingContent">
     <div class="material">
       <div class="body meta">
         <div class="card">

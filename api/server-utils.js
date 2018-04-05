@@ -1,6 +1,6 @@
 var url = require('url'),
     path = require('path'),
-    db = require('./db'),
+    db = require('./db-nano'),
     isClientHuman = require('./is-client-human'),
     MEDIC_BASIC_AUTH = 'Basic realm="Medic Mobile Web Services"';
 
@@ -80,7 +80,7 @@ module.exports = {
         pathname: path.join('/', db.settings.db, 'login'),
         query: { redirect: req.url }
       });
-      res.redirect(301, redirectUrl);
+      res.redirect(302, redirectUrl);
     } else {
       promptForBasicAuth(res);
     }

@@ -12,10 +12,10 @@ node_modules
 /scripts/changelog-generator/token.json
 /static/dist/
 /static/fonts/
-/packages/libphonenumber/libphonenumber/libphonenumber.js
-/packages/task-utils/task-utils.js
-/ddocs/compiled.json
-logs
+/ddocs/*.json
+/ddocs/medic/_attachments
+/ddocs/medic/version
+/logs/
 /config.js
 /build/
 tests/results
