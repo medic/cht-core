@@ -23,7 +23,6 @@
     "http-proxy": "^1.11.1",
     "jszip": "^3.1.4",
     "lineage": "file:../shared-libs/lineage",
-    "lucene-query-generator": "^0.2.0",
     "moment": "^2.19.1",
     "morgan": "^1.9.0",
     "nano": "^6.4.2",
