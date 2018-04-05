@@ -70,7 +70,7 @@ module.exports = {
    * Returns `options.limit` messages, optionally filtering by state.
    */
   getMessages: function(options, callback) {
-    const checkpoint = new performanceTracker('getMessages()');
+    const checkpoint = performanceTracker('getMessages()');
 
     options = options || {};
     var viewOptions = {
