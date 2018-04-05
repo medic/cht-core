@@ -1,5 +1,5 @@
 const _ = require('underscore'),
-      db = require('./db-nano'),
+      //db = require('./db-nano'),
       taskUtils = require('task-utils');
 const performanceTracker = require('./performance-tracker');
 const dbPouch = require('./db-pouch').medic;
