@@ -2,6 +2,7 @@
  * This module implements GET and POST to support medic-gateway's API
  * @see https://github.com/medic/medic-gateway
  */
+const performanceTracker = require('../performance-tracker');
 const db = require('../db-pouch'),
       messageUtils = require('../message-utils'),
       recordUtils = require('./record-utils'),
@@ -105,12 +106,19 @@ const addNewMessages = req => {
 
 // Process message status updates
 const processTaskStateUpdates = req => {
+  const checkpoint = performanceTracker('processTaskStateUpdates()');
+
   if (!req.body.updates) {
+    checkpoint('No updates.');
     return Promise.resolve();
   }
   const taskStateChanges = req.body.updates.map(mapStateFields);
+  checkpoint('taskStateChanges fetched.');
+
   return new Promise((resolve, reject) => {
     messageUtils.updateMessageTaskStates(taskStateChanges, err => {
+      checkpoint('updateMessageTaskStates() completed.');
+
       if (err) {
         return reject(err);
       }
@@ -124,11 +132,20 @@ module.exports = {
     return { 'medic-gateway': true };
   },
   post: req => {
+    console.log('PERFORMANCE');
+    console.log('PERFORMANCE');
+    console.log('PERFORMANCE --- STARTING');
+    const checkpoint = performanceTracker('post()');
+
     return Promise.resolve()
       .then(() => addNewMessages(req))
+      .then(() => checkpoint('addNewMessages() returned'))
       .then(() => processTaskStateUpdates(req))
+      .then(chain => checkpoint('processTaskStateUpdates() returned') || chain)
       .then(getOutgoing)
+      .then(chain => checkpoint('getOutgoing() returned') || chain)
       .then(markMessagesForwarded)
-      .then(outgoingMessages => ({ messages: outgoingMessages }));
+      .then(chain => checkpoint('markMessagesForwarded() returned') || chain)
+      .then(outgoingMessages => ({ messages: outgoingMessages }))
   },
 };

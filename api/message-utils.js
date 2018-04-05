@@ -1,9 +1,12 @@
 const _ = require('underscore'),
       db = require('./db-nano'),
       taskUtils = require('task-utils');
+const performanceTracker = require('./performance-tracker');
+const dbPouch = require('./db-pouch').medic;
 
 const getTaskMessages = function(options, callback) {
-  db.medic.view('medic', 'tasks_messages', options, callback);
+  console.log('getTaskMessages() options=', JSON.stringify(options));
+  dbPouch.query('medic/tasks_messages', options, callback);
 };
 
 const getTaskForMessage = function(uuid, doc) {
@@ -66,6 +69,8 @@ module.exports = {
    * Returns `options.limit` messages, optionally filtering by state.
    */
   getMessages: function(options, callback) {
+    const checkpoint = new performanceTracker('getMessages()');
+
     options = options || {};
     var viewOptions = {
       limit: options.limit || 25,
@@ -80,6 +85,8 @@ module.exports = {
       viewOptions.keys = options.states;
     }
     getTaskMessages(viewOptions, function(err, data) {
+      checkpoint('getTaskMessages() returned');
+
       if (err) {
         return callback(err);
       }
@@ -98,6 +105,7 @@ module.exports = {
         sortFunc = (a, b) => a.sending_due_date - b.sending_due_date;
       }
       msgs.sort(sortFunc);
+      checkpoint('messages sorted');
       callback(null, msgs);
     });
   },
@@ -108,19 +116,28 @@ module.exports = {
    * function will retry up to three times for any updates which fail.
    */
   updateMessageTaskStates: function(taskStateChanges, callback, retriesLeft=3) {
+    const checkpoint = performanceTracker('updateMessageTaskStates()');
+
     getTaskMessages({ keys: taskStateChanges.map(change => change.messageId)}, (err, taskMessageResults) => {
+      checkpoint('getTaskMessages() returned');
       if (err) {
         return callback(err);
       }
 
       const idsToFetch = _.uniq(_.pluck(taskMessageResults.rows, 'id'));
 
+      //dbPouch.allDocs({ keys:idsToFetch }, (err, docResults) => {
       db.medic.fetch({keys: idsToFetch}, (err, docResults) => {
+        checkpoint('db.medic.fetch() returned');
+
         const docs = _.pluck(docResults.rows, 'doc');
 
         const stateChangesByDocId = applyTaskStateChangesToDocs(taskStateChanges, docs);
 
+        //dbPouch.bulkDocs(docs, (err, results) => {
         db.medic.bulk({docs: docs}, (err, results) => {
+          checkpoint('db.medic.bulk() returned');
+
           if (err) {
             return callback(err);
           }
