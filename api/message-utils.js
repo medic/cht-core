@@ -1,13 +1,21 @@
 const _ = require('underscore'),
-      //db = require('./db-nano'),
+      db = require('./db-nano'),
       taskUtils = require('task-utils');
 const performanceTracker = require('./performance-tracker');
 const dbPouch = require('./db-pouch').medic;
 
+console.log('Initialised db', db);
+console.log('Initialised dbPouch', dbPouch);
+
+const USE_POUCH = false;
+
 const getTaskMessages = function(options, callback) {
   console.log('getTaskMessages() options=', JSON.stringify(options));
-  //db.medic.view('medic', 'tasks_messages', options, callback);
-  dbPouch.query('medic/tasks_messages', options, callback);
+  if(USE_POUCH) {
+    dbPouch.query('medic/tasks_messages', options, callback);
+  } else {
+    db.medic.view('medic', 'tasks_messages', options, callback);
+  }
 };
 
 const getTaskForMessage = function(uuid, doc) {
@@ -127,16 +135,26 @@ module.exports = {
 
       const idsToFetch = _.uniq(_.pluck(taskMessageResults.rows, 'id'));
 
-      dbPouch.allDocs({ keys:idsToFetch }, (err, docResults) => {
-      //db.medic.fetch({keys: idsToFetch}, (err, docResults) => {
+      if(USE_POUCH) {
+        dbPouch.allDocs({ keys:idsToFetch }, fetchCallback);
+      } else {
+        db.medic.fetch({keys: idsToFetch}, fetchCallback);
+      }
+
+      function fetchCallback(err, results) {
         checkpoint('db.medic.fetch() returned');
 
         const docs = _.pluck(docResults.rows, 'doc');
 
         const stateChangesByDocId = applyTaskStateChangesToDocs(taskStateChanges, docs);
 
-        dbPouch.bulkDocs(docs, (err, results) => {
-        //db.medic.bulk({docs: docs}, (err, results) => {
+        if(USE_POUCH) {
+          dbPouch.bulkDocs(docs, bulkCallback);
+        } else {
+          db.medic.bulk({ docs }, bulkCallback);
+        }
+
+        function bulkCallback(err, results) {
           checkpoint('db.medic.bulk() returned');
 
           if (err) {
