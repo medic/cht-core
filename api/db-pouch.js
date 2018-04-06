@@ -10,8 +10,23 @@ if(COUCH_URL) {
   const couchUrl = COUCH_URL && COUCH_URL.replace(/\/$/, '');
   const DB = new PouchDB(couchUrl);
 
+  console.log('####################################################');
+  console.log('#');
+  console.log('#');
+  console.log('# DEBUG: INITIALISING api/db-pouch FOR COUCH_URL; db.name=' + DB.name);
+  console.log('#');
+  console.log('#');
+  console.log('####################################################');
+
   module.exports.medic = DB;
 } else if(UNIT_TEST_ENV) {
+  console.log('####################################################');
+  console.log('#');
+  console.log('#');
+  console.log('# DEBUG: INITIALISING api/db-pouch FOR UNIT_TEST_ENV');
+  console.log('#');
+  console.log('#');
+  console.log('####################################################');
   module.exports.medic = {
     allDocs: () => Promise.resolve({ offset:0, total_rows:0, rows:[] }),
     bulkDocs: () => Promise.resolve([]),
