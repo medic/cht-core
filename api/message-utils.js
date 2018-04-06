@@ -11,7 +11,7 @@ const USE_POUCH = true;
 
 const getTaskMessages = function(options, callback) {
 //  console.log(`getTaskMessages() options=${JSON.stringify(options)}; callback=${callback}`);
-  if(USE_POUCH) {
+  if(false && USE_POUCH) {
     dbPouch.medic.query('medic/tasks_messages', options, callback);
   } else {
     db.medic.view('medic', 'tasks_messages', options, callback);
@@ -135,7 +135,7 @@ module.exports = {
 
       const idsToFetch = _.uniq(_.pluck(taskMessageResults.rows, 'id'));
 
-      if(USE_POUCH) {
+      if(false && USE_POUCH) {
         dbPouch.medic.allDocs({ keys:idsToFetch }, fetchCallback);
       } else {
         db.medic.fetch({keys: idsToFetch}, fetchCallback);
@@ -152,7 +152,7 @@ module.exports = {
 
         const stateChangesByDocId = applyTaskStateChangesToDocs(taskStateChanges, docs);
 
-        if(USE_POUCH) {
+        if(false && USE_POUCH) {
           dbPouch.medic.bulkDocs(docs, bulkCallback);
         } else {
           db.medic.bulk({ docs }, bulkCallback);
