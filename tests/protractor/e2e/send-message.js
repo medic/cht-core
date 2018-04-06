@@ -196,7 +196,7 @@ describe('Send message', () => {
       lastMessageIs(smsMsg('contact'));
     });
 
-    it('can send messages to contacts under everyone at with phone numbers', () => {
+    xit('can send messages to contacts under everyone at with phone numbers', () => {
       element(by.id('messages-tab')).click();
 
       expect(element(by.css(messageInList(CAROL.phone))).isPresent()).toBeFalsy();
