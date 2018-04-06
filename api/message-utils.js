@@ -116,6 +116,10 @@ module.exports = {
       const idsToFetch = _.uniq(_.pluck(taskMessageResults.rows, 'id'));
 
       db.medic.fetch({keys: idsToFetch}, (err, docResults) => {
+        if (err) {
+          return callback(err);
+        }
+
         const docs = _.pluck(docResults.rows, 'doc');
 
         const stateChangesByDocId = applyTaskStateChangesToDocs(taskStateChanges, docs);
