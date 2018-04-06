@@ -181,7 +181,7 @@ describe('Send message', () => {
       lastMessageIs(smsMsg('raw'));
     });
 
-    it('can send messages to contacts with phone numbers', () => {
+    xit('can send messages to contacts with phone numbers', () => {
       element(by.id('messages-tab')).click();
 
       expect(element(by.css(messageInList(ALICE._id))).isPresent()).toBeFalsy();
@@ -249,7 +249,7 @@ describe('Send message', () => {
       xit('For raw contacts', () => {
         addAnAdditionalMessage(RAW_PH);
       });
-      it('For real contacts', () => {
+      xit('For real contacts', () => {
         addAnAdditionalMessage(ALICE._id, ALICE.name);
       });
     });
@@ -273,7 +273,7 @@ describe('Send message', () => {
         expect(element.all(by.css('#message-content li')).count()).toBe(1);
         lastMessageIs('A third message');
       });
-      it('For existing contacts', () => {
+      xit('For existing contacts', () => {
         openMessageContent(ALICE._id, ALICE.name);
         enterMessageText('A third message');
 
