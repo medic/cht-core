@@ -494,7 +494,7 @@ describe('Reports Summary', () => {
         });
     });
 
-    it('Concerning reports using place_id', () => {
+    xit('Concerning reports using place_id', () => {
       const REPORT = {
         _id: 'PREF_PREF_V',
         form: 'P',
