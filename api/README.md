@@ -79,12 +79,6 @@ If you are using CouchDB2.0 you need to also provide your node name. e.g.
 export COUCH_NODE_NAME=couchdb@localhost node server.js
 ```
 
-If you're using couchdb-lucene in any configuration other than the standard (on the same server as CouchDb on port 5985) you can specify it with the `LUCENE_URL` env variable:
-
-```
-export LUCENE_URL='http://somewherelse'
-```
-
 If you want to allow cross-origin requests, add the flag `--allow-cors` when starting api.  E.g.
 
 	node server.js --allow-cors

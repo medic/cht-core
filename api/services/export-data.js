@@ -7,7 +7,6 @@ var _ = require('underscore'),
     config = require('../config'),
     db = require('../db-nano'),
     dbPouch = require('../db-pouch'),
-    fti = require('../controllers/fti'),
     lineage = require('lineage')(Promise, dbPouch.medic);
 
 var createColumnModels = function(values, options) {
@@ -217,47 +216,6 @@ var outputToXml = function(options, tabs, callback) {
   });
 };
 
-var getRecordsFti = function(type, params, callback) {
-  var options = {
-    q: params.query,
-    schema: params.schema,
-    sort: type.orderBy,
-    include_docs: true
-  };
-  fti.get(type.index, options, params.district, callback);
-};
-
-var getRecordsView = function(type, params, callback) {
-  var districtId = params.district;
-  var options = {
-    include_docs: true,
-    descending: true
-  };
-  if (params.type === 'messages') {
-    if (districtId) {
-      options.startkey = [districtId, 9999999999999, {}];
-      options.endkey = [districtId, 0];
-    } else {
-      options.startkey = [9999999999999, {}];
-      options.endkey = [0];
-    }
-  } else if (params.type === 'forms') {
-    var form = params.form || '*';
-    if (districtId) {
-      options.startkey = [true, districtId, form, {}];
-      options.endkey = [true, districtId, form, 0];
-    } else {
-      options.startkey = [true, form, {}];
-      options.endkey = [true, form, 0];
-    }
-  } else if (params.type === 'feedback') {
-    options.startkey = [9999999999999, {}];
-    options.endkey = [0];
-  }
-  var actual = type.db || db.medic;
-  actual.view(type.ddoc || 'medic', type.view, options, callback);
-};
-
 const hydrate = (type, rows, callback) => {
   if (type.hydrate) {
     return type.hydrate(rows, callback);
@@ -269,21 +227,16 @@ var getRecords = function(type, params, callback) {
   if (_.isFunction(type.getRecords)) {
     return type.getRecords(callback);
   }
-  if (params.query) {
-    if (!type.index) {
-      return callback(new Error('This export cannot handle "query" param'));
-    }
-    return getRecordsFti(type, params, (err, response) => {
-      if (err) {
-        return callback(err);
-      }
-      hydrate(type, response.rows, err => callback(err, response));
-    });
-  }
   if (!type.view) {
     return callback(new Error('This export must have a "query" param'));
   }
-  getRecordsView(type, params, (err, response) => {
+  const options = {
+    include_docs: true,
+    descending: true,
+    startkey: [9999999999999, {}],
+    endkey: [0]
+  };
+  db.medic.view(type.ddoc || 'medic', type.view, options, (err, response) => {
     if (err) {
       return callback(err);
     }

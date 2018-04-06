@@ -20,7 +20,6 @@ const _ = require('underscore'),
       people = require('./controllers/people'),
       upgrade = require('./controllers/upgrade'),
       settings = require('./controllers/settings'),
-      fti = require('./controllers/fti'),
       bulkDocs = require('./controllers/bulk-docs'),
       createDomain = require('domain').create,
       staticResources = /\/(templates|static)\//,
@@ -232,24 +231,6 @@ app.all('/api/v1/export/:type/:form?', exportData.routeV1);
 app.all(`/${db.getPath()}/export/:type/:form?`, exportData.routeV1);
 app.get('/api/v2/export/:type', exportData.routeV2);
 app.postJson('/api/v2/export/:type', exportData.routeV2);
-
-app.get('/api/v1/fti/:view', function(req, res) {
-  auth.check(req, 'can_view_data_records', null, function(err) {
-    if (err) {
-      return serverUtils.error(err, req, res);
-    }
-    auth.check(req, 'can_view_unallocated_data_records', null, function(err, ctx) {
-      var queryOptions = _.pick(req.query, 'q', 'schema', 'sort', 'skip', 'limit', 'include_docs');
-      queryOptions.allocatedOnly = !!err;
-      fti.get(req.params.view, queryOptions, ctx && ctx.district, function(err, result) {
-        if (err) {
-          return serverUtils.serverError(err.message, req, res);
-        }
-        res.json(result);
-      });
-    });
-  });
-});
 
 app.post('/api/v1/records', [jsonParser, formParser], function(req, res) {
   auth.check(req, 'can_create_records', null, function(err) {
