@@ -157,7 +157,7 @@ const switchToRealDbs = () => {
 const switchToTestDbs = () => {
   db.audit = db.use(DB_PREFIX + 'audit');
   db.medic = db.use(DB_PREFIX + 'medic');
-  dbPouch.medic = new PouchDB(DB_PREFIX + 'medic');
+  dbPouch.medic = new PouchDB(realPouchDb.name.replace(/medic$/, DB_PREFIX + 'medic'));
 
   // hijack calls to db.request and make sure that they are made to the correct
   // database.
