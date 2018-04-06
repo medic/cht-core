@@ -4,6 +4,7 @@ PouchDB.plugin(require('pouchdb-mapreduce'));
 
 const { COUCH_URL, UNIT_TEST_ENV } = process.env;
 
+console.log('UNIT_TEST_ENV', UNIT_TEST_ENV);
 if(UNIT_TEST_ENV) {
   module.exports.medic = {
     allDocs: () => Promise.resolve({ offset:0, total_rows:0, rows:[] }),
