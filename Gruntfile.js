@@ -118,14 +118,14 @@ module.exports = function(grunt) {
       }
     },
     env: {
-      test: {
+      unitTest: {
         options: {
           add: {
             UNIT_TEST_ENV: '1'
           }
         }
       },
-      dev: {
+      general: {
         options: {
           replace: {
             UNIT_TEST_ENV: ''
@@ -685,10 +685,10 @@ module.exports = function(grunt) {
     'jshint',
     'karma:unit',
     'exec:sharedLibUnit',
-    'env:test',
+    'env:unitTest',
     'nodeunit',
     'mochaTest:unit',
-    'env:dev',
+    'env:general',
   ]);
 
   grunt.registerTask('test', 'Lint, unit tests, api_integration tests and e2e tests', [
@@ -713,10 +713,10 @@ module.exports = function(grunt) {
   grunt.registerTask('ci-test', 'Lint, deploy and test for CI', [
     'precommit',
     'karma:unit_ci',
-    'env:test',
+    'env:unitTest',
     'nodeunit',
     'mochaTest:unit',
-    'env:dev',
+    'env:general',
     'exec:setupAdmin',
     'deploy',
     'test_api_integration',
@@ -725,7 +725,7 @@ module.exports = function(grunt) {
 
   grunt.registerTask('ci-performance', 'Run performance tests on CI', [
     'precommit',
-    'env:dev',
+    'env:general',
     'exec:setupAdmin',
     'deploy',
     'test_perf',
