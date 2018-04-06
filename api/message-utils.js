@@ -4,13 +4,13 @@ const _ = require('underscore'),
 const performanceTracker = require('./performance-tracker');
 const dbPouch = require('./db-pouch').medic;
 
-console.log('Initialised db', db);
-console.log('Initialised dbPouch', dbPouch);
+//console.log('Initialised db', db);
+//console.log('Initialised dbPouch', dbPouch);
 
 const USE_POUCH = true;
 
 const getTaskMessages = function(options, callback) {
-  console.log('getTaskMessages() options=', JSON.stringify(options));
+//  console.log(`getTaskMessages() options=${JSON.stringify(options)}; callback=${callback}`);
   if(USE_POUCH) {
     dbPouch.query('medic/tasks_messages', options, callback);
   } else {
