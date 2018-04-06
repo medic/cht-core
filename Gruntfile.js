@@ -118,7 +118,7 @@ module.exports = function(grunt) {
       }
     },
     env: {
-      test: {
+      unitTest: {
         options: {
           add: {
             UNIT_TEST_ENV: '1'
@@ -685,7 +685,7 @@ module.exports = function(grunt) {
     'jshint',
     'karma:unit',
     'exec:sharedLibUnit',
-    'env:test',
+    'env:unitTest',
     'nodeunit',
     'mochaTest:unit',
     'env:dev',
@@ -713,7 +713,7 @@ module.exports = function(grunt) {
   grunt.registerTask('ci-test', 'Lint, deploy and test for CI', [
     'precommit',
     'karma:unit_ci',
-    'env:test',
+    'env:unitTest',
     'nodeunit',
     'mochaTest:unit',
     'env:dev',
