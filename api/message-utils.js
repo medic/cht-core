@@ -11,7 +11,7 @@ const USE_POUCH = true;
 
 const getTaskMessages = function(options, callback) {
 //  console.log(`getTaskMessages() options=${JSON.stringify(options)}; callback=${callback}`);
-  if(false && USE_POUCH) {
+  if(USE_POUCH) {
     dbPouch.medic.query('medic/tasks_messages', options, callback);
   } else {
     db.medic.view('medic', 'tasks_messages', options, callback);
