@@ -8,6 +8,7 @@ if(UNIT_TEST_ENV) {
   module.exports.medic = {
     allDocs: () => Promise.resolve({ offset:0, total_rows:0, rows:[] }),
     bulkDocs: () => Promise.resolve([]),
+    put: doc => Promise.resolve({ ok:true, id:doc._id, rev:'1' }),
     query: () => Promise.resolve({ offset:0, total_rows:0, rows:[] }),
   };
 } else if(COUCH_URL) {
