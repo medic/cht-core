@@ -81,7 +81,7 @@ jobs:
 after_failure:
   - |
       (cd logs
-        for log in "$(ls *.log)"; do
+        for log in $(ls *.log); do
           echo "---------- $log ----------"
           tail "$log"
           echo "--------------------------"
