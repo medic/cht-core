@@ -141,7 +141,11 @@ module.exports = {
         db.medic.fetch({keys: idsToFetch}, fetchCallback);
       }
 
-      function fetchCallback(err, results) {
+      function fetchCallback(err, docResults) {
+        if (err) {
+          return callback(err);
+        }
+
         checkpoint('db.medic.fetch() returned');
 
         const docs = _.pluck(docResults.rows, 'doc');
