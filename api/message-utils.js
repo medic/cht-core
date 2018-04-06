@@ -7,7 +7,7 @@ const dbPouch = require('./db-pouch').medic;
 console.log('Initialised db', db);
 console.log('Initialised dbPouch', dbPouch);
 
-const USE_POUCH = false;
+const USE_POUCH = true;
 
 const getTaskMessages = function(options, callback) {
   console.log('getTaskMessages() options=', JSON.stringify(options));
