@@ -80,6 +80,14 @@ jobs:
 
 after_failure:
   - |
+      (cd logs
+        for log in $(ls *.log); do
+          echo "---------- $log ----------"
+          tail "$log"
+          echo "--------------------------"
+        done
+      )
+
       [[ "$TRAVIS_BUILD_STAGE_NAME" = "Test" ]] || return
 
       if [[ "$TRAVIS_PULL_REQUEST" = true ]]; then
