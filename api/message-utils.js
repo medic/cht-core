@@ -186,8 +186,8 @@ module.exports = {
           }
 
           callback(null, {success: true});
-        });
-      });
+        }
+      }
     });
   }
 };
