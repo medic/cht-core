@@ -146,7 +146,6 @@ function matchDbs(expected, actual) {
 const dbPath = db.getPath,
       dbRequest = db.request;
 const realPouchDb = dbPouch.medic;
-console.log('realPouchDb', dbPouch.medic._url, dbPouch.medic);
 const switchToRealDbs = () => {
   db.request = dbRequest;
   db.getPath = dbPath;
