@@ -1,8 +1,8 @@
-*** node_modules/bootstrap-daterangepicker/daterangepicker.js	2017-01-18 07:47:35.000000000 +1300
---- /home/gareth/Desktop/daterangepicker.js	2017-03-08 22:54:51.689697001 +1300
+*** node_modules/bootstrap-daterangepicker/daterangepicker.js	2017-12-14 06:26:52.000000000 +1300
+--- /home/gareth/Desktop/picker.js	2018-04-09 11:34:50.976096938 +1200
 ***************
-*** 1295,1300 ****
---- 1295,1303 ----
+*** 1299,1304 ****
+--- 1299,1307 ----
   
           clickDate: function(e) {
   
