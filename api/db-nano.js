@@ -25,7 +25,50 @@ var sanitizeResponse = function(err, body, headers, callback) {
   callback(err, body, headers);
 };
 
-if (couchUrl) {
+if (process.env.UNIT_TEST_ENV) {
+  // Running tests only
+  module.exports = {
+    fti: function() {},
+    request: function() {},
+    getPath: function() {},
+    settings: {
+      protocol: 'http',
+      port: '123',
+      host: 'local',
+      db: 'medic',
+      ddoc: 'medic'
+    },
+    sanitizeResponse: sanitizeResponse,
+    use: function() {},
+    medic: {
+      view: function() {},
+      get: function() {},
+      insert: function() {},
+      updateWithHandler: function() {},
+      fetch: function() {},
+      fetchRevs: function() {},
+      bulk: function() {},
+      changes: function() {},
+      attachment: {
+        get: function() {}
+      }
+    },
+    audit: {
+      view: function() {},
+      list: function() {}
+    },
+    db: {
+      get: function() {},
+      create: function() {},
+      replicate:  function() {}
+    },
+    _users: {
+      get: function() {},
+      list: function() {},
+      insert: function() {}
+    }
+  };
+} else if (couchUrl) {
   // strip trailing slash from to prevent bugs in path matching
   couchUrl = couchUrl.replace(/\/$/, '');
   var baseUrl = couchUrl.substring(0, couchUrl.indexOf('/', 10));
@@ -113,49 +156,6 @@ if (couchUrl) {
   };
 
   module.exports.sanitizeResponse = sanitizeResponse;
-} else if (process.env.UNIT_TEST_ENV) {
-  // Running tests only
-  module.exports = {
-    fti: function() {},
-    request: function() {},
-    getPath: function() {},
-    settings: {
-      protocol: 'http',
-      port: '123',
-      host: 'local',
-      db: 'medic',
-      ddoc: 'medic'
-    },
-    sanitizeResponse: sanitizeResponse,
-    use: function() {},
-    medic: {
-      view: function() {},
-      get: function() {},
-      insert: function() {},
-      updateWithHandler: function() {},
-      fetch: function() {},
-      fetchRevs: function() {},
-      bulk: function() {},
-      changes: function() {},
-      attachment: {
-        get: function() {}
-      }
-    },
-    audit: {
-      view: function() {},
-      list: function() {}
-    },
-    db: {
-      get: function() {},
-      create: function() {},
-      replicate:  function() {}
-    },
-    _users: {
-      get: function() {},
-      list: function() {},
-      insert: function() {}
-    }
-  };
 } else {
   console.log(
     'Please define a COUCH_URL in your environment e.g. \n' +

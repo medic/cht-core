@@ -5,21 +5,7 @@ PouchDB.plugin(require('pouchdb-mapreduce'));
 const { COUCH_URL, UNIT_TEST_ENV } = process.env;
 
 console.log('UNIT_TEST_ENV', UNIT_TEST_ENV);
-if(COUCH_URL) {
-  // strip trailing slash from to prevent bugs in path matching
-  const couchUrl = COUCH_URL && COUCH_URL.replace(/\/$/, '');
-  const DB = new PouchDB(couchUrl);
-
-  console.log('####################################################');
-  console.log('#');
-  console.log('#');
-  console.log('# DEBUG: INITIALISING api/db-pouch FOR COUCH_URL; db.name=' + DB.name);
-  console.log('#');
-  console.log('#');
-  console.log('####################################################');
-
-  module.exports.medic = DB;
-} else if(UNIT_TEST_ENV) {
+if(UNIT_TEST_ENV) {
   console.log('####################################################');
   console.log('#');
   console.log('#');
@@ -33,6 +19,20 @@ if(COUCH_URL) {
     put: doc => Promise.resolve({ ok:true, id:doc._id, rev:'1' }),
     query: () => Promise.resolve({ offset:0, total_rows:0, rows:[] }),
   };
+} else if(COUCH_URL) {
+  // strip trailing slash from to prevent bugs in path matching
+  const couchUrl = COUCH_URL && COUCH_URL.replace(/\/$/, '');
+  const DB = new PouchDB(couchUrl);
+
+  console.log('####################################################');
+  console.log('#');
+  console.log('#');
+  console.log('# DEBUG: INITIALISING api/db-pouch FOR COUCH_URL; db.name=' + DB.name);
+  console.log('#');
+  console.log('#');
+  console.log('####################################################');
+
+  module.exports.medic = DB;
 } else {
   console.log(
     'Please define a COUCH_URL in your environment e.g. \n' +
