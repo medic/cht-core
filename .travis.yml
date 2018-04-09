@@ -63,8 +63,7 @@ before_script:
 script:
   - |
     if [[ "$TEST_SUITE" = 'normal' ]]; then
-      node --stack_size=10000 `which grunt` ci-unit &&
-      node --stack_size=10000 `which grunt` ci-integration-e2e
+      node --stack_size=10000 `which grunt` ci-unit
     elif [[ "$TEST_SUITE" = 'performance' ]]; then
       node --stack_size=10000 `which grunt` ci-performance
     else
@@ -74,6 +73,12 @@ script:
 
 jobs:
   include:
+    - stage: "Integration and e2e"
+      script: node --stack_size=10000 `which grunt` ci-integration-e2e
+      env:
+        matrix:
+        - NODE_VERSION=8 TEST_SUITE=normal
+        - NODE_VERSION=9 TEST_SUITE=normal
     - if: type != pull_request
       stage: "Publish binaries"
       script: node --stack_size=10000 `which grunt` publish
