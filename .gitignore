@@ -7,7 +7,6 @@ sentinel_working
 api_working
 npm-debug.log
 node_modules
-!/ddocs/medic/node_modules
 /ddocs/medic/build_info/
 /node_modules_backup/
 /scripts/node_modules/
