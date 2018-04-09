@@ -38,6 +38,17 @@ angular.module('inboxControllers').controller('ConfigurationUpgradeCtrl',
 
         var viewLookups = [];
 
+        var stripIds = function(releases) {
+          releases.forEach(function(release, key, releases) {
+            release.id = release.id.replace(/^medic:medic:/, '');
+            if (release.id === 'master') {
+              releases.splice(0, 0, releases.splice(key, 1)[0]);
+            }
+          });
+
+          return releases;
+        };
+
         // NB: Once we rely on CouchDB 2.0 combine these three calls
         //     See: http://docs.couchdb.org/en/2.0.0/api/ddoc/views.html#sending-multiple-queries-to-a-view
         viewLookups.push(
@@ -124,17 +135,6 @@ angular.module('inboxControllers').controller('ConfigurationUpgradeCtrl',
               $scope.versionCandidate = false;
             });
         });
-    };
-
-    var stripIds = function(releases) {
-      releases.forEach(function(release, key, releases) {
-        release.id = release.id.replace(/^medic:medic:/, '');
-        if (release.id === 'master') {
-          releases.splice(0, 0, releases.splice(key, 1)[0]);
-        }
-      });
-
-      return releases;
     };
   }
 );

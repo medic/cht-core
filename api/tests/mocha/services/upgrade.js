@@ -15,7 +15,8 @@ describe('Upgrade service', () => {
   afterEach(() => sinon.restore());
 
   it('creates a work doc for horti to pick up', () => {
-    sinon.stub(DB, 'put').returns(Promise.resolve());
+    DB.put = sinon.stub();
+    DB.put.resolves();
 
     service.upgrade(buildInfo, 'admin')
     .then(() => {
