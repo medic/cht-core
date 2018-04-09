@@ -69,7 +69,7 @@ if (process.env.UNIT_TEST_ENV) {
   };
 } else if (COUCH_URL) {
   // strip trailing slash from to prevent bugs in path matching
-  const couchUrl = couchUrl.replace(/\/$/, '');
+  const couchUrl = COUCH_URL.replace(/\/$/, '');
   var baseUrl = couchUrl.substring(0, couchUrl.indexOf('/', 10));
   var parsedUrl = url.parse(couchUrl);
   var dbName = parsedUrl.path.replace('/','');
