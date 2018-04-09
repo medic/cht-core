@@ -35,7 +35,7 @@ You will need to install the following:
 
 [Node.js](https://nodejs.org) 8.11.x and above
 
-[npm](https://npmjs.com) 5.x.x and above (to support `package-lock.json`)
+[yarn](https://yarnpkg.com/en/) 1.5.1
 
 [CouchDB](https://couchdb.apache.org) v2.x
 
@@ -90,7 +90,7 @@ $ curl http://localhost:5984 # should fail
 ```shell
 git clone --recursive https://github.com/medic/medic-webapp
 cd medic-webapp
-npm install
+yarn install
 ```
 
 ### Add a precommit hook
@@ -115,17 +115,17 @@ COUCH_NODE_NAME=couchdb@localhost
 ```
 Then install api and sentinel dependencies
 ```shell
-cd api && npm install && cd ..
-cd sentinel && npm install && cd ..
+cd api && yarn install && cd ..
+cd sentinel && yarn install && cd ..
 ```
 Then run
 ```shell
-npm start
+yarn start
 ```
 which will start the webapp, api, and sentinel, and watch for changes in each app.
 
 ### Deploy apps individually
-If `npm start` is not to your taste for whatever reason, the apps can be deployed individually.
+If `yarn start` is not to your taste for whatever reason, the apps can be deployed individually.
 
 #### Deploy the webapp
 
@@ -135,7 +135,7 @@ If `npm start` is not to your taste for whatever reason, the apps can be deploye
 
 ```shell
 cd sentinel
-npm install
+yarn install
 export COUCH_NODE_NAME=couchdb@localhost
 export COUCH_URL=http://admin:pass@localhost:5984/medic
 ```
@@ -145,7 +145,7 @@ Then run either `node ./server.js` from the sentinel directory or `grunt dev-sen
 
 ```shell
 cd api
-npm install
+yarn install
 export COUCH_NODE_NAME=couchdb@localhost
 export COUCH_URL=http://admin:pass@localhost:5984/medic
 ```
@@ -183,7 +183,7 @@ They live in [/tests/karma](tests/karma). Run them with grunt : `grunt unit_cont
 ### End to End tests
 They live in [tests/protractor](tests/protractor). To run them:
 
-1. Update and start Webdriver: `npm run webdriver`
+1. Update and start Webdriver: `yarn run webdriver`
 2. Run tests: `grunt e2e`
 
 ### API integration tests
