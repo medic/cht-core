@@ -33,7 +33,7 @@ The setup described below doesn't use [Medic OS](https://github.com/medic/medic-
 
 You will need to install the following:
 
-[Node.js](https://nodejs.org) 6.10.x and above
+[Node.js](https://nodejs.org) 8.11.x and above
 
 [npm](https://npmjs.com) 5.x.x and above (to support `package-lock.json`)
 
@@ -64,7 +64,6 @@ curl -X PUT http://admin:pass@localhost:5984/_config/couch_httpd_auth/require_va
 # CouchDB 2.0
 curl -X PUT http://admin:pass@localhost:5986/_config/chttpd/require_valid_user \
   -d '"true"' -H "Content-Type: application/json"
-
 ```
 
 Then create an actual admin user (note the username and password are the same as the admin user you created in the first step of this section):
