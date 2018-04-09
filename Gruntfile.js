@@ -93,7 +93,7 @@ module.exports = function(grunt) {
         options: {
           transform: ['browserify-ngannotate'],
           alias: {
-            'enketo/config': './static/js/enketo/config.json',
+            'enketo-config': './static/js/enketo/config.json',
             'widgets': './static/js/enketo/widgets',
             './xpath-evaluator-binding':'./static/js/enketo/OpenrosaXpathEvaluatorBinding',
             'extended-xpath': './node_modules/openrosa-xpath-evaluator/src/extended-xpath',
