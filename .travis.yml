@@ -14,8 +14,9 @@ services:
 
 env:
   matrix:
-  - NODE_VERSION=8
-  - NODE_VERSION=9
+  - NODE_VERSION=8 TEST_SUITE=normal
+  - NODE_VERSION=9 TEST_SUITE=normal
+  - NODE_VERSION="lts/*" TEST_SUITE=performance
   global:
   - COUCH_URL=http://admin:pass@localhost:5984/medic
   - API_URL=http://admin:pass@localhost:5988
@@ -59,18 +60,20 @@ before_script:
   - until nc -z localhost 4444; do sleep 1; done
   - node --stack_size=10000 `which grunt` ci-build
 
-script: node --stack_size=10000 `which grunt` ci-unit
+script:
+  - |
+    if [[ "$TEST_SUITE" = 'normal' ]]; then
+      node --stack_size=10000 `which grunt` ci-unit &&
+      node --stack_size=10000 `which grunt` ci-integration-e2e
+    elif [[ "$TEST_SUITE" = 'performance' ]]; then
+      node --stack_size=10000 `which grunt` ci-performance
+    else
+      echo "ERROR No or unknown value for TEST_SUITE env var ('${TEST_SUITE}')."
+      exit 1
+    fi
 
 jobs:
   include:
-    - stage: "Integration, e2e, performance"
-      script: node --stack_size=10000 `which grunt` ci-integration-e2e
-      env: NODE_VERSION=8
-    - script: node --stack_size=10000 `which grunt` ci-integration-e2e
-      env: NODE_VERSION=9
-    - script: node --stack_size=10000 `which grunt` ci-performance
-      env: NODE_VERSION=lts/* TEST_SUITE=performance
-
     - if: type != pull_request
       stage: "Publish binaries"
       script: node --stack_size=10000 `which grunt` publish
