@@ -136,7 +136,7 @@ module.exports = {
       const idsToFetch = _.uniq(_.pluck(taskMessageResults.rows, 'id'));
 
       if(USE_POUCH) {
-        dbPouch.medic.allDocs({ keys:idsToFetch }, fetchCallback);
+        dbPouch.medic.allDocs({ keys:idsToFetch, include_docs:true }, fetchCallback);
       } else {
         db.medic.fetch({keys: idsToFetch}, fetchCallback);
       }
@@ -148,7 +148,8 @@ module.exports = {
 
         checkpoint('db.medic.fetch() returned');
 
-        const docs = _.pluck(docResults.rows, 'doc');
+        const docs = docResults.rows.map(r => r.doc);
+        console.log('### DEBUG docs=' + JSON.stringify(docs));
 
         const stateChangesByDocId = applyTaskStateChangesToDocs(taskStateChanges, docs);
 
