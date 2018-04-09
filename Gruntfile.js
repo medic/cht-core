@@ -719,7 +719,7 @@ module.exports = function(grunt) {
     'env:dev',
     'exec:setupAdmin',
     'deploy',
-//    'test_api_integration',
+    'test_api_integration',
     'e2e'
   ]);
 
