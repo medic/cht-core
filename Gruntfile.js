@@ -710,17 +710,20 @@ module.exports = function(grunt) {
     'build',
   ]);
 
-  grunt.registerTask('ci-test', 'Lint, deploy and test for CI', [
+  grunt.registerTask('ci-unit', 'Lint, deploy and test for CI', [
     'precommit',
     'karma:unit_ci',
     'env:unitTest',
     'nodeunit',
     'mochaTest:unit',
+  ]);
+
+  grunt.registerTask('ci-integration-e2e', 'Run further tests for CI', [
     'env:dev',
     'exec:setupAdmin',
     'deploy',
     'test_api_integration',
-    'e2e'
+    'e2e',
   ]);
 
   grunt.registerTask('ci-performance', 'Run performance tests on CI', [
