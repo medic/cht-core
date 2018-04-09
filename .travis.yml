@@ -75,9 +75,10 @@ jobs:
   include:
     - stage: "Integration and e2e"
       script: node --stack_size=10000 `which grunt` ci-integration-e2e
-      env:
-        - NODE_VERSION=8 TEST_SUITE=normal
-        - NODE_VERSION=9 TEST_SUITE=normal
+      env: NODE_VERSION=8 TEST_SUITE=normal
+    - stage: "Integration and e2e"
+      script: node --stack_size=10000 `which grunt` ci-integration-e2e
+      env: NODE_VERSION=9 TEST_SUITE=normal
     - if: type != pull_request
       stage: "Publish binaries"
       script: node --stack_size=10000 `which grunt` publish
