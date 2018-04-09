@@ -9,8 +9,7 @@ var path = require('path'),
     nano = require('nano'),
     request = require('request');
 
-var couchUrl = process.env.COUCH_URL;
-var luceneUrl = process.env.LUCENE_URL;
+const { COUCH_URL, LUCENE_URL } = process.env;
 
 var sanitizeResponse = function(err, body, headers, callback) {
   // Remove the `uri` and `statusCode` headers passed in from nano.  This
@@ -68,9 +67,9 @@ if (process.env.UNIT_TEST_ENV) {
       insert: function() {}
     }
   };
-} else if (couchUrl) {
+} else if (COUCH_URL) {
   // strip trailing slash from to prevent bugs in path matching
-  couchUrl = couchUrl.replace(/\/$/, '');
+  const couchUrl = couchUrl.replace(/\/$/, '');
   var baseUrl = couchUrl.substring(0, couchUrl.indexOf('/', 10));
   var parsedUrl = url.parse(couchUrl);
   var dbName = parsedUrl.path.replace('/','');
@@ -78,7 +77,7 @@ if (process.env.UNIT_TEST_ENV) {
   var db = nano(baseUrl);
 
   // Default configuration runs lucene on the same server at port 5985
-  luceneUrl = luceneUrl || baseUrl.replace('5984', '5985');
+  const luceneUrl = LUCENE_URL || baseUrl.replace('5984', '5985');
 
   module.exports = db;
   module.exports.medic = db.use(dbName);
