@@ -251,8 +251,8 @@ module.exports = function(grunt) {
       packNodeModules: {
         cmd: ['api', 'sentinel'].map(module => [
               `cd ${module}`,
-              `npm --production install`,
-              `npm pack`,
+              `yarn install --production`,
+              `yarn pack`,
               `mv medic-*.tgz ../ddocs/medic/_attachments/`,
               `cd ..`,
             ].join(' && ')).join(' && ')
@@ -316,12 +316,13 @@ module.exports = function(grunt) {
         cmd: 'node ./node_modules/bundlesize/index.js'
       },
       setup_api_integration: {
-        cmd: 'cd api && npm install',
+        cmd: 'cd api && yarn install',
       },
-      npm_install: {
-        cmd: '    echo "[webapp]"   && npm install' +
-             ' && echo "[api]"      && npm --prefix api install' +
-             ' && echo "[sentinel]" && npm --prefix sentinel install'
+      yarn_install: {
+        cmd: '    echo "[webapp]"   && yarn install' +
+             ' && echo "[api]"      && cd api && yarn install' +
+             ' && echo "[sentinel]" && cd ../sentinel && yarn install' +
+             ' && cd ..'
       },
       check_env_vars:
         'if [ -z $COUCH_URL ] || [ -z $API_URL ] || [ -z $COUCH_NODE_NAME ]; then ' +
@@ -356,7 +357,7 @@ module.exports = function(grunt) {
           ];
           return sharedLibs.map(function(lib) {
             return 'cd shared-libs/' + lib +
-              ' && if [ $(npm run | grep "^\\s\\stest$" | wc -l) -gt 0 ]; then npm install && npm test; fi' +
+              ' && if [ $(yarn run | grep "^\\s*-\\s*test$" | wc -l) -gt 0 ]; then yarn install && yarn test; fi' +
               ' && cd ../../';
           }).join(' ; ');
         }
@@ -586,9 +587,9 @@ module.exports = function(grunt) {
   });
 
   // Build tasks
-  grunt.registerTask('mmnpm', 'Update and patch npm dependencies', [
+  grunt.registerTask('mmyarn', 'Update and patch dependencies', [
     'exec:undopatches',
-    'exec:npm_install',
+    'exec:yarn_install',
     'copy:librariestopatch',
     'exec:applypatches'
   ]);
@@ -704,7 +705,7 @@ module.exports = function(grunt) {
   ]);
 
   grunt.registerTask('ci-build', 'build and minify for CI', [
-    'mmnpm',
+    'mmyarn',
     'build',
   ]);
 
@@ -730,8 +731,8 @@ module.exports = function(grunt) {
 
   // Dev tasks
   grunt.registerTask('dev-webapp', 'Build and deploy the webapp for dev', [
-    'mmnpm',
-    'dev-webapp-no-npm'
+    'mmyarn',
+    'dev-webapp-no-yarn'
   ]);
 
   grunt.registerTask('precommit', 'Static analysis checks', [
@@ -740,7 +741,7 @@ module.exports = function(grunt) {
     'jshint',
   ]);
 
-  grunt.registerTask('dev-webapp-no-npm', 'Build and deploy the webapp for dev, without reinstalling dependencies.', [
+  grunt.registerTask('dev-webapp-no-yarn', 'Build and deploy the webapp for dev, without reinstalling dependencies.', [
     'build-dev',
     'deploy',
     'watch'
