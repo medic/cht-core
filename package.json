@@ -7,6 +7,10 @@
     "type": "git",
     "url": "git://github.com/medic/medic-webapp.git"
   },
+  "engines": {
+    "node": ">=8.11.0",
+    "yarn": "1.5.1"
+  },
   "scripts": {
     "start": "nf start",
     "webdriver": "webdriver-manager update && webdriver-manager start"

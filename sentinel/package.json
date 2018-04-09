@@ -3,6 +3,10 @@
   "description": "Takes data messages and gets them ready for prime time.",
   "private": true,
   "version": "0.1.0",
+  "engines": {
+    "node": ">=8.11.0",
+    "yarn": "1.5.1"
+  },
   "dependencies": {
     "async": "^2.6.0",
     "bikram-sambat": "^1.5.0",
