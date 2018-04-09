@@ -4,13 +4,9 @@ const _ = require('underscore'),
 const performanceTracker = require('./performance-tracker');
 const dbPouch = require('./db-pouch');
 
-//console.log('Initialised db', db);
-//console.log('Initialised dbPouch', dbPouch);
-
 const USE_POUCH = true;
 
 const getTaskMessages = function(options, callback) {
-//  console.log(`getTaskMessages() options=${JSON.stringify(options)}; callback=${callback}`);
   if(USE_POUCH) {
     dbPouch.medic.query('medic/tasks_messages', options, callback);
   } else {
@@ -146,10 +142,9 @@ module.exports = {
           return callback(err);
         }
 
-        checkpoint('db.medic.fetch() returned');
+        checkpoint('fetchCallback() running');
 
         const docs = docResults.rows.map(r => r.doc);
-        console.log('### DEBUG docs=' + JSON.stringify(docs));
 
         const stateChangesByDocId = applyTaskStateChangesToDocs(taskStateChanges, docs);
 
