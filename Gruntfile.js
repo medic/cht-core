@@ -225,7 +225,6 @@ module.exports = function(grunt) {
             cwd: 'node_modules',
             src: [
               'bootstrap-daterangepicker/**',
-              'enketo-core/**',
               'font-awesome/**',
               'moment/**',
               'pouchdb-browser/**',
@@ -332,7 +331,6 @@ module.exports = function(grunt) {
         cmd: function() {
           var modulesToPatch = [
             'bootstrap-daterangepicker',
-            'enketo-core',
             'font-awesome',
             'moment',
             'pouchdb-browser',
