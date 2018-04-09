@@ -25,7 +25,7 @@ describe('Settings API', () => {
 
     describe('update', () => {
 
-      xit('with replace', () => {
+      it('with replace', () => {
         return update({ _test_sandbox: { times: 'one', b: 'c' } }, true)
           .then(response => {
             expect(response).toEqual({ success: true });
