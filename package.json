@@ -46,7 +46,7 @@
     "pouchdb-browser": "^6.4.3",
     "properties": "^1.2.1",
     "search": "file:shared-libs/search",
-    "select2": "^4.0.5",
+    "select2": "^4.0.3",
     "simple-password-tester": "^1.0.0",
     "task-utils": "file:shared-libs/task-utils",
     "underscore": "^1.8.3",

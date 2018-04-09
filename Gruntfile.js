@@ -93,7 +93,7 @@ module.exports = function(grunt) {
         options: {
           transform: ['browserify-ngannotate'],
           alias: {
-            'enketo-config': './static/js/enketo/config.json',
+            'enketo/config': './static/js/enketo/config.json',
             'widgets': './static/js/enketo/widgets',
             './xpath-evaluator-binding':'./static/js/enketo/OpenrosaXpathEvaluatorBinding',
             'extended-xpath': './node_modules/openrosa-xpath-evaluator/src/extended-xpath',
@@ -225,7 +225,6 @@ module.exports = function(grunt) {
             cwd: 'node_modules',
             src: [
               'bootstrap-daterangepicker/**',
-              'enketo-core/**',
               'font-awesome/**',
               'moment/**',
               'pouchdb-browser/**',
@@ -332,7 +331,6 @@ module.exports = function(grunt) {
         cmd: function() {
           var modulesToPatch = [
             'bootstrap-daterangepicker',
-            'enketo-core',
             'font-awesome',
             'moment',
             'pouchdb-browser',

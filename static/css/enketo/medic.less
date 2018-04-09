@@ -50,12 +50,12 @@
       padding-bottom: 5px;
       .active {
         font-size: @font-large;
-        &::before {
-          // hide the chevrons
-          display: none;
-        }
       }
     }
+  }
+  .or-group:not(.or-appearance-no-collapse) > h4::before {
+    // hide the chevrons
+    display: none;
   }
   .or > h3 {
     color: inherit;
