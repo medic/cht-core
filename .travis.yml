@@ -50,6 +50,7 @@ before_script:
   - npm ls || true
   # Create couchdb system tables (this has to be done manually on couchdb 2.0)
   - curl -X PUT http://127.0.0.1:5984/{_users,_replicator,_global_changes,_metadata,admins,medic-sentinel,medic-test-sentinel}
+  - curl -X PUT localhost:5984/_node/nonode@nohost/_config/admins/admin -d '"pass"'
   - npm install grunt-cli -g
   - npm --prefix api install
   - npm --prefix sentinel install
