@@ -45,5 +45,38 @@
   },
   "devDependencies": {
     "doctoc": "^1.3.1"
-  }
+  },
+  "bundledDependencies": [
+    "async",
+    "body-parser",
+    "buffer-shims",
+    "bulk-docs-utils",
+    "couchdb-audit",
+    "express",
+    "fast-csv",
+    "follow",
+    "google-libphonenumber",
+    "http-proxy",
+    "jszip",
+    "lineage",
+    "moment",
+    "morgan",
+    "nano",
+    "object-path",
+    "openrosa-formlist",
+    "pass-stream",
+    "phone-number",
+    "pouchdb-adapter-http",
+    "pouchdb-core",
+    "pouchdb-mapreduce",
+    "properties",
+    "request",
+    "search",
+    "simple-password-tester",
+    "task-utils",
+    "underscore",
+    "url",
+    "uuid",
+    "xmlbuilder"
+  ]
 }

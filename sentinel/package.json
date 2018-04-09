@@ -28,5 +28,28 @@
   },
   "devDependencies": {
     "jsverify": "^0.8.3"
-  }
+  },
+  "bundledDependencies": [
+    "async",
+    "bikram-sambat",
+    "couchdb-audit",
+    "epi-week",
+    "follow",
+    "google-libphonenumber",
+    "gsm",
+    "later",
+    "lineage",
+    "moment",
+    "mustache",
+    "nano",
+    "object-path",
+    "phone-number",
+    "pouchdb-adapter-http",
+    "pouchdb-core",
+    "pouchdb-mapreduce",
+    "task-utils",
+    "underscore",
+    "uuid",
+    "winston"
+  ]
 }
