@@ -722,7 +722,6 @@ module.exports = function(grunt) {
   ]);
 
   grunt.registerTask('ci-performance', 'Run performance tests on CI', [
-    'precommit',
     'env:general',
     'exec:setupAdmin',
     'deploy',
