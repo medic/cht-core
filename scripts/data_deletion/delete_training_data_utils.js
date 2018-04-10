@@ -148,7 +148,7 @@ var getDataRecordsForBranch = function(db, branchId, skip, batchSize) {
     include_docs: true,
     limit: batchSize
   };
-  return db.query('medic/data_records_by_ancestor', params).then(function (result) {
+  return db.query('medic-script-delete-training-data-utils/data_records_by_ancestor', params).then(function (result) {
     console.log('total_rows : ' + result.total_rows + ', offset : ' + result.offset);
     console.log('Reports for branch : ' + result.rows.length);
     return getDocsFromRows(result.rows);
