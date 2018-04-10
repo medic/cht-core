@@ -1,6 +1,7 @@
 const _ = require('underscore'),
       domain = require('domain'),
-      moment = require('moment');
+      moment = require('moment'),
+      debug = require('debug')('medic:export');
 
 const auth = require('../auth'),
       serverUtils = require('../server-utils');
@@ -105,9 +106,9 @@ module.exports = {
       }, req, res);
     }
 
-    console.log('v2 export requested for', type);
-    console.log('params:', JSON.stringify(filters, null, 2));
-    console.log('options:', JSON.stringify(options, null, 2));
+    debug('v2 export requested for: ' + type);
+    debug('params: ' + JSON.stringify(filters));
+    debug('options: ' + JSON.stringify(options));
 
     // We currently only support online users (CouchDB admins and National Admins)
     // If we want to support offline users we should either:
