@@ -430,8 +430,7 @@ angular.module('inboxServices').factory('FormatDataRecord',
             message: t.message
           };
 
-          if (copy.state === 'scheduled' && // not yet sent
-            !copy.messages) { // backwards compatibility
+          if (!copy.messages) { // backwards compatibility
             copy.messages = messages.generate(
               settings,
               _.partial(translate, settings, _, null, null, true),
