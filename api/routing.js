@@ -460,9 +460,9 @@ app.putJson(`${appPrefix}update_settings/${db.settings.ddoc}`, settings.put); //
 app.putJson('/api/v1/settings', settings.put);
 
 // DB replication endpoint
-var changesHander = _.partial(require('./handlers/changes').request, proxy);
-app.get(pathPrefix + '_changes', changesHander);
-app.postJson(pathPrefix + '_changes', changesHander);
+const changesHandler = _.partial(require('./handlers/changes').request, proxy);
+app.get(pathPrefix + '_changes', changesHandler);
+app.postJson(pathPrefix + '_changes', changesHandler);
 
 // Attempting to create the user's personal meta db
 app.put('/medic-user-\*-meta/', (req, res) => {
