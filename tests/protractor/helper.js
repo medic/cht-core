@@ -125,6 +125,12 @@ module.exports = {
     return selectedElement.isPresent();
   },
 
+  handleUpdateModal: () => {
+    if (element(by.css('#update-available')).isDisplayed()) {
+      browser.actions().sendKeys(protractor.Key.ENTER).perform();
+    }
+  },
+
   takeScreenshot: filename => {
     browser.takeScreenshot().then(png => {
       writeScreenShot(png, filename);

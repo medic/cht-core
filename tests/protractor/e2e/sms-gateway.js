@@ -153,6 +153,7 @@ describe('sms-gateway api', () => {
     });
 
     it('- shows content', () => {
+      helper.handleUpdateModal();
       element(by.id('messages-tab')).click();
 
       // LHS
