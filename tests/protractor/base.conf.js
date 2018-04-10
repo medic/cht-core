@@ -10,6 +10,8 @@ class BaseConfig {
       seleniumAddress: 'http://localhost:4444/wd/hub',
 
       specs: [`${testSrcDir}/**/*.js`],
+      //ignore these tests for they fail on travis
+      exclude: [`${testSrcDir}/**/sms-gateway.perf.js`],
 
       framework: 'jasmine2',
       capabilities: {
