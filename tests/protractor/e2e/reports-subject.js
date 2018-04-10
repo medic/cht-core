@@ -532,7 +532,7 @@ describe('Reports Summary', () => {
         });
     });
 
-    it('Concerning reports using unknown place_id', () => {
+    xit('Concerning reports using unknown place_id', () => {
       const REPORT = {
         _id: 'PREF_PREF_I',
         form: 'P',
