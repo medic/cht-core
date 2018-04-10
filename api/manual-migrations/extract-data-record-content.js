@@ -50,7 +50,7 @@ module.exports = {
     console.log('Finding data records...');
     async.doUntil(
       function(viewCallback) {
-        db.medic.view('medic', 'data_records', {
+        db.medic.view('medic-manual-migration-extract-data-record-content', 'data_records', {
           skip: processed,
           limit: VIEW_BATCH_SIZE
         },
