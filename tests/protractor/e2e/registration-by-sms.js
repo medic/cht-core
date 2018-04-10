@@ -9,7 +9,7 @@ describe('registration transition', () => {
   const PHONE = '+64271234567';
   const FORM_NAME = 'Registration';
 
-  // contacts
+  // contacts.
   const BOB_PLACE = {
     _id: 'bob-contact',
     reported_date: 1,
