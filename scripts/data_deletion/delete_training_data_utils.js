@@ -205,7 +205,7 @@ var filterFamilyMembers = function(personsList, logdir) {
 
 // Find which facilities (if any) this person is a contact for.
 var isContactFor = function(db, personId) {
-  return db.query('medic/places_by_contact', {key: personId, include_docs: true})
+  return db.query('medic-script-delete-training-data-utils/places_by_contact', {key: personId, include_docs: true})
     .then(function(result) {
       var ids = getIdsFromRows(result.rows);
       if (result.rows.length > 0) {
