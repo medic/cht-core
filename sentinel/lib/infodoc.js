@@ -96,9 +96,7 @@ const updateTransition = (change, transition, ok) => {
 };
 
 module.exports = {
-  findInfoDoc: (db, change) => findInfoDoc(db, change), //returns null for 404s
-  getInfoDoc: change => getInfoDoc(change),
-  deleteInfoDoc: change => deleteInfoDoc(change),
-  updateInfoDoc: change => updateInfoDoc(change),
+  get: change => getInfoDoc(change),
+  delete: change => deleteInfoDoc(change),
   updateTransition: (change, transition, ok) => updateTransition(change, transition, ok)
 };

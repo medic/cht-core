@@ -26,6 +26,8 @@ exports['transitions are only executed once if successful'] = function(test) {
     }
   });
 
+  sinon.stub(dbPouch.sentinel, 'get').rejects({status: 404});
+  sinon.stub(dbPouch.medic, 'get').rejects({status: 404});
   var saveDoc = sinon.stub(db.audit, 'saveDoc').callsArg(1);
   var infoDoc = sinon.stub(dbPouch.sentinel, 'put').resolves({});
 
@@ -71,6 +73,9 @@ exports['transitions are only executed again if first run failed'] = function(te
       condition: 'doc.fields.last_menstrual_period == 15'
     }
   });
+
+  sinon.stub(dbPouch.sentinel, 'get').rejects({status: 404});
+  sinon.stub(dbPouch.medic, 'get').rejects({status: 404});
   var saveDoc = sinon.stub(db.audit, 'saveDoc').callsArg(1);
   var infoDoc = sinon.stub(dbPouch.sentinel, 'put').resolves({});
 
@@ -123,6 +128,9 @@ exports['transitions are executed again when subsequent transitions succeed'] = 
       condition: 'doc.fields.last_menstrual_period == 15'
     }
   });
+
+  sinon.stub(dbPouch.sentinel, 'get').rejects({status: 404});
+  sinon.stub(dbPouch.medic, 'get').rejects({status: 404});
   var saveDoc = sinon.stub(db.audit, 'saveDoc').callsArg(1);
   var infoDoc = sinon.stub(dbPouch.sentinel, 'put').resolves({});
 

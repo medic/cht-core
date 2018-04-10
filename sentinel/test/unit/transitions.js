@@ -1,10 +1,10 @@
 const sinon = require('sinon').sandbox.create(),
-      follow = require('follow'),
       _ = require('underscore'),
       config = require('../../config'),
+      follow = require('follow'),
       db = require('../../db-nano'),
       dbPouch = require('../../db-pouch'),
-      infoUtils = require('../../lib/info-utils'),
+      infodoc = require('../../lib/infodoc'),
       transitions = require('../../transitions');
 
 exports.tearDown = callback => {
@@ -205,23 +205,23 @@ exports['loadTransitions does not load system transistions that have been explic
 };
 
 exports['attach handles missing meta data doc'] = test => {
-  const sentinel = sinon.stub(dbPouch.sentinel, 'get');
-  sentinel.withArgs('_local/sentinel-meta-data').callsArgWith(1, { status: 404 });
-  const get = sinon.stub(db.medic, 'get');
-  get.withArgs('_local/sentinel-meta-data').callsArgWith(1, { statusCode: 404 });
-  get.withArgs('sentinel-meta-data').callsArgWith(1, { statusCode: 404 });
-  const fetchHydratedDoc = sinon.stub(transitions._lineage, 'fetchHydratedDoc').returns(Promise.resolve({ type: 'data_record' }));
-  sinon.stub(infoUtils, 'getInfoDoc').returns(Promise.resolve({}));
-  sinon.stub(db.medic, 'insert').callsArg(1);
+  sinon.stub(dbPouch.sentinel, 'get').rejects({status: 404});
+  sinon.stub(dbPouch.medic, 'get').rejects({status: 404});
+
+  const fetchHydratedDoc = sinon.stub(transitions._lineage, 'fetchHydratedDoc')
+    .resolves({ type: 'data_record' });
+  sinon.stub(infodoc, 'get').resolves({});
   const insert = sinon.stub(dbPouch.sentinel, 'put').callsArg(1);
+  sinon.stub(dbPouch.medic, 'put').callsArg(1);
+
   const on = sinon.stub();
   const start = sinon.stub();
-  const feed = sinon.stub(follow, 'Feed').returns({ on: on, follow: start, stop: () => {} });
+  const feed = sinon.stub(follow, 'Feed')
+    .returns({ on: on, follow: start, stop: () => {} });
+
   const applyTransitions = sinon.stub(transitions, 'applyTransitions').callsArg(1);
   // wait for the queue processor
   transitions._changeQueue.drain = () => {
-    test.equal(sentinel.callCount, 2);
-    test.equal(get.callCount, 4);
     test.equal(fetchHydratedDoc.callCount, 1);
     test.equal(fetchHydratedDoc.args[0][0], 'abc');
     test.equal(applyTransitions.callCount, 1);
@@ -232,72 +232,86 @@ exports['attach handles missing meta data doc'] = test => {
     test.equal(insert.args[0][0].processed_seq, 55);
     test.done();
   };
-  transitions._attach();
-  test.equal(feed.callCount, 1);
-  test.equal(feed.args[0][0].since, 0);
-  test.equal(on.callCount, 3);
-  test.equal(on.args[0][0], 'change');
-  test.equal(on.args[1][0], 'error');
-  test.equal(start.callCount, 1);
-  // invoke the change handler
-  on.args[0][1]({ id: 'abc', seq: 55 });
+  return transitions._attach().then(() => {
+    test.equal(feed.callCount, 1);
+    test.equal(feed.args[0][0].since, 0);
+    test.equal(on.callCount, 3);
+    test.equal(on.args[0][0], 'change');
+    test.equal(on.args[1][0], 'error');
+    test.equal(start.callCount, 1);
+    // invoke the change handler
+    on.args[0][1]({ id: 'abc', seq: 55 });
+  });
 };
 
 exports['attach handles old meta data doc'] = test => {
-  const sentinel = sinon.stub(dbPouch.sentinel, 'get');
-  sentinel.withArgs('_local/sentinel-meta-data').callsArgWith(1, { status: 404 });
-  const get = sinon.stub(db.medic, 'get');
-  get.withArgs('_local/sentinel-meta-data').callsArgWith(1, { statusCode: 404 });
-  get.withArgs('sentinel-meta-data').callsArgWith(1, null, { _id: 'sentinel-meta-data', _rev: '1-123', processed_seq: 22});
-  const fetchHydratedDoc = sinon.stub(transitions._lineage, 'fetchHydratedDoc').returns(Promise.resolve({ type: 'data_record' }));
-  sinon.stub(infoUtils, 'getInfoDoc').returns(Promise.resolve({}));
-  const insert = sinon.stub(db.medic, 'insert').callsArg(1);
-  const put = sinon.stub(dbPouch.sentinel, 'put').callsArg(1);
+  const sentinelGet = sinon.stub(dbPouch.sentinel, 'get');
+  sentinelGet.withArgs('_local/sentinel-meta-data').rejects({ status: 404 });
+
+  const medicGet = sinon.stub(dbPouch.medic, 'get');
+  medicGet.withArgs('_local/sentinel-meta-data').rejects({ status: 404 });
+  medicGet.withArgs('sentinel-meta-data')
+    .resolves({_id: 'sentinel-meta-data', _rev: '1-123', processed_seq: 22});
+
+  const fetchHydratedDoc = sinon.stub(transitions._lineage, 'fetchHydratedDoc')
+    .resolves({ type: 'data_record' });
+  sinon.stub(infodoc, 'get').resolves({});
+  const medicPut = sinon.stub(dbPouch.medic, 'put').resolves({});
+  const sentinelPut = sinon.stub(dbPouch.sentinel, 'put').resolves({});
   const on = sinon.stub();
   const start = sinon.stub();
   const feed = sinon.stub(follow, 'Feed').returns({ on: on, follow: start, stop: () => {} });
   const applyTransitions = sinon.stub(transitions, 'applyTransitions').callsArg(1);
   // wait for the queue processor
   transitions._changeQueue.drain = () => {
-    test.equal(sentinel.callCount, 2);
-    test.equal(get.callCount, 4);
+    test.equal(sentinelGet.callCount, 2);
+    test.equal(medicGet.callCount, 4);
     test.equal(fetchHydratedDoc.callCount, 1);
     test.equal(fetchHydratedDoc.args[0][0], 'abc');
     test.equal(applyTransitions.callCount, 1);
     test.equal(applyTransitions.args[0][0].id, 'abc');
     test.equal(applyTransitions.args[0][0].seq, 55);
 
-    test.equal(insert.callCount, 2);
-    test.equal(insert.args[0][0]._id, 'sentinel-meta-data');
-    test.equal(insert.args[0][0]._rev, '1-123');
-    test.equal(insert.args[0][0]._deleted, true);
-    test.equal(insert.args[1][0]._id, '_local/sentinel-meta-data');
-    test.equal(put.callCount, 1);
-    test.equal(put.args[0][0]._id, '_local/sentinel-meta-data');
-    test.equal(put.args[0][0].processed_seq, 55);
+    test.equal(medicPut.callCount, 2);
+    test.equal(medicPut.args[0][0]._id, 'sentinel-meta-data');
+    test.equal(medicPut.args[0][0]._rev, '1-123');
+    test.equal(medicPut.args[0][0]._deleted, true);
+    test.equal(medicPut.args[1][0]._id, '_local/sentinel-meta-data');
+    test.equal(sentinelPut.callCount, 1);
+    test.equal(sentinelPut.args[0][0]._id, '_local/sentinel-meta-data');
+    test.equal(sentinelPut.args[0][0].processed_seq, 55);
     test.done();
   };
-  transitions._attach();
-  test.equal(feed.callCount, 1);
-  test.equal(feed.args[0][0].since, 22);
-  test.equal(on.callCount, 3);
-  test.equal(on.args[0][0], 'change');
-  test.equal(on.args[1][0], 'error');
-  test.equal(start.callCount, 1);
-  // invoke the change handler
-  on.args[0][1]({ id: 'abc', seq: 55 });
+  return transitions._attach().then(() => {
+    test.equal(feed.callCount, 1);
+    test.equal(feed.args[0][0].since, 22);
+    test.equal(on.callCount, 3);
+    test.equal(on.args[0][0], 'change');
+    test.equal(on.args[1][0], 'error');
+    test.equal(start.callCount, 1);
+    // invoke the change handler
+    on.args[0][1]({ id: 'abc', seq: 55 });
+  });
 };
 
 exports['attach handles existing meta data doc'] = test => {
-  const get = sinon.stub(dbPouch.sentinel, 'get');
-  get.withArgs('_local/sentinel-meta-data').callsArgWith(1, null, { _id: '_local/sentinel-meta-data', processed_seq: 22 });
-  const fetchHydratedDoc = sinon.stub(transitions._lineage, 'fetchHydratedDoc').returns(Promise.resolve({ type: 'data_record' }));
-  const info = sinon.stub(infoUtils, 'getInfoDoc').returns(Promise.resolve({}));
-  const insert = sinon.stub(dbPouch.sentinel, 'put').callsArg(1);
+  const get = sinon.stub(dbPouch.sentinel, 'get')
+    .resolves({ _id: '_local/sentinel-meta-data', processed_seq: 22 });
+  const fetchHydratedDoc = sinon.stub(transitions._lineage, 'fetchHydratedDoc')
+    .resolves({ type: 'data_record' });
+  const info = sinon.stub(infodoc, 'get').resolves({});
+  const insert = sinon.stub(dbPouch.sentinel, 'put').resolves({});
+
+  // sinon.stub(dbPouch.sentinel, 'get').rejects({status: 404});
+  sinon.stub(dbPouch.medic, 'get').rejects({status: 404});
+  sinon.stub(db.audit, 'saveDoc').callsArg(1);
+  // var infoDoc = sinon.stub(dbPouch.sentinel, 'put').resolves({});
+
   const on = sinon.stub();
   const start = sinon.stub();
   const feed = sinon.stub(follow, 'Feed').returns({ on: on, follow: start, stop: () => {} });
   const applyTransitions = sinon.stub(transitions, 'applyTransitions').callsArg(1);
+  // transitions.applyTransitions(change1, function() {});
   // wait for the queue processor
   transitions._changeQueue.drain = () => {
     test.equal(get.callCount, 2);
@@ -312,15 +326,16 @@ exports['attach handles existing meta data doc'] = test => {
     test.equal(insert.args[0][0].processed_seq, 55);
     test.done();
   };
-  transitions._attach();
-  test.equal(feed.callCount, 1);
-  test.equal(feed.args[0][0].since, 22);
-  test.equal(on.callCount, 3);
-  test.equal(on.args[0][0], 'change');
-  test.equal(on.args[1][0], 'error');
-  test.equal(start.callCount, 1);
-  // invoke the change handler
-  on.args[0][1]({ id: 'abc', seq: 55 });
+  return transitions._attach().then(() => {
+    test.equal(feed.callCount, 1);
+    test.equal(feed.args[0][0].since, 22);
+    test.equal(on.callCount, 3);
+    test.equal(on.args[0][0], 'change');
+    test.equal(on.args[1][0], 'error');
+    test.equal(start.callCount, 1);
+    // invoke the change handler
+    on.args[0][1]({ id: 'abc', seq: 55 });
+  });
 };
 
 const requiredFunctions = {

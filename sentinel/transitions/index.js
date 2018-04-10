@@ -4,23 +4,21 @@
  */
 
 const _ = require('underscore'),
-      follow = require('follow'),
       async = require('async'),
       utils = require('../lib/utils'),
+      feed = require('../lib/feed'),
       dbPouch = require('../db-pouch'),
       lineage = require('lineage')(Promise, dbPouch.medic),
       logger = require('../lib/logger'),
       config = require('../config'),
       db = require('../db-nano'),
-      infoUtils = require('../lib/info-utils'),
+      infodoc = require('../lib/infodoc'),
+      metadata = require('../lib/metadata'),
       PROCESSING_DELAY = 50, // ms
       PROGRESS_REPORT_INTERVAL = 500, // items
       transitions = [];
 
 let changesFeed;
-
-// We log the first time we catch up to the changes feed
-let caughtUpOnce;
 
 /*
  * Add new transitions here to make them available for configuration and execution.
@@ -51,8 +49,6 @@ const AVAILABLE_TRANSITIONS = [
 ];
 
 
-const METADATA_DOCUMENT = '_local/sentinel-meta-data';
-
 let processed = 0;
 
 const changeQueue = async.queue((task, callback) =>
@@ -69,10 +65,10 @@ const processChange = (change, callback) => {
   if (change.deleted) {
     // don't run transitions on deleted docs, but do clean up
     async.parallel([
-      function(callback) {
-        infoUtils.deleteInfoDoc(change)
-        .then(() => { callback(); })
-        .catch(err => { callback(err); });
+      callback => {
+        infodoc.delete(change)
+          .then(() => { callback(); })
+          .catch(err => { callback(err); });
       },
       async.apply(deleteReadDocs, change)
     ], err => {
@@ -80,7 +76,9 @@ const processChange = (change, callback) => {
         logger.error('Error cleaning up deleted doc', err);
       }
       processed++;
-      updateMetaData(change.seq, callback);
+      metadata.update(change.seq)
+        .then(() => { callback(); })
+        .catch(() => { callback(); });
     });
     return;
   }
@@ -88,7 +86,7 @@ const processChange = (change, callback) => {
   lineage.fetchHydratedDoc(change.id)
     .then(doc => {
       change.doc = doc;
-      infoUtils.getInfoDoc(change)
+      infodoc.get(change)
         .then(infoDoc => {
           change.info = infoDoc;
           // Remove transitions from doc since those
@@ -98,12 +96,12 @@ const processChange = (change, callback) => {
           }
           module.exports.applyTransitions(change, () => {
             processed++;
-            updateMetaData(change.seq, callback);
+            metadata.update(change.seq)
+              .then(() => callback())
+              .catch(err => {
+                callback(err);
+              });
           });
-        })
-        .catch(err => {
-          logger.error(`transitions: fetch failed for ${change.id} (${err})`);
-          return callback();
         });
     })
     .catch(err => {
@@ -321,7 +319,7 @@ const applyTransition = ({ key, change, transition }, callback) => {
       if (!changed) {
         return changed;
       }
-      return infoUtils.updateTransition(change, key, true)
+      return infodoc.updateTransition(change, key, true)
         .then(() => { return changed; });
     })
     .catch(err => {
@@ -336,7 +334,7 @@ const applyTransition = ({ key, change, transition }, callback) => {
       if (!err.changed) {
         return false;
       }
-      return infoUtils.updateTransition(change, key, false)
+      return infodoc.updateTransition(change, key, false)
         .then(() => { return true; });
     })
     .then(changed => callback(null, changed)); // return the promise instead
@@ -372,85 +370,6 @@ const applyTransitions = (change, callback) => {
     }, callback));
 };
 
-const migrateOldMetaDoc = (doc, callback) => {
-  const stub = {
-    _id: doc._id,
-    _rev: doc._rev,
-    _deleted: true
-  };
-  logger.info('Deleting old metadata document', doc);
-  return db.medic.insert(stub, err => {
-    if (err) {
-      callback(err);
-    } else {
-      doc._id = METADATA_DOCUMENT;
-      delete doc._rev;
-      callback(null, doc);
-    }
-  });
-};
-
-const getMetaData = callback =>
-  dbPouch.sentinel.get(METADATA_DOCUMENT, (err, doc) => {
-    if (!err) {
-      // Doc exists in sentinel db
-      return callback(null, doc);
-    } else if (err.status === 404) {
-      db.medic.get(METADATA_DOCUMENT, (err, doc) => {
-        if (!err) {
-          // Old doc exists, delete it and return the base doc to be saved later
-          return migrateOldMetaDoc(doc, callback);
-        } else if (err.statusCode !== 404) {
-          return callback(err);
-        }
-
-        // Doc doesn't exist.
-        // Maybe we have the doc in the old location?
-        db.medic.get('sentinel-meta-data', (err, doc) => {
-          if (!err) {
-            // Old doc exists, delete it and return the base doc to be saved later
-            return migrateOldMetaDoc(doc, callback);
-          } else if (err.statusCode !== 404) {
-            return callback(err);
-          }
-
-          // No doc at all, create and return default
-          doc = {
-            _id: METADATA_DOCUMENT,
-            processed_seq: 0
-          };
-
-          callback(null, doc);
-        });
-      });
-    } else {
-      return callback(err);
-    }
-  });
-
-const getProcessedSeq = callback =>
-  getMetaData((err, doc) => {
-    if (err) {
-      logger.error('Error getting meta data', err);
-      return callback(err);
-    }
-    callback(null, doc.processed_seq);
-  });
-
-const updateMetaData = (seq, callback) =>
-  getMetaData((err, metaData) => {
-    if (err) {
-      logger.error('Error fetching metaData for update', err);
-      return callback();
-    }
-    metaData.processed_seq = seq;
-    dbPouch.sentinel.put(metaData, err => {
-      if (err) {
-        logger.error('Error updating metaData', err);
-      }
-      return callback();
-    });
-  });
 
 const detach = () => {
   if (changesFeed) {
@@ -463,38 +382,17 @@ const detach = () => {
  *  Setup changes feed listener.
  */
 const attach = () => {
-  if (changesFeed) {
-    return;
+  if (!changesFeed) {
+    logger.info('transitions: processing enabled');
+    return metadata.getProcessedSeq()
+      .catch(err => {
+        logger.error('transitions: error fetching processed seq', err);
+      })
+      .then(seq => {
+        logger.info(`transitions: fetching changes feed, starting from ${seq}`);
+        changesFeed = feed.followFeed(seq, changeQueue);
+      });
   }
-  logger.info('transitions: processing enabled');
-  getProcessedSeq((err, processedSeq) => {
-    if (err) {
-      logger.error('transitions: error fetching processed seq', err);
-      return;
-    }
-    logger.info(`transitions: fetching changes feed, starting from ${processedSeq}`);
-    changesFeed = new follow.Feed({
-      db: process.env.COUCH_URL,
-      since: processedSeq
-    });
-    changesFeed.on('change', change => {
-      // skip uninteresting documents
-      if (change.id.match(/^_design\//)) {
-        return;
-      }
-      changeQueue.push(change);
-    });
-    changesFeed.on('error', err => {
-      logger.error('transitions: error from changes feed', err);
-    });
-    changesFeed.on('catchup', seq => {
-      if (!caughtUpOnce) {
-        caughtUpOnce = true;
-        logger.info(`Sentinel caught up to ${seq}`);
-      }
-    });
-    changesFeed.follow();
-  });
 };
 
 const availableTransitions = () => {

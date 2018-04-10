@@ -2,9 +2,9 @@ const sinon = require('sinon').sandbox.create(),
       db = require('../../../db-nano'),
       dbPouch = require('../../../db-pouch'),
       expect = require('chai').expect,
-      infoUtils = require('../../../lib/info-utils');
+      infodoc = require('../../../lib/infodoc');
 
-describe('infoUtils', () => {
+describe('infodoc', () => {
 
   beforeEach(done => {
     sinon.restore();
@@ -15,21 +15,21 @@ describe('infoUtils', () => {
     it('Gets info doc', () => {
       const change = {id: 'foo', doc:{}, info: {}};
 
-      const infoDoc = {
+      const doc = {
         _id: 'foo-info',
         type: 'info',
         doc_id: 'foo',
         initial_replication_date: new Date()
       };
 
-      sinon.stub(dbPouch.sentinel, 'get').resolves(infoDoc);
+      sinon.stub(dbPouch.sentinel, 'get').resolves(doc);
       sinon.stub(dbPouch.sentinel, 'put').resolves({});
 
-      return infoUtils.getInfoDoc(change).then(info => {
+      return infodoc.get(change).then(info => {
         expect(info).to.not.equal(null);
-        expect(dbPouch.sentinel.get.calledWith(infoDoc._id)).to.equal(true);
+        expect(dbPouch.sentinel.get.calledWith(doc._id)).to.equal(true);
         expect(info.latest_replication_date).to.be.instanceOf(Date);
-        expect(dbPouch.sentinel.put.calledWith(infoDoc)).to.equal(true);
+        expect(dbPouch.sentinel.put.calledWith(doc)).to.equal(true);
       });
     });
 
@@ -47,7 +47,7 @@ describe('infoUtils', () => {
       sinon.stub(dbPouch.medic, 'get').rejects({status: 404});
       sinon.stub(db.audit, 'get').callsArgWith(1, null, {doc: auditDoc});
       sinon.stub(dbPouch.sentinel, 'put').resolves({doc: auditDoc});
-      return infoUtils.getInfoDoc(change).then(info => {
+      return infodoc.get(change).then(info => {
         expect(info).to.not.equal(null);
         expect(dbPouch.sentinel.get.calledWith('foo-info')).to.equal(true);
         expect(dbPouch.medic.get.calledWith('foo-info')).to.equal(true);
@@ -67,7 +67,7 @@ describe('infoUtils', () => {
     it('deleteInfo doc ignores unexistent info doc', () => {
       const given = { id: 'abc' };
       sinon.stub(dbPouch.sentinel, 'get').rejects({ status: 404 });
-      return infoUtils.deleteInfoDoc(given).then(doc => {
+      return infodoc.delete(given).then(doc => {
         expect(doc).to.equal(undefined);
       });
     });
@@ -76,7 +76,7 @@ describe('infoUtils', () => {
       const given = { id: 'abc' };
       const get = sinon.stub(dbPouch.sentinel, 'get').resolves({ _id: 'abc', _rev: '123' });
       const insert = sinon.stub(dbPouch.sentinel, 'put').resolves({});
-      return infoUtils.deleteInfoDoc(given).catch(err => {
+      return infodoc.delete(given).catch(err => {
         expect(err === undefined).to.equal(true);
         expect(get.callCount).to.equal(1);
         expect(get.args[0][0]).to.equal('abc-info');
