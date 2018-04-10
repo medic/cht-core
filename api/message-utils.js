@@ -1,9 +1,9 @@
 const _ = require('underscore'),
-      db = require('./db-nano'),
+      db = require('./db-pouch'),
       taskUtils = require('task-utils');
 
 const getTaskMessages = function(options, callback) {
-  db.medic.view('medic', 'tasks_messages', options, callback);
+  db.medic.query('medic/tasks_messages', options, callback);
 };
 
 const getTaskForMessage = function(uuid, doc) {
@@ -115,16 +115,16 @@ module.exports = {
 
       const idsToFetch = _.uniq(_.pluck(taskMessageResults.rows, 'id'));
 
-      db.medic.fetch({keys: idsToFetch}, (err, docResults) => {
+      db.medic.allDocs({ keys:idsToFetch, include_docs:true }, (err, docResults) => {
         if (err) {
           return callback(err);
         }
 
-        const docs = _.pluck(docResults.rows, 'doc');
+        const docs = docResults.rows.map(r => r.doc);
 
         const stateChangesByDocId = applyTaskStateChangesToDocs(taskStateChanges, docs);
 
-        db.medic.bulk({docs: docs}, (err, results) => {
+        db.medic.bulkDocs(docs, (err, results) => {
           if (err) {
             return callback(err);
           }
