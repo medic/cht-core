@@ -18,7 +18,7 @@ class BaseConfig {
           args: ['--headless', '--disable-gpu', '--window-size=1024,768']
         }
         // browserName: 'firefox',
-        // 'marionette':'true'
+        // 'marionette':'true'.
       },
       beforeLaunch: function() {
         process.on('uncaughtException', function() {
