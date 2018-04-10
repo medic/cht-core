@@ -291,12 +291,9 @@ module.exports = function(grunt) {
         cmd: () => `
           mkdir -p ddocs/medic/build_info;
           cd ddocs/medic/build_info;
-          echo "medic" > application;
-          echo "medic" > namespace;
           echo "${releaseName}" > version;
           echo "${new Date().toISOString()}" > time;
-          echo "grunt on \`whoami\`" > author;
-          echo '["medic-api-0.1.0.tgz", "medic-sentinel-0.1.0.tgz"]' > node_modules.json`
+          echo "grunt on \`whoami\`" > author;`
       },
       apiDev: {
         cmd: 'TZ=UTC ./node_modules/.bin/nodemon --watch api api/server.js -- --allow-cors'

@@ -5,7 +5,7 @@ const service = require('../services/upgrade');
 
 module.exports = {
   upgrade: (req, res) => {
-    return auth.check(req, '_admin')
+    return auth.check(req, 'can_configure')
       .then(userCtx => {
         var buildInfo = req.body.build;
         if (!buildInfo) {
