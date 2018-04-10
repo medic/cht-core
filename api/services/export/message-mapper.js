@@ -96,7 +96,7 @@ const normalizeTasks = doc => {
 
 module.exports = {
   getDocIds: (options) => {
-    return db.medic.query('medic/tasks_messages', options)
+    return db.medic.query('medic-sms/tasks_messages', options)
       .then(result => result.rows)
       .then(rows => rows.map(row => row.id));
   },
