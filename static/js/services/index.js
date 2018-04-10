@@ -12,7 +12,6 @@
   require('./cache');
   require('./changes');
   require('./check-date');
-  require('./child-facility');
   require('./clean-etag');
   require('./contact-change-filter');
   require('./contact-form');

@@ -70,29 +70,6 @@
       })
 
       // analytics
-      .state('analytics', {
-        url: '/analytics?tour',
-        controller: 'AnalyticsCtrl',
-        templateUrl: 'templates/partials/analytics.html'
-      })
-      .state('analytics.reporting', {
-        url: '/reporting',
-        views: {
-          content: {
-            controller: 'AnalyticsReportingCtrl',
-            templateUrl: 'templates/partials/analytics/reporting.html'
-          }
-        }
-      })
-      .state('analytics.reporting.detail', {
-        url: '/:form/:place',
-        views: {
-          detail: {
-            controller: 'AnalyticsReportingDetailCtrl',
-            templateUrl: 'templates/partials/analytics/reporting_detail.html'
-          }
-        }
-      })
       .state('analytics.targets', {
         url: '/targets',
         views: {

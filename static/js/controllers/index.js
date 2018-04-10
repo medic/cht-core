@@ -7,9 +7,6 @@
   require('./inbox');
 
   require('./about');
-  require('./analytics');
-  require('./analytics-reporting');
-  require('./analytics-reporting-detail');
   require('./analytics-targets');
   require('./bulk-delete-confirm');
   require('./check-date');
