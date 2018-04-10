@@ -2,7 +2,6 @@ function(doc) {
   if (doc.type === 'clinic' ||
       doc.type === 'health_center' ||
       doc.type === 'district_hospital' ||
-      doc.type === 'national_office' ||
       doc.type === 'person') {
 
     var emitReference = function(prefix, key) {
