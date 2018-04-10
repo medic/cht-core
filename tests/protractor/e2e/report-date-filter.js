@@ -7,7 +7,7 @@ describe('Filters reports', () => {
   'use strict';
 
   const reports = [
-    // one registration half an hour before the start date
+    // one registration half an hour before the start date.
     {
       fields: {
         lmp_date: 'Feb 3, 2016'
