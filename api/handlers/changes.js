@@ -4,6 +4,7 @@ var _ = require('underscore'),
     config = require('../config'),
     serverUtils = require('../server-utils'),
     db = require('../db-nano'),
+    debug = require('debug')('medic:changes'),
     ALL_KEY = '_all', // key in the docs_by_replication_key view for records everyone can access
     UNASSIGNED_KEY = '_unassigned', // key in the docs_by_replication_key view for unassigned records
     CONTACT_TYPES = ['person', 'clinic', 'health_center', 'district_hospital'],
@@ -508,7 +509,7 @@ function startTimer() {
 
 function endTimer(name, start) {
   var diff = Date.now() - start;
-  console.log('TIMED SECTION COMPLETE', name, diff, 'ms');
+  debug(`TIMED SECTION COMPLETE ${name} ${diff}ms`);
 }
 
 // used for testing
