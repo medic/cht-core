@@ -1,5 +1,5 @@
 const packageJson = require('./package.json'),
-      releaseName = process.env.TRAVIS_TAG || process.env.TRAVIS_BRANCH || 'medic';
+      releaseName = process.env.TRAVIS_TAG || process.env.TRAVIS_BRANCH || 'local-development';
 
 
 module.exports = function(grunt) {
@@ -285,6 +285,14 @@ module.exports = function(grunt) {
           }
           return `echo "${version}" > ddocs/medic/version`;
         }
+      },
+      setHorticulturalistMetadata: {
+        cmd: () => `
+          mkdir -p ddocs/medic/build_info;
+          cd ddocs/medic/build_info;
+          echo "${releaseName}" > version;
+          echo "${new Date().toISOString()}" > time;
+          echo "grunt on \`whoami\`" > author;`
       },
       apiDev: {
         cmd: 'TZ=UTC ./node_modules/.bin/nodemon --watch api api/server.js -- --allow-cors'
@@ -630,6 +638,7 @@ module.exports = function(grunt) {
     'copy:inbox',
     'appcache',
     'exec:setDdocVersion',
+    'exec:setHorticulturalistMetadata',
     'build-ddoc',
   ]);
 

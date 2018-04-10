@@ -170,32 +170,7 @@ app.get('/api/auth/:path', function(req, res) {
   });
 });
 
-app.post('/api/v1/upgrade', jsonParser, (req, res) => {
-  auth.check(req, '_admin', null, (err, userCtx) => {
-    if (err) {
-      return serverUtils.error(err, req, res);
-    }
-
-    var buildInfo = req.body.build;
-    if (!buildInfo) {
-      return serverUtils.error({
-        message: 'You must provide a build info body',
-        status: 400
-      }, req, res);
-    }
-
-    upgrade(req.body.build, userCtx.user)
-      .then(() => res.json({ ok: true }))
-      .catch(err => serverUtils.error(err, req, res));
-  });
-});
-
-var emptyJSONBodyError = function(req, res) {
-  return serverUtils.error({
-    code: 400,
-    message: 'Request body is empty or Content-Type header was not set to application/json.'
-  }, req, res);
-};
+app.post('/api/v1/upgrade', jsonParser, upgrade.upgrade);
 
 app.get('/api/sms/', function(req, res) {
   res.redirect(301, '/api/sms');
@@ -306,6 +281,12 @@ app.postJson('/api/v1/users', function(req, res) {
   });
 });
 
+const emptyJSONBodyError = function(req, res) {
+  return serverUtils.error({
+    code: 400,
+    message: 'Request body is empty or Content-Type header was not set to application/json.'
+  }, req, res);
+};
 /*
  * TODO: move this logic out of here
  *       https://github.com/medic/medic-webapp/issues/4092
