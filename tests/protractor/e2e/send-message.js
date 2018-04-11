@@ -222,7 +222,7 @@ describe('Send message', () => {
       element(by.id('messages-tab')).click();
       browser.wait(() => {
         return element(by.css(messageInList(id))).isPresent();
-      }, 1000);
+      }, 1500);
       clickLhsEntry(id, name);
     };
     const enterMessageText = message => {
