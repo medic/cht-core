@@ -1,6 +1,6 @@
 const sinon = require('sinon').sandbox.create(),
       transition = require('../../../transitions/update_notifications'),
-      db = require('../../../db-nano'),
+      db = require('../../../db'),
       utils = require('../../../lib/utils');
 
 describe('update_notifications', () => {

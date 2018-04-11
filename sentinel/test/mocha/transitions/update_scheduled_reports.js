@@ -1,5 +1,5 @@
 const sinon = require('sinon').sandbox.create(),
-      db = require('../../../db-nano'),
+      db = require('../../../db'),
       transition = require('../../../transitions/update_scheduled_reports');
 
 describe('update_scheduled_reports', () => {
