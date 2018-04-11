@@ -464,8 +464,22 @@ const changesHandler = _.partial(require('./handlers/changes').request, proxy);
 app.get(pathPrefix + '_changes', changesHandler);
 app.postJson(pathPrefix + '_changes', changesHandler);
 
+const metaPathPrefix = '/medic-user-\*-meta/';
+
+// AuthZ for this endpoint should be handled by couchdb
+app.get(metaPathPrefix + '_changes', (req, res) => {
+  if (req.query.feed === 'longpoll' ||
+      req.query.feed === 'continuous' ||
+      req.query.feed === 'eventsource') {
+    // Disable nginx proxy buffering to allow hearbeats for long-running feeds
+    // Issue: #4312
+    res.setHeader('X-Accel-Buffering', 'no');
+  }
+  proxy.web(req, res);
+});
+
 // Attempting to create the user's personal meta db
-app.put('/medic-user-\*-meta/', (req, res) => {
+app.put(metaPathPrefix, (req, res) => {
   require('./controllers/create-user-db')(req, err => {
     if (err) {
       return serverUtils.error(err, req, res);
