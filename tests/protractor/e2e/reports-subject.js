@@ -9,7 +9,7 @@ describe('Reports Summary', () => {
 
   const PHONE = '+64271234567';
 
-  // contacts
+  // contacts.
   const DISTRICT = {
     _id: 'district',
     type: 'district_hospital',
