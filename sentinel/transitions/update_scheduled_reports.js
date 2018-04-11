@@ -9,7 +9,6 @@ module.exports = {
             doc &&
             doc.form &&
             doc.type === 'data_record' &&
-            utils.getClinicPhone(doc) &&
             (doc.errors ? doc.errors.length === 0 : true) &&
             self._isFormScheduled(doc)
         );

@@ -185,8 +185,7 @@ module.exports = {
             doc.form &&
             doc.reported_date &&
             !transitionUtils.hasRun(doc, NAME) &&
-            _hasConfig(doc) &&
-            utils.getClinicPhone(doc)
+            _hasConfig(doc)
         );
     },
     // also used by registrations transition.
