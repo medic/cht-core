@@ -23,7 +23,7 @@ module.exports = {
 
   addNewDistrict: districtName => {
     helper.waitUntilReady(newDistrictButton);
-    newDistrictButton.click();
+    helper.clickElement(newDistrictButton);
     helper.waitElementToBeVisible(newPlaceName);
     newPlaceName.sendKeys(districtName);
     newPersonButton.click();
