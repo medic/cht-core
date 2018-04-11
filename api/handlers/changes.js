@@ -470,6 +470,7 @@ module.exports = {
           req.query.feed === 'continuous' ||
           req.query.feed === 'eventsource') {
         // Disable nginx proxy buffering to allow hearbeats for long-running feeds
+        // Issue: #2363
         res.setHeader('X-Accel-Buffering', 'no');
       }
 
