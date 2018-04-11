@@ -3,7 +3,7 @@ const _ = require('underscore'),
       taskUtils = require('task-utils');
 
 const getTaskMessages = function(options, callback) {
-  db.medic.query('medic/tasks_messages', options, callback);
+  db.medic.query('medic-sms/tasks_messages', options, callback);
 };
 
 const getTaskForMessage = function(uuid, doc) {
