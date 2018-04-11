@@ -10,7 +10,7 @@ class BaseConfig {
       seleniumAddress: 'http://localhost:4444/wd/hub',
 
       specs: [`${testSrcDir}/**/*.js`],
-      
+
       framework: 'jasmine2',
       capabilities: {
         browserName: 'chrome',
