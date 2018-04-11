@@ -1,5 +1,4 @@
-var _ = require('underscore'),
-    transition = require('../../transitions/registration'),
+var transition = require('../../transitions/registration'),
     schedules = require('../../lib/schedules'),
     sinon = require('sinon').sandbox.create(),
     moment = require('moment'),
@@ -16,31 +15,23 @@ var _ = require('underscore'),
         }
     };
 
-function getMessage(doc, idx) {
-    if (!doc || !doc.tasks) {
-        return;
-    }
-    if (idx) {
-        if (!doc.tasks[idx]) {
-            return;
-        }
-        return _.first(doc.tasks[idx].messages);
-    }
-    return _.first(_.first(doc.tasks).messages);
-}
+const getMessage = (doc, idx) =>
+    doc &&
+    doc.tasks &&
+    doc.tasks.length &&
+    doc.tasks[idx] &&
+    doc.tasks[idx].messages &&
+    doc.tasks[idx].messages.length &&
+    doc.tasks[idx].messages[0];
 
-function getScheduledMessage(doc, idx) {
-    if (!doc || !doc.scheduled_tasks) {
-        return;
-    }
-    if (idx) {
-        if (!doc.scheduled_tasks[idx]) {
-            return;
-        }
-        return _.first(doc.scheduled_tasks[idx].messages);
-    }
-    return _.first(_.first(doc.scheduled_tasks).messages);
-}
+const getScheduledMessage = (doc, idx) =>
+    doc &&
+    doc.scheduled_tasks &&
+    doc.scheduled_tasks.length &&
+    doc.scheduled_tasks[idx] &&
+    doc.scheduled_tasks[idx].messages &&
+    doc.scheduled_tasks[idx].messages.length &&
+    doc.scheduled_tasks[idx].messages[0];
 
 exports.tearDown = function(callback) {
     sinon.restore();
@@ -52,12 +43,12 @@ exports['registration sets up schedule'] = function(test) {
     sinon.stub(transition, 'getConfig').returns([{
         form: 'PATR',
         events: [
-           {
-               name: 'on_create',
-               trigger: 'assign_schedule',
-               params: 'group1',
-               bool_expr: ''
-           }
+            {
+                name: 'on_create',
+                trigger: 'assign_schedule',
+                params: 'group1',
+                bool_expr: ''
+            }
         ],
         validations: [],
         messages: [
@@ -105,33 +96,22 @@ exports['registration sets up schedule'] = function(test) {
         test.equals(doc.scheduled_tasks && doc.scheduled_tasks.length, 1);
 
         var msg0 = getMessage(doc, 0);
-        test.ok(msg0);
-        test.ok(msg0.uuid);
-        test.ok(msg0.to);
-        test.ok(msg0.message);
-        if (msg0) {
-            delete msg0.uuid;
-            test.deepEqual(msg0, {
-                to: '+1234',
-                message: 'thanks Julie'
-            });
-        }
+        test.deepEqual(msg0, {
+            uuid: 'test-uuid',
+            to: '+1234',
+            message: 'thanks Julie'
+        });
 
         /*
          * Also checks that recipient using doc property value is resolved
          * correctly.
          * */
         var msg1 = getScheduledMessage(doc, 0);
-        test.ok(msg1);
-        test.ok(msg1.to);
-        test.ok(msg1.message);
-        if (msg1) {
-            test.deepEqual(msg1, {
-                to: '+1234',
-                message: 'Mustaches.  Overrated or underrated?',
-                uuid: 'test-uuid'
-            });
-        }
+        test.deepEqual(msg1, {
+            to: '+1234',
+            message: 'Mustaches.  Overrated or underrated?',
+            uuid: 'test-uuid'
+        });
         test.done();
     });
 };
@@ -141,11 +121,11 @@ exports['registration sets up schedule using translation_key'] = function(test) 
     sinon.stub(transition, 'getConfig').returns([{
         form: 'PATR',
         events: [{
-           name: 'on_create',
-           trigger: 'assign_schedule',
-           params: 'group1',
-           bool_expr: ''
-       }],
+            name: 'on_create',
+            trigger: 'assign_schedule',
+            params: 'group1',
+            bool_expr: ''
+        }],
         validations: [],
         messages: [{
             translation_key: 'thanks',
@@ -186,17 +166,11 @@ exports['registration sets up schedule using translation_key'] = function(test) 
         test.equals(doc.scheduled_tasks && doc.scheduled_tasks.length, 1);
 
         var msg0 = getMessage(doc, 0);
-        test.ok(msg0);
-        test.ok(msg0.uuid);
-        test.ok(msg0.to);
-        test.ok(msg0.message);
-        if (msg0) {
-            delete msg0.uuid;
-            test.deepEqual(msg0, {
-                to: '+1234',
-                message: 'thanks Julie'
-            });
-        }
+        test.deepEqual(msg0, {
+            uuid: 'test-uuid',
+            to: '+1234',
+            message: 'thanks Julie'
+        });
 
         // check that message generation is deferred until later
         test.equals(doc.scheduled_tasks.length, 1);
@@ -210,12 +184,12 @@ exports['registration sets up schedule using bool_expr'] = function(test) {
     sinon.stub(transition, 'getConfig').returns([{
         form: 'PATR',
         events: [
-           {
-               name: 'on_create',
-               trigger: 'assign_schedule',
-               params: 'group1',
-               bool_expr: 'doc.foo === "baz"'
-           }
+            {
+                name: 'on_create',
+                trigger: 'assign_schedule',
+                params: 'group1',
+                bool_expr: 'doc.foo === "baz"'
+            }
         ],
         validations: [],
         messages: [
@@ -265,33 +239,63 @@ exports['registration sets up schedule using bool_expr'] = function(test) {
         test.equals(doc.scheduled_tasks && doc.scheduled_tasks.length, 1);
 
         var msg0 = getMessage(doc, 0);
-        test.ok(msg0);
-        test.ok(msg0.uuid);
-        test.ok(msg0.to);
-        test.ok(msg0.message);
-        if (msg0) {
-            delete msg0.uuid;
-            test.deepEqual(msg0, {
-                to: '+1234',
-                message: 'thanks Julie'
-            });
-        }
+        test.deepEqual(msg0, {
+            uuid: 'test-uuid',
+            to: '+1234',
+            message: 'thanks Julie'
+        });
 
         /*
          * Also checks that recipient using doc property value is resolved
          * correctly.
          * */
         var msg1 = getScheduledMessage(doc, 0);
-        test.ok(msg1);
-        test.ok(msg1.to);
-        test.ok(msg1.message);
-        if (msg1) {
-            test.deepEqual(msg1, {
-                to: '+1234',
-                message: 'Mustaches.  Overrated or underrated?',
-                uuid: 'test-uuid'
-            });
-        }
+        test.deepEqual(msg1, {
+            to: '+1234',
+            message: 'Mustaches.  Overrated or underrated?',
+            uuid: 'test-uuid'
+        });
+        test.done();
+    });
+};
+
+exports['patients chp is resolved correctly as recipient'] = function(test) {
+    sinon.stub(transition, 'getConfig').returns([{
+        form: 'PATR',
+        events: [],
+        validations: [],
+        messages: [{
+            translation_key: 'thanks',
+            recipient: 'patient.parent.contact.phone'
+        }]
+    }]);
+    sinon.stub(schedules, 'getScheduleConfig').returns({});
+    sinon.stub(utils, 'getPatientContactUuid').callsArgWith(2, null, {_id: 'uuid'});
+    sinon.stub(utils, 'getRegistrations').callsArgWithAsync(1, null, []);
+    sinon.stub(utils, 'translate').withArgs('thanks', 'en').returns('thanks');
+    sinon.stub(uuid, 'v4').returns('test-uuid');
+
+    var doc = {
+        reported_date: moment().toISOString(),
+        form: 'PATR',
+        from: contact.phone,
+        contact: contact,
+        fields: { patient_id: '98765' },
+        patient: { parent: { contact: { phone: '+5551596' } } }
+    };
+
+    transition.onMatch({ doc: doc }).then(complete => {
+        test.equals(complete, true);
+        test.ok(doc.tasks);
+        test.equals(doc.tasks && doc.tasks.length, 1);
+
+        var msg0 = getMessage(doc, 0);
+        test.deepEqual(msg0, {
+            uuid: 'test-uuid',
+            to: '+5551596',
+            message: 'thanks'
+        });
+
         test.done();
     });
 };
@@ -301,12 +305,12 @@ exports['two phase registration sets up schedule using bool_expr'] = function(te
     sinon.stub(transition, 'getConfig').returns([{
         form: 'PATR',
         events: [
-           {
-               name: 'on_create',
-               trigger: 'assign_schedule',
-               params: 'group1',
-               bool_expr: 'doc.foo === "baz"'
-           }
+            {
+                name: 'on_create',
+                trigger: 'assign_schedule',
+                params: 'group1',
+                bool_expr: 'doc.foo === "baz"'
+            }
         ],
         validations: [],
         messages: [
@@ -360,33 +364,22 @@ exports['two phase registration sets up schedule using bool_expr'] = function(te
         test.equals(doc.scheduled_tasks && doc.scheduled_tasks.length, 1);
 
         var msg0 = getMessage(doc, 0);
-        test.ok(msg0);
-        test.ok(msg0.uuid);
-        test.ok(msg0.to);
-        test.ok(msg0.message);
-        if (msg0) {
-            delete msg0.uuid;
-            test.deepEqual(msg0, {
-                to: '+1234',
-                message: 'thanks for registering barry'
-            });
-        }
+        test.deepEqual(msg0, {
+            uuid: 'test-uuid',
+            to: '+1234',
+            message: 'thanks for registering barry'
+        });
 
         /*
          * Also checks that recipient using doc property value is resolved
          * correctly.
          * */
         var msg1 = getScheduledMessage(doc, 0);
-        test.ok(msg1);
-        test.ok(msg1.to);
-        test.ok(msg1.message);
-        if (msg1) {
-            test.deepEqual(msg1, {
-                to: '+1234',
-                message: 'Remember to visit barry',
-                uuid: 'test-uuid'
-            });
-        }
+        test.deepEqual(msg1, {
+            to: '+1234',
+            message: 'Remember to visit barry',
+            uuid: 'test-uuid'
+        });
 
         test.equals(getRegistrations.callCount, 2);
         test.equals(getRegistrations.args[0][0].id, '123');
@@ -399,12 +392,12 @@ exports['no schedule using false bool_expr'] = function(test) {
     sinon.stub(transition, 'getConfig').returns([{
         form: 'PATR',
         events: [
-           {
-               name: 'on_create',
-               trigger: 'assign_schedule',
-               params: 'group1',
-               bool_expr: 'doc.foo === "notbaz"'
-           }
+            {
+                name: 'on_create',
+                trigger: 'assign_schedule',
+                params: 'group1',
+                bool_expr: 'doc.foo === "notbaz"'
+            }
         ],
         validations: [],
         messages: [
@@ -417,6 +410,7 @@ exports['no schedule using false bool_expr'] = function(test) {
             }
         ]
     }]);
+    sinon.stub(uuid, 'v4').returns('test-uuid');
     sinon.stub(utils, 'getRegistrations').callsArgWithAsync(1, null, []);
     sinon.stub(utils, 'getPatientContact').callsArgWith(2, null, {_id: 'uuid'});
     sinon.stub(schedules, 'getScheduleConfig').returns({
@@ -451,17 +445,11 @@ exports['no schedule using false bool_expr'] = function(test) {
         test.ok(!doc.scheduled_tasks);
 
         var msg0 = getMessage(doc, 0);
-        test.ok(msg0);
-        test.ok(msg0.uuid);
-        test.ok(msg0.to);
-        test.ok(msg0.message);
-        if (msg0) {
-            delete msg0.uuid;
-            test.deepEqual(msg0, {
-                to: '+1234',
-                message: 'thanks Julie'
-            });
-        }
+        test.deepEqual(msg0, {
+            uuid: 'test-uuid',
+            to: '+1234',
+            message: 'thanks Julie'
+        });
 
         test.done();
     });

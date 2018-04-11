@@ -22,7 +22,7 @@ const mergeLineages = (lineage, patientLineage) => {
   const lineageContacts = [],
         contactsToFetch = [];
   contactIds.forEach(id => {
-    const contact = lineage.find(d => d && d._id === id);
+    const contact = lineages.find(d => d && d._id === id);
     if (contact) {
       lineageContacts.push(contact);
     } else {

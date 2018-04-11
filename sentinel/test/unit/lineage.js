@@ -434,6 +434,48 @@ exports['fetchHydratedDoc only fetches contacts that it has not got via lineage'
   }).catch(test.done);
 };
 
+exports['fetchHydratedDoc hydrates and attaches patient'] = test => {
+  const docId = 'docId';
+  const chwId = 'chwId';
+  const areaId = 'areaId';
+  const dhId = 'dhId';
+  const dhContactId = 'dhContactId';
+  const doc = {
+    _id: docId,
+    type: 'data_record',
+    contact: {_id: chwId, parent: {_id: areaId, parent: {_id: dhId}}},
+    fields: { patient_id: '12345' }
+  };
+  const chw = {type: 'person', _id: chwId, parent: {_id: areaId, parent: {_id: dhId}}, hydrated: true};
+  const area = {type: 'clinic', _id: areaId, contact: {_id: chwId }, parent: {_id: dhId}};
+  const dh = {type: 'district-hospital', _id: dhId, contact: {_id: dhContactId}};
+  const dhContact = {type: 'person', _id: dhContactId, hydrated: true};
+
+  const viewStub = sinon.stub(db.medic, 'view');
+  viewStub.callsArgWith(3, null, { rows: [
+    { doc: doc },
+    { doc: chw },
+    { doc: area },
+    { doc: dh }
+  ]});
+  viewStub.onCall(1).callsArgWith(3, null, { rows: [
+    { doc: report_patient },
+    { doc: report_contact },
+    { doc: report_parent },
+    { doc: report_grandparent }
+  ] });
+  sinon.stub(db.medic, 'fetch').callsArgWith(1, null, { rows: [
+    { doc: dhContact },
+    { doc: report_parentContact }
+  ]});
+  sinon.stub(utils, 'getPatientContactUuid').callsArgWith(2, null, report_patient._id);
+
+  lineage.fetchHydratedDoc(docId).then(actual => {
+    test.equal(actual.patient.parent.parent.contact.phone, '+123');
+    test.done();
+  }).catch(test.done);
+};
+
 exports['minify handles null argument'] = test => {
   lineage.minify(null);
   // just make sure it doesn't blow up!
