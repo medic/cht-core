@@ -64,6 +64,7 @@ module.exports = {
       .catch(() => {
         browser.sleep(1000);
         return browser.wait(EC.elementToBeClickable(element), 12000).then(() => {
+          module.exports.handleUpdateModal();
           element.click();
         });
       });

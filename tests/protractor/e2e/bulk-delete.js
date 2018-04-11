@@ -1,5 +1,6 @@
 const utils = require('../utils'),
-      commonElements = require('../page-objects/common/common.po.js');
+      commonElements = require('../page-objects/common/common.po.js'),
+      helper = require('../helper');
 
 describe('Bulk delete reports', () => {
 
@@ -82,7 +83,7 @@ describe('Bulk delete reports', () => {
     browser.wait(() => {
       return selectModeButton.isPresent();
     }, 1000);
-    selectModeButton.click();
+    helper.clickElement(selectModeButton);
     expect(element(by.css('#reports-list li[data-record-id="' + savedUuids[0] + '"] input[type="checkbox"]')).isDisplayed()).toBeTruthy();
 
     // stop select mode
@@ -90,7 +91,7 @@ describe('Bulk delete reports', () => {
     expect(element(by.css('#reports-list li[data-record-id="' + savedUuids[0] + '"] input[type="checkbox"]')).isDisplayed()).toBeFalsy();
 
     // start select mode again
-    selectModeButton.click();
+    helper.clickElement(selectModeButton);
     expect(element(by.css('#reports-list li[data-record-id="' + savedUuids[0] + '"] input[type="checkbox"]')).isDisplayed()).toBeTruthy();
 
     // select a report

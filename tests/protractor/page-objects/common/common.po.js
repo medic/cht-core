@@ -28,28 +28,30 @@ module.exports = {
 
   goToReports: () => {
     browser.get(utils.getBaseUrl() + 'reports/');
+    helper.handleUpdateModal();
     helper.waitElementToBeClickable(element(by.css('.action-container .general-actions:not(.ng-hide) .fa-plus')));
     helper.waitElementToBeVisible(element(by.id('reports-list')));
+    helper.handleUpdateModal();
   },
 
   goToAnalytics: () => {
-    analyticsLink.click();
+    helper.clickElement(analyticsLink);
     helper.waitUntilReady(medicLogo);
   },
 
   goToConfiguration: () => {
     helper.waitUntilReady(medicLogo);
-    configurationLink.click();
+    helper.clickElement(configurationLink);
   },
 
   openMenu: () => {
     helper.waitUntilReady(messagesLink);
-    hamburgerMenu.click();
+    helper.clickElement(hamburgerMenu);
   },
 
   goHome: () => {
     helper.waitUntilReady(medicLogo);
-    medicLogo.click();
+    helper.clickElement(medicLogo);
   },
 
   isAt: list => {
@@ -60,6 +62,6 @@ module.exports = {
   logout: () => {
     hamburgerMenu.click();
     helper.waitElementToBeVisible(logoutButton);
-    logoutButton.click();
+    helper.clickElement(logoutButton);
   }
 };
