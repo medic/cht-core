@@ -3959,11 +3959,7 @@ jquery-touchswipe@^1.6.18:
   version "1.6.18"
   resolved "https://registry.yarnpkg.com/jquery-touchswipe/-/jquery-touchswipe-1.6.18.tgz#fd65a09611edc3fece8ef480ae48569d42f984e2"
 
-jquery@*, jquery@3.3.x, jquery@>=1.10, "jquery@>=1.7.1 <4.0.0", jquery@>=1.8:
-  version "3.3.1"
-  resolved "https://registry.yarnpkg.com/jquery/-/jquery-3.3.1.tgz#958ce29e81c9790f31be7792df5d4d95fc57fbca"
-
-jquery@3.2.x:
+jquery@*, jquery@3.2.x, jquery@>=1.10, "jquery@>=1.7.1 <4.0.0", jquery@>=1.8:
   version "3.2.1"
   resolved "https://registry.yarnpkg.com/jquery/-/jquery-3.2.1.tgz#5c4d9de652af6cd0a770154a631bba12b015c787"
 

@@ -118,5 +118,8 @@
       "path": "./static/dist/inbox.css",
       "maxSize": "70 kB"
     }
-  ]
+  ],
+  "resolutions": {
+    "**/jquery": "3.2.x"
+  }
 }
