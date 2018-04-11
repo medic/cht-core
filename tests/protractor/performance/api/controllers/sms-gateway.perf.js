@@ -14,7 +14,7 @@ describe('/sms', function() {
 
     describe('for webapp-terminating message processing', function() {
 
-      it('should return within a reasonable time', function() {
+      xit('should return within a reasonable time', function() {
         const start = Date.now();
         return api.postMessages(...generate.oneHundredWtMessages())
           .then(response => {
@@ -32,7 +32,7 @@ describe('/sms', function() {
 
     describe('for webapp-originating message processing', function() {
 
-      it('should return within a reasonable time', function() {
+      xit('should return within a reasonable time', function() {
         return setup.saveWoMessages(...generate.oneHundredWoMessages())
           .then(() => {
 
