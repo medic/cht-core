@@ -126,7 +126,7 @@ module.exports = {
   },
 
   handleUpdateModal: () => {
-    if (element(by.css('#update-available')).isPresent()) {
+    if (element(by.css('#update-available')).isDisplayed()) {
       browser.actions().sendKeys(protractor.Key.ENTER).perform();
     }
   },
