@@ -55,6 +55,7 @@ describe('Export Data V2.0', () => {
           '"export-data-2-test-doc-2","a","abc124",1517529600000,,,,,,"barVal2",,"fooVal2","smangsmongVal2"',
           '"export-data-2-test-doc-1","a","abc123",1517443200000,,,,,,"barVal",,"fooVal","smangsmongVal"',
         ];
+        browser.driver.sleep(500);
         expect(rows.length).toBe(expected.length);
         expect(rows[0]).toBe(expected[0]);
         rows.splice(1).forEach(row => {
@@ -83,6 +84,7 @@ describe('Export Data V2.0', () => {
             '_id,form,patient_id,reported_date,from,contact.name,contact.parent.name,contact.parent.parent.name,contact.parent.parent.parent.name,baz',
             '"export-data-2-test-doc-3","b","abc125",1517616000000,,,,,,"bazVal"'
           ];
+          browser.driver.sleep(500);
           expect(rows.length).toBe(2);
           expect(rows).toEqual(expected);
         }));
@@ -97,6 +99,7 @@ describe('Export Data V2.0', () => {
             '_id,form,patient_id,reported_date,from,contact.name,contact.parent.name,contact.parent.parent.name,contact.parent.parent.parent.name,bar,baz,foo,smang.smong',
             '"export-data-2-test-doc-3","b","abc125",1517616000000,,,,,,,"bazVal",,'
           ];
+          browser.driver.sleep(500);
           expect(rows.length).toBe(2);
           expect(rows).toEqual(expected);
       });
@@ -149,7 +152,7 @@ describe('Export Data V2.0', () => {
             '"export-data-2-test-doc-4","weird-data-types",,"",,,,,,"[0,1,2]","",false,"[0,{\\"foo\\":false,\\"bar\\":null},\\"Hello, \\\\"world\\\\"\\"]","Woah there, \\"Jimmy O\'Tool\\"",,0',
           ];
           //wait for ui to render
-          browser.driver.sleep(1000);
+          browser.driver.sleep(500);
           expect(rows.length).toBe(2);
           expect(rows).toEqual(expected);
         }));
