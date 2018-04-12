@@ -148,6 +148,8 @@ describe('Export Data V2.0', () => {
             '_id,form,patient_id,reported_date,from,contact.name,contact.parent.name,contact.parent.parent.name,contact.parent.parent.parent.name,wd_array,wd_emptyString,wd_false,wd_naughtyArray,wd_naughtyString,wd_null,wd_zero',
             '"export-data-2-test-doc-4","weird-data-types",,"",,,,,,"[0,1,2]","",false,"[0,{\\"foo\\":false,\\"bar\\":null},\\"Hello, \\\\"world\\\\"\\"]","Woah there, \\"Jimmy O\'Tool\\"",,0',
           ];
+          //wait for ui to render
+          browser.driver.sleep(300);
           expect(rows.length).toBe(2);
           expect(rows).toEqual(expected);
         }));
