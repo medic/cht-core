@@ -44,17 +44,19 @@ install:
 before_script:
   - mkdir logs
   - nvm use $NODE_VERSION
-  - npm install -g npm@^5.3.0
-  - npm -v
-  - npm install
-  - npm ls || true
+  - curl -sS https://dl.yarnpkg.com/debian/pubkey.gpg | sudo apt-key add -
+  - echo "deb https://dl.yarnpkg.com/debian/ stable main" | sudo tee /etc/apt/sources.list.d/yarn.list
+  - sudo apt-get update && sudo apt-get install --no-install-recommends yarn
+  - yarn -v
+  - yarn install --ignore-engines
+  - yarn list || true
   # Create couchdb system tables (this has to be done manually on couchdb 2.0)
   - curl -X PUT http://127.0.0.1:5984/{_users,_replicator,_global_changes,_metadata,admins}
   - curl -X PUT localhost:5984/medic
-  - npm install grunt-cli -g
-  - npm --prefix api install
-  - npm --prefix sentinel install
-  - npm --prefix shared-libs/phone-number install
+  - yarn add grunt-cli -g
+  - cd api && yarn install && cd ..
+  - cd sentinel && yarn install && cd ..
+  - cd shared-libs/phone-number && yarn install && cd ../..
   - ./node_modules/.bin/webdriver-manager update
   - ./node_modules/.bin/webdriver-manager start > logs/webdriver.log &
   - until nc -z localhost 4444; do sleep 1; done
