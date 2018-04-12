@@ -65,6 +65,19 @@ exports.setUp = callback => {
         recipient: 'caregiver_phone',
       }
     ]
+  }, {
+    form: 'P',
+    validations: {
+      join_responses: true,
+      list: [{
+        property: 'last_menstrual_period',
+        rule: 'integer && between(2,42)',
+        message: [{
+          content: 'Something something {{patient_name}}',
+          locale: 'en'
+        }]
+      }]
+    }
   }]);
   callback();
 };
@@ -308,6 +321,39 @@ exports['registration responses support locale'] = test => {
         message: 'gracias Sam'
       });
     }
+    test.done();
+  });
+};
+
+exports['registration errors receive patient context'] = test => {
+  const doc = {
+    form: 'P',
+    fields: {
+      patient_id: '123456',
+      last_menstrual_period: 60
+    },
+    contact: {
+      phone: '+1234',
+      name: 'Julie',
+      parent: {
+        contact: {
+          phone: '+1234',
+          name: 'Julie'
+        }
+      }
+    },
+    patient: {
+      name: 'Maria'
+    }
+  };
+
+  transition.onMatch({ doc: doc }).then(changed => {
+    test.equal(changed, true);
+
+    test.ok(doc.errors);
+    test.equal(doc.errors.length, 1);
+    test.equal(doc.errors[0].code, 'invalid_last_menstrual_period');
+    test.equal(doc.errors[0].message, 'Something something Maria');
     test.done();
   });
 };

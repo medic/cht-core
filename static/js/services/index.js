@@ -37,7 +37,6 @@
   require('./file-reader');
   require('./format-data-record');
   require('./format-date');
-  require('./generate-lucene-query');
   require('./geolocation');
   require('./get-data-records');
   require('./get-subject-summaries');

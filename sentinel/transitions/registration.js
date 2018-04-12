@@ -219,7 +219,7 @@ module.exports = {
     return new Promise((resolve, reject) => {
       self.validate(registrationConfig, doc, errors => {
         if (errors && errors.length > 0) {
-          messages.addErrors(registrationConfig, doc, errors);
+          messages.addErrors(registrationConfig, doc, errors, { patient: doc.patient });
           return resolve(true);
         }
 

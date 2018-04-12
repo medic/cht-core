@@ -70,8 +70,7 @@ module.exports = {
             doc.type === 'data_record' &&
             doc.fields &&
             doc.fields.patient_id &&
-            !transitionUtils.hasRun(info, NAME) &&
-            utils.getClinicPhone(doc)
+            !transitionUtils.hasRun(info, NAME)
         );
     },
     getConfig: function() {
@@ -107,7 +106,7 @@ module.exports = {
             self.validate(config, doc, function(errors) {
 
                 if (errors && errors.length > 0) {
-                    messages.addErrors(config, doc, errors);
+                    messages.addErrors(config, doc, errors, { patient: doc.patient });
                     return resolve(true);
                 }
 

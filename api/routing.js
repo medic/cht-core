@@ -20,7 +20,6 @@ const _ = require('underscore'),
       people = require('./controllers/people'),
       upgrade = require('./controllers/upgrade'),
       settings = require('./controllers/settings'),
-      fti = require('./controllers/fti'),
       bulkDocs = require('./controllers/bulk-docs'),
       createDomain = require('domain').create,
       staticResources = /\/(templates|static)\//,
@@ -171,32 +170,7 @@ app.get('/api/auth/:path', function(req, res) {
   });
 });
 
-app.post('/api/v1/upgrade', jsonParser, (req, res) => {
-  auth.check(req, '_admin', null, (err, userCtx) => {
-    if (err) {
-      return serverUtils.error(err, req, res);
-    }
-
-    var buildInfo = req.body.build;
-    if (!buildInfo) {
-      return serverUtils.error({
-        message: 'You must provide a build info body',
-        status: 400
-      }, req, res);
-    }
-
-    upgrade(req.body.build, userCtx.user)
-      .then(() => res.json({ ok: true }))
-      .catch(err => serverUtils.error(err, req, res));
-  });
-});
-
-var emptyJSONBodyError = function(req, res) {
-  return serverUtils.error({
-    code: 400,
-    message: 'Request body is empty or Content-Type header was not set to application/json.'
-  }, req, res);
-};
+app.post('/api/v1/upgrade', jsonParser, upgrade.upgrade);
 
 app.get('/api/sms/', function(req, res) {
   res.redirect(301, '/api/sms');
@@ -232,24 +206,6 @@ app.all('/api/v1/export/:type/:form?', exportData.routeV1);
 app.all(`/${db.getPath()}/export/:type/:form?`, exportData.routeV1);
 app.get('/api/v2/export/:type', exportData.routeV2);
 app.postJson('/api/v2/export/:type', exportData.routeV2);
-
-app.get('/api/v1/fti/:view', function(req, res) {
-  auth.check(req, 'can_view_data_records', null, function(err) {
-    if (err) {
-      return serverUtils.error(err, req, res);
-    }
-    auth.check(req, 'can_view_unallocated_data_records', null, function(err, ctx) {
-      var queryOptions = _.pick(req.query, 'q', 'schema', 'sort', 'skip', 'limit', 'include_docs');
-      queryOptions.allocatedOnly = !!err;
-      fti.get(req.params.view, queryOptions, ctx && ctx.district, function(err, result) {
-        if (err) {
-          return serverUtils.serverError(err.message, req, res);
-        }
-        res.json(result);
-      });
-    });
-  });
-});
 
 app.post('/api/v1/records', [jsonParser, formParser], function(req, res) {
   auth.check(req, 'can_create_records', null, function(err) {
@@ -325,6 +281,12 @@ app.postJson('/api/v1/users', function(req, res) {
   });
 });
 
+const emptyJSONBodyError = function(req, res) {
+  return serverUtils.error({
+    code: 400,
+    message: 'Request body is empty or Content-Type header was not set to application/json.'
+  }, req, res);
+};
 /*
  * TODO: move this logic out of here
  *       https://github.com/medic/medic-webapp/issues/4092
@@ -498,9 +460,9 @@ app.putJson(`${appPrefix}update_settings/${db.settings.ddoc}`, settings.put); //
 app.putJson('/api/v1/settings', settings.put);
 
 // DB replication endpoint
-var changesHander = _.partial(require('./handlers/changes').request, proxy);
-app.get(pathPrefix + '_changes', changesHander);
-app.postJson(pathPrefix + '_changes', changesHander);
+const changesHandler = _.partial(require('./handlers/changes').request, proxy);
+app.get(pathPrefix + '_changes', changesHandler);
+app.postJson(pathPrefix + '_changes', changesHandler);
 
 // Attempting to create the user's personal meta db
 app.put('/medic-user-\*-meta/', (req, res) => {

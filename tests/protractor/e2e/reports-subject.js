@@ -296,7 +296,7 @@ describe('Reports Summary', () => {
   });
 
   describe('Displays correct LHS and RHS summary', () => {
-    it('Concerning reports using patient_id', () => {
+    xit('Concerning reports using patient_id', () => {
       const REPORT = {
         _id: 'REF_REF_V1',
         form: 'RR',
@@ -411,7 +411,7 @@ describe('Reports Summary', () => {
         });
     });
 
-    it('Concerning reports using patient name', () => {
+    xit('Concerning reports using patient name', () => {
       const REPORT = {
         _id: 'NAM_NAM_V',
         form: 'NN',
@@ -494,7 +494,7 @@ describe('Reports Summary', () => {
         });
     });
 
-    it('Concerning reports using place_id', () => {
+    xit('Concerning reports using place_id', () => {
       const REPORT = {
         _id: 'PREF_PREF_V',
         form: 'P',
@@ -532,7 +532,7 @@ describe('Reports Summary', () => {
         });
     });
 
-    it('Concerning reports using unknown place_id', () => {
+    xit('Concerning reports using unknown place_id', () => {
       const REPORT = {
         _id: 'PREF_PREF_I',
         form: 'P',

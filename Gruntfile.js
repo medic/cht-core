@@ -1,5 +1,5 @@
 const packageJson = require('./package.json'),
-      releaseName = process.env.TRAVIS_TAG || process.env.TRAVIS_BRANCH || 'medic';
+      releaseName = process.env.TRAVIS_TAG || process.env.TRAVIS_BRANCH || 'local-development';
 
 
 module.exports = function(grunt) {
@@ -118,14 +118,14 @@ module.exports = function(grunt) {
       }
     },
     env: {
-      test: {
+      unitTest: {
         options: {
           add: {
             UNIT_TEST_ENV: '1'
           }
         }
       },
-      dev: {
+      general: {
         options: {
           replace: {
             UNIT_TEST_ENV: ''
@@ -225,7 +225,6 @@ module.exports = function(grunt) {
             cwd: 'node_modules',
             src: [
               'bootstrap-daterangepicker/**',
-              'enketo-core/**',
               'font-awesome/**',
               'moment/**',
               'pouchdb-browser/**',
@@ -287,6 +286,14 @@ module.exports = function(grunt) {
           return `echo "${version}" > ddocs/medic/version`;
         }
       },
+      setHorticulturalistMetadata: {
+        cmd: () => `
+          mkdir -p ddocs/medic/build_info;
+          cd ddocs/medic/build_info;
+          echo "${releaseName}" > version;
+          echo "${new Date().toISOString()}" > time;
+          echo "grunt on \`whoami\`" > author;`
+      },
       apiDev: {
         cmd: 'TZ=UTC ./node_modules/.bin/nodemon --watch api api/server.js -- --allow-cors'
       },
@@ -332,7 +339,6 @@ module.exports = function(grunt) {
         cmd: function() {
           var modulesToPatch = [
             'bootstrap-daterangepicker',
-            'enketo-core',
             'font-awesome',
             'moment',
             'pouchdb-browser',
@@ -632,6 +638,7 @@ module.exports = function(grunt) {
     'copy:inbox',
     'appcache',
     'exec:setDdocVersion',
+    'exec:setHorticulturalistMetadata',
     'build-ddoc',
   ]);
 
@@ -685,10 +692,10 @@ module.exports = function(grunt) {
     'jshint',
     'karma:unit',
     'exec:sharedLibUnit',
-    'env:test',
+    'env:unitTest',
     'nodeunit',
     'mochaTest:unit',
-    'env:dev',
+    'env:general',
   ]);
 
   grunt.registerTask('test', 'Lint, unit tests, api_integration tests and e2e tests', [
@@ -710,13 +717,16 @@ module.exports = function(grunt) {
     'build',
   ]);
 
-  grunt.registerTask('ci-test', 'Lint, deploy and test for CI', [
+  grunt.registerTask('ci-unit', 'Lint, deploy and test for CI', [
     'precommit',
     'karma:unit_ci',
-    'env:test',
+    'env:unitTest',
     'nodeunit',
     'mochaTest:unit',
-    'env:dev',
+  ]);
+
+  grunt.registerTask('ci-integration-e2e', 'Run further tests for CI', [
+    'env:general',
     'exec:setupAdmin',
     'deploy',
     'test_api_integration',
@@ -724,8 +734,7 @@ module.exports = function(grunt) {
   ]);
 
   grunt.registerTask('ci-performance', 'Run performance tests on CI', [
-    'precommit',
-    'env:dev',
+    'env:general',
     'exec:setupAdmin',
     'deploy',
     'test_perf',
