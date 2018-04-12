@@ -5,23 +5,11 @@ PouchDB.plugin(require('pouchdb-mapreduce'));
 const { COUCH_URL, UNIT_TEST_ENV } = process.env;
 
 if(UNIT_TEST_ENV) {
-  const stubMe = functionName => () => {
-    console.error(new Error(`db.${functionName}() not stubbed!  UNIT_TEST_ENV=${UNIT_TEST_ENV}.  Please stub PouchDB functions that will be interacted with in unit tests.`));
-    process.exit(1);
-  };
-
-  module.exports.medic = {
-    allDocs: stubMe('allDocs'),
-    bulkDocs: stubMe('bulkDocs'),
-    put: stubMe('put'),
-    query: stubMe('query'),
-  };
+  module.exports.medic = {};
 } else if(COUCH_URL) {
   // strip trailing slash from to prevent bugs in path matching
   const couchUrl = COUCH_URL && COUCH_URL.replace(/\/$/, '');
-  const DB = new PouchDB(couchUrl);
-
-  module.exports.medic = DB;
+  module.exports.medic = new PouchDB(couchUrl);
 } else {
   console.log(
     'Please define a COUCH_URL in your environment e.g. \n' +

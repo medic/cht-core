@@ -21,13 +21,13 @@ exports['post() should save WT messages to DB'] = test => {
     .onCall(0).returns({ message: 'one' })
     .onCall(1).returns({ message: 'two' })
     .onCall(2).returns({ message: 'three' });
-  const bulkDocs = sinon.stub(db.medic, 'bulkDocs').returns(Promise.resolve([ { ok: true, id: 'some-id' } ]));
   const getMessages = sinon.stub(messageUtils, 'getMessages').callsArgWith(1, null, []);
-  const updateMessageTaskStates = sinon.stub(messageUtils, 'updateMessageTaskStates');
-  updateMessageTaskStates.callsArgWith(1, null, {});
+  sinon.stub(messageUtils, 'updateMessageTaskStates').callsArgWith(1, null, {});
 
-  sinon.stub(db.medic, 'query')
-      .returns(Promise.resolve({ offset:0, total_rows:0, rows:[] }));
+  sinon.stub(db, 'medic').value({
+    query: sinon.stub().returns(Promise.resolve({ offset:0, total_rows:0, rows:[] })),
+    bulkDocs: sinon.stub().returns(Promise.resolve([ { ok: true, id: 'some-id' } ]))
+  });
 
   const req = { body: {
     messages: [
@@ -45,8 +45,8 @@ exports['post() should save WT messages to DB'] = test => {
     test.deepEqual(createRecord.args[0][0], { gateway_ref: '1', from: '+1', message: 'one'   });
     test.deepEqual(createRecord.args[1][0], { gateway_ref: '2', from: '+2', message: 'two'   });
     test.deepEqual(createRecord.args[2][0], { gateway_ref: '3', from: '+3', message: 'three' });
-    test.equals(bulkDocs.callCount, 1);
-    test.deepEqual(bulkDocs.args[0][0], [
+    test.equals(db.medic.bulkDocs.callCount, 1);
+    test.deepEqual(db.medic.bulkDocs.args[0][0], [
       { message: 'one' },
       { message: 'two' },
       { message: 'three' }
@@ -145,9 +145,10 @@ exports['post() should provide WO messages in response'] = test => {
 exports['post() returns err if something goes wrong'] = test => {
   sinon.stub(recordUtils, 'createByForm')
     .onCall(0).returns({ message: 'one' });
-  sinon.stub(db.medic, 'bulkDocs').returns(Promise.reject(new Error('oh no!')));
-  sinon.stub(db.medic, 'query')
-      .returns(Promise.resolve({ offset:0, total_rows:0, rows:[] }));
+  sinon.stub(db, 'medic').value({
+    query: sinon.stub().returns(Promise.resolve({ offset:0, total_rows:0, rows:[] })),
+    bulkDocs: sinon.stub().returns(Promise.reject(new Error('oh no!')))
+  });
   sinon.stub(messageUtils, 'getMessages').callsArgWith(1, null, []);
   const updateMessageTaskStates = sinon.stub(messageUtils, 'updateMessageTaskStates');
   updateMessageTaskStates.callsArgWith(1, null, {});
