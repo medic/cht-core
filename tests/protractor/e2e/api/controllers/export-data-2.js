@@ -103,20 +103,23 @@ describe('Export Data V2.0', () => {
     });
   });
   describe('Weird data', () => {
-    beforeAll(() => utils.saveDoc({
+    beforeAll(() => {
+      utils.saveDoc({
       _id: 'export-data-2-test-doc-4',
       form: 'weird-data-types',
       type: 'data_record',
       fields: {
-        wd_array: [0,1,2],
+        wd_array: [0, 1, 2],
         wd_emptyString: '',
         wd_false: false,
-        wd_naughtyArray: [0, {foo: false, bar: null}, 'Hello, "world"'],
+        wd_naughtyArray: [0, { foo: false, bar: null }, 'Hello, "world"'],
         wd_naughtyString: 'Woah there, "Jimmy O\'Tool"',
         wd_null: null,
         wd_zero: 0,
       }
-    }));
+      });
+      helper.handleUpdateModal();  
+  });
 
     it('Outputs weird data types correctly', () =>
       utils.request({
