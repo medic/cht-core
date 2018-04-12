@@ -121,7 +121,6 @@ var extractTemplateContext = function(doc) {
   var healthCenter = getHealthCenter(doc);
   var district = getDistrict(doc);
   var internal = {
-    contact: clinic && clinic.contact,
     clinic: clinic,
     parent: healthCenter,
     health_center: healthCenter,
