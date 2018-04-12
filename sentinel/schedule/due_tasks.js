@@ -9,6 +9,12 @@ var async = require('async'),
     lineage = require('../lib/lineage'),
     messageUtils = require('../lib/message-utils');
 
+const getPatient = (id, callback) => {
+    lineage.fetchHydratedDoc(id)
+        .then(patient => callback(null, patient))
+        .catch(callback);
+};
+
 const getTemplateContext = (db, doc, callback) => {
     const patientId = doc.fields && doc.fields.patient_id;
     if (!patientId) {
@@ -16,7 +22,7 @@ const getTemplateContext = (db, doc, callback) => {
     }
     async.parallel({
         registrations: callback => utils.getRegistrations({ db: db, id: patientId }, callback),
-        patient: callback => utils.getPatientContact(db, patientId, callback)
+        patient: callback => getPatient(patientId, callback)
     }, callback);
 };
 
