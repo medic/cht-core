@@ -149,7 +149,7 @@ describe('Export Data V2.0', () => {
             '"export-data-2-test-doc-4","weird-data-types",,"",,,,,,"[0,1,2]","",false,"[0,{\\"foo\\":false,\\"bar\\":null},\\"Hello, \\\\"world\\\\"\\"]","Woah there, \\"Jimmy O\'Tool\\"",,0',
           ];
           //wait for ui to render
-          browser.driver.sleep(300);
+          browser.driver.sleep(1000);
           expect(rows.length).toBe(2);
           expect(rows).toEqual(expected);
         }));
