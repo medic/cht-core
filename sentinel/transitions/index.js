@@ -78,7 +78,7 @@ const processChange = (change, callback) => {
       processed++;
       metadata.update(change.seq)
         .then(() => { callback(); })
-        .catch(() => { callback(); });
+        .catch((err) => { callback(err); });
     });
     return;
   }
