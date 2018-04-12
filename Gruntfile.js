@@ -587,7 +587,7 @@ module.exports = function(grunt) {
   });
 
   // Build tasks
-  grunt.registerTask('mmyarn', 'Update and patch dependencies', [
+  grunt.registerTask('install_dependencies', 'Update and patch dependencies', [
     'exec:undopatches',
     'exec:yarn_install',
     'copy:librariestopatch',
@@ -705,7 +705,7 @@ module.exports = function(grunt) {
   ]);
 
   grunt.registerTask('ci-build', 'build and minify for CI', [
-    'mmyarn',
+    'install_dependencies',
     'build',
   ]);
 
@@ -731,8 +731,8 @@ module.exports = function(grunt) {
 
   // Dev tasks
   grunt.registerTask('dev-webapp', 'Build and deploy the webapp for dev', [
-    'mmyarn',
-    'dev-webapp-no-yarn'
+    'install_dependencies',
+    'dev-webapp-no-dependencies'
   ]);
 
   grunt.registerTask('precommit', 'Static analysis checks', [
@@ -741,7 +741,7 @@ module.exports = function(grunt) {
     'jshint',
   ]);
 
-  grunt.registerTask('dev-webapp-no-yarn', 'Build and deploy the webapp for dev, without reinstalling dependencies.', [
+  grunt.registerTask('dev-webapp-no-dependencies', 'Build and deploy the webapp for dev, without reinstalling dependencies.', [
     'build-dev',
     'deploy',
     'watch'
