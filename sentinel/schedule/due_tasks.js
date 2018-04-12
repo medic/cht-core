@@ -17,7 +17,7 @@ const getTemplateContext = (db, doc, callback) => {
     }
     async.parallel({
         registrations: callback => utils.getRegistrations({ db: db, id: patientId }, callback),
-        patient: callback => utils.getPatientContact(db, patientId, callback)
+        patient: callback => lineage.fetchHydratedDoc(patientId, callback)
     }, callback);
 };
 
