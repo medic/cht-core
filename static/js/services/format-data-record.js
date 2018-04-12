@@ -9,6 +9,7 @@ angular.module('inboxServices').factory('FormatDataRecord',
     $translate,
     DB,
     Language,
+    LineageModelGenerator,
     Settings
   ) {
 
@@ -41,7 +42,7 @@ angular.module('inboxServices').factory('FormatDataRecord',
           if (result.rows.length > 1) {
             $log.warn('More than one patient person document for shortcode "' + patientId + '"');
           }
-          return result.rows[0].doc;
+          return LineageModelGenerator.contact(result.rows[0].id, { merge: true });
         });
     };
 
