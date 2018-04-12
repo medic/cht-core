@@ -14,7 +14,7 @@ module.exports = {
           .map(username => {
             return new Promise((resolve, reject) => {
               userDb.setSecurity(userDb.getDbName(username), username, err => {
-                if (err) {
+                if (err && err.statusCode !== 404) { // db not found is ok
                   return reject(err);
                 }
                 resolve();
