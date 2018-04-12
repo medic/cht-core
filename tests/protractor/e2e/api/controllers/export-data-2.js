@@ -1,4 +1,5 @@
-const utils = require('../../../utils');
+const utils = require('../../../utils'),
+      helper = require('../../../helper');
 
 describe('Export Data V2.0', () => {
 
@@ -42,6 +43,7 @@ describe('Export Data V2.0', () => {
       }
     }];
     beforeAll(() => utils.saveDocs(docs));
+    beforeEach(() => helper.handleUpdateModal());
 
     it('Returns all reports that exist in the system', () =>
       utils.request('/api/v2/export/reports', {notJson: true}).then(result => {
