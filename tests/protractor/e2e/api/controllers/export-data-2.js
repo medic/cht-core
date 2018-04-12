@@ -138,7 +138,7 @@ describe('Export Data V2.0', () => {
           notJson: true
         }).then(result => {
           const rows = result.split('\n');
-          rows.pop(); // Last row is empty string, discard
+          rows.pop(); // Last row is empty string, discard.
           //
           // NB: if you have to debug this test failing, note that the test
           // runner will not output the escaped string values correctly to the
