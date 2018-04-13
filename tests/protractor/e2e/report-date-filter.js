@@ -100,7 +100,7 @@ describe('Filters reports', () => {
 
   afterEach(utils.afterEach);
 
-  it('by date', () => {
+  xit('by date', () => {
     commonElements.goToReports();
 
     browser.wait(() => {
