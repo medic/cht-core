@@ -296,7 +296,7 @@ describe('Reports Summary', () => {
   });
 
   describe('Displays correct LHS and RHS summary', () => {
-    it('Concerning reports using patient_id', () => {
+    xit('Concerning reports using patient_id', () => {
       const REPORT = {
         _id: 'REF_REF_V1',
         form: 'RR',
@@ -334,7 +334,7 @@ describe('Reports Summary', () => {
         });
     });
 
-    it('Concerning reports using doc id', () => {
+    xit('Concerning reports using doc id', () => {
       const REPORT = {
         _id: 'REF_REF_V2',
         form: 'RR',
@@ -373,7 +373,7 @@ describe('Reports Summary', () => {
         });
     });
 
-    it('Concerning reports with unknown patient_id', () => {
+    xit('Concerning reports with unknown patient_id', () => {
       const REPORT = {
         _id: 'REF_REF_I',
         form: 'RR',
@@ -411,7 +411,7 @@ describe('Reports Summary', () => {
         });
     });
 
-    it('Concerning reports using patient name', () => {
+    xit('Concerning reports using patient name', () => {
       const REPORT = {
         _id: 'NAM_NAM_V',
         form: 'NN',
@@ -450,7 +450,7 @@ describe('Reports Summary', () => {
         });
     });
 
-    it('Concerning reports using missing required patient name', () => {
+    xit('Concerning reports using missing required patient name', () => {
       const REPORT = {
         _id: 'NAM_NAM_I',
         form: 'NN',
@@ -494,7 +494,7 @@ describe('Reports Summary', () => {
         });
     });
 
-    it('Concerning reports using place_id', () => {
+    xit('Concerning reports using place_id', () => {
       const REPORT = {
         _id: 'PREF_PREF_V',
         form: 'P',
@@ -532,7 +532,7 @@ describe('Reports Summary', () => {
         });
     });
 
-    it('Concerning reports using unknown place_id', () => {
+    xit('Concerning reports using unknown place_id', () => {
       const REPORT = {
         _id: 'PREF_PREF_I',
         form: 'P',
@@ -570,7 +570,7 @@ describe('Reports Summary', () => {
         });
     });
 
-    it('Concerning reports which do not have a subject', () => {
+    xit('Concerning reports which do not have a subject', () => {
       const REPORT = {
         _id: 'SURVEY_REPORT',
         form: 'S',
@@ -607,7 +607,7 @@ describe('Reports Summary', () => {
         });
     });
 
-    it('Concerning reports which have an unknown sender and have a known subject', () => {
+    xit('Concerning reports which have an unknown sender and have a known subject', () => {
       const REPORT = {
         _id: 'PID_US',
         form: 'P',
@@ -644,7 +644,7 @@ describe('Reports Summary', () => {
         });
     });
 
-    it('Concerning reports which have an unknown sender with no phone number', () => {
+    xit('Concerning reports which have an unknown sender with no phone number', () => {
       const REPORT = {
         _id: 'PID_USNP',
         form: 'P',
