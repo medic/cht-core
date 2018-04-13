@@ -355,20 +355,16 @@ module.exports = function(grunt) {
         }
       },
       sharedLibUnit: {
-        cmd:  function() {
-          var sharedLibs = [
-            'bulk-docs-utils',
-            'lineage',
-            'search',
-            'task-utils',
-            'phone-number'
-          ];
-          return sharedLibs.map(function(lib) {
-            return 'cd shared-libs/' + lib +
-              ' && if [ $(npm run | grep "^\\s\\stest$" | wc -l) -gt 0 ]; then npm install && npm test; fi' +
-              ' && cd ../../';
-          }).join(' && ');
-        }
+        cmd: () => {
+          const fs = require('fs');
+          return fs.readdirSync('shared-libs')
+              .filter(f => fs.lstatSync(`shared-libs/${f}`).isDirectory())
+              .map(lib =>
+                  `(cd shared-libs/${lib} &&
+                      [[ "$(jq .scripts.test)" = "null" ]] ||
+                        (npm install && npm test))`)
+              .join(' && ');
+        },
       },
       // To monkey patch a library...
       // 1. copy the file you want to change
