@@ -1,5 +1,12 @@
 # Medic Mobile Release Notes
 
+## 2.13.6
+
+_April 13, 2018_
+
+### Performance improvements
+- [#4430](https://github.com/medic/medic-webapp/issues/4430) Drastically improve performance of form loading when the patient context is used, and that context is very large (e.g. you're including lineages)
+
 ## 2.13.5
 
 _January 23, 2018_
