@@ -1,5 +1,5 @@
 var uuid = require('uuid/v4'),
-    json2xml = require('json2xml'),
+    pojo2xml = require('pojo2xml'),
     xpathPath = require('../modules/xpath-element-path');
 
 /* globals EnketoForm */
@@ -208,9 +208,10 @@ angular.module('inboxServices').service('Enketo',
           if (!summary) {
             return;
           }
+
           return {
             id: 'contact-summary',
-            xmlStr: json2xml({ context: summary.context })
+            xmlStr: pojo2xml({ context: summary.context })
           };
         });
     };
