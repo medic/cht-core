@@ -48,7 +48,8 @@ describe('Export Data V2.0', () => {
     it('Returns all reports that exist in the system', () =>
       utils.request('/api/v2/export/reports', {notJson: true}).then(result => {
         const rows = result.split('\n');
-        rows.pop(); // Last row is empty string, discard.
+        const str = rows[rows.length - 1];//last string
+        if (!str || 0 === str.length) { rows.pop(); } // Last row is empty string, discard.
         const expected = [
           '_id,form,patient_id,reported_date,from,contact.name,contact.parent.name,contact.parent.parent.name,contact.parent.parent.parent.name,bar,baz,foo,smang.smong',
           '"export-data-2-test-doc-3","b","abc125",1517616000000,,,,,,,"bazVal",,',
@@ -78,7 +79,8 @@ describe('Export Data V2.0', () => {
           notJson: true
         }).then(result => {
           const rows = result.split('\n');
-          rows.pop(); // Last row is empty string, discard
+          const str = rows[rows.length - 1];//last string
+          if (!str || 0 === str.length) { rows.pop(); } // Last row is empty string, discard
           const expected = [
             '_id,form,patient_id,reported_date,from,contact.name,contact.parent.name,contact.parent.parent.name,contact.parent.parent.parent.name,baz',
             '"export-data-2-test-doc-3","b","abc125",1517616000000,,,,,,"bazVal"'
@@ -91,7 +93,8 @@ describe('Export Data V2.0', () => {
       const to = Date.UTC(2018,1,3,12);
       utils.request(`/api/v2/export/reports?filters%5Bsearch%5D=&filters%5Bdate%5D%5Bfrom%5D=${from}&filters%5Bdate%5D%5Bto%5D=${to}`, {notJson: true}).then(result => {
           const rows = result.split('\n');
-          rows.pop(); // Last row is empty string, discard
+        const str = rows[rows.length - 1];//last string
+        if (!str || 0 === str.length) { rows.pop(); } // Last row is empty string, discard
 
           const expected = [
             '_id,form,patient_id,reported_date,from,contact.name,contact.parent.name,contact.parent.parent.name,contact.parent.parent.parent.name,bar,baz,foo,smang.smong',
@@ -139,7 +142,8 @@ describe('Export Data V2.0', () => {
           notJson: true
         }).then(result => {
           const rows = result.split('\n');
-          rows.pop(); // Last row is empty string, discard
+          const str = rows[rows.length - 1];//last string
+          if ( !str || 0 === str.length) { rows.pop(); } // Last row is empty string, discard
           //
           // NB: if you have to debug this test failing, note that the test
           // runner will not output the escaped string values correctly to the
