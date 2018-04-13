@@ -43,6 +43,9 @@ angular.module('inboxServices').factory('FormatDataRecord',
             $log.warn('More than one patient person document for shortcode "' + patientId + '"');
           }
           return LineageModelGenerator.contact(result.rows[0].id, { merge: true });
+        })
+        .then(function(result) {
+          return result && result.doc;
         });
     };
 
