@@ -216,7 +216,7 @@ var truncateMessage = function(parts, max) {
 exports.generate = function(config, translate, doc, content, recipient, extraContext) {
   'use strict';
 
-  var context = extendedTemplateContext(doc, extraContext);
+  var context = extendedTemplateContext(doc, extraContext || {});
 
   var result = {
     uuid: uuid.v4(),
