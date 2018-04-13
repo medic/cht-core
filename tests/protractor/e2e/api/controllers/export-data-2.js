@@ -48,7 +48,7 @@ describe('Export Data V2.0', () => {
     it('Returns all reports that exist in the system', () =>
       utils.request('/api/v2/export/reports', {notJson: true}).then(result => {
         const rows = result.split('\n');
-        const str = rows[rows.length - 1];//last string.
+        const str = rows[rows.length - 1];//last string
         if (!str || 0 === str.length) { rows.pop(); } // Last row is empty string, discard.
         const expected = [
           '_id,form,patient_id,reported_date,from,contact.name,contact.parent.name,contact.parent.parent.name,contact.parent.parent.parent.name,bar,baz,foo,smang.smong',
