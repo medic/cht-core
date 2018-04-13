@@ -366,7 +366,7 @@ module.exports = function(grunt) {
             return 'cd shared-libs/' + lib +
               ' && if [ $(npm run | grep "^\\s\\stest$" | wc -l) -gt 0 ]; then npm install && npm test; fi' +
               ' && cd ../../';
-          }).join(' ; ');
+          }).join(' && ');
         }
       },
       // To monkey patch a library...
@@ -720,6 +720,7 @@ module.exports = function(grunt) {
   grunt.registerTask('ci-unit', 'Lint, deploy and test for CI', [
     'precommit',
     'karma:unit_ci',
+    'exec:sharedLibUnit',
     'env:unitTest',
     'nodeunit',
     'mochaTest:unit',
