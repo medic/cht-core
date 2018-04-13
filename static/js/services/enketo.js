@@ -1,5 +1,5 @@
 var uuid = require('uuid/v4'),
-    xml2js = require('xml2js'),
+    pojo2xml = require('pojo2xml'),
     xpathPath = require('../modules/xpath-element-path');
 
 /* globals EnketoForm */
@@ -209,8 +209,7 @@ angular.module('inboxServices').service('Enketo',
             return;
           }
 
-          var builder = new xml2js.Builder({headless: true, renderOpts: {pretty: false}});
-          var xml = builder.buildObject({ context: summary.context });
+          var xml = pojo2xml({ context: summary.context });
 
           return {
             id: 'contact-summary',
