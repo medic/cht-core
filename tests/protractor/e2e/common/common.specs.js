@@ -26,13 +26,13 @@ describe('Navigation tests : ', () => {
     expect(browser.getCurrentUrl()).toEqual(utils.getBaseUrl() + 'contacts/');
   });
 
-  it('should open Analytics or Targets tab', () => {
+  xit('should open Analytics or Targets tab', () => {
     commonElements.goToAnalytics();
     expect(browser.getCurrentUrl()).toEqual(utils.getBaseUrl() + 'analytics');
 
   });
 
-  it('should open Configuration tab', () => {
+  xit('should open Configuration tab', () => {
     commonElements.goToConfiguration();
     expect(browser.getCurrentUrl()).toEqual(utils.getBaseUrl() + 'configuration');
   });
