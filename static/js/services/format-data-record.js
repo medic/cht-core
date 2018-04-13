@@ -1,6 +1,7 @@
 var _ = require('underscore'),
     moment = require('moment'),
-    messages = require('../modules/message-utils');
+    messages = require('../modules/message-utils'),
+    lineageFactory = require('lineage');
 
 angular.module('inboxServices').factory('FormatDataRecord',
   function(
@@ -14,6 +15,8 @@ angular.module('inboxServices').factory('FormatDataRecord',
 
     'ngInject';
     'use strict';
+
+    var lineage = lineageFactory($q,DB());
 
     var getRegistrations = function(patientId) {
       var options = {
@@ -29,10 +32,7 @@ angular.module('inboxServices').factory('FormatDataRecord',
     };
 
     var getPatient = function(patientId) {
-      var options = {
-        key: [ 'shortcode', patientId ],
-        include_docs: true
-      };
+      var options = { key: [ 'shortcode', patientId ] };
       return DB().query('medic-client/contacts_by_reference', options)
         .then(function(result) {
           if (!result.rows.length) {
@@ -41,7 +41,7 @@ angular.module('inboxServices').factory('FormatDataRecord',
           if (result.rows.length > 1) {
             $log.warn('More than one patient person document for shortcode "' + patientId + '"');
           }
-          return result.rows[0].doc;
+          return lineage.fetchHydratedDoc(result.rows[0].id);
         });
     };
 
