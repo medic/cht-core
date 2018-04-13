@@ -209,7 +209,7 @@ angular.module('inboxServices').service('Enketo',
             return;
           }
 
-          var builder = new xml2js.Builder({headless: true});
+          var builder = new xml2js.Builder({headless: true, renderOpts: {pretty: false}});
           var xml = builder.buildObject({ context: summary.context });
 
           return {
