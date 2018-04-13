@@ -1,5 +1,5 @@
 var uuid = require('uuid/v4'),
-    json2xml = require('json2xml'),
+    xml2js = require('xml2js'),
     xpathPath = require('../modules/xpath-element-path');
 
 /* globals EnketoForm */
@@ -214,9 +214,12 @@ angular.module('inboxServices').service('Enketo',
           }
 
           try {
+            var builder = new xml2js.Builder({headless: true, renderOpts: {pretty: false}});
+            var xml = builder.buildObject({ context: summary.context });
+
             return {
               id: 'contact-summary',
-              xmlStr: json2xml({ context: summary.context })
+              xmlStr: xml
             };
           } catch (e) {
             $log.error('Error while converting app_summary.contact_summary.context to xml.');
