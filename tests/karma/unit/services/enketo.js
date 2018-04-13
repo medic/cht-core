@@ -591,15 +591,13 @@ describe('Enketo service', function() {
         var actualThing1 = actual[1];
         chai.expect(actualThing1._id).to.match(/(\w+-)\w+/);
         chai.expect(actualThing1._rev).to.equal(`1-${actualThing1._id}-abc`);
-        chai.expect(actualThing1.reported_date).to.be.above(startTime);
-        chai.expect(actualThing1.reported_date).to.be.below(endTime);
+        chai.expect(actualThing1.reported_date).to.be.within(startTime, endTime);
         chai.expect(actualThing1.some_property_1).to.equal('some_value_1');
 
         var actualThing2 = actual[2];
         chai.expect(actualThing2._id).to.match(/(\w+-)\w+/);
         chai.expect(actualThing2._rev).to.equal(`1-${actualThing2._id}-abc`);
-        chai.expect(actualThing2.reported_date).to.be.above(startTime);
-        chai.expect(actualThing2.reported_date).to.be.below(endTime);
+        chai.expect(actualThing2.reported_date).to.be.within(startTime, endTime);
         chai.expect(actualThing2.some_property_2).to.equal('some_value_2');
 
         chai.expect(_.uniq(_.pluck(actual, '_id')).length).to.equal(3);
