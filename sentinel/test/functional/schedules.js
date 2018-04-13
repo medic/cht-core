@@ -3,7 +3,6 @@ const transition = require('../../transitions/registration'),
       sinon = require('sinon').sandbox.create(),
       moment = require('moment'),
       utils = require('../../lib/utils'),
-      uuid = require('uuid'),
       contact = {
         phone: '+1234',
         name: 'Julie',
@@ -79,7 +78,6 @@ exports['registration sets up schedule'] = test => {
       }
     ]
   });
-  sinon.stub(uuid, 'v4').returns('test-uuid');
 
   const doc = {
     reported_date: moment().toISOString(),
@@ -95,23 +93,19 @@ exports['registration sets up schedule'] = test => {
     test.ok(doc.scheduled_tasks);
     test.equals(doc.scheduled_tasks && doc.scheduled_tasks.length, 1);
 
-    const msg0 = getMessage(doc, 0);
-    test.deepEqual(msg0, {
-      to: '+1234',
-      message: 'thanks Julie',
-      uuid: 'test-uuid'
-    });
+    testMessage(test,
+        getMessage(doc, 0),
+        '+1234',
+        'thanks Julie');
 
     /*
      * Also checks that recipient using doc property value is resolved
      * correctly.
-     * */
-    const msg1 = getScheduledMessage(doc, 0);
-    test.deepEqual(msg1, {
-      to: '+1234',
-      message: 'Mustaches.  Overrated or underrated?',
-      uuid: 'test-uuid'
-    });
+     */
+    testMessage(test,
+        getScheduledMessage(doc, 0),
+        '+1234',
+        'Mustaches.  Overrated or underrated?');
     test.done();
   });
 };
@@ -149,7 +143,6 @@ exports['registration sets up schedule using translation_key'] = test => {
   sinon.stub(utils, 'translate')
     .withArgs('thanks', 'en').returns('thanks {{contact.name}}')
     .withArgs('facial.hair', 'en').returns('Mustaches.  Overrated or underrated?');
-  sinon.stub(uuid, 'v4').returns('test-uuid');
 
   const doc = {
     reported_date: moment().toISOString(),
@@ -165,12 +158,10 @@ exports['registration sets up schedule using translation_key'] = test => {
     test.ok(doc.scheduled_tasks);
     test.equals(doc.scheduled_tasks && doc.scheduled_tasks.length, 1);
 
-    const msg0 = getMessage(doc, 0);
-    test.deepEqual(msg0, {
-      to: '+1234',
-      message: 'thanks Julie',
-      uuid: 'test-uuid'
-    });
+    testMessage(test,
+        getMessage(doc, 0),
+        '+1234',
+        'thanks Julie');
 
     // check that message generation is deferred until later
     test.equals(doc.scheduled_tasks.length, 1);
@@ -221,7 +212,6 @@ exports['registration sets up schedule using bool_expr'] = test => {
       }
     ]
   });
-  sinon.stub(uuid, 'v4').returns('test-uuid');
 
   const doc = {
     reported_date: moment().toISOString(),
@@ -238,23 +228,20 @@ exports['registration sets up schedule using bool_expr'] = test => {
     test.ok(doc.scheduled_tasks);
     test.equals(doc.scheduled_tasks && doc.scheduled_tasks.length, 1);
 
-    const msg0 = getMessage(doc, 0);
-    test.deepEqual(msg0, {
-      to: '+1234',
-      message: 'thanks Julie',
-      uuid: 'test-uuid'
-    });
+    testMessage(test,
+        getMessage(doc, 0),
+        '+1234',
+        'thanks Julie');
 
     /*
      * Also checks that recipient using doc property value is resolved
      * correctly.
-     * */
-    const msg1 = getScheduledMessage(doc, 0);
-    test.deepEqual(msg1, {
-      to: '+1234',
-      message: 'Mustaches.  Overrated or underrated?',
-      uuid: 'test-uuid'
-    });
+     */
+    testMessage(test,
+        getScheduledMessage(doc, 0),
+        '+1234',
+        'Mustaches.  Overrated or underrated?');
+
     test.done();
   });
 };
@@ -273,7 +260,6 @@ exports['patients chp is resolved correctly as recipient'] = test => {
   sinon.stub(utils, 'getPatientContactUuid').callsArgWith(2, null, {_id: 'uuid'});
   sinon.stub(utils, 'getRegistrations').callsArgWithAsync(1, null, []);
   sinon.stub(utils, 'translate').withArgs('thanks', 'en').returns('thanks');
-  sinon.stub(uuid, 'v4').returns('test-uuid');
 
   const doc = {
     reported_date: moment().toISOString(),
@@ -289,12 +275,10 @@ exports['patients chp is resolved correctly as recipient'] = test => {
     test.ok(doc.tasks);
     test.equals(doc.tasks && doc.tasks.length, 1);
 
-    const msg0 = getMessage(doc, 0);
-    test.deepEqual(msg0, {
-      uuid: 'test-uuid',
-      to: '+5551596',
-      message: 'thanks'
-    });
+    testMessage(test,
+        getMessage(doc, 0),
+        '+5551596',
+        'thanks');
 
     test.done();
   });
@@ -341,7 +325,6 @@ exports['two phase registration sets up schedule using bool_expr'] = test => {
       }
     ]
   });
-  sinon.stub(uuid, 'v4').returns('test-uuid');
 
   sinon.stub(utils, 'getPatientContactUuid').callsArgWith(2, null, {_id: 'uuid'});
   const doc = {
@@ -363,23 +346,19 @@ exports['two phase registration sets up schedule using bool_expr'] = test => {
     test.ok(doc.scheduled_tasks);
     test.equals(doc.scheduled_tasks && doc.scheduled_tasks.length, 1);
 
-    const msg0 = getMessage(doc, 0);
-    test.deepEqual(msg0, {
-      to: '+1234',
-      message: 'thanks for registering barry',
-      uuid: 'test-uuid'
-    });
+    testMessage(test,
+        getMessage(doc, 0),
+        '+1234',
+        'thanks for registering barry');
 
     /*
      * Also checks that recipient using doc property value is resolved
      * correctly.
-     * */
-    const msg1 = getScheduledMessage(doc, 0);
-    test.deepEqual(msg1, {
-      to: '+1234',
-      message: 'Remember to visit barry',
-      uuid: 'test-uuid'
-    });
+     */
+    testMessage(test,
+        getScheduledMessage(doc, 0),
+        '+1234',
+        'Remember to visit barry');
 
     test.equals(getRegistrations.callCount, 2);
     test.equals(getRegistrations.args[0][0].id, '123');
@@ -410,7 +389,6 @@ exports['no schedule using false bool_expr'] = test => {
       }
     ]
   }]);
-  sinon.stub(uuid, 'v4').returns('test-uuid');
   sinon.stub(utils, 'getRegistrations').callsArgWithAsync(1, null, []);
   sinon.stub(utils, 'getPatientContact').callsArgWith(2, null, {_id: 'uuid'});
   sinon.stub(schedules, 'getScheduleConfig').returns({
@@ -444,13 +422,17 @@ exports['no schedule using false bool_expr'] = test => {
     test.equals(doc.tasks && doc.tasks.length, 1);
     test.ok(!doc.scheduled_tasks);
 
-    const msg0 = getMessage(doc, 0);
-    test.deepEqual(msg0, {
-      to: '+1234',
-      message: 'thanks Julie',
-      uuid: 'test-uuid'
-    });
+    testMessage(test,
+        getMessage(doc, 0),
+        '+1234',
+        'thanks Julie');
 
     test.done();
   });
 };
+
+function testMessage(test, message, expectedTo, expectedContent) {
+  test.ok(/^[a-z0-9-]*$/.test(message.uuid));
+  test.equal(message.to, expectedTo);
+  test.equal(message.message, expectedContent);
+}

@@ -2,8 +2,8 @@ const sinon = require('sinon').sandbox.create(),
       moment = require('moment'),
       expect = require('chai').expect,
       should = require('chai').should(),
-      uuid = require('uuid'),
-      utils = require('../../../lib/message-utils');
+      uuid = require('uuid');
+const utils = require('../src/index');
 
 const MAX_GSM_LENGTH = 160;
 const MAX_UNICODE_LENGTH = 70;

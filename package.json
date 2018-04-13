@@ -47,6 +47,7 @@
     "properties": "^1.2.1",
     "search": "file:shared-libs/search",
     "select2": "^4.0.3",
+    "@shared-libs/message-utils": "file:shared-libs/message-utils",
     "simple-password-tester": "^1.0.0",
     "task-utils": "file:shared-libs/task-utils",
     "underscore": "^1.8.3",
