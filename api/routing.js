@@ -21,6 +21,7 @@ const _ = require('underscore'),
       upgrade = require('./controllers/upgrade'),
       settings = require('./controllers/settings'),
       bulkDocs = require('./controllers/bulk-docs'),
+      createUserDb = require('./controllers/create-user-db'),
       createDomain = require('domain').create,
       staticResources = /\/(templates|static)\//,
       favicon = /\/icon_\d+.ico$/,
@@ -479,14 +480,7 @@ app.get(metaPathPrefix + '_changes', (req, res) => {
 });
 
 // Attempting to create the user's personal meta db
-app.put(metaPathPrefix, (req, res) => {
-  require('./controllers/create-user-db')(req, err => {
-    if (err) {
-      return serverUtils.error(err, req, res);
-    }
-    res.json({ ok: true });
-  });
-});
+app.put(metaPathPrefix, createUserDb);
 
 var writeHeaders = function(req, res, headers, redirectHumans) {
   res.oldWriteHead = res.writeHead;
