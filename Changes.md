@@ -8,7 +8,6 @@
 
 ### Performance improvements
 - [#4430](https://github.com/medic/medic-webapp/issues/4430) Drastically improve performance of form loading when the patient context is used, and that context is very large (e.g. you're including lineages)
-bf41ab683 
 
 ### Features
 
