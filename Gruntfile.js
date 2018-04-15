@@ -351,7 +351,7 @@ module.exports = function(grunt) {
                    ' && mv ' + backupPath + ' ' + modulePath +
                    ' && echo "Module restored: ' + module + '"' +
                    ' || echo "No restore required for: ' + module + '"';
-          }).join(' & ');
+          }).join(' && ');
         }
       },
       sharedLibUnit: {
