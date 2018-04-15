@@ -1,5 +1,6 @@
 const auth = require('../auth'),
-      userDb = require('../lib/user-db');
+      serverUtils = require('../server-utils'),
+      userDb = require('../services/user-db');
 
 const checkPermissions = (req, callback) => {
   auth.getUserCtx(req, (err, userCtx) => {
@@ -15,11 +16,16 @@ const checkPermissions = (req, callback) => {
   });
 };
 
-module.exports = (req, callback) => {
+module.exports = (req, res) => {
   checkPermissions(req, (err, username) => {
     if (err) {
-      return callback(err);
+      return serverUtils.error(err, req, res);
     }
-    userDb.create(username, callback);
+    userDb.create(username, err => {
+      if (err) {
+        return serverUtils.error(err, req, res);
+      }
+      res.json({ ok: true });
+    });
   });
 };

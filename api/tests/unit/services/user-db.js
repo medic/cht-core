@@ -1,4 +1,4 @@
-var lib = require('../../../lib/user-db'),
+var service = require('../../../services/user-db'),
     db = require('../../../db-nano'),
     sinon = require('sinon').sandbox.create();
 
@@ -10,7 +10,7 @@ exports.tearDown = callback => {
 exports['getDbName creates the user db name'] = test => {
   const given = 'jimbob';
   const expected = 'medic-user-jimbob-meta';
-  const actual = lib.getDbName(given);
+  const actual = service.getDbName(given);
   test.equals(actual, expected);
   test.done();
 };
@@ -22,7 +22,7 @@ exports['getDbName escapes invalid characters - #3778'] = test => {
   const escaped = '(46)(60)(62)(94)(44)(63)(33)';
   const given   = valid + invalid;
   const expected = `medic-user-${valid + escaped}-meta`;
-  const actual = lib.getDbName(given);
+  const actual = service.getDbName(given);
   test.equals(actual, expected);
   test.done();
 };
@@ -32,7 +32,7 @@ exports['creates the db'] = test => {
   const request = sinon.stub(db, 'request').callsArgWith(1);
   const insert = sinon.stub().callsArgWith(1);
   const use = sinon.stub(db, 'use').returns({ insert: insert });
-  lib.create('gareth', err => {
+  service.create('gareth', err => {
     test.equals(err, null);
     test.equals(create.args[0][0], 'medic-user-gareth-meta');
     test.equals(request.callCount, 1);

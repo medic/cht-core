@@ -1,5 +1,5 @@
 const db = require('../db-pouch'),
-      userDb = require('../lib/user-db');
+      userDb = require('../services/user-db');
 
 module.exports = {
   name: 'fix-user-db-security',
