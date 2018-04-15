@@ -6,7 +6,7 @@
  *  2) Each issue should have one and only one Type label - the script will tell you which ones don't
  *  3) Make sure you have generated a GH token and created a token.json file, eg: { "githubApiToken": "..." }
  *  4) Execute the command: node index.js <project_name> > <output_file>
- *      eg: node index.js medic 3.0.0 > tmp.md
+ *      eg: node index.js 3.0.0 > tmp.md
  *  5) Insert the contents of the output file into the appropriate location in Changes.md
  */
 
