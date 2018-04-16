@@ -1,0 +1,23 @@
+<html>
+  <head>
+    <style>
+    body {
+      display: flex;
+    }
+    .navigation {
+      width: 200px;
+    }
+    </style>
+  </head>
+  <body>
+    <div class="navigation">
+      <ul>
+        <li><a href="#">Settings</a></li>
+        <li><a href="#">Exports</a></li>
+      </ul>
+    </div>
+    <div>
+      <p>HELLO!!!</p>
+    </div>
+  </body>
+</html>

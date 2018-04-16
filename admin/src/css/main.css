@@ -1,0 +1,6 @@
+body {
+  display: flex;
+}
+.navigation {
+  width: 200px;
+}

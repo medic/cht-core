@@ -48,7 +48,12 @@ module.exports = function(grunt) {
         files: {
           'ddocs/medic.json': 'ddocs/medic/'
         }
-      }
+      },
+      admin: {
+        files: {
+          'dist/ddocs/medic-admin.json': 'dist/ddocs/medic-admin/'
+        }
+      },
     },
     'couch-push': {
       localhost: {
@@ -57,7 +62,8 @@ module.exports = function(grunt) {
           pass: 'pass'
         },
         files: {
-          'http://localhost:5984/medic': 'ddocs/medic.json'
+          'http://localhost:5984/medic': 'ddocs/medic.json',
+          'http://localhost:5984/medic': 'dist/ddocs/medic-admin.json',
         }
       },
       test: {
@@ -104,7 +110,11 @@ module.exports = function(grunt) {
             'angular-translate-handler-log':  './node_modules/angular-translate/dist/angular-translate-handler-log/angular-translate-handler-log',
           },
         },
-      }
+      },
+      admin: {
+        src: ['admin/src/js/main.js'],
+        dest: 'dist/ddocs/medic-admin/_attachments/main.js',
+      },
     },
     uglify: {
       options: {
@@ -146,7 +156,6 @@ module.exports = function(grunt) {
         ]
       },
       all: [
-        'Gruntfile.js',
         'static/js/**/*.js',
         'tests/**/*.js',
         'ddocs/**/*.js',
@@ -215,7 +224,25 @@ module.exports = function(grunt) {
           {
             src: 'templates/inbox.html',
             dest: 'ddocs/medic/inbox_template'
-          }
+          },
+        ]
+      },
+      'admin-resources': {
+        files: [
+          {
+            src: 'ddocs/medic-admin/**/*',
+            dest: 'dist/'
+          },
+          {
+            expand: true,
+            flatten: true,
+            src: 'admin/src/css/main.css',
+            dest: 'dist/ddocs/medic-admin/_attachments/'
+          },
+          {
+            src: 'admin/src/templates/index.html',
+            dest: 'dist/ddocs/medic-admin/index_template'
+          },
         ]
       },
       librariestopatch: {
@@ -245,6 +272,9 @@ module.exports = function(grunt) {
       }
     },
     exec: {
+      'clean-dist': {
+        cmd: 'rm -rf dist'
+      },
       cleanDdocBuildDirectory: {
         cmd: 'rm -rf ddocs/medic/_attachments && mkdir ddocs/medic/_attachments'
       },
@@ -644,6 +674,14 @@ module.exports = function(grunt) {
     'copy:ddocAttachments',
     'couch-compile:client',
     'couch-compile:app',
+  ]);
+
+  grunt.registerTask('build-admin', 'Build the admin app', [
+    'exec:clean-dist',
+    'copy:admin-resources',
+    'browserify:admin',
+    'couch-compile:admin',
+    'couch-push:localhost',
   ]);
 
   grunt.registerTask('deploy', 'Deploy the webapp', [
