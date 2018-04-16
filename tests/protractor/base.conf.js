@@ -1,6 +1,7 @@
 const utils = require('./utils'),
       constants = require('./constants'),
-      auth = require('./auth')();
+      auth = require('./auth')(),
+      retry = require('protractor-retry').retry;
 const serviceManager = require('./service-manager');
 
 
@@ -9,18 +10,25 @@ class BaseConfig {
     this.config = {
       seleniumAddress: 'http://localhost:4444/wd/hub',
 
-      specs: [`${testSrcDir}/**/*.js`],
+      specs: [`${testSrcDir}/**/export-*.js`],
       
       framework: 'jasmine2',
       capabilities: {
+        shardTestFiles: true,
         browserName: 'chrome',
         chromeOptions: {
           args: ['--headless', '--disable-gpu', '--window-size=1024,768']
-        }
+        },
+        Build: 'protractor-retry-' + process.env.TRAVIS_BRANCH + '-' + process.env.TRAVIS_BUILD_NUMBER,
+        name: process.env.TRAVIS_BRANCH + '-' + process.env.TRAVIS_BUILD_NUMBER
+
+        //local 
+       // Build: 'localrun-' + new Date(),
+        //git name: __filename
         // browserName: 'firefox',
         // 'marionette':'true'.
       },
-      beforeLaunch: function() {
+      beforeLaunch: () => {
         process.on('uncaughtException', function() {
           utils.reporter.jasmineDone();
           utils.reporter.afterLaunch();
@@ -29,7 +37,11 @@ class BaseConfig {
           utils.reporter.beforeLaunch(resolve);
         });
       },
+      afterLaunch: () => {
+        return retry.afterLaunch(constants.NUMBER_OF_RETRIES);
+      },
       onPrepare: () => {
+        retry.onPrepare();
         jasmine.getEnv().addReporter(utils.reporter);
         browser.waitForAngularEnabled(false);
 
@@ -43,6 +55,9 @@ class BaseConfig {
         browser.driver.sleep(1); // block until previous command has completed
 
         return login(browser);
+      },
+      onCleanUp: results => {
+        retry.onCleanUp(results);
       },
     };
 
