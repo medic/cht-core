@@ -308,6 +308,46 @@ describe('messageUtils', () => {
         expect(actual).to.equal('Sally, Arnold');
       });
 
+      it('merges extra context', () => {
+        const doc = {
+          form: 'x',
+          reported_date: '2050-03-13T13:06:22.002Z',
+          chw_name: 'Arnold'
+        };
+        const patient = {
+          parent: {
+            type: 'clinic',
+            contact: { name: 'Bede' }
+          }
+        };
+        const actual = utils.template({}, null, doc, { message: 'Your CHP is {{clinic.contact.name}}' }, { patient: patient });
+        expect(actual).to.equal('Your CHP is Bede');
+      });
+
+      // Tests how standard configuration sets district_hospital parents
+      it('handles parent as an empty string - #4410', () => {
+        const doc = {
+          form: 'x',
+          reported_date: '2050-03-13T13:06:22.002Z',
+          chw_name: 'Arnold',
+          parent: {
+            type: 'health_center',
+            parent: {
+              type: 'district_hospital',
+              parent: ''
+            }
+          }
+        };
+        const patient = {
+          parent: {
+            type: 'clinic',
+            contact: { name: 'Bede' }
+          }
+        };
+        const actual = utils.template({}, null, doc, { message: 'Your CHP is {{clinic.contact.name}}' }, { patient: patient });
+        expect(actual).to.equal('Your CHP is Bede');
+      });
+
     });
 
   });
