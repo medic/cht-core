@@ -7,8 +7,8 @@ var async = require('async'),
     date = require('../date'),
     config = require('../config'),
     dbPouch = require('../db-pouch'),
-    lineage = require('lineage')(Promise, dbPouch.medic),
-    messageUtils = require('../lib/message-utils');
+    lineage = require('lineage')(Promise, dbPouch.medic);
+const messageUtils = require('@shared-libs/message-utils');
 
 const getTemplateContext = (db, doc, callback) => {
     const patientId = doc.fields && doc.fields.patient_id;

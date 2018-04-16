@@ -3,8 +3,8 @@ var _ = require('underscore'),
     date = require('../date'),
     moment = require('moment'),
     utils = require('../lib/utils'),
-    messages = require('../lib/messages'),
-    messageUtils = require('./message-utils');
+    messages = require('../lib/messages');
+const messageUtils = require('@shared-libs/message-utils');
 
 module.exports = {
     // return [hour, minute, timezone]
