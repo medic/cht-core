@@ -327,7 +327,7 @@ module.exports = function(grunt) {
         cmd: 'cd api && yarn install',
       },
       yarn_install: {
-        cmd: '    echo "[webapp]"   && yarn install' +
+        cmd: '    echo "[webapp]"   && yarn install --ignore-engines' +
              ' && echo "[api]"      && cd api && yarn install' +
              ' && echo "[sentinel]" && cd ../sentinel && yarn install' +
              ' && cd ..'
