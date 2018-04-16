@@ -328,9 +328,8 @@ module.exports = function(grunt) {
       },
       yarn_install: {
         cmd: '    echo "[webapp]"   && yarn install --ignore-engines' +
-             ' && echo "[api]"      && cd api && yarn install' +
-             ' && echo "[sentinel]" && cd ../sentinel && yarn install' +
-             ' && cd ..'
+             ' && echo "[api]"      && cd api && yarn install && cd ..' +
+             ' && echo "[sentinel]" && cd sentinel && yarn install && cd ..'
       },
       check_env_vars:
         'if [ -z $COUCH_URL ] || [ -z $API_URL ] || [ -z $COUCH_NODE_NAME ]; then ' +
