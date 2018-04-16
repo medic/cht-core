@@ -10,21 +10,21 @@ class BaseConfig {
     this.config = {
       seleniumAddress: 'http://localhost:4444/wd/hub',
 
-      specs: [`${testSrcDir}/**/export-*.js`],
-      
+      specs: [`${testSrcDir}/**/*.js`],
+            
       framework: 'jasmine2',
       capabilities: {
-        shardTestFiles: true,
+        shardTestFiles: false,
+        maxInstances: 2,
         browserName: 'chrome',
         chromeOptions: {
           args: ['--headless', '--disable-gpu', '--window-size=1024,768']
         },
-        Build: 'protractor-retry-' + process.env.TRAVIS_BRANCH + '-' + process.env.TRAVIS_BUILD_NUMBER,
-        name: process.env.TRAVIS_BRANCH + '-' + process.env.TRAVIS_BUILD_NUMBER
 
-        //local 
-       // Build: 'localrun-' + new Date(),
-        //git name: __filename
+        //protractor-retry
+        Build: 'protractor-retry-' + process.env.TRAVIS_BRANCH + '-' + process.env.TRAVIS_BUILD_NUMBER,
+        name: process.env.TRAVIS_BRANCH + '-' + process.env.TRAVIS_BUILD_NUMBER,
+
         // browserName: 'firefox',
         // 'marionette':'true'.
       },
@@ -38,7 +38,7 @@ class BaseConfig {
         });
       },
       afterLaunch: () => {
-        return retry.afterLaunch(constants.NUMBER_OF_RETRIES);
+        return retry.afterLaunch(2);
       },
       onPrepare: () => {
         retry.onPrepare();
