@@ -23,7 +23,7 @@ db.get(placeId)
     console.log('Found place ' + place._id + ' : ' + place.name);
 
     return db.query(
-      'medic/contacts_by_place',
+      'medic-scripts/contacts_by_place',
       {
         startkey: [placeId],
         endkey: [placeId + '\ufff0'],

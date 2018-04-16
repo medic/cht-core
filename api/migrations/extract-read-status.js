@@ -1,6 +1,6 @@
 const db = require('../db-nano'),
       async = require('async'),
-      userDb = require('../lib/user-db'),
+      userDb = require('../services/user-db'),
       batch = require('../lib/db-batch');
 
 const createReadStatusDoc = record => {

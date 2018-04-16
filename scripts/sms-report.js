@@ -69,7 +69,7 @@ var db = PouchDB(couchUrl);
 
 console.log('        state | to               |  len | message                          | doc URL');
 
-db.query('medic/tasks_messages')
+db.query('medic-sms/tasks_messages')
   .then((res) => {
     res.rows.map((row) => {
         doc = row.value;

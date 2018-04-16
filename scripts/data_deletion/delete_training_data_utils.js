@@ -148,7 +148,7 @@ var getDataRecordsForBranch = function(db, branchId, skip, batchSize) {
     include_docs: true,
     limit: batchSize
   };
-  return db.query('medic/data_records_by_ancestor', params).then(function (result) {
+  return db.query('medic-scripts/data_records_by_ancestor', params).then(function (result) {
     console.log('total_rows : ' + result.total_rows + ', offset : ' + result.offset);
     console.log('Reports for branch : ' + result.rows.length);
     return getDocsFromRows(result.rows);
@@ -205,7 +205,7 @@ var filterFamilyMembers = function(personsList, logdir) {
 
 // Find which facilities (if any) this person is a contact for.
 var isContactFor = function(db, personId) {
-  return db.query('medic/places_by_contact', {key: personId, include_docs: true})
+  return db.query('medic-scripts/places_by_contact', {key: personId, include_docs: true})
     .then(function(result) {
       var ids = getIdsFromRows(result.rows);
       if (result.rows.length > 0) {

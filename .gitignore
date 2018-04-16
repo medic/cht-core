@@ -8,7 +8,9 @@ api_working
 npm-debug.log
 yarn-error.log
 node_modules
-!/ddocs/medic/node_modules
+/ddocs/medic/build_info/version
+/ddocs/medic/build_info/time
+/ddocs/medic/build_info/author
 /node_modules_backup/
 /scripts/node_modules/
 /scripts/changelog-generator/token.json

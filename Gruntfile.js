@@ -1,5 +1,5 @@
 const packageJson = require('./package.json'),
-      releaseName = process.env.TRAVIS_TAG || process.env.TRAVIS_BRANCH || 'medic';
+      releaseName = process.env.TRAVIS_TAG || process.env.TRAVIS_BRANCH || 'local-development';
 
 
 module.exports = function(grunt) {
@@ -286,6 +286,14 @@ module.exports = function(grunt) {
           return `echo "${version}" > ddocs/medic/version`;
         }
       },
+      setHorticulturalistMetadata: {
+        cmd: () => `
+          mkdir -p ddocs/medic/build_info;
+          cd ddocs/medic/build_info;
+          echo "${releaseName}" > version;
+          echo "${new Date().toISOString()}" > time;
+          echo "grunt on \`whoami\`" > author;`
+      },
       apiDev: {
         cmd: 'TZ=UTC ./node_modules/.bin/nodemon --watch api api/server.js -- --allow-cors'
       },
@@ -344,23 +352,20 @@ module.exports = function(grunt) {
                    ' && mv ' + backupPath + ' ' + modulePath +
                    ' && echo "Module restored: ' + module + '"' +
                    ' || echo "No restore required for: ' + module + '"';
-          }).join(' & ');
+          }).join(' && ');
         }
       },
       sharedLibUnit: {
-        cmd:  function() {
-          var sharedLibs = [
-            'bulk-docs-utils',
-            'search',
-            'task-utils',
-            'phone-number'
-          ];
-          return sharedLibs.map(function(lib) {
-            return 'cd shared-libs/' + lib +
-              ' && if [ $(yarn run | grep "^\\s*-\\s*test$" | wc -l) -gt 0 ]; then yarn install && yarn test; fi' +
-              ' && cd ../../';
-          }).join(' ; ');
-        }
+        cmd: () => {
+          const fs = require('fs');
+          return fs.readdirSync('shared-libs')
+              .filter(f => fs.lstatSync(`shared-libs/${f}`).isDirectory())
+              .map(lib =>
+                  `(cd shared-libs/${lib} &&
+                      [[ "$(jq .scripts.test)" = "null" ]] ||
+                        (yarn install && yarn test))`)
+              .join(' && ');
+        },
       },
       // To monkey patch a library...
       // 1. copy the file you want to change
@@ -631,6 +636,7 @@ module.exports = function(grunt) {
     'copy:inbox',
     'appcache',
     'exec:setDdocVersion',
+    'exec:setHorticulturalistMetadata',
     'build-ddoc',
   ]);
 
@@ -709,12 +715,16 @@ module.exports = function(grunt) {
     'build',
   ]);
 
-  grunt.registerTask('ci-test', 'Lint, deploy and test for CI', [
+  grunt.registerTask('ci-unit', 'Lint, deploy and test for CI', [
     'precommit',
     'karma:unit_ci',
+    'exec:sharedLibUnit',
     'env:unitTest',
     'nodeunit',
     'mochaTest:unit',
+  ]);
+
+  grunt.registerTask('ci-integration-e2e', 'Run further tests for CI', [
     'env:general',
     'exec:setupAdmin',
     'deploy',

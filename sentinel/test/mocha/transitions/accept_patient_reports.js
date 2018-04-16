@@ -3,11 +3,11 @@ const sinon = require('sinon').sandbox.create(),
       moment = require('moment'),
       db = require('../../../db-nano'),
       utils = require('../../../lib/utils'),
-      config = require('../../../config');
+      config = require('../../../config'),
+      transition = require('../../../transitions/accept_patient_reports'),
+      messages = require('../../../lib/messages');
 
 describe('accept_patient_reports', () => {
-  const transition = require('../../../transitions/accept_patient_reports'),
-        messages = require('../../../lib/messages');
 
   afterEach(done => {
     sinon.restore();
@@ -15,9 +15,19 @@ describe('accept_patient_reports', () => {
   });
 
   describe('filter', () => {
-    it('validation', () => {
+    it('empty doc returns false', () => {
       transition.filter({}).should.equal(false);
+    });
+    it('no type returns false', () => {
       transition.filter({ form: 'x' }).should.equal(false);
+    });
+    it('returns true', () => {
+      sinon.stub(config, 'get').returns([ { form: 'x' }, { form: 'z' } ]);
+      transition.filter({
+        form: 'x',
+        type: 'data_record',
+        reported_date: 1
+      }).should.equal(true);
     });
   });
 

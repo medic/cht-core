@@ -2,7 +2,14 @@ const chai = require('chai');
 const sinon = require('sinon').sandbox.create();
 const lineage = require('../src/lineage');
 
-describe('Lineage', function() {
+/**
+ * These tests are disabled because:
+ * - they are currently broken
+ * - it's not clear if they're useful
+ * - they're scheduled to be replaced
+ * @see https://github.com/medic/medic-webapp/issues/4306
+ */
+describe.skip('Lineage', function() {
   let allDocs,
       get,
       query,

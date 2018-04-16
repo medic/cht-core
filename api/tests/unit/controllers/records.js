@@ -32,8 +32,7 @@ exports['create returns error when unsupported content type'] = test => {
 exports['create calls createRecordByJSON if json type'] = test => {
   const createRecordByJSON = sinon.stub(recordUtils, 'createRecordByJSON').returns({ message: 'one' });
   const createByForm = sinon.stub(recordUtils, 'createByForm');
-  const put = sinon.stub().returns(Promise.resolve({ ok: true }));
-  db.medic = { put: put };
+  const put = sinon.stub(db.medic, 'put').returns(Promise.resolve({ ok: true }));
   const req = {
     body: {
       message: 'test',
@@ -54,8 +53,7 @@ exports['create calls createRecordByJSON if json type'] = test => {
 exports['create calls createByForm if urlencoded type'] = test => {
   const createRecordByJSON = sinon.stub(recordUtils, 'createRecordByJSON');
   const createByForm = sinon.stub(recordUtils, 'createByForm').returns({ message: 'one' });
-  const put = sinon.stub().returns(Promise.resolve({ ok: true }));
-  db.medic = { put: put };
+  const put = sinon.stub(db.medic, 'put').returns(Promise.resolve({ ok: true }));
   const req = {
     body: {
       message: 'test',

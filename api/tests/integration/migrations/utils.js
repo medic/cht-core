@@ -145,18 +145,19 @@ function matchDbs(expected, actual) {
 
 const dbPath = db.getPath,
       dbRequest = db.request;
+const realPouchDb = dbPouch.medic;
 const switchToRealDbs = () => {
   db.request = dbRequest;
   db.getPath = dbPath;
   db.audit = db.use('audit');
   db.medic = db.use('medic');
-  dbPouch.medic = new PouchDB(dbPouch._url);
+  dbPouch.medic = realPouchDb;
 };
 
 const switchToTestDbs = () => {
   db.audit = db.use(DB_PREFIX + 'audit');
   db.medic = db.use(DB_PREFIX + 'medic');
-  dbPouch.medic = new PouchDB(dbPouch._url.replace(/medic$/, DB_PREFIX + 'medic'));
+  dbPouch.medic = new PouchDB(realPouchDb.name.replace(/medic$/, DB_PREFIX + 'medic'));
 
   // hijack calls to db.request and make sure that they are made to the correct
   // database.

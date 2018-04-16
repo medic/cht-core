@@ -70,8 +70,7 @@ module.exports = {
             doc.type === 'data_record' &&
             doc.fields &&
             doc.fields.patient_id &&
-            !transitionUtils.hasRun(doc, NAME) &&
-            utils.getClinicPhone(doc)
+            !transitionUtils.hasRun(doc, NAME)
         );
     },
     getConfig: function() {

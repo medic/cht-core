@@ -21,6 +21,7 @@ const _ = require('underscore'),
       upgrade = require('./controllers/upgrade'),
       settings = require('./controllers/settings'),
       bulkDocs = require('./controllers/bulk-docs'),
+      createUserDb = require('./controllers/create-user-db'),
       createDomain = require('domain').create,
       staticResources = /\/(templates|static)\//,
       favicon = /\/icon_\d+.ico$/,
@@ -170,32 +171,7 @@ app.get('/api/auth/:path', function(req, res) {
   });
 });
 
-app.post('/api/v1/upgrade', jsonParser, (req, res) => {
-  auth.check(req, '_admin', null, (err, userCtx) => {
-    if (err) {
-      return serverUtils.error(err, req, res);
-    }
-
-    var buildInfo = req.body.build;
-    if (!buildInfo) {
-      return serverUtils.error({
-        message: 'You must provide a build info body',
-        status: 400
-      }, req, res);
-    }
-
-    upgrade(req.body.build, userCtx.user)
-      .then(() => res.json({ ok: true }))
-      .catch(err => serverUtils.error(err, req, res));
-  });
-});
-
-var emptyJSONBodyError = function(req, res) {
-  return serverUtils.error({
-    code: 400,
-    message: 'Request body is empty or Content-Type header was not set to application/json.'
-  }, req, res);
-};
+app.post('/api/v1/upgrade', jsonParser, upgrade.upgrade);
 
 app.get('/api/sms/', function(req, res) {
   res.redirect(301, '/api/sms');
@@ -306,6 +282,12 @@ app.postJson('/api/v1/users', function(req, res) {
   });
 });
 
+const emptyJSONBodyError = function(req, res) {
+  return serverUtils.error({
+    code: 400,
+    message: 'Request body is empty or Content-Type header was not set to application/json.'
+  }, req, res);
+};
 /*
  * TODO: move this logic out of here
  *       https://github.com/medic/medic-webapp/issues/4092
@@ -479,19 +461,26 @@ app.putJson(`${appPrefix}update_settings/${db.settings.ddoc}`, settings.put); //
 app.putJson('/api/v1/settings', settings.put);
 
 // DB replication endpoint
-var changesHander = _.partial(require('./handlers/changes').request, proxy);
-app.get(pathPrefix + '_changes', changesHander);
-app.postJson(pathPrefix + '_changes', changesHander);
+const changesHandler = _.partial(require('./handlers/changes').request, proxy);
+app.get(pathPrefix + '_changes', changesHandler);
+app.postJson(pathPrefix + '_changes', changesHandler);
+
+const metaPathPrefix = '/medic-user-\*-meta/';
+
+// AuthZ for this endpoint should be handled by couchdb
+app.get(metaPathPrefix + '_changes', (req, res) => {
+  if (req.query.feed === 'longpoll' ||
+      req.query.feed === 'continuous' ||
+      req.query.feed === 'eventsource') {
+    // Disable nginx proxy buffering to allow hearbeats for long-running feeds
+    // Issue: #4312
+    res.setHeader('X-Accel-Buffering', 'no');
+  }
+  proxy.web(req, res);
+});
 
 // Attempting to create the user's personal meta db
-app.put('/medic-user-\*-meta/', (req, res) => {
-  require('./controllers/create-user-db')(req, err => {
-    if (err) {
-      return serverUtils.error(err, req, res);
-    }
-    res.json({ ok: true });
-  });
-});
+app.put(metaPathPrefix, createUserDb);
 
 var writeHeaders = function(req, res, headers, redirectHumans) {
   res.oldWriteHead = res.writeHead;
