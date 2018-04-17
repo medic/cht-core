@@ -400,7 +400,7 @@ describe('reminders', () => {
       });
   });
 
-  it('getReminderWindow calls view looking for old events and returns date found', () => {
+  it('getReminderWindow calls view looking for old events and returns date found', (done) => {
       var now = moment();
 
       var db = {
@@ -432,14 +432,15 @@ describe('reminders', () => {
 
           assert.equal(viewOpts.limit, 1);
           assert(viewOpts.startkey);
-          test.same(viewOpts.startkey[0], 'XXX');
+          assert.equal(viewOpts.startkey[0], 'XXX');
 
           // time within 1000ms
-          test.same(Math.floor(moment(viewOpts.startkey[1]).valueOf() / 1000), Math.floor(moment().valueOf() / 1000));
+          assert.deepEqual(Math.floor(moment(viewOpts.startkey[1]).valueOf() / 1000), Math.floor(moment().valueOf() / 1000));
 
-          test.same(viewOpts.endkey, ['XXX', now.clone().startOf('hour').subtract(1, 'day').toISOString()]);
+          assert.deepEqual(viewOpts.endkey, ['XXX', now.clone().startOf('hour').subtract(1, 'day').toISOString()]);
           assert.equal(viewOpts.descending, true);
           assert.equal(start.toISOString(), now.clone().subtract(1, 'hour').toISOString());
+          done();
       });
   });
 });

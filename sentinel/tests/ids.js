@@ -44,11 +44,10 @@ describe('ids', () => {
       return [];
     });
 
-    ids.generator(db).next().value.then(patientId => {
+    return ids.generator(db).next().value.then(patientId => {
       assert(patientId, 'should return id');
       assert(potentialIds.some(key => key[1] === patientId), 'id should come from the cached ids');
-
-    }).catch(err => test.fail(err));
+    });
   });
 
   it('id generator doesnt use ids that are already used by the DB', () => {
@@ -58,10 +57,9 @@ describe('ids', () => {
       return ids;
     });
 
-    ids.generator(db).next().value.then(patientId => {
+    return ids.generator(db).next().value.then(patientId => {
       assert.equal(patientId, idToUse[1]);
-
-    }).catch(err => test.fail(err));
+    });
   });
 
   it('addUniqueId retries with a longer id if it only generates duplicates', () => {
@@ -74,12 +72,11 @@ describe('ids', () => {
       return [];
     });
 
-    ids.generator(db).next().value.then(patientId => {
+    return ids.generator(db).next().value.then(patientId => {
       assert(patientId, 'id should be generated');
       assert.equal(patientId.length, 6);
       assert(potentialIds.some(key => key[1] === patientId), 'id should come from the cached ids');
-
-    }).catch(err => test.fail(err));
+    });
   });
 
   it('id generator uses id length from the database', () => {
@@ -87,11 +84,10 @@ describe('ids', () => {
           LENGTH = 10;
     db.medic.get = sinon.stub().callsArgWith(1, null, {_id: 'shortcode-id-length', current_length: LENGTH});
 
-    ids.generator(db).next().value.then(patientId => {
+    return ids.generator(db).next().value.then(patientId => {
       assert(patientId);
       assert.equal(patientId.length, LENGTH);
-
-    }).catch(err => test.fail(err));
+    });
   });
 
 });

@@ -45,7 +45,6 @@ describe('update sent by', () => {
   });
 
   it('does not overwrite if existing date is after', () => {
-      // test.expect(1);
       var now = moment(),
           tomorrow = now.clone().add(1, 'day');
       sinon.stub(db.medic, 'get').callsArgWith(1, null, {
@@ -64,7 +63,6 @@ describe('update sent by', () => {
   });
 
   it('overwrites if existing date is before', () => {
-      // test.expect(3);
       var now = moment(),
           yesterday = now.clone().subtract(1, 'day');
       sinon.stub(db.medic, 'get').callsArgWith(1, null, {
