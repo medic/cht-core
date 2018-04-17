@@ -53,8 +53,6 @@ before_script:
   - curl -X PUT http://127.0.0.1:5984/{_users,_replicator,_global_changes,_metadata,admins}
   - curl -X PUT localhost:5984/medic
   - yarn global add grunt-cli --ignore-engines
-  - cd api && yarn install && cd ..
-  - cd sentinel && yarn install --production=false && cd ..
   - cd shared-libs/phone-number && yarn install && cd ../..
   - ./node_modules/.bin/webdriver-manager update
   - ./node_modules/.bin/webdriver-manager start > logs/webdriver.log &
