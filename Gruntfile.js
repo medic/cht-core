@@ -245,6 +245,9 @@ module.exports = function(grunt) {
       }
     },
     exec: {
+      lsSelenium: {
+        cmd: 'ls node_modules/webdriver-manager/selenium'
+      },
       cleanDdocBuildDirectory: {
         cmd: 'rm -rf ddocs/medic/_attachments && mkdir ddocs/medic/_attachments'
       },
@@ -729,6 +732,7 @@ module.exports = function(grunt) {
     'exec:setupAdmin',
     'deploy',
     'test_api_integration',
+    'exec:lsSelenium',
     'e2e'
   ]);
 
