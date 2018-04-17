@@ -108,7 +108,10 @@ var _ = require('underscore');
         return requests;
       };
 
+      var searchId = 0;
       return function(type, filters, options) {
+        var debug = require('debug')('medic:search:' + searchId++);
+        debug('search initiated for ' + type, filters, options);
         options = options || {};
         _.defaults(options, {
           limit: 50,
@@ -116,16 +119,20 @@ var _ = require('underscore');
         });
         return $q.resolve(generateRequests(type, filters, options))
           .then(function(requests) {
+            debug('Requests generated');
             return getRows(type, requests, options);
           })
           .then(function(results) {
+            debug('Rows gotten');
             return GetDataRecords(_.pluck(results, 'id'), options);
           })
           .then(function(results) {
+            debug('Data records gotten');
             _currentQuery = {};
             return results;
           })
           .catch(function(err) {
+            debug('Something errored');
             _currentQuery = {};
             throw err;
           });

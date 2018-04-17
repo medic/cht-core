@@ -34,7 +34,6 @@ var feedback = require('../modules/feedback'),
       LiveListConfig,
       Location,
       Modal,
-      RulesEngine,
       Select2Search,
       SendMessage,
       Session,
@@ -89,13 +88,7 @@ var feedback = require('../modules/feedback'),
         }
       });
 
-      RulesEngine.init
-        .then(function() {
-          $scope.dbWarmedUp = true;
-        })
-        .catch(function() {
-          $scope.dbWarmedUp = true;
-        });
+      $scope.dbWarmedUp = true;
 
       feedback.init({
         saveDoc: function(doc, callback) {
