@@ -245,9 +245,6 @@ module.exports = function(grunt) {
       }
     },
     exec: {
-      lsSelenium: {
-        cmd: 'ls node_modules/webdriver-manager/selenium'
-      },
       cleanDdocBuildDirectory: {
         cmd: 'rm -rf ddocs/medic/_attachments && mkdir ddocs/medic/_attachments'
       },
@@ -333,6 +330,9 @@ module.exports = function(grunt) {
         cmd: '    echo "[webapp]"   && yarn install --ignore-engines' +
              ' && echo "[api]"      && cd api && yarn install && cd ..' +
              ' && echo "[sentinel]" && cd sentinel && yarn install && cd ..'
+      },
+      start_webdriver: {
+        cmd: 'yarn webdriver-manager update && yarn webdriver-manager start > logs/webdriver.log &'
       },
       check_env_vars:
         'if [ -z $COUCH_URL ] || [ -z $API_URL ] || [ -z $COUCH_NODE_NAME ]; then ' +
@@ -732,7 +732,7 @@ module.exports = function(grunt) {
     'exec:setupAdmin',
     'deploy',
     'test_api_integration',
-    'exec:lsSelenium',
+    'exec:start_webdriver',
     'e2e'
   ]);
 

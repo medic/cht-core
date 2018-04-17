@@ -54,8 +54,6 @@ before_script:
   - curl -X PUT localhost:5984/medic
   - yarn global add grunt-cli --ignore-engines
   - cd shared-libs/phone-number && yarn install && cd ../..
-  - ./node_modules/.bin/webdriver-manager update
-  - ./node_modules/.bin/webdriver-manager start > logs/webdriver.log &
   - until nc -z localhost 4444; do sleep 1; done
   - node --stack_size=10000 `which grunt` ci-build
 
