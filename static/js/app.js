@@ -93,7 +93,9 @@ _.templateSettings = {
   };
   app.constant('POUCHDB_OPTIONS', POUCHDB_OPTIONS);
 
+  console.debug('Beginning bootstrap');
   bootstrapper(POUCHDB_OPTIONS, function(err) {
+    console.debug('Bootstrap complete');
     if (err) {
       if (err.redirect) {
         window.location.href = err.redirect;
@@ -103,7 +105,9 @@ _.templateSettings = {
       }
       return;
     }
+    console.debug('Pre-angular ready');
     angular.element(document).ready(function() {
+      console.debug('Angular ready, angular boostrapping');
       angular.bootstrap(document, [ 'inboxApp' ], {
         strictDi: true
       });

@@ -1,5 +1,6 @@
 var nools = require('nools'),
     _ = require('underscore'),
+    debug = require('debug')('rules-engine'),
     nootils = require('medic-nootils'),
     FIRST_RUN_COMPLETE_TYPE = '_complete',
     // number of weeks before reported date to assume for start of pregnancy
@@ -233,13 +234,18 @@ var nools = require('nools'),
             force: true,
             include_docs: true
           };
+
+          debug('Just before doing our all');
           return $q.all([
             Search('reports', { valid: true }, options),
             Search('contacts', {}, options)
           ])
             .then(function(results) {
+              debug('all complete');
               facts = deriveFacts(results[0], results[1]);
+              debug('facts derived');
               assertFacts();
+              debug('facts asserted (maybe)');
             });
         });
 
