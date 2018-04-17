@@ -25,3 +25,4 @@ tests/results
 *.sublime-project
 *.sublime-workspace
 /.env
+coverage/
