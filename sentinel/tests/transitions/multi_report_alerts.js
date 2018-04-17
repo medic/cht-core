@@ -85,36 +85,36 @@ describe('multi report alerts', () => {
     }
   };
 
-  it('validates config : is_report_counted', (done) => {
+  it('validates config : is_report_counted', done => {
     assertConfigIsInvalid(done, [_.omit(alertConfig, 'is_report_counted')]);
   });
 
-  it('validates config : name', (done) => {
+  it('validates config : name', done => {
     assertConfigIsInvalid(done, [_.omit(alertConfig, 'name')]);
   });
 
-  it('validates config : names are unique', (done) => {
+  it('validates config : names are unique', done => {
     assertConfigIsInvalid(done, [alertConfig, alertConfig]);
   });
 
-  it('validates config : num_reports_threshold', (done) => {
+  it('validates config : num_reports_threshold', done => {
     assertConfigIsInvalid(done, [_.omit(alertConfig, 'num_reports_threshold')]);
   });
 
-  it('validates config : num_reports_threshold < 100', (done) => {
+  it('validates config : num_reports_threshold < 100', done => {
     alertConfig.num_reports_threshold = 100000000; // arbitrary large number
     assertConfigIsInvalid(done, [ alertConfig ]);
   });
 
-  it('validates config : message', (done) => {
+  it('validates config : message', done => {
     assertConfigIsInvalid(done, [_.omit(alertConfig, 'message')]);
   });
 
-  it('validates config : recipients', (done) => {
+  it('validates config : recipients', done => {
     assertConfigIsInvalid(done, [_.omit(alertConfig, 'recipients')]);
   });
 
-  it('validates config : time_window_in_days', (done) => {
+  it('validates config : time_window_in_days', done => {
     assertConfigIsInvalid(done, [_.omit(alertConfig, 'time_window_in_days')]);
   });
 

@@ -34,7 +34,7 @@ describe('utils', () => {
         assert.equal(utils.getVal(doc, 'fields.404'), undefined);
     });
 
-    it('getReportsWithSameClinicAndForm calls through to db view correctly', (done) => {
+    it('getReportsWithSameClinicAndForm calls through to db view correctly', done => {
 
         var formName = 'someForm';
         var clinicId = 'someClinicId';

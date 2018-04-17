@@ -29,7 +29,7 @@ describe('finalize transition', () => {
     });
   });
 
-  it('applyTransition creates transitions property', (done) => {
+  it('applyTransition creates transitions property', done => {
     const doc = { _rev: '1' };
     const audit = sinon.stub(db.audit, 'saveDoc').callsArg(1);
     const transition = {

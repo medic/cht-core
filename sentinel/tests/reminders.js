@@ -14,7 +14,7 @@ describe('reminders', () => {
     assert(_.isFunction(reminders.execute));
   });
 
-  it('config with no reminders calls callback', (done) => {
+  it('config with no reminders calls callback', done => {
     sinon.stub(config, 'get').returns([]);
     sinon.stub(reminders, 'runReminder').throws();
     reminders.execute({}, function(err) {
@@ -23,7 +23,7 @@ describe('reminders', () => {
     });
   });
 
-  it('config with three matching reminder calls runReminder thrice', (done) => {
+  it('config with three matching reminder calls runReminder thrice', done => {
       var runReminder;
       sinon.stub(config, 'get').returns([
           {form:'x', cron:'x', message:'x'},

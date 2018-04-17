@@ -9,7 +9,7 @@ describe('update_scheduled_reports', () => {
 
   describe('filter', () => {
 
-    it.only('fails when scheduled form not present', () => {
+    it('fails when scheduled form not present', () => {
       assert.equal(transition.filter({ patient_id: 'x' }), false);
     });
 
@@ -132,7 +132,7 @@ describe('update_scheduled_reports', () => {
   });
 
   describe('onMatch', () => {
-    it('calls audit.bulkSave with correct arguments', done => {
+    it('calls audit.bulkSave with correct arguments', () => {
       const view = sinon.stub(db.medic, 'view').callsArgWith(3, null, {rows: []});
       const bulkSave = sinon.stub(db.audit, 'bulkSave').callsArg(2);
       const change = {
@@ -151,7 +151,6 @@ describe('update_scheduled_reports', () => {
         assert.equal(view.callCount, 1);
         assert.equal(bulkSave.callCount, 1);
         assert.equal(bulkSave.args[0][0].length, 0);
-        done();
       });
 
     });

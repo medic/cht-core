@@ -68,7 +68,7 @@ describe('validations', () => {
       });
   });
 
-  it.only('pass unique validation when doc is the same', done => {
+  it('pass unique validation when doc is the same', done => {
       var view = sinon.stub(db.medic, 'view').callsArgWith(3, null, {
           rows: [{
               id: 'same',

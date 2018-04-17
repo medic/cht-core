@@ -10,7 +10,8 @@
   "scripts": {
     "start": "nf start",
     "webdriver": "webdriver-manager update && webdriver-manager start",
-    "mocha-tests": "jest --watchAll --coverage"
+    "mocha-tests": "jest --watchAll",
+    "mocha-tests-with-coverage": "jest --watchAll --coverage"
   },
   "dependencies": {
     "angular": "^1.6.9",

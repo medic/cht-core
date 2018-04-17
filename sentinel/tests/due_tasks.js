@@ -7,7 +7,7 @@ const sinon = require('sinon').sandbox.create(),
 describe('due tasks', () => {
   afterEach(() => sinon.restore());
 
-  it('due_tasks handles view returning no rows', (done) => {
+  it('due_tasks handles view returning no rows', done => {
     var db = {
       view: function() {}
     };
@@ -30,7 +30,7 @@ describe('due tasks', () => {
     assert.equal(saveDoc.callCount, 0);
   });
 
-  it('set all due scheduled tasks to pending', (done) => {
+  it('set all due scheduled tasks to pending', done => {
     var due = moment().toISOString();
     var notDue = moment().add(7, 'days').toISOString();
     var id = 'xyz';
@@ -85,7 +85,7 @@ describe('due tasks', () => {
 
   });
 
-  it('set all due scheduled tasks to pending and handles repeated rows', (done) => {
+  it('set all due scheduled tasks to pending and handles repeated rows', done => {
     var due = moment().toISOString();
     var notDue = moment().add(7, 'days').toISOString();
     var id = 'xyz';
@@ -142,7 +142,7 @@ describe('due tasks', () => {
 
   });
 
-  it('set all due scheduled tasks to pending and handles nonrepeated rows', (done) => {
+  it('set all due scheduled tasks to pending and handles nonrepeated rows', done => {
 
     var due = moment().toISOString();
     var id1 = 'xyz';
@@ -203,7 +203,7 @@ describe('due tasks', () => {
 
   });
 
-  it('generates the messages for all due scheduled tasks', (done) => {
+  it('generates the messages for all due scheduled tasks', done => {
     const due = moment().toISOString();
     const notDue = moment().add(7, 'days').toISOString();
     const id = 'xyz';
