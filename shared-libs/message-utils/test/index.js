@@ -314,13 +314,18 @@ describe('messageUtils', () => {
           reported_date: '2050-03-13T13:06:22.002Z',
           chw_name: 'Arnold'
         };
-        const patient = {
-          parent: {
-            type: 'clinic',
-            contact: { name: 'Bede' }
+        const extraContext = {
+          patient: {
+            parent: {
+              type: 'clinic',
+              contact: { name: 'Bede' }
+            }
           }
         };
-        const actual = utils.template({}, null, doc, { message: 'Your CHP is {{clinic.contact.name}}' }, { patient: patient });
+        const config = {};
+        const translate = null;
+        const content = { message: 'Your CHP is {{clinic.contact.name}}' };
+        const actual = utils.template(config, translate, doc, content, extraContext);
         expect(actual).to.equal('Your CHP is Bede');
       });
 
@@ -338,13 +343,18 @@ describe('messageUtils', () => {
             }
           }
         };
-        const patient = {
-          parent: {
-            type: 'clinic',
-            contact: { name: 'Bede' }
+        const extraContext = {
+          patient: {
+            parent: {
+              type: 'clinic',
+              contact: { name: 'Bede' }
+            }
           }
         };
-        const actual = utils.template({}, null, doc, { message: 'Your CHP is {{clinic.contact.name}}' }, { patient: patient });
+        const config = {};
+        const translate = null;
+        const content = { message: 'Your CHP is {{clinic.contact.name}}' };
+        const actual = utils.template(config, translate, doc, content, extraContext);
         expect(actual).to.equal('Your CHP is Bede');
       });
 
