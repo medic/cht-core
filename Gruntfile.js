@@ -333,7 +333,7 @@ module.exports = function(grunt) {
       },
       start_webdriver: {
         cmd: 'yarn webdriver-manager update && ' +
-             'yarn webdriver-manager start > logs/webdriver.log &' +
+             'yarn webdriver-manager start > logs/webdriver.log & ' +
              'until nc -z localhost 4444; do sleep 1; done'
       },
       check_env_vars:
