@@ -14,7 +14,8 @@ var getParent = function(doc, type) {
   while (facility && facility.type !== type) {
     facility = facility.parent;
   }
-  return facility;
+  // don't return falsey values, eg: ""
+  return facility || undefined;
 };
 
 var getClinic = function(doc) {
