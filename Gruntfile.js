@@ -332,7 +332,9 @@ module.exports = function(grunt) {
              ' && echo "[sentinel]" && cd sentinel && yarn install && cd ..'
       },
       start_webdriver: {
-        cmd: 'yarn webdriver-manager update && yarn webdriver-manager start > logs/webdriver.log &'
+        cmd: 'yarn webdriver-manager update && ' +
+             'yarn webdriver-manager start > logs/webdriver.log &' +
+             'until nc -z localhost 4444; do sleep 1; done'
       },
       check_env_vars:
         'if [ -z $COUCH_URL ] || [ -z $API_URL ] || [ -z $COUCH_NODE_NAME ]; then ' +
