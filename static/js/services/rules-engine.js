@@ -1,6 +1,6 @@
 var nools = require('nools'),
     _ = require('underscore'),
-    debug = require('debug')('rules-engine'),
+    debug = require('debug')('medic:rules-engine'),
     nootils = require('medic-nootils'),
     FIRST_RUN_COMPLETE_TYPE = '_complete',
     // number of weeks before reported date to assume for start of pregnancy
