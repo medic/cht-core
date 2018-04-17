@@ -120,6 +120,7 @@
     }
   ],
   "resolutions": {
-    "**/jquery": "3.2.x"
+    "**/jquery": "3.2.x",
+    "**/protractor": "5.1.x"
   }
 }
