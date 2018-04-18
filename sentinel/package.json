@@ -25,6 +25,7 @@
     "pouchdb-adapter-http": "^6.4.3",
     "pouchdb-core": "^6.4.3",
     "pouchdb-mapreduce": "^6.4.3",
+    "@shared-libs/message-utils": "file:../shared-libs/message-utils",
     "task-utils": "file:../shared-libs/task-utils",
     "underscore": "^1.8.3",
     "uuid": "^3.2.1",

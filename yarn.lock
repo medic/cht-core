@@ -2,6 +2,9 @@
 # yarn lockfile v1
 
 
+"@shared-libs/message-utils@file:shared-libs/message-utils":
+  version "1.0.0"
+
 "@sinonjs/formatio@^2.0.0":
   version "2.0.0"
   resolved "http://registry.npmjs.org/@sinonjs/formatio/-/formatio-2.0.0.tgz#84db7e9eb5531df18a8c5e0bfb6e449e55e654b2"
@@ -4052,10 +4055,6 @@ json-stringify-safe@5.0.x, json-stringify-safe@~5.0.1:
   version "5.0.1"
   resolved "https://registry.yarnpkg.com/json-stringify-safe/-/json-stringify-safe-5.0.1.tgz#1296a2d58fd45f19a0f6ce01d65701e2c735b6eb"
 
-json2xml@^0.1.3:
-  version "0.1.3"
-  resolved "https://registry.yarnpkg.com/json2xml/-/json2xml-0.1.3.tgz#9ae7c220bedd7c66a668e26f7ac182f6704eca21"
-
 jsonify@~0.0.0:
   version "0.0.0"
   resolved "https://registry.yarnpkg.com/jsonify/-/jsonify-0.0.0.tgz#2c74b6ee41d93ca51b7b5aaee8f503631d252a73"
@@ -5573,6 +5572,10 @@ plur@^2.1.0:
   resolved "https://registry.yarnpkg.com/plur/-/plur-2.1.2.tgz#7482452c1a0f508e3e344eaec312c91c29dc655a"
   dependencies:
     irregular-plurals "^1.0.0"
+
+pojo2xml@^1.4.0:
+  version "1.7.0"
+  resolved "https://registry.yarnpkg.com/pojo2xml/-/pojo2xml-1.7.0.tgz#8f976846870c03e17229bce453dea8b60a5261a6"
 
 posix-character-classes@^0.1.0:
   version "0.1.1"

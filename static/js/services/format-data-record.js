@@ -1,6 +1,6 @@
 var _ = require('underscore'),
     moment = require('moment'),
-    messages = require('../modules/message-utils'),
+    messages = require('@shared-libs/message-utils'),
     lineageFactory = require('lineage');
 
 angular.module('inboxServices').factory('FormatDataRecord',

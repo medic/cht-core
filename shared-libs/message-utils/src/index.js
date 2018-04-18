@@ -1,5 +1,3 @@
-// NB: This code is identical to code in webapp
-// TODO: move into a shared library as part of #4021
 var _ = require('underscore'),
     uuid = require('uuid'),
     gsm = require('gsm'),
@@ -14,7 +12,8 @@ var getParent = function(doc, type) {
   while (facility && facility.type !== type) {
     facility = facility.parent;
   }
-  return facility;
+  // don't return falsey values, eg: ""
+  return facility || undefined;
 };
 
 var getClinic = function(doc) {
@@ -261,3 +260,5 @@ exports.template = function(config, translate, doc, content, extraContext) {
   var context = extendedTemplateContext(doc, extraContext);
   return render(config, template, context);
 };
+
+exports._getRecipient = getRecipient;
