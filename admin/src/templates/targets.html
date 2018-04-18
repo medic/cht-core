@@ -1,0 +1,53 @@
+<div class="loader" ng-if="loading"></div>
+
+<div ng-if="!loading">
+
+  <p ng-if="error" class="alert alert-danger" role="alert" translate>error.settings.loading</p>
+
+  <div ng-if="!error">
+
+    <div class="tab-content">
+      <a class="btn btn-success" ng-if="!configuration.enabled" ng-click="enable()">
+        <i class="fa fa-play"></i>
+        <span translate>analytics.target.enable</span>
+      </a>
+      <a class="btn btn-danger" ng-if="configuration.enabled" ng-click="disable()">
+        <i class="fa fa-stop"></i>
+        <span translate>analytics.target.disable</span>
+      </a>
+      <a class="btn btn-primary" ui-sref="targets-edit">
+        <i class="fa fa-plus"></i>
+        <span translate>analytics.target.add</span>
+      </a>
+    </div>
+
+    <div class="tab-content">
+
+      <div class="row selection-heading">
+        <div class="col-xs-1"></div>
+        <div class="col-xs-4" translate>analytics.target.id</div>
+        <div class="col-xs-4" translate>analytics.target.name</div>
+        <div class="col-xs-2" translate>analytics.target.type</div>
+        <div class="col-xs-1" translate>analytics.target.goal</div>
+      </div>
+
+      <div class="row selection" ng-repeat="target in configuration.items track by target.id" ng-click="edit(target.id)">
+        <div class="col-xs-1" ng-bind-html="target.icon | resourceIcon"></div>
+        <div class="col-xs-4">{{target.id}}</div>
+        <div class="col-xs-4">{{target.name | translateFrom}}</div>
+        <div class="col-xs-2" ng-if="target.type === 'count'" translate>
+          analytics.target.type.count
+        </div>
+        <div class="col-xs-2" ng-if="target.type === 'percent'" translate>
+          analytics.target.type.percent
+        </div>
+        <div class="col-xs-1">
+          {{target.goal}}<span ng-if="target.type === 'percent'">%</span>
+        </div>
+      </div>
+
+    </div>
+
+  </div>
+
+</div>

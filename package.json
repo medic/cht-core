@@ -48,7 +48,6 @@
     "phone-number": "file:shared-libs/phone-number",
     "pojo2xml": "^1.4.0",
     "pouchdb-browser": "^6.4.3",
-    "properties": "^1.2.1",
     "search": "file:shared-libs/search",
     "select2": "4.0.3",
     "@shared-libs/message-utils": "file:shared-libs/message-utils",

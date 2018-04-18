@@ -1,0 +1,16 @@
+<div class="col-sm-12">
+  <div>
+    <a class="btn btn-default" ng-click="export()" ng-disabled="exporting">
+      <i class="fa fa-arrow-down"></i>
+      <span translate>Export</span>
+    </a>
+    <span class="loader inline small" ng-show="exporting"></span>
+  </div>
+  <div class="section">
+    <h3 translate translate-values="feedback.page">Showing number of total</h3>
+    <div class="row" ng-attr-data-record-id="item.id" ng-repeat="item in feedback.items">
+      <div class="col-sm-3" ng-bind="item.time | date:'medium'"></div>
+      <div class="col-sm-9">{{item.info}}</div>
+    </div>
+  </div>
+</div>

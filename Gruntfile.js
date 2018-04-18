@@ -172,11 +172,16 @@ module.exports = function(grunt) {
       ]
     },
     less: {
-      all: {
+      webapp: {
         files: {
           'static/dist/inbox.css': 'static/css/inbox.less'
         }
-      }
+      },
+      admin: {
+        files: {
+          'dist/ddocs/medic-admin/_attachments/main.css': 'admin/src/css/main.less'
+        }
+      },
     },
     cssmin: {
       all: {
@@ -645,7 +650,7 @@ module.exports = function(grunt) {
 
   grunt.registerTask('mmcss', 'Build the CSS resources', [
     'sass',
-    'less',
+    'less:webapp',
     'postcss'
   ]);
 
@@ -688,6 +693,7 @@ module.exports = function(grunt) {
     'exec:clean-dist',
     'copy:admin-resources',
     'browserify:admin',
+    'less:admin',
     'couch-compile:admin',
     'couch-push:localhost',
   ]);
