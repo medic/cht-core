@@ -47,7 +47,8 @@ angular.module('inboxServices').factory('Changes',
           live: true,
           since: 'now',
           timeout: false,
-          include_docs: true
+          include_docs: true,
+          return_docs: false,
         })
         .on('change', notifyAll)
         .on('error', function(err) {
