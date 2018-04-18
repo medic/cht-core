@@ -9,9 +9,7 @@
   },
   "scripts": {
     "start": "nf start",
-    "webdriver": "webdriver-manager update && webdriver-manager start",
-    "mocha-tests": "jest --watchAll",
-    "mocha-tests-with-coverage": "jest --watchAll --coverage"
+    "webdriver": "webdriver-manager update && webdriver-manager start"
   },
   "dependencies": {
     "angular": "^1.6.9",
@@ -86,8 +84,6 @@
     "grunt-sass": "^2.1.0",
     "grunt-text-replace": "^0.4.0",
     "grunt-xmlmin": "^0.1.8",
-    "jest": "22.4.3",
-    "jest-runner-mocha": "0.6.0",
     "jit-grunt": "^0.10.0",
     "jshint-stylish": "^2.1.0",
     "karma": "^2.0.0",
@@ -119,27 +115,5 @@
       "path": "./static/dist/inbox.css",
       "maxSize": "70 kB"
     }
-  ],
-  "jest": {
-    "runner": "jest-runner-mocha",
-    "testMatch": [
-      "<rootDir>/sentinel/tests/**/*.js",
-      "<rootDir>/api/tests/mocha/**/*.js"
-    ],
-    "testEnvironment": "node",
-    "collectCoverageFrom": [
-      "sentinel/lib/**/*.{js}"
-    ],
-    "coverageThreshold": {
-      "global": {
-        "branches": 100,
-        "functions": 100,
-        "lines": 100,
-        "statements": 100
-      }
-    },
-    "testPathIgnorePatterns": [
-    ],
-    "verbose": true
-  }
+  ]
 }

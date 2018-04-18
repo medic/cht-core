@@ -484,7 +484,7 @@ module.exports = function(grunt) {
         src: [
           'tests/mocha/unit/**/*.spec.js',
           'api/tests/mocha/**/*.js',
-          'sentinel/tests/**/*.js'
+          'sentinel/test/mocha/**/*.js'
         ],
       },
       api_integration: {
