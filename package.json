@@ -12,7 +12,7 @@
     "angular": "^1.6.4",
     "angular-cookie": "^4.1.0",
     "angular-nvd3": "^1.0.9",
-    "angular-pouchdb": "^5.0.0",
+    "angular-pouchdb": "^5.0.1",
     "angular-resource": "^1.6.4",
     "angular-route": "^1.6.4",
     "angular-sanitize": "^1.6.4",

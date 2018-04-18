@@ -34,7 +34,6 @@ var feedback = require('../modules/feedback'),
       LiveListConfig,
       Location,
       Modal,
-      RulesEngine,
       Select2Search,
       SendMessage,
       Session,
@@ -88,14 +87,6 @@ var feedback = require('../modules/feedback'),
           $scope.replicationStatus.icon = SYNC_ICON[update.status];
         }
       });
-
-      RulesEngine.init
-        .then(function() {
-          $scope.dbWarmedUp = true;
-        })
-        .catch(function() {
-          $scope.dbWarmedUp = true;
-        });
 
       feedback.init({
         saveDoc: function(doc, callback) {
