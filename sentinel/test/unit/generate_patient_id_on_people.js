@@ -1,38 +1,34 @@
 var sinon = require('sinon').sandbox.create(),
+    assert = require('chai').assert,
     transitionUtils = require('../../transitions/utils');
 
 var transition = require('../../transitions/generate_patient_id_on_people');
 
+describe('generate patient id on people', () => {
+  afterEach(() => sinon.restore());
 
-exports.tearDown = function(callback) {
-  sinon.restore();
-  callback();
-};
+  it('Adds patient_id to people', () => {
+    sinon.stub(transitionUtils, 'addUniqueId');
+    transition.onMatch({}, {}, {}, {});
+    assert.equal(transitionUtils.addUniqueId.callCount, 1);
+  });
 
-exports['Adds patient_id to people'] = function(test) {
-  sinon.stub(transitionUtils, 'addUniqueId');
-  transition.onMatch({}, {}, {}, {});
-  test.equal(transitionUtils.addUniqueId.callCount, 1);
-  test.done();
-};
+  it('Filter only accepts people without a patient_id', () => {
+    assert.equal(transition.filter({
+      type: 'person'
+    }), true);
 
-exports['Filter only accepts people without a patient_id'] = function(test) {
-  test.equal(transition.filter({
-    type: 'person'
-  }), true);
+    assert.equal(transition.filter({
+      type: 'person',
+      patient_id: '12345'
+    }), false);
 
-  test.equal(transition.filter({
-    type: 'person',
-    patient_id: '12345'
-  }), false);
+    assert.equal(transition.filter({
+      type: 'not-a-person'
+    }), false);
 
-  test.equal(transition.filter({
-    type: 'not-a-person'
-  }), false);
-
-  test.equal(transition.filter({
-    no: 'type'
-  }), false);
-
-  test.done();
-};
+    assert.equal(transition.filter({
+      no: 'type'
+    }), false);
+  });
+});
