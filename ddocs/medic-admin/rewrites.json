@@ -1,5 +1,6 @@
 [
-  {"from": "/", "to": "_show/index"},
-  {"from": "/main.css", "to": "main.css"},
-  {"from": "/main.js", "to": "main.js"}
+  {"from": "/",             "to": "templates/index.html"},
+  {"from": "/main.css",     "to": "main.css"},
+  {"from": "/main.js",      "to": "main.js"},
+  {"from": "/templates/*",  "to": "templates/*"}
 ]

@@ -5,13 +5,11 @@
   <body ng-controller="MainCtrl">
     <div class="navigation">
       <ul>
-        <li><a href="#">Settings</a></li>
+        <li><a ui-sref="settings">Settings</a></li>
         <li><a href="#">Exports</a></li>
       </ul>
     </div>
-    <div>
-      <p>HELLO!!!</p>
-    </div>
+    <div ui-view></div>
     <script src="main.js"></script>
   </body>
 </html>

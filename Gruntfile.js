@@ -114,6 +114,12 @@ module.exports = function(grunt) {
       admin: {
         src: ['admin/src/js/main.js'],
         dest: 'dist/ddocs/medic-admin/_attachments/main.js',
+        options: {
+          transform: ['browserify-ngannotate'],
+          alias: {
+            'angular-translate-interpolation-messageformat': './admin/node_modules/angular-translate/dist/angular-translate-interpolation-messageformat/angular-translate-interpolation-messageformat',
+          },
+        },
       },
     },
     uglify: {
@@ -240,8 +246,10 @@ module.exports = function(grunt) {
             dest: 'dist/ddocs/medic-admin/_attachments/'
           },
           {
-            src: 'admin/src/templates/index.html',
-            dest: 'dist/ddocs/medic-admin/index_template'
+            expand: true,
+            flatten: true,
+            src: 'admin/src/templates/**/*',
+            dest: 'dist/ddocs/medic-admin/_attachments/templates/'
           },
         ]
       },

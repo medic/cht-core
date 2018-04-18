@@ -1,7 +1,7 @@
 var phoneNumber = require('phone-number'),
     countries = require('../modules/countries');
 
-angular.module('inboxControllers').controller('ConfigurationSettingsBasicCtrl',
+angular.module('controllers').controller('SettingsBasicCtrl',
   function (
     $log,
     $scope,

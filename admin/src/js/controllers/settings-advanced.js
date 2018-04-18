@@ -2,7 +2,7 @@ var _ = require('underscore'),
     moment = require('moment'),
     countries = require('../modules/countries');
 
-angular.module('inboxControllers').controller('ConfigurationSettingsAdvancedCtrl',
+angular.module('controllers').controller('SettingsAdvancedCtrl',
   function (
     $log,
     $scope,

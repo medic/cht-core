@@ -1,0 +1,19 @@
+{
+  "name": "medic-admin",
+  "private": true,
+  "version": "0.1.0",
+  "dependencies": {
+    "angular": "^1.6.9",
+    "angular-pouchdb": "^5.0.1",
+    "angular-route": "^1.6.9",
+    "angular-sanitize": "^1.6.9",
+    "angular-translate": "^2.17.0",
+    "angular-ui-router": "^0.4.3",
+    "jquery": "3.2.x",
+    "moment": "^2.22.0",
+    "phone-number": "file:../shared-libs/phone-number",
+    "pouchdb-browser": "^6.4.3",
+    "select2": "^4.0.3",
+    "underscore": "^1.8.3"
+  }
+}
