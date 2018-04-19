@@ -40,6 +40,7 @@ describe('Add user  : ', () => {
     addUserModal.fillForm('user0', 'Not Saved', 'short');
     addUserModal.submit();
     expect(errorMessagePassword.getText()).toBe('The password must be at least 8 characters long.');
+    element(by.css('button.cancel.close')).click();
   });
 
   it('should reject weak passwords', () => {
@@ -47,6 +48,7 @@ describe('Add user  : ', () => {
     addUserModal.fillForm('user0', 'Not Saved', 'weakPassword');
     addUserModal.submit();
     expect(errorMessagePassword.getText()).toContain('The password is too easy to guess.');
+    element(by.css('button.cancel.close')).click();
   });
 
   it('should reject non-matching passwords', () => {
@@ -55,6 +57,7 @@ describe('Add user  : ', () => {
     element(by.id('password-confirm')).sendKeys('abc');
     addUserModal.submit();
     expect(errorMessagePassword.getText()).toMatch('Passwords must match');
+    element(by.css('button.cancel.close')).click();
   });
 
   it('should require password', () => {
@@ -62,6 +65,7 @@ describe('Add user  : ', () => {
     addUserModal.fillForm('user0', 'Not Saved', '');
     addUserModal.submit();
     expect(errorMessagePassword.getText()).toContain('required');
+    element(by.css('button.cancel.close')).click();
   });
 
   it('should require username', () => {
@@ -71,6 +75,7 @@ describe('Add user  : ', () => {
     const errorMessageUserName = element.all(by.css('span.help-block.ng-binding')).get(0);
     helper.waitUntilReady(errorMessageUserName);
     expect(errorMessageUserName.getText()).toContain('required');
+    element(by.css('button.cancel.close')).click();
   });
 
   it('should require place and contact for restricted user', () => {
@@ -80,5 +85,6 @@ describe('Add user  : ', () => {
     addUserModal.submit();
     expect(element(by.css('#facilitySelect ~ .help-block')).getText()).toContain('required');
     expect(element(by.css('#contactSelect ~ .help-block')).getText()).toContain('required');
+    element(by.css('button.cancel.close')).click();
   });
 });
