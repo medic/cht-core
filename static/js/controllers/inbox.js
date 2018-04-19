@@ -666,6 +666,19 @@ var feedback = require('../modules/feedback'),
         RecurringProcessManager.stopUpdateRelativeDate();
       });
 
+      var userCtx = Session.userCtx();
+      Changes({
+        key: 'inbox-user-context',
+        filter: function (change) {
+          return change.doc.type === 'user-settings' &&
+                 userCtx &&
+                 userCtx.name &&
+                 change.doc.name === userCtx.name;
+        },
+        callback: function () {
+          Session.init(showUpdateReady);
+        }
+      });
     }
   );
 

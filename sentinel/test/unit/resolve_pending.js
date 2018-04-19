@@ -1,78 +1,74 @@
+var assert = require('chai').assert;
 var transition = require('../../transitions/resolve_pending');
 
-exports['filter fails on undefined tasks or scheduled_tasks'] = function(test) {
-    test.equals(transition.filter({}), false);
-    test.done();
-};
+describe('reminders', () => {
+  it('filter fails on undefined tasks or scheduled_tasks', () => {
+      assert.equal(transition.filter({}), false);
+  });
 
-exports['filter fails on empty tasks or scheduled_tasks'] = function(test) {
-    test.equals(transition.filter({
-        tasks: [],
-        scheduled_tasks: []
-    }), false);
-    test.done();
-};
+  it('filter fails on empty tasks or scheduled_tasks', () => {
+      assert.equal(transition.filter({
+          tasks: [],
+          scheduled_tasks: []
+      }), false);
+  });
 
-exports['filter fails if task object looks wrong'] = function(test) {
-    test.equals(transition.filter({
-        tasks: ['foo']
-    }), false);
-    test.done();
-};
+  it('filter fails if task object looks wrong', () => {
+      assert.equal(transition.filter({
+          tasks: ['foo']
+      }), false);
+  });
 
-exports['filter succeeds with message task'] = function(test) {
-    test.equals(transition.filter({
-        tasks: [{
-            messages: [{
-                to: 'foo',
-                message: 'foo',
-            }],
-            state: 'pending'
-        }]
-    }), true);
-    test.done();
-};
+  it('filter succeeds with message task', () => {
+      assert.equal(transition.filter({
+          tasks: [{
+              messages: [{
+                  to: 'foo',
+                  message: 'foo',
+              }],
+              state: 'pending'
+          }]
+      }), true);
+  });
 
-exports['filter succeeds with scheduled message tasks'] = function(test) {
-    test.equals(transition.filter({
-        scheduled_tasks: [{
-            messages: [{
-                to: 'foo',
-                message: 'foo',
-            }],
-            state: 'pending'
-        }]
-    }), true);
-    test.done();
-};
+  it('filter succeeds with scheduled message tasks', () => {
+      assert.equal(transition.filter({
+          scheduled_tasks: [{
+              messages: [{
+                  to: 'foo',
+                  message: 'foo',
+              }],
+              state: 'pending'
+          }]
+      }), true);
+  });
 
-exports['filter fails with error and scheduled message task'] = function(test) {
-    test.equals(transition.filter({
-        errors: ['foo'],
-        scheduled_tasks: [{
-            messages: [{
-                to: 'foo',
-                message: 'foo',
-            }],
-            state: 'pending'
-        }]
-    }), false);
-    test.done();
-};
+  it('filter fails with error and scheduled message task', () => {
+      assert.equal(transition.filter({
+          errors: ['foo'],
+          scheduled_tasks: [{
+              messages: [{
+                  to: 'foo',
+                  message: 'foo',
+              }],
+              state: 'pending'
+          }]
+      }), false);
+  });
 
-exports['onMatch does not cause update if message is already sent'] = function(test) {
-    var doc = {
-        errors: ['foo'],
-        scheduled_tasks: [{
-            messages: [{
-                to: 'foo',
-                message: 'foo',
-            }],
-            state: 'sent'
-        }]
-    };
-    transition.onMatch({ doc: doc }).then(changed => {
-        test.equals(changed, false);
-        test.done();
-    });
-};
+  it('onMatch does not cause update if message is already sent', () => {
+      var doc = {
+          errors: ['foo'],
+          scheduled_tasks: [{
+              messages: [{
+                  to: 'foo',
+                  message: 'foo',
+              }],
+              state: 'sent'
+          }]
+      };
+      return transition.onMatch({ doc: doc }).then(changed => {
+          assert.equal(changed, false);
+      });
+  });
+});

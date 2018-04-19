@@ -1,34 +1,28 @@
 const sinon = require('sinon').sandbox.create(),
+     assert = require('chai').assert,
       db = require('../../db-nano'),
       transition = require('../../transitions/update_sent_by');
 
-exports.setUp = function(callback) {
-  process.env.TEST_ENV = true;
-  callback();
-};
+describe('update sent by', () => {
+  beforeEach(() => { process.env.TEST_ENV = true; });
+  afterEach(() => sinon.restore());
 
-exports.tearDown = function(callback) {
-  sinon.restore();
-  callback();
-};
-
-exports['updates sent_by to clinic name if contact name'] = function(test) {
-  var doc = { from: '+34567890123' };
-  var dbView = sinon.stub(db.medic, 'view').callsArgWith(3, null, { rows: [ { doc: { name: 'Clinic' } } ] } );
-  transition.onMatch({ doc: doc }).then(changed => {
-    test.ok(changed);
-    test.equal(doc.sent_by, 'Clinic');
-    test.ok(dbView.calledOnce);
-    test.done();
+  it('updates sent_by to clinic name if contact name', () => {
+    var doc = { from: '+34567890123' };
+    var dbView = sinon.stub(db.medic, 'view').callsArgWith(3, null, { rows: [ { doc: { name: 'Clinic' } } ] } );
+    return transition.onMatch({ doc: doc }).then(changed => {
+      assert(changed);
+      assert.equal(doc.sent_by, 'Clinic');
+      assert(dbView.calledOnce);
+    });
   });
-};
 
-exports['sent_by untouched if nothing available'] = function(test) {
-  var doc = { from: 'unknown number' };
-  sinon.stub(db.medic, 'view').callsArgWith(3, null, {});
-  transition.onMatch({ doc: doc }).then(changed => {
-    test.ok(!changed);
-    test.strictEqual(doc.sent_by, undefined);
-    test.done();
+  it('sent_by untouched if nothing available', () => {
+    var doc = { from: 'unknown number' };
+    sinon.stub(db.medic, 'view').callsArgWith(3, null, {});
+    return transition.onMatch({ doc: doc }).then(changed => {
+      assert(!changed);
+      assert.strictEqual(doc.sent_by, undefined);
+    });
   });
-};
+});

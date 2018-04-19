@@ -1,4 +1,5 @@
 const sinon = require('sinon').sandbox.create(),
+      assert = require('chai').assert,
       transition = require('../../../transitions/update_notifications'),
       db = require('../../../db-nano'),
       utils = require('../../../lib/utils');
@@ -13,45 +14,45 @@ describe('update_notifications', () => {
   describe('filter', () => {
 
     it('empty doc does not match', () => {
-      transition.filter({}).should.equal(false);
+      assert.equal(transition.filter({}), false);
     });
 
     it('missing form does not match', () => {
-      transition.filter({
+      assert.equal(transition.filter({
         fields: { patient_id: 'x' }
-      }).should.equal(false);
+      }), false);
     });
 
     it('missing clinic phone does not match', () => {
-      transition.filter({
+      assert.equal(transition.filter({
         form: 'x',
         fields: { patient_id: 'x' }
-      }).should.equal(false);
+      }), false);
     });
 
     it('already run does not match', () => {
-      transition.filter({
+      assert.equal(transition.filter({
         form: 'x',
         fields: { patient_id: 'x' },
         transitions: {
           update_notifications: { last_rev: 9, seq: 1854, ok: true }
         }
-      }).should.equal(false);
+      }), false);
     });
 
     it('match', () => {
-      transition.filter({
+      assert.equal(transition.filter({
         form: 'x',
         fields: { patient_id: 'x' },
         type: 'data_record'
-      }).should.equal(true);
+      }), true);
     });
 
   });
 
   describe('onMatch', () => {
 
-    it('returns false if not on or off form', done => {
+    it('returns false if not on or off form', () => {
       sinon.stub(transition, 'getConfig').returns({
         on_form: 'x',
         off_form: 'y'
@@ -62,13 +63,12 @@ describe('update_notifications', () => {
           type: 'data_record'
         }
       };
-      transition.onMatch(change).then(changed => {
-        (!!changed).should.equal(false);
-        done();
+      return transition.onMatch(change).then(changed => {
+        assert.equal((!!changed), false);
       });
     });
 
-    it('no configured on or off form returns false', done => {
+    it('no configured on or off form returns false', () => {
       sinon.stub(transition, 'getConfig').returns({});
       const change = {
         doc: {
@@ -77,13 +77,12 @@ describe('update_notifications', () => {
           fields: { patient_id: 'x' }
         }
       };
-      transition.onMatch(change).then(changed => {
-        (!!changed).should.equal(false);
-        done();
+      return transition.onMatch(change).then(changed => {
+        assert.equal((!!changed), false);
       });
     });
 
-    it('no configured on or off message returns false', done => {
+    it('no configured on or off message returns false', () => {
       sinon.stub(transition, 'getConfig').returns({ off_form: 'off' });
       const change = {
         doc: {
@@ -93,12 +92,11 @@ describe('update_notifications', () => {
         }
       };
       transition.onMatch(change).then(changed => {
-        (!!changed).should.equal(false);
-        done();
+        assert.equal((!!changed), false);
       });
     });
 
-    it('registration not found adds error and response', done => {
+    it('registration not found adds error and response', () => {
       const doc = {
         form: 'on',
         type: 'data_record',
@@ -129,14 +127,13 @@ describe('update_notifications', () => {
         doc: doc,
         form: 'on'
       };
-      transition.onMatch(change).then(changed => {
-        changed.should.equal(true);
-        doc.errors.length.should.equal(1);
-        doc.errors[0].message.should.equal('not found x');
-        doc.tasks.length.should.equal(1);
-        doc.tasks[0].messages[0].message.should.equal('not found x');
-        doc.tasks[0].messages[0].to.should.equal('x');
-        done();
+      return transition.onMatch(change).then(changed => {
+        assert.equal(changed, true);
+        assert.equal(doc.errors.length, 1);
+        assert.equal(doc.errors[0].message, 'not found x');
+        assert.equal(doc.tasks.length, 1);
+        assert.equal(doc.tasks[0].messages[0].message, 'not found x');
+        assert.equal(doc.tasks[0].messages[0].to, 'x');
       });
     });
 
@@ -172,12 +169,12 @@ describe('update_notifications', () => {
         form: 'on'
       };
       transition.onMatch(change).then(changed => {
-        changed.should.equal(true);
-        doc.errors.length.should.equal(1);
-        doc.errors[0].message.should.equal('not found x');
-        doc.tasks.length.should.equal(1);
-        doc.tasks[0].messages[0].message.should.equal('not found x');
-        doc.tasks[0].messages[0].to.should.equal('x');
+        assert.equal(changed, true);
+        assert.equal(doc.errors.length, 1);
+        assert.equal(doc.errors[0].message, 'not found x');
+        assert.equal(doc.tasks.length, 1);
+        assert.equal(doc.tasks[0].messages[0].message, 'not found x');
+        assert.equal(doc.tasks[0].messages[0].to, 'x');
         done();
       });
     });
@@ -224,12 +221,12 @@ describe('update_notifications', () => {
         form: 'on'
       };
       transition.onMatch(change).then(changed => {
-        changed.should.equal(true);
-        doc.errors.length.should.equal(1);
-        doc.errors[0].message.should.equal('patient id needs 5 numbers.');
-        doc.tasks.length.should.equal(1);
-        doc.tasks[0].messages[0].message.should.equal('patient id needs 5 numbers.');
-        doc.tasks[0].messages[0].to.should.equal('x');
+        assert.equal(changed, true);
+        assert.equal(doc.errors.length, 1);
+        assert.equal(doc.errors[0].message, 'patient id needs 5 numbers.');
+        assert.equal(doc.tasks.length, 1);
+        assert.equal(doc.tasks[0].messages[0].message, 'patient id needs 5 numbers.');
+        assert.equal(doc.tasks[0].messages[0].to, 'x');
         done();
       });
     });
@@ -275,11 +272,11 @@ describe('update_notifications', () => {
         form: 'off'
       };
       transition.onMatch(change).then(changed => {
-        changed.should.equal(true);
-        (doc.errors || []).length.should.equal(0);
-        doc.tasks.length.should.equal(1);
-        doc.tasks[0].messages[0].message.should.equal('Thank you woot, no further notifications regarding Agatha will be sent until you submit START 123.');
-        regDoc.scheduled_tasks[0].state.should.equal('muted');
+        assert.equal(changed, true);
+        assert.equal((doc.errors || []).length, 0);
+        assert.equal(doc.tasks.length, 1);
+        assert.equal(doc.tasks[0].messages[0].message, 'Thank you woot, no further notifications regarding Agatha will be sent until you submit START 123.');
+        assert.equal(regDoc.scheduled_tasks[0].state, 'muted');
         done();
       });
     });
@@ -300,8 +297,8 @@ describe('update_notifications', () => {
         }]
       };
       transition._addErr('foo', config, doc);
-      doc.errors[0].code.should.equal('invalid_report');
-      doc.errors[0].message.should.equal('Failed to complete notification request, event type "foo" misconfigured.');
+      assert.equal(doc.errors[0].code, 'invalid_report');
+      assert.equal(doc.errors[0].message, 'Failed to complete notification request, event type "foo" misconfigured.');
     });
 
     it('when event type message not found', () => {
@@ -313,8 +310,8 @@ describe('update_notifications', () => {
         }]
       };
       transition._addErr('foo', config, doc);
-      doc.errors[0].code.should.equal('invalid_report');
-      doc.errors[0].message.should.equal('Failed to complete notification request, event type "foo" misconfigured.');
+      assert.equal(doc.errors[0].code, 'invalid_report');
+      assert.equal(doc.errors[0].message, 'Failed to complete notification request, event type "foo" misconfigured.');
     });
 
     it('when event type message not found', () => {
@@ -326,8 +323,8 @@ describe('update_notifications', () => {
         }]
       };
       transition._addErr('foo', config, doc);
-      doc.errors[0].code.should.equal('invalid_report');
-      doc.errors[0].message.should.equal('Failed to complete notification request, event type "foo" misconfigured.');
+      assert.equal(doc.errors[0].code, 'invalid_report');
+      assert.equal(doc.errors[0].message, 'Failed to complete notification request, event type "foo" misconfigured.');
     });
 
   });
@@ -346,8 +343,8 @@ describe('update_notifications', () => {
         }]
       };
       transition._addMsg('foo', config, doc);
-      doc.errors[0].code.should.equal('invalid_report');
-      doc.errors[0].message.should.equal('Failed to complete notification request, event type "foo" misconfigured.');
+      assert.equal(doc.errors[0].code, 'invalid_report');
+      assert.equal(doc.errors[0].message, 'Failed to complete notification request, event type "foo" misconfigured.');
     });
 
   });

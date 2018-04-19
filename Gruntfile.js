@@ -482,18 +482,14 @@ module.exports = function(grunt) {
         'api/tests/unit/**/*.js',
         '!api/tests/unit/utils.js',
         '!api/tests/unit/integration/**/*.js',
-      ],
-      sentinel: [
-        'sentinel/test/unit/**/*.js',
-        'sentinel/test/functional/**/*.js',
-      ],
+      ]
     },
     mochaTest: {
       unit: {
         src: [
           'tests/mocha/unit/**/*.spec.js',
           'api/tests/mocha/**/*.js',
-          'sentinel/test/mocha/**/*.js'
+          'sentinel/test/**/*.js'
         ],
       },
       api_integration: {

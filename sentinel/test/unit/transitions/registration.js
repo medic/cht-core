@@ -677,7 +677,7 @@ describe('registration', () => {
         should.not.exist(err);
         // Registration will send messages with no event_type
         addMessage.callCount.should.equal(2);
-        
+
         const expectedContext = {
           patient: testPatient,
           registrations: testRegistration,
