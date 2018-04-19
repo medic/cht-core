@@ -35,7 +35,7 @@ You will need to install the following:
 
 [Node.js](https://nodejs.org) 8.11.x and above
 
-[yarn](https://yarnpkg.com/en/) 1.5.1
+[yarn](https://yarnpkg.com/en/) 1.6.0
 
 [CouchDB](https://couchdb.apache.org) v2.x
 
