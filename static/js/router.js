@@ -180,14 +180,10 @@
         }
       })
 
-      .state('configuration.user', {
+      .state('userSettings', {
         url: '/user',
-        views: {
-          content: {
-            controller: 'ConfigurationUserCtrl',
-            templateUrl: 'templates/partials/configuration_user.html'
-          }
-        }
+        controller: 'ConfigurationUserCtrl',
+        templateUrl: 'templates/partials/configuration_user.html'
       })
 
       // about page
