@@ -83,6 +83,15 @@ module.exports = function(grunt) {
           'http://localhost:5984/medic-test': 'ddocs/medic.json'
         }
       },
+      'admin-test': {
+        options: {
+          user: 'admin',
+          pass: 'pass'
+        },
+        files: {
+          'http://localhost:5984/medic-test': 'dist/ddocs/medic-admin.json'
+        }
+      },
       staging: {
         files: [
           {
@@ -707,13 +716,13 @@ module.exports = function(grunt) {
     'copy:admin-resources',
     'browserify:admin',
     'less:admin',
-    'couch-compile:admin',
-    'couch-push:admin',
+    'couch-compile:admin'
   ]);
 
   grunt.registerTask('deploy', 'Deploy the webapp', [
     'exec:ddocAppSettings',
     'couch-push:localhost',
+    'couch-push:admin',
     'notify:deployed',
   ]);
 
