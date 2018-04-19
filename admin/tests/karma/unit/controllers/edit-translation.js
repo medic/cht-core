@@ -12,7 +12,7 @@ describe('EditTranslationCtrl controller', function() {
       bulkDocs,
       model;
 
-  beforeEach(module('inboxApp'));
+  beforeEach(module('adminApp'));
 
   beforeEach(inject(function($rootScope, $controller) {
     scope = $rootScope.$new();

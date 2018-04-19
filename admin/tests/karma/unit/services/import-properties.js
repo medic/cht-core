@@ -12,7 +12,7 @@ describe('ImportProperties service', function() {
     Settings = sinon.stub();
     UpdateSettings = sinon.stub();
     put = sinon.stub();
-    module('inboxApp');
+    module('adminApp');
     module(function($provide) {
       $provide.value('translateFilter', function(key) {
         return '{' + key + '}';

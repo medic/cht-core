@@ -9,7 +9,7 @@ describe('UpdateUser service', function() {
   beforeEach(function() {
     $http = sinon.stub();
     $http.returns(Promise.resolve());
-    module('inboxApp');
+    module('adminApp');
     module($provide => {
       $provide.value('$http', $http);
     });
@@ -66,7 +66,7 @@ describe('CreateUser service', function() {
   beforeEach(function() {
     $http = sinon.stub();
     $http.returns(Promise.resolve());
-    module('inboxApp');
+    module('adminApp');
     module($provide => {
       $provide.value('$http', $http);
       $provide.value('$Q', Q);
@@ -108,7 +108,7 @@ describe('DeleteUser service', function() {
   beforeEach(function() {
     $http = sinon.stub();
     $http.returns(Promise.resolve());
-    module('inboxApp');
+    module('adminApp');
     module($provide => {
       $provide.value('$http', $http);
       $provide.value('$Q', Q);

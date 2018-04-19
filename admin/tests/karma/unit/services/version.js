@@ -2,7 +2,7 @@ describe('version', () => {
   let service;
 
   beforeEach(() => {
-    module('inboxApp');
+    module('adminApp');
     inject(_Version_ => service = _Version_);
   });
 

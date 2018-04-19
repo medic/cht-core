@@ -38,22 +38,26 @@ angular.module('controllers').controller('EditUserCtrl',
       // Edit a user that's not the current user.
       // $scope.model is the user object passed in by controller creating the Modal.
       // If $scope.model === {}, we're creating a new user.
-      return $q.resolve({
-        id: $scope.model._id,
-        username: $scope.model.name,
-        fullname: $scope.model.fullname,
-        email: $scope.model.email,
-        phone: $scope.model.phone,
-        // FacilitySelect is what binds to the select, place is there to
-        // compare to later to see if it's changed once we've run computeFields();
-        facilitySelect: $scope.model.facility_id,
-        place: $scope.model.facility_id,
-        type: getType($scope.model.roles),
-        language: { code: $scope.model.language },
-        // ^ Same with contactSelect vs. contact
-        contactSelect: $scope.model.contact_id,
-        contact: $scope.model.contact_id
-      });
+      if ($scope.model) {
+        return $q.resolve({
+          id: $scope.model._id,
+          username: $scope.model.name,
+          fullname: $scope.model.fullname,
+          email: $scope.model.email,
+          phone: $scope.model.phone,
+          // FacilitySelect is what binds to the select, place is there to
+          // compare to later to see if it's changed once we've run computeFields();
+          facilitySelect: $scope.model.facility_id,
+          place: $scope.model.facility_id,
+          type: getType($scope.model.roles),
+          language: { code: $scope.model.language },
+          // ^ Same with contactSelect vs. contact
+          contactSelect: $scope.model.contact_id,
+          contact: $scope.model.contact_id
+        });
+      } else {
+        return $q.resolve({});
+      }
     };
 
     determineEditUserModel()

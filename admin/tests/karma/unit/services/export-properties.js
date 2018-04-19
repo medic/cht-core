@@ -5,7 +5,7 @@ describe('ExportProperties service', function() {
   var service;
 
   beforeEach(function() {
-    module('inboxApp');
+    module('adminApp');
     inject(function($injector) {
       service = $injector.get('ExportProperties');
     });

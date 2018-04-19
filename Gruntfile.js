@@ -495,16 +495,16 @@ module.exports = function(grunt) {
         singleRun: true,
         browsers: ['Chrome_Headless']
       },
-      unit_ci: {
-        configFile: './tests/karma/karma-unit.conf.js',
-        singleRun: true,
-        browsers: ['Chrome_Headless']
-      },
       unit_continuous: {
         configFile: './tests/karma/karma-unit.conf.js',
         singleRun: false,
         browsers: ['Chrome_Headless']
-      }
+      },
+      admin: {
+        configFile: './admin/tests/karma/karma-unit.conf.js',
+        singleRun: true,
+        browsers: ['Chrome_Headless']
+      },
     },
     protractor: {
       e2e_tests_and_services: {
@@ -753,6 +753,7 @@ module.exports = function(grunt) {
   grunt.registerTask('unit', 'Lint and unit tests', [
     'jshint',
     'karma:unit',
+    'karma:admin',
     'exec:sharedLibUnit',
     'env:unitTest',
     'nodeunit',
@@ -782,7 +783,8 @@ module.exports = function(grunt) {
   grunt.registerTask('ci-unit', 'Lint, deploy and test for CI', [
     'precommit',
     'install_dependencies',
-    'karma:unit_ci',
+    'karma:unit',
+    'karma:admin',
     'exec:sharedLibUnit',
     'env:unitTest',
     'nodeunit',
