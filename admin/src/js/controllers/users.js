@@ -1,6 +1,6 @@
 var _ = require('underscore');
 
-angular.module('inboxControllers').controller('ConfigurationUsersCtrl',
+angular.module('controllers').controller('UsersCtrl',
   function (
     $log,
     $scope,
@@ -29,7 +29,7 @@ angular.module('inboxControllers').controller('ConfigurationUsersCtrl',
     $scope.deleteUserPrepare = function(user, $event) {
       $event.stopPropagation();
       Modal({
-        templateUrl: 'templates/modals/delete_user_confirm.html',
+        templateUrl: 'templates/delete_user_confirm.html',
         controller: 'DeleteUserCtrl',
         model: user
       });
@@ -37,7 +37,7 @@ angular.module('inboxControllers').controller('ConfigurationUsersCtrl',
 
     $scope.editUser = function(user) {
       Modal({
-        templateUrl: 'templates/modals/edit_user.html',
+        templateUrl: 'templates/edit_user.html',
         controller: 'EditUserCtrl',
         model: user
       });

@@ -1,7 +1,7 @@
 [
   {"from": "/static/*",     "to": "static/*"},
   {"from": "/templates/*",  "to": "templates/*"},
-  {"from": "/",             "to": "_show/inbox"},
-  {"from": "#/*",           "to": "_show/inbox"},
-  {"from": "/#/*",          "to": "_show/inbox"}
+  {"from": "/",             "to": "templates/inbox.html"},
+  {"from": "#/*",           "to": "templates/inbox.html"},
+  {"from": "/#/*",          "to": "templates/inbox.html"}
 ]

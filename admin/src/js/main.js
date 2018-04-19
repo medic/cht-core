@@ -4,6 +4,7 @@ require('../../node_modules/select2/dist/js/select2.full');
 
 require('bootstrap');
 require('angular');
+require('angular-cookie');
 require('angular-pouchdb');
 require('angular-route');
 require('angular-sanitize');
@@ -14,8 +15,10 @@ require('angular-ui-router');
 
 angular.module('controllers', []);
 require('./controllers/main');
+require('./controllers/delete-user');
 require('./controllers/edit-language');
 require('./controllers/edit-translation');
+require('./controllers/edit-user');
 require('./controllers/export-audit-logs');
 require('./controllers/export-contacts');
 require('./controllers/export-feedback');
@@ -35,6 +38,7 @@ require('./controllers/translation-application');
 require('./controllers/translation-languages');
 require('./controllers/upgrade');
 require('./controllers/upgrade-confirm');
+require('./controllers/users');
 
 angular.module('directives', []);
 require('./directives/modal');
@@ -44,27 +48,46 @@ require('./filters/resource-icon');
 require('./filters/translate-from');
 
 angular.module('services', []);
-require('./services/add-attachment');
-require('./services/db');
-require('./services/download-url');
-require('./services/export');
-require('./services/file-reader');
-require('./services/json-parse');
-require('./services/languages');
-require('./services/modal');
+require('./services/create-user');
+require('./services/delete-user');
 require('./services/properties');
-require('./services/resource-icons');
-require('./services/settings');
-require('./services/translate');
-require('./services/translate-from');
-require('./services/translation-loader');
-require('./services/update-settings');
 require('./services/version');
+
+// services we borrow from webapp
+angular.module('inboxServices', []);
+require('../../../static/js/services/add-attachment');
+require('../../../static/js/services/cache');
+require('../../../static/js/services/changes');
+require('../../../static/js/services/contact-schema');
+require('../../../static/js/services/db');
+require('../../../static/js/services/download-url');
+require('../../../static/js/services/export');
+require('../../../static/js/services/file-reader');
+require('../../../static/js/services/get-data-records');
+require('../../../static/js/services/get-subject-summaries');
+require('../../../static/js/services/hydrate-contact-names');
+require('../../../static/js/services/json-parse');
+require('../../../static/js/services/languages');
+require('../../../static/js/services/lineage-model-generator');
+require('../../../static/js/services/location');
+require('../../../static/js/services/modal');
+require('../../../static/js/services/resource-icons');
+require('../../../static/js/services/search');
+require('../../../static/js/services/select2-search');
+require('../../../static/js/services/settings');
+require('../../../static/js/services/session');
+require('../../../static/js/services/translate');
+require('../../../static/js/services/translate-from');
+require('../../../static/js/services/translation-loader');
+require('../../../static/js/services/update-settings');
+require('../../../static/js/services/update-user');
 
 var app = angular.module('adminApp', [
   'controllers',
   'directives',
   'filters',
+  'inboxServices',
+  'ipCookie',
   'ngRoute',
   'pascalprecht.translate',
   'pouchdb',
@@ -72,6 +95,11 @@ var app = angular.module('adminApp', [
   'ui.bootstrap',
   'ui.router',
 ]);
+
+app.constant('POUCHDB_OPTIONS', {
+  local: { auto_compaction: true },
+  remote: { skip_setup: true, ajax: { timeout: 30000 }}
+});
 
 app.config(function($stateProvider, $translateProvider) {
   'ngInject';
@@ -102,6 +130,11 @@ app.config(function($stateProvider, $translateProvider) {
           templateUrl: 'templates/settings_advanced.html'
         }
       }
+    })
+    .state('users', {
+      url: '/users',
+      controller: 'UsersCtrl',
+      templateUrl: 'templates/users.html'
     })
     .state('export', {
       url: '/export',

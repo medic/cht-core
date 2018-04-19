@@ -58,7 +58,6 @@
   require('./modal');
   require('./moment-locale-data');
   require('./place-hierarchy');
-  require('./properties');
   require('./recurring-process-manager');
   require('./relative-date');
   require('./report-view-model-generator');
@@ -86,7 +85,6 @@
   require('./update-user');
   require('./user');
   require('./user-contact');
-  require('./version');
   require('./xml-form');
   require('./xml-forms');
   require('./xml-forms-context-utils');

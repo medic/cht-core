@@ -4,11 +4,8 @@ angular.module('inboxServices').factory('Location',
     'use strict';
     'ngInject';
 
-    var getDbName = function(path) {
-      var parts = path && path.split('/');
-      if (parts.length > 1) {
-        return parts[1];
-      }
+    var getDbName = function() {
+      return $window.location.pathname.split('/')[1];
     };
 
     var getUrl = function(dbName) {
@@ -17,8 +14,8 @@ angular.module('inboxServices').factory('Location',
       return loc.protocol + '//' + loc.hostname + port + '/' + dbName;
     };
 
-    var path = $('html').data('base-url');
-    var dbName = getDbName(path);
+    var dbName = getDbName();
+    var path = dbName + '/_design/medic';
     var url = getUrl(dbName);
 
     return {

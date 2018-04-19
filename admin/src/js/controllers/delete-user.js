@@ -1,11 +1,10 @@
-angular.module('inboxControllers').controller('DeleteUserCtrl',
+angular.module('controllers').controller('DeleteUserCtrl',
   function (
     $rootScope,
     $scope,
     $translate,
     $uibModalInstance,
-    DeleteUser,
-    Snackbar
+    DeleteUser
   ) {
 
     'use strict';
@@ -21,7 +20,6 @@ angular.module('inboxControllers').controller('DeleteUserCtrl',
         .then(function() {
           $scope.setFinished();
           $rootScope.$broadcast('UsersUpdated');
-          $translate('document.deleted').then(Snackbar);
           $uibModalInstance.close();
         })
         .catch(function(err) {

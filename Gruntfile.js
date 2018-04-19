@@ -232,10 +232,6 @@ module.exports = function(grunt) {
             ],
             dest: 'ddocs/medic/_attachments/'
           },
-          {
-            src: 'templates/inbox.html',
-            dest: 'ddocs/medic/inbox_template'
-          },
         ]
       },
       'admin-resources': {
@@ -256,6 +252,12 @@ module.exports = function(grunt) {
             src: 'admin/src/templates/**/*',
             dest: 'dist/ddocs/medic-admin/_attachments/templates/'
           },
+          {
+            expand: true,
+            flatten: true,
+            src: [ 'node_modules/font-awesome/fonts/*' ],
+            dest: 'dist/ddocs/medic-admin/_attachments/fonts/'
+          }
         ]
       },
       librariestopatch: {

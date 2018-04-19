@@ -198,24 +198,7 @@
           }
         }
       })
-      .state('configuration.users', {
-        url: '/users',
-        views: {
-          content: {
-            controller: 'ConfigurationUsersCtrl',
-            templateUrl: 'templates/partials/configuration_users.html'
-          }
-        }
-      })
-      .state('configuration.contacts', {
-        url: '/contacts',
-        views: {
-          content: {
-            controller: 'ConfigurationContactsCtrl',
-            templateUrl: 'templates/partials/configuration_contacts.html'
-          }
-        }
-      })
+
 
 
 

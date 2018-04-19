@@ -4,6 +4,7 @@
   "version": "0.1.0",
   "dependencies": {
     "angular": "^1.6.9",
+    "angular-cookie": "^4.1.0",
     "angular-pouchdb": "^5.0.1",
     "angular-route": "^1.6.9",
     "angular-sanitize": "^1.6.9",
@@ -11,6 +12,7 @@
     "angular-ui-bootstrap": "^2.5.6",
     "angular-ui-router": "^0.4.3",
     "bootstrap": "^3.3.7",
+    "font-awesome": "^4.7.0",
     "jquery": "3.2.x",
     "moment": "^2.22.0",
     "properties": "^1.2.1",

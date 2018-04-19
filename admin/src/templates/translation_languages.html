@@ -11,6 +11,14 @@
       <h4 class="panel-title">
         <a class="collapsed" data-toggle="collapse" data-target="#locale-{{localeModel.doc.code}}-body" data-parent="#language-accordion">
           {{localeModel.doc.name}}
+          <span class="fa-stack default" translate translate-attr-title="Default Application Language" ng-show="localeModel.doc.code === languagesModel.default.locale">
+            <i class="fa fa-file-o fa-stack-2x"></i>
+            <i class="fa fa-star fa-stack-1x"></i>
+          </span>
+          <span class="fa-stack default" translate translate-attr-title="Language For Outgoing Messages" ng-show="localeModel.doc.code === languagesModel.default.outgoing">
+            <i class="fa fa-envelope-o fa-stack-2x"></i>
+            <i class="fa fa-star fa-stack-1x"></i>
+          </span>
         </a>
       </h4>
     </div>
