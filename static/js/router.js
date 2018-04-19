@@ -180,15 +180,6 @@
         }
       })
 
-      // configuration
-      .state('configuration', {
-        url: '/configuration',
-        controller: 'ConfigurationCtrl',
-        templateUrl: 'templates/partials/configuration.html'
-      })
-
-
-
       .state('configuration.user', {
         url: '/user',
         views: {
@@ -198,9 +189,6 @@
           }
         }
       })
-
-
-
 
       // about page
       .state('about', {

@@ -62,8 +62,16 @@ module.exports = function(grunt) {
           pass: 'pass'
         },
         files: {
-          'http://localhost:5984/medic': 'ddocs/medic.json',
-          'http://localhost:5984/medic': 'dist/ddocs/medic-admin.json',
+          'http://localhost:5984/medic': 'ddocs/medic.json'
+        }
+      },
+      admin: {
+        options: {
+          user: 'admin',
+          pass: 'pass'
+        },
+        files: {
+          'http://localhost:5984/medic': 'dist/ddocs/medic-admin.json'
         }
       },
       test: {
@@ -162,6 +170,7 @@ module.exports = function(grunt) {
         ]
       },
       all: [
+        'Gruntfile.js',
         'static/js/**/*.js',
         'tests/**/*.js',
         'ddocs/**/*.js',
@@ -169,6 +178,7 @@ module.exports = function(grunt) {
         'api/**/*.js',
         'sentinel/**/*.js',
         'shared-libs/**/*.js',
+        'admin/**/*.js',
       ]
     },
     less: {
@@ -697,7 +707,7 @@ module.exports = function(grunt) {
     'browserify:admin',
     'less:admin',
     'couch-compile:admin',
-    'couch-push:localhost',
+    'couch-push:admin',
   ]);
 
   grunt.registerTask('deploy', 'Deploy the webapp', [

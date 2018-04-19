@@ -64,7 +64,7 @@ angular.module('controllers').controller('TranslationApplicationCtrl',
     };
 
     updateTranslations()
-      .then(function(language) {
+      .then(function() {
         updateLocaleModel('en');
         updateTranslationModels();
         $scope.$watch('localeModel', function(curr, prev) {

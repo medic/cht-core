@@ -1,5 +1,3 @@
-var moment = require('moment');
-
 angular.module('controllers').controller('ExportFeedbackCtrl',
   function (
     $log,

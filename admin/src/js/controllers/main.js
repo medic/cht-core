@@ -1,5 +1,13 @@
-angular.module('controllers').controller('MainCtrl', function($translate) {
-  'ngInject';
-  $translate.use('en');
-  console.log('in main controller');
-});
+angular.module('controllers').controller('MainCtrl',
+  function (
+    $log,
+    $translate,
+    Auth
+  ) {
+    'ngInject';
+    $translate.use('en');
+    Auth('can_configure').catch(function(err) {
+      $log.error('Insufficient permissions. Must be either "admin" or "nationalAdmin".', err);
+    });
+  }
+);
