@@ -1,5 +1,11 @@
 # Medic Mobile Release Notes
 
+## 2.13.7
+
+### Performance improvemnets
+
+ - Various PouchDB performance improvements were backported from 2.14. This includes increasing the PouchDB version and removing our use of pouchdb-worker.
+
 ## 2.13.6
 
 _April 13, 2018_
