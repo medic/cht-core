@@ -722,7 +722,6 @@ module.exports = function(grunt) {
   grunt.registerTask('deploy', 'Deploy the webapp', [
     'exec:ddocAppSettings',
     'couch-push:localhost',
-    'couch-push:admin',
     'notify:deployed',
   ]);
 
