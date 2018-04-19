@@ -384,7 +384,8 @@ module.exports = function(grunt) {
       yarn_install: {
         cmd: '    echo "[webapp]"   && yarn install --ignore-engines' +
              ' && echo "[api]"      && cd api && yarn install && cd ..' +
-             ' && echo "[sentinel]" && cd sentinel && yarn install && cd ..'
+             ' && echo "[sentinel]" && cd sentinel && yarn install && cd ..' +
+             ' && echo "[admin]"    && cd admin && yarn install && cd ..'
       },
       start_webdriver: {
         cmd: 'yarn webdriver-manager update && ' +
@@ -778,6 +779,7 @@ module.exports = function(grunt) {
   grunt.registerTask('ci-build', 'build and minify for CI', [
     'install_dependencies',
     'build',
+    'build-admin'
   ]);
 
   grunt.registerTask('ci-unit', 'Lint, deploy and test for CI', [
