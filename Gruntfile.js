@@ -251,8 +251,8 @@ module.exports = function(grunt) {
       packNodeModules: {
         cmd: ['api', 'sentinel'].map(module => [
               `cd ${module}`,
-              `npm --production install`,
-              `npm pack`,
+              `yarn install --production`,
+              `yarn pack`,
               `mv medic-*.tgz ../ddocs/medic/_attachments/`,
               `cd ..`,
             ].join(' && ')).join(' && ')
@@ -324,12 +324,17 @@ module.exports = function(grunt) {
         cmd: 'node ./node_modules/bundlesize/index.js'
       },
       setup_api_integration: {
-        cmd: 'cd api && npm install',
+        cmd: 'cd api && yarn install',
       },
-      npm_install: {
-        cmd: '    echo "[webapp]"   && npm install' +
-             ' && echo "[api]"      && npm --prefix api install' +
-             ' && echo "[sentinel]" && npm --prefix sentinel install'
+      yarn_install: {
+        cmd: '    echo "[webapp]"   && yarn install --ignore-engines' +
+             ' && echo "[api]"      && cd api && yarn install && cd ..' +
+             ' && echo "[sentinel]" && cd sentinel && yarn install && cd ..'
+      },
+      start_webdriver: {
+        cmd: 'yarn webdriver-manager update && ' +
+             'yarn webdriver-manager start > logs/webdriver.log & ' +
+             'until nc -z localhost 4444; do sleep 1; done'
       },
       check_env_vars:
         'if [ -z $COUCH_URL ] || [ -z $API_URL ] || [ -z $COUCH_NODE_NAME ]; then ' +
@@ -362,7 +367,7 @@ module.exports = function(grunt) {
               .map(lib =>
                   `(cd shared-libs/${lib} &&
                       [[ "$(jq .scripts.test)" = "null" ]] ||
-                        (npm install && npm test))`)
+                        (yarn install && yarn test))`)
               .join(' && ');
         },
       },
@@ -587,9 +592,9 @@ module.exports = function(grunt) {
   });
 
   // Build tasks
-  grunt.registerTask('mmnpm', 'Update and patch npm dependencies', [
+  grunt.registerTask('install_dependencies', 'Update and patch dependencies', [
     'exec:undopatches',
-    'exec:npm_install',
+    'exec:yarn_install',
     'copy:librariestopatch',
     'exec:applypatches'
   ]);
@@ -706,12 +711,13 @@ module.exports = function(grunt) {
   ]);
 
   grunt.registerTask('ci-build', 'build and minify for CI', [
-    'mmnpm',
+    'install_dependencies',
     'build',
   ]);
 
   grunt.registerTask('ci-unit', 'Lint, deploy and test for CI', [
     'precommit',
+    'install_dependencies',
     'karma:unit_ci',
     'exec:sharedLibUnit',
     'env:unitTest',
@@ -724,6 +730,7 @@ module.exports = function(grunt) {
     'exec:setupAdmin',
     'deploy',
     'test_api_integration',
+    'exec:start_webdriver',
     'e2e'
   ]);
 
@@ -736,8 +743,8 @@ module.exports = function(grunt) {
 
   // Dev tasks
   grunt.registerTask('dev-webapp', 'Build and deploy the webapp for dev', [
-    'mmnpm',
-    'dev-webapp-no-npm'
+    'install_dependencies',
+    'dev-webapp-no-dependencies'
   ]);
 
   grunt.registerTask('precommit', 'Static analysis checks', [
@@ -746,7 +753,7 @@ module.exports = function(grunt) {
     'jshint',
   ]);
 
-  grunt.registerTask('dev-webapp-no-npm', 'Build and deploy the webapp for dev, without reinstalling dependencies.', [
+  grunt.registerTask('dev-webapp-no-dependencies', 'Build and deploy the webapp for dev, without reinstalling dependencies.', [
     'build-dev',
     'deploy',
     'watch'

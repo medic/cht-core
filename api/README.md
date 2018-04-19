@@ -9,7 +9,7 @@ audit history where required.
 
 # Table of contents
 
-<!-- To update table of contents run: `npm run toc` -->
+<!-- To update table of contents run: `yarn toc` -->
 
 <!-- START doctoc generated TOC please keep comment here to allow auto update -->
 <!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
@@ -63,7 +63,7 @@ audit history where required.
 
 ## Install
 
-Get node deps with  `npm install`.
+Get node deps with  `yarn install`.
 
 ## Settings
 
