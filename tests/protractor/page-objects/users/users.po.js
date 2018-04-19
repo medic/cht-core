@@ -25,7 +25,7 @@ module.exports = {
   },
 
   openAddUserModal: () => {
-    browser.get(utils.getBaseUrl() + 'configuration/users');
+    browser.get(utils.getAdminBaseUrl() + 'users');
     helper.waitElementToBeClickable(getAddUserButton());
     getAddUserButton().click();
   },

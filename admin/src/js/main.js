@@ -102,8 +102,10 @@ app.constant('POUCHDB_OPTIONS', {
   remote: { skip_setup: true, ajax: { timeout: 30000 }}
 });
 
-app.config(function($stateProvider, $translateProvider) {
+app.config(function($locationProvider, $stateProvider, $translateProvider) {
   'ngInject';
+
+  $locationProvider.hashPrefix('');
 
   $translateProvider.useLoader('TranslationLoader', {});
   $translateProvider.useSanitizeValueStrategy('escape');

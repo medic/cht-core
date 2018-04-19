@@ -41,17 +41,16 @@ module.exports = function(grunt) {
     'couch-compile': {
       client: {
         files: {
-          'ddocs/medic/_attachments/ddocs/compiled.json': 'ddocs/medic-*/'
+          'ddocs/medic/_attachments/ddocs/compiled.json': [
+            'ddocs/medic-*/',
+            '!ddocs/medic-admin/',
+            'dist/ddocs/medic-admin/',
+          ]
         }
       },
       app: {
         files: {
           'ddocs/medic.json': 'ddocs/medic/'
-        }
-      },
-      admin: {
-        files: {
-          'dist/ddocs/medic-admin.json': 'dist/ddocs/medic-admin/'
         }
       },
     },
@@ -65,15 +64,6 @@ module.exports = function(grunt) {
           'http://localhost:5984/medic': 'ddocs/medic.json'
         }
       },
-      admin: {
-        options: {
-          user: 'admin',
-          pass: 'pass'
-        },
-        files: {
-          'http://localhost:5984/medic': 'dist/ddocs/medic-admin.json'
-        }
-      },
       test: {
         options: {
           user: 'admin',
@@ -81,15 +71,6 @@ module.exports = function(grunt) {
         },
         files: {
           'http://localhost:5984/medic-test': 'ddocs/medic.json'
-        }
-      },
-      'admin-test': {
-        options: {
-          user: 'admin',
-          pass: 'pass'
-        },
-        files: {
-          'http://localhost:5984/medic-test': 'dist/ddocs/medic-admin.json'
         }
       },
       staging: {
@@ -716,7 +697,6 @@ module.exports = function(grunt) {
     'copy:admin-resources',
     'browserify:admin',
     'less:admin',
-    'couch-compile:admin'
   ]);
 
   grunt.registerTask('deploy', 'Deploy the webapp', [
@@ -734,6 +714,7 @@ module.exports = function(grunt) {
   // Test tasks
   grunt.registerTask('e2e', 'Deploy app for testing and run e2e tests', [
     'exec:resetTestDatabases',
+    'build-admin',
     'build-node-modules',
     'build-ddoc',
     'couch-push:test',
