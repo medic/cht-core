@@ -375,7 +375,7 @@ module.exports = function(grunt) {
         cmd: '    echo "[webapp]"   && yarn install --ignore-engines' +
              ' && echo "[api]"      && cd api && yarn install && cd ..' +
              ' && echo "[sentinel]" && cd sentinel && yarn install && cd ..' +
-             ' && echo "[admin]"    && cd admin && yarn install && cd ..'
+             ' && echo "[admin]"    && cd admin && yarn install --ignore-engines && cd ..'
       },
       start_webdriver: {
         cmd: 'yarn webdriver-manager update && ' +
