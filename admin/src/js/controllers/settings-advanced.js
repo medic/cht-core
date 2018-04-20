@@ -62,6 +62,9 @@ angular.module('controllers').controller('SettingsAdvancedCtrl',
         var changes = _.clone($scope.advancedSettingsModel);
         changes.forms_only_mode = !changes.accept_messages;
         delete changes.accept_messages;
+        if (!changes.outgoing_phone_replace) {
+          changes.outgoing_phone_replace = {};
+        }
         changes.outgoing_phone_replace.match = $('#outgoing-phone-replace-match').val();
         UpdateSettings(changes)
           .then(function() {

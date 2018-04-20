@@ -6,8 +6,7 @@ angular.module('controllers').controller('ExportContactsCtrl',
     Export,
     FileReader,
     ImportContacts,
-    JsonParse,
-    Snackbar
+    JsonParse
   ) {
 
     'use strict';
@@ -42,7 +41,6 @@ angular.module('controllers').controller('ExportContactsCtrl',
         })
         .then(function() {
           $scope.importing = false;
-          $translate('contacts.imported').then(Snackbar);
         })
         .catch(function(err) {
           $scope.importing = false;

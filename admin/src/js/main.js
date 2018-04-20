@@ -15,6 +15,7 @@ require('angular-ui-router');
 
 angular.module('controllers', []);
 require('./controllers/main');
+require('./controllers/delete-doc-confirm');
 require('./controllers/delete-user');
 require('./controllers/edit-language');
 require('./controllers/edit-translation');
@@ -40,16 +41,18 @@ require('./controllers/upgrade');
 require('./controllers/upgrade-confirm');
 require('./controllers/users');
 
-angular.module('directives', []);
+angular.module('directives', ['ngSanitize']);
 require('./directives/modal');
 
-angular.module('filters', []);
+angular.module('filters', ['ngSanitize']);
 require('./filters/resource-icon');
 require('./filters/translate-from');
 
 angular.module('services', []);
+require('./services/clean-etag');
 require('./services/create-user');
 require('./services/delete-user');
+require('./services/import-contacts');
 require('./services/properties');
 require('./services/version');
 
@@ -63,11 +66,13 @@ require('../../../static/js/services/contact-schema');
 require('../../../static/js/services/db');
 require('../../../static/js/services/download-url');
 require('../../../static/js/services/export');
+require('../../../static/js/services/extract-lineage');
 require('../../../static/js/services/file-reader');
 require('../../../static/js/services/get-data-records');
 require('../../../static/js/services/get-subject-summaries');
 require('../../../static/js/services/hydrate-contact-names');
 require('../../../static/js/services/json-parse');
+require('../../../static/js/services/language');
 require('../../../static/js/services/languages');
 require('../../../static/js/services/lineage-model-generator');
 require('../../../static/js/services/location');
@@ -82,6 +87,7 @@ require('../../../static/js/services/translate-from');
 require('../../../static/js/services/translation-loader');
 require('../../../static/js/services/update-settings');
 require('../../../static/js/services/update-user');
+require('../../../static/js/services/user');
 
 var app = angular.module('adminApp', [
   'controllers',
@@ -102,8 +108,15 @@ app.constant('POUCHDB_OPTIONS', {
   remote: { skip_setup: true, ajax: { timeout: 30000 }}
 });
 
-app.config(function($locationProvider, $stateProvider, $translateProvider) {
+app.config(function(
+  $compileProvider,
+  $locationProvider,
+  $stateProvider,
+  $translateProvider
+) {
   'ngInject';
+
+  $compileProvider.aHrefSanitizationWhitelist(/^\s*(https?|ftp|mailto|tel|sms|file|blob):/);
 
   $locationProvider.hashPrefix('');
 

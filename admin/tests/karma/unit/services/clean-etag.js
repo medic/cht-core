@@ -4,7 +4,7 @@ describe('CleanETag service', function() {
   var service;
 
   beforeEach(function() {
-    module('inboxApp');
+    module('adminApp');
     inject(function(_CleanETag_) {
       service = _CleanETag_;
     });

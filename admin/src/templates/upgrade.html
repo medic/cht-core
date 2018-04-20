@@ -67,7 +67,7 @@
         <ul ng-show="versions.branches.length" class="table table-striped">
           <li ng-repeat="release in versions.branches" class="row">
             <div class="col-xs-5"><span class="label label-info">{{release.id}}</span></div>
-            <div class="col-xs-4" ng-bind-html="release.value.time | relativeDate"></div>
+            <div class="col-xs-4">{{release.value.time | date:'medium'}}</div>
             <div class="col-xs-3">
               <button class="btn btn-primary" ng-click="upgrade(release.id)" translate>instance.upgrade.install</button>
             </div>

@@ -114,9 +114,17 @@ angular.module('controllers').controller('TranslationLanguagesCtrl',
     };
     $scope.prepareImport = function(doc) {
       Modal({
-        templateUrl: 'templates/modals/import_translation.html',
+        templateUrl: 'templates/import_translation.html',
         controller: 'ImportTranslationCtrl',
         model: doc
+      });
+    };
+
+    $scope.deleteDoc = function(doc) {
+      Modal({
+        templateUrl: 'templates/delete_doc_confirm.html',
+        controller: 'DeleteDocConfirm',
+        model: { doc: doc }
       });
     };
 

@@ -13,7 +13,6 @@
   require('./changes');
   require('./check-date');
   require('./child-facility');
-  require('./clean-etag');
   require('./contact-change-filter');
   require('./contact-form');
   require('./contact-save');
@@ -41,7 +40,6 @@
   require('./get-data-records');
   require('./get-subject-summaries');
   require('./hydrate-contact-names');
-  require('./import-contacts');
   require('./json-forms');
   require('./json-parse');
   require('./language');
