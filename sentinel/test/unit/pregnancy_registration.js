@@ -1,6 +1,7 @@
 var _ = require('underscore'),
     transition = require('../../transitions/registration'),
     sinon = require('sinon').sandbox.create(),
+    assert = require('chai').assert,
     moment = require('moment'),
     transitionUtils = require('../../transitions/utils'),
     utils = require('../../lib/utils');
@@ -12,7 +13,10 @@ const getMessage = doc => {
     return _.first(_.first(doc.tasks).messages).message;
 };
 
-exports.setUp = function(callback) {
+describe('patient registration', () => {
+  afterEach(() => sinon.restore());
+
+  beforeEach(() => {
     sinon.stub(transition, 'getConfig').returns([{
         form: 'p',
         type: 'pregnancy',
@@ -92,323 +96,308 @@ exports.setUp = function(callback) {
             ]
         }
     }]);
-    callback();
-};
+  });
 
-exports.tearDown = function(callback) {
-    sinon.restore();
-    callback();
-};
+  it('filter fails with empty doc', () => {
+      assert(!transition.filter({}));
+  });
 
-exports['filter fails with empty doc'] = function(test) {
-    test.ok(!transition.filter({}));
-    test.done();
-};
+  it('filter fails with no clinic phone and private form', () => {
+      var doc = { form: 'p', type: 'data_record'};
+      sinon.stub(utils, 'getClinicPhone').returns(null);
+      sinon.stub(utils, 'getForm').returns({ public_form: false });
+      assert(!transition.filter(doc));
+  });
 
-exports['filter fails with no clinic phone and private form'] = function(test) {
-    var doc = { form: 'p', type: 'data_record'};
-    sinon.stub(utils, 'getClinicPhone').returns(null);
-    sinon.stub(utils, 'getForm').returns({ public_form: false });
-    test.ok(!transition.filter(doc));
-    test.done();
-};
+  it('filter does not fail if doc has errors', () => {
+      var doc = { form: 'p', type: 'data_record', errors: [ 'some error ' ] };
+      sinon.stub(utils, 'getClinicPhone').returns('somephone');
+      sinon.stub(utils, 'getForm').returns({ public_form: true });
+      assert(transition.filter(doc));
+  });
 
-exports['filter does not fail if doc has errors'] = function(test) {
-    var doc = { form: 'p', type: 'data_record', errors: [ 'some error ' ] };
-    sinon.stub(utils, 'getClinicPhone').returns('somephone');
-    sinon.stub(utils, 'getForm').returns({ public_form: true });
-    test.ok(transition.filter(doc));
-    test.done();
-};
+  it('filter fails if form is unknown', () => {
+      var doc = { form: 'x' , type: 'data_record'};
+      sinon.stub(utils, 'getClinicPhone').returns('somephone');
+      assert(!transition.filter(doc));
+  });
 
-exports['filter fails if form is unknown'] = function(test) {
-    var doc = { form: 'x' , type: 'data_record'};
-    sinon.stub(utils, 'getClinicPhone').returns('somephone');
-    test.ok(!transition.filter(doc));
-    test.done();
-};
+  it('filter succeeds with no clinic phone if public form', () => {
+      var doc = { form: 'p' , type: 'data_record'};
+      sinon.stub(utils, 'getClinicPhone').returns(null);
+      sinon.stub(utils, 'getForm').returns({ public_form: true });
+      assert(transition.filter(doc));
+  });
 
-exports['filter succeeds with no clinic phone if public form'] = function(test) {
-    var doc = { form: 'p' , type: 'data_record'};
-    sinon.stub(utils, 'getClinicPhone').returns(null);
-    sinon.stub(utils, 'getForm').returns({ public_form: true });
-    test.ok(transition.filter(doc));
-    test.done();
-};
+  it('filter succeeds with populated doc', () => {
+      var doc = { form: 'p' , type: 'data_record'};
+      sinon.stub(utils, 'getClinicPhone').returns('somephone');
+      sinon.stub(utils, 'getForm').returns({});
+      assert(transition.filter(doc));
 
-exports['filter succeeds with populated doc'] = function(test) {
-    var doc = { form: 'p' , type: 'data_record'};
-    sinon.stub(utils, 'getClinicPhone').returns('somephone');
-    sinon.stub(utils, 'getForm').returns({});
-    test.ok(transition.filter(doc));
-    test.done();
-};
+  });
 
-exports['is id only'] = function(test) {
-    test.equals(transition.isIdOnly({}), false);
-    test.equals(transition.isIdOnly({
-        getid: undefined
-    }), false);
-    test.equals(transition.isIdOnly({
-        getid: ''
-    }), false);
-    test.equals(transition.isIdOnly({
-        getid: 'x'
-    }), true);
-    test.done();
-};
+  it('is id only', () => {
+      assert.equal(transition.isIdOnly({}), false);
+      assert.equal(transition.isIdOnly({
+          getid: undefined
+      }), false);
+      assert.equal(transition.isIdOnly({
+          getid: ''
+      }), false);
+      assert.equal(transition.isIdOnly({
+          getid: 'x'
+      }), true);
 
-exports['setExpectedBirthDate sets lmp_date and expected_date to null when lmp 0'] = function(test) {
-    var doc = { fields: { lmp: 0 }, type: 'data_record' };
-    transition.setExpectedBirthDate(doc);
-    test.equals(doc.lmp_date, null);
-    test.equals(doc.expected_date, null);
-    test.done();
-};
+  });
 
-exports['setExpectedBirthDate sets lmp_date and expected_date correctly for lmp: 10'] = function(test) {
-    var doc = { fields: { lmp: '10', type: 'data_record'} },
-        start = moment().startOf('day');
+  it('setExpectedBirthDate sets lmp_date and expected_date to null when lmp 0', () => {
+      var doc = { fields: { lmp: 0 }, type: 'data_record' };
+      transition.setExpectedBirthDate(doc);
+      assert.equal(doc.lmp_date, null);
+      assert.equal(doc.expected_date, null);
 
-    transition.setExpectedBirthDate(doc);
+  });
 
-    test.ok(doc.lmp_date);
-    test.equals(doc.lmp_date, start.clone().subtract(10, 'weeks').toISOString());
-    test.equals(doc.expected_date, start.clone().add(30, 'weeks').toISOString());
+  it('setExpectedBirthDate sets lmp_date and expected_date correctly for lmp: 10', () => {
+      var doc = { fields: { lmp: '10', type: 'data_record'} },
+          start = moment().startOf('day');
 
-    test.done();
-};
+      transition.setExpectedBirthDate(doc);
 
-exports['valid adds lmp_date and patient_id'] = function(test) {
-    var start = moment().startOf('day').subtract(5, 'weeks');
-
-    sinon.stub(utils, 'getPatientContactUuid').callsArgWith(2, null, {_id: 'uuid'});
-
-    sinon.stub(transitionUtils, 'addUniqueId').callsFake((doc, callback) => {
-        doc.patient_id = 12345;
-        callback();
-    });
-
-    const doc = {
-        form: 'p',
-        type: 'data_record',
-        fields: {
-            patient_name: 'abc',
-            lmp: 5
-        }
-    };
-
-    transition.onMatch({ doc: doc }).then(function(changed) {
-        test.equals(changed, true);
-        test.equals(doc.lmp_date, start.toISOString());
-        test.ok(doc.patient_id);
-        test.equals(doc.tasks, undefined);
-        test.done();
-    });
-};
-
-exports['pregnancies on existing patients fail without valid patient id'] = function(test) {
-    sinon.stub(utils, 'getRegistrations').callsArgWith(1, null, []);
-    sinon.stub(utils, 'getPatientContactUuid').callsArgWith(2);
-
-    const doc = {
-        form: 'ep',
-        type: 'data_record',
-        fields: {
-            patient_id: '12345',
-            lmp: 5
-        }
-    };
-
-    transition.onMatch({ doc: doc }).then(function(changed) {
-        test.equals(changed, true);
-        test.equals(doc.errors.length, 1);
-        test.equals(doc.errors[0].message, 'messages.generic.registration_not_found');
-        test.done();
-    });
-};
-
-exports['pregnancies on existing patients succeeds with a valid patient id'] = function(test) {
-    sinon.stub(utils, 'getRegistrations').callsArgWith(1, null, []);
-    sinon.stub(utils, 'getPatientContactUuid').callsArgWith(2, null, {_id: 'uuid'});
-
-    const doc = {
-        form: 'ep',
-        type: 'data_record',
-        fields: {
-            patient_id: '12345',
-            lmp: 5
-        }
-    };
-
-    transition.onMatch({ doc: doc }).then(function(changed) {
-        test.equals(changed, true);
-        test.ok(!doc.errors);
-        test.done();
-    });
-};
+      assert(doc.lmp_date);
+      assert.equal(doc.lmp_date, start.clone().subtract(10, 'weeks').toISOString());
+      assert.equal(doc.expected_date, start.clone().add(30, 'weeks').toISOString());
 
 
-exports['zero lmp value only registers patient'] = function(test) {
-    sinon.stub(utils, 'getPatientContactUuid').callsArgWith(2, null, {_id: 'uuid'});
+  });
 
-    sinon.stub(transitionUtils, 'addUniqueId').callsFake((doc, callback) => {
-        doc.patient_id = 12345;
-        callback();
-    });
+  it('valid adds lmp_date and patient_id', () => {
+      var start = moment().startOf('day').subtract(5, 'weeks');
 
-    const doc = {
-        form: 'p',
-        type: 'data_record',
-        fields: {
-            patient_name: 'abc',
-            lmp: 0
-        }
-    };
+      sinon.stub(utils, 'getPatientContactUuid').callsArgWith(2, null, {_id: 'uuid'});
 
-    transition.onMatch({ doc: doc }).then(function(changed) {
-        test.equals(changed, true);
-        test.equals(doc.lmp_date, null);
-        test.ok(doc.patient_id);
-        test.equals(doc.tasks, undefined);
-        test.done();
-    });
-};
+      sinon.stub(transitionUtils, 'addUniqueId').callsFake((doc, callback) => {
+          doc.patient_id = 12345;
+          callback();
+      });
 
-exports['id only logic with valid name'] = function(test) {
-    sinon.stub(utils, 'getPatientContactUuid').callsArgWith(2, null, {_id: 'uuid'});
+      const doc = {
+          form: 'p',
+          type: 'data_record',
+          fields: {
+              patient_name: 'abc',
+              lmp: 5
+          }
+      };
 
-    sinon.stub(transitionUtils, 'addUniqueId').callsFake((doc, callback) => {
-        doc.patient_id = 12345;
-        callback();
-    });
+      transition.onMatch({ doc: doc }).then(function(changed) {
+          assert.equal(changed, true);
+          assert.equal(doc.lmp_date, start.toISOString());
+          assert(doc.patient_id);
+          assert.equal(doc.tasks, undefined);
 
-    const doc = {
-        form: 'p',
-        type: 'data_record',
-        fields: {
-            patient_name: 'abc',
-            lmp: 5
-        },
-        getid: 'x'
-    };
+      });
+  });
 
-    transition.onMatch({ doc: doc }).then(function(changed) {
-        test.equals(changed, true);
-        test.equals(doc.lmp_date, undefined);
-        test.ok(doc.patient_id);
+  it('pregnancies on existing patients fail without valid patient id', () => {
+      sinon.stub(utils, 'getRegistrations').callsArgWith(1, null, []);
+      sinon.stub(utils, 'getPatientContactUuid').callsArgWith(2);
 
-        test.done();
-    });
-};
+      const doc = {
+          form: 'ep',
+          type: 'data_record',
+          fields: {
+              patient_id: '12345',
+              lmp: 5
+          }
+      };
 
-exports['id only logic with invalid name'] = function(test) {
-    sinon.stub(utils, 'getRegistrations').callsArgWith(1, null, []);
-    sinon.stub(utils, 'getPatientContactUuid').callsArgWith(2, null, {_id: 'uuid'});
+      transition.onMatch({ doc: doc }).then(function(changed) {
+          assert.equal(changed, true);
+          assert.equal(doc.errors.length, 1);
+          assert.equal(doc.errors[0].message, 'messages.generic.registration_not_found');
 
-    const doc = {
-        form: 'p',
-        from: '+12345',
-        type: 'data_record',
-        fields: {
-            patient_name: '',
-            lmp: 5
-        },
-        getid: 'x'
-    };
+      });
+  });
 
-    transition.onMatch({ doc: doc }).then(function(changed) {
-        test.equals(changed, true);
-        test.equals(doc.patient_id, undefined);
-        test.ok(doc.tasks);
-        test.equals(getMessage(doc), 'Invalid patient name.');
-        test.done();
-    });
-};
+  it('pregnancies on existing patients succeeds with a valid patient id', () => {
+      sinon.stub(utils, 'getRegistrations').callsArgWith(1, null, []);
+      sinon.stub(utils, 'getPatientContactUuid').callsArgWith(2, null, {_id: 'uuid'});
 
-exports['invalid name valid LMP logic'] = function(test) {
-    const doc = {
-        form: 'p',
-        from: '+1234',
-        type: 'data_record',
-        fields: {
-            patient_name: '',
-            lmp: 5
-        }
-    };
+      const doc = {
+          form: 'ep',
+          type: 'data_record',
+          fields: {
+              patient_id: '12345',
+              lmp: 5
+          }
+      };
 
-    transition.onMatch({ doc: doc }).then(function(changed) {
-        test.equals(changed, true);
-        test.equals(doc.patient_id, undefined);
-        test.equals(getMessage(doc), 'Invalid patient name.');
+      transition.onMatch({ doc: doc }).then(function(changed) {
+          assert.equal(changed, true);
+          assert(!doc.errors);
 
-        test.done();
-    });
-};
+      });
+  });
 
-exports['valid name invalid LMP logic'] = function(test) {
-    const doc = {
-        form: 'p',
-        from: '+1234',
-        type: 'data_record',
-        fields: {
-            patient_name: 'hi',
-            lmp: 45
-        }
-    };
 
-    transition.onMatch({ doc: doc }).then(function(changed) {
-        test.equals(changed, true);
-        test.equals(doc.patient_id, undefined);
-        test.equals(getMessage(doc), 'Invalid LMP; must be between 0-40 weeks.');
+  it('zero lmp value only registers patient', () => {
+      sinon.stub(utils, 'getPatientContactUuid').callsArgWith(2, null, {_id: 'uuid'});
 
-        test.done();
-    });
-};
+      sinon.stub(transitionUtils, 'addUniqueId').callsFake((doc, callback) => {
+          doc.patient_id = 12345;
+          callback();
+      });
 
-exports['invalid name invalid LMP logic'] = function(test) {
-    const doc = {
-        form: 'p',
-        from: '+123',
-        type: 'data_record',
-        fields: {
-            patient_name: '',
-            lmp: 45
-        }
-    };
+      const doc = {
+          form: 'p',
+          type: 'data_record',
+          fields: {
+              patient_name: 'abc',
+              lmp: 0
+          }
+      };
 
-    transition.onMatch({ doc: doc }).then(function(changed) {
-        test.equals(changed, true);
-        test.equals(doc.patient_id, undefined);
-        test.equals(getMessage(doc), 'Invalid patient name.  Invalid LMP; must be between 0-40 weeks.');
+      transition.onMatch({ doc: doc }).then(function(changed) {
+          assert.equal(changed, true);
+          assert.equal(doc.lmp_date, null);
+          assert(doc.patient_id);
+          assert.equal(doc.tasks, undefined);
 
-        test.done();
-    });
-};
+      });
+  });
 
-exports['mismatched form returns false'] = function(test) {
-    const doc = {
-        form: 'x',
-        type: 'data_record'
-    };
-    transition.onMatch({ doc: doc }).catch(function() {
-        test.done();
-    });
-};
+  it('id only logic with valid name', () => {
+      sinon.stub(utils, 'getPatientContactUuid').callsArgWith(2, null, {_id: 'uuid'});
 
-exports['missing all fields returns validation errors'] = function(test) {
-    test.expect(2);
-    const doc = {
-        form: 'p',
-        from: '+123',
-        type: 'data_record'
-    };
-    transition.onMatch({ doc: doc }).then(function(changed) {
-        test.equals(changed, true);
-        test.equals(
-            getMessage(doc),
-            'Invalid LMP; must be between 0-40 weeks.  Invalid patient name.'
-        );
-        test.done();
-    });
-};
+      sinon.stub(transitionUtils, 'addUniqueId').callsFake((doc, callback) => {
+          doc.patient_id = 12345;
+          callback();
+      });
+
+      const doc = {
+          form: 'p',
+          type: 'data_record',
+          fields: {
+              patient_name: 'abc',
+              lmp: 5
+          },
+          getid: 'x'
+      };
+
+      transition.onMatch({ doc: doc }).then(function(changed) {
+          assert.equal(changed, true);
+          assert.equal(doc.lmp_date, undefined);
+          assert(doc.patient_id);
+
+
+      });
+  });
+
+  it('id only logic with invalid name', () => {
+      sinon.stub(utils, 'getRegistrations').callsArgWith(1, null, []);
+      sinon.stub(utils, 'getPatientContactUuid').callsArgWith(2, null, {_id: 'uuid'});
+
+      const doc = {
+          form: 'p',
+          from: '+12345',
+          type: 'data_record',
+          fields: {
+              patient_name: '',
+              lmp: 5
+          },
+          getid: 'x'
+      };
+
+      transition.onMatch({ doc: doc }).then(function(changed) {
+          assert.equal(changed, true);
+          assert.equal(doc.patient_id, undefined);
+          assert(doc.tasks);
+          assert.equal(getMessage(doc), 'Invalid patient name.');
+
+      });
+  });
+
+  it('invalid name valid LMP logic', () => {
+      const doc = {
+          form: 'p',
+          from: '+1234',
+          type: 'data_record',
+          fields: {
+              patient_name: '',
+              lmp: 5
+          }
+      };
+
+      transition.onMatch({ doc: doc }).then(function(changed) {
+          assert.equal(changed, true);
+          assert.equal(doc.patient_id, undefined);
+          assert.equal(getMessage(doc), 'Invalid patient name.');
+
+
+      });
+  });
+
+  it('valid name invalid LMP logic', () => {
+      const doc = {
+          form: 'p',
+          from: '+1234',
+          type: 'data_record',
+          fields: {
+              patient_name: 'hi',
+              lmp: 45
+          }
+      };
+
+      return transition.onMatch({ doc: doc }).then(function(changed) {
+          assert.equal(changed, true);
+          assert.equal(doc.patient_id, undefined);
+          assert.equal(getMessage(doc), 'Invalid LMP; must be between 0-40 weeks.');
+      });
+  });
+
+  it('invalid name invalid LMP logic', () => {
+      const doc = {
+          form: 'p',
+          from: '+123',
+          type: 'data_record',
+          fields: {
+              patient_name: '',
+              lmp: 45
+          }
+      };
+
+      return transition.onMatch({ doc: doc }).then(function(changed) {
+          assert.equal(changed, true);
+          assert.equal(doc.patient_id, undefined);
+          assert.equal(getMessage(doc), 'Invalid patient name.  Invalid LMP; must be between 0-40 weeks.');
+      });
+  });
+
+  it('mismatched form returns false', () => {
+      const doc = {
+          form: 'x',
+          type: 'data_record'
+      };
+      return transition.onMatch({ doc: doc }).catch(function() {
+
+      });
+  });
+
+  it('missing all fields returns validation errors', () => {
+      const doc = {
+          form: 'p',
+          from: '+123',
+          type: 'data_record'
+      };
+      return transition.onMatch({ doc: doc }).then(function(changed) {
+          assert.equal(changed, true);
+          assert.equal(
+              getMessage(doc),
+              'Invalid LMP; must be between 0-40 weeks.  Invalid patient name.'
+          );
+      });
+  });
+
+});

@@ -22,6 +22,9 @@ if(UNIT_TEST_ENV) {
   const DB = new PouchDB(couchUrl);
 
   module.exports.medic = DB;
+
+  const usersDbUrl = couchUrl.slice(0, couchUrl.lastIndexOf('/')) + '/_users';
+  module.exports.users = new PouchDB(usersDbUrl);
 } else {
   console.log(
     'Please define a COUCH_URL in your environment e.g. \n' +

@@ -1,96 +1,86 @@
 var moment = require('moment'),
     sinon = require('sinon').sandbox.create(),
+    assert = require('chai').assert,
     db = require('../../db-nano'),
     transition = require('../../transitions/update_sent_forms');
 
-exports.setUp = function(callback) {
-    process.env.TEST_ENV = true;
-    callback();
-};
+describe('update sent by', () => {
+  beforeEach(() => { process.env.TEST_ENV = true; });
+  afterEach(() => sinon.restore());
 
-exports.tearDown = function(callback) {
-  sinon.restore();
-  callback();
-};
+  it('calls db.get with id of clinic', () => {
+      sinon.stub(db.medic, 'get').callsArgWith(1, null, {});
+      sinon.stub(db.audit, 'saveDoc').callsArgWith(1, null);
+      const change = {
+          doc: {
+              contact: {
+                  parent: {
+                      _id: '1'
+                  }
+              }
+          }
+      };
+      return transition.onMatch(change).then(() => {
+          assert.equal(db.medic.get.callCount, 1);
+          assert.equal(db.medic.get.args[0][0], '1');
+      });
+  });
 
-exports['calls db.get with id of clinic'] = function(test) {
-    sinon.stub(db.medic, 'get').callsArgWith(1, null, {});
-    sinon.stub(db.audit, 'saveDoc').callsArgWith(1, null);
-    const change = {
-        doc: {
-            contact: {
-                parent: {
-                    _id: '1'
-                }
-            }
-        }
-    };
-    transition.onMatch(change).then(() => {
-        test.equals(db.medic.get.callCount, 1);
-        test.equals(db.medic.get.args[0][0], '1');
-        test.done();
-    });
-};
+  it('calls audit.saveDoc with clinic and updated sent_forms', () => {
+      var now = moment();
+      sinon.stub(db.medic, 'get').callsArgWith(1, null, {});
+      var save = sinon.stub(db.audit, 'saveDoc').callsArgWith(1, null);
+      const change = {
+          doc: {
+              form: 'XXX',
+              reported_date: now.valueOf()
+          }
+      };
+      return transition.onMatch(change).then(() => {
+          const clinic = save.args[0][0];
+          assert(clinic.sent_forms);
+          assert(clinic.sent_forms.XXX);
+          assert.equal(clinic.sent_forms.XXX, now.toISOString());
+      });
+  });
 
-exports['calls audit.saveDoc with clinic and updated sent_forms'] = function(test) {
-    var now = moment();
-    sinon.stub(db.medic, 'get').callsArgWith(1, null, {});
-    var save = sinon.stub(db.audit, 'saveDoc').callsArgWith(1, null);
-    const change = {
-        doc: {
-            form: 'XXX',
-            reported_date: now.valueOf()
-        }
-    };
-    transition.onMatch(change).then(() => {
-        const clinic = save.args[0][0];
-        test.ok(clinic.sent_forms);
-        test.ok(clinic.sent_forms.XXX);
-        test.equals(clinic.sent_forms.XXX, now.toISOString());
-        test.done();
-    });
-};
+  it('does not overwrite if existing date is after', () => {
+      var now = moment(),
+          tomorrow = now.clone().add(1, 'day');
+      sinon.stub(db.medic, 'get').callsArgWith(1, null, {
+          sent_forms: { XXX: tomorrow.toISOString() }
+      });
+      sinon.stub(db.audit, 'saveDoc').callsArgWith(1, null);
+      const change = {
+          doc: {
+              form: 'XXX',
+              reported_date: now.valueOf()
+          }
+      };
+      return transition.onMatch(change).then(changed => {
+          assert(!changed);
+      });
+  });
 
-exports['does not overwrite if existing date is after'] = function(test) {
-    test.expect(1);
-    var now = moment(),
-        tomorrow = now.clone().add(1, 'day');
-    sinon.stub(db.medic, 'get').callsArgWith(1, null, {
-        sent_forms: { XXX: tomorrow.toISOString() }
-    });
-    sinon.stub(db.audit, 'saveDoc').callsArgWith(1, null);
-    const change = {
-        doc: {
-            form: 'XXX',
-            reported_date: now.valueOf()
-        }
-    };
-    transition.onMatch(change).then(changed => {
-        test.ok(!changed);
-        test.done();
-    });
-};
+  it('overwrites if existing date is before', () => {
+      var now = moment(),
+          yesterday = now.clone().subtract(1, 'day');
+      sinon.stub(db.medic, 'get').callsArgWith(1, null, {
+          sent_forms: { XXX: yesterday.toISOString() }
+      });
+      var save = sinon.stub(db.audit, 'saveDoc').callsArgWith(1, null);
 
-exports['overwrites if existing date is before'] = function(test) {
-    test.expect(3);
-    var now = moment(),
-        yesterday = now.clone().subtract(1, 'day');
-    sinon.stub(db.medic, 'get').callsArgWith(1, null, {
-        sent_forms: { XXX: yesterday.toISOString() }
-    });
-    var save = sinon.stub(db.audit, 'saveDoc').callsArgWith(1, null);
-
-    const change = {
-        doc: {
-            form: 'XXX',
-            reported_date: now.valueOf()
-        }
-    };
-    transition.onMatch(change).then(() => {
-        const clinic = save.args[0][0];
-        test.ok(clinic.sent_forms);
-        test.ok(clinic.sent_forms.XXX);
-        test.equals(clinic.sent_forms.XXX, now.toISOString());
-        test.done();
-    });
-};
+      const change = {
+          doc: {
+              form: 'XXX',
+              reported_date: now.valueOf()
+          }
+      };
+      return transition.onMatch(change).then(() => {
+          const clinic = save.args[0][0];
+          assert(clinic.sent_forms);
+          assert(clinic.sent_forms.XXX);
+          assert.equal(clinic.sent_forms.XXX, now.toISOString());
+      });
+  });
+});

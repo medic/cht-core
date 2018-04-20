@@ -21,6 +21,7 @@ const _ = require('underscore'),
       upgrade = require('./controllers/upgrade'),
       settings = require('./controllers/settings'),
       bulkDocs = require('./controllers/bulk-docs'),
+      createUserDb = require('./controllers/create-user-db'),
       createDomain = require('domain').create,
       staticResources = /\/(templates|static)\//,
       favicon = /\/icon_\d+.ico$/,
@@ -100,6 +101,7 @@ app.get('/', function(req, res) {
 
 app.use(express.static(path.join(__dirname, 'public')));
 app.get(pathPrefix + 'login', login.get);
+app.get(pathPrefix + 'login/identity', login.getIdentity);
 app.postJson(pathPrefix + 'login', login.post);
 
 var UNAUDITED_ENDPOINTS = [
@@ -464,15 +466,22 @@ const changesHandler = _.partial(require('./handlers/changes').request, proxy);
 app.get(pathPrefix + '_changes', changesHandler);
 app.postJson(pathPrefix + '_changes', changesHandler);
 
-// Attempting to create the user's personal meta db
-app.put('/medic-user-\*-meta/', (req, res) => {
-  require('./controllers/create-user-db')(req, err => {
-    if (err) {
-      return serverUtils.error(err, req, res);
-    }
-    res.json({ ok: true });
-  });
+const metaPathPrefix = '/medic-user-\*-meta/';
+
+// AuthZ for this endpoint should be handled by couchdb
+app.get(metaPathPrefix + '_changes', (req, res) => {
+  if (req.query.feed === 'longpoll' ||
+      req.query.feed === 'continuous' ||
+      req.query.feed === 'eventsource') {
+    // Disable nginx proxy buffering to allow hearbeats for long-running feeds
+    // Issue: #4312
+    res.setHeader('X-Accel-Buffering', 'no');
+  }
+  proxy.web(req, res);
 });
+
+// Attempting to create the user's personal meta db
+app.put(metaPathPrefix, createUserDb);
 
 var writeHeaders = function(req, res, headers, redirectHumans) {
   res.oldWriteHead = res.writeHead;

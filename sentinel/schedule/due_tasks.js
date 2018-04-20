@@ -7,8 +7,8 @@ var async = require('async'),
     date = require('../date'),
     config = require('../config'),
     dbPouch = require('../db-pouch'),
-    lineage = require('lineage')(Promise, dbPouch.medic),
-    messageUtils = require('../lib/message-utils');
+    lineage = require('lineage')(Promise, dbPouch.medic);
+const messageUtils = require('@shared-libs/message-utils');
 
 const getTemplateContext = (db, doc, callback) => {
     const patientId = doc.fields && doc.fields.patient_id;
@@ -17,7 +17,7 @@ const getTemplateContext = (db, doc, callback) => {
     }
     async.parallel({
         registrations: callback => utils.getRegistrations({ db: db, id: patientId }, callback),
-        patient: callback => utils.getPatientContact(db, patientId, callback)
+        patient: callback => lineage.fetchHydratedDoc(patientId, callback)
     }, callback);
 };
 

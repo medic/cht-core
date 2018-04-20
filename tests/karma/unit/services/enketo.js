@@ -414,84 +414,6 @@ describe('Enketo service', function() {
         chai.expect(LineageModelGenerator.contact.callCount).to.equal(0);
       });
     });
-
-    it('throws error when context is an array with an `undefined` element #4125', function(done) {
-      var data = '<data><patient_id>123</patient_id></data>';
-      UserContact.returns(Promise.resolve({
-        _id: '456',
-        contact_id: '123',
-        facility_id: '789'
-      }));
-      dbGet.returns(Promise.resolve(mockEnketoDoc('myform')));
-      dbGetAttachment.returns(Promise.resolve('xmlblob'));
-      enketoInit.returns([]);
-      FileReader.utf8.returns(Promise.resolve('<some-blob name="xml"/>'));
-      EnketoPrepopulationData.returns(Promise.resolve(data));
-      transform
-        .onFirstCall().returns(Promise.resolve($('<div>my form</div>')))
-        .onSecondCall().returns(Promise.resolve(VISIT_MODEL_WITH_CONTACT_SUMMARY));
-      var instanceData = {
-        contact: {
-          _id: 'fffff',
-          patient_id: '44509'
-        },
-        inputs: {
-          patient_id: 123,
-          name: 'sharon'
-        }
-      };
-      ContactSummary.returns(Promise.resolve({ context: [undefined] }));
-      Search.returns(Promise.resolve([ { _id: 'somereport' }]));
-      LineageModelGenerator.contact.returns(Promise.resolve({ lineage: [ { _id: 'someparent' } ] }));
-      service
-        .render($('<div></div>'), 'ok', instanceData)
-        .then(function() {
-          done(new Error('Should throw error'));
-        })
-        .catch(function(err) {
-          chai.expect(err.message).to.equal('contact_summary context is misconfigured');
-          done();
-        });
-    });
-
-    it('throws error when context is an object containing an array with an `undefined` element #4125', function(done) {
-      var data = '<data><patient_id>123</patient_id></data>';
-      UserContact.returns(Promise.resolve({
-        _id: '456',
-        contact_id: '123',
-        facility_id: '789'
-      }));
-      dbGet.returns(Promise.resolve(mockEnketoDoc('myform')));
-      dbGetAttachment.returns(Promise.resolve('xmlblob'));
-      enketoInit.returns([]);
-      FileReader.utf8.returns(Promise.resolve('<some-blob name="xml"/>'));
-      EnketoPrepopulationData.returns(Promise.resolve(data));
-      transform
-        .onFirstCall().returns(Promise.resolve($('<div>my form</div>')))
-        .onSecondCall().returns(Promise.resolve(VISIT_MODEL_WITH_CONTACT_SUMMARY));
-      var instanceData = {
-        contact: {
-          _id: 'fffff',
-          patient_id: '44509'
-        },
-        inputs: {
-          patient_id: 123,
-          name: 'sharon'
-        }
-      };
-      ContactSummary.returns(Promise.resolve({context: { some_element: [undefined] } }));
-      Search.returns(Promise.resolve([ { _id: 'somereport' }]));
-      LineageModelGenerator.contact.returns(Promise.resolve({ lineage: [ { _id: 'someparent' } ] }));
-      service
-        .render($('<div></div>'), 'ok', instanceData)
-        .then(function() {
-          done(new Error('Should throw error'));
-        })
-        .catch(function(err) {
-          chai.expect(err.message).to.equal('contact_summary context is misconfigured');
-          done();
-        });
-    });
   });
 
   describe('save', function() {
@@ -667,15 +589,13 @@ describe('Enketo service', function() {
         var actualThing1 = actual[1];
         chai.expect(actualThing1._id).to.match(/(\w+-)\w+/);
         chai.expect(actualThing1._rev).to.equal(`1-${actualThing1._id}-abc`);
-        chai.expect(actualThing1.reported_date).to.be.above(startTime);
-        chai.expect(actualThing1.reported_date).to.be.below(endTime);
+        chai.expect(actualThing1.reported_date).to.be.within(startTime, endTime);
         chai.expect(actualThing1.some_property_1).to.equal('some_value_1');
 
         var actualThing2 = actual[2];
         chai.expect(actualThing2._id).to.match(/(\w+-)\w+/);
         chai.expect(actualThing2._rev).to.equal(`1-${actualThing2._id}-abc`);
-        chai.expect(actualThing2.reported_date).to.be.above(startTime);
-        chai.expect(actualThing2.reported_date).to.be.below(endTime);
+        chai.expect(actualThing2.reported_date).to.be.within(startTime, endTime);
         chai.expect(actualThing2.some_property_2).to.equal('some_value_2');
 
         chai.expect(_.uniq(_.pluck(actual, '_id')).length).to.equal(3);

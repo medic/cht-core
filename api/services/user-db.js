@@ -34,7 +34,7 @@ const setSecurity = (dbName, username, callback) => {
     method: 'PUT',
     body: {
       admins: { names: [ username ], roles: [] },
-      members: { names: [], roles:[] }
+      members: { names: [ username ], roles:[] }
     }
   }, callback);
 };
@@ -53,6 +53,7 @@ const escapeUsername = name => name.replace(DB_NAME_BLACKLIST, match => {
 
 module.exports = {
   getDbName: username => `medic-user-${escapeUsername(username)}-meta`,
+  setSecurity: setSecurity,
   create: (username, callback) => {
     const dbName = module.exports.getDbName(username);
     async.series([

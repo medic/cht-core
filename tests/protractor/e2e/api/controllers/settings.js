@@ -69,7 +69,7 @@ describe('Settings API', () => {
 
     });
 
-    it('get', () => {
+    xit('get', () => {
       return update({ _test_sandbox: { times: 'three', b: 'c' } }, true)
         .then(response => {
           expect(response).toEqual({ success: true });

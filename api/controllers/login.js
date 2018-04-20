@@ -178,5 +178,17 @@ module.exports = {
       }
       setCookies(req, res, sessionRes);
     });
+  },
+  getIdentity: (req, res) => {
+    res.type('application/json');
+    auth.getUserCtx(req, (err, userCtx) => {
+      if (err) {
+        res.status(401);
+        return res.send();
+      }
+
+      setUserCtxCookie(res, userCtx);
+      res.send({ success: true });
+    });
   }
 };

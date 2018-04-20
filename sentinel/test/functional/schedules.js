@@ -1,9 +1,9 @@
 const transition = require('../../transitions/registration'),
       schedules = require('../../lib/schedules'),
       sinon = require('sinon').sandbox.create(),
+      assert = require('chai').assert,
       moment = require('moment'),
       utils = require('../../lib/utils'),
-      uuid = require('uuid'),
       contact = {
         phone: '+1234',
         name: 'Julie',
@@ -33,424 +33,399 @@ const getScheduledMessage = (doc, idx) =>
   doc.scheduled_tasks[idx].messages.length &&
   doc.scheduled_tasks[idx].messages[0];
 
-exports.tearDown = callback => {
-  sinon.restore();
-  callback();
-};
+describe('functional schedules', () => {
+  afterEach(() => sinon.restore());
 
-exports['registration sets up schedule'] = test => {
+  it('registration sets up schedule', () => {
 
-  sinon.stub(transition, 'getConfig').returns([{
-    form: 'PATR',
-    events: [
-      {
+    sinon.stub(transition, 'getConfig').returns([{
+      form: 'PATR',
+      events: [
+        {
+          name: 'on_create',
+          trigger: 'assign_schedule',
+          params: 'group1',
+          bool_expr: ''
+        }
+      ],
+      validations: [],
+      messages: [
+        {
+          message: [{
+            content: 'thanks {{contact.name}}',
+            locale: 'en'
+          }],
+          recipient: 'reporting_unit'
+        }
+      ]
+    }]);
+    sinon.stub(utils, 'getRegistrations').callsArgWithAsync(1, null, []);
+    sinon.stub(schedules, 'getScheduleConfig').returns({
+      name: 'group1',
+      start_from: 'reported_date',
+      registration_response: '',
+      messages: [
+        {
+          message: [{
+            content: 'Mustaches.  Overrated or underrated?',
+            locale: 'en'
+          }],
+          group: 1,
+          offset: '12 weeks',
+          send_time: '',
+          recipient: 'reporting_unit'
+        }
+      ]
+    });
+
+    const doc = {
+      reported_date: moment().toISOString(),
+      form: 'PATR',
+      from: contact.phone,
+      contact: contact
+    };
+
+    transition.onMatch({ doc: doc }).then(complete => {
+      assert.equal(complete, true);
+      assert(doc.tasks);
+      assert.equal(doc.tasks && doc.tasks.length, 1);
+      assert(doc.scheduled_tasks);
+      assert.equal(doc.scheduled_tasks && doc.scheduled_tasks.length, 1);
+
+      testMessage(
+          getMessage(doc, 0),
+          '+1234',
+          'thanks Julie');
+
+      /*
+       * Also checks that recipient using doc property value is resolved
+       * correctly.
+       */
+      testMessage(
+          getScheduledMessage(doc, 0),
+          '+1234',
+          'Mustaches.  Overrated or underrated?');
+
+    });
+  });
+
+  it('registration sets up schedule using translation_key', () => {
+
+    sinon.stub(transition, 'getConfig').returns([{
+      form: 'PATR',
+      events: [{
         name: 'on_create',
         trigger: 'assign_schedule',
         params: 'group1',
         bool_expr: ''
-      }
-    ],
-    validations: [],
-    messages: [
-      {
-        message: [{
-          content: 'thanks {{contact.name}}',
-          locale: 'en'
-        }],
+      }],
+      validations: [],
+      messages: [{
+        translation_key: 'thanks',
         recipient: 'reporting_unit'
-      }
-    ]
-  }]);
-  sinon.stub(utils, 'getRegistrations').callsArgWithAsync(1, null, []);
-  sinon.stub(schedules, 'getScheduleConfig').returns({
-    name: 'group1',
-    start_from: 'reported_date',
-    registration_response: '',
-    messages: [
-      {
-        message: [{
-          content: 'Mustaches.  Overrated or underrated?',
-          locale: 'en'
-        }],
+      }]
+    }]);
+    sinon.stub(schedules, 'getScheduleConfig').returns({
+      name: 'group1',
+      start_from: 'reported_date',
+      registration_response: '',
+      messages: [{
+        translation_key: 'facial.hair',
         group: 1,
         offset: '12 weeks',
         send_time: '',
         recipient: 'reporting_unit'
-      }
-    ]
+      }]
+    });
+    sinon.stub(utils, 'getPatientContact').callsArgWith(2, null, {_id: 'uuid'});
+    sinon.stub(utils, 'getRegistrations').callsArgWithAsync(1, null, []);
+    sinon.stub(utils, 'translate')
+      .withArgs('thanks', 'en').returns('thanks {{contact.name}}')
+      .withArgs('facial.hair', 'en').returns('Mustaches.  Overrated or underrated?');
+
+    const doc = {
+      reported_date: moment().toISOString(),
+      form: 'PATR',
+      from: contact.phone,
+      contact: contact
+    };
+
+    transition.onMatch({ doc: doc }).then(complete => {
+      assert.equal(complete, true);
+      assert(doc.tasks);
+      assert.equal(doc.tasks && doc.tasks.length, 1);
+      assert(doc.scheduled_tasks);
+      assert.equal(doc.scheduled_tasks && doc.scheduled_tasks.length, 1);
+
+      testMessage(
+          getMessage(doc, 0),
+          '+1234',
+          'thanks Julie');
+
+      // check that message generation is deferred until later
+      assert.equal(doc.scheduled_tasks.length, 1);
+      assert.equal(doc.scheduled_tasks[0].messages, undefined);
+
+    });
   });
-  sinon.stub(uuid, 'v4').returns('test-uuid');
 
-  const doc = {
-    reported_date: moment().toISOString(),
-    form: 'PATR',
-    from: contact.phone,
-    contact: contact
-  };
+  it('registration sets up schedule using bool_expr', () => {
 
-  transition.onMatch({ doc: doc }).then(complete => {
-    test.equals(complete, true);
-    test.ok(doc.tasks);
-    test.equals(doc.tasks && doc.tasks.length, 1);
-    test.ok(doc.scheduled_tasks);
-    test.equals(doc.scheduled_tasks && doc.scheduled_tasks.length, 1);
-
-    const msg0 = getMessage(doc, 0);
-    test.deepEqual(msg0, {
-      to: '+1234',
-      message: 'thanks Julie',
-      uuid: 'test-uuid'
+    sinon.stub(transition, 'getConfig').returns([{
+      form: 'PATR',
+      events: [
+        {
+          name: 'on_create',
+          trigger: 'assign_schedule',
+          params: 'group1',
+          bool_expr: 'doc.foo === "baz"'
+        }
+      ],
+      validations: [],
+      messages: [
+        {
+          message: [{
+            content: 'thanks {{contact.name}}',
+            locale: 'en'
+          }],
+          recipient: 'reporting_unit'
+        }
+      ]
+    }]);
+    sinon.stub(utils, 'getPatientContact').callsArgWith(2, null, {_id: 'uuid'});
+    sinon.stub(utils, 'getRegistrations').callsArgWithAsync(1, null, []);
+    sinon.stub(schedules, 'getScheduleConfig').returns({
+      name: 'group1',
+      start_from: 'reported_date',
+      registration_response: '',
+      messages: [
+        {
+          message: [{
+            content: 'Mustaches.  Overrated or underrated?',
+            locale: 'en'
+          }],
+          group: 1,
+          offset: '12 weeks',
+          send_time: '',
+          recipient: 'reporting_unit'
+        }
+      ]
     });
 
-    /*
-     * Also checks that recipient using doc property value is resolved
-     * correctly.
-     * */
-    const msg1 = getScheduledMessage(doc, 0);
-    test.deepEqual(msg1, {
-      to: '+1234',
-      message: 'Mustaches.  Overrated or underrated?',
-      uuid: 'test-uuid'
+    const doc = {
+      reported_date: moment().toISOString(),
+      form: 'PATR',
+      from: contact.phone,
+      contact: contact,
+      foo: 'baz'
+    };
+
+    return transition.onMatch({ doc: doc }).then(complete => {
+      assert.equal(complete, true);
+      assert(doc.tasks);
+      assert.equal(doc.tasks && doc.tasks.length, 1);
+      assert(doc.scheduled_tasks);
+      assert.equal(doc.scheduled_tasks && doc.scheduled_tasks.length, 1);
+
+      testMessage(
+          getMessage(doc, 0),
+          '+1234',
+          'thanks Julie');
+
+      /*
+       * Also checks that recipient using doc property value is resolved
+       * correctly.
+       */
+      testMessage(
+          getScheduledMessage(doc, 0),
+          '+1234',
+          'Mustaches.  Overrated or underrated?');
     });
-    test.done();
   });
-};
 
-exports['registration sets up schedule using translation_key'] = test => {
+  it('patients chp is resolved correctly as recipient', () => {
+    sinon.stub(transition, 'getConfig').returns([{
+      form: 'PATR',
+      events: [],
+      validations: [],
+      messages: [{
+        translation_key: 'thanks',
+        recipient: 'patient.parent.contact.phone'
+      }]
+    }]);
+    sinon.stub(schedules, 'getScheduleConfig').returns({});
+    sinon.stub(utils, 'getPatientContactUuid').callsArgWith(2, null, {_id: 'uuid'});
+    sinon.stub(utils, 'getRegistrations').callsArgWithAsync(1, null, []);
+    sinon.stub(utils, 'translate').withArgs('thanks', 'en').returns('thanks');
 
-  sinon.stub(transition, 'getConfig').returns([{
-    form: 'PATR',
-    events: [{
-      name: 'on_create',
-      trigger: 'assign_schedule',
-      params: 'group1',
-      bool_expr: ''
-    }],
-    validations: [],
-    messages: [{
-      translation_key: 'thanks',
-      recipient: 'reporting_unit'
-    }]
-  }]);
-  sinon.stub(schedules, 'getScheduleConfig').returns({
-    name: 'group1',
-    start_from: 'reported_date',
-    registration_response: '',
-    messages: [{
-      translation_key: 'facial.hair',
-      group: 1,
-      offset: '12 weeks',
-      send_time: '',
-      recipient: 'reporting_unit'
-    }]
-  });
-  sinon.stub(utils, 'getPatientContact').callsArgWith(2, null, {_id: 'uuid'});
-  sinon.stub(utils, 'getRegistrations').callsArgWithAsync(1, null, []);
-  sinon.stub(utils, 'translate')
-    .withArgs('thanks', 'en').returns('thanks {{contact.name}}')
-    .withArgs('facial.hair', 'en').returns('Mustaches.  Overrated or underrated?');
-  sinon.stub(uuid, 'v4').returns('test-uuid');
+    const doc = {
+      reported_date: moment().toISOString(),
+      form: 'PATR',
+      from: contact.phone,
+      contact: contact,
+      fields: { patient_id: '98765' },
+      patient: { parent: { contact: { phone: '+5551596' } } }
+    };
 
-  const doc = {
-    reported_date: moment().toISOString(),
-    form: 'PATR',
-    from: contact.phone,
-    contact: contact
-  };
+    return transition.onMatch({ doc: doc }).then(complete => {
+      assert.equal(complete, true);
+      assert(doc.tasks);
+      assert.equal(doc.tasks && doc.tasks.length, 1);
 
-  transition.onMatch({ doc: doc }).then(complete => {
-    test.equals(complete, true);
-    test.ok(doc.tasks);
-    test.equals(doc.tasks && doc.tasks.length, 1);
-    test.ok(doc.scheduled_tasks);
-    test.equals(doc.scheduled_tasks && doc.scheduled_tasks.length, 1);
-
-    const msg0 = getMessage(doc, 0);
-    test.deepEqual(msg0, {
-      to: '+1234',
-      message: 'thanks Julie',
-      uuid: 'test-uuid'
+      testMessage(
+          getMessage(doc, 0),
+          '+5551596',
+          'thanks');
     });
-
-    // check that message generation is deferred until later
-    test.equals(doc.scheduled_tasks.length, 1);
-    test.equals(doc.scheduled_tasks[0].messages, undefined);
-    test.done();
   });
-};
 
-exports['registration sets up schedule using bool_expr'] = test => {
+  it('two phase registration sets up schedule using bool_expr', () => {
 
-  sinon.stub(transition, 'getConfig').returns([{
-    form: 'PATR',
-    events: [
-      {
-        name: 'on_create',
-        trigger: 'assign_schedule',
-        params: 'group1',
-        bool_expr: 'doc.foo === "baz"'
-      }
-    ],
-    validations: [],
-    messages: [
-      {
-        message: [{
-          content: 'thanks {{contact.name}}',
-          locale: 'en'
-        }],
-        recipient: 'reporting_unit'
-      }
-    ]
-  }]);
-  sinon.stub(utils, 'getPatientContact').callsArgWith(2, null, {_id: 'uuid'});
-  sinon.stub(utils, 'getRegistrations').callsArgWithAsync(1, null, []);
-  sinon.stub(schedules, 'getScheduleConfig').returns({
-    name: 'group1',
-    start_from: 'reported_date',
-    registration_response: '',
-    messages: [
-      {
-        message: [{
-          content: 'Mustaches.  Overrated or underrated?',
-          locale: 'en'
-        }],
-        group: 1,
-        offset: '12 weeks',
-        send_time: '',
-        recipient: 'reporting_unit'
-      }
-    ]
-  });
-  sinon.stub(uuid, 'v4').returns('test-uuid');
-
-  const doc = {
-    reported_date: moment().toISOString(),
-    form: 'PATR',
-    from: contact.phone,
-    contact: contact,
-    foo: 'baz'
-  };
-
-  transition.onMatch({ doc: doc }).then(complete => {
-    test.equals(complete, true);
-    test.ok(doc.tasks);
-    test.equals(doc.tasks && doc.tasks.length, 1);
-    test.ok(doc.scheduled_tasks);
-    test.equals(doc.scheduled_tasks && doc.scheduled_tasks.length, 1);
-
-    const msg0 = getMessage(doc, 0);
-    test.deepEqual(msg0, {
-      to: '+1234',
-      message: 'thanks Julie',
-      uuid: 'test-uuid'
+    sinon.stub(transition, 'getConfig').returns([{
+      form: 'PATR',
+      events: [
+        {
+          name: 'on_create',
+          trigger: 'assign_schedule',
+          params: 'group1',
+          bool_expr: 'doc.foo === "baz"'
+        }
+      ],
+      validations: [],
+      messages: [
+        {
+          message: [{
+            content: 'thanks for registering {{patient_name}}',
+            locale: 'en'
+          }],
+          recipient: 'reporting_unit'
+        }
+      ]
+    }]);
+    const getRegistrations = sinon.stub(utils, 'getRegistrations').callsArgWithAsync(1, null, [ { fields: { patient_name: 'barry' } } ]);
+    sinon.stub(schedules, 'getScheduleConfig').returns({
+      name: 'group1',
+      start_from: 'reported_date',
+      registration_response: '',
+      messages: [
+        {
+          message: [{
+            content: 'Remember to visit {{patient_name}}',
+            locale: 'en'
+          }],
+          group: 1,
+          offset: '12 weeks',
+          send_time: '',
+          recipient: 'reporting_unit'
+        }
+      ]
     });
 
-    /*
-     * Also checks that recipient using doc property value is resolved
-     * correctly.
-     * */
-    const msg1 = getScheduledMessage(doc, 0);
-    test.deepEqual(msg1, {
-      to: '+1234',
-      message: 'Mustaches.  Overrated or underrated?',
-      uuid: 'test-uuid'
+    sinon.stub(utils, 'getPatientContactUuid').callsArgWith(2, null, {_id: 'uuid'});
+    const doc = {
+      reported_date: moment().toISOString(),
+      form: 'PATR',
+      from: contact.phone,
+      contact: contact,
+      foo: 'baz',
+      fields: { patient_id: '123' },
+      patient: {
+        _id: 'uuid'
+      }
+    };
+
+    return transition.onMatch({ doc: doc }).then(complete => {
+      assert.equal(complete, true);
+      assert(doc.tasks);
+      assert.equal(doc.tasks && doc.tasks.length, 1);
+      assert(doc.scheduled_tasks);
+      assert.equal(doc.scheduled_tasks && doc.scheduled_tasks.length, 1);
+
+      testMessage(
+          getMessage(doc, 0),
+          '+1234',
+          'thanks for registering barry');
+
+      /*
+       * Also checks that recipient using doc property value is resolved
+       * correctly.
+       */
+      testMessage(
+          getScheduledMessage(doc, 0),
+          '+1234',
+          'Remember to visit barry');
+
+      assert.equal(getRegistrations.callCount, 2);
+      assert.equal(getRegistrations.args[0][0].id, '123');
     });
-    test.done();
   });
-};
 
-exports['patients chp is resolved correctly as recipient'] = test => {
-  sinon.stub(transition, 'getConfig').returns([{
-    form: 'PATR',
-    events: [],
-    validations: [],
-    messages: [{
-      translation_key: 'thanks',
-      recipient: 'patient.parent.contact.phone'
-    }]
-  }]);
-  sinon.stub(schedules, 'getScheduleConfig').returns({});
-  sinon.stub(utils, 'getPatientContactUuid').callsArgWith(2, null, {_id: 'uuid'});
-  sinon.stub(utils, 'getRegistrations').callsArgWithAsync(1, null, []);
-  sinon.stub(utils, 'translate').withArgs('thanks', 'en').returns('thanks');
-  sinon.stub(uuid, 'v4').returns('test-uuid');
+  it('no schedule using false bool_expr', () => {
 
-  const doc = {
-    reported_date: moment().toISOString(),
-    form: 'PATR',
-    from: contact.phone,
-    contact: contact,
-    fields: { patient_id: '98765' },
-    patient: { parent: { contact: { phone: '+5551596' } } }
-  };
-
-  transition.onMatch({ doc: doc }).then(complete => {
-    test.equals(complete, true);
-    test.ok(doc.tasks);
-    test.equals(doc.tasks && doc.tasks.length, 1);
-
-    const msg0 = getMessage(doc, 0);
-    test.deepEqual(msg0, {
-      uuid: 'test-uuid',
-      to: '+5551596',
-      message: 'thanks'
-    });
-
-    test.done();
-  });
-};
-
-exports['two phase registration sets up schedule using bool_expr'] = test => {
-
-  sinon.stub(transition, 'getConfig').returns([{
-    form: 'PATR',
-    events: [
-      {
-        name: 'on_create',
-        trigger: 'assign_schedule',
-        params: 'group1',
-        bool_expr: 'doc.foo === "baz"'
-      }
-    ],
-    validations: [],
-    messages: [
-      {
-        message: [{
-          content: 'thanks for registering {{patient_name}}',
-          locale: 'en'
-        }],
-        recipient: 'reporting_unit'
-      }
-    ]
-  }]);
-  const getRegistrations = sinon.stub(utils, 'getRegistrations').callsArgWithAsync(1, null, [ { fields: { patient_name: 'barry' } } ]);
-  sinon.stub(schedules, 'getScheduleConfig').returns({
-    name: 'group1',
-    start_from: 'reported_date',
-    registration_response: '',
-    messages: [
-      {
-        message: [{
-          content: 'Remember to visit {{patient_name}}',
-          locale: 'en'
-        }],
-        group: 1,
-        offset: '12 weeks',
-        send_time: '',
-        recipient: 'reporting_unit'
-      }
-    ]
-  });
-  sinon.stub(uuid, 'v4').returns('test-uuid');
-
-  sinon.stub(utils, 'getPatientContactUuid').callsArgWith(2, null, {_id: 'uuid'});
-  const doc = {
-    reported_date: moment().toISOString(),
-    form: 'PATR',
-    from: contact.phone,
-    contact: contact,
-    foo: 'baz',
-    fields: { patient_id: '123' },
-    patient: {
-      _id: 'uuid'
-    }
-  };
-
-  transition.onMatch({ doc: doc }).then(complete => {
-    test.equals(complete, true);
-    test.ok(doc.tasks);
-    test.equals(doc.tasks && doc.tasks.length, 1);
-    test.ok(doc.scheduled_tasks);
-    test.equals(doc.scheduled_tasks && doc.scheduled_tasks.length, 1);
-
-    const msg0 = getMessage(doc, 0);
-    test.deepEqual(msg0, {
-      to: '+1234',
-      message: 'thanks for registering barry',
-      uuid: 'test-uuid'
+    sinon.stub(transition, 'getConfig').returns([{
+      form: 'PATR',
+      events: [
+        {
+          name: 'on_create',
+          trigger: 'assign_schedule',
+          params: 'group1',
+          bool_expr: 'doc.foo === "notbaz"'
+        }
+      ],
+      validations: [],
+      messages: [
+        {
+          message: [{
+            content: 'thanks {{contact.name}}',
+            locale: 'en'
+          }],
+          recipient: 'reporting_unit'
+        }
+      ]
+    }]);
+    sinon.stub(utils, 'getRegistrations').callsArgWithAsync(1, null, []);
+    sinon.stub(utils, 'getPatientContact').callsArgWith(2, null, {_id: 'uuid'});
+    sinon.stub(schedules, 'getScheduleConfig').returns({
+      name: 'group1',
+      start_from: 'reported_date',
+      registration_response: '',
+      messages: [
+        {
+          message: [{
+            content: 'Mustaches.  Overrated or underrated?',
+            locale: 'en'
+          }],
+          group: 1,
+          offset: '12 weeks',
+          send_time: '',
+          recipient: 'reporting_unit'
+        }
+      ]
     });
 
-    /*
-     * Also checks that recipient using doc property value is resolved
-     * correctly.
-     * */
-    const msg1 = getScheduledMessage(doc, 0);
-    test.deepEqual(msg1, {
-      to: '+1234',
-      message: 'Remember to visit barry',
-      uuid: 'test-uuid'
+    const doc = {
+      reported_date: moment().toISOString(),
+      form: 'PATR',
+      contact: contact,
+      foo: 'baz'
+    };
+
+    return transition.onMatch({ doc: doc }).then(complete => {
+      assert.equal(complete, true);
+      assert(doc.tasks);
+      assert.equal(doc.tasks && doc.tasks.length, 1);
+      assert(!doc.scheduled_tasks);
+
+      testMessage(
+          getMessage(doc, 0),
+          '+1234',
+          'thanks Julie');
     });
-
-    test.equals(getRegistrations.callCount, 2);
-    test.equals(getRegistrations.args[0][0].id, '123');
-    test.done();
-  });
-};
-
-exports['no schedule using false bool_expr'] = test => {
-
-  sinon.stub(transition, 'getConfig').returns([{
-    form: 'PATR',
-    events: [
-      {
-        name: 'on_create',
-        trigger: 'assign_schedule',
-        params: 'group1',
-        bool_expr: 'doc.foo === "notbaz"'
-      }
-    ],
-    validations: [],
-    messages: [
-      {
-        message: [{
-          content: 'thanks {{contact.name}}',
-          locale: 'en'
-        }],
-        recipient: 'reporting_unit'
-      }
-    ]
-  }]);
-  sinon.stub(uuid, 'v4').returns('test-uuid');
-  sinon.stub(utils, 'getRegistrations').callsArgWithAsync(1, null, []);
-  sinon.stub(utils, 'getPatientContact').callsArgWith(2, null, {_id: 'uuid'});
-  sinon.stub(schedules, 'getScheduleConfig').returns({
-    name: 'group1',
-    start_from: 'reported_date',
-    registration_response: '',
-    messages: [
-      {
-        message: [{
-          content: 'Mustaches.  Overrated or underrated?',
-          locale: 'en'
-        }],
-        group: 1,
-        offset: '12 weeks',
-        send_time: '',
-        recipient: 'reporting_unit'
-      }
-    ]
   });
 
-  const doc = {
-    reported_date: moment().toISOString(),
-    form: 'PATR',
-    contact: contact,
-    foo: 'baz'
-  };
-
-  transition.onMatch({ doc: doc }).then(complete => {
-    test.equals(complete, true);
-    test.ok(doc.tasks);
-    test.equals(doc.tasks && doc.tasks.length, 1);
-    test.ok(!doc.scheduled_tasks);
-
-    const msg0 = getMessage(doc, 0);
-    test.deepEqual(msg0, {
-      to: '+1234',
-      message: 'thanks Julie',
-      uuid: 'test-uuid'
-    });
-
-    test.done();
-  });
-};
+  function testMessage(message, expectedTo, expectedContent) {
+    assert(/^[a-z0-9-]*$/.test(message.uuid));
+    assert.equal(message.to, expectedTo);
+    assert.equal(message.message, expectedContent);
+  }
+});

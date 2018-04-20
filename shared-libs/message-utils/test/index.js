@@ -2,8 +2,8 @@ const sinon = require('sinon').sandbox.create(),
       moment = require('moment'),
       expect = require('chai').expect,
       should = require('chai').should(),
-      uuid = require('uuid'),
-      utils = require('../../../lib/message-utils');
+      uuid = require('uuid');
+const utils = require('../src/index');
 
 const MAX_GSM_LENGTH = 160;
 const MAX_UNICODE_LENGTH = 70;
@@ -306,6 +306,56 @@ describe('messageUtils', () => {
         };
         const actual = utils.template({}, null, doc, { message: '{{contact.name}}, {{chw_name}}' });
         expect(actual).to.equal('Sally, Arnold');
+      });
+
+      it('merges extra context', () => {
+        const doc = {
+          form: 'x',
+          reported_date: '2050-03-13T13:06:22.002Z',
+          chw_name: 'Arnold'
+        };
+        const extraContext = {
+          patient: {
+            parent: {
+              type: 'clinic',
+              contact: { name: 'Bede' }
+            }
+          }
+        };
+        const config = {};
+        const translate = null;
+        const content = { message: 'Your CHP is {{clinic.contact.name}}' };
+        const actual = utils.template(config, translate, doc, content, extraContext);
+        expect(actual).to.equal('Your CHP is Bede');
+      });
+
+      // Tests how standard configuration sets district_hospital parents
+      it('handles parent as an empty string - #4410', () => {
+        const doc = {
+          form: 'x',
+          reported_date: '2050-03-13T13:06:22.002Z',
+          chw_name: 'Arnold',
+          parent: {
+            type: 'health_center',
+            parent: {
+              type: 'district_hospital',
+              parent: ''
+            }
+          }
+        };
+        const extraContext = {
+          patient: {
+            parent: {
+              type: 'clinic',
+              contact: { name: 'Bede' }
+            }
+          }
+        };
+        const config = {};
+        const translate = null;
+        const content = { message: 'Your CHP is {{clinic.contact.name}}' };
+        const actual = utils.template(config, translate, doc, content, extraContext);
+        expect(actual).to.equal('Your CHP is Bede');
       });
 
     });

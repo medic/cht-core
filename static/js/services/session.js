@@ -43,7 +43,20 @@ var COOKIE_NAME = 'userCtx',
         $http.delete('/_session').then(navigateToLogin);
       };
 
-      var checkCurrentSession = function() {
+      var refreshUserCtx = function(callback) {
+        $http
+          .get('/' + Location.dbName + '/login/identity')
+          .then(function() {
+            if (_.isFunction(callback)) {
+              callback();
+            }
+          })
+          .catch(function() {
+            logout();
+          });
+      };
+
+      var checkCurrentSession = function(callback) {
         var userCtx = getUserCtx();
         if (!userCtx || !userCtx.name) {
           return logout();
@@ -55,7 +68,11 @@ var COOKIE_NAME = 'userCtx',
                        response.data.userCtx.name;
             if (name !== userCtx.name) {
               // connected to the internet but server session is different
-              logout();
+              return logout();
+            }
+            if (_.difference(userCtx.roles, response.data.userCtx.roles).length ||
+                _.difference(response.data.userCtx.roles, userCtx.roles).length) {
+              return refreshUserCtx(callback);
             }
           })
           .catch(function(response) {
@@ -82,9 +99,7 @@ var COOKIE_NAME = 'userCtx',
 
         navigateToLogin: navigateToLogin,
 
-        init: function() {
-          checkCurrentSession();
-        },
+        init: checkCurrentSession,
 
         /**
          * Returns true if the logged in user has the db or national admin role.

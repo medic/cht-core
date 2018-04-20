@@ -1,5 +1,3 @@
-// NB: This code is identical to code in webapp
-// TODO: move into a shared library as part of #4021
 var _ = require('underscore'),
     uuid = require('uuid'),
     gsm = require('gsm'),
@@ -9,23 +7,25 @@ var _ = require('underscore'),
     toBikramSambatLetters = require('bikram-sambat').toBik_text,
     SMS_TRUNCATION_SUFFIX = '...';
 
-var getParent = function(facility, type) {
+var getParent = function(doc, type) {
+  var facility = doc.contact || doc;
   while (facility && facility.type !== type) {
     facility = facility.parent;
   }
-  return facility;
+  // don't return falsey values, eg: ""
+  return facility || undefined;
 };
 
 var getClinic = function(doc) {
-  return doc && getParent(doc.contact, 'clinic');
+  return doc && getParent(doc, 'clinic');
 };
 
 var getHealthCenter = function(doc) {
-  return doc && getParent(doc.contact, 'health_center');
+  return doc && getParent(doc, 'health_center');
 };
 
 var getDistrict = function(doc) {
-  return doc && getParent(doc.contact, 'district_hospital');
+  return doc && getParent(doc, 'district_hospital');
 };
 
 var getClinicPhone = function(doc) {
@@ -71,12 +71,12 @@ var applyPhoneFilters = function(config, phone) {
   return phone;
 };
 
-var getRecipient = function(doc, recipient) {
-  if (!doc) {
+var getRecipient = function(context, recipient) {
+  if (!context) {
     return;
   }
   recipient = recipient && recipient.trim();
-  var from = doc.from || (doc.contact && doc.contact.phone);
+  var from = context.from || (context.contact && context.contact.phone);
   if (!recipient) {
     return from;
   }
@@ -84,26 +84,26 @@ var getRecipient = function(doc, recipient) {
   if (recipient === 'reporting_unit') {
     phone = from;
   } else if (recipient === 'clinic') {
-    phone = getClinicPhone(doc);
+    phone = getClinicPhone(context);
   } else if (recipient === 'parent') {
-    phone = getHealthCenterPhone(doc);
+    phone = getHealthCenterPhone(context);
   } else if (recipient === 'grandparent') {
-    phone = getDistrictPhone(doc);
-  } else if (doc.fields && doc.fields[recipient]) {
+    phone = getDistrictPhone(context);
+  } else if (context.fields && context.fields[recipient]) {
     // Try to resolve a specified property/field name
-    phone = doc.fields[recipient];
-  } else if (doc[recipient]) {
-    // Or directly on the doc
-    phone = doc[recipient];
+    phone = context.fields[recipient];
+  } else if (context[recipient]) {
+    // Or directly on the context
+    phone = context[recipient];
   } else if (recipient.indexOf('.') > -1) {
     // Or multiple layers by executing it as a statement
-    phone = objectPath.get(doc, recipient);
+    phone = objectPath.get(context, recipient);
   }
   return phone || from || recipient;
 };
 
-var getPhone = function(config, doc, recipient) {
-  var phone = getRecipient(doc, recipient);
+var getPhone = function(config, context, recipient) {
+  var phone = getRecipient(context, recipient);
   phone = applyPhoneReplacement(config, phone);
   return applyPhoneFilters(config, phone);
 };
@@ -121,7 +121,6 @@ var extractTemplateContext = function(doc) {
   var healthCenter = getHealthCenter(doc);
   var district = getDistrict(doc);
   var internal = {
-    contact: clinic && clinic.contact,
     clinic: clinic,
     parent: healthCenter,
     health_center: healthCenter,
@@ -216,9 +215,11 @@ var truncateMessage = function(parts, max) {
 exports.generate = function(config, translate, doc, content, recipient, extraContext) {
   'use strict';
 
+  var context = extendedTemplateContext(doc, extraContext || {});
+
   var result = {
     uuid: uuid.v4(),
-    to: getPhone(config, doc, recipient)
+    to: getPhone(config, context, recipient)
   };
 
   var message = exports.template(config, translate, doc, content, extraContext);
@@ -259,3 +260,5 @@ exports.template = function(config, translate, doc, content, extraContext) {
   var context = extendedTemplateContext(doc, extraContext);
   return render(config, template, context);
 };
+
+exports._getRecipient = getRecipient;

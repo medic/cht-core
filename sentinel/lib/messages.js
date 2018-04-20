@@ -1,8 +1,8 @@
 var _ = require('underscore'),
     phoneNumber = require('phone-number'),
     utils = require('./utils'),
-    messageUtils = require('./message-utils'),
     config = require('../config');
+const messageUtils = require('@shared-libs/message-utils');
 
 module.exports = {
     addMessage: (doc, messageConfig, recipient = 'clinic', context = {}) => {
