@@ -63,14 +63,14 @@ module.exports = {
             module.exports._addErr(event_type, config, doc);
         }
     },
-    filter: function(doc) {
+    filter: function(doc, info={}) {
         return Boolean(
             doc &&
             doc.form &&
             doc.type === 'data_record' &&
             doc.fields &&
             doc.fields.patient_id &&
-            !transitionUtils.hasRun(doc, NAME)
+            !transitionUtils.hasRun(info, NAME)
         );
     },
     getConfig: function() {

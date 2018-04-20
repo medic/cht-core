@@ -4,22 +4,21 @@
  */
 
 const _ = require('underscore'),
-      follow = require('follow'),
       async = require('async'),
       utils = require('../lib/utils'),
+      feed = require('../lib/feed'),
       dbPouch = require('../db-pouch'),
       lineage = require('lineage')(Promise, dbPouch.medic),
       logger = require('../lib/logger'),
       config = require('../config'),
       db = require('../db-nano'),
+      infodoc = require('../lib/infodoc'),
+      metadata = require('../lib/metadata'),
       PROCESSING_DELAY = 50, // ms
       PROGRESS_REPORT_INTERVAL = 500, // items
       transitions = [];
 
 let changesFeed;
-
-// We log the first time we catch up to the changes feed
-let caughtUpOnce;
 
 /*
  * Add new transitions here to make them available for configuration and execution.
@@ -34,7 +33,6 @@ let caughtUpOnce;
  *    medic-docs
  */
 const AVAILABLE_TRANSITIONS = [
-  'maintain_info_document',
   'update_clinics',
   'registration',
   'accept_patient_reports',
@@ -50,31 +48,6 @@ const AVAILABLE_TRANSITIONS = [
   'resolve_pending'
 ];
 
-/*
- * Add transitions here to have them execute by default.
- *
- * Transitions on this list:
- *  - must still be in the above master list
- *  - can still be configured to be explicitly disabled if needed
- *  - should not expect any particular configuration (as they run by default)
- *  - do not necessarily need to be documented externally
- *
- * Only add transitions here whose lack of running would break data / system
- * expectations, not just because you think most will want them to run.
- */
-const SYSTEM_TRANSITIONS = [
-  'maintain_info_document'
-];
-
-// Init assertion that all SYSTEM_TRANSITIONS are also in AVAILABLE_TRANSITIONS
-(() => {
-  if (SYSTEM_TRANSITIONS.filter(transition => !AVAILABLE_TRANSITIONS.includes(transition)).length) {
-    logger.error('FATAL: All SYSTEM_TRANSITIONS must also be in AVAILABLE_TRANSITIONS');
-    process.exit(1);
-  }
-})();
-
-const METADATA_DOCUMENT = '_local/sentinel-meta-data';
 
 let processed = 0;
 
@@ -92,43 +65,49 @@ const processChange = (change, callback) => {
   if (change.deleted) {
     // don't run transitions on deleted docs, but do clean up
     async.parallel([
-      async.apply(deleteInfoDoc, change),
+      callback => {
+        infodoc.delete(change)
+          .then(() => { callback(); })
+          .catch(err => { callback(err); });
+      },
       async.apply(deleteReadDocs, change)
     ], err => {
       if (err) {
         logger.error('Error cleaning up deleted doc', err);
       }
       processed++;
-      updateMetaData(change.seq, callback);
+      metadata.update(change.seq)
+        .then(() => { callback(); })
+        .catch((err) => { callback(err); });
     });
     return;
   }
+
   lineage.fetchHydratedDoc(change.id)
     .then(doc => {
       change.doc = doc;
-      module.exports.applyTransitions(change, () => {
-        processed++;
-        updateMetaData(change.seq, callback);
-      });
+      infodoc.get(change)
+        .then(infoDoc => {
+          change.info = infoDoc;
+          // Remove transitions from doc since those
+          // will be handled by the info doc(sentinel db) after this
+          if(change.doc.transitions) {
+            delete change.doc.transitions;
+          }
+          module.exports.applyTransitions(change, () => {
+            processed++;
+            metadata.update(change.seq)
+              .then(() => callback())
+              .catch(err => {
+                callback(err);
+              });
+          });
+        });
     })
     .catch(err => {
       logger.error(`transitions: fetch failed for ${change.id} (${err})`);
       return callback();
     });
-};
-
-const deleteInfoDoc = (change, callback) => {
-  db.medic.get(`${change.id}-info`, (err, doc) => {
-    if (err) {
-      if (err.statusCode === 404) {
-        // don't worry about deleting a non-existant doc
-        return callback();
-      }
-      return callback(err);
-    }
-    doc._deleted = true;
-    db.medic.insert(doc, callback);
-  });
 };
 
 const getAdminNames = callback => {
@@ -194,9 +173,8 @@ const deleteReadDocs = (change, callback) => {
  * constant and what is enabled in the `transitions` property in the settings
  * data.  Log warnings on failure.
  *
- * Tests can diabled autoEnableSystemTransitions for more control.
  */
-const loadTransitions = (autoEnableSystemTransitions = true) => {
+const loadTransitions = () => {
 
   const self = module.exports;
   const transitionsConfig = config.get('transitions') || [];
@@ -204,16 +182,13 @@ const loadTransitions = (autoEnableSystemTransitions = true) => {
 
   transitions.splice(0, transitions.length);
 
-  // Load all system or configured transitions
+  // Load all configured transitions
   AVAILABLE_TRANSITIONS.forEach(transition => {
     const conf = transitionsConfig[transition];
 
-    const system =
-      autoEnableSystemTransitions && SYSTEM_TRANSITIONS.includes(transition);
-
     const disabled = conf && conf.disable;
 
-    if ((system && disabled) || (!system && !conf || disabled)) {
+    if (!conf || disabled) {
       return logger.warn(`Disabled transition "${transition}"`);
     }
 
@@ -258,8 +233,12 @@ const loadTransition = key => {
  */
 const canRun = ({ key, change, transition }) => {
   const doc = change.doc;
+  const info = change.info;
 
-  const isRevSame = () => {
+  const isRevSame = (doc, info) => {
+    if (info.transitions && info.transitions[key]) {
+      return parseInt(doc._rev) === parseInt(info.transitions[key].last_rev);
+    }
     if (doc.transitions && doc.transitions[key]) {
       return parseInt(doc._rev) === parseInt(doc.transitions[key].last_rev);
     }
@@ -278,8 +257,8 @@ const canRun = ({ key, change, transition }) => {
     change &&
     !change.deleted &&
     doc &&
-    !isRevSame(doc) &&
-    transition.filter(doc)
+    !isRevSame(doc, info) &&
+    transition.filter(doc, info)
   );
 };
 
@@ -323,18 +302,6 @@ const finalize = ({ change, results }, callback) => {
  */
 const applyTransition = ({ key, change, transition }, callback) => {
 
-  const _setResult = ok => {
-    const doc = change.doc;
-    if (!doc.transitions) {
-      doc.transitions = {};
-    }
-    doc.transitions[key] = {
-      last_rev: parseInt(change.doc._rev) + 1,
-      seq: change.seq,
-      ok: ok
-    };
-  };
-
   logger.debug(
     `calling transition.onMatch for doc ${change.id} seq ${change.seq} and transition ${key}`);
 
@@ -349,10 +316,11 @@ const applyTransition = ({ key, change, transition }, callback) => {
         `finished transition ${key} for seq ${change.seq} doc ${change.id} is ` +
         changed ? 'changed' : 'unchanged'
       );
-      if (changed) {
-        _setResult(true);
+      if (!changed) {
+        return changed;
       }
-      return changed;
+      return infodoc.updateTransition(change, key, true)
+        .then(() => { return changed; });
     })
     .catch(err => {
       // adds an error to the doc but it will only get saved if there are
@@ -363,11 +331,11 @@ const applyTransition = ({ key, change, transition }, callback) => {
         message: `Transition error on ${key}: ${message}`
       });
       logger.error(`transition ${key} errored on doc ${change.id} seq ${change.seq}: ${JSON.stringify(err)}`);
-      if (err.changed) {
-        _setResult(false);
-        return true;
+      if (!err.changed) {
+        return false;
       }
-      return false;
+      return infodoc.updateTransition(change, key, false)
+        .then(() => { return true; });
     })
     .then(changed => callback(null, changed)); // return the promise instead
 };
@@ -402,76 +370,6 @@ const applyTransitions = (change, callback) => {
     }, callback));
 };
 
-const migrateOldMetaDoc = (doc, callback) => {
-  const stub = {
-    _id: doc._id,
-    _rev: doc._rev,
-    _deleted: true
-  };
-  logger.info('Deleting old metadata document', doc);
-  return db.medic.insert(stub, err => {
-    if (err) {
-      callback(err);
-    } else {
-      doc._id = METADATA_DOCUMENT;
-      delete doc._rev;
-      callback(null, doc);
-    }
-  });
-};
-
-const getMetaData = callback =>
-  db.medic.get(METADATA_DOCUMENT, (err, doc) => {
-    if (!err) {
-      // Doc exists in correct location
-      return callback(null, doc);
-    } else if (err.statusCode !== 404) {
-      return callback(err);
-    }
-
-    // Doc doesn't exist.
-    // Maybe we have the doc in the old location?
-    db.medic.get('sentinel-meta-data', (err, doc) => {
-      if (!err) {
-        // Old doc exists, delete it and return the base doc to be saved later
-        return migrateOldMetaDoc(doc, callback);
-      } else if (err.statusCode !== 404) {
-        return callback(err);
-      }
-
-      // No doc at all, create and return default
-      doc = {
-        _id: METADATA_DOCUMENT,
-        processed_seq: 0
-      };
-
-      callback(null, doc);
-    });
-  });
-
-const getProcessedSeq = callback =>
-  getMetaData((err, doc) => {
-    if (err) {
-      logger.error('Error getting meta data', err);
-      return callback(err);
-    }
-    callback(null, doc.processed_seq);
-  });
-
-const updateMetaData = (seq, callback) =>
-  getMetaData((err, metaData) => {
-    if (err) {
-      logger.error('Error fetching metaData for update', err);
-      return callback();
-    }
-    metaData.processed_seq = seq;
-    db.medic.insert(metaData, err => {
-      if (err) {
-        logger.error('Error updating metaData', err);
-      }
-      return callback();
-    });
-  });
 
 const detach = () => {
   if (changesFeed) {
@@ -484,38 +382,17 @@ const detach = () => {
  *  Setup changes feed listener.
  */
 const attach = () => {
-  if (changesFeed) {
-    return;
+  if (!changesFeed) {
+    logger.info('transitions: processing enabled');
+    return metadata.getProcessedSeq()
+      .catch(err => {
+        logger.error('transitions: error fetching processed seq', err);
+      })
+      .then(seq => {
+        logger.info(`transitions: fetching changes feed, starting from ${seq}`);
+        changesFeed = feed.followFeed(seq, changeQueue);
+      });
   }
-  logger.info('transitions: processing enabled');
-  getProcessedSeq((err, processedSeq) => {
-    if (err) {
-      logger.error('transitions: error fetching processed seq', err);
-      return;
-    }
-    logger.info(`transitions: fetching changes feed, starting from ${processedSeq}`);
-    changesFeed = new follow.Feed({
-      db: process.env.COUCH_URL,
-      since: processedSeq
-    });
-    changesFeed.on('change', change => {
-      // skip uninteresting documents
-      if (change.id.match(/^_design\//) || change.id === METADATA_DOCUMENT) {
-        return;
-      }
-      changeQueue.push(change);
-    });
-    changesFeed.on('error', err => {
-      logger.error('transitions: error from changes feed', err);
-    });
-    changesFeed.on('catchup', seq => {
-      if (!caughtUpOnce) {
-        caughtUpOnce = true;
-        logger.info(`Sentinel caught up to ${seq}`);
-      }
-    });
-    changesFeed.follow();
-  });
 };
 
 const availableTransitions = () => {
@@ -527,7 +404,6 @@ module.exports = {
   _changeQueue: changeQueue,
   _attach: attach,
   _detach: detach,
-  _deleteInfoDoc: deleteInfoDoc,
   _deleteReadDocs: deleteReadDocs,
   _lineage: lineage,
   availableTransitions: availableTransitions,

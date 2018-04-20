@@ -23,7 +23,7 @@ describe('multi report alerts', () => {
   });
 
   const stubFetchHydratedDocs = () => {
-    sinon.stub(transition._lineage, 'hydrateDocs').returns(Promise.resolve(hydratedReports));
+    sinon.stub(transition._lineage, 'hydrateDocs').resolves(hydratedReports);
   };
 
   // doc is hydrated before being passed to the transition.
@@ -63,16 +63,13 @@ describe('multi report alerts', () => {
       form: 'x',
       type: 'data_record'
     }), true);
-
   });
 
   it('filter validation hasRun', () => {
     assert.equal(transition.filter({
       form: 'x',
-      type: 'data_record',
-      transitions : { multi_report_alerts: 'hi' }
-    }), false);
-
+      type: 'data_record'
+    }, {transitions : { multi_report_alerts: 'hi' }}), false);
   });
 
   const assertConfigIsInvalid = (done, alerts) => {
@@ -120,7 +117,7 @@ describe('multi report alerts', () => {
 
   it('fetches reports within time window', () => {
     sinon.stub(config, 'get').returns([alertConfig]);
-    sinon.stub(utils, 'getReportsWithinTimeWindow').returns(Promise.resolve(reports));
+    sinon.stub(utils, 'getReportsWithinTimeWindow').resolves(reports);
     stubFetchHydratedDocs();
     return transition.onMatch({ doc: doc }).then(() => {
       assert.equal(utils.getReportsWithinTimeWindow.callCount, 1);
@@ -338,7 +335,7 @@ describe('multi report alerts', () => {
     sinon.stub(messages, 'addError');
     sinon.stub(messages, 'addMessage');
 
-    transition.onMatch({ doc: doc }).then(docNeedsSaving => {
+    return transition.onMatch({ doc: doc }).then(docNeedsSaving => {
       assert.equal(messages.addMessage.getCalls().length, 1);
       assert.equal(messages.addError.getCalls().length, 0);
       assert.deepEqual(messages.addMessage.getCall(0).args[3].templateContext.new_reports, [doc, hydratedReportsWithOneAlreadyMessaged[0] ]);

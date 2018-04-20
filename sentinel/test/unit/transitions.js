@@ -4,9 +4,11 @@ const sinon = require('sinon').sandbox.create(),
       _ = require('underscore'),
       config = require('../../config'),
       db = require('../../db-nano'),
+      dbPouch = require('../../db-pouch'),
+      infodoc = require('../../lib/infodoc'),
       transitions = require('../../transitions');
 
-describe('sendable', () => {
+describe('transitions', () => {
   afterEach(() => {
     transitions._changeQueue.kill();
     transitions._detach();
@@ -16,7 +18,7 @@ describe('sendable', () => {
   it('canRun returns false if filter returns false', () => {
     assert.equal(transitions.canRun({
       change: {
-        doc: {}
+        doc: {}, info: {}
       },
       transition: {
         filter: () => false
@@ -27,26 +29,23 @@ describe('sendable', () => {
   it('canRun returns true if filter returns true', () => {
     assert.equal(transitions.canRun({
       change: {
-        doc: {}
+        doc: {}, info: {}
       },
       transition: {
         filter: () => true
       }
     }), true);
-
   });
 
   it('canRun returns false if change is deletion', () => {
     assert.equal(transitions.canRun({
       change: {
-        doc: {},
-        deleted: true
+        doc: {}, info: {}, deleted: true
       },
       transition: {
         filter: () => true
       }
     }), false);
-
   });
 
   it('canRun returns false if rev is same', () => {
@@ -54,7 +53,9 @@ describe('sendable', () => {
       key: 'x',
       change: {
         doc: {
-          _rev: '1',
+          _rev: '1'
+        },
+        info: {
           transitions: {
             x: {
               last_rev: '1'
@@ -66,7 +67,6 @@ describe('sendable', () => {
         filter: () => true
       }
     }), false);
-
   });
 
   it('canRun returns true if rev is different', () => {
@@ -74,7 +74,9 @@ describe('sendable', () => {
       key: 'x',
       change: {
         doc: {
-          _rev: '1',
+          _rev: '1'
+        },
+        info: {
           transitions: {
             x: {
               last_rev: '2'
@@ -93,7 +95,9 @@ describe('sendable', () => {
       key: 'foo',
       change: {
         doc: {
-          _rev: '1',
+          _rev: '1'
+        },
+        info: {
           transitions: {
             baz: {
               last_rev: '2'
@@ -109,7 +113,9 @@ describe('sendable', () => {
       key: 'foo',
       change: {
         doc: {
-          _rev: '1',
+          _rev: '1'
+        },
+        info: {
           transitions: {}
         }
       },
@@ -152,7 +158,7 @@ describe('sendable', () => {
       const load = sinon.stub(transitions, '_loadTransition');
       const attach = sinon.stub(transitions, '_attach');
       const detach = sinon.stub(transitions, '_detach');
-      transitions.loadTransitions(false);
+      transitions.loadTransitions();
       assert.equal(load.callCount, loadTest.expectedCalls.load ? 1 : 0);
       assert.equal(attach.callCount, loadTest.expectedCalls.attach ? 1 : 0);
       assert.equal(detach.callCount, loadTest.expectedCalls.attach ? 0 : 1);
@@ -164,7 +170,7 @@ describe('sendable', () => {
     const load = sinon.stub(transitions, '_loadTransition').throws(new Error('some config error'));
     const attach = sinon.stub(transitions, '_attach');
     const detach = sinon.stub(transitions, '_detach');
-    transitions.loadTransitions(false);
+    transitions.loadTransitions();
     assert.equal(load.callCount, 1);
     assert.equal(attach.callCount, 0);
     assert.equal(detach.callCount, 1);
@@ -175,30 +181,35 @@ describe('sendable', () => {
     sinon.stub(transitions, '_attach');
     const stub = sinon.stub(transitions, '_loadTransition');
     transitions.loadTransitions();
-    assert.equal(stub.calledWith('maintain_info_document'), true);
+    assert.equal(stub.callCount, 0);
   });
 
   it('loadTransitions does not load system transistions that have been explicitly disabled', () => {
-    sinon.stub(config, 'get').returns({maintain_info_document: {disable: true}});
+    sinon.stub(config, 'get').returns({death_reporting: {disable: true}});
     sinon.stub(transitions, '_attach');
     const stub = sinon.stub(transitions, '_loadTransition');
     transitions.loadTransitions();
-    assert.equal(stub.calledWith('maintain_info_document'), false);
+    assert.equal(stub.calledWith('death_reporting'), false);
   });
 
-  it('attach handles missing meta data doc', () => {
-    const get = sinon.stub(db.medic, 'get');
-    get.withArgs('_local/sentinel-meta-data').callsArgWith(1, { statusCode: 404 });
-    get.withArgs('sentinel-meta-data').callsArgWith(1, { statusCode: 404 });
-    const fetchHydratedDoc = sinon.stub(transitions._lineage, 'fetchHydratedDoc').returns(Promise.resolve({ type: 'data_record' }));
-    const insert = sinon.stub(db.medic, 'insert').callsArg(1);
+  it('attach handles missing meta data doc', (done) => {
+    sinon.stub(dbPouch.sentinel, 'get').rejects({status: 404});
+    sinon.stub(dbPouch.medic, 'get').rejects({status: 404});
+
+    const fetchHydratedDoc = sinon.stub(transitions._lineage, 'fetchHydratedDoc')
+      .resolves({ type: 'data_record' });
+    sinon.stub(infodoc, 'get').resolves({});
+    const insert = sinon.stub(dbPouch.sentinel, 'put').resolves({});
+    sinon.stub(dbPouch.medic, 'put').resolves({});
+
     const on = sinon.stub();
     const start = sinon.stub();
-    const feed = sinon.stub(follow, 'Feed').returns({ on: on, follow: start, stop: () => {} });
+    const feed = sinon.stub(follow, 'Feed')
+      .returns({ on: on, follow: start, stop: () => {} });
+
     const applyTransitions = sinon.stub(transitions, 'applyTransitions').callsArg(1);
     // wait for the queue processor
     transitions._changeQueue.drain = () => {
-      assert.equal(get.callCount, 4);
       assert.equal(fetchHydratedDoc.callCount, 1);
       assert.equal(fetchHydratedDoc.args[0][0], 'abc');
       assert.equal(applyTransitions.callCount, 1);
@@ -207,62 +218,82 @@ describe('sendable', () => {
       assert.equal(insert.callCount, 1);
       assert.equal(insert.args[0][0]._id, '_local/sentinel-meta-data');
       assert.equal(insert.args[0][0].processed_seq, 55);
-
+      done();
     };
-    transitions._attach();
-    assert.equal(feed.callCount, 1);
-    assert.equal(feed.args[0][0].since, 0);
-    assert.equal(on.callCount, 3);
-    assert.equal(on.args[0][0], 'change');
-    assert.equal(on.args[1][0], 'error');
-    assert.equal(start.callCount, 1);
-    // invoke the change handler
-    on.args[0][1]({ id: 'abc', seq: 55 });
+    transitions._attach().then(() => {
+      assert.equal(feed.callCount, 1);
+      assert.equal(feed.args[0][0].since, 0);
+      assert.equal(on.callCount, 3);
+      assert.equal(on.args[0][0], 'change');
+      assert.equal(on.args[1][0], 'error');
+      assert.equal(start.callCount, 1);
+      // invoke the change handler
+      on.args[0][1]({ id: 'abc', seq: 55 });
+    });
   });
 
-  it('attach handles old meta data doc', () => {
-    const get = sinon.stub(db.medic, 'get');
-    get.withArgs('_local/sentinel-meta-data').callsArgWith(1, { statusCode: 404 });
-    get.withArgs('sentinel-meta-data').callsArgWith(1, null, { _id: 'sentinel-meta-data', _rev: '1-123', processed_seq: 22});
-    const fetchHydratedDoc = sinon.stub(transitions._lineage, 'fetchHydratedDoc').returns(Promise.resolve({ type: 'data_record' }));
-    const insert = sinon.stub(db.medic, 'insert').callsArg(1);
+  it('attach handles old meta data doc', done => {
+    const sentinelGet = sinon.stub(dbPouch.sentinel, 'get');
+    sentinelGet.withArgs('_local/sentinel-meta-data').rejects({ status: 404 });
+
+    const medicGet = sinon.stub(dbPouch.medic, 'get');
+    medicGet.withArgs('_local/sentinel-meta-data').rejects({ status: 404 });
+    medicGet.withArgs('sentinel-meta-data')
+      .resolves({_id: 'sentinel-meta-data', _rev: '1-123', processed_seq: 22});
+
+    const fetchHydratedDoc = sinon.stub(transitions._lineage, 'fetchHydratedDoc')
+      .resolves({ type: 'data_record' });
+    sinon.stub(infodoc, 'get').resolves({});
+    const medicPut = sinon.stub(dbPouch.medic, 'put').resolves({});
+    const sentinelPut = sinon.stub(dbPouch.sentinel, 'put').resolves({});
     const on = sinon.stub();
     const start = sinon.stub();
     const feed = sinon.stub(follow, 'Feed').returns({ on: on, follow: start, stop: () => {} });
     const applyTransitions = sinon.stub(transitions, 'applyTransitions').callsArg(1);
     // wait for the queue processor
     transitions._changeQueue.drain = () => {
-      assert.equal(get.callCount, 4);
+      assert.equal(sentinelGet.callCount, 2);
+      assert.equal(medicGet.callCount, 4);
       assert.equal(fetchHydratedDoc.callCount, 1);
       assert.equal(fetchHydratedDoc.args[0][0], 'abc');
       assert.equal(applyTransitions.callCount, 1);
       assert.equal(applyTransitions.args[0][0].id, 'abc');
       assert.equal(applyTransitions.args[0][0].seq, 55);
-      assert.equal(insert.callCount, 3);
-      assert.equal(insert.args[0][0]._id, 'sentinel-meta-data');
-      assert.equal(insert.args[0][0]._rev, '1-123');
-      assert.equal(insert.args[0][0]._deleted, true);
-      // args[1] is a second incorrect call to delete that is an artifact of how Sinon works
-      assert.equal(insert.args[2][0]._id, '_local/sentinel-meta-data');
-      assert.equal(insert.args[2][0].processed_seq, 55);
 
+      assert.equal(medicPut.callCount, 2);
+      assert.equal(medicPut.args[0][0]._id, 'sentinel-meta-data');
+      assert.equal(medicPut.args[0][0]._rev, '1-123');
+      assert.equal(medicPut.args[0][0]._deleted, true);
+      assert.equal(medicPut.args[1][0]._id, '_local/sentinel-meta-data');
+      assert.equal(sentinelPut.callCount, 1);
+      assert.equal(sentinelPut.args[0][0]._id, '_local/sentinel-meta-data');
+      assert.equal(sentinelPut.args[0][0].processed_seq, 55);
+      done();
     };
-    transitions._attach();
-    assert.equal(feed.callCount, 1);
-    assert.equal(feed.args[0][0].since, 22);
-    assert.equal(on.callCount, 3);
-    assert.equal(on.args[0][0], 'change');
-    assert.equal(on.args[1][0], 'error');
-    assert.equal(start.callCount, 1);
-    // invoke the change handler
-    on.args[0][1]({ id: 'abc', seq: 55 });
+    transitions._attach().then(() => {
+      assert.equal(feed.callCount, 1);
+      assert.equal(feed.args[0][0].since, 22);
+      assert.equal(on.callCount, 3);
+      assert.equal(on.args[0][0], 'change');
+      assert.equal(on.args[1][0], 'error');
+      assert.equal(start.callCount, 1);
+      // invoke the change handler
+      on.args[0][1]({ id: 'abc', seq: 55 });
+    });
   });
 
-  it('attach handles existing meta data doc', () => {
-    const get = sinon.stub(db.medic, 'get');
-    get.withArgs('_local/sentinel-meta-data').callsArgWith(1, null, { _id: '_local/sentinel-meta-data', processed_seq: 22 });
-    const fetchHydratedDoc = sinon.stub(transitions._lineage, 'fetchHydratedDoc').returns(Promise.resolve({ type: 'data_record' }));
-    const insert = sinon.stub(db.medic, 'insert').callsArg(1);
+  it('attach handles existing meta data doc', (done) => {
+    const get = sinon.stub(dbPouch.sentinel, 'get')
+      .resolves({ _id: '_local/sentinel-meta-data', processed_seq: 22});
+    const fetchHydratedDoc = sinon.stub(transitions._lineage, 'fetchHydratedDoc')
+      .resolves({ type: 'data_record' });
+
+    const info = sinon.stub(infodoc, 'get').resolves({});
+    const insert = sinon.stub(dbPouch.sentinel, 'put').resolves({});
+
+    sinon.stub(dbPouch.medic, 'get').rejects({status: 404});
+    sinon.stub(db.audit, 'saveDoc').callsArg(1);
+
     const on = sinon.stub();
     const start = sinon.stub();
     const feed = sinon.stub(follow, 'Feed').returns({ on: on, follow: start, stop: () => {} });
@@ -270,6 +301,7 @@ describe('sendable', () => {
     // wait for the queue processor
     transitions._changeQueue.drain = () => {
       assert.equal(get.callCount, 2);
+      assert.equal(info.callCount, 1);
       assert.equal(fetchHydratedDoc.callCount, 1);
       assert.equal(fetchHydratedDoc.args[0][0], 'abc');
       assert.equal(applyTransitions.callCount, 1);
@@ -278,17 +310,18 @@ describe('sendable', () => {
       assert.equal(insert.callCount, 1);
       assert.equal(insert.args[0][0]._id, '_local/sentinel-meta-data');
       assert.equal(insert.args[0][0].processed_seq, 55);
-
+      done();
     };
-    transitions._attach();
-    assert.equal(feed.callCount, 1);
-    assert.equal(feed.args[0][0].since, 22);
-    assert.equal(on.callCount, 3);
-    assert.equal(on.args[0][0], 'change');
-    assert.equal(on.args[1][0], 'error');
-    assert.equal(start.callCount, 1);
-    // invoke the change handler
-    on.args[0][1]({ id: 'abc', seq: 55 });
+    transitions._attach().then(() => {
+      assert.equal(feed.callCount, 1);
+      assert.equal(feed.args[0][0].since, 22);
+      assert.equal(on.callCount, 3);
+      assert.equal(on.args[0][0], 'change');
+      assert.equal(on.args[1][0], 'error');
+      assert.equal(start.callCount, 1);
+      // invoke the change handler
+      on.args[0][1]({ id: 'abc', seq: 55 });
+    });
   });
 
   const requiredFunctions = {
@@ -306,30 +339,25 @@ describe('sendable', () => {
     });
   });
 
-  it('deleteInfo doc handles missing info doc', () => {
+  it('deleteInfo doc handles missing info doc', ()=> {
     const given = { id: 'abc' };
-    sinon.stub(db.medic, 'get').callsArgWith(1, { statusCode: 404 });
-    transitions._deleteInfoDoc(given, err => {
-      assert.equal(err, undefined);
-
-    });
+    sinon.stub(dbPouch.sentinel, 'get').rejects({ status: 404 });
+    return infodoc.delete(given);
   });
 
   it('deleteInfoDoc deletes info doc', () => {
     const given = { id: 'abc' };
-    const get = sinon.stub(db.medic, 'get').callsArgWith(1, null, { _id: 'abc', _rev: '123' });
-    const insert = sinon.stub(db.medic, 'insert').callsArg(1);
-    transitions._deleteInfoDoc(given, err => {
-      assert.equal(err, undefined);
+    const get = sinon.stub(dbPouch.sentinel, 'get').resolves({ _id: 'abc', _rev: '123' });
+    const insert = sinon.stub(dbPouch.sentinel, 'put').resolves({});
+    return infodoc.delete(given).then(() => {
       assert.equal(get.callCount, 1);
       assert.equal(get.args[0][0], 'abc-info');
       assert.equal(insert.callCount, 1);
       assert.equal(insert.args[0][0]._deleted, true);
-
     });
   });
 
-  it('deleteReadDocs handles missing meta db', () => {
+  it('deleteReadDocs handles missing meta db', done => {
     const given = { id: 'abc' };
     const metaDb = { info: function() {} };
     sinon.stub(db.medic, 'view').callsArgWith(3, null, {
@@ -339,11 +367,11 @@ describe('sendable', () => {
     sinon.stub(metaDb, 'info').callsArgWith(0, { statusCode: 404 });
     transitions._deleteReadDocs(given, err => {
       assert.equal(err, undefined);
-
+      done();
     });
   });
 
-  it('deleteReadDocs handles missing read doc', () => {
+  it('deleteReadDocs handles missing read doc', done => {
     const given = { id: 'abc' };
     const metaDb = {
       info: function() {},
@@ -357,11 +385,11 @@ describe('sendable', () => {
     sinon.stub(metaDb, 'fetch').callsArgWith(1, null, { rows: [ { error: 'notfound' } ] });
     transitions._deleteReadDocs(given, err => {
       assert.equal(err, undefined);
-
+      done();
     });
   });
 
-  it('deleteReadDocs deletes read doc for all admins', () => {
+  it('deleteReadDocs deletes read doc for all admins', done => {
     const given = { id: 'abc' };
     const metaDb = {
       info: function() {},
@@ -396,7 +424,7 @@ describe('sendable', () => {
       assert.equal(insert.callCount, 2);
       assert.equal(insert.args[0][0]._deleted, true);
       assert.equal(insert.args[1][0]._deleted, true);
-
+      done();
     });
   });
 

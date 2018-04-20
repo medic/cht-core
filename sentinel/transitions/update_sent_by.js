@@ -3,14 +3,14 @@ const transitionUtils = require('./utils'),
       NAME = 'update_sent_by';
 
 module.exports = {
-    filter: function(doc) {
+    filter: function(doc, info={}) {
         var self = module.exports;
         return Boolean(
             doc &&
             doc.from &&
             doc.type === 'data_record' &&
             doc.sent_by === undefined &&
-            !self._hasRun(doc)
+            !self._hasRun(info)
         );
     },
     _hasRun: function(doc) {

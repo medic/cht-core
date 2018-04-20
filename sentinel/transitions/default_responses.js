@@ -7,7 +7,7 @@ var _ = require('underscore'),
     NAME = 'default_responses';
 
 module.exports = {
-    filter: function(doc) {
+    filter: function(doc, info={}) {
         var self = module.exports;
         return Boolean(
             doc &&
@@ -15,7 +15,7 @@ module.exports = {
             doc.type === 'data_record' &&
             !doc.kujua_message &&
             self._isReportedAfterStartDate(doc) &&
-            !transitionUtils.hasRun(doc, NAME) &&
+            !transitionUtils.hasRun(info, NAME) &&
             !self._isMessageFromGateway(doc)
         );
     },
