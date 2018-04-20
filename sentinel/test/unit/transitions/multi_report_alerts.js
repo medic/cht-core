@@ -68,9 +68,8 @@ describe('multi report alerts', () => {
   it('filter validation hasRun', () => {
     assert.equal(transition.filter({
       form: 'x',
-      type: 'data_record',
-      transitions : { multi_report_alerts: 'hi' }
-    }), false);
+      type: 'data_record'
+    }, {transitions : { multi_report_alerts: 'hi' }}), false);
   });
 
   const assertConfigIsInvalid = (done, alerts) => {

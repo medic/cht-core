@@ -22,10 +22,10 @@ describe('functional transitions', () => {
     });
     sinon.stub(dbPouch.sentinel, 'get').rejects({status: 404});
     sinon.stub(dbPouch.medic, 'get').rejects({status: 404});
-    var saveDoc = sinon.stub(db.audit, 'saveDoc').resolves({});
+    var saveDoc = sinon.stub(db.audit, 'saveDoc').callsArg(1);
     var infoDoc = sinon.stub(dbPouch.sentinel, 'put').resolves({});
 
-    transitions.loadTransitions(false);
+    transitions.loadTransitions();
     var change1 = {
       id: 'abc',
       seq: '44',
@@ -40,8 +40,8 @@ describe('functional transitions', () => {
       assert.equal(infoDoc.callCount, 1);
       var saved = saveDoc.args[0][0];
       var info = infoDoc.args[0][0];
-      assert.equal(saved.transitions.conditional_alerts.seq, '44');
-      assert.equal(saved.transitions.conditional_alerts.ok, true);
+      assert.equal(info.transitions.conditional_alerts.seq, '44');
+      assert.equal(info.transitions.conditional_alerts.ok, true);
       assert.equal(saved.tasks[0].messages[0].message, 'alert!');
       var change2 = {
         id: 'abc',
@@ -73,7 +73,7 @@ describe('functional transitions', () => {
     var saveDoc = sinon.stub(db.audit, 'saveDoc').callsArg(1);
     var infoDoc = sinon.stub(dbPouch.sentinel, 'put').resolves({});
 
-    transitions.loadTransitions(false);
+    transitions.loadTransitions();
     var change1 = {
       id: 'abc',
       seq: '44',
@@ -86,6 +86,7 @@ describe('functional transitions', () => {
     transitions.applyTransitions(change1, function() {
       // first run fails so no save
       assert.equal(saveDoc.callCount, 0);
+      assert.equal(infoDoc.callCount, 0);
       var change2 = {
         id: 'abc',
         seq: '45',
@@ -99,7 +100,7 @@ describe('functional transitions', () => {
       transitions.applyTransitions(change2, function() {
         assert.equal(saveDoc.callCount, 1);
         assert.equal(infoDoc.callCount, 1);
-        var transitions = saveDoc.args[0][0].transitions;
+        var transitions = infoDoc.args[0][0].transitions;
         assert.equal(transitions.conditional_alerts.seq, '45');
         assert.equal(transitions.conditional_alerts.ok, true);
         done();
@@ -127,7 +128,7 @@ describe('functional transitions', () => {
     var saveDoc = sinon.stub(db.audit, 'saveDoc').callsArg(1);
     var infoDoc = sinon.stub(dbPouch.sentinel, 'put').resolves({});
 
-    transitions.loadTransitions(false);
+    transitions.loadTransitions();
     var change1 = {
       id: 'abc',
       seq: '44',
@@ -143,19 +144,21 @@ describe('functional transitions', () => {
       assert.equal(saveDoc.callCount, 1);
       assert.equal(infoDoc.callCount, 1);
       var doc = saveDoc.args[0][0];
-      var info = saveDoc.args[0][0];
-      assert.equal(info.default_responses.seq, '44');
-      assert.equal(info.default_responses.ok, true);
+      var info = infoDoc.args[0][0];
+      assert.equal(info.transitions.default_responses.seq, '44');
+      assert.equal(info.transitions.default_responses.ok, true);
 
       doc.fields = { last_menstrual_period: 15 };
       var change2 = {
         id: 'abc',
         seq: '45',
-        doc: doc
+        doc: doc,
+        info: info
       };
       transitions.applyTransitions(change2, function() {
         assert.equal(saveDoc.callCount, 2);
-        var info = saveDoc.args[1][0].transitions;
+        assert.equal(infoDoc.callCount, 2);
+        var info = infoDoc.args[1][0].transitions;
         assert.equal(info.conditional_alerts.seq, '45');
         assert.equal(info.conditional_alerts.ok, true);
         assert.equal(info.default_responses.seq, '44');
