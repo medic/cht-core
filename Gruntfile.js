@@ -492,7 +492,7 @@ module.exports = function(grunt) {
         browsers: ['Chrome_Headless']
       },
       admin: {
-        configFile: './admin/tests/karma/karma-unit.conf.js',
+        configFile: './admin/tests/karma-unit.conf.js',
         singleRun: true,
         browsers: ['Chrome_Headless']
       },

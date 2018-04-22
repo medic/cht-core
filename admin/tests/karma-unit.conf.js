@@ -3,7 +3,7 @@ module.exports = function(config) {
   'use strict';
 
   config.set({
-    basePath: '../../',
+    basePath: '../',
     frameworks: ['mocha'],
     reporters: ['spec'],
     autoWatch: true,
@@ -21,6 +21,7 @@ module.exports = function(config) {
       'node_modules/jquery/dist/jquery.js',
       'node_modules/underscore/underscore.js',
 
+      // borrowed from webapp
       '../tests/karma/q.js',
 
       // application code
@@ -30,10 +31,10 @@ module.exports = function(config) {
       'node_modules/chai/chai.js',
       'node_modules/sinon/pkg/sinon.js',
       'node_modules/angular-mocks/angular-mocks.js',
-      'tests/karma/utils.js',
+      'tests/utils.js',
 
       // test files
-      'tests/karma/unit/**/*.js'
+      'tests/unit/**/*.js'
     ]
   });
 
