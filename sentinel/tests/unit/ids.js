@@ -1,7 +1,7 @@
 const sinon = require('sinon').sandbox.create(),
-     assert = require('chai').assert,
+      assert = require('chai').assert,
       jsc = require('jsverify'),
-      ids = require('../../lib/ids.js');
+      ids = require('../../src/lib/ids.js');
 
 const mockDb = (idFilterLogicFn) => {
   return { medic: {

@@ -1,8 +1,8 @@
 const sinon = require('sinon').sandbox.create(),
       assert = require('chai').assert,
-      db = require('../../db-nano'),
-      dbPouch = require('../../db-pouch'),
-      transitions = require('../../transitions/index');
+      db = require('../../src/db-nano'),
+      dbPouch = require('../../src/db-pouch'),
+      transitions = require('../../src/transitions/index');
 
 describe('finalize transition', () => {
   afterEach(() => sinon.restore());

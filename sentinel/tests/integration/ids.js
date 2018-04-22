@@ -1,5 +1,5 @@
 var _ = require('underscore'),
-  ids = require('../../lib/ids'),
+  ids = require('../../src/lib/ids'),
   assert = require('chai').assert;
 
 describe('functional ids', () => {

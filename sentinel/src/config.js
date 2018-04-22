@@ -2,10 +2,19 @@ const _ = require('underscore'),
       follow = require('follow'),
       db = require('./db-nano'),
       logger = require('./lib/logger'),
-      defaults = require('./defaults'),
       translations = {};
 
-let config = require('./defaults');
+const DEFAULT_CONFIG = {
+  schedule_morning_hours: 0,
+  schedule_morning_minutes: 0,
+  schedule_evening_hours: 23,
+  schedule_evening_minutes: 0,
+  synthetic_date: null,
+  transitions: {},
+  loglevel: 'info'
+};
+
+let config = DEFAULT_CONFIG;
 
 const loadTranslations = () => {
   return new Promise(resolve => {
@@ -47,7 +56,7 @@ const initConfig = () => {
         console.error(err);
         return reject(new Error('Error loading configuration'));
       }
-      _.defaults(ddoc.app_settings, defaults);
+      _.defaults(ddoc.app_settings, DEFAULT_CONFIG);
       config = ddoc.app_settings;
       logger.debug(
         'Reminder messages allowed between %s:%s and %s:%s',

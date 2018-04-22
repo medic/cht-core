@@ -1,9 +1,9 @@
-var transitions = require('../../transitions/index'),
+var transitions = require('../../src/transitions/index'),
     sinon = require('sinon').sandbox.create(),
     assert = require('chai').assert,
-    db = require('../../db-nano'),
-    dbPouch = require('../../db-pouch'),
-    config = require('../../config'),
+    db = require('../../src/db-nano'),
+    dbPouch = require('../../src/db-pouch'),
+    config = require('../../src/config'),
     configGet;
 
 describe('functional transitions', () => {

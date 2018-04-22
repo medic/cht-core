@@ -2,11 +2,11 @@ const sinon = require('sinon').sandbox.create(),
       assert = require('chai').assert,
       follow = require('follow'),
       _ = require('underscore'),
-      config = require('../../config'),
-      db = require('../../db-nano'),
-      dbPouch = require('../../db-pouch'),
-      infodoc = require('../../lib/infodoc'),
-      transitions = require('../../transitions');
+      config = require('../../src/config'),
+      db = require('../../src/db-nano'),
+      dbPouch = require('../../src/db-pouch'),
+      infodoc = require('../../src/lib/infodoc'),
+      transitions = require('../../src/transitions');
 
 describe('transitions', () => {
   afterEach(() => {
@@ -330,7 +330,7 @@ describe('transitions', () => {
   };
 
   transitions.availableTransitions().forEach(name => {
-    const transition = require(`../../transitions/${name}`);
+    const transition = require(`../../src/transitions/${name}`);
     Object.keys(requiredFunctions).forEach(key => {
       it(`Checking ${key} signature for ${name} transition`, () => {
         assert(_.isFunction(transition[key]), 'Required function not found');

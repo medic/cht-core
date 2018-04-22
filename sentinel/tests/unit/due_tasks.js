@@ -1,8 +1,8 @@
 const sinon = require('sinon').sandbox.create(),
      assert = require('chai').assert,
       moment = require('moment'),
-      utils = require('../../lib/utils'),
-      schedule = require('../../schedule/due_tasks');
+      utils = require('../../src/lib/utils'),
+      schedule = require('../../src/schedule/due_tasks');
 
 describe('due tasks', () => {
   afterEach(() => sinon.restore());

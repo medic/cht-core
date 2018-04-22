@@ -1,8 +1,8 @@
-var db = require('../../db-nano'),
+var db = require('../../src/db-nano'),
     sinon = require('sinon').sandbox.create(),
     assert = require('chai').assert,
-    utils = require('../../lib/utils'),
-    config = require('../../config');
+    utils = require('../../src/lib/utils'),
+    config = require('../../src/config');
 
 describe('utils', () => {
     afterEach(() => sinon.restore());

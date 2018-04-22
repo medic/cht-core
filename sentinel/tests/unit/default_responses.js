@@ -1,8 +1,8 @@
 var sinon = require('sinon').sandbox.create(),
     assert = require('chai').assert,
-    config = require('../../config'),
-    messages = require('../../lib/messages'),
-    transition = require('../../transitions/default_responses');
+    config = require('../../src/config'),
+    messages = require('../../src/lib/messages'),
+    transition = require('../../src/transitions/default_responses');
 
 describe('conditional alerts', () => {
   afterEach(() => sinon.restore());

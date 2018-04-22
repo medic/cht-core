@@ -1,8 +1,8 @@
-var config = require('../../config'),
+var config = require('../../src/config'),
     sinon = require('sinon').sandbox.create(),
     assert = require('chai').assert,    
-    utils = require('../../lib/utils'),
-    transition = require('../../transitions/accept_patient_reports');
+    utils = require('../../src/lib/utils'),
+    transition = require('../../src/transitions/accept_patient_reports');
 
 describe('functional validations', () => {
   /*

@@ -1,7 +1,7 @@
 const sinon = require('sinon').sandbox.create(),
       assert = require('chai').assert,
-      db = require('../../../db-nano'),
-      transition = require('../../../transitions/update_scheduled_reports');
+      db = require('../../../src/db-nano'),
+      transition = require('../../../src/transitions/update_scheduled_reports');
 
 describe('update_scheduled_reports', () => {
 

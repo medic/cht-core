@@ -1,8 +1,8 @@
 var sinon = require('sinon').sandbox.create(),
     assert = require('chai').assert,
-    transitionUtils = require('../../transitions/utils');
+    transitionUtils = require('../../src/transitions/utils');
 
-var transition = require('../../transitions/generate_patient_id_on_people');
+var transition = require('../../src/transitions/generate_patient_id_on_people');
 
 describe('generate patient id on people', () => {
   afterEach(() => sinon.restore());

@@ -155,7 +155,7 @@ module.exports = function(grunt) {
           'static/js/modules/xpath-element-path.js',
           'tests/karma/q.js',
           '**/node_modules/**',
-          'sentinel/lib/pupil/**',
+          'sentinel/src/lib/pupil/**',
           'ddocs/medic/_attachments/**'
         ]
       },
@@ -533,8 +533,8 @@ module.exports = function(grunt) {
     mochaTest: {
       unit: {
         src: [
-          // 'tests/mocha/unit/**/*.spec.js',
-          // 'api/tests/mocha/**/*.js',
+          'tests/mocha/unit/**/*.spec.js',
+          'api/tests/mocha/**/*.js',
           'sentinel/tests/**/*.js'
         ],
       },

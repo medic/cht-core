@@ -1,8 +1,8 @@
 const sinon = require('sinon').sandbox.create(),
       assert = require('chai').assert,
-      transition = require('../../../transitions/update_notifications'),
-      db = require('../../../db-nano'),
-      utils = require('../../../lib/utils');
+      transition = require('../../../src/transitions/update_notifications'),
+      db = require('../../../src/db-nano'),
+      utils = require('../../../src/lib/utils');
 
 describe('update_notifications', () => {
 

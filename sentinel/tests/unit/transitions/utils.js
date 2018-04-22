@@ -1,8 +1,8 @@
 const sinon = require('sinon').sandbox.create(),
       assert = require('chai').assert,
-      messages = require('../../../lib/messages'),
-      utils = require('../../../lib/utils'),
-      transitionUtils = require('../../../transitions/utils');
+      messages = require('../../../src/lib/messages'),
+      utils = require('../../../src/lib/utils'),
+      transitionUtils = require('../../../src/transitions/utils');
 
 describe('unit transition utils', () => {
   afterEach(() => sinon.restore());

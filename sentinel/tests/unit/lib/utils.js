@@ -1,7 +1,7 @@
 const should = require('chai').should();
 
 describe('utils util', () => {
-  const utils = require('../../../lib/utils');
+  const utils = require('../../../src/lib/utils');
   describe('getClinicPhone', () => {
     it('gets the phone number of the clinic', () => {
       const phone = '123';

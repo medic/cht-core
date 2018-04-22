@@ -1,8 +1,8 @@
 var moment = require('moment'),
     sinon = require('sinon').sandbox.create(),
     assert = require('chai').assert,
-    db = require('../../db-nano'),
-    transition = require('../../transitions/update_sent_forms');
+    db = require('../../src/db-nano'),
+    transition = require('../../src/transitions/update_sent_forms');
 
 describe('update sent by', () => {
   beforeEach(() => { process.env.TEST_ENV = true; });

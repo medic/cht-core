@@ -2,11 +2,11 @@ const _ = require('underscore'),
       moment = require('moment'),
       sinon = require('sinon').sandbox.create(),
       assert = require('chai').assert,
-      transition = require('../../transitions/registration'),
-      db = require('../../db-nano'),
-      utils = require('../../lib/utils'),
-      transitionUtils = require('../../transitions/utils'),
-      date = require('../../date');
+      transition = require('../../src/transitions/registration'),
+      db = require('../../src/db-nano'),
+      utils = require('../../src/lib/utils'),
+      transitionUtils = require('../../src/transitions/utils'),
+      date = require('../../src/date');
 
 const getMessage = (doc, idx) => {
   if (!doc || !doc.tasks) {

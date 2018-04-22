@@ -1,6 +1,6 @@
-var messages = require('../../lib/messages'),
-    utils = require('../../lib/utils'),
-    config = require('../../config'),
+var messages = require('../../src/lib/messages'),
+    utils = require('../../src/lib/utils'),
+    config = require('../../src/config'),
     sinon = require('sinon').sandbox.create(),
     assert = require('chai').assert;
 

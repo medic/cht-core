@@ -1,9 +1,9 @@
 require('chai').should();
 const sinon = require('sinon').sandbox.create(),
-      db = require('../../../db-nano'),
-      transition = require('../../../transitions/death_reporting'),
-      utils = require('../../../lib/utils'),
-      config = require('../../../config');
+      db = require('../../../src/db-nano'),
+      transition = require('../../../src/transitions/death_reporting'),
+      utils = require('../../../src/lib/utils'),
+      config = require('../../../src/config');
 
 describe('death_reporting', () => {
 

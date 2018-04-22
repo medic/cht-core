@@ -1,6 +1,6 @@
 var moment = require('moment'),
   assert = require('chai').assert,
-  unit = require('../../schedule/index'),
+  unit = require('../../src/schedule/index'),
   settings;
 
 var config = {

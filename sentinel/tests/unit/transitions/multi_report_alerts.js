@@ -1,10 +1,10 @@
 const _ = require('underscore'),
-      config = require('../../../config'),
-      messages = require('../../../lib/messages'),
+      config = require('../../../src/config'),
+      messages = require('../../../src/lib/messages'),
       sinon = require('sinon').sandbox.create(),
       assert = require('chai').assert,
-      transition = require('../../../transitions/multi_report_alerts'),
-      utils = require('../../../lib/utils');
+      transition = require('../../../src/transitions/multi_report_alerts'),
+      utils = require('../../../src/lib/utils');
 
 let alertConfig;
 

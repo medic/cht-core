@@ -1,9 +1,9 @@
-const transition = require('../../transitions/registration'),
-      schedules = require('../../lib/schedules'),
+const transition = require('../../src/transitions/registration'),
+      schedules = require('../../src/lib/schedules'),
       sinon = require('sinon').sandbox.create(),
       assert = require('chai').assert,
       moment = require('moment'),
-      utils = require('../../lib/utils'),
+      utils = require('../../src/lib/utils'),
       contact = {
         phone: '+1234',
         name: 'Julie',

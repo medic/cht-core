@@ -1,6 +1,6 @@
 var moment = require('moment'),
     assert = require('chai').assert,
-    schedules = require('../../lib/schedules');
+    schedules = require('../../src/lib/schedules');
 
 describe('schedules', () => {
 

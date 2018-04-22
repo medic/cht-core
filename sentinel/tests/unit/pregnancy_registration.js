@@ -1,10 +1,10 @@
 var _ = require('underscore'),
-    transition = require('../../transitions/registration'),
+    transition = require('../../src/transitions/registration'),
     sinon = require('sinon').sandbox.create(),
     assert = require('chai').assert,
     moment = require('moment'),
-    transitionUtils = require('../../transitions/utils'),
-    utils = require('../../lib/utils');
+    transitionUtils = require('../../src/transitions/utils'),
+    utils = require('../../src/lib/utils');
 
 const getMessage = doc => {
     if (!doc || !doc.tasks) {

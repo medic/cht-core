@@ -1,11 +1,11 @@
 require('chai').should();
 const sinon = require('sinon').sandbox.create(),
       moment = require('moment'),
-      db = require('../../../db-nano'),
-      utils = require('../../../lib/utils'),
-      config = require('../../../config'),
-      transition = require('../../../transitions/accept_patient_reports'),
-      messages = require('../../../lib/messages');
+      db = require('../../../src/db-nano'),
+      utils = require('../../../src/lib/utils'),
+      config = require('../../../src/config'),
+      transition = require('../../../src/transitions/accept_patient_reports'),
+      messages = require('../../../src/lib/messages');
 
 describe('accept_patient_reports', () => {
 

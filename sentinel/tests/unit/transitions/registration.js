@@ -1,12 +1,12 @@
 const should = require('chai').should(),
       sinon = require('sinon').sandbox.create(),
-      db = require('../../../db-nano'),
-      transition = require('../../../transitions/registration'),
-      schedules = require('../../../lib/schedules'),
-      messages = require('../../../lib/messages'),
-      utils = require('../../../lib/utils'),
-      config = require('../../../config'),
-      transitionUtils = require('../../../transitions/utils');
+      db = require('../../../src/db-nano'),
+      transition = require('../../../src/transitions/registration'),
+      schedules = require('../../../src/lib/schedules'),
+      messages = require('../../../src/lib/messages'),
+      utils = require('../../../src/lib/utils'),
+      config = require('../../../src/config'),
+      transitionUtils = require('../../../src/transitions/utils');
 
 describe('registration', () => {
 

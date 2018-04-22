@@ -1,5 +1,5 @@
 var assert = require('chai').assert;
-var transition = require('../../transitions/resolve_pending');
+var transition = require('../../src/transitions/resolve_pending');
 
 describe('reminders', () => {
   it('filter fails on undefined tasks or scheduled_tasks', () => {

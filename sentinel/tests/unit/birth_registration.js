@@ -1,9 +1,9 @@
-var transition = require('../../transitions/registration'),
+var transition = require('../../src/transitions/registration'),
     sinon = require('sinon').sandbox.create(),
     assert = require('chai').assert,
     moment = require('moment'),
-    transitionUtils = require('../../transitions/utils'),
-    utils = require('../../lib/utils');
+    transitionUtils = require('../../src/transitions/utils'),
+    utils = require('../../src/lib/utils');
 
 describe('birth registration', () => {
   afterEach(() => sinon.restore());

@@ -2,8 +2,8 @@ var _ = require('underscore'),
     moment = require('moment'),
     sinon = require('sinon').sandbox.create(),
     assert = require('chai').assert,
-    config = require('../../config'),
-    reminders = require('../../schedule/reminders');
+    config = require('../../src/config'),
+    reminders = require('../../src/schedule/reminders');
 
 describe('reminders', () => {
   afterEach(() => sinon.restore());
