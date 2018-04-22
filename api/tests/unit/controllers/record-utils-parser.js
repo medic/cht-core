@@ -1,7 +1,7 @@
 const sinon = require('sinon').sandbox.create(),
       definitions = require('../../form-definitions'),
-      config = require('../../../config'),
-      recordUtils = require('../../../controllers/record-utils');
+      config = require('../../../src/config'),
+      recordUtils = require('../../../src/controllers/record-utils');
 
 exports.tearDown = callback => {
   sinon.restore();

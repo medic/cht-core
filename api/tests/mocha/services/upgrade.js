@@ -2,8 +2,8 @@ require('chai').should();
 
 const sinon = require('sinon').sandbox.create();
 
-const DB = require('../../../db-pouch').medic;
-const service = require('../../../services/upgrade');
+const DB = require('../../../src/db-pouch').medic;
+const service = require('../../../src/services/upgrade');
 
 describe('Upgrade service', () => {
   const buildInfo = {

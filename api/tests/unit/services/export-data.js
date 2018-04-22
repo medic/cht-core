@@ -1,6 +1,6 @@
-const service = require('../../../services/export-data'),
+const service = require('../../../src/services/export-data'),
       lineage = service._lineage,
-      config = require('../../../config'),
+      config = require('../../../src/config'),
       childProcess = require('child_process'),
       JSZip = require('jszip'),
       sinon = require('sinon').sandbox.create(),

@@ -1,6 +1,6 @@
-var ddocExtraction = require('../../ddoc-extraction'),
+var ddocExtraction = require('../../src/ddoc-extraction'),
     sinon = require('sinon').sandbox.create(),
-    db = require('../../db-nano');
+    db = require('../../src/db-nano');
 
 exports.tearDown = function (callback) {
   sinon.restore();

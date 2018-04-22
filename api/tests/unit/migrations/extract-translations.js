@@ -1,7 +1,7 @@
 var sinon = require('sinon').sandbox.create(),
-    db = require('../../../db-nano'),
-    settingsService = require('../../../services/settings'),
-    migration = require('../../../migrations/extract-translations'),
+    db = require('../../../src/db-nano'),
+    settingsService = require('../../../src/services/settings'),
+    migration = require('../../../src/migrations/extract-translations'),
     originalDbSettings;
 
 exports.setUp = function(callback) {

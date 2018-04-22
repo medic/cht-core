@@ -1,7 +1,7 @@
 var sinon = require('sinon').sandbox.create(),
     properties = require('properties'),
-    db = require('../../db-nano'),
-    translations = require('../../translations');
+    db = require('../../src/db-nano'),
+    translations = require('../../src/translations');
 
 exports.tearDown = function (callback) {
   sinon.restore();

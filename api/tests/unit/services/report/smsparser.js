@@ -1,7 +1,7 @@
 const sinon = require('sinon').sandbox.create(),
       definitions = require('../../../form-definitions'),
-      config = require('../../../../config'),
-      smsparser = require('../../../../services/report/smsparser');
+      config = require('../../../../src/config'),
+      smsparser = require('../../../../src/services/report/smsparser');
 
 exports.tearDown = callback => {
   sinon.restore();

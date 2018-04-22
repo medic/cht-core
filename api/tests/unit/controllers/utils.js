@@ -1,4 +1,4 @@
-var utils = require('../../../controllers/utils'),
+var utils = require('../../../src/controllers/utils'),
     sinon = require('sinon').sandbox.create();
 
 var clock;

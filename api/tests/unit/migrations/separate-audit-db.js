@@ -1,6 +1,6 @@
 var sinon = require('sinon').sandbox.create(),
-    db = require('../../../db-nano'),
-    migration = require('../../../migrations/separate-audit-db.js'),
+    db = require('../../../src/db-nano'),
+    migration = require('../../../src/migrations/separate-audit-db.js'),
     originalDbSettings;
 
 var ERR_404 = {statusCode: 404};

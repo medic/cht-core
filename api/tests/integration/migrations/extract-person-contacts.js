@@ -5,7 +5,7 @@
   'controllers/people.js',
   'controllers/places.js'
 ].forEach(k => {
-  delete require.cache[require.resolve('../../../' + k)];
+  delete require.cache[require.resolve('../../../src/' + k)];
 });
 
 var utils = require('./utils');

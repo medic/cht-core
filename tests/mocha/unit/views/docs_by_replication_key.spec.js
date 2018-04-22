@@ -1,7 +1,7 @@
 const fs = require('fs'),
       path = require('path'),
       assert = require('chai').assert,
-      handler = require('../../../../api/handlers/changes');
+      handler = require('../../../../api/src/controllers/changes');
 
 var normaliseFunction = function(fn) {
   var COMMENT_REGEX = /\/\/.*/g;

@@ -1,7 +1,7 @@
 const db = require('../db-nano'),
       async = require('async'),
       userDb = require('../services/user-db'),
-      batch = require('../lib/db-batch');
+      batch = require('../db-batch');
 
 const createReadStatusDoc = record => {
   const type = record.form ? 'report' : 'message';

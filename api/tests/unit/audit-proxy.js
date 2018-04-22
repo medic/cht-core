@@ -1,4 +1,4 @@
-var AuditProxy = require('../../audit-proxy');
+var AuditProxy = require('../../src/audit-proxy');
 
 exports['audit audits the request'] = function(test) {
   test.expect(7);

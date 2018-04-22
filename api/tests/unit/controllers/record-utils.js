@@ -1,6 +1,6 @@
-const controller = require('../../../controllers/record-utils'),
+const controller = require('../../../src/controllers/record-utils'),
       definitions = require('../../form-definitions'),
-      config = require('../../../config'),
+      config = require('../../../src/config'),
       sinon = require('sinon').sandbox.create();
 
 exports.tearDown = callback => {

@@ -1,4 +1,4 @@
-const validate = require('../../../services/report/validate');
+const validate = require('../../../src/services/report/validate');
 
 /*
  * check that missing fields are logged as errors.

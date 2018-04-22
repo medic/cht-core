@@ -1,6 +1,6 @@
-const controller = require('../../../controllers/records'),
-      db = require('../../../db-pouch'),
-      recordUtils = require('../../../controllers/record-utils'),
+const controller = require('../../../src/controllers/records'),
+      db = require('../../../src/db-pouch'),
+      recordUtils = require('../../../src/controllers/record-utils'),
       sinon = require('sinon').sandbox.create();
 
 exports.tearDown = callback => {

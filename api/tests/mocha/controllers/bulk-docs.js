@@ -1,7 +1,7 @@
 const sinon = require('sinon').sandbox.create();
-const auth = require('../../../auth');
+const auth = require('../../../src/auth');
 require('chai').should();
-const controller = require('../../../controllers/bulk-docs');
+const controller = require('../../../src/controllers/bulk-docs');
 
 const testReq = {
   body: {

@@ -1,5 +1,5 @@
-var service = require('../../../services/user-db'),
-    db = require('../../../db-nano'),
+var service = require('../../../src/services/user-db'),
+    db = require('../../../src/db-nano'),
     sinon = require('sinon').sandbox.create();
 
 exports.tearDown = callback => {

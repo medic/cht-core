@@ -1,6 +1,6 @@
 require('chai').should();
 
-const service = require('../../../../services/export/report-mapper');
+const service = require('../../../../src/services/export/report-mapper');
 
 describe('Report mapper', () => {
 

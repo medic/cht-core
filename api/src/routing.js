@@ -462,7 +462,7 @@ app.putJson(`${appPrefix}update_settings/${db.settings.ddoc}`, settings.put); //
 app.putJson('/api/v1/settings', settings.put);
 
 // DB replication endpoint
-const changesHandler = _.partial(require('./handlers/changes').request, proxy);
+const changesHandler = _.partial(require('./controllers/changes').request, proxy);
 app.get(pathPrefix + '_changes', changesHandler);
 app.postJson(pathPrefix + '_changes', changesHandler);
 

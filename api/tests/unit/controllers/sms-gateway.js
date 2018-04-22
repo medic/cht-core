@@ -1,7 +1,7 @@
-const controller = require('../../../controllers/sms-gateway'),
-      messageUtils = require('../../../message-utils'),
-      recordUtils = require('../../../controllers/record-utils'),
-      db = require('../../../db-pouch'),
+const controller = require('../../../src/controllers/sms-gateway'),
+      messageUtils = require('../../../src/message-utils'),
+      recordUtils = require('../../../src/controllers/record-utils'),
+      db = require('../../../src/db-pouch'),
       sinon = require('sinon').sandbox.create();
 
 exports.tearDown = callback => {

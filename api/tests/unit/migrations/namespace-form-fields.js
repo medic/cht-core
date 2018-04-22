@@ -1,7 +1,7 @@
 var sinon = require('sinon').sandbox.create(),
-    db = require('../../../db-nano'),
-    config = require('../../../config'),
-    migration = require('../../../migrations/namespace-form-fields');
+    db = require('../../../src/db-nano'),
+    config = require('../../../src/config'),
+    migration = require('../../../src/migrations/namespace-form-fields');
 
 var makeStubs = (...viewBatches) => {
   var getView = sinon.stub(db.medic, 'view');

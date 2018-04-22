@@ -1,9 +1,9 @@
 const request = require('request'),
       url = require('url'),
       sinon = require('sinon').sandbox.create(),
-      auth = require('../../auth'),
-      config = require('../../config'),
-      db = require('../../db-nano');
+      auth = require('../../src/auth'),
+      config = require('../../src/config'),
+      db = require('../../src/db-nano');
 
 let originalDbSettings;
 

@@ -1,4 +1,4 @@
-const textformsParser = require('../../../../services/report/textforms-parser');
+const textformsParser = require('../../../../src/services/report/textforms-parser');
 
 const def = {
   meta: {

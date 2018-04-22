@@ -1,7 +1,7 @@
 var _ = require('underscore'),
     async = require('async'),
-    db = require('../../../db-nano'),
-    dbPouch = require('../../../db-pouch'),
+    db = require('../../../src/db-nano'),
+    dbPouch = require('../../../src/db-pouch'),
     DB_PREFIX = 'medic_api_integration_tests__';
 
 const PouchDB = require('pouchdb-core');
@@ -230,7 +230,7 @@ function initDb(content) {
     })
     .then(function() {
       return new Promise(function(resolve, reject) {
-        require('../../../ddoc-extraction').run(function(err) {
+        require('../../../src/ddoc-extraction').run(function(err) {
           if(err) { return reject(new Error('Error running ddoc-extraction: ' + err.message)); }
           resolve();
         });
@@ -306,7 +306,7 @@ function tearDown() {
 
 function runMigration(migration) {
   try {
-    var migrationPath = '../../../migrations/' + migration;
+    var migrationPath = '../../../src/migrations/' + migration;
     migration = require(migrationPath);
     return new Promise(function(resolve, reject) {
       try {

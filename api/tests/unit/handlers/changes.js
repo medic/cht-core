@@ -1,8 +1,8 @@
 var sinon = require('sinon').sandbox.create(),
-    auth = require('../../../auth'),
-    config = require('../../../config'),
-    handler = require('../../../handlers/changes'),
-    db = require('../../../db-nano'),
+    auth = require('../../../src/auth'),
+    config = require('../../../src/config'),
+    handler = require('../../../src/controllers/changes'),
+    db = require('../../../src/db-nano'),
     DDOC_ID = '_design/medic-client',
     changes;
 

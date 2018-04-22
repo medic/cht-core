@@ -1,13 +1,13 @@
 const async = require('async'),
-      db = require('./db-nano'),
-      config = require('./config'),
-      migrations = require('./migrations'),
-      ddocExtraction = require('./ddoc-extraction'),
-      translations = require('./translations'),
-      serverUtils = require('./server-utils'),
+      db = require('./src/db-nano'),
+      config = require('./src/config'),
+      migrations = require('./src/migrations'),
+      ddocExtraction = require('./src/ddoc-extraction'),
+      translations = require('./src/translations'),
+      serverUtils = require('./src/server-utils'),
       apiPort = process.env.API_PORT || 5988;
 
-const app = require('./routing');
+const app = require('./src/routing');
 
 const MIN_MAJOR = 8;
 const nodeVersionCheck = (cb) => {

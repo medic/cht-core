@@ -1,5 +1,5 @@
-const service = require('../../../services/bulk-docs');
-const db = require('../../../db-pouch');
+const service = require('../../../src/services/bulk-docs');
+const db = require('../../../src/db-pouch');
 const sinon = require('sinon').sandbox.create();
 require('chai').should();
 

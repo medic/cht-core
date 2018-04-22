@@ -1,6 +1,6 @@
 var sinon = require('sinon').sandbox.create(),
-    db = require('../../../db-nano'),
-    migration = require('../../../migrations/extract-user-settings');
+    db = require('../../../src/db-nano'),
+    migration = require('../../../src/migrations/extract-user-settings');
 
 var ddoc = { id: '_design/_auth', key: '_design/_auth' };
 var userA = {
