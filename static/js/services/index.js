@@ -13,7 +13,6 @@
   require('./changes');
   require('./check-date');
   require('./child-facility');
-  require('./clean-etag');
   require('./contact-change-filter');
   require('./contact-form');
   require('./contact-save');
@@ -41,7 +40,6 @@
   require('./get-data-records');
   require('./get-subject-summaries');
   require('./hydrate-contact-names');
-  require('./import-contacts');
   require('./json-forms');
   require('./json-parse');
   require('./language');
@@ -58,7 +56,6 @@
   require('./modal');
   require('./moment-locale-data');
   require('./place-hierarchy');
-  require('./properties');
   require('./recurring-process-manager');
   require('./relative-date');
   require('./report-view-model-generator');
@@ -86,7 +83,6 @@
   require('./update-user');
   require('./user');
   require('./user-contact');
-  require('./version');
   require('./xml-form');
   require('./xml-forms');
   require('./xml-forms-context-utils');

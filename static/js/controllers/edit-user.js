@@ -1,7 +1,6 @@
 var passwordTester = require('simple-password-tester'),
     PASSWORD_MINIMUM_LENGTH = 8,
-    PASSWORD_MINIMUM_SCORE = 50,
-    USERNAME_WHITELIST = /^[a-z0-9_-]+$/;
+    PASSWORD_MINIMUM_SCORE = 50;
 
 (function () {
 
@@ -12,16 +11,11 @@ var passwordTester = require('simple-password-tester'),
   angular.module('inboxControllers').controller('EditUserCtrl',
     function (
       $log,
-      $rootScope,
       $scope,
       $uibModalInstance,
       $q,
       $window,
-      ContactSchema,
-      CreateUser,
       Languages,
-      Select2Search,
-      Session,
       SetLanguage,
       Translate,
       UpdateUser,
@@ -37,52 +31,22 @@ var passwordTester = require('simple-password-tester'),
         $scope.enabledLocales = languages;
       });
 
-      var getType = function(roles) {
-        if (roles && roles.length) {
-          return roles[0];
-        }
-      };
-
       var determineEditUserModel = function() {
-        if ($scope.model) {
-          // Edit a user that's not the current user.
-          // $scope.model is the user object passed in by controller creating the Modal.
-          // If $scope.model === {}, we're creating a new user.
-          return $q.resolve({
-            id: $scope.model._id,
-            username: $scope.model.name,
-            fullname: $scope.model.fullname,
-            email: $scope.model.email,
-            phone: $scope.model.phone,
-            // FacilitySelect is what binds to the select, place is there to
-            // compare to later to see if it's changed once we've run computeFields();
-            facilitySelect: $scope.model.facility_id,
-            place: $scope.model.facility_id,
-            type: getType($scope.model.roles),
-            language: { code: $scope.model.language },
-            // ^ Same with contactSelect vs. contact
-            contactSelect: $scope.model.contact_id,
-            contact: $scope.model.contact_id
+        return UserSettings()
+          .then(function(user) {
+            if (user) {
+              return {
+                id: user._id,
+                username: user.name,
+                fullname: user.fullname,
+                email: user.email,
+                phone: user.phone,
+                language: { code: user.language }
+              };
+            } else {
+              return {};
+            }
           });
-        } else {
-          // Edit the current user.
-          // Could be full edit, or editPassword only.
-          return UserSettings()
-            .then(function(user) {
-              if (user) {
-                return {
-                  id: user._id,
-                  username: user.name,
-                  fullname: user.fullname,
-                  email: user.email,
-                  phone: user.phone,
-                  language: { code: user.language }
-                };
-              } else {
-                return {};
-              }
-            });
-        }
       };
 
       determineEditUserModel()
@@ -92,12 +56,6 @@ var passwordTester = require('simple-password-tester'),
         .catch(function(err) {
           $log.error('Error determining user model', err);
         });
-
-      $uibModalInstance.rendered.then(function() {
-        // only the #edit-user-profile modal has these fields
-        Select2Search($('#edit-user-profile [name=contactSelect]'), 'person');
-        Select2Search($('#edit-user-profile [name=facilitySelect]'), ContactSchema.getPlaceTypes());
-      });
 
       var validateRequired = function(fieldName, fieldDisplayName) {
         if (!$scope.editUserModel[fieldName]) {
@@ -109,19 +67,6 @@ var passwordTester = require('simple-password-tester'),
               $scope.errors[fieldName] = value;
             });
           return false;
-        }
-        return true;
-      };
-
-      var validatePasswordForEditUser = function() {
-        var newUser = !$scope.editUserModel.id;
-        if (newUser) {
-          return validatePasswordFields();
-        }
-
-        // if existing user : needs both fields, or none
-        if ($scope.editUserModel.password || $scope.editUserModel.passwordConfirm) {
-          return validatePasswordFields();
         }
         return true;
       };
@@ -158,36 +103,6 @@ var passwordTester = require('simple-password-tester'),
           (!$scope.editUserModel.currentPassword || validateRequired('currentPassword', 'Current Password')) &&
           validatePasswordStrength() &&
           validateConfirmPasswordMatches();
-      };
-
-      var validateName = function() {
-        if ($scope.editUserModel.id) {
-          // username is readonly when editing so ignore it
-          return true;
-        }
-        if (!validateRequired('username', 'User Name')) {
-          return false;
-        }
-        if (!USERNAME_WHITELIST.test($scope.editUserModel.username)) {
-          Translate('username.invalid').then(function(value) {
-            $scope.errors.username = value;
-          });
-          return false;
-        }
-        return true;
-      };
-
-      var validateContactAndFacility = function() {
-        if ($scope.editUserModel.type !== 'district-manager') {
-          return true;
-        }
-        var hasPlace = validateRequired('place', 'Facility');
-        var hasContact = validateRequired('contact', 'associated.contact');
-        return hasPlace && hasContact;
-      };
-
-      var validateRole = function() {
-        return validateRequired('type', 'User Type');
       };
 
       var changedUpdates = function(model) {
@@ -271,64 +186,26 @@ var passwordTester = require('simple-password-tester'),
         $scope.errors = {};
         computeFields();
 
-        if (validateName()) {
-          changedUpdates($scope.editUserModel).then(function(updates) {
-            $q.resolve().then(function() {
-              if (haveUpdates(updates)) {
-                return UpdateUser($scope.editUserModel.username, updates);
+        changedUpdates($scope.editUserModel).then(function(updates) {
+          $q.resolve().then(function() {
+            if (haveUpdates(updates)) {
+              return UpdateUser($scope.editUserModel.username, updates);
+            }
+          })
+            .then(function() {
+              if (updates.language) {
+                // editing current user, so update language
+                SetLanguage(updates.language);
               }
+              $scope.setFinished();
+              $uibModalInstance.close();
             })
-              .then(function() {
-                if (updates.language) {
-                  // editing current user, so update language
-                  SetLanguage(updates.language);
-                }
-                $scope.setFinished();
-                $uibModalInstance.close();
-              })
-              .catch(function(err) {
-                $scope.setError(err, 'Error updating user');
-              });
-          });
-        } else {
-          $scope.setError();
-        }
+            .catch(function(err) {
+              $scope.setError(err, 'Error updating user');
+            });
+        });
       };
 
-      // #edit-user-profile is the admin view, which has additional fields.
-      $scope.editUser = function() {
-        $scope.setProcessing();
-        $scope.errors = {};
-        computeFields();
-        if (validateName() &&
-            validateRole() &&
-            validateContactAndFacility() &&
-            validatePasswordForEditUser()) {
-          changedUpdates($scope.editUserModel).then(function(updates) {
-            $q.resolve().then(function() {
-              if (!haveUpdates(updates)) {
-                return;
-              } else if ($scope.editUserModel.id) {
-                return UpdateUser($scope.editUserModel.username, updates);
-              } else {
-                return CreateUser(updates);
-              }
-            })
-              .then(function() {
-                $scope.setFinished();
-                // TODO: change this from a broadcast to a changes watcher
-                //       https://github.com/medic/medic-webapp/issues/4094
-                $rootScope.$broadcast('UsersUpdated', $scope.editUserModel.id);
-                $uibModalInstance.close();
-              })
-              .catch(function(err) {
-                $scope.setError(err, 'Error updating user');
-              });
-          });
-        } else {
-          $scope.setError();
-        }
-      };
     }
   );
 

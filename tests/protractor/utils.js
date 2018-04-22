@@ -397,6 +397,9 @@ module.exports = {
   getBaseUrl: () =>
     `http://${constants.API_HOST}:${constants.API_PORT}/${constants.DB_NAME}/_design/medic/_rewrite/#/`,
 
+  getAdminBaseUrl: () =>
+    `http://${constants.API_HOST}:${constants.API_PORT}/${constants.DB_NAME}/_design/medic-admin/_rewrite/#/`,
+
   getLoginUrl: () =>
     `http://${constants.API_HOST}:${constants.API_PORT}/${constants.DB_NAME}/login`
 };

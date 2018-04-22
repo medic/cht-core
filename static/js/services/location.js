@@ -4,22 +4,11 @@ angular.module('inboxServices').factory('Location',
     'use strict';
     'ngInject';
 
-    var getDbName = function(path) {
-      var parts = path && path.split('/');
-      if (parts.length > 1) {
-        return parts[1];
-      }
-    };
-
-    var getUrl = function(dbName) {
-      var loc = $window.location;
-      var port = loc.port ? ':' + loc.port : '';
-      return loc.protocol + '//' + loc.hostname + port + '/' + dbName;
-    };
-
-    var path = $('html').data('base-url');
-    var dbName = getDbName(path);
-    var url = getUrl(dbName);
+    var location = $window.location;
+    var dbName = location.pathname.split('/')[1];
+    var path = '/' + dbName + '/_design/medic/_rewrite';
+    var port = location.port ? ':' + location.port : '';
+    var url = location.protocol + '//' + location.hostname + port + '/' + dbName;
 
     return {
       path: path,

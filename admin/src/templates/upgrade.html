@@ -1,0 +1,80 @@
+<div class="col-sm-12" ng-show="loading || upgrading">
+  <div class="loader"></div>
+</div>
+
+<div class="upgrade-config col-sm-12" ng-hide="deployInfo || loading">
+  <legend translate>instance.upgrade.no_horti</legend>
+  <p translate>instance.upgrade.no_horti.detail</p>
+</div>
+
+<div class="upgrade-config col-sm-12" ng-show="deployInfo">
+  <div ng-show="upgrading">
+    <p class="status"
+      translate="instance.upgrade.upgrading"
+      translate-values="{ before: deployInfo.version, after: upgrading }"></p>
+  </div>
+
+  <div ng-show="error">
+    <p class="alert alert-danger error">{{error}}</p>
+  </div>
+
+  <div ng-hide="upgrading">
+
+    <div class="upgrade-section">
+      <legend translate>instance.upgrade.current_version</legend>
+      <p ng-hide="deployInfo" translate>instance.upgrade.no_details</p>
+      <dl ng-show="deployInfo" class="horizontal">
+        <dt translate>instance.upgrade.version</dt>
+        <dd>{{deployInfo.version}}</dd>
+        <dt translate>instance.upgrade.deployed_by</dt>
+        <dd>{{deployInfo.user}}</dd>
+        <dt translate>instance.upgrade.at</dt>
+        <dd ng-bind-html="deployInfo.timestamp | date"></dd>
+      </dl>
+    </div>
+
+    <div class="upgrade-section">
+      <legend translate>instance.upgrade.releases</legend>
+      <p ng-hide="versions.releases.length" translate>instance.upgrade.no_new_releases</p>
+      <ul ng-show="versions.releases.length" class="table table-striped">
+        <li ng-repeat="release in versions.releases" class="row">
+          <div class="col-xs-5"><span class="label label-info">{{release.id}}</span></div>
+          <div class="col-xs-4" ng-bind-html="release.value.time | date"></div>
+          <div class="col-xs-3"><button ng-click="upgrade(release.id)" class="btn btn-primary" translate>instance.upgrade.install</button></div>
+        </li>
+      </ul>
+    </div>
+    <hr>
+
+    <div ng-show="allowPrereleaseBuilds" class="upgrade-section">
+      <legend translate>instance.upgrade.betas</legend>
+      <div>
+        <p ng-hide="versions.betas.length" translate>instance.upgrade.no_betas</p>
+        <ul ng-show="versions.betas.length" class="table table-striped">
+          <li ng-repeat="release in versions.betas" class="row">
+            <div class="col-xs-5"><span class="label label-info">{{release.id}}</span></div>
+            <div class="col-xs-4" ng-bind-html="release.value.time | date"></div>
+            <div class="col-xs-3"><button ng-click="upgrade(release.id)" class="btn btn-primary" translate>instance.upgrade.install</button></div>
+          </li>
+        </ul>
+      </div>
+    </div>
+
+    <div ng-show="allowPrereleaseBuilds" class="upgrade-section">
+      <legend translate>instance.upgrade.branches</legend>
+      <div>
+        <p ng-hide="versions.branches.length" translate>instance.upgrade.no_branches</p>
+        <ul ng-show="versions.branches.length" class="table table-striped">
+          <li ng-repeat="release in versions.branches" class="row">
+            <div class="col-xs-5"><span class="label label-info">{{release.id}}</span></div>
+            <div class="col-xs-4">{{release.value.time | date:'medium'}}</div>
+            <div class="col-xs-3">
+              <button class="btn btn-primary" ng-click="upgrade(release.id)" translate>instance.upgrade.install</button>
+            </div>
+          </li>
+        </ul>
+      </div>
+    </div>
+
+  </div>
+</div>

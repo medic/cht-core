@@ -1,0 +1,33 @@
+{
+  "name": "medic-admin",
+  "private": true,
+  "version": "0.1.0",
+  "engines": {
+    "node": ">=8.11.0",
+    "yarn": "1.6.0"
+  },
+  "dependencies": {
+    "angular": "^1.6.9",
+    "angular-cookie": "^4.1.0",
+    "angular-pouchdb": "^5.0.1",
+    "angular-route": "^1.6.9",
+    "angular-sanitize": "^1.6.9",
+    "angular-translate": "^2.17.0",
+    "angular-ui-bootstrap": "^2.5.6",
+    "angular-ui-router": "^0.4.3",
+    "bootstrap": "^3.3.7",
+    "font-awesome": "^4.7.0",
+    "jquery": "3.2.x",
+    "moment": "^2.22.0",
+    "properties": "^1.2.1",
+    "phone-number": "file:../shared-libs/phone-number",
+    "pouchdb-browser": "^6.4.3",
+    "select2": "^4.0.3",
+    "underscore": "^1.8.3"
+  },
+  "devDependencies": {
+    "angular-mocks": "^1.6.9",
+    "chai": "^4.1.2",
+    "sinon": "^4.5.0"
+  }
+}

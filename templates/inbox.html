@@ -1,11 +1,12 @@
 <!DOCTYPE html>
 
-<html data-base-url="<%= baseURL %>" manifest="static/dist/manifest.appcache">
+<html manifest="static/dist/manifest.appcache">
   <head>
+    <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <link rel="stylesheet" type="text/css" href="<%= baseURL %>/static/dist/inbox.css" />
-    <link rel="shortcut icon" href="<%= baseURL %>/static/img/ico/icon_32.ico">
-    <link rel="manifest" href="<%= baseURL %>/static/manifest.json">
+    <link rel="stylesheet" type="text/css" href="static/dist/inbox.css" />
+    <link rel="shortcut icon" href="static/img/ico/icon_32.ico">
+    <link rel="manifest" href="static/manifest.json">
     <title>Medic Mobile</title>
   </head>
   <body class="inbox {{currentTab}}" ng-controller="InboxCtrl" ng-class="{'show-content': showContent, 'bootstrapped': version && dbWarmedUp, 'select-mode': selectMode}">
@@ -28,8 +29,8 @@
       <span class="snackbar-content"></span>
     </div>
 
-    <script src="<%= baseURL %>/static/dist/inbox.js" type="text/javascript"></script>
-    <script src="<%= baseURL %>/static/dist/templates.js" type="text/javascript"></script>
+    <script src="static/dist/inbox.js" type="text/javascript"></script>
+    <script src="static/dist/templates.js" type="text/javascript"></script>
 
   </body>
 </html>

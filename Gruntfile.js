@@ -41,14 +41,18 @@ module.exports = function(grunt) {
     'couch-compile': {
       client: {
         files: {
-          'ddocs/medic/_attachments/ddocs/compiled.json': 'ddocs/medic-*/'
+          'ddocs/medic/_attachments/ddocs/compiled.json': [
+            'ddocs/medic-*/',
+            '!ddocs/medic-admin/',
+            'dist/ddocs/medic-admin/',
+          ]
         }
       },
       app: {
         files: {
           'ddocs/medic.json': 'ddocs/medic/'
         }
-      }
+      },
     },
     'couch-push': {
       localhost: {
@@ -104,7 +108,17 @@ module.exports = function(grunt) {
             'angular-translate-handler-log':  './node_modules/angular-translate/dist/angular-translate-handler-log/angular-translate-handler-log',
           },
         },
-      }
+      },
+      admin: {
+        src: ['admin/src/js/main.js'],
+        dest: 'dist/ddocs/medic-admin/_attachments/main.js',
+        options: {
+          transform: ['browserify-ngannotate'],
+          alias: {
+            'angular-translate-interpolation-messageformat': './admin/node_modules/angular-translate/dist/angular-translate-interpolation-messageformat/angular-translate-interpolation-messageformat',
+          },
+        },
+      },
     },
     uglify: {
       options: {
@@ -154,14 +168,20 @@ module.exports = function(grunt) {
         'api/**/*.js',
         'sentinel/**/*.js',
         'shared-libs/**/*.js',
+        'admin/**/*.js',
       ]
     },
     less: {
-      all: {
+      webapp: {
         files: {
           'static/dist/inbox.css': 'static/css/inbox.less'
         }
-      }
+      },
+      admin: {
+        files: {
+          'dist/ddocs/medic-admin/_attachments/main.css': 'admin/src/css/main.less'
+        }
+      },
     },
     cssmin: {
       all: {
@@ -212,9 +232,31 @@ module.exports = function(grunt) {
             ],
             dest: 'ddocs/medic/_attachments/'
           },
+        ]
+      },
+      'admin-resources': {
+        files: [
           {
-            src: 'templates/inbox.html',
-            dest: 'ddocs/medic/inbox_template'
+            src: 'ddocs/medic-admin/**/*',
+            dest: 'dist/'
+          },
+          {
+            expand: true,
+            flatten: true,
+            src: 'admin/src/css/main.css',
+            dest: 'dist/ddocs/medic-admin/_attachments/'
+          },
+          {
+            expand: true,
+            flatten: true,
+            src: 'admin/src/templates/**/*',
+            dest: 'dist/ddocs/medic-admin/_attachments/templates/'
+          },
+          {
+            expand: true,
+            flatten: true,
+            src: [ 'node_modules/font-awesome/fonts/*' ],
+            dest: 'dist/ddocs/medic-admin/_attachments/fonts/'
           }
         ]
       },
@@ -245,6 +287,9 @@ module.exports = function(grunt) {
       }
     },
     exec: {
+      'clean-dist': {
+        cmd: 'rm -rf dist'
+      },
       cleanDdocBuildDirectory: {
         cmd: 'rm -rf ddocs/medic/_attachments && mkdir ddocs/medic/_attachments'
       },
@@ -329,7 +374,8 @@ module.exports = function(grunt) {
       yarn_install: {
         cmd: '    echo "[webapp]"   && yarn install --ignore-engines' +
              ' && echo "[api]"      && cd api && yarn install && cd ..' +
-             ' && echo "[sentinel]" && cd sentinel && yarn install && cd ..'
+             ' && echo "[sentinel]" && cd sentinel && yarn install && cd ..' +
+             ' && echo "[admin]"    && cd admin && yarn install --ignore-engines && cd ..'
       },
       start_webdriver: {
         cmd: 'yarn webdriver-manager update && ' +
@@ -440,16 +486,16 @@ module.exports = function(grunt) {
         singleRun: true,
         browsers: ['Chrome_Headless']
       },
-      unit_ci: {
-        configFile: './tests/karma/karma-unit.conf.js',
-        singleRun: true,
-        browsers: ['Chrome_Headless']
-      },
       unit_continuous: {
         configFile: './tests/karma/karma-unit.conf.js',
         singleRun: false,
         browsers: ['Chrome_Headless']
-      }
+      },
+      admin: {
+        configFile: './admin/tests/karma/karma-unit.conf.js',
+        singleRun: true,
+        browsers: ['Chrome_Headless']
+      },
     },
     protractor: {
       e2e_tests_and_services: {
@@ -607,7 +653,7 @@ module.exports = function(grunt) {
 
   grunt.registerTask('mmcss', 'Build the CSS resources', [
     'sass',
-    'less',
+    'less:webapp',
     'postcss'
   ]);
 
@@ -646,6 +692,13 @@ module.exports = function(grunt) {
     'couch-compile:app',
   ]);
 
+  grunt.registerTask('build-admin', 'Build the admin app', [
+    'exec:clean-dist',
+    'copy:admin-resources',
+    'browserify:admin',
+    'less:admin',
+  ]);
+
   grunt.registerTask('deploy', 'Deploy the webapp', [
     'exec:ddocAppSettings',
     'couch-push:localhost',
@@ -661,6 +714,7 @@ module.exports = function(grunt) {
   // Test tasks
   grunt.registerTask('e2e', 'Deploy app for testing and run e2e tests', [
     'exec:resetTestDatabases',
+    'build-admin',
     'build-node-modules',
     'build-ddoc',
     'couch-push:test',
@@ -689,6 +743,7 @@ module.exports = function(grunt) {
   grunt.registerTask('unit', 'Lint and unit tests', [
     'jshint',
     'karma:unit',
+    'karma:admin',
     'exec:sharedLibUnit',
     'env:unitTest',
     'nodeunit',
@@ -713,12 +768,14 @@ module.exports = function(grunt) {
   grunt.registerTask('ci-build', 'build and minify for CI', [
     'install_dependencies',
     'build',
+    'build-admin'
   ]);
 
   grunt.registerTask('ci-unit', 'Lint, deploy and test for CI', [
     'precommit',
     'install_dependencies',
-    'karma:unit_ci',
+    'karma:unit',
+    'karma:admin',
     'exec:sharedLibUnit',
     'env:unitTest',
     'nodeunit',
