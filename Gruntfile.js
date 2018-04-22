@@ -533,9 +533,9 @@ module.exports = function(grunt) {
     mochaTest: {
       unit: {
         src: [
-          'tests/mocha/unit/**/*.spec.js',
-          'api/tests/mocha/**/*.js',
-          'sentinel/test/**/*.js'
+          // 'tests/mocha/unit/**/*.spec.js',
+          // 'api/tests/mocha/**/*.js',
+          'sentinel/tests/**/*.js'
         ],
       },
       api_integration: {
@@ -599,7 +599,7 @@ module.exports = function(grunt) {
       only_in_tests: {
         files: [ { src: [
           'tests/**/*.js',
-          'sentinel/test/mocha/**/*.js'
+          'sentinel/tests/**/*.js'
         ] } ],
         options: {
           // in Mocha, .only() is used
