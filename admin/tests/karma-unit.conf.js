@@ -22,10 +22,10 @@ module.exports = function(config) {
       'node_modules/underscore/underscore.js',
 
       // borrowed from webapp
-      'webapp/tests/karma/q.js',
+      '../webapp/tests/karma/q.js',
 
       // application code
-      'webapp/dist/ddocs/medic-admin/_attachments/main.js',
+      '../webapp/dist/ddocs/medic-admin/_attachments/main.js',
 
       // test-specific code
       'node_modules/chai/chai.js',
