@@ -178,10 +178,10 @@ All text labels in the app are localized. See the [translation documentation](ht
 Check out the [Gruntfile](Gruntfile.js) for all the tests you can run.
 
 ### Unit tests
-They live in [/tests/karma](tests/karma). Run them with grunt : `grunt unit_continuous`
+They live in the `tests` directories of each app. Run them with grunt: `grunt unit_continuous`.
 
 ### End to End tests
-They live in [tests/protractor](tests/protractor). To run them:
+They live in [tests](tests). To run them:
 
 1. Update and start Webdriver: `yarn run webdriver`
 2. Run tests: `grunt e2e`
