@@ -1,10 +1,10 @@
 require('chai').should();
 
 const sinon = require('sinon').sandbox.create(),
-      auth = require('../../../auth'),
-      serverUtils = require('../../../server-utils');
+      auth = require('../../../src/auth'),
+      serverUtils = require('../../../src/server-utils');
 
-const controller = require('../../../controllers/export-data');
+const controller = require('../../../src/controllers/export-data');
 
 describe('Export Data controller', () => {
   beforeEach(() => {

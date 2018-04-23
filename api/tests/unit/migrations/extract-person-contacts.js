@@ -1,8 +1,8 @@
 var sinon = require('sinon').sandbox.create(),
-    db = require('../../../db-nano'),
-    people = require('../../../controllers/people'),
-    places = require('../../../controllers/places'),
-    migration = require('../../../migrations/extract-person-contacts');
+    db = require('../../../src/db-nano'),
+    people = require('../../../src/controllers/people'),
+    places = require('../../../src/controllers/places'),
+    migration = require('../../../src/migrations/extract-person-contacts');
 
 var createPerson, getDoc, getView, insertDoc, updatePlace;
 

@@ -1,11 +1,11 @@
 require('chai').should();
 
 const sinon = require('sinon').sandbox.create();
-const auth = require('../../../auth'),
-      serverUtils = require('../../../server-utils');
+const auth = require('../../../src/auth'),
+      serverUtils = require('../../../src/server-utils');
 
-const controller = require('../../../controllers/upgrade'),
-      service = require('../../../services/upgrade');
+const controller = require('../../../src/controllers/upgrade'),
+      service = require('../../../src/services/upgrade');
 
 describe('Upgrade controller', () => {
   const req = {

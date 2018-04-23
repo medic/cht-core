@@ -1,5 +1,5 @@
-const lib = require('../../../lib/db-batch'),
-      db = require('../../../db-nano'),
+const lib = require('../../../src/db-batch'),
+      db = require('../../../src/db-nano'),
       sinon = require('sinon').sandbox.create(),
       ddocName = 'myddoc',
       viewName = 'myview',

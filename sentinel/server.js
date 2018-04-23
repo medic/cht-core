@@ -1,5 +1,5 @@
-const config = require('./config'),
-      logger = require('./lib/logger'),
+const config = require('./src/config'),
+      logger = require('./src/lib/logger'),
       loglevel = process.argv[2];
 
 if (loglevel === 'debug') {
@@ -37,7 +37,7 @@ config.init()
       logger.transports.Console.level = config.get('loglevel');
       logger.debug('loglevel is %s.', logger.transports.Console.level);
     }
-    require('./schedule').checkSchedule();
+    require('./src/schedule').checkSchedule();
     logger.info('startup complete.');
   })
   .catch(err => {

@@ -1,5 +1,5 @@
-var controller = require('../../message-utils'),
-    db = require('../../db-pouch'),
+var controller = require('../../src/message-utils'),
+    db = require('../../src/db-pouch'),
     sinon = require('sinon').sandbox.create(),
     taskUtils = require('task-utils');
 

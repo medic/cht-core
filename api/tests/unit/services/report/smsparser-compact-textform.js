@@ -1,4 +1,4 @@
-const smsparser = require('../../../../services/report/smsparser');
+const smsparser = require('../../../../src/services/report/smsparser');
 const def = {
   meta: {
     code: 'ANCR'

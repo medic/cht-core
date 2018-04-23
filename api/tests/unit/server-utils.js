@@ -1,6 +1,6 @@
-const db = require('../../db-nano'),
+const db = require('../../src/db-nano'),
       sinon = require('sinon').sandbox.create(),
-      serverUtils = require('../../server-utils'),
+      serverUtils = require('../../src/server-utils'),
       req = {
         url: '',
         get: function() {}

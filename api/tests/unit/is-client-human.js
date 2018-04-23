@@ -1,4 +1,4 @@
-const isClientHuman = require('../../is-client-human');
+const isClientHuman = require('../../src/is-client-human');
 
 exports.setUp = (callback) => callback();
 exports.tearDown = (callback) => callback();

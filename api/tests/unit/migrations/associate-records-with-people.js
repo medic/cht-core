@@ -1,6 +1,6 @@
 var sinon = require('sinon').sandbox.create(),
-    db = require('../../../db-nano'),
-    migration = require('../../../migrations/associate-records-with-people');
+    db = require('../../../src/db-nano'),
+    migration = require('../../../src/migrations/associate-records-with-people');
 
 exports.tearDown = function (callback) {
   sinon.restore();

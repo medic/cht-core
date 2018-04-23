@@ -91,7 +91,7 @@ describe('migrations integration test framework', function() {
     .then(function() {
 
       // when
-      return utils.runMigration('../tests/integration/res/migrations/reverse-names');
+      return utils.runMigration('../../tests/integration/res/migrations/reverse-names');
 
     })
     .then(function() {

@@ -19,7 +19,7 @@ module.exports = function(grunt) {
   grunt.initConfig({
     replace: {
       hardcodeappsettings: {
-        src: [ 'static/dist/inbox.js' ],
+        src: [ 'webapp/dist/ddocs/medic/_attachments/js/inbox.js' ],
         overwrite: true,
         replacements: [{
           from: /@@APP_CONFIG.version/g,
@@ -30,7 +30,7 @@ module.exports = function(grunt) {
         }]
       },
       'change-ddoc-id-for-publish': {
-        src: [ 'ddocs/medic.json' ],
+        src: [ 'webapp/dist/ddocs/medic.json' ],
         overwrite: true,
         replacements: [{
           from: '"_id": "_design/medic"',
@@ -41,16 +41,12 @@ module.exports = function(grunt) {
     'couch-compile': {
       client: {
         files: {
-          'ddocs/medic/_attachments/ddocs/compiled.json': [
-            'ddocs/medic-*/',
-            '!ddocs/medic-admin/',
-            'dist/ddocs/medic-admin/',
-          ]
+          'webapp/dist/ddocs/medic/_attachments/ddocs/compiled.json': 'webapp/dist/ddocs/medic-*/'
         }
       },
       app: {
         files: {
-          'ddocs/medic.json': 'ddocs/medic/'
+          'webapp/dist/ddocs/medic.json': 'webapp/dist/ddocs/medic/'
         }
       },
     },
@@ -61,7 +57,7 @@ module.exports = function(grunt) {
           pass: 'pass'
         },
         files: {
-          'http://localhost:5984/medic': 'ddocs/medic.json'
+          'http://localhost:5984/medic': 'webapp/dist/ddocs/medic.json'
         }
       },
       test: {
@@ -70,13 +66,13 @@ module.exports = function(grunt) {
           pass: 'pass'
         },
         files: {
-          'http://localhost:5984/medic-test': 'ddocs/medic.json'
+          'http://localhost:5984/medic-test': 'webapp/dist/ddocs/medic.json'
         }
       },
       staging: {
         files: [
           {
-            src: 'ddocs/medic.json',
+            src: 'webapp/dist/ddocs/medic.json',
             dest: process.env.UPLOAD_URL + '/_couch/builds'
           },
         ],
@@ -89,29 +85,29 @@ module.exports = function(grunt) {
         }
       },
       dist: {
-        src: ['static/js/app.js'],
-        dest: 'static/dist/inbox.js',
+        src: 'webapp/src/js/app.js',
+        dest: 'webapp/dist/ddocs/medic/_attachments/js/inbox.js',
         browserifyOptions: {
           detectGlobals: false
         },
         options: {
           transform: ['browserify-ngannotate'],
           alias: {
-            'enketo-config': './static/js/enketo/config.json',
-            'widgets': './static/js/enketo/widgets',
-            './xpath-evaluator-binding':'./static/js/enketo/OpenrosaXpathEvaluatorBinding',
-            'extended-xpath': './node_modules/openrosa-xpath-evaluator/src/extended-xpath',
-            'openrosa-xpath-extensions': './node_modules/openrosa-xpath-evaluator/src/openrosa-xpath-extensions',
-            'translator': './static/js/enketo/translator', // translator for enketo's internal i18n
-            '../../js/dropdown.jquery': 'bootstrap/js/dropdown', // enketo currently duplicates bootstrap's dropdown code.  working to resolve this upstream https://github.com/enketo/enketo-core/issues/454
-            'angular-translate-interpolation-messageformat': './node_modules/angular-translate/dist/angular-translate-interpolation-messageformat/angular-translate-interpolation-messageformat',
-            'angular-translate-handler-log':  './node_modules/angular-translate/dist/angular-translate-handler-log/angular-translate-handler-log',
+            'enketo-config': './webapp/src/js/enketo/config.json',
+            'widgets': './webapp/src/js/enketo/widgets',
+            './xpath-evaluator-binding':'./webapp/src/js/enketo/OpenrosaXpathEvaluatorBinding',
+            'extended-xpath': './webapp/node_modules/openrosa-xpath-evaluator/src/extended-xpath',
+            'openrosa-xpath-extensions': './webapp/node_modules/openrosa-xpath-evaluator/src/openrosa-xpath-extensions',
+            'translator': './webapp/src/js/enketo/translator', // translator for enketo's internal i18n
+            '../../js/dropdown.jquery': './webapp/node_modules/bootstrap/js/dropdown', // enketo currently duplicates bootstrap's dropdown code.  working to resolve this upstream https://github.com/enketo/enketo-core/issues/454
+            'angular-translate-interpolation-messageformat': './webapp/node_modules/angular-translate/dist/angular-translate-interpolation-messageformat/angular-translate-interpolation-messageformat',
+            'angular-translate-handler-log':  './webapp/node_modules/angular-translate/dist/angular-translate-handler-log/angular-translate-handler-log',
           },
-        },
+        }
       },
       admin: {
-        src: ['admin/src/js/main.js'],
-        dest: 'dist/ddocs/medic-admin/_attachments/main.js',
+        src: 'admin/src/js/main.js',
+        dest: 'webapp/dist/ddocs/medic-admin/_attachments/main.js',
         options: {
           transform: ['browserify-ngannotate'],
           alias: {
@@ -126,8 +122,8 @@ module.exports = function(grunt) {
       },
       build: {
         files: {
-          'static/dist/templates.js': ['static/dist/templates.js'],
-          'static/dist/inbox.js': ['static/dist/inbox.js'],
+          'webapp/dist/ddocs/medic/_attachments/js/templates.js': 'webapp/dist/ddocs/medic/_attachments/js/templates.js',
+          'webapp/dist/ddocs/medic/_attachments/js/inbox.js': 'webapp/dist/ddocs/medic/_attachments/js/inbox.js',
         }
       }
     },
@@ -152,19 +148,18 @@ module.exports = function(grunt) {
         jshintrc: true,
         reporter: require('jshint-stylish'),
         ignores: [
-          'static/js/modules/xpath-element-path.js',
-          'tests/karma/q.js',
+          'webapp/src/js/modules/xpath-element-path.js',
+          'webapp/tests/karma/q.js',
           '**/node_modules/**',
-          'sentinel/lib/pupil/**',
-          'ddocs/medic/_attachments/**'
+          'sentinel/src/lib/pupil/**',
+          'webapp/dist/**'
         ]
       },
       all: [
         'Gruntfile.js',
-        'static/js/**/*.js',
+        'webapp/src/**/*.js',
+        'webapp/tests/**/*.js',
         'tests/**/*.js',
-        'ddocs/**/*.js',
-        'lib/**/*.js',
         'api/**/*.js',
         'sentinel/**/*.js',
         'shared-libs/**/*.js',
@@ -174,12 +169,12 @@ module.exports = function(grunt) {
     less: {
       webapp: {
         files: {
-          'static/dist/inbox.css': 'static/css/inbox.less'
+          'webapp/dist/ddocs/medic/_attachments/css/inbox.css': 'webapp/src/css/inbox.less'
         }
       },
       admin: {
         files: {
-          'dist/ddocs/medic-admin/_attachments/main.css': 'admin/src/css/main.less'
+          'webapp/dist/ddocs/medic-admin/_attachments/main.css': 'admin/src/css/main.less'
         }
       },
     },
@@ -189,7 +184,7 @@ module.exports = function(grunt) {
           keepSpecialComments: 0
         },
         files: {
-          'static/dist/inbox.css': 'static/dist/inbox.css'
+          'webapp/dist/ddocs/medic/_attachments/css/inbox.css': 'webapp/dist/ddocs/medic/_attachments/css/inbox.css'
         }
       }
     },
@@ -203,60 +198,64 @@ module.exports = function(grunt) {
         ]
       },
       dist: {
-        src: 'static/dist/*.css'
+        src: 'webapp/dist/ddocs/medic/_attachments/css/*.css'
       }
     },
     copy: {
+      ddocs: {
+        files: [
+          {
+            expand: true,
+            cwd: 'webapp/src/ddocs/',
+            src: '**/*',
+            dest: 'webapp/dist/ddocs/'
+          },
+        ]
+      },
       inbox: {
         files: [
           {
             expand: true,
             flatten: true,
-            src: [ 'node_modules/font-awesome/fonts/*' ],
-            dest: 'static/fonts'
+            src: 'webapp/node_modules/font-awesome/fonts/*',
+            dest: 'webapp/dist/ddocs/medic/_attachments/fonts/'
           }
         ]
       },
       ddocAttachments: {
         files: [
           {
+            expand: true,
+            cwd: 'webapp/src/',
             src: [
-              'ddocs/compiled.json',
-              'static/audio/*',
-              'static/dist/**/*',
-              'static/fonts/*',
-              'static/img/**/*',
-              'static/manifest.json',
-              'templates/inbox.html',
-              'translations/*',
+              'audio/**/*',
+              'fonts/**/*',
+              'img/**/*',
+              'templates/inbox.html'
             ],
-            dest: 'ddocs/medic/_attachments/'
-          },
+            dest: 'webapp/dist/ddocs/medic/_attachments/'
+          }
         ]
       },
       'admin-resources': {
         files: [
           {
-            src: 'ddocs/medic-admin/**/*',
-            dest: 'dist/'
-          },
-          {
             expand: true,
             flatten: true,
             src: 'admin/src/css/main.css',
-            dest: 'dist/ddocs/medic-admin/_attachments/'
+            dest: 'webapp/dist/ddocs/medic-admin/_attachments/'
           },
           {
             expand: true,
             flatten: true,
             src: 'admin/src/templates/**/*',
-            dest: 'dist/ddocs/medic-admin/_attachments/templates/'
+            dest: 'webapp/dist/ddocs/medic-admin/_attachments/templates/'
           },
           {
             expand: true,
             flatten: true,
-            src: [ 'node_modules/font-awesome/fonts/*' ],
-            dest: 'dist/ddocs/medic-admin/_attachments/fonts/'
+            src: 'node_modules/font-awesome/fonts/*',
+            dest: 'webapp/dist/ddocs/medic-admin/_attachments/fonts/'
           }
         ]
       },
@@ -264,14 +263,14 @@ module.exports = function(grunt) {
         files: [
           {
             expand: true,
-            cwd: 'node_modules',
+            cwd: 'webapp/node_modules',
             src: [
               'bootstrap-daterangepicker/**',
               'font-awesome/**',
               'moment/**',
               'pouchdb-browser/**',
             ],
-            dest: 'node_modules_backup'
+            dest: 'webapp/node_modules_backup'
           }
         ]
       },
@@ -280,25 +279,22 @@ module.exports = function(grunt) {
           {
             expand: true,
             flatten: true,
-            src: [ 'node_modules/medic-enketo-xslt/xsl/*.xsl' ],
-            dest: 'static/dist/xslt/'
+            src: 'webapp/node_modules/medic-enketo-xslt/xsl/*.xsl',
+            dest: 'webapp/dist/ddocs/medic/_attachments/xslt/'
           }
         ]
       }
     },
     exec: {
       'clean-dist': {
-        cmd: 'rm -rf dist'
-      },
-      cleanDdocBuildDirectory: {
-        cmd: 'rm -rf ddocs/medic/_attachments && mkdir ddocs/medic/_attachments'
+        cmd: 'rm -rf webapp/dist && mkdir webapp/dist'
       },
       packNodeModules: {
         cmd: ['api', 'sentinel'].map(module => [
               `cd ${module}`,
               `yarn install --production`,
               `yarn pack`,
-              `mv medic-*.tgz ../ddocs/medic/_attachments/`,
+              `mv medic-*.tgz ../webapp/dist/ddocs/medic/_attachments/`,
               `cd ..`,
             ].join(' && ')).join(' && ')
       },
@@ -315,7 +311,7 @@ module.exports = function(grunt) {
         }
       },
       ddocAppSettings: {
-        cmd: 'node ./scripts/merge-app-settings $COUCH_URL/_design/medic ddocs/medic.json'
+        cmd: 'node ./scripts/merge-app-settings $COUCH_URL/_design/medic webapp/dist/ddocs/medic.json'
       },
       setDdocVersion: {
         cmd: () => {
@@ -328,13 +324,13 @@ module.exports = function(grunt) {
               version += `-alpha.${process.env.TRAVIS_BUILD_NUMBER}`;
             }
           }
-          return `echo "${version}" > ddocs/medic/version`;
+          return `echo "${version}" > webapp/dist/ddocs/medic/version`;
         }
       },
       setHorticulturalistMetadata: {
         cmd: () => `
-          mkdir -p ddocs/medic/build_info;
-          cd ddocs/medic/build_info;
+          mkdir -p webapp/dist/ddocs/medic/build_info;
+          cd webapp/dist/ddocs/medic/build_info;
           echo "${releaseName}" > version;
           echo "${new Date().toISOString()}" > time;
           echo "grunt on \`whoami\`" > author;`
@@ -347,7 +343,7 @@ module.exports = function(grunt) {
       },
       blankLinkCheck: {
         cmd: `echo "Checking for dangerous _blank links..." &&
-               ! (git grep -E  'target\\\\?="_blank"' -- templates/ translations/ static/ |
+               ! (git grep -E  'target\\\\?="_blank"' -- webapp/src |
                       grep -Ev 'target\\\\?="_blank" rel\\\\?="noopener noreferrer"' |
                       grep -Ev '^\s*//' &&
                   echo 'ERROR: Links found with target="_blank" but no rel="noopener noreferrer" set.  Please add required rel attribute.')`,
@@ -372,14 +368,13 @@ module.exports = function(grunt) {
         cmd: 'cd api && yarn install',
       },
       yarn_install: {
-        cmd: '    echo "[webapp]"   && yarn install --ignore-engines' +
-             ' && echo "[api]"      && cd api && yarn install && cd ..' +
-             ' && echo "[sentinel]" && cd sentinel && yarn install && cd ..' +
-             ' && echo "[admin]"    && cd admin && yarn install --ignore-engines && cd ..'
+        cmd: ['webapp', 'api', 'sentinel', 'admin']
+              .map(dir => `echo "[${dir}]" && cd ${dir} && yarn install --ignore-engines && cd ..`)
+              .join(' && ')
       },
       start_webdriver: {
         cmd: 'yarn webdriver-manager update && ' +
-             'yarn webdriver-manager start > logs/webdriver.log & ' +
+             'yarn webdriver-manager start > tests/logs/webdriver.log & ' +
              'until nc -z localhost 4444; do sleep 1; done'
       },
       check_env_vars:
@@ -395,8 +390,8 @@ module.exports = function(grunt) {
             'pouchdb-browser',
           ];
           return modulesToPatch.map(function(module) {
-            var backupPath = 'node_modules_backup/' + module;
-            var modulePath = 'node_modules/' + module;
+            var backupPath = 'webapp/node_modules_backup/' + module;
+            var modulePath = 'webapp/node_modules/' + module;
             return '[ -d ' + backupPath + ' ]' +
                    ' && rm -rf ' + modulePath +
                    ' && mv ' + backupPath + ' ' + modulePath +
@@ -411,9 +406,9 @@ module.exports = function(grunt) {
           return fs.readdirSync('shared-libs')
               .filter(f => fs.lstatSync(`shared-libs/${f}`).isDirectory())
               .map(lib =>
-                  `(cd shared-libs/${lib} &&
-                      [[ "$(jq .scripts.test)" = "null" ]] ||
-                        (yarn install && yarn test))`)
+                  `echo Testing shared library: ${lib} &&
+                  (cd shared-libs/${lib} &&
+                  [ "$(jq .scripts.test)" = "null" ] || (yarn install && yarn test))`)
               .join(' && ');
         },
       },
@@ -427,19 +422,19 @@ module.exports = function(grunt) {
           var patches = [
             // patch the daterangepicker for responsiveness
             // https://github.com/dangrossman/bootstrap-daterangepicker/pull/437
-            'patch node_modules/bootstrap-daterangepicker/daterangepicker.js < patches/bootstrap-daterangepicker.patch',
+            'patch webapp/node_modules/bootstrap-daterangepicker/daterangepicker.js < patches/bootstrap-daterangepicker.patch',
 
             // patch font-awesome to remove version attributes so appcache works
             // https://github.com/FortAwesome/Font-Awesome/issues/3286
-            'patch node_modules/font-awesome/less/path.less < patches/font-awesome-remove-version-attribute.patch',
+            'patch webapp/node_modules/font-awesome/less/path.less < patches/font-awesome-remove-version-attribute.patch',
 
             // patch moment.js to use western arabic (european) numerals in Hindi
-            'patch node_modules/moment/locale/hi.js < patches/moment-hindi-use-euro-numerals.patch',
+            'patch webapp/node_modules/moment/locale/hi.js < patches/moment-hindi-use-euro-numerals.patch',
 
             // patch pouch to:
             // * ignore doc_ids when generating replication id (https://github.com/medic/medic-webapp/issues/2404)
             // * improve safari checks (https://github.com/medic/medic-webapp/issues/2797)
-            'patch node_modules/pouchdb-browser/lib/index.js < patches/pouchdb-browser.patch',
+            'patch webapp/node_modules/pouchdb-browser/lib/index.js < patches/pouchdb-browser.patch',
           ];
           return patches.join(' && ');
         }
@@ -450,25 +445,21 @@ module.exports = function(grunt) {
         interval: 1000
       },
       configFiles: {
-        files: [ 'Gruntfile.js', 'package.json' ],
+        files: ['Gruntfile.js', 'package.json'],
         options: {
           reload: true,
         }
       },
       css: {
-        files: ['static/css/**/*'],
-        tasks: ['mmcss', 'appcache', 'build-ddoc', 'deploy']
+        files: ['webapp/src/css/**/*'],
+        tasks: ['mmcss', 'build-common', 'deploy']
       },
       js: {
-        files: ['templates/**/*', 'static/js/**/*', 'shared-libs/**'],
-        tasks: ['mmjs', 'appcache', 'build-ddoc', 'deploy']
-      },
-      other: {
-        files: ['lib/**/*', 'translations/*'],
-        tasks: ['appcache', 'build-ddoc', 'deploy']
+        files: ['webapp/src/**/*', 'webapp/src/js/**/*', 'shared-libs/**'],
+        tasks: ['mmjs', 'build-common', 'deploy']
       },
       compiledddocs: {
-        files: ['ddocs/**/*', '!ddocs/medic/_attachments/**/*'],
+        files: ['webapp/src/ddocs/**/*'],
         tasks: ['build-ddoc', 'deploy']
       }
     },
@@ -482,17 +473,17 @@ module.exports = function(grunt) {
     },
     karma: {
       unit: {
-        configFile: './tests/karma/karma-unit.conf.js',
+        configFile: './webapp/tests/karma/karma-unit.conf.js',
         singleRun: true,
         browsers: ['Chrome_Headless']
       },
       unit_continuous: {
-        configFile: './tests/karma/karma-unit.conf.js',
+        configFile: './webapp/tests/karma/karma-unit.conf.js',
         singleRun: false,
         browsers: ['Chrome_Headless']
       },
       admin: {
-        configFile: './admin/tests/karma/karma-unit.conf.js',
+        configFile: './admin/tests/karma-unit.conf.js',
         singleRun: true,
         browsers: ['Chrome_Headless']
       },
@@ -500,29 +491,29 @@ module.exports = function(grunt) {
     protractor: {
       e2e_tests_and_services: {
         options: {
-          configFile: 'tests/protractor/e2e.tests-and-services.conf.js',
+          configFile: 'tests/e2e.tests-and-services.conf.js',
         }
       },
       e2e_tests_only: {
         options: {
-          configFile: 'tests/protractor/e2e.tests-only.conf.js',
+          configFile: 'tests/e2e.tests-only.conf.js',
         }
       },
       performance_tests_and_services: {
         options: {
-          configFile: 'tests/protractor/performance.tests-and-services.conf.js',
+          configFile: 'tests/performance.tests-and-services.conf.js',
         }
       },
       performance_tests_only: {
         options: {
-          configFile: 'tests/protractor/performance.tests-only.conf.js',
+          configFile: 'tests/performance.tests-only.conf.js',
         }
       },
     },
     nodeunit: {
       webapp: [
-        'tests/nodeunit/unit/**/*.js',
-        '!tests/nodeunit/unit/*/utils.js',
+        'webapp/tests/nodeunit/unit/**/*.js',
+        '!webapp/tests/nodeunit/unit/*/utils.js',
       ],
       api: [
         'api/tests/unit/**/*.js',
@@ -533,13 +524,13 @@ module.exports = function(grunt) {
     mochaTest: {
       unit: {
         src: [
-          'tests/mocha/unit/**/*.spec.js',
+          'webapp/tests/mocha/unit/**/*.spec.js',
           'api/tests/mocha/**/*.js',
-          'sentinel/test/**/*.js'
+          'sentinel/tests/**/*.js'
         ],
       },
       api_integration: {
-        src: [ 'api/tests/integration/**/*.js' ],
+        src: 'api/tests/integration/**/*.js',
         options: {
           timeout: 10000
         }
@@ -547,12 +538,13 @@ module.exports = function(grunt) {
     },
     ngtemplates: {
       inboxApp: {
+        cwd: 'webapp/src',
         src: [
           'templates/modals/**/*.html',
           'templates/partials/**/*.html',
           'templates/directives/**/*.html'
         ],
-        dest: 'static/dist/templates.js',
+        dest: 'webapp/dist/ddocs/medic/_attachments/js/templates.js',
         options: {
           htmlmin: {
             collapseBooleanAttributes: true,
@@ -568,29 +560,32 @@ module.exports = function(grunt) {
       }
     },
     appcache: {
+      options: {
+        basePath: 'webapp/dist/ddocs/medic/_attachments',
+      },
       inbox: {
-        dest: 'static/dist/manifest.appcache',
-        baseUrl: '../../',
+        dest: 'webapp/dist/ddocs/medic/_attachments/manifest.appcache',
         network: '*',
         cache: {
           patterns: [
-            'static/manifest.json',
-            'static/audio/**/*',
-            'static/dist/**/*',
-            'static/fonts/**/*',
-            'static/img/**/*',
+            'webapp/dist/ddocs/medic/_attachments/manifest.json',
+            'webapp/dist/ddocs/medic/_attachments/audio/**/*',
+            'webapp/dist/ddocs/medic/_attachments/dist/**/*',
+            'webapp/dist/ddocs/medic/_attachments/fonts/**/*',
+            'webapp/dist/ddocs/medic/_attachments/img/**/*',
+            'webapp/dist/ddocs/medic/_attachments/xslt/**/*',
           ]
         }
       }
     },
     sass: {
       compile: {
-        cwd: 'static/css',
-        dest: 'build',
+        cwd: 'webapp/src/css/',
+        src: 'enketo/enketo.scss',
+        dest: 'webapp/dist',
+        ext: '.less',
         expand: true,
         outputStyle: 'expanded',
-        src: 'enketo/enketo.scss',
-        ext: '.less',
         flatten: true,
         extDot: 'last'
       },
@@ -598,8 +593,9 @@ module.exports = function(grunt) {
     'regex-check': {
       only_in_tests: {
         files: [ { src: [
-          'tests/**/*.js',
-          'sentinel/test/mocha/**/*.js'
+          'api/tests/**/*.js',
+          'webapp/tests/**/*.js',
+          'sentinel/tests/**/*.js'
         ] } ],
         options: {
           // in Mocha, .only() is used
@@ -609,14 +605,14 @@ module.exports = function(grunt) {
       },
       console_in_angular: {
         files: [ { src: [
-          'static/js/**/*.js',
+          'webapp/src/js/**/*.js',
 
            // ignored because they don't have access to angular
-          '!static/js/app.js',
-          '!static/js/bootstrapper.js',
+          '!webapp/src/js/app.js',
+          '!webapp/src/js/bootstrapper.js',
 
           // ignored because its job is to log to console
-          '!static/js/modules/feedback.js'
+          '!webapp/src/js/modules/feedback.js'
         ] } ],
         options: {
           pattern: /console\./g
@@ -626,14 +622,14 @@ module.exports = function(grunt) {
     xmlmin: {
       enketoxslt: {
         files: {
-          'static/dist/xslt/openrosa2html5form.xsl': 'static/dist/xslt/openrosa2html5form.xsl',
-          'static/dist/xslt/openrosa2xmlmodel.xsl': 'static/dist/xslt/openrosa2xmlmodel.xsl'
+          'webapp/dist/ddocs/medic/_attachments/xslt/openrosa2html5form.xsl': 'webapp/dist/ddocs/medic/_attachments/xslt/openrosa2html5form.xsl',
+          'webapp/dist/ddocs/medic/_attachments/xslt/openrosa2xmlmodel.xsl': 'webapp/dist/ddocs/medic/_attachments/xslt/openrosa2xmlmodel.xsl'
         }
       }
     },
     'optimize-js': {
-      'static/dist/inbox.js': 'static/dist/inbox.js',
-      'static/dist/templates.js': 'static/dist/templates.js',
+      'webapp/dist/ddocs/medic/_attachments/js/inbox.js': 'webapp/dist/ddocs/medic/_attachments/js/inbox.js',
+      'webapp/dist/ddocs/medic/_attachments/js/templates.js': 'webapp/dist/ddocs/medic/_attachments/js/templates.js',
     },
   });
 
@@ -663,6 +659,8 @@ module.exports = function(grunt) {
   ]);
 
   grunt.registerTask('build', 'Build the static resources', [
+    'exec:clean-dist',
+    'copy:ddocs',
     'build-node-modules',
     'mmcss',
     'mmjs',
@@ -672,6 +670,8 @@ module.exports = function(grunt) {
   ]);
 
   grunt.registerTask('build-dev', 'Build the static resources', [
+    'exec:clean-dist',
+    'copy:ddocs',
     'mmcss',
     'mmjs',
     'enketoxslt',
@@ -680,20 +680,20 @@ module.exports = function(grunt) {
 
   grunt.registerTask('build-common', 'Build the static resources', [
     'copy:inbox',
-    'appcache',
     'exec:setDdocVersion',
     'exec:setHorticulturalistMetadata',
+    'build-admin',
     'build-ddoc',
   ]);
 
   grunt.registerTask('build-ddoc', 'Build the main ddoc', [
-    'copy:ddocAttachments',
     'couch-compile:client',
+    'copy:ddocAttachments',
+    'appcache',
     'couch-compile:app',
   ]);
 
   grunt.registerTask('build-admin', 'Build the admin app', [
-    'exec:clean-dist',
     'copy:admin-resources',
     'browserify:admin',
     'less:admin',
@@ -706,7 +706,6 @@ module.exports = function(grunt) {
   ]);
 
   grunt.registerTask('build-node-modules', 'Build and pack api and sentinel bundles', [
-    'exec:cleanDdocBuildDirectory',
     'exec:bundle-dependencies',
     'exec:packNodeModules',
   ]);

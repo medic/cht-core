@@ -44,7 +44,7 @@ install:
   nvm install $NODE_VERSION
 
 before_script:
-  - mkdir logs
+  - mkdir tests/logs
   - nvm use $NODE_VERSION
   - yarn -v
   - yarn install --ignore-engines
@@ -77,7 +77,7 @@ jobs:
 
 after_failure:
   - |
-      (cd logs
+      (cd tests/logs
         for log in $(ls *.log); do
           echo "---------- $log ----------"
           tail "$log"
@@ -95,10 +95,10 @@ after_failure:
 
       echo "Uploading logs and screenshots to ${S3_PATH}..."
 
-      docker logs couch >logs/couch.log 2>&1
+      docker logs couch >tests/logs/couch.log 2>&1
 
       aws s3 cp tests/results "$S3_PATH"/test-results --recursive
-      aws s3 cp logs "$S3_PATH"/ --recursive
+      aws s3 cp tests/logs "$S3_PATH"/ --recursive
 
 notifications:
   webhooks:

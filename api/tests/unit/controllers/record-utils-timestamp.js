@@ -1,4 +1,4 @@
-const recordUtils = require('../../../controllers/record-utils');
+const recordUtils = require('../../../src/controllers/record-utils');
 
 const process = timestamp => {
   const body = {
