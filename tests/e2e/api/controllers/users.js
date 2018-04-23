@@ -5,7 +5,7 @@ const constants = require('../../../constants'),
 const user = n => `org.couchdb.user:${n}`;
 
 describe('Users API', () => {
-  describe('POST /api/v1/username/{username}', () => {
+  describe('POST /api/v1/users/{username}', () => {
     const username = 'testapiuser';
     const password = 'pass1234!';
     const _usersUser = {

@@ -265,7 +265,7 @@ module.exports = {
     headers: { 'content-type': 'application/json' }
   }).then(results => {
     if (results.find(r => !r.ok)) {
-      throw Error(results);
+      throw Error(JSON.stringify(results, null, 2));
     } else {
       return results;
     }
