@@ -369,7 +369,7 @@ module.exports = function(grunt) {
       },
       yarn_install: {
         cmd: ['webapp', 'api', 'sentinel', 'admin']
-              .map(dir => `echo "[${dir}]" && cd ${dir} && yarn install --ignore-engines && cd ..`)
+              .map(dir => `echo "[${dir}]" && cd ${dir} && yarn install && cd ..`)
               .join(' && ')
       },
       start_webdriver: {
