@@ -24,9 +24,9 @@ angular-mocks@^1.6.9:
   version "1.6.10"
   resolved "https://registry.yarnpkg.com/angular-mocks/-/angular-mocks-1.6.10.tgz#6a139e43c461d0c9a5a1acebc91e63db16031176"
 
-angular-pouchdb@^5.0.1:
-  version "5.0.1"
-  resolved "https://registry.yarnpkg.com/angular-pouchdb/-/angular-pouchdb-5.0.1.tgz#40793654361010041a0409152d7fe6e0cd34220e"
+angular-pouchdb@^5.0.2:
+  version "5.0.2"
+  resolved "https://registry.yarnpkg.com/angular-pouchdb/-/angular-pouchdb-5.0.2.tgz#0f4a5c3208987bbfd1b267717dec86ebd2a3015e"
   dependencies:
     angular ">=1 <2"
     pouchdb-browser "^6.0.7"
