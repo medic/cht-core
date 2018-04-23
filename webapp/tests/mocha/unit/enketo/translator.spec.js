@@ -1,7 +1,7 @@
 const _ = require('underscore');
 const assert = require('chai').assert;
 
-const translator = require('../../../../static/js/enketo/translator');
+const translator = require('../../../../src/js/enketo/translator');
 
 describe('enketo translator', () => {
 

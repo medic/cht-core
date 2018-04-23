@@ -1,7 +1,7 @@
 const fs = require('fs'),
       path = require('path'),
       assert = require('chai').assert,
-      handler = require('../../../../api/src/controllers/changes');
+      handler = require('../../../../../api/src/controllers/changes');
 
 var normaliseFunction = function(fn) {
   var COMMENT_REGEX = /\/\/.*/g;
@@ -15,7 +15,7 @@ var normaliseFunction = function(fn) {
 };
 
 const getMapFunction = () => {
-  return fs.readFileSync(path.join(__dirname, '../../../../ddocs/medic/views/docs_by_replication_key/map.js'), 'utf8');
+  return fs.readFileSync(path.join(__dirname, '../../../../src/ddocs/medic/views/docs_by_replication_key/map.js'), 'utf8');
 };
 
 describe('docs_by_replication_key view', () => {

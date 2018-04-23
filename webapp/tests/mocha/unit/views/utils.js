@@ -8,7 +8,7 @@ const MAP_ARG_NAME = 'doc';
 module.exports.loadView = (ddocName, viewName) => {
   const mapString = fs.readFileSync(path.join(
     __dirname,
-    '../../../../ddocs',
+    '../../../../src/ddocs',
     ddocName,
     'views',
     viewName,

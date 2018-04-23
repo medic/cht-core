@@ -20,7 +20,7 @@ exports['run finds all attached ddocs and, if required, updates them'] = functio
   var ddoc = {
     _id: '_design/medic',
     _attachments: {
-      'static/dist/manifest.appcache': {
+      'manifest.appcache': {
         content_type: 'text/cache-manifest',
         revpos: 2730,
         digest: 'md5-JRYByZdYixaFg3a4L6X0pw==',
@@ -62,7 +62,7 @@ exports['works when the compiled ddocs is not found'] = function(test) {
   var ddoc = {
     _id: '_design/medic',
     _attachments: {
-      'static/dist/manifest.appcache': {
+      'manifest.appcache': {
         content_type: 'text/cache-manifest',
         revpos: 2730,
         digest: 'md5-JRYByZdYixaFg3a4L6X0pw==',
@@ -97,7 +97,7 @@ exports['adds app_settings to medic-client ddoc'] = function(test) {
   var ddoc = {
     _id: '_design/medic',
     _attachments: {
-      'static/dist/manifest.appcache': {
+      'manifest.appcache': {
         content_type: 'text/cache-manifest',
         revpos: 2730,
         digest: 'md5-JRYByZdYixaFg3a4L6X0pw==',
@@ -150,7 +150,7 @@ exports['updates appcache doc when not found'] = function(test) {
   var ddoc = {
     _id: '_design/medic',
     _attachments: {
-      'static/dist/manifest.appcache': {
+      'manifest.appcache': {
         content_type: 'text/cache-manifest',
         revpos: 2730,
         digest: 'md5-JRYByZdYixaFg3a4L6X0pw==',
@@ -202,7 +202,7 @@ exports['updates appcache doc when out of date'] = function(test) {
   var ddoc = {
     _id: '_design/medic',
     _attachments: {
-      'static/dist/manifest.appcache': {
+      'manifest.appcache': {
         content_type: 'text/cache-manifest',
         revpos: 2730,
         digest: 'md5-JRYByZdYixaFg3a4L6X0pw==',

@@ -1,7 +1,7 @@
 const assert = require('chai').assert,
       sinon = require('sinon').sandbox;
 
-const utils = require('../../../../protractor/utils');
+const utils = require('../../../../../../tests/utils');
 
 describe('Protractor utils', () => {
 

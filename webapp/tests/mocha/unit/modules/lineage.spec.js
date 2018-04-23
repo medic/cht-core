@@ -1,5 +1,5 @@
 const assert = require('chai').assert,
-      format = require('../../../../static/js/modules/format');
+      format = require('../../../../src/js/modules/format');
 
 let $state;
 

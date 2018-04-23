@@ -17,7 +17,7 @@ module.exports = function(config) {
       }
     },
     preprocessors: {
-      'templates/**/*.html': ['ng-html2js']
+      'src/templates/**/*.html': ['ng-html2js']
     },
     ngHtml2JsPreprocessor: {
       moduleName: 'templates'
@@ -30,9 +30,9 @@ module.exports = function(config) {
       'tests/karma/q.js',
 
       // application code
-      'static/dist/inbox.js',
-      'static/dist/templates.js',
-      'templates/directives/sender.html',
+      'dist/ddocs/medic/_attachments/js/inbox.js',
+      'dist/ddocs/medic/_attachments/js/templates.js',
+      'src/templates/directives/sender.html',
 
       // test-specific code
       'node_modules/chai/chai.js',

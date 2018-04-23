@@ -2,12 +2,12 @@ var _ = require('underscore'),
     fs = require('fs'),
     clientValidateDocUpdate = function() {
       /*jshint -W061 */
-      var fn = fs.readFileSync('./ddocs/medic-client/validate_doc_update.js');
+      var fn = fs.readFileSync('./webapp/src/ddocs/medic-client/validate_doc_update.js');
       eval('(' + fn + ')').apply(null, arguments);
     },
     serverValidateDocUpdate = function() {
       /*jshint -W061 */
-      var fn = fs.readFileSync('./ddocs/medic/validate_doc_update.js');
+      var fn = fs.readFileSync('./webapp/src/ddocs/medic/validate_doc_update.js');
       eval('(' + fn + ')').apply(null, arguments);
     };
 var userSettings;

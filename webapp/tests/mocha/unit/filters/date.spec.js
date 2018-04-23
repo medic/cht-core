@@ -1,7 +1,7 @@
 const assert = require('chai').assert;
 
 const mockAngular = require('../mock-angular');
-require('../../../../static/js/filters/date');
+require('../../../../src/js/filters/date');
 const filter = mockAngular.modules.inboxFilters.filters;
 
 describe('date filter', function() {

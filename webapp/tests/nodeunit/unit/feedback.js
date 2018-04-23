@@ -1,5 +1,5 @@
 var sinon = require('sinon'),
-    feedback = require('../../../static/js/modules/feedback'),
+    feedback = require('../../../src/js/modules/feedback'),
     clock,
     getUserCtx,
     saveDoc,

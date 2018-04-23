@@ -7,7 +7,7 @@ const MAP_ARG_NAME = 'doc';
 var loadMedicClientViewValues = (viewName) => {
   const mapString = fs.readFileSync(path.join(
     __dirname,
-    '../../../../ddocs/medic-client/views/',
+    '../../../../src/ddocs/medic-client/views/',
     viewName,
     '/map.js'), 'utf8');
 

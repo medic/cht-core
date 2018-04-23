@@ -1,4 +1,4 @@
-var bootstrapper = require('../../../static/js/bootstrapper'),
+var bootstrapper = require('../../../src/js/bootstrapper'),
     sinon = require('sinon'),
     originalDocument,
     originalWindow,

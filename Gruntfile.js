@@ -174,7 +174,7 @@ module.exports = function(grunt) {
       },
       admin: {
         files: {
-          'dist/ddocs/medic-admin/_attachments/main.css': 'admin/src/css/main.less'
+          'webapp/dist/ddocs/medic-admin/_attachments/main.css': 'admin/src/css/main.less'
         }
       },
     },
@@ -243,19 +243,19 @@ module.exports = function(grunt) {
             expand: true,
             flatten: true,
             src: 'admin/src/css/main.css',
-            dest: 'dist/ddocs/medic-admin/_attachments/'
+            dest: 'webapp/dist/ddocs/medic-admin/_attachments/'
           },
           {
             expand: true,
             flatten: true,
             src: 'admin/src/templates/**/*',
-            dest: 'dist/ddocs/medic-admin/_attachments/templates/'
+            dest: 'webapp/dist/ddocs/medic-admin/_attachments/templates/'
           },
           {
             expand: true,
             flatten: true,
             src: 'node_modules/font-awesome/fonts/*',
-            dest: 'dist/ddocs/medic-admin/_attachments/fonts/'
+            dest: 'webapp/dist/ddocs/medic-admin/_attachments/fonts/'
           }
         ]
       },
@@ -368,10 +368,9 @@ module.exports = function(grunt) {
         cmd: 'cd api && yarn install',
       },
       yarn_install: {
-        cmd: '    echo "[webapp]"   && yarn install --ignore-engines' +
-             ' && echo "[api]"      && cd api && yarn install && cd ..' +
-             ' && echo "[sentinel]" && cd sentinel && yarn install && cd ..' +
-             ' && echo "[admin]"    && cd admin && yarn install --ignore-engines && cd ..'
+        cmd: ['webapp', 'api', 'sentinel', 'admin']
+              .map(dir => `echo "[${dir}]" && cd ${dir} && yarn install --ignore-engines && cd ..`)
+              .join(' && ')
       },
       start_webdriver: {
         cmd: 'yarn webdriver-manager update && ' +
@@ -683,6 +682,7 @@ module.exports = function(grunt) {
     'copy:inbox',
     'exec:setDdocVersion',
     'exec:setHorticulturalistMetadata',
+    'build-admin',
     'build-ddoc',
   ]);
 
