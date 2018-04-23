@@ -11,10 +11,6 @@
     "node": ">=8.11.0",
     "yarn": "1.6.0"
   },
-  "scripts": {
-    "start": "nf start",
-    "webdriver": "webdriver-manager update && webdriver-manager start"
-  },
   "dependencies": {
     "angular": "^1.6.9",
     "angular-cookie": "^4.1.0",
@@ -59,9 +55,6 @@
   },
   "devDependencies": {
     "angular-mocks": "^1.6.9",
-    "foreman": "^2.0.0",
-    "browserify-ngannotate": "^2.0.0",
-    "nodemon": "^1.17.3",
     "partial-json-parser": "1.0.2",
     "pouchdb-adapter-http": "^6.4.3",
     "pouchdb-core": "^6.4.3",

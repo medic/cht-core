@@ -11,11 +11,16 @@
     "node": ">=8.11.0",
     "yarn": "1.6.0"
   },
+  "scripts": {
+    "start": "nf start",
+    "webdriver": "webdriver-manager update && webdriver-manager start"
+  },
   "devDependencies": {
     "autoprefixer": "^8.2.0",
     "browserify-ngannotate": "^2.0.0",
     "bundlesize": "^0.17.0",
     "chai": "^4.1.2",
+    "foreman": "^2.0.0",
     "grunt": "^1.0.2",
     "grunt-angular-templates": "^1.0.3",
     "grunt-appcache": "^0.2.0",
