@@ -1,0 +1,14 @@
+[
+  {"from": "/css/*",              "to": "css/*"},
+  {"from": "/js/*",               "to": "js/*"},
+  {"from": "/audio/*",            "to": "audio/*"},
+  {"from": "/fonts/*",            "to": "fonts/*"},
+  {"from": "/img/*",              "to": "img/*"},
+  {"from": "/xslt/*",             "to": "xslt/*"},
+  {"from": "/manifest.appcache",  "to": "manifest.appcache"},
+  {"from": "/manifest.json",      "to": "manifest.json"},
+  {"from": "/templates/*",        "to": "templates/*"},
+  {"from": "/",                   "to": "templates/inbox.html"},
+  {"from": "#/*",                 "to": "templates/inbox.html"},
+  {"from": "/#/*",                "to": "templates/inbox.html"}
+]

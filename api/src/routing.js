@@ -134,7 +134,7 @@ UNAUDITED_ENDPOINTS.forEach(function(url) {
 });
 
 app.get('/setup/poll', function(req, res) {
-  var p = require('./package.json');
+  var p = require('../package.json');
   res.json({
     ready: true,
     handler: 'medic-api', version: p.version,
@@ -155,7 +155,7 @@ app.all('/setup/finish', function(req, res) {
 });
 
 app.get('/api/info', function(req, res) {
-  var p = require('./package.json');
+  var p = require('../package.json');
   res.json({ version: p.version });
 });
 

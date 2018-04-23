@@ -1,0 +1,73 @@
+{
+  "name": "medic-webapp",
+  "version": "3.0.0",
+  "private": true,
+  "license": "Apache-2.0",
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/medic/medic-webapp.git"
+  },
+  "engines": {
+    "node": ">=8.11.0",
+    "yarn": "1.6.0"
+  },
+  "scripts": {
+    "start": "nf start",
+    "webdriver": "webdriver-manager update && webdriver-manager start"
+  },
+  "dependencies": {
+    "angular": "^1.6.9",
+    "angular-cookie": "^4.1.0",
+    "angular-nvd3": "^1.0.9",
+    "angular-pouchdb": "^5.0.1",
+    "angular-resource": "^1.6.9",
+    "angular-route": "^1.6.9",
+    "angular-sanitize": "^1.6.9",
+    "angular-translate": "^2.17.0",
+    "angular-ui-bootstrap": "^2.5.6",
+    "angular-ui-router": "^0.4.3",
+    "async": "^2.6.0",
+    "bikram-sambat-bootstrap": "^1.4.2",
+    "bootstrap": "^3.3.7",
+    "bootstrap-daterangepicker": "^2.1.30",
+    "bootstrap-tour": "^0.12.0",
+    "bulk-docs-utils": "file:../shared-libs/bulk-docs-utils",
+    "enketo-core": "~4.41.2",
+    "font-awesome": "^4.7.0",
+    "google-libphonenumber": "^3.1.3",
+    "gsm": "^0.1.4",
+    "jquery": "3.2.x",
+    "lineage": "file:../shared-libs/lineage",
+    "medic-enketo-xslt": "^1.5.0",
+    "medic-nootils": "^1.1.0",
+    "messageformat": "^1.0.0",
+    "moment": "^2.22.0",
+    "mustache": "^2.3.0",
+    "object-path": "^0.11.4",
+    "openrosa-xpath-evaluator": "^1.4.2",
+    "phone-number": "file:../shared-libs/phone-number",
+    "pojo2xml": "^1.4.0",
+    "pouchdb-browser": "^6.4.3",
+    "search": "file:../shared-libs/search",
+    "select2": "4.0.3",
+    "@shared-libs/message-utils": "file:../shared-libs/message-utils",
+    "simple-password-tester": "^1.0.0",
+    "task-utils": "file:../shared-libs/task-utils",
+    "underscore": "^1.8.3",
+    "uuid": "^3.2.1"
+  },
+  "devDependencies": {
+    "angular-mocks": "^1.6.9",
+    "foreman": "^2.0.0",
+    "browserify-ngannotate": "^2.0.0",
+    "nodemon": "^1.17.3",
+    "partial-json-parser": "1.0.2",
+    "pouchdb-adapter-http": "^6.4.3",
+    "pouchdb-core": "^6.4.3",
+    "pouchdb-mapreduce": "^6.4.3",
+    "sinon": "^4.5.0"
+  },
+  "resolutions": {
+    "**/jquery": "3.2.x"
+  }
+}

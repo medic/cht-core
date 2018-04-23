@@ -19,10 +19,10 @@ node_modules
 /ddocs/*.json
 /ddocs/medic/_attachments
 /ddocs/medic/version
-/logs/
 /config.js
 /build/
-tests/results
+/tests/results
+/tests/logs/
 *.sublime-project
 *.sublime-workspace
 /.env
