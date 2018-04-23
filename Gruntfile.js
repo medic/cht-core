@@ -406,9 +406,9 @@ module.exports = function(grunt) {
           return fs.readdirSync('shared-libs')
               .filter(f => fs.lstatSync(`shared-libs/${f}`).isDirectory())
               .map(lib =>
-                  `(cd shared-libs/${lib} &&
-                      [[ "$(jq .scripts.test)" = "null" ]] ||
-                        (yarn install && yarn test))`)
+                  `echo Testing shared library: ${lib} &&
+                  (cd shared-libs/${lib} &&
+                  [ "$(jq .scripts.test)" = "null" ] || (yarn install && yarn test))`)
               .join(' && ');
         },
       },
