@@ -3,7 +3,6 @@ const helper = require('../../helper'),
       medicLogo = element(by.className('logo-full')),
       messagesLink = element(by.id('messages-tab')),
       analyticsLink = element(by.id('analytics-tab')),
-      configurationLink = element(by.css('[ui-sref=configuration]')),
       hamburgerMenu = element(by.className('dropdown options')),
       logoutButton = $('[ng-click=logout]');
 
