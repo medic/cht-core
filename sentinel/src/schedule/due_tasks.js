@@ -1,23 +1,36 @@
 // TODO: this doesn't need to exist. We can just work this out dynamically when
 //       gateway queries, it's not slow or complicated.
-var async = require('async'),
-    _ = require('underscore'),
-    moment = require('moment'),
-    utils = require('../lib/utils'),
-    date = require('../date'),
-    config = require('../config'),
-    dbPouch = require('../db-pouch'),
-    lineage = require('lineage')(Promise, dbPouch.medic);
-const messageUtils = require('@shared-libs/message-utils');
+const async = require('async'),
+      _ = require('underscore'),
+      moment = require('moment'),
+      utils = require('../lib/utils'),
+      date = require('../date'),
+      config = require('../config'),
+      dbPouch = require('../db-pouch'),
+      lineage = require('lineage')(Promise, dbPouch.medic),
+      messageUtils = require('@shared-libs/message-utils');
+
+const getPatient = (db, patientShortcodeId, callback) => {
+    console.log('getting patient', patientShortcodeId);
+    utils.getPatientContactUuid(db, patientShortcodeId, (err, uuid) => {
+        console.log('got err', err);
+        console.log('got uuid', uuid);
+        if (err || !uuid) {
+            return callback(err);
+        }
+        lineage.fetchHydratedDoc(uuid, callback);
+    });
+};
 
 const getTemplateContext = (db, doc, callback) => {
-    const patientId = doc.fields && doc.fields.patient_id;
-    if (!patientId) {
+    const patientShortcodeId = doc.fields && doc.fields.patient_id;
+    if (!patientShortcodeId) {
         return callback();
     }
+    console.log('getting context');
     async.parallel({
-        registrations: callback => utils.getRegistrations({ db: db, id: patientId }, callback),
-        patient: callback => lineage.fetchHydratedDoc(patientId, callback)
+        registrations: callback => utils.getRegistrations({ db: db, id: patientShortcodeId }, callback),
+        patient: callback => getPatient(db, patientShortcodeId, callback)
     }, callback);
 };
 
