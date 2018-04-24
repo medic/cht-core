@@ -254,7 +254,7 @@ module.exports = function(grunt) {
           {
             expand: true,
             flatten: true,
-            src: 'node_modules/font-awesome/fonts/*',
+            src: 'admin/node_modules/font-awesome/fonts/*',
             dest: 'webapp/dist/ddocs/medic-admin/_attachments/fonts/'
           }
         ]
