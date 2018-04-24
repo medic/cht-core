@@ -86,7 +86,7 @@ const processChange = (change, callback) => {
   lineage.fetchHydratedDoc(change.id)
     .then(doc => {
       change.doc = doc;
-      infodoc.get(change)
+      return infodoc.get(change)
         .then(infoDoc => {
           change.info = infoDoc;
           // Remove transitions from doc since those
