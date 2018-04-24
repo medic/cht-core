@@ -1,5 +1,5 @@
 const sinon = require('sinon').sandbox.create(),
-     assert = require('chai').assert,
+      assert = require('chai').assert,
       moment = require('moment'),
       utils = require('../../src/lib/utils'),
       schedule = require('../../src/schedule/due_tasks');
@@ -207,9 +207,11 @@ describe('due tasks', () => {
     const due = moment().toISOString();
     const notDue = moment().add(7, 'days').toISOString();
     const id = 'xyz';
+    const patientUuid = '123-456-789';
     const expectedPhone = '5556918';
     const translate = sinon.stub(utils, 'translate').returns('Please visit {{patient_name}} asap');
     const getRegistrations = sinon.stub(utils, 'getRegistrations').callsArgWith(1, null, []);
+    const getPatientContactUuid = sinon.stub(utils, 'getPatientContactUuid').callsArgWith(2, null, patientUuid);
     const fetchHydratedDoc = sinon.stub(schedule._lineage, 'fetchHydratedDoc').callsArgWith(1, null, { name: 'jim' });
     const setTaskState = sinon.stub(utils, 'setTaskState');
 
@@ -297,8 +299,10 @@ describe('due tasks', () => {
       assert.equal(translate.callCount, 1);
       assert.equal(translate.args[0][0], 'visit-1');
       assert.equal(getRegistrations.callCount, 1);
+      assert.equal(getPatientContactUuid.callCount, 1);
+      assert.equal(getPatientContactUuid.args[0][1], '123');
       assert.equal(fetchHydratedDoc.callCount, 1);
-      assert.equal(fetchHydratedDoc.args[0][0], '123');
+      assert.equal(fetchHydratedDoc.args[0][0], patientUuid);
       assert.equal(setTaskState.callCount, 1);
       const saved = saveDoc.firstCall.args[0];
       assert.equal(saved.scheduled_tasks.length, 2);
