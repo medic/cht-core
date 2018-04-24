@@ -16,7 +16,17 @@ const findInfoDoc = (db, change) => {
 const getInfoDoc = change => {
   return findInfoDoc(dbPouch.sentinel, change)
     .then(doc => {
-      return doc ? doc : findInfoDoc(dbPouch.medic, change);
+      if (doc) {
+        return doc;
+      }
+      return findInfoDoc(dbPouch.medic, change)
+        .then(doc => {
+          if (doc) {
+            // prepare the doc for saving into the new db
+            delete doc._rev;
+          }
+          return doc;
+        });
     })
     .then(doc => {
       if (doc) {
