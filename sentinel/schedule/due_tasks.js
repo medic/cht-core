@@ -9,20 +9,23 @@ var async = require('async'),
     lineage = require('../lib/lineage'),
     messageUtils = require('../lib/message-utils');
 
-const getPatient = (id, callback) => {
-    lineage.fetchHydratedDoc(id)
-        .then(patient => callback(null, patient))
-        .catch(callback);
+const getPatient = (db, patientShortcodeId, callback) => {
+    utils.getPatientContactUuid(db, patientShortcodeId, (err, uuid) => {
+        if (err || !uuid) {
+            return callback(err);
+        }
+        lineage.fetchHydratedDoc(uuid, callback);
+    });
 };
 
 const getTemplateContext = (db, doc, callback) => {
-    const patientId = doc.fields && doc.fields.patient_id;
-    if (!patientId) {
+    const patientShortcodeId = doc.fields && doc.fields.patient_id;
+    if (!patientShortcodeId) {
         return callback();
     }
     async.parallel({
-        registrations: callback => utils.getRegistrations({ db: db, id: patientId }, callback),
-        patient: callback => getPatient(patientId, callback)
+        registrations: callback => utils.getRegistrations({ db: db, id: patientShortcodeId }, callback),
+        patient: callback => getPatient(db, patientShortcodeId, callback)
     }, callback);
 };
 
