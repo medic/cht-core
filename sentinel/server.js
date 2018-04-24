@@ -12,6 +12,11 @@ if (process.env.TEST_ENV) {
   return;
 }
 
+process.on('unhandledRejection', reason => {
+  console.error('Unhandled Rejection:');
+  console.error(reason);
+});
+
 const MIN_MAJOR = 8;
 const nodeVersionCheck = () => {
   try {

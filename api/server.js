@@ -10,6 +10,12 @@ const async = require('async'),
 const app = require('./src/routing');
 
 const MIN_MAJOR = 8;
+
+process.on('unhandledRejection', reason => {
+  console.error('Unhandled Rejection:');
+  console.error(reason);
+});
+
 const nodeVersionCheck = (cb) => {
   try {
     const [major, minor, patch] = process.versions.node.split('.').map(Number);
