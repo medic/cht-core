@@ -11,10 +11,7 @@ const async = require('async'),
       messageUtils = require('@shared-libs/message-utils');
 
 const getPatient = (db, patientShortcodeId, callback) => {
-    console.log('getting patient', patientShortcodeId);
     utils.getPatientContactUuid(db, patientShortcodeId, (err, uuid) => {
-        console.log('got err', err);
-        console.log('got uuid', uuid);
         if (err || !uuid) {
             return callback(err);
         }
@@ -27,7 +24,6 @@ const getTemplateContext = (db, doc, callback) => {
     if (!patientShortcodeId) {
         return callback();
     }
-    console.log('getting context');
     async.parallel({
         registrations: callback => utils.getRegistrations({ db: db, id: patientShortcodeId }, callback),
         patient: callback => getPatient(db, patientShortcodeId, callback)
