@@ -248,8 +248,8 @@ module.exports = function(grunt) {
           {
             expand: true,
             flatten: true,
-            src: 'admin/src/templates/**/*',
-            dest: 'webapp/dist/ddocs/medic-admin/_attachments/templates/'
+            src: 'admin/src/templates/index.html',
+            dest: 'webapp/dist/ddocs/medic-admin/_attachments/'
           },
           {
             expand: true,
@@ -557,6 +557,26 @@ module.exports = function(grunt) {
             removeStyleLinkTypeAttributes: true
           }
         }
+      },
+      adminApp: {
+        cwd: 'admin/src',
+        src: [
+          'templates/**/*.html',
+          '!templates/index.html',
+        ],
+        dest: 'webapp/dist/ddocs/medic-admin/_attachments/templates.js',
+        options: {
+          htmlmin: {
+            collapseBooleanAttributes: true,
+            collapseWhitespace: true,
+            removeAttributeQuotes: true,
+            removeComments: true,
+            removeEmptyAttributes: true,
+            removeRedundantAttributes: true,
+            removeScriptTypeAttributes: true,
+            removeStyleLinkTypeAttributes: true
+          }
+        }
       }
     },
     appcache: {
@@ -644,7 +664,7 @@ module.exports = function(grunt) {
   grunt.registerTask('mmjs', 'Build the JS resources', [
     'browserify:dist',
     'replace:hardcodeappsettings',
-    'ngtemplates'
+    'ngtemplates:inboxApp'
   ]);
 
   grunt.registerTask('mmcss', 'Build the CSS resources', [
@@ -695,6 +715,7 @@ module.exports = function(grunt) {
 
   grunt.registerTask('build-admin', 'Build the admin app', [
     'copy:admin-resources',
+    'ngtemplates:adminApp',
     'browserify:admin',
     'less:admin',
   ]);
