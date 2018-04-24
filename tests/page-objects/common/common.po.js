@@ -39,7 +39,7 @@ module.exports = {
 
   goToConfiguration: () => {
     helper.waitUntilReady(medicLogo);
-    configurationLink.click();
+    browser.get(utils.getAdminBaseUrl());
   },
 
   openMenu: () => {
