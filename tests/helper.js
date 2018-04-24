@@ -6,6 +6,11 @@ function writeScreenShot(data, filename) {
   stream.write(new Buffer(data, 'base64'));
   stream.end();
 }
+function handleUpdateModal() {
+  if(element(by.css('#update-available')).isPresent()) {
+    $('body').sendKeys(protractor.Key.ENTER);
+  }
+}
 
 module.exports = {
   waitElementToBeVisible: elm => {
@@ -57,6 +62,7 @@ module.exports = {
   },
 
   clickElement: element => {
+    handleUpdateModal();
     return browser.wait(EC.elementToBeClickable(element), 12000, 'Element taking too long to appear in the DOM')
       .then(() => {
         element.click();
@@ -141,5 +147,6 @@ module.exports = {
         }
       });
     });
-  }
+  },
+  handleUpdateModal
 };
