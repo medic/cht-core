@@ -1,5 +1,12 @@
 # Medic Mobile Release Notes
 
+## 2.14.2
+
+_April 24, 2018_
+
+### Bug fixes
+- [#3099](https://github.com/medic/medic-webapp/issues/3099) Uncaught exception triggers 500 response for subsequent requests.
+
 ## 2.14.1
 
 _April 13, 2018_
