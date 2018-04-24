@@ -2,6 +2,8 @@ const commonElements = require('../../page-objects/common/common.po.js'),
       utils = require('../../utils');
 
 describe('Navigation tests : ', () => {
+  beforeEach(utils.beforeEach);
+
   it('should open Messages tab', () => {
     commonElements.goToMessages();
     expect(commonElements.isAt('message-list'));
@@ -26,14 +28,15 @@ describe('Navigation tests : ', () => {
     expect(browser.getCurrentUrl()).toEqual(utils.getBaseUrl() + 'contacts/');
   });
 
-  xit('should open Analytics or Targets tab', () => {
+  it('should open Analytics or Targets tab', () => {
     commonElements.goToAnalytics();
     expect(browser.getCurrentUrl()).toEqual(utils.getBaseUrl() + 'analytics');
 
   });
 
-  xit('should open Configuration tab', () => {
+  it('should open Configuration tab', () => {
     commonElements.goToConfiguration();
-    expect(browser.getCurrentUrl()).toEqual(utils.getBaseUrl() + 'configuration');
+    const settings = element(by.css('[ui-sref="settings.basic"]'));
+    expect(settings.isPresent()).toBeTruthy();
   });
 });
