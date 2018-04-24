@@ -32,8 +32,6 @@ const writeExportHeaders = (res, type, format) => {
   res
     .set('Content-Type', format.contentType)
     .set('Content-Disposition', 'attachment; filename=' + filename);
-  // To respond as quickly to the request as possible
-  res.flushHeaders();
 };
 
 const getExportPermission = function(type) {
@@ -120,6 +118,9 @@ module.exports = {
     return auth.check(req, ['national_admin', getExportPermission(req.params.type)])
       .then(() => {
         writeExportHeaders(res, req.params.type, formats.csv);
+
+        // To respond as quickly to the request as possible
+        res.flushHeaders();
 
         const d = domain.create();
         d.on('error', err => serverUtils.error(err, req, res));
