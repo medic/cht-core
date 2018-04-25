@@ -167,7 +167,7 @@ describe('Send message', () => {
   };
 
   describe('Send message modal', () => {
-    xit('can send messages to raw phone numbers', () => {
+    it('can send messages to raw phone numbers', () => {
       element(by.id('messages-tab')).click();
       expect(element(by.css(messageInList(RAW_PH))).isPresent()).toBeFalsy();
 
@@ -181,7 +181,7 @@ describe('Send message', () => {
       lastMessageIs(smsMsg('raw'));
     });
 
-    xit('can send messages to contacts with phone numbers', () => {
+    it('can send messages to contacts with phone numbers', () => {
       element(by.id('messages-tab')).click();
 
       expect(element(by.css(messageInList(ALICE._id))).isPresent()).toBeFalsy();
@@ -196,7 +196,7 @@ describe('Send message', () => {
       lastMessageIs(smsMsg('contact'));
     });
 
-    xit('can send messages to contacts under everyone at with phone numbers', () => {
+    it('can send messages to contacts under everyone at with phone numbers', () => {
       element(by.id('messages-tab')).click();
 
       expect(element(by.css(messageInList(CAROL.phone))).isPresent()).toBeFalsy();
@@ -246,15 +246,15 @@ describe('Send message', () => {
         lastMessageIs('Additional Message');
       };
 
-      xit('For raw contacts', () => {
+      it('For raw contacts', () => {
         addAnAdditionalMessage(RAW_PH);
       });
-      xit('For real contacts', () => {
+      it('For real contacts', () => {
         addAnAdditionalMessage(ALICE._id, ALICE.name);
       });
     });
     describe('Can add recipients', () => {
-      xit('For raw contacts', () => {
+      it('For raw contacts', () => {
         openMessageContent(RAW_PH);
         enterMessageText('A third message');
 
@@ -273,7 +273,7 @@ describe('Send message', () => {
         expect(element.all(by.css('#message-content li')).count()).toBe(1);
         lastMessageIs('A third message');
       });
-      xit('For existing contacts', () => {
+      it('For existing contacts', () => {
         openMessageContent(ALICE._id, ALICE.name);
         enterMessageText('A third message');
 
