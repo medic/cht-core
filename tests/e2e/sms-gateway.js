@@ -158,7 +158,7 @@ describe('sms-gateway api', () => {
     it('- shows content', () => {
       helper.clickElement(element(by.id('messages-tab')));
 
-      // LHS
+      // LHS.
       browser.wait(() => {
         return element(by.css('#message-list li:first-child')).isPresent();
       }, 10000);
