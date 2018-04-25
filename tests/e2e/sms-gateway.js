@@ -152,6 +152,8 @@ describe('sms-gateway api', () => {
       pollSmsApi(body).then(done).catch(done.fail);
       helper.handleUpdateModal();
     });
+    afterEach(helper.handleUpdateModal);
+
 
     it('- shows content', () => {
       helper.clickElement(element(by.id('messages-tab')));
