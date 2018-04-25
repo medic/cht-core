@@ -201,7 +201,7 @@ describe('messageUtils', () => {
         const doc = { reported_date: date };
         const config = { date_format: 'DD-MMM-YYYY' };
         const actual = utils.template(config, null, doc, { message: input });
-        expect(actual).to.equal(moment(date).format(config.date_format));
+        expect(actual).to.equal(moment.utc(date).format(config.date_format));
       });
 
       it('integer', () => {
@@ -210,7 +210,7 @@ describe('messageUtils', () => {
         const doc = { reported_date: date };
         const config = { date_format: 'DD-MMM-YYYY' };
         const actual = utils.template(config, null, doc, { message: input });
-        expect(actual).to.equal(moment(date).format(config.date_format));
+        expect(actual).to.equal(moment.utc(date).format(config.date_format));
       });
 
       it('Date object', () => {
@@ -219,7 +219,7 @@ describe('messageUtils', () => {
         const doc = { reported_date: date };
         const config = { date_format: 'DD-MMM-YYYY' };
         const actual = utils.template(config, null, doc, { message: input });
-        expect(actual).to.equal(moment(date).format(config.date_format));
+        expect(actual).to.equal(moment.utc(date).format(config.date_format));
       });
 
     });
@@ -232,7 +232,7 @@ describe('messageUtils', () => {
         const doc = { reported_date: date };
         const config = { reported_date_format: 'DD-MMMM-YYYY HH:mm:ss' };
         const actual = utils.template(config, null, doc, { message: input });
-        expect(actual).to.equal(moment(date).format(config.reported_date_format));
+        expect(actual).to.equal(moment.utc(date).format(config.reported_date_format));
       });
 
       it('Date object', () => {
@@ -241,7 +241,7 @@ describe('messageUtils', () => {
         const doc = { reported_date: date };
         const config = { reported_date_format: 'DD-MMMM-YYYY HH:mm:ss' };
         const actual = utils.template(config, null, doc, { message: input });
-        expect(actual).to.equal(moment(date).format(config.reported_date_format));
+        expect(actual).to.equal(moment.utc(date).format(config.reported_date_format));
       });
 
     });
