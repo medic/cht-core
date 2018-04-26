@@ -14,7 +14,9 @@ const getPatient = (db, patientShortcodeId, callback) => {
         if (err || !uuid) {
             return callback(err);
         }
-        lineage.fetchHydratedDoc(uuid, callback);
+        lineage.fetchHydratedDoc(uuid)
+            .then(doc => callback(null, doc))
+            .catch(callback);
     });
 };
 

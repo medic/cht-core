@@ -219,7 +219,7 @@ exports['generates the messages for all due scheduled tasks'] = test => {
   const translate = sinon.stub(utils, 'translate').returns('Please visit {{patient_name}} asap');
   const getRegistrations = sinon.stub(utils, 'getRegistrations').callsArgWith(1, null, []);
   const getPatientContactUuid = sinon.stub(utils, 'getPatientContactUuid').callsArgWith(2, null, patientUuid);
-  const fetchHydratedDoc = sinon.stub(lineage, 'fetchHydratedDoc').callsArgWith(1, null, { name: 'jim' });
+  const fetchHydratedDoc = sinon.stub(lineage, 'fetchHydratedDoc').returns(Promise.resolve({ name: 'jim' }));
   const setTaskState = sinon.stub(utils, 'setTaskState');
 
   const db = {
