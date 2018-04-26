@@ -141,8 +141,9 @@ var prepareResponse = function(feed, changes) {
 };
 
 var abortAllChangesRequests = feed => {
-  if (feed.changesReqs) {
-    feed.changesReqs.forEach(req => req && req.abort());
+  if (feed.upstream) {
+    feed.upstream.aborted = true;
+    feed.upstream.requests.forEach(req => req && req.abort());
   }
 };
 
@@ -189,13 +190,15 @@ const getChanges = feed => {
     }
   }
 
-  feed.changesReqs = [];
+  const upstream = { requests:[] };
+  feed.upstream = upstream;
+
   // we cannot call 'changes' in nano because it only uses GET requests and
   // our query string might be too long for GET
   async.map(
     chunks,
     (docIds, callback) => {
-      feed.changesReqs.push(db.request({
+      feed.upstream.requests.push(db.request({
         db: db.settings.db,
         path: '_changes',
         qs:  _.pick(feed.req.query, 'timeout', 'style', 'heartbeat', 'since', 'feed', 'limit', 'filter'),
@@ -205,7 +208,7 @@ const getChanges = feed => {
     },
     (err, responses) => {
       endTimer(`getChanges().requests:${chunks.length}`, startTime);
-      if (err) {
+      if (err || upstream.aborted) {
         return errorResponse(feed);
       }
 
