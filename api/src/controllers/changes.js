@@ -140,11 +140,12 @@ var prepareResponse = function(feed, changes) {
   feed.res.write(JSON.stringify(changes));
 };
 
-var abortUpstreamRequests = upstream => {
-  if (upstream) {
+var abortUpstreamRequests = feed => {
+  if (feed.upstream && feed.upstream.requests) {
     feed.upstream.requests.forEach(req => req && req.abort());
+  } else {
+    feed.upstream = { aborted:true };
   }
-  feed.upstream = { aborted:true };
 };
 
 var cleanUp = function(feed) {
@@ -155,7 +156,7 @@ var cleanUp = function(feed) {
   if (index !== -1) {
     continuousFeeds.splice(index, 1);
   }
-  abortUpstreamRequests(feed.upstream);
+  abortUpstreamRequests(feed);
 };
 
 // returns true if superset contains all elements in subset
@@ -223,7 +224,7 @@ const getChanges = feed => {
         }
         if (!containsAll(originalValidatedIds, feed.validatedIds)) {
           // getChanges again with the updated ids
-          abortUpstreamRequests(upstream);
+          abortUpstreamRequests({ upstream });
           // setTimeout to stop recursive stack overflow
           setTimeout(() => {
             getChanges(feed);
@@ -430,7 +431,7 @@ var updateFeeds = function(changes) {
   continuousFeeds.forEach(function(feed) {
     // check if new and relevant
     if (hasNewApplicableDoc(feed, modifiedChanges)) {
-      abortUpstreamRequests(feed.upstream);
+      abortUpstreamRequests(feed);
       bindServerIds(feed, function(err) {
         if (err) {
           return serverUtils.error(err, feed.req, feed.res);
