@@ -1,4 +1,5 @@
 const utils = require('../utils'),
+      helper = require('../helper'), 
       commonElements = require('../page-objects/common/common.po.js');
 
 describe('Bulk delete reports', () => {
@@ -72,7 +73,7 @@ describe('Bulk delete reports', () => {
 
   afterEach(utils.afterEach);
 
-  xit('reports', () => {
+  it('reports', () => {
     commonElements.goToReports();
 
     browser.wait(() => element(by.css('#reports-list li:first-child')).isPresent(), 10000, 'There should be at least one report in the LHS');
@@ -82,7 +83,7 @@ describe('Bulk delete reports', () => {
     browser.wait(() => {
       return selectModeButton.isPresent();
     }, 1000);
-    selectModeButton.click();
+    helper.clickElement(selectModeButton);
     expect(element(by.css('#reports-list li[data-record-id="' + savedUuids[0] + '"] input[type="checkbox"]')).isDisplayed()).toBeTruthy();
 
     // stop select mode
@@ -90,7 +91,7 @@ describe('Bulk delete reports', () => {
     expect(element(by.css('#reports-list li[data-record-id="' + savedUuids[0] + '"] input[type="checkbox"]')).isDisplayed()).toBeFalsy();
 
     // start select mode again
-    selectModeButton.click();
+    helper.clickElement(selectModeButton);
     expect(element(by.css('#reports-list li[data-record-id="' + savedUuids[0] + '"] input[type="checkbox"]')).isDisplayed()).toBeTruthy();
 
     // select a report
@@ -109,11 +110,11 @@ describe('Bulk delete reports', () => {
     }, 3000);
 
     // collapse selection
-    element(by.css('#reports-content .report-body .item-summary')).click();
+    helper.clickElement(element(by.css('#reports-content .report-body .item-summary')));
     expect(element(by.css('#reports-content .report-body .details')).isDisplayed()).toBeFalsy();
 
     // deselect
-    element(by.css('#reports-content .report-body .deselect')).click();
+    helper.clickElement(element(by.css('#reports-content .report-body .deselect')));
 
     // select all
     element(by.css('.action-container .select-all')).click();
