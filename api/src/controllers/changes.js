@@ -208,7 +208,10 @@ const getChanges = feed => {
     },
     (err, responses) => {
       endTimer(`getChanges().requests:${chunks.length}`, startTime);
-      if (err || upstream.aborted) {
+      if (upstream.aborted) {
+        return;
+      }
+      if (err) {
         return errorResponse(feed);
       }
 
