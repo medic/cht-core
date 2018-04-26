@@ -142,9 +142,9 @@ var prepareResponse = function(feed, changes) {
 
 var abortUpstreamRequests = upstream => {
   if (upstream) {
-    feed.upstream.aborted = true;
     feed.upstream.requests.forEach(req => req && req.abort());
   }
+  feed.upstream = { aborted:true };
 };
 
 var cleanUp = function(feed) {
