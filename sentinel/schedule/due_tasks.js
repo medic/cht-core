@@ -61,18 +61,20 @@ module.exports = function(db, audit, callback) {
                         doc.scheduled_tasks.forEach(task => {
                             if (task.due === obj.key) {
                                 utils.setTaskState(task, 'pending');
-                                const content = {
-                                    translationKey: task.message_key,
-                                    message: task.message
-                                };
-                                task.messages = messageUtils.generate(
-                                    config.getAll(),
-                                    utils.translate,
-                                    doc,
-                                    content,
-                                    task.recipient,
-                                    context
-                                );
+                                if (!task.messages) {
+                                    const content = {
+                                        translationKey: task.message_key,
+                                        message: task.message
+                                    };
+                                    task.messages = messageUtils.generate(
+                                        config.getAll(),
+                                        utils.translate,
+                                        doc,
+                                        content,
+                                        task.recipient,
+                                        context
+                                    );
+                                }
                             }
                         });
                         lineage.minify(doc);
