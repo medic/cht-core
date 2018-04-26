@@ -198,7 +198,7 @@ const getChanges = feed => {
   async.map(
     chunks,
     (docIds, callback) => {
-      feed.upstream.requests.push(db.request({
+      upstream.requests.push(db.request({
         db: db.settings.db,
         path: '_changes',
         qs:  _.pick(feed.req.query, 'timeout', 'style', 'heartbeat', 'since', 'feed', 'limit', 'filter'),
