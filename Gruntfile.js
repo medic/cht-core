@@ -590,9 +590,10 @@ module.exports = function(grunt) {
           patterns: [
             'webapp/dist/ddocs/medic/_attachments/manifest.json',
             'webapp/dist/ddocs/medic/_attachments/audio/**/*',
-            'webapp/dist/ddocs/medic/_attachments/dist/**/*',
+            'webapp/dist/ddocs/medic/_attachments/css/**/*',
             'webapp/dist/ddocs/medic/_attachments/fonts/**/*',
             'webapp/dist/ddocs/medic/_attachments/img/**/*',
+            'webapp/dist/ddocs/medic/_attachments/js/**/*',
             'webapp/dist/ddocs/medic/_attachments/xslt/**/*',
           ]
         }
