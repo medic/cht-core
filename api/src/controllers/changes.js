@@ -219,6 +219,9 @@ const getChanges = feed => {
       // if relevant ids have changed, update validated ids, getChanges again
       const originalValidatedIds = feed.validatedIds;
       bindServerIds(feed, err => {
+        if (upstream.aborted) {
+          return;
+        }
         if (err) {
           return errorResponse(feed);
         }
@@ -436,6 +439,7 @@ var updateFeeds = function(changes) {
         if (err) {
           return serverUtils.error(err, feed.req, feed.res);
         }
+        abortUpstreamRequests(feed);
         getChanges(feed);
       });
     }
