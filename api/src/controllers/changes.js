@@ -491,6 +491,7 @@ module.exports = {
         req.on('close', function() {
           cleanUp(feed);
         });
+        defibrillator(feed);
         initFeed(feed, function(err) {
           if (err) {
             return serverUtils.error(err, req, res);
@@ -500,8 +501,9 @@ module.exports = {
             continuousFeeds.push(feed);
           }
           res.type('json');
-          defibrillator(feed);
-          getChanges(feed);
+          if (!feed.upstream) {
+            getChanges(feed);
+          }
         });
       }
     });
