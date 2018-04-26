@@ -10,6 +10,7 @@ var _ = require('underscore'),
     inited = false,
     continuousFeeds = [];
 const uuid = require('uuid/v4');
+const heartbeatFilter = require('../services/heartbeat-filter');
 
 /**
  * As per https://issues.apache.org/jira/browse/COUCHDB-1288, there is a 100 doc
@@ -126,9 +127,10 @@ var bindRequestedIds = function(feed, callback) {
 
 var defibrillator = function(feed) {
   if (feed.req.query && feed.req.query.heartbeat) {
+    const heartbeatInterval = heartbeatFilter(feed.req.query.heartbeat);
     feed.heartbeat = setInterval(function() {
       feed.res.write('\n');
-    }, feed.req.query.heartbeat);
+    }, heartbeatInterval);
   }
 };
 
