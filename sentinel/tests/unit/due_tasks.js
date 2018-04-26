@@ -315,4 +315,111 @@ describe('due tasks', () => {
 
   });
 
+  it('does not generate messages if they are already generated', done => {
+    const due = moment().toISOString();
+    const id = 'xyz';
+    const patientUuid = '123-456-789';
+    const expectedPhone = '5556918';
+    const expectedMessage = 'old message';
+    const getRegistrations = sinon.stub(utils, 'getRegistrations').callsArgWith(1, null, []);
+    const getPatientContactUuid = sinon.stub(utils, 'getPatientContactUuid').callsArgWith(2, null, patientUuid);
+    const fetchHydratedDoc = sinon.stub(schedule._lineage, 'fetchHydratedDoc').callsArgWith(1, null, { name: 'jim' });
+    const setTaskState = sinon.stub(utils, 'setTaskState');
+
+    const db = {
+      view: () => {}
+    };
+    const minified = {
+      fields: {
+        patient_id: '123'
+      },
+      contact: {
+        _id: 'a',
+        parent: {
+          _id: 'b'
+        }
+      },
+      scheduled_tasks: [
+        {
+          due: due,
+          state: 'scheduled',
+          message_key: 'visit-1',
+          recipient: 'clinic',
+          messages: [
+            {
+              to: expectedPhone,
+              message: expectedMessage
+            }
+          ]
+        }
+      ]
+    };
+    const hydrated = {
+      fields: {
+        patient_id: '123'
+      },
+      contact: {
+        _id: 'a',
+        type: 'person',
+        parent: {
+          _id: 'b',
+          type: 'clinic',
+          contact: {
+            _id: 'c',
+            type: 'person',
+            phone: 'unexpectedphone'
+          }
+        }
+      },
+      scheduled_tasks: [
+        {
+          due: due,
+          state: 'scheduled',
+          message_key: 'visit-1',
+          recipient: 'clinic',
+          messages: [
+            {
+              to: expectedPhone,
+              message: expectedMessage
+            }
+          ]
+        }
+      ]
+    };
+    const view = sinon.stub(db, 'view').callsArgWith(3, null, {
+      rows: [
+        {
+          id: id,
+          key: due,
+          doc: minified
+        }
+      ]
+    });
+    sinon.stub(schedule._lineage, 'hydrateDocs').returns(Promise.resolve([ hydrated ]));
+    const audit = {
+      saveDoc: (doc, callback) => {
+        callback();
+      }
+    };
+    const saveDoc = sinon.spy(audit, 'saveDoc');
+    schedule.execute({ medic: db }, audit, err => {
+      assert.equal(err, undefined);
+      assert.equal(view.callCount, 1);
+      assert.equal(saveDoc.callCount, 1);
+      assert.equal(getRegistrations.callCount, 1);
+      assert.equal(getPatientContactUuid.callCount, 1);
+      assert.equal(getPatientContactUuid.args[0][1], '123');
+      assert.equal(fetchHydratedDoc.callCount, 1);
+      assert.equal(fetchHydratedDoc.args[0][0], patientUuid);
+      assert.equal(setTaskState.callCount, 1);
+      const saved = saveDoc.firstCall.args[0];
+      assert.equal(saved.scheduled_tasks.length, 1);
+      assert.equal(saved.scheduled_tasks[0].messages.length, 1);
+      assert.equal(saved.scheduled_tasks[0].messages[0].to, expectedPhone);
+      assert.equal(saved.scheduled_tasks[0].messages[0].message, expectedMessage);
+      done();
+    });
+
+  });
+
 });
