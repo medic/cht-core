@@ -6,7 +6,10 @@ const db = require('../db'),
 // https://wiki.apache.org/couchdb/HTTP_database_API#Naming_and_Addressing
 const DB_NAME_BLACKLIST = /[^a-z0-9_$()+/-]/g;
 
-const readMapFunction = function(doc) {
+// Space added after function to make Function.toString() output consistent
+// across node versions: https://github.com/nodejs/node/issues/20355
+// We are currently testing the exact content of the map function in tests/unit/lib/user-db.js
+const readMapFunction = function (doc) {
   var parts = doc._id.split(':');
   if (parts[0] === 'read') {
     emit(parts[1]);
