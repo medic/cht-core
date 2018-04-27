@@ -9,6 +9,7 @@ var _ = require('underscore'),
     CONTACT_TYPES = ['person', 'clinic', 'health_center', 'district_hospital'],
     inited = false,
     continuousFeeds = [];
+const uuid = require('uuid/v4');
 
 /**
  * As per https://issues.apache.org/jira/browse/COUCHDB-1288, there is a 100 doc
@@ -16,6 +17,10 @@ var _ = require('underscore'),
  * reasonable amount of time.
  */
 const MAX_DOC_IDS = 100;
+
+var error = function(code, message) {
+  return JSON.stringify({ code: code, message: message });
+};
 
 var getDepth = function(userCtx) {
   if (!userCtx.roles || !userCtx.roles.length) {
@@ -140,11 +145,19 @@ var prepareResponse = function(feed, changes) {
   feed.res.write(JSON.stringify(changes));
 };
 
-var abortAllChangesRequests = feed => {
-  if (feed.changesReqs) {
-    feed.changesReqs.forEach(req => req && req.abort());
-  }
-};
+function abortUpstreamSessions(feed, reason, logMessage) {
+  const uSessionCount = Object.keys(feed.upstreamSessions).length;
+  feed.log(`[abortUpstreamSessions():${reason}]`, `Cancelling ${uSessionCount} sessions...`);
+
+  Object.keys(feed.upstreamSessions).forEach(id => {
+    feed.log(`[abortUpstreamSessions():${reason}]`, logMessage, id);
+
+    const upstreamSession = feed.upstreamSessions[id];
+    upstreamSession.requests.forEach(r => r.abort());
+    upstreamSession.aborted = reason;
+    delete feed.upstreamSessions[id];
+  });
+}
 
 var cleanUp = function(feed) {
   if (feed.heartbeat) {
@@ -154,29 +167,18 @@ var cleanUp = function(feed) {
   if (index !== -1) {
     continuousFeeds.splice(index, 1);
   }
-  abortAllChangesRequests(feed);
 };
 
 // returns true if superset contains all elements in subset
 const containsAll = (superset, subset) =>
   subset.every(element => superset.indexOf(element) !== -1);
 
-const errorResponse = (feed, message) => {
-  cleanUp(feed);
-  if (feed.res.finished) {
-    // Don't write to the response if it has already ended. The change
-    // will be picked up in the subsequent changes request.
-    return;
-  }
-  feed.res.write(JSON.stringify({
-    code: 503,
-    message: message || 'Error processing your changes'
-  }));
-  feed.res.end();
-};
-
 const getChanges = feed => {
   const startTime = startTimer();
+  const upstreamSessionId = uuid();
+  const log = (...message) => feed.log('INFO', `[getChanges():${upstreamSessionId}]`, `[res.finished=${feed.res.finished}]`, ...message);
+
+  log('starting…');
 
   const allIds = _.union(feed.requestedIds, feed.validatedIds);
   const chunks = [];
@@ -189,13 +191,15 @@ const getChanges = feed => {
     }
   }
 
-  feed.changesReqs = [];
+  const upstreamSession = { id:upstreamSessionId, requests:[] };
+  feed.upstreamSessions[upstreamSessionId] = upstreamSession;
+
   // we cannot call 'changes' in nano because it only uses GET requests and
   // our query string might be too long for GET
   async.map(
     chunks,
     (docIds, callback) => {
-      feed.changesReqs.push(db.request({
+      upstreamSession.requests.push(db.request({
         db: db.settings.db,
         path: '_changes',
         qs:  _.pick(feed.req.query, 'timeout', 'style', 'heartbeat', 'since', 'feed', 'limit', 'filter'),
@@ -204,43 +208,75 @@ const getChanges = feed => {
       }, callback));
     },
     (err, responses) => {
-      endTimer(`getChanges().requests:${chunks.length}`, startTime);
+      endTimer(`getChanges():${upstreamSessionId}.requests:${chunks.length}`, startTime);
+      if (upstreamSession.aborted) {
+        if (err) {
+          log(`Error caught in upstream request for aborted upstream session.  This probably isn't a problem, but might be interesting.`, err);
+        }
+        log(`Not processing upstream change responses because the session was aborted (${upstreamSession.aborted}).`);
+        delete feed.upstreamSessions[upstreamSession.id];
+        return;
+      }
       if (err) {
-        return errorResponse(feed);
+        log('Error processing upstream changes request(s).  Response will be ended.', err);
+        feed.res.write(error(503, 'Error processing your changes'));
+        feed.res.end();
+        delete feed.upstreamSessions[upstreamSession.id];
+        return;
       }
 
       // if relevant ids have changed, update validated ids, getChanges again
       const originalValidatedIds = feed.validatedIds;
       bindServerIds(feed, err => {
-        if (err) {
-          return errorResponse(feed);
+        if (upstreamSession.aborted) {
+          if (err) {
+            log(`Error caught in bindServerIds() for aborted upstream session.  This probably isn't a problem, but might be interesting.`, err);
+          }
+          log(`Not processing bindServerIds() result because the session was aborted (${upstreamSession.aborted}).`);
+          delete feed.upstreamSessions[upstreamSession.id];
+          return;
         }
         if (!containsAll(originalValidatedIds, feed.validatedIds)) {
           // getChanges again with the updated ids
-          abortAllChangesRequests(feed);
           // setTimeout to stop recursive stack overflow
           setTimeout(() => {
-            getChanges(feed);
+            log(`setTimeout() fired (aborted=${upstreamSession.aborted}`);
+            if (!upstreamSession.aborted) {
+              getChanges(feed);
+            }
+            delete feed.upstreamSessions[upstreamSession.id];
           });
           return;
         }
-        const malformedResponse = responses.find(response => {
-          if (!response || !response.results) {
-            // See: https://github.com/medic/medic-webapp/issues/3099
-            // This should never happen, but apparently it does sometimes.
-            // Attempting to log out the response usefully to see what's occuring
-            console.error('No _changes error, but malformed response:', JSON.stringify(responses));
-            return true;
-          }
-        });
-        if (malformedResponse) {
-          return errorResponse(feed, 'No _changes error, but malformed response.');
-        }
+
         cleanUp(feed);
-        const changes = responses.length === 1 ? responses[0] : mergeChangesResponses(responses);
-        prepareResponse(feed, changes);
-        feed.res.end();
-        endTimer('getChanges().end', startTime);
+        if (err) {
+          log('Error returned by bindServerIds(); response will be ended.', err);
+          feed.res.write(error(503, 'Error processing your changes'));
+        } else {
+          const malformedResponse = responses.find(response => {
+            if (!response || !response.results) {
+              // See: https://github.com/medic/medic-webapp/issues/3099
+              // This should never happen, but apparently it does sometimes.
+              // Attempting to log out the response usefully to see what's occuring
+              console.error('No _changes error, but malformed response:', JSON.stringify(responses));
+              return true;
+            }
+          });
+
+          const changes = !malformedResponse &&
+              responses.length === 1 ? responses[0] : mergeChangesResponses(responses);
+
+          if (changes) {
+            log('changes merged successfully.  Response will be ended after prepareResponse() returns.');
+            prepareResponse(feed, changes);
+          } else {
+            log('Malformed response received from upstream changes request.  Response will be ended.');
+            feed.res.write(error(503, 'No _changes error, but malformed response.'));
+          }
+          feed.res.end();
+          endTimer(`getChanges():${upstreamSessionId}.end`, startTime);
+        }
       });
     }
   );
@@ -424,11 +460,14 @@ var updateFeeds = function(changes) {
   continuousFeeds.forEach(function(feed) {
     // check if new and relevant
     if (hasNewApplicableDoc(feed, modifiedChanges)) {
-      abortAllChangesRequests(feed);
+      abortUpstreamSessions(feed, 'newer-change-received', 'INFO [onRelevantChange] cancelling upstream session (before bindServerIds()):');
+
       bindServerIds(feed, function(err) {
+        abortUpstreamSessions(feed, 'newer-change-received', 'INFO [onRelevantChange] cancelling upstream session (after bindServerIds()):');
         if (err) {
           return serverUtils.error(err, feed.req, feed.res);
         }
+        feed.log('updateFeeds()', 'Calling getChanges()…');
         getChanges(feed);
       });
     }
@@ -477,12 +516,19 @@ module.exports = {
       if (auth.isAdmin(userCtx)) {
         proxy.web(req, res);
       } else {
-        var feed = {
+        const feed = {
+          id: uuid(),
           req: req,
           res: res,
-          userCtx: userCtx
+          userCtx: userCtx,
+          upstreamSessions: {},
         };
+        feed.log = (...message) => console.log(`[feed:${feed.id}]`, ...message);
+
         req.on('close', function() {
+          const uSessionCount = Object.keys(feed.upstreamSessions).length;
+          feed.log(`[event:close] outstanding ${uSessionCount} upstream sessions will be cancelled, and feed will be cleaned up.`);
+          abortUpstreamSessions(feed, 'response-closed', 'WARN unresolved upstream session(s) after response was closed:');
           cleanUp(feed);
         });
         initFeed(feed, function(err) {
@@ -495,7 +541,12 @@ module.exports = {
           }
           res.type('json');
           defibrillator(feed);
-          getChanges(feed);
+          if (feed.upstreamSessions.length) {
+            feed.log('initFeed().callback', 'this feed already has a getChanges() in progress; returning.');
+          } else {
+            feed.log('initFeed().callback', 'calling getChanges()…');
+            getChanges(feed);
+          }
         });
       }
     });
