@@ -1133,9 +1133,11 @@ exports['cleans up when the client connection is closed - #2476'] = function(tes
   // change log
   sinon.stub(db, 'request').returns({
     abort: function() {
-      var feeds = handler._getFeeds();
-      test.equals(feeds.length, 0);
-      test.done();
+      setTimeout(function() {
+        var feeds = handler._getFeeds();
+        test.equals(feeds.length, 0);
+        test.done();
+      });
     }
   });
 
