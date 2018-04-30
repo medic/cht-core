@@ -349,9 +349,6 @@ module.exports = function(grunt) {
                       grep -Ev '^\s*//' &&
                   echo 'ERROR: Links found with target="_blank" but no rel="noopener noreferrer" set.  Please add required rel attribute.')`,
       },
-      'debug': {
-        cmd: 'curl http://admin:pass@localhost:5984/_node/${COUCH_NODE_NAME}/_config'
-      },
       setupAdmin: {
         cmd: 'curl -X PUT http://localhost:5984/_node/${COUCH_NODE_NAME}/_config/admins/admin -d \'"pass"\'' +
              ' && curl -X POST http://admin:pass@localhost:5984/_users ' +
@@ -716,7 +713,7 @@ module.exports = function(grunt) {
     'couch-compile:client',
     'copy:ddocAttachments',
     'appcache',
-    'couch-compile:app'
+    'couch-compile:app',
   ]);
 
   grunt.registerTask('build-admin', 'Build the admin app', [
@@ -811,7 +808,6 @@ module.exports = function(grunt) {
   grunt.registerTask('ci-integration-e2e', 'Run further tests for CI', [
     'env:general',
     'exec:setupAdmin',
-    'exec:debug',
     'deploy',
     'test_api_integration',
     'exec:start_webdriver',
@@ -821,7 +817,6 @@ module.exports = function(grunt) {
   grunt.registerTask('ci-performance', 'Run performance tests on CI', [
     'env:general',
     'exec:setupAdmin',
-    'exec:debug',
     'deploy',
     'test_perf',
   ]);
