@@ -19,20 +19,52 @@ var getCompiledDdocs = function(callback) {
   });
 };
 
-var isUpdated = function(settings, ddoc, callback) {
-  db.medic.get(ddoc._id, function(err, oldDdoc) {
+var areAttachmentsEqual = (oldDdoc, newDdoc) => {
+  if (!oldDdoc._attachments && !newDdoc._attachments) {
+    // no attachments found
+    return true;
+  }
+  if (!oldDdoc._attachments || !newDdoc._attachments) {
+    // one ddoc has attachments and the other doesn't
+    return false;
+  }
+  if (Object.keys(oldDdoc._attachments).length !== Object.keys(newDdoc._attachments).length) {
+    // one ddoc has more attachments than the other
+    return false;
+  }
+  // check all attachment data
+  return Object.keys(oldDdoc._attachments).every(name => {
+    return newDdoc._attachments[name] &&
+           newDdoc._attachments[name].data === oldDdoc._attachments[name].data;
+  });
+};
+
+var isUpdated = function(settings, newDdoc, callback) {
+  db.medic.get(newDdoc._id, { attachments: true }, function(err, oldDdoc) {
     if (err && err.error !== 'not_found') {
       return callback(err);
     }
-    ddoc._rev = oldDdoc && oldDdoc._rev;
-    if (ddoc._id === CLIENT_DDOC_ID) {
-      ddoc.app_settings = settings;
+    // set the rev so we can update if necessary
+    newDdoc._rev = oldDdoc && oldDdoc._rev;
+    if (newDdoc._id === CLIENT_DDOC_ID) {
+      newDdoc.app_settings = settings;
     }
-    if (oldDdoc && _.isEqual(ddoc, oldDdoc)) {
-      // unmodified
+    if (!oldDdoc) {
+      // this is a new ddoc - definitely install it
+      return callback(null, newDdoc);
+    }
+    if (!areAttachmentsEqual(oldDdoc, newDdoc)) {
+      // attachments have been updated - install it
+      return callback(null, newDdoc);
+    }
+
+    // we've changed attachment data so we know they're identical where it counts
+    oldDdoc._attachments = newDdoc._attachments;
+
+    if (_.isEqual(oldDdoc, newDdoc)) {
       return callback();
     }
-    callback(null, ddoc);
+    callback(null, newDdoc);
   });
 };
 
