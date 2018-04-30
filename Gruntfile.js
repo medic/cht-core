@@ -293,7 +293,7 @@ module.exports = function(grunt) {
         cmd: ['api', 'sentinel'].map(module => [
               `cd ${module}`,
               `yarn install --production`,
-              `yarn pack`,
+              `npm pack`, // Use npm until yarn pack is fixed: https://github.com/medic/medic-webapp/issues/4489
               `mv medic-*.tgz ../webapp/dist/ddocs/medic/_attachments/`,
               `cd ..`,
             ].join(' && ')).join(' && ')
