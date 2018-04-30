@@ -14,7 +14,11 @@ function handleUpdateModal() {
 
 module.exports = {
   waitElementToBeVisible: elm => {
-    browser.wait(EC.visibilityOf(elm), 15000);
+    browser.wait(EC.visibilityOf(elm), 15000)
+      .catch(() => {
+        handleUpdateModal();
+        return browser.wait(EC.visibilityOf(elm), 15000);      
+    });
   },
 
   waitElementToBeClickable: elm => {

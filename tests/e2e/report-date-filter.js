@@ -1,5 +1,6 @@
 const utils = require('../utils'),
       moment = require('moment'),
+      helper = require('../helper'),
       commonElements = require('../page-objects/common/common.po.js');
 
 describe('Filters reports', () => {
@@ -96,35 +97,29 @@ describe('Filters reports', () => {
         done();
       })
       .catch(done.fail);
+    helper.handleUpdateModal();
   });
 
   afterEach(utils.afterEach);
 
   it('by date', () => {
+    helper.handleUpdateModal();
     commonElements.goToReports();
-
-    browser.wait(() => {
-      return element(by.css('#reports-list .unfiltered li:first-child')).isPresent();
-    }, 10000);
+    helper.handleUpdateModal();
+    helper.waitElementToBeVisible(element(by.css('#reports-list .unfiltered li:first-child')));
 
     let clear = '';
     for (let i = 0; i < 20; i++) {
       clear += protractor.Key.BACK_SPACE;
     }
 
-    element(by.css('#date-filter')).click();
+    helper.clickElement(element(by.css('#date-filter')));
     element(by.css('.daterangepicker [name="daterangepicker_start"]')).click().sendKeys(clear + '05/16/2016');
     element(by.css('.daterangepicker [name="daterangepicker_end"]')).click().sendKeys(clear + '05/17/2016' + protractor.Key.ENTER);
     element(by.css('#freetext')).click(); // blur the datepicker
 
-    browser.wait(() => {
-      return element(by.css('#reports-list .loader')).isPresent();
-    }, 10000);
-
-    browser.wait(() => {
-      return element(by.css('#reports-list .filtered li:first-child')).isPresent();
-    }, 10000);
-
+    helper.waitElementToBeVisible(element(by.css('#reports-list .filtered li:first-child')));
+   
     expect(element.all(by.css('#reports-list .filtered li')).count()).toBe(2);
     expect(element.all(by.css('#reports-list .filtered li[data-record-id="' + savedUuids[1] + '"]')).count()).toBe(1);
     expect(element.all(by.css('#reports-list .filtered li[data-record-id="' + savedUuids[3] + '"]')).count()).toBe(1);
