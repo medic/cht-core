@@ -286,6 +286,9 @@ module.exports = function(grunt) {
       }
     },
     exec: {
+      'debug': {
+        cmd: 'ls -l webapp/dist/ddocs/medic/_attachments/ && ls -l webapp/dist/ddocs/'
+      },
       'clean-dist': {
         cmd: 'rm -rf webapp/dist && mkdir webapp/dist'
       },
@@ -712,6 +715,7 @@ module.exports = function(grunt) {
     'copy:ddocAttachments',
     'appcache',
     'couch-compile:app',
+    'exec:debug',
   ]);
 
   grunt.registerTask('build-admin', 'Build the admin app', [
