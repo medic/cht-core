@@ -287,7 +287,7 @@ module.exports = function(grunt) {
     },
     exec: {
       'debug': {
-        cmd: 'ls -l webapp/dist/ddocs/medic/_attachments/ && ls -l webapp/dist/ddocs/'
+        cmd: 'ls -lR webapp/dist/ddocs/medic/'
       },
       'clean-dist': {
         cmd: 'rm -rf webapp/dist && mkdir webapp/dist'
@@ -295,6 +295,7 @@ module.exports = function(grunt) {
       packNodeModules: {
         cmd: ['api', 'sentinel'].map(module => [
               `cd ${module}`,
+              `rm -rf node_modules`,
               `yarn install --production`,
               `npm pack`, // Use npm until yarn pack is fixed: https://github.com/medic/medic-webapp/issues/4489
               `mv medic-*.tgz ../webapp/dist/ddocs/medic/_attachments/`,
