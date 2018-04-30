@@ -287,7 +287,7 @@ module.exports = function(grunt) {
     },
     exec: {
       'debug': {
-        cmd: 'ls -lR webapp/dist/ddocs/medic/ && curl http://admin:pass@localhost:5984 && http://admin:pass@localhost:5984/_node/${COUCH_NODE_NAME}/_config'
+        cmd: 'ls -lR webapp/dist/ddocs/medic/ && curl http://localhost:5984 && http://localhost:5984/_node/${COUCH_NODE_NAME}/_config'
       },
       'clean-dist': {
         cmd: 'rm -rf webapp/dist && mkdir webapp/dist'
