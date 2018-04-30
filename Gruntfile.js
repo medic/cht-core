@@ -286,9 +286,6 @@ module.exports = function(grunt) {
       }
     },
     exec: {
-      'debug': {
-        cmd: 'ls -lR webapp/dist/ddocs/medic/ && curl http://localhost:5984 && http://admin:pass@localhost:5984/_node/${COUCH_NODE_NAME}/_config'
-      },
       'clean-dist': {
         cmd: 'rm -rf webapp/dist && mkdir webapp/dist'
       },
@@ -351,6 +348,9 @@ module.exports = function(grunt) {
                       grep -Ev 'target\\\\?="_blank" rel\\\\?="noopener noreferrer"' |
                       grep -Ev '^\s*//' &&
                   echo 'ERROR: Links found with target="_blank" but no rel="noopener noreferrer" set.  Please add required rel attribute.')`,
+      },
+      'debug': {
+        cmd: 'curl http://admin:pass@localhost:5984/_node/${COUCH_NODE_NAME}/_config'
       },
       setupAdmin: {
         cmd: 'curl -X PUT http://localhost:5984/_node/${COUCH_NODE_NAME}/_config/admins/admin -d \'"pass"\'' +
