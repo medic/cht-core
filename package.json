@@ -20,6 +20,7 @@
     "browserify-ngannotate": "^2.0.0",
     "bundlesize": "^0.17.0",
     "chai": "^4.1.2",
+    "chai-exclude": "^1.0.8",
     "foreman": "^2.0.0",
     "grunt": "^1.0.2",
     "grunt-angular-templates": "^1.0.3",

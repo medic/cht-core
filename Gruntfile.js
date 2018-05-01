@@ -531,6 +531,12 @@ module.exports = function(grunt) {
           'sentinel/tests/**/*.js'
         ],
       },
+      integration: {
+        src: 'tests/integration/**/*.js',
+        options: {
+          require: 'tests/integration-setup.js'
+        }
+      },
       api_integration: {
         src: 'api/tests/integration/**/*.js',
         options: {
@@ -757,6 +763,11 @@ module.exports = function(grunt) {
     'karma:unit_continuous'
   ]);
 
+  grunt.registerTask('integration', 'Run all integration tests', [
+    'mochaTest:integration',
+    'test_api_integration'
+  ]);
+
   grunt.registerTask('test_api_integration', 'Integration tests for medic-api', [
     'exec:check_env_vars',
     'exec:setup_api_integration',
@@ -774,9 +785,9 @@ module.exports = function(grunt) {
     'env:general',
   ]);
 
-  grunt.registerTask('test', 'Lint, unit tests, api_integration tests and e2e tests', [
+  grunt.registerTask('test', 'Lint, unit tests, integration tests and e2e tests', [
     'unit',
-    'test_api_integration',
+    'integration',
     'e2e'
   ]);
 
@@ -809,7 +820,7 @@ module.exports = function(grunt) {
     'env:general',
     'exec:setupAdmin',
     'deploy',
-    'test_api_integration',
+    'integration',
     'exec:start_webdriver',
     'e2e'
   ]);
