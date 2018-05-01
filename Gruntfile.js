@@ -765,6 +765,8 @@ module.exports = function(grunt) {
 
   grunt.registerTask('integration', 'Run all integration tests', [
     'exec:resetTestDatabases',
+    'build-admin',
+    'build-node-modules',
     'build-ddoc',
     'couch-push:test',
     'mochaTest:integration',
