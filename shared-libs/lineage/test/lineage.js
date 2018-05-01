@@ -21,17 +21,6 @@ describe('Lineage', function() {
     sinon.restore();
   });
 
-  it('fetchContacts fetches contacts that it has not got via lineage', function() {
-    allDocs.resolves({ rows: [] });
-    const fakeLineage = [
-      { _id: 'abc', contact: { _id: 'def' }, parent: { _id: 'ghi' } },
-      { _id: 'ghi' }
-    ];
-    return lineage.fetchContacts(fakeLineage).then(() => {
-      chai.expect(allDocs.getCall(0).args[0]).to.deep.equal({ keys: ['def'], include_docs: true });
-    });
-  });
-
   it('fillContactsInDocs populates the contact field for relevant docs', function() {
     const docs = [
       { _id: 'doc1', contact: { _id: 'contact1' } },

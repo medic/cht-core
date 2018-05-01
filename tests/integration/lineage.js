@@ -284,6 +284,18 @@ describe('Lineage', function() {
     });
   });
 
+  it('fetchContacts fetches contacts with correct parameters', function() {
+    sinon.spy(db, 'allDocs');
+    const fakeLineage = [
+      { _id: 'abc', contact: { _id: 'def' }, parent: { _id: 'ghi' } },
+      { _id: 'ghi' }
+    ];
+    return lineage.fetchContacts(fakeLineage).then(() => {
+      expect(db.allDocs.callCount).to.equal(1);
+      expect(db.allDocs.getCall(0).args[0]).to.deep.equal({ keys: ['def'], include_docs: true });
+    });
+  });
+
   it('fetchHydratedDoc returns errors from query', function() {
     return lineage.fetchHydratedDoc('abc').then(
       () => {
