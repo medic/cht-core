@@ -58,8 +58,10 @@ var isUpdated = function(settings, newDdoc, callback) {
       return callback(null, newDdoc);
     }
 
-    // we've changed attachment data so we know they're identical where it counts
-    oldDdoc._attachments = newDdoc._attachments;
+    if (newDdoc._attachments) {
+      // we've checked attachment data so we know they're identical where it counts
+      oldDdoc._attachments = newDdoc._attachments;
+    }
 
     if (_.isEqual(oldDdoc, newDdoc)) {
       return callback();

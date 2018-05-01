@@ -51,6 +51,7 @@ describe('DDoc extraction', () => {
       getAppcache.callCount.should.equal(1);
       bulk.callCount.should.equal(1);
       const docs = bulk.args[0][0].docs;
+      docs.length.should.equal(2);
       docs[0]._id.should.equal('_design/new');
       chai.expect(docs[0]._rev).to.equal(undefined);
       docs[1]._id.should.equal('_design/updated');
