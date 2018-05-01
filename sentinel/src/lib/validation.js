@@ -1,7 +1,7 @@
 var _ = require('underscore'),
     async = require('async'),
     moment = require('moment'),
-    pupil = require('./pupil/src/pupil'),
+    pupil = require('pupil'),
     messages = require('./messages'),
     utils = require('./utils'),
     logger = require('./logger'),
@@ -204,42 +204,42 @@ module.exports = {
         callback = callback || ignores;
         validations = validations || [];
 
-        /*
-         * Modify validation objects that are calling a custom validation
-         * function. Add function name and args and append the function name to
-         * the property value so pupil.validate() will still work and error
-         * messages can be generated.
-         *
-         **/
-        var names = Object.keys(self.extra_validations);
-        _.each(validations, function(config, idx) {
-            var entities;
-            try {
-                logger.debug('validation rule %s', config.rule);
-                entities = pupil.parser.parse(pupil.lexer.tokenize(config.rule));
-            } catch(e) {
-                logger.error('error parsing validation: %s', e);
-                return errors.push('Error on pupil validations: ' + JSON.stringify(e));
-            }
-            _.each(entities, function(entity) {
-                logger.debug('validation rule entity %s', entity);
-                if (entity.sub && entity.sub.length > 0) {
-                    _.each(entity.sub, function(e) {
-                        logger.debug('validation rule entity sub %s', e.funcName);
-                        if (names.indexOf(e.funcName) >= 0) {
-                            var v = validations[idx];
-                            // only update the first time through
-                            if (v.property.indexOf('_' + e.funcName) === -1) {
-                                v.funcName = e.funcName;
-                                v.funcArgs = e.funcArgs;
-                                v.field = config.property;
-                                v.property += '_' + e.funcName;
-                            }
-                        }
-                    });
-                }
-            });
-        });
+        // /*
+        //  * Modify validation objects that are calling a custom validation
+        //  * function. Add function name and args and append the function name to
+        //  * the property value so pupil.validate() will still work and error
+        //  * messages can be generated.
+        //  *
+        //  **/
+        // var names = Object.keys(self.extra_validations);
+        // _.each(validations, function(config, idx) {
+        //     var entities;
+        //     try {
+        //         logger.debug('validation rule %s', config.rule);
+        //         entities = pupil.parser.parse(pupil.lexer.tokenize(config.rule));
+        //     } catch(e) {
+        //         logger.error('error parsing validation: %s', e);
+        //         return errors.push('Error on pupil validations: ' + JSON.stringify(e));
+        //     }
+        //     _.each(entities, function(entity) {
+        //         logger.debug('validation rule entity %s', entity);
+        //         if (entity.sub && entity.sub.length > 0) {
+        //             _.each(entity.sub, function(e) {
+        //                 logger.debug('validation rule entity sub %s', e.funcName);
+        //                 if (names.indexOf(e.funcName) >= 0) {
+        //                     var v = validations[idx];
+        //                     // only update the first time through
+        //                     if (v.property.indexOf('_' + e.funcName) === -1) {
+        //                         v.funcName = e.funcName;
+        //                         v.funcArgs = e.funcArgs;
+        //                         v.field = config.property;
+        //                         v.property += '_' + e.funcName;
+        //                     }
+        //                 }
+        //             });
+        //         }
+        //     });
+        // });
 
         // trouble parsing pupil rules
         if (errors.length > 0) {
@@ -249,6 +249,8 @@ module.exports = {
         var attributes = _.extend({}, doc, doc.fields);
 
         try {
+            const rules = self.getRules(validations);
+            console.log(JSON.stringify(rules, null, 2));
             result = pupil.validate(self.getRules(validations), attributes);
         } catch(e) {
             errors.push('Error on pupil validations: ' + JSON.stringify(e));

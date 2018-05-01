@@ -5,7 +5,7 @@ var moment = require('moment'),
     assert = require('chai').assert,
     clock;
 
-describe('validations', () => {
+describe.only('validations', () => {
   afterEach(() => sinon.restore());
 
   it('validate handles pupil parse errors', done => {
