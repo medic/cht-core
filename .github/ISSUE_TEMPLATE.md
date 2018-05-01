@@ -2,7 +2,7 @@
 
 ---
 
-If you're reporting a bug copy the following template below, replacing the _italicised_ text with your own. This is important to ensure we can look at your bug quickly and efficiently, and will improve the speed in which it gets fixed :-)
+If you're reporting a bug copy the following template below, replacing the _italicised_ text with your own. This is important to ensure we can look at your bug quickly and efficiently, which will improve the speed in which it gets fixed :-)
 
 ---
 
