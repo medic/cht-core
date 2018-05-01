@@ -258,7 +258,15 @@ describe('Lineage', function() {
 
   before(function() {
     lineage = lineageFactory(Promise, db);
-    return db.bulkDocs(docs);
+    return db.bulkDocs(docs).then(result => {
+      console.log(result);
+      return db.allDocs();
+    }).then(result => {
+      console.log(result);
+    }).catch(error => {
+      console.log('error');
+      console.log(error);
+    });
   });
 
   after(function() {
