@@ -19,8 +19,23 @@ _Brief description of bug encountered_.
 **What actually happens**:
  - _Describe what happens (the bug!)_
 
+_If this is a problem with the webapp, post the exact URL that has this problem._
+
+_If relevant, post any relevant logs, as long as you are highly confident they do not contain PHI._
+
+_If relevant, post screenshots of the problem._
+
 **Environment**:
-_Provide environmental information. Try to be as thorough as possible. What user, what OS, browser, server, app version, config version etc._
+
+_Fill in as many of these as apply. It's especially useful if some environments work and some don't (ie works in Chrome but not in FF)._
+
+- Instance: _(alpha.dev.medicmobile.org, etc)_
+- Browser: _(Firefox, Chrome, incognito mode, etc, which worked, which didn't)_
+- Client platform: _(Windows, MacOS, Linux)_
+- App: _(webapp, admin, sentinel, api, couch2pg, medic-conf, etc)_
+- Version: _(2.15.0, 3.0.0, etc)_
+
+_And any other environment-specific information you can think of._
 
 **Other**:
 _Provide any other information you think is relevant. What other things you've tried? Is there is a workaround? Does it work using one set of steps but not other? Do you have any suspicions about what the problem might be?_
