@@ -1,4 +1,5 @@
 function(doc) {
+// 3993_staged_deploys_ui_test_one
   if (['person', 'clinic', 'health_center', 'district_hospital'].indexOf(doc.type) !== -1) {
     var value = doc.patient_id || doc.place_id;
     var parent = doc;
