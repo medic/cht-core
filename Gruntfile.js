@@ -457,7 +457,7 @@ module.exports = function(grunt) {
         tasks: ['mmcss', 'build-common', 'deploy']
       },
       js: {
-        files: ['webapp/src/**/*', 'webapp/src/js/**/*', 'shared-libs/**'],
+        files: ['webapp/src/**/*', 'admin/src/**/*', 'shared-libs/**'],
         tasks: ['mmjs', 'build-common', 'deploy']
       },
       compiledddocs: {
