@@ -1,35 +1,44 @@
-<div class="col-sm-12" ng-show="loading || upgrading">
+<div class="col-sm-12" ng-show="loading || deployDoc">
   <div class="loader"></div>
 </div>
 
-<div class="upgrade-config col-sm-12" ng-hide="deployInfo || loading">
+<div class="upgrade-config col-sm-12" ng-hide="currentDeploy || loading">
   <legend translate>instance.upgrade.no_horti</legend>
   <p translate>instance.upgrade.no_horti.detail</p>
 </div>
 
-<div class="upgrade-config col-sm-12" ng-show="deployInfo">
-  <div ng-show="upgrading">
+<div class="upgrade-config col-sm-12" ng-show="currentDeploy">
+  <div ng-show="deployDoc">
+    <legend translate>instance.upgrade.deployment</legend>
+
     <p class="status"
       translate="instance.upgrade.upgrading"
-      translate-values="{ before: deployInfo.version, after: upgrading }"></p>
+      translate-values="{ before: currentDeploy.version, after: deployDoc.build_info.version }"></p>
+
+    <ul ng-show="deployDoc.log.length" class="table table-striped">
+      <li ng-repeat="entry in deployDoc.log" class="row">
+        <div class="col-xs-3">{{entry.datetime | date:'medium'}}</div>
+        <div class="col-xs-9">{{entry.message}}</div>
+      </li>
+    </ul>
   </div>
 
   <div ng-show="error">
     <p class="alert alert-danger error">{{error}}</p>
   </div>
 
-  <div ng-hide="upgrading">
+  <div ng-hide="deployDoc">
 
     <div class="upgrade-section">
       <legend translate>instance.upgrade.current_version</legend>
-      <p ng-hide="deployInfo" translate>instance.upgrade.no_details</p>
-      <dl ng-show="deployInfo" class="horizontal">
+      <p ng-hide="currentDeploy" translate>instance.upgrade.no_details</p>
+      <dl ng-show="currentDeploy" class="horizontal">
         <dt translate>instance.upgrade.version</dt>
-        <dd>{{deployInfo.version}}</dd>
+        <dd>{{currentDeploy.version}}</dd>
         <dt translate>instance.upgrade.deployed_by</dt>
-        <dd>{{deployInfo.user}}</dd>
+        <dd>{{currentDeploy.user}}</dd>
         <dt translate>instance.upgrade.at</dt>
-        <dd ng-bind-html="deployInfo.timestamp | date"></dd>
+        <dd ng-bind-html="currentDeploy.timestamp | date"></dd>
       </dl>
     </div>
 

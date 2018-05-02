@@ -1,5 +1,6 @@
 var IS_PROD_URL = /^https:\/\/[^.]+.app.medicmobile.org\//,
-  BUILDS_DB = 'https://staging.dev.medicmobile.org/_couch/builds';
+    BUILDS_DB = 'https://staging.dev.medicmobile.org/_couch/builds',
+    DEPLOY_DOC_ID = 'horti-upgrade';
 
 angular.module('controllers').controller('UpgradeCtrl',
   function(
@@ -7,6 +8,8 @@ angular.module('controllers').controller('UpgradeCtrl',
     $log,
     $q,
     $scope,
+    $timeout,
+    Changes,
     DB,
     pouchDB,
     Translate,
@@ -20,13 +23,38 @@ angular.module('controllers').controller('UpgradeCtrl',
     $scope.loading = true;
     $scope.versions = {};
 
-    DB().get('_design/medic')
-      .then(function(ddoc) {
-        $scope.deployInfo = ddoc.deploy_info;
+    var getCurrentDeployment = function() {
+      return DB().get(DEPLOY_DOC_ID)
+      .catch(function(err) {
+        if (err.status !== 404) {
+          throw err;
+        }
+      })
+      .then(function(deployDoc) {
+        if (deployDoc) {
+          $scope.deployDoc = deployDoc;
+        }
+      });
+    };
 
-        if (!$scope.deployInfo) {
+    var getExistingDeployment = function() {
+      return DB().get('_design/medic')
+        .then(function(ddoc) {
+          $scope.currentDeploy = ddoc.deploy_info;
+        });
+    };
+
+    $q.all([getCurrentDeployment(), getExistingDeployment()])
+      .then(function() {
+        if (!$scope.currentDeploy) {
           // This user has not deployed via horti, so upgrading via it (for now)
           // won't work / is not supported
+          return;
+        }
+
+        if ($scope.deployDoc) {
+          // This user is currently deploying, don't bother loading builds for
+          // them to deploy to
           return;
         }
 
@@ -34,7 +62,7 @@ angular.module('controllers').controller('UpgradeCtrl',
 
         var buildsDb = pouchDB(BUILDS_DB);
 
-        var minVersion = Version.minimumNextRelease($scope.deployInfo.version);
+        var minVersion = Version.minimumNextRelease($scope.currentDeploy.version);
 
         var viewLookups = [];
 
@@ -116,8 +144,9 @@ angular.module('controllers').controller('UpgradeCtrl',
 
     var upgrade = function() {
       $scope.error = false;
-      $scope.upgrading = $scope.versionCandidate;
 
+      // This will cause the DEPLOY_DOC_ID doc to be written by api, which
+      // will be caught in the changes feed below
       $http
         .post('/api/v1/upgrade', { build: {
           namespace: 'medic',
@@ -136,5 +165,15 @@ angular.module('controllers').controller('UpgradeCtrl',
             });
         });
     };
+
+    Changes({
+      key: 'upgrade',
+      filter: function(change) {
+        return change.id === DEPLOY_DOC_ID;
+      },
+      callback: function(change) {
+        $timeout(function() { $scope.deployDoc = change.doc; });
+      }
+    });
   }
 );
