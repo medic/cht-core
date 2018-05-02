@@ -17,8 +17,18 @@
 
     <ul ng-show="deployDoc.log.length" class="table table-striped">
       <li ng-repeat="entry in deployDoc.log" class="row">
-        <div class="col-xs-3">{{entry.datetime | date:'medium'}}</div>
-        <div class="col-xs-9">{{entry.message}}</div>
+        <div ng-show="entry.type === 'stage'">
+          <div class="col-xs-3">{{entry.datetime | date:'medium'}}</div>
+          <div class="col-xs-9">{{entry.message}}</div>
+        </div>
+        <ul class="col-xs-12" ng-show="entry.type === 'warm_log'">
+          <li ng-repeat="indexer in entry.indexers">
+            <div class="col-xs-3">{{indexer.design_document}}</div>
+            <div class="col-xs-9 progress">
+              <div class="progress-bar" role="progressbar" style="width: {{indexer.progress}}%;" aria-valuenow="{{indexer.progress}}" aria-valuemin="0" aria-valuemax="100">{{indexer.progress}}%</div>
+            </div>
+          </li>
+        </ul>
       </li>
     </ul>
   </div>
@@ -53,7 +63,6 @@
         </li>
       </ul>
     </div>
-    <hr>
 
     <div ng-show="allowPrereleaseBuilds" class="upgrade-section">
       <legend translate>instance.upgrade.betas</legend>
