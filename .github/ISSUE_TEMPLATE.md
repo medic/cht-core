@@ -21,7 +21,7 @@ _Brief description of bug encountered_.
 
 _If this is a problem with the webapp, post the exact URL that has this problem._
 
-_If relevant, post any relevant logs, as long as you are highly confident they do not contain PHI._
+_Post any relevant log sections, as long as you are highly confident they do not contain PHI. If you're unsure how to access logs see here: https://github.com/medic/medic-docs/blob/master/troubleshooting/obtaining-logs.md_
 
 _If relevant, post screenshots of the problem._
 
