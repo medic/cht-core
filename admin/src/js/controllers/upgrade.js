@@ -22,7 +22,7 @@ angular.module('controllers').controller('UpgradeCtrl',
 
     DB().get('_design/medic')
       .then(function(ddoc) {
-        $scope.deployInfo = ddoc.deploy_info || {}; // TODO dont commit
+        $scope.deployInfo = ddoc.deploy_info;
 
         if (!$scope.deployInfo) {
           // This user has not deployed via horti, so upgrading via it (for now)
