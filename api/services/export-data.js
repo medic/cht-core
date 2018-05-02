@@ -549,6 +549,7 @@ var getRecordsFti = function(type, params, callback) {
     q: params.query,
     schema: params.schema,
     sort: type.orderBy,
+    limit: 1000,
     include_docs: true
   };
   fti.get(type.index, options, params.district, callback);
@@ -558,7 +559,8 @@ var getRecordsView = function(type, params, callback) {
   var districtId = params.district;
   var options = {
     include_docs: true,
-    descending: true
+    descending: true,
+    limit: 1000
   };
   if (params.type === 'messages') {
     if (districtId) {
