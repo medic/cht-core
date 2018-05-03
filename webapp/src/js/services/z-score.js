@@ -1,5 +1,7 @@
 angular.module('inboxServices').factory('ZScore',
   function(
+    $log,
+    Changes,
     DB
   ) {
 
@@ -9,42 +11,15 @@ angular.module('inboxServices').factory('ZScore',
     var CONFIGURATION_DOC_ID = 'zscore-charts';
     var MINIMUM_Z_SCORE = -4;
     var MAXIMUM_Z_SCORE = 4;
-    var CONFIGURATIONS = [
-      {
-        id: 'weight-for-age',
-        property: 'weightForAge',
-        required: [ 'sex', 'age', 'weight' ],
-        xAxis: 'age',
-        yAxis: 'weight'
-      },
-      {
-        id: 'height-for-age',
-        property: 'heightForAge',
-        required: [ 'sex', 'age', 'height' ],
-        xAxis: 'age',
-        yAxis: 'height'
-      },
-      {
-        id: 'weight-for-height',
-        property: 'weightForHeight',
-        required: [ 'sex', 'height', 'weight' ],
-        xAxis: 'height',
-        yAxis: 'weight'
-      }
-    ];
 
-    var findChart = function(charts, id) {
-      for (var i = 0; i < charts.length; i++) {
-        if (charts[i].id === id) {
-          return charts[i];
+    var tables;
+
+    var findTable = function(id) {
+      for (var i = 0; i < tables.length; i++) {
+        if (tables[i].id === id) {
+          return tables[i];
         }
       }
-    };
-
-    var hasRequiredOptions = function(configuration, options) {
-      return configuration.required.every(function(required) {
-        return !!options[required];
-      });
     };
 
     var findClosestDataSet = function(data, key) {
@@ -85,44 +60,65 @@ angular.module('inboxServices').factory('ZScore',
       return lowerIndex + MINIMUM_Z_SCORE + ratio;
     };
 
-    var calculate = function(configuration, charts, options) {
-      if (!hasRequiredOptions(configuration, options)) {
-        return;
-      }
-      var chart = findChart(charts, configuration.id);
-      if (!chart) {
-        // no chart configured in the database
-        return;
-      }
-      var sexData = chart.data[options.sex];
-      if (!sexData) {
-        // no data for the given sex
-        return;
-      }
-      var xAxisData = findClosestDataSet(sexData, options[configuration.xAxis]);
+    var calculate = function(data, x, y) {
+      var xAxisData = findClosestDataSet(data, x);
       if (!xAxisData) {
         // the key lies outside of the lookup table range
         return;
       }
-      return findZScore(xAxisData, options[configuration.yAxis]);
+      return findZScore(xAxisData, y);
     };
 
-    return function(options) {
-      options = options || {};
+    var init = function() {
       return DB().get(CONFIGURATION_DOC_ID)
         .then(function(doc) {
-          var result = {};
-          CONFIGURATIONS.forEach(function(configuration) {
-            result[configuration.property] = calculate(configuration, doc.charts, options);
-          });
-          return result;
+          tables = doc.charts;
         })
         .catch(function(err) {
           if (err.status === 404) {
-            throw new Error('zscore-charts doc not found');
+            return;
           }
           throw err;
         });
+    };
+
+    Changes({
+      key: 'zscore-service',
+      filter: function(change) {
+        return change.id === CONFIGURATION_DOC_ID;
+      },
+      callback: function(change) {
+        tables = change.doc && change.doc.charts;
+      }
+    });
+
+    return function() {
+      return init().then(function() {
+        return function(tableId, sex, x, y) {
+          if (!tables) {
+            // log an error if the z-score utility is used but not configured
+            $log.error('Doc "' + CONFIGURATION_DOC_ID + '" not found');
+            return;
+          }
+          if (!sex || !x || !y) {
+            // the form may not have been filled out yet
+            return;
+          }
+          var table = findTable(tableId);
+          if (!table) {
+            // log an error if the z-score utility is used but not configured
+            $log.error('Requested z-score table not found', tableId);
+            return;
+          }
+          var data = table.data[sex];
+          if (!data) {
+            $log.error('The ' + tableId + ' z-score table is not configured for ' + sex + ' children');
+            // no data for the given sex
+            return;
+          }
+          return calculate(data, x, y);
+        };
+      });
     };
   }
 
