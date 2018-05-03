@@ -48,27 +48,27 @@ define( function( require, exports, module ) {
     };
 
     ZScoreWidget.prototype._update = function(self) {
-        var options = {
-            sex: self.group.find( '.or-appearance-zscore-sex [data-checked=true] input' ).val(),
-            age: self.group.find( '.or-appearance-zscore-age input' ).val(),
-            weight: self.group.find( '.or-appearance-zscore-weight input' ).val(),
-            height: self.group.find( '.or-appearance-zscore-height input' ).val()
-        };
-        self.zScoreService(options)
-            .then(function(scores) {
-                self.group.find('.or-appearance-zscore-weight-for-age input')
-                          .val(self._round(scores.weightForAge))
-                          .trigger( 'change' );
-                self.group.find('.or-appearance-zscore-height-for-age input')
-                          .val(self._round(scores.heightForAge))
-                          .trigger( 'change' );
-                self.group.find('.or-appearance-zscore-weight-for-height input')
-                          .val(self._round(scores.weightForHeight))
-                          .trigger( 'change' );
-            })
-            .catch(function(err) {
-                self.logService.error('Error calculating z-score', err);
-            });
+        var sex = self.group.find( '.or-appearance-zscore-sex [data-checked=true] input' ).val();
+        var age = self.group.find( '.or-appearance-zscore-age input' ).val();
+        var weight = self.group.find( '.or-appearance-zscore-weight input' ).val();
+        var height = self.group.find( '.or-appearance-zscore-height input' ).val();
+        self.zScoreService().then(function(util) {
+            var wfa = util('weight-for-age', sex, age, weight);
+            self.group.find('.or-appearance-zscore-weight-for-age input')
+                      .val(self._round(wfa))
+                      .trigger( 'change' );
+            var hfa = util('height-for-age', sex, age, height);
+            self.group.find('.or-appearance-zscore-height-for-age input')
+                      .val(self._round(hfa))
+                      .trigger( 'change' );
+            var wfh = util('weight-for-height', sex, height, weight);
+            self.group.find('.or-appearance-zscore-weight-for-height input')
+                      .val(self._round(wfh))
+                      .trigger( 'change' );
+        })
+        .catch(function(err) {
+            self.logService.error('Error calculating z-score', err);
+        });
     };
 
     ZScoreWidget.prototype.destroy = function( /* element */ ) {};
