@@ -292,8 +292,9 @@ module.exports = function(grunt) {
       packNodeModules: {
         cmd: ['api', 'sentinel'].map(module => [
               `cd ${module}`,
+              `rm -rf node_modules`,
               `yarn install --production`,
-              `yarn pack`,
+              `npm pack`, // Use npm until yarn pack is fixed: https://github.com/medic/medic-webapp/issues/4489
               `mv medic-*.tgz ../webapp/dist/ddocs/medic/_attachments/`,
               `cd ..`,
             ].join(' && ')).join(' && ')
@@ -353,7 +354,8 @@ module.exports = function(grunt) {
              ' && curl -X POST http://admin:pass@localhost:5984/_users ' +
                  ' -H "Content-Type: application/json" ' +
                  ' -d \'{"_id": "org.couchdb.user:admin", "name": "admin", "password":"pass", "type":"user", "roles":[]}\' ' +
-             ' && curl -X PUT --data \'"true"\' http://admin:pass@localhost:5984/_node/${COUCH_NODE_NAME}/_config/chttpd/require_valid_user'
+             ' && curl -X PUT --data \'"true"\' http://admin:pass@localhost:5984/_node/${COUCH_NODE_NAME}/_config/chttpd/require_valid_user' +
+             ' && curl -X PUT --data \'"4294967296"\' http://admin:pass@localhost:5984/_node/${COUCH_NODE_NAME}/_config/httpd/max_http_request_size'
       },
       resetTestDatabases: {
         stderr: false,
@@ -455,7 +457,7 @@ module.exports = function(grunt) {
         tasks: ['mmcss', 'build-common', 'deploy']
       },
       js: {
-        files: ['webapp/src/**/*', 'webapp/src/js/**/*', 'shared-libs/**'],
+        files: ['webapp/src/**/*', 'admin/src/**/*', 'shared-libs/**'],
         tasks: ['mmjs', 'build-common', 'deploy']
       },
       compiledddocs: {

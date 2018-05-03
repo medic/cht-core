@@ -367,6 +367,13 @@ module.exports = {
         }
       });
   },
+  
+  //check for the update modal before 
+  beforeEach:() => {
+    if (element(by.css('#update-available')).isPresent()) {
+      $('body').sendKeys(protractor.Key.ENTER);
+    }
+  },
 
  /**
    * Reverts the db's settings and documents
