@@ -11,7 +11,7 @@ const _ = require('underscore'),
  * First look at doc.locale, this will be set if the form has a locale property
  * being set. The form locale should override other defaults.
  *
- * Next check the smssync settings, which is on doc.sms_message.
+ * Next check doc.sms_message.
  *
  * Return 'en' otherwise.
  *
