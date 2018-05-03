@@ -120,6 +120,7 @@ describe('Enketo service', function() {
       $provide.value('EnketoPrepopulationData', EnketoPrepopulationData);
       $provide.value('AddAttachment', AddAttachment);
       $provide.value('XmlForm', XmlForm);
+      $provide.value('ZScore', () => Promise.resolve(sinon.stub()));
       $provide.value('$q', Q); // bypass $q so we don't have to digest
     });
     inject(function(_Enketo_) {
