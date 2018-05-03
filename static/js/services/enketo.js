@@ -1,6 +1,7 @@
 var uuid = require('uuid/v4'),
     pojo2xml = require('pojo2xml'),
-    xpathPath = require('../modules/xpath-element-path');
+    xpathPath = require('../modules/xpath-element-path'),
+    medicXpathExtensions = require('../enketo/medic-xpath-extensions');
 
 /* globals EnketoForm */
 angular.module('inboxServices').service('Enketo',
@@ -22,7 +23,8 @@ angular.module('inboxServices').service('Enketo',
     TranslateFrom,
     UserContact,
     XmlForm,
-    XSLT
+    XSLT,
+    ZScore
   ) {
     'use strict';
     'ngInject';
@@ -31,6 +33,17 @@ angular.module('inboxServices').service('Enketo',
     var xmlCache = {};
     var FORM_ATTACHMENT_NAME = 'xml';
     var REPORT_ATTACHMENT_NAME = this.REPORT_ATTACHMENT_NAME = 'content';
+
+    var init = function() {
+      ZScore()
+        .then(function(zscoreUtil) {
+          medicXpathExtensions.init(zscoreUtil);
+        })
+        .catch(function(err) {
+          $log.error('Error initialising zscore util', err);
+        });
+    };
+    var inited = init();
 
     var replaceJavarosaMediaWithLoaders = function(id, form) {
       form.find('img,video,audio').each(function() {
@@ -324,18 +337,17 @@ angular.module('inboxServices').service('Enketo',
     };
 
     this.render = function(selector, id, instanceData, editedListener) {
-      return getUserContact()
-        .then(function() {
-          return renderForm(selector, id, instanceData, editedListener);
-        });
+      return $q.all([inited, getUserContact()]).then(function() {
+        return renderForm(selector, id, instanceData, editedListener);
+      });
     };
 
     this.renderContactForm = renderForm;
 
     this.renderFromXmlString = function(selector, xmlString, instanceData, editedListener) {
-      return Language()
-        .then(function(language) {
-          return translateXml(xmlString, language);
+      return $q.all([inited, Language()])
+        .then(function(results) {
+          return translateXml(xmlString, results[1]);
         })
         .then(transformXml)
         .then(function(doc) {
