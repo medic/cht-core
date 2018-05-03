@@ -145,17 +145,17 @@ var prepareResponse = function(feed, changes) {
   feed.res.write(JSON.stringify(changes));
 };
 
-function abortUpstreamSessions(feed, reason, logMessage) {
-  const uSessionCount = Object.keys(feed.upstreamSessions).length;
-  feed.log(`[abortUpstreamSessions():${reason}]`, `Cancelling ${uSessionCount} sessions...`);
+function abortUpstreamBatches(feed, reason, logMessage) {
+  const uBatchCount = Object.keys(feed.upstreamBatches).length;
+  feed.log(`[abortUpstreamBatches():${reason}]`, `Cancelling ${uBatchCount} batches...`);
 
-  Object.keys(feed.upstreamSessions).forEach(id => {
-    feed.log(`[abortUpstreamSessions():${reason}]`, logMessage, id);
+  Object.keys(feed.upstreamBatches).forEach(id => {
+    feed.log(`[abortUpstreamBatches():${reason}]`, logMessage, id);
 
-    const upstreamSession = feed.upstreamSessions[id];
-    upstreamSession.requests.forEach(r => r.abort());
-    upstreamSession.aborted = reason;
-    delete feed.upstreamSessions[id];
+    const upstreamBatch = feed.upstreamBatches[id];
+    upstreamBatch.requests.forEach(r => r.abort());
+    upstreamBatch.aborted = reason;
+    delete feed.upstreamBatches[id];
   });
 }
 
@@ -175,8 +175,9 @@ const containsAll = (superset, subset) =>
 
 const getChanges = feed => {
   const startTime = startTimer();
-  const upstreamSessionId = uuid();
-  const log = (...message) => feed.log('INFO', `[getChanges():${upstreamSessionId}]`, `[res.finished=${feed.res.finished}]`, ...message);
+  const upstreamBatchId = uuid();
+  const logPrefix = `INFO [getChanges():${upstreamBatchId}]`;
+  const log = (...message) => feed.log(logPrefix, `[res.finished=${feed.res.finished}]`, ...message);
 
   log('starting…');
 
@@ -191,15 +192,15 @@ const getChanges = feed => {
     }
   }
 
-  const upstreamSession = { id:upstreamSessionId, requests:[] };
-  feed.upstreamSessions[upstreamSessionId] = upstreamSession;
+  const upstreamBatch = { id:upstreamBatchId, requests:[] };
+  feed.upstreamBatches[upstreamBatchId] = upstreamBatch;
 
   // we cannot call 'changes' in nano because it only uses GET requests and
   // our query string might be too long for GET
   async.map(
     chunks,
     (docIds, callback) => {
-      upstreamSession.requests.push(db.request({
+      upstreamBatch.requests.push(db.request({
         db: db.settings.db,
         path: '_changes',
         qs:  _.pick(feed.req.query, 'timeout', 'style', 'heartbeat', 'since', 'feed', 'limit', 'filter'),
@@ -208,43 +209,43 @@ const getChanges = feed => {
       }, callback));
     },
     (err, responses) => {
-      endTimer(`getChanges():${upstreamSessionId}.requests:${chunks.length}`, startTime);
-      if (upstreamSession.aborted) {
+      endTimer(`getChanges():${upstreamBatchId}.requests:${chunks.length}`, startTime);
+      if (upstreamBatch.aborted) {
         if (err) {
-          log(`Error caught in upstream request for aborted upstream session.  This probably isn't a problem, but might be interesting.`, err);
+          log(`Error caught in upstream request for aborted upstream batch.  This probably isn't a problem, but might be interesting.`, err);
         }
-        log(`Not processing upstream change responses because the session was aborted (${upstreamSession.aborted}).`);
-        delete feed.upstreamSessions[upstreamSession.id];
+        log(`Not processing upstream change responses because the batch was aborted (${upstreamBatch.aborted}).`);
+        delete feed.upstreamBatches[upstreamBatch.id];
         return;
       }
       if (err) {
         log('Error processing upstream changes request(s).  Response will be ended.', err);
         feed.res.write(error(503, 'Error processing your changes'));
         feed.res.end();
-        delete feed.upstreamSessions[upstreamSession.id];
+        delete feed.upstreamBatches[upstreamBatch.id];
         return;
       }
 
       // if relevant ids have changed, update validated ids, getChanges again
       const originalValidatedIds = feed.validatedIds;
       bindServerIds(feed, err => {
-        if (upstreamSession.aborted) {
+        if (upstreamBatch.aborted) {
           if (err) {
-            log(`Error caught in bindServerIds() for aborted upstream session.  This probably isn't a problem, but might be interesting.`, err);
+            log(`Error caught in bindServerIds() for aborted upstream batch.  This probably isn't a problem, but might be interesting.`, err);
           }
-          log(`Not processing bindServerIds() result because the session was aborted (${upstreamSession.aborted}).`);
-          delete feed.upstreamSessions[upstreamSession.id];
+          log(`Not processing bindServerIds() result because the batch was aborted (${upstreamBatch.aborted}).`);
+          delete feed.upstreamBatches[upstreamBatch.id];
           return;
         }
         if (!containsAll(originalValidatedIds, feed.validatedIds)) {
           // getChanges again with the updated ids
           // setTimeout to stop recursive stack overflow
           setTimeout(() => {
-            log(`setTimeout() fired (aborted=${upstreamSession.aborted}`);
-            if (!upstreamSession.aborted) {
+            log(`setTimeout() fired (aborted=${upstreamBatch.aborted}`);
+            if (!upstreamBatch.aborted) {
               getChanges(feed);
             }
-            delete feed.upstreamSessions[upstreamSession.id];
+            delete feed.upstreamBatches[upstreamBatch.id];
           });
           return;
         }
@@ -275,7 +276,7 @@ const getChanges = feed => {
             feed.res.write(error(503, 'No _changes error, but malformed response.'));
           }
           feed.res.end();
-          endTimer(`getChanges():${upstreamSessionId}.end`, startTime);
+          endTimer(`getChanges():${upstreamBatchId}.end`, startTime);
         }
       });
     }
@@ -460,10 +461,10 @@ var updateFeeds = function(changes) {
   continuousFeeds.forEach(function(feed) {
     // check if new and relevant
     if (hasNewApplicableDoc(feed, modifiedChanges)) {
-      abortUpstreamSessions(feed, 'newer-change-received', 'INFO [onRelevantChange] cancelling upstream session (before bindServerIds()):');
+      abortUpstreamBatches(feed, 'newer-change-received', 'INFO [onRelevantChange] cancelling upstream batch (before bindServerIds()):');
 
       bindServerIds(feed, function(err) {
-        abortUpstreamSessions(feed, 'newer-change-received', 'INFO [onRelevantChange] cancelling upstream session (after bindServerIds()):');
+        abortUpstreamBatches(feed, 'newer-change-received', 'INFO [onRelevantChange] cancelling upstream batch (after bindServerIds()):');
         if (err) {
           return serverUtils.error(err, feed.req, feed.res);
         }
@@ -520,14 +521,15 @@ module.exports = {
           req: req,
           res: res,
           userCtx: userCtx,
-          upstreamSessions: {},
+          upstreamBatches: {},
         };
-        feed.log = (...message) => console.log(`[feed:${feed.id}]`, ...message);
+        const logPrefix = `[feed:${feed.id}]`;
+        feed.log = (...message) => console.log(logPrefix, ...message);
 
         req.on('close', function() {
-          const uSessionCount = Object.keys(feed.upstreamSessions).length;
-          feed.log(`[event:close] outstanding ${uSessionCount} upstream sessions will be cancelled, and feed will be cleaned up.`);
-          abortUpstreamSessions(feed, 'response-closed', 'WARN unresolved upstream session(s) after response was closed:');
+          const uBatchCount = Object.keys(feed.upstreamBatches).length;
+          feed.log(`[event:close] outstanding ${uBatchCount} upstream batch(es) will be cancelled, and feed will be cleaned up.`);
+          abortUpstreamBatches(feed, 'response-closed', 'WARN unresolved upstream batch(es) after response was closed:');
           cleanUp(feed);
         });
         initFeed(feed, function(err) {
@@ -540,12 +542,8 @@ module.exports = {
           }
           res.type('json');
           defibrillator(feed);
-          if (feed.upstreamSessions.length) {
-            feed.log('initFeed().callback', 'this feed already has a getChanges() in progress; returning.');
-          } else {
-            feed.log('initFeed().callback', 'calling getChanges()…');
-            getChanges(feed);
-          }
+          feed.log('initFeed().callback', 'calling getChanges()…');
+          getChanges(feed);
         });
       }
     });
