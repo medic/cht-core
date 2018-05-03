@@ -10,11 +10,12 @@
 
 ## 2.15.0
 
-_April 16, 2018_
+_May 4, 2018_
 
 ### Migration notes
 
-- [#3910](https://github.com/medic/medic-webapp/issues/3910): the `POST /api/v1/users/{username}` API has had some significant changes. Importantly for scripting, an arguable bug was fixed where you didn't need to provide a user `type`. Check your scripts!
+- [#3910](https://github.com/medic/medic-webapp/issues/3910): The `POST /api/v1/users/{username}` API has had some significant changes. Importantly for scripting, an arguable bug was fixed where you didn't need to provide a user `type`. Check your scripts!
+- [#4457](https://github.com/medic/medic-webapp/issues/4457): The zscore enketo widget is now deprecated in favor of the xpath calculation which is more flexible and reliable. The widget will be removed in a future release.
 
 ### Features
 
