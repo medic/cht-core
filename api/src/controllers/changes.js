@@ -221,6 +221,7 @@ const getChanges = feed => {
       if (err) {
         log('Error processing upstream changes request(s).  Response will be ended.', err);
         feed.res.write(error(503, 'Error processing your changes'));
+        cleanUp(feed);
         feed.res.end();
         delete feed.upstreamBatches[upstreamBatch.id];
         return;
