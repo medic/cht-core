@@ -1,19 +1,27 @@
 # Medic Mobile Release Notes
 
+## 2.14.3
+
+_May 4, 2018_
+
+### Bug fixes
+
+- [#4457](https://github.com/medic/medic-webapp/issues/4457): The z-score enketo widget is not usable.
+- [#4460](https://github.com/medic/medic-webapp/issues/4460): Uncaught Exception: write after end error.
+
 ## 2.14.2
 
 _April 24, 2018_
 
 ### Bug fixes
-- [#3099](https://github.com/medic/medic-webapp/issues/3099) Uncaught exception triggers 500 response for subsequent requests.
+- [#3099](https://github.com/medic/medic-webapp/issues/3099): Uncaught exception triggers 500 response for subsequent requests.
 
 ## 2.14.1
 
 _April 13, 2018_
 
 ### Performance improvements
-- [#4430](https://github.com/medic/medic-webapp/issues/4430) Drastically improve performance of form loading when the patient context is used, and that context is very large (e.g. you're including lineages)
-bf41ab683
+- [#4430](https://github.com/medic/medic-webapp/issues/4430): Drastically improve performance of form loading when the patient context is used, and that context is very large (e.g. you're including lineages).
 
 ## 2.14.0
 
