@@ -1,23 +1,26 @@
-describe('ZScore service', function() {
+describe('ZScore service', () => {
   'use strict';
 
-  var service,
-      dbGet;
+  let service,
+      dbGet,
+      Changes;
 
-  beforeEach(function() {
+  beforeEach(() => {
     module('inboxApp');
     dbGet = sinon.stub();
-    module(function($provide) {
+    Changes = sinon.stub();
+    module($provide => {
       $provide.factory('DB', KarmaUtils.mockDB({ get: dbGet }));
+      $provide.value('Changes', Changes);
     });
-    inject(function(_ZScore_) {
+    inject(_ZScore_ => {
       service = _ZScore_;
     });
   });
 
-  describe('weightForAge calculation', function() {
+  describe('weightForAge calculation', () => {
 
-    var CONFIG_DOC = {
+    const CONFIG_DOC = {
       charts: [{
         id: 'weight-for-age',
         data: {
@@ -31,119 +34,89 @@ describe('ZScore service', function() {
       }]
     };
 
-    it('returns undefined for unconfigured chart', function() {
-      var options = {
-        sex: 'male',
-        weight: 10,
-        age: 150
-      };
-      var configDoc = {
+    it('returns undefined for unconfigured chart', () => {
+      const configDoc = {
         charts: []
       };
       dbGet.returns(Promise.resolve(configDoc));
-      return service(options).then(function(scores) {
-        chai.expect(scores.weightForAge).to.equal(undefined);
+      return service().then(util => {
+        const actual = util('weight-for-age', 'male', 10, 150);
+        chai.expect(actual).to.equal(undefined);
       });
     });
 
-    it('returns undefined when not given sex', function() {
-      var options = {
-        weight: 10,
-        age: 150
-      };
-      var configDoc = {
+    it('returns undefined when not given sex', () => {
+      const configDoc = {
         charts: [{
           id: 'weight-for-age',
           data: {}
         }]
       };
       dbGet.returns(Promise.resolve(configDoc));
-      return service(options).then(function(scores) {
-        chai.expect(scores.weightForAge).to.equal(undefined);
+      return service().then(util => {
+        const actual = util('weight-for-age', null, 10, 150);
+        chai.expect(actual).to.equal(undefined);
       });
     });
 
-    it('returns undefined when not given weight', function() {
-      var options = {
-        sex: 'male',
-        age: 150
-      };
-      var configDoc = {
+    it('returns undefined when not given weight', () => {
+      const configDoc = {
         charts: [{
           id: 'weight-for-age',
           data: {}
         }]
       };
       dbGet.returns(Promise.resolve(configDoc));
-      return service(options).then(function(scores) {
-        chai.expect(scores.weightForAge).to.equal(undefined);
+      return service().then(util => {
+        const actual = util('weight-for-age', 'male', null, 150);
+        chai.expect(actual).to.equal(undefined);
       });
     });
 
-    it('returns undefined when not given age', function() {
-      var options = {
-        sex: 'male',
-        weight: 10
-      };
-      var configDoc = {
+    it('returns undefined when not given age', () => {
+      const configDoc = {
         charts: [{
           id: 'weight-for-age',
           data: {}
         }]
       };
       dbGet.returns(Promise.resolve(configDoc));
-      return service(options).then(function(scores) {
-        chai.expect(scores.weightForAge).to.equal(undefined);
+      return service().then(util => {
+        const actual = util('weight-for-age', 'male', 10, null);
+        chai.expect(actual).to.equal(undefined);
       });
     });
 
-    it('returns zscore', function() {
-      var options = {
-        sex: 'male',
-        weight: 25,
-        age: 1
-      };
+    it('returns zscore', () => {
       dbGet.returns(Promise.resolve(CONFIG_DOC));
-      return service(options).then(function(scores) {
-        chai.expect(scores.weightForAge).to.equal(1);
+      return service().then(util => {
+        const actual = util('weight-for-age', 'male', 1, 25);
+        chai.expect(actual).to.equal(1);
         chai.expect(dbGet.callCount).to.equal(1);
         chai.expect(dbGet.args[0][0]).to.equal('zscore-charts');
       });
     });
 
-    it('approximates zscore when weight is between data points', function() {
-      var options = {
-        sex: 'male',
-        weight: 25.753,
-        age: 1
-      };
+    it('approximates zscore when weight is between data points', () => {
       dbGet.returns(Promise.resolve(CONFIG_DOC));
-      return service(options).then(function(scores) {
+      return service().then(util => {
+        const rough = util('weight-for-age', 'male', 1, 25.753);
         // round to 3dp to ignore tiny errors caused by floats
-        var actual = (scores.weightForAge * 1000) / 1000;
+        const actual = (rough * 1000) / 1000;
         chai.expect(actual).to.equal(1.753);
       });
     });
 
-    it('returns undefined when requested sex not configured', function() {
-      var options = {
-        sex: 'female',
-        weight: 25.7,
-        age: 1
-      };
+    it('returns undefined when requested sex not configured', () => {
       dbGet.returns(Promise.resolve(CONFIG_DOC));
-      return service(options).then(function(scores) {
-        chai.expect(scores.weightForAge).to.equal(undefined);
+      return service().then(util => {
+        const actual = util('weight-for-age', 'female', 1, 25.7);
+        chai.expect(actual).to.equal(undefined);
       });
     });
 
-    it('returns undefined when age is below data range', function() {
-      var options = {
-        sex: 'male',
-        weight: 25.7,
-        age: 1
-      };
-      var configDoc = {
+    it('returns undefined when age is below data range', () => {
+      const configDoc = {
         charts: [{
           id: 'weight-for-age',
           data: {
@@ -155,52 +128,41 @@ describe('ZScore service', function() {
         }]
       };
       dbGet.returns(Promise.resolve(configDoc));
-      return service(options).then(function(scores) {
-        chai.expect(scores.weightForAge).to.equal(undefined);
+      return service().then(util => {
+        const actual = util('weight-for-age', 'male', 1, 25.7);
+        chai.expect(actual).to.equal(undefined);
       });
     });
 
-    it('returns undefined when age is above data range', function() {
-      var options = {
-        sex: 'male',
-        weight: 25.7,
-        age: 5
-      };
+    it('returns undefined when age is above data range', () => {
       dbGet.returns(Promise.resolve(CONFIG_DOC));
-      return service(options).then(function(scores) {
-        chai.expect(scores.weightForAge).to.equal(undefined);
+      return service().then(util => {
+        const actual = util('weight-for-age', 'male', 5, 25.7);
+        chai.expect(actual).to.equal(undefined);
       });
     });
 
-    it('returns -4 when weight is below data range', function() {
-      var options = {
-        sex: 'male',
-        weight: 19,
-        age: 1
-      };
+    it('returns -4 when weight is below data range', () => {
       dbGet.returns(Promise.resolve(CONFIG_DOC));
-      return service(options).then(function(scores) {
-        chai.expect(scores.weightForAge).to.equal(-4);
+      return service().then(util => {
+        const actual = util('weight-for-age', 'male', 1, 19);
+        chai.expect(actual).to.equal(-4);
       });
     });
 
-    it('returns 4 when weight is above data range', function() {
-      var options = {
-        sex: 'male',
-        weight: 29,
-        age: 1
-      };
+    it('returns 4 when weight is above data range', () => {
       dbGet.returns(Promise.resolve(CONFIG_DOC));
-      return service(options).then(function(scores) {
-        chai.expect(scores.weightForAge).to.equal(4);
+      return service().then(util => {
+        const actual = util('weight-for-age', 'male', 1, 29);
+        chai.expect(actual).to.equal(4);
       });
     });
 
   });
 
-  describe('heightForAge calculation', function() {
+  describe('heightForAge calculation', () => {
 
-    var CONFIG_DOC = {
+    const CONFIG_DOC = {
       charts: [{
         id: 'height-for-age',
         data: {
@@ -214,24 +176,20 @@ describe('ZScore service', function() {
       }]
     };
 
-    it('returns zscore', function() {
-      var options = {
-        sex: 'male',
-        height: 56.1,
-        age: 1
-      };
+    it('returns zscore', () => {
       dbGet.returns(Promise.resolve(CONFIG_DOC));
-      return service(options).then(function(scores) {
-        chai.expect(scores.heightForAge).to.equal(1.5);
+      return service().then(util => {
+        const actual = util('height-for-age', 'male', 1, 56.1);
+        chai.expect(actual).to.equal(1.5);
         chai.expect(dbGet.callCount).to.equal(1);
         chai.expect(dbGet.args[0][0]).to.equal('zscore-charts');
       });
     });
   });
 
-  describe('weightForHeight calculation', function() {
+  describe('weightForHeight calculation', () => {
 
-    var CONFIG_DOC = {
+    const CONFIG_DOC = {
       charts: [{
         id: 'weight-for-height',
         data: {
@@ -245,24 +203,20 @@ describe('ZScore service', function() {
       }]
     };
 
-    it('returns zscore', function() {
-      var options = {
-        sex: 'male',
-        height: 45.1,
-        weight: 26.5
-      };
+    it('returns zscore', () => {
       dbGet.returns(Promise.resolve(CONFIG_DOC));
-      return service(options).then(function(scores) {
-        chai.expect(scores.weightForHeight).to.equal(2.5);
+      return service().then(util => {
+        const actual = util('weight-for-height', 'male', 45.1, 26.5);
+        chai.expect(actual).to.equal(2.5);
         chai.expect(dbGet.callCount).to.equal(1);
         chai.expect(dbGet.args[0][0]).to.equal('zscore-charts');
       });
     });
   });
 
-  describe('cic test cases', function() {
+  describe('cic test cases', () => {
 
-    var CONFIG_DOC = {
+    const CONFIG_DOC = {
       charts: [{
         id: 'height-for-age',
         data: {
@@ -293,18 +247,16 @@ describe('ZScore service', function() {
       }]
     };
 
-    it('#563', function() {
-      var options = {
-        sex: 'male',
-        age: 1072,
-        height: 83,
-        weight: 11.704545
-      };
+    it('#563', () => {
+      const sex = 'male';
+      const age = 1072;
+      const height = 83;
+      const weight = 11.704545;
       dbGet.returns(Promise.resolve(CONFIG_DOC));
-      return service(options).then(function(scores) {
-        chai.expect(scores.heightForAge).to.equal(-3.424135113048216);
-        chai.expect(scores.weightForAge).to.equal(-1.6321967559943587);
-        chai.expect(scores.weightForHeight).to.equal(0.6880010384215982);
+      return service().then(util => {
+        chai.expect(util('height-for-age',    sex, age,    height)).to.equal(-3.424135113048216);
+        chai.expect(util('weight-for-age',    sex, age,    weight)).to.equal(-1.6321967559943587);
+        chai.expect(util('weight-for-height', sex, height, weight)).to.equal(0.6880010384215982);
       });
     });
   });

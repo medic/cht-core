@@ -1,5 +1,7 @@
+var _ = require('underscore');
 var ExtendedXpathEvaluator = require('extended-xpath');
 var openrosa_xpath_extensions = require('openrosa-xpath-extensions');
+var medicExtensions = require('./medic-xpath-extensions');
 var translator = require('./translator');
 
 module.exports = function() {
@@ -12,6 +14,8 @@ module.exports = function() {
         return evaluator.createNSResolver.apply( evaluator, arguments );
     };
     this.xml.jsEvaluate = function(e, contextPath, namespaceResolver, resultType, result) {
+        var extensions = openrosa_xpath_extensions(translator.t);
+        extensions.func = _.extend(extensions.func, medicExtensions.func);
         var evaluator = new ExtendedXpathEvaluator(
                 function wrappedXpathEvaluator(v) {
                     // Node requests (i.e. result types greater than 3 (BOOLEAN)
@@ -23,7 +27,7 @@ module.exports = function() {
                     var doc = contextPath.ownerDocument;
                     return doc.evaluate(v, contextPath, namespaceResolver, wrappedResultType, result);
                 },
-                openrosa_xpath_extensions(translator.t));
+                extensions);
         return evaluator.evaluate(e, contextPath, namespaceResolver, resultType, result);
     };
     window.JsXPathException =
