@@ -14,8 +14,7 @@
   "scripts": {
     "start": "nf start",
     "webdriver": "webdriver-manager update && webdriver-manager start",
-    "mochatests": "jest --projects jest-*.config.js --watchAll",
-    "mochatests:coverage": "jest --projects jest-*.config.js --watchAll --coverage"
+    "mochatests": "jest --projects jest-test.config.js --watchAll"
   },
   "devDependencies": {
     "autoprefixer": "^8.2.0",
