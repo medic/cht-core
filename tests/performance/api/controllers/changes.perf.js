@@ -26,6 +26,7 @@ describe('/_changes', function() {
         // when multiple forms are uploaded
         return uploadFormsInParallel();
       })
+      .then(() => console.log('cancelling changes...'))
       .then(() => changes.cancel());
 
   });
@@ -102,5 +103,6 @@ function uploadForm(name) {
     });
   })
     .then(JSON.parse)
-    .then(testUtils.db.put);
+    .then(testUtils.db.put)
+    .then(() => console.log(`Uploaded ${name}.`));
 }
