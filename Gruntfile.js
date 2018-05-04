@@ -369,6 +369,9 @@ module.exports = function(grunt) {
       setup_api_integration: {
         cmd: 'cd api && yarn install',
       },
+      run_integration_tests: {
+        cmd: 'yarn mocha tests/integration/**/*.js --file tests/integration-setup.js'
+      },
       yarn_install: {
         cmd: ['webapp', 'api', 'sentinel', 'admin']
               .map(dir => `echo "[${dir}]" && cd ${dir} && yarn install && cd ..`)
@@ -531,12 +534,12 @@ module.exports = function(grunt) {
           'sentinel/tests/**/*.js'
         ],
       },
-      integration: {
-        src: 'tests/integration/**/*.js',
-        options: {
-          require: 'tests/integration-setup.js'
-        }
-      },
+      // integration: {
+      //   src: 'tests/integration/**/*.js',
+      //   options: {
+      //     require: 'tests/integration-setup.js'
+      //   }
+      // },
       api_integration: {
         src: 'api/tests/integration/**/*.js',
         options: {
@@ -765,11 +768,9 @@ module.exports = function(grunt) {
 
   grunt.registerTask('integration', 'Run all integration tests', [
     'exec:resetTestDatabases',
-    'build-admin',
-    'build-node-modules',
     'build-ddoc',
     'couch-push:test',
-    'mochaTest:integration',
+    'exec:run_integration_tests',
     'test_api_integration'
   ]);
 

@@ -90,7 +90,7 @@ async.series([
   couchDbVersionCheck,
 
   asyncLog('Extracting ddoc…'),
-  ddocExtraction.run,
+  ddocExtraction.run.bind(null, db.medic),
   asyncLog('DDoc extraction completed successfully'),
 
   asyncLog('Loading configuration…'),

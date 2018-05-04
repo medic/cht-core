@@ -144,7 +144,7 @@ module.exports = {
             process.exit(1);
           }
         });
-        ddocExtraction.run(function(err) {
+        ddocExtraction.run(db.medic, function(err) {
           if (err) {
             console.error('Something went wrong trying to extract ddocs', err);
             process.exit(1);

@@ -1,14 +1,17 @@
 var async = require('async'),
     _ = require('underscore'),
-    db = require('./db-nano'),
     DDOC_ATTACHMENT_ID = '_design/medic/ddocs/compiled.json',
     APPCACHE_ATTACHMENT_NAME = 'manifest.appcache',
     APPCACHE_DOC_ID = 'appcache',
     SERVER_DDOC_ID = '_design/medic',
-    CLIENT_DDOC_ID = '_design/medic-client';
+    CLIENT_DDOC_ID = '_design/medic-client',
+    db;
 
 var getCompiledDdocs = function(callback) {
-  db.medic.get(DDOC_ATTACHMENT_ID, function(err, ddocs) {
+  var thisCallback = function(err, ddocs) {
+    if (db.getAttachment) {
+      ddocs = JSON.parse(ddocs.toString('utf8'));
+    }
     if (err) {
       if (err.error === 'not_found') {
         return callback(null, []);
@@ -16,11 +19,16 @@ var getCompiledDdocs = function(callback) {
       return callback(err);
     }
     callback(null, ddocs.docs);
-  });
+  };
+  if (db.getAttachment) {
+    db.getAttachment('_design/medic', 'ddocs/compiled.json', thisCallback);
+  } else {
+    db.get(DDOC_ATTACHMENT_ID, thisCallback);
+  }
 };
 
 var isUpdated = function(settings, ddoc, callback) {
-  db.medic.get(ddoc._id, function(err, oldDdoc) {
+  db.get(ddoc._id, function(err, oldDdoc) {
     if (err && err.error !== 'not_found') {
       return callback(err);
     }
@@ -61,7 +69,7 @@ var findUpdatedAppcache = function(ddoc, callback) {
   if (!digest) {
     return callback();
   }
-  db.medic.get(APPCACHE_DOC_ID, function(err, doc) {
+  db.get(APPCACHE_DOC_ID, function(err, doc) {
     if (err) {
       if (err.error === 'not_found') {
         // create new appcache doc
@@ -94,8 +102,9 @@ var findUpdated = function(ddoc, callback) {
 };
 
 module.exports = {
-  run: function(callback) {
-    db.medic.get(SERVER_DDOC_ID, function(err, ddoc) {
+  run: function(database, callback) {
+    db = database;
+    db.get(SERVER_DDOC_ID, function(err, ddoc) {
       if (err) {
         return callback(err);
       }
@@ -107,7 +116,11 @@ module.exports = {
           return callback();
         }
         console.log('Updating docs: ' + _.pluck(docs, '_id'));
-        db.medic.bulk({ docs: docs }, callback);
+        if (db.bulk) {
+          db.bulk({ docs: docs }, callback);
+        } else {
+          db.bulkDocs(docs, callback);
+        }
       });
     });
   }

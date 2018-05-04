@@ -39,7 +39,7 @@ exports['run finds all attached ddocs and, if required, updates them'] = functio
   var getAppcache = get.withArgs('appcache').callsArgWith(1, null, { digest: 'md5-JRYByZdYixaFg3a4L6X0pw==' });
   var bulk = sinon.stub(db.medic, 'bulk').callsArg(1);
 
-  ddocExtraction.run(function(err) {
+  ddocExtraction.run(db.medic, function(err) {
     test.ok(!err);
     test.equals(getDdoc.callCount, 1);
     test.equals(getAttachment.callCount, 1);
@@ -76,7 +76,7 @@ exports['works when the compiled ddocs is not found'] = function(test) {
   var getDdoc = get.withArgs('_design/medic').callsArgWith(1, null, ddoc);
   var getAttachment = get.withArgs('_design/medic/ddocs/compiled.json').callsArgWith(1, { error: 'not_found' });
   var getAppcache = get.withArgs('appcache').callsArgWith(1, null, { digest: 'md5-JRYByZdYixaFg3a4L6X0pw==' });
-  ddocExtraction.run(function(err) {
+  ddocExtraction.run(db.medic, function(err) {
     test.ok(!err);
     test.equals(getDdoc.callCount, 1);
     test.equals(getAttachment.callCount, 1);
@@ -121,7 +121,7 @@ exports['adds app_settings to medic-client ddoc'] = function(test) {
   var getAppcache = get.withArgs('appcache').callsArgWith(1, null, { digest: 'md5-JRYByZdYixaFg3a4L6X0pw==' });
   var bulk = sinon.stub(db.medic, 'bulk').callsArg(1);
 
-  ddocExtraction.run(function(err) {
+  ddocExtraction.run(db.medic, function(err) {
     test.ok(!err);
     test.equals(getDdoc.callCount, 1);
     test.equals(getAttachment.callCount, 1);
@@ -173,7 +173,7 @@ exports['updates appcache doc when not found'] = function(test) {
   var getClient = get.withArgs('_design/medic-client').callsArgWith(1, null, existingClient);
   var bulk = sinon.stub(db.medic, 'bulk').callsArg(1);
 
-  ddocExtraction.run(function(err) {
+  ddocExtraction.run(db.medic, function(err) {
     test.ok(!err);
     test.equals(getDdoc.callCount, 1);
     test.equals(getDdocAttachment.callCount, 1);
@@ -230,7 +230,7 @@ exports['updates appcache doc when out of date'] = function(test) {
   var getClient = get.withArgs('_design/medic-client').callsArgWith(1, null, existingClient);
   var bulk = sinon.stub(db.medic, 'bulk').callsArg(1);
 
-  ddocExtraction.run(function(err) {
+  ddocExtraction.run(db.medic, function(err) {
     test.ok(!err);
     test.equals(getDdoc.callCount, 1);
     test.equals(getDdocAttachment.callCount, 1);
