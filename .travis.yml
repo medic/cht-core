@@ -62,7 +62,7 @@ script:
       exit 1
     fi
 
-after_failure:
+after_script:
   - |
       (cd tests/logs
         for log in $(ls *.log); do
