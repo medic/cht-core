@@ -2,7 +2,7 @@ const fs = require('fs');
 const PouchDB = require('pouchdb-core');
 const testUtils = require('../../../utils');
 
-const { COUCH_HOST, COUCH_PORT, DB_NAME } = require('../../../constants');
+const { API_HOST, API_PORT, DB_NAME } = require('../../../constants');
 
 describe('/_changes', function() {
 
@@ -12,7 +12,7 @@ describe('/_changes', function() {
     return createRestrictedUser('mr_test', 't0ps3cret!')
       .then(() => {
         // given a restricted user is listening API's /_changes feed
-        const restrictedUserDb = new PouchDB(`http://mr_test:t0ps3cret!@${COUCH_HOST}:${COUCH_PORT}/${DB_NAME}`);
+        const restrictedUserDb = new PouchDB(`http://mr_test:t0ps3cret!@${API_HOST}:${API_PORT}/${DB_NAME}`);
         console.log('testUtils.db.name', testUtils.db.name);
         console.log('restrictedUserDb.name', restrictedUserDb.name);
         changes = restrictedUserDb.changes({
