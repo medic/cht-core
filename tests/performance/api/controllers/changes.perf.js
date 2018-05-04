@@ -35,13 +35,31 @@ describe('/_changes', function() {
 function createRestrictedUser(username, password) {
   const type = 'district-manager';
 
-  // TODO create contact and place
-  return testUtils.request({
-    path: '/api/v1/users',
-    method: 'POST',
-    headers: { 'Content-Type':'application/json' },
-    body: { username, password, type, contact, place },
-  });
+  let place, contact;
+
+  return Promise.resolve()
+    .then(() => testUtils.request({
+      path: '/api/v1/places',
+      method: 'POST',
+      headers: { 'Content-Type':'application/json' },
+      body: { name:'National Office', type:'national_office' },
+    })
+    .then(res => place = res.id)
+
+    .then(() => testUtils.request({
+      path: '/api/v1/places',
+      method: 'POST',
+      headers: { 'Content-Type':'application/json' },
+      body: { name:'Contact', place:placeId },
+    })
+    .then(res => contact = res.id)
+
+    .then(() => testUtils.request({
+      path: '/api/v1/users',
+      method: 'POST',
+      headers: { 'Content-Type':'application/json' },
+      body: { username, password, type, contact, place },
+    });
 }
 
 function uploadFormsInParallel() {
