@@ -63,7 +63,7 @@ function createRestrictedUser(username, password) {
 }
 
 function uploadFormsInParallel() {
-  Promise.all([
+  return Promise.all([
     uploadForm('child'),
     uploadForm('collect_off'),
     uploadForm('collect_on'),
