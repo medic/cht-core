@@ -47,7 +47,7 @@ function createRestrictedUser(username, password) {
     .then(res => place = res.id)
 
     .then(() => testUtils.request({
-      path: '/api/v1/places',
+      path: '/api/v1/person',
       method: 'POST',
       headers: { 'Content-Type':'application/json' },
       body: { name:'Contact', place },
