@@ -1,5 +1,5 @@
 const fs = require('fs');
-const PouchDB = require('pouchdb');
+const PouchDB = require('pouchdb-core');
 const testUtils = require('../../../utils');
 
 const { COUCH_HOST, COUCH_PORT, DB_NAME } = require('../../../constants');
