@@ -931,9 +931,9 @@ performance-now@^2.1.0:
 "phone-number@file:../shared-libs/phone-number":
   version "1.0.0"
 
-pojo2xml@^1.4.0:
-  version "1.7.0"
-  resolved "https://registry.yarnpkg.com/pojo2xml/-/pojo2xml-1.7.0.tgz#8f976846870c03e17229bce453dea8b60a5261a6"
+pojo2xml@^1.7.1:
+  version "1.7.1"
+  resolved "https://registry.yarnpkg.com/pojo2xml/-/pojo2xml-1.7.1.tgz#9c4d3f2d9750329c03651c44d561e81e721f7be7"
 
 pouchdb-abstract-mapreduce@6.4.3:
   version "6.4.3"
