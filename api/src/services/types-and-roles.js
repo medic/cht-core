@@ -28,7 +28,7 @@ module.exports = function(type) {
     return [];
   }
   if (type in rolesMap) {
-    return [type].concat(rolesMap[type])
+    return [type].concat(rolesMap[type]);
   }
   return [type];
 };
