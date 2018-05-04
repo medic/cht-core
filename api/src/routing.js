@@ -464,7 +464,7 @@ app.putJson('/api/v1/settings', settings.put);
 // DB replication endpoint
 console.log('##################################################');
 console.log('#');
-console.log('# Applying changes handler to db at ${pathPrefix}…');
+console.log(`# Applying changes handler to db at ${pathPrefix}…`);
 console.log('#');
 console.log('##################################################');
 const changesHandler = _.partial(require('./controllers/changes').request, proxy);
