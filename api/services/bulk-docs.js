@@ -91,7 +91,7 @@ module.exports = {
         return [1, 2, 3].reduce((promise, attemptNumber) => {
           return promise.then(() => {
             if (docsToRetry.length === 0) {
-              return promise;
+              return Promise.resolve();
             }
             const batches = generateBatches(docsToRetry, batchSize);
             docsToRetry.length = 0;
