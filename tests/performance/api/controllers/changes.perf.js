@@ -13,6 +13,8 @@ describe('/_changes', function() {
       .then(() => {
         // given a restricted user is listening API's /_changes feed
         const restrictedUserDb = new PouchDB(`http://mr_test:t0ps3cret!@${COUCH_HOST}:${COUCH_PORT}/${DB_NAME}`);
+        console.log('testUtils.db.name', testUtils.db.name);
+        console.log('restrictedUserDb.name', restrictedUserDb.name);
         changes = restrictedUserDb.changes({
           live: true,
           timeout: false,
