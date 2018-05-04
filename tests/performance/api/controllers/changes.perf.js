@@ -9,10 +9,10 @@ describe('/_changes', function() {
   it('should not break for restricted users when multiple relevant changes arrive', function() {
     let changes;
 
-    return createRestrictedUser('mr.test', 't0ps3cret!')
+    return createRestrictedUser('mr_test', 't0ps3cret!')
       .then(() => {
         // given a restricted user is listening API's /_changes feed
-        const restrictedUserDb = new PouchDB(`http://mr.test:t0ps3cret!@${COUCH_HOST}:${COUCH_PORT}/${DB_NAME}`);
+        const restrictedUserDb = new PouchDB(`http://mr_test:t0ps3cret!@${COUCH_HOST}:${COUCH_PORT}/${DB_NAME}`);
         changes = restrictedUserDb.changes({
           live: true,
           timeout: false,
