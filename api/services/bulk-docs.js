@@ -89,12 +89,14 @@ module.exports = {
       .then(() => {
         // Retry any failures a maximum of 3 times
         return [1, 2, 3].reduce((promise, attemptNumber) => {
-          if (docsToRetry.length === 0) {
-            return promise;
-          }
-          const batches = generateBatches(docsToRetry, batchSize);
-          docsToRetry.length = 0;
-          return promise.then(() => deleteBatches(batches, res, docsToRetry, attemptNumber));
+          return promise.then(() => {
+            if (docsToRetry.length === 0) {
+              return promise;
+            }
+            const batches = generateBatches(docsToRetry, batchSize);
+            docsToRetry.length = 0;
+            return deleteBatches(batches, res, docsToRetry, attemptNumber);
+          });
         }, Promise.resolve());
       })
       .then(() => {
