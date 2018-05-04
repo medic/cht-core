@@ -36,14 +36,13 @@ const generateBatches = (docs, batchSize) => {
 
 const getDocsToModify = ids => {
   let docsToDelete;
-  let allDocs;
   return db.medic.allDocs({ keys: ids, include_docs: true })
     .then(result => {
       docsToDelete = markAsDeleted(result);
       return utils.updateParentContacts(docsToDelete);
     })
     .then(docsToUpdate => {
-      allDocs = docsToDelete.concat(docsToUpdate);
+      const allDocs = docsToDelete.concat(docsToUpdate);
       checkForDuplicates(allDocs);
       return allDocs;
     });
