@@ -47,7 +47,7 @@ const _ = require('underscore'),
 var jsonParser = bodyParser.json({limit: '32mb'});
 
 const handleJsonRequest = (method, path, callback) => {
-  app[method](path, jsonParser, (req, res) => {
+  app[method](path, jsonParser, (req, res, next) => {
     const contentType = req.headers['content-type'];
     if (!contentType || contentType !== 'application/json') {
       return serverUtils.error({
@@ -55,7 +55,7 @@ const handleJsonRequest = (method, path, callback) => {
         message: 'Content-Type must be application/json'
       }, req, res);
     } else {
-      callback(req, res);
+      callback(req, res, next);
     }
   });
 };
