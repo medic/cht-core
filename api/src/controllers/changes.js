@@ -9,7 +9,6 @@ var _ = require('underscore'),
     CONTACT_TYPES = ['person', 'clinic', 'health_center', 'district_hospital'],
     inited = false,
     continuousFeeds = [];
-const uuid = require('uuid/v4');
 const heartbeatFilter = require('../services/heartbeat-filter');
 
 /**
@@ -18,10 +17,6 @@ const heartbeatFilter = require('../services/heartbeat-filter');
  * reasonable amount of time.
  */
 const MAX_DOC_IDS = 100;
-
-var error = function(code, message) {
-  return JSON.stringify({ code: code, message: message });
-};
 
 var getDepth = function(userCtx) {
   if (!userCtx.roles || !userCtx.roles.length) {
@@ -147,19 +142,11 @@ var prepareResponse = function(feed, changes) {
   feed.res.write(JSON.stringify(changes));
 };
 
-function abortUpstreamBatches(feed, reason, logMessage) {
-  const uBatchCount = Object.keys(feed.upstreamBatches).length;
-  feed.log(`[abortUpstreamBatches():${reason}]`, `Cancelling ${uBatchCount} batches...`);
-
-  Object.keys(feed.upstreamBatches).forEach(id => {
-    feed.log(`[abortUpstreamBatches():${reason}]`, logMessage, id);
-
-    const upstreamBatch = feed.upstreamBatches[id];
-    upstreamBatch.requests.forEach(r => r.abort());
-    upstreamBatch.aborted = reason;
-    delete feed.upstreamBatches[id];
-  });
-}
+var abortAllChangesRequests = feed => {
+  if (feed.changesReqs) {
+    feed.changesReqs.forEach(req => req && req.abort());
+  }
+};
 
 var cleanUp = function(feed) {
   if (feed.heartbeat) {
@@ -169,19 +156,29 @@ var cleanUp = function(feed) {
   if (index !== -1) {
     continuousFeeds.splice(index, 1);
   }
+  abortAllChangesRequests(feed);
 };
 
 // returns true if superset contains all elements in subset
 const containsAll = (superset, subset) =>
   subset.every(element => superset.indexOf(element) !== -1);
 
+const errorResponse = (feed, message) => {
+  cleanUp(feed);
+  if (feed.res.finished) {
+    // Don't write to the response if it has already ended. The change
+    // will be picked up in the subsequent changes request.
+    return;
+  }
+  feed.res.write(JSON.stringify({
+    code: 503,
+    message: message || 'Error processing your changes'
+  }));
+  feed.res.end();
+};
+
 const getChanges = feed => {
   const startTime = startTimer();
-  const upstreamBatchId = uuid();
-  const logPrefix = `INFO [getChanges():${upstreamBatchId}]`;
-  const log = (...message) => feed.log(logPrefix, `[res.finished=${feed.res.finished}]`, ...message);
-
-  log('starting…');
 
   const allIds = _.union(feed.requestedIds, feed.validatedIds);
   const chunks = [];
@@ -194,15 +191,13 @@ const getChanges = feed => {
     }
   }
 
-  const upstreamBatch = { id:upstreamBatchId, requests:[] };
-  feed.upstreamBatches[upstreamBatchId] = upstreamBatch;
-
+  feed.changesReqs = [];
   // we cannot call 'changes' in nano because it only uses GET requests and
   // our query string might be too long for GET
   async.map(
     chunks,
     (docIds, callback) => {
-      upstreamBatch.requests.push(db.request({
+      feed.changesReqs.push(db.request({
         db: db.settings.db,
         path: '_changes',
         qs:  _.pick(feed.req.query, 'timeout', 'style', 'heartbeat', 'since', 'feed', 'limit', 'filter'),
@@ -211,75 +206,43 @@ const getChanges = feed => {
       }, callback));
     },
     (err, responses) => {
-      endTimer(`getChanges():${upstreamBatchId}.requests:${chunks.length}`, startTime);
-      if (upstreamBatch.aborted) {
-        if (err) {
-          log(`Error caught in upstream request for aborted upstream batch.  This probably isn't a problem, but might be interesting.`, err);
-        }
-        log(`Not processing upstream change responses because the batch was aborted (${upstreamBatch.aborted}).`);
-        delete feed.upstreamBatches[upstreamBatch.id];
-        return;
-      }
+      endTimer(`getChanges().requests:${chunks.length}`, startTime);
       if (err) {
-        log('Error processing upstream changes request(s).  Response will be ended.', err);
-        feed.res.write(error(503, 'Error processing your changes'));
-        feed.res.end();
-        delete feed.upstreamBatches[upstreamBatch.id];
-        return;
+        return errorResponse(feed);
       }
 
       // if relevant ids have changed, update validated ids, getChanges again
       const originalValidatedIds = feed.validatedIds;
       bindServerIds(feed, err => {
-        if (upstreamBatch.aborted) {
-          if (err) {
-            log(`Error caught in bindServerIds() for aborted upstream batch.  This probably isn't a problem, but might be interesting.`, err);
-          }
-          log(`Not processing bindServerIds() result because the batch was aborted (${upstreamBatch.aborted}).`);
-          delete feed.upstreamBatches[upstreamBatch.id];
-          return;
+        if (err) {
+          return errorResponse(feed);
         }
         if (!containsAll(originalValidatedIds, feed.validatedIds)) {
           // getChanges again with the updated ids
+          abortAllChangesRequests(feed);
           // setTimeout to stop recursive stack overflow
           setTimeout(() => {
-            log(`setTimeout() fired (aborted=${upstreamBatch.aborted}`);
-            if (!upstreamBatch.aborted) {
-              getChanges(feed);
-            }
-            delete feed.upstreamBatches[upstreamBatch.id];
+            getChanges(feed);
           });
           return;
         }
-
-        cleanUp(feed);
-        if (err) {
-          log('Error returned by bindServerIds(); response will be ended.', err);
-          feed.res.write(error(503, 'Error processing your changes'));
-        } else {
-          const malformedResponse = responses.find(response => {
-            if (!response || !response.results) {
-              // See: https://github.com/medic/medic-webapp/issues/3099
-              // This should never happen, but apparently it does sometimes.
-              // Attempting to log out the response usefully to see what's occuring
-              console.error('No _changes error, but malformed response:', JSON.stringify(responses));
-              return true;
-            }
-          });
-
-          const changes = !malformedResponse &&
-              responses.length === 1 ? responses[0] : mergeChangesResponses(responses);
-
-          if (changes) {
-            log('changes merged successfully.  Response will be ended after prepareResponse() returns.');
-            prepareResponse(feed, changes);
-          } else {
-            log('Malformed response received from upstream changes request.  Response will be ended.');
-            feed.res.write(error(503, 'No _changes error, but malformed response.'));
+        const malformedResponse = responses.find(response => {
+          if (!response || !response.results) {
+            // See: https://github.com/medic/medic-webapp/issues/3099
+            // This should never happen, but apparently it does sometimes.
+            // Attempting to log out the response usefully to see what's occuring
+            console.error('No _changes error, but malformed response:', JSON.stringify(responses));
+            return true;
           }
-          feed.res.end();
-          endTimer(`getChanges():${upstreamBatchId}.end`, startTime);
+        });
+        if (malformedResponse) {
+          return errorResponse(feed, 'No _changes error, but malformed response.');
         }
+        cleanUp(feed);
+        const changes = responses.length === 1 ? responses[0] : mergeChangesResponses(responses);
+        prepareResponse(feed, changes);
+        feed.res.end();
+        endTimer('getChanges().end', startTime);
       });
     }
   );
@@ -463,14 +426,11 @@ var updateFeeds = function(changes) {
   continuousFeeds.forEach(function(feed) {
     // check if new and relevant
     if (hasNewApplicableDoc(feed, modifiedChanges)) {
-      abortUpstreamBatches(feed, 'newer-change-received', 'INFO [onRelevantChange] cancelling upstream batch (before bindServerIds()):');
-
+      abortAllChangesRequests(feed);
       bindServerIds(feed, function(err) {
-        abortUpstreamBatches(feed, 'newer-change-received', 'INFO [onRelevantChange] cancelling upstream batch (after bindServerIds()):');
         if (err) {
           return serverUtils.error(err, feed.req, feed.res);
         }
-        feed.log('updateFeeds()', 'Calling getChanges()…');
         getChanges(feed);
       });
     }
@@ -519,20 +479,12 @@ module.exports = {
       if (auth.isAdmin(userCtx)) {
         proxy.web(req, res);
       } else {
-        const feed = {
-          id: uuid(),
+        var feed = {
           req: req,
           res: res,
-          userCtx: userCtx,
-          upstreamBatches: {},
+          userCtx: userCtx
         };
-        const logPrefix = `[feed:${feed.id}]`;
-        feed.log = (...message) => console.log(logPrefix, ...message);
-
         req.on('close', function() {
-          const uBatchCount = Object.keys(feed.upstreamBatches).length;
-          feed.log(`[event:close] outstanding ${uBatchCount} upstream batches will be cancelled, and feed will be cleaned up.`);
-          abortUpstreamBatches(feed, 'response-closed', 'WARN unresolved upstream batch(es) after response was closed:');
           cleanUp(feed);
         });
         initFeed(feed, function(err) {
@@ -545,7 +497,6 @@ module.exports = {
           }
           res.type('json');
           defibrillator(feed);
-          feed.log('initFeed().callback', 'calling getChanges()…');
           getChanges(feed);
         });
       }
