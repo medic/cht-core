@@ -102,7 +102,7 @@ function uploadForm(name) {
       return resolve(data);
     });
   })
-    .then(fileContents => JSON.parse(fileContents))
+    .then(JSON.parse)
     .then(doc => testUtils.db.put(doc))
     .then(() => console.log(`Uploaded ${name}.`));
 }
