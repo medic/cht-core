@@ -75,7 +75,10 @@ var utilsFactory = require('bulk-docs-utils');
         xhr.onprogress = function() {
           if (xhr.responseText) {
             var currentResponse = partialParse(xhr.responseText);
-            var totalDocsDeleted = _.flatten(currentResponse).length;
+            var successfulDeletions = _.flatten(currentResponse).filter(function(doc) {
+              return doc.ok;
+            });
+            var totalDocsDeleted = successfulDeletions.length;
             if (eventListeners.progress && Array.isArray(currentResponse)) {
               eventListeners.progress(totalDocsDeleted);
             }
