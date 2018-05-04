@@ -817,6 +817,7 @@ module.exports = function(grunt) {
   grunt.registerTask('ci-performance', 'Run performance tests on CI', [
     'env:general',
     'exec:setupAdmin',
+    'exec:start_webdriver',
     'deploy',
     'test_perf',
   ]);
