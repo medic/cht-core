@@ -67,7 +67,7 @@ after_script:
       (cd tests/logs
         for log in $(ls *.log); do
           echo "---------- $log ----------"
-          tail "$log"
+          tail -n 100000 "$log"
           echo "--------------------------"
         done
       )
