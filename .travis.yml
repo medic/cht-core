@@ -14,8 +14,6 @@ services:
 
 env:
   matrix:
-  - NODE_VERSION=8 TEST_SUITE=normal
-  - NODE_VERSION=9 TEST_SUITE=normal
   - NODE_VERSION="lts/*" TEST_SUITE=performance
   global:
   - COUCH_URL=http://admin:pass@localhost:5984/medic
@@ -63,13 +61,6 @@ script:
       echo "ERROR No or unknown value for TEST_SUITE env var ('${TEST_SUITE}')."
       exit 1
     fi
-
-jobs:
-  include:
-    - if: type != pull_request
-      stage: "Publish binaries"
-      script: node --stack_size=10000 `which grunt` publish
-      env: NODE_VERSION=8 PUBLISH_TO=horti
 
 after_failure:
   - |
