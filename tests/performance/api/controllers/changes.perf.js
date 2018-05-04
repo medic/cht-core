@@ -35,11 +35,12 @@ describe('/_changes', function() {
 function createRestrictedUser(username, password) {
   const type = 'district-manager';
 
+  // TODO create contact and place
   return testUtils.request({
     path: '/api/v1/users',
     method: 'POST',
     headers: { 'Content-Type':'application/json' },
-    body: { username, password, type },
+    body: { username, password, type, contact, place },
   });
 }
 
