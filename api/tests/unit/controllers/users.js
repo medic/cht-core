@@ -941,11 +941,11 @@ exports['updateUser type param updates roles on user and user-settings doc'] = f
   sinon.stub(controller, '_validateUser').callsArgWith(1, null, {});
   sinon.stub(controller, '_validateUserSettings').callsArgWith(1, null, {});
   var update = sinon.stub(controller, '_storeUpdatedUser').callsFake(function(id, data, callback) {
-    test.deepEqual(data.roles, ['rebel', undefined]);
+    test.deepEqual(data.roles, ['rebel']);
     callback();
   });
   var updateSettings = sinon.stub(controller, '_storeUpdatedUserSettings').callsFake(function(id, data, callback) {
-    test.deepEqual(data.roles, ['rebel', undefined]);
+    test.deepEqual(data.roles, ['rebel']);
     callback();
   });
   controller.updateUser('paul', data, true, function(err) {
@@ -1057,7 +1057,7 @@ exports['updateUser updates user and user settings doc'] = function(test) {
   sinon.stub(places, 'getPlace').callsArg(1);
   var update = sinon.stub(controller, '_storeUpdatedUser').callsFake(function(id, user, cb) {
     test.equal(user.facility_id, 'el paso');
-    test.deepEqual(user.roles, ['rambler', undefined]);
+    test.deepEqual(user.roles, ['rambler']);
     test.equal(user.shoes, 'dusty boots');
     test.equal(user.password, COMPLEX_PASSWORD);
     test.equal(user.type, 'user');
