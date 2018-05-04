@@ -93,13 +93,12 @@ function uploadFormsInParallel() {
 }
 
 function uploadForm(name) {
-  console.log('Attempting to load JSON relative to ' + process.cwd());
   return new Promise((resolve, reject) => {
     fs.readFile(`./tests/performance/api/controllers/changes-data/${name}.form.json`, { encoding:'utf8' }, (err, data) => {
       if(err) {
         return reject(err);
       }
-      return data;
+      return resolve(data);
     });
   })
     .then(JSON.parse)
