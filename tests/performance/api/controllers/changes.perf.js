@@ -43,15 +43,15 @@ function createRestrictedUser(username, password) {
       method: 'POST',
       headers: { 'Content-Type':'application/json' },
       body: { name:'National Office', type:'national_office' },
-    })
+    }))
     .then(res => place = res.id)
 
     .then(() => testUtils.request({
       path: '/api/v1/places',
       method: 'POST',
       headers: { 'Content-Type':'application/json' },
-      body: { name:'Contact', place:placeId },
-    })
+      body: { name:'Contact', place },
+    }))
     .then(res => contact = res.id)
 
     .then(() => testUtils.request({
@@ -59,7 +59,7 @@ function createRestrictedUser(username, password) {
       method: 'POST',
       headers: { 'Content-Type':'application/json' },
       body: { username, password, type, contact, place },
-    });
+    }));
 }
 
 function uploadFormsInParallel() {
