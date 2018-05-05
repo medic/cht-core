@@ -201,7 +201,7 @@ describe('messageUtils', () => {
         const doc = { reported_date: date };
         const config = { date_format: 'DD-MMM-YYYY' };
         const actual = utils.template(config, null, doc, { message: input });
-        expect(actual).to.equal(moment.utc(date).format(config.date_format));
+        expect(actual).to.equal(moment(date).format(config.date_format));
       });
 
       it('integer', () => {
@@ -210,7 +210,7 @@ describe('messageUtils', () => {
         const doc = { reported_date: date };
         const config = { date_format: 'DD-MMM-YYYY' };
         const actual = utils.template(config, null, doc, { message: input });
-        expect(actual).to.equal(moment.utc(date).format(config.date_format));
+        expect(actual).to.equal(moment(date).format(config.date_format));
       });
 
       it('Date object', () => {
@@ -219,7 +219,7 @@ describe('messageUtils', () => {
         const doc = { reported_date: date };
         const config = { date_format: 'DD-MMM-YYYY' };
         const actual = utils.template(config, null, doc, { message: input });
-        expect(actual).to.equal(moment.utc(date).format(config.date_format));
+        expect(actual).to.equal(moment(date).format(config.date_format));
       });
 
     });
@@ -232,7 +232,7 @@ describe('messageUtils', () => {
         const doc = { reported_date: date };
         const config = { reported_date_format: 'DD-MMMM-YYYY HH:mm:ss' };
         const actual = utils.template(config, null, doc, { message: input });
-        expect(actual).to.equal(moment.utc(date).format(config.reported_date_format));
+        expect(actual).to.equal(moment(date).format(config.reported_date_format));
       });
 
       it('Date object', () => {
@@ -241,7 +241,7 @@ describe('messageUtils', () => {
         const doc = { reported_date: date };
         const config = { reported_date_format: 'DD-MMMM-YYYY HH:mm:ss' };
         const actual = utils.template(config, null, doc, { message: input });
-        expect(actual).to.equal(moment.utc(date).format(config.reported_date_format));
+        expect(actual).to.equal(moment(date).format(config.reported_date_format));
       });
 
     });
@@ -249,7 +249,8 @@ describe('messageUtils', () => {
     describe('bikram sambat', () => {
 
       it('integer', () => {
-        const date = 1457235941000;
+        const dateStr = new Date(1457235941000).toISOString().split('T')[0];
+        const date = moment(dateStr).unix()*1000; //Integer date in current tz
         const expected = '२३ फाल्गुन २०७२';
         const input = '{{#bikram_sambat_date}}{{reported_date}}{{/bikram_sambat_date}}';
         const doc = { reported_date: date };
@@ -259,7 +260,8 @@ describe('messageUtils', () => {
       });
 
       it('Date object', () => {
-        const date = 1457235941000;
+        const dateStr = new Date(1457235941000).toISOString().split('T')[0];
+        const date = moment(dateStr); // Date in running tz
         const expected = '२३ फाल्गुन २०७२';
         const input = '{{#bikram_sambat_date}}Date({{reported_date}}){{/bikram_sambat_date}}';
         const doc = { reported_date: date };

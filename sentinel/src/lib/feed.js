@@ -22,7 +22,8 @@ const followFeed = (seq, queue) => {
       logger.info(`Sentinel caught up to ${seq}`);
     }
   });
-  return feed.follow();
+  feed.follow();
+  return feed;
 };
 
 module.exports = {
