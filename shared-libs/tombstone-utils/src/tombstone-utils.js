@@ -1,7 +1,7 @@
 var _ = require('underscore');
 
-var TYPES = ['data_record', 'person', 'clinic', 'district_hospital', 'health_center'];
-var TOMBSTONE_TYPE = 'tombstone';
+var TYPES = ['data_record', 'person', 'clinic', 'district_hospital', 'health_center'],
+    TOMBSTONE_TYPE = 'tombstone';
 
 module.exports = function(DB, Promise) {
   var needsTombstone = function (doc) {
@@ -23,6 +23,7 @@ module.exports = function(DB, Promise) {
 
     logger.log('saving tombstone for ' + doc._id);
 
+    // ensure the tombstone doc gets the same _rev as the deleted doc it represents
     return DB.bulkDocs({ docs: [tombstoneDoc], new_edits: false });
   };
 
@@ -44,8 +45,7 @@ module.exports = function(DB, Promise) {
       seq: change.seq,
       changes: change.changes,
       doc: change.doc && change.doc.tombstone,
-      deleted: true,
-      tombstone: true
+      deleted: true
     };
   };
 
