@@ -224,5 +224,23 @@ module.exports = {
 
       callback(null, username);
     });
+  },
+
+  hydrate: function(userCtx, callback) {
+    const _hydrate = (resolve, reject) => {
+      db.medic.get('org.couchdb.user:' + userCtx.name, function(err, user) {
+        if (err) {
+          return reject(err);
+        }
+
+        return resolve(user);
+      });
+    };
+
+    if (!callback) {
+      return new Promise(_hydrate);
+    }
+
+    _hydrate(_.partial(callback, null), callback);
   }
 };

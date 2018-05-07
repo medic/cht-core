@@ -72,7 +72,7 @@ describe('DBSync service', () => {
       chai.expect(from.callCount).to.equal(1);
       chai.expect(from.args[0][1].live).to.equal(true);
       chai.expect(from.args[0][1].retry).to.equal(true);
-      chai.expect(from.args[0][1].doc_ids).to.deep.equal(['m','e','d','i','c']);
+      chai.expect(from.args[0][1].doc_ids).to.deep.equal(undefined);
       chai.expect(from.args[0][1].checkpoint).to.equal(undefined); // should equal 'target' when single sided checkpointing is fixed
       chai.expect(to.callCount).to.equal(1);
       chai.expect(to.args[0][1].live).to.equal(true);
@@ -105,7 +105,7 @@ describe('DBSync service', () => {
       chai.expect(from.callCount).to.equal(1);
       chai.expect(from.args[0][1].live).to.equal(true);
       chai.expect(from.args[0][1].retry).to.equal(true);
-      chai.expect(from.args[0][1].doc_ids).to.deep.equal(['m','e','d','i','c']);
+      chai.expect(from.args[0][1].doc_ids).to.deep.equal(undefined);
       chai.expect(to.callCount).to.equal(0);
     });
   });

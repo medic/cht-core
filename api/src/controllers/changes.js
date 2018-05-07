@@ -1,579 +1,275 @@
-var _ = require('underscore'),
-    async = require('async'),
-    auth = require('../auth'),
-    config = require('../config'),
-    serverUtils = require('../server-utils'),
-    db = require('../db-nano'),
-    ALL_KEY = '_all', // key in the docs_by_replication_key view for records everyone can access
-    UNASSIGNED_KEY = '_unassigned', // key in the docs_by_replication_key view for unassigned records
-    CONTACT_TYPES = ['person', 'clinic', 'health_center', 'district_hospital'],
-    inited = false,
-    continuousFeeds = [];
-const uuid = require('uuid/v4');
-const heartbeatFilter = require('../services/heartbeat-filter');
+const auth = require('../auth'),
+      db = require('../db-pouch'),
+      authorization = require('../services/authorization'),
+      _ = require('underscore'),
+      config = require('../config'),
+      serverUtils = require('../server-utils'),
+      tombstoneUtils = require('@shared-libs/tombstone-utils');
 
-/**
- * As per https://issues.apache.org/jira/browse/COUCHDB-1288, there is a 100 doc
- * limit on processing changes feeds with the _doc_ids filter within a
- * reasonable amount of time.
- */
-const MAX_DOC_IDS = 100;
+//todo Alex's heartbeat!
+let inited        = false,
+    longpollFeeds = [],
+    normalFeeds   = [],
+    MAX_DOC_IDS   = 100,
+    currentSeq;
 
-var error = function(code, message) {
-  return JSON.stringify({ code: code, message: message });
-};
-
-var getDepth = function(userCtx) {
-  if (!userCtx.roles || !userCtx.roles.length) {
-    return -1;
-  }
-  var settings = config.get('replication_depth');
-  if (!settings) {
-    return -1;
-  }
-  var depth = -1;
-  userCtx.roles.forEach(function(role) {
-    // find the role with the deepest depth
-    var setting = _.findWhere(settings, { role: role });
-    var settingDepth = setting && parseInt(setting.depth, 10);
-    if (!isNaN(settingDepth) && settingDepth > depth) {
-      depth = settingDepth;
-    }
-  });
-  return depth;
-};
-
-const getSubjectIds = (facilityId, userCtx, callback) => {
-  const keys = [];
-  const depth = getDepth(userCtx);
-  if (depth >= 0) {
-    for (let i = 0; i <= depth; i++) {
-      keys.push([ facilityId, i ]);
-    }
-  } else {
-    // no configured depth limit
-    keys.push([ facilityId ]);
-  }
-  db.medic.view('medic', 'contacts_by_depth', { keys: keys }, (err, result) => {
-    if (err) {
-      return callback(err);
-    }
-    const subjectIds = [];
-    result.rows.forEach(row => {
-      subjectIds.push(row.id);
-      if (row.value) {
-        subjectIds.push(row.value);
-      }
-    });
-    subjectIds.push(ALL_KEY);
-    if (config.get('district_admins_access_unallocated_messages') &&
-        auth.hasAllPermissions(userCtx, 'can_view_unallocated_data_records')) {
-      subjectIds.push(UNASSIGNED_KEY);
-    }
-    callback(null, subjectIds);
-  });
-};
-
-/**
- * Method to ensure users don't see reports submitted by their boss about the user
- */
-var isSensitive = function(contactId, facilityId, subjectIds, subject, submitter) {
-  if (!subject || !submitter) {
-    // either not sure who it's about, or who submitted it - not sensitive
-    return false;
-  }
-  if (subject !== contactId && subject !== facilityId) {
-    // must be about a descendant - not sensitive
-    return false;
-  }
-  // submitted by someone the user can't see
-  return subjectIds.indexOf(submitter) === -1;
-};
-
-const getValidatedDocIds = (contactId, facilityId, subjectIds, userCtx, callback) => {
-  const startTime = startTimer();
-  db.medic.view('medic', 'docs_by_replication_key', { keys: subjectIds }, function(err, viewResult) {
-    endTimer('bindValidatedDocIds().docs_by_replication_key', startTime);
-    if (err) {
-      return callback(err);
-    }
-    const validatedIds = viewResult.rows.reduce(function(ids, row) {
-      if (!isSensitive(contactId, facilityId, subjectIds, row.key, row.value.submitter)) {
-        ids.push(row.id);
-      }
-      return ids;
-    }, [ '_design/medic-client', 'org.couchdb.user:' + userCtx.name ]);
-    endTimer('bindValidatedDocIds().before-callback', startTime);
-    callback(null, validatedIds);
-  });
-};
-
-var bindRequestedIds = function(feed, callback) {
-  var ids = [];
-  if (feed.req.body && feed.req.body.doc_ids) {
-    // POST request
-    ids = feed.req.body.doc_ids;
-  } else if (feed.req.query && feed.req.query.doc_ids) {
-    // GET request
-    try {
-      ids = JSON.parse(feed.req.query.doc_ids);
-    } catch(e) {
-      return callback({ code: 400, message: 'Invalid doc_ids param' });
-    }
-  }
-  feed.requestedIds = ids;
-  return callback();
-};
-
-var defibrillator = function(feed) {
-  if (feed.req.query && feed.req.query.heartbeat) {
-    const heartbeatInterval = heartbeatFilter(feed.req.query.heartbeat);
-    feed.heartbeat = setInterval(function() {
-      feed.res.write('\n');
-    }, heartbeatInterval);
-  }
-};
-
-var prepareResponse = function(feed, changes) {
-  if (feed.res.finished) {
-    // Don't write to the response if it has already ended. The change
-    // will be picked up in the subsequent changes request.
-    return;
-  }
-  // filter out records the user isn't allowed to see
-  changes.results = changes.results.filter(function(change) {
-    return change.deleted || _.contains(feed.validatedIds, change.id);
-  });
-  feed.res.write(JSON.stringify(changes));
-};
-
-function abortUpstreamBatches(feed, reason, logMessage) {
-  const uBatchCount = Object.keys(feed.upstreamBatches).length;
-  feed.log(`[abortUpstreamBatches():${reason}]`, `Cancelling ${uBatchCount} batches...`);
-
-  Object.keys(feed.upstreamBatches).forEach(id => {
-    feed.log(`[abortUpstreamBatches():${reason}]`, logMessage, id);
-
-    const upstreamBatch = feed.upstreamBatches[id];
-    upstreamBatch.requests.forEach(r => r.abort());
-    upstreamBatch.aborted = reason;
-    delete feed.upstreamBatches[id];
-  });
-}
-
-var cleanUp = function(feed) {
+const cleanUp = (feed) => {
+  //console.log(feed.feedId +  ' cleanup');
   if (feed.heartbeat) {
     clearInterval(feed.heartbeat);
   }
-  var index = _.indexOf(continuousFeeds, feed);
-  if (index !== -1) {
-    continuousFeeds.splice(index, 1);
+  if (feed.timeout) {
+    clearTimeout(feed.timeout);
+  }
+  if (feed.upstreamRequests.length) {
+    feed.upstreamRequests.forEach(request => request.cancel());
   }
 };
 
-// returns true if superset contains all elements in subset
-const containsAll = (superset, subset) =>
-  subset.every(element => superset.indexOf(element) !== -1);
-
-const getChanges = feed => {
-  const startTime = startTimer();
-  const upstreamBatchId = uuid();
-  const logPrefix = `INFO [getChanges():${upstreamBatchId}]`;
-  const log = (...message) => feed.log(logPrefix, `[res.finished=${feed.res.finished}]`, ...message);
-
-  log('starting…');
-
-  const allIds = _.union(feed.requestedIds, feed.validatedIds);
-  const chunks = [];
-
-  if (feed.req.query.feed === 'longpoll') {
-    chunks.push(allIds);
-  } else {
-    while (allIds.length) {
-      chunks.push(allIds.splice(0, MAX_DOC_IDS));
-    }
-  }
-
-  const upstreamBatch = { id:upstreamBatchId, requests:[] };
-  feed.upstreamBatches[upstreamBatchId] = upstreamBatch;
-
-  // we cannot call 'changes' in nano because it only uses GET requests and
-  // our query string might be too long for GET
-  async.map(
-    chunks,
-    (docIds, callback) => {
-      upstreamBatch.requests.push(db.request({
-        db: db.settings.db,
-        path: '_changes',
-        qs:  _.pick(feed.req.query, 'timeout', 'style', 'heartbeat', 'since', 'feed', 'limit', 'filter'),
-        body: { doc_ids: docIds },
-        method: 'POST'
-      }, callback));
-    },
-    (err, responses) => {
-      endTimer(`getChanges():${upstreamBatchId}.requests:${chunks.length}`, startTime);
-      if (upstreamBatch.aborted) {
-        if (err) {
-          log(`Error caught in upstream request for aborted upstream batch.  This probably isn't a problem, but might be interesting.`, err);
-        }
-        log(`Not processing upstream change responses because the batch was aborted (${upstreamBatch.aborted}).`);
-        delete feed.upstreamBatches[upstreamBatch.id];
-        return;
-      }
-      if (err) {
-        log('Error processing upstream changes request(s).  Response will be ended.', err);
-        feed.res.write(error(503, 'Error processing your changes'));
-        cleanUp(feed);
-        feed.res.end();
-        delete feed.upstreamBatches[upstreamBatch.id];
-        return;
-      }
-
-      // if relevant ids have changed, update validated ids, getChanges again
-      const originalValidatedIds = feed.validatedIds;
-      bindServerIds(feed, err => {
-        if (upstreamBatch.aborted) {
-          if (err) {
-            log(`Error caught in bindServerIds() for aborted upstream batch.  This probably isn't a problem, but might be interesting.`, err);
-          }
-          log(`Not processing bindServerIds() result because the batch was aborted (${upstreamBatch.aborted}).`);
-          delete feed.upstreamBatches[upstreamBatch.id];
-          return;
-        }
-        if (!containsAll(originalValidatedIds, feed.validatedIds)) {
-          // getChanges again with the updated ids
-          // setTimeout to stop recursive stack overflow
-          setTimeout(() => {
-            log(`setTimeout() fired (aborted=${upstreamBatch.aborted}`);
-            if (!upstreamBatch.aborted) {
-              getChanges(feed);
-            }
-            delete feed.upstreamBatches[upstreamBatch.id];
-          });
-          return;
-        }
-
-        cleanUp(feed);
-        if (err) {
-          log('Error returned by bindServerIds(); response will be ended.', err);
-          feed.res.write(error(503, 'Error processing your changes'));
-        } else {
-          const malformedResponse = responses.find(response => {
-            if (!response || !response.results) {
-              // See: https://github.com/medic/medic-webapp/issues/3099
-              // This should never happen, but apparently it does sometimes.
-              // Attempting to log out the response usefully to see what's occuring
-              console.error('No _changes error, but malformed response:', JSON.stringify(responses));
-              return true;
-            }
-          });
-
-          const changes = !malformedResponse &&
-              responses.length === 1 ? responses[0] : mergeChangesResponses(responses);
-
-          if (changes) {
-            log('changes merged successfully.  Response will be ended after prepareResponse() returns.');
-            prepareResponse(feed, changes);
-          } else {
-            log('Malformed response received from upstream changes request.  Response will be ended.');
-            feed.res.write(error(503, 'No _changes error, but malformed response.'));
-          }
-          feed.res.end();
-          endTimer(`getChanges():${upstreamBatchId}.end`, startTime);
-        }
-      });
-    }
-  );
+const isLongpoll = (req) => {
+  return ['longpoll', 'continuous', 'eventsource'].indexOf(req.query.feed) !== -1;
 };
 
-const mergeChangesResponses = responses => {
-  let lastSeqNum = 0;
-  let lastSeq;
-  const results = [];
+const split = (array, count) => {
+  if (count === null || count < 1) {
+    return [];
+  }
+  const result = [];
+  let i = 0,
+      length = array.length;
+  while (i < length) {
+    result.push(array.slice(i, i += count));
+  }
+  return result;
+};
 
-  responses.forEach(changes => {
-    results.push(changes.results);
-    const numericSeq = numericSeqFrom(changes.last_seq);
-    if (numericSeq > lastSeqNum) {
-      lastSeq = changes.last_seq;
-      lastSeqNum = numericSeq;
+const defibrillator = (feed) => {
+  if (feed.req.query && feed.req.query.heartbeat) {
+    const heartbeat = feed.req.query.heartbeat !== true ? feed.req.query.heartbeat : 9000;
+    feed.heartbeat = setInterval(() => module.exports.writeDownstream(feed, '\n'), heartbeat);
+  }
+
+  const timeout = feed.req.query.timeout ? Math.min(60000, feed.req.query.timeout) : 60000;
+  feed.timeout = setTimeout(() => module.exports.endFeed(feed), timeout);
+};
+
+module.exports.endFeed = (feed) => {
+  cleanUp(feed);
+  module.exports.writeDownstream(feed, JSON.stringify(prepareResponse(feed)), true);
+  longpollFeeds = _.reject(longpollFeeds, feed);
+  normalFeeds = _.reject(normalFeeds, feed);
+};
+
+// any doc ID should only appear once in the changes feed, with a list of changed revs attached to it
+module.exports.appendChange = (results, changeObj) => {
+  const result = _.findWhere(results, { id: changeObj.change.id });
+  if (!result) {
+    results.push(changeObj.change);
+    return results;
+  }
+  // append missing revs to the list
+  _.difference(changeObj.change.changes.map(rev => rev.rev), result.changes.map(rev => rev.rev))
+    .forEach(rev => result.changes.push({ rev: rev }));
+
+  return results;
+};
+
+// filters the list of pending changes
+module.exports.processPendingChanges = (feed, results) => {
+  feed.pendingChanges
+    .filter(changeObj => authorization.isAllowedFeed(feed, changeObj))
+    .forEach(changeObj => results = module.exports.appendChange(results, changeObj));
+
+  return results;
+};
+
+module.exports.mergeResults = (responses) => {
+  let results = [];
+  responses.forEach(response => results = results.concat(response.results));
+  results.forEach((change, idx) => {
+    if (tombstoneUtils().isTombstoneId(change.id)) {
+      results[idx] = tombstoneUtils().generateChangeFromTombstone(change);
     }
   });
 
-  const merged = Array.prototype.concat(...results); // flatten the result sets
-  merged.sort((a, b) => numericSeqFrom(a.seq) - numericSeqFrom(b.seq));
-
-  return {
-    last_seq: lastSeq,
-    results: merged
-  };
+  return results;
 };
 
-const numericSeqFrom = seq => typeof seq === 'number' ? seq : Number.parseInt(seq.split('-')[0]);
+module.exports.getChanges = (feed) => {
+  // impose limit to insure that we're getting all changes available for each of the requested doc ids
+  const options = {
+    since: feed.req.query.since || 0,
+    limit: MAX_DOC_IDS
+  };
+  const queryOpts = ['style', 'conflicts', 'descending', 'att_encoding_info', 'view', 'include_docs', 'seq_interval'];
+  _.extend(options, _.pick(feed.req.query, ...queryOpts));
 
-const bindServerIds = (feed, callback) => {
-  const startTime = startTimer();
-  async.parallel([
-    callback => auth.getFacilityId(feed.req, feed.userCtx, callback),
-    callback => auth.getContactId(feed.userCtx, callback)
-  ], (err, [facilityId, contactId]) => {
-    if (err) {
-      return callback(err);
-    }
-    getSubjectIds(facilityId, feed.userCtx, (err, subjectIds) => {
-      if (err) {
-        return callback(err);
+  const chunks = split(feed.validatedIds, MAX_DOC_IDS);
+  feed.upstreamRequests = chunks.map(docIds => {
+    return db.medic
+      .changes(_.extend({ doc_ids: docIds }, options))
+      .on('complete', info => feed.lastSeq = info.lastSeq);
+  });
+
+  return Promise
+    .all(feed.upstreamRequests)
+    .then(responses => {
+      let results = module.exports.mergeResults(responses);
+      results = module.exports.processPendingChanges(feed, results);
+
+      if (results.length || !isLongpoll(feed.req)) {
+        feed.results = results;
+        cleanUp(feed);
+        return module.exports.writeDownstream(feed, JSON.stringify(prepareResponse(feed)), true);
       }
-      getValidatedDocIds(contactId, facilityId, subjectIds, feed.userCtx, (err, validatedIds) => {
-        if (err) {
-          return callback(err);
-        }
-        feed.contactId = contactId;
-        feed.facilityId = facilityId;
-        feed.subjectIds = subjectIds;
-        feed.validatedIds = validatedIds;
-        endTimer('bindServerIds().before-callback', startTime);
-        callback();
-      });
+
+      // move the feed to the longpoll list to receive new changes
+      normalFeeds = _.without(normalFeeds, feed);
+      longpollFeeds.push(feed);
+    })
+    .catch(err => {
+      console.log(feed.feedId +  ' Error while requesting `normal` changes feed');
+      console.log(err);
+
+      //cancel ongoing requests
+      feed.upstreamRequests.forEach(request => request.cancel());
+      module.exports.getChanges(feed);
     });
-  });
 };
 
-var initFeed = function(feed, callback) {
-  bindRequestedIds(feed, function(err) {
-    if (err) {
-      return callback(err);
-    }
-    bindServerIds(feed, callback);
-  });
-};
-
-// returns if it is true that for any document in the feed the user
-// should be able to see it AND they don't already
-var hasNewApplicableDoc = function(feed, changes) {
-  return _.some(changes, function(change) {
-    if (_.contains(feed.validatedIds, change.id)) {
-      // feed already knows about doc
-      return false;
-    }
-    if (isSensitive(feed, change.subject, change.submitter)) {
-      // don't show sensitive information
-      return false;
-    }
-    if (feed.subjectIds.indexOf(change.subject) !== -1) {
-      // this is relevant to the feed
-      return true;
-    }
-    if (CONTACT_TYPES.indexOf(change.doc.type) === -1) {
-      // only people and places are subjects so we don't need to update
-      // the subject list for non-contact types.
-      return false;
-    }
-    var depth = getDepth(feed.userCtx);
-    if (depth < 0) {
-      depth = Infinity;
-    }
-    var parent = change.doc.parent;
-    while (depth >= 0 && parent) {
-      if (feed.subjectIds.indexOf(parent._id) !== -1) {
-        // this is relevant to the feed
-        return true;
-      }
-      depth--;
-      parent = parent.parent;
-    }
-    return false;
-  });
-};
-
-// WARNING: If updating this function also update the docs_by_replication_key view in the medic ddoc
-var getReplicationKey = function(doc) {
-  if (doc._id === 'resources' ||
-      doc._id === 'appcache' ||
-      doc._id === 'zscore-charts' ||
-      doc._id === 'settings' ||
-      doc.type === 'form' ||
-      doc.type === 'translations') {
-    return [ '_all', {} ];
-  }
-  var getSubject = function() {
-    if (doc.form) {
-      // report
-      if (doc.contact && doc.errors && doc.errors.length) {
-        for (var i = 0; i < doc.errors.length; i++) {
-          // no patient found, fall back to using contact. #3437
-          if (doc.errors[i].code === 'registration_not_found') {
-            return doc.contact._id;
-          }
-        }
-      }
-      return (doc.patient_id || (doc.fields && doc.fields.patient_id)) ||
-             (doc.place_id || (doc.fields && doc.fields.place_id)) ||
-             (doc.contact && doc.contact._id);
-    }
-    if (doc.sms_message) {
-      // incoming message
-      return doc.contact && doc.contact._id;
-    }
-    if (doc.kujua_message) {
-      // outgoing message
-      return doc.tasks &&
-             doc.tasks[0] &&
-             doc.tasks[0].messages &&
-             doc.tasks[0].messages[0] &&
-             doc.tasks[0].messages[0].contact &&
-             doc.tasks[0].messages[0].contact._id;
-    }
-  };
-  switch (doc.type) {
-    case 'data_record':
-      var subject = getSubject() || '_unassigned';
-      var value = {};
-      if (doc.form && doc.contact) {
-        value.submitter = doc.contact._id;
-      }
-      return [ subject, value ];
-    case 'clinic':
-    case 'district_hospital':
-    case 'health_center':
-    case 'person':
-      return [ doc._id, {} ];
-  }
-};
-
-var updateFeeds = function(changes) {
-  if (!changes || !changes.results) {
-    // See: https://github.com/medic/medic-webapp/issues/3099
-    // This should never happen, but apparently it does sometimes.
-    // Attempting to log out the response usefully to see what's occuring
-    console.error('No _changes error, but malformed response:', JSON.stringify(changes));
+module.exports.writeDownstream = (feed, content, end) => {
+  if (feed.res.finished) {
     return;
   }
-
-  var modifiedChanges = changes.results.map(function(change) {
-    var result = {
-      id: change.id,
-      doc: change.doc
-    };
-    var row = getReplicationKey(change.doc);
-    if (row && row.length) {
-      result.subject = row[0];
-      result.submitter = row[1].submitter;
-    }
-    return result;
-  });
-  continuousFeeds.forEach(function(feed) {
-    // check if new and relevant
-    if (hasNewApplicableDoc(feed, modifiedChanges)) {
-      abortUpstreamBatches(feed, 'newer-change-received', 'INFO [onRelevantChange] cancelling upstream batch (before bindServerIds()):');
-
-      bindServerIds(feed, function(err) {
-        abortUpstreamBatches(feed, 'newer-change-received', 'INFO [onRelevantChange] cancelling upstream batch (after bindServerIds()):');
-        if (err) {
-          return serverUtils.error(err, feed.req, feed.res);
-        }
-        feed.log('updateFeeds()', 'Calling getChanges()…');
-        getChanges(feed);
-      });
-    }
-  });
+  feed.res.write(content);
+  if (end) {
+    feed.res.end();
+  }
 };
 
-var init = function(since) {
-  inited = true;
-  since = since || 'now';
-  var options = {
-    since: since,
-    heartbeat: true,
-    feed: 'longpoll',
-    include_docs: true
+const prepareResponse = (feed) => {
+  const response = {
+    results: feed.results,
+    last_seq: feed.lastSeq
   };
-  db.medic.changes(options, function(err, changes) {
-    if (!err) {
-      updateFeeds(changes);
-      since = changes.last_seq;
+
+  return response;
+};
+
+module.exports.debouncedKillFeed = _.debounce(module.exports.endFeed, 200);
+
+module.exports.processChange = (change, seq) => {
+  let changeObj;
+  if (tombstoneUtils().isTombstoneId(change.id)) {
+    changeObj = {
+      change: tombstoneUtils().generateChangeFromTombstone(change),
+      authData: authorization.getViewResults(tombstoneUtils().extractDoc(change.doc))
+    };
+  } else {
+    changeObj = {
+      change: change,
+      authData: authorization.getViewResults(change.doc)
+    };
+  }
+  // inform the normal changes feed that a change was received while they were processing
+  normalFeeds.forEach(feed => {
+    feed.lastSeq = seq;
+    feed.pendingChanges.push(changeObj);
+  });
+
+  // send the change through to the longpoll feeds which are allowed to see it
+  // sending responses back through the feed is debounced, so multiple updates are caught
+  longpollFeeds.forEach(feed => {
+    feed.lastSeq = seq;
+    if (!authorization.isAllowedFeed(feed, changeObj)) {
+      return;
     }
-    // use setTimeout to break recursion so stack doesn't blow out
-    setTimeout(function() {
-      init(since);
-    }, 1000);
+    module.exports.appendChange(feed.results, changeObj);
+    module.exports.debouncedKillFeed(feed);
   });
 };
 
-module.exports = {
-  request: function(proxy, req, res) {
-    if (!inited) {
-      init();
-    }
-    auth.getUserCtx(req, function(err, userCtx) {
-      if (err) {
-        return serverUtils.error(err, req, res);
-      }
+module.exports.init = (since) => {
+  inited = true;
+  db.medic
+    .changes({
+      live: true,
+      include_docs: true,
+      since: since || 'now',
+      timeout: false,
+      //heartbeat: true
+    })
+    .on('change', (change, pending, seq) => {
+      module.exports.processChange(change, seq);
+      currentSeq = seq;
+    })
+    .on('error', () => {
+      module.exports.init(currentSeq);
+    });
+};
 
-      if (req.query.feed === 'longpoll' ||
-          req.query.feed === 'continuous' ||
-          req.query.feed === 'eventsource') {
+module.exports.initFeed = (feed) => {
+  _.extend(feed, {
+    depth: authorization.getDepth(feed.userCtx),
+    initSeq: currentSeq,
+    lastSeq: currentSeq,
+    pendingChanges: [],
+    results: [],
+    upstreamRequests: []
+  });
+
+  defibrillator(feed);
+  normalFeeds.push(feed);
+
+  return authorization
+    .getSubjectIds(feed.userCtx)
+    .then(subjectIds => {
+      return authorization
+        .getValidatedDocIds(subjectIds, feed.userCtx)
+        .then(validatedIds => {
+          _.extend(feed, { subjectIds: subjectIds, validatedIds: validatedIds });
+          return feed;
+        });
+    });
+};
+
+module.exports.request = (proxy, req, res) => {
+  if (!inited) {
+    // As per https://issues.apache.org/jira/browse/COUCHDB-1288, there is a 100 doc
+    // limit on processing changes feeds with the _doc_ids filter within a
+    // reasonable amount of time.
+    // While hardcoded at first, CouchDB 2.1.1 has the option to configure this value
+    MAX_DOC_IDS = config.get('changes_doc_ids_optimization_threshold') || MAX_DOC_IDS;
+    module.exports.init();
+
+    db.medic.setMaxListeners(100);
+  }
+  return auth
+    .getUserCtx(req)
+    .then(userCtx => {
+      if (isLongpoll(req)) {
         // Disable nginx proxy buffering to allow hearbeats for long-running feeds
         // Issue: #2363
         res.setHeader('X-Accel-Buffering', 'no');
       }
 
       if (auth.isAdmin(userCtx)) {
-        proxy.web(req, res);
-      } else {
-        const feed = {
-          id: uuid(),
-          req: req,
-          res: res,
-          userCtx: userCtx,
-          upstreamBatches: {},
-        };
-        const logPrefix = `[feed:${feed.id}]`;
-        feed.log = (...message) => console.log(logPrefix, ...message);
-
-        req.on('close', function() {
-          const uBatchCount = Object.keys(feed.upstreamBatches).length;
-          feed.log(`[event:close] outstanding ${uBatchCount} upstream batches will be cancelled, and feed will be cleaned up.`);
-          abortUpstreamBatches(feed, 'response-closed', 'WARN unresolved upstream batch(es) after response was closed:');
-          cleanUp(feed);
-        });
-        initFeed(feed, function(err) {
-          if (err) {
-            return serverUtils.error(err, req, res);
-          }
-          if (req.query.feed === 'longpoll') {
-            // watch for newly added docs
-            continuousFeeds.push(feed);
-          }
-          res.type('json');
-          defibrillator(feed);
-          feed.log('initFeed().callback', 'calling getChanges()…');
-          getChanges(feed);
-        });
+        return proxy.web(req, res);
       }
-    });
-  },
-  _getReplicationKey: getReplicationKey // used for testing
+
+      auth
+        .hydrate(userCtx)
+        .then(userCtx => {
+          const feedId = Date.now();
+          const feed = { req, res, userCtx, feedId };
+
+          req.on('close', function() {
+            cleanUp(feed);
+          });
+
+          res.type('json');
+          module.exports.initFeed(feed).then(module.exports.getChanges);
+        });
+    })
+    .catch(() => serverUtils.notLoggedIn(req, res));
 };
-
-function startTimer() {
-  return Date.now();
-}
-
-function endTimer(name, start) {
-  var diff = Date.now() - start;
-  console.log('TIMED SECTION COMPLETE', name, diff, 'ms');
-}
-
-// used for testing
-if (process.env.UNIT_TEST_ENV) {
-  _.extend(module.exports, {
-    _reset: function() {
-      continuousFeeds = [];
-      inited = false;
-    },
-    _getFeeds: function() {
-      return continuousFeeds;
-    }
-  });
-}

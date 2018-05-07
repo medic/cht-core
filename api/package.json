@@ -39,6 +39,8 @@
     "request": "^2.85.0",
     "search": "file:../shared-libs/search",
     "simple-password-tester": "^1.0.0",
+    "@shared-libs/tombstone-utils": "file:../shared-libs/tombstone-utils",
+    "@shared-libs/view-map-utils": "file:../shared-libs/view-map-utils",
     "task-utils": "file:../shared-libs/task-utils",
     "underscore": "^1.8.3",
     "url": "^0.11.0",

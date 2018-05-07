@@ -295,5 +295,6 @@
       "roles": [
       ]
     }
-  ]
+  ],
+  "changes_doc_ids_optimization_threshold": 100
 }
