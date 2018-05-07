@@ -10,11 +10,12 @@
 
 ## 2.15.0
 
-_April 16, 2018_
+_May 4, 2018_
 
 ### Migration notes
 
-- [#3910](https://github.com/medic/medic-webapp/issues/3910): the `POST /api/v1/users/{username}` API has had some significant changes. Importantly for scripting, an arguable bug was fixed where you didn't need to provide a user `type`. Check your scripts!
+- [#3910](https://github.com/medic/medic-webapp/issues/3910): The `POST /api/v1/users/{username}` API has had some significant changes. Importantly for scripting, an arguable bug was fixed where you didn't need to provide a user `type`. Check your scripts!
+- [#4457](https://github.com/medic/medic-webapp/issues/4457): The zscore enketo widget is now deprecated in favor of the xpath calculation which is more flexible and reliable. The widget will be removed in a future release.
 
 ### Features
 
@@ -99,6 +100,31 @@ _April 16, 2018_
 - [#4123](https://github.com/medic/medic-webapp/issues/4123): Revert to "official" google-libphonenumber dependency
 - [#3909](https://github.com/medic/medic-webapp/issues/3909): Check our auditing coverage
 - [#3738](https://github.com/medic/medic-webapp/issues/3738): Write e2e tests against medic-api for medic-gateway endpoint
+
+## 2.14.3
+
+_May 4, 2018_
+
+### Bug fixes
+
+- [#4457](https://github.com/medic/medic-webapp/issues/4457): The z-score enketo widget is not usable.
+- [#4460](https://github.com/medic/medic-webapp/issues/4460): Uncaught Exception: write after end error.
+
+## 2.14.2
+
+_April 24, 2018_
+
+### Bug fixes
+
+- [#3099](https://github.com/medic/medic-webapp/issues/3099): Uncaught exception triggers 500 response for subsequent requests.
+
+## 2.14.1
+
+_April 13, 2018_
+
+### Performance improvements
+
+- [#4430](https://github.com/medic/medic-webapp/issues/4430): Drastically improve performance of form loading when the patient context is used, and that context is very large (e.g. you're including lineages).
 
 ## 2.14.0
 

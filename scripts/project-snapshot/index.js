@@ -1,30 +1,21 @@
 /*
- * Generates a changelog given a GH project name.
+ * Generates a snapshot of the state of project issues.
  *
  * USAGE:
- *  1) Make sure all the issues in the release are assigned to the project
- *  2) Each issue should have one and only one Type label - the script will tell you which ones don't
- *  3) Make sure you have generated a GH token and created a token.json file, eg: { "githubApiToken": "..." }
- *  4) Execute the command: node index.js <project_name> > <output_file>
- *      eg: node index.js 3.0.0 > tmp.md
- *  5) Insert the contents of the output file into the appropriate location in Changes.md
+ *  1) Make sure all the issues are assigned to the project and have the right type and status labels
+ *  2) Make sure you have generated a GH token and created a token.json file, eg: { "githubApiToken": "..." }
+ *  3) Execute the command: node index.js <project_name> > <output_file>
+ *      eg: node index.js 3.0.0 > tmp.csv
  */
 
 const GitHub = require('@octokit/rest');
 
-const TYPES = [
-  { label: 'Type: Feature', title: 'Features', issues: [] },
-  { label: 'Type: Improvement', title: 'Improvements', issues: [] },
-  { label: 'Type: Performance', title: 'Performance fixes', issues: [] },
-  { label: 'Type: Bug', title: 'Bug fixes', issues: [] },
-  { label: 'Type: Technical issue', title: 'Technical issues', issues: [] }
-];
 const github = new GitHub({
   headers: { 'user-agent': 'changelog-generator' }
 });
 github.authenticate({
   type: 'token',
-  token: require('./token.json').githubApiToken
+  token: require('../token.json').githubApiToken
 });
 
 const projectByName = (projects, name) => projects.find(project => project.name === name);
@@ -94,10 +85,36 @@ const getIssues = cards => {
   );
 };
 
-const sort = issues => {
+const TYPES = [
+  'Type: Feature',
+  'Type: Improvement',
+  'Type: Performance',
+  'Type: Bug', 
+  'Type: Technical issue',
+];
+
+const STATUSES = [
+  'Status: 1 - Triaged',
+  'Status: 2 - Active work',
+  'Status: 3 - Code review',
+  'Status: 4 - Acceptance testing',
+  'Status: 5 - Ready',
+  'Status: 6 - Released',
+];
+
+const group = issues => {
+  const result = {
+    types: {},
+    statuses: {}
+  };
+
   const errors = [];
+
+  TYPES.forEach(type => result.types[type] = 0);
+  STATUSES.forEach(type => result.statuses[type] = 0);
+
   issues.forEach(issue => {
-    const matchingTypes = TYPES.filter(type => issue.data.labels.find(label => label.name === type.label));
+    const matchingTypes = TYPES.filter(type => issue.data.labels.find(label => label.name === type));
     if (!matchingTypes.length) {
       errors.push(`Issue doesn't have any Type label: ${issue.data.html_url}`);
       return;
@@ -106,32 +123,35 @@ const sort = issues => {
       errors.push(`Issue has too many Type labels: ${issue.data.html_url}`);
       return;
     }
-    matchingTypes[0].issues.push(issue);
+    result.types[matchingTypes[0]]++;
+
+    const matchingStatuses = STATUSES.filter(status => issue.data.labels.find(label => label.name === status));
+    if (!matchingStatuses.length) {
+      errors.push(`Issue doesn't have any Status label: ${issue.data.html_url}`);
+      return;
+    }
+    if (matchingStatuses.length > 1) {
+      errors.push(`Issue has too many Status labels: ${issue.data.html_url}`);
+      return;
+    }
+    result.statuses[matchingStatuses[0]]++;
   });
 
   if (errors.length) {
     console.error(JSON.stringify(errors, null, 2));
     throw new Error('Some issues are in an invalid state');
   }
-
-  return TYPES;
+  return result;
 };
 
 const output = groups => {
-  groups.forEach(group => {
-    if (group.issues.length) {
-      console.log(`### ${group.title}`);
-      console.log('');
-      group.issues.forEach(issue => console.log(`- [#${issue.data.number}](${issue.data.html_url}): ${issue.data.title}`));
-      console.log('');
-    }
-  });
+  console.log(JSON.stringify(groups, null, 2));
 };
 
 Promise.resolve()
   .then(getProjectId)
   .then(getCards)
   .then(getIssues)
-  .then(sort)
+  .then(group)
   .then(output)
   .catch(console.error);

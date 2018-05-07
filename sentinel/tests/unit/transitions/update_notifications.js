@@ -91,7 +91,7 @@ describe('update_notifications', () => {
           fields: { patient_id: 'x' }
         }
       };
-      transition.onMatch(change).then(changed => {
+      return transition.onMatch(change).then(changed => {
         assert.equal((!!changed), false);
       });
     });
@@ -137,7 +137,7 @@ describe('update_notifications', () => {
       });
     });
 
-    it('patient not found adds error and response', done => {
+    it('patient not found adds error and response', () => {
       const doc = {
         form: 'on',
         type: 'data_record',
@@ -168,18 +168,17 @@ describe('update_notifications', () => {
         doc: doc,
         form: 'on'
       };
-      transition.onMatch(change).then(changed => {
+      return transition.onMatch(change).then(changed => {
         assert.equal(changed, true);
         assert.equal(doc.errors.length, 1);
         assert.equal(doc.errors[0].message, 'not found x');
         assert.equal(doc.tasks.length, 1);
         assert.equal(doc.tasks[0].messages[0].message, 'not found x');
         assert.equal(doc.tasks[0].messages[0].to, 'x');
-        done();
       });
     });
 
-    it('validation failure adds error and response', done => {
+    it('validation failure adds error and response', () => {
 
       const doc = {
         form: 'on',
@@ -220,18 +219,17 @@ describe('update_notifications', () => {
         doc: doc,
         form: 'on'
       };
-      transition.onMatch(change).then(changed => {
+      return transition.onMatch(change).then(changed => {
         assert.equal(changed, true);
         assert.equal(doc.errors.length, 1);
         assert.equal(doc.errors[0].message, 'patient id needs 5 numbers.');
         assert.equal(doc.tasks.length, 1);
         assert.equal(doc.tasks[0].messages[0].message, 'patient id needs 5 numbers.');
         assert.equal(doc.tasks[0].messages[0].to, 'x');
-        done();
       });
     });
 
-    it('mute responds correctly', done => {
+    it('mute responds correctly', () => {
 
       const doc = {
         form: 'off',
@@ -271,13 +269,61 @@ describe('update_notifications', () => {
         doc: doc,
         form: 'off'
       };
-      transition.onMatch(change).then(changed => {
+      return transition.onMatch(change).then(changed => {
         assert.equal(changed, true);
         assert.equal((doc.errors || []).length, 0);
         assert.equal(doc.tasks.length, 1);
         assert.equal(doc.tasks[0].messages[0].message, 'Thank you woot, no further notifications regarding Agatha will be sent until you submit START 123.');
         assert.equal(regDoc.scheduled_tasks[0].state, 'muted');
-        done();
+      });
+    });
+
+    it('mute responds correctly when using translation keys', () => {
+
+      const doc = {
+        form: 'off',
+        type: 'data_record',
+        fields: { patient_id: '123' },
+        contact: {
+          phone: '+1234',
+          name: 'woot'
+        }
+      };
+
+      const regDoc = {
+        fields: {
+          patient_name: 'Agatha'
+        },
+        scheduled_tasks: [{
+          state: 'scheduled'
+        }]
+      };
+
+      sinon.stub(transition, 'getConfig').returns({
+        messages: [{
+          event_type: 'on_mute',
+          translation_key: 'msg.muted'
+        }],
+        off_form: 'off'
+      });
+
+      sinon.stub(utils, 'getRegistrations').callsArgWithAsync(1, null, [regDoc]);
+      sinon.stub(utils, 'getPatientContact').callsArgWithAsync(2, null, []);
+      const translate = sinon.stub(utils, 'translate').returns('translated value');
+      sinon.stub(db.audit, 'saveDoc').callsArg(1);
+
+      const change = {
+        doc: doc,
+        form: 'off'
+      };
+      return transition.onMatch(change).then(changed => {
+        assert.equal(changed, true);
+        assert.equal((doc.errors || []).length, 0);
+        assert.equal(doc.tasks.length, 1);
+        assert.equal(doc.tasks[0].messages[0].message, 'translated value');
+        assert.equal(translate.callCount, 1);
+        assert.equal(translate.args[0][0], 'msg.muted');
+        assert.equal(regDoc.scheduled_tasks[0].state, 'muted');
       });
     });
 

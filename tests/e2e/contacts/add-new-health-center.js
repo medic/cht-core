@@ -6,6 +6,7 @@ const commonElements = require('../../page-objects/common/common.po.js'),
 describe('Add new health center tests : ', () => {
 
   afterEach(utils.afterEach);
+  beforeEach(utils.beforeEach);
 
   it('should add new health center', () => {
     commonElements.goToPeople();
@@ -14,7 +15,7 @@ describe('Add new health center tests : ', () => {
     helper.waitUntilReady(element(by.css('.card .heading')));
     const newHealthCenterButton = element(by.css('[ng-show="actionBar.right.selected[0].child.type"]'));
     helper.waitUntilReady(newHealthCenterButton);
-    newHealthCenterButton.click();
+    helper.clickElement(newHealthCenterButton);
     helper.waitUntilReady(element(by.css('[name="/data/health_center"]')));
     element(by.css('[name="/data/health_center/name"]')).sendKeys('Mavuvu Clinic');
     browser.actions()
@@ -27,11 +28,11 @@ describe('Add new health center tests : ', () => {
       .sendKeys('Kiwi').perform();
     const contactName = element.all(by.css('.select2-results .name')).get(0);
     helper.waitElementToBeVisible(contactName);
-    contactName.click();
+    helper.clickElement(contactName);
     element(by.css('[name="/data/health_center/external_id"]')).sendKeys('1234457');
     element(by.css('[name="/data/health_center/notes"]')).sendKeys('some notes');
     const submitButton = element(by.css('.btn.submit.btn-primary'));
-    submitButton.click();
+    helper.clickElement(submitButton);
     const center = element(by.css('.card h2'));
     helper.waitUntilReady(center);
     expect(center.getText()).toBe('Mavuvu Clinic');

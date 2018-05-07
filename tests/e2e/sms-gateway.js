@@ -150,10 +150,13 @@ describe('sms-gateway api', () => {
         }]
       };
       pollSmsApi(body).then(done).catch(done.fail);
+      helper.handleUpdateModal();
     });
+    afterEach(helper.handleUpdateModal);
+
 
     it('- shows content', () => {
-      element(by.id('messages-tab')).click();
+      helper.clickElement(element(by.id('messages-tab')));
 
       // LHS
       browser.wait(() => {
@@ -165,7 +168,7 @@ describe('sms-gateway api', () => {
       expect(helper.getTextFromElement(element(by.css('#message-list li:first-child .summary p')))).toBe('hello');
 
       // RHS
-      element(by.css('#message-list li:first-child .summary')).click();
+      helper.clickElement(element(by.css('#message-list li:first-child .summary')));
       helper.waitElementToBeVisible(element(by.css('#message-content li.incoming:first-child .data p:first-child')));
       browser.wait(() => {
         return element(by.css('#message-content li.incoming:first-child .data p:first-child')).isPresent();
@@ -211,7 +214,7 @@ describe('sms-gateway api', () => {
         return element(by.css('#reports-list li:first-child')).isPresent();
       }, 10000);
       helper.waitElementToBeVisible(element(by.css('#reports-list li:first-child')));
-      element(by.css('#reports-list li:first-child .heading')).click();
+      helper.clickElement(element(by.css('#reports-list li:first-child .heading')));
       browser.wait(() => {
         return element(by.css('#reports-content .body .item-summary .icon')).isPresent();
       }, 10000);

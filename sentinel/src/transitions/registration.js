@@ -373,11 +373,8 @@ module.exports = {
       }
       options.params.forEach(scheduleName => {
         const schedule = schedules.getScheduleConfig(scheduleName);
-        const assigned = schedules.assignSchedule(
+        schedules.assignSchedule(
           options.doc, schedule, registrations, options.doc.patient);
-        if (!assigned) {
-          logger.error(new Error('Failed to add schedule please verify settings.'));
-        }
       });
       callback();
     });
