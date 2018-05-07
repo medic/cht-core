@@ -8,6 +8,7 @@ _May 4, 2018_
 
 - [#4457](https://github.com/medic/medic-webapp/issues/4457): The z-score enketo widget is not usable.
 - [#4460](https://github.com/medic/medic-webapp/issues/4460): Uncaught Exception: write after end error.
+- [#4523](https://github.com/medic/medic-webapp/issues/4523): Sentinel cannot handle reports with `{}` in lineage.
 
 ## 2.14.2
 
