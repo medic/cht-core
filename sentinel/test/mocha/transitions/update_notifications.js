@@ -284,6 +284,55 @@ describe('update_notifications', () => {
       });
     });
 
+    it('mute responds correctly when using translation keys', () => {
+
+      const doc = {
+        form: 'off',
+        type: 'data_record',
+        fields: { patient_id: '123' },
+        contact: {
+          phone: '+1234',
+          name: 'woot'
+        }
+      };
+
+      const regDoc = {
+        fields: {
+          patient_name: 'Agatha'
+        },
+        scheduled_tasks: [{
+          state: 'scheduled'
+        }]
+      };
+
+      sinon.stub(transition, 'getConfig').returns({
+        messages: [{
+          event_type: 'on_mute',
+          translation_key: 'msg.muted'
+        }],
+        off_form: 'off'
+      });
+
+      sinon.stub(utils, 'getRegistrations').callsArgWithAsync(1, null, [regDoc]);
+      sinon.stub(utils, 'getPatientContact').callsArgWithAsync(2, null, []);
+      const translate = sinon.stub(utils, 'translate').returns('translated value');
+      sinon.stub(db.audit, 'saveDoc').callsArg(1);
+
+      const change = {
+        doc: doc,
+        form: 'off'
+      };
+      return transition.onMatch(change).then(changed => {
+        changed.should.equal(true);
+        (doc.errors || []).length.should.equal(0);
+        doc.tasks.length.should.equal(1);
+        doc.tasks[0].messages[0].message.should.equal('translated value');
+        translate.callCount.should.equal(1);
+        translate.args[0][0].should.equal('msg.muted');
+        regDoc.scheduled_tasks[0].state.should.equal('muted');
+       });
+     });
+
   });
 
   describe('add error', () => {

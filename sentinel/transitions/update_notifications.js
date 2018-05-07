@@ -8,9 +8,11 @@ var async = require('async'),
     transitionUtils = require('./utils'),
     NAME = 'update_notifications';
 
-var getMessage = function(config, eventType) {
-    var msg = _.findWhere(config.messages, { event_type: eventType });
-    return msg && msg.message;
+var isConfigured = function(config, eventType) {
+    return config && config.messages && config.messages.some(message => {
+        return message.event_type === eventType &&
+               (message.message || message.translation_key);
+    });
 };
 
 var getEventType = function(config, doc) {
@@ -28,7 +30,7 @@ var getEventType = function(config, doc) {
         return false;
     }
     var eventType = mute ? 'on_mute' : 'on_unmute';
-    var msg = getMessage(config, eventType);
+    var msg = isConfigured(config, eventType);
     if (!msg) {
         // no configured message for the given eventType
         return false;
