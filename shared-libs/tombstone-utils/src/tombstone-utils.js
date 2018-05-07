@@ -1,30 +1,29 @@
 var _ = require('underscore');
 
 var TYPES = ['data_record', 'person', 'clinic', 'district_hospital', 'health_center'],
-    TOMBSTONE_TYPE = 'tombstone';
+    TOMBSTONE_TYPE = 'tombstone',
+    TOMBSTONE_ID_SEPARATOR = '____';
 
 module.exports = function(DB, Promise) {
   var needsTombstone = function (doc) {
     return TYPES.indexOf(doc.type) !== -1;
   };
 
-  var generateTombstoneId = function (docId) {
-    return [docId, TOMBSTONE_TYPE].join('-');
+  var generateTombstoneId = function (id, rev) {
+    return [id, rev, TOMBSTONE_TYPE].join(TOMBSTONE_ID_SEPARATOR);
   };
 
   var saveTombstone = function(doc, logger) {
     var tombstone = _.omit(doc, ['_attachments', 'transitions', '_deleted']);
     var tombstoneDoc = {
-      _id: generateTombstoneId(doc._id),
-      _rev: doc._rev,
+      _id: generateTombstoneId(doc._id, doc._rev),
       type: TOMBSTONE_TYPE,
       tombstone: tombstone
     };
 
     logger.log('saving tombstone for ' + doc._id);
 
-    // ensure the tombstone doc gets the same _rev as the deleted doc it represents
-    return DB.bulkDocs({ docs: [tombstoneDoc], new_edits: false });
+    DB.put(tombstoneDoc);
   };
 
   var getDoc = function(change) {
@@ -35,15 +34,25 @@ module.exports = function(DB, Promise) {
     return DB.get(change.id, { rev: change.changes[0].rev });
   };
 
+  var getTombstoneRegex = function() {
+    return new RegExp('(.*)' + TOMBSTONE_ID_SEPARATOR + '(.*)' + TOMBSTONE_ID_SEPARATOR + TOMBSTONE_TYPE);
+  };
+
   var extractDocId = function (tombstoneId) {
-    return tombstoneId.replace('-' + TOMBSTONE_TYPE, '');
+    var match = tombstoneId.match(getTombstoneRegex());
+    return match[1];
+  };
+
+  var extractRev = function(tombstoneId) {
+    var match = tombstoneId.match(getTombstoneRegex());
+    return match[2];
   };
 
   var generateChangeFromTombstone = function(change) {
     return {
       id: extractDocId(change.id),
       seq: change.seq,
-      changes: change.changes,
+      changes: [{ rev: extractRev(change.id) }],
       doc: change.doc && change.doc.tombstone,
       deleted: true
     };
@@ -72,7 +81,7 @@ module.exports = function(DB, Promise) {
 
     hasTombstone: function (doc) {
       return DB
-        .get(generateTombstoneId(doc._id))
+        .get(generateTombstoneId(doc._id, doc._rev))
         .then(function() {
           return false;
         })
@@ -86,7 +95,7 @@ module.exports = function(DB, Promise) {
     },
 
     isTombstoneId: function(tombstoneId) {
-      return tombstoneId.endsWith('-' + TOMBSTONE_TYPE);
+      return tombstoneId.test(getTombstoneRegex());
     },
 
     extractDoc: function(tombstoneDoc) {
