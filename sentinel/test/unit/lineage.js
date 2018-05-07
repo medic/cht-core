@@ -212,6 +212,31 @@ exports['fetchHydratedDoc handles doc with unknown parent by leaving just the st
   });
 };
 
+exports['fetchHydratedDoc handles doc with empty-object parent by removing it'] = test => {
+  const docId = 'abc';
+  sinon.stub(db.medic, 'view').callsArgWith(3, null, { rows: [
+    { type:'data_record', doc: { _id: 'abc', contact: { _id: 'def' }, parent: { _id: 'ghi', parent:{} } } },
+    { doc: null },
+  ] });
+  sinon.stub(db.medic, 'fetch').callsArgWith(1, null, { rows: [
+    { doc: { _id: 'cba' } },
+    { doc: { _id: 'def' } }
+  ] });
+  lineage.fetchHydratedDoc(docId)
+  .then(actual => {
+    test.deepEqual(actual, {
+      _id: 'abc',
+      contact: { _id: 'def' },
+      parent: { _id: 'ghi' }
+    });
+    test.done();
+  })
+  .catch(err => {
+    test.fail(err);
+    test.done();
+  });
+};
+
 exports['fetchHydratedDoc handles doc with unknown contact by leaving just the stub'] = test => {
   const docId = 'abc';
   sinon.stub(db.medic, 'view').callsArgWith(3, null, { rows: [
