@@ -108,28 +108,39 @@ const group = issues => {
     statuses: {}
   };
 
+  const errors = [];
+
   TYPES.forEach(type => result.types[type] = 0);
   STATUSES.forEach(type => result.statuses[type] = 0);
 
   issues.forEach(issue => {
     const matchingTypes = TYPES.filter(type => issue.data.labels.find(label => label.name === type));
     if (!matchingTypes.length) {
-      throw new Error(`Issue doesn't have any Type label: ${issue.data.html_url}`);
+      errors.push(`Issue doesn't have any Type label: ${issue.data.html_url}`);
+      return;
     }
     if (matchingTypes.length > 1) {
-      throw new Error(`Issue has too many Type labels: ${issue.data.html_url}`);
+      errors.push(`Issue has too many Type labels: ${issue.data.html_url}`);
+      return;
     }
     result.types[matchingTypes[0]]++;
 
     const matchingStatuses = STATUSES.filter(status => issue.data.labels.find(label => label.name === status));
     if (!matchingStatuses.length) {
-      throw new Error(`Issue doesn't have any Status label: ${issue.data.html_url}`);
+      errors.push(`Issue doesn't have any Status label: ${issue.data.html_url}`);
+      return;
     }
     if (matchingStatuses.length > 1) {
-      throw new Error(`Issue has too many Status labels: ${issue.data.html_url}`);
+      errors.push(`Issue has too many Status labels: ${issue.data.html_url}`);
+      return;
     }
     result.statuses[matchingStatuses[0]]++;
   });
+
+  if (errors.length) {
+    console.error(JSON.stringify(errors, null, 2));
+    throw new Error('Some issues are in an invalid state');
+  }
   return result;
 };
 

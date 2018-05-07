@@ -95,16 +95,25 @@ const getIssues = cards => {
 };
 
 const sort = issues => {
+  const errors = [];
   issues.forEach(issue => {
     const matchingTypes = TYPES.filter(type => issue.data.labels.find(label => label.name === type.label));
     if (!matchingTypes.length) {
-      throw new Error(`Issue doesn't have any Type label: ${issue.data.html_url}`);
+      errors.push(`Issue doesn't have any Type label: ${issue.data.html_url}`);
+      return;
     }
     if (matchingTypes.length > 1) {
-      throw new Error(`Issue has too many Type labels: ${issue.data.html_url}`);
+      errors.push(`Issue has too many Type labels: ${issue.data.html_url}`);
+      return;
     }
     matchingTypes[0].issues.push(issue);
   });
+
+  if (errors.length) {
+    console.error(JSON.stringify(errors, null, 2));
+    throw new Error('Some issues are in an invalid state');
+  }
+
   return TYPES;
 };
 
