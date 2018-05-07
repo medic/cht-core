@@ -4,17 +4,32 @@ const auth = require('../auth'),
       _ = require('underscore'),
       config = require('../config'),
       serverUtils = require('../server-utils'),
+      heartbeatFilter = require('../services/heartbeat-filter'),
       tombstoneUtils = require('@shared-libs/tombstone-utils');
 
-//todo Alex's heartbeat!
 let inited        = false,
     longpollFeeds = [],
     normalFeeds   = [],
     MAX_DOC_IDS   = 100,
     currentSeq;
 
-const cleanUp = (feed) => {
-  //console.log(feed.feedId +  ' cleanup');
+const DEFAULT_TIMEOUT = 60000,
+      DEFAULT_LIMIT = 100;
+
+const split = (array, count) => {
+  if (count === null || count < 1) {
+    return array;
+  }
+  const result = [];
+  let i = 0,
+      length = array.length;
+  while (i < length) {
+    result.push(array.slice(i, i += count));
+  }
+  return result;
+};
+
+const cleanUp = feed => {
   if (feed.heartbeat) {
     clearInterval(feed.heartbeat);
   }
@@ -26,42 +41,41 @@ const cleanUp = (feed) => {
   }
 };
 
-const isLongpoll = (req) => {
+const isLongpoll = req => {
   return ['longpoll', 'continuous', 'eventsource'].indexOf(req.query.feed) !== -1;
 };
 
-const split = (array, count) => {
-  if (count === null || count < 1) {
-    return [];
-  }
-  const result = [];
-  let i = 0,
-      length = array.length;
-  while (i < length) {
-    result.push(array.slice(i, i += count));
-  }
-  return result;
-};
-
-const defibrillator = (feed) => {
+const defibrillator = feed => {
   if (feed.req.query && feed.req.query.heartbeat) {
-    const heartbeat = feed.req.query.heartbeat !== true ? feed.req.query.heartbeat : 9000;
-    feed.heartbeat = setInterval(() => module.exports.writeDownstream(feed, '\n'), heartbeat);
+    const heartbeat = heartbeatFilter(feed.req.query.heartbeat);
+    feed.heartbeat = setInterval(() => writeDownstream(feed, '\n'), heartbeat);
   }
-
-  const timeout = feed.req.query.timeout ? Math.min(60000, feed.req.query.timeout) : 60000;
-  feed.timeout = setTimeout(() => module.exports.endFeed(feed), timeout);
 };
 
-module.exports.endFeed = (feed) => {
+const addTimeout = feed => {
+  if (feed.timeout) {
+    clearTimeout(feed.timeout);
+  }
+
+  const timeout = (feed.req.query && feed.req.query.timeout) ?
+    Math.min(DEFAULT_TIMEOUT, feed.req.query.timeout) : DEFAULT_TIMEOUT;
+  feed.timeout = setTimeout(() => endFeed(feed), timeout);
+};
+
+const prepareResponse = feed => ({
+  results: feed.results,
+  last_seq: feed.lastSeq
+});
+
+const endFeed = feed => {
   cleanUp(feed);
-  module.exports.writeDownstream(feed, JSON.stringify(prepareResponse(feed)), true);
+  writeDownstream(feed, JSON.stringify(prepareResponse(feed)), true);
   longpollFeeds = _.reject(longpollFeeds, feed);
   normalFeeds = _.reject(normalFeeds, feed);
 };
 
 // any doc ID should only appear once in the changes feed, with a list of changed revs attached to it
-module.exports.appendChange = (results, changeObj) => {
+const appendChange = (results, changeObj) => {
   const result = _.findWhere(results, { id: changeObj.change.id });
   if (!result) {
     results.push(changeObj.change);
@@ -75,15 +89,15 @@ module.exports.appendChange = (results, changeObj) => {
 };
 
 // filters the list of pending changes
-module.exports.processPendingChanges = (feed, results) => {
+const processPendingChanges = (feed, results) => {
   feed.pendingChanges
     .filter(changeObj => authorization.isAllowedFeed(feed, changeObj))
-    .forEach(changeObj => results = module.exports.appendChange(results, changeObj));
+    .forEach(changeObj => results = appendChange(results, changeObj));
 
   return results;
 };
 
-module.exports.mergeResults = (responses) => {
+const mergeResults = responses => {
   let results = [];
   responses.forEach(response => results = results.concat(response.results));
   results.forEach((change, idx) => {
@@ -95,7 +109,7 @@ module.exports.mergeResults = (responses) => {
   return results;
 };
 
-module.exports.getChanges = (feed) => {
+const getChanges = feed => {
   // impose limit to insure that we're getting all changes available for each of the requested doc ids
   const options = {
     since: feed.req.query.since || 0,
@@ -108,19 +122,19 @@ module.exports.getChanges = (feed) => {
   feed.upstreamRequests = chunks.map(docIds => {
     return db.medic
       .changes(_.extend({ doc_ids: docIds }, options))
-      .on('complete', info => feed.lastSeq = info.lastSeq);
+      .on('complete', info => feed.lastSeq = info.last_seq);
   });
 
   return Promise
     .all(feed.upstreamRequests)
     .then(responses => {
-      let results = module.exports.mergeResults(responses);
-      results = module.exports.processPendingChanges(feed, results);
+      let results = mergeResults(responses);
+      results = processPendingChanges(feed, results);
 
       if (results.length || !isLongpoll(feed.req)) {
         feed.results = results;
         cleanUp(feed);
-        return module.exports.writeDownstream(feed, JSON.stringify(prepareResponse(feed)), true);
+        return writeDownstream(feed, JSON.stringify(prepareResponse(feed)), true);
       }
 
       // move the feed to the longpoll list to receive new changes
@@ -133,11 +147,11 @@ module.exports.getChanges = (feed) => {
 
       //cancel ongoing requests
       feed.upstreamRequests.forEach(request => request.cancel());
-      module.exports.getChanges(feed);
+      getChanges(feed);
     });
 };
 
-module.exports.writeDownstream = (feed, content, end) => {
+const writeDownstream = (feed, content, end) => {
   if (feed.res.finished) {
     return;
   }
@@ -147,18 +161,24 @@ module.exports.writeDownstream = (feed, content, end) => {
   }
 };
 
-const prepareResponse = (feed) => {
-  const response = {
-    results: feed.results,
-    last_seq: feed.lastSeq
-  };
+const debouncedEndFeed = _.debounce(endFeed, 200);
+const addChangeToFeed = (feed, changeObj) => {
+  appendChange(feed.results, changeObj);
 
-  return response;
+  if (feed.results.length < feed.limit) {
+    // debouce sending results if the feed limit is not yet reached
+    addTimeout(feed);
+    feed.debouncedEnd = debouncedEndFeed(feed);
+    return;
+  }
+
+  if (feed.debouncedEnd) {
+    feed.debouncedEnd.cancel();
+  }
+  endFeed(feed);
 };
 
-module.exports.debouncedKillFeed = _.debounce(module.exports.endFeed, 200);
-
-module.exports.processChange = (change, seq) => {
+const processChange = (change, seq) => {
   let changeObj;
   if (tombstoneUtils().isTombstoneId(change.id)) {
     changeObj = {
@@ -178,18 +198,17 @@ module.exports.processChange = (change, seq) => {
   });
 
   // send the change through to the longpoll feeds which are allowed to see it
-  // sending responses back through the feed is debounced, so multiple updates are caught
   longpollFeeds.forEach(feed => {
     feed.lastSeq = seq;
     if (!authorization.isAllowedFeed(feed, changeObj)) {
       return;
     }
-    module.exports.appendChange(feed.results, changeObj);
-    module.exports.debouncedKillFeed(feed);
+
+    addChangeToFeed(feed, changeObj);
   });
 };
 
-module.exports.init = (since) => {
+const init = since => {
   inited = true;
   db.medic
     .changes({
@@ -197,28 +216,29 @@ module.exports.init = (since) => {
       include_docs: true,
       since: since || 'now',
       timeout: false,
-      //heartbeat: true
     })
     .on('change', (change, pending, seq) => {
-      module.exports.processChange(change, seq);
+      processChange(change, seq);
       currentSeq = seq;
     })
     .on('error', () => {
-      module.exports.init(currentSeq);
+      init(currentSeq);
     });
 };
 
-module.exports.initFeed = (feed) => {
+const initFeed = feed => {
   _.extend(feed, {
     depth: authorization.getDepth(feed.userCtx),
     initSeq: currentSeq,
     lastSeq: currentSeq,
     pendingChanges: [],
     results: [],
-    upstreamRequests: []
+    upstreamRequests: [],
+    limit: feed.req.query && feed.req.query.limit || DEFAULT_LIMIT
   });
 
   defibrillator(feed);
+  addTimeout(feed);
   normalFeeds.push(feed);
 
   return authorization
@@ -226,21 +246,19 @@ module.exports.initFeed = (feed) => {
     .then(subjectIds => {
       return authorization
         .getValidatedDocIds(subjectIds, feed.userCtx)
-        .then(validatedIds => {
-          _.extend(feed, { subjectIds: subjectIds, validatedIds: validatedIds });
-          return feed;
-        });
+        .then(validatedIds => _.extend(feed, { subjectIds: subjectIds, validatedIds: validatedIds }));
     });
 };
 
-module.exports.request = (proxy, req, res) => {
+const request = (proxy, req, res) => {
   if (!inited) {
     // As per https://issues.apache.org/jira/browse/COUCHDB-1288, there is a 100 doc
     // limit on processing changes feeds with the _doc_ids filter within a
     // reasonable amount of time.
     // While hardcoded at first, CouchDB 2.1.1 has the option to configure this value
+    // https://github.com/apache/couchdb/commit/e09b8074fec59a508905b700c5252df7eb5b5338
     MAX_DOC_IDS = config.get('changes_doc_ids_optimization_threshold') || MAX_DOC_IDS;
-    module.exports.init();
+    init();
 
     db.medic.setMaxListeners(100);
   }
@@ -260,16 +278,29 @@ module.exports.request = (proxy, req, res) => {
       auth
         .hydrate(userCtx)
         .then(userCtx => {
-          const feedId = Date.now();
-          const feed = { req, res, userCtx, feedId };
+          const feed = { req, res, userCtx };
 
           req.on('close', function() {
             cleanUp(feed);
           });
 
           res.type('json');
-          module.exports.initFeed(feed).then(module.exports.getChanges);
+          initFeed(feed).then(getChanges);
         });
     })
     .catch(() => serverUtils.notLoggedIn(req, res));
+};
+
+module.exports = {
+  request: request,
+
+  _init: init,
+  _initFeed: initFeed,
+  _processChange: processChange,
+  _addChangeToFeed: addChangeToFeed,
+  _writeDownstream: writeDownstream,
+  _processPendingChanges: processPendingChanges,
+  _appendChange: appendChange,
+  _mergeResults: mergeResults,
+  _getChanges: getChanges
 };
