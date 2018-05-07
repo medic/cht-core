@@ -66,7 +66,7 @@ const isAllowedSync = (doc, userInfo, viewResults) => {
     return write;
   }
 
-  if (tombstoneUtils().isTombstone(doc) || !replicationKey) {
+  if (tombstoneUtils().isTombstoneId(doc._id) || !replicationKey) {
     return false;
   }
 
@@ -106,24 +106,6 @@ const isAllowedSync = (doc, userInfo, viewResults) => {
     exclude(validatedIds, doc._id);
     return false;
   }
-};
-
-const getUserInfo = (userCtx, write) => {
-  return module.exports
-    .getSubjectIds(userCtx, write)
-    .then(subjectIds => {
-      return module.exports
-        .getValidatedDocIds(subjectIds, userCtx, write)
-        .then(validatedIds => {
-          return {
-            userCtx,
-            write,
-            subjectIds,
-            validatedIds,
-            depth: module.exports.getDepth(userCtx)
-          };
-        });
-    });
 };
 
 const isAllowedContact = (contact, user, maxDepth, currentDepth) => {
@@ -223,12 +205,6 @@ const getValidatedDocIds = (subjectIds, userCtx, write) => {
     });
 };
 
-const getAllowedIds = (userCtx, write) => {
-  return module.exports
-    .getSubjectIds(userCtx, write)
-    .then(subjectIds => module.exports.getValidatedDocIds(subjectIds, userCtx, write));
-};
-
 const getViewResults = (doc) => {
   if (!docsByReplicationKeyFn || !contactsByDepthFn) {
     module.exports.initViewFunctions();
@@ -248,15 +224,12 @@ module.exports = {
   isAllowedFeed: isAllowedFeed,
   isAllowedSync: isAllowedSync,
   getDepth: getDepth,
-  getAllowedIds: getAllowedIds,
   getViewResults: getViewResults,
-
+  initViewFunctions: initViewFunctions,
   getSubjectIds: getSubjectIds,
   getValidatedDocIds: getValidatedDocIds,
-  getUserInfo: getUserInfo,
 
   //exposed for testing purposes
   isAllowedContact: isAllowedContact,
   isSensitive: isSensitive,
-  initViewFunctions: initViewFunctions
 };

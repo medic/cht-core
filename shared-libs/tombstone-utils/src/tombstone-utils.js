@@ -40,7 +40,7 @@ module.exports = function(DB, Promise) {
 
   var extractDocId = function (tombstoneId) {
     var match = tombstoneId.match(getTombstoneRegex());
-    return match[1];
+    return match && match[1];
   };
 
   var extractRev = function(tombstoneId) {
@@ -95,7 +95,7 @@ module.exports = function(DB, Promise) {
     },
 
     isTombstoneId: function(tombstoneId) {
-      return tombstoneId.test(getTombstoneRegex());
+      return getTombstoneRegex().test(tombstoneId);
     },
 
     extractDoc: function(tombstoneDoc) {
