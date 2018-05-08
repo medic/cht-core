@@ -513,10 +513,6 @@ module.exports = function(grunt) {
       },
     },
     nodeunit: {
-      webapp: [
-        'webapp/tests/nodeunit/unit/**/*.js',
-        '!webapp/tests/nodeunit/unit/*/utils.js',
-      ],
       api: [
         'api/tests/unit/**/*.js',
         '!api/tests/unit/utils.js',
