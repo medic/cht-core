@@ -61,7 +61,7 @@ const deleteBatches = (batches, res, docsToRetry, attemptNumber) => {
         return db.medic.bulkDocs(docsToModify);
       })
       .then(result => {
-        const errors = result.map(docUpdate => docUpdate.error);
+        const errors = result.map(docUpdate => docUpdate.error && docUpdate.status !== 404);
         const errorIds = docsToModify
           .filter((doc, index) => errors[index])
           .map(doc => doc._id);
