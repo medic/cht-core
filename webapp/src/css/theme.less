@@ -207,3 +207,21 @@ ul {
     border-right: 2px solid #FFFFFF;
   }
 }
+
+dl.horizontal {
+  dt {
+    width: 200px;
+    float: left;
+    text-align: right;
+    margin-bottom: 5px;
+  }
+  dd {
+    margin-left: 0;
+    padding-left: 220px;
+  }
+  dd:after {
+    content: '';
+    display: block;
+    clear: both;
+  }
+}
