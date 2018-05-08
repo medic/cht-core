@@ -30,6 +30,7 @@ require('./controllers/forms-json');
 require('./controllers/forms-xml');
 require('./controllers/icons');
 require('./controllers/import-translation');
+require('./controllers/message-test');
 require('./controllers/permissions');
 require('./controllers/settings-advanced');
 require('./controllers/settings-basic');
@@ -278,6 +279,11 @@ app.config(function(
       url: '/upgrade',
       controller: 'UpgradeCtrl',
       templateUrl: 'templates/upgrade.html'
+    })
+    .state('messagetest', {
+      url: '/message-test',
+      controller: 'MessageTestCtrl',
+      templateUrl: 'templates/message_test.html'
     });
 });
 
