@@ -43,7 +43,7 @@
     "object-path": "^0.11.4",
     "openrosa-xpath-evaluator": "^1.4.2",
     "phone-number": "file:../shared-libs/phone-number",
-    "pojo2xml": "^1.4.0",
+    "pojo2xml": "^1.7.1",
     "pouchdb-browser": "^6.4.3",
     "search": "file:../shared-libs/search",
     "select2": "4.0.3",
