@@ -244,7 +244,7 @@ angular.module('inboxServices').factory('FormatDataRecord',
         return getMessage(settings, key, locale) || key;
       }
       var interpolation = skipInterpolation ? 'no-interpolation' : null;
-      return $translate.instant(key, ctx, interpolation);
+      return $translate.instant(key, ctx, interpolation, locale);
     };
 
     /*
@@ -437,7 +437,7 @@ angular.module('inboxServices').factory('FormatDataRecord',
           if (!copy.messages) { // backwards compatibility
             copy.messages = messages.generate(
               settings,
-              _.partial(translate, settings, _, null, null, true),
+              _.partial(translate, settings, _, _, null, true),
               doc,
               content,
               t.recipient,
