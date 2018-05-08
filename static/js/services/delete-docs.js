@@ -76,7 +76,7 @@ var utilsFactory = require('bulk-docs-utils');
           if (xhr.responseText) {
             var currentResponse = partialParse(xhr.responseText);
             var successfulDeletions = _.flatten(currentResponse).filter(function(doc) {
-              return doc.ok;
+              return !doc.error;
             });
             var totalDocsDeleted = successfulDeletions.length;
             if (eventListeners.progress && Array.isArray(currentResponse)) {
