@@ -10,7 +10,8 @@ describe('DBSync service', () => {
       isAdmin,
       userCtx,
       sync,
-      Auth;
+      Auth,
+      infiniteOn;
 
   beforeEach(() => {
     to = sinon.stub();
@@ -21,6 +22,7 @@ describe('DBSync service', () => {
     userCtx = sinon.stub();
     sync = sinon.stub();
     Auth = sinon.stub();
+    infiniteOn = sinon.stub().returns({ on: sinon.stub().returns({ on: sinon.stub().returns({ on: sinon.stub().returns({ on: sinon.stub().returns({ on: sinon.stub() }) }) }) }) });
     module('inboxApp');
     module($provide => {
       $provide.factory('DB', KarmaUtils.mockDB({
@@ -54,8 +56,8 @@ describe('DBSync service', () => {
 
   it('initiates sync for non-admin', () => {
     isAdmin.returns(false);
-    to.returns(Promise.resolve());
-    from.returns(Promise.resolve());
+    to.returns({ on :infiniteOn});
+    from.returns({ on :infiniteOn});
     Auth.returns(Promise.resolve());
     userCtx.returns({ name: 'mobile', roles: [ 'district-manager' ] });
     allDocs.returns(Promise.resolve({ rows: [
@@ -66,7 +68,7 @@ describe('DBSync service', () => {
       { id: 'c' }
     ] }));
     return service().then(() => {
-      chai.expect(allDocs.callCount).to.equal(1); // 1 'from' calls, 0 'to' calls
+      chai.expect(allDocs.callCount).to.equal(0);
       chai.expect(Auth.callCount).to.equal(1);
       chai.expect(Auth.args[0][0]).to.equal('can_edit');
       chai.expect(from.callCount).to.equal(1);
@@ -87,8 +89,8 @@ describe('DBSync service', () => {
 
   it('does not sync to remote if user lacks "can_edit" permission', () => {
     isAdmin.returns(false);
-    to.returns(Promise.resolve());
-    from.returns(Promise.resolve());
+    to.returns({ on: infiniteOn});
+    from.returns({ on: infiniteOn});
     Auth.returns(Promise.reject('unauthorized'));
     userCtx.returns({ name: 'mobile', roles: [ 'district-manager' ] });
     allDocs.returns(Promise.resolve({ rows: [
@@ -99,7 +101,7 @@ describe('DBSync service', () => {
       { id: 'c' }
     ] }));
     return service().then(() => {
-      chai.expect(allDocs.callCount).to.equal(1); // 1 'from' calls, 0 'to' calls
+      chai.expect(allDocs.callCount).to.equal(0);
       chai.expect(Auth.callCount).to.equal(1);
       chai.expect(Auth.args[0][0]).to.equal('can_edit');
       chai.expect(from.callCount).to.equal(1);
@@ -116,8 +118,8 @@ describe('DBSync service', () => {
 
     before(() => {
       isAdmin.returns(false);
-      to.returns(Promise.resolve());
-      from.returns(Promise.resolve());
+      to.returns({ on :infiniteOn });
+      from.returns({ on :infiniteOn });
       Auth.returns(Promise.resolve());
       userCtx.returns({ name: 'mobile', roles: [ 'district-manager' ] });
       allDocs.returns(Promise.resolve({ rows: [] }));

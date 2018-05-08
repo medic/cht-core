@@ -75,6 +75,8 @@
     "request",
     "search",
     "simple-password-tester",
+    "@shared-libs/tombstone-utils",
+    "@shared-libs/view-map-utils",
     "task-utils",
     "underscore",
     "url",

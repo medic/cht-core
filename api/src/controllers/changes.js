@@ -5,13 +5,14 @@ const auth = require('../auth'),
       config = require('../config'),
       serverUtils = require('../server-utils'),
       heartbeatFilter = require('../services/heartbeat-filter'),
-      tombstoneUtils = require('@shared-libs/tombstone-utils');
+      tombstoneUtils = require('@shared-libs/tombstone-utils')(db.medic, Promise),
+      uuid = require('uuid/v4');
 
 let inited        = false,
     longpollFeeds = [],
     normalFeeds   = [],
     MAX_DOC_IDS   = 100,
-    currentSeq;
+    currentSeq    = 0;
 
 const DEFAULT_TIMEOUT = 60000,
       DEFAULT_LIMIT = 100;
@@ -42,7 +43,7 @@ const cleanUp = feed => {
 };
 
 const isLongpoll = req => {
-  return ['longpoll', 'continuous', 'eventsource'].indexOf(req.query.feed) !== -1;
+  return req.query && ['longpoll', 'continuous', 'eventsource'].indexOf(req.query.feed) !== -1;
 };
 
 const defibrillator = feed => {
@@ -78,31 +79,34 @@ const endFeed = feed => {
 const appendChange = (results, changeObj) => {
   const result = _.findWhere(results, { id: changeObj.change.id });
   if (!result) {
-    results.push(changeObj.change);
-    return results;
+    return results.push(changeObj.change);
   }
+
   // append missing revs to the list
   _.difference(changeObj.change.changes.map(rev => rev.rev), result.changes.map(rev => rev.rev))
     .forEach(rev => result.changes.push({ rev: rev }));
-
-  return results;
 };
 
 // filters the list of pending changes
 const processPendingChanges = (feed, results) => {
   feed.pendingChanges
     .filter(changeObj => authorization.isAllowedFeed(feed, changeObj))
-    .forEach(changeObj => results = appendChange(results, changeObj));
+    .forEach(changeObj => appendChange(results, changeObj));
+};
 
-  return results;
+// checks that all changes requests responses are correct
+const validResults = responses => {
+  return responses.every(response => response && response.results);
 };
 
 const mergeResults = responses => {
   let results = [];
-  responses.forEach(response => results = results.concat(response.results));
+  responses.forEach(response => {
+    results.push.apply(results, response.results);
+  });
   results.forEach((change, idx) => {
-    if (tombstoneUtils().isTombstoneId(change.id)) {
-      results[idx] = tombstoneUtils().generateChangeFromTombstone(change);
+    if (tombstoneUtils.isTombstoneId(change.id)) {
+      results[idx] = tombstoneUtils.generateChangeFromTombstone(change);
     }
   });
 
@@ -112,29 +116,38 @@ const mergeResults = responses => {
 const getChanges = feed => {
   // impose limit to insure that we're getting all changes available for each of the requested doc ids
   const options = {
-    since: feed.req.query.since || 0,
+    since: feed.req.query && feed.req.query.since || 0,
     limit: MAX_DOC_IDS
   };
-  const queryOpts = ['style', 'conflicts', 'descending', 'att_encoding_info', 'view', 'include_docs', 'seq_interval'];
+  const queryOpts = ['style', 'conflicts', 'seq_interval'];
   _.extend(options, _.pick(feed.req.query, ...queryOpts));
 
   const chunks = split(feed.validatedIds, MAX_DOC_IDS);
   feed.upstreamRequests = chunks.map(docIds => {
     return db.medic
       .changes(_.extend({ doc_ids: docIds }, options))
-      .on('complete', info => feed.lastSeq = info.last_seq);
+      .on('complete', info => feed.lastSeq = info && info.last_seq || feed.lastSeq);
   });
 
   return Promise
     .all(feed.upstreamRequests)
     .then(responses => {
+      console.log('got responses');
+      // if any of the responses was incomplete, send empty response
+      if (!validResults(responses)) {
+        feed.results = [];
+        feed.lastSeq = feed.initSeq;
+        return endFeed(feed);
+      }
+
+      console.log('merge responses');
       let results = mergeResults(responses);
-      results = processPendingChanges(feed, results);
+      processPendingChanges(feed, results);
 
       if (results.length || !isLongpoll(feed.req)) {
+        console.log('send responses');
         feed.results = results;
-        cleanUp(feed);
-        return writeDownstream(feed, JSON.stringify(prepareResponse(feed)), true);
+        return endFeed(feed);
       }
 
       // move the feed to the longpoll list to receive new changes
@@ -142,10 +155,9 @@ const getChanges = feed => {
       longpollFeeds.push(feed);
     })
     .catch(err => {
-      console.log(feed.feedId +  ' Error while requesting `normal` changes feed');
+      console.log(feed.id +  ' Error while requesting `normal` changes feed');
       console.log(err);
-
-      //cancel ongoing requests
+      // cancel ongoing requests
       feed.upstreamRequests.forEach(request => request.cancel());
       getChanges(feed);
     });
@@ -180,10 +192,10 @@ const addChangeToFeed = (feed, changeObj) => {
 
 const processChange = (change, seq) => {
   let changeObj;
-  if (tombstoneUtils().isTombstoneId(change.id)) {
+  if (tombstoneUtils.isTombstoneId(change.id)) {
     changeObj = {
-      change: tombstoneUtils().generateChangeFromTombstone(change),
-      authData: authorization.getViewResults(tombstoneUtils().extractDoc(change.doc))
+      change: tombstoneUtils.generateChangeFromTombstone(change),
+      authData: authorization.getViewResults(tombstoneUtils.extractDoc(change.doc))
     };
   } else {
     changeObj = {
@@ -210,7 +222,7 @@ const processChange = (change, seq) => {
 
 const init = since => {
   inited = true;
-  db.medic
+  return db.medic
     .changes({
       live: true,
       include_docs: true,
@@ -222,24 +234,29 @@ const init = since => {
       currentSeq = seq;
     })
     .on('error', () => {
-      init(currentSeq);
+      return Promise.resolve().then(() => init(currentSeq));
     });
 };
 
-const initFeed = feed => {
-  _.extend(feed, {
-    depth: authorization.getDepth(feed.userCtx),
-    initSeq: currentSeq,
-    lastSeq: currentSeq,
+const initFeed = (req, res, userCtx) => {
+  const feed = {
+    id: req.uniqId || uuid(),
+    req: req,
+    res: res,
+    userCtx: userCtx,
+    depth: authorization.getDepth(userCtx),
+    initSeq: req.query && req.query.since || 0,
+    lastSeq: req.query && req.query.since || currentSeq,
     pendingChanges: [],
     results: [],
     upstreamRequests: [],
-    limit: feed.req.query && feed.req.query.limit || DEFAULT_LIMIT
-  });
+    limit: req.query && req.query.limit || DEFAULT_LIMIT
+  };
 
   defibrillator(feed);
   addTimeout(feed);
   normalFeeds.push(feed);
+  req.on('close', () => cleanUp(feed));
 
   return authorization
     .getSubjectIds(feed.userCtx)
@@ -259,7 +276,6 @@ const request = (proxy, req, res) => {
     // https://github.com/apache/couchdb/commit/e09b8074fec59a508905b700c5252df7eb5b5338
     MAX_DOC_IDS = config.get('changes_doc_ids_optimization_threshold') || MAX_DOC_IDS;
     init();
-
     db.medic.setMaxListeners(100);
   }
   return auth
@@ -275,17 +291,11 @@ const request = (proxy, req, res) => {
         return proxy.web(req, res);
       }
 
-      auth
+      return auth
         .hydrate(userCtx)
         .then(userCtx => {
-          const feed = { req, res, userCtx };
-
-          req.on('close', function() {
-            cleanUp(feed);
-          });
-
           res.type('json');
-          initFeed(feed).then(getChanges);
+          initFeed(req, res, userCtx).then(getChanges);
         });
     })
     .catch(() => serverUtils.notLoggedIn(req, res));
@@ -293,14 +303,33 @@ const request = (proxy, req, res) => {
 
 module.exports = {
   request: request,
-
-  _init: init,
-  _initFeed: initFeed,
-  _processChange: processChange,
-  _addChangeToFeed: addChangeToFeed,
-  _writeDownstream: writeDownstream,
-  _processPendingChanges: processPendingChanges,
-  _appendChange: appendChange,
-  _mergeResults: mergeResults,
-  _getChanges: getChanges
 };
+
+// used for testing
+if (process.env.UNIT_TEST_ENV) {
+  _.extend(module.exports, {
+    _init: init,
+    _initFeed: initFeed,
+    _processChange: processChange,
+    _addChangeToFeed: addChangeToFeed,
+    _writeDownstream: writeDownstream,
+    _processPendingChanges: processPendingChanges,
+    _appendChange: appendChange,
+    _mergeResults: mergeResults,
+    _getChanges: getChanges,
+    _isLongpoll: isLongpoll,
+    _tombstoneUtils: tombstoneUtils,
+
+    _reset: () => {
+      longpollFeeds = [];
+      normalFeeds = [];
+      inited = false;
+      currentSeq = 0;
+      MAX_DOC_IDS = 100;
+    },
+    _getNormalFeeds: () => normalFeeds,
+    _getLongpollFeeds: () => longpollFeeds,
+    _getCurrentSeq: () => currentSeq,
+    _inited: () => inited
+  });
+}

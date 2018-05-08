@@ -1,7 +1,7 @@
 var sinon = require('sinon').sandbox.create();
 require('chai').should();
 var expect = require('chai').expect;
-var lib = require('./.');
+var lib = require('../src/view-map-utils');
 var fs = require('fs');
 var path = require('path');
 

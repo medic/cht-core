@@ -23,7 +23,15 @@ module.exports = function(DB, Promise) {
 
     logger.log('saving tombstone for ' + doc._id);
 
-    DB.put(tombstoneDoc);
+    DB
+      .put(tombstoneDoc)
+      .catch(function(error) {
+        if (error.status === 409) {
+          return;
+        }
+
+        throw error;
+      });
   };
 
   var getDoc = function(change) {
