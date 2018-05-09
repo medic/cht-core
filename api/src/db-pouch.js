@@ -14,6 +14,7 @@ if(UNIT_TEST_ENV) {
     allDocs: stubMe('allDocs'),
     bulkDocs: stubMe('bulkDocs'),
     put: stubMe('put'),
+    post: stubMe('post'),
     query: stubMe('query'),
   };
 } else if(COUCH_URL) {
