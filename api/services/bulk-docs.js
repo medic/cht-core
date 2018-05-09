@@ -25,15 +25,6 @@ const checkForDuplicates = docs => {
   }
 };
 
-const generateBatches = (docs, batchSize) => {
-  const batches = [];
-  while (docs.length > 0) {
-    const batch = docs.splice(0, batchSize);
-    batches.push(batch);
-  }
-  return batches;
-};
-
 const getDocsToModify = ids => {
   let docsToDelete;
   return db.medic.allDocs({ keys: ids, include_docs: true })
@@ -48,56 +39,47 @@ const getDocsToModify = ids => {
     });
 };
 
-const deleteBatches = (batches, res, docsToRetry, attemptNumber) => {
-  return batches.reduce((promise, batch, index) => {
-    const isFinal = index === batches.length - 1;
-    let docsToModify;
-    return promise
-      .then(() => {
-        return getDocsToModify(batch);
-      })
-      .then(allDocs => {
-        docsToModify = allDocs;
-        return db.medic.bulkDocs(docsToModify);
-      })
-      .then(result => {
-        const errors = result.map(docUpdate => docUpdate.error && docUpdate.status !== 404);
-        const errorIds = docsToModify
-          .filter((doc, index) => errors[index])
-          .map(doc => doc._id);
-        errorIds.forEach(id => docsToRetry.push(id));
+const deleteInBatches = (ids, batchSize, attemptCounts, res) => {
+  const batch = ids.splice(0, batchSize);
+  batch.forEach(id => {
+    attemptCounts[id] = (attemptCounts[id] || 0) + 1;
+  });
 
-        let resString = JSON.stringify(result);
-        if ((!isFinal || docsToRetry.length) && attemptNumber !== 3) {
-          resString += ',';
+  let docsToModify;
+  return getDocsToModify(batch)
+    .then(allDocs => {
+      docsToModify = allDocs;
+      return db.medic.bulkDocs(docsToModify);
+    })
+    .then(result => {
+      const errorIds = result
+        .map((docUpdate, index) => docUpdate.error && docUpdate.status !== 404 && (docUpdate.id || docsToModify[index]._id))
+        .filter(id => id);
+      errorIds.forEach(id => {
+        if (attemptCounts[id] < 4) {
+          ids.push(id);
+          result = result.filter(docUpdate => docUpdate.id !== id);
         }
-        res.write(resString);
       });
-  }, Promise.resolve());
+
+      let resString = JSON.stringify(result);
+      if (ids.length > 0) {
+        resString += ',';
+        res.write(resString);
+        return deleteInBatches(ids, batchSize, attemptCounts, res);
+      }
+      res.write(resString);
+    });
 };
 
 module.exports = {
   bulkDelete: (docs, res, { batchSize = 100 } = {}) => {
     const ids = docs.map(doc => doc._id);
-    const batches = generateBatches(ids, batchSize);
-    let docsToRetry = [];
+    const attemptCounts = {};
     res.type('application/json');
     res.setHeader('X-Content-Type-Options', 'nosniff');
     res.write('[');
-    return deleteBatches(batches, res, docsToRetry, 0)
-      .then(() => {
-        // Retry any failures a maximum of 3 times
-        return [1, 2, 3].reduce((promise, attemptNumber) => {
-          return promise.then(() => {
-            if (docsToRetry.length === 0) {
-              return Promise.resolve();
-            }
-            const batches = generateBatches(docsToRetry, batchSize);
-            docsToRetry.length = 0;
-            return deleteBatches(batches, res, docsToRetry, attemptNumber);
-          });
-        }, Promise.resolve());
-      })
+    return deleteInBatches(ids, batchSize, attemptCounts, res)
       .then(() => {
         res.write(']');
         res.end();
