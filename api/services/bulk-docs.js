@@ -25,48 +25,70 @@ const checkForDuplicates = docs => {
   }
 };
 
-const getDocsToModify = ids => {
-  let docsToDelete;
-  return db.medic.allDocs({ keys: ids, include_docs: true })
-    .then(result => {
-      docsToDelete = markAsDeleted(result);
-      return utils.updateParentContacts(docsToDelete);
-    })
+const updateParentContacts = (docs, batchSize, attemptCounts) => {
+  const batch = docs.splice(0, batchSize);
+  batch.forEach(doc => {
+    attemptCounts[doc._id] = (attemptCounts[doc._id] || 0) + 1;
+  });
+  const parentMap = {};
+  return utils.updateParentContacts(batch, parentMap)
     .then(docsToUpdate => {
-      const allDocs = docsToDelete.concat(docsToUpdate);
-      checkForDuplicates(allDocs);
-      return allDocs;
+      if (!docsToUpdate.length) {
+        return [];
+      }
+      return db.medic.bulkDocs(docsToUpdate)
+        .then(result => {
+          const errorIds = result
+            .map((docUpdate, index) => docUpdate.error && docUpdate.status !== 404 && (docUpdate.id || docsToUpdate[index]._id))
+            .filter(id => id);
+          errorIds.forEach(id => {
+            const doc = parentMap[id];
+            if (attemptCounts[doc._id] < 4) {
+              docs.push(doc);
+              result = result.filter(docUpdate => docUpdate.id !== id);
+            }
+          });
+          if (docs.length > 0) {
+            return updateParentContacts(docs, batchSize, attemptCounts);
+          }
+          return result;
+        });
     });
 };
 
-const deleteInBatches = (ids, batchSize, attemptCounts, res) => {
-  const batch = ids.splice(0, batchSize);
+const deleteInBatches = (idsToDelete, batchSize, attemptCounts, res) => {
+  const batch = idsToDelete.splice(0, batchSize);
   batch.forEach(id => {
     attemptCounts[id] = (attemptCounts[id] || 0) + 1;
   });
-
-  let docsToModify;
-  return getDocsToModify(batch)
-    .then(allDocs => {
-      docsToModify = allDocs;
-      return db.medic.bulkDocs(docsToModify);
+  let docsToDelete;
+  let deletionResponse;
+  return db.medic.allDocs({ keys: batch, include_docs: true })
+    .then(result => {
+      docsToDelete = markAsDeleted(result);
+      return db.medic.bulkDocs(docsToDelete);
     })
     .then(result => {
-      const errorIds = result
-        .map((docUpdate, index) => docUpdate.error && docUpdate.status !== 404 && (docUpdate.id || docsToModify[index]._id))
+      deletionResponse = result;
+      const errorIds = deletionResponse
+        .map((docUpdate, index) => docUpdate.error && docUpdate.status !== 404 && (docUpdate.id || docsToDelete[index]._id))
         .filter(id => id);
       errorIds.forEach(id => {
         if (attemptCounts[id] < 4) {
-          ids.push(id);
-          result = result.filter(docUpdate => docUpdate.id !== id);
+          idsToDelete.push(id);
+          deletionResponse = deletionResponse.filter(docUpdate => docUpdate.id !== id);
         }
       });
-
-      let resString = JSON.stringify(result);
-      if (ids.length > 0) {
+      const successfullyDeletedDocs = docsToDelete.filter(doc => !errorIds.includes(doc._id));
+      const updateAttemptCounts = {};
+      return updateParentContacts(successfullyDeletedDocs, batchSize, updateAttemptCounts);
+    })
+    .then(updateResponse => {
+      let resString = JSON.stringify(deletionResponse.concat(updateResponse));
+      if (idsToDelete.length > 0) {
         resString += ',';
         res.write(resString);
-        return deleteInBatches(ids, batchSize, attemptCounts, res);
+        return deleteInBatches(idsToDelete, batchSize, attemptCounts, res);
       }
       res.write(resString);
     });
@@ -74,6 +96,7 @@ const deleteInBatches = (ids, batchSize, attemptCounts, res) => {
 
 module.exports = {
   bulkDelete: (docs, res, { batchSize = 100 } = {}) => {
+    checkForDuplicates(docs);
     const ids = docs.map(doc => doc._id);
     const attemptCounts = {};
     res.type('application/json');

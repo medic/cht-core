@@ -11,13 +11,16 @@ module.exports = function(dependencies) {
   }
 
   return {
-    updateParentContacts: function(docs) {
+    updateParentContacts: function(docs, parentMap) {
       return Promise.all(docs.map(function(doc) {
         return getParent(doc)
           .then(function(parent) {
             var shouldUpdateParentContact = parent && parent.contact && parent.contact._id && parent.contact._id === doc._id;
             if (shouldUpdateParentContact) {
               parent.contact = null;
+              if (parentMap) {
+                parentMap[parent._id] = doc;
+              }
               return parent;
             }
           });
