@@ -20,10 +20,6 @@ const formats = {
   json: {
     extension: 'json',
     contentType: 'application/json'
-  },
-  zip: {
-    extension: 'zip',
-    contentType: 'application/zip'
   }
 };
 
@@ -43,9 +39,6 @@ const getExportPermission = function(type) {
   }
   if (type === 'contacts') {
     return 'can_export_contacts';
-  }
-  if (type === 'logs') {
-    return 'can_export_server_logs';
   }
   return 'can_export_messages';
 };

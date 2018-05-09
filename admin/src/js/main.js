@@ -25,7 +25,6 @@ require('./controllers/export-contacts');
 require('./controllers/export-feedback');
 require('./controllers/export-messages');
 require('./controllers/export-reports');
-require('./controllers/export-server-logs');
 require('./controllers/forms-json');
 require('./controllers/forms-xml');
 require('./controllers/icons');
@@ -190,15 +189,6 @@ app.config(function(
         tab: {
           controller: 'ExportFeedbackCtrl',
           templateUrl: 'templates/export_feedback.html'
-        }
-      }
-    })
-    .state('export.serverlogs', {
-      url: '/server-logs',
-      views: {
-        tab: {
-          controller: 'ExportServerLogsCtrl',
-          templateUrl: 'templates/export_server_logs.html'
         }
       }
     })

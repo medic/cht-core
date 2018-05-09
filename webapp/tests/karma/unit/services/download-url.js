@@ -40,13 +40,6 @@ describe('DownloadUrl service', function() {
     });
   });
 
-  it('builds url for logs', function() {
-    Language.returns(Promise.resolve('en'));
-    return service(null, 'logs').then(function(actual) {
-      chai.expect(actual).to.equal('/api/v1/export/logs?format=zip&locale=en');
-    });
-  });
-
   describe('urls for reports', function() {
     it('builds base url', function() {
       return service(null, 'reports').then(function(actual) {
