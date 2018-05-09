@@ -3,7 +3,7 @@ let db = require('../db-pouch'),
     _ = require('underscore'),
     config = require('../config'),
     viewMapUtils = require('@shared-libs/view-map-utils'),
-    tombstoneUtils = require('@shared-libs/tombstone-utils');
+    tombstoneUtils = require('@shared-libs/tombstone-utils')(db.medic, Promise);
 
 const ALL_KEY = '_all', // key in the docs_by_replication_key view for records everyone can access
       UNASSIGNED_KEY = '_unassigned'; // key in the docs_by_replication_key view for unassigned records
@@ -54,33 +54,17 @@ const include = (array, value) => {
   }
 };
 
-const isAllowedSync = (doc, userInfo, viewResults) => {
-  const { userCtx, write, validatedIds, subjectIds, depth } = userInfo;
+const allowedDoc = (doc, userInfo, viewResults) => {
+  const { userCtx, validatedIds, subjectIds, depth } = userInfo;
   const { replicationKey, contactsByDepth } = viewResults;
 
-  if (['_design/medic-client', 'org.couchdb.user:' + userCtx.name].indexOf(doc._id) !== -1) {
-    return !write;
-  }
-
-  if (doc.type === 'feedback') {
-    return write;
-  }
-
-  if (tombstoneUtils().isTombstoneId(doc._id) || !replicationKey) {
+  if (!replicationKey) {
     return false;
-  }
-
-  if (replicationKey[0] === UNASSIGNED_KEY) {
-    return hasAccessToUnassignedDocs(userCtx);
-  }
-
-  if (replicationKey[0] === ALL_KEY) {
-    return !write;
   }
 
   if (contactsByDepth) {
     //it's a contact
-    if (module.exports.isAllowedContact(doc, userCtx, depth)) {
+    if (allowedContact(doc, userCtx, depth)) {
       include(subjectIds, contactsByDepth[1]);
       include(validatedIds, doc._id);
       return true;
@@ -94,7 +78,7 @@ const isAllowedSync = (doc, userInfo, viewResults) => {
     const [ subjectId, { submitter: submitterId } ] = replicationKey;
     const isAllowedSubject = subjectId && subjectIds.indexOf(subjectId) !== -1;
     const isAllowedSubmitter = submitterId && validatedIds.indexOf(submitterId) !== -1;
-    const sensitive = module.exports.isSensitive(userCtx, subjectId, submitterId, () => isAllowedSubmitter);
+    const sensitive = isSensitive(userCtx, subjectId, submitterId, () => isAllowedSubmitter);
 
     if ((!subjectId && isAllowedSubmitter) ||
         (!subjectId && isAllowedSubject) ||
@@ -108,7 +92,7 @@ const isAllowedSync = (doc, userInfo, viewResults) => {
   }
 };
 
-const isAllowedContact = (contact, user, maxDepth, currentDepth) => {
+const allowedContact = (contact, user, maxDepth, currentDepth) => {
   currentDepth = currentDepth || 0;
   if (maxDepth >= 0 && currentDepth > maxDepth) {
     return false;
@@ -122,10 +106,10 @@ const isAllowedContact = (contact, user, maxDepth, currentDepth) => {
     return true;
   }
 
-  return module.exports.isAllowedContact(contact.parent, user, maxDepth, currentDepth + 1);
+  return allowedContact(contact.parent, user, maxDepth, currentDepth + 1);
 };
 
-const getSubjectIds = (userCtx, write) => {
+const getSubjectIds = (userCtx) => {
   const keys = [];
   const depth = module.exports.getDepth(userCtx);
 
@@ -146,20 +130,16 @@ const getSubjectIds = (userCtx, write) => {
     .then(resultSets => {
       const subjectIds = [];
 
-      resultSets.forEach((resultSet, idx) => {
+      resultSets.forEach((resultSet, tombstone) => {
         resultSet.rows.forEach(row => {
-          subjectIds.push( idx ? tombstoneUtils().extractDocId(row.id) : row.id );
-          if (!idx && row.value) {
+          subjectIds.push( tombstone ? tombstoneUtils.extractDocId(row.id) : row.id );
+          if (!tombstone && row.value) {
             subjectIds.push(row.value);
           }
         });
       });
 
-      if (!write) {
-        // allow reads of forms & such
-        subjectIds.push(ALL_KEY);
-      }
-
+      subjectIds.push(ALL_KEY);
       if (hasAccessToUnassignedDocs(userCtx)) {
         subjectIds.push(UNASSIGNED_KEY);
       }
@@ -184,14 +164,14 @@ const isSensitive = function(userCtx, subject, submitter, allowedSubmitterFn) {
   return !allowedSubmitterFn(submitter);
 };
 
-const getValidatedDocIds = (subjectIds, userCtx, write) => {
+const getValidatedDocIds = (subjectIds, userCtx) => {
   return Promise
     .all([
       db.medic.query('medic/docs_by_replication_key', { keys: subjectIds }),
       db.medic.query('medic-tombstone/docs_by_replication_key', { keys: subjectIds })
     ])
     .then(resultSets => {
-      const validatedIds = write ? [] : ['_design/medic-client', 'org.couchdb.user:' + userCtx.name];
+      const validatedIds = ['_design/medic-client', 'org.couchdb.user:' + userCtx.name];
 
       resultSets.forEach(resultSet => {
         resultSet.rows.forEach(row => {
@@ -215,14 +195,14 @@ const getViewResults = (doc) => {
   };
 };
 
-const isAllowedFeed = (feed, changeObj) => {
+const allowedChange = (feed, changeObj) => {
   const userOpts = _.pick(feed, 'userCtx', 'subjectIds', 'validatedIds', 'depth');
-  return module.exports.isAllowedSync(changeObj.change.doc, userOpts, changeObj.authData);
+  return module.exports.allowedDoc(changeObj.change.doc, userOpts, changeObj.authData);
 };
 
 module.exports = {
-  isAllowedFeed: isAllowedFeed,
-  isAllowedSync: isAllowedSync,
+  allowedChange: allowedChange,
+  allowedDoc: allowedDoc,
   getDepth: getDepth,
   getViewResults: getViewResults,
   initViewFunctions: initViewFunctions,
@@ -230,6 +210,7 @@ module.exports = {
   getValidatedDocIds: getValidatedDocIds,
 
   //exposed for testing purposes
-  isAllowedContact: isAllowedContact,
-  isSensitive: isSensitive,
+  _isAllowedContact: allowedContact,
+  _isSensitive: isSensitive,
+  _tombstoneUtils: tombstoneUtils
 };

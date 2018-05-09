@@ -92,7 +92,7 @@ const appendChange = (results, changeObj) => {
 // filters the list of pending changes
 const processPendingChanges = (feed, results) => {
   feed.pendingChanges
-    .filter(changeObj => authorization.isAllowedFeed(feed, changeObj))
+    .filter(changeObj => authorization.allowedChange(feed, changeObj))
     .forEach(changeObj => appendChange(results, changeObj));
 };
 
@@ -238,7 +238,7 @@ const processChange = (change, seq) => {
   // send the change through to the longpoll feeds which are allowed to see it
   longpollFeeds.forEach(feed => {
     feed.lastSeq = seq;
-    if (!authorization.isAllowedFeed(feed, changeObj)) {
+    if (!authorization.allowedChange(feed, changeObj)) {
       return;
     }
 

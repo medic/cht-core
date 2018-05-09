@@ -1,10 +1,11 @@
-const service = require('../../../src/services/authorization');
-//const db = require('../../../src/db-pouch');
-const sinon = require('sinon').sandbox.create();
-//const fs = require('fs');
-//const path = require('path');
+const service = require('../../../src/services/authorization'),
+      db = require('../../../src/db-pouch'),
+      sinon = require('sinon').sandbox.create(),
+      config = require('../../../src/config'),
+      auth = require('../../../src/auth');
+
 require('chai').should();
-const config = require('../../../src/config');
+
 
 describe('Authorization service', () => {
   afterEach(function() {
@@ -38,7 +39,7 @@ describe('Authorization service', () => {
       service.getDepth({ roles: ['some_role'] }).should.equal(-1);
     });
 
-    it('returns role with deepest depth', () => {
+    it('returns biggest value', () => {
       const settings = [
         { role: 'a', depth: 1 },
         { role: 'b', depth: 2 },
@@ -51,6 +52,45 @@ describe('Authorization service', () => {
     });
   });
 
+  describe('getSubjectIds', () => {
+    beforeEach(() => {
+      sinon.stub(service, 'getDepth');
+      sinon.stub(auth, 'hasAllPermissions');
+      sinon.stub(config, 'get');
+      db.medic = { query: sinon.stub().resolves({ rows: [] }) };
+    });
 
+    it('queries correct views with correct keys when depth is not infinite', () => {
+      service.getDepth.returns(2);
+      return service
+        .getSubjectIds({ facility_id: 'facilityId' })
+        .then(() => {
+          db.medic.query.callCount.should.equal(2);
+          db.medic.query.args[0][0].should.equal('medic/contacts_by_depth');
+          db.medic.query.args[1][0].should.equal('medic-tombstone/contacts_by_depth');
+
+          db.medic.query.args[0][1].should.deep.equal({
+            keys: [[ 'facilityId', 0 ], [ 'facilityId', 1 ], [ 'facilityId', 2 ]]
+          });
+          db.medic.query.args[1][1].should.deep.equal({
+            keys: [[ 'facilityId', 0 ], [ 'facilityId', 1 ], [ 'facilityId', 2 ]]
+          });
+        });
+    });
+
+    it('queries with correct keys when depth is infinite', () => {
+      service.getDepth.returns(-1);
+      return service
+        .getSubjectIds({ facility_id: 'facilityId' })
+        .then(() => {
+          db.medic.query.callCount.should.equal(2);
+          db.medic.query.args[0][0].should.equal('medic/contacts_by_depth');
+          db.medic.query.args[1][0].should.equal('medic-tombstone/contacts_by_depth');
+
+          db.medic.query.args[0][1].should.deep.equal({ keys: [[ 'facilityId' ]] });
+          db.medic.query.args[1][1].should.deep.equal({ keys: [[ 'facilityId' ]] });
+        });
+    });
+  });
 });
 

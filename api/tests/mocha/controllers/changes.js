@@ -39,7 +39,7 @@ describe('Changes controller', () => {
     sinon.stub(controller._tombstoneUtils, 'generateChangeFromTombstone');
     sinon.stub(controller._tombstoneUtils, 'extractDoc');
     sinon.stub(authorization, 'getViewResults').returns({});
-    sinon.stub(authorization, 'isAllowedFeed');
+    sinon.stub(authorization, 'allowedChange');
     sinon.stub(authorization, 'getDepth').returns(1);
     sinon.stub(authorization, 'getSubjectIds').resolves({});
     sinon.stub(authorization, 'getValidatedDocIds').resolves({});
@@ -426,9 +426,9 @@ describe('Changes controller', () => {
     it('pushes allowed pending changes to the results', () => {
       const validatedIds = Array.from({length: 101}, () => Math.floor(Math.random() * 101));
       authorization.getValidatedDocIds.resolves(validatedIds);
-      authorization.isAllowedFeed.withArgs(sinon.match.any, { change: { id: 7, changes: [] }, authData: {} }).returns(false);
-      authorization.isAllowedFeed.withArgs(sinon.match.any, { change: { id: 8, changes: [] }, authData: {} }).returns(true);
-      authorization.isAllowedFeed.withArgs(sinon.match.any, { change: { id: 9, changes: [] }, authData: {} }).returns(true);
+      authorization.allowedChange.withArgs(sinon.match.any, { change: { id: 7, changes: [] }, authData: {} }).returns(false);
+      authorization.allowedChange.withArgs(sinon.match.any, { change: { id: 8, changes: [] }, authData: {} }).returns(true);
+      authorization.allowedChange.withArgs(sinon.match.any, { change: { id: 9, changes: [] }, authData: {} }).returns(true);
       testReq.query = { since: 0 };
 
       return controller
@@ -549,14 +549,14 @@ describe('Changes controller', () => {
           feed.validatedIds.should.deep.equal([ 'a', 'b' ]);
           feed.results.length.should.equal(0);
 
-          authorization.isAllowedFeed.returns(true);
+          authorization.allowedChange.returns(true);
           emitter.emit('change', { id: 1, changes: [] }, 0, 1);
           feed.limit.should.equal(99);
           emitter.emit('change', { id: 2, changes: [] }, 0, 2);
           feed.limit.should.equal(98);
-          authorization.isAllowedFeed.returns(false);
+          authorization.allowedChange.returns(false);
           emitter.emit('change', { id: 3, changes: [] }, 0, 3);
-          authorization.isAllowedFeed.returns(true);
+          authorization.allowedChange.returns(true);
           emitter.emit('change', { id: 4, changes: [] }, 0, 4);
           feed.limit.should.equal(97);
           feed.results.length.should.equal(3);
@@ -585,7 +585,7 @@ describe('Changes controller', () => {
           feed.validatedIds.should.deep.equal([ 'a', 'b' ]);
           feed.results.length.should.equal(0);
 
-          authorization.isAllowedFeed.returns(true);
+          authorization.allowedChange.returns(true);
           emitter.emit('change', { id: 1, changes: [] }, 0, 1);
           feed.limit.should.equal(99);
           feed.timeout.should.not.equal(feedTimout);
@@ -627,7 +627,7 @@ describe('Changes controller', () => {
           const emitter = controller._getContinuousFeed();
           const feed = controller._getLongpollFeeds()[0];
 
-          authorization.isAllowedFeed.returns(true);
+          authorization.allowedChange.returns(true);
           emitter.emit('change', { id: 1, changes: [] }, 0, 1);
           testRes.end.callCount.should.equal(0);
           feed.limit.should.equal(3);
@@ -689,10 +689,10 @@ describe('Changes controller', () => {
       authorization.getValidatedDocIds.onCall(0).resolves([ 'a', 'b' ]);
       authorization.getValidatedDocIds.onCall(1).resolves([ 1, 2 ]);
       authorization.getValidatedDocIds.onCall(2).resolves([ '*', '-' ]);
-      authorization.isAllowedFeed
+      authorization.allowedChange
         .withArgs(sinon.match({ id: 'one' }), sinon.match({ change: { id: sinon.match(/^[a-z]+$/) } }))
         .returns(true);
-      authorization.isAllowedFeed
+      authorization.allowedChange
         .withArgs(sinon.match({ id: 'two' }), sinon.match({ change: { id: sinon.match(/^[0-9]+$/) } }))
         .returns(true);
 
@@ -856,11 +856,11 @@ describe('Changes controller', () => {
         { change: { id: 4, changes: [{ rev: 1 }] } },
         { change: { id: 5, changes: [{ rev: 1 }] } },
       ];
-      authorization.isAllowedFeed.withArgs(sinon.match.any, sinon.match({ change: { id: 1 } })).returns(true);
-      authorization.isAllowedFeed.withArgs(sinon.match.any, sinon.match({ change: { id: 2 } })).returns(true);
-      authorization.isAllowedFeed.withArgs(sinon.match.any, sinon.match({ change: { id: 3 } })).returns(false);
-      authorization.isAllowedFeed.withArgs(sinon.match.any, sinon.match({ change: { id: 4 } })).returns(false);
-      authorization.isAllowedFeed.withArgs(sinon.match.any, sinon.match({ change: { id: 5 } })).returns(true);
+      authorization.allowedChange.withArgs(sinon.match.any, sinon.match({ change: { id: 1 } })).returns(true);
+      authorization.allowedChange.withArgs(sinon.match.any, sinon.match({ change: { id: 2 } })).returns(true);
+      authorization.allowedChange.withArgs(sinon.match.any, sinon.match({ change: { id: 3 } })).returns(false);
+      authorization.allowedChange.withArgs(sinon.match.any, sinon.match({ change: { id: 4 } })).returns(false);
+      authorization.allowedChange.withArgs(sinon.match.any, sinon.match({ change: { id: 5 } })).returns(true);
 
       controller._processPendingChanges({ pendingChanges: changes }, results);
       results.length.should.equal(3);
@@ -968,9 +968,9 @@ describe('Changes controller', () => {
 
     it('pushes the change to the results of longpoll feeds, if allowed, otherwise only updates seq', () => {
       authorization.getViewResults.withArgs({ _id: 1 }).returns({ view1: 'a', view2: 'b' });
-      authorization.isAllowedFeed.withArgs(sinon.match({ id: 1 })).returns(true);
-      authorization.isAllowedFeed.withArgs(sinon.match({ id: 2 })).returns(false);
-      authorization.isAllowedFeed.withArgs(sinon.match({ id: 3 })).returns(true);
+      authorization.allowedChange.withArgs(sinon.match({ id: 1 })).returns(true);
+      authorization.allowedChange.withArgs(sinon.match({ id: 2 })).returns(false);
+      authorization.allowedChange.withArgs(sinon.match({ id: 3 })).returns(true);
 
       const longpollFeeds = controller._getLongpollFeeds();
       const testFeed1 = { id: 1, lastSeq: 0, results: [], req: testReq, res: testRes };
