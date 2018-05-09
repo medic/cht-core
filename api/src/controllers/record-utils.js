@@ -5,7 +5,7 @@ const _ = require('underscore'),
       smsparser = require('../services/report/smsparser'),
       validate = require('../services/report/validate'),
       PublicError = require('../public-error'),
-      DATE_NUMBER_STRING = /\d{13,}/;
+      DATE_NUMBER_STRING = /(\d{13,})/;
 
 const empty = val => {
   return val === '' ||
@@ -86,8 +86,9 @@ const parseSentTimestamp = str => {
     return;
   }
 
-  if (DATE_NUMBER_STRING.test(str)) {
-    const ret = new Date(Number(str));
+  const match = str.match(DATE_NUMBER_STRING);
+  if (match) {
+    const ret = new Date(Number(match[1]));
     return ret.valueOf();
   }
 
