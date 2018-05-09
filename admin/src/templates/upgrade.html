@@ -9,13 +9,14 @@
 
 <div class="upgrade-config col-sm-12" ng-show="currentDeploy">
   <div ng-show="deployDoc">
-    <legend translate>instance.upgrade.deployment</legend>
+    <legend ng-hide="deployDoc.action === 'stage'" translate>instance.upgrade.deployment</legend>
+    <legend ng-show="deployDoc.action === 'stage'" translate>instance.stage.deployment</legend>
 
     <p class="status"
       translate="instance.upgrade.upgrading"
       translate-values="{ before: currentDeploy.version, after: deployDoc.build_info.version }"></p>
 
-    <ul ng-show="deployDoc.log.length" class="table table-striped">
+    <ul ng-show="deployDoc.log.length" class="table table-striped col">
       <li ng-repeat="entry in deployDoc.log" class="row">
         <div ng-show="entry.type === 'stage'">
           <div class="col-xs-3">{{entry.datetime | date:'medium'}}</div>
@@ -31,6 +32,11 @@
         </ul>
       </li>
     </ul>
+
+    <div ng-show="deployDoc.staging_complete">
+      <p class="col-xs-11" translate>instance.stage.complete</p>
+      <button class="col-xs-1 btn btn-primary" ng-click="upgrade(deployDoc.build_info.version, 'complete')" translate>instance.upgrade.install</button>
+    </div>
   </div>
 
   <div ng-show="error">
@@ -59,7 +65,7 @@
         <li ng-repeat="release in versions.releases" class="row">
           <div class="col-xs-5"><span class="label label-info">{{release.id}}</span></div>
           <div class="col-xs-5" ng-bind-html="release.value.time | date"></div>
-          <div class="col-xs-1"><button ng-click="upgrade(release.id, true)" class="btn btn-secondary" translate>instance.upgrade.stage</button></div>
+          <div class="col-xs-1"><button ng-click="upgrade(release.id, 'stage')" class="btn btn-secondary" translate>instance.upgrade.stage</button></div>
           <div class="col-xs-1"><button ng-click="upgrade(release.id)" class="btn btn-primary" translate>instance.upgrade.install</button></div>
         </li>
       </ul>
@@ -73,7 +79,7 @@
           <li ng-repeat="release in versions.betas" class="row">
             <div class="col-xs-5"><span class="label label-info">{{release.id}}</span></div>
             <div class="col-xs-5" ng-bind-html="release.value.time | date"></div>
-            <div class="col-xs-1"><button ng-click="upgrade(release.id, true)" class="btn btn-secondary" translate>instance.upgrade.stage</button></div>
+            <div class="col-xs-1"><button ng-click="upgrade(release.id, 'stage')" class="btn btn-secondary" translate>instance.upgrade.stage</button></div>
             <div class="col-xs-1"><button ng-click="upgrade(release.id)" class="btn btn-primary" translate>instance.upgrade.install</button></div>
           </li>
         </ul>
@@ -88,7 +94,7 @@
           <li ng-repeat="release in versions.branches" class="row">
             <div class="col-xs-5"><span class="label label-info">{{release.id}}</span></div>
             <div class="col-xs-5">{{release.value.time | date:'medium'}}</div>
-            <div class="col-xs-1"><button ng-click="upgrade(release.id, true)" class="btn btn-secondary" translate>instance.upgrade.stage</button></div>
+            <div class="col-xs-1"><button ng-click="upgrade(release.id, 'stage')" class="btn btn-secondary" translate>instance.upgrade.stage</button></div>
             <div class="col-xs-1"><button ng-click="upgrade(release.id)" class="btn btn-primary" translate>instance.upgrade.install</button></div>
           </li>
         </ul>

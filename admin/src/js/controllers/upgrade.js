@@ -9,6 +9,7 @@ angular.module('controllers').controller('UpgradeCtrl',
     $q,
     $scope,
     $timeout,
+    $window,
     Changes,
     DB,
     pouchDB,
@@ -128,26 +129,25 @@ angular.module('controllers').controller('UpgradeCtrl',
         $scope.loading = false;
       });
 
-    $scope.upgrade = function(version, stageOnly) {
-      $scope.versionCandidate = version;
+    $scope.upgrade = function(version, action) {
       Modal({
         templateUrl: 'templates/upgrade_confirm.html',
         controller: 'UpgradeConfirmCtrl',
-        model: {stageOnly: stageOnly, before: $scope.currentDeploy.version, after: version }
+        model: {stageOnly: action, before: $scope.currentDeploy.version, after: version }
       })
         .catch(function() {})
         .then(function(confirmed) {
           if (confirmed) {
-            upgrade(stageOnly);
+            upgrade(version, action);
           }
         });
     };
 
-    var upgrade = function(stageOnly) {
+    var upgrade = function(version, action) {
       $scope.error = false;
 
-      var url = stageOnly ?
-        '/api/v1/upgrade/stage' :
+      var url = action ?
+        '/api/v1/upgrade/' + action :
         '/api/v1/upgrade';
 
       // This will cause the DEPLOY_DOC_ID doc to be written by api, which
@@ -156,7 +156,7 @@ angular.module('controllers').controller('UpgradeCtrl',
         .post(url, { build: {
           namespace: 'medic',
           application: 'medic',
-          version: $scope.versionCandidate
+          version: version
         }})
         .catch(function(err) {
           err = err.responseText || err.statusText;
@@ -166,7 +166,6 @@ angular.module('controllers').controller('UpgradeCtrl',
               $log.error(msg, err);
               $scope.error = msg;
               $scope.upgrading = false;
-              $scope.versionCandidate = false;
             });
         });
     };
@@ -178,6 +177,17 @@ angular.module('controllers').controller('UpgradeCtrl',
       },
       callback: function(change) {
         $timeout(function() { $scope.deployDoc = change.doc; });
+
+        // TODO: don't use UpgradeConfirmCtrl.
+        if (change.doc._deleted) {
+          Modal({
+            templateUrl: 'templates/version_update.html',
+            controller: 'UpgradeConfirmCtrl',
+            singleton: true
+          }).then(function() {
+            $window.location.reload();
+          });
+        }
       }
     });
   }
