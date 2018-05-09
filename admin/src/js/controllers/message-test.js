@@ -29,7 +29,7 @@ angular.module('controllers').controller('MessageTestCtrl',
     var send = function() {
       var body = { message: $scope.message, from: $scope.from };
       var headers = { 'Content-Type': 'application/x-www-form-urlencoded' };
-      return $http.post('/api/v1/records', $.param(body), { headers: headers });
+      return $http.post('/api/v2/records', $.param(body), { headers: headers });
     };
 
     $scope.submit = function() {

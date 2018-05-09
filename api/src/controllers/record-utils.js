@@ -206,7 +206,7 @@ const getForm = code => {
   return forms && forms[code];
 };
 
-const createByForm = data => {
+const createByForm = (data, { locale }={}) => {
   // We're OK with from being empty - sometimes weird things happen with SMS
   if (data.from === undefined) {
     throw new PublicError('Missing required value: from');
@@ -222,6 +222,7 @@ const createByForm = data => {
     message: data.message,
     form: smsparser.getFormCode(data.message),
     sent_timestamp: data.sent_timestamp,
+    locale: data.locale || locale,
     from: data.from,
     gateway_ref: data.gateway_ref,
   };
@@ -235,7 +236,7 @@ const createByForm = data => {
 
 const createRecordByJSON = data => {
   const required = ['from', 'form'],
-        optional = ['reported_date'];
+        optional = ['reported_date', 'locale'];
   // check required fields are in _meta property
   if (empty(data._meta)) {
     throw new PublicError('Missing _meta property.');
@@ -251,6 +252,7 @@ const createRecordByJSON = data => {
   // request({ body: data }, callback);
 
   const options = {
+    locale: data._meta.locale,
     sent_timestamp: data._meta.reported_date,
     form: smsparser.getFormCode(data._meta.form),
     from: data._meta.from

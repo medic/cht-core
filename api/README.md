@@ -36,7 +36,7 @@ audit history where required.
   - [GET /api/v1/forms](#get-apiv1forms)
   - [GET /api/v1/forms/{{id}}.{{format}}](#get-apiv1formsidformat)
 - [Records](#records)
-  - [POST /api/v1/records](#post-apiv1records)
+  - [POST /api/v2/records](#post-apiv2records)
 - [SMS](#sms)
   - [POST /api/sms](#post-apisms)
 - [People](#people)
@@ -395,7 +395,7 @@ GET /api/v1/forms/NPYY.json
 
 # Records
 
-## POST /api/v1/records
+## POST /api/v2/records
 
 Create a new record based on a form.  This requires a form definition exists on the server side matching the form code.
 
@@ -415,11 +415,9 @@ allow multiple content types to appear in a single `Content-Type` header.
 
 | Variable | Description       |
 | -------- | ----------------- |
-| message  | Message string in a supported format like Muvuku or Textforms.  Depending if your Medic Mobile instance is configured in forms-only mode or not you might recieve an error if the form is not found.  |
+| message  | Message string in a supported format like Muvuku or Textforms.  Depending if your Medic Mobile instance is configured in forms-only mode or not you might receive an error if the form is not found.  |
 | from |   Reporting phone number. |
 | reported_date |  Timestamp in MS since Unix Epoch of when the message was received on the gateway. Defaults to now. |
-| locale |  Optional locale string. |
-
 
 #### JSON Properties
 
@@ -491,8 +489,7 @@ If required fields are not found return 500.
 
 If invalid JSON return error response 500.
 
-If submitting JSON and correspending form is not found on the server you will receive an error.
-
+If submitting JSON and corresponding form is not found on the server you will receive an error.
 
 # SMS
 

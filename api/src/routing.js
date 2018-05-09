@@ -209,16 +209,8 @@ app.all(`/${db.getPath()}/export/:type/:form?`, exportData.routeV1);
 app.get('/api/v2/export/:type', exportData.routeV2);
 app.postJson('/api/v2/export/:type', exportData.routeV2);
 
-app.post('/api/v1/records', [jsonParser, formParser], function(req, res) {
-  auth.check(req, 'can_create_records', null, function(err) {
-    if (err) {
-      return serverUtils.error(err, req, res, true);
-    }
-    records.create(req, req.is(['json','urlencoded']))
-      .then(body => res.json(body))
-      .catch(err => serverUtils.error(err, req, res));
-  });
-});
+app.post('/api/v1/records', [jsonParser, formParser], records.v1);
+app.post('/api/v2/records', [jsonParser, formParser], records.v2);
 
 app.get('/api/v1/forms', function(req, res) {
   forms.listForms(req.headers, function(err, body, headers) {

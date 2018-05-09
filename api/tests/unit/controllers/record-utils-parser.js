@@ -137,6 +137,86 @@ exports['only facility not found error on muvuku add'] = test => {
   test.done();
 };
 
+exports['form not found response locale from query'] = test => {
+  sinon.stub(config, 'get')
+    .withArgs('forms').returns(definitions.forms)
+    .withArgs('forms_only_mode').returns(true);
+  const translate = sinon.stub(config, 'translate').returns('translated');
+  const body = {
+    from:'+888',
+    message: '1!0000!2012#2#20#foo#bar'
+  };
+  const doc = recordUtils.createByForm(body, { locale: 'fr' });
+  test.equals(doc.errors[0].code, 'sys.facility_not_found');
+  test.equals(doc.errors[0].message, 'translated');
+  test.equals(doc.errors[1].code, 'sys.form_not_found');
+  test.equals(doc.errors[1].message, 'translated');
+  test.equals(doc.errors.length, 2);
+  test.equals(translate.callCount, 2);
+  test.equals(translate.args[0][0], 'sys.facility_not_found');
+  test.equals(translate.args[0][1], 'fr');
+  test.equals(translate.args[1][0], 'sys.form_not_found');
+  test.equals(translate.args[1][1], 'fr');
+  test.done();
+};
+
+exports['form not found message locale on form overrides locale on query'] = test => {
+  sinon.stub(config, 'get')
+    .withArgs('forms').returns(definitions.forms)
+    .withArgs('forms_only_mode').returns(true);
+  const translate = sinon.stub(config, 'translate').returns('translated');
+  const body = {
+    locale: 'es',
+    from: '+888',
+    message: '1!0000!2012#2#20#foo#bar'
+  };
+  recordUtils.createByForm(body, { locale: 'fr' });
+  test.equals(translate.callCount, 2);
+  test.equals(translate.args[0][0], 'sys.facility_not_found');
+  test.equals(translate.args[0][1], 'es');
+  test.equals(translate.args[1][0], 'sys.form_not_found');
+  test.equals(translate.args[1][1], 'es');
+  test.done();
+};
+
+exports['form not found message locale fallback to app_settings'] = test => {
+  sinon.stub(config, 'get')
+    .withArgs('forms').returns(definitions.forms)
+    .withArgs('forms_only_mode').returns(true)
+    .withArgs('locale').returns('ne');
+  const translate = sinon.stub(config, 'translate').returns('translated');
+  const body = {
+    from: '+888',
+    message: '1!0000!2012#2#20#foo#bar'
+  };
+  recordUtils.createByForm(body);
+  test.equals(translate.callCount, 2);
+  test.equals(translate.args[0][0], 'sys.facility_not_found');
+  test.equals(translate.args[0][1], 'ne');
+  test.equals(translate.args[1][0], 'sys.form_not_found');
+  test.equals(translate.args[1][1], 'ne');
+  test.done();
+};
+
+exports['form not found message when locale undefined'] = test => {
+  sinon.stub(config, 'get')
+    .withArgs('forms').returns(definitions.forms)
+    .withArgs('forms_only_mode').returns(true)
+    .withArgs('locale').returns(undefined);
+  const translate = sinon.stub(config, 'translate').returns('translated');
+  const body = {
+    from: '+888',
+    message: '1!0000!2012#2#20#foo#bar'
+  };
+  recordUtils.createByForm(body);
+  test.equals(translate.callCount, 2);
+  test.equals(translate.args[0][0], 'sys.facility_not_found');
+  test.equals(translate.args[0][1], 'en');
+  test.equals(translate.args[1][0], 'sys.form_not_found');
+  test.equals(translate.args[1][1], 'en');
+  test.done();
+};
+
 exports['assign sys.empty error to empty report'] = test => {
   const body = {
     from: '+888',
