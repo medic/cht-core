@@ -84,12 +84,6 @@
       ]
     },
     {
-      "name": "can_export_server_logs",
-      "roles": [
-        "national_admin"
-      ]
-    },
-    {
       "name": "can_view_data_records",
       "roles": [
         "national_admin",
