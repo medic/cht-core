@@ -133,7 +133,7 @@ const getSubjectIds = (userCtx) => {
       resultSets.forEach((resultSet, tombstone) => {
         resultSet.rows.forEach(row => {
           subjectIds.push( tombstone ? tombstoneUtils.extractDocId(row.id) : row.id );
-          if (!tombstone && row.value) {
+          if (row.value) {
             subjectIds.push(row.value);
           }
         });

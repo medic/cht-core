@@ -57,6 +57,7 @@ describe('Authorization service', () => {
       sinon.stub(service, 'getDepth');
       sinon.stub(auth, 'hasAllPermissions');
       sinon.stub(config, 'get');
+      sinon.stub(service._tombstoneUtils, 'extractDocId').returnsArg(0);
       db.medic = { query: sinon.stub().resolves({ rows: [] }) };
     });
 
@@ -90,6 +91,33 @@ describe('Authorization service', () => {
           db.medic.query.args[0][1].should.deep.equal({ keys: [[ 'facilityId' ]] });
           db.medic.query.args[1][1].should.deep.equal({ keys: [[ 'facilityId' ]] });
         });
+    });
+
+    it('extracts original docId from tombstone ID', () => {
+      service.getDepth.returns(-1);
+      db.medic.query.withArgs('medic/contacts_by_depth').resolves({
+        rows: [
+          { id: 1, key: 'key', value: 's1' },
+          { id: 2, key: 'key', value: 's2' },
+        ]
+      });
+      db.medic.query.withArgs('medic-tombstone/contacts_by_depth').resolves({
+        rows: [
+          { id: 't1', key: 'key', value: 's3' },
+          { id: 't2', key: 'key', value: 's4' },
+          { id: 't3', key: 'key', value: 's5' },
+        ]
+      });
+      return service
+        .getSubjectIds({ facility_id: 'facility_id' })
+        .then(() => {
+          service._tombstoneUtils.extractDocId.callCount.should.equal(3);
+          service._tombstoneUtils.extractDocId.args.should.deep.equal([['t1'], ['t2'], ['t3']]);
+        });
+    });
+
+    it('pushes ID-s and values to subject list', () => {
+
     });
   });
 });

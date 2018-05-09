@@ -21,7 +21,7 @@ module.exports = function(DB, Promise) {
       tombstone: tombstone
     };
 
-    logger.log('saving tombstone for ' + doc._id);
+    logger.info('saving tombstone for ' + doc._id);
 
     DB
       .put(tombstoneDoc)
@@ -71,7 +71,7 @@ module.exports = function(DB, Promise) {
       if (!logger) {
         logger = console;
       }
-      logger.log('processing tombstome for ' + change.id);
+      logger.info('processing tombstome for ' + change.id);
       return getDoc(change)
         .then(function(doc) {
           return needsTombstone(doc) && saveTombstone(doc, logger);

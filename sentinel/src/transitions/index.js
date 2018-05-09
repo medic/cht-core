@@ -14,7 +14,7 @@ const _ = require('underscore'),
       db = require('../db-nano'),
       infodoc = require('../lib/infodoc'),
       metadata = require('../lib/metadata'),
-      tombstoneUtils = require('@shared-libs/tombstone-utils'),
+      tombstoneUtils = require('@shared-libs/tombstone-utils')(dbPouch.medic, Promise),
       PROCESSING_DELAY = 50, // ms
       PROGRESS_REPORT_INTERVAL = 500, // items
       transitions = [];
@@ -64,7 +64,7 @@ const processChange = (change, callback) => {
     logger.info(`transitions: ${processed} items processed (since sentinel started)`);
   }
   if (change.deleted) {
-    tombstoneUtils(dbPouch.medic, Promise)
+    tombstoneUtils
       .processChange(change, logger)
       .then(() => {
         // don't run transitions on deleted docs, but do clean up
