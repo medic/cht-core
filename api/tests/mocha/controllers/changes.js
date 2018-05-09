@@ -15,8 +15,7 @@ let testReq,
     changesSpy,
     clock,
     emitters,
-    proxy,
-    testFeed;
+    proxy;
 
 const nextTick = () => Promise.resolve().then(() => Promise.resolve()).then(() => Promise.resolve());
 
@@ -28,19 +27,6 @@ describe('Changes controller', () => {
     testRes = { type: sinon.stub(), write: sinon.stub(), end: sinon.stub(), setHeader: sinon.stub() };
     userCtx = { name: 'user', facility_id: 'facility', contact_id: 'contact' };
     proxy = { web: sinon.stub() };
-    testFeed = {
-      id: 'someId',
-      req: testReq,
-      res: testRes,
-      userCtx: userCtx,
-      depth: 1,
-      pendingChanges: [],
-      results: [],
-      upstreamRequests: [],
-      limit: 100,
-      validatedDocIds: [],
-      subjectIds: []
-    };
 
     changesSpy = sinon.spy();
     sinon.stub(auth, 'getUserCtx').resolves({ name: 'user' });
@@ -54,6 +40,7 @@ describe('Changes controller', () => {
     sinon.stub(authorization, 'getDepth').returns(1);
     sinon.stub(authorization, 'getSubjectIds').resolves({});
     sinon.stub(authorization, 'getValidatedDocIds').resolves({});
+    sinon.stub(controller._, 'now').returns(Date.now); // force underscore debounce to use fake timers!
 
     Changes = function(opts) {
       changesSpy(opts);
@@ -126,7 +113,8 @@ describe('Changes controller', () => {
 
     it('sends changes to be analyzed and updates current seq when changes come in', () => {
       controller._tombstoneUtils.isTombstoneId.withArgs('change').returns(false);
-      const emitter = controller._init();
+      controller._init();
+      const emitter = controller._getContinuousFeed();
       emitter.emit('change', { id: 'change' }, 0, 'newseq');
       controller._tombstoneUtils.isTombstoneId.callCount.should.equal(1);
       controller._tombstoneUtils.isTombstoneId.args[0][0].should.equal('change');
@@ -135,7 +123,8 @@ describe('Changes controller', () => {
 
     it('resets changes listener on error, using last received sequence', () => {
       controller._tombstoneUtils.isTombstoneId.withArgs('change').returns(false);
-      const emitter = controller._init();
+      controller._init();
+      const emitter = controller._getContinuousFeed();
       emitter.emit('change', { id: 'change' }, 0, 'seq-1');
       emitter.emit('change', { id: 'change' }, 0, 'seq-2');
       emitter.emit('change', { id: 'change' }, 0, 'seq-3');
@@ -210,7 +199,8 @@ describe('Changes controller', () => {
 
   describe('initFeed', () => {
     it('initializes feed with default values', () => {
-      const emitter = controller._init();
+      controller._init();
+      const emitter = controller._getContinuousFeed();
       emitter.emit('change', { id: 'change' }, 0, 'seq-1');
       return controller
         .request(proxy, testReq, testRes)
@@ -224,7 +214,7 @@ describe('Changes controller', () => {
           feed.pendingChanges.length.should.equal(0);
           feed.results.length.should.equal(0);
           feed.upstreamRequests.length.should.equal(0);
-          feed.limit.should.equal(100);
+          feed.acceptLimit.should.equal(100);
           feed.should.not.have.property('heartbeat');
           feed.timeout.should.be.an('Object');
           clock.tick(60000);
@@ -241,7 +231,7 @@ describe('Changes controller', () => {
         .request(proxy, testReq, testRes)
         .then(() => {
           const feed = controller._getNormalFeeds()[0];
-          feed.limit.should.equal(23);
+          feed.acceptLimit.should.equal(23);
           feed.heartbeat.should.be.an('Object');
           clock.tick(80000);
           testRes.write.callCount.should.equal(7);
@@ -425,7 +415,6 @@ describe('Changes controller', () => {
     });
 
     it('pushes allowed pending changes to the results', () => {
-      const emitter = controller._init();
       const validatedIds = Array.from({length: 101}, () => Math.floor(Math.random() * 101));
       authorization.getValidatedDocIds.resolves(validatedIds);
       authorization.isAllowedFeed.withArgs(sinon.match.any, { change: { id: 7, changes: [] }, authData: {} }).returns(false);
@@ -436,15 +425,15 @@ describe('Changes controller', () => {
       return controller
         .request(proxy, testReq, testRes)
         .then(() => {
-          emitter.emit('change', { id: 7, changes: [] }, 0, 4);
+          controller._getContinuousFeed().emit('change', { id: 7, changes: [] }, 0, 4);
           return Promise.resolve();
         })
         .then(() => {
-          emitter.emit('change', { id: 8, changes: [] }, 0, 5);
+          controller._getContinuousFeed().emit('change', { id: 8, changes: [] }, 0, 5);
           return Promise.resolve();
         })
         .then(() => {
-          emitter.emit('change', { id: 9, changes: [] }, 0, 6);
+          controller._getContinuousFeed().emit('change', { id: 9, changes: [] }, 0, 6);
           return Promise.resolve();
         })
         .then(() => {
@@ -500,7 +489,6 @@ describe('Changes controller', () => {
         .then(nextTick)
         .then(() => {
           const feed = controller._getNormalFeeds()[0];
-          console.log(feed.upstreamRequests);
           feed.upstreamRequests.forEach(upstreamRequest => upstreamRequest.complete(null, { results: [], last_seq: 1 }));
         })
         .then(nextTick)
@@ -514,5 +502,118 @@ describe('Changes controller', () => {
           feed.validatedIds.should.deep.equal([1, 2]);
         });
     });
+  });
+
+  describe('handling waiting feeds', () => {
+    it('pushes allowed live changes to the feed results', () => {
+      authorization.getValidatedDocIds.resolves([1, 2]);
+      testReq.query = { feed: 'longpoll' };
+
+      return controller
+        .request(proxy, testReq, testRes)
+        .then(nextTick)
+        .then(() => {
+          const feed = controller._getNormalFeeds()[0];
+          feed.upstreamRequests.forEach(upstreamRequest => upstreamRequest.complete(null, { results: [], last_seq: 0 }));
+        })
+        .then(nextTick)
+        .then(() => {
+          const emitter = controller._getContinuousFeed();
+          const feed = controller._getLongpollFeeds()[0];
+          feed.validatedIds.should.deep.equal([1, 2]);
+          feed.results.length.should.equal(0);
+
+          authorization.isAllowedFeed.returns(true);
+          emitter.emit('change', { id: 1, changes: [] }, 0, 1);
+          emitter.emit('change', { id: 2, changes: [] }, 0, 2);
+          authorization.isAllowedFeed.returns(false);
+          emitter.emit('change', { id: 3, changes: [] }, 0, 3);
+          authorization.isAllowedFeed.returns(true);
+          emitter.emit('change', { id: 4, changes: [] }, 0, 4);
+          feed.results.length.should.equal(3);
+          feed.results.should.deep.equal([ { id: 1, changes: [] }, { id: 2, changes: [] }, { id: 4, changes: [] } ]);
+          feed.lastSeq.should.equal(4);
+          controller._getLongpollFeeds().length.should.equal(1);
+        });
+    });
+
+    it('debounces sending the results, capturing rapidly received changes, resets feed timeout every time', () => {
+      authorization.getValidatedDocIds.resolves([1, 2]);
+      testReq.query = { feed: 'longpoll' };
+
+      return controller
+        .request(proxy, testReq, testRes)
+        .then(nextTick)
+        .then(() => {
+          const feed = controller._getNormalFeeds()[0];
+          feed.upstreamRequests.forEach(upstreamRequest => upstreamRequest.complete(null, { results: [], last_seq: 0 }));
+        })
+        .then(nextTick)
+        .then(() => {
+          const emitter = controller._getContinuousFeed();
+          const feed = controller._getLongpollFeeds()[0];
+          let timeoutID = feed.timeout.id;
+          feed.validatedIds.should.deep.equal([1, 2]);
+          feed.results.length.should.equal(0);
+
+          authorization.isAllowedFeed.returns(true);
+          emitter.emit('change', { id: 1, changes: [] }, 0, 1);
+          feed.timeout.id.should.not.equal(timeoutID);
+          timeoutID = feed.timeout.id;
+          emitter.emit('change', { id: 2, changes: [] }, 0, 2);
+          feed.timeout.id.should.not.equal(timeoutID);
+          timeoutID = feed.timeout.id;
+          emitter.emit('change', { id: 4, changes: [] }, 0, 4);
+          feed.timeout.id.should.not.equal(timeoutID);
+          testRes.end.callCount.should.equal(0);
+
+          clock.tick(300);
+          testRes.end.callCount.should.equal(1);
+          testRes.write.callCount.should.equal(1);
+          testRes.write.args[0][0].should.equal(JSON.stringify(
+            { results: [{ id: 1, changes: [] }, { id: 2, changes: [] }, { id: 4, changes: [] }], last_seq: 4 }
+            ));
+          controller._getLongpollFeeds().length.should.equal(0);
+        });
+    });
+
+    it('sends results when reaching limit of maximum changes', () => {
+      authorization.getValidatedDocIds.resolves([1, 2]);
+      testReq.query = { limit: 4, feed: 'longpoll' };
+      testReq.uniqId = 'myTestFeed';
+
+      return controller
+        .request(proxy, testReq, testRes)
+        .then(nextTick)
+        .then(() => {
+          const feed = controller._getNormalFeeds()[0];
+          feed.upstreamRequests.forEach(upstreamRequest => upstreamRequest.complete(null, { results: [], last_seq: 0 }));
+        })
+        .then(nextTick)
+        .then(() => {
+          const emitter = controller._getContinuousFeed();
+          const feed = controller._getLongpollFeeds()[0];
+
+          authorization.isAllowedFeed.returns(true);
+          emitter.emit('change', { id: 1, changes: [] }, 0, 1);
+          testRes.end.callCount.should.equal(0);
+          emitter.emit('change', { id: 2, changes: [] }, 0, 2);
+          testRes.end.callCount.should.equal(0);
+          emitter.emit('change', { id: 2, changes: [] }, 0, 3);
+          testRes.end.callCount.should.equal(0);
+          emitter.emit('change', { id: 3, changes: [] }, 0, 4);
+          testRes.end.callCount.should.equal(1);
+
+          emitter.emit('change', { id: 4, changes: [] }, 0, 5);
+          feed.results.length.should.equal(3);
+          feed.results.should.deep.equal([ { id: 1, changes: [] }, { id: 2, changes: [] },{ id: 3, changes: [] } ]);
+          testRes.write.callCount.should.equal(1);
+          testRes.write.args[0][0].should.equal(JSON.stringify(
+            { results: [ { id: 1, changes: [] }, { id: 2, changes: [] },{ id: 3, changes: [] } ], last_seq: 4 }
+          ));
+        });
+    });
+
+
   });
 });

@@ -9,10 +9,12 @@ const auth = require('../auth'),
       uuid = require('uuid/v4');
 
 let inited        = false,
+    continuousFeed = false,
     longpollFeeds = [],
     normalFeeds   = [],
     MAX_DOC_IDS   = 100,
-    currentSeq    = 0;
+    currentSeq    = 0,
+    debouncedEndFeed;
 
 const DEFAULT_TIMEOUT = 60000,
       DEFAULT_LIMIT = 100;
@@ -132,7 +134,6 @@ const getChanges = feed => {
   return Promise
     .all(feed.upstreamRequests)
     .then(responses => {
-      console.log('got responses');
       // if any of the responses was incomplete, send empty response
       if (!validResults(responses)) {
         feed.results = [];
@@ -140,12 +141,10 @@ const getChanges = feed => {
         return endFeed(feed);
       }
 
-      console.log('merge responses');
       let results = mergeResults(responses);
       processPendingChanges(feed, results);
 
       if (results.length || !isLongpoll(feed.req)) {
-        console.log('send responses');
         feed.results = results;
         return endFeed(feed);
       }
@@ -173,12 +172,11 @@ const writeDownstream = (feed, content, end) => {
   }
 };
 
-const debouncedEndFeed = _.debounce(endFeed, 200);
 const addChangeToFeed = (feed, changeObj) => {
   appendChange(feed.results, changeObj);
 
-  if (feed.results.length < feed.limit) {
-    // debouce sending results if the feed limit is not yet reached
+  if (--feed.acceptLimit) {
+    // debounce sending results if the feed limit is not yet reached
     addTimeout(feed);
     feed.debouncedEnd = debouncedEndFeed(feed);
     return;
@@ -188,6 +186,35 @@ const addChangeToFeed = (feed, changeObj) => {
     feed.debouncedEnd.cancel();
   }
   endFeed(feed);
+};
+
+const initFeed = (req, res, userCtx) => {
+  const feed = {
+    id: req.uniqId || uuid(),
+    req: req,
+    res: res,
+    userCtx: userCtx,
+    depth: authorization.getDepth(userCtx),
+    initSeq: req.query && req.query.since || 0,
+    lastSeq: req.query && req.query.since || currentSeq,
+    pendingChanges: [],
+    results: [],
+    upstreamRequests: [],
+    acceptLimit: req.query && req.query.limit || DEFAULT_LIMIT
+  };
+
+  defibrillator(feed);
+  addTimeout(feed);
+  normalFeeds.push(feed);
+  req.on('close', () => cleanUp(feed));
+
+  return authorization
+    .getSubjectIds(feed.userCtx)
+    .then(subjectIds => {
+      return authorization
+        .getValidatedDocIds(subjectIds, feed.userCtx)
+        .then(validatedIds => _.extend(feed, { subjectIds: subjectIds, validatedIds: validatedIds }));
+    });
 };
 
 const processChange = (change, seq) => {
@@ -220,9 +247,8 @@ const processChange = (change, seq) => {
   });
 };
 
-const init = since => {
-  inited = true;
-  return db.medic
+const initContinuousFeed = since => {
+  continuousFeed = db.medic
     .changes({
       live: true,
       include_docs: true,
@@ -234,50 +260,33 @@ const init = since => {
       currentSeq = seq;
     })
     .on('error', () => {
-      return Promise.resolve().then(() => init(currentSeq));
+      continuousFeed.cancel();
+      Promise.resolve().then(() => {
+        continuousFeed = initContinuousFeed(currentSeq);
+      });
     });
 };
 
-const initFeed = (req, res, userCtx) => {
-  const feed = {
-    id: req.uniqId || uuid(),
-    req: req,
-    res: res,
-    userCtx: userCtx,
-    depth: authorization.getDepth(userCtx),
-    initSeq: req.query && req.query.since || 0,
-    lastSeq: req.query && req.query.since || currentSeq,
-    pendingChanges: [],
-    results: [],
-    upstreamRequests: [],
-    limit: req.query && req.query.limit || DEFAULT_LIMIT
-  };
+const init = () => {
+  if (inited) {
+    return;
+  }
 
-  defibrillator(feed);
-  addTimeout(feed);
-  normalFeeds.push(feed);
-  req.on('close', () => cleanUp(feed));
-
-  return authorization
-    .getSubjectIds(feed.userCtx)
-    .then(subjectIds => {
-      return authorization
-        .getValidatedDocIds(subjectIds, feed.userCtx)
-        .then(validatedIds => _.extend(feed, { subjectIds: subjectIds, validatedIds: validatedIds }));
-    });
+  // As per https://issues.apache.org/jira/browse/COUCHDB-1288, there is a 100 doc
+  // limit on processing changes feeds with the _doc_ids filter within a
+  // reasonable amount of time.
+  // While hardcoded at first, CouchDB 2.1.1 has the option to configure this value
+  // https://github.com/apache/couchdb/commit/e09b8074fec59a508905b700c5252df7eb5b5338
+  MAX_DOC_IDS = config.get('changes_doc_ids_optimization_threshold') || MAX_DOC_IDS;
+  db.medic.setMaxListeners(100);
+  debouncedEndFeed = _.debounce(endFeed, 200);
+  initContinuousFeed();
+  inited = true;
 };
 
 const request = (proxy, req, res) => {
-  if (!inited) {
-    // As per https://issues.apache.org/jira/browse/COUCHDB-1288, there is a 100 doc
-    // limit on processing changes feeds with the _doc_ids filter within a
-    // reasonable amount of time.
-    // While hardcoded at first, CouchDB 2.1.1 has the option to configure this value
-    // https://github.com/apache/couchdb/commit/e09b8074fec59a508905b700c5252df7eb5b5338
-    MAX_DOC_IDS = config.get('changes_doc_ids_optimization_threshold') || MAX_DOC_IDS;
-    init();
-    db.medic.setMaxListeners(100);
-  }
+  init();
+
   return auth
     .getUserCtx(req)
     .then(userCtx => {
@@ -319,6 +328,7 @@ if (process.env.UNIT_TEST_ENV) {
     _getChanges: getChanges,
     _isLongpoll: isLongpoll,
     _tombstoneUtils: tombstoneUtils,
+    _: _,
 
     _reset: () => {
       longpollFeeds = [];
@@ -330,6 +340,8 @@ if (process.env.UNIT_TEST_ENV) {
     _getNormalFeeds: () => normalFeeds,
     _getLongpollFeeds: () => longpollFeeds,
     _getCurrentSeq: () => currentSeq,
-    _inited: () => inited
+    _inited: () => inited,
+    _getContinuousFeed: () => continuousFeed,
+    _getDebounced: () => debouncedEndFeed,
   });
 }
