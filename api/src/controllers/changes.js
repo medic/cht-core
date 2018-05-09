@@ -13,11 +13,11 @@ let inited        = false,
     longpollFeeds = [],
     normalFeeds   = [],
     MAX_DOC_IDS   = 100,
-    currentSeq    = 0,
-    debouncedEndFeed;
+    currentSeq    = 0;
 
 const DEFAULT_TIMEOUT = 60000,
-      DEFAULT_LIMIT = 100;
+      DEFAULT_LIMIT = 100,
+      DEBOUNCE_INTERVAL = 200;
 
 const split = (array, count) => {
   if (count === null || count < 1) {
@@ -39,7 +39,7 @@ const cleanUp = feed => {
   if (feed.timeout) {
     clearTimeout(feed.timeout);
   }
-  if (feed.upstreamRequests.length) {
+  if (feed.upstreamRequests && feed.upstreamRequests.length) {
     feed.upstreamRequests.forEach(request => request.cancel());
   }
 };
@@ -172,19 +172,16 @@ const writeDownstream = (feed, content, end) => {
   }
 };
 
-const addChangeToFeed = (feed, changeObj) => {
+const addChangeToLongpollFeed = (feed, changeObj) => {
   appendChange(feed.results, changeObj);
 
-  if (--feed.acceptLimit) {
+  if (--feed.limit) {
     // debounce sending results if the feed limit is not yet reached
     addTimeout(feed);
-    feed.debouncedEnd = debouncedEndFeed(feed);
+    feed.debounceEnd();
     return;
   }
 
-  if (feed.debouncedEnd) {
-    feed.debouncedEnd.cancel();
-  }
   endFeed(feed);
 };
 
@@ -200,8 +197,10 @@ const initFeed = (req, res, userCtx) => {
     pendingChanges: [],
     results: [],
     upstreamRequests: [],
-    acceptLimit: req.query && req.query.limit || DEFAULT_LIMIT
+    limit: req.query && req.query.limit || DEFAULT_LIMIT,
   };
+
+  feed.debounceEnd = _.debounce(_.partial(endFeed, feed), DEBOUNCE_INTERVAL);
 
   defibrillator(feed);
   addTimeout(feed);
@@ -243,7 +242,7 @@ const processChange = (change, seq) => {
       return;
     }
 
-    addChangeToFeed(feed, changeObj);
+    addChangeToLongpollFeed(feed, changeObj);
   });
 };
 
@@ -271,7 +270,6 @@ const init = () => {
   if (inited) {
     return;
   }
-
   // As per https://issues.apache.org/jira/browse/COUCHDB-1288, there is a 100 doc
   // limit on processing changes feeds with the _doc_ids filter within a
   // reasonable amount of time.
@@ -279,7 +277,6 @@ const init = () => {
   // https://github.com/apache/couchdb/commit/e09b8074fec59a508905b700c5252df7eb5b5338
   MAX_DOC_IDS = config.get('changes_doc_ids_optimization_threshold') || MAX_DOC_IDS;
   db.medic.setMaxListeners(100);
-  debouncedEndFeed = _.debounce(endFeed, 200);
   initContinuousFeed();
   inited = true;
 };
@@ -320,13 +317,10 @@ if (process.env.UNIT_TEST_ENV) {
     _init: init,
     _initFeed: initFeed,
     _processChange: processChange,
-    _addChangeToFeed: addChangeToFeed,
     _writeDownstream: writeDownstream,
     _processPendingChanges: processPendingChanges,
     _appendChange: appendChange,
     _mergeResults: mergeResults,
-    _getChanges: getChanges,
-    _isLongpoll: isLongpoll,
     _tombstoneUtils: tombstoneUtils,
     _: _,
 
@@ -342,6 +336,5 @@ if (process.env.UNIT_TEST_ENV) {
     _getCurrentSeq: () => currentSeq,
     _inited: () => inited,
     _getContinuousFeed: () => continuousFeed,
-    _getDebounced: () => debouncedEndFeed,
   });
 }
