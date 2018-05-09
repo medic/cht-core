@@ -89,7 +89,7 @@
             <div class="col-xs-5"><span class="label label-info">{{release.id}}</span></div>
             <div class="col-xs-5">{{release.value.time | date:'medium'}}</div>
             <div class="col-xs-1"><button ng-click="upgrade(release.id, true)" class="btn btn-secondary" translate>instance.upgrade.stage</button></div>
-            <div class="col-xs-1"><button ng-click="upgrade(release.id, true)" class="btn btn-primary" translate>instance.upgrade.install</button></div>
+            <div class="col-xs-1"><button ng-click="upgrade(release.id)" class="btn btn-primary" translate>instance.upgrade.install</button></div>
           </li>
         </ul>
       </div>
