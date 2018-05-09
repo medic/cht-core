@@ -133,7 +133,7 @@ angular.module('controllers').controller('UpgradeCtrl',
       Modal({
         templateUrl: 'templates/upgrade_confirm.html',
         controller: 'UpgradeConfirmCtrl',
-        model: {stageOnly: action, before: $scope.currentDeploy.version, after: version }
+        model: {stageOnly: action === 'staging', before: $scope.currentDeploy.version, after: version }
       })
         .catch(function() {})
         .then(function(confirmed) {

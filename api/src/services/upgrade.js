@@ -15,7 +15,7 @@ module.exports = {
   complete: () => {
     return DB.get(HORTI_UPGRADE_DOC)
       .then(upgradeDoc => {
-        if (!upgradeDoc.stagingComplete) {
+        if (!upgradeDoc.staging_complete) {
           throw {
             code: 404,
           };
