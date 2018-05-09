@@ -128,27 +128,32 @@ angular.module('controllers').controller('UpgradeCtrl',
         $scope.loading = false;
       });
 
-    $scope.upgrade = function(version) {
+    $scope.upgrade = function(version, stageOnly) {
       $scope.versionCandidate = version;
       Modal({
         templateUrl: 'templates/upgrade_confirm.html',
-        controller: 'UpgradeConfirmCtrl'
+        controller: 'UpgradeConfirmCtrl',
+        model: {stageOnly: stageOnly, before: $scope.currentDeploy.version, after: version }
       })
         .catch(function() {})
         .then(function(confirmed) {
           if (confirmed) {
-            upgrade();
+            upgrade(stageOnly);
           }
         });
     };
 
-    var upgrade = function() {
+    var upgrade = function(stageOnly) {
       $scope.error = false;
+
+      var url = stageOnly ?
+        '/api/v1/upgrade/stage' :
+        '/api/v1/upgrade';
 
       // This will cause the DEPLOY_DOC_ID doc to be written by api, which
       // will be caught in the changes feed below
       $http
-        .post('/api/v1/upgrade', { build: {
+        .post(url, { build: {
           namespace: 'medic',
           application: 'medic',
           version: $scope.versionCandidate
