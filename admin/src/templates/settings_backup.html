@@ -1,0 +1,28 @@
+<p translate>settings.backuprestore.description</p>
+
+<div class="tab-content">
+  <legend translate>settings.backup.title</legend>
+  <p translate>settings.backup.description</p>
+  <a class="btn btn-primary" ng-attr-download="{{backup.name}}" ng-href="{{backup.url}}">
+    <i class="fa fa-arrow-down"></i>
+    <span translate>settings.backup.action</span>
+  </a>
+</div>
+
+<div class="tab-content">
+  <form id="settings-upload">
+    <legend translate>settings.restore.title</legend>
+    <p translate>settings.restore.description</p>
+    <div class="form-actions">
+      <a class="btn btn-primary choose" ng-disabled="status.uploading">
+        <i class="fa fa-arrow-up"></i>
+        <span translate>settings.restore.action</span>
+      </a>
+      <div class="error" ng-show="status.error" translate>Upload failed</div>
+      <div class="loader small inline" ng-show="status.uploading"></div>
+      <div class="hide">
+        <input class="uploader" type="file" accept="application/json">
+      </div>
+    </div>
+  </form>
+</div>

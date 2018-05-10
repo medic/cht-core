@@ -32,6 +32,7 @@ require('./controllers/import-translation');
 require('./controllers/message-test');
 require('./controllers/permissions');
 require('./controllers/settings-advanced');
+require('./controllers/settings-backup');
 require('./controllers/settings-basic');
 require('./controllers/targets');
 require('./controllers/targets-edit');
@@ -49,6 +50,7 @@ require('./filters/resource-icon');
 require('./filters/translate-from');
 
 angular.module('services', []);
+require('./services/blob');
 require('./services/clean-etag');
 require('./services/create-user');
 require('./services/delete-user');
@@ -144,6 +146,15 @@ app.config(function(
         tab: {
           controller: 'SettingsAdvancedCtrl',
           templateUrl: 'templates/settings_advanced.html'
+        }
+      }
+    })
+    .state('settings.backup', {
+      url: '/backup',
+      views: {
+        tab: {
+          controller: 'SettingsBackupCtrl',
+          templateUrl: 'templates/settings_backup.html'
         }
       }
     })

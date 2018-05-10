@@ -6,6 +6,7 @@ angular.module('controllers').controller('FormsJsonCtrl',
     $log,
     $scope,
     $timeout,
+    Blob,
     FileReader,
     JsonParse,
     Settings,
@@ -16,11 +17,9 @@ angular.module('controllers').controller('FormsJsonCtrl',
     'ngInject';
 
     var generateDownload = function(forms) {
-      var content = JSON.stringify(_.values(forms), null, 4);
-      var blob = new Blob([ content ], { type: 'application/json' });
       return {
         name: 'forms_' + moment().format('YYYY-MM-DD') + '.json',
-        url: (window.URL || window.webkitURL).createObjectURL(blob)
+        url: Blob.json(_.values(forms))
       };
     };
 
