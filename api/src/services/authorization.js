@@ -62,6 +62,10 @@ const allowedDoc = (doc, userInfo, viewResults) => {
     return false;
   }
 
+  if (replicationKey[0] === ALL_KEY) {
+    return true;
+  }
+
   if (contactsByDepth) {
     //it's a contact
     if (allowedContact(doc, userCtx, depth)) {
@@ -73,23 +77,21 @@ const allowedDoc = (doc, userInfo, viewResults) => {
     exclude(subjectIds, contactsByDepth[1]);
     exclude(validatedIds, doc._id);
     return false;
-  } else {
-    //it's a report
-    const [ subjectId, { submitter: submitterId } ] = replicationKey;
-    const isAllowedSubject = subjectId && subjectIds.indexOf(subjectId) !== -1;
-    const isAllowedSubmitter = submitterId && validatedIds.indexOf(submitterId) !== -1;
-    const sensitive = isSensitive(userCtx, subjectId, submitterId, () => isAllowedSubmitter);
-
-    if ((!subjectId && isAllowedSubmitter) ||
-        (!subjectId && isAllowedSubject) ||
-        (isAllowedSubject && !sensitive)) {
-      include(validatedIds, doc._id);
-      return true;
-    }
-
-    exclude(validatedIds, doc._id);
-    return false;
   }
+
+  //it's a report
+  const [ subjectId, { submitter: submitterId } ] = replicationKey;
+  const allowedSubject = subjectId && subjectIds.indexOf(subjectId) !== -1;
+  const allowedSubmitter = submitterId && validatedIds.indexOf(submitterId) !== -1;
+  const sensitive = isSensitive(userCtx, subjectId, submitterId, allowedSubmitter);
+
+  if ((!subjectId && allowedSubmitter) || (allowedSubject && !sensitive)) {
+    include(validatedIds, doc._id);
+    return true;
+  }
+
+  exclude(validatedIds, doc._id);
+  return false;
 };
 
 const allowedContact = (contact, user, maxDepth, currentDepth) => {
@@ -151,17 +153,16 @@ const getSubjectIds = (userCtx) => {
 /**
  * Method to ensure users don't see reports submitted by their boss about the user
  */
-const isSensitive = function(userCtx, subject, submitter, allowedSubmitterFn) {
+const isSensitive = function(userCtx, subject, submitter, allowedSubmitter) {
   if (!subject || !submitter) {
     return false;
   }
 
-  subject = subject._id || subject;
   if (subject !== userCtx.contact_id && subject !== userCtx.facility_id) {
     return false;
   }
 
-  return !allowedSubmitterFn(submitter);
+  return !allowedSubmitter;
 };
 
 const getValidatedDocIds = (subjectIds, userCtx) => {
@@ -175,7 +176,7 @@ const getValidatedDocIds = (subjectIds, userCtx) => {
 
       resultSets.forEach(resultSet => {
         resultSet.rows.forEach(row => {
-          if (!isSensitive(userCtx, row.key, row.value.submitter, (submitter) => subjectIds.indexOf(submitter) !== -1)) {
+          if (!isSensitive(userCtx, row.key, row.value.submitter, subjectIds.indexOf(row.value.submitter) !== -1)) {
             validatedIds.push(row.id);
           }
         });
@@ -212,5 +213,6 @@ module.exports = {
   //exposed for testing purposes
   _isAllowedContact: allowedContact,
   _isSensitive: isSensitive,
-  _tombstoneUtils: tombstoneUtils
+  _tombstoneUtils: tombstoneUtils,
+  _viewMapUtils: viewMapUtils
 };
