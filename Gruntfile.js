@@ -60,6 +60,16 @@ module.exports = function(grunt) {
           'http://localhost:5984/medic': 'webapp/dist/ddocs/medic.json'
         }
       },
+      // push just the secondary ddocs to save time in dev
+      'localhost-secondary': {
+        options: {
+          user: 'admin',
+          pass: 'pass'
+        },
+        files: {
+          'http://localhost:5984/medic': 'webapp/dist/ddocs/medic/_attachments/ddocs/compiled.json'
+        }
+      },
       test: {
         options: {
           user: 'admin',
@@ -231,20 +241,25 @@ module.exports = function(grunt) {
               'audio/**/*',
               'fonts/**/*',
               'img/**/*',
-              'templates/inbox.html'
+              'templates/inbox.html',
+              'ddocs/medic/_attachments/**/*',
             ],
             dest: 'webapp/dist/ddocs/medic/_attachments/'
           }
         ]
       },
-      'admin-resources': {
+      translations: {
         files: [
           {
             expand: true,
             flatten: true,
-            src: 'admin/src/css/main.css',
-            dest: 'webapp/dist/ddocs/medic-admin/_attachments/'
-          },
+            src: 'webapp/src/ddocs/medic/_attachments/translations/*',
+            dest: 'webapp/dist/ddocs/medic/_attachments/translations/'
+          }
+        ]
+      },
+      'admin-resources': {
+        files: [
           {
             expand: true,
             flatten: true,
@@ -452,18 +467,88 @@ module.exports = function(grunt) {
           reload: true,
         }
       },
-      css: {
+      'admin-css': {
+        files: ['admin/src/css/**/*'],
+        tasks: [
+          'less:admin',
+          'couch-compile:client',
+          'couch-push:localhost-secondary',
+          'notify:deployed',
+        ]
+      },
+      'admin-js': {
+        files: ['admin/src/js/**/*'],
+        tasks: [
+          'browserify:admin',
+          'couch-compile:client',
+          'couch-push:localhost-secondary',
+          'notify:deployed',
+        ]
+      },
+      'admin-index': {
+        files: ['admin/src/templates/index.html'],
+        tasks: [
+          'copy:admin-resources',
+          'couch-compile:client',
+          'couch-push:localhost-secondary',
+          'notify:deployed',
+        ]
+      },
+      'admin-templates': {
+        files: ['admin/src/templates/**/*','!admin/src/templates/index.html'],
+        tasks: [
+          'ngtemplates:adminApp',
+          'couch-compile:client',
+          'couch-push:localhost-secondary',
+          'notify:deployed',
+        ]
+      },
+      'webapp-css': {
         files: ['webapp/src/css/**/*'],
-        tasks: ['mmcss', 'build-common', 'deploy']
+        tasks: [
+          'sass',
+          'less:webapp',
+          'appcache',
+          'couch-compile:app',
+          'deploy',
+        ]
       },
-      js: {
-        files: ['webapp/src/**/*', 'admin/src/**/*', 'shared-libs/**'],
-        tasks: ['mmjs', 'build-common', 'deploy']
+      'webapp-js': {
+        files: ['webapp/src/js/**/*', 'shared-libs/**'],
+        tasks: [
+          'browserify:dist',
+          'replace:hardcodeappsettings',
+          'appcache',
+          'couch-compile:app',
+          'deploy',
+        ]
       },
-      compiledddocs: {
-        files: ['webapp/src/ddocs/**/*'],
-        tasks: ['build-ddoc', 'deploy']
-      }
+      'webapp-templates': {
+        files: ['webapp/src/templates/**/*','!webapp/src/templates/inbox.html'],
+        tasks: [
+          'ngtemplates:inboxApp',
+          'appcache',
+          'couch-compile:app',
+          'deploy',
+        ]
+      },
+      'primary-ddoc': {
+        files: ['webapp/src/ddocs/medic/**/*'],
+        tasks: [
+          'copy:ddocs',
+          'couch-compile:app',
+          'deploy',
+        ]
+      },
+      'secondary-ddocs': {
+        files: ['webapp/src/ddocs/medic-*/**/*'],
+        tasks: [
+          'copy:ddocs',
+          'couch-compile:client',
+          'couch-push:localhost-secondary',
+          'notify:deployed',
+        ]
+      },
     },
     notify: {
       deployed: {
