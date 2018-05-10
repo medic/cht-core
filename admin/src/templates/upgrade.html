@@ -1,6 +1,3 @@
-<div class="col-sm-12" ng-show="loading || deployDoc">
-  <div class="loader"></div>
-</div>
 
 <div class="upgrade-config col-sm-12" ng-hide="currentDeploy || loading">
   <legend translate>instance.upgrade.no_horti</legend>
@@ -33,10 +30,17 @@
       </li>
     </ul>
 
-    <div ng-show="deployDoc.staging_complete">
+    <div ng-show="deployDoc.staging_complete && deployDoc.action === 'stage'">
       <p class="col-xs-11" translate>instance.stage.complete</p>
       <button class="col-xs-1 btn btn-primary" ng-click="upgrade(deployDoc.build_info.version, 'complete')" translate>instance.upgrade.install</button>
     </div>
+    <div ng-show="deployDoc._deleted">
+      <p class="col-xs-11" translate>instance.upgrade.complete</p>
+    </div>
+  </div>
+
+  <div class="col-sm-12" ng-show="loading || (deployDoc && !deployDoc._deleted || (deployDoc.staging_complete && deployDoc.action === 'stage'))">
+    <div class="loader"></div>
   </div>
 
   <div ng-show="error">

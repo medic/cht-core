@@ -41,7 +41,7 @@ angular.module('controllers').controller('UpgradeCtrl',
     var getExistingDeployment = function() {
       return DB().get('_design/medic')
         .then(function(ddoc) {
-          $scope.currentDeploy = ddoc.deploy_info;
+          $scope.currentDeploy = ddoc.deploy_info || {};
         });
     };
 
@@ -176,18 +176,11 @@ angular.module('controllers').controller('UpgradeCtrl',
         return change.id === DEPLOY_DOC_ID;
       },
       callback: function(change) {
-        $timeout(function() { $scope.deployDoc = change.doc; });
-
-        // TODO: don't use UpgradeConfirmCtrl.
         if (change.doc._deleted) {
-          Modal({
-            templateUrl: 'templates/version_update.html',
-            controller: 'UpgradeConfirmCtrl',
-            singleton: true
-          }).then(function() {
-            $window.location.reload();
-          });
+          change.doc._deleted_watched = true;
         }
+
+        $timeout(function() { $scope.deployDoc = change.doc; });
       }
     });
   }
