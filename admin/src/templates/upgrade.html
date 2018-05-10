@@ -35,12 +35,9 @@
       <button class="col-xs-1 btn btn-primary" ng-click="upgrade(deployDoc.build_info.version, 'complete')" translate>instance.upgrade.install</button>
     </div>
     <div ng-show="deployDoc._deleted">
-      <p class="col-xs-11" translate>instance.upgrade.complete</p>
+      <p class="col-xs-10" translate>instance.upgrade.complete</p>
+      <button class="col-xs-2 btn btn-primary" onclick="window.location.reload()" translate>reload.app</button>
     </div>
-  </div>
-
-  <div class="col-sm-12" ng-show="loading || (deployDoc && !deployDoc._deleted || (deployDoc.staging_complete && deployDoc.action === 'stage'))">
-    <div class="loader"></div>
   </div>
 
   <div ng-show="error">
@@ -104,6 +101,9 @@
         </ul>
       </div>
     </div>
+  </div>
 
+  <div class="col-sm-12" ng-show="loading || (deployDoc && !deployDoc._deleted && (deployDoc.action !== 'stage' || !deployDoc.staging_complete))    ">
+    <div class="loader"></div>
   </div>
 </div>
