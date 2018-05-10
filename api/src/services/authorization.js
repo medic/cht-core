@@ -42,16 +42,18 @@ const hasAccessToUnassignedDocs = (userCtx) => {
          auth.hasAllPermissions(userCtx, 'can_view_unallocated_data_records');
 };
 
-const exclude = (array, value) => {
-  if (_.isArray(array)) {
-    array = _.without(array, value);
+const exclude = (array, ...values) => {
+  if (!_.isArray(array)) {
+    return;
   }
+  array = _.without(array, ...values);
 };
 
-const include = (array, value) => {
-  if (_.isArray(array) && _.indexOf(array, value) === -1) {
-    array.push(value);
+const include = (array, ...values) => {
+  if (!_.isArray(array)) {
+    return;
   }
+  values.forEach(value => array.indexOf(value) !== -1 && array.push(value));
 };
 
 const allowedDoc = (doc, userInfo, viewResults) => {
@@ -69,12 +71,12 @@ const allowedDoc = (doc, userInfo, viewResults) => {
   if (contactsByDepth) {
     //it's a contact
     if (allowedContact(doc, userCtx, depth)) {
-      include(subjectIds, contactsByDepth[1]);
+      include(subjectIds, contactsByDepth[1], doc._id);
       include(validatedIds, doc._id);
       return true;
     }
 
-    exclude(subjectIds, contactsByDepth[1]);
+    exclude(subjectIds, contactsByDepth[1], doc._id );
     exclude(validatedIds, doc._id);
     return false;
   }
@@ -188,7 +190,7 @@ const getValidatedDocIds = (subjectIds, userCtx) => {
 
 const getViewResults = (doc) => {
   if (!docsByReplicationKeyFn || !contactsByDepthFn) {
-    module.exports.initViewFunctions();
+    initViewFunctions();
   }
   return {
     replicationKey: docsByReplicationKeyFn(doc),
@@ -214,5 +216,11 @@ module.exports = {
   _isAllowedContact: allowedContact,
   _isSensitive: isSensitive,
   _tombstoneUtils: tombstoneUtils,
-  _viewMapUtils: viewMapUtils
+  _viewMapUtils: viewMapUtils,
+  _docsByReplicationKeyFn: () => docsByReplicationKeyFn,
+  _contactsByDepthFn: () => contactsByDepthFn,
+  _reset: () => {
+    docsByReplicationKeyFn = null;
+    contactsByDepthFn = null;
+  }
 };

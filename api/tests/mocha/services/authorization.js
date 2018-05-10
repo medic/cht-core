@@ -5,10 +5,15 @@ const service = require('../../../src/services/authorization'),
       auth = require('../../../src/auth');
 
 require('chai').should();
+const userCtx = { name: 'user', contact_id: 'contact_id', facility_id: 'facility_id' };
+let contact,
+    userData,
+    authData;
 
 describe('Authorization service', () => {
   afterEach(function() {
     sinon.restore();
+    service._reset();
   });
 
   beforeEach(() => {
@@ -182,6 +187,129 @@ describe('Authorization service', () => {
             'r11', 'r12', 'r13'
           ]);
         });
+    });
+  });
+
+  describe('initViewFunctions', () => {
+    it('requests and stores required view map functions', () => {
+      service._viewMapUtils.getViewMapFn.returnsArg(1);
+      config.get.returns('config');
+      service.initViewFunctions();
+      service._viewMapUtils.getViewMapFn.callCount.should.equal(2);
+      service._viewMapUtils.getViewMapFn.args[0].should.deep.equal(['config', 'contacts_by_depth']);
+      service._viewMapUtils.getViewMapFn.args[1].should.deep.equal(['config', 'docs_by_replication_key']);
+      config.get.callCount.should.equal(2);
+      service._docsByReplicationKeyFn().should.equal('docs_by_replication_key');
+      service._contactsByDepthFn().should.equal('contacts_by_depth');
+    });
+  });
+
+  describe('getViewResults', () => {
+    it('initializes view map functions if needed and returns view results', () => {
+      const contactsByDepthStub = sinon.stub().returns('contactsByDepthStubResult');
+      const docsByReplicationKeyStub = sinon.stub().returns('docsByReplicationKeyStubResult');
+      const doc = { _id: 1, _rev: 1 };
+      service._viewMapUtils.getViewMapFn
+        .withArgs(sinon.match.any, 'contacts_by_depth')
+        .returns(contactsByDepthStub);
+      service._viewMapUtils.getViewMapFn
+        .withArgs(sinon.match.any, 'docs_by_replication_key')
+        .returns(docsByReplicationKeyStub);
+
+      config.get.returns('config');
+      const result = service.getViewResults(doc);
+      service._viewMapUtils.getViewMapFn.callCount.should.equal(2);
+      docsByReplicationKeyStub.callCount.should.equal(1);
+      docsByReplicationKeyStub.args[0][0].should.deep.equal(doc);
+      contactsByDepthStub.callCount.should.equal(1);
+      contactsByDepthStub.args[0][0].should.deep.equal(doc);
+      result.should.deep.equal({
+        replicationKey: 'docsByReplicationKeyStubResult',
+        contactsByDepth: 'contactsByDepthStubResult'
+      });
+    });
+
+    describe('allowedDoc', () => {
+      it('returns false when document does not generate a replication key', () => {
+        service.allowedDoc({}, {}, { replicationKey: null, contactsByDepth: null }).should.equal(false);
+      });
+
+      it('returns true for `allowed for all` docs', () => {
+        service.allowedDoc({}, {}, { replicationKey: ['_all', {}], contactsByDepth: null }).should.equal(true);
+      });
+
+      describe('allowedContact', () => {
+        beforeEach(() => {
+          authData = { replicationKey: ['a', {}], contactsByDepth: [['parent1'], 'patient_id'] };
+          userData = { userCtx, depth: -1 };
+        });
+
+        it('returns true for valid contacts', () => {
+          contact = { _id: 'contact', parent: { _id: 'parent1', parent: { _id: userCtx.facility_id }}};
+          service.allowedDoc(contact, userData, authData).should.equal(true);
+          contact = { _id: userCtx.facility_id };
+          service.allowedDoc(contact, userData, authData).should.equal(true);
+          contact = { _id: 'contact', parent: { _id: userCtx.facility_id } };
+          service.allowedDoc(contact, userData, authData).should.equal(true);
+          contact = { _id: 'contact', parent: { _id: 'parent1', parent: { _id: 'parent2', parent: { _id: userCtx.facility_id }}}};
+          service.allowedDoc(contact, userData, authData).should.equal(true);
+        });
+
+        it('returns false for invalid contacts', () => {
+          contact = { _id: 'contact', parent: { _id: 'parent1', parent: { _id: 'parent2' }}};
+          service.allowedDoc(contact, userData, authData).should.equal(false);
+          contact = { _id: 'contact' };
+          service.allowedDoc(contact, userData, authData).should.equal(false);
+          contact = { _id: 'contact', parent: { _id: 'parent1' } };
+          service.allowedDoc(contact, userData, authData).should.equal(false);
+          contact = { _id: 'contact', parent: { _id: 'parent1', parent: { _id: 'parent2', parent: { _id: 'parent3' }}}};
+          service.allowedDoc(contact, userData, authData).should.equal(false);
+        });
+
+        it('respects depth', () => {
+          contact = { _id: userCtx.facility_id, parent: { _id: 'parent1' }};
+          service.allowedDoc(contact, { userCtx, depth: -1 }, authData).should.equal(true);
+          service.allowedDoc(contact, { userCtx, depth: 0 }, authData).should.equal(true);
+          service.allowedDoc(contact, { userCtx, depth: 1 }, authData).should.equal(true);
+
+          contact = { _id: 'contact_id', parent: { _id: userCtx.facility_id, parent: { _id: 'parent1' }}};
+          service.allowedDoc(contact, { userCtx, depth: -1 }, authData).should.equal(true);
+          service.allowedDoc(contact, { userCtx, depth: 0 }, authData).should.equal(false);
+          service.allowedDoc(contact, { userCtx, depth: 1 }, authData).should.equal(true);
+
+          contact = { _id: 'contact', parent: { _id: 'parent1', parent: { _id: userCtx.facility_id }}};
+          service.allowedDoc(contact, { userCtx, depth: -1 }, authData).should.equal(true);
+          service.allowedDoc(contact, { userCtx, depth: 0 }, authData).should.equal(false);
+          service.allowedDoc(contact, { userCtx, depth: 1 }, authData).should.equal(false);
+          service.allowedDoc(contact, { userCtx, depth: 2 }, authData).should.equal(true);
+
+          contact = { _id: 'contact', parent: { _id: 'parent1', parent: { _id: 'parent2', parent: { _id: userCtx.facility_id }}}};
+          service.allowedDoc(contact, { userCtx, depth: -1 }, authData).should.equal(true);
+          service.allowedDoc(contact, { userCtx, depth: 0 }, authData).should.equal(false);
+          service.allowedDoc(contact, { userCtx, depth: 1 }, authData).should.equal(false);
+          service.allowedDoc(contact, { userCtx, depth: 2 }, authData).should.equal(false);
+          service.allowedDoc(contact, { userCtx, depth: 3 }, authData).should.equal(true);
+        });
+
+        it('does not crash on invalid lineages', () => {
+          contact = { _id: false };
+          service.allowedDoc(contact, userData, authData).should.equal(false);
+          contact = { _id: 'id', parent: null };
+          service.allowedDoc(contact, userData, authData).should.equal(false);
+          contact = { _id: 'id', parent: {} };
+          service.allowedDoc(contact, userData, authData).should.equal(false);
+          contact = { _id: 'id', parent: { foo: 'bar' } };
+          service.allowedDoc(contact, userData, authData).should.equal(false);
+          contact = { _id: 'id', parent: { foo: 'bar', parent: 'string' } };
+          service.allowedDoc(contact, userData, authData).should.equal(false);
+          contact = { _id: 'id', parent: { foo: 'bar', parent: false } };
+          service.allowedDoc(contact, userData, authData).should.equal(false);
+          contact = { _id: 'id', parent: { foo: 'bar', parent: { bar: 'baz' } } };
+          service.allowedDoc(contact, userData, authData).should.equal(false);
+        });
+
+
+      });
     });
   });
 });
