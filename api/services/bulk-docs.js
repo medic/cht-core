@@ -43,6 +43,7 @@ const incrementAttemptCounts = (docs, attemptCounts) => {
 };
 
 const deleteDocs = (docsToDelete, deletionAttemptCounts, updateAttemptCounts, cumulativeResult = []) => {
+  const finishedModifications = cumulativeResult.map(docUpdate => docUpdate.id);
   const parentMap = {};
   let docsToUpdate;
   let docsToModify;
@@ -52,7 +53,7 @@ const deleteDocs = (docsToDelete, deletionAttemptCounts, updateAttemptCounts, cu
     .then(updatedParents => {
       docsToUpdate = updatedParents;
       incrementAttemptCounts(docsToUpdate, updateAttemptCounts);
-      docsToModify = docsToDelete.concat(docsToUpdate);
+      docsToModify = docsToDelete.concat(docsToUpdate).filter(doc => !finishedModifications.includes(doc._id));
       return db.medic.bulkDocs(docsToModify);
     })
     .then(result => {

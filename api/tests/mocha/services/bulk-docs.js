@@ -149,9 +149,9 @@ describe('Bulk Docs Service', function () {
           allDocs.callCount.should.equal(2);
           bulkDocs.callCount.should.equal(5);
           bulkDocs.getCall(0).args[0].should.deep.equal([expectedA, expectedB, expectedParent]);
-          bulkDocs.getCall(1).args[0].should.deep.equal([expectedA, expectedParent]);
-          bulkDocs.getCall(2).args[0].should.deep.equal([expectedA, expectedParent]);
-          bulkDocs.getCall(3).args[0].should.deep.equal([expectedA, expectedParent]);
+          bulkDocs.getCall(1).args[0].should.deep.equal([expectedParent]);
+          bulkDocs.getCall(2).args[0].should.deep.equal([expectedParent]);
+          bulkDocs.getCall(3).args[0].should.deep.equal([expectedParent]);
           bulkDocs.getCall(4).args[0].should.deep.equal([expectedC]);
           testRes.write.callCount.should.equal(4);
           testRes.write.getCall(0).args[0].should.equal('[');
