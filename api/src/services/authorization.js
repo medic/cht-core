@@ -12,7 +12,7 @@ let contactsByDepthFn,
     docsByReplicationKeyFn;
 
 const initViewFunctions = () => {
-  contactsByDepthFn = viewMapUtils.getViewMapFn(config.get(), 'contacts_by_depth');
+  contactsByDepthFn = viewMapUtils.getViewMapFn(config.get(), 'contacts_by_depth', true);
   docsByReplicationKeyFn = viewMapUtils.getViewMapFn(config.get(), 'docs_by_replication_key');
 };
 
@@ -43,21 +43,29 @@ const hasAccessToUnassignedDocs = (userCtx) => {
 };
 
 const exclude = (array, ...values) => {
-  if (!_.isArray(array)) {
+  if (!Array.isArray(array)) {
     return;
   }
-  array = _.without(array, ...values);
+
+  let i = 0;
+  while (i < array.length) {
+    if (values.indexOf(array[i]) !== -1) {
+      array.splice(i, 1);
+    } else {
+      i++;
+    }
+  }
 };
 
 const include = (array, ...values) => {
-  if (!_.isArray(array)) {
+  if (!Array.isArray(array)) {
     return;
   }
-  values.forEach(value => array.indexOf(value) !== -1 && array.push(value));
+  values.forEach(value => array.indexOf(value) === -1 && array.push(value));
 };
 
 const allowedDoc = (doc, userInfo, viewResults) => {
-  const { userCtx, validatedIds, subjectIds, depth } = userInfo;
+  const { userCtx, subjectIds, depth } = userInfo;
   const { replicationKey, contactsByDepth } = viewResults;
 
   if (!replicationKey) {
@@ -68,55 +76,33 @@ const allowedDoc = (doc, userInfo, viewResults) => {
     return true;
   }
 
-  if (contactsByDepth) {
+  if (contactsByDepth && contactsByDepth.length) {
+    const subjectId = contactsByDepth[0][1];
     //it's a contact
-    if (allowedContact(doc, userCtx, depth)) {
-      include(subjectIds, contactsByDepth[1], doc._id);
-      include(validatedIds, doc._id);
+    if (allowedContact(contactsByDepth, userCtx, depth)) {
+      include(subjectIds, subjectId, doc._id);
       return true;
     }
 
-    exclude(subjectIds, contactsByDepth[1], doc._id );
-    exclude(validatedIds, doc._id);
+    exclude(subjectIds, subjectId, doc._id );
     return false;
   }
 
   //it's a report
   const [ subjectId, { submitter: submitterId } ] = replicationKey;
   const allowedSubject = subjectId && subjectIds.indexOf(subjectId) !== -1;
-  const allowedSubmitter = submitterId && validatedIds.indexOf(submitterId) !== -1;
+  const allowedSubmitter = submitterId && subjectIds.indexOf(submitterId) !== -1;
   const sensitive = isSensitive(userCtx, subjectId, submitterId, allowedSubmitter);
 
   if ((!subjectId && allowedSubmitter) || (allowedSubject && !sensitive)) {
-    include(validatedIds, doc._id);
     return true;
   }
 
-  exclude(validatedIds, doc._id);
   return false;
 };
 
-const allowedContact = (contact, user, maxDepth, currentDepth) => {
-  currentDepth = currentDepth || 0;
-  if (maxDepth >= 0 && currentDepth > maxDepth) {
-    return false;
-  }
-
-  if (!contact || !contact._id) {
-    return false;
-  }
-
-  if (contact._id === user.facility_id) {
-    return true;
-  }
-
-  return allowedContact(contact.parent, user, maxDepth, currentDepth + 1);
-};
-
-const getSubjectIds = (userCtx) => {
+const getContactsByDepthKeys = (userCtx, depth) => {
   const keys = [];
-  const depth = module.exports.getDepth(userCtx);
-
   if (depth >= 0) {
     for (let i = 0; i <= depth; i++) {
       keys.push([ userCtx.facility_id, i ]);
@@ -125,6 +111,20 @@ const getSubjectIds = (userCtx) => {
     // no configured depth limit
     keys.push([ userCtx.facility_id ]);
   }
+
+  return keys;
+};
+
+const allowedContact = (contactsByDepth, userCtx, depth) => {
+  const generatedKeys = getContactsByDepthKeys(userCtx, depth);
+  const existentKeys = contactsByDepth.map(result => result[0]);
+
+  return existentKeys.some(i => generatedKeys.some(j => _.isEqual(i, j)));
+};
+
+const getSubjectIds = (userCtx, depth) => {
+  depth = depth || module.exports.getDepth(userCtx);
+  const keys = getContactsByDepthKeys(userCtx, depth);
 
   return Promise
     .all([
@@ -199,7 +199,7 @@ const getViewResults = (doc) => {
 };
 
 const allowedChange = (feed, changeObj) => {
-  const userOpts = _.pick(feed, 'userCtx', 'subjectIds', 'validatedIds', 'depth');
+  const userOpts = _.pick(feed, 'userCtx', 'subjectIds', 'depth');
   return module.exports.allowedDoc(changeObj.change.doc, userOpts, changeObj.authData);
 };
 
