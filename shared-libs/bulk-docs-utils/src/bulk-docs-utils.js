@@ -11,24 +11,27 @@ module.exports = function(dependencies) {
   }
 
   return {
-    updateParentContacts: function(docs, parentMap) {
+    updateParentContacts: function(docs) {
+      var parentMap = {};
       return Promise.all(docs.map(function(doc) {
         return getParent(doc)
           .then(function(parent) {
             var shouldUpdateParentContact = parent && parent.contact && parent.contact._id && parent.contact._id === doc._id;
             if (shouldUpdateParentContact) {
               parent.contact = null;
-              if (parentMap) {
-                parentMap[parent._id] = doc;
-              }
+              parentMap[parent._id] = doc;
               return parent;
             }
           });
         }))
         .then(function(parents) {
-          return parents.filter(function(parent) {
+          var docs = parents.filter(function(parent) {
             return parent;
           });
+          return {
+            docs: docs,
+            parentMap: parentMap
+          };
         });
     },
 

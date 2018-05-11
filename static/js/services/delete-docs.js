@@ -51,10 +51,10 @@ var utilsFactory = require('bulk-docs-utils');
           docsToDelete.forEach(function(doc) {
             doc._deleted = true;
           });
+          checkForDuplicates(docsToDelete);
           return utils.updateParentContacts(docsToDelete)
             .then(function(updatedParents) {
-              var allDocs = docsToDelete.concat(updatedParents);
-              checkForDuplicates(allDocs);
+              var allDocs = docsToDelete.concat(updatedParents.docs);
               minifyLineage(allDocs);
               return DB().bulkDocs(allDocs);
             });

@@ -3,6 +3,7 @@ const utils = require('bulk-docs-utils')({
   Promise: Promise,
   DB: db.medic
 });
+const ATTEMPT_LIMIT = 3;
 
 const extractDocs = data => {
   return data.rows
@@ -42,48 +43,59 @@ const incrementAttemptCounts = (docs, attemptCounts) => {
   });
 };
 
-const deleteDocs = (docsToDelete, deletionAttemptCounts, updateAttemptCounts, cumulativeResult = []) => {
-  const finishedModifications = cumulativeResult.map(docUpdate => docUpdate.id);
-  const parentMap = {};
+const getFailuresToRetry = (updateStatuses, docsToDelete, docsToUpdate, deletionAttemptCounts, updateAttemptCounts) => {
+  const deletionFailures = [];
+  const updateFailures = [];
+  const deletionIds = docsToDelete.map(doc => doc._id);
+  const updateIds = docsToUpdate.map(doc => doc._id);
+  const errorIds = updateStatuses
+    .map(docUpdate => docUpdate.error && docUpdate.id)
+    .filter(id => id);
+  errorIds.forEach(id => {
+    if (deletionIds.includes(id) && deletionAttemptCounts[id] <= ATTEMPT_LIMIT) {
+      deletionFailures.push(id);
+    } else if (updateIds.includes(id) && updateAttemptCounts[id] <= ATTEMPT_LIMIT) {
+      updateFailures.push(id);
+    }
+  });
+  return { deletionFailures, updateFailures };
+};
+
+const deleteDocs = (docsToDelete, deletionAttemptCounts, updateAttemptCounts, finalUpdateStatuses = []) => {
   let docsToUpdate;
   let docsToModify;
+  let parentMap;
+
   docsToDelete.forEach(doc => doc._deleted = true);
   incrementAttemptCounts(docsToDelete, deletionAttemptCounts);
-  return utils.updateParentContacts(docsToDelete, parentMap)
+
+  return utils.updateParentContacts(docsToDelete)
     .then(updatedParents => {
-      docsToUpdate = updatedParents;
+      parentMap = updatedParents.parentMap;
+
+      const deletionIds = docsToDelete.map(doc => doc._id);
+      docsToUpdate = updatedParents.docs.filter(doc => !deletionIds.includes(doc._id));
       incrementAttemptCounts(docsToUpdate, updateAttemptCounts);
-      docsToModify = docsToDelete.concat(docsToUpdate).filter(doc => !finishedModifications.includes(doc._id));
+
+      const finishedDocs = finalUpdateStatuses.map(docUpdate => docUpdate.id);
+      docsToModify = docsToDelete.concat(docsToUpdate).filter(doc => !finishedDocs.includes(doc._id));
+
       return db.medic.bulkDocs(docsToModify);
     })
-    .then(result => {
-      result = result.filter(docUpdate => docUpdate.status !== 404);
-      const deletionFailures = [];
-      const updateFailures = [];
-      const deletionIds = docsToDelete.map(doc => doc._id);
-      const updateIds = docsToUpdate.map(doc => doc._id);
-      const errorIds = result
-        .map((docUpdate, index) => docUpdate.error && (docUpdate.id || docsToModify[index]._id))
-        .filter(id => id);
-      errorIds.forEach(id => {
-        if (deletionIds.includes(id) && deletionAttemptCounts[id] < 4) {
-          deletionFailures.push(id);
-          result = result.filter(docUpdate => docUpdate.id !== id);
-        } else if (updateIds.includes(id) && updateAttemptCounts[id] < 4) {
-          updateFailures.push(id);
-          result = result.filter(docUpdate => docUpdate.id !== id);
-        }
-      });
+    .then(updateStatuses => {
+      updateStatuses = updateStatuses.filter(docUpdate => docUpdate.status !== 404);
+      const { deletionFailures, updateFailures } = getFailuresToRetry(updateStatuses, docsToDelete, docsToUpdate, deletionAttemptCounts, updateAttemptCounts);
+      updateStatuses = updateStatuses.filter(docUpdate => !deletionFailures.includes(docUpdate.id) && !updateFailures.includes(docUpdate.id));
+      finalUpdateStatuses = finalUpdateStatuses.concat(updateStatuses);
 
-      cumulativeResult = cumulativeResult.concat(result);
       if (deletionFailures.length > 0 || updateFailures.length > 0) {
         return fetchDocs(deletionFailures)
           .then(docsToDelete => {
-            const updatesToRetry = updateFailures.map(id => parentMap[id]);
-            return deleteDocs(docsToDelete.concat(updatesToRetry), deletionAttemptCounts, updateAttemptCounts, cumulativeResult);
+            const updatesToRetryThroughDocDeletions = updateFailures.map(id => parentMap[id]);
+            return deleteDocs(docsToDelete.concat(updatesToRetryThroughDocDeletions), deletionAttemptCounts, updateAttemptCounts, finalUpdateStatuses);
           });
       }
-      return cumulativeResult;
+      return finalUpdateStatuses;
     });
 };
 
@@ -92,15 +104,17 @@ module.exports = {
     checkForDuplicates(docs);
     const ids = docs.map(doc => doc._id);
     const batches = generateBatches(ids, batchSize);
-    const deletionAttemptCounts = {};
-    const updateAttemptCounts = {};
     res.type('application/json');
     res.setHeader('X-Content-Type-Options', 'nosniff');
     res.write('[');
     return batches.reduce((promise, batch, index) => {
       return promise
         .then(() => fetchDocs(batch))
-        .then(docsToDelete => deleteDocs(docsToDelete, deletionAttemptCounts, updateAttemptCounts))
+        .then(docsToDelete => {
+          const deletionAttemptCounts = {};
+          const updateAttemptCounts = {};
+          return deleteDocs(docsToDelete, deletionAttemptCounts, updateAttemptCounts);
+        })
         .then(result => {
           let resString = JSON.stringify(result);
           if (index !== batches.length - 1) {
