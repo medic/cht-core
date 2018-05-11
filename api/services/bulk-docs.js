@@ -43,15 +43,16 @@ const incrementAttemptCounts = (docs, attemptCounts) => {
   });
 };
 
-const getFailuresToRetry = (updateStatuses, docsToDelete, docsToUpdate, deletionAttemptCounts, updateAttemptCounts) => {
+const getFailuresToRetry = (updateStatuses, docsToDelete, docsToUpdate, docsToModify, deletionAttemptCounts, updateAttemptCounts) => {
   const deletionFailures = [];
   const updateFailures = [];
   const deletionIds = docsToDelete.map(doc => doc._id);
   const updateIds = docsToUpdate.map(doc => doc._id);
   const errorIds = updateStatuses
-    .map(docUpdate => docUpdate.error && docUpdate.id)
+    .map((docUpdate, index) => docUpdate.error && docsToModify[index]._id)
     .filter(id => id);
   errorIds.forEach(id => {
+    // Retry any errors for which the attempt limit has not been reached
     if (deletionIds.includes(id) && deletionAttemptCounts[id] <= ATTEMPT_LIMIT) {
       deletionFailures.push(id);
     } else if (updateIds.includes(id) && updateAttemptCounts[id] <= ATTEMPT_LIMIT) {
@@ -74,23 +75,27 @@ const deleteDocs = (docsToDelete, deletionAttemptCounts, updateAttemptCounts, fi
       parentMap = updatedParents.parentMap;
 
       const deletionIds = docsToDelete.map(doc => doc._id);
+      // Don't update any parents that are already marked for deletion
       docsToUpdate = updatedParents.docs.filter(doc => !deletionIds.includes(doc._id));
       incrementAttemptCounts(docsToUpdate, updateAttemptCounts);
 
       const finishedDocs = finalUpdateStatuses.map(docUpdate => docUpdate.id);
+      // Don't attempt to update any docs that have already been deleted/updated
       docsToModify = docsToDelete.concat(docsToUpdate).filter(doc => !finishedDocs.includes(doc._id));
 
       return db.medic.bulkDocs(docsToModify);
     })
     .then(updateStatuses => {
       updateStatuses = updateStatuses.filter(docUpdate => docUpdate.status !== 404);
-      const { deletionFailures, updateFailures } = getFailuresToRetry(updateStatuses, docsToDelete, docsToUpdate, deletionAttemptCounts, updateAttemptCounts);
+      const { deletionFailures, updateFailures } = getFailuresToRetry(updateStatuses, docsToDelete, docsToUpdate, docsToModify, deletionAttemptCounts, updateAttemptCounts);
+      // Don't send errors for docs that will be retried
       updateStatuses = updateStatuses.filter(docUpdate => !deletionFailures.includes(docUpdate.id) && !updateFailures.includes(docUpdate.id));
       finalUpdateStatuses = finalUpdateStatuses.concat(updateStatuses);
 
       if (deletionFailures.length > 0 || updateFailures.length > 0) {
         return fetchDocs(deletionFailures)
           .then(docsToDelete => {
+            // Retry updates by resending through the child doc (ensuring the update is still necessary in case of conflict)
             const updatesToRetryThroughDocDeletions = updateFailures.map(id => parentMap[id]);
             return deleteDocs(docsToDelete.concat(updatesToRetryThroughDocDeletions), deletionAttemptCounts, updateAttemptCounts, finalUpdateStatuses);
           });
