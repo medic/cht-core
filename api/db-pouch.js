@@ -9,6 +9,7 @@ if(UNIT_TEST_ENV) {
     allDocs: () => Promise.resolve({ offset:0, total_rows:0, rows:[] }),
     bulkDocs: () => Promise.resolve([]),
     query: () => Promise.resolve({ offset:0, total_rows:0, rows:[] }),
+    get: () => Promise.resolve({}),
   };
 } else if(COUCH_URL) {
   // strip trailing slash from to prevent bugs in path matching
