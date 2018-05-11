@@ -27,7 +27,7 @@ module.exports = {
   },
 
   loadViewMaps: function (ddoc) {
-    var ddocId = ddoc._id || DEFAULT_DDOC_ID;
+    var ddocId = ddoc._id && ddoc._id.replace('_design/', '') || DEFAULT_DDOC_ID;
     module.exports.reset(ddocId);
     var viewNames = argumentsToArray.apply({ skip: 1 }, arguments);
     viewNames.forEach(function(view) {

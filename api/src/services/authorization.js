@@ -3,7 +3,7 @@ let db = require('../db-pouch'),
     _ = require('underscore'),
     config = require('../config'),
     viewMapUtils = require('@shared-libs/view-map-utils'),
-    tombstoneUtils = require('@shared-libs/tombstone-utils')(db.medic, Promise);
+    tombstoneUtils = require('@shared-libs/tombstone-utils')(Promise, db.medic);
 
 const ALL_KEY = '_all', // key in the docs_by_replication_key view for records everyone can access
       UNASSIGNED_KEY = '_unassigned'; // key in the docs_by_replication_key view for unassigned records

@@ -14,7 +14,7 @@ const _ = require('underscore'),
       db = require('../db-nano'),
       infodoc = require('../lib/infodoc'),
       metadata = require('../lib/metadata'),
-      tombstoneUtils = require('@shared-libs/tombstone-utils')(dbPouch.medic, Promise),
+      tombstoneUtils = require('@shared-libs/tombstone-utils')(Promise, dbPouch.medic),
       PROCESSING_DELAY = 50, // ms
       PROGRESS_REPORT_INTERVAL = 500, // items
       transitions = [];
@@ -64,27 +64,31 @@ const processChange = (change, callback) => {
     logger.info(`transitions: ${processed} items processed (since sentinel started)`);
   }
   if (change.deleted) {
-    tombstoneUtils
-      .processChange(change, logger)
-      .then(() => {
-        // don't run transitions on deleted docs, but do clean up
-        async.parallel([
-          callback => {
-            infodoc.delete(change)
-              .then(() => { callback(); })
-              .catch(err => { callback(err); });
-          },
-          async.apply(deleteReadDocs, change)
-        ], err => {
-          if (err) {
-            logger.error('Error cleaning up deleted doc', err);
-          }
+    // don't run transitions on deleted docs, but do clean up
+    async.parallel([
+      callback => {
+        infodoc.delete(change)
+          .then(() => { callback(); })
+          .catch(err => { callback(err); });
+      },
+      async.apply(deleteReadDocs, change)
+    ], err => {
+      if (err) {
+        logger.error('Error cleaning up deleted doc', err);
+      }
+
+      tombstoneUtils
+        .processChange(change, logger)
+        .then(() => {
           processed++;
           metadata.update(change.seq)
             .then(() => { callback(); })
             .catch((err) => { callback(err); });
+        })
+        .catch(err => {
+          callback(err);
         });
-      });
+    });
     return;
   }
 

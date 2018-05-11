@@ -13,7 +13,7 @@ describe('Replication Helper Views Lib', function() {
   describe('loadViewMaps', function() {
     it('saves view map function from ddoc', function() {
       var ddoc = {
-        _id: 'ddoc',
+        _id: '_design/ddoc',
         views: {
           view1: { map: 'view1_map' },
           view2: { map: 'view2_map' },
@@ -58,7 +58,7 @@ describe('Replication Helper Views Lib', function() {
                      '  }' +
                      '}';
       var ddoc = {
-        _id: 'ddoc',
+        _id: '_design/ddoc',
         views: {
           viewName: { map: fnString },
           viewName2: { map: ' function(a){ return emit(a + 2) } '}}
@@ -79,7 +79,7 @@ describe('Replication Helper Views Lib', function() {
     it('supports multiple emits', function() {
       var fnString = 'function(a) { emit(a + 1); emit(a + 2); emit(a + 3); }';
       var ddoc = {
-        _id: 'ddoc',
+        _id: '_design/ddoc',
         views: {
           viewName: { map: fnString }
         }
@@ -92,7 +92,7 @@ describe('Replication Helper Views Lib', function() {
 
     it('throws error when requested a view that does not exist ', function() {
       var ddoc = {
-        _id: 'ddoc',
+        _id: '_design/ddoc',
         views: {
           viewName2: { map: ' function(a){ return emit(a + 2) } '}
         }
@@ -107,7 +107,7 @@ describe('Replication Helper Views Lib', function() {
       var fnStringView1 = 'function(a) { return a; }';
       var fnStringView2 = 'function(a) { return a * 2; }';
       var ddoc = {
-        _id: 'ddoc',
+        _id: '_design/ddoc',
         views: {
           view1: { map: fnStringView1 },
           view2: { map: fnStringView2 } }
@@ -119,7 +119,7 @@ describe('Replication Helper Views Lib', function() {
     it('falls back to default views when missing view or incorrect config', function() {
       var fnStringView1 = 'function(a) { return a; }';
       var ddoc = {
-        _id: 'ddoc',
+        _id: '_design/ddoc',
         views: {
           view1: { map: fnStringView1 }
         }
@@ -136,7 +136,7 @@ describe('Replication Helper Views Lib', function() {
     it('returns correct functions when views are reloaded', function() {
       var fnStringView1 = 'function(a) { return emit(a); }';
       var ddoc = {
-        _id: 'ddoc',
+        _id: '_design/ddoc',
         views: {
           view1: { map: fnStringView1 }
         }
@@ -159,7 +159,7 @@ describe('Replication Helper Views Lib', function() {
 
       fnStringView1 = 'function(a) { return emit(4); }';
       ddoc = {
-        _id: 'ddoc',
+        _id: '_design/ddoc',
         views: {
           view2: { map: fnStringView1 }
         }
@@ -171,7 +171,7 @@ describe('Replication Helper Views Lib', function() {
     it('supports hot reloading for multiple ddocs', function() {
       var fnStringView1 = 'function(a) { return emit(a); }';
       var ddoc1 = {
-        _id: 'ddoc1',
+        _id: '_design/ddoc1',
         views: {
           view: { map: fnStringView1 }
         }
@@ -180,7 +180,7 @@ describe('Replication Helper Views Lib', function() {
 
       var fnStringView2 = 'function(a) { return emit(a + 2); }';
       var ddoc2 = {
-        _id: 'ddoc2',
+        _id: '_design/ddoc2',
         views: {
           view: { map: fnStringView2 }
         }
@@ -194,7 +194,7 @@ describe('Replication Helper Views Lib', function() {
 
       fnStringView1 = 'function(a) { return emit(1024); }';
       ddoc1 = {
-        _id: 'ddoc1',
+        _id: '_design/ddoc1',
         views: {
           view: { map: fnStringView1 }
         }
@@ -208,7 +208,7 @@ describe('Replication Helper Views Lib', function() {
 
       fnStringView2 = 'function(a) { return emit(\'Medic Mobile\'); }';
       ddoc2 = {
-        _id: 'ddoc2',
+        _id: '_design/ddoc2',
         views: {
           view: { map: fnStringView2 }
         }

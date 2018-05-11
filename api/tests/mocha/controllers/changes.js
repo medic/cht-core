@@ -770,7 +770,7 @@ describe('Changes controller', () => {
 
       return controller
         .request(proxy, testReq, testRes)
-        .then(nextTick())
+        .then(nextTick)
         .then(() => {
           clock.tick(20000);
           const feed = controller._getNormalFeeds()[0];

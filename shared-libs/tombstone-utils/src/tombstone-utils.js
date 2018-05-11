@@ -4,7 +4,7 @@ var TYPES = ['data_record', 'person', 'clinic', 'district_hospital', 'health_cen
     TOMBSTONE_TYPE = 'tombstone',
     TOMBSTONE_ID_SEPARATOR = '____';
 
-module.exports = function(DB, Promise) {
+module.exports = function(Promise, DB) {
   var needsTombstone = function (doc) {
     return TYPES.indexOf(doc.type) !== -1;
   };
@@ -78,6 +78,7 @@ module.exports = function(DB, Promise) {
         })
         .catch(function(err) {
           logger.error('Tombstone: could not process doc id:' + change.id + ' seq:' + change.seq, err);
+          throw err;
         });
     },
 

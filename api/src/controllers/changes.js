@@ -5,7 +5,7 @@ const auth = require('../auth'),
       config = require('../config'),
       serverUtils = require('../server-utils'),
       heartbeatFilter = require('../services/heartbeat-filter'),
-      tombstoneUtils = require('@shared-libs/tombstone-utils')(db.medic, Promise),
+      tombstoneUtils = require('@shared-libs/tombstone-utils')(Promise, db.medic),
       uuid = require('uuid/v4');
 
 let inited        = false,
