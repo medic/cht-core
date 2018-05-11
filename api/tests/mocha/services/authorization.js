@@ -14,7 +14,6 @@ let contact,
 describe('Authorization service', () => {
   afterEach(function() {
     sinon.restore();
-    service._reset();
   });
 
   beforeEach(() => {
@@ -191,30 +190,16 @@ describe('Authorization service', () => {
     });
   });
 
-  describe('initViewFunctions', () => {
-    it('requests and stores required view map functions', () => {
-      service._viewMapUtils.getViewMapFn.returnsArg(1);
-      config.get.returns('config');
-      service.initViewFunctions();
-      service._viewMapUtils.getViewMapFn.callCount.should.equal(2);
-      service._viewMapUtils.getViewMapFn.args[0].should.deep.equal(['config', 'contacts_by_depth', true]);
-      service._viewMapUtils.getViewMapFn.args[1].should.deep.equal(['config', 'docs_by_replication_key']);
-      config.get.callCount.should.equal(2);
-      service._docsByReplicationKeyFn().should.equal('docs_by_replication_key');
-      service._contactsByDepthFn().should.equal('contacts_by_depth');
-    });
-  });
-
   describe('getViewResults', () => {
     it('initializes view map functions if needed and returns view results', () => {
       const contactsByDepthStub = sinon.stub().returns('contactsByDepthStubResult');
       const docsByReplicationKeyStub = sinon.stub().returns('docsByReplicationKeyStubResult');
       const doc = { _id: 1, _rev: 1 };
       service._viewMapUtils.getViewMapFn
-        .withArgs(sinon.match.any, 'contacts_by_depth')
+        .withArgs('contacts_by_depth', true)
         .returns(contactsByDepthStub);
       service._viewMapUtils.getViewMapFn
-        .withArgs(sinon.match.any, 'docs_by_replication_key')
+        .withArgs('docs_by_replication_key')
         .returns(docsByReplicationKeyStub);
 
       config.get.returns('config');

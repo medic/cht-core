@@ -8,14 +8,6 @@ let db = require('../db-pouch'),
 const ALL_KEY = '_all', // key in the docs_by_replication_key view for records everyone can access
       UNASSIGNED_KEY = '_unassigned'; // key in the docs_by_replication_key view for unassigned records
 
-let contactsByDepthFn,
-    docsByReplicationKeyFn;
-
-const initViewFunctions = () => {
-  contactsByDepthFn = viewMapUtils.getViewMapFn(config.get(), 'contacts_by_depth', true);
-  docsByReplicationKeyFn = viewMapUtils.getViewMapFn(config.get(), 'docs_by_replication_key');
-};
-
 const getDepth = (userCtx) => {
   if (!userCtx.roles || !userCtx.roles.length) {
     return -1;
@@ -189,18 +181,15 @@ const getValidatedDocIds = (subjectIds, userCtx) => {
 };
 
 const getViewResults = (doc) => {
-  if (!docsByReplicationKeyFn || !contactsByDepthFn) {
-    initViewFunctions();
-  }
   return {
-    replicationKey: docsByReplicationKeyFn(doc),
-    contactsByDepth: contactsByDepthFn(doc)
+    contactsByDepth: viewMapUtils.getViewMapFn('contacts_by_depth', true)(doc),
+    replicationKey: viewMapUtils.getViewMapFn('docs_by_replication_key')(doc)
   };
 };
 
 const allowedChange = (feed, changeObj) => {
   const userOpts = _.pick(feed, 'userCtx', 'subjectIds', 'depth');
-  return module.exports.allowedDoc(changeObj.change.doc, userOpts, changeObj.authData);
+  return allowedDoc(changeObj.change.doc, userOpts, changeObj.authData);
 };
 
 module.exports = {
@@ -208,19 +197,16 @@ module.exports = {
   allowedDoc: allowedDoc,
   getDepth: getDepth,
   getViewResults: getViewResults,
-  initViewFunctions: initViewFunctions,
   getSubjectIds: getSubjectIds,
   getValidatedDocIds: getValidatedDocIds,
-
-  //exposed for testing purposes
-  _isAllowedContact: allowedContact,
-  _isSensitive: isSensitive,
-  _tombstoneUtils: tombstoneUtils,
-  _viewMapUtils: viewMapUtils,
-  _docsByReplicationKeyFn: () => docsByReplicationKeyFn,
-  _contactsByDepthFn: () => contactsByDepthFn,
-  _reset: () => {
-    docsByReplicationKeyFn = null;
-    contactsByDepthFn = null;
-  }
 };
+
+// used for testing
+if (process.env.UNIT_TEST_ENV) {
+  _.extend(module.exports, {
+    _isAllowedContact: allowedContact,
+    _isSensitive: isSensitive,
+    _tombstoneUtils: tombstoneUtils,
+    _viewMapUtils: viewMapUtils
+  });
+}

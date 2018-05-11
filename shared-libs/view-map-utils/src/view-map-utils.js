@@ -1,44 +1,71 @@
-var emit = function() {};
+'use strict';
+
+var emit = function() {},
+    viewMapStrings = {},
+    viewMapFns = {};
+
+//ensure V8 optimization
+var argumentsToArray = function () {
+  var args = [];
+  for (var i = this && this.skip || 0; i < arguments.length; i++) {
+    args.push(arguments[i]);
+  }
+  return args;
+};
 
 module.exports = {
-  getConfig: function (ddoc, config, viewNames) {
-    if (!viewNames || !(viewNames instanceof Array)) {
-      return config;
-    }
-
-    config.views = {};
-    viewNames.forEach(function(view) {
-      config.views[view] = ddoc.views && ddoc.views[view] && ddoc.views[view].map || false;
-    });
-
-    return config;
+  reset: function () {
+    viewMapStrings = {};
+    viewMapFns = {};
   },
 
-  getViewMapFn: function (config, viewName, full) {
+  loadViewMaps: function (ddoc) {
+    module.exports.reset();
+    var viewNames = argumentsToArray.apply({ skip: 1 }, arguments);
+    viewNames.forEach(function(view) {
+      viewMapStrings[view] = ddoc.views && ddoc.views[view] && ddoc.views[view].map || false;
+      viewMapFns[view] = {};
+    });
+  },
+
+  getViewMapFn: function (viewName, full) {
     var COMMENT_REGEX = /\/\/.*/g,
-        SIGNATURE_REGEX = /emit\(([^\(]*)\)/g,
+        SIGNATURE_REGEX = /emit\(/g,
         NEW_LINE_REGEX = /\\n/g;
 
-    var fnString = module.exports.getViewMapString(config, viewName)
+    var fnString = module.exports.getViewMapString(viewName);
+    if (!fnString) {
+      throw new Error('Requested view ' + viewName + ' was not found');
+    }
+
+    full = !!full;
+    if (viewMapFns[viewName][full]) {
+      return viewMapFns[viewName][full];
+    }
+
+    fnString = fnString
       .replace(NEW_LINE_REGEX, '\n')
       .replace(COMMENT_REGEX, '')
-      .replace(SIGNATURE_REGEX, 'this.emit([ $1 ])')
+      .replace(SIGNATURE_REGEX, 'this.emit(')
       .trim();
 
     var fn = new Function('return ' + fnString)(); // jshint ignore:line
+
     //support multiple `emit`s
-    return function() {
+    var viewMapFn = function() {
       var emitted = [];
-      var emit = function(value) {
-        return emitted.push(value);
+      var emit = function() {
+        return emitted.push(argumentsToArray.apply(null, arguments));
       };
       fn.apply({ emit: emit }, arguments);
       return (full ? emitted : emitted[0]);
     };
+    viewMapFns[viewName][full] = viewMapFn;
+    return viewMapFn;
   },
 
-  getViewMapString: function (config, viewName) {
-    return config.views && config.views[viewName] || module.exports.defaultViews[viewName];
+  getViewMapString: function (viewName) {
+    return viewMapStrings[viewName] || module.exports.defaultViews[viewName];
   },
 
   defaultViews: {
@@ -109,5 +136,13 @@ module.exports = {
         }
       }
     }
+  },
+
+  //used for testing
+  _getViewMapStrings: function() {
+    return viewMapStrings;
+  },
+  _getViewMapFns: function() {
+    return viewMapFns;
   }
 };
