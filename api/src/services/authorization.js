@@ -189,7 +189,7 @@ const getViewResults = (doc) => {
 
 const allowedChange = (feed, changeObj) => {
   const userOpts = _.pick(feed, 'userCtx', 'subjectIds', 'depth');
-  return allowedDoc(changeObj.change.doc, userOpts, changeObj.authData);
+  return allowedDoc(changeObj.change.doc, userOpts, changeObj.viewResults);
 };
 
 module.exports = {

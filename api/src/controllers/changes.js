@@ -221,12 +221,12 @@ const processChange = (change, seq) => {
   if (tombstoneUtils.isTombstoneId(change.id)) {
     changeObj = {
       change: tombstoneUtils.generateChangeFromTombstone(change),
-      authData: authorization.getViewResults(tombstoneUtils.extractDoc(change.doc))
+      viewResults: authorization.getViewResults(tombstoneUtils.extractDoc(change.doc))
     };
   } else {
     changeObj = {
       change: change,
-      authData: authorization.getViewResults(change.doc)
+      viewResults: authorization.getViewResults(change.doc)
     };
   }
   // inform the normal changes feed that a change was received while they were processing

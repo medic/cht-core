@@ -426,9 +426,9 @@ describe('Changes controller', () => {
     it('pushes allowed pending changes to the results', () => {
       const validatedIds = Array.from({length: 101}, () => Math.floor(Math.random() * 101));
       authorization.getValidatedDocIds.resolves(validatedIds);
-      authorization.allowedChange.withArgs(sinon.match.any, { change: { id: 7, changes: [] }, authData: {} }).returns(false);
-      authorization.allowedChange.withArgs(sinon.match.any, { change: { id: 8, changes: [] }, authData: {} }).returns(true);
-      authorization.allowedChange.withArgs(sinon.match.any, { change: { id: 9, changes: [] }, authData: {} }).returns(true);
+      authorization.allowedChange.withArgs(sinon.match.any, { change: { id: 7, changes: [] }, viewResults: {} }).returns(false);
+      authorization.allowedChange.withArgs(sinon.match.any, { change: { id: 8, changes: [] }, viewResults: {} }).returns(true);
+      authorization.allowedChange.withArgs(sinon.match.any, { change: { id: 9, changes: [] }, viewResults: {} }).returns(true);
       testReq.query = { since: 0 };
 
       return controller
@@ -918,7 +918,7 @@ describe('Changes controller', () => {
       testFeed.pendingChanges.length.should.equal(1);
       testFeed.pendingChanges[0].should.deep.equal({
         change: { id: 1, doc: { _id: 1 }},
-        authData: { view1: 'a', view2: 'b' }
+        viewResults: { view1: 'a', view2: 'b' }
       });
     });
 
@@ -962,7 +962,7 @@ describe('Changes controller', () => {
       testFeed.pendingChanges.length.should.equal(1);
       testFeed.pendingChanges[0].should.deep.equal({
         change: { id: 1, changes: [{ rev: 2 }] },
-        authData: { view1: 'a', view2: 'b' }
+        viewResults: { view1: 'a', view2: 'b' }
       });
     });
 

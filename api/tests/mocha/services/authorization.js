@@ -145,14 +145,17 @@ describe('Authorization service', () => {
       const subjectIds = [1, 2, 3];
       return service
         .getValidatedDocIds(subjectIds, { name: 'user' })
-        .then(() => {
+        .then(result => {
           db.medic.query.callCount.should.equal(2);
           db.medic.query.args[0].should.deep.equal([ 'medic/docs_by_replication_key', { keys: subjectIds } ]);
           db.medic.query.args[1].should.deep.equal([ 'medic-tombstone/docs_by_replication_key', { keys: subjectIds } ]);
+
+          result.length.should.equal(2);
+          result.should.deep.equal(['_design/medic-client', 'org.couchdb.user:user']);
         });
     });
 
-    it('comprises the list of IDs from both view results, except for sensitive ones, includes ddoc and user doc', () => {
+    it('merges results from both view, except for sensitive ones, includes ddoc and user doc', () => {
       const subjectIds = [ 'sbj1', 'sbj2', 'sbj3', 'sbj4', 'facility_id', 'contact_id', 'c1', 'c2', 'c3', 'c4' ];
       db.medic.query
         .withArgs('medic/docs_by_replication_key')
@@ -368,12 +371,86 @@ describe('Authorization service', () => {
           report = { _id: 'report' };
         });
 
-        it('returns true for reports with allowed subjects', () => {
-          userInfo.subjectIds = [ 'subject1', 'contact1', 'subject', 'contact' ];
-          viewResults = { replicationKey: ['subject', { submitter: 'submitter' }], contactsByDepth: false };
+        it('returns true for reports with unknown subject and allowed submitter', () => {
+          userInfo.subjectIds = [ 'subject1', 'contact1', 'subject', 'contact', 'submitter' ];
+          viewResults = { replicationKey: [false, { submitter: 'submitter' }], contactsByDepth: [] };
           service.allowedDoc(report, userInfo, viewResults).should.equal(true);
         });
 
+        it('returns false for reports with unknown subject and denied submitter', () => {
+          userInfo.subjectIds = [ 'subject1', 'contact1', 'subject', 'contact' ];
+          viewResults = { replicationKey: [false, { submitter: 'submitter' }], contactsByDepth: [] };
+          service.allowedDoc(report, userInfo, viewResults).should.equal(false);
+        });
+
+        it('returns false for reports with denied subject and unknown submitter', () => {
+          userInfo.subjectIds = [ 'subject1', 'contact1', 'subject', 'contact' ];
+          viewResults = { replicationKey: ['subject2', { }], contactsByDepth: [] };
+          service.allowedDoc(report, userInfo, viewResults).should.equal(false);
+        });
+
+        it('returns false for reports with denied subject and allowed submitter', () => {
+          userInfo.subjectIds = [ 'subject1', 'contact1', 'subject', 'contact' ];
+          viewResults = { replicationKey: ['subject2', { submitter: 'contact' }], contactsByDepth: [] };
+          service.allowedDoc(report, userInfo, viewResults).should.equal(false);
+        });
+
+        it('returns true for reports with allowed subject and unknown submitter', () => {
+          userInfo.subjectIds = [ 'subject1', 'contact1', 'subject', 'contact' ];
+          viewResults = { replicationKey: ['subject', { }], contactsByDepth: false };
+          service.allowedDoc(report, userInfo, viewResults).should.equal(true);
+        });
+
+        it('returns true for reports with allowed subject, denied submitter and not sensitive', () => {
+          userInfo.subjectIds = [ 'subject1', 'contact1', 'subject', 'contact' ];
+          viewResults = { replicationKey: ['subject', { submitter: 'submitter' }], contactsByDepth: [] };
+          service.allowedDoc(report, userInfo, viewResults).should.equal(true);
+        });
+
+        it('returns true for reports with allowed subject, allowed submitter and not sensitive', () => {
+          userInfo.subjectIds = [ 'subject1', 'contact1', 'subject', 'contact' ];
+          viewResults = { replicationKey: ['subject', { submitter: 'contact' }], contactsByDepth: [] };
+          service.allowedDoc(report, userInfo, viewResults).should.equal(true);
+        });
+
+        it('returns false for reports with allowed subject, denied submitter and sensitive', () => {
+          userInfo.subjectIds = [ 'subject1', 'contact1', 'subject', 'contact', userCtx.contact_id ];
+          viewResults = { replicationKey: [userCtx.contact_id, { submitter: 'submitter' }], contactsByDepth: [] };
+          service.allowedDoc(report, userInfo, viewResults).should.equal(false);
+
+          userInfo.subjectIds = [ 'subject1', 'contact1', 'subject', 'contact', userCtx.facility_id ];
+          viewResults = { replicationKey: [userCtx.facility_id, { submitter: 'submitter' }], contactsByDepth: [] };
+          service.allowedDoc(report, userInfo, viewResults).should.equal(false);
+        });
+
+        it('returns true for reports with allowed subject, allowed submitter and about user`s contact or place', () => {
+          userInfo.subjectIds = [ 'subject1', 'contact1', 'subject', 'contact', userCtx.contact_id ];
+          viewResults = { replicationKey: [userCtx.contact_id, { submitter: 'contact' }], contactsByDepth: [] };
+          service.allowedDoc(report, userInfo, viewResults).should.equal(true);
+
+          userInfo.subjectIds = [ 'subject1', 'contact1', 'subject', 'contact', userCtx.facility_id ];
+          viewResults = { replicationKey: [userCtx.facility_id, { submitter: 'contact' }], contactsByDepth: [] };
+          service.allowedDoc(report, userInfo, viewResults).should.equal(true);
+        });
+      });
+    });
+
+    describe('getViewResults', () => {
+      it('calls allowedDoc with correct arguments, and returns the result', () => {
+        const feed = {
+          userCtx: { name: 'user', facility_id: 'facility_id', contact_id: 'contact_id' },
+          subjectIds: [ 'contact_id', 'facility_id', 'subject', 'submitter' ],
+          depth: -1
+        };
+        const changeObj = {
+          change: { id: 'report', rev: 'rev', doc: { _id: 'report', _rev: 'rev' } },
+          viewResults: { replicationKey: [ 'subject', { submitter: 'contact_id' } ], contactsByDepth: [] }
+        };
+
+        service.allowedChange(feed, changeObj).should.equal(true);
+
+        changeObj.viewResults.replicationKey[0] = 'subject2';
+        service.allowedChange(feed, changeObj).should.equal(false);
       });
     });
   });
