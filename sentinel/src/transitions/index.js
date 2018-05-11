@@ -415,6 +415,7 @@ module.exports = {
   _detach: detach,
   _deleteReadDocs: deleteReadDocs,
   _lineage: lineage,
+  _tombstoneUtils: tombstoneUtils,
   availableTransitions: availableTransitions,
   loadTransitions: loadTransitions,
   canRun: canRun,
