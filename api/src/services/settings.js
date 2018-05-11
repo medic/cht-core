@@ -2,7 +2,7 @@ const db = require('../db-pouch');
 
 const isObject = obj => obj === Object(obj) && !Array.isArray(obj);
 
-const getDdoc = () => db.medic.get('_design/medic');
+const getDoc = () => db.medic.get('settings');
 
 const doReplace = (target, source) => {
   Object.keys(source).forEach(k => {
@@ -27,17 +27,17 @@ const doExtend = (target, source) => {
 
 module.exports = {
   get: () => {
-    return getDdoc().then(ddoc => ddoc.app_settings);
+    return getDoc().then(ddoc => ddoc.settings);
   },
   update: (body, replace) => {
-    return getDdoc().then(ddoc => {
-      if (!ddoc.app_settings) {
-        ddoc.app_settings = {};
+    return getDoc().then(ddoc => {
+      if (!ddoc.settings) {
+        ddoc.settings = {};
       }
       if (replace) {
-        doReplace(ddoc.app_settings, body);
+        doReplace(ddoc.settings, body);
       } else {
-        doExtend(ddoc.app_settings, body);
+        doExtend(ddoc.settings, body);
       }
       return db.medic.put(ddoc);
     });

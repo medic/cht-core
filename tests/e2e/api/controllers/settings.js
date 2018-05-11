@@ -2,8 +2,8 @@ const path = require('path'),
       constants = require('../../../constants'),
       utils = require('../../../utils');
 
-const getDdoc = () => {
-  return utils.getDoc('_design/medic');
+const getDoc = () => {
+  return utils.getDoc('settings');
 };
 
 describe('Settings API', () => {
@@ -30,9 +30,9 @@ describe('Settings API', () => {
           .then(response => {
             expect(response).toEqual({ success: true });
           })
-          .then(getDdoc)
-          .then(ddoc => {
-            expect(ddoc.app_settings._test_sandbox).toEqual({ times: 'one', b: 'c' });
+          .then(getDoc)
+          .then(doc => {
+            expect(doc.settings._test_sandbox).toEqual({ times: 'one', b: 'c' });
           })
           .then(() => {
             return update({ _test_sandbox: { times: 'two' } }, true);
@@ -40,9 +40,9 @@ describe('Settings API', () => {
           .then(response => {
             expect(response).toEqual({ success: true });
           })
-          .then(getDdoc)
-          .then(ddoc => {
-            expect(ddoc.app_settings._test_sandbox).toEqual({ times: 'two' });
+          .then(getDoc)
+          .then(doc => {
+            expect(doc.settings._test_sandbox).toEqual({ times: 'two' });
           });
       });
 
@@ -51,9 +51,9 @@ describe('Settings API', () => {
           .then(response => {
             expect(response).toEqual({ success: true });
           })
-          .then(getDdoc)
-          .then(ddoc => {
-            expect(ddoc.app_settings._test_sandbox).toEqual({ times: 'one', b: 'c' });
+          .then(getDoc)
+          .then(doc => {
+            expect(doc.settings._test_sandbox).toEqual({ times: 'one', b: 'c' });
           })
           .then(() => {
             return update({ _test_sandbox: { times: 'two' } }, false);
@@ -61,9 +61,9 @@ describe('Settings API', () => {
           .then(response => {
             expect(response).toEqual({ success: true });
           })
-          .then(getDdoc)
-          .then(ddoc => {
-            expect(ddoc.app_settings._test_sandbox).toEqual({ times: 'two', b: 'c' });
+          .then(getDoc)
+          .then(doc => {
+            expect(doc.settings._test_sandbox).toEqual({ times: 'two', b: 'c' });
           });
       });
 
@@ -106,9 +106,9 @@ describe('Settings API', () => {
           .then(response => {
             expect(response).toEqual({ success: true });
           })
-          .then(getDdoc)
-          .then(ddoc => {
-            expect(ddoc.app_settings._test_sandbox).toEqual({ times: 'one', b: 'c' });
+          .then(getDoc)
+          .then(doc => {
+            expect(doc.settings._test_sandbox).toEqual({ times: 'one', b: 'c' });
           })
           .then(() => {
             return update({ _test_sandbox: { times: 'two' } }, true);
@@ -116,9 +116,9 @@ describe('Settings API', () => {
           .then(response => {
             expect(response).toEqual({ success: true });
           })
-          .then(getDdoc)
-          .then(ddoc => {
-            expect(ddoc.app_settings._test_sandbox).toEqual({ times: 'two' });
+          .then(getDoc)
+          .then(doc => {
+            expect(doc.settings._test_sandbox).toEqual({ times: 'two' });
           });
       });
 
@@ -127,9 +127,9 @@ describe('Settings API', () => {
           .then(response => {
             expect(response).toEqual({ success: true });
           })
-          .then(getDdoc)
-          .then(ddoc => {
-            expect(ddoc.app_settings._test_sandbox).toEqual({ times: 'one', b: 'c' });
+          .then(getDoc)
+          .then(doc => {
+            expect(doc.settings._test_sandbox).toEqual({ times: 'one', b: 'c' });
           })
           .then(() => {
             return update({ _test_sandbox: { times: 'two' } }, false);
@@ -137,9 +137,9 @@ describe('Settings API', () => {
           .then(response => {
             expect(response).toEqual({ success: true });
           })
-          .then(getDdoc)
-          .then(ddoc => {
-            expect(ddoc.app_settings._test_sandbox).toEqual({ times: 'two', b: 'c' });
+          .then(getDoc)
+          .then(doc => {
+            expect(doc.settings._test_sandbox).toEqual({ times: 'two', b: 'c' });
           });
       });
 
