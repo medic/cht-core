@@ -5,7 +5,13 @@ module.exports = function(dependencies) {
 
   function getParent(doc) {
     if (doc.type === 'person' && doc.parent && doc.parent._id) {
-      return DB.get(doc.parent._id);
+      return DB.get(doc.parent._id)
+        .catch(function(err) {
+          if (err.status === 404) {
+            return;
+          }
+          throw err;
+        });
     }
     return Promise.resolve();
   }
