@@ -43,13 +43,13 @@ const incrementAttemptCounts = (docs, attemptCounts) => {
   });
 };
 
-const getFailuresToRetry = (updateStatuses, docsToDelete, docsToUpdate, docsToModify, deletionAttemptCounts, updateAttemptCounts) => {
+const getFailuresToRetry = (updateStatuses, docsToDelete, docsToUpdate, deletionAttemptCounts, updateAttemptCounts) => {
   const deletionFailures = [];
   const updateFailures = [];
   const deletionIds = docsToDelete.map(doc => doc._id);
   const updateIds = docsToUpdate.map(doc => doc._id);
   const errorIds = updateStatuses
-    .map((docUpdate, index) => docUpdate.error && docsToModify[index]._id)
+    .map(docUpdate => docUpdate.error && docUpdate.id)
     .filter(id => id);
   errorIds.forEach(id => {
     // Retry any errors for which the attempt limit has not been reached
@@ -86,8 +86,9 @@ const deleteDocs = (docsToDelete, deletionAttemptCounts, updateAttemptCounts, fi
       return db.medic.bulkDocs(docsToModify);
     })
     .then(updateStatuses => {
+      updateStatuses.forEach((docUpdate, index) => docUpdate.id = docsToModify[index]._id);
       updateStatuses = updateStatuses.filter(docUpdate => docUpdate.status !== 404);
-      const { deletionFailures, updateFailures } = getFailuresToRetry(updateStatuses, docsToDelete, docsToUpdate, docsToModify, deletionAttemptCounts, updateAttemptCounts);
+      const { deletionFailures, updateFailures } = getFailuresToRetry(updateStatuses, docsToDelete, docsToUpdate, deletionAttemptCounts, updateAttemptCounts);
       // Don't send errors for docs that will be retried
       updateStatuses = updateStatuses.filter(docUpdate => !deletionFailures.includes(docUpdate.id) && !updateFailures.includes(docUpdate.id));
       finalUpdateStatuses = finalUpdateStatuses.concat(updateStatuses);
