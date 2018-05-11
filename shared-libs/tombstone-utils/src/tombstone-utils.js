@@ -23,7 +23,7 @@ module.exports = function(Promise, DB) {
 
     logger.info('saving tombstone for ' + doc._id);
 
-    DB
+    return DB
       .put(tombstoneDoc)
       .catch(function(error) {
         if (error.status === 409) {
@@ -53,25 +53,25 @@ module.exports = function(Promise, DB) {
 
   var extractRev = function(tombstoneId) {
     var match = tombstoneId.match(getTombstoneRegex());
-    return match[2];
-  };
-
-  var generateChangeFromTombstone = function(change) {
-    return {
-      id: extractDocId(change.id),
-      seq: change.seq,
-      changes: [{ rev: extractRev(change.id) }],
-      doc: change.doc && change.doc.tombstone,
-      deleted: true
-    };
+    return match && match[2];
   };
 
   return {
+    extractDocId: extractDocId,
+    extractRev: extractRev,
+
+    extractDoc: function(tombstoneDoc) {
+      return tombstoneDoc && tombstoneDoc.tombstone;
+    },
+
+    isTombstoneId: function(tombstoneId) {
+      return getTombstoneRegex().test(tombstoneId);
+    },
+
     processChange: function (change, logger) {
       if (!logger) {
         logger = console;
       }
-      logger.info('processing tombstome for ' + change.id);
       return getDoc(change)
         .then(function(doc) {
           return needsTombstone(doc) && saveTombstone(doc, logger);
@@ -82,33 +82,15 @@ module.exports = function(Promise, DB) {
         });
     },
 
-    saveTombstone: saveTombstone,
-    needsTombstone: needsTombstone,
-    getDoc: getDoc,
-    generateChangeFromTombstone: generateChangeFromTombstone,
-    extractDocId: extractDocId,
-
-    hasTombstone: function (doc) {
-      return DB
-        .get(generateTombstoneId(doc._id, doc._rev))
-        .then(function() {
-          return false;
-        })
-        .catch(function(err) {
-          return err.status === 404;
-        });
-    },
-
-    isTombstone: function (doc) {
-      return doc.type === TOMBSTONE_TYPE;
-    },
-
-    isTombstoneId: function(tombstoneId) {
-      return getTombstoneRegex().test(tombstoneId);
-    },
-
-    extractDoc: function(tombstoneDoc) {
-      return tombstoneDoc.tombstone;
+    // generates a copy of the deletion change of the original document
+    generateChangeFromTombstone: function(tombstoneChange) {
+      return {
+        id: extractDocId(tombstoneChange.id),
+        seq: tombstoneChange.seq,
+        changes: [{ rev: extractRev(tombstoneChange.id) }],
+        doc: tombstoneChange.doc && tombstoneChange.doc.tombstone,
+        deleted: true
+      };
     }
   };
 };
