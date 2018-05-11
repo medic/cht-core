@@ -2,7 +2,8 @@
 
 var emit = function() {},
     viewMapStrings = {},
-    viewMapFns = {};
+    viewMapFns = {},
+    DEFAULT_DDOC_ID = 'default';
 
 //ensure V8 optimization
 var argumentsToArray = function () {
@@ -14,33 +15,40 @@ var argumentsToArray = function () {
 };
 
 module.exports = {
-  reset: function () {
+  reset: function (ddoc) {
+    if (ddoc) {
+      viewMapStrings[ddoc] = {};
+      viewMapFns[ddoc] = {};
+      return;
+    }
+
     viewMapStrings = {};
     viewMapFns = {};
   },
 
   loadViewMaps: function (ddoc) {
-    module.exports.reset();
+    var ddocId = ddoc._id || DEFAULT_DDOC_ID;
+    module.exports.reset(ddocId);
     var viewNames = argumentsToArray.apply({ skip: 1 }, arguments);
     viewNames.forEach(function(view) {
-      viewMapStrings[view] = ddoc.views && ddoc.views[view] && ddoc.views[view].map || false;
-      viewMapFns[view] = {};
+      viewMapStrings[ddocId][view] = ddoc.views && ddoc.views[view] && ddoc.views[view].map || false;
+      viewMapFns[ddocId][view] = {};
     });
   },
 
-  getViewMapFn: function (viewName, full) {
+  getViewMapFn: function (ddocId, viewName, full) {
     var COMMENT_REGEX = /\/\/.*/g,
         SIGNATURE_REGEX = /emit\(/g,
         NEW_LINE_REGEX = /\\n/g;
 
-    var fnString = module.exports.getViewMapString(viewName);
+    var fnString = module.exports.getViewMapString(ddocId, viewName);
     if (!fnString) {
-      throw new Error('Requested view ' + viewName + ' was not found');
+      throw new Error('Requested view '+ ddocId + '/' + viewName + ' was not found');
     }
 
     full = !!full;
-    if (viewMapFns[viewName][full]) {
-      return viewMapFns[viewName][full];
+    if (viewMapFns[ddocId][viewName][full]) {
+      return viewMapFns[ddocId][viewName][full];
     }
 
     fnString = fnString
@@ -60,12 +68,13 @@ module.exports = {
       fn.apply({ emit: emit }, arguments);
       return (full ? emitted : emitted[0]);
     };
-    viewMapFns[viewName][full] = viewMapFn;
+    viewMapFns[ddocId][viewName][full] = viewMapFn;
     return viewMapFn;
   },
 
-  getViewMapString: function (viewName) {
-    return viewMapStrings[viewName] || module.exports.defaultViews[viewName];
+  getViewMapString: function (ddocId, viewName) {
+    ddocId = ddocId || DEFAULT_DDOC_ID;
+    return viewMapStrings[ddocId] && viewMapStrings[ddocId][viewName] || module.exports.defaultViews[viewName];
   },
 
   defaultViews: {

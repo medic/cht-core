@@ -196,10 +196,10 @@ describe('Authorization service', () => {
       const docsByReplicationKeyStub = sinon.stub().returns('docsByReplicationKeyStubResult');
       const doc = { _id: 1, _rev: 1 };
       service._viewMapUtils.getViewMapFn
-        .withArgs('contacts_by_depth', true)
+        .withArgs('medic', 'contacts_by_depth', true)
         .returns(contactsByDepthStub);
       service._viewMapUtils.getViewMapFn
-        .withArgs('docs_by_replication_key')
+        .withArgs('medic', 'docs_by_replication_key')
         .returns(docsByReplicationKeyStub);
 
       config.get.returns('config');

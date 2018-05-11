@@ -182,8 +182,8 @@ const getValidatedDocIds = (subjectIds, userCtx) => {
 
 const getViewResults = (doc) => {
   return {
-    contactsByDepth: viewMapUtils.getViewMapFn('contacts_by_depth', true)(doc),
-    replicationKey: viewMapUtils.getViewMapFn('docs_by_replication_key')(doc)
+    contactsByDepth: viewMapUtils.getViewMapFn('medic', 'contacts_by_depth', true)(doc),
+    replicationKey: viewMapUtils.getViewMapFn('medic', 'docs_by_replication_key')(doc)
   };
 };
 
