@@ -369,14 +369,6 @@ var feedback = require('../modules/feedback'),
         });
       });
 
-      $scope.showMedicReporter = function(jsonformCode) {
-        Modal({
-          templateUrl: 'templates/modals/medic_reporter.html',
-          controller: 'MedicReporterModalCtrl',
-          model: { formCode: jsonformCode }
-        });
-      };
-
       Tour.getTours().then(function(tours) {
         $scope.tours = tours;
       });

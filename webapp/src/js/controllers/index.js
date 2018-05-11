@@ -22,14 +22,12 @@
   require('./delete-doc-confirm');
   require('./edit-message-group');
   require('./edit-report');
-  require('./edit-translation-messages');
   require('./edit-user');
   require('./error');
   require('./feedback');
   require('./guided-setup-modal');
   require('./home');
   require('./logout-confirm');
-  require('./medic-reporter-modal');
   require('./messages');
   require('./messages-content');
   require('./navigation-confirm');
