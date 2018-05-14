@@ -16,6 +16,16 @@ if(UNIT_TEST_ENV) {
     put: stubMe('put'),
     post: stubMe('post'),
     query: stubMe('query'),
+    get: stubMe('get'),
+  };
+
+  module.exports.sentinel = {
+    allDocs: stubMe('allDocs'),
+    bulkDocs: stubMe('bulkDocs'),
+    put: stubMe('put'),
+    post: stubMe('post'),
+    query: stubMe('query'),
+    get: stubMe('get'),
   };
 } else if(COUCH_URL) {
   // strip trailing slash from to prevent bugs in path matching
