@@ -62,7 +62,7 @@ const getFailuresToRetry = (updateStatuses, docsToDelete, docsToUpdate, deletion
   return { deletionFailures, updateFailures };
 };
 
-const deleteDocs = (docsToDelete, deletionAttemptCounts, updateAttemptCounts, finalUpdateStatuses = []) => {
+const deleteDocs = (docsToDelete, deletionAttemptCounts = {}, updateAttemptCounts = {}, finalUpdateStatuses = []) => {
   let docsToUpdate;
   let docsToModify;
   let parentMap;
@@ -116,11 +116,7 @@ module.exports = {
     return batches.reduce((promise, batch, index) => {
       return promise
         .then(() => fetchDocs(batch))
-        .then(docsToDelete => {
-          const deletionAttemptCounts = {};
-          const updateAttemptCounts = {};
-          return deleteDocs(docsToDelete, deletionAttemptCounts, updateAttemptCounts);
-        })
+        .then(deleteDocs)
         .then(result => {
           let resString = JSON.stringify(result);
           if (index !== batches.length - 1) {
