@@ -97,7 +97,9 @@ const deleteDocs = (docsToDelete, deletionAttemptCounts = {}, updateAttemptCount
         return fetchDocs(deletionFailures)
           .then(docsToDelete => {
             // Retry updates by resending through the child doc (ensuring the update is still necessary in case of conflict)
-            const updatesToRetryThroughDocDeletions = updateFailures.map(id => documentByParentId[id]);
+            const updatesToRetryThroughDocDeletions = updateFailures
+              .map(id => documentByParentId[id])
+              .filter(doc => !deletionFailures.includes(doc._id));
             return deleteDocs(docsToDelete.concat(updatesToRetryThroughDocDeletions), deletionAttemptCounts, updateAttemptCounts, finalUpdateStatuses);
           });
       }

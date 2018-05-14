@@ -129,11 +129,12 @@ describe('Bulk Docs Service', function () {
 
       const allDocs = sinon.stub(db.medic, 'allDocs');
       allDocs.onCall(0).resolves({ rows: [{ doc: docA }, { doc: docB }] });
-      allDocs.onCall(1).resolves({ rows: [{ doc: docC }] });
+      allDocs.onCall(1).resolves({ rows: [{ doc: docA }] });
+      allDocs.onCall(2).resolves({ rows: [{ doc: docC }] });
 
       const bulkDocs = sinon.stub(db.medic, 'bulkDocs');
-      bulkDocs.onCall(0).resolves([{ id: docA._id, ok: true }, { id: docB._id, ok: true }, { id: parent._id, error: true }]);
-      bulkDocs.onCall(1).resolves([{ id: parent._id, error: true }]);
+      bulkDocs.onCall(0).resolves([{ id: docA._id, error: true }, { id: docB._id, ok: true }, { id: parent._id, error: true }]);
+      bulkDocs.onCall(1).resolves([{ id: docA._id, ok: true }, { id: parent._id, error: true }]);
       bulkDocs.onCall(2).resolves([{ id: parent._id, error: true }]);
       bulkDocs.onCall(3).resolves([{ id: parent._id, error: true }]);
       bulkDocs.onCall(4).resolves([{ id: docC._id, ok: true }]);
@@ -146,16 +147,16 @@ describe('Bulk Docs Service', function () {
 
       return service.bulkDelete(testDocs, testRes, { batchSize: 2 })
         .then(() => {
-          allDocs.callCount.should.equal(2);
+          allDocs.callCount.should.equal(3);
           bulkDocs.callCount.should.equal(5);
           bulkDocs.getCall(0).args[0].should.deep.equal([expectedA, expectedB, expectedParent]);
-          bulkDocs.getCall(1).args[0].should.deep.equal([expectedParent]);
+          bulkDocs.getCall(1).args[0].should.deep.equal([expectedA, expectedParent]);
           bulkDocs.getCall(2).args[0].should.deep.equal([expectedParent]);
           bulkDocs.getCall(3).args[0].should.deep.equal([expectedParent]);
           bulkDocs.getCall(4).args[0].should.deep.equal([expectedC]);
           testRes.write.callCount.should.equal(4);
           testRes.write.getCall(0).args[0].should.equal('[');
-          testRes.write.getCall(1).args[0].should.equal('[{"id":"a","ok":true},{"id":"b","ok":true},{"id":"parent","error":true}],');
+          testRes.write.getCall(1).args[0].should.equal('[{"id":"b","ok":true},{"id":"a","ok":true},{"id":"parent","error":true}],');
           testRes.write.getCall(2).args[0].should.equal('[{"id":"c","ok":true}]');
           testRes.write.getCall(3).args[0].should.equal(']');
           testRes.end.callCount.should.equal(1);
