@@ -201,13 +201,12 @@ describe('DDoc extraction', () => {
     });
   });
 
-  it('adds app_settings to medic-client ddoc', () => {
+  it('extracts old app_settings to settings doc', () => {
     const get = sinon.stub(db.medic, 'get');
     const getAttachment = sinon.stub(db.medic, 'getAttachment');
 
     const attachment = { docs: [
-      { _id: '_design/medic-client', views: { doc_by_valid: { map: 'function() { return true; }' } } },
-      { _id: '_design/something-else', views: { doc_by_valid: { map: 'function() { return true; }' } } },
+      { _id: '_design/medic-client', views: { doc_by_valid: { map: 'function() { return true; }' } } }
     ] };
     const ddoc = {
       _id: '_design/medic',
@@ -232,7 +231,6 @@ describe('DDoc extraction', () => {
     const getDdoc = get.withArgs('_design/medic').resolves(ddoc);
     const getDdocAttachment = getAttachment.withArgs('_design/medic', 'ddocs/compiled.json').resolves(Buffer.from(JSON.stringify(attachment)));
     const getClient = get.withArgs('_design/medic-client').resolves(existingClient);
-    const getOther = get.withArgs('_design/something-else').rejects({ status: 404 });
     const getAppcache = get.withArgs('appcache').resolves({ digest: 'md5-JRYByZdYixaFg3a4L6X0pw==' });
     const bulk = sinon.stub(db.medic, 'bulkDocs').resolves();
 
@@ -240,15 +238,12 @@ describe('DDoc extraction', () => {
       getDdoc.callCount.should.equal(1);
       getDdocAttachment.callCount.should.equal(1);
       getClient.callCount.should.equal(1);
-      getOther.callCount.should.equal(1);
       getAppcache.callCount.should.equal(1);
       bulk.callCount.should.equal(1);
       const docs = bulk.args[0][0].docs;
       docs[0]._id.should.equal('_design/medic-client');
       docs[0]._rev.should.equal('2');
       docs[0].app_settings.setup_complete.should.equal(true);
-      docs[1]._id.should.equal('_design/something-else');
-      chai.expect(docs[1].app_settings).to.equal(undefined);
     });
   });
 
