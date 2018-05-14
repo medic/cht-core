@@ -65,14 +65,14 @@ const getFailuresToRetry = (updateStatuses, docsToDelete, docsToUpdate, deletion
 const deleteDocs = (docsToDelete, deletionAttemptCounts = {}, updateAttemptCounts = {}, finalUpdateStatuses = []) => {
   let docsToUpdate;
   let docsToModify;
-  let parentMap;
+  let documentByParentId;
 
   docsToDelete.forEach(doc => doc._deleted = true);
   incrementAttemptCounts(docsToDelete, deletionAttemptCounts);
 
   return utils.updateParentContacts(docsToDelete)
     .then(updatedParents => {
-      parentMap = updatedParents.parentMap;
+      documentByParentId = updatedParents.documentByParentId;
 
       const deletionIds = docsToDelete.map(doc => doc._id);
       // Don't update any parents that are already marked for deletion
@@ -97,7 +97,7 @@ const deleteDocs = (docsToDelete, deletionAttemptCounts = {}, updateAttemptCount
         return fetchDocs(deletionFailures)
           .then(docsToDelete => {
             // Retry updates by resending through the child doc (ensuring the update is still necessary in case of conflict)
-            const updatesToRetryThroughDocDeletions = updateFailures.map(id => parentMap[id]);
+            const updatesToRetryThroughDocDeletions = updateFailures.map(id => documentByParentId[id]);
             return deleteDocs(docsToDelete.concat(updatesToRetryThroughDocDeletions), deletionAttemptCounts, updateAttemptCounts, finalUpdateStatuses);
           });
       }
