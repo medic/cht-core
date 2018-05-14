@@ -229,12 +229,7 @@ function initDb(content) {
       });
     })
     .then(function() {
-      return new Promise(function(resolve, reject) {
-        require('../../../src/ddoc-extraction').run(function(err) {
-          if(err) { return reject(new Error('Error running ddoc-extraction: ' + err.message)); }
-          resolve();
-        });
-      });
+      return require('../../../src/ddoc-extraction').run();
     })
     .then(function() {
       switchToTestDbs();
