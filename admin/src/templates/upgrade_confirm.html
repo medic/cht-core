@@ -7,6 +7,6 @@
   on-submit="submit()"
 >
   <p translate-values="{ before: '{{model.before}}', after: '{{model.after}}' }" translate>instance.upgrade.confirm.summary</p>
-  <p ng-show="model.stageOnly" translate>instance.stage.confirm.note</p>
-  <p ng-hide="model.stageOnly" translate>instance.upgrade.confirm.warning.text</p>
+  <p ng-if="model.stageOnly" translate>instance.stage.confirm.note</p>
+  <p ng-if="!model.stageOnly" translate>instance.upgrade.confirm.warning.text</p>
 </mm-modal>

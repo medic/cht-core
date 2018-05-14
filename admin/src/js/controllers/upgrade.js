@@ -26,14 +26,11 @@ angular.module('controllers').controller('UpgradeCtrl',
 
     var getCurrentDeployment = function() {
       return DB().get(DEPLOY_DOC_ID)
-      .catch(function(err) {
+      .then(function(deployDoc) {
+        $scope.deployDoc = deployDoc;
+      }).catch(function(err) {
         if (err.status !== 404) {
           throw err;
-        }
-      })
-      .then(function(deployDoc) {
-        if (deployDoc) {
-          $scope.deployDoc = deployDoc;
         }
       });
     };

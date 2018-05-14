@@ -29,6 +29,6 @@ module.exports = {
         return service.complete()
           .then(() => res.json({ ok: true }));
       })
-    .catch(err => serverUtils.error(err, req, res));
+      .catch(err => serverUtils.error(err, req, res));
   }
 };

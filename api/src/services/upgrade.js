@@ -18,6 +18,7 @@ module.exports = {
         if (!upgradeDoc.staging_complete) {
           throw {
             code: 404,
+            message: 'Cannot find a staged upgrade that is ready for completion'
           };
         }
 
