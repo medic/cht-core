@@ -43,6 +43,7 @@ describe('Changes controller', () => {
     sinon.stub(authorization, 'getDepth').returns(1);
     sinon.stub(authorization, 'getSubjectIds').resolves({});
     sinon.stub(authorization, 'getValidatedDocIds').resolves({});
+    sinon.stub(authorization, 'isAuthChange').returns(false);
     sinon.stub(controller._, 'now').callsFake(Date.now); // force underscore's debounce to use fake timers!
 
     ChangesEmitter = function(opts) {
@@ -464,7 +465,7 @@ describe('Changes controller', () => {
         });
     });
 
-    it('when no normal results are received for a non-longpoll, send empty results', () => {
+    it('when no normal results are received for a non-longpoll, and the results were not canceled, retry', () => {
       config.get.withArgs('changes_doc_ids_optimization_threshold').returns(10);
       const validatedIds = Array.from({length: 40}, () => Math.floor(Math.random() * 40));
       authorization.getValidatedDocIds.resolves(validatedIds);
@@ -481,10 +482,10 @@ describe('Changes controller', () => {
         })
         .then(nextTick)
         .then(() => {
-          testRes.write.callCount.should.equal(1);
-          testRes.write.args[0][0].should.equal(JSON.stringify({ results: [], last_seq: 0 }));
-          testRes.end.callCount.should.equal(1);
-          controller._getNormalFeeds().length.should.equal(0);
+          const feeds = controller._getNormalFeeds();
+          feeds.length.should.equal(1);
+          const feed = feeds[0];
+          feed.upstreamRequests.length.should.equal(4);
           controller._getLongpollFeeds().length.should.equal(0);
         });
     });
@@ -498,7 +499,7 @@ describe('Changes controller', () => {
         .then(nextTick)
         .then(() => {
           const feed = controller._getNormalFeeds()[0];
-          feed.upstreamRequests.forEach(upstreamRequest => upstreamRequest.complete(null, { results: [], last_seq: 1 }));
+          feed.upstreamRequests.forEach(upstreamReq => upstreamReq.complete(null, { results: [], last_seq: 1 }));
         })
         .then(nextTick)
         .then(() => {
@@ -526,6 +527,54 @@ describe('Changes controller', () => {
           changesCancelSpy.callCount.should.equal(3);
           testRes.end.callCount.should.equal(1);
           testRes.write.callCount.should.equal(1);
+        });
+    });
+
+    it('resets the feed completely if a breaking authorization change is received', () => {
+      authorization.getValidatedDocIds.resolves([1, 2, 3, 4, 5, 6]);
+      authorization.getValidatedDocIds.onCall(1).resolves([42]);
+      auth.hydrate.onCall(1).resolves({ name: 'user', facility_id: 'facility_id' });
+
+      testReq.uniqId = 'myFeed';
+      const userChange = {
+        id: 'org.couchdb.user:' + userCtx.name,
+        doc: {
+          _id: 'org.couchdb.user:' + userCtx.name,
+          contact_id: 'otherperson'
+        },
+        changes: [{ rev: 1 }]
+      };
+      authorization.allowedChange
+        .withArgs(sinon.match.any, sinon.match({ change: { id: userChange.id }}))
+        .returns(true);
+      authorization.isAuthChange
+        .withArgs(sinon.match.any, sinon.match({ change: { id: userChange.id }}))
+        .returns(true);
+
+      let initialFeed;
+
+      return controller
+        .request(proxy, testReq, testRes)
+        .then(nextTick)
+        .then(() => {
+          const emitter = controller._getContinuousFeed();
+          emitter.emit('change', userChange, 0, 20);
+          initialFeed = controller._getNormalFeeds()[0];
+          initialFeed.upstreamRequests.forEach(upstreamReq => upstreamReq.complete(null, { results: [], last_seq: 1 }));
+        })
+        .then(nextTick)
+        .then(() => {
+          const feeds = controller._getNormalFeeds();
+          feeds.length.should.equal(1);
+          controller._getLongpollFeeds().length.should.equal(0);
+          feeds[0].should.not.deep.equal(initialFeed);
+          feeds[0].id.should.equal('myFeed');
+          auth.hydrate.callCount.should.equal(2);
+          authorization.getSubjectIds.callCount.should.equal(2);
+          authorization.getSubjectIds.args[1][0].should.deep.equal({ name: 'user', facility_id: 'facility_id' });
+          authorization.getValidatedDocIds.callCount.should.equal(2);
+          feeds[0].userCtx.should.deep.equal({ name: 'user', facility_id: 'facility_id' });
+          initialFeed.ended.should.equal(true);
         });
     });
   });
@@ -715,10 +764,7 @@ describe('Changes controller', () => {
           normalFeeds.length.should.equal(3);
           normalFeeds.forEach(feed => {
             feed.upstreamRequests.length.should.equal(1);
-            feed.upstreamRequests.forEach(upstreamRequest => upstreamRequest.complete(null, {
-              results: [],
-              last_seq: 2
-            }));
+            feed.upstreamRequests.forEach(upstreamReq => upstreamReq.complete(null, { results: [], last_seq: 2 }));
           });
           controller._getLongpollFeeds().length.should.equal(0);
         })
@@ -759,6 +805,58 @@ describe('Changes controller', () => {
 
           // feed 'three' is still waiting
           controller._getLongpollFeeds().length.should.equal(1);
+        });
+    });
+
+    it('resets the feed when a breaking authorization change is received', () => {
+      testReq.query = { feed: 'longpoll' };
+      testReq.uniqId = 'myFeed';
+      authorization.getValidatedDocIds.resolves([1, 2, 3]);
+      authorization.getValidatedDocIds.onCall(1).resolves([ 'a', 'b', 'c' ]);
+      const authChange = { id: 'org.couchdb.user:name', doc: { _id: 'org.couchdb.user:name' } };
+      authorization.allowedChange
+        .withArgs(sinon.match.any, sinon.match({ change: { id: 'random' }}))
+        .returns(true);
+      authorization.allowedChange
+        .withArgs(sinon.match.any, sinon.match({ change: { id: 'org.couchdb.user:name' }}))
+        .returns(true);
+      authorization.isAuthChange
+        .withArgs(sinon.match.any, sinon.match({ change: { id: 'org.couchdb.user:name' }}))
+        .returns(true);
+
+      let initialFeed;
+
+      return controller
+        .request(proxy, testReq, testRes)
+        .then(nextTick)
+        .then(() => {
+          initialFeed = controller._getNormalFeeds()[0];
+          initialFeed.upstreamRequests.forEach(upstreamReq => upstreamReq.complete(null, { results: [], last_seq: 2 }));
+        })
+        .then(nextTick)
+        .then(() => {
+          console.log(controller._getNormalFeeds());
+          controller._getLongpollFeeds().length.should.equal(1);
+          const emitter = controller._getContinuousFeed();
+          emitter.emit('change', { id: 'random' }, 0, 2);
+          emitter.emit('change', authChange, 0, 3);
+        })
+        .then(nextTick)
+        .then(() => {
+          initialFeed.ended.should.equal(true);
+          testRes.write.callCount.should.equal(0);
+          testRes.end.callCount.should.equal(0);
+          clock.tick(300);
+          testRes.write.callCount.should.equal(0);
+          testRes.end.callCount.should.equal(0);
+          controller._getLongpollFeeds().length.should.equal(0);
+          const normalFeeds = controller._getNormalFeeds();
+          normalFeeds.length.should.equal(1);
+          const feed = normalFeeds[0];
+          feed.id.should.equal('myFeed');
+          feed.validatedIds.should.deep.equal([ 'a', 'b', 'c' ]);
+          auth.hydrate.callCount.should.equal(2);
+          authorization.getValidatedDocIds.callCount.should.equal(2);
         });
     });
   });
@@ -862,13 +960,40 @@ describe('Changes controller', () => {
       authorization.allowedChange.withArgs(sinon.match.any, sinon.match({ change: { id: 4 } })).returns(false);
       authorization.allowedChange.withArgs(sinon.match.any, sinon.match({ change: { id: 5 } })).returns(true);
 
-      controller._processPendingChanges({ pendingChanges: changes }, results);
+      controller._processPendingChanges({ pendingChanges: changes, userCtx: userCtx }, results).should.equal(true);
       results.length.should.equal(3);
       results.should.deep.equal([
         { id: 1, changes: [{ rev: 1 }] },
         { id: 2, changes: [{ rev: 1 }, { rev: 2 }] },
         { id: 5, changes: [{ rev: 1 }] }
       ]);
+    });
+
+    it('returns false when user doc change is found', () => {
+      authorization.allowedChange.withArgs(sinon.match.any, sinon.match({ change: { id: 1 } })).returns(true);
+      authorization.allowedChange.withArgs(sinon.match.any, sinon.match({ change: { id: 2 } })).returns(true);
+      authorization.allowedChange.withArgs(sinon.match.any, sinon.match({ change: { id: 3 } })).returns(false);
+      authorization.allowedChange
+        .withArgs(sinon.match.any, sinon.match({ change: { id: 'org.couchdb.user:' + userCtx.name } }))
+        .returns(true);
+      authorization.allowedChange.withArgs(sinon.match.any, sinon.match({ change: { id: 5 } })).returns(true);
+      authorization.isAuthChange
+        .withArgs(sinon.match.any, sinon.match({ change: { id: 'org.couchdb.user:' + userCtx.name }}))
+        .returns(true);
+
+      const results = [
+        { id: 1, changes: [{ rev: 1 }] },
+        { id: 2, changes: [{ rev: 1 }] }
+      ];
+      const changes = [
+        { change: { id: 1, changes: [{ rev: 1 }] } },
+        { change: { id: 2, changes: [{ rev: 2 }] } },
+        { change: { id: 3, changes: [{ rev: 2 }] } },
+        { change: { id: 'org.couchdb.user:' + userCtx.name, changes: [{ rev: 1 }], doc: { contact_id: '0123456' } } },
+        { change: { id: 5, changes: [{ rev: 1 }] } },
+      ];
+
+      controller._processPendingChanges({ pendingChanges: changes }, results).should.equal(false);
     });
   });
 

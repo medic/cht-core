@@ -60,6 +60,10 @@ const allowedDoc = (doc, userInfo, viewResults) => {
   const { userCtx, subjectIds, depth } = userInfo;
   const { replicationKey, contactsByDepth } = viewResults;
 
+  if (['_design/medic-client', 'org.couchdb.user:' + userCtx.name].indexOf(doc._id) !== -1) {
+    return true;
+  }
+
   if (!replicationKey) {
     return false;
   }
@@ -192,8 +196,22 @@ const allowedChange = (feed, changeObj) => {
   return allowedDoc(changeObj.change.doc, userOpts, changeObj.viewResults);
 };
 
+const isAuthChange = (feed, changeObj) => {
+  if (changeObj.change.id !== 'org.couchdb.user:' + feed.userCtx.name) {
+    return false;
+  }
+
+  if (feed.userCtx.contact_id !== changeObj.change.doc.contact_id ||
+      feed.userCtx.facility_id !== changeObj.change.doc.facility_id) {
+    return true;
+  }
+
+  return false;
+};
+
 module.exports = {
   allowedChange: allowedChange,
+  isAuthChange: isAuthChange,
   allowedDoc: allowedDoc,
   getDepth: getDepth,
   getViewResults: getViewResults,

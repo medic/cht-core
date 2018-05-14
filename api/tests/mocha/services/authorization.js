@@ -220,11 +220,18 @@ describe('Authorization service', () => {
 
     describe('allowedDoc', () => {
       it('returns false when document does not generate a replication key', () => {
-        service.allowedDoc({}, {}, { replicationKey: null, contactsByDepth: null }).should.equal(false);
+        service.allowedDoc({}, { userCtx }, { replicationKey: null, contactsByDepth: null }).should.equal(false);
       });
 
       it('returns true for `allowed for all` docs', () => {
-        service.allowedDoc({}, {}, { replicationKey: ['_all', {}], contactsByDepth: null }).should.equal(true);
+        service.allowedDoc({}, { userCtx }, { replicationKey: ['_all', {}], contactsByDepth: null }).should.equal(true);
+      });
+
+      it('returns true when it is main ddoc or user contact', () => {
+        const ddoc = { _id: '_design/medic-client' };
+        service.allowedDoc(ddoc, { userCtx }, { replicationKey: ['_all', {}], contactsByDepth: null }).should.equal(true);
+        const user = { _id: 'org.couchdb.user:' + userCtx.name };
+        service.allowedDoc(user, { userCtx }, { replicationKey: ['_all', {}], contactsByDepth: null }).should.equal(true);
       });
 
       describe('allowedContact', () => {
@@ -451,6 +458,67 @@ describe('Authorization service', () => {
 
         changeObj.viewResults.replicationKey[0] = 'subject2';
         service.allowedChange(feed, changeObj).should.equal(false);
+      });
+    });
+
+    describe('isAuthChange', () => {
+      it('returns correct response', () => {
+        const feed = {
+          userCtx: { name: 'user', facility_id: 'facility_id', contact_id: 'contact_id' },
+          subjectIds: [ 'contact_id', 'facility_id', 'subject', 'submitter' ],
+          depth: -1
+        };
+
+        let changeObj = {
+          change: {
+            id: 'org.couchdb.user:user',
+            rev: 'rev',
+            doc: {
+              _id: 'org.couchdb.user:user',
+              _rev: 'rev',
+              facility_id: 'new_facility_id',
+              contact_id: 'contact_id'
+            }
+          },
+          viewResults: { replicationKey:  null, contactsByDepth: [] }
+        };
+        service.isAuthChange(feed, changeObj).should.equal(true);
+
+        changeObj = {
+          change: {
+            id: 'org.couchdb.user:user',
+            rev: 'rev',
+            doc: {
+              _id: 'org.couchdb.user:user',
+              _rev: 'rev',
+              facility_id: 'facility_id',
+              contact_id: 'new_contact_id'
+            }
+          },
+          viewResults: { replicationKey:  null, contactsByDepth: [] }
+        };
+        service.isAuthChange(feed, changeObj).should.equal(true);
+
+        changeObj = {
+          change: {
+            id: 'org.couchdb.user:user',
+            rev: 'rev',
+            doc: {
+              _id: 'org.couchdb.user:user',
+              _rev: 'rev',
+              facility_id: 'facility_id',
+              contact_id: 'contact_id'
+            }
+          },
+          viewResults: { replicationKey:  null, contactsByDepth: [] }
+        };
+        service.isAuthChange(feed, changeObj).should.equal(false);
+
+        changeObj = {
+          change: { id: 'someid', doc: { _id: 'someid'} },
+          viewResults: { replicationKey:  null, contactsByDepth: [] }
+        };
+        service.isAuthChange(feed, changeObj).should.equal(false);
       });
     });
   });

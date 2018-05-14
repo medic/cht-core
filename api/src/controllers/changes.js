@@ -70,11 +70,18 @@ const prepareResponse = feed => ({
   last_seq: feed.lastSeq
 });
 
-const endFeed = feed => {
+const endFeed = (feed, verbose = true) => {
+  if (feed.ended) {
+    return;
+  }
+
+  feed.ended = true;
   cleanUp(feed);
-  writeDownstream(feed, JSON.stringify(prepareResponse(feed)), true);
-  longpollFeeds = _.reject(longpollFeeds, feed);
-  normalFeeds = _.reject(normalFeeds, feed);
+  longpollFeeds = _.without(longpollFeeds, feed);
+  normalFeeds = _.without(normalFeeds, feed);
+  if (verbose) {
+    writeDownstream(feed, JSON.stringify(prepareResponse(feed)), true);
+  }
 };
 
 // any doc ID should only appear once in the changes feed, with a list of changed revs attached to it
@@ -91,14 +98,27 @@ const appendChange = (results, changeObj) => {
 
 // filters the list of pending changes
 const processPendingChanges = (feed, results) => {
+  let error = false;
   feed.pendingChanges
     .filter(changeObj => authorization.allowedChange(feed, changeObj))
-    .forEach(changeObj => appendChange(results, changeObj));
+    .forEach(changeObj => {
+      if (authorization.isAuthChange(feed, changeObj)) {
+        error = true;
+        return;
+      }
+      return appendChange(results, changeObj);
+    });
+
+  return !error;
 };
 
 // checks that all changes requests responses are correct
 const validResults = responses => {
   return responses.every(response => response && response.results);
+};
+
+const canceledResults = responses => {
+  return responses.find(response => response && response.status === 'cancelled');
 };
 
 const mergeResults = responses => {
@@ -134,15 +154,22 @@ const getChanges = feed => {
   return Promise
     .all(feed.upstreamRequests)
     .then(responses => {
-      // if any of the responses was incomplete, send empty response
+      // if any of the responses was incomplete, retry
       if (!validResults(responses)) {
-        feed.results = [];
         feed.lastSeq = feed.initSeq;
-        return endFeed(feed);
+        feed.results = [];
+
+        if (canceledResults(responses)) {
+          return endFeed(feed);
+        }
+        return Promise.resolve(getChanges(feed));
       }
 
       let results = mergeResults(responses);
-      processPendingChanges(feed, results);
+      if (!processPendingChanges(feed, results)) {
+        endFeed(feed, false);
+        return Promise.resolve(run(feed.req, feed.res, feed.userCtx));
+      }
 
       if (results.length || !isLongpoll(feed.req)) {
         feed.results = results;
@@ -158,7 +185,7 @@ const getChanges = feed => {
       console.log(err);
       // cancel ongoing requests
       feed.upstreamRequests.forEach(request => request.cancel());
-      getChanges(feed);
+      return Promise.resolve(getChanges(feed));
     });
 };
 
@@ -242,6 +269,12 @@ const processChange = (change, seq) => {
       return;
     }
 
+    if (authorization.isAuthChange(feed, changeObj)) {
+      endFeed(feed, false);
+      run(feed.req, feed.res, feed.userCtx);
+      return;
+    }
+
     addChangeToLongpollFeed(feed, changeObj);
   });
 };
@@ -281,6 +314,14 @@ const init = () => {
   inited = true;
 };
 
+const run = (req, res, userCtx) => {
+  return auth
+    .hydrate(userCtx)
+    .then(userCtx => {
+      initFeed(req, res, userCtx).then(getChanges);
+    });
+};
+
 const request = (proxy, req, res) => {
   init();
 
@@ -296,13 +337,8 @@ const request = (proxy, req, res) => {
       if (auth.isAdmin(userCtx)) {
         return proxy.web(req, res);
       }
-
-      return auth
-        .hydrate(userCtx)
-        .then(userCtx => {
-          res.type('json');
-          initFeed(req, res, userCtx).then(getChanges);
-        });
+      res.type('json');
+      return run(req, res, userCtx);
     })
     .catch(() => serverUtils.notLoggedIn(req, res));
 };
