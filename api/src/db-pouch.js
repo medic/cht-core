@@ -16,6 +16,8 @@ if(UNIT_TEST_ENV) {
     put: stubMe('put'),
     post: stubMe('post'),
     query: stubMe('query'),
+    get: stubMe('get'),
+    getAttachment: stubMe('getAttachment'),
   };
 } else if(COUCH_URL) {
   // strip trailing slash from to prevent bugs in path matching
