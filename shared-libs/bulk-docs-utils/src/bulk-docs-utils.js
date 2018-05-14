@@ -5,27 +5,39 @@ module.exports = function(dependencies) {
 
   function getParent(doc) {
     if (doc.type === 'person' && doc.parent && doc.parent._id) {
-      return DB.get(doc.parent._id);
+      return DB.get(doc.parent._id)
+        .catch(function(err) {
+          if (err.status === 404) {
+            return;
+          }
+          throw err;
+        });
     }
     return Promise.resolve();
   }
 
   return {
     updateParentContacts: function(docs) {
+      var documentByParentId = {};
       return Promise.all(docs.map(function(doc) {
         return getParent(doc)
           .then(function(parent) {
             var shouldUpdateParentContact = parent && parent.contact && parent.contact._id && parent.contact._id === doc._id;
             if (shouldUpdateParentContact) {
               parent.contact = null;
+              documentByParentId[parent._id] = doc;
               return parent;
             }
           });
         }))
         .then(function(parents) {
-          return parents.filter(function(parent) {
+          var docs = parents.filter(function(parent) {
             return parent;
           });
+          return {
+            docs: docs,
+            documentByParentId: documentByParentId
+          };
         });
     },
 
