@@ -24,18 +24,11 @@ function assertChangeIds(changes) {
   expect(_.pluck(changes, 'id').sort()).toEqual(expectedIds.sort());
 }
 
-function requestChanges(username, ids, last_seq=0) {
+function requestChanges(username, last_seq=0, feed='normal') {
   const options = {
-    path: `/_changes?since=${last_seq}`,
+    path: `/_changes?since=${last_seq}&feed=${feed}`,
     auth: `${username}:${password}`
   };
-
-  if (ids) {
-    options.path += '&filter=_doc_ids';
-    options.body = {
-      doc_ids: JSON.stringify(ids)
-    };
-  }
 
   return utils.requestOnTestDb(options);
 }
@@ -283,7 +276,7 @@ describe('changes handler', () => {
 
         return utils.saveDoc(doc);
       })
-      .then(() => requestChanges('chw', null, seq_number))
+      .then(() => requestChanges('chw', seq_number))
       .then(changes => assertChangeIds(changes, 'visible'));
   });
 });

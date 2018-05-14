@@ -168,6 +168,9 @@ const deleteAll = (except = []) => {
     .then(({rows}) => rows
       .filter(({doc}) => !ignoreFns.find(fn => fn(doc)))
       .map(({doc}) => {
+        if (['data_record', 'person', 'clinic', 'district_hospital', 'health_center'].indexOf(doc.type) !== -1) {
+          doc.type = doc.type + '_no_tombstone';
+        }
         doc._deleted = true;
         return doc;
       }))
