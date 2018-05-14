@@ -13,6 +13,7 @@ describe('DDoc extraction', () => {
 
   it('finds all attached ddocs and, if required, updates them', () => {
     const get = sinon.stub(db.medic, 'get');
+    const getAttachment = sinon.stub(db.medic, 'getAttachment');
 
     const attachment = { docs: [
       { _id: '_design/new', views: { doc_by_place: { map: 'function() { return true; }' } } },
@@ -34,7 +35,9 @@ describe('DDoc extraction', () => {
     };
 
     const getDdoc = get.withArgs('_design/medic').resolves(ddoc);
-    const getAttachment = get.withArgs('_design/medic/ddocs/compiled.json').resolves(attachment);
+    const getDdocAttachment = getAttachment
+      .withArgs('_design/medic', 'ddocs/compiled.json')
+      .resolves(Buffer.from(JSON.stringify(attachment)));
     const getNew = get.withArgs('_design/new').rejects({ status: 404 });
     const getUpdated = get.withArgs('_design/updated').resolves({ _id: '_design/updated', _rev: '1', views: { doc_by_valed: { map: 'function() { return true; }' } } });
     const getUnchanged = get.withArgs('_design/unchanged').resolves({ _id: '_design/unchanged', _rev: '1', views: { doc_by_valid: { map: 'function() { return true; }' } } });
@@ -43,7 +46,7 @@ describe('DDoc extraction', () => {
 
     return ddocExtraction.run().then(() => {
       getDdoc.callCount.should.equal(1);
-      getAttachment.callCount.should.equal(1);
+      getDdocAttachment.callCount.should.equal(1);
       getNew.callCount.should.equal(1);
       getUpdated.callCount.should.equal(1);
       getUnchanged.callCount.should.equal(1);
@@ -60,6 +63,7 @@ describe('DDoc extraction', () => {
 
   it('checks attachment data', () => {
     const get = sinon.stub(db.medic, 'get');
+    const getAttachment = sinon.stub(db.medic, 'getAttachment');
 
     const unchangedData1 = 'some data';
     const unchangedData2 = 'some more data';
@@ -109,7 +113,9 @@ describe('DDoc extraction', () => {
     };
 
     const getDdoc = get.withArgs('_design/medic').resolves(ddoc);
-    const getAttachment = get.withArgs('_design/medic/ddocs/compiled.json').resolves(attachment);
+    const getDdocAttachment = getAttachment
+      .withArgs('_design/medic', 'ddocs/compiled.json')
+      .resolves(Buffer.from(JSON.stringify(attachment)));
     const getUpdated = get.withArgs('_design/updated').resolves({
       _id: '_design/updated',
       _rev: '1',
@@ -155,7 +161,7 @@ describe('DDoc extraction', () => {
 
     return ddocExtraction.run().then(() => {
       getDdoc.callCount.should.equal(1);
-      getAttachment.callCount.should.equal(1);
+      getDdocAttachment.callCount.should.equal(1);
       getUpdated.callCount.should.equal(1);
       getUnchanged.callCount.should.equal(1);
       getAppcache.callCount.should.equal(1);
@@ -182,18 +188,22 @@ describe('DDoc extraction', () => {
       app_settings: { setup_complete: true }
     };
     const get = sinon.stub(db.medic, 'get');
+    const getAttachment = sinon.stub(db.medic, 'getAttachment');
     const getDdoc = get.withArgs('_design/medic').resolves(ddoc);
-    const getAttachment = get.withArgs('_design/medic/ddocs/compiled.json').rejects({ status: 404 });
+    const getDdocAttachment = getAttachment
+      .withArgs('_design/medic', 'ddocs/compiled.json')
+      .rejects({ status: 404 });
     const getAppcache = get.withArgs('appcache').resolves({ digest: 'md5-JRYByZdYixaFg3a4L6X0pw==' });
     return ddocExtraction.run().then(() => {
       getDdoc.callCount.should.equal(1);
-      getAttachment.callCount.should.equal(1);
+      getDdocAttachment.callCount.should.equal(1);
       getAppcache.callCount.should.equal(1);
     });
   });
 
   it('adds app_settings to medic-client ddoc', () => {
     const get = sinon.stub(db.medic, 'get');
+    const getAttachment = sinon.stub(db.medic, 'getAttachment');
 
     const attachment = { docs: [
       { _id: '_design/medic-client', views: { doc_by_valid: { map: 'function() { return true; }' } } },
@@ -220,7 +230,7 @@ describe('DDoc extraction', () => {
     };
 
     const getDdoc = get.withArgs('_design/medic').resolves(ddoc);
-    const getAttachment = get.withArgs('_design/medic/ddocs/compiled.json').resolves(attachment);
+    const getDdocAttachment = getAttachment.withArgs('_design/medic', 'ddocs/compiled.json').resolves(Buffer.from(JSON.stringify(attachment)));
     const getClient = get.withArgs('_design/medic-client').resolves(existingClient);
     const getOther = get.withArgs('_design/something-else').rejects({ status: 404 });
     const getAppcache = get.withArgs('appcache').resolves({ digest: 'md5-JRYByZdYixaFg3a4L6X0pw==' });
@@ -228,7 +238,7 @@ describe('DDoc extraction', () => {
 
     return ddocExtraction.run().then(() => {
       getDdoc.callCount.should.equal(1);
-      getAttachment.callCount.should.equal(1);
+      getDdocAttachment.callCount.should.equal(1);
       getClient.callCount.should.equal(1);
       getOther.callCount.should.equal(1);
       getAppcache.callCount.should.equal(1);
@@ -244,8 +254,9 @@ describe('DDoc extraction', () => {
 
   it('updates appcache doc when not found', () => {
     const get = sinon.stub(db.medic, 'get');
+    const getAttachment = sinon.stub(db.medic, 'getAttachment');
 
-    const ddocAttachment = { docs: [
+    const attachment = { docs: [
       { _id: '_design/medic-client', views: { doc_by_valid: { map: 'function() { return true; }' } } }
     ] };
     const ddoc = {
@@ -269,7 +280,9 @@ describe('DDoc extraction', () => {
     };
 
     const getDdoc = get.withArgs('_design/medic').resolves(ddoc);
-    const getDdocAttachment = get.withArgs('_design/medic/ddocs/compiled.json').resolves(ddocAttachment);
+    const getDdocAttachment = getAttachment
+      .withArgs('_design/medic', 'ddocs/compiled.json')
+      .resolves(Buffer.from(JSON.stringify(attachment)));
     const getAppcache = get.withArgs('appcache').rejects({ status: 404 });
     const getClient = get.withArgs('_design/medic-client').resolves(existingClient);
     const bulk = sinon.stub(db.medic, 'bulkDocs').resolves();
@@ -292,8 +305,9 @@ describe('DDoc extraction', () => {
 
   it('updates appcache doc when out of date', () => {
     const get = sinon.stub(db.medic, 'get');
+    const getAttachment = sinon.stub(db.medic, 'getAttachment');
 
-    const ddocAttachment = { docs: [
+    const attachment = { docs: [
       { _id: '_design/medic-client', views: { doc_by_valid: { map: 'function() { return true; }' } } }
     ] };
     const ddoc = {
@@ -322,7 +336,9 @@ describe('DDoc extraction', () => {
     };
 
     const getDdoc = get.withArgs('_design/medic').resolves(ddoc);
-    const getDdocAttachment = get.withArgs('_design/medic/ddocs/compiled.json').resolves(ddocAttachment);
+    const getDdocAttachment = getAttachment
+      .withArgs('_design/medic', 'ddocs/compiled.json')
+      .resolves(Buffer.from(JSON.stringify(attachment)));
     const getAppcache = get.withArgs('appcache').resolves(appcache);
     const getClient = get.withArgs('_design/medic-client').resolves(existingClient);
     const bulk = sinon.stub(db.medic, 'bulkDocs').resolves();

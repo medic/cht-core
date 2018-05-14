@@ -1,14 +1,14 @@
 const _ = require('underscore'),
       db = require('./db-pouch'),
-      DDOC_ATTACHMENT_ID = '_design/medic/ddocs/compiled.json',
+      DDOC_ATTACHMENT_ID = 'ddocs/compiled.json',
       APPCACHE_ATTACHMENT_NAME = 'manifest.appcache',
       APPCACHE_DOC_ID = 'appcache',
       SERVER_DDOC_ID = '_design/medic',
       CLIENT_DDOC_ID = '_design/medic-client';
 
 const getCompiledDdocs = () => {
-  return db.medic.get(DDOC_ATTACHMENT_ID)
-    .then(ddocs => ddocs.docs)
+  return db.medic.getAttachment(SERVER_DDOC_ID, DDOC_ATTACHMENT_ID)
+    .then(result => JSON.parse(result.toString()).docs)
     .catch(err => {
       if (err.status === 404) {
         return [];
