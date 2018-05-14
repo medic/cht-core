@@ -81,6 +81,10 @@ const couchDbVersionCheck = callback =>
 
 const asyncLog = message => async.asyncify(() => console.log(message));
 
+const _ddocExtraction = callback => ddocExtraction.run()
+  .then(() => callback())
+  .catch(callback);
+
 async.series([
   nodeVersionCheck,
   envVarsCheck,
@@ -88,7 +92,7 @@ async.series([
   couchDbVersionCheck,
 
   asyncLog('Extracting ddoc…'),
-  ddocExtraction.run,
+  _ddocExtraction,
   asyncLog('DDoc extraction completed successfully'),
 
   asyncLog('Loading configuration…'),
