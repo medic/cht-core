@@ -56,10 +56,7 @@ const include = (array, ...values) => {
   values.forEach(value => array.indexOf(value) === -1 && array.push(value));
 };
 
-const allowedDoc = (doc, userInfo, viewResults) => {
-  const { userCtx, subjectIds, depth } = userInfo;
-  const { replicationKey, contactsByDepth } = viewResults;
-
+const allowedDoc = (doc, { userCtx, subjectIds, depth }, { replicationKey, contactsByDepth }) => {
   if (['_design/medic-client', 'org.couchdb.user:' + userCtx.name].indexOf(doc._id) !== -1) {
     return true;
   }
@@ -73,8 +70,8 @@ const allowedDoc = (doc, userInfo, viewResults) => {
   }
 
   if (contactsByDepth && contactsByDepth.length) {
-    const subjectId = contactsByDepth[0][1];
     //it's a contact
+    const subjectId = contactsByDepth[0][1];
     if (allowedContact(contactsByDepth, userCtx, depth)) {
       include(subjectIds, subjectId, doc._id);
       return true;
@@ -85,10 +82,10 @@ const allowedDoc = (doc, userInfo, viewResults) => {
   }
 
   //it's a report
-  const [ subjectId, { submitter: submitterId } ] = replicationKey;
-  const allowedSubject = subjectId && subjectIds.indexOf(subjectId) !== -1;
-  const allowedSubmitter = submitterId && subjectIds.indexOf(submitterId) !== -1;
-  const sensitive = isSensitive(userCtx, subjectId, submitterId, allowedSubmitter);
+  const [ subjectId, { submitter: submitterId } ] = replicationKey,
+        allowedSubject = subjectId && subjectIds.indexOf(subjectId) !== -1,
+        allowedSubmitter = submitterId && subjectIds.indexOf(submitterId) !== -1,
+        sensitive = isSensitive(userCtx, subjectId, submitterId, allowedSubmitter);
 
   if ((!subjectId && allowedSubmitter) || (allowedSubject && !sensitive)) {
     return true;
@@ -113,9 +110,9 @@ const getContactsByDepthKeys = (userCtx, depth) => {
 
 const allowedContact = (contactsByDepth, userCtx, depth) => {
   const generatedKeys = getContactsByDepthKeys(userCtx, depth);
-  const existentKeys = contactsByDepth.map(result => result[0]);
+  const viewResultKeys = contactsByDepth.map(result => result[0]);
 
-  return existentKeys.some(i => generatedKeys.some(j => _.isEqual(i, j)));
+  return viewResultKeys.some(viewResult => generatedKeys.some(generated => _.isEqual(viewResult, generated)));
 };
 
 const getSubjectIds = (userCtx, depth) => {

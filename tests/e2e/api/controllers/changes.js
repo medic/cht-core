@@ -141,7 +141,7 @@ const consumeChanges = (username, results, lastSeq) => {
 
   return requestChanges(username, opts).then(changes => {
     if (!changes.results.length) {
-      return results;
+      return { results: results, last_seq: changes.last_seq };
     }
     results = results.concat(changes.results);
     return consumeChanges(username, results, changes.last_seq);
@@ -263,8 +263,8 @@ describe('changes handler', () => {
         })
         .then(() => consumeChanges('bob', [], seq))
         .then(tombstoneResults => {
-          expect(tombstoneResults.filter(change => change.deleted).length).toBe(5);
-          expect(tombstoneResults.every(change => allowedDocIds.indexOf(change.id) !== -1)).toBe(true);
+          expect(tombstoneResults.results.filter(change => change.deleted).length).toBe(5);
+          expect(tombstoneResults.results.every(change => allowedDocIds.indexOf(change.id) !== -1)).toBe(true);
         });
     });
 
@@ -280,7 +280,7 @@ describe('changes handler', () => {
           utils.saveDocs(deniedDocs)
         ]))
         .then(([changes]) => {
-          expect(changes.every(change => allowedDocIds.indexOf(change.id) !== -1)).toBe(true);
+          expect(changes.results.every(change => allowedDocIds.indexOf(change.id) !== -1)).toBe(true);
         });
     });
 
@@ -353,8 +353,8 @@ describe('changes handler', () => {
           utils.saveDocs(allowedSteve),
         ]))
         .then(([ bobsChanges, stevesChanges ]) => {
-          expect(bobsChanges.every(change => _.pluck(allowedBob, '_id').indexOf(change.id) !== -1)).toBe(true);
-          expect(stevesChanges.every(change => _.pluck(allowedSteve, '_id').indexOf(change.id) !== -1)).toBe(true);
+          expect(bobsChanges.results.every(change => _.pluck(allowedBob, '_id').indexOf(change.id) !== -1)).toBe(true);
+          expect(stevesChanges.results.every(change => _.pluck(allowedSteve, '_id').indexOf(change.id) !== -1)).toBe(true);
         });
     });
 
@@ -390,8 +390,50 @@ describe('changes handler', () => {
           consumeChanges('steve', [], stevesSeq),
         ]))
         .then(([ bobsTombstones, stevesTombstones ]) => {
-          expect(bobsTombstones.every(change => _.pluck(allowedBob, '_id').indexOf(change.id) !== -1)).toBe(true);
-          expect(stevesTombstones.every(change => _.pluck(allowedSteve, '_id').indexOf(change.id) !== -1)).toBe(true);
+          expect(bobsTombstones.results.every(change => _.pluck(allowedBob, '_id').indexOf(change.id) !== -1)).toBe(true);
+          expect(stevesTombstones.results.every(change => _.pluck(allowedSteve, '_id').indexOf(change.id) !== -1)).toBe(true);
+        });
+    });
+
+    it('returns newly added docs', () => {
+      const newDocs = [
+        { _id: 'new_allowed_contact', place_id: '12345', parent: { _id: 'fixture:bobville' }, type: 'clinic' },
+        { _id: 'new_denied_contact', place_id: '88888', parent: { _id: 'fixture:steveville' }, type: 'clinic' },
+        { _id: 'new_allowed_report', type: 'data_record', reported_date: 1, place_id: '12345', form: 'some-form', contact: { _id: 'fixture:bobville' } },
+        { _id: 'new_denied_report', type: 'data_record', reported_date: 1, place_id: '88888', form: 'some-form', contact: { _id: 'fixture:steveville' } }
+      ];
+
+      return requestChanges('bob')
+        .then(changes => Promise.all([
+          consumeChanges('bob', [], changes.last_seq),
+          utils.saveDocs(newDocs)
+        ]))
+        .then(([ changes ]) => {
+          const allowedIds = ['new_allowed_contact', 'new_allowed_report'];
+          expect(changes.results.length).toBe(2);
+          expect(changes.results.every(change => allowedIds.indexOf(change.id) !== -1)).toBe(true);
+        });
+    });
+
+    it('returns correct results when user is updated while changes request is active', () => {
+      const allowedBob = createSomeContacts(3, 'fixture:bobville');
+      const allowedSteve = createSomeContacts(3, 'fixture:steveville');
+
+      return Promise
+        .all([
+          utils.getDoc('org.couchdb.user:steve'),
+          requestChanges('steve'),
+        ])
+        .then(([ stevesUser, changes ]) => {
+          return Promise.all([
+            requestChanges('steve', { feed: 'longpoll', since: changes.last_seq }),
+            utils.saveDocs(allowedBob),
+            utils.saveDocs(allowedSteve),
+            utils.saveDoc(_.extend(stevesUser, { facility_id: 'fixture:bobville' })),
+          ]);
+        })
+        .then(([ changes ]) => {
+          expect(changes.results.every(change => _.pluck(allowedBob, '_id').indexOf(change.id) !== -1 || change.id === 'org.couchdb.user:steve') ).toBe(true);
         });
     });
   });
