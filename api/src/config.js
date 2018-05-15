@@ -59,8 +59,8 @@ var getMessage = function(value, locale) {
 
 var loadSettings = function() {
   return settingsService.get()
-    .then(settings => {
-      settings = settings || {};
+    .then(newSettings => {
+      settings = newSettings || {};
       var original = JSON.stringify(settings);
       _.defaults(settings, defaults);
       // add any missing permissions

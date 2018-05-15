@@ -15,10 +15,10 @@ describe('emit-complete', function() {
 
       // then
       .then(function() {
-        return utils.getDdoc();
+        return utils.getSettings();
       })
-      .then(function(ddoc) {
-        if (ddoc.app_settings.tasks.rules) {
+      .then(function(doc) {
+        if (doc.settings.tasks.rules) {
           throw new Error('`tasks.rules` should be empty');
         }
       });
@@ -36,10 +36,10 @@ describe('emit-complete', function() {
 
       // then
       .then(function() {
-        return utils.getDdoc();
+        return utils.getSettings();
       })
-      .then(function(ddoc) {
-        if (ddoc.app_settings.tasks.rules !== rules) {
+      .then(function(doc) {
+        if (doc.settings.tasks.rules !== rules) {
           throw new Error('`tasks.rules` should not be changed');
         }
       });
@@ -58,11 +58,11 @@ describe('emit-complete', function() {
 
       // then
       .then(function() {
-        return utils.getDdoc();
+        return utils.getSettings();
       })
-      .then(function(ddoc) {
-        if (ddoc.app_settings.tasks.rules !== expected) {
-          throw new Error('`tasks.rules` should have _complete emit call appended, \nACTUAL:   ' + ddoc.app_settings.tasks.rules + '\nEXPECTED: ' + expected);
+      .then(function(doc) {
+        if (doc.settings.tasks.rules !== expected) {
+          throw new Error('`tasks.rules` should have _complete emit call appended, \nACTUAL:   ' + doc.settings.tasks.rules + '\nEXPECTED: ' + expected);
         }
       });
   });
