@@ -36,6 +36,9 @@ module.exports = {
         throw err;
       });
   },
+  /**
+   * @param replace If true, recursively merges the properties.
+   */
   update: (body, replace) => {
     return getDoc()
       .catch(err => {
