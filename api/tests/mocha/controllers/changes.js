@@ -598,14 +598,15 @@ describe('Changes controller', () => {
           feed.validatedIds.should.deep.equal([ 'a', 'b' ]);
           feed.results.length.should.equal(0);
 
-          authorization.allowedChange.returns(true);
+          authorization.allowedChange.withArgs(sinon.match.any, sinon.match({ change: { id: 1 } })).returns(true);
+          authorization.allowedChange.withArgs(sinon.match.any, sinon.match({ change: { id: 2 } })).returns(true);
+          authorization.allowedChange.withArgs(sinon.match.any, sinon.match({ change: { id: 3 } })).returns(false);
+          authorization.allowedChange.withArgs(sinon.match.any, sinon.match({ change: { id: 4 } })).returns(true);
           emitter.emit('change', { id: 1, changes: [] }, 0, 1);
           feed.limit.should.equal(99);
           emitter.emit('change', { id: 2, changes: [] }, 0, 2);
           feed.limit.should.equal(98);
-          authorization.allowedChange.returns(false);
           emitter.emit('change', { id: 3, changes: [] }, 0, 3);
-          authorization.allowedChange.returns(true);
           emitter.emit('change', { id: 4, changes: [] }, 0, 4);
           feed.limit.should.equal(97);
           feed.results.length.should.equal(3);
@@ -960,7 +961,9 @@ describe('Changes controller', () => {
       authorization.allowedChange.withArgs(sinon.match.any, sinon.match({ change: { id: 4 } })).returns(false);
       authorization.allowedChange.withArgs(sinon.match.any, sinon.match({ change: { id: 5 } })).returns(true);
 
-      controller._processPendingChanges({ pendingChanges: changes, userCtx: userCtx }, results).should.equal(true);
+      const actual = controller._processPendingChanges({ pendingChanges: changes, userCtx: userCtx }, results);
+      actual.should.deep.equal({ authChange: false, nbrAppended: 3 });
+
       results.length.should.equal(3);
       results.should.deep.equal([
         { id: 1, changes: [{ rev: 1 }] },
@@ -993,7 +996,45 @@ describe('Changes controller', () => {
         { change: { id: 5, changes: [{ rev: 1 }] } },
       ];
 
-      controller._processPendingChanges({ pendingChanges: changes }, results).should.equal(false);
+      const actual = controller._processPendingChanges({ pendingChanges: changes }, results);
+      actual.should.deep.equal({ authChange: true, nbrAppended: 3 });
+    });
+
+    it('reiterates over pending changes every time a change is evaluated as allowed, removes allowed changes from list', () => {
+      const results = [];
+      const changes = [
+        { change: { id: 1, changes: [{ rev: 1 }] } },
+        { change: { id: 2, changes: [{ rev: 2 }] } },
+        { change: { id: 3, changes: [{ rev: 2 }] } },
+        { change: { id: 4, changes: [{ rev: 1 }] } },
+        { change: { id: 5, changes: [{ rev: 1 }] } },
+      ];
+      const feed = { pendingChanges: changes };
+      authorization.allowedChange.withArgs(sinon.match.any, sinon.match({ change: { id: 1 } }))
+        .onCall(0).returns(true);
+      authorization.allowedChange.withArgs(sinon.match.any, sinon.match({ change: { id: 2 } }))
+        .onCall(0).returns(false)
+        .onCall(1).returns(true);
+
+      authorization.allowedChange.withArgs(sinon.match.any, sinon.match({ change: { id: 3 } }))
+        .returns(false);
+      authorization.allowedChange.withArgs(sinon.match.any, sinon.match({ change: { id: 4 } }))
+        .onCall(0).returns(false)
+        .onCall(1).returns(false)
+        .onCall(2).returns(true);
+      authorization.allowedChange.withArgs(sinon.match.any, sinon.match({ change: { id: 5 } })).returns(false);
+
+      const actual = controller._processPendingChanges(feed, results);
+      actual.should.deep.equal({ authChange: false, nbrAppended: 3 });
+
+      authorization.allowedChange.withArgs(sinon.match.any, sinon.match({ change: { id: 1 } })).callCount.should.equal(1);
+      authorization.allowedChange.withArgs(sinon.match.any, sinon.match({ change: { id: 2 } })).callCount.should.equal(2);
+      authorization.allowedChange.withArgs(sinon.match.any, sinon.match({ change: { id: 3 } })).callCount.should.equal(4);
+      authorization.allowedChange.withArgs(sinon.match.any, sinon.match({ change: { id: 4 } })).callCount.should.equal(3);
+      authorization.allowedChange.withArgs(sinon.match.any, sinon.match({ change: { id: 5 } })).callCount.should.equal(4);
+
+      feed.pendingChanges.length.should.equal(2);
+      feed.pendingChanges.every(change => [3, 5].indexOf(change.change.id) !== -1).should.equal(true);
     });
   });
 
@@ -1051,7 +1092,7 @@ describe('Changes controller', () => {
       const normalFeeds = controller._getNormalFeeds();
       const longpollFeeds = controller._getLongpollFeeds();
       const normalFeed = { lastSeq: 0, pendingChanges: [], req: testReq, res: testRes };
-      const longpollFeed = { lastSeq: 0, results: [], req: testReq, res: testRes };
+      const longpollFeed = { lastSeq: 0, pendingChanges: [], results: [], req: testReq, res: testRes };
       normalFeeds.push(normalFeed);
       longpollFeeds.push(longpollFeed);
 
@@ -1098,9 +1139,9 @@ describe('Changes controller', () => {
       authorization.allowedChange.withArgs(sinon.match({ id: 3 })).returns(true);
 
       const longpollFeeds = controller._getLongpollFeeds();
-      const testFeed1 = { id: 1, lastSeq: 0, results: [], req: testReq, res: testRes };
-      const testFeed2 = { id: 2, lastSeq: 0, results: [], req: testReq, res: testRes };
-      const testFeed3 = { id: 3, lastSeq: 0, results: [], req: testReq, res: testRes };
+      const testFeed1 = { id: 1, lastSeq: 0, results: [], req: testReq, res: testRes, pendingChanges: [] };
+      const testFeed2 = { id: 2, lastSeq: 0, results: [], req: testReq, res: testRes, pendingChanges: [] };
+      const testFeed3 = { id: 3, lastSeq: 0, results: [], req: testReq, res: testRes, pendingChanges: [] };
       longpollFeeds.push(testFeed1, testFeed2, testFeed3);
 
       controller._processChange({ id: 1, doc: { _id: 1 }}, 'seq');

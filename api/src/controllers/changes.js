@@ -97,31 +97,33 @@ const appendChange = (results, changeObj) => {
 };
 
 // filters the list of pending changes
-const processPendingChanges = (feed, results) => {
-  let authChange = false;
-  let shouldCheck = true;
+const processPendingChanges = (feed, results, checkForAuthChange = true) => {
+  let authChange  = false,
+      shouldCheck = true,
+      nbrAppended = 0;
 
   const checkChange = (changeObj) => {
-    shouldCheck = false;
     if (!authorization.allowedChange(feed, changeObj)) {
       return;
     }
 
-    if (authorization.isAuthChange(feed, changeObj)) {
+    if (checkForAuthChange && authorization.isAuthChange(feed, changeObj)) {
       authChange = true;
       return;
     }
 
     shouldCheck = true;
+    nbrAppended += 1;
     appendChange(results, changeObj);
     feed.pendingChanges = _.without(feed.pendingChanges, changeObj);
   };
 
   while (feed.pendingChanges.length && shouldCheck && !authChange) {
+    shouldCheck = false;
     feed.pendingChanges.forEach(checkChange);
   }
 
-  return !authChange;
+  return { authChange, nbrAppended };
 };
 
 // checks that all changes requests responses are valid
@@ -190,7 +192,7 @@ const getChanges = feed => {
       }
 
       let results = mergeResults(responses);
-      if (!processPendingChanges(feed, results)) {
+      if (processPendingChanges(feed, results).authChange) {
         // if critical auth data changes are received, reset the feed completely
         endFeed(feed, false);
         return Promise.resolve(processRequest(feed.req, feed.res, feed.userCtx));
@@ -203,6 +205,7 @@ const getChanges = feed => {
 
       // move the feed to the longpoll list to receive new changes
       normalFeeds = _.without(normalFeeds, feed);
+      feed.pendingChanges = [];
       longpollFeeds.push(feed);
     })
     .catch(err => {
@@ -255,8 +258,10 @@ const initFeed = (req, res, userCtx) => {
 
 const addChangeToLongpollFeed = (feed, changeObj) => {
   appendChange(feed.results, changeObj);
+  // check if this newly added change would update the auth state on any of the previous denied changes
+  feed.limit -= processPendingChanges(feed, feed.results, false).nbrAppended + 1;
 
-  if (--feed.limit) {
+  if (feed.limit) {
     // debounce sending results if the feed limit is not yet reached
     addTimeout(feed);
     feed.debounceEnd();
@@ -289,6 +294,7 @@ const processChange = (change, seq) => {
   longpollFeeds.forEach(feed => {
     feed.lastSeq = seq;
     if (!authorization.allowedChange(feed, changeObj)) {
+      feed.pendingChanges.push(changeObj);
       return;
     }
 
