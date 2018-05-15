@@ -1,6 +1,7 @@
 var async = require('async'),
     _ = require('underscore'),
-    DDOC_ATTACHMENT_ID = '_design/medic/ddocs/compiled.json',
+    DDOC_ID = '_design/medic',
+    DDOC_ATTACHMENT_ID = 'ddocs/compiled.json',
     APPCACHE_ATTACHMENT_NAME = 'manifest.appcache',
     APPCACHE_DOC_ID = 'appcache',
     SERVER_DDOC_ID = '_design/medic',
@@ -8,7 +9,7 @@ var async = require('async'),
     db;
 
 var getCompiledDdocs = function(callback) {
-  var thisCallback = function(err, ddocs) {
+  db.getAttachment(DDOC_ID, DDOC_ATTACHMENT_ID, function(err, ddocs) {
     if (db.getAttachment) {
       ddocs = JSON.parse(ddocs.toString('utf8'));
     }
@@ -19,12 +20,7 @@ var getCompiledDdocs = function(callback) {
       return callback(err);
     }
     callback(null, ddocs.docs);
-  };
-  if (db.getAttachment) {
-    db.getAttachment('_design/medic', 'ddocs/compiled.json', thisCallback);
-  } else {
-    db.get(DDOC_ATTACHMENT_ID, thisCallback);
-  }
+  });
 };
 
 var isUpdated = function(settings, ddoc, callback) {
@@ -116,11 +112,7 @@ module.exports = {
           return callback();
         }
         console.log('Updating docs: ' + _.pluck(docs, '_id'));
-        if (db.bulk) {
-          db.bulk({ docs: docs }, callback);
-        } else {
-          db.bulkDocs(docs, callback);
-        }
+        db.bulkDocs(docs, callback);
       });
     });
   }

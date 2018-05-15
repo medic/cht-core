@@ -1,6 +1,7 @@
 var _ = require('underscore'),
     follow = require('follow'),
-    db = require('./db-nano'),
+    db = require('./db-pouch'),
+    dbNano = require('./db-nano'),
     ddocExtraction = require('./ddoc-extraction'),
     translations = require('./translations'),
     defaults = require('./config.default.json'),
@@ -58,7 +59,7 @@ var getMessage = function(value, locale) {
 };
 
 var loadSettings = function(callback) {
-  db.medic.get('_design/medic', function(err, ddoc) {
+  dbNano.medic.get('_design/medic', function(err, ddoc) {
     if (err) {
       return callback(err);
     }
@@ -89,7 +90,7 @@ var loadSettings = function(callback) {
 
 var loadTranslations = function() {
   var options = { key: [ 'translations', true ], include_docs: true };
-  db.medic.view('medic-client', 'doc_by_type', options, function(err, result) {
+  dbNano.medic.view('medic-client', 'doc_by_type', options, function(err, result) {
     if (err) {
       console.error('Error loading translations - starting up anyway', err);
       return;

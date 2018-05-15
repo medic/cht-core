@@ -1,5 +1,6 @@
 const async = require('async'),
-      db = require('./src/db-nano'),
+      db = require('./src/db-pouch'),
+      dbNano = require('./src/db-nano'),
       config = require('./src/config'),
       migrations = require('./src/migrations'),
       ddocExtraction = require('./src/ddoc-extraction'),
@@ -72,7 +73,7 @@ const couchDbNoAdminPartyModeCheck = callback => {
 };
 
 const couchDbVersionCheck = callback =>
-  db.getCouchDbVersion((err, version) => {
+  dbNano.getCouchDbVersion((err, version) => {
     if (err) {
       return callback(err);
     }
