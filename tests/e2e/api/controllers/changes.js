@@ -262,9 +262,10 @@ describe('changes handler', () => {
           return Promise.resolve();
         })
         .then(() => consumeChanges('bob', [], seq))
-        .then(tombstoneResults => {
-          expect(tombstoneResults.results.filter(change => change.deleted).length).toBe(5);
-          expect(tombstoneResults.results.every(change => allowedDocIds.indexOf(change.id) !== -1)).toBe(true);
+        .then(changes => {
+          console.log(changes);
+          expect(changes.results.every(change => change.deleted)).toBe(true);
+          expect(changes.results.every(change => allowedDocIds.indexOf(change.id) !== -1)).toBe(true);
         });
     });
 
@@ -353,6 +354,8 @@ describe('changes handler', () => {
           utils.saveDocs(allowedSteve),
         ]))
         .then(([ bobsChanges, stevesChanges ]) => {
+          console.log(bobsChanges);
+          console.log(stevesChanges);
           expect(bobsChanges.results.every(change => _.pluck(allowedBob, '_id').indexOf(change.id) !== -1)).toBe(true);
           expect(stevesChanges.results.every(change => _.pluck(allowedSteve, '_id').indexOf(change.id) !== -1)).toBe(true);
         });

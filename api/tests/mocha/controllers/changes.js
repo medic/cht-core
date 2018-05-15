@@ -577,6 +577,69 @@ describe('Changes controller', () => {
           initialFeed.ended.should.equal(true);
         });
     });
+
+    it('handles multiple debounced changes correctly', () => {
+      testReq.query = { feed: 'longpoll' };
+      authorization.getValidatedDocIds.resolves([1, 2, 3]);
+
+      return controller
+        .request(proxy, testReq, testRes)
+        .then(nextTick)
+        .then(() => {
+          authorization.allowedChange
+            .withArgs(sinon.match.any, sinon.match({ change: { id: 3 }}))
+            .onCall(0).returns(false)
+            .onCall(1).returns(false)
+            .onCall(2).returns(true);
+          authorization.allowedChange
+            .withArgs(sinon.match.any, sinon.match({ change: { id: 2 }}))
+            .onCall(0).returns(false)
+            .onCall(1).returns(true);
+          authorization.allowedChange
+            .withArgs(sinon.match.any, sinon.match({ change: { id: 4 }}))
+            .onCall(0).returns(false)
+            .onCall(1).returns(false)
+            .onCall(2).returns(false)
+            .onCall(3).returns(false);
+          authorization.allowedChange
+            .withArgs(sinon.match.any, sinon.match({ change: { id: 1 }}))
+            .onCall(0).returns(true);
+
+          const emitter = controller._getContinuousFeed();
+          const feed = controller._getNormalFeeds()[0];
+          emitter.emit('change', { id: 3, changes: [] }, 0, 1);
+          feed.pendingChanges.length.should.equal(1);
+          emitter.emit('change', { id: 2, changes: [] }, 0, 2);
+          feed.pendingChanges.length.should.equal(2);
+          emitter.emit('change', { id: 4, changes: [] }, 0, 3);
+          feed.pendingChanges.length.should.equal(3);
+          emitter.emit('change', { id: 1, changes: [] }, 0, 4);
+          feed.pendingChanges.length.should.equal(4);
+
+          feed.upstreamRequests.forEach(upstreamReq => {
+            upstreamReq.complete(null, { results: [{ id: 22 }], last_seq: 5 });
+          });
+        })
+        .then(nextTick)
+        .then(() => {
+          testRes.end.callCount.should.equal(1);
+          controller._getLongpollFeeds().length.should.equal(0);
+          testRes.write.callCount.should.equal(1);
+          testRes.write.args[0][0].should.equal(JSON.stringify({
+            results: [
+              { id: 22 },
+              { id: 1, changes: [] },
+              { id: 2, changes: [] },
+              { id: 3, changes: [] }
+            ],
+            last_seq: 5
+          }));
+          authorization.allowedChange.withArgs(sinon.match.any, sinon.match({ change: { id: 3 }})).callCount.should.equal(3);
+          authorization.allowedChange.withArgs(sinon.match.any, sinon.match({ change: { id: 2 }})).callCount.should.equal(2);
+          authorization.allowedChange.withArgs(sinon.match.any, sinon.match({ change: { id: 4 }})).callCount.should.equal(4);
+          authorization.allowedChange.withArgs(sinon.match.any, sinon.match({ change: { id: 1 }})).callCount.should.equal(1);
+        });
+    });
   });
 
   describe('handling waiting feeds', () => {
@@ -858,6 +921,68 @@ describe('Changes controller', () => {
           feed.validatedIds.should.deep.equal([ 'a', 'b', 'c' ]);
           auth.hydrate.callCount.should.equal(2);
           authorization.getValidatedDocIds.callCount.should.equal(2);
+        });
+    });
+
+    it('handles multiple debounced changes correctly', () => {
+      testReq.query = { feed: 'longpoll' };
+      authorization.getValidatedDocIds.resolves([1, 2, 3]);
+
+      return controller
+        .request(proxy, testReq, testRes)
+        .then(nextTick)
+        .then(() => {
+          controller
+            ._getNormalFeeds()[0]
+            .upstreamRequests.forEach(upstreamReq => upstreamReq.complete(null, { results: [], last_seq: 2 }));
+        })
+        .then(nextTick)
+        .then(() => {
+          const feed = controller._getLongpollFeeds()[0];
+          const emitter = controller._getContinuousFeed();
+          authorization.allowedChange
+            .withArgs(sinon.match.any, sinon.match({ change: { id: 3 }}))
+            .onCall(0).returns(false)
+            .onCall(1).returns(false)
+            .onCall(2).returns(false)
+            .onCall(3).returns(false);
+          authorization.allowedChange
+            .withArgs(sinon.match.any, sinon.match({ change: { id: 2 }}))
+            .onCall(0).returns(false)
+            .onCall(1).returns(true);
+          authorization.allowedChange
+            .withArgs(sinon.match.any, sinon.match({ change: { id: 4 }}))
+            .onCall(0).returns(false)
+            .onCall(1).returns(false)
+            .onCall(2).returns(true);
+          authorization.allowedChange
+            .withArgs(sinon.match.any, sinon.match({ change: { id: 1 }}))
+            .onCall(0).returns(true);
+
+          emitter.emit('change', { id: 3, changes: [] }, 0, 1);
+          feed.pendingChanges.length.should.equal(1);
+          feed.results.length.should.equal(0);
+          emitter.emit('change', { id: 2, changes: [] }, 0, 2);
+          feed.pendingChanges.length.should.equal(2);
+          feed.results.length.should.equal(0);
+          emitter.emit('change', { id: 4, changes: [] }, 0, 3);
+          feed.pendingChanges.length.should.equal(3);
+          feed.results.length.should.equal(0);
+          emitter.emit('change', { id: 1, changes: [] }, 0, 4);
+          feed.pendingChanges.length.should.equal(1);
+          feed.results.length.should.equal(3);
+          clock.tick(500);
+          testRes.end.callCount.should.equal(1);
+          controller._getLongpollFeeds().length.should.equal(0);
+          testRes.write.callCount.should.equal(1);
+          testRes.write.args[0][0].should.equal(JSON.stringify({
+            results: [
+              { id: 1, changes: [] },
+              { id: 2, changes: [] },
+              { id: 4, changes: [] }
+            ],
+            last_seq: 4
+          }));
         });
     });
   });
