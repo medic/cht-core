@@ -37,16 +37,23 @@ module.exports = {
       });
   },
   update: (body, replace) => {
-    return getDoc().then(doc => {
-      if (!doc.settings) {
-        doc.settings = {};
-      }
-      if (replace) {
-        doReplace(doc.settings, body);
-      } else {
-        doExtend(doc.settings, body);
-      }
-      return db.medic.put(doc);
-    });
+    return getDoc()
+      .catch(err => {
+        if (err.status === 404) {
+          return { _id: 'settings' };
+        }
+        throw err;
+      })
+      .then(doc => {
+        if (!doc.settings) {
+          doc.settings = {};
+        }
+        if (replace) {
+          doReplace(doc.settings, body);
+        } else {
+          doExtend(doc.settings, body);
+        }
+        return db.medic.put(doc);
+      });
   }
 };
