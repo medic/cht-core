@@ -534,12 +534,6 @@ module.exports = function(grunt) {
           'sentinel/tests/**/*.js'
         ],
       },
-      // integration: {
-      //   src: 'tests/integration/**/*.js',
-      //   options: {
-      //     require: 'tests/integration-setup.js'
-      //   }
-      // },
       api_integration: {
         src: 'api/tests/integration/**/*.js',
         options: {
