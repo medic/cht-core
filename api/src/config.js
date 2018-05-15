@@ -126,18 +126,20 @@ module.exports = {
     var feed = new follow.Feed({ db: process.env.COUCH_URL, since: 'now' });
     feed.on('change', function(change) {
       if (change.id === '_design/medic') {
-        console.log('Detected settings change - reloading');
+        console.log('Detected ddoc change - reloading');
         translations.run(function(err) {
           if (err) {
             console.error('Failed to update translation docs', err);
           }
         });
-        loadSettings().catch(err => {
-          console.error('Failed to reload settings', err);
-          process.exit(1);
-        });
         ddocExtraction.run().catch(err => {
           console.error('Something went wrong trying to extract ddocs', err);
+          process.exit(1);
+        });
+      } else if (change.id === 'settings') {
+        console.log('Detected settings change - reloading');
+        loadSettings().catch(err => {
+          console.error('Failed to reload settings', err);
           process.exit(1);
         });
       } else if (change.id.indexOf('messages-') === 0) {
