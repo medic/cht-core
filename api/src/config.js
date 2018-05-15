@@ -57,34 +57,28 @@ var getMessage = function(value, locale) {
   return result;
 };
 
-var loadSettings = function(callback) {
-  db.medic.get('_design/medic', function(err, ddoc) {
-    if (err) {
-      return callback(err);
-    }
-    settings = ddoc.app_settings || {};
-    var original = JSON.stringify(settings);
-    _.defaults(settings, defaults);
-    // add any missing permissions
-    if (settings.permissions) {
-      defaults.permissions.forEach(function(def) {
-        var configured = _.findWhere(settings.permissions, { name: def.name });
-        if (!configured) {
-          settings.permissions.push(def);
-        }
-      });
-    } else {
-      settings.permissions = defaults.permissions;
-    }
-    var changed = JSON.stringify(settings) !== original;
-    if (!changed) {
-      return callback();
-    }
-    console.log('Updating settings with new defaults');
-    settingsService.update(settings)
-      .then(() => callback())
-      .catch(callback);
-  });
+var loadSettings = function() {
+  return settingsService.get()
+    .then(settings => {
+      settings = settings || {};
+      var original = JSON.stringify(settings);
+      _.defaults(settings, defaults);
+      // add any missing permissions
+      if (settings.permissions) {
+        defaults.permissions.forEach(function(def) {
+          var configured = _.findWhere(settings.permissions, { name: def.name });
+          if (!configured) {
+            settings.permissions.push(def);
+          }
+        });
+      } else {
+        settings.permissions = defaults.permissions;
+      }
+      if (JSON.stringify(settings) !== original) {
+        console.log('Updating settings with new defaults');
+        return settingsService.update(settings);
+      }
+    });
 };
 
 var loadTranslations = function() {
@@ -125,7 +119,7 @@ module.exports = {
     }
   },
   load: function(callback) {
-    loadSettings(callback);
+    loadSettings().then(() => callback()).catch(callback);
     loadTranslations();
   },
   listen: function() {
@@ -138,11 +132,9 @@ module.exports = {
             console.error('Failed to update translation docs', err);
           }
         });
-        loadSettings(function(err) {
-          if (err) {
-            console.error('Failed to reload settings', err);
-            process.exit(1);
-          }
+        loadSettings().catch(err => {
+          console.error('Failed to reload settings', err);
+          process.exit(1);
         });
         ddocExtraction.run().catch(err => {
           console.error('Something went wrong trying to extract ddocs', err);

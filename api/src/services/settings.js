@@ -27,19 +27,19 @@ const doExtend = (target, source) => {
 
 module.exports = {
   get: () => {
-    return getDoc().then(ddoc => ddoc.settings);
+    return getDoc().then(doc => doc.settings);
   },
   update: (body, replace) => {
-    return getDoc().then(ddoc => {
-      if (!ddoc.settings) {
-        ddoc.settings = {};
+    return getDoc().then(doc => {
+      if (!doc.settings) {
+        doc.settings = {};
       }
       if (replace) {
-        doReplace(ddoc.settings, body);
+        doReplace(doc.settings, body);
       } else {
-        doExtend(ddoc.settings, body);
+        doExtend(doc.settings, body);
       }
-      return db.medic.put(ddoc);
+      return db.medic.put(doc);
     });
   }
 };

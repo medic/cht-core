@@ -38,7 +38,7 @@ const initFeed = () => {
   // Use since=now on ddoc listener so we don't replay an old change.
   const feed = new follow.Feed({ db: process.env.COUCH_URL, since: 'now' });
   feed.on('change', change => {
-    if (change.id === '_design/medic') {
+    if (change.id === 'settings') {
       logger.info('Reloading configuration');
       initConfig();
     } else if (change.id.startsWith('messages-')) {
@@ -51,13 +51,13 @@ const initFeed = () => {
 
 const initConfig = () => {
   return new Promise((resolve, reject) => {
-    db.medic.get('_design/medic', (err, ddoc) => {
+    db.medic.get('settings', (err, doc) => {
       if (err) {
         console.error(err);
         return reject(new Error('Error loading configuration'));
       }
-      _.defaults(ddoc.app_settings, DEFAULT_CONFIG);
-      config = ddoc.app_settings;
+      _.defaults(doc.settings, DEFAULT_CONFIG);
+      config = doc.settings;
       logger.debug(
         'Reminder messages allowed between %s:%s and %s:%s',
         config.schedule_morning_hours,
