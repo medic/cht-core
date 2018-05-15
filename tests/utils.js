@@ -141,6 +141,7 @@ const deleteAll = (except = []) => {
     'appcache',
     'migration-log',
     'resources',
+    'settings',
     /^_design/
   );
   const ignoreFns = [];
