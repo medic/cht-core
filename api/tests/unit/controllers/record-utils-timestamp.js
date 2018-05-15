@@ -10,32 +10,6 @@ const process = timestamp => {
   return new Date(doc.reported_date);
 };
 
-exports['timestamp parsing without seconds'] = test => {
-  const actual = process( '01-19-12 18:45');
-  test.equals(actual.getMilliseconds(), 0);
-  test.equals(actual.getSeconds(), 0);
-  test.done();
-};
-
-exports['timestamp parsing boundaries'] = test => {
-  const actual = process( '1-9-99 8:45:59');
-  test.equals(actual.getMilliseconds(), 0);
-  test.equals(actual.getSeconds(), 59);
-  test.equals(actual.getFullYear(), 2099);
-  test.equals(actual.getMonth(), 0);
-  test.equals(actual.getDate(), 9);
-  test.equals(actual.getHours(), 8);
-  test.equals(actual.getMinutes(), 45);
-  test.done();
-};
-
-exports['timestamp parsing with seconds'] = test => {
-  const actual = process( '01-19-12 18:45:59');
-  test.equals(actual.getMilliseconds(), 0);
-  test.equals(actual.getSeconds(), 59);
-  test.done();
-};
-
 exports['ms since epoch'] = test => {
   const actual = process('1352659197736');
   test.equals(actual.getMilliseconds(), 736);
@@ -48,4 +22,3 @@ exports['support moment.js compat dates'] = test => {
   test.equals(actual.valueOf(), 1618135200000);
   test.done();
 };
-

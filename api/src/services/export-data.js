@@ -1,6 +1,4 @@
 var _ = require('underscore'),
-    JSZip = require('jszip'),
-    childProcess = require('child_process'),
     csv = require('fast-csv'),
     moment = require('moment'),
     xmlbuilder = require('xmlbuilder'),
@@ -93,39 +91,7 @@ var exportTypes = {
       });
       return [ model ];
     }
-  },
-  logs: {
-    lowlevel: true,
-    generate: function(callback) {
-      var rv = [];
-      var child = childProcess.spawn(
-        'sudo',
-        [ '/boot/print-logs' ],
-        { stdio: 'pipe' }
-      );
-      child.on('exit', function(code) {
-        if (code !== 0) {
-          return callback(new Error(
-            'Log export exited with non-zero status ' + code
-          ));
-        }
-        createLogZip(rv).then(function(content) {
-          callback(null, content);
-        });
-      });
-      child.stdout.on('data', function(buffer) {
-        rv.push(buffer);
-      });
-      child.stdin.end();
-    }
   }
-};
-
-var createLogZip = function(rv) {
-  var filename = 'server-logs-' + moment().format('YYYYMMDD') + '.md';
-  return new JSZip()
-    .file(filename, Buffer.concat(rv))
-    .generateAsync({ type: 'nodebuffer', compression: 'deflate' });
 };
 
 var formatDate = function(date, tz) {
@@ -287,9 +253,6 @@ module.exports = {
     }
     if (!_.isFunction(type.generate)) {
       return callback(new Error('Export type must provide a "generate" method'));
-    }
-    if (type.lowlevel) {
-      return type.generate(callback);
     }
 
     getRecords(type, params, function(err, response) {

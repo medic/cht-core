@@ -17,7 +17,7 @@ module.exports = {
      * If a record has a month/week/week_number, year and clinic then look for
      * duplicates and update those instead.
      *
-     * POST from smssync creates doc
+     * POST creates doc
      * GET  /scheduled_reports/:form/:year/:week|month/:clinic_id (look for dups)
      *
      */

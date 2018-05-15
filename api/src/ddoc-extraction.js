@@ -1,119 +1,126 @@
-var async = require('async'),
-    _ = require('underscore'),
-    DDOC_ID = '_design/medic',
-    DDOC_ATTACHMENT_ID = 'ddocs/compiled.json',
-    APPCACHE_ATTACHMENT_NAME = 'manifest.appcache',
-    APPCACHE_DOC_ID = 'appcache',
-    SERVER_DDOC_ID = '_design/medic',
-    CLIENT_DDOC_ID = '_design/medic-client',
-    db;
+const _ = require('underscore'),
+      db = require('./db-pouch'),
+      DDOC_ATTACHMENT_ID = 'ddocs/compiled.json',
+      APPCACHE_ATTACHMENT_NAME = 'manifest.appcache',
+      APPCACHE_DOC_ID = 'appcache',
+      SERVER_DDOC_ID = '_design/medic',
+      CLIENT_DDOC_ID = '_design/medic-client';
 
-var getCompiledDdocs = function(callback) {
-  db.getAttachment(DDOC_ID, DDOC_ATTACHMENT_ID, function(err, ddocs) {
-    if (db.getAttachment) {
-      ddocs = JSON.parse(ddocs.toString('utf8'));
-    }
-    if (err) {
-      if (err.error === 'not_found') {
-        return callback(null, []);
+const getCompiledDdocs = () => {
+  return db.medic.getAttachment(SERVER_DDOC_ID, DDOC_ATTACHMENT_ID)
+    .then(result => JSON.parse(result.toString()).docs)
+    .catch(err => {
+      if (err.status === 404) {
+        return [];
       }
-      return callback(err);
-    }
-    callback(null, ddocs.docs);
-  });
-};
-
-var isUpdated = function(settings, ddoc, callback) {
-  db.get(ddoc._id, function(err, oldDdoc) {
-    if (err && err.error !== 'not_found') {
-      return callback(err);
-    }
-    ddoc._rev = oldDdoc && oldDdoc._rev;
-    if (ddoc._id === CLIENT_DDOC_ID) {
-      ddoc.app_settings = settings;
-    }
-    if (oldDdoc && _.isEqual(ddoc, oldDdoc)) {
-      // unmodified
-      return callback();
-    }
-    callback(null, ddoc);
-  });
-};
-
-var findUpdatedDdocs = function(settings, callback) {
-  getCompiledDdocs(function(err, ddocs) {
-    if (err) {
-      return callback(err);
-    }
-    if (!ddocs.length) {
-      return callback(null, []);
-    }
-    async.map(ddocs, function(ddoc, cb) {
-      isUpdated(settings, ddoc, cb);
-    }, function(err, updated) {
-      if (err) {
-        return callback(err);
-      }
-      callback(null, _.compact(updated));
+      throw err;
     });
-  });
 };
 
-var findUpdatedAppcache = function(ddoc, callback) {
-  var attachment = ddoc._attachments && ddoc._attachments[APPCACHE_ATTACHMENT_NAME];
-  var digest = attachment && attachment.digest;
-  if (!digest) {
-    return callback();
+const areAttachmentsEqual = (oldDdoc, newDdoc) => {
+  if (!oldDdoc._attachments && !newDdoc._attachments) {
+    // no attachments found
+    return true;
   }
-  db.get(APPCACHE_DOC_ID, function(err, doc) {
-    if (err) {
-      if (err.error === 'not_found') {
-        // create new appcache doc
-        return callback(null, {
-          _id: APPCACHE_DOC_ID,
-          digest: digest
-        });
-      }
-      return callback(err);
-    }
-    if (doc.digest === digest) {
-      // unchanged
-      return callback();
-    }
-    doc.digest = digest;
-    callback(null, doc);
+  if (!oldDdoc._attachments || !newDdoc._attachments) {
+    // one ddoc has attachments and the other doesn't
+    return false;
+  }
+  if (Object.keys(oldDdoc._attachments).length !== Object.keys(newDdoc._attachments).length) {
+    // one ddoc has more attachments than the other
+    return false;
+  }
+  // check all attachment data
+  return Object.keys(oldDdoc._attachments).every(name => {
+    return newDdoc._attachments[name] &&
+           newDdoc._attachments[name].data === oldDdoc._attachments[name].data;
   });
 };
 
-var findUpdated = function(ddoc, callback) {
-  async.parallel([
-    _.partial(findUpdatedDdocs, ddoc.app_settings),
-    _.partial(findUpdatedAppcache, ddoc)
-  ], function(err, results) {
-    if (err) {
-      return callback(err);
-    }
-    callback(null, _.compact(_.flatten(results)));
-  });
+const isUpdated = (settings, newDdoc) => {
+  return db.medic.get(newDdoc._id, { attachments: true })
+    .then(oldDdoc => {
+      // set the rev so we can update if necessary
+      newDdoc._rev = oldDdoc && oldDdoc._rev;
+      if (newDdoc._id === CLIENT_DDOC_ID) {
+        newDdoc.app_settings = settings;
+      }
+      if (!oldDdoc) {
+        // this is a new ddoc - definitely install it
+        return newDdoc;
+      }
+      if (!areAttachmentsEqual(oldDdoc, newDdoc)) {
+        // attachments have been updated - install it
+        return newDdoc;
+      }
+
+      if (newDdoc._attachments) {
+        // we've checked attachment data so we know they're identical where it counts
+        oldDdoc._attachments = newDdoc._attachments;
+      }
+
+      if (_.isEqual(oldDdoc, newDdoc)) {
+        return;
+      }
+      return newDdoc;
+    })
+    .catch(err => {
+      if (err.status === 404) {
+        return newDdoc;
+      }
+      throw err;
+    });
+};
+
+const findUpdatedDdocs = settings => {
+  return getCompiledDdocs()
+    .then(ddocs => {
+      if (!ddocs.length) {
+        return [];
+      }
+      return Promise.all(ddocs.map(ddoc => isUpdated(settings, ddoc)));
+    })
+    .then(updated => _.compact(updated));
+};
+
+const findUpdatedAppcache = ddoc => {
+  const attachment = ddoc._attachments && ddoc._attachments[APPCACHE_ATTACHMENT_NAME];
+  const digest = attachment && attachment.digest;
+  if (!digest) {
+    return;
+  }
+  return db.medic.get(APPCACHE_DOC_ID)
+    .then(doc => {
+      if (doc.digest !== digest) {
+        doc.digest = digest;
+        return doc;
+      }
+    })
+    .catch(err => {
+      if (err.status === 404) {
+        // create new appcache doc
+        return { _id: APPCACHE_DOC_ID, digest: digest };
+      }
+      throw err;
+    });
+};
+
+const findUpdated = ddoc => {
+  return Promise.all([
+    findUpdatedDdocs(ddoc.app_settings),
+    findUpdatedAppcache(ddoc)
+  ]).then(results => _.compact(_.flatten(results)));
 };
 
 module.exports = {
-  run: function(database, callback) {
-    db = database;
-    db.get(SERVER_DDOC_ID, function(err, ddoc) {
-      if (err) {
-        return callback(err);
-      }
-      findUpdated(ddoc, function(err, docs) {
-        if (err) {
-          return callback(err);
+  run: () => {
+    return db.medic.get(SERVER_DDOC_ID)
+      .then(findUpdated)
+      .then(docs => {
+        if (docs.length) {
+          console.log('Updating docs: ' + _.pluck(docs, '_id').join(', '));
+          return db.medic.bulkDocs({ docs: docs });
         }
-        if (!docs.length) {
-          return callback();
-        }
-        console.log('Updating docs: ' + _.pluck(docs, '_id'));
-        db.bulkDocs(docs, callback);
       });
-    });
   }
 };

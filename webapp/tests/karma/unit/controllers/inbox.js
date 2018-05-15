@@ -89,6 +89,7 @@ describe('InboxCtrl controller', () => {
       $provide.value('Tour', { getTours: () => Promise.resolve([]) });
       $provide.value('RulesEngine', { init: KarmaUtils.nullPromise()() });
       $provide.value('RecurringProcessManager', RecurringProcessManager);
+      $provide.value('Enketo', sinon.stub());
       $provide.constant('APP_CONFIG', {
         name: 'name',
         version: 'version'

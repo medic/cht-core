@@ -1,7 +1,6 @@
 var _ = require('underscore'),
     follow = require('follow'),
-    db = require('./db-pouch'),
-    dbNano = require('./db-nano'),
+    db = require('./db-nano'),
     ddocExtraction = require('./ddoc-extraction'),
     translations = require('./translations'),
     defaults = require('./config.default.json'),
@@ -59,7 +58,7 @@ var getMessage = function(value, locale) {
 };
 
 var loadSettings = function(callback) {
-  dbNano.medic.get('_design/medic', function(err, ddoc) {
+  db.medic.get('_design/medic', function(err, ddoc) {
     if (err) {
       return callback(err);
     }
@@ -90,7 +89,7 @@ var loadSettings = function(callback) {
 
 var loadTranslations = function() {
   var options = { key: [ 'translations', true ], include_docs: true };
-  dbNano.medic.view('medic-client', 'doc_by_type', options, function(err, result) {
+  db.medic.view('medic-client', 'doc_by_type', options, function(err, result) {
     if (err) {
       console.error('Error loading translations - starting up anyway', err);
       return;
@@ -145,11 +144,9 @@ module.exports = {
             process.exit(1);
           }
         });
-        ddocExtraction.run(db.medic, function(err) {
-          if (err) {
-            console.error('Something went wrong trying to extract ddocs', err);
-            process.exit(1);
-          }
+        ddocExtraction.run().catch(err => {
+          console.error('Something went wrong trying to extract ddocs', err);
+          process.exit(1);
         });
       } else if (change.id.indexOf('messages-') === 0) {
         console.log('Detected translations change - reloading');

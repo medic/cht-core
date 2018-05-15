@@ -9,8 +9,7 @@
     contacts: { name: 'contacts', v2: true },
     messages: { name: 'messages', v2: true },
     audit:    { name: 'audit', format: 'xml' },
-    feedback: { name: 'feedback', format: 'xml' },
-    logs:     { name: 'logs', format: 'zip' }
+    feedback: { name: 'feedback', format: 'xml' }
   };
 
   inboxServices.factory('DownloadUrl',

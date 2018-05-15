@@ -460,7 +460,7 @@ module.exports = function(grunt) {
         tasks: ['mmcss', 'build-common', 'deploy']
       },
       js: {
-        files: ['webapp/src/**/*', 'webapp/src/js/**/*', 'shared-libs/**'],
+        files: ['webapp/src/**/*', 'admin/src/**/*', 'shared-libs/**'],
         tasks: ['mmjs', 'build-common', 'deploy']
       },
       compiledddocs: {
@@ -516,10 +516,6 @@ module.exports = function(grunt) {
       },
     },
     nodeunit: {
-      webapp: [
-        'webapp/tests/nodeunit/unit/**/*.js',
-        '!webapp/tests/nodeunit/unit/*/utils.js',
-      ],
       api: [
         'api/tests/unit/**/*.js',
         '!api/tests/unit/utils.js',
@@ -828,6 +824,7 @@ module.exports = function(grunt) {
   grunt.registerTask('ci-performance', 'Run performance tests on CI', [
     'env:general',
     'exec:setupAdmin',
+    'exec:start_webdriver',
     'deploy',
     'test_perf',
   ]);

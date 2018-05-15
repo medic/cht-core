@@ -4,7 +4,8 @@ const _ = require('underscore'),
       config = require('../config'),
       smsparser = require('../services/report/smsparser'),
       validate = require('../services/report/validate'),
-      PublicError = require('../public-error');
+      PublicError = require('../public-error'),
+      DATE_NUMBER_STRING = /(\d{13,})/;
 
 const empty = val => {
   return val === '' ||
@@ -72,44 +73,22 @@ const addError = (record, error) => {
 };
 
 /*
- * Try to parse SMSSync gateway sent_timestamp field and use it for
- * reported_date.  Particularly useful when re-importing data from gateway to
+ * Try to parse sent_timestamp field and use it for reported_date.
+ * Particularly useful when re-importing data from gateway to
  * maintain accurate reported_date field.
  *
  * return unix timestamp integer or undefined
  */
 const parseSentTimestamp = str => {
-
   if (typeof str === 'number') {
     str = String(str);
   } else if (typeof str !== 'string') {
     return;
   }
 
-  // smssync 1.1.9 format
-  const match1 = str.match(/(\d{1,2})-(\d{1,2})-(\d{2})\s(\d{1,2}):(\d{2})(:(\d{2}))?/);
-
-  if (match1) {
-    const ret = new Date();
-
-    let year = ret.getFullYear();
-    year -= year % 100; // round to nearest 100
-    ret.setYear(year + parseInt(match1[3], 10)); // works until 2100
-
-    ret.setMonth(parseInt(match1[1],10) - 1);
-    ret.setDate(parseInt(match1[2], 10));
-    ret.setHours(parseInt(match1[4], 10));
-    ret.setMinutes(match1[5]);
-    ret.setSeconds(match1[7] || 0);
-    ret.setMilliseconds(0);
-    return ret.valueOf();
-  }
-
-  // smssync 2.0 format (ms since epoch)
-  const match2 = str.match(/(\d{13,})/);
-
-  if (match2) {
-    const ret = new Date(Number(match2[1]));
+  const match = str.match(DATE_NUMBER_STRING);
+  if (match) {
+    const ret = new Date(Number(match[1]));
     return ret.valueOf();
   }
 

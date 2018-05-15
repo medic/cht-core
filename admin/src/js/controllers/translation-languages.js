@@ -5,6 +5,7 @@ angular.module('controllers').controller('TranslationLanguagesCtrl',
     $log,
     $q,
     $scope,
+    Blob,
     DB,
     ExportProperties,
     Modal,
@@ -22,10 +23,9 @@ angular.module('controllers').controller('TranslationLanguagesCtrl',
 
       var content = ExportProperties(settings, doc);
       if (content) {
-        var blob = new Blob([ content ], { type: 'text/plain' });
         result.export = {
           name: doc._id + '.properties',
-          url: (window.URL || window.webkitURL).createObjectURL(blob)
+          url: Blob.text(content)
         };
       }
 

@@ -12,6 +12,7 @@ angular.module('inboxControllers').controller('AnalyticsTargetsCtrl',
 
     $scope.targets = [];
     $scope.targetsDisabled = !RulesEngine.enabled;
+    $scope.loading = true;
 
     TargetGenerator(function(err, targets) {
       if (err) {
@@ -20,6 +21,7 @@ angular.module('inboxControllers').controller('AnalyticsTargetsCtrl',
       // timeout to force digest
       $timeout(function() {
         $scope.targets = targets;
+        $scope.loading = false;
       });
     });
 

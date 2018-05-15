@@ -25,13 +25,14 @@ require('./controllers/export-contacts');
 require('./controllers/export-feedback');
 require('./controllers/export-messages');
 require('./controllers/export-reports');
-require('./controllers/export-server-logs');
 require('./controllers/forms-json');
 require('./controllers/forms-xml');
 require('./controllers/icons');
 require('./controllers/import-translation');
+require('./controllers/message-test');
 require('./controllers/permissions');
 require('./controllers/settings-advanced');
+require('./controllers/settings-backup');
 require('./controllers/settings-basic');
 require('./controllers/targets');
 require('./controllers/targets-edit');
@@ -49,6 +50,7 @@ require('./filters/resource-icon');
 require('./filters/translate-from');
 
 angular.module('services', []);
+require('./services/blob');
 require('./services/clean-etag');
 require('./services/create-user');
 require('./services/delete-user');
@@ -147,6 +149,15 @@ app.config(function(
         }
       }
     })
+    .state('settings.backup', {
+      url: '/backup',
+      views: {
+        tab: {
+          controller: 'SettingsBackupCtrl',
+          templateUrl: 'templates/settings_backup.html'
+        }
+      }
+    })
     .state('users', {
       url: '/users',
       controller: 'UsersCtrl',
@@ -189,15 +200,6 @@ app.config(function(
         tab: {
           controller: 'ExportFeedbackCtrl',
           templateUrl: 'templates/export_feedback.html'
-        }
-      }
-    })
-    .state('export.serverlogs', {
-      url: '/server-logs',
-      views: {
-        tab: {
-          controller: 'ExportServerLogsCtrl',
-          templateUrl: 'templates/export_server_logs.html'
         }
       }
     })
@@ -278,6 +280,11 @@ app.config(function(
       url: '/upgrade',
       controller: 'UpgradeCtrl',
       templateUrl: 'templates/upgrade.html'
+    })
+    .state('messagetest', {
+      url: '/message-test',
+      controller: 'MessageTestCtrl',
+      templateUrl: 'templates/message_test.html'
     });
 });
 

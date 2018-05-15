@@ -1,6 +1,5 @@
 const async = require('async'),
-      db = require('./src/db-pouch'),
-      dbNano = require('./src/db-nano'),
+      db = require('./src/db-nano'),
       config = require('./src/config'),
       migrations = require('./src/migrations'),
       ddocExtraction = require('./src/ddoc-extraction'),
@@ -21,9 +20,7 @@ const nodeVersionCheck = (cb) => {
   try {
     const [major, minor, patch] = process.versions.node.split('.').map(Number);
     if (major < MIN_MAJOR) {
-      // TODO: re-enable this before releasing 3.0
-      // throw new Error(`Node version ${major}.${minor}.${patch} is not supported, minimum is ${MIN_MAJOR}.0.0`);
-      console.warn(`Node version ${major}.${minor}.${patch} is not supported, minimum is ${MIN_MAJOR}.0.0`);
+      throw new Error(`Node version ${major}.${minor}.${patch} is not supported, minimum is ${MIN_MAJOR}.0.0`);
     }
     console.log(`Node Version: ${major}.${minor}.${patch}`);
     cb();
@@ -73,7 +70,7 @@ const couchDbNoAdminPartyModeCheck = callback => {
 };
 
 const couchDbVersionCheck = callback =>
-  dbNano.getCouchDbVersion((err, version) => {
+  db.getCouchDbVersion((err, version) => {
     if (err) {
       return callback(err);
     }
@@ -84,6 +81,10 @@ const couchDbVersionCheck = callback =>
 
 const asyncLog = message => async.asyncify(() => console.log(message));
 
+const _ddocExtraction = callback => ddocExtraction.run()
+  .then(() => callback())
+  .catch(callback);
+
 async.series([
   nodeVersionCheck,
   envVarsCheck,
@@ -91,7 +92,7 @@ async.series([
   couchDbVersionCheck,
 
   asyncLog('Extracting ddoc…'),
-  ddocExtraction.run.bind(null, db.medic),
+  _ddocExtraction,
   asyncLog('DDoc extraction completed successfully'),
 
   asyncLog('Loading configuration…'),
