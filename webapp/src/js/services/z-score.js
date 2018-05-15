@@ -70,15 +70,10 @@ angular.module('inboxServices').factory('ZScore',
     };
 
     var init = function() {
-      return DB().get(CONFIGURATION_DOC_ID)
-        .then(function(doc) {
-          tables = doc.charts;
-        })
-        .catch(function(err) {
-          if (err.status === 404) {
-            return;
-          }
-          throw err;
+      // use allDocs instead of get so a 404 doesn't report an error
+      return DB().allDocs({ key: CONFIGURATION_DOC_ID, include_docs: true })
+        .then(function(result) {
+          tables = result.rows.length && result.rows[0].doc.charts;
         });
     };
 
