@@ -27,7 +27,14 @@ const doExtend = (target, source) => {
 
 module.exports = {
   get: () => {
-    return getDoc().then(doc => doc.settings);
+    return getDoc()
+      .then(doc => doc.settings)
+      .catch(err => {
+        if (err.status === 404) {
+          return {};
+        }
+        throw err;
+      });
   },
   update: (body, replace) => {
     return getDoc().then(doc => {
