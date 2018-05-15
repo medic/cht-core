@@ -135,7 +135,7 @@ const createSomeContacts = (nbr, parent) => {
 
 const consumeChanges = (username, results, lastSeq) => {
   const opts = { since: lastSeq, feed: 'longpoll' };
-  if (results.length) {
+  if (results && results.length) {
     opts.timeout = 2000;
   }
 
@@ -205,6 +205,7 @@ describe('changes handler', () => {
   afterEach(done => utils.revertDb(DOCS_TO_KEEP).then(done));
 
   describe('Filtered replication', () => {
+    let generalSeq = 0;
     it('returns a full list of allowed changes, regardless of the requested limit', () => {
       const allowedDocs = createSomeContacts(12, 'fixture:bobville');
       const deniedDocs = createSomeContacts(10, 'irrelevant-place');
@@ -216,6 +217,7 @@ describe('changes handler', () => {
         ]))
         .then(() => requestChanges('bob', { limit: 7 }))
         .then(changes => {
+          generalSeq = changes.last_seq;
           assertChangeIds(changes,
             'org.couchdb.user:bob',
             'fixture:user:bob',
@@ -241,18 +243,20 @@ describe('changes handler', () => {
           return requestChanges('bob');
         })
         .then(changes => {
-          seq = changes.last_seq;
           assertChangeIds(changes,
             'org.couchdb.user:bob',
             'fixture:bobville',
             'fixture:user:bob',
             ...allowedDocIds);
-          return Promise.resolve();
+          return consumeChanges('bob', [], seq);
         })
-        .then(() => Promise.all([
-          utils.saveDocs(deniedDocs.map(doc => _.extend(doc, { _deleted: true }))),
-          utils.saveDocs(allowedDocs.map(doc => _.extend(doc, { _deleted: true }))),
-        ]))
+        .then(changes => {
+          seq = changes.last_seq;
+          return Promise.all([
+            utils.saveDocs(deniedDocs.map(doc => _.extend(doc, { _deleted: true }))),
+            utils.saveDocs(allowedDocs.map(doc => _.extend(doc, { _deleted: true }))),
+          ]);
+        })
         .then(() => requestChanges('bob'))
         .then(changes => {
           assertChangeIds(changes,
@@ -263,6 +267,7 @@ describe('changes handler', () => {
         })
         .then(() => consumeChanges('bob', [], seq))
         .then(changes => {
+          generalSeq = changes.last_seq;
           console.log(changes);
           expect(changes.results.every(change => change.deleted)).toBe(true);
           expect(changes.results.every(change => allowedDocIds.indexOf(change.id) !== -1)).toBe(true);
@@ -274,13 +279,13 @@ describe('changes handler', () => {
       const deniedDocs = createSomeContacts(3, 'irrelevant-place');
       const allowedDocIds = allowedDocs.map(doc => doc._id);
 
-      return requestChanges('bob')
-        .then(changes => Promise.all([
-          consumeChanges('bob', [], changes.last_seq),
+      return Promise.all([
+          consumeChanges('bob', [], generalSeq),
           utils.saveDocs(allowedDocs),
           utils.saveDocs(deniedDocs)
-        ]))
+        ])
         .then(([changes]) => {
+          generalSeq = changes.last_seq;
           expect(changes.results.every(change => allowedDocIds.indexOf(change.id) !== -1)).toBe(true);
         });
     });
@@ -306,6 +311,7 @@ describe('changes handler', () => {
           utils.saveDocs(allowedDocs.map(doc => _.extend(doc, { _deleted: true })))
         ]))
         .then(([ changes ]) => {
+          generalSeq = changes.last_seq;
           expect(changes.results.every(change => allowedDocIds.indexOf(change.id) !== -1)).toBe(true);
           expect(changes.results.every(change => change.deleted)).toBe(true);
         });
@@ -335,6 +341,7 @@ describe('changes handler', () => {
             'fixture:user:steve',
             'fixture:steveville',
             ...allowedSteve.map(doc => doc._id));
+          generalSeq = bobsChanges.last_seq;
         });
     });
 
@@ -342,22 +349,18 @@ describe('changes handler', () => {
       const allowedBob = createSomeContacts(3, 'fixture:bobville');
       const allowedSteve = createSomeContacts(3, 'fixture:steveville');
 
-      return Promise
-        .all([
-          requestChanges('bob'),
-          requestChanges('steve')
-        ])
-        .then(([ bobsChanges, stevesChanges ]) => Promise.all([
-          consumeChanges('bob', [], bobsChanges.last_seq),
-          consumeChanges('steve', [], stevesChanges.last_seq),
+      return Promise.all([
+          consumeChanges('bob', [], generalSeq),
+          consumeChanges('steve', [], generalSeq),
           utils.saveDocs(allowedBob),
           utils.saveDocs(allowedSteve),
-        ]))
+        ])
         .then(([ bobsChanges, stevesChanges ]) => {
           console.log(bobsChanges);
           console.log(stevesChanges);
           expect(bobsChanges.results.every(change => _.pluck(allowedBob, '_id').indexOf(change.id) !== -1)).toBe(true);
           expect(stevesChanges.results.every(change => _.pluck(allowedSteve, '_id').indexOf(change.id) !== -1)).toBe(true);
+          generalSeq = bobsChanges.last_seq;
         });
     });
 
@@ -392,9 +395,10 @@ describe('changes handler', () => {
           consumeChanges('bob', [], bobsSeq),
           consumeChanges('steve', [], stevesSeq),
         ]))
-        .then(([ bobsTombstones, stevesTombstones ]) => {
-          expect(bobsTombstones.results.every(change => _.pluck(allowedBob, '_id').indexOf(change.id) !== -1)).toBe(true);
-          expect(stevesTombstones.results.every(change => _.pluck(allowedSteve, '_id').indexOf(change.id) !== -1)).toBe(true);
+        .then(([ bobsChanges, stevesChanges ]) => {
+          expect(bobsChanges.results.every(change => _.pluck(allowedBob, '_id').indexOf(change.id) !== -1)).toBe(true);
+          expect(stevesChanges.results.every(change => _.pluck(allowedSteve, '_id').indexOf(change.id) !== -1)).toBe(true);
+          generalSeq = stevesChanges.last_seq;
         });
     });
 
@@ -415,6 +419,7 @@ describe('changes handler', () => {
           const allowedIds = ['new_allowed_contact', 'new_allowed_report'];
           expect(changes.results.length).toBe(2);
           expect(changes.results.every(change => allowedIds.indexOf(change.id) !== -1)).toBe(true);
+          generalSeq = changes.last_seq;
         });
     });
 
@@ -436,6 +441,7 @@ describe('changes handler', () => {
           ]);
         })
         .then(([ changes ]) => {
+          generalSeq = changes.last_seq;
           expect(changes.results.every(change => _.pluck(allowedBob, '_id').indexOf(change.id) !== -1 || change.id === 'org.couchdb.user:steve') ).toBe(true);
         });
     });
