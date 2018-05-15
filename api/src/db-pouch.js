@@ -2,9 +2,9 @@ const PouchDB = require('pouchdb-core');
 PouchDB.plugin(require('pouchdb-adapter-http'));
 PouchDB.plugin(require('pouchdb-mapreduce'));
 
-const { COUCH_URL, UNIT_TEST_ENV } = process.env;
+const { COUCH_URL, INTEGRATION_TEST_ENV, UNIT_TEST_ENV } = process.env;
 
-if(UNIT_TEST_ENV) {
+if (UNIT_TEST_ENV) {
   const stubMe = functionName => () => {
     console.error(new Error(`db.${functionName}() not stubbed!  UNIT_TEST_ENV=${UNIT_TEST_ENV}.  Please stub PouchDB functions that will be interacted with in unit tests.`));
     process.exit(1);
@@ -19,7 +19,12 @@ if(UNIT_TEST_ENV) {
     get: stubMe('get'),
     getAttachment: stubMe('getAttachment'),
   };
-} else if(COUCH_URL) {
+} else if (COUCH_URL && INTEGRATION_TEST_ENV) {
+  const couchUrl = COUCH_URL && COUCH_URL.replace(/\/?$/, '-test');
+  const DB = new PouchDB(couchUrl);
+
+  module.exports.medic = DB;
+} else if (COUCH_URL) {
   // strip trailing slash from to prevent bugs in path matching
   const couchUrl = COUCH_URL && COUCH_URL.replace(/\/$/, '');
   const DB = new PouchDB(couchUrl);

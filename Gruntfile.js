@@ -128,6 +128,13 @@ module.exports = function(grunt) {
       }
     },
     env: {
+      integrationTest: {
+        options: {
+          add: {
+            INTEGRATION_TEST_ENV: '1'
+          }
+        }
+      },
       unitTest: {
         options: {
           add: {
@@ -138,6 +145,7 @@ module.exports = function(grunt) {
       general: {
         options: {
           replace: {
+            INTEGRATION_TEST_ENV: '',
             UNIT_TEST_ENV: ''
           }
         }
@@ -760,6 +768,7 @@ module.exports = function(grunt) {
     'exec:resetTestDatabases',
     'build-ddoc',
     'couch-push:test',
+    'env:integrationTest',
     'exec:run_integration_tests',
     'test_api_integration'
   ]);
