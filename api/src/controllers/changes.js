@@ -205,7 +205,6 @@ const getChanges = feed => {
 
       // move the feed to the longpoll list to receive new changes
       normalFeeds = _.without(normalFeeds, feed);
-      feed.pendingChanges = [];
       longpollFeeds.push(feed);
     })
     .catch(err => {

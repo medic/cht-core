@@ -311,7 +311,7 @@ describe('transitions', () => {
   it('processes deleted changes through TombstoneUtils to create tombstones', (done) => {
     sinon.stub(transitions._tombstoneUtils, 'processChange').resolves();
     sinon.stub(metadata, 'update').resolves();
-
+    sinon.stub(dbPouch.sentinel, 'put').resolves({});
     sinon.stub(dbPouch.sentinel, 'get').resolves({ _id: '_local/sentinel-meta-data', processed_seq: 12});
 
     const on = sinon.stub();
@@ -346,7 +346,7 @@ describe('transitions', () => {
   it('does not advance metadata document if creating tombstone fails', (done) => {
     sinon.stub(transitions._tombstoneUtils, 'processChange').rejects();
     sinon.stub(metadata, 'update').resolves();
-
+    sinon.stub(dbPouch.sentinel, 'put').resolves({});
     sinon.stub(dbPouch.sentinel, 'get').resolves({ _id: '_local/sentinel-meta-data', processed_seq: 12});
 
     const on = sinon.stub();

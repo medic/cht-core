@@ -642,7 +642,7 @@ describe('Changes controller', () => {
     });
   });
 
-  describe('handling waiting feeds', () => {
+  describe('handling longpoll feeds', () => {
     it('pushes allowed live changes to the feed results', () => {
       authorization.getValidatedDocIds.resolves(['a', 'b']);
       testReq.query = { feed: 'longpoll' };
@@ -924,7 +924,7 @@ describe('Changes controller', () => {
         });
     });
 
-    it('handles multiple debounced changes correctly', () => {
+    it('handles subjectIds being updated by incoming changes', () => {
       testReq.query = { feed: 'longpoll' };
       authorization.getValidatedDocIds.resolves([1, 2, 3]);
 
@@ -983,6 +983,65 @@ describe('Changes controller', () => {
             ],
             last_seq: 4
           }));
+        });
+    });
+
+    it('does not discard disallowed pendingChanges when switching from normal to longpoll', () => {
+      testReq.query = { feed: 'longpoll' };
+      authorization.getValidatedDocIds.resolves([1, 2, 3]);
+      authorization.allowedChange.withArgs(sinon.match.any, sinon.match({ change: { id: 'report-3' } }))
+        .onCall(0).returns(false)
+        .onCall(1).returns(true);
+      authorization.allowedChange.withArgs(sinon.match.any, sinon.match({ change: { id: 'report-2' } }))
+        .onCall(0).returns(false)
+        .onCall(1).returns(false)
+        .onCall(2).returns(false);
+      authorization.allowedChange.withArgs(sinon.match.any, sinon.match({ change: { id: 'report-1' } }))
+        .onCall(0).returns(false)
+        .onCall(1).returns(true);
+      authorization.allowedChange.withArgs(sinon.match.any, sinon.match({ change: { id: 'contact-1' } })).returns(true);
+      authorization.allowedChange.withArgs(sinon.match.any, sinon.match({ change: { id: 'contact-2' } })).returns(false);
+
+      return controller
+        .request(proxy, testReq, testRes)
+        .then(nextTick)
+        .then(() => {
+          const emitter = controller._getContinuousFeed();
+          emitter.emit('change', { id: 'report-3', changes: [] }, 0, 1);
+          emitter.emit('change', { id: 'report-2', changes: [] }, 0, 2);
+          controller
+            ._getNormalFeeds()[0]
+            .upstreamRequests.forEach(upstreamReq => upstreamReq.complete(null, { results: [], last_seq: 2 }));
+        })
+        .then(nextTick)
+        .then(() => {
+          const emitter = controller._getContinuousFeed();
+          clock.tick(100);
+          emitter.emit('change', { id: 'report-1', changes: [] }, 0, 3);
+          clock.tick(100);
+          emitter.emit('change', { id: 'contact-1', changes: [] }, 0, 4);
+          clock.tick(100);
+          emitter.emit('change', { id: 'contact-2', changes: [] }, 0, 5);
+          const feed = controller._getLongpollFeeds()[0];
+          feed.results.length.should.equal(3);
+          feed.lastSeq.should.equal(5);
+          clock.tick(200);
+          testRes.write.callCount.should.equal(1);
+          testRes.end.callCount.should.equal(1);
+          testRes.write.args[0][0].should.equal(JSON.stringify({
+            results: [
+              { id: 'contact-1', changes: [] },
+              { id: 'report-3', changes: [] },
+              { id: 'report-1', changes: [] }
+            ],
+            last_seq: 5
+          }));
+
+          authorization.allowedChange.withArgs(sinon.match.any, sinon.match({ change: { id: 'report-3' } })).callCount.should.equal(2);
+          authorization.allowedChange.withArgs(sinon.match.any, sinon.match({ change: { id: 'report-2' } })).callCount.should.equal(3);
+          authorization.allowedChange.withArgs(sinon.match.any, sinon.match({ change: { id: 'report-1' } })).callCount.should.equal(2);
+          authorization.allowedChange.withArgs(sinon.match.any, sinon.match({ change: { id: 'contact-1' } })).callCount.should.equal(1);
+          authorization.allowedChange.withArgs(sinon.match.any, sinon.match({ change: { id: 'contact-2' } })).callCount.should.equal(1);
         });
     });
   });
