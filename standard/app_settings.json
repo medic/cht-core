@@ -3321,9 +3321,9 @@
         "code": "N",
         "icon": "new-person",
         "label": {
-          "en": "New person (SMS)",
+          "en": "New Person (SMS)",
           "hi": "नया व्यक्ति  (SMS)",
-          "id": "Orang baru (SMS)"
+          "id": "Orang Baru (SMS)"
         }
       },
       "fields": {
@@ -3356,9 +3356,9 @@
         "code": "C",
         "icon": "child",
         "label": {
-          "en": "New child + immunization registration (SMS)",
+          "en": "New Child + Immunization Registration (SMS)",
           "hi": "नया बच्चा + टीकाकरण का रेजिस्ट्रेशन (SMS)",
-          "id": "Baru anak dan pendaftaran imunisasi (SMS)"
+          "id": "Baru Anak Dan Pendaftaran Imunisasi (SMS)"
         }
       },
       "fields": {
@@ -3417,9 +3417,9 @@
         "code": "CHILD",
         "icon": "child",
         "label": {
-          "en": "New child + immunization registration (Collect)",
+          "en": "New Child + Immunization Registration (Collect)",
           "hi": "नया बच्चा + टीकाकरण का रेजिस्ट्रेशन (Collect)",
-          "id": "Baru anak dan pendaftaran imunisasi (Collect)"
+          "id": "Baru Anak Dan Pendaftaran Imunisasi (Collect)"
         }
       },
       "fields": {
@@ -3478,9 +3478,9 @@
         "code": "P",
         "icon": "pregnancy-1",
         "label": {
-          "en": "New pregnancy (SMS)",
+          "en": "New Pregnancy (SMS)",
           "hi": "नयी गर्भावस्था (SMS)",
-          "id": "Kehamilan baru (SMS)"
+          "id": "Kehamilan Baru (SMS)"
         }
       },
       "fields": {
@@ -3544,9 +3544,9 @@
         "code": "V",
         "icon": "clinic",
         "label": {
-          "en": "Clinic visit (SMS)",
+          "en": "Clinic Visit (SMS)",
           "hi": "अस्पताल में जांच (SMS)",
-          "id": "Fasilitas kunjungan (SMS)"
+          "id": "Fasilitas Kunjungan (SMS)"
         }
       },
       "fields": {
@@ -3602,9 +3602,9 @@
         "code": "M",
         "icon": "clinic",
         "label": {
-          "en": "Postnatal visit (SMS)",
-          "hi": " (SMS)",
-          "id": " (SMS)"
+          "en": "Postnatal Visit (SMS)",
+          "hi": "Postnatal Visit (SMS)",
+          "id": "Postnatal Visit (SMS)"
         }
       },
       "fields": {
@@ -3640,9 +3640,9 @@
         "code": "D",
         "icon": "mother-child",
         "label": {
-          "en": "Delivery report (SMS)",
+          "en": "Delivery Report (SMS)",
           "hi": "डिलीवरी की रिपोर्ट (SMS)",
-          "id": "Laporan persalinan (SMS)"
+          "id": "Laporan Persalinan (SMS)"
         }
       },
       "fields": {
@@ -3718,9 +3718,9 @@
         "code": "F",
         "icon": "risk",
         "label": {
-          "en": "Danger sign flag (SMS)",
+          "en": "Danger Sign Flag (SMS)",
           "hi": "खतरे की सूचना (SMS)",
-          "id": "Laporan tanda bahaya (SMS)"
+          "id": "Laporan Tanda Bahaya (SMS)"
         }
       },
       "fields": {
@@ -3976,7 +3976,7 @@
         "code": "OPV0",
         "icon": "immunization",
         "label": {
-          "en": " OPV0 Oral polio"
+          "en": " OPV0 Oral Polio"
         }
       },
       "fields": {
@@ -4026,7 +4026,7 @@
         "code": "OPV1",
         "icon": "immunization",
         "label": {
-          "en": " OPV1 Oral polio"
+          "en": " OPV1 Oral Polio"
         }
       },
       "fields": {
@@ -4076,7 +4076,7 @@
         "code": "OPV2",
         "icon": "immunization",
         "label": {
-          "en": " OPV2 Oral polio"
+          "en": " OPV2 Oral Polio"
         }
       },
       "fields": {
@@ -4126,7 +4126,7 @@
         "code": "OPV3",
         "icon": "immunization",
         "label": {
-          "en": " OPV3 Oral polio"
+          "en": " OPV3 Oral Polio"
         }
       },
       "fields": {
@@ -4176,7 +4176,7 @@
         "code": "PCV1",
         "icon": "immunization",
         "label": {
-          "en": " PCV1 Pneumococcal pneumonia"
+          "en": " PCV1 Pneumococcal Pneumonia"
         }
       },
       "fields": {
@@ -4226,7 +4226,7 @@
         "code": "PCV2",
         "icon": "immunization",
         "label": {
-          "en": " PCV2 Pneumococcal pneumonia"
+          "en": " PCV2 Pneumococcal Pneumonia"
         }
       },
       "fields": {
@@ -4276,7 +4276,7 @@
         "code": "PCV3",
         "icon": "immunization",
         "label": {
-          "en": " PCV3 Pneumococcal pneumonia"
+          "en": " PCV3 Pneumococcal Pneumonia"
         }
       },
       "fields": {
@@ -4526,7 +4526,7 @@
         "code": "MTV1",
         "icon": "immunization",
         "label": {
-          "en": " MTV1 Maternal tetanus"
+          "en": " MTV1 Maternal Tetanus"
         }
       },
       "fields": {
@@ -4576,7 +4576,7 @@
         "code": "MTV2",
         "icon": "immunization",
         "label": {
-          "en": " MTV2 Maternal tetanus"
+          "en": " MTV2 Maternal Tetanus"
         }
       },
       "fields": {
@@ -5176,7 +5176,7 @@
         "code": "JE",
         "icon": "immunization",
         "label": {
-          "en": " JE Japanese encephalitis"
+          "en": " JE Japanese Encephalitis"
         }
       },
       "fields": {
@@ -5226,7 +5226,7 @@
         "code": "YF",
         "icon": "immunization",
         "label": {
-          "en": " YF Yellow fever"
+          "en": " YF Yellow Fever"
         }
       },
       "fields": {
@@ -5376,7 +5376,7 @@
         "code": "HPV1",
         "icon": "immunization",
         "label": {
-          "en": " HPV1 Human papillomavirus"
+          "en": " HPV1 Human Papillomavirus"
         }
       },
       "fields": {
@@ -5426,7 +5426,7 @@
         "code": "HPV2",
         "icon": "immunization",
         "label": {
-          "en": " HPV2 Human papillomavirus"
+          "en": " HPV2 Human Papillomavirus"
         }
       },
       "fields": {
@@ -5476,7 +5476,7 @@
         "code": "HPV3",
         "icon": "immunization",
         "label": {
-          "en": " HPV3 Human papillomavirus"
+          "en": " HPV3 Human Papillomavirus"
         }
       },
       "fields": {
@@ -5828,7 +5828,7 @@
         "label": {
           "en": "Turn Notifications OFF (SMS)",
           "hi": "सूचना बंद करें (SMS)",
-          "id": "Menonaktifkan pesan (SMS)"
+          "id": "Menonaktifkan Pesan (SMS)"
         }
       },
       "fields": {
@@ -5886,7 +5886,7 @@
         "label": {
           "en": "Turn Notifications ON (SMS)",
           "hi": "सूचना शूरू करें (SMS)",
-          "id": "Menghidupkan pesan (SMS)"
+          "id": "Menghidupkan Pesan (SMS)"
         }
       },
       "fields": {
