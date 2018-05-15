@@ -578,7 +578,7 @@ describe('Changes controller', () => {
         });
     });
 
-    it('handles multiple debounced changes correctly', () => {
+    it('handles multiple pending changes correctly', () => {
       testReq.query = { feed: 'longpoll' };
       authorization.getValidatedDocIds.resolves([1, 2, 3]);
 
