@@ -243,7 +243,6 @@ describe('changes handler', () => {
         ])
         .then(([changes]) => {
           generalSeq = changes.last_seq;
-          console.log(changes);
           expect(changes.results.every(change => bobsIds.indexOf(change.id) !== -1)).toBe(true);
         });
     });
@@ -291,8 +290,6 @@ describe('changes handler', () => {
           utils.saveDocs(allowedSteve),
         ])
         .then(([ bobsChanges, stevesChanges ]) => {
-          console.log(bobsChanges);
-          console.log(stevesChanges);
           expect(bobsChanges.results.every(change => _.pluck(allowedBob, '_id').indexOf(change.id) !== -1)).toBe(true);
           expect(stevesChanges.results.every(change => _.pluck(allowedSteve, '_id').indexOf(change.id) !== -1)).toBe(true);
           generalSeq = bobsChanges.last_seq;
@@ -391,7 +388,6 @@ describe('changes handler', () => {
         .then(() => consumeChanges('steve', [], seq))
         .then(changes => {
           generalSeq = changes.last_seq;
-          console.log(changes);
           expect(changes.results.every(change => change.deleted)).toBe(true);
           expect(changes.results.every(change => stevesIds.indexOf(change.id) !== -1)).toBe(true);
         });
