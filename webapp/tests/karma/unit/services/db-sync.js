@@ -11,18 +11,22 @@ describe('DBSync service', () => {
       userCtx,
       sync,
       Auth,
-      infiniteOn;
+      circularOn;
 
   beforeEach(() => {
+    circularOn = sinon.stub();
+    circularOn.returns({ on: circularOn });
     to = sinon.stub();
+    to.returns({ on: circularOn });
     from = sinon.stub();
+    from.returns({ on: circularOn });
     query = sinon.stub();
     allDocs = sinon.stub();
     isAdmin = sinon.stub();
     userCtx = sinon.stub();
     sync = sinon.stub();
     Auth = sinon.stub();
-    infiniteOn = sinon.stub().returns({ on: sinon.stub().returns({ on: sinon.stub().returns({ on: sinon.stub().returns({ on: sinon.stub().returns({ on: sinon.stub() }) }) }) }) });
+
     module('inboxApp');
     module($provide => {
       $provide.factory('DB', KarmaUtils.mockDB({
@@ -56,8 +60,6 @@ describe('DBSync service', () => {
 
   it('initiates sync for non-admin', () => {
     isAdmin.returns(false);
-    to.returns({ on :infiniteOn});
-    from.returns({ on :infiniteOn});
     Auth.returns(Promise.resolve());
     userCtx.returns({ name: 'mobile', roles: [ 'district-manager' ] });
     allDocs.returns(Promise.resolve({ rows: [
@@ -89,8 +91,6 @@ describe('DBSync service', () => {
 
   it('does not sync to remote if user lacks "can_edit" permission', () => {
     isAdmin.returns(false);
-    to.returns({ on: infiniteOn});
-    from.returns({ on: infiniteOn});
     Auth.returns(Promise.reject('unauthorized'));
     userCtx.returns({ name: 'mobile', roles: [ 'district-manager' ] });
     allDocs.returns(Promise.resolve({ rows: [
@@ -118,11 +118,11 @@ describe('DBSync service', () => {
 
     before(() => {
       isAdmin.returns(false);
-      to.returns({ on :infiniteOn });
-      from.returns({ on :infiniteOn });
       Auth.returns(Promise.resolve());
       userCtx.returns({ name: 'mobile', roles: [ 'district-manager' ] });
       allDocs.returns(Promise.resolve({ rows: [] }));
+      to.returns({ on: circularOn });
+      from.returns({ on: circularOn });
       return service().then(() => {
         chai.expect(to.callCount).to.equal(1);
         filterFunction = to.args[0][1].filter;
