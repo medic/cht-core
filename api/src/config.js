@@ -1,18 +1,18 @@
-var _ = require('underscore'),
-    follow = require('follow'),
-    db = require('./db-nano'),
-    ddocExtraction = require('./ddoc-extraction'),
-    translations = require('./translations'),
-    defaults = require('./config.default.json'),
-    settingsService = require('./services/settings'),
-    settings = {},
-    translationCache = {};
+const _ = require('underscore'),
+      db = require('./db-pouch'),
+      ddocExtraction = require('./ddoc-extraction'),
+      translations = require('./translations'),
+      defaults = require('./config.default.json'),
+      settingsService = require('./services/settings'),
+      translationCache = {};
 
-var getMessage = function(value, locale) {
+let settings = {};
 
-  var _findTranslation = function(value, locale) {
+const getMessage = (value, locale) => {
+
+  const _findTranslation = (value, locale) => {
     if (value.translations) {
-      var translation = _.findWhere(
+      const translation = _.findWhere(
         value.translations, { locale: locale }
       );
       return translation && translation.content;
@@ -27,13 +27,13 @@ var getMessage = function(value, locale) {
     return value;
   }
 
-  var test = false;
+  let test = false;
   if (locale === 'test') {
     test = true;
     locale = 'en';
   }
 
-  var result =
+  let result =
 
     // 1) Look for the requested locale
     _findTranslation(value, locale) ||
@@ -57,16 +57,16 @@ var getMessage = function(value, locale) {
   return result;
 };
 
-var loadSettings = function() {
+const loadSettings = function() {
   return settingsService.get()
     .then(newSettings => {
       settings = newSettings || {};
-      var original = JSON.stringify(settings);
+      const original = JSON.stringify(settings);
       _.defaults(settings, defaults);
       // add any missing permissions
       if (settings.permissions) {
         defaults.permissions.forEach(function(def) {
-          var configured = _.findWhere(settings.permissions, { name: def.name });
+          const configured = _.findWhere(settings.permissions, { name: def.name });
           if (!configured) {
             settings.permissions.push(def);
           }
@@ -81,24 +81,22 @@ var loadSettings = function() {
     });
 };
 
-var loadTranslations = function() {
-  var options = { key: [ 'translations', true ], include_docs: true };
-  db.medic.view('medic-client', 'doc_by_type', options, function(err, result) {
+const loadTranslations = () => {
+  const options = { key: [ 'translations', true ], include_docs: true };
+  db.medic.query('medic-client/doc_by_type', options, (err, result) => {
     if (err) {
       console.error('Error loading translations - starting up anyway', err);
       return;
     }
-    result.rows.forEach(function(row) {
+    result.rows.forEach(row => {
       translationCache[row.doc.code] = row.doc.values;
     });
   });
 };
 
 module.exports = {
-  get: function(key) {
-    return key ? settings[key] : settings;
-  },
-  translate: function(key, locale, ctx) {
+  get: key => key ? settings[key] : settings,
+  translate: (key, locale, ctx) => {
     if (_.isObject(locale)) {
       ctx = locale;
       locale = null;
@@ -107,7 +105,7 @@ module.exports = {
     if (_.isObject(key)) {
       return getMessage(key, locale) || key;
     }
-    var value = (translationCache[locale] && translationCache[locale][key]) ||
+    const value = (translationCache[locale] && translationCache[locale][key]) ||
                 (translationCache.en && translationCache.en[key]) ||
                 key;
     // underscore templates will return ReferenceError if all variables in
@@ -118,35 +116,38 @@ module.exports = {
       return value;
     }
   },
-  load: function(callback) {
+  load: callback => {
     loadSettings().then(() => callback()).catch(callback);
     loadTranslations();
   },
-  listen: function() {
-    var feed = new follow.Feed({ db: process.env.COUCH_URL, since: 'now' });
-    feed.on('change', function(change) {
-      if (change.id === '_design/medic') {
-        console.log('Detected ddoc change - reloading');
-        translations.run(function(err) {
-          if (err) {
-            console.error('Failed to update translation docs', err);
-          }
-        });
-        ddocExtraction.run().catch(err => {
-          console.error('Something went wrong trying to extract ddocs', err);
-          process.exit(1);
-        });
-      } else if (change.id === 'settings') {
-        console.log('Detected settings change - reloading');
-        loadSettings().catch(err => {
-          console.error('Failed to reload settings', err);
-          process.exit(1);
-        });
-      } else if (change.id.indexOf('messages-') === 0) {
-        console.log('Detected translations change - reloading');
-        loadTranslations();
-      }
-    });
-    feed.follow();
+  listen: () => {
+    db.medic.changes({ live: true, since: 'now' })
+      .on('change', change => {
+        if (change.id === '_design/medic') {
+          console.log('Detected ddoc change - reloading');
+          translations.run(err => {
+            if (err) {
+              console.error('Failed to update translation docs', err);
+            }
+          });
+          ddocExtraction.run().catch(err => {
+            console.error('Something went wrong trying to extract ddocs', err);
+            process.exit(1);
+          });
+        } else if (change.id === 'settings') {
+          console.log('Detected settings change - reloading');
+          loadSettings().catch(err => {
+            console.error('Failed to reload settings', err);
+            process.exit(1);
+          });
+        } else if (change.id.indexOf('messages-') === 0) {
+          console.log('Detected translations change - reloading');
+          loadTranslations();
+        }
+      })
+      .on('error', err => {
+        console.error('Error watching changes, restarting', err);
+        process.exit(1);
+      });
   }
 };
