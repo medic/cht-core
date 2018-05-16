@@ -36,6 +36,14 @@ describe('ZScore service', () => {
       }]
     };
 
+    it('returns undefined when no z-score doc', () => {
+      allDocs.resolves({ rows: [ ] });
+      return service().then(util => {
+        const actual = util('weight-for-age', 'male', 10, 150);
+        chai.expect(actual).to.equal(undefined);
+      });
+    });
+
     it('returns undefined for unconfigured chart', () => {
       mockAllDocs({ charts: [] });
       return service().then(util => {
