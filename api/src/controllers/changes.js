@@ -386,7 +386,7 @@ var hasNewApplicableDoc = function(feed, changes) {
   });
 };
 
-// WARNING: If updating this function also update the docs_by_replication_key view in lib/views.js
+// WARNING: If updating this function also update the docs_by_replication_key view in the medic ddoc
 var getReplicationKey = function(doc) {
   if (doc._id === 'resources' ||
       doc._id === 'appcache' ||
