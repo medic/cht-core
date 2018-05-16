@@ -4,6 +4,7 @@ angular.module('inboxServices').factory('MessageContacts',
   function(
     AddReadStatus,
     DB,
+    HydrateMessages,
     HydrateContactNames
   ) {
     'use strict';
@@ -49,9 +50,11 @@ angular.module('inboxServices').factory('MessageContacts',
     var getMessages = function(params) {
       return DB().query('medic-client/messages_by_contact_date', params)
         .then(function(response) {
-          var messages = response.rows;
-          addDetail(messages);
-          return messages;
+          return HydrateMessages(response.rows)
+            .then(function(messages) {
+              addDetail(messages);
+              return messages;
+            });
         });
     };
 
