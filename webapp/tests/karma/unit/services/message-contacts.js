@@ -4,11 +4,13 @@ describe('MessageContacts service', () => {
 
   let service,
       query,
+      hydrateMessages,
       hydrateContactNames,
       addReadStatus;
 
   beforeEach(() => {
     query = sinon.stub();
+    hydrateMessages = sinon.stub();
     hydrateContactNames = sinon.stub();
     addReadStatus = {
       messages: sinon.stub()
@@ -18,6 +20,7 @@ describe('MessageContacts service', () => {
     module($provide => {
       $provide.factory('DB', KarmaUtils.mockDB({ query: query }));
       $provide.value('HydrateContactNames', hydrateContactNames);
+      $provide.value('HydrateMessages', hydrateMessages);
       $provide.value('AddReadStatus', addReadStatus);
     });
     inject($injector => service = $injector.get('MessageContacts'));
@@ -31,6 +34,7 @@ describe('MessageContacts service', () => {
         { key: [ '4321' ], value: { id: 'b', from: '4321' } },
       ];
       query.returns(Promise.resolve({ rows: given }));
+      hydrateMessages.returns(Promise.resolve(given));
       hydrateContactNames.returns(Promise.resolve([]));
       return service.list().then(() => {
         chai.expect(query.args[0][1]).to.deep.equal({
@@ -78,6 +82,7 @@ describe('MessageContacts service', () => {
         }
       }];
       query.returns(Promise.resolve({ rows: given }));
+      hydrateMessages.returns(Promise.resolve(given));
       return service.conversation('abc').then(actual => {
         chai.expect(query.args[0][1]).to.deep.equal({
           reduce: false,
@@ -110,6 +115,7 @@ describe('MessageContacts service', () => {
         }
       }];
       query.returns(Promise.resolve({ rows: given }));
+      hydrateMessages.returns(Promise.resolve(given));
       return service.conversation('abc', 45).then(actual => {
         chai.expect(query.args[0][1]).to.deep.equal({
           reduce: false,
