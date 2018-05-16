@@ -160,7 +160,7 @@ describe('Users controller', () => {
   });
 
   describe('validateUser', () => {
-    it('defines custom error when not found.', done => {
+    it('defines custom error when not found', done => {
       sinon.stub(db._users, 'get').callsArgWith(1, {statusCode: 404});
       controller._validateUser('x', err => {
         chai.expect(err.message).to.equal('Failed to find user.');
@@ -170,7 +170,7 @@ describe('Users controller', () => {
   });
 
   describe('validateUserSettings', () => {
-    it('defines custom error when not found.', done => {
+    it('defines custom error when not found', done => {
       sinon.stub(db.medic, 'get').callsArgWith(1, {statusCode: 404});
       controller._validateUserSettings('x', err => {
         chai.expect(err.message).to.equal('Failed to find user settings.');
@@ -595,7 +595,7 @@ describe('Users controller', () => {
 
   describe('createUser', () => {
 
-    it('returns error if missing fields.', done => {
+    it('returns error if missing fields', done => {
       // empty
       controller.createUser({}, err => {
         chai.expect(err.code).to.equal(400);
@@ -671,7 +671,7 @@ describe('Users controller', () => {
       });
     });
 
-    it('returns error if contact.parent lookup fails.', done => {
+    it('returns error if contact.parent lookup fails', done => {
       sinon.stub(controller, '_validateNewUsername').callsArg(1);
       sinon.stub(controller, '_createPlace').callsArgWith(2, null, {}, {});
       sinon.stub(controller, '_setContactParent').callsArgWith(2, 'kablooey');
@@ -681,7 +681,7 @@ describe('Users controller', () => {
       });
     });
 
-    it('returns error if place lookup fails.', done => {
+    it('returns error if place lookup fails', done => {
       sinon.stub(controller, '_validateNewUsername').callsArg(1);
       sinon.stub(controller, '_createPlace').callsArgWith(2, 'fail');
       controller.createUser(userData, err => {
@@ -690,7 +690,7 @@ describe('Users controller', () => {
       });
     });
 
-    it('returns error if place is not within contact.', done => {
+    it('returns error if place is not within contact', done => {
       sinon.stub(controller, '_validateNewUsername').callsArg(1);
       sinon.stub(controller, '_createPlace').callsArgWith(2, null, userData, {});
       sinon.stub(places, 'getPlace').callsArgWith(1, null, {
@@ -707,7 +707,7 @@ describe('Users controller', () => {
       });
     });
 
-    it('succeeds if contact and place are the same.', done => {
+    it('succeeds if contact and place are the same', done => {
       sinon.stub(controller, '_validateNewUsername').callsArg(1);
       sinon.stub(controller, '_createPlace').callsArgWith(2, null, userData, {});
       sinon.stub(controller, '_createUser').callsArgWith(2, null, {}, {});
@@ -724,7 +724,7 @@ describe('Users controller', () => {
       });
     });
 
-    it('succeeds if contact is within place.', done => {
+    it('succeeds if contact is within place', done => {
       sinon.stub(controller, '_validateNewUsername').callsArg(1);
       sinon.stub(controller, '_createPlace').callsArgWith(2, null, userData, {});
       sinon.stub(controller, '_createUser').callsArgWith(2, null, {}, {});
@@ -817,6 +817,56 @@ describe('Users controller', () => {
       // checking function after setContactParent
       sinon.stub(controller, '_createContact').callsFake(data => {
         chai.expect(data.contact.parent).to.deep.equal({ _id: 'a' });
+        done();
+      });
+      controller.createUser(userData);
+    });
+
+    it('fails validation if contact is not in place using id', done => {
+      const userData = {
+        username: 'x',
+        password: COMPLEX_PASSWORD,
+        place: 'abc',
+        contact: 'def',
+        type: 'national-manager'
+      };
+      sinon.stub(controller, '_validateNewUsername').callsArg(1);
+      sinon.stub(controller, '_createPlace').callsArgWith(2, null, userData, {});
+      sinon.stub(db.medic, 'get').callsArgWith(1, null, {
+        _id: 'def',
+        type: 'person',
+        name: 'greg',
+        parent: {
+          _id: 'efg'
+        }
+      });
+      controller.createUser(userData, err => {
+        chai.expect(err.message).to.equal('Contact is not within place.');
+        done();
+      });
+    });
+
+    it('passes validation if contact is in place using id', done => {
+      const userData = {
+        username: 'x',
+        password: COMPLEX_PASSWORD,
+        place: 'efg',
+        contact: 'def',
+        type: 'national-manager'
+      };
+      sinon.stub(controller, '_validateNewUsername').callsArg(1);
+      sinon.stub(controller, '_createPlace').callsArgWith(2, null, userData, {});
+      sinon.stub(db.medic, 'get').callsArgWith(1, null, {
+        _id: 'def',
+        type: 'person',
+        name: 'greg',
+        parent: {
+          _id: 'efg'
+        }
+      });
+      // checking function after setContactParent
+      sinon.stub(controller, '_createContact').callsFake(data => {
+        chai.expect(data.contact).to.equal('def');
         done();
       });
       controller.createUser(userData);
