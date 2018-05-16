@@ -287,7 +287,13 @@ var setContactParent = function(data, response, callback) {
     const placeId = getDocID(data.place);
     validateContact(contactId, placeId, (err) => {
       if (err) {
-        return callback(err);
+        if (err.statusCode === 404) {
+          // try creating the user
+          data.contact.parent = lineage.minifyLineage(data.place);
+          return callback(null, data, response);
+        } else {
+          return callback(err);
+        }
       }
       callback(null, data, response);
     });

@@ -46,10 +46,10 @@ const users = [
     username: 'bob',
     password: password,
     place: {
-       _id: 'fixture:bobville',
-       type: 'health_center',
-       name: 'Bobville',
-       parent: 'PARENT_PLACE'
+      _id: 'fixture:bobville',
+      type: 'health_center',
+      name: 'Bobville',
+      parent: 'PARENT_PLACE'
     },
     contact: {
       _id: 'fixture:user:bob',
@@ -61,10 +61,10 @@ const users = [
     username: 'clare',
     password: password,
     place: {
-       _id: 'fixture:clareville',
-       type: 'health_center',
-       name: 'Clareville',
-       parent: 'PARENT_PLACE'
+      _id: 'fixture:clareville',
+      type: 'health_center',
+      name: 'Clareville',
+      parent: 'PARENT_PLACE'
     },
     contact: {
       _id: 'fixture:user:clare',
@@ -76,10 +76,10 @@ const users = [
     username: 'chw-boss',
     password: password,
     place: {
-       _id: 'fixture:chw-bossville',
-       type: 'health_center',
-       name: 'CHW Bossville',
-       parent: 'PARENT_PLACE'
+      _id: 'fixture:chw-bossville',
+      type: 'health_center',
+      name: 'CHW Bossville',
+      parent: 'PARENT_PLACE'
     },
     contact: {
       _id: 'fixture:user:chw-boss',
@@ -91,10 +91,10 @@ const users = [
     username: 'chw',
     password: password,
     place: {
-       _id: 'fixture:chwville',
-       type: 'district_hospital',
-       name: 'Chwville',
-       parent: 'fixture:chw-bossville'
+      _id: 'fixture:chwville',
+      type: 'district_hospital',
+      name: 'Chwville',
+      parent: 'fixture:chw-bossville'
     },
     contact: {
       _id: 'fixture:user:chw',
