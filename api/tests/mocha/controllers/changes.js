@@ -94,7 +94,8 @@ describe('Changes controller', () => {
       return emitter;
     };
 
-    db.medic = { changes: changes, setMaxListeners: sinon.stub() };
+    db.medic.changes = changes;
+    db.medic.setMaxListeners = sinon.stub();
   });
 
   afterEach(() => {

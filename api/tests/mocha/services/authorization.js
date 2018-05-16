@@ -21,7 +21,7 @@ describe('Authorization service', () => {
     sinon.stub(auth, 'hasAllPermissions');
     sinon.stub(service._tombstoneUtils, 'extractDocId').callsFake(t => t.replace('tombstone', 'deleted'));
     sinon.stub(service._viewMapUtils, 'getViewMapFn').returns(sinon.stub());
-    db.medic = { query: sinon.stub().resolves({ rows: [] }) };
+    sinon.stub(db.medic, 'query').resolves({ rows: [] });
   });
 
   describe('getDepth', () => {
