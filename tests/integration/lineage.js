@@ -207,7 +207,7 @@ const sms_doc = {
   }
 };
 
-const docs = [
+const fixtures = [
   circular_area,
   circular_chw,
   circular_report,
@@ -235,7 +235,6 @@ const docs = [
   stub_parents,
   sms_doc
 ];
-const docIds = docs.map(doc => doc._id);
 const deleteDocs = ids => {
   return db.allDocs({
     keys: ids,
@@ -259,10 +258,11 @@ describe('Lineage', function() {
 
   before(function() {
     lineage = lineageFactory(Promise, db);
-    return db.bulkDocs(docs);
+    return db.bulkDocs(fixtures);
   });
 
   after(function() {
+    const docIds = fixtures.map(doc => doc._id);
     return deleteDocs(docIds);
   });
 

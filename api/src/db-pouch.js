@@ -2,7 +2,7 @@ const PouchDB = require('pouchdb-core');
 PouchDB.plugin(require('pouchdb-adapter-http'));
 PouchDB.plugin(require('pouchdb-mapreduce'));
 
-const { COUCH_URL, INTEGRATION_TEST_ENV, UNIT_TEST_ENV } = process.env;
+const { COUCH_URL, TEST_DB_ENV, UNIT_TEST_ENV } = process.env;
 
 if (UNIT_TEST_ENV) {
   const stubMe = functionName => () => {
@@ -19,7 +19,7 @@ if (UNIT_TEST_ENV) {
     get: stubMe('get'),
     getAttachment: stubMe('getAttachment'),
   };
-} else if (COUCH_URL && INTEGRATION_TEST_ENV) {
+} else if (COUCH_URL && TEST_DB_ENV) {
   const couchUrl = COUCH_URL && COUCH_URL.replace(/\/?$/, '-test');
   const DB = new PouchDB(couchUrl);
 
