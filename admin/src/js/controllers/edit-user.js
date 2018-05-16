@@ -12,6 +12,7 @@ angular.module('controllers').controller('EditUserCtrl',
     $q,
     ContactSchema,
     CreateUser,
+    DB,
     Languages,
     Select2Search,
     Translate,
@@ -161,6 +162,36 @@ angular.module('controllers').controller('EditUserCtrl',
       return hasPlace && hasContact;
     };
 
+    var validateContactIsInPlace = function() {
+      var placeId = $scope.editUserModel.place;
+      var contactId = $scope.editUserModel.contact;
+      if (!placeId || !contactId) {
+        return $q.resolve(true);
+      }
+      return DB().get(contactId)
+        .then(function(contact) {
+          var parent = contact.parent;
+          var valid = false;
+          while (parent) {
+            if (parent._id === placeId) {
+              valid = true;
+              break;
+            }
+            parent = parent.parent;
+          }
+          if (!valid) {
+            Translate('configuration.user.place.contact').then(function(value) {
+              $scope.errors.contact = value;
+            });
+          }
+          return valid;
+        })
+        .catch(function(err) {
+          $log.error('Error trying to validate contact. Trying to save anyway.', err);
+          return true;
+        });
+    };
+
     var validateRole = function() {
       return validateRequired('type', 'User Type');
     };
@@ -217,27 +248,37 @@ angular.module('controllers').controller('EditUserCtrl',
           validateRole() &&
           validateContactAndFacility() &&
           validatePasswordForEditUser()) {
-        changedUpdates($scope.editUserModel).then(function(updates) {
-          $q.resolve().then(function() {
-            if (!haveUpdates(updates)) {
+        validateContactIsInPlace()
+          .then(function(valid) {
+            if (!valid) {
+              $scope.setError();
               return;
-            } else if ($scope.editUserModel.id) {
-              return UpdateUser($scope.editUserModel.username, updates);
-            } else {
-              return CreateUser(updates);
             }
-          })
-            .then(function() {
-              $scope.setFinished();
-              // TODO: change this from a broadcast to a changes watcher
-              //       https://github.com/medic/medic-webapp/issues/4094
-              $rootScope.$broadcast('UsersUpdated', $scope.editUserModel.id);
-              $uibModalInstance.close();
-            })
-            .catch(function(err) {
-              $scope.setError(err, 'Error updating user');
+            changedUpdates($scope.editUserModel).then(function(updates) {
+              $q.resolve().then(function() {
+                if (!haveUpdates(updates)) {
+                  return;
+                } else if ($scope.editUserModel.id) {
+                  return UpdateUser($scope.editUserModel.username, updates);
+                } else {
+                  return CreateUser(updates);
+                }
+              })
+                .then(function() {
+                  $scope.setFinished();
+                  // TODO: change this from a broadcast to a changes watcher
+                  //       https://github.com/medic/medic-webapp/issues/4094
+                  $rootScope.$broadcast('UsersUpdated', $scope.editUserModel.id);
+                  $uibModalInstance.close();
+                })
+                .catch(function(err) {
+                  $scope.setError(err, 'Error updating user');
+                });
             });
-        });
+          })
+          .catch(function(err) {
+            $scope.setError(err, 'Error validating user');
+          });
       } else {
         $scope.setError();
       }
