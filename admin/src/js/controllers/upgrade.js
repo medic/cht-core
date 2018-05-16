@@ -38,7 +38,7 @@ angular.module('controllers').controller('UpgradeCtrl',
     var getExistingDeployment = function() {
       return DB().get('_design/medic')
         .then(function(ddoc) {
-          $scope.currentDeploy = ddoc.deploy_info || {};
+          $scope.currentDeploy = ddoc.deploy_info;
         });
     };
 
