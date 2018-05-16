@@ -1,3 +1,4 @@
+// WARNING: If updating this function also update the corresponding view in medic-tombstone
 function(doc) {
   if (doc.type === 'clinic' ||
       doc.type === 'health_center' ||

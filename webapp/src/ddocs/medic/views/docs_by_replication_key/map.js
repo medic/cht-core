@@ -1,4 +1,4 @@
-// WARNING: If updating this function also update the getReplicationKey function in api/handlers/changes.js
+// WARNING: If updating this function also update the corresponding view in medic-tombstone
 function (doc) {
   if (doc._id === 'resources' ||
       doc._id === 'appcache' ||

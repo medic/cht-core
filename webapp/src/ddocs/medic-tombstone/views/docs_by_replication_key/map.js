@@ -1,3 +1,4 @@
+// WARNING: If updating this function also update the corresponding view in medic ddoc
 function (doc) {
   if (doc.type !== 'tombstone' || !doc.tombstone) {
     return;

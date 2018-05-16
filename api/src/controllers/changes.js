@@ -96,7 +96,8 @@ const appendChange = (results, changeObj) => {
     .forEach(rev => result.changes.push({ rev: rev }));
 };
 
-// filters the list of pending changes
+// filters the list of pending changes, appending the allowed ones
+// returns whether a user authorization change was detected and the number of changes appended
 const processPendingChanges = (feed, results, checkForAuthChange = true) => {
   let authChange  = false,
       shouldCheck = true,
