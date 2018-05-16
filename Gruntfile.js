@@ -770,6 +770,7 @@ module.exports = function(grunt) {
     'couch-push:test',
     'env:integrationTest',
     'exec:run_integration_tests',
+    'env:general',
     'test_api_integration'
   ]);
 
