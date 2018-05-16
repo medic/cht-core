@@ -179,19 +179,16 @@ angular.module('controllers').controller('EditUserCtrl',
             }
             parent = parent.parent;
           }
-          return valid;
-        })
-        .catch(function(err) {
-          $log.error('Error trying to validate contact. Trying to save anyway.', err);
-          return true;
-        })
-        .then(function(valid) {
           if (!valid) {
             Translate('configuration.user.place.contact').then(function(value) {
               $scope.errors.contact = value;
             });
           }
           return valid;
+        })
+        .catch(function(err) {
+          $log.error('Error trying to validate contact. Trying to save anyway.', err);
+          return true;
         });
     };
 
