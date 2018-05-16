@@ -41,14 +41,14 @@ module.exports = {
         SIGNATURE_REGEX = /emit\(/g,
         NEW_LINE_REGEX = /\\n/g;
 
+    full = !!full;
+    if (viewMapFns[ddocId] && viewMapFns[ddocId][viewName] && viewMapFns[ddocId][viewName][full]) {
+      return viewMapFns[ddocId][viewName][full];
+    }
+
     var fnString = module.exports.getViewMapString(ddocId, viewName);
     if (!fnString) {
       throw new Error('Requested view '+ ddocId + '/' + viewName + ' was not found');
-    }
-
-    full = !!full;
-    if (viewMapFns[ddocId][viewName][full]) {
-      return viewMapFns[ddocId][viewName][full];
     }
 
     fnString = fnString

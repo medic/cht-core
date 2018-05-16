@@ -100,8 +100,7 @@ const putIdLengthDoc = (db, idLengthDoc) =>
  */
 const findUnusedIds = (db, freshIds) =>
   new Promise((resolve, reject) => {
-    const uniqueIds = new Set(freshIds);
-    const keys = [...uniqueIds].map(id => [ 'shortcode', id ]);
+    const keys = [...freshIds].map(id => [ 'shortcode', id ]);
     async.parallel([
       cb => db.medic.view('medic-client', 'contacts_by_reference', { keys: keys }, (err, res) => cb(err, res)),
       cb => db.medic.view('medic-tombstone', 'contacts_by_reference', { keys: keys }, (err, res) => cb(err, res))
@@ -109,6 +108,9 @@ const findUnusedIds = (db, freshIds) =>
       if (err) {
         return reject(err);
       }
+
+      const uniqueIds = new Set(freshIds);
+
       results.forEach(result => result.rows.forEach(row => uniqueIds.delete(row.key[1])));
       resolve(uniqueIds);
     });

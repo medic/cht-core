@@ -219,8 +219,6 @@ module.exports = {
 // used for testing
 if (process.env.UNIT_TEST_ENV) {
   _.extend(module.exports, {
-    _isAllowedContact: allowedContact,
-    _isSensitive: isSensitive,
     _tombstoneUtils: tombstoneUtils,
     _viewMapUtils: viewMapUtils
   });

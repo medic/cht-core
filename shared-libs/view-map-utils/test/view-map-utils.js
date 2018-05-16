@@ -90,6 +90,23 @@ describe('Replication Helper Views Lib', function() {
       fn(2).should.deep.equal([[3], [4], [5]]);
     });
 
+    it('supports multiple and single emits for the same view', function() {
+      var fnString = 'function(a) { emit(a + 1); emit(a + 2); emit(a + 3); }';
+      var ddoc = {
+        _id: '_design/ddoc',
+        views: {
+          viewName: { map: fnString }
+        }
+      };
+      lib.loadViewMaps(ddoc, 'viewName');
+      var fnMultiple = lib.getViewMapFn('ddoc', 'viewName', true);
+      var fnSingle = lib.getViewMapFn('ddoc', 'viewName', false);
+      fnMultiple(1).should.deep.equal([[2], [3], [4]]);
+      fnMultiple(2).should.deep.equal([[3], [4], [5]]);
+      fnSingle(1).should.deep.equal([2]);
+      fnSingle(2).should.deep.equal([3]);
+    });
+
     it('throws error when requested a view that does not exist ', function() {
       var ddoc = {
         _id: '_design/ddoc',
@@ -99,6 +116,34 @@ describe('Replication Helper Views Lib', function() {
       };
       lib.loadViewMaps(ddoc, 'viewName2');
       lib.getViewMapFn.bind(lib, 'ddoc', 'viewName').should.throw(Error, 'Requested view ddoc/viewName was not found');
+    });
+
+    it('caches results', function() {
+      sinon.spy(lib, 'getViewMapString');
+
+      var fnString = 'function(a) { emit(a + 1); emit(a + 2); emit(a + 3); }';
+      var ddoc = {
+        _id: '_design/ddoc',
+        views: {
+          viewName: { map: fnString }
+        }
+      };
+      lib.loadViewMaps(ddoc, 'viewName');
+      var fnMultiple = lib.getViewMapFn('ddoc', 'viewName', true);
+      fnMultiple = lib.getViewMapFn('ddoc', 'viewName', true);
+      fnMultiple = lib.getViewMapFn('ddoc', 'viewName', true);
+      fnMultiple = lib.getViewMapFn('ddoc', 'viewName', true);
+      var fnSingle = lib.getViewMapFn('ddoc', 'viewName', false);
+      fnSingle = lib.getViewMapFn('ddoc', 'viewName', false);
+      fnSingle = lib.getViewMapFn('ddoc', 'viewName', false);
+      fnSingle = lib.getViewMapFn('ddoc', 'viewName', false);
+      fnMultiple(1).should.deep.equal([[2], [3], [4]]);
+      fnMultiple(2).should.deep.equal([[3], [4], [5]]);
+      fnSingle(1).should.deep.equal([2]);
+      fnSingle(2).should.deep.equal([3]);
+      lib.getViewMapString.callCount.should.equal(2);
+      lib.getViewMapString.args[0].should.deep.equal(['ddoc', 'viewName']);
+      lib.getViewMapString.args[1].should.deep.equal(['ddoc', 'viewName']);
     });
   });
 
