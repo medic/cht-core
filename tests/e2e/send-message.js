@@ -130,7 +130,7 @@ describe('Send message', () => {
           return !isDisplayed;
         })
         .catch(() => {
-          // It's been detached, so it's gone
+          // It's been detached, so it's gone.
           return true;
         });
     }, 2000);
