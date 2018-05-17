@@ -5,7 +5,7 @@ const vm = require('vm');
 
 const MAP_ARG_NAME = 'doc';
 
-module.exports.loadView = (ddocName, viewName) => {
+module.exports.loadView = (ddocName, viewName, saveValues = false, reset = false) => {
   const mapString = fs.readFileSync(path.join(
     __dirname,
     '../../../../src/ddocs',
@@ -19,12 +19,18 @@ module.exports.loadView = (ddocName, viewName) => {
   const emitted = [];
   const context = new vm.createContext({
     emitted: emitted,
-    emit: function(e) {
-      emitted.push(e);
+    emit: function(key, value) {
+      if (!saveValues) {
+        return emitted.push(key);
+      }
+      emitted.push({ key: key, value: value });
     }
   });
 
   return (doc) => {
+    if (reset) {
+      emitted.splice(0, emitted.length);
+    }
     context[MAP_ARG_NAME] = doc;
     mapScript.runInContext(context);
     return context.emitted;
