@@ -655,7 +655,7 @@ Call: <output value=" /delivery/chw_phone "/></value></text>
         </translation>
       </itext>
       <instance>
-        <delivery delimiter="#" id="delivery" prefix="J1!delivery!" version="2018-03-06_06-54">
+        <delivery delimiter="#" id="delivery" prefix="J1!delivery!" version="2018-05-17_12-14">
           <inputs tag="hidden">
             <meta tag="hidden">
               <location>
@@ -694,7 +694,9 @@ Call: <output value=" /delivery/chw_phone "/></value></text>
           <chw_phone/>
           <birth_date/>
           <delivery_code/>
+          <delivery_code_label/>
           <pregnancy_outcome/>
+          <pregnancy_outcome_label/>
           <chw_sms/>
           <geolocation tag="hidden"/>
           <patient_age_in_years tag="hidden">0</patient_age_in_years>
@@ -755,7 +757,9 @@ Call: <output value=" /delivery/chw_phone "/></value></text>
       <bind calculate="../inputs/contact/parent/contact/phone" nodeset="/delivery/chw_phone" type="string"/>
       <bind calculate=" /delivery/group_delivery_summary/g_birth_date " nodeset="/delivery/birth_date" type="string"/>
       <bind calculate=" /delivery/group_delivery_summary/g_delivery_code " nodeset="/delivery/delivery_code" type="string"/>
+      <bind calculate="jr:choice-name( /delivery/group_delivery_summary/g_delivery_code ,' /delivery/group_delivery_summary/g_delivery_code ')" nodeset="/delivery/delivery_code_label" type="string"/>
       <bind calculate=" /delivery/group_delivery_summary/g_pregnancy_outcome " nodeset="/delivery/pregnancy_outcome" type="string"/>
+      <bind calculate="jr:choice-name( /delivery/group_delivery_summary/g_pregnancy_outcome ,' /delivery/group_delivery_summary/g_pregnancy_outcome ')" nodeset="/delivery/pregnancy_outcome_label" type="string"/>
       <bind calculate="if( /delivery/group_note/g_chw_sms  != '', concat( /delivery/group_note/default_chw_sms_text ,concat('
 ', /delivery/group_note/g_chw_sms )),  /delivery/group_note/default_chw_sms_text )" nodeset="/delivery/chw_sms" type="string"/>
       <bind calculate="concat(../../inputs/meta/location/lat, concat(' ', ../../inputs/meta/location/long))" nodeset="/delivery/geolocation" type="string"/>
