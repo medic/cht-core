@@ -133,7 +133,7 @@ function getMessageContents() {
 }
 
 function allMessageDocs() {
-  return testUtils.db.query('medic-client/messages_by_contact_date_test',
+  return testUtils.db.query('medic-client/messages_by_contact_date',
       { reduce:false, include_docs:true })
     .then(res => res.rows.map(row => row.doc));
 }
