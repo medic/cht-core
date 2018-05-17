@@ -3603,8 +3603,8 @@
         "icon": "clinic",
         "label": {
           "en": "Postnatal Visit (SMS)",
-          "hi": "Postnatal Visit (SMS)",
-          "id": "Postnatal Visit (SMS)"
+          "hi": "गर्भावस्था के बाद की जांच (SMS)",
+          "id": "Kunjungi setelah melahirkan (SMS)"
         }
       },
       "fields": {
