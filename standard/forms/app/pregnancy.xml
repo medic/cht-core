@@ -960,7 +960,7 @@ Tanggal taksiran persalinan: <output value=" /pregnancy/group_lmp/g_edd "/></val
         </translation>
       </itext>
       <instance>
-        <pregnancy delimiter="#" id="pregnancy" prefix="J1!pregnancy!" version="2018-03-06_06-54">
+        <pregnancy delimiter="#" id="pregnancy" prefix="J1!pregnancy!" version="2018-05-17_11-17">
           <inputs>
             <meta tag="hidden">
               <location>
@@ -1101,8 +1101,8 @@ Tanggal taksiran persalinan: <output value=" /pregnancy/group_lmp/g_edd "/></val
       <bind calculate="if(selected(  /pregnancy/group_lmp/g_lmp_method ,'calendar'),  /pregnancy/group_lmp/g_lmp_calendar ,date-time(decimal-date-time(today()- /pregnancy/group_lmp/g_lmp_approx )))" nodeset="/pregnancy/group_lmp/g_lmp_date_raw" type="string"/>
       <bind calculate="format-date-time(if(selected(  /pregnancy/group_lmp/g_lmp_method ,'calendar'),  /pregnancy/group_lmp/g_lmp_calendar ,date-time(decimal-date-time(today()- /pregnancy/group_lmp/g_lmp_approx ))),&quot;%Y-%m-%d&quot;)" nodeset="/pregnancy/group_lmp/g_lmp_date_8601" type="string"/>
       <bind calculate="format-date-time(if(selected( /pregnancy/group_lmp/g_lmp_method ,'calendar'),  /pregnancy/group_lmp/g_lmp_calendar ,date-time(decimal-date-time(today()- /pregnancy/group_lmp/g_lmp_approx ))),&quot;%b %e, %Y&quot;)" nodeset="/pregnancy/group_lmp/g_lmp_date" type="string"/>
-      <bind calculate="format-date-time(date-time(decimal-date-time( /pregnancy/group_lmp/g_lmp_date )+280),&quot;%Y-%m-%dT00:00:00.000Z&quot;)" nodeset="/pregnancy/group_lmp/g_edd_8601" type="string"/>
-      <bind calculate="format-date-time(date-time(decimal-date-time( /pregnancy/group_lmp/g_lmp_date )+280),&quot;%b %e, %Y&quot;)" nodeset="/pregnancy/group_lmp/g_edd" type="string"/>
+      <bind calculate="format-date-time(date-time(decimal-date-time( /pregnancy/group_lmp/g_lmp_date_8601 )+280),&quot;%Y-%m-%dT00:00:00.000Z&quot;)" nodeset="/pregnancy/group_lmp/g_edd_8601" type="string"/>
+      <bind calculate="format-date-time(date-time(decimal-date-time( /pregnancy/group_lmp/g_lmp_date_8601 )+280),&quot;%b %e, %Y&quot;)" nodeset="/pregnancy/group_lmp/g_edd" type="string"/>
       <bind nodeset="/pregnancy/group_lmp/g_display_edd" readonly="true()" relevant=" /pregnancy/group_lmp/g_edd  != &quot;Invalid Date&quot; and  /pregnancy/group_lmp/g_edd  != &quot;&quot;" type="string"/>
       <bind constraint="not(selected(.,'r1')) or (selected(.,'r1') and not(selected(.,'r2') or selected(.,'r3') or selected(.,'r4')))" jr:constraintMsg="jr:itext('/pregnancy/group_risk_factors/g_risk_factors:jr:constraintMsg')" nodeset="/pregnancy/group_risk_factors/g_risk_factors" type="select"/>
       <bind constraint="not(selected( .,'d7') and (decimal-date-time( /pregnancy/lmp_date_8601 ) &gt;= decimal-date-time(today())-150))" jr:constraintMsg="jr:itext('/pregnancy/group_danger_signs/g_danger_signs:jr:constraintMsg')" nodeset="/pregnancy/group_danger_signs/g_danger_signs" type="select"/>
