@@ -34,6 +34,15 @@ const dummyDoc2 = {
   _id: 'dummyDoc2',
   name: 'clinic',
 };
+const emptyObjectParent = {
+  _id: 'emptyObjectParent',
+  contact: { _id: 'idontexist' },
+  parent: {
+    _id: dummyDoc._id,
+    parent: {}
+  },
+  type: 'clinic'
+};
 const fetch_contact = {
   _id: 'fetch_contact',
   type: 'clinic',
@@ -213,6 +222,7 @@ const fixtures = [
   circular_report,
   dummyDoc,
   dummyDoc2,
+  emptyObjectParent,
   fetch_contact,
   fetch_noContact,
   no_contact,
@@ -419,6 +429,17 @@ describe('Lineage', function() {
     it('works for SMS reports', function() {
       return lineage.fetchHydratedDoc(sms_doc._id).then(actual => {
         expect(actual).excluding('_rev').to.deep.equal(sms_doc);
+      });
+    });
+
+    it('handles doc with empty-object parent by removing it', function() {
+      return lineage.fetchHydratedDoc(emptyObjectParent._id).then(actual => {
+        expect(actual).excludingEvery('_rev').to.deep.equal({
+          _id: emptyObjectParent._id,
+          contact: emptyObjectParent.contact,
+          parent: dummyDoc,
+          type: emptyObjectParent.type
+        });
       });
     });
   });

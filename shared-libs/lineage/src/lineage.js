@@ -135,9 +135,13 @@ module.exports = function(Promise, DB) {
     };
     return DB.query('medic-client/docs_by_id_lineage', options)
       .then(function(result) {
-        return result.rows.map(function(row) {
-          return row.doc;
-        });
+        return result.rows
+          .filter(function(row, index) {
+            return index === 0 || (row.value && row.value._id);
+          })
+          .map(function(row) {
+            return row.doc;
+          });
       });
   };
 
