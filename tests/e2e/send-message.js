@@ -221,6 +221,7 @@ describe('Send message', () => {
   describe('Sending from message pane', () => {
     const openMessageContent = (id, name) => {
       common.goToMessages();
+      helper.waitUntilReady(element(by.css(messageInList(id))));
       browser.wait(() => {
         return element(by.css(messageInList(id))).isPresent();
       }, 1000);
