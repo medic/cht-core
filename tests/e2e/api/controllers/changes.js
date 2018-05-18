@@ -138,6 +138,8 @@ const consumeChanges = (username, results, lastSeq) => {
   const opts = { since: lastSeq, feed: 'longpoll' };
   if (results && results.length) {
     opts.timeout = 2000;
+  } else {
+    opts.timeout = 10000;
   }
 
   return requestChanges(username, opts).then(changes => {

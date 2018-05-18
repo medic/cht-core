@@ -14,7 +14,7 @@ const _ = require('underscore'),
       db = require('../db-nano'),
       infodoc = require('../lib/infodoc'),
       metadata = require('../lib/metadata'),
-      tombstoneUtils = require('@shared-libs/tombstone-utils')(Promise, dbPouch.medic),
+      tombstoneUtils = require('@shared-libs/tombstone-utils'),
       PROCESSING_DELAY = 50, // ms
       PROGRESS_REPORT_INTERVAL = 500, // items
       transitions = [];
@@ -78,7 +78,7 @@ const processChange = (change, callback) => {
       }
 
       tombstoneUtils
-        .processChange(change, logger)
+        .processChange(Promise, dbPouch.medic, change, logger)
         .then(() => {
           processed++;
           metadata.update(change.seq)
@@ -415,7 +415,6 @@ module.exports = {
   _detach: detach,
   _deleteReadDocs: deleteReadDocs,
   _lineage: lineage,
-  _tombstoneUtils: tombstoneUtils,
   availableTransitions: availableTransitions,
   loadTransitions: loadTransitions,
   canRun: canRun,

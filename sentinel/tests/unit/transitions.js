@@ -6,7 +6,8 @@ const sinon = require('sinon').sandbox.create(),
       dbPouch = require('../../src/db-pouch'),
       infodoc = require('../../src/lib/infodoc'),
       transitions = require('../../src/transitions'),
-      metadata = require('../../src/lib/metadata');
+      metadata = require('../../src/lib/metadata'),
+      tombstoneUtils = require('@shared-libs/tombstone-utils');
 
 describe('transitions', () => {
   afterEach(() => {
@@ -309,10 +310,15 @@ describe('transitions', () => {
   });
 
   it('processes deleted changes through TombstoneUtils to create tombstones', (done) => {
-    sinon.stub(transitions._tombstoneUtils, 'processChange').resolves();
+    sinon.stub(tombstoneUtils, 'processChange').resolves();
     sinon.stub(metadata, 'update').resolves();
     sinon.stub(dbPouch.sentinel, 'put').resolves({});
     sinon.stub(dbPouch.sentinel, 'get').resolves({ _id: '_local/sentinel-meta-data', processed_seq: 12});
+    sinon.stub(infodoc, 'delete').resolves();
+
+    sinon.stub(db.medic, 'view')
+      .withArgs('medic', 'online_user_settings_by_id')
+      .callsArgWith(3, null, { rows: [] });
 
     const on = sinon.stub();
     const start = sinon.stub();
@@ -329,11 +335,9 @@ describe('transitions', () => {
     });
 
     transitions._changeQueue.drain = () => {
-      sinon.stub(infodoc, 'delete').resolves();
-      sinon.stub(transitions, '_deleteReadDocs').callsArgWith(1, null);
       return Promise.resolve().then(() => {
-        assert.equal(transitions._tombstoneUtils.processChange.callCount, 1);
-        assert.deepEqual(transitions._tombstoneUtils.processChange.args[0][0], { id: 'somechange', seq: 55, deleted: true });
+        assert.equal(tombstoneUtils.processChange.callCount, 1);
+        assert.deepEqual(tombstoneUtils.processChange.args[0][2], { id: 'somechange', seq: 55, deleted: true });
         return Promise.resolve().then(() => {
           assert.equal(metadata.update.callCount, 1);
           assert.equal(metadata.update.args[0][0], 55);
@@ -344,10 +348,15 @@ describe('transitions', () => {
   });
 
   it('does not advance metadata document if creating tombstone fails', (done) => {
-    sinon.stub(transitions._tombstoneUtils, 'processChange').rejects();
+    sinon.stub(tombstoneUtils, 'processChange').rejects();
     sinon.stub(metadata, 'update').resolves();
     sinon.stub(dbPouch.sentinel, 'put').resolves({});
     sinon.stub(dbPouch.sentinel, 'get').resolves({ _id: '_local/sentinel-meta-data', processed_seq: 12});
+    sinon.stub(infodoc, 'delete').resolves();
+
+    sinon.stub(db.medic, 'view')
+      .withArgs('medic', 'online_user_settings_by_id')
+      .callsArgWith(3, null, { rows: []});
 
     const on = sinon.stub();
     const start = sinon.stub();
@@ -364,11 +373,9 @@ describe('transitions', () => {
     });
 
     transitions._changeQueue.drain = () => {
-      sinon.stub(infodoc, 'delete').resolves();
-      sinon.stub(transitions, '_deleteReadDocs').callsArgWith(1, null);
       return Promise.resolve().then(() => {
-        assert.equal(transitions._tombstoneUtils.processChange.callCount, 1);
-        assert.deepEqual(transitions._tombstoneUtils.processChange.args[0][0], {
+        assert.equal(tombstoneUtils.processChange.callCount, 1);
+        assert.deepEqual(tombstoneUtils.processChange.args[0][2], {
           id: 'somechange',
           seq: 55,
           deleted: true

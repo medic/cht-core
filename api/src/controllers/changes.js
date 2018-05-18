@@ -5,7 +5,7 @@ const auth = require('../auth'),
       config = require('../config'),
       serverUtils = require('../server-utils'),
       heartbeatFilter = require('../services/heartbeat-filter'),
-      tombstoneUtils = require('@shared-libs/tombstone-utils')(Promise, db.medic),
+      tombstoneUtils = require('@shared-libs/tombstone-utils'),
       uuid = require('uuid/v4');
 
 let inited = false,
@@ -15,13 +15,12 @@ let inited = false,
     MAX_DOC_IDS = 100,
     currentSeq = 0;
 
-const DEFAULT_TIMEOUT = 60000,
-      DEFAULT_LIMIT = 100,
+const DEFAULT_LIMIT = 100,
       DEBOUNCE_INTERVAL = 200;
 
 const split = (array, count) => {
   if (count === null || count < 1) {
-    return array;
+    return [array];
   }
   const result = [];
   let i = 0,
@@ -56,13 +55,12 @@ const defibrillator = feed => {
 };
 
 const addTimeout = feed => {
-  if (feed.timeout) {
-    clearTimeout(feed.timeout);
-  }
-
-  const timeout = (feed.req.query && feed.req.query.timeout) ?
-    Math.min(DEFAULT_TIMEOUT, feed.req.query.timeout) : DEFAULT_TIMEOUT;
-  feed.timeout = setTimeout(() => endFeed(feed), timeout);
+   if (feed.timeout) {
+     clearTimeout(feed.timeout);
+   }
+   if (feed.req.query && feed.req.query.timeout) {
+     feed.timeout = setTimeout(() => endFeed(feed), feed.req.query.timeout);
+   }
 };
 
 const generateResponse = feed => ({
@@ -88,7 +86,7 @@ const endFeed = (feed, write = true) => {
 const appendChange = (results, changeObj) => {
   const result = _.findWhere(results, { id: changeObj.change.id });
   if (!result) {
-    return results.push(changeObj.change);
+    return results.push(_.omit(changeObj.change, 'doc'));
   }
 
   // append missing revs to the list
@@ -104,17 +102,17 @@ const processPendingChanges = (feed, results, checkForAuthChange = true) => {
       nbrAppended = 0;
 
   const checkChange = (changeObj) => {
-    if (!authorization.allowedChange(feed, changeObj)) {
+    if (!authorization.allowedDoc(changeObj.change.doc, feed, changeObj.viewResults)) {
       return;
     }
 
-    if (checkForAuthChange && authorization.isAuthChange(feed, changeObj)) {
+    if (checkForAuthChange && authorization.isAuthChange(changeObj.change.doc, feed.userCtx)) {
       authChange = true;
       return;
     }
 
     shouldCheck = true;
-    nbrAppended += 1;
+    nbrAppended++;
     appendChange(results, changeObj);
     feed.pendingChanges = _.without(feed.pendingChanges, changeObj);
   };
@@ -138,9 +136,13 @@ const canceledResults = responses => {
 
 const mergeResults = responses => {
   let results = [];
-  responses.forEach(response => {
-    results.push.apply(results, response.results);
-  });
+  if (responses.length === 1) {
+    results = responses[0].results;
+  } else {
+    responses.forEach(response => {
+      results.push.apply(results, response.results);
+    });
+  }
   results.forEach((change, idx) => {
     // tombstone changes are converted into their corresponding doc changes
     if (tombstoneUtils.isTombstoneId(change.id)) {
@@ -167,8 +169,7 @@ const getChanges = feed => {
     since: feed.req.query && feed.req.query.since || 0,
     limit: MAX_DOC_IDS
   };
-  const queryOpts = ['style', 'conflicts', 'seq_interval'];
-  _.extend(options, _.pick(feed.req.query, ...queryOpts));
+  _.extend(options, _.pick(feed.req.query, 'style', 'conflicts', 'seq_interval'));
 
   const chunks = split(feed.validatedIds, MAX_DOC_IDS);
   feed.upstreamRequests = chunks.map(docIds => {
@@ -245,7 +246,7 @@ const initFeed = (req, res, userCtx) => {
   defibrillator(feed);
   addTimeout(feed);
   normalFeeds.push(feed);
-  req.on('close', () => cleanUp(feed));
+  req.on('close', () => endFeed(feed, false));
 
   return authorization
     .getSubjectIds(feed.userCtx)
@@ -272,18 +273,11 @@ const addChangeToLongpollFeed = (feed, changeObj) => {
 };
 
 const processChange = (change, seq) => {
-  let changeObj;
-  if (tombstoneUtils.isTombstoneId(change.id)) {
-    changeObj = {
-      change: tombstoneUtils.generateChangeFromTombstone(change),
-      viewResults: authorization.getViewResults(tombstoneUtils.extractDoc(change.doc))
-    };
-  } else {
-    changeObj = {
-      change: change,
-      viewResults: authorization.getViewResults(change.doc)
-    };
-  }
+  const changeObj = {
+    change: tombstoneUtils.isTombstoneId(change.id) ? tombstoneUtils.generateChangeFromTombstone(change) : change,
+    viewResults: authorization.getViewResults(change.doc)
+  };
+
   // inform the normal feeds that a change was received while they were processing
   normalFeeds.forEach(feed => {
     feed.lastSeq = seq;
@@ -293,12 +287,12 @@ const processChange = (change, seq) => {
   // send the change through to the longpoll feeds which are allowed to see it
   longpollFeeds.forEach(feed => {
     feed.lastSeq = seq;
-    if (!authorization.allowedChange(feed, changeObj)) {
+    if (!authorization.allowedDoc(changeObj.change.doc, feed, changeObj.viewResults)) {
       feed.pendingChanges.push(changeObj);
       return;
     }
 
-    if (authorization.isAuthChange(feed, changeObj)) {
+    if (authorization.isAuthChange(changeObj.change.doc, feed.userCtx)) {
       endFeed(feed, false);
       processRequest(feed.req, feed.res, feed.userCtx);
       return;
@@ -337,7 +331,6 @@ const init = () => {
   // reasonable amount of time.
   // While hardcoded at first, CouchDB 2.1.1 has the option to configure this value
   MAX_DOC_IDS = config.get('changes_doc_ids_optimization_threshold') || MAX_DOC_IDS;
-  db.medic.setMaxListeners(100);
   initContinuousFeed();
   inited = true;
 };
@@ -377,9 +370,6 @@ if (process.env.UNIT_TEST_ENV) {
     _processPendingChanges: processPendingChanges,
     _appendChange: appendChange,
     _mergeResults: mergeResults,
-    _tombstoneUtils: tombstoneUtils,
-    _: _,
-
     _reset: () => {
       longpollFeeds = [];
       normalFeeds = [];

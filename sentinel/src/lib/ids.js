@@ -1,6 +1,5 @@
 const _ = require('underscore'),
-      logger = require('./logger'),
-      async = require('async');
+      logger = require('./logger');
 
 const ID_LENGTH_DOC_ID = 'shortcode-id-length',
       ID_LENGTH_PARAM = 'current_length',
@@ -98,23 +97,26 @@ const putIdLengthDoc = (db, idLengthDoc) =>
 /*
  * Given a collection of ids return an array of those not used already
  */
-const findUnusedIds = (db, freshIds) =>
-  new Promise((resolve, reject) => {
-    const keys = [...freshIds].map(id => [ 'shortcode', id ]);
-    async.parallel([
-      cb => db.medic.view('medic-client', 'contacts_by_reference', { keys: keys }, (err, res) => cb(err, res)),
-      cb => db.medic.view('medic-tombstone', 'contacts_by_reference', { keys: keys }, (err, res) => cb(err, res))
-    ], (err, results) => {
+const findUnusedIds = (db, freshIds) => {
+  const keys = [...freshIds].reduce((keys, id) => {
+    keys.push(['shortcode', id], ['tombstone-shortcode', id]);
+    return keys;
+  }, []);
+  return new Promise((resolve, reject) => {
+    db.medic.view('medic-client', 'contacts_by_reference', { keys: keys }, (err, results) => {
       if (err) {
         return reject(err);
       }
 
       const uniqueIds = new Set(freshIds);
 
-      results.forEach(result => result.rows.forEach(row => uniqueIds.delete(row.key[1])));
+      results.rows.forEach(row => {
+        uniqueIds.delete(row.key[1]);
+      });
       resolve(uniqueIds);
     });
   });
+};
 
 const generateNewIds = (currentIdLength) => {
   const freshIds = new Set();

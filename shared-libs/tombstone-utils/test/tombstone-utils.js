@@ -1,10 +1,7 @@
 var sinon = require('sinon').sandbox.create(),
-    chai = require('chai'),
-    lib = require('../src/tombstone-utils');
-require('chai').should();
-
-var DB,
-    initedLib;
+    lib = require('../src/tombstone-utils'),
+    expect = require('chai').expect,
+    DB;
 
 describe('Tombstone Utils Lib', function() {
   'use strict';
@@ -15,37 +12,29 @@ describe('Tombstone Utils Lib', function() {
 
   beforeEach(function() {
     DB = { get: sinon.stub(), put: sinon.stub() };
-    initedLib = lib(Promise, DB);
   });
 
-  describe('extractDocId', function() {
-    it('extracts docID from tombstoneID, if it matches the format, otherwise null', function() {
-      initedLib.extractDocId('docid____rev____tombstone').should.equal('docid');
-      chai.expect(initedLib.extractDocId('000011111')).to.equal(null);
-    });
-  });
-
-  describe('extractRev', function() {
-    it('extracts rev from tombstoneID, if it matches the format, otherwise null', function() {
-      initedLib.extractRev('docid____rev____tombstone').should.equal('rev');
-      chai.expect(initedLib.extractRev('Friday')).to.equal(null);
+  describe('extractStub', function() {
+    it('extracts doc stub from tombstoneID, if it matches the format, otherwise null', function() {
+      expect(lib.extractStub('docid____rev____tombstone')).to.deep.equal({ id: 'docid', rev: 'rev' });
+      expect(lib.extractStub('000011111')).to.equal(null);
     });
   });
 
   describe('extractDoc', function() {
     it('returns tombstone property contents', function() {
       var doc = { _id: 'some_tombstone', tombstone: { _id: 'some', foo: 'bar' } };
-      initedLib.extractDoc(doc).should.deep.equal({ _id: 'some', foo: 'bar' });
-      chai.expect(initedLib.extractDoc({})).to.equal(undefined);
-      chai.expect(initedLib.extractDoc(33)).to.equal(undefined);
+      expect(lib.extractDoc(doc)).to.deep.equal({ _id: 'some', foo: 'bar' });
+      expect(lib.extractDoc({})).to.equal(undefined);
+      expect(lib.extractDoc(33)).to.equal(undefined);
     });
   });
 
   describe('isTombstoneId', function() {
     it('returns true for strings that match, false otherwise', function() {
-      initedLib.isTombstoneId('aaaa').should.equal(false);
-      initedLib.isTombstoneId('doc____rev____tombstone').should.equal(true);
-      initedLib.isTombstoneId('doc-rev-tombstone').should.equal(false);
+      expect(lib.isTombstoneId('aaaa')).to.equal(false);
+      expect(lib.isTombstoneId('doc____rev____tombstone')).to.equal(true);
+      expect(lib.isTombstoneId('doc-rev-tombstone')).to.equal(false);
     });
   });
 
@@ -72,42 +61,42 @@ describe('Tombstone Utils Lib', function() {
 
       return Promise
         .all([
-          initedLib.processChange(personChange),
-          initedLib.processChange(clinicChange),
-          initedLib.processChange(districtHospitalChange),
-          initedLib.processChange(healthCenterChange),
-          initedLib.processChange(reportChange)
+          lib.processChange(Promise, DB, personChange),
+          lib.processChange(Promise, DB, clinicChange),
+          lib.processChange(Promise, DB, districtHospitalChange),
+          lib.processChange(Promise, DB, healthCenterChange),
+          lib.processChange(Promise, DB, reportChange)
         ])
         .then(function() {
-          DB.get.callCount.should.equal(5);
-          DB.get.args[0].should.deep.equal([ 'personId', { rev: 'personRev' } ]);
-          DB.get.args[1].should.deep.equal([ 'clinicId', { rev: 'clinicRev' } ]);
-          DB.get.args[2].should.deep.equal([ 'districtHospitalId', { rev: 'districtHospitalRev' } ]);
-          DB.get.args[3].should.deep.equal([ 'healthCenterId', { rev: 'healthCenterRev' } ]);
-          DB.get.args[4].should.deep.equal([ 'reportId', { rev: 'reportRev' } ]);
+          expect(DB.get.callCount).to.equal(5);
+          expect(DB.get.args[0]).to.deep.equal([ 'personId', { rev: 'personRev' } ]);
+          expect(DB.get.args[1]).to.deep.equal([ 'clinicId', { rev: 'clinicRev' } ]);
+          expect(DB.get.args[2]).to.deep.equal([ 'districtHospitalId', { rev: 'districtHospitalRev' } ]);
+          expect(DB.get.args[3]).to.deep.equal([ 'healthCenterId', { rev: 'healthCenterRev' } ]);
+          expect(DB.get.args[4]).to.deep.equal([ 'reportId', { rev: 'reportRev' } ]);
 
-          DB.put.callCount.should.equal(5);
-          DB.put.args[0].should.deep.equal([{
+          expect(DB.put.callCount).to.equal(5);
+          expect(DB.put.args[0]).to.deep.equal([{
             _id: 'personId____personRev____tombstone',
             type: 'tombstone',
             tombstone: person
           }]);
-          DB.put.args[1].should.deep.equal([{
+          expect(DB.put.args[1]).to.deep.equal([{
             _id: 'clinicId____clinicRev____tombstone',
             type: 'tombstone',
             tombstone: clinic
           }]);
-          DB.put.args[2].should.deep.equal([{
+          expect(DB.put.args[2]).to.deep.equal([{
             _id: 'districtHospitalId____districtHospitalRev____tombstone',
             type: 'tombstone',
             tombstone: districtHospital
           }]);
-          DB.put.args[3].should.deep.equal([{
+          expect(DB.put.args[3]).to.deep.equal([{
             _id: 'healthCenterId____healthCenterRev____tombstone',
             type: 'tombstone',
             tombstone: healthCenter
           }]);
-          DB.put.args[4].should.deep.equal([{
+          expect(DB.put.args[4]).to.deep.equal([{
             _id: 'reportId____reportRev____tombstone',
             type: 'tombstone',
             tombstone: report
@@ -115,7 +104,7 @@ describe('Tombstone Utils Lib', function() {
         });
     });
 
-    it('does not save tombstone when doc is not contact or data_record', function() {
+    it('saves a tombstone for any deleted document, except for tombstones!', function() {
       var notype = {_id: 'doc1', _rev: 'doc1Rev'};
       var form = {_id: 'form', _rev: 'formRev', type: 'form'};
       var feedback = {_id: 'feedback', _rev: 'feedbackRev', type: 'feedback'};
@@ -140,36 +129,61 @@ describe('Tombstone Utils Lib', function() {
 
       return Promise
         .all([
-          initedLib.processChange(notypeChange),
-          initedLib.processChange(formChange),
-          initedLib.processChange(feedbackChange),
-          initedLib.processChange(infoChange),
-          initedLib.processChange(tombstoneChange),
-          initedLib.processChange(translationChange)
+          lib.processChange(Promise, DB, notypeChange),
+          lib.processChange(Promise, DB, formChange),
+          lib.processChange(Promise, DB, feedbackChange),
+          lib.processChange(Promise, DB, infoChange),
+          lib.processChange(Promise, DB, tombstoneChange),
+          lib.processChange(Promise, DB, translationChange)
         ])
         .then(function () {
-          DB.get.callCount.should.equal(6);
-          DB.get.args[0].should.deep.equal(['doc1', {rev: 'doc1Rev'}]);
-          DB.get.args[1].should.deep.equal(['form', {rev: 'formRev'}]);
-          DB.get.args[2].should.deep.equal(['feedback', {rev: 'feedbackRev'}]);
-          DB.get.args[3].should.deep.equal(['info', {rev: 'infoRev'}]);
-          DB.get.args[4].should.deep.equal(['tombstone', {rev: 'tombstoneRev'}]);
-          DB.get.args[5].should.deep.equal(['translation', {rev: 'translationRev'}]);
+          expect(DB.get.callCount).to.equal(6);
+          expect(DB.get.args[0]).to.deep.equal(['doc1', {rev: 'doc1Rev'}]);
+          expect(DB.get.args[1]).to.deep.equal(['form', {rev: 'formRev'}]);
+          expect(DB.get.args[2]).to.deep.equal(['feedback', {rev: 'feedbackRev'}]);
+          expect(DB.get.args[3]).to.deep.equal(['info', {rev: 'infoRev'}]);
+          expect(DB.get.args[4]).to.deep.equal(['tombstone', {rev: 'tombstoneRev'}]);
+          expect(DB.get.args[5]).to.deep.equal(['translation', {rev: 'translationRev'}]);
 
-          DB.put.callCount.should.equal(0);
+          expect(DB.put.callCount).to.equal(5);
+          expect(DB.put.args[0]).to.deep.equal([{
+            _id: 'doc1____doc1Rev____tombstone',
+            type: 'tombstone',
+            tombstone: notype
+          }]);
+          expect(DB.put.args[1]).to.deep.equal([{
+            _id: 'form____formRev____tombstone',
+            type: 'tombstone',
+            tombstone: form
+          }]);
+          expect(DB.put.args[2]).to.deep.equal([{
+            _id: 'feedback____feedbackRev____tombstone',
+            type: 'tombstone',
+            tombstone: feedback
+          }]);
+          expect(DB.put.args[3]).to.deep.equal([{
+            _id: 'info____infoRev____tombstone',
+            type: 'tombstone',
+            tombstone: info
+          }]);
+          expect(DB.put.args[4]).to.deep.equal([{
+            _id: 'translation____translationRev____tombstone',
+            type: 'tombstone',
+            tombstone: translation
+          }]);
         });
     });
 
     it('throws error when reading the change doc fails', function() {
       DB.get.rejects('some error');
       var change = { id: 'id', deleted: true, changes: [{ rev: 'rev' }] };
-      return initedLib
-        .processChange(change)
+      return lib
+        .processChange(Promise, DB, change)
         .then(function() {
           throw new Error('was supposed to throw an error');
         })
         .catch(function(err) {
-          err.name.should.deep.equal('some error');
+          expect(err.name).to.deep.equal('some error');
         });
     });
 
@@ -177,11 +191,11 @@ describe('Tombstone Utils Lib', function() {
       DB.get.resolves({ _id: 'id', type: 'person', _rev: 'rev' });
       DB.put.rejects({ status: 409, reason: 'document update conflict' });
       var change = { id: 'id', deleted: true, changes: [{ rev: 'rev' }] };
-      return initedLib
-        .processChange(change)
+      return lib
+        .processChange(Promise, DB, change)
         .then(function() {
-          DB.put.callCount.should.equal(1);
-          DB.put.args[0].should.deep.equal([{
+          expect(DB.put.callCount).to.equal(1);
+          expect(DB.put.args[0]).to.deep.equal([{
             _id: 'id____rev____tombstone',
             type: 'tombstone',
             tombstone: { _id: 'id', type: 'person', _rev: 'rev' }
@@ -193,14 +207,40 @@ describe('Tombstone Utils Lib', function() {
       DB.get.resolves({ _id: 'id', type: 'person' });
       DB.put.rejects('some other error');
       var change = { id: 'id', deleted: true, changes: [{ rev: 'rev' }] };
-      return initedLib
-        .processChange(change)
+      return lib
+        .processChange(Promise, DB, change)
         .then(function() {
           throw new Error('was supposed to throw an error');
         })
         .catch(function(err) {
-          err.name.should.equal('some other error');
+          expect(err.name).to.equal('some other error');
         });
+    });
+  });
+
+  describe('generateChangeFromTombstone', function() {
+    it('extracts accurate information', function() {
+      expect(lib.generateChangeFromTombstone({ id: 'id____rev____tombstone' }))
+        .to.deep.equal({ id: 'id', changes:[{ rev: 'rev' }], deleted: true, seq: undefined });
+      expect(lib.generateChangeFromTombstone({ id: 'id____rev____tombstone', seq: 'aaa' }))
+        .to.deep.equal({ id: 'id', changes:[{ rev: 'rev' }], deleted: true, seq: 'aaa' });
+    });
+
+    it('only includes doc if it exists and is requested', function() {
+      expect(lib.generateChangeFromTombstone({ id: 'id____rev____tombstone' }, true))
+        .to.deep.equal({ id: 'id', changes:[{ rev: 'rev' }], deleted: true, seq: undefined });
+
+      var changeWithDoc = {
+        id: 'id____rev____tombstone',
+        doc: {
+          _id:'id____rev____tombstone',
+          tombstone: { _id: 'id', _rev: 'rev' }
+        }
+      };
+      expect(lib.generateChangeFromTombstone(changeWithDoc))
+        .to.deep.equal({ id: 'id', changes:[{ rev: 'rev' }], deleted: true, seq: undefined });
+      expect(lib.generateChangeFromTombstone(changeWithDoc, true))
+        .to.deep.equal({ id: 'id', changes:[{ rev: 'rev' }], deleted: true, seq: undefined, doc: { _id: 'id', _rev: 'rev' }});
     });
   });
 });

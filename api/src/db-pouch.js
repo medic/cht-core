@@ -23,7 +23,7 @@ if(UNIT_TEST_ENV) {
   // strip trailing slash from to prevent bugs in path matching
   const couchUrl = COUCH_URL && COUCH_URL.replace(/\/$/, '');
   const DB = new PouchDB(couchUrl);
-
+  DB.setMaxListeners(0);
   module.exports.medic = DB;
 
   const usersDbUrl = couchUrl.slice(0, couchUrl.lastIndexOf('/')) + '/_users';

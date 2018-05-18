@@ -1,9 +1,9 @@
-let db = require('../db-pouch'),
-    auth = require('../auth'),
-    _ = require('underscore'),
-    config = require('../config'),
-    viewMapUtils = require('@shared-libs/view-map-utils'),
-    tombstoneUtils = require('@shared-libs/tombstone-utils')(Promise, db.medic);
+const db = require('../db-pouch'),
+      auth = require('../auth'),
+      _ = require('underscore'),
+      config = require('../config'),
+      viewMapUtils = require('@shared-libs/view-map-utils'),
+      tombstoneUtils = require('@shared-libs/tombstone-utils');
 
 const ALL_KEY = '_all', // key in the docs_by_replication_key view for records everyone can access
       UNASSIGNED_KEY = '_unassigned'; // key in the docs_by_replication_key view for unassigned records
@@ -34,30 +34,24 @@ const hasAccessToUnassignedDocs = (userCtx) => {
          auth.hasAllPermissions(userCtx, 'can_view_unallocated_data_records');
 };
 
-const exclude = (array, ...values) => {
-  if (!Array.isArray(array)) {
-    return;
-  }
-
-  let i = 0;
-  while (i < array.length) {
-    if (values.indexOf(array[i]) !== -1) {
-      array.splice(i, 1);
-    } else {
-      i++;
-    }
-  }
-};
-
 const include = (array, ...values) => {
-  if (!Array.isArray(array)) {
-    return;
-  }
   values.forEach(value => array.indexOf(value) === -1 && array.push(value));
+  return array;
 };
 
-const allowedDoc = (doc, { userCtx, subjectIds, depth }, { replicationKey, contactsByDepth }) => {
-  if (['_design/medic-client', 'org.couchdb.user:' + userCtx.name].indexOf(doc._id) !== -1) {
+const exclude = (array, ...values) => {
+  return array.filter(value => values.indexOf(value) === -1);
+};
+
+// Returns whether an authenticated user has access to a document
+// @param {Object} doc - CouchDB document
+// @param {Object} authData.userCtx - authenticated user information
+// @param {number} authData.depth - allowed maximum replication depth
+// @param {Array} authData.subjectIds - allowed subjectIds. Is updated when this function is called against a contact.
+// @param {Object} viewValues.replicationKey - result of `medic/docs_by_replication_key` view against doc
+// @param {Array} viewValues.contactsByDepth - results of `medic/contacts_by_depth` view against doc
+const allowedDoc = (doc, authData, { replicationKey, contactsByDepth }) => {
+  if (['_design/medic-client', 'org.couchdb.user:' + authData.userCtx.name].indexOf(doc._id) !== -1) {
     return true;
   }
 
@@ -72,20 +66,20 @@ const allowedDoc = (doc, { userCtx, subjectIds, depth }, { replicationKey, conta
   if (contactsByDepth && contactsByDepth.length) {
     //it's a contact
     const subjectId = contactsByDepth[0][1];
-    if (allowedContact(contactsByDepth, userCtx, depth)) {
-      include(subjectIds, subjectId, doc._id);
+    if (allowedContact(contactsByDepth, authData.userCtx, authData.depth)) {
+      authData.subjectIds = include(authData.subjectIds, subjectId, doc._id);
       return true;
     }
 
-    exclude(subjectIds, subjectId, doc._id );
+    authData.subjectIds = exclude(authData.subjectIds, subjectId, doc._id );
     return false;
   }
 
   //it's a report
   const [ subjectId, { submitter: submitterId } ] = replicationKey,
-        allowedSubject = subjectId && subjectIds.indexOf(subjectId) !== -1,
-        allowedSubmitter = submitterId && subjectIds.indexOf(submitterId) !== -1,
-        sensitive = isSensitive(userCtx, subjectId, submitterId, allowedSubmitter);
+        allowedSubject = subjectId && authData.subjectIds.indexOf(subjectId) !== -1,
+        allowedSubmitter = submitterId && authData.subjectIds.indexOf(submitterId) !== -1,
+        sensitive = isSensitive(authData.userCtx, subjectId, submitterId, allowedSubmitter);
 
   if ((!subjectId && allowedSubmitter) || (allowedSubject && !sensitive)) {
     return true;
@@ -119,30 +113,26 @@ const getSubjectIds = (userCtx, depth) => {
   depth = depth || module.exports.getDepth(userCtx);
   const keys = getContactsByDepthKeys(userCtx, depth);
 
-  return Promise
-    .all([
-      db.medic.query('medic/contacts_by_depth', { keys: keys }),
-      db.medic.query('medic-tombstone/contacts_by_depth', { keys: keys }),
-    ])
-    .then(resultSets => {
-      const subjectIds = [];
-
-      resultSets.forEach((resultSet, tombstone) => {
-        resultSet.rows.forEach(row => {
-          subjectIds.push( tombstone ? tombstoneUtils.extractDocId(row.id) : row.id );
-          if (row.value) {
-            subjectIds.push(row.value);
-          }
-        });
-      });
-
-      subjectIds.push(ALL_KEY);
-      if (hasAccessToUnassignedDocs(userCtx)) {
-        subjectIds.push(UNASSIGNED_KEY);
+  return db.medic.query('medic/contacts_by_depth', { keys: keys }).then(results => {
+    const subjectIds = [];
+    results.rows.forEach(row => {
+      if (tombstoneUtils.isTombstoneId(row.id)) {
+        subjectIds.push(tombstoneUtils.extractStub(row.id).id);
+      } else {
+        subjectIds.push(row.id);
       }
-
-      return subjectIds;
+      if (row.value) {
+        subjectIds.push(row.value);
+      }
     });
+
+    subjectIds.push(ALL_KEY);
+    if (hasAccessToUnassignedDocs(userCtx)) {
+      subjectIds.push(UNASSIGNED_KEY);
+    }
+
+    return subjectIds;
+  });
 };
 
 /**
@@ -161,24 +151,16 @@ const isSensitive = function(userCtx, subject, submitter, allowedSubmitter) {
 };
 
 const getValidatedDocIds = (subjectIds, userCtx) => {
-  return Promise
-    .all([
-      db.medic.query('medic/docs_by_replication_key', { keys: subjectIds }),
-      db.medic.query('medic-tombstone/docs_by_replication_key', { keys: subjectIds })
-    ])
-    .then(resultSets => {
-      const validatedIds = ['_design/medic-client', 'org.couchdb.user:' + userCtx.name];
-
-      resultSets.forEach(resultSet => {
-        resultSet.rows.forEach(row => {
-          if (!isSensitive(userCtx, row.key, row.value.submitter, subjectIds.indexOf(row.value.submitter) !== -1)) {
-            validatedIds.push(row.id);
-          }
-        });
-      });
-
-      return validatedIds;
+  return db.medic.query('medic/docs_by_replication_key', { keys: subjectIds }).then(results => {
+    const validatedIds = ['_design/medic-client', 'org.couchdb.user:' + userCtx.name];
+    results.rows.forEach(row => {
+      if (!isSensitive(userCtx, row.key, row.value.submitter, subjectIds.indexOf(row.value.submitter) !== -1)) {
+        validatedIds.push(row.id);
+      }
     });
+
+    return validatedIds;
+  });
 };
 
 const getViewResults = (doc) => {
@@ -188,18 +170,13 @@ const getViewResults = (doc) => {
   };
 };
 
-const allowedChange = (feed, changeObj) => {
-  const userOpts = _.pick(feed, 'userCtx', 'subjectIds', 'depth');
-  return allowedDoc(changeObj.change.doc, userOpts, changeObj.viewResults);
-};
-
-const isAuthChange = (feed, changeObj) => {
-  if (changeObj.change.id !== 'org.couchdb.user:' + feed.userCtx.name) {
+const isAuthChange = (doc, userCtx) => {
+  if (doc._id !== 'org.couchdb.user:' + userCtx.name) {
     return false;
   }
 
-  if (feed.userCtx.contact_id !== changeObj.change.doc.contact_id ||
-      feed.userCtx.facility_id !== changeObj.change.doc.facility_id) {
+  if (userCtx.contact_id !== doc.contact_id ||
+      userCtx.facility_id !== doc.facility_id) {
     return true;
   }
 
@@ -207,7 +184,6 @@ const isAuthChange = (feed, changeObj) => {
 };
 
 module.exports = {
-  allowedChange: allowedChange,
   isAuthChange: isAuthChange,
   allowedDoc: allowedDoc,
   getDepth: getDepth,
@@ -215,11 +191,3 @@ module.exports = {
   getSubjectIds: getSubjectIds,
   getValidatedDocIds: getValidatedDocIds,
 };
-
-// used for testing
-if (process.env.UNIT_TEST_ENV) {
-  _.extend(module.exports, {
-    _tombstoneUtils: tombstoneUtils,
-    _viewMapUtils: viewMapUtils
-  });
-}

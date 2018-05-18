@@ -8,6 +8,11 @@ function (doc) {
       doc.type === 'translations') {
     return emit('_all', {});
   }
+
+  if (doc.type === 'tombstone' && doc.tombstone) {
+    doc = doc.tombstone;
+  }
+
   var getSubject = function() {
     if (doc.form) {
       // report

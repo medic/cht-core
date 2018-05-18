@@ -1,8 +1,6 @@
 var sinon = require('sinon').sandbox.create();
 require('chai').should();
 var lib = require('../src/view-map-utils');
-var fs = require('fs');
-var path = require('path');
 
 describe('Replication Helper Views Lib', function() {
   afterEach(function() {
@@ -32,12 +30,9 @@ describe('Replication Helper Views Lib', function() {
       lib._getViewMapStrings().should.deep.equal({ ddoc: { view1: false, view2: false }});
     });
 
-    it('does not crash when requested views param is undefined, or ddoc Id is not set', function () {
-      lib.loadViewMaps({});
-      lib._getViewMapStrings().should.deep.equal({ default: {} });
-
-      lib.loadViewMaps({ views: { view1: { map: 'aaaa' } } }, 'view1');
-      lib._getViewMapStrings().should.deep.equal({default: { view1: 'aaaa' }});
+    it('does not crash when requested views param is undefined', function () {
+      lib.loadViewMaps({ _id: 'ddoc', views: { view1: { map: 'aaaa' }}}, 'view1');
+      lib._getViewMapStrings().should.deep.equal({ddoc: { view1: 'aaaa' }});
     });
   });
 
@@ -160,21 +155,6 @@ describe('Replication Helper Views Lib', function() {
       lib.loadViewMaps(ddoc, 'view1', 'view2');
       lib.getViewMapString('ddoc', 'view1').should.equal('function(a) { return a; }');
     });
-
-    it('falls back to default views when missing view or incorrect config', function() {
-      var fnStringView1 = 'function(a) { return a; }';
-      var ddoc = {
-        _id: '_design/ddoc',
-        views: {
-          view1: { map: fnStringView1 }
-        }
-      };
-      lib.loadViewMaps(ddoc, 'view1');
-
-      lib.defaultViews.someview = 'sometext';
-      lib.getViewMapString('someddoc', 'someview').should.equal('sometext');
-      delete lib.defaultViews.someview;
-    });
   });
 
   describe('hot reloading', function() {
@@ -264,32 +244,6 @@ describe('Replication Helper Views Lib', function() {
       lib.getViewMapFn('ddoc1', 'view')('I am a happy hippo').should.deep.equal([1024]);
       lib.getViewMapFn('ddoc2', 'view')(1).should.deep.equal(['Medic Mobile']);
       lib.getViewMapFn('ddoc2', 'view')(33).should.deep.equal(['Medic Mobile']);
-    });
-
-
-  });
-
-  describe('defaultViews', function() {
-    it('default views are correct', function() {
-      var COMMENT_REGEX = /\/\/.*/g,
-          NEW_LINE_REGEX = /\\n/g,
-          SPACE_REGEX = /\s/g;
-      Object.keys(lib.defaultViews).forEach(function(view) {
-        var fnString = fs
-          .readFileSync(path.join(__dirname, '../../../webapp/src/ddocs/medic/views/'+ view +'/map.js'), 'utf8')
-          .toString()
-          .replace(COMMENT_REGEX,'')
-          .replace(NEW_LINE_REGEX,'')
-          .replace(SPACE_REGEX, '');
-
-        var defaultView = lib.defaultViews[view]
-          .toString()
-          .replace(COMMENT_REGEX,'')
-          .replace(NEW_LINE_REGEX,'')
-          .replace(SPACE_REGEX, '');
-
-        defaultView.should.equal(fnString);
-      });
     });
   });
 });

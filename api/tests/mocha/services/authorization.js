@@ -1,11 +1,15 @@
-const service = require('../../../src/services/authorization'),
-      db = require('../../../src/db-pouch'),
+const db = require('../../../src/db-pouch'),
       sinon = require('sinon').sandbox.create(),
       config = require('../../../src/config'),
-      auth = require('../../../src/auth');
+      auth = require('../../../src/auth'),
+      tombstoneUtils = require('@shared-libs/tombstone-utils'),
+      viewMapUtils = require('@shared-libs/view-map-utils'),
+      service = require('../../../src/services/authorization');
 
 require('chai').should();
-const userCtx = { name: 'user', contact_id: 'contact_id', facility_id: 'facility_id' };
+const userCtx = { name: 'user', contact_id: 'contact_id', facility_id: 'facility_id' },
+      subjectIds = [1, 2, 3];
+
 let contact,
     report,
     userInfo,
@@ -17,10 +21,11 @@ describe('Authorization service', () => {
   });
 
   beforeEach(() => {
+    sinon.stub(tombstoneUtils, 'extractStub').callsFake(t => ({ id: t.replace('tombstone', 'deleted')}));
+    sinon.stub(tombstoneUtils, 'isTombstoneId').returns(false);
     sinon.stub(config, 'get');
     sinon.stub(auth, 'hasAllPermissions');
-    sinon.stub(service._tombstoneUtils, 'extractDocId').callsFake(t => t.replace('tombstone', 'deleted'));
-    sinon.stub(service._viewMapUtils, 'getViewMapFn').returns(sinon.stub());
+    sinon.stub(viewMapUtils, 'getViewMapFn').returns(sinon.stub());
     sinon.stub(db.medic, 'query').resolves({ rows: [] });
   });
 
@@ -70,14 +75,10 @@ describe('Authorization service', () => {
       return service
         .getSubjectIds({ facility_id: 'facilityId' })
         .then(() => {
-          db.medic.query.callCount.should.equal(2);
+          db.medic.query.callCount.should.equal(1);
           db.medic.query.args[0][0].should.equal('medic/contacts_by_depth');
-          db.medic.query.args[1][0].should.equal('medic-tombstone/contacts_by_depth');
 
           db.medic.query.args[0][1].should.deep.equal({
-            keys: [[ 'facilityId', 0 ], [ 'facilityId', 1 ], [ 'facilityId', 2 ]]
-          });
-          db.medic.query.args[1][1].should.deep.equal({
             keys: [[ 'facilityId', 0 ], [ 'facilityId', 1 ], [ 'facilityId', 2 ]]
           });
         });
@@ -88,12 +89,9 @@ describe('Authorization service', () => {
       return service
         .getSubjectIds({ facility_id: 'facilityId' })
         .then(() => {
-          db.medic.query.callCount.should.equal(2);
+          db.medic.query.callCount.should.equal(1);
           db.medic.query.args[0][0].should.equal('medic/contacts_by_depth');
-          db.medic.query.args[1][0].should.equal('medic-tombstone/contacts_by_depth');
-
           db.medic.query.args[0][1].should.deep.equal({ keys: [[ 'facilityId' ]] });
-          db.medic.query.args[1][1].should.deep.equal({ keys: [[ 'facilityId' ]] });
         });
     });
 
@@ -101,24 +99,25 @@ describe('Authorization service', () => {
       auth.hasAllPermissions.returns(false);
       config.get.returns(false);
       service.getDepth.returns(-1);
+      tombstoneUtils.isTombstoneId.withArgs('tombstone-1').returns(true);
+      tombstoneUtils.isTombstoneId.withArgs('tombstone-2').returns(true);
+      tombstoneUtils.isTombstoneId.withArgs('tombstone-3').returns(true);
+
       db.medic.query.withArgs('medic/contacts_by_depth').resolves({
         rows: [
           { id: 1, key: 'key', value: 's1' },
           { id: 2, key: 'key', value: 's2' },
-        ]
-      });
-      db.medic.query.withArgs('medic-tombstone/contacts_by_depth').resolves({
-        rows: [
           { id: 'tombstone-1', key: 'key', value: 's3' },
           { id: 'tombstone-2', key: 'key', value: 's4' },
-          { id: 'tombstone-3', key: 'key', value: 's5' },
+          { id: 'tombstone-3', key: 'key', value: 's5' }
         ]
       });
+
       return service
         .getSubjectIds({ facility_id: 'facility_id' })
         .then(result => {
-          service._tombstoneUtils.extractDocId.callCount.should.equal(3);
-          service._tombstoneUtils.extractDocId.args.should.deep.equal([
+          tombstoneUtils.extractStub.callCount.should.equal(3);
+          tombstoneUtils.extractStub.args.should.deep.equal([
             ['tombstone-1'], ['tombstone-2'], ['tombstone-3']
           ]);
           result.sort().should.deep.equal([
@@ -139,16 +138,14 @@ describe('Authorization service', () => {
         });
     });
   });
-  
+
   describe('getValidatedDocIds', () => {
     it('queries correct views with correct keys', () => {
-      const subjectIds = [1, 2, 3];
       return service
         .getValidatedDocIds(subjectIds, { name: 'user' })
         .then(result => {
-          db.medic.query.callCount.should.equal(2);
+          db.medic.query.callCount.should.equal(1);
           db.medic.query.args[0].should.deep.equal([ 'medic/docs_by_replication_key', { keys: subjectIds } ]);
-          db.medic.query.args[1].should.deep.equal([ 'medic-tombstone/docs_by_replication_key', { keys: subjectIds } ]);
 
           result.length.should.equal(2);
           result.should.deep.equal(['_design/medic-client', 'org.couchdb.user:user']);
@@ -169,11 +166,7 @@ describe('Authorization service', () => {
             { id: 'r7', key: 'facility_id', value: { submitter: 'c-unknown' } }, //sensitive
             { id: 'r8', key: 'contact_id', value: { submitter: 'c-unknown' } }, //sensitive
             { id: 'r9', key: 'facility_id', value: { submitter: 'c3' } },
-            { id: 'r10', key: 'contact_id', value: { submitter: 'c4' } }
-          ]});
-      db.medic.query
-        .withArgs('medic-tombstone/docs_by_replication_key')
-        .resolves({ rows: [
+            { id: 'r10', key: 'contact_id', value: { submitter: 'c4' } },
             { id: 'r11', key: 'sbj3', value: { } },
             { id: 'r12', key: 'sbj4', value: { submitter: 'someone' } },
             { id: 'r13', key: false, value: { submitter: 'someone else' } }
@@ -198,16 +191,16 @@ describe('Authorization service', () => {
       const contactsByDepthStub = sinon.stub().returns('contactsByDepthStubResult');
       const docsByReplicationKeyStub = sinon.stub().returns('docsByReplicationKeyStubResult');
       const doc = { _id: 1, _rev: 1 };
-      service._viewMapUtils.getViewMapFn
+      viewMapUtils.getViewMapFn
         .withArgs('medic', 'contacts_by_depth', true)
         .returns(contactsByDepthStub);
-      service._viewMapUtils.getViewMapFn
+      viewMapUtils.getViewMapFn
         .withArgs('medic', 'docs_by_replication_key')
         .returns(docsByReplicationKeyStub);
 
       config.get.returns('config');
       const result = service.getViewResults(doc);
-      service._viewMapUtils.getViewMapFn.callCount.should.equal(2);
+      viewMapUtils.getViewMapFn.callCount.should.equal(2);
       docsByReplicationKeyStub.callCount.should.equal(1);
       docsByReplicationKeyStub.args[0][0].should.deep.equal(doc);
       contactsByDepthStub.callCount.should.equal(1);
@@ -237,7 +230,7 @@ describe('Authorization service', () => {
       describe('allowedContact', () => {
         beforeEach(() => {
           viewResults = { replicationKey: ['a', {}], contactsByDepth: [['parent1'], 'patient_id'] };
-          userInfo = { userCtx, depth: -1 };
+          userInfo = { userCtx, depth: -1, subjectIds };
         });
 
         it('returns true for valid contacts', () => {
@@ -289,9 +282,9 @@ describe('Authorization service', () => {
             [[userCtx.facility_id], 'patient_id'], [[userCtx.facility_id, 0], 'patient_id'],
             [['parent1'], 'patient_id'], [['parent1', 1], 'patient_id']
           ];
-          service.allowedDoc(contact, { userCtx, depth: -1 }, viewResults).should.equal(true);
-          service.allowedDoc(contact, { userCtx, depth: 0 }, viewResults).should.equal(true);
-          service.allowedDoc(contact, { userCtx, depth: 1 }, viewResults).should.equal(true);
+          service.allowedDoc(contact, { userCtx, subjectIds, depth: -1 }, viewResults).should.equal(true);
+          service.allowedDoc(contact, { userCtx, subjectIds, depth: 0 }, viewResults).should.equal(true);
+          service.allowedDoc(contact, { userCtx, subjectIds, depth: 1 }, viewResults).should.equal(true);
 
           contact = { _id: 'contact_id', parent: { _id: userCtx.facility_id, parent: { _id: 'parent1' }}};
           viewResults.contactsByDepth = [
@@ -299,9 +292,9 @@ describe('Authorization service', () => {
             [[userCtx.facility_id], 'patient_id'], [[userCtx.facility_id, 1], 'patient_id'],
             [['parent1'], 'patient_id'], [['parent1', 2], 'patient_id']
           ];
-          service.allowedDoc(contact, { userCtx, depth: -1 }, viewResults).should.equal(true);
-          service.allowedDoc(contact, { userCtx, depth: 0 }, viewResults).should.equal(false);
-          service.allowedDoc(contact, { userCtx, depth: 1 }, viewResults).should.equal(true);
+          service.allowedDoc(contact, { userCtx, subjectIds, depth: -1 }, viewResults).should.equal(true);
+          service.allowedDoc(contact, { userCtx, subjectIds, depth: 0 }, viewResults).should.equal(false);
+          service.allowedDoc(contact, { userCtx, subjectIds, depth: 1 }, viewResults).should.equal(true);
 
           contact = { _id: 'contact', parent: { _id: 'parent1', parent: { _id: userCtx.facility_id }}};
           viewResults.contactsByDepth = [
@@ -309,10 +302,10 @@ describe('Authorization service', () => {
             [['parent1'], 'patient_id'], [['parent1', 1], 'patient_id'],
             [[userCtx.facility_id], 'patient_id'], [[userCtx.facility_id, 2], 'patient_id'],
           ];
-          service.allowedDoc(contact, { userCtx, depth: -1 }, viewResults).should.equal(true);
-          service.allowedDoc(contact, { userCtx, depth: 0 }, viewResults).should.equal(false);
-          service.allowedDoc(contact, { userCtx, depth: 1 }, viewResults).should.equal(false);
-          service.allowedDoc(contact, { userCtx, depth: 2 }, viewResults).should.equal(true);
+          service.allowedDoc(contact, { userCtx, subjectIds, depth: -1 }, viewResults).should.equal(true);
+          service.allowedDoc(contact, { userCtx, subjectIds, depth: 0 }, viewResults).should.equal(false);
+          service.allowedDoc(contact, { userCtx, subjectIds, depth: 1 }, viewResults).should.equal(false);
+          service.allowedDoc(contact, { userCtx, subjectIds, depth: 2 }, viewResults).should.equal(true);
 
           contact = { _id: 'contact', parent: { _id: 'parent1', parent: { _id: 'parent2', parent: { _id: userCtx.facility_id }}}};
           viewResults.contactsByDepth = [
@@ -321,11 +314,11 @@ describe('Authorization service', () => {
             [['parent2'], 'patient_id'], [['parent2', 2], 'patient_id'],
             [[userCtx.facility_id], 'patient_id'], [[userCtx.facility_id, 3], 'patient_id'],
           ];
-          service.allowedDoc(contact, { userCtx, depth: -1 }, viewResults).should.equal(true);
-          service.allowedDoc(contact, { userCtx, depth: 0 }, viewResults).should.equal(false);
-          service.allowedDoc(contact, { userCtx, depth: 1 }, viewResults).should.equal(false);
-          service.allowedDoc(contact, { userCtx, depth: 2 }, viewResults).should.equal(false);
-          service.allowedDoc(contact, { userCtx, depth: 3 }, viewResults).should.equal(true);
+          service.allowedDoc(contact, { userCtx, subjectIds, depth: -1 }, viewResults).should.equal(true);
+          service.allowedDoc(contact, { userCtx, subjectIds, depth: 0 }, viewResults).should.equal(false);
+          service.allowedDoc(contact, { userCtx, subjectIds, depth: 1 }, viewResults).should.equal(false);
+          service.allowedDoc(contact, { userCtx, subjectIds, depth: 2 }, viewResults).should.equal(false);
+          service.allowedDoc(contact, { userCtx, subjectIds, depth: 3 }, viewResults).should.equal(true);
         });
 
         it('adds valid contact _id and reference to subjects list, while keeping them unique', () => {
@@ -442,83 +435,37 @@ describe('Authorization service', () => {
       });
     });
 
-    describe('getViewResults', () => {
-      it('calls allowedDoc with correct arguments, and returns the result', () => {
-        const feed = {
-          userCtx: { name: 'user', facility_id: 'facility_id', contact_id: 'contact_id' },
-          subjectIds: [ 'contact_id', 'facility_id', 'subject', 'submitter' ],
-          depth: -1
-        };
-        const changeObj = {
-          change: { id: 'report', rev: 'rev', doc: { _id: 'report', _rev: 'rev' } },
-          viewResults: { replicationKey: [ 'subject', { submitter: 'contact_id' } ], contactsByDepth: [] }
-        };
-
-        service.allowedChange(feed, changeObj).should.equal(true);
-
-        changeObj.viewResults.replicationKey[0] = 'subject2';
-        service.allowedChange(feed, changeObj).should.equal(false);
-      });
-    });
-
     describe('isAuthChange', () => {
       it('returns correct response', () => {
-        const feed = {
-          userCtx: { name: 'user', facility_id: 'facility_id', contact_id: 'contact_id' },
-          subjectIds: [ 'contact_id', 'facility_id', 'subject', 'submitter' ],
-          depth: -1
-        };
+        const userCtx = { name: 'user', facility_id: 'facility_id', contact_id: 'contact_id' };
+        let doc = {
+          _id: 'org.couchdb.user:user',
+          _rev: 'rev',
+          facility_id: 'new_facility_id',
+          contact_id: 'contact_id'
 
-        let changeObj = {
-          change: {
-            id: 'org.couchdb.user:user',
-            rev: 'rev',
-            doc: {
-              _id: 'org.couchdb.user:user',
-              _rev: 'rev',
-              facility_id: 'new_facility_id',
-              contact_id: 'contact_id'
-            }
-          },
-          viewResults: { replicationKey:  null, contactsByDepth: [] }
         };
-        service.isAuthChange(feed, changeObj).should.equal(true);
+        service.isAuthChange(doc, userCtx).should.equal(true);
+        doc = {
 
-        changeObj = {
-          change: {
-            id: 'org.couchdb.user:user',
-            rev: 'rev',
-            doc: {
-              _id: 'org.couchdb.user:user',
-              _rev: 'rev',
-              facility_id: 'facility_id',
-              contact_id: 'new_contact_id'
-            }
-          },
-          viewResults: { replicationKey:  null, contactsByDepth: [] }
-        };
-        service.isAuthChange(feed, changeObj).should.equal(true);
+          _id: 'org.couchdb.user:user',
+          _rev: 'rev',
+          facility_id: 'facility_id',
+          contact_id: 'new_contact_id'
 
-        changeObj = {
-          change: {
-            id: 'org.couchdb.user:user',
-            rev: 'rev',
-            doc: {
-              _id: 'org.couchdb.user:user',
-              _rev: 'rev',
-              facility_id: 'facility_id',
-              contact_id: 'contact_id'
-            }
-          },
-          viewResults: { replicationKey:  null, contactsByDepth: [] }
         };
-        service.isAuthChange(feed, changeObj).should.equal(false);
+        service.isAuthChange(doc, userCtx).should.equal(true);
+        doc = {
+          _id: 'org.couchdb.user:user',
+          _rev: 'rev',
+          facility_id: 'facility_id',
+          contact_id: 'contact_id'
 
-        changeObj = {
-          change: { id: 'someid', doc: { _id: 'someid'} },
-          viewResults: { replicationKey:  null, contactsByDepth: [] }
         };
-        service.isAuthChange(feed, changeObj).should.equal(false);
+        service.isAuthChange(doc, userCtx).should.equal(false);
+
+        doc = { _id: 'someid'};
+        service.isAuthChange(doc, userCtx).should.equal(false);
       });
     });
   });
