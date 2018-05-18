@@ -86,7 +86,7 @@ describe('Send message', () => {
         })
         .catch(err => {
           // item may have been detached from the page, so whatever it's invalid,
-          // we ignore it. Log the error just for kicks.
+          // we ignore it. Log the error just for kicks
           console.log('Caught and ignoring an error trying to getText', err);
         });
     });
