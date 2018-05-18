@@ -224,7 +224,7 @@ describe('Send message', () => {
       helper.waitUntilReady(element(by.css(messageInList(id))));
       browser.wait(() => {
         return element(by.css(messageInList(id))).isPresent();
-      }, 1000);
+      }, 2000);
       clickLhsEntry(id, name);
     };
     const enterMessageText = message => {
