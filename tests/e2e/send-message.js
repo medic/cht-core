@@ -217,7 +217,7 @@ describe('Send message', () => {
 
   });
 
-  // Requires that 'Send message modal' describe has been run.
+  // Requires that 'Send message modal' describe has been run
   describe('Sending from message pane', () => {
     const openMessageContent = (id, name) => {
       common.goToMessages();
