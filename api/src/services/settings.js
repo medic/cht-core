@@ -31,7 +31,11 @@ module.exports = {
       .then(doc => doc.settings)
       .catch(err => {
         if (err.status === 404) {
-          return {};
+          // TODO replace this once everyone is on 3.0+
+          // return {};
+          // check if the ddoc has legacy app_settings
+          return db.medic.get('_design/medic')
+            .then(ddoc => ddoc.app_settings || {});
         }
         throw err;
       });
