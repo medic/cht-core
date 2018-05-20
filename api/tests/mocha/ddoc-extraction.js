@@ -204,55 +204,6 @@ describe('DDoc extraction', () => {
     });
   });
 
-  it('extracts old app_settings to settings doc', () => {
-    const get = sinon.stub(db.medic, 'get');
-    const getAttachment = sinon.stub(db.medic, 'getAttachment');
-
-    const attachment = { docs: [
-      { _id: '_design/medic-client', views: { doc_by_valid: { map: 'function() { return true; }' } } }
-    ] };
-    const ddoc = {
-      _id: '_design/medic',
-      _attachments: {
-        'manifest.appcache': {
-          content_type: 'text/cache-manifest',
-          revpos: 2730,
-          digest: 'md5-JRYByZdYixaFg3a4L6X0pw==',
-          length: 1224,
-          stub: true
-        }
-      },
-      app_settings: { setup_complete: true }
-    };
-    const existingClient = {
-      _id: '_design/medic-client',
-      _rev: '2',
-      views: { doc_by_valid: { map: 'function() { return true; }' } }
-    };
-
-    const getDdoc = get.withArgs('_design/medic').resolves(ddoc);
-    const getDdocAttachment = getAttachment.withArgs('_design/medic', 'ddocs/compiled.json').resolves(Buffer.from(JSON.stringify(attachment)));
-    const getClient = get.withArgs('_design/medic-client').resolves(existingClient);
-    const getAppcache = get.withArgs('appcache').resolves({ digest: 'md5-JRYByZdYixaFg3a4L6X0pw==' });
-    const getSettings = get.withArgs('settings').rejects({ status: 404 });
-    const bulk = sinon.stub(db.medic, 'bulkDocs').resolves();
-
-    return ddocExtraction.run().then(() => {
-      getDdoc.callCount.should.equal(1);
-      getDdocAttachment.callCount.should.equal(1);
-      getClient.callCount.should.equal(1);
-      getAppcache.callCount.should.equal(1);
-      getSettings.callCount.should.equal(1);
-      bulk.callCount.should.equal(1);
-      const docs = bulk.args[0][0].docs;
-      chai.expect(docs.length).to.equal(2);
-      docs[0]._id.should.equal('settings');
-      docs[0].settings.should.deep.equal({ setup_complete: true });
-      docs[1]._id.should.equal('_design/medic');
-      chai.expect(docs[1].app_settings).to.equal(undefined);
-    });
-  });
-
   it('updates appcache doc when not found', () => {
     const get = sinon.stub(db.medic, 'get');
     const getAttachment = sinon.stub(db.medic, 'getAttachment');
@@ -324,7 +275,6 @@ describe('DDoc extraction', () => {
     const existingClient = {
       _id: '_design/medic-client',
       _rev: '2',
-      app_settings: { setup_complete: false },
       views: { doc_by_valid: { map: 'function() { return true; }' } }
     };
     const appcache = {

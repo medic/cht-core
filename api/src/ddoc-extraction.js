@@ -3,8 +3,7 @@ const _ = require('underscore'),
       DDOC_ATTACHMENT_ID = 'ddocs/compiled.json',
       APPCACHE_ATTACHMENT_NAME = 'manifest.appcache',
       APPCACHE_DOC_ID = 'appcache',
-      SERVER_DDOC_ID = '_design/medic',
-      SETTINGS_DOC_ID = 'settings';
+      SERVER_DDOC_ID = '_design/medic';
 
 const getCompiledDdocs = () => {
   return db.medic.getAttachment(SERVER_DDOC_ID, DDOC_ATTACHMENT_ID)
@@ -56,9 +55,6 @@ const isUpdated = newDdoc => {
         oldDdoc._attachments = newDdoc._attachments;
       }
 
-      // delete the obsolete app_settings so the docs will be comparable
-      delete oldDdoc.app_settings;
-
       if (_.isEqual(oldDdoc, newDdoc)) {
         return;
       }
@@ -105,29 +101,8 @@ const findUpdatedAppcache = ddoc => {
     });
 };
 
-// converts old style app_settings on ddoc to new separate doc
-const extractAppSettings = ddoc => {
-  if (!ddoc.app_settings) {
-    // the app_settings have already been converted - ignore
-    return [];
-  }
-  return db.medic.get(SETTINGS_DOC_ID)
-    .catch(err => {
-      if (err.status === 404) {
-        return { _id: SETTINGS_DOC_ID };
-      }
-      throw err;
-    })
-    .then(doc => {
-      doc.settings = ddoc.app_settings;
-      delete ddoc.app_settings;
-      return [ doc, ddoc ];
-    });
-};
-
 const findUpdated = ddoc => {
   return Promise.all([
-    extractAppSettings(ddoc),
     findUpdatedDdocs(),
     findUpdatedAppcache(ddoc)
   ]).then(results => _.compact(_.flatten(results)));
