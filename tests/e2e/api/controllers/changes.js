@@ -4,6 +4,7 @@ const _ = require('underscore'),
 function assertChangeIds(changes) {
   const DEFAULT_EXPECTED = [
     'appcache',
+    'settings',
     'resources',
     '_design/medic-client'
   ];

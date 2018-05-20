@@ -311,9 +311,6 @@ module.exports = function(grunt) {
           return 'echo "Node module dependencies updated"';
         }
       },
-      ddocAppSettings: {
-        cmd: 'node ./scripts/merge-app-settings $COUCH_URL/_design/medic webapp/dist/ddocs/medic.json'
-      },
       setDdocVersion: {
         cmd: () => {
           let version;
@@ -720,7 +717,6 @@ module.exports = function(grunt) {
   ]);
 
   grunt.registerTask('deploy', 'Deploy the webapp', [
-    'exec:ddocAppSettings',
     'couch-push:localhost',
     'notify:deployed',
   ]);

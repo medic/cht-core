@@ -34,7 +34,7 @@ describe('Settings service', function() {
         isTrue: true,
         isString: 'hello'
       };
-      get.returns(Promise.resolve({ app_settings: expected }));
+      get.returns(Promise.resolve({ settings: expected }));
       service()
         .then(function(actual) {
           chai.expect(actual.isTrue).to.equal(expected.isTrue);

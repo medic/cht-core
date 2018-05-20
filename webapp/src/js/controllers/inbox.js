@@ -636,7 +636,8 @@ var feedback = require('../modules/feedback'),
           filter: function(change) {
             return change.id === '_design/medic' ||
                    change.id === '_design/medic-client' ||
-                   change.id === 'appcache';
+                   change.id === 'appcache' ||
+                   change.id === 'settings';
           },
           callback: function() {
             // if the manifest hasn't changed, prompt user to reload settings
