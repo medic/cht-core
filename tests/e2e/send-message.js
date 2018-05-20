@@ -257,6 +257,7 @@ describe('Send message', () => {
     });
     describe('Can add recipients', () => {
       it('For raw contacts', () => {
+        browser.wait(protractor.ExpectedConditions.textToBePresentInElement($('.phone'), RAW_PH), 5000);
         openMessageContent(RAW_PH);
         enterMessageText('A third message');
 
