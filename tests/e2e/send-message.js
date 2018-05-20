@@ -68,8 +68,8 @@ describe('Send message', () => {
   };
 
   const openSendMessageModal = () => {
-    expect(element(by.css('.general-actions .send-message')).isDisplayed()).toBeTruthy();
-    element(by.css('.general-actions .send-message')).click();
+    helper.waitElementToBeClickable(element(by.css('.general-actions .send-message')));
+    helper.getTextFromElement(element(by.css('.general-actions .send-message')));
     browser.wait(() => {
       const modal = element(by.id('send-message'));
       return modal.isPresent().then(() => {
