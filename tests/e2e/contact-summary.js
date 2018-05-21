@@ -129,7 +129,7 @@ describe('Contact summary info', () => {
       .catch(done.fail);
   });
 
-  afterEach(utils.afterEach);
+  //afterEach(utils.afterEach);
 
   const selectContact = term => {
     helper.waitElementToBeVisible(element(by.id('freetext')));
@@ -144,7 +144,7 @@ describe('Contact summary info', () => {
     }, 10000);
   };
 
-  xit('contact summary', () => { //disabled.
+  it('contact summary', () => { //disabled.
     helper.clickElement(element(by.css('#contacts-tab')));
     try {
       selectContact('carol');
