@@ -48,10 +48,10 @@ const initFeed = () => {
 };
 
 const initConfig = () => {
-  return db.medic.get('_design/medic')
-    .then(ddoc => {
-      _.defaults(ddoc.app_settings, DEFAULT_CONFIG);
-      config = ddoc.app_settings;
+  return db.medic.get('settings')
+    .then(doc => {
+      _.defaults(doc.settings, DEFAULT_CONFIG);
+      config = doc.settings;
       logger.debug(
         'Reminder messages allowed between %s:%s and %s:%s',
         config.schedule_morning_hours,
