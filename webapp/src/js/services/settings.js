@@ -3,6 +3,7 @@
   'use strict';
 
   var inboxServices = angular.module('inboxServices');
+  var SETTINGS_ID = 'settings';
 
   inboxServices.factory('Settings',
     function(
@@ -18,9 +19,9 @@
       var cache = Cache({
         get: function(callback) {
           DB()
-            .get('_design/medic-client')
-            .then(function(ddoc) {
-              callback(null, ddoc.app_settings);
+            .get(SETTINGS_ID)
+            .then(function(doc) {
+              callback(null, doc.settings);
             })
             .catch(function(err) {
               if (err && err.status === 401) {
@@ -30,7 +31,7 @@
             });
         },
         invalidate: function(doc) {
-          return doc._id === '_design/medic-client';
+          return doc._id === SETTINGS_ID;
         }
       });
 

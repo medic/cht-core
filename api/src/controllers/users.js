@@ -281,7 +281,23 @@ var setContactParent = function(data, response, callback) {
     return callback(null, data, response);
   }
 
-  if (data.contact.parent) {
+  const contactId = getDocID(data.contact);
+  if (contactId) {
+    // assigning to existing contact
+    const placeId = getDocID(data.place);
+    validateContact(contactId, placeId, (err) => {
+      if (err) {
+        if (err.statusCode === 404) {
+          // try creating the user
+          data.contact.parent = lineage.minifyLineage(data.place);
+          return callback(null, data, response);
+        } else {
+          return callback(err);
+        }
+      }
+      callback(null, data, response);
+    });
+  } else if (data.contact.parent) {
     // contact parent must exist
     places.getPlace(data.contact.parent, function(err, place) {
       if (err) {
@@ -295,6 +311,7 @@ var setContactParent = function(data, response, callback) {
       callback(null, data, response);
     });
   } else {
+    // creating new contact
     data.contact.parent = lineage.minifyLineage(data.place);
     callback(null, data, response);
   }

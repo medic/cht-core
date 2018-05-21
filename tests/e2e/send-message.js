@@ -1,5 +1,6 @@
 const utils = require('../utils'),
-      helper = require('../helper');
+      helper = require('../helper'),
+      common = require('../page-objects/common/common.po');
 
 describe('Send message', () => {
   'use strict';
@@ -67,8 +68,8 @@ describe('Send message', () => {
   };
 
   const openSendMessageModal = () => {
-    expect(element(by.css('.general-actions .send-message')).isDisplayed()).toBeTruthy();
-    element(by.css('.general-actions .send-message')).click();
+    helper.waitElementToBeClickable(element(by.css('.general-actions .send-message')));
+    helper.clickElement(element(by.css('.general-actions .send-message')));
     browser.wait(() => {
       const modal = element(by.id('send-message'));
       return modal.isPresent().then(() => {
@@ -167,8 +168,8 @@ describe('Send message', () => {
   };
 
   describe('Send message modal', () => {
-    xit('can send messages to raw phone numbers', () => {
-      element(by.id('messages-tab')).click();
+    it('can send messages to raw phone numbers', () => {
+      common.goToMessages();
       expect(element(by.css(messageInList(RAW_PH))).isPresent()).toBeFalsy();
 
       openSendMessageModal();
@@ -181,8 +182,8 @@ describe('Send message', () => {
       lastMessageIs(smsMsg('raw'));
     });
 
-    xit('can send messages to contacts with phone numbers', () => {
-      element(by.id('messages-tab')).click();
+    it('can send messages to contacts with phone numbers', () => {
+      common.goToMessages();
 
       expect(element(by.css(messageInList(ALICE._id))).isPresent()).toBeFalsy();
 
@@ -196,8 +197,8 @@ describe('Send message', () => {
       lastMessageIs(smsMsg('contact'));
     });
 
-    xit('can send messages to contacts under everyone at with phone numbers', () => {
-      element(by.id('messages-tab')).click();
+    it('can send messages to contacts under everyone at with phone numbers', () => {
+      common.goToMessages();
 
       expect(element(by.css(messageInList(CAROL.phone))).isPresent()).toBeFalsy();
       expect(element(by.css(messageInList(DAVID.phone))).isPresent()).toBeFalsy();
@@ -219,10 +220,11 @@ describe('Send message', () => {
   // Requires that 'Send message modal' describe has been run
   describe('Sending from message pane', () => {
     const openMessageContent = (id, name) => {
-      element(by.id('messages-tab')).click();
+      common.goToMessages();
+      helper.waitUntilReady(element(by.css(messageInList(id))));
       browser.wait(() => {
         return element(by.css(messageInList(id))).isPresent();
-      }, 1000);
+      }, 2000);
       clickLhsEntry(id, name);
     };
     const enterMessageText = message => {
@@ -246,15 +248,15 @@ describe('Send message', () => {
         lastMessageIs('Additional Message');
       };
 
-      xit('For raw contacts', () => {
+      it('For raw contacts', () => {
         addAnAdditionalMessage(RAW_PH);
       });
-      xit('For real contacts', () => {
+      it('For real contacts', () => {
         addAnAdditionalMessage(ALICE._id, ALICE.name);
       });
     });
     describe('Can add recipients', () => {
-      xit('For raw contacts', () => {
+      it('For raw contacts', () => {
         openMessageContent(RAW_PH);
         enterMessageText('A third message');
 
@@ -273,7 +275,7 @@ describe('Send message', () => {
         expect(element.all(by.css('#message-content li')).count()).toBe(1);
         lastMessageIs('A third message');
       });
-      xit('For existing contacts', () => {
+      it('For existing contacts', () => {
         openMessageContent(ALICE._id, ALICE.name);
         enterMessageText('A third message');
 

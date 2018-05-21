@@ -108,22 +108,22 @@ describe('extract-translations', function() {
 
     })
     .then(function() {
-      return utils.getDdoc();
+      return utils.getSettings();
     })
-    .then(function(ddoc) {
-      if (ddoc.app_settings.translations) {
+    .then(function(doc) {
+      if (doc.settings.translations) {
         throw new Error('`translations` should be empty');
       }
-      if (ddoc.app_settings.locales) {
+      if (doc.settings.locales) {
         throw new Error('`locales` should be empty');
       }
-      if (ddoc.app_settings._id) {
+      if (doc.settings._id) {
         throw new Error('`_id` should be empty');
       }
-      if (ddoc.app_settings.test !== 'unchanged') {
+      if (doc.settings.test !== 'unchanged') {
         throw new Error('Migration changed unexpected property');
       }
-      if (ddoc.app_settings.schedules[0].messages[0].message[0].content !== 'कृपया {{patient_name}} ({{patient_id}}) को याद दिलाएँ कि इस हफ्ते, वह स्वास्थ्य सुविधा जाएं स्वास्थ्य की जांच के लिए | स्वास्थ्य की जांच के बाद, हमें बताइए \'V {{patient_id}}\' से जवाब भेजकर | धन्यवाद !') {
+      if (doc.settings.schedules[0].messages[0].message[0].content !== 'कृपया {{patient_name}} ({{patient_id}}) को याद दिलाएँ कि इस हफ्ते, वह स्वास्थ्य सुविधा जाएं स्वास्थ्य की जांच के लिए | स्वास्थ्य की जांच के बाद, हमें बताइए \'V {{patient_id}}\' से जवाब भेजकर | धन्यवाद !') {
         throw new Error('message content got corrupted');
       }
     });

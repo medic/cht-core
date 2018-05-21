@@ -16,19 +16,29 @@ module.exports.loadView = (ddocName, viewName) => {
 
   const mapScript = new vm.Script('(' + mapString + ')(' + MAP_ARG_NAME + ');');
 
-  const emitted = [];
+  const emitted = [],
+        emittedValues = [];
   const context = new vm.createContext({
     emitted: emitted,
-    emit: function(e) {
-      emitted.push(e);
+    emittedValues: emittedValues,
+    emit: function(key, value) {
+      emitted.push(key);
+      emittedValues.push({ key: key, value: value });
     }
   });
 
-  return (doc) => {
+  const mapFn = (doc, values = false) => {
     context[MAP_ARG_NAME] = doc;
     mapScript.runInContext(context);
-    return context.emitted;
+    return values ? context.emittedValues : context.emitted;
   };
+
+  mapFn.reset = () => {
+    emitted.splice(0, emitted.length);
+    emittedValues.splice(0, emittedValues.length);
+  };
+
+  return mapFn;
 };
 
 module.exports.assertIncludesPair = (array, pair) => {

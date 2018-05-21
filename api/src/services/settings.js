@@ -2,7 +2,7 @@ const db = require('../db-pouch');
 
 const isObject = obj => obj === Object(obj) && !Array.isArray(obj);
 
-const getDdoc = () => db.medic.get('_design/medic');
+const getDoc = () => db.medic.get('settings');
 
 const doReplace = (target, source) => {
   Object.keys(source).forEach(k => {
@@ -27,19 +27,40 @@ const doExtend = (target, source) => {
 
 module.exports = {
   get: () => {
-    return getDdoc().then(ddoc => ddoc.app_settings);
+    return getDoc()
+      .then(doc => doc.settings)
+      .catch(err => {
+        if (err.status === 404) {
+          // TODO replace this once everyone is on 3.0+
+          // return {};
+          // check if the ddoc has legacy app_settings
+          return db.medic.get('_design/medic')
+            .then(ddoc => ddoc.app_settings || {});
+        }
+        throw err;
+      });
   },
+  /**
+   * @param replace If true, recursively merges the properties.
+   */
   update: (body, replace) => {
-    return getDdoc().then(ddoc => {
-      if (!ddoc.app_settings) {
-        ddoc.app_settings = {};
-      }
-      if (replace) {
-        doReplace(ddoc.app_settings, body);
-      } else {
-        doExtend(ddoc.app_settings, body);
-      }
-      return db.medic.put(ddoc);
-    });
+    return getDoc()
+      .catch(err => {
+        if (err.status === 404) {
+          return { _id: 'settings' };
+        }
+        throw err;
+      })
+      .then(doc => {
+        if (!doc.settings) {
+          doc.settings = {};
+        }
+        if (replace) {
+          doReplace(doc.settings, body);
+        } else {
+          doExtend(doc.settings, body);
+        }
+        return db.medic.put(doc);
+      });
   }
 };
