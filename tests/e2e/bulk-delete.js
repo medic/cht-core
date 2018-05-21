@@ -72,8 +72,9 @@ describe('Bulk delete reports', () => {
 
   afterEach(utils.afterEach);
 
-  xit('reports', () => {
+  it('reports', () => {
     commonElements.goToReports();
+    browser.refresh();
 
     browser.wait(() => element(by.css('#reports-list li:first-child')).isPresent(), 10000, 'There should be at least one report in the LHS');
 
