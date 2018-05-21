@@ -2,21 +2,22 @@ const auth = require('../auth'),
       db = require('../db-pouch'),
       authorization = require('../services/authorization'),
       _ = require('underscore'),
-      config = require('../config'),
       serverUtils = require('../server-utils'),
       heartbeatFilter = require('../services/heartbeat-filter'),
       tombstoneUtils = require('@shared-libs/tombstone-utils'),
-      uuid = require('uuid/v4');
+      uuid = require('uuid/v4'),
+      DEFAULT_MAX_DOC_IDS = 100;
 
 let inited = false,
     continuousFeed = false,
     longpollFeeds = [],
     normalFeeds = [],
-    MAX_DOC_IDS = 100,
+    MAX_DOC_IDS = DEFAULT_MAX_DOC_IDS,
     currentSeq = 0;
 
 const DEFAULT_LIMIT = 100,
-      DEBOUNCE_INTERVAL = 200;
+      DEBOUNCE_INTERVAL = 200,
+      { COUCH_NODE_NAME, COUCH_URL } = process.env;
 
 const split = (array, count) => {
   if (count === null || count < 1) {
@@ -55,12 +56,12 @@ const defibrillator = feed => {
 };
 
 const addTimeout = feed => {
-   if (feed.timeout) {
-     clearTimeout(feed.timeout);
-   }
-   if (feed.req.query && feed.req.query.timeout) {
-     feed.timeout = setTimeout(() => endFeed(feed), feed.req.query.timeout);
-   }
+  if (feed.timeout) {
+    clearTimeout(feed.timeout);
+  }
+  if (feed.req.query && feed.req.query.timeout) {
+    feed.timeout = setTimeout(() => endFeed(feed), feed.req.query.timeout);
+  }
 };
 
 const generateResponse = feed => ({
@@ -322,38 +323,64 @@ const initContinuousFeed = since => {
     });
 };
 
-const init = () => {
-  if (inited) {
-    return;
-  }
+const getConfig = () => {
   // As per https://issues.apache.org/jira/browse/COUCHDB-1288, there is a 100 doc
   // limit on processing changes feeds with the _doc_ids filter within a
   // reasonable amount of time.
   // While hardcoded at first, CouchDB 2.1.1 has the option to configure this value
-  MAX_DOC_IDS = config.get('changes_doc_ids_optimization_threshold') || MAX_DOC_IDS;
-  initContinuousFeed();
-  inited = true;
+  return db.medic.info()
+    .then(info => {
+      currentSeq = info.update_seq;
+      const url = COUCH_URL.slice(0, COUCH_URL.lastIndexOf(info.db_name)) +
+                  `_node/${COUCH_NODE_NAME}/_config/couchdb/changes_doc_ids_optimization_threshold`;
+      return new Promise((resolve, reject) => {
+        db.medic._ajax({ url: url }, (err, value) => {
+          if (err) {
+            console.error('Could not read changes_doc_ids_optimization_threshold config value.');
+            return reject(err);
+          }
+          MAX_DOC_IDS = value;
+          resolve();
+        });
+      });
+    })
+    .catch(err => {
+      console.error('Could not read DB info');
+      console.error(err);
+      MAX_DOC_IDS = DEFAULT_MAX_DOC_IDS;
+    });
+};
+
+const init = () => {
+  if (inited) {
+    return Promise.resolve();
+  }
+
+  return getConfig().then(() => {
+    initContinuousFeed();
+    inited = true;
+  });
 };
 
 const request = (proxy, req, res) => {
-  init();
+  return init().then(() => {
+    return auth
+      .getUserCtx(req)
+      .then(userCtx => {
+        if (isLongpoll(req)) {
+          // Disable nginx proxy buffering to allow hearbeats for long-running feeds
+          // Issue: #2363
+          res.setHeader('X-Accel-Buffering', 'no');
+        }
 
-  return auth
-    .getUserCtx(req)
-    .then(userCtx => {
-      if (isLongpoll(req)) {
-        // Disable nginx proxy buffering to allow hearbeats for long-running feeds
-        // Issue: #2363
-        res.setHeader('X-Accel-Buffering', 'no');
-      }
-
-      if (auth.isAdmin(userCtx)) {
-        return proxy.web(req, res);
-      }
-      res.type('json');
-      return processRequest(req, res, userCtx);
-    })
-    .catch(() => serverUtils.notLoggedIn(req, res));
+        if (auth.isAdmin(userCtx)) {
+          return proxy.web(req, res);
+        }
+        res.type('json');
+        return processRequest(req, res, userCtx);
+      })
+      .catch(() => serverUtils.notLoggedIn(req, res));
+  });
 };
 
 module.exports = {
@@ -375,11 +402,12 @@ if (process.env.UNIT_TEST_ENV) {
       normalFeeds = [];
       inited = false;
       currentSeq = 0;
-      MAX_DOC_IDS = 100;
+      MAX_DOC_IDS = DEFAULT_MAX_DOC_IDS;
     },
     _getNormalFeeds: () => normalFeeds,
     _getLongpollFeeds: () => longpollFeeds,
     _getCurrentSeq: () => currentSeq,
+    _getMaxDocIds: () => MAX_DOC_IDS,
     _inited: () => inited,
     _getContinuousFeed: () => continuousFeed,
   });

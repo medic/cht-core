@@ -4,10 +4,11 @@ const sinon = require('sinon').sandbox.create(),
       authorization = require('../../../src/services/authorization'),
       tombstoneUtils = require('@shared-libs/tombstone-utils'),
       db = require('../../../src/db-pouch'),
-      config = require('../../../src/config'),
       inherits = require('util').inherits,
       EventEmitter = require('events'),
       _ = require('underscore');
+
+const { COUCH_URL, COUCH_NODE_NAME } = process.env;
 
 require('chai').should();
 let testReq,
@@ -44,7 +45,6 @@ describe('Changes controller', () => {
     sinon.stub(auth, 'getUserCtx').resolves({ name: 'user' });
     sinon.stub(auth, 'isAdmin').returns(false);
     sinon.stub(auth, 'hydrate').resolves(userCtx);
-    sinon.stub(config, 'get').returns(false);
     sinon.stub(authorization, 'getViewResults').returns({});
     sinon.stub(authorization, 'allowedDoc');
     sinon.stub(authorization, 'getDepth').returns(1);
@@ -104,46 +104,75 @@ describe('Changes controller', () => {
       return emitter;
     };
 
-    db.medic.changes = changes;
+    _.extend(db.medic, {
+      changes: changes,
+      _ajax: sinon.stub().callsArgWith(1, null, 100),
+      info: sinon.stub().resolves({ db_name: 'medic', update_seq: 0 })
+    });
   });
 
   describe('init', () => {
     it('initializes the continuous changes feed and used constants', () => {
-      controller._init();
-      changesSpy.callCount.should.equal(1);
-      changesSpy.args[0][0].should.deep.equal({
-        live: true,
-        include_docs: true,
-        since: 'now',
-        timeout: false,
+      db.medic.info.resolves({ db_name: 'medic', update_seq: 122 });
+      db.medic._ajax.callsArgWith(1, null, 20);
+      return controller._init().then(() => {
+        changesSpy.callCount.should.equal(1);
+        changesSpy.args[0][0].should.deep.equal({
+          live: true,
+          include_docs: true,
+          since: 'now',
+          timeout: false,
+        });
+        controller._inited().should.equal(true);
+        controller._getContinuousFeed().should.equal(emitters[0]);
+        controller._getCurrentSeq().should.equal(122);
+        controller._getMaxDocIds().should.equal(20);
+        db.medic._ajax.callCount.should.equal(1);
+        db.medic._ajax.args[0][0].should.deep.equal({ url:
+          COUCH_URL.slice(0, COUCH_URL.indexOf('medic')) +
+          `_node/${COUCH_NODE_NAME}/_config/couchdb/changes_doc_ids_optimization_threshold`});
       });
-      controller._inited().should.equal(true);
-      controller._getContinuousFeed().should.equal(emitters[0]);
-      config.get.callCount.should.equal(1);
-      config.get.args[0][0].should.equal('changes_doc_ids_optimization_threshold');
+    });
+
+    it('uses default values when info request fails', () => {
+      db.medic.info.rejects('error!!');
+      return controller._init().then(() => {
+        db.medic._ajax.callCount.should.equal(0);
+        controller._getCurrentSeq().should.equal(0);
+        controller._getMaxDocIds().should.equal(100);
+      });
+    });
+
+    it('uses default values when config request fails', () => {
+      db.medic._ajax.callsArgWith(1, 'error');
+      return controller._init().then(() => {
+        controller._getMaxDocIds().should.equal(100);
+      });
     });
 
     it('sends changes to be analyzed and updates current seq when changes come in', () => {
       tombstoneUtils.isTombstoneId.withArgs('change').returns(false);
-      controller._init();
-      const emitter = controller._getContinuousFeed();
-      emitter.emit('change', { id: 'change' }, 0, 'newseq');
-      tombstoneUtils.isTombstoneId.callCount.should.equal(1);
-      tombstoneUtils.isTombstoneId.args[0][0].should.equal('change');
-      controller._getCurrentSeq().should.equal('newseq');
+      return controller._init().then(() => {
+        const emitter = controller._getContinuousFeed();
+        emitter.emit('change', { id: 'change' }, 0, 'newseq');
+        tombstoneUtils.isTombstoneId.callCount.should.equal(1);
+        tombstoneUtils.isTombstoneId.args[0][0].should.equal('change');
+        controller._getCurrentSeq().should.equal('newseq');
+      });
     });
 
     it('resets changes listener on error, using last received sequence', () => {
       tombstoneUtils.isTombstoneId.withArgs('change').returns(false);
-      controller._init();
-      const emitter = controller._getContinuousFeed();
-      emitter.emit('change', { id: 'change' }, 0, 'seq-1');
-      emitter.emit('change', { id: 'change' }, 0, 'seq-2');
-      emitter.emit('change', { id: 'change' }, 0, 'seq-3');
-      emitter.emit('error');
-      return Promise.resolve().then(() => {
-        changesSpy.callCount.should.equal(2);
-        changesSpy.args[1][0].since.should.equal('seq-3');
+      return controller._init().then(() => {
+        const emitter = controller._getContinuousFeed();
+        emitter.emit('change', { id: 'change' }, 0, 'seq-1');
+        emitter.emit('change', { id: 'change' }, 0, 'seq-2');
+        emitter.emit('change', { id: 'change' }, 0, 'seq-3');
+        emitter.emit('error');
+        return Promise.resolve().then(() => {
+          changesSpy.callCount.should.equal(2);
+          changesSpy.args[1][0].since.should.equal('seq-3');
+        });
       });
     });
   });
@@ -211,29 +240,30 @@ describe('Changes controller', () => {
 
   describe('initFeed', () => {
     it('initializes feed with default values', () => {
-      controller._init();
-      const emitter = controller._getContinuousFeed();
-      emitter.emit('change', { id: 'change' }, 0, 'seq-1');
-      return controller
-        .request(proxy, testReq, testRes)
-        .then(() => {
-          const feed = controller._getNormalFeeds()[0];
-          feed.req.should.equal(testReq);
-          feed.res.should.equal(testRes);
-          feed.userCtx.should.equal(userCtx);
-          feed.lastSeq.should.equal('seq-1');
-          feed.initSeq.should.equal(0);
-          feed.pendingChanges.length.should.equal(0);
-          feed.results.length.should.equal(0);
-          feed.upstreamRequests.length.should.equal(0);
-          feed.limit.should.equal(100);
-          feed.should.not.have.property('heartbeat');
-          feed.hasOwnProperty('timeout').should.equal(false);
-          clock.tick(60000);
-          testRes.write.callCount.should.equal(0);
-          testRes.end.callCount.should.equal(0);
-          controller._getNormalFeeds().length.should.equal(1);
-        });
+      return controller._init().then(() => {
+        const emitter = controller._getContinuousFeed();
+        emitter.emit('change', { id: 'change' }, 0, 'seq-1');
+        return controller
+          .request(proxy, testReq, testRes)
+          .then(() => {
+            const feed = controller._getNormalFeeds()[0];
+            feed.req.should.equal(testReq);
+            feed.res.should.equal(testRes);
+            feed.userCtx.should.equal(userCtx);
+            feed.lastSeq.should.equal('seq-1');
+            feed.initSeq.should.equal(0);
+            feed.pendingChanges.length.should.equal(0);
+            feed.results.length.should.equal(0);
+            feed.upstreamRequests.length.should.equal(0);
+            feed.limit.should.equal(100);
+            feed.should.not.have.property('heartbeat');
+            feed.hasOwnProperty('timeout').should.equal(false);
+            clock.tick(60000);
+            testRes.write.callCount.should.equal(0);
+            testRes.end.callCount.should.equal(0);
+            controller._getNormalFeeds().length.should.equal(1);
+          });
+      });
     });
 
     it('initializes the feed with custom values', () => {
@@ -282,7 +312,7 @@ describe('Changes controller', () => {
 
   describe('getChanges', () => {
     it('requests changes with correct default parameters', () => {
-      config.get.withArgs('changes_doc_ids_optimization_threshold').returns(40);
+      db.medic._ajax.callsArgWith(1, null, 40);
       const validatedDocIds = ['d1', 'd2', 'd3'];
       authorization.getValidatedDocIds.resolves(validatedDocIds);
       return controller
@@ -301,7 +331,7 @@ describe('Changes controller', () => {
 
     it('requests changes with correct query parameters', () => {
       testReq.query = { limit: 20, view: 'test', something: 'else', conflicts: true, seq_interval: false, since: '22'};
-      config.get.withArgs('changes_doc_ids_optimization_threshold').returns(40);
+      db.medic._ajax.callsArgWith(1, null, 40);
       const validatedDocIds = ['d1', 'd2', 'd3'];
       authorization.getValidatedDocIds.resolves(validatedDocIds);
       return controller
@@ -322,7 +352,7 @@ describe('Changes controller', () => {
     });
 
     it('splits validated docIds into correct sized chunks', () => {
-      config.get.withArgs('changes_doc_ids_optimization_threshold').returns(10);
+      db.medic._ajax.callsArgWith(1, null, 10);
       const validatedIds = Array.from({length: 40}, () => Math.floor(Math.random() * 40));
       authorization.getValidatedDocIds.resolves(validatedIds);
 
@@ -347,7 +377,7 @@ describe('Changes controller', () => {
     });
 
     it('cancels all upstream requests and restarts them when one of them fails', () => {
-      config.get.withArgs('changes_doc_ids_optimization_threshold').returns(10);
+      db.medic._ajax.callsArgWith(1, null, 10);
       const validatedIds = Array.from({length: 40}, () => Math.floor(Math.random() * 40));
       authorization.getValidatedDocIds.resolves(validatedIds);
 
@@ -377,7 +407,7 @@ describe('Changes controller', () => {
     });
 
     it('sends empty response when any of the change feeds are canceled', () => {
-      config.get.withArgs('changes_doc_ids_optimization_threshold').returns(10);
+      db.medic._ajax.callsArgWith(1, null, 10);
       const validatedIds = Array.from({length: 40}, () => Math.floor(Math.random() * 40));
       authorization.getValidatedDocIds.resolves(validatedIds);
       testReq.query = { since: 1 };
@@ -401,7 +431,7 @@ describe('Changes controller', () => {
     });
 
     it('sends complete response when change feeds are finished', () => {
-      config.get.withArgs('changes_doc_ids_optimization_threshold').returns(10);
+      db.medic._ajax.callsArgWith(1, null, 10);
       const validatedIds = Array.from({length: 40}, () => Math.floor(Math.random() * 40));
       authorization.getValidatedDocIds.resolves(validatedIds);
       testReq.query = { since: 0 };
@@ -464,7 +494,7 @@ describe('Changes controller', () => {
           const concatenatedResults = [
             { id: 1, changes: [] }, { id: 2, changes: [] }, { id: 3, changes: [] }, { id: 4, changes: [] },
             { id: 5, changes: [] }, { id: 6, changes: [] }, { id: 8, changes: [] }, { id: 9, changes: [] }
-            ];
+          ];
           testRes.write.callCount.should.equal(1);
           testRes.write.args[0][0].should.equal(JSON.stringify({ results: concatenatedResults, last_seq: 6 }));
           testRes.end.callCount.should.equal(1);
@@ -474,7 +504,7 @@ describe('Changes controller', () => {
     });
 
     it('when no normal results are received for a non-longpoll, and the results were not canceled, retry', () => {
-      config.get.withArgs('changes_doc_ids_optimization_threshold').returns(10);
+      db.medic._ajax.callsArgWith(1, null, 10);
       const validatedIds = Array.from({length: 40}, () => Math.floor(Math.random() * 40));
       authorization.getValidatedDocIds.resolves(validatedIds);
 
@@ -523,7 +553,7 @@ describe('Changes controller', () => {
 
     it('cancels all upstreamRequests when request is closed', () => {
       authorization.getValidatedDocIds.resolves([1, 2, 3, 4, 5, 6]);
-      config.get.withArgs('changes_doc_ids_optimization_threshold').returns(2);
+      db.medic._ajax.callsArgWith(1, null, 2);
       return controller
         .request(proxy, testReq, testRes)
         .then(nextTick)
@@ -719,7 +749,7 @@ describe('Changes controller', () => {
           testRes.write.callCount.should.equal(1);
           testRes.write.args[0][0].should.equal(JSON.stringify(
             { results: [{ id: 1, changes: [] }, { id: 2, changes: [] }, { id: 4, changes: [] }], last_seq: 4 }
-            ));
+          ));
           controller._getLongpollFeeds().length.should.equal(0);
         });
     });
@@ -1096,7 +1126,7 @@ describe('Changes controller', () => {
 
     it('cancels all upstreamRequests when the timeout is reached', () => {
       authorization.getValidatedDocIds.resolves([1, 2, 3, 4, 5, 6]);
-      config.get.withArgs('changes_doc_ids_optimization_threshold').returns(2);
+      db.medic._ajax.callsArgWith(1, null, 2);
       testReq.query = { timeout: 50000 };
       return controller
         .request(proxy, testReq, testRes)
@@ -1160,7 +1190,7 @@ describe('Changes controller', () => {
         { id: 1, changes: [{ rev: 1 }, { rev: 2 }] },
         { id: 2, changes: [{ rev: 1 }, { rev: 3 }] },
         { id: 3, changes: [{ rev: 1 }] }
-        ];
+      ];
       const changeObj = { change: { id: 2, changes: [{ rev: 1 }, { rev: 2}] } };
       controller._appendChange(results, changeObj);
       results.length.should.equal(3);
@@ -1282,7 +1312,6 @@ describe('Changes controller', () => {
     });
 
     it('converts tombstone changes to their original document counterparts', () => {
-      controller._init();
       const responses = [
         { results: [{ id: '1-tombstone' }, { id: 2 }] },
         { results: [{ id: 3 }, { id: '4-tombstone' }] },
@@ -1332,7 +1361,6 @@ describe('Changes controller', () => {
     });
 
     it('if tombstone change is detected, change content is converted to reflect deleted counterpart', () => {
-      controller._init();
       const normalFeeds = controller._getNormalFeeds();
       const testFeed = { lastSeq: 0, pendingChanges: [], req: testReq, res: testRes};
       authorization.getViewResults.withArgs({ _id: '1-tombstone' }).returns({ view1: 'a', view2: 'b' });
@@ -1363,7 +1391,6 @@ describe('Changes controller', () => {
     });
 
     it('pushes the change to the results of longpoll feeds, if allowed, otherwise only updates seq', () => {
-      controller._init();
       authorization.getViewResults.withArgs({ _id: 1 }).returns({ view1: 'a', view2: 'b' });
       authorization.allowedDoc.withArgs({ _id: 1 }, sinon.match({ id: 'feed1' })).returns(true);
       authorization.allowedDoc.withArgs({ _id: 1 }, sinon.match({ id: 'feed2' })).returns(false);
