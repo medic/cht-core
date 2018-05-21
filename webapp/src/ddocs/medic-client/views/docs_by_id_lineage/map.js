@@ -1,7 +1,7 @@
 function(doc) {
 
   var emitLineage = function(contact, depth) {
-    while (contact) {
+    while (contact && contact._id) {
       emit([ doc._id, depth++ ], { _id: contact._id });
       contact = contact.parent;
     }
