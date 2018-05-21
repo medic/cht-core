@@ -5,7 +5,7 @@ const vm = require('vm');
 
 const MAP_ARG_NAME = 'doc';
 
-module.exports.loadView = (ddocName, viewName, saveValues = false, reset = false) => {
+module.exports.loadView = (ddocName, viewName) => {
   const mapString = fs.readFileSync(path.join(
     __dirname,
     '../../../../src/ddocs',
@@ -16,25 +16,29 @@ module.exports.loadView = (ddocName, viewName, saveValues = false, reset = false
 
   const mapScript = new vm.Script('(' + mapString + ')(' + MAP_ARG_NAME + ');');
 
-  const emitted = [];
+  const emitted = [],
+        emittedValues = [];
   const context = new vm.createContext({
     emitted: emitted,
+    emittedValues: emittedValues,
     emit: function(key, value) {
-      if (!saveValues) {
-        return emitted.push(key);
-      }
-      emitted.push({ key: key, value: value });
+      emitted.push(key);
+      emittedValues.push({ key: key, value: value });
     }
   });
 
-  return (doc) => {
-    if (reset) {
-      emitted.splice(0, emitted.length);
-    }
+  const mapFn = (doc, values = false) => {
     context[MAP_ARG_NAME] = doc;
     mapScript.runInContext(context);
-    return context.emitted;
+    return values ? context.emittedValues : context.emitted;
   };
+
+  mapFn.reset = () => {
+    emitted.splice(0, emitted.length);
+    emittedValues.splice(0, emittedValues.length);
+  };
+
+  return mapFn;
 };
 
 module.exports.assertIncludesPair = (array, pair) => {
