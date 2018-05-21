@@ -128,13 +128,6 @@ module.exports = function(grunt) {
       }
     },
     env: {
-      testDb: {
-        options: {
-          add: {
-            TEST_DB_ENV: '1'
-          }
-        }
-      },
       unitTest: {
         options: {
           add: {
@@ -145,7 +138,6 @@ module.exports = function(grunt) {
       general: {
         options: {
           replace: {
-            TEST_DB_ENV: '',
             UNIT_TEST_ENV: ''
           }
         }
@@ -376,9 +368,6 @@ module.exports = function(grunt) {
       },
       setup_api_integration: {
         cmd: 'cd api && yarn install',
-      },
-      run_integration_tests: {
-        cmd: 'yarn mocha tests/integration/**/*.js --file tests/integration-setup.js'
       },
       yarn_install: {
         cmd: ['webapp', 'api', 'sentinel', 'admin']
@@ -764,16 +753,6 @@ module.exports = function(grunt) {
     'karma:unit_continuous'
   ]);
 
-  grunt.registerTask('integration', 'Run all integration tests', [
-    'exec:resetTestDatabases',
-    'build-ddoc',
-    'couch-push:test',
-    'env:testDb',
-    'exec:run_integration_tests',
-    'env:general',
-    'test_api_integration'
-  ]);
-
   grunt.registerTask('test_api_integration', 'Integration tests for medic-api', [
     'exec:check_env_vars',
     'exec:setup_api_integration',
@@ -791,9 +770,9 @@ module.exports = function(grunt) {
     'env:general',
   ]);
 
-  grunt.registerTask('test', 'Lint, unit tests, integration tests and e2e tests', [
+  grunt.registerTask('test', 'Lint, unit tests, api_integration tests and e2e tests', [
     'unit',
-    'integration',
+    'test_api_integration',
     'e2e'
   ]);
 
@@ -826,7 +805,7 @@ module.exports = function(grunt) {
     'env:general',
     'exec:setupAdmin',
     'deploy',
-    'integration',
+    'test_api_integration',
     'exec:start_webdriver',
     'e2e'
   ]);
