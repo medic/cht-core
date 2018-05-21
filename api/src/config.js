@@ -4,7 +4,8 @@ const _ = require('underscore'),
       translations = require('./translations'),
       defaults = require('./config.default.json'),
       settingsService = require('./services/settings'),
-      translationCache = {};
+      translationCache = {},
+      viewMapUtils = require('@shared-libs/view-map-utils');
 
 let settings = {};
 
@@ -94,6 +95,16 @@ const loadTranslations = () => {
   });
 };
 
+const loadViewMaps = () => {
+  db.medic.get('_design/medic', function(err, ddoc) {
+    if (err) {
+      console.error('Error loading view maps for medic ddoc', err);
+      return;
+    }
+    viewMapUtils.loadViewMaps(ddoc, 'docs_by_replication_key', 'contacts_by_depth');
+  });
+};
+
 module.exports = {
   get: key => key ? settings[key] : settings,
   translate: (key, locale, ctx) => {
@@ -119,6 +130,7 @@ module.exports = {
   load: callback => {
     loadSettings().then(() => callback()).catch(callback);
     loadTranslations();
+    loadViewMaps();
   },
   listen: () => {
     db.medic.changes({ live: true, since: 'now' })
@@ -134,6 +146,7 @@ module.exports = {
             console.error('Something went wrong trying to extract ddocs', err);
             process.exit(1);
           });
+          loadViewMaps();
         } else if (change.id === 'settings') {
           console.log('Detected settings change - reloading');
           loadSettings().catch(err => {
