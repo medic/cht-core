@@ -373,7 +373,7 @@ const applyTransitions = (change, callback) => {
 
 const detach = () => {
   if (changesFeed) {
-    changesFeed.stop();
+    changesFeed.cancel();
     changesFeed = null;
   }
 };

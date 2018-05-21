@@ -1,4 +1,4 @@
-var transitions = require('../../src/transitions/index'),
+var transitions,
     sinon = require('sinon').sandbox.create(),
     assert = require('chai').assert,
     db = require('../../src/db-nano'),
@@ -7,7 +7,15 @@ var transitions = require('../../src/transitions/index'),
     configGet;
 
 describe('functional transitions', () => {
-  beforeEach(() => { configGet = sinon.stub(config, 'get'); });
+  beforeEach(() => {
+    configGet = sinon.stub(config, 'get');
+    sinon.stub(dbPouch.medic, 'changes').returns({
+      on: () => {
+        return { on: () => {} };
+      }
+    });
+    transitions = require('../../src/transitions/index');
+  });
   afterEach(() => sinon.restore());
 
   it('transitions are only executed once if successful', done => {
