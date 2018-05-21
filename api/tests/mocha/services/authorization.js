@@ -12,8 +12,9 @@ const userCtx = { name: 'user', contact_id: 'contact_id', facility_id: 'facility
 
 let contact,
     report,
-    userInfo,
-    viewResults;
+    feed,
+    viewResults,
+    keysByDepth;
 
 describe('Authorization service', () => {
   afterEach(function() {
@@ -65,7 +66,7 @@ describe('Authorization service', () => {
     });
   });
 
-  describe('getSubjectIds', () => {
+  describe('getFeedAuthData', () => {
     beforeEach(() => {
       sinon.stub(service, 'getDepth');
     });
@@ -73,7 +74,7 @@ describe('Authorization service', () => {
     it('queries correct views with correct keys when depth is not infinite', () => {
       service.getDepth.returns(2);
       return service
-        .getSubjectIds({ facility_id: 'facilityId' })
+        .getFeedAuthData( {facility_id: 'facilityId' })
         .then(() => {
           db.medic.query.callCount.should.equal(1);
           db.medic.query.args[0][0].should.equal('medic/contacts_by_depth');
@@ -87,7 +88,7 @@ describe('Authorization service', () => {
     it('queries with correct keys when depth is infinite', () => {
       service.getDepth.returns(-1);
       return service
-        .getSubjectIds({ facility_id: 'facilityId' })
+        .getFeedAuthData({ facility_id: 'facilityId' })
         .then(() => {
           db.medic.query.callCount.should.equal(1);
           db.medic.query.args[0][0].should.equal('medic/contacts_by_depth');
@@ -114,13 +115,13 @@ describe('Authorization service', () => {
       });
 
       return service
-        .getSubjectIds({ facility_id: 'facility_id' })
+        .getFeedAuthData({facility_id: 'facilityId' })
         .then(result => {
           tombstoneUtils.extractStub.callCount.should.equal(3);
           tombstoneUtils.extractStub.args.should.deep.equal([
             ['tombstone-1'], ['tombstone-2'], ['tombstone-3']
           ]);
-          result.sort().should.deep.equal([
+          result.subjectIds.sort().should.deep.equal([
             1, 2, 'deleted-1', 'deleted-2', 'deleted-3', '_all',
             's1', 's2', 's3', 's4', 's5'
           ].sort());
@@ -132,17 +133,32 @@ describe('Authorization service', () => {
       config.get.returns(true);
 
       return service
-        .getSubjectIds({ facility_id: 'aaa' })
+        .getFeedAuthData({ userCtx: { facility_id: 'aaa' }})
         .then(result => {
-          result.should.deep.equal(['_all', '_unassigned']);
+          result.subjectIds.should.deep.equal(['_all', '_unassigned']);
+        });
+    });
+
+    it('returns contactsByDepthKeys array', () => {
+      db.medic.query.withArgs('medic/contacts_by_depth').resolves({
+        rows: [{ id: 1, key: 'key', value: 's1' }, { id: 2, key: 'key', value: 's2' }]
+      });
+      service.getDepth.returns(2);
+      auth.hasAllPermissions.returns(false);
+      config.get.returns(false);
+      return service
+        .getFeedAuthData({ facility_id: 'aaa' })
+        .then(result => {
+          result.subjectIds.sort().should.deep.equal([1, 2, '_all', 's1', 's2']);
+          result.contactsByDepthKeys.should.deep.equal([['aaa', 0], ['aaa', 1], ['aaa', 2]]);
         });
     });
   });
 
-  describe('getValidatedDocIds', () => {
+  describe('getAllowedDocIds', () => {
     it('queries correct views with correct keys', () => {
       return service
-        .getValidatedDocIds(subjectIds, { name: 'user' })
+        .getAllowedDocIds({ subjectIds, userCtx: { name: 'user' }})
         .then(result => {
           db.medic.query.callCount.should.equal(1);
           db.medic.query.args[0].should.deep.equal([ 'medic/docs_by_replication_key', { keys: subjectIds } ]);
@@ -173,7 +189,7 @@ describe('Authorization service', () => {
           ]});
 
       return service
-        .getValidatedDocIds(subjectIds, { name: 'user', facility_id: 'facility_id', contact_id: 'contact_id' })
+        .getAllowedDocIds({subjectIds, userCtx: { name: 'user', facility_id: 'facility_id', contact_id: 'contact_id' }})
         .then(result => {
           result.length.should.equal(13);
           result.should.deep.equal([
@@ -230,7 +246,13 @@ describe('Authorization service', () => {
       describe('allowedContact', () => {
         beforeEach(() => {
           viewResults = { replicationKey: ['a', {}], contactsByDepth: [['parent1'], 'patient_id'] };
-          userInfo = { userCtx, depth: -1, subjectIds };
+          feed = { userCtx, contactsByDepthKeys: [[userCtx.facility_id]], subjectIds };
+          keysByDepth = {
+            0: [[userCtx.facility_id, 0]],
+            1: [[userCtx.facility_id, 0], [userCtx.facility_id, 1]],
+            2: [[userCtx.facility_id, 0], [userCtx.facility_id, 1], [userCtx.facility_id, 2]],
+            3: [[userCtx.facility_id, 0], [userCtx.facility_id, 1], [userCtx.facility_id, 2], [userCtx.facility_id, 3]]
+          };
         });
 
         it('returns true for valid contacts', () => {
@@ -240,20 +262,20 @@ describe('Authorization service', () => {
             [['parent1'], 'patient_id'], [['parent1', 1], 'patient_id'],
             [[userCtx.facility_id], 'patient_id'], [[userCtx.facility_id, 2], 'patient_id']
           ];
-          service.allowedDoc(contact, userInfo, viewResults).should.equal(true);
+          service.allowedDoc(contact, feed, viewResults).should.equal(true);
 
           contact = { _id: userCtx.facility_id };
           viewResults.contactsByDepth = [
             [[userCtx.facility_id], null], [[userCtx.facility_id, 0], null]
           ];
-          service.allowedDoc(contact, userInfo, viewResults).should.equal(true);
+          service.allowedDoc(contact, feed, viewResults).should.equal(true);
 
           contact = { _id: 'contact', patient_id: 'patient_id', parent: { _id: userCtx.facility_id } };
           viewResults.contactsByDepth = [
             [['contact'], 'patient_id'], [['contact', 0], 'patient_id'],
             [[userCtx.facility_id], 'patient_id'], [[userCtx.facility_id, 1], 'patient_id']
           ];
-          service.allowedDoc(contact, userInfo, viewResults).should.equal(true);
+          service.allowedDoc(contact, feed, viewResults).should.equal(true);
 
           contact = { _id: 'contact', parent: { _id: 'parent1', parent: { _id: 'parent2', parent: { _id: userCtx.facility_id }}}};
           viewResults.contactsByDepth = [
@@ -262,18 +284,18 @@ describe('Authorization service', () => {
             [['parent2'], 'patient_id'], [['parent2', 2], 'patient_id'],
             [[userCtx.facility_id], 'patient_id'], [[userCtx.facility_id, 3], 'patient_id']
           ];
-          service.allowedDoc(contact, userInfo, viewResults).should.equal(true);
+          service.allowedDoc(contact, feed, viewResults).should.equal(true);
         });
 
         it('returns false for invalid contacts', () => {
           contact = { _id: 'contact', parent: { _id: 'parent1', parent: { _id: 'parent2' }}};
-          service.allowedDoc(contact, userInfo, viewResults).should.equal(false);
+          service.allowedDoc(contact, feed, viewResults).should.equal(false);
           contact = { _id: 'contact' };
-          service.allowedDoc(contact, userInfo, viewResults).should.equal(false);
+          service.allowedDoc(contact, feed, viewResults).should.equal(false);
           contact = { _id: 'contact', parent: { _id: 'parent1' } };
-          service.allowedDoc(contact, userInfo, viewResults).should.equal(false);
+          service.allowedDoc(contact, feed, viewResults).should.equal(false);
           contact = { _id: 'contact', parent: { _id: 'parent1', parent: { _id: 'parent2', parent: { _id: 'parent3' }}}};
-          service.allowedDoc(contact, userInfo, viewResults).should.equal(false);
+          service.allowedDoc(contact, feed, viewResults).should.equal(false);
         });
 
         it('respects depth', () => {
@@ -282,9 +304,13 @@ describe('Authorization service', () => {
             [[userCtx.facility_id], 'patient_id'], [[userCtx.facility_id, 0], 'patient_id'],
             [['parent1'], 'patient_id'], [['parent1', 1], 'patient_id']
           ];
-          service.allowedDoc(contact, { userCtx, subjectIds, depth: -1 }, viewResults).should.equal(true);
-          service.allowedDoc(contact, { userCtx, subjectIds, depth: 0 }, viewResults).should.equal(true);
-          service.allowedDoc(contact, { userCtx, subjectIds, depth: 1 }, viewResults).should.equal(true);
+          service.allowedDoc(contact, feed, viewResults).should.equal(true);
+          service
+            .allowedDoc(contact, { userCtx, subjectIds, contactsByDepthKeys: keysByDepth[0] }, viewResults)
+            .should.equal(true);
+          service
+            .allowedDoc(contact, { userCtx, subjectIds, contactsByDepthKeys: keysByDepth[1] }, viewResults)
+            .should.equal(true);
 
           contact = { _id: 'contact_id', parent: { _id: userCtx.facility_id, parent: { _id: 'parent1' }}};
           viewResults.contactsByDepth = [
@@ -292,9 +318,13 @@ describe('Authorization service', () => {
             [[userCtx.facility_id], 'patient_id'], [[userCtx.facility_id, 1], 'patient_id'],
             [['parent1'], 'patient_id'], [['parent1', 2], 'patient_id']
           ];
-          service.allowedDoc(contact, { userCtx, subjectIds, depth: -1 }, viewResults).should.equal(true);
-          service.allowedDoc(contact, { userCtx, subjectIds, depth: 0 }, viewResults).should.equal(false);
-          service.allowedDoc(contact, { userCtx, subjectIds, depth: 1 }, viewResults).should.equal(true);
+          service.allowedDoc(contact, feed, viewResults).should.equal(true);
+          service
+            .allowedDoc(contact, { userCtx, subjectIds, contactsByDepthKeys: keysByDepth[0] }, viewResults)
+            .should.equal(false);
+          service
+            .allowedDoc(contact, { userCtx, subjectIds, contactsByDepthKeys: keysByDepth[1] }, viewResults)
+            .should.equal(true);
 
           contact = { _id: 'contact', parent: { _id: 'parent1', parent: { _id: userCtx.facility_id }}};
           viewResults.contactsByDepth = [
@@ -302,10 +332,16 @@ describe('Authorization service', () => {
             [['parent1'], 'patient_id'], [['parent1', 1], 'patient_id'],
             [[userCtx.facility_id], 'patient_id'], [[userCtx.facility_id, 2], 'patient_id'],
           ];
-          service.allowedDoc(contact, { userCtx, subjectIds, depth: -1 }, viewResults).should.equal(true);
-          service.allowedDoc(contact, { userCtx, subjectIds, depth: 0 }, viewResults).should.equal(false);
-          service.allowedDoc(contact, { userCtx, subjectIds, depth: 1 }, viewResults).should.equal(false);
-          service.allowedDoc(contact, { userCtx, subjectIds, depth: 2 }, viewResults).should.equal(true);
+          service.allowedDoc(contact, feed, viewResults).should.equal(true);
+          service
+            .allowedDoc(contact, { userCtx, subjectIds, contactsByDepthKeys: keysByDepth[0] }, viewResults)
+            .should.equal(false);
+          service
+            .allowedDoc(contact, { userCtx, subjectIds, contactsByDepthKeys: keysByDepth[1] }, viewResults)
+            .should.equal(false);
+          service
+            .allowedDoc(contact, { userCtx, subjectIds, contactsByDepthKeys: keysByDepth[2] }, viewResults)
+            .should.equal(true);
 
           contact = { _id: 'contact', parent: { _id: 'parent1', parent: { _id: 'parent2', parent: { _id: userCtx.facility_id }}}};
           viewResults.contactsByDepth = [
@@ -314,16 +350,24 @@ describe('Authorization service', () => {
             [['parent2'], 'patient_id'], [['parent2', 2], 'patient_id'],
             [[userCtx.facility_id], 'patient_id'], [[userCtx.facility_id, 3], 'patient_id'],
           ];
-          service.allowedDoc(contact, { userCtx, subjectIds, depth: -1 }, viewResults).should.equal(true);
-          service.allowedDoc(contact, { userCtx, subjectIds, depth: 0 }, viewResults).should.equal(false);
-          service.allowedDoc(contact, { userCtx, subjectIds, depth: 1 }, viewResults).should.equal(false);
-          service.allowedDoc(contact, { userCtx, subjectIds, depth: 2 }, viewResults).should.equal(false);
-          service.allowedDoc(contact, { userCtx, subjectIds, depth: 3 }, viewResults).should.equal(true);
+          service.allowedDoc(contact, feed, viewResults).should.equal(true);
+          service
+            .allowedDoc(contact, { userCtx, subjectIds, contactsByDepthKeys: keysByDepth[0] }, viewResults)
+            .should.equal(false);
+          service
+            .allowedDoc(contact, { userCtx, subjectIds, contactsByDepthKeys: keysByDepth[1] }, viewResults)
+            .should.equal(false);
+          service
+            .allowedDoc(contact, { userCtx, subjectIds, contactsByDepthKeys: keysByDepth[2] }, viewResults)
+            .should.equal(false);
+          service
+            .allowedDoc(contact, { userCtx, subjectIds, contactsByDepthKeys: keysByDepth[3] }, viewResults)
+            .should.equal(true);
         });
 
         it('adds valid contact _id and reference to subjects list, while keeping them unique', () => {
-          userInfo.subjectIds = [];
-          userInfo.validatedIds = [];
+          feed.subjectIds = [];
+          feed.validatedIds = [];
           contact = { _id: 'new_contact_id', patient_id: 'new_patient_id', parent: { _id: userCtx.facility_id }};
           viewResults = {
             replicationKey: ['a', {}],
@@ -332,11 +376,11 @@ describe('Authorization service', () => {
               [[userCtx.facility_id], 'new_patient_id'], [[userCtx.facility_id, 1], 'new_patient_id']
             ]};
 
-          service.allowedDoc(contact, userInfo, viewResults).should.equal(true);
-          userInfo.subjectIds.should.deep.equal(['new_patient_id', 'new_contact_id']);
+          service.allowedDoc(contact, feed, viewResults).should.equal(true);
+          feed.subjectIds.should.deep.equal(['new_patient_id', 'new_contact_id']);
 
-          service.allowedDoc(contact, userInfo, viewResults).should.equal(true);
-          userInfo.subjectIds.should.deep.equal(['new_patient_id', 'new_contact_id']);
+          service.allowedDoc(contact, feed, viewResults).should.equal(true);
+          feed.subjectIds.should.deep.equal(['new_patient_id', 'new_contact_id']);
 
           contact = { id: 'second_new_contact_id', patient_id: 'second_patient_id', parent: { _id: 'parent1' }};
           viewResults = {
@@ -345,12 +389,12 @@ describe('Authorization service', () => {
               [['second_new_contact_id'], 'second_patient_id'], [['second_new_contact_id', 0], 'second_patient_id'],
               [['parent1'], 'second_patient_id'], [['parent1', 1], 'second_patient_id']
             ]};
-          service.allowedDoc(contact, userInfo, viewResults).should.equal(false);
-          userInfo.subjectIds.should.deep.equal(['new_patient_id', 'new_contact_id']);
+          service.allowedDoc(contact, feed, viewResults).should.equal(false);
+          feed.subjectIds.should.deep.equal(['new_patient_id', 'new_contact_id']);
         });
 
         it('removes invalid contact _id and reference from subjects list', () => {
-          userInfo.subjectIds = ['person_id', 'person_id', 'contact_id', 'person_ref', 'contact_id', 'person_ref', 's'];
+          feed.subjectIds = ['person_id', 'person_id', 'contact_id', 'person_ref', 'contact_id', 'person_ref', 's'];
 
           contact = { _id: 'person_id', patient_id: 'person_ref', parent: { _id: 'parent1' }};
           viewResults = {
@@ -360,77 +404,77 @@ describe('Authorization service', () => {
               [['parent1'], 'person_ref'], [['parent1', 1], 'person_ref']
             ]};
 
-          service.allowedDoc(contact, userInfo, viewResults).should.equal(false);
-          userInfo.subjectIds.should.deep.equal(['contact_id', 'contact_id', 's']);
+          service.allowedDoc(contact, feed, viewResults).should.equal(false);
+          feed.subjectIds.should.deep.equal(['contact_id', 'contact_id', 's']);
         });
       });
 
       describe('allowedReport', () => {
         beforeEach(() => {
-          userInfo = { userCtx, depth: -1, subjectIds: [], validatedIds: [] };
+          feed = { userCtx, contactsByDepthKeys: [[userCtx.facility_id]], subjectIds: []};
           report = { _id: 'report' };
         });
 
         it('returns true for reports with unknown subject and allowed submitter', () => {
-          userInfo.subjectIds = [ 'subject1', 'contact1', 'subject', 'contact', 'submitter' ];
+          feed.subjectIds = [ 'subject1', 'contact1', 'subject', 'contact', 'submitter' ];
           viewResults = { replicationKey: [false, { submitter: 'submitter' }], contactsByDepth: [] };
-          service.allowedDoc(report, userInfo, viewResults).should.equal(true);
+          service.allowedDoc(report, feed, viewResults).should.equal(true);
         });
 
         it('returns false for reports with unknown subject and denied submitter', () => {
-          userInfo.subjectIds = [ 'subject1', 'contact1', 'subject', 'contact' ];
+          feed.subjectIds = [ 'subject1', 'contact1', 'subject', 'contact' ];
           viewResults = { replicationKey: [false, { submitter: 'submitter' }], contactsByDepth: [] };
-          service.allowedDoc(report, userInfo, viewResults).should.equal(false);
+          service.allowedDoc(report, feed, viewResults).should.equal(false);
         });
 
         it('returns false for reports with denied subject and unknown submitter', () => {
-          userInfo.subjectIds = [ 'subject1', 'contact1', 'subject', 'contact' ];
+          feed.subjectIds = [ 'subject1', 'contact1', 'subject', 'contact' ];
           viewResults = { replicationKey: ['subject2', { }], contactsByDepth: [] };
-          service.allowedDoc(report, userInfo, viewResults).should.equal(false);
+          service.allowedDoc(report, feed, viewResults).should.equal(false);
         });
 
         it('returns false for reports with denied subject and allowed submitter', () => {
-          userInfo.subjectIds = [ 'subject1', 'contact1', 'subject', 'contact' ];
+          feed.subjectIds = [ 'subject1', 'contact1', 'subject', 'contact' ];
           viewResults = { replicationKey: ['subject2', { submitter: 'contact' }], contactsByDepth: [] };
-          service.allowedDoc(report, userInfo, viewResults).should.equal(false);
+          service.allowedDoc(report, feed, viewResults).should.equal(false);
         });
 
         it('returns true for reports with allowed subject and unknown submitter', () => {
-          userInfo.subjectIds = [ 'subject1', 'contact1', 'subject', 'contact' ];
+          feed.subjectIds = [ 'subject1', 'contact1', 'subject', 'contact' ];
           viewResults = { replicationKey: ['subject', { }], contactsByDepth: false };
-          service.allowedDoc(report, userInfo, viewResults).should.equal(true);
+          service.allowedDoc(report, feed, viewResults).should.equal(true);
         });
 
         it('returns true for reports with allowed subject, denied submitter and not sensitive', () => {
-          userInfo.subjectIds = [ 'subject1', 'contact1', 'subject', 'contact' ];
+          feed.subjectIds = [ 'subject1', 'contact1', 'subject', 'contact' ];
           viewResults = { replicationKey: ['subject', { submitter: 'submitter' }], contactsByDepth: [] };
-          service.allowedDoc(report, userInfo, viewResults).should.equal(true);
+          service.allowedDoc(report, feed, viewResults).should.equal(true);
         });
 
         it('returns true for reports with allowed subject, allowed submitter and not sensitive', () => {
-          userInfo.subjectIds = [ 'subject1', 'contact1', 'subject', 'contact' ];
+          feed.subjectIds = [ 'subject1', 'contact1', 'subject', 'contact' ];
           viewResults = { replicationKey: ['subject', { submitter: 'contact' }], contactsByDepth: [] };
-          service.allowedDoc(report, userInfo, viewResults).should.equal(true);
+          service.allowedDoc(report, feed, viewResults).should.equal(true);
         });
 
         it('returns false for reports with allowed subject, denied submitter and sensitive', () => {
-          userInfo.subjectIds = [ 'subject1', 'contact1', 'subject', 'contact', userCtx.contact_id ];
+          feed.subjectIds = [ 'subject1', 'contact1', 'subject', 'contact', userCtx.contact_id ];
           viewResults = { replicationKey: [userCtx.contact_id, { submitter: 'submitter' }], contactsByDepth: [] };
-          service.allowedDoc(report, userInfo, viewResults).should.equal(false);
+          service.allowedDoc(report, feed, viewResults).should.equal(false);
 
-          userInfo.subjectIds = [ 'subject1', 'contact1', 'subject', 'contact', userCtx.facility_id ];
+          feed.subjectIds = [ 'subject1', 'contact1', 'subject', 'contact', userCtx.facility_id ];
           viewResults = { replicationKey: [userCtx.facility_id, { submitter: 'submitter' }], contactsByDepth: [] };
-          service.allowedDoc(report, userInfo, viewResults).should.equal(false);
+          service.allowedDoc(report, feed, viewResults).should.equal(false);
         });
 
         it('returns true for reports with allowed subject, allowed submitter and about user`s contact or place', () => {
-          userInfo.subjectIds = [ 'subject1', 'contact1', 'subject', 'contact', userCtx.contact_id ];
+          feed.subjectIds = [ 'subject1', 'contact1', 'subject', 'contact', userCtx.contact_id ];
           viewResults = { replicationKey: [userCtx.contact_id, { submitter: 'contact' }], contactsByDepth: [] };
-          service.allowedDoc(report, userInfo, viewResults).should.equal(true);
+          service.allowedDoc(report, feed, viewResults).should.equal(true);
 
-          userInfo.subjectIds = [ 'subject1', 'contact1', 'subject', 'contact', userCtx.facility_id ];
+          feed.subjectIds = [ 'subject1', 'contact1', 'subject', 'contact', userCtx.facility_id ];
           viewResults = { replicationKey: [userCtx.facility_id, { submitter: 'contact' }], contactsByDepth: [] };
-          service.allowedDoc(report, userInfo, viewResults).should.equal(true);
+          service.allowedDoc(report, feed, viewResults).should.equal(true);
         });
       });
     });

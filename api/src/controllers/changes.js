@@ -24,10 +24,8 @@ const split = (array, count) => {
     return [array];
   }
   const result = [];
-  let i = 0,
-      length = array.length;
-  while (i < length) {
-    result.push(array.slice(i, i += count));
+  while (array.length) {
+    result.push(array.splice(0, count));
   }
   return result;
 };
@@ -172,8 +170,10 @@ const getChanges = feed => {
   };
   _.extend(options, _.pick(feed.req.query, 'style', 'conflicts', 'seq_interval'));
 
-  const chunks = split(feed.validatedIds, MAX_DOC_IDS);
-  feed.upstreamRequests = chunks.map(docIds => {
+  if (!feed.chunkedAllowedDocIds) {
+    feed.chunkedAllowedDocIds = split(feed.allowedDocIds, MAX_DOC_IDS);
+  }
+  feed.upstreamRequests = feed.chunkedAllowedDocIds.map(docIds => {
     return db.medic
       .changes(_.extend({ doc_ids: docIds }, options))
       .on('complete', info => feed.lastSeq = info && info.last_seq || feed.lastSeq);
@@ -220,11 +220,9 @@ const getChanges = feed => {
 };
 
 const processRequest = (req, res, userCtx) => {
-  return auth
-    .hydrate(userCtx)
-    .then(userCtx => {
-      initFeed(req, res, userCtx).then(getChanges);
-    });
+  return auth.getUserSettings(userCtx).then(userCtx => {
+    initFeed(req, res, userCtx).then(getChanges);
+  });
 };
 
 const initFeed = (req, res, userCtx) => {
@@ -233,7 +231,6 @@ const initFeed = (req, res, userCtx) => {
     req: req,
     res: res,
     userCtx: userCtx,
-    depth: authorization.getDepth(userCtx),
     initSeq: req.query && req.query.since || 0,
     lastSeq: req.query && req.query.since || currentSeq,
     pendingChanges: [],
@@ -250,11 +247,14 @@ const initFeed = (req, res, userCtx) => {
   req.on('close', () => endFeed(feed, false));
 
   return authorization
-    .getSubjectIds(feed.userCtx)
-    .then(subjectIds => {
-      return authorization
-        .getValidatedDocIds(subjectIds, feed.userCtx)
-        .then(validatedIds => _.extend(feed, { subjectIds: subjectIds, validatedIds: validatedIds }));
+    .getFeedAuthData(userCtx)
+    .then(authData => {
+      _.extend(feed, authData);
+      return authorization.getAllowedDocIds(feed);
+    })
+    .then(allowedDocIds => {
+      feed.allowedDocIds = allowedDocIds;
+      return feed;
     });
 };
 
@@ -336,7 +336,7 @@ const getConfig = () => {
       return new Promise((resolve, reject) => {
         db.medic._ajax({ url: url }, (err, value) => {
           if (err) {
-            console.error('Could not read changes_doc_ids_optimization_threshold config value.');
+            console.log('Could not read changes_doc_ids_optimization_threshold config value.');
             return reject(err);
           }
           MAX_DOC_IDS = value;
@@ -345,8 +345,8 @@ const getConfig = () => {
       });
     })
     .catch(err => {
-      console.error('Could not read DB info');
-      console.error(err);
+      console.log('Could not read DB info');
+      console.log(err);
       MAX_DOC_IDS = DEFAULT_MAX_DOC_IDS;
     });
 };

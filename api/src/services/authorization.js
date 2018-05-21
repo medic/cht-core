@@ -44,14 +44,14 @@ const exclude = (array, ...values) => {
 };
 
 // Returns whether an authenticated user has access to a document
-// @param {Object} doc - CouchDB document
-// @param {Object} authData.userCtx - authenticated user information
-// @param {number} authData.depth - allowed maximum replication depth
-// @param {Array} authData.subjectIds - allowed subjectIds. Is updated when this function is called against a contact.
-// @param {Object} viewValues.replicationKey - result of `medic/docs_by_replication_key` view against doc
-// @param {Array} viewValues.contactsByDepth - results of `medic/contacts_by_depth` view against doc
-const allowedDoc = (doc, authData, { replicationKey, contactsByDepth }) => {
-  if (['_design/medic-client', 'org.couchdb.user:' + authData.userCtx.name].indexOf(doc._id) !== -1) {
+// @param {Object}  doc - CouchDB document
+// @param {Object}  feed.userCtx - authenticated user information
+// @param {Array}   feed.contactsByDepthKeys - list containing user's generated contactsByDepthKeys
+// @param {Array}   feed.subjectIds - allowed subjectIds. Is updated when this function is called against a contact.
+// @param {Object}  viewValues.replicationKey - result of `medic/docs_by_replication_key` view against doc
+// @param {Array}   viewValues.contactsByDepth - results of `medic/contacts_by_depth` view against doc
+const allowedDoc = (doc, feed, { replicationKey, contactsByDepth }) => {
+  if (['_design/medic-client', 'org.couchdb.user:' + feed.userCtx.name].indexOf(doc._id) !== -1) {
     return true;
   }
 
@@ -66,20 +66,20 @@ const allowedDoc = (doc, authData, { replicationKey, contactsByDepth }) => {
   if (contactsByDepth && contactsByDepth.length) {
     //it's a contact
     const subjectId = contactsByDepth[0][1];
-    if (allowedContact(contactsByDepth, authData.userCtx, authData.depth)) {
-      authData.subjectIds = include(authData.subjectIds, subjectId, doc._id);
+    if (allowedContact(contactsByDepth, feed.contactsByDepthKeys)) {
+      feed.subjectIds = include(feed.subjectIds, subjectId, doc._id);
       return true;
     }
 
-    authData.subjectIds = exclude(authData.subjectIds, subjectId, doc._id );
+    feed.subjectIds = exclude(feed.subjectIds, subjectId, doc._id );
     return false;
   }
 
   //it's a report
   const [ subjectId, { submitter: submitterId } ] = replicationKey,
-        allowedSubject = subjectId && authData.subjectIds.indexOf(subjectId) !== -1,
-        allowedSubmitter = submitterId && authData.subjectIds.indexOf(submitterId) !== -1,
-        sensitive = isSensitive(authData.userCtx, subjectId, submitterId, allowedSubmitter);
+        allowedSubject = subjectId && feed.subjectIds.indexOf(subjectId) !== -1,
+        allowedSubmitter = submitterId && feed.subjectIds.indexOf(submitterId) !== -1,
+        sensitive = isSensitive(feed.userCtx, subjectId, submitterId, allowedSubmitter);
 
   if ((!subjectId && allowedSubmitter) || (allowedSubject && !sensitive)) {
     return true;
@@ -102,36 +102,34 @@ const getContactsByDepthKeys = (userCtx, depth) => {
   return keys;
 };
 
-const allowedContact = (contactsByDepth, userCtx, depth) => {
-  const generatedKeys = getContactsByDepthKeys(userCtx, depth);
+const allowedContact = (contactsByDepth, userContactsByDepthKeys) => {
   const viewResultKeys = contactsByDepth.map(result => result[0]);
-
-  return viewResultKeys.some(viewResult => generatedKeys.some(generated => _.isEqual(viewResult, generated)));
+  return viewResultKeys.some(viewResult => userContactsByDepthKeys.some(generated => _.isEqual(viewResult, generated)));
 };
 
-const getSubjectIds = (userCtx, depth) => {
-  depth = depth || module.exports.getDepth(userCtx);
-  const keys = getContactsByDepthKeys(userCtx, depth);
+const getFeedAuthData = (userCtx) => {
+  const authData = {
+    contactsByDepthKeys: getContactsByDepthKeys(userCtx, module.exports.getDepth(userCtx)),
+    subjectIds: []
+  };
 
-  return db.medic.query('medic/contacts_by_depth', { keys: keys }).then(results => {
-    const subjectIds = [];
+  return db.medic.query('medic/contacts_by_depth', { keys: authData.contactsByDepthKeys }).then(results => {
     results.rows.forEach(row => {
       if (tombstoneUtils.isTombstoneId(row.id)) {
-        subjectIds.push(tombstoneUtils.extractStub(row.id).id);
+        authData.subjectIds.push(tombstoneUtils.extractStub(row.id).id);
       } else {
-        subjectIds.push(row.id);
+        authData.subjectIds.push(row.id);
       }
       if (row.value) {
-        subjectIds.push(row.value);
+        authData.subjectIds.push(row.value);
       }
     });
 
-    subjectIds.push(ALL_KEY);
+    authData.subjectIds.push(ALL_KEY);
     if (hasAccessToUnassignedDocs(userCtx)) {
-      subjectIds.push(UNASSIGNED_KEY);
+      authData.subjectIds.push(UNASSIGNED_KEY);
     }
-
-    return subjectIds;
+    return authData;
   });
 };
 
@@ -150,11 +148,11 @@ const isSensitive = function(userCtx, subject, submitter, allowedSubmitter) {
   return !allowedSubmitter;
 };
 
-const getValidatedDocIds = (subjectIds, userCtx) => {
-  return db.medic.query('medic/docs_by_replication_key', { keys: subjectIds }).then(results => {
-    const validatedIds = ['_design/medic-client', 'org.couchdb.user:' + userCtx.name];
+const getAllowedDocIds = (feed) => {
+  return db.medic.query('medic/docs_by_replication_key', { keys: feed.subjectIds }).then(results => {
+    const validatedIds = ['_design/medic-client', 'org.couchdb.user:' + feed.userCtx.name];
     results.rows.forEach(row => {
-      if (!isSensitive(userCtx, row.key, row.value.submitter, subjectIds.indexOf(row.value.submitter) !== -1)) {
+      if (!isSensitive(feed.userCtx, row.key, row.value.submitter, feed.subjectIds.indexOf(row.value.submitter) !== -1)) {
         validatedIds.push(row.id);
       }
     });
@@ -188,6 +186,6 @@ module.exports = {
   allowedDoc: allowedDoc,
   getDepth: getDepth,
   getViewResults: getViewResults,
-  getSubjectIds: getSubjectIds,
-  getValidatedDocIds: getValidatedDocIds,
+  getFeedAuthData: getFeedAuthData,
+  getAllowedDocIds: getAllowedDocIds,
 };

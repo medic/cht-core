@@ -226,8 +226,8 @@ module.exports = {
     });
   },
 
-  hydrate: function(userCtx, callback) {
-    const _hydrate = (resolve, reject) => {
+  getUserSettings: function(userCtx, callback) {
+    const _getUserSettings = (resolve, reject) => {
       db.medic.get('org.couchdb.user:' + userCtx.name, function(err, user) {
         if (err) {
           return reject(err);
@@ -238,9 +238,9 @@ module.exports = {
     };
 
     if (!callback) {
-      return new Promise(_hydrate);
+      return new Promise(_getUserSettings);
     }
 
-    _hydrate(_.partial(callback, null), callback);
+    _getUserSettings(_.partial(callback, null), callback);
   }
 };
