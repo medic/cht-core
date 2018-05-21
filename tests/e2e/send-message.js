@@ -69,7 +69,7 @@ describe('Send message', () => {
 
   const openSendMessageModal = () => {
     helper.waitElementToBeClickable(element(by.css('.general-actions .send-message')));
-    helper.getTextFromElement(element(by.css('.general-actions .send-message')));
+    helper.clickElement(element(by.css('.general-actions .send-message')));
     browser.wait(() => {
       const modal = element(by.id('send-message'));
       return modal.isPresent().then(() => {
@@ -257,7 +257,6 @@ describe('Send message', () => {
     });
     describe('Can add recipients', () => {
       it('For raw contacts', () => {
-        browser.wait(protractor.ExpectedConditions.textToBePresentInElement($('.phone'), RAW_PH), 5000);
         openMessageContent(RAW_PH);
         enterMessageText('A third message');
 

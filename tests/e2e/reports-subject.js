@@ -266,7 +266,7 @@ describe('Reports Summary', () => {
   const getElementText = (css, attempt) => {
     attempt = attempt || 0;
 
-    return element(by.css(css)).getText()
+    return helper.getTextFromElement(element(by.css(css))) //.getText()
       .then((text) => {
         return text;
       }, (err) => {
