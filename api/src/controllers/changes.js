@@ -274,7 +274,7 @@ const addChangeToLongpollFeed = (feed, changeObj) => {
 
 const processChange = (change, seq) => {
   const changeObj = {
-    change: tombstoneUtils.isTombstoneId(change.id) ? tombstoneUtils.generateChangeFromTombstone(change) : change,
+    change: tombstoneUtils.isTombstoneId(change.id) ? tombstoneUtils.generateChangeFromTombstone(change, true) : change,
     viewResults: authorization.getViewResults(change.doc)
   };
 

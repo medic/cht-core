@@ -208,8 +208,8 @@ describe('changes handler', () => {
   afterEach(done => utils.revertDb(DOCS_TO_KEEP).then(done));
 
   describe('Filtered replication', () => {
-    const bobsIds = ['_design/medic-client'],
-          stevesIds = ['_design/medic-client'];
+    const bobsIds = ['_design/medic-client', 'settings'],
+          stevesIds = ['_design/medic-client', 'settings'];
     let generalSeq = 0;
     it('returns a full list of allowed changes, regardless of the requested limit', () => {
       const allowedDocs = createSomeContacts(12, 'fixture:bobville');
@@ -229,7 +229,7 @@ describe('changes handler', () => {
             'org.couchdb.user:bob',
             'fixture:user:bob',
             'fixture:bobville',
-            ..._.without(bobsIds, '_design/medic-client'));
+            ..._.without(bobsIds, '_design/medic-client', 'settings'));
         });
     });
 
