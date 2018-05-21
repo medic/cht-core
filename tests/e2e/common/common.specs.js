@@ -38,5 +38,6 @@ describe('Navigation tests : ', () => {
     commonElements.goToConfiguration();
     const settings = element(by.css('[ui-sref="settings.basic"]'));
     expect(settings.isPresent()).toBeTruthy();
+    browser.get(utils.getBaseUrl() + 'messages/');
   });
 });
