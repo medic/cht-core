@@ -422,7 +422,7 @@ module.exports = function(grunt) {
               .map(lib =>
                   `echo Testing shared library: ${lib} &&
                   (cd shared-libs/${lib} &&
-                  [ "$(jq .scripts.test)" = "null" ] || (yarn install && yarn test))`)
+                  [ "$(cat package.json | jq .scripts.test)" = "null" ] || (yarn install && yarn test))`)
               .join(' && ');
         },
       },
