@@ -281,7 +281,7 @@ describe('Reports Summary', () => {
     utils.updateSettings(CONFIG)
       .then(() => protractor.promise.all(CONTACTS.map(utils.saveDoc)))
       .then(() => {
-        //wait till change feed receives all the contacts we created
+        //wait till change feed receives all the contacts we created.
         setTimeout(done, 2000);
       })
       .catch(done.fail);
