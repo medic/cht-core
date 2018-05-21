@@ -129,7 +129,7 @@ describe('Contact summary info', () => {
       .catch(done.fail);
   });
 
-  afterEach(utils.afterEach);
+  //afterEach(utils.afterEach);
 
   const selectContact = term => {
     helper.waitElementToBeVisible(element(by.id('freetext')));
