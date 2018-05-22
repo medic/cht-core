@@ -25,6 +25,7 @@ describe('Lineage', function() {
     it('queries db with correct parameters', function() {
       query.resolves({ rows: [] });
       const id = 'banana';
+
       return lineage.fetchLineageById(id).then(() => {
         chai.expect(query.callCount).to.equal(1);
         chai.expect(query.getCall(0).args[0]).to.equal('medic-client/docs_by_id_lineage');
@@ -42,6 +43,7 @@ describe('Lineage', function() {
         { _id: 'abc', contact: { _id: 'def' }, parent: { _id: 'ghi' } },
         { _id: 'ghi' }
       ];
+
       return lineage.fetchContacts(fakeLineage).then(() => {
         chai.expect(allDocs.callCount).to.equal(1);
         chai.expect(allDocs.getCall(0).args[0]).to.deep.equal({ keys: ['def'], include_docs: true });
@@ -51,6 +53,7 @@ describe('Lineage', function() {
 
   describe('fillContactsInDocs', function() {
     it('populates the contact field for relevant docs', function() {
+      // Given
       const docs = [
         { _id: 'doc1', contact: { _id: 'contact1' } },
         { _id: 'doc2', contact: { _id: 'contact1' } },
@@ -61,7 +64,11 @@ describe('Lineage', function() {
         { _id: 'contact1', type: 'person' },
         { _id: 'contact2', type: 'person' }
       ];
+
+      // when
       lineage.fillContactsInDocs(docs, contacts);
+
+      // then
       chai.expect(docs[0].contact).to.deep.equal(contacts[0]);
       chai.expect(docs[1].contact).to.deep.equal(contacts[0]);
       chai.expect(docs[2].contact).to.deep.equal(contacts[1]);
@@ -71,6 +78,7 @@ describe('Lineage', function() {
 
   describe('fillParentsInDocs', function() {
     it('populates parent fields throughout lineage', function() {
+      // Given
       const doc = {
         _id: 'a',
         parent: {
@@ -88,13 +96,18 @@ describe('Lineage', function() {
         null,
         { _id: 'd', type: 'person' },
       ];
+
+      // when
       lineage.fillParentsInDocs(doc, fakeLineage);
+
+      // then
       chai.expect(doc.parent).to.deep.equal(fakeLineage[0]);
       chai.expect(doc.parent.parent._id).to.equal('c');
       chai.expect(doc.parent.parent.parent).to.deep.equal(fakeLineage[2]);
     });
 
     it('correctly populates parent fields for reports', function() {
+      // Given
       const report = {
         _id: 'a',
         type: 'data_record',
@@ -114,7 +127,11 @@ describe('Lineage', function() {
         null,
         { _id: 'c', type: 'clinic' }
       ];
+
+      // when
       lineage.fillParentsInDocs(report, fakeLineage);
+
+      // then
       chai.expect(report.contact).to.deep.equal(contactInLineage);
       chai.expect(report.contact.parent._id).to.equal('b');
       chai.expect(report.contact.parent.parent).to.deep.equal(fakeLineage[1]);
@@ -137,17 +154,19 @@ describe('Lineage', function() {
           _id: 'def'
         }
       };
+
       chai.expect(lineage.minifyLineage(parent)).to.deep.equal(minified);
     });
   });
 
   describe('minify', function() {
     it('handles null argument', function() {
-      lineage.minify(null);
       // just make sure it doesn't blow up!
+      lineage.minify(null);
     });
 
     it('minifies the parent', function() {
+      // Given
       const actual = {
         _id: 'c',
         name: 'cathy',
@@ -170,11 +189,16 @@ describe('Lineage', function() {
           }
         }
       };
+
+      // when
       lineage.minify(actual);
+
+      // then
       chai.expect(actual).to.deep.equal(expected);
     });
 
     it('minifies the contact and lineage', function() {
+      // Given
       const actual = {
         _id: 'c',
         name: 'cathy',
@@ -211,11 +235,16 @@ describe('Lineage', function() {
           }
         }
       };
+
+      // when
       lineage.minify(actual);
+
+      // then
       chai.expect(actual).to.deep.equal(expected);
     });
 
     it('removes the patient', function() {
+      // Given
       const actual = {
         _id: 'c',
         type: 'data_record',
@@ -235,7 +264,11 @@ describe('Lineage', function() {
         type: 'data_record',
         patient_id: '123'
       };
+
+      // when
       lineage.minify(actual);
+
+      // then
       chai.expect(actual).to.deep.equal(expected);
     });
   });
@@ -243,6 +276,7 @@ describe('Lineage', function() {
   describe('hydrateDocs', function() {
     it('works on empty array', function() {
       const docs = [];
+
       return lineage.hydrateDocs(docs).then((hydratedDocs) => {
         chai.expect(hydratedDocs).to.have.length(0);
       });
@@ -253,6 +287,7 @@ describe('Lineage', function() {
         { _id: 'a' },
         { _id: 'b' },
       ];
+
       return lineage.hydrateDocs(docs).then((hydratedDocs) => {
         chai.expect(hydratedDocs).to.deep.equal(docs);
       });

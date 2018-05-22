@@ -348,7 +348,7 @@ describe('Lineage', function() {
 
     it('attaches the full lineage for reports', function() {
       return lineage.fetchHydratedDoc(report._id).then(actual => {
-        chai.expect(actual).to.shallowDeepEqual({
+        chai.assert.checkDeepProperties(actual, {
           form: 'A',
           patient: {
             name: report_patient.name,
@@ -372,7 +372,7 @@ describe('Lineage', function() {
 
     it('attaches the contacts', function() {
       return lineage.fetchHydratedDoc(place._id).then(actual => {
-        chai.expect(actual).to.shallowDeepEqual({
+        chai.assert.checkDeepProperties(actual, {
           name: place.name,
           contact: { phone: '+789' },
           parent: {
@@ -452,45 +452,44 @@ describe('Lineage', function() {
     it('binds contacts and parents', function() {
       const docs = [ report, place ];
 
-      return lineage.hydrateDocs(docs).then(([ hydratedReport, hydratedPlace ]) => {
-        chai.expect(hydratedReport).to.shallowDeepEqual({
-          contact: {
-            name: report_contact.name,
-            parent: {
-              name: report_parent.name,
-              contact: { name: report_parentContact.name },
+      return lineage.hydrateDocs(docs)
+        .then(([ hydratedReport, hydratedPlace ]) => {
+          chai.assert.checkDeepProperties(hydratedReport, {
+            contact: {
+              name: report_contact.name,
               parent: {
-                name: report_grandparent.name,
-                contact: { name: report_grandparentContact.name }
+                name: report_parent.name,
+                contact: { name: report_parentContact.name },
+                parent: {
+                  name: report_grandparent.name,
+                  contact: { name: report_grandparentContact.name }
+                }
+              }
+            },
+            parent: undefined,
+            patient: { _id: report_patient._id }
+          });
+          chai.assert.checkDeepProperties(hydratedPlace, {
+            contact: { name: place_contact.name },
+            parent: {
+              name: place_parent.name,
+              contact: { name: place_parentContact.name },
+              parent: {
+                name: place_grandparent.name,
+                contact: { name: place_grandparentContact.name }
               }
             }
-          },
-          parent: undefined,
-          patient: { _id: report_patient._id }
+          });
         });
-        chai.expect(hydratedPlace).to.shallowDeepEqual({
-          contact: { name: place_contact.name },
-          parent: {
-            name: place_parent.name,
-            contact: { name: place_parentContact.name },
-            parent: {
-              name: place_grandparent.name,
-              contact: { name: place_grandparentContact.name }
-            }
-          }
-        });
-      });
     });
 
     it('ignores db-fetch errors', function() {
       const docs = [ report, place ];
 
       return deleteDocs([place_parent._id, report_parentContact._id])
-        .then(() => {
-          return lineage.hydrateDocs(docs);
-        })
+        .then(() => lineage.hydrateDocs(docs))
         .then(([ hydratedReport, hydratedPlace ]) => {
-          chai.expect(hydratedReport).to.shallowDeepEqual({
+          chai.assert.checkDeepProperties(hydratedReport, {
             contact: {
               name: report_contact.name,
               parent: {
@@ -507,7 +506,7 @@ describe('Lineage', function() {
             },
             parent: undefined
           });
-          chai.expect(hydratedPlace).to.shallowDeepEqual({
+          chai.assert.checkDeepProperties(hydratedPlace, {
             contact: { name: place_contact.name },
             parent: {
               _id: place_parent._id,
@@ -524,12 +523,13 @@ describe('Lineage', function() {
     it('minifying the result returns the starting documents', function() {
       const docs = [ cloneDeep(report), cloneDeep(place) ];
 
-      return lineage.hydrateDocs(docs).then(([ hydratedReport, hydratedPlace ]) => {
-        lineage.minify(hydratedReport);
-        lineage.minify(hydratedPlace);
-        chai.expect(hydratedReport).excluding('_rev').to.deep.equal(report);
-        chai.expect(hydratedPlace).excluding('_rev').to.deep.equal(place);
-      });
+      return lineage.hydrateDocs(docs)
+        .then(([ hydratedReport, hydratedPlace ]) => {
+          lineage.minify(hydratedReport);
+          lineage.minify(hydratedPlace);
+          chai.expect(hydratedReport).excluding('_rev').to.deep.equal(report);
+          chai.expect(hydratedPlace).excluding('_rev').to.deep.equal(place);
+        });
     });
   });
 });
