@@ -260,6 +260,7 @@ We take the security of our systems seriously, and we value the security communi
 We require that all researchers:
 
 - Make every effort to avoid privacy violations, degradation of user experience, disruption to production systems, and destruction of data during security testing;
+- Refrain from using any in-scope compromise as a platform to probe or conduct additional research, on any other system, regardless of scope;
 - Perform research only within the scope set out below;
 - Use the identified communication channels to report vulnerability information to us; and
 - Keep information about any vulnerabilities you've discovered confidential between yourself and Medic Mobile until all production systems have been patched.
@@ -276,7 +277,7 @@ If you follow these guidelines when reporting an issue to us, we commit to:
 
 ### Out of scope
 
-Any services hosted by 3rd party providers and services are excluded from scope.
+Any services hosted by 3rd party providers and any and all other services hosted on or beneath the medicmobile.org and hopephones.org domains are excluded from scope.
 
 In the interest of the safety of our users, staff, the Internet at large and you as a security researcher, the following test types are excluded from scope:
 
@@ -288,14 +289,15 @@ In the interest of the safety of our users, staff, the Internet at large and you
 
 Things we do not want to receive:
 
-* Personally identifiable information (PII)
+- Personally identifiable information (PII)
+- Any exploits or proofs-of-concept in binary format (e.g. ELF)
 
 ### How to report a security vulnerability?
 
 If you believe you've found a security vulnerability in one of our products or platforms please send it to us by emailing dev@medicmobile.org. Please include the following details with your report:
 
 - Description of the location and potential impact of the vulnerability;
-- A detailed description of the steps required to reproduce the vulnerability (POC scripts, screenshots, and compressed screen captures are all helpful to us); and
+- A detailed description of the steps required to reproduce the vulnerability (proof of concept source code, screenshots, and compressed screen captures are all helpful to us); and
 - Your name/handle and a link for recognition in our Hall of Fame.
 
 ## Build Status
