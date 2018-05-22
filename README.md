@@ -247,6 +247,10 @@ Code is automatically published via [Travis CI](https://travis-ci.org/medic/medi
 
 Join our [Google Group](https://groups.google.com/forum/#!forum/medic-developers) or file an issue on Github. You can also post questions, and look for answers, on our [AnswerHub site](http://medicmobile.cloud.answerhub.com/).
 
+## Contributing
+
+You can contribute by messaging our [Google Group](https://groups.google.com/forum/#!forum/medic-developers), raising bugs or improvements in the medic-webapp Github repo, or submitting pull requests.
+
 ## Build Status
 
 Builds brought to you courtesy of [Travis CI](https://travis-ci.org/medic/medic-webapp).
@@ -255,7 +259,7 @@ Builds brought to you courtesy of [Travis CI](https://travis-ci.org/medic/medic-
 
 ## License & Copyright
 
-Copyright 2013-2015 Medic Mobile, Inc. <hello@medicmobile.org>
+Copyright 2013-2018 Medic Mobile, Inc. <hello@medicmobile.org>
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
