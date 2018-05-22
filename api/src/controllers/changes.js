@@ -94,25 +94,24 @@ const appendChange = (results, changeObj) => {
 };
 
 // filters the list of pending changes, appending the allowed ones
-// returns whether a user authorization change was detected and the number of changes appended
-const processPendingChanges = (feed, results, checkForAuthChange = true) => {
+// returns true if no breaking authorization change is processed, false otherwise
+const processPendingChanges = (feed, isNormalFeed) => {
   let authChange  = false,
-      shouldCheck = true,
-      nbrAppended = 0;
+      shouldCheck = feed.hasNewSubjects || isNormalFeed;
 
   const checkChange = (changeObj) => {
+    const subjectsLength = authorization.getSubjectsLength(feed);
     if (!authorization.allowedDoc(changeObj.change.doc, feed, changeObj.viewResults)) {
       return;
     }
 
-    if (checkForAuthChange && authorization.isAuthChange(changeObj.change.doc, feed.userCtx)) {
+    if (isNormalFeed && authorization.isAuthChange(changeObj.change.doc, feed.userCtx)) {
       authChange = true;
       return;
     }
 
-    shouldCheck = true;
-    nbrAppended++;
-    appendChange(results, changeObj);
+    shouldCheck = subjectsLength !== authorization.getSubjectsLength(feed);
+    appendChange(feed.results, changeObj);
     feed.pendingChanges = _.without(feed.pendingChanges, changeObj);
   };
 
@@ -121,7 +120,7 @@ const processPendingChanges = (feed, results, checkForAuthChange = true) => {
     feed.pendingChanges.forEach(checkChange);
   }
 
-  return { authChange, nbrAppended };
+  return !authChange;
 };
 
 // checks that all changes requests responses are valid
@@ -194,15 +193,14 @@ const getChanges = feed => {
         return Promise.resolve(getChanges(feed));
       }
 
-      let results = mergeResults(responses);
-      if (processPendingChanges(feed, results).authChange) {
+      feed.results = mergeResults(responses);
+      if (!processPendingChanges(feed, true)) {
         // if critical auth data changes are received, reset the feed completely
         endFeed(feed, false);
-        return Promise.resolve(processRequest(feed.req, feed.res, feed.userCtx));
+        return processRequest(feed.req, feed.res, feed.userCtx);
       }
 
-      if (results.length || !isLongpoll(feed.req)) {
-        feed.results = results;
+      if (feed.results.length || !isLongpoll(feed.req)) {
         return endFeed(feed);
       }
 
@@ -239,7 +237,10 @@ const initFeed = (req, res, userCtx) => {
     limit: req.query && req.query.limit || DEFAULT_LIMIT,
   };
 
-  feed.debounceEnd = _.debounce(_.partial(endFeed, feed), DEBOUNCE_INTERVAL);
+  feed.debounceEnd = _.debounce(() => {
+    processPendingChanges(feed);
+    endFeed(feed);
+  }, DEBOUNCE_INTERVAL);
 
   defibrillator(feed);
   addTimeout(feed);
@@ -260,16 +261,15 @@ const initFeed = (req, res, userCtx) => {
 
 const addChangeToLongpollFeed = (feed, changeObj) => {
   appendChange(feed.results, changeObj);
-  // check if this newly added change would update the auth state on any of the previous denied changes
-  feed.limit -= processPendingChanges(feed, feed.results, false).nbrAppended + 1;
 
-  if (feed.limit) {
+  if (--feed.limit) {
     // debounce sending results if the feed limit is not yet reached
     addTimeout(feed);
     feed.debounceEnd();
     return;
   }
 
+  processPendingChanges(feed);
   endFeed(feed);
 };
 
@@ -288,6 +288,7 @@ const processChange = (change, seq) => {
   // send the change through to the longpoll feeds which are allowed to see it
   longpollFeeds.forEach(feed => {
     feed.lastSeq = seq;
+    const subjectsLength = authorization.getSubjectsLength(feed);
     if (!authorization.allowedDoc(changeObj.change.doc, feed, changeObj.viewResults)) {
       feed.pendingChanges.push(changeObj);
       return;
@@ -299,6 +300,7 @@ const processChange = (change, seq) => {
       return;
     }
 
+    feed.hasNewSubjects = feed.hasNewSubjects || subjectsLength !== authorization.getSubjectsLength(feed);
     addChangeToLongpollFeed(feed, changeObj);
   });
 };
@@ -328,27 +330,23 @@ const getConfig = () => {
   // limit on processing changes feeds with the _doc_ids filter within a
   // reasonable amount of time.
   // While hardcoded at first, CouchDB 2.1.1 has the option to configure this value
-  return db.medic.info()
-    .then(info => {
-      currentSeq = info.update_seq;
-      const url = COUCH_URL.slice(0, COUCH_URL.lastIndexOf(info.db_name)) +
-                  `_node/${COUCH_NODE_NAME}/_config/couchdb/changes_doc_ids_optimization_threshold`;
-      return new Promise((resolve, reject) => {
-        db.medic._ajax({ url: url }, (err, value) => {
-          if (err) {
-            console.log('Could not read changes_doc_ids_optimization_threshold config value.');
-            return reject(err);
-          }
-          MAX_DOC_IDS = value;
-          resolve();
-        });
+  const couchUrl = COUCH_URL.replace(/\/$/, '');
+  const serverUrl = couchUrl.slice(0, couchUrl.lastIndexOf('/'));
+  return new Promise(resolve => {
+    db.medic._ajax(
+      { url: `${serverUrl}/_node/${COUCH_NODE_NAME}/_config/couchdb/changes_doc_ids_optimization_threshold` },
+      (err, value) => {
+        if (err) {
+          console.log('Could not read changes_doc_ids_optimization_threshold config value.');
+          console.log(err);
+          MAX_DOC_IDS = DEFAULT_MAX_DOC_IDS;
+          return resolve();
+        }
+
+        MAX_DOC_IDS = value;
+        resolve();
       });
-    })
-    .catch(err => {
-      console.log('Could not read DB info');
-      console.log(err);
-      MAX_DOC_IDS = DEFAULT_MAX_DOC_IDS;
-    });
+  });
 };
 
 const init = () => {

@@ -480,7 +480,7 @@ describe('Authorization service', () => {
     });
 
     describe('isAuthChange', () => {
-      it('returns correct response', () => {
+      it('returns true if change affects user contact or facility, false otherwise', () => {
         const userCtx = { name: 'user', facility_id: 'facility_id', contact_id: 'contact_id' };
         let doc = {
           _id: 'org.couchdb.user:user',
@@ -510,6 +510,13 @@ describe('Authorization service', () => {
 
         doc = { _id: 'someid'};
         service.isAuthChange(doc, userCtx).should.equal(false);
+      });
+    });
+
+    describe('getSubjectsLength', () => {
+      it('returns length of feeb subjectIds array', () => {
+        service.getSubjectsLength({ subjectIds: new Array(10) }).should.equal(10);
+        service.getSubjectsLength({ subjectIds: new Array(20) }).should.equal(20);
       });
     });
   });

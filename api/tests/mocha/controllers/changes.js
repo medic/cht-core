@@ -42,19 +42,24 @@ describe('Changes controller', () => {
 
     changesSpy = sinon.spy();
     changesCancelSpy = sinon.spy();
+
     sinon.stub(auth, 'getUserCtx').resolves({ name: 'user' });
     sinon.stub(auth, 'isAdmin').returns(false);
     sinon.stub(auth, 'getUserSettings').resolves(userCtx);
+
     sinon.stub(authorization, 'getViewResults').returns({});
     sinon.stub(authorization, 'allowedDoc');
     sinon.stub(authorization, 'getDepth').returns(1);
     sinon.stub(authorization, 'getFeedAuthData').resolves({});
     sinon.stub(authorization, 'getAllowedDocIds').resolves({});
     sinon.stub(authorization, 'isAuthChange').returns(false);
-    sinon.stub(_, 'now').callsFake(Date.now); // force underscore's debounce to use fake timers!
+    sinon.stub(authorization, 'getSubjectsLength');
+
     sinon.stub(tombstoneUtils, 'isTombstoneId').returns(false);
     sinon.stub(tombstoneUtils, 'generateChangeFromTombstone');
     sinon.stub(tombstoneUtils, 'extractDoc');
+
+    sinon.stub(_, 'now').callsFake(Date.now); // force underscore's debounce to use fake timers!
 
     ChangesEmitter = function(opts) {
       changesSpy(opts);
@@ -104,16 +109,12 @@ describe('Changes controller', () => {
       return emitter;
     };
 
-    _.extend(db.medic, {
-      changes: changes,
-      _ajax: sinon.stub().callsArgWith(1, null, 100),
-      info: sinon.stub().resolves({ db_name: 'medic', update_seq: 0 })
-    });
+    db.medic.changes = changes;
+    db.medic._ajax = sinon.stub().callsArgWith(1, null, 100);
   });
 
   describe('init', () => {
     it('initializes the continuous changes feed and used constants', () => {
-      db.medic.info.resolves({ db_name: 'medic', update_seq: 122 });
       db.medic._ajax.callsArgWith(1, null, 20);
       return controller._init().then(() => {
         changesSpy.callCount.should.equal(1);
@@ -125,21 +126,11 @@ describe('Changes controller', () => {
         });
         controller._inited().should.equal(true);
         controller._getContinuousFeed().should.equal(emitters[0]);
-        controller._getCurrentSeq().should.equal(122);
         controller._getMaxDocIds().should.equal(20);
         db.medic._ajax.callCount.should.equal(1);
         db.medic._ajax.args[0][0].should.deep.equal({ url:
           COUCH_URL.slice(0, COUCH_URL.indexOf('medic')) +
           `_node/${COUCH_NODE_NAME}/_config/couchdb/changes_doc_ids_optimization_threshold`});
-      });
-    });
-
-    it('uses default values when info request fails', () => {
-      db.medic.info.rejects('error!!');
-      return controller._init().then(() => {
-        db.medic._ajax.callCount.should.equal(0);
-        controller._getCurrentSeq().should.equal(0);
-        controller._getMaxDocIds().should.equal(100);
       });
     });
 
@@ -628,18 +619,21 @@ describe('Changes controller', () => {
         .then(() => {
           authorization.allowedDoc.withArgs({ _id: 3 })
             .onCall(0).returns(false)
-            .onCall(1).returns(false)
-            .onCall(2).returns(true);
+            .onCall(1).returns(true);
           authorization.allowedDoc.withArgs({ _id: 2 })
             .onCall(0).returns(false)
             .onCall(1).returns(true);
           authorization.allowedDoc.withArgs({ _id: 4 })
             .onCall(0).returns(false)
-            .onCall(1).returns(false)
-            .onCall(2).returns(false)
-            .onCall(3).returns(false);
+            .onCall(1).returns(false);
           authorization.allowedDoc.withArgs({ _id: 1 })
             .onCall(0).returns(true);
+          authorization.getSubjectsLength
+            .returns(3)
+            .onCall(0).returns(2)
+            .onCall(1).returns(2)
+            .onCall(2).returns(2)
+            .onCall(3).returns(2);
 
           const emitter = controller._getContinuousFeed();
           const feed = controller._getNormalFeeds()[0];
@@ -661,18 +655,19 @@ describe('Changes controller', () => {
           testRes.end.callCount.should.equal(1);
           controller._getLongpollFeeds().length.should.equal(0);
           testRes.write.callCount.should.equal(1);
+          authorization.getSubjectsLength.callCount.should.equal(10);
           testRes.write.args[0][0].should.equal(JSON.stringify({
             results: [
               { id: 22 },
               { id: 1, changes: [] },
-              { id: 2, changes: [] },
-              { id: 3, changes: [] }
+              { id: 3, changes: [] },
+              { id: 2, changes: [] }
             ],
             last_seq: 5
           }));
-          authorization.allowedDoc.withArgs({ _id: 3 }).callCount.should.equal(3);
+          authorization.allowedDoc.withArgs({ _id: 3 }).callCount.should.equal(2);
           authorization.allowedDoc.withArgs({ _id: 2 }).callCount.should.equal(2);
-          authorization.allowedDoc.withArgs({ _id: 4 }).callCount.should.equal(4);
+          authorization.allowedDoc.withArgs({ _id: 4 }).callCount.should.equal(2);
           authorization.allowedDoc.withArgs({ _id: 1 }).callCount.should.equal(1);
         });
     });
@@ -936,20 +931,25 @@ describe('Changes controller', () => {
           authorization.allowedDoc.withArgs({ _id: 3 })
             .onCall(0).returns(false)
             .onCall(1).returns(false)
-            .onCall(2).returns(false)
-            .onCall(3).returns(false);
+            .onCall(2).returns(false);
           authorization.allowedDoc.withArgs({ _id: 2 })
-            .onCall(0).returns(false)
-            .onCall(1).returns(true);
-          authorization.allowedDoc.withArgs({ _id: 4 })
             .onCall(0).returns(false)
             .onCall(1).returns(false)
             .onCall(2).returns(true);
+          authorization.allowedDoc.withArgs({ _id: 4 })
+            .onCall(0).returns(false)
+            .onCall(1).returns(true);
           authorization.allowedDoc.withArgs({ _id: 1 })
             .onCall(0).returns(true);
 
+          authorization.getSubjectsLength.returns(2);
+          for (let i = 0; i < 8; i++) {
+            authorization.getSubjectsLength.onCall(i).returns(i < 4 ? 0 : 1);
+          }
+
           emitter.emit('change', { id: 3, changes: [], doc: { _id: 3 }}, 0, 1);
           feed.pendingChanges.length.should.equal(1);
+          (!!feed.hasNewSubjects).should.equal(false);
           feed.results.length.should.equal(0);
           emitter.emit('change', { id: 2, changes: [], doc: { _id: 2 }}, 0, 2);
           feed.pendingChanges.length.should.equal(2);
@@ -958,17 +958,18 @@ describe('Changes controller', () => {
           feed.pendingChanges.length.should.equal(3);
           feed.results.length.should.equal(0);
           emitter.emit('change', { id: 1, changes: [], doc: { _id: 1 }}, 0, 4);
-          feed.pendingChanges.length.should.equal(1);
-          feed.results.length.should.equal(3);
+          feed.pendingChanges.length.should.equal(3);
+          feed.results.length.should.equal(1);
           clock.tick(500);
           testRes.end.callCount.should.equal(1);
+          authorization.getSubjectsLength.callCount.should.equal(12);
           controller._getLongpollFeeds().length.should.equal(0);
           testRes.write.callCount.should.equal(1);
           testRes.write.args[0][0].should.equal(JSON.stringify({
             results: [
               { id: 1, changes: [] },
-              { id: 2, changes: [] },
-              { id: 4, changes: [] }
+              { id: 4, changes: [] },
+              { id: 2, changes: [] }
             ],
             last_seq: 4
           }));
@@ -991,6 +992,13 @@ describe('Changes controller', () => {
       authorization.allowedDoc.withArgs({ _id: 'contact-1' }).returns(true);
       authorization.allowedDoc.withArgs({ _id: 'contact-2' }).returns(false);
 
+      authorization.getSubjectsLength.returns(1);
+      authorization.getSubjectsLength
+        .onCall(0).returns(0)
+        .onCall(1).returns(0)
+        .onCall(2).returns(0)
+        .onCall(3).returns(0);
+
       return controller
         .request(proxy, testReq, testRes)
         .then(nextTick)
@@ -1010,9 +1018,9 @@ describe('Changes controller', () => {
           clock.tick(100);
           emitter.emit('change', { id: 'contact-1', changes: [], doc: { _id: 'contact-1'}}, 0, 4);
           clock.tick(100);
-          emitter.emit('change', { id: 'contact-2', changes: [], doc: { _id: 'contact-2'} }, 0, 5);
+          emitter.emit('change', { id: 'contact-2', changes: [], doc: { _id: 'contact-2'}}, 0, 5);
           const feed = controller._getLongpollFeeds()[0];
-          feed.results.length.should.equal(3);
+          feed.results.length.should.equal(1);
           feed.lastSeq.should.equal(5);
           clock.tick(200);
           testRes.write.callCount.should.equal(1);
@@ -1027,11 +1035,12 @@ describe('Changes controller', () => {
           }));
 
           authorization.allowedDoc.withArgs({ _id: 'report-3' }).callCount.should.equal(2);
-          authorization.allowedDoc.withArgs({ _id: 'report-2' }).callCount.should.equal(3);
+          authorization.allowedDoc.withArgs({ _id: 'report-2' }).callCount.should.equal(2);
           authorization.allowedDoc.withArgs({ _id: 'report-1' }).callCount.should.equal(2);
           authorization.allowedDoc.withArgs({ _id: 'contact-1' }).callCount.should.equal(1);
-          authorization.allowedDoc.withArgs({ _id: 'contact-2' }).callCount.should.equal(1);
+          authorization.allowedDoc.withArgs({ _id: 'contact-2' }).callCount.should.equal(2);
           authorization.allowedDoc.callCount.should.equal(9);
+          authorization.getSubjectsLength.callCount.should.equal(12);
         });
     });
 
@@ -1056,6 +1065,62 @@ describe('Changes controller', () => {
           feed.ended.should.equal(true);
           testRes.write.callCount.should.equal(0);
           testRes.end.callCount.should.equal(0);
+        });
+    });
+
+    it('does not process old changes if received change does not modify subject IDS list', () => {
+      testReq.query = { feed: 'longpoll' };
+      authorization.getAllowedDocIds.resolves([1, 2, 3]);
+      authorization.allowedDoc.withArgs({ _id: 'report-1'}).returns(true);
+      authorization.allowedDoc.withArgs({ _id: 'report-2'}).returns(false);
+      authorization.allowedDoc.withArgs({ _id: 'report-3'}).returns(false);
+      authorization.allowedDoc.withArgs({ _id: 'report-4'}).returns(false);
+      authorization.allowedDoc.withArgs({ _id: 'contact-1'}).returns(true);
+      authorization.allowedDoc.withArgs({ _id: 'contact-2'}).returns(false);
+      authorization.getSubjectsLength.returns(1);
+
+      return controller
+        .request(proxy, testReq, testRes)
+        .then(nextTick)
+        .then(() => {
+          controller
+            ._getNormalFeeds()[0]
+            .upstreamRequests.forEach(upstreamReq => upstreamReq.complete(null, { results: [], last_seq: 2 }));
+        })
+        .then(nextTick)
+        .then(() => {
+          const feed = controller._getLongpollFeeds()[0];
+          const emitter = controller._getContinuousFeed();
+          clock.tick(100);
+          emitter.emit('change', { id: 'report-1', changes: [], doc: { _id: 'report-1'}}, 0, 3);
+          emitter.emit('change', { id: 'report-2', changes: [], doc: { _id: 'report-2'}}, 0, 3);
+          emitter.emit('change', { id: 'report-3', changes: [], doc: { _id: 'report-3'}}, 0, 3);
+          emitter.emit('change', { id: 'report-4', changes: [], doc: { _id: 'report-4'}}, 0, 3);
+          clock.tick(100);
+          emitter.emit('change', { id: 'contact-1', changes: [], doc: { _id: 'contact-1'}}, 0, 4);
+          clock.tick(100);
+          emitter.emit('change', { id: 'contact-2', changes: [], doc: { _id: 'contact-2'}}, 0, 5);
+          feed.results.length.should.equal(2);
+          feed.lastSeq.should.equal(5);
+          clock.tick(200);
+          testRes.write.callCount.should.equal(1);
+          testRes.end.callCount.should.equal(1);
+          testRes.write.args[0][0].should.equal(JSON.stringify({
+            results: [
+              { id: 'report-1', changes: [] },
+              { id: 'contact-1', changes: [] }
+            ],
+            last_seq: 5
+          }));
+
+          authorization.allowedDoc.withArgs({ _id: 'report-1' }).callCount.should.equal(1);
+          authorization.allowedDoc.withArgs({ _id: 'report-2' }).callCount.should.equal(1);
+          authorization.allowedDoc.withArgs({ _id: 'report-3' }).callCount.should.equal(1);
+          authorization.allowedDoc.withArgs({ _id: 'report-4' }).callCount.should.equal(1);
+          authorization.allowedDoc.withArgs({ _id: 'contact-1' }).callCount.should.equal(1);
+          authorization.allowedDoc.withArgs({ _id: 'contact-2' }).callCount.should.equal(1);
+          authorization.allowedDoc.callCount.should.equal(6);
+          authorization.getSubjectsLength.callCount.should.equal(8);
         });
     });
   });
@@ -1217,7 +1282,7 @@ describe('Changes controller', () => {
         { id: 1, changes: [{ rev: 1 }] },
         { id: 2, changes: [{ rev: 1 }] }
       ];
-      const changes = [
+      const pendingChanges = [
         { change: { id: 1, changes: [{ rev: 1 }], doc: { _id: 1 } } },
         { change: { id: 2, changes: [{ rev: 2 }], doc: { _id: 2 } } },
         { change: { id: 3, changes: [{ rev: 2 }], doc: { _id: 3 } } },
@@ -1230,9 +1295,7 @@ describe('Changes controller', () => {
       authorization.allowedDoc.withArgs({ _id: 4 }).returns(false);
       authorization.allowedDoc.withArgs({ _id: 5 }).returns(true);
 
-      const actual = controller._processPendingChanges({ pendingChanges: changes, userCtx: userCtx }, results);
-      actual.should.deep.equal({ authChange: false, nbrAppended: 3 });
-
+      controller._processPendingChanges({ pendingChanges, userCtx, results }, true).should.equal(true);
       results.length.should.equal(3);
       results.should.deep.equal([
         { id: 1, changes: [{ rev: 1 }] },
@@ -1253,7 +1316,7 @@ describe('Changes controller', () => {
         { id: 1, changes: [{ rev: 1 }] },
         { id: 2, changes: [{ rev: 1 }] }
       ];
-      const changes = [
+      const pendingChanges = [
         { change: { id: 1, changes: [{ rev: 1 }], doc: { _id: 1 }}},
         { change: { id: 2, changes: [{ rev: 2 }], doc: { _id: 2 }}},
         { change: { id: 3, changes: [{ rev: 2 }], doc: { _id: 3 }}},
@@ -1261,20 +1324,22 @@ describe('Changes controller', () => {
         { change: { id: 5, changes: [{ rev: 1 }], doc: { _id: 5 }}},
       ];
 
-      const actual = controller._processPendingChanges({ pendingChanges: changes }, results);
-      actual.should.deep.equal({ authChange: true, nbrAppended: 3 });
+      controller._processPendingChanges({ pendingChanges, results }, true).should.equal(false);
+      results.length.should.equal(3);
     });
 
-    it('reiterates over pending changes every time a change is evaluated as allowed, removes allowed changes from list', () => {
-      const results = [];
+    it('reiterates over pending changes every time an allowed change increases the subjects list, removes allowed changes from list', () => {
       const changes = [
-        { change: { id: 1, changes: [{ rev: 1 }], doc: { _id: 1 }}},
-        { change: { id: 2, changes: [{ rev: 2 }], doc: { _id: 2 }}},
-        { change: { id: 3, changes: [{ rev: 2 }], doc: { _id: 3 }}},
+        { change: { id: 6, changes: [{ rev: 1 }], doc: { _id: 6 }}},
+        { change: { id: 7, changes: [{ rev: 1 }], doc: { _id: 7 }}},
+        { change: { id: 8, changes: [{ rev: 1 }], doc: { _id: 8 }}},
         { change: { id: 4, changes: [{ rev: 1 }], doc: { _id: 4 }}},
         { change: { id: 5, changes: [{ rev: 1 }], doc: { _id: 5 }}},
+        { change: { id: 2, changes: [{ rev: 2 }], doc: { _id: 2 }}},
+        { change: { id: 3, changes: [{ rev: 2 }], doc: { _id: 3 }}},
+        { change: { id: 1, changes: [{ rev: 1 }], doc: { _id: 1 }}}
       ];
-      const feed = { pendingChanges: changes };
+      const feed = { pendingChanges: changes, results: [] };
       authorization.allowedDoc.withArgs({ _id: 1 }).returns(true);
       authorization.allowedDoc.withArgs({ _id: 2 })
         .onCall(0).returns(false)
@@ -1286,19 +1351,85 @@ describe('Changes controller', () => {
         .onCall(1).returns(false)
         .onCall(2).returns(true);
       authorization.allowedDoc.withArgs({ _id: 5 }).returns(false);
+      authorization.allowedDoc.withArgs({ _id: 6 }).returns(false);
+      authorization.allowedDoc.withArgs({ _id: 7 }).returns(false);
+      authorization.allowedDoc.withArgs({ _id: 8 }).returns(false);
 
-      const actual = controller._processPendingChanges(feed, results);
-      actual.should.deep.equal({ authChange: false, nbrAppended: 3 });
+      authorization.getSubjectsLength.returns(2);
+      for (let i = 0; i < 15; i++) {
+        authorization.getSubjectsLength.onCall(i).returns(i < 8 ? 0 : 1);
+      }
+
+      controller._processPendingChanges(feed, true).should.equal(true);
 
       authorization.allowedDoc.withArgs({ _id: 1 }).callCount.should.equal(1);
       authorization.allowedDoc.withArgs({ _id: 2 }).callCount.should.equal(2);
-      authorization.allowedDoc.withArgs({ _id: 3 }).callCount.should.equal(4);
+      authorization.allowedDoc.withArgs({ _id: 3 }).callCount.should.equal(3);
       authorization.allowedDoc.withArgs({ _id: 4 }).callCount.should.equal(3);
-      authorization.allowedDoc.withArgs({ _id: 5 }).callCount.should.equal(4);
-      authorization.allowedDoc.callCount.should.equal(14);
+      authorization.allowedDoc.withArgs({ _id: 5 }).callCount.should.equal(3);
+      authorization.allowedDoc.withArgs({ _id: 6 }).callCount.should.equal(3);
+      authorization.allowedDoc.withArgs({ _id: 7 }).callCount.should.equal(3);
+      authorization.allowedDoc.withArgs({ _id: 8 }).callCount.should.equal(3);
+      authorization.allowedDoc.callCount.should.equal(21);
+      authorization.getSubjectsLength.callCount.should.equal(24);
 
-      feed.pendingChanges.length.should.equal(2);
-      feed.pendingChanges.every(change => [3, 5].indexOf(change.change.id) !== -1).should.equal(true);
+      feed.pendingChanges.length.should.equal(5);
+      feed.pendingChanges.every(change => [3, 5, 6, 7, 8].indexOf(change.change.id) !== -1).should.equal(true);
+    });
+
+    it('does not reiterate when allowed changes do not modify the subjects list', () => {
+      const pendingChanges = [
+        { change: { id: 4, changes: [{ rev: 1 }], doc: { _id: 4 }}},
+        { change: { id: 5, changes: [{ rev: 1 }], doc: { _id: 5 }}},
+        { change: { id: 2, changes: [{ rev: 2 }], doc: { _id: 2 }}},
+        { change: { id: 3, changes: [{ rev: 2 }], doc: { _id: 3 }}},
+        { change: { id: 1, changes: [{ rev: 1 }], doc: { _id: 1 }}}
+      ];
+      const feed = { pendingChanges, results: [] };
+      authorization.allowedDoc.withArgs({ _id: 1 }).returns(true);
+      authorization.allowedDoc.withArgs({ _id: 2 }).returns(false);
+      authorization.allowedDoc.withArgs({ _id: 3 }).returns(true);
+      authorization.allowedDoc.withArgs({ _id: 4 }).returns(true);
+      authorization.allowedDoc.withArgs({ _id: 5 }).returns(false);
+
+      controller._processPendingChanges(feed, true).should.equal(true);
+      feed.results.length.should.equal(3);
+      feed.results.should.deep.equal([
+        { id: 4, changes: [{ rev: 1 }]},
+        { id: 3, changes: [{ rev: 2 }]},
+        { id: 1, changes: [{ rev: 1 }]}
+      ]);
+      authorization.allowedDoc.callCount.should.equal(5);
+      authorization.getSubjectsLength.callCount.should.equal(8);
+    });
+
+    it('does not run when the feed is not a normal feed and there are no new subjects', () => {
+      const pendingChanges = [
+        { change: { id: 4, changes: [{ rev: 1 }], doc: { _id: 4 }}},
+        { change: { id: 5, changes: [{ rev: 1 }], doc: { _id: 5 }}},
+        { change: { id: 2, changes: [{ rev: 2 }], doc: { _id: 2 }}},
+        { change: { id: 3, changes: [{ rev: 2 }], doc: { _id: 3 }}},
+        { change: { id: 1, changes: [{ rev: 1 }], doc: { _id: 1 }}}
+      ];
+      controller._processPendingChanges({ pendingChanges }).should.equal(true);
+      authorization.allowedDoc.callCount.should.equal(0);
+      authorization.getSubjectsLength.callCount.should.equal(0);
+      authorization.isAuthChange.callCount.should.equal(0);
+    });
+
+    it('does not check for changes in auth for longpoll feeds', () => {
+      const pendingChanges = [
+        { change: { id: 4, changes: [{ rev: 1 }], doc: { _id: 4 }}},
+        { change: { id: 5, changes: [{ rev: 1 }], doc: { _id: 5 }}},
+        { change: { id: 2, changes: [{ rev: 2 }], doc: { _id: 2 }}},
+        { change: { id: 3, changes: [{ rev: 2 }], doc: { _id: 3 }}},
+        { change: { id: 1, changes: [{ rev: 1 }], doc: { _id: 1 }}}
+      ];
+
+      controller._processPendingChanges({ pendingChanges, hasNewSubjects: true }).should.equal(true);
+      authorization.isAuthChange.callCount.should.equal(0);
+      authorization.allowedDoc.callCount.should.equal(5);
+      authorization.getSubjectsLength.callCount.should.equal(5);
     });
   });
 

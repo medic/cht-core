@@ -188,4 +188,5 @@ module.exports = {
   getViewResults: getViewResults,
   getFeedAuthData: getFeedAuthData,
   getAllowedDocIds: getAllowedDocIds,
+  getSubjectsLength: feed => feed.subjectIds.length
 };
