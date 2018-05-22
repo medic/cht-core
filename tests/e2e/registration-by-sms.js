@@ -197,6 +197,7 @@ describe('registration transition', () => {
   };
 
   describe('submits new sms messages', () => {
+    var originalTimeout;
 
     beforeEach(done => {
       const body = {
@@ -215,8 +216,16 @@ describe('registration transition', () => {
         })
         .catch(done.fail);
     });
+    beforeEach(function() {
+      //increasing DEFAULT_TIMEOUT_INTERVAL for this page is very slow and it takes long for the report details to load
+      originalTimeout = jasmine.DEFAULT_TIMEOUT_INTERVAL;
+      jasmine.DEFAULT_TIMEOUT_INTERVAL = 60000;
+    });
 
     afterEach(utils.afterEach);
+    afterAll(function() {
+      jasmine.DEFAULT_TIMEOUT_INTERVAL = originalTimeout;
+    });
 
     const checkItemSummary = () => {
       const summaryElement = element(by.css('#reports-content .item-summary'));
