@@ -213,7 +213,7 @@ const getChanges = feed => {
       console.log(err);
       // cancel ongoing requests
       feed.upstreamRequests.forEach(request => request.cancel());
-      return Promise.resolve(getChanges(feed));
+      getChanges(feed);
     });
 };
 
@@ -319,9 +319,7 @@ const initContinuousFeed = since => {
     })
     .on('error', () => {
       continuousFeed.cancel();
-      Promise.resolve().then(() => {
-        continuousFeed = initContinuousFeed(currentSeq);
-      });
+      initContinuousFeed(currentSeq);
     });
 };
 

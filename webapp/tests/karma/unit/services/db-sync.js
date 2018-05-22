@@ -11,15 +11,15 @@ describe('DBSync service', () => {
       userCtx,
       sync,
       Auth,
-      circularOn;
+      recursiveOn;
 
   beforeEach(() => {
-    circularOn = sinon.stub();
-    circularOn.returns({ on: circularOn });
+    recursiveOn = sinon.stub();
+    recursiveOn.returns({ on: recursiveOn });
     to = sinon.stub();
-    to.returns({ on: circularOn });
+    to.returns({ on: recursiveOn });
     from = sinon.stub();
-    from.returns({ on: circularOn });
+    from.returns({ on: recursiveOn });
     query = sinon.stub();
     allDocs = sinon.stub();
     isAdmin = sinon.stub();
@@ -74,10 +74,8 @@ describe('DBSync service', () => {
       chai.expect(Auth.callCount).to.equal(1);
       chai.expect(Auth.args[0][0]).to.equal('can_edit');
       chai.expect(from.callCount).to.equal(1);
-      chai.expect(from.args[0][1].live).to.equal(true);
-      chai.expect(from.args[0][1].retry).to.equal(true);
-      chai.expect(from.args[0][1].doc_ids).to.deep.equal(undefined);
-      chai.expect(from.args[0][1].checkpoint).to.equal(undefined); // should equal 'target' when single sided checkpointing is fixed
+      chai.expect(from.withArgs(sinon.match.any, sinon.match({ live: true, retry: true })).callCount).to.equal(1);
+      chai.expect(from.args[0][1]).to.not.have.keys('doc_ids', 'checkpoint');
       chai.expect(to.callCount).to.equal(1);
       chai.expect(to.args[0][1].live).to.equal(true);
       chai.expect(to.args[0][1].retry).to.equal(true);
@@ -105,9 +103,8 @@ describe('DBSync service', () => {
       chai.expect(Auth.callCount).to.equal(1);
       chai.expect(Auth.args[0][0]).to.equal('can_edit');
       chai.expect(from.callCount).to.equal(1);
-      chai.expect(from.args[0][1].live).to.equal(true);
-      chai.expect(from.args[0][1].retry).to.equal(true);
-      chai.expect(from.args[0][1].doc_ids).to.deep.equal(undefined);
+      chai.expect(from.withArgs(sinon.match.any, sinon.match({ live: true, retry: true })).callCount).to.equal(1);
+      chai.expect(from.args[0][1]).to.not.have.keys('doc_ids', 'checkpoint');
       chai.expect(to.callCount).to.equal(0);
     });
   });
@@ -121,8 +118,8 @@ describe('DBSync service', () => {
       Auth.returns(Promise.resolve());
       userCtx.returns({ name: 'mobile', roles: [ 'district-manager' ] });
       allDocs.returns(Promise.resolve({ rows: [] }));
-      to.returns({ on: circularOn });
-      from.returns({ on: circularOn });
+      to.returns({ on: recursiveOn });
+      from.returns({ on: recursiveOn });
       return service().then(() => {
         chai.expect(to.callCount).to.equal(1);
         filterFunction = to.args[0][1].filter;
