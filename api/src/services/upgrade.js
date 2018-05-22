@@ -6,6 +6,7 @@ module.exports = {
   upgrade: (buildInfo, user, {stageOnly}) => {
     return DB.put({
       _id: HORTI_UPGRADE_DOC,
+      schema_version: 1,
       user: user,
       created: new Date().getTime(),
       action: stageOnly ? 'stage' : 'install',
