@@ -17,6 +17,7 @@ if(UNIT_TEST_ENV) {
     post: stubMe('post'),
     query: stubMe('query'),
     get: stubMe('get'),
+    changes: stubMe('changes'),
   };
 
   module.exports.sentinel = {
@@ -26,6 +27,7 @@ if(UNIT_TEST_ENV) {
     post: stubMe('post'),
     query: stubMe('query'),
     get: stubMe('get'),
+    changes: stubMe('changes'),
   };
 } else if(COUCH_URL) {
   // strip trailing slash from to prevent bugs in path matching

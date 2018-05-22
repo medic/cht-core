@@ -1,6 +1,5 @@
 const sinon = require('sinon').sandbox.create(),
       assert = require('chai').assert,
-      follow = require('follow'),
       _ = require('underscore'),
       config = require('../../src/config'),
       db = require('../../src/db-nano'),
@@ -202,10 +201,8 @@ describe('transitions', () => {
     const insert = sinon.stub(dbPouch.sentinel, 'put').resolves({});
     sinon.stub(dbPouch.medic, 'put').resolves({});
 
-    const on = sinon.stub();
-    const start = sinon.stub();
-    const feed = sinon.stub(follow, 'Feed')
-      .returns({ on: on, follow: start, stop: () => {} });
+    const on = sinon.stub().returns({ on: () => ({ cancel: () => null }) });
+    const feed = sinon.stub(dbPouch.medic, 'changes').returns({ on: on });
 
     const applyTransitions = sinon.stub(transitions, 'applyTransitions').callsArg(1);
     // wait for the queue processor
@@ -223,10 +220,6 @@ describe('transitions', () => {
     transitions._attach().then(() => {
       assert.equal(feed.callCount, 1);
       assert.equal(feed.args[0][0].since, 0);
-      assert.equal(on.callCount, 3);
-      assert.equal(on.args[0][0], 'change');
-      assert.equal(on.args[1][0], 'error');
-      assert.equal(start.callCount, 1);
       // invoke the change handler
       on.args[0][1]({ id: 'abc', seq: 55 });
     });
@@ -246,9 +239,8 @@ describe('transitions', () => {
     sinon.stub(infodoc, 'get').resolves({});
     const medicPut = sinon.stub(dbPouch.medic, 'put').resolves({});
     const sentinelPut = sinon.stub(dbPouch.sentinel, 'put').resolves({});
-    const on = sinon.stub();
-    const start = sinon.stub();
-    const feed = sinon.stub(follow, 'Feed').returns({ on: on, follow: start, stop: () => {} });
+    const on = sinon.stub().returns({ on: () => ({ cancel: () => null }) });
+    const feed = sinon.stub(dbPouch.medic, 'changes').returns({ on: on });
     const applyTransitions = sinon.stub(transitions, 'applyTransitions').callsArg(1);
     // wait for the queue processor
     transitions._changeQueue.drain = () => {
@@ -273,10 +265,6 @@ describe('transitions', () => {
     transitions._attach().then(() => {
       assert.equal(feed.callCount, 1);
       assert.equal(feed.args[0][0].since, 22);
-      assert.equal(on.callCount, 3);
-      assert.equal(on.args[0][0], 'change');
-      assert.equal(on.args[1][0], 'error');
-      assert.equal(start.callCount, 1);
       // invoke the change handler
       on.args[0][1]({ id: 'abc', seq: 55 });
     });
@@ -294,9 +282,8 @@ describe('transitions', () => {
     sinon.stub(dbPouch.medic, 'get').rejects({status: 404});
     sinon.stub(db.audit, 'saveDoc').callsArg(1);
 
-    const on = sinon.stub();
-    const start = sinon.stub();
-    const feed = sinon.stub(follow, 'Feed').returns({ on: on, follow: start, stop: () => {} });
+    const on = sinon.stub().returns({ on: () => ({ cancel: () => null }) });
+    const feed = sinon.stub(dbPouch.medic, 'changes').returns({ on: on });
     const applyTransitions = sinon.stub(transitions, 'applyTransitions').callsArg(1);
     // wait for the queue processor
     transitions._changeQueue.drain = () => {
@@ -315,10 +302,6 @@ describe('transitions', () => {
     transitions._attach().then(() => {
       assert.equal(feed.callCount, 1);
       assert.equal(feed.args[0][0].since, 22);
-      assert.equal(on.callCount, 3);
-      assert.equal(on.args[0][0], 'change');
-      assert.equal(on.args[1][0], 'error');
-      assert.equal(start.callCount, 1);
       // invoke the change handler
       on.args[0][1]({ id: 'abc', seq: 55 });
     });

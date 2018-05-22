@@ -1,6 +1,6 @@
 var _ = require('underscore'),
     READ_ONLY_TYPES = [ 'form', 'translations' ],
-    READ_ONLY_IDS = [ 'resources', 'appcache', 'zscore-charts' ],
+    READ_ONLY_IDS = [ 'resources', 'appcache', 'zscore-charts', 'settings' ],
     DDOC_PREFIX = [ '_design/' ],
     META_SYNC_FREQUENCY = 30 * 60 * 1000; // 30 minutes
 

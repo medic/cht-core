@@ -105,7 +105,7 @@ const processChange = (change, callback) => {
         });
     })
     .catch(err => {
-      logger.error(`transitions: fetch failed for ${change.id} (${err})`);
+      logger.error(`transitions: fetch failed for ${change.id} (${err})`, err);
       return callback();
     });
 };
@@ -373,7 +373,7 @@ const applyTransitions = (change, callback) => {
 
 const detach = () => {
   if (changesFeed) {
-    changesFeed.stop();
+    changesFeed.cancel();
     changesFeed = null;
   }
 };

@@ -1073,13 +1073,15 @@ Content-Type: application/json
 
 # Upgrades
 
-Initiates an upgrade to the provided version. Once this endpoint is called [Horticulturalist](https://github.com/medic/horticulturalist) will take over and complete the installation.
+All of these endpoints require the `can_configure` permission.
 
-### Permissions
+All of these endpoints are asynchronous. Progress can be followed by watching the `horti-upgrade` document and looking at the `log` property.
 
-`_admin` (CouchDB Administrator)
+## POST /api/v1/upgrade
 
-## Example
+Performs a complete upgrade to the provided version. This is equivalent of calling `/api/v1/upgrade/stage` and then `/api/v1/upgrade/complete` once staging has finished.
+
+### Example
 
 ```
 POST /api/v1/upgrade
@@ -1096,6 +1098,18 @@ For potential forwards compatibility, you must pass the `namespace` and `applica
 
 The `version` should correspond to a release, pre-release or branch that has been pushed to our builds server (currently hard-coded to https://staging.dev.medicmobile.org/builds). This happens automatically upon a successful travis run.
 
-Calling this endpoint will potentially restart API.
+Calling this endpoint will eventually cause api and sentinel to restart.
 
-It is expected that the caller ensures forwards or backwards compatibility is maintained between deployed versions. This endpoing does not stop you from "upgrading" to an earlier version, or a branch that is incompatible with your current state.
+It is expected that the caller ensures forwards or backwards compatibility is maintained between deployed versions. This endpoint does not stop you from "upgrading" to an earlier version, or a branch that is incompatible with your current state.
+
+## POST /api/v1/upgrade/stage
+
+Stages an upgrade to the provided version. Does as much of the upgrade as possible without actually swapping versions over and restarting.
+
+Parameters are the same as `/api/v1/upgrade`.
+
+You know that an upgrade has been staged when the `horti-upgrade` document in CouchDB has `"staged": true`.
+
+## POST /api/v1/upgrade/complete
+
+Completes a staged upgrade. Throws a `404` if there is no upgrade in the staged position.

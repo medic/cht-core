@@ -8,6 +8,7 @@ describe('EditUserCtrl controller', () => {
       mockEditCurrentUser,
       scope,
       translationsDbQuery,
+      dbGet,
       UpdateUser,
       CreateUser,
       UserSettings,
@@ -17,6 +18,7 @@ describe('EditUserCtrl controller', () => {
   beforeEach(() => {
     module('adminApp');
 
+    dbGet = sinon.stub();
     translationsDbQuery = sinon.stub();
     translationsDbQuery.returns(Promise.resolve({ rows: [
       { value: { code: 'en' } },
@@ -53,12 +55,14 @@ describe('EditUserCtrl controller', () => {
       $provide.factory('processingFunction', () => {
         return null;
       });
-      $provide.factory('DB', KarmaUtils.mockDB({ query: translationsDbQuery }));
+      $provide.factory('DB', KarmaUtils.mockDB({
+        query: translationsDbQuery,
+        get: dbGet
+      }));
       $provide.value('UpdateUser', UpdateUser);
       $provide.value('CreateUser', CreateUser);
       $provide.value('UserSettings', UserSettings);
       $provide.value('Translate', Translate);
-
     });
 
     inject(($rootScope, $controller) => {
@@ -107,16 +111,20 @@ describe('EditUserCtrl controller', () => {
       UpdateUser,
       UserSettings,
       translationsDbQuery,
+      dbGet,
       jQuery);
   });
 
-  const mockFacility = (facility_id) => {
-      window.$.withArgs('#edit-user-profile [name=facilitySelect]')
-        .returns({ val: () => facility_id });
+  const mockFacility = facilityId => {
+    window.$.withArgs('#edit-user-profile [name=facilitySelect]')
+      .returns({ val: () => facilityId });
   };
-  const mockContact = (contact_id) => {
-      window.$.withArgs('#edit-user-profile [name=contactSelect]')
-        .returns({ val: () => contact_id });
+  const mockContact = contactId => {
+    window.$.withArgs('#edit-user-profile [name=contactSelect]')
+      .returns({ val: () => contactId });
+  };
+  const mockContactGet = (facilityId) => {
+    dbGet.returns(Promise.resolve({ parent: { _id: facilityId } }));
   };
 
   describe('initialisation', () => {
@@ -223,6 +231,7 @@ describe('EditUserCtrl controller', () => {
       mockEditAUser(userToEdit);
       mockContact(userToEdit.contact_id);
       mockFacility(userToEdit.facility_id);
+      mockContactGet(userToEdit.contact_id);
 
       setTimeout(() => {
         scope.editUserModel.currentPassword = 'blah';
@@ -325,10 +334,32 @@ describe('EditUserCtrl controller', () => {
       });
     });
 
+    it('associated place must be parent of contact', done => {
+      mockEditAUser(userToEdit);
+
+      setTimeout(() => {
+        scope.editUserModel.type = 'district-manager';
+        mockContact(userToEdit.contact_id);
+        mockFacility(userToEdit.facility_id);
+        mockContactGet('some-other-id');
+        Translate.withArgs('configuration.user.place.contact').returns(Promise.resolve('outside'));
+
+        // when
+        scope.editUser();
+
+        // expect
+        setTimeout(() => {
+          chai.expect(scope.errors.contact).to.equal('outside');
+          done();
+        });
+      });
+    });
+
     it('user is updated', done => {
       mockEditAUser(userToEdit);
       mockContact(userToEdit.contact_id);
       mockFacility(userToEdit.facility_id);
+      mockContactGet(userToEdit.contact_id);
 
       setTimeout(() => {
         scope.editUserModel.fullname = 'fullname';

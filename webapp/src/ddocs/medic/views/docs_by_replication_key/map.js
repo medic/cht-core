@@ -3,6 +3,7 @@ function (doc) {
   if (doc._id === 'resources' ||
       doc._id === 'appcache' ||
       doc._id === 'zscore-charts' ||
+      doc._id === 'settings' ||
       doc.type === 'form' ||
       doc.type === 'translations') {
     return emit('_all', {});

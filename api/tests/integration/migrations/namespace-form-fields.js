@@ -31,45 +31,45 @@ describe('namespace-form-fields migration', function() {
       patient_name: 'Marc'
     };
 
-    return utils.initSettings({
-      forms: { // this is the default config
-        R: {
-          meta: {
-            code: 'R',
-            icon: 'registration',
-            label: {
-              en: 'Pregnancy Registration'
-            }
-          },
-          fields: {
-            patient_name: {
-              labels: {
-                tiny: {
-                  en: 'N'
-                },
-                description: {
-                  en: 'Patient Name'
-                },
-                short: {
-                  en: 'Name'
-                }
-              },
-              position: 0,
-              type: 'string',
-              length: [
-                1,
-                30
-              ],
-              required: true
-            }
-          },
-          public_form: true,
-          use_sentinel: true
-        }
-      }
-    })
+    return utils.initDb([ needsMigration, alreadyMigrated, unknownForm ])
     .then(function() {
-      return utils.initDb([ needsMigration, alreadyMigrated, unknownForm ]);
+      return utils.initSettings({
+        forms: { // this is the default config
+          R: {
+            meta: {
+              code: 'R',
+              icon: 'registration',
+              label: {
+                en: 'Pregnancy Registration'
+              }
+            },
+            fields: {
+              patient_name: {
+                labels: {
+                  tiny: {
+                    en: 'N'
+                  },
+                  description: {
+                    en: 'Patient Name'
+                  },
+                  short: {
+                    en: 'Name'
+                  }
+                },
+                position: 0,
+                type: 'string',
+                length: [
+                  1,
+                  30
+                ],
+                required: true
+              }
+            },
+            public_form: true,
+            use_sentinel: true
+          }
+        }
+      });
     })
     .then(function() {
 

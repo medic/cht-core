@@ -173,6 +173,8 @@ app.get('/api/auth/:path', function(req, res) {
 });
 
 app.post('/api/v1/upgrade', jsonParser, upgrade.upgrade);
+app.post('/api/v1/upgrade/stage', jsonParser, upgrade.stage);
+app.post('/api/v1/upgrade/complete', jsonParser, upgrade.complete);
 
 app.get('/api/sms/', function(req, res) {
   res.redirect(301, '/api/sms');

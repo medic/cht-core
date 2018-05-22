@@ -80,7 +80,8 @@ function assertDb(expectedContents) {
           if (key === 'medic') {
             actualContent = actualContent.filter(function(doc) {
               return doc._id !== '_design/medic' &&
-                  doc._id !== '_design/medic-client';
+                  doc._id !== '_design/medic-client' &&
+                  doc._id !== 'settings';
             });
           }
 
@@ -134,7 +135,7 @@ function matchDbs(expected, actual) {
   });
 
   if(actual.length) {
-    errors.push('Some unexpected docs were found in the database: ' +
+    errors.push(`${actual.length} unexpected docs were found in the database: ` +
         JSON.stringify(actual, null, 2));
   }
 
@@ -321,30 +322,34 @@ function runMigration(migration) {
 }
 
 function initSettings(settings) {
-  return getDdoc()
-    .then(function(ddoc) {
-      _.extend(ddoc.app_settings, settings);
-      return ddoc;
+  return getSettings()
+    .then(function(doc) {
+      _.extend(doc.settings, settings);
+      return doc;
     })
-    .then(function(ddoc) {
+    .then(function(doc) {
       return new Promise(function(resolve, reject) {
-        db.medic.insert(ddoc, function(err) {
+        db.medic.insert(doc, function(err) {
           if (err) {
             return reject(err);
           }
-          resolve();
+          setTimeout(resolve, 1000);
         });
       });
     });
 }
 
-function getDdoc() {
+function getSettings() {
   return new Promise(function(resolve, reject) {
-    db.medic.get('_design/medic', function(err, ddoc) {
+    db.medic.get('settings', function(err, doc) {
       if (err) {
-        return reject(err);
+        if (err.statusCode === 404) {
+          doc = { _id: 'settings', settings: {} };
+        } else {
+          return reject(err);
+        }
       }
-      resolve(ddoc);
+      resolve(doc);
     });
   });
 }
@@ -353,7 +358,7 @@ module.exports = {
   assertDb: assertDb,
   initDb: initDb,
   initSettings: initSettings,
-  getDdoc: getDdoc,
+  getSettings: getSettings,
   runMigration: runMigration,
   tearDown: tearDown,
 };

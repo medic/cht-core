@@ -1,32 +1,5 @@
 const assert = require('chai').assert;
-const fs = require('fs');
-const path = require('path');
-const vm = require('vm');
-const MAP_ARG_NAME = 'doc';
-
-var loadMedicClientViewValues = (viewName) => {
-  const mapString = fs.readFileSync(path.join(
-    __dirname,
-    '../../../../src/ddocs/medic-client/views/',
-    viewName,
-    '/map.js'), 'utf8');
-
-  const mapScript = new vm.Script('(' + mapString + ')(' + MAP_ARG_NAME + ');');
-
-  let emitted = [];
-  const context = new vm.createContext({
-    emitted: emitted,
-    emit: function(key, value) {
-      emitted.push({ key: key, value: value });
-    }
-  });
-
-  return (doc) => {
-    context[MAP_ARG_NAME] = doc;
-    mapScript.runInContext(context);
-    return context.emitted;
-  };
-};
+const utils = require('./utils');
 
 const person = {
   _id: '2bba279f-8ad9-4823-be69-a8eb09879402',
@@ -237,9 +210,9 @@ const jsonHouseholdBis = Object.assign({}, jsonHousehold, {
 
 describe('doc_summaries_by_id view', () => {
   it('indexes name, phone, type, contact, lineage, simprints, dod for non-data-records', () => {
-    const map = loadMedicClientViewValues('doc_summaries_by_id');
+    const map = utils.loadView('medic-client', 'doc_summaries_by_id');
 
-    const emitted = map(person) && map(personBis);
+    const emitted = map(person, true) && map(personBis, true);
     assert.deepEqual(emitted[0], {
       key: '2bba279f-8ad9-4823-be69-a8eb09879402',
       value: {
@@ -269,7 +242,7 @@ describe('doc_summaries_by_id view', () => {
   });
 
   it('indexes data-records summary and subject', () => {
-    const map = loadMedicClientViewValues('doc_summaries_by_id');
+    const map = utils.loadView('medic-client', 'doc_summaries_by_id');
 
     const reportsList = [
       householdVisit,
@@ -288,7 +261,7 @@ describe('doc_summaries_by_id view', () => {
 
     let emitted = true;
     reportsList.forEach(report => {
-      emitted = emitted && map(report);
+      emitted = emitted && map(report, true);
     });
 
     assert.deepEqual(emitted[0], {

@@ -1,6 +1,5 @@
 const _ = require('underscore'),
-      follow = require('follow'),
-      db = require('./db-nano'),
+      db = require('./db-pouch'),
       logger = require('./lib/logger'),
       translations = {};
 
@@ -17,47 +16,42 @@ const DEFAULT_CONFIG = {
 let config = DEFAULT_CONFIG;
 
 const loadTranslations = () => {
-  return new Promise(resolve => {
-    const options = {
-      startkey: [ 'translations', false ],
-      endkey: [ 'translations', true ],
-      include_docs: true
-    };
-    db.medic.view('medic-client', 'doc_by_type', options, (err, result) => {
-      if (err) {
-        logger.error('Error loading translations - starting up anyway', err);
-      } else {
-        result.rows.forEach(row => translations[row.doc.code] = row.doc.values);
-      }
-      resolve();
+  const options = {
+    startkey: [ 'translations', false ],
+    endkey: [ 'translations', true ],
+    include_docs: true
+  };
+  return db.medic.query('medic-client/doc_by_type', options)
+    .then(result => {
+      result.rows.forEach(row => translations[row.doc.code] = row.doc.values);
+    })
+    .catch(err => {
+      logger.error('Error loading translations - starting up anyway', err);
     });
-  });
 };
 
 const initFeed = () => {
-  // Use since=now on ddoc listener so we don't replay an old change.
-  const feed = new follow.Feed({ db: process.env.COUCH_URL, since: 'now' });
-  feed.on('change', change => {
-    if (change.id === '_design/medic') {
-      logger.info('Reloading configuration');
-      initConfig();
-    } else if (change.id.startsWith('messages-')) {
-      logger.info('Detected translations change - reloading');
-      loadTranslations();
-    }
-  });
-  feed.follow();
+  db.medic.changes({ live: true, since: 'now' })
+    .on('change', change => {
+      if (change.id === 'settings') {
+        logger.info('Reloading configuration');
+        initConfig();
+      } else if (change.id.startsWith('messages-')) {
+        logger.info('Detected translations change - reloading');
+        loadTranslations();
+      }
+    })
+    .on('error', err => {
+      console.error('Error watching changes, restarting', err);
+      process.exit(1);
+    });
 };
 
 const initConfig = () => {
-  return new Promise((resolve, reject) => {
-    db.medic.get('_design/medic', (err, ddoc) => {
-      if (err) {
-        console.error(err);
-        return reject(new Error('Error loading configuration'));
-      }
-      _.defaults(ddoc.app_settings, DEFAULT_CONFIG);
-      config = ddoc.app_settings;
+  return db.medic.get('settings')
+    .then(doc => {
+      _.defaults(doc.settings, DEFAULT_CONFIG);
+      config = doc.settings;
       logger.debug(
         'Reminder messages allowed between %s:%s and %s:%s',
         config.schedule_morning_hours,
@@ -65,11 +59,12 @@ const initConfig = () => {
         config.schedule_evening_hours,
         config.schedule_evening_minutes
       );
-      return resolve();
+      require('./transitions').loadTransitions();
+    })
+    .catch(err => {
+      console.error(err);
+      throw new Error('Error loading configuration');
     });
-  }).then(() => {
-    return require('./transitions').loadTransitions();
-  });
 };
 
 module.exports = {
