@@ -6,7 +6,8 @@ const sinon = require('sinon').sandbox.create(),
       db = require('../../../src/db-pouch'),
       inherits = require('util').inherits,
       EventEmitter = require('events'),
-      _ = require('underscore');
+      _ = require('underscore'),
+      serverUtils = require('../../../src/server-utils');
 
 const { COUCH_URL, COUCH_NODE_NAME } = process.env;
 
@@ -59,6 +60,7 @@ describe('Changes controller', () => {
     sinon.stub(tombstoneUtils, 'generateChangeFromTombstone');
     sinon.stub(tombstoneUtils, 'extractDoc');
 
+    sinon.stub(serverUtils, 'notLoggedIn');
     sinon.stub(_, 'now').callsFake(Date.now); // force underscore's debounce to use fake timers!
 
     ChangesEmitter = function(opts) {
@@ -673,7 +675,7 @@ describe('Changes controller', () => {
     });
   });
 
-  describe('handling longpoll feeds', () => {
+  describe('handling longpoll feeds in iteration mode', () => {
     it('pushes allowed live changes to the feed results', () => {
       authorization.getAllowedDocIds.resolves(['a', 'b']);
       testReq.query = { feed: 'longpoll' };
@@ -1121,6 +1123,145 @@ describe('Changes controller', () => {
           authorization.allowedDoc.withArgs({ _id: 'contact-2' }).callCount.should.equal(1);
           authorization.allowedDoc.callCount.should.equal(6);
           authorization.getSubjectsLength.callCount.should.equal(8);
+        });
+    });
+  });
+
+  describe('handling longpoll feeds in restart mode', () => {
+    it('sends results directly when subjectIds were not updated', () => {
+      testReq.query = { feed: 'longpoll' };
+      authorization.getAllowedDocIds.resolves([1, 2, 3]);
+      controller._setMode('not-iteration');
+      authorization.allowedDoc.withArgs({ _id: 1 }).returns(true);
+      authorization.allowedDoc.withArgs({ _id: 2 }).returns(false);
+      authorization.allowedDoc.withArgs({ _id: 3 }).returns(true);
+      authorization.allowedDoc.withArgs({ _id: 4 }).returns(false);
+      authorization.getSubjectsLength.returns(1);
+
+      return controller
+        .request(proxy, testReq, testRes)
+        .then(nextTick)
+        .then(() => {
+          controller._getNormalFeeds().forEach(feed => {
+            feed.upstreamRequests.forEach(upstreamReq => {
+              upstreamReq.complete(null, { results: [], last_seq: 5 });
+            });
+          });
+        })
+        .then(nextTick)
+        .then(() => {
+          const emitter = controller._getContinuousFeed();
+          emitter.emit('change', { id: 1, changes: [{ rev: 1 }], doc: { _id: 1 }}, 0, 1);
+          emitter.emit('change', { id: 2, changes: [{ rev: 1 }], doc: { _id: 2 }}, 0, 2);
+          emitter.emit('change', { id: 3, changes: [{ rev: 1 }], doc: { _id: 3 }}, 0, 3);
+          emitter.emit('change', { id: 4, changes: [{ rev: 1 }], doc: { _id: 4 }}, 0, 4);
+          clock.tick(300);
+          testRes.write.callCount.should.equal(1);
+          testRes.end.callCount.should.equal(1);
+          testRes.write.args[0][0].should.equal(JSON.stringify({
+            results: [
+              { id: 1, changes: [{ rev: 1 }]},
+              { id: 3, changes: [{ rev: 1 }]}
+            ],
+            last_seq: 4
+          }));
+          authorization.getAllowedDocIds.callCount.should.equal(1);
+        });
+    });
+
+    it('resets the feed to being a normal feed when subjectIds are updated', () => {
+      db.medic._ajax.callsArgWith(1, null, 2);
+      testReq.query = { feed: 'longpoll', since: 'seq' };
+      testReq.uniqId = 'myFeed';
+      authorization.getFeedAuthData.resolves({ subjectIds: ['a', 'b'], contactsByDepthKeys: []});
+      authorization.getAllowedDocIds.onCall(0).resolves([ 'a', 'b' ]);
+      authorization.getAllowedDocIds.onCall(1).resolves([ 'a', 'b', 'c', 'd' ]);
+      controller._setMode('not-iteration');
+      authorization.allowedDoc.withArgs({ _id: 1 }).returns(true);
+      authorization.allowedDoc.withArgs({ _id: 2 }).returns(false);
+      authorization.allowedDoc.withArgs({ _id: 3 }).returns(true);
+      authorization.allowedDoc.withArgs({ _id: 4 }).returns(false);
+
+      authorization.getSubjectsLength.onCall(0).returns(2);
+      authorization.getSubjectsLength.onCall(1).returns(3);
+      authorization.getSubjectsLength.returns(3);
+
+      return controller
+        .request(proxy, testReq, testRes)
+        .then(nextTick)
+        .then(() => {
+          changesSpy.callCount.should.equal(2);
+          changesSpy.args[1][0].should.deep.equal({
+            doc_ids: ['a', 'b'],
+            since: 'seq',
+            limit: 2
+          });
+          controller._getNormalFeeds().forEach(feed => {
+            feed.upstreamRequests.forEach(upstreamReq => {
+              upstreamReq.complete(null, { results: [], last_seq: 5 });
+            });
+          });
+        })
+        .then(nextTick)
+        .then(() => {
+          const emitter = controller._getContinuousFeed();
+          const feed = controller._getLongpollFeeds()[0];
+          controller._getNormalFeeds().length.should.equal(0);
+          emitter.emit('change', { id: 1, changes: [{ rev: 1 }], doc: { _id: 1 }}, 0, 1);
+          emitter.emit('change', { id: 2, changes: [{ rev: 1 }], doc: { _id: 2 }}, 0, 2);
+          emitter.emit('change', { id: 3, changes: [{ rev: 1 }], doc: { _id: 3 }}, 0, 3);
+          emitter.emit('change', { id: 4, changes: [{ rev: 1 }], doc: { _id: 4 }}, 0, 4);
+          feed.lastSeq.should.equal(4);
+          clock.tick(300);
+          testRes.write.callCount.should.equal(0);
+          testRes.end.callCount.should.equal(0);
+          controller._getLongpollFeeds().length.should.equal(0);
+          const normalFeeds = controller._getNormalFeeds();
+          normalFeeds.length.should.equal(1);
+          normalFeeds[0].id.should.equal(feed.id);
+          feed.pendingChanges.should.deep.equal([]);
+          feed.results.should.deep.equal([]);
+          feed.lastSeq.should.equal(feed.initSeq);
+          feed.chunkedAllowedDocIds.should.equal(false);
+          feed.hasNewSubjects.should.equal(false);
+          feed.subjectIds = ['a', 'b', 'c'];
+        })
+        .then(nextTick)
+        .then(() => {
+          authorization.getFeedAuthData.callCount.should.equal(1);
+          authorization.getAllowedDocIds.callCount.should.equal(2);
+
+          changesSpy.callCount.should.equal(4);
+          changesSpy.args[2][0].should.deep.equal({
+            doc_ids: ['a', 'b'],
+            since: 'seq',
+            limit: 2
+          });
+          changesSpy.args[3][0].should.deep.equal({
+            doc_ids: ['c', 'd'],
+            since: 'seq',
+            limit: 2
+          });
+
+          controller._getLongpollFeeds().length.should.equal(0);
+          const feed = controller._getNormalFeeds()[0];
+          feed.id.should.equal(testReq.uniqId);
+          feed.upstreamRequests.length.should.equal(2);
+          feed.chunkedAllowedDocIds.should.deep.equal([[ 'a', 'b' ],[ 'c', 'd' ]]);
+
+          feed.upstreamRequests[0].complete(null, { results: [{ id: 1, changes: [{ rev: 1 }] }], last_seq: 4 });
+          feed.upstreamRequests[1].complete(null,
+            { results: [{ id: 3, changes: [{ rev: 1 }] }, { id: 7, changes: [{ rev: 1 }] }], last_seq: 5 });
+        })
+        .then(nextTick)
+        .then(() => {
+          controller._getLongpollFeeds().length.should.equal(0);
+          controller._getNormalFeeds().length.should.equal(0);
+          testRes.write.callCount.should.equal(1);
+          testRes.write.args[0][0].should.equal(JSON.stringify({
+            results: [{ id: 1, changes: [{ rev: 1 }]}, { id: 3, changes: [{ rev: 1 }]}, { id: 7, changes: [{ rev: 1 }]}],
+            last_seq: 5
+          }));
         });
     });
   });

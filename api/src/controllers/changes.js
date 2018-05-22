@@ -13,7 +13,8 @@ let inited = false,
     longpollFeeds = [],
     normalFeeds = [],
     MAX_DOC_IDS = DEFAULT_MAX_DOC_IDS,
-    currentSeq = 0;
+    currentSeq = 0,
+    mode = 'iteration';
 
 const DEFAULT_LIMIT = 100,
       DEBOUNCE_INTERVAL = 200,
@@ -161,8 +162,26 @@ const writeDownstream = (feed, content, end) => {
   }
 };
 
+const restartFeed = feed => {
+  longpollFeeds = _.without(longpollFeeds, feed);
+  normalFeeds.push(feed);
+  _.extend(feed, {
+    pendingChanges: [],
+    results: [],
+    lastSeq: feed.initSeq,
+    chunkedAllowedDocIds: false,
+    hasNewSubjects: false
+  });
+
+  return authorization.getAllowedDocIds(feed).then(allowedDocIds => {
+    feed.allowedDocIds = allowedDocIds;
+    getChanges(feed);
+  });
+};
+
 const getChanges = feed => {
   // impose limit to insure that we're getting all changes available for each of the requested doc ids
+  // todo remove this limit, it's not needed
   const options = {
     since: feed.req.query && feed.req.query.since || 0,
     limit: MAX_DOC_IDS
@@ -223,6 +242,15 @@ const processRequest = (req, res, userCtx) => {
   });
 };
 
+const endLongpollFeed = (feed) => {
+  if (mode === 'iteration') {
+    processPendingChanges(feed);
+  } else if (feed.hasNewSubjects) {
+    return restartFeed(feed);
+  }
+  endFeed(feed);
+};
+
 const initFeed = (req, res, userCtx) => {
   const feed = {
     id: req.uniqId || uuid(),
@@ -237,10 +265,7 @@ const initFeed = (req, res, userCtx) => {
     limit: req.query && req.query.limit || DEFAULT_LIMIT,
   };
 
-  feed.debounceEnd = _.debounce(() => {
-    processPendingChanges(feed);
-    endFeed(feed);
-  }, DEBOUNCE_INTERVAL);
+  feed.debounceEnd = _.debounce(_.partial(endLongpollFeed, feed), DEBOUNCE_INTERVAL);
 
   defibrillator(feed);
   addTimeout(feed);
@@ -269,8 +294,7 @@ const addChangeToLongpollFeed = (feed, changeObj) => {
     return;
   }
 
-  processPendingChanges(feed);
-  endFeed(feed);
+  endLongpollFeed(feed);
 };
 
 const processChange = (change, seq) => {
@@ -290,7 +314,9 @@ const processChange = (change, seq) => {
     feed.lastSeq = seq;
     const subjectsLength = authorization.getSubjectsLength(feed);
     if (!authorization.allowedDoc(changeObj.change.doc, feed, changeObj.viewResults)) {
-      feed.pendingChanges.push(changeObj);
+      if (mode === 'iteration') {
+        feed.pendingChanges.push(changeObj);
+      }
       return;
     }
 
@@ -406,5 +432,7 @@ if (process.env.UNIT_TEST_ENV) {
     _getMaxDocIds: () => MAX_DOC_IDS,
     _inited: () => inited,
     _getContinuousFeed: () => continuousFeed,
+    _getMode: () => mode,
+    _setMode: newMode => mode = newMode
   });
 }
