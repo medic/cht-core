@@ -242,7 +242,7 @@ describe('registration transition', () => {
       expect(taskElement.element(by.css('.task-list li .task-state .recipient')).getText()).toBe(' to +64271234567');
     };
 
-    xit('shows content', () => {
+    it('shows content', () => {
       commonElements.goToReports();
       helper.waitElementToBeClickable(element(by.css('.action-container .general-actions:not(.ng-hide) .fa-plus')));
       helper.waitElementToBeClickable(element(by.css('#reports-list .unfiltered li:first-child')));
