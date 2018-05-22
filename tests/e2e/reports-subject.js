@@ -326,10 +326,13 @@ describe('Reports Summary', () => {
           testListLineage(['TAG Place', 'Health Center', 'District']);
 
           //RHS
+          browser.wait(() => getElementText('#reports-content .item-summary .sender .phone'),
+            10000
+          );
           expect(getElementText('#reports-content .item-summary .subject .name')).toBe(MARIA.name);
           expect(getElementText('#reports-content .item-summary .subject + div')).toBe('REF_REF');
           testSummaryLineage(['TAG Place', 'Health Center', 'District']);
-          expect(getElementText('#reports-content .item-summary .sender .name')).toMatch(`${CAROL.name}`);
+          expect(getElementText('#reports-content .item-summary .sender .name')).toMatch(`Sent by ${CAROL.name}`);
           expect(getElementText('#reports-content .item-summary .sender .phone')).toBe(CAROL.phone);
         });
     });
