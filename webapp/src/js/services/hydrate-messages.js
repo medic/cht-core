@@ -27,14 +27,22 @@ angular.module('inboxServices').factory('HydrateMessages',
         phone = doc.from;
       }
 
-      return LineageModelGenerator.reportSubject(contactId).then(function(report) {
-        var lineageNames = _.pluck(report.lineage, 'name');
+      var reportPromise = LineageModelGenerator.reportSubject(contactId)
+        .catch(function(err) {
+          if(err.code !== 404) {
+            throw err;
+          }
+          return $q.resolve(null);
+        });
+
+      return reportPromise.then(function(report) {
+        var lineage = report && _.pluck(report.lineage, 'name');
         return {
           doc: doc,
           id: doc._id,
           key: contactId,
-          contact: report.doc.name,
-          lineage: lineageNames,
+          contact: report && report.doc.name,
+          lineage: lineage || [],
           outgoing: doc.kujua_message ? true : false,
           from: (contact && contact._id) || phone || doc._id,
           date: reportedDate,
