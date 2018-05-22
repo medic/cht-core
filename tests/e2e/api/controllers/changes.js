@@ -182,7 +182,6 @@ describe('changes handler', () => {
   describe('reports with no associated contact', () => {
     describe('can_view_unallocated_data_records permission', () => {
 
-      // test disabled for https://github.com/medic/medic-webapp/issues/4345
       it('should be supplied if user has this permission and district_admins_access_unallocated_messages is enabled', () =>
         utils.updateSettings({district_admins_access_unallocated_messages: true})
           .then(() => utils.saveDoc({ _id:'unallocated_report', type:'data_record' }))
