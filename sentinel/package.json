@@ -36,6 +36,7 @@
   },
   "bundledDependencies": [
     "@shared-libs/message-utils",
+    "@shared-libs/tombstone-utils",
     "async",
     "bikram-sambat",
     "couchdb-audit",

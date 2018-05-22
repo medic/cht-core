@@ -1,34 +1,29 @@
 const config = require('../../src/config'),
       sinon = require('sinon').sandbox.create(),
-      db = require('../../src/db-nano'),
+      db = require('../../src/db-pouch'),
       ddocExtraction = require('../../src/ddoc-extraction'),
       translations = require('../../src/translations'),
       settingsService = require('../../src/services/settings'),
       viewMapUtils = require('@shared-libs/view-map-utils'),
       defaults = require('../../src/config.default.json'),
       _ = require('underscore'),
-      follow = require('follow'),
       chai = require('chai');
 
-let changeCallback,
-    feed;
+let on;
 
 describe('Config', () => {
   beforeEach(() => {
-    feed = {
-      follow: sinon.stub(),
-      on: sinon.stub().withArgs('change').callsFake((event, fn) => {
-        changeCallback = fn;
-      })
-    };
+    on = sinon.stub();
+    on.returns({ on: on });
+
     sinon.stub(db.medic, 'get');
-    sinon.stub(db.medic, 'view');
+    sinon.stub(db.medic, 'query');
+    sinon.stub(db.medic, 'changes').returns({ on: on });
     sinon.stub(viewMapUtils, 'loadViewMaps');
     sinon.stub(ddocExtraction, 'run').resolves();
     sinon.stub(translations, 'run');
     sinon.stub(settingsService, 'get').resolves();
     sinon.stub(settingsService, 'update').resolves();
-    sinon.stub(follow, 'Feed').returns(feed);
   });
 
   afterEach(() => {
@@ -62,9 +57,9 @@ describe('Config', () => {
           chai.expect(viewMapUtils.loadViewMaps.callCount).to.equal(1);
           chai.expect(viewMapUtils.loadViewMaps.args[0])
             .to.deep.equal([ { _id: '_design/medic' }, 'docs_by_replication_key', 'contacts_by_depth' ]);
-          chai.expect(db.medic.view.callCount).to.equal(1);
-          chai.expect(db.medic.view
-            .withArgs('medic-client', 'doc_by_type', { key: [ 'translations', true ], include_docs: true })
+          chai.expect(db.medic.query.callCount).to.equal(1);
+          chai.expect(db.medic.query
+            .withArgs('medic-client/doc_by_type', { key: [ 'translations', true ], include_docs: true })
             .callCount).to.equal(1);
           done();
         });
@@ -93,24 +88,28 @@ describe('Config', () => {
   });
 
   describe('listen', () => {
-    it('initializes the feed', () => {
+    it('initializes the Continuous changes feed', () => {
       config.listen();
-      chai.expect(follow.Feed.callCount).to.equal(1);
-      chai.expect(follow.Feed.args[0]).to.deep.equal([{ db: process.env.COUCH_URL, since: 'now' }]);
-      chai.expect(feed.follow.callCount).to.equal(1);
+      chai.expect(db.medic.changes.callCount).to.equal(1);
+      chai.expect(db.medic.changes.args[0]).to.deep.equal([{ live: true, since: 'now' }]);
     });
 
     it('does nothing for irrelevant change', () => {
       config.listen();
       const change = { id: 'someDoc' };
+      on.callCount.should.equal(2);
+      const changeCallback = on.args[0][1];
+
+      console.log(changeCallback);
       changeCallback(change);
-      chai.expect(db.medic.view.callCount).to.equal(0);
+      chai.expect(db.medic.query.callCount).to.equal(0);
       chai.expect(db.medic.get.callCount).to.equal(0);
     });
 
     it('reloads settings, runs translations and ddoc extraction when _design/medic is updated', () => {
       config.listen();
       const change = { id: '_design/medic' };
+      const changeCallback = on.args[0][1];
       changeCallback(change);
       chai.expect(translations.run.callCount).to.equal(1);
       chai.expect(ddocExtraction.run.callCount).to.equal(1);
@@ -121,13 +120,14 @@ describe('Config', () => {
     it('reloads translations when translations are updated', () => {
       config.listen();
       const change = { id: 'messages-test' };
+      const changeCallback = on.args[0][1];
       changeCallback(change);
       chai.expect(translations.run.callCount).to.equal(0);
       chai.expect(ddocExtraction.run.callCount).to.equal(0);
       chai.expect(db.medic.get.callCount).to.equal(0);
 
-      chai.expect(db.medic.view.callCount).to.equal(1);
-      chai.expect(db.medic.view.withArgs('medic-client', 'doc_by_type', { key: [ 'translations', true ], include_docs: true }).callCount).to.equal(1);
+      chai.expect(db.medic.query.callCount).to.equal(1);
+      chai.expect(db.medic.query.withArgs('medic-client/doc_by_type', { key: [ 'translations', true ], include_docs: true }).callCount).to.equal(1);
     });
   });
 });

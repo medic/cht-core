@@ -320,16 +320,13 @@ describe('transitions', () => {
       .withArgs('medic', 'online_user_settings_by_id')
       .callsArgWith(3, null, { rows: [] });
 
-    const on = sinon.stub();
-    const start = sinon.stub();
-    const feed = sinon.stub(follow, 'Feed').returns({ on: on, follow: start, stop: () => {} });
+    const on = sinon.stub().returns({ on: () => ({ cancel: () => null }) });
+    const feed = sinon.stub(dbPouch.medic, 'changes').returns({ on: on });
     transitions._attach().then(() => {
       assert.equal(feed.callCount, 1);
       assert.equal(feed.args[0][0].since, 12);
-      assert.equal(on.callCount, 3);
+      assert.equal(on.callCount, 1);
       assert.equal(on.args[0][0], 'change');
-      assert.equal(on.args[1][0], 'error');
-      assert.equal(start.callCount, 1);
       // invoke the change handler
       on.args[0][1]({ id: 'somechange', seq: 55, deleted: true });
     });
@@ -358,16 +355,13 @@ describe('transitions', () => {
       .withArgs('medic', 'online_user_settings_by_id')
       .callsArgWith(3, null, { rows: []});
 
-    const on = sinon.stub();
-    const start = sinon.stub();
-    const feed = sinon.stub(follow, 'Feed').returns({ on: on, follow: start, stop: () => {} });
+    const on = sinon.stub().returns({ on: () => ({ cancel: () => null }) });
+    const feed = sinon.stub(dbPouch.medic, 'changes').returns({ on: on });
     transitions._attach().then(() => {
       assert.equal(feed.callCount, 1);
       assert.equal(feed.args[0][0].since, 12);
-      assert.equal(on.callCount, 3);
+      assert.equal(on.callCount, 1);
       assert.equal(on.args[0][0], 'change');
-      assert.equal(on.args[1][0], 'error');
-      assert.equal(start.callCount, 1);
       // invoke the change handler
       on.args[0][1]({ id: 'somechange', seq: 55, deleted: true });
     });
