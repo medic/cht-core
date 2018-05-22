@@ -449,7 +449,6 @@ module.exports = function(grunt) {
             'patch webapp/node_modules/moment/locale/hi.js < patches/moment-hindi-use-euro-numerals.patch',
 
             // patch pouch to:
-            // * ignore doc_ids when generating replication id (https://github.com/medic/medic-webapp/issues/2404)
             // * improve safari checks (https://github.com/medic/medic-webapp/issues/2797)
             'patch webapp/node_modules/pouchdb-browser/lib/index.js < patches/pouchdb-browser.patch',
           ];
