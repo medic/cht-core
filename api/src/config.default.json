@@ -295,5 +295,6 @@
       "roles": [
       ]
     }
-  ]
+  ],
+  "changes_controller_iterate_pending_changes": true
 }

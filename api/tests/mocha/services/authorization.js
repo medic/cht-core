@@ -66,7 +66,7 @@ describe('Authorization service', () => {
     });
   });
 
-  describe('getFeedAuthData', () => {
+  describe('getUserAuthorizationData', () => {
     beforeEach(() => {
       sinon.stub(service, 'getDepth');
     });
@@ -74,7 +74,7 @@ describe('Authorization service', () => {
     it('queries correct views with correct keys when depth is not infinite', () => {
       service.getDepth.returns(2);
       return service
-        .getFeedAuthData( {facility_id: 'facilityId' })
+        .getUserAuthorizationData( {facility_id: 'facilityId' })
         .then(() => {
           db.medic.query.callCount.should.equal(1);
           db.medic.query.args[0][0].should.equal('medic/contacts_by_depth');
@@ -88,7 +88,7 @@ describe('Authorization service', () => {
     it('queries with correct keys when depth is infinite', () => {
       service.getDepth.returns(-1);
       return service
-        .getFeedAuthData({ facility_id: 'facilityId' })
+        .getUserAuthorizationData({ facility_id: 'facilityId' })
         .then(() => {
           db.medic.query.callCount.should.equal(1);
           db.medic.query.args[0][0].should.equal('medic/contacts_by_depth');
@@ -115,7 +115,7 @@ describe('Authorization service', () => {
       });
 
       return service
-        .getFeedAuthData({facility_id: 'facilityId' })
+        .getUserAuthorizationData({facility_id: 'facilityId' })
         .then(result => {
           tombstoneUtils.extractStub.callCount.should.equal(3);
           tombstoneUtils.extractStub.args.should.deep.equal([
@@ -133,7 +133,7 @@ describe('Authorization service', () => {
       config.get.returns(true);
 
       return service
-        .getFeedAuthData({ userCtx: { facility_id: 'aaa' }})
+        .getUserAuthorizationData({ userCtx: { facility_id: 'aaa' }})
         .then(result => {
           result.subjectIds.should.deep.equal(['_all', '_unassigned']);
         });
@@ -147,7 +147,7 @@ describe('Authorization service', () => {
       auth.hasAllPermissions.returns(false);
       config.get.returns(false);
       return service
-        .getFeedAuthData({ facility_id: 'aaa' })
+        .getUserAuthorizationData({ facility_id: 'aaa' })
         .then(result => {
           result.subjectIds.sort().should.deep.equal([1, 2, '_all', 's1', 's2']);
           result.contactsByDepthKeys.should.deep.equal([['aaa', 0], ['aaa', 1], ['aaa', 2]]);

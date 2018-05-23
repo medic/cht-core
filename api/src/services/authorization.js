@@ -104,12 +104,13 @@ const getContactsByDepthKeys = (userCtx, depth) => {
   return keys;
 };
 
+// checks whether there is at least one common contactsByDepthKey
 const allowedContact = (contactsByDepth, userContactsByDepthKeys) => {
   const viewResultKeys = contactsByDepth.map(result => result[0]);
   return viewResultKeys.some(viewResult => userContactsByDepthKeys.some(generated => _.isEqual(viewResult, generated)));
 };
 
-const getFeedAuthData = (userCtx) => {
+const getUserAuthorizationData = (userCtx) => {
   const authData = {
     contactsByDepthKeys: getContactsByDepthKeys(userCtx, module.exports.getDepth(userCtx)),
     subjectIds: []
@@ -188,6 +189,6 @@ module.exports = {
   allowedDoc: allowedDoc,
   getDepth: getDepth,
   getViewResults: getViewResults,
-  getFeedAuthData: getFeedAuthData,
+  getUserAuthorizationData: getUserAuthorizationData,
   getAllowedDocIds: getAllowedDocIds
 };
