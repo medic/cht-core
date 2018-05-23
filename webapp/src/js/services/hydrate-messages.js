@@ -14,7 +14,11 @@ angular.module('inboxServices').factory('HydrateMessages',
       var contact = null, phone = null, message = null;
       if(doc.kujua_message) {
         var task = _.find(doc.tasks, function(task) {
-          return task.messages[0] && task.messages[0].contact._id === contactId;
+          var msg = task.messages[0];
+          if(msg.contact) {
+            return msg.contact._id === contactId;
+          }
+          return msg.to === contactId;
         });
         if(task && task.messages) {
           message = task.messages[0].message;
