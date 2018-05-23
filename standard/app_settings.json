@@ -543,6 +543,11 @@
             "property": "delivery_code",
             "rule": "regex('^(F|f|S|s|Ns|NS|ns|nS)$')",
             "translation_key": "messages.d.validation.delivery_code"
+          },
+          {
+            "property": "days_since_birth",
+            "rule": "lenMin(1) ? (integer && between(0,365)) : optional",
+            "translation_key": "messages.d.validation.days_since_birth"
           }
         ]
       },
@@ -3702,10 +3707,10 @@
             }
           },
           "position": 2,
-          "type": "string",
+          "type": "integer",
           "length": [
             1,
-            20
+            3
           ],
           "required": false
         }
