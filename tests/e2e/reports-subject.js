@@ -244,7 +244,7 @@ describe('Reports Summary', () => {
     helper.waitElementToBeClickable(element(by.css('#reports-list .unfiltered li .summary')));
 
     helper.clickElement(element(by.css('#reports-list .unfiltered li .summary')));
-    browser.wait(() => element(by.css('#reports-content .item-summary')).isPresent(), 3000);
+    browser.wait(() => element(by.css('#reports-content .item-summary')).isPresent(), 5000);
     return Promise.resolve();
   };
 
