@@ -8,6 +8,14 @@ const db = require('../db-pouch'),
 const ALL_KEY = '_all', // key in the docs_by_replication_key view for records everyone can access
       UNASSIGNED_KEY = '_unassigned'; // key in the docs_by_replication_key view for unassigned records
 
+// fake view map, to store only relevant information about user changes
+const couchDbUser = (doc) => {
+  if (doc.type === 'user-settings') {
+    return _.pick(doc, 'contact_id', 'facility_id');
+  }
+  return false;
+};
+
 const getDepth = (userCtx) => {
   if (!userCtx.roles || !userCtx.roles.length) {
     return -1;
@@ -45,15 +53,15 @@ const exclude = (array, ...values) => {
 };
 
 // Returns whether an authenticated user has access to a document
-// @param {Object}  doc - CouchDB document
+// @param {Object}  docId - CouchDB document ID
 // @param {Object}  feed.userCtx - authenticated user information
 // @param {Array}   feed.contactsByDepthKeys - list containing user's generated contactsByDepthKeys
 // @param {Array}   feed.subjectIds - allowed subjectIds. Is updated when this function is called against a contact.
 // @param {Object}  viewValues.replicationKey - result of `medic/docs_by_replication_key` view against doc
 // @param {Array}   viewValues.contactsByDepth - results of `medic/contacts_by_depth` view against doc
 // @returns {(boolean|Object)} Object containing number of new subjectIds if doc is an allowed contact, bool otherwise
-const allowedDoc = (doc, feed, { replicationKey, contactsByDepth }) => {
-  if (['_design/medic-client', 'org.couchdb.user:' + feed.userCtx.name].indexOf(doc._id) !== -1) {
+const allowedDoc = (docId, feed, { replicationKey, contactsByDepth }) => {
+  if (['_design/medic-client', 'org.couchdb.user:' + feed.userCtx.name].indexOf(docId) !== -1) {
     return true;
   }
 
@@ -69,11 +77,11 @@ const allowedDoc = (doc, feed, { replicationKey, contactsByDepth }) => {
     //it's a contact
     const subjectId = contactsByDepth[0][1];
     if (allowedContact(contactsByDepth, feed.contactsByDepthKeys)) {
-      const newSubjects = include(feed.subjectIds, subjectId, doc._id);
+      const newSubjects = include(feed.subjectIds, subjectId, docId);
       return { newSubjects };
     }
 
-    feed.subjectIds = exclude(feed.subjectIds, subjectId, doc._id );
+    feed.subjectIds = exclude(feed.subjectIds, subjectId, docId );
     return false;
   }
 
@@ -167,17 +175,18 @@ const getAllowedDocIds = (feed) => {
 const getViewResults = (doc) => {
   return {
     contactsByDepth: viewMapUtils.getViewMapFn('medic', 'contacts_by_depth', true)(doc),
-    replicationKey: viewMapUtils.getViewMapFn('medic', 'docs_by_replication_key')(doc)
+    replicationKey: viewMapUtils.getViewMapFn('medic', 'docs_by_replication_key')(doc),
+    couchDbUser: couchDbUser(doc)
   };
 };
 
-const isAuthChange = (doc, userCtx) => {
-  if (doc._id !== 'org.couchdb.user:' + userCtx.name) {
+const isAuthChange = (docId, userCtx, { couchDbUser }) => {
+  if (docId !== 'org.couchdb.user:' + userCtx.name || !couchDbUser) {
     return false;
   }
 
-  if (userCtx.contact_id !== doc.contact_id ||
-      userCtx.facility_id !== doc.facility_id) {
+  if (userCtx.contact_id !== couchDbUser.contact_id ||
+      userCtx.facility_id !== couchDbUser.facility_id) {
     return true;
   }
 

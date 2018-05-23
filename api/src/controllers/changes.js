@@ -109,12 +109,12 @@ const processPendingChanges = (feed, isNormalFeed) => {
       shouldCheck = true;
 
   const checkChange = (changeObj) => {
-    const allowed = authorization.allowedDoc(changeObj.change.doc, feed, changeObj.viewResults);
+    const allowed = authorization.allowedDoc(changeObj.change.id, feed, changeObj.viewResults);
     if (!allowed) {
       return;
     }
 
-    if (isNormalFeed && authorization.isAuthChange(changeObj.change.doc, feed.userCtx)) {
+    if (isNormalFeed && authorization.isAuthChange(changeObj.change.id, feed.userCtx, changeObj.viewResults)) {
       authChange = true;
       return;
     }
@@ -300,9 +300,10 @@ const addChangeToLongpollFeed = (feed, changeObj) => {
 
 const processChange = (change, seq) => {
   const changeObj = {
-    change: tombstoneUtils.isTombstoneId(change.id) ? tombstoneUtils.generateChangeFromTombstone(change, true) : change,
+    change: tombstoneUtils.isTombstoneId(change.id) ? tombstoneUtils.generateChangeFromTombstone(change) : change,
     viewResults: authorization.getViewResults(change.doc)
   };
+  delete change.doc;
 
   // inform the normal feeds that a change was received while they were processing
   normalFeeds.forEach(feed => {
@@ -313,12 +314,12 @@ const processChange = (change, seq) => {
   // send the change through to the longpoll feeds which are allowed to see it
   longpollFeeds.forEach(feed => {
     feed.lastSeq = seq;
-    const allowed = authorization.allowedDoc(changeObj.change.doc, feed, changeObj.viewResults);
+    const allowed = authorization.allowedDoc(changeObj.change.id, feed, changeObj.viewResults);
     if (!allowed) {
       return iterationMode() && feed.pendingChanges.push(changeObj);
     }
 
-    if (authorization.isAuthChange(changeObj.change.doc, feed.userCtx)) {
+    if (authorization.isAuthChange(changeObj.change.id, feed.userCtx, changeObj.viewResults)) {
       endFeed(feed, false);
       processRequest(feed.req, feed.res, feed.userCtx);
       return;
