@@ -35,8 +35,9 @@ const hasAccessToUnassignedDocs = (userCtx) => {
 };
 
 const include = (array, ...values) => {
-  values.forEach(value => array.indexOf(value) === -1 && array.push(value));
-  return array;
+  let newValues = 0;
+  values.forEach(value => array.indexOf(value) === -1 && array.push(value) && newValues++);
+  return newValues;
 };
 
 const exclude = (array, ...values) => {
@@ -50,6 +51,7 @@ const exclude = (array, ...values) => {
 // @param {Array}   feed.subjectIds - allowed subjectIds. Is updated when this function is called against a contact.
 // @param {Object}  viewValues.replicationKey - result of `medic/docs_by_replication_key` view against doc
 // @param {Array}   viewValues.contactsByDepth - results of `medic/contacts_by_depth` view against doc
+// @returns {(boolean|Object)} Object containing number of new subjectIds if doc is an allowed contact, bool otherwise
 const allowedDoc = (doc, feed, { replicationKey, contactsByDepth }) => {
   if (['_design/medic-client', 'org.couchdb.user:' + feed.userCtx.name].indexOf(doc._id) !== -1) {
     return true;
@@ -67,8 +69,8 @@ const allowedDoc = (doc, feed, { replicationKey, contactsByDepth }) => {
     //it's a contact
     const subjectId = contactsByDepth[0][1];
     if (allowedContact(contactsByDepth, feed.contactsByDepthKeys)) {
-      feed.subjectIds = include(feed.subjectIds, subjectId, doc._id);
-      return true;
+      const newSubjects = include(feed.subjectIds, subjectId, doc._id);
+      return { newSubjects };
     }
 
     feed.subjectIds = exclude(feed.subjectIds, subjectId, doc._id );
@@ -187,6 +189,5 @@ module.exports = {
   getDepth: getDepth,
   getViewResults: getViewResults,
   getFeedAuthData: getFeedAuthData,
-  getAllowedDocIds: getAllowedDocIds,
-  getSubjectsLength: feed => feed.subjectIds.length
+  getAllowedDocIds: getAllowedDocIds
 };

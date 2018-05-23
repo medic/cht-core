@@ -20,6 +20,8 @@ const DEFAULT_LIMIT = 100,
       DEBOUNCE_INTERVAL = 200,
       { COUCH_NODE_NAME, COUCH_URL } = process.env;
 
+const iterationMode = () => mode === 'iteration';
+
 const split = (array, count) => {
   if (count === null || count < 1) {
     return [array];
@@ -98,11 +100,11 @@ const appendChange = (results, changeObj) => {
 // returns true if no breaking authorization change is processed, false otherwise
 const processPendingChanges = (feed, isNormalFeed) => {
   let authChange  = false,
-      shouldCheck = feed.hasNewSubjects || isNormalFeed;
+      shouldCheck = true;
 
   const checkChange = (changeObj) => {
-    const subjectsLength = authorization.getSubjectsLength(feed);
-    if (!authorization.allowedDoc(changeObj.change.doc, feed, changeObj.viewResults)) {
+    const allowed = authorization.allowedDoc(changeObj.change.doc, feed, changeObj.viewResults);
+    if (!allowed) {
       return;
     }
 
@@ -111,7 +113,7 @@ const processPendingChanges = (feed, isNormalFeed) => {
       return;
     }
 
-    shouldCheck = subjectsLength !== authorization.getSubjectsLength(feed);
+    shouldCheck = allowed.newSubjects;
     appendChange(feed.results, changeObj);
     feed.pendingChanges = _.without(feed.pendingChanges, changeObj);
   };
@@ -162,9 +164,10 @@ const writeDownstream = (feed, content, end) => {
   }
 };
 
-const restartFeed = feed => {
+const resetToNormalFeed = feed => {
   longpollFeeds = _.without(longpollFeeds, feed);
   normalFeeds.push(feed);
+
   _.extend(feed, {
     pendingChanges: [],
     results: [],
@@ -180,17 +183,12 @@ const restartFeed = feed => {
 };
 
 const getChanges = feed => {
-  // impose limit to insure that we're getting all changes available for each of the requested doc ids
-  // todo remove this limit, it's not needed
   const options = {
-    since: feed.req.query && feed.req.query.since || 0,
-    limit: MAX_DOC_IDS
+    since: feed.req.query && feed.req.query.since || 0
   };
   _.extend(options, _.pick(feed.req.query, 'style', 'conflicts', 'seq_interval'));
 
-  if (!feed.chunkedAllowedDocIds) {
-    feed.chunkedAllowedDocIds = split(feed.allowedDocIds, MAX_DOC_IDS);
-  }
+  feed.chunkedAllowedDocIds = feed.chunkedAllowedDocIds || split(feed.allowedDocIds, MAX_DOC_IDS);
   feed.upstreamRequests = feed.chunkedAllowedDocIds.map(docIds => {
     return db.medic
       .changes(_.extend({ doc_ids: docIds }, options))
@@ -209,7 +207,7 @@ const getChanges = feed => {
           return endFeed(feed);
         }
         // retry if malformed response
-        return Promise.resolve(getChanges(feed));
+        getChanges(feed);
       }
 
       feed.results = mergeResults(responses);
@@ -220,6 +218,7 @@ const getChanges = feed => {
       }
 
       if (feed.results.length || !isLongpoll(feed.req)) {
+        // send response downstream
         return endFeed(feed);
       }
 
@@ -230,7 +229,7 @@ const getChanges = feed => {
     .catch(err => {
       console.log(feed.id +  ' Error while requesting `normal` changes feed');
       console.log(err);
-      // cancel ongoing requests
+      // cancel ongoing requests and restart
       feed.upstreamRequests.forEach(request => request.cancel());
       getChanges(feed);
     });
@@ -243,11 +242,14 @@ const processRequest = (req, res, userCtx) => {
 };
 
 const endLongpollFeed = (feed) => {
-  if (mode === 'iteration') {
-    processPendingChanges(feed);
-  } else if (feed.hasNewSubjects) {
-    return restartFeed(feed);
+  if (feed.hasNewSubjects && !iterationMode()) {
+    return resetToNormalFeed(feed);
   }
+
+  if (feed.hasNewSubjects && iterationMode()) {
+    processPendingChanges(feed);
+  }
+  // in iteration mode OR in restart mode with no new subjects
   endFeed(feed);
 };
 
@@ -312,12 +314,9 @@ const processChange = (change, seq) => {
   // send the change through to the longpoll feeds which are allowed to see it
   longpollFeeds.forEach(feed => {
     feed.lastSeq = seq;
-    const subjectsLength = authorization.getSubjectsLength(feed);
-    if (!authorization.allowedDoc(changeObj.change.doc, feed, changeObj.viewResults)) {
-      if (mode === 'iteration') {
-        feed.pendingChanges.push(changeObj);
-      }
-      return;
+    const allowed = authorization.allowedDoc(changeObj.change.doc, feed, changeObj.viewResults);
+    if (!allowed) {
+      return iterationMode() && feed.pendingChanges.push(changeObj);
     }
 
     if (authorization.isAuthChange(changeObj.change.doc, feed.userCtx)) {
@@ -326,7 +325,7 @@ const processChange = (change, seq) => {
       return;
     }
 
-    feed.hasNewSubjects = feed.hasNewSubjects || subjectsLength !== authorization.getSubjectsLength(feed);
+    feed.hasNewSubjects = feed.hasNewSubjects || allowed.newSubjects;
     addChangeToLongpollFeed(feed, changeObj);
   });
 };
