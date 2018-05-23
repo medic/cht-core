@@ -1,5 +1,4 @@
 const chai = require('chai');
-const sinon = require('sinon').sandbox.create();
 const lineageFactory = require('../src/lineage');
 const memdownMedic = require('memdown-medic');
 const cloneDeep = require('lodash/cloneDeep');
@@ -44,18 +43,6 @@ const emptyObjectParent = {
     parent: {}
   },
   type: 'clinic'
-};
-const fetch_contact = {
-  _id: 'fetch_contact',
-  type: 'clinic',
-  contact: { _id: dummyDoc2._id },
-  parent: { _id: dummyDoc._id }
-};
-const fetch_noContact = {
-  _id: 'fetch_noContact',
-  type: 'clinic',
-  contact: { _id: dummyDoc._id },
-  parent: { _id: dummyDoc._id }
 };
 const no_contact = {
   _id: 'no_contact',
@@ -225,8 +212,6 @@ const fixtures = [
   dummyDoc,
   dummyDoc2,
   emptyObjectParent,
-  fetch_contact,
-  fetch_noContact,
   no_contact,
   no_lineageContact,
   one_parent,
@@ -278,10 +263,6 @@ describe('Lineage', function() {
   after(function() {
     const docIds = fixtures.map(doc => doc._id);
     return deleteDocs(docIds);
-  });
-
-  afterEach(function() {
-    sinon.restore();
   });
 
   describe('fetchLineageById', function() {
@@ -397,20 +378,6 @@ describe('Lineage', function() {
         // And we can minify back to the original without error
         lineage.minify(actual);
         chai.expect(actual).excludingEvery('_rev').to.deep.equal(circular_report);
-      });
-    });
-
-    it('fetches contacts that it has not got via lineage', function() {
-      sinon.spy(db, 'allDocs');
-      return lineage.fetchHydratedDoc(fetch_contact._id).then(() => {
-        chai.expect(db.allDocs.getCall(1).args[0]).to.deep.equal({ keys: [dummyDoc2._id], include_docs: true });
-      });
-    });
-
-    it('does not fetch contacts that it has already got via lineage', function() {
-      sinon.spy(db, 'allDocs');
-      return lineage.fetchHydratedDoc(fetch_noContact._id).then(() => {
-        chai.expect(db.allDocs.callCount).to.equal(1);
       });
     });
 

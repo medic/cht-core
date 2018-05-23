@@ -49,6 +49,18 @@ describe('Lineage', function() {
         chai.expect(allDocs.getCall(0).args[0]).to.deep.equal({ keys: ['def'], include_docs: true });
       });
     });
+
+    it('does not fetch contacts that it has already got via lineage', function() {
+      allDocs.resolves({ rows: [] });
+      const fakeLineage = [
+        { _id: 'abc', contact: { _id: 'def' }, parent: { _id: 'def' } },
+        { _id: 'def' }
+      ];
+
+      return lineage.fetchContacts(fakeLineage).then(() => {
+        chai.expect(allDocs.callCount).to.equal(0);
+      });
+    });
   });
 
   describe('fillContactsInDocs', function() {
