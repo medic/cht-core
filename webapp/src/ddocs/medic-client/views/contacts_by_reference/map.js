@@ -1,4 +1,3 @@
-// WARNING: If updating this function also update the corresponding view in medic-tombstone
 function(doc) {
   var tombstone = false;
   if (doc.type === 'tombstone' && doc.tombstone) {
