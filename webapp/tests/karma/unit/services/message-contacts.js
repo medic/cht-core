@@ -4,12 +4,14 @@ describe('MessageContacts service', () => {
 
   let service,
       query,
-      hydrateContactNames,
+      GetDataRecords,
+      hydrateMessages,
       addReadStatus;
 
   beforeEach(() => {
     query = sinon.stub();
-    hydrateContactNames = sinon.stub();
+    hydrateMessages = sinon.stub();
+    GetDataRecords = sinon.stub();
     addReadStatus = {
       messages: sinon.stub()
     };
@@ -17,7 +19,8 @@ describe('MessageContacts service', () => {
     module('inboxApp');
     module($provide => {
       $provide.factory('DB', KarmaUtils.mockDB({ query: query }));
-      $provide.value('HydrateContactNames', hydrateContactNames);
+      $provide.value('GetDataRecords', GetDataRecords);
+      $provide.value('HydrateMessages', hydrateMessages);
       $provide.value('AddReadStatus', addReadStatus);
     });
     inject($injector => service = $injector.get('MessageContacts'));
@@ -26,20 +29,13 @@ describe('MessageContacts service', () => {
   describe('list', () => {
 
     it('builds list', () => {
-      const given = [
-        { key: [ '1234' ], value: { id: 'a', from: '1234' } },
-        { key: [ '4321' ], value: { id: 'b', from: '4321' } },
-      ];
-      query.returns(Promise.resolve({ rows: given }));
-      hydrateContactNames.returns(Promise.resolve([]));
+      query.returns(Promise.resolve({}));
+      GetDataRecords.returns(Promise.resolve({}));
+      hydrateMessages.returns(Promise.resolve([]));
       return service.list().then(() => {
         chai.expect(query.args[0][1]).to.deep.equal({
           group_level: 1
         });
-        chai.expect(hydrateContactNames.args[0][0]).to.deep.equal([
-          { id: 'a', from: '1234', key: '1234', type: 'phone' },
-          { id: 'b', from: '4321', key: '4321', type: 'phone' },
-        ]);
         chai.expect(addReadStatus.messages.callCount).to.equal(1);
       });
     });
@@ -61,24 +57,10 @@ describe('MessageContacts service', () => {
   describe('conversation', () => {
 
     it('builds conversation', () => {
-      const given = [ { id: 'a', key: ['a'], value: {}}, { id: 'b', key: ['b'], value: {} } ];
-      const expected = [{
-        id: 'a',
-        key: ['a'],
-        value: {
-          key: 'a',
-          type: 'unknown'
-        }
-      }, {
-        id: 'b',
-        key: ['b'],
-        value: {
-          key: 'b',
-          type: 'unknown'
-        }
-      }];
-      query.returns(Promise.resolve({ rows: given }));
-      return service.conversation('abc').then(actual => {
+      query.returns(Promise.resolve({}));
+      GetDataRecords.returns(Promise.resolve({}));
+      hydrateMessages.returns(Promise.resolve([]));
+      return service.conversation('abc').then(() => {
         chai.expect(query.args[0][1]).to.deep.equal({
           reduce: false,
           descending: true,
@@ -88,29 +70,14 @@ describe('MessageContacts service', () => {
           startkey: [ 'abc', {} ],
           endkey: [ 'abc' ]
         });
-        chai.expect(actual).to.deep.equal(expected);
       });
     });
 
     it('builds conversation with skip', () => {
-      const given = [ { id: 'a', key: ['a'], value: {}}, { id: 'b', key: ['b'], value: {} } ];
-      const expected = [{
-        id: 'a',
-        key: ['a'],
-        value: {
-          key: 'a',
-          type: 'unknown'
-        }
-      }, {
-        id: 'b',
-        key: ['b'],
-        value: {
-          key: 'b',
-          type: 'unknown'
-        }
-      }];
-      query.returns(Promise.resolve({ rows: given }));
-      return service.conversation('abc', 45).then(actual => {
+      query.returns(Promise.resolve({}));
+      GetDataRecords.returns(Promise.resolve({}));
+      hydrateMessages.returns(Promise.resolve([]));
+      return service.conversation('abc', 45).then(() => {
         chai.expect(query.args[0][1]).to.deep.equal({
           reduce: false,
           descending: true,
@@ -120,7 +87,6 @@ describe('MessageContacts service', () => {
           startkey: [ 'abc', {} ],
           endkey: [ 'abc' ]
         });
-        chai.expect(actual).to.deep.equal(expected);
       });
     });
 

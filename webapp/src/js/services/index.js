@@ -40,6 +40,7 @@
   require('./get-data-records');
   require('./get-subject-summaries');
   require('./hydrate-contact-names');
+  require('./hydrate-messages');
   require('./json-forms');
   require('./json-parse');
   require('./language');

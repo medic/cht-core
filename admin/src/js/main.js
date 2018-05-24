@@ -73,6 +73,7 @@ require('../../../webapp/src/js/services/file-reader');
 require('../../../webapp/src/js/services/get-data-records');
 require('../../../webapp/src/js/services/get-subject-summaries');
 require('../../../webapp/src/js/services/hydrate-contact-names');
+require('../../../webapp/src/js/services/hydrate-messages');
 require('../../../webapp/src/js/services/json-parse');
 require('../../../webapp/src/js/services/language');
 require('../../../webapp/src/js/services/languages');
