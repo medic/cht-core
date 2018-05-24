@@ -4,7 +4,8 @@ angular.module('inboxServices').factory('MessageContacts',
   function(
     AddReadStatus,
     DB,
-    HydrateContactNames
+    GetDataRecords,
+    HydrateMessages
   ) {
     'use strict';
     'ngInject';
@@ -27,43 +28,27 @@ angular.module('inboxServices').factory('MessageContacts',
       };
     };
 
-    /**
-     * We want to keep CouchDB view "values" as small as possible to keep
-     * CouchDB as efficient as possible. This adds some redundant information we
-     * don't need to pass down.
-     */
-    var addDetail = function(messages) {
-      messages.forEach(function(message) {
-        message.value.key = message.key[0];
-
-        if (message.value.contact) {
-          message.value.type = 'contact';
-        } else if (message.key[0] === message.value.from) {
-          message.value.type = 'phone';
-        } else {
-          message.value.type = 'unknown';
-        }
-      });
-    };
-
     var getMessages = function(params) {
       return DB().query('medic-client/messages_by_contact_date', params)
         .then(function(response) {
-          var messages = response.rows;
-          addDetail(messages);
-          return messages;
-        });
-    };
-
-    var hydrateContactNames = function(messages) {
-      messages = _.pluck(messages, 'value');
-      return HydrateContactNames(messages);
+          //include_docs on reduce views (listParams)
+          if(params.reduce === undefined || params.reduce === true) {
+            var valueId = function(value) { return value.id; };
+            var ids = _.map(_.pluck(response.rows, 'value'), valueId);
+            return GetDataRecords(ids, {include_docs: true}).then(function(docs) {
+              _.each(response.rows, function(row, idx) { row.doc = docs[idx]; });
+              return response.rows;
+            });
+          } else {
+            return response.rows;
+          }
+        })
+        .then(HydrateMessages);
     };
 
     return {
       list: function() {
         return getMessages(listParams())
-          .then(hydrateContactNames)
           .then(AddReadStatus.messages);
       },
       conversation: function(id, skip) {
