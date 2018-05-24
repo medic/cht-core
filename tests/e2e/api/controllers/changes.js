@@ -151,6 +151,18 @@ const consumeChanges = (username, results, lastSeq) => {
   });
 };
 
+let currentSeq;
+const getCurrentSeq = (username) => {
+  const options = {
+    path: '/',
+    auth: `${username}:${password}`,
+    method: 'GET'
+  };
+  return utils.requestOnTestDb(options).then(result => {
+    currentSeq = result.update_seq;
+  });
+};
+
 describe('changes handler', () => {
 
   const DOCS_TO_KEEP = [
@@ -208,9 +220,9 @@ describe('changes handler', () => {
   afterEach(done => utils.revertDb(DOCS_TO_KEEP).then(done));
 
   describe('Filtered replication', () => {
+    beforeEach(done => getCurrentSeq('bob').then(done));
     const bobsIds = ['_design/medic-client', 'settings'],
           stevesIds = ['_design/medic-client', 'settings'];
-    let generalSeq = 0;
     it('returns a full list of allowed changes, regardless of the requested limit', () => {
       const allowedDocs = createSomeContacts(12, 'fixture:bobville');
       bobsIds.push(..._.pluck(allowedDocs, '_id'));
@@ -224,7 +236,6 @@ describe('changes handler', () => {
         ]))
         .then(() => requestChanges('bob', { limit: 7 }))
         .then(changes => {
-          generalSeq = changes.last_seq;
           assertChangeIds(changes,
             'org.couchdb.user:bob',
             'fixture:user:bob',
@@ -239,12 +250,11 @@ describe('changes handler', () => {
       bobsIds.push(..._.pluck(allowedDocs, '_id'));
 
       return Promise.all([
-          consumeChanges('bob', [], generalSeq),
+          consumeChanges('bob', [], currentSeq),
           utils.saveDocs(allowedDocs),
           utils.saveDocs(deniedDocs)
         ])
         .then(([changes]) => {
-          generalSeq = changes.last_seq;
           expect(changes.results.every(change => bobsIds.indexOf(change.id) !== -1)).toBe(true);
         });
     });
@@ -275,7 +285,6 @@ describe('changes handler', () => {
             'fixture:user:steve',
             'fixture:steveville',
             ...allowedSteve.map(doc => doc._id));
-          generalSeq = bobsChanges.last_seq;
         });
     });
 
@@ -286,15 +295,14 @@ describe('changes handler', () => {
       stevesIds.push(..._.pluck(allowedSteve, '_id'));
 
       return Promise.all([
-          consumeChanges('bob', [], generalSeq),
-          consumeChanges('steve', [], generalSeq),
+          consumeChanges('bob', [], currentSeq),
+          consumeChanges('steve', [], currentSeq),
           utils.saveDocs(allowedBob),
           utils.saveDocs(allowedSteve),
         ])
         .then(([ bobsChanges, stevesChanges ]) => {
           expect(bobsChanges.results.every(change => _.pluck(allowedBob, '_id').indexOf(change.id) !== -1)).toBe(true);
           expect(stevesChanges.results.every(change => _.pluck(allowedSteve, '_id').indexOf(change.id) !== -1)).toBe(true);
-          generalSeq = bobsChanges.last_seq;
         });
     });
 
@@ -308,11 +316,11 @@ describe('changes handler', () => {
       bobsIds.push('new_allowed_contact', 'new_allowed_report');
       const allowedIds = ['new_allowed_contact', 'new_allowed_report'];
 
-      return requestChanges('bob')
-        .then(changes => Promise.all([
-          consumeChanges('bob', [], changes.last_seq),
+      return Promise
+        .all([
+          consumeChanges('bob', [], currentSeq),
           utils.saveDocs(newDocs)
-        ]))
+        ])
         .then(([ changes ]) => {
           if (changes.results.length >= 2) {
             return changes;
@@ -320,7 +328,6 @@ describe('changes handler', () => {
           return consumeChanges('bob', [], changes.last_seq);
         })
         .then(changes => {
-          generalSeq = changes.last_seq;
           expect(changes.results.length).toEqual(2);
           expect(changes.results.every(change => allowedIds.indexOf(change.id) !== -1)).toBe(true);
         });
@@ -339,44 +346,39 @@ describe('changes handler', () => {
         .then(([ allowedDocsResult, deniedDocsResult ]) => {
           allowedDocsResult.forEach((doc, idx) => allowedDocs[idx]._rev = doc.rev);
           deniedDocsResult.forEach((doc, idx) => deniedDocs[idx]._rev = doc.rev);
-          return requestChanges('bob');
+          return getCurrentSeq('bob');
         })
-        .then(changes => Promise.all([
-          requestChanges('bob', { since: changes.last_seq, feed: 'longpoll' }),
+        .then(() => Promise.all([
+          requestChanges('bob', { since: currentSeq, feed: 'longpoll' }),
           utils.saveDocs(deniedDocs.map(doc => _.extend(doc, { _deleted: true }))),
           utils.saveDocs(allowedDocs.map(doc => _.extend(doc, { _deleted: true })))
         ]))
         .then(([ changes ]) => {
-          generalSeq = changes.last_seq;
           expect(changes.results.every(change => bobsIds.indexOf(change.id) !== -1)).toBe(true);
           expect(changes.results.every(change => change.deleted)).toBe(true);
         });
     });
 
     it('resets longpoll feeds when settings are changed', () => {
-      let initSeq;
-      return consumeChanges('steve', [], generalSeq)
-        .then(changes => {
-          initSeq = changes.last_seq;
-          return Promise.all([
-            requestChanges('steve', { feed: 'longpoll', since: changes.last_seq }),
-            requestChanges('bob', { feed: 'longpoll', since: changes.last_seq }),
-            new Promise(resolve => {
-              setTimeout(() => {
-                resolve(utils.updateSettings({ changes_controller_iterate_pending_changes: false }, true));
-              }, 300);
+      return Promise
+        .all([
+          requestChanges('steve', { feed: 'longpoll', since: currentSeq }),
+          requestChanges('bob', { feed: 'longpoll', since: currentSeq }),
+          new Promise(resolve => {
+            setTimeout(() => {
+              resolve(utils.updateSettings({ changes_controller_iterate_pending_changes: false }, true));},
+              300);
             })
-          ]);
-        })
+        ])
         .then(([ stevesChanges, bobsChanges ]) => {
           expect(stevesChanges.results.length).toEqual(0);
           expect(bobsChanges.results.length).toEqual(0);
-          expect(stevesChanges.last_seq).toEqual(initSeq);
-          expect(bobsChanges.last_seq).toEqual(initSeq);
+          expect(stevesChanges.last_seq).toEqual(currentSeq);
+          expect(bobsChanges.last_seq).toEqual(currentSeq);
 
           return Promise.all([
-            requestChanges('steve', { feed: 'longpoll', since: initSeq }),
-            requestChanges('bob', { feed: 'longpoll', since: initSeq }),
+            requestChanges('steve', { feed: 'longpoll', since: currentSeq }),
+            requestChanges('bob', { feed: 'longpoll', since: currentSeq }),
           ]);
         })
         .then(([ stevesChanges, bobsChanges ]) => {
@@ -384,8 +386,8 @@ describe('changes handler', () => {
           expect(bobsChanges.results.length).toBeGreaterThanOrEqual(1);
           expect(stevesChanges.results.find(change => change.id === 'settings')).toBeTruthy();
           expect(bobsChanges.results.find(change => change.id === 'settings')).toBeTruthy();
-          expect(stevesChanges.last_seq !== initSeq).toBe(true);
-          expect(bobsChanges.last_seq !== initSeq).toBe(true);
+          expect(stevesChanges.last_seq !== currentSeq).toBe(true);
+          expect(bobsChanges.last_seq !== currentSeq).toBe(true);
           expect(bobsChanges.results.every(change => bobsIds.indexOf(change.id) !== -1)).toBe(true);
           expect(stevesChanges.results.every(change => stevesIds.indexOf(change.id) !== -1)).toBe(true);
         });
@@ -400,11 +402,11 @@ describe('changes handler', () => {
       ];
       bobsIds.push('new_allowed_contact_bis', 'new_allowed_report_bis');
       const newIds = ['new_allowed_contact_bis', 'new_allowed_report_bis'];
-      return requestChanges('bob')
-        .then(changes => Promise.all([
-          consumeChanges('bob', [], changes.last_seq),
+      return Promise
+        .all([
+          consumeChanges('bob', [], currentSeq),
           utils.saveDocs(newDocs)
-        ]))
+        ])
         .then(([ changes ]) => {
           if (changes.results.length >= 2) {
             return changes;
@@ -413,7 +415,6 @@ describe('changes handler', () => {
         })
         .then(changes => {
           console.log(changes);
-          generalSeq = changes.last_seq;
           expect(changes.results.length).toEqual(2);
           expect(changes.results.every(change => newIds.indexOf(change.id) !== -1)).toBe(true);
         });
@@ -424,7 +425,6 @@ describe('changes handler', () => {
       const deniedDocs = createSomeContacts(5, 'irrelevant-place');
       stevesIds.push(..._.pluck(allowedDocs, '_id'));
       const allowedDocIds = allowedDocs.map(doc => doc._id);
-      let seq = 0;
 
       return Promise
         .all([
@@ -442,10 +442,9 @@ describe('changes handler', () => {
             'fixture:steveville',
             'fixture:user:steve',
             ...allowedDocIds);
-          return consumeChanges('steve', [], seq);
+          return getCurrentSeq('steve');
         })
-        .then(changes => {
-          seq = changes.last_seq;
+        .then(() => {
           return Promise.all([
             utils.saveDocs(deniedDocs.map(doc => _.extend(doc, { _deleted: true }))),
             utils.saveDocs(allowedDocs.map(doc => _.extend(doc, { _deleted: true }))),
@@ -459,9 +458,8 @@ describe('changes handler', () => {
             'fixture:user:steve');
           return Promise.resolve();
         })
-        .then(() => consumeChanges('steve', [], seq))
+        .then(() => consumeChanges('steve', [], currentSeq))
         .then(changes => {
-          generalSeq = changes.last_seq;
           expect(changes.results.every(change => change.deleted)).toBe(true);
           expect(changes.results.every(change => stevesIds.indexOf(change.id) !== -1)).toBe(true);
         });
@@ -503,7 +501,6 @@ describe('changes handler', () => {
         .then(([ bobsChanges, stevesChanges ]) => {
           expect(bobsChanges.results.every(change => bobsIds.indexOf(change.id) !== -1)).toBe(true);
           expect(stevesChanges.results.every(change => stevesIds.indexOf(change.id) !== -1)).toBe(true);
-          generalSeq = stevesChanges.last_seq;
         });
     });
 
@@ -513,21 +510,17 @@ describe('changes handler', () => {
       bobsIds.push(..._.pluck(allowedBob, '_id'));
       stevesIds.push(..._.pluck(allowedSteve, '_id'));
 
-      return Promise
-        .all([
-          utils.getDoc('org.couchdb.user:steve'),
-          requestChanges('steve'),
-        ])
-        .then(([ stevesUser, changes ]) => {
+      return utils
+        .getDoc('org.couchdb.user:steve')
+        .then(stevesUser => {
           return Promise.all([
-            requestChanges('steve', { feed: 'longpoll', since: changes.last_seq }),
+            requestChanges('steve', { feed: 'longpoll', since: currentSeq }),
             utils.saveDocs(allowedBob),
             utils.saveDocs(allowedSteve),
             utils.saveDoc(_.extend(stevesUser, { facility_id: 'fixture:bobville' })),
           ]);
         })
         .then(([ changes ]) => {
-          generalSeq = changes.last_seq;
           expect(changes.results.every(change => bobsIds.indexOf(change.id) !== -1 || change.id === 'org.couchdb.user:steve') ).toBe(true);
         });
     });
