@@ -306,6 +306,7 @@ describe('changes handler', () => {
         { _id: 'new_denied_report', type: 'data_record', reported_date: 1, place_id: '88888', form: 'some-form', contact: { _id: 'fixture:steveville' } }
       ];
       bobsIds.push('new_allowed_contact', 'new_allowed_report');
+      const allowedIds = ['new_allowed_contact', 'new_allowed_report'];
 
       return requestChanges('bob')
         .then(changes => Promise.all([
@@ -313,11 +314,15 @@ describe('changes handler', () => {
           utils.saveDocs(newDocs)
         ]))
         .then(([ changes ]) => {
-          const allowedIds = ['new_allowed_contact', 'new_allowed_report'];
-          console.log(changes);
-          expect(changes.results.length).toBe(2);
-          expect(changes.results.every(change => allowedIds.indexOf(change.id) !== -1)).toBe(true);
+          if (changes.results.length === 2) {
+            return changes;
+          }
+          return consumeChanges('bob', [], changes.last_seq);
+        })
+        .then(changes => {
           generalSeq = changes.last_seq;
+          expect(changes.results.length).toEqual(2);
+          expect(changes.results.every(change => allowedIds.indexOf(change.id) !== -1)).toBe(true);
         });
     });
 
@@ -345,6 +350,71 @@ describe('changes handler', () => {
           generalSeq = changes.last_seq;
           expect(changes.results.every(change => bobsIds.indexOf(change.id) !== -1)).toBe(true);
           expect(changes.results.every(change => change.deleted)).toBe(true);
+        });
+    });
+
+    it('resets longpoll feeds when settings are changed', () => {
+      let initSeq;
+      return consumeChanges('steve', [], generalSeq)
+        .then(changes => {
+          initSeq = changes.last_seq;
+          return Promise.all([
+            requestChanges('steve', { feed: 'longpoll', since: changes.last_seq }),
+            requestChanges('bob', { feed: 'longpoll', since: changes.last_seq }),
+            new Promise(resolve => {
+              setTimeout(() => {
+                resolve(utils.updateSettings({ changes_controller_iterate_pending_changes: false }, true));
+              }, 300);
+            })
+          ]);
+        })
+        .then(([ stevesChanges, bobsChanges ]) => {
+          expect(stevesChanges.results.length).toEqual(0);
+          expect(bobsChanges.results.length).toEqual(0);
+          expect(stevesChanges.last_seq).toEqual(initSeq);
+          expect(bobsChanges.last_seq).toEqual(initSeq);
+
+          return Promise.all([
+            requestChanges('steve', { feed: 'longpoll', since: initSeq }),
+            requestChanges('bob', { feed: 'longpoll', since: initSeq }),
+          ]);
+        })
+        .then(([ stevesChanges, bobsChanges ]) => {
+          expect(stevesChanges.results.length).toBeGreaterThanOrEqual(1);
+          expect(bobsChanges.results.length).toBeGreaterThanOrEqual(1);
+          expect(stevesChanges.results.find(change => change.id === 'settings')).toBeTruthy();
+          expect(bobsChanges.results.find(change => change.id === 'settings')).toBeTruthy();
+          expect(stevesChanges.last_seq !== initSeq).toBe(true);
+          expect(bobsChanges.last_seq !== initSeq).toBe(true);
+          expect(bobsChanges.results.every(change => bobsIds.indexOf(change.id) !== -1)).toBe(true);
+          expect(stevesChanges.results.every(change => stevesIds.indexOf(change.id) !== -1)).toBe(true);
+        });
+    });
+
+    it('returns newly added docs when in restart mode', () => {
+      const newDocs = [
+        { _id: 'new_allowed_contact_bis', place_id: '123456', parent: { _id: 'fixture:bobville' }, type: 'clinic' },
+        { _id: 'new_denied_contact_bis', place_id: '888888', parent: { _id: 'fixture:steveville' }, type: 'clinic' },
+        { _id: 'new_allowed_report_bis', type: 'data_record', reported_date: 1, place_id: '123456', form: 'some-form', contact: { _id: 'fixture:bobville' } },
+        { _id: 'new_denied_report_bis', type: 'data_record', reported_date: 1, place_id: '888888', form: 'some-form', contact: { _id: 'fixture:steveville' } }
+      ];
+      bobsIds.push('new_allowed_contact_bis', 'new_allowed_report_bis');
+      const newIds = ['new_allowed_contact_bis', 'new_allowed_report_bis'];
+      return requestChanges('bob')
+        .then(changes => Promise.all([
+          consumeChanges('bob', [], changes.last_seq),
+          utils.saveDocs(newDocs)
+        ]))
+        .then(([ changes ]) => {
+          if (changes.results.length === 2) {
+            return changes;
+          }
+          return consumeChanges('bob', [], changes.last_seq);
+        })
+        .then(changes => {
+          generalSeq = changes.last_seq;
+          expect(changes.results.length).toEqual(2);
+          expect(changes.results.every(change => newIds.indexOf(change.id) !== -1)).toBe(true);
         });
     });
 
@@ -433,68 +503,6 @@ describe('changes handler', () => {
           expect(bobsChanges.results.every(change => bobsIds.indexOf(change.id) !== -1)).toBe(true);
           expect(stevesChanges.results.every(change => stevesIds.indexOf(change.id) !== -1)).toBe(true);
           generalSeq = stevesChanges.last_seq;
-        });
-    });
-
-    it('resets longpoll feeds when settings are changed', () => {
-      let initSeq;
-      return requestChanges('steve')
-        .then(changes => {
-          initSeq = changes.last_seq;
-          return Promise.all([
-            requestChanges('steve', { feed: 'longpoll', since: changes.last_seq }),
-            requestChanges('bob', { feed: 'longpoll', since: changes.last_seq }),
-            new Promise(resolve => {
-              setTimeout(() => {
-                resolve(utils.updateSettings({ changes_controller_iterate_pending_changes: false }, true));
-              }, 300);
-            })
-          ]);
-        })
-        .then(([ stevesChanges, bobsChanges ]) => {
-          expect(stevesChanges.results.length).toEqual(0);
-          expect(bobsChanges.results.length).toEqual(0);
-          expect(stevesChanges.last_seq).toEqual(initSeq);
-          expect(bobsChanges.last_seq).toEqual(initSeq);
-
-          return Promise.all([
-            requestChanges('steve', { feed: 'longpoll', since: initSeq }),
-            requestChanges('bob', { feed: 'longpoll', since: initSeq }),
-          ]);
-        })
-        .then(([ stevesChanges, bobsChanges ]) => {
-          expect(stevesChanges.results.length).toBeGreaterThanOrEqual(1);
-          expect(bobsChanges.results.length).toBeGreaterThanOrEqual(1);
-          expect(stevesChanges.results.find(change => change.id === 'settings')).toBeTruthy();
-          expect(bobsChanges.results.find(change => change.id === 'settings')).toBeTruthy();
-          expect(stevesChanges.last_seq !== initSeq).toBe(true);
-          expect(bobsChanges.last_seq !== initSeq).toBe(true);
-          expect(bobsChanges.results.every(change => bobsIds.indexOf(change.id) !== -1)).toBe(true);
-          expect(stevesChanges.results.every(change => stevesIds.indexOf(change.id) !== -1)).toBe(true);
-        });
-    });
-
-    it('returns newly added docs when in restart mode', () => {
-      const newDocs = [
-        { _id: 'new_allowed_contact_bis', place_id: '123456', parent: { _id: 'fixture:bobville' }, type: 'clinic' },
-        { _id: 'new_denied_contact_bis', place_id: '888888', parent: { _id: 'fixture:steveville' }, type: 'clinic' },
-        { _id: 'new_allowed_report_bis', type: 'data_record', reported_date: 1, place_id: '123456', form: 'some-form', contact: { _id: 'fixture:bobville' } },
-        { _id: 'new_denied_report_bis', type: 'data_record', reported_date: 1, place_id: '888888', form: 'some-form', contact: { _id: 'fixture:steveville' } }
-      ];
-      bobsIds.push('new_allowed_contact_bis', 'new_allowed_report_bis');
-
-      return requestChanges('bob')
-        .then(changes => Promise.all([
-          consumeChanges('bob', [], changes.last_seq),
-          utils.saveDocs(newDocs)
-        ]))
-        .then(([ changes ]) => {
-          console.log(changes);
-          const newIds = ['new_allowed_contact_bis', 'new_allowed_report_bis'];
-          expect(changes.results.length).toBeGreaterThanOrEqual(2);
-          expect(newIds.every(id => changes.results.find(change => change.id === id))).toBe(true);
-          expect(changes.results.every(change => bobsIds.indexOf(change.id) !== -1)).toBe(true);
-          generalSeq = changes.last_seq;
         });
     });
 
