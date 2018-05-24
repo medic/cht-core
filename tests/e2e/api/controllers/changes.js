@@ -314,6 +314,7 @@ describe('changes handler', () => {
         ]))
         .then(([ changes ]) => {
           const allowedIds = ['new_allowed_contact', 'new_allowed_report'];
+          console.log(changes);
           expect(changes.results.length).toBe(2);
           expect(changes.results.every(change => allowedIds.indexOf(change.id) !== -1)).toBe(true);
           generalSeq = changes.last_seq;
@@ -429,7 +430,6 @@ describe('changes handler', () => {
           consumeChanges('steve', [], stevesSeq),
         ]))
         .then(([ bobsChanges, stevesChanges ]) => {
-
           expect(bobsChanges.results.every(change => bobsIds.indexOf(change.id) !== -1)).toBe(true);
           expect(stevesChanges.results.every(change => stevesIds.indexOf(change.id) !== -1)).toBe(true);
           generalSeq = stevesChanges.last_seq;
@@ -463,12 +463,14 @@ describe('changes handler', () => {
           ]);
         })
         .then(([ stevesChanges, bobsChanges ]) => {
-          expect(stevesChanges.results.length).toEqual(1);
-          expect(bobsChanges.results.length).toEqual(1);
-          expect(stevesChanges.results[0].id).toEqual('settings');
-          expect(bobsChanges.results[0].id).toEqual('settings');
+          expect(stevesChanges.results.length).toBeGreaterThanOrEqual(1);
+          expect(bobsChanges.results.length).toBeGreaterThanOrEqual(1);
+          expect(stevesChanges.results.find(change => change.id === 'settings')).toBeTruthy();
+          expect(bobsChanges.results.find(change => change.id === 'settings')).toBeTruthy();
           expect(stevesChanges.last_seq !== initSeq).toBe(true);
           expect(bobsChanges.last_seq !== initSeq).toBe(true);
+          expect(bobsChanges.results.every(change => bobsIds.indexOf(change.id) !== -1)).toBe(true);
+          expect(stevesChanges.results.every(change => stevesIds.indexOf(change.id) !== -1)).toBe(true);
         });
     });
 
@@ -487,9 +489,11 @@ describe('changes handler', () => {
           utils.saveDocs(newDocs)
         ]))
         .then(([ changes ]) => {
-          const allowedIds = ['new_allowed_contact_bis', 'new_allowed_report_bis'];
-          expect(changes.results.length).toBe(2);
-          expect(changes.results.every(change => allowedIds.indexOf(change.id) !== -1)).toBe(true);
+          console.log(changes);
+          const newIds = ['new_allowed_contact_bis', 'new_allowed_report_bis'];
+          expect(changes.results.length).toBeGreaterThanOrEqual(2);
+          expect(newIds.every(id => changes.results.find(change => change.id === id))).toBe(true);
+          expect(changes.results.every(change => bobsIds.indexOf(change.id) !== -1)).toBe(true);
           generalSeq = changes.last_seq;
         });
     });
