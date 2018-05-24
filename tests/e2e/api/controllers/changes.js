@@ -228,12 +228,10 @@ describe('changes handler', () => {
       bobsIds.push(..._.pluck(allowedDocs, '_id'));
 
       const deniedDocs = createSomeContacts(10, 'irrelevant-place');
-      return utils
-        .updateSettings( { changes_doc_ids_optimization_threshold: 5 }, true)
-        .then(() => Promise.all([
+      return Promise.all([
           utils.saveDocs(allowedDocs),
           utils.saveDocs(deniedDocs)
-        ]))
+        ])
         .then(() => requestChanges('bob', { limit: 7 }))
         .then(changes => {
           assertChangeIds(changes,
@@ -308,28 +306,41 @@ describe('changes handler', () => {
 
     it('returns newly added docs', () => {
       const newDocs = [
-        { _id: 'new_allowed_contact', place_id: '12345', parent: { _id: 'fixture:bobville' }, type: 'clinic' },
-        { _id: 'new_denied_contact', place_id: '88888', parent: { _id: 'fixture:steveville' }, type: 'clinic' },
-        { _id: 'new_allowed_report', type: 'data_record', reported_date: 1, place_id: '12345', form: 'some-form', contact: { _id: 'fixture:bobville' } },
-        { _id: 'new_denied_report', type: 'data_record', reported_date: 1, place_id: '88888', form: 'some-form', contact: { _id: 'fixture:steveville' } }
+        {_id: 'new_allowed_contact', place_id: '12345', parent: {_id: 'fixture:bobville'}, type: 'clinic'},
+        {_id: 'new_denied_contact', place_id: '88888', parent: {_id: 'fixture:steveville'}, type: 'clinic'},
+        {
+          _id: 'new_allowed_report',
+          type: 'data_record',
+          reported_date: 1,
+          place_id: '12345',
+          form: 'some-form',
+          contact: {_id: 'fixture:bobville'}
+        },
+        {
+          _id: 'new_denied_report',
+          type: 'data_record',
+          reported_date: 1,
+          place_id: '88888',
+          form: 'some-form',
+          contact: {_id: 'fixture:steveville'}
+        }
       ];
-      bobsIds.push('new_allowed_contact', 'new_allowed_report');
-      const allowedIds = ['new_allowed_contact', 'new_allowed_report'];
-
+      const newIds = ['new_allowed_contact', 'new_allowed_report'];
+      bobsIds.push(...newIds);
       return Promise
         .all([
           consumeChanges('bob', [], currentSeq),
           utils.saveDocs(newDocs)
         ])
-        .then(([ changes ]) => {
+        .then(([changes]) => {
           if (changes.results.length >= 2) {
             return changes;
           }
-          return consumeChanges('bob', [], changes.last_seq);
+          return consumeChanges('bob', [], currentSeq);
         })
         .then(changes => {
-          expect(changes.results.length).toEqual(2);
-          expect(changes.results.every(change => allowedIds.indexOf(change.id) !== -1)).toBe(true);
+          expect(changes.results.length).toBeGreaterThanOrEqual(2);
+          expect(changes.results.every(change => newIds.indexOf(change.id) !== -1)).toBe(true);
         });
     });
 
@@ -369,28 +380,46 @@ describe('changes handler', () => {
 
     it('returns newly added docs when in restart mode', () => {
       const newDocs = [
-        { _id: 'new_allowed_contact_bis', place_id: '123456', parent: { _id: 'fixture:bobville' }, type: 'clinic' },
-        { _id: 'new_denied_contact_bis', place_id: '888888', parent: { _id: 'fixture:steveville' }, type: 'clinic' },
-        { _id: 'new_allowed_report_bis', type: 'data_record', reported_date: 1, place_id: '123456', form: 'some-form', contact: { _id: 'fixture:bobville' } },
-        { _id: 'new_denied_report_bis', type: 'data_record', reported_date: 1, place_id: '888888', form: 'some-form', contact: { _id: 'fixture:steveville' } }
+        {_id: 'new_allowed_contact_bis', place_id: '123456', parent: {_id: 'fixture:bobville'}, type: 'clinic'},
+        {_id: 'new_denied_contact_bis', place_id: '888888', parent: {_id: 'fixture:steveville'}, type: 'clinic'},
+        {
+          _id: 'new_allowed_report_bis',
+          type: 'data_record',
+          reported_date: 1,
+          place_id: '123456',
+          form: 'some-form',
+          contact: {_id: 'fixture:bobville'}
+        },
+        {
+          _id: 'new_denied_report_bis',
+          type: 'data_record',
+          reported_date: 1,
+          place_id: '888888',
+          form: 'some-form',
+          contact: {_id: 'fixture:steveville'}
+        }
       ];
-      bobsIds.push('new_allowed_contact_bis', 'new_allowed_report_bis');
       const newIds = ['new_allowed_contact_bis', 'new_allowed_report_bis'];
-      return Promise
-        .all([
-          consumeChanges('bob', [], currentSeq),
-          utils.saveDocs(newDocs)
-        ])
-        .then(([ changes ]) => {
-          if (changes.results.length >= 2) {
-            return changes;
-          }
-          return consumeChanges('bob', [], changes.last_seq);
-        })
-        .then(changes => {
-          console.log(changes);
-          expect(changes.results.length).toEqual(2);
-          expect(changes.results.every(change => newIds.indexOf(change.id) !== -1)).toBe(true);
+      bobsIds.push(...newIds);
+      return utils
+        .updateSettings({ changes_controller_iterate_pending_changes: false }, true)
+        .then(() => getCurrentSeq('bob'))
+        .then(() => {
+          return Promise
+            .all([
+              consumeChanges('bob', [], currentSeq),
+              utils.saveDocs(newDocs)
+            ])
+            .then(([changes]) => {
+              if (changes.results.length >= 2) {
+                return changes;
+              }
+              return consumeChanges('bob', [], currentSeq);
+            })
+            .then(changes => {
+              expect(changes.results.length).toEqual(2);
+              expect(changes.results.every(change => newIds.indexOf(change.id) !== -1)).toBe(true);
+            });
         });
     });
 

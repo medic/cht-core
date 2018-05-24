@@ -1551,22 +1551,24 @@ describe('Changes controller', () => {
       ]);
     });
 
-    it('does not append change doc property', () => {
+    it('saves deleted status currectly', () => {
       const results = [
-        { id: 1, changes: [{ rev: 1 }, { rev: 2 }] },
+        { id: 1, changes: [{ rev: 1 }, { rev: 2 }], deleted: true },
         { id: 2, changes: [{ rev: 1 }, { rev: 3 }] },
         { id: 3, changes: [{ rev: 1 }] }
       ];
-      const changeObj1 = { change: { id: 2, changes: [{ rev: 1 }, { rev: 2}], doc: { _id: 2 }}};
-      const changeObj2 = { change: { id: 4, changes: [{ rev: 1 }], doc: { _id: 4 }}};
-      controller._appendChange(results, changeObj1);
-      controller._appendChange(results, changeObj2);
-      results.length.should.equal(4);
+
+      let changeObj = { change: { id: 1, changes: [{ rev: 2}], deleted: true }};
+      controller._appendChange(results, changeObj);
+      changeObj = { change: { id: 2, changes: [{ rev: 4 }], deleted: true }};
+      controller._appendChange(results, changeObj);
+      changeObj = { change: { id: 3, changes: [{ rev: 2 }] }};
+      controller._appendChange(results, changeObj);
+
       results.should.deep.equal([
-        { id: 1, changes: [{ rev: 1 }, { rev: 2 }] },
-        { id: 2, changes: [{ rev: 1 }, { rev: 3 }, { rev: 2 }] },
-        { id: 3, changes: [{ rev: 1 }] },
-        { id: 4, changes: [{ rev: 1 }] },
+        { id: 1, changes: [{ rev: 1 }, { rev: 2 }], deleted: true },
+        { id: 2, changes: [{ rev: 1 }, { rev: 3 }, { rev: 4 }], deleted: true },
+        { id: 3, changes: [{ rev: 1 }, { rev: 2 }] }
       ]);
     });
   });

@@ -99,6 +99,11 @@ const appendChange = (results, changeObj) => {
   // append missing revs to the list
   _.difference(changeObj.change.changes.map(rev => rev.rev), result.changes.map(rev => rev.rev))
     .forEach(rev => result.changes.push({ rev: rev }));
+
+  // add the deleted flag, if needed
+  if (changeObj.change.deleted) {
+    result.deleted = changeObj.change.deleted;
+  }
 };
 
 // filters the list of pending changes, appending the allowed ones
@@ -354,7 +359,6 @@ const initContinuousFeed = since => {
       if (change.id === 'settings') {
         processSettingsChange(change.doc);
       }
-
       processChange(change, seq);
       currentSeq = seq;
     })
