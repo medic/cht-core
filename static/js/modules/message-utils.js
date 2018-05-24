@@ -10,7 +10,7 @@ var _ = require('underscore'),
     SMS_TRUNCATION_SUFFIX = '...';
 
 var getParent = function(doc, type) {
-  var facility = doc.contact || doc;
+  var facility = doc.parent ? doc : doc.contact;
   while (facility && facility.type !== type) {
     facility = facility.parent;
   }
@@ -133,7 +133,7 @@ var extractTemplateContext = function(doc) {
 };
 
 var extendedTemplateContext = function(doc, extras) {
-  var templateContext = extractTemplateContext(doc);
+  var templateContext = {};
 
   if (extras.templateContext) {
     _.defaults(templateContext, extras.templateContext);
@@ -157,6 +157,8 @@ var extendedTemplateContext = function(doc, extras) {
     // "registered" through the UI, only creating a patient and no registration report
     throw Error('Cannot provide registrations to template context without a patient');
   }
+
+   _.defaults(templateContext, extractTemplateContext(doc));
 
   return templateContext;
 };
