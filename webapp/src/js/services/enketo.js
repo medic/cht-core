@@ -403,9 +403,13 @@ angular.module('inboxServices').service('Enketo',
       var $record = $($(recordDoc).children()[0]);
       mapOrAssignId($record[0], doc._id || uuid());
 
-      $record.find('[db-doc=true]').each(function() {
-        mapOrAssignId(this);
-      });
+      $record.find('[db-doc]')
+        .filter(function() {
+          return $(this).attr('db-doc').toLowerCase() === 'true';
+        })
+        .each(function() {
+          mapOrAssignId(this);
+        });
 
       $record.find('[db-doc-ref]').each(function() {
         var $ref = $(this);
