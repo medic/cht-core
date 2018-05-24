@@ -333,32 +333,6 @@ describe('changes handler', () => {
         });
     });
 
-    it('filters allowed deletes in longpolls', () => {
-      const allowedDocs = createSomeContacts(3, 'fixture:bobville');
-      const deniedDocs = createSomeContacts(3, 'irrelevant-place');
-      bobsIds.push(..._.pluck(allowedDocs, '_id'));
-
-      return Promise
-        .all([
-          utils.saveDocs(allowedDocs),
-          utils.saveDocs(deniedDocs),
-        ])
-        .then(([ allowedDocsResult, deniedDocsResult ]) => {
-          allowedDocsResult.forEach((doc, idx) => allowedDocs[idx]._rev = doc.rev);
-          deniedDocsResult.forEach((doc, idx) => deniedDocs[idx]._rev = doc.rev);
-          return getCurrentSeq('bob');
-        })
-        .then(() => Promise.all([
-          requestChanges('bob', { since: currentSeq, feed: 'longpoll' }),
-          utils.saveDocs(deniedDocs.map(doc => _.extend(doc, { _deleted: true }))),
-          utils.saveDocs(allowedDocs.map(doc => _.extend(doc, { _deleted: true })))
-        ]))
-        .then(([ changes ]) => {
-          expect(changes.results.every(change => bobsIds.indexOf(change.id) !== -1)).toBe(true);
-          expect(changes.results.every(change => change.deleted)).toBe(true);
-        });
-    });
-
     it('resets longpoll feeds when settings are changed', () => {
       return Promise
         .all([
@@ -417,6 +391,32 @@ describe('changes handler', () => {
           console.log(changes);
           expect(changes.results.length).toEqual(2);
           expect(changes.results.every(change => newIds.indexOf(change.id) !== -1)).toBe(true);
+        });
+    });
+
+    it('filters allowed deletes in longpolls', () => {
+      const allowedDocs = createSomeContacts(3, 'fixture:bobville');
+      const deniedDocs = createSomeContacts(3, 'irrelevant-place');
+      bobsIds.push(..._.pluck(allowedDocs, '_id'));
+
+      return Promise
+        .all([
+          utils.saveDocs(allowedDocs),
+          utils.saveDocs(deniedDocs),
+        ])
+        .then(([ allowedDocsResult, deniedDocsResult ]) => {
+          allowedDocsResult.forEach((doc, idx) => allowedDocs[idx]._rev = doc.rev);
+          deniedDocsResult.forEach((doc, idx) => deniedDocs[idx]._rev = doc.rev);
+          return getCurrentSeq('bob');
+        })
+        .then(() => Promise.all([
+          requestChanges('bob', { since: currentSeq, feed: 'longpoll' }),
+          utils.saveDocs(deniedDocs.map(doc => _.extend(doc, { _deleted: true }))),
+          utils.saveDocs(allowedDocs.map(doc => _.extend(doc, { _deleted: true })))
+        ]))
+        .then(([ changes ]) => {
+          expect(changes.results.every(change => bobsIds.indexOf(change.id) !== -1)).toBe(true);
+          expect(changes.results.every(change => change.deleted)).toBe(true);
         });
     });
 
