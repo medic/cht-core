@@ -1,12 +1,13 @@
-const assert = require('chai').assert;
+const assert = require('chai').assert,
+      moment = require('moment');
 
 const mockAngular = require('../mock-angular');
 require('../../../../src/js/filters/date');
 const filter = mockAngular.modules.inboxFilters.filters;
 
 describe('date filter', function() {
-  
-  const TEST_DATE = new Date(2398472085558);
+
+  const TEST_DATE = moment.utc(2398472085558);
 
   const TEST_TASK = {
     messages: [

@@ -195,6 +195,8 @@ describe('messageUtils', () => {
 
     describe('dates', () => {
 
+      const dateStr = time => new Date(time).toISOString().split('T')[0];
+
       it('string', () => {
         const date = '2016-03-06T03:45:41.000Z';
         const input = '{{#date}}{{reported_date}}{{/date}}';
@@ -205,7 +207,8 @@ describe('messageUtils', () => {
       });
 
       it('integer', () => {
-        const date = 1457235941000;
+        // Date integer in running timezone
+        const date = moment(dateStr(1457235941000)).unix()*1000;
         const input = '{{#date}}{{reported_date}}{{/date}}';
         const doc = { reported_date: date };
         const config = { date_format: 'DD-MMM-YYYY' };
@@ -214,7 +217,8 @@ describe('messageUtils', () => {
       });
 
       it('Date object', () => {
-        const date = 1457235941000;
+        // Date object in running timezone
+        const date = moment(dateStr(1457235941000));
         const input = '{{#date}}Date({{reported_date}}){{/date}}';
         const doc = { reported_date: date };
         const config = { date_format: 'DD-MMM-YYYY' };
