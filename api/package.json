@@ -56,7 +56,6 @@
     "couchdb-audit",
     "express",
     "fast-csv",
-    "follow",
     "google-libphonenumber",
     "http-proxy",
     "lineage",

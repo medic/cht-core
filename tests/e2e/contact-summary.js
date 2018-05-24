@@ -144,7 +144,7 @@ describe('Contact summary info', () => {
     }, 10000);
   };
 
-  xit('contact summary', () => { //disabled.
+  it('contact summary', () => { //disabled.
     helper.clickElement(element(by.css('#contacts-tab')));
     try {
       selectContact('carol');
