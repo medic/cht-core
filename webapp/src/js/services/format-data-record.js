@@ -185,20 +185,31 @@ angular.module('inboxServices').factory('FormatDataRecord',
     };
 
     var fromNowOrToday = function(momento, today) {
-      var startOfDay = moment().startOfDay('day');
+      var startOfDay = moment().startOf('day');
       var duration = moment.duration(startOfDay.diff(momento));
       if(duration.asHours < 24) {
         return capitalizeWord(today);
       }
+      return null;
     };
 
-    var formatDate = function(settings, date, today) {
+    var formatDate = function(settings, date, locale, field) {
       if (!date) {
           return;
       }
       var m = moment(date);
+
+      var fromNow = m.fromNow();
+      if(field === 'child_birth_date') {
+        //Daily precision for child birth date
+        var today = fromNowOrToday(m, translate(settings, 'today', locale));
+        if(today) {
+          fromNow = today;
+        }
+      }
+
       return m.format(settings.date_format) +
-        ' (' + fromNowOrToday(m, today) + ')';
+        ' (' + fromNow + ')';
     };
 
     /*
@@ -226,8 +237,7 @@ angular.module('inboxServices').factory('FormatDataRecord',
         return val === true ? 'True' : 'False';
       }
       if (def.type === 'date') {
-        var today = translate(settings, 'today', locale);
-        return formatDate(settings, data_record[key], today);
+        return formatDate(settings, data_record[key], locale, key);
       }
       if (def.type === 'integer') {
         // use list value for month
@@ -291,8 +301,7 @@ angular.module('inboxServices').factory('FormatDataRecord',
         }
 
         if (_.contains(dateFields, field)) {
-          var today = translate(settings, 'today', locale);
-          value = formatDate(settings, value, today);
+          value = formatDate(settings, value, locale, field);
         }
 
         doc.fields.data.unshift({
