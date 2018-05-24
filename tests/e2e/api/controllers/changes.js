@@ -314,7 +314,7 @@ describe('changes handler', () => {
           utils.saveDocs(newDocs)
         ]))
         .then(([ changes ]) => {
-          if (changes.results.length === 2) {
+          if (changes.results.length >= 2) {
             return changes;
           }
           return consumeChanges('bob', [], changes.last_seq);
@@ -406,12 +406,13 @@ describe('changes handler', () => {
           utils.saveDocs(newDocs)
         ]))
         .then(([ changes ]) => {
-          if (changes.results.length === 2) {
+          if (changes.results.length >= 2) {
             return changes;
           }
           return consumeChanges('bob', [], changes.last_seq);
         })
         .then(changes => {
+          console.log(changes);
           generalSeq = changes.last_seq;
           expect(changes.results.length).toEqual(2);
           expect(changes.results.every(change => newIds.indexOf(change.id) !== -1)).toBe(true);
