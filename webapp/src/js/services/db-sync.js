@@ -41,7 +41,6 @@ angular.module('inboxServices').factory('DBSync',
       var options = {
         live: true,
         retry: true,
-        timeout: 134217728, // Erlang's max integer on 32 bit arch (#4199)
         heartbeat: 10000,
         back_off_function: backOffFunction
       };

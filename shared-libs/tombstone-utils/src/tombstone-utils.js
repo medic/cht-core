@@ -3,7 +3,6 @@ var _ = require('underscore');
 var TOMBSTONE_TYPE = 'tombstone',
     TOMBSTONE_ID_SEPARATOR = '____';
 
-
 var generateTombstoneId = function (id, rev) {
   return [id, rev, TOMBSTONE_TYPE].join(TOMBSTONE_ID_SEPARATOR);
 };
@@ -39,6 +38,7 @@ var getDoc = function(Promise, DB, change) {
 
 module.exports = {
   regex: new RegExp('(.*)' + TOMBSTONE_ID_SEPARATOR + '(.*)' + TOMBSTONE_ID_SEPARATOR + TOMBSTONE_TYPE),
+
   extractStub: function(tombstoneId) {
     var match = tombstoneId.match(module.exports.regex);
     return match && { id: match[1], rev: match[2] };

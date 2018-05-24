@@ -1266,9 +1266,27 @@ describe('Changes controller', () => {
           const normalFeeds = controller._getNormalFeeds();
           normalFeeds.length.should.equal(2);
           const emitter = controller._getContinuousFeed();
-          emitter.emit('change', { id: 'settings', doc: {}});
+          emitter.emit('change', { id: 'settings' });
           controller._getIterationMode().should.equal(false);
           controller._getNormalFeeds().should.deep.equal(normalFeeds);
+          config.get.callCount.should.equal(2);
+        });
+    });
+
+    it('reads settings from received doc', () => {
+      authorization.getAllowedDocIds.onCall(0).resolves([ 'a',  'b' ]);
+      authorization.getAllowedDocIds.onCall(1).resolves([ 'c',  'd' ]);
+      testReq.uniqId = 'myFeed1';
+      testReq.query = { feed: 'longpoll', since: 'seq1' };
+
+      return controller
+        ._init()
+        .then(() => {
+          controller._getIterationMode().should.equal(true);
+          const emitter = controller._getContinuousFeed();
+          emitter.emit('change', { id: 'settings', doc: { _id: 'settings', settings: { changes_controller_iterate_pending_changes: false }}});
+          controller._getIterationMode().should.equal(false);
+          config.get.callCount.should.equal(1);
         });
     });
 
@@ -1298,7 +1316,7 @@ describe('Changes controller', () => {
           longpollFeeds.length.should.equal(2);
           const emitter = controller._getContinuousFeed();
           controller._getIterationMode().should.equal(true);
-          emitter.emit('change', { id: 'settings', doc: {}});
+          emitter.emit('change', { id: 'settings' });
           controller._getIterationMode().should.equal(true);
           controller._getLongpollFeeds().should.deep.equal(longpollFeeds);
         });
@@ -1364,7 +1382,7 @@ describe('Changes controller', () => {
           feed2.lastSeq.should.equal(5);
 
           controller._getIterationMode().should.equal(true);
-          emitter.emit('change', { id: 'settings', doc: {}});
+          emitter.emit('change', { id: 'settings' });
           controller._getIterationMode().should.equal(false);
 
           controller._getLongpollFeeds().length.should.equal(0);
@@ -1378,7 +1396,7 @@ describe('Changes controller', () => {
           testRes1.end.callCount.should.equal(1);
           testRes1.write.callCount.should.equal(1);
           testRes1.write.args[0][0].should.equal(JSON.stringify({ results: [], last_seq: 'seq2' }));
-          clock.tick(10000);
+          clock.tick(10000000);
           testRes.end.callCount.should.equal(1);
           testRes.write.callCount.should.equal(1);
           testRes1.end.callCount.should.equal(1);
@@ -1779,7 +1797,7 @@ describe('Changes controller', () => {
     });
 
     it('pushes the change to the results of longpoll feeds, if allowed, otherwise only updates seq', () => {
-      authorization.getViewResults.withArgs({ _id: 1 }).returns({ view1: 'a', view2: 'b' });
+      authorization.getViewResults.withArgs(sinon.match({ _id: 1 })).returns({ view1: 'a', view2: 'b' });
       authorization.allowedDoc.withArgs(1, sinon.match({ id: 'feed1' })).returns(true);
       authorization.allowedDoc.withArgs(1, sinon.match({ id: 'feed2' })).returns(false);
       authorization.allowedDoc.withArgs(1, sinon.match({ id: 'feed3' })).returns(true);
@@ -1801,6 +1819,33 @@ describe('Changes controller', () => {
 
       testFeed1.results[0].should.deep.equal({ id: 1 });
       testFeed3.results[0].should.deep.equal({ id: 1 });
+    });
+
+    it('deletes change doc after view maps are applied to it, to save up memory', () => {
+      authorization.getViewResults.withArgs(sinon.match({ _id: 1 })).returns({ view1: 'a', view2: 'b' });
+      authorization.allowedDoc.withArgs(1, sinon.match({ id: 'feed1' })).returns(true);
+      authorization.allowedDoc.withArgs(1, sinon.match({ id: 'feed2' })).returns(false);
+      authorization.allowedDoc.withArgs(1, sinon.match({ id: 'feed3' })).returns(true);
+
+      const change = {
+        id: 1,
+        changes: [{ rev: 1 }],
+        doc: {
+          _id: 1,
+          someValue: 1
+        }
+      };
+
+      const longpollFeeds = controller._getLongpollFeeds();
+      const testFeed1 = { id: 'feed1', lastSeq: 0, results: [], req: testReq, res: testRes, pendingChanges: [] };
+      const testFeed2 = { id: 'feed2', lastSeq: 0, results: [], req: testReq, res: testRes, pendingChanges: [] };
+      const testFeed3 = { id: 'feed3', lastSeq: 0, results: [], req: testReq, res: testRes, pendingChanges: [] };
+      longpollFeeds.push(testFeed1, testFeed2, testFeed3);
+      controller._processChange(change, 'seq');
+      testFeed1.results[0].should.deep.equal(change);
+      testFeed3.results[0].should.deep.equal(change);
+      testFeed2.pendingChanges[0].should.deep.equal({ change, viewResults: { view1: 'a', view2: 'b' }});
+      (!!change.doc).should.equal(false);
     });
   });
 

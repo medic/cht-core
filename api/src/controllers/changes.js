@@ -330,9 +330,9 @@ const processChange = (change, seq) => {
   });
 };
 
-const processSettingsChange = () => {
+const processSettingsChange = (settings) => {
   const prevLongpollIterateChanges = longpollIterateChanges;
-  getApiSettings();
+  getApiSettings(settings);
   if (prevLongpollIterateChanges !== longpollIterateChanges) {
     // setting changed, close all longpoll feeds
     longpollFeeds.forEach(feed => {
@@ -352,7 +352,7 @@ const initContinuousFeed = since => {
     })
     .on('change', (change, pending, seq) => {
       if (change.id === 'settings') {
-        processSettingsChange();
+        processSettingsChange(change.doc);
       }
 
       processChange(change, seq);
@@ -371,7 +371,12 @@ const getConfig = () => {
   ]);
 };
 
-const getApiSettings = () => {
+const getApiSettings = (settings) => {
+  if (settings) {
+    longpollIterateChanges = settings.settings.changes_controller_iterate_pending_changes;
+    return;
+  }
+
   longpollIterateChanges = config.get('changes_controller_iterate_pending_changes');
 };
 
