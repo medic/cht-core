@@ -440,6 +440,7 @@ describe('changes handler', () => {
           utils.saveDocs(allowedDocs.map(doc => _.extend(doc, { _deleted: true })))
         ]))
         .then(([ changes ]) => {
+          console.log(JSON.stringify(changes));
           expect(changes.results.every(change => bobsIds.indexOf(change.id) !== -1)).toBe(true);
           expect(changes.results.every(change => change.deleted)).toBe(true);
         });
