@@ -351,7 +351,7 @@ describe('changes handler', () => {
         });
     });
 
-    it('resets longpoll feeds when settings are changed', () => {
+    it('restarts longpoll feeds when settings are changed', () => {
       return Promise
         .all([
           requestChanges('steve', { feed: 'longpoll', since: currentSeq }),
@@ -362,17 +362,6 @@ describe('changes handler', () => {
               300);
             })
         ])
-        .then(([ stevesChanges, bobsChanges ]) => {
-          expect(stevesChanges.results.length).toEqual(0);
-          expect(bobsChanges.results.length).toEqual(0);
-          expect(stevesChanges.last_seq).toEqual(currentSeq);
-          expect(bobsChanges.last_seq).toEqual(currentSeq);
-
-          return Promise.all([
-            requestChanges('steve', { feed: 'longpoll', since: currentSeq }),
-            requestChanges('bob', { feed: 'longpoll', since: currentSeq }),
-          ]);
-        })
         .then(([ stevesChanges, bobsChanges ]) => {
           expect(stevesChanges.results.length).toBeGreaterThanOrEqual(1);
           expect(bobsChanges.results.length).toBeGreaterThanOrEqual(1);
@@ -451,7 +440,6 @@ describe('changes handler', () => {
           utils.saveDocs(allowedDocs.map(doc => _.extend(doc, { _deleted: true })))
         ]))
         .then(([ changes ]) => {
-          console.log(JSON.stringify(changes));
           expect(changes.results.every(change => bobsIds.indexOf(change.id) !== -1)).toBe(true);
           expect(changes.results.every(change => change.deleted)).toBe(true);
         });

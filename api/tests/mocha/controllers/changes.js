@@ -1449,9 +1449,11 @@ describe('Changes controller', () => {
         });
     });
 
-    it('ends longpoll feeds, with empty results and initial seq', () => {
+    it('resets longpoll feeds', () => {
       authorization.getAllowedDocIds.onCall(0).resolves([ 'a',  'b' ]);
       authorization.getAllowedDocIds.onCall(1).resolves([ 'c',  'd' ]);
+      authorization.getAllowedDocIds.onCall(3).resolves([ 'a',  'b' ]);
+      authorization.getAllowedDocIds.onCall(4).resolves([ 'c',  'd' ]);
       authorization.allowedDoc.withArgs(5, sinon.match({ id: 'myFeed1' })).returns({ newSubjects: 2 });
       testReq.uniqId = 'myFeed1';
       testReq.query = { feed: 'longpoll', since: 'seq1' };
@@ -1513,21 +1515,11 @@ describe('Changes controller', () => {
           controller._getIterationMode().should.equal(false);
 
           controller._getLongpollFeeds().length.should.equal(0);
-          controller._getNormalFeeds().length.should.equal(0);
-
-          console.log(testRes.write.args);
-          testRes.end.callCount.should.equal(1);
-          testRes.write.callCount.should.equal(1);
-          testRes.write.args[0][0].should.equal(JSON.stringify({ results: [], last_seq: 'seq1' }));
-
-          testRes1.end.callCount.should.equal(1);
-          testRes1.write.callCount.should.equal(1);
-          testRes1.write.args[0][0].should.equal(JSON.stringify({ results: [], last_seq: 'seq2' }));
-          clock.tick(10000000);
-          testRes.end.callCount.should.equal(1);
-          testRes.write.callCount.should.equal(1);
-          testRes1.end.callCount.should.equal(1);
-          testRes1.write.callCount.should.equal(1);
+          const normalFeeds = controller._getNormalFeeds();
+          normalFeeds.length.should.equal(2);
+          _.findWhere(normalFeeds, { id: 'myFeed1' }).should.equal(feed1);
+          _.findWhere(normalFeeds, { id: 'myFeed2' }).should.equal(feed2);
+          authorization.getAllowedDocIds.callCount.should.equal(4);
         });
     });
   });

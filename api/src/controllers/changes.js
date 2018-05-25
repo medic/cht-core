@@ -174,6 +174,8 @@ const writeDownstream = (feed, content, end) => {
 };
 
 const resetFeed = feed => {
+  clearTimeout(feed.timeout);
+
   _.extend(feed, {
     pendingChanges: [],
     results: [],
@@ -347,8 +349,7 @@ const processSettingsChange = (settings) => {
   if (prevReiterateChanges !== shouldReiterateChanges()) {
     // setting changed, close all longpoll feeds
     longpollFeeds.forEach(feed => {
-      resetFeed(feed);
-      endFeed(feed);
+      restartNormalFeed(feed);
     });
   }
 };
