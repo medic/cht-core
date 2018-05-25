@@ -120,6 +120,12 @@ const parentPlace = {
   name: 'Big Parent Hostpital'
 };
 
+const defaultSettings = {
+  reiterate_changes: true,
+  changes_limit: 100,
+  debounce_interval: 200
+};
+
 const createSomeContacts = (nbr, parent) => {
   const docs = [];
   parent = typeof parent === 'string' ? { _id: parent } : parent;
@@ -162,6 +168,7 @@ const getCurrentSeq = (username) => {
     currentSeq = result.update_seq;
   });
 };
+
 
 describe('changes handler', () => {
 
@@ -351,7 +358,7 @@ describe('changes handler', () => {
           requestChanges('bob', { feed: 'longpoll', since: currentSeq }),
           new Promise(resolve => {
             setTimeout(() => {
-              resolve(utils.updateSettings({ changes_controller_iterate_pending_changes: false }, true));},
+              resolve(utils.updateSettings({ changes_controller: _.defaults({ reiterate_changes: false }, defaultSettings) }, true));},
               300);
             })
         ])
@@ -402,7 +409,7 @@ describe('changes handler', () => {
       const newIds = ['new_allowed_contact_bis', 'new_allowed_report_bis'];
       bobsIds.push(...newIds);
       return utils
-        .updateSettings({ changes_controller_iterate_pending_changes: false }, true)
+        .updateSettings({ changes_controller: _.defaults({ reiterate_changes: false }, defaultSettings) }, true)
         .then(() => getCurrentSeq('bob'))
         .then(() => {
           return Promise

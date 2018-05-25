@@ -9,19 +9,17 @@ const auth = require('../auth'),
       config = require('../config'),
       DEFAULT_MAX_DOC_IDS = 100;
 
+const { COUCH_NODE_NAME, COUCH_URL } = process.env;
+
 let inited = false,
     continuousFeed = false,
     longpollFeeds = [],
     normalFeeds = [],
-    MAX_DOC_IDS = DEFAULT_MAX_DOC_IDS,
     currentSeq = 0,
-    longpollIterateChanges;
+    settings,
+    MAX_DOC_IDS;
 
-const DEFAULT_LIMIT = 100,
-      DEBOUNCE_INTERVAL = 200,
-      { COUCH_NODE_NAME, COUCH_URL } = process.env;
-
-const iterationMode = () => longpollIterateChanges;
+const shouldReiterateChanges = () => settings.reiterate_changes;
 
 const split = (array, count) => {
   if (count === null || count < 1) {
@@ -66,11 +64,11 @@ const endFeed = (feed, write = true, debounced = false) => {
     return;
   }
 
-  if (feed.hasNewSubjects && !iterationMode()) {
+  if (feed.hasNewSubjects && !shouldReiterateChanges()) {
     return restartNormalFeed(feed);
   }
 
-  if (feed.hasNewSubjects && iterationMode()) {
+  if (feed.hasNewSubjects && shouldReiterateChanges()) {
     processPendingChanges(feed);
   }
 
@@ -93,7 +91,7 @@ const generateResponse = feed => ({
 const appendChange = (results, changeObj) => {
   const result = _.findWhere(results, { id: changeObj.change.id });
   if (!result) {
-    return results.push(_.omit(changeObj.change, 'doc'));
+    return results.push(JSON.parse(JSON.stringify(changeObj.change)));
   }
 
   // append missing revs to the list
@@ -106,7 +104,7 @@ const appendChange = (results, changeObj) => {
   }
 };
 
-// filters the list of pending changes, appending the allowed ones
+// filters the list of pending changes, appending the allowed ones to the results list
 // if new subjects are added, changes are reiterated
 // returns true if no breaking authorization change is processed, false otherwise
 const processPendingChanges = (feed, isNormalFeed) => {
@@ -185,15 +183,19 @@ const resetFeed = feed => {
   });
 };
 
+// converts previous longpoll feed back to a normal feed when
+// refreshes the allowedIds list
 const restartNormalFeed = feed => {
   longpollFeeds = _.without(longpollFeeds, feed);
   normalFeeds.push(feed);
 
   resetFeed(feed);
 
-  return authorization.getAllowedDocIds(feed).then(allowedDocIds => {
-    feed.allowedDocIds = allowedDocIds;
-    getChanges(feed);
+  return authorization
+    .getAllowedDocIds(feed)
+    .then(allowedDocIds => {
+      feed.allowedDocIds = allowedDocIds;
+      getChanges(feed);
   });
 };
 
@@ -250,12 +252,6 @@ const getChanges = feed => {
     });
 };
 
-const processRequest = (req, res, userCtx) => {
-  return auth.getUserSettings(userCtx).then(userCtx => {
-    initFeed(req, res, userCtx).then(getChanges);
-  });
-};
-
 const initFeed = (req, res, userCtx) => {
   const feed = {
     id: req.uniqId || uuid(),
@@ -267,10 +263,12 @@ const initFeed = (req, res, userCtx) => {
     pendingChanges: [],
     results: [],
     upstreamRequests: [],
-    limit: req.query && req.query.limit || DEFAULT_LIMIT,
+    limit: req.query && req.query.limit || settings.changes_limit
   };
 
-  feed.debounceEnd = _.debounce(() => endFeed(feed, true, true), DEBOUNCE_INTERVAL);
+  if (settings.debounce_interval) {
+    feed.debounceEnd = _.debounce(() => endFeed(feed, true, true), settings.debounce_interval);
+  }
 
   defibrillator(feed);
   addTimeout(feed);
@@ -289,11 +287,19 @@ const initFeed = (req, res, userCtx) => {
     });
 };
 
+const processRequest = (req, res, userCtx) => {
+  return auth
+    .getUserSettings(userCtx)
+    .then(userCtx => {
+      initFeed(req, res, userCtx).then(getChanges);
+    });
+};
+
 const addChangeToLongpollFeed = (feed, changeObj) => {
   appendChange(feed.results, changeObj);
   feed.cancelDebouncedEnd = false;
 
-  if (--feed.limit) {
+  if (feed.debounceEnd && --feed.limit) {
     // debounce sending results if the feed limit is not yet reached
     clearTimeout(feed.timeout);
     feed.debounceEnd();
@@ -321,7 +327,7 @@ const processChange = (change, seq) => {
     feed.lastSeq = seq;
     const allowed = authorization.allowedDoc(changeObj.change.id, feed, changeObj.viewResults);
     if (!allowed) {
-      return iterationMode() && feed.pendingChanges.push(changeObj);
+      return shouldReiterateChanges() && feed.pendingChanges.push(changeObj);
     }
 
     if (authorization.isAuthChange(changeObj.change.id, feed.userCtx, changeObj.viewResults)) {
@@ -336,9 +342,9 @@ const processChange = (change, seq) => {
 };
 
 const processSettingsChange = (settings) => {
-  const prevLongpollIterateChanges = longpollIterateChanges;
+  const prevReiterateChanges = shouldReiterateChanges();
   getApiSettings(settings);
-  if (prevLongpollIterateChanges !== longpollIterateChanges) {
+  if (prevReiterateChanges !== shouldReiterateChanges()) {
     // setting changed, close all longpoll feeds
     longpollFeeds.forEach(feed => {
       resetFeed(feed);
@@ -375,13 +381,12 @@ const getConfig = () => {
   ]);
 };
 
-const getApiSettings = (settings) => {
-  if (settings) {
-    longpollIterateChanges = settings.settings.changes_controller_iterate_pending_changes;
+const getApiSettings = (settingsDoc) => {
+  if (settingsDoc) {
+    settings = settingsDoc.settings.changes_controller;
     return;
   }
-
-  longpollIterateChanges = config.get('changes_controller_iterate_pending_changes');
+  settings = config.get('changes_controller');
 };
 
 const getCouchDbConfig = () => {
@@ -465,6 +470,6 @@ if (process.env.UNIT_TEST_ENV) {
     _getMaxDocIds: () => MAX_DOC_IDS,
     _inited: () => inited,
     _getContinuousFeed: () => continuousFeed,
-    _getIterationMode: () => longpollIterateChanges
+    _getIterationMode: shouldReiterateChanges
   });
 }
