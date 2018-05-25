@@ -2,14 +2,14 @@ const _ = require('underscore'),
       utils = require('../../../utils'),
       uuid = require('uuid');
 
-function assertChangeIds(changes) {
-  const DEFAULT_EXPECTED = [
-    'appcache',
-    'settings',
-    'resources',
-    '_design/medic-client'
-  ];
+const DEFAULT_EXPECTED = [
+  'appcache',
+  'settings',
+  'resources',
+  '_design/medic-client'
+];
 
+function assertChangeIds(changes) {
   changes = changes.results;
 
   // * filter out deleted entries - we never delete in our production code, but
@@ -228,8 +228,10 @@ describe('changes handler', () => {
 
   describe('Filtered replication', () => {
     beforeEach(done => getCurrentSeq('bob').then(done));
-    const bobsIds = ['_design/medic-client', 'settings'],
-          stevesIds = ['_design/medic-client', 'settings'];
+
+    const bobsIds = [...DEFAULT_EXPECTED],
+          stevesIds = [...DEFAULT_EXPECTED];
+
     it('returns a full list of allowed changes, regardless of the requested limit', () => {
       const allowedDocs = createSomeContacts(12, 'fixture:bobville');
       bobsIds.push(..._.pluck(allowedDocs, '_id'));
@@ -245,7 +247,7 @@ describe('changes handler', () => {
             'org.couchdb.user:bob',
             'fixture:user:bob',
             'fixture:bobville',
-            ..._.without(bobsIds, '_design/medic-client', 'settings'));
+            ..._.without(bobsIds, ...DEFAULT_EXPECTED));
         });
     });
 
@@ -334,6 +336,7 @@ describe('changes handler', () => {
       ];
       const newIds = ['new_allowed_contact', 'new_allowed_report'];
       bobsIds.push(...newIds);
+      newIds.push(...DEFAULT_EXPECTED);
       return Promise
         .all([
           consumeChanges('bob', [], currentSeq),
@@ -397,6 +400,7 @@ describe('changes handler', () => {
       ];
       const newIds = ['new_allowed_contact_bis', 'new_allowed_report_bis'];
       bobsIds.push(...newIds);
+      newIds.push(...DEFAULT_EXPECTED);
       return utils
         .updateSettings({ changes_controller: _.defaults({ reiterate_changes: false }, defaultSettings) }, true)
         .then(() => getCurrentSeq('bob'))
@@ -443,7 +447,7 @@ describe('changes handler', () => {
         .then(([ changes ]) => {
           console.log(JSON.stringify(changes));
           expect(changes.results.every(change => bobsIds.indexOf(change.id) !== -1)).toBe(true);
-          expect(changes.results.every(change => change.deleted)).toBe(true);
+          expect(changes.results.every(change => change.deleted || DEFAULT_EXPECTED.indexOf(change.id) !== -1)).toBe(true);
         });
     });
 
@@ -487,8 +491,8 @@ describe('changes handler', () => {
         })
         .then(() => consumeChanges('steve', [], currentSeq))
         .then(changes => {
-          expect(changes.results.every(change => change.deleted)).toBe(true);
           expect(changes.results.every(change => stevesIds.indexOf(change.id) !== -1)).toBe(true);
+          expect(changes.results.every(change => change.deleted || DEFAULT_EXPECTED.indexOf(change.id) !== -1)).toBe(true);
         });
     });
 
