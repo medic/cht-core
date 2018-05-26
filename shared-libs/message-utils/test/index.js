@@ -249,7 +249,8 @@ describe('messageUtils', () => {
     describe('bikram sambat', () => {
 
       it('integer', () => {
-        const date = 1457235941000;
+        const dateStr = new Date(1457235941000).toISOString().split('T')[0];
+        const date = moment(dateStr).unix()*1000; //Integer date in current tz
         const expected = '२३ फाल्गुन २०७२';
         const input = '{{#bikram_sambat_date}}{{reported_date}}{{/bikram_sambat_date}}';
         const doc = { reported_date: date };
@@ -259,7 +260,8 @@ describe('messageUtils', () => {
       });
 
       it('Date object', () => {
-        const date = 1457235941000;
+        const dateStr = new Date(1457235941000).toISOString().split('T')[0];
+        const date = moment(dateStr); // Date in running tz
         const expected = '२३ फाल्गुन २०७२';
         const input = '{{#bikram_sambat_date}}Date({{reported_date}}){{/bikram_sambat_date}}';
         const doc = { reported_date: date };

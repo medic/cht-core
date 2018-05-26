@@ -180,13 +180,27 @@ angular.module('inboxServices').factory('FormatDataRecord',
               });
     };
 
-    var formatDate = function(settings, date) {
+    var capitalizeFirstLetter = function(string) {
+        return string.charAt(0).toUpperCase() + string.slice(1);
+    };
+
+    var fromNowOrToday = function(momento, today) {
+      var startOfDay = moment().startOf('day');
+      var endOfDay = startOfDay.clone().endOf('day');
+      if(momento >= startOfDay && momento <= endOfDay) {
+        return capitalizeFirstLetter(today);
+      }
+      return momento.fromNow();
+    };
+
+    var formatDate = function(settings, date, today) {
       if (!date) {
           return;
       }
       var m = moment(date);
+
       return m.format(settings.date_format) +
-        ' (' + m.fromNow() + ')';
+        ' (' + fromNowOrToday(m, today) + ')';
     };
 
     /*
@@ -214,7 +228,8 @@ angular.module('inboxServices').factory('FormatDataRecord',
         return val === true ? 'True' : 'False';
       }
       if (def.type === 'date') {
-        return formatDate(settings, data_record[key]);
+        var today = translate(settings, 'today', locale);
+        return formatDate(settings, data_record[key], today);
       }
       if (def.type === 'integer') {
         // use list value for month
@@ -278,7 +293,8 @@ angular.module('inboxServices').factory('FormatDataRecord',
         }
 
         if (_.contains(dateFields, field)) {
-          value = formatDate(settings, value);
+          var today = translate(settings, 'today', locale);
+          value = formatDate(settings, value, today);
         }
 
         doc.fields.data.unshift({
