@@ -37,7 +37,7 @@ before_install:
   - echo "CouchDB Started"
   - pip install --user awscli
   - export PATH=$PATH:$HOME/.local/bin
-  - curl -o- -L https://yarnpkg.com/install.sh | bash -s -- --version 1.6.0
+  - curl -o- -L https://yarnpkg.com/install.sh | bash -s -- --version 1.7.0
   - export PATH=$HOME/.yarn/bin:$PATH
 
 install:
@@ -47,7 +47,7 @@ before_script:
   - mkdir tests/logs
   - nvm use $NODE_VERSION
   - yarn -v
-  - yarn install --ignore-engines
+  - yarn install
   - yarn list || true
   # Create couchdb system tables (this has to be done manually on couchdb 2.0)
   - curl -X PUT http://127.0.0.1:5984/{_users,_replicator,_global_changes,_metadata,admins}
