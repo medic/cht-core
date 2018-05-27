@@ -85,6 +85,10 @@ var getRecipient = function(context, recipient) {
     phone = from;
   } else if (recipient === 'clinic') {
     phone = getClinicPhone(context);
+  } else if (recipient === 'health_center') {
+    phone = getHealthCenterPhone(context);
+  } else if (recipient === 'district') {
+    phone = getDistrictPhone(context);
   } else if (recipient === 'parent') {
     phone = getHealthCenterPhone(context);
   } else if (recipient === 'grandparent') {
