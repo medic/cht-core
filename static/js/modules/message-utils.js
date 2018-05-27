@@ -87,9 +87,9 @@ var getRecipient = function(context, recipient) {
     phone = from;
   } else if (recipient === 'clinic') {
     phone = getClinicPhone(context);
-  } else if (recipient === 'parent') {
+  } else if (recipient === 'health_center' || recipient === 'parent') {
     phone = getHealthCenterPhone(context);
-  } else if (recipient === 'grandparent') {
+  } else if (recipient === 'district' || recipient === 'grandparent') {
     phone = getDistrictPhone(context);
   } else if (context.fields && context.fields[recipient]) {
     // Try to resolve a specified property/field name
