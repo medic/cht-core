@@ -138,13 +138,10 @@ describe('Changes controller', () => {
         controller._inited().should.equal(true);
         controller._getContinuousFeed().should.equal(emitters[0]);
         controller._getMaxDocIds().should.equal(20);
-        controller._getIterationMode().should.equal(false);
         db.medic._ajax.callCount.should.equal(1);
         db.medic._ajax.args[0][0].should.deep.equal({ url:
           COUCH_URL.slice(0, COUCH_URL.indexOf('medic')) +
           `_node/${COUCH_NODE_NAME}/_config/couchdb/changes_doc_ids_optimization_threshold`});
-        config.get.callCount.should.equal(1);
-        config.get.args[0][0].should.equal('changes_controller');
       });
     });
 
@@ -268,7 +265,9 @@ describe('Changes controller', () => {
             feed.upstreamRequests.length.should.equal(1);
             feed.limit.should.equal(100);
             feed.should.not.have.property('heartbeat');
-            feed.hasOwnProperty('timeout').should.equal(false);
+            feed.should.not.have.property('timeout');
+            feed.reiterate_changes.should.equal(true);
+            feed.debounceEnd.should.be.a('function');
             clock.tick(60000);
             testRes.write.callCount.should.equal(0);
             testRes.end.callCount.should.equal(0);
@@ -280,6 +279,8 @@ describe('Changes controller', () => {
     it('initializes the feed with custom values', () => {
       testReq.query = { limit: 23, heartbeat: 10000, since: 'some-since-655', timeout: 100000 };
       authorization.getAllowedDocIds.resolves([1, 2, 3]);
+      defaultSettings.reiterate_changes = 'something';
+      defaultSettings.debounce_interval = false;
       return controller
         .request(proxy, testReq, testRes)
         .then(() => {
@@ -297,6 +298,8 @@ describe('Changes controller', () => {
           clock.tick(30000);
           testRes.end.callCount.should.equal(1);
           controller._getNormalFeeds().length.should.equal(0);
+          feed.reiterate_changes.should.equal('something');
+          feed.should.not.have.property('debouncedEnd');
         });
     });
 
@@ -1370,160 +1373,6 @@ describe('Changes controller', () => {
     });
   });
 
-  describe('live switching between longpoll modes', () => {
-    it('does not affect normal feeds', () => {
-      authorization.getAllowedDocIds.onCall(0).resolves([ 'a',  'b' ]);
-      authorization.getAllowedDocIds.onCall(1).resolves([ 'c',  'd' ]);
-      testReq.uniqId = 'myFeed1';
-      testReq.query = { feed: 'longpoll', since: 'seq1' };
-
-      const testReq1 = { on: sinon.stub(), uniqId: 'two', query: { feed: 'longpoll', since: 'seq2' }};
-      const testRes1 = { type: sinon.stub(), write: sinon.stub(), end: sinon.stub(), setHeader: sinon.stub() };
-
-      config.get.onCall(1).returns(_.defaults({ reiterate_changes: false }, defaultSettings));
-
-      return Promise.all([
-          controller.request(proxy, testReq, testRes),
-          controller.request(proxy, testReq1, testRes1)
-        ])
-        .then(nextTick)
-        .then(() => {
-          controller._getIterationMode().should.equal(true);
-          const normalFeeds = controller._getNormalFeeds();
-          normalFeeds.length.should.equal(2);
-          const emitter = controller._getContinuousFeed();
-          emitter.emit('change', { id: 'settings' });
-          controller._getIterationMode().should.equal(false);
-          controller._getNormalFeeds().should.deep.equal(normalFeeds);
-          config.get.callCount.should.equal(2);
-        });
-    });
-
-    it('reads settings from received doc', () => {
-      authorization.getAllowedDocIds.onCall(0).resolves([ 'a',  'b' ]);
-      authorization.getAllowedDocIds.onCall(1).resolves([ 'c',  'd' ]);
-      testReq.uniqId = 'myFeed1';
-      testReq.query = { feed: 'longpoll', since: 'seq1' };
-
-      return controller
-        ._init()
-        .then(() => {
-          controller._getIterationMode().should.equal(true);
-          const emitter = controller._getContinuousFeed(),
-                newSettings = { settings: { changes_controller: _.defaults({ reiterate_changes:false }, defaultSettings)}};
-          emitter.emit('change', { id: 'settings', doc: newSettings});
-          controller._getIterationMode().should.equal(false);
-          config.get.callCount.should.equal(1);
-        });
-    });
-
-    it('nothing happens when the setting is not changed', () => {
-      authorization.getAllowedDocIds.onCall(0).resolves([ 'a',  'b' ]);
-      authorization.getAllowedDocIds.onCall(1).resolves([ 'c',  'd' ]);
-      testReq.query = { feed: 'longpoll' };
-      testReq.uniqId = 'myFeed1';
-
-      const testReq1 = { on: sinon.stub(), uniqId: 'myFeed2', query: { feed: 'longpoll' }};
-      const testRes1 = { type: sinon.stub(), write: sinon.stub(), end: sinon.stub(), setHeader: sinon.stub() };
-
-      return Promise
-        .all([
-          controller.request(proxy, testReq, testRes),
-          controller.request(proxy, testReq1, testRes1)
-        ])
-        .then(nextTick)
-        .then(() => {
-          controller._getNormalFeeds().forEach(feed => {
-            feed.upstreamRequests.forEach(upstreamReq => upstreamReq.complete(null, { results:[], last_seq: 1 }));
-          });
-        })
-        .then(nextTick)
-        .then(() => {
-          const longpollFeeds = controller._getLongpollFeeds();
-          longpollFeeds.length.should.equal(2);
-          const emitter = controller._getContinuousFeed();
-          controller._getIterationMode().should.equal(true);
-          emitter.emit('change', { id: 'settings' });
-          controller._getIterationMode().should.equal(true);
-          controller._getLongpollFeeds().should.deep.equal(longpollFeeds);
-        });
-    });
-
-    it('resets longpoll feeds', () => {
-      authorization.getAllowedDocIds.onCall(0).resolves([ 'a',  'b' ]);
-      authorization.getAllowedDocIds.onCall(1).resolves([ 'c',  'd' ]);
-      authorization.getAllowedDocIds.onCall(3).resolves([ 'a',  'b' ]);
-      authorization.getAllowedDocIds.onCall(4).resolves([ 'c',  'd' ]);
-      authorization.allowedDoc.withArgs(5, sinon.match({ id: 'myFeed1' })).returns({ newSubjects: 2 });
-      testReq.uniqId = 'myFeed1';
-      testReq.query = { feed: 'longpoll', since: 'seq1' };
-
-      const testReq1 = { on: sinon.stub(), uniqId: 'myFeed2', query: { feed: 'longpoll', since: 'seq2' }};
-      const testRes1 = { type: sinon.stub(), write: sinon.stub(), end: sinon.stub(), setHeader: sinon.stub() };
-
-      config.get.onCall(1).returns(_.defaults({ reiterate_changes: false }, defaultSettings));
-
-      return Promise
-        .all([
-          controller.request(proxy, testReq, testRes),
-          controller.request(proxy, testReq1, testRes1)
-        ])
-        .then(nextTick)
-        .then(() => {
-          controller._getNormalFeeds().forEach(feed => {
-            feed.upstreamRequests.forEach(upstreamReq => upstreamReq.complete(null, { results:[], last_seq: 1 }));
-          });
-        })
-        .then(nextTick)
-        .then(() => {
-          const emitter = controller._getContinuousFeed();
-          emitter.emit('change', { id: 1, changes: [], doc: { _id: 1 }}, 0, 1);
-          emitter.emit('change', { id: 2, changes: [], doc: { _id: 2 }}, 0, 2);
-          emitter.emit('change', { id: 3, changes: [], doc: { _id: 3 }}, 0, 3);
-          emitter.emit('change', { id: 4, changes: [], doc: { _id: 4 }}, 0, 4);
-          emitter.emit('change', { id: 5, changes: [], doc: { _id: 5 }}, 0, 5);
-
-          const longpollFeeds = controller._getLongpollFeeds(),
-                feed1 = _.findWhere(longpollFeeds, { id: 'myFeed1' }),
-                feed2 = _.findWhere(longpollFeeds, { id: 'myFeed2' });
-
-          longpollFeeds.length.should.equal(2);
-
-          feed1.initSeq.should.equal('seq1');
-          feed1.pendingChanges.should.deep.equal([
-            { change: { id: 1, changes: []}, viewResults: {}},
-            { change: { id: 2, changes: []}, viewResults: {}},
-            { change: { id: 3, changes: []}, viewResults: {}},
-            { change: { id: 4, changes: []}, viewResults: {}}
-          ]);
-          feed1.results.should.deep.equal([{ id: 5, changes: [] }]);
-          feed1.lastSeq.should.equal(5);
-
-          feed2.initSeq.should.equal('seq2');
-          feed2.pendingChanges.should.deep.equal([
-            { change: { id: 1, changes: []}, viewResults: {}},
-            { change: { id: 2, changes: []}, viewResults: {}},
-            { change: { id: 3, changes: []}, viewResults: {}},
-            { change: { id: 4, changes: []}, viewResults: {}},
-            { change: { id: 5, changes: []}, viewResults: {}}
-          ]);
-          feed2.results.should.deep.equal([]);
-          feed2.lastSeq.should.equal(5);
-
-          controller._getIterationMode().should.equal(true);
-          emitter.emit('change', { id: 'settings' });
-          controller._getIterationMode().should.equal(false);
-
-          controller._getLongpollFeeds().length.should.equal(0);
-          const normalFeeds = controller._getNormalFeeds();
-          normalFeeds.length.should.equal(2);
-          _.findWhere(normalFeeds, { id: 'myFeed1' }).should.equal(feed1);
-          _.findWhere(normalFeeds, { id: 'myFeed2' }).should.equal(feed2);
-          authorization.getAllowedDocIds.callCount.should.equal(4);
-        });
-    });
-  });
-
   describe('handling heartbeats', () => {
     it('does not send heartbeat if not defined', () => {
       authorization.getAllowedDocIds.resolves([ 'a',  'b' ]);
@@ -1967,9 +1816,9 @@ describe('Changes controller', () => {
       };
 
       const longpollFeeds = controller._getLongpollFeeds();
-      const testFeed1 = { id: 'feed1', lastSeq: 0, results: [], req: testReq, res: testRes, pendingChanges: [] };
-      const testFeed2 = { id: 'feed2', lastSeq: 0, results: [], req: testReq, res: testRes, pendingChanges: [] };
-      const testFeed3 = { id: 'feed3', lastSeq: 0, results: [], req: testReq, res: testRes, pendingChanges: [] };
+      const testFeed1 = { id: 'feed1', lastSeq: 0, results: [], req: testReq, res: testRes, pendingChanges: [], reiterate_changes: true };
+      const testFeed2 = { id: 'feed2', lastSeq: 0, results: [], req: testReq, res: testRes, pendingChanges: [], reiterate_changes: true };
+      const testFeed3 = { id: 'feed3', lastSeq: 0, results: [], req: testReq, res: testRes, pendingChanges: [], reiterate_changes: true };
       longpollFeeds.push(testFeed1, testFeed2, testFeed3);
       controller._processChange(change, 'seq');
       testFeed1.results[0].should.deep.equal(change);

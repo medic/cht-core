@@ -16,10 +16,7 @@ let inited = false,
     longpollFeeds = [],
     normalFeeds = [],
     currentSeq = 0,
-    settings,
     MAX_DOC_IDS;
-
-const shouldReiterateChanges = () => settings.reiterate_changes;
 
 const split = (array, count) => {
   if (count === null || count < 1) {
@@ -64,11 +61,11 @@ const endFeed = (feed, write = true, debounced = false) => {
     return;
   }
 
-  if (feed.hasNewSubjects && !shouldReiterateChanges()) {
+  if (feed.hasNewSubjects && !feed.reiterate_changes) {
     return restartNormalFeed(feed);
   }
 
-  if (feed.hasNewSubjects && shouldReiterateChanges()) {
+  if (feed.hasNewSubjects && feed.reiterate_changes) {
     processPendingChanges(feed);
   }
 
@@ -265,11 +262,12 @@ const initFeed = (req, res, userCtx) => {
     pendingChanges: [],
     results: [],
     upstreamRequests: [],
-    limit: req.query && req.query.limit || settings.changes_limit
+    limit: req.query && req.query.limit || config.get('changes_controller').changes_limit,
+    reiterate_changes: config.get('changes_controller').reiterate_changes
   };
 
-  if (settings.debounce_interval) {
-    feed.debounceEnd = _.debounce(() => endFeed(feed, true, true), settings.debounce_interval);
+  if (config.get('changes_controller').debounce_interval) {
+    feed.debounceEnd = _.debounce(() => endFeed(feed, true, true), config.get('changes_controller').debounce_interval);
   }
 
   defibrillator(feed);
@@ -329,7 +327,7 @@ const processChange = (change, seq) => {
     feed.lastSeq = seq;
     const allowed = authorization.allowedDoc(changeObj.change.id, feed, changeObj.viewResults);
     if (!allowed) {
-      return shouldReiterateChanges() && feed.pendingChanges.push(changeObj);
+      return feed.reiterate_changes && feed.pendingChanges.push(changeObj);
     }
 
     if (authorization.isAuthChange(changeObj.change.id, feed.userCtx, changeObj.viewResults)) {
@@ -343,17 +341,6 @@ const processChange = (change, seq) => {
   });
 };
 
-const processSettingsChange = (settings) => {
-  const prevReiterateChanges = shouldReiterateChanges();
-  getApiSettings(settings);
-  if (prevReiterateChanges !== shouldReiterateChanges()) {
-    // setting changed, close all longpoll feeds
-    longpollFeeds.forEach(feed => {
-      restartNormalFeed(feed);
-    });
-  }
-};
-
 const initContinuousFeed = since => {
   continuousFeed = db.medic
     .changes({
@@ -363,9 +350,6 @@ const initContinuousFeed = since => {
       timeout: false,
     })
     .on('change', (change, pending, seq) => {
-      if (change.id === 'settings') {
-        processSettingsChange(change.doc);
-      }
       processChange(change, seq);
       currentSeq = seq;
     })
@@ -373,21 +357,6 @@ const initContinuousFeed = since => {
       continuousFeed.cancel();
       initContinuousFeed(currentSeq);
     });
-};
-
-const getConfig = () => {
-  return Promise.all([
-    getCouchDbConfig(),
-    getApiSettings()
-  ]);
-};
-
-const getApiSettings = (settingsDoc) => {
-  if (settingsDoc) {
-    settings = settingsDoc.settings.changes_controller;
-    return;
-  }
-  settings = config.get('changes_controller');
 };
 
 const getCouchDbConfig = () => {
@@ -420,7 +389,7 @@ const init = () => {
   }
   inited = true;
 
-  return getConfig().then(() => initContinuousFeed());
+  return getCouchDbConfig().then(() => initContinuousFeed());
 };
 
 const request = (proxy, req, res) => {
@@ -470,7 +439,6 @@ if (process.env.UNIT_TEST_ENV) {
     _getCurrentSeq: () => currentSeq,
     _getMaxDocIds: () => MAX_DOC_IDS,
     _inited: () => inited,
-    _getContinuousFeed: () => continuousFeed,
-    _getIterationMode: shouldReiterateChanges
+    _getContinuousFeed: () => continuousFeed
   });
 }
