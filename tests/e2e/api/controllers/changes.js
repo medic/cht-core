@@ -1,14 +1,15 @@
 const _ = require('underscore'),
-      utils = require('../../../utils');
+      utils = require('../../../utils'),
+      uuid = require('uuid');
+
+const DEFAULT_EXPECTED = [
+  'appcache',
+  'settings',
+  'resources',
+  '_design/medic-client'
+];
 
 function assertChangeIds(changes) {
-  const DEFAULT_EXPECTED = [
-    'appcache',
-    'settings',
-    'resources',
-    '_design/medic-client'
-  ];
-
   changes = changes.results;
 
   // * filter out deleted entries - we never delete in our production code, but
@@ -24,19 +25,12 @@ function assertChangeIds(changes) {
   expect(_.pluck(changes, 'id').sort()).toEqual(expectedIds.sort());
 }
 
-function requestChanges(username, ids, last_seq=0) {
+function requestChanges(username, params = {}) {
+  const queryParams = _.map(params, (value, key) => `${key}=${value}`).join('&');
   const options = {
-    path: `/_changes?since=${last_seq}`,
+    path: `/_changes${queryParams ? `?${queryParams}`: ''}`,
     auth: `${username}:${password}`
   };
-
-  if (ids) {
-    options.path += '&filter=_doc_ids';
-    options.body = {
-      doc_ids: JSON.stringify(ids)
-    };
-  }
-
   return utils.requestOnTestDb(options);
 }
 
@@ -103,6 +97,21 @@ const users = [
     },
     roles: []
   },
+  {
+    username: 'steve',
+    password: password,
+    place: {
+      _id: 'fixture:steveville',
+      type: 'health_center',
+      name: 'Steveville',
+      parent: 'PARENT_PLACE'
+    },
+    contact: {
+      _id: 'fixture:user:steve',
+      name: 'Steve'
+    },
+    roles: ['district-manager', 'kujua_user', 'data_entry', 'district_admin']
+  },
 ];
 
 const parentPlace = {
@@ -110,6 +119,56 @@ const parentPlace = {
   type: 'district_hospital',
   name: 'Big Parent Hostpital'
 };
+
+const defaultSettings = {
+  reiterate_changes: true,
+  changes_limit: 100,
+  debounce_interval: 200
+};
+
+const createSomeContacts = (nbr, parent) => {
+  const docs = [];
+  parent = typeof parent === 'string' ? { _id: parent } : parent;
+  for (let i = 0; i < nbr; i++) {
+    docs.push({
+      _id: `random_contact_${parent._id}_${uuid()}`,
+      type: `clinic`,
+      parent: parent
+    });
+  }
+
+  return docs;
+};
+
+const consumeChanges = (username, results, lastSeq) => {
+  const opts = { since: lastSeq, feed: 'longpoll' };
+  if (results && results.length) {
+    opts.timeout = 2000;
+  } else {
+    opts.timeout = 10000;
+  }
+
+  return requestChanges(username, opts).then(changes => {
+    if (!changes.results.length) {
+      return { results: results, last_seq: changes.last_seq };
+    }
+    results = results.concat(changes.results);
+    return consumeChanges(username, results, changes.last_seq);
+  });
+};
+
+let currentSeq;
+const getCurrentSeq = (username) => {
+  const options = {
+    path: '/',
+    auth: `${username}:${password}`,
+    method: 'GET'
+  };
+  return utils.requestOnTestDb(options).then(result => {
+    currentSeq = result.update_seq;
+  });
+};
+
 
 describe('changes handler', () => {
 
@@ -167,6 +226,337 @@ describe('changes handler', () => {
 
   afterEach(done => utils.revertDb(DOCS_TO_KEEP).then(done));
 
+  describe('Filtered replication', () => {
+    beforeEach(done => getCurrentSeq('bob').then(done));
+
+    const bobsIds = [...DEFAULT_EXPECTED],
+          stevesIds = [...DEFAULT_EXPECTED];
+
+    it('returns a full list of allowed changes, regardless of the requested limit', () => {
+      const allowedDocs = createSomeContacts(12, 'fixture:bobville');
+      bobsIds.push(..._.pluck(allowedDocs, '_id'));
+
+      const deniedDocs = createSomeContacts(10, 'irrelevant-place');
+      return Promise.all([
+          utils.saveDocs(allowedDocs),
+          utils.saveDocs(deniedDocs)
+        ])
+        .then(() => requestChanges('bob', { limit: 7 }))
+        .then(changes => {
+          assertChangeIds(changes,
+            'org.couchdb.user:bob',
+            'fixture:user:bob',
+            'fixture:bobville',
+            ..._.without(bobsIds, ...DEFAULT_EXPECTED));
+        });
+    });
+
+    it('filters allowed changes in longpolls', () => {
+      const allowedDocs = createSomeContacts(3, 'fixture:bobville');
+      const deniedDocs = createSomeContacts(3, 'irrelevant-place');
+      bobsIds.push(..._.pluck(allowedDocs, '_id'));
+
+      return Promise.all([
+          consumeChanges('bob', [], currentSeq),
+          utils.saveDocs(allowedDocs),
+          utils.saveDocs(deniedDocs)
+        ])
+        .then(([changes]) => {
+          expect(changes.results.every(change => bobsIds.indexOf(change.id) !== -1)).toBe(true);
+        });
+    });
+
+    it('filters correctly for concurrent users on initial replication', () => {
+      const allowedBob = createSomeContacts(3, 'fixture:bobville');
+      const allowedSteve = createSomeContacts(3, 'fixture:steveville');
+      bobsIds.push(..._.pluck(allowedBob, '_id'));
+      stevesIds.push(..._.pluck(allowedSteve, '_id'));
+
+      return Promise
+        .all([
+          utils.saveDocs(allowedBob),
+          utils.saveDocs(allowedSteve),
+        ])
+        .then(() => Promise.all([
+          requestChanges('bob'),
+          requestChanges('steve')
+        ]))
+        .then(([bobsChanges, stevesChanges]) => {
+          assertChangeIds(bobsChanges,
+            'org.couchdb.user:bob',
+            'fixture:user:bob',
+            'fixture:bobville',
+            ...allowedBob.map(doc => doc._id));
+          assertChangeIds(stevesChanges,
+            'org.couchdb.user:steve',
+            'fixture:user:steve',
+            'fixture:steveville',
+            ...allowedSteve.map(doc => doc._id));
+        });
+    });
+
+    it('filters correctly for concurrent users on longpolls', () => {
+      const allowedBob = createSomeContacts(3, 'fixture:bobville');
+      const allowedSteve = createSomeContacts(3, 'fixture:steveville');
+      bobsIds.push(..._.pluck(allowedBob, '_id'));
+      stevesIds.push(..._.pluck(allowedSteve, '_id'));
+
+      return Promise.all([
+          consumeChanges('bob', [], currentSeq),
+          consumeChanges('steve', [], currentSeq),
+          utils.saveDocs(allowedBob),
+          utils.saveDocs(allowedSteve),
+        ])
+        .then(([ bobsChanges, stevesChanges ]) => {
+          expect(bobsChanges.results.every(change => _.pluck(allowedBob, '_id').indexOf(change.id) !== -1)).toBe(true);
+          expect(stevesChanges.results.every(change => _.pluck(allowedSteve, '_id').indexOf(change.id) !== -1)).toBe(true);
+        });
+    });
+
+    it('returns newly added docs', () => {
+      const newDocs = [
+        {_id: 'new_allowed_contact', place_id: '12345', parent: {_id: 'fixture:bobville'}, type: 'clinic'},
+        {_id: 'new_denied_contact', place_id: '88888', parent: {_id: 'fixture:steveville'}, type: 'clinic'},
+        {
+          _id: 'new_allowed_report',
+          type: 'data_record',
+          reported_date: 1,
+          place_id: '12345',
+          form: 'some-form',
+          contact: {_id: 'fixture:bobville'}
+        },
+        {
+          _id: 'new_denied_report',
+          type: 'data_record',
+          reported_date: 1,
+          place_id: '88888',
+          form: 'some-form',
+          contact: {_id: 'fixture:steveville'}
+        }
+      ];
+      const newIds = ['new_allowed_contact', 'new_allowed_report'];
+      bobsIds.push(...newIds);
+      newIds.push(...DEFAULT_EXPECTED);
+      return Promise
+        .all([
+          consumeChanges('bob', [], currentSeq),
+          utils.saveDocs(newDocs)
+        ])
+        .then(([changes]) => {
+          if (changes.results.length >= 2) {
+            return changes;
+          }
+          return consumeChanges('bob', [], currentSeq);
+        })
+        .then(changes => {
+          expect(changes.results.length).toBeGreaterThanOrEqual(2);
+          expect(changes.results.every(change => newIds.indexOf(change.id) !== -1)).toBe(true);
+        });
+    });
+
+    it('restarts longpoll feeds when settings are changed', () => {
+      return Promise
+        .all([
+          requestChanges('steve', { feed: 'longpoll', since: currentSeq }),
+          requestChanges('bob', { feed: 'longpoll', since: currentSeq }),
+          new Promise(resolve => {
+            setTimeout(() => {
+              resolve(utils.updateSettings({ changes_controller: _.defaults({ reiterate_changes: false }, defaultSettings) }, true));},
+              300);
+            })
+        ])
+        .then(([ stevesChanges, bobsChanges ]) => {
+          expect(stevesChanges.results.length).toBeGreaterThanOrEqual(1);
+          expect(bobsChanges.results.length).toBeGreaterThanOrEqual(1);
+          expect(stevesChanges.results.find(change => change.id === 'settings')).toBeTruthy();
+          expect(bobsChanges.results.find(change => change.id === 'settings')).toBeTruthy();
+          expect(stevesChanges.last_seq !== currentSeq).toBe(true);
+          expect(bobsChanges.last_seq !== currentSeq).toBe(true);
+          expect(bobsChanges.results.every(change => bobsIds.indexOf(change.id) !== -1)).toBe(true);
+          expect(stevesChanges.results.every(change => stevesIds.indexOf(change.id) !== -1)).toBe(true);
+        });
+    });
+
+    it('returns newly added docs when in restart mode', () => {
+      const newDocs = [
+        {_id: 'new_allowed_contact_bis', place_id: '123456', parent: {_id: 'fixture:bobville'}, type: 'clinic'},
+        {_id: 'new_denied_contact_bis', place_id: '888888', parent: {_id: 'fixture:steveville'}, type: 'clinic'},
+        {
+          _id: 'new_allowed_report_bis',
+          type: 'data_record',
+          reported_date: 1,
+          place_id: '123456',
+          form: 'some-form',
+          contact: {_id: 'fixture:bobville'}
+        },
+        {
+          _id: 'new_denied_report_bis',
+          type: 'data_record',
+          reported_date: 1,
+          place_id: '888888',
+          form: 'some-form',
+          contact: {_id: 'fixture:steveville'}
+        }
+      ];
+      const newIds = ['new_allowed_contact_bis', 'new_allowed_report_bis'];
+      bobsIds.push(...newIds);
+      newIds.push(...DEFAULT_EXPECTED);
+      return utils
+        .updateSettings({ changes_controller: _.defaults({ reiterate_changes: false }, defaultSettings) }, true)
+        .then(() => getCurrentSeq('bob'))
+        .then(() => {
+          return Promise
+            .all([
+              consumeChanges('bob', [], currentSeq),
+              utils.saveDocs(newDocs)
+            ])
+            .then(([changes]) => {
+              if (changes.results.length >= 2) {
+                return changes;
+              }
+              return consumeChanges('bob', [], currentSeq);
+            })
+            .then(changes => {
+              console.log(JSON.stringify(changes));
+              expect(changes.results.length).toBeGreaterThanOrEqual(2);
+              expect(changes.results.every(change => newIds.indexOf(change.id) !== -1)).toBe(true);
+            });
+        });
+    });
+
+    it('filters allowed deletes in longpolls', () => {
+      const allowedDocs = createSomeContacts(3, 'fixture:bobville');
+      const deniedDocs = createSomeContacts(3, 'irrelevant-place');
+      bobsIds.push(..._.pluck(allowedDocs, '_id'));
+
+      return Promise
+        .all([
+          utils.saveDocs(allowedDocs),
+          utils.saveDocs(deniedDocs),
+        ])
+        .then(([ allowedDocsResult, deniedDocsResult ]) => {
+          allowedDocsResult.forEach((doc, idx) => allowedDocs[idx]._rev = doc.rev);
+          deniedDocsResult.forEach((doc, idx) => deniedDocs[idx]._rev = doc.rev);
+          return getCurrentSeq('bob');
+        })
+        .then(() => Promise.all([
+          requestChanges('bob', { since: currentSeq, feed: 'longpoll' }),
+          utils.saveDocs(deniedDocs.map(doc => _.extend(doc, { _deleted: true }))),
+          utils.saveDocs(allowedDocs.map(doc => _.extend(doc, { _deleted: true })))
+        ]))
+        .then(([ changes ]) => {
+          console.log(JSON.stringify(changes));
+          expect(changes.results.every(change => bobsIds.indexOf(change.id) !== -1)).toBe(true);
+          expect(changes.results.every(change => change.deleted || DEFAULT_EXPECTED.indexOf(change.id) !== -1)).toBe(true);
+        });
+    });
+
+    it('filters deletions (tombstones)', () => {
+      const allowedDocs = createSomeContacts(5, 'fixture:steveville');
+      const deniedDocs = createSomeContacts(5, 'irrelevant-place');
+      stevesIds.push(..._.pluck(allowedDocs, '_id'));
+      const allowedDocIds = allowedDocs.map(doc => doc._id);
+
+      return Promise
+        .all([
+          utils.saveDocs(allowedDocs),
+          utils.saveDocs(deniedDocs)
+        ])
+        .then(([ allowedDocsResult, deniedDocsResult ]) => {
+          allowedDocsResult.forEach((doc, idx) => allowedDocs[idx]._rev = doc.rev);
+          deniedDocsResult.forEach((doc, idx) => deniedDocs[idx]._rev = doc.rev);
+          return requestChanges('steve');
+        })
+        .then(changes => {
+          assertChangeIds(changes,
+            'org.couchdb.user:steve',
+            'fixture:steveville',
+            'fixture:user:steve',
+            ...allowedDocIds);
+          return getCurrentSeq('steve');
+        })
+        .then(() => {
+          return Promise.all([
+            utils.saveDocs(deniedDocs.map(doc => _.extend(doc, { _deleted: true }))),
+            utils.saveDocs(allowedDocs.map(doc => _.extend(doc, { _deleted: true }))),
+          ]);
+        })
+        .then(() => requestChanges('steve'))
+        .then(changes => {
+          assertChangeIds(changes,
+            'org.couchdb.user:steve',
+            'fixture:steveville',
+            'fixture:user:steve');
+          return Promise.resolve();
+        })
+        .then(() => consumeChanges('steve', [], currentSeq))
+        .then(changes => {
+          expect(changes.results.every(change => stevesIds.indexOf(change.id) !== -1)).toBe(true);
+          expect(changes.results.every(change => change.deleted || DEFAULT_EXPECTED.indexOf(change.id) !== -1)).toBe(true);
+        });
+    });
+
+    it('filters deletions (tombstones) for concurrent users', () => {
+      const allowedBob = createSomeContacts(3, 'fixture:bobville');
+      const allowedSteve = createSomeContacts(3, 'fixture:steveville');
+      bobsIds.push(..._.pluck(allowedBob, '_id'));
+      stevesIds.push(..._.pluck(allowedSteve, '_id'));
+      let bobsSeq = 0,
+          stevesSeq = 0;
+
+      return Promise
+        .all([
+          utils.saveDocs(allowedBob),
+          utils.saveDocs(allowedSteve)
+        ])
+        .then(([ allowedBobResult, allowedSteveResult ]) => {
+          allowedBobResult.forEach((doc, idx) => allowedBob[idx]._rev = doc.rev);
+          allowedSteveResult.forEach((doc, idx) => allowedSteve[idx]._rev = doc.rev);
+          return Promise.all([
+            requestChanges('bob'),
+            requestChanges('steve')
+          ]);
+        })
+        .then(([ bobsChanges, stevesChanges ]) => {
+          bobsSeq = bobsChanges.last_seq;
+          stevesSeq = stevesChanges.last_seq;
+          return Promise.all([
+            utils.saveDocs(allowedBob.map(doc => _.extend(doc, { _deleted: true }))),
+            utils.saveDocs(allowedSteve.map(doc => _.extend(doc, { _deleted: true }))),
+          ]);
+        })
+        .then(() => Promise.all([
+          consumeChanges('bob', [], bobsSeq),
+          consumeChanges('steve', [], stevesSeq),
+        ]))
+        .then(([ bobsChanges, stevesChanges ]) => {
+          expect(bobsChanges.results.every(change => bobsIds.indexOf(change.id) !== -1)).toBe(true);
+          expect(stevesChanges.results.every(change => stevesIds.indexOf(change.id) !== -1)).toBe(true);
+        });
+    });
+
+    it('returns correct results when user is updated while changes request is active', () => {
+      const allowedBob = createSomeContacts(3, 'fixture:bobville');
+      const allowedSteve = createSomeContacts(3, 'fixture:steveville');
+      bobsIds.push(..._.pluck(allowedBob, '_id'));
+      stevesIds.push(..._.pluck(allowedSteve, '_id'));
+
+      return utils
+        .getDoc('org.couchdb.user:steve')
+        .then(stevesUser => {
+          return Promise.all([
+            requestChanges('steve', { feed: 'longpoll', since: currentSeq }),
+            utils.saveDocs(allowedBob),
+            utils.saveDocs(allowedSteve),
+            utils.saveDoc(_.extend(stevesUser, { facility_id: 'fixture:bobville' })),
+          ]);
+        })
+        .then(([ changes ]) => {
+          expect(changes.results.every(change => bobsIds.indexOf(change.id) !== -1 || change.id === 'org.couchdb.user:steve') ).toBe(true);
+        });
+    });
+  });
+
   it('should filter the changes to relevant ones', () =>
     utils.saveDoc({ type:'clinic', parent:{ _id:'nowhere' } })
       .then(() => utils.saveDoc({ type:'clinic', _id:'very-relevant', parent:{ _id:'fixture:bobville' } }))
@@ -183,7 +573,7 @@ describe('changes handler', () => {
     describe('can_view_unallocated_data_records permission', () => {
 
       it('should be supplied if user has this permission and district_admins_access_unallocated_messages is enabled', () =>
-        utils.updateSettings({district_admins_access_unallocated_messages: true})
+        utils.updateSettings({district_admins_access_unallocated_messages: true}, true)
           .then(() => utils.saveDoc({ _id:'unallocated_report', type:'data_record' }))
           .then(() => requestChanges('bob'))
           .then(changes =>
@@ -283,7 +673,7 @@ describe('changes handler', () => {
 
         return utils.saveDoc(doc);
       })
-      .then(() => requestChanges('chw', null, seq_number))
+      .then(() => requestChanges('chw', { since: seq_number }))
       .then(changes => assertChangeIds(changes, 'visible'));
   });
 });

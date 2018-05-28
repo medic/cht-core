@@ -97,11 +97,13 @@ const putIdLengthDoc = (db, idLengthDoc) =>
 /*
  * Given a collection of ids return an array of those not used already
  */
-const findUnusedIds = (db, freshIds) =>
-  new Promise((resolve, reject) => {
-    db.medic.view('medic-client', 'contacts_by_reference', {
-      keys: [...freshIds].map(id => [ 'shortcode', id ])
-    }, (err, results) => {
+const findUnusedIds = (db, freshIds) => {
+  const keys = [...freshIds].reduce((keys, id) => {
+    keys.push(['shortcode', id], ['tombstone-shortcode', id]);
+    return keys;
+  }, []);
+  return new Promise((resolve, reject) => {
+    db.medic.view('medic-client', 'contacts_by_reference', { keys: keys }, (err, results) => {
       if (err) {
         return reject(err);
       }
@@ -111,10 +113,10 @@ const findUnusedIds = (db, freshIds) =>
       results.rows.forEach(row => {
         uniqueIds.delete(row.key[1]);
       });
-
       resolve(uniqueIds);
     });
   });
+};
 
 const generateNewIds = (currentIdLength) => {
   const freshIds = new Set();

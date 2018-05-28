@@ -54,6 +54,7 @@ describe('ids', () => {
     let idToUse;
     const db = mockDb(ids => {
       idToUse = ids.shift();
+      ids.shift(); // skip the tombstone-shortcode key with the same ID
       return ids;
     });
 

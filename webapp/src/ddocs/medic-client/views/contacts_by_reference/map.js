@@ -1,4 +1,10 @@
 function(doc) {
+  var tombstone = false;
+  if (doc.type === 'tombstone' && doc.tombstone) {
+    tombstone = true;
+    doc = doc.tombstone;
+  }
+
   if (doc.type === 'clinic' ||
       doc.type === 'health_center' ||
       doc.type === 'district_hospital' ||
@@ -6,6 +12,9 @@ function(doc) {
       doc.type === 'person') {
 
     var emitReference = function(prefix, key) {
+      if (tombstone) {
+        prefix = 'tombstone-' + prefix;
+      }
       emit([ prefix, String(key) ], doc.reported_date);
     };
 

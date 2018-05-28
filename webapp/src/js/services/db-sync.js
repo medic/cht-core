@@ -41,63 +41,53 @@ angular.module('inboxServices').factory('DBSync',
       var options = {
         live: true,
         retry: true,
-        timeout: 134217728, // Erlang's max integer on 32 bit arch (#4199)
         heartbeat: 10000,
         back_off_function: backOffFunction
       };
       if (direction === 'to') {
         options.checkpoint = 'source';
         options.filter = readOnlyFilter;
-        return $q.resolve(options);
+        return options;
       } else {
-        return DB().allDocs().then(function(result) {
-          // TODO reenable this when single sided checkpointing is fixed:
-          //      https://github.com/pouchdb/pouchdb/issues/6730
-          // options.checkpoint = 'target';
-          options.doc_ids = _.pluck(result.rows, 'id');
-          return options;
-        });
+        // TODO reenable this when single sided checkpointing is fixed:
+        //      https://github.com/pouchdb/pouchdb/issues/6730
+        // options.checkpoint = 'target';
+        return options;
       }
     };
 
     var replicate = function(direction, updateListener) {
-      return getOptions(direction)
-        .then(function(options) {
-          var remote = DB({ remote: true });
-          return DB().replicate[direction](remote, options)
-            .on('active', function() {
-              if (updateListener) {
-                updateListener({ direction: direction, status: 'in_progress' });
-              }
-            })
-            .on('denied', function(err) {
-              // In theory this could be caused by 401s
-              // TODO: work out what `err` looks like and navigate to login
-              // when we detect it's a 401
-              $log.error('Denied replicating ' + direction + ' remote server', err);
-            })
-            .on('error', function(err) {
-              $log.error('Error replicating ' + direction + ' remote server', err);
-              if (updateListener) {
-                updateListener({ direction: direction, status: 'required' });
-              }
-            })
-            .on('paused', function(err) {
-              if (updateListener) {
-                var status = err ? 'required' : 'not_required';
-                updateListener({ direction: direction, status: status });
-              }
-            })
-            .on('complete', function (info) {
-              if (!info.ok && authenticationIssue(info.errors)) {
-                Session.navigateToLogin();
-              }
-            });
+      var options = getOptions(direction);
+      var remote = DB({ remote: true });
+      return DB().replicate[direction](remote, options)
+        .on('active', function() {
+          if (updateListener) {
+            updateListener({ direction: direction, status: 'in_progress' });
+          }
         })
-        .catch(function(err) {
-          $log.error('Error getting sync options', err);
+        .on('denied', function(err) {
+          // In theory this could be caused by 401s
+          // TODO: work out what `err` looks like and navigate to login
+          // when we detect it's a 401
+          $log.error('Denied replicating ' + direction + ' remote server', err);
+        })
+        .on('error', function(err) {
+          $log.error('Error replicating ' + direction + ' remote server', err);
+          if (updateListener) {
+            updateListener({ direction: direction, status: 'required' });
+          }
+        })
+        .on('paused', function(err) {
+          if (updateListener) {
+            var status = err ? 'required' : 'not_required';
+            updateListener({ direction: direction, status: status });
+          }
+        })
+        .on('complete', function (info) {
+          if (!info.ok && authenticationIssue(info.errors)) {
+            Session.navigateToLogin();
+          }
         });
-
     };
 
     var replicateTo = function(updateListener) {

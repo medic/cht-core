@@ -224,5 +224,23 @@ module.exports = {
 
       callback(null, username);
     });
+  },
+
+  getUserSettings: function(userCtx, callback) {
+    const _getUserSettings = (resolve, reject) => {
+      db.medic.get('org.couchdb.user:' + userCtx.name, function(err, user) {
+        if (err) {
+          return reject(err);
+        }
+
+        return resolve(user);
+      });
+    };
+
+    if (!callback) {
+      return new Promise(_getUserSettings);
+    }
+
+    _getUserSettings(_.partial(callback, null), callback);
   }
 };

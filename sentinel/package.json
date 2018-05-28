@@ -9,6 +9,7 @@
   },
   "dependencies": {
     "@shared-libs/message-utils": "file:../shared-libs/message-utils",
+    "@shared-libs/tombstone-utils": "file:../shared-libs/tombstone-utils",
     "async": "^2.6.0",
     "bikram-sambat": "^1.5.0",
     "couchdb-audit": "^1.1.1",
@@ -35,6 +36,7 @@
   },
   "bundledDependencies": [
     "@shared-libs/message-utils",
+    "@shared-libs/tombstone-utils",
     "async",
     "bikram-sambat",
     "couchdb-audit",

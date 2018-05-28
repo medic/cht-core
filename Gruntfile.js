@@ -374,7 +374,7 @@ module.exports = function(grunt) {
       },
       'reset-test-databases': {
         stderr: false,
-        cmd: ['medic-test', 'medic-audit-test']
+        cmd: ['medic-test', 'medic-test-audit']
                 .map(name => `curl -X DELETE http://admin:pass@localhost:5984/${name}`)
                 .join(' && ')
       },
@@ -449,7 +449,6 @@ module.exports = function(grunt) {
             'patch webapp/node_modules/moment/locale/hi.js < patches/moment-hindi-use-euro-numerals.patch',
 
             // patch pouch to:
-            // * ignore doc_ids when generating replication id (https://github.com/medic/medic-webapp/issues/2404)
             // * improve safari checks (https://github.com/medic/medic-webapp/issues/2797)
             'patch webapp/node_modules/pouchdb-browser/lib/index.js < patches/pouchdb-browser.patch',
           ];
@@ -596,13 +595,6 @@ module.exports = function(grunt) {
           configFile: 'tests/performance.tests-only.conf.js',
         }
       },
-    },
-    nodeunit: {
-      api: [
-        'api/tests/unit/**/*.js',
-        '!api/tests/unit/utils.js',
-        '!api/tests/unit/integration/**/*.js',
-      ]
     },
     mochaTest: {
       unit: {
@@ -853,7 +845,6 @@ module.exports = function(grunt) {
     'karma:admin',
     'exec:shared-lib-unit',
     'env:unit-test',
-    'nodeunit',
     'mochaTest:unit',
     'env:general',
   ]);
@@ -885,7 +876,6 @@ module.exports = function(grunt) {
     'karma:admin',
     'exec:shared-lib-unit',
     'env:unit-test',
-    'nodeunit',
     'mochaTest:unit',
   ]);
 

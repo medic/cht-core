@@ -29,7 +29,7 @@ describe('Protractor utils', () => {
         .then(() => {
           const deleteOptions = request.args[1][0];
           assert.equal(deleteOptions.path.includes('_bulk_docs'), true);
-          assert.deepEqual(JSON.parse(deleteOptions.body), {docs: [{_id: 'ME', _deleted: true}]});
+          assert.deepEqual(JSON.parse(deleteOptions.body), {docs: [{_id: 'ME', _deleted: true, type: 'tombstone'}]});
         });
     });
     it('Supports extra strings as exceptions', () => {
@@ -44,7 +44,7 @@ describe('Protractor utils', () => {
         .then(() => {
           const deleteOptions = request.args[1][0];
           assert.equal(deleteOptions.path.includes('_bulk_docs'), true);
-          assert.deepEqual(JSON.parse(deleteOptions.body), {docs: [{_id: 'ME', _deleted: true}]});
+          assert.deepEqual(JSON.parse(deleteOptions.body), {docs: [{_id: 'ME', _deleted: true, type: 'tombstone'}]});
         });
     });
     it('Supports extra regex as exceptions', () => {
@@ -59,7 +59,7 @@ describe('Protractor utils', () => {
         .then(() => {
           const deleteOptions = request.args[1][0];
           assert.equal(deleteOptions.path.includes('_bulk_docs'), true);
-          assert.deepEqual(JSON.parse(deleteOptions.body), {docs: [{_id: 'ME', _deleted: true}]});
+          assert.deepEqual(JSON.parse(deleteOptions.body), {docs: [{_id: 'ME', _deleted: true, type: 'tombstone'}]});
         });
     });
     it('Supports extra functions as exceptions', () => {
@@ -74,7 +74,7 @@ describe('Protractor utils', () => {
         .then(() => {
           const deleteOptions = request.args[1][0];
           assert.equal(deleteOptions.path.includes('_bulk_docs'), true);
-          assert.deepEqual(JSON.parse(deleteOptions.body), {docs: [{_id: 'ME', _deleted: true}]});
+          assert.deepEqual(JSON.parse(deleteOptions.body), {docs: [{_id: 'ME', _deleted: true, type: 'tombstone'}]});
         });
     });
   });
