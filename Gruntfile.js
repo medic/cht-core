@@ -497,7 +497,7 @@ module.exports = function(grunt) {
       'admin-templates': {
         files: ['admin/src/templates/**/*','!admin/src/templates/index.html'],
         tasks: [
-          'ngtemplates:admin',
+          'ngtemplates:adminApp',
           'couch-compile:secondary',
           'couch-push:localhost-secondary',
           'notify:deployed',
@@ -526,7 +526,7 @@ module.exports = function(grunt) {
       'webapp-templates': {
         files: ['webapp/src/templates/**/*','!webapp/src/templates/inbox.html'],
         tasks: [
-          'ngtemplates:webapp',
+          'ngtemplates:inboxApp',
           'appcache',
           'couch-compile:primary',
           'deploy',
@@ -620,7 +620,7 @@ module.exports = function(grunt) {
       }
     },
     ngtemplates: {
-      webapp: {
+      inboxApp: {
         cwd: 'webapp/src',
         src: [
           'templates/modals/**/*.html',
@@ -641,7 +641,7 @@ module.exports = function(grunt) {
           }
         }
       },
-      admin: {
+      adminApp: {
         cwd: 'admin/src',
         src: [
           'templates/**/*.html',
@@ -752,7 +752,7 @@ module.exports = function(grunt) {
   grunt.registerTask('mmjs', 'Build the JS resources', [
     'browserify:webapp',
     'replace:update-app-constants',
-    'ngtemplates:webapp'
+    'ngtemplates:inboxApp'
   ]);
 
   grunt.registerTask('mmcss', 'Build the CSS resources', [
@@ -803,7 +803,7 @@ module.exports = function(grunt) {
 
   grunt.registerTask('build-admin', 'Build the admin app', [
     'copy:admin-resources',
-    'ngtemplates:admin',
+    'ngtemplates:adminApp',
     'browserify:admin',
     'less:admin',
   ]);
