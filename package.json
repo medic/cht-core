@@ -9,7 +9,7 @@
   },
   "engines": {
     "node": ">=8.11.0",
-    "yarn": "1.6.0"
+    "yarn": "1.7.0"
   },
   "scripts": {
     "start": "nf start",
