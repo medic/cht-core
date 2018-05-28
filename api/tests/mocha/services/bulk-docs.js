@@ -26,8 +26,7 @@ describe('Bulk Docs Service', function () {
 
   describe('Bulk Delete', function () {
     it('calls allDocs with correct args', function () {
-      const allDocs = sinon.stub().resolves({ rows: [] });
-      db.medic = { allDocs: allDocs };
+      const allDocs = sinon.stub(db.medic, 'allDocs').resolves({ rows: [] });
       return service.bulkDelete(testDocs, testRes)
         .then(() => {
           allDocs.callCount.should.equal(1);
@@ -39,15 +38,13 @@ describe('Bulk Docs Service', function () {
       const docA = { _id: 'a', _rev: '1' };
       const docB = { _id: 'b', _rev: '1' };
       const docC = { _id: 'c', _rev: '1' };
-      const allDocs = sinon.stub().resolves({
+      const allDocs = sinon.stub(db.medic, 'allDocs').resolves({
         rows: [{ doc: docA }, { doc: docB }, { doc: docC }]
       });
 
-      const bulkDocs = sinon.stub();
+      const bulkDocs = sinon.stub(db.medic, 'bulkDocs');
       bulkDocs.onCall(0).resolves([{ ok: true }, { ok: true }]);
       bulkDocs.onCall(1).resolves([{ ok: true }]);
-
-      db.medic = { allDocs: allDocs, bulkDocs: bulkDocs };
 
       return service.bulkDelete(testDocs, testRes, { batchSize: 2 })
         .then(() => {

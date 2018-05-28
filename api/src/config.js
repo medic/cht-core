@@ -125,10 +125,8 @@ module.exports = {
       .on('change', change => {
         if (change.id === '_design/medic') {
           console.log('Detected ddoc change - reloading');
-          translations.run(err => {
-            if (err) {
-              console.error('Failed to update translation docs', err);
-            }
+          translations.run().catch(err => {
+            console.error('Failed to update translation docs', err);
           });
           ddocExtraction.run().catch(err => {
             console.error('Something went wrong trying to extract ddocs', err);
