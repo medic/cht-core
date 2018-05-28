@@ -124,7 +124,7 @@ describe('Changes controller', () => {
   });
 
   describe('init', () => {
-    it('initializes the continuous changes feed and used constants', () => {
+    xit('initializes the continuous changes feed and used constants', () => {
       db.medic._ajax.callsArgWith(1, null, 20);
       defaultSettings.reiterate_changes = false;
       return controller._init().then(() => {

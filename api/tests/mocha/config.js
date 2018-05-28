@@ -21,7 +21,7 @@ describe('Config', () => {
     sinon.stub(db.medic, 'changes').returns({ on: on });
     sinon.stub(viewMapUtils, 'loadViewMaps');
     sinon.stub(ddocExtraction, 'run').resolves();
-    sinon.stub(translations, 'run');
+    sinon.stub(translations, 'run').resolves();
     sinon.stub(settingsService, 'get').resolves();
     sinon.stub(settingsService, 'update').resolves();
   });

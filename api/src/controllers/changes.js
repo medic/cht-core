@@ -9,7 +9,7 @@ const auth = require('../auth'),
       config = require('../config'),
       DEFAULT_MAX_DOC_IDS = 100;
 
-const { COUCH_NODE_NAME, COUCH_URL } = process.env;
+const { COUCH_NODE_NAME='', COUCH_URL='' } = process.env;
 
 let inited = false,
     continuousFeed = false,
