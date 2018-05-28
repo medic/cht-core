@@ -34,7 +34,7 @@ before_install:
   - ./scripts/travis/couch-start
   - pip install --user awscli
   - export PATH=$PATH:$HOME/.local/bin
-  - '[[ -z "$USE_YARN" ]] || curl -o- -L https://yarnpkg.com/install.sh | bash -s'
+  - '[[ -z "$USE_YARN" ]] || curl -o- -L https://yarnpkg.com/install.sh | bash -s -- --version 1.7.0'
   - export PATH=$HOME/.yarn/bin:$PATH
 
 install:
