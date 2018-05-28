@@ -85,6 +85,10 @@ const _ddocExtraction = callback => ddocExtraction.run()
   .then(() => callback())
   .catch(callback);
 
+const _translations = callback => translations.run()
+  .then(() => callback())
+  .catch(callback);
+
 async.series([
   nodeVersionCheck,
   envVarsCheck,
@@ -102,7 +106,7 @@ async.series([
   async.asyncify(config.listen),
 
   asyncLog('Merging translations…'),
-  translations.run,
+  _translations,
   asyncLog('Translations merged successfully'),
 
   asyncLog('Running db migrations…'),
