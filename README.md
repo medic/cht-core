@@ -178,7 +178,7 @@ All text labels in the app are localized. See the [translation documentation](ht
 Check out the [Gruntfile](Gruntfile.js) for all the tests you can run.
 
 ### Unit tests
-They live in the `tests` directories of each app. Run them with grunt: `grunt unit_continuous`.
+They live in the `tests` directories of each app. Run them with grunt: `grunt unit-continuous`.
 
 ### End to End tests
 They live in [tests](tests). To run them:
@@ -187,7 +187,7 @@ They live in [tests](tests). To run them:
 2. Run tests: `grunt e2e`
 
 ### API integration tests
-`grunt api_e2e`
+`grunt api-e2e`
 
 ### Integration tests
 [Travis](https://travis-ci.org/medic/medic-webapp) runs `grunt ci` every time some new code is pushed to github.
