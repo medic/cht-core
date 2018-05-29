@@ -18,7 +18,8 @@ let inited = false,
     MAX_DOC_IDS;
 
 const split = (array, count) => {
-  if (count === null || count < 1) {
+  count = Number.parseInt(count);
+  if (Number.isNaN(count) || count < 1) {
     return [array];
   }
   const result = [];
