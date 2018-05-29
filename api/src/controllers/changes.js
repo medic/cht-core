@@ -4,12 +4,11 @@ const auth = require('../auth'),
       _ = require('underscore'),
       serverUtils = require('../server-utils'),
       heartbeatFilter = require('../services/heartbeat-filter'),
+      dbConfig = require('../services/db-config'),
       tombstoneUtils = require('@shared-libs/tombstone-utils'),
       uuid = require('uuid/v4'),
       config = require('../config'),
       DEFAULT_MAX_DOC_IDS = 100;
-
-const { COUCH_NODE_NAME='', COUCH_URL='' } = process.env;
 
 let inited = false,
     continuousFeed = false,
@@ -364,23 +363,15 @@ const getCouchDbConfig = () => {
   // limit on processing changes feeds with the _doc_ids filter within a
   // reasonable amount of time.
   // While hardcoded at first, CouchDB 2.1.1 has the option to configure this value
-  const couchUrl = COUCH_URL.replace(/\/$/, '');
-  const serverUrl = couchUrl.slice(0, couchUrl.lastIndexOf('/'));
-  return new Promise(resolve => {
-    db.medic._ajax(
-      { url: `${serverUrl}/_node/${COUCH_NODE_NAME}/_config/couchdb/changes_doc_ids_optimization_threshold` },
-      (err, value) => {
-        if (err) {
-          console.log('Could not read changes_doc_ids_optimization_threshold config value.');
-          console.log(err);
-          MAX_DOC_IDS = DEFAULT_MAX_DOC_IDS;
-          return resolve();
-        }
-
-        MAX_DOC_IDS = value;
-        resolve();
-      });
-  });
+  return dbConfig.get('couchdb', 'changes_doc_ids_optimization_threshold')
+    .catch(err => {
+      console.log('Could not read changes_doc_ids_optimization_threshold config value.');
+      console.log(err);
+      return DEFAULT_MAX_DOC_IDS;
+    })
+    .then(value => {
+      MAX_DOC_IDS = value;
+    });
 };
 
 const init = () => {

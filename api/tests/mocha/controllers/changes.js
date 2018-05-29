@@ -8,9 +8,8 @@ const sinon = require('sinon').sandbox.create(),
       EventEmitter = require('events'),
       _ = require('underscore'),
       serverUtils = require('../../../src/server-utils'),
-      config = require('../../../src/config');
-
-const { COUCH_URL, COUCH_NODE_NAME } = process.env;
+      config = require('../../../src/config'),
+      dbConfig = require('../../../src/services/db-config');
 
 require('chai').should();
 let testReq,
@@ -113,19 +112,17 @@ describe('Changes controller', () => {
       this.then(result => complete(null, result), complete);
     };
     inherits(ChangesEmitter, EventEmitter);
-    const changes = (opts) => {
+
+    sinon.stub(db.medic, 'changes').callsFake(opts => {
       const emitter = new ChangesEmitter(opts);
       emitters.push(emitter);
       return emitter;
-    };
-
-    db.medic.changes = changes;
-    db.medic._ajax = sinon.stub().callsArgWith(1, null, 100);
+    });
   });
 
   describe('init', () => {
-    xit('initializes the continuous changes feed and used constants', () => {
-      db.medic._ajax.callsArgWith(1, null, 20);
+    it('initializes the continuous changes feed and used constants', () => {
+      const configGet = sinon.stub(dbConfig, 'get').resolves(20);
       defaultSettings.reiterate_changes = false;
       return controller._init().then(() => {
         changesSpy.callCount.should.equal(1);
@@ -138,15 +135,14 @@ describe('Changes controller', () => {
         controller._inited().should.equal(true);
         controller._getContinuousFeed().should.equal(emitters[0]);
         controller._getMaxDocIds().should.equal(20);
-        db.medic._ajax.callCount.should.equal(1);
-        db.medic._ajax.args[0][0].should.deep.equal({ url:
-          COUCH_URL.slice(0, COUCH_URL.indexOf('medic')) +
-          `_node/${COUCH_NODE_NAME}/_config/couchdb/changes_doc_ids_optimization_threshold`});
+        configGet.callCount.should.equal(1);
+        configGet.args[0][0].should.equal('couchdb');
+        configGet.args[0][1].should.equal('changes_doc_ids_optimization_threshold');
       });
     });
 
     it('uses default values when couchDB config request fails', () => {
-      db.medic._ajax.callsArgWith(1, 'error');
+      sinon.stub(dbConfig, 'get').returns(Promise.reject('boom'));
       return controller._init().then(() => {
         controller._getMaxDocIds().should.equal(100);
       });
@@ -327,7 +323,7 @@ describe('Changes controller', () => {
 
   describe('getChanges', () => {
     it('requests changes with correct default parameters', () => {
-      db.medic._ajax.callsArgWith(1, null, 40);
+      sinon.stub(dbConfig, 'get').resolves(40);
       authorization.getAllowedDocIds.resolves(['d1', 'd2', 'd3']);
       return controller
         .request(proxy, testReq, testRes)
@@ -344,7 +340,7 @@ describe('Changes controller', () => {
 
     it('requests changes with correct query parameters', () => {
       testReq.query = { limit: 20, view: 'test', something: 'else', conflicts: true, seq_interval: false, since: '22'};
-      db.medic._ajax.callsArgWith(1, null, 40);
+      sinon.stub(dbConfig, 'get').resolves(40);
       authorization.getAllowedDocIds.resolves(['d1', 'd2', 'd3']);
       return controller
         .request(proxy, testReq, testRes)
@@ -363,7 +359,7 @@ describe('Changes controller', () => {
     });
 
     it('splits allowedDocIds into correct sized chunks', () => {
-      db.medic._ajax.callsArgWith(1, null, 10);
+      sinon.stub(dbConfig, 'get').resolves(10);
       const allowedIds = Array.from({length: 40}, () => Math.floor(Math.random() * 40));
       authorization.getAllowedDocIds.resolves(allowedIds.slice());
 
@@ -388,7 +384,7 @@ describe('Changes controller', () => {
     });
 
     it('cancels all upstream requests and restarts them when one of them fails', () => {
-      db.medic._ajax.callsArgWith(1, null, 10);
+      sinon.stub(dbConfig, 'get').resolves(10);
       const allowedIds = Array.from({length: 40}, () => Math.floor(Math.random() * 40));
       authorization.getAllowedDocIds.resolves(allowedIds.slice());
 
@@ -418,7 +414,7 @@ describe('Changes controller', () => {
     });
 
     it('sends empty response when any of the change feeds are canceled', () => {
-      db.medic._ajax.callsArgWith(1, null, 10);
+      sinon.stub(dbConfig, 'get').resolves(10);
       const validatedIds = Array.from({length: 40}, () => Math.floor(Math.random() * 40));
       authorization.getAllowedDocIds.resolves(validatedIds);
       testReq.query = { since: 1 };
@@ -442,7 +438,7 @@ describe('Changes controller', () => {
     });
 
     it('sends complete response when change feeds are finished', () => {
-      db.medic._ajax.callsArgWith(1, null, 10);
+      sinon.stub(dbConfig, 'get').resolves(10);
       const validatedIds = Array.from({length: 40}, () => Math.floor(Math.random() * 40));
       authorization.getAllowedDocIds.resolves(validatedIds);
       testReq.query = { since: 0 };
@@ -515,7 +511,7 @@ describe('Changes controller', () => {
     });
 
     it('when no normal results are received for a non-longpoll, and the results were not canceled, retry', () => {
-      db.medic._ajax.callsArgWith(1, null, 10);
+      sinon.stub(dbConfig, 'get').resolves(10);
       const validatedIds = Array.from({length: 40}, () => Math.floor(Math.random() * 40));
       authorization.getAllowedDocIds.resolves(validatedIds);
 
@@ -564,7 +560,7 @@ describe('Changes controller', () => {
 
     it('cancels all upstreamRequests when request is closed', () => {
       authorization.getAllowedDocIds.resolves([1, 2, 3, 4, 5, 6]);
-      db.medic._ajax.callsArgWith(1, null, 2);
+      sinon.stub(dbConfig, 'get').resolves(2);
       return controller
         .request(proxy, testReq, testRes)
         .then(nextTick)
@@ -1284,7 +1280,7 @@ describe('Changes controller', () => {
     });
 
     it('resets the feed to being a normal feed if new subjects are added', () => {
-      db.medic._ajax.callsArgWith(1, null, 2);
+      sinon.stub(dbConfig, 'get').resolves(2);
       defaultSettings.reiterate_changes = false;
       testReq.query = { feed: 'longpoll', since: 'seq' };
       testReq.uniqId = 'myFeed';
@@ -1444,7 +1440,7 @@ describe('Changes controller', () => {
 
     it('cancels all upstreamRequests when the timeout is reached', () => {
       authorization.getAllowedDocIds.resolves([1, 2, 3, 4, 5, 6]);
-      db.medic._ajax.callsArgWith(1, null, 2);
+      sinon.stub(dbConfig, 'get').resolves(2);
       testReq.query = { timeout: 50000 };
       return controller
         .request(proxy, testReq, testRes)
