@@ -89,6 +89,10 @@ const _translations = callback => translations.run()
   .then(() => callback())
   .catch(callback);
 
+const _migrations = callback => migrations.run()
+  .then(() => callback())
+  .catch(callback);
+
 async.series([
   nodeVersionCheck,
   envVarsCheck,
@@ -110,7 +114,7 @@ async.series([
   asyncLog('Translations merged successfully'),
 
   asyncLog('Running db migrations…'),
-  migrations.run,
+  _migrations,
   asyncLog('Database migrations completed successfully'),
 ], err => {
   if (err) {
