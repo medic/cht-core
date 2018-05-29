@@ -18,7 +18,8 @@ let inited = false,
     MAX_DOC_IDS;
 
 const split = (array, count) => {
-  if (count === null || count < 1) {
+  count = Number.parseInt(count);
+  if (Number.isNaN(count) || count < 1) {
     return [array];
   }
   const result = [];
@@ -418,6 +419,7 @@ if (process.env.UNIT_TEST_ENV) {
     _processPendingChanges: processPendingChanges,
     _appendChange: appendChange,
     _mergeResults: mergeResults,
+    _split: split,
     _reset: () => {
       longpollFeeds = [];
       normalFeeds = [];

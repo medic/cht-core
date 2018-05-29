@@ -1852,4 +1852,28 @@ describe('Changes controller', () => {
       testRes.end.callCount.should.equal(1);
     });
   });
+
+  describe('split', () => {
+    it('splits as expected', () => {
+      controller._split([1, 2, 3, 4, 5, 6], 3).should.deep.equal([[1, 2, 3], [4, 5, 6]]);
+      controller._split([1, 2, 3, 4], 3).should.deep.equal([[1, 2, 3], [4]]);
+      controller._split([1, 2, 3, 4], 1).should.deep.equal([[1], [2], [3], [4]]);
+      controller._split([1, 2, 3, 4], 0).should.deep.equal([[1, 2, 3, 4]]);
+
+      const array = Array.from({length: 40}, () => Math.floor(Math.random() * 40)),
+            arrayCopy = [...array];
+      const result = controller._split(array, 10);
+      result.length.should.equal(4);
+      _.flatten(result).should.deep.equal(arrayCopy);
+    });
+
+    it('does not crash with invalid count argument', () => {
+      controller._split([1, 2, 3]).should.deep.equal([[1, 2, 3]]);
+      controller._split([1, 2, 3], null).should.deep.equal([[1, 2, 3]]);
+      controller._split([1, 2, 3], undefined).should.deep.equal([[1, 2, 3]]);
+      controller._split([1, 2, 3], false).should.deep.equal([[1, 2, 3]]);
+      controller._split([1, 2, 3], true).should.deep.equal([[1, 2, 3]]);
+      controller._split([1, 2, 3], 'onehundred').should.deep.equal([[1, 2, 3]]);
+    });
+  });
 });
