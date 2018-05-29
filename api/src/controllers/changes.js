@@ -419,6 +419,7 @@ if (process.env.UNIT_TEST_ENV) {
     _processPendingChanges: processPendingChanges,
     _appendChange: appendChange,
     _mergeResults: mergeResults,
+    _split: split,
     _reset: () => {
       longpollFeeds = [];
       normalFeeds = [];
