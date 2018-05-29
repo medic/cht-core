@@ -188,7 +188,7 @@ describe('migrations', () => {
       }
     }];
     const getLog = sinon.stub(db.medic, 'get');
-    getLog.onCall(0).returns(Promise.reject({ statusCode: 404 }));
+    getLog.onCall(0).returns(Promise.reject({ status: 404 }));
     getLog.onCall(1).resolves({ _id: 'migration-log', type: 'meta', migrations: [] });
     getLog.onCall(2).resolves({ _id: 'migration-log', type: 'meta', migrations: [] });
     const query = sinon.stub(db.medic, 'query').resolves({ rows: [ ] });
@@ -220,7 +220,7 @@ describe('migrations', () => {
     }];
     const oldLog = { _id: 1, type: 'meta', migrations: [ 'xyz' ] };
     const getLog = sinon.stub(db.medic, 'get');
-    getLog.onCall(0).returns(Promise.reject({ statusCode: 404 }));
+    getLog.onCall(0).returns(Promise.reject({ status: 404 }));
     getLog.onCall(1).resolves({ _id: 'migration-log', type: 'meta', migrations: [ 'xyz' ] });
     const query = sinon.stub(db.medic, 'query').resolves({ rows: [ { doc: oldLog } ] });
     sinon.stub(migrations, 'get').resolves(migration);

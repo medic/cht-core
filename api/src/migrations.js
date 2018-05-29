@@ -52,7 +52,7 @@ const createMigrationLog = () => {
 const getLog = () => {
   return db.medic.get(MIGRATION_LOG_ID)
     .catch(err => {
-      if (err.statusCode === 404) {
+      if (err.status === 404) {
         return createMigrationLog();
       }
       throw err;
