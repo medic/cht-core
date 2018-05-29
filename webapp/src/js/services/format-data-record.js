@@ -10,7 +10,8 @@ angular.module('inboxServices').factory('FormatDataRecord',
     $translate,
     DB,
     Language,
-    Settings
+    Settings,
+    FormatDate
   ) {
 
     'ngInject';
@@ -180,32 +181,24 @@ angular.module('inboxServices').factory('FormatDataRecord',
               });
     };
 
-    var capitalizeWord = function(str) {
-      return str.charAt(0).toUpperCase() + str.slice(1);
-    };
-
-    var fromNowOrToday = function(momento, today) {
+    var today = function(momento) {
       var startOfDay = moment().startOf('day');
       var duration = moment.duration(startOfDay.diff(momento));
-      if(duration.asHours < 24) {
-        return capitalizeWord(today);
-      }
-      return null;
+      return duration.asHours < 24;
     };
 
-    var formatDate = function(settings, date, locale, field) {
+    var formatDateField = function(settings, date, field) {
       if (!date) {
-          return;
+        return;
       }
-      var m = moment(date);
+      var dailyPrecisionFields = [
+        'child_birth_date'
+      ];
 
+      var m = moment(date);
       var fromNow = m.fromNow();
-      if(field === 'child_birth_date') {
-        //Daily precision for child birth date
-        var today = fromNowOrToday(m, translate(settings, 'today', locale));
-        if(today) {
-          fromNow = today;
-        }
+      if (_.contains(dailyPrecisionFields, field) && today(m)) {
+        fromNow = FormatDate.relative(m, { withoutTime: true });
       }
 
       return m.format(settings.date_format) +
@@ -237,7 +230,7 @@ angular.module('inboxServices').factory('FormatDataRecord',
         return val === true ? 'True' : 'False';
       }
       if (def.type === 'date') {
-        return formatDate(settings, data_record[key], locale, key);
+        return formatDateField(settings, data_record[key], key);
       }
       if (def.type === 'integer') {
         // use list value for month
@@ -301,7 +294,7 @@ angular.module('inboxServices').factory('FormatDataRecord',
         }
 
         if (_.contains(dateFields, field)) {
-          value = formatDate(settings, value, locale, field);
+          value = formatDateField(settings, value, field);
         }
 
         doc.fields.data.unshift({
