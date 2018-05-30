@@ -35,7 +35,7 @@ You will need to install the following:
 
 [Node.js](https://nodejs.org) 8.11.x and above
 
-[yarn](https://yarnpkg.com/en/) 1.6.0
+[yarn](https://yarnpkg.com/en/) 1.7.0
 
 [CouchDB](https://couchdb.apache.org) v2.x
 
@@ -113,8 +113,10 @@ Create a `.env` file in the app directory with the following contents
 COUCH_URL=http://admin:pass@localhost:5984/medic
 COUCH_NODE_NAME=couchdb@localhost
 ```
-Then install api and sentinel dependencies
+Then install webapp, admin, api and sentinel dependencies
 ```shell
+cd webapp && yarn install && cd ..
+cd admin && yarn install && cd ..
 cd api && yarn install && cd ..
 cd sentinel && yarn install && cd ..
 ```
