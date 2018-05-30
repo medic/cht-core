@@ -85,6 +85,26 @@ describe('messageUtils', () => {
         utils._getRecipient(doc, 'grandparent')
           .should.equal(grandparentPhone);
       });
+      it('resolves clinic based on patient if given', () => {
+        const context = {
+          patient: {
+            parent: {
+              type: 'clinic',
+              contact: {
+                phone: '111'
+              }
+            }
+          },
+          parent: {
+            type: 'clinic',
+            contact: {
+              phone: '222'
+            }
+          }
+        };
+        utils._getRecipient(context, 'clinic')
+          .should.equal('111');
+      });
     });
     it('tries to resolve the value from the fields property', () => {
       utils._getRecipient({fields: {foo: 'bar'}}, 'foo')
@@ -101,6 +121,49 @@ describe('messageUtils', () => {
     it('returns doc.from if the recipient cannot be resolved', () => {
       utils._getRecipient({from: 'foo'}, 'a-recipient')
         .should.equal('foo');
+    });
+  });
+
+  describe('extendedTemplateContext', () => {
+
+    it('picks patient data first', () => {
+      const doc = { name: 'alice', fields: { name: 'bob' } };
+      const patient = { name: 'charles' };
+      const registrations = [{ name: 'doug', fields: { name: 'elisa' } }];
+      const actual = utils._extendedTemplateContext(doc, { patient: patient, registrations: registrations });
+      actual.name.should.equal('charles');
+    });
+
+    it('picks doc.fields properties second', () => {
+      const doc = { name: 'alice', fields: { name: 'bob' } };
+      const patient = { };
+      const registrations = [{ name: 'doug', fields: { name: 'elisa' } }];
+      const actual = utils._extendedTemplateContext(doc, { patient: patient, registrations: registrations });
+      actual.name.should.equal('bob');
+    });
+
+    it('picks doc properties third', () => {
+      const doc = { name: 'alice' };
+      const patient = { };
+      const registrations = [{ name: 'doug', fields: { name: 'elisa' } }];
+      const actual = utils._extendedTemplateContext(doc, { patient: patient, registrations: registrations });
+      actual.name.should.equal('alice');
+    });
+
+    it('picks registration[0].fields properties fourth', () => {
+      const doc = { };
+      const patient = { };
+      const registrations = [{ name: 'doug', fields: { name: 'elisa' } }];
+      const actual = utils._extendedTemplateContext(doc, { patient: patient, registrations: registrations });
+      actual.name.should.equal('elisa');
+    });
+
+    it('picks registration[0].fields properties fifth', () => {
+      const doc = { };
+      const patient = { };
+      const registrations = [{ name: 'doug' }];
+      const actual = utils._extendedTemplateContext(doc, { patient: patient, registrations: registrations });
+      actual.name.should.equal('doug');
     });
   });
 

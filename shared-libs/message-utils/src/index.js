@@ -30,8 +30,7 @@ var getDistrict = function(doc) {
 
 var getClinicPhone = function(doc) {
   var clinic = getClinic(doc);
-  return (clinic && clinic.contact && clinic.contact.phone) ||
-         (doc.contact && doc.contact.phone);
+  return clinic && clinic.contact && clinic.contact.phone;
 };
 
 var getHealthCenterPhone = function(doc) {
@@ -84,11 +83,15 @@ var getRecipient = function(context, recipient) {
   if (recipient === 'reporting_unit') {
     phone = from;
   } else if (recipient === 'clinic') {
-    phone = getClinicPhone(context);
+    phone = getClinicPhone(context.patient) ||
+            getClinicPhone(context) ||
+            (context.contact && context.contact.phone);
   } else if (recipient === 'health_center' || recipient === 'parent') {
-    phone = getHealthCenterPhone(context);
+    phone = getHealthCenterPhone(context.patient) ||
+            getHealthCenterPhone(context);
   } else if (recipient === 'district' || recipient === 'grandparent') {
-    phone = getDistrictPhone(context);
+    phone = getDistrictPhone(context.patient) ||
+            getDistrictPhone(context);
   } else if (context.fields && context.fields[recipient]) {
     // Try to resolve a specified property/field name
     phone = context.fields[recipient];
@@ -122,16 +125,19 @@ var extractTemplateContext = function(doc) {
   var district = getDistrict(doc);
   var internal = {
     clinic: clinic,
-    parent: healthCenter,
     health_center: healthCenter,
+    district: district,
+    // deprecated but kept for backwards compatibility
+    parent: healthCenter,
     grandparent: district,
-    district: district
   };
   return _.defaults(internal, doc.fields, doc);
 };
 
 var extendedTemplateContext = function(doc, extras) {
-  var templateContext = {};
+  var templateContext = {
+    patient: extras.patient
+  };
 
   if (extras.templateContext) {
     _.defaults(templateContext, extras.templateContext);
@@ -145,6 +151,8 @@ var extendedTemplateContext = function(doc, extras) {
     templateContext.patient_name = templateContext.patient_name || extras.patient.name;
   }
 
+  _.defaults(templateContext, extractTemplateContext(doc));
+
   if (extras.registrations && extras.registrations.length) {
     _.defaults(templateContext, extractTemplateContext(extras.registrations[0]));
   }
@@ -155,8 +163,6 @@ var extendedTemplateContext = function(doc, extras) {
     // "registered" through the UI, only creating a patient and no registration report
     throw Error('Cannot provide registrations to template context without a patient');
   }
-
-  _.defaults(templateContext, extractTemplateContext(doc));
 
   return templateContext;
 };
@@ -264,3 +270,4 @@ exports.template = function(config, translate, doc, content, extraContext) {
 };
 
 exports._getRecipient = getRecipient;
+exports._extendedTemplateContext = extendedTemplateContext;
