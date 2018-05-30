@@ -85,6 +85,26 @@ describe('messageUtils', () => {
         utils._getRecipient(doc, 'grandparent')
           .should.equal(grandparentPhone);
       });
+      it('resolves clinic based on patient if given', () => {
+        const context = {
+          patient: {
+            parent: {
+              type: 'clinic',
+              contact: {
+                phone: '111'
+              }
+            }
+          },
+          parent: {
+            type: 'clinic',
+            contact: {
+              phone: '222'
+            }
+          }
+        };
+        utils._getRecipient(context, 'clinic')
+          .should.equal('111');
+      });
     });
     it('tries to resolve the value from the fields property', () => {
       utils._getRecipient({fields: {foo: 'bar'}}, 'foo')
@@ -105,33 +125,6 @@ describe('messageUtils', () => {
   });
 
   describe('extendedTemplateContext', () => {
-
-    it('calculates parent correctly', () => {
-      const doc = {
-        from: 'foo',
-        contact: {
-          parent: {
-            type: 'health_center',
-            contact: { phone: '111' }
-          }
-        }
-      };
-      const extraContext = {
-        patient: {
-          parent: {
-            type: 'clinic',
-            contact: { phone: '222' },
-            parent: {
-              type: 'health_center',
-              contact: { phone: '111' }
-            }
-          }
-        }
-      };
-      const actual = utils._extendedTemplateContext(doc, extraContext);
-      actual.parent.type.should.equal('clinic');
-      actual.grandparent.type.should.equal('health_center');
-    });
 
     it('picks patient data first', () => {
       const doc = { name: 'alice', fields: { name: 'bob' } };

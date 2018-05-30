@@ -30,8 +30,7 @@ var getDistrict = function(doc) {
 
 var getClinicPhone = function(doc) {
   var clinic = getClinic(doc);
-  return (clinic && clinic.contact && clinic.contact.phone) ||
-         (doc.contact && doc.contact.phone);
+  return clinic && clinic.contact && clinic.contact.phone;
 };
 
 var getHealthCenterPhone = function(doc) {
@@ -84,11 +83,15 @@ var getRecipient = function(context, recipient) {
   if (recipient === 'reporting_unit') {
     phone = from;
   } else if (recipient === 'clinic') {
-    phone = getClinicPhone(context);
+    phone = getClinicPhone(context.patient) ||
+            getClinicPhone(context) ||
+            (context.contact && context.contact.phone);
   } else if (recipient === 'health_center' || recipient === 'parent') {
-    phone = getHealthCenterPhone(context);
+    phone = getHealthCenterPhone(context.patient) ||
+            getHealthCenterPhone(context);
   } else if (recipient === 'district' || recipient === 'grandparent') {
-    phone = getDistrictPhone(context);
+    phone = getDistrictPhone(context.patient) ||
+            getDistrictPhone(context);
   } else if (context.fields && context.fields[recipient]) {
     // Try to resolve a specified property/field name
     phone = context.fields[recipient];
@@ -117,18 +120,24 @@ var getLocale = function(config, doc) {
 };
 
 var extractTemplateContext = function(doc) {
+  var clinic = getClinic(doc);
+  var healthCenter = getHealthCenter(doc);
+  var district = getDistrict(doc);
   var internal = {
-    parent: doc && doc.parent,
-    grandparent: doc && doc.parent && doc.parent.parent,
-    clinic: getClinic(doc),
-    health_center: getHealthCenter(doc),
-    district: getDistrict(doc)
+    clinic: clinic,
+    health_center: healthCenter,
+    district: district,
+    // deprecated but kept for backwards compatibility
+    parent: healthCenter,
+    grandparent: district,
   };
   return _.defaults(internal, doc.fields, doc);
 };
 
 var extendedTemplateContext = function(doc, extras) {
-  var templateContext = {};
+  var templateContext = {
+    patient: extras.patient
+  };
 
   if (extras.templateContext) {
     _.defaults(templateContext, extras.templateContext);
