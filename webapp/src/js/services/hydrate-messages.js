@@ -10,15 +10,16 @@ angular.module('inboxServices').factory('HydrateMessages',
     'use strict';
     'ngInject';
 
-    var hydrateMessage = function(doc, contactId, reportedDate) {
-      var contact = null, phone = null, message = null;
+    var hydrateMessage = function(doc, key, date, report) {
+      var contact = null, phone = null, message = null, outgoing = false;
       if(doc.kujua_message) {
+        outgoing = true;
         var task = _.find(doc.tasks, function(task) {
           var msg = task.messages[0];
           if(msg.contact) {
-            return msg.contact._id === contactId;
+            return msg.contact._id === key;
           }
-          return msg.to === contactId;
+          return msg.to === key;
         });
         if(task && task.messages) {
           message = task.messages[0].message;
@@ -31,37 +32,54 @@ angular.module('inboxServices').factory('HydrateMessages',
         phone = doc.from;
       }
 
-      var reportPromise = LineageModelGenerator.reportSubject(contactId)
-        .catch(function(err) {
-          if(err.code !== 404) {
-            throw err;
-          }
-          return $q.resolve(null);
-        });
+      var type = 'unknown', from = doc._id;
+      if(contact) {
+        type = 'contact';
+        from = contact._id;
+      } else if(phone){
+        type = 'phone';
+        from = phone;
+      }
 
-      return reportPromise.then(function(report) {
-        var lineage = report && _.pluck(report.lineage, 'name');
-        return {
-          doc: doc,
-          id: doc._id,
-          key: contactId,
-          contact: report && report.doc.name,
-          lineage: lineage || [],
-          outgoing: doc.kujua_message ? true : false,
-          from: (contact && contact._id) || phone || doc._id,
-          date: reportedDate,
-          type: contact ? 'contact' : phone ? 'phone' : 'unknown',
-          message: message
-        };
-      });
+      var lineage = report && report.lineage;
+      return {
+        doc: doc,
+        id: doc._id,
+        key: key,
+        contact: report && report.doc.name,
+        lineage: lineage || [],
+        outgoing: outgoing,
+        from: from,
+        date: date,
+        type: type,
+        message: message
+      };
     };
 
     return function(rows) {
-      var promises = [];
+      if(!rows || rows.length <= 0) {
+        return $q.resolve([]);
+      }
+      var rowsObject = {}, contactIds = [];
       rows.forEach(function(row) {
-        promises.push(hydrateMessage(row.doc, row.key[0], row.value.date));
+        rowsObject[row.key[0]] = row;
+        if(row.value.contact) {
+          contactIds.push(row.value.contact);
+        }
       });
-      return $q.all(promises);
+
+      return LineageModelGenerator.reportSubjects(contactIds)
+        .then(function(reports) {
+          reports.forEach(function(report) {
+            if(rowsObject[report._id]){
+              rowsObject[report._id].report = report;
+            }
+          });
+          return rows.map(function(row){
+            return hydrateMessage(row.doc, row.key[0],
+                         row.value.date, row.report);
+          });
+      });
     };
   }
 );

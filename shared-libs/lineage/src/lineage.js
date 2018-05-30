@@ -141,6 +141,12 @@ module.exports = function(Promise, DB) {
       });
   };
 
+  var fetchLineageByIds = function(ids) {
+    return fetchDocs(ids).then(function(docs) {
+      return hydrateDocs(docs);
+    });
+  };
+
   var fetchDoc = function(id) {
     return DB.get(id)
       .catch(function(err) {
@@ -391,6 +397,7 @@ module.exports = function(Promise, DB) {
     },
 
     fetchLineageById: fetchLineageById,
+    fetchLineageByIds: fetchLineageByIds,
     minifyLineage: minifyLineage,
     fillContactsInDocs: fillContactsInDocs,
     fillParentsInDocs: fillParentsInDocs,

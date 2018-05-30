@@ -275,6 +275,17 @@ describe('Lineage', function() {
     });
   });
 
+  describe('fetchLineageByIds', function() {
+    it('returns correct lineages', function() {
+      return lineage.fetchLineageByIds([one_parent._id]).then(result => {
+        chai.expect(result).to.have.lengthOf(1);
+        chai.expect(result[0]).to.have.lengthOf(2);
+        chai.expect(result[0][0]).excluding('_rev').to.deep.equal(one_parent);
+        chai.expect(result[0][1]).excluding('_rev').to.deep.equal(dummyDoc);
+      });
+    });
+  });
+
   describe('fetchHydratedDoc', function() {
     it('returns errors from query', function() {
       return lineage.fetchHydratedDoc('abc').then(

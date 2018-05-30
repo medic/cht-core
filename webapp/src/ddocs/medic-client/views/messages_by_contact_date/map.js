@@ -4,7 +4,8 @@ function(doc) {
     var id = (contact && contact._id) || phone || doc._id;
     emit([ id, doc.reported_date ], {
       id: doc._id,
-      date: doc.reported_date
+      date: doc.reported_date,
+      contact: contact && contact._id
     });
   };
 

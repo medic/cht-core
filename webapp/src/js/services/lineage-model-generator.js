@@ -39,6 +39,17 @@ angular.module('inboxServices').factory('LineageModelGenerator',
         });
     };
 
+    var lineageNames = function(doc) {
+      var names = [];
+      var parent = doc.parent;
+      while(parent) {
+        names.push(parent.name);
+        parent = parent.parent;
+      }
+      return names;
+    };
+
+
     return {
       /**
        * Fetch a contact and its lineage by the given uuid. Returns a
@@ -102,6 +113,18 @@ angular.module('inboxServices').factory('LineageModelGenerator',
               doc: docs.shift(),
               lineage: docs
             };
+          });
+      },
+      reportSubjects: function(ids) {
+        return lineage.fetchLineageByIds(ids)
+          .then(function(docs) {
+            return docs.map(function(doc){
+              return {
+                _id: doc._id,
+                doc: doc,
+                lineage: lineageNames(doc)
+              };
+            });
           });
       }
     };
