@@ -13,7 +13,7 @@ The web app is fully responsive with a mobile-first design, and supports localiz
 
 For more information about Medic Mobile's tools, visit http://medicmobile.org/tools.
 For more information about Medic Mobile's architecture and how the pieces fit together, see [Architecture Overview](https://github.com/medic/medic-docs/blob/master/development/architecture.md).
-For more information about the format of docs in the database, see [Database Schema](https://github.com/medic/medic-docs/blob/master/development/db_schema.md).
+For more information about the format of docs in the database, see [Database Schema](https://github.com/medic/medic-docs/blob/master/development/db-schema.md).
 For more information about the SMS exchange protocol between webapp and gateway, see [Message States](https://github.com/medic/medic-docs/blob/master/user/message-states.md).
 
 ## Easy local deployment
@@ -24,7 +24,7 @@ If you want to develop against Medic, follow the Development Setup below.
 
 ## Development Setup
 
-Before getting started, read about our [development workflow](https://github.com/medic/medic-docs/blob/master/md/dev/workflow.md) and the [architecture overview](https://github.com/medic/medic-docs/blob/master/development/architecture.md).
+Before getting started, read about our [development workflow](https://github.com/medic/medic-docs/blob/master/development/workflow.md) and the [architecture overview](https://github.com/medic/medic-docs/blob/master/development/architecture.md).
 
 The setup described below doesn't use [Medic OS](https://github.com/medic/medic-docs/blob/master/development/architecture.md#medic-os), the tools will be run directly on your machine.
 
@@ -88,7 +88,7 @@ $ curl http://localhost:5984 # should fail
 ### Build the webapp
 
 ```shell
-git clone --recursive https://github.com/medic/medic-webapp
+git clone https://github.com/medic/medic-webapp
 cd medic-webapp
 yarn install
 ```
@@ -233,9 +233,9 @@ curl -X DELETE $COUCH_URL
 
 ## Run on Medic OS
 
-[What's Medic OS?](https://github.com/medic/medic-docs/blob/master/development/architecture.md#medic-os)
+[What's Medic OS?](https://github.com/medic/medic-os#about-medic-os)
 
-For development, you can find it useful to [run Medic OS on a VM](https://github.com/medic/medic-docs#setup-medic-os) locally, to leverage VM snapshots, for instance to work with different versions.
+For development, you can find it useful to [run Medic OS on a VM](https://github.com/medic/medic-os#instance-creation-iso) locally, to leverage VM snapshots, for instance to work with different versions.
 
 You can also use Medic-OS for production instances.
 

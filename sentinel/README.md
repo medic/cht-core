@@ -20,7 +20,7 @@ Debug mode:
 ## Overview
 
 Sentinel listens to the CouchDB changes feed and runs a set of
-[transitions](#transitions-api)  on on a given database change.  It also
+[transitions](#additional-documentation) on a given database change.  It also
 manages scheduled tasks like message schedules.
 
 
