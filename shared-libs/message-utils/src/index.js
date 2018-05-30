@@ -117,15 +117,12 @@ var getLocale = function(config, doc) {
 };
 
 var extractTemplateContext = function(doc) {
-  var clinic = getClinic(doc);
-  var healthCenter = getHealthCenter(doc);
-  var district = getDistrict(doc);
   var internal = {
-    clinic: clinic,
-    parent: healthCenter,
-    health_center: healthCenter,
-    grandparent: district,
-    district: district
+    parent: doc && doc.parent,
+    grandparent: doc && doc.parent && doc.parent.parent,
+    clinic: getClinic(doc),
+    health_center: getHealthCenter(doc),
+    district: getDistrict(doc)
   };
   return _.defaults(internal, doc.fields, doc);
 };
@@ -145,6 +142,8 @@ var extendedTemplateContext = function(doc, extras) {
     templateContext.patient_name = templateContext.patient_name || extras.patient.name;
   }
 
+  _.defaults(templateContext, extractTemplateContext(doc));
+
   if (extras.registrations && extras.registrations.length) {
     _.defaults(templateContext, extractTemplateContext(extras.registrations[0]));
   }
@@ -155,8 +154,6 @@ var extendedTemplateContext = function(doc, extras) {
     // "registered" through the UI, only creating a patient and no registration report
     throw Error('Cannot provide registrations to template context without a patient');
   }
-
-  _.defaults(templateContext, extractTemplateContext(doc));
 
   return templateContext;
 };
@@ -264,3 +261,4 @@ exports.template = function(config, translate, doc, content, extraContext) {
 };
 
 exports._getRecipient = getRecipient;
+exports._extendedTemplateContext = extendedTemplateContext;
