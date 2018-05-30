@@ -48,6 +48,7 @@ require('./directives/modal');
 angular.module('filters', ['ngSanitize']);
 require('./filters/resource-icon');
 require('./filters/translate-from');
+require('./filters/build-version');
 
 angular.module('services', []);
 require('./services/blob');

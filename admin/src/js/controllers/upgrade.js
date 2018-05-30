@@ -1,3 +1,5 @@
+var _ = require('underscore');
+
 var IS_PROD_URL = /^https:\/\/[^.]+.app.medicmobile.org\//,
     BUILDS_DB = 'https://staging.dev.medicmobile.org/_couch/builds',
     DEPLOY_DOC_ID = 'horti-upgrade';
@@ -62,58 +64,43 @@ angular.module('controllers').controller('UpgradeCtrl',
 
         var minVersion = Version.minimumNextRelease($scope.currentDeploy.version);
 
-        var viewLookups = [];
+        var builds = function(options) {
+          return buildsDb.query('builds/releases', options)
+            .then(function(results) {
+              results.rows.forEach(function(row) {
+                if (!row.value.version) {
+                  row.value.version = row.id.replace(/^medic:medic:/, '');
+                }
+              });
 
-        var stripIds = function(releases) {
-          releases.forEach(function(release, key, releases) {
-            release.id = release.id.replace(/^medic:medic:/, '');
-            if (release.id === 'master') {
-              releases.splice(0, 0, releases.splice(key, 1)[0]);
-            }
-          });
-
-          return releases;
+              return _.pluck(results.rows, 'value');
+            });
         };
 
-        // NB: Once we rely on CouchDB 2.0 combine these three calls
+        // NB: Once our build server is on CouchDB 2.0 we can combine these three calls
         //     See: http://docs.couchdb.org/en/2.0.0/api/ddoc/views.html#sending-multiple-queries-to-a-view
-        viewLookups.push(
-          buildsDb
-            .query('builds/releases', {
-              startkey: [ 'branch', 'medic', 'medic', {}],
-              endkey: [ 'branch', 'medic', 'medic'],
-              descending: true,
-              limit: 50
-            })
-            .then(function(res) {
-              $scope.versions.branches = stripIds(res.rows);
-            }));
-
-        viewLookups.push(
-          buildsDb
-            .query('builds/releases', {
-              startkey: [ 'beta', 'medic', 'medic', {}],
-              endkey: [ 'beta', 'medic', 'medic', minVersion.major, minVersion.minor, minVersion.patch, minVersion.beta ],
-              descending: true,
-              limit: 50,
-            })
-            .then(function(res) {
-              $scope.versions.betas = stripIds(res.rows);
-            }));
-
-        viewLookups.push(
-          buildsDb
-            .query('builds/releases', {
-              startkey: [ 'release', 'medic', 'medic', {}],
-              endkey: [ 'release', 'medic', 'medic', minVersion.major, minVersion.minor, minVersion.patch],
-              descending: true,
-              limit: 50
-            })
-            .then(function(res) {
-              $scope.versions.releases = stripIds(res.rows);
-            }));
-
-        return $q.all(viewLookups);
+        return $q.all({
+          branches: builds({
+            startkey: [ 'branch', 'medic', 'medic', {}],
+            endkey: [ 'branch', 'medic', 'medic'],
+            descending: true,
+            limit: 50
+          }),
+          betas: builds({
+            startkey: [ 'beta', 'medic', 'medic', {}],
+            endkey: [ 'beta', 'medic', 'medic', minVersion.major, minVersion.minor, minVersion.patch, minVersion.beta ],
+            descending: true,
+            limit: 50,
+          }),
+          releases: builds({
+            startkey: [ 'release', 'medic', 'medic', {}],
+            endkey: [ 'release', 'medic', 'medic', minVersion.major, minVersion.minor, minVersion.patch],
+            descending: true,
+            limit: 50
+          })
+        }).then(function(results) {
+          $scope.versions = results;
+        });
       })
       .catch(function(err) {
         return Translate('instance.upgrade.error.version_fetch')
