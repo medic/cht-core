@@ -32,8 +32,8 @@ describe('Config', () => {
 
   describe('load', () => {
     it('calls back with error when db errors', () => {
-      settingsService.get.rejects('someError');
-      config.load((err) => {
+      settingsService.get.returns(Promise.reject('someError'));
+      return config.load().catch(err => {
         chai.expect(err).to.equal('someError');
         chai.expect(settingsService.update.callCount).to.equal(0);
       });
@@ -45,8 +45,7 @@ describe('Config', () => {
         .withArgs('_design/medic')
         .callsArgWith(1, null, { _id: '_design/medic' });
 
-      config.load((err) => {
-        chai.expect(err).to.equal(undefined);
+      config.load().then(() => {
         chai.expect(settingsService.get.callCount).to.equal(1);
         chai.expect(settingsService.update.callCount).to.equal(1);
         chai.expect(settingsService.update.args[0][0]).to.deep.equal(_.extend({ foo: 'bar' }, defaults));
@@ -78,8 +77,7 @@ describe('Config', () => {
         .withArgs('_design/medic')
         .callsArgWith(1, null, ddoc);
 
-      config.load((err) => {
-        chai.expect(err).to.equal(undefined);
+      return config.load().then(() => {
         chai.expect(db.medic.get.callCount).to.equal(1);
         chai.expect(db.medic.get.args[0][0]).to.equal('_design/medic');
         chai.expect(settingsService.update.callCount).to.equal(0);
