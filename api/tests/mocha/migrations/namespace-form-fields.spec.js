@@ -1,7 +1,7 @@
 const sinon = require('sinon').sandbox.create(),
       chai = require('chai'),
       db = require('../../../src/db-nano'),
-      config = require('../../../src/config'),
+      settingsService = require('../../../src/services/settings'),
       migration = require('../../../src/migrations/namespace-form-fields');
 
 const makeStubs = (...viewBatches) => {
@@ -26,7 +26,7 @@ const makeStubs = (...viewBatches) => {
   }
 
   return {
-    setConfig: sinon.stub(config, 'get').returns(forms),
+    getConfig: sinon.stub(settingsService, 'get').resolves({ forms: forms }),
     bulk: sinon.stub(db.medic, 'bulk').callsArgWith(1, null, null),
     getView: getView
   };
@@ -203,8 +203,7 @@ describe('namespace-form-fields migration', () => {
     ];
 
     const stubs = {
-      setConfig: sinon.stub(config, 'get').returns(forms),
-      loadConfig: sinon.stub(config, 'load').callsArg(0),
+      getConfig: sinon.stub(settingsService, 'get').resolves({ forms: forms }),
       bulk: sinon.stub(db.medic, 'bulk').callsArgWith(1, null,
         [
           {
