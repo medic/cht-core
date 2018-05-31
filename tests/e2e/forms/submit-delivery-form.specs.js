@@ -70,7 +70,7 @@ describe('Submit Delivery Report', () => {
 
   afterAll(utils.afterEach);
 
-  xit('open delivery form', () => {
+  it('open delivery form', () => {
     common.goToReports();
     browser.wait(() => {
       return element(by.css('.action-container .general-actions:not(.ng-hide) .fa-plus')).isPresent();

@@ -239,6 +239,7 @@ describe('Reports Summary', () => {
 
   const loadReport = () => {
     commonElements.goToReports();
+    browser.refresh();
 
     helper.waitElementToBeClickable(element(by.css('.action-container .general-actions:not(.ng-hide) .fa-plus')));
     helper.waitElementToBeClickable(element(by.css('#reports-list .unfiltered li .summary')));
@@ -296,7 +297,7 @@ describe('Reports Summary', () => {
   });
 
   describe('Displays correct LHS and RHS summary', () => {
-    xit('Concerning reports using patient_id', () => {
+    it('Concerning reports using patient_id', () => {
       const REPORT = {
         _id: 'REF_REF_V1',
         form: 'RR',
@@ -326,15 +327,18 @@ describe('Reports Summary', () => {
           testListLineage(['TAG Place', 'Health Center', 'District']);
 
           //RHS
+          browser.wait(() => getElementText('#reports-content .item-summary .sender .phone'),
+            10000
+          );
           expect(getElementText('#reports-content .item-summary .subject .name')).toBe(MARIA.name);
           expect(getElementText('#reports-content .item-summary .subject + div')).toBe('REF_REF');
           testSummaryLineage(['TAG Place', 'Health Center', 'District']);
-          expect(getElementText('#reports-content .item-summary .sender .name')).toMatch(`${CAROL.name}`);
+          expect(getElementText('#reports-content .item-summary .sender .name')).toMatch(`Sent by ${CAROL.name}`);
           expect(getElementText('#reports-content .item-summary .sender .phone')).toBe(CAROL.phone);
         });
     });
 
-    xit('Concerning reports using doc id', () => {
+    it('Concerning reports using doc id', () => {
       const REPORT = {
         _id: 'REF_REF_V2',
         form: 'RR',
@@ -373,7 +377,7 @@ describe('Reports Summary', () => {
         });
     });
 
-    xit('Concerning reports with unknown patient_id', () => {
+    it('Concerning reports with unknown patient_id', () => {
       const REPORT = {
         _id: 'REF_REF_I',
         form: 'RR',
@@ -411,7 +415,7 @@ describe('Reports Summary', () => {
         });
     });
 
-    xit('Concerning reports using patient name', () => {
+    it('Concerning reports using patient name', () => {
       const REPORT = {
         _id: 'NAM_NAM_V',
         form: 'NN',
@@ -494,7 +498,7 @@ describe('Reports Summary', () => {
         });
     });
 
-    xit('Concerning reports using place_id', () => {
+    it('Concerning reports using place_id', () => {
       const REPORT = {
         _id: 'PREF_PREF_V',
         form: 'P',
@@ -532,7 +536,7 @@ describe('Reports Summary', () => {
         });
     });
 
-    xit('Concerning reports using unknown place_id', () => {
+    it('Concerning reports using unknown place_id', () => {
       const REPORT = {
         _id: 'PREF_PREF_I',
         form: 'P',

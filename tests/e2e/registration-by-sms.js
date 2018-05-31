@@ -197,6 +197,7 @@ describe('registration transition', () => {
   };
 
   describe('submits new sms messages', () => {
+    var originalTimeout;
 
     beforeEach(done => {
       const body = {
@@ -215,12 +216,20 @@ describe('registration transition', () => {
         })
         .catch(done.fail);
     });
+    beforeEach(function() {
+      //increasing DEFAULT_TIMEOUT_INTERVAL for this page is very slow and it takes long for the report details to load
+      originalTimeout = jasmine.DEFAULT_TIMEOUT_INTERVAL;
+      jasmine.DEFAULT_TIMEOUT_INTERVAL = 60000;
+    });
 
     afterEach(utils.afterEach);
+    afterAll(function() {
+      jasmine.DEFAULT_TIMEOUT_INTERVAL = originalTimeout;
+    });
 
     const checkItemSummary = () => {
       const summaryElement = element(by.css('#reports-content .item-summary'));
-      expect(summaryElement.element(by.css('.sender .name')).getText()).toMatch(`${CAROL.name}`);
+      expect(summaryElement.element(by.css('.sender .name')).getText()).toMatch(`Sent by ${CAROL.name}`);
       expect(summaryElement.element(by.css('.subject .name')).getText()).toBe('Siobhan');
       expect(summaryElement.element(by.css('.sender .phone')).getText()).toBe(CAROL.phone);
       expect(summaryElement.element(by.css('.position a')).getText()).toBe(BOB_PLACE.name);
@@ -242,7 +251,7 @@ describe('registration transition', () => {
       expect(taskElement.element(by.css('.task-list li .task-state .recipient')).getText()).toBe(' to +64271234567');
     };
 
-    xit('shows content', () => {
+    it('shows content', () => {
       commonElements.goToReports();
       helper.waitElementToBeClickable(element(by.css('.action-container .general-actions:not(.ng-hide) .fa-plus')));
       helper.waitElementToBeClickable(element(by.css('#reports-list .unfiltered li:first-child')));
@@ -251,7 +260,7 @@ describe('registration transition', () => {
       helper.clickElement(element(by.css('#reports-list .unfiltered li:first-child .summary')));
 
       // wait for content to load
-      browser.wait(() => element(by.cssContainingText('#reports-content .item-summary .phone', CAROL.phone)).isPresent(), 10000);
+      browser.wait(() => element(by.cssContainingText('#reports-content .item-summary .phone', CAROL.phone)).isPresent(), 30000);
 
       checkItemSummary();
       checkAutoResponse();

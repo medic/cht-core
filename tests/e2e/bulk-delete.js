@@ -72,8 +72,9 @@ describe('Bulk delete reports', () => {
 
   afterEach(utils.afterEach);
 
-  xit('reports', () => {
+  it('reports', () => {
     commonElements.goToReports();
+    browser.refresh();
 
     browser.wait(() => element(by.css('#reports-list li:first-child')).isPresent(), 10000, 'There should be at least one report in the LHS');
 
@@ -135,7 +136,7 @@ describe('Bulk delete reports', () => {
 
     // delete all selected
     element(by.css('.action-container .detail-actions .delete-all')).click();
-    const confirmButton = element(by.css('#bulk-delete-confirm .submit:not(.ng-hide)'));
+    const confirmButton = element(by.css('.btn.submit.btn-danger'));
     browser.wait(protractor.ExpectedConditions.elementToBeClickable(confirmButton), 5000);
     confirmButton.click();
 

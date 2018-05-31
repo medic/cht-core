@@ -112,7 +112,6 @@ describe('bootstrapper', () => {
         retry: false,
         heartbeat: 10000,
         timeout: 600000,
-        doc_ids: [ 'org.couchdb.user:jim' ]
       });
       assert.equal(localClose.callCount, 1);
       assert.equal(remoteClose.callCount, 1);

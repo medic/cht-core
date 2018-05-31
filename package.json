@@ -9,7 +9,7 @@
   },
   "engines": {
     "node": ">=8.11.0",
-    "yarn": "1.6.0"
+    "yarn": "1.7.0"
   },
   "scripts": {
     "start": "nf start",
@@ -29,7 +29,6 @@
     "grunt-contrib-cssmin": "^2.2.1",
     "grunt-contrib-jshint": "^1.0.0",
     "grunt-contrib-less": "^1.2.0",
-    "grunt-contrib-nodeunit": "^1.0.0",
     "grunt-contrib-uglify": "^3.3.0",
     "grunt-contrib-watch": "github:scdf/grunt-contrib-watch#v1.0.0-fix_dirs_firing",
     "grunt-couch": "^1.5.1",

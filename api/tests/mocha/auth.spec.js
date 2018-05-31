@@ -189,4 +189,32 @@ describe('Auth', () => {
     done();
   });
 
+  it('getUserSettings returns couchdb user doc, with callback', done => {
+    sinon.stub(db.medic, 'get').callsArgWith(1, null, { name: 'steve', facility_id: 'steveVille' });
+    auth.getUserSettings({ name: 'steve' }, (err, result) => {
+      chai.expect(err).to.equal(null);
+      chai.expect(result).to.deep.equal({ name: 'steve', facility_id: 'steveVille' });
+      chai.expect(db.medic.get.callCount).to.equal(1);
+      chai.expect(db.medic.get.withArgs('org.couchdb.user:steve').callCount).to.equal(1);
+      done();
+    });
+  });
+
+  it('getUserSettings returns couchdb user doc, with promise', () => {
+    sinon.stub(db.medic, 'get').callsArgWith(1, null, { name: 'steve', facility_id: 'steveVille' });
+    auth.getUserSettings({ name: 'steve' }).then((err, result) => {
+      chai.expect(err).to.equal(null);
+      chai.expect(result).to.deep.equal({ name: 'steve', facility_id: 'steveVille' });
+      chai.expect(db.medic.get.callCount).to.equal(1);
+      chai.expect(db.medic.get.withArgs('org.couchdb.user:steve').callCount).to.equal(1);
+    });
+  });
+
+  it('getUserSettings throws error if user cannot be read', () => {
+    sinon.stub(db.medic, 'get').callsArgWith(1, 'someErr');
+    auth.getUserSettings({ name: 'steve' }).then((err, result) => {
+      chai.expect(err).to.equal('someErr');
+      chai.expect(result).to.equal(undefined);
+    });
+  });
 });

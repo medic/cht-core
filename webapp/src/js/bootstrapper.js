@@ -37,7 +37,7 @@
     return dbInfo.name + '-user-' + username;
   };
 
-  var initialReplication = function(localDb, remoteDb, username) {
+  var initialReplication = function(localDb, remoteDb) {
     $('.bootstrap-layer .status').text('Loading app…');
     var dbSyncStartTime = Date.now();
     var dbSyncStartData = getDataUsage();
@@ -47,7 +47,6 @@
         retry: false,
         heartbeat: 10000,
         timeout: 1000 * 60 * 10, // try for ten minutes then give up
-        doc_ids: [ 'org.couchdb.user:' + username ],
       });
 
     replicator
@@ -125,7 +124,7 @@
         // no ddoc found - do replication
 
         var remoteDb = window.PouchDB(dbInfo.remote, POUCHDB_OPTIONS.remote);
-        initialReplication(localDb, remoteDb, username)
+        initialReplication(localDb, remoteDb)
           .then(function() {
             // replication complete - bootstrap angular
             $('.bootstrap-layer .status').text('Starting app…');

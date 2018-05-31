@@ -13,7 +13,7 @@ The web app is fully responsive with a mobile-first design, and supports localiz
 
 For more information about Medic Mobile's tools, visit http://medicmobile.org/tools.
 For more information about Medic Mobile's architecture and how the pieces fit together, see [Architecture Overview](https://github.com/medic/medic-docs/blob/master/development/architecture.md).
-For more information about the format of docs in the database, see [Database Schema](https://github.com/medic/medic-docs/blob/master/development/db_schema.md).
+For more information about the format of docs in the database, see [Database Schema](https://github.com/medic/medic-docs/blob/master/development/db-schema.md).
 For more information about the SMS exchange protocol between webapp and gateway, see [Message States](https://github.com/medic/medic-docs/blob/master/user/message-states.md).
 
 ## Easy local deployment
@@ -24,7 +24,7 @@ If you want to develop against Medic, follow the Development Setup below.
 
 ## Development Setup
 
-Before getting started, read about our [development workflow](https://github.com/medic/medic-docs/blob/master/md/dev/workflow.md) and the [architecture overview](https://github.com/medic/medic-docs/blob/master/development/architecture.md).
+Before getting started, read about our [development workflow](https://github.com/medic/medic-docs/blob/master/development/workflow.md) and the [architecture overview](https://github.com/medic/medic-docs/blob/master/development/architecture.md).
 
 The setup described below doesn't use [Medic OS](https://github.com/medic/medic-docs/blob/master/development/architecture.md#medic-os), the tools will be run directly on your machine.
 
@@ -35,7 +35,7 @@ You will need to install the following:
 
 [Node.js](https://nodejs.org) 8.11.x and above
 
-[yarn](https://yarnpkg.com/en/) 1.6.0
+[yarn](https://yarnpkg.com/en/) 1.7.0
 
 [CouchDB](https://couchdb.apache.org) v2.x
 
@@ -88,7 +88,7 @@ $ curl http://localhost:5984 # should fail
 ### Build the webapp
 
 ```shell
-git clone --recursive https://github.com/medic/medic-webapp
+git clone https://github.com/medic/medic-webapp
 cd medic-webapp
 yarn install
 ```
@@ -113,8 +113,10 @@ Create a `.env` file in the app directory with the following contents
 COUCH_URL=http://admin:pass@localhost:5984/medic
 COUCH_NODE_NAME=couchdb@localhost
 ```
-Then install api and sentinel dependencies
+Then install webapp, admin, api and sentinel dependencies
 ```shell
+cd webapp && yarn install && cd ..
+cd admin && yarn install && cd ..
 cd api && yarn install && cd ..
 cd sentinel && yarn install && cd ..
 ```
@@ -178,7 +180,7 @@ All text labels in the app are localized. See the [translation documentation](ht
 Check out the [Gruntfile](Gruntfile.js) for all the tests you can run.
 
 ### Unit tests
-They live in the `tests` directories of each app. Run them with grunt: `grunt unit_continuous`.
+They live in the `tests` directories of each app. Run them with grunt: `grunt unit-continuous`.
 
 ### End to End tests
 They live in [tests](tests). To run them:
@@ -187,7 +189,7 @@ They live in [tests](tests). To run them:
 2. Run tests: `grunt e2e`
 
 ### API integration tests
-`grunt api_e2e`
+`grunt api-e2e`
 
 ### Integration tests
 [Travis](https://travis-ci.org/medic/medic-webapp) runs `grunt ci` every time some new code is pushed to github.
@@ -233,9 +235,9 @@ curl -X DELETE $COUCH_URL
 
 ## Run on Medic OS
 
-[What's Medic OS?](https://github.com/medic/medic-docs/blob/master/development/architecture.md#medic-os)
+[What's Medic OS?](https://github.com/medic/medic-os#about-medic-os)
 
-For development, you can find it useful to [run Medic OS on a VM](https://github.com/medic/medic-docs#setup-medic-os) locally, to leverage VM snapshots, for instance to work with different versions.
+For development, you can find it useful to [run Medic OS on a VM](https://github.com/medic/medic-os#instance-creation-iso) locally, to leverage VM snapshots, for instance to work with different versions.
 
 You can also use Medic-OS for production instances.
 

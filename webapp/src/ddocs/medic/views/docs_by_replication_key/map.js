@@ -1,4 +1,3 @@
-// WARNING: If updating this function also update the getReplicationKey function in api/handlers/changes.js
 function (doc) {
   if (doc._id === 'resources' ||
       doc._id === 'appcache' ||
@@ -8,6 +7,11 @@ function (doc) {
       doc.type === 'translations') {
     return emit('_all', {});
   }
+
+  if (doc.type === 'tombstone' && doc.tombstone) {
+    doc = doc.tombstone;
+  }
+
   var getSubject = function() {
     if (doc.form) {
       // report

@@ -14,6 +14,7 @@ const _ = require('underscore'),
       db = require('../db-nano'),
       infodoc = require('../lib/infodoc'),
       metadata = require('../lib/metadata'),
+      tombstoneUtils = require('@shared-libs/tombstone-utils'),
       PROCESSING_DELAY = 50, // ms
       PROGRESS_REPORT_INTERVAL = 500, // items
       transitions = [];
@@ -75,10 +76,18 @@ const processChange = (change, callback) => {
       if (err) {
         logger.error('Error cleaning up deleted doc', err);
       }
-      processed++;
-      metadata.update(change.seq)
-        .then(() => { callback(); })
-        .catch((err) => { callback(err); });
+
+      tombstoneUtils
+        .processChange(Promise, dbPouch.medic, change, logger)
+        .then(() => {
+          processed++;
+          metadata.update(change.seq)
+            .then(() => { callback(); })
+            .catch((err) => { callback(err); });
+        })
+        .catch(err => {
+          callback(err);
+        });
     });
     return;
   }

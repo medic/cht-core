@@ -85,6 +85,26 @@ describe('messageUtils', () => {
         utils._getRecipient(doc, 'grandparent')
           .should.equal(grandparentPhone);
       });
+      it('resolves clinic based on patient if given', () => {
+        const context = {
+          patient: {
+            parent: {
+              type: 'clinic',
+              contact: {
+                phone: '111'
+              }
+            }
+          },
+          parent: {
+            type: 'clinic',
+            contact: {
+              phone: '222'
+            }
+          }
+        };
+        utils._getRecipient(context, 'clinic')
+          .should.equal('111');
+      });
     });
     it('tries to resolve the value from the fields property', () => {
       utils._getRecipient({fields: {foo: 'bar'}}, 'foo')
@@ -104,6 +124,49 @@ describe('messageUtils', () => {
     });
   });
 
+  describe('extendedTemplateContext', () => {
+
+    it('picks patient data first', () => {
+      const doc = { name: 'alice', fields: { name: 'bob' } };
+      const patient = { name: 'charles' };
+      const registrations = [{ name: 'doug', fields: { name: 'elisa' } }];
+      const actual = utils._extendedTemplateContext(doc, { patient: patient, registrations: registrations });
+      actual.name.should.equal('charles');
+    });
+
+    it('picks doc.fields properties second', () => {
+      const doc = { name: 'alice', fields: { name: 'bob' } };
+      const patient = { };
+      const registrations = [{ name: 'doug', fields: { name: 'elisa' } }];
+      const actual = utils._extendedTemplateContext(doc, { patient: patient, registrations: registrations });
+      actual.name.should.equal('bob');
+    });
+
+    it('picks doc properties third', () => {
+      const doc = { name: 'alice' };
+      const patient = { };
+      const registrations = [{ name: 'doug', fields: { name: 'elisa' } }];
+      const actual = utils._extendedTemplateContext(doc, { patient: patient, registrations: registrations });
+      actual.name.should.equal('alice');
+    });
+
+    it('picks registration[0].fields properties fourth', () => {
+      const doc = { };
+      const patient = { };
+      const registrations = [{ name: 'doug', fields: { name: 'elisa' } }];
+      const actual = utils._extendedTemplateContext(doc, { patient: patient, registrations: registrations });
+      actual.name.should.equal('elisa');
+    });
+
+    it('picks registration[0].fields properties fifth', () => {
+      const doc = { };
+      const patient = { };
+      const registrations = [{ name: 'doug' }];
+      const actual = utils._extendedTemplateContext(doc, { patient: patient, registrations: registrations });
+      actual.name.should.equal('doug');
+    });
+  });
+
   describe('generate', () => {
 
     it('adds uuid', () => {
@@ -119,6 +182,148 @@ describe('messageUtils', () => {
       expect(message.message).to.equal('xxx');
       expect(message.to).to.equal('+1234');
       expect(message.uuid).to.equal('some-uuid');
+    });
+
+    describe('recipient', () => {
+
+      it('calculates clinic from contact if no patient', () => {
+        const config = {};
+        const translate = null;
+        const doc = {
+          from: '+111',
+          contact: {
+            type: 'person',
+            parent: {
+              type: 'clinic',
+              contact: {
+                type: 'person',
+                phone: '+222'
+              }
+            }
+          }
+        };
+        const content = { message: 'xxx' };
+        const recipient = 'clinic';
+        const context = {};
+        const messages = utils.generate(config, translate, doc, content, recipient, context);
+        expect(messages.length).to.equal(1);
+        const message = messages[0];
+        expect(message.to).to.equal('+222');
+      });
+
+      it('calculates clinic from patient', () => {
+        const config = {};
+        const translate = null;
+        const doc = {
+          from: '+111',
+          contact: {
+            type: 'person',
+            parent: {
+              type: 'clinic',
+              contact: {
+                type: 'person',
+                phone: '+222'
+              }
+            }
+          }
+        };
+        const content = { message: 'xxx' };
+        const recipient = 'clinic';
+        const context = {
+          patient: {
+            parent: {
+              type: 'clinic',
+              contact: {
+                type: 'person',
+                phone: '+333'
+              }
+            }
+          }
+        };
+        const messages = utils.generate(config, translate, doc, content, recipient, context);
+        expect(messages.length).to.equal(1);
+        const message = messages[0];
+        expect(message.to).to.equal('+333');
+      });
+
+      it('calculates health_center', () => {
+        const config = {};
+        const translate = null;
+        const doc = {
+          from: '+111',
+          contact: {
+            type: 'person',
+            parent: {
+              type: 'health_center',
+              contact: {
+                type: 'person',
+                phone: '+222'
+              }
+            }
+          }
+        };
+        const content = { message: 'xxx' };
+        const recipient = 'health_center';
+        const context = {
+          patient: {
+            parent: {
+              type: 'clinic',
+              parent: {
+                type: 'health_center',
+                contact: {
+                  type: 'person',
+                  phone: '+333'
+                }
+              }
+            }
+          }
+        };
+        const messages = utils.generate(config, translate, doc, content, recipient, context);
+        expect(messages.length).to.equal(1);
+        const message = messages[0];
+        expect(message.to).to.equal('+333');
+      });
+
+      it('calculates district', () => {
+        const config = {};
+        const translate = null;
+        const doc = {
+          from: '+111',
+          contact: {
+            type: 'person',
+            parent: {
+              type: 'district_hospital',
+              contact: {
+                type: 'person',
+                phone: '+222'
+              }
+            }
+          }
+        };
+        const content = { message: 'xxx' };
+        const recipient = 'district';
+        const context = {
+          patient: {
+            parent: {
+              type: 'clinic',
+              parent: {
+                type: 'health_center',
+                parent: {
+                  type: 'district_hospital',
+                  contact: {
+                    type: 'person',
+                    phone: '+333'
+                  }
+                }
+              }
+            }
+          }
+        };
+        const messages = utils.generate(config, translate, doc, content, recipient, context);
+        expect(messages.length).to.equal(1);
+        const message = messages[0];
+        expect(message.to).to.equal('+333');
+      });
     });
 
     describe('truncation', () => {

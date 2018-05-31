@@ -169,6 +169,7 @@ const deleteAll = (except = []) => {
       .filter(({doc}) => !ignoreFns.find(fn => fn(doc)))
       .map(({doc}) => {
         doc._deleted = true;
+        doc.type = 'tombstone'; // circumvent tombstones being created when DB is cleaned up
         return doc;
       }))
     .then(toDelete => {
