@@ -1,5 +1,6 @@
-const async = require('async'),
-      db = require('./src/db-nano'),
+const url = require('url'),
+      request = require('request'),
+      db = require('./src/db-pouch'),
       config = require('./src/config'),
       migrations = require('./src/migrations'),
       ddocExtraction = require('./src/ddoc-extraction'),
@@ -16,20 +17,15 @@ process.on('unhandledRejection', reason => {
   console.error(reason);
 });
 
-const nodeVersionCheck = (cb) => {
-  try {
-    const [major, minor, patch] = process.versions.node.split('.').map(Number);
-    if (major < MIN_MAJOR) {
-      throw new Error(`Node version ${major}.${minor}.${patch} is not supported, minimum is ${MIN_MAJOR}.0.0`);
-    }
-    console.log(`Node Version: ${major}.${minor}.${patch}`);
-    cb();
-  } catch (err) {
-    cb(err);
+const nodeVersionCheck = () => {
+  const [major, minor, patch] = process.versions.node.split('.').map(Number);
+  if (major < MIN_MAJOR) {
+    throw new Error(`Node version ${major}.${minor}.${patch} is not supported, minimum is ${MIN_MAJOR}.0.0`);
   }
+  console.log(`Node Version: ${major}.${minor}.${patch}`);
 };
 
-const envVarsCheck = callback => {
+const envVarsCheck = () => {
   const envValueAndExample = [
     ['COUCH_URL', 'http://admin:pass@localhost:5984/medic'],
     ['COUCH_NODE_NAME', 'couchdb@localhost']
@@ -43,89 +39,76 @@ const envVarsCheck = callback => {
   });
 
   if (failures.length) {
-    callback('At least one required environment variable was not set:\n' + failures.join('\n'));
-  } else {
-    callback();
+    return Promise.reject('At least one required environment variable was not set:\n' + failures.join('\n'));
   }
 };
 
-const couchDbNoAdminPartyModeCheck = callback => {
-  const url = require('url'),
-        noAuthUrl = url.parse(process.env.COUCH_URL),
+const couchDbNoAdminPartyModeCheck = () => {
+  const noAuthUrl = url.parse(process.env.COUCH_URL),
         protocol = noAuthUrl.protocol.replace(':', ''),
         net = require(protocol);
 
   delete noAuthUrl.auth;
 
-  net.get(url.format(noAuthUrl), ({statusCode}) => {
-    // We expect to be rejected because we didn't provide auth
-    if (statusCode === 401) {
-      callback();
-    } else {
-      console.error('Expected a 401 when accessing db without authentication.');
-      console.error(`Instead we got a ${statusCode}`);
-      callback(new Error('CouchDB security seems to be misconfigured, see: https://github.com/medic/medic-webapp#enabling-a-secure-couchdb'));
-    }
+  return new Promise((resolve, reject) => {
+    net.get(url.format(noAuthUrl), ({statusCode}) => {
+      // We expect to be rejected because we didn't provide auth
+      if (statusCode === 401) {
+        resolve();
+      } else {
+        console.error('Expected a 401 when accessing db without authentication.');
+        console.error(`Instead we got a ${statusCode}`);
+        reject(new Error('CouchDB security seems to be misconfigured, see: https://github.com/medic/medic-webapp#enabling-a-secure-couchdb'));
+      }
+    });
+  });
+
+};
+
+const couchDbVersionCheck = () => {
+  return new Promise((resolve, reject) => {
+    request.get({ url: db.serverUrl, json: true }, (err, response, body) => {
+      if (err) {
+        return reject(err);
+      }
+      console.log(`CouchDB Version: ${body.version}`);
+      resolve();
+    });
   });
 };
 
-const couchDbVersionCheck = callback =>
-  db.getCouchDbVersion((err, version) => {
-    if (err) {
-      return callback(err);
-    }
+Promise.resolve()
+  .then(nodeVersionCheck)
+  .then(envVarsCheck)
+  .then(couchDbNoAdminPartyModeCheck)
+  .then(couchDbVersionCheck)
 
-    console.log(`CouchDB Version: ${version.major}.${version.minor}.${version.patch}`);
-    callback();
-  });
+  .then(() => console.log('Extracting ddoc…'))
+  .then(ddocExtraction.run)
+  .then(() => console.log('DDoc extraction completed successfully'))
 
-const asyncLog = message => async.asyncify(() => console.log(message));
+  .then(() => console.log('Loading configuration…'))
+  .then(config.load)
+  .then(() => console.log('Configuration loaded successfully'))
+  .then(config.listen)
 
-const _ddocExtraction = callback => ddocExtraction.run()
-  .then(() => callback())
-  .catch(callback);
+  .then(() => console.log('Merging translations…'))
+  .then(translations.run)
+  .then(() => console.log('Translations merged successfully'))
 
-const _translations = callback => translations.run()
-  .then(() => callback())
-  .catch(callback);
+  .then(() => console.log('Running db migrations…'))
+  .then(migrations.run)
+  .then(() => console.log('Database migrations completed successfully'))
 
-const _migrations = callback => migrations.run()
-  .then(() => callback())
-  .catch(callback);
-
-async.series([
-  nodeVersionCheck,
-  envVarsCheck,
-  couchDbNoAdminPartyModeCheck,
-  couchDbVersionCheck,
-
-  asyncLog('Extracting ddoc…'),
-  _ddocExtraction,
-  asyncLog('DDoc extraction completed successfully'),
-
-  asyncLog('Loading configuration…'),
-  config.load,
-  asyncLog('Configuration loaded successfully'),
-
-  async.asyncify(config.listen),
-
-  asyncLog('Merging translations…'),
-  _translations,
-  asyncLog('Translations merged successfully'),
-
-  asyncLog('Running db migrations…'),
-  _migrations,
-  asyncLog('Database migrations completed successfully'),
-], err => {
-  if (err) {
+  .catch(err => {
     console.error('Fatal error initialising medic-api');
     console.error(err);
     process.exit(1);
-  }
+  })
 
-  app.listen(apiPort, () =>
-    console.log('Medic API listening on port ' + apiPort));
-});
+  .then(() => app.listen(apiPort, () => {
+    console.log('Medic API listening on port ' + apiPort);
+  }));
 
 // Define error-handling middleware last.
 // http://expressjs.com/guide/error-handling.html

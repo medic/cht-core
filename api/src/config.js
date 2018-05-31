@@ -127,10 +127,10 @@ module.exports = {
       return value;
     }
   },
-  load: callback => {
-    loadSettings().then(() => callback()).catch(callback);
+  load: () => {
     loadTranslations();
     loadViewMaps();
+    return loadSettings();
   },
   listen: () => {
     db.medic.changes({ live: true, since: 'now' })
