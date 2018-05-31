@@ -121,8 +121,14 @@ describe('FormatDate service', function() {
       var actual = service.relative(moment(), { withoutTime: true });
       chai.expect(actual).to.equal('pretty soon');
       chai.expect(translateInstant.args[0][0]).to.equal('today');
-      actual = service.relative(moment().startOf('day/'), { withoutTime: true });
+      done();
+    });
+
+    it('returns "today" when between midnigh and now', function(done) {
+      translateInstant.returns('pretty soon');
+      var actual = service.relative(moment().startOf('day'), { withoutTime: true });
       chai.expect(actual).to.equal('pretty soon');
+      chai.expect(translateInstant.args[0][0]).to.equal('today');
       done();
     });
 

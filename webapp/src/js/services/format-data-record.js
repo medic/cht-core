@@ -1,5 +1,4 @@
 var _ = require('underscore'),
-    moment = require('moment'),
     messages = require('@shared-libs/message-utils'),
     lineageFactory = require('lineage');
 
@@ -181,29 +180,20 @@ angular.module('inboxServices').factory('FormatDataRecord',
               });
     };
 
-    var isToday = function(momento) {
-      var startOfDay = moment().startOf('day');
-      var duration = moment.duration(startOfDay.diff(momento));
-      return duration.asHours < 24;
-    };
-
-    var formatDateField = function(settings, date, field) {
+    var formatDateField = function(date, field) {
       if (!date) {
         return;
       }
-      var dailyPrecisionFields = [
-        'child_birth_date',
-        'birth_date'
-      ];
-
-      var m = moment(date);
-      var fromNow = m.fromNow();
-      if (_.contains(dailyPrecisionFields, field) && isToday(m)) {
-        fromNow = FormatDate.relative(m, { withoutTime: true });
+      var formatted;
+      var relative;
+      if (_.contains([ 'child_birth_date', 'birth_date' ], field)) {
+        formatted = FormatDate.date(date);
+        relative = FormatDate.relative(date, { withoutTime: true });
+      } else {
+        formatted = FormatDate.datetime(date);
+        relative = FormatDate.relative(date);
       }
-
-      return m.format(settings.date_format) +
-        ' (' + fromNow + ')';
+      return formatted + '(' + relative + ')';
     };
 
     /*
@@ -231,7 +221,7 @@ angular.module('inboxServices').factory('FormatDataRecord',
         return val === true ? 'True' : 'False';
       }
       if (def.type === 'date') {
-        return formatDateField(settings, data_record[key], key);
+        return formatDateField(data_record[key], key);
       }
       if (def.type === 'integer') {
         // use list value for month
@@ -295,7 +285,7 @@ angular.module('inboxServices').factory('FormatDataRecord',
         }
 
         if (_.contains(dateFields, field)) {
-          value = formatDateField(settings, value, field);
+          value = formatDateField(value, field);
         }
 
         doc.fields.data.unshift({
