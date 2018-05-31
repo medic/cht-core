@@ -64,10 +64,7 @@
       <p ng-hide="versions.releases.length" translate>instance.upgrade.no_new_releases</p>
       <ul ng-show="versions.releases.length" class="table table-striped">
         <li ng-repeat="release in versions.releases" class="row">
-          <div class="col-xs-5"><span class="label label-info">{{release | buildVersion}}</span></div>
-          <div class="col-xs-5" ng-bind-html="release.time | date"></div>
-          <div class="col-xs-1"><button ng-click="upgrade(release.version, 'stage')" class="btn btn-secondary" translate>instance.upgrade.stage</button></div>
-          <div class="col-xs-1"><button ng-click="upgrade(release.version)" class="btn btn-primary" translate>instance.upgrade.install</button></div>
+          <release />
         </li>
       </ul>
     </div>
@@ -78,10 +75,7 @@
         <p ng-hide="versions.betas.length" translate>instance.upgrade.no_betas</p>
         <ul ng-show="versions.betas.length" class="table table-striped">
           <li ng-repeat="release in versions.betas" class="row">
-            <div class="col-xs-5"><span class="label label-info">{{release | buildVersion}}</span></div>
-            <div class="col-xs-5" ng-bind-html="release.time | date"></div>
-            <div class="col-xs-1"><button ng-click="upgrade(release.version, 'stage')" class="btn btn-secondary" translate>instance.upgrade.stage</button></div>
-            <div class="col-xs-1"><button ng-click="upgrade(release.version)" class="btn btn-primary" translate>instance.upgrade.install</button></div>
+            <release />
           </li>
         </ul>
       </div>
@@ -93,10 +87,7 @@
         <p ng-hide="versions.branches.length" translate>instance.upgrade.no_branches</p>
         <ul ng-show="versions.branches.length" class="table table-striped">
           <li ng-repeat="release in versions.branches" class="row">
-            <div class="col-xs-5"><span class="label label-info">{{release | buildVersion}}</span></div>
-            <div class="col-xs-5">{{release.time | date:'medium'}}</div>
-            <div class="col-xs-1"><button ng-click="upgrade(release.version, 'stage')" class="btn btn-secondary" translate>instance.upgrade.stage</button></div>
-            <div class="col-xs-1"><button ng-click="upgrade(release.version)" class="btn btn-primary" translate>instance.upgrade.install</button></div>
+            <release />
           </li>
         </ul>
       </div>

@@ -5,10 +5,12 @@ angular.module('filters').filter('buildVersion',
     'ngInject';
 
     return function(buildInfo) {
-      if (buildInfo.version === buildInfo.base_version || !buildInfo.base_version) {
-        return buildInfo.version;
-      } else {
-        return buildInfo.version + ' (~' + buildInfo.base_version + ')';
+      if (buildInfo) {
+        if (buildInfo.version === buildInfo.base_version || !buildInfo.base_version) {
+          return buildInfo.version;
+        } else {
+          return buildInfo.version + ' (~' + buildInfo.base_version + ')';
+        }
       }
     };
   }

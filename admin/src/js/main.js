@@ -44,6 +44,7 @@ require('./controllers/users');
 
 angular.module('directives', ['ngSanitize']);
 require('./directives/modal');
+require('./directives/release');
 
 angular.module('filters', ['ngSanitize']);
 require('./filters/resource-icon');
