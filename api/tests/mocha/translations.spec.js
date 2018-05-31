@@ -568,4 +568,66 @@ describe('translations', () => {
     });
   });
 
+  it('converts all non-string values to string', () => {
+    const ddoc = { _attachments: {
+        'translations/messages-en.properties': {}
+      } };
+    const backups = [
+      { doc: {
+          _id: 'messages-en-backup',
+          code: 'en',
+          type: 'translations-backup',
+          values: { hello: null, bye: 0, ciao: false, adios: 23, salut: true }
+        } }
+    ];
+    const docs = [
+      { doc: {
+          _id: 'messages-en',
+          code: 'en',
+          type: 'translations',
+          values: { hello: null, bye: 0, ciao: false, adios: 23, salut: true }
+        } }
+    ];
+    const dbGet = sinon.stub(db.medic, 'get').resolves(ddoc);
+    const dbAttachment = sinon.stub(db.medic, 'getAttachment').resolves('some buffer');
+    const parse = sinon.stub(properties, 'parse');
+    parse.onCall(0).callsArgWith(1, null, { hello: null, bye: 0, ciao: false, adios: 23, salut: true });
+    const dbView = sinon.stub(db.medic, 'query');
+    dbView.onCall(0).resolves({ rows: backups });
+    dbView.onCall(1).resolves({ rows: docs });
+    const dbBulk = sinon.stub(db.medic, 'bulkDocs').resolves();
+    return translations.run().then(() => {
+      chai.expect(dbGet.callCount).to.equal(1);
+      chai.expect(dbAttachment.callCount).to.equal(1);
+      chai.expect(parse.callCount).to.equal(1);
+      chai.expect(dbView.callCount).to.equal(2);
+      chai.expect(dbBulk.callCount).to.equal(1);
+      chai.expect(dbBulk.args[0][0]).to.deep.equal([
+        {
+          _id: 'messages-en',
+          code: 'en',
+          type: 'translations',
+          values: {
+            hello: 'hello',
+            bye: '0',
+            ciao: 'false',
+            adios: '23',
+            salut: 'true'
+          }
+        },
+        {
+          _id: 'messages-en-backup',
+          code: 'en',
+          type: 'translations-backup',
+          values: {
+            hello: 'hello',
+            bye: '0',
+            ciao: 'false',
+            adios: '23',
+            salut: 'true'
+          }
+        }
+      ]);
+    });
+  });
 });
