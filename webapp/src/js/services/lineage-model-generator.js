@@ -1,4 +1,5 @@
-var lineageFactory = require('lineage');
+// var lineageFactory = require('lineage');
+var lineageFactory = require('../../../../shared-libs/lineage/src/lineage.js');
 
 /**
  * Hydrates the given doc by uuid and creates a model which holds
@@ -102,6 +103,18 @@ angular.module('inboxServices').factory('LineageModelGenerator',
               doc: docs.shift(),
               lineage: docs
             };
+          });
+      },
+      reportSubjects: function(ids) {
+        return lineage.fetchLineageByIds(ids)
+          .then(function(docsList) {
+            return docsList.map(function(docs){
+              return {
+                _id: docs[0]._id,
+                doc: docs.shift(),
+                lineage: docs
+              };
+            });
           });
       }
     };
