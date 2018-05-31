@@ -74,21 +74,19 @@ module.exports = {
   created: new Date(2015, 5, 19, 10, 30, 0, 0),
   // Exposed for testing.
   _runWithBatchSize: function(batchSize, callback) {
-    config.load(function() {
-      forms = config.get('forms');
+    forms = config.get('forms');
 
-      var currentSkip = 0;
-      async.doWhilst(
-        function(callback) {
-          runBatch(batchSize, currentSkip, callback);
-        },
-        function(keepGoing) {
-          currentSkip += batchSize;
-          return keepGoing;
-        },
-        callback
-      );
-    });
+    var currentSkip = 0;
+    async.doWhilst(
+      function(callback) {
+        runBatch(batchSize, currentSkip, callback);
+      },
+      function(keepGoing) {
+        currentSkip += batchSize;
+        return keepGoing;
+      },
+      callback
+    );
   },
   run: function(callback) {
     module.exports._runWithBatchSize(BATCH_SIZE, callback);

@@ -27,7 +27,6 @@ const makeStubs = (...viewBatches) => {
 
   return {
     setConfig: sinon.stub(config, 'get').returns(forms),
-    loadConfig: sinon.stub(config, 'load').callsArg(0),
     bulk: sinon.stub(db.medic, 'bulk').callsArgWith(1, null, null),
     getView: getView
   };
@@ -131,7 +130,6 @@ describe('namespace-form-fields migration', () => {
     const stubs = makeStubs([doc]);
     migration.run(err => {
       chai.expect(stubs.getView.callCount).to.equal(1);
-      chai.expect(stubs.loadConfig.callCount).to.equal(1);
       chai.expect(stubs.bulk.callCount).to.equal(1);
       chai.expect(stubs.bulk.args[0][0].docs[0].fields).to.deep.equal(expected);
       chai.expect(stubs.bulk.args[0][0].docs[0].last_menstrual_period).to.equal(undefined);
@@ -171,7 +169,6 @@ describe('namespace-form-fields migration', () => {
     const stubs = makeStubs([docs[0]], [docs[1]]);
     migration._runWithBatchSize(BATCH_SIZE, function(err) {
       chai.expect(stubs.getView.callCount).to.equal(2);
-      chai.expect(stubs.loadConfig.callCount).to.equal(1);
       chai.expect(stubs.bulk.callCount).to.equal(2);
 
       chai.expect(stubs.bulk.args[0][0].docs[0].fields).to.deep.equal(expected[0]);
@@ -230,7 +227,6 @@ describe('namespace-form-fields migration', () => {
 
     migration._runWithBatchSize(BATCH_SIZE, function(err) {
       chai.expect(stubs.getView.callCount).to.equal(1);
-      chai.expect(stubs.loadConfig.callCount).to.equal(1);
       chai.expect(stubs.bulk.callCount).to.equal(1);
       chai.expect(!!err).to.equal(true);
       done();
