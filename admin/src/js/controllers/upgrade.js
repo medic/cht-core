@@ -113,6 +113,20 @@ angular.module('controllers').controller('UpgradeCtrl',
         $scope.loading = false;
       });
 
+    $scope.potentiallyIncompatible = function(release) {
+      // Old builds may not have a base version, which means unless their version
+      // is in the form 1.2.3[-maybe.4] (ie it's a branch) we can't tell and will
+      // just presume maybe it's bad
+      if (!release.base_version && !Version.parse(release.version)) {
+        return true;
+      }
+
+      var currentVersion = Version.parse($scope.currentDeploy.base_version);
+      var releaseVersion = Version.parse(release.base_version || release.version);
+
+      return Version.compare(currentVersion, releaseVersion) > 0;
+    };
+
     $scope.upgrade = function(version, action) {
       Modal({
         templateUrl: 'templates/upgrade_confirm.html',
