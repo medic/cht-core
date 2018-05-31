@@ -181,7 +181,7 @@ angular.module('inboxServices').factory('FormatDataRecord',
               });
     };
 
-    var today = function(momento) {
+    var isToday = function(momento) {
       var startOfDay = moment().startOf('day');
       var duration = moment.duration(startOfDay.diff(momento));
       return duration.asHours < 24;
@@ -192,12 +192,13 @@ angular.module('inboxServices').factory('FormatDataRecord',
         return;
       }
       var dailyPrecisionFields = [
-        'child_birth_date'
+        'child_birth_date',
+        'birth_date'
       ];
 
       var m = moment(date);
       var fromNow = m.fromNow();
-      if (_.contains(dailyPrecisionFields, field) && today(m)) {
+      if (_.contains(dailyPrecisionFields, field) && isToday(m)) {
         fromNow = FormatDate.relative(m, { withoutTime: true });
       }
 

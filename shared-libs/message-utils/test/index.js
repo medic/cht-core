@@ -400,8 +400,6 @@ describe('messageUtils', () => {
 
     describe('dates', () => {
 
-      const dateStr = time => new Date(time).toISOString().split('T')[0];
-
       it('string', () => {
         const date = '2016-03-06T03:45:41.000Z';
         const input = '{{#date}}{{reported_date}}{{/date}}';
