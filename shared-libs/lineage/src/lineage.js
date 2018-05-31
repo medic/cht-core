@@ -143,7 +143,20 @@ module.exports = function(Promise, DB) {
 
   var fetchLineageByIds = function(ids) {
     return fetchDocs(ids).then(function(docs) {
-      return hydrateDocs(docs);
+      return hydrateDocs(docs).then(function(hydratedDocs) {
+        // Returning a list of docs just like fetchLineageById
+        var docsList = [];
+        hydratedDocs.forEach(function(hdoc) {
+          var docLineage = [];
+          var parent = hdoc;
+          while(parent) {
+            docLineage.push(parent);
+            parent = parent.parent;
+          }
+          docsList.push(docLineage);
+        });
+        return docsList;
+      });
     });
   };
 

@@ -8,7 +8,9 @@ describe('HydrateMessages service', () => {
 
   const contact = { _id: 'contact', name: 'aa' };
 
-  const lineage = ['bb', 'cc'];
+  const lineage = [
+    { id: 1, name: 'bb' },
+    { id: 2, name: 'cc' }];
 
   beforeEach(() => {
     query = sinon.stub();
@@ -53,7 +55,7 @@ describe('HydrateMessages service', () => {
       id: doc._id,
       key: contact._id,
       contact: contact.name,
-      lineage: lineage,
+      lineage: _.pluck(lineage, 'name'),
       outgoing: true,
       from: contact._id,
       date: given[0].value.date,
@@ -88,7 +90,7 @@ describe('HydrateMessages service', () => {
       id: doc._id,
       key: contact._id,
       contact: contact.name,
-      lineage: lineage,
+      lineage: _.pluck(lineage, 'name'),
       outgoing: false,
       from: doc._id,
       date: given[0].value.date,

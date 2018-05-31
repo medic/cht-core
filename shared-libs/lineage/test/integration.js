@@ -280,8 +280,9 @@ describe('Lineage', function() {
       return lineage.fetchLineageByIds([one_parent._id]).then(result => {
         chai.expect(result).to.have.lengthOf(1);
         chai.expect(result[0]).to.have.lengthOf(2);
-        chai.expect(result[0][0]).excluding('_rev').to.deep.equal(one_parent);
-        chai.expect(result[0][1]).excluding('_rev').to.deep.equal(dummyDoc);
+        //We get all parent info for each doc (_rev, name, etc)
+        chai.expect(result[0][0].name).to.equal(one_parent.name);
+        chai.expect(result[0][1].name).to.equal(dummyDoc.name);
       });
     });
   });

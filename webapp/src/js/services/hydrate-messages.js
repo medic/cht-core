@@ -41,7 +41,7 @@ angular.module('inboxServices').factory('HydrateMessages',
         from = phone;
       }
 
-      var lineage = report && report.lineage;
+      var lineage = report && _.map(_.pluck(report.lineage, 'name'));
       return {
         doc: doc,
         id: doc._id,
