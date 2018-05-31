@@ -57,6 +57,8 @@ const merge = (attachments, backups, docs) => {
       const value = attachment.values[knownKey];
       if (_.isUndefined(value) || value === null) {
         attachment.values[knownKey] = knownKey;
+      } else if (typeof value !== 'string') {
+        attachment.values[knownKey] = String(value);
       }
     });
     const backup = _.findWhere(backups, { code: code });
