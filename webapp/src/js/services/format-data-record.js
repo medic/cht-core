@@ -1,5 +1,4 @@
 var _ = require('underscore'),
-    moment = require('moment'),
     messages = require('@shared-libs/message-utils'),
     lineageFactory = require('lineage');
 
@@ -10,7 +9,8 @@ angular.module('inboxServices').factory('FormatDataRecord',
     $translate,
     DB,
     Language,
-    Settings
+    Settings,
+    FormatDate
   ) {
 
     'ngInject';
@@ -180,13 +180,20 @@ angular.module('inboxServices').factory('FormatDataRecord',
               });
     };
 
-    var formatDate = function(settings, date) {
+    var formatDateField = function(date, field) {
       if (!date) {
-          return;
+        return;
       }
-      var m = moment(date);
-      return m.format(settings.date_format) +
-        ' (' + m.fromNow() + ')';
+      var formatted;
+      var relative;
+      if (_.contains([ 'child_birth_date', 'birth_date' ], field)) {
+        formatted = FormatDate.date(date);
+        relative = FormatDate.relative(date, { withoutTime: true });
+      } else {
+        formatted = FormatDate.datetime(date);
+        relative = FormatDate.relative(date);
+      }
+      return formatted + '(' + relative + ')';
     };
 
     /*
@@ -214,7 +221,7 @@ angular.module('inboxServices').factory('FormatDataRecord',
         return val === true ? 'True' : 'False';
       }
       if (def.type === 'date') {
-        return formatDate(settings, data_record[key]);
+        return formatDateField(data_record[key], key);
       }
       if (def.type === 'integer') {
         // use list value for month
@@ -278,7 +285,7 @@ angular.module('inboxServices').factory('FormatDataRecord',
         }
 
         if (_.contains(dateFields, field)) {
-          value = formatDate(settings, value);
+          value = formatDateField(value, field);
         }
 
         doc.fields.data.unshift({

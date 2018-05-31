@@ -13,6 +13,11 @@ describe('FormatDataRecord service', () => {
     module(function($provide) {
       $provide.value('Settings', Settings);
       $provide.value('Language', Language);
+      $provide.value('FormatDate', {
+        relative: function() {
+          return 'sometime';
+        }
+      });
       $provide.factory('DB', KarmaUtils.mockDB({ }));
       $provide.value('$q', Q); // bypass $q so we don't have to digest
     });
