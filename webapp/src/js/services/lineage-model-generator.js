@@ -103,6 +103,18 @@ angular.module('inboxServices').factory('LineageModelGenerator',
               lineage: docs
             };
           });
+      },
+      reportSubjects: function(ids) {
+        return lineage.fetchLineageByIds(ids)
+          .then(function(docsList) {
+            return docsList.map(function(docs){
+              return {
+                _id: docs[0]._id,
+                doc: docs.shift(),
+                lineage: docs
+              };
+            });
+          });
       }
     };
 
