@@ -10,7 +10,7 @@ angular.module('inboxServices').factory('HydrateMessages',
     'use strict';
     'ngInject';
 
-    var hydrateMessage = function(doc, key, date, report) {
+    var buildMessageModel = function(doc, key, date, report) {
       var contact = null, phone = null, message = null, outgoing = false;
       if(doc.kujua_message) {
         outgoing = true;
@@ -76,7 +76,7 @@ angular.module('inboxServices').factory('HydrateMessages',
             }
           });
           return rows.map(function(row){
-            return hydrateMessage(row.doc, row.key[0],
+            return buildMessageModel(row.doc, row.key[0],
                          row.value.date, row.report);
           });
       });
