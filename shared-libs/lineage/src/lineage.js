@@ -141,6 +141,25 @@ module.exports = function(Promise, DB) {
       });
   };
 
+  var fetchLineageByIds = function(ids) {
+    return fetchDocs(ids).then(function(docs) {
+      return hydrateDocs(docs).then(function(hydratedDocs) {
+        // Returning a list of docs just like fetchLineageById
+        var docsList = [];
+        hydratedDocs.forEach(function(hdoc) {
+          var docLineage = [];
+          var parent = hdoc;
+          while(parent) {
+            docLineage.push(parent);
+            parent = parent.parent;
+          }
+          docsList.push(docLineage);
+        });
+        return docsList;
+      });
+    });
+  };
+
   var fetchDoc = function(id) {
     return DB.get(id)
       .catch(function(err) {
@@ -391,6 +410,7 @@ module.exports = function(Promise, DB) {
     },
 
     fetchLineageById: fetchLineageById,
+    fetchLineageByIds: fetchLineageByIds,
     minifyLineage: minifyLineage,
     fillContactsInDocs: fillContactsInDocs,
     fillParentsInDocs: fillParentsInDocs,
