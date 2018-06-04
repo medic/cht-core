@@ -2,6 +2,7 @@ const _ = require('underscore'),
       bodyParser = require('body-parser'),
       express = require('express'),
       morgan = require('morgan'),
+      helmet = require('helmet'),
       db = require('./db-nano'),
       path = require('path'),
       auth = require('./auth'),
@@ -30,6 +31,8 @@ const _ = require('underscore'),
       serverUtils = require('./server-utils'),
       appcacheManifest = /\/manifest\.appcache$/,
       app = express();
+
+app.use(helmet());
 
 // requires content-type application/json header
 var jsonParser = bodyParser.json({limit: '32mb'});
