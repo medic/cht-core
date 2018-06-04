@@ -32,8 +32,6 @@ const _ = require('underscore'),
       appcacheManifest = /\/manifest\.appcache$/,
       app = express();
 
-app.use(helmet());
-
 // requires content-type application/json header
 var jsonParser = bodyParser.json({limit: '32mb'});
 
@@ -75,6 +73,8 @@ if(process.argv.slice(2).includes('--allow-cors')) {
 app.use(morgan('combined', {
   immediate: true
 }));
+
+app.use(helmet());
 
 app.use(function(req, res, next) {
   var domain = createDomain();
