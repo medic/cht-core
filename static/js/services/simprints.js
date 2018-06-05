@@ -37,11 +37,16 @@ angular.module('inboxServices').service('Simprints',
 
     return {
       enabled: function() {
-        return !!(
-          $window.medicmobile_android &&
-          $window.medicmobile_android.simprints_available &&
-          $window.medicmobile_android.simprints_available()
-        );
+        try {
+          return !!(
+            $window.medicmobile_android &&
+            $window.medicmobile_android.simprints_available &&
+            $window.medicmobile_android.simprints_available()
+          );
+        } catch (err) {
+          console.error(err);
+          return false;
+        }
       },
       register: function() {
         return request($window.medicmobile_android.simprints_reg);
