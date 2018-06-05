@@ -123,7 +123,15 @@ module.exports = {
         res.flushHeaders();
 
         const d = domain.create();
-        d.on('error', err => serverUtils.error(err, req, res));
+        d.on('error', err => {
+          // Because we've already flushed the headers above we can't use
+          // serverUtils anymore, we just have to close the connection
+          console.error('Error exporting v2 data for', type);
+          console.error('params:', JSON.stringify(filters, null, 2));
+          console.error('options:', JSON.stringify(options, null, 2));
+          console.error(err);
+          res.end(`--ERROR--\nError exporting data: ${err.message}\n`);
+        });
         d.run(() =>
           exportDataV2
             .export(type, filters, options)
