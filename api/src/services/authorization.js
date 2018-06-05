@@ -171,6 +171,14 @@ const getAllowedDocIds = (feed) => {
   });
 };
 
+const excludeTombstoneIds = (docIds) => {
+  return docIds.filter(docId => !tombstoneUtils.isTombstoneId(docId));
+};
+
+const convertTombstoneIds = (docIds) => {
+  return docIds.map(docId => tombstoneUtils.isTombstoneId(docId) ? tombstoneUtils.extractStub(docId).id : docId);
+};
+
 const getViewResults = (doc) => {
   return {
     contactsByDepth: viewMapUtils.getViewMapFn('medic', 'contacts_by_depth')(doc),
@@ -198,5 +206,7 @@ module.exports = {
   getDepth: getDepth,
   getViewResults: getViewResults,
   getUserAuthorizationData: getUserAuthorizationData,
-  getAllowedDocIds: getAllowedDocIds
+  getAllowedDocIds: getAllowedDocIds,
+  excludeTombstoneIds: excludeTombstoneIds,
+  convertTombstoneIds: convertTombstoneIds
 };

@@ -13,6 +13,7 @@ if(UNIT_TEST_ENV) {
   module.exports.medic = {
     allDocs: stubMe('allDocs'),
     bulkDocs: stubMe('bulkDocs'),
+    bulkGet: stubMe('bulkGet'),
     put: stubMe('put'),
     post: stubMe('post'),
     query: stubMe('query'),

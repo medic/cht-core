@@ -1,4 +1,8 @@
-const db = require('../db-pouch');
+const db = require('../db-pouch'),
+      authorization = require('./authorization'),
+      _ = require('underscore'),
+      serverUtils = require('../server-utils');
+
 const utils = require('bulk-docs-utils')({
   Promise: Promise,
   DB: db.medic
@@ -107,6 +111,77 @@ const deleteDocs = (docsToDelete, deletionAttemptCounts = {}, updateAttemptCount
     });
 };
 
+// Returns the documents that would be created by this request
+const filterNewDocs = (allowedDocIds, docs) => {
+  let docIds = _.unique(_.compact(docs.map(doc => doc._id)));
+
+  if (!docIds.length) {
+    // all docs are new
+    return Promise.resolve(docs);
+  }
+
+  docIds = _.difference(docIds, allowedDocIds);
+
+  if (!docIds.length) {
+    // all docs are allowed
+    return Promise.resolve([]);
+  }
+
+  // return docs without ids or docs which are not found
+  return db.medic
+    .allDocs({ keys: docIds })
+    .then(result => {
+      return docs.filter(doc => {
+        return !doc._id || (allowedDocIds.indexOf(doc._id) === -1 && !result.rows.find(row => row.id === doc._id));
+      });
+    });
+};
+
+const filterAllowedDocs = (authorizationContext, docs) => {
+  const allowedDocs = [];
+  let shouldCheck = true,
+      pendingDocs = docs.map(doc => ({
+        doc,
+        viewResults: authorization.getViewResults(doc)
+      }));
+
+  const checkDoc = (docObj) => {
+    const allowed = authorization.allowedDoc(docObj.doc._id, authorizationContext, docObj.viewResults);
+    if (!allowed) {
+      return;
+    }
+
+    shouldCheck = allowed.newSubjects;
+    allowedDocs.push(docObj.doc);
+    pendingDocs = _.without(pendingDocs, docObj);
+  };
+
+  while (pendingDocs.length && shouldCheck) {
+    pendingDocs.forEach(checkDoc);
+  }
+
+  return allowedDocs;
+};
+
+// Filters the list of request docs to the ones that satisfy the following conditions:
+// a. user would be allowed to see the doc after being updated/created
+// b. user is allowed to see existent doc
+const filterRequestDocs = (authorizationContext, reqBody) => {
+  if (!reqBody || !reqBody.docs || !reqBody.docs.length) {
+    return Promise.resolve([]);
+  }
+
+  // prevent restricted users from creating or updating docs with data they would not be allowed to see
+  const allowedUpdates = filterAllowedDocs(authorizationContext, reqBody.docs);
+
+  return filterNewDocs(authorizationContext.allowedDocIds, allowedUpdates).then(allowedNewDocs => {
+    const allowedDocs = allowedUpdates.filter(doc => authorizationContext.allowedDocIds.indexOf(doc._id) !== -1);
+    allowedDocs.push(...allowedNewDocs);
+
+    return allowedDocs;
+  });
+};
+
 module.exports = {
   bulkDelete: (docs, res, { batchSize = 100 } = {}) => {
     checkForDuplicates(docs);
@@ -134,5 +209,32 @@ module.exports = {
         res.flush();
         res.end();
       });
+  },
+  filterRestrictedRequest: (req, res, next) => {
+    const authorizationContext = { userCtx: req.userCtx };
+    return authorization
+      .getUserAuthorizationData(req.userCtx)
+      .then(authorizationData => {
+        _.extend(authorizationContext, authorizationData);
+        return authorization.getAllowedDocIds(authorizationContext);
+      })
+      .then(allowedDocIds => {
+        authorizationContext.allowedDocIds = authorization.convertTombstoneIds(allowedDocIds);
+        return filterRequestDocs(authorizationContext, req.body);
+      })
+      .then(filteredDocs => {
+        req.body.docs = filteredDocs;
+        return next();
+      })
+      .catch(err => serverUtils.serverError(err, req, res));
   }
 };
+
+// used for testing
+if (process.env.UNIT_TEST_ENV) {
+  _.extend(module.exports, {
+    _filterRequestDocs: filterRequestDocs,
+    _filterNewDocs: filterNewDocs,
+    _filterAllowedDocs: filterAllowedDocs
+  });
+}

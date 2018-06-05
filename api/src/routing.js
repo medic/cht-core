@@ -128,6 +128,41 @@ app.get(pathPrefix + 'login', login.get);
 app.get(pathPrefix + 'login/identity', login.getIdentity);
 app.postJson(pathPrefix + 'login', login.post);
 
+const RESTRICTED_ENDPOINTS = [
+  '_design/*/_list/*',
+  '_design/*/_show/*',
+  '_design/*/_view/*',
+  '_find',
+  '_explain',
+  '_index',
+  '_compact',
+  '_compact/*',
+  '_ensure_full_commit',
+  '_view_cleanup',
+  '_purge',
+  '_revs_limit'
+];
+
+const RESTRICTED_BLOCKED_ENPOINT = {
+  'error': 'unauthorized',
+  'reason': 'Restricted users are not allowed access to this enpoint'
+};
+
+RESTRICTED_ENDPOINTS.forEach(url => {
+  app.all(pathPrefix + url, (req, res, next) => {
+    auth
+      .getUserCtx(req)
+      .then(userCtx => {
+        if (!auth.isAdmin(userCtx)) {
+          serverUtils.notLoggedIn(req, res);
+          res.status(401);
+          return res.send(RESTRICTED_BLOCKED_ENPOINT);
+        }
+        next();
+      });
+  });
+});
+
 var UNAUDITED_ENDPOINTS = [
   // This takes arbitrary JSON, not whole documents with `_id`s, so it's not
   // auditable in our current framework
@@ -135,10 +170,9 @@ var UNAUDITED_ENDPOINTS = [
   '_local/*',
   '_revs_diff',
   '_missing_revs',
-  // These may use POST for specifiying ids
-  // NB: _changes is dealt with elsewhere: see `changesHandler`
-  '_all_docs',
-  '_bulk_get',
+  // These may use POST for specifying ids
+  // NB: _changes, _all_docs, _bulk_get are dealt with elsewhere:
+  // see `changesHandler`, `allDocsHandler`, `bulkGetHandler`
   '_design/*/_list/*',
   '_design/*/_show/*',
   '_design/*/_view/*',
@@ -460,6 +494,30 @@ const changesHandler = _.partial(require('./controllers/changes').request, proxy
 app.get(pathPrefix + '_changes', changesHandler);
 app.postJson(pathPrefix + '_changes', changesHandler);
 
+// authorization middleware to read userSettings and proxy admin requests directly to CouchDB
+const authorizationHandler = require('./controllers/authorization');
+const adminProxy = _.partial(authorizationHandler.adminProxy, proxy);
+
+const allDocsHandler = require('./controllers/all-docs').request;
+app.get(pathPrefix + '_all_docs', adminProxy, allDocsHandler);
+app.post(pathPrefix + '_all_docs', adminProxy, jsonParser, allDocsHandler);
+
+app.post(pathPrefix + '_bulk_docs', authorizationHandler.adminPassThrough, jsonParser, bulkDocs.request);
+
+const bulkGetHandler = require('./controllers/bulk-get').request;
+app.post(pathPrefix + '_bulk_get', adminProxy, jsonParser, bulkGetHandler);
+
+const dbDocHandler = require('./controllers/db-doc');
+const docPath = `${pathPrefix}:docId`;
+const attachmentPath = `${docPath}/:attachmentID`;
+
+app.get(docPath, authorizationHandler.adminPassThrough, dbDocHandler.requestDoc);
+app.post('/', authorizationHandler.adminPassThrough, jsonParser, dbDocHandler.requestDoc);
+app.put(docPath, authorizationHandler.adminPassThrough, jsonParser, dbDocHandler.requestDoc);
+app.delete(docPath, authorizationHandler.adminPassThrough, dbDocHandler.requestDoc);
+
+app.all(attachmentPath, authorizationHandler.adminPassThrough, dbDocHandler.requestAttachment);
+
 const metaPathPrefix = '/medic-user-\*-meta/';
 
 // AuthZ for this endpoint should be handled by couchdb
@@ -612,6 +670,16 @@ proxyForAuditing.on('error', function(err, req, res) {
 
 proxyForChanges.on('error', (err, req, res) => {
   serverUtils.serverError(JSON.stringify(err), req, res);
+});
+
+proxyForAuditing.on('proxyReq', function(proxyReq, req) {
+  // allow POST and PUT requests which have been body-parsed to be correctly proxied
+  if(req.body) {
+    let bodyData = JSON.stringify(req.body);
+    proxyReq.setHeader('Content-Type','application/json');
+    proxyReq.setHeader('Content-Length', Buffer.byteLength(bodyData));
+    proxyReq.write(bodyData);
+  }
 });
 
 module.exports = app;

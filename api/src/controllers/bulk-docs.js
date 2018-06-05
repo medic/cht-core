@@ -14,5 +14,7 @@ module.exports = {
       })
       .then(() => bulkDocs.bulkDelete(req.body.docs, res, { batchSize: 50}))
       .catch(err => next(err));
-  }
+  },
+
+  request: (req, res, next) => bulkDocs.filterRestrictedRequest(req, res, next)
 };

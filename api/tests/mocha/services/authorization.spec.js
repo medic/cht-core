@@ -509,5 +509,26 @@ describe('Authorization service', () => {
       });
     });
   });
+
+  describe('excludeTombstoneIds', () => {
+    it('excludes tombstone IDS', () => {
+      tombstoneUtils.isTombstoneId.callsFake(id => id.indexOf('tombstone') !== -1);
+      service.excludeTombstoneIds(['1', '2', 'tombstone-a', 'b-tombstone', '3', '5'])
+        .should.deep.equal(['1', '2', '3', '5']);
+      tombstoneUtils.isTombstoneId.callCount.should.equal(6);
+    });
+  });
+
+  describe('convertTombstoneIds', () => {
+    it('converts tombstone ids to their corresponding doc ids', () => {
+      tombstoneUtils.isTombstoneId.callsFake(id => id.indexOf('tombstone') !== -1);
+      tombstoneUtils.extractStub.callsFake(id => ({ id: id.replace('tombstone','') }));
+
+      service.convertTombstoneIds(['1', '2', 'tombstone-a', 'b-tombstone', '3', '5'])
+        .should.deep.equal(['1', '2', '-a', 'b-', '3', '5']);
+      tombstoneUtils.isTombstoneId.callCount.should.equal(6);
+      tombstoneUtils.extractStub.callCount.should.equal(2);
+    });
+  });
 });
 
