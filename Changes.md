@@ -1,5 +1,13 @@
 # Medic Mobile Release Notes
 
+## 2.14.4
+
+_June 5, 2018
+
+### Bug fixes
+
+- Increase simprints detection stability
+
 ## 2.14.3
 
 _May 4, 2018_
