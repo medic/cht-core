@@ -8,6 +8,7 @@ var SP_ID_MASK = 0xFFFFF8,
 
 angular.module('inboxServices').service('Simprints',
   function(
+    $log,
     $q,
     $window
   ) {
@@ -45,7 +46,7 @@ angular.module('inboxServices').service('Simprints',
             $window.medicmobile_android.simprints_available()
           );
         } catch (err) {
-          console.error(err);
+          $log.error(err);
           return false;
         }
       },
