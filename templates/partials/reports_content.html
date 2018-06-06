@@ -25,7 +25,6 @@
           <i class="fa fa-minus-circle"></i>
         </a>
         <div class="detail">
-          <div class="time small-font" ng-bind-html="summary.reported_date | fullDate"></div>
           <div class="status">
             <i ng-show="valid && !summary.verified" class="fa fa-circle green-dot"></i>
             <i ng-show="!valid && !summary.verified" class="fa fa-circle red-dot"></i>
@@ -44,6 +43,7 @@
                ng-bind-html="summary.subject.lineage || selection.lineage || selection.contact.parent || selection.place | lineage">
           </div>
           <mm-sender ng-if="summary.subject.type" message="selection" hide-lineage="true" sent-by="true"></mm-sender>
+          <div class="time small-font" ng-bind-html="summary.reported_date | relativeDate"></div>
         </div>
       </div>
 
