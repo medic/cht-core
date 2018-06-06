@@ -54,7 +54,29 @@ const hydrateDataRecords = result => {
         row.doc.contact = contact.doc;
       }
       let parent = row.doc.contact;
+      let guard = 50;
       while(parent) {
+        // There can be edge cases where documents can be created which have
+        // themselves as a parent. We have fixed at least one instance of this
+        // edge case:
+        //
+        //    https://github.com/medic/medic-webapp/issues/4487
+        //
+        // But there could be existing documents effected, and it could happen
+        // again. So just to be safe, we're going to guard against it here and
+        // throw if we get suspicious. Otherwise this can hang the entire server!
+        //
+        //    https://github.com/medic/medic-webapp/issues/4596
+        //
+        // This fix is just for 2.15.x, and in mainline will be fixed in main
+        // lineage shared library:
+        //
+        //    https://github.com/medic/medic-webapp/issues/4604
+        //
+        if (--guard === 0) {
+          throw Error(`Could not hydrate ${row.id}, possible parent recursion`);
+        }
+
         const parentId = parent.parent && parent.parent._id;
         const found = findContact(results.rows, parentId);
         if (found) {
