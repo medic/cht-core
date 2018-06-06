@@ -888,25 +888,34 @@ a.fa:hover {
         max-width: none;
         margin: 6px 0 0;
         .reports-icon {
-          color: @unverified-color;
-          font-size: 24px;
-          line-height: 1;
-          display: block;
+          background-color: @unverified-color;
           height: 24px;
-          margin-bottom: 6px;
+          width: 24px;
+          display: block;
+          margin: 0 auto 6px auto;
+
+          &.reports-icon-verify-error {
+            mask: url(../img/icon-status-times.svg) no-repeat 50% 50%;
+            -webkit-mask: url(../img/icon-status-times.svg) no-repeat 50% 50%;
+          }
+          &.reports-icon-verify-valid {
+            mask: url(../img/icon-status-check.svg) no-repeat 50% 50%;
+            -webkit-mask: url(../img/icon-status-check.svg) no-repeat 50% 50%;
+          }
         }
       }
 
       .verify-error.active {
-        &, .reports-icon {
-          color: @verify-error-color;
+        color: @verify-error-color;
+        .reports-icon {
+          background-color: @verify-error-color;
         }
       }
 
       .verify-valid.active {
         color: @verify-valid-color;
         .reports-icon {
-          color: @verify-valid-icon-color;
+          background-color: @verify-valid-icon-color;
         }
       }
     }
