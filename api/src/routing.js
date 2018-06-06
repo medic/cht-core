@@ -75,6 +75,8 @@ app.use(morgan('combined', {
 }));
 
 app.use(helmet({
+  // runs with a bunch of defaults: https://github.com/helmetjs/helmet
+  hpkp: false, // explicitely block dangerous header
   contentSecurityPolicy: {
     directives: {
       frameSrc: ['\'self\'']
