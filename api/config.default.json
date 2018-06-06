@@ -308,6 +308,13 @@
       "name": "can_log_out_on_android",
       "roles": [
       ]
+    },
+    {
+      "name": "can_verify_reports",
+      "roles": [
+        "national_admin",
+        "district_admin"
+      ]
     }
   ]
 }

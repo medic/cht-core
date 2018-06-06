@@ -81,3 +81,35 @@
     transform: rotate(360deg);
   }
 }
+
+@font-face {
+  font-family: "reports-verify-icons";
+  src:url("../fonts/reports-verify-icons.eot");
+  src:url("../fonts/reports-verify-icons.eot?#iefix") format("embedded-opentype"),
+  url("../fonts/reports-verify-icons.woff") format("woff"),
+  url("../fonts/reports-verify-icons.ttf") format("truetype"),
+  url("../fonts/reports-verify-icons.svg#untitled-font-1") format("svg");
+  font-weight: normal;
+  font-style: normal;
+
+}
+
+[class^="reports-icon-"]:before,
+[class*=" reports-icon-"]:before {
+  font-family: "reports-verify-icons" !important;
+  font-style: normal !important;
+  font-weight: normal !important;
+  font-variant: normal !important;
+  text-transform: none !important;
+  speak: none;
+  line-height: 1;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+.reports-icon-verify-error:before {
+  content: "\65";
+}
+.reports-icon-verify-valid:before {
+  content: "\76";
+}

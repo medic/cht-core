@@ -10,7 +10,9 @@ node_modules
 /node_modules_backup/
 /scripts/node_modules/
 /static/dist/
-/static/fonts/
+!/static/fonts/
+/static/fonts/**
+!/static/fonts/reports-verify*
 /packages/libphonenumber/libphonenumber/libphonenumber.js
 /packages/task-utils/task-utils.js
 /ddocs/compiled.json

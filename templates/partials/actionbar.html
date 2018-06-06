@@ -97,13 +97,19 @@
               <span class="fa fa-envelope"></span>
               <p translate>Send Message</p>
             </a>
-            <a class="mm-icon mm-icon-inverse mm-icon-caption" ng-show="!actionBar.right.verified" ng-click="emit('VerifyReport', true)">
+            <div class="sub-actions" ng-show="actionBar.right.verifyingReport">
+              <a class="mm-icon mm-icon-inverse mm-icon-caption verify-error" ng-class="{ active: actionBar.right.verified && !actionBar.right.verified_valid }" ng-click="emit('VerifyReport', false)">
+                <span class="reports-icon reports-icon-verify-error"></span>
+                <span translate>reports.verify.invalid</span>
+              </a>
+              <a class="mm-icon mm-icon-inverse mm-icon-caption verify-valid" ng-class="{ active: actionBar.right.verified && actionBar.right.verified_valid }" ng-click="emit('VerifyReport', true)">
+                <span class="reports-icon reports-icon-verify-valid"></span>
+                <span translate>reports.verify.valid</span>
+              </a>
+            </div>
+            <a class="mm-icon mm-icon-inverse mm-icon-caption" ng-class="{ active: actionBar.right.verifyingReport }"  mm-auth="can_verify_reports" ng-click="emit('ToggleVerificationBar')">
               <span class="fa fa-check"></span>
-              <p translate>Verify</p>
-            </a>
-            <a class="mm-icon mm-icon-inverse mm-icon-caption" ng-show="actionBar.right.verified" ng-click="emit('VerifyReport', false)">
-              <span class="fa fa-times"></span>
-              <p translate>Unverify</p>
+              <p translate>reports.verify</p>
             </a>
             <a class="mm-icon mm-icon-inverse mm-icon-caption" ng-show="actionBar.right.type === 'xml'" ui-sref="reports.edit({ reportId: actionBar.right.selected[0]._id })">
               <span class="fa fa-pencil"></span>

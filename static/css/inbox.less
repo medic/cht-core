@@ -870,6 +870,49 @@ a.fa:hover {
         color: #000000;
       }
     }
+
+    .sub-actions {
+      position: absolute;
+      background-color: #FFFFFF;
+      height: 56px;
+      top: -56px;
+      width: 100%;
+      display: flex;
+      box-shadow: 0 -6px 12px rgba(0, 0, 0, 0.4);
+
+      .mm-icon {
+        border: none;
+        line-height: 1;
+        color: @label-color;
+        max-width: 50%;
+        text-shadow: none;
+        margin: 6px 0 0;
+        .reports-icon {
+          color: @unverified-color;
+          font-size: 24px;
+          line-height: 1;
+          display: block;
+          height: 24px;
+          margin-bottom: 6px;
+        }
+      }
+
+      .verify-error.active {
+        &.active, .reports-icon {
+          color: @verify-error-color;
+        }
+      }
+
+      .verify-valid {
+        &.hover, &.active {
+          color: @verify-valid-text-color;
+
+          .reports-icon {
+            color: @verify-valid-icon-color;
+          }
+        }
+      }
+    }
   }
 }
 
@@ -877,7 +920,7 @@ a.fa:hover {
   border-bottom-color: @messages-color;
 }
 
-.reports .action-container .actions .mm-icon:hover {
+.reports .action-container .actions .mm-icon:hover, .reports .action-container .actions .mm-icon.active {
   border-bottom-color: @reports-color;
 }
 
