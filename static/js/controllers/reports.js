@@ -262,7 +262,7 @@ angular.module('inboxControllers').controller('ReportsCtrl',
       query();
     };
 
-    $scope.$on('ToggleVerificationBar', function() {
+    $scope.$on('ToggleVerifyingReport', function() {
       $scope.verifyingReport = !$scope.verifyingReport;
       setRightActionBar();
     });
