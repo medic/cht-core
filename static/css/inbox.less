@@ -872,20 +872,20 @@ a.fa:hover {
     }
 
     .sub-actions {
-      position: absolute;
       background-color: #FFFFFF;
       height: 56px;
-      top: -56px;
-      width: 100%;
+      padding: 0;
+      margin: 0 0 1px 0;
+      border-radius: 0;
+      border: none;
       display: flex;
       box-shadow: 0 -6px 12px rgba(0, 0, 0, 0.4);
 
-      .mm-icon {
+      .mm-icon-caption {
         border: none;
         line-height: 1;
         color: @label-color;
-        max-width: 50%;
-        text-shadow: none;
+        max-width: none;
         margin: 6px 0 0;
         .reports-icon {
           color: @unverified-color;
@@ -898,18 +898,15 @@ a.fa:hover {
       }
 
       .verify-error.active {
-        &.active, .reports-icon {
+        &, .reports-icon {
           color: @verify-error-color;
         }
       }
 
-      .verify-valid {
-        &.hover, &.active {
-          color: @verify-valid-text-color;
-
-          .reports-icon {
-            color: @verify-valid-icon-color;
-          }
+      .verify-valid.active {
+        color: @verify-valid-color;
+        .reports-icon {
+          color: @verify-valid-icon-color;
         }
       }
     }
