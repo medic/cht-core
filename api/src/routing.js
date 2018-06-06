@@ -2,6 +2,7 @@ const _ = require('underscore'),
       bodyParser = require('body-parser'),
       express = require('express'),
       morgan = require('morgan'),
+      helmet = require('helmet'),
       db = require('./db-nano'),
       path = require('path'),
       auth = require('./auth'),
@@ -71,6 +72,16 @@ if(process.argv.slice(2).includes('--allow-cors')) {
 
 app.use(morgan('combined', {
   immediate: true
+}));
+
+app.use(helmet({
+  // runs with a bunch of defaults: https://github.com/helmetjs/helmet
+  hpkp: false, // explicitly block dangerous header
+  contentSecurityPolicy: {
+    directives: {
+      frameSrc: ['\'self\'']
+    }
+  }
 }));
 
 app.use(function(req, res, next) {
