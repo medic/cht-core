@@ -23,6 +23,7 @@ var passwordTester = require('simple-password-tester'),
       Select2Search,
       Session,
       SetLanguage,
+      Settings,
       Translate,
       UpdateUser,
       UserSettings
@@ -37,9 +38,18 @@ var passwordTester = require('simple-password-tester'),
         $scope.enabledLocales = languages;
       });
 
-      var getType = function(roles) {
-        if (roles && roles.length) {
-          return roles[0];
+      var getRole = function(roles) {
+        if (!roles || !roles.length) {
+          return;
+        }
+        if (!$scope.roles) {
+          return;
+        }
+        var knownRoles = roles.filter(function(role) {
+          return !!$scope.roles[role];
+        });
+        if (knownRoles.length) {
+          return knownRoles[knownRoles.length - 1];
         }
       };
 
@@ -48,21 +58,24 @@ var passwordTester = require('simple-password-tester'),
           // Edit a user that's not the current user.
           // $scope.model is the user object passed in by controller creating the Modal.
           // If $scope.model === {}, we're creating a new user.
-          return $q.resolve({
-            id: $scope.model._id,
-            username: $scope.model.name,
-            fullname: $scope.model.fullname,
-            email: $scope.model.email,
-            phone: $scope.model.phone,
-            // FacilitySelect is what binds to the select, place is there to
-            // compare to later to see if it's changed once we've run computeFields();
-            facilitySelect: $scope.model.facility_id,
-            place: $scope.model.facility_id,
-            type: getType($scope.model.roles),
-            language: { code: $scope.model.language },
-            // ^ Same with contactSelect vs. contact
-            contactSelect: $scope.model.contact_id,
-            contact: $scope.model.contact_id
+          return Settings().then(function(settings) {
+            $scope.roles = settings.roles;
+            return {
+              id: $scope.model._id,
+              username: $scope.model.name,
+              fullname: $scope.model.fullname,
+              email: $scope.model.email,
+              phone: $scope.model.phone,
+              // FacilitySelect is what binds to the select, place is there to
+              // compare to later to see if it's changed once we've run computeFields();
+              facilitySelect: $scope.model.facility_id,
+              place: $scope.model.facility_id,
+              role: getRole($scope.model.roles),
+              language: { code: $scope.model.language },
+              // ^ Same with contactSelect vs. contact
+              contactSelect: $scope.model.contact_id,
+              contact: $scope.model.contact_id
+            };
           });
         } else {
           // Edit the current user.
@@ -178,7 +191,7 @@ var passwordTester = require('simple-password-tester'),
       };
 
       var validateContactAndFacility = function() {
-        if ($scope.editUserModel.type !== 'district-manager') {
+        if ($scope.editUserModel.role !== 'district-manager') {
           return true;
         }
         var hasPlace = validateRequired('place', 'Facility');
@@ -187,7 +200,7 @@ var passwordTester = require('simple-password-tester'),
       };
 
       var validateRole = function() {
-        return validateRequired('type', 'User Type');
+        return validateRequired('role', 'configuration.role');
       };
 
       var changedUpdates = function(model) {
@@ -215,6 +228,8 @@ var passwordTester = require('simple-password-tester'),
               .forEach(function(k) {
                 if (k === 'language') {
                   updates[k] = model[k].code;
+                } else if (k === 'role') {
+                  updates.roles = [model[k]];
                 } else {
                   updates[k] = model[k];
                 }

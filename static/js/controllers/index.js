@@ -15,6 +15,8 @@
   require('./bulk-delete-confirm');
   require('./check-date');
   require('./configuration');
+  require('./configuration-authorization-permissions');
+  require('./configuration-authorization-roles');
   require('./configuration-export-audit-logs');
   require('./configuration-export-contacts');
   require('./configuration-export-feedback');
@@ -24,7 +26,6 @@
   require('./configuration-forms-json');
   require('./configuration-forms-xml');
   require('./configuration-icons');
-  require('./configuration-permissions');
   require('./configuration-settings-advanced');
   require('./configuration-settings-basic');
   require('./configuration-targets');

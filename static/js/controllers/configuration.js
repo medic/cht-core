@@ -81,11 +81,11 @@ angular.module('inboxControllers').controller('ConfigurationCtrl',
         }
       },
       {
-        state: 'configuration.permissions',
+        state: 'configuration.authorization.permissions',
         icon: 'fa-key',
-        name: 'configuration.permissions',
+        name: 'configuration.authorization',
         active: function() {
-          return $state.is('configuration.permissions');
+          return $state.includes('configuration.authorization');
         }
       },
     ];
