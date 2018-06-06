@@ -74,7 +74,13 @@ app.use(morgan('combined', {
   immediate: true
 }));
 
-app.use(helmet());
+app.use(helmet({
+  contentSecurityPolicy: {
+    directives: {
+      frameSrc: ['\'self\'']
+    }
+  }
+}));
 
 app.use(function(req, res, next) {
   var domain = createDomain();
