@@ -1,0 +1,16 @@
+{
+  "fields": [
+    {
+      "label": "Notes",
+      "width": 12
+    }
+  ],
+  "cards": [],
+  "context": {
+    "use_cases": {
+      "anc": false,
+      "pnc": false,
+      "imm": false
+    }
+  }
+}

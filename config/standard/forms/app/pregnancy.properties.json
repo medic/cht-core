@@ -1,0 +1,38 @@
+{
+  "title": [
+    {
+      "locale": "en",
+      "content": "New Pregnancy"
+    },
+    {
+      "locale": "hi",
+      "content": "नई गर्भावस्था"
+    },
+    {
+      "locale": "id",
+      "content": "Kehamilan baru"
+    }
+  ],
+  "icon": "pregnancy-1",
+	"context": {
+		"person": true,
+		"place": false,
+		"expression": "!contact || (contact.type === 'person' && (!contact.sex || contact.sex === 'female') && (!contact.date_of_birth || (ageInYears(contact) >= 10 && ageInYears(contact) < 65)))"
+	},
+  "hidden_fields": [
+    "patient_age_in_years",
+    "patient_uuid",
+    "lmp_method",
+    "lmp_date_8601",
+    "edd_8601",
+    "patient_age_at_lmp",
+    "days_since_lmp",
+    "weeks_since_lmp",
+    "group_lmp",
+    "group_risk_factors",
+    "group_danger_signs",
+    "group_note",
+    "group_review",
+    "meta"
+  ]
+}

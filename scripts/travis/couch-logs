@@ -1,0 +1,8 @@
+#!/bin/bash -eu
+
+if [[ -z "${USE_COUCHDB-}" ]]; then
+	echo '[medic] skipping couch-logs'
+	exit 0
+fi
+
+docker logs couch >tests/logs/couch.log 2>&1
