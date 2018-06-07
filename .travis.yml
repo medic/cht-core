@@ -14,9 +14,10 @@ services:
 
 env:
   matrix:
-  - NODE_VERSION=8 TEST_SUITE=normal
-  - NODE_VERSION=9 TEST_SUITE=normal
-  - NODE_VERSION="lts/*" TEST_SUITE=performance
+  - TEST_SUITE=standard NODE_VERSION="lts/*" USE_COUCHDB=false USE_YARN=false
+  - TEST_SUITE=normal NODE_VERSION=8 USE_COUCHDB=true USE_YARN=true
+  - TEST_SUITE=normal NODE_VERSION=9 USE_COUCHDB=true USE_YARN=true
+  - TEST_SUITE=performance NODE_VERSION="lts/*" USE_COUCHDB=true USE_YARN=true
   global:
   - COUCH_URL=http://admin:pass@localhost:5984/medic
   - API_URL=http://admin:pass@localhost:5988
@@ -30,14 +31,10 @@ matrix:
     - env: NODE_VERSION="lts/*" TEST_SUITE=performance
 
 before_install:
-  # start couchdb 2.x docker instance
-  - docker run -d -p 5984:5984 --name couch couchdb:2
-  - echo "Starting CouchDB 2.x"
-  - until nc -z localhost 5984; do sleep 1; done
-  - echo "CouchDB Started"
+  - ./scripts/travis/couch-start
   - pip install --user awscli
   - export PATH=$PATH:$HOME/.local/bin
-  - curl -o- -L https://yarnpkg.com/install.sh | bash -s -- --version 1.7.0
+  - '[[ -z "$USE_YARN" ]] || curl -o- -L https://yarnpkg.com/install.sh | bash -s'
   - export PATH=$HOME/.yarn/bin:$PATH
 
 install:
@@ -46,15 +43,8 @@ install:
 before_script:
   - mkdir tests/logs
   - nvm use $NODE_VERSION
-  - yarn -v
-  - yarn install
-  - yarn list || true
-  # Create couchdb system tables (this has to be done manually on couchdb 2.0)
-  - curl -X PUT http://127.0.0.1:5984/{_users,_replicator,_global_changes,_metadata,admins}
-  - curl -X PUT localhost:5984/medic
-  - yarn global add grunt-cli --ignore-engines
-  - cd shared-libs/phone-number && yarn install && cd ../..
-  - node --stack_size=10000 `which grunt` ci-build
+  - ./scripts/travis/couch-config
+  - ./scripts/travis/yarn-init
 
 script:
   - |
@@ -63,6 +53,10 @@ script:
       node --stack_size=10000 `which grunt` ci-integration-e2e
     elif [[ "$TEST_SUITE" = 'performance' ]]; then
       node --stack_size=10000 `which grunt` ci-performance
+    elif [[ "$TEST_SUITE" = 'standard' ]]; then
+      cd config/standard &&
+      npm install &&
+      npm run travis
     else
       echo "ERROR No or unknown value for TEST_SUITE env var ('${TEST_SUITE}')."
       exit 1
@@ -73,7 +67,7 @@ jobs:
     - if: type != pull_request
       stage: "Publish binaries"
       script: node --stack_size=10000 `which grunt` publish
-      env: NODE_VERSION=8 PUBLISH_TO=horti
+      env: NODE_VERSION=8 PUBLISH_TO=horti USE_YARN=true
 
 after_failure:
   - |
@@ -95,7 +89,7 @@ after_failure:
 
       echo "Uploading logs and screenshots to ${S3_PATH}..."
 
-      docker logs couch >tests/logs/couch.log 2>&1
+      ./scripts/travis/couch-logs
 
       aws s3 cp tests/results "$S3_PATH"/test-results --recursive
       aws s3 cp tests/logs "$S3_PATH"/ --recursive

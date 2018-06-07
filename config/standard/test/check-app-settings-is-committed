@@ -1,0 +1,23 @@
+#!/bin/bash -eu
+
+explain_error() {
+	cat <<EOF
+ERROR \`medic-conf compile-app-settings\` generated a different app_settings.json
+ERROR to the version committed to git.
+ERROR
+ERROR See above for more details of the differences.
+ERROR
+ERROR Check that you are using the same version of medic-conf as that listed in
+ERROR package.json, and that you have committed any changes to app_settings
+ERROR which are generated when re-compiling.
+EOF
+}
+trap explain_error ERR
+
+echo '[check-app-settings-js-is-committed] Generating app_settings.json...'
+./node_modules/.bin/medic-conf --no-check compile-app-settings
+
+echo '[check-app-settings-js-is-committed] Check for changes...'
+git diff --exit-code app_settings.json
+
+echo '[check-app-settings-js-is-committed] app_settings.json is up-to-date :¬)'

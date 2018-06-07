@@ -1,0 +1,43 @@
+{
+  "name": "Collect (Standard)",
+  "short_description": "Allows health workers to complete & send reports to a Medic Mobile instance",
+  "long_description": "<b>This app is for users of Medic Mobile's Standard Package. Please contact hello@medicmobile.org if you need help getting started!</b>
+
+  --------------------------------------
+
+  Using <i>Collect</i> by Medic Mobile health workers register people into health programs, screen for high-risk pregnancies, report about pregnancy or immunization visits, and more. Reports can be submitted using data (mobile internet, or wifi) as well as SMS.",
+  "application_type": "application",
+  "category": "Medical",
+  "website": "http://medicmobile.org",
+  "email": "support@medicmobile.org",
+  "privacy_policy": "http://medicmobile.org/policy",
+  "icon": "medic-mobile-logo-circle-2017-512.png",
+  "feature_graphic": "header-FB-1024x500.png",
+  "screenshots": [
+    "Screenshot_20160321-100605_clean.png",
+    "Screenshot_20170807-001514.png",
+    "Screenshot_20170807-001708.png"
+  ],
+  "content_rating": {
+    "email": "android@medicmobile.org",
+    "category": "UTILITY, PRODUCTIVITY, COMMUNICATION, OR OTHER",
+    "violence": false,
+    "sexuality": false,
+    "language": false,
+    "controlled_substance": false,
+    "age_restricted_products": false,
+    "misc_exchange_content": false,
+    "misc_share_location": false,
+    "misc_digital_purchases": false,
+    "misc_unconstitutional_in_germany": false,
+    "misc_browser": false
+  },
+  "pricing_distribution": {
+    "price": "free",
+    "countries": "all",
+    "ads": false,
+    "marketing_opt_out": true,
+    "content_guidelines": true,
+    "us_export_laws": true
+  }
+}

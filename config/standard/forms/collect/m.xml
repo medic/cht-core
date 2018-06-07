@@ -1,0 +1,54 @@
+<?xml version="1.0"?>
+<h:html xmlns="http://www.w3.org/2002/xforms" xmlns:ev="http://www.w3.org/2001/xml-events" xmlns:h="http://www.w3.org/1999/xhtml" xmlns:jr="http://openrosa.org/javarosa" xmlns:orx="http://openrosa.org/xforms" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+  <h:head>
+    <h:title>Postnatal Visit</h:title>
+    <model>
+      <itext>
+        <translation lang="Bahasa Indonesia (Indonesian)">
+          <text id="/m/review:label">
+            <value>Mengirimkan laporan kunjungan untuk ID <output value=" /m/id "/></value>
+          </text>
+          <text id="/m/id:label">
+            <value>Pasien ID</value>
+          </text>
+        </translation>
+        <translation lang="हिन्दी (Hindi)">
+          <text id="/m/review:label">
+            <value>ID <output value=" /m/id "/> के लिए जांच की रिपोर्ट भेजें</value>
+          </text>
+          <text id="/m/id:label">
+            <value>मरीज का ID</value>
+          </text>
+        </translation>
+        <translation default="true()" lang="English">
+          <text id="/m/review:label">
+            <value>Submitting postnatal visit report for ID <output value=" /m/id "/></value>
+          </text>
+          <text id="/m/id:label">
+            <value>Patient ID</value>
+          </text>
+        </translation>
+      </itext>
+      <instance>
+        <m delimiter="#" id="m" prefix="J1!m!" version="2018-06-06_09-53">
+          <id/>
+          <review/>
+          <meta>
+            <instanceID/>
+          </meta>
+        </m>
+      </instance>
+      <bind nodeset="/m/id" required="true()" type="string"/>
+      <bind nodeset="/m/review" readonly="true()" type="string"/>
+      <bind calculate="concat('uuid:', uuid())" nodeset="/m/meta/instanceID" readonly="true()" type="string"/>
+    </model>
+  </h:head>
+  <h:body class="pages">
+    <input appearance="numbers" ref="/m/id">
+      <label ref="jr:itext('/m/id:label')"/>
+    </input>
+    <input ref="/m/review">
+      <label ref="jr:itext('/m/review:label')"/>
+    </input>
+  </h:body>
+</h:html>
