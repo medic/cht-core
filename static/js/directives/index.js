@@ -12,4 +12,5 @@
   require('./sender');
   require('./svg-icons');
   require('./enter');
+
 }());
