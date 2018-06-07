@@ -888,34 +888,30 @@ a.fa:hover {
         max-width: none;
         margin: 6px 0 0;
         .reports-icon {
-          background-color: @unverified-color;
-          height: 24px;
-          width: 24px;
           display: block;
           margin: 0 auto 6px auto;
 
-          &.reports-icon-verify-error {
-            mask: url(../img/icon-status-times.svg) no-repeat 50% 50%;
-            -webkit-mask: url(../img/icon-status-times.svg) no-repeat 50% 50%;
-          }
-          &.reports-icon-verify-valid {
-            mask: url(../img/icon-status-check.svg) no-repeat 50% 50%;
-            -webkit-mask: url(../img/icon-status-check.svg) no-repeat 50% 50%;
+          svg {
+            path {
+              fill: @unverified-color;
+            }
+            width: 24px;
+            height: 24px;
           }
         }
       }
 
       .verify-error.active {
         color: @verify-error-color;
-        .reports-icon {
-          background-color: @verify-error-color;
+        svg path {
+          fill: @verify-error-color;
         }
       }
 
       .verify-valid.active {
         color: @verify-valid-color;
-        .reports-icon {
-          background-color: @verify-valid-icon-color;
+        svg path {
+          fill: @verify-valid-icon-color;
         }
       }
     }
@@ -926,8 +922,10 @@ a.fa:hover {
   border-bottom-color: @messages-color;
 }
 
-.reports .action-container .actions .mm-icon:hover, .reports .action-container .actions .mm-icon.active {
-  border-bottom-color: @reports-color;
+.reports .action-container .actions .mm-icon {
+  &:hover, &.active {
+    border-bottom-color: @reports-color;
+  }
 }
 
 .contacts .action-container .actions .mm-icon:hover {
