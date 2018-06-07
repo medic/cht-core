@@ -17,6 +17,9 @@ module.exports = function(Promise, DB) {
       if (start < 0) {
         start = 0;
       }
+      if (end < 0) {
+        end = 0;
+      }
     } else {
       // ascending
       start = options.skip;
