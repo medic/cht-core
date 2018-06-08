@@ -40,10 +40,8 @@ describe('Bulk Docs utils', function() {
       return utils.updateParentContacts([person]).then(updatedParents => {
         chai.expect(get.callCount).to.equal(1);
         chai.expect(get.args[0][0]).to.equal(clinic._id);
-        chai.expect(updatedParents.docs).to.have.length(1);
-        chai.expect(updatedParents.docs[0]).to.deep.equal(expected);
-        chai.expect(updatedParents.documentByParentId).to.have.property(clinic._id);
-        chai.expect(updatedParents.documentByParentId[clinic._id]).to.deep.equal(person);
+        chai.expect(updatedParents).to.have.length(1);
+        chai.expect(updatedParents[0]).to.deep.equal(expected);
       });
     });
 
@@ -68,8 +66,7 @@ describe('Bulk Docs utils', function() {
       return utils.updateParentContacts([person]).then(updatedParents => {
         chai.expect(get.callCount).to.equal(1);
         chai.expect(get.args[0][0]).to.equal(clinic._id);
-        chai.expect(updatedParents.docs.length).to.equal(0);
-        chai.expect(updatedParents.documentByParentId).to.not.have.property(clinic._id);
+        chai.expect(updatedParents.length).to.equal(0);
       });
     });
 
@@ -90,8 +87,7 @@ describe('Bulk Docs utils', function() {
       return utils.updateParentContacts([person]).then(updatedParents => {
         chai.expect(get.callCount).to.equal(1);
         chai.expect(get.args[0][0]).to.equal(clinic._id);
-        chai.expect(updatedParents.docs.length).to.equal(0);
-        chai.expect(updatedParents.documentByParentId).to.not.have.property(clinic._id);
+        chai.expect(updatedParents).to.have.length(0);
       });
     });
   });
