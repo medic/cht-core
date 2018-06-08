@@ -278,11 +278,7 @@ angular.module('inboxControllers').controller('ReportsCtrl',
       if ($scope.selected[0].doc.form) {
         DB().get($scope.selected[0]._id)
           .then(function(message) {
-            if (message.verified === valid) {
-              message.verified = undefined;
-            } else {
-              message.verified = valid;
-            }
+            message.verified = (message.verified === valid) ? undefined : valid;
             return DB().post(message);
           })
           .catch(function(err) {
