@@ -29,13 +29,23 @@ var _ = require('underscore'),
     _.defaults(options, { prefix: '', suffix: '' });
 
     if (!date) {
-      return '<span>' + options.prefix + options.suffix + '</span>';
+      if (options.raw) {
+        return;
+      } else {
+        return '<span>' + options.prefix + options.suffix + '</span>';
+      }
     }
 
     var momentDate = moment(date);
-    var absolute = getAbsoluteDateString(momentDate, options);
     var relative = getRelativeDateString(momentDate, options);
+
+    if (options.raw) {
+      return relative;
+    }
+
     var classes = ['relative-date'];
+    var absolute = getAbsoluteDateString(momentDate, options);
+
     var now = moment();
 
     if (options.withoutTime) {
@@ -166,12 +176,19 @@ var _ = require('underscore'),
 
   module.filter('relativeDay', function(FormatDate, RelativeDate, $sce) {
     'ngInject';
-    return function (date) {
-      return $sce.trustAsHtml(getRelativeDate(date, {
+    return function (date, raw) {
+      var options = {
         FormatDate: FormatDate,
         RelativeDate: RelativeDate,
         withoutTime: true
-      }));
+      };
+
+      if (raw) {
+        options.raw = true;
+        return getRelativeDate(date, options);
+      } else {
+        return $sce.trustAsHtml(getRelativeDate(date, options));
+      }
     };
   });
 

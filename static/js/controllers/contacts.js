@@ -97,7 +97,12 @@ var _ = require('underscore'),
           actualFilter = $scope.filters;
         }
 
-        Search('contacts', actualFilter, options).then(function(contacts) {
+        var extensions = {};
+        if (true /*TODO pull this from a permission */) {
+          extensions.lastVisitedDate = true;
+        }
+
+        Search('contacts', actualFilter, options, extensions).then(function(contacts) {
           // If you have a home place make sure its at the top
           if (usersHomePlace) {
             var homeIndex = _.findIndex(contacts, function(contact) {
