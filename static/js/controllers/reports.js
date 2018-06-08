@@ -272,6 +272,7 @@ angular.module('inboxControllers').controller('ReportsCtrl',
         .prop('checked', false);
       LiveList.reports.clearSelected();
       LiveList['report-search'].clearSelected();
+      $scope.verifyingReport = false;
     });
 
     $scope.$on('VerifyReport', function(e, valid) {
