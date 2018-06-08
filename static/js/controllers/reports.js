@@ -89,7 +89,6 @@ angular.module('inboxControllers').controller('ReportsCtrl',
                 model.selected[0];
       if (doc) {
         model.verified = doc.verified;
-        model.verified_valid = doc.verified_valid;
         model.type = doc.content_type;
         model.verifyingReport = $scope.verifyingReport;
         if (doc.contact && doc.contact._id) {
