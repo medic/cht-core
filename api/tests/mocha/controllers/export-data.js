@@ -4,12 +4,18 @@ const sinon = require('sinon').sandbox.create(),
       auth = require('../../../auth'),
       serverUtils = require('../../../server-utils');
 
-const controller = require('../../../controllers/export-data');
+const controller = require('../../../controllers/export-data'),
+      exportDataV2 = require('../../../services/export-data-2');
+
+let set;
 
 describe('Export Data controller', () => {
   beforeEach(() => {
     sinon.stub(serverUtils, 'error');
     sinon.stub(auth, 'check');
+    sinon.stub(exportDataV2, 'export');
+
+    set = sinon.stub().returns({ set });
   });
 
   afterEach(() => sinon.restore());
@@ -33,6 +39,34 @@ describe('Export Data controller', () => {
           serverUtils.error.args[0][1].req.should.equal(true);
           serverUtils.error.args[0][2].res.should.equal(true);
         });
+    });
+
+    it('corrects filter types', () => {
+      const req = {
+        params: {
+          type: 'reports'
+        },
+        body: {
+          filters: {
+            date: { from: '1525813200000', to: '1528232399999' },
+            valid: 'true',
+            verified: 'false'
+          }
+        }
+      };
+      auth.check.resolves();
+      return controller.routeV2(req, { set: set, flushHeaders: sinon.stub() }).then(() => {
+        exportDataV2.export.callCount.should.equal(1);
+        exportDataV2.export.args[0].should.deep.equal([
+          'reports',
+          {
+            date: { from: 1525813200000, to: 1528232399999 },
+            valid: true,
+            verified: false
+          },
+          {}
+        ]);
+      });
     });
   });
 });

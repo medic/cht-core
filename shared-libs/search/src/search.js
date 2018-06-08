@@ -8,6 +8,10 @@ var _ = require('underscore'),
 module.exports = function(Promise, DB) {
   // Get the subset of rows, in appropriate order, according to options.
   var getPageRows = function(type, rows, options) {
+    if (rows.length < options.skip) {
+      return [];
+    }
+
     var start;
     var end;
     if (type === 'reports') {
@@ -16,9 +20,6 @@ module.exports = function(Promise, DB) {
       start = end - options.limit;
       if (start < 0) {
         start = 0;
-      }
-      if (end < 0) {
-        end = 0;
       }
     } else {
       // ascending
