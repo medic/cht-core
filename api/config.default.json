@@ -59,7 +59,8 @@
       "name": "usertype.national-manager"
     },
     "district_admin": {
-      "name": "usertype.district-manager"
+      "name": "usertype.district-manager",
+      "offline": true
     },
     "data_entry": {
       "name": "usertype.data-entry"

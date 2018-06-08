@@ -79,7 +79,10 @@ angular.module('inboxControllers').controller('ConfigurationAuthorizationRolesCt
       Object.keys($scope.roles).forEach(function(key) {
         changes[key] = $scope.roles[key];
       });
-      changes[$scope.newRole.key] = { name: $scope.newRole.name };
+      changes[$scope.newRole.key] = {
+        name: $scope.newRole.name,
+        offline: $scope.newRole.offline
+      };
       save(changes).then(function() {
         $scope.submitting = false;
       });

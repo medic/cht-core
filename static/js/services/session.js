@@ -1,4 +1,5 @@
 var COOKIE_NAME = 'userCtx',
+    ONLINE_ROLE = 'mm-online',
     _ = require('underscore');
 
 (function () {
@@ -92,16 +93,16 @@ var COOKIE_NAME = 'userCtx',
         isAdmin: function(userCtx) {
           userCtx = userCtx || getUserCtx();
           return hasRole(userCtx, '_admin') ||
-                 hasRole(userCtx, 'national_admin');
+                 hasRole(userCtx, 'national_admin'); // deprecated: kept for backwards compatibility
         },
 
         /**
-         * Returns true if the logged in user has the district admin role.
-         * @param {userCtx} (optional) Will get the current userCtx if not provided.
+         * Returns true if the logged in user is online only
          */
-        isDistrictAdmin: function(userCtx) {
+        isOnlineOnly: function(userCtx) {
           userCtx = userCtx || getUserCtx();
-          return hasRole(userCtx, 'district_admin');
+          return hasRole(userCtx, '_admin') ||
+                 hasRole(userCtx, ONLINE_ROLE);
         }
       };
 
