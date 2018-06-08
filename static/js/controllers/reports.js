@@ -279,12 +279,10 @@ angular.module('inboxControllers').controller('ReportsCtrl',
       if ($scope.selected[0].doc.form) {
         DB().get($scope.selected[0]._id)
           .then(function(message) {
-            if (message.verified && message.verified_valid === valid) {
-              message.verified = false;
-              message.verified_valid = false;
+            if (message.verified === valid) {
+              message.verified = undefined;
             } else {
-              message.verified = true;
-              message.verified_valid = valid;
+              message.verified = valid;
             }
             return DB().post(message);
           })

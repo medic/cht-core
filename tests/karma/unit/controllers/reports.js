@@ -130,7 +130,6 @@ describe('ReportsCtrl controller', () => {
           _id: 'def',
           name: 'hello',
           verified: true,
-          verified_valid: true
         }]);
       });
     });
@@ -152,8 +151,7 @@ describe('ReportsCtrl controller', () => {
         chai.expect(post.args[0]).to.deep.equal([{
           _id: 'def',
           name: 'hello',
-          verified: true,
-          verified_valid: false
+          verified: false
         }]);
       });
     });
@@ -162,8 +160,7 @@ describe('ReportsCtrl controller', () => {
       get.returns(Promise.resolve({
         _id: 'def',
         name: 'hello',
-        verified: true,
-        verified_valid: true
+        verified: true
       }));
       post.returns(Promise.resolve());
 
@@ -180,8 +177,7 @@ describe('ReportsCtrl controller', () => {
         chai.expect(post.args[0]).to.deep.equal([{
           _id: 'def',
           name: 'hello',
-          verified: true,
-          verified_valid: false
+          verified: false
         }]);
       });
     });
@@ -190,8 +186,7 @@ describe('ReportsCtrl controller', () => {
       get.returns(Promise.resolve({
         _id: 'def',
         name: 'hello',
-        verified: true,
-        verified_valid: false
+        verified: false
       }));
       post.returns(Promise.resolve());
 
@@ -208,8 +203,7 @@ describe('ReportsCtrl controller', () => {
         chai.expect(post.args[0]).to.deep.equal([{
           _id: 'def',
           name: 'hello',
-          verified: false,
-          verified_valid: false
+          verified: undefined
         }]);
       });
     });
@@ -218,8 +212,7 @@ describe('ReportsCtrl controller', () => {
       get.returns(Promise.resolve({
         _id: 'def',
         name: 'hello',
-        verified: true,
-        verified_valid: false
+        verified: false
       }));
       post.returns(Promise.resolve());
 
@@ -236,8 +229,7 @@ describe('ReportsCtrl controller', () => {
         chai.expect(post.args[0]).to.deep.equal([{
           _id: 'def',
           name: 'hello',
-          verified: true,
-          verified_valid: true
+          verified: true
         }]);
       });
     });
@@ -246,8 +238,7 @@ describe('ReportsCtrl controller', () => {
       get.returns(Promise.resolve({
         _id: 'def',
         name: 'hello',
-        verified: true,
-        verified_valid: true
+        verified: true
       }));
       post.returns(Promise.resolve());
 
@@ -264,8 +255,7 @@ describe('ReportsCtrl controller', () => {
         chai.expect(post.args[0]).to.deep.equal([{
           _id: 'def',
           name: 'hello',
-          verified: false,
-          verified_valid: false
+          verified: undefined
         }]);
       });
     });

@@ -60,7 +60,6 @@ const householdVisit = {
   form: 'household_visit',
   type: 'data_record',
   verified: true,
-  verified_valid: true,
   content_type: 'xml',
   reported_date: 1517418915669,
   contact: {
@@ -88,8 +87,7 @@ const householdVisitBis = Object.assign({}, householdVisit, {
   fields: Object.assign({}, householdVisit.fields, {
     place_id: null
   }),
-  verified: false,
-  verified_valid: false
+  verified: false
 });
 
 const postNatalVisit = {
@@ -116,8 +114,7 @@ const postNatalVisit = {
       instanceID: 'uuid:a53c23dc-eedb-433c-a81d-30c495ce7602'
     }
   },
-  verified: true,
-  verified_valid: false
+  verified: true
 };
 
 const postNatalVisitBis = Object.assign({}, postNatalVisit, {
@@ -307,7 +304,6 @@ describe('doc_summaries_by_id view', () => {
         read: undefined,
         valid: true,
         verified: true,
-        verified_valid: true,
         reported_date: 1517418915669,
         contact: 'df28f38e-cd3c-475f-96b5-48080d863e34',
         lineage: ['1a1aac55-04d6-40dc-aae2-e67a75a1496d'],
@@ -328,7 +324,6 @@ describe('doc_summaries_by_id view', () => {
         read: undefined,
         valid: false,
         verified: false,
-        verified_valid: false,
         reported_date: 1517418915669,
         contact: 'df28f38e-cd3c-475f-96b5-48080d863e34',
         lineage: ['1a1aac55-04d6-40dc-aae2-e67a75a1496d'],
@@ -346,7 +341,6 @@ describe('doc_summaries_by_id view', () => {
         read: undefined,
         valid: true,
         verified: true,
-        verified_valid: false,
         reported_date: 1517392010413,
         contact: 'df28f38e-cd3c-475f-96b5-48080d863e34',
         lineage: ['1a1aac55-04d6-40dc-aae2-e67a75a1496d'],
@@ -367,7 +361,6 @@ describe('doc_summaries_by_id view', () => {
         read: undefined,
         valid: true,
         verified: true,
-        verified_valid: false,
         reported_date: 1517392010413,
         contact: 'df28f38e-cd3c-475f-96b5-48080d863e34',
         lineage: ['1a1aac55-04d6-40dc-aae2-e67a75a1496d'],
@@ -388,7 +381,6 @@ describe('doc_summaries_by_id view', () => {
         read: undefined,
         valid: true,
         verified: undefined,
-        verified_valid: undefined,
         reported_date: 1517405737096,
         contact: undefined,
         lineage: [],
@@ -409,7 +401,6 @@ describe('doc_summaries_by_id view', () => {
         read: undefined,
         valid: false,
         verified: undefined,
-        verified_valid: undefined,
         reported_date: 1517405737096,
         contact: undefined,
         lineage: [],
@@ -427,7 +418,6 @@ describe('doc_summaries_by_id view', () => {
         read: undefined,
         valid: false,
         verified: undefined,
-        verified_valid: undefined,
         reported_date: 1517491485049,
         contact: undefined,
         lineage: [],
@@ -445,7 +435,6 @@ describe('doc_summaries_by_id view', () => {
         read: undefined,
         valid: true,
         verified: undefined,
-        verified_valid: undefined,
         reported_date: 1517495666367,
         contact: 'df28f38e-cd3c-475f-96b5-48080d863e34',
         lineage: ['1a1aac55-04d6-40dc-aae2-e67a75a1496d'],
@@ -463,7 +452,6 @@ describe('doc_summaries_by_id view', () => {
         read: undefined,
         valid: true,
         verified: undefined,
-        verified_valid: undefined,
         reported_date: 1517408179956,
         contact: undefined,
         lineage: [],
@@ -484,7 +472,6 @@ describe('doc_summaries_by_id view', () => {
         read: undefined,
         valid: false,
         verified: undefined,
-        verified_valid: undefined,
         reported_date: 1517408179956,
         contact: undefined,
         lineage: [],
@@ -502,7 +489,6 @@ describe('doc_summaries_by_id view', () => {
         read: undefined,
         valid: true,
         verified: undefined,
-        verified_valid: undefined,
         reported_date: 1517408179956,
         contact: undefined,
         lineage: [],
@@ -523,7 +509,6 @@ describe('doc_summaries_by_id view', () => {
         read: undefined,
         valid: false,
         verified: undefined,
-        verified_valid: undefined,
         reported_date: 1517408179956,
         contact: undefined,
         lineage: [],

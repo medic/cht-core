@@ -56,7 +56,6 @@ function(doc) {
       read: doc.read,
       valid: !doc.errors || !doc.errors.length,
       verified: doc.verified,
-      verified_valid: doc.verified_valid,
       reported_date: doc.reported_date,
       contact: doc.contact && doc.contact._id,
       lineage: getLineage(doc.contact && doc.contact.parent),

@@ -98,11 +98,11 @@
               <p translate>Send Message</p>
             </a>
             <div class="dropdown-menu sub-actions" mm-auth="can_verify_reports" ng-show="actionBar.right.verifyingReport">
-              <a class="mm-icon mm-icon-caption verify-error" ng-class="{ active: actionBar.right.verified && !actionBar.right.verified_valid }" ng-click="emit('VerifyReport', false)">
+              <a class="mm-icon mm-icon-caption verify-error" ng-class="{ active: actionBar.right.verified === false }" ng-click="emit('VerifyReport', false)">
                 <span class="reports-icon" mm-report-verify-icon valid="false"></span>
                 <span translate>reports.verify.invalid</span>
               </a>
-              <a class="mm-icon mm-icon-caption verify-valid" ng-class="{ active: actionBar.right.verified && actionBar.right.verified_valid }" ng-click="emit('VerifyReport', true)">
+              <a class="mm-icon mm-icon-caption verify-valid" ng-class="{ active: actionBar.right.verified }" ng-click="emit('VerifyReport', true)">
                 <span class="reports-icon" mm-report-verify-icon valid="true"></span>
                 <span translate>reports.verify.valid</span>
               </a>
