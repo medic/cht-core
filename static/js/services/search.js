@@ -26,6 +26,7 @@ var _ = require('underscore'),
     function(
       $log,
       $q,
+      DB,
       GetDataRecords,
       SearchFactory
     ) {
@@ -49,10 +50,21 @@ var _ = require('underscore'),
 
       var _search = SearchFactory();
 
-      return function(type, filters, options) {
-        $log.debug('Doing Search', type, filters, options);
+      var getLastVisitedDates = function(searchResults) {
+        return DB().query('medic-client/contacts_by_last_visited', {
+          reduce: true,
+          group: true,
+          keys: searchResults
+        }).then(function(results) {
+          return results.rows;
+        });
+      };
+
+      return function(type, filters, options, extensions) {
+        $log.debug('Doing Search', type, filters, options, extensions);
 
         options = options || {};
+        extensions = extensions || {};
         _.defaults(options, {
           limit: 50,
           skip: 0
@@ -65,9 +77,35 @@ var _ = require('underscore'),
           return $q.resolve([]);
         }
 
-        return _search(type, filters, options)
-          .then(function(results) {
-            return GetDataRecords(results, options);
+        return _search(type, filters, options, extensions)
+          .then(function(searchResults) {
+            var dataRecordsPromise = GetDataRecords(searchResults, options);
+
+            var result;
+            if (extensions.lastVisitedDate) {
+              var lastVisitedDatePromise = getLastVisitedDates(searchResults);
+
+              result = $q.all({
+                dataRecords: dataRecordsPromise,
+                lastVisitedDates: lastVisitedDatePromise
+              }).then(function(r) {
+                r.lastVisitedDates.forEach(function(dateResult) {
+                  var relevantDataRecord = r.dataRecords.find(function(dataRecord) {
+                    return dataRecord._id === dateResult.key;
+                  });
+
+                  if (relevantDataRecord) {
+                    relevantDataRecord.lastVisitedDate = dateResult.value.max;
+                  }
+                });
+
+                return r.dataRecords;
+              });
+            } else {
+              result = dataRecordsPromise;
+            }
+
+            return result;
           })
           .then(function(results) {
             _currentQuery = {};

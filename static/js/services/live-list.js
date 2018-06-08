@@ -12,6 +12,7 @@ angular.module('inboxServices').factory('LiveListConfig',
     ContactSchema,
     LiveList,
     RulesEngine,
+    relativeDayFilter,
     TranslateFrom
   ) {
     'use strict';
@@ -68,7 +69,17 @@ angular.module('inboxServices').factory('LiveListConfig',
           scope.simprintsTier = contact.simprints && contact.simprints.tierNumber;
           scope.dod = contact.date_of_death;
           if (contact.type !== 'person') {
-            scope.summary = $translate.instant('contact.primary_contact_name', { name: contact.contact });
+            if (Number.isInteger(contact.lastVisitedDate)) {
+              var now = new Date().getTime();
+              var oneMonthAgo = now - (30 * 24 * 60 * 60 * 1000);
+              if (contact.lastVisitedDate === 0 || contact.lastVisitedDate <= oneMonthAgo) {
+                scope.overdue = true;
+              }
+
+              scope.summary = $translate.instant('contact.lastVisitedDate', { date: relativeDayFilter(contact.lastVisitedDate, true) });
+            } else {
+              scope.summary = $translate.instant('contact.primary_contact_name', { name: contact.contact });
+            }
           }
           return renderTemplate(scope);
         },
