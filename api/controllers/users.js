@@ -383,10 +383,17 @@ var getSettingsUpdates = function(username, data) {
     // deprecated: use 'roles' instead
     settings.roles = getRoles(data.type);
   }
-  if (data.roles &&
-      !isOffline(data.roles) &&
-      settings.roles.indexOf(ONLINE_ROLE) === -1) {
-    settings.roles.push(ONLINE_ROLE);
+  if (settings.roles) {
+    var index = settings.roles.indexOf(ONLINE_ROLE);
+    if (isOffline(settings.roles)) {
+      if (index !== -1) {
+        // remove the online role
+        settings.roles.splice(index, 1);
+      }
+    } else if (index === -1) {
+      // add the online role
+      settings.roles.push(ONLINE_ROLE);
+    }
   }
   if (data.place) {
     settings.facility_id = getDocID(data.place);
