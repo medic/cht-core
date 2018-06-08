@@ -9,10 +9,12 @@ describe('Search service', function() {
   beforeEach(function() {
     GetDataRecords = sinon.stub();
     searchStub = sinon.stub();
+    const db = sinon.stub();
     searchStub.returns(Promise.resolve());
     module('inboxApp');
     module(function ($provide) {
       $provide.value('$q', Q); // bypass $q so we don't have to digest
+      $provide.value('DB', db);
       $provide.value('GetDataRecords', GetDataRecords);
       $provide.value('SearchFactory', function() {
         return searchStub;
