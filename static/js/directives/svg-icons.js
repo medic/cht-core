@@ -1,7 +1,4 @@
-/**
- * Directives for reusable inlined SVG icons
- */
-
+// Directives for reusable inlined SVG icons
 angular.module('inboxDirectives').directive('mmReportVerifyIcon', function() {
   'use strict';
   return {
