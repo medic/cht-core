@@ -191,7 +191,8 @@ var passwordTester = require('simple-password-tester'),
       };
 
       var validateContactAndFacility = function() {
-        if ($scope.editUserModel.role !== 'district-manager') {
+        var role = $scope.roles && $scope.roles[$scope.editUserModel.role];
+        if (!role || !role.offline) {
           return true;
         }
         var hasPlace = validateRequired('place', 'Facility');

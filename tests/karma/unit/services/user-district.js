@@ -6,13 +6,11 @@ describe('UserDistrict service', function() {
       user,
       userCtx,
       get,
-      isAdmin,
-      isDistrictAdmin;
+      isOnlineOnly;
 
   beforeEach(function() {
     get = sinon.stub();
-    isAdmin = sinon.stub();
-    isDistrictAdmin = sinon.stub();
+    isOnlineOnly = sinon.stub();
     module('inboxApp');
     module(function ($provide) {
       $provide.factory('DB', KarmaUtils.mockDB({ get: get }));
@@ -24,8 +22,7 @@ describe('UserDistrict service', function() {
         userCtx: function() {
           return userCtx;
         },
-        isAdmin: isAdmin,
-        isDistrictAdmin: isDistrictAdmin
+        isOnlineOnly: isOnlineOnly
       });
     });
     inject(function($injector) {
@@ -36,7 +33,7 @@ describe('UserDistrict service', function() {
   });
 
   afterEach(function() {
-    KarmaUtils.restore(get, isAdmin, isDistrictAdmin);
+    KarmaUtils.restore(get, isOnlineOnly);
   });
 
   it('returns nothing for db admin', function() {
@@ -44,7 +41,7 @@ describe('UserDistrict service', function() {
       name: 'greg',
       roles: ['_admin']
     };
-    isAdmin.returns(true);
+    isOnlineOnly.returns(true);
 
     return service()
       .then(function(actual) {
@@ -59,7 +56,7 @@ describe('UserDistrict service', function() {
       name: 'greg',
       roles: ['national_admin']
     };
-    isAdmin.returns(true);
+    isOnlineOnly.returns(true);
 
     return service()
       .then(function(actual) {
@@ -74,8 +71,7 @@ describe('UserDistrict service', function() {
       name: 'jeff',
       roles: ['district_admin']
     };
-    isAdmin.returns(false);
-    isDistrictAdmin.returns(true);
+    isOnlineOnly.returns(false);
 
     user = {
       name: 'jeff',
@@ -102,8 +98,7 @@ describe('UserDistrict service', function() {
       name: 'jeff',
       roles: ['district_admin']
     };
-    isAdmin.returns(false);
-    isDistrictAdmin.returns(true);
+    isOnlineOnly.returns(false);
 
     user = {
       name: 'jeff',
@@ -128,8 +123,7 @@ describe('UserDistrict service', function() {
       name: 'jeff',
       roles: ['district_admin']
     };
-    isAdmin.returns(false);
-    isDistrictAdmin.returns(true);
+    isOnlineOnly.returns(false);
 
     user = {
       name: 'jeff',
@@ -149,25 +143,6 @@ describe('UserDistrict service', function() {
       })
       .catch(function(err) {
         chai.expect(err.status).to.equal(404);
-      });
-
-  });
-
-  it('returns error for non admin', function() {
-
-    userCtx = {
-      name: 'jeff',
-      roles: ['analytics']
-    };
-    isAdmin.returns(false);
-    isDistrictAdmin.returns(false);
-
-    return service()
-      .then(function() {
-        throw new Error('Expected error to be thrown');
-      })
-      .catch(function(err) {
-        chai.expect(err.message).to.equal('The administrator needs to give you additional privileges to use this site.');
       });
 
   });

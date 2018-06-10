@@ -7,7 +7,7 @@ describe('DBSync service', () => {
       from,
       query,
       allDocs,
-      isAdmin,
+      isOnlineOnly,
       userCtx,
       sync,
       Auth;
@@ -17,7 +17,7 @@ describe('DBSync service', () => {
     from = sinon.stub();
     query = sinon.stub();
     allDocs = sinon.stub();
-    isAdmin = sinon.stub();
+    isOnlineOnly = sinon.stub();
     userCtx = sinon.stub();
     sync = sinon.stub();
     Auth = sinon.stub();
@@ -30,7 +30,7 @@ describe('DBSync service', () => {
       }));
       $provide.value('$q', Q); // bypass $q so we don't have to digest
       $provide.value('Session', {
-        isAdmin: isAdmin,
+        isOnlineOnly: isOnlineOnly,
         userCtx: userCtx
       } );
       $provide.value('Auth', Auth);
@@ -41,11 +41,11 @@ describe('DBSync service', () => {
   });
 
   afterEach(() => {
-    KarmaUtils.restore(to, from, query, allDocs, isAdmin, userCtx, sync, Auth);
+    KarmaUtils.restore(to, from, query, allDocs, isOnlineOnly, userCtx, sync, Auth);
   });
 
   it('does nothing for admin', () => {
-    isAdmin.returns(true);
+    isOnlineOnly.returns(true);
     return service(() => { }).then(() => {
       chai.expect(to.callCount).to.equal(0);
       chai.expect(from.callCount).to.equal(0);
@@ -53,7 +53,7 @@ describe('DBSync service', () => {
   });
 
   it('initiates sync for non-admin', () => {
-    isAdmin.returns(false);
+    isOnlineOnly.returns(false);
     to.returns(Promise.resolve());
     from.returns(Promise.resolve());
     Auth.returns(Promise.resolve());
@@ -86,7 +86,7 @@ describe('DBSync service', () => {
   });
 
   it('does not sync to remote if user lacks "can_edit" permission', () => {
-    isAdmin.returns(false);
+    isOnlineOnly.returns(false);
     to.returns(Promise.resolve());
     from.returns(Promise.resolve());
     Auth.returns(Promise.reject('unauthorized'));
@@ -115,7 +115,7 @@ describe('DBSync service', () => {
     let filterFunction;
 
     before(() => {
-      isAdmin.returns(false);
+      isOnlineOnly.returns(false);
       to.returns(Promise.resolve());
       from.returns(Promise.resolve());
       Auth.returns(Promise.resolve());
