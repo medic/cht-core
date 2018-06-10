@@ -148,7 +148,7 @@ var isCoveredByUseCase = function(contact, usecase) {
   if (!contact) {
     return false;
   }
-  else if (contact && contact.parent && contact.parent.use_cases && contact.parent.use_cases.split(' ').indexOf(usecase) !== -1) { 
+  else if (contact && contact.parent && contact.parent.use_cases && contact.parent.use_cases.split(' ').indexOf(usecase) !== -1) {
     return true;
   }
   else {
@@ -192,12 +192,12 @@ var isHighRiskPregnancy = function(reports, pregnancy) {
   // Pregnancy is high risk:
   // - if `pregnancy` form was used and has risk factors or danger signs in report
   // - if any Flag reports were submitted during time of pregnancy
-  return (pregnancy.form === 'pregnancy' && pregnancy.fields && (pregnancy.fields.risk_factors || pregnancy.fields.danger_signs))
-        || isFormSubmittedInWindow(reports, 'F', pregnancy.reported_date, addDate(new Date(pregnancy.reported_date), MAX_DAYS_IN_PREGNANCY).getTime());
+  return (pregnancy.form === 'pregnancy' && pregnancy.fields && (pregnancy.fields.risk_factors || pregnancy.fields.danger_signs)) ||
+        isFormSubmittedInWindow(reports, 'F', pregnancy.reported_date, addDate(new Date(pregnancy.reported_date), MAX_DAYS_IN_PREGNANCY).getTime());
 };
 
 var isHighRiskPostnatal = function (reports, period) {
-  // High risk postnatal period if: 
+  // High risk postnatal period if:
   //  - Delivery is not at facility
   //  - F report in PNC period
   //  - postnatal_visit with risk factor or danger sign
@@ -205,9 +205,9 @@ var isHighRiskPostnatal = function (reports, period) {
   if (period && period.start && period.end) {
     reports.forEach(function(report) {
       if (!isReportValid(report)) { return; }
-      if (isNonFacilityDelivery(report) 
-          || (report.form.toUpperCase() === 'F' && report.reported_date >= period.end.getTime() && report.reported_date <= period.end.getTime())
-          || (report.form === 'postnatal_visit' && report.fields && (report.fields.risk_factors || report.fields.danger_signs))) {
+      if (isNonFacilityDelivery(report) ||
+          (report.form.toUpperCase() === 'F' && report.reported_date >= period.end.getTime() && report.reported_date <= period.end.getTime()) ||
+          (report.form === 'postnatal_visit' && report.fields && (report.fields.risk_factors || report.fields.danger_signs))) {
         highRisk = true;
       }
     });
@@ -217,7 +217,7 @@ var isHighRiskPostnatal = function (reports, period) {
 
 var getDeliveryCode = function(report) {
   var code = ((report && report.fields) && ((report.fields.group_note && report.fields.group_note.default_chw_sms) || report.fields.delivery_code)) || 'unknown';
-  
+
   // no need to distinguish the prefix `anc_only_`, so remove it if it is there
   code = code.replace('anc_only_', '').toLowerCase();
   return code;
@@ -230,17 +230,17 @@ var initImmunizations = function() {
   });
   return master;
 };
- 
+
 var addImmunizations = function(master, vaccines_received) {
   IMMUNIZATION_DOSES.forEach(function(dose) {
-    master[dose[0]] = master[dose[0]] || ( vaccines_received['received_' + dose[0]] == 'yes' ) || ( typeof(vaccines_received) === 'string' && vaccines_received.toUpperCase() === dose[1] );
+    master[dose[0]] = master[dose[0]] || ( vaccines_received['received_' + dose[0]] === 'yes' ) || ( typeof(vaccines_received) === 'string' && vaccines_received.toUpperCase() === dose[1] );
   });
 };
 
 var countDosesReceived = function(master, name) {
   var count = 0;
   IMMUNIZATION_DOSES.forEach(function(dose) {
-    if (master[dose[0]] && dose[0].indexOf(name + '_') === 0) { 
+    if (master[dose[0]] && dose[0].indexOf(name + '_') === 0) {
       count++;
     }
   });
@@ -261,7 +261,7 @@ var isSingleDose = function(name) {
   // Single doses wont be followed by an underscore in the list of doses
   var singleDose = true;
   IMMUNIZATION_DOSES.forEach(function(dose) {
-    if (dose[0].indexOf(name + '_') === 0) { 
+    if (dose[0].indexOf(name + '_') === 0) {
       singleDose = false;
     }
   });
@@ -285,7 +285,7 @@ var countReportsSubmittedInWindow = function(reports, form, start, end) {
 
 // from nootils.js: https://github.com/medic/medic-webapp/blob/1cc25f2aeab60258065329bd1365ee1d316a1f50/static/js/modules/nootils.js
 // modified to exclude invalid reports, which is common with SMS reports
-var isFormSubmittedInWindow = function(reports, form, start, end, count) {
+function isFormSubmittedInWindow(reports, form, start, end, count) {
   var result = false;
   reports.forEach(function(report) {
     if (!isReportValid(report)) { return; }
@@ -299,10 +299,10 @@ var isFormSubmittedInWindow = function(reports, form, start, end, count) {
     }
   });
   return result;
-};
+}
 
 // from nootils.js: https://github.com/medic/medic-webapp/blob/1cc25f2aeab60258065329bd1365ee1d316a1f50/static/js/modules/nootils.js
-var addDate = function(date, days) {
+function addDate(date, days) {
   var result;
   if (date) {
     result = new Date(date.getTime());
@@ -312,7 +312,7 @@ var addDate = function(date, days) {
   result.setUTCDate(result.getUTCDate() + days);
   result.setUTCHours(0, 0, 0, 0);
   return result;
-};
+}
 
 // Opposite of the following, with no form arg: https://github.com/medic/medic-webapp/blob/31762050095dd775941d1db3a2fc6f6b633522f3/static/js/modules/nootils.js#L37-L47
 var getOldestReport = function(reports) {
@@ -326,16 +326,16 @@ var getOldestReport = function(reports) {
   return result;
 };
 
-var isReportValid = function(report){
+function isReportValid(report) {
   // valid XForms won't have `errors` field
-  // valid JSON forms will have empty array `errors:[]`  
+  // valid JSON forms will have empty array `errors:[]`
   if (report && (!report.errors || (report.errors && report.errors.length === 0))) {
     return true;
   }
   else {
     return false;
   }
-};
+}
 
 var use_cases = {};
 use_cases.anc = isCoveredByUseCaseInLineage(lineage, 'anc');
@@ -354,7 +354,7 @@ if (contact.type === 'person') {
   var pregnancy;
   var pregnancyDate;
   var pastPregnancies = { label: 'contact.profile.past_pregnancies', fields: [] };
-  
+
   var immunizations = initImmunizations();
 
   // INIT
@@ -372,12 +372,12 @@ if (contact.type === 'person') {
       var subsequentDeliveries = reports.filter(function(report2) {
         return (report2.form === 'delivery' || report2.form === 'D') && report2.reported_date > report.reported_date;
       });
-      
+
       // HANDLE PAST PREGNANCIES
       if (subsequentDeliveries.length > 0) {
         var relevantDelivery = getOldestReport(subsequentDeliveries);
         var birthdate = getBirthDate(relevantDelivery);
-        
+
         var relevantVisitsANC = reports.filter(function(report2) {
           return (report2.form === 'V' || report2.form === 'pregnancy_visit') && report2.reported_date > report.reported_date && report2.reported_date < birthdate.getTime();
         });
@@ -403,15 +403,15 @@ if (contact.type === 'person') {
         }
         return;
       }
-      
+
       // HANDLE CURRENT PREGNANCY
       var subsequentVisits = reports.filter(function(report2) {
         return (report2.form === 'pregnancy_visit' || report2.form === 'V') && report2.reported_date > report.reported_date;
       });
       context.pregnant = true; // don't show Create Pregnancy Report button
-            
+
       var edd = report.expected_date || report.fields.edd_8601;
-      
+
       var highRiskPregnancy = isHighRiskPregnancy(reports, report);
 
       if (!pregnancy || pregnancyDate < report.reported_date) {
@@ -447,7 +447,7 @@ if (contact.type === 'person') {
 
   var newestPNCperiod = getPNCperiod(newestDelivery);
   var birthdate = getBirthDate(newestDelivery);
-    
+
   if (use_cases.pnc && now >= newestPNCperiod.start && now <= newestPNCperiod.end) {
     context.in_pnc_period = true;
     var highRiskPostnatal = isHighRiskPostnatal(reports, newestPNCperiod);
@@ -485,7 +485,7 @@ if (contact.type === 'person') {
     };
 
     IMMUNIZATION_LIST.forEach(function(imm) {
-      if (isVaccineInLineage(lineage, imm)) {  
+      if (isVaccineInLineage(lineage, imm)) {
         var field = {};
         field.label = 'contact.profile.imm.' + imm;
         field.translate = true;
@@ -503,7 +503,7 @@ if (contact.type === 'person') {
       }
     });
     // Show a report count if no specific immunizations are being tracked
-    if (imm_card.fields.length == 0) {
+    if (!imm_card.fields.length) {
       imm_card.fields.push({
         label: 'contact.profile.imm.generic',
         translate: true,
@@ -534,4 +534,4 @@ var result = {
   context: context
 };
 // return the result for 2.13+ as per #2635
-return result; 
+return result;
