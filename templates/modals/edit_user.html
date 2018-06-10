@@ -37,7 +37,7 @@
 
     <div class="form-group required" mm-auth="can_configure" ng-class="{'has-error': errors.role}">
       <label for="role" translate>configuration.role</label>
-      <select id="role" class="form-control" ng-options="key as value.name | translate for (key, value) in roles" ng-model="editUserModel.role"></select>
+      <select id="role" class="form-control" ng-options="key as value.name | translate for (key, value) in roles track by key" ng-model="editUserModel.role"></select>
       <span class="help-block">{{errors.role}}</span>
     </div>
 

@@ -19,8 +19,8 @@ const getLanguageField = () => {
   return element(by.id('language'));
 };
 
-const getUserTypeField = () => {
-  return element(by.id('type'));
+const getRoleField = () => {
+  return element(by.id('role'));
 };
 
 const getPasswordField = () => {
@@ -56,7 +56,7 @@ module.exports = {
     getEmailField().sendKeys('bede@mobile.org');
     getPhoneField().sendKeys('0064212134566');
     helper.selectDropdownByValue(getLanguageField(), 'en', 2);
-    helper.selectDropdownByValue(getUserTypeField(), 'national-manager');
+    helper.selectDropdownByValue(getRoleField(), 'national_admin');
     getPasswordField().sendKeys(password);
     getConfirmPasswordField().sendKeys(password);
   }
