@@ -10,7 +10,6 @@
   require('./modal');
   require('./report-image');
   require('./sender');
-  require('./svg-icons');
   require('./enter');
 
 }());
