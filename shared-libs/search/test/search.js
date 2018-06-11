@@ -204,6 +204,21 @@ describe('Search service', function() {
         });
     });
 
+    it('does not slice with negative end index when skip is greater than nbr of results #4610', function() {
+      var viewResult = { rows: Array.apply(null, Array(50)).map(function (val, i) { return { id: i, value: i };})};
+
+      GenerateSearchRequests.generate.returns([
+        { view: 'get_stuff', params: { key: [ 'a' ] } },
+        { view: 'get_moar_stuff', params: { key: [ 'b' ] } }
+      ]);
+      DB.query.returns(Promise.resolve(viewResult));
+      return service('reports', {}, { skip: 60, limit: 3 })
+        .then(function(actual) {
+          chai.expect(actual.length).to.equal(0);
+          chai.expect(DB.query.callCount).to.equal(2);
+        });
+    });
+
   });
 
   describe('contacts', function() {

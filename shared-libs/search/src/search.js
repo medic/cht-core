@@ -8,6 +8,14 @@ var _ = require('underscore'),
 module.exports = function(Promise, DB) {
   // Get the subset of rows, in appropriate order, according to options.
   var getPageRows = function(type, rows, options) {
+    // When paginating reports, because we're calculating paging from the end of the results array,
+    // if `skip` is greater than `rows.length`, `end` index of `slice` call would be a negative number.
+    // This would cause this function to return the first 2 x `rows.length - `skip` resulted rows
+    // instead of an empty array.
+    if (rows.length < options.skip) {
+      return [];
+    }
+
     var start;
     var end;
     if (type === 'reports') {
