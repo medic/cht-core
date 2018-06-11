@@ -1,7 +1,8 @@
 var passwordTester = require('simple-password-tester'),
     PASSWORD_MINIMUM_LENGTH = 8,
     PASSWORD_MINIMUM_SCORE = 50,
-    USERNAME_WHITELIST = /^[a-z0-9_-]+$/;
+    USERNAME_WHITELIST = /^[a-z0-9_-]+$/,
+    ADMIN_ROLE = '_admin';
 
 (function () {
 
@@ -41,6 +42,9 @@ var passwordTester = require('simple-password-tester'),
       var getRole = function(roles) {
         if (!roles || !roles.length) {
           return;
+        }
+        if (roles.indexOf(ADMIN_ROLE) !== -1) {
+          return ADMIN_ROLE;
         }
         if (!$scope.roles) {
           // no configured roles

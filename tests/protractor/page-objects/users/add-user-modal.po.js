@@ -56,7 +56,7 @@ module.exports = {
     getEmailField().sendKeys('bede@mobile.org');
     getPhoneField().sendKeys('0064212134566');
     helper.selectDropdownByValue(getLanguageField(), 'en', 2);
-    helper.selectDropdownByValue(getRoleField(), 'national_admin');
+    helper.selectDropdownByValue(getRoleField(), 'string:national_admin');
     getPasswordField().sendKeys(password);
     getConfirmPasswordField().sendKeys(password);
   }

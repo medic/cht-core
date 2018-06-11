@@ -37,7 +37,8 @@
 
     <div class="form-group required" mm-auth="can_configure" ng-class="{'has-error': errors.role}">
       <label for="role" translate>configuration.role</label>
-      <select id="role" class="form-control" ng-options="key as value.name | translate for (key, value) in roles track by key" ng-model="editUserModel.role"></select>
+      <input type="text" class="form-control" ng-model="editUserModel.role" disabled="disabled" ng-if="editUserModel.role === '_admin'" />
+      <select id="role" class="form-control" ng-options="key as value.name | translate for (key, value) in roles" ng-model="editUserModel.role" ng-if="editUserModel.role !== '_admin'"></select>
       <span class="help-block">{{errors.role}}</span>
     </div>
 
@@ -60,13 +61,13 @@
 
     <div class="form-group" ng-class="{'has-error': errors.password, 'required': !editUserModel.id}">
       <label for="password" translate>Password</label>
-      <input id="password" type="password" class="form-control" ng-model="editUserModel.password" autocomplete="off"/>
+      <input id="password" type="password" class="form-control" ng-model="editUserModel.password" autocomplete="off" ng-disabled="editUserModel.role === '_admin'"/>
       <span class="help-block">{{errors.password}}</span>
     </div>
 
     <div class="form-group" ng-class="{'required': !editUserModel.id}">
       <label for="password-confirm" translate>Confirm Password</label>
-      <input id="password-confirm" type="password" class="form-control" ng-model="editUserModel.passwordConfirm" autocomplete="off"/>
+      <input id="password-confirm" type="password" class="form-control" ng-model="editUserModel.passwordConfirm" autocomplete="off" ng-disabled="editUserModel.role === '_admin'"/>
     </div>
 
   </form>
