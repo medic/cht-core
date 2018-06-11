@@ -276,7 +276,7 @@ module.exports = function(grunt) {
       sharedLibUnit: {
         cmd:  function() {
           var sharedLibs = [
-            'bulk-docs-utils',
+            //'bulk-docs-utils',
             'search',
             'task-utils'
           ];
@@ -284,7 +284,7 @@ module.exports = function(grunt) {
             return 'cd shared-libs/' + lib +
               ' && if [ $(npm run | grep "^\\s\\stest$" | wc -l) -gt 0 ]; then npm install && npm test; fi' +
               ' && cd ../../';
-          }).join(' ; ');
+          }).join(' && ');
         }
       },
       // To monkey patch a library...
@@ -599,6 +599,7 @@ module.exports = function(grunt) {
     'build',
     'minify',
     'karma:unit_ci',
+    'exec:sharedLibUnit',
     'env:test',
     'nodeunit',
     'mochaTest:unit',
