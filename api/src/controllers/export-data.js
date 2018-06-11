@@ -81,6 +81,12 @@ module.exports = {
       if (filters.date && filters.date.to) {
         filters.date.to = parseInt(filters.date.to);
       }
+      if (filters.verified) {
+        filters.verified = (filters.verified === 'true');
+      }
+      if (filters.valid) {
+        filters.valid = (filters.valid === 'true');
+      }
     };
 
     const type = req.params.type,
