@@ -43,12 +43,18 @@ var passwordTester = require('simple-password-tester'),
           return;
         }
         if (!$scope.roles) {
+          // no configured roles
           return;
         }
+        // find all the users roles that are specified in the configuration
         var knownRoles = roles.filter(function(role) {
           return !!$scope.roles[role];
         });
         if (knownRoles.length) {
+          // Pre 2.16.0 versions stored the role we care about at the end
+          // of the roles array so for backwards compatibility return the
+          // last element.
+          // From 2.16.0 onwards users only have a one role.
           return knownRoles[knownRoles.length - 1];
         }
       };

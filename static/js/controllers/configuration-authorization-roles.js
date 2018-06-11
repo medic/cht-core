@@ -14,19 +14,19 @@ angular.module('inboxControllers').controller('ConfigurationAuthorizationRolesCt
     $scope.newRole = {};
     $scope.validation = {};
 
-    var validate = function() {
-      $scope.validation = {};
-      if (!$scope.newRole.key) {
-        $scope.validation.key = $translate.instant('field is required', {
+    var validate = function(newRole) {
+      var errors = {};
+      if (!newRole.key) {
+        errors.key = $translate.instant('field is required', {
           field: $translate.instant('configuration.role')
         });
       }
-      if (!$scope.newRole.name) {
-        $scope.validation.name = $translate.instant('field is required', {
+      if (!newRole.name) {
+        errors.name = $translate.instant('field is required', {
           field: $translate.instant('translation.key')
         });
       }
-      return Object.keys($scope.validation).length === 0;
+      return errors;
     };
 
     var save = function(changes) {
@@ -70,7 +70,8 @@ angular.module('inboxControllers').controller('ConfigurationAuthorizationRolesCt
 
     $scope.add = function() {
       $scope.error = '';
-      if (!validate()) {
+      $scope.validation = validate($scope.newRole);
+      if (Object.keys($scope.validation).length) {
         return;
       }
       $scope.submitting = true;

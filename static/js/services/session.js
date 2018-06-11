@@ -93,7 +93,7 @@ var COOKIE_NAME = 'userCtx',
         isAdmin: function(userCtx) {
           userCtx = userCtx || getUserCtx();
           return hasRole(userCtx, '_admin') ||
-                 hasRole(userCtx, 'national_admin'); // deprecated: kept for backwards compatibility
+                 hasRole(userCtx, 'national_admin'); // deprecated: kept for backwards compatibility: #4525
         },
 
         /**
