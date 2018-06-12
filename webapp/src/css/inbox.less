@@ -869,6 +869,50 @@ a.fa:hover {
         color: #000000;
       }
     }
+
+    .sub-actions {
+      background-color: #FFFFFF;
+      height: 56px;
+      padding: 0;
+      margin: 0 0 1px 0;
+      border-radius: 0;
+      border: none;
+      display: flex;
+      box-shadow: 0 -6px 12px rgba(0, 0, 0, 0.4);
+
+      .mm-icon-caption {
+        border: none;
+        line-height: 1;
+        color: @label-color;
+        max-width: none;
+        margin: 6px 0 0;
+        .verify-icon {
+          display: block;
+          margin: 0 auto 3px auto;
+          svg {
+            width: 24px;
+            height: 24px;
+            path {
+              fill: @inactive-color;
+            }
+          }
+        }
+      }
+
+      .verify-error.active {
+        color: @error-color;
+        svg path {
+          fill: @error-color;
+        }
+      }
+
+      .verify-valid.active {
+        color: @ok-color;
+        svg path {
+          fill: @ok-color;
+        }
+      }
+    }
   }
 }
 
@@ -876,8 +920,10 @@ a.fa:hover {
   border-bottom-color: @messages-color;
 }
 
-.reports .action-container .actions .mm-icon:hover {
-  border-bottom-color: @reports-color;
+.reports .action-container .actions .mm-icon {
+  &:hover, &.active {
+    border-bottom-color: @reports-color;
+  }
 }
 
 .contacts .action-container .actions .mm-icon:hover {
@@ -1118,7 +1164,7 @@ a.fa:hover {
 }
 
 .deceased svg path {
-  fill: @deceased-color;
+  fill: @inactive-color;
 }
 
 @media (max-width: 767px) {
