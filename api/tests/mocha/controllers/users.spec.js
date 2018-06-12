@@ -3,7 +3,7 @@ const chai = require('chai'),
       controller = require('../../../src/controllers/users'),
       people = require('../../../src/controllers/people'),
       places = require('../../../src/controllers/places'),
-      config = require('../../../config'),
+      config = require('../../../src/config'),
       db = require('../../../src/db-nano'),
       COMPLEX_PASSWORD = '23l4ijk3nSDELKSFnwekirh';
 
@@ -1160,11 +1160,11 @@ describe('Users controller', () => {
       sinon.stub(config, 'get').returns({ chp: { offline: true } });
       sinon.stub(places, 'getPlace').callsArg(1);
       const update = sinon.stub(controller, '_storeUpdatedUser').callsFake((id, user, cb) => {
-        test.deepEqual(user.roles, ['chp']);
+        chai.expect(user.roles).to.deep.equal(['chp']);
         cb();
       });
       const updateSettings = sinon.stub(controller, '_storeUpdatedUserSettings').callsFake((id, settings, cb) => {
-        test.deepEqual(settings.roles, ['chp']);
+        chai.expect(settings.roles).to.deep.equal(['chp']);
         cb();
       });
       controller.updateUser('paul', data, true, err => {
