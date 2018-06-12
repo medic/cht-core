@@ -58,7 +58,7 @@ var passwordTester = require('simple-password-tester'),
           // Pre 2.16.0 versions stored the role we care about at the end
           // of the roles array so for backwards compatibility return the
           // last element.
-          // From 2.16.0 onwards users only have a one role.
+          // From 2.16.0 onwards users only have one role.
           return knownRoles[knownRoles.length - 1];
         }
       };
