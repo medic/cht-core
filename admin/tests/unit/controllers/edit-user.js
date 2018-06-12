@@ -31,10 +31,10 @@ describe('EditUserCtrl controller', () => {
     CreateUser.returns(Promise.resolve());
     UserSettings = sinon.stub();
     Settings = sinon.stub().returns(Promise.resolve({ roles: {
-      'district-manager': { name: 'xyz', offline: true }},
+      'district-manager': { name: 'xyz', offline: true },
       'data-entry': { name: 'abc' },
       'supervisor': { name: 'qrt', offline: true }
-    }));
+    }}));
     userToEdit = {
       _id: 'user.id',
       name: 'user.name',
@@ -304,7 +304,7 @@ describe('EditUserCtrl controller', () => {
       mockEditAUser(userToEdit);
 
       setTimeout(() => {
-        scope.editUserModel.role = 'data-entry';
+        scope.editUserModel.role = 'district-manager';
         mockFacility(null);
         mockContact(null);
         Translate.withArgs('associated.contact').returns(Promise.resolve('con'));
@@ -328,7 +328,7 @@ describe('EditUserCtrl controller', () => {
       mockEditAUser(userToEdit);
 
       setTimeout(() => {
-        scope.editUserModel.type = 'some-other-type';
+        scope.editUserModel.role = 'some-other-type';
         mockFacility(null);
         mockContact(null);
 
