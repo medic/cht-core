@@ -32,6 +32,7 @@ angular.module('inboxControllers').controller('ReportsCtrl',
     $scope.filters = {
       search: $stateParams.query
     };
+    $scope.verifyingReport = false;
 
     var liveList = LiveList.reports;
 
@@ -89,6 +90,7 @@ angular.module('inboxControllers').controller('ReportsCtrl',
       if (doc) {
         model.verified = doc.verified;
         model.type = doc.content_type;
+        model.verifyingReport = $scope.verifyingReport;
         if (doc.contact && doc.contact._id) {
           DB().get(doc.contact._id).then(function(contact) {
             model.sendTo = contact;
@@ -119,6 +121,10 @@ angular.module('inboxControllers').controller('ReportsCtrl',
         refreshing = model.doc &&
                      $scope.selected.length &&
                      $scope.selected[0]._id === model.doc._id;
+        if (!refreshing) {
+          $scope.verifyingReport = false;
+        }
+
         model.expanded = true;
         $scope.selected = [ model ];
         setTitle(model);
@@ -255,19 +261,25 @@ angular.module('inboxControllers').controller('ReportsCtrl',
       query();
     };
 
+    $scope.$on('ToggleVerifyingReport', function() {
+      $scope.verifyingReport = !$scope.verifyingReport;
+      setRightActionBar();
+    });
+
     $scope.$on('ClearSelected', function() {
       $scope.selected = [];
       $('#reports-list input[type="checkbox"]')
         .prop('checked', false);
       LiveList.reports.clearSelected();
       LiveList['report-search'].clearSelected();
+      $scope.verifyingReport = false;
     });
 
-    $scope.$on('VerifyReport', function(e, verify) {
+    $scope.$on('VerifyReport', function(e, valid) {
       if ($scope.selected[0].doc.form) {
         DB().get($scope.selected[0]._id)
           .then(function(message) {
-            message.verified = verify;
+            message.verified = (message.verified === valid) ? undefined : valid;
             return DB().post(message);
           })
           .catch(function(err) {
