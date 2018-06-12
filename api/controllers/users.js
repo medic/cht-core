@@ -3,18 +3,15 @@ const async = require('async'),
       passwordTester = require('simple-password-tester'),
       people  = require('./people'),
       places = require('./places'),
-      db = require('../db');
+      db = require('../db'),
+      config = require('../config');
 
 const USER_PREFIX = 'org.couchdb.user:';
+const ONLINE_ROLE = 'mm-online';
 
 const PASSWORD_MINIMUM_LENGTH = 8,
       PASSWORD_MINIMUM_SCORE = 50,
       USERNAME_WHITELIST = /^[a-z0-9_-]+$/;
-
-// TODO: sort out whether or not we can pass roles in instead of type.
-//       The code makes it look like you can sort of, but the existing docs
-//       don't mention it. Align docs and code, one way or another
-// https://github.com/medic/medic-webapp/issues/4096
 
 const RESTRICTED_USER_EDITABLE_FIELDS = [
   'password',
@@ -23,7 +20,8 @@ const RESTRICTED_USER_EDITABLE_FIELDS = [
 
 const USER_EDITABLE_FIELDS = RESTRICTED_USER_EDITABLE_FIELDS.concat([
   'place',
-  'type'
+  'type',
+  'roles',
 ]);
 
 const RESTRICTED_SETTINGS_EDITABLE_FIELDS = [
@@ -38,7 +36,8 @@ const SETTINGS_EDITABLE_FIELDS = RESTRICTED_SETTINGS_EDITABLE_FIELDS.concat([
   'place',
   'contact',
   'external_id',
-  'type'
+  'type',
+  'roles',
 ]);
 
 const ALLOWED_RESTRICTED_EDITABLE_FIELDS =
@@ -198,9 +197,6 @@ var createUser = function(data, response, callback) {
   response = response || {};
   var id = createID(data.username),
       user = getUserUpdates(data.username, data);
-  if (!user.roles) {
-    user.roles = getRoles('district-manager');
-  }
   db._users.insert(user, id, function(err, body) {
     if (err) {
       return callback(err);
@@ -235,9 +231,6 @@ var createContact = function(data, response, callback) {
 var createUserSettings = function(data, response, callback) {
   response = response || {};
   var settings = getSettingsUpdates(data.username, data);
-  if (!settings.roles) {
-    settings.roles = getRoles('district-manager');
-  }
   db.medic.insert(settings, createID(data.username), function(err, body) {
     if (err) {
       return callback(err);
@@ -345,19 +338,13 @@ var mapUsers = function(users, settings, facilities) {
 };
 
 /*
- * TODO: formalise this relationship in a shared library
+ * DEPRECATED: Roles are now configurable so this hardcoded map won't
+ * necessarily work. It is kept for backwards compatibility only.
  *
  * Specifically:
  *  - getRoles converts a supposed "type" in a collection of roles (that includes itself)
  *  - By convention, the type is always the first role
  *  - Thus, you can get the original type (in theory) back out by getting the first role
- *
- *  This may need to change once we makes roles more flexible, if the end result is that
- *  types are initial collections of roles but users can gain or lose any role manually.
- *
- *  NB: these are also documented in /api/README.md
- *
- *  Related to: https://github.com/medic/medic-webapp/issues/2583
  */
 var rolesMap = {
   'national-manager': ['kujua_user', 'data_entry', 'national_admin'],
@@ -371,6 +358,11 @@ var rolesMap = {
 var getRoles = function(type) {
   // create a new array with the type first, by convention
   return type ? [type].concat(rolesMap[type]) : [];
+};
+
+var isOffline = function(roles) {
+  const configured = config.get('roles') || {};
+  return roles.some(r => configured[r] && configured[r].offline);
 };
 
 var getSettingsUpdates = function(username, data) {
@@ -388,7 +380,20 @@ var getSettingsUpdates = function(username, data) {
   });
 
   if (data.type) {
+    // deprecated: use 'roles' instead
     settings.roles = getRoles(data.type);
+  }
+  if (settings.roles) {
+    var index = settings.roles.indexOf(ONLINE_ROLE);
+    if (isOffline(settings.roles)) {
+      if (index !== -1) {
+        // remove the online role
+        settings.roles.splice(index, 1);
+      }
+    } else if (index === -1) {
+      // add the online role
+      settings.roles.push(ONLINE_ROLE);
+    }
   }
   if (data.place) {
     settings.facility_id = getDocID(data.place);
@@ -418,7 +423,11 @@ var getUserUpdates = function(username, data) {
   });
 
   if (data.type) {
+    // deprecated: use 'roles' instead
     user.roles = getRoles(data.type);
+  }
+  if (user.roles && !isOffline(user.roles)) {
+    user.roles.push(ONLINE_ROLE);
   }
   if (data.place) {
     user.facility_id = getDocID(data.place);
@@ -520,7 +529,7 @@ module.exports = {
   createUser: function(data, callback) {
     const missingFields = data => {
       const required = ['username', 'password'];
-      if (data.type === 'district-manager' || (data.roles && data.roles.includes('district-manager'))) {
+      if (data.roles && isOffline(data.roles)) {
         required.push('place', 'contact');
       }
 

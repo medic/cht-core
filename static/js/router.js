@@ -398,12 +398,29 @@
           }
         }
       })
-      .state('configuration.permissions', {
-        url: '/permissions',
+      .state('configuration.authorization', {
+        url: '/authorization',
         views: {
           content: {
-            controller: 'ConfigurationPermissionsCtrl',
-            templateUrl: 'templates/partials/configuration_permissions.html'
+            templateUrl: 'templates/partials/configuration_authorization.html'
+          }
+        }
+      })
+      .state('configuration.authorization.permissions', {
+        url: '/permissions',
+        views: {
+          tab: {
+            controller: 'ConfigurationAuthorizationPermissionsCtrl',
+            templateUrl: 'templates/partials/configuration_authorization_permissions.html'
+          }
+        }
+      })
+      .state('configuration.authorization.roles', {
+        url: '/roles',
+        views: {
+          tab: {
+            controller: 'ConfigurationAuthorizationRolesCtrl',
+            templateUrl: 'templates/partials/configuration_authorization_roles.html'
           }
         }
       })

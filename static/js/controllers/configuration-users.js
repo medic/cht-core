@@ -5,11 +5,20 @@ angular.module('inboxControllers').controller('ConfigurationUsersCtrl',
     $log,
     $scope,
     DB,
-    Modal
+    Modal,
+    Settings
   ) {
 
     'use strict';
     'ngInject';
+
+    Settings()
+      .then(function(settings) {
+        $scope.roles = settings.roles;
+      })
+      .catch(function(err) {
+        $log.error('Error fetching settings', err);
+      });
 
     $scope.updateList = function() {
       $scope.loading = true;

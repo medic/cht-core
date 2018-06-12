@@ -12,6 +12,7 @@ describe('EditUserCtrl controller', () => {
       CreateUser,
       UserSettings,
       Translate,
+      Settings,
       userToEdit;
 
   beforeEach(() => {
@@ -27,6 +28,11 @@ describe('EditUserCtrl controller', () => {
     CreateUser = sinon.stub();
     CreateUser.returns(Promise.resolve());
     UserSettings = sinon.stub();
+    Settings = sinon.stub().returns(Promise.resolve({ roles: {
+      'district-manager': { name: 'xyz', offline: true }},
+      'data-entry': { name: 'abc' },
+      'supervisor': { name: 'qrt', offline: true }
+    }));
     userToEdit = {
       _id: 'user.id',
       name: 'user.name',
@@ -58,7 +64,7 @@ describe('EditUserCtrl controller', () => {
       $provide.value('CreateUser', CreateUser);
       $provide.value('UserSettings', UserSettings);
       $provide.value('Translate', Translate);
-
+      $provide.value('Settings', Settings);
     });
 
     inject(($rootScope, $controller) => {
@@ -106,6 +112,7 @@ describe('EditUserCtrl controller', () => {
     KarmaUtils.restore(
       UpdateUser,
       UserSettings,
+      Settings,
       translationsDbQuery,
       jQuery);
   });
@@ -139,7 +146,7 @@ describe('EditUserCtrl controller', () => {
           phone: userToEdit.phone,
           facilitySelect: userToEdit.facility_id,
           place: userToEdit.facility_id,
-          type: userToEdit.roles[0],
+          role: userToEdit.roles[0],
           language: { code: userToEdit.language },
           contactSelect: userToEdit.contact_id,
           contact: userToEdit.contact_id
@@ -327,7 +334,7 @@ describe('EditUserCtrl controller', () => {
       mockCreateNewUser();
       setTimeout(() => {
         scope.editUserModel.username = 'newuser';
-        scope.editUserModel.type = 'data-entry';
+        scope.editUserModel.role = 'data-entry';
         Translate.withArgs('Password').returns(Promise.resolve('pswd'));
         Translate.withArgs('field is required', { field: 'pswd' }).returns(Promise.resolve('pswd field must be filled'));
         setTimeout(() => {
@@ -358,7 +365,7 @@ describe('EditUserCtrl controller', () => {
 
       setTimeout(() => {
         scope.editUserModel.username = 'newuser';
-        scope.editUserModel.type = 'data-entry';
+        scope.editUserModel.role = 'data-entry';
         Translate.withArgs('Passwords must match').returns(Promise.resolve('wrong'));
         setTimeout(() => {
           const password = '1QrAs$$3%%kkkk445234234234';
@@ -395,11 +402,11 @@ describe('EditUserCtrl controller', () => {
       });
     });
 
-    it('must have associated place if user type is restricted user', done => {
+    it('must have associated place if user type is offline user', done => {
       mockEditAUser(userToEdit);
 
       setTimeout(() => {
-        scope.editUserModel.type = 'district-manager';
+        scope.editUserModel.role = 'district-manager';
         mockFacility(null);
         mockContact(userToEdit.contact_id);
         Translate.withArgs('Facility').returns(Promise.resolve('fac'));
@@ -416,11 +423,11 @@ describe('EditUserCtrl controller', () => {
       });
     });
 
-    it('must have associated contact if user type is restricted user', done => {
+    it('must have associated contact if user type is offline user', done => {
       mockEditAUser(userToEdit);
 
       setTimeout(() => {
-        scope.editUserModel.type = 'district-manager';
+        scope.editUserModel.role = 'district-manager';
         mockFacility(userToEdit.facility_id);
         mockContact(null);
         Translate.withArgs('associated.contact').returns(Promise.resolve('con'));
@@ -441,7 +448,7 @@ describe('EditUserCtrl controller', () => {
       mockEditAUser(userToEdit);
 
       setTimeout(() => {
-        scope.editUserModel.type = 'district-manager';
+        scope.editUserModel.role = 'district-manager';
         mockFacility(null);
         mockContact(null);
         Translate.withArgs('associated.contact').returns(Promise.resolve('con'));
@@ -461,11 +468,11 @@ describe('EditUserCtrl controller', () => {
       });
     });
 
-    it('doesn\'t need associated place and contact if user type is not restricted user', done => {
+    it('doesn\'t need associated place and contact if user type is not offline user', done => {
       mockEditAUser(userToEdit);
 
       setTimeout(() => {
-        scope.editUserModel.type = 'some-other-type';
+        scope.editUserModel.role = 'data-entry';
         mockFacility(null);
         mockContact(null);
 
@@ -493,7 +500,7 @@ describe('EditUserCtrl controller', () => {
         scope.editUserModel.language.code = 'language-code';
         scope.editUserModel.password = 'medic.1234';
         scope.editUserModel.passwordConfirm = 'medic.1234';
-        scope.editUserModel.type = 'not-district-manager';
+        scope.editUserModel.role = 'supervisor';
 
         scope.editUser();
 
@@ -510,7 +517,7 @@ describe('EditUserCtrl controller', () => {
           chai.expect(updates.place).to.equal(scope.editUserModel.facility_id);
           chai.expect(updates.contact).to.equal(scope.editUserModel.contact_id);
           chai.expect(updates.language).to.equal(scope.editUserModel.language.code);
-          chai.expect(updates.type).to.equal(scope.editUserModel.type);
+          chai.expect(updates.roles[0]).to.equal(scope.editUserModel.role);
           chai.expect(updates.password).to.deep.equal(scope.editUserModel.password);
           done();
         });

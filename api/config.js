@@ -61,7 +61,7 @@ var loadSettings = function(callback) {
     if (err) {
       return callback(err);
     }
-    settings = ddoc.app_settings;
+    settings = ddoc.app_settings || {};
     var original = JSON.stringify(settings);
     _.defaults(settings, defaults);
     // add any missing permissions

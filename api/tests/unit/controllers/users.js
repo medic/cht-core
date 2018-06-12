@@ -1,6 +1,7 @@
 const controller = require('../../../controllers/users'),
       people = require('../../../controllers/people'),
       places = require('../../../controllers/places'),
+      config = require('../../../config'),
       db = require('../../../db'),
       sinon = require('sinon').sandbox.create(),
       COMPLEX_PASSWORD = '23l4ijk3nSDELKSFnwekirh';
@@ -49,7 +50,6 @@ exports['getSettingsUpdates removes user doc specific fields'] = function(test) 
   };
   var settings = controller._getSettingsUpdates('john', data);
   test.ok(!settings.password);
-  test.ok(!settings.roles);
   test.done();
 };
 
@@ -465,19 +465,6 @@ exports['_storeUpdatedUserSettings returns response'] = function(test) {
   });
 };
 
-exports['createUserSettings sets default roles on user-settings'] = function(test) {
-  sinon.stub(db.medic, 'insert').callsFake(function(settings) {
-    test.deepEqual(settings.roles, [
-      'district-manager',
-      'kujua_user',
-      'data_entry',
-      'district_admin'
-    ]);
-    test.done();
-  });
-  controller._createUserSettings({});
-};
-
 exports['createContact returns error from db insert'] = function(test) {
   sinon.stub(people, 'createPerson').callsArgWith(1, 'yucky');
   controller._createContact(userData, {}, function(err) {
@@ -512,19 +499,6 @@ exports['createContact sets up response'] = function(test) {
     });
     test.done();
   });
-};
-
-exports['_createUser sets default roles on user'] = function(test) {
-  sinon.stub(db._users, 'insert').callsFake(function(user) {
-    test.deepEqual(user.roles, [
-      'district-manager',
-      'kujua_user',
-      'data_entry',
-      'district_admin'
-    ]);
-    test.done();
-  });
-  controller._createUser({});
 };
 
 exports['_createUser returns error from db insert'] = function(test) {
@@ -933,19 +907,19 @@ exports['updateUser succeeds if place is defined and found'] = function(test) {
   });
 };
 
-exports['updateUser type param updates roles on user and user-settings doc'] = function(test) {
+exports['updateUser roles param updates roles on user and user-settings doc'] = function(test) {
   test.expect(5);
   var data = {
-    type: 'rebel'
+    roles: [ 'rebel' ]
   };
   sinon.stub(controller, '_validateUser').callsArgWith(1, null, {});
   sinon.stub(controller, '_validateUserSettings').callsArgWith(1, null, {});
   var update = sinon.stub(controller, '_storeUpdatedUser').callsFake(function(id, data, callback) {
-    test.deepEqual(data.roles, ['rebel', undefined]);
+    test.deepEqual(data.roles, ['rebel', 'mm-online']);
     callback();
   });
   var updateSettings = sinon.stub(controller, '_storeUpdatedUserSettings').callsFake(function(id, data, callback) {
-    test.deepEqual(data.roles, ['rebel', undefined]);
+    test.deepEqual(data.roles, ['rebel', 'mm-online']);
     callback();
   });
   controller.updateUser('paul', data, true, function(err) {
@@ -1038,7 +1012,7 @@ exports['updateUser updates facility_id on user and user settings'] = function(t
 };
 
 exports['updateUser updates user and user settings doc'] = function(test) {
-  test.expect(12);
+  test.expect(13);
   var data = {
     place: 'el paso',
     type: 'rambler',
@@ -1057,7 +1031,7 @@ exports['updateUser updates user and user settings doc'] = function(test) {
   sinon.stub(places, 'getPlace').callsArg(1);
   var update = sinon.stub(controller, '_storeUpdatedUser').callsFake(function(id, user, cb) {
     test.equal(user.facility_id, 'el paso');
-    test.deepEqual(user.roles, ['rambler', undefined]);
+    test.deepEqual(user.roles, ['rambler', undefined, 'mm-online']);
     test.equal(user.shoes, 'dusty boots');
     test.equal(user.password, COMPLEX_PASSWORD);
     test.equal(user.type, 'user');
@@ -1068,6 +1042,42 @@ exports['updateUser updates user and user settings doc'] = function(test) {
     test.equal(settings.phone, '123');
     test.equal(settings.known, false);
     test.equal(settings.type, 'user-settings');
+    test.deepEqual(settings.roles, ['rambler', undefined, 'mm-online']);
+    cb();
+  });
+  controller.updateUser('paul', data, true, function(err) {
+    test.ok(!err);
+    test.same(update.callCount, 1);
+    test.same(updateSettings.callCount, 1);
+    test.done();
+  });
+};
+
+exports['updateUser does not add online role for offline users'] = function(test) {
+  test.expect(5);
+  sinon.stub(config, 'get').returns({ chp: { offline: true } });
+  var data = {
+    place: 'el paso',
+    roles: ['chp'],
+    password: COMPLEX_PASSWORD
+  };
+  sinon.stub(controller, '_validateUser').callsArgWith(1, null, {
+    facility_id: 'maine',
+    roles: ['chp'],
+    shoes: 'dusty boots'
+  });
+  sinon.stub(controller, '_validateUserSettings').callsArgWith(1, null, {
+    facility_id: 'maine',
+    phone: '123',
+    known: false
+  });
+  sinon.stub(places, 'getPlace').callsArg(1);
+  var update = sinon.stub(controller, '_storeUpdatedUser').callsFake(function(id, user, cb) {
+    test.deepEqual(user.roles, ['chp']);
+    cb();
+  });
+  var updateSettings = sinon.stub(controller, '_storeUpdatedUserSettings').callsFake(function(id, settings, cb) {
+    test.deepEqual(settings.roles, ['chp']);
     cb();
   });
   controller.updateUser('paul', data, true, function(err) {

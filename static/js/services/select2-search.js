@@ -154,7 +154,7 @@ angular.module('inboxServices').factory('Select2Search',
           templateResult: templateResult,
           templateSelection: templateSelection,
           width: '100%',
-          minimumInputLength: Session.isAdmin() ? 3 : 0
+          minimumInputLength: Session.isOnlineOnly() ? 3 : 0
         });
         if (allowNew) {
           var button = $('<a class="btn btn-link add-new"><i class="fa fa-plus"></i> ' + addNewText + '</a>')

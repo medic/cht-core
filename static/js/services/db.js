@@ -20,6 +20,7 @@ angular.module('inboxServices').factory('DB',
     'ngInject';
 
     var cache = {};
+    var isOnlineOnly = Session.isOnlineOnly();
 
     var getUsername = function(remote) {
       var username = Session.userCtx().name;
@@ -69,7 +70,7 @@ angular.module('inboxServices').factory('DB',
       }
       options = options || {};
       _.defaults(options, {
-        remote: Session.isAdmin(),
+        remote: isOnlineOnly,
         meta: false
       });
       var name = getDbName(options.remote, options.meta);
@@ -80,7 +81,7 @@ angular.module('inboxServices').factory('DB',
       return cache[name];
     };
 
-    if (!Session.isAdmin()) {
+    if (!isOnlineOnly) {
       get({ local: true }).viewCleanup();
       get({ local: true, meta: true }).viewCleanup();
     }

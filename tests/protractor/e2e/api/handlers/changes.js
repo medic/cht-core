@@ -70,7 +70,7 @@ const users = [
       _id: 'fixture:user:clare',
       name: 'Clare'
     },
-    roles: []
+    roles: ['district_admin']
   },
   {
     username: 'chw-boss',
@@ -85,7 +85,7 @@ const users = [
       _id: 'fixture:user:chw-boss',
       name: 'CHW Boss'
     },
-    roles: []
+    roles: ['district_admin']
   },
   {
     username: 'chw',
@@ -100,7 +100,7 @@ const users = [
       _id: 'fixture:user:chw',
       name: 'CHW'
     },
-    roles: []
+    roles: ['district_admin', 'analytics']
   },
 ];
 
@@ -229,7 +229,7 @@ describe('changes handler', () => {
       utils.updateSettings({
         replication_depth: [
             { role:'district_admin', depth:1 },
-            { role:'district-manager', depth:2 },
+            { role:'analytics', depth:2 },
           ]
       }, true)
         .then(() => utils.saveDoc({ _id:'should-be-visible', type:'clinic', parent: { _id:'fixture:chwville' } }))
