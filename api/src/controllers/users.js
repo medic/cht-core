@@ -4,20 +4,17 @@ const async = require('async'),
       people  = require('./people'),
       places = require('./places'),
       db = require('../db-nano'),
+      config = require('../config'),
       dbPouch = require('../db-pouch'),
       lineage = require('lineage')(Promise, dbPouch.medic);
 const getRoles = require('../services/types-and-roles');
 
 const USER_PREFIX = 'org.couchdb.user:';
+const ONLINE_ROLE = 'mm-online';
 
 const PASSWORD_MINIMUM_LENGTH = 8,
       PASSWORD_MINIMUM_SCORE = 50,
       USERNAME_WHITELIST = /^[a-z0-9_-]+$/;
-
-// TODO: sort out whether or not we can pass roles in instead of type.
-//       The code makes it look like you can sort of, but the existing docs
-//       don't mention it. Align docs and code, one way or another
-// https://github.com/medic/medic-webapp/issues/4096
 
 const RESTRICTED_USER_EDITABLE_FIELDS = [
   'password',
@@ -26,7 +23,8 @@ const RESTRICTED_USER_EDITABLE_FIELDS = [
 
 const USER_EDITABLE_FIELDS = RESTRICTED_USER_EDITABLE_FIELDS.concat([
   'place',
-  'type'
+  'type',
+  'roles',
 ]);
 
 const RESTRICTED_SETTINGS_EDITABLE_FIELDS = [
@@ -41,7 +39,8 @@ const SETTINGS_EDITABLE_FIELDS = RESTRICTED_SETTINGS_EDITABLE_FIELDS.concat([
   'place',
   'contact',
   'external_id',
-  'type'
+  'type',
+  'roles',
 ]);
 
 const ALLOWED_RESTRICTED_EDITABLE_FIELDS =
@@ -201,9 +200,6 @@ var createUser = function(data, response, callback) {
   response = response || {};
   var id = createID(data.username),
       user = getUserUpdates(data.username, data);
-  if (!user.roles) {
-    user.roles = getRoles('district-manager');
-  }
   db._users.insert(user, id, function(err, body) {
     if (err) {
       return callback(err);
@@ -238,9 +234,6 @@ var createContact = function(data, response, callback) {
 var createUserSettings = function(data, response, callback) {
   response = response || {};
   var settings = getSettingsUpdates(data.username, data);
-  if (!settings.roles) {
-    settings.roles = getRoles('district-manager');
-  }
   db.medic.insert(settings, createID(data.username), function(err, body) {
     if (err) {
       return callback(err);
@@ -364,6 +357,11 @@ var mapUsers = function(users, settings, facilities) {
   });
 };
 
+var isOffline = function(roles) {
+  const configured = config.get('roles') || {};
+  return roles.some(r => configured[r] && configured[r].offline);
+};
+
 var getSettingsUpdates = function(username, data) {
   const ignore = ['type', 'place', 'contact'];
 
@@ -379,7 +377,20 @@ var getSettingsUpdates = function(username, data) {
   });
 
   if (data.type) {
+    // deprecated: use 'roles' instead
     settings.roles = getRoles(data.type);
+  }
+  if (settings.roles) {
+    var index = settings.roles.indexOf(ONLINE_ROLE);
+    if (isOffline(settings.roles)) {
+      if (index !== -1) {
+        // remove the online role
+        settings.roles.splice(index, 1);
+      }
+    } else if (index === -1) {
+      // add the online role
+      settings.roles.push(ONLINE_ROLE);
+    }
   }
   if (data.place) {
     settings.facility_id = getDocID(data.place);
@@ -409,7 +420,11 @@ var getUserUpdates = function(username, data) {
   });
 
   if (data.type) {
+    // deprecated: use 'roles' instead
     user.roles = getRoles(data.type);
+  }
+  if (user.roles && !isOffline(user.roles)) {
+    user.roles.push(ONLINE_ROLE);
   }
   if (data.place) {
     user.facility_id = getDocID(data.place);
@@ -512,7 +527,7 @@ module.exports = {
   createUser: function(data, callback) {
     const missingFields = data => {
       const required = ['username', 'password'];
-      if (data.type === 'district-manager' || (data.roles && data.roles.includes('district-manager'))) {
+      if (data.roles && isOffline(data.roles)) {
         required.push('place', 'contact');
       }
 

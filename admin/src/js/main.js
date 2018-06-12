@@ -15,6 +15,8 @@ require('angular-ui-router');
 
 angular.module('controllers', []);
 require('./controllers/main');
+require('./controllers/authorization-permissions');
+require('./controllers/authorization-roles');
 require('./controllers/delete-doc-confirm');
 require('./controllers/delete-user');
 require('./controllers/edit-language');
@@ -30,7 +32,6 @@ require('./controllers/forms-xml');
 require('./controllers/icons');
 require('./controllers/import-translation');
 require('./controllers/message-test');
-require('./controllers/permissions');
 require('./controllers/settings-advanced');
 require('./controllers/settings-backup');
 require('./controllers/settings-basic');
@@ -239,10 +240,27 @@ app.config(function(
       controller: 'IconsCtrl',
       templateUrl: 'templates/icons.html'
     })
-    .state('permissions', {
+    .state('authorization', {
+      url: '/authorization',
+      templateUrl: 'templates/authorization.html'
+    })
+    .state('authorization.permissions', {
       url: '/permissions',
-      controller: 'PermissionsCtrl',
-      templateUrl: 'templates/permissions.html'
+      views: {
+        tab: {
+          controller: 'AuthorizationPermissionsCtrl',
+          templateUrl: 'templates/authorization_permissions.html'
+        }
+      }
+    })
+    .state('authorization.roles', {
+      url: '/roles',
+      views: {
+        tab: {
+          controller: 'AuthorizationRolesCtrl',
+          templateUrl: 'templates/authorization_roles.html'
+        }
+      }
     })
     .state('targets', {
       url: '/targets',

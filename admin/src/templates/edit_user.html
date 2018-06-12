@@ -35,25 +35,14 @@
       <select id="language" class="form-control" ng-model="editUserModel.language" ng-options="locale.name for locale in enabledLocales track by locale.code"></select>
     </div>
 
-    <div class="form-group required" mm-auth="can_configure" ng-class="{'has-error': errors.type}">
-      <label for="type" translate>User Type</label>
-      <input id="name" type="text" class="form-control" ng-model="editUserModel.type" disabled="disabled" ng-if="editUserModel.type === '_admin'" />
-      <select id="type" class="form-control" ng-model="editUserModel.type" ng-if="editUserModel.type !== '_admin'">
-        <option value=""></option>
-        <optgroup ng-attr-label="{{'usertype.people' | translate}}">
-          <option value="national-manager" translate>usertype.national-manager</option>
-          <option value="district-manager" translate>usertype.district-manager</option>
-          <option value="data-entry" translate>usertype.data-entry</option>
-        </optgroup>
-        <optgroup ng-attr-label="{{'usertype.computers' | translate}}">
-          <option value="analytics" translate>usertype.analytics</option>
-          <option value="gateway" translate>usertype.gateway</option>
-        </optgroup>
-      </select>
-      <span class="help-block">{{errors.type}}</span>
+    <div class="form-group required" mm-auth="can_configure" ng-class="{'has-error': errors.role}">
+      <label for="role" translate>configuration.role</label>
+      <input type="text" class="form-control" ng-model="editUserModel.role" disabled="disabled" ng-if="editUserModel.role === '_admin'" />
+      <select id="role" class="form-control" ng-options="key as value.name | translate for (key, value) in roles" ng-model="editUserModel.role" ng-if="editUserModel.role !== '_admin'"></select>
+      <span class="help-block">{{errors.role}}</span>
     </div>
 
-    <div class="form-group" mm-auth="can_configure" ng-class="{'has-error': errors.place, 'required': editUserModel.type === 'district-manager'}">
+    <div class="form-group" mm-auth="can_configure" ng-class="{'has-error': errors.place, 'required': roles[editUserModel.role].offline}">
       <label for="facilitySelect" translate>Facility</label>
       <select id="facilitySelect" name="facilitySelect">
         <option ng-value="editUserModel.facilitySelect" ng-if="editUserModel.facilitySelect"></option>
@@ -61,7 +50,7 @@
       <span class="help-block">{{errors.place}}</span>
     </div>
 
-    <div class="form-group" mm-auth="can_configure" ng-class="{'has-error': errors.contact, 'required': editUserModel.type === 'district-manager'}">
+    <div class="form-group" mm-auth="can_configure" ng-class="{'has-error': errors.contact, 'required': roles[editUserModel.role].offline}">
       <label for="contactSelect" translate>associated.contact</label>
       <div class="text-muted" translate>associated.contact.help</div>
       <select id="contactSelect" name="contactSelect" autocomplete="off">
@@ -72,13 +61,13 @@
 
     <div class="form-group" ng-class="{'has-error': errors.password, 'required': !editUserModel.id}">
       <label for="password" translate>Password</label>
-      <input id="password" type="password" class="form-control" ng-model="editUserModel.password" autocomplete="off" ng-disabled="editUserModel.type === '_admin'"/>
+      <input id="password" type="password" class="form-control" ng-model="editUserModel.password" autocomplete="off" ng-disabled="editUserModel.role === '_admin'"/>
       <span class="help-block">{{errors.password}}</span>
     </div>
 
     <div class="form-group" ng-class="{'required': !editUserModel.id}">
       <label for="password-confirm" translate>Confirm Password</label>
-      <input id="password-confirm" type="password" class="form-control" ng-model="editUserModel.passwordConfirm" autocomplete="off" ng-disabled="editUserModel.type === '_admin'"/>
+      <input id="password-confirm" type="password" class="form-control" ng-model="editUserModel.passwordConfirm" autocomplete="off" ng-disabled="editUserModel.role === '_admin'"/>
     </div>
 
   </form>

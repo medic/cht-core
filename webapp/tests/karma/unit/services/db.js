@@ -7,7 +7,7 @@ describe('DB service', () => {
       userCtx,
       pouchDB,
       expected,
-      isAdmin;
+      isOnlineOnly;
 
   beforeEach(() => {
     Location = {};
@@ -20,7 +20,7 @@ describe('DB service', () => {
     };
     pouchDB.returns(expected);
 
-    isAdmin = sinon.stub();
+    isOnlineOnly = sinon.stub();
     module('inboxApp');
     module($provide => {
       $provide.factory('$window', () => {
@@ -37,7 +37,7 @@ describe('DB service', () => {
       });
       $provide.value('Session', {
         userCtx: userCtx,
-        isAdmin: isAdmin
+        isOnlineOnly: isOnlineOnly
       } );
       $provide.value('Location', Location);
     });
@@ -50,13 +50,13 @@ describe('DB service', () => {
   });
 
   afterEach(() => {
-    KarmaUtils.restore(pouchDB, userCtx, isAdmin);
+    KarmaUtils.restore(pouchDB, userCtx, isOnlineOnly);
   });
 
   describe('get remote', () => {
 
     it('sets ajax timeout', () => {
-      isAdmin.returns(false);
+      isOnlineOnly.returns(false);
       Location.dbName = 'medicdb';
       Location.url = 'ftp//myhost:21/medicdb';
       userCtx.returns({ name: 'johnny' });
@@ -82,7 +82,7 @@ describe('DB service', () => {
     });
 
     it('caches pouchdb instances', () => {
-      isAdmin.returns(false);
+      isOnlineOnly.returns(false);
       Location.dbName = 'medicdb';
       Location.url = 'ftp//myhost:21/medicdb';
       userCtx.returns({ name: 'johnny' });
@@ -109,7 +109,7 @@ describe('DB service', () => {
      * Must be kept in sync with medic-api/lib/userDb.js
      */
     it('escapes invalid database characters - #3778', () => {
-      isAdmin.returns(false);
+      isOnlineOnly.returns(false);
       Location.dbName = 'medicdb';
       Location.url = 'ftp//myhost:21/medicdb';
       userCtx.returns({ name: 'johnny.<>^,?!' });
@@ -138,7 +138,7 @@ describe('DB service', () => {
   describe('get local', () => {
 
     it('sets ajax timeout', () => {
-      isAdmin.returns(false);
+      isOnlineOnly.returns(false);
       Location.dbName = 'medicdb';
       userCtx.returns({ name: 'johnny' });
 
@@ -159,7 +159,7 @@ describe('DB service', () => {
     });
 
     it('caches pouchdb instances', () => {
-      isAdmin.returns(false);
+      isOnlineOnly.returns(false);
       Location.dbName = 'medicdb';
       userCtx.returns({ name: 'johnny' });
 
@@ -176,12 +176,12 @@ describe('DB service', () => {
       const actual2 = service();
       chai.expect(pouchDB.callCount).to.equal(2);
       chai.expect(actual2.id).to.equal(expected.id);
-      chai.expect(isAdmin.callCount).to.equal(5);
+      chai.expect(isOnlineOnly.callCount).to.equal(5);
       chai.expect(userCtx.callCount).to.equal(8);
     });
 
     it('returns remote for admin user', () => {
-      isAdmin.returns(true);
+      isOnlineOnly.returns(true);
       userCtx.returns({ name: 'johnny' });
       Location.url = 'ftp//myhost:21/medicdb';
 

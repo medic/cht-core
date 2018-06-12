@@ -42,7 +42,7 @@ angular.module('inboxServices').factory('UnreadRecords', function(
   var updateReadDocs = function(change) {
     // update the meta db if a doc is deleted by a non-admin
     // admin dbs are updated by sentinel instead
-    if (!change.deleted || Session.isAdmin()) {
+    if (!change.deleted || Session.isOnlineOnly()) {
       return $q.resolve();
     }
     var metaDb = DB({ meta: true });

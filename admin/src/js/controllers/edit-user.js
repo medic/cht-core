@@ -1,7 +1,8 @@
 var passwordTester = require('simple-password-tester'),
     PASSWORD_MINIMUM_LENGTH = 8,
     PASSWORD_MINIMUM_SCORE = 50,
-    USERNAME_WHITELIST = /^[a-z0-9_-]+$/;
+    USERNAME_WHITELIST = /^[a-z0-9_-]+$/,
+    ADMIN_ROLE = '_admin';
 
 angular.module('controllers').controller('EditUserCtrl',
   function (
@@ -15,6 +16,7 @@ angular.module('controllers').controller('EditUserCtrl',
     DB,
     Languages,
     Select2Search,
+    Settings,
     Translate,
     UpdateUser
   ) {
@@ -29,9 +31,27 @@ angular.module('controllers').controller('EditUserCtrl',
       $scope.enabledLocales = languages;
     });
 
-    var getType = function(roles) {
-      if (roles && roles.length) {
-        return roles[0];
+    var getRole = function(roles) {
+      if (!roles || !roles.length) {
+        return;
+      }
+      if (roles.indexOf(ADMIN_ROLE) !== -1) {
+        return ADMIN_ROLE;
+      }
+      if (!$scope.roles) {
+        // no configured roles
+        return;
+      }
+      // find all the users roles that are specified in the configuration
+      var knownRoles = roles.filter(function(role) {
+        return !!$scope.roles[role];
+      });
+      if (knownRoles.length) {
+        // Pre 2.16.0 versions stored the role we care about at the end
+        // of the roles array so for backwards compatibility return the
+        // last element.
+        // From 2.16.0 onwards users only have one role.
+        return knownRoles[knownRoles.length - 1];
       }
     };
 
@@ -40,21 +60,24 @@ angular.module('controllers').controller('EditUserCtrl',
       // $scope.model is the user object passed in by controller creating the Modal.
       // If $scope.model === {}, we're creating a new user.
       if ($scope.model) {
-        return $q.resolve({
-          id: $scope.model._id,
-          username: $scope.model.name,
-          fullname: $scope.model.fullname,
-          email: $scope.model.email,
-          phone: $scope.model.phone,
-          // FacilitySelect is what binds to the select, place is there to
-          // compare to later to see if it's changed once we've run computeFields();
-          facilitySelect: $scope.model.facility_id,
-          place: $scope.model.facility_id,
-          type: getType($scope.model.roles),
-          language: { code: $scope.model.language },
-          // ^ Same with contactSelect vs. contact
-          contactSelect: $scope.model.contact_id,
-          contact: $scope.model.contact_id
+        return Settings().then(function(settings) {
+          $scope.roles = settings.roles;
+          return $q.resolve({
+            id: $scope.model._id,
+            username: $scope.model.name,
+            fullname: $scope.model.fullname,
+            email: $scope.model.email,
+            phone: $scope.model.phone,
+            // FacilitySelect is what binds to the select, place is there to
+            // compare to later to see if it's changed once we've run computeFields();
+            facilitySelect: $scope.model.facility_id,
+            place: $scope.model.facility_id,
+            role: getRole($scope.model.roles),
+            language: { code: $scope.model.language },
+            // ^ Same with contactSelect vs. contact
+            contactSelect: $scope.model.contact_id,
+            contact: $scope.model.contact_id
+          });
         });
       } else {
         return $q.resolve({});
@@ -154,7 +177,8 @@ angular.module('controllers').controller('EditUserCtrl',
     };
 
     var validateContactAndFacility = function() {
-      if ($scope.editUserModel.type !== 'district-manager') {
+      var role = $scope.roles && $scope.roles[$scope.editUserModel.role];
+      if (!role || !role.offline) {
         return true;
       }
       var hasPlace = validateRequired('place', 'Facility');
@@ -193,7 +217,7 @@ angular.module('controllers').controller('EditUserCtrl',
     };
 
     var validateRole = function() {
-      return validateRequired('type', 'User Type');
+      return validateRequired('role', 'configuration.role');
     };
 
     var changedUpdates = function(model) {
@@ -221,6 +245,8 @@ angular.module('controllers').controller('EditUserCtrl',
             .forEach(function(k) {
               if (k === 'language') {
                 updates[k] = model[k].code;
+              } else if (k === 'role') {
+                updates.roles = [model[k]];
               } else {
                 updates[k] = model[k];
               }

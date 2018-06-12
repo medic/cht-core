@@ -766,10 +766,9 @@ will be undefined.
 
 | Key | Description | Details
 | -------- | ----------------- | ------
-| type     | User permission type, maps to a collection of roles | You must provide either a type or a collection of roles
-| roles    | Speciofic collection of roles  |
-| place    | Place identifier string (UUID) or object this user resides in. | Required if your type / roles contain `district-manager`
-| contact  | A person object based on the form configured in the app. | Required if your type / roles contain `district-manager
+| roles    | Array of roles. |
+| place    | Place identifier string (UUID) or object this user resides in. | Required if your roles contain `district_admin`.
+| contact  | A person object based on the form configured in the app. | Required if your roles contain `district_admin`.
 
 #### Optional
 
@@ -780,31 +779,6 @@ will be undefined.
 | phone    | Phone number
 | language | Language preference. e.g. "sw" for Swahili
 | known    | Boolean to define if the user has logged in before.  Used mainly to determine whether or not to start a tour on first login.
-
-#### Types and Roles
-
-Types map to a collection of roles like so:
-
-| Type | roles
-| --- | ----
-| national-manager | ['national-manager', kujua_user', 'data_entry', 'national_admin'],
-| district-manager | ['district-manager', kujua_user', 'data_entry', 'district_admin'],
-| facility-manager | ['facility-manager', kujua_user', 'data_entry'],
-| data-entry | ['data-entry', data_entry'],
-| analytics | ['analytics', kujua_analytics'],
-| gateway | ['gateway', kujua_gateway']
-
-Roles roughly map to the following permissions, though these can be configured in-app.
-
-| Key | Description
-| -------- | -----------------
-| national-manager | Full permissions on all doc types.
-| district-manager | Full permissions on all doc types in a set of places.
-| facility-manager | Full permissions on all doc types in a given place.
-| data-entry | Only allowed to create new records from a given place.
-| analytics | Read only
-| gateway   | Only allowed to create new records.
-
 
 ## GET /api/v1/users
 

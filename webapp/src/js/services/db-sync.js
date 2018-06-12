@@ -112,7 +112,7 @@ angular.module('inboxServices').factory('DBSync',
     };
 
     return function(updateListener) {
-      if (Session.isAdmin()) {
+      if (Session.isOnlineOnly()) {
         if (updateListener) {
           updateListener({ disabled: true });
         }
