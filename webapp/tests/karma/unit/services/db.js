@@ -176,7 +176,7 @@ describe('DB service', () => {
       const actual2 = service();
       chai.expect(pouchDB.callCount).to.equal(2);
       chai.expect(actual2.id).to.equal(expected.id);
-      chai.expect(isOnlineOnly.callCount).to.equal(5);
+      chai.expect(isOnlineOnly.callCount).to.equal(1);
       chai.expect(userCtx.callCount).to.equal(8);
     });
 
