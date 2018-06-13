@@ -124,7 +124,7 @@ module.exports = {
     return auth.getUserCtx(req)
       .then(userCtx => {
         if (!auth.isOnlineOnly(userCtx)) {
-          throw new Error({ code: 403, message: 'Insufficient privileges' });
+          throw { code: 403, message: 'Insufficient privileges' };
         }
       })
       .then(() => auth.check(req, getExportPermission(req.params.type)))
