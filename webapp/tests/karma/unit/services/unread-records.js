@@ -14,7 +14,7 @@ describe('UnreadRecords service', () => {
     get = sinon.stub();
     put = sinon.stub();
     Changes = sinon.stub();
-    Session = { isAdmin: function() {} };
+    Session = { isOnlineOnly: function() {} };
     const info = sinon.stub().returns(Promise.resolve());
     module('inboxApp');
     module($provide => {
@@ -164,7 +164,7 @@ describe('UnreadRecords service', () => {
       query.onCall(3).returns(Promise.resolve({ rows: [
         { key: 'report', value: 3 }
       ] }));
-      sinon.stub(Session, 'isAdmin').returns(true);
+      sinon.stub(Session, 'isOnlineOnly').returns(true);
       get.returns(Promise.resolve({ _id: 'abc' }));
       put.returns(Promise.resolve());
       let call = 0;
@@ -204,7 +204,7 @@ describe('UnreadRecords service', () => {
       query.onCall(3).returns(Promise.resolve({ rows: [
         { key: 'report', value: 3 }
       ] }));
-      sinon.stub(Session, 'isAdmin').returns(false);
+      sinon.stub(Session, 'isOnlineOnly').returns(false);
       get.returns(Promise.resolve({ _id: 'abc' }));
       put.returns(Promise.resolve());
       let call = 0;

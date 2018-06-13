@@ -25,7 +25,7 @@ var nools = require('nools'),
 
       'ngInject';
 
-      if (Session.isAdmin()) {
+      if (Session.isOnlineOnly()) {
         // No-op all rules engine work for admins for now
         return {
           enabled: false,

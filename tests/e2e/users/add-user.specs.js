@@ -81,7 +81,7 @@ describe('Add user  : ', () => {
   it('should require place and contact for restricted user', () => {
     usersPage.openAddUserModal();
     addUserModal.fillForm('restricted', 'Not Saved', '%4wbbygxkgdwvdwT65');
-    helper.selectDropdownByValue(element(by.id('type')), 'district-manager');
+    helper.selectDropdownByValue(element(by.id('role')), 'string:district_admin');
     addUserModal.submit();
     expect(element(by.css('#facilitySelect ~ .help-block')).getText()).toContain('required');
     expect(element(by.css('#contactSelect ~ .help-block')).getText()).toContain('required');

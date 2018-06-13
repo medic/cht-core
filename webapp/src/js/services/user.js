@@ -29,11 +29,8 @@
         if (!userCtx || !userCtx.name) {
           return $q.reject(new Error('Not logged in'));
         }
-        if (Session.isAdmin(userCtx)) {
+        if (Session.isOnlineOnly(userCtx)) {
           return $q.resolve();
-        }
-        if (!Session.isDistrictAdmin(userCtx)) {
-          return $q.reject(new Error('The administrator needs to give you additional privileges to use this site.'));
         }
         return getWithRemoteFallback(DB, 'org.couchdb.user:' + userCtx.name)
           .then(function(user) {

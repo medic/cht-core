@@ -1,4 +1,4 @@
-angular.module('controllers').controller('PermissionsCtrl',
+angular.module('controllers').controller('AuthorizationPermissionsCtrl',
   function (
     $scope,
     $log,
@@ -10,34 +10,12 @@ angular.module('controllers').controller('PermissionsCtrl',
     'ngInject';
 
     $scope.loading = true;
-    $scope.roles = [
-      {
-        name: 'usertype.national-manager',
-        value: 'national_admin'
-      },
-      {
-        name: 'usertype.district-manager',
-        value: 'district_admin'
-      },
-      {
-        name: 'usertype.data-entry',
-        value: 'data_entry'
-      },
-      {
-        name: 'usertype.analytics',
-        value: 'analytics'
-      },
-      {
-        name: 'usertype.gateway',
-        value: 'gateway'
-      }
-    ];
 
     var makeRoleModel = function(permission) {
-      return $scope.roles.map(function(role) {
+      return Object.keys($scope.roles).map(function(key) {
         return {
-          name: role.value,
-          value: permission.roles.indexOf(role.value) !== -1
+          name: key,
+          value: permission.roles.indexOf(key) !== -1
         };
       });
     };
@@ -45,6 +23,8 @@ angular.module('controllers').controller('PermissionsCtrl',
     Settings()
       .then(function(settings) {
         $scope.loading = false;
+
+        $scope.roles = settings.roles;
 
         // add the configured permissions
         $scope.permissions = settings.permissions.map(function(permission) {

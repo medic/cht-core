@@ -62,7 +62,7 @@ function(newDoc, oldDoc, userCtx, secObj) {
     }
 
     // admins can do anything
-    if (isDbAdmin(userCtx, secObj) || hasRole(userCtx, 'national_admin')) {
+    if (isDbAdmin(userCtx, secObj)) {
       return;
     }
 
@@ -73,25 +73,6 @@ function(newDoc, oldDoc, userCtx, secObj) {
     if (userCtx.facility_id === newDoc._id) {
       _err('You are not authorized to edit your own place');
     }
-
-    // district admins can do almost anything
-    if (hasRole(userCtx, 'district_admin')) {
-      return;
-    }
-
-    // only admins can delete
-    if (oldDoc && newDoc._deleted) {
-        _err('You must be an admin to delete docs');
-    }
-
-    // gateway and data_entry users can update
-    if (hasRole(userCtx, 'kujua_gateway') ||
-        hasRole(userCtx, 'data_entry')) {
-      return;
-    }
-
-    // none of the above
-    _err('You must be an admin, gateway, or data entry user to edit documents');
   };
   checkAuthority(newDoc, oldDoc, userCtx, secObj);
   log('medic validate_doc_update passed for User "' + userCtx.name + '" changing document "' +  newDoc._id + '"');

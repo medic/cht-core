@@ -40,8 +40,7 @@ var utilsFactory = require('bulk-docs-utils');
       };
 
       var deleteAndUpdateDocs = function (docsToDelete, eventListeners) {
-        var onlineUser = Session.isAdmin();
-        if (onlineUser) {
+        if (Session.isOnlineOnly()) {
           var docIds = docsToDelete.map(function(doc) {
             return { _id: doc._id };
           });
