@@ -17,6 +17,7 @@ var _ = require('underscore'),
       $stateParams,
       $timeout,
       $translate,
+      Auth,
       Changes,
       ContactSchema,
       ContactSummary,
@@ -45,24 +46,6 @@ var _ = require('underscore'),
       var additionalListItem = false;
 
       $scope.sortDirection = 'alpha';
-
-      // TODO: use permission here
-      $scope.allowDateLastVisitedSorting = true;
-
-      var getUserHomePlaceSummary = function() {
-        return UserSettings()
-          .then(function(userSettings) {
-            if (userSettings.facility_id) {
-              return GetDataRecords(userSettings.facility_id);
-            }
-          })
-          .then(function(summary) {
-            if (summary) {
-              summary.home = true;
-            }
-            return summary;
-          });
-      };
 
       var _initScroll = function() {
         scrollLoader.init(function() {
@@ -103,7 +86,7 @@ var _ = require('underscore'),
         }
 
         var extensions = {};
-        if ($scope.allowDateLastVisitedSorting) {
+        if ($scope.lastVisitedDateExtras) {
           extensions.displayLastVisitedDate = true;
         }
         if ($scope.sortDirection === 'lastVisitedDate') {
@@ -310,11 +293,32 @@ var _ = require('underscore'),
         $scope.setLeftActionBar(data);
       };
 
-      var setupPromise = getUserHomePlaceSummary().then(function(home) {
-        usersHomePlace = home;
-        setActionBarData();
-        return $scope.search();
-      });
+      var setupPromise = $q.all({
+        home: UserSettings()
+          .then(function(userSettings) {
+            if (userSettings.facility_id) {
+              return GetDataRecords(userSettings.facility_id);
+            }
+          })
+          .then(function(summary) {
+            if (summary) {
+              summary.home = true;
+            }
+            return summary;
+          }),
+        lastVisitedDateExtras: Auth('can_view_last_visited_date')
+          .then(function() {
+            return true;
+          })
+          .catch(function() {
+            return false;
+          })
+      }).then(function(results) {
+          usersHomePlace = results.home;
+          $scope.lastVisitedDateExtras = results.lastVisitedDateExtras;
+          setActionBarData();
+          return $scope.search();
+        });
 
       this.getSetupPromiseForTesting = function(options) {
         if (options && options.scrollLoaderStub) {
