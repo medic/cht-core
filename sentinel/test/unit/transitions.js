@@ -336,31 +336,14 @@ exports['deleteInfoDoc deletes info doc'] = test => {
   });
 };
 
-exports['deleteReadDocs handles missing meta db'] = test => {
-  const given = { id: 'abc' };
-  const metaDb = { info: function() {} };
-  sinon.stub(db.medic, 'view').callsArgWith(3, null, {
-    rows: [ { id: 'org.couchdb.user:gareth' } ]
-  });
-  sinon.stub(db, 'use').returns(metaDb);
-  sinon.stub(metaDb, 'info').callsArgWith(0, { statusCode: 404 });
-  transitions._deleteReadDocs(given, err => {
-    test.equal(err, undefined);
-    test.done();
-  });
-};
-
 exports['deleteReadDocs handles missing read doc'] = test => {
   const given = { id: 'abc' };
   const metaDb = {
     info: function() {},
     fetch: function() {}
   };
-  sinon.stub(db.medic, 'view').callsArgWith(3, null, { rows: [
-    { id: 'org.couchdb.user:gareth' }
-  ] });
+  sinon.stub(db.db, 'list').callsArgWith(0, null, ['medic-user-gareth-meta']);
   sinon.stub(db, 'use').returns(metaDb);
-  sinon.stub(metaDb, 'info').callsArg(0);
   sinon.stub(metaDb, 'fetch').callsArgWith(1, null, { rows: [ { error: 'notfound' } ] });
   transitions._deleteReadDocs(given, err => {
     test.equal(err, undefined);
@@ -375,12 +358,12 @@ exports['deleteReadDocs deletes read doc for all admins'] = test => {
     fetch: function() {},
     insert: function() {}
   };
-  const view = sinon.stub(db.medic, 'view').callsArgWith(3, null, { rows: [
-    { id: 'org.couchdb.user:gareth' },
-    { id: 'org.couchdb.user:jim' }
-  ] });
+  const list = sinon.stub(db.db, 'list').callsArgWith(0, null, [
+    'medic-user-gareth-meta',
+    'medic-user-jim-meta',
+    'medic', // not a user db - must be ignored
+  ]);
   const use = sinon.stub(db, 'use').returns(metaDb);
-  const info = sinon.stub(metaDb, 'info').callsArg(0);
   const fetch = sinon.stub(metaDb, 'fetch').callsArgWith(1, null, { rows: [
     { error: 'notfound' },
     { doc: { id: 'xyz' } }
@@ -388,11 +371,10 @@ exports['deleteReadDocs deletes read doc for all admins'] = test => {
   const insert = sinon.stub(metaDb, 'insert').callsArg(1);
   transitions._deleteReadDocs(given, err => {
     test.equal(err, undefined);
-    test.equal(view.callCount, 1);
+    test.equal(list.callCount, 1);
     test.equal(use.callCount, 2);
     test.equal(use.args[0][0], 'medic-user-gareth-meta');
     test.equal(use.args[1][0], 'medic-user-jim-meta');
-    test.equal(info.callCount, 2);
     test.equal(fetch.callCount, 2);
     test.equal(fetch.args[0][0].keys.length, 2);
     test.equal(fetch.args[0][0].keys[0], 'read:report:abc');

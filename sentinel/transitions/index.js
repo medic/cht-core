@@ -130,21 +130,6 @@ const deleteInfoDoc = (change, callback) => {
   });
 };
 
-const getAdminNames = callback => {
-  db.medic.view('medic', 'online_user_settings_by_id', {}, (err, results) => {
-    if (err) {
-      return callback(err);
-    }
-    const admins = results.rows
-      .map(row => {
-        const parts = row.id.split(':');
-        return parts.length > 1 && parts[1];
-      })
-      .filter(name => !!name);
-    callback(null, admins);
-  });
-};
-
 const deleteReadDocs = (change, callback) => {
 
   // we don't know if the deleted doc was a report or a message so
@@ -152,34 +137,33 @@ const deleteReadDocs = (change, callback) => {
   const possibleReadDocIds = [ 'report', 'message' ]
     .map(type => `read:${type}:${change.id}`);
 
-  getAdminNames((err, admins) => {
+  db.db.list((err, dbs) => {
     if (err) {
       return callback(err);
     }
 
+    const userDbs = dbs.filter(db => db.indexOf('medic-user-') === 0);
+
     async.each(
-      admins,
-      (admin, callback) => {
-        const metaDb = db.use(`medic-user-${admin}-meta`);
-        metaDb.info(err => {
+      userDbs,
+      (userDb, callback) => {
+        const metaDb = db.use(userDb);
+        metaDb.fetch({ keys: possibleReadDocIds }, (err, results) => {
           if (err) {
-            if (err.statusCode === 404) {
-              // no meta data db exists for this user - ignore
-              return callback();
-            }
             return callback(err);
           }
-          metaDb.fetch({ keys: possibleReadDocIds }, (err, results) => {
-            if (err) {
+          // find which of the possible ids was the right one
+          const row = results.rows.find(row => !!row.doc);
+          if (!row) {
+            return callback();
+          }
+          row.doc._deleted = true;
+          metaDb.insert(row.doc, err => {
+            // ignore 404s or 409s - the doc was probably deleted client side already
+            if (err && err.statusCode !== 404 && err.statusCode !== 409) {
               return callback(err);
             }
-            // find which of the possible ids was the right one
-            const row = results.rows.find(row => !!row.doc);
-            if (!row) {
-              return callback();
-            }
-            row.doc._deleted = true;
-            metaDb.insert(row.doc, callback);
+            callback();
           });
         });
       },

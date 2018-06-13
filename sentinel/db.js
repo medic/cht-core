@@ -40,6 +40,9 @@ if (couchUrl) {
             insert: function() {},
             fetch: function() {}
         },
+        db: {
+            list: function() {}
+        },
         settings: {}
     };
 } else {
