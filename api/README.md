@@ -994,8 +994,7 @@ Bulk delete endpoint for deleting large numbers of documents. Docs will be batch
 
 ### Permissions
 
-Available to users with role `_admin` or `national_admin`.
-
+Only available to online users.
 
 ### Parameters
 

@@ -114,7 +114,13 @@ module.exports = {
     //    by the following auth check in ctx.district (maybe?)
     //  - Still don't let offline users use this API, and instead refactor the
     //    export logic so it can be used in webapp, and have exports works offline
-    return auth.check(req, ['national_admin', getExportPermission(req.params.type)])
+    return auth.getUserCtx(req)
+      .then(userCtx => {
+        if (!auth.isOnlineOnly(userCtx)) {
+          throw { code: 403, message: 'Insufficient privileges' };
+        }
+      })
+      .then(() => auth.check(req, getExportPermission(req.params.type)))
       .then(() => {
         writeExportHeaders(res, req.params.type, formats.csv);
 
