@@ -4,7 +4,7 @@ angular.module('services').factory('Version',
     'use strict';
 
     var minimumNextRelease = function(version) {
-      var minVersion = versionInformation(version);
+      var minVersion = versionInformation(version) || {};
 
       if (minVersion.beta !== undefined) {
         ++minVersion.beta;
@@ -31,12 +31,39 @@ angular.module('services').factory('Version',
         }
 
         return version;
-      } else {
-        return {};
       }
     };
 
+    var compare = function(version1, version2) {
+      var parts = ['major', 'minor', 'patch'];
+      for (var i = 0; i < parts.length; i++) {
+        var part = parts[i];
+
+        if (version1[part] !== version2[part]) {
+          return version1[part] - version2[part];
+        }
+      }
+
+      // Because beta is optional, chucking it in the array above means this
+      // function could return NaN sometimes, which is weird
+      if (version1.beta === undefined && version2.beta === undefined) {
+        return 0;
+      }
+
+      if (version1.beta === undefined && version2.beta !== undefined) {
+        return -1;
+      }
+
+      if (version1.beta !== undefined && version2.beta === undefined) {
+        return 1;
+      }
+
+      return version1.beta - version2.beta;
+    };
+
     return {
-      minimumNextRelease: minimumNextRelease
+      minimumNextRelease: minimumNextRelease,
+      parse: versionInformation,
+      compare: compare
     };
   });

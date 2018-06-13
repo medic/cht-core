@@ -348,6 +348,7 @@ module.exports = function(grunt) {
           mkdir -p webapp/dist/ddocs/medic/build_info;
           cd webapp/dist/ddocs/medic/build_info;
           echo "${releaseName}" > version;
+          echo "${require('./package.json').version}" > base_version;
           echo "${new Date().toISOString()}" > time;
           echo "grunt on \`whoami\`" > author;`
       },
