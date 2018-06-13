@@ -657,6 +657,32 @@ var feedback = require('../modules/feedback'),
         RecurringProcessManager.stopUpdateRelativeDate();
       });
 
+      Changes({
+        key: 'client-sentinel',
+        filter: function(change) {
+          return change.doc.form === 'family_survey';
+        },
+        callback: function(change) {
+          DB().query('medic-client/contacts_by_parent')
+            .then(function(result) {
+              var familyMemberIds = result.rows
+                .filter(function(row) {
+                  return row.key === change.doc.fields.place_id;
+                })
+                .map(function(row) {
+                  return row.id;
+                });
+              return DB().allDocs({ keys: familyMemberIds, include_docs: true });
+            })
+            .then(function(result) {
+              var updatedDocs = result.rows.map(function(row) {
+                row.doc.equity_score = change.doc.fields.NationalScore;
+                return row.doc;
+              });
+              return DB().bulkDocs(updatedDocs);
+            });
+        }
+      });
     }
   );
 
