@@ -241,7 +241,7 @@ var requestBuilders = {
       requests.push(defaultContactRequest());
     }
 
-    if (extensions.sortByLastVisitedDate) {
+    if (extensions && extensions.sortByLastVisitedDate) {
       // Always push this last, search:getIntersection uses the last request
       // result and we'll need it later for sorting
       requests.push(sortByLastVisitedDate());

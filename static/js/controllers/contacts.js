@@ -93,7 +93,7 @@ var _ = require('underscore'),
           extensions.sortByLastVisitedDate = true;
         }
 
-        Search('contacts', actualFilter, options, extensions).then(function(contacts) {
+        return Search('contacts', actualFilter, options, extensions).then(function(contacts) {
           // If you have a home place make sure its at the top
           if (usersHomePlace) {
             var homeIndex = _.findIndex(contacts, function(contact) {
@@ -236,10 +236,10 @@ var _ = require('underscore'),
           $scope.filtered = true;
           liveList = LiveList['contact-search'];
           liveList.set([]);
-          _query();
+          return _query();
         } else {
           $scope.filtered = false;
-          _query();
+          return _query();
         }
       };
 
@@ -293,8 +293,8 @@ var _ = require('underscore'),
         $scope.setLeftActionBar(data);
       };
 
-      var setupPromise = $q.all({
-        home: UserSettings()
+      var setupPromise = $q.all([
+        UserSettings()
           .then(function(userSettings) {
             if (userSettings.facility_id) {
               return GetDataRecords(userSettings.facility_id);
@@ -306,19 +306,20 @@ var _ = require('underscore'),
             }
             return summary;
           }),
-        lastVisitedDateExtras: Auth('can_view_last_visited_date')
+        Auth('can_view_last_visited_date')
           .then(function() {
             return true;
           })
           .catch(function() {
             return false;
           })
-      }).then(function(results) {
-          usersHomePlace = results.home;
-          $scope.lastVisitedDateExtras = results.lastVisitedDateExtras;
-          setActionBarData();
-          return $scope.search();
-        });
+      ])
+      .then(function(results) {
+        usersHomePlace = results[0];
+        $scope.lastVisitedDateExtras = results[1];
+        setActionBarData();
+        return $scope.search();
+      });
 
       this.getSetupPromiseForTesting = function(options) {
         if (options && options.scrollLoaderStub) {
