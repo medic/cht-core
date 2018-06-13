@@ -121,7 +121,7 @@ module.exports = {
     //    by the following auth check in ctx.district (maybe?)
     //  - Still don't let offline users use this API, and instead refactor the
     //    export logic so it can be used in webapp, and have exports works offline
-    return auth.getUserCtx()
+    return auth.getUserCtx(req)
       .then(userCtx => {
         if (!auth.isOnlineOnly(userCtx)) {
           throw new Error({ code: 403, message: 'Insufficient privileges' });
