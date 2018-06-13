@@ -316,9 +316,7 @@ describe('transitions', () => {
     sinon.stub(dbPouch.sentinel, 'get').resolves({ _id: '_local/sentinel-meta-data', processed_seq: 12});
     sinon.stub(infodoc, 'delete').resolves();
 
-    sinon.stub(db.medic, 'view')
-      .withArgs('medic', 'online_user_settings_by_id')
-      .callsArgWith(3, null, { rows: [] });
+    sinon.stub(db.db, 'list').callsArgWith(0, null, []);
 
     const on = sinon.stub().returns({ on: () => ({ cancel: () => null }) });
     const feed = sinon.stub(dbPouch.medic, 'changes').returns({ on: on });
@@ -351,9 +349,7 @@ describe('transitions', () => {
     sinon.stub(dbPouch.sentinel, 'get').resolves({ _id: '_local/sentinel-meta-data', processed_seq: 12});
     sinon.stub(infodoc, 'delete').resolves();
 
-    sinon.stub(db.medic, 'view')
-      .withArgs('medic', 'online_user_settings_by_id')
-      .callsArgWith(3, null, { rows: []});
+    sinon.stub(db.db, 'list').callsArgWith(0, null, []);
 
     const on = sinon.stub().returns({ on: () => ({ cancel: () => null }) });
     const feed = sinon.stub(dbPouch.medic, 'changes').returns({ on: on });
@@ -415,31 +411,14 @@ describe('transitions', () => {
     });
   });
 
-  it('deleteReadDocs handles missing meta db', done => {
-    const given = { id: 'abc' };
-    const metaDb = { info: function() {} };
-    sinon.stub(db.medic, 'view').callsArgWith(3, null, {
-      rows: [ { id: 'org.couchdb.user:gareth' } ]
-    });
-    sinon.stub(db, 'use').returns(metaDb);
-    sinon.stub(metaDb, 'info').callsArgWith(0, { statusCode: 404 });
-    transitions._deleteReadDocs(given, err => {
-      assert.equal(err, undefined);
-      done();
-    });
-  });
-
   it('deleteReadDocs handles missing read doc', done => {
     const given = { id: 'abc' };
     const metaDb = {
       info: function() {},
       fetch: function() {}
     };
-    sinon.stub(db.medic, 'view').callsArgWith(3, null, { rows: [
-      { id: 'org.couchdb.user:gareth' }
-    ] });
+    sinon.stub(db.db, 'list').callsArgWith(0, null, ['medic-user-gareth-meta']);
     sinon.stub(db, 'use').returns(metaDb);
-    sinon.stub(metaDb, 'info').callsArg(0);
     sinon.stub(metaDb, 'fetch').callsArgWith(1, null, { rows: [ { error: 'notfound' } ] });
     transitions._deleteReadDocs(given, err => {
       assert.equal(err, undefined);
@@ -454,12 +433,12 @@ describe('transitions', () => {
       fetch: function() {},
       insert: function() {}
     };
-    const view = sinon.stub(db.medic, 'view').callsArgWith(3, null, { rows: [
-      { id: 'org.couchdb.user:gareth' },
-      { id: 'org.couchdb.user:jim' }
-    ] });
+    const list = sinon.stub(db.db, 'list').callsArgWith(0, null, [
+      'medic-user-gareth-meta',
+      'medic-user-jim-meta',
+      'medic', // not a user db - must be ignored
+    ]);
     const use = sinon.stub(db, 'use').returns(metaDb);
-    const info = sinon.stub(metaDb, 'info').callsArg(0);
     const fetch = sinon.stub(metaDb, 'fetch').callsArgWith(1, null, { rows: [
       { error: 'notfound' },
       { doc: { id: 'xyz' } }
@@ -467,11 +446,10 @@ describe('transitions', () => {
     const insert = sinon.stub(metaDb, 'insert').callsArg(1);
     transitions._deleteReadDocs(given, err => {
       assert.equal(err, undefined);
-      assert.equal(view.callCount, 1);
+      assert.equal(list.callCount, 1);
       assert.equal(use.callCount, 2);
       assert.equal(use.args[0][0], 'medic-user-gareth-meta');
       assert.equal(use.args[1][0], 'medic-user-jim-meta');
-      assert.equal(info.callCount, 2);
       assert.equal(fetch.callCount, 2);
       assert.equal(fetch.args[0][0].keys.length, 2);
       assert.equal(fetch.args[0][0].keys[0], 'read:report:abc');
