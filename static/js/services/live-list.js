@@ -45,6 +45,9 @@ angular.module('inboxServices').factory('LiveListConfig',
           if (!c1 || !c2) {
             return;
           }
+          if (c1.sortByLastVisitedDate) {
+            return c1.lastVisitedDate < c2.lastVisitedDate;
+          }
           if (c1.simprints && c2.simprints) {
             return c2.simprints.confidence - c1.simprints.confidence;
           }
@@ -76,7 +79,7 @@ angular.module('inboxServices').factory('LiveListConfig',
                 scope.overdue = true;
               }
 
-              scope.summary = $translate.instant('contact.lastVisitedDate', { date: relativeDayFilter(contact.lastVisitedDate, true) });
+              scope.summary = $translate.instant('contact.last.visited.date', { date: relativeDayFilter(contact.lastVisitedDate, true) });
             } else {
               scope.summary = $translate.instant('contact.primary_contact_name', { name: contact.contact });
             }

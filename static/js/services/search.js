@@ -82,7 +82,7 @@ var _ = require('underscore'),
             var dataRecordsPromise = GetDataRecords(searchResults, options);
 
             var result;
-            if (extensions.lastVisitedDate) {
+            if (extensions.displayLastVisitedDate) {
               var lastVisitedDatePromise = getLastVisitedDates(searchResults);
 
               result = $q.all({
@@ -96,6 +96,7 @@ var _ = require('underscore'),
 
                   if (relevantDataRecord) {
                     relevantDataRecord.lastVisitedDate = dateResult.value.max;
+                    relevantDataRecord.sortByLastVisitedDate = extensions.sortByLastVisitedDate;
                   }
                 });
 

@@ -157,6 +157,21 @@ var defaultContactRequest = function() {
   };
 };
 
+var sortByLastVisitedDate = function() {
+  return {
+    view: 'medic-client/contacts_by_last_visited',
+    map: function(row) {
+      row.id = row.key;
+      row.value = row.value.max;
+      return row;
+    },
+    params: {
+      reduce: true,
+      group: true
+    }
+  };
+};
+
 var requestBuilders = {
   reports: function(filters) {
     var requests = [
@@ -174,7 +189,7 @@ var requestBuilders = {
     }
     return requests;
   },
-  contacts: function(filters) {
+  contacts: function(filters, extensions) {
     var simprints = simprintsRequest(filters);
     if (simprints) {
       return [ simprints ];
@@ -225,6 +240,12 @@ var requestBuilders = {
     if (!requests.length) {
       requests.push(defaultContactRequest());
     }
+
+    if (extensions.sortByLastVisitedDate) {
+      // Always push this last, search:getIntersection uses the last request
+      // result and we'll need it later for sorting
+      requests.push(sortByLastVisitedDate());
+    }
     return requests;
   }
 };
@@ -262,11 +283,11 @@ var requestBuilders = {
 //
 // NB: options is not required: it is an optimisation shortcut
 module.exports = {
-  generate: function(type, filters) {
+  generate: function(type, filters, extensions) {
     var builder = requestBuilders[type];
     if (!builder) {
       throw new Error('Unknown type: ' + type);
     }
-    return builder(filters);
+    return builder(filters, extensions);
   }
 };

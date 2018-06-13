@@ -44,6 +44,8 @@ var _ = require('underscore'),
       var usersHomePlace;
       var additionalListItem = false;
 
+      $scope.sortDirection = 'alpha';
+
       var getUserHomePlaceSummary = function() {
         return UserSettings()
           .then(function(userSettings) {
@@ -99,7 +101,10 @@ var _ = require('underscore'),
 
         var extensions = {};
         if (true /*TODO pull this from a permission */) {
-          extensions.lastVisitedDate = true;
+          extensions.displayLastVisitedDate = true;
+        }
+        if ($scope.sortDirection === 'lastVisitedDate') {
+          extensions.sortByLastVisitedDate = true;
         }
 
         Search('contacts', actualFilter, options, extensions).then(function(contacts) {
@@ -252,11 +257,18 @@ var _ = require('underscore'),
         }
       };
 
+      $scope.sort = function($event) {
+        $scope.sortDirection = $event.target.getAttribute('data-value');
+        liveList.set([]);
+        _query();
+      };
+
       $scope.setupSearchFreetext = function() {
         SearchFilters.freetext($scope.search);
       };
       $scope.resetFilterModel = function() {
         $scope.filters = {};
+        $scope.sortDirection = 'alpha';
         SearchFilters.reset();
         $scope.search();
       };
