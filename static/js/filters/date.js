@@ -166,11 +166,18 @@ var _ = require('underscore'),
 
   module.filter('relativeDate', function(FormatDate, RelativeDate, $sce) {
     'ngInject';
-    return function (date) {
-      return $sce.trustAsHtml(getRelativeDate(date, {
+    return function (date, raw) {
+      var options = {
         FormatDate: FormatDate,
         RelativeDate: RelativeDate
-      }));
+      };
+
+      if (raw) {
+        options.raw = true;
+        return getRelativeDate(date, options);
+      } else {
+        return $sce.trustAsHtml(getRelativeDate(date, options));
+      }
     };
   });
 

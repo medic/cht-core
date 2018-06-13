@@ -46,6 +46,9 @@ var _ = require('underscore'),
 
       $scope.sortDirection = 'alpha';
 
+      // TODO: use permission here
+      $scope.allowDateLastVisitedSorting = true;
+
       var getUserHomePlaceSummary = function() {
         return UserSettings()
           .then(function(userSettings) {
@@ -100,7 +103,7 @@ var _ = require('underscore'),
         }
 
         var extensions = {};
-        if (true /*TODO pull this from a permission */) {
+        if ($scope.allowDateLastVisitedSorting) {
           extensions.displayLastVisitedDate = true;
         }
         if ($scope.sortDirection === 'lastVisitedDate') {

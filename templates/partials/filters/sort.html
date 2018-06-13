@@ -1,5 +1,5 @@
 <!-- TODO: hide if not allowed to see-->
-<span id="sortDropdown" class="filter dropdown mm-dropdown multidropdown">
+<span ng-if="allowDateLastVisitedSorting" id="sortDropdown" class="filter dropdown mm-dropdown multidropdown">
   <span class="sort-results" data-toggle="dropdown">
     <a tabindex="-1" translate-attr-title="contacts.results.sort">
       <i class="fa fa-sort-amount-desc"></i>
@@ -7,12 +7,12 @@
   </span>
   <span role="menu" aria-labelledby="sort-results" class="dropdown-menu mm-dropdown-menu">
     <ul>
-      <li role="presentation" class="dropdown-header">{{'Sort this list' | translate}}</li>
+      <li role="presentation" class="dropdown-header">{{'contacts.results.sort.title' | translate}}</li>
       <li role="presentation">
-        <a role="menuitem" tabindex="-1" ng-class="{selected: sortDirection === 'alpha'}" data-value="alpha" ng-click="sort($event)">{{'Alphabetically' | translate}}</a>
+        <a role="menuitem" tabindex="-1" ng-class="{selected: sortDirection === 'alpha'}" data-value="alpha" ng-click="sort($event)">{{'contacts.results.sort.alpha' | translate}}</a>
       </li>
       <li role="presentation">
-        <a role="menuitem" tabindex="-1" ng-class="{selected: sortDirection === 'lastVisitedDate'}" data-value="lastVisitedDate" ng-click="sort($event)">{{'By date last visited' | translate}}</a>
+        <a role="menuitem" tabindex="-1" ng-class="{selected: sortDirection === 'lastVisitedDate'}" data-value="lastVisitedDate" ng-click="sort($event)">{{'contacts.results.sort.dlv' | translate}}</a>
       </li>
     </ul>
   </span>
