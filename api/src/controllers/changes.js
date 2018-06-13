@@ -395,7 +395,7 @@ const request = (proxy, req, res) => {
           res.setHeader('X-Accel-Buffering', 'no');
         }
 
-        if (auth.isAdmin(userCtx)) {
+        if (auth.isOnlineOnly(userCtx)) {
           return proxy.web(req, res);
         }
         res.type('json');

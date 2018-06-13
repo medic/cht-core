@@ -52,7 +52,7 @@ describe('Changes controller', () => {
     changesCancelSpy = sinon.spy();
 
     sinon.stub(auth, 'getUserCtx').resolves({ name: 'user' });
-    sinon.stub(auth, 'isAdmin').returns(false);
+    sinon.stub(auth, 'isOnlineOnly').returns(false);
     sinon.stub(auth, 'getUserSettings').resolves(userCtx);
 
     sinon.stub(authorization, 'getViewResults').returns({});
@@ -177,7 +177,7 @@ describe('Changes controller', () => {
 
   describe('request', () => {
     it('initializes the continuous changes feed', () => {
-      auth.isAdmin.returns(true);
+      auth.isOnlineOnly.returns(true);
       return controller
         .request(proxy, testReq, testRes)
         .then(() => {
@@ -186,7 +186,7 @@ describe('Changes controller', () => {
     });
 
     it('only initializes on first call', () => {
-      auth.isAdmin.returns(true);
+      auth.isOnlineOnly.returns(true);
       return controller
         .request(proxy, testReq, testRes)
         .then(() => controller.request(proxy, testReq, testRes))
@@ -198,7 +198,7 @@ describe('Changes controller', () => {
     });
 
     it('sends admin requests through the proxy', () => {
-      auth.isAdmin.returns(true);
+      auth.isOnlineOnly.returns(true);
       return controller
         .request(proxy, testReq, testRes)
         .then(() => {
@@ -228,7 +228,7 @@ describe('Changes controller', () => {
     });
 
     it('sets correct headers when longpoll requests are received', () => {
-      auth.isAdmin.returns(true);
+      auth.isOnlineOnly.returns(true);
       testReq.query = { feed: 'longpoll' };
       return controller._init().then(() => {
         return controller
