@@ -26,6 +26,7 @@ describe('Bulk Docs Service', function () {
 
   describe('Bulk Delete', function () {
     it('calls allDocs with correct args', function () {
+      sinon.stub(db.medic, 'bulkDocs').resolves([]);
       const allDocs = sinon.stub(db.medic, 'allDocs').resolves({ rows: [] });
       return service.bulkDelete(testDocs, testRes)
         .then(() => {
