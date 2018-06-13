@@ -2,7 +2,8 @@ var request = require('request'),
     url = require('url'),
     _ = require('underscore'),
     db = require('./db'),
-    config = require('./config');
+    config = require('./config'),
+    ONLINE_ROLE = 'mm-online';
 
 var get = function(path, headers, callback) {
   var fullUrl = url.format({
@@ -67,9 +68,10 @@ module.exports = {
     });
   },
 
-  isAdmin: function(userCtx) {
+  isOnlineOnly: function(userCtx) {
     return hasRole(userCtx, '_admin') ||
-           hasRole(userCtx, 'national_admin');
+           hasRole(userCtx, 'national_admin') || // kept for backwards compatibility
+           hasRole(userCtx, ONLINE_ROLE);
   },
 
   hasAllPermissions: function(userCtx, permissions) {

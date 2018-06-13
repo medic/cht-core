@@ -514,7 +514,7 @@ module.exports = {
         res.setHeader('X-Accel-Buffering', 'no');
       }
 
-      if (auth.isAdmin(userCtx)) {
+      if (auth.isOnlineOnly(userCtx)) {
         proxy.web(req, res);
       } else {
         const feed = {
