@@ -35,7 +35,10 @@ angular.module('services').factory('Version',
     };
 
     var compare = function(version1, version2) {
-      for (var part of ['major', 'minor', 'patch']) {
+      var parts = ['major', 'minor', 'patch'];
+      for (var i = 0; i < parts.length; i++) {
+        var part = parts[i];
+
         if (version1[part] !== version2[part]) {
           return version1[part] - version2[part];
         }

@@ -64,7 +64,7 @@
       <p ng-hide="versions.releases.length" translate>instance.upgrade.no_new_releases</p>
       <ul ng-show="versions.releases.length" class="table table-striped">
         <li ng-repeat="release in versions.releases" class="row">
-          <release />
+          <release release="release" potentially-incompatible="potentiallyIncompatible" upgrade="upgrade"/>
         </li>
       </ul>
     </div>
@@ -75,7 +75,7 @@
         <p ng-hide="versions.betas.length" translate>instance.upgrade.no_betas</p>
         <ul ng-show="versions.betas.length" class="table table-striped">
           <li ng-repeat="release in versions.betas" class="row">
-            <release />
+            <release release="release" potentially-incompatible="potentiallyIncompatible" upgrade="upgrade"/>
           </li>
         </ul>
       </div>
@@ -87,14 +87,14 @@
         <p ng-hide="versions.branches.length" translate>instance.upgrade.no_branches</p>
         <ul ng-show="versions.branches.length" class="table table-striped">
           <li ng-repeat="release in versions.branches" class="row">
-            <release />
+            <release release="release" potentially-incompatible="potentiallyIncompatible" upgrade="upgrade" date-format="medium" />
           </li>
         </ul>
       </div>
     </div>
   </div>
 
-  <div class="col-sm-12" ng-show="loading || (deployDoc && !deployDoc._deleted && (deployDoc.action !== 'stage' || !deployDoc.staging_complete))    ">
+  <div class="col-sm-12" ng-show="loading || (deployDoc && !deployDoc._deleted && (deployDoc.action !== 'stage' || !deployDoc.staging_complete))">
     <div class="loader"></div>
   </div>
 </div>
