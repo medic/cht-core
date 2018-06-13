@@ -102,6 +102,7 @@ var COOKIE_NAME = 'userCtx',
         isOnlineOnly: function(userCtx) {
           userCtx = userCtx || getUserCtx();
           return hasRole(userCtx, '_admin') ||
+                 hasRole(userCtx, 'national_admin') || // kept for backwards compatibility
                  hasRole(userCtx, ONLINE_ROLE);
         }
       };

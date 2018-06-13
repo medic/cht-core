@@ -191,10 +191,11 @@ exports['checkUrl requests the given url and returns status'] = function(test) {
   });
 };
 
-exports['isAdmin checks for "admin" and "national_admin" roles'] = function(test) {
-  test.expect(3);
-  test.equal(auth.isAdmin({ roles: ['_admin'] }), true);
-  test.equal(auth.isAdmin({ roles: ['national_admin'] }), true);
-  test.equal(auth.isAdmin({ roles: ['district_admin'] }), false);
+exports['isOnlineOnly checks for "admin" and "national_admin" roles'] = function(test) {
+  test.expect(4);
+  test.equal(auth.isOnlineOnly({ roles: ['_admin'] }), true);
+  test.equal(auth.isOnlineOnly({ roles: ['national_admin'] }), true);
+  test.equal(auth.isOnlineOnly({ roles: ['mm-online'] }), true);
+  test.equal(auth.isOnlineOnly({ roles: ['district_admin'] }), false);
   test.done();
 };

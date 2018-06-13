@@ -2,6 +2,8 @@
 
   'use strict';
 
+  var ONLINE_ROLE = 'mm-online';
+
   var getUserCtx = function() {
     var userCtx;
     document.cookie.split(';').forEach(function(c) {
@@ -95,7 +97,8 @@
 
   var hasFullDataAccess = function(userCtx) {
     return hasRole(userCtx, '_admin') ||
-           hasRole(userCtx, 'national_admin');
+           hasRole(userCtx, 'national_admin') || // kept for backwards compatibility
+           hasRole(userCtx, ONLINE_ROLE);
   };
 
   module.exports = function(POUCHDB_OPTIONS, callback) {

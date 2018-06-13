@@ -5,7 +5,7 @@ module.exports = {
   bulkDelete: (req, res, next) => {
     return auth.getUserCtx(req)
       .then(userCtx => {
-        if (!auth.isAdmin(userCtx)) {
+        if (!auth.isOnlineOnly(userCtx)) {
           throw {
             code: 401,
             message: 'User is not an admin'
