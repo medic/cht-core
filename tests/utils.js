@@ -52,7 +52,10 @@ const request = (options, {debug, noAuth, notJson} = {}) => {
 
         body = JSON.parse(body);
         if (body.error) {
-          deferred.reject(new Error(`Request failed: ${options.path},\n  body: ${JSON.stringify(options.body)}\n  response: ${JSON.stringify(body)}`));
+          const err = new Error(`Request failed: ${options.path},\n  body: ${JSON.stringify(options.body)}\n  response: ${JSON.stringify(body)}`);
+          err.responseBody = body;
+          err.statusCode = res.statusCode;
+          deferred.reject(err);
         } else {
           deferred.fulfill(body);
         }

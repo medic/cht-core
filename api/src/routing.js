@@ -135,17 +135,13 @@ const RESTRICTED_ENDPOINTS = [
   '_find',
   '_explain',
   '_index',
-  '_compact',
-  '_compact/*',
-  '_ensure_full_commit',
-  '_view_cleanup',
-  '_purge',
-  '_revs_limit'
+  '_purge'
 ];
 
 const RESTRICTED_BLOCKED_ENPOINT = {
-  'error': 'unauthorized',
-  'reason': 'Restricted users are not allowed access to this enpoint'
+  code: 403,
+  error: 'forbidden',
+  details: 'Restricted users are not allowed access to this enpoint'
 };
 
 RESTRICTED_ENDPOINTS.forEach(url => {
@@ -154,12 +150,12 @@ RESTRICTED_ENDPOINTS.forEach(url => {
       .getUserCtx(req)
       .then(userCtx => {
         if (!auth.isAdmin(userCtx)) {
-          serverUtils.notLoggedIn(req, res);
-          res.status(401);
-          return res.send(RESTRICTED_BLOCKED_ENPOINT);
+          res.status(RESTRICTED_BLOCKED_ENPOINT.code);
+          return res.json(RESTRICTED_BLOCKED_ENPOINT);
         }
         next();
-      });
+      })
+      .catch(next);
   });
 });
 
@@ -170,7 +166,6 @@ var UNAUDITED_ENDPOINTS = [
   '_local/*',
   '_revs_diff',
   '_missing_revs',
-  // These may use POST for specifying ids
   // NB: _changes, _all_docs, _bulk_get are dealt with elsewhere:
   // see `changesHandler`, `allDocsHandler`, `bulkGetHandler`
   '_design/*/_list/*',

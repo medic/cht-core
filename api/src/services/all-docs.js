@@ -32,7 +32,7 @@ const filterRequestIds = (allowedIds, requestIds, query) => {
 
   if (endKeys.length) {
     const endKey = _.last(endKeys);
-    if (query.inclusive_end === false) {
+    if (query.inclusive_end === 'false') {
       allowedIds = allowedIds.filter(docId => docId < endKey);
     } else {
       allowedIds = allowedIds.filter(docId => docId <= endKey);
