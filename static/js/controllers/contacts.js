@@ -243,8 +243,8 @@ var _ = require('underscore'),
         }
       };
 
-      $scope.sort = function($event) {
-        $scope.sortDirection = $event.target.getAttribute('data-value');
+      $scope.sort = function(sortDirection) {
+        $scope.sortDirection = sortDirection;
         liveList.set([]);
         _query();
       };
@@ -293,8 +293,8 @@ var _ = require('underscore'),
         $scope.setLeftActionBar(data);
       };
 
-      var setupPromise = $q.all([
-        UserSettings()
+      var getUserHomePlaceSummary = function() {
+        return UserSettings()
           .then(function(userSettings) {
             if (userSettings.facility_id) {
               return GetDataRecords(userSettings.facility_id);
@@ -305,14 +305,22 @@ var _ = require('underscore'),
               summary.home = true;
             }
             return summary;
-          }),
-        Auth('can_view_last_visited_date')
+          });
+      };
+
+      var canViewLastVisitedDate = function() {
+        return Auth('can_view_last_visited_date')
           .then(function() {
             return true;
           })
           .catch(function() {
             return false;
-          })
+          });
+      };
+
+      var setupPromise = $q.all([
+        getUserHomePlaceSummary(),
+        canViewLastVisitedDate()
       ])
       .then(function(results) {
         usersHomePlace = results[0];
