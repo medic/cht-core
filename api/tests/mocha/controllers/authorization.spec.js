@@ -13,7 +13,7 @@ let proxy,
 describe('Authorization controller', () => {
   beforeEach(() => {
     sinon.stub(auth, 'getUserCtx');
-    sinon.stub(auth, 'isAdmin');
+    sinon.stub(auth, 'isOnlineOnly');
     sinon.stub(auth, 'getUserSettings');
     sinon.stub(serverUtils, 'notLoggedIn');
     proxy = { web: sinon.stub() };
@@ -38,14 +38,14 @@ describe('Authorization controller', () => {
 
     it('it proxies the request for admins', () => {
       auth.getUserCtx.resolves({ name: 'user' });
-      auth.isAdmin.withArgs({ name: 'user' }).returns(true);
+      auth.isOnlineOnly.withArgs({ name: 'user' }).returns(true);
 
       return controller
         .adminProxy(proxy, testReq, testRes, next)
         .then(() => {
           serverUtils.notLoggedIn.callCount.should.equal(0);
           next.callCount.should.equal(0);
-          auth.isAdmin.args[0][0].should.deep.equal({ name: 'user'});
+          auth.isOnlineOnly.args[0][0].should.deep.equal({ name: 'user'});
           proxy.web.callCount.should.equal(1);
           proxy.web.args[0].should.deep.equal([ testReq, testRes ]);
         });
@@ -53,7 +53,7 @@ describe('Authorization controller', () => {
 
     it('does not proxy requests for non admins' , () => {
       auth.getUserCtx.resolves({ name: 'user' });
-      auth.isAdmin.withArgs({ name: 'user' }).returns(false);
+      auth.isOnlineOnly.withArgs({ name: 'user' }).returns(false);
       auth.getUserSettings.resolves({ name: 'user', contact_id: 'a' });
 
       return controller
@@ -62,14 +62,14 @@ describe('Authorization controller', () => {
           serverUtils.notLoggedIn.callCount.should.equal(0);
           next.callCount.should.equal(1);
           proxy.web.callCount.should.equal(0);
-          auth.isAdmin.args[0][0].should.deep.equal({ name: 'user'});
+          auth.isOnlineOnly.args[0][0].should.deep.equal({ name: 'user'});
           auth.getUserSettings.args[0][0].should.deep.equal({ name: 'user'});
         });
     });
 
     it('hydrates restricted user doc, saves it in `req` and passes to next middleware', () => {
       auth.getUserCtx.resolves({ name: 'user' });
-      auth.isAdmin.withArgs({ name: 'user' }).returns(false);
+      auth.isOnlineOnly.withArgs({ name: 'user' }).returns(false);
       auth.getUserSettings.withArgs({ name: 'user' }).resolves({ name: 'user', contact_id: 'a' });
 
       return controller
@@ -79,7 +79,7 @@ describe('Authorization controller', () => {
           next.callCount.should.equal(1);
           proxy.web.callCount.should.equal(0);
           testReq.userCtx.should.deep.equal({ name: 'user', contact_id: 'a' });
-          auth.isAdmin.args[0][0].should.deep.equal({ name: 'user'});
+          auth.isOnlineOnly.args[0][0].should.deep.equal({ name: 'user'});
           auth.getUserSettings.args[0][0].should.deep.equal({ name: 'user'});
         });
     });
@@ -98,7 +98,7 @@ describe('Authorization controller', () => {
 
     it('it sends admin requests to next route', () => {
       auth.getUserCtx.resolves({ name: 'user' });
-      auth.isAdmin.withArgs({ name: 'user' }).returns(true);
+      auth.isOnlineOnly.withArgs({ name: 'user' }).returns(true);
 
       return controller
         .adminPassThrough(testReq, testRes, next)
@@ -106,13 +106,13 @@ describe('Authorization controller', () => {
           serverUtils.notLoggedIn.callCount.should.equal(0);
           next.callCount.should.equal(1);
           next.args[0][0].should.equal('route');
-          auth.isAdmin.args[0][0].should.deep.equal({ name: 'user'});
+          auth.isOnlineOnly.args[0][0].should.deep.equal({ name: 'user'});
         });
     });
 
     it('hydrates restricted user doc, saves it in `req` and passes to next middleware', () => {
       auth.getUserCtx.resolves({ name: 'user' });
-      auth.isAdmin.withArgs({ name: 'user' }).returns(false);
+      auth.isOnlineOnly.withArgs({ name: 'user' }).returns(false);
       auth.getUserSettings.withArgs({ name: 'user' }).resolves({ name: 'user', contact_id: 'a' });
 
       return controller
@@ -122,7 +122,7 @@ describe('Authorization controller', () => {
           next.callCount.should.equal(1);
           next.args[0].should.deep.equal([]);
           testReq.userCtx.should.deep.equal({ name: 'user', contact_id: 'a' });
-          auth.isAdmin.args[0][0].should.deep.equal({ name: 'user'});
+          auth.isOnlineOnly.args[0][0].should.deep.equal({ name: 'user'});
           auth.getUserSettings.args[0][0].should.deep.equal({ name: 'user'});
         });
     });

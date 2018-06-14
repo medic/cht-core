@@ -23,7 +23,7 @@ const users = [
       _id: 'fixture:user:offline',
       name: 'OfflineUser'
     },
-    roles: ['district-manager', 'kujua_user', 'data_entry', 'district_admin']
+    roles: ['district-manager']
   },
   {
     username: 'online',
@@ -39,7 +39,7 @@ const users = [
       name: 'OnlineUser'
     },
     type: 'national-manager',
-    roles: ['national-manager', 'kujua_user', 'data_entry', 'national_admin']
+    roles: ['national-manager', 'mm-online']
   }
 ];
 
@@ -76,19 +76,7 @@ describe('restricted users routing', () => {
   afterAll(done =>
     utils
       .revertDb()
-      .then(() => utils
-        .request({
-          path: '/_users/_all_docs',
-          method: 'POST',
-          body: JSON.stringify({ keys: users.map(({username}) => `org.couchdb.user:${username}`) }),
-          headers: { 'content-type': 'application/json' }
-        })
-        .then(({ rows }) => utils.request({
-          path: '/_users/_bulk_docs',
-          method: 'POST',
-          body: JSON.stringify({ docs: rows.map(row => ({ _id: row.id, _rev: row.value.rev, _deleted: true })) }),
-          headers: { 'Content-Type': 'application/json' }
-        })))
+      .then(() => utils.deleteUsers(users.map(user => user.username)))
       .then(done)
   );
 

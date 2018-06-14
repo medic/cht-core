@@ -149,11 +149,11 @@ describe('All Docs service', () => {
       let response;
       const allowedIds = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'aa', 'bb', 'cc', 'dd', 'ee'];
 
-      response = service._filterRequestIds(allowedIds, [], { endkey_docid: 'd', inclusive_end: false});
+      response = service._filterRequestIds(allowedIds, [], { endkey_docid: 'd', inclusive_end: 'false'});
       response.length.should.equal(6);
       response.should.deep.equal(['a', 'b', 'c', 'aa', 'bb', 'cc']);
 
-      response = service._filterRequestIds(allowedIds, [], { endkey_docid: 'd', inclusive_end: true});
+      response = service._filterRequestIds(allowedIds, [], { endkey_docid: 'd', inclusive_end: 'true'});
       response.length.should.equal(7);
       response.should.deep.equal(['a', 'b', 'c', 'd', 'aa', 'bb', 'cc']);
     });

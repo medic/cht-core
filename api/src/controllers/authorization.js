@@ -5,7 +5,7 @@ module.exports.adminProxy = (proxy, req, res, next) => {
   return auth
     .getUserCtx(req)
     .then(userCtx => {
-      if (auth.isAdmin(userCtx)) {
+      if (auth.isOnlineOnly(userCtx)) {
         return proxy.web(req, res);
       }
 
@@ -23,7 +23,7 @@ module.exports.adminPassThrough = (req, res, next) => {
   return auth
     .getUserCtx(req)
     .then(userCtx => {
-      if (auth.isAdmin(userCtx)) {
+      if (auth.isOnlineOnly(userCtx)) {
         return next('route');
       }
 

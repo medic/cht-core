@@ -149,7 +149,7 @@ RESTRICTED_ENDPOINTS.forEach(url => {
     auth
       .getUserCtx(req)
       .then(userCtx => {
-        if (!auth.isAdmin(userCtx)) {
+        if (!auth.isOnlineOnly(userCtx)) {
           res.status(RESTRICTED_BLOCKED_ENPOINT.code);
           return res.json(RESTRICTED_BLOCKED_ENPOINT);
         }
