@@ -163,14 +163,12 @@ var requestBuilders = {
       reportedDateRequest(filters),
       formRequest(filters),
       validityRequest(filters),
+      verificationRequest(filters),
       placeRequest(filters),
       freetextRequest(filters, 'medic-client/reports_by_freetext'),
       subjectRequest(filters)
     ];
 
-    if(filters.verified && filters.verified.length) {
-      requests.push(verificationRequest(filters));
-    }
     requests = _.compact(_.flatten(requests));
     if (!requests.length) {
       requests.push(defaultReportRequest());

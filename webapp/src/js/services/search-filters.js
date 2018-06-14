@@ -123,6 +123,9 @@ var _ = require('underscore'),
               if(values.verified) {
                 parts.push(values.verified);
               }
+              if(values.unverified && values.verifiedErrors && values.verified) {
+                parts = [];
+              }
 
               if (values.valid && !values.invalid) {
                 parts.push(values.valid);
