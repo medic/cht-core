@@ -58,7 +58,11 @@ module.exports = function(Promise, DB) {
     }))
       .then(function(data) {
         return _.flatten(data.map(function(datum) {
-          return datum.rows;
+          if (request.map) {
+            return datum.rows.map(request.map);
+          } else {
+            return datum.rows;
+          }
         }), true);
       });
   };
@@ -81,7 +85,7 @@ module.exports = function(Promise, DB) {
       .then(_.partial(getPageRows, type, _, options));
   };
 
-  return function(type, filters, options) {
+  return function(type, filters, options, extensions) {
     options = options || {};
     _.defaults(options, {
       limit: 50,
@@ -90,12 +94,12 @@ module.exports = function(Promise, DB) {
 
     var requests;
     try {
-      requests = GenerateSearchRequests.generate(type, filters);
+      requests = GenerateSearchRequests.generate(type, filters, extensions);
     } catch (err) {
       return Promise.reject(err);
     }
 
-    return getRows(type, requests, options)
+    return getRows(type, requests, options, extensions)
       .then(function(results) {
         return _.pluck(results, 'id');
       });

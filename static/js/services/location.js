@@ -6,7 +6,7 @@ angular.module('inboxServices').factory('Location',
 
     var getDbName = function(path) {
       var parts = path && path.split('/');
-      if (parts.length > 1) {
+      if (parts && parts.length > 1) {
         return parts[1];
       }
     };

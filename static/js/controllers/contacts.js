@@ -17,6 +17,7 @@ var _ = require('underscore'),
       $stateParams,
       $timeout,
       $translate,
+      Auth,
       Changes,
       ContactSchema,
       ContactSummary,
@@ -44,20 +45,7 @@ var _ = require('underscore'),
       var usersHomePlace;
       var additionalListItem = false;
 
-      var getUserHomePlaceSummary = function() {
-        return UserSettings()
-          .then(function(userSettings) {
-            if (userSettings.facility_id) {
-              return GetDataRecords(userSettings.facility_id);
-            }
-          })
-          .then(function(summary) {
-            if (summary) {
-              summary.home = true;
-            }
-            return summary;
-          });
-      };
+      $scope.sortDirection = 'alpha';
 
       var _initScroll = function() {
         scrollLoader.init(function() {
@@ -97,7 +85,15 @@ var _ = require('underscore'),
           actualFilter = $scope.filters;
         }
 
-        Search('contacts', actualFilter, options).then(function(contacts) {
+        var extensions = {};
+        if ($scope.lastVisitedDateExtras) {
+          extensions.displayLastVisitedDate = true;
+        }
+        if ($scope.sortDirection === 'lastVisitedDate') {
+          extensions.sortByLastVisitedDate = true;
+        }
+
+        return Search('contacts', actualFilter, options, extensions).then(function(contacts) {
           // If you have a home place make sure its at the top
           if (usersHomePlace) {
             var homeIndex = _.findIndex(contacts, function(contact) {
@@ -240,11 +236,17 @@ var _ = require('underscore'),
           $scope.filtered = true;
           liveList = LiveList['contact-search'];
           liveList.set([]);
-          _query();
+          return _query();
         } else {
           $scope.filtered = false;
-          _query();
+          return _query();
         }
+      };
+
+      $scope.sort = function(sortDirection) {
+        $scope.sortDirection = sortDirection;
+        liveList.set([]);
+        _query();
       };
 
       $scope.setupSearchFreetext = function() {
@@ -252,6 +254,7 @@ var _ = require('underscore'),
       };
       $scope.resetFilterModel = function() {
         $scope.filters = {};
+        $scope.sortDirection = 'alpha';
         SearchFilters.reset();
         $scope.search();
       };
@@ -290,8 +293,38 @@ var _ = require('underscore'),
         $scope.setLeftActionBar(data);
       };
 
-      var setupPromise = getUserHomePlaceSummary().then(function(home) {
-        usersHomePlace = home;
+      var getUserHomePlaceSummary = function() {
+        return UserSettings()
+          .then(function(userSettings) {
+            if (userSettings.facility_id) {
+              return GetDataRecords(userSettings.facility_id);
+            }
+          })
+          .then(function(summary) {
+            if (summary) {
+              summary.home = true;
+            }
+            return summary;
+          });
+      };
+
+      var canViewLastVisitedDate = function() {
+        return Auth('can_view_last_visited_date')
+          .then(function() {
+            return true;
+          })
+          .catch(function() {
+            return false;
+          });
+      };
+
+      var setupPromise = $q.all([
+        getUserHomePlaceSummary(),
+        canViewLastVisitedDate()
+      ])
+      .then(function(results) {
+        usersHomePlace = results[0];
+        $scope.lastVisitedDateExtras = results[1];
         setActionBarData();
         return $scope.search();
       });

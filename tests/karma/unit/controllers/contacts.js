@@ -114,6 +114,7 @@ describe('Contacts controller', () => {
         '$state': { includes: sinon.stub() },
         '$timeout': work => work(),
         '$translate': $translate,
+        'Auth': () => Promise.reject(),
         'Changes': changes,
         'ContactSchema': contactSchema,
         'ContactSummary': () => {
