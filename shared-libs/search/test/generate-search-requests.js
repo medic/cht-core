@@ -82,21 +82,15 @@ describe('GenerateSearchRequests service', function() {
 
   describe('verification filter', function() {
 
-    it('true', function() {
-      var result = service('reports', { verified: true });
-      chai.expect(result.length).to.equal(1);
-      chai.expect(result[0].view).to.equal('medic-client/reports_by_verification');
-      chai.expect(result[0].params).to.deep.equal({
-        key: [ true ]
-      });
-    });
-
-    it('false', function() {
-      var result = service('reports', { verified: false });
-      chai.expect(result.length).to.equal(1);
-      chai.expect(result[0].view).to.equal('medic-client/reports_by_verification');
-      chai.expect(result[0].params).to.deep.equal({
-        key: [ false ]
+    it('queries', function() {
+      var verifiedValues = [[true], [false], [undefined], [false, undefined]];
+      verifiedValues.forEach(function(value) {
+        var result = service('reports', { verified: value });
+        chai.expect(result.length).to.equal(1);
+        chai.expect(result[0].view).to.equal('medic-client/reports_by_verification');
+        chai.expect(result[0].params).to.deep.equal({
+          keys: value.map(function(v){ return [v]; })
+        });
       });
     });
 
