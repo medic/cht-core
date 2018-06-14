@@ -157,6 +157,7 @@ const filterAllowedDocs = (authorizationContext, docs) => {
   };
 
   while (pendingDocs.length && shouldCheck) {
+    shouldCheck = false;
     pendingDocs.forEach(checkDoc);
   }
 
@@ -180,6 +181,31 @@ const filterRequestDocs = (authorizationContext, reqBody) => {
 
     return allowedDocs;
   });
+};
+
+const stubSkipped = (docs, filteredDocs, result) => {
+  return docs.map(doc => {
+      const filteredIdx = _.findIndex(filteredDocs, doc);
+      if (filteredIdx !== -1) {
+        return result[filteredIdx];
+      }
+
+      return { id: doc._id, error: 'forbidden' };
+    }
+  );
+};
+
+const interceptResponse = (req, res, response) => {
+  response = JSON.parse(response);
+
+  if (req.query && req.query.new_edits !== false) {
+    // CouchDB doesn't return results when `new_edits` parameter is `false`
+    // if docs were skipped, the consensus is that the response array sequence should reflect
+    // the request array sequence.
+    response = stubSkipped(req.originalBody.docs, req.body.docs, response);
+  }
+  res.write(JSON.stringify(response));
+  res.end();
 };
 
 module.exports = {
@@ -223,6 +249,8 @@ module.exports = {
         return filterRequestDocs(authorizationContext, req.body);
       })
       .then(filteredDocs => {
+        res.interceptResponse = _.partial(interceptResponse, req, res);
+        req.originalBody = { docs: req.body.docs };
         req.body.docs = filteredDocs;
         return next();
       })
@@ -235,6 +263,7 @@ if (process.env.UNIT_TEST_ENV) {
   _.extend(module.exports, {
     _filterRequestDocs: filterRequestDocs,
     _filterNewDocs: filterNewDocs,
-    _filterAllowedDocs: filterAllowedDocs
+    _filterAllowedDocs: filterAllowedDocs,
+    _interceptResponse: interceptResponse
   });
 }

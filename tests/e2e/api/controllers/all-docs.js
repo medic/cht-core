@@ -6,7 +6,7 @@ const password = 'passwordSUP3RS3CR37!';
 const parentPlace = {
   _id: 'PARENT_PLACE',
   type: 'district_hospital',
-  name: 'Big Parent Hostpital'
+  name: 'Big Parent Hospital'
 };
 
 const users = [
@@ -23,7 +23,7 @@ const users = [
       _id: 'fixture:user:offline',
       name: 'OfflineUser'
     },
-    roles: ['district-manager', 'kujua_user', 'data_entry', 'district_admin']
+    roles: ['district-manager']
   },
   {
     username: 'online',
@@ -38,13 +38,12 @@ const users = [
       _id: 'fixture:user:online',
       name: 'OnlineUser'
     },
-    type: 'national-manager',
-    roles: ['national-manager', 'kujua_user', 'data_entry', 'national_admin']
+    roles: ['mm-online']
   }
 ];
 
-let restrictedRequestOptions,
-    unrestrictedRequestOptions;
+let offlineRequestOptions,
+    onlineRequestOptions;
 
 const DOCS_TO_KEEP = [
   'PARENT_PLACE',
@@ -94,30 +93,29 @@ describe('all_docs handler', () => {
 
   afterEach(done => utils.revertDb(DOCS_TO_KEEP, true).then(done));
   beforeEach(() => {
-    restrictedRequestOptions = {
+    offlineRequestOptions = {
       path: '/_all_docs',
       auth: `offline:${password}`,
       method: 'GET'
     };
 
-    unrestrictedRequestOptions = {
+    onlineRequestOptions = {
       path: '/_all_docs',
       auth: `online:${password}`,
       method: 'GET'
     };
-
   });
 
-  it('does not restrict online users', () => {
+  it('does not filter online users', () => {
     return utils
-      .requestOnTestDb(unrestrictedRequestOptions)
+      .requestOnTestDb(onlineRequestOptions)
       .then(result => {
         expect(unrestrictedKeys.every(id => result.rows.find(row => row.id === id || row.id.match(id)))).toBe(true);
         expect(restrictedKeys.every(id => result.rows.find(row => row.id === id || row.id.match(id)))).toBe(true);
       });
   });
 
-  it('restricts offline users', () => {
+  it('filters offline users results', () => {
     const docs = [
       { _id: 'allowed_contact', parent: { _id: 'fixture:offline'}, type: 'clinic' },
       { _id: 'allowed_report', contact: { _id: 'fixture:offline'}, type: 'data_record', form: 'a' },
@@ -127,7 +125,7 @@ describe('all_docs handler', () => {
 
     return utils
       .saveDocs(docs)
-      .then(() => utils.requestOnTestDb(restrictedRequestOptions)).then(result => {
+      .then(() => utils.requestOnTestDb(offlineRequestOptions)).then(result => {
         expect(unrestrictedKeys.every(id => result.rows.find(row => row.id === id || row.id.match(id)))).toBe(true);
         expect(restrictedKeys.some(id => result.rows.find(row => row.id === id || row.id.match(id)))).toBe(false);
 
@@ -138,7 +136,7 @@ describe('all_docs handler', () => {
       });
   });
 
-  it('restricts offline users when requested with key param', () => {
+  it('filters offline users when requested with key param', () => {
     const docs = [
       { _id: 'allowed_contact', parent: { _id: 'fixture:offline'}, type: 'clinic' },
       { _id: 'denied_contact', parent: { _id: 'fixture:online'}, type: 'clinic' }
@@ -149,8 +147,8 @@ describe('all_docs handler', () => {
       .then(result => {
         result.forEach((stub, key) => docs[key]._rev = stub.rev);
         return Promise.all([
-          utils.requestOnTestDb(_.defaults({path: '/_all_docs?key=allowed_contact'}, restrictedRequestOptions)),
-          utils.requestOnTestDb(_.defaults({path: '/_all_docs?key=denied_contact'}, restrictedRequestOptions))
+          utils.requestOnTestDb(_.defaults({path: '/_all_docs?key=allowed_contact'}, offlineRequestOptions)),
+          utils.requestOnTestDb(_.defaults({path: '/_all_docs?key=denied_contact'}, offlineRequestOptions))
         ]);
       })
       .then(result => {
@@ -161,7 +159,7 @@ describe('all_docs handler', () => {
       });
   });
 
-  it('restricts offline users when requested with keys param', () => {
+  it('filters offline users when requested with keys param', () => {
     const docs = [
       { _id: 'allowed_contact', parent: { _id: 'fixture:offline'}, type: 'clinic' },
       { _id: 'allowed_report', contact: { _id: 'fixture:offline'}, type: 'data_record', form: 'a' },
@@ -185,8 +183,8 @@ describe('all_docs handler', () => {
     return utils
       .saveDocs(docs)
       .then(() => Promise.all([
-        utils.requestOnTestDb(_.defaults(request, restrictedRequestOptions)),
-        utils.requestOnTestDb(_.defaults({ path: '/_all_docs?keys=' + JSON.stringify(keys) }, restrictedRequestOptions))
+        utils.requestOnTestDb(_.defaults(request, offlineRequestOptions)),
+        utils.requestOnTestDb(_.defaults({ path: '/_all_docs?keys=' + JSON.stringify(keys) }, offlineRequestOptions))
       ]))
       .then(results => {
         results.forEach(result => {
@@ -204,7 +202,7 @@ describe('all_docs handler', () => {
       });
   });
 
-  it('restricts offline users when requested with start_key / end_key', () => {
+  it('filters offline users when requested with start_key / end_key', () => {
     const docs = [
       { _id: '1', parent: { _id: 'fixture:offline'}, type: 'clinic' },
       { _id: '2', parent: { _id: 'fixture:online'}, type: 'clinic' },
@@ -221,8 +219,8 @@ describe('all_docs handler', () => {
     return utils
       .saveDocs(docs)
       .then(() => Promise.all([
-        utils.requestOnTestDb(_.defaults({ path: '/_all_docs?start_key=10&end_key=8' }, restrictedRequestOptions)),
-        utils.requestOnTestDb(_.defaults({ path: '/_all_docs?startkey=10&endkey=8&inclusive_end=false' }, restrictedRequestOptions))
+        utils.requestOnTestDb(_.defaults({ path: '/_all_docs?start_key=10&end_key=8' }, offlineRequestOptions)),
+        utils.requestOnTestDb(_.defaults({ path: '/_all_docs?startkey=10&endkey=8&inclusive_end=false' }, offlineRequestOptions))
       ]))
       .then(result => {
         expect(result[0].rows.length).toEqual(5);
@@ -266,7 +264,7 @@ describe('all_docs handler', () => {
 
         return utils.saveDocs(tombstones);
       })
-      .then(() => utils.requestOnTestDb(_.defaults({ path: '/_all_docs?keys=' + JSON.stringify(keys) }, restrictedRequestOptions)))
+      .then(() => utils.requestOnTestDb(_.defaults({ path: '/_all_docs?keys=' + JSON.stringify(keys) }, offlineRequestOptions)))
       .then(result => {
         expect(result.rows).toEqual([
           { id: 'allowed_contact', key: 'allowed_contact', value: { rev: docs[0]._rev, deleted: true }},

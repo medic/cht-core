@@ -38,17 +38,16 @@ const users = [
       _id: 'fixture:user:online',
       name: 'OnlineUser'
     },
-    type: 'national-manager',
-    roles: ['national-manager', 'mm-online']
+    roles: ['mm-online']
   }
 ];
 
-const restrictedRequestOptions = {
+const offlineRequestOptions = {
   auth: `offline:${password}`,
   method: 'GET'
 };
 
-const unrestrictedRequestOptions = {
+const onlineRequestOptions = {
   auth: `online:${password}`,
   method: 'GET'
 };
@@ -60,7 +59,7 @@ const DOCS_TO_KEEP = [
   /^org.couchdb.user/,
 ];
 
-describe('restricted users routing', () => {
+describe('offline users routing', () => {
   beforeAll(done => {
     utils
       .saveDoc(parentPlace)
@@ -85,13 +84,13 @@ describe('restricted users routing', () => {
   it('restricts _design/*/_list/*', () => {
     const path = '/_design/medic/_list/test';
     return utils
-      .requestOnTestDb(_.extend({ path }, restrictedRequestOptions))
+      .requestOnTestDb(_.extend({ path }, offlineRequestOptions))
       .then(result => expect(result).toEqual('Should not be a successful request'))
       .catch(err => {
         expect(err.statusCode).toEqual(403);
         expect(err.responseBody.error).toEqual('forbidden');
       })
-      .then(() => utils.requestOnTestDb(_.extend({ path }, unrestrictedRequestOptions)))
+      .then(() => utils.requestOnTestDb(_.extend({ path }, onlineRequestOptions)))
       .then(result => expect(result).toEqual('Should not be a successful request'))
       .catch(err => {
         expect(err.statusCode).toEqual(404);
@@ -102,13 +101,13 @@ describe('restricted users routing', () => {
   it('restricts _design/*/_show/*', () => {
     const path = '/_design/medic/_show/test';
     return utils
-      .requestOnTestDb(_.extend({ path }, restrictedRequestOptions))
+      .requestOnTestDb(_.extend({ path }, offlineRequestOptions))
       .then(result => expect(result).toEqual('Should not be a successful request'))
       .catch(err => {
         expect(err.statusCode).toEqual(403);
         expect(err.responseBody.error).toEqual('forbidden');
       })
-      .then(() => utils.requestOnTestDb(_.extend({ path }, unrestrictedRequestOptions)))
+      .then(() => utils.requestOnTestDb(_.extend({ path }, onlineRequestOptions)))
       .then(result => expect(result).toEqual('Should not be a successful request'))
       .catch(err => {
         expect(err.statusCode).toEqual(404);
@@ -119,13 +118,13 @@ describe('restricted users routing', () => {
   it('restricts _design/*/_view/*', () => {
     const path = '/_design/medic/_view/test';
     return utils
-      .requestOnTestDb(_.extend({ path }, restrictedRequestOptions))
+      .requestOnTestDb(_.extend({ path }, offlineRequestOptions))
       .then(result => expect(result).toEqual('Should not be a successful request'))
       .catch(err => {
         expect(err.statusCode).toEqual(403);
         expect(err.responseBody.error).toEqual('forbidden');
       })
-      .then(() => utils.requestOnTestDb(_.extend({ path }, unrestrictedRequestOptions)))
+      .then(() => utils.requestOnTestDb(_.extend({ path }, onlineRequestOptions)))
       .then(result => expect(result).toEqual('Should not be a successful request'))
       .catch(err => {
         expect(err.statusCode).toEqual(404);
@@ -142,13 +141,13 @@ describe('restricted users routing', () => {
     };
 
     return utils
-      .requestOnTestDb(_.extend({}, restrictedRequestOptions, request))
+      .requestOnTestDb(_.extend({}, offlineRequestOptions, request))
       .then(result => expect(result).toEqual('Should not be a successful request'))
       .catch(err => {
         expect(err.statusCode).toEqual(403);
         expect(err.responseBody.error).toEqual('forbidden');
       })
-      .then(() => utils.requestOnTestDb(_.extend({}, unrestrictedRequestOptions, request)))
+      .then(() => utils.requestOnTestDb(_.extend({}, onlineRequestOptions, request)))
       .then(result => {
         expect(result.docs.length).toEqual(1);
       });
@@ -163,13 +162,13 @@ describe('restricted users routing', () => {
     };
 
     return utils
-      .requestOnTestDb(_.extend({}, restrictedRequestOptions, request))
+      .requestOnTestDb(_.extend({}, offlineRequestOptions, request))
       .then(result => expect(result).toEqual('Should not be a successful request'))
       .catch(err => {
         expect(err.statusCode).toEqual(403);
         expect(err.responseBody.error).toEqual('forbidden');
       })
-      .then(() => utils.requestOnTestDb(_.extend({}, unrestrictedRequestOptions, request)))
+      .then(() => utils.requestOnTestDb(_.extend({}, onlineRequestOptions, request)))
       .then(result => {
         expect(result.limit).toEqual(1);
         expect(result.fields).toEqual('all_fields');
@@ -185,13 +184,13 @@ describe('restricted users routing', () => {
     };
 
     return utils
-      .requestOnTestDb(_.extend({}, restrictedRequestOptions, request))
+      .requestOnTestDb(_.extend({}, offlineRequestOptions, request))
       .then(result => expect(result).toEqual('Should not be a successful request'))
       .catch(err => {
         expect(err.statusCode).toEqual(403);
         expect(err.responseBody.error).toEqual('forbidden');
       })
-      .then(() => utils.requestOnTestDb(_.extend({}, unrestrictedRequestOptions, request)))
+      .then(() => utils.requestOnTestDb(_.extend({}, onlineRequestOptions, request)))
       .catch(err => {
         expect(err.responseBody.error).toEqual('invalid_key');
       });
@@ -206,13 +205,13 @@ describe('restricted users routing', () => {
     };
 
     return utils
-      .requestOnTestDb(_.extend({}, restrictedRequestOptions, request))
+      .requestOnTestDb(_.extend({}, offlineRequestOptions, request))
       .then(result => expect(result).toEqual('Should not be a successful request'))
       .catch(err => {
         expect(err.statusCode).toEqual(403);
         expect(err.responseBody.error).toEqual('forbidden');
       })
-      .then(() => utils.requestOnTestDb(_.extend({}, unrestrictedRequestOptions, request)))
+      .then(() => utils.requestOnTestDb(_.extend({}, onlineRequestOptions, request)))
       .then(result => expect(result).toEqual('Should not be a successful request'))
       .catch(err => {
         expect(err.responseBody.error).toEqual('bad_request');

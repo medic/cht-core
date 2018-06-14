@@ -10,7 +10,7 @@ const _ = require('underscore'),
       AuditProxy = require('./audit-proxy'),
       target = 'http://' + db.settings.host + ':' + db.settings.port,
       proxy = require('http-proxy').createProxyServer({ target: target }),
-      proxyForAuditing = require('http-proxy').createProxyServer({ target: target }),
+      proxyForAuditing = require('http-proxy').createProxyServer({ target: target, selfHandleResponse: true }),
       proxyForChanges = require('http-proxy').createProxyServer({ target: target, selfHandleResponse: true }),
       login = require('./controllers/login'),
       smsGateway = require('./controllers/sms-gateway'),
@@ -676,5 +676,16 @@ proxyForAuditing.on('proxyReq', function(proxyReq, req) {
     proxyReq.write(bodyData);
   }
 });
+
+proxyForAuditing.on('proxyRes', (proxyRes, req, res) => {
+  if (res.interceptResponse) {
+    let body = new Buffer('');
+    proxyRes.on('data', data => body = Buffer.concat([body, data]));
+    proxyRes.on('end', () => res.interceptResponse(body.toString()));
+  } else {
+    proxyRes.pipe(res);
+  }
+});
+
 
 module.exports = app;
