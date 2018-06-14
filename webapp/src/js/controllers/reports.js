@@ -249,13 +249,12 @@ angular.module('inboxControllers').controller('ReportsCtrl',
         return;
       }
       $scope.loading = true;
-
       if ($scope.filters.search ||
           ($scope.filters.forms && $scope.filters.forms.selected && $scope.filters.forms.selected.length) ||
           ($scope.filters.facilities && $scope.filters.facilities.selected && $scope.filters.facilities.selected.length) ||
           ($scope.filters.date && ($scope.filters.date.to || $scope.filters.date.from)) ||
           ($scope.filters.valid === true || $scope.filters.valid === false) ||
-          ($scope.filters.verified === true || $scope.filters.verified === false)
+          ($scope.filters.verified && $scope.filters.verified.length)
          ) {
         $scope.filtered = true;
         liveList = LiveList['report-search'];
