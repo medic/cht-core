@@ -271,19 +271,20 @@ module.exports = {
     }
   }),
 
-  requestOnTestDb: (options, debug) => {
+  requestOnTestDb: (options, debug, notJson) => {
     if (typeof options === 'string') {
       options = {
         path: options
       };
     }
     options.path = '/' + constants.DB_NAME + (options.path || '');
-    return request(options, {debug: debug});
+    return request(options, {debug: debug, notJson: notJson});
   },
 
   saveDoc: doc => {
     const postData = JSON.stringify(doc);
     return module.exports.requestOnTestDb({
+      path: '/', // so audit picks this up
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',

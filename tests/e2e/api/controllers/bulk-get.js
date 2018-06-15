@@ -1,5 +1,5 @@
 const _ = require('underscore'),
-  utils = require('../../../utils');
+      utils = require('../../../utils');
 
 const password = 'passwordSUP3RS3CR37!';
 
