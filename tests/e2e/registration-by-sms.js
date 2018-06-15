@@ -233,7 +233,8 @@ describe('registration transition', () => {
       expect(summaryElement.element(by.css('.subject .name')).getText()).toBe('Siobhan');
       expect(summaryElement.element(by.css('.sender .phone')).getText()).toBe(CAROL.phone);
       expect(summaryElement.element(by.css('.position a')).getText()).toBe(BOB_PLACE.name);
-      expect(summaryElement.element(by.css('.detail .status .fa-circle.green-dot')).isDisplayed()).toBeTruthy();
+      expect(summaryElement.element(by.css('.detail')).isDisplayed()).toBeTruthy();
+      expect(summaryElement.element(by.css('.detail .status')).isDisplayed()).toBe(false);
     };
 
     const checkAutoResponse = () => {

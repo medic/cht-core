@@ -11,12 +11,12 @@ var _ = require('underscore');
       $log,
       $scope,
       $stateParams,
+      $timeout,
       Changes,
       MessageState
     ) {
 
       'ngInject';
-
       $scope.selectReport($stateParams.id);
       $scope.clearCancelTarget();
       $('.tooltip').remove();
@@ -89,7 +89,16 @@ var _ = require('underscore');
               $scope.deselectReport(change.doc);
             });
           } else {
-            $scope.refreshReportSilently(change.doc);
+            var selected = $scope.selected;
+            $scope.refreshReportSilently(change.doc)
+              .then(function() {
+                if(selected[0].formatted.verified !== change.doc.verified) {
+                  $scope.selected = selected;
+                  $timeout(function() {
+                    $scope.selected[0].formatted.verified = change.doc.verified;
+                  });
+                }
+              });
           }
         }
       });

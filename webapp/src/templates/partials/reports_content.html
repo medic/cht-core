@@ -25,11 +25,13 @@
           <i class="fa fa-minus-circle"></i>
         </a>
         <div class="detail">
-          <div class="status">
-            <i ng-show="valid && !summary.verified" class="fa fa-circle green-dot"></i>
-            <i ng-show="!valid && !summary.verified" class="fa fa-circle red-dot"></i>
-            <i ng-show="valid && summary.verified" class="fa fa-check-circle green-dot"></i>
-            <i ng-show="!valid && summary.verified" class="fa fa-check-circle red-dot"></i>
+          <div class="status" ng-hide="valid && summary.verified === undefined">
+            <span ng-if="valid && summary.verified" class="verification-badge verified">
+              <ng-include src="'templates/partials/svg-icons/report-verify-valid-icon.html'"/>
+            </span>
+            <span ng-if="!(valid && summary.verified)" class="verification-badge error">
+              <ng-include src="'templates/partials/svg-icons/report-verify-invalid-icon.html'"/>
+            </span>
           </div>
 
           <div ng-if="summary.subject.type" class="subject">

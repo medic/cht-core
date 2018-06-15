@@ -42,9 +42,15 @@
   top: -3px;
 }
 
-.green-dot {
-  color: @green;
-}
-.red-dot {
-  color: @red;
+.verification-badge {
+  svg {
+    width: 14px;
+    height: 14px;
+  }
+  &.verified svg path {
+    fill: @ok-color;
+  }
+  &.error svg path {
+    fill: @error-color;
+  }  
 }

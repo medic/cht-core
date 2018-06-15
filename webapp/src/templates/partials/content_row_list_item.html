@@ -39,8 +39,8 @@ Places of interest
       </div>
       <div class="summary">
         <p class="{{overdue ? 'overdue' : ''}}">{{summary}}</p>
-        <div class="status {{showStatus ? '' : 'ng-hide'}}">
-          <i class="fa {{valid ? 'green-dot' : 'red-dot'}} {{verified ? 'fa-check-circle' : 'fa-circle'}}"></i>
+        <div class="status {{(valid && verified === undefined) ? 'ng-hide' : ''}}">
+          <span class="verification-badge {{(valid && verified) ? 'verified' : 'error'}}" ng-bind-html="statusIcon | safeHtml"/>
         </div>
       </div>
       <p ng-bind-html="dob | age:dod"></p>
