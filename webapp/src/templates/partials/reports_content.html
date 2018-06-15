@@ -26,7 +26,12 @@
         </a>
         <div class="detail">
           <div class="status" ng-hide="valid && summary.verified === undefined">
-            <i class="fa {{ (valid && summary.verified) ? 'mm-check' : 'mm-times'}}"></i>
+            <span ng-show="valid && summary.verified" class="mm-svg-ok">
+              <ng-include src="'templates/partials/svg-icons/ok-icon.html'"/>
+            </span>
+            <span ng-hide="valid && summary.verified" class="mm-svg-error">
+              <ng-include src="'templates/partials/svg-icons/error-icon.html'"/>
+            </span>
           </div>
 
           <div ng-if="summary.subject.type" class="subject">

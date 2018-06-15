@@ -42,18 +42,22 @@
   top: -3px;
 }
 
-.mm-check {
-  background-image: url('../img/icon-check.svg');
-  background-size: contain;
-  background-repeat: no-repeat;
-  width: 1em;
-  height: 1em;
+.mm-svg-ok {
+  svg {
+    width: 14px;
+    height: 14px;
+    path {
+      fill: @ok-color;
+    }
+  }
 }
 
-.mm-times {
-  background-image: url('../img/icon-times.svg');
-  background-size: contain;
-  background-repeat: no-repeat;
-  width: 1em;
-  height: 1em;
+.mm-svg-error {
+  svg {
+    width: 14px;
+    height: 14px;
+    path {
+      fill: @error-color;
+    }
+  }
 }

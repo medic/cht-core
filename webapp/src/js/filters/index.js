@@ -10,6 +10,7 @@
   require('./message');
   require('./phone');
   require('./resource-icon');
+  require('./safe-html');
   require('./translate-from');
 
 }());

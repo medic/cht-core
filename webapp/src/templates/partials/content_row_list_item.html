@@ -20,7 +20,7 @@
       <div class="summary">
         <p>{{summary}}</p>
         <div class="status {{(valid && verified === undefined) ? 'ng-hide' : ''}}">
-          <div class="{{(valid && verified) ? 'mm-check' : 'mm-times'}}"></div>
+          <span class="{{(valid && verified) ? 'mm-svg-ok' : 'mm-svg-error'}}" ng-bind-html="statusIcon | safeHtml"/>
         </div>
       </div>
       <p ng-bind-html="dob | age:dod"></p>
