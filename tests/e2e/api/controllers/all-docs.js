@@ -23,7 +23,7 @@ const users = [
       _id: 'fixture:user:offline',
       name: 'OfflineUser'
     },
-    roles: ['district-manager']
+    roles: ['district_admin']
   },
   {
     username: 'online',
@@ -38,7 +38,7 @@ const users = [
       _id: 'fixture:user:online',
       name: 'OnlineUser'
     },
-    roles: ['mm-online']
+    roles: ['national_admin']
   }
 ];
 

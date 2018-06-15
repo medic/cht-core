@@ -23,7 +23,7 @@ const users = [
       _id: 'fixture:user:offline',
       name: 'OfflineUser'
     },
-    roles: ['district-manager']
+    roles: ['district_admin']
   },
   {
     username: 'online',
@@ -38,7 +38,7 @@ const users = [
       _id: 'fixture:user:online',
       name: 'OnlineUser'
     },
-    roles: ['mm-online']
+    roles: ['national_admin']
   }
 ];
 
@@ -178,9 +178,6 @@ describe('offline users routing', () => {
   it('restricts _index', () => {
     const request = {
       path: '/_index',
-      method: 'POST',
-      body: JSON.stringify({ index: {} }),
-      headers: { 'Content-Type': 'application/json' }
     };
 
     return utils
@@ -191,30 +188,9 @@ describe('offline users routing', () => {
         expect(err.responseBody.error).toEqual('forbidden');
       })
       .then(() => utils.requestOnTestDb(_.extend({}, onlineRequestOptions, request)))
-      .catch(err => {
-        expect(err.responseBody.error).toEqual('invalid_key');
-      });
-  });
-
-  it('restricts _purge', () => {
-    const request = {
-      path: '/_purge',
-      method: 'POST',
-      body: JSON.stringify({ someId: ['1-someRev'] }),
-      headers: { 'Content-Type': 'application/json' }
-    };
-
-    return utils
-      .requestOnTestDb(_.extend({}, offlineRequestOptions, request))
-      .then(result => expect(result).toEqual('Should not be a successful request'))
-      .catch(err => {
-        expect(err.statusCode).toEqual(403);
-        expect(err.responseBody.error).toEqual('forbidden');
-      })
-      .then(() => utils.requestOnTestDb(_.extend({}, onlineRequestOptions, request)))
-      .then(result => expect(result).toEqual('Should not be a successful request'))
-      .catch(err => {
-        expect(err.responseBody.error).toEqual('bad_request');
+      .then(result => {
+        expect(result.total_rows).toEqual(1);
+        expect(result.indexes.length).toEqual(1);
       });
   });
 });
