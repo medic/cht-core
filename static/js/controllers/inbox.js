@@ -23,6 +23,7 @@ var feedback = require('../modules/feedback'),
       Auth,
       Changes,
       CheckDate,
+      ClientSentinel,
       ContactSchema,
       CountMessages,
       DB,
@@ -657,24 +658,7 @@ var feedback = require('../modules/feedback'),
         RecurringProcessManager.stopUpdateRelativeDate();
       });
 
-      // TODO turn into a more robust client-side sentinel style of service
-      Changes({
-        key: 'inbox-wealth-quintiles',
-        filter: function(change) {
-          return change.doc.fields && Object.keys(change.doc.fields).indexOf('NationalQuintile') !== -1;
-        },
-        callback: function(change) {
-          DB().query('medic-client/contacts_by_parent', { key: change.doc.fields.place_id, include_docs: true })
-            .then(function(result) {
-              var updatedDocs = result.rows.map(function(row) {
-                row.doc.wealth_quintile_national = change.doc.fields.NationalQuintile;
-                row.doc.wealth_quintile_urban = change.doc.fields.UrbanQuintile;
-                return row.doc;
-              });
-              return DB().bulkDocs(updatedDocs);
-            });
-        }
-      });
+      ClientSentinel.start();
     }
   );
 
