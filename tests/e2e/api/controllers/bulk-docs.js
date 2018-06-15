@@ -109,6 +109,11 @@ describe('bulk-docs handler', () => {
       .then(results => {
         expect(results.every(result => result.history.length === 1)).toBe(true);
         expect(results.every(result => result.history[0].action === 'create' && result.history[0].user === 'online'));
+
+        return Promise.all(docs.map(doc => utils.getDoc(doc._id)));
+      })
+      .then(results => {
+        results.forEach((result, idx) => expect(_.omit(result, '_rev')).toEqual(docs[idx]));
       });
   });
 
@@ -158,7 +163,24 @@ describe('bulk-docs handler', () => {
 
         return Promise.all(result.map(row =>
           utils
-            .getAuditDoc(row.id)
+            .getDoc(row.id)
+            .catch(err => err)
+        ));
+      })
+      .then(results => {
+        expect(results.length).toEqual(8);
+        expect(_.omit(results[0], '_rev')).toEqual(docs[0]);
+        expect(results[1].responseBody.error).toEqual('not_found');
+        expect(_.omit(results[2], '_rev')).toEqual(existentDocs[2]);
+        expect(_.omit(results[3], '_rev')).toEqual(existentDocs[3]);
+        expect(_.omit(results[4], '_rev')).toEqual(existentDocs[0]);
+        expect(_.omit(results[5], '_rev')).toEqual(_.omit(docs[5], '_rev'));
+        expect(results[6].responseBody.error).toEqual('not_found');
+        expect(_.omit(results[7], '_rev', '_id')).toEqual(docs[7]);
+
+        return Promise.all(results.map(row =>
+          utils
+            .getAuditDoc(row._id)
             .catch(err => err)
         ));
       })
