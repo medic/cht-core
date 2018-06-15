@@ -1,4 +1,5 @@
 var COOKIE_NAME = 'userCtx',
+    ONLINE_ROLE = 'mm-online',
     _ = require('underscore');
 
 (function () {
@@ -88,6 +89,12 @@ var COOKIE_NAME = 'userCtx',
         return _.contains(userCtx && userCtx.roles, role);
       };
 
+      var isAdmin = function(userCtx) {
+        userCtx = userCtx || getUserCtx();
+        return hasRole(userCtx, '_admin') ||
+               hasRole(userCtx, 'national_admin'); // deprecated: kept for backwards compatibility: #4525
+      };
+
       return {
         logout: logout,
 
@@ -105,19 +112,15 @@ var COOKIE_NAME = 'userCtx',
          * Returns true if the logged in user has the db or national admin role.
          * @param {userCtx} (optional) Will get the current userCtx if not provided.
          */
-        isAdmin: function(userCtx) {
-          userCtx = userCtx || getUserCtx();
-          return hasRole(userCtx, '_admin') ||
-                 hasRole(userCtx, 'national_admin');
-        },
+        isAdmin: isAdmin,
 
         /**
-         * Returns true if the logged in user has the district admin role.
-         * @param {userCtx} (optional) Will get the current userCtx if not provided.
+         * Returns true if the logged in user is online only
          */
-        isDistrictAdmin: function(userCtx) {
+        isOnlineOnly: function(userCtx) {
           userCtx = userCtx || getUserCtx();
-          return hasRole(userCtx, 'district_admin');
+          return isAdmin(userCtx) ||
+                 hasRole(userCtx, ONLINE_ROLE);
         }
       };
 

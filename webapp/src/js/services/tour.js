@@ -498,7 +498,7 @@ angular.module('inboxServices').service('Tour',
     };
 
     var getTasksTour = function() {
-      if (Session.isAdmin()) {
+      if (Session.isOnlineOnly()) {
         return;
       }
       return Auth('can_view_tasks_tab')

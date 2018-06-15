@@ -40,8 +40,7 @@ var utilsFactory = require('bulk-docs-utils');
       };
 
       var deleteAndUpdateDocs = function (docsToDelete, eventListeners) {
-        var onlineUser = Session.isAdmin();
-        if (onlineUser) {
+        if (Session.isOnlineOnly()) {
           var docIds = docsToDelete.map(function(doc) {
             return { _id: doc._id };
           });
@@ -51,10 +50,10 @@ var utilsFactory = require('bulk-docs-utils');
           docsToDelete.forEach(function(doc) {
             doc._deleted = true;
           });
+          checkForDuplicates(docsToDelete);
           return utils.updateParentContacts(docsToDelete)
             .then(function(updatedParents) {
-              var allDocs = docsToDelete.concat(updatedParents);
-              checkForDuplicates(allDocs);
+              var allDocs = docsToDelete.concat(updatedParents.docs);
               minifyLineage(allDocs);
               return DB().bulkDocs(allDocs);
             });
@@ -75,7 +74,10 @@ var utilsFactory = require('bulk-docs-utils');
         xhr.onprogress = function() {
           if (xhr.responseText) {
             var currentResponse = partialParse(xhr.responseText);
-            var totalDocsDeleted = _.flatten(currentResponse).length;
+            var successfulDeletions = _.flatten(currentResponse).filter(function(doc) {
+              return !doc.error;
+            });
+            var totalDocsDeleted = successfulDeletions.length;
             if (eventListeners.progress && Array.isArray(currentResponse)) {
               eventListeners.progress(totalDocsDeleted);
             }

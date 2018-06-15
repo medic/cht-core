@@ -6,7 +6,7 @@
 
     <div class="row selection-heading" ng-hide="error">
       <div class="col-xs-3" translate>configuration.permission</div>
-      <div class="col-xs-1" ng-repeat="role in roles" translate>{{role.name}}</div>
+      <div class="col-xs-1" ng-repeat="(key, value) in roles track by key" translate>{{value.name}}</div>
     </div>
 
     <div class="row" ng-repeat="permission in permissions | orderBy:'name' track by permission.name">

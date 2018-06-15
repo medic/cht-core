@@ -3,6 +3,7 @@ const chai = require('chai'),
       controller = require('../../../src/controllers/users'),
       people = require('../../../src/controllers/people'),
       places = require('../../../src/controllers/places'),
+      config = require('../../../src/config'),
       db = require('../../../src/db-nano'),
       COMPLEX_PASSWORD = '23l4ijk3nSDELKSFnwekirh';
 
@@ -51,7 +52,6 @@ describe('Users controller', () => {
       };
       const settings = controller._getSettingsUpdates('john', data);
       chai.expect(settings.password).to.equal(undefined);
-      chai.expect(settings.roles).to.equal(undefined);
       done();
     });
 
@@ -477,19 +477,6 @@ describe('Users controller', () => {
       });
     });
 
-    it('sets default roles on user-settings', done => {
-      sinon.stub(db.medic, 'insert').callsFake(settings => {
-        chai.expect(settings.roles).to.deep.equal([
-          'district-manager',
-          'kujua_user',
-          'data_entry',
-          'district_admin'
-        ]);
-        done();
-      });
-      controller._createUserSettings({});
-    });
-
   });
 
   describe('_storeUpdatedUserSettings', () => {
@@ -552,19 +539,6 @@ describe('Users controller', () => {
   });
 
   describe('_createUser', () => {
-
-    it('sets default roles on user', done => {
-      sinon.stub(db._users, 'insert').callsFake(user => {
-        chai.expect(user.roles).to.deep.equal([
-          'district-manager',
-          'kujua_user',
-          'data_entry',
-          'district_admin'
-        ]);
-        done();
-      });
-      controller._createUser({});
-    });
 
     it('returns error from db insert', done => {
       sinon.stub(db._users, 'insert').callsArgWith(2, 'yucky');
@@ -1027,18 +1001,18 @@ describe('Users controller', () => {
       });
     });
 
-    it('type param updates roles on user and user-settings doc', done => {
+    it('roles param updates roles on user and user-settings doc', done => {
       const data = {
-        type: 'rebel'
+        roles: [ 'rebel' ]
       };
       sinon.stub(controller, '_validateUser').callsArgWith(1, null, {});
       sinon.stub(controller, '_validateUserSettings').callsArgWith(1, null, {});
       const update = sinon.stub(controller, '_storeUpdatedUser').callsFake((id, data, callback) => {
-        chai.expect(data.roles).to.deep.equal(['rebel']);
+        chai.expect(data.roles).to.deep.equal(['rebel', 'mm-online']);
         callback();
       });
       const updateSettings = sinon.stub(controller, '_storeUpdatedUserSettings').callsFake((id, data, callback) => {
-        chai.expect(data.roles).to.deep.equal(['rebel']);
+        chai.expect(data.roles).to.deep.equal(['rebel', 'mm-online']);
         callback();
       });
       controller.updateUser('paul', data, true, err => {
@@ -1145,7 +1119,7 @@ describe('Users controller', () => {
       sinon.stub(places, 'getPlace').callsArg(1);
       const update = sinon.stub(controller, '_storeUpdatedUser').callsFake((id, user, cb) => {
         chai.expect(user.facility_id).to.equal('el paso');
-        chai.expect(user.roles).to.deep.equal(['rambler']);
+        chai.expect(user.roles).to.deep.equal(['rambler', 'mm-online']);
         chai.expect(user.shoes).to.equal('dusty boots');
         chai.expect(user.password).to.equal(COMPLEX_PASSWORD);
         chai.expect(user.type).to.equal('user');
@@ -1156,6 +1130,41 @@ describe('Users controller', () => {
         chai.expect(settings.phone).to.equal('123');
         chai.expect(settings.known).to.equal(false);
         chai.expect(settings.type).to.equal('user-settings');
+        chai.expect(settings.roles).to.deep.equal(['rambler', 'mm-online']);
+        cb();
+      });
+      controller.updateUser('paul', data, true, err => {
+        chai.expect(err).to.equal(null);
+        chai.expect(update.callCount).to.equal(1);
+        chai.expect(updateSettings.callCount).to.equal(1);
+        done();
+      });
+    });
+
+    it('does not add online role for offline users', done => {
+      const data = {
+        place: 'el paso',
+        roles: ['chp'],
+        password: COMPLEX_PASSWORD
+      };
+      sinon.stub(controller, '_validateUser').callsArgWith(1, null, {
+        facility_id: 'maine',
+        roles: ['chp'],
+        shoes: 'dusty boots'
+      });
+      sinon.stub(controller, '_validateUserSettings').callsArgWith(1, null, {
+        facility_id: 'maine',
+        phone: '123',
+        known: false
+      });
+      sinon.stub(config, 'get').returns({ chp: { offline: true } });
+      sinon.stub(places, 'getPlace').callsArg(1);
+      const update = sinon.stub(controller, '_storeUpdatedUser').callsFake((id, user, cb) => {
+        chai.expect(user.roles).to.deep.equal(['chp']);
+        cb();
+      });
+      const updateSettings = sinon.stub(controller, '_storeUpdatedUserSettings').callsFake((id, settings, cb) => {
+        chai.expect(settings.roles).to.deep.equal(['chp']);
         cb();
       });
       controller.updateUser('paul', data, true, err => {

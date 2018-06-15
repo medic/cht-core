@@ -12,6 +12,7 @@ angular.module('inboxServices').factory('LiveListConfig',
     ContactSchema,
     LiveList,
     RulesEngine,
+    relativeDateFilter,
     TranslateFrom
   ) {
     'use strict';
@@ -44,6 +45,9 @@ angular.module('inboxServices').factory('LiveListConfig',
           if (!c1 || !c2) {
             return;
           }
+          if (c1.sortByLastVisitedDate) {
+            return c1.lastVisitedDate < c2.lastVisitedDate;
+          }
           if (c1.simprints && c2.simprints) {
             return c2.simprints.confidence - c1.simprints.confidence;
           }
@@ -68,7 +72,19 @@ angular.module('inboxServices').factory('LiveListConfig',
           scope.simprintsTier = contact.simprints && contact.simprints.tierNumber;
           scope.dod = contact.date_of_death;
           if (contact.type !== 'person') {
-            scope.summary = $translate.instant('contact.primary_contact_name', { name: contact.contact });
+            if (Number.isInteger(contact.lastVisitedDate)) {
+              if (contact.lastVisitedDate === 0) {
+                scope.overdue = true;
+                scope.summary = $translate.instant('contact.last.visited.unknown');
+              } else {
+                var now = new Date().getTime();
+                var oneMonthAgo = now - (30 * 24 * 60 * 60 * 1000);
+                scope.overdue = contact.lastVisitedDate <= oneMonthAgo;
+                scope.summary = $translate.instant('contact.last.visited.date', { date: relativeDateFilter(contact.lastVisitedDate, true) });
+              }
+            } else {
+              scope.summary = $translate.instant('contact.primary_contact_name', { name: contact.contact });
+            }
           }
           return renderTemplate(scope);
         },
@@ -114,7 +130,7 @@ angular.module('inboxServices').factory('LiveListConfig',
           scope.showStatus = true;
           scope.valid = report.valid;
           scope.verified = report.verified;
-          var statusIcon = (report.valid && report.verified) ? 'ok-icon.html' : 'error-icon.html';
+          var statusIcon = (report.valid && report.verified) ? 'report-verify-valid-icon.html' : 'report-verify-invalid-icon.html';
           scope.statusIcon = $templateCache.get('templates/partials/svg-icons/'+statusIcon);
           scope.lineage = report.subject && report.subject.lineage || report.lineage;
           scope.unread = !report.read;

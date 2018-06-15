@@ -1,3 +1,23 @@
+<!--
+This code is used in different places with different rendering abilities. Make
+sure your changes work in both, as required.
+
+When this is rendered on the LHS (i.e. people / report / task lists) it is
+consumed by LiveList, which deals with raw HTML, with only the `ng-bind-html`
+property and `{{...}}` blocks being consumed and executed inside an angular
+context.
+
+When this is rendered elsewhere (e.g. as the list of people on a contact summary
+page) it is consumed by Angular, and so everything you'd expect angular to be
+able to do you can do here.
+
+Note: because it's used in both places, you cannot rely on `ng-if` or `ng-hide`,
+as they will be ignored by LiveList, causing LHS output to render incorrectly.
+
+Places of interest
+ - content-row.js contains the scope for this file
+ - live-list.js:renderTemplate is where this is consumed by livelist
+-->
 <li data-record-id="{{id}}" class="content-row {{selected ? 'selected' : ''}} {{primary ? 'primary' : ''}} {{unread ? 'unread' : ''}} {{dod ? 'deceased' : ''}}">
   <a href="#{{route}}/{{id}}">
     <div><input type="checkbox"></div>
@@ -18,9 +38,9 @@
         </div>
       </div>
       <div class="summary">
-        <p>{{summary}}</p>
+        <p class="{{overdue ? 'overdue' : ''}}">{{summary}}</p>
         <div class="status {{(valid && verified === undefined) ? 'ng-hide' : ''}}">
-          <span class="{{(valid && verified) ? 'mm-svg-ok' : 'mm-svg-error'}}" ng-bind-html="statusIcon | safeHtml"/>
+          <span class="verification-badge {{(valid && verified) ? 'verified' : 'error'}}" ng-bind-html="statusIcon | safeHtml"/>
         </div>
       </div>
       <p ng-bind-html="dob | age:dod"></p>

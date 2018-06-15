@@ -33,10 +33,10 @@ module.exports = {
   put: (req, res) => {
     auth.getUserCtx(req)
       .then(userCtx => {
-        if (!auth.isAdmin(userCtx)) {
+        if (!auth.hasAllPermissions(userCtx, 'can_configure')) {
           throw {
-            code: 401,
-            message: 'User is not an admin'
+            code: 403,
+            message: 'Insufficient permissions'
           };
         }
       })

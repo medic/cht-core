@@ -15,7 +15,7 @@ var _ = require('underscore'),
       var isEnter = function(e) {
         return e.which === ENTER_KEY_CODE;
       };
-      
+
       var initFreetext = function(callback) {
         $('#search').on('click', function(e) {
           e.preventDefault();
@@ -200,7 +200,7 @@ var _ = require('underscore'),
         date: initDate,
         facility: initFacility,
         reset: function() {
-          $('.filter.multidropdown').each(function() {
+          $('.filter.multidropdown:not(.no-reset)').each(function() {
             $(this).multiDropdown().reset();
           });
         }

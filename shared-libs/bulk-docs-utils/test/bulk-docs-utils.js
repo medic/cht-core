@@ -40,8 +40,8 @@ describe('Bulk Docs utils', function() {
       return utils.updateParentContacts([person]).then(updatedParents => {
         chai.expect(get.callCount).to.equal(1);
         chai.expect(get.args[0][0]).to.equal(clinic._id);
-        chai.expect(updatedParents).to.have.length(1);
-        chai.expect(updatedParents[0]).to.deep.equal(expected);
+        chai.expect(updatedParents.docs).to.have.length(1);
+        chai.expect(updatedParents.docs[0]).to.deep.equal(expected);
       });
     });
 
@@ -66,7 +66,30 @@ describe('Bulk Docs utils', function() {
       return utils.updateParentContacts([person]).then(updatedParents => {
         chai.expect(get.callCount).to.equal(1);
         chai.expect(get.args[0][0]).to.equal(clinic._id);
-        chai.expect(updatedParents.length).to.equal(0);
+        chai.expect(updatedParents.docs.length).to.equal(0);
+      });
+    });
+
+    it('returns a map from parents back to their child docs', function() {
+      const clinic = {
+        _id: 'b',
+        type: 'clinic',
+        contact: {
+          _id: 'a',
+          name: 'sally'
+        }
+      };
+      const person = {
+        _id: 'a',
+        type: 'person',
+        name: 'sally',
+        parent: {
+          _id: 'b'
+        }
+      };
+      get.returns(Promise.resolve(clinic));
+      return utils.updateParentContacts([person]).then(updatedParents => {
+        chai.expect(updatedParents.documentByParentId[clinic._id]).to.deep.equal(person);
       });
     });
 
@@ -87,7 +110,7 @@ describe('Bulk Docs utils', function() {
       return utils.updateParentContacts([person]).then(updatedParents => {
         chai.expect(get.callCount).to.equal(1);
         chai.expect(get.args[0][0]).to.equal(clinic._id);
-        chai.expect(updatedParents).to.have.length(0);
+        chai.expect(updatedParents.docs).to.have.length(0);
       });
     });
   });

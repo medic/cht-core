@@ -182,10 +182,11 @@ describe('Auth', () => {
     });
   });
 
-  it('isAdmin checks for "admin" and "national_admin" roles', done => {
-    chai.expect(auth.isAdmin({ roles: ['_admin'] })).to.equal(true);
-    chai.expect(auth.isAdmin({ roles: ['national_admin'] })).to.equal(true);
-    chai.expect(auth.isAdmin({ roles: ['district_admin'] })).to.equal(false);
+  it('isOnlineOnly checks for "admin" and "national_admin" roles', done => {
+    chai.expect(auth.isOnlineOnly({ roles: ['_admin'] })).to.equal(true);
+    chai.expect(auth.isOnlineOnly({ roles: ['national_admin'] })).to.equal(true);
+    chai.expect(auth.isOnlineOnly({ roles: ['mm-online'] })).to.equal(true);
+    chai.expect(auth.isOnlineOnly({ roles: ['district_admin'] })).to.equal(false);
     done();
   });
 

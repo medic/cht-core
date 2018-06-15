@@ -26,11 +26,11 @@
         </a>
         <div class="detail">
           <div class="status" ng-hide="valid && summary.verified === undefined">
-            <span ng-show="valid && summary.verified" class="mm-svg-ok">
-              <ng-include src="'templates/partials/svg-icons/ok-icon.html'"/>
+            <span ng-if="valid && summary.verified" class="verification-badge verified">
+              <ng-include src="'templates/partials/svg-icons/report-verify-valid-icon.html'"/>
             </span>
-            <span ng-hide="valid && summary.verified" class="mm-svg-error">
-              <ng-include src="'templates/partials/svg-icons/error-icon.html'"/>
+            <span ng-if="!(valid && summary.verified)" class="verification-badge error">
+              <ng-include src="'templates/partials/svg-icons/report-verify-invalid-icon.html'"/>
             </span>
           </div>
 

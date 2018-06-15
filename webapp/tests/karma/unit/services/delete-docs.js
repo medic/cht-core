@@ -5,14 +5,13 @@ describe('DeleteDocs service', function() {
   var service,
       get,
       bulkDocs,
-      isAdmin,
+      isOnlineOnly,
       server;
 
   beforeEach(function() {
     get = sinon.stub();
     bulkDocs = sinon.stub();
-    isAdmin = sinon.stub();
-    isAdmin.returns(false);
+    isOnlineOnly = sinon.stub().returns(false);
     module('inboxApp');
     const Changes = () => undefined;
     Changes.killWatchers = () => undefined;
@@ -20,7 +19,7 @@ describe('DeleteDocs service', function() {
     module(function ($provide) {
       $provide.factory('DB', KarmaUtils.mockDB({ bulkDocs: bulkDocs, get: get }));
       $provide.value('$q', Q); // bypass $q so we don't have to digest
-      $provide.value('Session', { isAdmin: isAdmin });
+      $provide.value('Session', { isOnlineOnly: isOnlineOnly });
       $provide.value('Changes', Changes);
     });
     inject(function(_DeleteDocs_) {
@@ -170,7 +169,7 @@ describe('DeleteDocs service', function() {
     var expected1 = { _id: 'xyz' };
     var expected2 = { _id: 'abc' };
     server.respondWith([200, { 'Content-Type': 'application/json' }, '{ "hello": "there" }']);
-    isAdmin.returns(true);
+    isOnlineOnly.returns(true);
     return service([ record1, record2 ]).then(function() {
       chai.expect(server.requests).to.have.lengthOf(1);
       chai.expect(server.requests[0].url).to.equal('/api/v1/bulk-delete');
@@ -187,7 +186,7 @@ describe('DeleteDocs service', function() {
     var onProgress = sinon.spy();
     var response = '[[{"ok": true}, {"ok": true}],';
     server.respondWith([200, { 'Content-Type': 'application/json' }, response]);
-    isAdmin.returns(true);
+    isOnlineOnly.returns(true);
     service([ record1, record2 ], { progress: onProgress })
       .then(() => {
         done(Error('Should have thrown')); // The onload handler should throw an error due to partial json

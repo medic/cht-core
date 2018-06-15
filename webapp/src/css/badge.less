@@ -42,22 +42,15 @@
   top: -3px;
 }
 
-.mm-svg-ok {
+.verification-badge {
   svg {
     width: 14px;
     height: 14px;
-    path {
-      fill: @ok-color;
-    }
   }
-}
-
-.mm-svg-error {
-  svg {
-    width: 14px;
-    height: 14px;
-    path {
-      fill: @error-color;
-    }
+  &.verified svg path {
+    fill: @ok-color;
   }
+  &.error svg path {
+    fill: @error-color;
+  }  
 }
