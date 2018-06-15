@@ -235,4 +235,50 @@ describe('bulk-docs handler', () => {
           { _id: 'd2', type: 'clinic', parent: { _id: 'fixture:offline' }, name: 'Previously denied Contact 2', _rev: revs.d2[1] });
       });
   });
+
+  it('uses correct request parameters', () => {
+    const docs = [
+      { _id: 'a1', type: 'clinic', parent: { _id: 'fixture:offline' }, name: 'Allowed Contact 1' },
+      { _id: 'a2', type: 'clinic', parent: { _id: 'fixture:offline' }, name: 'Allowed Contact 2' }
+    ];
+
+    offlineRequestOptions.body = JSON.stringify({ docs: [{ id: 'a1' }, { id: 'a2' }] });
+
+    return utils
+      .saveDocs(docs)
+      .then(result => utils.requestOnTestDb({
+        path: `/a1/att1?rev=${result[0].rev}`,
+        method: 'PUT',
+        headers: { 'Content-Type': 'text/plain' },
+        body: 'a1 attachment content'
+      }))
+      .then(() => utils.requestOnTestDb(offlineRequestOptions))
+      .then(result => {
+        expect(result.results.length).toEqual(2);
+        expect(result.results[0].id).toEqual('a1');
+        expect(result.results[0].docs[0].ok._attachments).toBeTruthy();
+        expect(result.results[0].docs[0].ok._attachments.att1.stub).toEqual(true);
+        expect(result.results[0].docs[0].ok._revisions).not.toBeTruthy();
+
+        expect(result.results[1].id).toEqual('a2');
+        expect(result.results[1].docs[0].ok._attachments).not.toBeTruthy();
+        expect(result.results[1].docs[0].ok._revisions).not.toBeTruthy();
+
+        offlineRequestOptions.path = '/_bulk_get?revs=true&attachments=true';
+        return utils.requestOnTestDb(offlineRequestOptions);
+      })
+      .then(result => {
+        expect(result.results.length).toEqual(2);
+        expect(result.results[0].id).toEqual('a1');
+        expect(result.results[0].docs[0].ok._attachments).toBeTruthy();
+        expect(result.results[0].docs[0].ok._attachments.att1.stub).not.toBeTruthy();
+        expect(result.results[0].docs[0].ok._revisions).toBeTruthy();
+        expect(result.results[0].docs[0].ok._revisions.ids.length).toEqual(5);
+
+        expect(result.results[1].id).toEqual('a2');
+        expect(result.results[1].docs[0].ok._attachments).not.toBeTruthy();
+        expect(result.results[1].docs[0].ok._revisions).toBeTruthy();
+        expect(result.results[1].docs[0].ok._revisions.ids.length).toEqual(4);
+      });
+  });
 });
