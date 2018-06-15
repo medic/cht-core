@@ -52,7 +52,7 @@ const DOCS_TO_KEEP = [
   /^org.couchdb.user/,
 ];
 
-describe('bulk-docs handler', () => {
+describe('db-doc handler', () => {
   beforeAll(done => {
     utils
       .saveDoc(parentPlace)
@@ -104,82 +104,74 @@ describe('bulk-docs handler', () => {
       path: '/',
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ _id: 'NEW_PLACE', type: 'district_hospital', name: 'NEW PLACE' })
+      body: JSON.stringify({ _id: 'db_doc_post', type: 'district_hospital', name: 'NEW PLACE' })
     });
 
     return utils
       .requestOnTestDb(onlineRequestOptions)
       .then(result => {
-        expect(_.omit(result, 'rev')).toEqual({ id: 'NEW_PLACE', ok: true });
+        expect(_.omit(result, 'rev')).toEqual({ id: 'db_doc_post', ok: true });
         return Promise.all([
-          utils.getDoc('NEW_PLACE'),
-          utils.getAuditDoc('NEW_PLACE')
+          utils.getDoc('db_doc_post'),
+          utils.getAuditDoc('db_doc_post')
         ]);
       })
       .then(results => {
-        expect(_.omit(results[0], '_rev')).toEqual({ _id: 'NEW_PLACE', type: 'district_hospital', name: 'NEW PLACE' });
+        expect(_.omit(results[0], '_rev')).toEqual({ _id: 'db_doc_post', type: 'district_hospital', name: 'NEW PLACE' });
         expect(results[1].history.length).toEqual(1);
         expect(_.pick(results[1].history[0], 'user', 'action')).toEqual({ user: 'online', action: 'create' });
-        expect(results[1].history[0].doc).toEqual({ _id: 'NEW_PLACE', type: 'district_hospital', name: 'NEW PLACE', _rev: 'current' });
+        expect(results[1].history[0].doc).toEqual({ _id: 'db_doc_post', type: 'district_hospital', name: 'NEW PLACE', _rev: 'current' });
       });
   });
 
   it('PUT', () => {
     return utils
-      .saveDoc({ _id: 'my_test_id', type: 'clinic', name: 'my clinic' })
+      .saveDoc({ _id: 'db_doc_put', type: 'clinic', name: 'my clinic' })
       .then(result => {
         _.extend(onlineRequestOptions, {
           method: 'PUT',
-          path: '/my_test_id',
+          path: '/db_doc_put',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ _id: 'my_test_id', type: 'clinic', name: 'my updated clinic', _rev: result.rev })
+          body: JSON.stringify({ _id: 'db_doc_put', type: 'clinic', name: 'my updated clinic', _rev: result.rev })
         });
 
         return utils.requestOnTestDb(onlineRequestOptions);
       })
       .then(result => {
-        expect(_.omit(result, 'rev')).toEqual({ id: 'my_test_id', ok: true });
+        expect(_.omit(result, 'rev')).toEqual({ id: 'db_doc_put', ok: true });
         return Promise.all([
-          utils.getDoc('my_test_id'),
-          utils.getAuditDoc('my_test_id')
+          utils.getDoc('db_doc_put'),
+          utils.getAuditDoc('db_doc_put')
         ]);
       })
       .then(results => {
-        expect(_.omit(results[0], '_rev')).toEqual({ _id: 'my_test_id', type: 'clinic', name: 'my updated clinic' });
+        expect(_.omit(results[0], '_rev')).toEqual({ _id: 'db_doc_put', type: 'clinic', name: 'my updated clinic' });
         expect(results[1].history.length).toEqual(2);
         expect(_.pick(results[1].history[0], 'user', 'action')).toEqual({ user: 'admin', action: 'create' });
-        expect(_.omit(results[1].history[0].doc, '_rev')).toEqual({ _id: 'my_test_id', type: 'clinic', name: 'my clinic' });
+        expect(_.omit(results[1].history[0].doc, '_rev')).toEqual({ _id: 'db_doc_put', type: 'clinic', name: 'my clinic' });
         expect(_.pick(results[1].history[1], 'user', 'action')).toEqual({ user: 'online', action: 'update' });
-        expect(_.omit(results[1].history[1].doc, '_rev')).toEqual({ _id: 'my_test_id', type: 'clinic', name: 'my updated clinic' });
+        expect(_.omit(results[1].history[1].doc, '_rev')).toEqual({ _id: 'db_doc_put', type: 'clinic', name: 'my updated clinic' });
       });
   });
 
   it('DELETE', () => {
     return utils
-      .saveDoc({ _id: 'my_delete_id', type: 'clinic', name: 'my clinic' })
+      .saveDoc({ _id: 'db_doc_delete', type: 'clinic', name: 'my clinic' })
       .then(result => {
         _.extend(onlineRequestOptions, {
           method: 'DELETE',
-          path: `/my_delete_id?rev=${result.rev}`,
+          path: `/db_doc_delete?rev=${result.rev}`,
           headers: { 'Content-Type': 'application/json' },
         });
 
         return utils.requestOnTestDb(onlineRequestOptions);
       })
       .then(result => {
-        expect(_.omit(result, 'rev')).toEqual({ id: 'my_delete_id', ok: true });
-        return Promise.all([
-          utils.getDoc('my_delete_id').catch(err => err),
-          utils.getAuditDoc('my_delete_id')
-        ]);
+        expect(_.omit(result, 'rev')).toEqual({ id: 'db_doc_delete', ok: true });
+        return utils.getDoc('db_doc_delete');
       })
-      .catch(results => {
-        expect(results[0].responseBody.error).toEqual('not_found');
-        expect(results[1].history.length).toEqual(2);
-        expect(_.pick(results[1].history[0], 'user', 'action')).toEqual({ user: 'admin', action: 'create' });
-        expect(_.omit(results[1].history[0].doc, '_rev')).toEqual({ _id: 'my_test_id', type: 'clinic', name: 'my clinic' });
-        expect(_.pick(results[1].history[1], 'user', 'action')).toEqual({ user: 'online', action: 'delete' });
-        expect(_.omit(results[1].history[1].doc, '_rev')).toEqual({ _id: 'my_test_id', type: 'clinic', name: 'my clinic' });
+      .catch(err => {
+        expect(err.responseBody.error).toEqual('not_found');
       });
   });
 
