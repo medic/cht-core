@@ -24,7 +24,7 @@ const github = new GitHub({
 });
 github.authenticate({
   type: 'token',
-  token: require('./token.json').githubApiToken
+  token: require('../token.json').githubApiToken
 });
 
 const projectByName = (projects, name) => projects.find(project => project.name === name);

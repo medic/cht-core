@@ -215,7 +215,7 @@ var _ = require('underscore'),
         date: initDate,
         facility: initFacility,
         reset: function() {
-          $('.filter.multidropdown').each(function() {
+          $('.filter.multidropdown:not(.no-reset)').each(function() {
             $(this).multiDropdown().reset();
           });
         }

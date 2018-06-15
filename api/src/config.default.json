@@ -319,6 +319,10 @@
         "national_admin",
         "district_admin"
       ]
+    },
+    {
+      "name": "can_view_last_visited_date",
+      "roles": []
     }
   ],
   "changes_controller": {
