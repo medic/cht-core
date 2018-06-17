@@ -30,18 +30,16 @@ module.exports = {
     var viewNames = argumentsToArray.apply({ skip: 1 }, arguments);
     viewNames.forEach(function(view) {
       viewMapStrings[ddocId][view] = ddoc.views && ddoc.views[view] && ddoc.views[view].map || false;
-      viewMapFns[ddocId][view] = {};
     });
   },
 
-  getViewMapFn: function (ddocId, viewName, full) {
+  getViewMapFn: function (ddocId, viewName) {
     var COMMENT_REGEX = /\/\/.*/g,
         SIGNATURE_REGEX = /emit\(/g,
         NEW_LINE_REGEX = /\\n/g;
 
-    full = !!full;
-    if (viewMapFns[ddocId] && viewMapFns[ddocId][viewName] && viewMapFns[ddocId][viewName][full]) {
-      return viewMapFns[ddocId][viewName][full];
+    if (viewMapFns[ddocId] && viewMapFns[ddocId][viewName]) {
+      return viewMapFns[ddocId][viewName];
     }
 
     var fnString = module.exports.getViewMapString(ddocId, viewName);
@@ -64,9 +62,9 @@ module.exports = {
         return emitted.push(argumentsToArray.apply(null, arguments));
       };
       fn.apply({ emit: emit }, arguments);
-      return (full ? emitted : emitted[0]);
+      return emitted;
     };
-    viewMapFns[ddocId][viewName][full] = viewMapFn;
+    viewMapFns[ddocId][viewName] = viewMapFn;
     return viewMapFn;
   },
 

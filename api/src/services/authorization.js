@@ -60,16 +60,16 @@ const exclude = (array, ...values) => {
 // @param {Object}  viewValues.replicationKey - result of `medic/docs_by_replication_key` view against doc
 // @param {Array}   viewValues.contactsByDepth - results of `medic/contacts_by_depth` view against doc
 // @returns {(boolean|Object)} Object containing number of new subjectIds if doc is an allowed contact, bool otherwise
-const allowedDoc = (docId, feed, { replicationKey, contactsByDepth }) => {
+const allowedDoc = (docId, feed, { replicationKeys, contactsByDepth }) => {
   if (['_design/medic-client', 'org.couchdb.user:' + feed.userCtx.name].indexOf(docId) !== -1) {
     return true;
   }
 
-  if (!replicationKey) {
+  if (!replicationKeys || !replicationKeys.length) {
     return false;
   }
 
-  if (replicationKey[0] === ALL_KEY) {
+  if (replicationKeys[0][0] === ALL_KEY) {
     return true;
   }
 
@@ -86,16 +86,15 @@ const allowedDoc = (docId, feed, { replicationKey, contactsByDepth }) => {
   }
 
   //it's a report
-  const [ subjectId, { submitter: submitterId } ] = replicationKey,
-        allowedSubject = subjectId && feed.subjectIds.indexOf(subjectId) !== -1,
-        allowedSubmitter = submitterId && feed.subjectIds.indexOf(submitterId) !== -1,
-        sensitive = isSensitive(feed.userCtx, subjectId, submitterId, allowedSubmitter);
-
-  if ((!subjectId && allowedSubmitter) || (allowedSubject && !sensitive)) {
-    return true;
-  }
-
-  return false;
+  return replicationKeys.some(replicationKey => {
+    const [ subjectId, { submitter: submitterId } ] = replicationKey;
+    const allowedSubmitter = submitterId && feed.subjectIds.indexOf(submitterId) !== -1;
+    if (!subjectId && allowedSubmitter) {
+      return true;
+    }
+    const allowedSubject = subjectId && feed.subjectIds.indexOf(subjectId) !== -1;
+    return allowedSubject && !isSensitive(feed.userCtx, subjectId, submitterId, allowedSubmitter);
+  });
 };
 
 const getContactsByDepthKeys = (userCtx, depth) => {
@@ -174,8 +173,8 @@ const getAllowedDocIds = (feed) => {
 
 const getViewResults = (doc) => {
   return {
-    contactsByDepth: viewMapUtils.getViewMapFn('medic', 'contacts_by_depth', true)(doc),
-    replicationKey: viewMapUtils.getViewMapFn('medic', 'docs_by_replication_key')(doc),
+    contactsByDepth: viewMapUtils.getViewMapFn('medic', 'contacts_by_depth')(doc),
+    replicationKeys: viewMapUtils.getViewMapFn('medic', 'docs_by_replication_key')(doc),
     couchDbUser: couchDbUser(doc)
   };
 };
