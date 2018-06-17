@@ -48,7 +48,16 @@ function (doc) {
       if (doc.form && doc.contact) {
         value.submitter = doc.contact._id;
       }
-      return emit(subject, value);
+      emit(subject, value);
+      if (doc.fields &&
+          doc.fields.needs_signoff &&
+          doc.contact &&
+          doc.contact._id &&
+          doc.contact._id !== subject
+      ) {
+        emit(doc.contact._id, value);
+      }
+      return;
     case 'clinic':
     case 'district_hospital':
     case 'health_center':
