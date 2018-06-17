@@ -385,13 +385,13 @@ var hasNewApplicableDoc = function(feed, changes) {
 };
 
 // WARNING: If updating this function also update the docs_by_replication_key view in lib/views.js
-var getReplicationKey = function(doc) {
+var getReplicationKeys = function(doc) {
   if (doc._id === 'resources' ||
       doc._id === 'appcache' ||
       doc._id === 'zscore-charts' ||
       doc.type === 'form' ||
       doc.type === 'translations') {
-    return [ '_all', {} ];
+    return [ [ '_all', {} ] ];
   }
   var getSubject = function() {
     if (doc.form) {
@@ -429,12 +429,21 @@ var getReplicationKey = function(doc) {
       if (doc.form && doc.contact) {
         value.submitter = doc.contact._id;
       }
-      return [ subject, value ];
+      var result = [ [ subject, value ] ];
+      if (doc.fields &&
+          doc.fields.needs_signoff &&
+          doc.contact &&
+          doc.contact._id &&
+          doc.contact._id !== subject
+      ) {
+        result.push([ doc.contact._id, value ]);
+      }
+      return result;
     case 'clinic':
     case 'district_hospital':
     case 'health_center':
     case 'person':
-      return [ doc._id, {} ];
+      return [ [ doc._id, {} ] ];
   }
 };
 
@@ -447,18 +456,18 @@ var updateFeeds = function(changes) {
     return;
   }
 
-  var modifiedChanges = changes.results.map(function(change) {
-    var result = {
-      id: change.id,
-      doc: change.doc
-    };
-    var row = getReplicationKey(change.doc);
-    if (row && row.length) {
-      result.subject = row[0];
-      result.submitter = row[1].submitter;
+  var modifiedChanges = _.flatten(changes.results.map(function(change) {
+    var keys = getReplicationKeys(change.doc);
+    if (!keys || !keys.length) {
+      return [ { id: change.id, doc: change.doc } ];
     }
-    return result;
-  });
+    return keys.map(key => ({
+      id: change.id,
+      doc: change.doc,
+      subject: key[0],
+      submitter: key[1].submitter
+    }));
+  }));
   continuousFeeds.forEach(function(feed) {
     // check if new and relevant
     if (hasNewApplicableDoc(feed, modifiedChanges)) {
@@ -548,8 +557,7 @@ module.exports = {
         });
       }
     });
-  },
-  _getReplicationKey: getReplicationKey // used for testing
+  }
 };
 
 function startTimer() {
