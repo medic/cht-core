@@ -153,7 +153,8 @@ describe('all_docs handler', () => {
       })
       .then(result => {
         expect(result[0].rows.length).toEqual(1);
-        expect(result[0].rows[0]).toEqual({ id: 'allowed_contact', key: 'allowed_contact', value: { rev: docs[0]._rev } });
+        expect(result[0].rows[0]).toEqual(
+          { id: 'allowed_contact', key: 'allowed_contact', value: { rev: docs[0]._rev } });
         expect(result[1].rows.length).toEqual(1);
         expect(result[1].rows[0]).toEqual({ id: 'denied_contact', error: 'forbidden'});
       });
@@ -183,8 +184,8 @@ describe('all_docs handler', () => {
     return utils
       .saveDocs(docs)
       .then(() => Promise.all([
-        utils.requestOnTestDb(_.defaults(request, offlineRequestOptions)),
-        utils.requestOnTestDb(_.defaults({ path: '/_all_docs?keys=' + JSON.stringify(keys) }, offlineRequestOptions))
+        utils.requestOnTestDb(_.extend(request, offlineRequestOptions)),
+        utils.requestOnTestDb(_.extend({ path: '/_all_docs?keys=' + JSON.stringify(keys) }, offlineRequestOptions))
       ]))
       .then(results => {
         results.forEach(result => {
@@ -219,8 +220,10 @@ describe('all_docs handler', () => {
     return utils
       .saveDocs(docs)
       .then(() => Promise.all([
-        utils.requestOnTestDb(_.defaults({ path: '/_all_docs?start_key=10&end_key=8' }, offlineRequestOptions)),
-        utils.requestOnTestDb(_.defaults({ path: '/_all_docs?startkey=10&endkey=8&inclusive_end=false' }, offlineRequestOptions))
+        utils.requestOnTestDb(_.extend({ path: '/_all_docs?start_key=10&end_key=8' }, offlineRequestOptions)),
+        utils.requestOnTestDb(_.extend({
+          path: '/_all_docs?startkey=10&endkey=8&inclusive_end=false'
+        }, offlineRequestOptions))
       ]))
       .then(result => {
         expect(result[0].rows.length).toEqual(5);
@@ -264,7 +267,8 @@ describe('all_docs handler', () => {
 
         return utils.saveDocs(tombstones);
       })
-      .then(() => utils.requestOnTestDb(_.defaults({ path: '/_all_docs?keys=' + JSON.stringify(keys) }, offlineRequestOptions)))
+      .then(() =>
+        utils.requestOnTestDb(_.extend({ path: '/_all_docs?keys=' + JSON.stringify(keys) }, offlineRequestOptions)))
       .then(result => {
         expect(result.rows).toEqual([
           { id: 'allowed_contact', key: 'allowed_contact', value: { rev: docs[0]._rev, deleted: true }},

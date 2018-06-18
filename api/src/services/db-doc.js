@@ -67,15 +67,17 @@ module.exports = {
       .then(([ storedDoc, requestDoc, authorizationContext ]) => {
         authorizationContext.userCtx = req.userCtx;
 
-        if ((storedDoc && !authorization.allowedDoc(
-                                          storedDoc._id,
-                                          authorizationContext,
-                                          authorization.getViewResults(storedDoc))) ||
-            (requestDoc && !authorization.allowedDoc(
-                                          requestDoc._id,
-                                          authorizationContext,
-                                          authorization.getViewResults(requestDoc))) ||
-            (!storedDoc && !requestDoc)) {
+        if (!storedDoc && !requestDoc) {
+          return sendError(res);
+        }
+
+        if (storedDoc &&
+            !authorization.allowedDoc(storedDoc._id, authorizationContext, authorization.getViewResults(storedDoc))) {
+          return sendError(res);
+        }
+
+        if (requestDoc &&
+            !authorization.allowedDoc(requestDoc._id, authorizationContext, authorization.getViewResults(requestDoc))) {
           return sendError(res);
         }
 

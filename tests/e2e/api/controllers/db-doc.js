@@ -116,10 +116,12 @@ describe('db-doc handler', () => {
           ]);
         })
         .then(results => {
-          expect(_.omit(results[0], '_rev')).toEqual({ _id: 'db_doc_post', type: 'district_hospital', name: 'NEW PLACE' });
+          expect(_.omit(results[0], '_rev')).toEqual(
+            { _id: 'db_doc_post', type: 'district_hospital', name: 'NEW PLACE' });
           expect(results[1].history.length).toEqual(1);
           expect(_.pick(results[1].history[0], 'user', 'action')).toEqual({ user: 'online', action: 'create' });
-          expect(results[1].history[0].doc).toEqual({ _id: 'db_doc_post', type: 'district_hospital', name: 'NEW PLACE', _rev: 'current' });
+          expect(results[1].history[0].doc).toEqual(
+            { _id: 'db_doc_post', type: 'district_hospital', name: 'NEW PLACE', _rev: 'current' });
         });
     });
 
@@ -147,9 +149,11 @@ describe('db-doc handler', () => {
           expect(_.omit(results[0], '_rev')).toEqual({ _id: 'db_doc_put', type: 'clinic', name: 'my updated clinic' });
           expect(results[1].history.length).toEqual(2);
           expect(_.pick(results[1].history[0], 'user', 'action')).toEqual({ user: 'admin', action: 'create' });
-          expect(_.omit(results[1].history[0].doc, '_rev')).toEqual({ _id: 'db_doc_put', type: 'clinic', name: 'my clinic' });
+          expect(_.omit(results[1].history[0].doc, '_rev')).toEqual(
+            { _id: 'db_doc_put', type: 'clinic', name: 'my clinic' });
           expect(_.pick(results[1].history[1], 'user', 'action')).toEqual({ user: 'online', action: 'update' });
-          expect(_.omit(results[1].history[1].doc, '_rev')).toEqual({ _id: 'db_doc_put', type: 'clinic', name: 'my updated clinic' });
+          expect(_.omit(results[1].history[1].doc, '_rev')).toEqual(
+            { _id: 'db_doc_put', type: 'clinic', name: 'my updated clinic' });
         });
     });
 
@@ -246,7 +250,9 @@ describe('db-doc handler', () => {
       return Promise
         .all([
           utils.requestOnTestDb(_.defaults({ body: JSON.stringify(allowedDoc), path: '/' }, offlineRequestOptions)),
-          utils.requestOnTestDb(_.defaults({ body: JSON.stringify(deniedDoc), path: '/' }, offlineRequestOptions)).catch(err => err),
+          utils
+            .requestOnTestDb(_.defaults({ body: JSON.stringify(deniedDoc), path: '/' }, offlineRequestOptions))
+            .catch(err => err),
           utils.requestOnTestDb(_.defaults({}, offlineRequestOptions)).catch(err => err)
         ])
         .then(results => {
