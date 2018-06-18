@@ -78,6 +78,21 @@
 
   display: inline-block;
 
+  .dropdown-menu {
+    min-width: 220px;
+    a:before {
+      // copied from .fa-fw
+      display: inline-block;
+      width: 1.28571429em;
+      text-align: center;
+      font-family: FontAwesome;
+      content: ' ';
+    }
+    .selected:before {
+      content: '\f00c'; // https://fontawesome.com/icons/check
+    }
+  }
+
   &.multidropdown .dropdown-menu {
     > ul {
       max-height: 300px;
@@ -98,12 +113,9 @@
       }
       a:before {
         content: '\f096'; // http://fontawesome.io/icon/square-o/
-        font-family: FontAwesome;
-        margin-right: 4px;
       }
       .selected:before {
         content: '\f046'; // http://fontawesome.io/icon/check-square-o/
-        margin-right: 2px;
       }
     }
     .dropdown-child a {
@@ -253,3 +265,8 @@
   }
 }
 
+@media (max-width: 400px) {
+  .open .mm-dropdown-menu {
+    top: 101px;
+  }
+}
