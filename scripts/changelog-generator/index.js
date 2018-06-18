@@ -114,6 +114,10 @@ const sort = issues => {
     throw new Error('Some issues are in an invalid state');
   }
 
+  TYPES.forEach(type => {
+    type.issues.sort((lhs, rhs) => lhs.data.number > rhs.data.number);
+  });
+
   return TYPES;
 };
 
