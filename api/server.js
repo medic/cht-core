@@ -22,7 +22,7 @@ const nodeVersionCheck = () => {
   if (major < MIN_MAJOR) {
     throw new Error(`Node version ${major}.${minor}.${patch} is not supported, minimum is ${MIN_MAJOR}.0.0`);
   }
-  console.log(`Node Version: ${major}.${minor}.${patch}`);
+  console.log(`Node Version: ${major}.${minor}.${patch} in ${process.env.NODE_ENV || 'development'} mode`);
 };
 
 const envVarsCheck = () => {
