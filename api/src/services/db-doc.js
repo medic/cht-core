@@ -33,8 +33,9 @@ const getRequestDoc = (req, attachment) => {
 };
 
 const sendError = res => {
-  res.status(404);
-  res.send(JSON.stringify({error: 'not_found', reason: 'missing'}));
+  res.type('json');
+  res.status(403);
+  res.send(JSON.stringify({ error: 'forbidden', reason: 'Insufficient privileges' }));
 };
 
 module.exports = {

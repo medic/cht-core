@@ -11,6 +11,7 @@ let testReq, testRes, next;
 describe('db-doc service', () => {
   beforeEach(function() {
     testRes = {
+      type: sinon.stub(),
       send: sinon.stub(),
       status: sinon.stub()
     };
@@ -231,10 +232,10 @@ describe('db-doc service', () => {
           next.callCount.should.equal(0);
           testRes.send.callCount.should.equal(1);
           testRes.send.args[0][0].should.equal(
-            JSON.stringify({error: 'not_found', reason: 'missing'})
+            JSON.stringify({error: 'forbidden', reason: 'Insufficient privileges'})
           );
           testRes.status.callCount.should.equal(1);
-          testRes.status.args[0][0].should.equal(404);
+          testRes.status.args[0][0].should.equal(403);
         });
     });
 

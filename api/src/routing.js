@@ -506,7 +506,7 @@ const docPath = `${pathPrefix}:docId`;
 const attachmentPath = `${docPath}/:attachmentID`;
 
 app.get(docPath, authorizationHandler.adminPassThrough, dbDocHandler.requestDoc);
-app.post('/', authorizationHandler.adminPassThrough, jsonParser, dbDocHandler.requestDoc);
+app.post(`${pathPrefix}`, authorizationHandler.adminPassThrough, jsonParser, dbDocHandler.requestDoc);
 app.put(docPath, authorizationHandler.adminPassThrough, jsonParser, dbDocHandler.requestDoc);
 app.delete(docPath, authorizationHandler.adminPassThrough, dbDocHandler.requestDoc);
 
@@ -676,6 +676,7 @@ proxyForAuditing.on('proxyReq', function(proxyReq, req) {
   }
 });
 
+// intercept responses from restricted _bulk_docs to fill in the gaps
 proxyForAuditing.on('proxyRes', (proxyRes, req, res) => {
   if (res.interceptResponse) {
     let body = new Buffer('');

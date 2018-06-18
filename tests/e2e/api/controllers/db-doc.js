@@ -97,118 +97,371 @@ describe('db-doc handler', () => {
           });
         });
     });
-  });
 
-  it('POST', () => {
-    _.extend(onlineRequestOptions, {
-      path: '/',
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ _id: 'db_doc_post', type: 'district_hospital', name: 'NEW PLACE' })
+    it('POST', () => {
+      _.extend(onlineRequestOptions, {
+        path: '/',
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ _id: 'db_doc_post', type: 'district_hospital', name: 'NEW PLACE' })
+      });
+
+      return utils
+        .requestOnTestDb(onlineRequestOptions)
+        .then(result => {
+          expect(_.omit(result, 'rev')).toEqual({ id: 'db_doc_post', ok: true });
+          return Promise.all([
+            utils.getDoc('db_doc_post'),
+            utils.getAuditDoc('db_doc_post')
+          ]);
+        })
+        .then(results => {
+          expect(_.omit(results[0], '_rev')).toEqual({ _id: 'db_doc_post', type: 'district_hospital', name: 'NEW PLACE' });
+          expect(results[1].history.length).toEqual(1);
+          expect(_.pick(results[1].history[0], 'user', 'action')).toEqual({ user: 'online', action: 'create' });
+          expect(results[1].history[0].doc).toEqual({ _id: 'db_doc_post', type: 'district_hospital', name: 'NEW PLACE', _rev: 'current' });
+        });
     });
 
-    return utils
-      .requestOnTestDb(onlineRequestOptions)
-      .then(result => {
-        expect(_.omit(result, 'rev')).toEqual({ id: 'db_doc_post', ok: true });
-        return Promise.all([
-          utils.getDoc('db_doc_post'),
-          utils.getAuditDoc('db_doc_post')
-        ]);
-      })
-      .then(results => {
-        expect(_.omit(results[0], '_rev')).toEqual({ _id: 'db_doc_post', type: 'district_hospital', name: 'NEW PLACE' });
-        expect(results[1].history.length).toEqual(1);
-        expect(_.pick(results[1].history[0], 'user', 'action')).toEqual({ user: 'online', action: 'create' });
-        expect(results[1].history[0].doc).toEqual({ _id: 'db_doc_post', type: 'district_hospital', name: 'NEW PLACE', _rev: 'current' });
-      });
-  });
+    it('PUT', () => {
+      return utils
+        .saveDoc({ _id: 'db_doc_put', type: 'clinic', name: 'my clinic' })
+        .then(result => {
+          _.extend(onlineRequestOptions, {
+            method: 'PUT',
+            path: '/db_doc_put',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ _id: 'db_doc_put', type: 'clinic', name: 'my updated clinic', _rev: result.rev })
+          });
 
-  it('PUT', () => {
-    return utils
-      .saveDoc({ _id: 'db_doc_put', type: 'clinic', name: 'my clinic' })
-      .then(result => {
-        _.extend(onlineRequestOptions, {
+          return utils.requestOnTestDb(onlineRequestOptions);
+        })
+        .then(result => {
+          expect(_.omit(result, 'rev')).toEqual({ id: 'db_doc_put', ok: true });
+          return Promise.all([
+            utils.getDoc('db_doc_put'),
+            utils.getAuditDoc('db_doc_put')
+          ]);
+        })
+        .then(results => {
+          expect(_.omit(results[0], '_rev')).toEqual({ _id: 'db_doc_put', type: 'clinic', name: 'my updated clinic' });
+          expect(results[1].history.length).toEqual(2);
+          expect(_.pick(results[1].history[0], 'user', 'action')).toEqual({ user: 'admin', action: 'create' });
+          expect(_.omit(results[1].history[0].doc, '_rev')).toEqual({ _id: 'db_doc_put', type: 'clinic', name: 'my clinic' });
+          expect(_.pick(results[1].history[1], 'user', 'action')).toEqual({ user: 'online', action: 'update' });
+          expect(_.omit(results[1].history[1].doc, '_rev')).toEqual({ _id: 'db_doc_put', type: 'clinic', name: 'my updated clinic' });
+        });
+    });
+
+    it('DELETE', () => {
+      return utils
+        .saveDoc({ _id: 'db_doc_delete', type: 'clinic', name: 'my clinic' })
+        .then(result => {
+          _.extend(onlineRequestOptions, {
+            method: 'DELETE',
+            path: `/db_doc_delete?rev=${result.rev}`,
+            headers: { 'Content-Type': 'application/json' },
+          });
+
+          return utils.requestOnTestDb(onlineRequestOptions);
+        })
+        .then(result => {
+          expect(_.omit(result, 'rev')).toEqual({ id: 'db_doc_delete', ok: true });
+          return utils.getDoc('db_doc_delete');
+        })
+        .catch(err => {
+          expect(err.responseBody.error).toEqual('not_found');
+        });
+    });
+
+    it('GET attachment', () => {
+      return utils
+        .saveDoc({ _id: 'with_attachments' })
+        .then(result => utils.requestOnTestDb({
+          path: `/with_attachments/att_name?rev=${result.rev}`,
           method: 'PUT',
-          path: '/db_doc_put',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ _id: 'db_doc_put', type: 'clinic', name: 'my updated clinic', _rev: result.rev })
+          body: 'my attachment content',
+          headers: { 'Content-Type': 'text/plain' }
+        }))
+        .then(() => {
+          onlineRequestOptions.path = '/with_attachments/att_name';
+          return utils.requestOnTestDb(onlineRequestOptions, false, true);
+        })
+        .then(result => {
+          expect(result).toEqual('my attachment content');
         });
+    });
 
-        return utils.requestOnTestDb(onlineRequestOptions);
-      })
-      .then(result => {
-        expect(_.omit(result, 'rev')).toEqual({ id: 'db_doc_put', ok: true });
-        return Promise.all([
-          utils.getDoc('db_doc_put'),
-          utils.getAuditDoc('db_doc_put')
-        ]);
-      })
-      .then(results => {
-        expect(_.omit(results[0], '_rev')).toEqual({ _id: 'db_doc_put', type: 'clinic', name: 'my updated clinic' });
-        expect(results[1].history.length).toEqual(2);
-        expect(_.pick(results[1].history[0], 'user', 'action')).toEqual({ user: 'admin', action: 'create' });
-        expect(_.omit(results[1].history[0].doc, '_rev')).toEqual({ _id: 'db_doc_put', type: 'clinic', name: 'my clinic' });
-        expect(_.pick(results[1].history[1], 'user', 'action')).toEqual({ user: 'online', action: 'update' });
-        expect(_.omit(results[1].history[1].doc, '_rev')).toEqual({ _id: 'db_doc_put', type: 'clinic', name: 'my updated clinic' });
-      });
+    it('PUT attachment', () => {
+      return utils
+        .saveDoc({ _id: 'with_attachments' })
+        .then(result => {
+          _.extend(onlineRequestOptions, {
+            path: `/with_attachments/new_attachment?rev=${result.rev}`,
+            method: 'PUT',
+            headers: { 'Content-Type': 'text/plain' },
+            body: 'my new attachment content'
+          });
+
+          return utils.requestOnTestDb(onlineRequestOptions);
+        })
+        .then(result => utils.requestOnTestDb(`/with_attachments/new_attachment?rev=${result.rev}`, false, true))
+        .then(result => {
+          expect(result).toEqual('my new attachment content');
+        });
+    });
   });
 
-  it('DELETE', () => {
-    return utils
-      .saveDoc({ _id: 'db_doc_delete', type: 'clinic', name: 'my clinic' })
-      .then(result => {
-        _.extend(onlineRequestOptions, {
-          method: 'DELETE',
-          path: `/db_doc_delete?rev=${result.rev}`,
-          headers: { 'Content-Type': 'application/json' },
+  describe('restricts offline users', () => {
+    it('GET', () => {
+      offlineRequestOptions.method = 'GET';
+
+      return Promise
+        .all([
+          utils.requestOnTestDb(_.defaults({ path: '/fixture:user:offline' }, offlineRequestOptions)),
+          utils.requestOnTestDb(_.defaults({ path: '/fixture:user:online' }, offlineRequestOptions)).catch(err => err)
+        ])
+        .then(results => {
+          expect(_.omit(results[0], '_rev', 'reported_date')).toEqual({
+            _id: 'fixture:user:offline',
+            name: 'OfflineUser',
+            type: 'person',
+            parent: { _id: 'fixture:offline', parent: { _id: 'PARENT_PLACE' }}
+          });
+
+          expect(results[1].statusCode).toEqual(403);
+          expect(results[1].responseBody).toEqual({ error: 'forbidden', reason: 'Insufficient privileges' });
         });
+    });
 
-        return utils.requestOnTestDb(onlineRequestOptions);
-      })
-      .then(result => {
-        expect(_.omit(result, 'rev')).toEqual({ id: 'db_doc_delete', ok: true });
-        return utils.getDoc('db_doc_delete');
-      })
-      .catch(err => {
-        expect(err.responseBody.error).toEqual('not_found');
+    it('POST', () => {
+      _.extend(offlineRequestOptions, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' }
       });
-  });
 
-  it('GET attachment', () => {
-    return utils
-      .saveDoc({ _id: 'with_attachments' })
-      .then(result => utils.requestOnTestDb({
-        path: `/with_attachments/att_name?rev=${result.rev}`,
+      const allowedDoc = { _id: 'allowed_doc_post', type: 'clinic', parent: { _id: 'fixture:offline' }, name: 'allowed' },
+            deniedDoc = { _id: 'denied_doc_post', type: 'clinic', parent: { _id: 'fixture:online' }, name: 'denied' };
+
+      return Promise
+        .all([
+          utils.requestOnTestDb(_.defaults({ body: JSON.stringify(allowedDoc), path: '/' }, offlineRequestOptions)),
+          utils.requestOnTestDb(_.defaults({ body: JSON.stringify(deniedDoc), path: '/' }, offlineRequestOptions)).catch(err => err),
+          utils.requestOnTestDb(_.defaults({}, offlineRequestOptions)).catch(err => err)
+        ])
+        .then(results => {
+          expect(_.omit(results[0], 'rev')).toEqual({ id: 'allowed_doc_post', ok: true });
+          expect(results[1].statusCode).toEqual(403);
+          expect(results[1].responseBody).toEqual({ error: 'forbidden', reason: 'Insufficient privileges' });
+          expect(results[2].responseBody.error).toEqual('bad_request');
+
+          return Promise.all([
+            utils.getDoc('allowed_doc_post'),
+            utils.getAuditDoc('allowed_doc_post'),
+            utils.getDoc('denied_doc_post').catch(err => err),
+            utils.getAuditDoc('denied_doc_post').catch(err => err),
+          ]);
+        })
+        .then(results => {
+          expect(_.omit(results[0], '_rev')).toEqual(allowedDoc);
+          expect(results[1].history.length).toEqual(1);
+          expect(_.pick(results[1].history[0], 'user', 'action')).toEqual({ user: 'offline', action: 'create' });
+          expect(results[1].history[0].doc).toEqual(_.extend({ _rev: 'current' }, allowedDoc));
+
+          expect(results[2].statusCode).toEqual(404);
+          expect(results[3].statusCode).toEqual(404);
+        });
+    });
+
+    it('PUT', () => {
+      _.extend(offlineRequestOptions, {
         method: 'PUT',
-        body: 'my attachment content',
-        headers: { 'Content-Type': 'text/plain' }
-      }))
-      .then(() => {
-        onlineRequestOptions.path = '/with_attachments/att_name';
-        return utils.requestOnTestDb(onlineRequestOptions, false, true);
-      })
-      .then(result => {
-        expect(result).toEqual('my attachment content');
+        headers: { 'Content-Type': 'application/json' }
       });
-  });
 
-  it('PUT attachment', () => {
-    return utils
-      .saveDoc({ _id: 'with_attachments' })
-      .then(result => {
-        _.extend(onlineRequestOptions, {
-          path: `/with_attachments/new_attachment?rev=${result.rev}`,
-          method: 'PUT',
-          headers: { 'Content-Type': 'text/plain' },
-          body: 'my new attachment content'
+      const docs = [
+        { _id: 'a_put_1', type: 'clinic', parent: { _id: 'fixture:offline' }, name: 'a1' },
+        { _id: 'a_put_2', type: 'clinic', parent: { _id: 'fixture:offline' }, name: 'a2' },
+        { _id: 'd_put_1', type: 'clinic', parent: { _id: 'fixture:online' }, name: 'd1' },
+        { _id: 'd_put_2', type: 'clinic', parent: { _id: 'fixture:online' }, name: 'd2' }
+      ];
+
+      return utils
+        .saveDocs(docs)
+        .then(results => {
+          results.forEach((result, idx) => docs[idx]._rev = result.rev);
+
+          const updates = [
+            { _id: 'n_put_1', type: 'clinic', parent: { _id: 'fixture:offline' }, name: 'n1' }, // new allowed
+            { _id: 'n_put_2', type: 'clinic', parent: { _id: 'fixture:online' }, name: 'n2' }, // new denied
+            _.defaults({ name: 'a1 updated' }, docs[0]), // stored allowed, new allowed
+            _.defaults({ name: 'a2 updated', parent: { _id: 'fixture:online' }}, docs[1]), // stored allowed, new denied
+            _.defaults({ name: 'd1 updated' }, docs[2]), // stored denied, new denied
+            _.defaults({ name: 'd2 updated', parent: { _id: 'fixture:offline' }}, docs[3]) // stored denied, new allowed
+          ];
+
+          return Promise.all(updates.map(doc =>
+            utils
+              .requestOnTestDb(_.extend({ path: `/${doc._id}`, body: JSON.stringify(doc)}, offlineRequestOptions))
+              .catch(err => err)
+          ));
+        })
+        .then(results => {
+          expect(_.omit(results[0], 'rev')).toEqual({ ok: true, id: 'n_put_1' });
+          expect(results[1].statusCode).toEqual(403);
+          expect(results[1].responseBody).toEqual({ error: 'forbidden', reason: 'Insufficient privileges' });
+          expect(_.omit(results[2], 'rev')).toEqual({ ok: true, id: 'a_put_1' });
+          expect(results[3].statusCode).toEqual(403);
+          expect(results[3].responseBody).toEqual({ error: 'forbidden', reason: 'Insufficient privileges' });
+          expect(results[4].statusCode).toEqual(403);
+          expect(results[4].responseBody).toEqual({ error: 'forbidden', reason: 'Insufficient privileges' });
+          expect(results[5].statusCode).toEqual(403);
+          expect(results[5].responseBody).toEqual({ error: 'forbidden', reason: 'Insufficient privileges' });
+
+          return Promise.all([
+            utils.getAuditDoc('n_put_1'),
+            utils.getAuditDoc('n_put_2').catch(err => err),
+            ...docs.map(doc => utils.getAuditDoc(doc._id))
+          ]);
+        })
+        .then(results => {
+          // new allowed
+          expect(results[0].history.length).toEqual(1);
+          expect(_.pick(results[0].history[0], 'user', 'action')).toEqual({ user: 'offline', action: 'create' });
+          expect(results[0].history[0].doc).toEqual(
+            { _id: 'n_put_1', type: 'clinic', parent: { _id: 'fixture:offline' }, name: 'n1', _rev: 'current' });
+
+          // new denied
+          expect(results[1].statusCode).toEqual(404);
+
+          // stored allowed, new allowed
+          expect(results[2].history.length).toEqual(2);
+          expect(_.pick(results[2].history[0], 'user', 'action')).toEqual({ user: 'admin', action: 'create' });
+          expect(_.pick(results[2].history[1], 'user', 'action')).toEqual({ user: 'offline', action: 'update' });
+          expect(results[2].history[0].doc.name).toEqual('a1');
+          expect(results[2].history[1].doc.name).toEqual('a1 updated');
+
+          // stored allowed, new denied
+          expect(results[3].history.length).toEqual(1);
+          expect(_.pick(results[3].history[0], 'user', 'action')).toEqual({ user: 'admin', action: 'create' });
+          expect(results[3].history[0].doc.name).toEqual('a2');
+
+          // stored denied, new denied
+          expect(results[4].history.length).toEqual(1);
+          expect(_.pick(results[4].history[0], 'user', 'action')).toEqual({ user: 'admin', action: 'create' });
+          expect(results[4].history[0].doc.name).toEqual('d1');
+
+          // stored denied, new allowed
+          expect(results[5].history.length).toEqual(1);
+          expect(_.pick(results[5].history[0], 'user', 'action')).toEqual({ user: 'admin', action: 'create' });
+          expect(results[5].history[0].doc.name).toEqual('d2');
         });
+    });
 
-        return utils.requestOnTestDb(onlineRequestOptions);
-      })
-      .then(result => utils.requestOnTestDb(`/with_attachments/new_attachment?rev=${result.rev}`, false, true))
-      .then(result => {
-        expect(result).toEqual('my new attachment content');
+    it('DELETE', () => {
+      offlineRequestOptions.method = 'DELETE';
+
+      return utils
+        .saveDocs([
+          { _id: 'allowed_del', type: 'clinic', parent: { _id: 'fixture:offline' }, name: 'allowed' },
+          { _id: 'denied_del', type: 'clinic', parent: { _id: 'fixture:online' }, name: 'denied' }
+        ])
+        .then(results => Promise.all([
+          utils.requestOnTestDb(_.extend({ path: `/allowed_del?rev=${results[0].rev}` }, offlineRequestOptions)),
+          utils
+            .requestOnTestDb(_.extend({ path: `/denied_del?rev=${results[1].rev}` }, offlineRequestOptions))
+            .catch(err => err)
+        ]))
+        .then(results => {
+          expect(_.omit(results[0], 'rev')).toEqual({ id: 'allowed_del', ok: true });
+          expect(results[1].statusCode).toEqual(403);
+          expect(results[1].responseBody).toEqual({ error: 'forbidden', reason: 'Insufficient privileges' });
+
+          return Promise.all([
+            utils.getDoc('allowed_del').catch(err => err),
+            utils.getDoc('denied_del')
+          ]);
+        })
+        .then(results => {
+          expect(results[0].statusCode).toEqual(404);
+          expect(results[0].responseBody).toEqual({ error: 'not_found', reason: 'deleted' });
+
+          expect(_.omit(results[1], '_rev')).toEqual(
+            { _id: 'denied_del', type: 'clinic', parent: { _id: 'fixture:online' }, name: 'denied' });
+        });
+    });
+
+    it('GET attachment', () => {
+      return utils
+        .saveDocs([
+          { _id: 'a_with_attachments', type: 'clinic', parent: { _id: 'fixture:offline' }, name: 'allowed attach'},
+          { _id: 'd_with_attachments', type: 'clinic', parent: { _id: 'fixture:online' }, name: 'denied attach'},
+        ])
+        .then(results => Promise.all(results.map(result => {
+          return utils.requestOnTestDb({
+            path: `/${result.id}/att_name?rev=${result.rev}`,
+            method: 'PUT',
+            body: 'my attachment content',
+            headers: { 'Content-Type': 'text/plain' }
+          });
+        })))
+        .then(() => {
+          return Promise.all([
+            utils
+              .requestOnTestDb(_.extend({ path: '/a_with_attachments/att_name' }, offlineRequestOptions), false, true),
+            utils
+              .requestOnTestDb(_.extend({ path: '/d_with_attachments/att_name' }, offlineRequestOptions))
+              .catch(err => err)
+          ]);
+        })
+        .then(results => {
+          expect(results[0]).toEqual('my attachment content');
+          expect(results[1].statusCode).toEqual(403);
+          expect(results[1].responseBody).toEqual({ error: 'forbidden', reason: 'Insufficient privileges' });
+        });
+    });
+
+    it('PUT attachment', () => {
+      _.extend(offlineRequestOptions, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'text/plain' },
+        body: 'my new attachment content'
       });
+
+      return utils
+        .saveDocs([
+          { _id: 'a_with_attachments', type: 'clinic', parent: { _id: 'fixture:offline' }, name: 'allowed attach'},
+          { _id: 'd_with_attachments', type: 'clinic', parent: { _id: 'fixture:online' }, name: 'denied attach'},
+        ])
+        .then(results => Promise.all(results.map(result =>
+          utils
+            .requestOnTestDb(_.extend({ path: `/${result.id}/new_attachment?rev=${result.rev}`}, offlineRequestOptions))
+            .catch(err => err)
+        )))
+        .then(results => {
+          expect(_.omit(results[0], 'rev')).toEqual({ ok: true, id: 'a_with_attachments' });
+          expect(results[1].statusCode).toEqual(403);
+          expect(results[1].responseBody).toEqual({ error: 'forbidden', reason: 'Insufficient privileges' });
+
+          return Promise.all([
+            utils.requestOnTestDb({ path: '/a_with_attachments' }),
+            utils.requestOnTestDb({ path: '/a_with_attachments/new_attachment' }, false, true),
+            utils.requestOnTestDb({ path: '/d_with_attachments' }),
+            utils.requestOnTestDb({ path: '/d_with_attachments/new_attachment' }).catch(err => err)
+          ]);
+        })
+        .then(results => {
+          console.log(results);
+          expect(results[0]._attachments.new_attachment).toBeTruthy();
+          expect(results[0]._id).toEqual('a_with_attachments');
+
+          expect(results[1]).toEqual('my new attachment content');
+
+          expect(results[2]._attachments).not.toBeTruthy();
+          expect(results[2]._id).toEqual('d_with_attachments');
+
+          expect(results[3].responseBody.error).toEqual('not_found');
+        });
+    });
   });
 });
