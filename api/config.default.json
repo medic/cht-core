@@ -337,6 +337,10 @@
     {
       "name": "can_view_last_visited_date",
       "roles": []
+    },
+    {
+      "name": "can_write_wealth_quintiles",
+      "roles": []
     }
   ]
 }

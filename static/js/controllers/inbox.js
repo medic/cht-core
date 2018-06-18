@@ -658,7 +658,11 @@ var feedback = require('../modules/feedback'),
         RecurringProcessManager.stopUpdateRelativeDate();
       });
 
-      WealthQuintilesWatcher.start();
+      Auth('can_write_wealth_quintiles')
+        .then(function() {
+          WealthQuintilesWatcher.start();
+        })
+        .catch(function() {});
     }
   );
 
