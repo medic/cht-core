@@ -457,7 +457,6 @@ describe('db-doc handler', () => {
           ]);
         })
         .then(results => {
-          console.log(results);
           expect(results[0]._attachments.new_attachment).toBeTruthy();
           expect(results[0]._id).toEqual('a_with_attachments');
 
