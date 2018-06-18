@@ -23,7 +23,6 @@ var feedback = require('../modules/feedback'),
       Auth,
       Changes,
       CheckDate,
-      ClientSentinel,
       ContactSchema,
       CountMessages,
       DB,
@@ -48,6 +47,7 @@ var feedback = require('../modules/feedback'),
       UpdateSettings,
       UpdateUser,
       UserSettings,
+      WealthQuintilesWatcher,
       XmlForms,
       RecurringProcessManager
     ) {
@@ -658,7 +658,7 @@ var feedback = require('../modules/feedback'),
         RecurringProcessManager.stopUpdateRelativeDate();
       });
 
-      ClientSentinel.start();
+      WealthQuintilesWatcher.start();
     }
   );
 

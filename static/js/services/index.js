@@ -14,7 +14,6 @@
   require('./check-date');
   require('./child-facility');
   require('./clean-etag');
-  require('./client-sentinel');
   require('./contact-change-filter');
   require('./contact-form');
   require('./contact-save');
@@ -90,6 +89,7 @@
   require('./user');
   require('./user-contact');
   require('./version');
+  require('./wealth-quintiles-watcher');
   require('./xml-form');
   require('./xml-forms');
   require('./xml-forms-context-utils');
