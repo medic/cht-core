@@ -89,6 +89,7 @@
   require('./user');
   require('./user-contact');
   require('./version');
+  require('./wealth-quintiles-watcher');
   require('./xml-form');
   require('./xml-forms');
   require('./xml-forms-context-utils');

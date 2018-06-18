@@ -47,6 +47,7 @@ var feedback = require('../modules/feedback'),
       UpdateSettings,
       UpdateUser,
       UserSettings,
+      WealthQuintilesWatcher,
       XmlForms,
       RecurringProcessManager
     ) {
@@ -657,6 +658,11 @@ var feedback = require('../modules/feedback'),
         RecurringProcessManager.stopUpdateRelativeDate();
       });
 
+      Auth('can_write_wealth_quintiles')
+        .then(function() {
+          WealthQuintilesWatcher.start();
+        })
+        .catch(function() {});
     }
   );
 
