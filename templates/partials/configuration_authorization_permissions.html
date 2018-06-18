@@ -3,19 +3,19 @@
 <form class="tab-content permissions" ng-hide="loading">
 
   <div class="form-group">
-
-    <div class="row selection-heading" ng-hide="error">
-      <div class="col-xs-3" translate>configuration.permission</div>
-      <div class="col-xs-1" ng-repeat="(key, value) in roles track by key" translate>{{value.name}}</div>
-    </div>
-
     <div class="row" ng-repeat="permission in permissions | orderBy:'name' track by permission.name">
       <div class="col-xs-3">{{permission.name}}</div>
-      <div class="col-xs-1" ng-repeat="role in permission.roles">
-        <input type="checkbox" ng-model="role.value"/>
+      <div class="col-xs-9">
+        <ul>
+          <li ng-repeat="role in permission.roles" class="checkbox">
+            <label>
+              <input type="checkbox" ng-model="role.value"/>
+              <span translate>{{roles[role.name].name}}</span>
+            </label>
+          </li>
+        </ul>
       </div>
     </div>
-
   </div>
 
   <div class="form-actions">
