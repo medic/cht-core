@@ -27,7 +27,8 @@ describe('death_reporting', () => {
       };
       sinon.stub(config, 'get').returns({
         mark_deceased_forms: ['death-confirm'],
-        undo_deceased_forms: ['death-undo']
+        undo_deceased_forms: ['death-undo'],
+        date_field: 'death.date'
       });
       const getPatientContact = sinon.stub(utils, 'getPatientContact').callsArgWith(2, null, patient);
       const saveDoc = sinon.stub(db.audit, 'saveDoc').callsArg(1);
@@ -56,7 +57,8 @@ describe('death_reporting', () => {
       };
       sinon.stub(config, 'get').returns({
         mark_deceased_forms: ['death-confirm'],
-        undo_deceased_forms: ['death-undo']
+        undo_deceased_forms: ['death-undo'],
+        date_field: 'death.date'
       });
       const getPatientContact = sinon.stub(utils, 'getPatientContact').callsArgWith(2, null, patient);
       const saveDoc = sinon.stub(db.audit, 'saveDoc').callsArg(1);
@@ -69,6 +71,35 @@ describe('death_reporting', () => {
         saveDoc.callCount.should.equal(1);
         saveDoc.args[0][0].should.deep.equal({ name: 'greg', date_of_death: dateOfDeath });
         done();
+      });
+    });
+
+    it('uses the configured field for the date', () => {
+      const patientId = 'some-uuid';
+      const dateOfDeath = 1529285369317;
+      const patient = { name: 'greg' };
+      const change = {
+        doc: {
+          reported_date: 15612321,
+          form: 'death-confirm',
+          fields: {
+            patient_id: patientId,
+            death: { date: dateOfDeath }
+          }
+        }
+      };
+      sinon.stub(config, 'get').returns({
+        mark_deceased_forms: ['death-confirm'],
+        undo_deceased_forms: ['death-undo'],
+        date_field: 'fields.death.date'
+      });
+      sinon.stub(utils, 'getPatientContact').callsArgWith(2, null, patient);
+      const saveDoc = sinon.stub(db.audit, 'saveDoc').callsArg(1);
+      sinon.stub(db.medic, 'get').callsArgWith(1, null, patient);
+      return transition.onMatch(change).then(changed => {
+        changed.should.equal(true);
+        saveDoc.callCount.should.equal(1);
+        saveDoc.args[0][0].should.deep.equal({ name: 'greg', date_of_death: dateOfDeath });
       });
     });
 
