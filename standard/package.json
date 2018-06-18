@@ -1,0 +1,24 @@
+{
+  "name": "standard-config",
+  "version": "1.0.0",
+  "description": "",
+  "directories": {
+    "test": "test"
+  },
+  "scripts": {
+    "jshint": "jshint app_settings.json forms-on-google-drive.json package.json tasks.json resources.json targets.json test/*.js",
+    "test": "npm run jshint && npm run test-unit",
+    "test-unit": "mocha --reporter progress test/*.spec.js",
+    "test-contact-summary": "cd test && medic-contact-summary-test"
+  },
+  "devDependencies": {
+    "chai": "^4.1.2",
+    "jshint": "^2.9.5",
+    "medic-conf": "^1.17.1",
+    "medic-nootils": "^1.6.0",
+    "mocha": "^5.2.0"
+  },
+  "dependencies": {
+    "@medic/contact-summary-testing": "^1.1.3"
+  }
+}

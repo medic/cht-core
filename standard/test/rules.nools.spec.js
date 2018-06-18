@@ -1,25 +1,19 @@
-var Nools = require('nools');
-var assert = require('chai').assert;
-const parseRules = require('medic-nootils/src/node/test-utils').parseRules;
+const assert = require('chai').assert;
+const NootilsManager = require('medic-nootils/src/node/test-wrapper');
+const now = NootilsManager.BASE_DATE;
+const newDate = () => new Date(now);
 
-const now = new Date();
 const MS_IN_DAY = 24*60*60*1000;  // 1 day in ms
 const MAX_DAYS_IN_PREGNANCY = 44*7;  // 44 weeks
 const IMMUNIZATION_PERIOD = 2*365;
 const DAYS_IN_PNC = 42;
 const WEEKS = 7;  // days per week
 
-// TODO instead of including calls to `Date.now()` in our test data, we should
-// instead set the date at the start of a test script, and progress it during
-// the script as we require.  This will require replacement of all `new Date()`
-// calls in individual rulesets to use e.g. `Utils.date()`.  This refactoring is
-// not complicated.
-
 var person = {
   "type": "person",
   "name": "Zoe",
   "date_of_birth": "1990-09-01",
-  "reported_date": Date.now(),
+  "reported_date": now,
   "_id": "contact-1"
 };
 
@@ -28,7 +22,7 @@ var pregnancyReport = {
   "_id":"pregnancy-1",
   "fields": { },
   "form": "P",
-  "reported_date": Date.now()
+  "reported_date": now
 };
 var flagReport = {
   "_id":"flag-1",
@@ -36,34 +30,34 @@ var flagReport = {
     "notes": ""
   },
   "form": "F",
-  "reported_date": Date.now()
+  "reported_date": now
 };
 var deliveryReport = {
   "_id":"report-1",
   "fields": {
     "delivery_code": "NS"
   },
-  "birth_date": (new Date(Date.now() - 3*MS_IN_DAY)).toISOString(),
+  "birth_date": (new Date(now - 3*MS_IN_DAY)).toISOString(),
   "form": "delivery",
-  "reported_date": Date.now()
+  "reported_date": now
 };
 var pncVisitAppReport = {
   "_id": "report-2",
   "fields": {},
   "form": "postnatal_visit",
-  "reported_date": Date.now() + 1*MS_IN_DAY
+  "reported_date": now + 1*MS_IN_DAY
 };
 var pncVisitSMSReport = {
   "_id": "report-3",
   "fields": {},
   "form": "M",
-  "reported_date": Date.now() + 1*MS_IN_DAY
+  "reported_date": now + 1*MS_IN_DAY
 };
 var immVisitSMSReport = {
   "_id": "report-imm",
   "fields": {},
   "form": "V",
-  "reported_date": Date.now() + 1*MS_IN_DAY
+  "reported_date": now + 1*MS_IN_DAY
 };
 
 describe('Standard Configuration', function() {
@@ -75,23 +69,13 @@ describe('Standard Configuration', function() {
     },
   };
 
-  beforeEach(function() {
-    var rules = parseRules(
-      __dirname + '/../rules.nools.js',
-      __dirname + '/../tasks.json',
-      { user:TEST_USER });
-    flow = rules.flow;
-    session = rules.session;
-
-    Contact = flow.getDefined('Contact');
+  before(() => {
+    nootilsManager = NootilsManager('./tasks.json', { user:TEST_USER });
+    Contact = nootilsManager.Contact;
+    session = nootilsManager.session;
   });
-
-  afterEach(function() {
-    flow = null;
-    session = null;
-    Contact = null;
-    Nools.deleteFlows();
-  });
+  afterEach(() => nootilsManager.afterEach());
+  after(() => nootilsManager.after());
 
   describe('Birth not at facility', function() {
 
@@ -150,8 +134,8 @@ describe('Standard Configuration', function() {
     });
     it(`should have a 'postnatal-danger-sign' task if a flag is sent during PNC period`, function() {
       // given
-      deliveryReport = setDate(deliveryReport, Date.now()-(25*MS_IN_DAY)); 
-      flagReport.reported_date = Date.now()-(4*MS_IN_DAY); 
+      deliveryReport = setDate(deliveryReport, now-(25*MS_IN_DAY));
+      flagReport.reported_date = now-(4*MS_IN_DAY);
 
       var reports = [
         deliveryReport,
@@ -255,8 +239,8 @@ describe('Standard Configuration', function() {
 
     it(`should have a 'pregnancy-danger-sign' task if a flag is sent during active pregnancy`, function() {
       // given
-      pregnancyReport.reported_date = Date.now()-(6*MS_IN_DAY); 
-      flagReport.reported_date = Date.now()-(4*MS_IN_DAY);
+      pregnancyReport.reported_date = now-(6*MS_IN_DAY);
+      flagReport.reported_date = now-(4*MS_IN_DAY);
 
       var reports = [
         pregnancyReport,
@@ -276,8 +260,8 @@ describe('Standard Configuration', function() {
 
     it(`should not have a 'pregnancy-danger-sign' task if a flag is sent before pregnancy`, function() {
       // given
-      pregnancyReport.reported_date = Date.now()-(2*MS_IN_DAY); 
-      flagReport.reported_date = Date.now()-(4*MS_IN_DAY);
+      pregnancyReport.reported_date = now-(2*MS_IN_DAY);
+      flagReport.reported_date = now-(4*MS_IN_DAY);
 
       var reports = [
         pregnancyReport,
@@ -295,9 +279,9 @@ describe('Standard Configuration', function() {
 
     it(`should not have a 'pregnancy-danger-sign' task if a flag is sent after pregnancy`, function() {
       // given
-      pregnancyReport.reported_date = Date.now()-(8*MS_IN_DAY);
-      deliveryReport.reported_date = Date.now()-(6*MS_IN_DAY);
-      flagReport.reported_date = Date.now()-(4*MS_IN_DAY);
+      pregnancyReport.reported_date = now-(8*MS_IN_DAY);
+      deliveryReport.reported_date = now-(6*MS_IN_DAY);
+      flagReport.reported_date = now-(4*MS_IN_DAY);
 
       var reports = [
         pregnancyReport,
@@ -436,7 +420,7 @@ describe('Standard Configuration', function() {
           it(`should have a cleared visit task on day ${day} if received a visit`, function() {
             // given
             var reports = setupReports([newChildReport, immVisitSMSReport], day - ageInDaysWhenRegistered);
-            reports[1].reported_date = Date.now();  // make sure the immuniztion report was sent today
+            reports[1].reported_date = now;  // make sure the immuniztion report was sent today
             var c = setupContact(Contact, person, reports);
             session.assert(c);
 
@@ -474,7 +458,7 @@ function range(a, b) {
 }
 
 function getDayRanges(startDays, duration, offset) {
-  var a = new Array();
+  var a = [];
   startDays.forEach(day => {
     var startVal = day + offset;
     var endVal = startVal + duration - 1;
@@ -483,10 +467,10 @@ function getDayRanges(startDays, duration, offset) {
 
   // return the flattened 1D array
   return [].concat.apply([], a);
-};
+}
 
 function getRangeFromTask(task, offset) {
-  var a = new Array();
+  var a = [];
   task.triggers.forEach(t => {
     var start = t + task.offset - task.pre;
     var end = t + task.offset + task.post;
@@ -495,11 +479,11 @@ function getRangeFromTask(task, offset) {
 
   // return the flattened 1D array
   return [].concat.apply([], a);
-};
+}
 
 function getRange(startDay, durationInDays, offset) {
   return range(startDay+offset, startDay+durationInDays+offset);
-};
+}
 
 function setDate(form, newDate) {
   // Sets the newDate as the form's reported date, and modifies other dates in doc by the same offset
@@ -544,9 +528,8 @@ var setupReports = function(reports, day) {
   if (day !== undefined && reports) {
     // Sets up the tasks by using the doc and reports 
     reports.forEach(r => {
-      // r = setDate(r, Date.now()-(day*MS_IN_DAY)); 
-      var noonToday = (new Date()).setHours(12,0,0,0);
-      r = setDate(r, noonToday-(day*MS_IN_DAY)); 
+      var noonToday = newDate().setHours(12,0,0,0);
+      r = setDate(r, noonToday-(day*MS_IN_DAY));
     });
   }
   return reports;
