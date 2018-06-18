@@ -12,7 +12,7 @@ angular.module('inboxServices').factory('LiveListConfig',
     ContactSchema,
     LiveList,
     RulesEngine,
-    relativeDateFilter,
+    relativeDayFilter,
     TranslateFrom
   ) {
     'use strict';
@@ -80,7 +80,7 @@ angular.module('inboxServices').factory('LiveListConfig',
                 var now = new Date().getTime();
                 var oneMonthAgo = now - (30 * 24 * 60 * 60 * 1000);
                 scope.overdue = contact.lastVisitedDate <= oneMonthAgo;
-                scope.summary = $translate.instant('contact.last.visited.date', { date: relativeDateFilter(contact.lastVisitedDate, true) });
+                scope.summary = $translate.instant('contact.last.visited.date', { date: relativeDayFilter(contact.lastVisitedDate, true) });
               }
             } else {
               scope.summary = $translate.instant('contact.primary_contact_name', { name: contact.contact });

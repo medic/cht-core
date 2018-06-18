@@ -70,9 +70,6 @@ var _ = require('underscore'),
           skip: 0
         });
 
-        // Gareth: I have maintained the original debouncing code, but I'm
-        // not sure it actually does anything useful? Shouldn't it attach to an
-        // ongoing result (promise) and not just return []?
         if (!options.force && debounce(type, filters, options)) {
           return $q.resolve([]);
         }
