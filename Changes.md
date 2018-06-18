@@ -2,7 +2,7 @@
 
 ## 2.16.0
 
-_June 15, 2018_
+_June 20, 2018_
 
 ### Features
 
@@ -16,7 +16,9 @@ _June 15, 2018_
 ### Improvements
 
 - [#4577](https://github.com/medic/medic-webapp/issues/4577): Update status filter on reports page
+- [#4636](https://github.com/medic/medic-webapp/issues/4636): Improve death reporting workflow by allowing the death confirmation form to specify the date of death
 - [#4575](https://github.com/medic/medic-webapp/issues/4575): Change use of colored (red/green) dot on the reports list and report detail page
+- [#4635](https://github.com/medic/medic-webapp/issues/4635): Update CHW area icon
 - [#4576](https://github.com/medic/medic-webapp/issues/4576): Minor updates to report detail page header
 
 ### Technical issues
