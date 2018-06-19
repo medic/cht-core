@@ -5,6 +5,12 @@ sudo: true
 jdk:
   - oraclejdk8
 
+cache:
+  directories:
+  - node_modules
+  - api/node_modules
+  - sentinel/node_modules
+
 addons:
   chrome: "stable"
 
