@@ -1,5 +1,6 @@
 const _ = require('underscore'),
-      utils = require('../../../utils');
+      utils = require('../../../utils'),
+      constants = require('../../../constants');
 
 const password = 'passwordSUP3RS3CR37!';
 
@@ -276,6 +277,38 @@ describe('all_docs handler', () => {
           { id: 'denied_contact', error: 'forbidden' },
           { id: 'denied_report', error: 'forbidden' },
         ]);
+      });
+  });
+
+  it('restricts calls with irregular urls which match couchdb endpoint', () => {
+    const doc = { _id: 'denied_report', contact: { _id: 'fixture:online'}, type: 'data_record', form: 'a' };
+
+    return utils
+      .saveDoc(doc)
+      .then(() => Promise.all([
+        utils.requestOnTestDb(_.defaults({ path: '/_all_docs?key=denied_report' }, offlineRequestOptions)),
+        utils.requestOnTestDb(_.defaults({ path: '///_all_docs//?key=denied_report' }, offlineRequestOptions)),
+        utils.request(_.defaults({ path: `//${constants.DB_NAME}//_all_docs?key=denied_report` }, offlineRequestOptions)),
+        utils
+          .requestOnTestDb(_.defaults({ path: '/_all_docs/something' }, offlineRequestOptions))
+          .catch(err => err),
+        utils
+          .requestOnTestDb(_.defaults({ path: '///_all_docs//something' }, offlineRequestOptions))
+          .catch(err => err),
+        utils
+          .request(_.defaults({ path: `//${constants.DB_NAME}//_all_docs/something` }, offlineRequestOptions))
+          .catch(err => err)
+      ]))
+      .then(results => {
+        expect(results.every(result => {
+          if (result.rows) {
+            return result.rows.length === 1 &&
+                   result.rows[0].id === 'denied_report' &&
+                   result.rows[0].error === 'forbidden';
+          }
+
+          return result.responseBody.error === 'forbidden';
+        })).toBe(true);
       });
   });
 });

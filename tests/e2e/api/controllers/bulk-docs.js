@@ -1,5 +1,6 @@
 const _ = require('underscore'),
-      utils = require('../../../utils');
+      utils = require('../../../utils'),
+      constants = require('../../../constants');
 
 const password = 'passwordSUP3RS3CR37!';
 
@@ -294,6 +295,38 @@ describe('bulk-docs handler', () => {
         // not created
         expect(results[6].responseBody.error).toEqual('not_found');
         expect(results[7].responseBody.error).toEqual('not_found');
+      });
+  });
+
+  it('restricts calls with irregular urls which match couchdb endpoint', () => {
+    const doc = { _id: 'denied_report', contact: { _id: 'fixture:online'}, type: 'data_record', form: 'a' };
+    offlineRequestOptions.body = JSON.stringify({ docs: [ doc ] });
+
+    return Promise
+      .all([
+        utils.requestOnTestDb(_.defaults({ path: '/_bulk_docs' }, offlineRequestOptions)),
+        utils.requestOnTestDb(_.defaults({ path: '///_bulk_docs//' }, offlineRequestOptions)),
+        utils.request(_.defaults({ path: `//${constants.DB_NAME}//_bulk_docs` }, offlineRequestOptions)),
+        utils
+          .requestOnTestDb(_.defaults({ path: '/_bulk_docs/something' }, offlineRequestOptions))
+          .catch(err => err),
+        utils
+          .requestOnTestDb(_.defaults({ path: '///_bulk_docs//something' }, offlineRequestOptions))
+          .catch(err => err),
+        utils
+          .request(_.defaults({ path: `//${constants.DB_NAME}//_bulk_docs/something` }, offlineRequestOptions))
+          .catch(err => err)
+      ])
+      .then(results => {
+        expect(results.every(result => {
+          if (_.isArray(result)) {
+            return result.length === 1 &&
+                   result[0].id === 'denied_report' &&
+                   result[0].error === 'forbidden';
+          }
+
+          return result.responseBody === 'Server error';
+        })).toBe(true);
       });
   });
 });

@@ -1,5 +1,6 @@
 const _ = require('underscore'),
-      utils = require('../../../utils');
+      utils = require('../../../utils'),
+      constants = require('../../../constants');
 
 const password = 'passwordSUP3RS3CR37!';
 
@@ -279,6 +280,37 @@ describe('bulk-docs handler', () => {
         expect(result.results[1].docs[0].ok._attachments).not.toBeTruthy();
         expect(result.results[1].docs[0].ok._revisions).toBeTruthy();
         expect(result.results[1].docs[0].ok._revisions.ids.length).toEqual(4);
+      });
+  });
+
+  it('restricts calls with irregular urls which match couchdb endpoint', () => {
+    const doc = { _id: 'denied_report', contact: { _id: 'fixture:online'}, type: 'data_record', form: 'a' };
+    offlineRequestOptions.body = JSON.stringify({ docs: [{ _id: 'denied_report' }] });
+
+    return utils
+      .saveDoc(doc)
+      .then(() => Promise.all([
+        utils.requestOnTestDb(_.defaults({ path: '/_bulk_get' }, offlineRequestOptions)),
+        utils.requestOnTestDb(_.defaults({ path: '///_bulk_get//' }, offlineRequestOptions)),
+        utils.request(_.defaults({ path: `//${constants.DB_NAME}//_bulk_get` }, offlineRequestOptions)),
+        utils
+          .requestOnTestDb(_.defaults({ path: '/_bulk_get/something' }, offlineRequestOptions))
+          .catch(err => err),
+        utils
+          .requestOnTestDb(_.defaults({ path: '///_bulk_get//something' }, offlineRequestOptions))
+          .catch(err => err),
+        utils
+          .request(_.defaults({ path: `//${constants.DB_NAME}//_bulk_get/something` }, offlineRequestOptions))
+          .catch(err => err)
+      ]))
+      .then(results => {
+        expect(results.every(result => {
+          if (result.results) {
+            return result.results.length === 0;
+          }
+
+          return result.responseBody === 'Server error';
+        })).toBe(true);
       });
   });
 });

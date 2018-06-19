@@ -198,7 +198,7 @@ const stubSkipped = (docs, filteredDocs, result) => {
 const interceptResponse = (req, res, response) => {
   response = JSON.parse(response);
 
-  if (req.query && req.query.new_edits !== false) {
+  if (req.query && req.query.new_edits !== false && _.isArray(req.originalBody.docs)) {
     // CouchDB doesn't return results when `new_edits` parameter is `false`
     // if docs were skipped, the consensus is that the response array sequence should reflect
     // the request array sequence.

@@ -747,7 +747,44 @@ describe('changes handler', () => {
           ]);
         })
         .then(([ changes ]) => {
-          expect(changes.results.every(change => bobsIds.indexOf(change.id) !== -1 || change.id === 'org.couchdb.user:steve') ).toBe(true);
+          expect(changes.results.every(change =>
+            bobsIds.indexOf(change.id) !== -1 || change.id === 'org.couchdb.user:steve'
+          )).toBe(true);
+        });
+    });
+
+    it('filters calls with irregular urls which match couchdb endpoint', () => {
+      const options = {
+        auth: `bob:${password}`,
+        method: 'GET'
+      };
+
+      return Promise
+        .all([
+          utils.requestOnTestDb(_.defaults({ path: '/_changes' }, options)),
+          utils.requestOnTestDb(_.defaults({ path: '//_changes//' }, options)),
+          utils.request(_.defaults({ path: `//${constants.DB_NAME}//_changes` }, options)),
+          utils
+            .requestOnTestDb(_.defaults({ path: '/_changes/dsad' }, options))
+            .catch(err => err),
+          utils
+            .requestOnTestDb(_.defaults({ path: '//_changes//dsada' }, options))
+            .catch(err => err),
+          utils
+            .request(_.defaults({ path: `//${constants.DB_NAME}//_changes//dsadada` }, options))
+            .catch(err => err)
+        ])
+        .then(results => {
+          results.forEach(result => {
+            if (result.results) {
+              return assertChangeIds(result,
+                'org.couchdb.user:bob',
+                'fixture:bobville',
+                'fixture:user:bob');
+            }
+
+            expect(result.responseBody.error).toEqual('forbidden');
+          });
         });
     });
   });

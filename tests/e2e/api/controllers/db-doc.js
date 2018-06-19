@@ -1,5 +1,6 @@
 const _ = require('underscore'),
-      utils = require('../../../utils');
+      utils = require('../../../utils'),
+      constants = require('../../../constants');
 
 const password = 'passwordSUP3RS3CR37!';
 
@@ -468,5 +469,35 @@ describe('db-doc handler', () => {
           expect(results[3].responseBody.error).toEqual('not_found');
         });
     });
+  });
+
+  it('restricts calls with irregular urls which match couchdb endpoint', () => {
+    const doc = { _id: 'denied_report', contact: { _id: 'fixture:online'}, type: 'data_record', form: 'a' };
+
+    return utils
+      .saveDoc(doc)
+      .then(() => Promise.all([
+        utils
+          .requestOnTestDb(_.defaults({ path: '/denied_report' }, offlineRequestOptions))
+          .catch(err => err),
+        utils
+          .requestOnTestDb(_.defaults({ path: '///denied_report//' }, offlineRequestOptions))
+          .catch(err => err),
+        utils
+          .request(_.defaults({ path: `//${constants.DB_NAME}//denied_report/dsada` }, offlineRequestOptions))
+          .catch(err => err),
+        utils
+          .requestOnTestDb(_.defaults({ path: '/denied_report/something' }, offlineRequestOptions))
+          .catch(err => err),
+        utils
+          .requestOnTestDb(_.defaults({ path: '///denied_report//something' }, offlineRequestOptions))
+          .catch(err => err),
+        utils
+          .request(_.defaults({ path: `//${constants.DB_NAME}//denied_report/something` }, offlineRequestOptions))
+          .catch(err => err)
+      ]))
+      .then(results => {
+        console.log(require('util').inspect(results, { depth: 1000 }));
+      });
   });
 });

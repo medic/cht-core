@@ -27,8 +27,9 @@ const _ = require('underscore'),
       createDomain = require('domain').create,
       staticResources = /\/(templates|static)\//,
       favicon = /\/icon_\d+.ico$/,
-      pathPrefix = '/' + db.settings.db + '/',
-      appPrefix = pathPrefix + '_design/' + db.settings.ddoc + '/_rewrite/',
+      pathPrefix = '\/+' + db.settings.db + '\/+',
+      appPathPrefix = '/' + db.settings.db + '/',
+      appPrefix = appPathPrefix + '_design/' + db.settings.ddoc + '/_rewrite/',
       serverUtils = require('./server-utils'),
       appcacheManifest = /\/manifest\.appcache$/,
       uuid = require('uuid/v4'),
@@ -119,7 +120,7 @@ app.get('/', function(req, res) {
     proxy.web(req, res);
   } else {
     // redirect to the app path - redirect to _rewrite
-    res.redirect(appPrefix);
+    res.redirect(appPathPrefix);
   }
 });
 
@@ -485,25 +486,25 @@ app.putJson('/api/v1/settings', settings.put);
 
 // DB replication endpoint
 const changesHandler = _.partial(require('./controllers/changes').request, proxyForChanges);
-app.get(pathPrefix + '_changes', changesHandler);
-app.postJson(pathPrefix + '_changes', changesHandler);
+app.get(pathPrefix + '_changes\/{0,}', changesHandler);
+app.postJson(pathPrefix + '_changes\/{0,}', changesHandler);
 
 // authorization middleware to read userSettings and proxy admin requests directly to CouchDB
 const authorizationHandler = require('./controllers/authorization');
 const adminProxy = _.partial(authorizationHandler.adminProxy, proxy);
 
 const allDocsHandler = require('./controllers/all-docs').request;
-app.get(pathPrefix + '_all_docs', adminProxy, allDocsHandler);
-app.post(pathPrefix + '_all_docs', adminProxy, jsonParser, allDocsHandler);
+app.get(pathPrefix + '_all_docs\/{0,}', adminProxy, allDocsHandler);
+app.post(pathPrefix + '_all_docs\/{0,}', adminProxy, jsonParser, allDocsHandler);
 
-app.post(pathPrefix + '_bulk_docs', authorizationHandler.adminPassThrough, jsonParser, bulkDocs.request);
+app.post(pathPrefix + '_bulk_docs\/{0,}', authorizationHandler.adminPassThrough, jsonParser, bulkDocs.request);
 
 const bulkGetHandler = require('./controllers/bulk-get').request;
-app.post(pathPrefix + '_bulk_get', adminProxy, jsonParser, bulkGetHandler);
+app.post(pathPrefix + '_bulk_get\/{0,}', adminProxy, jsonParser, bulkGetHandler);
 
 const dbDocHandler = require('./controllers/db-doc');
-const docPath = `${pathPrefix}:docId`;
-const attachmentPath = `${docPath}/:attachmentID`;
+const docPath = `${pathPrefix}:docId\/{0,}`;
+const attachmentPath = `${docPath}/+:attachmentID\/{0,}`;
 
 app.get(docPath, authorizationHandler.adminPassThrough, dbDocHandler.requestDoc);
 app.post(`${pathPrefix}`, authorizationHandler.adminPassThrough, jsonParser, dbDocHandler.requestDoc);
@@ -539,7 +540,7 @@ var writeHeaders = function(req, res, headers, redirectHumans) {
           _statusCode = 302;
           res.setHeader(
             'Location',
-            pathPrefix + 'login?redirect=' + encodeURIComponent(req.url)
+            appPathPrefix + 'login?redirect=' + encodeURIComponent(req.url)
           );
         }
       } else {
@@ -626,7 +627,7 @@ proxyForChanges.on('proxyRes', (proxyRes, req, res) => {
  */
 [
   appPrefix,
-  pathPrefix
+  appPathPrefix
 ].forEach(function(url) {
   var urlSansTrailingSlash = url.slice(0, -1);
   app.get(urlSansTrailingSlash, function(req, res) {
