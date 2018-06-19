@@ -70,9 +70,10 @@ if(process.argv.slice(2).includes('--allow-cors')) {
   });
 }
 
-app.use(morgan('combined', {
-  immediate: true
-}));
+// Logs Request
+app.use(morgan('combined', {immediate: true}));//':remote-addr - :remote-user [:date[clf]] ":method :url HTTP/:http-version" ":referrer" ":user-agent"'
+// Logs Response
+app.use(morgan(':remote-addr - :remote-user [:date[clf]] ":method :url HTTP/:http-version" :status :res[content-length] :response-time ms'));
 
 app.use(helmet({
   // runs with a bunch of defaults: https://github.com/helmetjs/helmet
