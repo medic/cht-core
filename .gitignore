@@ -16,4 +16,4 @@ node_modules_backup
 /.env
 coverage/
 dist
-build
+/build/
