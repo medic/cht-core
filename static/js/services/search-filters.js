@@ -114,15 +114,23 @@ var _ = require('underscore'),
                 values[elem.data('value')] = elem.text();
               });
               var parts = [];
+              if(values.unverified) {
+                parts.push(values.unverified);
+              }
+              if(values.verifiedErrors) {
+                parts.push(values.verifiedErrors);
+              }
+              if(values.verified) {
+                parts.push(values.verified);
+              }
+              if(values.unverified && values.verifiedErrors && values.verified) {
+                parts = [];
+              }
+
               if (values.valid && !values.invalid) {
                 parts.push(values.valid);
               } else if (!values.valid && values.invalid) {
                 parts.push(values.invalid);
-              }
-              if (values.verified && !values.unverified) {
-                parts.push(values.verified);
-              } else if (!values.verified && values.unverified) {
-                parts.push(values.unverified);
               }
               if (parts.length === 0 || parts.length === state.total.length) {
                 return callback($translate.instant(state.menu.data('label-no-filter')));
@@ -138,10 +146,16 @@ var _ = require('underscore'),
               _.contains(values, 'valid'),
               _.contains(values, 'invalid')
             );
-            var verified = getTernaryValue(
-              _.contains(values, 'verified'),
-              _.contains(values, 'unverified')
-            );
+            var verified = [];
+            if(_.contains(values, 'verified')) {
+              verified.push(true);
+            }
+            if(_.contains(values, 'unverified')) {
+              verified.push(undefined);
+            }
+            if(_.contains(values, 'verifiedErrors')) {
+              verified.push(false);
+            }
             callback({
               valid: valid,
               verified: verified

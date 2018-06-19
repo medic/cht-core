@@ -84,7 +84,7 @@ var validityRequest = function(filters) {
 };
 
 var verificationRequest = function(filters) {
-  return getRequestForBooleanKey('medic-client/reports_by_verification', filters.verified);
+  return getRequestWithMappedKeys('medic-client/reports_by_verification', filters.verified, getKeysArray);
 };
 
 var placeRequest = function(filters) {

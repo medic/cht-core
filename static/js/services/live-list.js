@@ -130,6 +130,8 @@ angular.module('inboxServices').factory('LiveListConfig',
           scope.showStatus = true;
           scope.valid = report.valid;
           scope.verified = report.verified;
+          var statusIcon = (report.valid && report.verified) ? 'report-verify-valid-icon.html' : 'report-verify-invalid-icon.html';
+          scope.statusIcon = $templateCache.get('templates/partials/svg-icons/'+statusIcon);
           scope.lineage = report.subject && report.subject.lineage || report.lineage;
           scope.unread = !report.read;
           var element = renderTemplate(scope);
