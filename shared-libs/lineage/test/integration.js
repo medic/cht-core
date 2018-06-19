@@ -252,7 +252,7 @@ describe('Lineage', function() {
   let lineage;
 
   before(function() {
-    return memdownMedic('../../webapp/src')
+    return memdownMedic('../..')
       .then(database => {
         db = database;
         lineage = lineageFactory(Promise, db);
