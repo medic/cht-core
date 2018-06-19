@@ -402,8 +402,64 @@ describe('Bulk Docs Service', function () {
     });
   });
 
-  describe('Filter Restricted Request', () => {
+  describe('Intercept Response', () => {
+    let testReq,
+        testRes;
+
+    beforeEach(() => {
+      testReq = { query: {} };
+      testRes = {
+        write: sinon.stub(),
+        end: sinon.stub()
+      };
+    });
+
+    it('passes unchanged response if `new_edits` param is false', () => {
+      testReq.originalBody = { docs: [{ _id: 1 }, { _id: 2 }] };
+      testReq.query.new_edits = false;
+
+      service._interceptResponse(testReq, testRes, JSON.stringify(['my response']));
+      testRes.write.callCount.should.equal(1);
+      testRes.write.args[0][0].should.equal(JSON.stringify(['my response']));
+      testRes.end.callCount.should.equal(1);
+    });
+
+    it('passes unchanged response for malformed requests', () => {
+      testReq.originalBody = { docs: 1 };
+      service._interceptResponse(testReq, testRes, JSON.stringify(['my response']));
+      testRes.write.callCount.should.equal(1);
+      testRes.write.args[0][0].should.equal(JSON.stringify(['my response']));
+      testRes.end.callCount.should.equal(1);
+    });
+
+    it('passes unchanged response for malformed responses', () => {
+      testReq.originalBody = { docs: [{ _id: 1 }, { _id: 2 }] };
+      service._interceptResponse(testReq, testRes, JSON.stringify({ name: 'eddie' }));
+      testRes.write.callCount.should.equal(1);
+      testRes.write.args[0][0].should.equal(JSON.stringify({ name: 'eddie' }));
+      testRes.end.callCount.should.equal(1);
+    });
+
+    it('fills for restricted docs with stubs and preserves correct order', () => {
+      testReq.originalBody = { docs: [{ _id: 1 }, { _id: 2 }, { _id: 3 }, { _id: 4 }, { _id: 5 }] };
+      testReq.body = { docs: [{ _id: 5 }, { _id: 2 }] };
+      service._interceptResponse(testReq, testRes, JSON.stringify([{ id: 5, ok: true }, { id: 2, ok: true }]));
+
+      testRes.write.callCount.should.equal(1);
+      testRes.write.args[0][0].should.equal(JSON.stringify([
+        { id: 1, error: 'forbidden' },
+        { id: 2, ok: true },
+        { id: 3, error: 'forbidden' },
+        { id: 4, error: 'forbidden' },
+        { id: 5, ok: true }
+      ]));
+      testRes.end.callCount.should.equal(1);
+    });
+  });
+
+  describe('Filter Offline Request', () => {
     let testReq;
+
     beforeEach(() => {
       sinon.stub(db.medic, 'allDocs').resolves({ rows: [] });
       sinon.stub(db.medic, 'bulkDocs').resolves([]);
@@ -426,7 +482,7 @@ describe('Bulk Docs Service', function () {
       authorization.getUserAuthorizationData.resolves({ subjectIds: ['a'] });
       authorization.getAllowedDocIds.resolves(['a', 'b']);
 
-      return service.filterRestrictedRequest(testReq, testRes, next).then(() => {
+      return service.filterOfflineRequest(testReq, testRes, next).then(() => {
         authorization.getUserAuthorizationData.callCount.should.equal(1);
         authorization.getUserAuthorizationData.args[0][0].should.equal(testReq.userCtx);
 
@@ -439,7 +495,7 @@ describe('Bulk Docs Service', function () {
     it('catches authorization.getAuthorizationData errors', () => {
       authorization.getUserAuthorizationData.rejects({ error: 'something' });
 
-      return service.filterRestrictedRequest(testReq, testRes, next).then(() => {
+      return service.filterOfflineRequest(testReq, testRes, next).then(() => {
         serverUtils.serverError.callCount.should.equal(1);
         serverUtils.serverError.args[0][0].should.deep.equal({ error: 'something' });
       });
@@ -448,7 +504,7 @@ describe('Bulk Docs Service', function () {
     it('catches authorization.getAllowedIds errors', () => {
       authorization.getAllowedDocIds.rejects({ error: 'something' });
 
-      return service.filterRestrictedRequest(testReq, testRes, next).then(() => {
+      return service.filterOfflineRequest(testReq, testRes, next).then(() => {
         serverUtils.serverError.callCount.should.equal(1);
         serverUtils.serverError.args[0][0].should.deep.equal({ error: 'something' });
         next.callCount.should.equal(0);
@@ -459,7 +515,7 @@ describe('Bulk Docs Service', function () {
       authorization.getAllowedDocIds.resolves(['a', 'b']);
       db.medic.allDocs.resolves({ rows: [{ id: 'c' }, { id: 'd' }, { id: 'e' }] });
 
-      return service.filterRestrictedRequest(testReq, testRes, next).then(() => {
+      return service.filterOfflineRequest(testReq, testRes, next).then(() => {
         next.callCount.should.equal(1);
         serverUtils.serverError.callCount.should.equal(0);
         testReq.body.docs.should.deep.equal([{ _id: 'a'}, { _id: 'b' }]);
@@ -474,7 +530,7 @@ describe('Bulk Docs Service', function () {
         .withArgs({ keys: ['b', 'd'] })
         .resolves({ rows: [{ id: 'd' }, { id: 'b' }] });
 
-      return service.filterRestrictedRequest(testReq, testRes, next).then(() => {
+      return service.filterOfflineRequest(testReq, testRes, next).then(() => {
         serverUtils.serverError.callCount.should.equal(0);
         next.callCount.should.equal(1);
         testReq.body.docs.should.deep.equal([
@@ -511,7 +567,7 @@ describe('Bulk Docs Service', function () {
         .withArgs({ keys: [ 'b', 'g'] })
         .resolves({ rows: [{ id: 'b' }]});
 
-      return service.filterRestrictedRequest(testReq, testRes, next).then(() => {
+      return service.filterOfflineRequest(testReq, testRes, next).then(() => {
         serverUtils.serverError.callCount.should.equal(0);
         next.callCount.should.equal(1);
         testReq.body.docs.should.deep.equal([

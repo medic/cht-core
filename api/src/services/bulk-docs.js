@@ -198,10 +198,9 @@ const stubSkipped = (docs, filteredDocs, result) => {
 const interceptResponse = (req, res, response) => {
   response = JSON.parse(response);
 
-  if (req.query && req.query.new_edits !== false && _.isArray(req.originalBody.docs)) {
+  if (req.query && req.query.new_edits !== false && _.isArray(req.originalBody.docs) && _.isArray(response)) {
     // CouchDB doesn't return results when `new_edits` parameter is `false`
-    // if docs were skipped, the consensus is that the response array sequence should reflect
-    // the request array sequence.
+    // The consensus is that the response array sequence should reflect the request array sequence.
     response = stubSkipped(req.originalBody.docs, req.body.docs, response);
   }
   res.write(JSON.stringify(response));
@@ -236,7 +235,7 @@ module.exports = {
         res.end();
       });
   },
-  filterRestrictedRequest: (req, res, next) => {
+  filterOfflineRequest: (req, res, next) => {
     const authorizationContext = { userCtx: req.userCtx };
     return authorization
       .getUserAuthorizationData(req.userCtx)

@@ -471,7 +471,7 @@ describe('db-doc handler', () => {
     });
   });
 
-  it('restricts calls with irregular urls which match couchdb endpoint', () => {
+  it('restricts calls with irregular urls which match couchdb endpoints', () => {
     const doc = { _id: 'denied_report', contact: { _id: 'fixture:online'}, type: 'data_record', form: 'a' };
 
     return utils
@@ -497,7 +497,7 @@ describe('db-doc handler', () => {
           .catch(err => err)
       ]))
       .then(results => {
-        console.log(require('util').inspect(results, { depth: 1000 }));
+        expect(results.every(result => result.statusCode === 403)).toBe(true);
       });
   });
 });

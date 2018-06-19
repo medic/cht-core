@@ -28,12 +28,12 @@ describe('Bulk Get service', () => {
     sinon.restore();
   });
 
-  describe('Filter Restricted Request', () => {
+  describe('Filter Offline Request', () => {
     it('catches authorization errors', () => {
       testReq.body = { docs: [] };
       authorization.getUserAuthorizationData.rejects({ error: 'something' });
 
-      return service.filterRestrictedRequest(testReq, testRes).then(() => {
+      return service.filterOfflineRequest(testReq, testRes).then(() => {
         serverUtils.serverError.callCount.should.equal(1);
         serverUtils.serverError.args[0][0].should.deep.equal({ error: 'something' });
       });
@@ -43,7 +43,7 @@ describe('Bulk Get service', () => {
       testReq.body = { docs: [] };
       db.medic.bulkGet.rejects({ error: 'something' });
 
-      return service.filterRestrictedRequest(testReq, testRes).then(() => {
+      return service.filterOfflineRequest(testReq, testRes).then(() => {
         serverUtils.serverError.callCount.should.equal(1);
         serverUtils.serverError.args[0][0].should.deep.equal({ error: 'something' });
       });
@@ -53,7 +53,7 @@ describe('Bulk Get service', () => {
       testReq.body = { docs: [{ id: 'a', rev: '1-a' }, { id: 'b' }] };
       testReq.query = { revs: 'yes', attachments: 'no', some: 'param' };
 
-      return service.filterRestrictedRequest(testReq, testRes).then(() => {
+      return service.filterOfflineRequest(testReq, testRes).then(() => {
         authorization.getUserAuthorizationData.callCount.should.equal(1);
         db.medic.bulkGet.callCount.should.equal(1);
         db.medic.bulkGet.args[0][0].should.deep.equal(
@@ -86,7 +86,7 @@ describe('Bulk Get service', () => {
         .withArgs('e').returns(false);
 
       return service
-        .filterRestrictedRequest(testReq, testRes)
+        .filterOfflineRequest(testReq, testRes)
         .then(() => {
           authorization.getUserAuthorizationData.callCount.should.equal(1);
           authorization.allowedDoc.callCount.should.equal(7);

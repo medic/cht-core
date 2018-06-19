@@ -9,7 +9,7 @@ let testReq,
 
 describe('db-doc controller', () => {
   beforeEach(() => {
-    sinon.stub(service, 'filterRestrictedRequest').resolves();
+    sinon.stub(service, 'filterOfflineRequest').resolves();
     sinon.stub(service, 'isValidRequest');
 
     testReq = { body: {}, method: 'method', params: { docId: 'a' }};
@@ -22,7 +22,7 @@ describe('db-doc controller', () => {
   });
 
   describe('request', () => {
-    it('filters restricted document requests when the request is valid', () => {
+    it('filters document requests when the request is valid', () => {
       service.isValidRequest.returns(true);
       return controller
         .requestDoc(testReq, testRes, next)
@@ -30,8 +30,8 @@ describe('db-doc controller', () => {
           service.isValidRequest.callCount.should.equal(1);
           service.isValidRequest.args[0].should.deep.equal([testReq.method, testReq.params.docId, testReq.body]);
           next.callCount.should.equal(0);
-          service.filterRestrictedRequest.callCount.should.equal(1);
-          service.filterRestrictedRequest.args[0].should.deep.equal([testReq, testRes, next]);
+          service.filterOfflineRequest.callCount.should.equal(1);
+          service.filterOfflineRequest.args[0].should.deep.equal([testReq, testRes, next]);
         });
     });
 
@@ -44,18 +44,18 @@ describe('db-doc controller', () => {
           service.isValidRequest.args[0].should.deep.equal([testReq.method, testReq.params.docId, testReq.body]);
           next.callCount.should.equal(1);
           next.args[0].should.deep.equal(['route']);
-          service.filterRestrictedRequest.callCount.should.equal(0);
+          service.filterOfflineRequest.callCount.should.equal(0);
         });
     });
 
-    it('filters restricted attachment requests', () => {
+    it('filters attachment requests', () => {
       return controller
         .requestAttachment(testReq, testRes, next)
         .then(() => {
           service.isValidRequest.callCount.should.equal(0);
           next.callCount.should.equal(0);
-          service.filterRestrictedRequest.callCount.should.equal(1);
-          service.filterRestrictedRequest.args[0].should.deep.equal([testReq, testRes, next, true]);
+          service.filterOfflineRequest.callCount.should.equal(1);
+          service.filterOfflineRequest.args[0].should.deep.equal([testReq, testRes, next, true]);
         });
     });
   });

@@ -57,7 +57,7 @@ module.exports = {
     return true;
   },
 
-  filterRestrictedRequest: (req, res, next, attachment) => {
+  filterOfflineRequest: (req, res, next, attachment) => {
     return Promise
       .all([
         getStoredDoc(req),

@@ -123,7 +123,7 @@ describe('db-doc service', () => {
     it('catches db errors', () => {
       db.medic.get.rejects({ some: 'error' });
       return service
-        .filterRestrictedRequest(testReq, testRes, next)
+        .filterOfflineRequest(testReq, testRes, next)
         .then(() => {
           authorization.allowedDoc.callCount.should.equal(0);
           serverUtils.serverError.callCount.should.equal(1);
@@ -135,7 +135,7 @@ describe('db-doc service', () => {
       testReq.userCtx = { name: 'user' };
 
       return service
-        .filterRestrictedRequest(testReq, testRes, next)
+        .filterOfflineRequest(testReq, testRes, next)
         .then(() => {
           authorization.getUserAuthorizationData.callCount.should.equal(1);
           authorization.getUserAuthorizationData.args[0].should.deep.equal([{ name: 'user' }]);
@@ -149,7 +149,7 @@ describe('db-doc service', () => {
       db.medic.get.resolves(doc);
 
       return service
-        .filterRestrictedRequest(testReq, testRes, next)
+        .filterOfflineRequest(testReq, testRes, next)
         .then(() => {
           authorization.getViewResults.callCount.should.equal(1);
           authorization.getViewResults.args[0].should.deep.equal([doc]);
@@ -171,7 +171,7 @@ describe('db-doc service', () => {
       authorization.allowedDoc.returns(true);
 
       return service
-        .filterRestrictedRequest(testReq, testRes, next)
+        .filterOfflineRequest(testReq, testRes, next)
         .then(() => {
           authorization.getViewResults.callCount.should.equal(2);
           authorization.getViewResults.args[0].should.deep.equal([dbDoc]);
@@ -191,7 +191,7 @@ describe('db-doc service', () => {
       authorization.allowedDoc.returns(true);
 
       return service
-        .filterRestrictedRequest(testReq, testRes, next)
+        .filterOfflineRequest(testReq, testRes, next)
         .then(() => {
           authorization.getViewResults.callCount.should.equal(1);
           authorization.getViewResults.args[0].should.deep.equal([doc]);
@@ -210,7 +210,7 @@ describe('db-doc service', () => {
       testReq.method = 'PUT';
 
       return service
-        .filterRestrictedRequest(testReq, testRes, next)
+        .filterOfflineRequest(testReq, testRes, next)
         .then(() => {
           authorization.allowedDoc.callCount.should.equal(1);
           next.callCount.should.equal(1);
@@ -226,7 +226,7 @@ describe('db-doc service', () => {
       testReq.method = 'PUT';
 
       return service
-        .filterRestrictedRequest(testReq, testRes, next)
+        .filterOfflineRequest(testReq, testRes, next)
         .then(() => {
           authorization.allowedDoc.callCount.should.equal(1);
           next.callCount.should.equal(0);
@@ -253,7 +253,7 @@ describe('db-doc service', () => {
       it('blocks for non-existent doc', () => {
         db.medic.get.rejects({ status: 404 });
         return service
-          .filterRestrictedRequest(testReq, testRes, next)
+          .filterOfflineRequest(testReq, testRes, next)
           .then(() => {
             next.callCount.should.equal(0);
             testRes.send.callCount.should.equal(1);
@@ -267,7 +267,7 @@ describe('db-doc service', () => {
         authorization.allowedDoc.returns(false);
 
         return service
-          .filterRestrictedRequest(testReq, testRes, next)
+          .filterOfflineRequest(testReq, testRes, next)
           .then(() => {
             next.callCount.should.equal(0);
             testRes.send.callCount.should.equal(1);
@@ -283,7 +283,7 @@ describe('db-doc service', () => {
         authorization.allowedDoc.returns(true);
 
         return service
-          .filterRestrictedRequest(testReq, testRes, next)
+          .filterOfflineRequest(testReq, testRes, next)
           .then(() => {
             next.callCount.should.equal(1);
             testRes.send.callCount.should.equal(0);
@@ -298,7 +298,7 @@ describe('db-doc service', () => {
       it('blocks for non existent DOC', () => {
         db.medic.get.rejects({ status: 404 });
         return service
-          .filterRestrictedRequest(testReq, testRes, next)
+          .filterOfflineRequest(testReq, testRes, next)
           .then(() => {
             next.callCount.should.equal(0);
             testRes.send.callCount.should.equal(1);
@@ -312,7 +312,7 @@ describe('db-doc service', () => {
         authorization.allowedDoc.returns(false);
 
         return service
-          .filterRestrictedRequest(testReq, testRes, next)
+          .filterOfflineRequest(testReq, testRes, next)
           .then(() => {
             next.callCount.should.equal(0);
             testRes.send.callCount.should.equal(1);
@@ -328,7 +328,7 @@ describe('db-doc service', () => {
         authorization.allowedDoc.returns(true);
 
         return service
-          .filterRestrictedRequest(testReq, testRes, next)
+          .filterOfflineRequest(testReq, testRes, next)
           .then(() => {
             next.callCount.should.equal(1);
             testRes.send.callCount.should.equal(0);
@@ -349,7 +349,7 @@ describe('db-doc service', () => {
         authorization.allowedDoc.returns(false);
 
         return service
-          .filterRestrictedRequest(testReq, testRes, next)
+          .filterOfflineRequest(testReq, testRes, next)
           .then(() => {
             authorization.allowedDoc.callCount.should.equal(1);
             authorization.allowedDoc.args[0].should.deep.equal([
@@ -365,7 +365,7 @@ describe('db-doc service', () => {
         authorization.allowedDoc.returns(true);
 
         return service
-          .filterRestrictedRequest(testReq, testRes, next)
+          .filterOfflineRequest(testReq, testRes, next)
           .then(() => {
             authorization.allowedDoc.callCount.should.equal(1);
             db.medic.get.callCount.should.equal(0);
@@ -388,7 +388,7 @@ describe('db-doc service', () => {
         authorization.allowedDoc.returns(false);
 
         return service
-          .filterRestrictedRequest(testReq, testRes, next)
+          .filterOfflineRequest(testReq, testRes, next)
           .then(() => {
             authorization.allowedDoc.callCount.should.equal(1);
             authorization.allowedDoc.args[0].should.deep.equal([
@@ -405,7 +405,7 @@ describe('db-doc service', () => {
         authorization.allowedDoc.returns(true);
 
         return service
-          .filterRestrictedRequest(testReq, testRes, next)
+          .filterOfflineRequest(testReq, testRes, next)
           .then(() => {
             authorization.allowedDoc.callCount.should.equal(1);
             authorization.allowedDoc.args[0].should.deep.equal([
@@ -422,7 +422,7 @@ describe('db-doc service', () => {
 
         authorization.allowedDoc.returns(false);
         return service
-          .filterRestrictedRequest(testReq, testRes, next)
+          .filterOfflineRequest(testReq, testRes, next)
           .then(() => {
             authorization.allowedDoc.callCount.should.equal(1);
             authorization.allowedDoc.args[0].should.deep.equal([
@@ -444,7 +444,7 @@ describe('db-doc service', () => {
           .returns(true);
 
         return service
-          .filterRestrictedRequest(testReq, testRes, next)
+          .filterOfflineRequest(testReq, testRes, next)
           .then(() => {
             authorization.allowedDoc.callCount.should.equal(1);
             authorization.allowedDoc.args[0].should.deep.equal([
@@ -466,7 +466,7 @@ describe('db-doc service', () => {
           .returns(false);
 
         return service
-          .filterRestrictedRequest(testReq, testRes, next)
+          .filterOfflineRequest(testReq, testRes, next)
           .then(() => {
             authorization.allowedDoc.callCount.should.equal(2);
             authorization.allowedDoc.args[0].should.deep.equal([
@@ -487,7 +487,7 @@ describe('db-doc service', () => {
         authorization.allowedDoc.returns(true);
 
         return service
-          .filterRestrictedRequest(testReq, testRes, next)
+          .filterOfflineRequest(testReq, testRes, next)
           .then(() => {
             authorization.allowedDoc.callCount.should.equal(2);
             authorization.allowedDoc.args[0].should.deep.equal([
@@ -510,7 +510,7 @@ describe('db-doc service', () => {
         db.medic.get.rejects({ status: 404 });
 
         return service
-          .filterRestrictedRequest(testReq, testRes, next)
+          .filterOfflineRequest(testReq, testRes, next)
           .then(() => {
             authorization.allowedDoc.callCount.should.equal(0);
             db.medic.get.callCount.should.equal(1);
@@ -524,7 +524,7 @@ describe('db-doc service', () => {
         db.medic.get.resolves({ _id: 'id' });
 
         return service
-          .filterRestrictedRequest(testReq, testRes, next)
+          .filterOfflineRequest(testReq, testRes, next)
           .then(() => {
             authorization.allowedDoc.callCount.should.equal(1);
             authorization.allowedDoc.args[0].should.deep.equal([
@@ -544,7 +544,7 @@ describe('db-doc service', () => {
         authorization.allowedDoc.returns(true);
 
         return service
-          .filterRestrictedRequest(testReq, testRes, next)
+          .filterOfflineRequest(testReq, testRes, next)
           .then(() => {
             authorization.allowedDoc.callCount.should.equal(1);
             authorization.allowedDoc.args[0].should.deep.equal([

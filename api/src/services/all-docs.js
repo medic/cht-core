@@ -63,7 +63,7 @@ const formatResults = (results, requestIds, res) => {
   res.end();
 };
 
-const filterRestrictedRequest = (req, res) => {
+const filterOfflineRequest = (req, res) => {
   res.type('json');
 
   return authorization
@@ -96,7 +96,7 @@ const filterRestrictedRequest = (req, res) => {
 };
 
 module.exports = {
-  filterRestrictedRequest: filterRestrictedRequest
+  filterOfflineRequest: filterOfflineRequest
 };
 
 // used for testing

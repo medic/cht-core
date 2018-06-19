@@ -1,5 +1,5 @@
 const bulkGet = require('../services/bulk-get');
 
 module.exports = {
-  request: (req, res) => bulkGet.filterRestrictedRequest(req, res)
+  request: (req, res) => bulkGet.filterOfflineRequest(req, res)
 };

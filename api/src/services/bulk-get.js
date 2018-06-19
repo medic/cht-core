@@ -15,7 +15,7 @@ const filterResults = (authorizationContext, result) => {
   });
 };
 
-const filterRestrictedRequest = (req, res) => {
+const filterOfflineRequest = (req, res) => {
   const authorizationContext = { userCtx: req.userCtx };
   return authorization
     .getUserAuthorizationData(req.userCtx)
@@ -33,5 +33,5 @@ const filterRestrictedRequest = (req, res) => {
 };
 
 module.exports = {
-  filterRestrictedRequest: filterRestrictedRequest,
+  filterOfflineRequest: filterOfflineRequest,
 };

@@ -23,6 +23,7 @@ const _ = require('underscore'),
       upgrade = require('./controllers/upgrade'),
       settings = require('./controllers/settings'),
       bulkDocs = require('./controllers/bulk-docs'),
+      authorizationMiddleware = require('./middleware/authorization'),
       createUserDb = require('./controllers/create-user-db'),
       createDomain = require('domain').create,
       staticResources = /\/(templates|static)\//,
@@ -129,34 +130,9 @@ app.get(pathPrefix + 'login', login.get);
 app.get(pathPrefix + 'login/identity', login.getIdentity);
 app.postJson(pathPrefix + 'login', login.post);
 
-const RESTRICTED_ENDPOINTS = [
-  '_design/*/_list/*',
-  '_design/*/_show/*',
-  '_design/*/_view/*',
-  '_find',
-  '_explain',
-  '_index'
-];
-
-const RESTRICTED_BLOCKED_ENPOINT = {
-  code: 403,
-  error: 'forbidden',
-  details: 'Restricted users are not allowed access to this enpoint'
-};
-
-RESTRICTED_ENDPOINTS.forEach(url => {
-  app.all(pathPrefix + url, (req, res, next) => {
-    auth
-      .getUserCtx(req)
-      .then(userCtx => {
-        if (!auth.isOnlineOnly(userCtx)) {
-          res.status(RESTRICTED_BLOCKED_ENPOINT.code);
-          return res.json(RESTRICTED_BLOCKED_ENPOINT);
-        }
-        next();
-      })
-      .catch(next);
-  });
+// restrict offline users from accessing CouchDB endpoints
+authorizationMiddleware.ONLINE_ONLY_ENDPOINTS.forEach(url => {
+  app.all(pathPrefix + url, authorizationMiddleware.offlineFirewall);
 });
 
 var UNAUDITED_ENDPOINTS = [
@@ -489,29 +465,32 @@ const changesHandler = _.partial(require('./controllers/changes').request, proxy
 app.get(pathPrefix + '_changes\/{0,}', changesHandler);
 app.postJson(pathPrefix + '_changes\/{0,}', changesHandler);
 
-// authorization middleware to read userSettings and proxy admin requests directly to CouchDB
-const authorizationHandler = require('./controllers/authorization');
-const adminProxy = _.partial(authorizationHandler.adminProxy, proxy);
+// authorization middleware to read userSettings and proxy online users requests directly to CouchDB
+const onlineProxy = _.partial(authorizationMiddleware.onlineProxy, proxy);
 
+// filter _all_docs requests for offline users
 const allDocsHandler = require('./controllers/all-docs').request;
-app.get(pathPrefix + '_all_docs\/{0,}', adminProxy, allDocsHandler);
-app.post(pathPrefix + '_all_docs\/{0,}', adminProxy, jsonParser, allDocsHandler);
+app.get(pathPrefix + '_all_docs\/{0,}', onlineProxy, allDocsHandler);
+app.post(pathPrefix + '_all_docs\/{0,}', onlineProxy, jsonParser, allDocsHandler);
 
-app.post(pathPrefix + '_bulk_docs\/{0,}', authorizationHandler.adminPassThrough, jsonParser, bulkDocs.request);
+// filter _bulk_docs requests for offline users
+app.post(pathPrefix + '_bulk_docs\/{0,}', authorizationMiddleware.onlinePassThrough, jsonParser, bulkDocs.request);
 
+// filter _bulk_get requests for offline users
 const bulkGetHandler = require('./controllers/bulk-get').request;
-app.post(pathPrefix + '_bulk_get\/{0,}', adminProxy, jsonParser, bulkGetHandler);
+app.post(pathPrefix + '_bulk_get\/{0,}', onlineProxy, jsonParser, bulkGetHandler);
 
+// filter document and attachment requests for offline users
 const dbDocHandler = require('./controllers/db-doc');
 const docPath = `${pathPrefix}:docId\/{0,}`;
 const attachmentPath = `${docPath}/+:attachmentID\/{0,}`;
 
-app.get(docPath, authorizationHandler.adminPassThrough, dbDocHandler.requestDoc);
-app.post(`${pathPrefix}`, authorizationHandler.adminPassThrough, jsonParser, dbDocHandler.requestDoc);
-app.put(docPath, authorizationHandler.adminPassThrough, jsonParser, dbDocHandler.requestDoc);
-app.delete(docPath, authorizationHandler.adminPassThrough, dbDocHandler.requestDoc);
+app.get(docPath, authorizationMiddleware.onlinePassThrough, dbDocHandler.requestDoc);
+app.post(`${pathPrefix}`, authorizationMiddleware.onlinePassThrough, jsonParser, dbDocHandler.requestDoc);
+app.put(docPath, authorizationMiddleware.onlinePassThrough, jsonParser, dbDocHandler.requestDoc);
+app.delete(docPath, authorizationMiddleware.onlinePassThrough, dbDocHandler.requestDoc);
 
-app.all(attachmentPath, authorizationHandler.adminPassThrough, dbDocHandler.requestAttachment);
+app.all(attachmentPath, authorizationMiddleware.onlinePassThrough, dbDocHandler.requestAttachment);
 
 const metaPathPrefix = '/medic-user-\*-meta/';
 

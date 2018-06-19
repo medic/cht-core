@@ -1,6 +1,6 @@
 const sinon = require('sinon').sandbox.create();
 require('chai').should();
-const controller = require('../../../src/controllers/authorization');
+const middleware = require('../../../src/middleware/authorization');
 const auth = require('../../../src/auth');
 const serverUtils = require('../../../src/server-utils');
 
@@ -10,7 +10,7 @@ const testRes = {};
 let proxy,
     next;
 
-describe('Authorization controller', () => {
+describe('Authorization middleware', () => {
   beforeEach(() => {
     sinon.stub(auth, 'getUserCtx');
     sinon.stub(auth, 'isOnlineOnly');
@@ -28,8 +28,8 @@ describe('Authorization controller', () => {
   describe('Admin Proxy', () => {
     it('handles not logged in requests', () => {
       auth.getUserCtx.rejects();
-      return controller
-        .adminProxy(proxy, testReq, testRes, next)
+      return middleware
+        .onlineProxy(proxy, testReq, testRes, next)
         .then(() => {
           serverUtils.notLoggedIn.callCount.should.equal(1);
           next.callCount.should.equal(0);
@@ -40,8 +40,8 @@ describe('Authorization controller', () => {
       auth.getUserCtx.resolves({ name: 'user' });
       auth.isOnlineOnly.withArgs({ name: 'user' }).returns(true);
 
-      return controller
-        .adminProxy(proxy, testReq, testRes, next)
+      return middleware
+        .onlineProxy(proxy, testReq, testRes, next)
         .then(() => {
           serverUtils.notLoggedIn.callCount.should.equal(0);
           next.callCount.should.equal(0);
@@ -56,8 +56,8 @@ describe('Authorization controller', () => {
       auth.isOnlineOnly.withArgs({ name: 'user' }).returns(false);
       auth.getUserSettings.resolves({ name: 'user', contact_id: 'a' });
 
-      return controller
-        .adminProxy(proxy, testReq, testRes, next)
+      return middleware
+        .onlineProxy(proxy, testReq, testRes, next)
         .then(() => {
           serverUtils.notLoggedIn.callCount.should.equal(0);
           next.callCount.should.equal(1);
@@ -72,8 +72,8 @@ describe('Authorization controller', () => {
       auth.isOnlineOnly.withArgs({ name: 'user' }).returns(false);
       auth.getUserSettings.withArgs({ name: 'user' }).resolves({ name: 'user', contact_id: 'a' });
 
-      return controller
-        .adminProxy(proxy, testReq, testRes, next)
+      return middleware
+        .onlineProxy(proxy, testReq, testRes, next)
         .then(() => {
           serverUtils.notLoggedIn.callCount.should.equal(0);
           next.callCount.should.equal(1);
@@ -88,8 +88,8 @@ describe('Authorization controller', () => {
   describe('Admin Pass Through', () => {
     it('handles not logged in requests', () => {
       auth.getUserCtx.rejects();
-      return controller
-        .adminPassThrough(testReq, testRes, next)
+      return middleware
+        .onlinePassThrough(testReq, testRes, next)
         .then(() => {
           serverUtils.notLoggedIn.callCount.should.equal(1);
           next.callCount.should.equal(0);
@@ -100,8 +100,8 @@ describe('Authorization controller', () => {
       auth.getUserCtx.resolves({ name: 'user' });
       auth.isOnlineOnly.withArgs({ name: 'user' }).returns(true);
 
-      return controller
-        .adminPassThrough(testReq, testRes, next)
+      return middleware
+        .onlinePassThrough(testReq, testRes, next)
         .then(() => {
           serverUtils.notLoggedIn.callCount.should.equal(0);
           next.callCount.should.equal(1);
@@ -115,8 +115,8 @@ describe('Authorization controller', () => {
       auth.isOnlineOnly.withArgs({ name: 'user' }).returns(false);
       auth.getUserSettings.withArgs({ name: 'user' }).resolves({ name: 'user', contact_id: 'a' });
 
-      return controller
-        .adminPassThrough(testReq, testRes, next)
+      return middleware
+        .onlinePassThrough(testReq, testRes, next)
         .then(() => {
           serverUtils.notLoggedIn.callCount.should.equal(0);
           next.callCount.should.equal(1);

@@ -6,8 +6,8 @@ module.exports = {
       return next('route');
     }
 
-    return dbDoc.filterRestrictedRequest(req, res, next);
+    return dbDoc.filterOfflineRequest(req, res, next);
   },
 
-  requestAttachment: (req, res, next) => dbDoc.filterRestrictedRequest(req, res, next, true)
+  requestAttachment: (req, res, next) => dbDoc.filterOfflineRequest(req, res, next, true)
 };

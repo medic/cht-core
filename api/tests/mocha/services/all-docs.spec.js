@@ -164,7 +164,7 @@ describe('All Docs service', () => {
       authorization.getUserAuthorizationData.rejects({ error: 'something' });
 
       return service
-        .filterRestrictedRequest(testReq, testRes)
+        .filterOfflineRequest(testReq, testRes)
         .then(() => {
           serverUtils.serverError.callCount.should.equal(1);
           serverUtils.serverError.args[0][0].should.deep.equal({ error: 'something' });
@@ -175,7 +175,7 @@ describe('All Docs service', () => {
       authorization.getAllowedDocIds.rejects({ error: 'something' });
 
       return service
-        .filterRestrictedRequest(testReq, testRes)
+        .filterOfflineRequest(testReq, testRes)
         .then(() => {
           serverUtils.serverError.callCount.should.equal(1);
           serverUtils.serverError.args[0][0].should.deep.equal({ error: 'something' });
@@ -184,7 +184,7 @@ describe('All Docs service', () => {
 
     it('calls authorization.getUserAuthorizationData with correct parameters', () => {
       return service
-        .filterRestrictedRequest(testReq, testRes)
+        .filterOfflineRequest(testReq, testRes)
         .then(() => {
           authorization.getUserAuthorizationData.callCount.should.equal(1);
           authorization.getUserAuthorizationData.args[0][0].should.equal(testReq.userCtx);
@@ -197,7 +197,7 @@ describe('All Docs service', () => {
       db.medic.allDocs.rejects({ error: 'something' });
 
       return service
-        .filterRestrictedRequest(testReq, testRes)
+        .filterOfflineRequest(testReq, testRes)
         .then(() => {
           authorization.getAllowedDocIds.callCount.should.equal(1);
           authorization.getAllowedDocIds.args[0].should.deep.equal([{
@@ -213,7 +213,7 @@ describe('All Docs service', () => {
       authorization.excludeTombstoneIds.withArgs(['a', 'b', 'tombstone1', 'tombstone2']).returns(['a', 'b']);
 
       return service
-        .filterRestrictedRequest(testReq, testRes)
+        .filterOfflineRequest(testReq, testRes)
         .then(() => {
           authorization.excludeTombstoneIds.callCount.should.equal(1);
           authorization.excludeTombstoneIds.args[0][0].should.deep.equal(['a', 'b', 'tombstone1', 'tombstone2']);
@@ -229,7 +229,7 @@ describe('All Docs service', () => {
       testReq.body = { keys: ['1', '2', '3', '4'] };
 
       return service
-        .filterRestrictedRequest(testReq, testRes)
+        .filterOfflineRequest(testReq, testRes)
         .then(() => {
           authorization.excludeTombstoneIds.callCount.should.equal(0);
           authorization.convertTombstoneIds.callCount.should.equal(1);
@@ -242,7 +242,7 @@ describe('All Docs service', () => {
       db.medic.allDocs.rejects({ error: 'something' });
 
       return service
-        .filterRestrictedRequest(testReq, testRes)
+        .filterOfflineRequest(testReq, testRes)
         .then(() => {
           serverUtils.serverError.callCount.should.equal(1);
           serverUtils.serverError.args[0][0].should.deep.equal({ error: 'something' });
@@ -262,7 +262,7 @@ describe('All Docs service', () => {
       authorization.getAllowedDocIds.returns(['a', 'b', 'c']);
 
       return service
-        .filterRestrictedRequest(testReq, testRes)
+        .filterOfflineRequest(testReq, testRes)
         .then(() => {
           serverUtils.serverError.callCount.should.equal(0);
           db.medic.allDocs.callCount.should.equal(1);
@@ -294,7 +294,7 @@ describe('All Docs service', () => {
       authorization.getAllowedDocIds.resolves(['a', 'b']);
 
       return service
-        .filterRestrictedRequest(testReq, testRes)
+        .filterOfflineRequest(testReq, testRes)
         .then(() => {
           serverUtils.serverError.callCount.should.equal(0);
           db.medic.allDocs.callCount.should.equal(1);
@@ -312,7 +312,7 @@ describe('All Docs service', () => {
       db.medic.allDocs.resolves([{ id: 'a' }, { id: 'b' }]);
 
       return service
-        .filterRestrictedRequest(testReq, testRes)
+        .filterOfflineRequest(testReq, testRes)
         .then(() => {
           serverUtils.serverError.callCount.should.equal(0);
           db.medic.allDocs.callCount.should.equal(1);
@@ -328,7 +328,7 @@ describe('All Docs service', () => {
       testReq.method = 'GET';
 
       return service
-        .filterRestrictedRequest(testReq, testRes)
+        .filterOfflineRequest(testReq, testRes)
         .then(() => {
           db.medic.allDocs.callCount.should.equal(1);
           testRes.write.callCount.should.equal(1);
@@ -348,7 +348,7 @@ describe('All Docs service', () => {
       db.medic.allDocs.withArgs({ keys: docIds }).resolves(allDocsResponse);
 
       return service
-        .filterRestrictedRequest(testReq, testRes)
+        .filterOfflineRequest(testReq, testRes)
         .then(() => {
           db.medic.allDocs.callCount.should.equal(1);
           db.medic.allDocs.args[0][0].should.deep.equal({ keys: docIds });
@@ -368,7 +368,7 @@ describe('All Docs service', () => {
       testReq.body = { keys: ['a', 'aa', 'b', 'bb', 'c', 'd', 'f', 'g'] };
 
       return service
-        .filterRestrictedRequest(testReq, testRes)
+        .filterOfflineRequest(testReq, testRes)
         .then(() => {
           db.medic.allDocs.callCount.should.equal(1);
           db.medic.allDocs.args[0][0].should.deep.equal({ keys: ['b', 'c', 'd'] });

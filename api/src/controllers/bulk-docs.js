@@ -16,5 +16,5 @@ module.exports = {
       .catch(err => next(err));
   },
 
-  request: (req, res, next) => bulkDocs.filterRestrictedRequest(req, res, next)
+  request: (req, res, next) => bulkDocs.filterOfflineRequest(req, res, next)
 };

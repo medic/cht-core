@@ -1,5 +1,5 @@
 const allDocs = require('../services/all-docs');
 
 module.exports = {
-  request: (req, res) => allDocs.filterRestrictedRequest(req, res)
+  request: (req, res) => allDocs.filterOfflineRequest(req, res)
 };

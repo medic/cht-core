@@ -1,7 +1,35 @@
 const auth = require('../auth'),
       serverUtils = require('../server-utils');
 
-module.exports.adminProxy = (proxy, req, res, next) => {
+module.exports.ONLINE_ONLY_ENDPOINTS = [
+  '_design/*/_list/*',
+  '_design/*/_show/*',
+  '_design/*/_view/*',
+  '_find',
+  '_explain',
+  '_index'
+];
+
+const OFFLINE_FIREWALL_RESPONSE = {
+  code: 403,
+  error: 'forbidden',
+  details: 'Restricted users are not allowed access to this enpoint'
+};
+
+module.exports.offlineFirewall = (req, res, next) => {
+  auth
+    .getUserCtx(req)
+    .then(userCtx => {
+      if (!auth.isOnlineOnly(userCtx)) {
+        res.status(OFFLINE_FIREWALL_RESPONSE.code);
+        return res.json(OFFLINE_FIREWALL_RESPONSE);
+      }
+      next();
+    })
+    .catch(next);
+};
+
+module.exports.onlineProxy = (proxy, req, res, next) => {
   return auth
     .getUserCtx(req)
     .then(userCtx => {
@@ -19,7 +47,7 @@ module.exports.adminProxy = (proxy, req, res, next) => {
     .catch(() => serverUtils.notLoggedIn(req, res, false));
 };
 
-module.exports.adminPassThrough = (req, res, next) => {
+module.exports.onlinePassThrough = (req, res, next) => {
   return auth
     .getUserCtx(req)
     .then(userCtx => {

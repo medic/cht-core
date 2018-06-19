@@ -12,7 +12,7 @@ const testRes = {};
 
 describe('Bulk GET controller', () => {
   beforeEach(() => {
-    sinon.stub(service, 'filterRestrictedRequest').resolves();
+    sinon.stub(service, 'filterOfflineRequest').resolves();
   });
 
   afterEach(() => {
@@ -20,13 +20,13 @@ describe('Bulk GET controller', () => {
   });
 
   describe('request', () => {
-    it ('filters for restricted requests', () => {
+    it ('filters for offline requests', () => {
       return controller
         .request(testReq, testRes)
         .then(() => {
-          service.filterRestrictedRequest.callCount.should.equal(1);
-          service.filterRestrictedRequest.getCall(0).args[0].should.equal(testReq);
-          service.filterRestrictedRequest.getCall(0).args[1].should.equal(testRes);
+          service.filterOfflineRequest.callCount.should.equal(1);
+          service.filterOfflineRequest.getCall(0).args[0].should.equal(testReq);
+          service.filterOfflineRequest.getCall(0).args[1].should.equal(testRes);
         });
     });
   });
