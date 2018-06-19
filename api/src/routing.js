@@ -30,6 +30,7 @@ const _ = require('underscore'),
       appPrefix = pathPrefix + '_design/' + db.settings.ddoc + '/_rewrite/',
       serverUtils = require('./server-utils'),
       appcacheManifest = /\/manifest\.appcache$/,
+      uuid = require('uuid/v4'),
       app = express();
 
 // requires content-type application/json header
@@ -70,10 +71,15 @@ if(process.argv.slice(2).includes('--allow-cors')) {
   });
 }
 
-// Logs Request
-app.use(morgan('combined', {immediate: true}));//':remote-addr - :remote-user [:date[clf]] ":method :url HTTP/:http-version" ":referrer" ":user-agent"'
-// Logs Response
-app.use(morgan(':remote-addr - :remote-user [:date[clf]] ":method :url HTTP/:http-version" :status :res[content-length] :response-time ms'));
+app.use((req, res, next) => {
+  req.id = uuid.v4();
+  next();
+});
+morgan.token('id', req => req.id);
+app.use(morgan('REQ :id :remote-addr :remote-user :method :url HTTP/:http-version', {immediate: true}));
+app.use(morgan('RES :id :remote-addr :remote-user :method :url HTTP/:http-version :status :res[content-length] :response-time ms'));
+
+
 
 app.use(helmet({
   // runs with a bunch of defaults: https://github.com/helmetjs/helmet
