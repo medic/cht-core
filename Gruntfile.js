@@ -433,25 +433,25 @@ module.exports = function(grunt) {
       // To monkey patch a library...
       // 1. copy the file you want to change
       // 2. make the changes
-      // 3. run `diff -c original modified > patches/my-patch.patch`
+      // 3. run `diff -c original modified > webapp/patches/my-patch.patch`
       // 4. update grunt targets: "apply-patches", "undo-patches", and "libraries-to-patch"
       'apply-patches': {
         cmd: function() {
           var patches = [
             // patch the daterangepicker for responsiveness
             // https://github.com/dangrossman/bootstrap-daterangepicker/pull/437
-            'patch webapp/node_modules/bootstrap-daterangepicker/daterangepicker.js < patches/bootstrap-daterangepicker.patch',
+            'patch webapp/node_modules/bootstrap-daterangepicker/daterangepicker.js < webapp/patches/bootstrap-daterangepicker.patch',
 
             // patch font-awesome to remove version attributes so appcache works
             // https://github.com/FortAwesome/Font-Awesome/issues/3286
-            'patch webapp/node_modules/font-awesome/less/path.less < patches/font-awesome-remove-version-attribute.patch',
+            'patch webapp/node_modules/font-awesome/less/path.less < webapp/patches/font-awesome-remove-version-attribute.patch',
 
             // patch moment.js to use western arabic (european) numerals in Hindi
-            'patch webapp/node_modules/moment/locale/hi.js < patches/moment-hindi-use-euro-numerals.patch',
+            'patch webapp/node_modules/moment/locale/hi.js < webapp/patches/moment-hindi-use-euro-numerals.patch',
 
             // patch pouch to:
             // * improve safari checks (https://github.com/medic/medic-webapp/issues/2797)
-            'patch webapp/node_modules/pouchdb-browser/lib/index.js < patches/pouchdb-browser.patch',
+            'patch webapp/node_modules/pouchdb-browser/lib/index.js < webapp/patches/pouchdb-browser.patch',
           ];
           return patches.join(' && ');
         }
