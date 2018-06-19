@@ -30,8 +30,8 @@ module.exports = function(config) {
       'tests/karma/q.js',
 
       // application code
-      'dist/ddocs/medic/_attachments/js/inbox.js',
-      'dist/ddocs/medic/_attachments/js/templates.js',
+      '../build/ddocs/medic/_attachments/js/inbox.js',
+      '../build/ddocs/medic/_attachments/js/templates.js',
       'src/templates/directives/sender.html',
 
       // test-specific code

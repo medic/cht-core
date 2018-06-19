@@ -4,7 +4,7 @@
  *
  * USAGE
  * 	memdownMedic = require('memdown-medic');
- * 	memdownMedic('webapp/src')
+ * 	memdownMedic('.')
  * 	  .then(db => {
  * 	    db.allDocs()
  * 	      .then(console.log)

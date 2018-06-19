@@ -25,7 +25,7 @@ module.exports = function(config) {
       '../webapp/tests/karma/q.js',
 
       // application code
-      '../webapp/dist/ddocs/medic-admin/_attachments/main.js',
+      '../build/ddocs/medic-admin/_attachments/main.js',
 
       // test-specific code
       'node_modules/chai/chai.js',

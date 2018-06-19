@@ -65,15 +65,15 @@
   },
   "bundlesize": [
     {
-      "path": "./webapp/dist/ddocs/medic/_attachments/js/inbox.js",
+      "path": "./build/ddocs/medic/_attachments/js/inbox.js",
       "maxSize": "800 kB"
     },
     {
-      "path": "./webapp/dist/ddocs/medic/_attachments/js/templates.js",
+      "path": "./build/ddocs/medic/_attachments/js/templates.js",
       "maxSize": "30 kB"
     },
     {
-      "path": "./webapp/dist/ddocs/medic/_attachments/css/inbox.css",
+      "path": "./build/ddocs/medic/_attachments/css/inbox.css",
       "maxSize": "70 kB"
     }
   ]

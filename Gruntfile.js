@@ -19,7 +19,7 @@ module.exports = function(grunt) {
   grunt.initConfig({
     replace: {
       'update-app-constants': {
-        src: [ 'webapp/dist/ddocs/medic/_attachments/js/inbox.js' ],
+        src: [ 'build/ddocs/medic/_attachments/js/inbox.js' ],
         overwrite: true,
         replacements: [{
           from: /@@APP_CONFIG.version/g,
@@ -30,7 +30,7 @@ module.exports = function(grunt) {
         }]
       },
       'change-ddoc-id-for-publish': {
-        src: [ 'webapp/dist/ddocs/medic.json' ],
+        src: [ 'build/ddocs/medic.json' ],
         overwrite: true,
         replacements: [{
           from: '"_id": "_design/medic"',
@@ -41,12 +41,12 @@ module.exports = function(grunt) {
     'couch-compile': {
       primary: {
         files: {
-          'webapp/dist/ddocs/medic.json': 'webapp/dist/ddocs/medic/'
+          'build/ddocs/medic.json': 'build/ddocs/medic/'
         }
       },
       secondary: {
         files: {
-          'webapp/dist/ddocs/medic/_attachments/ddocs/compiled.json': 'webapp/dist/ddocs/medic-*/'
+          'build/ddocs/medic/_attachments/ddocs/compiled.json': 'build/ddocs/medic-*/'
         }
       },
     },
@@ -57,7 +57,7 @@ module.exports = function(grunt) {
           pass: 'pass'
         },
         files: {
-          'http://localhost:5984/medic': 'webapp/dist/ddocs/medic.json'
+          'http://localhost:5984/medic': 'build/ddocs/medic.json'
         }
       },
       // push just the secondary ddocs to save time in dev
@@ -67,7 +67,7 @@ module.exports = function(grunt) {
           pass: 'pass'
         },
         files: {
-          'http://localhost:5984/medic': 'webapp/dist/ddocs/medic/_attachments/ddocs/compiled.json'
+          'http://localhost:5984/medic': 'build/ddocs/medic/_attachments/ddocs/compiled.json'
         }
       },
       test: {
@@ -76,13 +76,13 @@ module.exports = function(grunt) {
           pass: 'pass'
         },
         files: {
-          'http://localhost:5984/medic-test': 'webapp/dist/ddocs/medic.json'
+          'http://localhost:5984/medic-test': 'build/ddocs/medic.json'
         }
       },
       staging: {
         files: [
           {
-            src: 'webapp/dist/ddocs/medic.json',
+            src: 'build/ddocs/medic.json',
             dest: process.env.UPLOAD_URL + '/_couch/builds'
           },
         ],
@@ -96,7 +96,7 @@ module.exports = function(grunt) {
       },
       webapp: {
         src: 'webapp/src/js/app.js',
-        dest: 'webapp/dist/ddocs/medic/_attachments/js/inbox.js',
+        dest: 'build/ddocs/medic/_attachments/js/inbox.js',
         browserifyOptions: {
           detectGlobals: false
         },
@@ -117,7 +117,7 @@ module.exports = function(grunt) {
       },
       admin: {
         src: 'admin/src/js/main.js',
-        dest: 'webapp/dist/ddocs/medic-admin/_attachments/main.js',
+        dest: 'build/ddocs/medic-admin/_attachments/main.js',
         options: {
           transform: ['browserify-ngannotate'],
           alias: {
@@ -132,10 +132,10 @@ module.exports = function(grunt) {
       },
       build: {
         files: {
-          'webapp/dist/ddocs/medic/_attachments/js/templates.js': 'webapp/dist/ddocs/medic/_attachments/js/templates.js',
-          'webapp/dist/ddocs/medic/_attachments/js/inbox.js': 'webapp/dist/ddocs/medic/_attachments/js/inbox.js',
-          'webapp/dist/ddocs/medic-admin/_attachments/main.js': 'webapp/dist/ddocs/medic-admin/_attachments/main.js',
-          'webapp/dist/ddocs/medic-admin/_attachments/templates.js': 'webapp/dist/ddocs/medic-admin/_attachments/templates.js',
+          'build/ddocs/medic/_attachments/js/templates.js': 'build/ddocs/medic/_attachments/js/templates.js',
+          'build/ddocs/medic/_attachments/js/inbox.js': 'build/ddocs/medic/_attachments/js/inbox.js',
+          'build/ddocs/medic-admin/_attachments/main.js': 'build/ddocs/medic-admin/_attachments/main.js',
+          'build/ddocs/medic-admin/_attachments/templates.js': 'build/ddocs/medic-admin/_attachments/templates.js',
         }
       }
     },
@@ -164,7 +164,7 @@ module.exports = function(grunt) {
           'webapp/tests/karma/q.js',
           '**/node_modules/**',
           'sentinel/src/lib/pupil/**',
-          'webapp/dist/**'
+          'build/**'
         ]
       },
       all: [
@@ -176,17 +176,18 @@ module.exports = function(grunt) {
         'sentinel/**/*.js',
         'shared-libs/**/*.js',
         'admin/**/*.js',
+        'ddocs/**/*.js',
       ]
     },
     less: {
       webapp: {
         files: {
-          'webapp/dist/ddocs/medic/_attachments/css/inbox.css': 'webapp/src/css/inbox.less'
+          'build/ddocs/medic/_attachments/css/inbox.css': 'webapp/src/css/inbox.less'
         }
       },
       admin: {
         files: {
-          'webapp/dist/ddocs/medic-admin/_attachments/main.css': 'admin/src/css/main.less'
+          'build/ddocs/medic-admin/_attachments/main.css': 'admin/src/css/main.less'
         }
       },
     },
@@ -196,8 +197,8 @@ module.exports = function(grunt) {
           keepSpecialComments: 0
         },
         files: {
-          'webapp/dist/ddocs/medic/_attachments/css/inbox.css': 'webapp/dist/ddocs/medic/_attachments/css/inbox.css',
-          'webapp/dist/ddocs/medic-admin/_attachments/main.css': 'webapp/dist/ddocs/medic-admin/_attachments/main.css',
+          'build/ddocs/medic/_attachments/css/inbox.css': 'build/ddocs/medic/_attachments/css/inbox.css',
+          'build/ddocs/medic-admin/_attachments/main.css': 'build/ddocs/medic-admin/_attachments/main.css',
         }
       }
     },
@@ -211,7 +212,7 @@ module.exports = function(grunt) {
         ]
       },
       dist: {
-        src: 'webapp/dist/ddocs/medic/_attachments/css/*.css'
+        src: 'build/ddocs/medic/_attachments/css/*.css'
       }
     },
     copy: {
@@ -219,9 +220,9 @@ module.exports = function(grunt) {
         files: [
           {
             expand: true,
-            cwd: 'webapp/src/ddocs/',
+            cwd: 'ddocs/',
             src: '**/*',
-            dest: 'webapp/dist/ddocs/'
+            dest: 'build/ddocs/'
           },
         ]
       },
@@ -231,7 +232,7 @@ module.exports = function(grunt) {
             expand: true,
             flatten: true,
             src: 'webapp/node_modules/font-awesome/fonts/*',
-            dest: 'webapp/dist/ddocs/medic/_attachments/fonts/'
+            dest: 'build/ddocs/medic/_attachments/fonts/'
           }
         ]
       },
@@ -247,17 +248,7 @@ module.exports = function(grunt) {
               'templates/inbox.html',
               'ddocs/medic/_attachments/**/*',
             ],
-            dest: 'webapp/dist/ddocs/medic/_attachments/'
-          }
-        ]
-      },
-      translations: {
-        files: [
-          {
-            expand: true,
-            flatten: true,
-            src: 'webapp/src/ddocs/medic/_attachments/translations/*',
-            dest: 'webapp/dist/ddocs/medic/_attachments/translations/'
+            dest: 'build/ddocs/medic/_attachments/'
           }
         ]
       },
@@ -267,13 +258,13 @@ module.exports = function(grunt) {
             expand: true,
             flatten: true,
             src: 'admin/src/templates/index.html',
-            dest: 'webapp/dist/ddocs/medic-admin/_attachments/'
+            dest: 'build/ddocs/medic-admin/_attachments/'
           },
           {
             expand: true,
             flatten: true,
             src: 'admin/node_modules/font-awesome/fonts/*',
-            dest: 'webapp/dist/ddocs/medic-admin/_attachments/fonts/'
+            dest: 'build/ddocs/medic-admin/_attachments/fonts/'
           }
         ]
       },
@@ -298,14 +289,14 @@ module.exports = function(grunt) {
             expand: true,
             flatten: true,
             src: 'webapp/node_modules/medic-enketo-xslt/xsl/*.xsl',
-            dest: 'webapp/dist/ddocs/medic/_attachments/xslt/'
+            dest: 'build/ddocs/medic/_attachments/xslt/'
           }
         ]
       }
     },
     exec: {
-      'clean-dist': {
-        cmd: 'rm -rf webapp/dist && mkdir webapp/dist'
+      'clean-build-dir': {
+        cmd: 'rm -rf build && mkdir build'
       },
       'pack-node-modules': {
         cmd: ['api', 'sentinel'].map(module => [
@@ -313,7 +304,7 @@ module.exports = function(grunt) {
               `rm -rf node_modules`,
               `yarn install --production`,
               `npm pack`, // Use npm until yarn pack is fixed: https://github.com/medic/medic-webapp/issues/4489
-              `mv medic-*.tgz ../webapp/dist/ddocs/medic/_attachments/`,
+              `mv medic-*.tgz ../build/ddocs/medic/_attachments/`,
               `cd ..`,
             ].join(' && ')).join(' && ')
       },
@@ -340,13 +331,13 @@ module.exports = function(grunt) {
               version += `-alpha.${process.env.TRAVIS_BUILD_NUMBER}`;
             }
           }
-          return `echo "${version}" > webapp/dist/ddocs/medic/version`;
+          return `echo "${version}" > build/ddocs/medic/version`;
         }
       },
       'set-horticulturalist-metadata': {
         cmd: () => `
-          mkdir -p webapp/dist/ddocs/medic/build_info;
-          cd webapp/dist/ddocs/medic/build_info;
+          mkdir -p build/ddocs/medic/build_info;
+          cd build/ddocs/medic/build_info;
           echo "${releaseName}" > version;
           echo "${require('./package.json').version}" > base_version;
           echo "${new Date().toISOString()}" > time;
@@ -533,7 +524,7 @@ module.exports = function(grunt) {
         ]
       },
       'primary-ddoc': {
-        files: ['webapp/src/ddocs/medic/**/*'],
+        files: ['ddocs/medic/**/*'],
         tasks: [
           'copy:ddocs',
           'couch-compile:primary',
@@ -541,7 +532,7 @@ module.exports = function(grunt) {
         ]
       },
       'secondary-ddocs': {
-        files: ['webapp/src/ddocs/medic-*/**/*'],
+        files: ['ddocs/medic-*/**/*'],
         tasks: [
           'copy:ddocs',
           'couch-compile:secondary',
@@ -620,7 +611,7 @@ module.exports = function(grunt) {
           'templates/partials/**/*.html',
           'templates/directives/**/*.html'
         ],
-        dest: 'webapp/dist/ddocs/medic/_attachments/js/templates.js',
+        dest: 'build/ddocs/medic/_attachments/js/templates.js',
         options: {
           htmlmin: {
             collapseBooleanAttributes: true,
@@ -640,7 +631,7 @@ module.exports = function(grunt) {
           'templates/**/*.html',
           '!templates/index.html',
         ],
-        dest: 'webapp/dist/ddocs/medic-admin/_attachments/templates.js',
+        dest: 'build/ddocs/medic-admin/_attachments/templates.js',
         options: {
           htmlmin: {
             collapseBooleanAttributes: true,
@@ -657,20 +648,20 @@ module.exports = function(grunt) {
     },
     appcache: {
       options: {
-        basePath: 'webapp/dist/ddocs/medic/_attachments',
+        basePath: 'build/ddocs/medic/_attachments',
       },
       inbox: {
-        dest: 'webapp/dist/ddocs/medic/_attachments/manifest.appcache',
+        dest: 'build/ddocs/medic/_attachments/manifest.appcache',
         network: '*',
         cache: {
           patterns: [
-            'webapp/dist/ddocs/medic/_attachments/manifest.json',
-            'webapp/dist/ddocs/medic/_attachments/audio/**/*',
-            'webapp/dist/ddocs/medic/_attachments/css/**/*',
-            'webapp/dist/ddocs/medic/_attachments/fonts/**/*',
-            'webapp/dist/ddocs/medic/_attachments/img/**/*',
-            'webapp/dist/ddocs/medic/_attachments/js/**/*',
-            'webapp/dist/ddocs/medic/_attachments/xslt/**/*',
+            'build/ddocs/medic/_attachments/manifest.json',
+            'build/ddocs/medic/_attachments/audio/**/*',
+            'build/ddocs/medic/_attachments/css/**/*',
+            'build/ddocs/medic/_attachments/fonts/**/*',
+            'build/ddocs/medic/_attachments/img/**/*',
+            'build/ddocs/medic/_attachments/js/**/*',
+            'build/ddocs/medic/_attachments/xslt/**/*',
           ]
         }
       }
@@ -679,7 +670,7 @@ module.exports = function(grunt) {
       compile: {
         cwd: 'webapp/src/css/',
         src: 'enketo/enketo.scss',
-        dest: 'webapp/dist',
+        dest: 'build',
         ext: '.less',
         expand: true,
         outputStyle: 'expanded',
@@ -721,16 +712,16 @@ module.exports = function(grunt) {
     xmlmin: {
       'enketo-xslt': {
         files: {
-          'webapp/dist/ddocs/medic/_attachments/xslt/openrosa2html5form.xsl': 'webapp/dist/ddocs/medic/_attachments/xslt/openrosa2html5form.xsl',
-          'webapp/dist/ddocs/medic/_attachments/xslt/openrosa2xmlmodel.xsl': 'webapp/dist/ddocs/medic/_attachments/xslt/openrosa2xmlmodel.xsl'
+          'build/ddocs/medic/_attachments/xslt/openrosa2html5form.xsl': 'build/ddocs/medic/_attachments/xslt/openrosa2html5form.xsl',
+          'build/ddocs/medic/_attachments/xslt/openrosa2xmlmodel.xsl': 'build/ddocs/medic/_attachments/xslt/openrosa2xmlmodel.xsl'
         }
       }
     },
     'optimize-js': {
-      'webapp/dist/ddocs/medic/_attachments/js/inbox.js': 'webapp/dist/ddocs/medic/_attachments/js/inbox.js',
-      'webapp/dist/ddocs/medic/_attachments/js/templates.js': 'webapp/dist/ddocs/medic/_attachments/js/templates.js',
-      'webapp/dist/ddocs/medic-admin/_attachments/main.js': 'webapp/dist/ddocs/medic-admin/_attachments/main.js',
-      'webapp/dist/ddocs/medic-admin/_attachments/templates.js': 'webapp/dist/ddocs/medic-admin/_attachments/templates.js',
+      'build/ddocs/medic/_attachments/js/inbox.js': 'build/ddocs/medic/_attachments/js/inbox.js',
+      'build/ddocs/medic/_attachments/js/templates.js': 'build/ddocs/medic/_attachments/js/templates.js',
+      'build/ddocs/medic-admin/_attachments/main.js': 'build/ddocs/medic-admin/_attachments/main.js',
+      'build/ddocs/medic-admin/_attachments/templates.js': 'build/ddocs/medic-admin/_attachments/templates.js',
     },
   });
 
@@ -760,7 +751,7 @@ module.exports = function(grunt) {
   ]);
 
   grunt.registerTask('build', 'Build the static resources', [
-    'exec:clean-dist',
+    'exec:clean-build-dir',
     'copy:ddocs',
     'build-node-modules',
     'mmcss',
@@ -771,7 +762,7 @@ module.exports = function(grunt) {
   ]);
 
   grunt.registerTask('build-dev', 'Build the static resources', [
-    'exec:clean-dist',
+    'exec:clean-build-dir',
     'copy:ddocs',
     'mmcss',
     'mmjs',
