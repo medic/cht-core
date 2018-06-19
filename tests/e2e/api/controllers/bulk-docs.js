@@ -329,4 +329,26 @@ describe('bulk-docs handler', () => {
         })).toBe(true);
       });
   });
+
+  it('works with `new_edits`', () => {
+    const docs = [
+      { _id: 'allowed', _rev: '1-test', type: 'clinic', parent: { _id: 'fixture:offline' }, name: 'allowed-1' },
+      { _id: 'denied', _rev: '1-test', type: 'clinic', parent: { _id: 'fixture:online' }, name: 'denied-1'}
+    ];
+
+    offlineRequestOptions.body = JSON.stringify({ docs: docs, new_edits: false });
+    return utils
+      .requestOnTestDb(offlineRequestOptions)
+      .then(result => {
+        expect(result).toEqual([]);
+        return Promise.all([
+          utils.getDoc('allowed'),
+          utils.getDoc('denied').catch(err => err)
+        ]);
+      })
+      .then(results => {
+        expect(results[0]).toEqual(docs[0]);
+        expect(results[1].statusCode).toEqual(404);
+      });
+  });
 });

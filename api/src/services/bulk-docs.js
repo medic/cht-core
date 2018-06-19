@@ -142,11 +142,14 @@ const filterAllowedDocs = (authorizationContext, docs) => {
   let shouldCheck = true,
       pendingDocs = docs.map(doc => ({
         doc,
-        viewResults: authorization.getViewResults(doc)
+        viewResults: authorization.getViewResults(doc),
+        alwaysAllowCreate: authorization.alwaysAllowCreate(doc)
       }));
 
   const checkDoc = (docObj) => {
-    const allowed = authorization.allowedDoc(docObj.doc._id, authorizationContext, docObj.viewResults);
+    const allowed = docObj.alwaysAllowCreate ||
+                    authorization.allowedDoc(docObj.doc._id, authorizationContext, docObj.viewResults);
+
     if (!allowed) {
       return;
     }
@@ -198,7 +201,7 @@ const stubSkipped = (docs, filteredDocs, result) => {
 const interceptResponse = (req, res, response) => {
   response = JSON.parse(response);
 
-  if (req.query && req.query.new_edits !== false && _.isArray(req.originalBody.docs) && _.isArray(response)) {
+  if (req.body.new_edits !== false && _.isArray(req.originalBody.docs) && _.isArray(response)) {
     // CouchDB doesn't return results when `new_edits` parameter is `false`
     // The consensus is that the response array sequence should reflect the request array sequence.
     response = stubSkipped(req.originalBody.docs, req.body.docs, response);

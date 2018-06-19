@@ -97,6 +97,10 @@ const allowedDoc = (docId, feed, { replicationKeys, contactsByDepth }) => {
   });
 };
 
+const alwaysAllowCreate = doc => {
+  return doc && doc.type && doc.type === 'feedback';
+};
+
 const getContactsByDepthKeys = (userCtx, depth) => {
   const keys = [];
   if (depth >= 0) {
@@ -208,5 +212,6 @@ module.exports = {
   getUserAuthorizationData: getUserAuthorizationData,
   getAllowedDocIds: getAllowedDocIds,
   excludeTombstoneIds: excludeTombstoneIds,
-  convertTombstoneIds: convertTombstoneIds
+  convertTombstoneIds: convertTombstoneIds,
+  alwaysAllowCreate: alwaysAllowCreate
 };

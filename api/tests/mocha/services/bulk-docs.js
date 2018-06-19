@@ -407,7 +407,7 @@ describe('Bulk Docs Service', function () {
         testRes;
 
     beforeEach(() => {
-      testReq = { query: {} };
+      testReq = { body: {} };
       testRes = {
         write: sinon.stub(),
         end: sinon.stub()
@@ -416,7 +416,7 @@ describe('Bulk Docs Service', function () {
 
     it('passes unchanged response if `new_edits` param is false', () => {
       testReq.originalBody = { docs: [{ _id: 1 }, { _id: 2 }] };
-      testReq.query.new_edits = false;
+      testReq.body.new_edits = false;
 
       service._interceptResponse(testReq, testRes, JSON.stringify(['my response']));
       testRes.write.callCount.should.equal(1);

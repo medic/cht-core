@@ -77,6 +77,7 @@ module.exports = {
         }
 
         if (requestDoc &&
+            !authorization.alwaysAllowCreate(requestDoc) &&
             !authorization.allowedDoc(requestDoc._id, authorizationContext, authorization.getViewResults(requestDoc))) {
           return sendError(res);
         }
