@@ -1,4 +1,5 @@
-var db = require('../db-nano');
+var db = require('../db-nano'),
+    {promisify} = require('util');
 
 var emptyParentsView = function(doc) {
   if (['district_hospital', 'health_center', 'clinic', 'person'].indexOf(doc.type) === -1 ||
@@ -22,7 +23,7 @@ var removeEmptyParents = function(docs, callback) {
 module.exports = {
   name: 'remove-empty-parents',
   created: new Date(2016, 7, 10, 13, 37, 0, 0),
-  run: function(callback) {
+  run: promisify(function(callback) {
     db.getCouchDbVersion(function(err, version) {
       if (err) {
         return callback(err);
@@ -83,5 +84,5 @@ module.exports = {
         });
       }
     });
-  }
+  })
 };

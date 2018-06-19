@@ -1,10 +1,11 @@
 const db = require('../db-pouch'),
+      {promisify} = require('util'),
       userDb = require('../services/user-db');
 
 module.exports = {
   name: 'fix-user-db-security',
   created: new Date(2018, 4, 12),
-  run: callback => {
+  run: promisify(callback => {
     db.users.allDocs()
       .then(docs => {
         return Promise.all(docs.rows
@@ -24,5 +25,5 @@ module.exports = {
       })
       .then(() => callback())
       .catch(callback);
-  }
+  })
 };

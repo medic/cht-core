@@ -1,4 +1,5 @@
 var db = require('../db-nano'),
+    {promisify} = require('util'),
     async = require('async'),
     moment = require('moment'),
     uuidV4 = require('uuid/v4'),
@@ -72,7 +73,7 @@ var runBatch = function(skip, callback) {
 module.exports = {
   name: 'add-uuid-to-scheduled-tasks',
   created: new Date(2017, 1, 5),
-  run: function(callback) {
+  run: promisify(function(callback) {
     settingsService.get()
       .then(settings => {
         var schedules = settings.schedules;
@@ -94,5 +95,5 @@ module.exports = {
         );
       })
       .catch(callback);
-  }
+  })
 };

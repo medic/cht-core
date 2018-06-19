@@ -1,11 +1,12 @@
 var async = require('async'),
+    {promisify} = require('util'),
     db = require('../db-nano'),
     DDOCS_TO_REMOVE = ['_design/kujua-sentinel', '_design/erlang_filters'];
 
 module.exports = {
   name: 'remove-obsolete-ddocs',
   created: new Date(2016, 8, 2, 22, 0, 0, 0),
-  run: function(callback) {
+  run: promisify(function(callback) {
     async.each(DDOCS_TO_REMOVE, function(id, callback) {
       db.medic.get(id, function(err, ddoc) {
         if (err) {
@@ -18,5 +19,5 @@ module.exports = {
         db.medic.insert(ddoc, callback);
       });
     }, callback);
-  }
+  })
 };

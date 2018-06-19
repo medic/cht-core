@@ -1,4 +1,5 @@
 var async = require('async'),
+    {promisify} = require('util'),
     _ = require('underscore'),
     db = require('../db-nano'),
     BATCH_SIZE = 100;
@@ -168,7 +169,7 @@ var runBatch = function(skip, callback) {
 module.exports = {
   name: 'associate-records-with-people',
   created: new Date(2015, 5, 13, 11, 41, 0, 0),
-  run: function(callback) {
+  run: promisify(function(callback) {
     var currentSkip = 0;
     async.doWhilst(
       function(callback) {
@@ -180,5 +181,5 @@ module.exports = {
       },
       callback
     );
-  }
+  })
 };

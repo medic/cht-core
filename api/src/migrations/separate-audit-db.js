@@ -1,4 +1,5 @@
 var _ = require('underscore'),
+    {promisify} = require('util'),
     db = require('../db-nano'),
     async = require('async');
 
@@ -74,7 +75,7 @@ var batchMoveAuditDocs = function(callback) {
 module.exports = {
   name: 'separate-audit-db',
   created: new Date(2016, 2, 18),
-  run: function(callback) {
+  run: promisify(function(callback) {
     async.series([
       _.partial(ensureDbExists, db.settings.auditDb),
       _.partial(ensureViewDdocExists, db.settings.auditDb)
@@ -97,5 +98,5 @@ module.exports = {
           },
           callback);
     });
-  }
+  })
 };

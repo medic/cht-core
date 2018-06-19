@@ -1,4 +1,5 @@
 var async = require('async'),
+    {promisify} = require('util'),
     request = require('request'),
     url = require('url'),
     _ = require('underscore'),
@@ -59,7 +60,7 @@ var getAdmins = function(callback) {
 module.exports = {
   name: 'extract-user-settings-roles',
   created: new Date(2016, 4, 26, 15, 10, 0, 0),
-  run: function(callback) {
+  run: promisify(function(callback) {
     getAdmins(function(err, admins) {
       if (err) {
         return callback(err);
@@ -77,5 +78,5 @@ module.exports = {
         );
       });
     });
-  }
+  })
 };

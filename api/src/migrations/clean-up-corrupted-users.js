@@ -1,4 +1,5 @@
 var doWhilst = require('async/doWhilst'),
+    {promisify} = require('util'),
     db = require('../db-nano'),
     BATCH_SIZE = 100;
 
@@ -46,7 +47,7 @@ var fixUsers = function(skip, callback) {
 module.exports = {
   name: 'clean-up-corrupted-users',
   created: new Date(2016, 12, 5, 22, 0, 0, 0),
-  run: function(callback) {
+  run: promisify(function(callback) {
     var skip = 0;
     var again = true;
     doWhilst(
@@ -66,5 +67,5 @@ module.exports = {
       callback
     );
 
-  }
+  })
 };

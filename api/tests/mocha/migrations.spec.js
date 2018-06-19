@@ -32,16 +32,12 @@ describe('migrations', () => {
       {
         name: 'xyz',
         created: new Date(2015, 1, 1, 1, 0, 0, 0),
-        run: callback => {
-          callback();
-        }
+        run: () => Promise.resolve()
       },
       {
         name: 'abc',
         created: new Date(2015, 1, 1, 2, 0, 0, 0),
-        run: () => {
-          throw new Error('should not be called');
-        }
+        run: () => Promise.reject(new Error('should not be called'))
       }
     ];
     const log = { _id: 'migration-log', migrations: [ 'abc' ], type: 'meta' };
@@ -64,16 +60,12 @@ describe('migrations', () => {
       {
         name: 'xyz',
         created: new Date(2015, 1, 1, 1, 0, 0, 0),
-        run: callback => {
-          callback();
-        }
+        run: () => Promise.resolve()
       },
       {
         name: 'abc',
         created: new Date(2015, 1, 1, 2, 0, 0, 0),
-        run: callback => {
-          callback();
-        }
+        run: () => Promise.resolve()
       }
     ];
     const getLog = sinon.stub(db.medic, 'get');
@@ -103,23 +95,17 @@ describe('migrations', () => {
       {
         name: 'a',
         created: new Date(2015, 1, 1, 2, 0, 0, 0),
-        run: callback => {
-          callback();
-        }
+        run: () => Promise.resolve()
       },
       {
         name: 'b',
         created: new Date(2015, 1, 1, 1, 0, 0, 0),
-        run: callback => {
-          callback();
-        }
+        run: () => Promise.resolve()
       },
       {
         name: 'c',
         created: new Date(2015, 1, 1, 3, 0, 0, 0),
-        run: callback => {
-          callback();
-        }
+        run: () => Promise.resolve()
       }
     ];
     const getLog = sinon.stub(db.medic, 'get');
@@ -143,23 +129,17 @@ describe('migrations', () => {
       {
         name: 'a',
         created: new Date(2015, 1, 1, 1, 0, 0, 0),
-        run: callback => {
-          callback();
-        }
+        run: () => Promise.resolve()
       },
       {
         name: 'b',
         created: new Date(2015, 1, 1, 2, 0, 0, 0),
-        run: callback => {
-          callback('boom!');
-        }
+        run: () => Promise.reject('boom!')
       },
       {
         name: 'c',
         created: new Date(2015, 1, 1, 3, 0, 0, 0),
-        run: () => {
-          throw new Error('should not be called');
-        }
+        run: () => Promise.reject(new Error('should not be called'))
       }
     ];
     const getLog = sinon.stub(db.medic, 'get');
@@ -183,9 +163,7 @@ describe('migrations', () => {
     const migration = [{
       name: 'xyz',
       created: new Date(2015, 1, 1, 1, 0, 0, 0),
-      run: callback => {
-        callback();
-      }
+      run: () => Promise.resolve()
     }];
     const getLog = sinon.stub(db.medic, 'get');
     getLog.onCall(0).returns(Promise.reject({ status: 404 }));
@@ -214,9 +192,7 @@ describe('migrations', () => {
     const migration = [{
       name: 'xyz',
       created: new Date(2015, 1, 1, 1, 0, 0, 0),
-      run: () => {
-        throw new Error('should not be called!');
-      }
+      run: () => Promise.reject(new Error('should not be called!'))
     }];
     const oldLog = { _id: 1, type: 'meta', migrations: [ 'xyz' ] };
     const getLog = sinon.stub(db.medic, 'get');

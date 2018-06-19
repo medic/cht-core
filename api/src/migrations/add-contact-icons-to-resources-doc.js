@@ -1,5 +1,6 @@
 const fs = require('fs'),
       path = require('path'),
+      {promisify} = require('util'),
       asyncEach = require('async/each'),
       db = require('../db-nano');
 
@@ -13,7 +14,7 @@ const resources = [
 module.exports = {
   name: 'add-contact-icons-to-resources-doc',
   created: new Date(2017, 10, 5, 15, 0, 0, 0),
-  run: callback => {
+  run: promisify(callback => {
     db.medic.get('resources', (err, doc) => {
       if (err) {
         return callback(err);
@@ -49,5 +50,5 @@ module.exports = {
         }
       );
     });
-  }
+  })
 };

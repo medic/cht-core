@@ -1,4 +1,5 @@
 var _ = require('underscore'),
+    {promisify} = require('util'),
     db = require('../db-nano'),
     settingsService = require('../services/settings'),
     DOC_TYPE = 'translations';
@@ -68,7 +69,7 @@ var updateDocs = settings => {
 module.exports = {
   name: 'extract-translations',
   created: new Date(2016, 6, 29),
-  run: function(callback) {
+  run: promisify(function(callback) {
     settingsService.get()
       .then(settings => {
         if (!settings.translations || !settings.translations.length) {
@@ -80,5 +81,5 @@ module.exports = {
       })
       .then(() => callback())
       .catch(callback);
-  }
+  })
 };

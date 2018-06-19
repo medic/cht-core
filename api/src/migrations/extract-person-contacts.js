@@ -1,4 +1,5 @@
 var async = require('async'),
+    {promisify} = require('util'),
     db = require('../db-nano'),
     people = require('../controllers/people'),
     places = require('../controllers/places');
@@ -316,8 +317,8 @@ var migrateOneType = function(type, callback) {
 module.exports = {
   name: 'extract-person-contacts',
   created: new Date(2015, 3, 16, 17, 6, 0, 0),
-  run: function(callback) {
+  run: promisify(function(callback) {
     var types = ['district_hospital', 'health_center', 'clinic'];
     async.eachSeries(types, migrateOneType, callback);
-  }
+  })
 };
