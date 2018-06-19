@@ -20,6 +20,7 @@ describe('db-doc service', () => {
     next = sinon.stub();
 
     sinon.stub(authorization, 'allowedDoc');
+    sinon.stub(authorization, 'alwaysAllowCreate');
     sinon.stub(authorization, 'getUserAuthorizationData').resolves({ subjectIds: [1, 3, 4] });
     sinon.stub(authorization, 'getViewResults').callsFake(doc => ({ view: doc }));
     sinon.stub(serverUtils, 'serverError');
@@ -265,6 +266,25 @@ describe('db-doc service', () => {
       it('blocks for not allowed existent doc', () => {
         db.medic.get.resolves({ _id: 'id' });
         authorization.allowedDoc.returns(false);
+        authorization.alwaysAllowCreate.returns(false);
+
+        return service
+          .filterOfflineRequest(testReq, testRes, next)
+          .then(() => {
+            next.callCount.should.equal(0);
+            testRes.send.callCount.should.equal(1);
+            authorization.allowedDoc.callCount.should.equal(1);
+            authorization.allowedDoc.args[0].should.deep.equal([
+              'id', { userCtx: { user: 'name' }, subjectIds: [1, 3, 4]}, { view: { _id: 'id' }}
+            ]);
+            authorization.alwaysAllowCreate.callCount.should.equal(0);
+          });
+      });
+
+      it('blocks for not allowed and always allowed to create existent doc', () => {
+        db.medic.get.resolves({ _id: 'id' });
+        authorization.allowedDoc.returns(false);
+        authorization.alwaysAllowCreate.returns(true);
 
         return service
           .filterOfflineRequest(testReq, testRes, next)
@@ -323,6 +343,24 @@ describe('db-doc service', () => {
           });
       });
 
+      it('blocks for not allowed, always allowed to create existent doc', () => {
+        db.medic.get.resolves({ _id: 'id' });
+        authorization.allowedDoc.returns(false);
+        authorization.alwaysAllowCreate.returns(true);
+
+        return service
+          .filterOfflineRequest(testReq, testRes, next)
+          .then(() => {
+            next.callCount.should.equal(0);
+            testRes.send.callCount.should.equal(1);
+            authorization.allowedDoc.callCount.should.equal(1);
+            authorization.allowedDoc.args[0].should.deep.equal([
+              'id', { userCtx: { user: 'name' }, subjectIds: [1, 3, 4]}, { view: { _id: 'id' }}
+            ]);
+            authorization.alwaysAllowCreate.callCount.should.equal(0);
+          });
+      });
+
       it('proxies for allowed existent doc', () => {
         db.medic.get.resolves({ _id: 'id' });
         authorization.allowedDoc.returns(true);
@@ -358,6 +396,21 @@ describe('db-doc service', () => {
             db.medic.get.callCount.should.equal(0);
             next.callCount.should.equal(0);
             testRes.send.callCount.should.equal(1);
+          });
+      });
+
+      it('proxies for not allowed, but always allowed to create request doc', () => {
+        authorization.allowedDoc.returns(false);
+        authorization.alwaysAllowCreate.returns(true);
+
+        return service
+          .filterOfflineRequest(testReq, testRes, next)
+          .then(() => {
+            authorization.alwaysAllowCreate.callCount.should.equal(1);
+            authorization.allowedDoc.callCount.should.equal(0);
+            db.medic.get.callCount.should.equal(0);
+            next.callCount.should.equal(1);
+            testRes.send.callCount.should.equal(0);
           });
       });
 
@@ -499,6 +552,42 @@ describe('db-doc service', () => {
             db.medic.get.callCount.should.equal(1);
             next.callCount.should.equal(1);
             testRes.send.callCount.should.equal(0);
+          });
+      });
+
+      it('proxies for non-existent always allowed to create doc', () => {
+        db.medic.get.rejects({ status: 404 });
+        authorization.allowedDoc.returns(false);
+        authorization.alwaysAllowCreate.returns(true);
+
+        return service
+          .filterOfflineRequest(testReq, testRes, next)
+          .then(() => {
+            authorization.allowedDoc.callCount.should.equal(0);
+            authorization.alwaysAllowCreate.callCount.should.equal(1);
+            db.medic.get.callCount.should.equal(1);
+            next.callCount.should.equal(1);
+            testRes.send.callCount.should.equal(0);
+          });
+      });
+
+      it('blocks for existent always allowed to create doc', () => {
+        db.medic.get.resolves({ _id: 'id' });
+
+        authorization.allowedDoc.returns(false);
+        authorization.alwaysAllowCreate.returns(true);
+
+        return service
+          .filterOfflineRequest(testReq, testRes, next)
+          .then(() => {
+            authorization.allowedDoc.callCount.should.equal(1);
+            authorization.allowedDoc.args[0].should.deep.equal([
+              'id', { userCtx: { user: 'name' }, subjectIds: [1, 3, 4] }, { view: { _id: 'id' }}
+            ]);
+            authorization.alwaysAllowCreate.callCount.should.equal(0);
+            db.medic.get.callCount.should.equal(1);
+            next.callCount.should.equal(0);
+            testRes.send.callCount.should.equal(1);
           });
       });
     });

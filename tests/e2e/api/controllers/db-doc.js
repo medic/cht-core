@@ -500,4 +500,52 @@ describe('db-doc handler', () => {
         expect(results.every(result => result.statusCode === 403)).toBe(true);
       });
   });
+
+  it('allows creation of feedback docs', () => {
+    const doc = { _id: 'fb1', type: 'feedback', content: 'content' };
+
+    _.extend(offlineRequestOptions, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(doc)
+    });
+
+    return utils
+      .requestOnTestDb(offlineRequestOptions)
+      .then(result => {
+        expect(_.omit(result, 'rev')).toEqual({ id: 'fb1', ok: true });
+        return utils.getDoc('fb1');
+      })
+      .then(result => {
+        expect(_.omit(result, '_rev')).toEqual(doc);
+      });
+  });
+
+  it('does not allow updates of feedback docs', () => {
+    const doc = { _id: 'fb1', type: 'feedback', content: 'content' };
+
+    return utils
+      .saveDoc(doc)
+      .then(result => {
+        doc._rev = result.rev;
+        doc.content = 'new content';
+
+        _.extend(offlineRequestOptions, {
+          method: 'PUT',
+          path: '/fb1',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(doc)
+        });
+        return utils.requestOnTestDb(offlineRequestOptions).catch(err => err);
+      })
+      .then(result => {
+        expect(result.responseBody.error).toEqual('forbidden');
+        expect(result.statusCode).toEqual(403);
+        return utils.getDoc('fb1');
+      })
+      .then(result => {
+        expect(result._rev).toEqual(doc._rev);
+        expect(result.content).toEqual('content');
+      });
+  });
 });

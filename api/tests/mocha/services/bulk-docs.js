@@ -37,6 +37,7 @@ describe('Bulk Docs Service', function () {
     sinon.stub(authorization, 'convertTombstoneIds').callsFake(list => list);
     sinon.stub(authorization, 'allowedDoc').returns(true);
     sinon.stub(authorization, 'getViewResults').callsFake(doc => ({ view: doc }));
+    sinon.stub(authorization, 'alwaysAllowCreate').returns(false);
     sinon.stub(serverUtils, 'serverError');
   });
 
@@ -262,6 +263,18 @@ describe('Bulk Docs Service', function () {
       result.length.should.equal(3);
       result.should.deep.equal([{ _id: 4 }, { _id: 3 }, { _id: 1 }]);
       authorization.allowedDoc.callCount.should.equal(5);
+    });
+
+    it('returns docs which are always allowed to be created', () => {
+      const docs = [{ _id: 4 }, { _id: 5 }, { _id: 2 }, { _id: 3 }, { _id: 1 }];
+      authorization.allowedDoc.returns(false);
+      authorization.alwaysAllowCreate.withArgs({ _id: 4 }).returns(true);
+      authorization.alwaysAllowCreate.withArgs({ _id: 2 }).returns(true);
+
+      const result = service._filterAllowedDocs({ userCtx }, docs);
+
+      result.length.should.equal(2);
+      result.should.deep.equal([{ _id: 4 }, { _id: 2 }]);
     });
   });
 
@@ -544,7 +557,8 @@ describe('Bulk Docs Service', function () {
     it('filters request', () => {
       testReq.body = { docs: [
           { _id: 'a'}, { _id: 'b' }, { _id: 'c' }, { _id: 'f' }, { _id: 'g' },
-          { _id: 'h' }, { name: 'a' }, { name: 'b' }, { _id: 'deleted' }
+          { _id: 'h' }, { name: 'a' }, { name: 'b' }, { _id: 'deleted' },
+          { _id: 'fb1' }, { _id: 'fb2' }
         ]
       };
 
@@ -558,24 +572,66 @@ describe('Bulk Docs Service', function () {
         .withArgs('h').returns(false)
         .withArgs(sinon.match.any, sinon.match.any, { view: { name: 'a' } }).returns(true)
         .withArgs(sinon.match.any, sinon.match.any, { view: { name: 'b' } }).returns(false)
-        .withArgs('deleted').returns(true);
+        .withArgs('deleted').returns(true)
+        .withArgs('fb1').returns(false)
+        .withArgs('fb2').returns(false);
+
+      authorization.alwaysAllowCreate
+        .withArgs({ _id: 'fb1'}).returns(true)
+        .withArgs({ _id: 'fb2'}).returns(true);
 
       authorization.convertTombstoneIds
         .withArgs(['a', 'c', 'd', 'e', 'deleted-tombstone']).returns(['a', 'c', 'd', 'e', 'deleted']);
 
       db.medic.allDocs
-        .withArgs({ keys: [ 'b', 'g'] })
-        .resolves({ rows: [{ id: 'b' }]});
+        .withArgs({ keys: [ 'b', 'g', 'fb1', 'fb2'] })
+        .resolves({ rows: [{ id: 'b' }, { id: 'fb2' }]});
 
       return service.filterOfflineRequest(testReq, testRes, next).then(() => {
         serverUtils.serverError.callCount.should.equal(0);
         next.callCount.should.equal(1);
+        testRes.write.callCount.should.equal(0);
         testReq.body.docs.should.deep.equal([
           { _id: 'c' },
           { _id: 'deleted' },
           { _id: 'g' },
-          { name: 'a'}
+          { name: 'a'},
+          { _id: 'fb1'}
         ]);
+        testRes.interceptResponse.should.be.a('function');
+        testReq.originalBody.should.deep.equal({ docs: [
+            { _id: 'a'}, { _id: 'b' }, { _id: 'c' }, { _id: 'f' }, { _id: 'g' },
+            { _id: 'h' }, { name: 'a' }, { name: 'b' }, { _id: 'deleted' },
+            { _id: 'fb1' }, { _id: 'fb2' }
+          ]
+        });
+
+        const response = [
+          { id: 'c', ok: true },
+          { id: 'deleted', ok: true },
+          { id: 'g', ok: true },
+          { id: 'new_id', ok: true },
+          { id: 'fb1', ok: true }
+        ];
+
+        testRes.interceptResponse(JSON.stringify(response));
+
+        testRes.write.callCount.should.equal(1);
+        testRes.end.callCount.should.equal(1);
+
+        testRes.write.args[0][0].should.equal(JSON.stringify([
+          { id: 'a', error: 'forbidden'},
+          { id: 'b', error: 'forbidden' },
+          { id: 'c', ok: true },
+          { id: 'f', error: 'forbidden' },
+          { id: 'g', ok: true },
+          { id: 'h', error: 'forbidden' },
+          { id: 'new_id', ok: true },
+          { id: undefined, error: 'forbidden' },
+          { id: 'deleted', ok: true },
+          { id: 'fb1', ok: true },
+          { id: 'fb2', error: 'forbidden' }
+        ]));
       });
     });
   });

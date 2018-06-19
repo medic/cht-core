@@ -351,4 +351,61 @@ describe('bulk-docs handler', () => {
         expect(results[1].statusCode).toEqual(404);
       });
   });
+
+  it('allows offline user creation of feedback docs', () => {
+    const docs = [
+      { _id: 'fb1', type: 'feedback', content: 'feedback1'},
+      { _id: 'fb2', type: 'feedback', content: 'feedback2'}
+    ];
+
+    offlineRequestOptions.body = JSON.stringify({ docs: docs });
+    return utils
+      .requestOnTestDb(offlineRequestOptions)
+      .then(result => {
+        expect(result.length).toEqual(2);
+        expect(_.omit(result[0], 'rev')).toEqual({ ok: true, id: 'fb1' });
+        expect(_.omit(result[1], 'rev')).toEqual({ ok: true, id: 'fb2' });
+        return Promise.all([
+          utils.getDoc('fb1'),
+          utils.getDoc('fb2')
+        ]);
+      })
+      .then(results => {
+        expect(_.omit(results[0], '_rev')).toEqual(docs[0]);
+        expect(_.omit(results[1], '_rev')).toEqual(docs[1]);
+      });
+  });
+
+  it('does not allow offline users updates of feedback docs', () => {
+    const docs = [
+      { _id: 'fb1', type: 'feedback', content: 'feedback1'},
+      { _id: 'fb2', type: 'feedback', content: 'feedback2'}
+    ];
+
+    return utils
+      .saveDocs(docs)
+      .then(result => {
+        result.forEach((row, idx) => {
+          docs[idx]._rev = row.rev;
+          docs[idx].content += 'update';
+        });
+
+        offlineRequestOptions.body = JSON.stringify({ docs: docs });
+        return utils.requestOnTestDb(offlineRequestOptions);
+      })
+      .then(result => {
+        expect(result).toEqual([{ id: 'fb1', error: 'forbidden' }, { id: 'fb2', error: 'forbidden' }]);
+        return Promise.all([
+          utils.getDoc('fb1'),
+          utils.getDoc('fb2')
+        ]);
+      })
+      .then(results => {
+        expect(results[0].content).toEqual('feedback1');
+        expect(results[0]._rev).toEqual(docs[0]._rev);
+
+        expect(results[1].content).toEqual('feedback2');
+        expect(results[1]._rev).toEqual(docs[1]._rev);
+      });
+  });
 });
