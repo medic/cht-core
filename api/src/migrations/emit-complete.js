@@ -1,11 +1,12 @@
 var settingsService = require('../services/settings'),
+    {promisify} = require('util'),
     SETTINGS_REGEX = /(.*)(\}[ \n\t]*\}[ \n\t]*)$/,
     COMPLETE_EVENT_CONFIG = 'emit(\'_complete\', { _id: true });';
 
 module.exports = {
   name: 'emit-complete',
   created: new Date(2017, 2, 27),
-  run: function(callback) {
+  run: promisify(function(callback) {
     settingsService.get()
       .then(settings => {
         var rules = settings.tasks && settings.tasks.rules;
@@ -26,5 +27,5 @@ module.exports = {
       })
       .then(() => callback())
       .catch(callback);
-  }
+  })
 };

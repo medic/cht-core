@@ -68,20 +68,12 @@ const runMigration = migration => {
     return Promise.reject(new Error(`Migration "${migration.name}" has no "created" date property`));
   }
   console.log(`Running migration ${migration.name}...`);
-  return new Promise((resolve, reject) => {
-    migration.run(err => {
-      if (err) {
-        return reject(err);
-      }
-      getLog()
-        .then(log => {
-          log.migrations.push(migration.name);
-          return db.medic.put(log);
-        })
-        .then(() => resolve())
-        .catch(reject);
+  return migration.run()
+    .then(getLog)
+    .then(log => {
+      log.migrations.push(migration.name);
+      return db.medic.put(log);
     });
-  });
 };
 
 const runMigrations = (log, migrations) => {

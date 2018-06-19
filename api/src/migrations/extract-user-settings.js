@@ -1,4 +1,5 @@
 var async = require('async'),
+    {promisify} = require('util'),
     _ = require('underscore'),
     db = require('../db-nano');
 
@@ -66,7 +67,7 @@ var filterResults = function(rows) {
 module.exports = {
   name: 'extract-user-settings',
   created: new Date(2015, 7, 29, 9, 50, 0, 0),
-  run: function(callback) {
+  run: promisify(function(callback) {
     db._users.list({ include_docs: true }, function(err, result) {
       if (err) {
         return callback(err);
@@ -74,5 +75,5 @@ module.exports = {
       // Run only one at a time, in case there are duplicate uppercase vs lowercase users.
       async.eachSeries(filterResults(result.rows), migrateUser, callback);
     });
-  }
+  })
 };

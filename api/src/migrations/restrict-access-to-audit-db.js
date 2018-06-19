@@ -1,4 +1,5 @@
-const db = require('../db-nano');
+const db = require('../db-nano'),
+      {promisify} = require('util');
 
 const addMemberToDb = (callback) => {
   const securityObject = {
@@ -18,7 +19,7 @@ const addMemberToDb = (callback) => {
 module.exports = {
   name: 'restrict-access-to-audit-db',
   created: new Date(2017, 5, 8),
-  run: callback => {
+  run: promisify(callback => {
     addMemberToDb((err) => {
       if (err) {
         return callback(new Error('Failed to add member to audit db.' +
@@ -26,5 +27,5 @@ module.exports = {
       }
       callback();
     });
-  }
+  })
 };

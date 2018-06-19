@@ -1,4 +1,5 @@
 var db = require('../db-nano'),
+    {promisify} = require('util'),
     moment = require('moment');
 
 var map = function(doc) {
@@ -23,7 +24,7 @@ var convertBadDobFormat = function(docs, callback) {
 module.exports = {
   name: 'convert-bad-dob-format',
   created: new Date(2016, 4, 20),
-  run: function(callback) {
+  run: promisify(function(callback) {
     db.getCouchDbVersion(function(err, version) {
       if (err) {
         callback(err);
@@ -72,5 +73,5 @@ module.exports = {
       }
     });
 
-  }
+  })
 };

@@ -1,4 +1,5 @@
 const db = require('../db-nano'),
+      {promisify} = require('util'),
       async = require('async'),
       userDb = require('../services/user-db'),
       batch = require('../db-batch');
@@ -51,7 +52,7 @@ const extract = (docs, callback) => {
 module.exports = {
   name: 'extract-read-status',
   created: new Date(2017, 6, 7),
-  run: callback => {
+  run: promisify(callback => {
     batch.view('medic-client', 'doc_by_type', { key: [ 'data_record' ] }, extract, callback);
-  }
+  })
 };

@@ -1,4 +1,5 @@
 var db = require('../db-nano'),
+    {promisify} = require('util'),
     async = require('async'),
     _ = require('underscore'),
     DDOC_ID = '_design/medic',
@@ -152,12 +153,12 @@ var changeDocIds = function(callback) {
 module.exports = {
   name: 'drop-audit-doc-index',
   created: new Date(2016, 11, 1),
-  run: function(callback) {
+  run: promisify(function(callback) {
     dropView(function(err) {
       if (err) {
         return callback(err);
       }
       changeDocIds(callback);
     });
-  }
+  })
 };

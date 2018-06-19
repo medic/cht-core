@@ -4,6 +4,7 @@
 
 var async = require('async'),
     _ = require('underscore'),
+    {promisify} = require('util'),
     db = require('../db-nano'),
     settingsService = require('../services/settings'),
     forms;
@@ -92,7 +93,7 @@ module.exports = {
       })
       .catch(callback);
   },
-  run: function(callback) {
+  run: promisify(function(callback) {
     module.exports._runWithBatchSize(BATCH_SIZE, callback);
-  }
+  })
 };

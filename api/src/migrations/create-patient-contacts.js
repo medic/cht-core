@@ -1,4 +1,5 @@
 var _ = require('underscore'),
+    {promisify} = require('util'),
     db = require('../db-nano'),
     async = require('async');
 
@@ -141,7 +142,7 @@ var batchCreatePatientContacts = function(batch, callback) {
 module.exports = {
   name: 'create-patient-contacts',
   created: new Date(2017, 2, 13),
-  run: function(callback) {
+  run: promisify(function(callback) {
     db.medic.view('medic-client', 'registered_patients', {}, function(err, results) {
       if (err) {
         return callback(err);
@@ -181,5 +182,5 @@ module.exports = {
         },
         callback);
     });
-  }
+  })
 };

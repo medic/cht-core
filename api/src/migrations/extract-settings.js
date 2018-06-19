@@ -1,10 +1,11 @@
 const db = require('../db-pouch'),
+      {promisify} = require('util'),
       settingsService = require('../services/settings');
 
 module.exports = {
   name: 'extract-settings',
   created: new Date(2000, 1, 1), // really early so it runs first
-  run: callback => {
+  run: promisify(callback => {
     return db.medic.get('_design/medic')
       .then(ddoc => {
         if (ddoc.app_settings) {
@@ -19,5 +20,5 @@ module.exports = {
         callback();
       })
       .catch(callback);
-  }
+  })
 };

@@ -1,4 +1,5 @@
 const _ = require('underscore'),
+      {promisify} = require('util'),
       db = require('../db-nano'),
       series = require('async/series');
 
@@ -38,8 +39,8 @@ const addRole = (dbname, role, callback) => db.request({
 module.exports = {
   name: 'add-national_admin-role',
   created: new Date(2017, 3, 30),
-  run: callback => series([
+  run: promisify(callback => series([
     _.partial(addRole, '_users', 'national_admin'),
     _.partial(addRole, 'medic', 'national_admin')
-  ], callback)
+  ], callback))
 };
