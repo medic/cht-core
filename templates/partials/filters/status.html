@@ -10,19 +10,22 @@
   </span>
   <span role="menu" aria-labelledby="status" class="dropdown-menu mm-dropdown-menu">
     <ul>
-      <li role="presentation" class="dropdown-header">{{'Validity' | translate}}</li>
+      <li role="presentation" class="dropdown-header" translate>status.review.title</li>
       <li role="presentation">
-        <a role="menuitem" tabindex="-1" data-value="valid">{{'Valid' | translate}}</a>
+        <a role="menuitem" tabindex="-1" data-value="unverified" translate>status.review.unverified</a>
       </li>
       <li role="presentation">
-        <a role="menuitem" tabindex="-1" data-value="invalid">{{'Invalid' | translate}}</a>
-      </li>
-      <li role="presentation" class="dropdown-header">{{'Verification' | translate}}</li>
-      <li role="presentation">
-        <a role="menuitem" tabindex="-1" data-value="verified">{{'Verified' | translate}}</a>
+        <a role="menuitem" tabindex="-1" data-value="verifiedErrors" translate>status.review.errors</a>
       </li>
       <li role="presentation">
-        <a role="menuitem" tabindex="-1" data-value="unverified">{{'Unverified' | translate}}</a>
+        <a role="menuitem" tabindex="-1" data-value="verified" translate>status.review.correct</a>
+      </li>
+      <li role="presentation" class="dropdown-header" translate>status.sms.title</li>
+      <li role="presentation">
+        <a role="menuitem" tabindex="-1" data-value="valid" translate>status.sms.valid</a>
+      </li>
+      <li role="presentation">
+        <a role="menuitem" tabindex="-1" data-value="invalid" translate>status.sms.invalid</a>
       </li>
     </ul>
   </span>
