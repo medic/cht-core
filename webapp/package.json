@@ -41,7 +41,7 @@
     "moment": "^2.22.0",
     "mustache": "^2.3.0",
     "object-path": "^0.11.4",
-    "openrosa-xpath-evaluator": "^1.4.2",
+    "openrosa-xpath-evaluator": "^1.5.0",
     "phone-number": "file:../shared-libs/phone-number",
     "pojo2xml": "^1.7.1",
     "pouchdb-browser": "^6.4.3",
