@@ -6,14 +6,17 @@ module.exports.ONLINE_ONLY_ENDPOINTS = [
   '_design/*/_show/*',
   '_design/*/_view/*',
   '_find',
+  '_find/*',
   '_explain',
-  '_index'
+  '_explain/*',
+  '_index',
+  '_index/*'
 ];
 
 const OFFLINE_FIREWALL_RESPONSE = {
   code: 403,
   error: 'forbidden',
-  details: 'Restricted users are not allowed access to this enpoint'
+  details: 'Offline users are not allowed access to this enpoint'
 };
 
 module.exports.offlineFirewall = (req, res, next) => {
