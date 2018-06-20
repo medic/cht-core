@@ -254,7 +254,7 @@ module.exports = {
         res.interceptResponse = _.partial(interceptResponse, req, res);
         req.originalBody = { docs: req.body.docs };
         req.body.docs = filteredDocs;
-        return next();
+        next();
       })
       .catch(err => serverUtils.serverError(err, req, res));
   }

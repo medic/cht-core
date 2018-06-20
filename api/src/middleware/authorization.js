@@ -10,7 +10,13 @@ module.exports.ONLINE_ONLY_ENDPOINTS = [
   '_explain',
   '_explain/*',
   '_index',
-  '_index/*'
+  '_index/*',
+  '_ensure_full_commit',
+  '_ensure_full_commit/*',
+  '_security',
+  '_security/*',
+  '_purge',
+  '_purge/*'
 ];
 
 const OFFLINE_FIREWALL_RESPONSE = {

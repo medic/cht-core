@@ -28,9 +28,9 @@ const _ = require('underscore'),
       createDomain = require('domain').create,
       staticResources = /\/(templates|static)\//,
       favicon = /\/icon_\d+.ico$/,
-      pathPrefix = '\/+' + db.settings.db + '\/+',
-      appPathPrefix = '/' + db.settings.db + '/',
-      appPrefix = appPathPrefix + '_design/' + db.settings.ddoc + '/_rewrite/',
+      routePrefix = '\/+' + db.settings.db + '\/+',
+      pathPrefix = '/' + db.settings.db + '/',
+      appPrefix = pathPrefix + '_design/' + db.settings.ddoc + '/_rewrite/',
       serverUtils = require('./server-utils'),
       appcacheManifest = /\/manifest\.appcache$/,
       uuid = require('uuid/v4'),
@@ -121,18 +121,18 @@ app.get('/', function(req, res) {
     proxy.web(req, res);
   } else {
     // redirect to the app path - redirect to _rewrite
-    res.redirect(appPathPrefix);
+    res.redirect(pathPrefix);
   }
 });
 
 app.use(express.static(path.join(__dirname, 'public')));
-app.get(pathPrefix + 'login', login.get);
-app.get(pathPrefix + 'login/identity', login.getIdentity);
-app.postJson(pathPrefix + 'login', login.post);
+app.get(routePrefix + 'login', login.get);
+app.get(routePrefix + 'login/identity', login.getIdentity);
+app.postJson(routePrefix + 'login', login.post);
 
 // restrict offline users from accessing CouchDB endpoints
 authorizationMiddleware.ONLINE_ONLY_ENDPOINTS.forEach(url => {
-  app.all(pathPrefix + url, authorizationMiddleware.offlineFirewall);
+  app.all(routePrefix + url, authorizationMiddleware.offlineFirewall);
 });
 
 var UNAUDITED_ENDPOINTS = [
@@ -157,7 +157,7 @@ UNAUDITED_ENDPOINTS.forEach(function(url) {
   // the file below, and these calls will all be proxies. If you want to avoid
   // auditing and do other things as well, look to how the _changes feed is
   // handled.
-  app.all(pathPrefix +  url, function(req, res) {
+  app.all(routePrefix +  url, function(req, res) {
     proxy.web(req, res);
   });
 });
@@ -461,36 +461,39 @@ app.putJson(`${appPrefix}update_settings/${db.settings.ddoc}`, settings.put); //
 app.putJson('/api/v1/settings', settings.put);
 
 // DB replication endpoint
-const changesHandler = _.partial(require('./controllers/changes').request, proxyForChanges);
-app.get(pathPrefix + '_changes\/{0,}', changesHandler);
-app.postJson(pathPrefix + '_changes\/{0,}', changesHandler);
+const changesHandler = _.partial(require('./controllers/changes').request, proxyForChanges),
+      changesPath = routePrefix + '_changes(/*)?';
+
+app.get(changesPath, changesHandler);
+app.postJson(changesPath, changesHandler);
 
 // authorization middleware to read userSettings and proxy online users requests directly to CouchDB
 const onlineProxy = _.partial(authorizationMiddleware.onlineProxy, proxy);
 
 // filter _all_docs requests for offline users
-const allDocsHandler = require('./controllers/all-docs').request;
-app.get(pathPrefix + '_all_docs\/{0,}', onlineProxy, allDocsHandler);
-app.post(pathPrefix + '_all_docs\/{0,}', onlineProxy, jsonParser, allDocsHandler);
+const allDocsHandler = require('./controllers/all-docs').request,
+      allDocsPath = routePrefix + '_all_docs(/*)?';
+
+app.get(allDocsPath, onlineProxy, allDocsHandler);
+app.post(allDocsPath, onlineProxy, jsonParser, allDocsHandler);
 
 // filter _bulk_docs requests for offline users
-app.post(pathPrefix + '_bulk_docs\/{0,}', authorizationMiddleware.onlinePassThrough, jsonParser, bulkDocs.request);
+app.post(routePrefix + '_bulk_docs(/*)?', authorizationMiddleware.onlinePassThrough, jsonParser, bulkDocs.request);
 
 // filter _bulk_get requests for offline users
 const bulkGetHandler = require('./controllers/bulk-get').request;
-app.post(pathPrefix + '_bulk_get\/{0,}', onlineProxy, jsonParser, bulkGetHandler);
+app.post(routePrefix + '_bulk_get(/*)?', onlineProxy, jsonParser, bulkGetHandler);
 
 // filter document and attachment requests for offline users
-const dbDocHandler = require('./controllers/db-doc');
-const docPath = `${pathPrefix}:docId\/{0,}`;
-const attachmentPath = `${docPath}/+:attachmentID\/{0,}`;
+const dbDocHandler = require('./controllers/db-doc').request,
+      docPath = routePrefix + ':docId/{0,}',
+      attachmentPath = routePrefix + ':docId/+:attachmentId';
 
-app.get(docPath, authorizationMiddleware.onlinePassThrough, dbDocHandler.requestDoc);
-app.post(`${pathPrefix}`, authorizationMiddleware.onlinePassThrough, jsonParser, dbDocHandler.requestDoc);
-app.put(docPath, authorizationMiddleware.onlinePassThrough, jsonParser, dbDocHandler.requestDoc);
-app.delete(docPath, authorizationMiddleware.onlinePassThrough, dbDocHandler.requestDoc);
-
-app.all(attachmentPath, authorizationMiddleware.onlinePassThrough, dbDocHandler.requestAttachment);
+app.get(docPath, authorizationMiddleware.onlinePassThrough, dbDocHandler);
+app.post(routePrefix, authorizationMiddleware.onlinePassThrough, jsonParser, dbDocHandler);
+app.put(docPath, authorizationMiddleware.onlinePassThrough, jsonParser, dbDocHandler);
+app.delete(docPath, authorizationMiddleware.onlinePassThrough, dbDocHandler);
+app.all(attachmentPath, authorizationMiddleware.onlinePassThrough, dbDocHandler);
 
 const metaPathPrefix = '/medic-user-\*-meta/';
 
@@ -519,7 +522,7 @@ var writeHeaders = function(req, res, headers, redirectHumans) {
           _statusCode = 302;
           res.setHeader(
             'Location',
-            appPathPrefix + 'login?redirect=' + encodeURIComponent(req.url)
+            pathPrefix + 'login?redirect=' + encodeURIComponent(req.url)
           );
         }
       } else {
@@ -606,7 +609,7 @@ proxyForChanges.on('proxyRes', (proxyRes, req, res) => {
  */
 [
   appPrefix,
-  appPathPrefix
+  pathPrefix
 ].forEach(function(url) {
   var urlSansTrailingSlash = url.slice(0, -1);
   app.get(urlSansTrailingSlash, function(req, res) {
@@ -625,7 +628,7 @@ var audit = function(req, res) {
   ap.audit(proxyForAuditing, req, res);
 };
 
-var auditPath = pathPrefix + '*';
+var auditPath = routePrefix + '*';
 app.put(auditPath, audit);
 app.post(auditPath, audit);
 app.delete(auditPath, audit);

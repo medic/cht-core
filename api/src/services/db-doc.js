@@ -1,7 +1,13 @@
 const db = require('../db-pouch'),
       authorization = require('./authorization'),
       _ = require('underscore'),
-      serverUtils = require('../server-utils');
+      serverUtils = require('../server-utils'),
+      RESERVED_ENDPOINTS = [
+        '_all_docs',
+        '_bulk_docs',
+        '_bulk_get',
+        '_changes'
+      ];
 
 const getStoredDoc = (req) => {
   if (!req.params || !req.params.docId) {
@@ -40,6 +46,10 @@ const sendError = res => {
 
 module.exports = {
   isValidRequest: (method, docId, body) => {
+    if (RESERVED_ENDPOINTS.indexOf(docId) !== -1) {
+      return false;
+    }
+
     if (['GET', 'POST', 'PUT', 'DELETE'].indexOf(method) === -1) {
       return false;
     }

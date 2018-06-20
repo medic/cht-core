@@ -25,7 +25,7 @@ describe('db-doc controller', () => {
     it('filters document requests when the request is valid', () => {
       service.isValidRequest.returns(true);
       return controller
-        .requestDoc(testReq, testRes, next)
+        .request(testReq, testRes, next)
         .then(() => {
           service.isValidRequest.callCount.should.equal(1);
           service.isValidRequest.args[0].should.deep.equal([testReq.method, testReq.params.docId, testReq.body]);
@@ -38,24 +38,13 @@ describe('db-doc controller', () => {
     it('directs to next route match when document request is not valid', () => {
       service.isValidRequest.returns(false);
       return controller
-        .requestDoc(testReq, testRes, next)
+        .request(testReq, testRes, next)
         .then(() => {
           service.isValidRequest.callCount.should.equal(1);
           service.isValidRequest.args[0].should.deep.equal([testReq.method, testReq.params.docId, testReq.body]);
           next.callCount.should.equal(1);
           next.args[0].should.deep.equal(['route']);
           service.filterOfflineRequest.callCount.should.equal(0);
-        });
-    });
-
-    it('filters attachment requests', () => {
-      return controller
-        .requestAttachment(testReq, testRes, next)
-        .then(() => {
-          service.isValidRequest.callCount.should.equal(0);
-          next.callCount.should.equal(0);
-          service.filterOfflineRequest.callCount.should.equal(1);
-          service.filterOfflineRequest.args[0].should.deep.equal([testReq, testRes, next, true]);
         });
     });
   });

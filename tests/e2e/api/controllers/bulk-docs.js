@@ -304,9 +304,15 @@ describe('bulk-docs handler', () => {
 
     return Promise
       .all([
-        utils.requestOnTestDb(_.defaults({ path: '/_bulk_docs' }, offlineRequestOptions)),
-        utils.requestOnTestDb(_.defaults({ path: '///_bulk_docs//' }, offlineRequestOptions)),
-        utils.request(_.defaults({ path: `//${constants.DB_NAME}//_bulk_docs` }, offlineRequestOptions)),
+        utils
+          .requestOnTestDb(_.defaults({ path: '/_bulk_docs' }, offlineRequestOptions))
+          .catch(err => err),
+        utils
+          .requestOnTestDb(_.defaults({ path: '///_bulk_docs//' }, offlineRequestOptions))
+          .catch(err => err),
+        utils
+          .request(_.defaults({ path: `//${constants.DB_NAME}//_bulk_docs` }, offlineRequestOptions))
+          .catch(err => err),
         utils
           .requestOnTestDb(_.defaults({ path: '/_bulk_docs/something' }, offlineRequestOptions))
           .catch(err => err),
@@ -325,7 +331,8 @@ describe('bulk-docs handler', () => {
                    result[0].error === 'forbidden';
           }
 
-          return result.responseBody === 'Server error';
+          // CouchDB interprets this as an attachment POST request
+          return result.responseBody.error === 'method_not_allowed';
         })).toBe(true);
       });
   });

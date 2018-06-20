@@ -290,13 +290,13 @@ describe('all_docs handler', () => {
         utils.requestOnTestDb(_.defaults({ path: '///_all_docs//?key=denied_report' }, offlineRequestOptions)),
         utils.request(_.defaults({ path: `//${constants.DB_NAME}//_all_docs?key=denied_report` }, offlineRequestOptions)),
         utils
-          .requestOnTestDb(_.defaults({ path: '/_all_docs/something' }, offlineRequestOptions))
+          .requestOnTestDb(_.defaults({ path: '/_all_docs/something?key=denied_report' }, offlineRequestOptions))
           .catch(err => err),
         utils
-          .requestOnTestDb(_.defaults({ path: '///_all_docs//something' }, offlineRequestOptions))
+          .requestOnTestDb(_.defaults({ path: '///_all_docs//something?key=denied_report' }, offlineRequestOptions))
           .catch(err => err),
         utils
-          .request(_.defaults({ path: `//${constants.DB_NAME}//_all_docs/something` }, offlineRequestOptions))
+          .request(_.defaults({ path: `//${constants.DB_NAME}//_all_docs/something?key=denied_report` }, offlineRequestOptions))
           .catch(err => err)
       ]))
       .then(results => {
@@ -306,8 +306,6 @@ describe('all_docs handler', () => {
                    result.rows[0].id === 'denied_report' &&
                    result.rows[0].error === 'forbidden';
           }
-
-          return result.responseBody.error === 'forbidden';
         })).toBe(true);
       });
   });

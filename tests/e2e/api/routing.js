@@ -290,4 +290,105 @@ describe('offline users routing', () => {
         expect(results[3].indexes.length).toEqual(1);
       });
   });
+
+  it('restricts _ensure_full_commit', () => {
+    const request = {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' }
+    };
+
+    return Promise
+      .all([
+        utils
+          .requestOnTestDb(_.extend({path: '/_ensure_full_commit'}, offlineRequestOptions, request))
+          .catch(err => err),
+        utils
+          .requestOnTestDb(_.extend({path: '///_ensure_full_commit//'}, offlineRequestOptions, request))
+          .catch(err => err),
+        utils
+          .request(_.extend({ path: `//${constants.DB_NAME}//_ensure_full_commit//` }, offlineRequestOptions, request))
+          .catch(err => err),
+        utils
+          .requestOnTestDb(_.extend({ path: '/_ensure_full_commit' }, onlineRequestOptions, request))
+          .catch(err => err),
+      ])
+      .then(results => {
+        expect(results[0].statusCode).toEqual(403);
+        expect(results[0].responseBody.error).toEqual('forbidden');
+
+        expect(results[1].statusCode).toEqual(403);
+        expect(results[1].responseBody.error).toEqual('forbidden');
+
+        expect(results[2].statusCode).toEqual(403);
+        expect(results[2].responseBody.error).toEqual('forbidden');
+
+        expect(results[3].ok).toEqual(true);
+      });
+  });
+
+  it('restricts _security', () => {
+    return Promise
+      .all([
+        utils
+          .requestOnTestDb(_.extend({path: '/_security'}, offlineRequestOptions))
+          .catch(err => err),
+        utils
+          .requestOnTestDb(_.extend({path: '///_security//'}, offlineRequestOptions))
+          .catch(err => err),
+        utils
+          .request(_.extend({ path: `//${constants.DB_NAME}//_security//` }, offlineRequestOptions))
+          .catch(err => err),
+        utils
+          .requestOnTestDb(_.extend({ path: '/_security' }, onlineRequestOptions))
+          .catch(err => err),
+      ])
+      .then(results => {
+        expect(results[0].statusCode).toEqual(403);
+        expect(results[0].responseBody.error).toEqual('forbidden');
+
+        expect(results[1].statusCode).toEqual(403);
+        expect(results[1].responseBody.error).toEqual('forbidden');
+
+        expect(results[2].statusCode).toEqual(403);
+        expect(results[2].responseBody.error).toEqual('forbidden');
+
+        expect(results[3].statusCode).toBeFalsy();
+      });
+  });
+
+  it('restricts _purge', () => {
+    const request = {
+      method: 'POST',
+      body: JSON.stringify({ 'some-fake-id': [] }),
+      headers: { 'Content-Type': 'application/json' }
+    };
+
+    return Promise
+      .all([
+        utils
+          .requestOnTestDb(_.extend({path: '/_purge'}, offlineRequestOptions, request))
+          .catch(err => err),
+        utils
+          .requestOnTestDb(_.extend({path: '///_purge//'}, offlineRequestOptions, request))
+          .catch(err => err),
+        utils
+          .request(_.extend({ path: `//${constants.DB_NAME}//_purge//` }, offlineRequestOptions, request))
+          .catch(err => err),
+        utils
+          .requestOnTestDb(_.extend({ path: '/_purge' }, onlineRequestOptions, request))
+          .catch(err => err),
+      ])
+      .then(results => {
+        expect(results[0].statusCode).toEqual(403);
+        expect(results[0].responseBody.error).toEqual('forbidden');
+
+        expect(results[1].statusCode).toEqual(403);
+        expect(results[1].responseBody.error).toEqual('forbidden');
+
+        expect(results[2].statusCode).toEqual(403);
+        expect(results[2].responseBody.error).toEqual('forbidden');
+
+        expect(results[3].responseBody.error).toEqual('bad_request');
+      });
+  });
 });
