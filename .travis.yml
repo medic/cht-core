@@ -8,8 +8,10 @@ jdk:
 cache:
   directories:
   - node_modules
+  - admin/node_modules
   - api/node_modules
   - sentinel/node_modules
+  - webapp/node_modules
 
 addons:
   chrome: "stable"
