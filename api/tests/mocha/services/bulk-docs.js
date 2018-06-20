@@ -336,20 +336,8 @@ describe('Bulk Docs Service', function () {
       sinon.stub(db.medic, 'bulkDocs').resolves([]);
     });
 
-    it('returns empty when request has no body', () => {
-      return service._filterRequestDocs({}, null).then(result => {
-        result.length.should.equal(0);
-      });
-    });
-
-    it('returns empty when request body has no docs', () => {
-      return service._filterRequestDocs({}, {}).then(result => {
-        result.length.should.equal(0);
-      });
-    });
-
     it('returns empty when request docs is empty', () => {
-      return service._filterRequestDocs({}, { docs: [] }).then(result => {
+      return service._filterRequestDocs({}, []).then(result => {
         result.length.should.equal(0);
       });
     });
@@ -364,7 +352,7 @@ describe('Bulk Docs Service', function () {
         .withArgs(4).returns(false)
         .withArgs(5).returns(true);
 
-      return service._filterRequestDocs({ allowedDocIds }, { docs }).then(result => {
+      return service._filterRequestDocs({ allowedDocIds }, docs).then(result => {
         result.length.should.equal(3);
         result.should.deep.equal([{ _id: 1 }, { _id: 3 }, { _id: 5 }]);
       });
@@ -376,7 +364,7 @@ describe('Bulk Docs Service', function () {
       authorization.allowedDoc.returns(true);
       db.medic.allDocs.resolves({rows: [{ id: 'b' }, { id: 'd' }]});
 
-      return service._filterRequestDocs({ userCtx, allowedDocIds }, { docs }).then(result => {
+      return service._filterRequestDocs({ userCtx, allowedDocIds }, docs).then(result => {
         authorization.getViewResults.callCount.should.equal(5);
         authorization.allowedDoc.callCount.should.equal(5);
 
@@ -406,7 +394,7 @@ describe('Bulk Docs Service', function () {
         .withArgs({ keys: ['b', 'd'] })
         .resolves({ rows: [{ id: 'b' }, { key: 'd' }]});
 
-      return service._filterRequestDocs({ userCtx, allowedDocIds }, { docs }).then(result => {
+      return service._filterRequestDocs({ userCtx, allowedDocIds }, docs).then(result => {
         authorization.allowedDoc.callCount.should.equal(7);
         authorization.getViewResults.callCount.should.equal(7);
 

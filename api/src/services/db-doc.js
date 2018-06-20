@@ -1,21 +1,24 @@
 const db = require('../db-pouch'),
       authorization = require('./authorization'),
       _ = require('underscore'),
-      serverUtils = require('../server-utils'),
-      RESERVED_ENDPOINTS = [
-        '_all_docs',
-        '_bulk_docs',
-        '_bulk_get',
-        '_changes'
-      ];
+      serverUtils = require('../server-utils');
 
-const getStoredDoc = (req) => {
+const RESERVED_ENDPOINTS = [
+  '_all_docs',
+  '_bulk_docs',
+  '_bulk_get',
+  '_changes'
+];
+
+const getStoredDoc = (req, isAttachment) => {
   if (!req.params || !req.params.docId) {
     return Promise.resolve(false);
   }
 
   const options = {};
-  if (req.method === 'GET' && req.query && req.query.rev) {
+  // get requested `rev` for `doc` GET requests and any `attachment` requests
+  // `doc` PUT and DELETE requests will require last `rev` to be allowed
+  if ((req.method === 'GET' || isAttachment) && req.query && req.query.rev) {
     options.rev = req.query.rev;
   }
 
@@ -30,8 +33,8 @@ const getStoredDoc = (req) => {
     });
 };
 
-const getRequestDoc = (req, attachment) => {
-  if (!req.body || attachment) {
+const getRequestDoc = (req, isAttachment) => {
+  if (!req.body || isAttachment) {
     return false;
   }
 
@@ -74,7 +77,7 @@ module.exports = {
 
     return Promise
       .all([
-        getStoredDoc(req),
+        getStoredDoc(req, isAttachment),
         getRequestDoc(req, isAttachment),
         authorization.getUserAuthorizationData(req.userCtx)
       ])

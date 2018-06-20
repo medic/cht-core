@@ -593,7 +593,10 @@ describe('db-doc service', () => {
     });
 
     describe('attachments', () => {
-      beforeEach(() => testReq.query = { rev: '1' });
+      beforeEach(() => {
+        testReq.query = { rev: '1' };
+        testReq.params.attachmentId = 'attachmentID';
+      });
 
       it('blocks for non existent doc', () => {
         db.medic.get.rejects({ status: 404 });
@@ -603,13 +606,13 @@ describe('db-doc service', () => {
           .then(() => {
             authorization.allowedDoc.callCount.should.equal(0);
             db.medic.get.callCount.should.equal(1);
+            db.medic.get.args[0].should.deep.equal([ 'id', { rev: '1' } ]);
             next.callCount.should.equal(0);
             testRes.send.callCount.should.equal(1);
           });
       });
 
       it('blocks for existent not allowed doc', () => {
-        testReq.METHOD = 'GET';
         db.medic.get.resolves({ _id: 'id' });
 
         return service
@@ -620,7 +623,7 @@ describe('db-doc service', () => {
               'id', { userCtx: { user: 'name' }, subjectIds: [1, 3, 4] }, { view: { _id: 'id' }}
             ]);
             db.medic.get.callCount.should.equal(1);
-            db.medic.get.args[0].should.deep.equal(['id', {}]);
+            db.medic.get.args[0].should.deep.equal(['id', { rev: '1' }]);
 
             next.callCount.should.equal(0);
             testRes.send.callCount.should.equal(1);
@@ -628,7 +631,6 @@ describe('db-doc service', () => {
       });
 
       it('proxies for existent allowed doc', () => {
-        testReq.METHOD = 'GET';
         db.medic.get.resolves({ _id: 'id' });
         authorization.allowedDoc.returns(true);
 
@@ -640,7 +642,7 @@ describe('db-doc service', () => {
               'id', { userCtx: { user: 'name' }, subjectIds: [1, 3, 4] }, { view: { _id: 'id' }}
             ]);
             db.medic.get.callCount.should.equal(1);
-            db.medic.get.args[0].should.deep.equal(['id', {}]);
+            db.medic.get.args[0].should.deep.equal(['id', { rev: '1'}]);
 
             next.callCount.should.equal(1);
             testRes.send.callCount.should.equal(0);

@@ -172,13 +172,13 @@ const filterAllowedDocs = (authorizationContext, docs) => {
 // Filters the list of request docs to the ones that satisfy the following conditions:
 // a. the user will be allowed to see the doc after being updated/created
 // b. the user is allowed to see the stored doc
-const filterRequestDocs = (authorizationContext, reqBody) => {
-  if (!reqBody || !reqBody.docs || !reqBody.docs.length) {
+const filterRequestDocs = (authorizationContext, docs) => {
+  if (!docs.length) {
     return Promise.resolve([]);
   }
 
   // prevent restricted users from creating or updating docs they will not be allowed to see
-  const allowedRequestDocs = filterAllowedDocs(authorizationContext, reqBody.docs);
+  const allowedRequestDocs = filterAllowedDocs(authorizationContext, docs);
 
   return filterNewDocs(authorizationContext.allowedDocIds, allowedRequestDocs).then(allowedNewDocs => {
     const allowedDocs = allowedRequestDocs.filter(doc => authorizationContext.allowedDocIds.indexOf(doc._id) !== -1);
@@ -282,7 +282,7 @@ module.exports = {
       })
       .then(allowedDocIds => {
         authorizationContext.allowedDocIds = authorization.convertTombstoneIds(allowedDocIds);
-        return filterRequestDocs(authorizationContext, req.body);
+        return filterRequestDocs(authorizationContext, req.body.docs);
       })
       .then(filteredDocs => {
         // results received from CouchDB need to be ordered to maintain same sequence as original `docs` parameter

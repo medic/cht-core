@@ -399,12 +399,18 @@ describe('db-doc handler', () => {
     });
 
     it('GET attachment', () => {
+      const revs = {
+        'allowed_attach': [],
+        'denied_attach': []
+      };
+
       return utils
         .saveDocs([
-          { _id: 'a_with_attachments', type: 'clinic', parent: { _id: 'fixture:offline' }, name: 'allowed attach'},
-          { _id: 'd_with_attachments', type: 'clinic', parent: { _id: 'fixture:online' }, name: 'denied attach'},
+          { _id: 'allowed_attach', type: 'clinic', parent: { _id: 'fixture:offline' }, name: 'allowed attach'},
+          { _id: 'denied_attach', type: 'clinic', parent: { _id: 'fixture:online' }, name: 'denied attach'},
         ])
         .then(results => Promise.all(results.map(result => {
+          revs[result.id].push(result.rev);
           return utils.requestOnTestDb({
             path: `/${result.id}/att_name?rev=${result.rev}`,
             method: 'PUT',
@@ -412,12 +418,13 @@ describe('db-doc handler', () => {
             headers: { 'Content-Type': 'text/plain' }
           });
         })))
-        .then(() => {
+        .then(results => {
+          results.forEach(result => revs[result.id].push(result.rev));
           return Promise.all([
             utils
-              .requestOnTestDb(_.extend({ path: '/a_with_attachments/att_name' }, offlineRequestOptions), false, true),
+              .requestOnTestDb(_.extend({ path: '/allowed_attach/att_name' }, offlineRequestOptions), false, true),
             utils
-              .requestOnTestDb(_.extend({ path: '/d_with_attachments/att_name' }, offlineRequestOptions))
+              .requestOnTestDb(_.extend({ path: '/denied_attach/att_name' }, offlineRequestOptions))
               .catch(err => err)
           ]);
         })
@@ -425,6 +432,43 @@ describe('db-doc handler', () => {
           expect(results[0]).toEqual('my attachment content');
           expect(results[1].statusCode).toEqual(403);
           expect(results[1].responseBody).toEqual({ error: 'forbidden', reason: 'Insufficient privileges' });
+
+          return Promise.all([
+            utils.getDoc('allowed_attach'),
+            utils.getDoc('denied_attach')
+          ]);
+        })
+        .then(results => {
+          return utils.saveDocs([
+            _.extend(results[0], {  parent: { _id: 'fixture:online' } }),
+            _.extend(results[1], {  parent: { _id: 'fixture:offline' } }),
+          ]);
+        })
+        .then(results => {
+          results.forEach(result => revs[result.id].push(result.rev));
+
+          return Promise.all(_.flatten(_.map(revs, (revisions, id) => {
+            return revisions.map(rev =>
+              utils
+                .requestOnTestDb(_.extend({ path: `/${id}/att_name?rev=${rev}` }, offlineRequestOptions), false, true)
+                .catch(err => err)
+            );
+          })));
+        })
+        .then(results => {
+          // allowed_attach is allowed, but missing attachment
+          expect(JSON.parse(results[0])).toEqual({ error: 'not_found', reason: 'Document is missing attachment' });
+          // allowed_attach is allowed and has attachment
+          expect(results[1]).toEqual('my attachment content');
+          // allowed_attach is not allowed and has attachment
+          expect(JSON.parse(results[2]).error).toEqual('forbidden');
+
+          // denied_attach is not allowed, but missing attachment
+          expect(JSON.parse(results[3]).error).toEqual('forbidden');
+          // denied_attach is not allowed and has attachment
+          expect(JSON.parse(results[4]).error).toEqual('forbidden');
+          // denied_attach is allowed and has attachment
+          expect(results[5]).toEqual('my attachment content');
         });
     });
 

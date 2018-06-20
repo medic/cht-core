@@ -121,7 +121,7 @@ app.get('/', function(req, res) {
     proxy.web(req, res);
   } else {
     // redirect to the app path - redirect to _rewrite
-    res.redirect(pathPrefix);
+    res.redirect(appPrefix);
   }
 });
 
