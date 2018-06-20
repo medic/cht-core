@@ -428,17 +428,8 @@ describe('Bulk Docs Service', function () {
     });
 
     it('passes unchanged response if `new_edits` param is false', () => {
-      testReq.originalBody = { docs: [{ _id: 1 }, { _id: 2 }] };
       testReq.body.new_edits = false;
 
-      service._interceptResponse(testReq, testRes, JSON.stringify(['my response']));
-      testRes.write.callCount.should.equal(1);
-      testRes.write.args[0][0].should.equal(JSON.stringify(['my response']));
-      testRes.end.callCount.should.equal(1);
-    });
-
-    it('passes unchanged response for malformed requests', () => {
-      testReq.originalBody = { docs: 1 };
       service._interceptResponse(testReq, testRes, JSON.stringify(['my response']));
       testRes.write.callCount.should.equal(1);
       testRes.write.args[0][0].should.equal(JSON.stringify(['my response']));
@@ -467,6 +458,22 @@ describe('Bulk Docs Service', function () {
         { id: 5, ok: true }
       ]));
       testRes.end.callCount.should.equal(1);
+    });
+  });
+
+  describe('invalidRequest', () => {
+    it('returns error when body is not set', () => {
+      service._invalidRequest(false).should.deep.equal({ error: 'bad_request', reason: 'invalid UTF-8 JSON' });
+    });
+
+    it('returns error when body is missing `docs` property', () => {
+      service._invalidRequest({ body: {} }).should.deep.equal(
+        { error: 'bad_request', reason: 'POST body must include `docs` parameter.' });
+    });
+
+    it('returns error when `docs` is not an array', () => {
+      service._invalidRequest({ body: { docs: 'alpha' } }).should.deep.equal(
+        { error: 'bad_request', reason: '`docs` parameter must be an array.' });
     });
   });
 
@@ -633,6 +640,53 @@ describe('Bulk Docs Service', function () {
           { id: 'fb2', error: 'forbidden' }
         ]));
       });
+    });
+
+    it('handles requests without a body', () => {
+      testReq.body = null;
+
+      return Promise
+        .all([
+          service.filterOfflineRequest(testReq, testRes),
+          Promise.resolve()
+        ]).then(() => {
+          testRes.type.callCount.should.equal(1);
+          testRes.type.args[0][0].should.equal('json');
+          authorization.getUserAuthorizationData.callCount.should.equal(0);
+          testRes.write.callCount.should.equal(1);
+          testRes.end.callCount.should.equal(1);
+          JSON.parse(testRes.write.args[0][0]).error.should.equal('bad_request');
+        });
+    });
+
+    it('handles requests without `docs` parameter', () => {
+      testReq.body = { some: 'thing' };
+
+      return Promise
+        .all([
+          service.filterOfflineRequest(testReq, testRes),
+          Promise.resolve()
+        ]).then(() => {
+          authorization.getUserAuthorizationData.callCount.should.equal(0);
+          testRes.write.callCount.should.equal(1);
+          testRes.end.callCount.should.equal(1);
+          JSON.parse(testRes.write.args[0][0]).error.should.equal('bad_request');
+        });
+    });
+
+    it('handles requests when `docs` parameter is not an array', () => {
+      testReq.body = { docs: 'something' };
+
+      return Promise
+        .all([
+          service.filterOfflineRequest(testReq, testRes),
+          Promise.resolve()
+        ]).then(() => {
+          authorization.getUserAuthorizationData.callCount.should.equal(0);
+          testRes.write.callCount.should.equal(1);
+          testRes.end.callCount.should.equal(1);
+          JSON.parse(testRes.write.args[0][0]).error.should.equal('bad_request');
+        });
     });
   });
 });

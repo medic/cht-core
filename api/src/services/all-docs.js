@@ -3,27 +3,27 @@ const db = require('../db-pouch'),
       _ = require('underscore'),
       serverUtils = require('../server-utils');
 
-const startKeyParams = ['startkey', 'start_key', 'startkey_docid', 'start_key_doc_id'];
-const endKeyParams = ['endkey', 'end_key', 'endkey_docid', 'end_key_doc_id'];
+const startKeyParams = ['startkey', 'start_key', 'startkey_docid', 'start_key_doc_id'],
+      endKeyParams = ['endkey', 'end_key', 'endkey_docid', 'end_key_doc_id'];
+
 const getRequestIds = (req) => {
-  const keys = [];
+  if (req.query && req.query.keys) {
+    return JSON.parse(req.query.keys);
+  }
+
+  if (req.body && req.body.keys) {
+    return req.body.keys;
+  }
 
   if (req.query && req.query.key) {
-    keys.push(req.query.key);
+    return [ req.query.key ];
   }
-
-  if (req.method === 'GET') {
-    if (req.query && req.query.keys) {
-      return keys.concat(JSON.parse(req.query.keys));
-    }
-  }
-
-  return keys.concat(req.body && req.body.keys || []);
 };
 
 const filterRequestIds = (allowedIds, requestIds, query) => {
-  const startKeys = _.values(_.pick(query, (value, key) => startKeyParams.indexOf(key) !== -1));
-  const endKeys = _.values(_.pick(query, (value, key) => endKeyParams.indexOf(key) !== -1));
+  // support multiple startKey/endKey params, last one is the winning value
+  const startKeys = _.values(_.pick(query, (value, key) => startKeyParams.indexOf(key) !== -1)),
+        endKeys = _.values(_.pick(query, (value, key) => endKeyParams.indexOf(key) !== -1));
 
   if (startKeys.length) {
     const startKey = _.last(startKeys);
@@ -39,13 +39,14 @@ const filterRequestIds = (allowedIds, requestIds, query) => {
     }
   }
 
-  if (!requestIds.length) {
+  if (!requestIds) {
     return allowedIds;
   }
 
   return _.intersection(allowedIds, requestIds);
 };
 
+// fills in the "gaps" for forbidden docs
 const stubSkipped = (requestIds, result) => {
   return requestIds.map(docId =>
     _.findWhere(result, { id: docId }) || { id: docId, error: 'forbidden' }
@@ -53,7 +54,7 @@ const stubSkipped = (requestIds, result) => {
 };
 
 const formatResults = (results, requestIds, res) => {
-  if (requestIds.length) {
+  if (requestIds) {
     // if specific keys were requested, response rows should respect the order of request keys
     // and all of the requested keys should generate a response
     results.rows = stubSkipped(requestIds, results.rows);
@@ -63,8 +64,40 @@ const formatResults = (results, requestIds, res) => {
   res.end();
 };
 
+const requestError = reason => ({
+  error: 'bad_request',
+  reason: reason
+});
+
+const invalidRequest = req => {
+  if (req.query && req.query.keys) {
+    try {
+      const keys = JSON.parse(req.query.keys);
+      if (!_.isArray(keys)) {
+        return requestError('`keys` parameter must be an array.');
+      }
+    } catch (err) {
+      return requestError('invalid UTF-8 JSON');
+    }
+  }
+
+  if (req.method === 'POST' && req.body.keys && !_.isArray(req.body.keys)) {
+    return requestError('`keys` body member must be an array.');
+  }
+
+  return false;
+};
+
 const filterOfflineRequest = (req, res) => {
   res.type('json');
+
+  const error = invalidRequest(req);
+  if (error) {
+    res.write(JSON.stringify(error));
+    return res.end();
+  }
+
+  const requestIds = getRequestIds(req);
 
   return authorization
     .getUserAuthorizationData(req.userCtx)
@@ -73,29 +106,29 @@ const filterOfflineRequest = (req, res) => {
       return authorization.getAllowedDocIds(authorizationData);
     })
     .then(allowedDocIds => {
-      const requestIds = getRequestIds(req);
-      allowedDocIds = requestIds.length ?
+      // when specific keys are requested, the expectation is to send deleted documents as well
+      allowedDocIds = requestIds ?
         authorization.convertTombstoneIds(allowedDocIds) : authorization.excludeTombstoneIds(allowedDocIds);
 
       const filteredIds = filterRequestIds(allowedDocIds, requestIds, req.query);
 
-      // if specific ids's were requested, but none of them are allowed
-      if (requestIds.length && !filteredIds.length) {
+      // when specific keys were requested, but none of them are allowed
+      if (requestIds && !filteredIds.length) {
         return formatResults({ rows: [] }, requestIds, res);
       }
 
-      const options = { keys: filteredIds };
-      _.defaults(options, _.omit(req.query, 'key', ...startKeyParams, ...endKeyParams));
-
-      return db.medic
-        .allDocs(options)
-        .then(results => formatResults(results, requestIds, res))
-        .catch(err => serverUtils.serverError(err, req, res));
+      // remove all the `startKey` / `endKey` / `key` params from the request options, as they are incompatible with
+      // `keys` and their function is already handled
+      const options = _.defaults({ keys: filteredIds }, _.omit(req.query, 'key', ...startKeyParams, ...endKeyParams));
+      return db.medic.allDocs(options);
     })
+    .then(results => formatResults(results, requestIds, res))
     .catch(err => serverUtils.serverError(err, req, res));
 };
 
 module.exports = {
+  // offline users will only receive results for documents they are allowed to see
+  // mimics CouchDB response format, stubbing forbidden docs when specific `keys` are requested
   filterOfflineRequest: filterOfflineRequest
 };
 
@@ -103,6 +136,7 @@ module.exports = {
 if (process.env.UNIT_TEST_ENV) {
   _.extend(module.exports, {
     _filterRequestIds: filterRequestIds,
-    _getRequestIds: getRequestIds
+    _getRequestIds: getRequestIds,
+    _invalidRequest: invalidRequest
   });
 }

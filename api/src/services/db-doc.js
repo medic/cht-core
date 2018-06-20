@@ -38,8 +38,7 @@ const getRequestDoc = (req, attachment) => {
   return req.body;
 };
 
-const sendError = res => {
-  res.type('json');
+const requestError = res => {
   res.status(403);
   res.send(JSON.stringify({ error: 'forbidden', reason: 'Insufficient privileges' }));
 };
@@ -67,29 +66,36 @@ module.exports = {
     return true;
   },
 
-  filterOfflineRequest: (req, res, next, attachment) => {
+  filterOfflineRequest: (req, res, next) => {
+    const isAttachment = req.params.attachmentId;
+    if (!isAttachment) {
+      res.type('json');
+    }
+
     return Promise
       .all([
         getStoredDoc(req),
-        getRequestDoc(req, attachment),
+        getRequestDoc(req, isAttachment),
         authorization.getUserAuthorizationData(req.userCtx)
       ])
       .then(([ storedDoc, requestDoc, authorizationContext ]) => {
         authorizationContext.userCtx = req.userCtx;
 
         if (!storedDoc && !requestDoc) {
-          return sendError(res);
+          return requestError(res);
         }
 
+        // user must be allowed to see existent document
         if (storedDoc &&
             !authorization.allowedDoc(storedDoc._id, authorizationContext, authorization.getViewResults(storedDoc))) {
-          return sendError(res);
+          return requestError(res);
         }
 
+        // user must be allowed to see new/updated document or be allowed to create only
         if (requestDoc &&
             !authorization.alwaysAllowCreate(requestDoc) &&
             !authorization.allowedDoc(requestDoc._id, authorizationContext, authorization.getViewResults(requestDoc))) {
-          return sendError(res);
+          return requestError(res);
         }
 
         next();

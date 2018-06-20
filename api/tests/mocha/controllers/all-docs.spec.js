@@ -3,12 +3,8 @@ require('chai').should();
 const controller = require('../../../src/controllers/all-docs');
 const service = require('../../../src/services/all-docs');
 
-const testReq = {
-  body: {
-    docs: []
-  }
-};
-const testRes = {};
+const testReq = { body: { docs: []}},
+      testRes = { type: sinon.stub() };
 
 describe('All Docs controller', () => {
   beforeEach(() => {
@@ -25,8 +21,7 @@ describe('All Docs controller', () => {
         .request(testReq, testRes)
         .then(() => {
           service.filterOfflineRequest.callCount.should.equal(1);
-          service.filterOfflineRequest.getCall(0).args[0].should.equal(testReq);
-          service.filterOfflineRequest.getCall(0).args[1].should.equal(testRes);
+          service.filterOfflineRequest.args[0].should.deep.equal([ testReq, testRes ]);
         });
     });
   });

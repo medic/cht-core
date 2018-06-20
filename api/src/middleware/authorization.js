@@ -1,22 +1,17 @@
 const auth = require('../auth'),
       serverUtils = require('../server-utils');
 
+// authorization for `_compact`, `_view_cleanup`, `_revs_limit` endpoints is handled by CouchDB
 module.exports.ONLINE_ONLY_ENDPOINTS = [
   '_design/*/_list/*',
   '_design/*/_show/*',
   '_design/*/_view/*',
-  '_find',
-  '_find/*',
-  '_explain',
-  '_explain/*',
-  '_index',
-  '_index/*',
-  '_ensure_full_commit',
-  '_ensure_full_commit/*',
-  '_security',
-  '_security/*',
-  '_purge',
-  '_purge/*'
+  '_find(/*)?',
+  '_explain(/*)?',
+  '_index(/*)?',
+  '_ensure_full_commit(/*)?',
+  '_security(/*)?',
+  '_purge(/*)?'
 ];
 
 const OFFLINE_FIREWALL_RESPONSE = {

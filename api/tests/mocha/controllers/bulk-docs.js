@@ -9,7 +9,8 @@ const testReq = {
     docs: []
   }
 };
-const testRes = {};
+const testRes = {},
+      next = {};
 
 describe('Bulk Docs controller', () => {
   beforeEach(() => {
@@ -40,11 +41,10 @@ describe('Bulk Docs controller', () => {
   describe('request', () => {
     it ('filters for offline requests', () => {
       return controller
-        .request(testReq, testRes)
+        .request(testReq, testRes, next)
         .then(() => {
           service.filterOfflineRequest.callCount.should.equal(1);
-          service.filterOfflineRequest.getCall(0).args[0].should.equal(testReq);
-          service.filterOfflineRequest.getCall(0).args[1].should.equal(testRes);
+          service.filterOfflineRequest.args[0].should.deep.equal([ testReq, testRes, next ]);
         });
     });
   });

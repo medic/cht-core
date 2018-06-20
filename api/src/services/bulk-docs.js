@@ -111,7 +111,6 @@ const deleteDocs = (docsToDelete, deletionAttemptCounts = {}, updateAttemptCount
     });
 };
 
-// Returns the documents that would be created by this request
 const filterNewDocs = (allowedDocIds, docs) => {
   let docIds = _.unique(_.compact(docs.map(doc => doc._id)));
 
@@ -127,16 +126,19 @@ const filterNewDocs = (allowedDocIds, docs) => {
     return Promise.resolve([]);
   }
 
-  // return docs without ids or docs which are not found
+  // return docs without ids or docs which do not exist
   return db.medic
     .allDocs({ keys: docIds })
     .then(result => {
-      return docs.filter(doc => {
-        return !doc._id || (allowedDocIds.indexOf(doc._id) === -1 && !result.rows.find(row => row.id === doc._id));
-      });
+      return docs.filter(doc =>
+        !doc._id ||
+        (allowedDocIds.indexOf(doc._id) === -1 && !result.rows.find(row => row.id === doc._id))
+      );
     });
 };
 
+// iterates over request `docs`, filtering the ones the user is allowed to see or create
+// when a doc adds new allowed `subjectIds`, the remaining `docs` are reiterated
 const filterAllowedDocs = (authorizationContext, docs) => {
   const allowedDocs = [];
   let shouldCheck = true,
@@ -168,19 +170,19 @@ const filterAllowedDocs = (authorizationContext, docs) => {
 };
 
 // Filters the list of request docs to the ones that satisfy the following conditions:
-// a. user would be allowed to see the doc after being updated/created
-// b. user is allowed to see existent doc
+// a. the user will be allowed to see the doc after being updated/created
+// b. the user is allowed to see the stored doc
 const filterRequestDocs = (authorizationContext, reqBody) => {
   if (!reqBody || !reqBody.docs || !reqBody.docs.length) {
     return Promise.resolve([]);
   }
 
-  // prevent restricted users from creating or updating docs with data they would not be allowed to see
-  const allowedUpdates = filterAllowedDocs(authorizationContext, reqBody.docs);
+  // prevent restricted users from creating or updating docs they will not be allowed to see
+  const allowedRequestDocs = filterAllowedDocs(authorizationContext, reqBody.docs);
 
-  return filterNewDocs(authorizationContext.allowedDocIds, allowedUpdates).then(allowedNewDocs => {
-    const allowedDocs = allowedUpdates.filter(doc => authorizationContext.allowedDocIds.indexOf(doc._id) !== -1);
-    allowedDocs.push(...allowedNewDocs);
+  return filterNewDocs(authorizationContext.allowedDocIds, allowedRequestDocs).then(allowedNewDocs => {
+    const allowedDocs = allowedRequestDocs.filter(doc => authorizationContext.allowedDocIds.indexOf(doc._id) !== -1);
+    allowedDocs.push.apply(allowedDocs, allowedNewDocs);
 
     return allowedDocs;
   });
@@ -201,13 +203,34 @@ const stubSkipped = (docs, filteredDocs, result) => {
 const interceptResponse = (req, res, response) => {
   response = JSON.parse(response);
 
-  if (req.body.new_edits !== false && _.isArray(req.originalBody.docs) && _.isArray(response)) {
+  if (req.body.new_edits !== false && _.isArray(response)) {
     // CouchDB doesn't return results when `new_edits` parameter is `false`
     // The consensus is that the response array sequence should reflect the request array sequence.
     response = stubSkipped(req.originalBody.docs, req.body.docs, response);
   }
   res.write(JSON.stringify(response));
   res.end();
+};
+
+const requestError = reason => ({
+  error: 'bad_request',
+  reason: reason
+});
+
+const invalidRequest = req => {
+  if (!req.body) {
+    return requestError('invalid UTF-8 JSON');
+  }
+
+  if (!req.body.docs) {
+    return requestError('POST body must include `docs` parameter.');
+  }
+
+  if (!_.isArray(req.body.docs)) {
+    return requestError('`docs` parameter must be an array.');
+  }
+
+  return false;
 };
 
 module.exports = {
@@ -238,8 +261,19 @@ module.exports = {
         res.end();
       });
   },
+  // offline users will only update/create/delete documents they are allowed to see and will be allowed to see
+  // mimics CouchDB response format, stubbing forbidden docs and respecting document sequence
   filterOfflineRequest: (req, res, next) => {
+    res.type('json');
+
+    const error = invalidRequest(req);
+    if (error) {
+      res.write(JSON.stringify(error));
+      return res.end();
+    }
+
     const authorizationContext = { userCtx: req.userCtx };
+
     return authorization
       .getUserAuthorizationData(req.userCtx)
       .then(authorizationData => {
@@ -251,6 +285,8 @@ module.exports = {
         return filterRequestDocs(authorizationContext, req.body);
       })
       .then(filteredDocs => {
+        // results received from CouchDB need to be ordered to maintain same sequence as original `docs` parameter
+        // and forbidden docs stubs must be added
         res.interceptResponse = _.partial(interceptResponse, req, res);
         req.originalBody = { docs: req.body.docs };
         req.body.docs = filteredDocs;
@@ -266,6 +302,7 @@ if (process.env.UNIT_TEST_ENV) {
     _filterRequestDocs: filterRequestDocs,
     _filterNewDocs: filterNewDocs,
     _filterAllowedDocs: filterAllowedDocs,
-    _interceptResponse: interceptResponse
+    _interceptResponse: interceptResponse,
+    _invalidRequest: invalidRequest
   });
 }

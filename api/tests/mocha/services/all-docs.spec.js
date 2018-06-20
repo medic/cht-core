@@ -6,14 +6,15 @@ require('chai').should();
 const authorization = require('../../../src/services/authorization');
 const serverUtils = require('../../../src/server-utils');
 
-let testRes, testReq;
+let testRes,
+    testReq;
 
 describe('All Docs service', () => {
   beforeEach(function() {
     testRes = {
       write: sinon.stub(),
       end: sinon.stub(),
-      type: () => {},
+      type: sinon.stub(),
       setHeader: () => {}
     };
 
@@ -67,7 +68,7 @@ describe('All Docs service', () => {
 
   describe('Filter Request Ids', () => {
     it('returns all allowed ids when no specific ids are requested', () => {
-      const response = service._filterRequestIds(['a', 'b', 'c'], [], {});
+      const response = service._filterRequestIds(['a', 'b', 'c'], null, {});
       response.length.should.equal(3);
       response.should.deep.equal(['a', 'b', 'c']);
     });
@@ -84,19 +85,19 @@ describe('All Docs service', () => {
       let response;
       const allowedIds = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'aa', 'bb', 'cc', 'dd', 'ee'];
 
-      response = service._filterRequestIds(allowedIds, [], { startkey: 'c' });
+      response = service._filterRequestIds(allowedIds, null, { startkey: 'c' });
       response.length.should.equal(12);
       response.should.deep.equal(['c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'cc', 'dd', 'ee']);
 
-      response = service._filterRequestIds(allowedIds, [], { start_key: 'd' });
+      response = service._filterRequestIds(allowedIds, null, { start_key: 'd' });
       response.length.should.equal(10);
       response.should.deep.equal(['d', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'dd', 'ee']);
 
-      response = service._filterRequestIds(allowedIds, [], { startkey_docid: 'c' });
+      response = service._filterRequestIds(allowedIds, null, { startkey_docid: 'c' });
       response.length.should.equal(12);
       response.should.deep.equal(['c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'cc', 'dd', 'ee']);
 
-      response = service._filterRequestIds(allowedIds, [], { start_key_doc_id: 'e' });
+      response = service._filterRequestIds(allowedIds, null, { start_key_doc_id: 'e' });
       response.length.should.equal(8);
       response.should.deep.equal(['e', 'f', 'g', 'h', 'i', 'j', 'k', 'ee']);
     });
@@ -107,7 +108,7 @@ describe('All Docs service', () => {
 
       response = service._filterRequestIds(
         allowedIds,
-        [],
+        null,
         { startkey: 'c', start_key_doc_id: 'a', startkey_docid: 'b', start_key: 'd' });
       response.length.should.equal(10);
       response.should.deep.equal(['d', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'dd', 'ee']);
@@ -117,19 +118,19 @@ describe('All Docs service', () => {
       let response;
       const allowedIds = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'aa', 'bb', 'cc', 'dd', 'ee'];
 
-      response = service._filterRequestIds(allowedIds, [], { endkey: 'e' });
+      response = service._filterRequestIds(allowedIds, null, { endkey: 'e' });
       response.length.should.equal(9);
       response.should.deep.equal(['a', 'b', 'c', 'd', 'e', 'aa', 'bb', 'cc', 'dd']);
 
-      response = service._filterRequestIds(allowedIds, [], { end_key: 'd' });
+      response = service._filterRequestIds(allowedIds, null, { end_key: 'd' });
       response.length.should.equal(7);
       response.should.deep.equal(['a', 'b', 'c', 'd', 'aa', 'bb', 'cc']);
 
-      response = service._filterRequestIds(allowedIds, [], { endkey_docid: 'f' });
+      response = service._filterRequestIds(allowedIds, null, { endkey_docid: 'f' });
       response.length.should.equal(11);
       response.should.deep.equal(['a', 'b', 'c', 'd', 'e', 'f', 'aa', 'bb', 'cc', 'dd', 'ee']);
 
-      response = service._filterRequestIds(allowedIds, [], { end_key_doc_id: 'x' });
+      response = service._filterRequestIds(allowedIds, null, { end_key_doc_id: 'x' });
       response.length.should.equal(16);
       response.should.deep.equal(['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'aa', 'bb', 'cc', 'dd', 'ee']);
     });
@@ -139,7 +140,7 @@ describe('All Docs service', () => {
 
       const response = service._filterRequestIds(
         allowedIds,
-        [],
+        null,
         { endkey: 'c', end_key_doc_id: 'a', end_key: 'b', endkey_docid: 'd' });
       response.length.should.equal(7);
       response.should.deep.equal(['a', 'b', 'c', 'd', 'aa', 'bb', 'cc']);
@@ -149,13 +150,39 @@ describe('All Docs service', () => {
       let response;
       const allowedIds = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'aa', 'bb', 'cc', 'dd', 'ee'];
 
-      response = service._filterRequestIds(allowedIds, [], { endkey_docid: 'd', inclusive_end: 'false'});
+      response = service._filterRequestIds(allowedIds, null, { endkey_docid: 'd', inclusive_end: 'false'});
       response.length.should.equal(6);
       response.should.deep.equal(['a', 'b', 'c', 'aa', 'bb', 'cc']);
 
-      response = service._filterRequestIds(allowedIds, [], { endkey_docid: 'd', inclusive_end: 'true'});
+      response = service._filterRequestIds(allowedIds, null, { endkey_docid: 'd', inclusive_end: 'true'});
       response.length.should.equal(7);
       response.should.deep.equal(['a', 'b', 'c', 'd', 'aa', 'bb', 'cc']);
+    });
+  });
+
+  describe('invalidRequest', () => {
+    it('returns error when request query `keys` is not JSON', () => {
+      testReq.query.keys = 'abcd';
+      service._invalidRequest(testReq).should.deep.equal({ error: 'bad_request', reason: 'invalid UTF-8 JSON' });
+    });
+
+    it('returns error when request query `keys` is not an array', () => {
+      testReq.query.keys = JSON.stringify({ some: 'thing' });
+      service._invalidRequest(testReq).should.deep.equal(
+        { error: 'bad_request', reason: '`keys` parameter must be an array.' });
+    });
+
+    it('returns error when request body `keys` is not an array array', () => {
+      testReq.body = { keys: 'something' };
+      testReq.method = 'POST';
+      service._invalidRequest(testReq).should.deep.equal(
+        { error: 'bad_request', reason: '`keys` body member must be an array.' });
+    });
+
+    it('returns false otherwise', () => {
+      service._invalidRequest({}).should.equal(false);
+      service._invalidRequest({query: { keys: JSON.stringify([1, 2]) }}).should.equal(false);
+      service._invalidRequest({body: { keys: [1, 2] }}).should.equal(false);
     });
   });
 
@@ -207,7 +234,7 @@ describe('All Docs service', () => {
         });
     });
 
-    it('excludes tombstone ids from allowed ids list when request keys is empty', () => {
+    it('excludes tombstone ids from allowed ids list when request has no `keys` parameter', () => {
       authorization.getUserAuthorizationData.resolves({ subjectIds: ['a', 'b'] });
       authorization.getAllowedDocIds.resolves(['a', 'b', 'tombstone1', 'tombstone2']);
       authorization.excludeTombstoneIds.withArgs(['a', 'b', 'tombstone1', 'tombstone2']).returns(['a', 'b']);
@@ -222,7 +249,7 @@ describe('All Docs service', () => {
         });
     });
 
-    it('converts tombstone ids from allowed ids list when request keys is not empty', () => {
+    it('converts tombstone ids from allowed ids list when request has `keys` parameter', () => {
       authorization.getUserAuthorizationData.resolves({ subjectIds: ['a', 'b'] });
       authorization.getAllowedDocIds.resolves(['a', 'b', 'tombstone1', 'tombstone2']);
       authorization.convertTombstoneIds.withArgs(['a', 'b', 'tombstone1', 'tombstone2']).returns(['a', 'b', '1', '2']);
@@ -385,6 +412,58 @@ describe('All Docs service', () => {
               {id: 'g', error: 'forbidden'}
               ]
           }));
+        });
+    });
+
+    it('handles POST requests with non-array `keys` body parameter', () => {
+      testReq.method = 'POST';
+      testReq.body = { keys: 'aaaaa' };
+
+      return Promise
+        .all([
+          service.filterOfflineRequest(testReq, testRes),
+          Promise.resolve()
+        ])
+        .then(() => {
+          authorization.getUserAuthorizationData.callCount.should.equal(0);
+          testRes.type.callCount.should.equal(1);
+          testRes.write.callCount.should.equal(1);
+          testRes.end.callCount.should.equal(1);
+          JSON.parse(testRes.write.args[0][0]).error.should.equal('bad_request');
+        });
+    });
+
+    it('handles requests with non-json `keys` query parameter', () => {
+      testReq.query.keys = 'aaaa';
+
+      return Promise
+        .all([
+          service.filterOfflineRequest(testReq, testRes),
+          Promise.resolve()
+        ])
+        .then(() => {
+          authorization.getUserAuthorizationData.callCount.should.equal(0);
+          testRes.type.callCount.should.equal(1);
+          testRes.write.callCount.should.equal(1);
+          testRes.end.callCount.should.equal(1);
+          JSON.parse(testRes.write.args[0][0]).error.should.equal('bad_request');
+        });
+    });
+
+    it('handles requests with non-array `keys` query parameter', () => {
+      testReq.query.keys = JSON.stringify({ some: 'thing' });
+
+      return Promise
+        .all([
+          service.filterOfflineRequest(testReq, testRes),
+          Promise.resolve()
+        ])
+        .then(() => {
+          authorization.getUserAuthorizationData.callCount.should.equal(0);
+          testRes.type.callCount.should.equal(1);
+          testRes.write.callCount.should.equal(1);
+          testRes.end.callCount.should.equal(1);
+          JSON.parse(testRes.write.args[0][0]).error.should.equal('bad_request');
         });
     });
   });

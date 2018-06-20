@@ -5,7 +5,8 @@ const serverUtils = require('../../../src/server-utils');
 require('chai').should();
 const authorization = require('../../../src/services/authorization');
 
-let testRes, testReq;
+let testRes,
+    testReq;
 
 describe('Bulk Get service', () => {
   beforeEach(function() {
@@ -26,6 +27,22 @@ describe('Bulk Get service', () => {
 
   afterEach(function() {
     sinon.restore();
+  });
+
+  describe('invalidRequest', () => {
+    it('returns error when body is not set', () => {
+      service._invalidRequest(false).should.deep.equal({ error: 'bad_request', reason: 'invalid UTF-8 JSON' });
+    });
+
+    it('returns error when body is missing `docs` property', () => {
+      service._invalidRequest({ body: {} }).should.deep.equal(
+        { error: 'bad_request', reason: 'Missing JSON list of `docs`.' });
+    });
+
+    it('returns error when `docs` is not an array', () => {
+      service._invalidRequest({ body: { docs: 'alpha' } }).should.deep.equal(
+        { error: 'bad_request', reason: '`docs` parameter must be an array.' });
+    });
   });
 
   describe('Filter Offline Request', () => {
@@ -101,6 +118,53 @@ describe('Bulk Get service', () => {
               { id: 'd', docs: [ { ok: { id: 'd' } } ] }
             ]
           }));
+        });
+    });
+
+    it('handles requests without a body', () => {
+      testReq.body = null;
+
+      return Promise
+        .all([
+          service.filterOfflineRequest(testReq, testRes),
+          Promise.resolve()
+        ]).then(() => {
+          testRes.type.callCount.should.equal(1);
+          testRes.type.args[0][0].should.equal('json');
+          authorization.getUserAuthorizationData.callCount.should.equal(0);
+          testRes.write.callCount.should.equal(1);
+          testRes.end.callCount.should.equal(1);
+          JSON.parse(testRes.write.args[0][0]).error.should.equal('bad_request');
+        });
+    });
+
+    it('handles requests without `docs` parameter', () => {
+      testReq.body = { some: 'thing' };
+
+      return Promise
+        .all([
+          service.filterOfflineRequest(testReq, testRes),
+          Promise.resolve()
+        ]).then(() => {
+          authorization.getUserAuthorizationData.callCount.should.equal(0);
+          testRes.write.callCount.should.equal(1);
+          testRes.end.callCount.should.equal(1);
+          JSON.parse(testRes.write.args[0][0]).error.should.equal('bad_request');
+        });
+    });
+
+    it('handles requests when `docs` parameter is not an array', () => {
+      testReq.body = { docs: 'something' };
+
+      return Promise
+        .all([
+          service.filterOfflineRequest(testReq, testRes),
+          Promise.resolve()
+        ]).then(() => {
+          authorization.getUserAuthorizationData.callCount.should.equal(0);
+          testRes.write.callCount.should.equal(1);
+          testRes.end.callCount.should.equal(1);
+          JSON.parse(testRes.write.args[0][0]).error.should.equal('bad_request');
         });
     });
   });
