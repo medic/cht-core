@@ -29,7 +29,7 @@ describe('Authorization middleware', () => {
     it('handles not logged in requests', () => {
       auth.getUserCtx.rejects();
       return middleware
-        .onlineProxy(proxy, testReq, testRes, next)
+        .onlineUserProxy(proxy, testReq, testRes, next)
         .then(() => {
           serverUtils.notLoggedIn.callCount.should.equal(1);
           next.callCount.should.equal(0);
@@ -41,7 +41,7 @@ describe('Authorization middleware', () => {
       auth.isOnlineOnly.withArgs({ name: 'user' }).returns(true);
 
       return middleware
-        .onlineProxy(proxy, testReq, testRes, next)
+        .onlineUserProxy(proxy, testReq, testRes, next)
         .then(() => {
           serverUtils.notLoggedIn.callCount.should.equal(0);
           next.callCount.should.equal(0);
@@ -57,7 +57,7 @@ describe('Authorization middleware', () => {
       auth.getUserSettings.resolves({ name: 'user', contact_id: 'a' });
 
       return middleware
-        .onlineProxy(proxy, testReq, testRes, next)
+        .onlineUserProxy(proxy, testReq, testRes, next)
         .then(() => {
           serverUtils.notLoggedIn.callCount.should.equal(0);
           next.callCount.should.equal(1);
@@ -67,13 +67,13 @@ describe('Authorization middleware', () => {
         });
     });
 
-    it('hydrates restricted user doc, saves it in `req` and passes to next middleware', () => {
+    it('hydrates offline user doc, saves it in `req` and passes to next middleware', () => {
       auth.getUserCtx.resolves({ name: 'user' });
       auth.isOnlineOnly.withArgs({ name: 'user' }).returns(false);
       auth.getUserSettings.withArgs({ name: 'user' }).resolves({ name: 'user', contact_id: 'a' });
 
       return middleware
-        .onlineProxy(proxy, testReq, testRes, next)
+        .onlineUserProxy(proxy, testReq, testRes, next)
         .then(() => {
           serverUtils.notLoggedIn.callCount.should.equal(0);
           next.callCount.should.equal(1);
@@ -89,7 +89,7 @@ describe('Authorization middleware', () => {
     it('handles not logged in requests', () => {
       auth.getUserCtx.rejects();
       return middleware
-        .onlinePassThrough(testReq, testRes, next)
+        .onlineUserPassThrough(testReq, testRes, next)
         .then(() => {
           serverUtils.notLoggedIn.callCount.should.equal(1);
           next.callCount.should.equal(0);
@@ -101,7 +101,7 @@ describe('Authorization middleware', () => {
       auth.isOnlineOnly.withArgs({ name: 'user' }).returns(true);
 
       return middleware
-        .onlinePassThrough(testReq, testRes, next)
+        .onlineUserPassThrough(testReq, testRes, next)
         .then(() => {
           serverUtils.notLoggedIn.callCount.should.equal(0);
           next.callCount.should.equal(1);
@@ -110,13 +110,13 @@ describe('Authorization middleware', () => {
         });
     });
 
-    it('hydrates restricted user doc, saves it in `req` and passes to next middleware', () => {
+    it('hydrates offline user doc, saves it in `req` and passes to next middleware', () => {
       auth.getUserCtx.resolves({ name: 'user' });
       auth.isOnlineOnly.withArgs({ name: 'user' }).returns(false);
       auth.getUserSettings.withArgs({ name: 'user' }).resolves({ name: 'user', contact_id: 'a' });
 
       return middleware
-        .onlinePassThrough(testReq, testRes, next)
+        .onlineUserPassThrough(testReq, testRes, next)
         .then(() => {
           serverUtils.notLoggedIn.callCount.should.equal(0);
           next.callCount.should.equal(1);

@@ -3,6 +3,7 @@ const db = require('../db-pouch'),
       _ = require('underscore'),
       serverUtils = require('../server-utils');
 
+// block this middleware from processing requests to these endpoints
 const RESERVED_ENDPOINTS = [
   '_all_docs',
   '_bulk_docs',
@@ -16,8 +17,8 @@ const getStoredDoc = (req, isAttachment) => {
   }
 
   const options = {};
-  // get requested `rev` for `doc` GET requests and any `attachment` requests
-  // `doc` PUT and DELETE requests will require last `rev` to be allowed
+  // get requested `rev` for `db-doc` GET requests and any `attachment` requests
+  // `db-doc` PUT and DELETE requests will require last `rev` to be allowed
   if ((req.method === 'GET' || isAttachment) && req.query && req.query.rev) {
     options.rev = req.query.rev;
   }
@@ -69,6 +70,12 @@ module.exports = {
     return true;
   },
 
+  // offline users will only be able to:
+  // - GET/DELETE `db-docs` they are allowed to see
+  // - POST `db-docs` they will be allowed to see
+  // - PUT `db-docs` they are and will be allowed to see
+  // - GET/PUT/DELETE `attachments` of `db-docs` they are allowed to see
+  // this filters audited endpoints, so valid requests are allowed to pass through to the next route
   filterOfflineRequest: (req, res, next) => {
     const isAttachment = req.params.attachmentId;
     if (!isAttachment) {

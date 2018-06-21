@@ -186,7 +186,7 @@ describe('All Docs service', () => {
     });
   });
 
-  describe('Filter Restricted Request', () => {
+  describe('Filter Offline Request', () => {
     it('catches authorization errors', () => {
       authorization.getUserAuthorizationData.rejects({ error: 'something' });
 

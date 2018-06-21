@@ -120,7 +120,7 @@ describe('db-doc service', () => {
     });
   });
 
-  describe('Filter Restricted Request', () => {
+  describe('Filter Offline Request', () => {
     it('catches db errors', () => {
       db.medic.get.rejects({ some: 'error' });
       return service

@@ -28,7 +28,8 @@ const _ = require('underscore'),
       createDomain = require('domain').create,
       staticResources = /\/(templates|static)\//,
       favicon = /\/icon_\d+.ico$/,
-      routePrefix = '\/+' + db.settings.db + '\/+',
+      // CouchDB is very relaxed in matching routes
+      routePrefix = '/+' + db.settings.db + '/+',
       pathPrefix = '/' + db.settings.db + '/',
       appPrefix = pathPrefix + '_design/' + db.settings.ddoc + '/_rewrite/',
       serverUtils = require('./server-utils'),
@@ -130,9 +131,9 @@ app.get(routePrefix + 'login', login.get);
 app.get(routePrefix + 'login/identity', login.getIdentity);
 app.postJson(routePrefix + 'login', login.post);
 
-// restrict offline users from accessing CouchDB endpoints
+// block offline users from accessing CouchDB endpoints
 authorizationMiddleware.ONLINE_ONLY_ENDPOINTS.forEach(url => {
-  app.all(routePrefix + url, authorizationMiddleware.offlineFirewall);
+  app.all(routePrefix + url, authorizationMiddleware.offlineUserFirewall);
 });
 
 var UNAUDITED_ENDPOINTS = [
@@ -468,32 +469,34 @@ app.get(changesPath, changesHandler);
 app.postJson(changesPath, changesHandler);
 
 // authorization middleware to read userSettings and proxy online users requests directly to CouchDB
-const onlineProxy = _.partial(authorizationMiddleware.onlineProxy, proxy);
+const onlineUserProxy = _.partial(authorizationMiddleware.onlineUserProxy, proxy);
 
 // filter _all_docs requests for offline users
 const allDocsHandler = require('./controllers/all-docs').request,
       allDocsPath = routePrefix + '_all_docs(/*)?';
 
-app.get(allDocsPath, onlineProxy, allDocsHandler);
-app.post(allDocsPath, onlineProxy, jsonParser, allDocsHandler);
-
-// filter _bulk_docs requests for offline users
-app.post(routePrefix + '_bulk_docs(/*)?', authorizationMiddleware.onlinePassThrough, jsonParser, bulkDocs.request);
+app.get(allDocsPath, onlineUserProxy, allDocsHandler);
+app.post(allDocsPath, onlineUserProxy, jsonParser, allDocsHandler);
 
 // filter _bulk_get requests for offline users
 const bulkGetHandler = require('./controllers/bulk-get').request;
-app.post(routePrefix + '_bulk_get(/*)?', onlineProxy, jsonParser, bulkGetHandler);
+app.post(routePrefix + '_bulk_get(/*)?', onlineUserProxy, jsonParser, bulkGetHandler);
+
+// filter _bulk_docs requests for offline users
+// this is an audited endpoint: online and filtered offline requests will pass through to the audit route
+app.post(routePrefix + '_bulk_docs(/*)?', authorizationMiddleware.onlineUserPassThrough, jsonParser, bulkDocs.request);
 
 // filter document and attachment requests for offline users
+// these are audited endpoints: online and allowed offline requests will pass through to the audit route
 const dbDocHandler = require('./controllers/db-doc').request,
       docPath = routePrefix + ':docId/{0,}',
       attachmentPath = routePrefix + ':docId/+:attachmentId';
 
-app.get(docPath, authorizationMiddleware.onlinePassThrough, dbDocHandler);
-app.post(routePrefix, authorizationMiddleware.onlinePassThrough, jsonParser, dbDocHandler);
-app.put(docPath, authorizationMiddleware.onlinePassThrough, jsonParser, dbDocHandler);
-app.delete(docPath, authorizationMiddleware.onlinePassThrough, dbDocHandler);
-app.all(attachmentPath, authorizationMiddleware.onlinePassThrough, dbDocHandler);
+app.get(docPath, authorizationMiddleware.onlineUserPassThrough, dbDocHandler);
+app.post(routePrefix, authorizationMiddleware.onlineUserPassThrough, jsonParser, dbDocHandler);
+app.put(docPath, authorizationMiddleware.onlineUserPassThrough, jsonParser, dbDocHandler);
+app.delete(docPath, authorizationMiddleware.onlineUserPassThrough, dbDocHandler);
+app.all(attachmentPath, authorizationMiddleware.onlineUserPassThrough, dbDocHandler);
 
 const metaPathPrefix = '/medic-user-\*-meta/';
 
@@ -659,7 +662,7 @@ proxyForAuditing.on('proxyReq', function(proxyReq, req) {
   }
 });
 
-// intercept responses from restricted endpoints to fill in forbidden docs gaps
+// intercept responses from filtered offline endpoints to fill in with forbidden docs stubs
 proxyForAuditing.on('proxyRes', (proxyRes, req, res) => {
   if (res.interceptResponse) {
     let body = new Buffer('');

@@ -126,19 +126,18 @@ const filterNewDocs = (allowedDocIds, docs) => {
     return Promise.resolve([]);
   }
 
-  // return docs without ids or docs which do not exist
   return db.medic
     .allDocs({ keys: docIds })
     .then(result => {
-      return docs.filter(doc =>
-        !doc._id ||
-        (allowedDocIds.indexOf(doc._id) === -1 && !result.rows.find(row => row.id === doc._id))
-      );
+      return docs.filter(doc => {
+        // return docs without ids or docs which do not exist
+        return !doc._id || (allowedDocIds.indexOf(doc._id) === -1 && !result.rows.find(row => row.id === doc._id));
+      });
     });
 };
 
 // iterates over request `docs`, filtering the ones the user is allowed to see or create
-// when a doc adds new allowed `subjectIds`, the remaining `docs` are reiterated
+// when a doc adds new `subjectIds`, the remaining `docs` are reiterated
 const filterAllowedDocs = (authorizationContext, docs) => {
   const allowedDocs = [];
   let shouldCheck = true,
@@ -170,14 +169,14 @@ const filterAllowedDocs = (authorizationContext, docs) => {
 };
 
 // Filters the list of request docs to the ones that satisfy the following conditions:
-// a. the user will be allowed to see the doc after being updated/created
-// b. the user is allowed to see the stored doc
+// - the user will be allowed to see the doc if this request is successful
+// - the user is allowed to see the stored doc, if it exists
 const filterRequestDocs = (authorizationContext, docs) => {
   if (!docs.length) {
     return Promise.resolve([]);
   }
 
-  // prevent restricted users from creating or updating docs they will not be allowed to see
+  // prevent offline users from creating or updating docs they will not be allowed to see
   const allowedRequestDocs = filterAllowedDocs(authorizationContext, docs);
 
   return filterNewDocs(authorizationContext.allowedDocIds, allowedRequestDocs).then(allowedNewDocs => {
@@ -261,8 +260,9 @@ module.exports = {
         res.end();
       });
   },
-  // offline users will only update/create/delete documents they are allowed to see and will be allowed to see
-  // mimics CouchDB response format, stubbing forbidden docs and respecting document sequence
+
+  // offline users will only create/update/delete documents they are allowed to see and will be allowed to see
+  // mimics CouchDB response format, stubbing forbidden docs and respecting requested `docs` sequence
   filterOfflineRequest: (req, res, next) => {
     res.type('json');
 

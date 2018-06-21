@@ -432,7 +432,7 @@ describe('Bulk Docs Service', function () {
       testRes.end.callCount.should.equal(1);
     });
 
-    it('fills for restricted docs with stubs and preserves correct order', () => {
+    it('fills for forbidden docs with stubs and preserves correct order', () => {
       testReq.originalBody = { docs: [{ _id: 1 }, { _id: 2 }, { _id: 3 }, { _id: 4 }, { _id: 5 }] };
       testReq.body = { docs: [{ _id: 5 }, { _id: 2 }] };
       service._interceptResponse(testReq, testRes, JSON.stringify([{ id: 5, ok: true }, { id: 2, ok: true }]));

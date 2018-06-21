@@ -3,7 +3,8 @@ const authorization = require('./authorization'),
       _ = require('underscore'),
       serverUtils = require('../server-utils');
 
-// filters response from CouchDB
+// filters response from CouchDB only to include successfully read and allowed docs
+// PouchDB uses this endpoint for replication
 const filterResults = (authorizationContext, result) => {
   return result.results.filter(resultDocs => {
     resultDocs.docs = resultDocs.docs.filter(doc => {
@@ -37,35 +38,34 @@ const invalidRequest = req => {
   return false;
 };
 
-const filterOfflineRequest = (req, res) => {
-  res.type('json');
-
-  const error = invalidRequest(req);
-  if (error) {
-    res.write(JSON.stringify(error));
-    return res.end();
-  }
-
-  const authorizationContext = { userCtx: req.userCtx };
-
-  return authorization
-    .getUserAuthorizationData(req.userCtx)
-    .then(authorizationData => {
-      _.extend(authorizationContext, authorizationData);
-      return db.medic.bulkGet(_.defaults({ docs: req.body.docs }, req.query));
-    })
-    .then(result => {
-      result.results = filterResults(authorizationContext, result);
-
-      res.write(JSON.stringify(result));
-      res.end();
-    })
-    .catch(err => serverUtils.serverError(err, req, res));
-};
-
 module.exports = {
-  // offline users will only receive `doc`-`rev` pairs they are allowed to see
-  filterOfflineRequest: filterOfflineRequest,
+  // offline users will only receive `doc`+`rev` pairs they are allowed to see
+  filterOfflineRequest: (req, res) => {
+    res.type('json');
+
+    const error = invalidRequest(req);
+    if (error) {
+      res.write(JSON.stringify(error));
+      return res.end();
+    }
+
+    const authorizationContext = { userCtx: req.userCtx };
+
+    return authorization
+      .getUserAuthorizationData(req.userCtx)
+      .then(authorizationData => {
+        _.extend(authorizationContext, authorizationData);
+        // actually execute the _bulk_get request as-is and filter the response
+        return db.medic.bulkGet(_.defaults({ docs: req.body.docs }, req.query));
+      })
+      .then(result => {
+        result.results = filterResults(authorizationContext, result);
+
+        res.write(JSON.stringify(result));
+        res.end();
+      })
+      .catch(err => serverUtils.serverError(err, req, res));
+  },
 };
 
 // used for testing

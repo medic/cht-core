@@ -21,7 +21,12 @@ const getRequestIds = (req) => {
 };
 
 const filterRequestIds = (allowedIds, requestIds, query) => {
-  // support multiple startKey/endKey params, last one is the winning value
+  // if `key`/`keys` parameter is used, ignore `startKey`/`endKey` (CouchDB throws an error for such requests)
+  if (requestIds) {
+    return _.intersection(allowedIds, requestIds);
+  }
+
+  // support multiple startKey/endKey params in the same query, last one wins
   const startKeys = _.values(_.pick(query, (value, key) => startKeyParams.indexOf(key) !== -1)),
         endKeys = _.values(_.pick(query, (value, key) => endKeyParams.indexOf(key) !== -1));
 
@@ -39,11 +44,7 @@ const filterRequestIds = (allowedIds, requestIds, query) => {
     }
   }
 
-  if (!requestIds) {
-    return allowedIds;
-  }
-
-  return _.intersection(allowedIds, requestIds);
+  return allowedIds;
 };
 
 // fills in the "gaps" for forbidden docs
@@ -88,48 +89,46 @@ const invalidRequest = req => {
   return false;
 };
 
-const filterOfflineRequest = (req, res) => {
-  res.type('json');
-
-  const error = invalidRequest(req);
-  if (error) {
-    res.write(JSON.stringify(error));
-    return res.end();
-  }
-
-  const requestIds = getRequestIds(req);
-
-  return authorization
-    .getUserAuthorizationData(req.userCtx)
-    .then(authorizationData => {
-      authorizationData.userCtx = req.userCtx;
-      return authorization.getAllowedDocIds(authorizationData);
-    })
-    .then(allowedDocIds => {
-      // when specific keys are requested, the expectation is to send deleted documents as well
-      allowedDocIds = requestIds ?
-        authorization.convertTombstoneIds(allowedDocIds) : authorization.excludeTombstoneIds(allowedDocIds);
-
-      const filteredIds = filterRequestIds(allowedDocIds, requestIds, req.query);
-
-      // when specific keys were requested, but none of them are allowed
-      if (requestIds && !filteredIds.length) {
-        return formatResults({ rows: [] }, requestIds, res);
-      }
-
-      // remove all the `startKey` / `endKey` / `key` params from the request options, as they are incompatible with
-      // `keys` and their function is already handled
-      const options = _.defaults({ keys: filteredIds }, _.omit(req.query, 'key', ...startKeyParams, ...endKeyParams));
-      return db.medic.allDocs(options);
-    })
-    .then(results => formatResults(results, requestIds, res))
-    .catch(err => serverUtils.serverError(err, req, res));
-};
-
 module.exports = {
   // offline users will only receive results for documents they are allowed to see
   // mimics CouchDB response format, stubbing forbidden docs when specific `keys` are requested
-  filterOfflineRequest: filterOfflineRequest
+  filterOfflineRequest: (req, res) => {
+    res.type('json');
+
+    const error = invalidRequest(req);
+    if (error) {
+      res.write(JSON.stringify(error));
+      return res.end();
+    }
+
+    const requestIds = getRequestIds(req);
+
+    return authorization
+      .getUserAuthorizationData(req.userCtx)
+      .then(authorizationData => {
+        authorizationData.userCtx = req.userCtx;
+        return authorization.getAllowedDocIds(authorizationData);
+      })
+      .then(allowedDocIds => {
+        // when specific keys are requested, the expectation is to send deleted documents as well
+        allowedDocIds = requestIds ?
+          authorization.convertTombstoneIds(allowedDocIds) : authorization.excludeTombstoneIds(allowedDocIds);
+
+        const filteredIds = filterRequestIds(allowedDocIds, requestIds, req.query);
+
+        // when specific keys were requested, but none of them are allowed
+        if (requestIds && !filteredIds.length) {
+          return formatResults({ rows: [] }, requestIds, res);
+        }
+
+        // remove all the `startKey` / `endKey` / `key` params from the request options, as they are incompatible with
+        // `keys` and their function is already handled
+        const options = _.defaults({ keys: filteredIds }, _.omit(req.query, 'key', ...startKeyParams, ...endKeyParams));
+        return db.medic.allDocs(options);
+      })
+      .then(results => formatResults(results, requestIds, res))
+      .catch(err => serverUtils.serverError(err, req, res));
+  }
 };
 
 // used for testing
