@@ -158,6 +158,21 @@ describe('All Docs service', () => {
       response.length.should.equal(7);
       response.should.deep.equal(['a', 'b', 'c', 'd', 'aa', 'bb', 'cc']);
     });
+
+    it('ignores `startKey`/`endKey` when specific `keys` are requested', () => {
+      const requestIds = ['a', 'b', 'c', 'd', 'e'];
+      const allowedIds = ['a', 'c', 'e', 'f', 'g'];
+      const response = service._filterRequestIds(allowedIds, requestIds, { start_key: '7', end_key: '22' });
+      response.length.should.equal(3);
+      response.should.deep.equal(['a', 'c', 'e']);
+    });
+
+    it('filters allowedIds by `startKey` and `endKey`', () => {
+      const allowedIds = [1, 2, 3, 5, 6, 7, 9, 10, 11, 13, 14, 15];
+      const response = service._filterRequestIds(allowedIds, null, { start_key: 3, end_key: 10 });
+      response.length.should.equal(6);
+      response.should.deep.equal([3, 5, 6, 7, 9, 10]);
+    });
   });
 
   describe('invalidRequest', () => {
@@ -267,6 +282,7 @@ describe('All Docs service', () => {
 
     it('catches allDocs errors', () => {
       db.medic.allDocs.rejects({ error: 'something' });
+      authorization.getAllowedDocIds.resolves([1, 2, 3, 4]);
 
       return service
         .filterOfflineRequest(testReq, testRes)

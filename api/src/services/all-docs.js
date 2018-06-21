@@ -116,9 +116,8 @@ module.exports = {
 
         const filteredIds = filterRequestIds(allowedDocIds, requestIds, req.query);
 
-        // when specific keys were requested, but none of them are allowed
-        if (requestIds && !filteredIds.length) {
-          return formatResults({ rows: [] }, requestIds, res);
+        if (!filteredIds.length) {
+          return { rows: [] };
         }
 
         // remove all the `startKey` / `endKey` / `key` params from the request options, as they are incompatible with
