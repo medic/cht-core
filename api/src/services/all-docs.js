@@ -7,6 +7,7 @@ const startKeyParams = ['startkey', 'start_key', 'startkey_docid', 'start_key_do
       endKeyParams = ['endkey', 'end_key', 'endkey_docid', 'end_key_doc_id'];
 
 const getRequestIds = (req) => {
+  // CouchDB prioritizes query `keys` above body `keys`
   if (req.query && req.query.keys) {
     return JSON.parse(req.query.keys);
   }
