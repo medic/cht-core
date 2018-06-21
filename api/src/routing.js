@@ -107,7 +107,7 @@ app.use(function(req, res, next) {
 // TODO: investigate blocking writes to _users from the outside. Reads maybe as well, though may be harder
 //       https://github.com/medic/medic-webapp/issues/4089
 
-app.get(/^[\/]+_utils*/, function(req, res, next) {
+app.get(/^[\/]+_utils*/, function(req, res) {
   res.end('Access Denied');
 });
 
