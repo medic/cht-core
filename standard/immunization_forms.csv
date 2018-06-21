@@ -9,12 +9,11 @@ OPV3, OPV3 Oral polio
 PCV1, PCV1 Pneumococcal pneumonia
 PCV2, PCV2 Pneumococcal pneumonia
 PCV3, PCV3 Pneumococcal pneumonia
+PCV4, PCV4 Pneumococcal pneumonia
 RV1, RV1 Rotavirus
 RV2, RV2 Rotavirus
 RV3, RV3 Rotavirus
 VA, VA Vitamin A
-MTV1, MTV1 Maternal tetanus
-MTV2, MTV2 Maternal tetanus
 MMR1, MMR1 Measles Mumps Rubella
 MMR2, MMR2 Measles Mumps Rubella
 MMRV1, MMRV1 Measles Mumps Rubella Varicella
@@ -33,8 +32,6 @@ TY2, TY2 Typhoid
 HPV1, HPV1 Human papillomavirus
 HPV2, HPV2 Human papillomavirus
 HPV3, HPV3 Human papillomavirus
-CH, CH Cholera
-RB1, RB1 Rabies
-RB2, RB2 Rabies
-RB3, RB3 Rabies
-TBE, TBE Tick-borne encephalitis
+CH1, CH1 Cholera
+CH2, CH2 Cholera
+CH3, CH3 Cholera

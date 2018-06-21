@@ -1,3 +1,9 @@
 #!/bin/bash -eu
+
+if find test/ -name \*.js | xargs git grep -F .only; then
+	echo 'ERROR mocha .only() calls found in test files.  These must be removed!'
+	exit 1
+fi
+
 npm install
 npm test

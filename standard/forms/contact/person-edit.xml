@@ -142,8 +142,8 @@
           </text>
         </translation>
         <translation lang="hi">
-          <text id="/data/person/role/manager:label">
-            <value>स्वास्थ्य केंद्र के मैनजर</value>
+          <text id="/data/person/phone:jr:constraintMsg">
+            <value>कृपया एक सही स्थानीय नंबर दर्ज करें, या मानक अंतरराष्ट्रीय प्रारूप का उपयोग करें, जिसमें एक प्लस साइन (+) और देश कोड शामिल है। उदाहरण के लिए: +914712345678</value>
           </text>
           <text id="/data/person/role:label">
             <value>भूमिका</value>
@@ -160,8 +160,11 @@
           <text id="/data/init/change_parent/true:label">
             <value>हाँ</value>
           </text>
+          <text id="/data/person/role/manager:label">
+            <value>स्वास्थ्य केंद्र के मैनजर</value>
+          </text>
           <text id="/data/person/phone_alternate:jr:constraintMsg">
-            <value>-</value>
+            <value>कृपया एक सही स्थानीय नंबर दर्ज करें, या मानक अंतरराष्ट्रीय प्रारूप का उपयोग करें, जिसमें एक प्लस साइन (+) और देश कोड शामिल है। उदाहरण के लिए: +914712345678</value>
           </text>
           <text id="/data/inputs/user:label">
             <value></value>
@@ -249,9 +252,6 @@
           </text>
           <text id="/data/init/type:label">
             <value></value>
-          </text>
-          <text id="/data/person/phone:jr:constraintMsg">
-            <value>-</value>
           </text>
           <text id="/data/inputs:label">
             <value></value>
@@ -691,7 +691,7 @@
         </translation>
       </itext>
       <instance>
-        <data delimiter="#" id="contact:person:edit" prefix="J1!contact:person:edit!" version="2018-02-28_20-34">
+        <data delimiter="#" id="contact:person:edit" prefix="J1!contact:person:edit!" version="2018-06-19_14-26">
           <inputs>
             <meta>
               <location>

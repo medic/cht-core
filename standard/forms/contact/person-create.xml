@@ -124,8 +124,8 @@
           </text>
         </translation>
         <translation lang="hi">
-          <text id="/data/person/role/manager:label">
-            <value>स्वास्थ्य केंद्र के मैनजर</value>
+          <text id="/data/inputs:label">
+            <value></value>
           </text>
           <text id="/data/init/parent_id:label">
             <value>यह व्यक्ति इस जगह से जुड़ा है</value>
@@ -142,8 +142,11 @@
           <text id="/data/person/role_other:hint">
             <value>अन्य का उल्‍लेख करें</value>
           </text>
+          <text id="/data/person/role/manager:label">
+            <value>स्वास्थ्य केंद्र के मैनजर</value>
+          </text>
           <text id="/data/person/phone_alternate:jr:constraintMsg">
-            <value>-</value>
+            <value>कृपया एक सही स्थानीय नंबर दर्ज करें, या मानक अंतरराष्ट्रीय प्रारूप का उपयोग करें, जिसमें एक प्लस साइन (+) और देश कोड शामिल है। उदाहरण के लिए: +914712345678</value>
           </text>
           <text id="/data/inputs/user:label">
             <value></value>
@@ -212,10 +215,7 @@
             <value></value>
           </text>
           <text id="/data/person/phone:jr:constraintMsg">
-            <value>-</value>
-          </text>
-          <text id="/data/inputs:label">
-            <value></value>
+            <value>कृपया एक सही स्थानीय नंबर दर्ज करें, या मानक अंतरराष्ट्रीय प्रारूप का उपयोग करें, जिसमें एक प्लस साइन (+) और देश कोड शामिल है। उदाहरण के लिए: +914712345678</value>
           </text>
           <text id="/data/person/phone:label">
             <value>फोन नंबर</value>
@@ -601,7 +601,7 @@
         </translation>
       </itext>
       <instance>
-        <data delimiter="#" id="contact:person:create" prefix="J1!contact:person:create!" version="2018-02-28_20-34">
+        <data delimiter="#" id="contact:person:create" prefix="J1!contact:person:create!" version="2018-06-19_14-26">
           <inputs>
             <meta>
               <location>
