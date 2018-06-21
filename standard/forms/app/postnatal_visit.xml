@@ -42,7 +42,7 @@
             <value>आपका सन्देश 5 SMS से ऊपर नहीं हो सकता है | कृपया SMS का मूल्य को कम करने के लिए अपना सन्देश छोटा करें |</value>
           </text>
           <text id="/postnatal_visit/group_note/is_sms_edited:label">
-            <value>क्या आप सन्देश में कुछ जोड़ना या बदलना चाहते है?</value>
+            <value>क्या आप संदेश में कुछ और कहना चाहते हैं?</value>
           </text>
           <text id="/postnatal_visit/inputs:label">
             <value>मरीज</value>
@@ -110,9 +110,8 @@
             <value></value>
           </text>
           <text id="/postnatal_visit/group_note/default_chw_sms_note:label">
-            <value>**यह सन्देश ऐसे ही भेजा जा सकता है या आप इस को बदल कर भी भेज सकते है**
- <output value=" /postnatal_visit/group_note/default_chw_sms_text "/></value>
-          </text>
+            <value>**यह संदेश <output value=" /postnatal_visit/chw_name "/> (<output value=" /postnatal_visit/chw_phone "/>) को भेजा जाएगा:**
+ <output value=" /postnatal_visit/group_note/default_chw_sms_text "/></value></text>
           <text id="/postnatal_visit/inputs/contact/phone:label">
             <value></value>
           </text>
@@ -240,7 +239,7 @@
             <value><output value=" /postnatal_visit/chw_sms "/></value>
           </text>
           <text id="/postnatal_visit/group_note/g_chw_sms:label">
-            <value>यह सन्देश ऐसे ही भेजा जा सकता है या आप इस को बदल कर भी भेज सकते है</value>
+            <value>आप यहां संदेश में कुछ और जोड़ सकते हैं:</value>
           </text>
           <text id="/postnatal_visit/group_danger_signs_baby/g_danger_signs_baby/bd4:label">
             <value>ऐंठन</value>
@@ -753,7 +752,7 @@ ID: <output value=" /postnatal_visit/group_review/r_patient_id "/></value></text
             <value>Pesan anda tidak boleh lebih dari 5 pesan SMS. Persingkat pesan Anda untuk mengurangi biaya SMS.</value>
           </text>
           <text id="/postnatal_visit/group_note/is_sms_edited:label">
-            <value>Apakah anda ingin mengedit atau menambahkan info untuk pesan?</value>
+            <value>Apakah Anda ingin menambahkan pesan?</value>
           </text>
           <text id="/postnatal_visit/inputs:label">
             <value>Pasien</value>
@@ -821,9 +820,8 @@ ID: <output value=" /postnatal_visit/group_review/r_patient_id "/></value></text
             <value></value>
           </text>
           <text id="/postnatal_visit/group_note/default_chw_sms_note:label">
-            <value>**Pesan berikut dapat dikirim sebagai adalah atau dimodifikasi untuk menambahkan catatan pribadi**
- <output value=" /postnatal_visit/group_note/default_chw_sms_text "/></value>
-          </text>
+            <value>**Pesan ini akan dikirim ke <output value=" /postnatal_visit/chw_name "/> (<output value=" /postnatal_visit/chw_phone "/>):**
+ <output value=" /postnatal_visit/group_note/default_chw_sms_text "/></value></text>
           <text id="/postnatal_visit/inputs/contact/phone:label">
             <value></value>
           </text>
@@ -951,7 +949,7 @@ ID: <output value=" /postnatal_visit/group_review/r_patient_id "/></value></text
             <value><output value=" /postnatal_visit/chw_sms "/></value>
           </text>
           <text id="/postnatal_visit/group_note/g_chw_sms:label">
-            <value>Pesan berikut dapat dikirim sebagai adalah atau dimodifikasi untuk menambahkan catatan pribadi</value>
+            <value>Anda dapat menambahkan sesuatu yang lain ke pesan di sini:</value>
           </text>
           <text id="/postnatal_visit/group_danger_signs_baby/g_danger_signs_baby/bd4:label">
             <value>Kejang</value>
@@ -1074,7 +1072,7 @@ ID: <output value=" /postnatal_visit/group_review/r_patient_id "/>&quot;</value>
         </translation>
       </itext>
       <instance>
-        <postnatal_visit delimiter="#" id="postnatal_visit" prefix="J1!postnatal_visit!" version="2018-03-06_06-55">
+        <postnatal_visit delimiter="#" id="postnatal_visit" prefix="J1!postnatal_visit!" version="2018-06-06_09-53">
           <inputs tag="hidden">
             <meta tag="hidden">
               <location>

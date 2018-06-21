@@ -14,6 +14,17 @@
             <value>Catatan</value>
           </text>
         </translation>
+        <translation lang="fr">
+          <text id="/collect_off/review:label">
+            <value>Envoi d'un rapport pour désactiver les notifications pour l'identifiant $ {id}, avec les notes suivantes: <output value=" /collect_off/r "/></value>
+          </text>
+          <text id="/collect_off/id:label">
+            <value>Identifiant du patient</value>
+          </text>
+          <text id="/collect_off/r:label">
+            <value>Notes</value>
+          </text>
+        </translation>
         <translation lang="हिन्दी (Hindi)">
           <text id="/collect_off/review:label">
             <value>आप ID <output value=" /collect_off/id "/> के लिए सूचनाएं बंद करने के लिए रिपोर्ट भेज रहे हैं, इन नोट्स के साथ: <output value=" /collect_off/r "/></value></text>
@@ -36,7 +47,7 @@
         </translation>
       </itext>
       <instance>
-        <collect_off delimiter="#" id="collect_off" prefix="J1!off!" version="2018-03-09_14-35">
+        <collect_off delimiter="#" id="collect_off" prefix="J1!off!" version="2018-06-19_14-26">
           <id/>
           <r/>
           <review/>

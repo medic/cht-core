@@ -25,6 +25,7 @@
     "geolocation",
     "patient_age_in_years",
     "patient_contact_phone",
+    "pregnancy_outcome",
     "group_chw_info",
     "group_delivery_summary",
     "group_note",

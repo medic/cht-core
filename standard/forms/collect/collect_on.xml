@@ -14,6 +14,16 @@
             <value>Pasien ID</value>
           </text>
         </translation>
+        <translation lang="fr">
+          <text id="/collect_on/r:label">
+            <value>Notes</value>
+          </text>
+          <text id="/collect_on/review:label">
+            <value>Envoi d'un rapport pour activer les notifications pour l'identifiant <output value=" /collect_on/id "/>, avec les notes suivantes: <output value=" /collect_on/r "/></value></text>
+          <text id="/collect_on/id:label">
+            <value>Identifiant du patient</value>
+          </text>
+        </translation>
         <translation lang="हिन्दी (Hindi)">
           <text id="/collect_on/r:label">
             <value>नोट्स</value>
@@ -36,7 +46,7 @@
         </translation>
       </itext>
       <instance>
-        <collect_on delimiter="#" id="collect_on" prefix="J1!on!" version="2018-03-09_14-34">
+        <collect_on delimiter="#" id="collect_on" prefix="J1!on!" version="2018-06-19_14-26">
           <id/>
           <r/>
           <review/>

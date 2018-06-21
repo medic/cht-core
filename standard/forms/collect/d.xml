@@ -33,6 +33,35 @@
             <value>Berapa hari sejak melahirkan?</value>
           </text>
         </translation>
+        <translation lang="fr">
+          <text id="/d/review_without_days:label">
+            <value>Envoi du rapport d'accouchement pour l'identifiant <output value=" /d/id "/>. Elle a accouché à <output value=" /d/c_label "/>.</value>
+          </text>
+          <text id="/d/c/NS:label">
+            <value>Domicile sans personnel qualifié</value>
+          </text>
+          <text id="/d/c/F:label">
+            <value>Centre de santé</value>
+          </text>
+          <text id="/d/c/S:label">
+            <value>Domicile avec personnel qualifié</value>
+          </text>
+          <text id="/d/c:label">
+            <value>Où est_ce que la femme a accouché ?</value>
+          </text>
+          <text id="/d/id:label">
+            <value>Identifiant du patient</value>
+          </text>
+          <text id="/d/review_with_days:label">
+            <value>Envoi du rapport d'accouchement pour l'identifiant <output value=" /d/id "/>. Elle a accouché à <output value=" /d/c_label "/>, avec la date de naissance enregistrée.</value>
+          </text>
+          <text id="/d/d:jr:constraintMsg">
+            <value>-</value>
+          </text>
+          <text id="/d/d:label">
+            <value>Depuis combien de jours la femme a accouché ?</value>
+          </text>
+        </translation>
         <translation lang="हिन्दी (Hindi)">
           <text id="/d/review_without_days:label">
             <value>आप ID <output value=" /d/id "/> के लिए डिलिवरी की रिपोर्ट भेज रहे हैं | डिलीवरी कि स्थान <output value=" /d/c_label "/> |</value>
@@ -93,7 +122,7 @@
         </translation>
       </itext>
       <instance>
-        <d delimiter="#" id="d" prefix="J1!d!" version="2017-09-14_18-20">
+        <d delimiter="#" id="d" prefix="J1!d!" version="2018-06-19_14-25">
           <id/>
           <c/>
           <d/>

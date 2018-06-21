@@ -12,12 +12,20 @@
             <value>Submitting this form will give you a Medic ID associated to this person</value>
           </text>
         </translation>
+        <translation lang="fr">
+          <text id="/n/n:label">
+            <value>Nom de la personne</value>
+          </text>
+          <text id="/n/n:hint">
+            <value>-</value>
+          </text>
+        </translation>
         <translation lang="हिन्दी (Hindi)">
           <text id="/n/n:label">
             <value>व्यक्ति का नाम</value>
           </text>
           <text id="/n/n:hint">
-            <value>Submitting this form will give you a Medic ID associated to this person</value>
+            <value>इस फॉर्म को सबमिट करने से आपको इस व्यक्ति की मेडिक आईडी मिल जाएगी</value>
           </text>
         </translation>
         <translation default="true()" lang="English">
@@ -30,7 +38,7 @@
         </translation>
       </itext>
       <instance>
-        <n delimiter="#" id="n" prefix="J1!n!" version="2017-09-14_18-20">
+        <n delimiter="#" id="n" prefix="J1!n!" version="2018-06-19_14-25">
           <n/>
           <meta>
             <instanceID/>

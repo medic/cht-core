@@ -4,6 +4,223 @@
     <h:title>Delivery Report</h:title>
     <model>
       <itext>
+        <translation lang="fr">
+          <text id="/delivery/group_delivery_summary/g_birth_date:jr:constraintMsg">
+            <value>-</value>
+          </text>
+          <text id="/delivery/group_note/default_chw_sms/anc_only_home_no_sba_birth:label">
+            <value>Salut <output value=" /delivery/chw_name "/>! <output value=" /delivery/patient_name "/> (<output value=" /delivery/group_summary/r_patient_id "/>) a accouché à domicile en l'absence d'un personnel qualifié. S'il vous plaît surveillez la pour les signes de danger. Merci !</value>
+          </text>
+          <text id="/delivery/group_chw_info/still_pregnant:label">
+            <value>Est-ce que <output value=" /delivery/patient_name "/> est toujours enceinte ?</value>
+          </text>
+          <text id="/delivery/patient_name:label">
+            <value>Nom du patient</value>
+          </text>
+          <text id="/delivery/group_summary/r_followup_note1:label">
+            <value>**Le contenu suivant sera envoyé par SMS à <output value=" /delivery/chw_name "/> (<output value=" /delivery/chw_phone "/>)**</value>
+          </text>
+          <text id="/delivery/inputs/contact/parent/parent/parent/use_cases:label">
+            <value></value>
+          </text>
+          <text id="/delivery/group_delivery_summary/g_pregnancy_outcome/still_birth:label">
+            <value>Mort-né</value>
+          </text>
+          <text id="/delivery/patient_id:label">
+            <value>ID du patient</value>
+          </text>
+          <text id="/delivery/group_note/default_chw_sms_note:label">
+            <value>**Le message suivant sera envoyé à <output value=" /delivery/chw_name "/> (<output value=" /delivery/chw_phone "/>):**
+ <output value=" /delivery/group_note/default_chw_sms_text "/></value></text>
+          <text id="/delivery/group_summary/r_followup_note2:label">
+            <value><output value=" /delivery/chw_sms "/></value>
+          </text>
+          <text id="/delivery/group_note/is_sms_edited/yes:label">
+            <value>Oui</value>
+          </text>
+          <text id="/delivery/group_note/default_chw_sms/unknown:label">
+            <value>Salut <output value=" /delivery/chw_name "/>, <output value=" /delivery/patient_name "/> (<output value=" /delivery/group_summary/r_patient_id "/>) a été au centre de santé pour son accouchement. Merci !</value>
+          </text>
+          <text id="/delivery/group_note/default_chw_sms/home_sba_stillbirth:label">
+            <value>Salut <output value=" /delivery/chw_name "/>! nous avions été informé que <output value=" /delivery/patient_name "/> (<output value=" /delivery/group_summary/r_patient_id "/>) a accouché d'un mort-né à domicile en présence d'un personnel qualifié. Nous vous avertirons lorsqu'il est temps de la référer pour les CPoN. S'il vous plaît surveillez la pour les signes de danger et encouragez la pendant ces moments difficiles. Merci !</value>
+          </text>
+          <text id="/delivery/group_note/default_chw_sms/facility_stillbirth:label">
+            <value>Salut <output value=" /delivery/chw_name "/>! <output value=" /delivery/patient_name "/> (<output value=" /delivery/group_summary/r_patient_id "/>) a accouché d'un mort-né au centre de santé. Nous vous avertirons lorsqu'il est temps de la référer pour les CPoN. S'il vous plaît encouragez la pendant ces moments difficiles. Merci !</value>
+          </text>
+          <text id="/delivery/group_summary/r_followup:label">
+            <value>Message de suivi &lt;i class="fa fa-envelope"&gt;&lt;/i&gt;</value>
+          </text>
+          <text id="/delivery/inputs/contact/patient_id:label">
+            <value></value>
+          </text>
+          <text id="/delivery/patient_contact_phone:label">
+            <value>Tépéhone du patient</value>
+          </text>
+          <text id="/delivery/group_chw_info/still_pregnant/yes:label">
+            <value>Oui</value>
+          </text>
+          <text id="/delivery/inputs/contact/phone:label">
+            <value></value>
+          </text>
+          <text id="/delivery/group_summary/r_patient_info:label">
+            <value>**<output value=" /delivery/patient_name "/>**
+ID: <output value=" /delivery/group_summary/r_patient_id "/></value></text>
+          <text id="/delivery/chw_name:label">
+            <value>Nom de l'ASC</value>
+          </text>
+          <text id="/delivery/group_note/default_chw_sms/still_pregnant:label">
+            <value><output value=" /delivery/patient_name "/> (<output value=" /delivery/group_summary/r_patient_id "/>) a été au centre de santé et va accoucher bientôt. S'il vous plaît référez la au centre de santé pour son accouchement. Merci !</value>
+          </text>
+          <text id="/delivery/inputs/contact/parent/contact/name:label">
+            <value></value>
+          </text>
+          <text id="/delivery/chw_sms:label">
+            <value>Notes de l'ASC</value>
+          </text>
+          <text id="/delivery/group_delivery_summary/g_pregnancy_outcome/healthy:label">
+            <value>Vivant</value>
+          </text>
+          <text id="/delivery/group_note/default_chw_sms/home_no_sba_stillbirth:label">
+            <value>Salut <output value=" /delivery/chw_name "/>! nous avions été informé que <output value=" /delivery/patient_name "/> (<output value=" /delivery/group_summary/r_patient_id "/>) a accouché d'un mort-né à domicile en l'absence d'un personnel qualifié. Nous vous avertirons lorsqu'il est temps de la référer pour les CPoN. S'il vous plaît surveillez la pour les signes de danger et encouragez la pendant ces moments difficiles. Merci !</value>
+          </text>
+          <text id="/delivery/group_note/default_chw_sms/anc_only_home_no_sba_stillbirth:label">
+            <value>Salut <output value=" /delivery/chw_name "/>! nous avions été informé que <output value=" /delivery/patient_name "/> (<output value=" /delivery/group_summary/r_patient_id "/>) a accouché d'un mort-né à domicile en l'absence d'un personnel qualifié. S'il vous plaît surveillez la pour les signes de danger et encouragez la pendant ces moments difficiles. Merci !</value>
+          </text>
+          <text id="/delivery/group_delivery_summary:label">
+            <value>Information sur l'accouchement</value>
+          </text>
+          <text id="/delivery/inputs/contact/sex:label">
+            <value></value>
+          </text>
+          <text id="/delivery/inputs/contact/parent/contact/phone:label">
+            <value></value>
+          </text>
+          <text id="/delivery/group_delivery_summary/g_delivery_code/ns:label">
+            <value>Domicile sans personnel qualifié</value>
+          </text>
+          <text id="/delivery/group_summary/submit:label">
+            <value>&lt;h4 style="text-align:center;"&gt;Assurez-vous d'avoir soumis pour compléter l'action.&lt;/h4&gt;</value>
+          </text>
+          <text id="/delivery/group_summary/r_birth_date:label">
+            <value>A accouhé le <output value=" /delivery/group_delivery_summary/display_birth_date "/> à <output value=" /delivery/group_summary/r_delivery_location "/></value></text>
+          <text id="/delivery/group_note/default_chw_sms/anc_only_home_sba_stillbirth:label">
+            <value>Salut <output value=" /delivery/chw_name "/>! nous avions été informé que <output value=" /delivery/patient_name "/> (<output value=" /delivery/group_summary/r_patient_id "/>) a accouché d'un mort-né à domicile en présence d'un personnel qualifié. S'il vous plaît surveillez la pour les signes de danger et encouragez la pendant ces moments difficiles. Merci !</value>
+          </text>
+          <text id="/delivery/inputs/contact/name:label">
+            <value></value>
+          </text>
+          <text id="/delivery/group_chw_info/still_pregnant:jr:constraintMsg">
+            <value>-</value>
+          </text>
+          <text id="/delivery/group_summary/r_summary:label">
+            <value>Détails de l'accouchement&lt;i class="fa fa-user"&gt;&lt;/i&gt;</value>
+          </text>
+          <text id="/delivery/group_delivery_summary/g_pregnancy_outcome/miscarriage:label">
+            <value>Fausse couche</value>
+          </text>
+          <text id="/delivery/group_summary/r_pregnancy_outcome:label">
+            <value>Résultat: <output value=" /delivery/group_delivery_summary/display_delivery_outcome "/></value>
+          </text>
+          <text id="/delivery/group_note/default_chw_sms/miscarriage:label">
+            <value>Salut <output value=" /delivery/chw_name "/>! nous avions été informé par le centre de santé que <output value=" /delivery/patient_name "/> (<output value=" /delivery/group_summary/r_patient_id "/>) a fait une fausse couche. S'il vous plaît encouragez la pendant ces moments difficiles. Merci !</value>
+          </text>
+          <text id="/delivery/group_note/default_chw_sms/facility_birth:label">
+            <value>Bonne nouvelle, <output value=" /delivery/chw_name "/>! <output value=" /delivery/patient_name "/> (<output value=" /delivery/group_summary/r_patient_id "/>) a accouché au centre de santé. Nous vous avertirons lorsqu'il est temps de la référer pour les CPoN. S'il vous plaît surveillez la pour les signes de danger. Merci !</value>
+          </text>
+          <text id="/delivery/group_note/is_sms_edited/no:label">
+            <value>Non</value>
+          </text>
+          <text id="/delivery/geolocation:label">
+            <value>Emplacement</value>
+          </text>
+          <text id="/delivery/group_note/g_chw_sms:jr:constraintMsg">
+            <value>-</value>
+          </text>
+          <text id="/delivery/group_note/g_chw_sms:label">
+            <value>Vous pouvez ajouter ici une note personnelle au message.</value>
+          </text>
+          <text id="/delivery/group_note/default_chw_sms/anc_only_facility_stillbirth:label">
+            <value>Salut <output value=" /delivery/chw_name "/>! <output value=" /delivery/patient_name "/> (<output value=" /delivery/group_summary/r_patient_id "/>) a accouché d'un mort-né au centre de santé. S'il vous plaît encouragez la pendant ces moments difficiles. Merci !</value>
+          </text>
+          <text id="/delivery/group_note/default_chw_sms/anc_only_home_sba_birth:label">
+            <value>Salut <output value=" /delivery/chw_name "/>! <output value=" /delivery/patient_name "/> (<output value=" /delivery/group_summary/r_patient_id "/>) a accouché à domicile en présence d'un personnel qualifié. S'il vous plaît surveillez la pour les signes de danger. Merci !</value>
+          </text>
+          <text id="/delivery/group_delivery_summary/g_delivery_code/f:label">
+            <value>Centre de santé</value>
+          </text>
+          <text id="/delivery/group_chw_info/still_pregnant/no:label">
+            <value>Non</value>
+          </text>
+          <text id="/delivery/patient_uuid:label">
+            <value>UUID du patient</value>
+          </text>
+          <text id="/delivery/group_note:label">
+            <value>Notes à l'ASC</value>
+          </text>
+          <text id="/delivery/group_note/default_chw_sms/anc_only_miscarriage:label">
+            <value>Salut <output value=" /delivery/chw_name "/>, <output value=" /delivery/patient_name "/> (<output value=" /delivery/group_summary/r_patient_id "/>) a fait une fausse couche au centre de santé. S'il vous plaît encouragez la pendant ces moments difficiles. Merci !</value>
+          </text>
+          <text id="/delivery/inputs/contact/date_of_birth:label">
+            <value></value>
+          </text>
+          <text id="/delivery/group_note/default_chw_sms:label">
+            <value>Message à envoyer à l'ASC</value>
+          </text>
+          <text id="/delivery/group_chw_info:label">
+            <value>Rapport d'accouchement manquant</value>
+          </text>
+          <text id="/delivery/group_chw_info/still_pregnant/unknown:label">
+            <value>Pas sûr</value>
+          </text>
+          <text id="/delivery/group_note/default_chw_sms/anc_only_facility_birth:label">
+            <value>Bonne nouvelle, <output value=" /delivery/chw_name "/>! <output value=" /delivery/patient_name "/> (<output value=" /delivery/group_summary/r_patient_id "/>) a accouché au centre de santé. S'il vous plaît surveillez la pour les signes de danger. Merci !</value>
+          </text>
+          <text id="/delivery/group_delivery_summary/g_pregnancy_outcome:label">
+            <value>Résultat de la grossesse</value>
+          </text>
+          <text id="/delivery/inputs/contact/_id:label">
+            <value>Quel est le nom du patient ?</value>
+          </text>
+          <text id="/delivery/group_note/default_chw_sms/home_sba_birth:label">
+            <value>Salut <output value=" /delivery/chw_name "/>! <output value=" /delivery/patient_name "/> (<output value=" /delivery/group_summary/r_patient_id "/>) a accouché à domicile en présence d'un personnel qualifié. Nous vous avertirons lorsqu'il est temps de la référer pour les CPoN. S'il vous plaît surveillez la pour les signes de danger. Merci !</value>
+          </text>
+          <text id="/delivery/group_delivery_summary/g_delivery_code/s:label">
+            <value>Domicile avec personnel qualifié</value>
+          </text>
+          <text id="/delivery/inputs:label">
+            <value>Patient</value>
+          </text>
+          <text id="/delivery/group_note/default_chw_sms/home_no_sba_birth:label">
+            <value>Salut <output value=" /delivery/chw_name "/>! <output value=" /delivery/patient_name "/> (<output value=" /delivery/group_summary/r_patient_id "/>) a accouché à domicile en l'absence d'un personnel qualifié. Nous vous avertirons lorsqu'il est temps de la référer pour les CPoN. S'il vous plaît surveillez la pour les signes de danger. Merci !</value>
+          </text>
+          <text id="/delivery/group_chw_info/chw_information:label">
+            <value>Le rapport d'accouchement pour <output value=" /delivery/patient_name "/> n'a pas été soumis</value>
+          </text>
+          <text id="/delivery/chw_phone:label">
+            <value>Téléphone de l'ASC</value>
+          </text>
+          <text id="/delivery/group_delivery_summary/g_birth_date:label">
+            <value>Entrer la date d'accouchement</value>
+          </text>
+          <text id="/delivery/group_delivery_summary/g_delivery_code:label">
+            <value>Lieu d'accouchement</value>
+          </text>
+          <text id="/delivery/inputs/contact/_id:hint">
+            <value>-</value>
+          </text>
+          <text id="/delivery/group_note/is_sms_edited:label">
+            <value>Voulez-vous ajouter une note personnelle au message ?</value>
+          </text>
+          <text id="/delivery/group_note/g_chw_sms:hint">
+            <value>-</value>
+          </text>
+          <text id="/delivery/group_chw_info/call_button:label">
+            <value>**Merci de faire un suivi avec <output value=" /delivery/chw_name "/> pour voir si <output value=" /delivery/patient_name "/> est toujours enceinte.**
+Call: <output value=" /delivery/chw_phone "/></value></text>
+          <text id="/delivery/patient_age_in_years:label">
+            <value>Années</value>
+          </text>
+        </translation>
         <translation lang="hi">
           <text id="/delivery/group_delivery_summary/g_birth_date:jr:constraintMsg">
             <value>तारीख एक साल पहले और आज के बीच में होनी चाहिए</value>
@@ -30,9 +247,8 @@
             <value>मरीज का ID</value>
           </text>
           <text id="/delivery/group_note/default_chw_sms_note:label">
-            <value>**यह सन्देश ऐसे ही भेजा जा सकता है या आप इस को बदल कर भी भेज सकते है**
- <output value=" /delivery/group_note/default_chw_sms_text "/></value>
-          </text>
+            <value>**यह संदेश <output value=" /delivery/chw_name "/> (<output value=" /delivery/chw_phone "/>) को भेजा जाएगा:**
+ <output value=" /delivery/group_note/default_chw_sms_text "/></value></text>
           <text id="/delivery/group_summary/r_followup_note2:label">
             <value><output value=" /delivery/chw_sms "/></value>
           </text>
@@ -137,7 +353,7 @@
             <value>आपका सन्देश 5 SMS से ऊपर नहीं हो सकता है | कृपया SMS का मूल्य को कम करने के लिए अपना सन्देश छोटा करें |</value>
           </text>
           <text id="/delivery/group_note/g_chw_sms:label">
-            <value>यह सन्देश ऐसे ही भेजा जा सकता है या आप इस को बदल कर भी भेज सकते है</value>
+            <value>आप यहां संदेश में कुछ और जोड़ सकते हैं:</value>
           </text>
           <text id="/delivery/group_note/default_chw_sms/anc_only_facility_stillbirth:label">
             <value>नमस्ते <output value=" /delivery/chw_name "/>, <output value=" /delivery/patient_name "/> (<output value=" /delivery/group_summary/r_patient_id "/>) का बच्चा का स्वास्थ्य केंद्र में मृत जन्म हुआ | कृपया इस मुश्किल समय में <output value=" /delivery/patient_name "/> को सहारा दे | धन्यवाद |</value>
@@ -209,7 +425,7 @@
             <value>सूची में से एक व्यक्ति को चुनें</value>
           </text>
           <text id="/delivery/group_note/is_sms_edited:label">
-            <value>क्या आप सन्देश में कुछ जोड़ना या बदलना चाहते है?</value>
+            <value>क्या आप संदेश में कुछ और कहना चाहते हैं?</value>
           </text>
           <text id="/delivery/group_note/g_chw_sms:hint">
             <value><output value=" /delivery/chw_name "/> (<output value=" /delivery/chw_phone "/>) को संदेश भेजा जायेगा | संदेश की लंबाई सीमित है ताकी SMS का मूल्य उच्च ना हो|</value>
@@ -463,9 +679,8 @@ Call: <output value=" /delivery/chw_phone "/></value></text>
             <value>Pasien ID</value>
           </text>
           <text id="/delivery/group_note/default_chw_sms_note:label">
-            <value>**Pesan berikut dapat dikirim sebagai adalah atau dimodifikasi untuk menambahkan catatan pribadi**
- <output value=" /delivery/group_note/default_chw_sms_text "/></value>
-          </text>
+            <value>**Pesan ini akan dikirim ke <output value=" /delivery/chw_name "/> (<output value=" /delivery/chw_phone "/>):**
+ <output value=" /delivery/group_note/default_chw_sms_text "/></value></text>
           <text id="/delivery/group_summary/r_followup_note2:label">
             <value><output value=" /delivery/chw_sms "/></value>
           </text>
@@ -570,7 +785,7 @@ Call: <output value=" /delivery/chw_phone "/></value></text>
             <value>Pesan anda tidak boleh lebih dari 5 pesan SMS. Persingkat pesan Anda untuk mengurangi biaya SMS.</value>
           </text>
           <text id="/delivery/group_note/g_chw_sms:label">
-            <value>Pesan berikut dapat dikirim sebagai adalah atau dimodifikasi untuk menambahkan catatan pribadi</value>
+            <value>Anda dapat menambahkan sesuatu yang lain ke pesan di sini:</value>
           </text>
           <text id="/delivery/group_note/default_chw_sms/anc_only_facility_stillbirth:label">
             <value>Halo <output value=" /delivery/chw_name "/>, <output value=" /delivery/patient_name "/> (<output value=" /delivery/group_summary/r_patient_id "/>) telah melahirkan di fasilitas kesehatan namun anaknya meninggal. Mohon dukungan untuk <output value=" /delivery/patient_name "/> selama masa sulit ini. Terima kasih.</value>
@@ -642,7 +857,7 @@ Call: <output value=" /delivery/chw_phone "/></value></text>
             <value>Pilih orang dari daftar</value>
           </text>
           <text id="/delivery/group_note/is_sms_edited:label">
-            <value>Apakah anda ingin mengedit atau menambahkan info untuk pesan?</value>
+            <value>Apakah Anda ingin menambahkan pesan?</value>
           </text>
           <text id="/delivery/group_note/g_chw_sms:hint">
             <value>Pesan akan dikirim ke <output value=" /delivery/chw_name "/> (<output value=" /delivery/chw_phone "/>). Pesan dibatasi panjang untuk menghindari biaya SMS yang tinggi.</value>
@@ -655,7 +870,7 @@ Call: <output value=" /delivery/chw_phone "/></value></text>
         </translation>
       </itext>
       <instance>
-        <delivery delimiter="#" id="delivery" prefix="J1!delivery!" version="2018-05-17_12-14">
+        <delivery delimiter="#" id="delivery" prefix="J1!delivery!" version="2018-06-19_14-25">
           <inputs tag="hidden">
             <meta tag="hidden">
               <location>
@@ -694,9 +909,9 @@ Call: <output value=" /delivery/chw_phone "/></value></text>
           <chw_phone/>
           <birth_date/>
           <delivery_code/>
-          <delivery_code_label/>
-          <pregnancy_outcome/>
-          <pregnancy_outcome_label/>
+          <label_delivery_code/>
+          <pregnancy_outcome tag="hidden"/>
+          <label_pregnancy_outcome/>
           <chw_sms/>
           <geolocation tag="hidden"/>
           <patient_age_in_years tag="hidden">0</patient_age_in_years>
@@ -757,9 +972,9 @@ Call: <output value=" /delivery/chw_phone "/></value></text>
       <bind calculate="../inputs/contact/parent/contact/phone" nodeset="/delivery/chw_phone" type="string"/>
       <bind calculate=" /delivery/group_delivery_summary/g_birth_date " nodeset="/delivery/birth_date" type="string"/>
       <bind calculate=" /delivery/group_delivery_summary/g_delivery_code " nodeset="/delivery/delivery_code" type="string"/>
-      <bind calculate="jr:choice-name( /delivery/group_delivery_summary/g_delivery_code ,' /delivery/group_delivery_summary/g_delivery_code ')" nodeset="/delivery/delivery_code_label" type="string"/>
+      <bind calculate="jr:choice-name( /delivery/group_delivery_summary/g_delivery_code ,' /delivery/group_delivery_summary/g_delivery_code ')" nodeset="/delivery/label_delivery_code" type="string"/>
       <bind calculate=" /delivery/group_delivery_summary/g_pregnancy_outcome " nodeset="/delivery/pregnancy_outcome" type="string"/>
-      <bind calculate="jr:choice-name( /delivery/group_delivery_summary/g_pregnancy_outcome ,' /delivery/group_delivery_summary/g_pregnancy_outcome ')" nodeset="/delivery/pregnancy_outcome_label" type="string"/>
+      <bind calculate="jr:choice-name( /delivery/group_delivery_summary/g_pregnancy_outcome ,' /delivery/group_delivery_summary/g_pregnancy_outcome ')" nodeset="/delivery/label_pregnancy_outcome" type="string"/>
       <bind calculate="if( /delivery/group_note/g_chw_sms  != '', concat( /delivery/group_note/default_chw_sms_text ,concat('
 ', /delivery/group_note/g_chw_sms )),  /delivery/group_note/default_chw_sms_text )" nodeset="/delivery/chw_sms" type="string"/>
       <bind calculate="concat(../../inputs/meta/location/lat, concat(' ', ../../inputs/meta/location/long))" nodeset="/delivery/geolocation" type="string"/>

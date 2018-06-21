@@ -13,11 +13,11 @@ set -e
 while IFS=, read col1 col2
 do
     echo "| $col1 | $col2 |"
-    cat template_form.json >> "${GENERATED_FORMS}"
+    cat template_form.json.ish >> "${GENERATED_FORMS}"
     sed -i -r -e "s/\{\{FORM_CODE\}\}/$col1/g" "${GENERATED_FORMS}"
     sed -i -r -e "s/\{\{FORM_NAME\}\}/$col2/g" "${GENERATED_FORMS}"
 
-    cat template_patient_report.json >> "${GENERATED_PATIENT_REPORTS}"
+    cat template_patient_report.json.ish >> "${GENERATED_PATIENT_REPORTS}"
     sed -i -r -e "s/\{\{FORM_CODE\}\}/$col1/g" "${GENERATED_PATIENT_REPORTS}"
     sed -i -r -e "s/\{\{FORM_NAME\}\}/$col2/g" "${GENERATED_PATIENT_REPORTS}"
 
