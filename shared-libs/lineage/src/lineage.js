@@ -208,24 +208,21 @@ module.exports = function(Promise, DB) {
 
   var checkForInfiniteRecursion = function(doc) {
     var ids = [];
-    var parent = doc.parent;
 
     if (doc.type === 'data_record') {
-      var contactId = doc.contact && doc.contact._id;
-      if (!contactId) {
+      if (!doc.contact || !doc.contact._id) {
         return ;
       }
-      ids.push(contactId);
-      parent = doc.contact;
+      doc = doc.contact;
     }
 
-    while (parent) {
-      if (parent._id && ids.indexOf(parent._id) !== -1) {
+    while (doc) {
+      if (doc._id && ids.indexOf(doc._id) !== -1) {
         throw new Error('Could not hydrate/minify ' + doc._id + ', possible parent recursion.');
-      } else if (parent._id) {
-        ids.push(parent._id);
+      } else if (doc._id) {
+        ids.push(doc._id);
       }
-      parent = parent.parent;
+      doc = doc.parent;
     }
   };
 
@@ -386,6 +383,7 @@ module.exports = function(Promise, DB) {
     }
 
     checkForInfiniteRecursion(parent);
+
     var result = { _id: parent._id };
     var minified = result;
     while (parent.parent && parent.parent._id) {
