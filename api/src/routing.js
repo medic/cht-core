@@ -31,6 +31,7 @@ const _ = require('underscore'),
       serverUtils = require('./server-utils'),
       appcacheManifest = /\/manifest\.appcache$/,
       uuid = require('uuid/v4'),
+      compression = require('compression'),
       app = express();
 
 // requires content-type application/json header
@@ -103,6 +104,7 @@ app.use(function(req, res, next) {
   next();
 });
 
+app.use(compression({ threshold: 0 }));
 
 // TODO: investigate blocking writes to _users from the outside. Reads maybe as well, though may be harder
 //       https://github.com/medic/medic-webapp/issues/4089
