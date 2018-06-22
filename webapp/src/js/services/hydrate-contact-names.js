@@ -3,7 +3,8 @@ var _ = require('underscore');
 angular.module('inboxServices').factory('HydrateContactNames',
   function(
     $q,
-    DB
+    DB,
+    GetSummaries
   ) {
 
     'use strict';
@@ -48,8 +49,7 @@ angular.module('inboxServices').factory('HydrateContactNames',
         return $q.resolve(summaries);
       }
 
-      return DB()
-        .query('medic-client/doc_summaries_by_id', { keys: ids })
+      return GetSummaries(ids)
         .then(function(response) {
           return replaceContactIdsWithNames(summaries, response.rows);
         });

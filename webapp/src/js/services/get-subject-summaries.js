@@ -4,6 +4,7 @@ angular.module('inboxServices').factory('GetSubjectSummaries',
   function(
     $q,
     DB,
+    GetSummaries,
     LineageModelGenerator
   ) {
 
@@ -68,8 +69,7 @@ angular.module('inboxServices').factory('GetSubjectSummaries',
         return $q.resolve(summaries);
       }
 
-      return DB()
-        .query('medic-client/doc_summaries_by_id', { keys: ids })
+      return GetSummaries(ids)
         .then(function(response) {
           return replaceIdsWithNames(summaries, response);
         });

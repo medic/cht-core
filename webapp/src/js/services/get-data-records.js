@@ -21,7 +21,8 @@ angular.module('inboxServices').factory('GetDataRecords',
     $q,
     DB,
     HydrateContactNames,
-    GetSubjectSummaries
+    GetSubjectSummaries,
+    GetSummaries
   ) {
 
     'use strict';
@@ -35,17 +36,8 @@ angular.module('inboxServices').factory('GetDataRecords',
         });
     };
 
-    var getResponseValues = function(response) {
-      return _.map(response.rows, function(row) {
-        row.value._id = row.id;
-        return row.value;
-      });
-    };
-
     var getSummaries = function(ids) {
-      return DB()
-        .query('medic-client/doc_summaries_by_id', { keys: ids })
-        .then(getResponseValues)
+      return GetSummaries(ids)
         .then(HydrateContactNames)
         .then(GetSubjectSummaries);
     };
