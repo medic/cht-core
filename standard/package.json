@@ -9,7 +9,8 @@
     "jshint": "jshint *.json contact-summary*.js test/*.js",
     "test": "npm run jshint && npm run test-contact-summary && npm run test-unit",
     "test-contact-summary": "medic-contact-summary-test",
-    "test-unit": "mocha --require test/mocha-setup.js --reporter progress test/*.spec.js"
+    "test-unit": "mocha --require test/mocha-setup.js --reporter progress test/*.spec.js",
+    "travis": "npm install && ./test/check-app-settings-is-committed && npm test"
   },
   "devDependencies": {
     "@medic/contact-summary-testing": "^1.1.3",
