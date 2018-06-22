@@ -5,6 +5,12 @@ const cloneDeep = require('lodash/cloneDeep');
 
 let db;
 
+const child_is_parent = {
+  _id: 'child_is_parent',
+  type: 'person',
+  parent: { _id: 'child_is_parent' },
+  reported_date: 5
+};
 const circular_areaId = 'circular_area';
 const circular_chw = {
   _id: 'circular_chw',
@@ -206,6 +212,7 @@ const sms_doc = {
 };
 
 const fixtures = [
+  child_is_parent,
   circular_area,
   circular_chw,
   circular_report,
@@ -283,6 +290,15 @@ describe('Lineage', function() {
         //We get all parent info for each doc (_rev, name, etc)
         chai.expect(result[0][0].name).to.equal(one_parent.name);
         chai.expect(result[0][1].name).to.equal(dummyDoc.name);
+      });
+    });
+  });
+
+  describe('fetchContacts', function() {
+    it('clones any reused contacts', function() {
+      const lineageDocs = [ circular_chw, circular_area ];
+      return lineage.fetchContacts(lineageDocs).then(result => {
+        chai.expect(result[0]).to.not.equal(circular_chw);
       });
     });
   });
@@ -509,6 +525,12 @@ describe('Lineage', function() {
           chai.expect(hydratedReport).excluding('_rev').to.deep.equal(report);
           chai.expect(hydratedPlace).excluding('_rev').to.deep.equal(place);
         });
+    });
+
+    it('errors out on potential infinite recursion', function() {
+      const docs = [ cloneDeep(child_is_parent) ];
+
+      chai.expect(() => lineage.hydrateDocs(docs)).to.throw();
     });
   });
 });
