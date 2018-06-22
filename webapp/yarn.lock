@@ -441,9 +441,9 @@ glob@~7.0.6:
     once "^1.3.0"
     path-is-absolute "^1.0.0"
 
-google-libphonenumber@^3.1.3:
-  version "3.1.3"
-  resolved "https://registry.yarnpkg.com/google-libphonenumber/-/google-libphonenumber-3.1.3.tgz#2f59ae0e902486ade404a3a3e38e7dd8ad2373ad"
+google-libphonenumber@^3.1.8:
+  version "3.1.8"
+  resolved "https://registry.yarnpkg.com/google-libphonenumber/-/google-libphonenumber-3.1.8.tgz#076ecc21e2113371b9d67f6b7dd9ac66db9722cc"
 
 gsm@^0.1.4:
   version "0.1.4"
@@ -1170,7 +1170,7 @@ samsam@1.3.0:
   resolved "https://registry.yarnpkg.com/samsam/-/samsam-1.3.0.tgz#8d1d9350e25622da30de3e44ba692b5221ab7c50"
 
 "search@file:../shared-libs/search":
-  version "1.0.0"
+  version "1.1.0"
   dependencies:
     moment "2.19.1"
     underscore "1.8.3"
