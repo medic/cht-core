@@ -38,8 +38,8 @@ angular.module('inboxServices').factory('GetSubjectSummaries',
     };
 
     var findSubjectName = function(response, id) {
-      var parent = _.findWhere(response.rows, { id: id });
-      return (parent && parent.value && parent.value.name) || null;
+      var parent = _.findWhere(response, { _id: id });
+      return (parent && parent.name) || null;
     };
 
     var replaceIdsWithNames = function(summaries, response) {

@@ -4,24 +4,25 @@ describe('GetDataRecords service', () => {
 
   let service,
       allDocs,
-      query,
+      GetSummaries,
       HydrateContactNames;
 
   beforeEach(() => {
     allDocs = sinon.stub();
-    query = sinon.stub();
+    GetSummaries = sinon.stub();
     HydrateContactNames = sinon.stub();
     module('inboxApp');
     module($provide => {
-      $provide.factory('DB', KarmaUtils.mockDB({ allDocs: allDocs, query: query }));
+      $provide.factory('DB', KarmaUtils.mockDB({ allDocs: allDocs }));
       $provide.value('$q', Q); // bypass $q so we don't have to digest
       $provide.value('HydrateContactNames', HydrateContactNames);
+      $provide.value('GetSummaries', GetSummaries);
     });
     inject($injector => service = $injector.get('GetDataRecords'));
   });
 
   afterEach(() => {
-    KarmaUtils.restore(allDocs, query, HydrateContactNames);
+    KarmaUtils.restore(allDocs, GetSummaries, HydrateContactNames);
   });
 
   it('returns empty array when given no ids', () => {
@@ -35,7 +36,7 @@ describe('GetDataRecords service', () => {
   describe('summaries', () => {
 
     it('db errors', () => {
-      query.returns(Promise.reject('missing'));
+      GetSummaries.returns(Promise.reject('missing'));
       return service('5')
         .then(() => {
           throw new Error('expected error to be thrown');
@@ -44,13 +45,12 @@ describe('GetDataRecords service', () => {
     });
 
     it('no result', () => {
-      query.returns(Promise.resolve({ rows: [] }));
+      GetSummaries.returns(Promise.resolve(null));
       HydrateContactNames.returns(Promise.resolve([ ]));
       return service('5').then(actual => {
         chai.expect(actual).to.equal(null);
-        chai.expect(query.callCount).to.equal(1);
-        chai.expect(query.args[0][0]).to.equal('medic-client/doc_summaries_by_id');
-        chai.expect(query.args[0][1]).to.deep.equal({ keys: [ '5' ] });
+        chai.expect(GetSummaries.callCount).to.equal(1);
+        chai.expect(GetSummaries.args[0][0]).to.deep.equal(['5']);
         chai.expect(allDocs.callCount).to.equal(0);
       });
     });
@@ -62,22 +62,18 @@ describe('GetDataRecords service', () => {
         contact: 'jim',
         lineage: [ 'area', 'center' ]
       };
-      query.returns(Promise.resolve({ rows: [
+      GetSummaries.returns(Promise.resolve([
         {
-          id: '5',
-          value: {
-            name: 'five',
-            contact: 'a',
-            lineage: [ 'b', 'c' ]
-          }
+          _id: '5',
+          name: 'five',
+          contact: 'a',
+          lineage: [ 'b', 'c' ]
         }
-      ] }));
+      ]));
       HydrateContactNames.returns(Promise.resolve([ expected ]));
       return service('5').then(actual => {
         chai.expect(actual).to.deep.equal(expected);
-        chai.expect(query.callCount).to.equal(1);
-        chai.expect(query.args[0][0]).to.equal('medic-client/doc_summaries_by_id');
-        chai.expect(query.args[0][1]).to.deep.equal({ keys: [ '5' ] });
+        chai.expect(GetSummaries.callCount).to.equal(1);
         chai.expect(allDocs.callCount).to.equal(0);
         chai.expect(HydrateContactNames.callCount).to.equal(1);
         chai.expect(HydrateContactNames.args[0][0]).to.deep.equal([{
@@ -95,17 +91,16 @@ describe('GetDataRecords service', () => {
         { _id: '6', name: 'six' },
         { _id: '7', name: 'seven' }
       ];
-      query.returns(Promise.resolve({ rows: [
-        { id: '5', value: { name: 'five' } },
-        { id: '6', value: { name: 'six' } },
-        { id: '7', value: { name: 'seven' } }
-      ] }));
+      GetSummaries.returns(Promise.resolve([
+        { _id: '5', name: 'five' },
+        { _id: '6', name: 'six' },
+        { _id: '7', name: 'seven' }
+      ]));
       HydrateContactNames.returns(Promise.resolve(expected));
       return service([ '5', '6', '7' ]).then(actual => {
         chai.expect(actual).to.deep.equal(expected);
-        chai.expect(query.callCount).to.equal(1);
-        chai.expect(query.args[0][0]).to.equal('medic-client/doc_summaries_by_id');
-        chai.expect(query.args[0][1]).to.deep.equal({ keys: [ '5', '6', '7' ] });
+        chai.expect(GetSummaries.callCount).to.equal(1);
+        chai.expect(GetSummaries.args[0][0]).to.deep.equal([ '5', '6', '7' ]);
         chai.expect(allDocs.callCount).to.equal(0);
       });
     });
@@ -129,7 +124,7 @@ describe('GetDataRecords service', () => {
         chai.expect(actual).to.equal(null);
         chai.expect(allDocs.callCount).to.equal(1);
         chai.expect(allDocs.args[0][0]).to.deep.equal({ keys: [ '5' ], include_docs: true });
-        chai.expect(query.callCount).to.equal(0);
+        chai.expect(GetSummaries.callCount).to.equal(0);
       });
     });
 
@@ -141,7 +136,7 @@ describe('GetDataRecords service', () => {
         chai.expect(actual).to.deep.equal({ _id: '5', name: 'five' });
         chai.expect(allDocs.callCount).to.equal(1);
         chai.expect(allDocs.args[0][0]).to.deep.equal({ keys: [ '5' ], include_docs: true });
-        chai.expect(query.callCount).to.equal(0);
+        chai.expect(GetSummaries.callCount).to.equal(0);
       });
     });
 
@@ -159,7 +154,7 @@ describe('GetDataRecords service', () => {
         ]);
         chai.expect(allDocs.callCount).to.equal(1);
         chai.expect(allDocs.args[0][0]).to.deep.equal({ keys: [ '5', '6', '7' ], include_docs: true });
-        chai.expect(query.callCount).to.equal(0);
+        chai.expect(GetSummaries.callCount).to.equal(0);
       });
     });
 
