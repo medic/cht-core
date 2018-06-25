@@ -298,6 +298,7 @@ describe('Lineage', function() {
     it('clones any reused contacts', function() {
       const lineageDocs = [ circular_chw, circular_area ];
       return lineage.fetchContacts(lineageDocs).then(result => {
+        chai.expect(result[0]._id).to.equal(circular_chw._id);
         chai.expect(result[0]).to.not.equal(circular_chw);
       });
     });
