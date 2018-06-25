@@ -1,6 +1,5 @@
 const assert = require('chai').assert;
 const parse = require('medic-conf/src/lib/simple-js-parser');
-const path   = require('path');
 
 describe('contact-utils', function() {
   const cu = parse({
