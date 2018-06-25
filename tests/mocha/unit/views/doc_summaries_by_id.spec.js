@@ -345,6 +345,7 @@ describe('doc_summaries_by_id view', () => {
         contact: 'df28f38e-cd3c-475f-96b5-48080d863e34',
         lineage: ['1a1aac55-04d6-40dc-aae2-e67a75a1496d'],
         subject: {
+          name: 'mother',
           type: 'reference',
           value: 'a29c933c-90cb-4cb0-9e25-36403499aee4'
         }
@@ -365,6 +366,7 @@ describe('doc_summaries_by_id view', () => {
         contact: 'df28f38e-cd3c-475f-96b5-48080d863e34',
         lineage: ['1a1aac55-04d6-40dc-aae2-e67a75a1496d'],
         subject: {
+          name: 'mother',
           type: 'name',
           value: 'mother'
         }
@@ -385,6 +387,7 @@ describe('doc_summaries_by_id view', () => {
         contact: undefined,
         lineage: [],
         subject: {
+          name: 'test',
           type: 'name',
           value: 'test'
         }

@@ -25,11 +25,14 @@ function(doc) {
   };
 
   var getSubject = function(doc) {
+    var subject = {};
     var reference = doc.patient_id ||
                     (doc.fields && doc.fields.patient_id) ||
                     doc.place_id;
     var patientName = doc.fields && doc.fields.patient_name;
-    var subject = { name: patientName };
+    if (patientName) {
+      subject.name = patientName;
+    }
 
     if (reference) {
       subject.value = reference;
