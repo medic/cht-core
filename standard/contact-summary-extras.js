@@ -363,12 +363,3 @@ function getSubsequentVisits(r) {
   });
   return subsequentVisits;
 }
-
-// function getRelevantDelivery(r) {
-//   var subsequentDeliveries = getSubsequentDeliveries(r);
-
-//   // HANDLE PAST PREGNANCIES
-//   if (!subsequentDeliveries.length) return;
-
-//   return getOldestReport(subsequentDeliveries);
-// }
