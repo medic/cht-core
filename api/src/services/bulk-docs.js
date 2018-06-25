@@ -136,36 +136,20 @@ const filterNewDocs = (allowedDocIds, docs) => {
     });
 };
 
-// iterates over request `docs`, filtering the ones the user is allowed to see or create
-// when a doc adds new `subjectIds`, the remaining `docs` are reiterated
+// returns a list of filtered docs the user is allowed to update/create
 const filterAllowedDocs = (authorizationContext, docs) => {
-  const allowedDocs = [];
-  let shouldCheck = true,
-      pendingDocs = docs.map(doc => ({
-        doc,
-        viewResults: authorization.getViewResults(doc),
-        alwaysAllowCreate: authorization.alwaysAllowCreate(doc)
-      }));
-
-  const checkDoc = (docObj) => {
-    const allowed = docObj.alwaysAllowCreate ||
-                    authorization.allowedDoc(docObj.doc._id, authorizationContext, docObj.viewResults);
-
-    if (!allowed) {
-      return;
+  docs = docs.map(doc => ({
+    doc,
+    viewResults: authorization.getViewResults(doc),
+    allowed: authorization.alwaysAllowCreate(doc),
+    get id() {
+      return this.doc._id;
     }
+  }));
 
-    shouldCheck = allowed.newSubjects;
-    allowedDocs.push(docObj.doc);
-    pendingDocs = _.without(pendingDocs, docObj);
-  };
-
-  while (pendingDocs.length && shouldCheck) {
-    shouldCheck = false;
-    pendingDocs.forEach(checkDoc);
-  }
-
-  return allowedDocs;
+  return authorization
+    .filterAllowedDocs(authorizationContext, docs)
+    .map(docObj => docObj.doc);
 };
 
 // Filters the list of request docs to the ones that satisfy the following conditions:

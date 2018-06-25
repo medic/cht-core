@@ -86,7 +86,7 @@ const generateResponse = feed => ({
 
 // any doc ID should only appear once in the changes feed, with a list of changed revs attached to it
 const appendChange = (results, changeObj) => {
-  const result = _.findWhere(results, { id: changeObj.change.id });
+  const result = _.findWhere(results, { id: changeObj.id });
   if (!result) {
     return results.push(JSON.parse(JSON.stringify(changeObj.change)));
   }
@@ -101,35 +101,15 @@ const appendChange = (results, changeObj) => {
   }
 };
 
-// filters the list of pending changes, appending the allowed ones to the results list
-// if new subjects are added, changes are reiterated
 // returns true if no breaking authorization change is processed, false otherwise
-const processPendingChanges = (feed, isNormalFeed) => {
-  let authChange  = false,
-      shouldCheck = true;
+const hasBreakingAuthorizationChange = (feed) =>
+  feed.pendingChanges.some(changeObj => authorization.isAuthChange(changeObj.id, feed.userCtx, changeObj.viewResults));
 
-  const checkChange = (changeObj) => {
-    const allowed = authorization.allowedDoc(changeObj.change.id, feed, changeObj.viewResults);
-    if (!allowed) {
-      return;
-    }
-
-    if (isNormalFeed && authorization.isAuthChange(changeObj.change.id, feed.userCtx, changeObj.viewResults)) {
-      authChange = true;
-      return;
-    }
-
-    shouldCheck = allowed.newSubjects;
-    appendChange(feed.results, changeObj);
-    feed.pendingChanges = _.without(feed.pendingChanges, changeObj);
-  };
-
-  while (feed.pendingChanges.length && shouldCheck && !authChange) {
-    shouldCheck = false;
-    feed.pendingChanges.forEach(checkChange);
-  }
-
-  return !authChange;
+// appends allowed `changes` to feed `results`
+const processPendingChanges = (feed) => {
+  authorization
+    .filterAllowedDocs(feed, feed.pendingChanges)
+    .forEach(changeObj => appendChange(feed.results, changeObj));
 };
 
 // checks that all changes requests responses are valid
@@ -228,11 +208,13 @@ const getChanges = feed => {
       }
 
       feed.results = mergeResults(responses);
-      if (!processPendingChanges(feed, true)) {
+      if (hasBreakingAuthorizationChange(feed)) {
         // if critical auth data changes are received, reset the feed completely
         endFeed(feed, false);
         return processRequest(feed.req, feed.res, feed.userCtx);
       }
+
+      processPendingChanges(feed);
 
       if (feed.results.length || !isLongpoll(feed.req)) {
         // send response downstream
@@ -313,7 +295,10 @@ const addChangeToLongpollFeed = (feed, changeObj) => {
 const processChange = (change, seq) => {
   const changeObj = {
     change: tombstoneUtils.isTombstoneId(change.id) ? tombstoneUtils.generateChangeFromTombstone(change) : change,
-    viewResults: authorization.getViewResults(change.doc)
+    viewResults: authorization.getViewResults(change.doc),
+    get id() {
+      return this.change.id;
+    }
   };
   delete change.doc;
 
@@ -326,18 +311,20 @@ const processChange = (change, seq) => {
   // send the change through to the longpoll feeds which are allowed to see it
   longpollFeeds.forEach(feed => {
     feed.lastSeq = seq;
-    const allowed = authorization.allowedDoc(changeObj.change.id, feed, changeObj.viewResults);
+    const allowed = authorization.allowedDoc(changeObj.id, feed, changeObj.viewResults),
+          newSubjects = authorization.updateContext(changeObj.id, allowed, feed, changeObj.viewResults);
+
     if (!allowed) {
       return feed.reiterate_changes && feed.pendingChanges.push(changeObj);
     }
 
-    if (authorization.isAuthChange(changeObj.change.id, feed.userCtx, changeObj.viewResults)) {
+    if (authorization.isAuthChange(changeObj.id, feed.userCtx, changeObj.viewResults)) {
       endFeed(feed, false);
       processRequest(feed.req, feed.res, feed.userCtx);
       return;
     }
 
-    feed.hasNewSubjects = feed.hasNewSubjects || allowed.newSubjects;
+    feed.hasNewSubjects = feed.hasNewSubjects || newSubjects;
     addChangeToLongpollFeed(feed, changeObj);
   });
 };
@@ -414,6 +401,7 @@ if (process.env.UNIT_TEST_ENV) {
     _processPendingChanges: processPendingChanges,
     _appendChange: appendChange,
     _mergeResults: mergeResults,
+    _hasBreakingAuthorizationChange: hasBreakingAuthorizationChange,
     _split: split,
     _reset: () => {
       longpollFeeds = [];
