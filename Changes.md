@@ -8,6 +8,39 @@
 - [#1002](https://github.com/medic/medic-webapp/issues/1002): The `/api/v1/export/messages`, `/api/v1/export/forms`, and `/api/v1/export/contacts` endpoints have been removed in favor of `/api/v2/export/messages`, `/api/v2/export/reports`, and `/api/v2/export/contacts` respectively.
 - [#1002](https://github.com/medic/medic-webapp/issues/1002): The `/api/v1/fti`  endpoint has been removed due to security concerns and lack of use.
 
+## 2.16.0
+
+_August 2, 2018_
+
+### Features
+
+- [#4524](https://github.com/medic/medic-webapp/issues/4524): Add ability to sort places by date last visited
+- [#4525](https://github.com/medic/medic-webapp/issues/4525): Make it possible to toggle universal health coverage mode on and off
+- [#4526](https://github.com/medic/medic-webapp/issues/4526): Replace the primary contact with date last visited in the people list
+- [#4529](https://github.com/medic/medic-webapp/issues/4529): Expand verify button to allow for manager review of CHW reports
+- [#4591](https://github.com/medic/medic-webapp/issues/4591): Allow supervisors to access specific patient reports so that they can review them
+- [#4600](https://github.com/medic/medic-webapp/issues/4600): Make family equity score available for family member task generation and within forms about family members
+
+### Improvements
+
+- [#4575](https://github.com/medic/medic-webapp/issues/4575): Change use of colored (red/green) dot on the reports list and report detail page
+- [#4576](https://github.com/medic/medic-webapp/issues/4576): Minor updates to report detail page header
+- [#4577](https://github.com/medic/medic-webapp/issues/4577): Update status filter on reports page
+- [#4635](https://github.com/medic/medic-webapp/issues/4635): Update CHW area icon
+- [#4636](https://github.com/medic/medic-webapp/issues/4636): Improve death reporting workflow by allowing the death confirmation form to specify the date of death
+
+### Performance fixes
+
+- [#4666](https://github.com/medic/medic-webapp/issues/4666): Performance issues loading contacts
+
+### Bug fixes
+
+- [#4665](https://github.com/medic/medic-webapp/issues/4665): Update google-libphonenumber
+
+### Technical issues
+
+- [#3960](https://github.com/medic/medic-webapp/issues/3960): Find a better way to determine if a user is online-only
+
 ## 2.15.0
 
 _Jun 12, 2018_
