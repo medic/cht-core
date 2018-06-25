@@ -3,15 +3,15 @@ var _ = require('underscore');
 angular.module('inboxServices').factory('HydrateContactNames',
   function(
     $q,
-    DB
+    GetSummaries
   ) {
 
     'use strict';
     'ngInject';
 
     var findContactName = function(contactSummaries, id) {
-      var cs = _.findWhere(contactSummaries, { id: id });
-      return (cs && cs.value && cs.value.name) || null;
+      var cs = _.findWhere(contactSummaries, { _id: id });
+      return (cs && cs.name) || null;
     };
 
     var replaceContactIdsWithNames = function(summaries, contactSummaries) {
@@ -48,10 +48,9 @@ angular.module('inboxServices').factory('HydrateContactNames',
         return $q.resolve(summaries);
       }
 
-      return DB()
-        .query('medic-client/doc_summaries_by_id', { keys: ids })
+      return GetSummaries(ids)
         .then(function(response) {
-          return replaceContactIdsWithNames(summaries, response.rows);
+          return replaceContactIdsWithNames(summaries, response);
         });
     };
   }

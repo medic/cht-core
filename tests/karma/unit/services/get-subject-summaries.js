@@ -4,6 +4,7 @@ describe('GetSubjectSummaries service', () => {
 
   let service,
       query,
+      GetSummaries,
       lineageModelGenerator;
 
   const doc = { _id: 'result' };
@@ -15,6 +16,7 @@ describe('GetSubjectSummaries service', () => {
 
   beforeEach(() => {
     query = sinon.stub();
+    GetSummaries = sinon.stub();
     lineageModelGenerator = {
       reportSubject: sinon.stub()
     };
@@ -24,6 +26,7 @@ describe('GetSubjectSummaries service', () => {
     module($provide => {
       $provide.factory('DB', KarmaUtils.mockDB({ query: query }));
       $provide.value('$q', Q); // bypass $q so we don't have to digest
+      $provide.value('GetSummaries', GetSummaries);
       $provide.value('LineageModelGenerator', lineageModelGenerator);
     });
     inject($injector => service = $injector.get('GetSubjectSummaries'));
@@ -44,10 +47,10 @@ describe('GetSubjectSummaries service', () => {
       { id: 'a', type: 'person' }
     ];
 
-    query.returns(Promise.resolve({ rows: [] }));
     return service(given).then(actual => {
       chai.expect(actual).to.deep.equal(given);
       chai.expect(query.callCount).to.equal(0);
+      chai.expect(GetSummaries.callCount).to.equal(0);
     });
   });
 
@@ -58,6 +61,7 @@ describe('GetSubjectSummaries service', () => {
     ];
 
     query.returns(Promise.resolve({ rows: [] }));
+    GetSummaries.returns(Promise.resolve([]));
     return service(given).then(actual => {
       chai.expect(actual).to.deep.equal(given);
     });
@@ -75,12 +79,8 @@ describe('GetSubjectSummaries service', () => {
       { id: 'b', key: ['shortcode', '67890'] }
     ];
 
-    query
-      .withArgs('medic-client/contacts_by_reference')
-      .returns(Promise.resolve({ rows: contactReferences }));
-    query
-      .withArgs('medic-client/doc_summaries_by_id')
-      .returns(Promise.resolve({ rows: [] }));
+    query.returns(Promise.resolve({ rows: contactReferences }));
+    GetSummaries.returns(Promise.resolve([]));
 
     return service(given).then(actual => {
       chai.expect(actual[0]).to.deep.equal({
@@ -110,7 +110,8 @@ describe('GetSubjectSummaries service', () => {
         validSubject: false
       });
 
-      chai.expect(query.callCount).to.equal(2);
+      chai.expect(query.callCount).to.equal(1);
+      chai.expect(GetSummaries.callCount).to.equal(1);
     });
   });
 
@@ -122,11 +123,11 @@ describe('GetSubjectSummaries service', () => {
     ];
 
     const summaries = [
-      {id: 'a', value: { name: 'tom' } },
-      {id: 'b', value: { name: 'helen' } }
+      { _id: 'a', name: 'tom' },
+      { _id: 'b', name: 'helen' }
     ];
 
-    query.returns(Promise.resolve({ rows: summaries }));
+    GetSummaries.returns(Promise.resolve(summaries));
     return service(given).then(actual => {
       chai.expect(actual[0]).to.deep.equal({
         form: 'a',
@@ -156,8 +157,8 @@ describe('GetSubjectSummaries service', () => {
         },
         validSubject: false
       });
-
-      chai.expect(query.callCount).to.equal(1);
+      chai.expect(query.callCount).to.equal(0);
+      chai.expect(GetSummaries.callCount).to.equal(1);
     });
   });
 
@@ -166,7 +167,6 @@ describe('GetSubjectSummaries service', () => {
       { form: 'a', subject: { type: 'name', value: 'tom' } },
     ];
 
-    query.returns(Promise.resolve({ rows: [] }));
     return service(given).then(actual => {
       chai.expect(actual[0]).to.deep.equal({
         form: 'a',
@@ -177,6 +177,7 @@ describe('GetSubjectSummaries service', () => {
         validSubject: true
       });
       chai.expect(query.callCount).to.equal(0);
+      chai.expect(GetSummaries.callCount).to.equal(0);
     });
   });
 
@@ -195,16 +196,12 @@ describe('GetSubjectSummaries service', () => {
     ];
 
     const summaries = [
-      {id: 'a', value: { name: 'tom' } },
-      {id: 'b', value: { name: 'helen' } }
+      { _id: 'a', name: 'tom' },
+      { _id: 'b', name: 'helen' }
     ];
 
-    query
-      .withArgs('medic-client/contacts_by_reference')
-      .returns(Promise.resolve({ rows: contactReferences }));
-    query
-      .withArgs('medic-client/doc_summaries_by_id')
-      .returns(Promise.resolve({ rows: summaries }));
+    query.returns(Promise.resolve({ rows: contactReferences }));
+    GetSummaries.returns(Promise.resolve(summaries));
 
     return service(given).then(actual => {
       chai.expect(actual[0]).to.deep.equal({
@@ -245,7 +242,8 @@ describe('GetSubjectSummaries service', () => {
         validSubject: false
       });
 
-      chai.expect(query.callCount).to.equal(2);
+      chai.expect(query.callCount).to.equal(1);
+      chai.expect(GetSummaries.callCount).to.equal(1);
     });
 
   });
@@ -256,7 +254,6 @@ describe('GetSubjectSummaries service', () => {
       { form: 'a', from: 'helen', subject: {} }
     ];
 
-    query.returns(Promise.resolve({ rows: [] }));
     return service(given).then(actual => {
       chai.expect(actual[0]).to.deep.equal({
         form: 'a',
@@ -277,6 +274,7 @@ describe('GetSubjectSummaries service', () => {
       });
 
       chai.expect(query.callCount).to.equal(0);
+      chai.expect(GetSummaries.callCount).to.equal(0);
     });
   });
 
@@ -331,15 +329,11 @@ describe('GetSubjectSummaries service', () => {
     ];
 
     const summaries = [
-      {id: 'lid', value: { name: 'tom' } },
+      { _id: 'lid', name: 'tom' },
     ];
 
-    query
-      .withArgs('medic-client/contacts_by_reference')
-      .returns(Promise.resolve({ rows: contactReferences }));
-    query
-      .withArgs('medic-client/doc_summaries_by_id')
-      .returns(Promise.resolve({ rows: summaries }));
+    query.returns(Promise.resolve({ rows: contactReferences }));
+    GetSummaries.returns(Promise.resolve(summaries));
 
     return service(given, true).then(actual => {
       chai.expect(actual[0]).to.deep.equal({
@@ -354,7 +348,8 @@ describe('GetSubjectSummaries service', () => {
         validSubject: true
       });
 
-      chai.expect(query.callCount).to.equal(2);
+      chai.expect(query.callCount).to.equal(1);
+      chai.expect(GetSummaries.callCount).to.equal(1);
     });
   });
 
@@ -368,15 +363,11 @@ describe('GetSubjectSummaries service', () => {
     ];
 
     const summaries = [
-      {id: 'lid', value: { name: 'tom' } },
+      { _id: 'lid', name: 'tom' },
     ];
 
-    query
-      .withArgs('medic-client/contacts_by_reference')
-      .returns(Promise.resolve({ rows: contactReferences }));
-    query
-      .withArgs('medic-client/doc_summaries_by_id')
-      .returns(Promise.resolve({ rows: summaries }));
+    query.returns(Promise.resolve({ rows: contactReferences }));
+    GetSummaries.returns(Promise.resolve(summaries));
 
     return service(given).then(actual => {
       chai.expect(actual[0]).to.deep.equal({
@@ -391,7 +382,8 @@ describe('GetSubjectSummaries service', () => {
         validSubject: true
       });
 
-      chai.expect(query.callCount).to.equal(2);
+      chai.expect(query.callCount).to.equal(1);
+      chai.expect(GetSummaries.callCount).to.equal(1);
     });
   });
 });

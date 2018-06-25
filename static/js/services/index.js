@@ -41,6 +41,7 @@
   require('./geolocation');
   require('./get-data-records');
   require('./get-subject-summaries');
+  require('./get-summaries');
   require('./hydrate-contact-names');
   require('./import-contacts');
   require('./json-forms');
