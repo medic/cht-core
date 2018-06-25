@@ -11,6 +11,26 @@ const child_is_parent = {
   parent: { _id: 'child_is_parent' },
   reported_date: 5
 };
+
+const child_is_great_grandparent = {
+  _id: 'child_is_great_grandparent',
+  type: 'person',
+  parent: { _id: 'cigg-parent' },
+  reported_date: 5
+};
+const cigg_parent = {
+  _id: 'cigg-parent',
+  type: 'person',
+  parent: { _id: 'cigg-grandparent' },
+  reported_date: 5
+};
+const cigg_grandparent = {
+  _id: 'cigg-grandparent',
+  type: 'person',
+  parent: { _id: 'child_is_great_grandparent' },
+  reported_date: 5
+};
+
 const circular_areaId = 'circular_area';
 const circular_chw = {
   _id: 'circular_chw',
@@ -213,6 +233,9 @@ const sms_doc = {
 
 const fixtures = [
   child_is_parent,
+  child_is_great_grandparent,
+  cigg_parent,
+  cigg_grandparent,
   circular_area,
   circular_chw,
   circular_report,
@@ -530,6 +553,12 @@ describe('Lineage', function() {
 
     it('errors out on potential infinite recursion', function() {
       const docs = [ cloneDeep(child_is_parent) ];
+
+      chai.expect(() => lineage.hydrateDocs(docs)).to.throw();
+    });
+
+    it('errors out on potential infinite recursion (deep)', function() {
+      const docs = [ cloneDeep(child_is_great_grandparent) ];
 
       chai.expect(() => lineage.hydrateDocs(docs)).to.throw();
     });
