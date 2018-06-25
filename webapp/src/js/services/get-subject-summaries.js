@@ -4,6 +4,7 @@ angular.module('inboxServices').factory('GetSubjectSummaries',
   function(
     $q,
     DB,
+    GetSummaries,
     LineageModelGenerator
   ) {
 
@@ -37,8 +38,8 @@ angular.module('inboxServices').factory('GetSubjectSummaries',
     };
 
     var findSubjectName = function(response, id) {
-      var parent = _.findWhere(response.rows, { id: id });
-      return (parent && parent.value && parent.value.name) || null;
+      var parent = _.findWhere(response, { _id: id });
+      return (parent && parent.name) || null;
     };
 
     var replaceIdsWithNames = function(summaries, response) {
@@ -68,8 +69,7 @@ angular.module('inboxServices').factory('GetSubjectSummaries',
         return $q.resolve(summaries);
       }
 
-      return DB()
-        .query('medic-client/doc_summaries_by_id', { keys: ids })
+      return GetSummaries(ids)
         .then(function(response) {
           return replaceIdsWithNames(summaries, response);
         });

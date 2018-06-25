@@ -3,20 +3,16 @@ describe('HydrateContactNames service', () => {
   'use strict';
 
   let service,
-      query;
+      GetSummaries;
 
   beforeEach(() => {
-    query = sinon.stub();
+    GetSummaries = sinon.stub();
     module('inboxApp');
     module($provide => {
-      $provide.factory('DB', KarmaUtils.mockDB({ query: query }));
       $provide.value('$q', Q); // bypass $q so we don't have to digest
+      $provide.value('GetSummaries', GetSummaries);
     });
     inject($injector => service = $injector.get('HydrateContactNames'));
-  });
-
-  afterEach(() => {
-    KarmaUtils.restore(query);
   });
 
   it('returns empty array when given no summaries', () => {
@@ -30,7 +26,7 @@ describe('HydrateContactNames service', () => {
       contact: 'a',
       lineage: [ 'b', 'c' ]
     }];
-    query.returns(Promise.resolve({ rows: [] }));
+    GetSummaries.returns(Promise.resolve([]));
     return service(given).then(actual => {
       chai.expect(actual).to.deep.equal(given);
     });
@@ -42,11 +38,11 @@ describe('HydrateContactNames service', () => {
       { contact: 'd' }
     ];
     const summaries = [
-      { id: 'a', value: { name: 'arnie', age: 15 } },
-      { id: 'c', value: { name: 'charlie', colour: 'green' } },
-      { id: 'd', value: { name: 'dannie' } }
+      { _id: 'a', name: 'arnie', age: 15 },
+      { _id: 'c', name: 'charlie', colour: 'green' },
+      { _id: 'd', name: 'dannie' }
     ];
-    query.returns(Promise.resolve({ rows: summaries }));
+    GetSummaries.returns(Promise.resolve(summaries));
     return service(given).then(actual => {
       chai.expect(actual[0].contact).to.equal('arnie');
       chai.expect(actual[0].lineage.length).to.equal(2);
@@ -54,9 +50,8 @@ describe('HydrateContactNames service', () => {
       chai.expect(actual[0].lineage[1]).to.equal('charlie');
       chai.expect(actual[1].contact).to.equal('dannie');
       chai.expect(actual[1].lineage).to.equal(undefined);
-      chai.expect(query.callCount).to.equal(1);
-      chai.expect(query.args[0][0]).to.equal('medic-client/doc_summaries_by_id');
-      chai.expect(query.args[0][1]).to.deep.equal({ keys: ['a', 'b', 'c', 'd' ] });
+      chai.expect(GetSummaries.callCount).to.equal(1);
+      chai.expect(GetSummaries.args[0][0]).to.deep.equal(['a', 'b', 'c', 'd' ]);
     });
   });
 

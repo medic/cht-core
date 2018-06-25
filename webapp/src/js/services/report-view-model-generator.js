@@ -17,7 +17,8 @@ angular.module('inboxServices').factory('ReportViewModelGenerator',
     FormatDataRecord,
     LineageModelGenerator,
     DB,
-    GetSubjectSummaries
+    GetSubjectSummaries,
+    GetSummaries
   ) {
     'ngInject';
     'use strict';
@@ -87,10 +88,9 @@ angular.module('inboxServices').factory('ReportViewModelGenerator',
           });
         })
         .then(function(model) {
-          return DB()
-            .query('medic-client/doc_summaries_by_id', { keys: [model.doc._id] })
+          return GetSummaries([model.doc._id])
             .then(function(results) {
-              return GetSubjectSummaries(results.rows.map(function(row) { return row.value; }), true);
+              return GetSubjectSummaries(results, true);
             })
             .then(function(summaries) {
               if (summaries && summaries.length) {
