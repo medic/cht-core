@@ -75,6 +75,7 @@ require('../../../webapp/src/js/services/extract-lineage');
 require('../../../webapp/src/js/services/file-reader');
 require('../../../webapp/src/js/services/get-data-records');
 require('../../../webapp/src/js/services/get-subject-summaries');
+require('../../../webapp/src/js/services/get-summaries');
 require('../../../webapp/src/js/services/hydrate-contact-names');
 require('../../../webapp/src/js/services/json-parse');
 require('../../../webapp/src/js/services/language');
