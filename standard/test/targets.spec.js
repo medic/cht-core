@@ -1332,14 +1332,11 @@ describe('Standard Configuration Targets', function() {
 //> DATES
   const today = NootilsManager.BASE_DATE;
   const yesterday = daysAgo(1);
-  const tomorrow = daysInTheFuture(1);
   const aWeekAgo = weeksAgo(1);
   const twoWeeksAgo = weeksAgo(2);
   const threeWeeksAgo = weeksAgo(3);
-  const sixWeeksAgo = weeksAgo(6);
   const aMonthAgo = monthsAgo(1);
   const threeMonthsAgo = monthsAgo(3);
-  const sixMonthsAgo = monthsAgo(6);
 
   function monthsAgo(n) {
     const d = new Date(today);
@@ -1347,18 +1344,10 @@ describe('Standard Configuration Targets', function() {
     return d.getTime();
   }
 
-  function daysInTheFuture(n) {
-    return daysAgo(-n);
-  }
-
   function daysAgo(n) {
     const d = new Date(today);
     d.setDate(d.getDate() - n);
     return d.getTime();
-  }
-
-  function weeksInTheFuture(n) {
-    return weeksAgo(-n);
   }
 
   function weeksAgo(n) {

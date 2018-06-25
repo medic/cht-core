@@ -1,5 +1,5 @@
+const _ = require('lodash');
 const assert = require('chai').assert;
-const fs = require('fs');
 const NootilsManager = require('medic-nootils/src/node/test-wrapper');
 
 const now = NootilsManager.BASE_DATE;
@@ -8,9 +8,44 @@ const MAX_DAYS_IN_PREGNANCY = 44*7;  // 44 weeks
 const IMMUNIZATION_PERIOD = 2*365;
 const DAYS_IN_PNC = 42;
 
-const D_REPORT = require('./data/d-form.report.json');
-const P_REPORT = require('./data/p-form.report.json');
-const CW_REPORT = require('./data/cw-form.report.json');
+const freshCloneOf = o => () => _.cloneDeep(o);
+
+// TEST DATA
+// THESE ARE FUNCTIONS TO PREVENT THEIR MODIFICATION IN-PLACE AND CHANGES MADE
+// IN ONE TEST LEAKING INTO OTHERS.
+const fixtures = {
+  contact: freshCloneOf({
+    type: 'person',
+    name: 'Zoe',
+    date_of_birth: '1990-09-01',
+    reported_date: now,
+    _id: 'contact-1'
+  }),
+  reports: {
+    d:  freshCloneOf(require(`./data/d-form.report.json`)),
+    p:  freshCloneOf(require(`./data/p-form.report.json`)),
+    cw: freshCloneOf(require(`./data/cw-form.report.json`)),
+    flag: freshCloneOf({
+      _id: 'flag-1',
+      fields:{ notes:'' },
+      form: 'F',
+      reported_date: now,
+    }),
+    pregnancy: freshCloneOf({
+      _id: 'pregnancy-1',
+      fields: {},
+      form: 'P',
+      reported_date: now,
+    }),
+    delivery: freshCloneOf({
+      _id: 'report-1',
+      fields:{ delivery_code:'NS' },
+      birth_date: iso(daysAgo(3)),
+      form: 'delivery',
+      reported_date: now,
+    }),
+  },
+};
 
 describe('Standard Configuration Tasks', function() {
   const TEST_USER = {
@@ -35,8 +70,7 @@ describe('Standard Configuration Tasks', function() {
 
     it('should have a clinic visit task', function() {
       // given
-      const c = contactWith(deliveryReport);
-      session.assert(c);
+      session.assert(contactWith(fixtures.reports.delivery()));
 
       // when
       return session.emitTasks()
@@ -53,14 +87,19 @@ describe('Standard Configuration Tasks', function() {
           assert.deepInclude(task.actions[0].content, {
             "source": "task",
             "source_id": "report-1",
-            contact
+            contact: fixtures.contact(),
           });
         });
     });
     it('should have first visit task completed when PNC app form is submitted', function() {
       // given
-      const c = contactWith(deliveryReport, pncVisitAppReport);
-      session.assert(c);
+      const pncVisitAppReport = {
+        "_id": "report-2",
+        "fields": {},
+        "form": "postnatal_visit",
+        "reported_date": tomorrow,
+      };
+      session.assert(contactWith(fixtures.reports.delivery(), pncVisitAppReport));
 
       // when
       return session.emitTasks()
@@ -78,8 +117,13 @@ describe('Standard Configuration Tasks', function() {
     });
     it('should have first visit task completed when PNC SMS form is submitted', function() {
       // given
-      const c = contactWith(deliveryReport, pncVisitSMSReport);
-      session.assert(c);
+      const pncVisitSMSReport = {
+        "_id": "report-3",
+        "fields": {},
+        "form": "M",
+        "reported_date": tomorrow,
+      };
+      session.assert(contactWith(fixtures.reports.delivery(), pncVisitSMSReport));
 
       // when
       return session.emitTasks()
@@ -97,12 +141,13 @@ describe('Standard Configuration Tasks', function() {
     });
     it(`should have a 'postnatal-danger-sign' task if a flag is sent during PNC period`, function() {
       // given
-      // FIXME don't modify shared data
+      const deliveryReport = fixtures.reports.delivery();
       setDate(deliveryReport, daysAgo(25));
+
+      const flagReport = fixtures.reports.flag();
       flagReport.reported_date = daysAgo(4);
 
-      const c = contactWith(deliveryReport, flagReport);
-      session.assert(c);
+      session.assert(contactWith(deliveryReport, flagReport));
 
       // when
       return session.emitTasks()
@@ -121,6 +166,8 @@ describe('Standard Configuration Tasks', function() {
 
     describe('Postnatal visit schedule', function() {
       const postnatalTaskDays = [ 5, 6, 7, 8, 9, 10, 11, 12, 44, 45, 46, 47 ];
+      // FIXME it's not clear why ageInDaysWhenRegistered should influence the
+      // task generation - please explain here.
       const ageInDaysWhenRegistered = 1;
 
       range(ageInDaysWhenRegistered, DAYS_IN_PNC+10).forEach(day => {
@@ -129,9 +176,8 @@ describe('Standard Configuration Tasks', function() {
           if (postnatalTaskDays.includes(day)) {
             it(`should have 'postnatal-missing-visit' visit task`, function() {
               // given
-              const reports = setupReports([ D_REPORT ], day-ageInDaysWhenRegistered);
-              const c = contactWith(...reports);
-              session.assert(c);
+              session.assert(contactWith(
+                  backdatedReport('d', day-ageInDaysWhenRegistered)));
 
               // when
               return session.emitTasks()
@@ -150,9 +196,8 @@ describe('Standard Configuration Tasks', function() {
           } else {
             it(`should not have 'postnatal-missing-visit' visit task`, function() {
               // given
-              var reports = setupReports([ D_REPORT ], day-ageInDaysWhenRegistered);
-              const c = contactWith(...reports);
-              session.assert(c);
+              session.assert(contactWith(
+                  backdatedReport('d', day - ageInDaysWhenRegistered)));
 
 
               // when
@@ -203,12 +248,12 @@ describe('Standard Configuration Tasks', function() {
 
     it(`should have a 'pregnancy-danger-sign' task if a flag is sent during active pregnancy`, function() {
       // given
-      // FIXME don't modify shared data
+      const pregnancyReport = fixtures.reports.pregnancy();
       pregnancyReport.reported_date = daysAgo(6);
+      const flagReport = fixtures.reports.flag();
       flagReport.reported_date = daysAgo(4);
 
-      const c = contactWith(pregnancyReport, flagReport);
-      session.assert(c);
+      session.assert(contactWith(pregnancyReport, flagReport));
 
       // when
       return session.emitTasks()
@@ -227,15 +272,12 @@ describe('Standard Configuration Tasks', function() {
 
     it(`should not have a 'pregnancy-danger-sign' task if a flag is sent before pregnancy`, function() {
       // given
+      const pregnancyReport = fixtures.reports.pregnancy();
       pregnancyReport.reported_date = daysAgo(2);
+      const flagReport = fixtures.reports.flag();
       flagReport.reported_date = daysAgo(4);
 
-      var reports = [
-        pregnancyReport,
-        flagReport,
-      ];
-      const c = contactWith(...reports);
-      session.assert(c);
+      session.assert(contactWith(pregnancyReport, flagReport));
 
       // when
       return session.emitTasks()
@@ -248,18 +290,20 @@ describe('Standard Configuration Tasks', function() {
 
     it(`should not have a 'pregnancy-danger-sign' task if a flag is sent after pregnancy`, function() {
       // given
+      const pregnancyReport = fixtures.reports.pregnancy();
       pregnancyReport.reported_date = daysAgo(8);
+
+      const deliveryReport = fixtures.reports.delivery();
       deliveryReport.reported_date = daysAgo(6);
+
+      const flagReport = fixtures.reports.flag();
       flagReport.reported_date = daysAgo(4);
 
-      var reports = [
+      session.assert(contactWith(
         pregnancyReport,
         deliveryReport,
-        flagReport,
-      ];
-
-      const c = contactWith(...reports);
-      session.assert(c);
+        flagReport
+      ));
 
       // when
       return session.emitTasks()
@@ -285,9 +329,7 @@ describe('Standard Configuration Tasks', function() {
         if (pregnancyTaskDays.includes(day)) {
           it(`should have 'pregnancy-missing-visit' visit task`, function() {
             // given
-            var reports = setupReports([ P_REPORT ], day);
-            const c = contactWith(...reports);
-            session.assert(c);
+            session.assert(contactWith(backdatedReport('p', day)));
 
             // when
             return session.emitTasks()
@@ -306,9 +348,7 @@ describe('Standard Configuration Tasks', function() {
         } else {
           it(`should not have 'pregnancy-missing-visit' visit task`, function() {
             // given
-            var reports = setupReports([ P_REPORT ], day);
-            const c = contactWith(...reports);
-            session.assert(c);
+            session.assert(contactWith(backdatedReport('p', day)));
 
             // when
             return session.emitTasks()
@@ -321,9 +361,7 @@ describe('Standard Configuration Tasks', function() {
         if (deliveryTaskDays.includes(day)) {
           it(`should have 'pregnancy-missing-birth' visit task`, function() {
             // given
-            var reports = setupReports([ P_REPORT ], day);
-            const c = contactWith(...reports);
-            session.assert(c);
+            session.assert(contactWith(backdatedReport('p', day)));
 
             // when
             return session.emitTasks()
@@ -342,9 +380,7 @@ describe('Standard Configuration Tasks', function() {
         } else {
           it(`should not have 'pregnancy-missing-birth' visit task`, function() {
             // given
-            var reports = setupReports([ P_REPORT ], day);
-            const c = contactWith(...reports);
-            session.assert(c);
+            session.assert(contactWith(backdatedReport('p', day)));
 
             // when
             return session.emitTasks()
@@ -376,7 +412,10 @@ describe('Standard Configuration Tasks', function() {
       ]
     };
     var immunizationTaskDays = getRangeFromTask(immunizationTasks, weekdayOffset);
-    var ageInDaysWhenRegistered = Math.floor((CW_REPORT.reported_date - (new Date(CW_REPORT.birth_date).getTime()))/MS_IN_DAY);
+    const cwReport = fixtures.reports.cw();
+    // FIXME it's not clear why ageInDaysWhenRegistered should influence the
+    // task generation - please explain here.
+    var ageInDaysWhenRegistered = Math.floor((cwReport.reported_date - (new Date(cwReport.birth_date).getTime()))/MS_IN_DAY);
 
     // Test for 10 days beyond the immunization period
     range(ageInDaysWhenRegistered, IMMUNIZATION_PERIOD + 10).forEach(day => {
@@ -385,9 +424,8 @@ describe('Standard Configuration Tasks', function() {
         if (immunizationTaskDays.includes(day)) {
           it(`should have 'immunization-missing-visit' visit task`, function() {
             // given
-            var reports = setupReports([CW_REPORT], day - ageInDaysWhenRegistered);
-            const c = contactWith(...reports);
-            session.assert(c);
+            session.assert(contactWith(
+                backdatedReport('cw', day - ageInDaysWhenRegistered)));
 
             // when
             return session.emitTasks()
@@ -406,10 +444,17 @@ describe('Standard Configuration Tasks', function() {
           });
           it(`should have a cleared visit task if received a visit`, function() {
             // given
-            var reports = setupReports([CW_REPORT, immVisitSMSReport], day - ageInDaysWhenRegistered);
-            reports[1].reported_date = now;  // make sure the immuniztion report was sent today
-            const c = contactWith(...reports);
-            session.assert(c);
+            // FIXME understand what this is and then give it a descriptive name
+            const dayOffset = day - ageInDaysWhenRegistered;
+            const immVisitReport = {
+              _id: 'report-imm',
+              fields: {},
+              form: 'IMM',
+              reported_date: now,
+            };
+            session.assert(contactWith(
+                backdatedReport('cw', dayOffset),
+                immVisitReport));
 
             // when
             return session.emitTasks()
@@ -430,9 +475,8 @@ describe('Standard Configuration Tasks', function() {
         } else {
           it(`should not have 'immunization-missing-visit' visit task`, function() {
             // given
-            var reports = setupReports([CW_REPORT], day - ageInDaysWhenRegistered);
-            const c = contactWith(...reports);
-            session.assert(c);
+            session.assert(contactWith(
+                backdatedReport('cw', day - ageInDaysWhenRegistered)));
 
             // when
             return session.emitTasks()
@@ -445,94 +489,28 @@ describe('Standard Configuration Tasks', function() {
     });
   });
 
-  const contact = {
-    type: 'person',
-    name: 'Zoe',
-    date_of_birth: '1990-09-01',
-    reported_date: now,
-    _id: 'contact-1'
-  };
-
   function contactWith(...reports) {
     // TODO: Investigate how timezone affect showing task.
     // Tests pass vs fail with task window being off by one at 11pm vs 12:15am on GMT+2.
-    return new Contact({ contact, reports });
+    return new Contact({ contact:fixtures.contact(), reports });
   }
 
   const tomorrow = daysAgo(-1);
 
-  // form id must be upper case
-  const pregnancyReport = {
-    "_id":"pregnancy-1",
-    "fields": { },
-    "form": "P",
-    "reported_date": now
-  };
-  const flagReport = {
-    "_id":"flag-1",
-    "fields": {
-      "notes": ""
-    },
-    "form": "F",
-    "reported_date": now
-  };
-  const deliveryReport = {
-    "_id":"report-1",
-    "fields": {
-      "delivery_code": "NS"
-    },
-    "birth_date": iso(daysAgo(3)),
-    "form": "delivery",
-    "reported_date": now
-  };
-  const pncVisitAppReport = {
-    "_id": "report-2",
-    "fields": {},
-    "form": "postnatal_visit",
-    "reported_date": tomorrow,
-  };
-  const pncVisitSMSReport = {
-    "_id": "report-3",
-    "fields": {},
-    "form": "M",
-    "reported_date": tomorrow,
-  };
-  const immVisitSMSReport = {
-    "_id": "report-imm",
-    "fields": {},
-    "form": "IMM",
-    "reported_date": tomorrow,
-  };
+  function backdatedReport(reportFixtureName, daysAgo) {
+    const noonToday = new Date(now);
+    noonToday.setHours(12,0,0,0);
 
-  function setupReports(reports, day) {
-    //  reports:   array of reports
-    //  day:       number of days to push back all the dates in reports
+    const report = fixtures.reports[reportFixtureName]();
+    const msAgo = daysAgo * MS_IN_DAY;
+    setDate(report, noonToday - msAgo);
 
-    if (day !== undefined && reports) {
-      // Sets up the tasks by using the doc and reports
-      reports.forEach(r => {
-        var noonToday = new Date(now).setHours(12,0,0,0);
-        // FIXME don't modify shared data
-        setDate(r, noonToday-(day*MS_IN_DAY));
-      });
-    }
-    return reports;
+    return report;
   }
 });
 
 function range(a, b) {
   return Array.apply(null, { length:b-a+1 }).map((_, i) => i+a);
-}
-
-function getDayRanges(startDays, duration, offset) {
-  const a = startDays.map(day => {
-    var startVal = day + offset;
-    var endVal = startVal + duration - 1;
-    return range(startVal, endVal);
-  });
-
-  // return the flattened 1D array
-  return [].concat.apply([], a);
 }
 
 function getRangeFromTask(task, offset) {
@@ -544,10 +522,6 @@ function getRangeFromTask(task, offset) {
 
   // return the flattened 1D array
   return [].concat.apply([], a);
-}
-
-function getRange(startDay, durationInDays, offset) {
-  return range(startDay+offset, startDay+durationInDays+offset);
 }
 
 function setDate(form, newDate) {
