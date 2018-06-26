@@ -105,7 +105,7 @@ module.exports = {
     const requestIds = getRequestIds(req);
 
     return authorization
-      .getUserAuthorizationData(req.userCtx)
+      .getAuthorizationContext(req.userCtx)
       .then(authorizationData => {
         authorizationData.userCtx = req.userCtx;
         return authorization.getAllowedDocIds(authorizationData);

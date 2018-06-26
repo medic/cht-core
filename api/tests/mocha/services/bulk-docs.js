@@ -31,12 +31,11 @@ describe('Bulk Docs Service', function () {
 
     next = sinon.stub();
 
-    sinon.stub(authorization, 'getUserAuthorizationData').resolves({});
+    sinon.stub(authorization, 'getAuthorizationContext').resolves({});
     sinon.stub(authorization, 'getAllowedDocIds').resolves([]);
     sinon.stub(authorization, 'excludeTombstoneIds').callsFake(list => list);
     sinon.stub(authorization, 'convertTombstoneIds').callsFake(list => list);
-    sinon.stub(authorization, 'allowedDoc').returns(true);
-    sinon.stub(authorization, 'filterAllowedDocs');
+    sinon.stub(authorization, 'filterAllowedDocs').returns([]);
     sinon.stub(authorization, 'getViewResults').callsFake(doc => ({ view: doc }));
     sinon.stub(authorization, 'alwaysAllowCreate').returns(false);
     sinon.stub(serverUtils, 'serverError');
@@ -292,14 +291,22 @@ describe('Bulk Docs Service', function () {
       const allowedDocIds = [1, 2, 3, 4, 5];
 
       authorization.filterAllowedDocs.returns([
-        { doc: { _id: 1 } },
-        { doc: { _id: 3 } },
-        { doc: { _id: 5 } }
+        { id: 1, doc: { _id: 1 }, viewResults: { view: { _id: 1 }}, allowed: false },
+        { id: 5, doc: { _id: 5 }, viewResults: { view: { _id: 5 }}, allowed: false },
+        { id: 3, doc: { _id: 3 }, viewResults: { view: { _id: 3 }}, allowed: false },
       ]);
 
       return service._filterRequestDocs({ allowedDocIds }, docs).then(result => {
         result.length.should.equal(3);
-        result.should.deep.equal([{ _id: 1 }, { _id: 3 }, { _id: 5 }]);
+        result.should.deep.equal([{ _id: 1 }, { _id: 5 }, { _id: 3 }]);
+        authorization.filterAllowedDocs.callCount.should.equal(1);
+        authorization.filterAllowedDocs.args[0][1].should.deep.equal([
+          { id: 1, doc: { _id: 1 }, viewResults: { view: { _id: 1 }}, allowed: false },
+          { id: 2, doc: { _id: 2 }, viewResults: { view: { _id: 2 }}, allowed: false },
+          { id: 3, doc: { _id: 3 }, viewResults: { view: { _id: 3 }}, allowed: false },
+          { id: 4, doc: { _id: 4 }, viewResults: { view: { _id: 4 }}, allowed: false },
+          { id: 5, doc: { _id: 5 }, viewResults: { view: { _id: 5 }}, allowed: false },
+        ]);
       });
     });
 
@@ -312,6 +319,13 @@ describe('Bulk Docs Service', function () {
       return service._filterRequestDocs({ userCtx, allowedDocIds }, docs).then(result => {
         authorization.getViewResults.callCount.should.equal(5);
         authorization.filterAllowedDocs.callCount.should.equal(1);
+        authorization.filterAllowedDocs.args[0][1].should.deep.equal([
+          { id: 'a', doc: { _id: 'a' }, viewResults: { view: { _id: 'a' } }, allowed: false },
+          { id: 'b', doc: { _id: 'b' }, viewResults: { view: { _id: 'b' } }, allowed: false },
+          { id: 'c', doc: { _id: 'c' }, viewResults: { view: { _id: 'c' } }, allowed: false },
+          { id: 'd', doc: { _id: 'd' }, viewResults: { view: { _id: 'd' } }, allowed: false },
+          { id: 'e', doc: { _id: 'e' }, viewResults: { view: { _id: 'e' } }, allowed: false }
+        ]);
 
         db.medic.allDocs.callCount.should.equal(1);
         db.medic.allDocs.args[0][0].should.deep.equal({ keys: ['b', 'd'] });
@@ -327,7 +341,10 @@ describe('Bulk Docs Service', function () {
 
       authorization.getViewResults.withArgs({ key: 'g' }).returns({ view1: 'g' });
       authorization.filterAllowedDocs.returns([
-        { doc: { _id: 'a' } }, { doc: { _id: 'b' } }, { doc: { _id: 'd' } }, { doc: { key: 'g' } }
+        { id: 'a', doc: { _id: 'a' }, viewResults: { view: { _id: 'a' } }, allowed: false },
+        { id: 'b', doc: { _id: 'b' }, viewResults: { view: { _id: 'b' } }, allowed: false },
+        { id: 'd', doc: { _id: 'd' }, viewResults: { view: { _id: 'd' } }, allowed: false },
+        { id: undefined, doc: { key: 'g' }, viewResults: { view1: 'g' }, allowed: false }
       ]);
 
       db.medic.allDocs
@@ -338,6 +355,16 @@ describe('Bulk Docs Service', function () {
         authorization.getViewResults.callCount.should.equal(7);
 
         result.should.deep.equal([{ _id: 'a' }, { _id: 'd' }, { key: 'g' }]);
+        authorization.filterAllowedDocs.callCount.should.equal(1);
+        authorization.filterAllowedDocs.args[0][1].should.deep.equal([
+          { id: 'a', doc: { _id: 'a' }, viewResults: { view: { _id: 'a' } }, allowed: false },
+          { id: 'b', doc: { _id: 'b' }, viewResults: { view: { _id: 'b' } }, allowed: false },
+          { id: 'c', doc: { _id: 'c' }, viewResults: { view: { _id: 'c' } }, allowed: false },
+          { id: 'd', doc: { _id: 'd' }, viewResults: { view: { _id: 'd' } }, allowed: false },
+          { id: 'e', doc: { _id: 'e' }, viewResults: { view: { _id: 'e' } }, allowed: false },
+          { id: 'f', doc: { _id: 'f' }, viewResults: { view: { _id: 'f' } }, allowed: false },
+          { id: undefined, doc: { key: 'g' }, viewResults: { view1: 'g' }, allowed: false }
+        ]);
       });
     });
   });
@@ -426,12 +453,12 @@ describe('Bulk Docs Service', function () {
     });
 
     it('calls authorization.getAllowedIds and authorization.getAuthorizationData with correct parameters', () => {
-      authorization.getUserAuthorizationData.resolves({ subjectIds: ['a'] });
+      authorization.getAuthorizationContext.resolves({ subjectIds: ['a'],  userCtx: { name: 'user' } });
       authorization.getAllowedDocIds.resolves(['a', 'b']);
 
       return service.filterOfflineRequest(testReq, testRes, next).then(() => {
-        authorization.getUserAuthorizationData.callCount.should.equal(1);
-        authorization.getUserAuthorizationData.args[0][0].should.equal(testReq.userCtx);
+        authorization.getAuthorizationContext.callCount.should.equal(1);
+        authorization.getAuthorizationContext.args[0][0].should.equal(testReq.userCtx);
 
         authorization.getAllowedDocIds.callCount.should.equal(1);
         authorization.getAllowedDocIds.args[0][0].should.deep.equal(
@@ -440,7 +467,7 @@ describe('Bulk Docs Service', function () {
     });
 
     it('catches authorization.getAuthorizationData errors', () => {
-      authorization.getUserAuthorizationData.rejects({ error: 'something' });
+      authorization.getAuthorizationContext.rejects({ error: 'something' });
 
       return service.filterOfflineRequest(testReq, testRes, next).then(() => {
         serverUtils.serverError.callCount.should.equal(1);
@@ -573,7 +600,7 @@ describe('Bulk Docs Service', function () {
         ]).then(() => {
           testRes.type.callCount.should.equal(1);
           testRes.type.args[0][0].should.equal('json');
-          authorization.getUserAuthorizationData.callCount.should.equal(0);
+          authorization.getAuthorizationContext.callCount.should.equal(0);
           testRes.write.callCount.should.equal(1);
           testRes.end.callCount.should.equal(1);
           JSON.parse(testRes.write.args[0][0]).error.should.equal('bad_request');
@@ -588,7 +615,7 @@ describe('Bulk Docs Service', function () {
           service.filterOfflineRequest(testReq, testRes),
           Promise.resolve()
         ]).then(() => {
-          authorization.getUserAuthorizationData.callCount.should.equal(0);
+          authorization.getAuthorizationContext.callCount.should.equal(0);
           testRes.write.callCount.should.equal(1);
           testRes.end.callCount.should.equal(1);
           JSON.parse(testRes.write.args[0][0]).error.should.equal('bad_request');
@@ -603,7 +630,7 @@ describe('Bulk Docs Service', function () {
           service.filterOfflineRequest(testReq, testRes),
           Promise.resolve()
         ]).then(() => {
-          authorization.getUserAuthorizationData.callCount.should.equal(0);
+          authorization.getAuthorizationContext.callCount.should.equal(0);
           testRes.write.callCount.should.equal(1);
           testRes.end.callCount.should.equal(1);
           JSON.parse(testRes.write.args[0][0]).error.should.equal('bad_request');

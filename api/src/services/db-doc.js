@@ -86,11 +86,9 @@ module.exports = {
       .all([
         getStoredDoc(req, isAttachment),
         getRequestDoc(req, isAttachment),
-        authorization.getUserAuthorizationData(req.userCtx)
+        authorization.getAuthorizationContext(req.userCtx)
       ])
       .then(([ storedDoc, requestDoc, authorizationContext ]) => {
-        authorizationContext.userCtx = req.userCtx;
-
         if (!storedDoc && !requestDoc) {
           return requestError(res);
         }

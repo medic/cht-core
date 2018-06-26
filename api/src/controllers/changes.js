@@ -259,7 +259,7 @@ const initFeed = (req, res, userCtx) => {
   req.on('close', () => endFeed(feed, false));
 
   return authorization
-    .getUserAuthorizationData(userCtx)
+    .getAuthorizationContext(userCtx)
     .then(authData => {
       _.extend(feed, authData);
       return authorization.getAllowedDocIds(feed);
@@ -312,7 +312,7 @@ const processChange = (change, seq) => {
   longpollFeeds.forEach(feed => {
     feed.lastSeq = seq;
     const allowed = authorization.allowedDoc(changeObj.id, feed, changeObj.viewResults),
-          newSubjects = authorization.updateContext(changeObj.id, allowed, feed, changeObj.viewResults);
+          newSubjects = authorization.updateContext(allowed, feed, changeObj.viewResults);
 
     if (!allowed) {
       return feed.reiterate_changes && feed.pendingChanges.push(changeObj);

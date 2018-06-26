@@ -18,7 +18,7 @@ describe('Bulk Get service', () => {
 
     testReq = { query: {}, userCtx: { name: 'user' } };
 
-    sinon.stub(authorization, 'getUserAuthorizationData').resolves({});
+    sinon.stub(authorization, 'getAuthorizationContext').resolves({});
     sinon.stub(authorization, 'allowedDoc').returns(true);
     sinon.stub(authorization, 'getViewResults').callsFake(doc => ({ view: doc }));
     sinon.stub(serverUtils, 'serverError');
@@ -48,7 +48,7 @@ describe('Bulk Get service', () => {
   describe('Filter Offline Request', () => {
     it('catches authorization errors', () => {
       testReq.body = { docs: [] };
-      authorization.getUserAuthorizationData.rejects({ error: 'something' });
+      authorization.getAuthorizationContext.rejects({ error: 'something' });
 
       return service.filterOfflineRequest(testReq, testRes).then(() => {
         serverUtils.serverError.callCount.should.equal(1);
@@ -71,7 +71,7 @@ describe('Bulk Get service', () => {
       testReq.query = { revs: 'yes', attachments: 'no', some: 'param' };
 
       return service.filterOfflineRequest(testReq, testRes).then(() => {
-        authorization.getUserAuthorizationData.callCount.should.equal(1);
+        authorization.getAuthorizationContext.callCount.should.equal(1);
         db.medic.bulkGet.callCount.should.equal(1);
         db.medic.bulkGet.args[0][0].should.deep.equal(
           { docs: testReq.body.docs, revs: 'yes', attachments: 'no', some: 'param' });
@@ -92,7 +92,7 @@ describe('Bulk Get service', () => {
               { id: 'f', docs: [ { error: { id: 'f' } } ] },
             ]});
 
-      authorization.getUserAuthorizationData.withArgs({ name: 'user' }).resolves({ });
+      authorization.getAuthorizationContext.withArgs({ name: 'user' }).resolves({ });
       authorization.allowedDoc
         .withArgs('a', sinon.match.any, { view: { id: 'a', rev: 1 }}).returns(false)
         .withArgs('a', sinon.match.any, { view: { id: 'a', rev: 3 }}).returns(false)
@@ -105,7 +105,7 @@ describe('Bulk Get service', () => {
       return service
         .filterOfflineRequest(testReq, testRes)
         .then(() => {
-          authorization.getUserAuthorizationData.callCount.should.equal(1);
+          authorization.getAuthorizationContext.callCount.should.equal(1);
           authorization.allowedDoc.callCount.should.equal(7);
 
           db.medic.bulkGet.callCount.should.equal(1);
@@ -131,7 +131,7 @@ describe('Bulk Get service', () => {
         ]).then(() => {
           testRes.type.callCount.should.equal(1);
           testRes.type.args[0][0].should.equal('json');
-          authorization.getUserAuthorizationData.callCount.should.equal(0);
+          authorization.getAuthorizationContext.callCount.should.equal(0);
           testRes.write.callCount.should.equal(1);
           testRes.end.callCount.should.equal(1);
           JSON.parse(testRes.write.args[0][0]).error.should.equal('bad_request');
@@ -146,7 +146,7 @@ describe('Bulk Get service', () => {
           service.filterOfflineRequest(testReq, testRes),
           Promise.resolve()
         ]).then(() => {
-          authorization.getUserAuthorizationData.callCount.should.equal(0);
+          authorization.getAuthorizationContext.callCount.should.equal(0);
           testRes.write.callCount.should.equal(1);
           testRes.end.callCount.should.equal(1);
           JSON.parse(testRes.write.args[0][0]).error.should.equal('bad_request');
@@ -161,7 +161,7 @@ describe('Bulk Get service', () => {
           service.filterOfflineRequest(testReq, testRes),
           Promise.resolve()
         ]).then(() => {
-          authorization.getUserAuthorizationData.callCount.should.equal(0);
+          authorization.getAuthorizationContext.callCount.should.equal(0);
           testRes.write.callCount.should.equal(1);
           testRes.end.callCount.should.equal(1);
           JSON.parse(testRes.write.args[0][0]).error.should.equal('bad_request');

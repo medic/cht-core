@@ -49,12 +49,12 @@ module.exports = {
       return res.end();
     }
 
-    const authorizationContext = { userCtx: req.userCtx };
+    let authorizationContext;
 
     return authorization
-      .getUserAuthorizationData(req.userCtx)
-      .then(authorizationData => {
-        _.extend(authorizationContext, authorizationData);
+      .getAuthorizationContext(req.userCtx)
+      .then(context => {
+        authorizationContext = context;
         // actually execute the _bulk_get request as-is and filter the response
         return db.medic.bulkGet(_.defaults({ docs: req.body.docs }, req.query));
       })

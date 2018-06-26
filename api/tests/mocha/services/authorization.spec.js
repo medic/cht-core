@@ -66,7 +66,7 @@ describe('Authorization service', () => {
     });
   });
 
-  describe('getUserAuthorizationData', () => {
+  describe('getAuthorizationContext', () => {
     beforeEach(() => {
       sinon.stub(service, 'getDepth');
     });
@@ -74,7 +74,7 @@ describe('Authorization service', () => {
     it('queries correct views with correct keys when depth is not infinite', () => {
       service.getDepth.returns(2);
       return service
-        .getUserAuthorizationData( {facility_id: 'facilityId' })
+        .getAuthorizationContext( {facility_id: 'facilityId' })
         .then(() => {
           db.medic.query.callCount.should.equal(1);
           db.medic.query.args[0][0].should.equal('medic/contacts_by_depth');
@@ -88,7 +88,7 @@ describe('Authorization service', () => {
     it('queries with correct keys when depth is infinite', () => {
       service.getDepth.returns(-1);
       return service
-        .getUserAuthorizationData({ facility_id: 'facilityId' })
+        .getAuthorizationContext({ facility_id: 'facilityId' })
         .then(() => {
           db.medic.query.callCount.should.equal(1);
           db.medic.query.args[0][0].should.equal('medic/contacts_by_depth');
@@ -115,7 +115,7 @@ describe('Authorization service', () => {
       });
 
       return service
-        .getUserAuthorizationData({facility_id: 'facilityId' })
+        .getAuthorizationContext({facility_id: 'facilityId' })
         .then(result => {
           tombstoneUtils.extractStub.callCount.should.equal(3);
           tombstoneUtils.extractStub.args.should.deep.equal([
@@ -133,7 +133,7 @@ describe('Authorization service', () => {
       config.get.returns(true);
 
       return service
-        .getUserAuthorizationData({ userCtx: { facility_id: 'aaa' }})
+        .getAuthorizationContext({ userCtx: { facility_id: 'aaa' }})
         .then(result => {
           result.subjectIds.should.deep.equal(['_all', '_unassigned']);
         });
@@ -147,7 +147,7 @@ describe('Authorization service', () => {
       auth.hasAllPermissions.returns(false);
       config.get.returns(false);
       return service
-        .getUserAuthorizationData({ facility_id: 'aaa' })
+        .getAuthorizationContext({ facility_id: 'aaa' })
         .then(result => {
           result.subjectIds.sort().should.deep.equal([1, 2, '_all', 's1', 's2']);
           result.contactsByDepthKeys.should.deep.equal([['aaa', 0], ['aaa', 1], ['aaa', 2]]);
@@ -471,18 +471,18 @@ describe('Authorization service', () => {
           [['parent1'], 'patient_id'], [['parent1', 1], 'patient_id'],
           [[userCtx.facility_id], 'patient_id'], [[userCtx.facility_id, 2], 'patient_id']
         ];
-        service.updateContext(contact, true, feed, viewResults).should.deep.equal(2);
+        service.updateContext(true, feed, viewResults).should.equal(2);
 
         viewResults.contactsByDepth = [
           [[userCtx.facility_id], null], [[userCtx.facility_id, 0], null]
         ];
-        service.updateContext(contact, true, feed, viewResults).should.deep.equal(1);
+        service.updateContext(true, feed, viewResults).should.equal(1);
 
         viewResults.contactsByDepth = [
           [['contact'], 'patient_id'], [['contact', 0], 'patient_id'],
           [[userCtx.facility_id], 'patient_id'], [[userCtx.facility_id, 1], 'patient_id']
         ];
-        service.updateContext(contact, true, feed, viewResults).should.deep.equal(0);
+        service.updateContext(true, feed, viewResults).should.equal(0);
 
         viewResults.contactsByDepth = [
           [['contact'], 'patient_id'], [['contact', 0], 'patient_id'],
@@ -490,7 +490,7 @@ describe('Authorization service', () => {
           [['parent2'], 'patient_id'], [['parent2', 2], 'patient_id'],
           [[userCtx.facility_id], 'patient_id'], [[userCtx.facility_id, 3], 'patient_id']
         ];
-        service.updateContext(contact, true, feed, viewResults).should.deep.equal(0);
+        service.updateContext(true, feed, viewResults).should.equal(0);
       });
 
       it('returns false for not allowed contacts', () => {
@@ -499,18 +499,18 @@ describe('Authorization service', () => {
           [['parent1'], 'patient_id'], [['parent1', 1], 'patient_id'],
           [['parent2'], 'patient_id'], [['parent2', 2], 'patient_id']
         ];
-        service.updateContext(contact, false, feed, viewResults).should.equal(false);
+        service.updateContext(false, feed, viewResults).should.equal(false);
 
         viewResults.contactsByDepth = [
           [['contact'], 'patient_id'], [['contact', 0], 'patient_id'],
         ];
-        service.updateContext(contact, false, feed, viewResults).should.equal(false);
+        service.updateContext(false, feed, viewResults).should.equal(false);
 
         viewResults.contactsByDepth = [
           [['contact'], 'patient_id'], [['contact', 0], 'patient_id'],
           [['parent1'], 'patient_id'], [['parent1', 1], 'patient_id'],
         ];
-        service.updateContext(contact, false, feed, viewResults).should.equal(false);
+        service.updateContext(false, feed, viewResults).should.equal(false);
       });
 
       it('adds valid contact _id and reference to subjects list, while keeping them unique', () => {
@@ -520,17 +520,17 @@ describe('Authorization service', () => {
           [[userCtx.facility_id], 'new_patient_id'], [[userCtx.facility_id, 1], 'new_patient_id']
         ];
 
-        service.updateContext('new_contact_id', true, feed, viewResults).should.equal(2);
+        service.updateContext(true, feed, viewResults).should.equal(2);
         feed.subjectIds.should.deep.equal(['new_patient_id', 'new_contact_id']);
 
-        service.updateContext('new_contact_id', true, feed, viewResults).should.equal(0);
+        service.updateContext(true, feed, viewResults).should.equal(0);
         feed.subjectIds.should.deep.equal(['new_patient_id', 'new_contact_id']);
 
         viewResults.contactsByDepth = [
           [['second_new_contact_id'], 'second_patient_id'], [['second_new_contact_id', 0], 'second_patient_id'],
           [['parent1'], 'second_patient_id'], [['parent1', 1], 'second_patient_id']
         ];
-        service.updateContext('second_new_contact_id', false, feed, viewResults).should.equal(false);
+        service.updateContext(false, feed, viewResults).should.equal(false);
         feed.subjectIds.should.deep.equal(['new_patient_id', 'new_contact_id']);
       });
 
@@ -542,7 +542,7 @@ describe('Authorization service', () => {
           [['parent1'], 'person_ref'], [['parent1', 1], 'person_ref']
         ];
 
-        service.updateContext('person_id', false, feed, viewResults).should.equal(false);
+        service.updateContext(false, feed, viewResults).should.equal(false);
         feed.subjectIds.should.deep.equal(['contact_id', 'contact_id', 's']);
       });
     });
@@ -607,31 +607,37 @@ describe('Authorization service', () => {
       ]);
     });
 
-    it('reiterates over remaining docs every time context receives new subjects', () => {
+    it('reiterates over remaining docs when authorization context receives new subjects', () => {
       const authzContext = {
         userCtx: {},
         subjectIds: [],
-        contactsByDepthKeys: [[1], [1, 0]]
+        contactsByDepthKeys: [['a']]
       };
       const docs = [
         { id: 6, viewResults: {} },
         { id: 7, viewResults: {} },
-        { id: 8, viewResults: {} },
-        { id: 4, viewResults: { replicationKeys: [['subject2', { submitter: 'a' }]], contactsByDepth: false } },
+        { id: 8, viewResults: { replicationKeys: [['subject2', { submitter: 'a' }]], contactsByDepth: false } },
+        { id: 4, viewResults: { replicationKeys: [[1, { submitter: 'b' }]], contactsByDepth: false } },
         { id: 5, viewResults: {} },
-        { id: 2, viewResults: { replicationKeys: [['something']], contactsByDepth: [[[1, 0], 'subject2']] } },
+        { id: 2, viewResults: { replicationKeys: [['something']], contactsByDepth: [[[2, 0], 'subject2'], [['a']]] } },
         { id: 3, viewResults: { replicationKeys: [[ '_all' ]]} },
-        { id: 1, viewResults: { replicationKeys: [['something']], contactsByDepth: [[[1], 'subject1']] } }
+        { id: 1, viewResults: { replicationKeys: [['something']], contactsByDepth: [[[1], 'subject1'], [['a']]] } },
+        { id: 9, viewResults: {}, allowed: true },
+        { id: 11, viewResults: { replicationKeys: [['subject2', { submitter: 'a' }]], contactsByDepth: false } },
+        { id: 10, viewResults: {} }
       ];
 
       const results = service.filterAllowedDocs(authzContext, docs);
 
-      results.length.should.equal(4);
+      results.length.should.equal(7);
       results.should.deep.equal([
-        { id: 2, viewResults: { replicationKeys: [['something']], contactsByDepth: [[[1, 0], 'subject2']] } },
+        { id: 2, viewResults: { replicationKeys: [['something']], contactsByDepth: [[[2, 0], 'subject2'], [['a']]] } },
         { id: 3, viewResults: { replicationKeys: [[ '_all' ]]} },
-        { id: 1, viewResults: { replicationKeys: [['something']], contactsByDepth: [[[1], 'subject1']] } },
-        { id: 4, viewResults: { replicationKeys: [['subject2', { submitter: 'a' }]], contactsByDepth: false } }
+        { id: 1, viewResults: { replicationKeys: [['something']], contactsByDepth: [[[1], 'subject1'], [['a']]] } },
+        { id: 9, viewResults: {}, allowed: true },
+        { id: 11, viewResults: { replicationKeys: [['subject2', { submitter: 'a' }]], contactsByDepth: false } },
+        { id: 8, viewResults: { replicationKeys: [['subject2', { submitter: 'a' }]], contactsByDepth: false } },
+        { id: 4, viewResults: { replicationKeys: [[1, { submitter: 'b' }]], contactsByDepth: false } }
       ]);
 
       authzContext.subjectIds.should.deep.equal([ 'subject2', 2, 'subject1', 1 ]);

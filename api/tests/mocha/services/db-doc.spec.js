@@ -21,7 +21,7 @@ describe('db-doc service', () => {
 
     sinon.stub(authorization, 'allowedDoc');
     sinon.stub(authorization, 'alwaysAllowCreate');
-    sinon.stub(authorization, 'getUserAuthorizationData').resolves({ subjectIds: [1, 3, 4] });
+    sinon.stub(authorization, 'getAuthorizationContext').resolves({ subjectIds: [1, 3, 4], userCtx: { name: 'user' } });
     sinon.stub(authorization, 'getViewResults').callsFake(doc => ({ view: doc }));
     sinon.stub(serverUtils, 'serverError');
     sinon.stub(db.medic, 'get').resolves({});
@@ -132,14 +132,14 @@ describe('db-doc service', () => {
         });
     });
 
-    it('calls authorization.getUserAuthorizationData with correct params', () => {
+    it('calls authorization.getAuthorizationContext with correct params', () => {
       testReq.userCtx = { name: 'user' };
 
       return service
         .filterOfflineRequest(testReq, testRes, next)
         .then(() => {
-          authorization.getUserAuthorizationData.callCount.should.equal(1);
-          authorization.getUserAuthorizationData.args[0].should.deep.equal([{ name: 'user' }]);
+          authorization.getAuthorizationContext.callCount.should.equal(1);
+          authorization.getAuthorizationContext.args[0].should.deep.equal([{ name: 'user' }]);
         });
     });
 
@@ -275,7 +275,7 @@ describe('db-doc service', () => {
             testRes.send.callCount.should.equal(1);
             authorization.allowedDoc.callCount.should.equal(1);
             authorization.allowedDoc.args[0].should.deep.equal([
-              'id', { userCtx: { user: 'name' }, subjectIds: [1, 3, 4]}, { view: { _id: 'id' }}
+              'id', { userCtx: { name: 'user' }, subjectIds: [1, 3, 4]}, { view: { _id: 'id' }}
             ]);
             authorization.alwaysAllowCreate.callCount.should.equal(0);
           });
@@ -293,7 +293,7 @@ describe('db-doc service', () => {
             testRes.send.callCount.should.equal(1);
             authorization.allowedDoc.callCount.should.equal(1);
             authorization.allowedDoc.args[0].should.deep.equal([
-              'id', { userCtx: { user: 'name' }, subjectIds: [1, 3, 4]}, { view: { _id: 'id' }}
+              'id', { userCtx: { name: 'user' }, subjectIds: [1, 3, 4]}, { view: { _id: 'id' }}
             ]);
           });
       });
@@ -338,7 +338,7 @@ describe('db-doc service', () => {
             testRes.send.callCount.should.equal(1);
             authorization.allowedDoc.callCount.should.equal(1);
             authorization.allowedDoc.args[0].should.deep.equal([
-              'id', { userCtx: { user: 'name' }, subjectIds: [1, 3, 4]}, { view: { _id: 'id' }}
+              'id', { userCtx: { name: 'user' }, subjectIds: [1, 3, 4]}, { view: { _id: 'id' }}
             ]);
           });
       });
@@ -355,7 +355,7 @@ describe('db-doc service', () => {
             testRes.send.callCount.should.equal(1);
             authorization.allowedDoc.callCount.should.equal(1);
             authorization.allowedDoc.args[0].should.deep.equal([
-              'id', { userCtx: { user: 'name' }, subjectIds: [1, 3, 4]}, { view: { _id: 'id' }}
+              'id', { userCtx: { name: 'user' }, subjectIds: [1, 3, 4]}, { view: { _id: 'id' }}
             ]);
             authorization.alwaysAllowCreate.callCount.should.equal(0);
           });
@@ -380,7 +380,7 @@ describe('db-doc service', () => {
         testReq.method = 'POST';
         testReq.params = {};
         testReq.body = { _id: 'id', some: 'data' };
-        testReq.userCtx = { user: 'name' };
+        testReq.userCtx = { name: 'user' };
       });
 
       it('blocks for not allowed request doc', () => {
@@ -391,7 +391,7 @@ describe('db-doc service', () => {
           .then(() => {
             authorization.allowedDoc.callCount.should.equal(1);
             authorization.allowedDoc.args[0].should.deep.equal([
-              'id', { userCtx: { user: 'name' }, subjectIds: [1, 3, 4] }, { view: { _id: 'id', some: 'data' }}
+              'id', { userCtx: { name: 'user' }, subjectIds: [1, 3, 4] }, { view: { _id: 'id', some: 'data' }}
             ]);
             db.medic.get.callCount.should.equal(0);
             next.callCount.should.equal(0);
@@ -433,7 +433,7 @@ describe('db-doc service', () => {
         testReq.method = 'POST';
         testReq.params = { docId: 'id' };
         testReq.body = { _id: 'id', some: 'data' };
-        testReq.userCtx = { user: 'name' };
+        testReq.userCtx = { name: 'user' };
       });
 
       it('blocks for non existent db doc, not allowed request doc', () => {
@@ -445,7 +445,7 @@ describe('db-doc service', () => {
           .then(() => {
             authorization.allowedDoc.callCount.should.equal(1);
             authorization.allowedDoc.args[0].should.deep.equal([
-              'id', { userCtx: { user: 'name' }, subjectIds: [1, 3, 4] }, { view: { _id: 'id', some: 'data' }}
+              'id', { userCtx: { name: 'user' }, subjectIds: [1, 3, 4] }, { view: { _id: 'id', some: 'data' }}
             ]);
             db.medic.get.callCount.should.equal(1);
             next.callCount.should.equal(0);
@@ -462,7 +462,7 @@ describe('db-doc service', () => {
           .then(() => {
             authorization.allowedDoc.callCount.should.equal(1);
             authorization.allowedDoc.args[0].should.deep.equal([
-              'id', { userCtx: { user: 'name' }, subjectIds: [1, 3, 4] }, { view: { _id: 'id', some: 'data' }}
+              'id', { userCtx: { name: 'user' }, subjectIds: [1, 3, 4] }, { view: { _id: 'id', some: 'data' }}
             ]);
             db.medic.get.callCount.should.equal(1);
             next.callCount.should.equal(1);
@@ -479,7 +479,7 @@ describe('db-doc service', () => {
           .then(() => {
             authorization.allowedDoc.callCount.should.equal(1);
             authorization.allowedDoc.args[0].should.deep.equal([
-              'id', { userCtx: { user: 'name' }, subjectIds: [1, 3, 4] }, { view: { _id: 'id' }}
+              'id', { userCtx: { name: 'user' }, subjectIds: [1, 3, 4] }, { view: { _id: 'id' }}
             ]);
             db.medic.get.callCount.should.equal(1);
             next.callCount.should.equal(0);
@@ -491,9 +491,9 @@ describe('db-doc service', () => {
         db.medic.get.resolves({ _id: 'id' });
 
         authorization.allowedDoc
-          .withArgs('id', { userCtx: { user: 'name' }, subjectIds: [1, 3, 4] }, { view: { _id: 'id' }}).returns(false);
+          .withArgs('id', { userCtx: { name: 'user' }, subjectIds: [1, 3, 4] }, { view: { _id: 'id' }}).returns(false);
         authorization.allowedDoc
-          .withArgs('id', { userCtx: { user: 'name' }, subjectIds: [1, 3, 4] }, { view: { _id: 'id', some: 'data' }})
+          .withArgs('id', { userCtx: { name: 'user' }, subjectIds: [1, 3, 4] }, { view: { _id: 'id', some: 'data' }})
           .returns(true);
 
         return service
@@ -501,7 +501,7 @@ describe('db-doc service', () => {
           .then(() => {
             authorization.allowedDoc.callCount.should.equal(1);
             authorization.allowedDoc.args[0].should.deep.equal([
-              'id', { userCtx: { user: 'name' }, subjectIds: [1, 3, 4] }, { view: { _id: 'id' }}
+              'id', { userCtx: { name: 'user' }, subjectIds: [1, 3, 4] }, { view: { _id: 'id' }}
             ]);
             db.medic.get.callCount.should.equal(1);
             next.callCount.should.equal(0);
@@ -513,9 +513,9 @@ describe('db-doc service', () => {
         db.medic.get.resolves({ _id: 'id' });
 
         authorization.allowedDoc
-          .withArgs('id', { userCtx: { user: 'name' }, subjectIds: [1, 3, 4] }, { view: { _id: 'id' }}).returns(true);
+          .withArgs('id', { userCtx: { name: 'user' }, subjectIds: [1, 3, 4] }, { view: { _id: 'id' }}).returns(true);
         authorization.allowedDoc
-          .withArgs('id', { userCtx: { user: 'name' }, subjectIds: [1, 3, 4] }, { view: { _id: 'id', some: 'data' }})
+          .withArgs('id', { userCtx: { name: 'user' }, subjectIds: [1, 3, 4] }, { view: { _id: 'id', some: 'data' }})
           .returns(false);
 
         return service
@@ -523,10 +523,10 @@ describe('db-doc service', () => {
           .then(() => {
             authorization.allowedDoc.callCount.should.equal(2);
             authorization.allowedDoc.args[0].should.deep.equal([
-              'id', { userCtx: { user: 'name' }, subjectIds: [1, 3, 4] }, { view: { _id: 'id' }}
+              'id', { userCtx: { name: 'user' }, subjectIds: [1, 3, 4] }, { view: { _id: 'id' }}
             ]);
             authorization.allowedDoc.args[1].should.deep.equal([
-              'id', { userCtx: { user: 'name' }, subjectIds: [1, 3, 4] }, { view: { _id: 'id', some: 'data' }}
+              'id', { userCtx: { name: 'user' }, subjectIds: [1, 3, 4] }, { view: { _id: 'id', some: 'data' }}
             ]);
             db.medic.get.callCount.should.equal(1);
             next.callCount.should.equal(0);
@@ -544,10 +544,10 @@ describe('db-doc service', () => {
           .then(() => {
             authorization.allowedDoc.callCount.should.equal(2);
             authorization.allowedDoc.args[0].should.deep.equal([
-              'id', { userCtx: { user: 'name' }, subjectIds: [1, 3, 4] }, { view: { _id: 'id' }}
+              'id', { userCtx: { name: 'user' }, subjectIds: [1, 3, 4] }, { view: { _id: 'id' }}
             ]);
             authorization.allowedDoc.args[1].should.deep.equal([
-              'id', { userCtx: { user: 'name' }, subjectIds: [1, 3, 4] }, { view: { _id: 'id', some: 'data' }}
+              'id', { userCtx: { name: 'user' }, subjectIds: [1, 3, 4] }, { view: { _id: 'id', some: 'data' }}
             ]);
             db.medic.get.callCount.should.equal(1);
             next.callCount.should.equal(1);
@@ -582,7 +582,7 @@ describe('db-doc service', () => {
           .then(() => {
             authorization.allowedDoc.callCount.should.equal(1);
             authorization.allowedDoc.args[0].should.deep.equal([
-              'id', { userCtx: { user: 'name' }, subjectIds: [1, 3, 4] }, { view: { _id: 'id' }}
+              'id', { userCtx: { name: 'user' }, subjectIds: [1, 3, 4] }, { view: { _id: 'id' }}
             ]);
             authorization.alwaysAllowCreate.callCount.should.equal(0);
             db.medic.get.callCount.should.equal(1);
@@ -620,7 +620,7 @@ describe('db-doc service', () => {
           .then(() => {
             authorization.allowedDoc.callCount.should.equal(1);
             authorization.allowedDoc.args[0].should.deep.equal([
-              'id', { userCtx: { user: 'name' }, subjectIds: [1, 3, 4] }, { view: { _id: 'id' }}
+              'id', { userCtx: { name: 'user' }, subjectIds: [1, 3, 4] }, { view: { _id: 'id' }}
             ]);
             db.medic.get.callCount.should.equal(1);
             db.medic.get.args[0].should.deep.equal(['id', { rev: '1' }]);
@@ -639,7 +639,7 @@ describe('db-doc service', () => {
           .then(() => {
             authorization.allowedDoc.callCount.should.equal(1);
             authorization.allowedDoc.args[0].should.deep.equal([
-              'id', { userCtx: { user: 'name' }, subjectIds: [1, 3, 4] }, { view: { _id: 'id' }}
+              'id', { userCtx: { name: 'user' }, subjectIds: [1, 3, 4] }, { view: { _id: 'id' }}
             ]);
             db.medic.get.callCount.should.equal(1);
             db.medic.get.args[0].should.deep.equal(['id', { rev: '1'}]);

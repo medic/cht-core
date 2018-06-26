@@ -256,12 +256,12 @@ module.exports = {
       return res.end();
     }
 
-    const authorizationContext = { userCtx: req.userCtx };
+    let authorizationContext;
 
     return authorization
-      .getUserAuthorizationData(req.userCtx)
-      .then(authorizationData => {
-        _.extend(authorizationContext, authorizationData);
+      .getAuthorizationContext(req.userCtx)
+      .then(context => {
+        authorizationContext = context;
         return authorization.getAllowedDocIds(authorizationContext);
       })
       .then(allowedDocIds => {

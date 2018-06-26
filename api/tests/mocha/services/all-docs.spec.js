@@ -20,7 +20,7 @@ describe('All Docs service', () => {
 
     testReq = { query: {}, userCtx: { name: 'user' } };
 
-    sinon.stub(authorization, 'getUserAuthorizationData').resolves({});
+    sinon.stub(authorization, 'getAuthorizationContext').resolves({});
     sinon.stub(authorization, 'getAllowedDocIds').resolves([]);
     sinon.stub(authorization, 'excludeTombstoneIds').callsFake(list => list);
     sinon.stub(authorization, 'convertTombstoneIds').callsFake(list => list);
@@ -203,7 +203,7 @@ describe('All Docs service', () => {
 
   describe('Filter Offline Request', () => {
     it('catches authorization errors', () => {
-      authorization.getUserAuthorizationData.rejects({ error: 'something' });
+      authorization.getAuthorizationContext.rejects({ error: 'something' });
 
       return service
         .filterOfflineRequest(testReq, testRes)
@@ -224,17 +224,17 @@ describe('All Docs service', () => {
         });
     });
 
-    it('calls authorization.getUserAuthorizationData with correct parameters', () => {
+    it('calls authorization.getAuthorizationContext with correct parameters', () => {
       return service
         .filterOfflineRequest(testReq, testRes)
         .then(() => {
-          authorization.getUserAuthorizationData.callCount.should.equal(1);
-          authorization.getUserAuthorizationData.args[0][0].should.equal(testReq.userCtx);
+          authorization.getAuthorizationContext.callCount.should.equal(1);
+          authorization.getAuthorizationContext.args[0][0].should.equal(testReq.userCtx);
         });
     });
 
     it('calls authorization.getAllowedIds with correct parameters', () => {
-      authorization.getUserAuthorizationData.resolves({ subjectIds: ['a', 'b'] });
+      authorization.getAuthorizationContext.resolves({ subjectIds: ['a', 'b'] });
       authorization.getAllowedDocIds.resolves(['a', 'b']);
       db.medic.allDocs.rejects({ error: 'something' });
 
@@ -250,7 +250,7 @@ describe('All Docs service', () => {
     });
 
     it('excludes tombstone ids from allowed ids list when request has no `keys` parameter', () => {
-      authorization.getUserAuthorizationData.resolves({ subjectIds: ['a', 'b'] });
+      authorization.getAuthorizationContext.resolves({ subjectIds: ['a', 'b'] });
       authorization.getAllowedDocIds.resolves(['a', 'b', 'tombstone1', 'tombstone2']);
       authorization.excludeTombstoneIds.withArgs(['a', 'b', 'tombstone1', 'tombstone2']).returns(['a', 'b']);
 
@@ -265,7 +265,7 @@ describe('All Docs service', () => {
     });
 
     it('converts tombstone ids from allowed ids list when request has `keys` parameter', () => {
-      authorization.getUserAuthorizationData.resolves({ subjectIds: ['a', 'b'] });
+      authorization.getAuthorizationContext.resolves({ subjectIds: ['a', 'b'] });
       authorization.getAllowedDocIds.resolves(['a', 'b', 'tombstone1', 'tombstone2']);
       authorization.convertTombstoneIds.withArgs(['a', 'b', 'tombstone1', 'tombstone2']).returns(['a', 'b', '1', '2']);
       testReq.body = { keys: ['1', '2', '3', '4'] };
@@ -441,7 +441,7 @@ describe('All Docs service', () => {
           Promise.resolve()
         ])
         .then(() => {
-          authorization.getUserAuthorizationData.callCount.should.equal(0);
+          authorization.getAuthorizationContext.callCount.should.equal(0);
           testRes.type.callCount.should.equal(1);
           testRes.write.callCount.should.equal(1);
           testRes.end.callCount.should.equal(1);
@@ -458,7 +458,7 @@ describe('All Docs service', () => {
           Promise.resolve()
         ])
         .then(() => {
-          authorization.getUserAuthorizationData.callCount.should.equal(0);
+          authorization.getAuthorizationContext.callCount.should.equal(0);
           testRes.type.callCount.should.equal(1);
           testRes.write.callCount.should.equal(1);
           testRes.end.callCount.should.equal(1);
@@ -475,7 +475,7 @@ describe('All Docs service', () => {
           Promise.resolve()
         ])
         .then(() => {
-          authorization.getUserAuthorizationData.callCount.should.equal(0);
+          authorization.getAuthorizationContext.callCount.should.equal(0);
           testRes.type.callCount.should.equal(1);
           testRes.write.callCount.should.equal(1);
           testRes.end.callCount.should.equal(1);

@@ -44,7 +44,7 @@ const hasAccessToUnassignedDocs = (userCtx) => {
 
 const include = (array, ...values) => {
   let newValues = 0;
-  values.forEach(value => array.indexOf(value) === -1 && array.push(value) && newValues++);
+  values.forEach(value => value && array.indexOf(value) === -1 && array.push(value) && newValues++);
   return newValues;
 };
 
@@ -58,9 +58,10 @@ const exclude = (array, ...values) => {
 // @param {Array}   viewValues.contactsByDepth - results of `medic/contacts_by_depth` view against doc
 // @param {Boolean} whether the doc is allowed
 // @returns
-const updateContext = (docId, allowed, authorizationContext, { replicationKeys, contactsByDepth }) => {
+const updateContext = (allowed, authorizationContext, { replicationKeys, contactsByDepth }) => {
   if (contactsByDepth && contactsByDepth.length) {
-    const subjectId = contactsByDepth[0][1];
+    //first element of `contactsByDepth` contains both subjects
+    const [[[ docId ], subjectId]] = contactsByDepth;
 
     if (allowed) {
       return include(authorizationContext.subjectIds, subjectId, docId);
@@ -119,7 +120,7 @@ const filterAllowedDocs = (authorizationContext, docs) => {
 
   const checkDoc = (doc) => {
     const allowed = doc.allowed || allowedDoc(doc.id, authorizationContext, doc.viewResults);
-    shouldIterate += updateContext(doc.id, allowed, authorizationContext, doc.viewResults);
+    shouldIterate = updateContext(allowed, authorizationContext, doc.viewResults) || shouldIterate;
 
     if (!allowed) {
       return;
@@ -161,8 +162,9 @@ const allowedContact = (contactsByDepth, userContactsByDepthKeys) => {
   return viewResultKeys.some(viewResult => userContactsByDepthKeys.some(generated => _.isEqual(viewResult, generated)));
 };
 
-const getUserAuthorizationData = (userCtx) => {
+const getAuthorizationContext = (userCtx) => {
   const authData = {
+    userCtx,
     contactsByDepthKeys: getContactsByDepthKeys(userCtx, module.exports.getDepth(userCtx)),
     subjectIds: []
   };
@@ -249,7 +251,7 @@ module.exports = {
   allowedDoc: allowedDoc,
   getDepth: getDepth,
   getViewResults: getViewResults,
-  getUserAuthorizationData: getUserAuthorizationData,
+  getAuthorizationContext: getAuthorizationContext,
   getAllowedDocIds: getAllowedDocIds,
   excludeTombstoneIds: excludeTombstoneIds,
   convertTombstoneIds: convertTombstoneIds,
