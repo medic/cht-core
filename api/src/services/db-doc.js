@@ -35,7 +35,9 @@ const getStoredDoc = (req, isAttachment) => {
 };
 
 const getRequestDoc = (req, isAttachment) => {
-  if (!req.body || isAttachment) {
+  // bodyParser adds a `body` property regardless of method
+  // attachment requests are not bodyParsed, so theoretically will not have a `body` property
+  if (req.method === 'GET' || req.method === 'DELETE' || !req.body || isAttachment) {
     return false;
   }
 
@@ -106,7 +108,6 @@ module.exports = {
           return requestError(res);
         }
 
-        req.authorized = true;
         next();
       })
       .catch(err => serverUtils.serverError(err, req, res));

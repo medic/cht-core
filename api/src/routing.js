@@ -23,7 +23,7 @@ const _ = require('underscore'),
       upgrade = require('./controllers/upgrade'),
       settings = require('./controllers/settings'),
       bulkDocs = require('./controllers/bulk-docs'),
-      authorization = require('./middleware/authorization'),
+      authorizationMiddleware = require('./middleware/authorization'),
       createUserDb = require('./controllers/create-user-db'),
       createDomain = require('domain').create,
       staticResources = /\/(templates|static)\//,
@@ -131,30 +131,31 @@ app.get(routePrefix + 'login', login.get);
 app.get(routePrefix + 'login/identity', login.getIdentity);
 app.postJson(routePrefix + 'login', login.post);
 
-// saves `userCtx` in the `req` object
-app.use(authorization.getUserCtx);
+// saves CouchDB _session information as `userCtx` in the `req` object
+app.use(authorizationMiddleware.getUserCtx);
 
-// block offline users from accessing CouchDB endpoints
-authorization.ONLINE_ONLY_ENDPOINTS.forEach(url => {
-  app.all(routePrefix + url, authorization.offlineUserFirewall);
+// block offline users from accessing some unaudited CouchDB endpoints
+authorizationMiddleware.ONLINE_ONLY_ENDPOINTS.forEach(url => {
+  app.all(routePrefix + url, authorizationMiddleware.offlineUserFirewall);
 });
 
 var UNAUDITED_ENDPOINTS = [
   // This takes arbitrary JSON, not whole documents with `_id`s, so it's not
   // auditable in our current framework
   // Replication machinery we don't care to audit
-  '_local/*',
-  '_revs_diff',
-  '_missing_revs',
+  routePrefix + '_local/*',
+  routePrefix + '_revs_diff',
+  routePrefix + '_missing_revs',
   // NB: _changes, _all_docs, _bulk_get are dealt with elsewhere:
   // see `changesHandler`, `allDocsHandler`, `bulkGetHandler`
-  '_design/*/_list/*',
-  '_design/*/_show/*',
-  '_design/*/_view/*',
-  //'_design/*/_rewrite/*',
+  routePrefix + '_design/*/_list/*',
+  routePrefix + '_design/*/_show/*',
+  routePrefix + '_design/*/_view/*',
   // Interacting with mongo filters uses POST
-  '_find',
-  '_explain'
+  routePrefix + '_find',
+  routePrefix + '_explain',
+  // allow anyone to access their _session information
+  '/_session'
 ];
 
 UNAUDITED_ENDPOINTS.forEach(function(url) {
@@ -162,7 +163,7 @@ UNAUDITED_ENDPOINTS.forEach(function(url) {
   // the file below, and these calls will all be proxies. If you want to avoid
   // auditing and do other things as well, look to how the _changes feed is
   // handled.
-  app.all(routePrefix +  url, function(req, res) {
+  app.all(url, function(req, res) {
     proxy.web(req, res);
   });
 });
@@ -469,44 +470,60 @@ app.putJson('/api/v1/settings', settings.put);
 const changesHandler = _.partial(require('./controllers/changes').request, proxyForChanges),
       changesPath = routePrefix + '_changes(/*)?';
 
-app.get(changesPath, authorization.authenticated, changesHandler);
-app.postJson(changesPath, authorization.authenticated, changesHandler);
+app.get(changesPath, authorizationMiddleware.requireAuthenticatedUser, changesHandler);
+app.postJson(changesPath, authorizationMiddleware.requireAuthenticatedUser, changesHandler);
 
-// authorization middleware to read userSettings and proxy online users requests directly to CouchDB
-const onlineUserProxy = _.partial(authorization.onlineUserProxy, proxy);
+// authorization middleware proxy online users requests directly to CouchDB
+// reads offline users `user-settings` and saves it as `req.userCtx`
+const onlineUserProxy = _.partial(authorizationMiddleware.onlineUserProxy, proxy);
 
 // filter _all_docs requests for offline users
 const allDocsHandler = require('./controllers/all-docs').request,
       allDocsPath = routePrefix + '_all_docs(/*)?';
 
-app.get(allDocsPath, authorization.authenticated, onlineUserProxy, allDocsHandler);
-app.post(allDocsPath, authorization.authenticated, onlineUserProxy, jsonParser, allDocsHandler);
+app.get(allDocsPath, onlineUserProxy, allDocsHandler);
+app.post(allDocsPath, onlineUserProxy, jsonParser, allDocsHandler);
 
 // filter _bulk_get requests for offline users
 const bulkGetHandler = require('./controllers/bulk-get').request;
-app.post(routePrefix + '_bulk_get(/*)?', authorization.authenticated, onlineUserProxy, jsonParser, bulkGetHandler);
+app.post(routePrefix + '_bulk_get(/*)?', onlineUserProxy, jsonParser, bulkGetHandler);
 
 // filter _bulk_docs requests for offline users
 // this is an audited endpoint: online and filtered offline requests will pass through to the audit route
 app.post(
   routePrefix + '_bulk_docs(/*)?',
-  authorization.authenticated,
-  authorization.onlineUserPassThrough,
+  authorizationMiddleware.onlineUserPassThrough, // online user requests pass through to the next route
   jsonParser,
-  bulkDocs.request
+  bulkDocs.request,
+  authorizationMiddleware.setAuthorized // adds the `authorized` flag to the `req` object, so it passes the firewall
 );
 
-// filter document and attachment requests for offline users
+// filter db-doc and attachment requests for offline users
 // these are audited endpoints: online and allowed offline requests will pass through to the audit route
 const dbDocHandler = require('./controllers/db-doc').request,
       docPath = routePrefix + ':docId/{0,}',
       attachmentPath = routePrefix + ':docId/+:attachmentId';
 
-app.get(docPath, authorization.authenticated, authorization.onlineUserPassThrough, dbDocHandler);
-app.post(routePrefix, authorization.authenticated, authorization.onlineUserPassThrough, jsonParser, dbDocHandler);
-app.put(docPath, authorization.authenticated, authorization.onlineUserPassThrough, jsonParser, dbDocHandler);
-app.delete(docPath, authorization.authenticated, authorization.onlineUserPassThrough, dbDocHandler);
-app.all(attachmentPath, authorization.authenticated, authorization.onlineUserPassThrough, dbDocHandler);
+app.all(
+  docPath,
+  authorizationMiddleware.onlineUserPassThrough, // online user requests pass through to the next route,
+  jsonParser,
+  dbDocHandler,
+  authorizationMiddleware.setAuthorized // adds the `authorized` flag to the `req` object, so it passes the firewall
+);
+app.post(
+  routePrefix,
+  authorizationMiddleware.onlineUserPassThrough, // online user requests pass through to the next route
+  jsonParser, // request body must be json
+  dbDocHandler,
+  authorizationMiddleware.setAuthorized // adds the `authorized` flag to the `req` object, so it passes the firewall
+);
+app.all(
+  attachmentPath,
+  authorizationMiddleware.onlineUserPassThrough,  // online user requests pass through to the next route
+  dbDocHandler,
+  authorizationMiddleware.setAuthorized // adds the `authorized` flag to the `req` object, so it passes the firewall
+);
 
 const metaPathPrefix = '/medic-user-\*-meta/';
 
@@ -517,6 +534,8 @@ app.get(metaPathPrefix + '_changes', (req, res) => {
 
 // Attempting to create the user's personal meta db
 app.put(metaPathPrefix, createUserDb);
+// AuthZ for this endpoint should be handled by couchdb, allow offline users to access this directly
+app.all(metaPathPrefix + '*', authorizationMiddleware.setAuthorized);
 
 var writeHeaders = function(req, res, headers, redirectHumans) {
   res.oldWriteHead = res.writeHead;
@@ -630,6 +649,14 @@ proxyForChanges.on('proxyRes', (proxyRes, req, res) => {
   });
 });
 
+// allow offline users to access the app
+app.all(appPrefix + '*', authorizationMiddleware.setAuthorized);
+
+// block offline users requests from accessing CouchDB directly, via AuditProxy or Proxy
+// requests which are authorized (fe: by BulkDocsHandler or DbDocHandler) can pass through
+// unauthenticated requests will be redirected to login or given a meaningful error
+app.use(authorizationMiddleware.offlineUserFirewall);
+
 var audit = function(req, res) {
   var ap = new AuditProxy();
   ap.on('error', function(e) {
@@ -640,23 +667,6 @@ var audit = function(req, res) {
   });
   ap.audit(proxyForAuditing, req, res);
 };
-
-const UNRESTRICTED_ENDPOINTS = [
-  // allow anyone to access the app
-  // we can't add this to UNAUDITED_ENDPOINTS because of the deprecated `app_settings` endpoints
-  appPrefix + '*',
-  // AuthZ for this endpoint should be handled by couchdb
-  metaPathPrefix + '*',
-  // allow anyone to access their session
-  '/_session'
-];
-
-UNRESTRICTED_ENDPOINTS.forEach(endoint => app.all(endoint, (req, res) => proxy.web(req, res)));
-
-// block offline users requests from accessing CouchDB directly, via AuditProxy or Proxy
-// requests which were authorized by BulkDocsHandler or DbDocHandler can pass through
-// unauthenticated requests will be redirected to login or given a meaningful error
-app.use(authorization.authenticated, authorization.offlineUserFirewall);
 
 var auditPath = routePrefix + '*';
 app.put(auditPath, audit);

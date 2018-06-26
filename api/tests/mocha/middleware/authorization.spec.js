@@ -25,29 +25,15 @@ describe('Authorization middleware', () => {
     sinon.restore();
   });
 
-  describe('authenticated', () => {
-    it('blocks unauthenticated requests', () => {
-      middleware.authenticated(testReq, testRes, next);
-      next.callCount.should.equal(0);
-      serverUtils.notLoggedIn.callCount.should.equal(1);
-    });
-
-    it('forwards authenticated requests', () => {
-      testReq.userCtx = {};
-      middleware.authenticated(testReq, testRes, next);
-      next.callCount.should.equal(1);
-      serverUtils.notLoggedIn.callCount.should.equal(0);
-    });
-  });
-
   describe('getUserCtx', () => {
-    it('handles not logged in requests', () => {
+    it('handles unauthenticated requests', () => {
       auth.getUserCtx.rejects();
       return middleware
         .getUserCtx(testReq, testRes, next)
         .then(() => {
           next.callCount.should.equal(1);
           (!!testReq.userCtx).should.equal(false);
+          serverUtils.notLoggedIn.callCount.should.equal(0);
         });
     });
 
@@ -60,6 +46,21 @@ describe('Authorization middleware', () => {
           next.callCount.should.equal(1);
           testReq.userCtx.should.deep.equal({ name: 'user' });
         });
+    });
+  });
+
+  describe('requireAuthenticatedUser', () => {
+    it('blocks unauthenticated requests', () => {
+      middleware.requireAuthenticatedUser(testReq, testRes, next);
+      next.callCount.should.equal(0);
+      serverUtils.notLoggedIn.callCount.should.equal(1);
+    });
+
+    it('allows authenticated requests to pass through', () => {
+      testReq.userCtx = {};
+      middleware.requireAuthenticatedUser(testReq, testRes, next);
+      next.callCount.should.equal(1);
+      serverUtils.notLoggedIn.callCount.should.equal(0);
     });
   });
 
@@ -144,6 +145,14 @@ describe('Authorization middleware', () => {
           auth.isOnlineOnly.args[0][0].should.deep.equal({ name: 'user'});
           auth.getUserSettings.args[0][0].should.deep.equal({ name: 'user'});
         });
+    });
+  });
+
+  describe('setAuthorized', () => {
+    it('sets correct authorized flag and forwards to next route', () => {
+      middleware.setAuthorized(testReq, testRes, next);
+      testReq.authorized.should.equal(true);
+      next.callCount.should.equal(1);
     });
   });
 });
