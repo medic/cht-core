@@ -27,12 +27,13 @@ describe('Authorization middleware', () => {
 
   describe('getUserCtx', () => {
     it('handles unauthenticated requests', () => {
-      auth.getUserCtx.rejects();
+      auth.getUserCtx.rejects({ some: 'error' });
       return middleware
         .getUserCtx(testReq, testRes, next)
         .then(() => {
           next.callCount.should.equal(1);
           (!!testReq.userCtx).should.equal(false);
+          testReq.authErr.should.equal({ soome: 'error' });
           serverUtils.notLoggedIn.callCount.should.equal(0);
         });
     });
@@ -45,6 +46,7 @@ describe('Authorization middleware', () => {
           serverUtils.notLoggedIn.callCount.should.equal(0);
           next.callCount.should.equal(1);
           testReq.userCtx.should.deep.equal({ name: 'user' });
+          (!!testReq.authErr).should.equal(false);
         });
     });
   });

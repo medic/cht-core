@@ -21,7 +21,7 @@ module.exports = {
     '_purge(/*)?'
   ],
 
-  // saves CouchDB session `userCtx` into `req` object for later use
+  // saves CouchDB _session information as `userCtx` in the `req` object
   getUserCtx: (req, res, next) => {
     return auth
       .getUserCtx(req)
@@ -29,7 +29,10 @@ module.exports = {
         req.userCtx = userCtx;
         next();
       })
-      .catch(() => next());
+      .catch(err => {
+        req.authErr = err;
+        next();
+      });
   },
 
   // blocks unauthenticated requests from passing through
