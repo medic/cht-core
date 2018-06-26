@@ -85,7 +85,7 @@ describe('Standard Configuration Tasks', function() {
           assertTitle(task, 'Postnatal visit needed');
           assertNotResolved(task);
           assert.deepInclude(task.actions[0].content, {
-            "source": "task",
+            "source": "return",
             "source_id": "report-1",
             contact: fixtures.contact(),
           });
