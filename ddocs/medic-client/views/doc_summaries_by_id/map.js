@@ -31,15 +31,22 @@ function(doc) {
 
   var getSubject = function(doc) {
     var subject = {};
+    var reference = doc.patient_id ||
+                    (doc.fields && doc.fields.patient_id) ||
+                    doc.place_id;
+    var patientName = doc.fields && doc.fields.patient_name;
+    if (patientName) {
+      subject.name = patientName;
+    }
 
-    if (doc.patient_id || (doc.fields && doc.fields.patient_id) || doc.place_id) {
-      subject.value = doc.patient_id || (doc.fields && doc.fields.patient_id) || doc.place_id;
+    if (reference) {
+      subject.value = reference;
       subject.type = 'reference';
     } else if (doc.fields && doc.fields.place_id) {
       subject.value = doc.fields.place_id;
       subject.type = 'id';
-    } else if (doc.fields && doc.fields.patient_name) {
-      subject.value = doc.fields.patient_name;
+    } else if (patientName) {
+      subject.value = patientName;
       subject.type = 'name';
     } else if (doc.errors) {
       doc.errors.forEach(function(error) {
