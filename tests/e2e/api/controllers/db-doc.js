@@ -254,13 +254,15 @@ describe('db-doc handler', () => {
           utils
             .requestOnTestDb(_.defaults({ body: JSON.stringify(deniedDoc), path: '/' }, offlineRequestOptions))
             .catch(err => err),
-          utils.requestOnTestDb(_.defaults({}, offlineRequestOptions)).catch(err => err)
+          utils
+            .requestOnTestDb(_.defaults({ path: '/' }, offlineRequestOptions))
+            .catch(err => err)
         ])
         .then(results => {
           expect(_.omit(results[0], 'rev')).toEqual({ id: 'allowed_doc_post', ok: true });
           expect(results[1].statusCode).toEqual(403);
           expect(results[1].responseBody).toEqual({ error: 'forbidden', reason: 'Insufficient privileges' });
-          expect(results[2].responseBody.error).toEqual('bad_request');
+          expect(results[2].responseBody.error).toEqual('forbidden');
 
           return Promise.all([
             utils.getDoc('allowed_doc_post'),
@@ -549,6 +551,7 @@ describe('db-doc handler', () => {
     const doc = { _id: 'fb1', type: 'feedback', content: 'content' };
 
     _.extend(offlineRequestOptions, {
+      path: '/',
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(doc)

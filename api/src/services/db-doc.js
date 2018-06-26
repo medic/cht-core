@@ -106,6 +106,7 @@ module.exports = {
           return requestError(res);
         }
 
+        req.authorized = true;
         next();
       })
       .catch(err => serverUtils.serverError(err, req, res));

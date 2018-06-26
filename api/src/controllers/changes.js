@@ -2,7 +2,6 @@ const auth = require('../auth'),
       db = require('../db-pouch'),
       authorization = require('../services/authorization'),
       _ = require('underscore'),
-      serverUtils = require('../server-utils'),
       heartbeatFilter = require('../services/heartbeat-filter'),
       dbConfig = require('../services/db-config'),
       tombstoneUtils = require('@shared-libs/tombstone-utils'),
@@ -270,9 +269,9 @@ const initFeed = (req, res, userCtx) => {
     });
 };
 
-const processRequest = (req, res, userCtx) => {
+const processRequest = (req, res) => {
   return auth
-    .getUserSettings(userCtx)
+    .getUserSettings(req.userCtx)
     .then(userCtx => {
       initFeed(req, res, userCtx).then(getChanges);
     });
@@ -374,16 +373,11 @@ const init = () => {
 
 const request = (proxy, req, res) => {
   return init().then(() => {
-    return auth
-      .getUserCtx(req)
-      .then(userCtx => {
-        if (auth.isOnlineOnly(userCtx)) {
-          return proxy.web(req, res);
-        }
-        res.type('json');
-        return processRequest(req, res, userCtx);
-      })
-      .catch(() => serverUtils.notLoggedIn(req, res));
+    if (auth.isOnlineOnly(req.userCtx)) {
+      return proxy.web(req, res);
+    }
+    res.type('json');
+    return processRequest(req, res);
   });
 };
 

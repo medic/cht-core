@@ -433,11 +433,15 @@ describe('changes handler', () => {
 
       const deniedDocs = createSomeContacts(10, 'irrelevant-place');
       return Promise.all([
-          utils.saveDocs(allowedDocs),
-          utils.saveDocs(deniedDocs)
-        ])
-        .then(() => requestChanges('bob', { limit: 7 }))
-        .then(changes => {
+        utils.saveDocs(allowedDocs),
+        utils.saveDocs(deniedDocs)
+      ])
+        .then(() => Promise.all([
+          requestChanges('bob', { limit: 7 }),
+          utils.getDoc('fixture:user:bob')
+        ]))
+        .then(([ changes, userBob ]) => {
+          console.log(userBob);
           assertChangeIds(changes,
             'org.couchdb.user:bob',
             'fixture:user:bob',
@@ -452,10 +456,10 @@ describe('changes handler', () => {
       bobsIds.push(..._.pluck(allowedDocs, '_id'));
 
       return Promise.all([
-          consumeChanges('bob', [], currentSeq),
-          utils.saveDocs(allowedDocs),
-          utils.saveDocs(deniedDocs)
-        ])
+        consumeChanges('bob', [], currentSeq),
+        utils.saveDocs(allowedDocs),
+        utils.saveDocs(deniedDocs)
+      ])
         .then(([changes]) => {
           expect(changes.results.every(change => bobsIds.indexOf(change.id) !== -1)).toBe(true);
         });
@@ -497,11 +501,11 @@ describe('changes handler', () => {
       stevesIds.push(..._.pluck(allowedSteve, '_id'));
 
       return Promise.all([
-          consumeChanges('bob', [], currentSeq),
-          consumeChanges('steve', [], currentSeq),
-          utils.saveDocs(allowedBob),
-          utils.saveDocs(allowedSteve),
-        ])
+        consumeChanges('bob', [], currentSeq),
+        consumeChanges('steve', [], currentSeq),
+        utils.saveDocs(allowedBob),
+        utils.saveDocs(allowedSteve),
+      ])
         .then(([ bobsChanges, stevesChanges ]) => {
           expect(bobsChanges.results.every(change => _.pluck(allowedBob, '_id').indexOf(change.id) !== -1)).toBe(true);
           expect(stevesChanges.results.every(change => _.pluck(allowedSteve, '_id').indexOf(change.id) !== -1)).toBe(true);
@@ -556,9 +560,9 @@ describe('changes handler', () => {
           requestChanges('bob', { feed: 'longpoll', since: currentSeq }),
           new Promise(resolve => {
             setTimeout(() => {
-              resolve(utils.updateSettings({ changes_controller: _.defaults({ reiterate_changes: false }, defaultSettings) }, true));},
+                resolve(utils.updateSettings({ changes_controller: _.defaults({ reiterate_changes: false }, defaultSettings) }, true));},
               300);
-            })
+          })
         ])
         .then(([ stevesChanges, bobsChanges ]) => {
           expect(stevesChanges.results.length).toBeGreaterThanOrEqual(1);
@@ -691,6 +695,30 @@ describe('changes handler', () => {
         });
     });
 
+    it('returns correct results when user is updated while changes request is active', () => {
+      const allowedBob = createSomeContacts(3, 'fixture:bobville');
+      const allowedSteve = createSomeContacts(3, 'fixture:steveville');
+      bobsIds.push(..._.pluck(allowedBob, '_id'));
+      stevesIds.push(..._.pluck(allowedSteve, '_id'));
+
+      return utils
+        .getDoc('org.couchdb.user:steve')
+        .then(stevesUser => {
+          return Promise.all([
+            requestChanges('steve', { feed: 'longpoll', since: currentSeq }),
+            utils.saveDocs(allowedBob),
+            utils.saveDocs(allowedSteve),
+            utils.saveDoc(_.extend(stevesUser, { facility_id: 'fixture:bobville' })),
+          ]);
+        })
+        .then(([ changes ]) => {
+          console.log(changes);
+          expect(changes.results.every(change =>
+            bobsIds.indexOf(change.id) !== -1 || change.id === 'org.couchdb.user:steve'
+          )).toBe(true);
+        });
+    });
+
     it('filters deletions (tombstones) for concurrent users', () => {
       const allowedBob = createSomeContacts(3, 'fixture:bobville');
       const allowedSteve = createSomeContacts(3, 'fixture:steveville');
@@ -698,12 +726,13 @@ describe('changes handler', () => {
       stevesIds.push(..._.pluck(allowedSteve, '_id'));
       let bobsSeq = 0,
           stevesSeq = 0;
-
-      return Promise
-        .all([
+      return utils
+        .getDoc('org.couchdb.user:steve')
+        .then(stevesUser => utils.saveDoc(_.extend(stevesUser, { facility_id: 'fixture:steveville' })))
+        .then(() => Promise.all([
           utils.saveDocs(allowedBob),
           utils.saveDocs(allowedSteve)
-        ])
+        ]))
         .then(([ allowedBobResult, allowedSteveResult ]) => {
           allowedBobResult.forEach((doc, idx) => allowedBob[idx]._rev = doc.rev);
           allowedSteveResult.forEach((doc, idx) => allowedSteve[idx]._rev = doc.rev);
@@ -727,29 +756,6 @@ describe('changes handler', () => {
         .then(([ bobsChanges, stevesChanges ]) => {
           expect(bobsChanges.results.every(change => bobsIds.indexOf(change.id) !== -1)).toBe(true);
           expect(stevesChanges.results.every(change => stevesIds.indexOf(change.id) !== -1)).toBe(true);
-        });
-    });
-
-    it('returns correct results when user is updated while changes request is active', () => {
-      const allowedBob = createSomeContacts(3, 'fixture:bobville');
-      const allowedSteve = createSomeContacts(3, 'fixture:steveville');
-      bobsIds.push(..._.pluck(allowedBob, '_id'));
-      stevesIds.push(..._.pluck(allowedSteve, '_id'));
-
-      return utils
-        .getDoc('org.couchdb.user:steve')
-        .then(stevesUser => {
-          return Promise.all([
-            requestChanges('steve', { feed: 'longpoll', since: currentSeq }),
-            utils.saveDocs(allowedBob),
-            utils.saveDocs(allowedSteve),
-            utils.saveDoc(_.extend(stevesUser, { facility_id: 'fixture:bobville' })),
-          ]);
-        })
-        .then(([ changes ]) => {
-          expect(changes.results.every(change =>
-            bobsIds.indexOf(change.id) !== -1 || change.id === 'org.couchdb.user:steve'
-          )).toBe(true);
         });
     });
 
@@ -796,10 +802,10 @@ describe('changes handler', () => {
       .then(() => requestChanges('bob'))
       .then(changes =>
         assertChangeIds(changes,
-            'org.couchdb.user:bob',
-            'fixture:bobville',
-            'fixture:user:bob',
-            'very-relevant')));
+          'org.couchdb.user:bob',
+          'fixture:bobville',
+          'fixture:user:bob',
+          'very-relevant')));
 
   describe('reports with no associated contact', () => {
     describe('can_view_unallocated_data_records permission', () => {
@@ -843,28 +849,28 @@ describe('changes handler', () => {
         .then(() => requestChanges('chw'))
         .then(changes =>
           assertChangeIds(changes,
-              'org.couchdb.user:chw',
-              'fixture:user:chw',
-              'fixture:chwville',
-              'should-be-visible')));
+            'org.couchdb.user:chw',
+            'fixture:user:chw',
+            'fixture:chwville',
+            'should-be-visible')));
 
     it('should correspond to the largest number for any role the user has', () =>
       utils.updateSettings({
         replication_depth: [
-            { role:'district_admin', depth:1 },
-            { role:'analytics', depth:2 },
-          ]
+          { role:'district_admin', depth:1 },
+          { role:'analytics', depth:2 },
+        ]
       }, true)
         .then(() => utils.saveDoc({ _id:'should-be-visible', type:'clinic', parent: { _id:'fixture:chwville' } }))
         .then(() => utils.saveDoc({ _id:'should-be-visible-too', reported_date: 1, type:'person', parent: { _id:'should-be-visible', parent:{ _id:'fixture:chwville' } } }))
         .then(() => requestChanges('chw'))
         .then(changes =>
           assertChangeIds(changes,
-              'org.couchdb.user:chw',
-              'fixture:user:chw',
-              'fixture:chwville',
-              'should-be-visible',
-              'should-be-visible-too')));
+            'org.couchdb.user:chw',
+            'fixture:user:chw',
+            'fixture:chwville',
+            'should-be-visible',
+            'should-be-visible-too')));
 
     it('should have no effect if not configured', () =>
       utils.saveDoc({ _id:'should-be-visible', type:'clinic', parent: { _id:'fixture:chwville' } })
@@ -872,11 +878,11 @@ describe('changes handler', () => {
         .then(() => requestChanges('chw'))
         .then(changes =>
           assertChangeIds(changes,
-              'org.couchdb.user:chw',
-              'fixture:user:chw',
-              'fixture:chwville',
-              'should-be-visible',
-              'should-also-be-visible')));
+            'org.couchdb.user:chw',
+            'fixture:user:chw',
+            'fixture:chwville',
+            'should-be-visible',
+            'should-also-be-visible')));
   });
 
   it('should not return reports about your place by someone above you in the hierarchy', () =>

@@ -183,13 +183,13 @@ const stubSkipped = (docs, filteredDocs, result) => {
   );
 };
 
-const interceptResponse = (req, res, response) => {
+const interceptResponse = (req, res, originalBody, response) => {
   response = JSON.parse(response);
 
   if (req.body.new_edits !== false && _.isArray(response)) {
     // CouchDB doesn't return results when `new_edits` parameter is `false`
     // The consensus is that the response array sequence should reflect the request array sequence.
-    response = stubSkipped(req.originalBody.docs, req.body.docs, response);
+    response = stubSkipped(originalBody.docs, req.body.docs, response);
   }
   res.write(JSON.stringify(response));
   res.end();
@@ -271,9 +271,9 @@ module.exports = {
       .then(filteredDocs => {
         // results received from CouchDB need to be ordered to maintain same sequence as original `docs` parameter
         // and forbidden docs stubs must be added
-        res.interceptResponse = _.partial(interceptResponse, req, res);
-        req.originalBody = { docs: req.body.docs };
+        res.interceptResponse = _.partial(interceptResponse, req, res, { docs: req.body.docs });
         req.body.docs = filteredDocs;
+        req.authorized = true;
         next();
       })
       .catch(err => serverUtils.serverError(err, req, res));

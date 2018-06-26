@@ -21,58 +21,63 @@ module.exports = {
     '_purge(/*)?'
   ],
 
-  // blocks offline users from accessing online-only endpoints
-  offlineUserFirewall: (req, res, next) => {
-    auth
+  // saves CouchDB session `userCtx` into `req` object for later use
+  // does not err when not logged in
+  getUserCtx: (req, res, next) => {
+    return auth
       .getUserCtx(req)
       .then(userCtx => {
-        if (!auth.isOnlineOnly(userCtx)) {
-          res.status(FIREWALL_ERROR.code);
-          return res.json(FIREWALL_ERROR);
-        }
+        req.userCtx = userCtx;
         next();
       })
-      .catch(next);
+      .catch(() => next());
+  },
+
+  // blocks unauthenticated requests from passing through
+  authenticated: (req, res, next) => {
+    if (!req.userCtx) {
+      return serverUtils.notLoggedIn(req, res);
+    }
+    next();
+  },
+
+  // blocks offline users from accessing online-only endpoints
+  offlineUserFirewall: (req, res, next) => {
+    if (!auth.isOnlineOnly(req.userCtx) && !req.authorized) {
+      res.status(FIREWALL_ERROR.code);
+      return res.json(FIREWALL_ERROR);
+    }
+    next();
   },
 
   // proxies all online users requests to CouchDB
-  // saves offline user context in the request object to be used later
+  // saves offline user settings in the request object to be used later
   onlineUserProxy: (proxy, req, res, next) => {
-    return auth
-      .getUserCtx(req)
-      .then(userCtx => {
-        if (auth.isOnlineOnly(userCtx)) {
-          return proxy.web(req, res);
-        }
+    if (auth.isOnlineOnly(req.userCtx)) {
+      return proxy.web(req, res);
+    }
 
-        return auth
-          .getUserSettings(userCtx)
-          .then(userCtx => {
-            req.userCtx = userCtx;
-            next();
-          });
-      })
-      .catch(() => serverUtils.notLoggedIn(req, res, false));
+    return auth
+      .getUserSettings(req.userCtx)
+      .then(userCtx => {
+        req.userCtx = userCtx;
+        next();
+      });
   },
 
   // online users requests pass through to the next route (other middleware in this stack is skipped)
-  // saves offline user context in the request object to be used later
+  // saves offline user settings in the request object to be used later
   // used for audited endpoints
   onlineUserPassThrough:(req, res, next) => {
-    return auth
-      .getUserCtx(req)
-      .then(userCtx => {
-        if (auth.isOnlineOnly(userCtx)) {
-          return next('route');
-        }
+    if (auth.isOnlineOnly(req.userCtx)) {
+      return next('route');
+    }
 
-        return auth
-          .getUserSettings(userCtx)
-          .then(userCtx => {
-            req.userCtx = userCtx;
-            next();
-          });
-      })
-      .catch(() => serverUtils.notLoggedIn(req, res, false));
+    return auth
+      .getUserSettings(req.userCtx)
+      .then(userCtx => {
+        req.userCtx = userCtx;
+        next();
+      });
   }
 };

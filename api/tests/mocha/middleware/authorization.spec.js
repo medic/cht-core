@@ -4,11 +4,10 @@ const middleware = require('../../../src/middleware/authorization');
 const auth = require('../../../src/auth');
 const serverUtils = require('../../../src/server-utils');
 
-const testReq = {};
-const testRes = {};
-
 let proxy,
-    next;
+    next,
+    testReq,
+    testRes;
 
 describe('Authorization middleware', () => {
   beforeEach(() => {
@@ -16,28 +15,57 @@ describe('Authorization middleware', () => {
     sinon.stub(auth, 'isOnlineOnly');
     sinon.stub(auth, 'getUserSettings');
     sinon.stub(serverUtils, 'notLoggedIn');
-    proxy = { web: sinon.stub() };
+    proxy = { web: sinon.stub().resolves() };
     next = sinon.stub().resolves();
-
+    testReq = {};
+    testRes = {};
   });
 
   afterEach(() => {
     sinon.restore();
   });
 
-  describe('Admin Proxy', () => {
+  describe('authenticated', () => {
+    it('blocks unauthenticated requests', () => {
+      middleware.authenticated(testReq, testRes, next);
+      next.callCount.should.equal(0);
+      serverUtils.notLoggedIn.callCount.should.equal(1);
+    });
+
+    it('forwards authenticated requests', () => {
+      testReq.userCtx = {};
+      middleware.authenticated(testReq, testRes, next);
+      next.callCount.should.equal(1);
+      serverUtils.notLoggedIn.callCount.should.equal(0);
+    });
+  });
+
+  describe('getUserCtx', () => {
     it('handles not logged in requests', () => {
       auth.getUserCtx.rejects();
       return middleware
-        .onlineUserProxy(proxy, testReq, testRes, next)
+        .getUserCtx(testReq, testRes, next)
         .then(() => {
-          serverUtils.notLoggedIn.callCount.should.equal(1);
-          next.callCount.should.equal(0);
+          next.callCount.should.equal(1);
+          (!!testReq.userCtx).should.equal(false);
         });
     });
 
-    it('it proxies the request for admins', () => {
+    it('saves CouchDB session as `userCtx` in the `req` object', () => {
       auth.getUserCtx.resolves({ name: 'user' });
+      return middleware
+        .getUserCtx(testReq, testRes, next)
+        .then(() => {
+          serverUtils.notLoggedIn.callCount.should.equal(0);
+          next.callCount.should.equal(1);
+          testReq.userCtx.should.deep.equal({ name: 'user' });
+        });
+    });
+  });
+
+  describe('Online Users Proxy', () => {
+    it('it proxies the request for online users', () => {
+      testReq.userCtx = { name: 'user' };
       auth.isOnlineOnly.withArgs({ name: 'user' }).returns(true);
 
       return middleware
@@ -51,8 +79,8 @@ describe('Authorization middleware', () => {
         });
     });
 
-    it('does not proxy requests for non admins' , () => {
-      auth.getUserCtx.resolves({ name: 'user' });
+    it('does not proxy requests for offline users' , () => {
+      testReq.userCtx = { name: 'user' };
       auth.isOnlineOnly.withArgs({ name: 'user' }).returns(false);
       auth.getUserSettings.resolves({ name: 'user', contact_id: 'a' });
 
@@ -67,7 +95,8 @@ describe('Authorization middleware', () => {
         });
     });
 
-    it('hydrates offline user doc, saves it in `req` and passes to next middleware', () => {
+    it('hydrates offline user_settings doc, saves it in `req` and forwards to next middleware', () => {
+      testReq.userCtx = { name: 'user' };
       auth.getUserCtx.resolves({ name: 'user' });
       auth.isOnlineOnly.withArgs({ name: 'user' }).returns(false);
       auth.getUserSettings.withArgs({ name: 'user' }).resolves({ name: 'user', contact_id: 'a' });
@@ -85,19 +114,9 @@ describe('Authorization middleware', () => {
     });
   });
 
-  describe('Admin Pass Through', () => {
-    it('handles not logged in requests', () => {
-      auth.getUserCtx.rejects();
-      return middleware
-        .onlineUserPassThrough(testReq, testRes, next)
-        .then(() => {
-          serverUtils.notLoggedIn.callCount.should.equal(1);
-          next.callCount.should.equal(0);
-        });
-    });
-
-    it('it sends admin requests to next route', () => {
-      auth.getUserCtx.resolves({ name: 'user' });
+  describe('Online User Pass Through', () => {
+    it('it sends online user requests to next route', () => {
+      testReq.userCtx = { name: 'user' };
       auth.isOnlineOnly.withArgs({ name: 'user' }).returns(true);
 
       return middleware
@@ -110,8 +129,8 @@ describe('Authorization middleware', () => {
         });
     });
 
-    it('hydrates offline user doc, saves it in `req` and passes to next middleware', () => {
-      auth.getUserCtx.resolves({ name: 'user' });
+    it('hydrates offline user_settings doc, saves it in `req` and forwards to next middleware', () => {
+      testReq.userCtx = { name: 'user' };
       auth.isOnlineOnly.withArgs({ name: 'user' }).returns(false);
       auth.getUserSettings.withArgs({ name: 'user' }).resolves({ name: 'user', contact_id: 'a' });
 

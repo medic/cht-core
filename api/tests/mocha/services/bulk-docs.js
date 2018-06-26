@@ -384,24 +384,24 @@ describe('Bulk Docs Service', function () {
     it('passes unchanged response if `new_edits` param is false', () => {
       testReq.body.new_edits = false;
 
-      service._interceptResponse(testReq, testRes, JSON.stringify(['my response']));
+      service._interceptResponse(testReq, testRes, { docs: [] }, JSON.stringify(['my response']));
       testRes.write.callCount.should.equal(1);
       testRes.write.args[0][0].should.equal(JSON.stringify(['my response']));
       testRes.end.callCount.should.equal(1);
     });
 
     it('passes unchanged response for malformed responses', () => {
-      testReq.originalBody = { docs: [{ _id: 1 }, { _id: 2 }] };
-      service._interceptResponse(testReq, testRes, JSON.stringify({ name: 'eddie' }));
+      const originalBody = { docs: [{ _id: 1 }, { _id: 2 }] };
+      service._interceptResponse(testReq, testRes, originalBody, JSON.stringify({ name: 'eddie' }));
       testRes.write.callCount.should.equal(1);
       testRes.write.args[0][0].should.equal(JSON.stringify({ name: 'eddie' }));
       testRes.end.callCount.should.equal(1);
     });
 
     it('fills for forbidden docs with stubs and preserves correct order', () => {
-      testReq.originalBody = { docs: [{ _id: 1 }, { _id: 2 }, { _id: 3 }, { _id: 4 }, { _id: 5 }] };
+      const originalBody = { docs: [{ _id: 1 }, { _id: 2 }, { _id: 3 }, { _id: 4 }, { _id: 5 }] };
       testReq.body = { docs: [{ _id: 5 }, { _id: 2 }] };
-      service._interceptResponse(testReq, testRes, JSON.stringify([{ id: 5, ok: true }, { id: 2, ok: true }]));
+      service._interceptResponse(testReq, testRes, originalBody, JSON.stringify([{ id: 5, ok: true }, { id: 2, ok: true }]));
 
       testRes.write.callCount.should.equal(1);
       testRes.write.args[0][0].should.equal(JSON.stringify([
@@ -554,12 +554,6 @@ describe('Bulk Docs Service', function () {
           { _id: 'fb1'}
         ]);
         testRes.interceptResponse.should.be.a('function');
-        testReq.originalBody.should.deep.equal({ docs: [
-            { _id: 'a'}, { _id: 'b' }, { _id: 'c' }, { _id: 'f' }, { _id: 'g' },
-            { _id: 'h' }, { name: 'a' }, { name: 'b' }, { _id: 'deleted' },
-            { _id: 'fb1' }, { _id: 'fb2' }
-          ]
-        });
 
         const response = [
           { id: 'c', ok: true },
