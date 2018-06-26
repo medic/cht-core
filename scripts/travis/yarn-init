@@ -1,6 +1,6 @@
 #!/bin/bash -eu
 
-if ! [[ "$USE_YARN" = "true" ]]; then
+if ! [[ "${USE_YARN-}" = "true" ]]; then
 	echo '[medic] skipping yarn-init'
 	exit 0
 fi
