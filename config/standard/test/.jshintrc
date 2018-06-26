@@ -1,3 +1,7 @@
 {
-  "esversion": 6
+  "esversion": 6,
+  "undef": true,
+  "unused": true,
+  "mocha": true,
+  "node": true
 }
