@@ -75,7 +75,6 @@ angular.module('inboxServices').factory('GetSubjectSummaries',
         });
     };
 
-
     var validateSubjects = function(summaries) {
       summaries.forEach(function(summary) {
         if (!summary.subject) {
@@ -143,12 +142,7 @@ angular.module('inboxServices').factory('GetSubjectSummaries',
         return $q.resolve(summaries);
       }
 
-      var promises = subjectIds.map(function(id) {
-        return LineageModelGenerator.reportSubject(id);
-      });
-
-      return $q
-        .all(promises)
+      return LineageModelGenerator.reportSubjects(subjectIds)
         .then(function(response) {
           return hydrateSubjectLineages(summaries, response);
         });
