@@ -5,7 +5,7 @@ describe('GetSubjectSummaries service', () => {
   let service,
       query,
       GetSummaries,
-      lineageModelGenerator;
+      LineageModelGenerator;
 
   const doc = { _id: 'result' };
   const lineage = [
@@ -17,17 +17,17 @@ describe('GetSubjectSummaries service', () => {
   beforeEach(() => {
     query = sinon.stub();
     GetSummaries = sinon.stub();
-    lineageModelGenerator = {
-      reportSubject: sinon.stub()
+    LineageModelGenerator = {
+      reportSubjects: sinon.stub().returns(
+        Promise.resolve([{ _id: 'lid', doc: doc, lineage: lineage }])
+      )
     };
-    lineageModelGenerator.reportSubject.returns(Promise.resolve({ _id: 'lid', doc: doc, lineage: lineage }));
-
     module('inboxApp');
     module($provide => {
       $provide.factory('DB', KarmaUtils.mockDB({ query: query }));
       $provide.value('$q', Q); // bypass $q so we don't have to digest
       $provide.value('GetSummaries', GetSummaries);
-      $provide.value('LineageModelGenerator', lineageModelGenerator);
+      $provide.value('LineageModelGenerator', LineageModelGenerator);
     });
     inject($injector => service = $injector.get('GetSubjectSummaries'));
   });
