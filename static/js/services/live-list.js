@@ -102,6 +102,16 @@ angular.module('inboxServices').factory('LiveListConfig',
         listItem: contacts_config.listItem,
       });
 
+      var getHeading = function(report) {
+        if (report.validSubject) {
+          return report.subject.value;
+        }
+        if (report.subject.name) {
+          return report.subject.name;
+        }
+        return $translate.instant('report.subject.unknown');
+      };
+
       var reports_config = {
         orderBy: function(r1, r2) {
           var lhs = r1 && r1.reported_date,
@@ -123,8 +133,7 @@ angular.module('inboxServices').factory('LiveListConfig',
           var form = _.findWhere($scope.forms, { code: report.form });
           scope.route = 'reports';
           scope.icon = form && form.icon;
-          scope.heading =
-            report.validSubject ? report.subject.value : $translate.instant('report.subject.unknown');
+          scope.heading = getHeading(report);
           scope.date = report.reported_date;
           scope.summary = form ? form.title : report.form;
           scope.showStatus = true;
