@@ -104,7 +104,10 @@ app.use(function(req, res, next) {
   next();
 });
 
-app.use(compression({ threshold: 0 }));
+// requires `req` header `Accept-Encoding` to be `gzip` or `deflate`
+// requires `res` `Content-Type` to be compressible (see https://github.com/jshttp/mime-db/blob/master/db.json)
+// default threshold is 1KB
+app.use(compression());
 
 // TODO: investigate blocking writes to _users from the outside. Reads maybe as well, though may be harder
 //       https://github.com/medic/medic-webapp/issues/4089
