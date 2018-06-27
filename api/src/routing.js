@@ -701,6 +701,11 @@ proxyForAuditing.on('proxyReq', function(proxyReq, req) {
 
 // intercept responses from filtered offline endpoints to fill in with forbidden docs stubs
 proxyForAuditing.on('proxyRes', (proxyRes, req, res) => {
+  // copy headers from proxyRes to res
+  if (!res.headersSent) {
+    _.each(proxyRes.headers, (value, header) => res.setHeader(header, value));
+  }
+
   if (res.interceptResponse) {
     let body = new Buffer('');
     proxyRes.on('data', data => body = Buffer.concat([body, data]));
