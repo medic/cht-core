@@ -1,4 +1,5 @@
 var _ = require('underscore');
+var RECURSION_LIMIT = 50;
 
 module.exports = function(Promise, DB) {
   var extractParentIds = function(currentParent) {
@@ -206,26 +207,6 @@ module.exports = function(Promise, DB) {
       });
   };
 
-  var checkForInfiniteRecursion = function(doc) {
-    var ids = [];
-
-    if (doc.type === 'data_record') {
-      if (!doc.contact || !doc.contact._id) {
-        return ;
-      }
-      doc = doc.contact;
-    }
-
-    while (doc) {
-      if (doc._id && ids.indexOf(doc._id) !== -1) {
-        throw new Error('Could not hydrate/minify ' + doc._id + ', possible parent recursion.');
-      } else if (doc._id) {
-        ids.push(doc._id);
-      }
-      doc = doc.parent;
-    }
-  };
-
   // for data_records, include the first-level contact.
   var collectParentIds = function(docs) {
     var ids = [];
@@ -307,7 +288,12 @@ module.exports = function(Promise, DB) {
         current = doc.contact;
       }
 
+      var guard = RECURSION_LIMIT;
       while (current) {
+        if (--guard === 0) {
+          throw Error('Could not hydrate/minify ' + doc._id + ', possible parent recursion.');
+        }
+
         if (current.parent && current.parent._id) {
           var parentDoc = findById(current.parent._id, parents);
           if (parentDoc) {
@@ -358,8 +344,6 @@ module.exports = function(Promise, DB) {
       return Promise.resolve([]);
     }
 
-    docs.forEach(checkForInfiniteRecursion);
-
     var parentIds = collectParentIds(docs);
     var hydratedDocs = JSON.parse(JSON.stringify(docs));
     return fetchDocs(parentIds)
@@ -382,11 +366,14 @@ module.exports = function(Promise, DB) {
       return parent;
     }
 
-    checkForInfiniteRecursion(parent);
-
+    var docId = parent._id;
     var result = { _id: parent._id };
     var minified = result;
+    var guard = RECURSION_LIMIT;
     while (parent.parent && parent.parent._id) {
+      if (--guard === 0) {
+        throw Error('Could not hydrate/minify ' + docId + ', possible parent recursion.');
+      }
       minified.parent = { _id: parent.parent._id };
       minified = minified.parent;
       parent = parent.parent;

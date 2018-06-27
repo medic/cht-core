@@ -5,10 +5,37 @@ const cloneDeep = require('lodash/cloneDeep');
 
 let db;
 
+const child_is_great_grandparent = {
+  _id: 'child_is_great_grandparent',
+  type: 'person',
+  parent: { _id: 'cigg_parent' },
+  reported_date: 5
+};
+const cigg_parent = {
+  _id: 'cigg_parent',
+  type: 'person',
+  parent: { _id: 'cigg_grandparent' },
+  reported_date: 5
+};
+const cigg_grandparent = {
+  _id: 'cigg_grandparent',
+  type: 'person',
+  parent: { _id: 'child_is_great_grandparent' },
+  reported_date: 5
+};
 const child_is_parent = {
   _id: 'child_is_parent',
   type: 'person',
   parent: { _id: 'child_is_parent' },
+  reported_date: 5
+};
+const child_is_grandparent = {
+  _id: 'child_is_grandparent',
+  type: 'person',
+  parent: {
+    _id: 'something_else',
+    parent: { _id: 'child_is_grandparent' }
+  },
   reported_date: 5
 };
 const circular_areaId = 'circular_area';
@@ -212,7 +239,11 @@ const sms_doc = {
 };
 
 const fixtures = [
+  child_is_great_grandparent,
+  cigg_parent,
+  cigg_grandparent,
   child_is_parent,
+  child_is_grandparent,
   circular_area,
   circular_chw,
   circular_report,
@@ -528,10 +559,22 @@ describe('Lineage', function() {
         });
     });
 
-    it('errors out on potential infinite recursion', function() {
+    it('processing a doc with itself as a parent errors out', function() {
       const docs = [ cloneDeep(child_is_parent) ];
 
-      chai.expect(() => lineage.hydrateDocs(docs)).to.throw();
+      chai.expect(lineage.hydrateDocs(docs)).to.be.rejected;
+    });
+
+    it('processing a doc with itself as a grandparent errors out', function() {
+      const docs = [ cloneDeep(child_is_grandparent) ];
+
+      chai.expect(lineage.hydrateDocs(docs)).to.be.rejected;
+    });
+
+    it('processing a doc with itself as a grandparent referenced through intermediate docs errors out', function() {
+      const docs = [ cloneDeep(child_is_great_grandparent), cloneDeep(cigg_parent), cloneDeep(cigg_grandparent) ];
+
+      chai.expect(lineage.hydrateDocs(docs)).to.be.rejected;
     });
   });
 });

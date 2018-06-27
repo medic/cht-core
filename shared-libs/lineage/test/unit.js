@@ -287,13 +287,9 @@ describe('Lineage', function() {
     it('errors out on potential infinite recursion', function() {
       const doc = {
         _id: 'same_id',
-        type: 'clinic',
-        parent: {
-          _id: 'same_id',
-          type: 'clinic',
-          parent: { _id: 'same_id' }
-        }
+        type: 'clinic'
       };
+      doc.parent = doc;
 
       chai.expect(() => lineage.minify(doc)).to.throw();
     });
