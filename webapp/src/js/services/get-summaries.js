@@ -9,7 +9,7 @@ angular.module('inboxServices').factory('GetSummaries',
     'use strict';
     'ngInject';
 
-    // WARNING: This is a copy of the medic-client/doc_summaries_by_id view
+    // WARNING: This is a copy of the medic/doc_summaries_by_id view
     // with some minor modifications and needs to be kept in sync until
     // this workaround is no longer needed.
     // https://github.com/medic/medic-webapp/issues/4666
@@ -107,7 +107,7 @@ angular.module('inboxServices').factory('GetSummaries',
     };
 
     var getRemote = function(ids) {
-      return DB().query('medic-client/doc_summaries_by_id', { keys: ids }).then(function(response) {
+      return DB().query('medic/doc_summaries_by_id', { keys: ids }).then(function(response) {
          return _.map(response.rows, function(row) {
           row.value._id = row.id;
           return row.value;
