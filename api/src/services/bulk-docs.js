@@ -191,8 +191,8 @@ const interceptResponse = (req, res, originalBody, response) => {
     // The consensus is that the response array sequence should reflect the request array sequence.
     response = stubSkipped(originalBody.docs, req.body.docs, response);
   }
-  res.write(JSON.stringify(response));
-  res.end();
+
+  res.send(JSON.stringify(response));
 };
 
 const requestError = reason => ({
@@ -252,8 +252,7 @@ module.exports = {
 
     const error = invalidRequest(req);
     if (error) {
-      res.write(JSON.stringify(error));
-      return res.end();
+      return res.send(JSON.stringify(error));
     }
 
     let authorizationContext;
