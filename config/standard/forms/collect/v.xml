@@ -1,0 +1,54 @@
+<?xml version="1.0"?>
+<h:html xmlns="http://www.w3.org/2002/xforms" xmlns:ev="http://www.w3.org/2001/xml-events" xmlns:h="http://www.w3.org/1999/xhtml" xmlns:jr="http://openrosa.org/javarosa" xmlns:orx="http://openrosa.org/xforms" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+  <h:head>
+    <h:title>Clinic Visit (V)</h:title>
+    <model>
+      <itext>
+        <translation lang="Bahasa Indonesia (Indonesian)">
+          <text id="/v/review:label">
+            <value>Mengirimkan laporan kunjungan untuk ID <output value=" /v/id "/></value>
+          </text>
+          <text id="/v/id:label">
+            <value>Pasien ID</value>
+          </text>
+        </translation>
+        <translation lang="हिन्दी (Hindi)">
+          <text id="/v/review:label">
+            <value>ID <output value=" /v/id "/> के लिए जांच की रिपोर्ट भेजें</value>
+          </text>
+          <text id="/v/id:label">
+            <value>मरीज का ID</value>
+          </text>
+        </translation>
+        <translation default="true()" lang="English">
+          <text id="/v/review:label">
+            <value>Submitting visit report for ID <output value=" /v/id "/></value>
+          </text>
+          <text id="/v/id:label">
+            <value>Patient ID</value>
+          </text>
+        </translation>
+      </itext>
+      <instance>
+        <v delimiter="#" id="v" prefix="J1!v!" version="2017-09-14_18-20">
+          <id/>
+          <review/>
+          <meta>
+            <instanceID/>
+          </meta>
+        </v>
+      </instance>
+      <bind nodeset="/v/id" required="true()" type="string"/>
+      <bind nodeset="/v/review" readonly="true()" type="string"/>
+      <bind calculate="concat('uuid:', uuid())" nodeset="/v/meta/instanceID" readonly="true()" type="string"/>
+    </model>
+  </h:head>
+  <h:body class="pages">
+    <input appearance="numbers" ref="/v/id">
+      <label ref="jr:itext('/v/id:label')"/>
+    </input>
+    <input ref="/v/review">
+      <label ref="jr:itext('/v/review:label')"/>
+    </input>
+  </h:body>
+</h:html>
