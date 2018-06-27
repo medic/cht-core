@@ -1,0 +1,13 @@
+#!/bin/bash -eu
+
+if ! [[ "${USE_YARN-}" = "true" ]]; then
+	echo '[medic] skipping yarn-init'
+	exit 0
+fi
+
+yarn -v
+yarn install
+yarn list || true
+yarn global add grunt-cli --ignore-engines
+cd shared-libs/phone-number && yarn install && cd ../..
+node --stack_size=10000 `which grunt` ci-build
