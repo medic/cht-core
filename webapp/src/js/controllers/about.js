@@ -13,7 +13,7 @@ angular.module('inboxControllers').controller('AboutCtrl',
     $scope.url = window.location.hostname;
     $scope.userCtx = Session.userCtx();
 
-    DB({remote: true}).allDocs({keys: ['_design/medic']})
+    DB({remote: true}).allDocs({ key: '_design/medic' })
       .then(function(info) {
         $scope.ddocVersion = info.rows[0].value.rev.split('-')[0];
       })
@@ -22,7 +22,7 @@ angular.module('inboxControllers').controller('AboutCtrl',
         $scope.ddocVersion = 'offline'; // TODO translate?
       });
 
-    DB().allDocs({keys: ['_design/medic-client']})
+    DB().allDocs({ key: '_design/medic-client' })
       .then(function(info) {
         $scope.clientDdocVersion = info.rows[0].value.rev.split('-')[0];
       })

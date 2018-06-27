@@ -69,12 +69,12 @@ angular.module('inboxServices').factory('SendMessage',
     };
 
     var hydrate = function(recipients) {
-     return DB().allDocs({
-      include_docs: true,
-      keys: _.pluck(_.pluck(recipients, 'doc'), '_id')
-     }).then(function(results) {
-      return results.rows;
-     });
+      var ids = recipients.map(function(recipient) {
+        return recipient.doc._id;
+      });
+      return DB().allDocs({ include_docs: true, keys: ids }).then(function(results) {
+        return results.rows;
+      });
     };
 
     var resolvePhoneNumbers = function(recipients) {
