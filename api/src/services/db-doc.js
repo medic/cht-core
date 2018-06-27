@@ -16,11 +16,12 @@ const getStoredDoc = (req, isAttachment) => {
     return Promise.resolve(false);
   }
 
-  const options = {};
-  // get requested `rev` for `db-doc` GET requests and any `attachment` requests
+  let options = {};
+  // use `req.query` params for `db-doc` GET, as we will return the result directly if allowed
+  // use `req.query.rev` for attachment requests
   // `db-doc` PUT and DELETE requests will require last `rev` to be allowed
-  if ((req.method === 'GET' || isAttachment) && req.query && req.query.rev) {
-    options.rev = req.query.rev;
+  if ((req.method === 'GET' || isAttachment) && req.query) {
+    options = req.query;
   }
 
   return db.medic
@@ -106,6 +107,11 @@ module.exports = {
             !authorization.alwaysAllowCreate(requestDoc) &&
             !authorization.allowedDoc(requestDoc._id, authorizationContext, authorization.getViewResults(requestDoc))) {
           return requestError(res);
+        }
+
+        if (req.method === 'GET' && !isAttachment) {
+          // we have already requested the doc with same query options
+          return res.send(JSON.stringify(storedDoc));
         }
 
         next();

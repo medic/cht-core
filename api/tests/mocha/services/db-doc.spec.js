@@ -64,18 +64,26 @@ describe('db-doc service', () => {
       });
     });
 
-    it('queries the database with request docId and rev when request method is GET', () => {
-      testReq = { params: { docId: 'id' }, query: { rev: '1-rev' }, method: 'GET' };
+    it('queries the database with request docId and req.query params when request method is GET', () => {
+      testReq = {
+        params: { docId: 'id' },
+        query: { rev: '1-rev', revs: true, open_revs: true, revs_info: true },
+        method: 'GET'
+      };
       db.medic.get.resolves({ _id: 'id', _rev: '1-rev' });
       return service._getStoredDoc(testReq).then(result => {
         db.medic.get.callCount.should.equal(1);
-        db.medic.get.args[0].should.deep.equal(['id', { rev: '1-rev' }]);
+        db.medic.get.args[0].should.deep.equal(['id', testReq.query]);
         result.should.deep.equal({ _id: 'id', _rev: '1-rev' });
       });
     });
 
-    it('queries the database with docId and no rev when request method is not GET', () => {
-      testReq = { params: { docId: 'id' }, query: { rev: '1-rev' }, method: 'POST' };
+    it('queries the database with docId and no options when request method is not GET', () => {
+      testReq = {
+        params: { docId: 'id' },
+        query: { rev: '1-rev', revs: true, open_revs: true, revs_info: true },
+        method: 'POST'
+      };
       db.medic.get.resolves({ _id: 'id', _rev: '1-rev' });
       return service._getStoredDoc(testReq).then(result => {
         db.medic.get.callCount.should.equal(1);
@@ -204,7 +212,6 @@ describe('db-doc service', () => {
     });
 
     it('passes to next route when access is granted', () => {
-      testReq.method = 'GET';
       authorization.allowedDoc.returns(true);
 
       testReq.userCtx = { name: 'user' };
@@ -298,16 +305,18 @@ describe('db-doc service', () => {
           });
       });
 
-      it('proxies for allowed existent doc', () => {
+      it('responds for allowed existent doc', () => {
+        testReq.method = 'GET';
         db.medic.get.resolves({ _id: 'id' });
         authorization.allowedDoc.returns(true);
 
         return service
           .filterOfflineRequest(testReq, testRes, next)
           .then(() => {
-            next.callCount.should.equal(1);
-            testRes.send.callCount.should.equal(0);
+            next.callCount.should.equal(0);
             authorization.allowedDoc.callCount.should.equal(1);
+            testRes.send.callCount.should.equal(1);
+            testRes.send.args[0].should.deep.equal([ JSON.stringify({ _id: 'id' }) ]);
           });
       });
     });

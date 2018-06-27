@@ -33,7 +33,7 @@ describe('Authorization middleware', () => {
         .then(() => {
           next.callCount.should.equal(1);
           (!!testReq.userCtx).should.equal(false);
-          testReq.authErr.should.equal({ soome: 'error' });
+          testReq.authErr.should.deep.equal({ some: 'error' });
           serverUtils.notLoggedIn.callCount.should.equal(0);
         });
     });
