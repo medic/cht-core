@@ -213,7 +213,7 @@ const jsonHouseholdBis = Object.assign({}, jsonHousehold, {
 
 describe('doc_summaries_by_id view', () => {
   it('indexes name, phone, type, contact, lineage, simprints, dod for non-data-records', () => {
-    const map = utils.loadView('medic-client', 'doc_summaries_by_id');
+    const map = utils.loadView('medic', 'doc_summaries_by_id');
 
     const emitted = map(person, true) && map(personBis, true);
     assert.deepEqual(emitted[0], {
@@ -245,7 +245,7 @@ describe('doc_summaries_by_id view', () => {
   });
 
   it('indexes data-records summary and subject', () => {
-    const map = utils.loadView('medic-client', 'doc_summaries_by_id');
+    const map = utils.loadView('medic', 'doc_summaries_by_id');
 
     const reportsList = [
       householdVisit,
