@@ -57,10 +57,13 @@ module.exports = function(db, audit, callback) {
                         if (err) {
                             return cb(err);
                         }
+                        let updated = false;
                         // set task to pending for gateway to pick up
                         doc.scheduled_tasks.forEach(task => {
                             if (task.due === obj.key) {
-                                utils.setTaskState(task, 'pending');
+                                if (utils.setTaskState(task, 'pending')) {
+                                    updated = true;
+                                }
                                 if (!task.messages) {
                                     const content = {
                                         translationKey: task.message_key,
@@ -74,9 +77,15 @@ module.exports = function(db, audit, callback) {
                                         task.recipient,
                                         context
                                     );
+                                    updated = true;
                                 }
                             }
                         });
+
+                        if (!updated) {
+                            return cb();
+                        }
+
                         lineage.minify(doc);
                         audit.saveDoc(doc, cb);
                     });
