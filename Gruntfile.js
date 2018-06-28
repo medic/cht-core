@@ -164,7 +164,8 @@ module.exports = function(grunt) {
           'webapp/tests/karma/q.js',
           '**/node_modules/**',
           'sentinel/src/lib/pupil/**',
-          'build/**'
+          'build/**',
+          'config/**',
         ]
       },
       all: [
@@ -684,7 +685,8 @@ module.exports = function(grunt) {
           'api/tests/**/*.js',
           'webapp/tests/**/*.js',
           'sentinel/tests/**/*.js',
-          'admin/tests/**/*.js'
+          'admin/tests/**/*.js',
+          'config/*/test/**/*.spec.js',
         ] } ],
         options: {
           // in Mocha, .only() is used

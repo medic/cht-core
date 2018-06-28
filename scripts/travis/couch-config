@@ -1,0 +1,10 @@
+#!/bin/bash -eu
+
+if ! [[ "${USE_COUCHDB-}" = "true" ]]; then
+	echo '[medic] skipping couch-config'
+	exit 0
+fi
+
+# Create couchdb system tables (this has to be done manually on couchdb 2.0)
+curl -X PUT 'http://127.0.0.1:5984/{_users,_replicator,_global_changes,_metadata,admins}'
+curl -X PUT 'localhost:5984/medic'
