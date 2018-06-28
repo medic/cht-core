@@ -126,7 +126,7 @@ exports['updateMessageTaskStates takes a collection of state changes and saves i
   ]});
 
   const bulk = sinon.stub(db.medic, 'bulk').callsArgWith(1, null, []);
-  const setTaskState = sinon.stub(taskUtils, 'setTaskState');
+  const setTaskState = sinon.stub(taskUtils, 'setTaskState').returns(true);
 
   controller.updateMessageTaskStates([
     {
@@ -255,6 +255,100 @@ exports['updateMessageTaskStates re-applies changes if it errored'] = test => {
     test.equal(bulk.args[0][0].docs[1]._id, 'testDoc2');
     test.equal(bulk.args[1][0].docs.length, 1);
     test.equal(bulk.args[1][0].docs[0]._id, 'testDoc2');
+
+    test.done();
+  });
+};
+
+exports['does not save docs which have not received any updates'] = test => {
+  sinon.stub(db.medic, 'view').callsArgWith(3, null, {rows: [
+      {id: 'testMessageId1'},
+      {id: 'testMessageId2'},
+      {id: 'testMessageId3'},
+      {id: 'testMessageId4'},
+      {id: 'testMessageId5'},
+      {id: 'testMessageId6'}
+    ]});
+
+  sinon.stub(db.medic, 'fetch').callsArgWith(1, null, {rows: [
+      {
+        doc: {
+          _id: 'testDoc',
+          tasks: [{
+            messages: [{
+              uuid: 'testMessageId1'
+            }]
+          }],
+          scheduled_tasks: [{
+            messages: [{
+              uuid: 'testMessageId2'
+            }]
+          }]
+        }
+      },
+      {
+        doc: {
+          _id: 'testDoc2',
+          tasks: [{
+            messages: [{
+              uuid: 'testMessageId3',
+            }]
+          }],
+          scheduled_tasks: [{
+            messages: [{
+              uuid: 'testMessageId4'
+            }]
+          }]
+        }
+      },
+      {
+        doc: {
+          _id: 'testDoc3',
+          tasks: [{
+            messages: [{
+              uuid: 'testMessageId5',
+            }]
+          }],
+          scheduled_tasks: [{
+            messages: [{
+              uuid: 'testMessageId6'
+            }]
+          }]
+        }
+      }
+    ]});
+
+  const bulk = sinon.stub(db.medic, 'bulk').callsArgWith(1, null, []);
+  const setTaskState = sinon.stub(taskUtils, 'setTaskState');
+  setTaskState
+    .withArgs(sinon.match({ messages: [{ uuid: 'testMessageId1' }]})).returns(true)   //testDoc
+    .withArgs(sinon.match({ messages: [{ uuid: 'testMessageId2' }]})).returns(false)  //testDoc
+    .withArgs(sinon.match({ messages: [{ uuid: 'testMessageId3' }]})).returns(false)  //testDoc2
+    .withArgs(sinon.match({ messages: [{ uuid: 'testMessageId4' }]})).returns(true)   //testDoc2
+    .withArgs(sinon.match({ messages: [{ uuid: 'testMessageId5' }]})).returns(false)  //testDoc3
+    .withArgs(sinon.match({ messages: [{ uuid: 'testMessageId6' }]})).returns(false); //testDoc3
+
+  controller.updateMessageTaskStates([
+    { messageId: 'testMessageId1', state: 'state' },
+    { messageId: 'testMessageId2', state: 'state' },
+    { messageId: 'testMessageId3', state: 'state' },
+    { messageId: 'testMessageId4', state: 'state' },
+    { messageId: 'testMessageId5', state: 'state' },
+    { messageId: 'testMessageId6', state: 'state' }
+  ], (err, result) => {
+    test.equal(err, null);
+    test.deepEqual(result, {success: true});
+    test.equal(setTaskState.callCount, 6);
+    test.deepEqual(setTaskState.args[0], [{ messages: [{uuid: 'testMessageId1'}]}, 'state', undefined]);
+    test.deepEqual(setTaskState.args[1], [{ messages: [{uuid: 'testMessageId2'}]}, 'state', undefined]);
+    test.deepEqual(setTaskState.args[2], [{ messages: [{uuid: 'testMessageId3'}]}, 'state', undefined]);
+    test.deepEqual(setTaskState.args[3], [{ messages: [{uuid: 'testMessageId4'}]}, 'state', undefined]);
+    test.deepEqual(setTaskState.args[4], [{ messages: [{uuid: 'testMessageId5'}]}, 'state', undefined]);
+    test.deepEqual(setTaskState.args[5], [{ messages: [{uuid: 'testMessageId6'}]}, 'state', undefined]);
+
+    test.equal(bulk.args[0][0].docs.length, 2);
+    test.equal(bulk.args[0][0].docs[0]._id, 'testDoc');
+    test.equal(bulk.args[0][0].docs[1]._id, 'testDoc2');
 
     test.done();
   });
