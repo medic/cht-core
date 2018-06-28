@@ -54,8 +54,9 @@ const applyTaskStateChangesToDocs = (taskStateChanges, docs) => {
       return console.error(`Message not found: ${taskStateChange.messageId}`);
     }
 
-    fillTaskStateChangeByDocId(taskStateChange, docId);
-    taskUtils.setTaskState(task, taskStateChange.state, taskStateChange.details);
+    if (taskUtils.setTaskState(task, taskStateChange.state, taskStateChange.details)) {
+      fillTaskStateChangeByDocId(taskStateChange, docId);
+    }
   });
 
   return taskStateChangesByDocId;
@@ -139,9 +140,10 @@ module.exports = {
       const idsToFetch = _.uniq(_.pluck(taskMessageResults.rows, 'id'));
 
       db.medic.fetch({keys: idsToFetch}, (err, docResults) => {
-        const docs = _.pluck(docResults.rows, 'doc');
+        let docs = _.pluck(docResults.rows, 'doc');
 
         const stateChangesByDocId = applyTaskStateChangesToDocs(taskStateChanges, docs);
+        docs = docs.filter(doc => stateChangesByDocId[doc._id] && stateChangesByDocId[doc._id].length);
 
         db.medic.bulk({docs: docs}, (err, results) => {
           if (err) {
