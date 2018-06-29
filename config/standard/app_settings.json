@@ -3275,56 +3275,17 @@
     },
     "messages": [
       {
-        "message": [
-          {
-            "content": "No further notifications regarding {{patient_name}} will be sent until you submit 'ON {{patient_id}}'.{{#chw_sms}} {{chw_sms}}{{/chw_sms}}",
-            "locale": "en"
-          },
-          {
-            "content": "आगे {{patient_name}} से संबंधित कोई भी संदेश नहीं भेजा जाएगा जब तक की आप 'ऑन {{patient_id}}' संदेश नहीं भेजते हैं | {{#chw_sms}} {{chw_sms}}{{/chw_sms}} ",
-            "locale": "hi"
-          },
-          {
-            "content": "Tidak ada pemberitahuan lebih lanjut mengenai {{patient_name}} akan dikirim sampai Anda submit 'ON {{patient_id}}'.{{#chw_sms}} {{chw_sms}}{{/chw_sms}}",
-            "locale": "id"
-          }
-        ],
+        "translation_key": "messages.off.report_accepted",
         "event_type": "on_mute",
         "recipient": "reporting_unit"
       },
       {
-        "message": [
-          {
-            "content": "Notifications for {{patient_name}} ({{patient_id}}) have been reactivated.{{#chw_sms}} {{chw_sms}}{{/chw_sms}}",
-            "locale": "en"
-          },
-          {
-            "content": "{{patient_name}} ({{patient_id}}) के लिए सूचनाए फिर से शुरू की गई है | {{#chw_sms}} {{chw_sms}}{{/chw_sms}}",
-            "locale": "hi"
-          },
-          {
-            "content": "Pemberitahuan untuk {{patient_name}} ({{patient_id}}) telah diaktifkan kembali. {{#chw_sms}} {{chw_sms}}{{/chw_sms}}",
-            "locale": "id"
-          }
-        ],
+        "translation_key": "messages.on.report_accepted",
         "event_type": "on_unmute",
         "recipient": "reporting_unit"
       },
       {
-        "message": [
-          {
-            "content": "No person with ID number '{{patient_id}}' found. Verify the ID and resend the message.",
-            "locale": "en"
-          },
-          {
-            "content": "कोई भी व्यक्ति ID नंबर '{{patient_id}}' के साथ नहीं पाया गया | ID को जाँचें और फिर से संदेश भेजें |",
-            "locale": "hi"
-          },
-          {
-            "content": "Tidak ada orang dengan nomor ID '{{patient_id}}' yang ditemukan. Verifikasi ID dan mengirim ulang pesan.",
-            "locale": "id"
-          }
-        ],
+        "translation_key": "generic.registration_not_found",
         "event_type": "patient_not_found",
         "recipient": "reporting_unit"
       }
