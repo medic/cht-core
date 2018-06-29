@@ -283,6 +283,16 @@ describe('Lineage', function() {
       // then
       chai.expect(actual).to.deep.equal(expected);
     });
+
+    it('errors out on potential infinite recursion', function() {
+      const doc = {
+        _id: 'same_id',
+        type: 'clinic'
+      };
+      doc.parent = doc;
+
+      chai.expect(() => lineage.minify(doc)).to.throw();
+    });
   });
 
   describe('hydrateDocs', function() {

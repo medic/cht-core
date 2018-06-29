@@ -5,6 +5,39 @@ const cloneDeep = require('lodash/cloneDeep');
 
 let db;
 
+const child_is_great_grandparent = {
+  _id: 'child_is_great_grandparent',
+  type: 'person',
+  parent: { _id: 'cigg_parent' },
+  reported_date: 5
+};
+const cigg_parent = {
+  _id: 'cigg_parent',
+  type: 'person',
+  parent: { _id: 'cigg_grandparent' },
+  reported_date: 5
+};
+const cigg_grandparent = {
+  _id: 'cigg_grandparent',
+  type: 'person',
+  parent: { _id: 'child_is_great_grandparent' },
+  reported_date: 5
+};
+const child_is_parent = {
+  _id: 'child_is_parent',
+  type: 'person',
+  parent: { _id: 'child_is_parent' },
+  reported_date: 5
+};
+const child_is_grandparent = {
+  _id: 'child_is_grandparent',
+  type: 'person',
+  parent: {
+    _id: 'something_else',
+    parent: { _id: 'child_is_grandparent' }
+  },
+  reported_date: 5
+};
 const circular_areaId = 'circular_area';
 const circular_chw = {
   _id: 'circular_chw',
@@ -206,6 +239,11 @@ const sms_doc = {
 };
 
 const fixtures = [
+  child_is_great_grandparent,
+  cigg_parent,
+  cigg_grandparent,
+  child_is_parent,
+  child_is_grandparent,
   circular_area,
   circular_chw,
   circular_report,
@@ -283,6 +321,16 @@ describe('Lineage', function() {
         //We get all parent info for each doc (_rev, name, etc)
         chai.expect(result[0][0].name).to.equal(one_parent.name);
         chai.expect(result[0][1].name).to.equal(dummyDoc.name);
+      });
+    });
+  });
+
+  describe('fetchContacts', function() {
+    it('clones any reused contacts', function() {
+      const lineageDocs = [ circular_chw, circular_area ];
+      return lineage.fetchContacts(lineageDocs).then(result => {
+        chai.expect(result[0]._id).to.equal(circular_chw._id);
+        chai.expect(result[0]).to.not.equal(circular_chw);
       });
     });
   });
@@ -509,6 +557,24 @@ describe('Lineage', function() {
           chai.expect(hydratedReport).excluding('_rev').to.deep.equal(report);
           chai.expect(hydratedPlace).excluding('_rev').to.deep.equal(place);
         });
+    });
+
+    it('processing a doc with itself as a parent errors out', function() {
+      const docs = [ cloneDeep(child_is_parent) ];
+
+      chai.expect(lineage.hydrateDocs(docs)).to.be.rejected;
+    });
+
+    it('processing a doc with itself as a grandparent errors out', function() {
+      const docs = [ cloneDeep(child_is_grandparent) ];
+
+      chai.expect(lineage.hydrateDocs(docs)).to.be.rejected;
+    });
+
+    it('processing a doc with itself as a grandparent referenced through intermediate docs errors out', function() {
+      const docs = [ cloneDeep(child_is_great_grandparent), cloneDeep(cigg_parent), cloneDeep(cigg_grandparent) ];
+
+      chai.expect(lineage.hydrateDocs(docs)).to.be.rejected;
     });
   });
 });

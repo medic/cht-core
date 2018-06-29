@@ -1,4 +1,5 @@
 var _ = require('underscore');
+var RECURSION_LIMIT = 50;
 
 module.exports = function(Promise, DB) {
   var extractParentIds = function(currentParent) {
@@ -287,7 +288,12 @@ module.exports = function(Promise, DB) {
         current = doc.contact;
       }
 
+      var guard = RECURSION_LIMIT;
       while (current) {
+        if (--guard === 0) {
+          throw Error('Could not hydrate/minify ' + doc._id + ', possible parent recursion.');
+        }
+
         if (current.parent && current.parent._id) {
           var parentDoc = findById(current.parent._id, parents);
           if (parentDoc) {
@@ -337,6 +343,7 @@ module.exports = function(Promise, DB) {
     if (!docs.length) {
       return Promise.resolve([]);
     }
+
     var parentIds = collectParentIds(docs);
     var hydratedDocs = JSON.parse(JSON.stringify(docs));
     return fetchDocs(parentIds)
@@ -359,9 +366,14 @@ module.exports = function(Promise, DB) {
       return parent;
     }
 
+    var docId = parent._id;
     var result = { _id: parent._id };
     var minified = result;
+    var guard = RECURSION_LIMIT;
     while (parent.parent && parent.parent._id) {
+      if (--guard === 0) {
+        throw Error('Could not hydrate/minify ' + docId + ', possible parent recursion.');
+      }
       minified.parent = { _id: parent.parent._id };
       minified = minified.parent;
       parent = parent.parent;
