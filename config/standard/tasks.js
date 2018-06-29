@@ -1,6 +1,5 @@
 [
   {
-    name: 'pregnancy-danger-sign',
     icon: 'mother-child',
     title: [ { locale:'en', content:'Pregnancy visit needed' } ],
     appliesToForms: [ 'P', 'pregnancy' ],
@@ -13,8 +12,8 @@
     actions: [ { form:'pregnancy_visit' } ],
     events: [ {
       id: 'pregnancy-danger-sign',
-      days:0, start:0, end:6,
-      dueDate: function(r, event) { return new Date(Utils.addDate(new Date(Utils.getMostRecentTimestamp(c.reports, 'F')), event.days)); },
+      start:0, end:6,
+      dueDate: function() { return new Date(Utils.getMostRecentTimestamp(c.reports, 'F')); },
     } ],
     priority: {
       level: 'high',
@@ -31,7 +30,6 @@
 
   // Attach the missing birth schedule to the last scheduled SMS
   {
-    name: 'pregnancy-missing-birth',
     icon: 'mother-child',
     title: [ { locale: 'en', content: 'Missing birth report' } ],
     appliesToForms: [ 'P', 'pregnancy' ],
@@ -39,8 +37,8 @@
     actions: [ { form:'delivery' } ],
     events: [ {
       id: 'pregnancy-missing-birth',
-      days:7, start:1, end:13,
-      dueDate: function(r, event) { return new Date(Utils.addDate(new Date(r.scheduled_tasks[r.scheduled_tasks.length-1].due), event.days)); },
+      start:1, end:13,
+      dueDate: function(r) { return Utils.addDate(new Date(r.scheduled_tasks[r.scheduled_tasks.length-1].due), 7); },
     } ],
     priority: function(c, r) {
       if(isHighRiskPregnancy(c, r)) {
@@ -67,7 +65,6 @@
   // The group needing Birth Report task is now in a separate schedule, which could have the same group number... so check the type as well.
   // Be mindful of overflow when peaking ahead!
   {
-    name: 'pregnancy-missing-visit',
     icon: 'pregnancy-1',
     title: [ { locale:'en', content:'Missing pregnancy visit' } ],
     appliesToForms: [ 'P', 'pregnancy' ],
@@ -100,7 +97,6 @@
 
   // PNC TASK 1: If a home delivery, needs clinic tasks
   {
-    name: 'postnatal-home-birth',
     icon: 'mother-child',
     title: [ { locale:'en', content:'Postnatal visit needed' } ],
     appliesToForms: [ 'D', 'delivery' ],
@@ -131,7 +127,6 @@
 
   // PNC TASK 2: if a F flag sent in 42 days since delivery needs clinic task
   {
-    name: 'postnatal-danger-sign',
     icon: 'mother-child',
     title: [ { locale: 'en', content: 'Postnatal visit needed' } ],
     appliesToForms: [ 'D', 'delivery' ],
@@ -144,8 +139,8 @@
     actions: [ { form:'postnatal_visit' } ],
     events: [ {
       id: 'postnatal-danger-sign',
-      days:0, start:0, end:6,
-      dueDate: function(r, event) { return new Date(Utils.addDate(new Date(Utils.getMostRecentTimestamp(c.reports, 'F')), event.days)); },
+      start:0, end:6,
+      dueDate: function() { return new Date(Utils.getMostRecentTimestamp(c.reports, 'F')); },
     } ],
     priority: {
       level: 'high',
@@ -164,7 +159,6 @@
   // PNC TASK 3: Assign a missing visit schedule to last SMS of each group
   // Associate tasks to the last message of each group. Be mindful of overflow when peaking ahead!
   {
-    name: 'postnatal-missing-visit',
     icon: 'mother-child',
     title: [ { locale:'en', content:'Missing postnatal visit' } ],
     appliesToForms: [ 'D', 'delivery' ],
@@ -201,7 +195,6 @@
   // IMM Task based on Child Health monthly SMS
   // Assign task to specific age in months corresponding to the group number
   {
-    name: 'immunization-missing-visit',
     icon: 'immunization',
     title: [ { locale:'en', content:'Missing immunization visit' } ],
     appliesToForms: [ 'CW', 'child_health_registration' ],
@@ -211,8 +204,6 @@
     events: [ {
       id: 'immunization-missing-visit',
       days:21, start:7, end:13,
-      // set dueDate explicitly because default dueDate is +28 days and not sure why
-      dueDate: function(r,event,i) { return Utils.addDate(new Date(r.scheduled_tasks[i].due), event.days); }
     } ],
     resolvedIf: function(c, r, event, dueDate, i) {
       // Resolved if the scheduled SMS that generated the task is cleared,
