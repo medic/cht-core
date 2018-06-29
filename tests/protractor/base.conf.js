@@ -10,7 +10,7 @@ class BaseConfig {
       // Excludes registration-by-sms, because the feature has changed and there is an issue around it:
       // https://github.com/medic/medic-webapp/issues/4053.
 
-      specs: ['e2e/**/*.js'],
+      specs: ['e2e/api/controllers/non-unique-message-ids.js'],
       exclude: ['e2e/**/registration-by-sms.js'],
 
       framework: 'jasmine2',
