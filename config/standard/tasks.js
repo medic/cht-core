@@ -1,7 +1,7 @@
 [
   {
     icon: 'mother-child',
-    title: [ { locale:'en', content:'Pregnancy visit needed' } ],
+    title: 'task.pregnancy_danger_sign.title',
     appliesToForms: [ 'P', 'pregnancy' ],
     appliesIf: function(c, r) {
       // ANC TASK if a F flag during pregnancy
@@ -17,7 +17,7 @@
     } ],
     priority: {
       level: 'high',
-      label: [ { locale:'en', content:'Danger Signs' } ],
+      label: 'task.warning.danger_sign',
     },
     resolvedIf: function(c, r, event, dueDate) {
       return r.reported_date < getNewestDeliveryTimestamp(c) ||
@@ -31,7 +31,7 @@
   // Attach the missing birth schedule to the last scheduled SMS
   {
     icon: 'mother-child',
-    title: [ { locale: 'en', content: 'Missing birth report' } ],
+    title: 'task.pregnancy_missing_birth.title',
     appliesToForms: [ 'P', 'pregnancy' ],
     appliesIf: function(c, r) { return r.scheduled_tasks; },
     actions: [ { form:'delivery' } ],
@@ -44,7 +44,7 @@
       if(isHighRiskPregnancy(c, r)) {
         return {
           level: 'high',
-          label: [ { locale:'en', content:'High Risk' } ],
+          label: 'task.warning.high_risk',
         };
       }
     },
@@ -66,7 +66,7 @@
   // Be mindful of overflow when peaking ahead!
   {
     icon: 'pregnancy-1',
-    title: [ { locale:'en', content:'Missing pregnancy visit' } ],
+    title: 'task.pregnancy_missing_visit.title',
     appliesToForms: [ 'P', 'pregnancy' ],
     appliesToScheduledTaskIf: function(r, i) {
       return (i+1 < r.scheduled_tasks.length &&
@@ -82,7 +82,7 @@
       if(isHighRiskPregnancy(c, r)) {
         return {
           level: 'high',
-          label: [ { locale:'en', content:'High Risk' } ],
+          label: 'task.warning.high_risk',
         };
       }
     },
@@ -98,7 +98,7 @@
   // PNC TASK 1: If a home delivery, needs clinic tasks
   {
     icon: 'mother-child',
-    title: [ { locale:'en', content:'Postnatal visit needed' } ],
+    title: 'task.postnatal_home_birth.title',
     appliesToForms: [ 'D', 'delivery' ],
     appliesIf: function(c, r) {
       return isCoveredByUseCase(c.contact, 'pnc') &&
@@ -113,7 +113,7 @@
     } ],
     priority: {
       level: 'high',
-      label: [ { locale:'en', content:'Home Birth' } ],
+      label: 'task.warning.home_birth',
     },
     resolvedIf: function(c, r, event, dueDate) {
       // Resolved if there a visit report received in time window or a newer pregnancy
@@ -128,7 +128,7 @@
   // PNC TASK 2: if a F flag sent in 42 days since delivery needs clinic task
   {
     icon: 'mother-child',
-    title: [ { locale: 'en', content: 'Postnatal visit needed' } ],
+    title: 'task.postnatal_danger_sign.title',
     appliesToForms: [ 'D', 'delivery' ],
     appliesIf: function(c, r) {
       return isCoveredByUseCase(c.contact, 'pnc') &&
@@ -144,7 +144,7 @@
     } ],
     priority: {
       level: 'high',
-      label: [ { locale: 'en', content: 'Danger Signs' } ],
+      label: 'task.warning.danger_sign',
     },
     resolvedIf: function(c, r, event, dueDate) {
       // Only resolved with PNC report received from nurse in time window or a newer pregnancy
@@ -160,7 +160,7 @@
   // Associate tasks to the last message of each group. Be mindful of overflow when peaking ahead!
   {
     icon: 'mother-child',
-    title: [ { locale:'en', content:'Missing postnatal visit' } ],
+    title: 'task.postnatal_missing_visit.title',
     appliesToForms: [ 'D', 'delivery' ],
     appliesIf: function() { return isCoveredByUseCase(c.contact, 'pnc'); },
     appliesToScheduledTaskIf: function(r, i) {
@@ -171,7 +171,7 @@
       if(isHomeBirth(r)) {
         return {
           level: 'high',
-          label: [ { locale:'en', content:'Home Birth' } ],
+          label: 'task.warning.home_birth',
         };
       }
     },
@@ -196,7 +196,7 @@
   // Assign task to specific age in months corresponding to the group number
   {
     icon: 'immunization',
-    title: [ { locale:'en', content:'Missing immunization visit' } ],
+    title: 'task.immunization_missing_visit.title',
     appliesToForms: [ 'CW', 'child_health_registration' ],
     appliesIf: function() { return isCoveredByUseCase(c.contact, 'imm'); },
     appliesToScheduledTaskIf: function(r, i) { return immunizationMonths.indexOf(r.scheduled_tasks[i].group) !== -1; },
