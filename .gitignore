@@ -16,8 +16,9 @@ node_modules_backup
 /.env
 coverage/
 dist
-/build/
 /ddocs/compiled.json
 /packages
 /static
 .vscode/
+/build/
+config/standard/.gdrive.*.json
