@@ -9,19 +9,16 @@
             <value>Personnel médical</value>
           </text>
           <text id="/data/init/parent_id:label">
-            <value>Identifiant du patient</value>
+            <value>Associé avec</value>
           </text>
           <text id="/data/init/name:label">
             <value></value>
           </text>
           <text id="/data/person/role:label">
-            <value>rôle</value>
+            <value>Rôle</value>
           </text>
           <text id="/data/person/role/chw:label">
             <value>ASC</value>
-          </text>
-          <text id="/data/person/role_other:hint">
-            <value>-</value>
           </text>
           <text id="/data/person/phone_alternate:jr:constraintMsg">
             <value>-</value>
@@ -39,7 +36,7 @@
             <value></value>
           </text>
           <text id="/data/init:label">
-            <value>Initier</value>
+            <value></value>
           </text>
           <text id="/data/person/sex:label">
             <value>Sexe</value>
@@ -139,9 +136,6 @@
           <text id="/data/person/role/chw:label">
             <value>CHW</value>
           </text>
-          <text id="/data/person/role_other:hint">
-            <value>Specify other</value>
-          </text>
           <text id="/data/person/role/manager:label">
             <value>Facility Manager</value>
           </text>
@@ -161,7 +155,7 @@
             <value></value>
           </text>
           <text id="/data/init:label">
-            <value>New Person</value>
+            <value></value>
           </text>
           <text id="/data/person/sex:label">
             <value>Sex</value>
@@ -239,7 +233,7 @@
             <value>Area</value>
           </text>
           <text id="/data/person/role_other:label">
-            <value></value>
+            <value>Specify other</value>
           </text>
         </translation>
         <translation lang="sw">
@@ -258,9 +252,6 @@
           <text id="/data/person/role/chw:label">
             <value>Mhudumu wa afya</value>
           </text>
-          <text id="/data/person/role_other:hint">
-            <value>Jukumu lingine lelote</value>
-          </text>
           <text id="/data/person/phone_alternate:jr:constraintMsg">
             <value>-</value>
           </text>
@@ -277,7 +268,7 @@
             <value></value>
           </text>
           <text id="/data/init:label">
-            <value>Mtu mpya</value>
+            <value></value>
           </text>
           <text id="/data/person/sex:label">
             <value>Jinsia</value>
@@ -358,7 +349,7 @@
             <value>Eneo</value>
           </text>
           <text id="/data/person/role_other:label">
-            <value></value>
+            <value>Jukumu lingine lelote</value>
           </text>
         </translation>
         <translation lang="ne">
@@ -377,9 +368,6 @@
           <text id="/data/person/role/chw:label">
             <value>महिला स्वास्थ्य स्वयम् सेविका</value>
           </text>
-          <text id="/data/person/role_other:hint">
-            <value>अन्य उल्लेख गर्नुहोस्</value>
-          </text>
           <text id="/data/person/phone_alternate:jr:constraintMsg">
             <value>-</value>
           </text>
@@ -396,7 +384,7 @@
             <value></value>
           </text>
           <text id="/data/init:label">
-            <value>नयाँ व्यक्ति</value>
+            <value></value>
           </text>
           <text id="/data/person/sex:label">
             <value>लिंग</value>
@@ -477,7 +465,7 @@
             <value>क्षेत्र</value>
           </text>
           <text id="/data/person/role_other:label">
-            <value></value>
+            <value>अन्य उल्लेख गर्नुहोस्</value>
           </text>
         </translation>
         <translation lang="hi">
@@ -495,9 +483,6 @@
           </text>
           <text id="/data/person/role/chw:label">
             <value>सामुदायिक स्वास्थ्यकर्मी</value>
-          </text>
-          <text id="/data/person/role_other:hint">
-            <value>अन्य का उल्‍लेख करें</value>
           </text>
           <text id="/data/person/role/manager:label">
             <value>स्वास्थ्य केंद्र के मैनजर</value>
@@ -518,7 +503,7 @@
             <value></value>
           </text>
           <text id="/data/init:label">
-            <value>नया व्यक्ति</value>
+            <value></value>
           </text>
           <text id="/data/person/sex:label">
             <value>लिंग</value>
@@ -596,7 +581,7 @@
             <value>क्षेत्र</value>
           </text>
           <text id="/data/person/role_other:label">
-            <value></value>
+            <value>अन्य का उल्‍लेख करें</value>
           </text>
         </translation>
         <translation lang="id">
@@ -615,9 +600,6 @@
           <text id="/data/person/role/chw:label">
             <value>Kader</value>
           </text>
-          <text id="/data/person/role_other:hint">
-            <value>Tentukan lainnya</value>
-          </text>
           <text id="/data/person/phone_alternate:jr:constraintMsg">
             <value>-</value>
           </text>
@@ -634,7 +616,7 @@
             <value></value>
           </text>
           <text id="/data/init:label">
-            <value>Orang Baru</value>
+            <value></value>
           </text>
           <text id="/data/person/sex:label">
             <value>Jenis kelamin</value>
@@ -715,12 +697,12 @@
             <value>Daerah</value>
           </text>
           <text id="/data/person/role_other:label">
-            <value></value>
+            <value>Tentukan lainnya</value>
           </text>
         </translation>
       </itext>
       <instance>
-        <data delimiter="#" id="contact:person:create" prefix="J1!contact:person:create!" version="2018-06-21_07-33">
+        <data delimiter="#" id="contact:person:create" prefix="J1!contact:person:create!" version="2018-06-29_14-50">
           <inputs>
             <meta>
               <location>
@@ -891,7 +873,6 @@
       </select1>
       <input ref="/data/person/role_other">
         <label ref="jr:itext('/data/person/role_other:label')"/>
-        <hint ref="jr:itext('/data/person/role_other:hint')"/>
       </input>
       <input ref="/data/person/external_id">
         <label ref="jr:itext('/data/person/external_id:label')"/>

@@ -23,9 +23,6 @@
           <text id="/data/district_hospital/use_cases:hint">
             <value>-</value>
           </text>
-          <text id="/data/district_hospital:hint">
-            <value>-</value>
-          </text>
           <text id="/data/district_hospital/contact/name:label">
             <value></value>
           </text>
@@ -42,7 +39,7 @@
             <value></value>
           </text>
           <text id="/data/district_hospital/vaccines/pneumococcal:label">
-            <value>Pneumococcique</value>
+            <value>Pneumo</value>
           </text>
           <text id="/data/inputs/user/name:label">
             <value>Nom</value>
@@ -66,7 +63,7 @@
             <value>-</value>
           </text>
           <text id="/data/district_hospital/name:label">
-            <value></value>
+            <value>Nom pour <output value=" /data/init/place_type_translation "/></value>
           </text>
           <text id="/data/init/place_type/clinic:label">
             <value>Zone</value>
@@ -75,7 +72,7 @@
             <value>Soins prénataux</value>
           </text>
           <text id="/data/district_hospital/vaccines/penta:label">
-            <value>Pentavalent</value>
+            <value>Penta</value>
           </text>
           <text id="/data/district_hospital/vaccines/yellow_fever:label">
             <value>Fièvre jaune</value>
@@ -93,7 +90,7 @@
             <value>MMRV (rougeole, oreillons, rubéole, varicelle)</value>
           </text>
           <text id="/data/district_hospital/contact/_id:label">
-            <value>Identifiant</value>
+            <value>Contact primaire</value>
           </text>
           <text id="/data/init/select_generated_name/clinic:label">
             <value>Zone de <output value=" /data/district_hospital/contact/contact_name "/></value>
@@ -114,7 +111,7 @@
             <value>Soins postnataux</value>
           </text>
           <text id="/data/district_hospital/is_name_generated:label">
-            <value>-</value>
+            <value>Voulez-vous nommer l'endroit: &quot;<output value=" /data/district_hospital/generated_name "/>&quot;?</value>
           </text>
           <text id="/data/district_hospital/is_name_generated/false:label">
             <value>Non, je veux nommer ça manuellement</value>
@@ -126,7 +123,7 @@
             <value></value>
           </text>
           <text id="/data/district_hospital/vaccines/rotavirus:label">
-            <value>Rotavirus</value>
+            <value>Rota</value>
           </text>
           <text id="/data/district_hospital/use_cases/imm:label">
             <value>Vaccination</value>
@@ -142,9 +139,6 @@
           </text>
           <text id="/data/inputs:label">
             <value></value>
-          </text>
-          <text id="/data/district_hospital/name:hint">
-            <value>-</value>
           </text>
           <text id="/data/init/select_generated_name/district_hospital:label">
             <value>District de <output value=" /data/district_hospital/contact/contact_name "/></value>
@@ -190,14 +184,8 @@
           <text id="/data/district_hospital/meta/created_by_place_uuid:label">
             <value></value>
           </text>
-          <text id="/data/district_hospital:hint">
-            <value>mandatory</value>
-          </text>
           <text id="/data/district_hospital/contact/name:label">
             <value></value>
-          </text>
-          <text id="/data/district_hospital/vaccines/jap_enc:label">
-            <value>Japanese Encephalitis</value>
           </text>
           <text id="/data/init/select_generated_name:label">
             <value></value>
@@ -226,8 +214,8 @@
           <text id="/data/district_hospital/vaccines/hep_a:label">
             <value>Hepatitis A</value>
           </text>
-          <text id="/data/district_hospital/name:hint">
-            <value>Name of this <output value=" /data/init/place_type_translation "/></value>
+          <text id="/data/district_hospital/vaccines/jap_enc:label">
+            <value>Japanese Encephalitis</value>
           </text>
           <text id="/data/init:label">
             <value></value>
@@ -236,7 +224,7 @@
             <value>External ID</value>
           </text>
           <text id="/data/district_hospital/name:label">
-            <value></value>
+            <value>Name of this <output value=" /data/init/place_type_translation "/></value>
           </text>
           <text id="/data/init/place_type/clinic:label">
             <value>Area</value>
@@ -360,14 +348,8 @@
           <text id="/data/district_hospital/meta/created_by_place_uuid:label">
             <value></value>
           </text>
-          <text id="/data/district_hospital:hint">
-            <value>lazima</value>
-          </text>
           <text id="/data/district_hospital/contact/name:label">
             <value></value>
-          </text>
-          <text id="/data/district_hospital/vaccines/jap_enc:label">
-            <value>-</value>
           </text>
           <text id="/data/init/select_generated_name:label">
             <value></value>
@@ -396,8 +378,8 @@
           <text id="/data/district_hospital/vaccines/hep_a:label">
             <value>-</value>
           </text>
-          <text id="/data/district_hospital/name:hint">
-            <value>Jaza jina la eneo hii</value>
+          <text id="/data/district_hospital/vaccines/jap_enc:label">
+            <value>-</value>
           </text>
           <text id="/data/init:label">
             <value></value>
@@ -406,7 +388,7 @@
             <value>Namba ya nje</value>
           </text>
           <text id="/data/district_hospital/name:label">
-            <value></value>
+            <value>Jaza jina la eneo hii</value>
           </text>
           <text id="/data/init/place_type/clinic:label">
             <value>Eneo</value>
@@ -530,14 +512,8 @@
           <text id="/data/district_hospital/meta/created_by_place_uuid:label">
             <value></value>
           </text>
-          <text id="/data/district_hospital:hint">
-            <value>जरुरी</value>
-          </text>
           <text id="/data/district_hospital/contact/name:label">
             <value></value>
-          </text>
-          <text id="/data/district_hospital/vaccines/jap_enc:label">
-            <value>-</value>
           </text>
           <text id="/data/init/select_generated_name:label">
             <value></value>
@@ -566,8 +542,8 @@
           <text id="/data/district_hospital/vaccines/hep_a:label">
             <value>-</value>
           </text>
-          <text id="/data/district_hospital/name:hint">
-            <value>यस स्थानको नाम लेख्नुहोस्</value>
+          <text id="/data/district_hospital/vaccines/jap_enc:label">
+            <value>-</value>
           </text>
           <text id="/data/init:label">
             <value></value>
@@ -576,7 +552,7 @@
             <value>बाहिरी ID</value>
           </text>
           <text id="/data/district_hospital/name:label">
-            <value></value>
+            <value>यस स्थानको नाम लेख्नुहोस्</value>
           </text>
           <text id="/data/init/place_type/clinic:label">
             <value>क्षेत्र</value>
@@ -700,14 +676,8 @@
           <text id="/data/district_hospital/meta/created_by_place_uuid:label">
             <value></value>
           </text>
-          <text id="/data/district_hospital:hint">
-            <value>ज़रूरी</value>
-          </text>
           <text id="/data/district_hospital/contact/name:label">
             <value></value>
-          </text>
-          <text id="/data/district_hospital/vaccines/jap_enc:label">
-            <value>Japanese Encephalitis</value>
           </text>
           <text id="/data/init/select_generated_name:label">
             <value></value>
@@ -736,8 +706,8 @@
           <text id="/data/district_hospital/vaccines/hep_a:label">
             <value>Hepatitis A</value>
           </text>
-          <text id="/data/district_hospital/name:hint">
-            <value>इस स्थान का नाम <output value=" /data/init/place_type_translation "/></value>
+          <text id="/data/district_hospital/vaccines/jap_enc:label">
+            <value>Japanese Encephalitis</value>
           </text>
           <text id="/data/init:label">
             <value></value>
@@ -746,7 +716,7 @@
             <value>बाहरी ID</value>
           </text>
           <text id="/data/district_hospital/name:label">
-            <value></value>
+            <value>इस स्थान का नाम <output value=" /data/init/place_type_translation "/></value>
           </text>
           <text id="/data/init/place_type/clinic:label">
             <value>क्षेत्र</value>
@@ -870,14 +840,8 @@
           <text id="/data/district_hospital/meta/created_by_place_uuid:label">
             <value></value>
           </text>
-          <text id="/data/district_hospital:hint">
-            <value>diperlukan</value>
-          </text>
           <text id="/data/district_hospital/contact/name:label">
             <value></value>
-          </text>
-          <text id="/data/district_hospital/vaccines/jap_enc:label">
-            <value>Japanese Encephalitis</value>
           </text>
           <text id="/data/init/select_generated_name:label">
             <value></value>
@@ -906,8 +870,8 @@
           <text id="/data/district_hospital/vaccines/hep_a:label">
             <value>Hepatitis A</value>
           </text>
-          <text id="/data/district_hospital/name:hint">
-            <value>Masukkan nama tempat ini</value>
+          <text id="/data/district_hospital/vaccines/jap_enc:label">
+            <value>Japanese Encephalitis</value>
           </text>
           <text id="/data/init:label">
             <value></value>
@@ -916,7 +880,7 @@
             <value>Eksternal ID</value>
           </text>
           <text id="/data/district_hospital/name:label">
-            <value></value>
+            <value>Masukkan nama tempat ini</value>
           </text>
           <text id="/data/init/place_type/clinic:label">
             <value>Daerah</value>
@@ -1026,7 +990,7 @@
         </translation>
       </itext>
       <instance>
-        <data delimiter="#" id="contact:district_hospital:edit" prefix="J1!contact:district_hospital:edit!" version="2018-06-21_07-26">
+        <data delimiter="#" id="contact:district_hospital:edit" prefix="J1!contact:district_hospital:edit!" version="2018-06-29_14-36">
           <inputs>
             <meta>
               <location>
@@ -1149,7 +1113,6 @@
       </select1>
       <input ref="/data/district_hospital/name">
         <label ref="jr:itext('/data/district_hospital/name:label')"/>
-        <hint ref="jr:itext('/data/district_hospital/name:hint')"/>
       </input>
       <input ref="/data/district_hospital/external_id">
         <label ref="jr:itext('/data/district_hospital/external_id:label')"/>

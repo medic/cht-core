@@ -26,9 +26,6 @@
           <text id="/data/contact/role/chw_supervisor:label">
             <value>Superviseur ASC</value>
           </text>
-          <text id="/data/clinic:hint">
-            <value>-</value>
-          </text>
           <text id="/data/contact/role/nurse:label">
             <value>Infirmier</value>
           </text>
@@ -51,7 +48,7 @@
             <value></value>
           </text>
           <text id="/data/clinic/vaccines/pneumococcal:label">
-            <value>Pneumococcique</value>
+            <value>Pneumo</value>
           </text>
           <text id="/data/inputs/user/name:label">
             <value>Nom de l'utilisateur connecté</value>
@@ -59,14 +56,17 @@
           <text id="/data/clinic/is_name_generated/false:label">
             <value>Non, je veux nommer ça manuellement</value>
           </text>
-          <text id="/data/clinic/vaccines/cholera:label">
-            <value>Choléra</value>
+          <text id="/data/clinic/use_cases:label">
+            <value>Programmes de santé</value>
           </text>
           <text id="/data/contact/phone_alternate:label">
             <value>Téléphone alternatif</value>
           </text>
           <text id="/data/clinic/notes:label">
-            <value>-</value>
+            <value>Notes</value>
+          </text>
+          <text id="/data/clinic/vaccines/vitamin_a:label">
+            <value>Vitamine A</value>
           </text>
           <text id="/data/clinic/vaccines/hep_a:label">
             <value>Hépatite A</value>
@@ -81,10 +81,10 @@
             <value>-</value>
           </text>
           <text id="/data/clinic/external_id:label">
-            <value>-</value>
+            <value>Identifiant externe</value>
           </text>
-          <text id="/data/clinic/vaccines/vitamin_a:label">
-            <value>Vitamine A</value>
+          <text id="/data/clinic/name:label">
+            <value>Nom</value>
           </text>
           <text id="/data/init/place_type/clinic:label">
             <value>Zone</value>
@@ -92,17 +92,14 @@
           <text id="/data/clinic/use_cases/anc:label">
             <value>Soins prénataux</value>
           </text>
-          <text id="/data/clinic/is_name_generated:label">
-            <value>-</value>
-          </text>
-          <text id="/data/clinic/vaccines/penta:label">
-            <value>Pentavalent</value>
+          <text id="/data/clinic/vaccines/mmr:label">
+            <value>MMR (rougeole, oreillons, rubéole)</value>
           </text>
           <text id="/data/clinic/vaccines/yellow_fever:label">
             <value>Fièvre jaune</value>
           </text>
           <text id="/data/clinic/vaccines/rotavirus:label">
-            <value>Rotavirus</value>
+            <value>Rota</value>
           </text>
           <text id="/data/clinic/vaccines/flu:label">
             <value>Grippe</value>
@@ -113,6 +110,9 @@
           <text id="/data/clinic/vaccines/typhoid:label">
             <value>Typhoïde</value>
           </text>
+          <text id="/data/clinic/vaccines/penta:label">
+            <value>Penta</value>
+          </text>
           <text id="/data/clinic/vaccines/mmrv:label">
             <value>MMRV (rougeole, oreillons, rubéole, varicelle)</value>
           </text>
@@ -120,16 +120,16 @@
             <value>-</value>
           </text>
           <text id="/data/contact/role_other:label">
-            <value></value>
+            <value>Specifier</value>
           </text>
           <text id="/data/clinic/vaccines:label">
-            <value>-</value>
+            <value>Choisissez les vaccins</value>
           </text>
           <text id="/data/clinic/type:label">
             <value></value>
           </text>
-          <text id="/data/clinic/vaccines/mmr:label">
-            <value>MMR (rougeole, oreillons, rubéole)</value>
+          <text id="/data/clinic/vaccines/cholera:label">
+            <value>Choléra</value>
           </text>
           <text id="/data/init/generated_name/clinic:label">
             <value>Zone de <output value=" /data/init/contact_name "/></value>
@@ -137,29 +137,20 @@
           <text id="/data/inputs/user/facility_id:label">
             <value>Identifiant de la place de l'utilisateur connecté</value>
           </text>
-          <text id="/data/init/create_new_person/new_person:label">
-            <value>Créer une nouvelle personne</value>
-          </text>
-          <text id="/data/clinic/use_cases:label">
-            <value>-</value>
-          </text>
           <text id="/data/clinic/vaccines/bcg:label">
             <value>BCG</value>
           </text>
-          <text id="/data/init/select_person:hint">
-            <value>-</value>
+          <text id="/data/init/create_new_person/new_person:label">
+            <value>Créer une nouvelle personne</value>
+          </text>
+          <text id="/data/clinic/is_name_generated:label">
+            <value>Voulez-vous nommer l'endroit: &quot;<output value=" /data/init/generated_name_translation "/>&quot;?</value>
           </text>
           <text id="/data/contact:label">
             <value>Nouvelle personne</value>
           </text>
-          <text id="/data/contact/role_other:hint">
-            <value>-</value>
-          </text>
           <text id="/data/init/name:label">
             <value></value>
-          </text>
-          <text id="/data/init/custom_place_name:hint">
-            <value>-</value>
           </text>
           <text id="/data/contact/parent:label">
             <value></value>
@@ -177,7 +168,7 @@
             <value>Patient</value>
           </text>
           <text id="/data/init/place_type:label">
-            <value></value>
+            <value>Nom de l'endroit</value>
           </text>
           <text id="/data/clinic/use_cases/pnc:label">
             <value>Soins postnataux</value>
@@ -186,7 +177,7 @@
             <value>Sauter cette section</value>
           </text>
           <text id="/data/init/select_person:label">
-            <value></value>
+            <value>Choisisser le contact primaire</value>
           </text>
           <text id="/data/init/generated_name/health_center:label">
             <value>Centre de santé de <output value=" /data/init/contact_name "/></value>
@@ -214,9 +205,6 @@
           </text>
           <text id="/data/clinic/vaccines/polio:label">
             <value>Polio</value>
-          </text>
-          <text id="/data/clinic/name:label">
-            <value>-</value>
           </text>
           <text id="/data/init/create_new_person:label">
             <value>Contact primaire</value>
@@ -255,12 +243,6 @@
           </text>
           <text id="/data/contact/role/chw_supervisor:label">
             <value>CHW Supervisor</value>
-          </text>
-          <text id="/data/clinic:hint">
-            <value>mandatory</value>
-          </text>
-          <text id="/data/contact/role/patient:label">
-            <value>Patient</value>
           </text>
           <text id="/data/contact/role/nurse:label">
             <value>Nurse</value>
@@ -356,7 +338,7 @@
             <value>Select all needed for this <output value=" /data/init/place_type_translation "/></value>
           </text>
           <text id="/data/contact/role_other:label">
-            <value></value>
+            <value>Specify other</value>
           </text>
           <text id="/data/clinic/vaccines:label">
             <value>Select vaccines</value>
@@ -385,14 +367,8 @@
           <text id="/data/contact:label">
             <value>New Person</value>
           </text>
-          <text id="/data/contact/role_other:hint">
-            <value>Specify other</value>
-          </text>
           <text id="/data/init/name:label">
             <value></value>
-          </text>
-          <text id="/data/init/custom_place_name:hint">
-            <value>Enter the name of this place</value>
           </text>
           <text id="/data/contact/parent:label">
             <value></value>
@@ -406,11 +382,11 @@
           <text id="/data/clinic/use_cases/imm:label">
             <value>Immunizations</value>
           </text>
-          <text id="/data/init/generated_name/district_hospital:label">
-            <value><output value=" /data/init/contact_name "/>'s District</value>
+          <text id="/data/contact/role/patient:label">
+            <value>Patient</value>
           </text>
           <text id="/data/init/place_type:label">
-            <value></value>
+            <value>Enter the name of this place</value>
           </text>
           <text id="/data/clinic/use_cases/pnc:label">
             <value>Postnatal care</value>
@@ -419,7 +395,7 @@
             <value>Skip this step</value>
           </text>
           <text id="/data/init/select_person:label">
-            <value></value>
+            <value>Select the Primary Contact</value>
           </text>
           <text id="/data/init/generated_name/health_center:label">
             <value><output value=" /data/init/contact_name "/>'s Health Center</value>
@@ -466,8 +442,8 @@
           <text id="/data/init/custom_place_name:label">
             <value><output value=" /data/init/custom_place_name_label "/></value>
           </text>
-          <text id="/data/init/select_person:hint">
-            <value>Select the Primary Contact</value>
+          <text id="/data/init/generated_name/district_hospital:label">
+            <value><output value=" /data/init/contact_name "/>'s District</value>
           </text>
         </translation>
         <translation lang="sw">
@@ -486,17 +462,8 @@
           <text id="/data/contact/type:label">
             <value></value>
           </text>
-          <text id="/data/clinic/vaccines/rotavirus:label">
-            <value>-</value>
-          </text>
           <text id="/data/contact/role/chw_supervisor:label">
             <value>Mkuu wa wahudumu wa afya</value>
-          </text>
-          <text id="/data/clinic:hint">
-            <value>lazima</value>
-          </text>
-          <text id="/data/contact/role/patient:label">
-            <value>Mgonjwa</value>
           </text>
           <text id="/data/clinic/vaccines/mmr:label">
             <value>-</value>
@@ -567,7 +534,7 @@
           <text id="/data/clinic/vaccines/yellow_fever:label">
             <value>-</value>
           </text>
-          <text id="/data/clinic/vaccines:label">
+          <text id="/data/clinic/vaccines/rotavirus:label">
             <value>-</value>
           </text>
           <text id="/data/clinic/vaccines/flu:label">
@@ -589,7 +556,7 @@
             <value>Chagua zote zinazohitajika kwa hii <output value=" /data/init/place_type_translation "/></value>
           </text>
           <text id="/data/contact/role_other:label">
-            <value></value>
+            <value>Fafanua vingine</value>
           </text>
           <text id="/data/clinic/vaccines/pneumococcal:label">
             <value>-</value>
@@ -618,14 +585,8 @@
           <text id="/data/contact:label">
             <value>Mtu Mpya</value>
           </text>
-          <text id="/data/contact/role_other:hint">
-            <value>Fafanua vingine</value>
-          </text>
           <text id="/data/init/name:label">
             <value></value>
-          </text>
-          <text id="/data/init/custom_place_name:hint">
-            <value>Jaza jina la eneo hii</value>
           </text>
           <text id="/data/contact/parent:label">
             <value></value>
@@ -642,11 +603,11 @@
           <text id="/data/clinic/use_cases/imm:label">
             <value>Chanjo</value>
           </text>
-          <text id="/data/init/generated_name/district_hospital:label">
-            <value>WIlaya ya  <output value=" /data/init/contact_name "/></value>
+          <text id="/data/contact/role/patient:label">
+            <value>Mgonjwa</value>
           </text>
           <text id="/data/init/place_type:label">
-            <value></value>
+            <value>Jaza jina la eneo hii</value>
           </text>
           <text id="/data/clinic/use_cases/pnc:label">
             <value>Huduma ya baada ya kuzaa</value>
@@ -655,7 +616,7 @@
             <value>Ruka hatua ii</value>
           </text>
           <text id="/data/init/select_person:label">
-            <value></value>
+            <value>Chagua Mwasiliwa mkuu</value>
           </text>
           <text id="/data/init/generated_name/health_center:label">
             <value>Kituo cha afya cha  <output value=" /data/init/contact_name "/></value>
@@ -684,6 +645,9 @@
           <text id="/data/clinic/vaccines/polio:label">
             <value>-</value>
           </text>
+          <text id="/data/clinic/vaccines:label">
+            <value>-</value>
+          </text>
           <text id="/data/init/create_new_person:label">
             <value>Weka mwasiliwa mkuu</value>
           </text>
@@ -699,8 +663,8 @@
           <text id="/data/init/custom_place_name:label">
             <value><output value=" /data/init/custom_place_name_label "/></value>
           </text>
-          <text id="/data/init/select_person:hint">
-            <value>Chagua Mwasiliwa mkuu</value>
+          <text id="/data/init/generated_name/district_hospital:label">
+            <value>WIlaya ya  <output value=" /data/init/contact_name "/></value>
           </text>
         </translation>
         <translation lang="ne">
@@ -719,17 +683,8 @@
           <text id="/data/contact/type:label">
             <value></value>
           </text>
-          <text id="/data/clinic/vaccines/rotavirus:label">
-            <value>-</value>
-          </text>
           <text id="/data/contact/role/chw_supervisor:label">
             <value>महिला स्वास्थ्य स्वयम् सेविकाको सुपरभाइजर</value>
-          </text>
-          <text id="/data/clinic:hint">
-            <value>जरुरी</value>
-          </text>
-          <text id="/data/contact/role/patient:label">
-            <value>बिरामी</value>
           </text>
           <text id="/data/clinic/vaccines/mmr:label">
             <value>-</value>
@@ -800,7 +755,7 @@
           <text id="/data/clinic/vaccines/yellow_fever:label">
             <value>-</value>
           </text>
-          <text id="/data/clinic/vaccines:label">
+          <text id="/data/clinic/vaccines/rotavirus:label">
             <value>-</value>
           </text>
           <text id="/data/clinic/vaccines/flu:label">
@@ -822,7 +777,7 @@
             <value>यस <output value=" /data/init/place_type_translation "/> का लागि आवश्यक सब छान्नुहोस्</value>
           </text>
           <text id="/data/contact/role_other:label">
-            <value></value>
+            <value>अन्य उल्लेख गर्नुहोस्</value>
           </text>
           <text id="/data/clinic/vaccines/pneumococcal:label">
             <value>-</value>
@@ -851,14 +806,8 @@
           <text id="/data/contact:label">
             <value>नया व्यक्ति</value>
           </text>
-          <text id="/data/contact/role_other:hint">
-            <value>अन्य उल्लेख गर्नुहोस्</value>
-          </text>
           <text id="/data/init/name:label">
             <value></value>
-          </text>
-          <text id="/data/init/custom_place_name:hint">
-            <value>यस स्थानको नाम लेख्नुहोस्</value>
           </text>
           <text id="/data/contact/parent:label">
             <value></value>
@@ -875,11 +824,11 @@
           <text id="/data/clinic/use_cases/imm:label">
             <value>खोप</value>
           </text>
-          <text id="/data/init/generated_name/district_hospital:label">
-            <value><output value=" /data/init/contact_name "/>को जिल्ला</value>
+          <text id="/data/contact/role/patient:label">
+            <value>बिरामी</value>
           </text>
           <text id="/data/init/place_type:label">
-            <value></value>
+            <value>यस स्थानको नाम लेख्नुहोस्</value>
           </text>
           <text id="/data/clinic/use_cases/pnc:label">
             <value>प्रसुती पश्चातको स्याहार</value>
@@ -888,7 +837,7 @@
             <value>एख</value>
           </text>
           <text id="/data/init/select_person:label">
-            <value></value>
+            <value>प्राथमिक सम्पर्क व्यक्ति छान्नुहोस्</value>
           </text>
           <text id="/data/init/generated_name/health_center:label">
             <value><output value=" /data/init/contact_name "/>को स्वास्थ्य केन्द्र</value>
@@ -917,6 +866,9 @@
           <text id="/data/clinic/vaccines/polio:label">
             <value>-</value>
           </text>
+          <text id="/data/clinic/vaccines:label">
+            <value>-</value>
+          </text>
           <text id="/data/init/create_new_person:label">
             <value>प्राथमिक सम्पर्क व्यक्ति</value>
           </text>
@@ -932,8 +884,8 @@
           <text id="/data/init/custom_place_name:label">
             <value><output value=" /data/init/custom_place_name_label "/></value>
           </text>
-          <text id="/data/init/select_person:hint">
-            <value>प्राथमिक सम्पर्क व्यक्ति छान्नुहोस्</value>
+          <text id="/data/init/generated_name/district_hospital:label">
+            <value><output value=" /data/init/contact_name "/>को जिल्ला</value>
           </text>
         </translation>
         <translation lang="hi">
@@ -957,12 +909,6 @@
           </text>
           <text id="/data/contact/role/chw_supervisor:label">
             <value>सामुदायिक स्वास्थ्य कर्मी के मैनेजर</value>
-          </text>
-          <text id="/data/clinic:hint">
-            <value>ज़रूरी</value>
-          </text>
-          <text id="/data/contact/role/patient:label">
-            <value>मरीज़</value>
           </text>
           <text id="/data/contact/role/nurse:label">
             <value>नर्स</value>
@@ -1055,7 +1001,7 @@
             <value>इस <output value=" /data/init/place_type_translation "/> के लिए आवश्यक सभी का चयन करें</value>
           </text>
           <text id="/data/contact/role_other:label">
-            <value></value>
+            <value>अन्य का उल्‍लेख करें</value>
           </text>
           <text id="/data/clinic/vaccines:label">
             <value>टीकाकरण चुनें</value>
@@ -1084,14 +1030,8 @@
           <text id="/data/contact:label">
             <value>नया व्यक्ति</value>
           </text>
-          <text id="/data/contact/role_other:hint">
-            <value>अन्य का उल्‍लेख करें</value>
-          </text>
           <text id="/data/init/name:label">
             <value></value>
-          </text>
-          <text id="/data/init/custom_place_name:hint">
-            <value>इस स्थान का नाम दर्ज करें</value>
           </text>
           <text id="/data/contact/parent:label">
             <value></value>
@@ -1105,11 +1045,11 @@
           <text id="/data/clinic/use_cases/imm:label">
             <value>टीकाकरण</value>
           </text>
-          <text id="/data/init/generated_name/district_hospital:label">
-            <value><output value=" /data/init/contact_name "/> का ज़िला</value>
+          <text id="/data/contact/role/patient:label">
+            <value>मरीज़</value>
           </text>
           <text id="/data/init/place_type:label">
-            <value></value>
+            <value>इस स्थान का नाम दर्ज करें</value>
           </text>
           <text id="/data/clinic/use_cases/pnc:label">
             <value>गर्भावस्था के बाद की देखभाल</value>
@@ -1118,7 +1058,7 @@
             <value>इस स्टेप को छोड़ दें</value>
           </text>
           <text id="/data/init/select_person:label">
-            <value></value>
+            <value>प्राथमिक कॉंटॅक्ट चुनें</value>
           </text>
           <text id="/data/init/generated_name/health_center:label">
             <value><output value=" /data/init/contact_name "/> का स्वास्थ्य केंद्र</value>
@@ -1165,8 +1105,8 @@
           <text id="/data/init/custom_place_name:label">
             <value><output value=" /data/init/custom_place_name_label "/></value>
           </text>
-          <text id="/data/init/select_person:hint">
-            <value>प्राथमिक कॉंटॅक्ट चुनें</value>
+          <text id="/data/init/generated_name/district_hospital:label">
+            <value><output value=" /data/init/contact_name "/> का ज़िला</value>
           </text>
         </translation>
         <translation lang="id">
@@ -1190,12 +1130,6 @@
           </text>
           <text id="/data/contact/role/chw_supervisor:label">
             <value>Kader Pengawas</value>
-          </text>
-          <text id="/data/clinic:hint">
-            <value>diperlukan</value>
-          </text>
-          <text id="/data/contact/role/patient:label">
-            <value>Pasien</value>
           </text>
           <text id="/data/contact/role/nurse:label">
             <value>Perawat</value>
@@ -1288,7 +1222,7 @@
             <value>Pilih semua yang diperlukan untuk ini <output value=" /data/init/place_type_translation "/></value>
           </text>
           <text id="/data/contact/role_other:label">
-            <value></value>
+            <value>Tentukan lainnya</value>
           </text>
           <text id="/data/clinic/vaccines:label">
             <value>Pilih Jenis Vaksin</value>
@@ -1317,14 +1251,8 @@
           <text id="/data/contact:label">
             <value>Orang Baru</value>
           </text>
-          <text id="/data/contact/role_other:hint">
-            <value>Tentukan lainnya</value>
-          </text>
           <text id="/data/init/name:label">
             <value></value>
-          </text>
-          <text id="/data/init/custom_place_name:hint">
-            <value>Masukkan nama tempat ini</value>
           </text>
           <text id="/data/contact/parent:label">
             <value></value>
@@ -1338,11 +1266,11 @@
           <text id="/data/clinic/use_cases/imm:label">
             <value>Imunisasi</value>
           </text>
-          <text id="/data/init/generated_name/district_hospital:label">
-            <value>Kabupaten <output value=" /data/init/contact_name "/></value>
+          <text id="/data/contact/role/patient:label">
+            <value>Pasien</value>
           </text>
           <text id="/data/init/place_type:label">
-            <value></value>
+            <value>Masukkan nama tempat ini</value>
           </text>
           <text id="/data/clinic/use_cases/pnc:label">
             <value>Perawatan Setelah Melahirkan</value>
@@ -1351,7 +1279,7 @@
             <value>Lewati langkah ini</value>
           </text>
           <text id="/data/init/select_person:label">
-            <value></value>
+            <value>Pilih Kontak Utama</value>
           </text>
           <text id="/data/init/generated_name/health_center:label">
             <value>Fasilitas Kesehatan <output value=" /data/init/contact_name "/></value>
@@ -1398,13 +1326,13 @@
           <text id="/data/init/custom_place_name:label">
             <value><output value=" /data/init/custom_place_name_label "/></value>
           </text>
-          <text id="/data/init/select_person:hint">
-            <value>Pilih Kontak Utama</value>
+          <text id="/data/init/generated_name/district_hospital:label">
+            <value>Kabupaten <output value=" /data/init/contact_name "/></value>
           </text>
         </translation>
       </itext>
       <instance>
-        <data delimiter="#" id="contact:clinic:create" prefix="J1!contact:clinic:create!" version="2018-06-21_07-26">
+        <data delimiter="#" id="contact:clinic:create" prefix="J1!contact:clinic:create!" version="2018-06-29_14-30">
           <inputs>
             <meta>
               <location>
@@ -1550,7 +1478,6 @@
       </select1>
       <input appearance="db-object" ref="/data/init/select_person">
         <label ref="jr:itext('/data/init/select_person:label')"/>
-        <hint ref="jr:itext('/data/init/select_person:hint')"/>
       </input>
       <input appearance="hidden" ref="/data/init/name">
         <label ref="jr:itext('/data/init/name:label')"/>
@@ -1632,7 +1559,6 @@
         </select1>
         <input ref="/data/contact/role_other">
           <label ref="jr:itext('/data/contact/role_other:label')"/>
-          <hint ref="jr:itext('/data/contact/role_other:hint')"/>
         </input>
         <input ref="/data/contact/external_id">
           <label ref="jr:itext('/data/contact/external_id:label')"/>
@@ -1660,7 +1586,6 @@
       </select1>
       <input ref="/data/init/custom_place_name">
         <label ref="jr:itext('/data/init/custom_place_name:label')"/>
-        <hint ref="jr:itext('/data/init/custom_place_name:hint')"/>
       </input>
       <input ref="/data/clinic/external_id">
         <label ref="jr:itext('/data/clinic/external_id:label')"/>
