@@ -20,9 +20,6 @@
           <text id="/data/person/role/chw:label">
             <value>ASC</value>
           </text>
-          <text id="/data/person/role_other:hint">
-            <value>-</value>
-          </text>
           <text id="/data/init/change_parent/true:label">
             <value>Oui</value>
           </text>
@@ -41,9 +38,6 @@
           <text id="/data/inputs/user/name:label">
             <value>Nom</value>
           </text>
-          <text id="/data/init/id_health_center:hint">
-            <value>-</value>
-          </text>
           <text id="/data/init/edited_place_type/district_hospital:label">
             <value>District</value>
           </text>
@@ -51,7 +45,7 @@
             <value>Centre de santé</value>
           </text>
           <text id="/data/init:label">
-            <value>Modifier personne</value>
+            <value></value>
           </text>
           <text id="/data/person/sex:label">
             <value>Sexe</value>
@@ -71,12 +65,6 @@
           <text id="/data/init/person_parent:label">
             <value>Place actuelle</value>
           </text>
-          <text id="/data/init/id_district_hospital:hint">
-            <value>-</value>
-          </text>
-          <text id="/data/init/id_clinic:hint">
-            <value>-</value>
-          </text>
           <text id="/data/person/meta/created_by_person_uuid:label">
             <value></value>
           </text>
@@ -84,7 +72,7 @@
             <value>Téléphone alternatif</value>
           </text>
           <text id="/data/init/id_district_hospital:label">
-            <value></value>
+            <value>Choisissez le district</value>
           </text>
           <text id="/data/init/edited_place_type:label">
             <value>Rechercher par type de place</value>
@@ -99,7 +87,7 @@
             <value>Autre</value>
           </text>
           <text id="/data/init/id_health_center:label">
-            <value></value>
+            <value>Choisissez le centre de santé</value>
           </text>
           <text id="/data/init/name:label">
             <value></value>
@@ -117,7 +105,7 @@
             <value>Zone</value>
           </text>
           <text id="/data/init/id_clinic:label">
-            <value></value>
+            <value>Choisissez la zone</value>
           </text>
           <text id="/data/person/name:label">
             <value>Nom</value>
@@ -172,9 +160,6 @@
           <text id="/data/person/role/chw:label">
             <value>CHW</value>
           </text>
-          <text id="/data/person/role_other:hint">
-            <value>Specify other</value>
-          </text>
           <text id="/data/init/change_parent/true:label">
             <value>Yes</value>
           </text>
@@ -196,9 +181,6 @@
           <text id="/data/inputs/user/name:label">
             <value>Name of the logged in user</value>
           </text>
-          <text id="/data/init/id_health_center:hint">
-            <value>Select Health Center</value>
-          </text>
           <text id="/data/init/edited_place_type/district_hospital:label">
             <value>District</value>
           </text>
@@ -206,7 +188,7 @@
             <value>Health Center</value>
           </text>
           <text id="/data/init:label">
-            <value>Edit Person</value>
+            <value></value>
           </text>
           <text id="/data/person/sex:label">
             <value>Sex</value>
@@ -220,14 +202,11 @@
           <text id="/data/person/_id:label">
             <value></value>
           </text>
-          <text id="/data/init/id_clinic:hint">
-            <value>Select Clinic</value>
+          <text id="/data/person/role/patient:label">
+            <value>Patient</value>
           </text>
           <text id="/data/init/person_parent:label">
             <value>Current Place</value>
-          </text>
-          <text id="/data/init/id_district_hospital:hint">
-            <value>Select District Hospital</value>
           </text>
           <text id="/data/person/meta/created_by_person_uuid:label">
             <value></value>
@@ -236,7 +215,7 @@
             <value>Alternate Phone Number</value>
           </text>
           <text id="/data/init/id_district_hospital:label">
-            <value></value>
+            <value>Select District Hospital</value>
           </text>
           <text id="/data/init/edited_place_type:label">
             <value>Search for place by</value>
@@ -251,7 +230,7 @@
             <value>Other</value>
           </text>
           <text id="/data/init/id_health_center:label">
-            <value></value>
+            <value>Select Health Center</value>
           </text>
           <text id="/data/init/name:label">
             <value></value>
@@ -269,7 +248,7 @@
             <value>Area</value>
           </text>
           <text id="/data/init/id_clinic:label">
-            <value></value>
+            <value>Select Clinic</value>
           </text>
           <text id="/data/person/name:label">
             <value>Names</value>
@@ -301,11 +280,8 @@
           <text id="/data/person/role/nurse:label">
             <value>Nurse</value>
           </text>
-          <text id="/data/person/role/patient:label">
-            <value>Patient</value>
-          </text>
           <text id="/data/person/role_other:label">
-            <value></value>
+            <value>Specify other</value>
           </text>
         </translation>
         <translation lang="sw">
@@ -318,14 +294,14 @@
           <text id="/data/person/phone:label">
             <value>Namba ya simu</value>
           </text>
-          <text id="/data/person/type:label">
+          <text id="/data/init/name:label">
             <value></value>
           </text>
           <text id="/data/person/role/chw:label">
             <value>Mhudumu wa afya</value>
           </text>
-          <text id="/data/person/role_other:hint">
-            <value>Fafanua nyingine</value>
+          <text id="/data/init/person_parent:label">
+            <value>-</value>
           </text>
           <text id="/data/init/change_parent/true:label">
             <value>Ndiyo</value>
@@ -345,9 +321,6 @@
           <text id="/data/inputs/user/name:label">
             <value>Jina la mtumizi</value>
           </text>
-          <text id="/data/init/id_health_center:hint">
-            <value>Chagua kituo cha afya</value>
-          </text>
           <text id="/data/init/edited_place_type/district_hospital:label">
             <value>Wilaya</value>
           </text>
@@ -355,7 +328,7 @@
             <value>kituo cha afya</value>
           </text>
           <text id="/data/init:label">
-            <value>Badilisha maelezo ya mtu</value>
+            <value></value>
           </text>
           <text id="/data/person/sex:label">
             <value>Jinsia</value>
@@ -369,17 +342,11 @@
           <text id="/data/person/_id:label">
             <value></value>
           </text>
-          <text id="/data/init/id_clinic:hint">
-            <value>Chagua kliniki</value>
-          </text>
-          <text id="/data/init/person_parent:label">
-            <value>-</value>
+          <text id="/data/person/role/patient:label">
+            <value>Mgonjwa</value>
           </text>
           <text id="/data/person/meta/created_by_place_uuid:label">
             <value></value>
-          </text>
-          <text id="/data/init/id_district_hospital:hint">
-            <value>Chagua hospitali ya wilaya</value>
           </text>
           <text id="/data/person/meta/created_by_person_uuid:label">
             <value></value>
@@ -388,7 +355,7 @@
             <value>Namba nyingine ya simu</value>
           </text>
           <text id="/data/init/id_district_hospital:label">
-            <value></value>
+            <value>Chagua hospitali ya wilaya</value>
           </text>
           <text id="/data/init/edited_place_type:label">
             <value>Tafuta mahali kwa</value>
@@ -403,9 +370,9 @@
             <value>Ingine</value>
           </text>
           <text id="/data/init/id_health_center:label">
-            <value></value>
+            <value>Chagua kituo cha afya</value>
           </text>
-          <text id="/data/init/name:label">
+          <text id="/data/person/type:label">
             <value></value>
           </text>
           <text id="/data/init/change_parent/false:label">
@@ -421,7 +388,7 @@
             <value>Eneo</value>
           </text>
           <text id="/data/init/id_clinic:label">
-            <value></value>
+            <value>Chagua kliniki</value>
           </text>
           <text id="/data/person/name:label">
             <value>Jina</value>
@@ -453,11 +420,8 @@
           <text id="/data/person/role/nurse:label">
             <value>muuguzi</value>
           </text>
-          <text id="/data/person/role/patient:label">
-            <value>Mgonjwa</value>
-          </text>
           <text id="/data/person/role_other:label">
-            <value></value>
+            <value>Fafanua nyingine</value>
           </text>
         </translation>
         <translation lang="ne">
@@ -470,14 +434,14 @@
           <text id="/data/person/phone:label">
             <value>फोन नम्बर</value>
           </text>
-          <text id="/data/person/type:label">
+          <text id="/data/init/name:label">
             <value></value>
           </text>
           <text id="/data/person/role/chw:label">
             <value>महिला स्वास्थ्य स्वयम् सेविका</value>
           </text>
-          <text id="/data/person/role_other:hint">
-            <value>अन्य उल्लेख गर्नुहोस्</value>
+          <text id="/data/init/person_parent:label">
+            <value>-</value>
           </text>
           <text id="/data/init/change_parent/true:label">
             <value>हो</value>
@@ -497,9 +461,6 @@
           <text id="/data/inputs/user/name:label">
             <value>लग इन गरेको प्रयोगकर्ताको नाम</value>
           </text>
-          <text id="/data/init/id_health_center:hint">
-            <value>स्वास्थ्य संस्था रोज्नुहोस्</value>
-          </text>
           <text id="/data/init/edited_place_type/district_hospital:label">
             <value>जिल्ला</value>
           </text>
@@ -507,7 +468,7 @@
             <value>स्वास्थ्य केन्द्र</value>
           </text>
           <text id="/data/init:label">
-            <value>ब्यक्ति सम्पादन</value>
+            <value></value>
           </text>
           <text id="/data/person/sex:label">
             <value>लिंग</value>
@@ -521,17 +482,11 @@
           <text id="/data/person/_id:label">
             <value></value>
           </text>
-          <text id="/data/init/id_clinic:hint">
-            <value>क्लिनिक रोज्नुहोस्</value>
-          </text>
-          <text id="/data/init/person_parent:label">
-            <value>-</value>
+          <text id="/data/person/role/patient:label">
+            <value>बिरामी</value>
           </text>
           <text id="/data/person/meta/created_by_place_uuid:label">
             <value></value>
-          </text>
-          <text id="/data/init/id_district_hospital:hint">
-            <value>जिल्ला अस्पताल रोज्नुहोस्</value>
           </text>
           <text id="/data/person/meta/created_by_person_uuid:label">
             <value></value>
@@ -540,7 +495,7 @@
             <value>अन्य फोन नम्बर</value>
           </text>
           <text id="/data/init/id_district_hospital:label">
-            <value></value>
+            <value>जिल्ला अस्पताल रोज्नुहोस्</value>
           </text>
           <text id="/data/init/edited_place_type:label">
             <value>स्थान को खोजी</value>
@@ -555,9 +510,9 @@
             <value>अन्य</value>
           </text>
           <text id="/data/init/id_health_center:label">
-            <value></value>
+            <value>स्वास्थ्य संस्था रोज्नुहोस्</value>
           </text>
-          <text id="/data/init/name:label">
+          <text id="/data/person/type:label">
             <value></value>
           </text>
           <text id="/data/init/change_parent/false:label">
@@ -573,7 +528,7 @@
             <value>क्षेत्र</value>
           </text>
           <text id="/data/init/id_clinic:label">
-            <value></value>
+            <value>क्लिनिक रोज्नुहोस्</value>
           </text>
           <text id="/data/person/name:label">
             <value>नाम</value>
@@ -605,11 +560,8 @@
           <text id="/data/person/role/nurse:label">
             <value>नर्स</value>
           </text>
-          <text id="/data/person/role/patient:label">
-            <value>बिरामी</value>
-          </text>
           <text id="/data/person/role_other:label">
-            <value></value>
+            <value>अन्य उल्लेख गर्नुहोस्</value>
           </text>
         </translation>
         <translation lang="hi">
@@ -622,14 +574,14 @@
           <text id="/data/person/phone:label">
             <value>फोन नंबर</value>
           </text>
-          <text id="/data/person/type:label">
+          <text id="/data/init/name:label">
             <value></value>
           </text>
           <text id="/data/person/role/chw:label">
             <value>सामुदायिक स्वास्थ्य कर्मी</value>
           </text>
-          <text id="/data/person/role_other:hint">
-            <value>अन्य का उल्‍लेख करें</value>
+          <text id="/data/init/person_parent:label">
+            <value>-</value>
           </text>
           <text id="/data/init/change_parent/true:label">
             <value>हाँ</value>
@@ -652,9 +604,6 @@
           <text id="/data/inputs/user/name:label">
             <value>लॉग इन यूज़र का नाम</value>
           </text>
-          <text id="/data/init/id_health_center:hint">
-            <value>स्वास्थ्य केंद्र चुनें</value>
-          </text>
           <text id="/data/init/edited_place_type/district_hospital:label">
             <value>ज़िला</value>
           </text>
@@ -662,7 +611,7 @@
             <value>स्वास्थ्य केंद्र</value>
           </text>
           <text id="/data/init:label">
-            <value>व्यक्ति बदलें</value>
+            <value></value>
           </text>
           <text id="/data/person/sex:label">
             <value>लिंग</value>
@@ -676,17 +625,11 @@
           <text id="/data/person/_id:label">
             <value></value>
           </text>
-          <text id="/data/init/id_clinic:hint">
-            <value>अस्पताल चुनें</value>
-          </text>
-          <text id="/data/init/person_parent:label">
-            <value>-</value>
+          <text id="/data/person/role/patient:label">
+            <value>मरीज़</value>
           </text>
           <text id="/data/person/meta/created_by_place_uuid:label">
             <value></value>
-          </text>
-          <text id="/data/init/id_district_hospital:hint">
-            <value>जिला अस्पताल चुनें</value>
           </text>
           <text id="/data/person/meta/created_by_person_uuid:label">
             <value></value>
@@ -695,7 +638,7 @@
             <value>अन्य फोन नंबर</value>
           </text>
           <text id="/data/init/id_district_hospital:label">
-            <value></value>
+            <value>जिला अस्पताल चुनें</value>
           </text>
           <text id="/data/init/edited_place_type:label">
             <value>जगह की खोज</value>
@@ -710,9 +653,9 @@
             <value>अन्य</value>
           </text>
           <text id="/data/init/id_health_center:label">
-            <value></value>
+            <value>स्वास्थ्य केंद्र चुनें</value>
           </text>
-          <text id="/data/init/name:label">
+          <text id="/data/person/type:label">
             <value></value>
           </text>
           <text id="/data/init/change_parent/false:label">
@@ -728,7 +671,7 @@
             <value>क्षेत्र</value>
           </text>
           <text id="/data/init/id_clinic:label">
-            <value></value>
+            <value>अस्पताल चुनें</value>
           </text>
           <text id="/data/person/name:label">
             <value>नाम</value>
@@ -757,11 +700,8 @@
           <text id="/data/person/role/nurse:label">
             <value>नर्स</value>
           </text>
-          <text id="/data/person/role/patient:label">
-            <value>मरीज़</value>
-          </text>
           <text id="/data/person/role_other:label">
-            <value></value>
+            <value>अन्य का उल्‍लेख करें</value>
           </text>
         </translation>
         <translation lang="id">
@@ -774,14 +714,14 @@
           <text id="/data/person/phone:label">
             <value>Nomor Telepon</value>
           </text>
-          <text id="/data/person/type:label">
+          <text id="/data/init/name:label">
             <value></value>
           </text>
           <text id="/data/person/role/chw:label">
             <value>Kader</value>
           </text>
-          <text id="/data/person/role_other:hint">
-            <value>Tentukan lainnya</value>
+          <text id="/data/init/person_parent:label">
+            <value>-</value>
           </text>
           <text id="/data/init/change_parent/true:label">
             <value>Iya</value>
@@ -801,9 +741,6 @@
           <text id="/data/inputs/user/name:label">
             <value>Nama dari login user</value>
           </text>
-          <text id="/data/init/id_health_center:hint">
-            <value>Pilih Fasilitas Kesehatan</value>
-          </text>
           <text id="/data/init/edited_place_type/district_hospital:label">
             <value>Kabupaten</value>
           </text>
@@ -811,7 +748,7 @@
             <value>Fasilitas Kesehatan</value>
           </text>
           <text id="/data/init:label">
-            <value>Mengedit Orang</value>
+            <value></value>
           </text>
           <text id="/data/person/sex:label">
             <value>Jenis kelamin</value>
@@ -825,17 +762,11 @@
           <text id="/data/person/_id:label">
             <value></value>
           </text>
-          <text id="/data/init/id_clinic:hint">
-            <value>Pilih Klinik</value>
-          </text>
-          <text id="/data/init/person_parent:label">
-            <value>-</value>
+          <text id="/data/person/role/patient:label">
+            <value>Pasien</value>
           </text>
           <text id="/data/person/meta/created_by_place_uuid:label">
             <value></value>
-          </text>
-          <text id="/data/init/id_district_hospital:hint">
-            <value>Pilih Rumah Sakit kabupaten</value>
           </text>
           <text id="/data/person/meta/created_by_person_uuid:label">
             <value></value>
@@ -844,7 +775,7 @@
             <value>Nomor Telepon Alternatif</value>
           </text>
           <text id="/data/init/id_district_hospital:label">
-            <value></value>
+            <value>Pilih Rumah Sakit kabupaten</value>
           </text>
           <text id="/data/init/edited_place_type:label">
             <value>Cari tempat oleh</value>
@@ -859,9 +790,9 @@
             <value>Lain</value>
           </text>
           <text id="/data/init/id_health_center:label">
-            <value></value>
+            <value>Pilih Fasilitas Kesehatan</value>
           </text>
-          <text id="/data/init/name:label">
+          <text id="/data/person/type:label">
             <value></value>
           </text>
           <text id="/data/init/change_parent/false:label">
@@ -877,7 +808,7 @@
             <value>Daerah</value>
           </text>
           <text id="/data/init/id_clinic:label">
-            <value></value>
+            <value>Pilih Klinik</value>
           </text>
           <text id="/data/person/name:label">
             <value>Nama</value>
@@ -909,16 +840,13 @@
           <text id="/data/person/role/nurse:label">
             <value>Perawat</value>
           </text>
-          <text id="/data/person/role/patient:label">
-            <value>Pasien</value>
-          </text>
           <text id="/data/person/role_other:label">
-            <value></value>
+            <value>Tentukan lainnya</value>
           </text>
         </translation>
       </itext>
       <instance>
-        <data delimiter="#" id="contact:person:edit" prefix="J1!contact:person:edit!" version="2018-06-21_07-31">
+        <data delimiter="#" id="contact:person:edit" prefix="J1!contact:person:edit!" version="2018-06-29_14-52">
           <inputs>
             <meta>
               <location>
@@ -1068,15 +996,12 @@
       </select1>
       <input appearance="db-object bind-id-only" ref="/data/init/id_district_hospital">
         <label ref="jr:itext('/data/init/id_district_hospital:label')"/>
-        <hint ref="jr:itext('/data/init/id_district_hospital:hint')"/>
       </input>
       <input appearance="db-object bind-id-only" ref="/data/init/id_health_center">
         <label ref="jr:itext('/data/init/id_health_center:label')"/>
-        <hint ref="jr:itext('/data/init/id_health_center:hint')"/>
       </input>
       <input appearance="db-object bind-id-only" ref="/data/init/id_clinic">
         <label ref="jr:itext('/data/init/id_clinic:label')"/>
-        <hint ref="jr:itext('/data/init/id_clinic:hint')"/>
       </input>
     </group>
     <group appearance="field-list" ref="/data/person">
@@ -1133,7 +1058,6 @@
       </select1>
       <input ref="/data/person/role_other">
         <label ref="jr:itext('/data/person/role_other:label')"/>
-        <hint ref="jr:itext('/data/person/role_other:hint')"/>
       </input>
       <input ref="/data/person/external_id">
         <label ref="jr:itext('/data/person/external_id:label')"/>
