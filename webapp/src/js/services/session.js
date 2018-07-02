@@ -41,7 +41,7 @@ var COOKIE_NAME = 'userCtx',
       };
 
       var logout = function() {
-        $http.delete('/_session').then(navigateToLogin);
+        $http.delete('/_session').finally(navigateToLogin);
       };
 
       var refreshUserCtx = function(callback) {
