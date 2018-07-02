@@ -145,6 +145,11 @@ module.exports = {
         const stateChangesByDocId = applyTaskStateChangesToDocs(taskStateChanges, docs);
         docs = docs.filter(doc => stateChangesByDocId[doc._id] && stateChangesByDocId[doc._id].length);
 
+        if (!docs.length) {
+          // nothing to update
+          return callback(null, {success: true});
+        }
+
         db.medic.bulk({docs: docs}, (err, results) => {
           if (err) {
             return callback(err);
