@@ -436,12 +436,8 @@ describe('changes handler', () => {
         utils.saveDocs(allowedDocs),
         utils.saveDocs(deniedDocs)
       ])
-        .then(() => Promise.all([
-          requestChanges('bob', { limit: 7 }),
-          utils.getDoc('fixture:user:bob')
-        ]))
-        .then(([ changes, userBob ]) => {
-          console.log(userBob);
+        .then(() =>requestChanges('bob', { limit: 7 }))
+        .then(changes => {
           assertChangeIds(changes,
             'org.couchdb.user:bob',
             'fixture:user:bob',

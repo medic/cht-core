@@ -471,7 +471,7 @@ const changesHandler = _.partial(require('./controllers/changes').request, proxy
       changesPath = routePrefix + '_changes(/*)?';
 
 app.get(changesPath, authorizationMiddleware.requireAuthenticatedUser, changesHandler);
-app.postJson(changesPath, authorizationMiddleware.requireAuthenticatedUser, changesHandler);
+app.post(changesPath, jsonParser, authorizationMiddleware.requireAuthenticatedUser, changesHandler);
 
 // authorization middleware proxy online users requests directly to CouchDB
 // reads offline users `user-settings` and saves it as `req.userCtx`

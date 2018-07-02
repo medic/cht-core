@@ -66,7 +66,7 @@ const DOCS_TO_KEEP = [
   /^org.couchdb.user/,
 ];
 
-describe('routing', () =>{
+describe('routing', () => {
   beforeAll(done => {
     utils
       .saveDoc(parentPlace)
@@ -483,14 +483,26 @@ describe('routing', () =>{
         });
     });
 
-    it('blocks direct access to CouchDB', () => {
+    it('blocks direct access to CouchDB and to fauxton', () => {
       return Promise
         .all([
           utils
             .request(_.extend({ path: '/some-new-db', method: 'PUT'}, offlineRequestOptions))
             .catch(err => err),
           utils
-            .requestOnTestDb(_.extend({ path: '/a/b/c', method: 'GET' }, offlineRequestOptions))
+            .request(_.extend({ path: '/_utils' }, offlineRequestOptions))
+            .catch(err => err),
+          utils
+            .request(_.extend({ path: '/_utils/something' }, offlineRequestOptions))
+            .catch(err => err),
+          utils
+            .request(_.extend({ path: '//_utils'}, offlineRequestOptions))
+            .catch(err => err),
+          utils
+            .request(_.extend({ path: '//_utils//something/else'}, offlineRequestOptions))
+            .catch(err => err),
+          utils
+            .requestOnTestDb(_.extend({ path: '/a/b/c' }, offlineRequestOptions))
             .catch(err => err)
         ])
         .then(results => {
