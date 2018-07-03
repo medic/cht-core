@@ -569,7 +569,7 @@ proxy.on('proxyReq', function(proxyReq, req, res) {
 // because these are longpolls, we need to manually flush the CouchDB heartbeats through compression
 proxyForChanges.on('proxyRes', (proxyRes, req, res) => {
   if (!res.headersSent) {
-    _.each(proxyRes.headers, (value, header) => res.setHeader(header, value));
+    res.writeHead(proxyRes.statusCode, proxyRes.headers);
   }
 
   proxyRes.pipe(res);
