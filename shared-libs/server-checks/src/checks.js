@@ -73,4 +73,4 @@ module.exports = {
   envVarsCheck: () => envVarsCheck(),
   couchDbNoAdminPartyModeCheck: () => couchDbNoAdminPartyModeCheck(),
   couchDbVersionCheck: (db) => couchDbVersionCheck(db)
-}
+};

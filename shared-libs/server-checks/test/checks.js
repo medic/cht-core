@@ -13,8 +13,8 @@ describe('Server Checks service', function() {
 
   beforeEach(() => {
     originalProcess = process;
-    sinon.stub(console, "log").returns(void 0);
-    sinon.stub(console, "error").returns(void 0);
+    sinon.stub(console, 'log').returns(void 0);
+    sinon.stub(console, 'error').returns(void 0);
     DB = {query: sinon.stub()};
   });
 
@@ -53,7 +53,7 @@ describe('Server Checks service', function() {
       chai.assert.equal(console.log.callCount, 1);
       chai.assert.equal(console.error.callCount, 1);
       chai.assert.equal(log(0), 'Error: Node version 6.1.0 is not supported, minimum is 8.0.0');
-      chai.assert.equal(error(0), "Fatal error initialising medic-api");
+      chai.assert.equal(error(0), 'Fatal error initialising medic-api');
     });
 
     it('valid env vars', () => {
@@ -75,7 +75,7 @@ describe('Server Checks service', function() {
     });
 
     it('couchdb admin party mode', () => {
-      process = {env: {COUCH_URL: 'http://localhost:5984'}}
+      process = {env: {COUCH_URL: 'http://localhost:5984'}};
       sinon.stub(http, 'get').callsArgWith(1, {statusCode: 200});
       return service.couchDbNoAdminPartyModeCheck().catch((err) => {
         chai.assert.equal(console.error.callCount, 2);

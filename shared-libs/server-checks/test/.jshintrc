@@ -1,7 +1,0 @@
-{
-  "extends": "../../.jshintrc",
-  "esversion"     : 5,
-  "globals"       : {
-      "Promise"   : true
-  }
-}
