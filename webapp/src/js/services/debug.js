@@ -24,6 +24,7 @@ angular.module('inboxServices').config([
           $logProvider.debugEnabled(bool);
           var db = pouchDB.debug ? pouchDB : window.PouchDB;
           if (bool) {
+            PouchDB.plugin(require('pouchdb-debug'));
             db.debug.enable('*');
             ipCookie(cookieName, bool, { expires: 360, path: '/' });
           } else {

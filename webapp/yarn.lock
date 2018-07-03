@@ -653,6 +653,12 @@ pouchdb-core@^7.0.0:
     pouchdb-merge "7.0.0"
     pouchdb-utils "7.0.0"
 
+pouchdb-debug@^7.0.0:
+  version "7.0.0"
+  resolved "https://registry.yarnpkg.com/pouchdb-debug/-/pouchdb-debug-7.0.0.tgz#db028678b952206ec64fd6fa76aa1dc62c0fe9a5"
+  dependencies:
+    debug "3.1.0"
+
 pouchdb-errors@7.0.0:
   version "7.0.0"
   resolved "https://registry.yarnpkg.com/pouchdb-errors/-/pouchdb-errors-7.0.0.tgz#4e2a5a8b82af20cbe5f9970ca90b7ec74563caa0"
