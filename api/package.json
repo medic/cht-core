@@ -27,7 +27,7 @@
     "fast-csv": "^2.4.1",
     "google-libphonenumber": "^3.1.8",
     "helmet": "^3.12.1",
-    "http-proxy": "^1.16.2",
+    "http-proxy": "^1.17.0",
     "lineage": "file:../shared-libs/lineage",
     "moment": "^2.22.0",
     "morgan": "^1.9.0",

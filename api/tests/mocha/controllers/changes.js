@@ -38,7 +38,13 @@ describe('Changes controller', () => {
     clock = sinon.useFakeTimers();
     emitters = [];
     testReq = { on: sinon.stub().callsFake((event, fn) => reqOnClose = fn)};
-    testRes = { type: sinon.stub(), write: sinon.stub(), end: sinon.stub(), setHeader: sinon.stub() };
+    testRes = {
+      type: sinon.stub(),
+      write: sinon.stub(),
+      end: sinon.stub(),
+      setHeader: sinon.stub(),
+      flush: sinon.stub()
+    };
     userCtx = { name: 'user', facility_id: 'facility', contact_id: 'contact' };
     proxy = { web: sinon.stub() };
 
@@ -249,6 +255,7 @@ describe('Changes controller', () => {
         emitter.emit('change', { id: 'change' }, 0, 'seq-1');
         return controller
           .request(proxy, testReq, testRes)
+          .then(nextTick)
           .then(() => {
             const feed = controller._getNormalFeeds()[0];
             feed.req.should.equal(testReq);
@@ -818,9 +825,21 @@ describe('Changes controller', () => {
       testReq.query = { feed: 'longpoll' };
       testReq.uniqId = 'one';
       const testReq2 = { on: sinon.stub(), uniqId: 'two', query: { feed: 'longpoll' } };
-      const testRes2 = { type: sinon.stub(), write: sinon.stub(), end: sinon.stub(), setHeader: sinon.stub() };
+      const testRes2 = {
+        type: sinon.stub(),
+        write: sinon.stub(),
+        end: sinon.stub(),
+        setHeader: sinon.stub(),
+        flush: sinon.stub()
+      };
       const testReq3 = { on: sinon.stub(), uniqId: 'three', query: { feed: 'longpoll' } };
-      const testRes3 = { type: sinon.stub(), write: sinon.stub(), end: sinon.stub(), setHeader: sinon.stub() };
+      const testRes3 = {
+        type: sinon.stub(),
+        write: sinon.stub(),
+        end: sinon.stub(),
+        setHeader: sinon.stub(),
+        flush: sinon.stub()
+      };
 
       return Promise
         .all([

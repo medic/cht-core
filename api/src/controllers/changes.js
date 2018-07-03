@@ -165,6 +165,7 @@ const writeDownstream = (feed, content, end) => {
     return;
   }
   feed.res.write(content);
+  feed.res.flush();
   if (end) {
     feed.res.end();
   }
@@ -223,7 +224,7 @@ const getChanges = feed => {
           return endFeed(feed);
         }
         // retry if malformed response
-        getChanges(feed);
+        return getChanges(feed);
       }
 
       feed.results = mergeResults(responses);
