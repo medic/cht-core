@@ -11,6 +11,7 @@ const _ = require('underscore'),
       target = 'http://' + db.settings.host + ':' + db.settings.port,
       proxy = require('http-proxy').createProxyServer({ target: target }),
       proxyForAuditing = require('http-proxy').createProxyServer({ target: target }),
+      proxyForChanges = require('http-proxy').createProxyServer({ target: target, selfHandleResponse: true }),
       login = require('./controllers/login'),
       smsGateway = require('./controllers/sms-gateway'),
       exportData = require('./controllers/export-data'),
@@ -477,7 +478,7 @@ app.putJson(`${appPrefix}update_settings/${db.settings.ddoc}`, settings.put); //
 app.putJson('/api/v1/settings', settings.put);
 
 // DB replication endpoint
-const changesHandler = _.partial(require('./controllers/changes').request, proxy);
+const changesHandler = _.partial(require('./controllers/changes').request, proxyForChanges);
 app.get(pathPrefix + '_changes', changesHandler);
 app.postJson(pathPrefix + '_changes', changesHandler);
 
@@ -492,7 +493,7 @@ app.get(metaPathPrefix + '_changes', (req, res) => {
     // Issue: #4312
     res.setHeader('X-Accel-Buffering', 'no');
   }
-  proxy.web(req, res);
+  proxyForChanges.web(req, res);
 });
 
 // Attempting to create the user's personal meta db
@@ -565,6 +566,16 @@ proxy.on('proxyReq', function(proxyReq, req, res) {
   }
 });
 
+// because these are longpolls, we need to manually flush the CouchDB heartbeats through compression
+proxyForChanges.on('proxyRes', (proxyRes, req, res) => {
+  if (!res.headersSent) {
+    _.each(proxyRes.headers, (value, header) => res.setHeader(header, value));
+  }
+
+  proxyRes.pipe(res);
+  proxyRes.on('data', () => res.flush());
+});
+
 /**
  * Make sure requests to these urls sans trailing / are redirected to the
  * correct slashed endpoint to avoid weird bugs
@@ -604,6 +615,10 @@ proxy.on('error', function(err, req, res) {
 });
 
 proxyForAuditing.on('error', function(err, req, res) {
+  serverUtils.serverError(JSON.stringify(err), req, res);
+});
+
+proxyForChanges.on('error', (err, req, res) => {
   serverUtils.serverError(JSON.stringify(err), req, res);
 });
 

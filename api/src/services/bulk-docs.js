@@ -115,6 +115,7 @@ module.exports = {
     res.type('application/json');
     res.setHeader('X-Content-Type-Options', 'nosniff');
     res.write('[');
+    res.flush();
     return batches.reduce((promise, batch, index) => {
       return promise
         .then(() => fetchDocs(batch))
@@ -125,10 +126,12 @@ module.exports = {
             resString += ',';
           }
           res.write(resString);
+          res.flush();
         });
     }, Promise.resolve())
       .then(() => {
         res.write(']');
+        res.flush();
         res.end();
       });
   }

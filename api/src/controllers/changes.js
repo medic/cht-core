@@ -165,6 +165,7 @@ const writeDownstream = (feed, content, end) => {
     return;
   }
   feed.res.write(content);
+  feed.res.flush();
   if (end) {
     feed.res.end();
   }
