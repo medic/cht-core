@@ -13,7 +13,7 @@ angular.module('inboxServices').config([
     'use strict';
 
     $provide.service('Debug', [
-      'ipCookie', 'pouchDB', function(ipCookie, pouchDB) {
+      '$window', 'ipCookie', 'pouchDB', function($window, ipCookie, pouchDB) {
         var cookieName = 'medic-webapp-debug';
         var get = function() {
           return Boolean(ipCookie(cookieName));
