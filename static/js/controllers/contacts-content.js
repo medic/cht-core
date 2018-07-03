@@ -56,6 +56,15 @@ angular.module('inboxControllers').controller('ContactsContentCtrl',
         });
     };
 
+    var translate = function(value, task) {
+      if (_.isString(value)) {
+        // new translation key style
+        return $translate.instant(value, task);
+      }
+      // old message array style
+      return TranslateFrom(value, task);
+    };
+
     var getTasks = function() {
       return Auth('can_view_tasks')
         .then(function() {
@@ -69,13 +78,8 @@ angular.module('inboxControllers').controller('ContactsContentCtrl',
             function(areTasksEnabled, tasks) {
               if ($scope.selected) {
                 tasks.forEach(function(task) {
-                  if (_.isString(task.title)) {
-                    // new translation key style
-                    task.title = $translate.instant(task.title, task);
-                  } else {
-                    // old message array style
-                    task.title = TranslateFrom(task.title, task);
-                  }
+                  task.title = translate(task.title, task);
+                  task.priorityLabel = translate(task.priorityLabel, task);
                 });
                 $scope.selected.areTasksEnabled = areTasksEnabled;
                 $scope.selected.tasks = tasks;
