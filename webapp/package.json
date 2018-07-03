@@ -34,7 +34,7 @@
     "font-awesome": "^4.7.0",
     "google-libphonenumber": "^3.1.8",
     "gsm": "^0.1.4",
-    "jquery": "3.2.x",
+    "jquery": "^3.3.1",
     "lineage": "file:../shared-libs/lineage",
     "medic-enketo-xslt": "^1.5.0",
     "medic-nootils": "^1.1.0",

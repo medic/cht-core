@@ -171,9 +171,9 @@ jquery-mousewheel@~3.1.13:
   version "3.1.13"
   resolved "https://registry.yarnpkg.com/jquery-mousewheel/-/jquery-mousewheel-3.1.13.tgz#06f0335f16e353a695e7206bf50503cb523a6ee5"
 
-jquery@3.2.x:
-  version "3.2.1"
-  resolved "https://registry.yarnpkg.com/jquery/-/jquery-3.2.1.tgz#5c4d9de652af6cd0a770154a631bba12b015c787"
+jquery@^3.3.1:
+  version "3.3.1"
+  resolved "https://registry.yarnpkg.com/jquery/-/jquery-3.3.1.tgz#958ce29e81c9790f31be7792df5d4d95fc57fbca"
 
 just-extend@^1.1.27:
   version "1.1.27"
@@ -269,6 +269,8 @@ pathval@^1.0.0:
 
 "phone-number@file:../shared-libs/phone-number":
   version "1.0.0"
+  dependencies:
+    google-libphonenumber "^3.1.8"
 
 pouchdb-browser@^6.0.7, pouchdb-browser@^6.4.3:
   version "6.4.3"
