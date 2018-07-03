@@ -1,0 +1,102 @@
+var chai = require('chai'),
+    sinon = require('sinon').sandbox.create(),
+    service = require('../src/checks'),
+    http = require('http'),
+    request = require('request');
+
+describe('Server Checks service', function() {
+
+  'use strict';
+
+
+  var DB, originalProcess;
+
+  beforeEach(() => {
+    originalProcess = process;
+    sinon.stub(console, "log").returns(void 0);
+    sinon.stub(console, "error").returns(void 0);
+    DB = {query: sinon.stub()};
+  });
+
+  afterEach(() => {
+    process = originalProcess;
+    sinon.restore();
+  });
+
+  describe('checks', () => {
+
+    function log(order) {
+      return console.log.getCall(order).args[0].toString();
+    }
+
+    function error(order) {
+      return console.error.getCall(order).args[0].toString();
+    }
+
+    it('valid node version', function() {
+      process = {
+        versions: {node: '9.11.1'},
+        env: {},
+        exit: () => 0,
+      };
+      service.nodeVersionCheck('api');
+      chai.assert.isTrue(console.log.called);
+      chai.assert.equal(console.log.callCount, 2);
+      chai.assert.isTrue(log(0).startsWith('Node Environment Options'));
+      chai.expect(log(1)).to.equal('Node Version: 9.11.1 in development mode');
+    });
+
+    it('invalid node version', function() {
+      process = {versions: {node: '6.1.0'}, exit: () => 0};
+      service.nodeVersionCheck('api');
+      chai.assert.isTrue(console.log.called);
+      chai.assert.equal(console.log.callCount, 1);
+      chai.assert.equal(console.error.callCount, 1);
+      chai.assert.equal(log(0), 'Error: Node version 6.1.0 is not supported, minimum is 8.0.0');
+      chai.assert.equal(error(0), "Fatal error initialising medic-api");
+    });
+
+    it('valid env vars', () => {
+      process = {env: {COUCH_URL: 'something', COUCH_NODE_NAME: 'something'}};
+      return service.envVarsCheck();
+    });
+
+    it('invalid env vars', () => {
+      process = {env: {COUCH_URL: 'something'}};
+      return service.envVarsCheck().catch((err) => {
+        chai.assert.isTrue(err.startsWith('At least one required environment'));
+      });
+    });
+
+    it('couchdb no admin party mode', () => {
+      process = {env: {COUCH_URL: 'http://localhost:5984'}};
+      sinon.stub(http, 'get').callsArgWith(1, {statusCode: 401});
+      return service.couchDbNoAdminPartyModeCheck();
+    });
+
+    it('couchdb admin party mode', () => {
+      process = {env: {COUCH_URL: 'http://localhost:5984'}}
+      sinon.stub(http, 'get').callsArgWith(1, {statusCode: 200});
+      return service.couchDbNoAdminPartyModeCheck().catch((err) => {
+        chai.assert.equal(console.error.callCount, 2);
+        chai.assert.equal(error(0), 'Expected a 401 when accessing db without authentication.');
+        chai.assert.equal(error(1), 'Instead we got a 200');
+        chai.assert.isTrue(err.toString().startsWith('Error: CouchDB security seems to be misconfigured'));
+      });
+    });
+
+    it('couchdb valid version check', function() {
+      sinon.stub(request, 'get').callsArgWith(1, null, null, {version: '2'});
+      return service.couchDbVersionCheck({serverUrl: 'something'}).then(() => {
+        chai.assert.equal(log(0), 'CouchDB Version: 2');
+      });
+    });
+
+    it('couchdb invalid version check', function() {
+      sinon.stub(request, 'get').callsArgWith(1, 'error');
+      return service.couchDbVersionCheck({serverUrl: 'something'}).catch(err => {
+        chai.assert.equal(err, 'error');
+      });
+    });
+  });
+});

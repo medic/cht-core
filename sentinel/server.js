@@ -1,5 +1,6 @@
 const config = require('./src/config'),
       logger = require('./src/lib/logger'),
+      serverChecks = require('@shared-libs/server-checks'),
       loglevel = process.argv[2];
 
 if (loglevel === 'debug') {
@@ -17,22 +18,7 @@ process.on('unhandledRejection', reason => {
   console.error(reason);
 });
 
-const MIN_MAJOR = 8;
-const nodeVersionCheck = () => {
-  try {
-    const [major, minor, patch] = process.versions.node.split('.').map(Number);
-    if (major < MIN_MAJOR) {
-      throw new Error(`Node version ${major}.${minor}.${patch} is not supported, minimum is ${MIN_MAJOR}.0.0`);
-    }
-    console.log(`Node Version: ${major}.${minor}.${patch}`);
-  } catch (err) {
-    console.error('Fatal error intialising medic-sentinel');
-    console.log(err);
-    process.exit(1);
-  }
-};
-
-nodeVersionCheck();
+serverChecks.nodeVersionCheck('sentinel');
 
 config.init()
   .then(() => {
