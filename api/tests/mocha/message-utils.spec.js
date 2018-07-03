@@ -97,7 +97,7 @@ describe('message utils', () => {
     ]});
 
     const bulk = sinon.stub(db.medic, 'bulkDocs').callsArgWith(1, null, []);
-    const setTaskState = sinon.stub(taskUtils, 'setTaskState');
+    const setTaskState = sinon.stub(taskUtils, 'setTaskState').returns(true);
 
     controller.updateMessageTaskStates([
       {
@@ -225,6 +225,102 @@ describe('message utils', () => {
       chai.expect(bulk.args[0][0][1]._id).to.equal('testDoc2');
       chai.expect(bulk.args[1][0].length).to.equal(1);
       chai.expect(bulk.args[1][0][0]._id).to.equal('testDoc2');
+
+      done();
+    });
+  });
+
+  it('does not save docs which have not received any updates', done => {
+
+    sinon.stub(db.medic, 'query').callsArgWith(2, null, {rows: [
+      {id: 'testMessageId1'},
+      {id: 'testMessageId2'},
+      {id: 'testMessageId3'},
+      {id: 'testMessageId4'},
+      {id: 'testMessageId5'},
+      {id: 'testMessageId6'}
+    ]});
+
+    sinon.stub(db.medic, 'allDocs').callsArgWith(1, null, {rows: [
+      {
+        doc: {
+          _id: 'testDoc',
+          tasks: [{
+            messages: [{
+              uuid: 'testMessageId1'
+            }]
+          }],
+          scheduled_tasks: [{
+            messages: [{
+              uuid: 'testMessageId2'
+            }]
+          }]
+        }
+      },
+      {
+        doc: {
+          _id: 'testDoc2',
+          tasks: [{
+            messages: [{
+              uuid: 'testMessageId3',
+            }]
+          }],
+          scheduled_tasks: [{
+            messages: [{
+              uuid: 'testMessageId4'
+            }]
+          }]
+        }
+      },
+      {
+        doc: {
+          _id: 'testDoc3',
+          tasks: [{
+            messages: [{
+              uuid: 'testMessageId5',
+            }]
+          }],
+          scheduled_tasks: [{
+            messages: [{
+              uuid: 'testMessageId6'
+            }]
+          }]
+        }
+      }
+    ]});
+
+    const bulk = sinon.stub(db.medic, 'bulkDocs').callsArgWith(1, null, []);
+    const setTaskState = sinon.stub(taskUtils, 'setTaskState');
+    setTaskState
+      .withArgs(sinon.match({ messages: [{ uuid: 'testMessageId1' }]})).returns(true)   //testDoc
+      .withArgs(sinon.match({ messages: [{ uuid: 'testMessageId2' }]})).returns(false)  //testDoc
+      .withArgs(sinon.match({ messages: [{ uuid: 'testMessageId3' }]})).returns(false)  //testDoc2
+      .withArgs(sinon.match({ messages: [{ uuid: 'testMessageId4' }]})).returns(true)   //testDoc2
+      .withArgs(sinon.match({ messages: [{ uuid: 'testMessageId5' }]})).returns(false)  //testDoc3
+      .withArgs(sinon.match({ messages: [{ uuid: 'testMessageId6' }]})).returns(false); //testDoc3
+
+    controller.updateMessageTaskStates([
+      { messageId: 'testMessageId1', state: 'state' },
+      { messageId: 'testMessageId2', state: 'state' },
+      { messageId: 'testMessageId3', state: 'state' },
+      { messageId: 'testMessageId4', state: 'state' },
+      { messageId: 'testMessageId5', state: 'state' },
+      { messageId: 'testMessageId6', state: 'state' }
+    ], (err, result) => {
+      chai.expect(err).to.equal(null);
+      chai.expect(result).to.deep.equal({success: true});
+
+      chai.expect(setTaskState.callCount).to.equal(6);
+      chai.expect(setTaskState.args[0]).to.deep.equal([{ messages: [{uuid: 'testMessageId1'}]}, 'state', undefined]);
+      chai.expect(setTaskState.args[1]).to.deep.equal([{ messages: [{uuid: 'testMessageId2'}]}, 'state', undefined]);
+      chai.expect(setTaskState.args[2]).to.deep.equal([{ messages: [{uuid: 'testMessageId3'}]}, 'state', undefined]);
+      chai.expect(setTaskState.args[3]).to.deep.equal([{ messages: [{uuid: 'testMessageId4'}]}, 'state', undefined]);
+      chai.expect(setTaskState.args[4]).to.deep.equal([{ messages: [{uuid: 'testMessageId5'}]}, 'state', undefined]);
+      chai.expect(setTaskState.args[5]).to.deep.equal([{ messages: [{uuid: 'testMessageId6'}]}, 'state', undefined]);
+
+      chai.expect(bulk.args[0][0].length).to.equal(2);
+      chai.expect(bulk.args[0][0][0]._id).to.equal('testDoc');
+      chai.expect(bulk.args[0][0][1]._id).to.equal('testDoc2');
 
       done();
     });
