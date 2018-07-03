@@ -8,19 +8,6 @@ const FIREWALL_ERROR = {
 };
 
 module.exports = {
-  // authorization for `_compact`, `_view_cleanup`, `_revs_limit` endpoints is handled by CouchDB
-  ONLINE_ONLY_ENDPOINTS: [
-    '_design/*/_list/*',
-    '_design/*/_show/*',
-    '_design/*/_view/*',
-    '_find(/*)?',
-    '_explain(/*)?',
-    '_index(/*)?',
-    '_ensure_full_commit(/*)?',
-    '_security(/*)?',
-    '_purge(/*)?'
-  ],
-
   // saves CouchDB _session information as `userCtx` in the `req` object
   getUserCtx: (req, res, next) => {
     return auth

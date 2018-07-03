@@ -134,10 +134,23 @@ app.postJson(routePrefix + 'login', login.post);
 // saves CouchDB _session information as `userCtx` in the `req` object
 app.use(authorizationMiddleware.getUserCtx);
 
+// authorization for `_compact`, `_view_cleanup`, `_revs_limit` endpoints is handled by CouchDB
+const ONLINE_ONLY_ENDPOINTS = [
+  '_design/*/_list/*',
+  '_design/*/_show/*',
+  '_design/*/_view/*',
+  '_find(/*)?',
+  '_explain(/*)?',
+  '_index(/*)?',
+  '_ensure_full_commit(/*)?',
+  '_security(/*)?',
+  '_purge(/*)?'
+];
+
 // block offline users from accessing some unaudited CouchDB endpoints
-authorizationMiddleware.ONLINE_ONLY_ENDPOINTS.forEach(url => {
-  app.all(routePrefix + url, authorizationMiddleware.offlineUserFirewall);
-});
+ONLINE_ONLY_ENDPOINTS.forEach(url =>
+  app.all(routePrefix + url, authorizationMiddleware.offlineUserFirewall)
+);
 
 var UNAUDITED_ENDPOINTS = [
   // This takes arbitrary JSON, not whole documents with `_id`s, so it's not
