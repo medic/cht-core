@@ -16,7 +16,8 @@ describe('Bulk Docs Service', function () {
       write: sinon.stub(),
       end: sinon.stub(),
       type: () => {},
-      setHeader: () => {}
+      setHeader: () => {},
+      flush: sinon.stub()
     };
   });
 

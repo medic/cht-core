@@ -224,7 +224,7 @@ const getChanges = feed => {
           return endFeed(feed);
         }
         // retry if malformed response
-        getChanges(feed);
+        return getChanges(feed);
       }
 
       feed.results = mergeResults(responses);
