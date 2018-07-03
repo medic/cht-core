@@ -10,7 +10,7 @@
 
 ## 2.16.0
 
-_August 2, 2018_
+_July 2, 2018_
 
 ### Features
 
@@ -32,10 +32,13 @@ _August 2, 2018_
 ### Performance fixes
 
 - [#4666](https://github.com/medic/medic-webapp/issues/4666): Performance issues loading contacts
+- [#4688](https://github.com/medic/medic-webapp/issues/4688): Don't save docs that are already in the right state
 
 ### Bug fixes
 
+- [#4655](https://github.com/medic/medic-webapp/issues/4655): Action (+) menu cannot be opened on mobile
 - [#4665](https://github.com/medic/medic-webapp/issues/4665): Update google-libphonenumber
+- [#4690](https://github.com/medic/medic-webapp/issues/4690): Translation key not translated for Task in Contact page
 
 ### Technical issues
 
