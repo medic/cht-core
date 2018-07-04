@@ -30,7 +30,7 @@ function assertChangeIds(changes) {
 }
 
 function requestChanges(username, params = {}) {
-  const queryParams = _.map(params, (value, key) => `${key}=${value}`).join('&');
+  const queryParams = querystring.stringify(params);
   const options = {
     path: `/_changes${queryParams ? `?${queryParams}`: ''}`,
     auth: `${username}:${password}`
