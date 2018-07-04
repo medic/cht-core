@@ -103,12 +103,12 @@ module.exports = function(grunt) {
         options: {
           transform: ['browserify-ngannotate'],
           alias: {
-            'enketo-config': './webapp/src/js/enketo/config.json',
-            'widgets': './webapp/src/js/enketo/widgets',
+            'enketo/config': './webapp/src/js/enketo/config.json',
+            'enketo/widgets': './webapp/src/js/enketo/widgets',
             './xpath-evaluator-binding':'./webapp/src/js/enketo/OpenrosaXpathEvaluatorBinding',
             'extended-xpath': './webapp/node_modules/openrosa-xpath-evaluator/src/extended-xpath',
             'openrosa-xpath-extensions': './webapp/node_modules/openrosa-xpath-evaluator/src/openrosa-xpath-extensions',
-            'translator': './webapp/src/js/enketo/translator', // translator for enketo's internal i18n
+            'enketo/translator': './webapp/src/js/enketo/translator', // translator for enketo's internal i18n
             '../../js/dropdown.jquery': './webapp/node_modules/bootstrap/js/dropdown', // enketo currently duplicates bootstrap's dropdown code.  working to resolve this upstream https://github.com/enketo/enketo-core/issues/454
             'angular-translate-interpolation-messageformat': './webapp/node_modules/angular-translate/dist/angular-translate-interpolation-messageformat/angular-translate-interpolation-messageformat',
             'angular-translate-handler-log':  './webapp/node_modules/angular-translate/dist/angular-translate-handler-log/angular-translate-handler-log',
