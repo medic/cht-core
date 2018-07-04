@@ -1,4 +1,4 @@
-var _ = require('underscore');
+var _ = require('lodash');
 var partialParse = require('partial-json-parser');
 var utilsFactory = require('bulk-docs-utils');
 

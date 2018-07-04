@@ -1,4 +1,4 @@
-var _ = require('underscore'),
+var _ = require('lodash'),
     ExtendedXpathEvaluator = require('extended-xpath'),
     openrosaExtensions = require('openrosa-xpath-extensions'),
     medicExtensions = require('./medic-xpath-extensions'),

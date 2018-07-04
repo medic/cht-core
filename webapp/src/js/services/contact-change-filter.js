@@ -1,7 +1,7 @@
 /**
  * Service to identify relevant changes in relation to a Contact document.
  */
-var _ = require('underscore');
+var _ = require('lodash');
 
 angular.module('inboxServices').factory('ContactChangeFilter',
   function(ContactSchema) {

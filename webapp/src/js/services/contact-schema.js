@@ -1,4 +1,4 @@
-var _ = require('underscore');
+var _ = require('lodash');
 
 /**
  * Service to prepare the schema used for Enketo contact forms.

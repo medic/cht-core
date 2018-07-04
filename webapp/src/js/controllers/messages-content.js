@@ -1,4 +1,4 @@
-var _ = require('underscore');
+var _ = require('lodash');
 
 // In this context $stateParams.id (the id in the url) can be:
 //  - the _id of the contact who is sending these messages

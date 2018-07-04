@@ -1,4 +1,4 @@
-var _ = require('underscore'),
+var _ = require('lodash'),
     phoneNumber = require('phone-number'),
     format = require('../modules/format');
 

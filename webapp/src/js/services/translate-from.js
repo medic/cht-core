@@ -16,7 +16,7 @@
  * var patient = { _id: 'abc', patient: { name: 'Estelle' } };
  * translateFrom([ { locale: 'en', content: 'Go visit {{patient.name}}' }], patient);  // 'Go visit Estelle'
  */
-var _ = require('underscore');
+var _ = require('lodash');
 
 (function () {
 

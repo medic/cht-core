@@ -1,4 +1,4 @@
-var _ = require('underscore');
+var _ = require('lodash');
 var uuidV4 = require('uuid/v4');
 
 angular.module('inboxServices').service('ContactSave',

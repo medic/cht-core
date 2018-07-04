@@ -1,5 +1,5 @@
 var format = require('../modules/format'),
-    _ = require('underscore');
+    _ = require('lodash');
 
 (function () {
 

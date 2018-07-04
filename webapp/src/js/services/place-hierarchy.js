@@ -1,4 +1,4 @@
-var _ = require('underscore');
+var _ = require('lodash');
 
 /**
   Returns all places, in a hierarchy tree.

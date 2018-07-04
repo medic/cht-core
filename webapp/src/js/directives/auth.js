@@ -1,4 +1,4 @@
-var _ = require('underscore');
+var _ = require('lodash');
 
 angular.module('inboxDirectives').directive('mmAuth', function($log, Auth, $parse) {
   'use strict';

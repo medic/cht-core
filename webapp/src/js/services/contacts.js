@@ -1,4 +1,4 @@
-var _ = require('underscore'),
+var _ = require('lodash'),
     parallel = require('async/parallel');
 
 angular.module('inboxServices').factory('Contacts',

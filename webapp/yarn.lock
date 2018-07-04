@@ -709,9 +709,9 @@ lodash.isnull@^3.0.0:
   version "3.0.0"
   resolved "https://registry.yarnpkg.com/lodash.isnull/-/lodash.isnull-3.0.0.tgz#fafbe59ea1dca27eed786534039dd84c2e07c56e"
 
-lodash@^4.14.0:
-  version "4.17.5"
-  resolved "https://registry.yarnpkg.com/lodash/-/lodash-4.17.5.tgz#99a92d65c0272debe8c96b6057bc8fbfa3bed511"
+lodash@^4.14.0, lodash@^4.17.10:
+  version "4.17.10"
+  resolved "https://registry.yarnpkg.com/lodash/-/lodash-4.17.10.tgz#1b7793cf7259ea38fb3661d4d38b3260af8ae4e7"
 
 lolex@^2.2.0, lolex@^2.3.2:
   version "2.3.2"
@@ -930,6 +930,8 @@ performance-now@^2.1.0:
 
 "phone-number@file:../shared-libs/phone-number":
   version "1.0.0"
+  dependencies:
+    google-libphonenumber "^3.1.8"
 
 pojo2xml@^1.7.1:
   version "1.7.1"

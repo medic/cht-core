@@ -1,4 +1,4 @@
-var _ = require('underscore'),
+var _ = require('lodash'),
     d3 = require('d3'),
     reportingUtils = require('../modules/reporting-rates-utils');
 

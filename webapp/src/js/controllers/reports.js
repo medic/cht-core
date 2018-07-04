@@ -1,4 +1,4 @@
-var _ = require('underscore'),
+var _ = require('lodash'),
     scrollLoader = require('../modules/scroll-loader');
 
 angular.module('inboxControllers').controller('ReportsCtrl',

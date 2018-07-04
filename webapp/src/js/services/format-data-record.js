@@ -1,4 +1,4 @@
-var _ = require('underscore'),
+var _ = require('lodash'),
     messages = require('@shared-libs/message-utils'),
     lineageFactory = require('lineage');
 

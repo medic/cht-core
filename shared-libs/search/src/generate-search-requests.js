@@ -1,4 +1,4 @@
-var _ = require('underscore'),
+var _ = require('lodash'),
     moment = require('moment'),
     END_OF_ALPHABET = '\ufff0';
 

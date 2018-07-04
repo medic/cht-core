@@ -1,4 +1,4 @@
-var _ = require('underscore');
+var _ = require('lodash');
 
 // medic-webapp specific config for LiveList.
 // This service should be invoked once at startup.

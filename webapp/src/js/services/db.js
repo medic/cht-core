@@ -1,4 +1,4 @@
-var _ = require('underscore'),
+var _ = require('lodash'),
     USER_DB_SUFFIX = 'user',
     META_DB_SUFFIX = 'meta';
 

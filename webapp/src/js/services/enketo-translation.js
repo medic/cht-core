@@ -1,4 +1,4 @@
-var _ = require('underscore');
+var _ = require('lodash');
 
 function withElements(nodes) {
   return _.chain(nodes)

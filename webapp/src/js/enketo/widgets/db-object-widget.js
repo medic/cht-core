@@ -6,7 +6,7 @@ if ( typeof exports === 'object' && typeof exports.nodeName !== 'string' && type
 
 define( function( require, exports, module ) {
     'use strict';
-    var _ = require('underscore');
+    var _ = require('lodash');
     var Widget = require('enketo-core/src/js/Widget');
     var $ = require('jquery');
 

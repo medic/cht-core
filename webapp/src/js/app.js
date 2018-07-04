@@ -38,7 +38,7 @@ require('./enketo/main');
 
 var bootstrapper = require('./bootstrapper');
 var router = require('./router');
-var _ = require('underscore');
+var _ = require('lodash');
 _.templateSettings = {
   interpolate: /\{\{(.+?)\}\}/g
 };

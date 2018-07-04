@@ -1,4 +1,4 @@
-var _ = require('underscore');
+var _ = require('lodash');
 
 angular.module('inboxServices').factory('ChildFacility',
   function(DB) {

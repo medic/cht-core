@@ -1,6 +1,6 @@
 var COOKIE_NAME = 'userCtx',
     ONLINE_ROLE = 'mm-online',
-    _ = require('underscore');
+    _ = require('lodash');
 
 (function () {
 

@@ -1,4 +1,4 @@
-var _ = require('underscore');
+var _ = require('lodash');
 
 /**
  * Gets data records by the given array of ids.

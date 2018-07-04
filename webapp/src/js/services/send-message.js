@@ -1,4 +1,4 @@
-var _ = require('underscore'),
+var _ = require('lodash'),
     uuid = require('uuid/v4'),
     taskUtils = require('task-utils'),
     phoneNumber = require('phone-number');

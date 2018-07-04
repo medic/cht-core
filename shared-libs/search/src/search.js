@@ -2,7 +2,7 @@
 // Skip and Limit are not considered fast:
 //    http://docs.couchdb.org/en/latest/ddocs/views/pagination.html
 //    https://github.com/medic/medic-webapp/issues/4206
-var _ = require('underscore'),
+var _ = require('lodash'),
     GenerateSearchRequests = require('./generate-search-requests');
 
 module.exports = function(Promise, DB) {

@@ -1,4 +1,4 @@
-var _ = require('underscore');
+var _ = require('lodash');
 
 /**
  * Hydrates the given contact by uuid and creates a model which

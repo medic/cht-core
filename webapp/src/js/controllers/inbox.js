@@ -1,5 +1,5 @@
 var feedback = require('../modules/feedback'),
-    _ = require('underscore'),
+    _ = require('lodash'),
     moment = require('moment');
 
 (function () {

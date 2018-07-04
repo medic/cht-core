@@ -1,4 +1,4 @@
-var _ = require('underscore');
+var _ = require('lodash');
 
 /*
   Auth service returns a promise that will be resolved if

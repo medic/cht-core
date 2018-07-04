@@ -1,4 +1,4 @@
-var _ = require('underscore'),
+var _ = require('lodash'),
     READ_ONLY_TYPES = [ 'form', 'translations' ],
     READ_ONLY_IDS = [ 'resources', 'appcache', 'zscore-charts', 'settings' ],
     DDOC_PREFIX = [ '_design/' ],

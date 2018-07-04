@@ -1,4 +1,4 @@
-var _ = require('underscore'),
+var _ = require('lodash'),
     taskUtils = require('task-utils');
 
 (function () {

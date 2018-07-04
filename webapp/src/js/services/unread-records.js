@@ -1,4 +1,4 @@
-var _ = require('underscore'),
+var _ = require('lodash'),
     readDocs = require('../modules/read-docs'),
     TYPES = [ 'report', 'message' ];
 
