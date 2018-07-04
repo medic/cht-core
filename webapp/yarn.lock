@@ -338,23 +338,23 @@ ecc-jsbn@~0.1.1:
   dependencies:
     jsbn "~0.1.0"
 
-enketo-core@4.44.1:
-  version "4.44.1"
-  resolved "https://registry.yarnpkg.com/enketo-core/-/enketo-core-4.44.1.tgz#c1e2e4d282cb92f1c08addc9a60be8981a20d968"
+enketo-core@4.44.2:
+  version "4.44.2"
+  resolved "https://registry.yarnpkg.com/enketo-core/-/enketo-core-4.44.2.tgz#ad0368975a11f8862c0660b91cbf5e172c82a88d"
   dependencies:
     bootstrap-datepicker "1.7.x"
     bootstrap-slider-basic "3.3.x"
-    enketo-xpathjs "1.6.1"
-    jquery "3.2.x"
+    enketo-xpathjs "1.6.2"
+    jquery "3.3.x"
     jquery-touchswipe "^1.6.18"
     leaflet "0.7.x"
     lie "3.1.x"
     mergexml "1.1.2"
     signature_pad "2.3.x"
 
-enketo-xpathjs@1.6.1:
-  version "1.6.1"
-  resolved "https://registry.yarnpkg.com/enketo-xpathjs/-/enketo-xpathjs-1.6.1.tgz#18e277726e80fa41e6b1febdcd45e589e41616c7"
+enketo-xpathjs@1.6.2:
+  version "1.6.2"
+  resolved "https://registry.yarnpkg.com/enketo-xpathjs/-/enketo-xpathjs-1.6.2.tgz#822cdc188523509d03e7ecb8301eb2bd5e57ebd8"
 
 eurodigit@^3.1.1:
   version "3.1.2"
@@ -641,9 +641,9 @@ jquery-touchswipe@^1.6.18:
   version "1.6.18"
   resolved "https://registry.yarnpkg.com/jquery-touchswipe/-/jquery-touchswipe-1.6.18.tgz#fd65a09611edc3fece8ef480ae48569d42f984e2"
 
-jquery@*, jquery@3.2.x, jquery@>=1.10, "jquery@>=1.7.1 <4.0.0", jquery@>=1.8:
-  version "3.2.1"
-  resolved "https://registry.yarnpkg.com/jquery/-/jquery-3.2.1.tgz#5c4d9de652af6cd0a770154a631bba12b015c787"
+jquery@*, jquery@3.3.x, jquery@>=1.10, "jquery@>=1.7.1 <4.0.0", jquery@>=1.8, jquery@^3.3.1:
+  version "3.3.1"
+  resolved "https://registry.yarnpkg.com/jquery/-/jquery-3.3.1.tgz#958ce29e81c9790f31be7792df5d4d95fc57fbca"
 
 jsbn@~0.1.0:
   version "0.1.1"
