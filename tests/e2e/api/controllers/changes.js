@@ -238,6 +238,19 @@ describe('changes handler', () => {
         method: 'PUT'
       }))));
 
+    it('should allow DB admins to POST to _changes', () => {
+      return utils
+        .requestOnTestDb({
+          path: '/_changes?since=0&filter=_doc_ids&heartbeat=10000',
+          method: 'POST',
+          body: JSON.stringify({ doc_ids: ['org.couchdb.user:bob'] }),
+          headers: { 'Content-Type': 'application/json' }
+        })
+        .then(result => {
+          expect(result.results).toBeTruthy();
+        });
+    });
+
     it('should send heartbeats at specified intervals for all types of _changes requests', () => {
       const heartRateMonitor = options => {
         options = options || {};
