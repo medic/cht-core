@@ -229,7 +229,7 @@ angular.module('inboxServices').service('Enketo',
           try {
             return {
               id: 'contact-summary',
-              xmlStr: pojo2xml({ context: summary.context })
+              xml: $.parseXML(pojo2xml({ context: summary.context })),
             };
           } catch (e) {
             $log.error('Error while converting app_summary.contact_summary.context to xml.');
