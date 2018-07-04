@@ -338,9 +338,9 @@ ecc-jsbn@~0.1.1:
   dependencies:
     jsbn "~0.1.0"
 
-enketo-core@4.51.1:
-  version "4.51.1"
-  resolved "https://registry.yarnpkg.com/enketo-core/-/enketo-core-4.51.1.tgz#53956c4c993f1404f008b77010a3adf1316823b1"
+enketo-core@4.51.2:
+  version "4.51.2"
+  resolved "https://registry.yarnpkg.com/enketo-core/-/enketo-core-4.51.2.tgz#6ec17361d84d9a4b2ee1b649e86e9f4835e6e81b"
   dependencies:
     bootstrap-datepicker "1.8.x"
     bootstrap-slider-basic "3.3.x"
