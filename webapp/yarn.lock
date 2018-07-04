@@ -338,9 +338,9 @@ ecc-jsbn@~0.1.1:
   dependencies:
     jsbn "~0.1.0"
 
-enketo-core@4.44.2:
-  version "4.44.2"
-  resolved "https://registry.yarnpkg.com/enketo-core/-/enketo-core-4.44.2.tgz#ad0368975a11f8862c0660b91cbf5e172c82a88d"
+enketo-core@4.45.0:
+  version "4.45.0"
+  resolved "https://registry.yarnpkg.com/enketo-core/-/enketo-core-4.45.0.tgz#f4d583b73fd085d2461c80a693ce9392240385c2"
   dependencies:
     bootstrap-datepicker "1.7.x"
     bootstrap-slider-basic "3.3.x"
@@ -348,7 +348,7 @@ enketo-core@4.44.2:
     jquery "3.3.x"
     jquery-touchswipe "^1.6.18"
     leaflet "0.7.x"
-    lie "3.1.x"
+    lie "3.2.x"
     mergexml "1.1.2"
     signature_pad "2.3.x"
 
@@ -692,9 +692,9 @@ leafy@~0.0.3:
     is-extended "~0.0.3"
     string-extended "~0.0.3"
 
-lie@3.1.1, lie@3.1.x:
-  version "3.1.1"
-  resolved "https://registry.yarnpkg.com/lie/-/lie-3.1.1.tgz#9a436b2cc7746ca59de7a41fa469b3efb76bd87e"
+lie@3.1.1, lie@3.2.x:
+  version "3.2.0"
+  resolved "https://registry.yarnpkg.com/lie/-/lie-3.2.0.tgz#4f13f2f8bbb027d383db338c43043545791aa8dc"
   dependencies:
     immediate "~3.0.5"
 
