@@ -1,4 +1,4 @@
-var chai = require('chai'),
+const chai = require('chai'),
     sinon = require('sinon').sandbox.create(),
     service = require('../src/checks'),
     http = require('http'),
@@ -8,8 +8,7 @@ describe('Server Checks service', function() {
 
   'use strict';
 
-
-  var originalProcess;
+  let originalProcess;
 
   beforeEach(() => {
     originalProcess = process;
@@ -18,25 +17,25 @@ describe('Server Checks service', function() {
   });
 
   afterEach(() => {
-    process = originalProcess;
     sinon.restore();
+    process = originalProcess;
   });
 
-  function log(order) {
+  const log = order => {
     return console.log.getCall(order).args[0].toString();
-  }
+  };
 
-  function error(order) {
+  const error = order => {
     return console.error.getCall(order).args[0].toString();
-  }
+  };
 
   describe('checks', () => {
 
-    it('valid node version', function() {
+    it('valid node version', () => {
       process = {
         versions: {node: '9.11.1'},
         env: {},
-        exit: () => 0,
+        exit: () => 0
       };
       service._nodeVersionCheck();
       chai.assert.isTrue(console.log.called);
@@ -45,7 +44,7 @@ describe('Server Checks service', function() {
       chai.expect(log(1)).to.equal('Node Version: 9.11.1 in development mode');
     });
 
-    it('invalid node version', function() {
+    it('invalid node version', () => {
       process = {versions: {node: '6.1.0'}, exit: () => 0};
       service._nodeVersionCheck();
       chai.assert.isTrue(console.log.called);
@@ -84,14 +83,14 @@ describe('Server Checks service', function() {
       });
     });
 
-    it('couchdb valid version check', function() {
+    it('couchdb valid version check', () => {
       sinon.stub(request, 'get').callsArgWith(1, null, null, {version: '2'});
       return service._couchDbVersionCheck({serverUrl: 'something'}).then(() => {
         chai.assert.equal(log(0), 'CouchDB Version: 2');
       });
     });
 
-    it('couchdb invalid version check', function() {
+    it('couchdb invalid version check', () => {
       sinon.stub(request, 'get').callsArgWith(1, 'error');
       return service._couchDbVersionCheck({serverUrl: 'something'}).catch(err => {
         chai.assert.equal(err, 'error');
@@ -99,7 +98,8 @@ describe('Server Checks service', function() {
     });
   });
 
-  describe('check', () => {
+  describe('entry point check', () => {
+
     it('valid server', function() {
       process = {
         versions: {node: '9.11.1'},
@@ -107,11 +107,11 @@ describe('Server Checks service', function() {
           COUCH_URL: 'http://admin:pass@localhost:5984',
           COUCH_NODE_NAME: 'something'
         },
-        exit: () => 0,
+        exit: () => 0
       };
       sinon.stub(http, 'get').callsArgWith(1, {statusCode: 401});
       sinon.stub(request, 'get').callsArgWith(1, null, null, {version: '2'});
-      return service.check();
+      return service.check({serverUrl: 'something'});
     });
 
     it('invalid server', function() {
@@ -120,11 +120,11 @@ describe('Server Checks service', function() {
         env: {
           COUCH_URL: 'http://admin:pass@localhost:5984'
         },
-        exit: () => 0,
+        exit: () => 0
       };
       sinon.stub(http, 'get').callsArgWith(1, {statusCode: 401});
       sinon.stub(request, 'get').callsArgWith(1, null, null, {version: '2'});
-      return service.check().catch(err => {
+      return service.check({serverUrl: 'something'}).catch(err => {
         chai.assert.isTrue(err.startsWith('At least one required environment'));
       });
     });
