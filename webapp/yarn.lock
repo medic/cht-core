@@ -276,6 +276,10 @@ concat-map@0.0.1:
   version "0.0.1"
   resolved "https://registry.yarnpkg.com/concat-map/-/concat-map-0.0.1.tgz#d8a96bd77fd68df7793a73036a3ba0d5405d477b"
 
+core-js@^2.5.7:
+  version "2.5.7"
+  resolved "https://registry.yarnpkg.com/core-js/-/core-js-2.5.7.tgz#f972608ff0cead68b841a16a932d0b183791814e"
+
 core-util-is@1.0.2:
   version "1.0.2"
   resolved "https://registry.yarnpkg.com/core-util-is/-/core-util-is-1.0.2.tgz#b5fd54220aa2bc5ab57aab7140c940754503c1a7"
@@ -338,23 +342,26 @@ ecc-jsbn@~0.1.1:
   dependencies:
     jsbn "~0.1.0"
 
-enketo-core@4.51.2:
-  version "4.51.2"
-  resolved "https://registry.yarnpkg.com/enketo-core/-/enketo-core-4.51.2.tgz#6ec17361d84d9a4b2ee1b649e86e9f4835e6e81b"
+enketo-core@^4.54.2:
+  version "4.54.2"
+  resolved "https://registry.yarnpkg.com/enketo-core/-/enketo-core-4.54.2.tgz#6000e8d9b711211b06ec620db595446c94270ed3"
   dependencies:
     bootstrap-datepicker "1.8.x"
     bootstrap-slider-basic "3.3.x"
-    enketo-xpathjs "1.8.0"
+    core-js "^2.5.7"
+    enketo-xpathjs "1.8.1"
+    html5sortable "^0.9.3"
     jquery "3.3.x"
     jquery-touchswipe "^1.6.18"
-    leaflet "0.7.x"
-    lie "3.3.x"
+    leaflet "1.3.x"
+    leaflet-draw "^1.0.2"
+    leaflet.gridlayer.googlemutant "0.7.x"
     mergexml "1.1.2"
     signature_pad "2.3.x"
 
-enketo-xpathjs@1.8.0:
-  version "1.8.0"
-  resolved "https://registry.yarnpkg.com/enketo-xpathjs/-/enketo-xpathjs-1.8.0.tgz#0fd2b64dac98d9c8f7505cef36c1dac76db6a507"
+enketo-xpathjs@1.8.1:
+  version "1.8.1"
+  resolved "https://registry.yarnpkg.com/enketo-xpathjs/-/enketo-xpathjs-1.8.1.tgz#5a72ac3137ffd53467b1ee9f6c41a340378c8610"
 
 eurodigit@^3.1.1:
   version "3.1.2"
@@ -503,6 +510,10 @@ ht@~0.0.2:
     declare.js "~0.0.3"
     extended "~0.0.3"
     is-extended "~0.0.3"
+
+html5sortable@^0.9.3:
+  version "0.9.3"
+  resolved "https://registry.yarnpkg.com/html5sortable/-/html5sortable-0.9.3.tgz#4114020b6742bbd4ed42f22f37ccffc8baeeb402"
 
 http-signature@~1.2.0:
   version "1.2.0"
@@ -678,9 +689,17 @@ keypress@0.1.x:
   version "0.1.0"
   resolved "https://registry.yarnpkg.com/keypress/-/keypress-0.1.0.tgz#4a3188d4291b66b4f65edb99f806aa9ae293592a"
 
-leaflet@0.7.x:
-  version "0.7.7"
-  resolved "https://registry.yarnpkg.com/leaflet/-/leaflet-0.7.7.tgz#1e352ba54e63d076451fa363c900890cb2cf75ee"
+leaflet-draw@^1.0.2:
+  version "1.0.2"
+  resolved "https://registry.yarnpkg.com/leaflet-draw/-/leaflet-draw-1.0.2.tgz#212d1d958a53b849bec19a2135d39c13ed012559"
+
+leaflet.gridlayer.googlemutant@0.7.x:
+  version "0.7.0"
+  resolved "https://registry.yarnpkg.com/leaflet.gridlayer.googlemutant/-/leaflet.gridlayer.googlemutant-0.7.0.tgz#cd64dd0e33720fb44ac8d3e13a11c44a72843d28"
+
+leaflet@1.3.x:
+  version "1.3.1"
+  resolved "https://registry.yarnpkg.com/leaflet/-/leaflet-1.3.1.tgz#86f336d2fb0e2d0ff446677049a5dc34cf0ea60e"
 
 leafy@~0.0.3:
   version "0.0.3"
