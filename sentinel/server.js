@@ -1,4 +1,5 @@
-const config = require('./src/config'),
+const db = require('./src/db-pouch'),
+      config = require('./src/config'),
       logger = require('./src/lib/logger'),
       serverChecks = require('@shared-libs/server-checks'),
       loglevel = process.argv[2];
@@ -18,19 +19,20 @@ process.on('unhandledRejection', reason => {
   console.error(reason);
 });
 
-serverChecks.nodeVersionCheck('sentinel');
-
-config.init()
+serverChecks.check(db)
   .then(() => {
-    if (!loglevel) {
-      logger.transports.Console.level = config.get('loglevel');
-      logger.debug('loglevel is %s.', logger.transports.Console.level);
-    }
-    require('./src/schedule').checkSchedule();
-    logger.info('startup complete.');
-  })
-  .catch(err => {
-    console.error('Fatal error intialising medic-sentinel');
-    console.log(err);
-    process.exit(1);
+    config.init()
+      .then(() => {
+        if (!loglevel) {
+          logger.transports.Console.level = config.get('loglevel');
+          logger.debug('loglevel is %s.', logger.transports.Console.level);
+        }
+        require('./src/schedule').checkSchedule();
+        logger.info('startup complete.');
+      })
+      .catch(err => {
+        console.error('Fatal error intialising medic-sentinel');
+        console.log(err);
+        process.exit(1);
+      });
   });

@@ -32,6 +32,7 @@ if(UNIT_TEST_ENV) {
 } else if(COUCH_URL) {
   // strip trailing slash from to prevent bugs in path matching
   const couchUrl = COUCH_URL && COUCH_URL.replace(/\/$/, '');
+  module.exports.serverUrl = couchUrl.slice(0, couchUrl.lastIndexOf('/'));
 
   module.exports.medic = new PouchDB(couchUrl);
   module.exports.audit = new PouchDB(`${couchUrl}-audit`);

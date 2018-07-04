@@ -1,33 +1,33 @@
-var url = require('url'),
-    request = require('request');
+const url = require('url'),
+      request = require('request');
 
-var MIN_MAJOR = 8;
+const MIN_MAJOR = 8;
 
-var nodeVersionCheck = (medicModule) => {
+const nodeVersionCheck = () => {
   try {
-    var [major, minor, patch] = process.versions.node.split('.').map(Number);
+    const [major, minor, patch] = process.versions.node.split('.').map(Number);
     if (major < MIN_MAJOR) {
       throw new Error(`Node version ${major}.${minor}.${patch} is not supported, minimum is ${MIN_MAJOR}.0.0`);
     }
     console.log(`Node Environment Options: '${process.env.NODE_OPTIONS}'`);
     console.log(`Node Version: ${major}.${minor}.${patch} in ${process.env.NODE_ENV || 'development'} mode`);
   } catch (err) {
-    console.error(`Fatal error initialising medic-${medicModule}`);
+    console.error('Fatal error initialising');
     console.log(err);
     process.exit(1);
   }
 };
 
-var envVarsCheck = () => {
-  var envValueAndExample = [
+const envVarsCheck = () => {
+  const envValueAndExample = [
     ['COUCH_URL', 'http://admin:pass@localhost:5984/medic'],
     ['COUCH_NODE_NAME', 'couchdb@localhost']
   ];
 
-  var failures = [];
-  envValueAndExample.forEach(([envVar, example]) => {
-    if (!process.env[envVar]) {
-      failures.push(`${envVar} must be set. For example: ${envVar}=${example}`);
+  const failures = [];
+  envValueAndExample.forEach(([envconst, example]) => {
+    if (!process.env[envconst]) {
+      failures.push(`${envconst} must be set. For example: ${envconst}=${example}`);
     }
   });
 
@@ -36,8 +36,8 @@ var envVarsCheck = () => {
   }
 };
 
-var couchDbNoAdminPartyModeCheck = () => {
-  var noAuthUrl = url.parse(process.env.COUCH_URL),
+const couchDbNoAdminPartyModeCheck = () => {
+  const noAuthUrl = url.parse(process.env.COUCH_URL),
         protocol = noAuthUrl.protocol.replace(':', ''),
         net = require(protocol);
   delete noAuthUrl.auth;
@@ -56,7 +56,7 @@ var couchDbNoAdminPartyModeCheck = () => {
   });
 };
 
-var couchDbVersionCheck = (db) => {
+const couchDbVersionCheck = (db) => {
   return new Promise((resolve, reject) => {
     request.get({ url: db.serverUrl, json: true }, (err, response, body) => {
       if (err) {
@@ -68,9 +68,18 @@ var couchDbVersionCheck = (db) => {
   });
 };
 
+const check = (db) => {
+  return Promise.resolve()
+    .then(nodeVersionCheck)
+    .then(envVarsCheck)
+    .then(couchDbNoAdminPartyModeCheck)
+    .then(couchDbVersionCheck(db));
+};
+
 module.exports = {
-  nodeVersionCheck: (medicModule) => nodeVersionCheck(medicModule),
-  envVarsCheck: () => envVarsCheck(),
-  couchDbNoAdminPartyModeCheck: () => couchDbNoAdminPartyModeCheck(),
-  couchDbVersionCheck: (db) => couchDbVersionCheck(db)
+  check: (db) => check(db),
+  _nodeVersionCheck: () => nodeVersionCheck(),
+  _envVarsCheck: () => envVarsCheck(),
+  _couchDbNoAdminPartyModeCheck: () => couchDbNoAdminPartyModeCheck(),
+  _couchDbVersionCheck: (db) => couchDbVersionCheck(db)
 };

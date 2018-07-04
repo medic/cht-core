@@ -6,7 +6,7 @@
   version "1.0.0"
 
 "@shared-libs/server-checks@file:../shared-libs/server-checks":
-  version "1.1.0"
+  version "1.0.0"
   dependencies:
     moment "2.19.1"
     underscore "1.8.3"
@@ -102,6 +102,12 @@ cached-constructors-x@^1.0.0, cached-constructors-x@^1.0.2:
 caseless@~0.12.0:
   version "0.12.0"
   resolved "https://registry.yarnpkg.com/caseless/-/caseless-0.12.0.tgz#1b681c21ff84033c826543090689420d187151dc"
+
+"checks@file:../shared-libs/server-checks":
+  version "1.0.0"
+  dependencies:
+    moment "2.19.1"
+    underscore "1.8.3"
 
 clone-buffer@1.0.0:
   version "1.0.0"

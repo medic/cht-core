@@ -15,11 +15,7 @@ process.on('unhandledRejection', reason => {
 });
 
 Promise.resolve()
-  .then(serverChecks.nodeVersionCheck('api'))
-  .then(serverChecks.envVarsCheck)
-  .then(serverChecks.couchDbNoAdminPartyModeCheck)
-  .then(serverChecks.couchDbVersionCheck(db))
-
+  .then(serverChecks.check(db))
   .then(() => console.log('Extracting ddoc…'))
   .then(ddocExtraction.run)
   .then(() => console.log('DDoc extraction completed successfully'))
