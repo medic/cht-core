@@ -486,13 +486,6 @@ const metaPathPrefix = '/medic-user-\*-meta/';
 
 // AuthZ for this endpoint should be handled by couchdb
 app.get(metaPathPrefix + '_changes', (req, res) => {
-  if (req.query.feed === 'longpoll' ||
-      req.query.feed === 'continuous' ||
-      req.query.feed === 'eventsource') {
-    // Disable nginx proxy buffering to allow hearbeats for long-running feeds
-    // Issue: #4312
-    res.setHeader('X-Accel-Buffering', 'no');
-  }
   proxyForChanges.web(req, res);
 });
 

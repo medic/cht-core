@@ -390,12 +390,6 @@ const request = (proxy, req, res) => {
     return auth
       .getUserCtx(req)
       .then(userCtx => {
-        if (isLongpoll(req)) {
-          // Disable nginx proxy buffering to allow hearbeats for long-running feeds
-          // Issue: #2363
-          res.setHeader('X-Accel-Buffering', 'no');
-        }
-
         if (auth.isOnlineOnly(userCtx)) {
           return proxy.web(req, res);
         }
