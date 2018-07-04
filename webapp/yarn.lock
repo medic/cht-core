@@ -338,9 +338,9 @@ ecc-jsbn@~0.1.1:
   dependencies:
     jsbn "~0.1.0"
 
-enketo-core@~4.41.2:
-  version "4.41.9"
-  resolved "https://registry.yarnpkg.com/enketo-core/-/enketo-core-4.41.9.tgz#996a8eb20dd1daad2daa1b13c2a5992c4144aecf"
+enketo-core@4.44.1:
+  version "4.44.1"
+  resolved "https://registry.yarnpkg.com/enketo-core/-/enketo-core-4.44.1.tgz#c1e2e4d282cb92f1c08addc9a60be8981a20d968"
   dependencies:
     bootstrap-datepicker "1.7.x"
     bootstrap-slider-basic "3.3.x"
@@ -930,6 +930,8 @@ performance-now@^2.1.0:
 
 "phone-number@file:../shared-libs/phone-number":
   version "1.0.0"
+  dependencies:
+    google-libphonenumber "^3.1.8"
 
 pojo2xml@^1.7.1:
   version "1.7.1"
