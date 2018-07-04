@@ -12,7 +12,7 @@ describe('phone-widget', function() {
     settings = sinon.stub();
 
     // Fetch phone widget.
-    var widgets = require('widgets');
+    var widgets = require('enketo/widgets');
     for (var i = 0; i < widgets.length; i++) {
       if (widgets[i].name && widgets[i].name === 'phonewidget') {
         phoneWidget = widgets[i];
