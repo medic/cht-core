@@ -179,9 +179,9 @@ boom@5.x.x:
   dependencies:
     hoek "4.x.x"
 
-bootstrap-datepicker@1.7.x:
-  version "1.7.1"
-  resolved "https://registry.yarnpkg.com/bootstrap-datepicker/-/bootstrap-datepicker-1.7.1.tgz#4ee7faf34888dbec7834fbf9dbe7c4277e01ddaf"
+bootstrap-datepicker@1.8.x:
+  version "1.8.0"
+  resolved "https://registry.yarnpkg.com/bootstrap-datepicker/-/bootstrap-datepicker-1.8.0.tgz#c63513931e6f09f16ae9f11b62f32d950df3958e"
   dependencies:
     jquery ">=1.7.1 <4.0.0"
 
@@ -338,23 +338,23 @@ ecc-jsbn@~0.1.1:
   dependencies:
     jsbn "~0.1.0"
 
-enketo-core@4.46.0:
-  version "4.46.0"
-  resolved "https://registry.yarnpkg.com/enketo-core/-/enketo-core-4.46.0.tgz#b82f98ddfabdef6d33fb57047b5cef75803c5a57"
+enketo-core@4.51.1:
+  version "4.51.1"
+  resolved "https://registry.yarnpkg.com/enketo-core/-/enketo-core-4.51.1.tgz#53956c4c993f1404f008b77010a3adf1316823b1"
   dependencies:
-    bootstrap-datepicker "1.7.x"
+    bootstrap-datepicker "1.8.x"
     bootstrap-slider-basic "3.3.x"
-    enketo-xpathjs "1.6.2"
+    enketo-xpathjs "1.8.0"
     jquery "3.3.x"
     jquery-touchswipe "^1.6.18"
     leaflet "0.7.x"
-    lie "3.2.x"
+    lie "3.3.x"
     mergexml "1.1.2"
     signature_pad "2.3.x"
 
-enketo-xpathjs@1.6.2:
-  version "1.6.2"
-  resolved "https://registry.yarnpkg.com/enketo-xpathjs/-/enketo-xpathjs-1.6.2.tgz#822cdc188523509d03e7ecb8301eb2bd5e57ebd8"
+enketo-xpathjs@1.8.0:
+  version "1.8.0"
+  resolved "https://registry.yarnpkg.com/enketo-xpathjs/-/enketo-xpathjs-1.8.0.tgz#0fd2b64dac98d9c8f7505cef36c1dac76db6a507"
 
 eurodigit@^3.1.1:
   version "3.1.2"
@@ -692,9 +692,9 @@ leafy@~0.0.3:
     is-extended "~0.0.3"
     string-extended "~0.0.3"
 
-lie@3.1.1, lie@3.2.x:
-  version "3.2.0"
-  resolved "https://registry.yarnpkg.com/lie/-/lie-3.2.0.tgz#4f13f2f8bbb027d383db338c43043545791aa8dc"
+lie@3.1.1, lie@3.3.x:
+  version "3.3.0"
+  resolved "https://registry.yarnpkg.com/lie/-/lie-3.3.0.tgz#dcf82dee545f46074daf200c7c1c5a08e0f40f6a"
   dependencies:
     immediate "~3.0.5"
 
