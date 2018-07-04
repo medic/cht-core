@@ -486,13 +486,6 @@ const metaPathPrefix = '/medic-user-\*-meta/';
 
 // AuthZ for this endpoint should be handled by couchdb
 app.get(metaPathPrefix + '_changes', (req, res) => {
-  if (req.query.feed === 'longpoll' ||
-      req.query.feed === 'continuous' ||
-      req.query.feed === 'eventsource') {
-    // Disable nginx proxy buffering to allow hearbeats for long-running feeds
-    // Issue: #4312
-    res.setHeader('X-Accel-Buffering', 'no');
-  }
   proxyForChanges.web(req, res);
 });
 
@@ -527,6 +520,16 @@ var writeHeaders = function(req, res, headers, redirectHumans) {
   };
 };
 
+// allow POST requests which have been body-parsed to be correctly proxied
+const writeParsedBody = (proxyReq, req) => {
+  if (req.body) {
+    let bodyData = JSON.stringify(req.body);
+    proxyReq.setHeader('Content-Type','application/json');
+    proxyReq.setHeader('Content-Length', Buffer.byteLength(bodyData));
+    proxyReq.write(bodyData);
+  }
+};
+
 /**
  * Set cache control on static resources. Must be hacked in to
  * ensure we set the value first.
@@ -557,13 +560,11 @@ proxy.on('proxyReq', function(proxyReq, req, res) {
     writeHeaders(req, res);
   }
 
-  // allow POST requests which have been body-parsed to be correctly proxied
-  if(req.body) {
-    let bodyData = JSON.stringify(req.body);
-    proxyReq.setHeader('Content-Type','application/json');
-    proxyReq.setHeader('Content-Length', Buffer.byteLength(bodyData));
-    proxyReq.write(bodyData);
-  }
+  writeParsedBody(proxyReq, req);
+});
+
+proxyForChanges.on('proxyReq', (proxyReq, req) => {
+  writeParsedBody(proxyReq, req);
 });
 
 // because these are longpolls, we need to manually flush the CouchDB heartbeats through compression

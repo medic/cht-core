@@ -232,19 +232,6 @@ describe('Changes controller', () => {
           });
       });
     });
-
-    it('sets correct headers when longpoll requests are received', () => {
-      auth.isOnlineOnly.returns(true);
-      testReq.query = { feed: 'longpoll' };
-      return controller._init().then(() => {
-        return controller
-          .request(proxy, testReq, testRes)
-          .then(() => {
-            testRes.setHeader.callCount.should.equal(1);
-            testRes.setHeader.args[0].should.deep.equal(['X-Accel-Buffering', 'no']);
-          });
-      });
-    });
   });
 
   describe('initFeed', () => {
@@ -1869,6 +1856,12 @@ describe('Changes controller', () => {
       testRes.write.callCount.should.equal(1);
       testRes.write.args[0][0].should.equal('aaa');
       testRes.end.callCount.should.equal(1);
+    });
+
+    it('calls `res.flush` after writing - necessary for compression and heartbeats', () => {
+      controller._writeDownstream({ res: testRes }, 'aaa', true);
+      testRes.write.callCount.should.equal(1);
+      testRes.flush.callCount.should.equal(1);
     });
   });
 

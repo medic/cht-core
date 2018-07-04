@@ -1,6 +1,10 @@
 const _ = require('underscore'),
       utils = require('../../../utils'),
-      uuid = require('uuid');
+      uuid = require('uuid'),
+      http = require('http'),
+      querystring = require('querystring'),
+      constants = require('../../../constants'),
+      auth = require('../../../auth')();
 
 const DEFAULT_EXPECTED = [
   'appcache',
@@ -26,7 +30,7 @@ function assertChangeIds(changes) {
 }
 
 function requestChanges(username, params = {}) {
-  const queryParams = _.map(params, (value, key) => `${key}=${value}`).join('&');
+  const queryParams = querystring.stringify(params);
   const options = {
     path: `/_changes${queryParams ? `?${queryParams}`: ''}`,
     auth: `${username}:${password}`
@@ -112,6 +116,21 @@ const users = [
     },
     roles: ['district-manager', 'kujua_user', 'data_entry', 'district_admin']
   },
+  {
+    username: 'manager',
+    password: password,
+    place: {
+      _id: 'fixture:managerville',
+      type: 'health_center',
+      name: 'Managerville',
+      parent: 'PARENT_PLACE'
+    },
+    contact: {
+      _id: 'fixture:user:manager',
+      name: 'Manager'
+    },
+    roles: ['national_admin']
+  },
 ];
 
 const parentPlace = {
@@ -169,7 +188,6 @@ const getCurrentSeq = (username) => {
   });
 };
 
-
 describe('changes handler', () => {
 
   const DOCS_TO_KEEP = [
@@ -199,32 +217,188 @@ describe('changes handler', () => {
 
   afterAll(done =>
     // Clean up like normal
-    utils.revertDb()
-    // And also revert users we created in before
-    .then(() => {
-      const userDocs = users.map(({username}) => `org.couchdb.user:${username}`);
-
-      return utils.request('/_users/_all_docs')
-        .then(({rows}) => {
-          const deleteMe = rows
-            .filter(({id}) => userDocs.includes(id))
-            .map(row => ({
-              _id: row.id,
-              _rev: row.value.rev,
-              _deleted: true
-            }));
-
-            return utils.request({
-              path: '/_users/_bulk_docs',
-              method: 'POST',
-              body: JSON.stringify({ docs: deleteMe }),
-              headers: { 'content-type': 'application/json' }
-            });
-        });
-      })
-    .then(done));
+    utils
+      .revertDb()
+      // And also revert users we created in before
+      .then(() => utils.deleteUsers(users.map(user => user.username)))
+      .then(() => Promise.all(users.map(user =>
+        utils.request({
+          path: `/medic-user-${user.username}-meta`,
+          method: 'DELETE'
+        })
+      )))
+      .then(done));
 
   afterEach(done => utils.revertDb(DOCS_TO_KEEP).then(done));
+
+  describe('requests', () => {
+    beforeAll(()=> Promise.all(users.map(user =>
+      utils.request({
+        path: `/medic-user-${user.username}-meta`,
+        method: 'PUT'
+      }))));
+
+    it('should allow DB admins to POST to _changes', () => {
+      return utils
+        .requestOnTestDb({
+          path: '/_changes?since=0&filter=_doc_ids&heartbeat=10000',
+          method: 'POST',
+          body: JSON.stringify({ doc_ids: ['org.couchdb.user:bob'] }),
+          headers: { 'Content-Type': 'application/json' }
+        })
+        .then(result => {
+          expect(result.results).toBeTruthy();
+        });
+    });
+
+    it('should send heartbeats at specified intervals for all types of _changes requests', () => {
+      const heartRateMonitor = options => {
+        options = options || {};
+        options.hostname = constants.API_HOST;
+        options.port = constants.API_PORT;
+        options.auth = options.auth || auth.user + ':' + auth.pass;
+        options.path = options.path || '/';
+        options.query = _.extend({ heartbeat: 2000, feed: 'longpoll' }, options.query || {});
+        options.path += '?' + querystring.stringify(options.query || {});
+
+        const heartbeats = [];
+        let timer;
+
+        return new Promise((resolve, reject) => {
+          const req = http.request(options, res => {
+            res.setEncoding('utf8');
+            let body = '';
+            res.on('data', chunk => {
+              body += chunk;
+              const oldTimer = timer;
+              timer = new Date().getTime();
+              heartbeats.push({ chunk, interval: timer - oldTimer });
+            });
+            res.on('end', () => {
+              resolve({ body, heartbeats });
+            });
+          });
+
+          req.on('error', e => {
+            console.log('Request failed: ' + e.message);
+            reject(e);
+          });
+
+          if (options.body) {
+            if (typeof options.body === 'string') {
+              req.write(options.body);
+            } else {
+              req.write(JSON.stringify(options.body));
+            }
+          }
+
+          req.end();
+          timer = new Date().getTime();
+
+          if (options.timeout) {
+            // have to manually abort this, sending a `heartbeat` disables the `timeout` mechanism in CouchDB
+            setTimeout(() => req.abort(), options.timeout);
+          }
+
+        });
+      };
+      return utils
+        .requestOnTestDb('/')
+        .then(result => {
+          const since = result.update_seq;
+
+          return Promise.all([
+            heartRateMonitor({ // admin longpoll _changes
+              path: '/' + constants.DB_NAME + '/_changes',
+              query: { since },
+              timeout: 11000 // 5 heartbeats
+            }),
+            heartRateMonitor({ // online user longpoll _changes
+              path: '/' + constants.DB_NAME + '/_changes',
+              auth: `manager:${password}`,
+              query: { since },
+              timeout: 11000 // 5 heartbeats
+            }),
+            heartRateMonitor({ // offline user longpoll _changes
+              path: '/' + constants.DB_NAME + '/_changes',
+              auth: `bob:${password}`,
+              query: { since, timeout: 21000, heartbeat: 5000 } // 4 heartbeats
+            }),
+            heartRateMonitor({ // online meta longpoll _changes
+              path: '/medic-user-manager-meta/_changes',
+              query: { since },
+              timeout: 11000 // 5 heartbeats
+            }),
+            heartRateMonitor({ // offline meta longpoll _changes
+              path: '/medic-user-bob-meta/_changes',
+              query: { since },
+              timeout: 11000 // 5 heartbeats
+            }),
+          ]);
+        })
+        .then(results => {
+          // admin _changes
+          expect(results[0].heartbeats.length).toEqual(6);
+          results[0].heartbeats.forEach((heartbeat, idx) => {
+            if (idx === 0) {
+              expect(heartbeat.chunk).toEqual('{"results":[\n');
+            } else {
+              expect(heartbeat.chunk).toEqual('\n');
+            }
+            expect(parseInt(heartbeat.interval / 1000)).toBeLessThan(3);
+          });
+          expect(results[0].body).toEqual('{"results":[\n\n\n\n\n\n');
+
+          // online user _changes
+          expect(results[1].heartbeats.length).toEqual(6);
+          results[1].heartbeats.forEach((heartbeat, idx) => {
+            if (idx === 0) {
+              expect(heartbeat.chunk).toEqual('{"results":[\n');
+            } else {
+              expect(heartbeat.chunk).toEqual('\n');
+            }
+            expect(parseInt(heartbeat.interval / 1000)).toBeLessThan(3);
+          });
+          expect(results[1].body).toEqual('{"results":[\n\n\n\n\n\n');
+
+          // offline user _changes
+          // `last_seq` doesn't necessarily match the `since` we requested
+          expect(results[2].body.startsWith('\n\n\n\n{"results":[],"last_seq":')).toEqual(true);
+          results[2].heartbeats.forEach((heartbeat, idx) => {
+            if (idx === 4) {
+              expect(heartbeat.chunk.startsWith('{"results":[],"last_seq":"')).toEqual(true);
+            } else {
+              expect(heartbeat.chunk).toEqual('\n');
+            }
+            expect(parseInt(heartbeat.interval / 1000)).toBeLessThan(6);
+          });
+
+          // online user meta _changes
+          expect(results[0].heartbeats.length).toEqual(6);
+          results[0].heartbeats.forEach((heartbeat, idx) => {
+            if (idx === 0) {
+              expect(heartbeat.chunk).toEqual('{"results":[\n');
+            } else {
+              expect(heartbeat.chunk).toEqual('\n');
+            }
+            expect(parseInt(heartbeat.interval / 1000)).toBeLessThan(3);
+          });
+          expect(results[0].body).toEqual('{"results":[\n\n\n\n\n\n');
+
+          // ofline user meta _changes
+          expect(results[1].heartbeats.length).toEqual(6);
+          results[1].heartbeats.forEach((heartbeat, idx) => {
+            if (idx === 0) {
+              expect(heartbeat.chunk).toEqual('{"results":[\n');
+            } else {
+              expect(heartbeat.chunk).toEqual('\n');
+            }
+            expect(parseInt(heartbeat.interval / 1000)).toBeLessThan(3);
+          });
+          expect(results[1].body).toEqual('{"results":[\n\n\n\n\n\n');
+        });
+    });
+  });
 
   describe('Filtered replication', () => {
     beforeEach(done => getCurrentSeq('bob').then(done));
