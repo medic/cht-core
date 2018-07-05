@@ -14,7 +14,9 @@ function(doc) {
       // outgoing
       doc.tasks.forEach(function(task) {
         var message = task.messages && task.messages[0];
-        message && emitMessage(doc, message.contact, message.to);
+        if(message) {
+          emitMessage(doc, message.contact, message.to);
+        }
       });
     } else if (doc.sms_message) {
       // incoming
