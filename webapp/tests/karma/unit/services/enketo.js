@@ -378,7 +378,7 @@ describe('Enketo service', function() {
         chai.expect(EnketoForm.args[0][1].external.length).to.equal(1);
         var summary = EnketoForm.args[0][1].external[0];
         chai.expect(summary.id).to.equal('contact-summary');
-        assertXmlEqual(summary.xml, '<context><pregnant>true</pregnant><previousChildren><dob>2016</dob><dob>2013</dob><dob>2010</dob></previousChildren><notes>always &lt;uses&gt; reserved &quot;characters&quot; &amp; \'words\'</notes></context>');
+        assertXmlEqual(summary.xml, '<context><pregnant>true</pregnant><previousChildren><dob>2016</dob><dob>2013</dob><dob>2010</dob></previousChildren><notes>always &lt;uses&gt; reserved "characters" &amp; \'words\'</notes></context>');
         chai.expect(ContactSummary.callCount).to.equal(1);
         chai.expect(ContactSummary.args[0][0]._id).to.equal('fffff');
       });
