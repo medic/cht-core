@@ -7,7 +7,6 @@ const sinon = require('sinon').sandbox.create(),
       inherits = require('util').inherits,
       EventEmitter = require('events'),
       _ = require('underscore'),
-      serverUtils = require('../../../src/server-utils'),
       config = require('../../../src/config'),
       dbConfig = require('../../../src/services/db-config');
 
@@ -20,7 +19,6 @@ let testReq,
     changesCancelSpy,
     clock,
     emitters,
-    proxy,
     reqOnClose,
     defaultSettings;
 
@@ -46,7 +44,6 @@ describe('Changes controller', () => {
       flush: sinon.stub()
     };
     userCtx = { name: 'user', facility_id: 'facility', contact_id: 'contact' };
-    proxy = { web: sinon.stub() };
 
     defaultSettings = {
       reiterate_changes: true,
@@ -57,7 +54,6 @@ describe('Changes controller', () => {
     changesSpy = sinon.spy();
     changesCancelSpy = sinon.spy();
 
-    sinon.stub(auth, 'isOnlineOnly').returns(false);
     sinon.stub(auth, 'getUserSettings').resolves(userCtx);
 
     sinon.stub(authorization, 'getViewResults').returns({});
@@ -73,7 +69,6 @@ describe('Changes controller', () => {
     sinon.stub(tombstoneUtils, 'generateChangeFromTombstone');
     sinon.stub(tombstoneUtils, 'extractDoc');
 
-    sinon.stub(serverUtils, 'notLoggedIn');
     sinon.stub(_, 'now').callsFake(Date.now); // force underscore's debounce to use fake timers!
     sinon.stub(config, 'get').returns(defaultSettings);
 
@@ -185,44 +180,30 @@ describe('Changes controller', () => {
 
   describe('request', () => {
     it('initializes the continuous changes feed', () => {
-      auth.isOnlineOnly.returns(true);
       return controller
-        .request(proxy, testReq, testRes)
+        .request(testReq, testRes)
         .then(() => {
           changesSpy.callCount.should.equal(1);
         });
     });
 
     it('only initializes on first call', () => {
-      auth.isOnlineOnly.returns(true);
       return controller
-        .request(proxy, testReq, testRes)
-        .then(() => controller.request(proxy, testReq, testRes))
-        .then(() => controller.request(proxy, testReq, testRes))
-        .then(() => controller.request(proxy, testReq, testRes))
+        .request(testReq, testRes)
+        .then(() => controller.request(testReq, testRes))
+        .then(() => controller.request(testReq, testRes))
+        .then(() => controller.request(testReq, testRes))
         .then(() => {
           changesSpy.callCount.should.equal(1);
         });
     });
 
-    it('sends admin requests through the proxy', () => {
-      auth.isOnlineOnly.returns(true);
-      return controller
-        .request(proxy, testReq, testRes)
-        .then(() => {
-          proxy.web.callCount.should.equal(1);
-          auth.getUserSettings.callCount.should.equal(0);
-          testRes.setHeader.callCount.should.equal(0);
-        });
-    });
-
-    it('pushes non-admin requests to the normal feeds list', () => {
+    it('pushes requests to the normal feeds list', () => {
       authorization.getAllowedDocIds.resolves([1, 2, 3]);
       return controller._init().then(() => {
         return controller
-          .request(proxy, testReq, testRes)
+          .request(testReq, testRes)
           .then(() => {
-            proxy.web.callCount.should.equal(0);
             testReq.on.callCount.should.equal(1);
             testReq.on.args[0][0].should.equal('close');
             testRes.type.callCount.should.equal(1);
@@ -243,7 +224,7 @@ describe('Changes controller', () => {
         const emitter = controller._getContinuousFeed();
         emitter.emit('change', { id: 'change' }, 0, 'seq-1');
         return controller
-          .request(proxy, testReq, testRes)
+          .request(testReq, testRes)
           .then(nextTick)
           .then(() => {
             const feed = controller._getNormalFeeds()[0];
@@ -274,7 +255,7 @@ describe('Changes controller', () => {
       defaultSettings.reiterate_changes = 'something';
       defaultSettings.debounce_interval = false;
       return controller
-        .request(proxy, testReq, testRes)
+        .request(testReq, testRes)
         .then(() => {
           const feed = controller._getNormalFeeds()[0];
           feed.limit.should.equal(23);
@@ -302,7 +283,7 @@ describe('Changes controller', () => {
       authorization.getAuthorizationContext.resolves({ subjectIds, contactsByDepthKeys });
       authorization.getAllowedDocIds.resolves(allowedDocIds);
       return controller
-        .request(proxy, testReq, testRes)
+        .request(testReq, testRes)
         .then(() => {
           authorization.getAuthorizationContext.callCount.should.equal(1);
           authorization.getAuthorizationContext.withArgs(userCtx).callCount.should.equal(1);
@@ -322,7 +303,7 @@ describe('Changes controller', () => {
       dbConfig.get.resolves(40);
       authorization.getAllowedDocIds.resolves(['d1', 'd2', 'd3']);
       return controller
-        .request(proxy, testReq, testRes)
+        .request(testReq, testRes)
         .then(nextTick)
         .then(() => {
           authorization.getAllowedDocIds.callCount.should.equal(1);
@@ -340,7 +321,7 @@ describe('Changes controller', () => {
       dbConfig.get.resolves(40);
       authorization.getAllowedDocIds.resolves(['d1', 'd2', 'd3']);
       return controller
-        .request(proxy, testReq, testRes)
+        .request(testReq, testRes)
         .then(nextTick)
         .then(() => {
           changesSpy.callCount.should.equal(2);
@@ -362,7 +343,7 @@ describe('Changes controller', () => {
       authorization.getAllowedDocIds.resolves(allowedIds.slice());
 
       return controller
-        .request(proxy, testReq, testRes)
+        .request(testReq, testRes)
         .then(nextTick)
         .then(() => {
           changesSpy.callCount.should.equal(5);
@@ -387,7 +368,7 @@ describe('Changes controller', () => {
       authorization.getAllowedDocIds.resolves(allowedIds.slice());
 
       return controller
-        .request(proxy, testReq, testRes)
+        .request(testReq, testRes)
         .then(nextTick)
         .then(() => {
           changesSpy.callCount.should.equal(5);
@@ -418,7 +399,7 @@ describe('Changes controller', () => {
       testReq.query = { since: 1 };
 
       return controller
-        .request(proxy, testReq, testRes)
+        .request(testReq, testRes)
         .then(nextTick)
         .then(() => {
           const feed = controller._getNormalFeeds()[0];
@@ -442,7 +423,7 @@ describe('Changes controller', () => {
       testReq.query = { since: 0 };
 
       return controller
-        .request(proxy, testReq, testRes)
+        .request(testReq, testRes)
         .then(nextTick)
         .then(() => {
           const feed = controller._getNormalFeeds()[0];
@@ -473,7 +454,7 @@ describe('Changes controller', () => {
       testReq.query = { since: 0 };
 
       return controller
-        .request(proxy, testReq, testRes)
+        .request(testReq, testRes)
         .then(() => {
           controller._getContinuousFeed().emit('change', { id: 7, changes: [], doc: { _id: 7 } }, 0, 4);
           return Promise.resolve();
@@ -523,7 +504,7 @@ describe('Changes controller', () => {
       authorization.getAllowedDocIds.resolves(validatedIds);
 
       return controller
-        .request(proxy, testReq, testRes)
+        .request(testReq, testRes)
         .then(nextTick)
         .then(() => {
           const feed = controller._getNormalFeeds()[0];
@@ -547,7 +528,7 @@ describe('Changes controller', () => {
       testReq.query = { feed: 'longpoll' };
       testReq.uniqId = 'myUniqueId';
       return controller
-        .request(proxy, testReq, testRes)
+        .request(testReq, testRes)
         .then(nextTick)
         .then(() => {
           const feed = controller._getNormalFeeds()[0];
@@ -569,7 +550,7 @@ describe('Changes controller', () => {
       authorization.getAllowedDocIds.resolves([1, 2, 3, 4, 5, 6]);
       dbConfig.get.resolves(2);
       return controller
-        .request(proxy, testReq, testRes)
+        .request(testReq, testRes)
         .then(nextTick)
         .then(() => {
           const feed = controller._getNormalFeeds()[0];
@@ -602,7 +583,7 @@ describe('Changes controller', () => {
       let initialFeed;
 
       return controller
-        .request(proxy, testReq, testRes)
+        .request(testReq, testRes)
         .then(nextTick)
         .then(() => {
           const emitter = controller._getContinuousFeed();
@@ -637,7 +618,7 @@ describe('Changes controller', () => {
       ]);
 
       return controller
-        .request(proxy, testReq, testRes)
+        .request(testReq, testRes)
         .then(nextTick)
         .then(() => {
           const emitter = controller._getContinuousFeed();
@@ -687,7 +668,7 @@ describe('Changes controller', () => {
       testReq.query = { feed: 'longpoll' };
 
       return controller
-        .request(proxy, testReq, testRes)
+        .request(testReq, testRes)
         .then(nextTick)
         .then(() => {
           const feed = controller._getNormalFeeds()[0];
@@ -723,7 +704,7 @@ describe('Changes controller', () => {
       testReq.query = { feed: 'longpoll', timeout: 50000 };
 
       return controller
-        .request(proxy, testReq, testRes)
+        .request(testReq, testRes)
         .then(nextTick)
         .then(() => {
           const feed = controller._getNormalFeeds()[0];
@@ -774,7 +755,7 @@ describe('Changes controller', () => {
       testReq.query = { limit: 4, feed: 'longpoll' };
 
       return controller
-        .request(proxy, testReq, testRes)
+        .request(testReq, testRes)
         .then(nextTick)
         .then(() => {
           const feed = controller._getNormalFeeds()[0];
@@ -840,9 +821,9 @@ describe('Changes controller', () => {
 
       return Promise
         .all([
-          controller.request(proxy, testReq, testRes),
-          controller.request(proxy, testReq2, testRes2),
-          controller.request(proxy, testReq3, testRes3)
+          controller.request(testReq, testRes),
+          controller.request(testReq2, testRes2),
+          controller.request(testReq3, testRes3)
         ])
         .then(nextTick)
         .then(() => {
@@ -906,7 +887,7 @@ describe('Changes controller', () => {
       let initialFeed;
 
       return controller
-        .request(proxy, testReq, testRes)
+        .request(testReq, testRes)
         .then(nextTick)
         .then(() => {
           initialFeed = controller._getNormalFeeds()[0];
@@ -943,7 +924,7 @@ describe('Changes controller', () => {
       authorization.getAllowedDocIds.resolves([1, 2, 3]);
 
       return controller
-        .request(proxy, testReq, testRes)
+        .request(testReq, testRes)
         .then(nextTick)
         .then(() => {
           controller
@@ -1019,7 +1000,7 @@ describe('Changes controller', () => {
       ]);
 
       return controller
-        .request(proxy, testReq, testRes)
+        .request(testReq, testRes)
         .then(nextTick)
         .then(() => {
           const emitter = controller._getContinuousFeed();
@@ -1064,7 +1045,7 @@ describe('Changes controller', () => {
       testReq.query = { feed: 'longpoll' };
       authorization.getAllowedDocIds.resolves([1, 2, 3]);
       return controller
-        .request(proxy, testReq, testRes)
+        .request(testReq, testRes)
         .then(nextTick)
         .then(() => {
           controller
@@ -1095,7 +1076,7 @@ describe('Changes controller', () => {
       authorization.allowedDoc.withArgs('contact-2').returns(false);
 
       return controller
-        .request(proxy, testReq, testRes)
+        .request(testReq, testRes)
         .then(nextTick)
         .then(() => {
           controller
@@ -1152,7 +1133,7 @@ describe('Changes controller', () => {
       authorization.filterAllowedDocs.onCall(1).returns([ { change: { id: 3, changes: [] }, id: 3 } ]);
 
       return controller
-        .request(proxy, testReq, testRes)
+        .request(testReq, testRes)
         .then(nextTick)
         .then(() => {
           controller
@@ -1207,7 +1188,7 @@ describe('Changes controller', () => {
       authorization.filterAllowedDocs.withArgs(sinon.match.any, []).returns([]);
 
       return controller
-        .request(proxy, testReq, testRes)
+        .request(testReq, testRes)
         .then(nextTick)
         .then(() => {
           controller
@@ -1286,7 +1267,7 @@ describe('Changes controller', () => {
       authorization.allowedDoc.withArgs(4).returns(false);
 
       return controller
-        .request(proxy, testReq, testRes)
+        .request(testReq, testRes)
         .then(nextTick)
         .then(() => {
           controller._getNormalFeeds().forEach(feed => {
@@ -1334,7 +1315,7 @@ describe('Changes controller', () => {
                    .onCall(1).returns(0);
 
       return controller
-        .request(proxy, testReq, testRes)
+        .request(testReq, testRes)
         .then(nextTick)
         .then(() => {
           changesSpy.callCount.should.equal(2);
@@ -1419,7 +1400,7 @@ describe('Changes controller', () => {
       testReq.query = { feed: 'longpoll' };
 
       return controller
-        .request(proxy, testReq, testRes)
+        .request(testReq, testRes)
         .then(nextTick)
         .then(() => {
           clock.tick(20000);
@@ -1440,7 +1421,7 @@ describe('Changes controller', () => {
       testReq.query = { feed: 'longpoll', heartbeat: 5000 };
 
       return controller
-        .request(proxy, testReq, testRes)
+        .request(testReq, testRes)
         .then(nextTick)
         .then(() => {
           clock.tick(20000);
@@ -1466,7 +1447,7 @@ describe('Changes controller', () => {
       testReq.query = { feed: 'longpoll' };
 
       return controller
-        .request(proxy, testReq, testRes)
+        .request(testReq, testRes)
         .then(nextTick)
         .then(() => {
           clock.tick(20000);
@@ -1487,7 +1468,7 @@ describe('Changes controller', () => {
       dbConfig.get.resolves(2);
       testReq.query = { timeout: 50000 };
       return controller
-        .request(proxy, testReq, testRes)
+        .request(testReq, testRes)
         .then(nextTick)
         .then(() => {
           const feed = controller._getNormalFeeds()[0];
@@ -1504,7 +1485,7 @@ describe('Changes controller', () => {
       testReq.query = { feed: 'longpoll', timeout: 60000, since: 2 };
 
       return controller
-        .request(proxy, testReq, testRes)
+        .request(testReq, testRes)
         .then(nextTick)
         .then(() => {
           const feed = controller._getNormalFeeds()[0];

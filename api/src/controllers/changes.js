@@ -372,11 +372,8 @@ const init = () => {
   return getCouchDbConfig().then(() => initContinuousFeed());
 };
 
-const request = (proxy, req, res) => {
+const request = (req, res) => {
   return init().then(() => {
-    if (auth.isOnlineOnly(req.userCtx)) {
-      return proxy.web(req, res);
-    }
     res.type('json');
     return processRequest(req, res);
   });

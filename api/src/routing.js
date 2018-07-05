@@ -479,16 +479,17 @@ app.get('/api/v1/settings', settings.get);
 app.putJson(`${appPrefix}update_settings/${db.settings.ddoc}`, settings.put); // deprecated
 app.putJson('/api/v1/settings', settings.put);
 
-// DB replication endpoint
-const changesHandler = _.partial(require('./controllers/changes').request, proxyForChanges),
-      changesPath = routePrefix + '_changes(/*)?';
-
-app.get(changesPath, authorizationMiddleware.requireAuthenticatedUser, changesHandler);
-app.post(changesPath, jsonParser, authorizationMiddleware.requireAuthenticatedUser, changesHandler);
-
 // authorization middleware proxy online users requests directly to CouchDB
 // reads offline users `user-settings` and saves it as `req.userCtx`
-const onlineUserProxy = _.partial(authorizationMiddleware.onlineUserProxy, proxy);
+const onlineUserProxy = _.partial(authorizationMiddleware.onlineUserProxy, proxy),
+      onlineUserChangesProxy = _.partial(authorizationMiddleware.onlineUserProxy, proxyForChanges);
+
+// DB replication endpoint
+const changesHandler = require('./controllers/changes').request,
+      changesPath = routePrefix + '_changes(/*)?';
+
+app.get(changesPath, onlineUserChangesProxy, changesHandler);
+app.post(changesPath, onlineUserChangesProxy, jsonParser, changesHandler);
 
 // filter _all_docs requests for offline users
 const allDocsHandler = require('./controllers/all-docs').request,
@@ -703,21 +704,16 @@ proxyForChanges.on('error', (err, req, res) => {
 });
 
 proxyForAuditing.on('proxyReq', function(proxyReq, req) {
-  // allow POST and PUT requests which have been body-parsed to be correctly proxied
-  if(req.body) {
-    let bodyData = JSON.stringify(req.body);
-    proxyReq.setHeader('Content-Type','application/json');
-    proxyReq.setHeader('Content-Length', Buffer.byteLength(bodyData));
-    proxyReq.write(bodyData);
-  }
+  writeParsedBody(proxyReq, req);
 });
 
 // intercept responses from filtered offline endpoints to fill in with forbidden docs stubs
 proxyForAuditing.on('proxyRes', (proxyRes, req, res) => {
-  // copy headers from proxyRes to res
-  if (!res.headersSent) {
-    _.each(proxyRes.headers, (value, header) => res.setHeader(header, value));
-  }
+  // copy headers and status from proxyRes to res
+  _.each(proxyRes.headers, (value, header) => {
+    res.setHeader(header, value);
+  });
+  res.statusCode = proxyRes.statusCode;
 
   if (res.interceptResponse) {
     let body = new Buffer('');
