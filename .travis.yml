@@ -94,12 +94,12 @@ after_failure:
       aws s3 cp tests/results "$S3_PATH"/test-results --recursive
       aws s3 cp tests/logs "$S3_PATH"/ --recursive
 
-#notifications:
-#  webhooks:
-#    urls:
-#      - https://medic.slack.com/services/hooks/travis?token=xcYT8yusfEdSwLskhBxK4Vwj
-#    on_success: change
-#    on_failure: always
-#  email:
-#    recipients:
-#      - dev@medicmobile.org
+notifications:
+  webhooks:
+    urls:
+      - https://medic.slack.com/services/hooks/travis?token=xcYT8yusfEdSwLskhBxK4Vwj
+    on_success: change
+    on_failure: always
+  email:
+    recipients:
+      - dev@medicmobile.org
