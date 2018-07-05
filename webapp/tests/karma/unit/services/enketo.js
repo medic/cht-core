@@ -826,6 +826,6 @@ describe('Enketo service', function() {
 });
 
 function assertXmlEqual(document, expectedXmlStr) {
-  const actualXmlStr = `docmuent=${typeof document}; ${document.toString()}`; // TODO actually turn it into a string
+  const actualXmlStr = `docmuent=${typeof document}; ${document.toString()}; ${new XMLSerializer()).serializeToString(document.documentElement)}`; // TODO actually turn it into a string
   chai.expect(actualXmlStr).to.equal(expectedXmlStr);
 }
