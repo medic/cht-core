@@ -56,9 +56,9 @@ const couchDbNoAdminPartyModeCheck = () => {
   });
 };
 
-const couchDbVersionCheck = (db) => {
+const couchDbVersionCheck = (serverUrl) => {
   return new Promise((resolve, reject) => {
-    request.get({ url: db.serverUrl, json: true }, (err, response, body) => {
+    request.get({ url: serverUrl, json: true }, (err, response, body) => {
       if (err) {
         return reject(err);
       }
@@ -68,18 +68,18 @@ const couchDbVersionCheck = (db) => {
   });
 };
 
-const check = (db) => {
+const check = (serverUrl) => {
   return Promise.resolve()
     .then(nodeVersionCheck)
     .then(envVarsCheck)
     .then(couchDbNoAdminPartyModeCheck)
-    .then(couchDbVersionCheck(db));
+    .then(couchDbVersionCheck(serverUrl));
 };
 
 module.exports = {
-  check: (db) => check(db),
+  check: (serverUrl) => check(serverUrl),
   _nodeVersionCheck: () => nodeVersionCheck(),
   _envVarsCheck: () => envVarsCheck(),
   _couchDbNoAdminPartyModeCheck: () => couchDbNoAdminPartyModeCheck(),
-  _couchDbVersionCheck: (db) => couchDbVersionCheck(db)
+  _couchDbVersionCheck: (serverUrl) => couchDbVersionCheck(serverUrl)
 };

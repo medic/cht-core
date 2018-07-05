@@ -15,7 +15,7 @@ process.on('unhandledRejection', reason => {
 });
 
 Promise.resolve()
-  .then(serverChecks.check(db))
+  .then(serverChecks.check(db.serverUrl))
   .then(() => console.log('Extracting ddoc…'))
   .then(ddocExtraction.run)
   .then(() => console.log('DDoc extraction completed successfully'))

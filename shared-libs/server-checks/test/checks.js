@@ -85,14 +85,14 @@ describe('Server Checks service', function() {
 
     it('couchdb valid version check', () => {
       sinon.stub(request, 'get').callsArgWith(1, null, null, {version: '2'});
-      return service._couchDbVersionCheck({serverUrl: 'something'}).then(() => {
+      return service._couchDbVersionCheck('something').then(() => {
         chai.assert.equal(log(0), 'CouchDB Version: 2');
       });
     });
 
     it('couchdb invalid version check', () => {
       sinon.stub(request, 'get').callsArgWith(1, 'error');
-      return service._couchDbVersionCheck({serverUrl: 'something'}).catch(err => {
+      return service._couchDbVersionCheck('something').catch(err => {
         chai.assert.equal(err, 'error');
       });
     });
@@ -111,7 +111,7 @@ describe('Server Checks service', function() {
       };
       sinon.stub(http, 'get').callsArgWith(1, {statusCode: 401});
       sinon.stub(request, 'get').callsArgWith(1, null, null, {version: '2'});
-      return service.check({serverUrl: 'something'});
+      return service.check('something');
     });
 
     it('invalid server', function() {
@@ -124,7 +124,7 @@ describe('Server Checks service', function() {
       };
       sinon.stub(http, 'get').callsArgWith(1, {statusCode: 401});
       sinon.stub(request, 'get').callsArgWith(1, null, null, {version: '2'});
-      return service.check({serverUrl: 'something'}).catch(err => {
+      return service.check('something').catch(err => {
         chai.assert.isTrue(err.startsWith('At least one required environment'));
       });
     });

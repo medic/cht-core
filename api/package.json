@@ -22,7 +22,6 @@
     "body-parser": "^1.18.2",
     "buffer-shims": "^1.0.0",
     "bulk-docs-utils": "file:../shared-libs/bulk-docs-utils",
-    "checks": "file:../shared-libs/server-checks",
     "compression": "^1.7.2",
     "couchdb-audit": "^1.1.1",
     "express": "^4.16.3",

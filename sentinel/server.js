@@ -19,20 +19,18 @@ process.on('unhandledRejection', reason => {
   console.error(reason);
 });
 
-serverChecks.check(db)
+serverChecks.check(db.serverUrl)
+  .then(config.init())
   .then(() => {
-    config.init()
-      .then(() => {
-        if (!loglevel) {
-          logger.transports.Console.level = config.get('loglevel');
-          logger.debug('loglevel is %s.', logger.transports.Console.level);
-        }
-        require('./src/schedule').checkSchedule();
-        logger.info('startup complete.');
-      })
-      .catch(err => {
-        console.error('Fatal error intialising medic-sentinel');
-        console.log(err);
-        process.exit(1);
-      });
+    if (!loglevel) {
+      logger.transports.Console.level = config.get('loglevel');
+      logger.debug('loglevel is %s.', logger.transports.Console.level);
+    }
+    require('./src/schedule').checkSchedule();
+    logger.info('startup complete.');
+  })
+  .catch(err => {
+    console.error('Fatal error intialising medic-sentinel');
+    console.log(err);
+    process.exit(1);
   });
