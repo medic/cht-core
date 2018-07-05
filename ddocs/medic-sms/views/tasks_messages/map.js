@@ -1,7 +1,7 @@
 function (doc) {
   var _emit = function(tasks) {
     tasks.forEach(function(task) {
-      task.messages.forEach(function(msg) {
+      task.messages && task.messages.forEach(function(msg) {
         /*
          * uuid, to and message properties are required for message
          * to be processed/valid.
