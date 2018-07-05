@@ -1,12 +1,15 @@
-const [,, threadId, userPrefix, pass, userCount] = process.argv;
-const username = `${userPrefix}-${threadId%userCount}`;
+const [,, threadId] = process.argv;
+
+const config = require('./config.json');
+const user = config.users[threadId % config.users.length];
 
 const PouchDB = require('pouchdb');
 PouchDB.plugin(require('pouchdb-adapter-memory'));
-const remoteDb = new PouchDB('http://localhost:5988/medic', {
+
+const remoteDb = new PouchDB(config.url, {
   skip_setup: true,
   ajax: { timeout: 30000 },
-  auth: { username: username, password: pass }
+  auth: { username: user.name, password: user.pass }
 });
 const localDb = new PouchDB(`scalability-test-${threadId}`, {
   adapter: 'memory',

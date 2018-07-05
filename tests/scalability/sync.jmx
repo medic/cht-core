@@ -7,34 +7,14 @@
       <boolProp name="TestPlan.serialize_threadgroups">false</boolProp>
       <elementProp name="TestPlan.user_defined_variables" elementType="Arguments" guiclass="ArgumentsPanel" testclass="Arguments" testname="User Defined Variables" enabled="true">
         <collectionProp name="Arguments.arguments">
-          <elementProp name="target" elementType="Argument">
-            <stringProp name="Argument.name">target</stringProp>
-            <stringProp name="Argument.value">http://localhost:5988/medic</stringProp>
+          <elementProp name="working_dir" elementType="Argument">
+            <stringProp name="Argument.name">working_dir</stringProp>
+            <stringProp name="Argument.value">/home/gareth/src/medic/medic-webapp/tests/scalability</stringProp>
             <stringProp name="Argument.metadata">=</stringProp>
           </elementProp>
-          <elementProp name="adminUser" elementType="Argument">
-            <stringProp name="Argument.name">adminUser</stringProp>
-            <stringProp name="Argument.value">admin</stringProp>
-            <stringProp name="Argument.metadata">=</stringProp>
-          </elementProp>
-          <elementProp name="adminPass" elementType="Argument">
-            <stringProp name="Argument.name">adminPass</stringProp>
-            <stringProp name="Argument.value">pass</stringProp>
-            <stringProp name="Argument.metadata">=</stringProp>
-          </elementProp>
-          <elementProp name="chpUserPrefix" elementType="Argument">
-            <stringProp name="Argument.name">chpUserPrefix</stringProp>
-            <stringProp name="Argument.value">chp</stringProp>
-            <stringProp name="Argument.metadata">=</stringProp>
-          </elementProp>
-          <elementProp name="chpPass" elementType="Argument">
-            <stringProp name="Argument.name">chpPass</stringProp>
-            <stringProp name="Argument.value">P4ssw0rd</stringProp>
-            <stringProp name="Argument.metadata">=</stringProp>
-          </elementProp>
-          <elementProp name="numberOfCHPsToUse" elementType="Argument">
-            <stringProp name="Argument.name">numberOfCHPsToUse</stringProp>
-            <stringProp name="Argument.value">5</stringProp>
+          <elementProp name="node_binary" elementType="Argument">
+            <stringProp name="Argument.name">node_binary</stringProp>
+            <stringProp name="Argument.value">/home/gareth/.nvm/versions/v8.11.1/bin/node</stringProp>
             <stringProp name="Argument.metadata">=</stringProp>
           </elementProp>
         </collectionProp>
@@ -60,7 +40,7 @@
         <SystemSampler guiclass="SystemSamplerGui" testclass="SystemSampler" testname="sync" enabled="true">
           <boolProp name="SystemSampler.checkReturnCode">true</boolProp>
           <stringProp name="SystemSampler.expectedReturnCode">0</stringProp>
-          <stringProp name="SystemSampler.command">/home/gareth/.nvm/versions/v8.11.1/bin/node</stringProp>
+          <stringProp name="SystemSampler.command">${node_binary}</stringProp>
           <elementProp name="SystemSampler.arguments" elementType="Arguments" guiclass="ArgumentsPanel" testclass="Arguments" testname="User Defined Variables" enabled="true">
             <collectionProp name="Arguments.arguments">
               <elementProp name="" elementType="Argument">
@@ -73,27 +53,12 @@
                 <stringProp name="Argument.value">${__threadNum}</stringProp>
                 <stringProp name="Argument.metadata">=</stringProp>
               </elementProp>
-              <elementProp name="" elementType="Argument">
-                <stringProp name="Argument.name"></stringProp>
-                <stringProp name="Argument.value">${chpUserPrefix}</stringProp>
-                <stringProp name="Argument.metadata">=</stringProp>
-              </elementProp>
-              <elementProp name="" elementType="Argument">
-                <stringProp name="Argument.name"></stringProp>
-                <stringProp name="Argument.value">${chpPass}</stringProp>
-                <stringProp name="Argument.metadata">=</stringProp>
-              </elementProp>
-              <elementProp name="" elementType="Argument">
-                <stringProp name="Argument.name"></stringProp>
-                <stringProp name="Argument.value">${numberOfCHPsToUse}</stringProp>
-                <stringProp name="Argument.metadata">=</stringProp>
-              </elementProp>
             </collectionProp>
           </elementProp>
           <elementProp name="SystemSampler.environment" elementType="Arguments" guiclass="ArgumentsPanel" testclass="Arguments" testname="User Defined Variables" enabled="true">
             <collectionProp name="Arguments.arguments"/>
           </elementProp>
-          <stringProp name="SystemSampler.directory">/home/gareth/src/medic/medic-webapp/tests/scalability</stringProp>
+          <stringProp name="SystemSampler.directory">${working_dir}</stringProp>
           <longProp name="SystemSampler.timeout">-1</longProp>
         </SystemSampler>
         <hashTree/>
