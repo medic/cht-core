@@ -64,9 +64,7 @@ describe('audit proxy', () => {
       }
     };
     const auth = {
-      check: function(req, permission, district, cb) {
-        cb(null, { user: username });
-      }
+      check: () => Promise.resolve({ user: username })
     };
     const p = new AuditProxy();
     p.setup({ audit: audit, passStream: passStreamFn, db: db, auth: auth });
@@ -93,9 +91,7 @@ describe('audit proxy', () => {
       }
     };
     const auth = {
-      check: function(req, permission, district, cb) {
-        cb(null, { user: username });
-      }
+      check: () => Promise.resolve({ user: username })
     };
 
     const p = new AuditProxy();
@@ -131,9 +127,7 @@ describe('audit proxy', () => {
       }
     };
     const auth = {
-      check: function(req, permission, district, cb) {
-        cb(null, { user: username });
-      }
+      check: () => Promise.resolve({ user: username })
     };
 
     const p = new AuditProxy();
@@ -202,9 +196,7 @@ describe('audit proxy', () => {
       }
     };
     const auth = {
-      check: function(req, permission, district, cb) {
-        cb(null, { user: username });
-      }
+      check: () => Promise.resolve({ user: username })
     };
     const p = new AuditProxy();
     p.setup({ audit: audit, passStream: passStreamFn, db: db, auth: auth });
@@ -217,9 +209,7 @@ describe('audit proxy', () => {
     const proxy = {};
     const req = {};
     const auth = {
-      check: function(req, permission, district, cb) {
-        cb({ code: 401 });
-      }
+      check: () => Promise.reject({ code: 401 })
     };
     const p = new AuditProxy();
     p.setup({ auth: auth });
@@ -297,9 +287,7 @@ describe('audit proxy', () => {
       }
     };
     const auth = {
-      check: function(req, permission, district, cb) {
-        cb(null, { user: username });
-      }
+      check: () => Promise.resolve({ user: username })
     };
     const p = new AuditProxy();
     p.setup({ audit: audit, passStream: passStreamFn, db: db, auth: auth });

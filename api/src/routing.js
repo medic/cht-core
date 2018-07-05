@@ -204,30 +204,19 @@ app.get('/api/sms/', function(req, res) {
   res.redirect(301, '/api/sms');
 });
 app.get('/api/sms', function(req, res) {
-  auth.check(req, 'can_access_gateway_api', null, function(err) {
-    if (err) {
-      return serverUtils.error(err, req, res);
-    }
-    res.json(smsGateway.get());
-  });
+  auth.check(req, 'can_access_gateway_api')
+    .then(() => res.json(smsGateway.get()))
+    .catch(err => serverUtils.error(err, req, res));
 });
 
 app.post('/api/sms/', function(req, res) {
   res.redirect(301, '/api/sms');
 });
 app.postJson('/api/sms', function(req, res) {
-  auth.check(req, 'can_access_gateway_api', null, function(err) {
-    if (err) {
-      return serverUtils.error(err, req, res);
-    }
-    smsGateway.post(req)
-      .then(results => {
-        res.json(results);
-      })
-      .catch(err => {
-        serverUtils.error(err, req, res);
-      });
-  });
+  auth.check(req, 'can_access_gateway_api')
+    .then(() => smsGateway.post(req))
+    .then(results => res.json(results))
+    .catch(err => serverUtils.error(err, req, res));
 });
 
 app.all('/api/v1/export/:type/:form?', exportData.routeV1);
@@ -272,31 +261,29 @@ app.get('/api/v1/forms/:form', function(req, res) {
 });
 
 app.get('/api/v1/users', function(req, res) {
-  auth.check(req, 'can_view_users', null, function(err) {
-    if (err) {
-      return serverUtils.error(err, req, res);
-    }
-    users.getList(function(err, body) {
-      if (err) {
-        return serverUtils.error(err, req, res);
-      }
-      res.json(body);
-    });
-  });
+  auth.check(req, 'can_view_users')
+    .then(() => {
+      users.getList(function(err, body) {
+        if (err) {
+          return serverUtils.error(err, req, res);
+        }
+        res.json(body);
+      });
+    })
+    .catch(err => serverUtils.error(err, req, res));
 });
 
 app.postJson('/api/v1/users', function(req, res) {
-  auth.check(req, 'can_create_users', null, function(err) {
-    if (err) {
-      return serverUtils.error(err, req, res);
-    }
-    users.createUser(req.body, function(err, body) {
-      if (err) {
-        return serverUtils.error(err, req, res);
-      }
-      res.json(body);
-    });
-  });
+  auth.check(req, 'can_create_users')
+    .then(() => {
+      users.createUser(req.body, function(err, body) {
+        if (err) {
+          return serverUtils.error(err, req, res);
+        }
+        res.json(body);
+      });
+    })
+    .catch(err => serverUtils.error(err, req, res));
 });
 
 const emptyJSONBodyError = function(req, res) {
@@ -327,25 +314,20 @@ app.postJson('/api/v1/users/:username', function(req, res) {
     });
 
   const hasFullPermission = () =>
-    new Promise((resolve, reject) => auth.check(req, 'can_update_users', null, err => {
-      if (err && err.code === 403) {
-        resolve(false);
-      } else if (err) {
-        reject(err);
-      } else {
-        resolve(true);
-      }
-    }));
+    auth.check(req, 'can_update_users')
+      .then(() => true)
+      .catch(err => {
+        if (err.code === 403) {
+          return false;
+        }
+        throw err;
+      });
   const isUpdatingSelf = () =>
-    new Promise((resolve, reject) => auth.getUserCtx(req, (err, userCtx) => {
-      if (err) {
-        reject(err);
-      } else if (userCtx.name === username && (!credentials || credentials.username === username)) {
-        resolve(true);
-      } else {
-        resolve(false);
-      }
-    }));
+    auth.getUserCtx(req)
+      .then(userCtx => {
+        return userCtx.name === username &&
+               (!credentials || credentials.username === username);
+      });
   const basicAuthValid = () =>
     new Promise(resolve => {
       if (!credentials) {
@@ -405,68 +387,64 @@ app.postJson('/api/v1/users/:username', function(req, res) {
 });
 
 app.delete('/api/v1/users/:username', function(req, res) {
-  auth.check(req, 'can_delete_users', null, function(err) {
-    if (err) {
-      return serverUtils.error(err, req, res);
-    }
-    users.deleteUser(req.params.username, function(err, result) {
-      if (err) {
-        return serverUtils.error(err, req, res);
-      }
-      res.json(result);
-    });
-  });
+  auth.check(req, 'can_delete_users')
+    .then(() => {
+      users.deleteUser(req.params.username, function(err, result) {
+        if (err) {
+          return serverUtils.error(err, req, res);
+        }
+        res.json(result);
+      });
+    })
+    .catch(err => serverUtils.error(err, req, res));
 });
 
 app.postJson('/api/v1/places', function(req, res) {
-  auth.check(req, 'can_create_places', null, function(err) {
-    if (err) {
-      return serverUtils.error(err, req, res);
-    }
-    if (_.isEmpty(req.body)) {
-      return emptyJSONBodyError(req, res);
-    }
-    places.createPlace(req.body, function(err, body) {
-      if (err) {
-        return serverUtils.error(err, req, res);
+  auth.check(req, 'can_create_places')
+    .then(() => {
+      if (_.isEmpty(req.body)) {
+        return emptyJSONBodyError(req, res);
       }
-      res.json(body);
-    });
-  });
+      places.createPlace(req.body, function(err, body) {
+        if (err) {
+          return serverUtils.error(err, req, res);
+        }
+        res.json(body);
+      });
+    })
+    .catch(err => serverUtils.error(err, req, res));
 });
 
 app.postJson('/api/v1/places/:id', function(req, res) {
-  auth.check(req, 'can_update_places', null, function(err) {
-    if (err) {
-      return serverUtils.error(err, req, res);
-    }
-    if (_.isEmpty(req.body)) {
-      return emptyJSONBodyError(req, res);
-    }
-    places.updatePlace(req.params.id, req.body, function(err, body) {
-      if (err) {
-        return serverUtils.error(err, req, res);
+  auth.check(req, 'can_update_places')
+    .then(() => {
+      if (_.isEmpty(req.body)) {
+        return emptyJSONBodyError(req, res);
       }
-      res.json(body);
-    });
-  });
+      places.updatePlace(req.params.id, req.body, function(err, body) {
+        if (err) {
+          return serverUtils.error(err, req, res);
+        }
+        res.json(body);
+      });
+    })
+    .catch(err => serverUtils.error(err, req, res));
 });
 
 app.postJson('/api/v1/people', function(req, res) {
-  auth.check(req, 'can_create_people', null, function(err) {
-    if (err) {
-      return serverUtils.error(err, req, res);
-    }
-    if (_.isEmpty(req.body)) {
-      return emptyJSONBodyError(req, res);
-    }
-    people.createPerson(req.body, function(err, body) {
-      if (err) {
-        return serverUtils.error(err, req, res);
+  auth.check(req, 'can_create_people')
+    .then(() => {
+      if (_.isEmpty(req.body)) {
+        return emptyJSONBodyError(req, res);
       }
-      res.json(body);
-    });
-  });
+      people.createPerson(req.body, function(err, body) {
+        if (err) {
+          return serverUtils.error(err, req, res);
+        }
+        res.json(body);
+      });
+    })
+    .catch(err => serverUtils.error(err, req, res));
 });
 
 app.postJson('/api/v1/bulk-delete', bulkDocs.bulkDelete);
