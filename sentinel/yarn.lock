@@ -5,6 +5,12 @@
 "@shared-libs/message-utils@file:../shared-libs/message-utils":
   version "1.0.0"
 
+"@shared-libs/server-checks@file:../shared-libs/server-checks":
+  version "1.0.0"
+  dependencies:
+    moment "2.19.1"
+    underscore "1.8.3"
+
 "@shared-libs/tombstone-utils@file:../shared-libs/tombstone-utils":
   version "1.0.0"
 
@@ -30,10 +36,10 @@ assert-plus@1.0.0, assert-plus@^1.0.0:
   resolved "https://registry.yarnpkg.com/assert-plus/-/assert-plus-1.0.0.tgz#f12e0f3c5d77b0b1cdd9146942e4e96c1e4dd525"
 
 async@^2.1.2, async@^2.6.0:
-  version "2.6.0"
-  resolved "https://registry.yarnpkg.com/async/-/async-2.6.0.tgz#61a29abb6fcc026fea77e56d1c6ec53a795951f4"
+  version "2.6.1"
+  resolved "https://registry.yarnpkg.com/async/-/async-2.6.1.tgz#b245a23ca71930044ec53fa46aa00a3e87c6a610"
   dependencies:
-    lodash "^4.14.0"
+    lodash "^4.17.10"
 
 async@~1.0.0:
   version "1.0.0"
@@ -56,8 +62,8 @@ aws4@^1.6.0:
   resolved "https://registry.yarnpkg.com/aws4/-/aws4-1.7.0.tgz#d4d0e9b9dbfca77bf08eeb0a8a471550fe39e289"
 
 bcrypt-pbkdf@^1.0.0:
-  version "1.0.1"
-  resolved "https://registry.yarnpkg.com/bcrypt-pbkdf/-/bcrypt-pbkdf-1.0.1.tgz#63bc5dcb61331b92bc05fd528953c33462a06f8d"
+  version "1.0.2"
+  resolved "https://registry.yarnpkg.com/bcrypt-pbkdf/-/bcrypt-pbkdf-1.0.2.tgz#a4301d389b6a43f9b67ff3ca11a3f6637e360e9e"
   dependencies:
     tweetnacl "^0.14.3"
 
@@ -97,13 +103,19 @@ caseless@~0.12.0:
   version "0.12.0"
   resolved "https://registry.yarnpkg.com/caseless/-/caseless-0.12.0.tgz#1b681c21ff84033c826543090689420d187151dc"
 
+"checks@file:../shared-libs/server-checks":
+  version "1.0.0"
+  dependencies:
+    moment "2.19.1"
+    underscore "1.8.3"
+
 clone-buffer@1.0.0:
   version "1.0.0"
   resolved "https://registry.yarnpkg.com/clone-buffer/-/clone-buffer-1.0.0.tgz#e3e25b207ac4e701af721e2cb5a16792cac3dc58"
 
-cloudant-follow@~0.16.1:
-  version "0.16.1"
-  resolved "https://registry.yarnpkg.com/cloudant-follow/-/cloudant-follow-0.16.1.tgz#c5bb8a62db50b2b637416f47f493c293296be741"
+cloudant-follow@~0.17.0:
+  version "0.17.0"
+  resolved "https://registry.yarnpkg.com/cloudant-follow/-/cloudant-follow-0.17.0.tgz#842513a74e72c440e61dc2b6fd96eedbd9cef38a"
   dependencies:
     browser-request "~0.3.0"
     debug "^3.0.0"
@@ -180,8 +192,8 @@ errs@^0.3.2:
   resolved "https://registry.yarnpkg.com/errs/-/errs-0.3.2.tgz#798099b2dbd37ca2bc749e538a7c1307d0b50499"
 
 eurodigit@^3.1.1:
-  version "3.1.2"
-  resolved "https://registry.yarnpkg.com/eurodigit/-/eurodigit-3.1.2.tgz#5bcb39cfb1d40c4c579c5744f2f4eb0c19717dd8"
+  version "3.1.3"
+  resolved "https://registry.yarnpkg.com/eurodigit/-/eurodigit-3.1.3.tgz#a3b66a2383f4faa02a37749e19c24b60bd2849c2"
 
 extend@~3.0.1:
   version "3.0.1"
@@ -368,8 +380,8 @@ is-primitive@^2.0.0:
   resolved "https://registry.yarnpkg.com/is-primitive/-/is-primitive-2.0.0.tgz#207bab91638499c07b2adf240a41a87210034575"
 
 is-primitive@^3.0.0:
-  version "3.0.0"
-  resolved "https://registry.yarnpkg.com/is-primitive/-/is-primitive-3.0.0.tgz#ddc27a9f9ebe7bed4b4f308acc9abb1c7a025757"
+  version "3.0.1"
+  resolved "https://registry.yarnpkg.com/is-primitive/-/is-primitive-3.0.1.tgz#98c4db1abff185485a657fc2905052b940524d05"
 
 is-string@^1.0.4:
   version "1.0.4"
@@ -438,13 +450,17 @@ lie@3.1.1:
 "lineage@file:../shared-libs/lineage":
   version "1.0.0"
 
+lodash.isempty@^4.4.0:
+  version "4.4.0"
+  resolved "https://registry.yarnpkg.com/lodash.isempty/-/lodash.isempty-4.4.0.tgz#6f86cbedd8be4ec987be9aaf33c9684db1b31e7e"
+
 lodash.isnull@^3.0.0:
   version "3.0.0"
   resolved "https://registry.yarnpkg.com/lodash.isnull/-/lodash.isnull-3.0.0.tgz#fafbe59ea1dca27eed786534039dd84c2e07c56e"
 
-lodash@^4.14.0:
-  version "4.17.5"
-  resolved "https://registry.yarnpkg.com/lodash/-/lodash-4.17.5.tgz#99a92d65c0272debe8c96b6057bc8fbfa3bed511"
+lodash@^4.17.10:
+  version "4.17.10"
+  resolved "https://registry.yarnpkg.com/lodash/-/lodash-4.17.10.tgz#1b7793cf7259ea38fb3661d4d38b3260af8ae4e7"
 
 math-clamp-x@^1.2.0:
   version "1.2.0"
@@ -473,9 +489,13 @@ mime-types@^2.1.12, mime-types@~2.1.17:
   dependencies:
     mime-db "~1.33.0"
 
+moment@2.19.1:
+  version "2.19.1"
+  resolved "https://registry.yarnpkg.com/moment/-/moment-2.19.1.tgz#56da1a2d1cbf01d38b7e1afc31c10bcfa1929167"
+
 moment@^2.22.0:
-  version "2.22.0"
-  resolved "https://registry.yarnpkg.com/moment/-/moment-2.22.0.tgz#7921ade01017dd45186e7fee5f424f0b8663a730"
+  version "2.22.2"
+  resolved "https://registry.yarnpkg.com/moment/-/moment-2.22.2.tgz#3c257f9839fc0e93ff53149632239eb90783ff66"
 
 ms@2.0.0:
   version "2.0.0"
@@ -490,14 +510,14 @@ nan-x@^1.0.0:
   resolved "https://registry.yarnpkg.com/nan-x/-/nan-x-1.0.2.tgz#5f34e9d3115242486219eee3c8bc49fd2425b19a"
 
 nano@^6.4.3:
-  version "6.4.3"
-  resolved "https://registry.yarnpkg.com/nano/-/nano-6.4.3.tgz#d9679505dd431897a582ee717dc42e46f325d8e8"
+  version "6.4.4"
+  resolved "https://registry.yarnpkg.com/nano/-/nano-6.4.4.tgz#4902a095e5186cfb23612c78826ea755b76fadf0"
   dependencies:
-    cloudant-follow "~0.16.1"
+    cloudant-follow "~0.17.0"
     debug "^2.2.0"
     errs "^0.3.2"
-    request "~2.83.0"
-    underscore "^1.8.3"
+    lodash.isempty "^4.4.0"
+    request "^2.85.0"
 
 normalize-space-x@^3.0.0:
   version "3.0.0"
@@ -545,6 +565,8 @@ performance-now@^2.1.0:
 
 "phone-number@file:../shared-libs/phone-number":
   version "1.0.0"
+  dependencies:
+    google-libphonenumber "^3.1.8"
 
 pouchdb-abstract-mapreduce@6.4.3:
   version "6.4.3"
@@ -694,8 +716,8 @@ punycode@^1.4.1:
   resolved "https://registry.yarnpkg.com/punycode/-/punycode-1.4.1.tgz#c0d5a63b2718800ad8e1eb0fa5269c84dd41845e"
 
 qs@~6.5.1:
-  version "6.5.1"
-  resolved "https://registry.yarnpkg.com/qs/-/qs-6.5.1.tgz#349cdf6eef89ec45c12d7d5eb3fc0c870343a6d8"
+  version "6.5.2"
+  resolved "https://registry.yarnpkg.com/qs/-/qs-6.5.2.tgz#cb3ae806e8740444584ef154ce8ee98d403f3e36"
 
 rc4@~0.1.5:
   version "0.1.5"
@@ -708,7 +730,7 @@ replace-comments-x@^2.0.0:
     require-coercible-to-string-x "^1.0.0"
     to-string-x "^1.4.2"
 
-request@2.83.0, request@~2.83.0:
+request@2.83.0:
   version "2.83.0"
   resolved "https://registry.yarnpkg.com/request/-/request-2.83.0.tgz#ca0b65da02ed62935887808e6f510381034e3356"
   dependencies:
@@ -735,9 +757,9 @@ request@2.83.0, request@~2.83.0:
     tunnel-agent "^0.6.0"
     uuid "^3.1.0"
 
-request@^2.83.0:
-  version "2.85.0"
-  resolved "https://registry.yarnpkg.com/request/-/request-2.85.0.tgz#5a03615a47c61420b3eb99b7dba204f83603e1fa"
+request@^2.83.0, request@^2.85.0:
+  version "2.87.0"
+  resolved "https://registry.yarnpkg.com/request/-/request-2.87.0.tgz#32f00235cd08d482b4d0d68db93a829c0ed5756e"
   dependencies:
     aws-sign2 "~0.7.0"
     aws4 "^1.6.0"
@@ -747,7 +769,6 @@ request@^2.83.0:
     forever-agent "~0.6.1"
     form-data "~2.3.1"
     har-validator "~5.0.3"
-    hawk "~6.0.2"
     http-signature "~1.2.0"
     is-typedarray "~1.0.0"
     isstream "~0.1.2"
@@ -757,7 +778,6 @@ request@^2.83.0:
     performance-now "^2.1.0"
     qs "~6.5.1"
     safe-buffer "^5.1.1"
-    stringstream "~0.0.5"
     tough-cookie "~2.3.3"
     tunnel-agent "^0.6.0"
     uuid "^3.1.0"
@@ -776,8 +796,12 @@ require-object-coercible-x@^1.4.1, require-object-coercible-x@^1.4.3:
     is-nil-x "^1.4.2"
 
 safe-buffer@^5.0.1, safe-buffer@^5.1.1:
-  version "5.1.1"
-  resolved "https://registry.yarnpkg.com/safe-buffer/-/safe-buffer-5.1.1.tgz#893312af69b2123def71f57889001671eeb2c853"
+  version "5.1.2"
+  resolved "https://registry.yarnpkg.com/safe-buffer/-/safe-buffer-5.1.2.tgz#991ec69d296e0313747d59bdfd2b745c35f8828d"
+
+safer-buffer@^2.0.2:
+  version "2.1.2"
+  resolved "https://registry.yarnpkg.com/safer-buffer/-/safer-buffer-2.1.2.tgz#44fa161b0187b9549dd84bb91802f9bd8385cd6a"
 
 sntp@2.x.x:
   version "2.1.0"
@@ -790,13 +814,14 @@ spark-md5@3.0.0:
   resolved "https://registry.yarnpkg.com/spark-md5/-/spark-md5-3.0.0.tgz#3722227c54e2faf24b1dc6d933cc144e6f71bfef"
 
 sshpk@^1.7.0:
-  version "1.14.1"
-  resolved "https://registry.yarnpkg.com/sshpk/-/sshpk-1.14.1.tgz#130f5975eddad963f1d56f92b9ac6c51fa9f83eb"
+  version "1.14.2"
+  resolved "https://registry.yarnpkg.com/sshpk/-/sshpk-1.14.2.tgz#c6fc61648a3d9c4e764fd3fcdf4ea105e492ba98"
   dependencies:
     asn1 "~0.2.3"
     assert-plus "^1.0.0"
     dashdash "^1.12.0"
     getpass "^0.1.1"
+    safer-buffer "^2.0.2"
   optionalDependencies:
     bcrypt-pbkdf "^1.0.0"
     ecc-jsbn "~0.1.1"
@@ -808,8 +833,8 @@ stack-trace@0.0.x:
   resolved "https://registry.yarnpkg.com/stack-trace/-/stack-trace-0.0.10.tgz#547c70b347e8d32b4e108ea1a2a159e5fdde19c0"
 
 stringstream@~0.0.5:
-  version "0.0.5"
-  resolved "https://registry.yarnpkg.com/stringstream/-/stringstream-0.0.5.tgz#4e484cd4de5a0bbbee18e46307710a8a81621878"
+  version "0.0.6"
+  resolved "https://registry.yarnpkg.com/stringstream/-/stringstream-0.0.6.tgz#7880225b0d4ad10e30927d167a1d6f2fd3b33a72"
 
 "task-utils@file:../shared-libs/task-utils":
   version "1.0.0"
@@ -934,13 +959,21 @@ typify-parser@^1.1.0:
   version "1.1.0"
   resolved "https://registry.yarnpkg.com/typify-parser/-/typify-parser-1.1.0.tgz#ac73bfa5f25343468e2d0f3346c6117bc03d3c99"
 
-underscore@^1.8.3:
+underscore@1.8.3:
   version "1.8.3"
   resolved "https://registry.yarnpkg.com/underscore/-/underscore-1.8.3.tgz#4f3fb53b106e6097fcf9cb4109f2a5e9bdfa5022"
 
-uuid@3.2.1, uuid@^3.1.0, uuid@^3.2.1:
+underscore@^1.8.3:
+  version "1.9.1"
+  resolved "https://registry.yarnpkg.com/underscore/-/underscore-1.9.1.tgz#06dce34a0e68a7babc29b365b8e74b8925203961"
+
+uuid@3.2.1:
   version "3.2.1"
   resolved "https://registry.yarnpkg.com/uuid/-/uuid-3.2.1.tgz#12c528bb9d58d0b9265d9a2f6f0fe8be17ff1f14"
+
+uuid@^3.1.0, uuid@^3.2.1:
+  version "3.3.2"
+  resolved "https://registry.yarnpkg.com/uuid/-/uuid-3.3.2.tgz#1b4af4955eb3077c501c23872fc6513811587131"
 
 validate.io-undefined@^1.0.3:
   version "1.0.3"
@@ -959,8 +992,8 @@ white-space-x@^3.0.0:
   resolved "https://registry.yarnpkg.com/white-space-x/-/white-space-x-3.0.1.tgz#81a82d5432da725aba5ca671624bb579c9e66d4f"
 
 winston@^2.4.1:
-  version "2.4.1"
-  resolved "https://registry.yarnpkg.com/winston/-/winston-2.4.1.tgz#a3a9265105564263c6785b4583b8c8aca26fded6"
+  version "2.4.3"
+  resolved "https://registry.yarnpkg.com/winston/-/winston-2.4.3.tgz#7a9fdab371b6d3d9b63a592947846d856948c517"
   dependencies:
     async "~1.0.0"
     colors "1.0.x"

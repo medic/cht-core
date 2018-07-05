@@ -9,9 +9,11 @@
   },
   "dependencies": {
     "@shared-libs/message-utils": "file:../shared-libs/message-utils",
+    "@shared-libs/server-checks": "file:../shared-libs/server-checks",
     "@shared-libs/tombstone-utils": "file:../shared-libs/tombstone-utils",
     "async": "^2.6.0",
     "bikram-sambat": "^1.5.0",
+    "checks": "file:../shared-libs/server-checks",
     "couchdb-audit": "^1.1.1",
     "epi-week": "^0.0.1",
     "google-libphonenumber": "^3.1.8",

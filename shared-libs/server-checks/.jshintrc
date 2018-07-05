@@ -1,0 +1,16 @@
+{
+  // See http://jshint.com/docs/ for more details
+  "extends"       : "../.jshintrc",
+
+  "esversion"     : 6,
+
+  // Environments
+  "browser"       : false,    // Web Browser (window, document, etc)
+  "devel"         : false,    // Development/debugging (alert, confirm, etc)
+  "jquery"        : false,    // jQuery
+
+  // Custom Globals
+  "globals"       : {         // additional predefined global variables
+      "Promise"   : true
+  }
+}
