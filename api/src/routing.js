@@ -569,9 +569,16 @@ proxyForChanges.on('proxyReq', (proxyReq, req) => {
 
 // because these are longpolls, we need to manually flush the CouchDB heartbeats through compression
 proxyForChanges.on('proxyRes', (proxyRes, req, res) => {
-  if (!res.headersSent) {
-    res.writeHead(proxyRes.statusCode, proxyRes.headers);
+  res.statusCode = proxyRes.statusCode;
+  if(proxyRes.statusMessage) {
+    res.statusMessage = proxyRes.statusMessage;
   }
+
+  _.each(proxyRes.headers, (value, key) => {
+    if (value !== undefined) {
+      res.setHeader(String(key).trim(), value);
+    }
+  });
 
   proxyRes.pipe(res);
   proxyRes.on('data', () => res.flush());
