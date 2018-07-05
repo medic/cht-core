@@ -21,9 +21,11 @@ var respond = function(req, res, code, message, details) {
   if (wantsJSON(req)) {
     return writeJSON(res, code, message, details);
   }
-  res.writeHead(code, {
-    'Content-Type': 'text/plain'
-  });
+  if (!res.headersSent) {
+    res.writeHead(code, {
+      'Content-Type': 'text/plain'
+    });
+  }
   if (details) {
     message += ': ' + JSON.stringify(details);
   }
