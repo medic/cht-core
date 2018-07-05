@@ -508,6 +508,21 @@ const writeParsedBody = (proxyReq, req) => {
   }
 };
 
+const copyProxyHeaders = (proxyRes, res) => {
+  if (!res.headersSent) {
+    res.statusCode = proxyRes.statusCode;
+    if (proxyRes.statusMessage) {
+      res.statusMessage = proxyRes.statusMessage;
+    }
+
+    _.each(proxyRes.headers, (value, key) => {
+      if (value !== undefined) {
+        res.setHeader(String(key).trim(), value);
+      }
+    });
+  }
+};
+
 /**
  * Set cache control on static resources. Must be hacked in to
  * ensure we set the value first.
@@ -547,9 +562,7 @@ proxyForChanges.on('proxyReq', (proxyReq, req) => {
 
 // because these are longpolls, we need to manually flush the CouchDB heartbeats through compression
 proxyForChanges.on('proxyRes', (proxyRes, req, res) => {
-  if (!res.headersSent) {
-    res.writeHead(proxyRes.statusCode, proxyRes.headers);
-  }
+  copyProxyHeaders(proxyRes, res);
 
   proxyRes.pipe(res);
   proxyRes.on('data', () => res.flush());
