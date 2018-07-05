@@ -308,7 +308,7 @@ describe('audit proxy', () => {
           },
           log = sinon.stub().callsArgWith(1),
           audit = { withNano: sinon.stub().returns({ log: log })},
-          auth = { check: sinon.stub().callsArgWith(3, null, { user: 'name' }) },
+          auth = { check: () => Promise.resolve({ user: 'user' }) },
           db = {
             client: {
               host: 'localhost',
