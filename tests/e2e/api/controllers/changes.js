@@ -251,6 +251,30 @@ describe('changes handler', () => {
         });
     });
 
+    it('should copy proxied response headers', () => {
+      const options = {
+        hostname: constants.API_HOST,
+        port: constants.API_PORT,
+        auth: auth.user + ':' + auth.pass,
+        path: `/${constants.DB_NAME}/_changes?limit=1`
+      };
+
+      return new Promise((resolve, reject) => {
+          const req = http.request(options, res => {
+            res.on('data', () => {});
+            res.on('end', () => resolve(res.headers));
+          });
+
+          req.on('error', e => reject(e));
+          req.end();
+        })
+        .then(headers => {
+          expect(headers).toBeTruthy();
+          expect(headers['content-type']).toEqual('application/json');
+          expect(headers.server).toBeTruthy();
+        });
+    });
+
     it('should send heartbeats at specified intervals for all types of _changes requests', () => {
       const heartRateMonitor = options => {
         options = options || {};
