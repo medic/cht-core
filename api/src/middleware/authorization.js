@@ -12,14 +12,9 @@ module.exports = {
   getUserCtx: (req, res, next) => {
     return auth
       .getUserCtx(req)
-      .then(userCtx => {
-        req.userCtx = userCtx;
-        next();
-      })
-      .catch(err => {
-        req.authErr = err;
-        next();
-      });
+      .then(userCtx => req.userCtx = userCtx)
+      .catch(err => req.authErr = err)
+      .then(() => next());
   },
 
   // blocks unauthenticated requests from passing through
@@ -30,7 +25,7 @@ module.exports = {
     next();
   },
 
-  // blocks offline users from accessing online-only endpoints
+  // blocks offline users not-authorized requests from accessing the endpoint
   offlineUserFirewall: (req, res, next) => {
     if (!req.userCtx) {
       return serverUtils.notLoggedIn(req, res);
@@ -44,7 +39,7 @@ module.exports = {
   },
 
   // proxies all online users requests to CouchDB
-  // saves offline user settings in the request object to be used later
+  // saves offline user-settings doc in the request object
   onlineUserProxy: (proxy, req, res, next) => {
     if (!req.userCtx) {
       return serverUtils.notLoggedIn(req, res);
@@ -63,7 +58,7 @@ module.exports = {
   },
 
   // online users requests pass through to the next route (other middleware in this stack is skipped)
-  // saves offline user settings in the request object to be used later
+  // saves offline user-settings doc in the request object to be used later
   // used for audited endpoints
   onlineUserPassThrough:(req, res, next) => {
     if (!req.userCtx) {

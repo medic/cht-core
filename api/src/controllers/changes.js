@@ -102,7 +102,8 @@ const appendChange = (results, changeObj) => {
 
 // returns true if no breaking authorization change is processed, false otherwise
 const hasBreakingAuthorizationChange = (feed) =>
-  feed.pendingChanges.some(changeObj => authorization.isAuthChange(changeObj.id, feed.userCtx, changeObj.viewResults));
+  feed.pendingChanges.some(changeObj =>
+    authorization.isAuthChange(changeObj.id, feed.req.userCtx, changeObj.viewResults));
 
 // appends allowed `changes` to feed `results`
 const processPendingChanges = (feed) => {
@@ -209,9 +210,8 @@ const getChanges = feed => {
 
       feed.results = mergeResults(responses);
       if (hasBreakingAuthorizationChange(feed)) {
-        // if critical auth data changes are received, reset the feed completely
-        endFeed(feed, false);
-        return processRequest(feed.req, feed.res, feed.userCtx);
+        // if critical auth data changes are received, reset the request, refreshing user settings
+        return restartRequest(feed);
       }
 
       processPendingChanges(feed);
@@ -234,12 +234,11 @@ const getChanges = feed => {
     });
 };
 
-const initFeed = (req, res, userCtx) => {
+const initFeed = (req, res) => {
   const feed = {
     id: req.uniqId || uuid(),
     req: req,
     res: res,
-    userCtx: userCtx,
     initSeq: req.query && req.query.since || 0,
     lastSeq: req.query && req.query.since || currentSeq,
     pendingChanges: [],
@@ -259,7 +258,7 @@ const initFeed = (req, res, userCtx) => {
   req.on('close', () => endFeed(feed, false));
 
   return authorization
-    .getAuthorizationContext(userCtx)
+    .getAuthorizationContext(feed.req.userCtx)
     .then(authData => {
       _.extend(feed, authData);
       return authorization.getAllowedDocIds(feed);
@@ -270,12 +269,19 @@ const initFeed = (req, res, userCtx) => {
     });
 };
 
-const processRequest = (req, res) => {
+// restarts the request, refreshing user-settings
+const restartRequest = feed => {
+  endFeed(feed, false);
   return auth
-    .getUserSettings(req.userCtx)
+    .getUserSettings(feed.req.userCtx)
     .then(userCtx => {
-      initFeed(req, res, userCtx).then(getChanges);
+      feed.req.userCtx = userCtx;
+      processRequest(feed.req, feed.res);
     });
+};
+
+const processRequest = (req, res) => {
+  initFeed(req, res).then(getChanges);
 };
 
 const addChangeToLongpollFeed = (feed, changeObj) => {
@@ -318,10 +324,8 @@ const processChange = (change, seq) => {
       return feed.reiterate_changes && feed.pendingChanges.push(changeObj);
     }
 
-    if (authorization.isAuthChange(changeObj.id, feed.userCtx, changeObj.viewResults)) {
-      endFeed(feed, false);
-      processRequest(feed.req, feed.res, feed.userCtx);
-      return;
+    if (authorization.isAuthChange(changeObj.id, feed.req.userCtx, changeObj.viewResults)) {
+      return restartRequest(feed);
     }
 
     feed.hasNewSubjects = feed.hasNewSubjects || newSubjects;

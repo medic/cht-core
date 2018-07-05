@@ -35,7 +35,8 @@ describe('Changes controller', () => {
   beforeEach(() => {
     clock = sinon.useFakeTimers();
     emitters = [];
-    testReq = { on: sinon.stub().callsFake((event, fn) => reqOnClose = fn), userCtx: { name: 'user' }};
+    userCtx = { name: 'user', facility_id: 'facility', contact_id: 'contact' };
+    testReq = { on: sinon.stub().callsFake((event, fn) => reqOnClose = fn), userCtx: userCtx};
     testRes = {
       type: sinon.stub(),
       write: sinon.stub(),
@@ -43,7 +44,6 @@ describe('Changes controller', () => {
       setHeader: sinon.stub(),
       flush: sinon.stub()
     };
-    userCtx = { name: 'user', facility_id: 'facility', contact_id: 'contact' };
 
     defaultSettings = {
       reiterate_changes: true,
@@ -208,7 +208,6 @@ describe('Changes controller', () => {
             testReq.on.args[0][0].should.equal('close');
             testRes.type.callCount.should.equal(1);
             testRes.type.args[0][0].should.equal('json');
-            auth.getUserSettings.callCount.should.equal(1);
             const feeds = controller._getNormalFeeds();
             feeds.length.should.equal(1);
             testRes.setHeader.callCount.should.equal(0);
@@ -230,7 +229,7 @@ describe('Changes controller', () => {
             const feed = controller._getNormalFeeds()[0];
             feed.req.should.equal(testReq);
             feed.res.should.equal(testRes);
-            feed.userCtx.should.equal(userCtx);
+            feed.req.userCtx.should.equal(userCtx);
             feed.lastSeq.should.equal('seq-1');
             feed.initSeq.should.equal(0);
             feed.pendingChanges.length.should.equal(0);
@@ -288,7 +287,9 @@ describe('Changes controller', () => {
           authorization.getAuthorizationContext.callCount.should.equal(1);
           authorization.getAuthorizationContext.withArgs(userCtx).callCount.should.equal(1);
           authorization.getAllowedDocIds.callCount.should.equal(1);
-          authorization.getAllowedDocIds.withArgs(sinon.match({ userCtx, subjectIds, contactsByDepthKeys })).callCount.should.equal(1);
+          authorization.getAllowedDocIds
+            .withArgs(sinon.match({ req: { userCtx }, subjectIds, contactsByDepthKeys }))
+            .callCount.should.equal(1);
           return Promise.resolve();
         })
         .then(() => {
@@ -566,7 +567,7 @@ describe('Changes controller', () => {
     it('resets the feed completely if a breaking authorization change is received', () => {
       authorization.getAllowedDocIds.resolves([1, 2, 3, 4, 5, 6]);
       authorization.getAllowedDocIds.onCall(1).resolves([42]);
-      auth.getUserSettings.onCall(1).resolves({ name: 'user', facility_id: 'facility_id' });
+      auth.getUserSettings.resolves({ name: 'user', facility_id: 'facility_id' });
 
       testReq.uniqId = 'myFeed';
       const userChange = {
@@ -598,12 +599,12 @@ describe('Changes controller', () => {
           controller._getLongpollFeeds().length.should.equal(0);
           feeds[0].should.not.deep.equal(initialFeed);
           feeds[0].id.should.equal('myFeed');
-          auth.getUserSettings.callCount.should.equal(2);
+          auth.getUserSettings.callCount.should.equal(1);
           authorization.getAuthorizationContext.callCount.should.equal(2);
-
+          authorization.getAuthorizationContext.args[0][0].should.deep.equal(userCtx);
           authorization.getAuthorizationContext.args[1][0].should.deep.equal({ name: 'user', facility_id: 'facility_id' });
           authorization.getAllowedDocIds.callCount.should.equal(2);
-          feeds[0].userCtx.should.deep.equal({ name: 'user', facility_id: 'facility_id' });
+          feeds[0].req.userCtx.should.deep.equal({ name: 'user', facility_id: 'facility_id' });
           initialFeed.ended.should.equal(true);
         });
     });
@@ -914,7 +915,7 @@ describe('Changes controller', () => {
           const feed = normalFeeds[0];
           feed.id.should.equal('myFeed');
           feed.chunkedAllowedDocIds.should.deep.equal([[ 'a', 'b', 'c' ]]);
-          auth.getUserSettings.callCount.should.equal(2);
+          auth.getUserSettings.callCount.should.equal(1);
           authorization.getAllowedDocIds.callCount.should.equal(2);
         });
     });
@@ -1613,7 +1614,7 @@ describe('Changes controller', () => {
         { change: { id: 5, changes: [{ rev: 1 }], doc: { _id: 5 }}, id: 5},
       ];
 
-      controller._hasBreakingAuthorizationChange({ pendingChanges }).should.equal(true);
+      controller._hasBreakingAuthorizationChange({ req: testReq, pendingChanges }).should.equal(true);
     });
 
     it('returns false when user doc change is not received', () => {
@@ -1626,7 +1627,7 @@ describe('Changes controller', () => {
         { change: { id: 5, changes: [{ rev: 1 }], doc: { _id: 5 }}, id: 5 },
       ];
 
-      controller._hasBreakingAuthorizationChange({ pendingChanges }).should.equal(false);
+      controller._hasBreakingAuthorizationChange({ req: testReq, pendingChanges }).should.equal(false);
     });
   });
 
