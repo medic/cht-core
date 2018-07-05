@@ -127,8 +127,8 @@ describe('bulk-docs handler', () => {
     ];
 
     const docs = [
-      { _id: 'new_allowed_contact', type: 'clinic', parent: { _id: 'fixture:offline' }, name: 'New Allowed Contact' },
-      { _id: 'new_denied_contact', type: 'clinic', parent: { _id: 'fixture:online' }, name: 'New Denied Contact' },
+      { _id: 'new_allowed_contact_1', type: 'clinic', parent: { _id: 'fixture:offline' }, name: 'New Allowed Contact' },
+      { _id: 'new_denied_contact_1', type: 'clinic', parent: { _id: 'fixture:online' }, name: 'New Denied Contact' },
       // disallowed update on disallowed doc
       { _id: 'denied_contact_1', type: 'clinic', parent: { _id: 'fixture:online' }, name: 'Denied Contact 1 updated' },
       // allowed update on disallowed doc
@@ -152,11 +152,11 @@ describe('bulk-docs handler', () => {
       })
       .then(result => {
         expect(result.length).toEqual(8);
-        expect(_.pick(result[0], 'ok', 'id')).toEqual({ ok: true, id: 'new_allowed_contact' });
+        expect(_.pick(result[0], 'ok', 'id')).toEqual({ ok: true, id: 'new_allowed_contact_1' });
         expect(_.pick(result[5], 'ok', 'id')).toEqual({ ok: true, id: 'allowed_contact_2' });
         expect(_.pick(result[7], 'ok')).toEqual({ ok: true });
 
-        expect(result[1]).toEqual({ id: 'new_denied_contact', error: 'forbidden' });
+        expect(result[1]).toEqual({ id: 'new_denied_contact_1', error: 'forbidden' });
         expect(result[2]).toEqual({ id: 'denied_contact_1', error: 'forbidden' });
         expect(result[3]).toEqual({ id: 'denied_contact_2', error: 'forbidden' });
         expect(result[4]).toEqual({ id: 'allowed_contact_1', error: 'forbidden' });
@@ -187,7 +187,7 @@ describe('bulk-docs handler', () => {
       })
       .then(results => {
         // created
-        expect(results[0]._id).toEqual('new_allowed_contact-audit');
+        expect(results[0]._id).toEqual('new_allowed_contact_1-audit');
         expect(results[0].history.length).toEqual(1);
         expect(_.pick(results[0].history[0], 'user', 'action')).toEqual({ user: 'offline', action: 'create' });
         expect(results[0].history[0].doc).toEqual(_.extend(docs[0], { _rev: 'current' }));
