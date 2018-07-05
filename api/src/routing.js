@@ -314,15 +314,14 @@ app.postJson('/api/v1/users/:username', function(req, res) {
     });
 
   const hasFullPermission = () =>
-    new Promise((resolve, reject) => auth.check(req, 'can_update_users', null, err => {
-      if (err && err.code === 403) {
-        resolve(false);
-      } else if (err) {
-        reject(err);
-      } else {
-        resolve(true);
-      }
-    }));
+    auth.check(req, 'can_update_users')
+      .then(() => true)
+      .catch(err => {
+        if (err.code === 403) {
+          return false;
+        }
+        throw err;
+      });
   const isUpdatingSelf = () =>
     auth.getUserCtx(req)
       .then(userCtx => {
