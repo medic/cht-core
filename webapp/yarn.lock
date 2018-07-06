@@ -759,9 +759,9 @@ max-safe-integer@^1.0.1:
   version "1.0.1"
   resolved "https://registry.yarnpkg.com/max-safe-integer/-/max-safe-integer-1.0.1.tgz#f38060be2c563d8c02e6d48af39122fd83b6f410"
 
-medic-enketo-xslt@^1.5.0:
-  version "1.5.0"
-  resolved "https://registry.yarnpkg.com/medic-enketo-xslt/-/medic-enketo-xslt-1.5.0.tgz#4b2eda78448eaa9f4d04fbee52d0b3dbda1b802d"
+"medic-enketo-xslt@https://github.com/medic/enketo-xslt.git#medic-1.19.0":
+  version "1.6.0"
+  resolved "https://github.com/medic/enketo-xslt.git#d77e7db6f37e7addc60e8422c352877d8c3ce85f"
 
 medic-nootils@^1.1.0:
   version "1.1.0"
