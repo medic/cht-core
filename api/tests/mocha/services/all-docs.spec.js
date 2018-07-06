@@ -234,7 +234,7 @@ describe('All Docs service', () => {
     });
 
     it('calls authorization.getAllowedIds with correct parameters', () => {
-      authorization.getAuthorizationContext.resolves({ subjectIds: ['a', 'b'] });
+      authorization.getAuthorizationContext.resolves({ subjectIds: ['a', 'b'], userCtx: testReq.userCtx });
       authorization.getAllowedDocIds.resolves(['a', 'b']);
       db.medic.allDocs.rejects({ error: 'something' });
 

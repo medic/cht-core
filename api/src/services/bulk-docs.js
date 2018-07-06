@@ -201,6 +201,7 @@ const requestError = reason => ({
 });
 
 const invalidRequest = req => {
+  // error messages copied from CouchDB source
   if (!req.body) {
     return requestError('invalid UTF-8 JSON');
   }

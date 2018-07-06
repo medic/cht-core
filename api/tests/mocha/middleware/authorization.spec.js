@@ -51,16 +51,16 @@ describe('Authorization middleware', () => {
     });
   });
 
-  describe('requireAuthenticatedUser', () => {
+  describe('checkAuth', () => {
     it('blocks unauthenticated requests', () => {
-      middleware.requireAuthenticatedUser(testReq, testRes, next);
+      middleware.checkAuth(testReq, testRes, next);
       next.callCount.should.equal(0);
       serverUtils.notLoggedIn.callCount.should.equal(1);
     });
 
     it('allows authenticated requests to pass through', () => {
       testReq.userCtx = {};
-      middleware.requireAuthenticatedUser(testReq, testRes, next);
+      middleware.checkAuth(testReq, testRes, next);
       next.callCount.should.equal(1);
       serverUtils.notLoggedIn.callCount.should.equal(0);
     });
@@ -142,7 +142,7 @@ describe('Authorization middleware', () => {
         .then(() => {
           serverUtils.notLoggedIn.callCount.should.equal(0);
           next.callCount.should.equal(1);
-          next.args[0].should.deep.equal([]);
+          next.args[0].should.deep.equal([undefined]);
           testReq.userCtx.should.deep.equal({ name: 'user', contact_id: 'a' });
           auth.isOnlineOnly.args[0][0].should.deep.equal({ name: 'user'});
           auth.getUserSettings.args[0][0].should.deep.equal({ name: 'user'});

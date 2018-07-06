@@ -471,18 +471,18 @@ describe('Authorization service', () => {
           [['parent1'], 'patient_id'], [['parent1', 1], 'patient_id'],
           [[userCtx.facility_id], 'patient_id'], [[userCtx.facility_id, 2], 'patient_id']
         ];
-        service.updateContext(true, feed, viewResults).should.equal(2);
+        service.updateContext(true, feed, viewResults).should.equal(true);
 
         viewResults.contactsByDepth = [
           [[userCtx.facility_id], null], [[userCtx.facility_id, 0], null]
         ];
-        service.updateContext(true, feed, viewResults).should.equal(1);
+        service.updateContext(true, feed, viewResults).should.equal(true);
 
         viewResults.contactsByDepth = [
           [['contact'], 'patient_id'], [['contact', 0], 'patient_id'],
           [[userCtx.facility_id], 'patient_id'], [[userCtx.facility_id, 1], 'patient_id']
         ];
-        service.updateContext(true, feed, viewResults).should.equal(0);
+        service.updateContext(true, feed, viewResults).should.equal(false);
 
         viewResults.contactsByDepth = [
           [['contact'], 'patient_id'], [['contact', 0], 'patient_id'],
@@ -490,7 +490,7 @@ describe('Authorization service', () => {
           [['parent2'], 'patient_id'], [['parent2', 2], 'patient_id'],
           [[userCtx.facility_id], 'patient_id'], [[userCtx.facility_id, 3], 'patient_id']
         ];
-        service.updateContext(true, feed, viewResults).should.equal(0);
+        service.updateContext(true, feed, viewResults).should.equal(false);
       });
 
       it('returns false for not allowed contacts', () => {
@@ -520,10 +520,10 @@ describe('Authorization service', () => {
           [[userCtx.facility_id], 'new_patient_id'], [[userCtx.facility_id, 1], 'new_patient_id']
         ];
 
-        service.updateContext(true, feed, viewResults).should.equal(2);
+        service.updateContext(true, feed, viewResults).should.equal(true);
         feed.subjectIds.should.deep.equal(['new_patient_id', 'new_contact_id']);
 
-        service.updateContext(true, feed, viewResults).should.equal(0);
+        service.updateContext(true, feed, viewResults).should.equal(false);
         feed.subjectIds.should.deep.equal(['new_patient_id', 'new_contact_id']);
 
         viewResults.contactsByDepth = [

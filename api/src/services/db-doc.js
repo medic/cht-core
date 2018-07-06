@@ -19,7 +19,7 @@ const getStoredDoc = (req, isAttachment) => {
   let options = {};
   // use `req.query` params for `db-doc` GET, as we will return the result directly if allowed
   // use `req.query.rev` for attachment requests
-  // `db-doc` PUT and DELETE requests will require last `rev` to be allowed
+  // `db-doc` PUT and DELETE requests will require latest `rev` to be allowed
   if ((req.method === 'GET' || isAttachment) && req.query) {
     options = req.query;
   }
@@ -38,7 +38,7 @@ const getStoredDoc = (req, isAttachment) => {
 const getRequestDoc = (req, isAttachment) => {
   // bodyParser adds a `body` property regardless of method
   // attachment requests are not bodyParsed, so theoretically will not have a `body` property
-  if (req.method === 'GET' || req.method === 'DELETE' || !req.body || isAttachment) {
+  if (req.method === 'GET' || req.method === 'DELETE' || isAttachment || !req.body) {
     return false;
   }
 
@@ -66,7 +66,7 @@ module.exports = {
     }
 
     if (method !== 'POST' && !docId) {
-      //all other requests need the docId parameter
+      //all other requests require the docId parameter
       return false;
     }
 
@@ -102,7 +102,7 @@ module.exports = {
           return requestError(res);
         }
 
-        // user must be allowed to see new/updated document or be allowed to create only
+        // user must be allowed to see new/updated document or be allowed to create this document
         if (requestDoc &&
             !authorization.alwaysAllowCreate(requestDoc) &&
             !authorization.allowedDoc(requestDoc._id, authorizationContext, authorization.getViewResults(requestDoc))) {

@@ -108,9 +108,11 @@ const processPendingChanges = (feed) => {
 };
 
 // returns true if an authorization change is found
-const hasAuthorizationChange = (feed) =>
-  feed.pendingChanges.some(changeObj =>
-    authorization.isAuthChange(changeObj.id, feed.req.userCtx, changeObj.viewResults));
+const hasAuthorizationChange = (feed) => {
+  return feed.pendingChanges.some(changeObj => {
+    return authorization.isAuthChange(changeObj.id, feed.req.userCtx, changeObj.viewResults);
+  });
+};
 
 // checks that all changes requests responses are valid
 const validResults = responses => {
@@ -181,7 +183,7 @@ const restartNormalFeed = feed => {
 const getChanges = feed => {
   const options = {
     since: feed.req.query && feed.req.query.since || 0,
-    batch_size: MAX_DOC_IDS
+    batch_size: MAX_DOC_IDS // PouchDB parameter
   };
   _.extend(options, _.pick(feed.req.query, 'style', 'conflicts', 'seq_interval'));
 
@@ -209,7 +211,7 @@ const getChanges = feed => {
 
       feed.results = mergeResults(responses);
       if (hasAuthorizationChange(feed)) {
-        // if critical auth data changes are received, reset the request, refreshing user settings
+        // if authorization changes are received, reset the request, refreshing user settings
         return reauthorizeRequest(feed);
       }
 
@@ -258,14 +260,18 @@ const initFeed = (req, res) => {
 
   return authorization
     .getAuthorizationContext(feed.req.userCtx)
-    .then(authData => {
-      _.extend(feed, authData);
+    .then(authorizationContext => {
+      _.extend(feed, authorizationContext);
       return authorization.getAllowedDocIds(feed);
     })
     .then(allowedDocIds => {
       feed.allowedDocIds = allowedDocIds;
       return feed;
     });
+};
+
+const processRequest = (req, res) => {
+  initFeed(req, res).then(getChanges);
 };
 
 // restarts the request, refreshing user-settings
@@ -277,10 +283,6 @@ const reauthorizeRequest = feed => {
       feed.req.userCtx = userCtx;
       processRequest(feed.req, feed.res);
     });
-};
-
-const processRequest = (req, res) => {
-  initFeed(req, res).then(getChanges);
 };
 
 const addChangeToLongpollFeed = (feed, changeObj) => {

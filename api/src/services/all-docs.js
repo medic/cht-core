@@ -72,6 +72,7 @@ const requestError = reason => ({
 });
 
 const invalidRequest = req => {
+  // error messages copied from CouchDB source
   if (req.query && req.query.keys) {
     try {
       const keys = JSON.parse(req.query.keys);
@@ -106,10 +107,7 @@ module.exports = {
 
     return authorization
       .getAuthorizationContext(req.userCtx)
-      .then(authorizationData => {
-        authorizationData.userCtx = req.userCtx;
-        return authorization.getAllowedDocIds(authorizationData);
-      })
+      .then(authorizationData => authorization.getAllowedDocIds(authorizationData))
       .then(allowedDocIds => {
         // when specific keys are requested, the expectation is to send deleted documents as well
         allowedDocIds = requestIds ?
