@@ -1602,7 +1602,7 @@ describe('Changes controller', () => {
     });
   });
 
-  describe('hasBreakingAuthorizationChange', () => {
+  describe('hasAuthorizationChange', () => {
     it('returns true when user doc change is received', () => {
       authorization.isAuthChange.withArgs('org.couchdb.user:user').returns(true);
 
@@ -1614,7 +1614,7 @@ describe('Changes controller', () => {
         { change: { id: 5, changes: [{ rev: 1 }], doc: { _id: 5 }}, id: 5},
       ];
 
-      controller._hasBreakingAuthorizationChange({ req: testReq, pendingChanges }).should.equal(true);
+      controller._hasAuthorizationChange({ req: testReq, pendingChanges }).should.equal(true);
     });
 
     it('returns false when user doc change is not received', () => {
@@ -1627,7 +1627,7 @@ describe('Changes controller', () => {
         { change: { id: 5, changes: [{ rev: 1 }], doc: { _id: 5 }}, id: 5 },
       ];
 
-      controller._hasBreakingAuthorizationChange({ req: testReq, pendingChanges }).should.equal(false);
+      controller._hasAuthorizationChange({ req: testReq, pendingChanges }).should.equal(false);
     });
   });
 

@@ -100,17 +100,17 @@ const appendChange = (results, changeObj) => {
   }
 };
 
-// returns true if no breaking authorization change is processed, false otherwise
-const hasBreakingAuthorizationChange = (feed) =>
-  feed.pendingChanges.some(changeObj =>
-    authorization.isAuthChange(changeObj.id, feed.req.userCtx, changeObj.viewResults));
-
 // appends allowed `changes` to feed `results`
 const processPendingChanges = (feed) => {
   authorization
     .filterAllowedDocs(feed, feed.pendingChanges)
     .forEach(changeObj => appendChange(feed.results, changeObj));
 };
+
+// returns true if an authorization change is found
+const hasAuthorizationChange = (feed) =>
+  feed.pendingChanges.some(changeObj =>
+    authorization.isAuthChange(changeObj.id, feed.req.userCtx, changeObj.viewResults));
 
 // checks that all changes requests responses are valid
 const validResults = responses => {
@@ -163,8 +163,7 @@ const resetFeed = feed => {
   });
 };
 
-// converts previous longpoll feed back to a normal feed when
-// refreshes the allowedIds list
+// converts previous longpoll feed back to a normal feed when it receives new allowed subjects
 const restartNormalFeed = feed => {
   longpollFeeds = _.without(longpollFeeds, feed);
   normalFeeds.push(feed);
@@ -209,9 +208,9 @@ const getChanges = feed => {
       }
 
       feed.results = mergeResults(responses);
-      if (hasBreakingAuthorizationChange(feed)) {
+      if (hasAuthorizationChange(feed)) {
         // if critical auth data changes are received, reset the request, refreshing user settings
-        return restartRequest(feed);
+        return reauthorizeRequest(feed);
       }
 
       processPendingChanges(feed);
@@ -270,7 +269,7 @@ const initFeed = (req, res) => {
 };
 
 // restarts the request, refreshing user-settings
-const restartRequest = feed => {
+const reauthorizeRequest = feed => {
   endFeed(feed, false);
   return auth
     .getUserSettings(feed.req.userCtx)
@@ -325,7 +324,7 @@ const processChange = (change, seq) => {
     }
 
     if (authorization.isAuthChange(changeObj.id, feed.req.userCtx, changeObj.viewResults)) {
-      return restartRequest(feed);
+      return reauthorizeRequest(feed);
     }
 
     feed.hasNewSubjects = feed.hasNewSubjects || newSubjects;
@@ -397,7 +396,7 @@ if (process.env.UNIT_TEST_ENV) {
     _processPendingChanges: processPendingChanges,
     _appendChange: appendChange,
     _mergeResults: mergeResults,
-    _hasBreakingAuthorizationChange: hasBreakingAuthorizationChange,
+    _hasAuthorizationChange: hasAuthorizationChange,
     _split: split,
     _reset: () => {
       longpollFeeds = [];
