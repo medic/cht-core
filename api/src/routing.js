@@ -522,7 +522,7 @@ const dbDocHandler = require('./controllers/db-doc').request,
 app.get(
   docPath,
   authorization.checkAuth,
-  authorization.onlineUserProxy, // online user GET requests are proxied directly to CouchDB
+  onlineUserProxy, // online user GET requests are proxied directly to CouchDB
   dbDocHandler
 );
 app.post(
