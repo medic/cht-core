@@ -5,11 +5,15 @@ require('chai').should();
 
 const authorization = require('../../../src/services/authorization');
 
-let testReq;
+let userCtx,
+    query,
+    body;
 
 describe('All Docs service', () => {
   beforeEach(function() {
-    testReq = { query: {}, userCtx: { name: 'user' } };
+    userCtx = { name: 'user' };
+    query = {};
+    body = {};
 
     sinon.stub(authorization, 'getAuthorizationContext').resolves({});
     sinon.stub(authorization, 'getAllowedDocIds').resolves([]);
@@ -24,33 +28,23 @@ describe('All Docs service', () => {
 
   describe('Get Request Ids', () => {
     it('returns request key parameter', () => {
-      testReq = {
-        query: { key: 'a' }
-      };
+      query = { key: 'a' };
 
-      const response = service._getRequestIds(testReq);
+      const response = service._getRequestIds(query);
       response.length.should.equal(1);
       response.should.deep.equal(['a']);
     });
 
     it('returns query keys for GET requests', () => {
-      testReq = {
-        query: { keys: JSON.stringify(['a', 'b', 'c']) },
-        method: 'GET'
-      };
-
-      const response = service._getRequestIds(testReq);
+      query = { keys: JSON.stringify(['a', 'b', 'c']) };
+      const response = service._getRequestIds(query);
       response.length.should.equal(3);
       response.should.deep.equal(['a', 'b', 'c']);
     });
 
     it('returns post keys for POST request', () => {
-      testReq = {
-        method: 'POST',
-        body: { keys: ['a', 'b', 'c'] }
-      };
-
-      const response = service._getRequestIds(testReq);
+      body = { keys: ['a', 'b', 'c'] };
+      const response = service._getRequestIds(query, body);
       response.length.should.equal(3);
       response.should.deep.equal(['a', 'b', 'c']);
     });
@@ -169,7 +163,7 @@ describe('All Docs service', () => {
     it('throws authorization errors', () => {
       authorization.getAuthorizationContext.rejects(new Error('something'));
       return service
-        .filterOfflineRequest(testReq)
+        .filterOfflineRequest(userCtx, query, body)
         .catch(err => {
           err.message.should.deep.equal('something');
         });
@@ -179,7 +173,7 @@ describe('All Docs service', () => {
       authorization.getAllowedDocIds.rejects(new Error('something'));
 
       return service
-        .filterOfflineRequest(testReq)
+        .filterOfflineRequest(userCtx, query, body)
         .catch(err => {
           err.message.should.deep.equal('something');
         });
@@ -187,24 +181,24 @@ describe('All Docs service', () => {
 
     it('calls authorization.getAuthorizationContext with correct parameters', () => {
       return service
-        .filterOfflineRequest(testReq)
+        .filterOfflineRequest(userCtx, query, body)
         .then(() => {
           authorization.getAuthorizationContext.callCount.should.equal(1);
-          authorization.getAuthorizationContext.args[0][0].should.equal(testReq.userCtx);
+          authorization.getAuthorizationContext.args[0][0].should.equal(userCtx);
         });
     });
 
     it('calls authorization.getAllowedIds with correct parameters', () => {
-      authorization.getAuthorizationContext.resolves({ subjectIds: ['a', 'b'], userCtx: testReq.userCtx });
+      authorization.getAuthorizationContext.resolves({ subjectIds: ['a', 'b'], userCtx: userCtx });
       authorization.getAllowedDocIds.resolves(['a', 'b']);
 
       return service
-        .filterOfflineRequest(testReq)
+        .filterOfflineRequest(userCtx, query, body)
         .then(() => {
           authorization.getAllowedDocIds.callCount.should.equal(1);
           authorization.getAllowedDocIds.args[0].should.deep.equal([{
             subjectIds: ['a', 'b'],
-            userCtx: testReq.userCtx
+            userCtx: userCtx
           }]);
         });
     });
@@ -215,7 +209,7 @@ describe('All Docs service', () => {
       authorization.excludeTombstoneIds.withArgs(['a', 'b', 'tombstone1', 'tombstone2']).returns(['a', 'b']);
 
       return service
-        .filterOfflineRequest(testReq)
+        .filterOfflineRequest(userCtx, query, body)
         .then(() => {
           authorization.excludeTombstoneIds.callCount.should.equal(1);
           authorization.excludeTombstoneIds.args[0][0].should.deep.equal(['a', 'b', 'tombstone1', 'tombstone2']);
@@ -228,10 +222,10 @@ describe('All Docs service', () => {
       authorization.getAuthorizationContext.resolves({ subjectIds: ['a', 'b'] });
       authorization.getAllowedDocIds.resolves(['a', 'b', 'tombstone1', 'tombstone2']);
       authorization.convertTombstoneIds.withArgs(['a', 'b', 'tombstone1', 'tombstone2']).returns(['a', 'b', '1', '2']);
-      testReq.body = { keys: ['1', '2', '3', '4'] };
+      body = { keys: ['1', '2', '3', '4'] };
 
       return service
-        .filterOfflineRequest(testReq)
+        .filterOfflineRequest(userCtx, query, body)
         .then(() => {
           authorization.excludeTombstoneIds.callCount.should.equal(0);
           authorization.convertTombstoneIds.callCount.should.equal(1);
@@ -245,14 +239,14 @@ describe('All Docs service', () => {
       authorization.getAllowedDocIds.resolves([1, 2, 3, 4]);
 
       return service
-        .filterOfflineRequest(testReq)
+        .filterOfflineRequest(userCtx, query, body)
         .catch(err => {
           err.message.should.deep.equal('something');
         });
     });
 
     it('calls db.allDocs with full parameter list', () => {
-      testReq.query = {
+      query = {
         conflicts: 'something',
         descending: 'else',
         skip: 'skip',
@@ -264,7 +258,7 @@ describe('All Docs service', () => {
       authorization.getAllowedDocIds.returns(['a', 'b', 'c']);
 
       return service
-        .filterOfflineRequest(testReq)
+        .filterOfflineRequest(userCtx, query, body)
         .then(() => {
           db.medic.allDocs.callCount.should.equal(1);
           db.medic.allDocs.args[0][0].should.deep.equal({
@@ -281,7 +275,7 @@ describe('All Docs service', () => {
     });
 
     it('removes incompatible parameters from db.allDocs call', () => {
-      testReq.query = {
+      query = {
         conflicts: 'something',
         descending: 'else',
         skip: 'skip',
@@ -295,7 +289,7 @@ describe('All Docs service', () => {
       authorization.getAllowedDocIds.resolves(['a', 'b']);
 
       return service
-        .filterOfflineRequest(testReq)
+        .filterOfflineRequest(userCtx, query, body)
         .then(() => {
           db.medic.allDocs.callCount.should.equal(1);
           db.medic.allDocs.args[0][0].should.deep.equal({
@@ -312,7 +306,7 @@ describe('All Docs service', () => {
       db.medic.allDocs.resolves([{ id: 'a' }, { id: 'b' }]);
 
       return service
-        .filterOfflineRequest(testReq)
+        .filterOfflineRequest(userCtx, query, body)
         .then(result => {
           db.medic.allDocs.callCount.should.equal(1);
           result.should.deep.equal([{ id: 'a' }, { id: 'b' }]);
@@ -322,11 +316,10 @@ describe('All Docs service', () => {
     it('populates response when specific keys are requested', () => {
       authorization.getAllowedDocIds.resolves(['a', 'c', 'f', 'g']);
       db.medic.allDocs.resolves({rows :[{ id: 'a' }, { id: 'c' }]});
-      testReq.query.keys = JSON.stringify(['a', 'b', 'c', 'd']);
-      testReq.method = 'GET';
+      query.keys = JSON.stringify(['a', 'b', 'c', 'd']);
 
       return service
-        .filterOfflineRequest(testReq)
+        .filterOfflineRequest(userCtx, query, body)
         .then(result => {
           db.medic.allDocs.callCount.should.equal(1);
           result.should.deep.equal({ rows: [
@@ -345,7 +338,7 @@ describe('All Docs service', () => {
       db.medic.allDocs.withArgs({ keys: docIds }).resolves(allDocsResponse);
 
       return service
-        .filterOfflineRequest(testReq)
+        .filterOfflineRequest(userCtx, query, body)
         .then(result => {
           db.medic.allDocs.callCount.should.equal(1);
           db.medic.allDocs.args[0][0].should.deep.equal({ keys: docIds });
@@ -360,11 +353,10 @@ describe('All Docs service', () => {
         .withArgs({ keys: ['b', 'c', 'd'] })
         .resolves({ rows: [{id: 'b'}, {id: 'c'}, {id: 'd'}] });
 
-      testReq.method = 'POST';
-      testReq.body = { keys: ['a', 'aa', 'b', 'bb', 'c', 'd', 'f', 'g'] };
+      body = { keys: ['a', 'aa', 'b', 'bb', 'c', 'd', 'f', 'g'] };
 
       return service
-        .filterOfflineRequest(testReq)
+        .filterOfflineRequest(userCtx, query, body)
         .then(result => {
           db.medic.allDocs.callCount.should.equal(1);
           db.medic.allDocs.args[0][0].should.deep.equal({ keys: ['b', 'c', 'd'] });

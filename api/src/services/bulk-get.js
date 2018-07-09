@@ -17,15 +17,15 @@ const filterResults = (authorizationContext, result) => {
 
 module.exports = {
   // offline users will only receive `doc`+`rev` pairs they are allowed to see
-  filterOfflineRequest: (req) => {
+  filterOfflineRequest: (userCtx, query, docs) => {
     let authorizationContext;
 
     return authorization
-      .getAuthorizationContext(req.userCtx)
+      .getAuthorizationContext(userCtx)
       .then(context => {
         authorizationContext = context;
         // actually execute the _bulk_get request as-is and filter the response
-        return db.medic.bulkGet(_.defaults({ docs: req.body.docs }, req.query));
+        return db.medic.bulkGet(_.defaults({ docs: docs }, query));
       })
       .then(result => {
         result.results = filterResults(authorizationContext, result);

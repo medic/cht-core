@@ -44,7 +44,7 @@ module.exports = {
     }
 
     return dbDoc
-      .filterOfflineRequest(req)
+      .filterOfflineRequest(req.userCtx, req.params, req.method, req.query, req.body)
       .then(result => {
         if (!result) {
           return requestError(res);

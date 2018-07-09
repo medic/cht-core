@@ -4,11 +4,14 @@ const service = require('../../../src/services/bulk-get'),
       db = require('../../../src/db-pouch'),
       authorization = require('../../../src/services/authorization');
 
-let testReq;
+let userCtx,
+    query,
+    docs;
 
 describe('Bulk Get service', () => {
   beforeEach(function() {
-    testReq = { query: {}, userCtx: { name: 'user' } };
+    query = {};
+    userCtx = { name: 'user' };
 
     sinon.stub(authorization, 'getAuthorizationContext').resolves({});
     sinon.stub(authorization, 'allowedDoc').returns(true);
@@ -22,41 +25,39 @@ describe('Bulk Get service', () => {
 
   describe('Filter Offline Request', () => {
     it('throws authorization errors', () => {
-      testReq.body = { docs: [] };
       authorization.getAuthorizationContext.rejects(new Error('something'));
 
       return service
-        .filterOfflineRequest(testReq)
+        .filterOfflineRequest(userCtx, query, docs)
         .catch(err => {
           err.message.should.equal('something');
         });
     });
 
     it('catches bulk get errors', () => {
-      testReq.body = { docs: [] };
       db.medic.bulkGet.rejects(new Error('something'));
 
       return service
-        .filterOfflineRequest(testReq)
+        .filterOfflineRequest(userCtx, query, docs)
         .catch(err => {
           err.message.should.equal('something');
         });
     });
 
     it('passes request query parameters to the db call', () => {
-      testReq.body = { docs: [{ id: 'a', rev: '1-a' }, { id: 'b' }] };
-      testReq.query = { revs: 'yes', attachments: 'no', some: 'param' };
+      docs = [{ id: 'a', rev: '1-a' }, { id: 'b' }];
+      query = { revs: 'yes', attachments: 'no', some: 'param' };
 
-      return service.filterOfflineRequest(testReq).then(() => {
+      return service.filterOfflineRequest(userCtx, query, docs).then(() => {
         authorization.getAuthorizationContext.callCount.should.equal(1);
         db.medic.bulkGet.callCount.should.equal(1);
         db.medic.bulkGet.args[0][0].should.deep.equal(
-          { docs: testReq.body.docs, revs: 'yes', attachments: 'no', some: 'param' });
+          { docs: docs, revs: 'yes', attachments: 'no', some: 'param' });
       });
     });
 
     it('filters request docs, excluding error and not allowed docs', () => {
-      testReq.body = { docs: [{ id: 'a' }, { id: 'b' }, { id: 'c' }, { id: 'd' }, { id: 'e' }, { id: 'f' }]};
+      docs = [{ id: 'a' }, { id: 'b' }, { id: 'c' }, { id: 'd' }, { id: 'e' }, { id: 'f' }];
       db.medic.bulkGet
         .withArgs({ docs: [{ id: 'a' }, { id: 'b' }, { id: 'c' }, { id: 'd' }, { id: 'e' }, { id: 'f' }] })
         .resolves({ results:
@@ -80,7 +81,7 @@ describe('Bulk Get service', () => {
         .withArgs('e').returns(false);
 
       return service
-        .filterOfflineRequest(testReq)
+        .filterOfflineRequest(userCtx, query, docs)
         .then(result => {
           authorization.getAuthorizationContext.callCount.should.equal(1);
           authorization.allowedDoc.callCount.should.equal(7);

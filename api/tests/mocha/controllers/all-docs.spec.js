@@ -62,11 +62,14 @@ describe('All Docs controller', () => {
     });
 
     it ('filters for offline requests', () => {
+      service.filterOfflineRequest.resolves(['a', 'b']);
       return controller
         .request(testReq, testRes)
         .then(() => {
           service.filterOfflineRequest.callCount.should.equal(1);
-          service.filterOfflineRequest.args[0].should.deep.equal([ testReq ]);
+          service.filterOfflineRequest.args[0].should.deep.equal([ testReq.userCtx, testReq.query, testReq.body ]);
+          testRes.json.callCount.should.equal(1);
+          testRes.json.args[0].should.deep.equal([['a', 'b']]);
         });
     });
 

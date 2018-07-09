@@ -5,18 +5,18 @@ const db = require('../db-pouch'),
 const startKeyParams = ['startkey', 'start_key', 'startkey_docid', 'start_key_doc_id'],
       endKeyParams = ['endkey', 'end_key', 'endkey_docid', 'end_key_doc_id'];
 
-const getRequestIds = (req) => {
+const getRequestIds = (query, body) => {
   // CouchDB prioritizes query `keys` above body `keys`
-  if (req.query && req.query.keys) {
-    return JSON.parse(req.query.keys);
+  if (query && query.keys) {
+    return JSON.parse(query.keys);
   }
 
-  if (req.body && req.body.keys) {
-    return req.body.keys;
+  if (body && body.keys) {
+    return body.keys;
   }
 
-  if (req.query && req.query.key) {
-    return [ req.query.key ];
+  if (query && query.key) {
+    return [ query.key ];
   }
 };
 
@@ -67,18 +67,18 @@ const formatResults = (results, requestIds) => {
 module.exports = {
   // offline users will only receive results for documents they are allowed to see
   // mimics CouchDB response format, stubbing forbidden docs when specific `keys` are requested
-  filterOfflineRequest: (req) => {
-    const requestIds = getRequestIds(req);
+  filterOfflineRequest: (userCtx, query, body) => {
+    const requestIds = getRequestIds(query, body);
 
     return authorization
-      .getAuthorizationContext(req.userCtx)
-      .then(authorizationData => authorization.getAllowedDocIds(authorizationData))
+      .getAuthorizationContext(userCtx)
+      .then(authorizationContext => authorization.getAllowedDocIds(authorizationContext))
       .then(allowedDocIds => {
         // when specific keys are requested, the expectation is to send deleted documents as well
         allowedDocIds = requestIds ?
           authorization.convertTombstoneIds(allowedDocIds) : authorization.excludeTombstoneIds(allowedDocIds);
 
-        const filteredIds = filterRequestIds(allowedDocIds, requestIds, req.query);
+        const filteredIds = filterRequestIds(allowedDocIds, requestIds, query);
 
         if (!filteredIds.length) {
           return { rows: [] };
@@ -86,7 +86,7 @@ module.exports = {
 
         // remove all the `startKey` / `endKey` / `key` params from the request options, as they are incompatible with
         // `keys` and their function is already handled
-        const options = _.defaults({ keys: filteredIds }, _.omit(req.query, 'key', ...startKeyParams, ...endKeyParams));
+        const options = _.defaults({ keys: filteredIds }, _.omit(query, 'key', ...startKeyParams, ...endKeyParams));
         return db.medic.allDocs(options);
       })
       .then(results => formatResults(results, requestIds));

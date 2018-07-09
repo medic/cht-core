@@ -147,12 +147,13 @@ describe('Bulk Docs controller', () => {
     });
 
     it ('filters for offline requests', () => {
+      testReq.body = { docs: ['some', 'longer', 'doc', 'list'] };
       service.filterOfflineRequest.resolves(['some', 'doc', 'list']);
       return controller
         .request(testReq, testRes, next)
         .then(() => {
           service.filterOfflineRequest.callCount.should.equal(1);
-          service.filterOfflineRequest.args[0].should.deep.equal([ testReq ]);
+          service.filterOfflineRequest.args[0].should.deep.equal([ testReq.userCtx, ['some', 'longer', 'doc', 'list'] ]);
           testRes.interceptResponse.should.be.a('function');
           testReq.body.docs.should.deep.equal(['some', 'doc', 'list']);
           next.callCount.should.equal(1);

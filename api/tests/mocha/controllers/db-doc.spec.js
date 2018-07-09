@@ -13,7 +13,7 @@ describe('db-doc controller', () => {
     sinon.stub(service, 'filterOfflineRequest').resolves();
     sinon.stub(serverUtils, 'serverError');
 
-    testReq = { body: {}, method: 'GET', params: { docId: 'a' }};
+    testReq = { body: {}, method: 'GET', params: { docId: 'a' }, query: {}};
     testRes = {
       json: sinon.stub(),
       status: sinon.stub()
@@ -78,7 +78,8 @@ describe('db-doc controller', () => {
         .request(testReq, testRes, next)
         .then(() => {
           service.filterOfflineRequest.callCount.should.equal(1);
-          service.filterOfflineRequest.args[0].should.deep.equal([testReq]);
+          service.filterOfflineRequest.args[0].should.deep.equal(
+            [ testReq.userCtx, testReq.params, testReq.method, testReq.query, testReq.body ]);
           next.callCount.should.equal(1);
           testRes.json.callCount.should.equal(0);
         });
@@ -91,7 +92,8 @@ describe('db-doc controller', () => {
         .then(() => {
           next.callCount.should.equal(0);
           service.filterOfflineRequest.callCount.should.equal(1);
-          service.filterOfflineRequest.args[0].should.deep.equal([testReq]);
+          service.filterOfflineRequest.args[0].should.deep.equal([
+            testReq.userCtx, testReq.params, testReq.method, testReq.query, testReq.body ]);
           next.callCount.should.equal(0);
           testRes.json.callCount.should.equal(1);
           testRes.json.args[0].should.deep.equal([{ some: 'thing' }]);

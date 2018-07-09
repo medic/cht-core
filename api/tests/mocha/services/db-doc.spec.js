@@ -5,11 +5,18 @@ const service = require('../../../src/services/db-doc'),
       db = require('../../../src/db-pouch'),
       authorization = require('../../../src/services/authorization');
 
-let testReq;
+let userCtx,
+    params,
+    method,
+    query,
+    body;
 
 describe('db-doc service', () => {
   beforeEach(function() {
-    testReq = { params: { docId: 'id'}};
+    userCtx = { name: 'user' };
+    params = { docId: 'id' };
+    query = {};
+    method = 'GET';
 
     sinon.stub(authorization, 'allowedDoc');
     sinon.stub(authorization, 'alwaysAllowCreate');
@@ -24,64 +31,66 @@ describe('db-doc service', () => {
 
   describe('getStoredDoc', () => {
     it('returns false when request has no docID param', () => {
-      testReq = {};
-      return service._getStoredDoc(testReq).then(result => {
-        db.medic.get.callCount.should.equal(0);
-        result.should.equal(false);
-      });
+      params = {};
+      return service
+        ._getStoredDoc(params, method, query)
+        .then(result => {
+          db.medic.get.callCount.should.equal(0);
+          result.should.equal(false);
+        });
     });
 
     it('queries the database with request docId and req.query params when request method is GET', () => {
-      testReq = {
-        params: { docId: 'id' },
-        query: { rev: '1-rev', revs: true, open_revs: true, revs_info: true },
-        method: 'GET'
-      };
+      query = { rev: '1-rev', revs: true, open_revs: true, revs_info: true };
+
       db.medic.get.resolves({ _id: 'id', _rev: '1-rev' });
-      return service._getStoredDoc(testReq).then(result => {
-        db.medic.get.callCount.should.equal(1);
-        db.medic.get.args[0].should.deep.equal(['id', testReq.query]);
-        result.should.deep.equal({ _id: 'id', _rev: '1-rev' });
-      });
+      return service
+        ._getStoredDoc(params, method, query)
+        .then(result => {
+          db.medic.get.callCount.should.equal(1);
+          db.medic.get.args[0].should.deep.equal(['id', query]);
+          result.should.deep.equal({ _id: 'id', _rev: '1-rev' });
+        });
     });
 
     it('queries the database with docId and no options when request method is not GET', () => {
-      testReq = {
-        params: { docId: 'id' },
-        query: { rev: '1-rev', revs: true, open_revs: true, revs_info: true },
-        method: 'POST'
-      };
+      query =  { rev: '1-rev', revs: true, open_revs: true, revs_info: true };
+      method = 'POST';
       db.medic.get.resolves({ _id: 'id', _rev: '1-rev' });
-      return service._getStoredDoc(testReq).then(result => {
-        db.medic.get.callCount.should.equal(1);
-        db.medic.get.args[0].should.deep.equal(['id', {}]);
-        result.should.deep.equal({ _id: 'id', _rev: '1-rev' });
-      });
+      return service
+        ._getStoredDoc(params, method, query)
+        .then(result => {
+          db.medic.get.callCount.should.equal(1);
+          db.medic.get.args[0].should.deep.equal(['id', {}]);
+          result.should.deep.equal({ _id: 'id', _rev: '1-rev' });
+        });
     });
 
     it('queries the database with docId and no rev when request method is GET', () => {
-      testReq = { params: { docId: 'id' } };
       db.medic.get.resolves({ _id: 'id', _rev: '1-rev' });
-      return service._getStoredDoc(testReq).then(result => {
-        db.medic.get.callCount.should.equal(1);
-        db.medic.get.args[0].should.deep.equal(['id', {}]);
-        result.should.deep.equal({ _id: 'id', _rev: '1-rev' });
-      });
+      return service
+        ._getStoredDoc(params, method, query)
+        .then(result => {
+          db.medic.get.callCount.should.equal(1);
+          db.medic.get.args[0].should.deep.equal(['id', {}]);
+          result.should.deep.equal({ _id: 'id', _rev: '1-rev' });
+        });
     });
 
     it('catches db 404s', () => {
-      testReq = { params: { docId: 'id' } };
       db.medic.get.rejects({ status: 404 });
-      return service._getStoredDoc(testReq).then(result => {
-        db.medic.get.args[0].should.deep.equal(['id', {}]);
-        result.should.deep.equal(false);
-      });
+      return service
+        ._getStoredDoc(params, method, query)
+        .then(result => {
+          db.medic.get.args[0].should.deep.equal(['id', {}]);
+          result.should.deep.equal(false);
+        });
     });
 
     it('throws other errors', () => {
       db.medic.get.rejects({ some: 'error' });
       return service
-        ._getStoredDoc(testReq)
+        ._getStoredDoc(params, method, query)
         .then(result => result.should.equal('Should throw an error'))
         .catch(err => err.should.deep.equal({ some: 'error' }));
     });
@@ -89,9 +98,9 @@ describe('db-doc service', () => {
 
   describe('getRequestDoc', () => {
     it('returns request body, if existent and request is not attachment request', () => {
-      service._getRequestDoc({}).should.equal(false);
-      service._getRequestDoc({ body: 'test' }).should.equal('test');
-      service._getRequestDoc({ body: 'test' }, true).should.equal(false);
+      service._getRequestDoc('GET').should.equal(false);
+      service._getRequestDoc('POST', 'test').should.equal('test');
+      service._getRequestDoc('POST', 'test', true).should.equal(false);
     });
   });
 
@@ -99,7 +108,7 @@ describe('db-doc service', () => {
     it('throws db errors', () => {
       db.medic.get.rejects(new Error('something'));
       return service
-        .filterOfflineRequest(testReq)
+        .filterOfflineRequest(userCtx, params, method, query, body)
         .catch(err => {
           authorization.allowedDoc.callCount.should.equal(0);
           err.message.should.equal('something');
@@ -107,10 +116,8 @@ describe('db-doc service', () => {
     });
 
     it('calls authorization.getAuthorizationContext with correct params', () => {
-      testReq.userCtx = { name: 'user' };
-
       return service
-        .filterOfflineRequest(testReq)
+        .filterOfflineRequest(userCtx, params, method, query, body)
         .then(() => {
           authorization.getAuthorizationContext.callCount.should.equal(1);
           authorization.getAuthorizationContext.args[0].should.deep.equal([{ name: 'user' }]);
@@ -119,12 +126,10 @@ describe('db-doc service', () => {
 
     it('calls authorization.allowedDoc with correct params for GET / DELETE  requests', () => {
       const doc = { _id: 'id', _rev: '1' };
-      testReq.userCtx = { name: 'user' };
-      testReq.method = 'GET';
       db.medic.get.resolves(doc);
 
       return service
-        .filterOfflineRequest(testReq)
+        .filterOfflineRequest(userCtx, params, method, query, body)
         .then(() => {
           authorization.getViewResults.callCount.should.equal(1);
           authorization.getViewResults.args[0].should.deep.equal([doc]);
@@ -138,15 +143,14 @@ describe('db-doc service', () => {
     it('calls authorization.allowedDoc with correct params for PUT requests', () => {
       const dbDoc = { _id: 'id', _rev: '1' },
             requestDoc = { _id: 'id', _rev: '1', some: 'data' };
-      testReq.userCtx = { name: 'user' };
-      testReq.method = 'PUT';
-      testReq.body = requestDoc;
+      method = 'PUT';
+      body = requestDoc;
       db.medic.get.resolves(dbDoc);
 
       authorization.allowedDoc.returns(true);
 
       return service
-        .filterOfflineRequest(testReq)
+        .filterOfflineRequest(userCtx, params, method, query, body)
         .then(() => {
           authorization.getViewResults.callCount.should.equal(2);
           authorization.getViewResults.args[0].should.deep.equal([dbDoc]);
@@ -162,11 +166,13 @@ describe('db-doc service', () => {
 
     it('calls authorization.allowedDoc with correct params for POST requests', () => {
       const doc = { _id: 'id', _rev: '1' };
-      testReq = { params: {}, userCtx: { name: 'user' }, method: 'POST', body: doc };
+      params = {};
+      method = 'POST';
+      body = doc;
       authorization.allowedDoc.returns(true);
 
       return service
-        .filterOfflineRequest(testReq)
+        .filterOfflineRequest(userCtx, params, method, query, body)
         .then(() => {
           authorization.getViewResults.callCount.should.equal(1);
           authorization.getViewResults.args[0].should.deep.equal([doc]);
@@ -180,26 +186,25 @@ describe('db-doc service', () => {
     it('passes to next route when access is granted', () => {
       authorization.allowedDoc.returns(true);
 
-      testReq.userCtx = { name: 'user' };
-      testReq.method = 'PUT';
+      userCtx = { name: 'user' };
+      method = 'PUT';
 
       return service
-        .filterOfflineRequest(testReq)
+        .filterOfflineRequest(userCtx, params, method, query, body)
         .then(result => {
-          authorization.allowedDoc.callCount.should.equal(1);
+          authorization.allowedDoc.callCount.should.equal(2);
           result.should.equal(true);
         });
     });
 
     it('responds with an error when access is not granted', () => {
-      testReq.method = 'GET';
       authorization.allowedDoc.returns(false);
 
-      testReq.userCtx = { name: 'user' };
-      testReq.method = 'PUT';
+      userCtx = { name: 'user' };
+      method = 'PUT';
 
       return service
-        .filterOfflineRequest(testReq)
+        .filterOfflineRequest(userCtx, params, method, query, body)
         .then(result => {
           authorization.allowedDoc.callCount.should.equal(1);
           result.should.equal(false);
@@ -210,17 +215,14 @@ describe('db-doc service', () => {
 
   describe('Scenarios', () => {
     beforeEach(() => {
-      testReq.query = { rev: '1' };
-      testReq.userCtx = { user: 'name' };
+      query = { rev: '1' };
     });
 
     describe('GET', () => {
-      beforeEach(() => testReq.method = 'GET');
-
       it('returns false for non-existent doc', () => {
         db.medic.get.rejects({ status: 404 });
         return service
-          .filterOfflineRequest(testReq)
+          .filterOfflineRequest(userCtx, params, method, query, body)
           .then(result => {
             result.should.equal(false);
             db.medic.get.callCount.should.equal(1);
@@ -234,7 +236,7 @@ describe('db-doc service', () => {
         authorization.alwaysAllowCreate.returns(false);
 
         return service
-          .filterOfflineRequest(testReq)
+          .filterOfflineRequest(userCtx, params, method, query, body)
           .then(result => {
             result.should.equal(false);
             authorization.allowedDoc.callCount.should.equal(1);
@@ -251,7 +253,7 @@ describe('db-doc service', () => {
         authorization.alwaysAllowCreate.returns(true);
 
         return service
-          .filterOfflineRequest(testReq)
+          .filterOfflineRequest(userCtx, params, method, query, body)
           .then(result => {
             result.should.equal(false);
             authorization.allowedDoc.callCount.should.equal(1);
@@ -262,12 +264,11 @@ describe('db-doc service', () => {
       });
 
       it('returns db-doc for allowed existent doc', () => {
-        testReq.method = 'GET';
         db.medic.get.resolves({ _id: 'id' });
         authorization.allowedDoc.returns(true);
 
         return service
-          .filterOfflineRequest(testReq)
+          .filterOfflineRequest(userCtx, params, method, query, body)
           .then(result => {
             authorization.allowedDoc.callCount.should.equal(1);
             result.should.deep.equal({ _id: 'id' });
@@ -276,12 +277,12 @@ describe('db-doc service', () => {
     });
 
     describe('DELETE', () => {
-      beforeEach(() => testReq.method = 'DELETE');
+      beforeEach(() => method = 'DELETE');
 
       it('returns false for non existent DOC', () => {
         db.medic.get.rejects({ status: 404 });
         return service
-          .filterOfflineRequest(testReq)
+          .filterOfflineRequest(userCtx, params, method, query, body)
           .then(result => {
             result.should.equal(false);
             db.medic.get.callCount.should.equal(1);
@@ -294,7 +295,7 @@ describe('db-doc service', () => {
         authorization.allowedDoc.returns(false);
 
         return service
-          .filterOfflineRequest(testReq)
+          .filterOfflineRequest(userCtx, params, method, query, body)
           .then(result => {
             result.should.equal(false);
             authorization.allowedDoc.callCount.should.equal(1);
@@ -310,7 +311,7 @@ describe('db-doc service', () => {
         authorization.alwaysAllowCreate.returns(true);
 
         return service
-          .filterOfflineRequest(testReq)
+          .filterOfflineRequest(userCtx, params, method, query, body)
           .then(result => {
             result.should.equal(false);
             authorization.allowedDoc.callCount.should.equal(1);
@@ -326,7 +327,7 @@ describe('db-doc service', () => {
         authorization.allowedDoc.returns(true);
 
         return service
-          .filterOfflineRequest(testReq)
+          .filterOfflineRequest(userCtx, params, method, query, body)
           .then(result => {
             result.should.equal(true);
             authorization.allowedDoc.callCount.should.equal(1);
@@ -336,17 +337,16 @@ describe('db-doc service', () => {
 
     describe('POST', () => {
       beforeEach(() => {
-        testReq.method = 'POST';
-        testReq.params = {};
-        testReq.body = { _id: 'id', some: 'data' };
-        testReq.userCtx = { name: 'user' };
+        method = 'POST';
+        body = { _id: 'id', some: 'data' };
+        params = {};
       });
 
       it('returns false for not allowed request doc', () => {
         authorization.allowedDoc.returns(false);
 
         return service
-          .filterOfflineRequest(testReq)
+          .filterOfflineRequest(userCtx, params, method, query, body)
           .then(result => {
             authorization.allowedDoc.callCount.should.equal(1);
             authorization.allowedDoc.args[0].should.deep.equal([
@@ -362,7 +362,7 @@ describe('db-doc service', () => {
         authorization.alwaysAllowCreate.returns(true);
 
         return service
-          .filterOfflineRequest(testReq)
+          .filterOfflineRequest(userCtx, params, method, query, body)
           .then(result => {
             authorization.alwaysAllowCreate.callCount.should.equal(1);
             authorization.allowedDoc.callCount.should.equal(0);
@@ -375,7 +375,7 @@ describe('db-doc service', () => {
         authorization.allowedDoc.returns(true);
 
         return service
-          .filterOfflineRequest(testReq)
+          .filterOfflineRequest(userCtx, params, method, query, body)
           .then(result => {
             authorization.allowedDoc.callCount.should.equal(1);
             db.medic.get.callCount.should.equal(0);
@@ -386,10 +386,8 @@ describe('db-doc service', () => {
 
     describe('PUT', () => {
       beforeEach(() => {
-        testReq.method = 'POST';
-        testReq.params = { docId: 'id' };
-        testReq.body = { _id: 'id', some: 'data' };
-        testReq.userCtx = { name: 'user' };
+        method = 'PUT';
+        body = { _id: 'id', some: 'data' };
       });
 
       it('returns false for non existent db doc, not allowed request doc', () => {
@@ -397,7 +395,7 @@ describe('db-doc service', () => {
         authorization.allowedDoc.returns(false);
 
         return service
-          .filterOfflineRequest(testReq)
+          .filterOfflineRequest(userCtx, params, method, query, body)
           .then(result => {
             authorization.allowedDoc.callCount.should.equal(1);
             authorization.allowedDoc.args[0].should.deep.equal([
@@ -413,7 +411,7 @@ describe('db-doc service', () => {
         authorization.allowedDoc.returns(true);
 
         return service
-          .filterOfflineRequest(testReq)
+          .filterOfflineRequest(userCtx, params, method, query, body)
           .then(result => {
             authorization.allowedDoc.callCount.should.equal(1);
             authorization.allowedDoc.args[0].should.deep.equal([
@@ -429,7 +427,7 @@ describe('db-doc service', () => {
 
         authorization.allowedDoc.returns(false);
         return service
-          .filterOfflineRequest(testReq)
+          .filterOfflineRequest(userCtx, params, method, query, body)
           .then(result => {
             authorization.allowedDoc.callCount.should.equal(1);
             authorization.allowedDoc.args[0].should.deep.equal([
@@ -450,7 +448,7 @@ describe('db-doc service', () => {
           .returns(true);
 
         return service
-          .filterOfflineRequest(testReq)
+          .filterOfflineRequest(userCtx, params, method, query, body)
           .then(result => {
             authorization.allowedDoc.callCount.should.equal(1);
             authorization.allowedDoc.args[0].should.deep.equal([
@@ -471,7 +469,7 @@ describe('db-doc service', () => {
           .returns(false);
 
         return service
-          .filterOfflineRequest(testReq)
+          .filterOfflineRequest(userCtx, params, method, query, body)
           .then(result => {
             authorization.allowedDoc.callCount.should.equal(2);
             authorization.allowedDoc.args[0].should.deep.equal([
@@ -491,7 +489,7 @@ describe('db-doc service', () => {
         authorization.allowedDoc.returns(true);
 
         return service
-          .filterOfflineRequest(testReq)
+          .filterOfflineRequest(userCtx, params, method, query, body)
           .then(result => {
             authorization.allowedDoc.callCount.should.equal(2);
             authorization.allowedDoc.args[0].should.deep.equal([
@@ -511,7 +509,7 @@ describe('db-doc service', () => {
         authorization.alwaysAllowCreate.returns(true);
 
         return service
-          .filterOfflineRequest(testReq)
+          .filterOfflineRequest(userCtx, params, method, query, body)
           .then(result => {
             authorization.allowedDoc.callCount.should.equal(0);
             authorization.alwaysAllowCreate.callCount.should.equal(1);
@@ -527,7 +525,7 @@ describe('db-doc service', () => {
         authorization.alwaysAllowCreate.returns(true);
 
         return service
-          .filterOfflineRequest(testReq)
+          .filterOfflineRequest(userCtx, params, method, query, body)
           .then(result => {
             authorization.allowedDoc.callCount.should.equal(1);
             authorization.allowedDoc.args[0].should.deep.equal([
@@ -542,15 +540,15 @@ describe('db-doc service', () => {
 
     describe('attachments', () => {
       beforeEach(() => {
-        testReq.query = { rev: '1' };
-        testReq.params.attachmentId = 'attachmentID';
+        query = { rev: '1' };
+        params.attachmentId = 'attachmentID';
       });
 
       it('returns false for non existent doc', () => {
         db.medic.get.rejects({ status: 404 });
 
         return service
-          .filterOfflineRequest(testReq)
+          .filterOfflineRequest(userCtx, params, method, query, body)
           .then(result => {
             authorization.allowedDoc.callCount.should.equal(0);
             db.medic.get.callCount.should.equal(1);
@@ -563,7 +561,7 @@ describe('db-doc service', () => {
         db.medic.get.resolves({ _id: 'id' });
 
         return service
-          .filterOfflineRequest(testReq)
+          .filterOfflineRequest(userCtx, params, method, query, body)
           .then(result => {
             authorization.allowedDoc.callCount.should.equal(1);
             authorization.allowedDoc.args[0].should.deep.equal([
@@ -581,7 +579,7 @@ describe('db-doc service', () => {
         authorization.allowedDoc.returns(true);
 
         return service
-          .filterOfflineRequest(testReq)
+          .filterOfflineRequest(userCtx, params, method, query, body)
           .then(result => {
             authorization.allowedDoc.callCount.should.equal(1);
             authorization.allowedDoc.args[0].should.deep.equal([

@@ -54,7 +54,7 @@ module.exports = {
     }
 
     return bulkDocs
-      .filterOfflineRequest(req)
+      .filterOfflineRequest(req.userCtx, req.body.docs)
       .then(filteredDocs => {
         // results received from CouchDB need to be ordered to maintain same sequence as original `docs` parameter
         // and forbidden docs stubs must be added

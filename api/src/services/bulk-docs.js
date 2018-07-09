@@ -213,18 +213,18 @@ module.exports = {
 
   // offline users will only create/update/delete documents they are allowed to see and will be allowed to see
   // mimics CouchDB response format, stubbing forbidden docs and respecting requested `docs` sequence
-  filterOfflineRequest: (req) => {
+  filterOfflineRequest: (userCtx, docs) => {
     let authorizationContext;
 
     return authorization
-      .getAuthorizationContext(req.userCtx)
+      .getAuthorizationContext(userCtx)
       .then(context => {
         authorizationContext = context;
         return authorization.getAllowedDocIds(authorizationContext);
       })
       .then(allowedDocIds => {
         authorizationContext.allowedDocIds = authorization.convertTombstoneIds(allowedDocIds);
-        return filterRequestDocs(authorizationContext, req.body.docs);
+        return filterRequestDocs(authorizationContext, docs);
       });
   },
 

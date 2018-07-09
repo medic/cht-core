@@ -22,8 +22,7 @@ describe('Bulk Docs Service', function () {
       end: sinon.stub(),
       type: sinon.stub(),
       setHeader: () => {},
-      flush: sinon.stub(),
-      send: sinon.stub()
+      flush: sinon.stub()
     };
 
     userCtx = { name: 'user' };
@@ -394,24 +393,13 @@ describe('Bulk Docs Service', function () {
   });
 
   describe('Filter Offline Request', () => {
-    let testReq;
+    let docs;
 
     beforeEach(() => {
       sinon.stub(db.medic, 'allDocs').resolves({ rows: [] });
       sinon.stub(db.medic, 'bulkDocs').resolves([]);
-      testReq = {
-        userCtx: { name: 'user' },
-        body:
-          {
-            docs: [
-              { _id: 'a' },
-              { _id: 'b' },
-              { _id: 'c' },
-              { _id: 'd' },
-              { _id: 'e' }
-            ]
-          }
-      };
+      userCtx = { name: 'user' };
+      docs = [ { _id: 'a' }, { _id: 'b' }, { _id: 'c' }, { _id: 'd' }, { _id: 'e' } ];
     });
 
     it('calls authorization.getAllowedIds and authorization.getAuthorizationData with correct parameters', () => {
@@ -419,10 +407,10 @@ describe('Bulk Docs Service', function () {
       authorization.getAllowedDocIds.resolves(['a', 'b']);
 
       return service
-        .filterOfflineRequest(testReq)
+        .filterOfflineRequest(userCtx, docs)
         .then(() => {
           authorization.getAuthorizationContext.callCount.should.equal(1);
-          authorization.getAuthorizationContext.args[0][0].should.equal(testReq.userCtx);
+          authorization.getAuthorizationContext.args[0][0].should.equal(userCtx);
 
           authorization.getAllowedDocIds.callCount.should.equal(1);
           authorization.getAllowedDocIds.args[0][0].should.deep.equal(
@@ -434,7 +422,7 @@ describe('Bulk Docs Service', function () {
       authorization.getAuthorizationContext.rejects(new Error('something'));
 
       return service
-        .filterOfflineRequest(testReq)
+        .filterOfflineRequest(userCtx, docs)
         .catch(err => {
           err.message.should.equal('something');
       });
@@ -444,7 +432,7 @@ describe('Bulk Docs Service', function () {
       authorization.getAllowedDocIds.rejects(new Error('something'));
 
       return service
-        .filterOfflineRequest(testReq)
+        .filterOfflineRequest(userCtx, docs)
         .catch(err => {
           err.message.should.equal('something');
         });
@@ -456,7 +444,7 @@ describe('Bulk Docs Service', function () {
       db.medic.allDocs.resolves({ rows: [{ id: 'c' }, { id: 'd' }, { id: 'e' }] });
 
       return service
-        .filterOfflineRequest(testReq)
+        .filterOfflineRequest(userCtx, docs)
         .then(result => {
           result.should.deep.equal([{ _id: 'a'}, { _id: 'b' }]);
       });
@@ -472,7 +460,7 @@ describe('Bulk Docs Service', function () {
         .resolves({ rows: [{ id: 'd' }, { id: 'b' }] });
 
       return service
-        .filterOfflineRequest(testReq)
+        .filterOfflineRequest(userCtx, docs)
         .then(result => {
           result.should.deep.equal([
             { _id: 'a' },
@@ -483,12 +471,11 @@ describe('Bulk Docs Service', function () {
     });
 
     it('filters request', () => {
-      testReq.body = { docs: [
-          { _id: 'a'}, { _id: 'b' }, { _id: 'c' }, { _id: 'f' }, { _id: 'g' },
-          { _id: 'h' }, { name: 'a' }, { name: 'b' }, { _id: 'deleted' },
-          { _id: 'fb1' }, { _id: 'fb2' }
-        ]
-      };
+      docs = [
+        { _id: 'a'}, { _id: 'b' }, { _id: 'c' }, { _id: 'f' }, { _id: 'g' },
+        { _id: 'h' }, { name: 'a' }, { name: 'b' }, { _id: 'deleted' },
+        { _id: 'fb1' }, { _id: 'fb2' }
+      ];
 
       authorization.getAllowedDocIds.resolves(['a', 'c', 'd', 'e', 'deleted-tombstone']);
       authorization.filterAllowedDocs.returns([
@@ -508,7 +495,7 @@ describe('Bulk Docs Service', function () {
         .resolves({ rows: [{ id: 'b' }, { id: 'fb2' }]});
 
       return service
-        .filterOfflineRequest(testReq)
+        .filterOfflineRequest(userCtx, docs)
         .then(result => {
           result.should.deep.equal([
             { _id: 'c' },

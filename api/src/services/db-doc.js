@@ -2,8 +2,8 @@ const db = require('../db-pouch'),
       authorization = require('./authorization'),
       _ = require('underscore');
 
-const getStoredDoc = (req, isAttachment) => {
-  if (!req.params || !req.params.docId) {
+const getStoredDoc = (params, method, query, isAttachment) => {
+  if (!params || !params.docId) {
     return Promise.resolve(false);
   }
 
@@ -11,12 +11,12 @@ const getStoredDoc = (req, isAttachment) => {
   // use `req.query` params for `db-doc` GET, as we will return the result directly if allowed
   // use `req.query.rev` for attachment requests
   // `db-doc` PUT and DELETE requests will require latest `rev` to be allowed
-  if ((req.method === 'GET' || isAttachment) && req.query) {
-    options = req.query;
+  if ((method === 'GET' || isAttachment) && query) {
+    options = query;
   }
 
   return db.medic
-    .get(req.params.docId, options)
+    .get(params.docId, options)
     .catch(err => {
       if (err.status === 404) {
         return false;
@@ -26,14 +26,14 @@ const getStoredDoc = (req, isAttachment) => {
     });
 };
 
-const getRequestDoc = (req, isAttachment) => {
+const getRequestDoc = (method, body, isAttachment) => {
   // bodyParser adds a `body` property regardless of method
   // attachment requests are not bodyParsed, so theoretically will not have a `body` property
-  if (req.method === 'GET' || req.method === 'DELETE' || isAttachment || !req.body) {
+  if (method === 'GET' || method === 'DELETE' || isAttachment || !body) {
     return false;
   }
 
-  return req.body;
+  return body;
 };
 
 module.exports = {
@@ -43,14 +43,14 @@ module.exports = {
   // - PUT `db-docs` they are and will be allowed to see
   // - GET/PUT/DELETE `attachments` of `db-docs` they are allowed to see
   // this filters audited endpoints, so valid requests are allowed to pass through to the next route
-  filterOfflineRequest: (req) => {
-    const isAttachment = req.params.attachmentId;
+  filterOfflineRequest: (userCtx, params, method, query, body) => {
+    const isAttachment = params.attachmentId;
 
     return Promise
       .all([
-        getStoredDoc(req, isAttachment),
-        getRequestDoc(req, isAttachment),
-        authorization.getAuthorizationContext(req.userCtx)
+        getStoredDoc(params, method, query, isAttachment),
+        getRequestDoc(method, body, isAttachment),
+        authorization.getAuthorizationContext(userCtx)
       ])
       .then(([ storedDoc, requestDoc, authorizationContext ]) => {
         if (!storedDoc && !requestDoc) {
@@ -70,7 +70,7 @@ module.exports = {
           return false;
         }
 
-        if (req.method === 'GET' && !isAttachment) {
+        if (method === 'GET' && !isAttachment) {
           // we have already requested the doc with same query options
           return storedDoc;
         }
