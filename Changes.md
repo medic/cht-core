@@ -37,6 +37,7 @@ _July 6, 2018_
 - [#4604](https://github.com/medic/medic-webapp/issues/4604): Make sure we can't infinitely recurse in the lineage shared library
 - [#4609](https://github.com/medic/medic-webapp/issues/4609): Deny non-admin requests to futon/fauxton/whatever
 - [#4622](https://github.com/medic/medic-webapp/issues/4622): Implement access logging in API
+- [#3973](https://github.com/medic/medic-webapp/issues/3973): Value for db-doc attribute is case sensitive
 
 ### Performance fixes
 
