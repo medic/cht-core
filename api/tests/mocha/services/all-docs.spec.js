@@ -4,27 +4,17 @@ const sinon = require('sinon').sandbox.create();
 require('chai').should();
 
 const authorization = require('../../../src/services/authorization');
-const serverUtils = require('../../../src/server-utils');
 
-let testRes,
-    testReq;
+let testReq;
 
 describe('All Docs service', () => {
   beforeEach(function() {
-    testRes = {
-      write: sinon.stub(),
-      end: sinon.stub(),
-      type: sinon.stub(),
-      setHeader: () => {}
-    };
-
     testReq = { query: {}, userCtx: { name: 'user' } };
 
     sinon.stub(authorization, 'getAuthorizationContext').resolves({});
     sinon.stub(authorization, 'getAllowedDocIds').resolves([]);
     sinon.stub(authorization, 'excludeTombstoneIds').callsFake(list => list);
     sinon.stub(authorization, 'convertTombstoneIds').callsFake(list => list);
-    sinon.stub(serverUtils, 'serverError');
     sinon.stub(db.medic, 'allDocs').resolves([]);
   });
 
@@ -175,58 +165,29 @@ describe('All Docs service', () => {
     });
   });
 
-  describe('invalidRequest', () => {
-    it('returns error when request query `keys` is not JSON', () => {
-      testReq.query.keys = 'abcd';
-      service._invalidRequest(testReq).should.deep.equal({ error: 'bad_request', reason: 'invalid UTF-8 JSON' });
-    });
-
-    it('returns error when request query `keys` is not an array', () => {
-      testReq.query.keys = JSON.stringify({ some: 'thing' });
-      service._invalidRequest(testReq).should.deep.equal(
-        { error: 'bad_request', reason: '`keys` parameter must be an array.' });
-    });
-
-    it('returns error when request body `keys` is not an array array', () => {
-      testReq.body = { keys: 'something' };
-      testReq.method = 'POST';
-      service._invalidRequest(testReq).should.deep.equal(
-        { error: 'bad_request', reason: '`keys` body member must be an array.' });
-    });
-
-    it('returns false otherwise', () => {
-      service._invalidRequest({}).should.equal(false);
-      service._invalidRequest({query: { keys: JSON.stringify([1, 2]) }}).should.equal(false);
-      service._invalidRequest({body: { keys: [1, 2] }}).should.equal(false);
-    });
-  });
-
   describe('Filter Offline Request', () => {
-    it('catches authorization errors', () => {
-      authorization.getAuthorizationContext.rejects({ error: 'something' });
-
+    it('throws authorization errors', () => {
+      authorization.getAuthorizationContext.rejects(new Error('something'));
       return service
-        .filterOfflineRequest(testReq, testRes)
-        .then(() => {
-          serverUtils.serverError.callCount.should.equal(1);
-          serverUtils.serverError.args[0][0].should.deep.equal({ error: 'something' });
+        .filterOfflineRequest(testReq)
+        .catch(err => {
+          err.message.should.deep.equal('something');
         });
     });
 
-    it('catches authorization errors', () => {
-      authorization.getAllowedDocIds.rejects({ error: 'something' });
+    it('throws authorization errors', () => {
+      authorization.getAllowedDocIds.rejects(new Error('something'));
 
       return service
-        .filterOfflineRequest(testReq, testRes)
-        .then(() => {
-          serverUtils.serverError.callCount.should.equal(1);
-          serverUtils.serverError.args[0][0].should.deep.equal({ error: 'something' });
+        .filterOfflineRequest(testReq)
+        .catch(err => {
+          err.message.should.deep.equal('something');
         });
     });
 
     it('calls authorization.getAuthorizationContext with correct parameters', () => {
       return service
-        .filterOfflineRequest(testReq, testRes)
+        .filterOfflineRequest(testReq)
         .then(() => {
           authorization.getAuthorizationContext.callCount.should.equal(1);
           authorization.getAuthorizationContext.args[0][0].should.equal(testReq.userCtx);
@@ -236,10 +197,9 @@ describe('All Docs service', () => {
     it('calls authorization.getAllowedIds with correct parameters', () => {
       authorization.getAuthorizationContext.resolves({ subjectIds: ['a', 'b'], userCtx: testReq.userCtx });
       authorization.getAllowedDocIds.resolves(['a', 'b']);
-      db.medic.allDocs.rejects({ error: 'something' });
 
       return service
-        .filterOfflineRequest(testReq, testRes)
+        .filterOfflineRequest(testReq)
         .then(() => {
           authorization.getAllowedDocIds.callCount.should.equal(1);
           authorization.getAllowedDocIds.args[0].should.deep.equal([{
@@ -255,7 +215,7 @@ describe('All Docs service', () => {
       authorization.excludeTombstoneIds.withArgs(['a', 'b', 'tombstone1', 'tombstone2']).returns(['a', 'b']);
 
       return service
-        .filterOfflineRequest(testReq, testRes)
+        .filterOfflineRequest(testReq)
         .then(() => {
           authorization.excludeTombstoneIds.callCount.should.equal(1);
           authorization.excludeTombstoneIds.args[0][0].should.deep.equal(['a', 'b', 'tombstone1', 'tombstone2']);
@@ -271,7 +231,7 @@ describe('All Docs service', () => {
       testReq.body = { keys: ['1', '2', '3', '4'] };
 
       return service
-        .filterOfflineRequest(testReq, testRes)
+        .filterOfflineRequest(testReq)
         .then(() => {
           authorization.excludeTombstoneIds.callCount.should.equal(0);
           authorization.convertTombstoneIds.callCount.should.equal(1);
@@ -280,15 +240,14 @@ describe('All Docs service', () => {
         });
     });
 
-    it('catches allDocs errors', () => {
-      db.medic.allDocs.rejects({ error: 'something' });
+    it('throws allDocs errors', () => {
+      db.medic.allDocs.rejects(new Error('something'));
       authorization.getAllowedDocIds.resolves([1, 2, 3, 4]);
 
       return service
-        .filterOfflineRequest(testReq, testRes)
-        .then(() => {
-          serverUtils.serverError.callCount.should.equal(1);
-          serverUtils.serverError.args[0][0].should.deep.equal({ error: 'something' });
+        .filterOfflineRequest(testReq)
+        .catch(err => {
+          err.message.should.deep.equal('something');
         });
     });
 
@@ -305,9 +264,8 @@ describe('All Docs service', () => {
       authorization.getAllowedDocIds.returns(['a', 'b', 'c']);
 
       return service
-        .filterOfflineRequest(testReq, testRes)
+        .filterOfflineRequest(testReq)
         .then(() => {
-          serverUtils.serverError.callCount.should.equal(0);
           db.medic.allDocs.callCount.should.equal(1);
           db.medic.allDocs.args[0][0].should.deep.equal({
             conflicts: 'something',
@@ -337,9 +295,8 @@ describe('All Docs service', () => {
       authorization.getAllowedDocIds.resolves(['a', 'b']);
 
       return service
-        .filterOfflineRequest(testReq, testRes)
+        .filterOfflineRequest(testReq)
         .then(() => {
-          serverUtils.serverError.callCount.should.equal(0);
           db.medic.allDocs.callCount.should.equal(1);
           db.medic.allDocs.args[0][0].should.deep.equal({
             conflicts: 'something',
@@ -355,12 +312,10 @@ describe('All Docs service', () => {
       db.medic.allDocs.resolves([{ id: 'a' }, { id: 'b' }]);
 
       return service
-        .filterOfflineRequest(testReq, testRes)
-        .then(() => {
-          serverUtils.serverError.callCount.should.equal(0);
+        .filterOfflineRequest(testReq)
+        .then(result => {
           db.medic.allDocs.callCount.should.equal(1);
-          testRes.write.callCount.should.equal(1);
-          testRes.write.args[0][0].should.equal(JSON.stringify([{ id: 'a' }, { id: 'b' }]));
+          result.should.deep.equal([{ id: 'a' }, { id: 'b' }]);
         });
     });
 
@@ -371,16 +326,15 @@ describe('All Docs service', () => {
       testReq.method = 'GET';
 
       return service
-        .filterOfflineRequest(testReq, testRes)
-        .then(() => {
+        .filterOfflineRequest(testReq)
+        .then(result => {
           db.medic.allDocs.callCount.should.equal(1);
-          testRes.write.callCount.should.equal(1);
-          testRes.write.args[0][0].should.equal(JSON.stringify({ rows: [
+          result.should.deep.equal({ rows: [
               { id: 'a' },
               { id: 'b', error: 'forbidden' },
               { id: 'c' },
               { id: 'd', error: 'forbidden' }
-            ]}));
+            ]});
         });
     });
 
@@ -391,13 +345,12 @@ describe('All Docs service', () => {
       db.medic.allDocs.withArgs({ keys: docIds }).resolves(allDocsResponse);
 
       return service
-        .filterOfflineRequest(testReq, testRes)
-        .then(() => {
+        .filterOfflineRequest(testReq)
+        .then(result => {
           db.medic.allDocs.callCount.should.equal(1);
           db.medic.allDocs.args[0][0].should.deep.equal({ keys: docIds });
 
-          testRes.write.callCount.should.equal(1);
-          testRes.write.args[0][0].should.equal(JSON.stringify(allDocsResponse));
+          result.should.deep.equal(allDocsResponse);
         });
     });
 
@@ -411,14 +364,12 @@ describe('All Docs service', () => {
       testReq.body = { keys: ['a', 'aa', 'b', 'bb', 'c', 'd', 'f', 'g'] };
 
       return service
-        .filterOfflineRequest(testReq, testRes)
-        .then(() => {
+        .filterOfflineRequest(testReq)
+        .then(result => {
           db.medic.allDocs.callCount.should.equal(1);
           db.medic.allDocs.args[0][0].should.deep.equal({ keys: ['b', 'c', 'd'] });
 
-          testRes.write.callCount.should.equal(1);
-          testRes.write.args[0][0].should.equal(JSON.stringify({
-            rows: [
+          result.should.deep.equal({ rows: [
               {id: 'a', error: 'forbidden'},
               {id: 'aa', error: 'forbidden'},
               {id: 'b'},
@@ -426,60 +377,7 @@ describe('All Docs service', () => {
               {id: 'c'}, {id: 'd'},
               {id: 'f', error: 'forbidden'},
               {id: 'g', error: 'forbidden'}
-              ]
-          }));
-        });
-    });
-
-    it('handles POST requests with non-array `keys` body parameter', () => {
-      testReq.method = 'POST';
-      testReq.body = { keys: 'aaaaa' };
-
-      return Promise
-        .all([
-          service.filterOfflineRequest(testReq, testRes),
-          Promise.resolve()
-        ])
-        .then(() => {
-          authorization.getAuthorizationContext.callCount.should.equal(0);
-          testRes.type.callCount.should.equal(1);
-          testRes.write.callCount.should.equal(1);
-          testRes.end.callCount.should.equal(1);
-          JSON.parse(testRes.write.args[0][0]).error.should.equal('bad_request');
-        });
-    });
-
-    it('handles requests with non-json `keys` query parameter', () => {
-      testReq.query.keys = 'aaaa';
-
-      return Promise
-        .all([
-          service.filterOfflineRequest(testReq, testRes),
-          Promise.resolve()
-        ])
-        .then(() => {
-          authorization.getAuthorizationContext.callCount.should.equal(0);
-          testRes.type.callCount.should.equal(1);
-          testRes.write.callCount.should.equal(1);
-          testRes.end.callCount.should.equal(1);
-          JSON.parse(testRes.write.args[0][0]).error.should.equal('bad_request');
-        });
-    });
-
-    it('handles requests with non-array `keys` query parameter', () => {
-      testReq.query.keys = JSON.stringify({ some: 'thing' });
-
-      return Promise
-        .all([
-          service.filterOfflineRequest(testReq, testRes),
-          Promise.resolve()
-        ])
-        .then(() => {
-          authorization.getAuthorizationContext.callCount.should.equal(0);
-          testRes.type.callCount.should.equal(1);
-          testRes.write.callCount.should.equal(1);
-          testRes.end.callCount.should.equal(1);
-          JSON.parse(testRes.write.args[0][0]).error.should.equal('bad_request');
+            ]});
         });
     });
   });

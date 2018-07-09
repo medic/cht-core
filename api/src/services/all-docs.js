@@ -1,7 +1,6 @@
 const db = require('../db-pouch'),
       authorization = require('./authorization'),
-      _ = require('underscore'),
-      serverUtils = require('../server-utils');
+      _ = require('underscore');
 
 const startKeyParams = ['startkey', 'start_key', 'startkey_docid', 'start_key_doc_id'],
       endKeyParams = ['endkey', 'end_key', 'endkey_docid', 'end_key_doc_id'];
@@ -55,54 +54,20 @@ const stubSkipped = (requestIds, result) => {
   );
 };
 
-const formatResults = (results, requestIds, res) => {
+const formatResults = (results, requestIds) => {
   if (requestIds) {
     // if specific keys were requested, response rows should respect the order of request keys
     // and all of the requested keys should generate a response
     results.rows = stubSkipped(requestIds, results.rows);
   }
 
-  res.write(JSON.stringify(results));
-  res.end();
-};
-
-const requestError = reason => ({
-  error: 'bad_request',
-  reason: reason
-});
-
-const invalidRequest = req => {
-  // error messages copied from CouchDB source
-  if (req.query && req.query.keys) {
-    try {
-      const keys = JSON.parse(req.query.keys);
-      if (!_.isArray(keys)) {
-        return requestError('`keys` parameter must be an array.');
-      }
-    } catch (err) {
-      return requestError('invalid UTF-8 JSON');
-    }
-  }
-
-  if (req.method === 'POST' && req.body.keys && !_.isArray(req.body.keys)) {
-    return requestError('`keys` body member must be an array.');
-  }
-
-  return false;
+  return results;
 };
 
 module.exports = {
   // offline users will only receive results for documents they are allowed to see
   // mimics CouchDB response format, stubbing forbidden docs when specific `keys` are requested
-  filterOfflineRequest: (req, res) => {
-    res.type('json');
-
-    const error = invalidRequest(req);
-    if (error) {
-      res.write(JSON.stringify(error));
-      return res.end();
-    }
-
+  filterOfflineRequest: (req) => {
     const requestIds = getRequestIds(req);
 
     return authorization
@@ -124,8 +89,7 @@ module.exports = {
         const options = _.defaults({ keys: filteredIds }, _.omit(req.query, 'key', ...startKeyParams, ...endKeyParams));
         return db.medic.allDocs(options);
       })
-      .then(results => formatResults(results, requestIds, res))
-      .catch(err => serverUtils.serverError(err, req, res));
+      .then(results => formatResults(results, requestIds));
   }
 };
 
@@ -133,7 +97,6 @@ module.exports = {
 if (process.env.UNIT_TEST_ENV) {
   _.extend(module.exports, {
     _filterRequestIds: filterRequestIds,
-    _getRequestIds: getRequestIds,
-    _invalidRequest: invalidRequest
+    _getRequestIds: getRequestIds
   });
 }
