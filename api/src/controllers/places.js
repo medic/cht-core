@@ -98,7 +98,7 @@ const createPlace = place => {
         });
       }
     })
-    .then(() => db.medic.put(place));
+    .then(() => db.medic.post(place));
 };
 
 /*
@@ -173,7 +173,7 @@ const updatePlace = (id, data) => {
     .then(() => {
       place.contact = lineage.minifyLineage(place.contact);
       place.parent = lineage.minifyLineage(place.parent);
-      return db.medic.put(place);
+      return db.medic.post(place);
     })
     .then(response => ({ id: response.id, rev: response.rev }));
 };

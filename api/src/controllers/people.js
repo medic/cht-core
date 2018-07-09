@@ -67,7 +67,7 @@ const createPerson = data => {
         });
       }
     })
-    .then(() => db.medic.put(data));
+    .then(() => db.medic.post(data));
 };
 
 /*

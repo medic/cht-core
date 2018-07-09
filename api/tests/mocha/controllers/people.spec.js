@@ -71,7 +71,7 @@ describe('people controller', () => {
 
     it('sets contact type before validating', () => {
       sinon.stub(controller, '_validatePerson').returns();
-      sinon.stub(db.medic, 'put').returns(Promise.resolve());
+      sinon.stub(db.medic, 'post').returns(Promise.resolve());
       return controller.createPerson({ type: 'shoe', name: 'Kobe' }).then(() => {
         chai.expect(controller._validatePerson.args[0][0].type).to.equal('person');
         chai.expect(controller._validatePerson.args[0][0].name).to.equal('Kobe');
@@ -81,7 +81,7 @@ describe('people controller', () => {
     it('returns error from db insert', done => {
       sinon.stub(controller, '_validatePerson').returns();
       sinon.stub(places, 'getOrCreatePlace').resolves();
-      sinon.stub(db.medic, 'put').returns(Promise.reject('yucky'));
+      sinon.stub(db.medic, 'post').returns(Promise.reject('yucky'));
       controller.createPerson({}).catch(err => {
         chai.expect(err).to.equal('yucky');
         done();
@@ -108,9 +108,9 @@ describe('people controller', () => {
         reported_date: '123'
       };
       sinon.stub(places, 'getOrCreatePlace').resolves();
-      const put = sinon.stub(db.medic, 'put').resolves();
+      const post = sinon.stub(db.medic, 'post').resolves();
       return controller.createPerson(person).then(() => {
-        chai.expect(put.args[0][0].reported_date).to.equal(123);
+        chai.expect(post.args[0][0].reported_date).to.equal(123);
       });
     });
 
@@ -120,9 +120,9 @@ describe('people controller', () => {
         reported_date: '2011-10-10T14:48:00-0300'
       };
       sinon.stub(places, 'getOrCreatePlace').resolves();
-      const put = sinon.stub(db.medic, 'put').resolves();
+      const post = sinon.stub(db.medic, 'post').resolves();
       return controller.createPerson(person).then(() => {
-        chai.expect(put.args[0][0].reported_date).to.equal(new Date('2011-10-10T14:48:00-0300').valueOf());
+        chai.expect(post.args[0][0].reported_date).to.equal(new Date('2011-10-10T14:48:00-0300').valueOf());
       });
     });
 
@@ -148,9 +148,9 @@ describe('people controller', () => {
       };
       sinon.stub(places, 'getOrCreatePlace').resolves(place);
       sinon.stub(controller._lineage, 'minifyLineage').returns(minified);
-      sinon.stub(db.medic, 'put').resolves();
+      sinon.stub(db.medic, 'post').resolves();
       return controller.createPerson(person).then(() => {
-        const doc = db.medic.put.args[0][0];
+        const doc = db.medic.post.args[0][0];
         chai.expect(!doc.place).to.equal(true);
         chai.expect(doc.parent).to.deep.equal(minified);
         chai.expect(places.getOrCreatePlace.callCount).to.equal(1);
@@ -164,9 +164,9 @@ describe('people controller', () => {
       const person = {
         name: 'Test'
       };
-      sinon.stub(db.medic, 'put').resolves();
+      sinon.stub(db.medic, 'post').resolves();
       return controller.createPerson(person).then(() => {
-        const doc = db.medic.put.args[0][0];
+        const doc = db.medic.post.args[0][0];
         // should be set to within 5 seconds of now
         chai.expect(doc.reported_date <= (new Date().valueOf())).to.equal(true);
         chai.expect(doc.reported_date > (new Date().valueOf() - 5000)).to.equal(true);
