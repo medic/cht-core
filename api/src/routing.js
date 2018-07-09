@@ -731,7 +731,7 @@ proxyForAuditing.on('proxyRes', (proxyRes, req, res) => {
   if (res.interceptResponse) {
     let body = new Buffer('');
     proxyRes.on('data', data => body = Buffer.concat([body, data]));
-    proxyRes.on('end', () => res.interceptResponse(body.toString()));
+    proxyRes.on('end', () => res.interceptResponse(req, res, body.toString()));
   } else {
     proxyRes.pipe(res);
   }

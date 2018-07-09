@@ -1,5 +1,35 @@
 const auth = require('../auth');
-const bulkDocs = require('../services/bulk-docs');
+const bulkDocs = require('../services/bulk-docs'),
+      _ = require('underscore'),
+      serverUtils = require('../server-utils');
+
+const requestError = reason => ({
+  error: 'bad_request',
+  reason: reason
+});
+
+const invalidRequest = req => {
+  // error messages copied from CouchDB source
+  if (!req.body) {
+    return requestError('invalid UTF-8 JSON');
+  }
+
+  if (!req.body.docs) {
+    return requestError('POST body must include `docs` parameter.');
+  }
+
+  if (!_.isArray(req.body.docs)) {
+    return requestError('`docs` parameter must be an array.');
+  }
+
+  return false;
+};
+
+const interceptResponse = (requestDocs, req, res, response) => {
+  response = JSON.parse(response);
+  const formattedResults = bulkDocs.formatResults(req.body.new_edits, requestDocs, req.body.docs, response);
+  res.send(JSON.stringify(formattedResults));
+};
 
 module.exports = {
   bulkDelete: (req, res, next) => {
@@ -16,5 +46,32 @@ module.exports = {
       .catch(err => next(err));
   },
 
-  request: (req, res, next) => bulkDocs.filterOfflineRequest(req, res, next)
+  request: (req, res, next) => {
+    res.type('json');
+
+    const error = invalidRequest(req);
+    if (error) {
+      return res.send(JSON.stringify(error));
+    }
+
+    return bulkDocs
+      .filterOfflineRequest(req)
+      .then(filteredDocs => {
+        // results received from CouchDB need to be ordered to maintain same sequence as original `docs` parameter
+        // and forbidden docs stubs must be added
+        res.interceptResponse = _.partial(interceptResponse, req.body.docs);
+        req.body.docs = filteredDocs;
+        next();
+      })
+      .catch(err => serverUtils.serverError(err, req, res));
+  }
 };
+
+
+// used for testing
+if (process.env.UNIT_TEST_ENV) {
+  _.extend(module.exports, {
+    _invalidRequest: invalidRequest,
+    _interceptResponse: interceptResponse
+  });
+}

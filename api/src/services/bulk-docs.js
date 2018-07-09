@@ -1,7 +1,6 @@
 const db = require('../db-pouch'),
       authorization = require('./authorization'),
-      _ = require('underscore'),
-      serverUtils = require('../server-utils');
+      _ = require('underscore');
 
 const utils = require('bulk-docs-utils')({
   Promise: Promise,
@@ -183,40 +182,6 @@ const stubSkipped = (docs, filteredDocs, result) => {
   );
 };
 
-const interceptResponse = (req, res, originalBody, response) => {
-  response = JSON.parse(response);
-
-  if (req.body.new_edits !== false && _.isArray(response)) {
-    // CouchDB doesn't return results when `new_edits` parameter is `false`
-    // The consensus is that the response array sequence should reflect the request array sequence.
-    response = stubSkipped(originalBody.docs, req.body.docs, response);
-  }
-
-  res.send(JSON.stringify(response));
-};
-
-const requestError = reason => ({
-  error: 'bad_request',
-  reason: reason
-});
-
-const invalidRequest = req => {
-  // error messages copied from CouchDB source
-  if (!req.body) {
-    return requestError('invalid UTF-8 JSON');
-  }
-
-  if (!req.body.docs) {
-    return requestError('POST body must include `docs` parameter.');
-  }
-
-  if (!_.isArray(req.body.docs)) {
-    return requestError('`docs` parameter must be an array.');
-  }
-
-  return false;
-};
-
 module.exports = {
   bulkDelete: (docs, res, { batchSize = 100 } = {}) => {
     checkForDuplicates(docs);
@@ -248,14 +213,7 @@ module.exports = {
 
   // offline users will only create/update/delete documents they are allowed to see and will be allowed to see
   // mimics CouchDB response format, stubbing forbidden docs and respecting requested `docs` sequence
-  filterOfflineRequest: (req, res, next) => {
-    res.type('json');
-
-    const error = invalidRequest(req);
-    if (error) {
-      return res.send(JSON.stringify(error));
-    }
-
+  filterOfflineRequest: (req) => {
     let authorizationContext;
 
     return authorization
@@ -267,16 +225,19 @@ module.exports = {
       .then(allowedDocIds => {
         authorizationContext.allowedDocIds = authorization.convertTombstoneIds(allowedDocIds);
         return filterRequestDocs(authorizationContext, req.body.docs);
-      })
-      .then(filteredDocs => {
-        // results received from CouchDB need to be ordered to maintain same sequence as original `docs` parameter
-        // and forbidden docs stubs must be added
-        res.interceptResponse = _.partial(interceptResponse, req, res, { docs: req.body.docs });
-        req.body.docs = filteredDocs;
-        req.authorized = true;
-        next();
-      })
-      .catch(err => serverUtils.serverError(err, req, res));
+      });
+  },
+
+  // results received from CouchDB need to be ordered to maintain same sequence as original `docs` parameter
+  // and forbidden docs stubs must be added
+  formatResults: (new_edits, requestDocs, filteredDocs, response) => {
+    if (new_edits !== false && _.isArray(response)) {
+      // CouchDB doesn't return results when `new_edits` parameter is `false`
+      // The consensus is that the response array sequence should reflect the request array sequence.
+      response = stubSkipped(requestDocs, filteredDocs, response);
+    }
+
+    return response;
   }
 };
 
@@ -285,8 +246,6 @@ if (process.env.UNIT_TEST_ENV) {
   _.extend(module.exports, {
     _filterRequestDocs: filterRequestDocs,
     _filterNewDocs: filterNewDocs,
-    _filterAllowedDocs: filterAllowedDocs,
-    _interceptResponse: interceptResponse,
-    _invalidRequest: invalidRequest
+    _filterAllowedDocs: filterAllowedDocs
   });
 }
