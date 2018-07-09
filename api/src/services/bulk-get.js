@@ -15,7 +15,6 @@ const filterResults = (authorizationContext, result) => {
   });
 };
 
-
 module.exports = {
   // offline users will only receive `doc`+`rev` pairs they are allowed to see
   filterOfflineRequest: (req) => {

@@ -51,6 +51,7 @@ module.exports = {
         }
 
         if (_.isObject(result)) {
+          // when `GET`-ing an allowed db-doc, respond directly
           return res.json(result);
         }
 
@@ -59,7 +60,6 @@ module.exports = {
       .catch(err => serverUtils.serverError(err, req, res));
   }
 };
-
 
 // used for testing
 if (process.env.UNIT_TEST_ENV) {

@@ -2,7 +2,6 @@ const db = require('../db-pouch'),
       authorization = require('./authorization'),
       _ = require('underscore');
 
-
 const getStoredDoc = (req, isAttachment) => {
   if (!req.params || !req.params.docId) {
     return Promise.resolve(false);

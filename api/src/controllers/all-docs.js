@@ -42,7 +42,6 @@ module.exports = {
   }
 };
 
-
 // used for testing
 if (process.env.UNIT_TEST_ENV) {
   _.extend(module.exports, {
