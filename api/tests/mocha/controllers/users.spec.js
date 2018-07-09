@@ -439,9 +439,7 @@ describe('Users controller', () => {
 
   describe('createPlace', () => {
     it('assigns new place', done => {
-      sinon.stub(places, 'getOrCreatePlace').callsArgWith(1, null, {
-        _id: 'santos'
-      });
+      sinon.stub(places, 'getOrCreatePlace').resolves({ _id: 'santos' });
       controller._createPlace(userData, {}, (err, data) => {
         chai.expect(err).to.equal(null);
         chai.expect(data.place._id).to.equal('santos');
@@ -501,7 +499,7 @@ describe('Users controller', () => {
   describe('createContact', () => {
 
     it('returns error from db insert', done => {
-      sinon.stub(people, 'createPerson').callsArgWith(1, 'yucky');
+      sinon.stub(people, 'createPerson').returns(Promise.reject('yucky'));
       controller._createContact(userData, {}, err => {
         chai.expect(err).to.equal('yucky');
         done();
@@ -509,9 +507,7 @@ describe('Users controller', () => {
     });
 
     it('updates contact property', done => {
-      sinon.stub(people, 'getOrCreatePerson').callsArgWith(1, null, {
-        id: 'abc'
-      });
+      sinon.stub(people, 'getOrCreatePerson').resolves({ id: 'abc' });
       controller._createContact(userData, {}, (err, data) => {
         chai.expect(err).to.equal(null);
         chai.expect(data.contact).to.deep.equal({ id: 'abc' });
@@ -520,10 +516,7 @@ describe('Users controller', () => {
     });
 
     it('sets up response', done => {
-      sinon.stub(people, 'getOrCreatePerson').callsArgWith(1, null, {
-        _id: 'abc',
-        _rev: '1-xyz'
-      });
+      sinon.stub(people, 'getOrCreatePerson').resolves({ _id: 'abc', _rev: '1-xyz' });
       controller._createContact(userData, {}, (err, data, response) => {
         chai.expect(err).to.equal(null);
         chai.expect(response).to.deep.equal({
@@ -667,10 +660,10 @@ describe('Users controller', () => {
     it('returns error if place is not within contact', done => {
       sinon.stub(controller, '_validateNewUsername').callsArg(1);
       sinon.stub(controller, '_createPlace').callsArgWith(2, null, userData, {});
-      sinon.stub(places, 'getPlace').callsArgWith(1, null, {
-        '_id': 'miami',
+      sinon.stub(places, 'getPlace').resolves({
+        _id: 'miami',
         parent: {
-          '_id': 'florida'
+          _id: 'florida'
         }
       });
       userData.place = 'georgia';
@@ -688,9 +681,7 @@ describe('Users controller', () => {
       sinon.stub(controller, '_createContact').callsArgWith(2, null, {}, {});
       sinon.stub(controller, '_storeUpdatedPlace').callsArgWith(2, null, {}, {});
       sinon.stub(controller, '_createUserSettings').callsArgWith(2, null, {}, {});
-      sinon.stub(places, 'getPlace').callsArgWith(1, null, {
-        '_id': 'foo'
-      });
+      sinon.stub(places, 'getPlace').resolves({ _id: 'foo' });
       userData.place = 'foo';
       controller.createUser(userData, err => {
         chai.expect(err).to.equal(null);
@@ -705,10 +696,10 @@ describe('Users controller', () => {
       sinon.stub(controller, '_createContact').callsArgWith(2, null, {}, {});
       sinon.stub(controller, '_storeUpdatedPlace').callsArgWith(2, null, {}, {});
       sinon.stub(controller, '_createUserSettings').callsArgWith(2, null, {}, {});
-      sinon.stub(places, 'getPlace').callsArgWith(1, null, {
-        '_id': 'miami',
+      sinon.stub(places, 'getPlace').resolves({
+        _id: 'miami',
         parent: {
-          '_id': 'florida'
+          _id: 'florida'
         }
       });
       userData.place = 'florida';
@@ -728,7 +719,7 @@ describe('Users controller', () => {
       sinon.stub(controller, '_createUserSettings').callsArgWith(2, null, {}, {
         biz: 'baz'
       });
-      sinon.stub(places, 'getPlace').callsArg(1);
+      sinon.stub(places, 'getPlace').resolves();
       sinon.stub(controller, '_hasParent').returns(true);
       controller.createUser(userData, (err, response) => {
         chai.expect(err).to.equal(null);
@@ -783,7 +774,7 @@ describe('Users controller', () => {
     it('resolves contact parent in waterfall', done => {
       sinon.stub(controller, '_validateNewUsername').callsArg(1);
       sinon.stub(controller, '_createPlace').callsArgWith(2, null, userData, {});
-      sinon.stub(places, 'getPlace').callsArgWith(1, null, {
+      sinon.stub(places, 'getPlace').resolves({
         _id: 'a',
         biz: 'marquee'
       });
@@ -854,7 +845,7 @@ describe('Users controller', () => {
       sinon.stub(controller, '_validateNewUsername').callsArg(1);
       sinon.stub(controller, '_createPlace').callsArgWith(2, null, {}, {});
       sinon.stub(controller, '_setContactParent').callsArgWith(2, null, userData, {});
-      sinon.stub(people, 'getOrCreatePerson').callsArgWith(1, null, {
+      sinon.stub(people, 'getOrCreatePerson').resolves({
         _id: 'b',
         name: 'mickey'
       });
@@ -891,7 +882,7 @@ describe('Users controller', () => {
       };
       sinon.stub(controller, '_validateUser').callsArgWith(1, null, {});
       sinon.stub(controller, '_validateUserSettings').callsArgWith(1, null, {});
-      sinon.stub(places, 'getPlace').callsArgWith(1, 'Not today pal.');
+      sinon.stub(places, 'getPlace').returns(Promise.reject('Not today pal.'));
       const update = sinon.stub(controller, '_storeUpdatedUser');
       const updateSettings = sinon.stub(controller, '_storeUpdatedUserSettings');
       controller.updateUser('paul', data, true, () => {
@@ -990,7 +981,7 @@ describe('Users controller', () => {
       };
       sinon.stub(controller, '_validateUser').callsArgWith(1, null, {});
       sinon.stub(controller, '_validateUserSettings').callsArgWith(1, null, {});
-      sinon.stub(places, 'getPlace').callsArg(1);
+      sinon.stub(places, 'getPlace').resolves();
       const update = sinon.stub(controller, '_storeUpdatedUser').callsArg(2);
       const updateSettings = sinon.stub(controller, '_storeUpdatedUserSettings').callsArg(2);
       controller.updateUser('paul', data, true, err => {
@@ -1029,7 +1020,7 @@ describe('Users controller', () => {
       };
       sinon.stub(controller, '_validateUser').callsArgWith(1, null, {});
       sinon.stub(controller, '_validateUserSettings').callsArgWith(1, null, {});
-      sinon.stub(places, 'getPlace').callsArg(1);
+      sinon.stub(places, 'getPlace').resolves();
       const update = sinon.stub(controller, '_storeUpdatedUser').callsFake((id, data, callback) => {
         chai.expect(data.password).to.equal(COMPLEX_PASSWORD);
         callback();
@@ -1083,7 +1074,7 @@ describe('Users controller', () => {
       sinon.stub(controller, '_validateUserSettings').callsArgWith(1, null, {
         facility_id: 'maine'
       });
-      sinon.stub(places, 'getPlace').callsArg(1);
+      sinon.stub(places, 'getPlace').resolves();
       const update = sinon.stub(controller, '_storeUpdatedUser').callsFake((id, user, cb) => {
         chai.expect(user.facility_id).to.equal('paris');
         cb();
@@ -1116,7 +1107,7 @@ describe('Users controller', () => {
         phone: '123',
         known: false
       });
-      sinon.stub(places, 'getPlace').callsArg(1);
+      sinon.stub(places, 'getPlace').resolves();
       const update = sinon.stub(controller, '_storeUpdatedUser').callsFake((id, user, cb) => {
         chai.expect(user.facility_id).to.equal('el paso');
         chai.expect(user.roles).to.deep.equal(['rambler', 'mm-online']);
@@ -1158,7 +1149,7 @@ describe('Users controller', () => {
         known: false
       });
       sinon.stub(config, 'get').returns({ chp: { offline: true } });
-      sinon.stub(places, 'getPlace').callsArg(1);
+      sinon.stub(places, 'getPlace').resolves();
       const update = sinon.stub(controller, '_storeUpdatedUser').callsFake((id, user, cb) => {
         chai.expect(user.roles).to.deep.equal(['chp']);
         cb();
