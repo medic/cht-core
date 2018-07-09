@@ -501,7 +501,7 @@ describe('Users controller', () => {
   describe('createContact', () => {
 
     it('returns error from db insert', done => {
-      sinon.stub(people, 'createPerson').callsArgWith(1, 'yucky');
+      sinon.stub(people, 'createPerson').returns(Promise.reject('yucky'));
       controller._createContact(userData, {}, err => {
         chai.expect(err).to.equal('yucky');
         done();
@@ -509,9 +509,7 @@ describe('Users controller', () => {
     });
 
     it('updates contact property', done => {
-      sinon.stub(people, 'getOrCreatePerson').callsArgWith(1, null, {
-        id: 'abc'
-      });
+      sinon.stub(people, 'getOrCreatePerson').resolves({ id: 'abc' });
       controller._createContact(userData, {}, (err, data) => {
         chai.expect(err).to.equal(null);
         chai.expect(data.contact).to.deep.equal({ id: 'abc' });
@@ -520,10 +518,7 @@ describe('Users controller', () => {
     });
 
     it('sets up response', done => {
-      sinon.stub(people, 'getOrCreatePerson').callsArgWith(1, null, {
-        _id: 'abc',
-        _rev: '1-xyz'
-      });
+      sinon.stub(people, 'getOrCreatePerson').resolves({ _id: 'abc', _rev: '1-xyz' });
       controller._createContact(userData, {}, (err, data, response) => {
         chai.expect(err).to.equal(null);
         chai.expect(response).to.deep.equal({
@@ -854,7 +849,7 @@ describe('Users controller', () => {
       sinon.stub(controller, '_validateNewUsername').callsArg(1);
       sinon.stub(controller, '_createPlace').callsArgWith(2, null, {}, {});
       sinon.stub(controller, '_setContactParent').callsArgWith(2, null, userData, {});
-      sinon.stub(people, 'getOrCreatePerson').callsArgWith(1, null, {
+      sinon.stub(people, 'getOrCreatePerson').resolves({
         _id: 'b',
         name: 'mickey'
       });

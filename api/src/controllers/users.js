@@ -218,17 +218,16 @@ var createContact = function(data, response, callback) {
   }
 
   response = response || {};
-  people.getOrCreatePerson(data.contact, function(err, doc) {
-    if (err) {
-      return callback(err);
-    }
-    data.contact = doc;
-    response.contact = {
-      id: doc._id,
-      rev: doc._rev
-    };
-    callback(null, data, response);
-  });
+  people.getOrCreatePerson(data.contact)
+    .then(doc => {
+      data.contact = doc;
+      response.contact = {
+        id: doc._id,
+        rev: doc._rev
+      };
+      callback(null, data, response);
+    })
+    .catch(err => callback(err));
 };
 
 var createUserSettings = function(data, response, callback) {

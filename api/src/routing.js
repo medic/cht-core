@@ -405,12 +405,8 @@ app.postJson('/api/v1/places', function(req, res) {
       if (_.isEmpty(req.body)) {
         return emptyJSONBodyError(req, res);
       }
-      places.createPlace(req.body, function(err, body) {
-        if (err) {
-          return serverUtils.error(err, req, res);
-        }
-        res.json(body);
-      });
+      return places.createPlace(req.body)
+        .then(body => res.json(body));
     })
     .catch(err => serverUtils.error(err, req, res));
 });
@@ -421,12 +417,8 @@ app.postJson('/api/v1/places/:id', function(req, res) {
       if (_.isEmpty(req.body)) {
         return emptyJSONBodyError(req, res);
       }
-      places.updatePlace(req.params.id, req.body, function(err, body) {
-        if (err) {
-          return serverUtils.error(err, req, res);
-        }
-        res.json(body);
-      });
+      return places.updatePlace(req.params.id, req.body)
+        .then(body => res.json(body));
     })
     .catch(err => serverUtils.error(err, req, res));
 });
@@ -437,12 +429,8 @@ app.postJson('/api/v1/people', function(req, res) {
       if (_.isEmpty(req.body)) {
         return emptyJSONBodyError(req, res);
       }
-      people.createPerson(req.body, function(err, body) {
-        if (err) {
-          return serverUtils.error(err, req, res);
-        }
-        res.json(body);
-      });
+      return people.createPerson(req.body)
+        .then(body => res.json(body));
     })
     .catch(err => serverUtils.error(err, req, res));
 });
