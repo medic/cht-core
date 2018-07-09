@@ -29,16 +29,15 @@ const invalidRequest = req => {
 
 module.exports = {
   request: (req, res) => {
-    res.type('json');
-
     const error = invalidRequest(req);
     if (error) {
-      return res.send(JSON.stringify(error));
+      res.status(400);
+      return res.json(error);
     }
 
     return allDocs
       .filterOfflineRequest(req)
-      .then(results => res.send(JSON.stringify(results)))
+      .then(results => res.json(results))
       .catch(err => serverUtils.serverError(err, req, res));
   }
 };

@@ -11,8 +11,8 @@ describe('All Docs controller', () => {
   beforeEach(() => {
     testReq = { body: {}, query: {}};
     testRes = {
-      type: sinon.stub(),
-      send: sinon.stub()
+      json: sinon.stub(),
+      status: sinon.stub()
     };
     sinon.stub(service, 'filterOfflineRequest').resolves();
     sinon.stub(serverUtils, 'serverError');
@@ -81,9 +81,10 @@ describe('All Docs controller', () => {
         ])
         .then(() => {
           service.filterOfflineRequest.callCount.should.equal(0);
-          testRes.type.callCount.should.equal(1);
-          testRes.send.callCount.should.equal(1);
-          JSON.parse(testRes.send.args[0][0]).error.should.equal('bad_request');
+          testRes.json.callCount.should.equal(1);
+          testRes.status.callCount.should.equal(1);
+          testRes.status.args[0][0].should.equal(400);
+          testRes.json.args[0][0].error.should.equal('bad_request');
         });
     });
 
@@ -97,9 +98,10 @@ describe('All Docs controller', () => {
         ])
         .then(() => {
           service.filterOfflineRequest.callCount.should.equal(0);
-          testRes.type.callCount.should.equal(1);
-          testRes.send.callCount.should.equal(1);
-          JSON.parse(testRes.send.args[0][0]).error.should.equal('bad_request');
+          testRes.json.callCount.should.equal(1);
+          testRes.status.callCount.should.equal(1);
+          testRes.status.args[0][0].should.equal(400);
+          testRes.json.args[0][0].error.should.equal('bad_request');
         });
     });
 
@@ -113,9 +115,10 @@ describe('All Docs controller', () => {
         ])
         .then(() => {
           service.filterOfflineRequest.callCount.should.equal(0);
-          testRes.type.callCount.should.equal(1);
-          testRes.send.callCount.should.equal(1);
-          JSON.parse(testRes.send.args[0][0]).error.should.equal('bad_request');
+          testRes.json.callCount.should.equal(1);
+          testRes.status.callCount.should.equal(1);
+          testRes.status.args[0][0].should.equal(400);
+          testRes.json.args[0][0].error.should.equal('bad_request');
         });
     });
   });

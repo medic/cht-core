@@ -1,27 +1,18 @@
-const service = require('../../../src/services/bulk-get');
-const db = require('../../../src/db-pouch');
 const sinon = require('sinon').sandbox.create();
-const serverUtils = require('../../../src/server-utils');
 require('chai').should();
-const authorization = require('../../../src/services/authorization');
+const service = require('../../../src/services/bulk-get'),
+      db = require('../../../src/db-pouch'),
+      authorization = require('../../../src/services/authorization');
 
-let testRes,
-    testReq;
+let testReq;
 
 describe('Bulk Get service', () => {
   beforeEach(function() {
-    testRes = {
-      write: sinon.stub(),
-      end: sinon.stub(),
-      type: sinon.stub()
-    };
-
     testReq = { query: {}, userCtx: { name: 'user' } };
 
     sinon.stub(authorization, 'getAuthorizationContext').resolves({});
     sinon.stub(authorization, 'allowedDoc').returns(true);
     sinon.stub(authorization, 'getViewResults').callsFake(doc => ({ view: doc }));
-    sinon.stub(serverUtils, 'serverError');
     sinon.stub(db.medic, 'bulkGet').resolves({ results: [] });
   });
 
@@ -29,48 +20,34 @@ describe('Bulk Get service', () => {
     sinon.restore();
   });
 
-  describe('invalidRequest', () => {
-    it('returns error when body is not set', () => {
-      service._invalidRequest(false).should.deep.equal({ error: 'bad_request', reason: 'invalid UTF-8 JSON' });
-    });
-
-    it('returns error when body is missing `docs` property', () => {
-      service._invalidRequest({ body: {} }).should.deep.equal(
-        { error: 'bad_request', reason: 'Missing JSON list of `docs`.' });
-    });
-
-    it('returns error when `docs` is not an array', () => {
-      service._invalidRequest({ body: { docs: 'alpha' } }).should.deep.equal(
-        { error: 'bad_request', reason: '`docs` parameter must be an array.' });
-    });
-  });
-
   describe('Filter Offline Request', () => {
-    it('catches authorization errors', () => {
+    it('throws authorization errors', () => {
       testReq.body = { docs: [] };
-      authorization.getAuthorizationContext.rejects({ error: 'something' });
+      authorization.getAuthorizationContext.rejects(new Error('something'));
 
-      return service.filterOfflineRequest(testReq, testRes).then(() => {
-        serverUtils.serverError.callCount.should.equal(1);
-        serverUtils.serverError.args[0][0].should.deep.equal({ error: 'something' });
-      });
+      return service
+        .filterOfflineRequest(testReq)
+        .catch(err => {
+          err.message.should.equal('something');
+        });
     });
 
     it('catches bulk get errors', () => {
       testReq.body = { docs: [] };
-      db.medic.bulkGet.rejects({ error: 'something' });
+      db.medic.bulkGet.rejects(new Error('something'));
 
-      return service.filterOfflineRequest(testReq, testRes).then(() => {
-        serverUtils.serverError.callCount.should.equal(1);
-        serverUtils.serverError.args[0][0].should.deep.equal({ error: 'something' });
-      });
+      return service
+        .filterOfflineRequest(testReq)
+        .catch(err => {
+          err.message.should.equal('something');
+        });
     });
 
-    it('passes reqest query parameters to the db call', () => {
+    it('passes request query parameters to the db call', () => {
       testReq.body = { docs: [{ id: 'a', rev: '1-a' }, { id: 'b' }] };
       testReq.query = { revs: 'yes', attachments: 'no', some: 'param' };
 
-      return service.filterOfflineRequest(testReq, testRes).then(() => {
+      return service.filterOfflineRequest(testReq).then(() => {
         authorization.getAuthorizationContext.callCount.should.equal(1);
         db.medic.bulkGet.callCount.should.equal(1);
         db.medic.bulkGet.args[0][0].should.deep.equal(
@@ -103,68 +80,21 @@ describe('Bulk Get service', () => {
         .withArgs('e').returns(false);
 
       return service
-        .filterOfflineRequest(testReq, testRes)
-        .then(() => {
+        .filterOfflineRequest(testReq)
+        .then(result => {
           authorization.getAuthorizationContext.callCount.should.equal(1);
           authorization.allowedDoc.callCount.should.equal(7);
 
           db.medic.bulkGet.callCount.should.equal(1);
           db.medic.bulkGet.args[0][0].should.deep.equal(
             { docs: [{ id: 'a' }, { id: 'b' }, { id: 'c' }, { id: 'd' }, { id: 'e' }, { id: 'f' }]});
-          testRes.write.callCount.should.equal(1);
-          testRes.write.args[0][0].should.equal(JSON.stringify({
+
+          result.should.deep.equal({
             results: [
               { id: 'b', docs: [ { ok: { id: 'b', rev: 1 } }, { ok: { id: 'b', rev: 2 } } ] },
               { id: 'd', docs: [ { ok: { id: 'd' } } ] }
             ]
-          }));
-        });
-    });
-
-    it('handles requests without a body', () => {
-      testReq.body = null;
-
-      return Promise
-        .all([
-          service.filterOfflineRequest(testReq, testRes),
-          Promise.resolve()
-        ]).then(() => {
-          testRes.type.callCount.should.equal(1);
-          testRes.type.args[0][0].should.equal('json');
-          authorization.getAuthorizationContext.callCount.should.equal(0);
-          testRes.write.callCount.should.equal(1);
-          testRes.end.callCount.should.equal(1);
-          JSON.parse(testRes.write.args[0][0]).error.should.equal('bad_request');
-        });
-    });
-
-    it('handles requests without `docs` parameter', () => {
-      testReq.body = { some: 'thing' };
-
-      return Promise
-        .all([
-          service.filterOfflineRequest(testReq, testRes),
-          Promise.resolve()
-        ]).then(() => {
-          authorization.getAuthorizationContext.callCount.should.equal(0);
-          testRes.write.callCount.should.equal(1);
-          testRes.end.callCount.should.equal(1);
-          JSON.parse(testRes.write.args[0][0]).error.should.equal('bad_request');
-        });
-    });
-
-    it('handles requests when `docs` parameter is not an array', () => {
-      testReq.body = { docs: 'something' };
-
-      return Promise
-        .all([
-          service.filterOfflineRequest(testReq, testRes),
-          Promise.resolve()
-        ]).then(() => {
-          authorization.getAuthorizationContext.callCount.should.equal(0);
-          testRes.write.callCount.should.equal(1);
-          testRes.end.callCount.should.equal(1);
-          JSON.parse(testRes.write.args[0][0]).error.should.equal('bad_request');
+          });
         });
     });
   });

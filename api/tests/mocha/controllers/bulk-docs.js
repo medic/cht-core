@@ -25,8 +25,8 @@ describe('Bulk Docs controller', () => {
     };
 
     testRes = {
-      type: sinon.stub(),
-      send: sinon.stub()
+      json: sinon.stub(),
+      status: sinon.stub()
     };
 
     next = sinon.stub();
@@ -84,8 +84,8 @@ describe('Bulk Docs controller', () => {
           ['results']
         ]);
 
-        testRes.send.callCount.should.equal(1);
-        testRes.send.args[0].should.deep.equal([JSON.stringify(['formatted', 'results'])]);
+        testRes.json.callCount.should.equal(1);
+        testRes.json.args[0].should.deep.equal([['formatted', 'results']]);
       });
     });
 
@@ -97,11 +97,11 @@ describe('Bulk Docs controller', () => {
           controller.request(testReq, testRes, next),
           Promise.resolve()
         ]).then(() => {
-          testRes.type.callCount.should.equal(1);
-          testRes.type.args[0][0].should.equal('json');
+          testRes.status.callCount.should.equal(1);
+          testRes.status.args[0][0].should.equal(400);
           service.filterOfflineRequest.callCount.should.equal(0);
-          testRes.send.callCount.should.equal(1);
-          JSON.parse(testRes.send.args[0][0]).error.should.equal('bad_request');
+          testRes.json.callCount.should.equal(1);
+          testRes.json.args[0][0].error.should.equal('bad_request');
         });
     });
 
@@ -114,8 +114,10 @@ describe('Bulk Docs controller', () => {
           Promise.resolve()
         ]).then(() => {
           service.filterOfflineRequest.callCount.should.equal(0);
-          testRes.send.callCount.should.equal(1);
-          JSON.parse(testRes.send.args[0][0]).error.should.equal('bad_request');
+          testRes.json.callCount.should.equal(1);
+          testRes.status.callCount.should.equal(1);
+          testRes.status.args[0][0].should.equal(400);
+          testRes.json.args[0][0].error.should.equal('bad_request');
         });
     });
 
@@ -128,8 +130,10 @@ describe('Bulk Docs controller', () => {
           Promise.resolve()
         ]).then(() => {
           service.filterOfflineRequest.callCount.should.equal(0);
-          testRes.send.callCount.should.equal(1);
-          JSON.parse(testRes.send.args[0][0]).error.should.equal('bad_request');
+          testRes.json.callCount.should.equal(1);
+          testRes.status.callCount.should.equal(1);
+          testRes.status.args[0][0].should.equal(400);
+          testRes.json.args[0][0].error.should.equal('bad_request');
         });
     });
 

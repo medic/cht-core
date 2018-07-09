@@ -28,7 +28,7 @@ const invalidRequest = req => {
 const interceptResponse = (requestDocs, req, res, response) => {
   response = JSON.parse(response);
   const formattedResults = bulkDocs.formatResults(req.body.new_edits, requestDocs, req.body.docs, response);
-  res.send(JSON.stringify(formattedResults));
+  res.json(formattedResults);
 };
 
 module.exports = {
@@ -47,11 +47,10 @@ module.exports = {
   },
 
   request: (req, res, next) => {
-    res.type('json');
-
     const error = invalidRequest(req);
     if (error) {
-      return res.send(JSON.stringify(error));
+      res.status(400);
+      return res.json(error);
     }
 
     return bulkDocs
