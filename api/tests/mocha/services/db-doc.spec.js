@@ -1,58 +1,25 @@
-const service = require('../../../src/services/db-doc');
-const db = require('../../../src/db-pouch');
 const sinon = require('sinon').sandbox.create();
 require('chai').should();
 
-const authorization = require('../../../src/services/authorization');
-const serverUtils = require('../../../src/server-utils');
+const service = require('../../../src/services/db-doc'),
+      db = require('../../../src/db-pouch'),
+      authorization = require('../../../src/services/authorization');
 
-let testReq, testRes, next;
+let testReq;
 
 describe('db-doc service', () => {
   beforeEach(function() {
-    testRes = {
-      type: sinon.stub(),
-      send: sinon.stub(),
-      status: sinon.stub()
-    };
-
     testReq = { params: { docId: 'id'}};
-    next = sinon.stub();
 
     sinon.stub(authorization, 'allowedDoc');
     sinon.stub(authorization, 'alwaysAllowCreate');
     sinon.stub(authorization, 'getAuthorizationContext').resolves({ subjectIds: [1, 3, 4], userCtx: { name: 'user' } });
     sinon.stub(authorization, 'getViewResults').callsFake(doc => ({ view: doc }));
-    sinon.stub(serverUtils, 'serverError');
     sinon.stub(db.medic, 'get').resolves({});
   });
 
   afterEach(function() {
     sinon.restore();
-  });
-
-  describe('Is Valid Request', () => {
-    it('invalid for invalid methods', () => {
-      service.isValidRequest('HEAD', 'a').should.equal(false);
-    });
-
-    it('POST should not have docId parameter and should have a body', () => {
-      service.isValidRequest('POST', 'a').should.equal(false);
-      service.isValidRequest('POST', null, null).should.equal(false);
-    });
-
-    it('docId is required for all methods, except POST', () => {
-      service.isValidRequest('GET').should.equal(false);
-      service.isValidRequest('PUT').should.equal(false);
-      service.isValidRequest('DELETE').should.equal(false);
-    });
-
-    it('validates correct request', () => {
-      service.isValidRequest('POST', null, { a: 'b' }).should.equal(true);
-      service.isValidRequest('GET', 'a').should.equal(true);
-      service.isValidRequest('PUT', 'a').should.equal(true);
-      service.isValidRequest('DELETE', 'a').should.equal(true);
-    });
   });
 
   describe('getStoredDoc', () => {
@@ -129,14 +96,13 @@ describe('db-doc service', () => {
   });
 
   describe('Filter Offline Request', () => {
-    it('catches db errors', () => {
-      db.medic.get.rejects({ some: 'error' });
+    it('throws db errors', () => {
+      db.medic.get.rejects(new Error('something'));
       return service
-        .filterOfflineRequest(testReq, testRes, next)
-        .then(() => {
+        .filterOfflineRequest(testReq)
+        .catch(err => {
           authorization.allowedDoc.callCount.should.equal(0);
-          serverUtils.serverError.callCount.should.equal(1);
-          serverUtils.serverError.args[0].should.deep.equal([{ some: 'error' }, testReq, testRes]);
+          err.message.should.equal('something');
         });
     });
 
@@ -144,7 +110,7 @@ describe('db-doc service', () => {
       testReq.userCtx = { name: 'user' };
 
       return service
-        .filterOfflineRequest(testReq, testRes, next)
+        .filterOfflineRequest(testReq)
         .then(() => {
           authorization.getAuthorizationContext.callCount.should.equal(1);
           authorization.getAuthorizationContext.args[0].should.deep.equal([{ name: 'user' }]);
@@ -158,7 +124,7 @@ describe('db-doc service', () => {
       db.medic.get.resolves(doc);
 
       return service
-        .filterOfflineRequest(testReq, testRes, next)
+        .filterOfflineRequest(testReq)
         .then(() => {
           authorization.getViewResults.callCount.should.equal(1);
           authorization.getViewResults.args[0].should.deep.equal([doc]);
@@ -180,7 +146,7 @@ describe('db-doc service', () => {
       authorization.allowedDoc.returns(true);
 
       return service
-        .filterOfflineRequest(testReq, testRes, next)
+        .filterOfflineRequest(testReq)
         .then(() => {
           authorization.getViewResults.callCount.should.equal(2);
           authorization.getViewResults.args[0].should.deep.equal([dbDoc]);
@@ -200,7 +166,7 @@ describe('db-doc service', () => {
       authorization.allowedDoc.returns(true);
 
       return service
-        .filterOfflineRequest(testReq, testRes, next)
+        .filterOfflineRequest(testReq)
         .then(() => {
           authorization.getViewResults.callCount.should.equal(1);
           authorization.getViewResults.args[0].should.deep.equal([doc]);
@@ -218,11 +184,10 @@ describe('db-doc service', () => {
       testReq.method = 'PUT';
 
       return service
-        .filterOfflineRequest(testReq, testRes, next)
-        .then(() => {
+        .filterOfflineRequest(testReq)
+        .then(result => {
           authorization.allowedDoc.callCount.should.equal(1);
-          next.callCount.should.equal(1);
-          testRes.send.callCount.should.equal(0);
+          result.should.equal(true);
         });
     });
 
@@ -234,16 +199,10 @@ describe('db-doc service', () => {
       testReq.method = 'PUT';
 
       return service
-        .filterOfflineRequest(testReq, testRes, next)
-        .then(() => {
+        .filterOfflineRequest(testReq)
+        .then(result => {
           authorization.allowedDoc.callCount.should.equal(1);
-          next.callCount.should.equal(0);
-          testRes.send.callCount.should.equal(1);
-          testRes.send.args[0][0].should.equal(
-            JSON.stringify({error: 'forbidden', reason: 'Insufficient privileges'})
-          );
-          testRes.status.callCount.should.equal(1);
-          testRes.status.args[0][0].should.equal(403);
+          result.should.equal(false);
         });
     });
 
@@ -258,28 +217,26 @@ describe('db-doc service', () => {
     describe('GET', () => {
       beforeEach(() => testReq.method = 'GET');
 
-      it('blocks for non-existent doc', () => {
+      it('returns false for non-existent doc', () => {
         db.medic.get.rejects({ status: 404 });
         return service
-          .filterOfflineRequest(testReq, testRes, next)
-          .then(() => {
-            next.callCount.should.equal(0);
-            testRes.send.callCount.should.equal(1);
+          .filterOfflineRequest(testReq)
+          .then(result => {
+            result.should.equal(false);
             db.medic.get.callCount.should.equal(1);
             db.medic.get.args[0].should.deep.equal(['id', { rev: '1' }]);
           });
       });
 
-      it('blocks for not allowed existent doc', () => {
+      it('returns false for not allowed existent doc', () => {
         db.medic.get.resolves({ _id: 'id' });
         authorization.allowedDoc.returns(false);
         authorization.alwaysAllowCreate.returns(false);
 
         return service
-          .filterOfflineRequest(testReq, testRes, next)
-          .then(() => {
-            next.callCount.should.equal(0);
-            testRes.send.callCount.should.equal(1);
+          .filterOfflineRequest(testReq)
+          .then(result => {
+            result.should.equal(false);
             authorization.allowedDoc.callCount.should.equal(1);
             authorization.allowedDoc.args[0].should.deep.equal([
               'id', { userCtx: { name: 'user' }, subjectIds: [1, 3, 4]}, { view: { _id: 'id' }}
@@ -288,16 +245,15 @@ describe('db-doc service', () => {
           });
       });
 
-      it('blocks for not allowed and always allowed to create existent doc', () => {
+      it('returns false for not allowed and always allowed to create existent doc', () => {
         db.medic.get.resolves({ _id: 'id' });
         authorization.allowedDoc.returns(false);
         authorization.alwaysAllowCreate.returns(true);
 
         return service
-          .filterOfflineRequest(testReq, testRes, next)
-          .then(() => {
-            next.callCount.should.equal(0);
-            testRes.send.callCount.should.equal(1);
+          .filterOfflineRequest(testReq)
+          .then(result => {
+            result.should.equal(false);
             authorization.allowedDoc.callCount.should.equal(1);
             authorization.allowedDoc.args[0].should.deep.equal([
               'id', { userCtx: { name: 'user' }, subjectIds: [1, 3, 4]}, { view: { _id: 'id' }}
@@ -305,18 +261,16 @@ describe('db-doc service', () => {
           });
       });
 
-      it('responds for allowed existent doc', () => {
+      it('returns db-doc for allowed existent doc', () => {
         testReq.method = 'GET';
         db.medic.get.resolves({ _id: 'id' });
         authorization.allowedDoc.returns(true);
 
         return service
-          .filterOfflineRequest(testReq, testRes, next)
-          .then(() => {
-            next.callCount.should.equal(0);
+          .filterOfflineRequest(testReq)
+          .then(result => {
             authorization.allowedDoc.callCount.should.equal(1);
-            testRes.send.callCount.should.equal(1);
-            testRes.send.args[0].should.deep.equal([ JSON.stringify({ _id: 'id' }) ]);
+            result.should.deep.equal({ _id: 'id' });
           });
       });
     });
@@ -324,27 +278,25 @@ describe('db-doc service', () => {
     describe('DELETE', () => {
       beforeEach(() => testReq.method = 'DELETE');
 
-      it('blocks for non existent DOC', () => {
+      it('returns false for non existent DOC', () => {
         db.medic.get.rejects({ status: 404 });
         return service
-          .filterOfflineRequest(testReq, testRes, next)
-          .then(() => {
-            next.callCount.should.equal(0);
-            testRes.send.callCount.should.equal(1);
+          .filterOfflineRequest(testReq)
+          .then(result => {
+            result.should.equal(false);
             db.medic.get.callCount.should.equal(1);
             db.medic.get.args[0].should.deep.equal(['id', {}]);
           });
       });
 
-      it('blocks for not allowed existent doc', () => {
+      it('returns false for not allowed existent doc', () => {
         db.medic.get.resolves({ _id: 'id' });
         authorization.allowedDoc.returns(false);
 
         return service
-          .filterOfflineRequest(testReq, testRes, next)
-          .then(() => {
-            next.callCount.should.equal(0);
-            testRes.send.callCount.should.equal(1);
+          .filterOfflineRequest(testReq)
+          .then(result => {
+            result.should.equal(false);
             authorization.allowedDoc.callCount.should.equal(1);
             authorization.allowedDoc.args[0].should.deep.equal([
               'id', { userCtx: { name: 'user' }, subjectIds: [1, 3, 4]}, { view: { _id: 'id' }}
@@ -352,16 +304,15 @@ describe('db-doc service', () => {
           });
       });
 
-      it('blocks for not allowed, always allowed to create existent doc', () => {
+      it('returns false for not allowed, always allowed to create existent doc', () => {
         db.medic.get.resolves({ _id: 'id' });
         authorization.allowedDoc.returns(false);
         authorization.alwaysAllowCreate.returns(true);
 
         return service
-          .filterOfflineRequest(testReq, testRes, next)
-          .then(() => {
-            next.callCount.should.equal(0);
-            testRes.send.callCount.should.equal(1);
+          .filterOfflineRequest(testReq)
+          .then(result => {
+            result.should.equal(false);
             authorization.allowedDoc.callCount.should.equal(1);
             authorization.allowedDoc.args[0].should.deep.equal([
               'id', { userCtx: { name: 'user' }, subjectIds: [1, 3, 4]}, { view: { _id: 'id' }}
@@ -370,15 +321,14 @@ describe('db-doc service', () => {
           });
       });
 
-      it('proxies for allowed existent doc', () => {
+      it('returns true for allowed existent doc', () => {
         db.medic.get.resolves({ _id: 'id' });
         authorization.allowedDoc.returns(true);
 
         return service
-          .filterOfflineRequest(testReq, testRes, next)
-          .then(() => {
-            next.callCount.should.equal(1);
-            testRes.send.callCount.should.equal(0);
+          .filterOfflineRequest(testReq)
+          .then(result => {
+            result.should.equal(true);
             authorization.allowedDoc.callCount.should.equal(1);
           });
       });
@@ -392,47 +342,44 @@ describe('db-doc service', () => {
         testReq.userCtx = { name: 'user' };
       });
 
-      it('blocks for not allowed request doc', () => {
+      it('returns false for not allowed request doc', () => {
         authorization.allowedDoc.returns(false);
 
         return service
-          .filterOfflineRequest(testReq, testRes, next)
-          .then(() => {
+          .filterOfflineRequest(testReq)
+          .then(result => {
             authorization.allowedDoc.callCount.should.equal(1);
             authorization.allowedDoc.args[0].should.deep.equal([
               'id', { userCtx: { name: 'user' }, subjectIds: [1, 3, 4] }, { view: { _id: 'id', some: 'data' }}
             ]);
             db.medic.get.callCount.should.equal(0);
-            next.callCount.should.equal(0);
-            testRes.send.callCount.should.equal(1);
+            result.should.equal(false);
           });
       });
 
-      it('proxies for not allowed, but always allowed to create request doc', () => {
+      it('returns true for not allowed, but always allowed to create request doc', () => {
         authorization.allowedDoc.returns(false);
         authorization.alwaysAllowCreate.returns(true);
 
         return service
-          .filterOfflineRequest(testReq, testRes, next)
-          .then(() => {
+          .filterOfflineRequest(testReq)
+          .then(result => {
             authorization.alwaysAllowCreate.callCount.should.equal(1);
             authorization.allowedDoc.callCount.should.equal(0);
             db.medic.get.callCount.should.equal(0);
-            next.callCount.should.equal(1);
-            testRes.send.callCount.should.equal(0);
+            result.should.equal(true);
           });
       });
 
-      it('proxies for allowed request doc', () => {
+      it('returns true for allowed request doc', () => {
         authorization.allowedDoc.returns(true);
 
         return service
-          .filterOfflineRequest(testReq, testRes, next)
-          .then(() => {
+          .filterOfflineRequest(testReq)
+          .then(result => {
             authorization.allowedDoc.callCount.should.equal(1);
             db.medic.get.callCount.should.equal(0);
-            next.callCount.should.equal(1);
-            testRes.send.callCount.should.equal(0);
+            result.should.equal(true);
           });
       });
     });
@@ -445,58 +392,55 @@ describe('db-doc service', () => {
         testReq.userCtx = { name: 'user' };
       });
 
-      it('blocks for non existent db doc, not allowed request doc', () => {
+      it('returns false for non existent db doc, not allowed request doc', () => {
         db.medic.get.rejects({ status: 404 });
         authorization.allowedDoc.returns(false);
 
         return service
-          .filterOfflineRequest(testReq, testRes, next)
-          .then(() => {
+          .filterOfflineRequest(testReq)
+          .then(result => {
             authorization.allowedDoc.callCount.should.equal(1);
             authorization.allowedDoc.args[0].should.deep.equal([
               'id', { userCtx: { name: 'user' }, subjectIds: [1, 3, 4] }, { view: { _id: 'id', some: 'data' }}
             ]);
             db.medic.get.callCount.should.equal(1);
-            next.callCount.should.equal(0);
-            testRes.send.callCount.should.equal(1);
+            result.should.equal(false);
           });
       });
 
-      it('proxies for non existent db doc, allowed request doc', () => {
+      it('returns true for non existent db doc, allowed request doc', () => {
         db.medic.get.rejects({ status: 404 });
         authorization.allowedDoc.returns(true);
 
         return service
-          .filterOfflineRequest(testReq, testRes, next)
-          .then(() => {
+          .filterOfflineRequest(testReq)
+          .then(result => {
             authorization.allowedDoc.callCount.should.equal(1);
             authorization.allowedDoc.args[0].should.deep.equal([
               'id', { userCtx: { name: 'user' }, subjectIds: [1, 3, 4] }, { view: { _id: 'id', some: 'data' }}
             ]);
             db.medic.get.callCount.should.equal(1);
-            next.callCount.should.equal(1);
-            testRes.send.callCount.should.equal(0);
+            result.should.equal(true);
           });
       });
 
-      it('blocks for existent db doc, not allowed existent, not allowed new', () => {
+      it('returns false for existent db doc, not allowed existent, not allowed new', () => {
         db.medic.get.resolves({ _id: 'id' });
 
         authorization.allowedDoc.returns(false);
         return service
-          .filterOfflineRequest(testReq, testRes, next)
-          .then(() => {
+          .filterOfflineRequest(testReq)
+          .then(result => {
             authorization.allowedDoc.callCount.should.equal(1);
             authorization.allowedDoc.args[0].should.deep.equal([
               'id', { userCtx: { name: 'user' }, subjectIds: [1, 3, 4] }, { view: { _id: 'id' }}
             ]);
             db.medic.get.callCount.should.equal(1);
-            next.callCount.should.equal(0);
-            testRes.send.callCount.should.equal(1);
+            result.should.equal(false);
           });
       });
 
-      it('blocks for existent db doc, not allowed existent, allowed new', () => {
+      it('returns false for existent db doc, not allowed existent, allowed new', () => {
         db.medic.get.resolves({ _id: 'id' });
 
         authorization.allowedDoc
@@ -506,19 +450,18 @@ describe('db-doc service', () => {
           .returns(true);
 
         return service
-          .filterOfflineRequest(testReq, testRes, next)
-          .then(() => {
+          .filterOfflineRequest(testReq)
+          .then(result => {
             authorization.allowedDoc.callCount.should.equal(1);
             authorization.allowedDoc.args[0].should.deep.equal([
               'id', { userCtx: { name: 'user' }, subjectIds: [1, 3, 4] }, { view: { _id: 'id' }}
             ]);
             db.medic.get.callCount.should.equal(1);
-            next.callCount.should.equal(0);
-            testRes.send.callCount.should.equal(1);
+            result.should.equal(false);
           });
       });
 
-      it('blocks for existent db doc, allowed existent, not allowed new', () => {
+      it('returns false for existent db doc, allowed existent, not allowed new', () => {
         db.medic.get.resolves({ _id: 'id' });
 
         authorization.allowedDoc
@@ -528,8 +471,8 @@ describe('db-doc service', () => {
           .returns(false);
 
         return service
-          .filterOfflineRequest(testReq, testRes, next)
-          .then(() => {
+          .filterOfflineRequest(testReq)
+          .then(result => {
             authorization.allowedDoc.callCount.should.equal(2);
             authorization.allowedDoc.args[0].should.deep.equal([
               'id', { userCtx: { name: 'user' }, subjectIds: [1, 3, 4] }, { view: { _id: 'id' }}
@@ -538,19 +481,18 @@ describe('db-doc service', () => {
               'id', { userCtx: { name: 'user' }, subjectIds: [1, 3, 4] }, { view: { _id: 'id', some: 'data' }}
             ]);
             db.medic.get.callCount.should.equal(1);
-            next.callCount.should.equal(0);
-            testRes.send.callCount.should.equal(1);
+            result.should.equal(false);
           });
       });
 
-      it('proxies for existent db doc, allowed existent, allowed new', () => {
+      it('returns true for existent db doc, allowed existent, allowed new', () => {
         db.medic.get.resolves({ _id: 'id' });
 
         authorization.allowedDoc.returns(true);
 
         return service
-          .filterOfflineRequest(testReq, testRes, next)
-          .then(() => {
+          .filterOfflineRequest(testReq)
+          .then(result => {
             authorization.allowedDoc.callCount.should.equal(2);
             authorization.allowedDoc.args[0].should.deep.equal([
               'id', { userCtx: { name: 'user' }, subjectIds: [1, 3, 4] }, { view: { _id: 'id' }}
@@ -559,44 +501,41 @@ describe('db-doc service', () => {
               'id', { userCtx: { name: 'user' }, subjectIds: [1, 3, 4] }, { view: { _id: 'id', some: 'data' }}
             ]);
             db.medic.get.callCount.should.equal(1);
-            next.callCount.should.equal(1);
-            testRes.send.callCount.should.equal(0);
+            result.should.equal(true);
           });
       });
 
-      it('proxies for non-existent always allowed to create doc', () => {
+      it('returns true for non-existent always allowed to create doc', () => {
         db.medic.get.rejects({ status: 404 });
         authorization.allowedDoc.returns(false);
         authorization.alwaysAllowCreate.returns(true);
 
         return service
-          .filterOfflineRequest(testReq, testRes, next)
-          .then(() => {
+          .filterOfflineRequest(testReq)
+          .then(result => {
             authorization.allowedDoc.callCount.should.equal(0);
             authorization.alwaysAllowCreate.callCount.should.equal(1);
             db.medic.get.callCount.should.equal(1);
-            next.callCount.should.equal(1);
-            testRes.send.callCount.should.equal(0);
+            result.should.equal(true);
           });
       });
 
-      it('blocks for existent always allowed to create doc', () => {
+      it('returns false for existent always allowed to create doc', () => {
         db.medic.get.resolves({ _id: 'id' });
 
         authorization.allowedDoc.returns(false);
         authorization.alwaysAllowCreate.returns(true);
 
         return service
-          .filterOfflineRequest(testReq, testRes, next)
-          .then(() => {
+          .filterOfflineRequest(testReq)
+          .then(result => {
             authorization.allowedDoc.callCount.should.equal(1);
             authorization.allowedDoc.args[0].should.deep.equal([
               'id', { userCtx: { name: 'user' }, subjectIds: [1, 3, 4] }, { view: { _id: 'id' }}
             ]);
             authorization.alwaysAllowCreate.callCount.should.equal(0);
             db.medic.get.callCount.should.equal(1);
-            next.callCount.should.equal(0);
-            testRes.send.callCount.should.equal(1);
+            result.should.equal(false);
           });
       });
     });
@@ -607,26 +546,25 @@ describe('db-doc service', () => {
         testReq.params.attachmentId = 'attachmentID';
       });
 
-      it('blocks for non existent doc', () => {
+      it('returns false for non existent doc', () => {
         db.medic.get.rejects({ status: 404 });
 
         return service
-          .filterOfflineRequest(testReq, testRes, next)
-          .then(() => {
+          .filterOfflineRequest(testReq)
+          .then(result => {
             authorization.allowedDoc.callCount.should.equal(0);
             db.medic.get.callCount.should.equal(1);
             db.medic.get.args[0].should.deep.equal([ 'id', { rev: '1' } ]);
-            next.callCount.should.equal(0);
-            testRes.send.callCount.should.equal(1);
+            result.should.equal(false);
           });
       });
 
-      it('blocks for existent not allowed doc', () => {
+      it('returns false for existent not allowed doc', () => {
         db.medic.get.resolves({ _id: 'id' });
 
         return service
-          .filterOfflineRequest(testReq, testRes, next)
-          .then(() => {
+          .filterOfflineRequest(testReq)
+          .then(result => {
             authorization.allowedDoc.callCount.should.equal(1);
             authorization.allowedDoc.args[0].should.deep.equal([
               'id', { userCtx: { name: 'user' }, subjectIds: [1, 3, 4] }, { view: { _id: 'id' }}
@@ -634,18 +572,17 @@ describe('db-doc service', () => {
             db.medic.get.callCount.should.equal(1);
             db.medic.get.args[0].should.deep.equal(['id', { rev: '1' }]);
 
-            next.callCount.should.equal(0);
-            testRes.send.callCount.should.equal(1);
+            result.should.equal(false);
           });
       });
 
-      it('proxies for existent allowed doc', () => {
+      it('returns true for existent allowed doc', () => {
         db.medic.get.resolves({ _id: 'id' });
         authorization.allowedDoc.returns(true);
 
         return service
-          .filterOfflineRequest(testReq, testRes, next)
-          .then(() => {
+          .filterOfflineRequest(testReq)
+          .then(result => {
             authorization.allowedDoc.callCount.should.equal(1);
             authorization.allowedDoc.args[0].should.deep.equal([
               'id', { userCtx: { name: 'user' }, subjectIds: [1, 3, 4] }, { view: { _id: 'id' }}
@@ -653,8 +590,7 @@ describe('db-doc service', () => {
             db.medic.get.callCount.should.equal(1);
             db.medic.get.args[0].should.deep.equal(['id', { rev: '1'}]);
 
-            next.callCount.should.equal(1);
-            testRes.send.callCount.should.equal(0);
+            result.should.equal(true);
           });
       });
     });
