@@ -201,7 +201,8 @@ const restartNormalFeed = feed => {
 
 const getChanges = feed => {
   const options = {
-    since: feed.req.query && feed.req.query.since || 0
+    since: feed.req.query && feed.req.query.since || 0,
+    batch_size: MAX_DOC_IDS // PouchDB batch size
   };
   _.extend(options, _.pick(feed.req.query, 'style', 'conflicts', 'seq_interval'));
 
