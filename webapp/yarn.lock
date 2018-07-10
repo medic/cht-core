@@ -1182,9 +1182,9 @@ parse-int-x@^2.0.0:
     to-string-x "^1.4.2"
     trim-left-x "^3.0.0"
 
-partial-json-parser@^1.0.3:
-  version "1.0.3"
-  resolved "https://registry.yarnpkg.com/partial-json-parser/-/partial-json-parser-1.0.3.tgz#6670ade5e66fcfa1cedf254fd673d90227832281"
+partial-json-parser@1.0.2:
+  version "1.0.2"
+  resolved "https://registry.yarnpkg.com/partial-json-parser/-/partial-json-parser-1.0.2.tgz#e16f3c1fca2315fe1a24d3fafb34a709e08f5e90"
 
 path-is-absolute@^1.0.0:
   version "1.0.1"
