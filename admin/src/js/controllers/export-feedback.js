@@ -9,11 +9,15 @@ angular.module('controllers').controller('ExportFeedbackCtrl',
     'use strict';
     'ngInject';
 
+    var MESSAGE_LIMIT = 120;
+
     var safeStringify = function(str) {
       if (typeof str === 'string') {
         return str;
       }
       try {
+        var suffix = str.message.length > MESSAGE_LIMIT ? '...' : '';
+        str.message = str.message.substring(0, MESSAGE_LIMIT) + suffix;
         return JSON.stringify(str);
       } catch(e) {
         return str;
