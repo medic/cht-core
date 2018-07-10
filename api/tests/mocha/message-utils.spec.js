@@ -1,5 +1,5 @@
 const chai = require('chai'),
-      sinon = require('sinon').sandbox.create(),
+      sinon = require('sinon'),
       taskUtils = require('task-utils'),
       db = require('../../src/db-pouch'),
       controller = require('../../src/message-utils');

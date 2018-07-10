@@ -107,7 +107,7 @@ describe('InboxCtrl controller', () => {
     });
 
     createController();
-    spyState.go.reset();
+    spyState.go.resetHistory();
   });
 
   it('navigates back to contacts state after deleting contact', done => {

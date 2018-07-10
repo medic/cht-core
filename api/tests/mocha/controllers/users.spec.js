@@ -1,5 +1,5 @@
 const chai = require('chai'),
-      sinon = require('sinon').sandbox.create(),
+      sinon = require('sinon'),
       controller = require('../../../src/controllers/users'),
       people = require('../../../src/controllers/people'),
       places = require('../../../src/controllers/places'),

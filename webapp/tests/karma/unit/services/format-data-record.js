@@ -2,8 +2,6 @@ describe('FormatDataRecord service', () => {
 
   'use strict';
 
-  const sandbox = sinon.sandbox.create();
-
   let service,
       Settings = sinon.stub(),
       Language = sinon.stub();
@@ -26,7 +24,7 @@ describe('FormatDataRecord service', () => {
     });
   });
 
-  afterEach(() => sandbox.restore());
+  afterEach(() => sinon.restore());
 
   it('generates cleared messages', done => {
     const doc = {

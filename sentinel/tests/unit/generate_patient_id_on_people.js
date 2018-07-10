@@ -1,4 +1,4 @@
-var sinon = require('sinon').sandbox.create(),
+var sinon = require('sinon'),
     assert = require('chai').assert,
     transitionUtils = require('../../src/transitions/utils');
 

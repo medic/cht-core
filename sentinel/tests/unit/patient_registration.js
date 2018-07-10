@@ -1,6 +1,6 @@
 const _ = require('underscore'),
       moment = require('moment'),
-      sinon = require('sinon').sandbox.create(),
+      sinon = require('sinon'),
       assert = require('chai').assert,
       transition = require('../../src/transitions/registration'),
       db = require('../../src/db-nano'),

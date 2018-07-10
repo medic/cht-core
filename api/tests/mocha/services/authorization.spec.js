@@ -1,5 +1,5 @@
 const db = require('../../../src/db-pouch'),
-      sinon = require('sinon').sandbox.create(),
+      sinon = require('sinon'),
       config = require('../../../src/config'),
       auth = require('../../../src/auth'),
       tombstoneUtils = require('@shared-libs/tombstone-utils'),

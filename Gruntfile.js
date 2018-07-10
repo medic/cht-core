@@ -278,7 +278,6 @@ module.exports = function(grunt) {
               'bootstrap-daterangepicker/**',
               'font-awesome/**',
               'moment/**',
-              'pouchdb-browser/**',
             ],
             dest: 'webapp/node_modules_backup'
           }
@@ -397,7 +396,6 @@ module.exports = function(grunt) {
             'bootstrap-daterangepicker',
             'font-awesome',
             'moment',
-            'pouchdb-browser',
           ];
           return modulesToPatch.map(function(module) {
             var backupPath = 'webapp/node_modules_backup/' + module;
@@ -440,10 +438,6 @@ module.exports = function(grunt) {
 
             // patch moment.js to use western arabic (european) numerals in Hindi
             'patch webapp/node_modules/moment/locale/hi.js < webapp/patches/moment-hindi-use-euro-numerals.patch',
-
-            // patch pouch to:
-            // * improve safari checks (https://github.com/medic/medic-webapp/issues/2797)
-            'patch webapp/node_modules/pouchdb-browser/lib/index.js < webapp/patches/pouchdb-browser.patch',
           ];
           return patches.join(' && ');
         }
@@ -668,6 +662,9 @@ module.exports = function(grunt) {
       }
     },
     sass: {
+      options: {
+        implementation: require('node-sass'),
+      },
       compile: {
         cwd: 'webapp/src/css/',
         src: 'enketo/enketo.scss',

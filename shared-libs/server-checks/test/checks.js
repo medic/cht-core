@@ -1,10 +1,10 @@
 const chai = require('chai'),
-    sinon = require('sinon').sandbox.create(),
+    sinon = require('sinon'),
     service = require('../src/checks'),
     http = require('http'),
     request = require('request');
 
-describe('Server Checks service', function() {
+describe('Server Checks service', () => {
 
   'use strict';
 
@@ -12,8 +12,8 @@ describe('Server Checks service', function() {
 
   beforeEach(() => {
     originalProcess = process;
-    sinon.stub(console, 'log').returns(void 0);
-    sinon.stub(console, 'error').returns(void 0);
+    sinon.spy(console, 'log');
+    sinon.spy(console, 'error');
   });
 
   afterEach(() => {

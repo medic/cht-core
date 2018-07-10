@@ -2,15 +2,13 @@ describe('PlaceHierarchy service', () => {
 
   'use strict';
 
-  const sandbox = sinon.sandbox.create();
-
   let service,
       Contacts,
       settings;
 
   beforeEach(() => {
     module('inboxApp');
-    Contacts = sandbox.stub();
+    Contacts = sinon.stub();
     settings = {};
     module($provide => {
       $provide.value('Contacts', Contacts);
@@ -25,7 +23,7 @@ describe('PlaceHierarchy service', () => {
   });
 
   afterEach(() => {
-    sandbox.restore();
+    sinon.restore();
   });
 
   it('returns errors from Contacts service', done => {

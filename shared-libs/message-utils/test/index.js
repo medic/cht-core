@@ -1,4 +1,4 @@
-const sinon = require('sinon').sandbox.create(),
+const sinon = require('sinon'),
       moment = require('moment'),
       expect = require('chai').expect,
       should = require('chai').should(),
