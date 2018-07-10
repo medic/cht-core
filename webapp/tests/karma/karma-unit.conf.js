@@ -35,9 +35,9 @@ module.exports = function(config) {
       'src/templates/directives/sender.html',
 
       // test-specific code
-      'node_modules/chai/chai.js',
-      'node_modules/sinon/pkg/sinon.js',
-      'node_modules/angular-mocks/angular-mocks.js',
+      '../node_modules/chai/chai.js',
+      '../node_modules/sinon/pkg/sinon.js',
+      '../node_modules/angular-mocks/angular-mocks.js',
       'node_modules/moment/moment.js',
       'tests/karma/utils.js',
 

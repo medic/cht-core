@@ -1,4 +1,4 @@
-const sinon = require('sinon').sandbox.create(),
+const sinon = require('sinon'),
       assert = require('chai').assert,
       jsc = require('jsverify'),
       ids = require('../../src/lib/ids.js');

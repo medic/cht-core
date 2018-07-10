@@ -1,4 +1,4 @@
-const sinon = require('sinon').sandbox.create(),
+const sinon = require('sinon'),
       assert = require('chai').assert,
       _ = require('underscore'),
       config = require('../../src/config'),

@@ -1,4 +1,4 @@
-const sinon = require('sinon').sandbox.create(),
+const sinon = require('sinon'),
       assert = require('chai').assert,
       db = require('../../src/db-nano'),
       dbPouch = require('../../src/db-pouch'),

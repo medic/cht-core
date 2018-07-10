@@ -1,5 +1,5 @@
 var config = require('../../src/config'),
-    sinon = require('sinon').sandbox.create(),
+    sinon = require('sinon'),
     assert = require('chai').assert,    
     utils = require('../../src/lib/utils'),
     transition = require('../../src/transitions/accept_patient_reports');

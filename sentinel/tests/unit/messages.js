@@ -1,7 +1,7 @@
 var messages = require('../../src/lib/messages'),
     utils = require('../../src/lib/utils'),
     config = require('../../src/config'),
-    sinon = require('sinon').sandbox.create(),
+    sinon = require('sinon'),
     assert = require('chai').assert;
 
 describe('messages', () => {

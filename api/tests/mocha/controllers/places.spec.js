@@ -3,7 +3,7 @@ const controller = require('../../../src/controllers/places'),
       people = require('../../../src/controllers/people'),
       cutils = require('../../../src/controllers/utils'),
       db = require('../../../src/db-pouch'),
-      sinon = require('sinon').sandbox.create();
+      sinon = require('sinon');
 
 let examplePlace;
 

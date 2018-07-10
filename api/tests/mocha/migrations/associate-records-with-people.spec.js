@@ -1,4 +1,4 @@
-const sinon = require('sinon').sandbox.create(),
+const sinon = require('sinon'),
       db = require('../../../src/db-nano'),
       chai = require('chai'),
       migration = require('../../../src/migrations/associate-records-with-people');

@@ -1,4 +1,4 @@
-const sinon = require('sinon').sandbox.create(),
+const sinon = require('sinon'),
       auth = require('../../../src/auth'),
       controller = require('../../../src/controllers/changes'),
       authorization = require('../../../src/services/authorization'),

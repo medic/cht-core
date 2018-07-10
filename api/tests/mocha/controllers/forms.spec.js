@@ -1,7 +1,7 @@
 const controller = require('../../../src/controllers/forms'),
       chai = require('chai'),
       db = require('../../../src/db-nano'),
-      sinon = require('sinon').sandbox.create();
+      sinon = require('sinon');
 
 const mockFormsInDb = (...docs) => {
   sinon.stub(db.medic, 'view')

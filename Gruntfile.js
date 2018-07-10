@@ -668,6 +668,9 @@ module.exports = function(grunt) {
       }
     },
     sass: {
+      options: {
+        implementation: require('node-sass'),
+      },
       compile: {
         cwd: 'webapp/src/css/',
         src: 'enketo/enketo.scss',

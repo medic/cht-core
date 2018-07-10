@@ -1,6 +1,6 @@
 const service = require('../../../src/services/bulk-docs');
 const db = require('../../../src/db-pouch');
-const sinon = require('sinon').sandbox.create();
+const sinon = require('sinon');
 require('chai').should();
 
 const authorization = require('../../../src/services/authorization');

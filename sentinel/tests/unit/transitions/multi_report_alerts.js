@@ -1,7 +1,7 @@
 const _ = require('underscore'),
       config = require('../../../src/config'),
       messages = require('../../../src/lib/messages'),
-      sinon = require('sinon').sandbox.create(),
+      sinon = require('sinon'),
       assert = require('chai').assert,
       transition = require('../../../src/transitions/multi_report_alerts'),
       utils = require('../../../src/lib/utils');
