@@ -47,7 +47,7 @@
     "pojo2xml": "^1.7.1",
     "pouchdb-browser": "^6.4.3",
     "search": "file:../shared-libs/search",
-    "select2": "^4.0.5",
+    "select2": "4.0.3",
     "simple-password-tester": "^1.0.0",
     "task-utils": "file:../shared-libs/task-utils",
     "underscore": "^1.9.1",
