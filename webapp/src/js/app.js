@@ -1,4 +1,5 @@
 window.PouchDB = require('pouchdb-browser');
+window.PouchDB.plugin(require('pouchdb-debug'));
 window.$ = window.jQuery = require('jquery');
 window.d3 = require('d3');
 
@@ -90,7 +91,14 @@ _.templateSettings = {
   });
   var POUCHDB_OPTIONS = {
     local: { auto_compaction: true },
-    remote: { skip_setup: true, ajax: { timeout: 30000 }}
+    remote: {
+      skip_setup: true,
+      fetch: function(url, opts) {
+        opts.headers.set('Accept', 'application/json');
+        opts.credentials = 'same-origin';
+        return window.PouchDB.fetch(url, opts);
+      }
+    }
   };
   app.constant('POUCHDB_OPTIONS', POUCHDB_OPTIONS);
 

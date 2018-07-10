@@ -22,11 +22,15 @@
     "messageformat": "^2.0.2",
     "moment": "^2.22.2",
     "phone-number": "file:../shared-libs/phone-number",
-    "pouchdb-browser": "^6.4.3",
+    "pouchdb-browser": "^7.0.0",
     "properties": "^1.2.1",
     "select2": "^4.0.3",
     "simple-password-tester": "^1.0.0",
     "underscore": "^1.9.1"
   },
-  "devDependencies": {}
+  "devDependencies": {},
+  "resolutions": {
+    "**/jquery": "3.2.x",
+    "**/pouchdb-browser": "^7.0.0"
+  }
 }

@@ -57,12 +57,6 @@ bootstrap@^3.3.7:
   version "3.3.7"
   resolved "https://registry.yarnpkg.com/bootstrap/-/bootstrap-3.3.7.tgz#5a389394549f23330875a3b150656574f8a9eb71"
 
-debug@3.1.0:
-  version "3.1.0"
-  resolved "https://registry.yarnpkg.com/debug/-/debug-3.1.0.tgz#5bb5a0672628b64149566ba16819e61518c67261"
-  dependencies:
-    ms "2.0.0"
-
 font-awesome@^4.7.0:
   version "4.7.0"
   resolved "https://registry.yarnpkg.com/font-awesome/-/font-awesome-4.7.0.tgz#8fa8cf0411a1a31afd07b06d2902bb9fc815a133"
@@ -71,7 +65,7 @@ google-libphonenumber@^3.1.8:
   version "3.1.8"
   resolved "https://registry.yarnpkg.com/google-libphonenumber/-/google-libphonenumber-3.1.8.tgz#076ecc21e2113371b9d67f6b7dd9ac66db9722cc"
 
-immediate@3.0.6, immediate@~3.0.5:
+immediate@3.0.6:
   version "3.0.6"
   resolved "https://registry.yarnpkg.com/immediate/-/immediate-3.0.6.tgz#9db1dbd0faf8de6fbe0f5dd5e56bb606280de69b"
 
@@ -86,12 +80,6 @@ jquery-mousewheel@~3.1.13:
 jquery@3.2.x:
   version "3.2.1"
   resolved "https://registry.yarnpkg.com/jquery/-/jquery-3.2.1.tgz#5c4d9de652af6cd0a770154a631bba12b015c787"
-
-lie@3.1.1:
-  version "3.1.1"
-  resolved "https://registry.yarnpkg.com/lie/-/lie-3.1.1.tgz#9a436b2cc7746ca59de7a41fa469b3efb76bd87e"
-  dependencies:
-    immediate "~3.0.5"
 
 make-plural@^4.1.1:
   version "4.2.0"
@@ -119,24 +107,18 @@ moment@^2.22.2:
   version "2.22.2"
   resolved "https://registry.yarnpkg.com/moment/-/moment-2.22.2.tgz#3c257f9839fc0e93ff53149632239eb90783ff66"
 
-ms@2.0.0:
-  version "2.0.0"
-  resolved "https://registry.yarnpkg.com/ms/-/ms-2.0.0.tgz#5608aeadfc00be6c2901df5f9861788de0d597c8"
-
 "phone-number@file:../shared-libs/phone-number":
   version "1.0.0"
   dependencies:
     google-libphonenumber "^3.1.8"
 
-pouchdb-browser@^6.0.7, pouchdb-browser@^6.4.3:
-  version "6.4.3"
-  resolved "https://registry.yarnpkg.com/pouchdb-browser/-/pouchdb-browser-6.4.3.tgz#980de389abdb7850a8196525ca96c3b93d79b359"
+pouchdb-browser@^6.0.7, pouchdb-browser@^7.0.0:
+  version "7.0.0"
+  resolved "https://registry.yarnpkg.com/pouchdb-browser/-/pouchdb-browser-7.0.0.tgz#d493fd738f21f7c91f17bbb7ee7ad97c2072e546"
   dependencies:
     argsarray "0.0.1"
-    debug "3.1.0"
     immediate "3.0.6"
     inherits "2.0.3"
-    lie "3.1.1"
     spark-md5 "3.0.0"
     uuid "3.2.1"
     vuvuzela "1.0.3"
