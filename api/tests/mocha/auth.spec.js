@@ -207,4 +207,77 @@ describe('Auth', () => {
     });
 
   });
+
+  describe('getUserCtx', () => {
+    it('requests requests DB _session when request userCtx and authErr properties are missing', () => {
+      db.serverUrl = 'http://abc.com';
+      sinon.stub(request, 'get').callsArgWith(1, null, null);
+      return auth.getUserCtx({ }).catch(() => {
+        chai.expect(request.get.callCount).to.equal(1);
+        chai.expect(request.get.args[0][0].url).to.equal('http://abc.com/_session');
+      });
+    });
+
+    it('saves _session userCtx in request object', () => {
+      db.serverUrl = 'http://abc.com';
+      const userCtx = { name: 'user' },
+            testReq = {};
+      sinon.stub(request, 'get').callsArgWith(1, null, null, { userCtx });
+
+      return auth.getUserCtx(testReq).then(result => {
+        chai.expect(result).to.deep.equal(userCtx);
+        chai.expect(testReq.userCtx).to.deep.equal(userCtx);
+        chai.expect(request.get.callCount).to.equal(1);
+        chai.expect(request.get.args[0][0].url).to.equal('http://abc.com/_session');
+      });
+    });
+
+    it('saves and throws error if no session', () => {
+      db.serverUrl = 'http://abc.com';
+      const testReq = {};
+      sinon.stub(request, 'get').callsArgWith(1, null, null, null);
+
+      return auth.getUserCtx(testReq).catch(err => {
+        chai.expect(err.message).to.equal('Not logged in');
+        chai.expect(err.code).to.equal(401);
+        chai.expect(testReq.authErr).to.deep.equal(err);
+        chai.expect(request.get.callCount).to.equal(1);
+        chai.expect(request.get.args[0][0].url).to.equal('http://abc.com/_session');
+      });
+    });
+
+    it('saves and throws error if no userCtx', () => {
+      db.serverUrl = 'http://abc.com';
+      const testReq = {};
+      sinon.stub(request, 'get').callsArgWith(1, null, null, { });
+
+      return auth.getUserCtx(testReq).catch(err => {
+        chai.expect(err.message).to.equal('Not logged in');
+        chai.expect(err.code).to.equal(401);
+        chai.expect(testReq.authErr).to.deep.equal(err);
+        chai.expect(request.get.callCount).to.equal(1);
+        chai.expect(request.get.args[0][0].url).to.equal('http://abc.com/_session');
+      });
+    });
+
+    it('resolves with saved userCtx request property, if exists', () => {
+      sinon.stub(request, 'get');
+      const testReq = { userCtx: { name: 'user' } };
+
+      return auth.getUserCtx(testReq).then(result => {
+        chai.expect(result).to.deep.equal(testReq.userCtx);
+        chai.expect(request.get.callCount).to.equal(0);
+      });
+    });
+
+    it('rejects with saved authErr request property, if exists', () => {
+      sinon.stub(request, 'get');
+      const testReq = { authErr: 'someerr' };
+
+      return auth.getUserCtx(testReq).catch(err => {
+        chai.expect(err).to.deep.equal(testReq.authErr);
+        chai.expect(request.get.callCount).to.equal(0);
+      });
+    });
+  });
 });

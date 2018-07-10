@@ -83,15 +83,27 @@ module.exports = {
   },
 
   getUserCtx: req => {
+    if (req.userCtx) {
+      return Promise.resolve(req.userCtx);
+    }
+
+    if (req.authErr) {
+      return Promise.reject(req.authErr);
+    }
+
     return get('/_session', req.headers)
       .catch(err => {
-        throw { code: 401, message: 'Not logged in', err: err };
+        req.authErr = { code: 401, message: 'Not logged in', err: err };
+        throw req.authErr;
       })
       .then(auth => {
         if (auth && auth.userCtx && auth.userCtx.name) {
-          return auth.userCtx;
+          req.userCtx = auth.userCtx;
+          return req.userCtx;
         }
-        throw { code: 401, message: 'Not logged in' };
+
+        req.authErr = { code: 401, message: 'Not logged in' };
+        throw req.authErr;
       });
   },
 

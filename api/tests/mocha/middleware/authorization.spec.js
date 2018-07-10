@@ -32,21 +32,21 @@ describe('Authorization middleware', () => {
         .getUserCtx(testReq, testRes, next)
         .then(() => {
           next.callCount.should.equal(1);
-          (!!testReq.userCtx).should.equal(false);
-          testReq.authErr.should.deep.equal({ some: 'error' });
+          auth.getUserCtx.callCount.should.equal(1);
+          auth.getUserCtx.args[0].should.deep.equal([ testReq ]);
           serverUtils.notLoggedIn.callCount.should.equal(0);
         });
     });
 
-    it('saves CouchDB session as `userCtx` in the `req` object', () => {
+    it('calls auth.getUserCtx', () => {
       auth.getUserCtx.resolves({ name: 'user' });
       return middleware
         .getUserCtx(testReq, testRes, next)
         .then(() => {
           serverUtils.notLoggedIn.callCount.should.equal(0);
           next.callCount.should.equal(1);
-          testReq.userCtx.should.deep.equal({ name: 'user' });
-          (!!testReq.authErr).should.equal(false);
+          auth.getUserCtx.callCount.should.equal(1);
+          auth.getUserCtx.args[0].should.deep.equal([ testReq ]);
         });
     });
   });

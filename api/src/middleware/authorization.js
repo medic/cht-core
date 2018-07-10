@@ -20,13 +20,9 @@ module.exports = {
   getUserCtx: (req, res, next) => {
     return auth
       .getUserCtx(req)
-      .then(userCtx => {
-        req.userCtx = userCtx;
-      })
-      .catch(err => {
-        req.authErr = err;
-      })
-      .then(next);
+      // catch not-logged-in errors - not all endpoints require authenticated users
+      .catch(() => {})
+      .then(() => next());
   },
 
   // blocks unauthenticated requests from passing through
