@@ -137,6 +137,14 @@ module.exports = {
       return '';
     }
     const today = moment(date.getDate()).startOf('day');
+    const years = parseInt(module.exports.getYearsSinceDOB(doc), 10);
+    if (!isNaN(years)) {
+      return today.subtract(years, 'years');
+    }
+    const months = parseInt(module.exports.getMonthsSinceDOB(doc), 10);
+    if (!isNaN(months)) {
+      return today.subtract(months, 'months');
+    }
     const weeks = parseInt(module.exports.getWeeksSinceDOB(doc), 10);
     if (!isNaN(weeks)) {
       return today.subtract(weeks, 'weeks');
@@ -147,6 +155,14 @@ module.exports = {
     }
     // no given date of birth - return today as it's the best we can do
     return today;
+  },
+  getYearsSinceDOB: doc => {
+    const fields = [ 'years_since_dob', 'years_since_birth', 'age_in_years' ];
+    return findFirstDefinedValue(doc, fields);
+  },
+  getMonthsSinceDOB: doc => {
+    const fields = [ 'months_since_dob', 'months_since_birth', 'age_in_months' ];
+    return findFirstDefinedValue(doc, fields);
   },
   getWeeksSinceDOB: doc => {
     const fields = [ 'weeks_since_dob', 'dob', 'weeks_since_birth', 'age_in_weeks' ];
