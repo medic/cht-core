@@ -1,4 +1,7 @@
-const db = require('../db-pouch');
+const db = require('../db-pouch'),
+      authorization = require('./authorization'),
+      _ = require('underscore');
+
 const utils = require('bulk-docs-utils')({
   Promise: Promise,
   DB: db.medic
@@ -107,6 +110,78 @@ const deleteDocs = (docsToDelete, deletionAttemptCounts = {}, updateAttemptCount
     });
 };
 
+const filterNewDocs = (allowedDocIds, docs) => {
+  let docIds = _.unique(_.compact(docs.map(doc => doc._id)));
+
+  if (!docIds.length) {
+    // all docs are new
+    return Promise.resolve(docs);
+  }
+
+  docIds = _.difference(docIds, allowedDocIds);
+
+  if (!docIds.length) {
+    // all docs are allowed
+    return Promise.resolve([]);
+  }
+
+  return db.medic
+    .allDocs({ keys: docIds })
+    .then(result => {
+      return docs.filter(doc => {
+        // return docs without ids or docs which do not exist
+        return !doc._id || (allowedDocIds.indexOf(doc._id) === -1 && !result.rows.find(row => row.id === doc._id));
+      });
+    });
+};
+
+// returns a list of filtered docs the user is allowed to update/create
+const filterAllowedDocs = (authorizationContext, docs) => {
+  docs = docs.map(doc => ({
+    doc,
+    viewResults: authorization.getViewResults(doc),
+    allowed: authorization.alwaysAllowCreate(doc),
+    get id() {
+      return this.doc._id;
+    }
+  }));
+
+  return authorization
+    .filterAllowedDocs(authorizationContext, docs)
+    .map(docObj => docObj.doc);
+};
+
+// Filters the list of request docs to the ones that satisfy the following conditions:
+// - the user will be allowed to see the doc if this request is successful
+// - the user is allowed to see the stored doc, if it exists
+const filterRequestDocs = (authorizationContext, docs) => {
+  if (!docs.length) {
+    return Promise.resolve([]);
+  }
+
+  // prevent offline users from creating or updating docs they will not be allowed to see
+  const allowedRequestDocs = filterAllowedDocs(authorizationContext, docs);
+
+  return filterNewDocs(authorizationContext.allowedDocIds, allowedRequestDocs).then(allowedNewDocs => {
+    const allowedDocs = allowedRequestDocs.filter(doc => authorizationContext.allowedDocIds.indexOf(doc._id) !== -1);
+    allowedDocs.push.apply(allowedDocs, allowedNewDocs);
+
+    return allowedDocs;
+  });
+};
+
+const stubSkipped = (docs, filteredDocs, result) => {
+  return docs.map(doc => {
+      const filteredIdx = _.findIndex(filteredDocs, doc);
+      if (filteredIdx !== -1) {
+        return result[filteredIdx];
+      }
+
+      return { id: doc._id, error: 'forbidden' };
+    }
+  );
+};
+
 module.exports = {
   bulkDelete: (docs, res, { batchSize = 100 } = {}) => {
     checkForDuplicates(docs);
@@ -134,5 +209,43 @@ module.exports = {
         res.flush();
         res.end();
       });
+  },
+
+  // offline users will only create/update/delete documents they are allowed to see and will be allowed to see
+  // mimics CouchDB response format, stubbing forbidden docs and respecting requested `docs` sequence
+  filterOfflineRequest: (userCtx, docs) => {
+    let authorizationContext;
+
+    return authorization
+      .getAuthorizationContext(userCtx)
+      .then(context => {
+        authorizationContext = context;
+        return authorization.getAllowedDocIds(authorizationContext);
+      })
+      .then(allowedDocIds => {
+        authorizationContext.allowedDocIds = authorization.convertTombstoneIds(allowedDocIds);
+        return filterRequestDocs(authorizationContext, docs);
+      });
+  },
+
+  // results received from CouchDB need to be ordered to maintain same sequence as original `docs` parameter
+  // and forbidden docs stubs must be added
+  formatResults: (new_edits, requestDocs, filteredDocs, response) => {
+    if (new_edits !== false && _.isArray(response)) {
+      // CouchDB doesn't return results when `new_edits` parameter is `false`
+      // The consensus is that the response array sequence should reflect the request array sequence.
+      response = stubSkipped(requestDocs, filteredDocs, response);
+    }
+
+    return response;
   }
 };
+
+// used for testing
+if (process.env.UNIT_TEST_ENV) {
+  _.extend(module.exports, {
+    _filterRequestDocs: filterRequestDocs,
+    _filterNewDocs: filterNewDocs,
+    _filterAllowedDocs: filterAllowedDocs
+  });
+}

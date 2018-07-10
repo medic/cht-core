@@ -52,7 +52,10 @@ const request = (options, {debug, noAuth, notJson} = {}) => {
 
         body = JSON.parse(body);
         if (body.error) {
-          deferred.reject(new Error(`Request failed: ${options.path},\n  body: ${JSON.stringify(options.body)}\n  response: ${JSON.stringify(body)}`));
+          const err = new Error(`Request failed: ${options.path},\n  body: ${JSON.stringify(options.body)}\n  response: ${JSON.stringify(body)}`);
+          err.responseBody = body;
+          err.statusCode = res.statusCode;
+          deferred.reject(err);
         } else {
           deferred.fulfill(body);
         }
@@ -268,19 +271,20 @@ module.exports = {
     }
   }),
 
-  requestOnTestDb: (options, debug) => {
+  requestOnTestDb: (options, debug, notJson) => {
     if (typeof options === 'string') {
       options = {
         path: options
       };
     }
     options.path = '/' + constants.DB_NAME + (options.path || '');
-    return request(options, {debug: debug});
+    return request(options, {debug: debug, notJson: notJson});
   },
 
   saveDoc: doc => {
     const postData = JSON.stringify(doc);
     return module.exports.requestOnTestDb({
+      path: '/', // so audit picks this up
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',

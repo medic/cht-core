@@ -91,6 +91,18 @@ AuditProxy.prototype.audit = function(proxy, req, res) {
         });
       };
 
+      // offline `_bulk_docs` and `doc` requests are already `bodyParsed`
+      if (req.body) {
+        audit(req.body, (err) => {
+          if (err) {
+            return self.emit('error', err);
+          }
+
+          proxy.web(req, res);
+        });
+        return;
+      }
+
       var ps = passStream(writeFn, endFn);
       var buffer = req.pipe(ps);
       buffer.on('error', function(e) {
