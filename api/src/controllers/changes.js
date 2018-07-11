@@ -376,7 +376,8 @@ const getCouchDbConfig = () => {
     })
     .then(value => {
       value = parseInt(value);
-      MAX_DOC_IDS = (!isNaN(value) && value) ? value : DEFAULT_MAX_DOC_IDS;
+      const isValidValue = (!isNaN(value) && value > 0);
+      MAX_DOC_IDS = isValidValue ? value : DEFAULT_MAX_DOC_IDS;
     });
 };
 

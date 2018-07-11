@@ -161,10 +161,17 @@ describe('Changes controller', () => {
       });
     });
 
-    it('uses default values when CouchDB config request returns 0', () => {
-      sinon.stub(dbConfig, 'get').resolves('0');
+    it('uses default values when CouchDB config request returns lower than 0 value', () => {
+      sinon.stub(dbConfig, 'get').resolves('-100');
       return controller._init().then(() => {
         controller._getMaxDocIds().should.equal(100);
+      });
+    });
+
+    it('uses config value when it is valid', () => {
+      sinon.stub(dbConfig, 'get').resolves('400');
+      return controller._init().then(() => {
+        controller._getMaxDocIds().should.equal(400);
       });
     });
 
