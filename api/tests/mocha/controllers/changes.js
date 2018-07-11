@@ -534,7 +534,7 @@ describe('Changes controller', () => {
     it('when no normal results are received for a longpoll request, push to longpollFeeds', () => {
       authorization.getAllowedDocIds.resolves([1, 2]);
       testReq.query = { feed: 'longpoll' };
-      testReq.uniqId = 'myUniqueId';
+      testReq.id = 'myUniqueId';
       return controller
         .request(proxy, testReq, testRes)
         .then(nextTick)
@@ -576,7 +576,7 @@ describe('Changes controller', () => {
       authorization.getAllowedDocIds.onCall(1).resolves([42]);
       auth.getUserSettings.onCall(1).resolves({ name: 'user', facility_id: 'facility_id' });
 
-      testReq.uniqId = 'myFeed';
+      testReq.id = 'myFeed';
       const userChange = {
         id: 'org.couchdb.user:' + userCtx.name,
         doc: {
@@ -812,8 +812,8 @@ describe('Changes controller', () => {
         .withArgs(sinon.match(/^[0-9]+$/), sinon.match({ id: 'two' })).returns({ newSubjects: 0 });
 
       testReq.query = { feed: 'longpoll' };
-      testReq.uniqId = 'one';
-      const testReq2 = { on: sinon.stub(), uniqId: 'two', query: { feed: 'longpoll' } };
+      testReq.id = 'one';
+      const testReq2 = { on: sinon.stub(), id: 'two', query: { feed: 'longpoll' } };
       const testRes2 = {
         type: sinon.stub(),
         write: sinon.stub(),
@@ -821,7 +821,7 @@ describe('Changes controller', () => {
         setHeader: sinon.stub(),
         flush: sinon.stub()
       };
-      const testReq3 = { on: sinon.stub(), uniqId: 'three', query: { feed: 'longpoll' } };
+      const testReq3 = { on: sinon.stub(), id: 'three', query: { feed: 'longpoll' } };
       const testRes3 = {
         type: sinon.stub(),
         write: sinon.stub(),
@@ -888,7 +888,7 @@ describe('Changes controller', () => {
 
     it('resets the feed when a breaking authorization change is received', () => {
       testReq.query = { feed: 'longpoll' };
-      testReq.uniqId = 'myFeed';
+      testReq.id = 'myFeed';
       authorization.getAllowedDocIds.resolves([1, 2, 3]);
       authorization.getAllowedDocIds.onCall(1).resolves([ 'a', 'b', 'c' ]);
       const authChange = { id: 'org.couchdb.user:name' };
@@ -1291,7 +1291,7 @@ describe('Changes controller', () => {
       sinon.stub(dbConfig, 'get').resolves(2);
       defaultSettings.reiterate_changes = false;
       testReq.query = { feed: 'longpoll', since: 'seq' };
-      testReq.uniqId = 'myFeed';
+      testReq.id = 'myFeed';
       authorization.getUserAuthorizationData.resolves({ subjectIds: ['a', 'b'], contactsByDepthKeys: []});
       authorization.getAllowedDocIds.onCall(0).resolves([ 'a', 'b' ]);
       authorization.getAllowedDocIds.onCall(1).resolves([ 'a', 'b', 'c', 'd' ]);
@@ -1359,7 +1359,7 @@ describe('Changes controller', () => {
 
           controller._getLongpollFeeds().length.should.equal(0);
           const feed = controller._getNormalFeeds()[0];
-          feed.id.should.equal(testReq.uniqId);
+          feed.id.should.equal(testReq.id);
           feed.upstreamRequests.length.should.equal(2);
           feed.chunkedAllowedDocIds.should.deep.equal([[ 'a', 'b' ],[ 'c', 'd' ]]);
 

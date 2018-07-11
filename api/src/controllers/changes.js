@@ -257,7 +257,7 @@ const getChanges = feed => {
 
 const initFeed = (req, res, userCtx) => {
   const feed = {
-    id: req.uniqId || uuid(),
+    id: req.id || uuid(),
     req: req,
     res: res,
     userCtx: userCtx,
