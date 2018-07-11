@@ -176,6 +176,7 @@ var formatDate = function(config, text, view, formatString, locale) {
   if (!isNaN(date)) {
     date = parseInt(date, 10);
   }
+  locale = locale || moment().locale();
   return moment(date).locale(locale).format(formatString);
 };
 
@@ -183,7 +184,7 @@ var render = function(config, template, view, locale) {
   return mustache.render(template, _.extend(view, {
     bikram_sambat_date: function() {
       return function(text) {
-        return toBikramSambatLetters(formatDate(config, text, view, 'YYYY-MM-DD', 'en'));
+        return toBikramSambatLetters(formatDate(config, text, view, 'YYYY-MM-DD'));
       };
     },
     date: function() {
