@@ -1,6 +1,5 @@
 const db = require('./src/db-pouch'),
       config = require('./src/config'),
-      migrations = require('./src/migrations'),
       ddocExtraction = require('./src/ddoc-extraction'),
       translations = require('./src/translations'),
       serverUtils = require('./src/server-utils'),
@@ -30,7 +29,7 @@ Promise.resolve()
   .then(() => console.log('Translations merged successfully'))
 
   .then(() => console.log('Running db migrations…'))
-  .then(migrations.run)
+  .then(() => require('./src/migrations').run())
   .then(() => console.log('Database migrations completed successfully'))
 
   .catch(err => {
