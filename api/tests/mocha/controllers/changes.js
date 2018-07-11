@@ -154,6 +154,20 @@ describe('Changes controller', () => {
       });
     });
 
+    it('uses default values when CouchDB config request returns non-numeric values', () => {
+      sinon.stub(dbConfig, 'get').resolves({ some: 'object' });
+      return controller._init().then(() => {
+        controller._getMaxDocIds().should.equal(100);
+      });
+    });
+
+    it('uses default values when CouchDB config request returns 0', () => {
+      sinon.stub(dbConfig, 'get').resolves('0');
+      return controller._init().then(() => {
+        controller._getMaxDocIds().should.equal(100);
+      });
+    });
+
     it('sends changes to be analyzed and updates current seq when changes come in', () => {
       tombstoneUtils.isTombstoneId.withArgs('change').returns(false);
       return controller._init().then(() => {
