@@ -453,7 +453,7 @@ describe('messageUtils', () => {
         const date = 1457235941000;
         const input = '{{#datetime}}Date({{reported_date}}){{/datetime}}';
         const doc = { reported_date: date, locale: 'sw' };
-        const config = { reported_date_format: 'DD-MMMM-YYYY HH:mm:ss' };
+        const config = { reported_date_format: 'ddd, MMM Do, YYYY' };
         const actual = utils.template(config, null, doc, { message: input });
         expect(actual).to.equal(moment(date).locale('sw').format(config.reported_date_format));
         expect(actual).to.not.equal(moment(date).format(config.reported_date_format));
@@ -463,7 +463,7 @@ describe('messageUtils', () => {
         const date = 1457235941000;
         const input = '{{#datetime}}Date({{reported_date}}){{/datetime}}';
         const doc = { reported_date: date, locale: 'this-locale-doesnt-exist' };
-        const config = { reported_date_format: 'DD-MMMM-YYYY HH:mm:ss' };
+        const config = { reported_date_format: 'ddd, MMM Do, YYYY' };
         const actual = utils.template(config, null, doc, { message: input });
         expect(actual).to.equal(moment(date).locale('en').format(config.reported_date_format));
         expect(actual).to.equal(moment(date).format(config.reported_date_format));
@@ -473,7 +473,7 @@ describe('messageUtils', () => {
         const date = 1457235941000;
         const input = '{{#datetime}}Date({{reported_date}}){{/datetime}}';
         const doc = { reported_date: date, locale: false };
-        const config = { reported_date_format: 'DD-MMMM-YYYY HH:mm:ss' };
+        const config = { reported_date_format: 'ddd, MMM Do, YYYY' };
         const actual = utils.template(config, null, doc, { message: input });
         expect(actual).to.equal(moment(date).locale('en').format(config.reported_date_format));
         expect(actual).to.equal(moment(date).format(config.reported_date_format));
@@ -508,7 +508,7 @@ describe('messageUtils', () => {
         const expected = '२३ फाल्गुन २०७२';
         const input = '{{#bikram_sambat_date}}Date({{reported_date}}){{/bikram_sambat_date}}';
         const doc = { reported_date: date, locale: 'sw' };
-        const config = { reported_date_format: 'DD-MMMM-YYYY HH:mm:ss' };
+        const config = { reported_date_format: 'ddd, MMM Do, YYYY' };
         const actual = utils.template(config, null, doc, { message: input });
         expect(actual).to.equal(expected);
       });
