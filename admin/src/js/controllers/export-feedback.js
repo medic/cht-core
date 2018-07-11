@@ -11,13 +11,17 @@ angular.module('controllers').controller('ExportFeedbackCtrl',
 
     var MESSAGE_LIMIT = 120;
 
+    var formattedMessage = function(msg) {
+      var suffix = msg.length > MESSAGE_LIMIT ? '...' : '';
+      return msg.substring(0, MESSAGE_LIMIT) + suffix;
+    };
+
     var safeStringify = function(str) {
       if (typeof str === 'string') {
-        return str;
+        return formattedMessage(str);
       }
       try {
-        var suffix = str.message.length > MESSAGE_LIMIT ? '...' : '';
-        str.message = str.message.substring(0, MESSAGE_LIMIT) + suffix;
+        str.message = formattedMessage(str.message);
         return JSON.stringify(str);
       } catch(e) {
         return str;
