@@ -17,10 +17,10 @@ angular.module('controllers').controller('ExportFeedbackCtrl',
     };
 
     var safeStringify = function(str) {
-      if (typeof str === 'string') {
-        return formattedMessage(str);
+      if (typeof str === 'string') { // User typed feedback
+        return str;
       }
-      try {
+      try { // Pouchdb automated log; can be massive hence the limit
         str.message = formattedMessage(str.message);
         return JSON.stringify(str);
       } catch(e) {
