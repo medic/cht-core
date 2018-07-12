@@ -27,7 +27,7 @@ const waitForApi = () => new Promise(resolve => {
   //
   //
   const waitLoop = () => {
-    request('http://localhost:5988/setup/poll', (err, response, body) => {
+    request(`http://localhost:${process.env.API_PORT || 5988}/setup/poll`, (err, response, body) => {
       if (err) {
         logger.info('Waiting for API to be ready...');
         return setTimeout(() => waitLoop(), 10 * 1000);
