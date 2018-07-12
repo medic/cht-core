@@ -260,7 +260,7 @@ const getChanges = feed => {
     .catch(err => {
       console.log(feed.id +  ' Error while requesting `normal` changes feed');
       console.log(err);
-      // cancel ongoing requests and end feed
+      // cancel ongoing requests and send error response
       feed.upstreamRequests.forEach(request => request.cancel());
       feed.error = err;
       endFeed(feed);

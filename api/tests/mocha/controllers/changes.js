@@ -401,7 +401,7 @@ describe('Changes controller', () => {
         });
     });
 
-    it('cancels all upstream requests and sends an error response when one of them fails', () => {
+    it('cancels all upstream requests and sends an error response when one of them errors', () => {
       sinon.stub(dbConfig, 'get').resolves(10);
       const allowedIds = Array.from({length: 40}, () => Math.floor(Math.random() * 40));
       authorization.getAllowedDocIds.resolves(allowedIds.slice());
