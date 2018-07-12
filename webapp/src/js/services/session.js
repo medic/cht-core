@@ -45,7 +45,7 @@ var COOKIE_NAME = 'userCtx',
           .catch(function() {
             // Ignore exception. User can already be logged out.
           })
-          .finally(navigateToLogin);
+          .then(navigateToLogin);
       };
 
       var refreshUserCtx = function(callback) {
