@@ -51,7 +51,7 @@ module.exports = {
         });
       } else {
         db.request({
-          db: 'medic',
+          db: db.settings.db,
           method: 'POST',
           path: '_find',
           body: {
