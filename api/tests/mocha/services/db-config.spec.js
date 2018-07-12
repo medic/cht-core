@@ -20,7 +20,7 @@ describe('db config service', () => {
   afterEach(() => sinon.restore());
 
   describe('get', () => {
-    
+
     it('returns errors', () => {
       sinon.stub(request, 'get').callsArgWith(1, 'boom');
       return service.get().catch(actual => {
@@ -28,9 +28,16 @@ describe('db config service', () => {
       });
     });
 
+    it('rejects when response status is not 200', () => {
+      sinon.stub(request, 'get').callsArgWith(1, null, { statusCode: 404 }, { error: 'not_found' });
+      return service.get().catch(actual => {
+        chai.expect(actual).to.deep.equal({ error: 'not_found' });
+      });
+    });
+
     it('gets the whole config when no params', () => {
       const expected = { some_val: true, other_val: 'untrue' };
-      const requestGet = sinon.stub(request, 'get').callsArgWith(1, null, null, expected);
+      const requestGet = sinon.stub(request, 'get').callsArgWith(1, null, { statusCode: 200 }, expected);
       return service.get().then(actual => {
         chai.expect(actual).to.deep.equal(expected);
         chai.expect(requestGet.callCount).to.equal(1);
@@ -41,7 +48,7 @@ describe('db config service', () => {
 
     it('gets the whole config when section only', () => {
       const expected = { some_val: true, other_val: 'untrue' };
-      const requestGet = sinon.stub(request, 'get').callsArgWith(1, null, null, expected);
+      const requestGet = sinon.stub(request, 'get').callsArgWith(1, null, { statusCode: 200 }, expected);
       return service.get('my-section').then(actual => {
         chai.expect(actual).to.deep.equal(expected);
         chai.expect(requestGet.callCount).to.equal(1);
@@ -52,7 +59,7 @@ describe('db config service', () => {
 
     it('gets the whole config when section and key', () => {
       const expected = 500;
-      const requestGet = sinon.stub(request, 'get').callsArgWith(1, null, null, expected);
+      const requestGet = sinon.stub(request, 'get').callsArgWith(1, null, { statusCode: 200 }, expected);
       return service.get('my-section', 'my-key').then(actual => {
         chai.expect(actual).to.equal(expected);
         chai.expect(requestGet.callCount).to.equal(1);
