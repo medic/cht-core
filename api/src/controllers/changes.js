@@ -183,7 +183,9 @@ const restartNormalFeed = feed => {
 const getChanges = feed => {
   const options = {
     since: feed.req.query && feed.req.query.since || 0,
-    batch_size: MAX_DOC_IDS // PouchDB parameter
+    // PouchDB batches requests using this value as a limit and keeps issuing requests until the result
+    // set length is lower than the limit.
+    batch_size: MAX_DOC_IDS + 1
   };
   _.extend(options, _.pick(feed.req.query, 'style', 'conflicts', 'seq_interval'));
 
@@ -237,7 +239,7 @@ const getChanges = feed => {
 
 const initFeed = (req, res) => {
   const feed = {
-    id: req.uniqId || uuid(),
+    id: req.id || uuid(),
     req: req,
     res: res,
     initSeq: req.query && req.query.since || 0,
@@ -364,7 +366,9 @@ const getCouchDbConfig = () => {
       return DEFAULT_MAX_DOC_IDS;
     })
     .then(value => {
-      MAX_DOC_IDS = value;
+      value = parseInt(value);
+      const isValidValue = (!isNaN(value) && value > 0);
+      MAX_DOC_IDS = isValidValue ? value : DEFAULT_MAX_DOC_IDS;
     });
 };
 
