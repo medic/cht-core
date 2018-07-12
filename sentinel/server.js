@@ -20,7 +20,7 @@ process.on('unhandledRejection', reason => {
   console.error(reason);
 });
 
-const waitForApi = () => new Promise((resolve, reject) => {
+const waitForApi = () => new Promise(resolve => {
   //
   // This waits forever, with no escape hatch, becayse there is no way currently
   // to know what API is doing, and migrations could legitimately take days
