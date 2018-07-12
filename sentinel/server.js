@@ -55,7 +55,7 @@ serverChecks.check(db.serverUrl)
         }
         require('./src/schedule').checkSchedule();
         logger.info('startup complete.');
-      })
+      });
   })
   .catch(err => {
     console.error('Fatal error intialising medic-sentinel');
