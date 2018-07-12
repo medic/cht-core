@@ -401,7 +401,7 @@ describe('Changes controller', () => {
         });
     });
 
-    it('cancels all upstream requests and ends the request with an error when one of them fails', () => {
+    it('cancels all upstream requests and sends an error response when one of them fails', () => {
       sinon.stub(dbConfig, 'get').resolves(10);
       const allowedIds = Array.from({length: 40}, () => Math.floor(Math.random() * 40));
       authorization.getAllowedDocIds.resolves(allowedIds.slice());
@@ -424,6 +424,9 @@ describe('Changes controller', () => {
           feed.error.should.deep.equal('someerror');
           testRes.write.callCount.should.equal(1);
           testRes.write.args[0].should.deep.equal([JSON.stringify({ error: 'Error processing your changes'})]);
+          controller._getNormalFeeds().length.should.equal(0);
+          controller._getLongpollFeeds().length.should.equal(0);
+          testRes.end.callCount.should.equal(1);
         });
     });
 
@@ -1926,16 +1929,16 @@ describe('Changes controller', () => {
 
   describe('generateResponse', () => {
     it('returns obj with feed results and last seq when no error', () => {
-      controller._generateResponse({ results: 'results', lastSeq: 'lastSeq' }).should.deep.equal({
-        results: 'results',
-        last_seq: 'lastSeq'
+      const feed = { results: 'results', lastSeq: 'lastSeq' };
+      controller._generateResponse(feed).should.deep.equal({
+        results: feed.results,
+        last_seq: feed.lastSeq
       });
     });
 
-    it('returns error string when error exists', () => {
-      controller._generateResponse({ results: 'results', lastSeq: 'lastSeq', error: 'true' }).should.deep.equal({
-        error: 'Error processing your changes'
-      });
+    it('returns error message when error exists', () => {
+      const feed = { results: 'results', lastSeq: 'lastSeq', error: true };
+      controller._generateResponse(feed).should.deep.equal({ error: 'Error processing your changes' });
     });
   });
 });
