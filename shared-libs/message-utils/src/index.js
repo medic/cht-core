@@ -171,15 +171,16 @@ mustache.escape = function(value) {
   return value;
 };
 
-var formatDate = function(config, text, view, formatString) {
+var formatDate = function(config, text, view, formatString, locale) {
   var date = render(config, text, view);
   if (!isNaN(date)) {
     date = parseInt(date, 10);
   }
-  return moment(date).format(formatString);
+  locale = locale || moment().locale();
+  return moment(date).locale(locale).format(formatString);
 };
 
-var render = function(config, template, view) {
+var render = function(config, template, view, locale) {
   return mustache.render(template, _.extend(view, {
     bikram_sambat_date: function() {
       return function(text) {
@@ -188,12 +189,12 @@ var render = function(config, template, view) {
     },
     date: function() {
       return function(text) {
-        return formatDate(config, text, view, config.date_format);
+        return formatDate(config, text, view, config.date_format, locale);
       };
     },
     datetime: function() {
       return function(text) {
-        return formatDate(config, text, view, config.reported_date_format);
+        return formatDate(config, text, view, config.reported_date_format, locale);
       };
     }
   }));
@@ -266,7 +267,7 @@ exports.template = function(config, translate, doc, content, extraContext) {
     return '';
   }
   var context = extendedTemplateContext(doc, extraContext);
-  return render(config, template, context);
+  return render(config, template, context, locale);
 };
 
 exports._getRecipient = getRecipient;
