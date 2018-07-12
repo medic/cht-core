@@ -43,7 +43,8 @@ describe('Changes controller', () => {
       write: sinon.stub(),
       end: sinon.stub(),
       setHeader: sinon.stub(),
-      flush: sinon.stub()
+      flush: sinon.stub(),
+      status: sinon.stub()
     };
     userCtx = { name: 'user', facility_id: 'facility', contact_id: 'contact' };
     proxy = { web: sinon.stub() };
@@ -400,33 +401,29 @@ describe('Changes controller', () => {
         });
     });
 
-    it('cancels all upstream requests and restarts them when one of them fails', () => {
+    it('cancels all upstream requests and ends the request with an error when one of them fails', () => {
       sinon.stub(dbConfig, 'get').resolves(10);
       const allowedIds = Array.from({length: 40}, () => Math.floor(Math.random() * 40));
       authorization.getAllowedDocIds.resolves(allowedIds.slice());
+      let feed;
 
       return controller
         .request(proxy, testReq, testRes)
         .then(nextTick)
         .then(() => {
           changesSpy.callCount.should.equal(5);
-          const feed = controller._getNormalFeeds()[0];
+          feed = controller._getNormalFeeds()[0];
           feed.upstreamRequests[0].complete('someerror', { status: 'error' });
         })
         .then(nextTick)
         .then(() => {
-          let resultIds = [];
-          changesSpy.callCount.should.equal(9);
-          changesSpy.args.forEach((arg, idx) => {
-            if (idx === 0) {
-              return;
-            }
-
-            arg[0].doc_ids.length.should.equal(10);
-            resultIds.push.apply(resultIds, arg[0].doc_ids);
-          });
-          resultIds.length.should.equal(80);
-          resultIds.should.deep.equal(allowedIds.concat(allowedIds));
+          changesSpy.callCount.should.equal(5);
+          feed.ended.should.equal(true);
+          testRes.status.callCount.should.equal(1);
+          testRes.status.args[0].should.deep.equal([ 500 ]);
+          feed.error.should.deep.equal('someerror');
+          testRes.write.callCount.should.equal(1);
+          testRes.write.args[0].should.deep.equal([JSON.stringify({ error: 'Error processing your changes'})]);
         });
     });
 
@@ -1863,6 +1860,7 @@ describe('Changes controller', () => {
       controller._writeDownstream(feed, 'aaa');
       testRes.write.callCount.should.equal(0);
       testRes.end.callCount.should.equal(0);
+      testRes.status.callCount.should.equal(0);
     });
 
     it('does not end response if not specified', () => {
@@ -1873,6 +1871,7 @@ describe('Changes controller', () => {
       testRes.write.callCount.should.equal(2);
       testRes.write.args.should.deep.equal([ ['aaa'], ['bbb'] ]);
       testRes.end.callCount.should.equal(0);
+      testRes.status.callCount.should.equal(0);
     });
 
     it('ends the feed, if specified', () => {
@@ -1882,12 +1881,22 @@ describe('Changes controller', () => {
       testRes.write.callCount.should.equal(1);
       testRes.write.args[0][0].should.equal('aaa');
       testRes.end.callCount.should.equal(1);
+      testRes.status.callCount.should.equal(0);
     });
 
     it('calls `res.flush` after writing - necessary for compression and heartbeats', () => {
       controller._writeDownstream({ res: testRes }, 'aaa', true);
       testRes.write.callCount.should.equal(1);
       testRes.flush.callCount.should.equal(1);
+      testRes.status.callCount.should.equal(0);
+    });
+
+    it('sets response status to 500 when feed has errors', () => {
+      controller._writeDownstream({ res: testRes, error: true }, 'aaa', true);
+      testRes.status.callCount.should.equal(1);
+      testRes.status.args[0].should.deep.equal([ 500 ]);
+      testRes.write.callCount.should.equal(1);
+      testRes.write.args[0].should.deep.equal([ 'aaa' ]);
     });
   });
 
@@ -1912,6 +1921,21 @@ describe('Changes controller', () => {
       controller._split([1, 2, 3], false).should.deep.equal([[1, 2, 3]]);
       controller._split([1, 2, 3], true).should.deep.equal([[1, 2, 3]]);
       controller._split([1, 2, 3], 'onehundred').should.deep.equal([[1, 2, 3]]);
+    });
+  });
+
+  describe('generateResponse', () => {
+    it('returns obj with feed results and last seq when no error', () => {
+      controller._generateResponse({ results: 'results', lastSeq: 'lastSeq' }).should.deep.equal({
+        results: 'results',
+        last_seq: 'lastSeq'
+      });
+    });
+
+    it('returns error string when error exists', () => {
+      controller._generateResponse({ results: 'results', lastSeq: 'lastSeq', error: 'true' }).should.deep.equal({
+        error: 'Error processing your changes'
+      });
     });
   });
 });
