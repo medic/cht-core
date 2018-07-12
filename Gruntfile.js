@@ -112,7 +112,6 @@ module.exports = function(grunt) {
             '../../js/dropdown.jquery': './webapp/node_modules/bootstrap/js/dropdown', // enketo currently duplicates bootstrap's dropdown code.  working to resolve this upstream https://github.com/enketo/enketo-core/issues/454
             'angular-translate-interpolation-messageformat': './webapp/node_modules/angular-translate/dist/angular-translate-interpolation-messageformat/angular-translate-interpolation-messageformat',
             'angular-translate-handler-log':  './webapp/node_modules/angular-translate/dist/angular-translate-handler-log/angular-translate-handler-log',
-            'moment': './webapp/node_modules/moment/moment'
           },
         }
       },
