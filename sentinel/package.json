@@ -27,6 +27,7 @@
     "pouchdb-adapter-http": "^7.0.0",
     "pouchdb-core": "^7.0.0",
     "pouchdb-mapreduce": "^7.0.0",
+    "request": "^2.87.0",
     "task-utils": "file:../shared-libs/task-utils",
     "underscore": "^1.8.3",
     "uuid": "^3.2.1",

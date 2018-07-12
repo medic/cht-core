@@ -1,5 +1,6 @@
+const request = require('request');
+
 const db = require('./src/db-pouch'),
-      config = require('./src/config'),
       logger = require('./src/lib/logger'),
       serverChecks = require('@shared-libs/server-checks'),
       loglevel = process.argv[2];
@@ -19,15 +20,42 @@ process.on('unhandledRejection', reason => {
   console.error(reason);
 });
 
+const waitForApi = () => new Promise((resolve, reject) => {
+  //
+  // This waits forever, with no escape hatch, becayse there is no way currently
+  // to know what API is doing, and migrations could legitimately take days
+  //
+  //
+  const waitLoop = () => {
+    request('http://localhost:5988/setup/poll', (err, response, body) => {
+      if (err) {
+        logger.info('Waiting for API to be ready...');
+        return setTimeout(() => waitLoop(), 10 * 1000);
+      }
+
+      logger.info('Api is ready:', body);
+      resolve();
+    });
+  };
+
+  waitLoop();
+});
+
 serverChecks.check(db.serverUrl)
-  .then(config.init())
+  .then(waitForApi)
   .then(() => {
-    if (!loglevel) {
-      logger.transports.Console.level = config.get('loglevel');
-      logger.debug('loglevel is %s.', logger.transports.Console.level);
-    }
-    require('./src/schedule').checkSchedule();
-    logger.info('startup complete.');
+    // Even requiring this boots translations, so has to be required after
+    // api has booted
+    const config = require('./src/config');
+    return config.init()
+      .then(() => {
+        if (!loglevel) {
+          logger.transports.Console.level = require('./src/config').get('loglevel');
+          logger.debug('loglevel is %s.', logger.transports.Console.level);
+        }
+        require('./src/schedule').checkSchedule();
+        logger.info('startup complete.');
+      })
   })
   .catch(err => {
     console.error('Fatal error intialising medic-sentinel');
