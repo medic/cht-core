@@ -483,6 +483,30 @@ describe('routing', () => {
         });
     });
 
+    it('allows access to the app - redirect cause of no trailing slash', () => {
+      const request = {
+        path: '/_design/medic/_rewrite'
+      };
+
+      return utils
+        .requestOnTestDb(_.defaults(request, offlineRequestOptions), false, true)
+        .then(result => {
+          expect(result).toEqual(`Found. Redirecting to /${constants.DB_NAME}/_design/medic/_rewrite/`);
+        });
+    });
+
+    it('allows access to the app', () => {
+      const request = {
+        path: '/_design/medic/_rewrite/'
+      };
+
+      return utils
+        .requestOnTestDb(_.defaults(request, offlineRequestOptions), false, true)
+        .then(result => {
+          expect(result.includes('DOCTYPE html')).toBe(true);
+        });
+    });
+
     it('blocks direct access to CouchDB and to fauxton', () => {
       return Promise
         .all([

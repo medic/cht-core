@@ -669,4 +669,74 @@ describe('db-doc handler', () => {
         expect(result.content).toEqual('content');
       });
   });
+
+  it('allows GETting _design/medic-client', () => {
+    const request = {
+      path: '/_design/medic-client'
+    };
+
+    return utils
+      .requestOnTestDb(_.defaults(request, offlineRequestOptions), false)
+      .then(result => {
+        expect(result._id).toEqual('_design/medic-client');
+      });
+  });
+
+  it('blocks PUTting _design/medic-client', () => {
+    const request = {
+      path: '/_design/medic-client',
+      method: 'PUT',
+      body: JSON.stringify({ _id: '_design/medic-client', some: 'data' }),
+      headers: { 'Content-Type': 'application/json' },
+    };
+
+    return utils
+      .requestOnTestDb(_.defaults(request, offlineRequestOptions), false)
+      .catch(result => {
+        expect(result.statusCode).toEqual(403);
+        expect(result.responseBody.error).toEqual('forbidden');
+      });
+  });
+
+  it('blocks GETing _design/medic', () => {
+    const request = {
+      path: '/_design/medic'
+    };
+
+    return utils
+      .requestOnTestDb(_.defaults(request, offlineRequestOptions), false, true)
+      .catch(result => {
+        expect(result.statusCode).toEqual(403);
+        expect(result.responseBody.error).toEqual('forbidden');
+      });
+  });
+
+  it('blocks PUTting _design/medic', () => {
+    const request = {
+      path: '/_design/medic',
+      method: 'PUT',
+      body: JSON.stringify({ _id: '_design/medic', some: 'data' }),
+      headers: { 'Content-Type': 'application/json' },
+    };
+
+    return utils
+      .requestOnTestDb(_.defaults(request, offlineRequestOptions), false, true)
+      .catch(result => {
+        expect(result.statusCode).toEqual(403);
+        expect(result.responseBody.error).toEqual('forbidden');
+      });
+  });
+
+  it('blocks GETing inexistent ddoc', () => {
+    const request = {
+      path: '/_design/something'
+    };
+
+    return utils
+      .requestOnTestDb(_.defaults(request, offlineRequestOptions), false, true)
+      .catch(result => {
+        expect(result.statusCode).toEqual(403);
+        expect(result.responseBody.error).toEqual('forbidden');
+      });
+  });
 });
