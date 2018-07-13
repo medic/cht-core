@@ -670,73 +670,83 @@ describe('db-doc handler', () => {
       });
   });
 
-  it('allows GETting _design/medic-client', () => {
-    const request = {
-      path: '/_design/medic-client'
-    };
+  describe('interactions with ddocs', () => {
+    it('allows GETting _design/medic-client, blocks all other ddoc GET requests', () => {
+      return Promise
+        .all([
+          utils.requestOnTestDb(_.defaults({ path: '/_design/medic-client' }, offlineRequestOptions)),
+          utils.requestOnTestDb(_.defaults({ path: '/_design/medic' }, offlineRequestOptions)).catch(err => err),
+          utils.requestOnTestDb(_.defaults({ path: '/_design/something' }, offlineRequestOptions)).catch(err => err),
+        ])
+        .then(results => {
+          expect(results[0]._id).toEqual('_design/medic-client');
 
-    return utils
-      .requestOnTestDb(_.defaults(request, offlineRequestOptions), false)
-      .then(result => {
-        expect(result._id).toEqual('_design/medic-client');
-      });
-  });
+          expect(results[1].statusCode).toEqual(403);
+          expect(results[1].responseBody.error).toEqual('forbidden');
 
-  it('blocks PUTting _design/medic-client', () => {
-    const request = {
-      path: '/_design/medic-client',
-      method: 'PUT',
-      body: JSON.stringify({ _id: '_design/medic-client', some: 'data' }),
-      headers: { 'Content-Type': 'application/json' },
-    };
+          expect(results[2].statusCode).toEqual(403);
+          expect(results[2].responseBody.error).toEqual('forbidden');
+        });
+    });
 
-    return utils
-      .requestOnTestDb(_.defaults(request, offlineRequestOptions), false)
-      .catch(result => {
-        expect(result.statusCode).toEqual(403);
-        expect(result.responseBody.error).toEqual('forbidden');
-      });
-  });
+    it('blocks PUTting any ddoc', () => {
+      const request = {
+        method: 'PUT',
+        body: JSON.stringify({ some: 'data' }),
+        headers: { 'Content-Type': 'application/json' },
+      };
 
-  it('blocks GETing _design/medic', () => {
-    const request = {
-      path: '/_design/medic'
-    };
+      return Promise
+        .all([
+          utils
+            .requestOnTestDb(_.defaults({ path: '/_design/medic-client' }, request, offlineRequestOptions))
+            .catch(err => err),
+          utils
+            .requestOnTestDb(_.defaults({ path: '/_design/medic' }, request, offlineRequestOptions))
+            .catch(err => err),
+          utils
+            .requestOnTestDb(_.defaults({ path: '/_design/something' }, request, offlineRequestOptions))
+            .catch(err => err),
+        ])
+        .then(results => {
+          expect(results[0].statusCode).toEqual(403);
+          expect(results[0].responseBody.error).toEqual('forbidden');
 
-    return utils
-      .requestOnTestDb(_.defaults(request, offlineRequestOptions), false, true)
-      .catch(result => {
-        expect(result.statusCode).toEqual(403);
-        expect(result.responseBody.error).toEqual('forbidden');
-      });
-  });
+          expect(results[1].statusCode).toEqual(403);
+          expect(results[1].responseBody.error).toEqual('forbidden');
 
-  it('blocks PUTting _design/medic', () => {
-    const request = {
-      path: '/_design/medic',
-      method: 'PUT',
-      body: JSON.stringify({ _id: '_design/medic', some: 'data' }),
-      headers: { 'Content-Type': 'application/json' },
-    };
+          expect(results[2].statusCode).toEqual(403);
+          expect(results[2].responseBody.error).toEqual('forbidden');
+        });
+    });
 
-    return utils
-      .requestOnTestDb(_.defaults(request, offlineRequestOptions), false, true)
-      .catch(result => {
-        expect(result.statusCode).toEqual(403);
-        expect(result.responseBody.error).toEqual('forbidden');
-      });
-  });
+    it('blocks DELETEing any ddoc', () => {
+      const request = {
+        method: 'DELETE'
+      };
 
-  it('blocks GETing inexistent ddoc', () => {
-    const request = {
-      path: '/_design/something'
-    };
+      return Promise
+        .all([
+          utils
+            .requestOnTestDb(_.defaults({ path: '/_design/medic-client' }, request, offlineRequestOptions))
+            .catch(err => err),
+          utils
+            .requestOnTestDb(_.defaults({ path: '/_design/medic' }, request, offlineRequestOptions))
+            .catch(err => err),
+          utils
+            .requestOnTestDb(_.defaults({ path: '/_design/something' }, request, offlineRequestOptions))
+            .catch(err => err),
+        ])
+        .then(results => {
+          expect(results[0].statusCode).toEqual(403);
+          expect(results[0].responseBody.error).toEqual('forbidden');
 
-    return utils
-      .requestOnTestDb(_.defaults(request, offlineRequestOptions), false, true)
-      .catch(result => {
-        expect(result.statusCode).toEqual(403);
-        expect(result.responseBody.error).toEqual('forbidden');
-      });
+          expect(results[1].statusCode).toEqual(403);
+          expect(results[1].responseBody.error).toEqual('forbidden');
+
+          expect(results[2].statusCode).toEqual(403);
+          expect(results[2].responseBody.error).toEqual('forbidden');
+        });
+    });
   });
 });

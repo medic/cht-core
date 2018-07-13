@@ -483,27 +483,17 @@ describe('routing', () => {
         });
     });
 
-    it('allows access to the app - redirect cause of no trailing slash', () => {
-      const request = {
-        path: '/_design/medic/_rewrite'
-      };
-
-      return utils
-        .requestOnTestDb(_.defaults(request, offlineRequestOptions), false, true)
-        .then(result => {
-          expect(result).toEqual(`Found. Redirecting to /${constants.DB_NAME}/_design/medic/_rewrite/`);
-        });
-    });
-
     it('allows access to the app', () => {
-      const request = {
-        path: '/_design/medic/_rewrite/'
-      };
-
-      return utils
-        .requestOnTestDb(_.defaults(request, offlineRequestOptions), false, true)
-        .then(result => {
-          expect(result.includes('DOCTYPE html')).toBe(true);
+      return Promise
+        .all([
+          utils.requestOnTestDb(_.defaults({ path: '/_design/medic/_rewrite' }, offlineRequestOptions), false, true),
+          utils.requestOnTestDb(_.defaults({ path: '/_design/medic/_rewrite/' }, offlineRequestOptions), false, true),
+          utils.requestOnTestDb(_.defaults({ path: '/_design/medic/_rewrite/css/inbox.css' }, offlineRequestOptions), false, true)
+        ])
+        .then(results => {
+          expect(results[0].includes('Found. Redirecting to')).toBe(true);
+          expect(results[1].includes('DOCTYPE html')).toBe(true);
+          expect(results[2].includes('html')).toBe(true);
         });
     });
 
