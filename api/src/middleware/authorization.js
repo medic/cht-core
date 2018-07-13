@@ -12,7 +12,8 @@ const getUserSettings = (req) => {
     .getUserSettings(req.userCtx)
     .then(userCtx => {
       req.userCtx = userCtx;
-    });
+    })
+    .catch(err => err);
 };
 
 module.exports = {
