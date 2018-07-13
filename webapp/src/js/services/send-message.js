@@ -45,7 +45,7 @@ angular.module('inboxServices').factory('SendMessage',
 
         recipient = recipient.doc;
 
-        if (recipient.phone) {
+        if (!recipient.descendant && recipient.phone) {
           return {
             phone: recipient.phone,
             contact: recipient
@@ -64,7 +64,14 @@ angular.module('inboxServices').factory('SendMessage',
         include_docs: true,
         key: recipient.doc._id
       }).then(function(results) {
-        return results.rows;
+        return results.rows
+          .filter(function(row) {
+            return row.doc.contact;
+          })
+          .map(function(row) {
+            row.doc.descendant = true;
+            return row;
+          });
       });
     };
 
