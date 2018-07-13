@@ -1901,6 +1901,14 @@ describe('Changes controller', () => {
       testRes.write.callCount.should.equal(1);
       testRes.write.args[0].should.deep.equal([ 'aaa' ]);
     });
+
+    it('does not set response status to 500 when feed has errors and headers are already sent', () => {
+      testRes.headersSent = true;
+      controller._writeDownstream({ res: testRes, error: true }, 'aaa', true);
+      testRes.status.callCount.should.equal(0);
+      testRes.write.callCount.should.equal(1);
+      testRes.write.args[0].should.deep.equal([ 'aaa' ]);
+    });
   });
 
   describe('split', () => {

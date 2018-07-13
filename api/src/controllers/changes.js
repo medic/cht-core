@@ -172,7 +172,7 @@ const writeDownstream = (feed, content, end) => {
   if (feed.res.finished) {
     return;
   }
-  if (feed.error) {
+  if (feed.error && !feed.res.headersSent) {
     feed.res.status(500);
   }
   feed.res.write(content);

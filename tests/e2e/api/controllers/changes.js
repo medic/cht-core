@@ -758,7 +758,7 @@ describe('changes handler', () => {
       return requestChanges('bob', { style: 'couchdb will love this', seq_interval: 'this as well' })
         .catch(err => {
           expect(err).toBeTruthy();
-          expect(err.message.indexOf('Error processing your changes')).not.toEqual(-1);
+          expect(err.message.includes('Error processing your changes')).toEqual(true);
         });
     });
   });
