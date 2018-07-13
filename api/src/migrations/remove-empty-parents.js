@@ -31,7 +31,7 @@ module.exports = {
 
       if (version.major === '1') {
         db.request({
-          db: 'medic',
+          db: db.settings.db,
           method: 'POST',
           path: '_temp_view',
           body: { map: emptyParentsView.toString() },
