@@ -505,7 +505,7 @@ app.post(
 // these are audited endpoints: online and allowed offline requests will pass through to the audit route
 const dbDocHandler = require('./controllers/db-doc').request,
       docPath = routePrefix + ':docId/{0,}',
-      attachmentPath = routePrefix + ':docId/+:attachmentId';
+      attachmentPath = routePrefix + ':docId/+:attachmentId*';
 
 app.get(
   docPath,
