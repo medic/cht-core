@@ -47,7 +47,7 @@ describe('Send message', () => {
   const CONTACTS = [ALICE, BOB_PLACE, CAROL, DAVID, DAVID_AREA];
 
   beforeAll(done => {
-    DAVID_AREA.contact = { _id: DAVID._id };
+    DAVID_AREA.contact = { _id: DAVID._id, phone: '+554465902001' };
     protractor.promise
       .all(CONTACTS.map(utils.saveDoc))
       .then(done)
