@@ -83,6 +83,14 @@ $ curl http://localhost:5984 # should fail
 {"error":"unauthorized","reason":"Authentication required."}
 ```
 
+### Increasing `max_request_http_size`
+
+Our application is larger than CouchDB's default request size, so we must increase it otherwise deployments may fail:
+
+```shell
+$ curl -X PUT --data '"4294967296"' http://admin:pass@localhost:5984/_node/couchdb@localhost/_config/httpd/max_http_request_size'
+```
+
 ## Build and run
 
 ### Build the webapp
