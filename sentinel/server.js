@@ -50,7 +50,7 @@ serverChecks.check(db.serverUrl)
     return config.init()
       .then(() => {
         if (!loglevel) {
-          logger.transports.Console.level = require('./src/config').get('loglevel');
+          logger.transports.Console.level = config.get('loglevel');
           logger.debug('loglevel is %s.', logger.transports.Console.level);
         }
         require('./src/schedule').checkSchedule();
