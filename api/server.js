@@ -31,7 +31,7 @@ serverChecks.check(db.serverUrl).then(() => {
   .then(() => console.log('Translations merged successfully'))
 
   .then(() => console.log('Running db migrations…'))
-  .then(() => migrations.run)
+  .then(migrations.run)
   .then(() => console.log('Database migrations completed successfully'))
 
   .catch(err => {
