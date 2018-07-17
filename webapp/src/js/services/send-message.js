@@ -32,31 +32,13 @@ angular.module('inboxServices').factory('SendMessage',
       };
     };
 
-    // Takes a collection of results either exploded from the DB or
-    // directly from a local raw result such as select2 and attempts to
-    // coerse it all into the same format
-    var mapRecipients = function(recipients) {
-      return recipients.map(function(recipient) {
-        if (typeof recipient === 'string') {
-          return {
-            phone: recipient,
-          };
-        }
-
-        recipient = recipient.doc;
-
-        if (!recipient.descendant && recipient.phone) {
-          return {
-            phone: recipient.phone,
-            contact: recipient
-          };
-        } else if (recipient.contact && recipient.contact.phone) {
-          return {
-            phone: recipient.contact.phone,
-            contact: recipient
-          };
-        }
-      });
+    var mapRecipient = function(contact, phone) {
+      if (phone) {
+        return {
+          contact: contact,
+          phone: phone
+        };
+      }
     };
 
     var descendants = function(recipient) {
@@ -64,14 +46,11 @@ angular.module('inboxServices').factory('SendMessage',
         include_docs: true,
         key: recipient.doc._id
       }).then(function(results) {
-        return results.rows
-          .filter(function(row) {
-            return row.doc.contact;
-          })
-          .map(function(row) {
-            row.doc.descendant = true;
-            return row;
-          });
+        return results.rows.map(function(row) {
+          var doc = row.doc;
+          var phone = doc.contact && doc.contact.phone;
+          return mapRecipient(doc, phone);
+        });
       });
     };
 
@@ -80,7 +59,11 @@ angular.module('inboxServices').factory('SendMessage',
         return recipient.doc._id;
       });
       return DB().allDocs({ include_docs: true, keys: ids }).then(function(results) {
-        return results.rows;
+        return results.rows.map(function(row) {
+          var doc = row.doc;
+          var phone = doc.phone || (doc.contact && doc.contact.phone);
+          return mapRecipient(doc, phone);
+        });
       });
     };
 
@@ -89,8 +72,9 @@ angular.module('inboxServices').factory('SendMessage',
       // users will have already got that suggestion in the send-message UI if
       // it exists in the DB
       return recipients.map(function(recipient) {
-        return recipient.text || // from select2
+        var phone = recipient.text || // from select2
                recipient.doc.contact.phone; // from LHS message bar
+        return mapRecipient(null, phone);
       });
     };
 
@@ -120,7 +104,7 @@ angular.module('inboxServices').factory('SendMessage',
         recipients = _.flatten(recipients);
 
         // removes any undefined values caused by bad data
-        var validRecipients = mapRecipients(recipients).filter(identity);
+        var validRecipients = recipients.filter(identity);
 
         return _.uniq(validRecipients, false, function(recipient) {
           return recipient.phone;
