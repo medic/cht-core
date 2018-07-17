@@ -44,7 +44,7 @@ const hasAccessToUnassignedDocs = (userCtx) => {
 
 const include = (array, ...values) => {
   let newValues = 0;
-  values.forEach(value => array.indexOf(value) === -1 && array.push(value) && newValues++);
+  values.forEach(value => value && array.indexOf(value) === -1 && array.push(value) && newValues++);
   return newValues;
 };
 
@@ -52,16 +52,37 @@ const exclude = (array, ...values) => {
   return array.filter(value => values.indexOf(value) === -1);
 };
 
+// Updates authorizationContext.subjectIds, including or excluding tested contact `subjectId` and `docId`
+// @param   {Boolean} allowed - whether subjects should be included or excluded
+// @param   {Array}   authorizationContext.subjectIds - allowed subjectIds.
+// @param   {Array}   viewValues.contactsByDepth - results of `medic/contacts_by_depth` view against doc
+// @returns {Boolean} whether new subjectIds were added to authorizationContext
+const updateContext = (allowed, authorizationContext, { replicationKeys, contactsByDepth }) => {
+  if (contactsByDepth && contactsByDepth.length) {
+    //first element of `contactsByDepth` contains both `subjectId` and `docID`
+    const [[[ docId ], subjectId ]] = contactsByDepth;
+
+    if (allowed) {
+      return !!include(authorizationContext.subjectIds, subjectId, docId);
+    }
+
+    authorizationContext.subjectIds = exclude(authorizationContext.subjectIds, subjectId, docId );
+    return false;
+  }
+
+  return false;
+};
+
 // Returns whether an authenticated user has access to a document
-// @param {Object}  docId - CouchDB document ID
-// @param {Object}  feed.userCtx - authenticated user information
-// @param {Array}   feed.contactsByDepthKeys - list containing user's generated contactsByDepthKeys
-// @param {Array}   feed.subjectIds - allowed subjectIds. Is updated when this function is called against a contact.
-// @param {Object}  viewValues.replicationKey - result of `medic/docs_by_replication_key` view against doc
-// @param {Array}   viewValues.contactsByDepth - results of `medic/contacts_by_depth` view against doc
-// @returns {(boolean|Object)} Object containing number of new subjectIds if doc is an allowed contact, bool otherwise
-const allowedDoc = (docId, feed, { replicationKeys, contactsByDepth }) => {
-  if (['_design/medic-client', 'org.couchdb.user:' + feed.userCtx.name].indexOf(docId) !== -1) {
+// @param   {Object}   docId - CouchDB document ID
+// @param   {Object}   authorizationContext.userCtx - authenticated user information
+// @param   {Array}    authorizationContext.contactsByDepthKeys - list containing user's generated contactsByDepthKeys
+// @param   {Array}    authorizationContext.subjectIds - allowed subjectIds.
+// @param   {Object}   viewResults.replicationKey - result of `medic/docs_by_replication_key` view against doc
+// @param   {Array}    viewResults.contactsByDepth - results of `medic/contacts_by_depth` view against doc
+// @returns {Boolean}
+const allowedDoc = (docId, authorizationContext, { replicationKeys, contactsByDepth }) => {
+  if (['_design/medic-client', 'org.couchdb.user:' + authorizationContext.userCtx.name].indexOf(docId) !== -1) {
     return true;
   }
 
@@ -75,26 +96,56 @@ const allowedDoc = (docId, feed, { replicationKeys, contactsByDepth }) => {
 
   if (contactsByDepth && contactsByDepth.length) {
     //it's a contact
-    const subjectId = contactsByDepth[0][1];
-    if (allowedContact(contactsByDepth, feed.contactsByDepthKeys)) {
-      const newSubjects = include(feed.subjectIds, subjectId, docId);
-      return { newSubjects };
-    }
-
-    feed.subjectIds = exclude(feed.subjectIds, subjectId, docId );
-    return false;
+    return allowedContact(contactsByDepth, authorizationContext.contactsByDepthKeys);
   }
 
   //it's a report
   return replicationKeys.some(replicationKey => {
     const [ subjectId, { submitter: submitterId } ] = replicationKey;
-    const allowedSubmitter = submitterId && feed.subjectIds.indexOf(submitterId) !== -1;
+    const allowedSubmitter = submitterId && authorizationContext.subjectIds.indexOf(submitterId) !== -1;
     if (!subjectId && allowedSubmitter) {
       return true;
     }
-    const allowedSubject = subjectId && feed.subjectIds.indexOf(subjectId) !== -1;
-    return allowedSubject && !isSensitive(feed.userCtx, subjectId, submitterId, allowedSubmitter);
+    const allowedSubject = subjectId && authorizationContext.subjectIds.indexOf(subjectId) !== -1;
+    return allowedSubject && !isSensitive(authorizationContext.userCtx, subjectId, submitterId, allowedSubmitter);
   });
+};
+
+// Returns filtered list of docs the offline user is allowed to see
+// @param   {Object}   authorizationContext
+// @param   {Object[]} docObjs - the list of docObjs to be filtered
+// @param   {String}   docObjs[].id - the docId
+// @param   {Boolean}  docObjs[].allowed - when true, the doc is considered as allowed without being checked
+// @param   {Object}   docObjs[].viewResults - results of authorization views against the doc
+// @returns {Object[]} filtered list of docs the offline user is allowed to see
+// If authorizationContext was updating during an iteration, the remaining docs are rechecked against the
+// updated context.
+const filterAllowedDocs = (authorizationContext, docObjs) => {
+  const allowedDocs = [];
+  let shouldIterate = true;
+
+  const checkDoc = (docObj) => {
+    const allowed = docObj.allowed || allowedDoc(docObj.id, authorizationContext, docObj.viewResults);
+    shouldIterate = updateContext(allowed, authorizationContext, docObj.viewResults) || shouldIterate;
+
+    if (!allowed) {
+      return;
+    }
+
+    allowedDocs.push(docObj);
+    docObjs = _.without(docObjs, docObj);
+  };
+
+  while (docObjs.length && shouldIterate) {
+    shouldIterate = false;
+    docObjs.forEach(checkDoc);
+  }
+
+  return allowedDocs;
+};
+
+const alwaysAllowCreate = doc => {
+  return doc && doc.type && doc.type === 'feedback';
 };
 
 const getContactsByDepthKeys = (userCtx, depth) => {
@@ -117,29 +168,30 @@ const allowedContact = (contactsByDepth, userContactsByDepthKeys) => {
   return viewResultKeys.some(viewResult => userContactsByDepthKeys.some(generated => _.isEqual(viewResult, generated)));
 };
 
-const getUserAuthorizationData = (userCtx) => {
-  const authData = {
+const getAuthorizationContext = (userCtx) => {
+  const authorizationCtx = {
+    userCtx,
     contactsByDepthKeys: getContactsByDepthKeys(userCtx, module.exports.getDepth(userCtx)),
     subjectIds: []
   };
 
-  return db.medic.query('medic/contacts_by_depth', { keys: authData.contactsByDepthKeys }).then(results => {
+  return db.medic.query('medic/contacts_by_depth', { keys: authorizationCtx.contactsByDepthKeys }).then(results => {
     results.rows.forEach(row => {
       if (tombstoneUtils.isTombstoneId(row.id)) {
-        authData.subjectIds.push(tombstoneUtils.extractStub(row.id).id);
+        authorizationCtx.subjectIds.push(tombstoneUtils.extractStub(row.id).id);
       } else {
-        authData.subjectIds.push(row.id);
+        authorizationCtx.subjectIds.push(row.id);
       }
       if (row.value) {
-        authData.subjectIds.push(row.value);
+        authorizationCtx.subjectIds.push(row.value);
       }
     });
 
-    authData.subjectIds.push(ALL_KEY);
+    authorizationCtx.subjectIds.push(ALL_KEY);
     if (hasAccessToUnassignedDocs(userCtx)) {
-      authData.subjectIds.push(UNASSIGNED_KEY);
+      authorizationCtx.subjectIds.push(UNASSIGNED_KEY);
     }
-    return authData;
+    return authorizationCtx;
   });
 };
 
@@ -171,6 +223,14 @@ const getAllowedDocIds = (feed) => {
   });
 };
 
+const excludeTombstoneIds = (docIds) => {
+  return docIds.filter(docId => !tombstoneUtils.isTombstoneId(docId));
+};
+
+const convertTombstoneIds = (docIds) => {
+  return docIds.map(docId => tombstoneUtils.isTombstoneId(docId) ? tombstoneUtils.extractStub(docId).id : docId);
+};
+
 const getViewResults = (doc) => {
   return {
     contactsByDepth: viewMapUtils.getViewMapFn('medic', 'contacts_by_depth')(doc),
@@ -197,6 +257,11 @@ module.exports = {
   allowedDoc: allowedDoc,
   getDepth: getDepth,
   getViewResults: getViewResults,
-  getUserAuthorizationData: getUserAuthorizationData,
-  getAllowedDocIds: getAllowedDocIds
+  getAuthorizationContext: getAuthorizationContext,
+  getAllowedDocIds: getAllowedDocIds,
+  excludeTombstoneIds: excludeTombstoneIds,
+  convertTombstoneIds: convertTombstoneIds,
+  alwaysAllowCreate: alwaysAllowCreate,
+  updateContext: updateContext,
+  filterAllowedDocs: filterAllowedDocs
 };

@@ -1,5 +1,5 @@
 var db = require('../../src/db-nano'),
-    sinon = require('sinon').sandbox.create(),
+    sinon = require('sinon'),
     assert = require('chai').assert,
     utils = require('../../src/lib/utils'),
     config = require('../../src/config');

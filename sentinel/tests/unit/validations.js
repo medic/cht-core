@@ -1,7 +1,7 @@
 var moment = require('moment'),
     validation = require('../../src/lib/validation'),
     db = require('../../src/db-nano'),
-    sinon = require('sinon').sandbox.create(),
+    sinon = require('sinon'),
     assert = require('chai').assert,
     clock;
 

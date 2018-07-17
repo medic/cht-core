@@ -1,24 +1,24 @@
-const chai = require('chai');
-const sinon = require('sinon').sandbox.create();
-const utilsFactory = require('../src/bulk-docs-utils');
+const chai = require('chai'),
+      sinon = require('sinon'),
+      utilsFactory = require('../src/bulk-docs-utils');
 
-describe('Bulk Docs utils', function() {
+describe('Bulk Docs utils', () => {
   let get;
   let DB;
   let utils;
 
-  beforeEach(function() {
+  beforeEach(() => {
     get = sinon.stub();
     DB = { get };
     utils = utilsFactory({ Promise, DB });
   });
 
-  afterEach(function() {
+  afterEach(() => {
     sinon.restore();
   });
 
-  describe('updateParentContacts', function() {
-    it('updates clinic deleted person is contact for', function() {
+  describe('updateParentContacts', () => {
+    it('updates clinic deleted person is contact for', () => {
       const clinic = {
         _id: 'b',
         type: 'clinic',
@@ -45,7 +45,7 @@ describe('Bulk Docs utils', function() {
       });
     });
 
-    it('does not update clinic when id does not match', function() {
+    it('does not update clinic when id does not match', () => {
       var clinic = {
         _id: 'b',
         type: 'clinic',
@@ -70,7 +70,7 @@ describe('Bulk Docs utils', function() {
       });
     });
 
-    it('returns a map from parents back to their child docs', function() {
+    it('returns a map from parents back to their child docs', () => {
       const clinic = {
         _id: 'b',
         type: 'clinic',
@@ -93,7 +93,7 @@ describe('Bulk Docs utils', function() {
       });
     });
 
-    it('handles the parents contact being undefined - #2416', function() {
+    it('handles the parents contact being undefined - #2416', () => {
       var clinic = {
         _id: 'b',
         type: 'clinic'
@@ -115,8 +115,8 @@ describe('Bulk Docs utils', function() {
     });
   });
 
-  describe('getDuplicateErrors', function() {
-    it('generates errors on duplicate docs', function() {
+  describe('getDuplicateErrors', () => {
+    it('generates errors on duplicate docs', () => {
       const clinic = {
         _id: 'b',
         type: 'clinic',

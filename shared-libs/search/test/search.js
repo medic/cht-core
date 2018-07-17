@@ -1,5 +1,5 @@
 var chai = require('chai'),
-    sinon = require('sinon').sandbox.create(),
+    sinon = require('sinon'),
     Search = require('../src/search'),
     GenerateSearchRequests = require('../src/generate-search-requests');
 

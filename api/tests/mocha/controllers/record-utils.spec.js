@@ -2,7 +2,7 @@ const controller = require('../../../src/controllers/record-utils'),
       chai = require('chai'),
       definitions = require('../../form-definitions'),
       config = require('../../../src/config'),
-      sinon = require('sinon').sandbox.create();
+      sinon = require('sinon');
 
 describe('record-utils', () => {
 

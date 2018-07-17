@@ -1,4 +1,4 @@
-var sinon = require('sinon').sandbox.create(),
+var sinon = require('sinon'),
     lib = require('../src/tombstone-utils'),
     expect = require('chai').expect,
     DB;

@@ -1,7 +1,7 @@
 const request = require('request'),
       url = require('url'),
       chai = require('chai'),
-      sinon = require('sinon').sandbox.create(),
+      sinon = require('sinon'),
       auth = require('../../src/auth'),
       config = require('../../src/config'),
       db = require('../../src/db-pouch');

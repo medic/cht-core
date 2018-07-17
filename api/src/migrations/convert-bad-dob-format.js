@@ -32,7 +32,7 @@ module.exports = {
 
       if (version.major === '1') {
         db.request({
-          db: 'medic',
+          db: db.settings.db,
           method: 'POST',
           path: '_temp_view',
           body: temporaryView,
@@ -52,7 +52,7 @@ module.exports = {
         });
       } else {
         db.request({
-          db: 'medic',
+          db: db.settings.db,
           method: 'POST',
           path: '_find',
           body: {

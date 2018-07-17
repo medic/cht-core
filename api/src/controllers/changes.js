@@ -2,7 +2,6 @@ const auth = require('../auth'),
       db = require('../db-pouch'),
       authorization = require('../services/authorization'),
       _ = require('underscore'),
-      serverUtils = require('../server-utils'),
       heartbeatFilter = require('../services/heartbeat-filter'),
       dbConfig = require('../services/db-config'),
       tombstoneUtils = require('@shared-libs/tombstone-utils'),
@@ -86,7 +85,7 @@ const generateResponse = feed => ({
 
 // any doc ID should only appear once in the changes feed, with a list of changed revs attached to it
 const appendChange = (results, changeObj) => {
-  const result = _.findWhere(results, { id: changeObj.change.id });
+  const result = _.findWhere(results, { id: changeObj.id });
   if (!result) {
     return results.push(JSON.parse(JSON.stringify(changeObj.change)));
   }
@@ -101,35 +100,18 @@ const appendChange = (results, changeObj) => {
   }
 };
 
-// filters the list of pending changes, appending the allowed ones to the results list
-// if new subjects are added, changes are reiterated
-// returns true if no breaking authorization change is processed, false otherwise
-const processPendingChanges = (feed, isNormalFeed) => {
-  let authChange  = false,
-      shouldCheck = true;
+// appends allowed `changes` to feed `results`
+const processPendingChanges = (feed) => {
+  authorization
+    .filterAllowedDocs(feed, feed.pendingChanges)
+    .forEach(changeObj => appendChange(feed.results, changeObj));
+};
 
-  const checkChange = (changeObj) => {
-    const allowed = authorization.allowedDoc(changeObj.change.id, feed, changeObj.viewResults);
-    if (!allowed) {
-      return;
-    }
-
-    if (isNormalFeed && authorization.isAuthChange(changeObj.change.id, feed.userCtx, changeObj.viewResults)) {
-      authChange = true;
-      return;
-    }
-
-    shouldCheck = allowed.newSubjects;
-    appendChange(feed.results, changeObj);
-    feed.pendingChanges = _.without(feed.pendingChanges, changeObj);
-  };
-
-  while (feed.pendingChanges.length && shouldCheck && !authChange) {
-    shouldCheck = false;
-    feed.pendingChanges.forEach(checkChange);
-  }
-
-  return !authChange;
+// returns true if an authorization change is found
+const hasAuthorizationChange = (feed) => {
+  return feed.pendingChanges.some(changeObj => {
+    return authorization.isAuthChange(changeObj.id, feed.req.userCtx, changeObj.viewResults);
+  });
 };
 
 // checks that all changes requests responses are valid
@@ -183,8 +165,7 @@ const resetFeed = feed => {
   });
 };
 
-// converts previous longpoll feed back to a normal feed when
-// refreshes the allowedIds list
+// converts previous longpoll feed back to a normal feed when it receives new allowed subjects
 const restartNormalFeed = feed => {
   longpollFeeds = _.without(longpollFeeds, feed);
   normalFeeds.push(feed);
@@ -231,11 +212,12 @@ const getChanges = feed => {
       }
 
       feed.results = mergeResults(responses);
-      if (!processPendingChanges(feed, true)) {
-        // if critical auth data changes are received, reset the feed completely
-        endFeed(feed, false);
-        return processRequest(feed.req, feed.res, feed.userCtx);
+      if (hasAuthorizationChange(feed)) {
+        // if authorization changes are received, reset the request, refreshing user settings
+        return reauthorizeRequest(feed);
       }
+
+      processPendingChanges(feed);
 
       if (feed.results.length || !isLongpoll(feed.req)) {
         // send response downstream
@@ -255,12 +237,11 @@ const getChanges = feed => {
     });
 };
 
-const initFeed = (req, res, userCtx) => {
+const initFeed = (req, res) => {
   const feed = {
     id: req.id || uuid(),
     req: req,
     res: res,
-    userCtx: userCtx,
     initSeq: req.query && req.query.since || 0,
     lastSeq: req.query && req.query.since || currentSeq,
     pendingChanges: [],
@@ -280,9 +261,9 @@ const initFeed = (req, res, userCtx) => {
   req.on('close', () => endFeed(feed, false));
 
   return authorization
-    .getUserAuthorizationData(userCtx)
-    .then(authData => {
-      _.extend(feed, authData);
+    .getAuthorizationContext(feed.req.userCtx)
+    .then(authorizationContext => {
+      _.extend(feed, authorizationContext);
       return authorization.getAllowedDocIds(feed);
     })
     .then(allowedDocIds => {
@@ -291,11 +272,18 @@ const initFeed = (req, res, userCtx) => {
     });
 };
 
-const processRequest = (req, res, userCtx) => {
+const processRequest = (req, res) => {
+  initFeed(req, res).then(getChanges);
+};
+
+// restarts the request, refreshing user-settings
+const reauthorizeRequest = feed => {
+  endFeed(feed, false);
   return auth
-    .getUserSettings(userCtx)
+    .getUserSettings(feed.req.userCtx)
     .then(userCtx => {
-      initFeed(req, res, userCtx).then(getChanges);
+      feed.req.userCtx = userCtx;
+      processRequest(feed.req, feed.res);
     });
 };
 
@@ -316,7 +304,10 @@ const addChangeToLongpollFeed = (feed, changeObj) => {
 const processChange = (change, seq) => {
   const changeObj = {
     change: tombstoneUtils.isTombstoneId(change.id) ? tombstoneUtils.generateChangeFromTombstone(change) : change,
-    viewResults: authorization.getViewResults(change.doc)
+    viewResults: authorization.getViewResults(change.doc),
+    get id() {
+      return this.change.id;
+    }
   };
   delete change.doc;
 
@@ -329,18 +320,18 @@ const processChange = (change, seq) => {
   // send the change through to the longpoll feeds which are allowed to see it
   longpollFeeds.forEach(feed => {
     feed.lastSeq = seq;
-    const allowed = authorization.allowedDoc(changeObj.change.id, feed, changeObj.viewResults);
+    const allowed = authorization.allowedDoc(changeObj.id, feed, changeObj.viewResults),
+          newSubjects = authorization.updateContext(allowed, feed, changeObj.viewResults);
+
     if (!allowed) {
       return feed.reiterate_changes && feed.pendingChanges.push(changeObj);
     }
 
-    if (authorization.isAuthChange(changeObj.change.id, feed.userCtx, changeObj.viewResults)) {
-      endFeed(feed, false);
-      processRequest(feed.req, feed.res, feed.userCtx);
-      return;
+    if (authorization.isAuthChange(changeObj.id, feed.req.userCtx, changeObj.viewResults)) {
+      return reauthorizeRequest(feed);
     }
 
-    feed.hasNewSubjects = feed.hasNewSubjects || allowed.newSubjects;
+    feed.hasNewSubjects = feed.hasNewSubjects || newSubjects;
     addChangeToLongpollFeed(feed, changeObj);
   });
 };
@@ -390,18 +381,10 @@ const init = () => {
   return getCouchDbConfig().then(() => initContinuousFeed());
 };
 
-const request = (proxy, req, res) => {
+const request = (req, res) => {
   return init().then(() => {
-    return auth
-      .getUserCtx(req)
-      .then(userCtx => {
-        if (auth.isOnlineOnly(userCtx)) {
-          return proxy.web(req, res);
-        }
-        res.type('json');
-        return processRequest(req, res, userCtx);
-      })
-      .catch(() => serverUtils.notLoggedIn(req, res));
+    res.type('json');
+    return processRequest(req, res);
   });
 };
 
@@ -419,6 +402,7 @@ if (process.env.UNIT_TEST_ENV) {
     _processPendingChanges: processPendingChanges,
     _appendChange: appendChange,
     _mergeResults: mergeResults,
+    _hasAuthorizationChange: hasAuthorizationChange,
     _split: split,
     _reset: () => {
       longpollFeeds = [];

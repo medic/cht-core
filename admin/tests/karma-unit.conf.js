@@ -28,9 +28,9 @@ module.exports = function(config) {
       '../build/ddocs/medic-admin/_attachments/main.js',
 
       // test-specific code
-      'node_modules/chai/chai.js',
-      'node_modules/sinon/pkg/sinon.js',
-      'node_modules/angular-mocks/angular-mocks.js',
+      '../node_modules/chai/chai.js',
+      '../node_modules/sinon/pkg/sinon.js',
+      '../node_modules/angular-mocks/angular-mocks.js',
       'tests/utils.js',
 
       // test files

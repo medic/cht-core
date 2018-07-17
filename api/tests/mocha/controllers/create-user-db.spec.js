@@ -3,7 +3,7 @@ const controller = require('../../../src/controllers/create-user-db'),
       auth = require('../../../src/auth'),
       userDb = require('../../../src/services/user-db'),
       serverUtils = require('../../../src/server-utils'),
-      sinon = require('sinon').sandbox.create();
+      sinon = require('sinon');
 
 describe('create-user-db controller', () => {
 
