@@ -34,10 +34,11 @@ angular.module('inboxServices').factory('SendMessage',
 
     var mapRecipient = function(contact, phone) {
       if (phone) {
-        return {
-          contact: contact,
-          phone: phone
-        };
+        var res = { phone: phone };
+        if(contact) {
+          res.contact = contact;
+        }
+        return res;
       }
     };
 

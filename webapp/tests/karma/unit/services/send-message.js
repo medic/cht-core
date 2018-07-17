@@ -115,7 +115,7 @@ describe('SendMessage service', function() {
         assertMessage(post.args[0][0].tasks[0], {
           from: '+5551',
           sent_by: 'jack',
-          to: '+5552',
+          to: '+5552'
         });
         done();
       })
@@ -353,8 +353,7 @@ describe('SendMessage service', function() {
         assertMessage(post.args[0][0].tasks[3], {
               from: '+5551',
               sent_by: 'jack',
-              to: '+5550',
-              contact: null
+              to: '+5550'
             });
         done();
       }).catch(done);
