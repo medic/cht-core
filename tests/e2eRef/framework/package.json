@@ -1,0 +1,7 @@
+{
+    "name": "testing-framework",
+    "version": "0.0.1",
+    "description": "JS testing framework",
+    "main": "testingFramework",
+    "license": "MIT"
+}
