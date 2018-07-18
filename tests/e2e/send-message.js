@@ -18,15 +18,22 @@ describe('Send message', () => {
   const BOB_PLACE = {
     _id: 'bob-contact',
     reported_date: 1,
-    type: 'clinic',
+    type: 'health_center',
     name: 'Bob Place'
+  };
+  const DAVID_AREA = {
+    _id: 'david-area',
+    reported_date: 1,
+    type: 'clinic',
+    name: 'David Area',
+    parent: { _id: BOB_PLACE._id }
   };
   const CAROL = {
     _id: 'carol-contact',
     reported_date: 1,
     type: 'person',
     name: 'Carol Carolina',
-    parent: { _id: BOB_PLACE._id }
+    parent: { _id: DAVID_AREA._id }
   };
   const DAVID = {
     _id: 'david-contact',
@@ -34,12 +41,13 @@ describe('Send message', () => {
     type: 'person',
     name: 'David Davidson',
     phone: '+447765902002',
-    parent: { _id: BOB_PLACE._id }
+    parent: { _id: DAVID_AREA._id }
   };
 
-  const CONTACTS = [ALICE, BOB_PLACE, CAROL, DAVID];
+  const CONTACTS = [ALICE, BOB_PLACE, CAROL, DAVID, DAVID_AREA];
 
   beforeAll(done => {
+    DAVID_AREA.contact = { _id: DAVID._id, phone: '+554465902001' };
     protractor.promise
       .all(CONTACTS.map(utils.saveDoc))
       .then(done)
@@ -209,7 +217,8 @@ describe('Send message', () => {
       sendMessage();
 
       expect(element.all(by.css(messageInList(CAROL._id))).count()).toBe(0);
-      clickLhsEntry(DAVID._id, DAVID.name);
+      expect(element.all(by.css(messageInList(DAVID._id))).count()).toBe(0);
+      clickLhsEntry(DAVID_AREA._id, DAVID_AREA.name);
 
       expect(element.all(by.css('#message-content li')).count()).toBe(1);
       lastMessageIs(smsMsg('everyoneAt'));
@@ -290,7 +299,7 @@ describe('Send message', () => {
         expect(element.all(by.css('#message-content li')).count()).toBe(3);
         expect(element.all(by.css('#message-content li div.data>p>span')).last().getText()).toBe('A third message');
         openMessageContent(DAVID._id, DAVID.name);
-        expect(element.all(by.css('#message-content li')).count()).toBe(2);
+        expect(element.all(by.css('#message-content li')).count()).toBe(1);
         expect(element.all(by.css('#message-content li div.data>p>span')).last().getText()).toBe('A third message');
       });
     });
