@@ -57,9 +57,9 @@ var feedback = require('../modules/feedback'),
       Session.init();
 
       if (window.location.href.indexOf('localhost') !== -1) {
-        // Local development
-        Debug.set(true);
+        Debug.set(Debug.get()); // Initialize with cookie
       } else {
+        // Disable debug for everything but localhost
         Debug.set(false);
       }
 

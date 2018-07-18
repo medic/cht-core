@@ -31,7 +31,6 @@ angular.module('inboxServices').config([
             ipCookie.remove(cookieName, { path: '/' });
           }
         };
-        set(get()); // initialize
         return {
           get: get,
           set: set
