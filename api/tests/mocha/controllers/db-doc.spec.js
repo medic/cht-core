@@ -50,7 +50,7 @@ describe('db-doc controller', () => {
       });
     });
 
-    it('forwards to next route when docID is a couchDB endpoint', () => {
+    it('forwards to next route when docID is a couchDB endpoint or a _design document', () => {
       testReq.params.docId = '_bulk_docs';
       controller.request(testReq, testRes, next);
       next.callCount.should.equal(1);
@@ -70,6 +70,11 @@ describe('db-doc controller', () => {
       controller.request(testReq, testRes, next);
       next.callCount.should.equal(4);
       next.args[3].should.deep.equal(['route']);
+
+      testReq.params.docId = '_design';
+      controller.request(testReq, testRes, next);
+      next.callCount.should.equal(5);
+      next.args[4].should.deep.equal(['route']);
     });
 
     it('filters document requests when the request is valid', () => {
@@ -134,6 +139,65 @@ describe('db-doc controller', () => {
         .catch(() => {
           serverUtils.serverError.callCount.should.equal(1);
           serverUtils.serverError.args[0][0].should.deep.equal({ error: 'something' });
+        });
+    });
+  });
+
+  describe('requestDdoc', () => {
+    beforeEach(() => testReq.params = { ddocId: 'someddoc' });
+
+    it('forwards appddoc requests to the next route', () => {
+      return controller
+        .requestDdoc('someddoc', testReq, testRes, next)
+        .then(() => {
+          next.callCount.should.equal(1);
+          next.args[0].should.deep.equal(['route']);
+          service.filterOfflineRequest.callCount.should.equal(0);
+        });
+    });
+
+    it('constructs correct docId when ddoc is not appddoc and continues request when allowed', () => {
+      service.filterOfflineRequest.resolves(true);
+      return controller
+        .requestDdoc('otherddoc', testReq, testRes, next)
+        .then(() => {
+          testReq.params.docId.should.equal('_design/someddoc');
+          service.filterOfflineRequest.callCount.should.equal(1);
+          service.filterOfflineRequest.args[0][1].should.deep.equal({ docId: '_design/someddoc', ddocId: 'someddoc' });
+          next.callCount.should.equal(1);
+        });
+    });
+
+    it('responds with ddoc body when received', () => {
+      service.filterOfflineRequest.resolves({ _id: '_design/someddoc' });
+
+      return controller
+        .requestDdoc('otherddoc', testReq, testRes, next)
+        .then(() => {
+          testReq.params.docId.should.equal('_design/someddoc');
+          service.filterOfflineRequest.callCount.should.equal(1);
+          service.filterOfflineRequest.args[0][1].should.deep.equal({ docId: '_design/someddoc', ddocId: 'someddoc' });
+          next.callCount.should.equal(0);
+          testRes.json.callCount.should.deep.equal(1);
+          testRes.json.args[0].should.deep.equal([{ _id: '_design/someddoc' }]);
+        });
+    });
+
+    it('blocks requests for not allowed ddocs', () => {
+      service.filterOfflineRequest.resolves(false);
+
+      return controller
+        .requestDdoc('otherddoc', testReq, testRes, next)
+        .then(() => {
+          testReq.params.docId.should.equal('_design/someddoc');
+          service.filterOfflineRequest.callCount.should.equal(1);
+          service.filterOfflineRequest.args[0][1].should.deep.equal({ docId: '_design/someddoc', ddocId: 'someddoc' });
+
+          next.callCount.should.equal(0);
+          testRes.status.callCount.should.equal(1);
+          testRes.status.args[0].should.deep.equal([403]);
+          testRes.json.callCount.should.deep.equal(1);
+          testRes.json.args[0].should.deep.equal([{ error: 'forbidden', reason: 'Insufficient privileges' }]);
         });
     });
   });

@@ -503,22 +503,30 @@ app.post(
 
 // filter db-doc and attachment requests for offline users
 // these are audited endpoints: online and allowed offline requests will pass through to the audit route
-const dbDocHandler = require('./controllers/db-doc').request,
+const dbDocHandler = require('./controllers/db-doc'),
       docPath = routePrefix + ':docId/{0,}',
-      attachmentPath = routePrefix + ':docId/+:attachmentId';
+      attachmentPath = routePrefix + ':docId/+:attachmentId*',
+      ddocPath = routePrefix + '_design/+:ddocId*';
+
+app.get(
+  ddocPath,
+  authorization.checkAuth,
+  onlineUserProxy,
+  _.partial(dbDocHandler.requestDdoc, db.settings.ddoc)
+);
 
 app.get(
   docPath,
   authorization.checkAuth,
   onlineUserProxy, // online user GET requests are proxied directly to CouchDB
-  dbDocHandler
+  dbDocHandler.request
 );
 app.post(
   routePrefix,
   authorization.checkAuth,
   authorization.onlineUserPassThrough, // online user requests pass through to the next route
   jsonParser, // request body must be json
-  dbDocHandler,
+  dbDocHandler.request,
   authorization.setAuthorized // adds the `authorized` flag to the `req` object, so it passes the firewall
 );
 app.put(
@@ -526,21 +534,21 @@ app.put(
   authorization.checkAuth,
   authorization.onlineUserPassThrough, // online user requests pass through to the next route,
   jsonParser,
-  dbDocHandler,
+  dbDocHandler.request,
   authorization.setAuthorized // adds the `authorized` flag to the `req` object, so it passes the firewall
 );
 app.delete(
   docPath,
   authorization.checkAuth,
   authorization.onlineUserPassThrough, // online user requests pass through to the next route,
-  dbDocHandler,
+  dbDocHandler.request,
   authorization.setAuthorized // adds the `authorized` flag to the `req` object, so it passes the firewall
 );
 app.all(
   attachmentPath,
   authorization.checkAuth,
   authorization.onlineUserPassThrough,  // online user requests pass through to the next route
-  dbDocHandler,
+  dbDocHandler.request,
   authorization.setAuthorized // adds the `authorized` flag to the `req` object, so it passes the firewall
 );
 

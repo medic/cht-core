@@ -7,7 +7,8 @@ const RESERVED_ENDPOINTS = [
   '_all_docs',
   '_bulk_docs',
   '_bulk_get',
-  '_changes'
+  '_changes',
+  '_design'
 ];
 
 const isValidRequest = (method, docId, body) => {
@@ -58,6 +59,16 @@ module.exports = {
         next();
       })
       .catch(err => serverUtils.serverError(err, req, res));
+  },
+
+  requestDdoc: (appDdoc, req, res, next) => {
+    // offline users are allowed to access app _rewrites, which are authorized by another route
+    if (req.params.ddocId === appDdoc) {
+      return next('route');
+    }
+
+    req.params.docId = `_design/${req.params.ddocId}`;
+    return module.exports.request(req, res, next);
   }
 };
 
