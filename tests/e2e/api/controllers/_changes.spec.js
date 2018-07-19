@@ -786,6 +786,14 @@ describe('changes handler', () => {
           });
         });
     });
+
+    it('sends an error when couchdb returns an error', () => {
+      return requestChanges('bob', { style: 'couchdb will love this', seq_interval: 'this as well' })
+        .catch(err => {
+          expect(err).toBeTruthy();
+          expect(err.message.includes('Error processing your changes')).toEqual(true);
+        });
+    });
   });
 
   it('should filter the changes to relevant ones', () =>

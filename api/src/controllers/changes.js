@@ -78,10 +78,18 @@ const endFeed = (feed, write = true, debounced = false) => {
   }
 };
 
-const generateResponse = feed => ({
-  results: feed.results,
-  last_seq: feed.lastSeq
-});
+const generateResponse = feed => {
+  if (feed.error) {
+    return {
+      error: 'Error processing your changes'
+    };
+  }
+
+  return {
+    results: feed.results,
+    last_seq: feed.lastSeq
+  };
+};
 
 // any doc ID should only appear once in the changes feed, with a list of changed revs attached to it
 const appendChange = (results, changeObj) => {
@@ -145,6 +153,9 @@ const mergeResults = responses => {
 const writeDownstream = (feed, content, end) => {
   if (feed.res.finished) {
     return;
+  }
+  if (feed.error && !feed.res.headersSent) {
+    feed.res.status(500);
   }
   feed.res.write(content);
   feed.res.flush();
@@ -231,9 +242,10 @@ const getChanges = feed => {
     .catch(err => {
       console.log(feed.id +  ' Error while requesting `normal` changes feed');
       console.log(err);
-      // cancel ongoing requests and restart
+      // cancel ongoing requests and send error response
       feed.upstreamRequests.forEach(request => request.cancel());
-      getChanges(feed);
+      feed.error = err;
+      endFeed(feed);
     });
 };
 
@@ -403,6 +415,7 @@ if (process.env.UNIT_TEST_ENV) {
     _appendChange: appendChange,
     _mergeResults: mergeResults,
     _hasAuthorizationChange: hasAuthorizationChange,
+    _generateResponse: generateResponse,
     _split: split,
     _reset: () => {
       longpollFeeds = [];
