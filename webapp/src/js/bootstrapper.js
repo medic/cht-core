@@ -106,15 +106,11 @@
 
   var bootstrap = function(localDb, remoteDb) {
     return getDdoc(localDb).catch(function() {
-      return initialReplication(localDb, remoteDb)
-        .catch(function(err) {
-          throw err;
-        })
-        .then(function() {
-          return getDdoc(localDb).catch(function() {
-            throw new Error('Initial replication failed');
-          });
+      return initialReplication(localDb, remoteDb).then(function() {
+        return getDdoc(localDb).catch(function() {
+          throw new Error('Initial replication failed');
         });
+      });
     });
   };
 
