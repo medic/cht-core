@@ -104,13 +104,6 @@
     return localDb.get('_design/medic-client');
   };
 
-  var closeDbs = function(localDb, remoteDb) {
-    localDb.close();
-    if (remoteDb) {
-      remoteDb.close();
-    }
-  };
-
   module.exports = function(POUCHDB_OPTIONS, callback) {
     var dbInfo = getDbInfo();
     var userCtx = getUserCtx();
@@ -126,29 +119,38 @@
     var username = userCtx && userCtx.name;
     var localDbName = getLocalDbName(dbInfo, username);
     var localDb = window.PouchDB(localDbName, POUCHDB_OPTIONS.local);
-    var remoteDb;
 
     getDdoc(localDb)
-      .catch(function() {
-        remoteDb = window.PouchDB(dbInfo.remote, POUCHDB_OPTIONS.remote);
-        return initialReplication(localDb, remoteDb).then(function() {
-          return getDdoc(localDb).catch(function() {
-            throw new Error('Initial replication failed');
-          });
-        });
-      })
       .then(function() {
-        // replication complete - bootstrap angular
-        $('.bootstrap-layer .status').text('Starting app…');
-        closeDbs(localDb, remoteDb);
+        // ddoc found - bootstrap immediately
+        localDb.close();
         callback();
       })
-      .catch(function(err) {
-        closeDbs(localDb, remoteDb);
-        if (err && err.status === 401) {
-          return redirectToLogin(dbInfo, err, callback);
-        }
-        callback(err);
+      .catch(function() {
+        // no ddoc found - do replication
+
+        var remoteDb = window.PouchDB(dbInfo.remote, POUCHDB_OPTIONS.remote);
+        initialReplication(localDb, remoteDb)
+          .then(function() {
+            return getDdoc(localDb).catch(function() {
+              throw new Error('Initial replication failed');
+            });
+          })
+          .then(function() {
+            // replication complete - bootstrap angular
+            $('.bootstrap-layer .status').text('Starting app…');
+          })
+          .catch(function(err) {
+            return err;
+          })
+          .then(function(err) {
+            localDb.close();
+            remoteDb.close();
+            if (err && err.status === 401) {
+              return redirectToLogin(dbInfo, err, callback);
+            }
+            callback(err);
+          });
       });
   };
 }());
