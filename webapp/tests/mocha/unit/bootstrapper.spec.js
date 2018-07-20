@@ -64,15 +64,12 @@ describe('bootstrapper', () => {
   it('returns if local db already has client ddoc', done => {
     setUserCtxCookie({ name: 'jim' });
     const localGet = sinon.stub().returns(Promise.resolve());
-    const localClose = sinon.stub().returns(Promise.resolve()),
-          remoteClose = sinon.stub().resolves();
-    pouchDb.onCall(0).returns({ get: localGet, close: localClose });
-    pouchDb.onCall(1).returns({ close: remoteClose });
+    const localClose = sinon.stub().returns(Promise.resolve());
+    pouchDb.returns({ get: localGet, close: localClose });
     bootstrapper(pouchDbOptions, err => {
       assert.equal(null, err);
-      assert.equal(pouchDb.callCount, 2);
+      assert.equal(pouchDb.callCount, 1);
       assert.equal(localClose.callCount, 1);
-      assert.equal(remoteClose.callCount, 1);
       assert.equal(pouchDb.args[0][0], 'medic-user-jim');
       assert.deepEqual(pouchDb.args[0][1], { auto_compaction: true });
       assert.equal(localGet.callCount, 1);

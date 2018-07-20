@@ -104,14 +104,11 @@
     return localDb.get('_design/medic-client');
   };
 
-  var bootstrap = function(localDb, remoteDb) {
-    return getDdoc(localDb).catch(function() {
-      return initialReplication(localDb, remoteDb).then(function() {
-        return getDdoc(localDb).catch(function() {
-          throw new Error('Initial replication failed');
-        });
-      });
-    });
+  var closeDbs = function(localDb, remoteDb) {
+    localDb.close();
+    if (remoteDb) {
+      remoteDb.close();
+    }
   };
 
   module.exports = function(POUCHDB_OPTIONS, callback) {
@@ -129,19 +126,25 @@
     var username = userCtx && userCtx.name;
     var localDbName = getLocalDbName(dbInfo, username);
     var localDb = window.PouchDB(localDbName, POUCHDB_OPTIONS.local);
-    var remoteDb = window.PouchDB(dbInfo.remote, POUCHDB_OPTIONS.remote);
+    var remoteDb;
 
-    bootstrap(localDb, remoteDb)
+    getDdoc(localDb)
+      .catch(function() {
+        remoteDb = window.PouchDB(dbInfo.remote, POUCHDB_OPTIONS.remote);
+        return initialReplication(localDb, remoteDb).then(function() {
+          return getDdoc(localDb).catch(function() {
+            throw new Error('Initial replication failed');
+          });
+        });
+      })
       .then(function() {
         // replication complete - bootstrap angular
         $('.bootstrap-layer .status').text('Starting app…');
-        localDb.close();
-        remoteDb.close();
+        closeDbs(localDb, remoteDb);
         callback();
       })
       .catch(function(err) {
-        localDb.close();
-        remoteDb.close();
+        closeDbs(localDb, remoteDb);
         if (err && err.status === 401) {
           return redirectToLogin(dbInfo, err, callback);
         }
