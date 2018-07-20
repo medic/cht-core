@@ -64,12 +64,15 @@ describe('bootstrapper', () => {
   it('returns if local db already has client ddoc', done => {
     setUserCtxCookie({ name: 'jim' });
     const localGet = sinon.stub().returns(Promise.resolve());
-    const localClose = sinon.stub().returns(Promise.resolve());
-    pouchDb.returns({ get: localGet, close: localClose });
+    const localClose = sinon.stub().returns(Promise.resolve()),
+          remoteClose = sinon.stub().resolves();
+    pouchDb.onCall(0).returns({ get: localGet, close: localClose });
+    pouchDb.onCall(1).returns({ close: remoteClose });
     bootstrapper(pouchDbOptions, err => {
       assert.equal(null, err);
-      assert.equal(pouchDb.callCount, 1);
+      assert.equal(pouchDb.callCount, 2);
       assert.equal(localClose.callCount, 1);
+      assert.equal(remoteClose.callCount, 1);
       assert.equal(pouchDb.args[0][0], 'medic-user-jim');
       assert.deepEqual(pouchDb.args[0][1], { auto_compaction: true });
       assert.equal(localGet.callCount, 1);
@@ -78,9 +81,11 @@ describe('bootstrapper', () => {
     });
   });
 
-  it('performs initial replication', done => {
+  it('performs initial replication, checking that ddoc exists', done => {
     setUserCtxCookie({ name: 'jim' });
-    const localGet = sinon.stub().returns(Promise.reject());
+    const localGet = sinon.stub();
+    localGet.onCall(0).rejects();
+    localGet.onCall(1).resolves();
     const localClose = sinon.stub().returns(Promise.resolve());
     const remoteClose = sinon.stub().returns(Promise.resolve());
     const localReplicate = sinon.stub();
@@ -103,8 +108,9 @@ describe('bootstrapper', () => {
       assert.deepEqual(pouchDb.args[0][1], { auto_compaction: true });
       assert.equal(pouchDb.args[1][0], 'http://localhost:5988/medic');
       assert.deepEqual(pouchDb.args[1][1], { skip_setup: true });
-      assert.equal(localGet.callCount, 1);
+      assert.equal(localGet.callCount, 2);
       assert.equal(localGet.args[0][0], '_design/medic-client');
+      assert.equal(localGet.args[1][0], '_design/medic-client');
       assert.equal(localReplicate.callCount, 1);
       assert.equal(localReplicate.args[0][0].remote, true);
       assert.deepEqual(localReplicate.args[0][1], {
@@ -189,6 +195,33 @@ describe('bootstrapper', () => {
     bootstrapper(pouchDbOptions, err => {
       assert.equal(err.status, 404);
       assert.equal(err.redirect, null);
+      done();
+    });
+  });
+
+  it('returns error if ddoc is not found after successful initial replication', done => {
+    setUserCtxCookie({ name: 'jim' });
+    const localGet = sinon.stub().returns(Promise.reject());
+    const localReplicate = sinon.stub();
+    const localClose = sinon.stub().returns(Promise.resolve());
+    const remoteClose = sinon.stub().returns(Promise.resolve());
+    pouchDb.onCall(0).returns({
+      get: localGet,
+      replicate: { from: localReplicate },
+      close: localClose
+    });
+    pouchDb.onCall(1).returns({
+      remote: true,
+      close: remoteClose
+    });
+    const localReplicateResult = Promise.resolve();
+    localReplicateResult.on = () => {};
+    localReplicate.returns(localReplicateResult);
+    bootstrapper(pouchDbOptions, err => {
+      assert.equal(err.message, 'Initial replication failed');
+      assert.equal(localGet.callCount, 2);
+      assert.equal(localClose.callCount, 1);
+      assert.equal(remoteClose.callCount, 1);
       done();
     });
   });
