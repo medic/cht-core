@@ -198,10 +198,10 @@ describe('bootstrapper', () => {
 
   it('returns error if ddoc is not found after successful initial replication', done => {
     setUserCtxCookie({ name: 'jim' });
-    const localGet = sinon.stub().returns(Promise.reject());
+    const localGet = sinon.stub().rejects();
     const localReplicate = sinon.stub();
-    const localClose = sinon.stub().returns(Promise.resolve());
-    const remoteClose = sinon.stub().returns(Promise.resolve());
+    const localClose = sinon.stub().resolves();
+    const remoteClose = sinon.stub().resolves();
     pouchDb.onCall(0).returns({
       get: localGet,
       replicate: { from: localReplicate },
@@ -212,7 +212,7 @@ describe('bootstrapper', () => {
       close: remoteClose
     });
     const localReplicateResult = Promise.resolve();
-    localReplicateResult.on = () => {};
+    localReplicateResult.on = sinon.stub();
     localReplicate.returns(localReplicateResult);
     bootstrapper(pouchDbOptions, err => {
       assert.equal(err.message, 'Initial replication failed');
