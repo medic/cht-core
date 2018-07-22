@@ -1,5 +1,13 @@
 # Medic Mobile Release Notes
 
+## 2.16.1
+
+_July 23, 2018_
+
+### Improvements
+
+- [#4747](https://github.com/medic/medic-webapp/issues/4747): Add icon to patients who are overdue for a visit
+
 ## 2.16.0
 
 _July 2, 2018_
