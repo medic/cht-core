@@ -109,6 +109,11 @@
 
         .overdue {
           color: @high-risk-color;
+          &:before {
+            content: @high-risk-icon;
+            font-family: FontAwesome;
+            margin-right: 3px;
+          }
         }
       }
 
