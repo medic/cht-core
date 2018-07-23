@@ -12,7 +12,8 @@ describe('InboxCtrl controller', () => {
       changes,
       changesListener = {},
       changesSpy,
-      session
+      session,
+      sessionStorage
   ;
 
   beforeEach(() => {
@@ -34,6 +35,8 @@ describe('InboxCtrl controller', () => {
       isAdmin: sinon.stub(),
       userCtx: sinon.stub(),
     };
+
+    sessionStorage = { set: sinon.stub() };
 
     module($provide => {
       $provide.value('ActiveRequests', sinon.stub());
@@ -94,6 +97,7 @@ describe('InboxCtrl controller', () => {
         name: 'name',
         version: 'version'
       });
+      $provide.value('SessionStorage', sessionStorage);
     });
 
     inject(($rootScope, $controller) => {
@@ -189,5 +193,17 @@ describe('InboxCtrl controller', () => {
   it('InboxUserContent Changes listener callback should check current session', () => {
     changesListener['inbox-user-context'].callback();
     chai.expect(session.init.callCount).to.equal(2);
+  });
+
+  it('saves previous state in session storage on state change', () => {
+    const toState = { name: 'toState' },
+          toParams = 'toParams',
+          fromState = { name: 'fromState' },
+          fromParams = 'fromParams';
+    scope.$broadcast('$stateChangeSuccess', toState, toParams, fromState, fromParams);
+    scope.$digest();
+
+    chai.expect(sessionStorage.set.callCount).to.equal(1);
+    chai.expect(sessionStorage.set.args[0]).to.deep.equal([ 'prevState', { state: fromState, params: fromParams } ]);
   });
 });
