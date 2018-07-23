@@ -565,22 +565,22 @@ module.exports = function(grunt) {
     protractor: {
       'e2e-tests-and-services': {
         options: {
-          configFile: 'tests/e2e.tests-and-services.conf.js',
+          configFile: 'tests/configs/e2e.tests-and-services.conf.js',
         }
       },
       'e2e-tests-only': {
         options: {
-          configFile: 'tests/e2e.tests-only.conf.js',
+          configFile: 'tests/configs/e2e.tests-only.conf.js',
         }
       },
       'performance-tests-and-services': {
         options: {
-          configFile: 'tests/performance.tests-and-services.conf.js',
+          configFile: 'tests/configs/performance.tests-and-services.conf.js',
         }
       },
       'performance-tests-only': {
         options: {
-          configFile: 'tests/performance.tests-only.conf.js',
+          configFile: 'tests/configs/performance.tests-only.conf.js',
         }
       },
     },
