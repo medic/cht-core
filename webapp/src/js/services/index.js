@@ -69,6 +69,7 @@
   require('./select2-search');
   require('./send-message');
   require('./session');
+  require('./session-storage');
   require('./settings');
   require('./simprints');
   require('./snackbar');
