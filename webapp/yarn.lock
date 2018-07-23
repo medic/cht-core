@@ -53,6 +53,10 @@ angular-sanitize@^1.7.2:
   version "1.7.2"
   resolved "https://registry.yarnpkg.com/angular-sanitize/-/angular-sanitize-1.7.2.tgz#e9f6e6a3e966c479c02dbc5712bee6de031f8eef"
 
+angular-storage@^0.0.15:
+  version "0.0.15"
+  resolved "https://registry.yarnpkg.com/angular-storage/-/angular-storage-0.0.15.tgz#005d64808982848d949725e2b2bf90a1dd27afc1"
+
 angular-translate@^2.18.1:
   version "2.18.1"
   resolved "https://registry.yarnpkg.com/angular-translate/-/angular-translate-2.18.1.tgz#b29ed0d2f9bac44075e7aad3284166c59e150791"

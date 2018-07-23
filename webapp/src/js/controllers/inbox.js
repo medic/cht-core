@@ -50,7 +50,8 @@ var feedback = require('../modules/feedback'),
       UserSettings,
       WealthQuintilesWatcher,
       XmlForms,
-      RecurringProcessManager
+      RecurringProcessManager,
+      SessionStorage
     ) {
       'ngInject';
 
@@ -270,11 +271,12 @@ var feedback = require('../modules/feedback'),
       };
 
 
-      $scope.$on('$stateChangeSuccess', function(event, toState) {
+      $scope.$on('$stateChangeSuccess', function(event, toState, toParams, fromState, fromParams) {
         $scope.currentTab = toState.name.split('.')[0];
         if (!$state.includes('reports')) {
           $scope.selectMode = false;
         }
+        SessionStorage.set('prevState', { state: fromState, params: fromParams });
       });
 
       var updateAvailableFacilities = function() {
