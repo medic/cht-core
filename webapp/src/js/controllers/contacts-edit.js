@@ -11,7 +11,8 @@ angular.module('inboxControllers').controller('ContactsEditCtrl',
     ContactSchema,
     Enketo,
     LineageModelGenerator,
-    Snackbar
+    Snackbar,
+    $window
   ) {
 
     'use strict';
@@ -20,7 +21,11 @@ angular.module('inboxControllers').controller('ContactsEditCtrl',
     $scope.loadingContent = true;
     $scope.setShowContent(true);
     $scope.setCancelTarget(function() {
-      $state.go('contacts.detail', { id: $state.params.id || $state.params.parent_id });
+      if ($window.history.length > 1) {
+        $window.history.back();
+      } else {
+        $state.go('contacts.detail', { id: $state.params.id || $state.params.parent_id });
+      }
     });
 
     var setTitle = function() {
