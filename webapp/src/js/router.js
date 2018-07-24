@@ -146,11 +146,17 @@
         }
       })
       .state('contacts.addChild', {
-        url: '/:parent_id/add/:type/:redirectToList?',
+        url: '/:parent_id/add/:type/:redirectToList',
         views: {
           content: {
             controller: 'ContactsEditCtrl',
             templateUrl: 'templates/partials/contacts_edit.html'
+          }
+        },
+        params: {
+          redirectToList: {
+            value: null,
+            squash: true
           }
         }
       })
