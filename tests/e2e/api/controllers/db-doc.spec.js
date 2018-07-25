@@ -797,4 +797,5 @@ describe('db-doc handler', () => {
         });
     });
   });
+
 });
