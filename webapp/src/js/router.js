@@ -146,17 +146,11 @@
         }
       })
       .state('contacts.addChild', {
-        url: '/:parent_id/add/:type/:fromList',
+        url: '/:parent_id/add/:type?fromList',
         views: {
           content: {
             controller: 'ContactsEditCtrl',
             templateUrl: 'templates/partials/contacts_edit.html'
-          }
-        },
-        params: {
-          fromList: {
-            value: null,
-            squash: true
           }
         }
       })

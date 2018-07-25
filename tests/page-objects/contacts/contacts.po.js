@@ -3,7 +3,7 @@ const helper = require('../../helper');
 const searchBox = element(by.css('#freetext')),
       seachButton = element(by.css('#search')),
       refreshButton = element(by.css('.fa fa-undo')),
-      newDistrictButton = element(by.css('a[href="#/contacts//add/district_hospital/true"]')),
+      newDistrictButton = element(by.css('a[href="#/contacts//add/district_hospital?fromList=true"]')),
       newPlaceName = element(by.css('[name="/data/district_hospital/name"]')),
       newPersonButton = element(by.css('a.btn.btn-link.add-new')),
       nextButton = element(by.css('button.btn.btn-primary.next-page.ng-scope')),
