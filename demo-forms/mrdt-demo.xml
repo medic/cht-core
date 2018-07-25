@@ -4,25 +4,25 @@
     <h:title>MRDT Demo</h:title>
     <model>
       <instance>
-        <data delimiter="#" id="mrdt_demo">
+        <mrdt delimiter="#" id="mrdt_demo">
           <name/>
-          <mrdt_image_data/>
+          <mrdt_image_data type="binary"/>
           <meta>
             <instanceID/>
           </meta>
-        </data>
+        </mrdt>
       </instance>
-      <bind nodeset="/data/name" type="string"/>
-      <bind nodeset="/data/mrdt_image_data" type="string"/>
+      <bind nodeset="/mrdt/name" type="string"/>
+      <bind nodeset="/mrdt/mrdt_image_data" type="string"/>
     </model>
   </h:head>
   <h:body class="pages">
-    <group appearance="field-list" ref="/data">
+    <group appearance="field-list" ref="/mrdt">
       <label>Submit a photo of an MRDT test result</label>
-      <input ref="/data/name">
+      <input ref="/mrdt/name">
         <label>Patient name</label>
       </input>
-      <input ref="/data/mrdt_image_data" appearance="mrdt-verify">
+      <input ref="/mrdt/mrdt_image_data" appearance="mrdt-verify">
         <label>MRDT image</label>
       </input>
     </group>
