@@ -106,6 +106,10 @@ _.templateSettings = {
       } else {
         $('.bootstrap-layer').html('<div><p>Loading error, please check your connection.</p><a class="btn btn-primary" href="#" onclick="window.location.reload(false);">Try again</a></div>');
         console.error('Error fetching ddoc from remote server', err);
+        setTimeout(function() {
+          // retry initial replication automatically after one minute
+          window.location.reload(false);
+        }, 60 * 1000);
       }
       return;
     }
