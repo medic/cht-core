@@ -91,4 +91,5 @@ describe('Contacts Edit controller', () => {
     chai.expect(spyState.go.callCount).to.equal(1);
     chai.expect(spyState.go.args[0]).to.deep.equal([ 'contacts.detail', { 'id': 'id' } ]);
   });
+
 });
