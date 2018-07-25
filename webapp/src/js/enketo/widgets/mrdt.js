@@ -31,12 +31,19 @@ define( function( require, exports, module ) {
     Mrdtwidget.prototype.constructor = Mrdtwidget;
 
     Mrdtwidget.prototype._init = function() {
+        var self = this;
         var $el = $( this.element );
         var $input = $el.find( 'input' );
-        $input.attr( 'disabled', true );
+
+        // we need to make it a textarea because text inputs strip out the
+        // \n (new line) characters which breaks the encoded file content.
+        var textarea = $input[0].outerHTML
+            .replace(/^<input /, '<textarea ')
+            .replace(/<\/input>/, '</textarea>');
+        $input.replaceWith(textarea);
         var angularServices = angular.element( document.body ).injector();
         var $translate = angularServices.get( '$translate' );
-        var service = angularServices.get( 'Mrdt' );
+        var service = angularServices.get( 'MRDT' );
 
         if ( !service.enabled() ) {
             $translate( 'mrdt.disabled' ).then(function( label ) {
@@ -46,15 +53,23 @@ define( function( require, exports, module ) {
         }
 
         $el.on( 'click', '.btn.mrdt-verify', function() {
-            service.verify().then( function(mrdtId) {
-                $input.val( mrdtId ).trigger( 'change' );
+            service.verify().then( function(image) {
+                $( self.element )
+                    .find( 'textarea' )
+                    .val( image )
+                    .trigger( 'change' );
+                $( self.element )
+                    .find( '.mrdt-preview' )
+                    .attr('src', 'data:image/png;base64, ' + image);
             } );
         } );
 
-/* TODO translate!        $translate( 'mrdt.verify' ).then( function( label ) { */
-            var label = 'take photo';
-            $el.append( '<div><img class="mrdt-preview"/></div><div><a class="btn btn-default mrdt-verify">' + label + '</a></div>' );
-/*        } ); */
+        $translate( 'mrdt.verify' ).then( function( label ) {
+            $el.append(
+                '<div><a class="btn btn-default mrdt-verify">' + label + '</a></div>' +
+                '<div><img class="mrdt-preview"/></div>'
+            );
+        } );
     };
 
     Mrdtwidget.prototype.destroy = function( element ) {

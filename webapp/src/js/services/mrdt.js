@@ -1,4 +1,4 @@
-angular.module('inboxServices').service('Mrdt',
+angular.module('inboxServices').service('MRDT',
   function(
     $log,
     $q,
@@ -6,6 +6,8 @@ angular.module('inboxServices').service('Mrdt',
   ) {
     'use strict';
     'ngInject';
+
+    var current;
 
     return {
       enabled: function() {
@@ -21,9 +23,15 @@ angular.module('inboxServices').service('Mrdt',
         }
       },
       verify: function() {
-        return $window.medicmobile_android.mrdt_verify();
+        current = $q.defer();
+        $window.medicmobile_android.mrdt_verify();
+        return current.promise;
+      },
+      respond: function(image) {
+        if (current) {
+          current.resolve(image);
+        }
       },
     };
   }
 );
-

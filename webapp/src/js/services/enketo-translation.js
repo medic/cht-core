@@ -263,12 +263,16 @@ angular.module('inboxServices').service('EnketoTranslation', [
             return;
           }
 
+          var typeAttribute = n.attributes.getNamedItem('type');
           var updatedPath = path + '/' + n.nodeName;
           var value;
 
           var hasChildren = withElements(n.childNodes).size().value();
           if(hasChildren) {
             value = nodesToJs(n.childNodes, repeatPaths, updatedPath);
+          } else if (typeAttribute && typeAttribute.value === 'binary') {
+            // this is attached to the doc instead of inlined
+            value = '';
           } else {
             value = n.textContent;
           }

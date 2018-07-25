@@ -9,6 +9,7 @@ angular.module('inboxServices').factory('AndroidApi',
     $log,
     $rootScope,
     $state,
+    MRDT,
     Session,
     Simprints
   ) {
@@ -148,14 +149,8 @@ angular.module('inboxServices').factory('AndroidApi',
          * @param response The stringified JSON response from the MRDT app.
          */
         mrdtResponse: function(response) {
-          //$log.error('mrdtResponse()', 'response =', response);
           try {
-            response = JSON.parse(response);
-
-            var $mrdtField = $('.or-appearance-mrdt-verify input');
-            $mrdtField.val(response).trigger('change');
-
-            $('img.mrdt-preview').attr('src', 'data:image/png;base64, ' + response);
+            MRDT.respond(JSON.parse(response));
           } catch(e) {
             return $log.error(new Error('Unable to parse JSON response from android app: "' + response + '"'));
           }
