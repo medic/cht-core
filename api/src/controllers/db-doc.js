@@ -29,7 +29,21 @@ const isValidRequest = (method, docId, body) => {
   return true;
 };
 
-const requestError = res => {
+const isValidAttachmentRequest = (params, query) => {
+  if (params.attachmentId && !query.rev) {
+    return false;
+  }
+
+  return true;
+};
+
+const requestError = (res, status) => {
+  if (status === 404) {
+    res.status(404);
+    res.json({ error: 'bad_request', reason: 'Invalid rev format' });
+    return;
+  }
+
   res.status(403);
   res.json({ error: 'forbidden', reason: 'Insufficient privileges' });
 };
@@ -38,6 +52,11 @@ module.exports = {
   request: (req, res, next) => {
     if (RESERVED_ENDPOINTS.indexOf(req.params.docId) !== -1) {
       return next('route');
+    }
+
+    // don't support attachment requests without `rev` parameter
+    if (!isValidAttachmentRequest(req.params, req.query)) {
+      return requestError(res, 404);
     }
 
     if (!isValidRequest(req.method, req.params.docId, req.body)) {
@@ -75,6 +94,7 @@ module.exports = {
 // used for testing
 if (process.env.UNIT_TEST_ENV) {
   _.extend(module.exports, {
-    _isValidRequest: isValidRequest
+    _isValidRequest: isValidRequest,
+    _isValidAttachmentRequest: isValidAttachmentRequest
   });
 }
