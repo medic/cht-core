@@ -100,6 +100,10 @@
            hasRole(userCtx, ONLINE_ROLE);
   };
 
+  var getDdoc = function(localDb) {
+    return localDb.get('_design/medic-client');
+  };
+
   module.exports = function(POUCHDB_OPTIONS, callback) {
     var dbInfo = getDbInfo();
     var userCtx = getUserCtx();
@@ -116,8 +120,7 @@
     var localDbName = getLocalDbName(dbInfo, username);
     var localDb = window.PouchDB(localDbName, POUCHDB_OPTIONS.local);
 
-    localDb
-      .get('_design/medic-client')
+    getDdoc(localDb)
       .then(function() {
         // ddoc found - bootstrap immediately
         localDb.close();
@@ -128,6 +131,11 @@
 
         var remoteDb = window.PouchDB(dbInfo.remote, POUCHDB_OPTIONS.remote);
         initialReplication(localDb, remoteDb)
+          .then(function() {
+            return getDdoc(localDb).catch(function() {
+              throw new Error('Initial replication failed');
+            });
+          })
           .then(function() {
             // replication complete - bootstrap angular
             $('.bootstrap-layer .status').text('Starting app…');
