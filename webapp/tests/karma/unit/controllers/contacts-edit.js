@@ -2,13 +2,9 @@ describe('Contacts Edit controller', () => {
 
   'use strict';
 
-  let buttonLabel,
-      childType,
-      contactSchema,
+  let contactSchema,
       createController,
-      icon,
       scope,
-      typeLabel,
       $rootScope,
       contactForm,
       spyState;
@@ -16,10 +12,6 @@ describe('Contacts Edit controller', () => {
   beforeEach(module('inboxApp'));
 
   beforeEach(inject((_$rootScope_, $controller) => {
-    childType = 'childType';
-    icon = 'fa-la-la-la-la';
-    buttonLabel = 'ClICK ME!!';
-    typeLabel = 'District';
     contactForm = { forEdit: sinon.stub(), forCreate: sinon.stub() };
     $rootScope = _$rootScope_;
     scope = $rootScope.$new();
@@ -27,9 +19,7 @@ describe('Contacts Edit controller', () => {
     scope.clearSelected = sinon.stub();
     scope.setShowContent = sinon.stub();
     scope.setCancelTarget = sinon.stub();
-    contactSchema = {
-      get: sinon.stub().returns({ icon: icon, addButtonLabel : buttonLabel, label: typeLabel, fields: { parent: '' } })
-    };
+    contactSchema = { get: sinon.stub().returns({ fields: { parent: '' }}) };
     var $translate = key => Promise.resolve(key + 'translated');
     $translate.instant = key => key + 'translated';
 
@@ -90,5 +80,4 @@ describe('Contacts Edit controller', () => {
     chai.expect(spyState.go.callCount).to.equal(1);
     chai.expect(spyState.go.args[0]).to.deep.equal([ 'contacts.detail', { 'id': 'id' } ]);
   });
-
 });
