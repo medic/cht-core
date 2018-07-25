@@ -20,7 +20,7 @@ angular.module('inboxControllers').controller('ContactsEditCtrl',
     $scope.loadingContent = true;
     $scope.setShowContent(true);
     $scope.setCancelTarget(function() {
-      if ($state.params.redirectToList) {
+      if ($state.params.fromList) {
         $state.go('contacts.detail', { id: null });
       } else {
         $state.go('contacts.detail', { id: $state.params.id || $state.params.parent_id });

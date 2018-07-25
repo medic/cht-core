@@ -146,7 +146,7 @@
         }
       })
       .state('contacts.addChild', {
-        url: '/:parent_id/add/:type/:redirectToList',
+        url: '/:parent_id/add/:type/:fromList',
         views: {
           content: {
             controller: 'ContactsEditCtrl',
@@ -154,7 +154,7 @@
           }
         },
         params: {
-          redirectToList: {
+          fromList: {
             value: null,
             squash: true
           }

@@ -51,7 +51,7 @@ describe('Contacts Edit controller', () => {
 
   it('cancelling redirects to contacts list when route has redirectToList param', () => {
     let cancelTarget;
-    spyState.params.redirectToList = true;
+    spyState.params.fromList = true;
     scope.setCancelTarget.callsFake(func => cancelTarget = func);
 
     createController();
