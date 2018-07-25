@@ -44,9 +44,9 @@ describe('Bulk Get service', () => {
         });
     });
 
-    it('passes request query parameters to the db call', () => {
+    it('passes request query parameters to the db call, except latest param', () => {
       docs = [{ id: 'a', rev: '1-a' }, { id: 'b' }];
-      query = { revs: 'yes', attachments: 'no', some: 'param' };
+      query = { revs: 'yes', attachments: 'no', some: 'param', latest: true };
 
       return service.filterOfflineRequest(userCtx, query, docs).then(() => {
         authorization.getAuthorizationContext.callCount.should.equal(1);
