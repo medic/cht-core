@@ -49,9 +49,9 @@ describe('Contacts Edit controller', () => {
     };
   }));
 
-  it('cancelling redirects to contacts list when route has redirectToList param', () => {
+  it('cancelling redirects to contacts list when query has `from` param equal to `list`', () => {
     let cancelTarget;
-    spyState.params.fromList = true;
+    spyState.params.from = 'list';
     scope.setCancelTarget.callsFake(func => cancelTarget = func);
 
     createController();
@@ -60,7 +60,18 @@ describe('Contacts Edit controller', () => {
     chai.expect(spyState.go.args[0]).to.deep.equal([ 'contacts.detail', { id: null } ]);
   });
 
-  it('cancelling falls back to parent contact if new contact and route does not have redirectToList', () => {
+  it('cancelling falls back to parent contact if new contact and query `from` param is not equal to `list`', () => {
+    let cancelTarget;
+    spyState.params.from = 'something';
+    scope.setCancelTarget.callsFake(func => cancelTarget = func);
+
+    createController();
+    cancelTarget();
+    chai.expect(spyState.go.callCount).to.equal(1);
+    chai.expect(spyState.go.args[0]).to.deep.equal([ 'contacts.detail', { 'id': 'parent_id' } ]);
+  });
+
+  it('cancelling falls back to parent contact if new contact and query does not have `from` param', () => {
     let cancelTarget;
     scope.setCancelTarget.callsFake(func => cancelTarget = func);
 
