@@ -149,17 +149,36 @@ describe('db-doc controller', () => {
         });
     });
 
-    it('sends error when request is not a valid attachment request', () => {
+    it('sends 404 error when request is an invalid attachment request without rev', () => {
       testReq.query = {};
       testReq.params.attachmentId = 'something';
-      controller.request(testReq, testRes, next);
+      service.filterOfflineRequest.resolves(false);
+      return controller
+        .request(testReq, testRes, next)
+        .then(() => {
+          next.callCount.should.equal(0);
+          testRes.status.callCount.should.equal(1);
+          testRes.status.args[0].should.deep.equal([404]);
+          testRes.json.callCount.should.deep.equal(1);
+          testRes.json.args[0].should.deep.equal([{ error: 'bad_request', reason: 'Invalid rev format' }]);
+          service.filterOfflineRequest.callCount.should.equal(1);
+        });
+    });
 
-      next.callCount.should.equal(0);
-      testRes.status.callCount.should.equal(1);
-      testRes.status.args[0].should.deep.equal([404]);
-      testRes.json.callCount.should.deep.equal(1);
-      testRes.json.args[0].should.deep.equal([{ error: 'bad_request', reason: 'Invalid rev format' }]);
-      service.filterOfflineRequest.callCount.should.equal(0);
+    it('sends 403 error when request is an invalid attachment request with rev', () => {
+      testReq.query = { rev: 'something' };
+      testReq.params.attachmentId = 'something';
+      service.filterOfflineRequest.resolves(false);
+      return controller
+        .request(testReq, testRes, next)
+        .then(() => {
+          next.callCount.should.equal(0);
+          testRes.status.callCount.should.equal(1);
+          testRes.status.args[0].should.deep.equal([403]);
+          testRes.json.callCount.should.deep.equal(1);
+          testRes.json.args[0].should.deep.equal([{ error: 'forbidden', reason: 'Insufficient privileges' }]);
+          service.filterOfflineRequest.callCount.should.equal(1);
+        });
     });
 
     it('catches service errors', () => {

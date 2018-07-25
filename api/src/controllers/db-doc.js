@@ -54,11 +54,6 @@ module.exports = {
       return next('route');
     }
 
-    // don't support attachment requests without `rev` parameter
-    if (!isValidAttachmentRequest(req.params, req.query)) {
-      return requestError(res, 404);
-    }
-
     if (!isValidRequest(req.method, req.params.docId, req.body)) {
       return requestError(res);
     }
@@ -67,6 +62,12 @@ module.exports = {
       .filterOfflineRequest(req.userCtx, req.params, req.method, req.query, req.body)
       .then(result => {
         if (!result) {
+          // if this is an attachment request without `rev` parameter that is not valid,
+          // send a `404` so PouchDB will retry with a `rev` parameter.
+          if (!isValidAttachmentRequest(req.params, req.query)) {
+            return requestError(res, 404);
+          }
+
           return requestError(res);
         }
 
