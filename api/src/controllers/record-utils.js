@@ -5,6 +5,8 @@ const _ = require('underscore'),
       smsparser = require('../services/report/smsparser'),
       validate = require('../services/report/validate'),
       PublicError = require('../public-error'),
+      db = require('../db-pouch'),
+      lineage = require('lineage')(Promise, db.medic),
       DATE_NUMBER_STRING = /(\d{13,})/;
 
 const empty = val => {
@@ -120,7 +122,7 @@ const getRefID = (form, form_data) => {
  * @returns {Object} - data record
  * @api private
  */
-const getDataRecord = (formData, options) => {
+const getDataRecord = (formData, options, contact) => {
 
   const form = options.form,
         def = getForm(options.form);
@@ -136,6 +138,9 @@ const getDataRecord = (formData, options) => {
     // keep POST data part of record
     sms_message: options
   };
+  if(contact) {
+    record.contact = contact;
+  }
 
   // try to parse timestamp from gateway
   const ts = parseSentTimestamp(options.sent_timestamp);
@@ -210,7 +215,17 @@ const createByForm = (data, { locale }={}) => {
   if (content.form && formDefinition) {
     formData = smsparser.parse(formDefinition, data);
   }
-  return getDataRecord(formData, content);
+
+  return db.medic.query('medic-client/contacts_by_phone', {
+    key: data.from,
+    include_docs: true
+  }).then((result) => {
+    let contact = result && result.rows.length && result.rows[0].doc;
+    if(contact) {
+      contact = lineage.minifyLineage(contact);
+    }
+    return getDataRecord(formData, content, contact);
+  });
 };
 
 const createRecordByJSON = data => {
@@ -252,7 +267,7 @@ const createRecordByJSON = data => {
     if (['string', 'number'].indexOf(typeof data[k]) >= 0) {
       formData[k.toLowerCase()] = data[k];
     }
-  }  
+  }
 
   return getDataRecord(formData, options);
 };
