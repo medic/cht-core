@@ -354,7 +354,8 @@ var _ = require('underscore'),
           _query({ limit: limit, silent: true });
         },
         filter: function(change) {
-          return ContactSchema.getTypes().indexOf(change.doc.type) !== -1;
+          return ContactSchema.getTypes().indexOf(change.doc.type) !== -1 ||
+                 liveList.isContainedTombstone(change.doc);
         }
       });
 

@@ -13,7 +13,8 @@ describe('ReportsCtrl controller', () => {
       Search,
       Changes,
       FormatDataRecord,
-      changesCallback;
+      changesCallback,
+      changesFilter;
 
   beforeEach(module('inboxApp'));
 
@@ -40,7 +41,10 @@ describe('ReportsCtrl controller', () => {
     };
     LiveList = { reports: {
       initialised: () => true,
-      setSelected: sinon.stub()
+      setSelected: sinon.stub(),
+      isContainedTombstone: sinon.stub(),
+      remove: sinon.stub(),
+      count: sinon.stub()
     }};
     MarkRead = () => {};
     FormatDataRecord = data => {
@@ -54,16 +58,16 @@ describe('ReportsCtrl controller', () => {
       };
     };
 
-    Search = (type, filters, options, callback) => {
-      callback(null, { });
-    };
+    Search = sinon.stub().resolves();
 
-    Changes = options => {
+    Changes = sinon.stub().callsFake(options => {
       changesCallback = options.callback;
+      changesFilter = options.filter;
       return { unsubscribe: () => {} };
-    };
+    });
 
     changesCallback = undefined;
+    changesFilter = undefined;
 
     createController = () => {
       return $controller('ReportsCtrl', {
@@ -257,6 +261,67 @@ describe('ReportsCtrl controller', () => {
           name: 'hello',
           verified: undefined
         }]);
+      });
+    });
+  });
+
+  describe('Changes listener', () => {
+    it('subscribes to changes', () => {
+      createController();
+      return Promise.resolve().then(() => {
+        chai.expect(Changes.callCount).to.equal(1);
+      });
+    });
+
+    it('filters reports', () => {
+      createController();
+
+      return Promise.resolve().then(() => {
+        const change = { doc: { form: 'something' } };
+        chai.expect(!!changesFilter(change)).to.equal(true);
+        chai.expect(LiveList.reports.isContainedTombstone.callCount).to.equal(0);
+      });
+    });
+
+    it('filters contained tombstones', () => {
+      createController();
+
+      return Promise.resolve().then(() => {
+        const change = { doc: { type: 'this is not a form' } };
+        LiveList.reports.isContainedTombstone.returns(true);
+        chai.expect(!!changesFilter(change)).to.equal(true);
+        chai.expect(LiveList.reports.isContainedTombstone.callCount).to.equal(1);
+        chai.expect(LiveList.reports.isContainedTombstone.args[0]).to.deep.equal([ change.doc ]);
+      });
+    });
+
+    it('filters everything else', () => {
+      createController();
+      LiveList.reports.isContainedTombstone.returns(false);
+
+      return Promise.resolve().then(() => {
+        chai.expect(!!changesFilter({ doc: { some: 'thing' } })).to.equal(false);
+      });
+    });
+
+    it('removes deleted reports from the list', () => {
+      createController();
+
+      return Promise.resolve().then(() => {
+        changesCallback({ deleted: true, doc: { _id: 'id' } });
+        chai.expect(LiveList.reports.remove.callCount).to.equal(1);
+        chai.expect(LiveList.reports.remove.args[0]).to.deep.equal([ { _id: 'id' } ]);
+        chai.expect(Search.callCount).to.equal(0);
+      });
+    });
+
+    it('refreshes list', () => {
+      createController();
+
+      return Promise.resolve().then(() => {
+        changesCallback({ doc: { _id: 'id' } });
+        chai.expect(LiveList.reports.remove.callCount).to.equal(0);
+        chai.expect(Search.callCount).to.equal(1);
       });
     });
   });

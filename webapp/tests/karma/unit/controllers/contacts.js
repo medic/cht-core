@@ -53,7 +53,8 @@ describe('Contacts controller', () => {
           return elements.pop();
         }
         return false;
-      }
+      },
+      isContainedTombstone: sinon.stub()
     };
   };
 
@@ -525,6 +526,7 @@ describe('Contacts controller', () => {
         assert.equal(changesFilter({ doc: { type: 'clinic' } }), true);
         assert.equal(changesFilter({ doc: { type: 'health_center' } }), true);
         assert.equal(changesFilter({ doc: { type: 'district_hospital' } }), true);
+        assert.equal(contactsLiveList.isContainedTombstone.callCount, 0);
       });
     });
 
@@ -533,6 +535,7 @@ describe('Contacts controller', () => {
         assert.isNotOk(changesFilter({ doc: { } }));
         assert.isNotOk(changesFilter({ doc: { type: 'data_record' } }));
         assert.isNotOk(changesFilter({ doc: { type: '' } }));
+        assert.equal(contactsLiveList.isContainedTombstone.callCount, 3);
       });
     });
 
@@ -567,6 +570,15 @@ describe('Contacts controller', () => {
           changesCallback({ deleted: true });
           assert.equal(searchService.args[1][2].limit, 30);
         });
+    });
+
+    it('filtering returns true for contained tombstones', () => {
+      contactsLiveList.isContainedTombstone.returns(true);
+      return createController()
+        .getSetupPromiseForTesting()
+        .then(() => {
+          assert.equal(changesFilter({ doc: { } }), true);
+      });
     });
   });
 });

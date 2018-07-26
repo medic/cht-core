@@ -466,6 +466,16 @@ angular.module('inboxServices').factory('LiveList',
       delete idx.selected;
     }
 
+    function _isContainedTombstone(listName, doc) {
+      // When a document is deleted via DELETE call, CouchDB doesn't save the whole body of the doc in the tombstone,
+      // just the _id, _rev, and _deleted flag.
+      if (Object.keys(doc).length === 3 && doc._deleted) {
+        return _contains(listName, doc);
+      }
+
+      return false;
+    }
+
     function refreshAll() {
       var i, now = new Date();
 
@@ -521,6 +531,7 @@ angular.module('inboxServices').factory('LiveList',
         initialised: _.partial(_initialised, name),
         setSelected: _.partial(_setSelected, name),
         clearSelected: _.partial(_clearSelected, name),
+        isContainedTombstone: _.partial(_isContainedTombstone, name)
       };
 
       return api[name];
