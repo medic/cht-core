@@ -220,7 +220,7 @@ const createByForm = (data, { locale }={}) => {
     key: data.from,
     include_docs: true
   }).then((result) => {
-    let contact = result && result.rows.length && result.rows[0].doc;
+    let contact = result && result.rows && result.rows.length && result.rows[0].doc;
     if(contact) {
       contact = lineage.minifyLineage(contact);
     }

@@ -69,14 +69,13 @@ angular.module('inboxServices').factory('SendMessage',
     };
 
     var resolvePhoneNumbers = function(recipients) {
+      //TODO: do we want to attempt to resolve phone numbers into existing contacts?
+      // users will have already got that suggestion in the send-message UI if
+      // it exists in the DB
       return recipients.map(function(recipient) {
-          return DB().query('medic-client/contacts_by_phone', {
-              key: recipient.text,
-              include_docs: true
-          }).then(function(result) {
-              var contact = result.rows && result.rows.length && result.rows[0].doc;
-              return mapRecipient(contact, recipient.text);
-          });
+        var phone = recipient.text || // from select2
+               recipient.doc.contact.phone; // from LHS message bar
+        return mapRecipient(null, phone);
       });
     };
 
