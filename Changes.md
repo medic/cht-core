@@ -137,6 +137,28 @@ _July 6, 2018_
 - [#4676](https://github.com/medic/medic-webapp/issues/4676): Emit NODE_OPTIONS during API startup
 - [#4683](https://github.com/medic/medic-webapp/issues/4683): Create a shared library for server startup checks
 
+## 2.17.0
+
+_July 26, 2018_
+
+### Features
+
+- [#4743](https://github.com/medic/medic-webapp/issues/4743): Include mRDT in a webapp release
+- [#4744](https://github.com/medic/medic-webapp/issues/4744): Include mRDT in an android release
+
+### Improvements
+
+- [#4742](https://github.com/medic/medic-webapp/issues/4742): Show pictures in the report view
+- [#4745](https://github.com/medic/medic-webapp/issues/4745): Improve styling of mRDT Enketo widget
+
+## 2.16.1
+
+_July 23, 2018_
+
+### Improvements
+
+- [#4747](https://github.com/medic/medic-webapp/issues/4747): Add icon to patients who are overdue for a visit
+
 ## 2.16.0
 
 _July 2, 2018_
