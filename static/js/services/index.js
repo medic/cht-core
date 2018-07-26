@@ -60,6 +60,7 @@
   require('./message-state');
   require('./modal');
   require('./moment-locale-data');
+  require('./mrdt');
   require('./place-hierarchy');
   require('./properties');
   require('./recurring-process-manager');

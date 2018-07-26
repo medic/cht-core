@@ -28,6 +28,7 @@ define( function( require, exports, module ) {
         require( './widgets/z-score' ),
         require( './widgets/bikram-sambat-datepicker' ),
         require( './widgets/simprints' ),
+        require( './widgets/mrdt' ),
     ];
 
     module.exports = widgets;

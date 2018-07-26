@@ -48,8 +48,7 @@ angular.module('inboxServices').factory('ReportViewModelGenerator',
               doc._attachments &&
               doc._attachments[filePath] &&
               doc._attachments[filePath].content_type &&
-              doc._attachments[filePath].content_type.startsWith('image/') &&
-                true) {
+              doc._attachments[filePath].content_type.startsWith('image/')) {
             result.imagePath = filePath;
           }
 
