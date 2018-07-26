@@ -37,15 +37,14 @@ const isValidAttachmentRequest = (params, query) => {
   return true;
 };
 
-const requestError = (res, status) => {
-  if (status === 404) {
-    res.status(404);
-    res.json({ error: 'bad_request', reason: 'Invalid rev format' });
-    return;
-  }
-
+const permissionsError = res => {
   res.status(403);
   res.json({ error: 'forbidden', reason: 'Insufficient privileges' });
+};
+
+const notFoundError = res => {
+  res.status(404);
+  res.json({ error: 'bad_request', reason: 'Invalid rev format' });
 };
 
 module.exports = {
@@ -55,7 +54,7 @@ module.exports = {
     }
 
     if (!isValidRequest(req.method, req.params.docId, req.body)) {
-      return requestError(res);
+      return permissionsError(res);
     }
 
     return dbDoc
@@ -65,10 +64,10 @@ module.exports = {
           // if this is an attachment request without `rev` parameter that is not valid,
           // send a `404` so PouchDB will retry with a `rev` parameter.
           if (!isValidAttachmentRequest(req.params, req.query)) {
-            return requestError(res, 404);
+            return notFoundError(res);
           }
 
-          return requestError(res);
+          return permissionsError(res);
         }
 
         if (_.isObject(result)) {
