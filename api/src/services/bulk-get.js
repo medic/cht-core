@@ -24,8 +24,8 @@ module.exports = {
       .getAuthorizationContext(userCtx)
       .then(context => {
         authorizationContext = context;
-        // actually execute the _bulk_get request as-is and filter the response
-        return db.medic.bulkGet(_.defaults({ docs: docs }, query));
+        // actually execute the _bulk_get request as-is, excluding `latest` param, and filter the response
+        return db.medic.bulkGet(_.defaults({ docs: docs }, _.omit(query, 'latest')));
       })
       .then(result => {
         result.results = filterResults(authorizationContext, result);

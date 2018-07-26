@@ -209,6 +209,7 @@ describe('bulk-docs handler', () => {
             { id: 'd2', rev: revs.d2[1] } // allowed
           ]
         });
+        offlineRequestOptions.path = '/_bulk_get?latest=true';
 
         return utils.requestOnTestDb(offlineRequestOptions);
       })

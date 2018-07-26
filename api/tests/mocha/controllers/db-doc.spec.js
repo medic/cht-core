@@ -50,6 +50,24 @@ describe('db-doc controller', () => {
       });
     });
 
+    describe('isValidAttachmentRequest', () => {
+      it('returns true for non-attachment requests', () => {
+        controller._isValidAttachmentRequest({}, {}).should.equal(true);
+        controller._isValidAttachmentRequest({ something: true }, {}).should.equal(true);
+        controller._isValidAttachmentRequest({ attachmentId: false }, {}).should.equal(true);
+      });
+
+      it('returns true for attachment requests with rev parameter', () => {
+        controller._isValidAttachmentRequest({ attachmentId: 'attId' }, { rev: 'something' }).should.equal(true);
+      });
+
+      it('returns false for attachment requests without rev parameter', () => {
+        controller._isValidAttachmentRequest({ attachmentId: 'attId' }, {}).should.equal(false);
+        controller._isValidAttachmentRequest({ attachmentId: 'attId' }, { something: true }).should.equal(false);
+        controller._isValidAttachmentRequest({ attachmentId: 'attId' }, { rev: false }).should.equal(false);
+      });
+    });
+
     it('forwards to next route when docID is a couchDB endpoint or a _design document', () => {
       testReq.params.docId = '_bulk_docs';
       controller.request(testReq, testRes, next);
@@ -128,6 +146,38 @@ describe('db-doc controller', () => {
           testRes.status.args[0].should.deep.equal([403]);
           testRes.json.callCount.should.deep.equal(1);
           testRes.json.args[0].should.deep.equal([{ error: 'forbidden', reason: 'Insufficient privileges' }]);
+        });
+    });
+
+    it('sends 404 error when request is an invalid attachment request without rev', () => {
+      testReq.query = {};
+      testReq.params.attachmentId = 'something';
+      service.filterOfflineRequest.resolves(false);
+      return controller
+        .request(testReq, testRes, next)
+        .then(() => {
+          next.callCount.should.equal(0);
+          testRes.status.callCount.should.equal(1);
+          testRes.status.args[0].should.deep.equal([404]);
+          testRes.json.callCount.should.deep.equal(1);
+          testRes.json.args[0].should.deep.equal([{ error: 'bad_request', reason: 'Invalid rev format' }]);
+          service.filterOfflineRequest.callCount.should.equal(1);
+        });
+    });
+
+    it('sends 403 error when request is an invalid attachment request with rev', () => {
+      testReq.query = { rev: 'something' };
+      testReq.params.attachmentId = 'something';
+      service.filterOfflineRequest.resolves(false);
+      return controller
+        .request(testReq, testRes, next)
+        .then(() => {
+          next.callCount.should.equal(0);
+          testRes.status.callCount.should.equal(1);
+          testRes.status.args[0].should.deep.equal([403]);
+          testRes.json.callCount.should.deep.equal(1);
+          testRes.json.args[0].should.deep.equal([{ error: 'forbidden', reason: 'Insufficient privileges' }]);
+          service.filterOfflineRequest.callCount.should.equal(1);
         });
     });
 

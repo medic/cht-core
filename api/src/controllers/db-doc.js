@@ -29,9 +29,22 @@ const isValidRequest = (method, docId, body) => {
   return true;
 };
 
-const requestError = res => {
+const isValidAttachmentRequest = (params, query) => {
+  if (params.attachmentId && !query.rev) {
+    return false;
+  }
+
+  return true;
+};
+
+const permissionsError = res => {
   res.status(403);
   res.json({ error: 'forbidden', reason: 'Insufficient privileges' });
+};
+
+const notFoundError = res => {
+  res.status(404);
+  res.json({ error: 'bad_request', reason: 'Invalid rev format' });
 };
 
 module.exports = {
@@ -41,14 +54,20 @@ module.exports = {
     }
 
     if (!isValidRequest(req.method, req.params.docId, req.body)) {
-      return requestError(res);
+      return permissionsError(res);
     }
 
     return dbDoc
       .filterOfflineRequest(req.userCtx, req.params, req.method, req.query, req.body)
       .then(result => {
         if (!result) {
-          return requestError(res);
+          // if this is an attachment request without `rev` parameter that is not valid,
+          // send a `404` so PouchDB will retry with a `rev` parameter.
+          if (!isValidAttachmentRequest(req.params, req.query)) {
+            return notFoundError(res);
+          }
+
+          return permissionsError(res);
         }
 
         if (_.isObject(result)) {
@@ -75,6 +94,7 @@ module.exports = {
 // used for testing
 if (process.env.UNIT_TEST_ENV) {
   _.extend(module.exports, {
-    _isValidRequest: isValidRequest
+    _isValidRequest: isValidRequest,
+    _isValidAttachmentRequest: isValidAttachmentRequest
   });
 }

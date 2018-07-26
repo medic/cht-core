@@ -427,13 +427,18 @@ describe('db-doc handler', () => {
               .requestOnTestDb(_.extend({ path: '/allowed_attach/att_name' }, offlineRequestOptions), false, true),
             utils
               .requestOnTestDb(_.extend({ path: '/denied_attach/att_name' }, offlineRequestOptions))
+              .catch(err => err),
+            utils
+              .requestOnTestDb(_.extend({ path: `/denied_attach/att_name?rev=${results[1].rev}` }, offlineRequestOptions))
               .catch(err => err)
           ]);
         })
         .then(results => {
           expect(results[0]).toEqual('my attachment content');
-          expect(results[1].statusCode).toEqual(403);
-          expect(results[1].responseBody).toEqual({ error: 'forbidden', reason: 'Insufficient privileges' });
+          expect(results[1].statusCode).toEqual(404);
+          expect(results[1].responseBody).toEqual({ error: 'bad_request', reason: 'Invalid rev format' });
+          expect(results[2].statusCode).toEqual(403);
+          expect(results[2].responseBody).toEqual({ error: 'forbidden', reason: 'Insufficient privileges' });
 
           return Promise.all([
             utils.getDoc('allowed_attach'),
@@ -471,6 +476,39 @@ describe('db-doc handler', () => {
           expect(JSON.parse(results[4]).error).toEqual('forbidden');
           // denied_attach is allowed and has attachment
           expect(results[5]).toEqual('my attachment content');
+
+          //attachments for deleted docs
+          return Promise.all([
+            utils.deleteDoc('allowed_attach'),
+            utils.deleteDoc('denied_attach')
+          ]);
+        })
+        .then(results => {
+          return Promise.all([
+            utils
+              .requestOnTestDb(_.extend({ path: '/allowed_attach/att_name' }, offlineRequestOptions))
+              .catch(err => err),
+            utils
+              .requestOnTestDb(_.extend({ path: `/allowed_attach/att_name?rev=${results[0].rev}` }, offlineRequestOptions))
+              .catch(err => err),
+            utils
+              .requestOnTestDb(_.extend({ path: '/denied_attach/att_name' }, offlineRequestOptions))
+              .catch(err => err),
+            utils
+              .requestOnTestDb(_.extend({ path: `/denied_attach/att_name?rev=${results[1].rev}` }, offlineRequestOptions), false, true)
+          ]);
+        })
+        .then(results => {
+          expect(results[0].statusCode).toEqual(404);
+          expect(results[0].responseBody).toEqual({ error: 'bad_request', reason: 'Invalid rev format' });
+
+          expect(results[1].statusCode).toEqual(403);
+          expect(results[1].responseBody).toEqual({ error: 'forbidden', reason: 'Insufficient privileges' });
+
+          expect(results[2].statusCode).toEqual(404);
+          expect(results[2].responseBody).toEqual({ error: 'bad_request', reason: 'Invalid rev format' });
+
+          expect(results[3]).toEqual('my attachment content');
         });
     });
 
@@ -500,14 +538,24 @@ describe('db-doc handler', () => {
             utils
               .requestOnTestDb(_.extend({ path: '/allowed_attach_1/att_name/1/2/3/etc' }, offlineRequestOptions), false, true),
             utils
+              .requestOnTestDb(_.extend({ path: `/allowed_attach_1/att_name/1/2/3/etc?rev=${results[0].rev}` }, offlineRequestOptions), false, true),
+            utils
               .requestOnTestDb(_.extend({ path: '/denied_attach_1/att_name/1/2/3/etc' }, offlineRequestOptions))
+              .catch(err => err),
+            utils
+              .requestOnTestDb(_.extend({ path: `/denied_attach_1/att_name/1/2/3/etc?rev=${results[1].rev}` }, offlineRequestOptions))
               .catch(err => err)
           ]);
         })
         .then(results => {
           expect(results[0]).toEqual('my attachment content');
-          expect(results[1].statusCode).toEqual(403);
-          expect(results[1].responseBody).toEqual({ error: 'forbidden', reason: 'Insufficient privileges' });
+          expect(results[1]).toEqual('my attachment content');
+
+          expect(results[2].statusCode).toEqual(404);
+          expect(results[2].responseBody).toEqual({ error: 'bad_request', reason: 'Invalid rev format' });
+
+          expect(results[3].statusCode).toEqual(403);
+          expect(results[3].responseBody).toEqual({ error: 'forbidden', reason: 'Insufficient privileges' });
 
           return Promise.all([
             utils.getDoc('allowed_attach_1'),
@@ -617,7 +665,7 @@ describe('db-doc handler', () => {
           .catch(err => err)
       ]))
       .then(results => {
-        expect(results.every(result => result.statusCode === 403)).toBe(true);
+        expect(results.every(result => result.statusCode === 403 || result.statusCode === 404)).toBe(true);
       });
   });
 
@@ -749,4 +797,5 @@ describe('db-doc handler', () => {
         });
     });
   });
+
 });
