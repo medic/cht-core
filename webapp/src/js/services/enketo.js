@@ -430,14 +430,23 @@ angular.module('inboxServices').service('Enketo',
       doc._id = getId('/*');
       doc.hidden_fields = EnketoTranslation.getHiddenFieldList(record);
 
+      var attach = function(elem, file, type, alreadyEncoded) {
+        var filename = 'user-file' + xpathPath(elem);
+        AddAttachment(doc, filename, file, type, alreadyEncoded);
+      };
+
       $record.find('[type=file]').each(function() {
-        var xpath = xpathPath(this);
-        var path = 'user-file' + xpath;
-        var $input = $('input[type=file][name="' + xpath + '"]');
-        var file = $input[0].files[0];
+        var file = $(this).files[0];
         if (file) {
-          AddAttachment(doc, path, file, file.type);
-        } // else file set previously, but not changed during this edit
+          attach(this, file, file.type);
+        }
+      });
+
+      $record.find('[type=binary]').each(function() {
+        var file = $(this).text();
+        if (file) {
+          attach(this, file, 'image/png', true);
+        }
       });
 
       docsToStore.unshift(doc);
