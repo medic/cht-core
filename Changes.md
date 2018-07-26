@@ -1,5 +1,19 @@
 # Medic Mobile Release Notes
 
+## 2.17.0
+
+_July 26, 2018_
+
+### Features
+
+- [#4743](https://github.com/medic/medic-webapp/issues/4743): Include mRDT in a webapp release
+- [#4744](https://github.com/medic/medic-webapp/issues/4744): Include mRDT in an android release
+
+### Improvements
+
+- [#4742](https://github.com/medic/medic-webapp/issues/4742): Show pictures in the report view
+- [#4745](https://github.com/medic/medic-webapp/issues/4745): Improve styling of mRDT Enketo widget
+
 ## 2.16.1
 
 _July 23, 2018_
