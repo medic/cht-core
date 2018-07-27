@@ -60,7 +60,13 @@ var getDoc = function(Promise, DB, change) {
 
 // CouchDB `DELETE`d docs are stubs { _id, _rev, _deleted: true }
 var isCouchDbTombstone = function(doc) {
-  if (!_.difference(Object.keys(doc), COUCHDB_TOMBSTONE_PROPERTIES).length && doc._deleted) {
+  var arrayIncludes = function(array1, array2) {
+    return array2.every(function(elem) {
+      return array1.indexOf(elem) !== -1;
+    });
+  };
+
+  if (arrayIncludes(COUCHDB_TOMBSTONE_PROPERTIES, Object.keys(doc)) && doc._deleted) {
     return true;
   }
 
