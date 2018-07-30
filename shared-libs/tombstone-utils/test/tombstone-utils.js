@@ -343,15 +343,15 @@ describe('Tombstone Utils Lib', function() {
     });
   });
 
-  describe('isCouchDbTombstone', function() {
+  describe('isDeleteStub', function() {
     it('returns false for docs that have properties', function() {
-      expect(lib._isCouchDbTombstone({ _id: 'a', some: 'thing' })).to.equal(false);
-      expect(lib._isCouchDbTombstone({ _id: 'a', some: 'thing', _rev: '1' })).to.equal(false);
+      expect(lib._isDeleteStub({ _id: 'a', some: 'thing' })).to.equal(false);
+      expect(lib._isDeleteStub({ _id: 'a', some: 'thing', _rev: '1' })).to.equal(false);
     });
 
     it('returns false for docs that are not deleted', function() {
-      expect(lib._isCouchDbTombstone({ _id: 'a', _rev: 'thing' })).to.equal(false);
-      expect(lib._isCouchDbTombstone({ _id: 'a', _rev: 'thing', _deleted: false })).to.equal(false);
+      expect(lib._isDeleteStub({ _id: 'a', _rev: 'thing' })).to.equal(false);
+      expect(lib._isDeleteStub({ _id: 'a', _rev: 'thing', _deleted: false })).to.equal(false);
     });
 
     it('returns true for couchDB tombstones', function() {
@@ -364,30 +364,40 @@ describe('Tombstone Utils Lib', function() {
         _deleted: true
       };
 
-      expect(lib._isCouchDbTombstone(doc)).to.equal(true);
+      expect(lib._isDeleteStub(doc)).to.equal(true);
       doc._deleted = false;
-      expect(lib._isCouchDbTombstone(doc)).to.equal(false);
+      expect(lib._isDeleteStub(doc)).to.equal(false);
       doc._deleted = true;
       doc.a = 'something';
-      expect(lib._isCouchDbTombstone(doc)).to.equal(false);
+      expect(lib._isDeleteStub(doc)).to.equal(false);
     });
   });
 
-  describe('getPreviousRevision', function() {
-    it('returns false when revision is missing', function() {
-      expect(lib._getPreviousRevision(false)).to.equal(false);
-      expect(lib._getPreviousRevision(undefined)).to.equal(false);
-      expect(lib._getPreviousRevision({})).to.equal(false);
-      expect(lib._getPreviousRevision({ start: 1 })).to.equal(false);
-      expect(lib._getPreviousRevision({ start: 2 })).to.equal(false);
-      expect(lib._getPreviousRevision({ start: 2, ids: [] })).to.equal(false);
-      expect(lib._getPreviousRevision({ start: 2, ids: ['a'] })).to.equal(false);
-      expect(lib._getPreviousRevision({ start: 1, ids: ['a', 'b', 'c'] })).to.equal(false);
+  describe('getPreviousRev', function() {
+    it('returns false when rev is missing', function() {
+      expect(lib._getPreviousRev(false)).to.equal(false);
+      expect(lib._getPreviousRev(undefined)).to.equal(false);
+      expect(lib._getPreviousRev({})).to.equal(false);
+      expect(lib._getPreviousRev({ start: 1 })).to.equal(false);
+      expect(lib._getPreviousRev({ start: 2 })).to.equal(false);
+      expect(lib._getPreviousRev({ start: 2, ids: [] })).to.equal(false);
+      expect(lib._getPreviousRev({ start: 2, ids: ['a'] })).to.equal(false);
+      expect(lib._getPreviousRev({ start: 1, ids: ['a', 'b', 'c'] })).to.equal(false);
+
+      expect(lib._getPreviousRev({ start: 10, ids: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10] }, 12)).to.equal(false);
     });
 
-    it('returns previous revision', function() {
-      expect(lib._getPreviousRevision({ start: 2, ids: ['a', 'b'] })).to.equal('1-b');
-      expect(lib._getPreviousRevision({ start: 10, ids: ['a', 'b', 'c', 'd', 'e', 'f'] })).to.equal('9-b');
+    it('returns previous rev', function() {
+      expect(lib._getPreviousRev({ start: 2, ids: ['a', 'b'] })).to.equal('1-b');
+      expect(lib._getPreviousRev({ start: 10, ids: ['a', 'b', 'c', 'd', 'e', 'f'] })).to.equal('9-b');
+
+      expect(lib._getPreviousRev({ start: 10, ids: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10] })).to.equal('9-2');
+      expect(lib._getPreviousRev({ start: 10, ids: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10] }, 2)).to.equal('8-3');
+      expect(lib._getPreviousRev({ start: 10, ids: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10] }, 3)).to.equal('7-4');
+      expect(lib._getPreviousRev({ start: 10, ids: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10] }, 4)).to.equal('6-5');
+      expect(lib._getPreviousRev({ start: 10, ids: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10] }, 5)).to.equal('5-6');
     });
+
+
   });
 });

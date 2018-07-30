@@ -466,17 +466,17 @@ angular.module('inboxServices').factory('LiveList',
       delete idx.selected;
     }
 
-    function _isContainedTombstone(listName, doc) {
+    function _isContainedDeleteStub(listName, doc) {
+      // determines if array2 is included in array1
       var arrayIncludes = function(array1, array2) {
         return array2.every(function(elem) {
           return array1.indexOf(elem) !== -1;
         });
       };
-      // When a document is deleted via DELETE call, CouchDB doesn't save the whole body of the doc in the tombstone,
-      // just the _id, _rev, and _deleted flag.
+      // CouchDB/Fauxton deletes don't include doc fields in the deleted revision
       // _conflicts, _attachments can be part of the _changes request result
-      var tombstoneProperties = [ '_id', '_rev', '_deleted', '_conflicts', '_attachments' ];
-      if (arrayIncludes(tombstoneProperties, Object.keys(doc)) && doc._deleted) {
+      var stubProps = [ '_id', '_rev', '_deleted', '_conflicts', '_attachments' ];
+      if (arrayIncludes(stubProps, Object.keys(doc)) && doc._deleted) {
         return _contains(listName, doc);
       }
 
@@ -538,7 +538,7 @@ angular.module('inboxServices').factory('LiveList',
         initialised: _.partial(_initialised, name),
         setSelected: _.partial(_setSelected, name),
         clearSelected: _.partial(_clearSelected, name),
-        isContainedTombstone: _.partial(_isContainedTombstone, name)
+        isContainedDeleteStub: _.partial(_isContainedDeleteStub, name)
       };
 
       return api[name];

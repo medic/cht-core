@@ -476,7 +476,8 @@ angular.module('inboxControllers').controller('ReportsCtrl',
         }
       },
       filter: function(change) {
-        return change.doc.form || liveList.isContainedTombstone(change.doc);
+        return change.doc.form ||
+               liveList.isContainedDeleteStub(change.doc);
       }
     });
 

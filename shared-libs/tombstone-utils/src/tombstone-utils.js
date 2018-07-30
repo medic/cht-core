@@ -3,12 +3,12 @@ var _ = require('underscore');
 var TOMBSTONE_TYPE = 'tombstone',
     TOMBSTONE_ID_SEPARATOR = '____',
     COUCHDB_TOMBSTONE_PROPERTIES = [
-      '_id',               // CouchDB tombstone field
-      '_rev',              // CouchDB tombstone field
-      '_deleted',          // CouchDB tombstone field
-      '_revisions',        // field present in { revs: true } GET
-      '_attachments',      // field present when requesting _changes with { attachments: true }
-      '_conflicts',        // field present when requesting _changes with { conflicts: true }
+      '_id',
+      '_rev',
+      '_deleted',
+      '_revisions',   // GET with `revs`
+      '_attachments', // _changes with `attachments`
+      '_conflicts',   // _changes with `conflicts`
     ];
 
 var generateTombstoneId = function (id, rev) {
@@ -37,19 +37,19 @@ var saveTombstone = function(DB, doc, change, logger) {
 };
 
 var getDoc = function(Promise, DB, change) {
-  if (change.doc && !isCouchDbTombstone(change.doc)) {
+  if (change.doc && !isDeleteStub(change.doc)) {
     return Promise.resolve(change.doc);
   }
 
   return DB
     .get(change.id, { rev: change.changes[0].rev, revs: true })
     .then(function(doc) {
-      if (!isCouchDbTombstone(doc)) {
+      if (!isDeleteStub(doc)) {
         return doc;
       }
 
-      // we've received a doc only containing _id, _rev, and _deleted flag - a result of a DELETE call
-      var previousRevision = getPreviousRevision(doc._revisions);
+      // we've received a delete stub doc
+      var previousRevision = getPreviousRev(doc._revisions);
       if (!previousRevision) {
         return doc;
       }
@@ -58,8 +58,9 @@ var getDoc = function(Promise, DB, change) {
     });
 };
 
-// CouchDB `DELETE`d docs are stubs { _id, _rev, _deleted: true }
-var isCouchDbTombstone = function(doc) {
+// CouchDB/Fauxton deletes don't include doc fields in the deleted revision
+var isDeleteStub = function(doc) {
+  // determines if array2 is included in array1
   var arrayIncludes = function(array1, array2) {
     return array2.every(function(elem) {
       return array1.indexOf(elem) !== -1;
@@ -73,10 +74,13 @@ var isCouchDbTombstone = function(doc) {
   return false;
 };
 
-// when given a list of _revisions, it will return next to last revision string
-var getPreviousRevision = function(revisions) {
-  if (revisions && revisions.start > 1 && revisions.ids && revisions.ids.length > 1) {
-    return [revisions.start - 1, '-', revisions.ids[1]].join('');
+// Returns n-th previous rev
+// @param {Object} revisions - doc _revisions
+// @param {number} n
+var getPreviousRev = function(revisions, n) {
+  n = n || 1;
+  if (revisions && revisions.start > n && revisions.ids && revisions.ids.length > n) {
+    return [revisions.start - n, '-', revisions.ids[n]].join('');
   }
   return false;
 };
@@ -134,5 +138,6 @@ module.exports = {
   }
 };
 
-module.exports._isCouchDbTombstone = isCouchDbTombstone;
-module.exports._getPreviousRevision = getPreviousRevision;
+// exposed for testing
+module.exports._isDeleteStub = isDeleteStub;
+module.exports._getPreviousRev = getPreviousRev;

@@ -133,7 +133,7 @@ describe('LiveListSrv', function() {
       'initialised',
       'setSelected',
       'clearSelected',
-      'isContainedTombstone'
+      'isContainedDeleteStub'
     ]);
   });
 
@@ -507,7 +507,7 @@ describe('LiveListSrv', function() {
     });
   });
 
-  describe('isContainedTombstone', () => {
+  describe('isContainedDeleteStub', () => {
     beforeEach(function() {
       var config = {
         listItem: SIMPLE_LIST_ITEM,
@@ -519,26 +519,26 @@ describe('LiveListSrv', function() {
 
     it('returns false for non-tombstone, not deleted docs', () => {
       const doc = { _id: 'a', _rev: 'b', name: 'something' };
-      assert.equal(service.testing.isContainedTombstone(doc), false);
+      assert.equal(service.testing.isContainedDeleteStub(doc), false);
 
       const doc2 = { _id: 'a', _rev: 'b', name: 'something', lastname: 'else' };
-      assert.equal(service.testing.isContainedTombstone(doc2), false);
+      assert.equal(service.testing.isContainedDeleteStub(doc2), false);
     });
 
     it('returns false for non-tombstone, deleted docs', () => {
       const doc = { _id: 'a', _rev: 'b', name: 'something', reported: 'now', _deleted: true };
-      assert.equal(service.testing.isContainedTombstone(doc), false);
+      assert.equal(service.testing.isContainedDeleteStub(doc), false);
     });
 
     it('returns false for tombstone deleted not-contained docs', () => {
       const doc = { _id: 'a', _rev: 'b', _deleted: true };
-      assert.equal(service.testing.isContainedTombstone(doc), false);
+      assert.equal(service.testing.isContainedDeleteStub(doc), false);
     });
 
     it('returns true for tombstone deleted docs', () => {
       const doc = { _id: 'a', _rev: 'b', _deleted: true };
       service.testing.set([{ _id: 'a' }]);
-      assert.equal(service.testing.isContainedTombstone(doc), true);
+      assert.equal(service.testing.isContainedDeleteStub(doc), true);
     });
   });
 
