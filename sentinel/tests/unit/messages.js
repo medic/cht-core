@@ -151,6 +151,16 @@ describe('messages', () => {
       );
   });
 
+  it('addMessage detects spam', () => {
+      const doc = {to: '+1234567'};
+      messages.addMessage(doc, { message: 'Thank you.' }, '123', {});
+      assert.equal(doc.tasks.length, 1);
+      assert.equal(doc.tasks[0].state, 'pending');
+      messages.addMessage(doc, { message: 'Thank you.' }, '123', {});
+      assert.equal(doc.tasks.length, 2);
+      assert.equal(doc.tasks[1].state, 'duplicate');
+  });
+
   it('getMessage returns empty string on empty config', () => {
       var config = { messages: [{
           content: '',
