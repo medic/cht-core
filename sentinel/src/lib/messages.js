@@ -31,7 +31,7 @@ module.exports = {
                 context
             );
             const task = { messages: generated };
-            utils.setTaskState(task, messageStatus(doc, generated[0]));
+            utils.setTaskState(task, messageStatus(doc.from, generated[0]));
             doc.tasks.push(task);
             return task;
         } catch(e) {
