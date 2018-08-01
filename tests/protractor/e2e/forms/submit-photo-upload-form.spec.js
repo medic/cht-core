@@ -34,7 +34,7 @@ describe('Submit Photo Upload form', () => {
 
   afterAll(utils.afterEach);
 
-  it('open photo upload form', () => {
+  it('upload photo', () => {
     common.goToReports();
     browser.wait(() => {
       return element(by.css('.action-container .general-actions:not(.ng-hide) .fa-plus')).isPresent();
@@ -49,18 +49,13 @@ describe('Submit Photo Upload form', () => {
     }, 10000);
     helper.clickElement(addButton);
     element(by.css('.action-container .general-actions .dropup.open .dropdown-menu li:first-child a')).click();
-    browser.wait(() => {
-      return element(by.css('#report-form')).isPresent();
-    }, 10000);
 
     browser.wait(() => {
-      return element(by.css('.fake-file-input')).element(by.xpath('../../input')).isPresent();
+      return element(by.css('#photo-upload input[type=file]')).isPresent();
     }, 10000);
 
-    const fileElem1 = element(by.css('.fake-file-input')).element(by.xpath('../../input')),
-          absolutePath = path.join(__dirname, '../../../../static/img/simprints.png');
-    browser.executeScript('arguments[0].style.visibility = "visible"; arguments[0].style.height = "1px"; arguments[0].style.width = "1px";  arguments[0].style.opacity = 1', fileElem1.getWebElement());
-    fileElem1.sendKeys(absolutePath);
+    element(by.css('#photo-upload input[type=file]'))
+      .sendKeys(path.join(__dirname, '../../../../static/img/simprints.png'));
     //submit
     photoUpload.submit();
     expect(element(by.css('div.details')).isPresent()).toBeTruthy();
