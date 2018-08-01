@@ -430,15 +430,18 @@ angular.module('inboxServices').service('Enketo',
       doc._id = getId('/*');
       doc.hidden_fields = EnketoTranslation.getHiddenFieldList(record);
 
-      var attach = function(elem, file, type, alreadyEncoded) {
-        var filename = 'user-file' + xpathPath(elem);
+      var attach = function(elem, file, type, alreadyEncoded, xpath) {
+        xpath = xpath || xpathPath(elem);
+        var filename = 'user-file' + xpath;
         AddAttachment(doc, filename, file, type, alreadyEncoded);
       };
 
       $record.find('[type=file]').each(function() {
-        var file = $(this).files[0];
+        var xpath = xpathPath(this);
+        var $input = $('input[type=file][name="' + xpath + '"]');
+        var file = $input[0].files[0];
         if (file) {
-          attach(this, file, file.type);
+          attach(this, file, file.type, false, xpath);
         }
       });
 
