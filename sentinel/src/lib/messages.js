@@ -2,7 +2,17 @@ var _ = require('underscore'),
     phoneNumber = require('phone-number'),
     utils = require('./utils'),
     config = require('../config');
-const messageUtils = require('@shared-libs/message-utils');
+const messageUtils = require('@shared-libs/message-utils'),
+      history = require('./history');
+
+const messageStatus = (from, msg) => {
+  let status = 'denied';
+  if(module.exports.isOutgoingAllowed(from)) {
+    const msgKey = `${msg.to}-${msg.message.replace(' ', '')}`;
+    status = history.track(msgKey) ? 'duplicate' : 'pending';
+  }
+  return status;
+};
 
 module.exports = {
     addMessage: (doc, messageConfig, recipient = 'clinic', context = {}) => {
@@ -21,7 +31,7 @@ module.exports = {
                 context
             );
             const task = { messages: generated };
-            utils.setTaskState(task, module.exports.isOutgoingAllowed(doc.from) ? 'pending' : 'denied');
+            utils.setTaskState(task, messageStatus(doc, generated[0]));
             doc.tasks.push(task);
             return task;
         } catch(e) {
