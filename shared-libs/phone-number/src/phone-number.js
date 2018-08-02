@@ -9,6 +9,17 @@ var _init = function(settings, phone) {
   var countryCode = settings && settings.default_country_code;
   var regionCode = instance.getRegionCodeForCountryCode(countryCode);
   var parsed = instance.parseAndKeepRawInput(phone, regionCode);
+  var validationType = ((settings && settings.phone_validation) || '').toLowerCase();
+
+  function validPhone(){
+    if (validationType === 'partial') {
+      return instance.isPossibleNumber(parsed);
+    }
+    if(validationType === 'none') {
+      return true;
+    }
+    return instance.isValidNumber(parsed);
+  }
 
   return {
     format: function(scheme) {
@@ -25,7 +36,7 @@ var _init = function(settings, phone) {
       return instance.format(parsed, scheme).toString();
     },
     validate: function() {
-      return instance.isValidNumber(parsed) &&
+      return validPhone() &&
         // Disallow alpha numbers which libphonenumber considers valid,
         // e.g. 1-800-MICROSOFT.
         !phone.match(CHARACTER_REGEX);
