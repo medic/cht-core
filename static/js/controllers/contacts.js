@@ -27,6 +27,7 @@ var _ = require('underscore'),
       Search,
       SearchFilters,
       Session,
+      Settings,
       Simprints,
       Tour,
       TranslateFrom,
@@ -88,6 +89,7 @@ var _ = require('underscore'),
         var extensions = {};
         if ($scope.lastVisitedDateExtras) {
           extensions.displayLastVisitedDate = true;
+          extensions.lastVisitedDateSettings = $scope.lastVisitedDateSettings;
         }
         if ($scope.sortDirection === 'lastVisitedDate') {
           extensions.sortByLastVisitedDate = true;
@@ -124,7 +126,6 @@ var _ = require('underscore'),
           }
 
           $scope.moreItems = liveList.moreItems = contacts.length >= options.limit;
-
           contacts.forEach(liveList.update);
           liveList.refresh();
           _initScroll();
@@ -318,13 +319,38 @@ var _ = require('underscore'),
           });
       };
 
+      var getVisitCountSettings = function(settings) {
+        if (!settings || !settings.tasks || !settings.tasks.targets || !settings.tasks.targets.items) {
+          return {};
+        }
+
+        var target = settings.tasks.targets.items.find(function(target) {
+          return target.id === 'home-visits';
+        });
+
+        return {
+          monthStartDate: target && target.month_start_date,
+          visitCountGoal: target && target.goal
+        };
+      };
+
       var setupPromise = $q.all([
         getUserHomePlaceSummary(),
-        canViewLastVisitedDate()
+        canViewLastVisitedDate(),
+        Settings()
       ])
       .then(function(results) {
         usersHomePlace = results[0];
         $scope.lastVisitedDateExtras = results[1];
+
+        $scope.lastVisitedDateSettings = getVisitCountSettings(results[2]);
+        if ($scope.lastVisitedDateExtras &&
+            results[2].uhc &&
+            results[2].uhc.contacts_default_sort &&
+            results[2].uhc.contacts_default_sort.last_visited_date) {
+          $scope.sortDirection = 'lastVisitedDate';
+        }
+
         setActionBarData();
         return $scope.search();
       });

@@ -72,7 +72,7 @@ angular.module('inboxServices').factory('LiveListConfig',
           scope.simprintsTier = contact.simprints && contact.simprints.tierNumber;
           scope.dod = contact.date_of_death;
           if (contact.type !== 'person') {
-            if (Number.isInteger(contact.lastVisitedDate)) {
+            if (Number.isInteger(contact.lastVisitedDate) && contact.lastVisitedDate >= 0) {
               if (contact.lastVisitedDate === 0) {
                 scope.overdue = true;
                 scope.summary = $translate.instant('contact.last.visited.unknown');
@@ -81,6 +81,24 @@ angular.module('inboxServices').factory('LiveListConfig',
                 var oneMonthAgo = now - (30 * 24 * 60 * 60 * 1000);
                 scope.overdue = contact.lastVisitedDate <= oneMonthAgo;
                 scope.summary = $translate.instant('contact.last.visited.date', { date: relativeDayFilter(contact.lastVisitedDate, true) });
+              }
+
+              scope.visits = {
+                count: contact.visitCount,
+                summary: contact.visitCount === 1 ?
+                  $translate.instant('contacts.visits.count.visit') :
+                  $translate.instant('contacts.visits.count.visits'),
+
+              };
+
+              if (contact.visitCountGoal) {
+                if (!contact.visitCount) {
+                  scope.visits.status = 'pending';
+                } else if (contact.visitCount < contact.visitCountGoal) {
+                  scope.visits.status = 'started';
+                } else {
+                  scope.visits.status = 'done';
+                }
               }
             } else {
               scope.summary = $translate.instant('contact.primary_contact_name', { name: contact.contact });

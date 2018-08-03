@@ -342,5 +342,10 @@
       "name": "can_write_wealth_quintiles",
       "roles": []
     }
-  ]
+  ],
+  "uhc": {
+    "contacts_default_sort": {
+      "last_visited_date": false
+    }
+  }
 }

@@ -27,7 +27,9 @@ describe('Contacts controller', () => {
       changesCallback,
       changesFilter,
       contactSearchLiveList,
-      deadListFind = sinon.stub();
+      deadListFind = sinon.stub(),
+      settings,
+      auth;
 
   beforeEach(module('inboxApp'));
 
@@ -102,6 +104,9 @@ describe('Contacts controller', () => {
       return { unsubscribe: () => {} };
     };
 
+    settings = sinon.stub().resolves({});
+    auth = sinon.stub().rejects();
+
     createController = () => {
       searchService = sinon.stub();
       searchService.returns(Promise.resolve(searchResults));
@@ -114,7 +119,7 @@ describe('Contacts controller', () => {
         '$state': { includes: sinon.stub() },
         '$timeout': work => work(),
         '$translate': $translate,
-        'Auth': () => Promise.reject(),
+        'Auth': auth,
         'Changes': changes,
         'ContactSchema': contactSchema,
         'ContactSummary': () => {
@@ -128,6 +133,7 @@ describe('Contacts controller', () => {
         'Session': {
           isAdmin: () => { return isAdmin; }
         },
+        'Settings': settings,
         'Simprints': { enabled: () => false },
         'Tour': () => {},
         'TranslateFrom': key => `TranslateFrom:${key}`,
@@ -532,6 +538,138 @@ describe('Contacts controller', () => {
           deadListFind.returns(true);
           changesCallback({ deleted: true });
           assert.equal(searchService.args[1][2].limit, 30);
+        });
+    });
+  });
+
+  describe('last visited date', function() {
+    it('does not enable LastVisitedDate features not allowed', function() {
+      auth.rejects();
+
+      return createController().getSetupPromiseForTesting()
+        .then(() => {
+          assert.equal(auth.callCount, 1);
+          assert.deepEqual(auth.args[0], ['can_view_last_visited_date']);
+          assert.equal(scope.lastVisitedDateExtras, false);
+          assert.deepEqual(scope.lastVisitedDateSettings, {});
+          assert.equal(scope.sortDirection, 'alpha');
+          assert.equal(settings.callCount, 1);
+
+          assert.equal(searchService.callCount, 1);
+          assert.deepEqual(searchService.args[0], [
+            'contacts',
+            { types: { selected: ['childType'] } },
+            { limit: 50 },
+            {}
+          ]);
+        });
+    });
+
+    it('enables LastVisitedDate features when allowed', function() {
+      auth.resolves();
+
+      return createController().getSetupPromiseForTesting()
+        .then(() => {
+          assert.equal(auth.callCount, 1);
+          assert.deepEqual(auth.args[0], ['can_view_last_visited_date']);
+          assert.equal(scope.lastVisitedDateExtras, true);
+          assert.deepEqual(scope.lastVisitedDateSettings, {});
+          assert.equal(scope.sortDirection, 'alpha');
+          assert.equal(settings.callCount, 1);
+
+          assert.equal(searchService.callCount, 1);
+          assert.deepEqual(searchService.args[0], [
+            'contacts',
+            { types: { selected: ['childType'] } },
+            { limit: 50 },
+            {
+              displayLastVisitedDate: true,
+              lastVisitedDateSettings: {}
+            }
+          ]);
+        });
+    });
+
+    it('saves uhc home_visits settings and default sort when correct', function() {
+      auth.resolves();
+      settings.resolves({
+        uhc: {
+          contacts_default_sort: {}
+        },
+        tasks: {
+          targets: {
+            items: [{
+              id: 'home-visits',
+              month_start_date: false,
+              goal: 1
+            }]
+          }
+        }
+      });
+
+      return createController().getSetupPromiseForTesting()
+        .then(() => {
+          assert.equal(auth.callCount, 1);
+          assert.deepEqual(auth.args[0], ['can_view_last_visited_date']);
+
+          assert.equal(scope.lastVisitedDateExtras, true);
+          assert.deepEqual(scope.lastVisitedDateSettings, { monthStartDate: false, visitCountGoal: 1 });
+          assert.equal(scope.sortDirection, 'alpha');
+          assert.equal(settings.callCount, 1);
+
+          assert.equal(searchService.callCount, 1);
+          assert.deepEqual(searchService.args[0], [
+            'contacts',
+            { types: { selected: ['childType'] } },
+            { limit: 50 },
+            {
+              displayLastVisitedDate: true,
+              lastVisitedDateSettings: { monthStartDate: false, visitCountGoal: 1 }
+            }
+          ]);
+        });
+    });
+
+    it('saves uhc default sorting', function() {
+      auth.resolves();
+      settings.resolves({
+        uhc: {
+          contacts_default_sort: {
+            last_visited_date: true
+          }
+        },
+        tasks: {
+          targets: {
+            items: [{
+              id: 'home-visits',
+              month_start_date: 25,
+              goal: 125
+            }]
+          }
+        }
+      });
+
+      return createController().getSetupPromiseForTesting()
+        .then(() => {
+          assert.equal(auth.callCount, 1);
+          assert.deepEqual(auth.args[0], ['can_view_last_visited_date']);
+
+          assert.equal(scope.lastVisitedDateExtras, true);
+          assert.deepEqual(scope.lastVisitedDateSettings, { monthStartDate: 25, visitCountGoal: 125 });
+          assert.equal(scope.sortDirection, 'lastVisitedDate');
+          assert.equal(settings.callCount, 1);
+
+          assert.equal(searchService.callCount, 1);
+          assert.deepEqual(searchService.args[0], [
+            'contacts',
+            { types: { selected: ['childType'] } },
+            { limit: 50 },
+            {
+              displayLastVisitedDate: true,
+              lastVisitedDateSettings: { monthStartDate: 25, visitCountGoal: 125 },
+              sortByLastVisitedDate: true
+            }
+          ]);
         });
     });
   });
