@@ -73,7 +73,7 @@ describe('libphonenumber', () => {
     assert.isFalse(actual);
   });
 
-  // Correct for libphonenumber weirdness : 
+  // Correct for libphonenumber weirdness :
   // For some reason, '<validnumber>a' or '<validnumber>aa' is valid for libphonenumber.
   // Issue : https://github.com/googlei18n/libphonenumber/issues/328
   it('normalize returns false for invalid number - two extra letters - trailing', () => {
@@ -112,6 +112,19 @@ describe('libphonenumber', () => {
     assert.equal(actual, expected);
   });
 
+  it('validation types', () => {
+    var xsettings = {default_country_code: COUNTRY_CODES.new_zealand};
+    // Default validation (full)
+    assert.isFalse(phonenumber.validate(xsettings, '123'));
+    xsettings.phone_validation = 'partial';
+    assert.isFalse(phonenumber.validate(xsettings, '123456'));
+    assert.isTrue(phonenumber.validate(xsettings, '1234567'));
+    xsettings.phone_validation = 'none';
+    assert.isTrue(phonenumber.validate(xsettings, '123'));
+    xsettings.phone_validation = 'whatever';
+    assert.isFalse(phonenumber.validate(xsettings, '123'));
+  });
+
   it('validate returns false for empty number', () => {
     var actual = phonenumber.validate(settings, '');
     assert.isFalse(actual);
@@ -144,7 +157,7 @@ describe('libphonenumber', () => {
     assert.isFalse(actual);
   });
 
-  // Correct for libphonenumber weirdness : 
+  // Correct for libphonenumber weirdness :
   // For some reason, '<validnumber>a' or '<validnumber>aa' is valid for libphonenumber.
   // Issue : https://github.com/googlei18n/libphonenumber/issues/328
   it('validate returns false for invalid number - two extra letters - trailing', () => {
