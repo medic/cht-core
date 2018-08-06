@@ -595,7 +595,7 @@ describe('Contacts controller', () => {
       settings.resolves({
         uhc: {
           contacts_default_sort: {},
-          home_visits: {
+          visit_count: {
             month_start_date: false,
             visit_count_goal: 1
           }
@@ -632,7 +632,7 @@ describe('Contacts controller', () => {
           contacts_default_sort: {
             last_visited_date: true
           },
-          home_visits: {
+          visit_count: {
             month_start_date: 25,
             visit_count_goal: 125
           }

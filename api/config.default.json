@@ -347,7 +347,7 @@
     "contacts_default_sort": {
       "last_visited_date": false
     },
-    "home_visits": {
+    "visit_count": {
       "month_start_date": 1,
       "visit_count_goal": 0
     }

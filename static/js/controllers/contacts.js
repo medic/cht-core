@@ -320,13 +320,13 @@ var _ = require('underscore'),
       };
 
       var getVisitCountSettings = function(settings) {
-        if (!settings.home_visits) {
+        if (!settings.visit_count) {
           return {};
         }
 
         return {
-          monthStartDate: settings.home_visits.month_start_date,
-          visitCountGoal: settings.home_visits.visit_count_goal
+          monthStartDate: settings.visit_count.month_start_date,
+          visitCountGoal: settings.visit_count.visit_count_goal
         };
       };
 
