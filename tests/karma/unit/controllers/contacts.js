@@ -27,40 +27,43 @@ describe('Contacts controller', () => {
       changesCallback,
       changesFilter,
       contactSearchLiveList,
-      deadListFind = sinon.stub(),
+      deadListFind,
       settings,
       auth,
-      deadListContains = sinon.stub();
+      deadListContains,
+      deadList;
 
   beforeEach(module('inboxApp'));
 
-  const deadList = () => {
-    let elements = [];
-
-    return  {
-      getList: () => elements,
-      initialised: sinon.stub(),
-      setSelected: sinon.stub(),
-      refresh: sinon.stub(),
-      count: () => elements.length,
-      insert: e => elements.push(e),
-      set: es => elements = es,
-      update: e => {
-        if (e !== district || elements[0] !== district) {
-          elements.push(e);
-        }
-      },
-      remove: () => {
-        if (deadListFind()) {
-          return elements.pop();
-        }
-        return false;
-      },
-      contains: deadListContains
-    };
-  };
-
   beforeEach(inject((_$rootScope_, $controller) => {
+    deadListFind = sinon.stub();
+    deadListContains = sinon.stub();
+    deadList = () => {
+      let elements = [];
+
+      return  {
+        getList: () => elements,
+        initialised: sinon.stub(),
+        setSelected: sinon.stub(),
+        refresh: sinon.stub(),
+        count: () => elements.length,
+        insert: e => elements.push(e),
+        set: es => elements = es,
+        update: e => {
+          if (e !== district || elements[0] !== district) {
+            elements.push(e);
+          }
+        },
+        remove: () => {
+          if (deadListFind()) {
+            return elements.pop();
+          }
+          return false;
+        },
+        contains: deadListContains
+      };
+    };
+
     district = { _id: 'abcde', name: 'My District', type: 'district_hospital' };
     person = { _id: 'lkasdfh', name: 'Alon', type: 'person' };
     childType = 'childType';
