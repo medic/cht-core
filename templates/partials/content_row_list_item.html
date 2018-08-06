@@ -37,7 +37,7 @@ Places of interest
           <span class="badge">{{taskCount}}</span>
         </div>
         <div class="visits {{visits ? '' : 'ng-hide'}} {{visits.status === 'pending' ? 'danger': ''}} {{visits.status === 'started' ? 'warning' : ''}} {{visits.status === 'done' ? 'success': ''}}">
-          <span>{{visits && visits.count | integer : 2}}</span>
+          <span>{{visits && visits.count | integer : 99}}</span>
         </div>
       </div>
       <div class="summary">

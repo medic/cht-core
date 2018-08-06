@@ -29,7 +29,8 @@ describe('Contacts controller', () => {
       contactSearchLiveList,
       deadListFind = sinon.stub(),
       settings,
-      auth;
+      auth,
+      deadListContains = sinon.stub();
 
   beforeEach(module('inboxApp'));
 
@@ -54,7 +55,8 @@ describe('Contacts controller', () => {
           return elements.pop();
         }
         return false;
-      }
+      },
+      contains: deadListContains
     };
   };
 
@@ -661,6 +663,27 @@ describe('Contacts controller', () => {
             }
           ]);
         });
+    });
+
+    it('changes listener filters relevant last visited reports', () => {
+      const relevantReport = { type: 'data_record', form: 'home_visit', fields: { visited_contact_uuid: 'something' } };
+      const irrelevantReports = [
+        { type: 'data_record', form: 'home_visit', fields: { visited_contact_uuid: 'else' }},
+        { type: 'data_record', form: 'home_visit', fields: { uuid: 'bla' }},
+        { type: 'data_record', form: 'home_visit' },
+        { type: 'something', form: 'home_visit', fields: { visited_contact_uuid: 'something' }},
+      ];
+
+      deadListContains.returns(false);
+      deadListContains.withArgs({ _id: 'something' }).returns(true);
+
+      return createController().getSetupPromiseForTesting().then(() => {
+        assert.equal(changesFilter({ doc: relevantReport }), true);
+        assert.equal(changesFilter({ doc: irrelevantReports[0] }), false);
+        assert.equal(changesFilter({ doc: irrelevantReports[1] }), false);
+        assert.equal(changesFilter({ doc: irrelevantReports[2] }), false);
+        assert.equal(changesFilter({ doc: irrelevantReports[3] }), false);
+      });
     });
   });
 });

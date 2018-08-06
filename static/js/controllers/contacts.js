@@ -365,6 +365,19 @@ var _ = require('underscore'),
         }
       });
 
+      var isRelevantVisitReport = function(doc) {
+        if (doc.type === 'data_record' &&
+            doc.form &&
+            doc.fields &&
+            doc.fields.visited_contact_uuid &&
+            liveList.contains({ _id: doc.fields.visited_contact_uuid })
+        ) {
+          return true;
+        }
+
+        return false;
+      };
+
       var changeListener = Changes({
         key: 'contacts-list',
         callback: function(change) {
@@ -375,7 +388,8 @@ var _ = require('underscore'),
           _query({ limit: limit, silent: true });
         },
         filter: function(change) {
-          return ContactSchema.getTypes().indexOf(change.doc.type) !== -1;
+          return ContactSchema.getTypes().indexOf(change.doc.type) !== -1 ||
+                 isRelevantVisitReport(change.doc);
         }
       });
 

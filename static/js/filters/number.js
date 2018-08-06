@@ -1,19 +1,19 @@
+// Integer filter that accepts an upper digit limit
 angular.module('inboxFilters').filter('integer', function() {
   'use strict';
   'ngInject';
-  return function(number, maxDigits) {
+  return function(number, max) {
     number = parseInt(number);
-    maxDigits = parseInt(maxDigits);
+    max = parseInt(max);
 
     if (isNaN(number)) {
       return;
     }
 
-    if (number > 0 && maxDigits > 0 && number.toString().length > maxDigits) {
-      var max = Math.pow(10, maxDigits) - 1;
+    if (max > 0 && number > max) {
       return max + '+';
     }
 
-    return number + '';
+    return number.toString();
   };
 });

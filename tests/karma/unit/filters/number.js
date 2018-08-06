@@ -1,11 +1,12 @@
-describe('number filters', function() {
+describe('number filters', () => {
 
   'use strict';
 
-  var compile,
-      scope;
+  let compile,
+      scope,
+      element;
 
-  beforeEach(function() {
+  beforeEach(() => {
     module('inboxApp');
     inject(function(_$compile_, _$rootScope_) {
       compile = _$compile_;
@@ -13,79 +14,101 @@ describe('number filters', function() {
     });
   });
 
-  describe('max digit integer filter', function() {
+  describe('max number integer filter', () => {
     it('should render nothing when no number', function() {
       scope.number = undefined;
-      var element = compile('<div ng-bind-html="number | integer"></div>')(scope);
+      element = compile('<div ng-bind-html="number | integer"></div>')(scope);
       scope.$digest();
       chai.expect(element.html()).to.equal('');
     });
 
-    it('should render nothing when not a number', function() {
+    it('should render nothing when not a number', () => {
       scope.number = 'this is not a number';
-      var element = compile('<div ng-bind-html="number | integer"></div>')(scope);
+      element = compile('<div ng-bind-html="number | integer"></div>')(scope);
       scope.$digest();
       chai.expect(element.html()).to.equal('');
     });
 
-    it('should parse integers', function() {
+    it('should parse integers', () => {
       scope.number = 3.14;
-      var element = compile('<div ng-bind-html="number | integer"></div>')(scope);
+      element = compile('<div ng-bind-html="number | integer"></div>')(scope);
       scope.$digest();
       chai.expect(element.html()).to.equal('3');
 
       scope.number = -3.14;
-      var element1 = compile('<div ng-bind-html="number | integer"></div>')(scope);
+      element = compile('<div ng-bind-html="number | integer"></div>')(scope);
       scope.$digest();
-      chai.expect(element1.html()).to.equal('-3');
+      chai.expect(element.html()).to.equal('-3');
     });
 
-    it('should respect max digits when positive number', function() {
+    it('should respect max when positive number', () => {
       scope.number = '123456';
-      var element1 = compile('<div ng-bind-html="number | integer:something"></div>')(scope);
+      element = compile('<div ng-bind-html="number | integer:something"></div>')(scope);
       scope.$digest();
-      chai.expect(element1.html()).to.equal('123456');
+      chai.expect(element.html()).to.equal('123456');
 
-      var element2 = compile('<div ng-bind-html="number | integer:0"></div>')(scope);
+      element = compile('<div ng-bind-html="number | integer:0"></div>')(scope);
       scope.$digest();
-      chai.expect(element2.html()).to.equal('123456');
+      chai.expect(element.html()).to.equal('123456');
 
-      var element3 = compile('<div ng-bind-html="number | integer:-1000"></div>')(scope);
+      element = compile('<div ng-bind-html="number | integer:-1000"></div>')(scope);
       scope.$digest();
-      chai.expect(element3.html()).to.equal('123456');
+      chai.expect(element.html()).to.equal('123456');
 
-      var element4 = compile('<div ng-bind-html="number | integer:2"></div>')(scope);
+      element = compile('<div ng-bind-html="number | integer:99"></div>')(scope);
       scope.$digest();
-      chai.expect(element4.html()).to.equal('99+');
+      chai.expect(element.html()).to.equal('99+');
     });
 
-    it('should display correct positive maximum number', function() {
-      scope.number = 11;
-      var element1 = compile('<div ng-bind-html="number | integer:1"></div>')(scope);
+    it('should display correct positive number', () => {
+      scope.number = 5;
+      element = compile('<div ng-bind-html="number | integer:9"></div>')(scope);
       scope.$digest();
-      chai.expect(element1.html()).to.equal('9+');
+      chai.expect(element.html()).to.equal('5');
+
+      scope.number = 67;
+      element = compile('<div ng-bind-html="number | integer:99"></div>')(scope);
+      scope.$digest();
+      chai.expect(element.html()).to.equal('67');
+
+      scope.number = 286;
+      element = compile('<div ng-bind-html="number | integer:999"></div>')(scope);
+      scope.$digest();
+      chai.expect(element.html()).to.equal('286');
+
+      scope.number = 1985;
+      element = compile('<div ng-bind-html="number | integer:9999"></div>')(scope);
+      scope.$digest();
+      chai.expect(element.html()).to.equal('1985');
+    });
+
+    it('should display correct positive maximum number', () => {
+      scope.number = 11;
+      element = compile('<div ng-bind-html="number | integer:9"></div>')(scope);
+      scope.$digest();
+      chai.expect(element.html()).to.equal('9+');
 
       scope.number = 125;
-      var element2 = compile('<div ng-bind-html="number | integer:2"></div>')(scope);
+      element = compile('<div ng-bind-html="number | integer:99"></div>')(scope);
       scope.$digest();
-      chai.expect(element2.html()).to.equal('99+');
+      chai.expect(element.html()).to.equal('99+');
 
       scope.number = 1987;
-      var element3 = compile('<div ng-bind-html="number | integer:3"></div>')(scope);
+      element = compile('<div ng-bind-html="number | integer:999"></div>')(scope);
       scope.$digest();
-      chai.expect(element3.html()).to.equal('999+');
+      chai.expect(element.html()).to.equal('999+');
 
       scope.number = 98782;
-      var element4 = compile('<div ng-bind-html="number | integer:4"></div>')(scope);
+      element = compile('<div ng-bind-html="number | integer:9999"></div>')(scope);
       scope.$digest();
-      chai.expect(element4.html()).to.equal('9999+');
+      chai.expect(element.html()).to.equal('9999+');
     });
 
-    it('should display correct negative number', function() {
+    it('should display correct negative number', () => {
       scope.number = -123456789;
-      var element1 = compile('<div ng-bind-html="number | integer:1"></div>')(scope);
+      element = compile('<div ng-bind-html="number | integer:9"></div>')(scope);
       scope.$digest();
-      chai.expect(element1.html()).to.equal('-123456789');
+      chai.expect(element.html()).to.equal('-123456789');
     });
   });
 });
