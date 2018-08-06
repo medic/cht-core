@@ -14,20 +14,20 @@ var moment = require('moment');
     return intervalStartDate;
   };
 
-  var getMinimumStartDate = function(intervalStartDate) {
+  var getMinimumStartDate = function(intervalStartDate, relativeDate) {
     return moment
       .min(
-        moment().subtract(1, 'month').date(intervalStartDate).startOf('day'),
-        moment().startOf('month')
+        moment(relativeDate).subtract(1, 'month').date(intervalStartDate).startOf('day'),
+        moment(relativeDate).startOf('month')
       )
       .valueOf();
   };
 
-  var getMinimumEndDate = function(intervalStartDate, nextMonth) {
+  var getMinimumEndDate = function(intervalStartDate, nextMonth, relativeDate) {
     return moment
       .min(
-        moment().add(nextMonth ? 1 : 0, 'month').date(intervalStartDate - 1).endOf('day'),
-        moment().add(nextMonth ? 1 : 0, 'month').endOf('month')
+        moment(relativeDate).add(nextMonth ? 1 : 0, 'month').date(intervalStartDate - 1).endOf('day'),
+        moment(relativeDate).add(nextMonth ? 1 : 0, 'month').endOf('month')
       )
       .valueOf();
   };
@@ -36,8 +36,7 @@ var moment = require('moment');
   // @param {Number} [intervalStartDate=1] - day of month when interval starts (1 - 31)
   //
   // if `intervalStartDate` exceeds the month's day count, the start of following month is returned
-  //
-  // fe `intervalStartDate` === 31 would result in following intervals :
+  // fe `intervalStartDate` === 31 would generate following intervals :
   // [12-31 -> 01-30], [02-01 -> 02-[28|29]], [03-01 -> 03-30], [03-31 -> 04-30]
   exports.getCurrent = function(intervalStartDate) {
     intervalStartDate = normalizeStartDate(intervalStartDate);
