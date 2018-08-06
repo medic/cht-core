@@ -1,5 +1,4 @@
-// Integer filter that accepts an upper digit limit
-angular.module('inboxFilters').filter('integer', function() {
+angular.module('inboxFilters').filter('maxInteger', function() {
   'use strict';
   'ngInject';
   return function(number, max) {

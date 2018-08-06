@@ -10,7 +10,7 @@ angular.module('inboxServices').factory('LiveListConfig',
     $timeout,
     $translate,
     ContactSchema,
-    integerFilter,
+    maxIntegerFilter,
     LiveList,
     RulesEngine,
     relativeDayFilter,
@@ -85,11 +85,10 @@ angular.module('inboxServices').factory('LiveListConfig',
               }
 
               scope.visits = {
-                count: $translate.instant('contacts.visits.count', { count: integerFilter(contact.visitCount, 99) }),
+                count: $translate.instant('contacts.visits.count', { count: maxIntegerFilter(contact.visitCount, 99) }),
                 summary: contact.visitCount === 1 ?
                   $translate.instant('contacts.visits.count.visit') :
                   $translate.instant('contacts.visits.count.visits'),
-
               };
 
               if (contact.visitCountGoal) {

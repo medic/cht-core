@@ -340,7 +340,6 @@ var _ = require('underscore'),
         usersHomePlace = results[0];
         $scope.lastVisitedDateExtras = results[1];
         var uhcSettings = results[2] && results[2].uhc || {};
-
         $scope.visitCountSettings = getVisitCountSettings(uhcSettings);
         if ($scope.lastVisitedDateExtras &&
             uhcSettings.contacts_default_sort &&

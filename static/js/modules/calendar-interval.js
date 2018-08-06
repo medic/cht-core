@@ -32,12 +32,12 @@ var moment = require('moment');
       .valueOf();
   };
 
-  // Returns the timestamps of the beginning and end of a current calendar interval
+  // Returns the timestamps of the start and end of the current calendar interval
   // @param {Number} [intervalStartDate=1] - day of month when interval starts (1 - 31)
   //
-  // if `intervalStartDate` exceeds the month's day count, the start of following month is returned
-  // fe `intervalStartDate` === 31 would generate following intervals :
-  // [12-31 -> 01-30], [02-01 -> 02-[28|29]], [03-01 -> 03-30], [03-31 -> 04-30]
+  // if `intervalStartDate` exceeds month's day count, the start/end of following/current month is returned
+  // f.e. `intervalStartDate` === 31 would generate next intervals :
+  // [12-31 -> 01-30], [01-31 -> 02-[28|29]], [03-01 -> 03-30], [03-31 -> 04-30], [05-01 -> 05-30], [05-31 - 06-30] etc
   exports.getCurrent = function(intervalStartDate) {
     intervalStartDate = normalizeStartDate(intervalStartDate);
 
