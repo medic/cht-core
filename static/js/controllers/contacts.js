@@ -89,7 +89,7 @@ var _ = require('underscore'),
         var extensions = {};
         if ($scope.lastVisitedDateExtras) {
           extensions.displayLastVisitedDate = true;
-          extensions.lastVisitedDateSettings = $scope.lastVisitedDateSettings;
+          extensions.visitCountSettings = $scope.visitCountSettings;
         }
         if ($scope.sortDirection === 'lastVisitedDate') {
           extensions.sortByLastVisitedDate = true;
@@ -341,7 +341,7 @@ var _ = require('underscore'),
         $scope.lastVisitedDateExtras = results[1];
         var uhcSettings = results[2] && results[2].uhc || {};
 
-        $scope.lastVisitedDateSettings = getVisitCountSettings(uhcSettings);
+        $scope.visitCountSettings = getVisitCountSettings(uhcSettings);
         if ($scope.lastVisitedDateExtras &&
             uhcSettings.contacts_default_sort &&
             uhcSettings.contacts_default_sort.last_visited_date) {

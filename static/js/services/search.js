@@ -108,7 +108,7 @@ var _ = require('underscore'),
 
             var result;
             if (extensions.displayLastVisitedDate) {
-              var lastVisitedDatePromise = getLastVisitedDates(searchResults, extensions.lastVisitedDateSettings);
+              var lastVisitedDatePromise = getLastVisitedDates(searchResults, extensions.visitCountSettings);
 
               result = $q
                 .all([ dataRecordsPromise, lastVisitedDatePromise ])

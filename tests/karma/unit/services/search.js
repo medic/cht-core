@@ -228,7 +228,7 @@ describe('Search service', function() {
 
       const extensions = {
         displayLastVisitedDate: true,
-        lastVisitedDateSettings: {
+        visitCountSettings: {
           visitCountGoal: 2,
           monthStartDate: 25
         },

@@ -551,7 +551,7 @@ describe('Contacts controller', () => {
           assert.equal(auth.callCount, 1);
           assert.deepEqual(auth.args[0], ['can_view_last_visited_date']);
           assert.equal(scope.lastVisitedDateExtras, false);
-          assert.deepEqual(scope.lastVisitedDateSettings, {});
+          assert.deepEqual(scope.visitCountSettings, {});
           assert.equal(scope.sortDirection, 'alpha');
           assert.equal(settings.callCount, 1);
 
@@ -573,7 +573,7 @@ describe('Contacts controller', () => {
           assert.equal(auth.callCount, 1);
           assert.deepEqual(auth.args[0], ['can_view_last_visited_date']);
           assert.equal(scope.lastVisitedDateExtras, true);
-          assert.deepEqual(scope.lastVisitedDateSettings, {});
+          assert.deepEqual(scope.visitCountSettings, {});
           assert.equal(scope.sortDirection, 'alpha');
           assert.equal(settings.callCount, 1);
 
@@ -584,7 +584,7 @@ describe('Contacts controller', () => {
             { limit: 50 },
             {
               displayLastVisitedDate: true,
-              lastVisitedDateSettings: {}
+              visitCountSettings: {}
             }
           ]);
         });
@@ -608,7 +608,7 @@ describe('Contacts controller', () => {
           assert.deepEqual(auth.args[0], ['can_view_last_visited_date']);
 
           assert.equal(scope.lastVisitedDateExtras, true);
-          assert.deepEqual(scope.lastVisitedDateSettings, { monthStartDate: false, visitCountGoal: 1 });
+          assert.deepEqual(scope.visitCountSettings, { monthStartDate: false, visitCountGoal: 1 });
           assert.equal(scope.sortDirection, 'alpha');
           assert.equal(settings.callCount, 1);
 
@@ -619,7 +619,7 @@ describe('Contacts controller', () => {
             { limit: 50 },
             {
               displayLastVisitedDate: true,
-              lastVisitedDateSettings: { monthStartDate: false, visitCountGoal: 1 }
+              visitCountSettings: { monthStartDate: false, visitCountGoal: 1 }
             }
           ]);
         });
@@ -645,7 +645,7 @@ describe('Contacts controller', () => {
           assert.deepEqual(auth.args[0], ['can_view_last_visited_date']);
 
           assert.equal(scope.lastVisitedDateExtras, true);
-          assert.deepEqual(scope.lastVisitedDateSettings, { monthStartDate: 25, visitCountGoal: 125 });
+          assert.deepEqual(scope.visitCountSettings, { monthStartDate: 25, visitCountGoal: 125 });
           assert.equal(scope.sortDirection, 'lastVisitedDate');
           assert.equal(settings.callCount, 1);
 
@@ -656,7 +656,7 @@ describe('Contacts controller', () => {
             { limit: 50 },
             {
               displayLastVisitedDate: true,
-              lastVisitedDateSettings: { monthStartDate: 25, visitCountGoal: 125 },
+              visitCountSettings: { monthStartDate: 25, visitCountGoal: 125 },
               sortByLastVisitedDate: true
             }
           ]);
