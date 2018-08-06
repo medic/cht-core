@@ -126,6 +126,7 @@ var _ = require('underscore'),
           }
 
           $scope.moreItems = liveList.moreItems = contacts.length >= options.limit;
+
           contacts.forEach(liveList.update);
           liveList.refresh();
           _initScroll();
@@ -319,14 +320,14 @@ var _ = require('underscore'),
           });
       };
 
-      var getVisitCountSettings = function(settings) {
-        if (!settings.visit_count) {
+      var getVisitCountSettings = function(uhcSettings) {
+        if (!uhcSettings.visit_count) {
           return {};
         }
 
         return {
-          monthStartDate: settings.visit_count.month_start_date,
-          visitCountGoal: settings.visit_count.visit_count_goal
+          monthStartDate: uhcSettings.visit_count.month_start_date,
+          visitCountGoal: uhcSettings.visit_count.visit_count_goal
         };
       };
 
