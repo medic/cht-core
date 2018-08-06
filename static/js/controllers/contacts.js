@@ -320,17 +320,13 @@ var _ = require('underscore'),
       };
 
       var getVisitCountSettings = function(settings) {
-        if (!settings || !settings.tasks || !settings.tasks.targets || !settings.tasks.targets.items) {
+        if (!settings.home_visits) {
           return {};
         }
 
-        var target = settings.tasks.targets.items.find(function(target) {
-          return target.id === 'home-visits';
-        });
-
         return {
-          monthStartDate: target && target.month_start_date,
-          visitCountGoal: target && target.goal
+          monthStartDate: settings.home_visits.month_start_date,
+          visitCountGoal: settings.home_visits.visit_count_goal
         };
       };
 
@@ -342,12 +338,12 @@ var _ = require('underscore'),
       .then(function(results) {
         usersHomePlace = results[0];
         $scope.lastVisitedDateExtras = results[1];
+        var uhcSettings = results[2] && results[2].uhc || {};
 
-        $scope.lastVisitedDateSettings = getVisitCountSettings(results[2]);
+        $scope.lastVisitedDateSettings = getVisitCountSettings(uhcSettings);
         if ($scope.lastVisitedDateExtras &&
-            results[2].uhc &&
-            results[2].uhc.contacts_default_sort &&
-            results[2].uhc.contacts_default_sort.last_visited_date) {
+            uhcSettings.contacts_default_sort &&
+            uhcSettings.contacts_default_sort.last_visited_date) {
           $scope.sortDirection = 'lastVisitedDate';
         }
 

@@ -60,41 +60,32 @@ describe('number filters', function() {
     });
 
     it('should display correct positive maximum number', function() {
-      scope.number = 123456789;
+      scope.number = 11;
       var element1 = compile('<div ng-bind-html="number | integer:1"></div>')(scope);
       scope.$digest();
       chai.expect(element1.html()).to.equal('9+');
 
+      scope.number = 125;
       var element2 = compile('<div ng-bind-html="number | integer:2"></div>')(scope);
       scope.$digest();
       chai.expect(element2.html()).to.equal('99+');
 
+      scope.number = 1987;
       var element3 = compile('<div ng-bind-html="number | integer:3"></div>')(scope);
       scope.$digest();
       chai.expect(element3.html()).to.equal('999+');
 
+      scope.number = 98782;
       var element4 = compile('<div ng-bind-html="number | integer:4"></div>')(scope);
       scope.$digest();
       chai.expect(element4.html()).to.equal('9999+');
     });
 
-    it('should display correct negative maximum number', function() {
+    it('should display correct negative number', function() {
       scope.number = -123456789;
       var element1 = compile('<div ng-bind-html="number | integer:1"></div>')(scope);
       scope.$digest();
-      chai.expect(element1.html()).to.equal('&lt; -9');
-
-      var element2 = compile('<div ng-bind-html="number | integer:2"></div>')(scope);
-      scope.$digest();
-      chai.expect(element2.html()).to.equal('&lt; -99');
-
-      var element3 = compile('<div ng-bind-html="number | integer:3"></div>')(scope);
-      scope.$digest();
-      chai.expect(element3.html()).to.equal('&lt; -999');
-
-      var element4 = compile('<div ng-bind-html="number | integer:4"></div>')(scope);
-      scope.$digest();
-      chai.expect(element4.html()).to.equal('&lt; -9999');
+      chai.expect(element1.html()).to.equal('-123456789');
     });
   });
 });

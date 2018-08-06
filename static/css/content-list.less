@@ -139,9 +139,14 @@
         }
       }
 
+      .summary .visits {
+        font-size: @font-small;
+        font-weight: bold;
+      }
+
       .visits {
         &.warning {
-          color: @warning-color;
+          color: @visits-started-color;
         }
 
         &.danger {
@@ -149,15 +154,14 @@
         }
 
         &.success {
-          color: @analytics-color;
+          color: @visits-done-color;
         }
       }
-
-      .summary .visits {
-        font-size: @font-small;
-        font-weight: bold;
-      }
     }
+  }
+
+  &.visit-count > a {
+    padding-right: 10px;
   }
 }
 

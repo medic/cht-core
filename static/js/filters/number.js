@@ -9,9 +9,9 @@ angular.module('inboxFilters').filter('integer', function() {
       return;
     }
 
-    if (maxDigits > 0 && Math.abs(Math.ceil(number/10)) > maxDigits) {
+    if (number > 0 && maxDigits > 0 && number.toString().length > maxDigits) {
       var max = Math.pow(10, maxDigits) - 1;
-      return number > 0 ? max + '+' : '< -' + max;
+      return max + '+';
     }
 
     return number + '';

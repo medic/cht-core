@@ -594,15 +594,10 @@ describe('Contacts controller', () => {
       auth.resolves();
       settings.resolves({
         uhc: {
-          contacts_default_sort: {}
-        },
-        tasks: {
-          targets: {
-            items: [{
-              id: 'home-visits',
-              month_start_date: false,
-              goal: 1
-            }]
+          contacts_default_sort: {},
+          home_visits: {
+            month_start_date: false,
+            visit_count_goal: 1
           }
         }
       });
@@ -636,15 +631,10 @@ describe('Contacts controller', () => {
         uhc: {
           contacts_default_sort: {
             last_visited_date: true
-          }
-        },
-        tasks: {
-          targets: {
-            items: [{
-              id: 'home-visits',
-              month_start_date: 25,
-              goal: 125
-            }]
+          },
+          home_visits: {
+            month_start_date: 25,
+            visit_count_goal: 125
           }
         }
       });
