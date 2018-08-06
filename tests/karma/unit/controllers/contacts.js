@@ -555,6 +555,7 @@ describe('Contacts controller', () => {
           assert.equal(scope.lastVisitedDateExtras, false);
           assert.deepEqual(scope.visitCountSettings, {});
           assert.equal(scope.sortDirection, 'alpha');
+          assert.equal(scope.defaultSortDirection, 'alpha');
           assert.equal(settings.callCount, 1);
 
           assert.equal(searchService.callCount, 1);
@@ -564,6 +565,10 @@ describe('Contacts controller', () => {
             { limit: 50 },
             {}
           ]);
+
+          scope.sortDirection = 'something';
+          scope.resetFilterModel();
+          assert.equal(scope.sortDirection, 'alpha');
         });
     });
 
@@ -577,6 +582,7 @@ describe('Contacts controller', () => {
           assert.equal(scope.lastVisitedDateExtras, true);
           assert.deepEqual(scope.visitCountSettings, {});
           assert.equal(scope.sortDirection, 'alpha');
+          assert.equal(scope.defaultSortDirection, 'alpha');
           assert.equal(settings.callCount, 1);
 
           assert.equal(searchService.callCount, 1);
@@ -649,6 +655,7 @@ describe('Contacts controller', () => {
           assert.equal(scope.lastVisitedDateExtras, true);
           assert.deepEqual(scope.visitCountSettings, { monthStartDate: 25, visitCountGoal: 125 });
           assert.equal(scope.sortDirection, 'lastVisitedDate');
+          assert.equal(scope.defaultSortDirection, 'lastVisitedDate');
           assert.equal(settings.callCount, 1);
 
           assert.equal(searchService.callCount, 1);
@@ -662,10 +669,15 @@ describe('Contacts controller', () => {
               sortByLastVisitedDate: true
             }
           ]);
+
+          scope.sortDirection = 'something';
+          scope.resetFilterModel();
+          assert.equal(scope.sortDirection, 'lastVisitedDate');
         });
     });
 
-    it('changes listener filters relevant last visited reports', () => {
+    it('changes listener filters relevant last visited reports when feature is enabled', () => {
+      auth.resolves();
       const relevantReport = { type: 'data_record', form: 'home_visit', fields: { visited_contact_uuid: 'something' } };
       const irrelevantReports = [
         { type: 'data_record', form: 'home_visit', fields: { visited_contact_uuid: 'else' }},
@@ -683,6 +695,30 @@ describe('Contacts controller', () => {
         assert.equal(changesFilter({ doc: irrelevantReports[1] }), false);
         assert.equal(changesFilter({ doc: irrelevantReports[2] }), false);
         assert.equal(changesFilter({ doc: irrelevantReports[3] }), false);
+      });
+    });
+
+    it('changes listener does not filter last visited reports when feature is disabled', () => {
+      auth.rejects();
+      const relevantReport = { type: 'data_record', form: 'home_visit', fields: { visited_contact_uuid: 'something' } };
+      const irrelevantReports = [
+        { type: 'data_record', form: 'home_visit', fields: { visited_contact_uuid: 'else' }},
+        { type: 'data_record', form: 'home_visit', fields: { uuid: 'bla' }},
+        { type: 'data_record', form: 'home_visit' },
+        { type: 'something', form: 'home_visit', fields: { visited_contact_uuid: 'something' }},
+      ];
+
+      deadListContains.returns(false);
+      deadListContains.withArgs({ _id: 'something' }).returns(true);
+
+      return createController().getSetupPromiseForTesting().then(() => {
+        assert.equal(changesFilter({ doc: relevantReport }), false);
+        assert.equal(changesFilter({ doc: irrelevantReports[0] }), false);
+        assert.equal(changesFilter({ doc: irrelevantReports[1] }), false);
+        assert.equal(changesFilter({ doc: irrelevantReports[2] }), false);
+        assert.equal(changesFilter({ doc: irrelevantReports[3] }), false);
+
+        assert.equal(deadListContains.callCount, 0);
       });
     });
   });

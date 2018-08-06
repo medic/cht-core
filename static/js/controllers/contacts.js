@@ -46,7 +46,7 @@ var _ = require('underscore'),
       var usersHomePlace;
       var additionalListItem = false;
 
-      $scope.sortDirection = 'alpha';
+      $scope.sortDirection = $scope.defaultSortDirection = 'alpha';
 
       var _initScroll = function() {
         scrollLoader.init(function() {
@@ -256,7 +256,7 @@ var _ = require('underscore'),
       };
       $scope.resetFilterModel = function() {
         $scope.filters = {};
-        $scope.sortDirection = 'alpha';
+        $scope.sortDirection = $scope.defaultSortDirection;
         SearchFilters.reset();
         $scope.search();
       };
@@ -345,7 +345,7 @@ var _ = require('underscore'),
         if ($scope.lastVisitedDateExtras &&
             uhcSettings.contacts_default_sort &&
             uhcSettings.contacts_default_sort.last_visited_date) {
-          $scope.sortDirection = 'lastVisitedDate';
+          $scope.sortDirection = $scope.defaultSortDirection = 'lastVisitedDate';
         }
 
         setActionBarData();
@@ -366,7 +366,8 @@ var _ = require('underscore'),
       });
 
       var isRelevantVisitReport = function(doc) {
-        if (doc.type === 'data_record' &&
+        if ($scope.lastVisitedDateExtras &&
+            doc.type === 'data_record' &&
             doc.form &&
             doc.fields &&
             doc.fields.visited_contact_uuid &&
