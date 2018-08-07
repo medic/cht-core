@@ -67,11 +67,7 @@ var isDeleteStub = function(doc) {
     });
   };
 
-  if (arrayIncludes(COUCHDB_TOMBSTONE_PROPERTIES, Object.keys(doc)) && doc._deleted) {
-    return true;
-  }
-
-  return false;
+  return arrayIncludes(COUCHDB_TOMBSTONE_PROPERTIES, Object.keys(doc)) && !!doc._deleted;
 };
 
 // Returns n-th previous rev
@@ -105,7 +101,6 @@ module.exports = {
     if (!logger) {
       logger = console;
     }
-
     if (!change.deleted) {
       throw new Error('Tombstone: received non-deletion change to tombstone');
     }

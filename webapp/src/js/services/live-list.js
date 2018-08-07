@@ -476,11 +476,9 @@ angular.module('inboxServices').factory('LiveList',
       // CouchDB/Fauxton deletes don't include doc fields in the deleted revision
       // _conflicts, _attachments can be part of the _changes request result
       var stubProps = [ '_id', '_rev', '_deleted', '_conflicts', '_attachments' ];
-      if (arrayIncludes(stubProps, Object.keys(doc)) && doc._deleted) {
-        return _contains(listName, doc);
-      }
-
-      return false;
+      return arrayIncludes(stubProps, Object.keys(doc)) &&
+             !!doc._deleted &&
+             _contains(listName, doc);
     }
 
     function refreshAll() {
