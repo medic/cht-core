@@ -15,8 +15,8 @@
     "chai-shallow-deep-equal": "^1.4.6",
     "lodash": "^4.17.10",
     "memdown-medic": "file:../memdown-medic",
-    "mocha": "^5.0.0",
-    "sinon": "4.0.1"
+    "mocha": "^5.2.0",
+    "sinon": "^6.1.3"
   },
   "dependencies": {}
 }

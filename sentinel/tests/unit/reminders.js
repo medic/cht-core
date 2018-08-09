@@ -1,6 +1,6 @@
 var _ = require('underscore'),
     moment = require('moment'),
-    sinon = require('sinon').sandbox.create(),
+    sinon = require('sinon'),
     assert = require('chai').assert,
     config = require('../../src/config'),
     reminders = require('../../src/schedule/reminders');

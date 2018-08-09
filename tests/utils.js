@@ -52,7 +52,10 @@ const request = (options, {debug, noAuth, notJson} = {}) => {
 
         body = JSON.parse(body);
         if (body.error) {
-          deferred.reject(new Error(`Request failed: ${options.path},\n  body: ${JSON.stringify(options.body)}\n  response: ${JSON.stringify(body)}`));
+          const err = new Error(`Request failed: ${options.path},\n  body: ${JSON.stringify(options.body)}\n  response: ${JSON.stringify(body)}`);
+          err.responseBody = body;
+          err.statusCode = res.statusCode;
+          deferred.reject(err);
         } else {
           deferred.fulfill(body);
         }
@@ -218,6 +221,36 @@ const revertDb = (except, ignoreRefresh) => {
   });
 };
 
+const deleteUsers = (usernames) => {
+  const userIds = JSON.stringify(usernames.map(user => `org.couchdb.user:${user}`)),
+        method = 'POST',
+        headers = { 'Content-Type': 'application/json' };
+
+  return Promise
+    .all([
+      request(`/${constants.DB_NAME}/_all_docs?include_docs=true&keys=${userIds}`),
+      request(`/_users/_all_docs?include_docs=true&keys=${userIds}`)
+    ])
+    .then(results => {
+      const docs = results.map(result =>
+        result.rows
+          .map(row => {
+            if (row.doc) {
+              row.doc._deleted = true;
+              row.doc.type = 'tombstone';
+              return row.doc;
+            }
+          })
+          .filter(doc => doc));
+
+      return Promise.all([
+        request({ path: `/${constants.DB_NAME}/_bulk_docs`, body: { docs: docs[0]}, method, headers}),
+        request({ path: `/_users/_bulk_docs`, body: { docs: docs[1]}, method, headers})
+      ]);
+    })
+    ;
+};
+
 module.exports = {
 
   db: db,
@@ -238,19 +271,20 @@ module.exports = {
     }
   }),
 
-  requestOnTestDb: (options, debug) => {
+  requestOnTestDb: (options, debug, notJson) => {
     if (typeof options === 'string') {
       options = {
         path: options
       };
     }
     options.path = '/' + constants.DB_NAME + (options.path || '');
-    return request(options, {debug: debug});
+    return request(options, {debug: debug, notJson: notJson});
   },
 
   saveDoc: doc => {
     const postData = JSON.stringify(doc);
     return module.exports.requestOnTestDb({
+      path: '/', // so audit picks this up
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -369,8 +403,8 @@ module.exports = {
         }
       });
   },
-  
-  //check for the update modal before 
+
+  //check for the update modal before
   beforeEach:() => {
     if (element(by.css('#update-available')).isPresent()) {
       $('body').sendKeys(protractor.Key.ENTER);
@@ -410,5 +444,10 @@ module.exports = {
     `http://${constants.API_HOST}:${constants.API_PORT}/${constants.DB_NAME}/_design/medic-admin/_rewrite/#/`,
 
   getLoginUrl: () =>
-    `http://${constants.API_HOST}:${constants.API_PORT}/${constants.DB_NAME}/login`
+    `http://${constants.API_HOST}:${constants.API_PORT}/${constants.DB_NAME}/login`,
+
+  // Deletes _users docs and medic/user-settings docs for specified users
+  // @param {Array} usernames - list of users to be deleted
+  // @return {Promise}
+  deleteUsers: deleteUsers
 };

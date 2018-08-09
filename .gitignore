@@ -17,4 +17,7 @@ node_modules_backup
 coverage/
 dist
 /build/
-config/standard/.gdrive.*.json
+/ddocs/compiled.json
+/packages
+/static
+/config/*/.gdrive.*.json

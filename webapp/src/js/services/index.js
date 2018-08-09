@@ -57,6 +57,7 @@
   require('./message-state');
   require('./modal');
   require('./moment-locale-data');
+  require('./mrdt');
   require('./place-hierarchy');
   require('./recurring-process-manager');
   require('./relative-date');

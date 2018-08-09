@@ -218,17 +218,16 @@ var createContact = function(data, response, callback) {
   }
 
   response = response || {};
-  people.getOrCreatePerson(data.contact, function(err, doc) {
-    if (err) {
-      return callback(err);
-    }
-    data.contact = doc;
-    response.contact = {
-      id: doc._id,
-      rev: doc._rev
-    };
-    callback(null, data, response);
-  });
+  people.getOrCreatePerson(data.contact)
+    .then(doc => {
+      data.contact = doc;
+      response.contact = {
+        id: doc._id,
+        rev: doc._rev
+      };
+      callback(null, data, response);
+    })
+    .catch(err => callback(err));
 };
 
 var createUserSettings = function(data, response, callback) {
@@ -251,10 +250,12 @@ var createPlace = function(data, response, callback) {
     return callback(null, data, response);
   }
 
-  places.getOrCreatePlace(data.place, function(err, doc) {
-    data.place = doc;
-    callback(err, data, response);
-  });
+  places.getOrCreatePlace(data.place)
+    .then(doc => {
+      data.place = doc;
+      callback(null, data, response);
+    })
+    .catch(callback);
 };
 
 var storeUpdatedPlace = function(data, response, callback) {
@@ -292,17 +293,16 @@ var setContactParent = function(data, response, callback) {
     });
   } else if (data.contact.parent) {
     // contact parent must exist
-    places.getPlace(data.contact.parent, function(err, place) {
-      if (err) {
-        return callback(err);
-      }
-      if (!module.exports._hasParent(place, data.place)) {
-        return callback(error400('Contact is not within place.'));
-      }
-      // save result to contact object
-      data.contact.parent = lineage.minifyLineage(place);
-      callback(null, data, response);
-    });
+    places.getPlace(data.contact.parent)
+      .then(place => {
+        if (!module.exports._hasParent(place, data.place)) {
+          return callback(error400('Contact is not within place.'));
+        }
+        // save result to contact object
+        data.contact.parent = lineage.minifyLineage(place);
+        callback(null, data, response);
+      })
+      .catch(callback);
   } else {
     // creating new contact
     data.contact.parent = lineage.minifyLineage(data.place);
@@ -634,7 +634,9 @@ module.exports = {
         if (data.place) {
           settings.facility_id = user.facility_id;
           series.push(function(cb) {
-            places.getPlace(user.facility_id, cb);
+            places.getPlace(user.facility_id)
+              .then(place => cb(null, place))
+              .catch(cb);
           });
         }
         if (data.contact) {

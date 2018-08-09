@@ -111,7 +111,14 @@ var app = angular.module('adminApp', [
 
 app.constant('POUCHDB_OPTIONS', {
   local: { auto_compaction: true },
-  remote: { skip_setup: true, ajax: { timeout: 30000 }}
+  remote: {
+    skip_setup: true,
+    fetch: function(url, opts) {
+      opts.headers.set('Accept', 'application/json');
+      opts.credentials = 'same-origin';
+      return window.PouchDB.fetch(url, opts);
+    }
+  }
 });
 
 app.config(function(

@@ -115,7 +115,7 @@ const sort = issues => {
   }
 
   TYPES.forEach(type => {
-    type.issues.sort((lhs, rhs) => lhs.data.number > rhs.data.number);
+    type.issues.sort((lhs, rhs) => lhs.data.number - rhs.data.number);
   });
 
   return TYPES;

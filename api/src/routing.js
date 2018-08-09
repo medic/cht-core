@@ -10,7 +10,8 @@ const _ = require('underscore'),
       AuditProxy = require('./audit-proxy'),
       target = 'http://' + db.settings.host + ':' + db.settings.port,
       proxy = require('http-proxy').createProxyServer({ target: target }),
-      proxyForAuditing = require('http-proxy').createProxyServer({ target: target }),
+      proxyForAuditing = require('http-proxy').createProxyServer({ target: target, selfHandleResponse: true }),
+      proxyForChanges = require('http-proxy').createProxyServer({ target: target, selfHandleResponse: true }),
       login = require('./controllers/login'),
       smsGateway = require('./controllers/sms-gateway'),
       exportData = require('./controllers/export-data'),
@@ -22,10 +23,13 @@ const _ = require('underscore'),
       upgrade = require('./controllers/upgrade'),
       settings = require('./controllers/settings'),
       bulkDocs = require('./controllers/bulk-docs'),
+      authorization = require('./middleware/authorization'),
       createUserDb = require('./controllers/create-user-db'),
       createDomain = require('domain').create,
       staticResources = /\/(templates|static)\//,
       favicon = /\/icon_\d+.ico$/,
+      // CouchDB is very relaxed in matching routes
+      routePrefix = '/+' + db.settings.db + '/+',
       pathPrefix = '/' + db.settings.db + '/',
       appPrefix = pathPrefix + '_design/' + db.settings.ddoc + '/_rewrite/',
       serverUtils = require('./server-utils'),
@@ -123,27 +127,48 @@ app.get('/', function(req, res) {
 });
 
 app.use(express.static(path.join(__dirname, 'public')));
-app.get(pathPrefix + 'login', login.get);
-app.get(pathPrefix + 'login/identity', login.getIdentity);
-app.postJson(pathPrefix + 'login', login.post);
+app.get(routePrefix + 'login', login.get);
+app.get(routePrefix + 'login/identity', login.getIdentity);
+app.postJson(routePrefix + 'login', login.post);
+
+// saves CouchDB _session information as `userCtx` in the `req` object
+app.use(authorization.getUserCtx);
+
+// authorization for `_compact`, `_view_cleanup`, `_revs_limit` endpoints is handled by CouchDB
+const ONLINE_ONLY_ENDPOINTS = [
+  '_design/*/_list/*',
+  '_design/*/_show/*',
+  '_design/*/_view/*',
+  '_find(/*)?',
+  '_explain(/*)?',
+  '_index(/*)?',
+  '_ensure_full_commit(/*)?',
+  '_security(/*)?',
+  '_purge(/*)?'
+];
+
+// block offline users from accessing some unaudited CouchDB endpoints
+ONLINE_ONLY_ENDPOINTS.forEach(url =>
+  app.all(routePrefix + url, authorization.offlineUserFirewall)
+);
 
 var UNAUDITED_ENDPOINTS = [
   // This takes arbitrary JSON, not whole documents with `_id`s, so it's not
   // auditable in our current framework
   // Replication machinery we don't care to audit
-  '_local/*',
-  '_revs_diff',
-  '_missing_revs',
-  // These may use POST for specifiying ids
-  // NB: _changes is dealt with elsewhere: see `changesHandler`
-  '_all_docs',
-  '_bulk_get',
-  '_design/*/_list/*',
-  '_design/*/_show/*',
-  '_design/*/_view/*',
+  routePrefix + '_local/*',
+  routePrefix + '_revs_diff',
+  routePrefix + '_missing_revs',
+  // NB: _changes, _all_docs, _bulk_get are dealt with elsewhere:
+  // see `changesHandler`, `allDocsHandler`, `bulkGetHandler`
+  routePrefix + '_design/*/_list/*',
+  routePrefix + '_design/*/_show/*',
+  routePrefix + '_design/*/_view/*',
   // Interacting with mongo filters uses POST
-  '_find',
-  '_explain'
+  routePrefix + '_find',
+  routePrefix + '_explain',
+  // allow anyone to access their _session information
+  '/_session'
 ];
 
 UNAUDITED_ENDPOINTS.forEach(function(url) {
@@ -151,7 +176,7 @@ UNAUDITED_ENDPOINTS.forEach(function(url) {
   // the file below, and these calls will all be proxies. If you want to avoid
   // auditing and do other things as well, look to how the _changes feed is
   // handled.
-  app.all(pathPrefix +  url, function(req, res) {
+  app.all(url, function(req, res) {
     proxy.web(req, res);
   });
 });
@@ -203,30 +228,19 @@ app.get('/api/sms/', function(req, res) {
   res.redirect(301, '/api/sms');
 });
 app.get('/api/sms', function(req, res) {
-  auth.check(req, 'can_access_gateway_api', null, function(err) {
-    if (err) {
-      return serverUtils.error(err, req, res);
-    }
-    res.json(smsGateway.get());
-  });
+  auth.check(req, 'can_access_gateway_api')
+    .then(() => res.json(smsGateway.get()))
+    .catch(err => serverUtils.error(err, req, res));
 });
 
 app.post('/api/sms/', function(req, res) {
   res.redirect(301, '/api/sms');
 });
 app.postJson('/api/sms', function(req, res) {
-  auth.check(req, 'can_access_gateway_api', null, function(err) {
-    if (err) {
-      return serverUtils.error(err, req, res);
-    }
-    smsGateway.post(req)
-      .then(results => {
-        res.json(results);
-      })
-      .catch(err => {
-        serverUtils.error(err, req, res);
-      });
-  });
+  auth.check(req, 'can_access_gateway_api')
+    .then(() => smsGateway.post(req))
+    .then(results => res.json(results))
+    .catch(err => serverUtils.error(err, req, res));
 });
 
 app.all('/api/v1/export/:type/:form?', exportData.routeV1);
@@ -271,31 +285,29 @@ app.get('/api/v1/forms/:form', function(req, res) {
 });
 
 app.get('/api/v1/users', function(req, res) {
-  auth.check(req, 'can_view_users', null, function(err) {
-    if (err) {
-      return serverUtils.error(err, req, res);
-    }
-    users.getList(function(err, body) {
-      if (err) {
-        return serverUtils.error(err, req, res);
-      }
-      res.json(body);
-    });
-  });
+  auth.check(req, 'can_view_users')
+    .then(() => {
+      users.getList(function(err, body) {
+        if (err) {
+          return serverUtils.error(err, req, res);
+        }
+        res.json(body);
+      });
+    })
+    .catch(err => serverUtils.error(err, req, res));
 });
 
 app.postJson('/api/v1/users', function(req, res) {
-  auth.check(req, 'can_create_users', null, function(err) {
-    if (err) {
-      return serverUtils.error(err, req, res);
-    }
-    users.createUser(req.body, function(err, body) {
-      if (err) {
-        return serverUtils.error(err, req, res);
-      }
-      res.json(body);
-    });
-  });
+  auth.check(req, 'can_create_users')
+    .then(() => {
+      users.createUser(req.body, function(err, body) {
+        if (err) {
+          return serverUtils.error(err, req, res);
+        }
+        res.json(body);
+      });
+    })
+    .catch(err => serverUtils.error(err, req, res));
 });
 
 const emptyJSONBodyError = function(req, res) {
@@ -326,25 +338,20 @@ app.postJson('/api/v1/users/:username', function(req, res) {
     });
 
   const hasFullPermission = () =>
-    new Promise((resolve, reject) => auth.check(req, 'can_update_users', null, err => {
-      if (err && err.code === 403) {
-        resolve(false);
-      } else if (err) {
-        reject(err);
-      } else {
-        resolve(true);
-      }
-    }));
+    auth.check(req, 'can_update_users')
+      .then(() => true)
+      .catch(err => {
+        if (err.code === 403) {
+          return false;
+        }
+        throw err;
+      });
   const isUpdatingSelf = () =>
-    new Promise((resolve, reject) => auth.getUserCtx(req, (err, userCtx) => {
-      if (err) {
-        reject(err);
-      } else if (userCtx.name === username && (!credentials || credentials.username === username)) {
-        resolve(true);
-      } else {
-        resolve(false);
-      }
-    }));
+    auth.getUserCtx(req)
+      .then(userCtx => {
+        return userCtx.name === username &&
+               (!credentials || credentials.username === username);
+      });
   const basicAuthValid = () =>
     new Promise(resolve => {
       if (!credentials) {
@@ -404,68 +411,52 @@ app.postJson('/api/v1/users/:username', function(req, res) {
 });
 
 app.delete('/api/v1/users/:username', function(req, res) {
-  auth.check(req, 'can_delete_users', null, function(err) {
-    if (err) {
-      return serverUtils.error(err, req, res);
-    }
-    users.deleteUser(req.params.username, function(err, result) {
-      if (err) {
-        return serverUtils.error(err, req, res);
-      }
-      res.json(result);
-    });
-  });
+  auth.check(req, 'can_delete_users')
+    .then(() => {
+      users.deleteUser(req.params.username, function(err, result) {
+        if (err) {
+          return serverUtils.error(err, req, res);
+        }
+        res.json(result);
+      });
+    })
+    .catch(err => serverUtils.error(err, req, res));
 });
 
 app.postJson('/api/v1/places', function(req, res) {
-  auth.check(req, 'can_create_places', null, function(err) {
-    if (err) {
-      return serverUtils.error(err, req, res);
-    }
-    if (_.isEmpty(req.body)) {
-      return emptyJSONBodyError(req, res);
-    }
-    places.createPlace(req.body, function(err, body) {
-      if (err) {
-        return serverUtils.error(err, req, res);
+  auth.check(req, 'can_create_places')
+    .then(() => {
+      if (_.isEmpty(req.body)) {
+        return emptyJSONBodyError(req, res);
       }
-      res.json(body);
-    });
-  });
+      return places.createPlace(req.body)
+        .then(body => res.json(body));
+    })
+    .catch(err => serverUtils.error(err, req, res));
 });
 
 app.postJson('/api/v1/places/:id', function(req, res) {
-  auth.check(req, 'can_update_places', null, function(err) {
-    if (err) {
-      return serverUtils.error(err, req, res);
-    }
-    if (_.isEmpty(req.body)) {
-      return emptyJSONBodyError(req, res);
-    }
-    places.updatePlace(req.params.id, req.body, function(err, body) {
-      if (err) {
-        return serverUtils.error(err, req, res);
+  auth.check(req, 'can_update_places')
+    .then(() => {
+      if (_.isEmpty(req.body)) {
+        return emptyJSONBodyError(req, res);
       }
-      res.json(body);
-    });
-  });
+      return places.updatePlace(req.params.id, req.body)
+        .then(body => res.json(body));
+    })
+    .catch(err => serverUtils.error(err, req, res));
 });
 
 app.postJson('/api/v1/people', function(req, res) {
-  auth.check(req, 'can_create_people', null, function(err) {
-    if (err) {
-      return serverUtils.error(err, req, res);
-    }
-    if (_.isEmpty(req.body)) {
-      return emptyJSONBodyError(req, res);
-    }
-    people.createPerson(req.body, function(err, body) {
-      if (err) {
-        return serverUtils.error(err, req, res);
+  auth.check(req, 'can_create_people')
+    .then(() => {
+      if (_.isEmpty(req.body)) {
+        return emptyJSONBodyError(req, res);
       }
-      res.json(body);
-    });
-  });
+      return people.createPerson(req.body)
+        .then(body => res.json(body));
+    })
+    .catch(err => serverUtils.error(err, req, res));
 });
 
 app.postJson('/api/v1/bulk-delete', bulkDocs.bulkDelete);
@@ -476,27 +467,102 @@ app.get('/api/v1/settings', settings.get);
 app.putJson(`${appPrefix}update_settings/${db.settings.ddoc}`, settings.put); // deprecated
 app.putJson('/api/v1/settings', settings.put);
 
+// authorization middleware to proxy online users requests directly to CouchDB
+// reads offline users `user-settings` and saves it as `req.userCtx`
+const onlineUserProxy = _.partial(authorization.onlineUserProxy, proxy),
+      onlineUserChangesProxy = _.partial(authorization.onlineUserProxy, proxyForChanges);
+
 // DB replication endpoint
-const changesHandler = _.partial(require('./controllers/changes').request, proxy);
-app.get(pathPrefix + '_changes', changesHandler);
-app.postJson(pathPrefix + '_changes', changesHandler);
+const changesHandler = require('./controllers/changes').request,
+      changesPath = routePrefix + '_changes(/*)?';
+
+app.get(changesPath, authorization.checkAuth, onlineUserChangesProxy, changesHandler);
+app.post(changesPath, authorization.checkAuth, onlineUserChangesProxy, jsonParser, changesHandler);
+
+// filter _all_docs requests for offline users
+const allDocsHandler = require('./controllers/all-docs').request,
+      allDocsPath = routePrefix + '_all_docs(/*)?';
+
+app.get(allDocsPath, authorization.checkAuth, onlineUserProxy, allDocsHandler);
+app.post(allDocsPath, authorization.checkAuth, onlineUserProxy, jsonParser, allDocsHandler);
+
+// filter _bulk_get requests for offline users
+const bulkGetHandler = require('./controllers/bulk-get').request;
+app.post(routePrefix + '_bulk_get(/*)?', authorization.checkAuth, onlineUserProxy, jsonParser, bulkGetHandler);
+
+// filter _bulk_docs requests for offline users
+// this is an audited endpoint: online and filtered offline requests will pass through to the audit route
+app.post(
+  routePrefix + '_bulk_docs(/*)?',
+  authorization.checkAuth,
+  authorization.onlineUserPassThrough, // online user requests pass through to the next route
+  jsonParser,
+  bulkDocs.request,
+  authorization.setAuthorized // adds the `authorized` flag to the `req` object, so it passes the firewall
+);
+
+// filter db-doc and attachment requests for offline users
+// these are audited endpoints: online and allowed offline requests will pass through to the audit route
+const dbDocHandler = require('./controllers/db-doc'),
+      docPath = routePrefix + ':docId/{0,}',
+      attachmentPath = routePrefix + ':docId/+:attachmentId*',
+      ddocPath = routePrefix + '_design/+:ddocId*';
+
+app.get(
+  ddocPath,
+  authorization.checkAuth,
+  onlineUserProxy,
+  _.partial(dbDocHandler.requestDdoc, db.settings.ddoc)
+);
+
+app.get(
+  docPath,
+  authorization.checkAuth,
+  onlineUserProxy, // online user GET requests are proxied directly to CouchDB
+  dbDocHandler.request
+);
+app.post(
+  routePrefix,
+  authorization.checkAuth,
+  authorization.onlineUserPassThrough, // online user requests pass through to the next route
+  jsonParser, // request body must be json
+  dbDocHandler.request,
+  authorization.setAuthorized // adds the `authorized` flag to the `req` object, so it passes the firewall
+);
+app.put(
+  docPath,
+  authorization.checkAuth,
+  authorization.onlineUserPassThrough, // online user requests pass through to the next route,
+  jsonParser,
+  dbDocHandler.request,
+  authorization.setAuthorized // adds the `authorized` flag to the `req` object, so it passes the firewall
+);
+app.delete(
+  docPath,
+  authorization.checkAuth,
+  authorization.onlineUserPassThrough, // online user requests pass through to the next route,
+  dbDocHandler.request,
+  authorization.setAuthorized // adds the `authorized` flag to the `req` object, so it passes the firewall
+);
+app.all(
+  attachmentPath,
+  authorization.checkAuth,
+  authorization.onlineUserPassThrough,  // online user requests pass through to the next route
+  dbDocHandler.request,
+  authorization.setAuthorized // adds the `authorized` flag to the `req` object, so it passes the firewall
+);
 
 const metaPathPrefix = '/medic-user-\*-meta/';
 
 // AuthZ for this endpoint should be handled by couchdb
 app.get(metaPathPrefix + '_changes', (req, res) => {
-  if (req.query.feed === 'longpoll' ||
-      req.query.feed === 'continuous' ||
-      req.query.feed === 'eventsource') {
-    // Disable nginx proxy buffering to allow hearbeats for long-running feeds
-    // Issue: #4312
-    res.setHeader('X-Accel-Buffering', 'no');
-  }
-  proxy.web(req, res);
+  proxyForChanges.web(req, res);
 });
 
 // Attempting to create the user's personal meta db
 app.put(metaPathPrefix, createUserDb);
+// AuthZ for this endpoint should be handled by couchdb, allow offline users to access this directly
+app.all(metaPathPrefix + '*', authorization.setAuthorized);
 
 var writeHeaders = function(req, res, headers, redirectHumans) {
   res.oldWriteHead = res.writeHead;
@@ -524,6 +590,31 @@ var writeHeaders = function(req, res, headers, redirectHumans) {
     }
     res.oldWriteHead(_statusCode, _headers);
   };
+};
+
+// allow POST requests which have been body-parsed to be correctly proxied
+const writeParsedBody = (proxyReq, req) => {
+  if (req.body) {
+    let bodyData = JSON.stringify(req.body);
+    proxyReq.setHeader('Content-Type','application/json');
+    proxyReq.setHeader('Content-Length', Buffer.byteLength(bodyData));
+    proxyReq.write(bodyData);
+  }
+};
+
+const copyProxyHeaders = (proxyRes, res) => {
+  if (!res.headersSent) {
+    res.statusCode = proxyRes.statusCode;
+    if (proxyRes.statusMessage) {
+      res.statusMessage = proxyRes.statusMessage;
+    }
+
+    _.each(proxyRes.headers, (value, key) => {
+      if (value !== undefined) {
+        res.setHeader(String(key).trim(), value);
+      }
+    });
+  }
 };
 
 /**
@@ -556,13 +647,19 @@ proxy.on('proxyReq', function(proxyReq, req, res) {
     writeHeaders(req, res);
   }
 
-  // allow POST requests which have been body-parsed to be correctly proxied
-  if(req.body) {
-    let bodyData = JSON.stringify(req.body);
-    proxyReq.setHeader('Content-Type','application/json');
-    proxyReq.setHeader('Content-Length', Buffer.byteLength(bodyData));
-    proxyReq.write(bodyData);
-  }
+  writeParsedBody(proxyReq, req);
+});
+
+proxyForChanges.on('proxyReq', (proxyReq, req) => {
+  writeParsedBody(proxyReq, req);
+});
+
+// because these are longpolls, we need to manually flush the CouchDB heartbeats through compression
+proxyForChanges.on('proxyRes', (proxyRes, req, res) => {
+  copyProxyHeaders(proxyRes, res);
+
+  proxyRes.pipe(res);
+  proxyRes.on('data', () => res.flush());
 });
 
 /**
@@ -579,6 +676,14 @@ proxy.on('proxyReq', function(proxyReq, req, res) {
   });
 });
 
+// allow offline users to access the app
+app.all(appPrefix + '*', authorization.setAuthorized);
+
+// block offline users requests from accessing CouchDB directly, via AuditProxy or Proxy
+// requests which are authorized (fe: by BulkDocsHandler or DbDocHandler) can pass through
+// unauthenticated requests will be redirected to login or given a meaningful error
+app.use(authorization.offlineUserFirewall);
+
 var audit = function(req, res) {
   var ap = new AuditProxy();
   ap.on('error', function(e) {
@@ -590,7 +695,7 @@ var audit = function(req, res) {
   ap.audit(proxyForAuditing, req, res);
 };
 
-var auditPath = pathPrefix + '*';
+var auditPath = routePrefix + '*';
 app.put(auditPath, audit);
 app.post(auditPath, audit);
 app.delete(auditPath, audit);
@@ -605,6 +710,27 @@ proxy.on('error', function(err, req, res) {
 
 proxyForAuditing.on('error', function(err, req, res) {
   serverUtils.serverError(JSON.stringify(err), req, res);
+});
+
+proxyForChanges.on('error', (err, req, res) => {
+  serverUtils.serverError(JSON.stringify(err), req, res);
+});
+
+proxyForAuditing.on('proxyReq', function(proxyReq, req) {
+  writeParsedBody(proxyReq, req);
+});
+
+// intercept responses from filtered offline endpoints to fill in with forbidden docs stubs
+proxyForAuditing.on('proxyRes', (proxyRes, req, res) => {
+  copyProxyHeaders(proxyRes, res);
+
+  if (res.interceptResponse) {
+    let body = new Buffer('');
+    proxyRes.on('data', data => body = Buffer.concat([body, data]));
+    proxyRes.on('end', () => res.interceptResponse(req, res, body.toString()));
+  } else {
+    proxyRes.pipe(res);
+  }
 });
 
 module.exports = app;

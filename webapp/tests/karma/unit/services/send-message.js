@@ -115,7 +115,7 @@ describe('SendMessage service', function() {
         assertMessage(post.args[0][0].tasks[0], {
           from: '+5551',
           sent_by: 'jack',
-          to: '+5552',
+          to: '+5552'
         });
         done();
       })
@@ -236,7 +236,10 @@ describe('SendMessage service', function() {
         contact: {
           phone: '+5554'
         }
-      }
+      },
+      {
+        _id: 'nop'
+      },
     ];
 
     allDocs.returns(mockAllDocs(recipients[0].doc));
@@ -264,6 +267,94 @@ describe('SendMessage service', function() {
           to: '+5554',
           contact: { _id: descendants[2]._id }
         });
+        done();
+      }).catch(done);
+  });
+
+  it('create doc for multiple types of recipients', function(done) {
+
+    post.returns(Promise.resolve());
+    Settings.returns(Promise.resolve({}));
+
+    var recipients = [
+      {
+        doc: {
+          _id: 'abc',
+          contact: {
+            phone: '+5552'
+          }
+        }
+      },
+      {
+        selected: false,
+        disabled: false,
+        text: '+5550',
+        id: '+5550',
+        _resultId: 'select2-phone-os-result-ef7y-+447890119334',
+        element: {}
+      },
+      {
+        everyoneAt: true,
+        doc: {
+          _id: 'test'
+        }
+      }
+    ];
+
+    var descendants = [
+      {
+        _id: 'efg',
+        contact: {
+          phone: '+5553'
+        }
+      },
+      {
+        _id: 'hij',
+        contact: {
+          phone: '+5552' // duplicate phone number should be removed
+        }
+      },
+      {
+        _id: 'klm',
+        contact: {
+          phone: '+5554'
+        }
+      },
+      {
+        _id: 'nop'
+      },
+    ];
+
+    allDocs.returns(mockAllDocs(recipients));
+    query.returns(mockAllDocs(descendants));
+
+    service(recipients, 'hello')
+      .then(function() {
+        chai.expect(post.callCount).to.equal(1);
+        chai.expect(post.args[0][0].tasks.length).to.equal(4);
+        assertMessage(post.args[0][0].tasks[0], {
+              from: '+5551',
+              sent_by: 'jack',
+              to: '+5553',
+              contact: { _id: descendants[0]._id }
+            });
+        assertMessage(post.args[0][0].tasks[1], {
+              from: '+5551',
+              sent_by: 'jack',
+              to: '+5552',
+              contact: { _id: descendants[1]._id }
+            });
+        assertMessage(post.args[0][0].tasks[2], {
+              from: '+5551',
+              sent_by: 'jack',
+              to: '+5554',
+              contact: { _id: descendants[2]._id }
+            });
+        assertMessage(post.args[0][0].tasks[3], {
+              from: '+5551',
+              sent_by: 'jack',
+              to: '+5550'
+            });
         done();
       }).catch(done);
   });

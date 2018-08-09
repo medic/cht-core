@@ -87,15 +87,13 @@ var createPerson = function(id, callback) {
       phone: oldContact.phone,
       place: facilityId
     };
-    people.createPerson(person, function(err, result) {
-      if (err) {
+    people.createPerson(person)
+      .then(result => callback(null, result.id))
+      .catch(err => {
         restoreContact(facilityId, oldContact, function() {
           callback(new Error('Could not create person for facility ' + facilityId + ': ' + JSON.stringify(err, null, 2)));
         });
-        return;
-      }
-      callback(null, result.id);
-    });
+      });
   };
 
   // Re-set the contact field in the facility : set it to the contents of the newly created `person` doc.
@@ -104,25 +102,22 @@ var createPerson = function(id, callback) {
     if (oldContact.rc_code) {
       updates.place_id = oldContact.rc_code;
     }
-    places.updatePlace(facilityId, updates, function(err) {
-      if (err) {
+    places.updatePlace(facilityId, updates)
+      .then(() => callback())
+      .catch(err => {
         restoreContact(facilityId, oldContact, function() {
           callback(new Error('Failed to update contact on facility ' + facilityId + ': ' + JSON.stringify(err, null, 2)));
         });
-        return;
-      }
-      callback();
-    });
+      });
   };
 
   var restoreContact = function(facilityId, oldContact, callback) {
-    places.updatePlace(facilityId, { contact: oldContact }, function(err) {
-      if (err) {
+    places.updatePlace(facilityId, { contact: oldContact })
+      .then(() => callback())
+      .catch(() => {
         // we tried our best - log the details and exit
         console.error('Failed to restore contact on facility ' + facilityId + ', contact: ' + JSON.stringify(oldContact));
-      }
-      callback();
-    });
+      });
   };
 
   db.medic.get(id, function(err, facility) {
@@ -258,14 +253,12 @@ var updateParents = function(id, callback) {
         }
         return callback(err);
       }
-      places.updatePlace(facilityId, { parent: parentId },
-        function(err) {
-          if (err) {
-            return callback(new Error('Failed to update parent on facility ' + facilityId + ' - ' +
-              JSON.stringify(err, null, 2)));
-          }
-          return callback();
-      });
+      places.updatePlace(facilityId, { parent: parentId })
+        .then(() => callback())
+        .catch(err => {
+          callback(new Error('Failed to update parent on facility ' + facilityId + ' - ' +
+            JSON.stringify(err, null, 2)));
+        });
     });
   };
 

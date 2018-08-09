@@ -90,20 +90,27 @@ const getSessionCookie = res => {
   );
 };
 
-const createSession = (req, callback) => {
+const createSession = req => {
   const user = req.body.user;
   const password = req.body.password;
-  request.post({
-    url: url.format({
-      protocol: db.settings.protocol,
-      hostname: db.settings.host,
-      port: db.settings.port,
-      pathname: '_session'
-    }),
-    json: true,
-    body: { name: user, password: password },
-    auth: { user: user, pass: password }
-  }, callback);
+  return new Promise((resolve, reject) => {
+    request.post({
+      url: url.format({
+        protocol: db.settings.protocol,
+        hostname: db.settings.host,
+        port: db.settings.port,
+        pathname: '_session'
+      }),
+      json: true,
+      body: { name: user, password: password },
+      auth: { user: user, pass: password }
+    }, (err, sessionRes) => {
+      if (err) {
+        return reject(err);
+      }
+      resolve(sessionRes);
+    });
+  });
 };
 
 const getCookieOptions = () => {
@@ -133,62 +140,62 @@ const setCookies = (req, res, sessionRes) => {
     return;
   }
   const options = { headers: { Cookie: sessionCookie } };
-  auth.getUserCtx(options, (err, userCtx) => {
-    if (err) {
+  return auth.getUserCtx(options)
+    .then(userCtx => {
+      setSessionCookie(res, sessionCookie);
+      setUserCtxCookie(res, userCtx);
+      res.json({ success: true });
+    })
+    .catch(err => {
       console.error('Error getting authCtx', err);
       res.status(401).json({ error: 'Error getting authCtx' });
-      return;
-    }
-    setSessionCookie(res, sessionCookie);
-    setUserCtxCookie(res, userCtx);
-    res.json({ success: true });
-  });
+    });
 };
 
 module.exports = {
   safePath: safePath,
   get: (req, res) => {
-    auth.getUserCtx(req, (err, userCtx) => {
-      const redirect = safePath(req.query.redirect);
-      if (!err) {
+    const redirect = safePath(req.query.redirect);
+    return auth.getUserCtx(req)
+      .then(userCtx => {
         // already logged in
         setUserCtxCookie(res, userCtx);
         res.redirect(redirect);
-        return;
-      }
-      renderLogin(redirect, (err, body) => {
-        if (err) {
-          console.error('Could not find login page');
-          throw err;
-        }
-        res.send(body);
+      })
+      .catch(() => {
+        renderLogin(redirect, (err, body) => {
+          if (err) {
+            console.error('Could not find login page');
+            throw err;
+          }
+          res.send(body);
+        });
       });
-    });
   },
   post: (req, res) => {
-    createSession(req, (err, sessionRes) => {
-      if (err) {
+    return createSession(req)
+      .then(sessionRes => {
+        if (sessionRes.statusCode !== 200) {
+          res.status(sessionRes.statusCode).json({ error: 'Not logged in' });
+          return;
+        }
+        return setCookies(req, res, sessionRes);
+      })
+      .catch(err => {
         console.error('Error logging in', err);
         res.status(500).json({ error: 'Unexpected error logging in' });
-        return;
-      }
-      if (sessionRes.statusCode !== 200) {
-        res.status(sessionRes.statusCode).json({ error: 'Not logged in' });
-        return;
-      }
-      setCookies(req, res, sessionRes);
-    });
+      });
   },
   getIdentity: (req, res) => {
     res.type('application/json');
-    auth.getUserCtx(req, (err, userCtx) => {
-      if (err) {
+    return auth.getUserCtx(req)
+      .then(userCtx => {
+        setUserCtxCookie(res, userCtx);
+        res.send({ success: true });
+      })
+      .catch(() => {
         res.status(401);
         return res.send();
-      }
-
-      setUserCtxCookie(res, userCtx);
-      res.send({ success: true });
-    });
+      });
   }
 };

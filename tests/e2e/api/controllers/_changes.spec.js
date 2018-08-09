@@ -1,6 +1,10 @@
 const _ = require('underscore'),
       utils = require('../../../utils'),
-      uuid = require('uuid');
+      uuid = require('uuid'),
+      http = require('http'),
+      querystring = require('querystring'),
+      constants = require('../../../constants'),
+      auth = require('../../../auth')();
 
 const DEFAULT_EXPECTED = [
   'appcache',
@@ -26,7 +30,7 @@ function assertChangeIds(changes) {
 }
 
 function requestChanges(username, params = {}) {
-  const queryParams = _.map(params, (value, key) => `${key}=${value}`).join('&');
+  const queryParams = querystring.stringify(params);
   const options = {
     path: `/_changes${queryParams ? `?${queryParams}`: ''}`,
     auth: `${username}:${password}`
@@ -112,6 +116,21 @@ const users = [
     },
     roles: ['district-manager', 'kujua_user', 'data_entry', 'district_admin']
   },
+  {
+    username: 'manager',
+    password: password,
+    place: {
+      _id: 'fixture:managerville',
+      type: 'health_center',
+      name: 'Managerville',
+      parent: 'PARENT_PLACE'
+    },
+    contact: {
+      _id: 'fixture:user:manager',
+      name: 'Manager'
+    },
+    roles: ['national_admin']
+  },
 ];
 
 const parentPlace = {
@@ -158,17 +177,13 @@ const consumeChanges = (username, results, lastSeq) => {
 };
 
 let currentSeq;
-const getCurrentSeq = (username) => {
-  const options = {
-    path: '/',
-    auth: `${username}:${password}`,
-    method: 'GET'
-  };
-  return utils.requestOnTestDb(options).then(result => {
-    currentSeq = result.update_seq;
-  });
+const getCurrentSeq = () => {
+  return utils
+    .requestOnTestDb('/_changes?descending=true&limit=1')
+    .then(result => {
+      currentSeq = result.last_seq;
+    });
 };
-
 
 describe('changes handler', () => {
 
@@ -199,35 +214,215 @@ describe('changes handler', () => {
 
   afterAll(done =>
     // Clean up like normal
-    utils.revertDb()
-    // And also revert users we created in before
-    .then(() => {
-      const userDocs = users.map(({username}) => `org.couchdb.user:${username}`);
-
-      return utils.request('/_users/_all_docs')
-        .then(({rows}) => {
-          const deleteMe = rows
-            .filter(({id}) => userDocs.includes(id))
-            .map(row => ({
-              _id: row.id,
-              _rev: row.value.rev,
-              _deleted: true
-            }));
-
-            return utils.request({
-              path: '/_users/_bulk_docs',
-              method: 'POST',
-              body: JSON.stringify({ docs: deleteMe }),
-              headers: { 'content-type': 'application/json' }
-            });
-        });
-      })
-    .then(done));
+    utils
+      .revertDb()
+      // And also revert users we created in before
+      .then(() => utils.deleteUsers(users.map(user => user.username)))
+      .then(() => Promise.all(users.map(user =>
+        utils.request({
+          path: `/medic-user-${user.username}-meta`,
+          method: 'DELETE'
+        })
+      )))
+      .then(done));
 
   afterEach(done => utils.revertDb(DOCS_TO_KEEP).then(done));
 
+  describe('requests', () => {
+    beforeAll(()=> Promise.all(users.map(user =>
+      utils.request({
+        path: `/medic-user-${user.username}-meta`,
+        method: 'PUT'
+      }))));
+
+    it('should allow DB admins to POST to _changes', () => {
+      return utils
+        .requestOnTestDb({
+          path: '/_changes?since=0&filter=_doc_ids&heartbeat=10000',
+          method: 'POST',
+          body: JSON.stringify({ doc_ids: ['org.couchdb.user:bob'] }),
+          headers: { 'Content-Type': 'application/json' }
+        })
+        .then(result => {
+          expect(result.results).toBeTruthy();
+        });
+    });
+
+    it('should copy proxied response headers', () => {
+      const options = {
+        hostname: constants.API_HOST,
+        port: constants.API_PORT,
+        auth: auth.user + ':' + auth.pass,
+        path: `/${constants.DB_NAME}/_changes?limit=1`
+      };
+
+      return new Promise((resolve, reject) => {
+          const req = http.request(options, res => {
+            res.on('data', () => {});
+            res.on('end', () => resolve(res.headers));
+          });
+
+          req.on('error', e => reject(e));
+          req.end();
+        })
+        .then(headers => {
+          expect(headers).toBeTruthy();
+          expect(headers['content-type']).toEqual('application/json');
+          expect(headers.server).toBeTruthy();
+        });
+    });
+
+    it('should send heartbeats at specified intervals for all types of _changes requests', () => {
+      const heartRateMonitor = options => {
+        options = options || {};
+        options.hostname = constants.API_HOST;
+        options.port = constants.API_PORT;
+        options.auth = options.auth || auth.user + ':' + auth.pass;
+        options.path = options.path || '/';
+        options.query = _.extend({ heartbeat: 2000, feed: 'longpoll' }, options.query || {});
+        options.path += '?' + querystring.stringify(options.query || {});
+
+        const heartbeats = [];
+        let timer;
+
+        return new Promise((resolve, reject) => {
+          const req = http.request(options, res => {
+            res.setEncoding('utf8');
+            let body = '';
+            res.on('data', chunk => {
+              body += chunk;
+              const oldTimer = timer;
+              timer = new Date().getTime();
+              heartbeats.push({ chunk, interval: timer - oldTimer });
+            });
+            res.on('end', () => {
+              resolve({ body, heartbeats });
+            });
+          });
+
+          req.on('error', e => {
+            console.log('Request failed: ' + e.message);
+            reject(e);
+          });
+
+          if (options.body) {
+            if (typeof options.body === 'string') {
+              req.write(options.body);
+            } else {
+              req.write(JSON.stringify(options.body));
+            }
+          }
+
+          req.end();
+          timer = new Date().getTime();
+
+          if (options.timeout) {
+            // have to manually abort this, sending a `heartbeat` disables the `timeout` mechanism in CouchDB
+            setTimeout(() => req.abort(), options.timeout);
+          }
+
+        });
+      };
+      return utils
+        .requestOnTestDb('/')
+        .then(result => {
+          const since = result.update_seq;
+
+          return Promise.all([
+            heartRateMonitor({ // admin longpoll _changes
+              path: '/' + constants.DB_NAME + '/_changes',
+              query: { since },
+              timeout: 11000 // 5 heartbeats
+            }),
+            heartRateMonitor({ // online user longpoll _changes
+              path: '/' + constants.DB_NAME + '/_changes',
+              auth: `manager:${password}`,
+              query: { since },
+              timeout: 11000 // 5 heartbeats
+            }),
+            heartRateMonitor({ // offline user longpoll _changes
+              path: '/' + constants.DB_NAME + '/_changes',
+              auth: `bob:${password}`,
+              query: { since, timeout: 21000, heartbeat: 5000 } // 4 heartbeats
+            }),
+            heartRateMonitor({ // online meta longpoll _changes
+              path: '/medic-user-manager-meta/_changes',
+              query: { since },
+              timeout: 11000 // 5 heartbeats
+            }),
+            heartRateMonitor({ // offline meta longpoll _changes
+              path: '/medic-user-bob-meta/_changes',
+              query: { since },
+              timeout: 11000 // 5 heartbeats
+            }),
+          ]);
+        })
+        .then(results => {
+          // admin _changes
+          expect(results[0].heartbeats.length).toEqual(6);
+          results[0].heartbeats.forEach((heartbeat, idx) => {
+            if (idx === 0) {
+              expect(heartbeat.chunk).toEqual('{"results":[\n');
+            } else {
+              expect(heartbeat.chunk).toEqual('\n');
+            }
+            expect(parseInt(heartbeat.interval / 1000)).toBeLessThan(3);
+          });
+          expect(results[0].body).toEqual('{"results":[\n\n\n\n\n\n');
+
+          // online user _changes
+          expect(results[1].heartbeats.length).toEqual(6);
+          results[1].heartbeats.forEach((heartbeat, idx) => {
+            if (idx === 0) {
+              expect(heartbeat.chunk).toEqual('{"results":[\n');
+            } else {
+              expect(heartbeat.chunk).toEqual('\n');
+            }
+            expect(parseInt(heartbeat.interval / 1000)).toBeLessThan(3);
+          });
+          expect(results[1].body).toEqual('{"results":[\n\n\n\n\n\n');
+
+          // offline user _changes
+          // `last_seq` doesn't necessarily match the `since` we requested
+          expect(results[2].body.startsWith('\n\n\n\n{"results":[],"last_seq":')).toEqual(true);
+          results[2].heartbeats.forEach((heartbeat, idx) => {
+            if (idx === 4) {
+              expect(heartbeat.chunk.startsWith('{"results":[],"last_seq":"')).toEqual(true);
+            } else {
+              expect(heartbeat.chunk).toEqual('\n');
+            }
+            expect(parseInt(heartbeat.interval / 1000)).toBeLessThan(6);
+          });
+
+          // online user meta _changes
+          expect(results[0].heartbeats.length).toEqual(6);
+          results[0].heartbeats.forEach((heartbeat, idx) => {
+            if (idx === 0) {
+              expect(heartbeat.chunk).toEqual('{"results":[\n');
+            } else {
+              expect(heartbeat.chunk).toEqual('\n');
+            }
+            expect(parseInt(heartbeat.interval / 1000)).toBeLessThan(3);
+          });
+          expect(results[0].body).toEqual('{"results":[\n\n\n\n\n\n');
+
+          // ofline user meta _changes
+          expect(results[1].heartbeats.length).toEqual(6);
+          results[1].heartbeats.forEach((heartbeat, idx) => {
+            if (idx === 0) {
+              expect(heartbeat.chunk).toEqual('{"results":[\n');
+            } else {
+              expect(heartbeat.chunk).toEqual('\n');
+            }
+            expect(parseInt(heartbeat.interval / 1000)).toBeLessThan(3);
+          });
+          expect(results[1].body).toEqual('{"results":[\n\n\n\n\n\n');
+        });
+    });
+  });
+
   describe('Filtered replication', () => {
-    beforeEach(done => getCurrentSeq('bob').then(done));
+    beforeEach(done => getCurrentSeq().then(done));
 
     const bobsIds = [...DEFAULT_EXPECTED],
           stevesIds = [...DEFAULT_EXPECTED];
@@ -403,7 +598,7 @@ describe('changes handler', () => {
       newIds.push(...DEFAULT_EXPECTED);
       return utils
         .updateSettings({ changes_controller: _.defaults({ reiterate_changes: false }, defaultSettings) }, true)
-        .then(() => getCurrentSeq('bob'))
+        .then(() => getCurrentSeq())
         .then(() => {
           return Promise
             .all([
@@ -424,6 +619,29 @@ describe('changes handler', () => {
         });
     });
 
+    it('returns correct results when user is updated while changes request is active', () => {
+      const allowedBob = createSomeContacts(3, 'fixture:bobville');
+      bobsIds.push(..._.pluck(allowedBob, '_id'));
+
+      return utils
+        .getDoc('org.couchdb.user:steve')
+        .then(stevesUser => {
+          return Promise.all([
+            requestChanges('steve', { feed: 'longpoll', since: currentSeq }),
+            utils.saveDocs(allowedBob),
+            utils.saveDoc(_.extend(stevesUser, { facility_id: 'fixture:bobville' })),
+          ]);
+        })
+        .then(([ changes ]) => {
+          console.log(changes);
+          expect(changes.results.every(change =>
+            bobsIds.indexOf(change.id) !== -1 || change.id === 'org.couchdb.user:steve'
+          )).toBe(true);
+        })
+        .then(() => utils.getDoc('org.couchdb.user:steve'))
+        .then(stevesUser => utils.saveDoc(_.extend(stevesUser, { facility_id: 'fixture:steveville' })));
+    });
+
     it('filters allowed deletes in longpolls', () => {
       const allowedDocs = createSomeContacts(3, 'fixture:bobville');
       const deniedDocs = createSomeContacts(3, 'irrelevant-place');
@@ -437,7 +655,7 @@ describe('changes handler', () => {
         .then(([ allowedDocsResult, deniedDocsResult ]) => {
           allowedDocsResult.forEach((doc, idx) => allowedDocs[idx]._rev = doc.rev);
           deniedDocsResult.forEach((doc, idx) => deniedDocs[idx]._rev = doc.rev);
-          return getCurrentSeq('bob');
+          return getCurrentSeq();
         })
         .then(() => Promise.all([
           requestChanges('bob', { since: currentSeq, feed: 'longpoll' }),
@@ -473,7 +691,7 @@ describe('changes handler', () => {
             'fixture:steveville',
             'fixture:user:steve',
             ...allowedDocIds);
-          return getCurrentSeq('steve');
+          return getCurrentSeq();
         })
         .then(() => {
           return Promise.all([
@@ -503,56 +721,77 @@ describe('changes handler', () => {
       stevesIds.push(..._.pluck(allowedSteve, '_id'));
       let bobsSeq = 0,
           stevesSeq = 0;
+     return Promise
+       .all([
+         utils.saveDocs(allowedBob),
+         utils.saveDocs(allowedSteve)
+       ])
+       .then(([ allowedBobResult, allowedSteveResult ]) => {
+         allowedBobResult.forEach((doc, idx) => allowedBob[idx]._rev = doc.rev);
+         allowedSteveResult.forEach((doc, idx) => allowedSteve[idx]._rev = doc.rev);
+         return Promise.all([
+           requestChanges('bob'),
+           requestChanges('steve')
+         ]);
+       })
+       .then(([ bobsChanges, stevesChanges ]) => {
+         bobsSeq = bobsChanges.last_seq;
+         stevesSeq = stevesChanges.last_seq;
+         return Promise.all([
+           utils.saveDocs(allowedBob.map(doc => _.extend(doc, { _deleted: true }))),
+           utils.saveDocs(allowedSteve.map(doc => _.extend(doc, { _deleted: true }))),
+         ]);
+       })
+       .then(() => Promise.all([
+         consumeChanges('bob', [], bobsSeq),
+         consumeChanges('steve', [], stevesSeq),
+       ]))
+       .then(([ bobsChanges, stevesChanges ]) => {
+         expect(bobsChanges.results.every(change => bobsIds.indexOf(change.id) !== -1)).toBe(true);
+         expect(stevesChanges.results.every(change => stevesIds.indexOf(change.id) !== -1)).toBe(true);
+       });
+    });
+
+    it('filters calls with irregular urls which match couchdb endpoint', () => {
+      const options = {
+        auth: `bob:${password}`,
+        method: 'GET'
+      };
 
       return Promise
         .all([
-          utils.saveDocs(allowedBob),
-          utils.saveDocs(allowedSteve)
+          utils.requestOnTestDb(_.defaults({ path: '/_changes' }, options)),
+          utils.requestOnTestDb(_.defaults({ path: '//_changes//' }, options)),
+          utils.request(_.defaults({ path: `//${constants.DB_NAME}//_changes` }, options)),
+          utils
+            .requestOnTestDb(_.defaults({ path: '/_changes/dsad' }, options))
+            .catch(err => err),
+          utils
+            .requestOnTestDb(_.defaults({ path: '//_changes//dsada' }, options))
+            .catch(err => err),
+          utils
+            .request(_.defaults({ path: `//${constants.DB_NAME}//_changes//dsadada` }, options))
+            .catch(err => err)
         ])
-        .then(([ allowedBobResult, allowedSteveResult ]) => {
-          allowedBobResult.forEach((doc, idx) => allowedBob[idx]._rev = doc.rev);
-          allowedSteveResult.forEach((doc, idx) => allowedSteve[idx]._rev = doc.rev);
-          return Promise.all([
-            requestChanges('bob'),
-            requestChanges('steve')
-          ]);
-        })
-        .then(([ bobsChanges, stevesChanges ]) => {
-          bobsSeq = bobsChanges.last_seq;
-          stevesSeq = stevesChanges.last_seq;
-          return Promise.all([
-            utils.saveDocs(allowedBob.map(doc => _.extend(doc, { _deleted: true }))),
-            utils.saveDocs(allowedSteve.map(doc => _.extend(doc, { _deleted: true }))),
-          ]);
-        })
-        .then(() => Promise.all([
-          consumeChanges('bob', [], bobsSeq),
-          consumeChanges('steve', [], stevesSeq),
-        ]))
-        .then(([ bobsChanges, stevesChanges ]) => {
-          expect(bobsChanges.results.every(change => bobsIds.indexOf(change.id) !== -1)).toBe(true);
-          expect(stevesChanges.results.every(change => stevesIds.indexOf(change.id) !== -1)).toBe(true);
+        .then(results => {
+          results.forEach(result => {
+            if (result.results) {
+              return assertChangeIds(result,
+                'org.couchdb.user:bob',
+                'fixture:bobville',
+                'fixture:user:bob');
+            }
+
+            expect(result.responseBody.error).toEqual('forbidden');
+          });
         });
     });
 
-    it('returns correct results when user is updated while changes request is active', () => {
-      const allowedBob = createSomeContacts(3, 'fixture:bobville');
-      const allowedSteve = createSomeContacts(3, 'fixture:steveville');
-      bobsIds.push(..._.pluck(allowedBob, '_id'));
-      stevesIds.push(..._.pluck(allowedSteve, '_id'));
-
-      return utils
-        .getDoc('org.couchdb.user:steve')
-        .then(stevesUser => {
-          return Promise.all([
-            requestChanges('steve', { feed: 'longpoll', since: currentSeq }),
-            utils.saveDocs(allowedBob),
-            utils.saveDocs(allowedSteve),
-            utils.saveDoc(_.extend(stevesUser, { facility_id: 'fixture:bobville' })),
-          ]);
-        })
-        .then(([ changes ]) => {
-          expect(changes.results.every(change => bobsIds.indexOf(change.id) !== -1 || change.id === 'org.couchdb.user:steve') ).toBe(true);
+    it('sends an error when couchdb returns an error', () => {
+      return requestChanges('bob', { style: 'couchdb will love this', seq_interval: 'this as well' })
+        .catch(err => {
+          expect(err).toBeTruthy();
+          expect(err.message.includes('Error processing your changes')).toEqual(true);
         });
     });
   });
@@ -578,10 +817,10 @@ describe('changes handler', () => {
           .then(() => requestChanges('bob'))
           .then(changes =>
             assertChangeIds(changes,
-              'org.couchdb.user:bob',
-              'fixture:bobville',
-              'fixture:user:bob',
-              'unallocated_report')));
+                'org.couchdb.user:bob',
+                'fixture:bobville',
+                'fixture:user:bob',
+                'unallocated_report')));
 
       it('should not be supplied if user has this permission but district_admins_access_unallocated_messages is disabled', () =>
         utils.saveDoc({ _id:'unallocated_report', type:'data_record' })
@@ -611,10 +850,10 @@ describe('changes handler', () => {
         .then(() => requestChanges('chw'))
         .then(changes =>
           assertChangeIds(changes,
-              'org.couchdb.user:chw',
-              'fixture:user:chw',
-              'fixture:chwville',
-              'should-be-visible')));
+            'org.couchdb.user:chw',
+            'fixture:user:chw',
+            'fixture:chwville',
+            'should-be-visible')));
 
     it('should correspond to the largest number for any role the user has', () =>
       utils.updateSettings({
@@ -628,11 +867,11 @@ describe('changes handler', () => {
         .then(() => requestChanges('chw'))
         .then(changes =>
           assertChangeIds(changes,
-              'org.couchdb.user:chw',
-              'fixture:user:chw',
-              'fixture:chwville',
-              'should-be-visible',
-              'should-be-visible-too')));
+            'org.couchdb.user:chw',
+            'fixture:user:chw',
+            'fixture:chwville',
+            'should-be-visible',
+            'should-be-visible-too')));
 
     it('should have no effect if not configured', () =>
       utils.saveDoc({ _id:'should-be-visible', type:'clinic', parent: { _id:'fixture:chwville' } })

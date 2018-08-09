@@ -132,10 +132,16 @@ module.exports = {
                     };
                     if (!msg.translation_key) {
                         // no translation_key so generate now
-                        task.messages = messageUtils.generate(config, utils.translate, doc, msg, msg.recipient, {
+                        task.messages = messageUtils.generate(
+                          config.getAll(),
+                          utils.translate,
+                          doc,
+                          msg,
+                          msg.recipient,
+                          {
                             registrations: registrations,
                             patient: patient
-                        });
+                          });
                     }
                     const state = messages.isOutgoingAllowed(doc.from) ? 'scheduled' : 'denied';
                     utils.setTaskState(task, state);

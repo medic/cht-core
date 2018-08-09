@@ -3,7 +3,7 @@ const controller = require('../../../src/controllers/records'),
       db = require('../../../src/db-pouch'),
       auth = require('../../../src/auth'),
       recordUtils = require('../../../src/controllers/record-utils'),
-      sinon = require('sinon').sandbox.create();
+      sinon = require('sinon');
 
 describe('records controller', () => {
 

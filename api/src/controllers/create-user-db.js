@@ -2,30 +2,26 @@ const auth = require('../auth'),
       serverUtils = require('../server-utils'),
       userDb = require('../services/user-db');
 
-const checkPermissions = (req, callback) => {
-  auth.getUserCtx(req, (err, userCtx) => {
-    if (err) {
-      return callback(err);
-    }
+const checkPermissions = req => {
+  return auth.getUserCtx(req).then(userCtx => {
     const username = userCtx.name;
     if (req.url !== '/' + userDb.getDbName(username) + '/') {
       // trying to create a db with a disallowed name
-      return callback({ code: 403, message: 'Insufficient privileges' });
+      throw { code: 403, message: 'Insufficient privileges' };
     }
-    return callback(null, username);
+    return username;
   });
 };
 
 module.exports = (req, res) => {
-  checkPermissions(req, (err, username) => {
-    if (err) {
-      return serverUtils.error(err, req, res);
-    }
-    userDb.create(username, err => {
-      if (err) {
-        return serverUtils.error(err, req, res);
-      }
-      res.json({ ok: true });
-    });
-  });
+  return checkPermissions(req)
+    .then(username => {
+      userDb.create(username, err => {
+        if (err) {
+          throw err;
+        }
+        res.json({ ok: true });
+      });
+    })
+    .catch(err => serverUtils.error(err, req, res));
 };

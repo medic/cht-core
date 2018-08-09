@@ -1,5 +1,5 @@
 require('chai').should();
-const sinon = require('sinon').sandbox.create(),
+const sinon = require('sinon'),
       moment = require('moment'),
       db = require('../../../src/db-nano'),
       utils = require('../../../src/lib/utils'),
