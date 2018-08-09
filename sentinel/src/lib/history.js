@@ -7,14 +7,18 @@ const moment = require('moment');
 let records = {};
 
 const now = () => {
+  // Passing date to make it testable with fake timers
   return moment(new Date());
 };
 
-const expired = (key) => {
-  const value = records[key];
+const purgeIfExpired = (key, value) => {
   if(value && value.timestamp) {
     // Checks difference with history duration in minutes
-    return (now().diff(value.timestamp))/60000 >= module.exports.periodMins;
+    const hasExpired = (now().diff(value.timestamp))/60000 >= module.exports._periodMins;
+    if(hasExpired) {
+      delete records[key];
+    }
+    return hasExpired;
   }
   return true;
 };
@@ -24,43 +28,39 @@ const size = () => {
 };
 
 const purge = (force=false) => {
-  if(force || size() >= module.exports.purgeThreshold) {
+  if(force || size() >= module.exports._purgeThreshold) {
     for (const key of Object.keys(records)) {
-      if(expired(key)) {
-        delete records[key];
-      }
+      purgeIfExpired(key, records[key]);
     }
     return true;
   }
   return false;
 };
 
+const formatkey = (to, msg) => {
+  return `${to}-${msg}`;
+};
+
 module.exports = {
 
-  periodMins: 30, //Number of minutes to track
-
-  purgeThreshold: 100, //Number of keys to keep in memory
-
-  track: (key) => { //key to track. returns true for duplicates
+  check: (to, msg) => { //key to track. returns true for duplicates
     purge();
-    const alreadyExists = module.exports.get(key) !== null;
-    records[key] = {timestamp: now()};
+    const alreadyExists = module.exports._get(to, msg) !== null;
+    records[formatkey(to, msg)] = {timestamp: now()};
     return alreadyExists;
   },
 
-  get: (key) => { // returns last timestamp for given key
+  // Exposed for testing purposes
+  _get: (to, msg) => { // returns last timestamp for given key
+    const key = formatkey(to, msg);
     const value = records[key];
-    if(value && !expired(key)) {
+    if(value && !purgeIfExpired(key, value)) {
       return value;
     }
     return null;
   },
-
-  size: () => size(), // returns number of expired + non-expired keys
-
-  purge: () => purge(true), // purges expired keys regardless of threshold
-
-  clear: () => { // clears history
-    records = {};
-  }
+  _size: () => size(), // returns number of expired + non-expired keys
+  _clear: () => { records = {}; },// clears history
+  _periodMins: 30, //Number of minutes to track
+  _purgeThreshold: 100 //Number of keys to keep in memory
 };

@@ -8,10 +8,10 @@ describe('history utility', () => {
 
   beforeEach(() => {
     clock = sinon.useFakeTimers();
-    history.clear();
-    should.equal(history.track('key1'), false);
-    should.equal(history.track('key2'), false);
-    should.equal(history.track('key1'), true);
+    history._clear();
+    should.equal(history.check('to1', 'msg1'), false);
+    should.equal(history.check('to2', 'msg2'), false);
+    should.equal(history.check('to1', 'msg1'), true);
   });
 
   afterEach(() => {
@@ -19,33 +19,31 @@ describe('history utility', () => {
   });
 
   it('tracks keys', () => {
-    should.equal(history.track('key1'), true); // duplicate
-    clock.tick(history.periodMins*60000); // expires keys
-    should.equal(history.track('key1'), false); // not duplicate
-    should.equal(history.track('key1'), true); // duplicate again
+    should.equal(history.check('to1', 'msg1'), true); // duplicate
+    clock.tick(history._periodMins*60000); // expires keys
+    should.equal(history.check('to1', 'msg1'), false); // not duplicate
+    should.equal(history.check('to1', 'msg1'), true); // duplicate again
   });
 
   it('checks keys', () => {
-    history.size().should.equal(2);
-    should.exist(history.get('key1'));
-    should.exist(history.get('key2'));
-    should.not.exist(history.get('key3'));
+    history._size().should.equal(2);
+    should.exist(history._get('to1', 'msg1'));
+    should.exist(history._get('to2', 'msg2'));
+    should.not.exist(history._get('to3', 'msg3'));
   });
 
   it('purges keys after history period', () => {
-    should.equal(history.size(), 2);
-    clock.tick(history.periodMins*60000); // expires keys
-    should.not.exist(history.get('key1'));
-    should.not.exist(history.get('key2'));
-    should.equal(history.size(), 2);
-    history.purge();
-    should.equal(history.size(), 0);
+    should.equal(history._size(), 2);
+    clock.tick(history._periodMins*60000); // expires keys
+    should.not.exist(history._get('to1', 'msg1'));
+    should.not.exist(history._get('to2', 'msg2'));
+    should.equal(history._size(), 0);
   });
 
   it('clears keys regardless', () => {
-    should.equal(history.size(), 2);
-    history.clear();
-    should.equal(history.size(), 0);
+    should.equal(history._size(), 2);
+    history._clear();
+    should.equal(history._size(), 0);
   });
 
 });

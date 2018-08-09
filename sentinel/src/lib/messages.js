@@ -8,8 +8,7 @@ const messageUtils = require('@shared-libs/message-utils'),
 const messageStatus = (from, msg) => {
   let status = 'denied';
   if(module.exports.isOutgoingAllowed(from)) {
-    const msgKey = `${msg.to}-${msg.message.replace(' ', '')}`;
-    status = history.track(msgKey) ? 'duplicate' : 'pending';
+    status = history.check(msg.to, msg.message) ? 'duplicate' : 'pending';
   }
   return status;
 };
