@@ -383,22 +383,13 @@ describe('Tombstone Utils Lib', function() {
       expect(lib._getPreviousRev({ start: 2, ids: [] })).to.equal(false);
       expect(lib._getPreviousRev({ start: 2, ids: ['a'] })).to.equal(false);
       expect(lib._getPreviousRev({ start: 1, ids: ['a', 'b', 'c'] })).to.equal(false);
-
-      expect(lib._getPreviousRev({ start: 10, ids: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10] }, 12)).to.equal(false);
-      expect(lib._getPreviousRev({ start: 500, ids: [500, 499, 498, 497, 496, 495, 494, 493] }, 22)).to.equal(false);
     });
 
     it('returns previous rev', function() {
       expect(lib._getPreviousRev({ start: 2, ids: ['a', 'b'] })).to.equal('1-b');
-      expect(lib._getPreviousRev({ start: 10, ids: ['a', 'b', 'c', 'd', 'e', 'f'] })).to.equal('9-b');
-
+      expect(lib._getPreviousRev({ start: 720, ids: ['a', 'b', 'c', 'd', 'e', 'f'] })).to.equal('719-b');
       expect(lib._getPreviousRev({ start: 10, ids: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10] })).to.equal('9-2');
-      expect(lib._getPreviousRev({ start: 10, ids: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10] }, 2)).to.equal('8-3');
-      expect(lib._getPreviousRev({ start: 10, ids: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10] }, 3)).to.equal('7-4');
-      expect(lib._getPreviousRev({ start: 10, ids: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10] }, 4)).to.equal('6-5');
-      expect(lib._getPreviousRev({ start: 10, ids: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10] }, 5)).to.equal('5-6');
-
-      expect(lib._getPreviousRev({ start: 500, ids: [500, 499, 498, 497, 496, 495, 494, 493] }, 5)).to.equal('495-495');
+      expect(lib._getPreviousRev({ start: 500, ids: [500, 499, 498, 497, 496, 495, 494, 493] })).to.equal('499-499');
     });
 
 

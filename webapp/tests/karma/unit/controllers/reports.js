@@ -42,7 +42,7 @@ describe('ReportsCtrl controller', () => {
     LiveList = { reports: {
       initialised: () => true,
       setSelected: sinon.stub(),
-      isContainedDeleteStub: sinon.stub(),
+      containsDeleteStub: sinon.stub(),
       remove: sinon.stub(),
       count: sinon.stub()
     }};
@@ -279,7 +279,7 @@ describe('ReportsCtrl controller', () => {
       return Promise.resolve().then(() => {
         const change = { doc: { form: 'something' } };
         chai.expect(!!changesFilter(change)).to.equal(true);
-        chai.expect(LiveList.reports.isContainedDeleteStub.callCount).to.equal(0);
+        chai.expect(LiveList.reports.containsDeleteStub.callCount).to.equal(0);
       });
     });
 
@@ -288,16 +288,16 @@ describe('ReportsCtrl controller', () => {
 
       return Promise.resolve().then(() => {
         const change = { doc: { type: 'this is not a form' } };
-        LiveList.reports.isContainedDeleteStub.returns(true);
+        LiveList.reports.containsDeleteStub.returns(true);
         chai.expect(!!changesFilter(change)).to.equal(true);
-        chai.expect(LiveList.reports.isContainedDeleteStub.callCount).to.equal(1);
-        chai.expect(LiveList.reports.isContainedDeleteStub.args[0]).to.deep.equal([ change.doc ]);
+        chai.expect(LiveList.reports.containsDeleteStub.callCount).to.equal(1);
+        chai.expect(LiveList.reports.containsDeleteStub.args[0]).to.deep.equal([ change.doc ]);
       });
     });
 
     it('filters everything else', () => {
       createController();
-      LiveList.reports.isContainedDeleteStub.returns(false);
+      LiveList.reports.containsDeleteStub.returns(false);
 
       return Promise.resolve().then(() => {
         chai.expect(!!changesFilter({ doc: { some: 'thing' } })).to.equal(false);

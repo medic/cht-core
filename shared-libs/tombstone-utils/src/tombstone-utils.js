@@ -70,13 +70,11 @@ var isDeleteStub = function(doc) {
   return arrayIncludes(COUCHDB_TOMBSTONE_PROPERTIES, Object.keys(doc)) && !!doc._deleted;
 };
 
-// Returns n-th previous rev
+// Returns previous rev
 // @param {Object} revisions - doc _revisions
-// @param {number} n
-var getPreviousRev = function(revisions, n) {
-  n = n || 1;
-  if (revisions && revisions.start > n && revisions.ids && revisions.ids.length > n) {
-    return [revisions.start - n, '-', revisions.ids[n]].join('');
+var getPreviousRev = function(revisions) {
+  if (revisions && revisions.start > 1 && revisions.ids && revisions.ids.length > 1) {
+    return [revisions.start - 1, '-', revisions.ids[1]].join('');
   }
   return false;
 };

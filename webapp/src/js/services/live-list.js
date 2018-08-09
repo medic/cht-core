@@ -466,7 +466,7 @@ angular.module('inboxServices').factory('LiveList',
       delete idx.selected;
     }
 
-    function _isContainedDeleteStub(listName, doc) {
+    function _containsDeleteStub(listName, doc) {
       // determines if array2 is included in array1
       var arrayIncludes = function(array1, array2) {
         return array2.every(function(elem) {
@@ -536,7 +536,7 @@ angular.module('inboxServices').factory('LiveList',
         initialised: _.partial(_initialised, name),
         setSelected: _.partial(_setSelected, name),
         clearSelected: _.partial(_clearSelected, name),
-        isContainedDeleteStub: _.partial(_isContainedDeleteStub, name)
+        containsDeleteStub: _.partial(_containsDeleteStub, name)
       };
 
       return api[name];

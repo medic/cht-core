@@ -54,7 +54,7 @@ describe('Contacts controller', () => {
         }
         return false;
       },
-      isContainedDeleteStub: sinon.stub()
+      containsDeleteStub: sinon.stub()
     };
   };
 
@@ -526,7 +526,7 @@ describe('Contacts controller', () => {
         assert.equal(changesFilter({ doc: { type: 'clinic' } }), true);
         assert.equal(changesFilter({ doc: { type: 'health_center' } }), true);
         assert.equal(changesFilter({ doc: { type: 'district_hospital' } }), true);
-        assert.equal(contactsLiveList.isContainedDeleteStub.callCount, 0);
+        assert.equal(contactsLiveList.containsDeleteStub.callCount, 0);
       });
     });
 
@@ -535,7 +535,7 @@ describe('Contacts controller', () => {
         assert.isNotOk(changesFilter({ doc: { } }));
         assert.isNotOk(changesFilter({ doc: { type: 'data_record' } }));
         assert.isNotOk(changesFilter({ doc: { type: '' } }));
-        assert.equal(contactsLiveList.isContainedDeleteStub.callCount, 3);
+        assert.equal(contactsLiveList.containsDeleteStub.callCount, 3);
       });
     });
 
@@ -573,7 +573,7 @@ describe('Contacts controller', () => {
     });
 
     it('filtering returns true for contained tombstones', () => {
-      contactsLiveList.isContainedDeleteStub.returns(true);
+      contactsLiveList.containsDeleteStub.returns(true);
       return createController()
         .getSetupPromiseForTesting()
         .then(() => {
