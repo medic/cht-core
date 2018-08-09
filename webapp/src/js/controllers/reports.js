@@ -476,7 +476,8 @@ angular.module('inboxControllers').controller('ReportsCtrl',
         }
       },
       filter: function(change) {
-        return change.doc.form;
+        return change.doc.form ||
+               liveList.containsDeleteStub(change.doc);
       }
     });
 
