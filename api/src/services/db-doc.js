@@ -13,6 +13,9 @@ const getStoredDoc = (params, method, query, isAttachment) => {
   // `db-doc` PUT and DELETE requests will require latest `rev` to be allowed
   if ((method === 'GET' || isAttachment) && query) {
     options = query;
+    if (options.open_revs) {
+      options.open_revs = JSON.parse(options.open_revs);
+    }
   }
 
   return db.medic
@@ -57,9 +60,12 @@ module.exports = {
           return false;
         }
 
+        console.log(requestDoc, storedDoc);
+
         // user must be allowed to see existent document
         if (storedDoc &&
-            !authorization.allowedDoc(storedDoc._id, authorizationContext, authorization.getViewResults(storedDoc))) {
+            !authorization.allowedDoc(storedDoc._id, authorizationContext, authorization.getViewResults(storedDoc)) &&
+            !authorization.isDeleteStub(storedDoc)) {
           return false;
         }
 

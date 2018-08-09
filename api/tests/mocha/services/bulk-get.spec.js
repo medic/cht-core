@@ -16,6 +16,7 @@ describe('Bulk Get service', () => {
     sinon.stub(authorization, 'getAuthorizationContext').resolves({});
     sinon.stub(authorization, 'allowedDoc').returns(true);
     sinon.stub(authorization, 'getViewResults').callsFake(doc => ({ view: doc }));
+    sinon.stub(authorization, 'isDeleteStub').returns(false);
     sinon.stub(db.medic, 'bulkGet').resolves({ results: [] });
   });
 
@@ -57,9 +58,9 @@ describe('Bulk Get service', () => {
     });
 
     it('filters request docs, excluding error and not allowed docs', () => {
-      docs = [{ id: 'a' }, { id: 'b' }, { id: 'c' }, { id: 'd' }, { id: 'e' }, { id: 'f' }];
+      docs = [{ id: 'a' }, { id: 'b' }, { id: 'c' }, { id: 'd' }, { id: 'e' }, { id: 'f' }, { id: 'g' }];
       db.medic.bulkGet
-        .withArgs({ docs: [{ id: 'a' }, { id: 'b' }, { id: 'c' }, { id: 'd' }, { id: 'e' }, { id: 'f' }] })
+        .withArgs({ docs: [{ id: 'a' }, { id: 'b' }, { id: 'c' }, { id: 'd' }, { id: 'e' }, { id: 'f' }, { id: 'g' }] })
         .resolves({ results:
             [
               { id: 'a', docs: [ { ok: { id: 'a', rev: 1 } }, { error: { id: 'a', rev: 2 } }, { ok: { id: 'a', rev: 3 } } ] },
@@ -68,6 +69,7 @@ describe('Bulk Get service', () => {
               { id: 'd', docs: [ { ok: { id: 'd' } } ] },
               { id: 'e', docs: [ { ok: { id: 'e' } } ] },
               { id: 'f', docs: [ { error: { id: 'f' } } ] },
+              { id: 'g', docs: [ { ok: { id: 'g' } } ] },
             ]});
 
       authorization.getAuthorizationContext.withArgs({ name: 'user' }).resolves({ });
@@ -78,22 +80,33 @@ describe('Bulk Get service', () => {
         .withArgs('b', sinon.match.any, { view: { id: 'b', rev: 2 }}).returns(true)
         .withArgs('b', sinon.match.any, { view: { id: 'b', rev: 3 }}).returns(false)
         .withArgs('d').returns(true)
-        .withArgs('e').returns(false);
+        .withArgs('e').returns(false)
+        .withArgs('g').returns(false);
+
+      authorization.isDeleteStub.withArgs({ id: 'g' }).returns(true);
 
       return service
         .filterOfflineRequest(userCtx, query, docs)
         .then(result => {
           authorization.getAuthorizationContext.callCount.should.equal(1);
-          authorization.allowedDoc.callCount.should.equal(7);
+          authorization.allowedDoc.callCount.should.equal(8);
+          authorization.isDeleteStub.callCount.should.equal(5);
+          authorization.isDeleteStub.args.should.deep.equal([
+            [{ id: 'a', rev: 1 }], [{ id: 'a', rev: 3 }],
+            [{ id: 'b', rev: 3 }],
+            [{ id: 'e' }],
+            [{ id: 'g' }]
+          ]);
 
           db.medic.bulkGet.callCount.should.equal(1);
           db.medic.bulkGet.args[0][0].should.deep.equal(
-            { docs: [{ id: 'a' }, { id: 'b' }, { id: 'c' }, { id: 'd' }, { id: 'e' }, { id: 'f' }]});
+            { docs: [{ id: 'a' }, { id: 'b' }, { id: 'c' }, { id: 'd' }, { id: 'e' }, { id: 'f' }, { id: 'g' }]});
 
           result.should.deep.equal({
             results: [
               { id: 'b', docs: [ { ok: { id: 'b', rev: 1 } }, { ok: { id: 'b', rev: 2 } } ] },
-              { id: 'd', docs: [ { ok: { id: 'd' } } ] }
+              { id: 'd', docs: [ { ok: { id: 'd' } } ] },
+              { id: 'g', docs: [ { ok: { id: 'g' } } ] }
             ]
           });
         });
