@@ -13,7 +13,6 @@ services:
   - docker
 
 env:
-
   matrix:
   - TEST_SUITE=standard NODE_VERSION="lts/*" USE_COUCHDB=false USE_YARN=false
   - TEST_SUITE=normal NODE_VERSION=8 USE_COUCHDB=true USE_YARN=true
