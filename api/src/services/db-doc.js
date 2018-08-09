@@ -13,9 +13,6 @@ const getStoredDoc = (params, method, query, isAttachment) => {
   // `db-doc` PUT and DELETE requests will require latest `rev` to be allowed
   if ((method === 'GET' || isAttachment) && query) {
     options = query;
-    if (options.open_revs) {
-      options.open_revs = JSON.parse(options.open_revs);
-    }
   }
 
   return db.medic
