@@ -263,5 +263,6 @@ module.exports = {
   convertTombstoneIds: convertTombstoneIds,
   alwaysAllowCreate: alwaysAllowCreate,
   updateContext: updateContext,
-  filterAllowedDocs: filterAllowedDocs
+  filterAllowedDocs: filterAllowedDocs,
+  isDeleteStub: tombstoneUtils._isDeleteStub
 };

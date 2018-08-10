@@ -9,7 +9,8 @@ const filterResults = (authorizationContext, result) => {
       if (!doc.ok) {
         return false;
       }
-      return authorization.allowedDoc(resultDocs.id, authorizationContext, authorization.getViewResults(doc.ok));
+      return authorization.allowedDoc(resultDocs.id, authorizationContext, authorization.getViewResults(doc.ok)) ||
+             authorization.isDeleteStub(doc.ok);
     });
     return resultDocs.docs.length;
   });

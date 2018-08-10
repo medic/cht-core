@@ -1,16 +1,24 @@
 var _ = require('underscore');
 
 var TOMBSTONE_TYPE = 'tombstone',
-    TOMBSTONE_ID_SEPARATOR = '____';
+    TOMBSTONE_ID_SEPARATOR = '____',
+    COUCHDB_TOMBSTONE_PROPERTIES = [
+      '_id',
+      '_rev',
+      '_deleted',
+      '_revisions',   // GET with `revs`
+      '_attachments', // _changes with `attachments`
+      '_conflicts',   // _changes with `conflicts`
+    ];
 
 var generateTombstoneId = function (id, rev) {
   return [id, rev, TOMBSTONE_TYPE].join(TOMBSTONE_ID_SEPARATOR);
 };
 
-var saveTombstone = function(DB, doc, logger) {
-  var tombstone = _.omit(doc, ['_attachments', '_deleted']);
+var saveTombstone = function(DB, doc, change, logger) {
+  var tombstone = _.omit(doc, ['_attachments', '_deleted', '_revisions', '_conflicts']);
   var tombstoneDoc = {
-    _id: generateTombstoneId(doc._id, doc._rev),
+    _id: generateTombstoneId(change.id, change.changes[0].rev),
     type: TOMBSTONE_TYPE,
     tombstone: tombstone
   };
@@ -29,11 +37,46 @@ var saveTombstone = function(DB, doc, logger) {
 };
 
 var getDoc = function(Promise, DB, change) {
-  if (change.doc) {
+  if (change.doc && !isDeleteStub(change.doc)) {
     return Promise.resolve(change.doc);
   }
 
-  return DB.get(change.id, { rev: change.changes[0].rev });
+  return DB
+    .get(change.id, { rev: change.changes[0].rev, revs: true })
+    .then(function(doc) {
+      if (!isDeleteStub(doc)) {
+        return doc;
+      }
+
+      // we've received a delete stub doc
+      var previousRevision = getPreviousRev(doc._revisions);
+      if (!previousRevision) {
+        return doc;
+      }
+
+      return DB.get(change.id, { rev: previousRevision });
+    });
+};
+
+// CouchDB/Fauxton deletes don't include doc fields in the deleted revision
+var isDeleteStub = function(doc) {
+  // determines if array2 is included in array1
+  var arrayIncludes = function(array1, array2) {
+    return array2.every(function(elem) {
+      return array1.indexOf(elem) !== -1;
+    });
+  };
+
+  return arrayIncludes(COUCHDB_TOMBSTONE_PROPERTIES, Object.keys(doc)) && !!doc._deleted;
+};
+
+// Returns previous rev
+// @param {Object} revisions - doc _revisions
+var getPreviousRev = function(revisions) {
+  if (revisions && revisions.start > 1 && revisions.ids && revisions.ids.length > 1) {
+    return [revisions.start - 1, '-', revisions.ids[1]].join('');
+  }
+  return false;
 };
 
 module.exports = {
@@ -62,7 +105,7 @@ module.exports = {
 
     return getDoc(Promise, DB, change)
       .then(function(doc) {
-        return doc.type !== TOMBSTONE_TYPE && saveTombstone(DB, doc, logger);
+        return doc.type !== TOMBSTONE_TYPE && saveTombstone(DB, doc, change, logger);
       })
       .catch(function(err) {
         logger.error('Tombstone: could not process doc id:' + change.id + ' seq:' + change.seq, err);
@@ -87,3 +130,7 @@ module.exports = {
     return change;
   }
 };
+
+// exposed for testing
+module.exports._isDeleteStub = isDeleteStub;
+module.exports._getPreviousRev = getPreviousRev;

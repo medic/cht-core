@@ -284,6 +284,42 @@ describe('bulk-docs handler', () => {
       });
   });
 
+  it('returns bodies of couchDB delete stubs', () => {
+    const docs = [
+      { _id: 'a1', type: 'clinic', parent: { _id: 'fixture:offline' }, name: 'Allowed Contact 1' },
+      { _id: 'a2', type: 'clinic', parent: { _id: 'fixture:offline' }, name: 'Allowed Contact 2' },
+      { _id: 'a3', type: 'clinic', parent: { _id: 'fixture:online' }, name: 'Denied Contact 2' }
+    ];
+
+    return utils
+      .saveDocs(docs)
+      .then(result => Promise.all(
+        docs.map((doc, key) => utils.requestOnTestDb({ method: 'DELETE', path: `/${doc._id}?rev=${result[key].rev}` }))
+      ))
+      .then(results => {
+        results.forEach((result, key) => docs[key]._rev = result.rev);
+        offlineRequestOptions.body = JSON.stringify({
+          docs: [
+            { id: 'a1', rev: results[0].rev },
+            { id: 'a2', rev: results[1].rev },
+            { id: 'a3', rev: results[2].rev }
+          ]
+        });
+        return utils.requestOnTestDb(offlineRequestOptions);
+      })
+      .then(result => {
+        expect(result.results.length).toEqual(3);
+        expect(result.results[0].id).toEqual('a1');
+        expect(result.results[0].docs).toEqual([{ ok: { _id: 'a1', _rev: docs[0]._rev, _deleted: true }}]);
+
+        expect(result.results[1].id).toEqual('a2');
+        expect(result.results[1].docs).toEqual([{ ok: { _id: 'a2', _rev: docs[1]._rev, _deleted: true }}]);
+
+        expect(result.results[2].id).toEqual('a3');
+        expect(result.results[2].docs).toEqual([{ ok: { _id: 'a3', _rev: docs[2]._rev, _deleted: true }}]);
+      });
+  });
+
   it('restricts calls with irregular urls which match couchdb endpoint', () => {
     const doc = { _id: 'denied_report', contact: { _id: 'fixture:online'}, type: 'data_record', form: 'a' };
     offlineRequestOptions.body = JSON.stringify({ docs: [{ _id: 'denied_report' }] });
