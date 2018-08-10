@@ -187,12 +187,14 @@ describe('Auth', () => {
 
   describe('getUserSettings', () => {
 
-    it('returns couchdb user doc', () => {
+    it('returns medic user doc with facility_id from couchdb user doc', () => {
       db.serverUrl = 'http://abc.com';
-      sinon.stub(db.medic, 'get')
-        .returns(Promise.resolve({ name: 'steve', facility_id: 'steveVille' }));
+      sinon.stub(db.users, 'get').resolves({ name: 'steve1', facility_id: 'steveVille' });
+      sinon.stub(db.medic, 'get').resolves({ name: 'steve2', facility_id: 'otherville', contact_id: 'steve' });
       return auth.getUserSettings({ name: 'steve' }).then(result => {
-        chai.expect(result).to.deep.equal({ name: 'steve', facility_id: 'steveVille' });
+        chai.expect(result).to.deep.equal({ name: 'steve2', facility_id: 'steveVille', contact_id: 'steve' });
+        chai.expect(db.users.get.callCount).to.equal(1);
+        chai.expect(db.users.get.withArgs('org.couchdb.user:steve').callCount).to.equal(1);
         chai.expect(db.medic.get.callCount).to.equal(1);
         chai.expect(db.medic.get.withArgs('org.couchdb.user:steve').callCount).to.equal(1);
       });
@@ -200,9 +202,19 @@ describe('Auth', () => {
 
     it('throws error if user cannot be read', () => {
       db.serverUrl = 'http://abc.com';
-      sinon.stub(db.medic, 'get').returns(Promise.reject('someErr'));
+      sinon.stub(db.users, 'get').rejects({ some: 'err' });
+      sinon.stub(db.medic, 'get').resolves({});
       return auth.getUserSettings({ name: 'steve' }).catch(err => {
-        chai.expect(err).to.equal('someErr');
+        chai.expect(err).to.deep.equal({ some: 'err' });
+      });
+    });
+
+    it('throws error if user cannot be read', () => {
+      db.serverUrl = 'http://abc.com';
+      sinon.stub(db.users, 'get').resolves({});
+      sinon.stub(db.medic, 'get').rejects({ some: 'err' });
+      return auth.getUserSettings({ name: 'steve' }).catch(err => {
+        chai.expect(err).to.deep.equal({ some: 'err' });
       });
     });
 

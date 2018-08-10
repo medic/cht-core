@@ -20,6 +20,16 @@ if(UNIT_TEST_ENV) {
     getAttachment: stubMe('getAttachment'),
     changes: stubMe('changes')
   };
+
+  module.exports.users = {
+    allDocs: stubMe('allDocs'),
+    bulkDocs: stubMe('bulkDocs'),
+    put: stubMe('put'),
+    post: stubMe('post'),
+    query: stubMe('query'),
+    get: stubMe('get'),
+    changes: stubMe('changes')
+  };
 } else if(COUCH_URL) {
   // strip trailing slash from to prevent bugs in path matching
   const couchUrl = COUCH_URL.replace(/\/$/, '');

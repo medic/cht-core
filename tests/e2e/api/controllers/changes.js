@@ -615,7 +615,6 @@ describe('changes handler', () => {
               return consumeChanges('bob', [], currentSeq);
             })
             .then(changes => {
-              console.log(JSON.stringify(changes));
               expect(changes.results.length).toBeGreaterThanOrEqual(2);
               expect(changes.results.every(change => newIds.indexOf(change.id) !== -1)).toBe(true);
             });
@@ -638,12 +637,11 @@ describe('changes handler', () => {
           return getCurrentSeq('bob');
         })
         .then(() => Promise.all([
-          requestChanges('bob', { since: currentSeq, feed: 'longpoll' }),
+          consumeChanges('bob', [], currentSeq),
           utils.saveDocs(deniedDocs.map(doc => _.extend(doc, { _deleted: true }))),
           utils.saveDocs(allowedDocs.map(doc => _.extend(doc, { _deleted: true })))
         ]))
         .then(([ changes ]) => {
-          console.log(JSON.stringify(changes));
           expect(changes.results.every(change => bobsIds.indexOf(change.id) !== -1)).toBe(true);
           expect(changes.results.every(change => change.deleted || DEFAULT_EXPECTED.indexOf(change.id) !== -1)).toBe(true);
         });
@@ -733,7 +731,7 @@ describe('changes handler', () => {
         });
     });
 
-    it('returns correct results when user is updated while changes request is active', () => {
+    it('returns correct results when only medic user-settings doc facility_id is updated', () => {
       const allowedBob = createSomeContacts(3, 'fixture:bobville');
       const allowedSteve = createSomeContacts(3, 'fixture:steveville');
       bobsIds.push(..._.pluck(allowedBob, '_id'));
@@ -750,7 +748,51 @@ describe('changes handler', () => {
           ]);
         })
         .then(([ changes ]) => {
-          expect(changes.results.every(change => bobsIds.indexOf(change.id) !== -1 || change.id === 'org.couchdb.user:steve') ).toBe(true);
+          expect(changes.results.every(change => stevesIds.indexOf(change.id) !== -1 || change.id === 'org.couchdb.user:steve') ).toBe(true);
+          return requestChanges('steve', { since: currentSeq });
+        })
+        .then(changes => {
+          expect(changes.results.every(change => stevesIds.indexOf(change.id) !== -1 || change.id === 'org.couchdb.user:steve') ).toBe(true);
+        });
+    });
+
+    it('returns correct results when user is updated while changes request is active', () => {
+      const allowedBob = createSomeContacts(3, 'fixture:bobville');
+      const allowedSteve = createSomeContacts(3, 'fixture:steveville');
+      bobsIds.push(..._.pluck(allowedBob, '_id'));
+      stevesIds.push(..._.pluck(allowedSteve, '_id'));
+
+      return utils
+        .updateSettings({ changes_controller: _.defaults({ reiterate_changes: true }, defaultSettings) }, true)
+        .then(() => {
+          return Promise
+            .all([
+              utils.request({ path: '/_users/org.couchdb.user:steve' }),
+              utils.getDoc('org.couchdb.user:steve')
+            ])
+            .then(([ user, medicUser ]) => {
+              return Promise.all([
+                requestChanges('steve', { feed: 'longpoll', since: currentSeq }),
+                utils
+                  .request({
+                    path: `/_users/org.couchdb.user:steve?rev=${user._rev}`,
+                    method: 'PUT',
+                    json: true,
+                    body: _.extend(user, { facility_id: 'fixture:bobville' })
+                  })
+                  .then(() => Promise.all([
+                    utils.saveDoc(_.extend(medicUser, { facility_id: 'fixture:somethingville' })),
+                    utils.saveDocs(allowedBob),
+                    utils.saveDocs(allowedSteve),
+                  ]))
+              ]);
+            })
+            .then(([ changes ]) => {
+              expect(changes.results.every(change => bobsIds.indexOf(change.id) !== -1 ||
+                                                     change.id === 'org.couchdb.user:steve' ||
+                                                     change.id === 'settings')
+              ).toBe(true);
+            });
         });
     });
 

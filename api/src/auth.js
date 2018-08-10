@@ -185,5 +185,15 @@ module.exports = {
     });
   },
 
-  getUserSettings: userCtx => db.medic.get('org.couchdb.user:' + userCtx.name)
+  getUserSettings: userCtx => {
+    return Promise
+      .all([
+        db.users.get('org.couchdb.user:' + userCtx.name),
+        db.medic.get('org.couchdb.user:' + userCtx.name)
+      ])
+      .then(([ user, medicUser ]) => {
+        medicUser.facility_id = user.facility_id;
+        return medicUser;
+      });
+  }
 };

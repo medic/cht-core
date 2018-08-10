@@ -10,10 +10,10 @@ const ALL_KEY = '_all', // key in the docs_by_replication_key view for records e
 
 // fake view map, to store only relevant information about user changes
 const couchDbUser = (doc) => {
-  if (doc.type === 'user-settings') {
-    return _.pick(doc, 'contact_id', 'facility_id');
+  if (doc.type !== 'user-settings') {
+    return false;
   }
-  return false;
+  return true;
 };
 
 const getDepth = (userCtx) => {
@@ -183,13 +183,7 @@ const isAuthChange = (docId, userCtx, { couchDbUser }) => {
   if (docId !== 'org.couchdb.user:' + userCtx.name || !couchDbUser) {
     return false;
   }
-
-  if (userCtx.contact_id !== couchDbUser.contact_id ||
-      userCtx.facility_id !== couchDbUser.facility_id) {
-    return true;
-  }
-
-  return false;
+  return true;
 };
 
 module.exports = {

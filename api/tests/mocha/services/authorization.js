@@ -228,7 +228,7 @@ describe('Authorization service', () => {
       });
     });
 
-    it('extracts correct information for user-settings docs', () => {
+    it('sets couchDBUser view value as true for user-settings docs', () => {
       const doc = {
         id: 'user',
         type: 'user-settings',
@@ -236,7 +236,7 @@ describe('Authorization service', () => {
         facility_id: 'facility-id'
       };
       const result = service.getViewResults(doc);
-      result.couchDbUser.should.deep.equal({ contact_id: 'contact-id', facility_id: 'facility-id' });
+      result.couchDbUser.should.deep.equal(true);
     });
   });
 
@@ -493,19 +493,16 @@ describe('Authorization service', () => {
     });
 
     describe('isAuthChange', () => {
-      it('returns true if change affects user contact or facility, false otherwise', () => {
+      it('returns true if doc is own user Settings doc, false otherwise', () => {
         const userCtx = { name: 'user', facility_id: 'facility_id', contact_id: 'contact_id' };
-        let viewResults = { couchDbUser: { facility_id: 'new_facility_id', contact_id: 'contact_id' }};
+        let viewResults = { couchDbUser: true };
         service.isAuthChange('org.couchdb.user:user', userCtx, viewResults).should.equal(true);
 
-        viewResults = { couchDbUser: { facility_id: 'new_facility_id', contact_id: 'new_contact_id' }};
-        service.isAuthChange('org.couchdb.user:user', userCtx, viewResults).should.equal(true);
-
-        viewResults = { couchDbUser: { facility_id: 'facility_id', contact_id: 'contact_id' }};
-        service.isAuthChange('org.couchdb.user:user', userCtx, viewResults).should.equal(false);
+        viewResults = { couchDbUser: true };
+        service.isAuthChange('org.couchdb.user:otheruser', userCtx, viewResults).should.equal(false);
 
         viewResults = { couchDbUser: false };
-        service.isAuthChange('someId', userCtx, viewResults).should.equal(false);
+        service.isAuthChange('org.couchdb.user:user', userCtx, viewResults).should.equal(false);
       });
     });
   });
