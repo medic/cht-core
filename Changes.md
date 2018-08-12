@@ -2,7 +2,7 @@
 
 ## 2.17.0
 
-_July 26, 2018_
+_August 13, 2018_
 
 ### Features
 
@@ -13,6 +13,10 @@ _July 26, 2018_
 
 - [#4742](https://github.com/medic/medic-webapp/issues/4742): Show pictures in the report view
 - [#4745](https://github.com/medic/medic-webapp/issues/4745): Improve styling of mRDT Enketo widget
+
+### Bug fixes
+
+- [#4763](https://github.com/medic/medic-webapp/issues/4763): Error while submitting form with file uploads
 
 ## 2.16.1
 
