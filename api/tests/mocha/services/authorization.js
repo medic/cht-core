@@ -495,14 +495,14 @@ describe('Authorization service', () => {
     describe('isAuthChange', () => {
       it('returns true if doc is own user Settings doc, false otherwise', () => {
         const userCtx = { name: 'user', facility_id: 'facility_id', contact_id: 'contact_id' };
-        let viewResults = { couchDbUser: true };
-        service.isAuthChange('org.couchdb.user:user', userCtx, viewResults).should.equal(true);
 
-        viewResults = { couchDbUser: true };
-        service.isAuthChange('org.couchdb.user:otheruser', userCtx, viewResults).should.equal(false);
-
-        viewResults = { couchDbUser: false };
-        service.isAuthChange('org.couchdb.user:user', userCtx, viewResults).should.equal(false);
+        service.isAuthChange('org.couchdb.user:user', userCtx, { couchDbUser: true }).should.equal(true);
+        service.isAuthChange('org.couchdb.user:otheruser', userCtx, { couchDbUser: true }).should.equal(false);
+        service.isAuthChange('org.couchdb.user:user', userCtx, { couchDbUser: false }).should.equal(false);
+        service.isAuthChange('org.couchdb.user:user', userCtx, {}).should.equal(false);
+        service.isAuthChange('org.couchdb.user:user', userCtx, { some: 'thing' }).should.equal(false);
+        service.isAuthChange('org.couchdb.user:user', userCtx, { couchDbUser: undefined }).should.equal(false);
+        service.isAuthChange('someid', userCtx, { couchDbUser: 'aaaa'}).should.equal(false);
       });
     });
   });
