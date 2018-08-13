@@ -189,10 +189,15 @@ describe('Auth', () => {
 
     it('returns medic user doc with facility_id from couchdb user doc', () => {
       db.serverUrl = 'http://abc.com';
-      sinon.stub(db.users, 'get').resolves({ name: 'steve1', facility_id: 'steveVille' });
-      sinon.stub(db.medic, 'get').resolves({ name: 'steve2', facility_id: 'otherville', contact_id: 'steve' });
-      return auth.getUserSettings({ name: 'steve' }).then(result => {
-        chai.expect(result).to.deep.equal({ name: 'steve', facility_id: 'steveVille', contact_id: 'steve' });
+      sinon
+        .stub(db.users, 'get')
+        .resolves({ name: 'steve1', facility_id: 'steveVille', roles: ['b'] });
+      sinon
+        .stub(db.medic, 'get')
+        .resolves({ name: 'steve2', facility_id: 'otherville', contact_id: 'steve', roles: ['c'] });
+      return auth.getUserSettings({ name: 'steve', roles: ['a'] }).then(result => {
+        chai.expect(result).to.deep.equal(
+          { name: 'steve', facility_id: 'steveVille', contact_id: 'steve', roles: ['a'] });
         chai.expect(db.users.get.callCount).to.equal(1);
         chai.expect(db.users.get.withArgs('org.couchdb.user:steve').callCount).to.equal(1);
         chai.expect(db.medic.get.callCount).to.equal(1);
