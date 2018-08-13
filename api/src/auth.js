@@ -192,9 +192,7 @@ module.exports = {
         db.medic.get('org.couchdb.user:' + userCtx.name)
       ])
       .then(([ user, medicUser ]) => {
-        medicUser.name = userCtx.name;
-        medicUser.roles = userCtx.roles;
-        medicUser.facility_id = user.facility_id;
+        _.extend(medicUser, _.pick(user, 'name', 'roles', 'facility_id'));
         return medicUser;
       });
   }

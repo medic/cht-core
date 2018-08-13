@@ -191,13 +191,13 @@ describe('Auth', () => {
       db.serverUrl = 'http://abc.com';
       sinon
         .stub(db.users, 'get')
-        .resolves({ name: 'steve1', facility_id: 'steveVille', roles: ['b'] });
+        .resolves({ name: 'steve', facility_id: 'steveVille', roles: ['b'] });
       sinon
         .stub(db.medic, 'get')
         .resolves({ name: 'steve2', facility_id: 'otherville', contact_id: 'steve', roles: ['c'] });
-      return auth.getUserSettings({ name: 'steve', roles: ['a'] }).then(result => {
+      return auth.getUserSettings({ name: 'steve' }).then(result => {
         chai.expect(result).to.deep.equal(
-          { name: 'steve', facility_id: 'steveVille', contact_id: 'steve', roles: ['a'] });
+          { name: 'steve', facility_id: 'steveVille', contact_id: 'steve', roles: ['b'] });
         chai.expect(db.users.get.callCount).to.equal(1);
         chai.expect(db.users.get.withArgs('org.couchdb.user:steve').callCount).to.equal(1);
         chai.expect(db.medic.get.callCount).to.equal(1);
@@ -210,7 +210,7 @@ describe('Auth', () => {
 
       sinon.stub(db.users, 'get').resolves({
         _id: 'org.couchdb.user:my-user',
-        name: 'my-user-a',
+        name: 'my-user',
         roles: [ 'a' ],
         type: 'user',
         password_scheme: 'abcd',
@@ -226,11 +226,11 @@ describe('Auth', () => {
         facility_id: 'otherVille'
       });
 
-      return auth.getUserSettings({ name: 'my-user', roles: [ 'c' ] }).then(result => {
+      return auth.getUserSettings({ name: 'my-user' }).then(result => {
         chai.expect(result).to.deep.equal({
           _id: 'org.couchdb.user:my-user',
           name: 'my-user',
-          roles: [ 'c' ],
+          roles: [ 'a' ],
           type: 'user-settings',
           some: 'field',
           contact_id: 'my-user-contact',
