@@ -8,13 +8,8 @@ const db = require('../db-pouch'),
 const ALL_KEY = '_all', // key in the docs_by_replication_key view for records everyone can access
       UNASSIGNED_KEY = '_unassigned'; // key in the docs_by_replication_key view for unassigned records
 
-// fake view map, to store only relevant information about user changes
-const couchDbUser = (doc) => {
-  if (doc.type !== 'user-settings') {
-    return false;
-  }
-  return true;
-};
+// fake view map, to store whether doc is a medic.user-settings doc
+const couchDbUser = doc => doc.type === 'user-settings';
 
 const getDepth = (userCtx) => {
   if (!userCtx.roles || !userCtx.roles.length) {
@@ -180,10 +175,7 @@ const getViewResults = (doc) => {
 };
 
 const isAuthChange = (docId, userCtx, { couchDbUser }) => {
-  if (docId !== 'org.couchdb.user:' + userCtx.name || !couchDbUser) {
-    return false;
-  }
-  return true;
+  return docId === 'org.couchdb.user:' + userCtx.name && !!couchDbUser;
 };
 
 module.exports = {
