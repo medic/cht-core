@@ -200,7 +200,7 @@ describe('Auth', () => {
       });
     });
 
-    it('throws error if user cannot be read', () => {
+    it('throws error if _users user returns an error', () => {
       db.serverUrl = 'http://abc.com';
       sinon.stub(db.users, 'get').rejects({ some: 'err' });
       sinon.stub(db.medic, 'get').resolves({});
@@ -209,7 +209,7 @@ describe('Auth', () => {
       });
     });
 
-    it('throws error if user cannot be read', () => {
+    it('throws error if medic user-settings returns an error', () => {
       db.serverUrl = 'http://abc.com';
       sinon.stub(db.users, 'get').resolves({});
       sinon.stub(db.medic, 'get').rejects({ some: 'err' });
