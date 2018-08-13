@@ -643,7 +643,7 @@ describe('changes handler', () => {
         ]))
         .then(([ changes ]) => {
           expect(changes.results.every(change => bobsIds.indexOf(change.id) !== -1)).toBe(true);
-          expect(changes.results.every(change => change.deleted || DEFAULT_EXPECTED.indexOf(change.id) !== -1)).toBe(true);
+          expect(changes.results.some(change => change.deleted)).toBe(true);
         });
     });
 
@@ -764,6 +764,7 @@ describe('changes handler', () => {
 
       return utils
         .updateSettings({ changes_controller: _.defaults({ reiterate_changes: true }, defaultSettings) }, true)
+        .then(() => getCurrentSeq('steve'))
         .then(() => {
           return Promise
             .all([
@@ -781,7 +782,7 @@ describe('changes handler', () => {
                     body: _.extend(user, { facility_id: 'fixture:bobville' })
                   })
                   .then(() => Promise.all([
-                    utils.saveDoc(_.extend(medicUser, { facility_id: 'fixture:somethingville' })),
+                    utils.saveDoc(_.extend(medicUser, { facility_id: 'fixture:somethingville', roles: ['_admin'] })),
                     utils.saveDocs(allowedBob),
                     utils.saveDocs(allowedSteve),
                   ]))

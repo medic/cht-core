@@ -192,11 +192,45 @@ describe('Auth', () => {
       sinon.stub(db.users, 'get').resolves({ name: 'steve1', facility_id: 'steveVille' });
       sinon.stub(db.medic, 'get').resolves({ name: 'steve2', facility_id: 'otherville', contact_id: 'steve' });
       return auth.getUserSettings({ name: 'steve' }).then(result => {
-        chai.expect(result).to.deep.equal({ name: 'steve2', facility_id: 'steveVille', contact_id: 'steve' });
+        chai.expect(result).to.deep.equal({ name: 'steve', facility_id: 'steveVille', contact_id: 'steve' });
         chai.expect(db.users.get.callCount).to.equal(1);
         chai.expect(db.users.get.withArgs('org.couchdb.user:steve').callCount).to.equal(1);
         chai.expect(db.medic.get.callCount).to.equal(1);
         chai.expect(db.medic.get.withArgs('org.couchdb.user:steve').callCount).to.equal(1);
+      });
+    });
+
+    it('returns name and roles from provided userCtx', () => {
+      db.serverUrl = 'http://abc.com';
+
+      sinon.stub(db.users, 'get').resolves({
+        _id: 'org.couchdb.user:my-user',
+        name: 'my-user-a',
+        roles: [ 'a' ],
+        type: 'user',
+        password_scheme: 'abcd',
+        facility_id: 'myUserVille'
+      });
+      sinon.stub(db.medic, 'get').resolves({
+        _id: 'org.couchdb.user:my-user',
+        name: 'my-user-edited',
+        roles: [ '_admin' ],
+        type: 'user-settings',
+        some: 'field',
+        contact_id: 'my-user-contact',
+        facility_id: 'otherVille'
+      });
+
+      return auth.getUserSettings({ name: 'my-user', roles: [ 'c' ] }).then(result => {
+        chai.expect(result).to.deep.equal({
+          _id: 'org.couchdb.user:my-user',
+          name: 'my-user',
+          roles: [ 'c' ],
+          type: 'user-settings',
+          some: 'field',
+          contact_id: 'my-user-contact',
+          facility_id: 'myUserVille'
+        });
       });
     });
 
