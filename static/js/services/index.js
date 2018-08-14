@@ -10,6 +10,7 @@
   require('./android-api');
   require('./auth');
   require('./cache');
+  require('./calendar-interval');
   require('./changes');
   require('./check-date');
   require('./child-facility');

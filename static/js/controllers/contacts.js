@@ -341,10 +341,8 @@ var _ = require('underscore'),
         $scope.lastVisitedDateExtras = results[1];
         var uhcSettings = results[2] && results[2].uhc || {};
         $scope.visitCountSettings = getVisitCountSettings(uhcSettings);
-        if ($scope.lastVisitedDateExtras &&
-            uhcSettings.contacts_default_sort &&
-            uhcSettings.contacts_default_sort.last_visited_date) {
-          $scope.sortDirection = $scope.defaultSortDirection = 'lastVisitedDate';
+        if ($scope.lastVisitedDateExtras && uhcSettings.contacts_default_sort) {
+          $scope.sortDirection = $scope.defaultSortDirection = uhcSettings.contacts_default_sort;
         }
 
         setActionBarData();
@@ -365,17 +363,12 @@ var _ = require('underscore'),
       });
 
       var isRelevantVisitReport = function(doc) {
-        if ($scope.lastVisitedDateExtras &&
-            doc.type === 'data_record' &&
-            doc.form &&
-            doc.fields &&
-            doc.fields.visited_contact_uuid &&
-            liveList.contains({ _id: doc.fields.visited_contact_uuid })
-        ) {
-          return true;
-        }
-
-        return false;
+        return $scope.lastVisitedDateExtras &&
+               doc.type === 'data_record' &&
+               doc.form &&
+               doc.fields &&
+               doc.fields.visited_contact_uuid &&
+               liveList.contains({ _id: doc.fields.visited_contact_uuid });
       };
 
       var changeListener = Changes({

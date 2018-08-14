@@ -1,6 +1,5 @@
 var _ = require('underscore'),
-    Search = require('search'),
-    calendarInterval = require('../modules/calendar-interval');
+    Search = require('search');
 
 (function () {
 
@@ -29,7 +28,8 @@ var _ = require('underscore'),
       $q,
       DB,
       GetDataRecords,
-      SearchFactory
+      SearchFactory,
+      CalendarInterval
     ) {
 
       'ngInject';
@@ -59,14 +59,12 @@ var _ = require('underscore'),
           keys: searchResults
         }).then(function(results) {
           var visitStats = {},
-              interval = calendarInterval.getCurrent(settings.monthStartDate);
+              interval = CalendarInterval.getCurrent(settings.monthStartDate);
 
           results.rows.forEach(function(row) {
             var stats = visitStats[row.key] || { lastVisitedDate: -1, visitCount: 0 };
 
-            if (stats.lastVisitedDate < row.value) {
-              stats.lastVisitedDate = row.value;
-            }
+            stats.lastVisitedDate = Math.max(stats.lastVisitedDate, row.value);
 
             if (row.value >= interval.start && row.value <= interval.end) {
               stats.visitCount++;

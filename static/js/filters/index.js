@@ -8,7 +8,6 @@
   require('./form-icon');
   require('./form-icon-name');
   require('./message');
-  require('./number');
   require('./phone');
   require('./resource-icon');
   require('./safe-html');

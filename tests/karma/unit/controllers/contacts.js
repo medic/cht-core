@@ -605,7 +605,7 @@ describe('Contacts controller', () => {
       auth.resolves();
       settings.resolves({
         uhc: {
-          contacts_default_sort: {},
+          contacts_default_sort: false,
           visit_count: {
             month_start_date: false,
             visit_count_goal: 1
@@ -640,9 +640,7 @@ describe('Contacts controller', () => {
       auth.resolves();
       settings.resolves({
         uhc: {
-          contacts_default_sort: {
-            last_visited_date: true
-          },
+          contacts_default_sort: 'lastVisitedDate',
           visit_count: {
             month_start_date: 25,
             visit_count_goal: 125
@@ -693,11 +691,11 @@ describe('Contacts controller', () => {
       deadListContains.withArgs({ _id: 'something' }).returns(true);
 
       return createController().getSetupPromiseForTesting().then(() => {
-        assert.equal(changesFilter({ doc: relevantReport }), true);
-        assert.equal(changesFilter({ doc: irrelevantReports[0] }), false);
-        assert.equal(changesFilter({ doc: irrelevantReports[1] }), false);
-        assert.equal(changesFilter({ doc: irrelevantReports[2] }), false);
-        assert.equal(changesFilter({ doc: irrelevantReports[3] }), false);
+        assert.equal(!!changesFilter({ doc: relevantReport }), true);
+        assert.equal(!!changesFilter({ doc: irrelevantReports[0] }), false);
+        assert.equal(!!changesFilter({ doc: irrelevantReports[1] }), false);
+        assert.equal(!!changesFilter({ doc: irrelevantReports[2] }), false);
+        assert.equal(!!changesFilter({ doc: irrelevantReports[3] }), false);
       });
     });
 
@@ -715,11 +713,11 @@ describe('Contacts controller', () => {
       deadListContains.withArgs({ _id: 'something' }).returns(true);
 
       return createController().getSetupPromiseForTesting().then(() => {
-        assert.equal(changesFilter({ doc: relevantReport }), false);
-        assert.equal(changesFilter({ doc: irrelevantReports[0] }), false);
-        assert.equal(changesFilter({ doc: irrelevantReports[1] }), false);
-        assert.equal(changesFilter({ doc: irrelevantReports[2] }), false);
-        assert.equal(changesFilter({ doc: irrelevantReports[3] }), false);
+        assert.equal(!!changesFilter({ doc: relevantReport }), false);
+        assert.equal(!!changesFilter({ doc: irrelevantReports[0] }), false);
+        assert.equal(!!changesFilter({ doc: irrelevantReports[1] }), false);
+        assert.equal(!!changesFilter({ doc: irrelevantReports[2] }), false);
+        assert.equal(!!changesFilter({ doc: irrelevantReports[3] }), false);
 
         assert.equal(deadListContains.callCount, 0);
       });
