@@ -265,6 +265,77 @@ describe('db-doc handler', () => {
         });
     });
 
+    it('GET with open_revs', () => {
+      offlineRequestOptions.method = 'GET';
+
+      const docs = [
+        { _id: 'a1_revs', type: 'clinic', parent: { _id: 'fixture:offline' }, name: 'Allowed Contact 1' },
+        { _id: 'd1_revs', type: 'clinic', parent: { _id: 'fixture:online' }, name: 'Denied Contact 1' }
+      ];
+
+      return utils
+        .saveDocs(docs)
+        .then(results => {
+          results.forEach((result, key) => docs[key]._rev = result.rev);
+
+          return utils.saveDocs(docs);
+        })
+        .then(results => {
+          results.forEach((result, key) => docs[key]._rev = result.rev);
+
+          docs[0].parent = { _id: 'fixture:online' };
+          docs[1].parent = { _id: 'fixture:offline' };
+
+          return utils.saveDocs(docs);
+        })
+        .then(results => {
+          const deletes = [];
+          results.forEach((result, key) => {
+            docs[key]._rev = result.rev;
+            deletes.push({ _id: docs[key]._id, _rev: result.rev, _deleted: true });
+          });
+
+          return utils.saveDocs(deletes);
+        })
+        .then(results => {
+          results.forEach((result, key) => docs[key]._rev = result.rev);
+
+          return Promise.all(docs.map(doc => utils.requestOnTestDb(`/${doc._id}?rev=${doc._rev}&revs=true`)));
+        })
+        .then(results => Promise
+          .all(_.flatten(results.map(result => {
+          const open_revs = result._revisions.ids.map((rev, key) => `${result._revisions.start - key}-${rev}`),
+                path = `/${result._id}?rev=${result._rev}&open_revs=${JSON.stringify(open_revs)}`,
+                pathAll = `/${result._id}?rev=${result._rev}&open_revs=all`;
+          return [
+            utils.requestOnTestDb(_.defaults({ path: path }, offlineRequestOptions)),
+            utils.requestOnTestDb(_.defaults({ path: pathAll }, offlineRequestOptions)),
+          ];
+        }))))
+        .then(results => {
+          expect(results[0].length).toEqual(3);
+          expect(results[0][0].ok._rev.startsWith('1')).toBe(true);
+          expect(results[0][1].ok._rev.startsWith('2')).toBe(true);
+          expect(results[0][2].ok._rev.startsWith('4')).toBe(true);
+          expect(results[0].every(result => result.ok._id === 'a1_revs' &&
+                                            (result.ok._deleted || result.ok.parent._id === 'fixture:offline'))
+          ).toBe(true);
+
+          expect(results[1].length).toEqual(1);
+          expect(results[1][0].ok._deleted).toBe(true);
+
+          expect(results[2].length).toEqual(2);
+          expect(results[2][0].ok._rev.startsWith('3')).toBe(true);
+          expect(results[2][1].ok._rev.startsWith('4')).toBe(true);
+          expect(results[2].every(result => result.ok._id === 'd1_revs' &&
+                                            (result.ok._deleted || result.ok.parent._id === 'fixture:offline'))
+          ).toBe(true);
+
+          expect(results[1].length).toEqual(1);
+          expect(results[1][0].ok._deleted).toBe(true);
+        });
+    });
+
     it('POST', () => {
       _.extend(offlineRequestOptions, {
         method: 'POST',

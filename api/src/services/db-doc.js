@@ -12,7 +12,15 @@ const getStoredDoc = (params, method, query, isAttachment) => {
   // use `req.query.rev` for attachment requests
   // `db-doc` PUT and DELETE requests will require latest `rev` to be allowed
   if ((method === 'GET' || isAttachment) && query) {
-    options = query;
+    // open_revs can be either a json stringified array or `all`
+    if (query.open_revs && query.open_revs !== 'all') {
+      try {
+        query.open_revs = JSON.parse(query.open_revs);
+      } catch (err) {
+        return Promise.reject({ error: 'bad_request', reason: 'invalid UTF-8 JSON' });
+      }
+    }
+    options = _.omit(query, 'latest');
   }
 
   return db.medic
@@ -79,6 +87,25 @@ module.exports = {
         return true;
       });
   },
+
+  filterOfflineOpenRevsRequest: (userCtx, params, query) => {
+    return Promise
+      .all([
+        getStoredDoc(params, 'GET', query),
+        authorization.getAuthorizationContext(userCtx)
+      ])
+      .then(([ storedDocs, authorizationContext ]) => {
+        return storedDocs.filter(storedDoc => {
+          if (!storedDoc.ok) {
+            return false;
+          }
+
+          const viewResults = authorization.getViewResults(storedDoc.ok);
+          return authorization.allowedDoc(storedDoc.ok._id, authorizationContext, viewResults) ||
+                 authorization.isDeleteStub(storedDoc.ok);
+        });
+      });
+  }
 };
 
 // used for testing

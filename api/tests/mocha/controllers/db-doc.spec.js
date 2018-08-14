@@ -2,7 +2,8 @@ const sinon = require('sinon').sandbox.create();
 require('chai').should();
 const controller = require('../../../src/controllers/db-doc'),
       service = require('../../../src/services/db-doc'),
-      serverUtils = require('../../../src/server-utils');
+      serverUtils = require('../../../src/server-utils'),
+      _ = require('underscore');
 
 let testReq,
     testRes,
@@ -11,6 +12,7 @@ let testReq,
 describe('db-doc controller', () => {
   beforeEach(() => {
     sinon.stub(service, 'filterOfflineRequest').resolves();
+    sinon.stub(service, 'filterOfflineOpenRevsRequest').resolves();
     sinon.stub(serverUtils, 'serverError');
 
     testReq = { body: {}, method: 'GET', params: { docId: 'a' }, query: {}};
@@ -105,6 +107,7 @@ describe('db-doc controller', () => {
             [ testReq.userCtx, testReq.params, testReq.method, testReq.query, testReq.body ]);
           next.callCount.should.equal(1);
           testRes.json.callCount.should.equal(0);
+          service.filterOfflineOpenRevsRequest.callCount.should.equal(0);
         });
     });
 
@@ -120,6 +123,7 @@ describe('db-doc controller', () => {
           next.callCount.should.equal(0);
           testRes.json.callCount.should.equal(1);
           testRes.json.args[0].should.deep.equal([{ some: 'thing' }]);
+          service.filterOfflineOpenRevsRequest.callCount.should.equal(0);
         });
     });
 
@@ -134,6 +138,7 @@ describe('db-doc controller', () => {
       testRes.json.callCount.should.deep.equal(1);
       testRes.json.args[0].should.deep.equal([{ error: 'forbidden', reason: 'Insufficient privileges' }]);
       service.filterOfflineRequest.callCount.should.equal(0);
+      service.filterOfflineOpenRevsRequest.callCount.should.equal(0);
     });
 
     it('sends error when document request is not allowed', () => {
@@ -190,6 +195,59 @@ describe('db-doc controller', () => {
           serverUtils.serverError.callCount.should.equal(1);
           serverUtils.serverError.args[0][0].should.deep.equal({ error: 'something' });
         });
+    });
+
+    describe('Get requests with open_revs', () => {
+      it('processes GET requests with open_revs parameter properly', () => {
+        testReq.query = { open_revs: 'something' };
+        service.filterOfflineOpenRevsRequest.resolves({ some: 'thing' });
+
+        return controller
+          .request(testReq, testRes, next)
+          .then(() => {
+            next.callCount.should.equal(0);
+            testRes.json.callCount.should.equal(1);
+            testRes.json.args[0].should.deep.equal([{ some: 'thing' }]);
+            service.filterOfflineRequest.callCount.should.equal(0);
+            service.filterOfflineOpenRevsRequest.callCount.should.equal(1);
+            service.filterOfflineOpenRevsRequest.args[0]
+              .should.deep.equal([testReq.userCtx, testReq.params, testReq.query]);
+          });
+      });
+
+      it('processes non open_revs requests properly', () => {
+        service.filterOfflineOpenRevsRequest.resolves(false);
+        service.filterOfflineRequest.resolves(true);
+
+        return Promise
+          .all([
+            controller.request(testReq, testRes, next), // GET without open revs
+            controller.request(_.defaults({ query: { open_revs: false } }, testReq), testRes, next),
+            controller.request(_.defaults({ method: 'POST', query: { open_revs: true }, params: {} }, testReq), testRes, next),
+            controller.request(_.defaults({ method: 'POST', params: {} }, testReq), testRes, next),
+            controller.request(_.defaults({ method: 'PUT', query: { open_revs: true } }, testReq), testRes, next),
+            controller.request(_.defaults({ method: 'PUT' }, testReq), testRes, next),
+            controller.request(_.defaults({ method: 'DELETE', query: { open_revs: true } }, testReq), testRes, next),
+            controller.request(_.defaults({ method: 'DELETE' }, testReq), testRes, next),
+          ])
+          .then(() => {
+            next.callCount.should.equal(8);
+            service.filterOfflineRequest.callCount.should.equal(8);
+            service.filterOfflineOpenRevsRequest.callCount.should.equal(0);
+          });
+      });
+
+      it('catches service errors', () => {
+        testReq.query = { open_revs: 'something' };
+        service.filterOfflineOpenRevsRequest.rejects({ error: 'something' });
+
+        return controller
+          .request(testReq, testRes, next)
+          .catch(() => {
+            serverUtils.serverError.callCount.should.equal(1);
+            serverUtils.serverError.args[0][0].should.deep.equal({ error: 'something' });
+          });
+      });
     });
   });
 

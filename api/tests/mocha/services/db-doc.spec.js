@@ -95,6 +95,64 @@ describe('db-doc service', () => {
         .then(result => result.should.equal('Should throw an error'))
         .catch(err => err.should.deep.equal({ some: 'error' }));
     });
+
+    it('unstringifies open_revs query param', () => {
+      query.open_revs = JSON.stringify(['a', 'b', 'c']);
+      db.medic.get.resolves({ some: 'thing'});
+      return service
+        ._getStoredDoc(params, method, query)
+        .then(result => {
+          result.should.deep.equal({ some: 'thing' });
+          db.medic.get.callCount.should.equal(1);
+          db.medic.get.args[0].should.deep.equal(['id', { open_revs: ['a', 'b', 'c'] }]);
+        });
+    });
+
+    it('supports open_revs===all query param', () => {
+      query.open_revs = 'all';
+      db.medic.get.resolves({ some: 'thing'});
+      return service
+        ._getStoredDoc(params, method, query)
+        .then(result => {
+          result.should.deep.equal({ some: 'thing' });
+          db.medic.get.callCount.should.equal(1);
+          db.medic.get.args[0].should.deep.equal(['id', { open_revs: 'all' }]);
+        });
+    });
+
+    it('supports open_revs===false query param', () => {
+      query.open_revs = false;
+      db.medic.get.resolves({ some: 'thing'});
+      return service
+        ._getStoredDoc(params, method, query)
+        .then(result => {
+          result.should.deep.equal({ some: 'thing' });
+          db.medic.get.callCount.should.equal(1);
+          db.medic.get.args[0].should.deep.equal(['id', { open_revs: false }]);
+        });
+    });
+
+    it('throws when incorrect open_revs param', () => {
+      query.open_revs = 'something';
+      db.medic.get.resolves({ some: 'thing'});
+      return service
+        ._getStoredDoc(params, method, query)
+        .then(result => result.should.equal('Should throw an error'))
+        .catch(err => err.should.deep.equal({ error: 'bad_request', reason: 'invalid UTF-8 JSON' }));
+    });
+
+    it('omits latest query param', () => {
+      query = { rev: '1-rev', revs: true, open_revs: true, revs_info: true, latest: true };
+
+      db.medic.get.resolves({ _id: 'id', _rev: '1-rev' });
+      return service
+        ._getStoredDoc(params, method, query)
+        .then(result => {
+          db.medic.get.callCount.should.equal(1);
+          db.medic.get.args[0].should.deep.equal(['id', { rev: '1-rev', revs: true, open_revs: true, revs_info: true }]);
+          result.should.deep.equal({ _id: 'id', _rev: '1-rev' });
+        });
+    });
   });
 
   describe('getRequestDoc', () => {
@@ -652,6 +710,83 @@ describe('db-doc service', () => {
             result.should.equal(true);
           });
       });
+    });
+  });
+
+  describe('filterOfflineOpenRevsRequest', () => {
+    it('throws db errors', () => {
+      db.medic.get.rejects(new Error('something'));
+      return service
+        .filterOfflineOpenRevsRequest(userCtx, params, query)
+        .catch(err => {
+          authorization.allowedDoc.callCount.should.equal(0);
+          err.message.should.equal('something');
+        });
+    });
+
+    it('calls authorization.getAuthorizationContext with correct params', () => {
+      db.medic.get.resolves([]);
+      return service
+        .filterOfflineOpenRevsRequest(userCtx, params, query)
+        .then(() => {
+          authorization.getAuthorizationContext.callCount.should.equal(1);
+          authorization.getAuthorizationContext.args[0].should.deep.equal([{ name: 'user' }]);
+        });
+    });
+
+    it('calls db get with correct params', () => {
+      db.medic.get.resolves([]);
+      query.open_revs = JSON.stringify(['a', 'b', 'c']);
+      return service
+        .filterOfflineOpenRevsRequest(userCtx, params, query)
+        .then(result => {
+          result.should.deep.equal([]);
+          db.medic.get.callCount.should.deep.equal(1);
+          db.medic.get.args[0].should.deep.equal(['id', { open_revs: ['a', 'b', 'c'] }]);
+        });
+    });
+
+    it('throws error when open_revs is incorrect', () => {
+      db.medic.get.resolves([]);
+      return service
+        .filterOfflineOpenRevsRequest(userCtx, params, query)
+        .catch(err => {
+          db.medic.get.callCount.should.equal(0);
+          err.should.deep.equal({ error: 'bad_request', reason: 'invalid UTF-8 JSON' });
+        });
+    });
+
+    it('filters allowed docs', () => {
+      db.medic.get.resolves([
+        { ok: { _id: 'id', _rev: 1 } },
+        { ok: { _id: 'id', _rev: 2 } },
+        { missing: 3 },
+        { ok: { _id: 'id', _rev: 4 } },
+        { ok: { _id: 'id', _rev: 5 } },
+        { ok: { _id: 'id', _rev: 6, _deleted: true } }
+      ]);
+
+      authorization.getViewResults.callsFake(doc => doc._rev);
+      authorization.allowedDoc.withArgs('id', sinon.match.any, 1).returns(true);
+      authorization.allowedDoc.withArgs('id', sinon.match.any, 2).returns(false);
+      authorization.allowedDoc.withArgs('id', sinon.match.any, 4).returns(false);
+      authorization.allowedDoc.withArgs('id', sinon.match.any, 5).returns(true);
+      authorization.allowedDoc.withArgs('id', sinon.match.any, 6).returns(false);
+      authorization.isDeleteStub.withArgs(sinon.match({ _deleted: true })).returns(true);
+
+      return service
+        .filterOfflineOpenRevsRequest(userCtx, params, query)
+        .then(result => {
+          result.should.deep.equal([
+            { ok: { _id: 'id', _rev: 1 } },
+            { ok: { _id: 'id', _rev: 5 } },
+            { ok: { _id: 'id', _rev: 6, _deleted: true } }
+          ]);
+
+          authorization.getViewResults.callCount.should.equal(5);
+          authorization.allowedDoc.callCount.should.equal(5);
+          authorization.isDeleteStub.callCount.should.equal(3);
+        });
     });
   });
 
