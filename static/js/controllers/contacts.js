@@ -47,6 +47,7 @@ var _ = require('underscore'),
       var additionalListItem = false;
 
       $scope.sortDirection = $scope.defaultSortDirection = 'alpha';
+      var validSortingDirections = ['alpha', 'lastVisitedDate'];
 
       var _initScroll = function() {
         scrollLoader.init(function() {
@@ -341,7 +342,9 @@ var _ = require('underscore'),
         $scope.lastVisitedDateExtras = results[1];
         var uhcSettings = results[2] && results[2].uhc || {};
         $scope.visitCountSettings = getVisitCountSettings(uhcSettings);
-        if ($scope.lastVisitedDateExtras && uhcSettings.contacts_default_sort) {
+        if ($scope.lastVisitedDateExtras &&
+            uhcSettings.contacts_default_sort &&
+            validSortingDirections.indexOf(uhcSettings.contacts_default_sort) !== -1) {
           $scope.sortDirection = $scope.defaultSortDirection = uhcSettings.contacts_default_sort;
         }
 

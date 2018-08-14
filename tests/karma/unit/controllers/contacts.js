@@ -636,6 +636,41 @@ describe('Contacts controller', () => {
         });
     });
 
+    it('only saves correct default sort', function() {
+      auth.resolves();
+      settings.resolves({
+        uhc: {
+          contacts_default_sort: 'something',
+          visit_count: {
+            month_start_date: false,
+            visit_count_goal: 1
+          }
+        }
+      });
+
+      return createController().getSetupPromiseForTesting()
+        .then(() => {
+          assert.equal(auth.callCount, 1);
+          assert.deepEqual(auth.args[0], ['can_view_last_visited_date']);
+
+          assert.equal(scope.lastVisitedDateExtras, true);
+          assert.deepEqual(scope.visitCountSettings, { monthStartDate: false, visitCountGoal: 1 });
+          assert.equal(scope.sortDirection, 'alpha');
+          assert.equal(settings.callCount, 1);
+
+          assert.equal(searchService.callCount, 1);
+          assert.deepEqual(searchService.args[0], [
+            'contacts',
+            { types: { selected: ['childType'] } },
+            { limit: 50 },
+            {
+              displayLastVisitedDate: true,
+              visitCountSettings: { monthStartDate: false, visitCountGoal: 1 }
+            }
+          ]);
+        });
+    });
+
     it('saves uhc default sorting', function() {
       auth.resolves();
       settings.resolves({
