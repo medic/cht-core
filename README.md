@@ -11,6 +11,8 @@ The `medic-webapp` repository is the core tool of the Medic Mobile stack. When h
 
 The web app is fully responsive with a mobile-first design, and supports localization using any written language. It can be installed locally, as part of a virtual machine (see [medic-os](https://github.com/medic/medic-os)), or in the cloud.
 
+Currently, we functionally support the latest versions of Chrome, Chrome for Android and Firefox. We do not support Safari (unreliable implementations of web APIs we need) and the generic android browser (unreliable implementations in general). Our webapp code, which includes any code written as configuration, is still ES5. Our exact support matrix (including older app versions) can be found [in our docs](https://github.com/medic/medic-docs/blob/master/installation/supported-software.md).
+
 For more information about Medic Mobile's tools, visit http://medicmobile.org/tools.
 For more information about Medic Mobile's architecture and how the pieces fit together, see [Architecture Overview](https://github.com/medic/medic-docs/blob/master/development/architecture.md).
 For more information about the format of docs in the database, see [Database Schema](https://github.com/medic/medic-docs/blob/master/development/db-schema.md).
@@ -20,6 +22,8 @@ For more information about the SMS exchange protocol between webapp and gateway,
 
 If you want to get up and running with no fuss, [you can use Horticulturalist](#deploy-locally-using-horticulturalist-beta).
 
+If you want to use our standard configuration, [you can use the Medic Project Configurer](https://github.com/medic/medic-conf) in the [./config/standard](https://github.com/medic/medic-webapp/tree/master/config/standard) directory once Horticuluralist has successfully started.
+
 If you want to develop against Medic, follow the Development Setup below.
 
 ## Development Setup
@@ -27,7 +31,6 @@ If you want to develop against Medic, follow the Development Setup below.
 Before getting started, read about our [development workflow](https://github.com/medic/medic-docs/blob/master/development/workflow.md) and the [architecture overview](https://github.com/medic/medic-docs/blob/master/development/architecture.md).
 
 The setup described below doesn't use [Medic OS](https://github.com/medic/medic-docs/blob/master/development/architecture.md#medic-os), the tools will be run directly on your machine.
-
 
 ### Dependencies
 
@@ -202,9 +205,9 @@ They live in [tests](tests). To run them:
 ### Integration tests
 [Travis](https://travis-ci.org/medic/medic-webapp) runs `grunt ci` every time some new code is pushed to github.
 
-# Other deployment steps
+## Other deployment steps
 
-## Deploy locally using Horticulturalist (beta)
+### Deploy locally using Horticulturalist (beta)
 
 [Horticulturalist](https://github.com/medic/horticulturalist) is an easy way to deploy Medic locally if you're not going to be developing against it.
 
@@ -240,14 +243,11 @@ If you wish to change the version of Medic installed, you can either bootstrap a
 ```shell
 curl -X DELETE $COUCH_URL
 ```
+## Configuring Medic
 
-## Run on Medic OS
+We ship with one "standard" configuration, which can be a useful basis to start with. It is located at [./config/standard[(https://github.com/medic/medic-webapp/tree/master/config/standard).
 
-[What's Medic OS?](https://github.com/medic/medic-os#about-medic-os)
-
-For development, you can find it useful to [run Medic OS on a VM](https://github.com/medic/medic-os#instance-creation-iso) locally, to leverage VM snapshots, for instance to work with different versions.
-
-You can also use Medic-OS for production instances.
+Configuration is performed using [Medic Project Configurer](https://github.com/medic/medic-conf). `medic-conf` expects a particular structure (seen in the standard config above). It compiles forms and configuration into the required formats, as well as uploading that configuration and performing other tasks.
 
 ## Automated Deployment on Travis
 
