@@ -215,6 +215,19 @@ describe('db-doc controller', () => {
           });
       });
 
+      it('sends empty results - no allowed revs correctly', () => {
+        testReq.query = { open_revs: 'something' };
+        service.filterOfflineOpenRevsRequest.resolves([]);
+
+        return controller
+          .request(testReq, testRes, next)
+          .then(() => {
+            next.callCount.should.equal(0);
+            testRes.json.callCount.should.equal(1);
+            testRes.json.args[0].should.deep.equal([[]]);
+          });
+      });
+
       it('processes non open_revs requests properly', () => {
         service.filterOfflineOpenRevsRequest.resolves(false);
         service.filterOfflineRequest.resolves(true);

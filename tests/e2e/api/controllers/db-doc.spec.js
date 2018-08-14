@@ -270,7 +270,8 @@ describe('db-doc handler', () => {
 
       const docs = [
         { _id: 'a1_revs', type: 'clinic', parent: { _id: 'fixture:offline' }, name: 'Allowed Contact 1' },
-        { _id: 'd1_revs', type: 'clinic', parent: { _id: 'fixture:online' }, name: 'Denied Contact 1' }
+        { _id: 'd1_revs', type: 'clinic', parent: { _id: 'fixture:online' }, name: 'Denied Contact 1' },
+        { _id: 'd2_revs', type: 'clinic', parent: { _id: 'fixture:online' }, name: 'Denied Contact 2' }
       ];
 
       return utils
@@ -290,10 +291,10 @@ describe('db-doc handler', () => {
         })
         .then(results => {
           const deletes = [];
-          results.forEach((result, key) => {
-            docs[key]._rev = result.rev;
-            deletes.push({ _id: docs[key]._id, _rev: result.rev, _deleted: true });
-          });
+          results.forEach((result, key) => docs[key]._rev = result.rev);
+
+          deletes.push({ _id: docs[0]._id, _rev: docs[0]._rev, _deleted: true });
+          deletes.push({ _id: docs[1]._id, _rev: docs[1]._rev, _deleted: true });
 
           return utils.saveDocs(deletes);
         })
@@ -331,8 +332,11 @@ describe('db-doc handler', () => {
                                             (result.ok._deleted || result.ok.parent._id === 'fixture:offline'))
           ).toBe(true);
 
-          expect(results[1].length).toEqual(1);
-          expect(results[1][0].ok._deleted).toBe(true);
+          expect(results[3].length).toEqual(1);
+          expect(results[3][0].ok._deleted).toBe(true);
+
+          expect(results[4].length).toEqual(0);
+          expect(results[5].length).toEqual(0);
         });
     });
 

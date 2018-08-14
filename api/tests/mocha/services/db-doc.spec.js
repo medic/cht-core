@@ -763,7 +763,8 @@ describe('db-doc service', () => {
         { missing: 3 },
         { ok: { _id: 'id', _rev: 4 } },
         { ok: { _id: 'id', _rev: 5 } },
-        { ok: { _id: 'id', _rev: 6, _deleted: true } }
+        { ok: { _id: 'id', _rev: 6, _deleted: true } },
+        { error: { _id: 'id', _rev: 7 } }
       ]);
 
       authorization.getViewResults.callsFake(doc => doc._rev);
