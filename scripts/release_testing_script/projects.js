@@ -117,11 +117,13 @@ function create_project(projectName, issueIds) {
       var columnPromises = addColumns(body.columns_url, config.columnNames);
       Promise.all(columnPromises)
         .then(function (columns) {
-          reorderColumns(body.id);
           var toDoColumn = columns.find(column => column.name === config.columnNames[0]);
           issueIds.forEach(function (issueId) {
             addIssueToColumn(toDoColumn.id, issueId);
           });
+        })
+        .then(function(){
+          reorderColumns(body.id);
         })
         .catch(function (error) {
           console.log(error);

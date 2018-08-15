@@ -15,6 +15,7 @@ if (typeof (args.version) !== 'string') {
 
 console.log(args.v);
 
-issues().then(function (ids) {
-  projects(args.v, ids);
-});
+issues()
+  .then(function (ids) {
+    projects(args.v, ids);
+  });
