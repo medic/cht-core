@@ -333,5 +333,12 @@
     "reiterate_changes": true,
     "changes_limit": 100,
     "debounce_interval": 200
+  },
+  "uhc": {
+    "contacts_default_sort": "",
+    "visit_count": {
+      "month_start_date": 1,
+      "visit_count_goal": 0
+    }
   }
 }
