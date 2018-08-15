@@ -27,6 +27,7 @@ var _ = require('underscore'),
       Search,
       SearchFilters,
       Session,
+      Settings,
       Simprints,
       Tour,
       TranslateFrom,
@@ -45,7 +46,7 @@ var _ = require('underscore'),
       var usersHomePlace;
       var additionalListItem = false;
 
-      $scope.sortDirection = 'alpha';
+      $scope.sortDirection = $scope.defaultSortDirection = 'alpha';
 
       var _initScroll = function() {
         scrollLoader.init(function() {
@@ -88,8 +89,9 @@ var _ = require('underscore'),
         var extensions = {};
         if ($scope.lastVisitedDateExtras) {
           extensions.displayLastVisitedDate = true;
+          extensions.visitCountSettings = $scope.visitCountSettings;
         }
-        if ($scope.sortDirection === 'lastVisitedDate') {
+        if ($scope.sortDirection === 'last_visited_date') {
           extensions.sortByLastVisitedDate = true;
         }
 
@@ -256,7 +258,7 @@ var _ = require('underscore'),
       };
       $scope.resetFilterModel = function() {
         $scope.filters = {};
-        $scope.sortDirection = 'alpha';
+        $scope.sortDirection = $scope.defaultSortDirection;
         SearchFilters.reset();
         $scope.search();
       };
@@ -320,13 +322,32 @@ var _ = require('underscore'),
           });
       };
 
+      var getVisitCountSettings = function(uhcSettings) {
+        if (!uhcSettings.visit_count) {
+          return {};
+        }
+
+        return {
+          monthStartDate: uhcSettings.visit_count.month_start_date,
+          visitCountGoal: uhcSettings.visit_count.visit_count_goal
+        };
+      };
+
       var setupPromise = $q.all([
         getUserHomePlaceSummary(),
-        canViewLastVisitedDate()
+        canViewLastVisitedDate(),
+        Settings()
       ])
       .then(function(results) {
         usersHomePlace = results[0];
         $scope.lastVisitedDateExtras = results[1];
+        var uhcSettings = results[2] && results[2].uhc || {};
+        $scope.visitCountSettings = getVisitCountSettings(uhcSettings);
+        if ($scope.lastVisitedDateExtras &&
+            uhcSettings.contacts_default_sort) {
+          $scope.sortDirection = $scope.defaultSortDirection = uhcSettings.contacts_default_sort;
+        }
+
         setActionBarData();
         return $scope.search();
       });
@@ -344,6 +365,15 @@ var _ = require('underscore'),
         }
       });
 
+      var isRelevantVisitReport = function(doc) {
+        return $scope.lastVisitedDateExtras &&
+               doc.type === 'data_record' &&
+               doc.form &&
+               doc.fields &&
+               doc.fields.visited_contact_uuid &&
+               liveList.contains({ _id: doc.fields.visited_contact_uuid });
+      };
+
       var changeListener = Changes({
         key: 'contacts-list',
         callback: function(change) {
@@ -355,7 +385,8 @@ var _ = require('underscore'),
         },
         filter: function(change) {
           return ContactSchema.getTypes().indexOf(change.doc.type) !== -1 ||
-                 liveList.containsDeleteStub(change.doc);
+                 liveList.containsDeleteStub(change.doc) ||
+                 isRelevantVisitReport(change.doc);
         }
       });
 

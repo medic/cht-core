@@ -66,6 +66,7 @@ angular.module('inboxServices', []);
 require('../../../webapp/src/js/services/add-attachment');
 require('../../../webapp/src/js/services/auth');
 require('../../../webapp/src/js/services/cache');
+require('../../../webapp/src/js/services/calendar-interval');
 require('../../../webapp/src/js/services/changes');
 require('../../../webapp/src/js/services/contact-schema');
 require('../../../webapp/src/js/services/db');
