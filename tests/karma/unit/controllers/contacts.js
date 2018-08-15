@@ -636,7 +636,7 @@ describe('Contacts controller', () => {
         });
     });
 
-    it('only saves correct default sort', function() {
+    it('always saves default sort', function() {
       auth.resolves();
       settings.resolves({
         uhc: {
@@ -655,7 +655,7 @@ describe('Contacts controller', () => {
 
           assert.equal(scope.lastVisitedDateExtras, true);
           assert.deepEqual(scope.visitCountSettings, { monthStartDate: false, visitCountGoal: 1 });
-          assert.equal(scope.sortDirection, 'alpha');
+          assert.equal(scope.sortDirection, 'something');
           assert.equal(settings.callCount, 1);
 
           assert.equal(searchService.callCount, 1);
@@ -668,6 +668,10 @@ describe('Contacts controller', () => {
               visitCountSettings: { monthStartDate: false, visitCountGoal: 1 }
             }
           ]);
+
+          scope.sortDirection = 'somethingElse';
+          scope.resetFilterModel();
+          assert.equal(scope.sortDirection, 'something');
         });
     });
 
@@ -675,7 +679,7 @@ describe('Contacts controller', () => {
       auth.resolves();
       settings.resolves({
         uhc: {
-          contacts_default_sort: 'lastVisitedDate',
+          contacts_default_sort: 'last_visited_date',
           visit_count: {
             month_start_date: 25,
             visit_count_goal: 125
@@ -690,8 +694,8 @@ describe('Contacts controller', () => {
 
           assert.equal(scope.lastVisitedDateExtras, true);
           assert.deepEqual(scope.visitCountSettings, { monthStartDate: 25, visitCountGoal: 125 });
-          assert.equal(scope.sortDirection, 'lastVisitedDate');
-          assert.equal(scope.defaultSortDirection, 'lastVisitedDate');
+          assert.equal(scope.sortDirection, 'last_visited_date');
+          assert.equal(scope.defaultSortDirection, 'last_visited_date');
           assert.equal(settings.callCount, 1);
 
           assert.equal(searchService.callCount, 1);
@@ -708,7 +712,7 @@ describe('Contacts controller', () => {
 
           scope.sortDirection = 'something';
           scope.resetFilterModel();
-          assert.equal(scope.sortDirection, 'lastVisitedDate');
+          assert.equal(scope.sortDirection, 'last_visited_date');
         });
     });
 
