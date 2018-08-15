@@ -108,25 +108,23 @@ var _ = require('underscore'),
             if (extensions.displayLastVisitedDate) {
               var lastVisitedDatePromise = getLastVisitedDates(searchResults, extensions.visitCountSettings);
 
-              result = $q
-                .all([ dataRecordsPromise, lastVisitedDatePromise ])
-                .then(function(results) {
-                  var dataRecords = results[0];
-                  var lastVisitedDates = results[1];
-
-                  lastVisitedDates.forEach(function(dateResult) {
-                    var relevantDataRecord = dataRecords.find(function(dataRecord) {
-                      return dataRecord._id === dateResult.key;
-                    });
-
-                    if (relevantDataRecord) {
-                      _.extend(relevantDataRecord, dateResult.value);
-                      relevantDataRecord.sortByLastVisitedDate = extensions.sortByLastVisitedDate;
-                    }
+              result = $q.all({
+                dataRecords: dataRecordsPromise,
+                lastVisitedDates: lastVisitedDatePromise
+              }).then(function(r) {
+                r.lastVisitedDates.forEach(function(dateResult) {
+                  var relevantDataRecord = r.dataRecords.find(function(dataRecord) {
+                    return dataRecord._id === dateResult.key;
                   });
 
-                  return dataRecords;
+                  if (relevantDataRecord) {
+                    _.extend(relevantDataRecord, dateResult.value);
+                    relevantDataRecord.sortByLastVisitedDate = extensions.sortByLastVisitedDate;
+                  }
                 });
+
+                return r.dataRecords;
+              });
             } else {
               result = dataRecordsPromise;
             }

@@ -8,7 +8,29 @@ describe('Search service', function() {
       db,
       clock;
 
+  let qAll;
+
+  const objectToIterable = () => {
+    qAll = Q.all;
+
+    Q.all = map => {
+      if (!map || typeof map[Symbol.iterator] === 'function') {
+        return qAll(map);
+      }
+
+      const keys = Object.keys(map),
+            iterable = keys.map(key => map[key]);
+
+      return qAll(iterable).then(results => {
+        const resultMap = {};
+        results.forEach((result, key) => resultMap[keys[key]] = result);
+        return resultMap;
+      });
+    };
+  };
+
   beforeEach(function() {
+    objectToIterable();
     GetDataRecords = sinon.stub();
     searchStub = sinon.stub();
     searchStub.returns(Promise.resolve());
@@ -29,6 +51,7 @@ describe('Search service', function() {
 
   afterEach(function() {
     KarmaUtils.restore(GetDataRecords);
+    Q.all = qAll;
   });
 
   describe('debouncing', function() {
