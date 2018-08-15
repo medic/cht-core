@@ -1,5 +1,7 @@
 module.exports = {
   gitHubApi: 'https://api.github.com/',
+  gitHub: 'https://github.com/',
+  projects: 'newtewt/release_testing_example/projects',
   issuesEnd: 'repos/newtewt/release_testing_example/issues',
   projectCreate: 'repos/newtewt/release_testing_example/projects',
   repoName: 'release_testing_example',

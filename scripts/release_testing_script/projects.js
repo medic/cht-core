@@ -39,17 +39,16 @@ function moveColumnAfter(columnIdToMove, moveAfterId) {
     });
 }
 
-function addColumns(projectId, columnNames) {
+function addColumns(columnUrl, columnNames) {
   var columnDetails = []
   columnNames.forEach(function (name) {
-    columnDetails.push(addColumn(projectId, name));
+    columnDetails.push(addColumn(columnUrl, name));
   });
   return columnDetails;
 
 };
 
-async function addColumn(projectId, columnName) {
-  var columnUrl = config.gitHubApi + `projects/${projectId}/columns`;
+async function addColumn(columnUrl, columnName) {
   var options = {
     method: 'POST',
     headers: config.headers,
@@ -114,15 +113,19 @@ function create_project(projectName, issueIds) {
 
   rp(options)
     .then(function (body) {
-      console.log('Project ' + projectName + ' created');
-      var columnPromises = addColumns(body.id, config.columnNames);
-      Promise.all(columnPromises).then(function (columns) {
-        reorderColumns(body.id);
-        var toDoColumn = columns.find(column => column.name === config.columnNames[0]);
-        issueIds.forEach(function (issueId) {
-          addIssueToColumn(toDoColumn.id, issueId);
+      console.log('Project created at ' + body.html_url);
+      var columnPromises = addColumns(body.columns_url, config.columnNames);
+      Promise.all(columnPromises)
+        .then(function (columns) {
+          reorderColumns(body.id);
+          var toDoColumn = columns.find(column => column.name === config.columnNames[0]);
+          issueIds.forEach(function (issueId) {
+            addIssueToColumn(toDoColumn.id, issueId);
+          });
+        })
+        .catch(function (error) {
+          console.log(error);
         });
-      });
     })
     .catch(function (error) {
       console.log(options)
