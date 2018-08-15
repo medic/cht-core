@@ -28,7 +28,8 @@ var _ = require('underscore'),
       $q,
       DB,
       GetDataRecords,
-      SearchFactory
+      SearchFactory,
+      CalendarInterval
     ) {
 
       'ngInject';
@@ -50,13 +51,38 @@ var _ = require('underscore'),
 
       var _search = SearchFactory();
 
-      var getLastVisitedDates = function(searchResults) {
+      var getLastVisitedDates = function(searchResults, settings) {
+        settings = settings || {};
+
         return DB().query('medic-client/contacts_by_last_visited', {
-          reduce: true,
-          group: true,
+          reduce: false,
           keys: searchResults
         }).then(function(results) {
-          return results.rows;
+          var visitStats = {},
+              interval = CalendarInterval.getCurrent(settings.monthStartDate);
+
+          results.rows.forEach(function(row) {
+            var stats = visitStats[row.key] || { lastVisitedDate: -1, visitCount: 0 };
+
+            stats.lastVisitedDate = Math.max(stats.lastVisitedDate, row.value);
+
+            if (row.value >= interval.start && row.value <= interval.end) {
+              stats.visitCount++;
+            }
+
+            visitStats[row.key] = stats;
+          });
+
+          return Object.keys(visitStats).map(function(key) {
+            return {
+              key: key,
+              value: {
+                lastVisitedDate: visitStats[key].lastVisitedDate,
+                visitCount: visitStats[key].visitCount,
+                visitCountGoal: settings.visitCountGoal
+              }
+            };
+          });
         });
       };
 
@@ -80,7 +106,7 @@ var _ = require('underscore'),
 
             var result;
             if (extensions.displayLastVisitedDate) {
-              var lastVisitedDatePromise = getLastVisitedDates(searchResults);
+              var lastVisitedDatePromise = getLastVisitedDates(searchResults, extensions.visitCountSettings);
 
               result = $q.all({
                 dataRecords: dataRecordsPromise,
@@ -92,7 +118,7 @@ var _ = require('underscore'),
                   });
 
                   if (relevantDataRecord) {
-                    relevantDataRecord.lastVisitedDate = dateResult.value.max;
+                    _.extend(relevantDataRecord, dateResult.value);
                     relevantDataRecord.sortByLastVisitedDate = extensions.sortByLastVisitedDate;
                   }
                 });
