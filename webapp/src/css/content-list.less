@@ -101,19 +101,16 @@
       .heading {
         display: flex;
         justify-content: space-between;
+        align-items: baseline;
       }
 
       .summary {
         display: flex;
         justify-content: space-between;
+        align-items: baseline;
 
         .overdue {
           color: @high-risk-color;
-          &:before {
-            content: @high-risk-icon;
-            font-family: FontAwesome;
-            margin-right: 3px;
-          }
         }
       }
 
@@ -124,7 +121,47 @@
         overflow: hidden;
         white-space: nowrap;
       }
+
+      .heading .visits {
+        font-size: @font-extra-extra-large;
+        line-height: @font-medium;
+        font-weight: bold;
+
+        &.warning, &.danger {
+          &:before {
+            content: @high-risk-icon;
+            color: @high-risk-color;
+            font-family: FontAwesome;
+            margin-right: 3px;
+            font-size: @font-medium;
+            vertical-align: middle;
+          }
+        }
+      }
+
+      .summary .visits {
+        font-size: @font-small;
+        font-weight: bold;
+      }
+
+      .visits {
+        &.warning {
+          color: @visits-goal-incomplete;
+        }
+
+        &.danger {
+          color: @high-risk-color;
+        }
+
+        &.success {
+          color: @visits-goal-done;
+        }
+      }
     }
+  }
+
+  &.visit-count > a {
+    padding-right: 10px;
   }
 }
 
