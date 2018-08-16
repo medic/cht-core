@@ -12,9 +12,14 @@
     "yarn": "1.7.0"
   },
   "scripts": {
-    "precommit": "pretty-quick --staged",
     "start": "nf start",
     "webdriver": "webdriver-manager update && webdriver-manager start"
+  },
+  "husky": {
+    "hooks": {
+      "pre-push": "grunt precommit",
+      "pre-commit": "pretty-quick --staged"
+    }
   },
   "devDependencies": {
     "angular-mocks": "^1.7.2",
@@ -46,7 +51,7 @@
     "grunt-sass": "^3.0.1",
     "grunt-text-replace": "^0.4.0",
     "grunt-xmlmin": "^0.1.8",
-    "husky": "^0.14.3",
+    "husky": "^1.0.0-rc.13",
     "jit-grunt": "^0.10.0",
     "jshint-stylish": "^2.1.0",
     "karma": "^2.0.4",
