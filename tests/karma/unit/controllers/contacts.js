@@ -566,7 +566,8 @@ describe('Contacts controller', () => {
             'contacts',
             { types: { selected: ['childType'] } },
             { limit: 50 },
-            {}
+            {},
+            []
           ]);
 
           scope.sortDirection = 'something';
@@ -596,7 +597,8 @@ describe('Contacts controller', () => {
             {
               displayLastVisitedDate: true,
               visitCountSettings: {}
-            }
+            },
+            []
           ]);
         });
     });
@@ -631,7 +633,8 @@ describe('Contacts controller', () => {
             {
               displayLastVisitedDate: true,
               visitCountSettings: { monthStartDate: false, visitCountGoal: 1 }
-            }
+            },
+            []
           ]);
         });
     });
@@ -666,7 +669,8 @@ describe('Contacts controller', () => {
             {
               displayLastVisitedDate: true,
               visitCountSettings: { monthStartDate: false, visitCountGoal: 1 }
-            }
+            },
+            []
           ]);
 
           scope.sortDirection = 'somethingElse';
@@ -707,7 +711,8 @@ describe('Contacts controller', () => {
               displayLastVisitedDate: true,
               visitCountSettings: { monthStartDate: 25, visitCountGoal: 125 },
               sortByLastVisitedDate: true
-            }
+            },
+            []
           ]);
 
           scope.sortDirection = 'something';
@@ -759,6 +764,283 @@ describe('Contacts controller', () => {
         assert.equal(!!changesFilter({ doc: irrelevantReports[3] }), false);
 
         assert.equal(deadListContains.callCount, 0);
+      });
+    });
+
+    describe('fully refreshing LHS list', () => {
+      const relevantReport = { type: 'data_record', form: 'home_visit', fields: { visited_contact_uuid: 4 } },
+            irrelevantReport = { type: 'data_record', form: 'somethibg', fields: {} },
+            someContact = { type: 'person', _id: 1 };
+
+      describe('uhc visits enabled', () => {
+        beforeEach(() => {
+          auth.resolves();
+          deadListContains.withArgs({ _id: 4 }).returns(true);
+        });
+        describe('alpha default sorting', () => {
+          it('does not require refreshing when sorting is `alpha` and visit report is received', () => {
+            return createController().getSetupPromiseForTesting().then(() => {
+              Array.apply(null, Array(5)).forEach((k, i) => contactsLiveList.insert({ _id: i }));
+              assert.equal(searchService.callCount, 1);
+              return Promise
+                .all([
+                  changesCallback({ doc: relevantReport }),
+                  changesCallback({ doc: irrelevantReport }),
+                  changesCallback({ doc: someContact })
+                ])
+                .then(() => {
+                  assert.equal(searchService.callCount, 4);
+
+                  assert.deepEqual(searchService.args[1], [
+                    'contacts',
+                    { types: { selected: ['childType'] } },
+                    { limit: 5, sendIds: false, silent: true },
+                    { displayLastVisitedDate: true, visitCountSettings: {}, },
+                    []
+                  ]);
+
+                  assert.deepEqual(searchService.args[2], [
+                    'contacts',
+                    { types: { selected: ['childType'] } },
+                    { limit: 5, sendIds: false, silent: true },
+                    { displayLastVisitedDate: true, visitCountSettings: {}, },
+                    []
+                  ]);
+
+                  assert.deepEqual(searchService.args[3], [
+                    'contacts',
+                    { types: { selected: ['childType'] } },
+                    { limit: 5, sendIds: false, silent: true },
+                    { displayLastVisitedDate: true, visitCountSettings: {}, },
+                    []
+                  ]);
+                });
+            });
+          });
+
+          it('does require refreshing when sorting is `last_visited_date` and visit report is received', () => {
+            return createController().getSetupPromiseForTesting().then(() => {
+              Array.apply(null, Array(5)).forEach((k, i) => contactsLiveList.insert({ _id: i }));
+              assert.equal(searchService.callCount, 1);
+              scope.sortDirection = 'last_visited_date';
+
+              return Promise
+                .all([
+                  changesCallback({ doc: relevantReport }),
+                  changesCallback({ doc: irrelevantReport }),
+                  changesCallback({ doc: someContact })
+                ])
+                .then(() => {
+                  assert.equal(searchService.callCount, 4);
+                  assert.deepEqual(searchService.args[1], [
+                    'contacts',
+                    { types: { selected: ['childType'] } },
+                    { limit: 5, sendIds: true, silent: true },
+                    { displayLastVisitedDate: true, visitCountSettings: {}, sortByLastVisitedDate: true },
+                    ['abcde', 0, 1, 2, 3, 4]
+                  ]);
+
+                  assert.deepEqual(searchService.args[2], [
+                    'contacts',
+                    { types: { selected: ['childType'] } },
+                    { limit: 5, sendIds: false, silent: true },
+                    { displayLastVisitedDate: true, visitCountSettings: {}, sortByLastVisitedDate: true },
+                    []
+                  ]);
+
+                  assert.deepEqual(searchService.args[3], [
+                    'contacts',
+                    { types: { selected: ['childType'] } },
+                    { limit: 5, sendIds: false, silent: true },
+                    { displayLastVisitedDate: true, visitCountSettings: {}, sortByLastVisitedDate: true },
+                    []
+                  ]);
+                });
+            });
+          });
+        });
+
+        describe('last_visited_date default sorting', () => {
+          beforeEach(() => {
+            settings.resolves({ uhc: { contacts_default_sort: 'last_visited_date', } });
+          });
+
+          it('does not require refreshing when sorting is `alpha` and visit report is received', () => {
+            return createController().getSetupPromiseForTesting().then(() => {
+              scope.sortDirection = 'alpha';
+              Array.apply(null, Array(5)).forEach((k, i) => contactsLiveList.insert({ _id: i }));
+              assert.equal(searchService.callCount, 1);
+              return Promise
+                .all([
+                  changesCallback({ doc: relevantReport }),
+                  changesCallback({ doc: irrelevantReport }),
+                  changesCallback({ doc: someContact })
+                ])
+                .then(() => {
+                  assert.equal(searchService.callCount, 4);
+
+                  assert.deepEqual(searchService.args[1], [
+                    'contacts',
+                    { types: { selected: ['childType'] } },
+                    { limit: 5, sendIds: false, silent: true },
+                    { displayLastVisitedDate: true, visitCountSettings: {}, },
+                    []
+                  ]);
+
+                  assert.deepEqual(searchService.args[2], [
+                    'contacts',
+                    { types: { selected: ['childType'] } },
+                    { limit: 5, sendIds: false, silent: true },
+                    { displayLastVisitedDate: true, visitCountSettings: {}, },
+                    []
+                  ]);
+
+                  assert.deepEqual(searchService.args[3], [
+                    'contacts',
+                    { types: { selected: ['childType'] } },
+                    { limit: 5, sendIds: false, silent: true },
+                    { displayLastVisitedDate: true, visitCountSettings: {}, },
+                    []
+                  ]);
+                });
+            });
+          });
+
+          it('does require refreshing when sorting is `last_visited_date` and visit report is received', () => {
+            return createController().getSetupPromiseForTesting().then(() => {
+              Array.apply(null, Array(5)).forEach((k, i) => contactsLiveList.insert({ _id: i }));
+              assert.equal(searchService.callCount, 1);
+
+              return Promise
+                .all([
+                  changesCallback({ doc: relevantReport }),
+                  changesCallback({ doc: irrelevantReport }),
+                  changesCallback({ doc: someContact })
+                ])
+                .then(() => {
+                  assert.equal(searchService.callCount, 4);
+                  assert.deepEqual(searchService.args[1], [
+                    'contacts',
+                    { types: { selected: ['childType'] } },
+                    { limit: 5, sendIds: true, silent: true },
+                    { displayLastVisitedDate: true, visitCountSettings: {}, sortByLastVisitedDate: true },
+                    ['abcde', 0, 1, 2, 3, 4]
+                  ]);
+
+                  assert.deepEqual(searchService.args[2], [
+                    'contacts',
+                    { types: { selected: ['childType'] } },
+                    { limit: 5, sendIds: false, silent: true },
+                    { displayLastVisitedDate: true, visitCountSettings: {}, sortByLastVisitedDate: true },
+                    []
+                  ]);
+
+                  assert.deepEqual(searchService.args[3], [
+                    'contacts',
+                    { types: { selected: ['childType'] } },
+                    { limit: 5, sendIds: false, silent: true },
+                    { displayLastVisitedDate: true, visitCountSettings: {}, sortByLastVisitedDate: true },
+                    []
+                  ]);
+                });
+            });
+          });
+        });
+      });
+
+      describe('uhc visits disabled', () => {
+        beforeEach(() => {
+          auth.rejects();
+          deadListContains.withArgs({ _id: 4 }).returns(true);
+        });
+
+        describe('alpha default sorting', () => {
+          it('does not require refreshing when sorting is `alpha` and visit report is received', () => {
+            return createController().getSetupPromiseForTesting().then(() => {
+              Array.apply(null, Array(5)).forEach((k, i) => contactsLiveList.insert({ _id: i }));
+              assert.equal(searchService.callCount, 1);
+              return Promise
+                .all([
+                  changesCallback({ doc: relevantReport }),
+                  changesCallback({ doc: irrelevantReport }),
+                  changesCallback({ doc: someContact })
+                ])
+                .then(() => {
+                  assert.equal(searchService.callCount, 4);
+
+                  assert.deepEqual(searchService.args[1], [
+                    'contacts',
+                    { types: { selected: ['childType'] } },
+                    { limit: 5, sendIds: false, silent: true },
+                    {},
+                    []
+                  ]);
+
+                  assert.deepEqual(searchService.args[2], [
+                    'contacts',
+                    { types: { selected: ['childType'] } },
+                    { limit: 5, sendIds: false, silent: true },
+                    {},
+                    []
+                  ]);
+
+                  assert.deepEqual(searchService.args[3], [
+                    'contacts',
+                    { types: { selected: ['childType'] } },
+                    { limit: 5, sendIds: false, silent: true },
+                    {},
+                    []
+                  ]);
+                });
+            });
+          });
+        });
+
+        describe('last_visited_date default sorting', () => {
+          beforeEach(() => {
+            settings.resolves({ uhc: { contacts_default_sort: 'last_visited_date', } });
+          });
+
+          it('does require refreshing when sorting is `last_visited_date` and visit report is received', () => {
+            return createController().getSetupPromiseForTesting().then(() => {
+              Array.apply(null, Array(5)).forEach((k, i) => contactsLiveList.insert({ _id: i }));
+              assert.equal(searchService.callCount, 1);
+
+              return Promise
+                .all([
+                  changesCallback({ doc: relevantReport }),
+                  changesCallback({ doc: irrelevantReport }),
+                  changesCallback({ doc: someContact })
+                ])
+                .then(() => {
+                  assert.equal(searchService.callCount, 4);
+                  assert.deepEqual(searchService.args[2], [
+                    'contacts',
+                    { types: { selected: ['childType'] } },
+                    { limit: 5, sendIds: false, silent: true },
+                    {},
+                    []
+                  ]);
+
+                  assert.deepEqual(searchService.args[2], [
+                    'contacts',
+                    { types: { selected: ['childType'] } },
+                    { limit: 5, sendIds: false, silent: true },
+                    {},
+                    []
+                  ]);
+
+                  assert.deepEqual(searchService.args[3], [
+                    'contacts',
+                    { types: { selected: ['childType'] } },
+                    { limit: 5, sendIds: false, silent: true },
+                    {},
+                    []
+                  ]);
+                });
+            });
+          });
+        });
       });
     });
   });

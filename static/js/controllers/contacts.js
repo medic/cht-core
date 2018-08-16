@@ -95,7 +95,14 @@ var _ = require('underscore'),
           extensions.sortByLastVisitedDate = true;
         }
 
-        return Search('contacts', actualFilter, options, extensions).then(function(contacts) {
+        var docIds = [];
+        if (options.sendIds) {
+          docIds = liveList.getList().map(function(item) {
+            return item._id;
+          });
+        }
+
+        return Search('contacts', actualFilter, options, extensions, docIds).then(function(contacts) {
           // If you have a home place make sure its at the top
           if (usersHomePlace) {
             var homeIndex = _.findIndex(contacts, function(contact) {
@@ -379,7 +386,9 @@ var _ = require('underscore'),
           if (change.deleted) {
             liveList.remove(change.doc);
           }
-          _query({ limit: limit, silent: true });
+
+          var sendIds = $scope.sortDirection === 'last_visited_date' && !!isRelevantVisitReport(change.doc);
+          return _query({ limit: limit, silent: true, sendIds: sendIds });
         },
         filter: function(change) {
           return ContactSchema.getTypes().indexOf(change.doc.type) !== -1 ||
