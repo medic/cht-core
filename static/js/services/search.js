@@ -103,7 +103,9 @@ var _ = require('underscore'),
         return _search(type, filters, options, extensions)
           .then(function(searchResults) {
             if (docIds && docIds.length) {
-              searchResults = _.union(searchResults, docIds);
+              docIds.forEach(function(docId) {
+                return searchResults.indexOf(docId) === -1 && searchResults.push(docId);
+              });
             }
             var dataRecordsPromise = GetDataRecords(searchResults, options);
 
