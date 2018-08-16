@@ -541,7 +541,7 @@ describe('Contacts controller', () => {
         .getSetupPromiseForTesting()
         .then(() => {
           deadListFind.returns(true);
-          changesCallback({ deleted: true });
+          changesCallback({ deleted: true, doc: {} });
           assert.equal(searchService.args[1][2].limit, 30);
         });
     });
@@ -724,6 +724,7 @@ describe('Contacts controller', () => {
     it('changes listener filters relevant last visited reports when feature is enabled', () => {
       auth.resolves();
       const relevantReport = { type: 'data_record', form: 'home_visit', fields: { visited_contact_uuid: 'something' } };
+      const deletedReport = { type: 'data_record', form: 'home_visit', fields: { visited_contact_uuid: 'deleted' }, _deleted: true };
       const irrelevantReports = [
         { type: 'data_record', form: 'home_visit', fields: { visited_contact_uuid: 'else' }},
         { type: 'data_record', form: 'home_visit', fields: { uuid: 'bla' }},
@@ -740,6 +741,17 @@ describe('Contacts controller', () => {
         assert.equal(!!changesFilter({ doc: irrelevantReports[1] }), false);
         assert.equal(!!changesFilter({ doc: irrelevantReports[2] }), false);
         assert.equal(!!changesFilter({ doc: irrelevantReports[3] }), false);
+        assert.equal(!!changesFilter({ doc: deletedReport, deleted: true }), false);
+      });
+    });
+
+    it('changes listener filters deleted visit reports when sorting by last visited date', () => {
+      auth.resolves();
+      const deletedReport = { type: 'data_record', form: 'home_visit', fields: { visited_contact_uuid: 'deleted' }, _deleted: true };
+      deadListContains.returns(false);
+      return createController().getSetupPromiseForTesting().then(() => {
+        scope.sortDirection = 'last_visited_date';
+        assert.equal(!!changesFilter({ doc: deletedReport, deleted: true }), true);
       });
     });
 
@@ -768,8 +780,10 @@ describe('Contacts controller', () => {
     });
 
     describe('fully refreshing LHS list', () => {
-      const relevantReport = { type: 'data_record', form: 'home_visit', fields: { visited_contact_uuid: 4 } },
+      const relevantVisitReport = { type: 'data_record', form: 'home_visit', fields: { visited_contact_uuid: 4 } },
             irrelevantReport = { type: 'data_record', form: 'somethibg', fields: {} },
+            irrelevantVisitReport = { type: 'data_record', form: 'home_visit', fields: { visited_contact_uuid: 122 } },
+            deletedVisitReport = { type: 'data_record', form: 'home_visit', fields: { visited_contact_uuid: 122 }, _deleted: true },
             someContact = { type: 'person', _id: 1 };
 
       describe('uhc visits enabled', () => {
@@ -784,36 +798,24 @@ describe('Contacts controller', () => {
               assert.equal(searchService.callCount, 1);
               return Promise
                 .all([
-                  changesCallback({ doc: relevantReport }),
+                  changesCallback({ doc: relevantVisitReport }),
                   changesCallback({ doc: irrelevantReport }),
+                  changesCallback({ doc: irrelevantVisitReport }),
+                  changesCallback({ doc: deletedVisitReport, deleted: true }),
                   changesCallback({ doc: someContact })
                 ])
                 .then(() => {
-                  assert.equal(searchService.callCount, 4);
+                  assert.equal(searchService.callCount, 6);
 
-                  assert.deepEqual(searchService.args[1], [
-                    'contacts',
-                    { types: { selected: ['childType'] } },
-                    { limit: 5, sendIds: false, silent: true },
-                    { displayLastVisitedDate: true, visitCountSettings: {}, },
-                    []
-                  ]);
-
-                  assert.deepEqual(searchService.args[2], [
-                    'contacts',
-                    { types: { selected: ['childType'] } },
-                    { limit: 5, sendIds: false, silent: true },
-                    { displayLastVisitedDate: true, visitCountSettings: {}, },
-                    []
-                  ]);
-
-                  assert.deepEqual(searchService.args[3], [
-                    'contacts',
-                    { types: { selected: ['childType'] } },
-                    { limit: 5, sendIds: false, silent: true },
-                    { displayLastVisitedDate: true, visitCountSettings: {}, },
-                    []
-                  ]);
+                  for (let i = 1; i < 6; i++) {
+                    assert.deepEqual(searchService.args[i], [
+                      'contacts',
+                      { types: { selected: ['childType'] } },
+                      { limit: 5, sendIds: false, silent: true },
+                      { displayLastVisitedDate: true, visitCountSettings: {}, },
+                      []
+                    ]);
+                  }
                 });
             });
           });
@@ -826,12 +828,14 @@ describe('Contacts controller', () => {
 
               return Promise
                 .all([
-                  changesCallback({ doc: relevantReport }),
+                  changesCallback({ doc: relevantVisitReport }),
                   changesCallback({ doc: irrelevantReport }),
+                  changesCallback({ doc: irrelevantVisitReport }),
+                  changesCallback({ doc: deletedVisitReport, deleted: true }),
                   changesCallback({ doc: someContact })
                 ])
                 .then(() => {
-                  assert.equal(searchService.callCount, 4);
+                  assert.equal(searchService.callCount, 6);
                   assert.deepEqual(searchService.args[1], [
                     'contacts',
                     { types: { selected: ['childType'] } },
@@ -840,21 +844,15 @@ describe('Contacts controller', () => {
                     ['abcde', 0, 1, 2, 3, 4]
                   ]);
 
-                  assert.deepEqual(searchService.args[2], [
-                    'contacts',
-                    { types: { selected: ['childType'] } },
-                    { limit: 5, sendIds: false, silent: true },
-                    { displayLastVisitedDate: true, visitCountSettings: {}, sortByLastVisitedDate: true },
-                    []
-                  ]);
-
-                  assert.deepEqual(searchService.args[3], [
-                    'contacts',
-                    { types: { selected: ['childType'] } },
-                    { limit: 5, sendIds: false, silent: true },
-                    { displayLastVisitedDate: true, visitCountSettings: {}, sortByLastVisitedDate: true },
-                    []
-                  ]);
+                  for (let i = 2; i < 6; i++) {
+                    assert.deepEqual(searchService.args[i], [
+                      'contacts',
+                      { types: { selected: ['childType'] } },
+                      { limit: 5, sendIds: false, silent: true },
+                      { displayLastVisitedDate: true, visitCountSettings: {}, sortByLastVisitedDate: true },
+                      []
+                    ]);
+                  }
                 });
             });
           });
@@ -872,36 +870,24 @@ describe('Contacts controller', () => {
               assert.equal(searchService.callCount, 1);
               return Promise
                 .all([
-                  changesCallback({ doc: relevantReport }),
+                  changesCallback({ doc: relevantVisitReport }),
                   changesCallback({ doc: irrelevantReport }),
+                  changesCallback({ doc: irrelevantVisitReport }),
+                  changesCallback({ doc: deletedVisitReport, deleted: true }),
                   changesCallback({ doc: someContact })
                 ])
                 .then(() => {
-                  assert.equal(searchService.callCount, 4);
+                  assert.equal(searchService.callCount, 6);
 
-                  assert.deepEqual(searchService.args[1], [
-                    'contacts',
-                    { types: { selected: ['childType'] } },
-                    { limit: 5, sendIds: false, silent: true },
-                    { displayLastVisitedDate: true, visitCountSettings: {}, },
-                    []
-                  ]);
-
-                  assert.deepEqual(searchService.args[2], [
-                    'contacts',
-                    { types: { selected: ['childType'] } },
-                    { limit: 5, sendIds: false, silent: true },
-                    { displayLastVisitedDate: true, visitCountSettings: {}, },
-                    []
-                  ]);
-
-                  assert.deepEqual(searchService.args[3], [
-                    'contacts',
-                    { types: { selected: ['childType'] } },
-                    { limit: 5, sendIds: false, silent: true },
-                    { displayLastVisitedDate: true, visitCountSettings: {}, },
-                    []
-                  ]);
+                  for (let i = 1; i < 6; i++) {
+                    assert.deepEqual(searchService.args[i], [
+                      'contacts',
+                      { types: { selected: ['childType'] } },
+                      { limit: 5, sendIds: false, silent: true },
+                      { displayLastVisitedDate: true, visitCountSettings: {}, },
+                      []
+                    ]);
+                  }
                 });
             });
           });
@@ -913,12 +899,14 @@ describe('Contacts controller', () => {
 
               return Promise
                 .all([
-                  changesCallback({ doc: relevantReport }),
+                  changesCallback({ doc: relevantVisitReport }),
                   changesCallback({ doc: irrelevantReport }),
+                  changesCallback({ doc: irrelevantVisitReport }),
+                  changesCallback({ doc: deletedVisitReport, deleted: true }),
                   changesCallback({ doc: someContact })
                 ])
                 .then(() => {
-                  assert.equal(searchService.callCount, 4);
+                  assert.equal(searchService.callCount, 6);
                   assert.deepEqual(searchService.args[1], [
                     'contacts',
                     { types: { selected: ['childType'] } },
@@ -927,21 +915,15 @@ describe('Contacts controller', () => {
                     ['abcde', 0, 1, 2, 3, 4]
                   ]);
 
-                  assert.deepEqual(searchService.args[2], [
-                    'contacts',
-                    { types: { selected: ['childType'] } },
-                    { limit: 5, sendIds: false, silent: true },
-                    { displayLastVisitedDate: true, visitCountSettings: {}, sortByLastVisitedDate: true },
-                    []
-                  ]);
-
-                  assert.deepEqual(searchService.args[3], [
-                    'contacts',
-                    { types: { selected: ['childType'] } },
-                    { limit: 5, sendIds: false, silent: true },
-                    { displayLastVisitedDate: true, visitCountSettings: {}, sortByLastVisitedDate: true },
-                    []
-                  ]);
+                  for (let i = 2; i < 6; i++) {
+                    assert.deepEqual(searchService.args[i], [
+                      'contacts',
+                      { types: { selected: ['childType'] } },
+                      { limit: 5, sendIds: false, silent: true },
+                      { displayLastVisitedDate: true, visitCountSettings: {}, sortByLastVisitedDate: true },
+                      []
+                    ]);
+                  }
                 });
             });
           });
@@ -961,36 +943,24 @@ describe('Contacts controller', () => {
               assert.equal(searchService.callCount, 1);
               return Promise
                 .all([
-                  changesCallback({ doc: relevantReport }),
+                  changesCallback({ doc: relevantVisitReport }),
                   changesCallback({ doc: irrelevantReport }),
+                  changesCallback({ doc: irrelevantVisitReport }),
+                  changesCallback({ doc: deletedVisitReport, deleted: true }),
                   changesCallback({ doc: someContact })
                 ])
                 .then(() => {
-                  assert.equal(searchService.callCount, 4);
+                  assert.equal(searchService.callCount, 6);
 
-                  assert.deepEqual(searchService.args[1], [
-                    'contacts',
-                    { types: { selected: ['childType'] } },
-                    { limit: 5, sendIds: false, silent: true },
-                    {},
-                    []
-                  ]);
-
-                  assert.deepEqual(searchService.args[2], [
-                    'contacts',
-                    { types: { selected: ['childType'] } },
-                    { limit: 5, sendIds: false, silent: true },
-                    {},
-                    []
-                  ]);
-
-                  assert.deepEqual(searchService.args[3], [
-                    'contacts',
-                    { types: { selected: ['childType'] } },
-                    { limit: 5, sendIds: false, silent: true },
-                    {},
-                    []
-                  ]);
+                  for (let i = 1; i < 6; i++) {
+                    assert.deepEqual(searchService.args[i], [
+                      'contacts',
+                      { types: { selected: ['childType'] } },
+                      { limit: 5, sendIds: false, silent: true },
+                      {},
+                      []
+                    ]);
+                  }
                 });
             });
           });
@@ -1008,35 +978,24 @@ describe('Contacts controller', () => {
 
               return Promise
                 .all([
-                  changesCallback({ doc: relevantReport }),
+                  changesCallback({ doc: relevantVisitReport }),
                   changesCallback({ doc: irrelevantReport }),
+                  changesCallback({ doc: irrelevantVisitReport }),
+                  changesCallback({ doc: deletedVisitReport, deleted: true }),
                   changesCallback({ doc: someContact })
                 ])
                 .then(() => {
-                  assert.equal(searchService.callCount, 4);
-                  assert.deepEqual(searchService.args[2], [
-                    'contacts',
-                    { types: { selected: ['childType'] } },
-                    { limit: 5, sendIds: false, silent: true },
-                    {},
-                    []
-                  ]);
+                  assert.equal(searchService.callCount, 6);
 
-                  assert.deepEqual(searchService.args[2], [
-                    'contacts',
-                    { types: { selected: ['childType'] } },
-                    { limit: 5, sendIds: false, silent: true },
-                    {},
-                    []
-                  ]);
-
-                  assert.deepEqual(searchService.args[3], [
-                    'contacts',
-                    { types: { selected: ['childType'] } },
-                    { limit: 5, sendIds: false, silent: true },
-                    {},
-                    []
-                  ]);
+                  for (let i = 1; i < 6; i++) {
+                    assert.deepEqual(searchService.args[2], [
+                      'contacts',
+                      { types: { selected: ['childType'] } },
+                      { limit: 5, sendIds: false, silent: true },
+                      {},
+                      []
+                    ]);
+                  }
                 });
             });
           });

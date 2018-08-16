@@ -371,23 +371,26 @@ var _ = require('underscore'),
       });
 
       var isRelevantVisitReport = function(doc) {
+        var isRelevantDelete = doc._deleted && $scope.sortDirection === 'last_visited_date';
         return $scope.lastVisitedDateExtras &&
                doc.type === 'data_record' &&
                doc.form &&
                doc.fields &&
                doc.fields.visited_contact_uuid &&
-               liveList.contains({ _id: doc.fields.visited_contact_uuid });
+               (liveList.contains({ _id: doc.fields.visited_contact_uuid }) || isRelevantDelete);
       };
 
       var changeListener = Changes({
         key: 'contacts-list',
         callback: function(change) {
           var limit = liveList.count();
-          if (change.deleted) {
+          if (change.deleted && change.doc.type !== 'data_record') {
             liveList.remove(change.doc);
           }
 
-          var sendIds = $scope.sortDirection === 'last_visited_date' && !!isRelevantVisitReport(change.doc);
+          var sendIds = $scope.sortDirection === 'last_visited_date' &&
+                        !!isRelevantVisitReport(change.doc) &&
+                        !change.deleted;
           return _query({ limit: limit, silent: true, sendIds: sendIds });
         },
         filter: function(change) {
