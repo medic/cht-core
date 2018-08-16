@@ -3,7 +3,7 @@ const octokit = require('@octokit/rest')(),
 
 
 async function createProject(projectName) {
-  data = {
+  var data = {
     owner: config.owner,
     repo: config.repoName,
     name: projectName,
@@ -17,46 +17,53 @@ async function createProject(projectName) {
   };
 };
 
-async function addColumnsToProject(columnNames, projectId) {
-  var columnResponses = [];
-  for (const index in columnNames) {
-    data = {
-      project_id: projectId,
-      name: columnNames[index],
-      headers: config.headers
-    };
-    try {
-      var result = await octokit.projects.createProjectColumn(data);
-      columnResponses.push(result.data);
-    }
-    catch (err) {
-      console.log(err);
-    };
+async function addColumnsToProject(columnName, projectId) {
+  var data = {
+    project_id: projectId,
+    name: columnName,
+    headers: config.headers
+  };
+  try {
+    return await octokit.projects.createProjectColumn(data);
   }
-  return columnResponses;
+  catch (err) {
+    console.log(err);
+  };
+}
+
+function sortColumnData(columns) {
+  var sorted = [];
+  for (const key in columns) {
+    sorted.push([key, columns[key].order]);
+  };
+
+  sorted.sort(function (a, b) {
+    return a[1] - b[1];
+  });
+  return sorted;
+}
+
+function generateMoveBody(columns, sortedData) {
+  var data = [];
+  var i;
+  for (i = 1; i < sortedData.length; i++) {
+    data.push(
+      {
+        headers: config.headers,
+        column_id: columns[sortedData[i][0]].columnId,
+        position: `after:${columns[sortedData[i - 1][0]].columnId}`
+      });
+  }
+  return data;
 }
 
 async function reOrderColumns(columns) {
-  inProData = {
-    headers: config.headers,
-    column_id: columns.inPro.id,
-    position: `after:${columns.toDo.id}`
-  };
-  doneData = {
-    headers: config.headers,
-    column_id: columns.done.id,
-    position: `after:${columns.inPro.id}`
-  };
-  await octokit.projects.moveProjectColumn(inProData);
-  octokit.projects.moveProjectColumn(doneData);
-}
+  var sorted = sortColumnData(columns);
+  var data = generateMoveBody(columns, sorted);
 
-function orderColumnData(columns) {
-  return {
-    toDo: columns.find(column => column.name == config.columnNames[0]),
-    inPro: columns.find(column => column.name == config.columnNames[1]),
-    done: columns.find(column => column.name == config.columnNames[2]),
-  }
+  for (const index in data) {
+    await octokit.projects.moveProjectColumn(data[index]);
+  };
 }
 
 function addIssuesToColumn(columnId, issueIds) {
@@ -81,5 +88,4 @@ module.exports = {
   addColumnsToProject: addColumnsToProject,
   reOrderColumns: reOrderColumns,
   addIssuesToColumn: addIssuesToColumn,
-  orderColumnData: orderColumnData
 };
