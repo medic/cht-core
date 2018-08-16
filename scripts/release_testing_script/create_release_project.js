@@ -1,7 +1,7 @@
 const minimist = require('minimist'),
   issues = require('./issues'),
+  config = require('./config'),
   projects = require('./projects');
-
 
 var args = minimist(process.argv.slice(2), {
   string: ['version'],     // --version
@@ -13,9 +13,21 @@ if (typeof (args.version) !== 'string') {
   process.exit(1);
 }
 
-console.log(args.v);
+async function createProjectAddColumnsAndIssues() {
+  var projectResponse = await projects.createProject(args.v);
+  var columns = await projects.addColumnsToProject(config.columnNames, projectResponse.data.id);
+  var orderedColumnns = projects.orderColumnData(columns)
+  projects.reOrderColumns(orderedColumnns);
+  issues()
+    .then((response) => {
+      var issueIds = response.data.map(x => x.id);
+      projects.addIssuesToColumn(orderedColumnns.toDo.id,issueIds );
+    })
+    .catch((err)=> {
+      console.log(err);
+    });
+  console.log("Project created at: " + projectResponse.data.html_url);
+}
 
-issues()
-  .then(function (ids) {
-    projects(args.v, ids);
-  });
+
+createProjectAddColumnsAndIssues();

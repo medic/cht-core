@@ -1,26 +1,19 @@
-const rp = require('request-promise'),
+const octokit = require('@octokit/rest')(),
   config = require('./config');
 
-var options = {
-  uri: config.gitHubApi + config.issuesEnd,
-  qs: {
-    state: 'all',
-    labels: 'Release Testing'
-  },
-  headers: config.headers,
-  json: true
-}
+async function issues() {
+  data = {
+    owner: config.owner,
+    repo: config.repoName,
+    labels: config.labels,
+    state: 'all'
+  };
 
-async function issues(version) {
   try {
-    var issues = await rp(options)
-    ids = issues.map(issue => issue.id)
-    return Promise.resolve(ids);
-  }
-  catch (error) {
-    console.log(error);
-    Promise.reject(error);
-  }
+    return await octokit.issues.getForRepo(data);
+  } catch(err){
+    console.log("An error occured getting issues" + err);
+  };
 }
 
 module.exports = issues;
