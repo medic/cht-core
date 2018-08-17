@@ -56,9 +56,12 @@ describe('Submit Photo Upload form', () => {
 
     element(by.css('#photo-upload input[type=file]'))
       .sendKeys(path.join(__dirname, '../../../webapp/src/img/simprints.png'));
+    browser.wait(() => element(by.css('#photo-upload .file-picker .file-preview img')).isPresent(), 10000);
     //submit
     photoUpload.submit();
+    browser.wait(() => element(by.css('div.details')).isPresent(), 10000);
     expect(element(by.css('div.details')).isPresent()).toBeTruthy();
+    browser.wait(() => element(by.css('.report-image')).isPresent(), 10000);
     expect(element(by.css('.report-image')).isPresent()).toBeTruthy();
   });
 });
