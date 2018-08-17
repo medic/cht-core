@@ -20,17 +20,15 @@ async function createProjectAddColumnsAndIssues() {
     config.columnNamesData[key].columnId = columnData.data.id;
   }
 
-  projects.reOrderColumns(config.columnNamesData);
-  issues()
-    .then((response) => {
-      var issueIds = response.data.map(x => x.id);
-      projects.addIssuesToColumn(config.columnNamesData.toDo.columnId, issueIds);
-    })
-    .catch((err) => {
-      console.log(err);
-    });
-
-  console.log("Project created at: " + projectResponse.data.html_url);
+  try{
+    projects.reOrderColumns(config.columnNamesData);
+    var response = await issues();
+    var issueIds = response.data.map(x => x.id);
+    await projects.addIssuesToColumn(config.columnNamesData.toDo.columnId, issueIds);
+    console.log("Project created at: " + projectResponse.data.html_url);
+  } catch(err){
+    console.error(err);
+  }
 }
 
 
