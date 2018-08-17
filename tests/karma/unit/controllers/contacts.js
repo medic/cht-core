@@ -567,7 +567,7 @@ describe('Contacts controller', () => {
             { types: { selected: ['childType'] } },
             { limit: 50 },
             {},
-            []
+            undefined
           ]);
 
           scope.sortDirection = 'something';
@@ -598,7 +598,7 @@ describe('Contacts controller', () => {
               displayLastVisitedDate: true,
               visitCountSettings: {}
             },
-            []
+            undefined
           ]);
         });
     });
@@ -634,7 +634,7 @@ describe('Contacts controller', () => {
               displayLastVisitedDate: true,
               visitCountSettings: { monthStartDate: false, visitCountGoal: 1 }
             },
-            []
+            undefined
           ]);
         });
     });
@@ -670,7 +670,7 @@ describe('Contacts controller', () => {
               displayLastVisitedDate: true,
               visitCountSettings: { monthStartDate: false, visitCountGoal: 1 }
             },
-            []
+            undefined
           ]);
 
           scope.sortDirection = 'somethingElse';
@@ -712,7 +712,7 @@ describe('Contacts controller', () => {
               visitCountSettings: { monthStartDate: 25, visitCountGoal: 125 },
               sortByLastVisitedDate: true
             },
-            []
+            undefined
           ]);
 
           scope.sortDirection = 'something';
@@ -811,9 +811,9 @@ describe('Contacts controller', () => {
                     assert.deepEqual(searchService.args[i], [
                       'contacts',
                       { types: { selected: ['childType'] } },
-                      { limit: 5, sendIds: false, silent: true },
+                      { limit: 5, withIds: false, silent: true },
                       { displayLastVisitedDate: true, visitCountSettings: {}, },
-                      []
+                      undefined
                     ]);
                   }
                 });
@@ -839,7 +839,7 @@ describe('Contacts controller', () => {
                   assert.deepEqual(searchService.args[1], [
                     'contacts',
                     { types: { selected: ['childType'] } },
-                    { limit: 5, sendIds: true, silent: true },
+                    { limit: 5, withIds: true, silent: true },
                     { displayLastVisitedDate: true, visitCountSettings: {}, sortByLastVisitedDate: true },
                     ['abcde', 0, 1, 2, 3, 4]
                   ]);
@@ -848,9 +848,9 @@ describe('Contacts controller', () => {
                     assert.deepEqual(searchService.args[i], [
                       'contacts',
                       { types: { selected: ['childType'] } },
-                      { limit: 5, sendIds: false, silent: true },
+                      { limit: 5, withIds: false, silent: true },
                       { displayLastVisitedDate: true, visitCountSettings: {}, sortByLastVisitedDate: true },
-                      []
+                      undefined
                     ]);
                   }
                 });
@@ -883,9 +883,9 @@ describe('Contacts controller', () => {
                     assert.deepEqual(searchService.args[i], [
                       'contacts',
                       { types: { selected: ['childType'] } },
-                      { limit: 5, sendIds: false, silent: true },
+                      { limit: 5, withIds: false, silent: true },
                       { displayLastVisitedDate: true, visitCountSettings: {}, },
-                      []
+                      undefined
                     ]);
                   }
                 });
@@ -910,7 +910,7 @@ describe('Contacts controller', () => {
                   assert.deepEqual(searchService.args[1], [
                     'contacts',
                     { types: { selected: ['childType'] } },
-                    { limit: 5, sendIds: true, silent: true },
+                    { limit: 5, withIds: true, silent: true },
                     { displayLastVisitedDate: true, visitCountSettings: {}, sortByLastVisitedDate: true },
                     ['abcde', 0, 1, 2, 3, 4]
                   ]);
@@ -919,9 +919,9 @@ describe('Contacts controller', () => {
                     assert.deepEqual(searchService.args[i], [
                       'contacts',
                       { types: { selected: ['childType'] } },
-                      { limit: 5, sendIds: false, silent: true },
+                      { limit: 5, withIds: false, silent: true },
                       { displayLastVisitedDate: true, visitCountSettings: {}, sortByLastVisitedDate: true },
-                      []
+                      undefined
                     ]);
                   }
                 });
@@ -956,9 +956,9 @@ describe('Contacts controller', () => {
                     assert.deepEqual(searchService.args[i], [
                       'contacts',
                       { types: { selected: ['childType'] } },
-                      { limit: 5, sendIds: false, silent: true },
+                      { limit: 5, withIds: false, silent: true },
                       {},
-                      []
+                      undefined
                     ]);
                   }
                 });
@@ -991,9 +991,9 @@ describe('Contacts controller', () => {
                     assert.deepEqual(searchService.args[2], [
                       'contacts',
                       { types: { selected: ['childType'] } },
-                      { limit: 5, sendIds: false, silent: true },
+                      { limit: 5, withIds: false, silent: true },
                       {},
-                      []
+                      undefined
                     ]);
                   }
                 });

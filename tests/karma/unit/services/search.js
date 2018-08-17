@@ -394,7 +394,7 @@ describe('Search service', function() {
         { _id: 1 }, { _id: 2 }, { _id: 3 }
       ]);
 
-      return service('reports', {}, {}, {}).then(result => {
+      return service('reports', {}, {}, {}, undefined).then(result => {
         chai.expect(GetDataRecords.callCount).to.equal(1);
         chai.expect(GetDataRecords.args[0][0]).to.deep.equal([1, 2, 3]);
         chai.expect(result).to.deep.equal([
