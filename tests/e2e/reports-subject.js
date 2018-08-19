@@ -333,7 +333,7 @@ describe('Reports Summary', () => {
           expect(getElementText('#reports-content .item-summary .subject .name')).toBe(MARIA.name);
           expect(getElementText('#reports-content .item-summary .subject + div')).toBe('REF_REF');
           testSummaryLineage(['TAG Place', 'Health Center', 'District']);
-          expect(getElementText('#reports-content .item-summary .sender .name')).toMatch(`Sent by ${CAROL.name}`);
+          expect(getElementText('#reports-content .item-summary .sender .name')).toMatch(`Submitted by ${CAROL.name}`);
           expect(getElementText('#reports-content .item-summary .sender .phone')).toBe(CAROL.phone);
         });
     });
