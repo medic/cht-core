@@ -601,8 +601,9 @@ module.exports = {
     const self = this,
           userID = createID(username);
     const props = _.uniq(USER_EDITABLE_FIELDS.concat(SETTINGS_EDITABLE_FIELDS));
+    const ignore = ['place'];
     const hasFields = _.some(props, function(k) {
-      return !_.isNull(data[k]) && !_.isUndefined(data[k]);
+      return (!_.isNull(data[k]) && !_.isUndefined(data[k])) || ignore.indexOf(k) !== -1;
     });
     if (!hasFields) {
       return callback(error400('One of the following fields are required: ' + props.join(', ')));
@@ -638,6 +639,8 @@ module.exports = {
               .then(place => cb(null, place))
               .catch(cb);
           });
+        } else if(_.isNull(data.place)) {
+          settings.facility_id = null;
         }
         if (data.contact) {
           series.push(function(cb) {
