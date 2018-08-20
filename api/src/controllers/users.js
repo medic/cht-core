@@ -601,11 +601,10 @@ module.exports = {
     const self = this,
           userID = createID(username);
     const props = _.uniq(USER_EDITABLE_FIELDS.concat(SETTINGS_EDITABLE_FIELDS));
-    const ignore = ['place'];
     const hasFields = _.some(props, function(k) {
-      return (!_.isNull(data[k]) && !_.isUndefined(data[k])) || ignore.indexOf(k) !== -1;
+      return (!_.isNull(data[k]) && !_.isUndefined(data[k]));
     });
-    if (!hasFields) {
+    if (!hasFields && !_.isNull(data.place)) { //Online users can remove place
       return callback(error400('One of the following fields are required: ' + props.join(', ')));
     }
     if (data.password) {
@@ -640,6 +639,7 @@ module.exports = {
               .catch(cb);
           });
         } else if(_.isNull(data.place)) {
+          user.facility_id = null;
           settings.facility_id = null;
         }
         if (data.contact) {
