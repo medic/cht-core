@@ -1091,16 +1091,18 @@ describe('Users controller', () => {
       });
     });
 
-    it('removes facility_id on user and user settings for online user', done => {
+    it('removes facility_id/contact on user and user settings for online user', done => {
       const data = {
-        place: null
+        place: null,
+        contact: null
       };
       sinon.stub(controller, '_validateUser').callsArgWith(1, null, {
         facility_id: 'maine',
         roles: ['mm-online']
       });
       sinon.stub(controller, '_validateUserSettings').callsArgWith(1, null, {
-        facility_id: 'maine'
+        facility_id: 'maine',
+        contact_id: 1
       });
       const update = sinon.stub(controller, '_storeUpdatedUser').callsFake((id, user, cb) => {
         chai.expect(user.facility_id).to.equal(null);
@@ -1108,6 +1110,7 @@ describe('Users controller', () => {
       });
       const updateSettings = sinon.stub(controller, '_storeUpdatedUserSettings').callsFake((id, settings, cb) => {
         chai.expect(settings.facility_id).to.equal(null);
+        chai.expect(settings.contact_id).to.equal(null);
         cb();
       });
       controller.updateUser('paul', data, true, err => {
