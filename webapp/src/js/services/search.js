@@ -86,7 +86,7 @@ var _ = require('underscore'),
         });
       };
 
-      return function(type, filters, options, extensions) {
+      return function(type, filters, options, extensions, docIds) {
         $log.debug('Doing Search', type, filters, options, extensions);
 
         options = options || {};
@@ -102,6 +102,13 @@ var _ = require('underscore'),
 
         return _search(type, filters, options, extensions)
           .then(function(searchResults) {
+            if (docIds && docIds.length) {
+              docIds.forEach(function(docId) {
+                if (searchResults.indexOf(docId) === -1) {
+                  searchResults.push(docId);
+                }
+              });
+            }
             var dataRecordsPromise = GetDataRecords(searchResults, options);
 
             var result;
