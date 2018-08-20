@@ -1,8 +1,26 @@
 # Medic Mobile Release Notes
 
+## 2.18.0
+
+_August 20, 2018_
+
+### Features
+
+- [#4758](https://github.com/medic/medic-webapp/issues/4758): Add display of visit counts and conditionally style them (UHC mode)
+
+### Improvements
+
+- [#4752](https://github.com/medic/medic-webapp/issues/4752): Make People page default sort configurable (UHC mode)
+
+### Bug fixes
+
+- [#4612](https://github.com/medic/medic-webapp/issues/4612): There are view generation errors
+- [#4762](https://github.com/medic/medic-webapp/issues/4762): Allow child textform registrations up to 5 years old
+- [#4782](https://github.com/medic/medic-webapp/issues/4782): LHS list doesn't update "out of page" items
+
 ## 2.17.0
 
-_July 26, 2018_
+_August 13, 2018_
 
 ### Features
 
@@ -13,6 +31,10 @@ _July 26, 2018_
 
 - [#4742](https://github.com/medic/medic-webapp/issues/4742): Show pictures in the report view
 - [#4745](https://github.com/medic/medic-webapp/issues/4745): Improve styling of mRDT Enketo widget
+
+### Bug fixes
+
+- [#4763](https://github.com/medic/medic-webapp/issues/4763): Error while submitting form with file uploads
 
 ## 2.16.1
 
