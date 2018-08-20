@@ -639,6 +639,9 @@ module.exports = {
               .catch(cb);
           });
         } else if(_.isNull(data.place)) {
+          if(settings.roles && isOffline(settings.roles)) {
+            return callback(error400('Place field is required for offline users'));
+          }
           user.facility_id = null;
           settings.facility_id = null;
         }
