@@ -191,7 +191,6 @@ describe('Search service', function() {
           chai.expect(db.query.args[0])
             .to.deep.equal([ 'medic-client/contacts_by_last_visited', {reduce: false, keys: ['1', '2', '3']} ]);
 
-          console.log(result);
           chai.expect(result).to.deep.equal([
             {
               _id: '1',
@@ -294,4 +293,114 @@ describe('Search service', function() {
     });
   });
 
+  describe('provided docIds', () => {
+    it('merges provided docIds with search results', () => {
+      searchStub.resolves([1, 2, 3, 4]);
+      GetDataRecords.withArgs([1, 2, 3, 4, 5, 6, 7, 8]).resolves([
+        { _id: 1 }, { _id: 2 }, { _id: 3 }, { _id: 4 }, { _id: 5 }, { _id: 6 }, { _id: 7 }, { _id: 8 }
+      ]);
+
+      return service('contacts', {}, {}, {}, [5, 6, 7, 8]).then(result => {
+        chai.expect(GetDataRecords.callCount).to.equal(1);
+        chai.expect(GetDataRecords.args[0][0]).to.deep.equal([1, 2, 3, 4, 5, 6, 7, 8]);
+        chai.expect(result).to.deep.equal([
+          { _id: 1 }, { _id: 2 }, { _id: 3 }, { _id: 4 }, { _id: 5 }, { _id: 6 }, { _id: 7 }, { _id: 8 }
+        ]);
+      });
+    });
+
+    it('merges the lists keeping records unique', () => {
+      searchStub.resolves([1, 2, 3, 4]);
+      GetDataRecords.withArgs([1, 2, 3, 4, 5]).resolves([
+        { _id: 1 }, { _id: 2 }, { _id: 3 }, { _id: 4 }, { _id: 5 }
+      ]);
+
+      return service('contacts', {}, {}, {}, [1, 2, 3, 4, 5]).then(result => {
+        chai.expect(GetDataRecords.callCount).to.equal(1);
+        chai.expect(GetDataRecords.args[0][0]).to.deep.equal([1, 2, 3, 4, 5]);
+        chai.expect(result).to.deep.equal([
+          { _id: 1 }, { _id: 2 }, { _id: 3 }, { _id: 4 }, { _id: 5 }
+        ]);
+      });
+    });
+
+    it('queries for last visited date with the full list of ids', () => {
+      searchStub.resolves(['1', '2']);
+      GetDataRecords.withArgs(['1', '2', '3', '4']).resolves([
+        { _id: '1' }, { _id: '2' }, { _id: '3' }, { _id: '4' }
+      ]);
+      db.query
+        .withArgs('medic-client/contacts_by_last_visited')
+        .resolves({ rows :[
+          { key: '1', value: 1 },
+          { key: '2', value: 2 },
+          { key: '3', value: 3 },
+          { key: '4', value: 4 },
+        ]});
+
+      const extensions = { displayLastVisitedDate: true };
+
+      return service('contacts', {}, {}, extensions, ['3', '4']).then(results => {
+        chai.expect(GetDataRecords.callCount).to.equal(1);
+        chai.expect(GetDataRecords.args[0][0]).to.deep.equal(['1', '2', '3', '4']);
+        chai.expect(db.query.callCount).to.equal(1);
+        chai.expect(db.query.args[0])
+          .to.deep.equal([ 'medic-client/contacts_by_last_visited', { reduce: false, keys: ['1', '2', '3', '4']} ]);
+
+        console.log(results[0]);
+
+        chai.expect(results).to.deep.equal([
+          { _id: '1', lastVisitedDate: 1, visitCount: 0, visitCountGoal: undefined, sortByLastVisitedDate: undefined },
+          { _id: '2', lastVisitedDate: 2, visitCount: 0, visitCountGoal: undefined, sortByLastVisitedDate: undefined },
+          { _id: '3', lastVisitedDate: 3, visitCount: 0, visitCountGoal: undefined, sortByLastVisitedDate: undefined },
+          { _id: '4', lastVisitedDate: 4, visitCount: 0, visitCountGoal: undefined, sortByLastVisitedDate: undefined }
+        ]);
+      });
+    });
+
+    it('works for reports too', () => {
+      searchStub.resolves([1, 2, 3]);
+      GetDataRecords.withArgs([1, 2, 3, 4, 5]).resolves([
+        { _id: 1 }, { _id: 2 }, { _id: 3 }, { _id: 4 }, { _id: 5 }
+      ]);
+
+      return service('reports', {}, {}, {}, [1, 2, 3, 4, 5]).then(result => {
+        chai.expect(GetDataRecords.callCount).to.equal(1);
+        chai.expect(GetDataRecords.args[0][0]).to.deep.equal([1, 2, 3, 4, 5]);
+        chai.expect(result).to.deep.equal([
+          { _id: 1 }, { _id: 2 }, { _id: 3 }, { _id: 4 }, { _id: 5 }
+        ]);
+      });
+    });
+
+    it('has no effect when docIds is empty', () => {
+      searchStub.resolves([1, 2, 3]);
+      GetDataRecords.withArgs([1, 2, 3]).resolves([
+        { _id: 1 }, { _id: 2 }, { _id: 3 }
+      ]);
+
+      return service('reports', {}, {}, {}, []).then(result => {
+        chai.expect(GetDataRecords.callCount).to.equal(1);
+        chai.expect(GetDataRecords.args[0][0]).to.deep.equal([1, 2, 3]);
+        chai.expect(result).to.deep.equal([
+          { _id: 1 }, { _id: 2 }, { _id: 3 }
+        ]);
+      });
+    });
+
+    it('has no effect when docIds is undefined', () => {
+      searchStub.resolves([1, 2, 3]);
+      GetDataRecords.withArgs([1, 2, 3]).resolves([
+        { _id: 1 }, { _id: 2 }, { _id: 3 }
+      ]);
+
+      return service('reports', {}, {}, {}, undefined).then(result => {
+        chai.expect(GetDataRecords.callCount).to.equal(1);
+        chai.expect(GetDataRecords.args[0][0]).to.deep.equal([1, 2, 3]);
+        chai.expect(result).to.deep.equal([
+          { _id: 1 }, { _id: 2 }, { _id: 3 }
+        ]);
+      });
+    });
+  });
 });

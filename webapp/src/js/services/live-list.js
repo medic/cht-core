@@ -46,7 +46,7 @@ angular.module('inboxServices').factory('LiveListConfig',
             return;
           }
           if (c1.sortByLastVisitedDate) {
-            return c1.lastVisitedDate < c2.lastVisitedDate;
+            return c1.lastVisitedDate - c2.lastVisitedDate;
           }
           if (c1.simprints && c2.simprints) {
             return c2.simprints.confidence - c1.simprints.confidence;
