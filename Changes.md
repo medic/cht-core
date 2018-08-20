@@ -137,6 +137,24 @@ _July 6, 2018_
 - [#4676](https://github.com/medic/medic-webapp/issues/4676): Emit NODE_OPTIONS during API startup
 - [#4683](https://github.com/medic/medic-webapp/issues/4683): Create a shared library for server startup checks
 
+## 2.18.0
+
+_August 20, 2018_
+
+### Features
+
+- [#4758](https://github.com/medic/medic-webapp/issues/4758): Add display of visit counts and conditionally style them (UHC mode)
+
+### Improvements
+
+- [#4752](https://github.com/medic/medic-webapp/issues/4752): Make People page default sort configurable (UHC mode)
+
+### Bug fixes
+
+- [#4612](https://github.com/medic/medic-webapp/issues/4612): There are view generation errors
+- [#4762](https://github.com/medic/medic-webapp/issues/4762): Allow child textform registrations up to 5 years old
+- [#4782](https://github.com/medic/medic-webapp/issues/4782): LHS list doesn't update "out of page" items
+
 ## 2.17.0
 
 _August 13, 2018_
