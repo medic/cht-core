@@ -104,7 +104,9 @@ var _ = require('underscore'),
           .then(function(searchResults) {
             if (docIds && docIds.length) {
               docIds.forEach(function(docId) {
-                return searchResults.indexOf(docId) === -1 && searchResults.push(docId);
+                if (searchResults.indexOf(docId) === -1) {
+                  searchResults.push(docId);
+                }
               });
             }
             var dataRecordsPromise = GetDataRecords(searchResults, options);
