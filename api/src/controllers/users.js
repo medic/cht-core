@@ -602,9 +602,10 @@ module.exports = {
           userID = createID(username);
     const props = _.uniq(USER_EDITABLE_FIELDS.concat(SETTINGS_EDITABLE_FIELDS));
     const hasFields = _.some(props, function(k) {
-      return !_.isNull(data[k]) && !_.isUndefined(data[k]);
+      return (!_.isNull(data[k]) && !_.isUndefined(data[k]));
     });
-    if (!hasFields) {
+    //Online users can remove place or contact
+    if (!hasFields && !_.isNull(data.place) && !_.isNull(data.contact)) {
       return callback(error400('One of the following fields are required: ' + props.join(', ')));
     }
     if (data.password) {
@@ -638,11 +639,22 @@ module.exports = {
               .then(place => cb(null, place))
               .catch(cb);
           });
+        } else if(_.isNull(data.place)) {
+          if(settings.roles && isOffline(settings.roles)) {
+            return callback(error400('Place field is required for offline users'));
+          }
+          user.facility_id = null;
+          settings.facility_id = null;
         }
         if (data.contact) {
           series.push(function(cb) {
             self._validateContact(settings.contact_id, user.facility_id, cb);
           });
+        } else if (_.isNull(data.contact)) {
+          if(settings.roles && isOffline(settings.roles)) {
+            return callback(error400('Contact field is required for offline users'));
+          }
+          settings.contact_id = null;
         }
         series.push(function(cb) {
           self._storeUpdatedUser(userID, user, function(err, resp) {
