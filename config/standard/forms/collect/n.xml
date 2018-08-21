@@ -17,7 +17,7 @@
             <value>Nom de la personne</value>
           </text>
           <text id="/n/n:hint">
-            <value>-</value>
+            <value>En soumettant ce formulaire, vous recevrez un Identifiant associé à cette personne.</value>
           </text>
         </translation>
         <translation lang="हिन्दी (Hindi)">
@@ -26,6 +26,14 @@
           </text>
           <text id="/n/n:hint">
             <value>इस फॉर्म को सबमिट करने से आपको इस व्यक्ति की मेडिक आईडी मिल जाएगी</value>
+          </text>
+        </translation>
+        <translation lang="bengali">
+          <text id="/n/n:label">
+            <value>ব্যক্তির নাম</value>
+          </text>
+          <text id="/n/n:hint">
+            <value>এই ফর্ম জমা দেওয়ার জন্য আপনাকে এই ব্যক্তির সাথে যুক্ত একটি মেডিকেড আইডি দেবে</value>
           </text>
         </translation>
         <translation default="true()" lang="English">
@@ -38,7 +46,7 @@
         </translation>
       </itext>
       <instance>
-        <n delimiter="#" id="n" prefix="J1!n!" version="2018-06-19_14-25">
+        <n delimiter="#" id="n" prefix="J1!n!" version="2018-08-21_08-38">
           <n/>
           <meta>
             <instanceID/>

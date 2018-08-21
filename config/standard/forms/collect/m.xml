@@ -20,6 +20,14 @@
             <value>मरीज का ID</value>
           </text>
         </translation>
+        <translation lang="bengali">
+          <text id="/m/review:label">
+            <value>আইডি <output value=" /m/id "/> জন্য জন্মোত্তর দর্শন প্রতিবেদন জমা দেওয়া</value>
+          </text>
+          <text id="/m/id:label">
+            <value>রোগীর আইডি</value>
+          </text>
+        </translation>
         <translation default="true()" lang="English">
           <text id="/m/review:label">
             <value>Submitting postnatal visit report for ID <output value=" /m/id "/></value>
@@ -30,7 +38,7 @@
         </translation>
       </itext>
       <instance>
-        <m delimiter="#" id="m" prefix="J1!m!" version="2018-06-06_09-53">
+        <m delimiter="#" id="m" prefix="J1!m!" version="2018-08-21_08-38">
           <id/>
           <review/>
           <meta>

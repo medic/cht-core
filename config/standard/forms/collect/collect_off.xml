@@ -16,8 +16,7 @@
         </translation>
         <translation lang="fr">
           <text id="/collect_off/review:label">
-            <value>Envoi d'un rapport pour désactiver les notifications pour l'identifiant $ {id}, avec les notes suivantes: <output value=" /collect_off/r "/></value>
-          </text>
+            <value>Envoi d'un rapport pour désactiver les notifications pour l'identifiant <output value=" /collect_off/id "/>, avec les notes suivantes: <output value=" /collect_off/r "/></value></text>
           <text id="/collect_off/id:label">
             <value>Identifiant du patient</value>
           </text>
@@ -35,6 +34,17 @@
             <value>नोट्स</value>
           </text>
         </translation>
+        <translation lang="bengali">
+          <text id="/collect_off/review:label">
+            <value>প্রতিবেদন জমা দেওয়া, আইডি $ {আইডি} এর জন্য বিজ্ঞপ্তিগুলি বন্ধ করুন নিম্নলিখিত টীকা সহ: $ {R}</value>
+          </text>
+          <text id="/collect_off/id:label">
+            <value>রোগীর আইডি</value>
+          </text>
+          <text id="/collect_off/r:label">
+            <value>নোট</value>
+          </text>
+        </translation>
         <translation default="true()" lang="English">
           <text id="/collect_off/review:label">
             <value>Submitting report to turn OFF notifications for ID <output value=" /collect_off/id "/>, with the following notes: <output value=" /collect_off/r "/></value></text>
@@ -47,7 +57,7 @@
         </translation>
       </itext>
       <instance>
-        <collect_off delimiter="#" id="collect_off" prefix="J1!off!" version="2018-06-19_14-26">
+        <collect_off delimiter="#" id="collect_off" prefix="J1!off!" version="2018-08-21_08-38">
           <id/>
           <r/>
           <review/>

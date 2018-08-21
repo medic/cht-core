@@ -608,67 +608,67 @@
         </translation>
         <translation lang="fr">
           <text id="/c_imm/group_review_vaccines/r_opv_2:label">
-            <value>-</value>
+            <value>OPV 2</value>
           </text>
           <text id="/c_imm/group_mmrv/g_mmrv/MMRV2:label">
-            <value>-</value>
+            <value>MMRV 2</value>
           </text>
           <text id="/c_imm/group_select_vaccines/g_vaccines/polio:label">
-            <value>-</value>
+            <value>Polio</value>
           </text>
           <text id="/c_imm/group_review_vaccines/r_rotavirus_2:label">
-            <value>-</value>
+            <value>Rota 2</value>
           </text>
           <text id="/c_imm/group_bcg/g_bcg:label">
-            <value>-</value>
+            <value>Est-ce que <output value=" /c_imm/id "/> a reçu le vaccin BBG?</value>
           </text>
           <text id="/c_imm/group_hpv/g_hpv/HPV1:label">
-            <value>-</value>
+            <value>HPV 1</value>
           </text>
           <text id="/c_imm/group_pneumococcal/g_pneumococcal/none:label">
-            <value>-</value>
+            <value>Aucun</value>
           </text>
           <text id="/c_imm/group_review_vaccines/r_mmrv_2:label">
-            <value>-</value>
+            <value>MMRV 2</value>
           </text>
           <text id="/c_imm/group_jap_enc:label">
-            <value>-</value>
+            <value>Encéphalite japonaise</value>
           </text>
-          <text id="/c_imm/received/bcg:label">
-            <value>BCG reçu</value>
+          <text id="/c_imm/group_polio/g_polio/none:label">
+            <value>Aucun</value>
           </text>
           <text id="/c_imm/group_select_vaccines/g_vaccines:label">
-            <value>-</value>
+            <value>Quels vaccins voulez-vous rapporter ?</value>
           </text>
           <text id="/c_imm/group_mmr/g_mmr:label">
-            <value>-</value>
+            <value>Quel vaccin MMR a reçu <output value=" /c_imm/id "/> ?</value>
           </text>
           <text id="/c_imm/group_rotavirus/g_rotavirus/RV3:label">
-            <value>-</value>
+            <value>Rota 3</value>
           </text>
           <text id="/c_imm/group_review:label">
-            <value>-</value>
+            <value>Rapport pour <output value=" /c_imm/id "/></value>
           </text>
           <text id="/c_imm/group_polio/g_polio/OPV0:label">
-            <value>-</value>
+            <value>OPV 0</value>
           </text>
           <text id="/c_imm/received/pcv2:label">
             <value>Pneumo 2 reçu</value>
           </text>
           <text id="/c_imm/group_pentavalent/g_pentavalent/DT1:label">
-            <value>-</value>
+            <value>Penta 1</value>
           </text>
           <text id="/c_imm/group_meningococcal/g_meningococcal/MN3:label">
-            <value>-</value>
+            <value>Méningococcal 3</value>
           </text>
           <text id="/c_imm/received/opv1:label">
             <value>OPV 1 reçu</value>
           </text>
           <text id="/c_imm/group_mmrv/g_mmrv:label">
-            <value>-</value>
+            <value>Quel vaccin MMRV a reçu <output value=" /c_imm/id "/> ?</value>
           </text>
           <text id="/c_imm/group_hpv/g_hpv:jr:constraintMsg">
-            <value>-</value>
+            <value>Impossible de sélectionner aucun si une autre dose est sélectionnée.</value>
           </text>
           <text id="/c_imm/received/opv0:label">
             <value>OPV 0 reçu</value>
@@ -680,19 +680,19 @@
             <value>MMR 1 reçu</value>
           </text>
           <text id="/c_imm/group_cholera:label">
-            <value>-</value>
+            <value>Choléra</value>
           </text>
           <text id="/c_imm/group_vitamin_a/g_vitamin_a:label">
-            <value>-</value>
+            <value>Est-ce que <output value=" /c_imm/id "/> a reçu la Vitamine A ?</value>
           </text>
           <text id="/c_imm/group_review_vaccines/r_cholera_1:label">
-            <value>-</value>
+            <value>Choléra 1</value>
           </text>
           <text id="/c_imm/group_hep_a:label">
-            <value>-</value>
+            <value>Hépatite A</value>
           </text>
           <text id="/c_imm/group_select_vaccines/g_vaccines/mmr:label">
-            <value>-</value>
+            <value>MMR</value>
           </text>
           <text id="/c_imm/received/yf:label">
             <value>Fièvre jaune reçu</value>
@@ -701,121 +701,127 @@
             <value>Penta 3 reçu</value>
           </text>
           <text id="/c_imm/group_yellow_fever/g_yellow_fever:label">
-            <value>-</value>
+            <value>Est-ce que <output value=" /c_imm/id "/> a reçu le vaccin contre la fièvre jaune ?</value>
           </text>
           <text id="/c_imm/group_mmrv/g_mmrv/none:label">
-            <value>-</value>
+            <value>Aucun</value>
+          </text>
+          <text id="/c_imm/group_hep_a/g_hep_a:jr:constraintMsg">
+            <value>Impossible de sélectionner aucun si une autre dose est sélectionnée.</value>
+          </text>
+          <text id="/c_imm/group_flu/g_flu:label">
+            <value>Est-ce que <output value=" /c_imm/id "/> a reçu le vaccin contre la grippe ?</value>
           </text>
           <text id="/c_imm/received/rv3:label">
             <value>Rota 3 reçu</value>
           </text>
-          <text id="/c_imm/group_flu/g_flu:label">
-            <value>-</value>
-          </text>
-          <text id="/c_imm/group_hep_a/g_hep_a:jr:constraintMsg">
-            <value>-</value>
-          </text>
           <text id="/c_imm/group_polio/g_polio:label">
-            <value>-</value>
+            <value>Quel vaccin OPV a reçu <output value=" /c_imm/id "/> ?</value>
+          </text>
+          <text id="/c_imm/group_review_vaccines/r_pneumococcal_2:label">
+            <value>Pneumo 2</value>
           </text>
           <text id="/c_imm/group_pneumococcal/g_pneumococcal/PCV2:label">
-            <value>-</value>
+            <value>Pneumo 2</value>
           </text>
           <text id="/c_imm/group_polio/g_polio/OPV1:label">
-            <value>-</value>
+            <value>OPV 1</value>
           </text>
           <text id="/c_imm/group_review_vaccines/r_vitamin_a:label">
-            <value>-</value>
+            <value>Vitamine A</value>
           </text>
           <text id="/c_imm/group_pentavalent/g_pentavalent/DT3:label">
-            <value>-</value>
+            <value>Penta 3</value>
           </text>
           <text id="/c_imm/group_typhoid/g_typhoid:jr:constraintMsg">
-            <value>-</value>
+            <value>Impossible de sélectionner aucun si une autre dose est sélectionnée.</value>
           </text>
           <text id="/c_imm/group_hpv/g_hpv:label">
-            <value>-</value>
+            <value>Quel vaccin HPV a reçu <output value=" /c_imm/id "/> ?</value>
           </text>
           <text id="/c_imm/group_review_vaccines/r_hep_a_2:label">
-            <value>-</value>
+            <value>Hépatite A 2</value>
           </text>
           <text id="/c_imm/group_typhoid/g_typhoid/none:label">
-            <value>-</value>
-          </text>
-          <text id="/c_imm/group_rotavirus/g_rotavirus:label">
-            <value>-</value>
+            <value>Aucun</value>
           </text>
           <text id="/c_imm/group_cholera/g_cholera/none:label">
-            <value>-</value>
+            <value>Aucun</value>
           </text>
           <text id="/c_imm/received/mmrv1:label">
             <value>MMRV 1 reçu</value>
           </text>
+          <text id="/c_imm/group_vitamin_a:label">
+            <value>Vitamine A</value>
+          </text>
           <text id="/c_imm/group_polio/g_polio:jr:constraintMsg">
-            <value>-</value>
+            <value>Impossible de sélectionner aucun si une autre dose est sélectionnée.</value>
           </text>
           <text id="/c_imm/received/opv2:label">
             <value>OPV 2 reçu</value>
           </text>
           <text id="/c_imm/group_pneumococcal/g_pneumococcal:jr:constraintMsg">
-            <value>-</value>
+            <value>Impossible de sélectionner aucun si une autre dose est sélectionnée.</value>
           </text>
           <text id="/c_imm/group_select_vaccines/g_vaccines/jap_enc:label">
-            <value>-</value>
+            <value>Encéphalite japonaise</value>
           </text>
           <text id="/c_imm/received/flu:label">
             <value>Grippe reçu</value>
           </text>
           <text id="/c_imm/group_select_vaccines/g_vaccines/hep_a:label">
-            <value>-</value>
+            <value>Hépatite A</value>
           </text>
-          <text id="/c_imm/group_chw_info/attended_imm/no:label">
-            <value>-</value>
+          <text id="/c_imm/group_bcg/g_bcg/no:label">
+            <value>Non</value>
           </text>
           <text id="/c_imm/group_yellow_fever/g_yellow_fever/no:label">
-            <value>-</value>
+            <value>Non</value>
           </text>
           <text id="/c_imm/group_review_vaccines/r_yellow_fever:label">
-            <value>-</value>
+            <value>Fièvre jaune</value>
           </text>
           <text id="/c_imm/received/opv3:label">
             <value>OPV 3 reçu</value>
           </text>
           <text id="/c_imm/group_polio:label">
-            <value>-</value>
+            <value>Polio</value>
           </text>
           <text id="/c_imm/received/hpv1:label">
             <value>HPV 1 reçu</value>
           </text>
           <text id="/c_imm/group_select_vaccines/g_vaccines/mmrv:label">
-            <value>-</value>
+            <value>MMRV</value>
           </text>
           <text id="/c_imm/group_pneumococcal/g_pneumococcal/PCV3:label">
-            <value>-</value>
+            <value>Pneumo 3</value>
           </text>
-          <text id="/c_imm/group_jap_enc/g_jap_enc:label">
-            <value>-</value>
+          <text id="/c_imm/group_typhoid/g_typhoid:label">
+            <value>Quel vaccin Typhoïde a reçu <output value=" /c_imm/id "/> ?</value>
           </text>
           <text id="/c_imm/group_hpv/g_hpv/none:label">
-            <value>-</value>
+            <value>Aucun</value>
+          </text>
+          <text id="/c_imm/group_review_vaccines/r_opv_3:label">
+            <value>OPV 3</value>
           </text>
           <text id="/c_imm/group_cholera/g_cholera:jr:constraintMsg">
-            <value>-</value>
+            <value>Impossible de sélectionner aucun si une autre dose est sélectionnée.</value>
           </text>
           <text id="/c_imm/group_flu/g_flu/yes:label">
-            <value>-</value>
+            <value>Oui</value>
           </text>
           <text id="/c_imm/received/ty2:label">
             <value>Typhoïde 2 reçu</value>
           </text>
           <text id="/c_imm/group_select_vaccines/g_vaccines/typhoid:label">
-            <value>-</value>
+            <value>Typhoïde</value>
           </text>
-          <text id="/c_imm/group_typhoid/g_typhoid:label">
-            <value>-</value>
+          <text id="/c_imm/group_jap_enc/g_jap_enc:label">
+            <value>Est-ce que <output value=" /c_imm/id "/> a reçu l'Encépahlite japonaise ?</value>
           </text>
           <text id="/c_imm/group_cholera/g_cholera:label">
-            <value>-</value>
+            <value>Quel vaccin contre le choléra a reçu <output value=" /c_imm/id "/> ?</value>
           </text>
           <text id="/c_imm/received/rv1:label">
             <value>Rota 1 reçu</value>
@@ -824,58 +830,58 @@
             <value>Méningoccoque 1 reçu</value>
           </text>
           <text id="/c_imm/group_review_vaccines/r_mmr_1:label">
-            <value>-</value>
+            <value>MMR 1</value>
           </text>
           <text id="/c_imm/group_mmr/g_mmr/MMR1:label">
-            <value>-</value>
+            <value>MMR 1</value>
           </text>
           <text id="/c_imm/group_vitamin_a/g_vitamin_a/no:label">
-            <value>-</value>
+            <value>Non</value>
           </text>
           <text id="/c_imm/group_review_vaccines/r_penta_3:label">
-            <value>-</value>
+            <value>Penta 3</value>
           </text>
           <text id="/c_imm/group_review_vaccines/r_hpv_3:label">
-            <value>-</value>
+            <value>HPV 3</value>
           </text>
           <text id="/c_imm/group_review_vaccines/r_meningococcal_2:label">
-            <value>-</value>
+            <value>Méningococcal 2</value>
           </text>
           <text id="/c_imm/group_review_vaccines/r_bcg:label">
-            <value>-</value>
+            <value>BCG</value>
           </text>
           <text id="/c_imm/group_review_vaccines/r_pneumococcal_3:label">
-            <value>-</value>
+            <value>Pneumo 3</value>
           </text>
           <text id="/c_imm/received/je:label">
             <value>Encépahlite japonaise reçu</value>
           </text>
           <text id="/c_imm/group_select_vaccines/g_vaccines/pneumococcal:label">
-            <value>-</value>
+            <value>Pneumo</value>
           </text>
           <text id="/c_imm/group_pentavalent:label">
-            <value>-</value>
+            <value>Penta</value>
           </text>
-          <text id="/c_imm/group_review_vaccines/r_meningococcal_1:label">
-            <value>-</value>
+          <text id="/c_imm/group_rotavirus/g_rotavirus:label">
+            <value>Quel vaccin Rota a reçu <output value=" /c_imm/id "/> ?</value>
           </text>
           <text id="/c_imm/group_cholera/g_cholera/CH2:label">
-            <value>-</value>
+            <value>Choléra 2</value>
           </text>
           <text id="/c_imm/received/ch2:label">
             <value>Choléra 2 reçu</value>
           </text>
-          <text id="/c_imm/group_review_vaccines/r_pneumococcal_2:label">
-            <value>-</value>
+          <text id="/c_imm/group_review_vaccines/r_cholera_2:label">
+            <value>Choléra 2</value>
           </text>
           <text id="/c_imm/received/rv2:label">
             <value>Rota 2 reçu</value>
           </text>
           <text id="/c_imm/group_review/r_visit_yes:label">
-            <value>-</value>
+            <value>Visite de vaccination faite</value>
           </text>
           <text id="/c_imm/group_review_vaccines/r_opv_0:label">
-            <value>-</value>
+            <value>OPV 0</value>
           </text>
           <text id="/c_imm/received/ch3:label">
             <value>Choléra 3 reçu</value>
@@ -887,205 +893,205 @@
             <value>MMRV 2 reçu</value>
           </text>
           <text id="/c_imm/group_mmr/g_mmr/MMR2:label">
-            <value>-</value>
+            <value>MMR 2</value>
           </text>
           <text id="/c_imm/group_review_vaccines/r_end:label">
             <value>-</value>
           </text>
           <text id="/c_imm/group_select_vaccines/g_vaccines/yellow_fever:label">
-            <value>-</value>
+            <value>Fièvre jaune</value>
           </text>
           <text id="/c_imm/group_pneumococcal/g_pneumococcal:label">
-            <value>-</value>
+            <value>Quel vaccin Pneumo a reçu <output value=" /c_imm/id "/> ?</value>
           </text>
           <text id="/c_imm/group_mmrv/g_mmrv/MMRV1:label">
-            <value>-</value>
+            <value>MMRV 1</value>
           </text>
           <text id="/c_imm/group_review_vaccines/r_opv_1:label">
-            <value>-</value>
+            <value>OPV 1</value>
           </text>
           <text id="/c_imm/group_chw_info/attended_imm/yes:label">
-            <value>-</value>
+            <value>Oui</value>
           </text>
           <text id="/c_imm/group_jap_enc/g_jap_enc/no:label">
-            <value>-</value>
+            <value>Non</value>
           </text>
           <text id="/c_imm/group_review_vaccines/r_hpv_2:label">
-            <value>-</value>
+            <value>HPV 2</value>
           </text>
           <text id="/c_imm/group_select_vaccines/g_vaccines/hpv:label">
-            <value>-</value>
+            <value>HPV</value>
           </text>
           <text id="/c_imm/group_chw_info:label">
-            <value>-</value>
+            <value>Rapport de visite manquée</value>
           </text>
           <text id="/c_imm/group_select_vaccines:label">
-            <value>-</value>
+            <value>Choix des vaccins</value>
           </text>
           <text id="/c_imm/group_review_vaccines/r_jap_enc:label">
-            <value>-</value>
-          </text>
-          <text id="/c_imm/group_review_vaccines/r_penta_1:label">
-            <value>-</value>
-          </text>
-          <text id="/c_imm/group_review_vaccines/r_meningococcal_4:label">
-            <value>-</value>
-          </text>
-          <text id="/c_imm/group_mmr/g_mmr/none:label">
-            <value>-</value>
-          </text>
-          <text id="/c_imm/group_pentavalent/g_pentavalent:jr:constraintMsg">
-            <value>-</value>
-          </text>
-          <text id="/c_imm/id:label">
-            <value>Identifiant du patient</value>
+            <value>Encéphalite japonaise</value>
           </text>
           <text id="/c_imm/group_select_vaccines/g_vaccines:hint">
             <value>-</value>
           </text>
+          <text id="/c_imm/group_review_vaccines/r_meningococcal_4:label">
+            <value>Méningococcal 4</value>
+          </text>
+          <text id="/c_imm/group_mmr/g_mmr/none:label">
+            <value>Aucun</value>
+          </text>
+          <text id="/c_imm/group_pentavalent/g_pentavalent:jr:constraintMsg">
+            <value>Impossible de sélectionner aucun si une autre dose est sélectionnée.</value>
+          </text>
+          <text id="/c_imm/id:label">
+            <value>Identifiant du patient</value>
+          </text>
+          <text id="/c_imm/group_review_vaccines/r_penta_1:label">
+            <value>Penta 1</value>
+          </text>
           <text id="/c_imm/group_review_vaccines/r_rotavirus_3:label">
-            <value>-</value>
+            <value>Rota 3</value>
           </text>
           <text id="/c_imm/group_select_vaccines/g_vaccines/bcg:label">
-            <value>-</value>
+            <value>BCG</value>
           </text>
           <text id="/c_imm/group_pneumococcal/g_pneumococcal/PCV4:label">
-            <value>-</value>
+            <value>Pneumo 4</value>
           </text>
-          <text id="/c_imm/group_vitamin_a:label">
-            <value>-</value>
+          <text id="/c_imm/group_polio/g_polio/OPV3:label">
+            <value>OPV 3</value>
           </text>
           <text id="/c_imm/received/pcv3:label">
             <value>Pneumo 3 reçu</value>
           </text>
           <text id="/c_imm/group_review_vaccines/r_typhoid_1:label">
-            <value>-</value>
+            <value>Typhoïde 1</value>
           </text>
           <text id="/c_imm/group_rotavirus/g_rotavirus/none:label">
-            <value>-</value>
+            <value>Aucun</value>
           </text>
           <text id="/c_imm/group_flu/g_flu/no:label">
-            <value>-</value>
+            <value>Non</value>
           </text>
           <text id="/c_imm/group_review_vaccines/r_cholera_3:label">
-            <value>-</value>
+            <value>Choléra 3</value>
           </text>
           <text id="/c_imm/received/mn2:label">
             <value>Méningoccoque 2 reçu</value>
           </text>
           <text id="/c_imm/group_yellow_fever/g_yellow_fever/yes:label">
-            <value>-</value>
+            <value>Oui</value>
           </text>
           <text id="/c_imm/group_pentavalent/g_pentavalent:label">
-            <value>-</value>
+            <value>Quel vaccin Penta a reçu <output value=" /c_imm/id "/> ?</value>
           </text>
           <text id="/c_imm/group_meningococcal:label">
-            <value>-</value>
+            <value>Méningococcal</value>
           </text>
           <text id="/c_imm/group_hep_a/g_hep_a/HA1:label">
-            <value>-</value>
+            <value>Hépatite A 1</value>
           </text>
           <text id="/c_imm/received/hpv3:label">
             <value>HPV 3 reçu</value>
           </text>
           <text id="/c_imm/group_mmr:label">
-            <value>-</value>
+            <value>MMR</value>
           </text>
-          <text id="/c_imm/group_polio/g_polio/OPV3:label">
-            <value>-</value>
+          <text id="/c_imm/group_rotavirus/g_rotavirus/RV2:label">
+            <value>Rota 2</value>
           </text>
           <text id="/c_imm/group_mmrv:label">
-            <value>-</value>
+            <value>MMRV</value>
           </text>
           <text id="/c_imm/group_select_vaccines/g_vaccines/meningococcal:label">
-            <value>-</value>
+            <value>Méningococcal</value>
           </text>
           <text id="/c_imm/group_meningococcal/g_meningococcal:jr:constraintMsg">
-            <value>-</value>
+            <value>Impossible de sélectionner aucun si une autre dose est sélectionnée.</value>
           </text>
           <text id="/c_imm/group_review_vaccines:label">
-            <value>-</value>
+            <value>Nouveaux vaccins pour <output value=" /c_imm/id "/></value>
           </text>
-          <text id="/c_imm/group_polio/g_polio/none:label">
-            <value>-</value>
+          <text id="/c_imm/received/bcg:label">
+            <value>BCG reçu</value>
           </text>
           <text id="/c_imm/group_select_vaccines/g_vaccines/penta:label">
-            <value>-</value>
+            <value>Penta</value>
           </text>
           <text id="/c_imm/group_vitamin_a/g_vitamin_a/yes:label">
-            <value>-</value>
+            <value>Oui</value>
           </text>
           <text id="/c_imm/group_meningococcal/g_meningococcal/MN2:label">
-            <value>-</value>
+            <value>Méningococcal 2</value>
           </text>
           <text id="/c_imm/received/ha2:label">
             <value>Hépatite A 2 reçu</value>
           </text>
           <text id="/c_imm/group_pneumococcal/g_pneumococcal/PCV1:label">
-            <value>-</value>
+            <value>Pneumo 1</value>
           </text>
           <text id="/c_imm/group_review_vaccines/r_mmr_2:label">
-            <value>-</value>
+            <value>MMR 2</value>
           </text>
           <text id="/c_imm/received/ha1:label">
             <value>Hépatite A 1 reçu</value>
           </text>
           <text id="/c_imm/group_review_vaccines/r_flu:label">
-            <value>-</value>
+            <value>Grippe</value>
           </text>
           <text id="/c_imm/group_mmr/g_mmr:jr:constraintMsg">
-            <value>-</value>
+            <value>Impossible de sélectionner aucun si une autre dose est sélectionnée.</value>
           </text>
-          <text id="/c_imm/group_review_vaccines/r_opv_3:label">
-            <value>-</value>
+          <text id="/c_imm/group_review_vaccines/r_mmrv_1:label">
+            <value>MMRV 1</value>
           </text>
           <text id="/c_imm/group_hep_a/g_hep_a:label">
-            <value>-</value>
+            <value>Quel vaccin contre l'hépatite A a reçu <output value=" /c_imm/id "/> ?</value>
           </text>
           <text id="/c_imm/group_hpv/g_hpv/HPV3:label">
-            <value>-</value>
+            <value>HPV 3</value>
           </text>
           <text id="/c_imm/received/mn3:label">
             <value>Méningoccoque 3 reçu</value>
           </text>
           <text id="/c_imm/group_review_vaccines/r_pneumococcal_1:label">
-            <value>-</value>
+            <value>Pneumo 1</value>
           </text>
           <text id="/c_imm/group_jap_enc/g_jap_enc/yes:label">
-            <value>-</value>
+            <value>Oui</value>
           </text>
           <text id="/c_imm/group_hpv:label">
-            <value>-</value>
+            <value>HPV</value>
           </text>
           <text id="/c_imm/received/dt1:label">
             <value>Penta 1 reçu</value>
           </text>
           <text id="/c_imm/group_review_vaccines/r_meningococcal_3:label">
-            <value>-</value>
+            <value>Méningococcal 3</value>
           </text>
           <text id="/c_imm/group_flu:label">
-            <value>-</value>
+            <value>Grippe</value>
           </text>
           <text id="/c_imm/group_review_vaccines/r_rotavirus_1:label">
-            <value>-</value>
+            <value>Rota 1</value>
           </text>
           <text id="/c_imm/received/dt2:label">
             <value>Penta 2 reçu</value>
           </text>
-          <text id="/c_imm/group_review_vaccines/r_mmrv_1:label">
-            <value>-</value>
+          <text id="/c_imm/group_polio/g_polio/OPV2:label">
+            <value>OPV 2</value>
           </text>
           <text id="/c_imm/group_typhoid/g_typhoid/TY2:label">
-            <value>-</value>
+            <value>Typhoïde 2</value>
           </text>
           <text id="/c_imm/received/ch1:label">
             <value>Choléra 1 reçu</value>
           </text>
           <text id="/c_imm/group_typhoid/g_typhoid/TY1:label">
-            <value>-</value>
+            <value>Typhoïde 1</value>
           </text>
           <text id="/c_imm/group_review_vaccines/r_hpv_1:label">
-            <value>-</value>
+            <value>HPV 1</value>
           </text>
           <text id="/c_imm/received/mmr2:label">
             <value>MMR 2 reçu</value>
@@ -1093,119 +1099,113 @@
           <text id="/c_imm/received/mn4:label">
             <value>Méningoccoque 4 reçu</value>
           </text>
+          <text id="/c_imm/group_review_vaccines/r_meningococcal_1:label">
+            <value>Méningococcal 1</value>
+          </text>
           <text id="/c_imm/group_bcg:label">
-            <value>-</value>
+            <value>BCG</value>
           </text>
           <text id="/c_imm/received/pcv4:label">
             <value>Pneumo 4 reçu</value>
           </text>
           <text id="/c_imm/group_pneumococcal:label">
-            <value>-</value>
+            <value>Pneumo</value>
           </text>
           <text id="/c_imm/group_meningococcal/g_meningococcal/MN4:label">
-            <value>-</value>
+            <value>Méningococcal 4</value>
           </text>
           <text id="/c_imm/group_review_vaccines/r_pneumococcal_4:label">
-            <value>-</value>
+            <value>Pneumo 4</value>
           </text>
           <text id="/c_imm/group_pentavalent/g_pentavalent/none:label">
-            <value>-</value>
+            <value>Aucun</value>
           </text>
           <text id="/c_imm/received:label">
             <value>Vaccins reçus</value>
           </text>
-          <text id="/c_imm/group_review_vaccines/r_cholera_2:label">
-            <value>-</value>
-          </text>
-          <text id="/c_imm/group_polio/g_polio/OPV2:label">
-            <value>-</value>
-          </text>
-          <text id="/c_imm/group_pentavalent/g_pentavalent/DT2:label">
-            <value>-</value>
-          </text>
-          <text id="/c_imm/group_bcg/g_bcg/yes:label">
-            <value>-</value>
-          </text>
-          <text id="/c_imm/group_select_vaccines/g_vaccines/vitamin_a:label">
-            <value>-</value>
-          </text>
-          <text id="/c_imm/group_cholera/g_cholera/CH1:label">
-            <value>-</value>
-          </text>
-          <text id="/c_imm/group_rotavirus/g_rotavirus/RV1:label">
-            <value>-</value>
-          </text>
-          <text id="/c_imm/group_hep_a/g_hep_a/none:label">
-            <value>-</value>
+          <text id="/c_imm/group_review_vaccines/r_hep_a_1:label">
+            <value>Hépatite A 1</value>
           </text>
           <text id="/c_imm/group_review_vaccines/r_typhoid_2:label">
-            <value>-</value>
+            <value>Typhoïde 2</value>
+          </text>
+          <text id="/c_imm/group_pentavalent/g_pentavalent/DT2:label">
+            <value>Penta 2</value>
+          </text>
+          <text id="/c_imm/group_bcg/g_bcg/yes:label">
+            <value>Oui</value>
+          </text>
+          <text id="/c_imm/group_select_vaccines/g_vaccines/vitamin_a:label">
+            <value>Vitamine A</value>
+          </text>
+          <text id="/c_imm/group_cholera/g_cholera/CH1:label">
+            <value>Choléra 1</value>
+          </text>
+          <text id="/c_imm/group_rotavirus/g_rotavirus/RV1:label">
+            <value>Rota 1</value>
+          </text>
+          <text id="/c_imm/group_hep_a/g_hep_a/none:label">
+            <value>Aucun</value>
+          </text>
+          <text id="/c_imm/group_review/r_visit_no:label">
+            <value>Visite de vaccination non faite</value>
           </text>
           <text id="/c_imm/group_meningococcal/g_meningococcal/none:label">
-            <value>-</value>
+            <value>Aucun</value>
           </text>
           <text id="/c_imm/group_select_vaccines/g_vaccines/flu:label">
-            <value>-</value>
+            <value>Grippe</value>
           </text>
           <text id="/c_imm/group_select_vaccines/g_vaccines/rotavirus:label">
-            <value>-</value>
+            <value>Rota</value>
           </text>
           <text id="/c_imm/group_rotavirus:label">
-            <value>-</value>
+            <value>Rota</value>
           </text>
           <text id="/c_imm/received/pcv1:label">
             <value>Pneumo 1 reçu</value>
           </text>
-          <text id="/c_imm/group_review/r_visit_no:label">
-            <value>-</value>
-          </text>
           <text id="/c_imm/group_hep_a/g_hep_a/HA2:label">
-            <value>-</value>
+            <value>Hépatite A 2</value>
           </text>
           <text id="/c_imm/group_yellow_fever:label">
-            <value>-</value>
+            <value>Fièvre Jaune</value>
           </text>
           <text id="/c_imm/group_mmrv/g_mmrv:jr:constraintMsg">
-            <value>-</value>
+            <value>Impossible de sélectionner aucun si une autre dose est sélectionnée.</value>
           </text>
           <text id="/c_imm/group_cholera/g_cholera/CH3:label">
-            <value>-</value>
+            <value>Choléra 3</value>
           </text>
           <text id="/c_imm/received/ty1:label">
             <value>Typhoïde 1 reçu</value>
           </text>
-          <text id="/c_imm/group_rotavirus/g_rotavirus/RV2:label">
-            <value>-</value>
-          </text>
-          <text id="/c_imm/group_review_vaccines/r_hep_a_1:label">
-            <value>-</value>
-          </text>
-          <text id="/c_imm/group_bcg/g_bcg/no:label">
-            <value>-</value>
+          <text id="/c_imm/group_chw_info/attended_imm/no:label">
+            <value>Non</value>
           </text>
           <text id="/c_imm/group_hpv/g_hpv/HPV2:label">
-            <value>-</value>
+            <value>HPV 2</value>
           </text>
           <text id="/c_imm/group_typhoid:label">
-            <value>-</value>
+            <value>Typhoïde</value>
           </text>
           <text id="/c_imm/group_review_vaccines/r_penta_2:label">
-            <value>-</value>
+            <value>Penta 2</value>
           </text>
           <text id="/c_imm/group_meningococcal/g_meningococcal:label">
-            <value>-</value>
+            <value>Quel vaccin Méningococcal a reçu <output value=" /c_imm/id "/> ?</value>
           </text>
           <text id="/c_imm/group_select_vaccines/g_vaccines/cholera:label">
-            <value>-</value>
+            <value>Choléra</value>
           </text>
           <text id="/c_imm/group_rotavirus/g_rotavirus:jr:constraintMsg">
-            <value>-</value>
+            <value>Impossible de sélectionner aucun si une autre dose est sélectionnée.</value>
           </text>
           <text id="/c_imm/group_chw_info/attended_imm:label">
-            <value>-</value>
+            <value>Est-ce que <output value=" /c_imm/id "/> a fait sa visite de vaccination ?</value>
           </text>
           <text id="/c_imm/group_meningococcal/g_meningococcal/MN1:label">
-            <value>-</value>
+            <value>Méningococcal 1</value>
           </text>
         </translation>
         <translation lang="हिन्दी (Hindi)">
@@ -1808,6 +1808,608 @@
           </text>
           <text id="/c_imm/group_meningococcal/g_meningococcal/MN1:label">
             <value>Meningococcal 1</value>
+          </text>
+        </translation>
+        <translation lang="bengali">
+          <text id="/c_imm/group_review_vaccines/r_opv_2:label">
+            <value>পোলিও 2</value>
+          </text>
+          <text id="/c_imm/group_mmrv/g_mmrv/MMRV2:label">
+            <value>MMRV2( হাম, মাম্প, রুবেলা, জলবসন্ত)</value>
+          </text>
+          <text id="/c_imm/group_select_vaccines/g_vaccines/polio:label">
+            <value>পোলিও</value>
+          </text>
+          <text id="/c_imm/group_review_vaccines/r_rotavirus_2:label">
+            <value>রটাভাইরাস 2</value>
+          </text>
+          <text id="/c_imm/group_bcg/g_bcg:label">
+            <value>$ {id} BCG টিকা পেয়েছে কি?</value>
+          </text>
+          <text id="/c_imm/group_hpv/g_hpv/HPV1:label">
+            <value>HPV (হিউম্যান পাপিলোমাইরাস) 1</value>
+          </text>
+          <text id="/c_imm/group_pneumococcal/g_pneumococcal/none:label">
+            <value>কিছুই নয়</value>
+          </text>
+          <text id="/c_imm/group_review_vaccines/r_mmrv_2:label">
+            <value>MMRV2( হাম, মাম্প, রুবেলা, জলবসন্ত)</value>
+          </text>
+          <text id="/c_imm/group_jap_enc:label">
+            <value>জাপানি এনসেফালাইটিস</value>
+          </text>
+          <text id="/c_imm/group_polio/g_polio/none:label">
+            <value>কিছুই নয়</value>
+          </text>
+          <text id="/c_imm/group_select_vaccines/g_vaccines:label">
+            <value>কোন টিকা আপনি আজ রিপোর্ট করতে চান?</value>
+          </text>
+          <text id="/c_imm/group_mmr/g_mmr:label">
+            <value>MMR কোন ডোজ $ {id} পেয়েছেন?</value>
+          </text>
+          <text id="/c_imm/group_rotavirus/g_rotavirus/RV3:label">
+            <value>রটাভাইরাস 3</value>
+          </text>
+          <text id="/c_imm/group_review:label">
+            <value>আইডি $ {id} জন্য প্রতিবেদন করা হচ্ছে</value>
+          </text>
+          <text id="/c_imm/group_polio/g_polio/OPV0:label">
+            <value>পোলিও 0</value>
+          </text>
+          <text id="/c_imm/received/pcv2:label">
+            <value>পাইওমোকোকাল 2 পেয়েছেন</value>
+          </text>
+          <text id="/c_imm/group_pentavalent/g_pentavalent/DT1:label">
+            <value>পেন্টাগলেন্ট 1</value>
+          </text>
+          <text id="/c_imm/group_meningococcal/g_meningococcal/MN3:label">
+            <value>মেনিংকোকাল 3</value>
+          </text>
+          <text id="/c_imm/received/opv1:label">
+            <value>পোলিও 1 প্রাপ্তি</value>
+          </text>
+          <text id="/c_imm/group_mmrv/g_mmrv:label">
+            <value>MMRV কোন ডোজ $ {id} পেয়েছেন?</value>
+          </text>
+          <text id="/c_imm/group_hpv/g_hpv:jr:constraintMsg">
+            <value>অন্য ডোজ নির্বাচন করা হলে কেউ নির্বাচন করতে পারবেন না।</value>
+          </text>
+          <text id="/c_imm/received/opv0:label">
+            <value>জন্মগ্রহণ পোলিও প্রাপ্তি</value>
+          </text>
+          <text id="/c_imm/received/vita:label">
+            <value>ভিটামিন A প্রাপ্ত</value>
+          </text>
+          <text id="/c_imm/received/mmr1:label">
+            <value>MMR 1 প্রাপ্তি</value>
+          </text>
+          <text id="/c_imm/group_cholera:label">
+            <value>কলেরা</value>
+          </text>
+          <text id="/c_imm/group_vitamin_a/g_vitamin_a:label">
+            <value>$ {id} ভিটামিন A টিকা পেয়েছে কি?</value>
+          </text>
+          <text id="/c_imm/group_review_vaccines/r_cholera_1:label">
+            <value>কলেরা 1</value>
+          </text>
+          <text id="/c_imm/group_hep_a:label">
+            <value>হেপাটাইটিস A</value>
+          </text>
+          <text id="/c_imm/group_select_vaccines/g_vaccines/mmr:label">
+            <value>MMR( হাম, মাম্প, রুবেলা)</value>
+          </text>
+          <text id="/c_imm/received/yf:label">
+            <value>হলুদ জ্বর পাওয়া গেছে</value>
+          </text>
+          <text id="/c_imm/received/dt3:label">
+            <value>পেন্টাগলেন্ট 3 প্রাপ্ত</value>
+          </text>
+          <text id="/c_imm/group_yellow_fever/g_yellow_fever:label">
+            <value>$ {id} হলুদ জ্বর টিকা পেয়েছে কি?</value>
+          </text>
+          <text id="/c_imm/group_mmrv/g_mmrv/none:label">
+            <value>কিছুই নয়</value>
+          </text>
+          <text id="/c_imm/group_hep_a/g_hep_a:jr:constraintMsg">
+            <value>অন্য ডোজ নির্বাচন করা হলে কেউ নির্বাচন করতে পারবেন না।</value>
+          </text>
+          <text id="/c_imm/group_flu/g_flu:label">
+            <value>$ {id} ইনফ্লুয়েঞ্জা টিকা পেয়েছে কি?</value>
+          </text>
+          <text id="/c_imm/received/rv3:label">
+            <value>রটাভাইরাস 3 পেয়েছেন</value>
+          </text>
+          <text id="/c_imm/group_polio/g_polio:label">
+            <value>পোলিও কোন ডোজ $ {id} পেয়েছেন?</value>
+          </text>
+          <text id="/c_imm/group_review_vaccines/r_pneumococcal_2:label">
+            <value>পাইওমোকোকাল 2</value>
+          </text>
+          <text id="/c_imm/group_pneumococcal/g_pneumococcal/PCV2:label">
+            <value>পাইওমোকোকাল 2</value>
+          </text>
+          <text id="/c_imm/group_polio/g_polio/OPV1:label">
+            <value>পোলিও 1</value>
+          </text>
+          <text id="/c_imm/group_review_vaccines/r_vitamin_a:label">
+            <value>ভিটামিন A</value>
+          </text>
+          <text id="/c_imm/group_pentavalent/g_pentavalent/DT3:label">
+            <value>পেন্টাগলেন্ট 3</value>
+          </text>
+          <text id="/c_imm/group_typhoid/g_typhoid:jr:constraintMsg">
+            <value>অন্য ডোজ নির্বাচন করা হলে কেউ নির্বাচন করতে পারবেন না।</value>
+          </text>
+          <text id="/c_imm/group_hpv/g_hpv:label">
+            <value>$ {id} HPV টিকা পেয়েছে কি?</value>
+          </text>
+          <text id="/c_imm/group_review_vaccines/r_hep_a_2:label">
+            <value>হেপাটাইটিস A 2</value>
+          </text>
+          <text id="/c_imm/group_typhoid/g_typhoid/none:label">
+            <value>কিছুই নয়</value>
+          </text>
+          <text id="/c_imm/group_typhoid/g_typhoid/TY2:label">
+            <value>টাইফয়েড 2</value>
+          </text>
+          <text id="/c_imm/received/mmrv1:label">
+            <value>MMRV 1প্রাপ্তি</value>
+          </text>
+          <text id="/c_imm/group_vitamin_a:label">
+            <value>ভিটামিন A</value>
+          </text>
+          <text id="/c_imm/group_polio/g_polio:jr:constraintMsg">
+            <value>অন্য ডোজ নির্বাচন করা হলে কেউ নির্বাচন করতে পারবেন না।</value>
+          </text>
+          <text id="/c_imm/received/opv2:label">
+            <value>পোলিও 2 প্রাপ্তি</value>
+          </text>
+          <text id="/c_imm/group_pneumococcal/g_pneumococcal:jr:constraintMsg">
+            <value>অন্য ডোজ নির্বাচন করা হলে কেউ নির্বাচন করতে পারবেন না।</value>
+          </text>
+          <text id="/c_imm/group_select_vaccines/g_vaccines/jap_enc:label">
+            <value>জাপানি এনসেফালাইটিস</value>
+          </text>
+          <text id="/c_imm/received/flu:label">
+            <value>Flu প্রাপ্তি</value>
+          </text>
+          <text id="/c_imm/group_select_vaccines/g_vaccines/hep_a:label">
+            <value>হেপাটাইটিস A</value>
+          </text>
+          <text id="/c_imm/group_bcg/g_bcg/no:label">
+            <value>না</value>
+          </text>
+          <text id="/c_imm/group_yellow_fever/g_yellow_fever/no:label">
+            <value>না</value>
+          </text>
+          <text id="/c_imm/group_review_vaccines/r_yellow_fever:label">
+            <value>হলুদ জ্বর</value>
+          </text>
+          <text id="/c_imm/received/opv3:label">
+            <value>পোলিও 3 প্রাপ্তি</value>
+          </text>
+          <text id="/c_imm/group_polio:label">
+            <value>পোলিও</value>
+          </text>
+          <text id="/c_imm/received/hpv1:label">
+            <value>HPV 1 প্রাপ্তি</value>
+          </text>
+          <text id="/c_imm/group_select_vaccines/g_vaccines/mmrv:label">
+            <value>MMRV( হাম, মাম্প, রুবেলা, জলবসন্ত)</value>
+          </text>
+          <text id="/c_imm/group_pneumococcal/g_pneumococcal/PCV3:label">
+            <value>পাইওমোকোকাল 3</value>
+          </text>
+          <text id="/c_imm/group_typhoid/g_typhoid:label">
+            <value>টাইফয়েড কোন ডোজ $ {id} পেয়েছেন?</value>
+          </text>
+          <text id="/c_imm/group_hpv/g_hpv/none:label">
+            <value>কিছুই নয়</value>
+          </text>
+          <text id="/c_imm/group_review_vaccines/r_opv_3:label">
+            <value>পোলিও 3</value>
+          </text>
+          <text id="/c_imm/group_cholera/g_cholera:jr:constraintMsg">
+            <value>অন্য ডোজ নির্বাচন করা হলে কেউ নির্বাচন করতে পারবেন না।</value>
+          </text>
+          <text id="/c_imm/group_flu/g_flu/yes:label">
+            <value>হ্যাঁ</value>
+          </text>
+          <text id="/c_imm/received/ty2:label">
+            <value>টাইফয়েড 2 পেয়েছেন</value>
+          </text>
+          <text id="/c_imm/group_select_vaccines/g_vaccines/typhoid:label">
+            <value>টাইফয়েড</value>
+          </text>
+          <text id="/c_imm/group_jap_enc/g_jap_enc:label">
+            <value>$ {id} জাপানি এনসেফালাইটিস টিকা পেয়েছে কি?</value>
+          </text>
+          <text id="/c_imm/group_cholera/g_cholera:label">
+            <value>$ {id} কলেরা টিকা পেয়েছে কি?</value>
+          </text>
+          <text id="/c_imm/received/rv1:label">
+            <value>রটাভাইরাস 1 পেয়েছেন</value>
+          </text>
+          <text id="/c_imm/received/mn1:label">
+            <value>মেনিংকোকাল 1 প্রাপ্তি</value>
+          </text>
+          <text id="/c_imm/group_review_vaccines/r_mmr_1:label">
+            <value>MMR1 ( হাম, মাম্প, রুবেলা)</value>
+          </text>
+          <text id="/c_imm/group_mmr/g_mmr/MMR1:label">
+            <value>MMR1 ( হাম, মাম্প, রুবেলা)</value>
+          </text>
+          <text id="/c_imm/group_vitamin_a/g_vitamin_a/no:label">
+            <value>না</value>
+          </text>
+          <text id="/c_imm/group_review_vaccines/r_penta_3:label">
+            <value>পেন্টাগলেন্ট 3</value>
+          </text>
+          <text id="/c_imm/group_review_vaccines/r_hpv_3:label">
+            <value>HPV (হিউম্যান পাপিলোমাইরাস) 3</value>
+          </text>
+          <text id="/c_imm/group_review_vaccines/r_meningococcal_2:label">
+            <value>মেনিংকোকাল 2</value>
+          </text>
+          <text id="/c_imm/group_review_vaccines/r_bcg:label">
+            <value>BCG</value>
+          </text>
+          <text id="/c_imm/group_review_vaccines/r_pneumococcal_3:label">
+            <value>পাইওমোকোকাল 3</value>
+          </text>
+          <text id="/c_imm/received/je:label">
+            <value>জাপানি এনসেফালাইটিস প্রাপ্তি</value>
+          </text>
+          <text id="/c_imm/group_select_vaccines/g_vaccines/pneumococcal:label">
+            <value>পাইওমোকোকাল</value>
+          </text>
+          <text id="/c_imm/group_pentavalent:label">
+            <value>পেন্টাগলেন্ট</value>
+          </text>
+          <text id="/c_imm/group_rotavirus/g_rotavirus:label">
+            <value>রটাভাইরাস কোন ডোজ $ {id} পেয়েছেন?</value>
+          </text>
+          <text id="/c_imm/group_cholera/g_cholera/CH2:label">
+            <value>কলেরা 2</value>
+          </text>
+          <text id="/c_imm/received/ch2:label">
+            <value>কলেরা 2 প্রাপ্তি</value>
+          </text>
+          <text id="/c_imm/group_review_vaccines/r_cholera_2:label">
+            <value>কলেরা 2</value>
+          </text>
+          <text id="/c_imm/group_cholera/g_cholera/none:label">
+            <value>-</value>
+          </text>
+          <text id="/c_imm/received/rv2:label">
+            <value>রটাভাইরাস 2 পেয়েছেন</value>
+          </text>
+          <text id="/c_imm/group_review/r_visit_yes:label">
+            <value>টিকাদান পরিদর্শন সম্পন্ন হয়েছে</value>
+          </text>
+          <text id="/c_imm/group_review_vaccines/r_opv_0:label">
+            <value>পোলিও 0</value>
+          </text>
+          <text id="/c_imm/received/ch3:label">
+            <value>কলেরা 3 প্রাপ্তি</value>
+          </text>
+          <text id="/c_imm/received/hpv2:label">
+            <value>HPV 2 প্রাপ্তি</value>
+          </text>
+          <text id="/c_imm/received/mmrv2:label">
+            <value>MMRV 2 প্রাপ্তি</value>
+          </text>
+          <text id="/c_imm/group_mmr/g_mmr/MMR2:label">
+            <value>MMR 2( হাম, মাম্প, রুবেলা)</value>
+          </text>
+          <text id="/c_imm/group_review_vaccines/r_end:label">
+            <value>-</value>
+          </text>
+          <text id="/c_imm/group_select_vaccines/g_vaccines/yellow_fever:label">
+            <value>হলুদ জ্বর</value>
+          </text>
+          <text id="/c_imm/group_pneumococcal/g_pneumococcal:label">
+            <value>পাইওমোকোকাল কোন ডোজ $ {id} পেয়েছেন?</value>
+          </text>
+          <text id="/c_imm/group_mmrv/g_mmrv/MMRV1:label">
+            <value>MMRV 1( হাম, মাম্প, রুবেলা, জলবসন্ত)</value>
+          </text>
+          <text id="/c_imm/group_review_vaccines/r_opv_1:label">
+            <value>পোলিও 1</value>
+          </text>
+          <text id="/c_imm/group_chw_info/attended_imm/yes:label">
+            <value>হ্যাঁ</value>
+          </text>
+          <text id="/c_imm/group_jap_enc/g_jap_enc/no:label">
+            <value>না</value>
+          </text>
+          <text id="/c_imm/group_review_vaccines/r_hpv_2:label">
+            <value>HPV (হিউম্যান পাপিলোমাইরাস) 2</value>
+          </text>
+          <text id="/c_imm/group_select_vaccines/g_vaccines/hpv:label">
+            <value>HPV (হিউম্যান পাপিলোমাইরাস)</value>
+          </text>
+          <text id="/c_imm/group_chw_info:label">
+            <value>নিখোঁজ পরিদর্শন প্রতিবেদন</value>
+          </text>
+          <text id="/c_imm/group_select_vaccines:label">
+            <value>টিকা নির্বাচন করুন</value>
+          </text>
+          <text id="/c_imm/group_review_vaccines/r_jap_enc:label">
+            <value>জাপানি এনসেফালাইটিস</value>
+          </text>
+          <text id="/c_imm/group_review_vaccines/r_penta_1:label">
+            <value>পেন্টাগলেন্ট 1</value>
+          </text>
+          <text id="/c_imm/group_review_vaccines/r_meningococcal_4:label">
+            <value>মেনিংকোকাল 4</value>
+          </text>
+          <text id="/c_imm/group_mmr/g_mmr/none:label">
+            <value>কিছুই নয়</value>
+          </text>
+          <text id="/c_imm/group_pentavalent/g_pentavalent:jr:constraintMsg">
+            <value>অন্য ডোজ নির্বাচন করা হলে কেউ নির্বাচন করতে পারবেন না।</value>
+          </text>
+          <text id="/c_imm/id:label">
+            <value>রোগীর আইডি</value>
+          </text>
+          <text id="/c_imm/group_select_vaccines/g_vaccines:hint">
+            <value>প্রয়োগ করা সমস্ত নির্বাচন করুন</value>
+          </text>
+          <text id="/c_imm/group_review_vaccines/r_rotavirus_3:label">
+            <value>রটাভাইরাস 3</value>
+          </text>
+          <text id="/c_imm/group_select_vaccines/g_vaccines/bcg:label">
+            <value>BCG</value>
+          </text>
+          <text id="/c_imm/group_pneumococcal/g_pneumococcal/PCV4:label">
+            <value>পাইওমোকোকাল 4</value>
+          </text>
+          <text id="/c_imm/group_polio/g_polio/OPV3:label">
+            <value>পোলিও 3</value>
+          </text>
+          <text id="/c_imm/received/pcv3:label">
+            <value>পাইওমোকোকাল 3 পেয়েছেন</value>
+          </text>
+          <text id="/c_imm/group_review_vaccines/r_typhoid_1:label">
+            <value>টাইফয়েড 1</value>
+          </text>
+          <text id="/c_imm/group_rotavirus/g_rotavirus/none:label">
+            <value>কিছুই নয়</value>
+          </text>
+          <text id="/c_imm/group_flu/g_flu/no:label">
+            <value>না</value>
+          </text>
+          <text id="/c_imm/group_review_vaccines/r_cholera_3:label">
+            <value>কলেরা 3</value>
+          </text>
+          <text id="/c_imm/received/mn2:label">
+            <value>মেনিংকোকাল 2 প্রাপ্তি</value>
+          </text>
+          <text id="/c_imm/group_yellow_fever/g_yellow_fever/yes:label">
+            <value>হ্যাঁ</value>
+          </text>
+          <text id="/c_imm/group_pentavalent/g_pentavalent:label">
+            <value>পেন্টাগলেন্ট কোন ডোজ $ {id} পেয়েছেন?</value>
+          </text>
+          <text id="/c_imm/group_meningococcal:label">
+            <value>মেনিংকোকাল</value>
+          </text>
+          <text id="/c_imm/group_hep_a/g_hep_a/HA1:label">
+            <value>হেপাটাইটিস A 1</value>
+          </text>
+          <text id="/c_imm/received/hpv3:label">
+            <value>HPV 3 প্রাপ্তি</value>
+          </text>
+          <text id="/c_imm/group_mmr:label">
+            <value>MMR( হাম, মাম্প, রুবেলা)</value>
+          </text>
+          <text id="/c_imm/group_rotavirus/g_rotavirus/RV2:label">
+            <value>রটাভাইরাস 2</value>
+          </text>
+          <text id="/c_imm/group_mmrv:label">
+            <value>MMRV( হাম, মাম্প, রুবেলা, জলবসন্ত)</value>
+          </text>
+          <text id="/c_imm/group_select_vaccines/g_vaccines/meningococcal:label">
+            <value>মেনিংকোকাল</value>
+          </text>
+          <text id="/c_imm/group_meningococcal/g_meningococcal:jr:constraintMsg">
+            <value>অন্য ডোজ নির্বাচন করা হলে কেউ নির্বাচন করতে পারবেন না।</value>
+          </text>
+          <text id="/c_imm/group_review_vaccines:label">
+            <value>আইডি $ {id} জন্য নতুন টিকা</value>
+          </text>
+          <text id="/c_imm/received/bcg:label">
+            <value>BCG প্রাপ্তি</value>
+          </text>
+          <text id="/c_imm/group_select_vaccines/g_vaccines/penta:label">
+            <value>পেন্টাগলেন্ট</value>
+          </text>
+          <text id="/c_imm/group_vitamin_a/g_vitamin_a/yes:label">
+            <value>হ্যাঁ</value>
+          </text>
+          <text id="/c_imm/group_meningococcal/g_meningococcal/MN2:label">
+            <value>মেনিংকোকাল 2</value>
+          </text>
+          <text id="/c_imm/received/ha2:label">
+            <value>হেপাটাইটিস A 2 প্রাপ্তি</value>
+          </text>
+          <text id="/c_imm/group_pneumococcal/g_pneumococcal/PCV1:label">
+            <value>পাইওমোকোকাল 1</value>
+          </text>
+          <text id="/c_imm/group_review_vaccines/r_mmr_2:label">
+            <value>MMR 2( হাম, মাম্প, রুবেলা)</value>
+          </text>
+          <text id="/c_imm/received/ha1:label">
+            <value>হেপাটাইটিস A 1 প্রাপ্তি</value>
+          </text>
+          <text id="/c_imm/group_review_vaccines/r_flu:label">
+            <value>ইনফ্লুয়েঞ্জা</value>
+          </text>
+          <text id="/c_imm/group_mmr/g_mmr:jr:constraintMsg">
+            <value>অন্য ডোজ নির্বাচন করা হলে কেউ নির্বাচন করতে পারবেন না।</value>
+          </text>
+          <text id="/c_imm/group_review_vaccines/r_mmrv_1:label">
+            <value>MMRV 1( হাম, মাম্প, রুবেলা, জলবসন্ত)</value>
+          </text>
+          <text id="/c_imm/group_hep_a/g_hep_a:label">
+            <value>$ {id} হেপাটাইটিস A টিকা পেয়েছে কি?</value>
+          </text>
+          <text id="/c_imm/group_hpv/g_hpv/HPV3:label">
+            <value>HPV (হিউম্যান পাপিলোমাইরাস) 3</value>
+          </text>
+          <text id="/c_imm/received/mn3:label">
+            <value>মেনিংকোকাল 3 প্রাপ্তি</value>
+          </text>
+          <text id="/c_imm/group_review_vaccines/r_pneumococcal_1:label">
+            <value>পাইওমোকোকাল 1</value>
+          </text>
+          <text id="/c_imm/group_jap_enc/g_jap_enc/yes:label">
+            <value>হ্যাঁ</value>
+          </text>
+          <text id="/c_imm/group_hpv:label">
+            <value>HPV (হিউম্যান পাপিলোমাইরাস)</value>
+          </text>
+          <text id="/c_imm/received/dt1:label">
+            <value>পেন্টাগলেন্ট 1 প্রাপ্ত</value>
+          </text>
+          <text id="/c_imm/group_review_vaccines/r_meningococcal_3:label">
+            <value>মেনিংকোকাল 3</value>
+          </text>
+          <text id="/c_imm/group_flu:label">
+            <value>ইনফ্লুয়েঞ্জা</value>
+          </text>
+          <text id="/c_imm/group_review_vaccines/r_rotavirus_1:label">
+            <value>রটাভাইরাস 1</value>
+          </text>
+          <text id="/c_imm/received/dt2:label">
+            <value>পেন্টাগলেন্ট 2 প্রাপ্ত</value>
+          </text>
+          <text id="/c_imm/group_polio/g_polio/OPV2:label">
+            <value>পোলিও 2</value>
+          </text>
+          <text id="/c_imm/received/ch1:label">
+            <value>কলেরা 1 প্রাপ্তি</value>
+          </text>
+          <text id="/c_imm/group_typhoid/g_typhoid/TY1:label">
+            <value>টাইফয়েড 1</value>
+          </text>
+          <text id="/c_imm/group_review_vaccines/r_hpv_1:label">
+            <value>HPV (হিউম্যান পাপিলোমাইরাস) 1</value>
+          </text>
+          <text id="/c_imm/received/mmr2:label">
+            <value>MMR 2 প্রাপ্তি</value>
+          </text>
+          <text id="/c_imm/received/mn4:label">
+            <value>মেনিংকোকাল 4 প্রাপ্তি</value>
+          </text>
+          <text id="/c_imm/group_review_vaccines/r_meningococcal_1:label">
+            <value>মেনিংকোকাল 1</value>
+          </text>
+          <text id="/c_imm/group_bcg:label">
+            <value>BCG</value>
+          </text>
+          <text id="/c_imm/received/pcv4:label">
+            <value>পাইওমোকোকাল 4 পেয়েছেন</value>
+          </text>
+          <text id="/c_imm/group_pneumococcal:label">
+            <value>পাইওমোকোকাল</value>
+          </text>
+          <text id="/c_imm/group_meningococcal/g_meningococcal/MN4:label">
+            <value>মেনিংকোকাল 4</value>
+          </text>
+          <text id="/c_imm/group_review_vaccines/r_pneumococcal_4:label">
+            <value>পাইওমোকোকাল 4</value>
+          </text>
+          <text id="/c_imm/group_pentavalent/g_pentavalent/none:label">
+            <value>কিছুই নয়</value>
+          </text>
+          <text id="/c_imm/received:label">
+            <value>টিকা গ্রহণ</value>
+          </text>
+          <text id="/c_imm/group_review_vaccines/r_hep_a_1:label">
+            <value>হেপাটাইটিস A 1</value>
+          </text>
+          <text id="/c_imm/group_review_vaccines/r_typhoid_2:label">
+            <value>টাইফয়েড 2</value>
+          </text>
+          <text id="/c_imm/group_pentavalent/g_pentavalent/DT2:label">
+            <value>পেন্টাগলেন্ট 2</value>
+          </text>
+          <text id="/c_imm/group_bcg/g_bcg/yes:label">
+            <value>হ্যাঁ</value>
+          </text>
+          <text id="/c_imm/group_select_vaccines/g_vaccines/vitamin_a:label">
+            <value>ভিটামিন A</value>
+          </text>
+          <text id="/c_imm/group_cholera/g_cholera/CH1:label">
+            <value>কলেরা 1</value>
+          </text>
+          <text id="/c_imm/group_rotavirus/g_rotavirus/RV1:label">
+            <value>রটাভাইরাস 1</value>
+          </text>
+          <text id="/c_imm/group_hep_a/g_hep_a/none:label">
+            <value>-</value>
+          </text>
+          <text id="/c_imm/group_review/r_visit_no:label">
+            <value>টিকাদান পরিদর্শন সম্পন্ন হয়নি</value>
+          </text>
+          <text id="/c_imm/group_meningococcal/g_meningococcal/none:label">
+            <value>কিছুই নয়</value>
+          </text>
+          <text id="/c_imm/group_select_vaccines/g_vaccines/flu:label">
+            <value>ইনফ্লুয়েঞ্জা</value>
+          </text>
+          <text id="/c_imm/group_select_vaccines/g_vaccines/rotavirus:label">
+            <value>রটাভাইরাস</value>
+          </text>
+          <text id="/c_imm/group_rotavirus:label">
+            <value>রটাভাইরাস</value>
+          </text>
+          <text id="/c_imm/received/pcv1:label">
+            <value>পাইওমোকোকাল 1 পেয়েছেন</value>
+          </text>
+          <text id="/c_imm/group_hep_a/g_hep_a/HA2:label">
+            <value>হেপাটাইটিস A 2</value>
+          </text>
+          <text id="/c_imm/group_yellow_fever:label">
+            <value>হলুদ জ্বর</value>
+          </text>
+          <text id="/c_imm/group_mmrv/g_mmrv:jr:constraintMsg">
+            <value>অন্য ডোজ নির্বাচন করা হলে কেউ নির্বাচন করতে পারবেন না।</value>
+          </text>
+          <text id="/c_imm/group_cholera/g_cholera/CH3:label">
+            <value>কলেরা 3</value>
+          </text>
+          <text id="/c_imm/received/ty1:label">
+            <value>টাইফয়েড 1 পেয়েছেন</value>
+          </text>
+          <text id="/c_imm/group_chw_info/attended_imm/no:label">
+            <value>না</value>
+          </text>
+          <text id="/c_imm/group_hpv/g_hpv/HPV2:label">
+            <value>HPV (হিউম্যান পাপিলোমাইরাস) 2</value>
+          </text>
+          <text id="/c_imm/group_typhoid:label">
+            <value>টাইফয়েড</value>
+          </text>
+          <text id="/c_imm/group_review_vaccines/r_penta_2:label">
+            <value>পেন্টাগলেন্ট 2</value>
+          </text>
+          <text id="/c_imm/group_meningococcal/g_meningococcal:label">
+            <value>মেনিংকোকালের কোন ডোজ $ {id} পেয়েছেন?</value>
+          </text>
+          <text id="/c_imm/group_select_vaccines/g_vaccines/cholera:label">
+            <value>কলেরা</value>
+          </text>
+          <text id="/c_imm/group_rotavirus/g_rotavirus:jr:constraintMsg">
+            <value>অন্য ডোজ নির্বাচন করা হলে কেউ নির্বাচন করতে পারবেন না।</value>
+          </text>
+          <text id="/c_imm/group_chw_info/attended_imm:label">
+            <value>$ {Id} কি টিকাকরণ কর্মসুচী মেনে চলেছে?</value>
+          </text>
+          <text id="/c_imm/group_meningococcal/g_meningococcal/MN1:label">
+            <value>মেনিংকোকাল 1</value>
           </text>
         </translation>
         <translation default="true()" lang="English">
@@ -2414,7 +3016,7 @@
         </translation>
       </itext>
       <instance>
-        <c_imm delimiter="#" id="c_imm" prefix="J1!c_imm!" version="2018-06-19_14-25">
+        <c_imm delimiter="#" id="c_imm" prefix="J1!c_imm!" version="2018-08-21_08-38">
           <id/>
           <c/>
           <received>
