@@ -1,5 +1,5 @@
 const chai = require('chai'),
-      sinon = require('sinon'),
+      sinon = require('sinon').sandbox.create(),
       properties = require('properties'),
       db = require('../../src/db-pouch'),
       translations = require('../../src/translations');

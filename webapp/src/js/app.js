@@ -1,5 +1,4 @@
 window.PouchDB = require('pouchdb-browser');
-window.PouchDB.plugin(require('pouchdb-debug'));
 window.$ = window.jQuery = require('jquery');
 window.d3 = require('d3');
 
@@ -91,14 +90,7 @@ _.templateSettings = {
   });
   var POUCHDB_OPTIONS = {
     local: { auto_compaction: true },
-    remote: {
-      skip_setup: true,
-      fetch: function(url, opts) {
-        opts.headers.set('Accept', 'application/json');
-        opts.credentials = 'same-origin';
-        return window.PouchDB.fetch(url, opts);
-      }
-    }
+    remote: { skip_setup: true, ajax: { timeout: 30000 }}
   };
   app.constant('POUCHDB_OPTIONS', POUCHDB_OPTIONS);
 
@@ -114,10 +106,6 @@ _.templateSettings = {
       } else {
         $('.bootstrap-layer').html('<div><p>Loading error, please check your connection.</p><a class="btn btn-primary" href="#" onclick="window.location.reload(false);">Try again</a></div>');
         console.error('Error fetching ddoc from remote server', err);
-        setTimeout(function() {
-          // retry initial replication automatically after one minute
-          window.location.reload(false);
-        }, 60 * 1000);
       }
       return;
     }

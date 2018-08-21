@@ -1,11 +1,8 @@
 var moment = require('moment'),
     assert = require('chai').assert,
-    schedules = require('../../src/lib/schedules'),
-    config = require('../../src/config'),
-    sinon = require('sinon');
+    schedules = require('../../src/lib/schedules');
 
 describe('schedules', () => {
-  afterEach(() => sinon.restore());
 
   it('getOffset returns false for bad syntax', () => {
     assert.equal(schedules.getOffset('x'), false);
@@ -370,43 +367,5 @@ describe('schedules', () => {
               }
           ]
       }, 'x'), true);
-  });
-
-  it('assignSchedule sends correct config to messageUtils', () => {
-    const doc = {
-      form: 'x',
-      serial_number: 'abc',
-      reported_date: moment().valueOf(),
-      fields: {
-        some_date: moment().add(10, 'days').valueOf(),
-      }
-    };
-
-    const configuration = {
-      locale_outgoing: 'sw',
-      date_format: 'dddd, Do MMMM YYYY'
-    };
-    sinon.stub(config, 'getAll').returns(configuration);
-
-    schedules.assignSchedule(doc, {
-      name: 'duckland',
-      start_from: 'reported_date',
-      messages: [
-        {
-          group: 1,
-          offset: '1 week',
-          message: [{
-            content: '{{#date}}{{some_date}}{{/date}}',
-            locale: 'en'
-          }]
-        }
-      ]
-    });
-
-    assert.equal(
-      doc.scheduled_tasks[0].messages[0].message,
-      moment(doc.fields.some_date).locale('sw').format('dddd, Do MMMM YYYY')
-    );
-    assert.equal(config.getAll.callCount, 1);
   });
 });

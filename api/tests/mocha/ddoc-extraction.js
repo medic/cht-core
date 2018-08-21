@@ -1,5 +1,5 @@
 const ddocExtraction = require('../../src/ddoc-extraction'),
-      sinon = require('sinon'),
+      sinon = require('sinon').sandbox.create(),
       db = require('../../src/db-pouch'),
       chai = require('chai');
 

@@ -1,5 +1,5 @@
 const assert = require('chai').assert,
-      sinon = require('sinon');
+      sinon = require('sinon').sandbox;
 
 const utils = require('../../../../../../tests/utils');
 

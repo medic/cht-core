@@ -9,8 +9,8 @@ module.exports = {
       const fullPath = path.join('_node', COUCH_NODE_NAME, '_config', section, key);
       const fullUrl = `${db.serverUrl}/${fullPath}`;
       request.get({ url: fullUrl, json: true }, (err, res, body) => {
-        if (err || res.statusCode !== 200) {
-          reject(err || body);
+        if (err) {
+          reject(err);
         } else {
           resolve(body);
         }

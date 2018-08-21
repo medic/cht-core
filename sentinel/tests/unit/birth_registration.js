@@ -1,5 +1,5 @@
 var transition = require('../../src/transitions/registration'),
-    sinon = require('sinon'),
+    sinon = require('sinon').sandbox.create(),
     assert = require('chai').assert,
     moment = require('moment'),
     transitionUtils = require('../../src/transitions/utils'),

@@ -1,0 +1,12 @@
+*** node_modules/pouchdb-browser/lib/index.js	2018-02-02 14:46:02.000000000 +0200
+--- pouchdb-browser-patched.js	2018-05-22 17:46:43.458259255 +0300
+***************
+*** 6503,6508 ****
+--- 6503,6509 ----
+    var isSafari = typeof openDatabase !== 'undefined' &&
+      /(Safari|iPhone|iPad|iPod)/.test(navigator.userAgent) &&
+      !/Chrome/.test(navigator.userAgent) &&
++     !/TECNO/.test(navigator.userAgent) && // MEDIC PATCH #2797
+      !/BlackBerry/.test(navigator.platform);
+
+    // Safari <10.1 does not meet our requirements for IDB support (#5572)

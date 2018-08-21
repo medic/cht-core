@@ -1,6 +1,6 @@
 require('chai').should();
 
-const sinon = require('sinon');
+const sinon = require('sinon').sandbox.create();
 const auth = require('../../../src/auth'),
       serverUtils = require('../../../src/server-utils');
 

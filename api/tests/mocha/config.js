@@ -1,5 +1,5 @@
 const config = require('../../src/config'),
-      sinon = require('sinon'),
+      sinon = require('sinon').sandbox.create(),
       db = require('../../src/db-pouch'),
       ddocExtraction = require('../../src/ddoc-extraction'),
       translations = require('../../src/translations'),

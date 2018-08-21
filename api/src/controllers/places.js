@@ -1,24 +1,30 @@
 const _ = require('underscore'),
+      async = require('async'),
       people = require('./people'),
       utils = require('./utils'),
-      db = require('../db-pouch'),
-      lineage = require('lineage')(Promise, db.medic),
+      db = require('../db-nano'),
+      dbPouch = require('../db-pouch'),
+      lineage = require('lineage')(Promise, dbPouch.medic),
       PLACE_EDITABLE_FIELDS = ['name', 'parent', 'contact', 'place_id'],
       PLACE_TYPES = ['national_office', 'district_hospital', 'health_center', 'clinic'];
 
-const getPlace = id => {
-  return lineage.fetchHydratedDoc(id)
+const getPlace = (id, callback) => {
+  lineage.fetchHydratedDoc(id)
     .then(doc => {
       if (!isAPlace(doc)) {
-        return Promise.reject({ statusCode: 404 });
+        throw {
+          statusCode: 404,
+        };
       }
-      return doc;
+
+      callback(null, doc);
     })
     .catch(err => {
       if (err.statusCode === 404) {
         err.message  = 'Failed to find place.';
       }
-      throw err;
+
+      callback(err);
     });
 };
 
@@ -33,9 +39,9 @@ const isAPlace = place => PLACE_TYPES.indexOf(place.type) !== -1;
  * NB: non-hydrated places may not be valid. You may wish to use
  *     fetchHydratedDoc().
  */
-const validatePlace = place => {
+const validatePlace = (place, callback) => {
   const err = (msg, code) => {
-    return Promise.reject({
+    return callback({
       code: code || 400,
       message: msg
     });
@@ -77,28 +83,38 @@ const validatePlace = place => {
   }
   if (place.parent && !_.isEmpty(place.parent)) {
     // validate parents
-    return validatePlace(place.parent);
+    return validatePlace(place.parent, callback);
   }
-  return Promise.resolve();
+  return callback();
 };
 
-const createPlace = place => {
+const createPlace = (place, callback) => {
   const self = module.exports;
-  return self._validatePlace(place)
-    .then(() => {
-      const date = place.reported_date ? utils.parseDate(place.reported_date) : new Date();
-      place.reported_date = date.valueOf();
-      if (place.parent) {
-        place.parent = lineage.minifyLineage(place.parent);
-      }
-      if (place.contact) {
-        // also validates contact if creating
-        return people.getOrCreatePerson(place.contact).then(person => {
-          place.contact = lineage.minifyLineage(person);
-        });
-      }
-    })
-    .then(() => db.medic.post(place));
+  self._validatePlace(place, err => {
+    if (err) {
+      return callback(err);
+    }
+    if (!place.reported_date) {
+      place.reported_date = new Date().valueOf();
+    } else {
+      place.reported_date = utils.parseDate(place.reported_date).valueOf();
+    }
+    if (place.parent) {
+      place.parent = lineage.minifyLineage(place.parent);
+    }
+    if (place.contact) {
+      // also validates contact if creating
+      people.getOrCreatePerson(place.contact, (err, person) => {
+        if (err) {
+          return callback(err);
+        }
+        place.contact = lineage.minifyLineage(person);
+        db.medic.insert(place, callback);
+      });
+    } else {
+      db.medic.insert(place, callback);
+    }
+  });
 };
 
 /*
@@ -109,23 +125,27 @@ const createPlace = place => {
  *
  * Return the id and rev of newly created place.
  */
-const createPlaces = place => {
+const createPlaces = (place, callback) => {
   const self = module.exports;
   if (_.isString(place.parent)) {
-    return self.getPlace(place.parent)
-      .then(doc => {
-        place.parent = doc;
-        return self._createPlace(place);
-      });
+    self.getPlace(place.parent, (err, doc) => {
+      if (err) {
+        return callback(err);
+      }
+      place.parent = doc;
+      self._createPlace(place, callback);
+    });
   } else if (_.isObject(place.parent) && !place.parent._id) {
-    return self._createPlaces(place.parent)
-      .then(body => {
-        place.parent = body.id;
-        return self._createPlaces(place);
-      });
+    self._createPlaces(place.parent, (err, body) => {
+      if (err) {
+        return callback(err);
+      }
+      place.parent = body.id;
+      self._createPlaces(place, callback);
+    });
   } else {
     // create place when all parents are resolved
-    return self._createPlace(place);
+    self._createPlace(place, callback);
   }
 };
 
@@ -142,40 +162,69 @@ const updateFields = (place, data) => {
   return place;
 };
 
-const updatePlace = (id, data) => {
-  if (!_.some(PLACE_EDITABLE_FIELDS, k => !_.isNull(data[k]) && !_.isUndefined(data[k]))) {
-    return Promise.reject({
+const updatePlace = (id, data, callback) => {
+  const self = module.exports,
+        response = {},
+        series = [];
+  let place;
+  if (!_.some(PLACE_EDITABLE_FIELDS, k => {
+    return !_.isNull(data[k]) && !_.isUndefined(data[k]);
+  })) {
+    return callback({
       code: 400,
       message: 'One of the following fields are required: ' + PLACE_EDITABLE_FIELDS.join(', ')
     });
   }
-  const self = module.exports;
-  let place;
-  return self.getPlace(id)
-    .then(doc => {
-      place = self._updateFields(doc, data);
-    })
-    .then(() => {
-      if (data.contact) {
-        return people.getOrCreatePerson(data.contact).then(contact => {
+  self.getPlace(id, (err, doc) => {
+    if (err) {
+      return callback(err);
+    }
+    place = self._updateFields(doc, data);
+    if (data.contact) {
+      series.push(cb => {
+        people.getOrCreatePerson(data.contact, (err, contact) => {
+          if (err) {
+            return cb(err);
+          }
           place.contact = contact;
+          cb();
         });
-      }
-    })
-    .then(() => {
-      if (data.parent) {
-        return self.getOrCreatePlace(data.parent).then(parent => {
+      });
+    }
+    if (data.parent) {
+      series.push(cb => {
+        self.getOrCreatePlace(data.parent, (err, parent) => {
+          if (err) {
+            return cb(err);
+          }
           place.parent = parent;
+          cb();
         });
-      }
-    })
-    .then(() => self._validatePlace(place))
-    .then(() => {
-      place.contact = lineage.minifyLineage(place.contact);
-      place.parent = lineage.minifyLineage(place.parent);
-      return db.medic.post(place);
-    })
-    .then(response => ({ id: response.id, rev: response.rev }));
+      });
+    }
+    series.push(cb => {
+      self._validatePlace(place, err => {
+        if (err) {
+          return cb(err);
+        }
+
+        place.contact = lineage.minifyLineage(place.contact);
+        place.parent = lineage.minifyLineage(place.parent);
+
+        db.medic.insert(place, (err, resp) => {
+          if (err) {
+            return cb(err);
+          }
+          response.id = resp.id;
+          response.rev = resp.rev;
+          cb();
+        });
+      });
+    });
+    async.series(series, err => {
+      callback(err, response);
+    });
+  });
 };
 
 /*
@@ -183,17 +232,26 @@ const updatePlace = (id, data) => {
  * valid.
  * `place` should be an id string, or a new place object. Can't be an existing place object.
  */
-const getOrCreatePlace = place => {
+const getOrCreatePlace = (place, callback) => {
   const self = module.exports;
   if (_.isString(place)) {
     // fetch place
-    return self.getPlace(place);
+    self.getPlace(place, (err, doc) => {
+      if (err) {
+        return callback(err);
+      }
+      callback(null, doc);
+    });
   } else if (_.isObject(place) && !place._rev) {
     // create and return place
-    return self._createPlaces(place)
-      .then(resp => self.getPlace(resp.id));
+    self._createPlaces(place, (err, resp) => {
+      if (err) {
+        return callback(err);
+      }
+      self.getPlace(resp.id, callback);
+    });
   } else {
-    return Promise.reject({
+    callback({
       code:400,
       message: 'Place must be a new object or string identifier (UUID).'
     });

@@ -13,8 +13,6 @@ angular.module('inboxControllers').controller('AboutCtrl',
     $scope.url = window.location.hostname;
     $scope.userCtx = Session.userCtx();
 
-    $scope.debugOptionEnabled = $scope.url.indexOf('localhost') >= 0;
-
     DB({remote: true}).allDocs({ key: '_design/medic' })
       .then(function(info) {
         $scope.ddocVersion = info.rows[0].value.rev.split('-')[0];

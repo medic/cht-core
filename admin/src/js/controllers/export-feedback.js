@@ -9,19 +9,11 @@ angular.module('controllers').controller('ExportFeedbackCtrl',
     'use strict';
     'ngInject';
 
-    var MESSAGE_LIMIT = 120;
-
-    var formattedMessage = function(msg) {
-      var suffix = msg.length > MESSAGE_LIMIT ? '...' : '';
-      return msg.substring(0, MESSAGE_LIMIT) + suffix;
-    };
-
     var safeStringify = function(str) {
-      if (typeof str === 'string') { // User typed feedback
+      if (typeof str === 'string') {
         return str;
       }
-      try { // Pouchdb automated log; can be massive hence the limit
-        str.message = formattedMessage(str.message);
+      try {
         return JSON.stringify(str);
       } catch(e) {
         return str;

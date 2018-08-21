@@ -41,11 +41,7 @@ var COOKIE_NAME = 'userCtx',
       };
 
       var logout = function() {
-        $http.delete('/_session')
-          .catch(function() {
-            // Ignore exception. User can already be logged out.
-          })
-          .then(navigateToLogin);
+        $http.delete('/_session').then(navigateToLogin);
       };
 
       var refreshUserCtx = function(callback) {

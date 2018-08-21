@@ -1,4 +1,4 @@
-var sinon = require('sinon'),
+var sinon = require('sinon').sandbox.create(),
     assert = require('chai').assert,
     config = require('../../src/config'),
     messages = require('../../src/lib/messages'),

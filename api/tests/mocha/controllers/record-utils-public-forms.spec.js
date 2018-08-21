@@ -1,4 +1,4 @@
-const sinon = require('sinon'),
+const sinon = require('sinon').sandbox.create(),
       chai = require('chai'),
       definitions = require('../../form-definitions'),
       config = require('../../../src/config'),

@@ -1,5 +1,5 @@
 var chai = require('chai'),
-  sinon = require('sinon'),
+  sinon = require('sinon').sandbox.create(),
   taskUtils = require('../src/task-utils');
 
 describe('TaskUtils shared lib - setTaskState function', function() {

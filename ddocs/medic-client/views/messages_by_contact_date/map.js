@@ -10,13 +10,11 @@ function(doc) {
   };
 
   if (doc.type === 'data_record' && !doc.form) {
-    if (doc.kujua_message && doc.tasks) {
+    if (doc.kujua_message) {
       // outgoing
       doc.tasks.forEach(function(task) {
-        var message = task.messages && task.messages[0];
-        if(message) {
-          emitMessage(doc, message.contact, message.to);
-        }
+        var message = task.messages[0];
+        emitMessage(doc, message.contact, message.to);
       });
     } else if (doc.sms_message) {
       // incoming

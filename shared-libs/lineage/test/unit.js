@@ -1,5 +1,5 @@
 const chai = require('chai');
-const sinon = require('sinon');
+const sinon = require('sinon').sandbox.create();
 const lineageFactory = require('../src/lineage');
 
 describe('Lineage', function() {

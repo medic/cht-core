@@ -20,11 +20,7 @@ angular.module('inboxControllers').controller('ContactsEditCtrl',
     $scope.loadingContent = true;
     $scope.setShowContent(true);
     $scope.setCancelTarget(function() {
-      if ($state.params.from === 'list') {
-        $state.go('contacts.detail', { id: null });
-      } else {
-        $state.go('contacts.detail', { id: $state.params.id || $state.params.parent_id });
-      }
+      $state.go('contacts.detail', { id: $state.params.id || $state.params.parent_id });
     });
 
     var setTitle = function() {

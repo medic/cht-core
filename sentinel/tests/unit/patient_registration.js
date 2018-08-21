@@ -1,6 +1,6 @@
 const _ = require('underscore'),
       moment = require('moment'),
-      sinon = require('sinon'),
+      sinon = require('sinon').sandbox.create(),
       assert = require('chai').assert,
       transition = require('../../src/transitions/registration'),
       db = require('../../src/db-nano'),
@@ -102,18 +102,6 @@ describe('patient registration', () => {
     assert.equal(transition.getWeeksSinceLMP({ fields: { lmp: '12' } }), 12);
     assert.equal(transition.getWeeksSinceLMP({ fields: { weeks_since_lmp: '12' } }), 12);
     assert.equal(transition.getWeeksSinceLMP({ fields: { last_menstrual_period: '12' } }), 12);
-  });
-
-  it('getYearsSinceDOB supports three property names', () => {
-    assert.equal(transition.getYearsSinceDOB({ fields: { years_since_dob: '12' } }), 12);
-    assert.equal(transition.getYearsSinceDOB({ fields: { years_since_birth: '12' } }), 12);
-    assert.equal(transition.getYearsSinceDOB({ fields: { age_in_years: '12' } }), 12);
-  });
-
-  it('getMonthsSinceDOB supports three property names', () => {
-    assert.equal(transition.getMonthsSinceDOB({ fields: { months_since_dob: '12' } }), 12);
-    assert.equal(transition.getMonthsSinceDOB({ fields: { months_since_birth: '12' } }), 12);
-    assert.equal(transition.getMonthsSinceDOB({ fields: { age_in_months: '12' } }), 12);
   });
 
   it('getWeeksSinceDOB supports four property names', () => {

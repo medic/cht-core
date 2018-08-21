@@ -54,9 +54,8 @@ const applyTaskStateChangesToDocs = (taskStateChanges, docs) => {
       return console.error(`Message not found: ${taskStateChange.messageId}`);
     }
 
-    if (taskUtils.setTaskState(task, taskStateChange.state, taskStateChange.details)) {
-      fillTaskStateChangeByDocId(taskStateChange, docId);
-    }
+    fillTaskStateChangeByDocId(taskStateChange, docId);
+    taskUtils.setTaskState(task, taskStateChange.state, taskStateChange.details);
   });
 
   return taskStateChangesByDocId;
@@ -121,15 +120,9 @@ module.exports = {
           return callback(err);
         }
 
-        let docs = docResults.rows.map(r => r.doc);
+        const docs = docResults.rows.map(r => r.doc);
 
         const stateChangesByDocId = applyTaskStateChangesToDocs(taskStateChanges, docs);
-        docs = docs.filter(doc => stateChangesByDocId[doc._id] && stateChangesByDocId[doc._id].length);
-
-        if (!docs.length) {
-          // nothing to update
-          return callback(null, {success: true});
-        }
 
         db.medic.bulkDocs(docs, (err, results) => {
           if (err) {

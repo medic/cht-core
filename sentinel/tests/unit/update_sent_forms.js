@@ -1,5 +1,5 @@
 var moment = require('moment'),
-    sinon = require('sinon'),
+    sinon = require('sinon').sandbox.create(),
     assert = require('chai').assert,
     db = require('../../src/db-nano'),
     transition = require('../../src/transitions/update_sent_forms');

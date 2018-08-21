@@ -41,6 +41,6 @@ module.exports = {
   created: new Date(2017, 3, 30),
   run: promisify(callback => series([
     _.partial(addRole, '_users', 'national_admin'),
-    _.partial(addRole, db.settings.db, 'national_admin')
+    _.partial(addRole, 'medic', 'national_admin')
   ], callback))
 };

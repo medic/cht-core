@@ -1,4 +1,4 @@
-const sinon = require('sinon'),
+const sinon = require('sinon').sandbox.create(),
       chai = require('chai'),
       db = require('../../../src/db-nano'),
       settingsService = require('../../../src/services/settings'),

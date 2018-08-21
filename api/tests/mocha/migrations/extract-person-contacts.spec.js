@@ -1,4 +1,4 @@
-const sinon = require('sinon'),
+const sinon = require('sinon').sandbox.create(),
       chai = require('chai'),
       db = require('../../../src/db-nano'),
       people = require('../../../src/controllers/people'),
@@ -57,7 +57,7 @@ describe('extract-person-contacts migration', () => {
     // resetParent: get parent to reset
     getDoc.onCall(1).callsArgWith(1, null, { _id: 'b', contact: {}, newKey: 'newValue' });
     // resetParent: update the place
-    updatePlace.onCall(0).resolves();
+    updatePlace.onCall(0).callsArg(2);
 
     // Get doc for contact update
     getDoc.onCall(2).callsArgWith(1, null,
@@ -69,11 +69,11 @@ describe('extract-person-contacts migration', () => {
     // Update doc : deleted contact
     insertDoc.onCall(1).callsArg(1);
     // Create person doc
-    createPerson.onCall(0).resolves({ id: 'c'});
+    createPerson.onCall(0).callsArgWith(1, null, { id: 'c'});
     // Update doc : reset the contact field
-    updatePlace.onCall(1).returns(Promise.reject('error'));
+    updatePlace.onCall(1).callsArgWith(2, 'error');
     // Restore the parent
-    updatePlace.onCall(2).resolves();
+    updatePlace.onCall(2).callsArg(2);
 
     migration.run(err => {
       chai.expect(err.message).to.equal('Failed to update contact on facility a: "error"');

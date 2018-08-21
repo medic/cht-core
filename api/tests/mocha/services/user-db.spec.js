@@ -1,7 +1,7 @@
 const service = require('../../../src/services/user-db'),
       db = require('../../../src/db-nano'),
       chai = require('chai'),
-      sinon = require('sinon');
+      sinon = require('sinon').sandbox.create();
 
 describe('User DB service', () => {
 

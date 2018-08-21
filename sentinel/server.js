@@ -1,8 +1,5 @@
-const request = require('request');
-
-const db = require('./src/db-pouch'),
+const config = require('./src/config'),
       logger = require('./src/lib/logger'),
-      serverChecks = require('@shared-libs/server-checks'),
       loglevel = process.argv[2];
 
 if (loglevel === 'debug') {
@@ -20,42 +17,31 @@ process.on('unhandledRejection', reason => {
   console.error(reason);
 });
 
-const waitForApi = () => new Promise(resolve => {
-  //
-  // This waits forever, with no escape hatch, becayse there is no way currently
-  // to know what API is doing, and migrations could legitimately take days
-  //
-  //
-  const waitLoop = () => {
-    request(`http://localhost:${process.env.API_PORT || 5988}/setup/poll`, (err, response, body) => {
-      if (err) {
-        logger.info('Waiting for API to be ready...');
-        return setTimeout(() => waitLoop(), 10 * 1000);
-      }
+const MIN_MAJOR = 8;
+const nodeVersionCheck = () => {
+  try {
+    const [major, minor, patch] = process.versions.node.split('.').map(Number);
+    if (major < MIN_MAJOR) {
+      throw new Error(`Node version ${major}.${minor}.${patch} is not supported, minimum is ${MIN_MAJOR}.0.0`);
+    }
+    console.log(`Node Version: ${major}.${minor}.${patch}`);
+  } catch (err) {
+    console.error('Fatal error intialising medic-sentinel');
+    console.log(err);
+    process.exit(1);
+  }
+};
 
-      logger.info('Api is ready:', body);
-      resolve();
-    });
-  };
+nodeVersionCheck();
 
-  waitLoop();
-});
-
-serverChecks.check(db.serverUrl)
-  .then(waitForApi)
+config.init()
   .then(() => {
-    // Even requiring this boots translations, so has to be required after
-    // api has booted
-    const config = require('./src/config');
-    return config.init()
-      .then(() => {
-        if (!loglevel) {
-          logger.transports.Console.level = config.get('loglevel');
-          logger.debug('loglevel is %s.', logger.transports.Console.level);
-        }
-        require('./src/schedule').checkSchedule();
-        logger.info('startup complete.');
-      });
+    if (!loglevel) {
+      logger.transports.Console.level = config.get('loglevel');
+      logger.debug('loglevel is %s.', logger.transports.Console.level);
+    }
+    require('./src/schedule').checkSchedule();
+    logger.info('startup complete.');
   })
   .catch(err => {
     console.error('Fatal error intialising medic-sentinel');

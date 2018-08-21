@@ -146,7 +146,7 @@
         }
       })
       .state('contacts.addChild', {
-        url: '/:parent_id/add/:type?from',
+        url: '/:parent_id/add/:type',
         views: {
           content: {
             controller: 'ContactsEditCtrl',

@@ -78,11 +78,9 @@ describe('bootstrapper', () => {
     });
   });
 
-  it('performs initial replication, checking that ddoc exists', done => {
+  it('performs initial replication', done => {
     setUserCtxCookie({ name: 'jim' });
-    const localGet = sinon.stub();
-    localGet.onCall(0).rejects();
-    localGet.onCall(1).resolves();
+    const localGet = sinon.stub().returns(Promise.reject());
     const localClose = sinon.stub().returns(Promise.resolve());
     const remoteClose = sinon.stub().returns(Promise.resolve());
     const localReplicate = sinon.stub();
@@ -105,9 +103,8 @@ describe('bootstrapper', () => {
       assert.deepEqual(pouchDb.args[0][1], { auto_compaction: true });
       assert.equal(pouchDb.args[1][0], 'http://localhost:5988/medic');
       assert.deepEqual(pouchDb.args[1][1], { skip_setup: true });
-      assert.equal(localGet.callCount, 2);
+      assert.equal(localGet.callCount, 1);
       assert.equal(localGet.args[0][0], '_design/medic-client');
-      assert.equal(localGet.args[1][0], '_design/medic-client');
       assert.equal(localReplicate.callCount, 1);
       assert.equal(localReplicate.args[0][0].remote, true);
       assert.deepEqual(localReplicate.args[0][1], {
@@ -192,33 +189,6 @@ describe('bootstrapper', () => {
     bootstrapper(pouchDbOptions, err => {
       assert.equal(err.status, 404);
       assert.equal(err.redirect, null);
-      done();
-    });
-  });
-
-  it('returns error if ddoc is not found after successful initial replication', done => {
-    setUserCtxCookie({ name: 'jim' });
-    const localGet = sinon.stub().rejects();
-    const localReplicate = sinon.stub();
-    const localClose = sinon.stub().resolves();
-    const remoteClose = sinon.stub().resolves();
-    pouchDb.onCall(0).returns({
-      get: localGet,
-      replicate: { from: localReplicate },
-      close: localClose
-    });
-    pouchDb.onCall(1).returns({
-      remote: true,
-      close: remoteClose
-    });
-    const localReplicateResult = Promise.resolve();
-    localReplicateResult.on = sinon.stub();
-    localReplicate.returns(localReplicateResult);
-    bootstrapper(pouchDbOptions, err => {
-      assert.equal(err.message, 'Initial replication failed');
-      assert.equal(localGet.callCount, 2);
-      assert.equal(localClose.callCount, 1);
-      assert.equal(remoteClose.callCount, 1);
       done();
     });
   });

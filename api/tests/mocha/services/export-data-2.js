@@ -4,7 +4,7 @@ const db = require('../../../src/db-pouch'),
       service = require('../../../src/services/export-data-2'),
       reportMapper = require('../../../src/services/export/report-mapper'),
       contactMapper = require('../../../src/services/export/contact-mapper'),
-      sinon = require('sinon');
+      sinon = require('sinon').sandbox.create();
 
 describe('Export Data Service 2.0', () => {
 

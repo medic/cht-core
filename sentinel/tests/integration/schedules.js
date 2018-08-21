@@ -1,6 +1,6 @@
 const transition = require('../../src/transitions/registration'),
       schedules = require('../../src/lib/schedules'),
-      sinon = require('sinon'),
+      sinon = require('sinon').sandbox.create(),
       assert = require('chai').assert,
       moment = require('moment'),
       utils = require('../../src/lib/utils'),

@@ -1,5 +1,5 @@
 const should = require('chai').should(),
-      sinon = require('sinon'),
+      sinon = require('sinon').sandbox.create(),
       db = require('../../../src/db-nano'),
       transition = require('../../../src/transitions/registration'),
       schedules = require('../../../src/lib/schedules'),

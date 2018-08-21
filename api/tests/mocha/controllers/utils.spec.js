@@ -1,6 +1,6 @@
 const chai = require('chai'),
       utils = require('../../../src/controllers/utils'),
-      sinon = require('sinon');
+      sinon = require('sinon').sandbox.create();
 
 let clock;
 

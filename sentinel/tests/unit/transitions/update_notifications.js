@@ -1,4 +1,4 @@
-const sinon = require('sinon'),
+const sinon = require('sinon').sandbox.create(),
       assert = require('chai').assert,
       transition = require('../../../src/transitions/update_notifications'),
       db = require('../../../src/db-nano'),

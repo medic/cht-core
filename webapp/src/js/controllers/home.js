@@ -4,7 +4,8 @@ var TABS = [
   { state: 'tasks.detail',    perm: 'can_view_tasks_tab'     },
   { state: 'reports.detail',  perm: 'can_view_reports_tab'   },
   { state: 'analytics',       perm: 'can_view_analytics_tab' },
-  { state: 'contacts.detail', perm: 'can_view_contacts_tab'  }
+  { state: 'contacts.detail', perm: 'can_view_contacts_tab'  },
+  { state: 'configuration',   perm: 'can_configure'          }
 ];
 
 angular.module('inboxControllers').controller('HomeCtrl',

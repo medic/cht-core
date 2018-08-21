@@ -1,7 +1,7 @@
 const lib = require('../../../src/db-batch'),
       db = require('../../../src/db-nano'),
       chai = require('chai'),
-      sinon = require('sinon'),
+      sinon = require('sinon').sandbox.create(),
       ddocName = 'myddoc',
       viewName = 'myview',
       viewKey = 'mykey';

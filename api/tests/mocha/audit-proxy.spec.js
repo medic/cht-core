@@ -1,6 +1,5 @@
 const chai = require('chai'),
-      AuditProxy = require('../../src/audit-proxy'),
-      sinon = require('sinon').sandbox.create();
+      AuditProxy = require('../../src/audit-proxy');
 
 describe('audit proxy', () => {
 
@@ -65,7 +64,9 @@ describe('audit proxy', () => {
       }
     };
     const auth = {
-      check: () => Promise.resolve({ user: username })
+      check: function(req, permission, district, cb) {
+        cb(null, { user: username });
+      }
     };
     const p = new AuditProxy();
     p.setup({ audit: audit, passStream: passStreamFn, db: db, auth: auth });
@@ -92,7 +93,9 @@ describe('audit proxy', () => {
       }
     };
     const auth = {
-      check: () => Promise.resolve({ user: username })
+      check: function(req, permission, district, cb) {
+        cb(null, { user: username });
+      }
     };
 
     const p = new AuditProxy();
@@ -128,7 +131,9 @@ describe('audit proxy', () => {
       }
     };
     const auth = {
-      check: () => Promise.resolve({ user: username })
+      check: function(req, permission, district, cb) {
+        cb(null, { user: username });
+      }
     };
 
     const p = new AuditProxy();
@@ -197,7 +202,9 @@ describe('audit proxy', () => {
       }
     };
     const auth = {
-      check: () => Promise.resolve({ user: username })
+      check: function(req, permission, district, cb) {
+        cb(null, { user: username });
+      }
     };
     const p = new AuditProxy();
     p.setup({ audit: audit, passStream: passStreamFn, db: db, auth: auth });
@@ -210,7 +217,9 @@ describe('audit proxy', () => {
     const proxy = {};
     const req = {};
     const auth = {
-      check: () => Promise.reject({ code: 401 })
+      check: function(req, permission, district, cb) {
+        cb({ code: 401 });
+      }
     };
     const p = new AuditProxy();
     p.setup({ auth: auth });
@@ -288,7 +297,9 @@ describe('audit proxy', () => {
       }
     };
     const auth = {
-      check: () => Promise.resolve({ user: username })
+      check: function(req, permission, district, cb) {
+        cb(null, { user: username });
+      }
     };
     const p = new AuditProxy();
     p.setup({ audit: audit, passStream: passStreamFn, db: db, auth: auth });
@@ -296,41 +307,6 @@ describe('audit proxy', () => {
       chai.expect(err).to.equal('SOME ERROR');
       done();
     });
-    p.audit(proxy, req, {}, target);
-  });
-
-  it('sends req.body directly to audit, if it exists', done => {
-    const target = 'http://localhost:4444',
-          req = {
-            body: 'my-body',
-            headers: {},
-            pipe: sinon.stub()
-          },
-          log = sinon.stub().callsArgWith(1),
-          audit = { withNano: sinon.stub().returns({ log: log })},
-          auth = { check: () => Promise.resolve({ user: 'user' }) },
-          db = {
-            client: {
-              host: 'localhost',
-              port: 5984
-            },
-            settings: {
-              db: 'medic',
-              ddoc: 'medic'
-            }
-          },
-          p = new AuditProxy(),
-          passStream = sinon.stub();
-
-
-    const proxy = { web: sinon.stub().callsFake(() => {
-              chai.expect(passStream.callCount).to.equal(0);
-              chai.expect(req.pipe.callCount).to.equal(0);
-              chai.expect(log.callCount).to.equal(1);
-              chai.expect(log.args[0][0]).to.deep.equal(['my-body']);
-              done();
-            })};
-    p.setup({ audit: audit, passStream: passStream, db: db, auth: auth });
     p.audit(proxy, req, {}, target);
   });
 

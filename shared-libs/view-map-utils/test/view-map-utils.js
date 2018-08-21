@@ -1,4 +1,4 @@
-var sinon = require('sinon');
+var sinon = require('sinon').sandbox.create();
 require('chai').should();
 var lib = require('../src/view-map-utils');
 

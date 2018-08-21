@@ -2,6 +2,8 @@ describe('FormatDate service', function() {
 
   'use strict';
 
+  var sandbox = sinon.sandbox.create();
+
   var service,
       translateInstant,
       relativeTime,
@@ -11,8 +13,8 @@ describe('FormatDate service', function() {
 
   beforeEach(function() {
     module('inboxApp');
-    relativeTime = sinon.stub();
-    pastFuture = sinon.stub();
+    relativeTime = sandbox.stub();
+    pastFuture = sandbox.stub();
     module(function($provide) {
       $provide.value('Settings', KarmaUtils.nullPromise());
       $provide.value('MomentLocaleData', function() {
@@ -25,11 +27,11 @@ describe('FormatDate service', function() {
     });
     inject(function(_FormatDate_, _$translate_) {
       service = _FormatDate_;
-      translateInstant = sinon.stub(_$translate_, 'instant');
+      translateInstant = sandbox.stub(_$translate_, 'instant');
     });
   });
 
-  afterEach(function() { sinon.restore(); });
+  afterEach(function() { sandbox.restore(); });
 
   describe('age', function() {
 
