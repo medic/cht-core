@@ -30,6 +30,32 @@
             <value>Tidak</value>
           </text>
         </translation>
+        <translation lang="fr">
+          <text id="/p/review_without_lmp:label">
+            <value>Envoi d'un rapport de grossesse pour ID <output value=" /p/id "/>, sans la date des dernières régles.</value>
+          </text>
+          <text id="/p/review_with_lmp:label">
+            <value>Envoi d'un rapport de grossesse pour ID <output value=" /p/id "/>, avec la dernière période menstruelle il y a <output value=" /p/lmp "/> semaines.</value>
+          </text>
+          <text id="/p/lmp_known/yes:label">
+            <value>Oui</value>
+          </text>
+          <text id="/p/lmp_known:label">
+            <value>Est-ce que la femme connaît la date de ses dernières régles?</value>
+          </text>
+          <text id="/p/lmp:jr:constraintMsg">
+            <value>-</value>
+          </text>
+          <text id="/p/lmp:label">
+            <value>Nombre de semaines depuis la date des dernières régles</value>
+          </text>
+          <text id="/p/id:label">
+            <value>Identifiant du patient</value>
+          </text>
+          <text id="/p/lmp_known/no:label">
+            <value>Non</value>
+          </text>
+        </translation>
         <translation lang="हिन्दी (Hindi)">
           <text id="/p/review_without_lmp:label">
             <value>आप ID <output value=" /p/id "/> के लिए गर्भावस्था की रिपोर्ट भेज रहे हैं, अज्ञात पिछली मासिक के साथ</value>
@@ -54,6 +80,32 @@
           </text>
           <text id="/p/lmp_known/no:label">
             <value>नहीं</value>
+          </text>
+        </translation>
+        <translation lang="bengali">
+          <text id="/p/review_without_lmp:label">
+            <value>আইডি $ {আইডি} জন্য গর্ভাবস্থা রিপোর্ট জমা দেওয়া, অজানা শেষ মাসিক ঋতু সঙ্গে।</value>
+          </text>
+          <text id="/p/review_with_lmp:label">
+            <value>$ {Id} ID এর জন্য গর্ভাবস্থার রিপোর্ট জমা দিন, শেষ মাসিক মাসিক মাসিক $ {lmp} সপ্তাহের আগে</value>
+          </text>
+          <text id="/p/lmp_known/yes:label">
+            <value>হ্যাঁ</value>
+          </text>
+          <text id="/p/lmp_known:label">
+            <value>গত স্রাবের পরিচিত?</value>
+          </text>
+          <text id="/p/lmp:jr:constraintMsg">
+            <value>-</value>
+          </text>
+          <text id="/p/lmp:label">
+            <value>শেষ মাসিক মাস থেকে সপ্তাহ</value>
+          </text>
+          <text id="/p/id:label">
+            <value>রোগীর আইডি</value>
+          </text>
+          <text id="/p/lmp_known/no:label">
+            <value>না</value>
           </text>
         </translation>
         <translation default="true()" lang="English">
@@ -84,7 +136,7 @@
         </translation>
       </itext>
       <instance>
-        <p delimiter="#" id="p" prefix="J1!p!" version="2017-09-14_18-20">
+        <p delimiter="#" id="p" prefix="J1!p!" version="2018-08-21_08-38">
           <id/>
           <lmp_known/>
           <lmp/>

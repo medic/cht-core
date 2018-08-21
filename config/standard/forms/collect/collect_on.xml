@@ -34,6 +34,17 @@
             <value>मरीज का ID</value>
           </text>
         </translation>
+        <translation lang="bengali">
+          <text id="/collect_on/r:label">
+            <value>নোট</value>
+          </text>
+          <text id="/collect_on/review:label">
+            <value>প্রতিবেদন জমা দেওয়া, আইডি $ {আইডি} এর জন্য বিজ্ঞপ্তিগুলি চালু করুন নিম্নলিখিত টীকা সহ: $ {R}</value>
+          </text>
+          <text id="/collect_on/id:label">
+            <value>রোগীর আইডি</value>
+          </text>
+        </translation>
         <translation default="true()" lang="English">
           <text id="/collect_on/r:label">
             <value>Notes</value>
@@ -46,7 +57,7 @@
         </translation>
       </itext>
       <instance>
-        <collect_on delimiter="#" id="collect_on" prefix="J1!on!" version="2018-06-19_14-26">
+        <collect_on delimiter="#" id="collect_on" prefix="J1!on!" version="2018-08-21_08-38">
           <id/>
           <r/>
           <review/>
