@@ -4221,7 +4221,7 @@
           "type": "integer",
           "length": [
             1,
-            2
+            3
           ],
           "range": [
             0,
@@ -4282,11 +4282,11 @@
           "type": "integer",
           "length": [
             1,
-            2
+            4
           ],
           "range": [
             0,
-            260
+            1827
           ],
           "required": true,
           "validations": {},
