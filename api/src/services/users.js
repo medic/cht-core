@@ -125,7 +125,7 @@ const validateUserSettings = id => {
 const validateNewUsernameForDb = (username, database) => {
   return database.get(createID(username))
     .catch(err => {
-      if (err.statusCode === 404) {
+      if (err.status === 404) {
         // username not found - it's valid.
         return;
       }
@@ -215,11 +215,11 @@ const setContactParent = data => {
     const placeId = getDocID(data.place);
     return validateContact(contactId, placeId)
       .catch(err => {
-        if (err.status === 404) {
-          // try creating the user
-          data.contact.parent = lineage.minifyLineage(data.place);
+        if (err.status !== 404) {
+          return Promise.reject(err);
         }
-        return Promise.reject(err);
+        // try creating the user
+        data.contact.parent = lineage.minifyLineage(data.place);
       });
   }
   if (data.contact.parent) {
@@ -503,7 +503,7 @@ module.exports = {
       const illegalAttempts = illegalDataModificationAttempts(data);
       if (illegalAttempts.length) {
         const err = Error('You do not have permission to modify: ' + illegalAttempts.join(','));
-        err.statusCode = 401;
+        err.status = 401;
         return Promise.reject(err);
       }
     }

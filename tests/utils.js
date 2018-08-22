@@ -60,12 +60,12 @@ const request = (options, {debug, noAuth, notJson} = {}) => {
           deferred.fulfill(body);
         }
       } catch (e) {
-        let errorMessage;
+        let errorMessage = `Server returned an error for request: ${JSON.stringify(options)}\n  `;
 
-        if(body === 'Server error') {
-          errorMessage = 'Server returned an error.  Check medic-api logs for details.';
+        if (body === 'Server error') {
+          errorMessage += 'Check medic-api logs for details.';
         } else {
-          errorMessage = `Server returned an error.  Response body: ${body}`;
+          errorMessage += `Response body: ${body}`;
         }
 
         const err = new Error(errorMessage);

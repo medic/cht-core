@@ -1128,7 +1128,7 @@ describe('Users service', () => {
 
     it('fails if a user already exists with that name', done => {
       const usersGet = sinon.stub(db.users, 'get').resolves({ id: 'abc', rev: '1-xyz' });
-      sinon.stub(db.medic, 'get').returns(Promise.reject({ statusCode: 404 }));
+      sinon.stub(db.medic, 'get').returns(Promise.reject({ status: 404 }));
       service._validateNewUsername('georgi').catch(err => {
         chai.expect(usersGet.callCount).to.equal(1);
         chai.expect(usersGet.args[0][0]).to.equal('org.couchdb.user:georgi');
@@ -1139,7 +1139,7 @@ describe('Users service', () => {
     });
 
     it('fails if a user settings already exists with that name', done => {
-      sinon.stub(db.users, 'get').returns(Promise.reject({ statusCode: 404 }));
+      sinon.stub(db.users, 'get').returns(Promise.reject({ status: 404 }));
       const medicGet = sinon.stub(db.medic, 'get').resolves({ id: 'abc', rev: '1-xyz' });
       service._validateNewUsername('georgi').catch(err => {
         chai.expect(medicGet.callCount).to.equal(1);
@@ -1159,8 +1159,8 @@ describe('Users service', () => {
     });
 
     it('passes if no user exists', () => {
-      sinon.stub(db.users, 'get').returns(Promise.reject({ statusCode: 404 }));
-      sinon.stub(db.medic, 'get').returns(Promise.reject({ statusCode: 404 }));
+      sinon.stub(db.users, 'get').returns(Promise.reject({ status: 404 }));
+      sinon.stub(db.medic, 'get').returns(Promise.reject({ status: 404 }));
       return service._validateNewUsername('georgi');
     });
 

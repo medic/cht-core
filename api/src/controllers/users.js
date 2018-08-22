@@ -99,7 +99,7 @@ module.exports = {
           settings.facility_id = null;
         }
 
-        if (basic === null && changingPassword) {
+        if (_.isUndefined(basic) && changingPassword) {
           return Promise.reject({
             message: 'You must authenticate with Basic Auth to modify your password',
             code: 403
