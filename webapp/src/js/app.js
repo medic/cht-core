@@ -107,6 +107,36 @@ _.templateSettings = {
     return;
   }
 
+  var ONLINE_ROLE = 'mm-online';
+  var ONLINE_USER_DENIED_ROUTES = ['/tasks', '/messages', '/contacts'];
+
+  var isDeniedRoute = function(path, routes) {
+    for(var i=0;i<routes.length;i++) {
+      if(path.indexOf('#'+routes[i]) !== -1) {
+        return true;
+      }
+    }
+    return false;
+  };
+
+  var accessDeniedRoute = function(path) {
+    return path.substring(0, path.indexOf('#')+1) + '/error/403';
+  };
+
+  // Detects reloads or route updates (#/something)
+  app.run(function($rootScope, Session) {
+    $rootScope.$on('$locationChangeStart', function(event, next) {
+      if(Session) {
+        var roles = Session.userCtx().roles;
+        if(roles && roles.indexOf(ONLINE_ROLE) !== -1 &&
+            isDeniedRoute(next, ONLINE_USER_DENIED_ROUTES)) {
+          event.preventDefault();
+          window.location.href = accessDeniedRoute(next);
+        }
+      }
+    });
+  });
+
   bootstrapper(POUCHDB_OPTIONS, function(err) {
     if (err) {
       if (err.redirect) {
