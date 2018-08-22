@@ -98,5 +98,12 @@ module.exports = {
     } else {
       respond(req, res, 500, 'Server error');
     }
+  },
+
+  emptyJSONBodyError: (req, res) => {
+    return module.exports.error({
+      code: 400,
+      message: 'Request body is empty or Content-Type header was not set to application/json.'
+    }, req, res);
   }
 };
