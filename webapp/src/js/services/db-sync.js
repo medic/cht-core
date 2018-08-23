@@ -1,19 +1,12 @@
 var _ = require('underscore'),
-    READ_ONLY_TYPES = [ 'form', 'translations' ],
-    READ_ONLY_IDS = [ 'resources', 'appcache', 'zscore-charts', 'settings' ],
-    DDOC_PREFIX = [ '_design/' ],
-    META_SYNC_FREQUENCY = 30 * 60 * 1000; // 30 minutes
+  READ_ONLY_TYPES = ['form', 'translations'],
+  READ_ONLY_IDS = ['resources', 'appcache', 'zscore-charts', 'settings'],
+  DDOC_PREFIX = ['_design/'],
+  META_SYNC_FREQUENCY = 30 * 60 * 1000; // 30 minutes
 
-angular.module('inboxServices').factory('DBSync',
-  function(
-    $interval,
-    $log,
-    $q,
-    Auth,
-    DB,
-    Session
-  ) {
-
+angular
+  .module('inboxServices')
+  .factory('DBSync', function($interval, $log, $q, Auth, DB, Session) {
     'use strict';
     'ngInject';
 
@@ -32,9 +25,11 @@ angular.module('inboxServices').factory('DBSync',
 
     var readOnlyFilter = function(doc) {
       // don't try to replicate read only docs back to the server
-      return READ_ONLY_TYPES.indexOf(doc.type) === -1 &&
-             READ_ONLY_IDS.indexOf(doc._id) === -1 &&
-             doc._id.indexOf(DDOC_PREFIX) !== 0;
+      return (
+        READ_ONLY_TYPES.indexOf(doc.type) === -1 &&
+        READ_ONLY_IDS.indexOf(doc._id) === -1 &&
+        doc._id.indexOf(DDOC_PREFIX) !== 0
+      );
     };
 
     var getOptions = function(direction) {
@@ -42,7 +37,7 @@ angular.module('inboxServices').factory('DBSync',
         live: true,
         retry: true,
         heartbeat: 10000,
-        back_off_function: backOffFunction
+        back_off_function: backOffFunction,
       };
       if (direction === 'to') {
         options.checkpoint = 'source';
@@ -59,7 +54,8 @@ angular.module('inboxServices').factory('DBSync',
     var replicate = function(direction, updateListener) {
       var options = getOptions(direction);
       var remote = DB({ remote: true });
-      return DB().replicate[direction](remote, options)
+      return DB()
+        .replicate[direction](remote, options)
         .on('active', function() {
           if (updateListener) {
             updateListener({ direction: direction, status: 'in_progress' });
@@ -83,7 +79,7 @@ angular.module('inboxServices').factory('DBSync',
             updateListener({ direction: direction, status: status });
           }
         })
-        .on('complete', function (info) {
+        .on('complete', function(info) {
           if (!info.ok && authenticationIssue(info.errors)) {
             Session.navigateToLogin();
           }
@@ -124,8 +120,7 @@ angular.module('inboxServices').factory('DBSync',
 
       return $q.all([
         replicateFrom(updateListener),
-        replicateTo(updateListener)
+        replicateTo(updateListener),
       ]);
     };
-  }
-);
+  });
