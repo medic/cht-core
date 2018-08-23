@@ -91,12 +91,6 @@ module.exports = {
             message: 'You do not have permissions to modify this person',
             code: 403
           });
-        } else if(_.isNull(data.place)) {
-          if(settings.roles && isOffline(settings.roles)) {
-            return callback(error400('Place field is required for offline users'));
-          }
-          user.facility_id = null;
-          settings.facility_id = null;
         }
 
         if (_.isUndefined(basic) && changingPassword) {
@@ -104,11 +98,6 @@ module.exports = {
             message: 'You must authenticate with Basic Auth to modify your password',
             code: 403
           });
-        } else if (_.isNull(data.contact)) {
-          if(settings.roles && isOffline(settings.roles)) {
-            return callback(error400('Contact field is required for offline users'));
-          }
-          settings.contact_id = null;
         }
 
         return usersService.updateUser(username, req.body, false);
