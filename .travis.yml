@@ -6,7 +6,7 @@ jdk:
   - oraclejdk8
 
 addons:
-  chrome: "stable"
+  chrome: 'stable'
 
 services:
   # docker is used for couchdb 2.0 (not currently available as a travis service)
@@ -14,17 +14,17 @@ services:
 
 env:
   matrix:
-  - TEST_SUITE=standard NODE_VERSION="lts/*" USE_COUCHDB=false USE_YARN=false
-  - TEST_SUITE=normal NODE_VERSION=8 USE_COUCHDB=true USE_YARN=true
-  - TEST_SUITE=normal NODE_VERSION=9 USE_COUCHDB=true USE_YARN=true
-  - TEST_SUITE=performance NODE_VERSION="lts/*" USE_COUCHDB=true USE_YARN=true
+    - TEST_SUITE=standard NODE_VERSION="lts/*" USE_COUCHDB=false USE_YARN=false
+    - TEST_SUITE=normal NODE_VERSION=8 USE_COUCHDB=true USE_YARN=true
+    - TEST_SUITE=normal NODE_VERSION=9 USE_COUCHDB=true USE_YARN=true
+    - TEST_SUITE=performance NODE_VERSION="lts/*" USE_COUCHDB=true USE_YARN=true
   global:
-  - COUCH_URL=http://admin:pass@localhost:5984/medic
-  - API_URL=http://admin:pass@localhost:5988
-  - COUCH_NODE_NAME=nonode@nohost
-  #AWS Access Key Id and AWS Secret Access Key encrypted by travis to access the S3 buckets where reports and screenshots are saved
-  - secure: TR1UN2r3beDtIF+VJpLF2ocTv/uxuOKyVWWhzMLre0ZrrBaIP1sLZV7Z4S/km5M92EfPgGW87BogdWE/R+kTTRiPTCbFB/U/3jFKxEZRXKST66YK5JMwsYqb17UtZtFdqEtO9GGbAVzXwpZfMMoXvlKNrors2W32xBm2uIkOSpI=
-  - secure: Q8RH65NClRBryxfvlwHQjeR4wGs+GXeUBRIBd1kspAM7Uv+5K3iP+q/TPCIrTL/OpJ5tyCYfeq5hKIFFwrY3JikNXnyHICOjXPE6zSLUm8E8NHaP/orPNWjze2x4yDSRCifqzr2ZiXVq9sxlZfNbZ9eyJxpPFTYDSpuN9T5UEE0=
+    - COUCH_URL=http://admin:pass@localhost:5984/medic
+    - API_URL=http://admin:pass@localhost:5988
+    - COUCH_NODE_NAME=nonode@nohost
+    #AWS Access Key Id and AWS Secret Access Key encrypted by travis to access the S3 buckets where reports and screenshots are saved
+    - secure: TR1UN2r3beDtIF+VJpLF2ocTv/uxuOKyVWWhzMLre0ZrrBaIP1sLZV7Z4S/km5M92EfPgGW87BogdWE/R+kTTRiPTCbFB/U/3jFKxEZRXKST66YK5JMwsYqb17UtZtFdqEtO9GGbAVzXwpZfMMoXvlKNrors2W32xBm2uIkOSpI=
+    - secure: Q8RH65NClRBryxfvlwHQjeR4wGs+GXeUBRIBd1kspAM7Uv+5K3iP+q/TPCIrTL/OpJ5tyCYfeq5hKIFFwrY3JikNXnyHICOjXPE6zSLUm8E8NHaP/orPNWjze2x4yDSRCifqzr2ZiXVq9sxlZfNbZ9eyJxpPFTYDSpuN9T5UEE0=
 
 matrix:
   allow_failures:
@@ -34,11 +34,10 @@ before_install:
   - ./scripts/travis/couch-start
   - pip install --user awscli
   - export PATH=$PATH:$HOME/.local/bin
-  - '[[ -z "$USE_YARN" ]] || curl -o- -L https://yarnpkg.com/install.sh | bash -s'
+  - '[[ -z "$USE_YARN" ]] || curl -o- -L https://yarnpkg.com/install.sh | bash -s -- --version 1.7.0'
   - export PATH=$HOME/.yarn/bin:$PATH
 
-install:
-  nvm install $NODE_VERSION
+install: nvm install $NODE_VERSION
 
 before_script:
   - mkdir tests/logs
@@ -65,34 +64,34 @@ script:
 jobs:
   include:
     - if: type != pull_request
-      stage: "Publish binaries"
+      stage: 'Publish binaries'
       script: node --stack_size=10000 `which grunt` publish
       env: NODE_VERSION=8 PUBLISH_TO=horti USE_YARN=true
 
 after_failure:
   - |
-      (cd tests/logs
-        for log in $(ls *.log); do
-          echo "---------- $log ----------"
-          tail "$log"
-          echo "--------------------------"
-        done
-      )
+    (cd tests/logs
+      for log in $(ls *.log); do
+        echo "---------- $log ----------"
+        tail "$log"
+        echo "--------------------------"
+      done
+    )
 
-      [[ "$TRAVIS_BUILD_STAGE_NAME" = "Test" ]] || return
+    [[ "$TRAVIS_BUILD_STAGE_NAME" = "Test" ]] || return
 
-      if [[ "$TRAVIS_PULL_REQUEST" = true ]]; then
-        S3_PATH=s3://medic-e2e/PR_$TRAVIS_PULL_REQUEST
-      else
-        S3_PATH=s3://medic-e2e/BUILD_$TRAVIS_BUILD_NUMBER/JOB_$TRAVIS_JOB_NUMBER
-      fi
+    if [[ "$TRAVIS_PULL_REQUEST" = true ]]; then
+      S3_PATH=s3://medic-e2e/PR_$TRAVIS_PULL_REQUEST
+    else
+      S3_PATH=s3://medic-e2e/BUILD_$TRAVIS_BUILD_NUMBER/JOB_$TRAVIS_JOB_NUMBER
+    fi
 
-      echo "Uploading logs and screenshots to ${S3_PATH}..."
+    echo "Uploading logs and screenshots to ${S3_PATH}..."
 
-      ./scripts/travis/couch-logs
+    ./scripts/travis/couch-logs
 
-      aws s3 cp tests/results "$S3_PATH"/test-results --recursive
-      aws s3 cp tests/logs "$S3_PATH"/ --recursive
+    aws s3 cp tests/results "$S3_PATH"/test-results --recursive
+    aws s3 cp tests/logs "$S3_PATH"/ --recursive
 
 notifications:
   webhooks:
