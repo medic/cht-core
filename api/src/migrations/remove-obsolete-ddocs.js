@@ -1,23 +1,21 @@
-var async = require('async'),
-    {promisify} = require('util'),
-    db = require('../db-nano'),
-    DDOCS_TO_REMOVE = ['_design/kujua-sentinel', '_design/erlang_filters'];
+const db = require('../db-pouch'),
+      DDOCS_TO_REMOVE = ['_design/kujua-sentinel', '_design/erlang_filters'];
+
+const remove = id => {
+  return db.medic.get(id)
+    .then(ddoc => {
+      ddoc._deleted = true;
+      return db.medic.put(ddoc);
+    })
+    .catch(err => {
+      if (err.status !== 404) {
+        throw err;
+      }
+    });
+};
 
 module.exports = {
   name: 'remove-obsolete-ddocs',
   created: new Date(2016, 8, 2, 22, 0, 0, 0),
-  run: promisify(function(callback) {
-    async.each(DDOCS_TO_REMOVE, function(id, callback) {
-      db.medic.get(id, function(err, ddoc) {
-        if (err) {
-          if (err.statusCode === 404) {
-            return callback();
-          }
-          return callback(err);
-        }
-        ddoc._deleted = true;
-        db.medic.insert(ddoc, callback);
-      });
-    }, callback);
-  })
+  run: () => Promise.all(DDOCS_TO_REMOVE.map(remove))
 };

@@ -46,7 +46,7 @@ angular.module('inboxServices').factory('LiveListConfig',
             return;
           }
           if (c1.sortByLastVisitedDate) {
-            return c1.lastVisitedDate < c2.lastVisitedDate;
+            return c1.lastVisitedDate - c2.lastVisitedDate;
           }
           if (c1.simprints && c2.simprints) {
             return c2.simprints.confidence - c1.simprints.confidence;
@@ -72,7 +72,7 @@ angular.module('inboxServices').factory('LiveListConfig',
           scope.simprintsTier = contact.simprints && contact.simprints.tierNumber;
           scope.dod = contact.date_of_death;
           if (contact.type !== 'person') {
-            if (Number.isInteger(contact.lastVisitedDate)) {
+            if (Number.isInteger(contact.lastVisitedDate) && contact.lastVisitedDate >= 0) {
               if (contact.lastVisitedDate === 0) {
                 scope.overdue = true;
                 scope.summary = $translate.instant('contact.last.visited.unknown');
@@ -81,6 +81,22 @@ angular.module('inboxServices').factory('LiveListConfig',
                 var oneMonthAgo = now - (30 * 24 * 60 * 60 * 1000);
                 scope.overdue = contact.lastVisitedDate <= oneMonthAgo;
                 scope.summary = $translate.instant('contact.last.visited.date', { date: relativeDayFilter(contact.lastVisitedDate, true) });
+              }
+
+              var visitCount = Math.min(contact.visitCount, 99) + (contact.visitCount > 99 ? '+' : '');
+              scope.visits = {
+                count: $translate.instant('contacts.visits.count', { count: visitCount }),
+                summary: $translate.instant('contacts.visits.visits', { VISITS: contact.visitCount }, 'messageformat')
+              };
+
+              if (contact.visitCountGoal) {
+                if (!contact.visitCount) {
+                  scope.visits.status = 'pending';
+                } else if (contact.visitCount < contact.visitCountGoal) {
+                  scope.visits.status = 'started';
+                } else {
+                  scope.visits.status = 'done';
+                }
               }
             } else {
               scope.summary = $translate.instant('contact.primary_contact_name', { name: contact.contact });
@@ -466,6 +482,21 @@ angular.module('inboxServices').factory('LiveList',
       delete idx.selected;
     }
 
+    function _containsDeleteStub(listName, doc) {
+      // determines if array2 is included in array1
+      var arrayIncludes = function(array1, array2) {
+        return array2.every(function(elem) {
+          return array1.indexOf(elem) !== -1;
+        });
+      };
+      // CouchDB/Fauxton deletes don't include doc fields in the deleted revision
+      // _conflicts, _attachments can be part of the _changes request result
+      var stubProps = [ '_id', '_rev', '_deleted', '_conflicts', '_attachments' ];
+      return arrayIncludes(stubProps, Object.keys(doc)) &&
+             !!doc._deleted &&
+             _contains(listName, doc);
+    }
+
     function refreshAll() {
       var i, now = new Date();
 
@@ -521,6 +552,7 @@ angular.module('inboxServices').factory('LiveList',
         initialised: _.partial(_initialised, name),
         setSelected: _.partial(_setSelected, name),
         clearSelected: _.partial(_clearSelected, name),
+        containsDeleteStub: _.partial(_containsDeleteStub, name)
       };
 
       return api[name];

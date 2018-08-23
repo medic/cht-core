@@ -22,6 +22,7 @@ describe('db-doc service', () => {
     sinon.stub(authorization, 'alwaysAllowCreate');
     sinon.stub(authorization, 'getAuthorizationContext').resolves({ subjectIds: [1, 3, 4], userCtx: { name: 'user' } });
     sinon.stub(authorization, 'getViewResults').callsFake(doc => ({ view: doc }));
+    sinon.stub(authorization, 'isDeleteStub').returns(false);
     sinon.stub(db.medic, 'get').resolves({});
   });
 
@@ -243,6 +244,7 @@ describe('db-doc service', () => {
             authorization.allowedDoc.args[0].should.deep.equal([
               'id', { userCtx: { name: 'user' }, subjectIds: [1, 3, 4]}, { view: { _id: 'id' }}
             ]);
+            authorization.isDeleteStub.callCount.should.equal(1);
             authorization.alwaysAllowCreate.callCount.should.equal(0);
           });
       });
@@ -260,6 +262,7 @@ describe('db-doc service', () => {
             authorization.allowedDoc.args[0].should.deep.equal([
               'id', { userCtx: { name: 'user' }, subjectIds: [1, 3, 4]}, { view: { _id: 'id' }}
             ]);
+            authorization.isDeleteStub.callCount.should.equal(1);
           });
       });
 
@@ -271,6 +274,21 @@ describe('db-doc service', () => {
           .filterOfflineRequest(userCtx, params, method, query, body)
           .then(result => {
             authorization.allowedDoc.callCount.should.equal(1);
+            authorization.isDeleteStub.callCount.should.equal(0);
+            result.should.deep.equal({ _id: 'id' });
+          });
+      });
+
+      it('returns db-doc for delete stubs', () => {
+        db.medic.get.resolves({ _id: 'id' });
+        authorization.allowedDoc.returns(false);
+        authorization.isDeleteStub.returns(true);
+
+        return service
+          .filterOfflineRequest(userCtx, params, method, query, body)
+          .then(result => {
+            authorization.allowedDoc.callCount.should.equal(1);
+            authorization.isDeleteStub.callCount.should.equal(1);
             result.should.deep.equal({ _id: 'id' });
           });
       });
@@ -331,6 +349,20 @@ describe('db-doc service', () => {
           .then(result => {
             result.should.equal(true);
             authorization.allowedDoc.callCount.should.equal(1);
+          });
+      });
+
+      it('returns true for delete stubs', () => {
+        db.medic.get.resolves({ _id: 'id' });
+        authorization.allowedDoc.returns(false);
+        authorization.isDeleteStub.returns(true);
+
+        return service
+          .filterOfflineRequest(userCtx, params, method, query, body)
+          .then(result => {
+            authorization.allowedDoc.callCount.should.equal(1);
+            authorization.isDeleteStub.callCount.should.equal(1);
+            result.should.equal(true);
           });
       });
     });
@@ -533,6 +565,35 @@ describe('db-doc service', () => {
             ]);
             authorization.alwaysAllowCreate.callCount.should.equal(0);
             db.medic.get.callCount.should.equal(1);
+            result.should.equal(false);
+          });
+      });
+
+      it('returns true for overwriting delete stubs with allowed docs', () => {
+        db.medic.get.resolves({ _id: 'id' });
+        authorization.allowedDoc.onCall(0).returns(false);
+        authorization.allowedDoc.onCall(1).returns(true);
+        authorization.isDeleteStub.returns(true);
+
+        return service
+          .filterOfflineRequest(userCtx, params, method, query, body)
+          .then(result => {
+            authorization.allowedDoc.callCount.should.equal(2);
+            authorization.isDeleteStub.callCount.should.equal(1);
+            result.should.equal(true);
+          });
+      });
+
+      it('returns true for overwriting delete stubs with not docs', () => {
+        db.medic.get.resolves({ _id: 'id' });
+        authorization.allowedDoc.returns(false);
+        authorization.isDeleteStub.returns(true);
+
+        return service
+          .filterOfflineRequest(userCtx, params, method, query, body)
+          .then(result => {
+            authorization.allowedDoc.callCount.should.equal(2);
+            authorization.isDeleteStub.callCount.should.equal(1);
             result.should.equal(false);
           });
       });

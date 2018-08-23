@@ -59,7 +59,8 @@ module.exports = {
 
         // user must be allowed to see existent document
         if (storedDoc &&
-            !authorization.allowedDoc(storedDoc._id, authorizationContext, authorization.getViewResults(storedDoc))) {
+            !authorization.allowedDoc(storedDoc._id, authorizationContext, authorization.getViewResults(storedDoc)) &&
+            !authorization.isDeleteStub(storedDoc)) {
           return false;
         }
 

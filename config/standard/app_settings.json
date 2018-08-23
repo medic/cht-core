@@ -385,7 +385,7 @@
           },
           {
             "property": "weeks_since_birth",
-            "rule": "integer && between(0,90)",
+            "rule": "integer && between(0,260)",
             "translation_key": "messages.c.validation.weeks_since_birth"
           }
         ]
@@ -4264,7 +4264,7 @@
           ],
           "range": [
             0,
-            90
+            260
           ],
           "required": true,
           "validations": {},
@@ -4325,7 +4325,7 @@
           ],
           "range": [
             0,
-            90
+            260
           ],
           "required": true,
           "validations": {},

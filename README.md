@@ -11,6 +11,8 @@ The `medic-webapp` repository is the core tool of the Medic Mobile stack. When h
 
 The web app is fully responsive with a mobile-first design, and supports localization using any written language. It can be installed locally, as part of a virtual machine (see [medic-os](https://github.com/medic/medic-os)), or in the cloud.
 
+Currently, we functionally support the latest versions of Chrome, Chrome for Android and Firefox. We do not support Safari (unreliable implementations of web APIs we need) and the generic android browser (unreliable implementations in general). Our webapp code, which includes any code written as configuration, is still ES5. Our exact support matrix (including older app versions) can be found [in our docs](https://github.com/medic/medic-docs/blob/master/installation/supported-software.md).
+
 For more information about Medic Mobile's tools, visit http://medicmobile.org/tools.
 For more information about Medic Mobile's architecture and how the pieces fit together, see [Architecture Overview](https://github.com/medic/medic-docs/blob/master/development/architecture.md).
 For more information about the format of docs in the database, see [Database Schema](https://github.com/medic/medic-docs/blob/master/development/db-schema.md).
@@ -19,6 +21,8 @@ For more information about the SMS exchange protocol between webapp and gateway,
 ## Easy local deployment
 
 If you want to get up and running with no fuss, [you can use Horticulturalist](#deploy-locally-using-horticulturalist-beta).
+
+If you want to use our standard configuration, [you can use the Medic Project Configurer](https://github.com/medic/medic-conf) in the [./config/standard](https://github.com/medic/medic-webapp/tree/master/config/standard) directory once Horticuluralist has successfully started.
 
 If you want to develop against Medic, follow the Development Setup below.
 
@@ -203,9 +207,9 @@ They live in [tests](tests). To run them:
 
 [Travis](https://travis-ci.org/medic/medic-webapp) runs `grunt ci` every time some new code is pushed to github.
 
-# Other deployment steps
+## Other deployment steps
 
-## Deploy locally using Horticulturalist (beta)
+### Deploy locally using Horticulturalist (beta)
 
 [Horticulturalist](https://github.com/medic/horticulturalist) is an easy way to deploy Medic locally if you're not going to be developing against it.
 
@@ -242,14 +246,11 @@ If you wish to change the version of Medic installed, you can either bootstrap a
 ```shell
 curl -X DELETE $COUCH_URL
 ```
+## Configuring Medic
 
-## Run on Medic OS
+We ship with one "standard" configuration, which can be a useful basis to start with. It is located at [./config/standard[(https://github.com/medic/medic-webapp/tree/master/config/standard).
 
-[What's Medic OS?](https://github.com/medic/medic-os#about-medic-os)
-
-For development, you can find it useful to [run Medic OS on a VM](https://github.com/medic/medic-os#instance-creation-iso) locally, to leverage VM snapshots, for instance to work with different versions.
-
-You can also use Medic-OS for production instances.
+Configuration is performed using [Medic Project Configurer](https://github.com/medic/medic-conf). `medic-conf` expects a particular structure (seen in the standard config above). It compiles forms and configuration into the required formats, as well as uploading that configuration and performing other tasks.
 
 ## Automated Deployment on Travis
 
@@ -261,56 +262,7 @@ Join our [Google Group](https://groups.google.com/forum/#!forum/medic-developers
 
 ## Contributing
 
-You can contribute by messaging our [Google Group](https://groups.google.com/forum/#!forum/medic-developers), raising bugs or improvements in the medic-webapp Github repo, or submitting pull requests.
-
-## Vulnerability Disclosure Policy
-
-We take the security of our systems seriously, and we value the security community. The disclosure of security vulnerabilities helps us ensure the security and privacy of our users.
-
-### Guidelines
-
-We require that all researchers:
-
-- Make every effort to avoid privacy violations, degradation of user experience, disruption to production systems, and destruction of data during security testing;
-- Refrain from using any in-scope compromise as a platform to probe or conduct additional research, on any other system, regardless of scope;
-- Perform research only within the scope set out below;
-- Use the identified communication channels to report vulnerability information to us; and
-- Keep information about any vulnerabilities you've discovered confidential between yourself and Medic Mobile until all production systems have been patched.
-
-If you follow these guidelines when reporting an issue to us, we commit to:
-
-- Not pursue or support any legal action related to your research;
-- Work with you to understand and resolve the issue quickly (including an initial confirmation of your report within 72 hours of submission);
-- Recognize your contribution on our Security Researcher Hall of Fame, if you are the first to report the issue and we make a code or configuration change based on the issue.
-
-### Scope
-
-- https://alpha.dev.medicmobile.org
-
-### Out of scope
-
-Any services hosted by 3rd party providers and any and all other services hosted on or beneath the medicmobile.org and hopephones.org domains are excluded from scope.
-
-In the interest of the safety of our users, staff, the Internet at large and you as a security researcher, the following test types are excluded from scope:
-
-- Findings from physical testing such as office access (e.g. open doors, tailgating)
-- Findings derived primarily from social engineering (e.g. phishing, vishing)
-- Findings from applications or systems not listed in the ‘Scope' section
-- UI and UX bugs and spelling mistakes
-- Network level Denial of Service (DoS/DDoS) vulnerabilities
-
-Things we do not want to receive:
-
-- Personally identifiable information (PII)
-- Any exploits or proofs-of-concept in binary format (e.g. ELF)
-
-### How to report a security vulnerability?
-
-If you believe you've found a security vulnerability in one of our products or platforms please send it to us by emailing dev@medicmobile.org. Please include the following details with your report:
-
-- Description of the location and potential impact of the vulnerability;
-- A detailed description of the steps required to reproduce the vulnerability (proof of concept source code, screenshots, and compressed screen captures are all helpful to us); and
-- Your name/handle and a link for recognition in our Hall of Fame.
+At Medic Mobile we welcome and appreciate community contributions. If you have an idea or a question we'd love to hear from you! The easiest ways to get in touch are by raising issues in the [medic-webapp Github repo](https://github.com/medic/medic-webapp/issues) or by messaging our [Google Group](https://groups.google.com/forum/#!forum/medic-developers). For more info check out our [contributor guidelines](CONTRIBUTING.md).
 
 ## Build Status
 

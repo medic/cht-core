@@ -239,6 +239,32 @@ describe('db-doc handler', () => {
         });
     });
 
+    it('GET delete stubs', () => {
+      offlineRequestOptions.method = 'GET';
+
+      const docs = [
+        { _id: 'a1', type: 'clinic', parent: { _id: 'fixture:offline' }, name: 'Allowed Contact 1' },
+        { _id: 'd1', type: 'clinic', parent: { _id: 'fixture:online' }, name: 'Denied Contact 1' }
+      ];
+
+      return utils
+        .saveDocs(docs)
+        .then(result => Promise.all(
+          docs.map((doc, key) => utils.requestOnTestDb({ method: 'DELETE', path: `/${doc._id}?rev=${result[key].rev}` }))
+        ))
+        .then(results => {
+          results.forEach((result, key) => docs[key]._rev = result.rev);
+          return Promise.all(docs.map(doc =>
+            utils.requestOnTestDb(_.defaults({ path: `/${doc._id}?rev=${doc._rev}` }, offlineRequestOptions))
+          ));
+        })
+        .then(results => {
+          expect(results.length).toEqual(2);
+          expect(results[0]).toEqual({ _id: 'a1', _rev: docs[0]._rev, _deleted: true });
+          expect(results[1]).toEqual({ _id: 'd1', _rev: docs[1]._rev, _deleted: true });
+        });
+    });
+
     it('POST', () => {
       _.extend(offlineRequestOptions, {
         method: 'POST',
@@ -364,6 +390,52 @@ describe('db-doc handler', () => {
           expect(results[5].history.length).toEqual(1);
           expect(_.pick(results[5].history[0], 'user', 'action')).toEqual({ user: 'admin', action: 'create' });
           expect(results[5].history[0].doc.name).toEqual('d2');
+        });
+    });
+
+    it('PUT over DELETE stubs', () => {
+      _.extend(offlineRequestOptions, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' }
+      });
+
+      const docs = [
+        { _id: 'a_put_del_1', type: 'clinic', parent: { _id: 'fixture:offline' }, name: 'a1' },
+        { _id: 'a_put_del_2', type: 'clinic', parent: { _id: 'fixture:offline' }, name: 'a2' },
+        { _id: 'd_put_del_1', type: 'clinic', parent: { _id: 'fixture:online' }, name: 'd1' },
+        { _id: 'd_put_del_2', type: 'clinic', parent: { _id: 'fixture:online' }, name: 'd2' }
+      ];
+
+      return utils
+        .saveDocs(docs)
+        .then(results => Promise.all(docs.map((doc, idx) =>
+          utils.requestOnTestDb({ method: 'DELETE', path: `/${doc._id}?rev=${results[idx].rev}` })
+        )))
+        .then(results => {
+          results.forEach((result, idx) => docs[idx]._rev = result.rev);
+
+          const updates = [
+            _.defaults({ name: 'a1 updated' }, docs[0]), // prev allowed, deleted, new allowed
+            _.defaults({ name: 'a2 updated', parent: { _id: 'fixture:online' }}, docs[1]), // prev allowed, deleted, new denied
+            _.defaults({ name: 'd1 updated' }, docs[2]), // prev denied, deleted, new denied
+            _.defaults({ name: 'd2 updated', parent: { _id: 'fixture:offline' }}, docs[3]) // prev denied, deleted, new allowed
+          ];
+
+          return Promise.all(updates.map(doc =>
+            utils
+              .requestOnTestDb(_.extend({ path: `/${doc._id}`, body: JSON.stringify(doc)}, offlineRequestOptions))
+              .catch(err => err)
+          ));
+        })
+        .then(results => {
+          expect(results[0].statusCode).toEqual(409);
+          expect(results[0].responseBody.error).toEqual('conflict');
+          expect(results[1].statusCode).toEqual(403);
+          expect(results[1].responseBody).toEqual({ error: 'forbidden', reason: 'Insufficient privileges' });
+          expect(results[2].statusCode).toEqual(403);
+          expect(results[2].responseBody).toEqual({ error: 'forbidden', reason: 'Insufficient privileges' });
+          expect(results[3].statusCode).toEqual(409);
+          expect(results[3].responseBody.error).toEqual('conflict');
         });
     });
 

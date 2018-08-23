@@ -151,6 +151,19 @@ describe('messages', () => {
       );
   });
 
+  it('addMessage detects duplicate messages', () => {
+      const doc = {to: '+1234567'};
+      messages.addMessage(doc, { message: 'Thank you.' }, '123', {});
+      assert.equal(doc.tasks.length, 1);
+      assert.equal(doc.tasks[0].state, 'pending');
+      messages.addMessage(doc, { message: 'Thank you.' }, '123', {});
+      assert.equal(doc.tasks.length, 2);
+      assert.equal(doc.tasks[1].state, 'duplicate');
+      messages.addMessage(doc, { message: 'Thank you again.' }, '123', {});
+      assert.equal(doc.tasks.length, 3);
+      assert.equal(doc.tasks[2].state, 'pending');
+  });
+
   it('getMessage returns empty string on empty config', () => {
       var config = { messages: [{
           content: '',

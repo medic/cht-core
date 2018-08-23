@@ -254,7 +254,7 @@ describe('registration transition', () => {
 
     const checkItemSummary = () => {
       const summaryElement = element(by.css('#reports-content .item-summary'));
-      expect(summaryElement.element(by.css('.sender .name')).getText()).toMatch(`Sent by ${CAROL.name}`);
+      expect(summaryElement.element(by.css('.sender .name')).getText()).toMatch(`Submitted by ${CAROL.name}`);
       expect(summaryElement.element(by.css('.subject .name')).getText()).toBe('Siobhan');
       expect(summaryElement.element(by.css('.sender .phone')).getText()).toBe(CAROL.phone);
       expect(summaryElement.element(by.css('.position a')).getText()).toBe(BOB_PLACE.name);

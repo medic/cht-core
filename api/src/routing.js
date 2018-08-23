@@ -284,150 +284,16 @@ app.get('/api/v1/forms/:form', function(req, res) {
   });
 });
 
-app.get('/api/v1/users', function(req, res) {
-  auth.check(req, 'can_view_users')
-    .then(() => {
-      users.getList(function(err, body) {
-        if (err) {
-          return serverUtils.error(err, req, res);
-        }
-        res.json(body);
-      });
-    })
-    .catch(err => serverUtils.error(err, req, res));
-});
-
-app.postJson('/api/v1/users', function(req, res) {
-  auth.check(req, 'can_create_users')
-    .then(() => {
-      users.createUser(req.body, function(err, body) {
-        if (err) {
-          return serverUtils.error(err, req, res);
-        }
-        res.json(body);
-      });
-    })
-    .catch(err => serverUtils.error(err, req, res));
-});
-
-const emptyJSONBodyError = function(req, res) {
-  return serverUtils.error({
-    code: 400,
-    message: 'Request body is empty or Content-Type header was not set to application/json.'
-  }, req, res);
-};
-/*
- * TODO: move this logic out of here
- *       https://github.com/medic/medic-webapp/issues/4092
- */
-app.postJson('/api/v1/users/:username', function(req, res) {
-  if (_.isEmpty(req.body)) {
-    return emptyJSONBodyError(req, res);
-  }
-
-  const username = req.params.username;
-  const credentials = auth.basicAuthCredentials(req);
-
-  const updateUser = fullAccess =>
-    users.updateUser(username, req.body, fullAccess, (err, body) => {
-      if (err) {
-        return serverUtils.error(err, req, res);
-      }
-
-      res.json(body);
-    });
-
-  const hasFullPermission = () =>
-    auth.check(req, 'can_update_users')
-      .then(() => true)
-      .catch(err => {
-        if (err.code === 403) {
-          return false;
-        }
-        throw err;
-      });
-  const isUpdatingSelf = () =>
-    auth.getUserCtx(req)
-      .then(userCtx => {
-        return userCtx.name === username &&
-               (!credentials || credentials.username === username);
-      });
-  const basicAuthValid = () =>
-    new Promise(resolve => {
-      if (!credentials) {
-        resolve(null); // Not attempting basic auth
-      } else {
-        auth.validateBasicAuth(credentials, err => {
-          if (err) {
-            console.error(`Invalid authorization attempt on /api/v1/users/${username}`);
-            console.error(err);
-            resolve(false); // Incorrect basic auth
-          } else {
-            resolve(true); // Correct basic auth
-          }
-        });
-      }
-    });
-  const isChangingPassword = () => Object.keys(req.body).includes('password');
-
-  Promise.all([hasFullPermission(), isUpdatingSelf(), basicAuthValid(), isChangingPassword()])
-    .then(([fullPermission, updatingSelf, basic, changingPassword]) => {
-
-      if (basic === false) {
-        // If you're passing basic auth we're going to validate it, even if we
-        // technicaly don't need to (because you already have a valid cookie and
-        // full permission).
-        // This is to maintain consistency in the personal change password UI:
-        // we want to validate the password you pass regardless of your permissions
-        throw {
-          message: 'Bad username / password',
-          code: 401
-        };
-      }
-
-      if (fullPermission) {
-        return updateUser(true);
-      }
-
-      if (!updatingSelf) {
-        throw {
-          message: 'You do not have permissions to modify this person',
-          code: 403
-        };
-      }
-
-      if (basic === null && changingPassword) {
-        throw {
-          message: 'You must authenticate with Basic Auth to modify your password',
-          code: 403
-        };
-      }
-
-      return updateUser(false);
-    })
-    .catch(err => {
-      return serverUtils.error(err, req, res);
-    });
-});
-
-app.delete('/api/v1/users/:username', function(req, res) {
-  auth.check(req, 'can_delete_users')
-    .then(() => {
-      users.deleteUser(req.params.username, function(err, result) {
-        if (err) {
-          return serverUtils.error(err, req, res);
-        }
-        res.json(result);
-      });
-    })
-    .catch(err => serverUtils.error(err, req, res));
-});
+app.get('/api/v1/users', users.get);
+app.postJson('/api/v1/users', users.create);
+app.postJson('/api/v1/users/:username', users.update);
+app.delete('/api/v1/users/:username', users.delete);
 
 app.postJson('/api/v1/places', function(req, res) {
   auth.check(req, 'can_create_places')
     .then(() => {
       if (_.isEmpty(req.body)) {
-        return emptyJSONBodyError(req, res);
+        return serverUtils.emptyJSONBodyError(req, res);
       }
       return places.createPlace(req.body)
         .then(body => res.json(body));
@@ -439,7 +305,7 @@ app.postJson('/api/v1/places/:id', function(req, res) {
   auth.check(req, 'can_update_places')
     .then(() => {
       if (_.isEmpty(req.body)) {
-        return emptyJSONBodyError(req, res);
+        return serverUtils.emptyJSONBodyError(req, res);
       }
       return places.updatePlace(req.params.id, req.body)
         .then(body => res.json(body));
@@ -451,7 +317,7 @@ app.postJson('/api/v1/people', function(req, res) {
   auth.check(req, 'can_create_people')
     .then(() => {
       if (_.isEmpty(req.body)) {
-        return emptyJSONBodyError(req, res);
+        return serverUtils.emptyJSONBodyError(req, res);
       }
       return people.createPerson(req.body)
         .then(body => res.json(body));

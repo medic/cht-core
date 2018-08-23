@@ -9,5 +9,10 @@ function(doc) {
   } else if (doc.type === 'clinic') {
     // Is a family
     emit(doc._id, 0);
+  } else if (doc.type === 'health_center' ||
+             doc.type === 'district_hospital' ||
+             doc.type === 'person') {
+    // Is other contact type
+    emit(doc._id, -1);
   }
 }
