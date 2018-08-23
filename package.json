@@ -17,7 +17,7 @@
   },
   "husky": {
     "hooks": {
-      "pre-push": "grunt precommit",
+      "pre-push": "grunt static-analysis",
       "pre-commit": "pretty-quick --staged"
     }
   },

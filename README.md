@@ -28,7 +28,6 @@ Before getting started, read about our [development workflow](https://github.com
 
 The setup described below doesn't use [Medic OS](https://github.com/medic/medic-docs/blob/master/development/architecture.md#medic-os), the tools will be run directly on your machine.
 
-
 ### Dependencies
 
 You will need to install the following:
@@ -49,8 +48,9 @@ By default CouchDB runs in "admin party" mode, which means you do not need users
 
 First, add an admin user:
 
- - If you are running CouchDB 2.x there is a wizard in Fauxton that does this for you, as well as initialising some databases. For more information see the [CouchDB install doc](http://docs.couchdb.org/en/2.0.0/install/).
- - If you are running CouchDB 1.x, run the following command to add an admin user:
+- If you are running CouchDB 2.x there is a wizard in Fauxton that does this for you, as well as initialising some databases. For more information see the [CouchDB install doc](http://docs.couchdb.org/en/2.0.0/install/).
+- If you are running CouchDB 1.x, run the following command to add an admin user:
+
 ```shell
 curl -X PUT http://localhost:5984/_config/admins/admin -d '"pass"'
 ```
@@ -101,40 +101,34 @@ cd medic-webapp
 yarn install
 ```
 
-### Add a precommit hook
-
-Add a precommit hook to do static analysis before you commit to pick up issues before the build fails.
-
-```shell
-cp .git/hooks/pre-commit.sample .git/hooks/pre-commit
-```
-
-Then edit `.git/hooks/pre-commit` and add the following at the top just below the comments:
-
-```shell
-exec grunt precommit
-```
-
 ### Deploy all the apps
+
 Create a `.env` file in the app directory with the following contents
+
 ```shell
 COUCH_URL=http://admin:pass@localhost:5984/medic
 COUCH_NODE_NAME=couchdb@localhost
 ```
+
 Then install webapp, admin, api and sentinel dependencies
+
 ```shell
 cd webapp && yarn install && cd ..
 cd admin && yarn install && cd ..
 cd api && yarn install && cd ..
 cd sentinel && yarn install && cd ..
 ```
+
 Then run
+
 ```shell
 yarn start
 ```
+
 which will start the webapp, api, and sentinel, and watch for changes in each app.
 
 ### Deploy apps individually
+
 If `yarn start` is not to your taste for whatever reason, the apps can be deployed individually.
 
 #### Deploy the webapp
@@ -149,6 +143,7 @@ yarn install
 export COUCH_NODE_NAME=couchdb@localhost
 export COUCH_URL=http://admin:pass@localhost:5984/medic
 ```
+
 Then run either `node ./server.js` from the sentinel directory or `grunt dev-sentinel` from the repository directory (which will watch for changes).
 
 #### Start medic-api
@@ -159,6 +154,7 @@ yarn install
 export COUCH_NODE_NAME=couchdb@localhost
 export COUCH_URL=http://admin:pass@localhost:5984/medic
 ```
+
 Then run either `node ./server.js` from the api directory or `grunt dev-api` from the repository directory (which will watch for changes).
 
 ### Try it out
@@ -185,21 +181,26 @@ curl -i -u gateway:123qwe \
 All text labels in the app are localized. See the [translation documentation](https://github.com/medic/medic-docs/blob/master/development/translations.md) for more details on how to add new labels or modify existing ones.
 
 ## Tests
+
 Check out the [Gruntfile](Gruntfile.js) for all the tests you can run.
 
 ### Unit tests
+
 They live in the `tests` directories of each app. Run them with grunt: `grunt unit-continuous`.
 
 ### End to End tests
+
 They live in [tests](tests). To run them:
 
 1. Update and start Webdriver: `yarn run webdriver`
 2. Run tests: `grunt e2e`
 
 ### API integration tests
+
 `grunt api-e2e`
 
 ### Integration tests
+
 [Travis](https://travis-ci.org/medic/medic-webapp) runs `grunt ci` every time some new code is pushed to github.
 
 # Other deployment steps
@@ -211,9 +212,10 @@ They live in [tests](tests). To run them:
 Horti is currently in beta, and will eventually replace the Market, Gardener and Dashboard as our standard way to deploy and manage our software.
 
 To use it locally:
- - Install, [configure](#setup-couchdb-on-a-single-node) and [secure](#enabling-a-secure-couchdb) CouchDB
- - Install [npm](https://npms.io/)
- - Install Horticulturalist with `npm install -g horticulturalist`
+
+- Install, [configure](#setup-couchdb-on-a-single-node) and [secure](#enabling-a-secure-couchdb) CouchDB
+- Install [npm](https://npms.io/)
+- Install Horticulturalist with `npm install -g horticulturalist`
 
 Now use the `horti` tool to bootstrap Medic and launch it:
 
@@ -278,7 +280,7 @@ We require that all researchers:
 If you follow these guidelines when reporting an issue to us, we commit to:
 
 - Not pursue or support any legal action related to your research;
-- Work with you to understand and resolve the issue quickly (including an initial confirmation of your report within 72 hours of submission); 
+- Work with you to understand and resolve the issue quickly (including an initial confirmation of your report within 72 hours of submission);
 - Recognize your contribution on our Security Researcher Hall of Fame, if you are the first to report the issue and we make a code or configuration change based on the issue.
 
 ### Scope
@@ -324,7 +326,7 @@ Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
 You may obtain a copy of the License at
 
-   http://www.apache.org/licenses/LICENSE-2.0
+http://www.apache.org/licenses/LICENSE-2.0
 
 Unless required by applicable law or agreed to in writing, software
 distributed under the License is distributed on an "AS IS" BASIS,
