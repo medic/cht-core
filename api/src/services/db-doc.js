@@ -88,6 +88,7 @@ module.exports = {
       });
   },
 
+  // db-doc GET requests with `open_revs` return a list of requested revisions of the requested doc id
   filterOfflineOpenRevsRequest: (userCtx, params, query) => {
     return Promise
       .all([
