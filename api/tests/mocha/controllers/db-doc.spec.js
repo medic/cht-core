@@ -212,7 +212,7 @@ describe('db-doc controller', () => {
         .requestDdoc('medic', testReq, testRes, next)
         .then(() => {
           next.callCount.should.equal(1);
-          next.args[0].should.deep.equal([undefind]);
+          next.args[0].should.deep.equal([]);
           service.filterOfflineRequest.callCount.should.equal(0);
         });
     });

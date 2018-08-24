@@ -81,7 +81,7 @@ module.exports = {
   },
 
   requestDdoc: (appDdoc, req, res, next) => {
-    // offline users are allowed to access app, which are authorized by another route
+    // offline users are allowed to access app _rewrites, which are authorized by another route
     if (req.params.ddocId === appDdoc) {
       return next('route');
     }
