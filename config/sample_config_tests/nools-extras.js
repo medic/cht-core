@@ -1,0 +1,3 @@
+function isHealthyDelivery() {
+  return true;
+}
