@@ -206,6 +206,17 @@ describe('db-doc controller', () => {
         });
     });
 
+    it('forwards medic-admin requests to the next middleware', () => {
+      testReq.params = { ddocId: 'medic-admin' };
+      return controller
+        .requestDdoc('medic', testReq, testRes, next)
+        .then(() => {
+          next.callCount.should.equal(1);
+          next.args[0].should.deep.equal([undefind]);
+          service.filterOfflineRequest.callCount.should.equal(0);
+        });
+    });
+
     it('constructs correct docId when ddoc is not appddoc and continues request when allowed', () => {
       service.filterOfflineRequest.resolves(true);
       return controller

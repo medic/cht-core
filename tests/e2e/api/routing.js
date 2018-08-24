@@ -497,6 +497,20 @@ describe('routing', () => {
         });
     });
 
+    it('allows access to the admin app', () => {
+      return Promise
+        .all([
+          utils.requestOnTestDb(_.defaults({ path: '/_design/medic-admin/_rewrite' }, offlineRequestOptions), false, true),
+          utils.requestOnTestDb(_.defaults({ path: '/_design/medic-admin/_rewrite/' }, offlineRequestOptions), false, true),
+          utils.requestOnTestDb(_.defaults({ path: '/_design/medic-admin/main.css' }, offlineRequestOptions), false, true)
+        ])
+        .then(results => {
+          expect(results[0].includes('administration console')).toBe(true);
+          expect(results[1].includes('administration console')).toBe(true);
+          expect(results[2].includes('html')).toBe(true);
+        });
+    });
+
     it('blocks direct access to CouchDB and to fauxton', () => {
       return Promise
         .all([
