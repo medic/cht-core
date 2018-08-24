@@ -15,8 +15,7 @@ The tests needs to create a contact, report, scheduled_task, or a combination of
 
 The tasks are returned in an array. The task object has the details about the original contact, report, etc… This all can be asserted on using chai’s assertion. 
 
-Note: Tests should be written in a TDD format. Write a test first and see it fail. Write a task that makes the test pass.  
-Running against legacy rules structure:
+_Note: Tests should be written in a TDD format. Write a test first and see it fail. Write a task that makes the test pass._  
 
 ## Legacy Rules Testing:
 
@@ -24,7 +23,7 @@ The compile-nools-rules in medic-conf project will look for the nools.rules.js a
 
 EX: Pass the location of the tasks.json file into the nootilsmanager and it will load the old style rules. 
 
- nootilsManager = NootilsManager(__dirname + "/../tasks.json", {});
+``` nootilsManager = NootilsManager(__dirname + "/../tasks.json", {});```
 
 ## Debugging Rules:
 
