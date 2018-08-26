@@ -378,7 +378,8 @@ app.get(
   ddocPath,
   authorization.checkAuth,
   onlineUserProxy,
-  _.partial(dbDocHandler.requestDdoc, db.settings.ddoc)
+  _.partial(dbDocHandler.requestDdoc, db.settings.ddoc),
+  authorization.setAuthorized // adds the `authorized` flag to the `req` object, so it passes the firewall
 );
 
 app.get(

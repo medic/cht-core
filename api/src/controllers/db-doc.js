@@ -94,6 +94,11 @@ module.exports = {
       return next('route');
     }
 
+    // offline users are allowed to access the admin app
+    if (req.params.ddocId === 'medic-admin') {
+      return next();
+    }
+
     req.params.docId = `_design/${req.params.ddocId}`;
     return module.exports.request(req, res, next);
   }
