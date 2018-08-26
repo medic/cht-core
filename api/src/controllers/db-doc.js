@@ -37,6 +37,8 @@ const isValidAttachmentRequest = (params, query) => {
   return true;
 };
 
+const isOpenRevsRequest = (method, query) => method === 'GET' && query && !!query.open_revs;
+
 const permissionsError = res => {
   res.status(403);
   res.json({ error: 'forbidden', reason: 'Insufficient privileges' });
@@ -57,8 +59,14 @@ module.exports = {
       return permissionsError(res);
     }
 
-    return dbDoc
-      .filterOfflineRequest(req.userCtx, req.params, req.method, req.query, req.body)
+    let promise;
+    if (isOpenRevsRequest(req.method, req.query)) {
+      promise = dbDoc.filterOfflineOpenRevsRequest(req.userCtx, req.params, req.query);
+    } else {
+      promise = dbDoc.filterOfflineRequest(req.userCtx, req.params, req.method, req.query, req.body);
+    }
+
+    return promise
       .then(result => {
         if (!result) {
           // if this is an attachment request without `rev` parameter that is not valid,

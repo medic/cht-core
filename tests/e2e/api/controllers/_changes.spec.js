@@ -665,25 +665,32 @@ describe('changes handler', () => {
             .then(([ user, medicUser ]) => {
               return Promise.all([
                 requestChanges('steve', { feed: 'longpoll', since: currentSeq }),
-                utils
-                  .request({
-                    path: `/_users/org.couchdb.user:steve?rev=${user._rev}`,
-                    method: 'PUT',
-                    json: true,
-                    body: _.extend(user, { facility_id: 'fixture:bobville' })
-                  })
-                  .then(() => Promise.all([
-                    utils.saveDoc(_.extend(medicUser, { facility_id: 'fixture:somethingville', roles: ['_admin'] })),
-                    utils.saveDocs(allowedBob),
-                    utils.saveDocs(allowedSteve),
-                  ]))
+                new Promise(resolve => {
+                  setTimeout(() => {
+                    utils
+                      .request({
+                        path: `/_users/org.couchdb.user:steve?rev=${user._rev}`,
+                        method: 'PUT',
+                        json: true,
+                        body: _.extend(user, { facility_id: 'fixture:bobville' })
+                      })
+                      .then(() => Promise.all([
+                        utils.saveDoc(_.extend(medicUser, { facility_id: 'fixture:somethingville', roles: ['_admin'] })),
+                        utils.saveDocs(allowedBob),
+                        utils.saveDocs(allowedSteve),
+                      ]))
+                      .then(resolve);
+                  });
+                }, 1000)
               ]);
             })
             .then(([ changes ]) => {
-              expect(changes.results.every(change => bobsIds.indexOf(change.id) !== -1 ||
-                                                     change.id === 'org.couchdb.user:steve' ||
-                                                     change.id === 'settings')
-              ).toBe(true);
+              if (changes.results.find(change => change.id === 'org.couchdb.user:steve')) {
+                expect(changes.results.every(change => bobsIds.indexOf(change.id) !== -1 ||
+                                                       change.id === 'org.couchdb.user:steve' ||
+                                                       change.id === 'settings')
+                ).toBe(true);
+              }
             })
             .then(() => utils.request({ path: '/_users/org.couchdb.user:steve' }))
             .then(user => utils.request({
