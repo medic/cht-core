@@ -1,9 +1,9 @@
 const assert = require('chai').assert,
-      net = require('net'),
-      constants = require('../constants'),
-      host = constants.API_HOST,
-      port = constants.API_PORT,
-      dbName = constants.DB_NAME;
+  net = require('net'),
+  constants = require('../constants'),
+  host = constants.API_HOST,
+  port = constants.API_PORT,
+  dbName = constants.DB_NAME;
 const utils = require('../utils');
 const db = utils.db;
 
@@ -20,66 +20,62 @@ const db = utils.db;
  *   - can submit form responses
  */
 describe('medic-collect', () => {
-
   beforeAll(() =>
     Promise.all([
-        saveFormToDb({
-            type: 'form',
-            _id: 'form:my_app_form',
-            internalId: 'MY-APP-FORM',
-          }),
-        saveFormToDb({
-            type: 'form',
-            _id: 'form:my_collect_form',
-            internalId: 'MY-COLLECT-FORM',
-            context: { collect:true },
-          }),
+      saveFormToDb({
+        type: 'form',
+        _id: 'form:my_app_form',
+        internalId: 'MY-APP-FORM',
+      }),
+      saveFormToDb({
+        type: 'form',
+        _id: 'form:my_collect_form',
+        internalId: 'MY-COLLECT-FORM',
+        context: { collect: true },
+      }),
     ]));
 
-/*  afterAll(() =>
+  /*  afterAll(() =>
     Promise.all([ 'form:my_app_form', 'form:my_collect_form' ].map(id =>
       db.get(id)
         .then((doc) => db.remove(doc)))));*/
 
-
   describe('without User-Agent header', () => {
-
     it('is prompted for auth details if not supplied', () => {
-
       // when
       return rawHttpRequest(
-
-`HEAD /${dbName}/_design/medic/_rewrite/add?deviceID=imei%3A357578064823168 HTTP/1.1\r
+        `HEAD /${dbName}/_design/medic/_rewrite/add?deviceID=imei%3A357578064823168 HTTP/1.1\r
 X-OpenRosa-Version: 1.0\r
 Date: ${new Date().toISOString()}\r
 Host: ${host}:${port}\r
 Connection: close\r
-\r\n`).then((res) => {
-
+\r\n`
+      ).then(res => {
         // then
         assert.equal(res.statusCode, 401, JSON.stringify(res));
-        assert.equal(res.headers['WWW-Authenticate'], 'Basic realm="Medic Mobile Web Services"', JSON.stringify(res));
-
+        assert.equal(
+          res.headers['WWW-Authenticate'],
+          'Basic realm="Medic Mobile Web Services"',
+          JSON.stringify(res)
+        );
       });
-
     });
 
     it('can fetch a list of forms', () => {
-
       // when
       return rawHttpRequest(
-
-`GET /api/v1/forms HTTP/1.1\r
+        `GET /api/v1/forms HTTP/1.1\r
 X-OpenRosa-Version: 1.0\r
 Date: ${new Date().toISOString()}\r
 Host: ${host}:${port}\r
 Connection: close\r
-\r\n`).then((res) => {
-
+\r\n`
+      ).then(res => {
         // then
         assert.equal(res.statusCode, 200, JSON.stringify(res));
-        assert.equal(res.body,
-`108\r
+        assert.equal(
+          res.body,
+          `108\r
 <?xml version=\"1.0\" encoding=\"UTF-8\"?>
 <xforms xmlns=\"http://openrosa.org/xforms/xformsList\">
   <xform>
@@ -88,54 +84,50 @@ Connection: close\r
   </xform>
 </xforms>\r
 0\r\n\r\n`,
-            JSON.stringify(res));
-
+          JSON.stringify(res)
+        );
       });
-
     });
-
   });
 
   describe('with User-Agent header', () => {
-
     it('is prompted for auth details if not supplied', () => {
-
       // when
       return rawHttpRequest(
-
-`HEAD /${dbName}/_design/medic/_rewrite/add?deviceID=imei%3A357578064823168 HTTP/1.1\r
+        `HEAD /${dbName}/_design/medic/_rewrite/add?deviceID=imei%3A357578064823168 HTTP/1.1\r
 X-OpenRosa-Version: 1.0\r
 Date: ${new Date().toISOString()}\r
 Host: ${host}:${port}\r
 User-Agent: Dalvik/1.6.0 (Linux; U; Android 4.4.2; TECNO-Y4 Build/KOT49H) org.medicmobile.collect.android/SNAPSHOT\r
 Connection: close\r
-\r\n`).then((res) => {
-
+\r\n`
+      ).then(res => {
         // then
         assert.equal(res.statusCode, 401, JSON.stringify(res));
-        assert.equal(res.headers['WWW-Authenticate'], 'Basic realm="Medic Mobile Web Services"', JSON.stringify(res));
-
+        assert.equal(
+          res.headers['WWW-Authenticate'],
+          'Basic realm="Medic Mobile Web Services"',
+          JSON.stringify(res)
+        );
       });
-
     });
 
     it('can fetch a list of forms', () => {
-
       // when
       return rawHttpRequest(
-
-`GET /api/v1/forms HTTP/1.1\r
+        `GET /api/v1/forms HTTP/1.1\r
 X-OpenRosa-Version: 1.0\r
 Date: ${new Date().toISOString()}\r
 Host: ${host}:${port}\r
 User-Agent: Dalvik/1.6.0 (Linux; U; Android 4.4.2; TECNO-Y4 Build/KOT49H) org.medicmobile.collect.android/SNAPSHOT\r
 Connection: close\r
-\r\n`).then((res) => {
-
+\r\n`
+      ).then(res => {
         // then
         assert.equal(res.statusCode, 200, JSON.stringify(res));
-        assert.equal(res.body,
-`108\r
+        assert.equal(
+          res.body,
+          `108\r
 <?xml version=\"1.0\" encoding=\"UTF-8\"?>
 <xforms xmlns=\"http://openrosa.org/xforms/xformsList\">
   <xform>
@@ -144,45 +136,53 @@ Connection: close\r
   </xform>
 </xforms>\r
 0\r\n\r\n`,
-            JSON.stringify(res));
-
+          JSON.stringify(res)
+        );
       });
-
     });
-
   });
-
 });
 
-function rawHttpRequest(rawRequest) {
+const rawHttpRequest = rawRequest => {
   return new Promise((resolve, reject) => {
-
-    const api = net.connect(port, host);
+    const api = net.connect(
+      port,
+      host
+    );
     let rawResponse = '';
 
     api.on('connect', () => api.write(rawRequest));
-    api.on('data', (data) => rawResponse += data.toString());
+    api.on('data', data => (rawResponse += data.toString()));
     api.on('error', reject);
 
     api.on('close', () => {
-      const response = { headers:{} };
-      let line, lines = rawResponse.split('\r\n');
+      const response = { headers: {} };
+      let line,
+        lines = rawResponse.split('\r\n');
 
       response.statusCode = parseInt(lines.shift().split(' ')[1]);
-      while((line = lines.shift())) {
+      while ((line = lines.shift())) {
         const colon = line.indexOf(':');
-        response.headers[line.substring(0, colon)] =
-            line.substring(colon+1).trim();
+        response.headers[line.substring(0, colon)] = line
+          .substring(colon + 1)
+          .trim();
       }
       response.body = lines.join('\r\n');
 
       resolve(response);
     });
   });
-}
+};
 
-const saveFormToDb = doc =>
-    Promise.resolve()
-      .then(() => db.put(doc))
-      .then(res => db.putAttachment(doc._id, 'xml', res.rev, new Buffer('<xform/>').toString('base64'), { type: 'text/xml', length:8 }))
-      ;
+const saveFormToDb = doc => {
+  return Promise.resolve()
+    .then(() => db.put(doc))
+    .then(res => {
+      const xml = '<xform/>';
+      const body = new Buffer(xml).toString('base64');
+      return db.putAttachment(doc._id, 'xml', res.rev, body, {
+        type: 'text/xml',
+        length: xml.length,
+      });
+    });
+};

@@ -1,110 +1,82 @@
-const controller = require('../../../src/controllers/forms'),
-      chai = require('chai'),
-      db = require('../../../src/db-nano'),
-      sinon = require('sinon');
+const chai = require('chai'),
+  sinon = require('sinon'),
+  db = require('../../../src/db-pouch'),
+  controller = require('../../../src/controllers/forms'),
+  serverUtils = require('../../../src/server-utils');
 
 const mockFormsInDb = (...docs) => {
-  sinon.stub(db.medic, 'view')
-      .callsArgWith(3, null, { rows: docs.map(doc => ({ doc:doc })) });
+  sinon.stub(db.medic, 'query').resolves({
+    rows: docs.map(doc => ({ doc: doc })),
+  });
+};
+
+const res = {
+  writeHead: () => {},
+  end: () => {},
 };
 
 describe('forms controller', () => {
-
   afterEach(() => {
     sinon.restore();
   });
 
-  it('getForm returns error from view query', done => {
-    const req = sinon.stub(db.medic, 'view').callsArgWith(3, 'icky');
-    controller.getForm('', '', err => {
-      chai.expect(err).to.equal('icky');
-      chai.expect(req.callCount).to.equal(1);
-      done();
+  describe('get', () => {
+    it('returns error from view query', done => {
+      const req = { params: { form: 'a.xml' } };
+      const query = sinon
+        .stub(db.medic, 'query')
+        .returns(Promise.reject('icky'));
+      const error = sinon.stub(serverUtils, 'error');
+      controller.get(req, res).then(() => {
+        chai.expect(error.args[0][0]).to.equal('icky');
+        chai.expect(query.callCount).to.equal(1);
+        done();
+      });
+    });
+
+    it('returns body and headers from attachment query', () => {
+      const req = { params: { form: 'a.xml' } };
+      sinon.stub(db.medic, 'query').resolves({
+        rows: [
+          {
+            doc: {
+              _attachments: {
+                xml: {
+                  content_type: 'xml',
+                  data: 'foo',
+                },
+              },
+            },
+          },
+        ],
+      });
+      const end = sinon.stub(res, 'end');
+      const writeHead = sinon.stub(res, 'writeHead');
+
+      return controller.get(req, res).then(() => {
+        chai.expect(writeHead.args[0][0]).to.equal(200);
+        chai
+          .expect(writeHead.args[0][1])
+          .to.deep.equal({ 'Content-Type': 'xml' });
+        chai.expect(end.args[0][0]).to.equal('foo');
+      });
     });
   });
 
-  it('getForm returns form not found message on empty view query', done => {
-    const req = sinon.stub(db.medic, 'view').callsArgWith(3, null, {rows: []});
-    controller.getForm('', '', err => {
-      chai.expect(err.message).to.equal('Form not found:  ()');
-      chai.expect(req.callCount).to.equal(1);
-      done();
+  describe('list', () => {
+    it('returns error from view query', done => {
+      const req = {};
+      const get = sinon.stub(db.medic, 'query').returns(Promise.reject('icky'));
+      const error = sinon.stub(serverUtils, 'error');
+      controller.list(req, res).then(() => {
+        chai.expect(error.args[0][0]).to.equal('icky');
+        chai.expect(get.callCount).to.equal(1);
+        done();
+      });
     });
-  });
 
-  it('getForm returns error from attachment query', done => {
-    const req1 = sinon.stub(db.medic, 'view').callsArgWith(3, null, {rows: [1]});
-    const req2 = sinon.stub(db.medic.attachment, 'get').callsArgWith(2, 'boop');
-    controller.getForm('', '', err => {
-      chai.expect(err).to.equal('boop');
-      chai.expect(req1.callCount).to.equal(1);
-      chai.expect(req2.callCount).to.equal(1);
-      done();
-    });
-  });
-
-  it('getForm returns body and headers from attachment query', done => {
-    sinon.stub(db.medic, 'view').callsArgWith(3, null, {rows: [1]});
-    sinon.stub(db.medic.attachment, 'get').callsArgWith(2, null, 'foo', {
-      'content-type': 'xml'
-    });
-    controller.getForm('', '', (err, body, headers) => {
-      chai.expect(body).to.equal('foo');
-      chai.expect(headers).to.deep.equal({'content-type': 'xml'});
-      done();
-    });
-  });
-
-  it('getForm sanitizes bad headers from attachment query', done => {
-    sinon.stub(db.medic, 'view').callsArgWith(3, null, {rows: [1]});
-    sinon.stub(db.medic.attachment, 'get').callsArgWith(2, null, 'foo', {
-      'content-type': 'xml',
-      'uri' : 'http://admin:passwordSUP3RS3CR37!@localhost',
-      'statusCode' : 'junk'
-    });
-    const spy = sinon.spy(db, 'sanitizeResponse');
-    controller.getForm('', '', (err, body, headers) => {
-      chai.expect(body).to.equal('foo');
-      chai.expect(headers).to.deep.equal({'content-type': 'xml'});
-      chai.expect(spy.called).to.equal(true);
-      done();
-    });
-  });
-
-  it('listForms returns error from view query', done => {
-    const req = sinon.stub(db.medic, 'view').callsArgWith(3, 'icky');
-    controller.listForms({}, err => {
-      chai.expect(err).to.equal('icky');
-      chai.expect(req.callCount).to.equal(1);
-      done();
-    });
-  });
-
-  it('listForms sanitizes response', done => {
-    sinon.stub(db.medic, 'view').callsArgWith(3, null, {
-      rows: [1]
-    });
-    const spy = sinon.spy(db, 'sanitizeResponse');
-    controller.listForms({}, err => {
-      chai.expect(spy.callCount).to.equal(1);
-      done(err);
-    });
-  });
-
-  it('listForms sanitizes openrosa response', done => {
-    sinon.stub(db.medic, 'view').callsArgWith(3, null, {
-      rows: [1]
-    });
-    const spy = sinon.spy(db, 'sanitizeResponse');
-    controller.listForms({'x-openrosa-version': '1.0'}, err => {
-      chai.expect(spy.callCount).to.equal(1);
-      done(err);
-    });
-  });
-
-  it('listForms returns all forms', done => {
-
-    mockFormsInDb(
+    it('returns all forms', () => {
+      mockFormsInDb(
         {
           _id: 'form:stock',
           _attachments: {
@@ -113,9 +85,9 @@ describe('forms controller', () => {
               revpos: 2,
               digest: 'md5-++6M50YX9KqBr0tD9ayNXg==',
               length: 23663,
-              stub: true
-            }
-          }
+              stub: true,
+            },
+          },
         },
         {
           _id: 'form:visit',
@@ -125,20 +97,27 @@ describe('forms controller', () => {
               revpos: 5,
               digest: 'md5-oaCI+4Gupwh75qmFBikRCg==',
               length: 23800,
-              stub: true
-            }
-          }
-        });
+              stub: true,
+            },
+          },
+        }
+      );
+      const req = { headers: {} };
+      const end = sinon.stub(res, 'end');
+      const writeHead = sinon.stub(res, 'writeHead');
 
-    controller.listForms({}, (err, body) => {
-      const forms = JSON.parse(body);
-      chai.expect(forms).to.deep.equal([ 'stock.xml', 'visit.xml' ]);
-      done(err);
+      return controller.list(req, res).then(() => {
+        chai.expect(writeHead.args[0][0]).to.equal(200);
+        chai
+          .expect(writeHead.args[0][1])
+          .to.deep.equal({ 'Content-Type': 'application/json; charset=utf-8' });
+        const forms = JSON.parse(end.args[0][0]);
+        chai.expect(forms).to.deep.equal(['stock.xml', 'visit.xml']);
+      });
     });
-  });
 
-  it('listForms ignores non xml attachments', done => {
-    mockFormsInDb({
+    it('ignores non xml attachments', () => {
+      mockFormsInDb({
         _id: 'form:stock',
         _attachments: {
           xml: {
@@ -146,24 +125,25 @@ describe('forms controller', () => {
             revpos: 2,
             digest: 'md5-++6M50YX9KqBr0tD9ayNXg==',
             length: 23663,
-            stub: true
+            stub: true,
           },
           'someimg.png': {
             content_type: 'application/octet-stream',
             revpos: 2,
             digest: 'md5-++6M50YX9KqBr0tD9ayNXg==',
             length: 23663,
-            stub: true
-          }
-        }
+            stub: true,
+          },
+        },
       });
+      const req = { headers: {} };
+      const end = sinon.stub(res, 'end');
+      sinon.stub(res, 'writeHead');
 
-    controller.listForms({}, (err, body) => {
-      const forms = JSON.parse(body);
-      chai.expect(forms.length).to.equal(1);
-      chai.expect(forms[0]).to.equal('stock.xml');
-      done(err);
+      return controller.list(req, res).then(() => {
+        const forms = JSON.parse(end.args[0][0]);
+        chai.expect(forms).to.deep.equal(['stock.xml']);
+      });
     });
   });
-
 });
