@@ -5,23 +5,10 @@
  *************************************************/
 
 var path = require('path'),
-    url = require('url'),
-    nano = require('nano');
+  url = require('url'),
+  nano = require('nano');
 
 const { COUCH_URL, UNIT_TEST_ENV } = process.env;
-
-var sanitizeResponse = function(err, body, headers, callback) {
-  // Remove the `uri` and `statusCode` headers passed in from nano.  This
-  // could potentially leak auth information to the client.  See
-  // https://github.com/dscape/nano/issues/311
-  var denyHeaders = ['uri', 'statuscode'];
-  for (var k in headers) {
-    if (denyHeaders.indexOf(k.toLowerCase()) >= 0) {
-        delete headers[k];
-    }
-  }
-  callback(err, body, headers);
-};
 
 if (UNIT_TEST_ENV) {
   // Running tests only
@@ -34,9 +21,8 @@ if (UNIT_TEST_ENV) {
       port: '123',
       host: 'local',
       db: 'medic',
-      ddoc: 'medic'
+      ddoc: 'medic',
     },
-    sanitizeResponse: sanitizeResponse,
     use: function() {},
     medic: {
       view: function() {},
@@ -48,30 +34,30 @@ if (UNIT_TEST_ENV) {
       bulk: function() {},
       changes: function() {},
       attachment: {
-        get: function() {}
-      }
+        get: function() {},
+      },
     },
     audit: {
       view: function() {},
-      list: function() {}
+      list: function() {},
     },
     db: {
       get: function() {},
       create: function() {},
-      replicate:  function() {}
+      replicate: function() {},
     },
     _users: {
       get: function() {},
       list: function() {},
-      insert: function() {}
-    }
+      insert: function() {},
+    },
   };
 } else if (COUCH_URL) {
   // strip trailing slash from to prevent bugs in path matching
   const couchUrl = COUCH_URL.replace(/\/$/, '');
   var baseUrl = couchUrl.substring(0, couchUrl.indexOf('/', 10));
   var parsedUrl = url.parse(couchUrl);
-  var dbName = parsedUrl.path.replace('/','');
+  var dbName = parsedUrl.path.replace('/', '');
   var auditDbName = dbName + '-audit';
   var db = nano(baseUrl);
 
@@ -86,7 +72,7 @@ if (UNIT_TEST_ENV) {
     host: parsedUrl.hostname,
     db: dbName,
     auditDb: auditDbName,
-    ddoc: 'medic'
+    ddoc: 'medic',
   };
 
   if (parsedUrl.auth) {
@@ -96,8 +82,12 @@ if (UNIT_TEST_ENV) {
   }
 
   module.exports.getPath = function() {
-    return path.join(module.exports.settings.db, '_design',
-                     module.exports.settings.ddoc, '_rewrite');
+    return path.join(
+      module.exports.settings.db,
+      '_design',
+      module.exports.settings.ddoc,
+      '_rewrite'
+    );
   };
   module.exports.getCouchDbVersion = function(cb) {
     db.request({}, function(err, body) {
@@ -109,16 +99,14 @@ if (UNIT_TEST_ENV) {
       cb(null, {
         major: semvers[1],
         minor: semvers[2],
-        patch: semvers[3]
+        patch: semvers[3],
       });
     });
   };
-
-  module.exports.sanitizeResponse = sanitizeResponse;
 } else {
   console.log(
     'Please define a COUCH_URL in your environment e.g. \n' +
-    'export COUCH_URL=\'http://admin:123qwe@localhost:5984/medic\'\n\n' +
-    'If you are running unit tests use UNIT_TEST_ENV=1 in your environment.\n'
+      "export COUCH_URL='http://admin:123qwe@localhost:5984/medic'\n\n" +
+      'If you are running unit tests use UNIT_TEST_ENV=1 in your environment.\n'
   );
 }
