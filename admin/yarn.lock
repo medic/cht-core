@@ -61,9 +61,9 @@ font-awesome@^4.7.0:
   version "4.7.0"
   resolved "https://registry.yarnpkg.com/font-awesome/-/font-awesome-4.7.0.tgz#8fa8cf0411a1a31afd07b06d2902bb9fc815a133"
 
-google-libphonenumber@^3.1.8:
-  version "3.1.8"
-  resolved "https://registry.yarnpkg.com/google-libphonenumber/-/google-libphonenumber-3.1.8.tgz#076ecc21e2113371b9d67f6b7dd9ac66db9722cc"
+google-libphonenumber@^3.1.11:
+  version "3.1.11"
+  resolved "https://registry.yarnpkg.com/google-libphonenumber/-/google-libphonenumber-3.1.11.tgz#894eafe874fbd456e794e322501b832871b7c568"
 
 immediate@3.0.6:
   version "3.0.6"
@@ -110,7 +110,7 @@ moment@^2.22.2:
 "phone-number@file:../shared-libs/phone-number":
   version "1.0.0"
   dependencies:
-    google-libphonenumber "^3.1.8"
+    google-libphonenumber "^3.1.11"
 
 pouchdb-browser@^6.0.7, pouchdb-browser@^7.0.0:
   version "7.0.0"

@@ -17,7 +17,7 @@
     "angular-ui-router": "^0.4.3",
     "bootstrap": "^3.3.7",
     "font-awesome": "^4.7.0",
-    "google-libphonenumber": "^3.1.8",
+    "google-libphonenumber": "^3.1.11",
     "jquery": "3.2.x",
     "messageformat": "^2.0.2",
     "moment": "^2.22.2",

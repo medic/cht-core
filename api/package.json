@@ -26,7 +26,7 @@
     "couchdb-audit": "^1.1.1",
     "express": "^4.16.3",
     "fast-csv": "^2.4.1",
-    "google-libphonenumber": "^3.1.8",
+    "google-libphonenumber": "^3.1.11",
     "helmet": "^3.12.1",
     "http-proxy": "^1.17.0",
     "lineage": "file:../shared-libs/lineage",

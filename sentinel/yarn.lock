@@ -214,9 +214,9 @@ getpass@^0.1.1:
   dependencies:
     assert-plus "^1.0.0"
 
-google-libphonenumber@^3.1.8:
-  version "3.1.8"
-  resolved "https://registry.yarnpkg.com/google-libphonenumber/-/google-libphonenumber-3.1.8.tgz#076ecc21e2113371b9d67f6b7dd9ac66db9722cc"
+google-libphonenumber@^3.1.11:
+  version "3.1.11"
+  resolved "https://registry.yarnpkg.com/google-libphonenumber/-/google-libphonenumber-3.1.11.tgz#894eafe874fbd456e794e322501b832871b7c568"
 
 gsm@^0.1.4:
   version "0.1.4"
@@ -361,7 +361,7 @@ performance-now@^2.1.0:
 "phone-number@file:../shared-libs/phone-number":
   version "1.0.0"
   dependencies:
-    google-libphonenumber "^3.1.8"
+    google-libphonenumber "^3.1.11"
 
 pouchdb-abstract-mapreduce@7.0.0:
   version "7.0.0"
