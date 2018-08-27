@@ -12,11 +12,7 @@ const JSON_RESPONSE_HEADERS = {
 };
 
 // removes "form:" prefix on form docs
-const removePrefix = str =>
-  str
-    .split(':')
-    .slice(1)
-    .join(':');
+const removePrefix = str => str.replace(/^form:/, '');
 
 const isXMLForm = doc => doc && doc._attachments && doc._attachments.xml;
 
@@ -69,6 +65,24 @@ const listFormsJSON = data => {
   return JSON.stringify(forms);
 };
 
+const getFormAttachment = (form, format) => {
+  const opts = {
+    key: form,
+    limit: 1,
+    include_docs: true,
+    attachments: true,
+    binary: true,
+  };
+  return db.medic.query('medic-client/forms', opts).then(data => {
+    return (
+      data.rows.length &&
+      data.rows[0].doc &&
+      data.rows[0].doc._attachments &&
+      data.rows[0].doc._attachments[format]
+    );
+  });
+};
+
 module.exports = {
   list: (req, res) => {
     return db.medic
@@ -91,19 +105,14 @@ module.exports = {
       form = parts.slice(0, -1).join('.'),
       format = parts.slice(-1)[0];
     if (!form || !format) {
-      return serverUtils.error(
-        {
-          code: 400,
-          message: `Invalid form parameter (form="${form}", format="${format}")`,
-        },
-        req,
-        res
-      );
+      const error = {
+        code: 400,
+        message: `Invalid form parameter (form="${form}", format="${format}")`,
+      };
+      return serverUtils.error(error, req, res);
     }
-    return db.medic
-      .get(`form:${form}`, { attachments: true, binary: true })
-      .then(doc => {
-        const attachment = doc._attachments && doc._attachments[format];
+    return getFormAttachment(form, format)
+      .then(attachment => {
         if (!attachment) {
           return Promise.reject({
             code: 404,
