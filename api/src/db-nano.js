@@ -105,8 +105,7 @@ if (UNIT_TEST_ENV) {
   };
 } else {
   console.log(
-    'Please define a COUCH_URL in your environment e.g. \n' +
-      "export COUCH_URL='http://admin:123qwe@localhost:5984/medic'\n\n" +
+    'Please define a COUCH_URL in your environment\n' +
       'If you are running unit tests use UNIT_TEST_ENV=1 in your environment.\n'
   );
 }
