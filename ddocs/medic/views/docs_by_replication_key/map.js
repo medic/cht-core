@@ -3,6 +3,7 @@ function (doc) {
       doc._id === 'appcache' ||
       doc._id === 'zscore-charts' ||
       doc._id === 'settings' ||
+      doc._id === 'medic-deploy-info' ||
       doc.type === 'form' ||
       doc.type === 'translations') {
     return emit('_all', {});

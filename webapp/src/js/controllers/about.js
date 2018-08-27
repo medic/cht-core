@@ -30,6 +30,24 @@ angular.module('inboxControllers').controller('AboutCtrl',
         $log.error('Couldnt access _design/medic-client for about section', err);
       });
 
+    DB()
+      .get('medic-deploy-info')
+      .then(function(doc) {
+        var getDeployVersion = function(deployInfo) {
+          if (!deployInfo || !deployInfo.version) {
+            return false;
+          }
+
+          if (deployInfo.version === deployInfo.base_version || !deployInfo.base_version) {
+            return deployInfo.version;
+          } else {
+            return deployInfo.version + ' (~' + deployInfo.base_version + ')';
+          }
+        };
+
+        $scope.version = getDeployVersion(doc.deploy_info) || $scope.version;
+      });
+
     $scope.reload = function() {
       window.location.reload(false);
     };

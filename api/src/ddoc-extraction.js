@@ -3,7 +3,8 @@ const _ = require('underscore'),
       DDOC_ATTACHMENT_ID = 'ddocs/compiled.json',
       APPCACHE_ATTACHMENT_NAME = 'manifest.appcache',
       APPCACHE_DOC_ID = 'appcache',
-      SERVER_DDOC_ID = '_design/medic';
+      SERVER_DDOC_ID = '_design/medic',
+      DEPLOY_INFO_DOC_ID = 'medic-deploy-info';
 
 const getCompiledDdocs = () => {
   return db.medic.getAttachment(SERVER_DDOC_ID, DDOC_ATTACHMENT_ID)
@@ -101,10 +102,28 @@ const findUpdatedAppcache = ddoc => {
     });
 };
 
+const findUpdatedDeployInfo = deploy_info => {
+  return db.medic.get(DEPLOY_INFO_DOC_ID)
+    .then(doc => {
+
+      if (!_.isEqual(doc.deploy_info, deploy_info)) {
+        doc.deploy_info = deploy_info;
+        return doc;
+      }
+    })
+    .catch(err => {
+      if (err.status === 404) {
+        return { _id: DEPLOY_INFO_DOC_ID, deploy_info };
+      }
+      throw err;
+    });
+};
+
 const findUpdated = ddoc => {
   return Promise.all([
     findUpdatedDdocs(),
-    findUpdatedAppcache(ddoc)
+    findUpdatedAppcache(ddoc),
+    findUpdatedDeployInfo(ddoc.deploy_info)
   ]).then(results => _.compact(_.flatten(results)));
 };
 
