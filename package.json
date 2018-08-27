@@ -64,7 +64,6 @@
     "moment": "^2.22.2",
     "node-sass": "^4.9.3",
     "nodemon": "^1.18.3",
-    "partial-json-parser": "^1.0.3",
     "pouchdb-adapter-http": "^7.0.0",
     "pouchdb-core": "^7.0.0",
     "pouchdb-mapreduce": "^7.0.0",

@@ -42,7 +42,7 @@
     "mustache": "^2.3.2",
     "object-path": "^0.11.4",
     "openrosa-xpath-evaluator": "^1.5.0",
-    "partial-json-parser": "^1.0.3",
+    "partial-json-parser": "1.0.2",
     "phone-number": "file:../shared-libs/phone-number",
     "pojo2xml": "^1.7.1",
     "pouchdb-browser": "^7.0.0",
