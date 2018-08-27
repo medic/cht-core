@@ -1,15 +1,53 @@
 # Medic Mobile Release Notes
 
+## 3.1.0
+
+_August 27, 2018_
+
+### Features
+
+- [#4597](https://github.com/medic/medic-webapp/issues/4597): Allow registration with age in months or years
+
+### Improvements
+
+- [#4127](https://github.com/medic/medic-webapp/issues/4127): Provide a configurable way to override libphonenumber validation
+- [#4715](https://github.com/medic/medic-webapp/issues/4715): Add SMS loop detection to sentinel
+
+### Performance fixes
+
+- [#4684](https://github.com/medic/medic-webapp/issues/4684): Make debugging harder to leave on
+
+### Bug fixes
+
+- [#2733](https://github.com/medic/medic-webapp/issues/2733): Any user can read any other's user-doc
+- [#2734](https://github.com/medic/medic-webapp/issues/2734): Changes feed filtering can be avoided
+- [#3379](https://github.com/medic/medic-webapp/issues/3379): Security issue 1809
+- [#4444](https://github.com/medic/medic-webapp/issues/4444): Closing add contact from LHS goes to CHW area on RHS on mobile
+- [#4681](https://github.com/medic/medic-webapp/issues/4681): Dates in outgoing messages are not translated
+- [#4708](https://github.com/medic/medic-webapp/issues/4708): Sending an SMS to all contacts in a place doesn't work as expected
+- [#4712](https://github.com/medic/medic-webapp/issues/4712): Error is shown when removing a users place and submitting the change
+- [#4735](https://github.com/medic/medic-webapp/issues/4735): Sentinel scheduled tasks messages ignore config
+- [#4776](https://github.com/medic/medic-webapp/issues/4776): Medic Collect Security Issue
+- [#4778](https://github.com/medic/medic-webapp/issues/4778): Support db-doc GET with open_revs for offline users
+- [#4786](https://github.com/medic/medic-webapp/issues/4786): Allow offline users to access admin app if allowed.
+- [#4789](https://github.com/medic/medic-webapp/issues/4789): Change the text that is displayed on LHS of Reports when there are no results
+
+### Technical issues
+
+- [#4092](https://github.com/medic/medic-webapp/issues/4092): Pull `POST /api/v1/users/{username}` authentication logic out of server.js
+- [#4481](https://github.com/medic/medic-webapp/issues/4481): Limit the size of feedback docs
+- [#4664](https://github.com/medic/medic-webapp/issues/4664): Upgrade to PouchDB 7.0
+
 ## 3.0.0
 
-_July 6, 2018_
+_August 27, 2018_
 
 ### Migration notes
 
 - [#3971](https://github.com/medic/medic-webapp/issues/3971): The `/api/v1/messages` endpoint has been removed as it was no longer actively used, and contained bugs.
 - [#1002](https://github.com/medic/medic-webapp/issues/1002): The ANC analytics page and the following APIs have been removed as they are no longer used: `/api/active-pregnancies`, `/api/upcoming-appointments`, `/api/missed-appointments`, `/api/upcoming-due-dates`, `/api/high-risk`, `/api/total-births`, `/api/missing-delivery-reports`, `/api/delivery-location`, `/api/visits-completed`, `/api/visits-during`, `/api/monthly-registrations`, `/api/monthly-deliveries`.
 - [#1002](https://github.com/medic/medic-webapp/issues/1002): The `/api/v1/export/messages`, `/api/v1/export/forms`, and `/api/v1/export/contacts` endpoints have been removed in favor of `/api/v2/export/messages`, `/api/v2/export/reports`, and `/api/v2/export/contacts` respectively.
-- [#1002](https://github.com/medic/medic-webapp/issues/1002): The `/api/v1/fti`  endpoint has been removed due to security concerns and lack of use.
+- [#1002](https://github.com/medic/medic-webapp/issues/1002): The `/api/v1/fti` endpoint has been removed due to security concerns and lack of use.
 
 ### Features
 
@@ -21,35 +59,33 @@ _July 6, 2018_
 
 ### Improvements
 
-- [#4241](https://github.com/medic/medic-webapp/issues/4241): Targets tab has no Loading spinner on initial load
-- [#4530](https://github.com/medic/medic-webapp/issues/4530): Enketo summary label icons are misaligned
-- [#4516](https://github.com/medic/medic-webapp/issues/4516): Replace medic-reporter
-- [#3344](https://github.com/medic/medic-webapp/issues/3344): Documentation for CouchDB 2.0
-- [#4487](https://github.com/medic/medic-webapp/issues/4487): Person with self as parent
-- [#4096](https://github.com/medic/medic-webapp/issues/4096): Work out if you're allowed to pass `roles` to `/api/v1/users`
-- [#4302](https://github.com/medic/medic-webapp/issues/4302): Remove `messages` from `medic-api` documentation
 - [#3805](https://github.com/medic/medic-webapp/issues/3805): Add Horticulturalist integration tests
+- [#3973](https://github.com/medic/medic-webapp/issues/3973): Value for db-doc attribute is case sensitive
+- [#4096](https://github.com/medic/medic-webapp/issues/4096): Work out if you're allowed to pass `roles` to `/api/v1/users`
+- [#4241](https://github.com/medic/medic-webapp/issues/4241): Targets tab has no Loading spinner on initial load
+- [#4302](https://github.com/medic/medic-webapp/issues/4302): Remove `messages` from `medic-api` documentation
+- [#4487](https://github.com/medic/medic-webapp/issues/4487): Person with self as parent
+- [#4516](https://github.com/medic/medic-webapp/issues/4516): Replace medic-reporter
+- [#4530](https://github.com/medic/medic-webapp/issues/4530): Enketo summary label icons are misaligned
 - [#4562](https://github.com/medic/medic-webapp/issues/4562): Horticulturalist restart behavior
 - [#4564](https://github.com/medic/medic-webapp/issues/4564): Version build info and horti upgrade doc data structures
 - [#4567](https://github.com/medic/medic-webapp/issues/4567): Make horticulturalist view warming output nicer
 - [#4568](https://github.com/medic/medic-webapp/issues/4568): Reduce how long horticulturalist takes node modules down for
 - [#4580](https://github.com/medic/medic-webapp/issues/4580): Horticulturalist shouldn't show older versions
 - [#4604](https://github.com/medic/medic-webapp/issues/4604): Make sure we can't infinitely recurse in the lineage shared library
-- [#4609](https://github.com/medic/medic-webapp/issues/4609): Deny non-admin requests to futon/fauxton/whatever
 - [#4622](https://github.com/medic/medic-webapp/issues/4622): Implement access logging in API
-- [#3973](https://github.com/medic/medic-webapp/issues/3973): Value for db-doc attribute is case sensitive
 
 ### Performance fixes
 
-- [#4497](https://github.com/medic/medic-webapp/issues/4497): DDoc extraction runs too often
-- [#4172](https://github.com/medic/medic-webapp/issues/4172): Changes requests are unsustainably large
-- [#4145](https://github.com/medic/medic-webapp/issues/4145): Split the admin tab out as a new app
-- [#3725](https://github.com/medic/medic-webapp/issues/3725): Add limit of 100 for num_reports_threshold in multi_report_alerts
 - [#3423](https://github.com/medic/medic-webapp/issues/3423): Pull sentinel data out into its own database
+- [#3725](https://github.com/medic/medic-webapp/issues/3725): Add limit of 100 for num_reports_threshold in multi_report_alerts
+- [#4145](https://github.com/medic/medic-webapp/issues/4145): Split the admin tab out as a new app
+- [#4172](https://github.com/medic/medic-webapp/issues/4172): Changes requests are unsustainably large
 - [#4185](https://github.com/medic/medic-webapp/issues/4185): Improve the filtered replication algorithm
 - [#4244](https://github.com/medic/medic-webapp/issues/4244): Write a scalability testing framework
 - [#4284](https://github.com/medic/medic-webapp/issues/4284): Refactor messages_by_contact_date view to reduce more
 - [#4362](https://github.com/medic/medic-webapp/issues/4362): Write a doc minification script to apply migrations to a running instance
+- [#4497](https://github.com/medic/medic-webapp/issues/4497): DDoc extraction runs too often
 - [#4620](https://github.com/medic/medic-webapp/issues/4620): Implement log rotation
 - [#4642](https://github.com/medic/medic-webapp/issues/4642): Output node_env when starting API
 - [#4643](https://github.com/medic/medic-webapp/issues/4643): Enable response body compression
@@ -58,84 +94,86 @@ _July 6, 2018_
 
 ### Bug fixes
 
-- [#4463](https://github.com/medic/medic-webapp/issues/4463): Configuration app, horticulturalist upgrade page no longer blocks if you aren't using horti
-- [#4502](https://github.com/medic/medic-webapp/issues/4502): Show a user friendly error message when contact is not within place
-- [#4446](https://github.com/medic/medic-webapp/issues/4446): Reports not linked to person if missing `patient_id`
-- [#3387](https://github.com/medic/medic-webapp/issues/3387): Couch2 may not require a valid user by default
-- [#4232](https://github.com/medic/medic-webapp/issues/4232): Wrong date shown based on time and timezone
 - [#1140](https://github.com/medic/medic-webapp/issues/1140): Use HTTP Strict Transport Security (HSTS)
-- [#4319](https://github.com/medic/medic-webapp/issues/4319): Browser OOM crash on Enketo db-object prepopulated forms
-- [#4371](https://github.com/medic/medic-webapp/issues/4371): Report RHS action bar not updated for unknown/missing contact
-- [#3923](https://github.com/medic/medic-webapp/issues/3923): Message for the `sys.missing_fields` error is not translated
-- [#4425](https://github.com/medic/medic-webapp/issues/4425): Lineage unit tests do not run on Travis
-- [#4373](https://github.com/medic/medic-webapp/issues/4373):  `{{patient_name}}`  not rendered in the error message and the automated reply.
-- [#4364](https://github.com/medic/medic-webapp/issues/4364): Don't use error code 301 when unauthorized
-- [#4343](https://github.com/medic/medic-webapp/issues/4343): The sms-gateway endpoint can crash api
-- [#3783](https://github.com/medic/medic-webapp/issues/3783): Online-only users never get changes that occured while api was offline
-- [#3835](https://github.com/medic/medic-webapp/issues/3835): Relative date in horticulturalist branches does not show absolute date on hover
-- [#4211](https://github.com/medic/medic-webapp/issues/4211): Export server logs not working
-- [#4243](https://github.com/medic/medic-webapp/issues/4243): Upgrading throbber spins forever when Cancel is clicked on in Horticulturalist's `Update Available` modal 
-- [#3374](https://github.com/medic/medic-webapp/issues/3374): Close hole in SSL for SMSSync
-- [#4465](https://github.com/medic/medic-webapp/issues/4465): Doc conflict when converting old sentinel info docs
-- [#4424](https://github.com/medic/medic-webapp/issues/4424): Pouch timeout weirdness with Medic servers
-- [#2734](https://github.com/medic/medic-webapp/issues/2734): Changes feed filtering can be avoided
-- [#3806](https://github.com/medic/medic-webapp/issues/3806): Horti fails to upgrade through the ui if there is already a staged ddoc
-- [#4412](https://github.com/medic/medic-webapp/issues/4412): User metadata db security
-- [#4088](https://github.com/medic/medic-webapp/issues/4088): User's role changes are only reflected if they log out and in again
-- [#4461](https://github.com/medic/medic-webapp/issues/4461): Select2 dropdowns don't work in the admin app
-- [#4500](https://github.com/medic/medic-webapp/issues/4500): Add/Edit User form does not show required fields in 3.0
-- [#4462](https://github.com/medic/medic-webapp/issues/4462): Checkboxes don't render correctly in the admin app
-- [#4312](https://github.com/medic/medic-webapp/issues/4312): TIMEOUT errors watching changes feed For Some Reason™
-- [#4426](https://github.com/medic/medic-webapp/issues/4426): If one shared-lib test fails it doesn't break the build
-- [#4472](https://github.com/medic/medic-webapp/issues/4472): couch2pg fails to escape certain JSON documents when trying to store them
 - [#3099](https://github.com/medic/medic-webapp/issues/3099): Uncaught exception triggers 500 response for subsequent requests
+- [#3374](https://github.com/medic/medic-webapp/issues/3374): Close hole in SSL for SMSSync
+- [#3387](https://github.com/medic/medic-webapp/issues/3387): Couch2 may not require a valid user by default
+- [#3783](https://github.com/medic/medic-webapp/issues/3783): Online-only users never get changes that occured while api was offline
+- [#3806](https://github.com/medic/medic-webapp/issues/3806): Horti fails to upgrade through the ui if there is already a staged ddoc
+- [#3835](https://github.com/medic/medic-webapp/issues/3835): Relative date in horticulturalist branches does not show absolute date on hover
+- [#3923](https://github.com/medic/medic-webapp/issues/3923): Message for the `sys.missing_fields` error is not translated
+- [#4088](https://github.com/medic/medic-webapp/issues/4088): User's role changes are only reflected if they log out and in again
+- [#4211](https://github.com/medic/medic-webapp/issues/4211): Export server logs not working
+- [#4232](https://github.com/medic/medic-webapp/issues/4232): Wrong date shown based on time and timezone
+- [#4243](https://github.com/medic/medic-webapp/issues/4243): Upgrading throbber spins forever when Cancel is clicked on in Horticulturalist's `Update Available` modal
+- [#4312](https://github.com/medic/medic-webapp/issues/4312): TIMEOUT errors watching changes feed For Some Reason™
+- [#4319](https://github.com/medic/medic-webapp/issues/4319): Browser OOM crash on Enketo db-object prepopulated forms
+- [#4343](https://github.com/medic/medic-webapp/issues/4343): The sms-gateway endpoint can crash api
+- [#4364](https://github.com/medic/medic-webapp/issues/4364): Don't use error code 301 when unauthorized
+- [#4371](https://github.com/medic/medic-webapp/issues/4371): Report RHS action bar not updated for unknown/missing contact
+- [#4373](https://github.com/medic/medic-webapp/issues/4373): `{{patient_name}}` not rendered in the error message and the automated reply.
+- [#4412](https://github.com/medic/medic-webapp/issues/4412): User metadata db security
+- [#4424](https://github.com/medic/medic-webapp/issues/4424): Pouch timeout weirdness with Medic servers
+- [#4425](https://github.com/medic/medic-webapp/issues/4425): Lineage unit tests do not run on Travis
+- [#4426](https://github.com/medic/medic-webapp/issues/4426): If one shared-lib test fails it doesn't break the build
+- [#4446](https://github.com/medic/medic-webapp/issues/4446): Reports not linked to person if missing `patient_id`
+- [#4461](https://github.com/medic/medic-webapp/issues/4461): Select2 dropdowns don't work in the admin app
+- [#4462](https://github.com/medic/medic-webapp/issues/4462): Checkboxes don't render correctly in the admin app
+- [#4463](https://github.com/medic/medic-webapp/issues/4463): Configuration app, horticulturalist upgrade page no longer blocks if you aren't using horti
+- [#4465](https://github.com/medic/medic-webapp/issues/4465): Doc conflict when converting old sentinel info docs
+- [#4472](https://github.com/medic/medic-webapp/issues/4472): couch2pg fails to escape certain JSON documents when trying to store them
+- [#4500](https://github.com/medic/medic-webapp/issues/4500): Add/Edit User form does not show required fields in 3.0
+- [#4502](https://github.com/medic/medic-webapp/issues/4502): Show a user friendly error message when contact is not within place
 - [#4504](https://github.com/medic/medic-webapp/issues/4504): Configuration app: loader throbber doesn't work
 - [#4507](https://github.com/medic/medic-webapp/issues/4507): Upgrade Instance does not show when it is finished
 - [#4546](https://github.com/medic/medic-webapp/issues/4546): Can't SSH in to Docker instances
 - [#4547](https://github.com/medic/medic-webapp/issues/4547): Implement a http to https redirect for Docker instances
 - [#4548](https://github.com/medic/medic-webapp/issues/4548): Error getting zscore-charts
 - [#4584](https://github.com/medic/medic-webapp/issues/4584): Pregnancy reports sent via sms cannot be viewed when user language in not English
-- [#4612](https://github.com/medic/medic-webapp/issues/4612): There are view generation errors
 - [#4645](https://github.com/medic/medic-webapp/issues/4645): Use a robots.txt file to stop spiders crawling our instances
 - [#4673](https://github.com/medic/medic-webapp/issues/4673): Logging out fails if the session is already timed out
+- [#4719](https://github.com/medic/medic-webapp/issues/4719): Fix horticulturalist timeouts
+- [#4754](https://github.com/medic/medic-webapp/issues/4754): Deleting error-report not replicating properly
+- [#4774](https://github.com/medic/medic-webapp/issues/4774): Use user.facility_id saved in `_users` instead of `medic` db
+- [#4792](https://github.com/medic/medic-webapp/issues/4792): Horti versions don't show up correctly in about page
 
 ### Technical issues
 
-- [#4536](https://github.com/medic/medic-webapp/issues/4536): Using grunt watch misses changes on admin app and translations
-- [#4305](https://github.com/medic/medic-webapp/issues/4305): Make node version requirement of v8 and above mandatory
-- [#2504](https://github.com/medic/medic-webapp/issues/2504): Make nools tests run when changes are made
-- [#4229](https://github.com/medic/medic-webapp/issues/4229): Registration transition logs error when all scheduled tasks are in the past
-- [#2583](https://github.com/medic/medic-webapp/issues/2583): Sort out roles
-- [#3343](https://github.com/medic/medic-webapp/issues/3343): Confirm logout on CouchDB 2.0 works properly
-- [#3257](https://github.com/medic/medic-webapp/issues/3257): Determine how we migrate large instances from CouchDB 1.x to CouchDB 2.0
-- [#1876](https://github.com/medic/medic-webapp/issues/1876): Restructure the repository to be more standard and logical
-- [#3019](https://github.com/medic/medic-webapp/issues/3019): Replace kanso
-- [#3436](https://github.com/medic/medic-webapp/issues/3436): edit-user controller has 3 different entry points and 2 different templates
-- [#3826](https://github.com/medic/medic-webapp/issues/3826): Too many hydration / lineage functions
 - [#1002](https://github.com/medic/medic-webapp/issues/1002): Remove the rest of lucene
+- [#1876](https://github.com/medic/medic-webapp/issues/1876): Restructure the repository to be more standard and logical
+- [#2504](https://github.com/medic/medic-webapp/issues/2504): Make nools tests run when changes are made
+- [#2583](https://github.com/medic/medic-webapp/issues/2583): Sort out roles
+- [#3019](https://github.com/medic/medic-webapp/issues/3019): Replace kanso
 - [#3032](https://github.com/medic/medic-webapp/issues/3032): Fix npm shrinkwrap
-- [#3971](https://github.com/medic/medic-webapp/issues/3971): Remove `/api/v1/messages` endpoint
+- [#3257](https://github.com/medic/medic-webapp/issues/3257): Determine how we migrate large instances from CouchDB 1.x to CouchDB 2.0
+- [#3343](https://github.com/medic/medic-webapp/issues/3343): Confirm logout on CouchDB 2.0 works properly
+- [#3436](https://github.com/medic/medic-webapp/issues/3436): edit-user controller has 3 different entry points and 2 different templates
+- [#3528](https://github.com/medic/medic-webapp/issues/3528): CouchDB 2.0: make sure our app doesn't rely on seq order
 - [#3747](https://github.com/medic/medic-webapp/issues/3747): Horticulturalist local mode
 - [#3825](https://github.com/medic/medic-webapp/issues/3825): Horti shouldn't default to starting in MedicOS mode
-- [#3528](https://github.com/medic/medic-webapp/issues/3528): CouchDB 2.0: make sure our app doesn't rely on seq order
+- [#3826](https://github.com/medic/medic-webapp/issues/3826): Too many hydration / lineage functions
+- [#3971](https://github.com/medic/medic-webapp/issues/3971): Remove `/api/v1/messages` endpoint
 - [#4147](https://github.com/medic/medic-webapp/issues/4147): Remove references to SMSSync
-- [#4661](https://github.com/medic/medic-webapp/issues/4661): Make sure we've released the latest version of Horti
-- [#4386](https://github.com/medic/medic-webapp/issues/4386): Bump enketo-core to latest
+- [#4229](https://github.com/medic/medic-webapp/issues/4229): Registration transition logs error when all scheduled tasks are in the past
+- [#4305](https://github.com/medic/medic-webapp/issues/4305): Make node version requirement of v8 and above mandatory
 - [#4306](https://github.com/medic/medic-webapp/issues/4306): Write integration tests against lineage
 - [#4316](https://github.com/medic/medic-webapp/issues/4316): Push docker output to s3 instead of to travis logs
-- [#4367](https://github.com/medic/medic-webapp/issues/4367): Move sms-specific views into medic-sms ddoc
 - [#4317](https://github.com/medic/medic-webapp/issues/4317): Push webdriver output to s3 instead of to travis logs
+- [#4367](https://github.com/medic/medic-webapp/issues/4367): Move sms-specific views into medic-sms ddoc
 - [#4380](https://github.com/medic/medic-webapp/issues/4380): UNIT_TEST_ENV is set 1 on Travis when running integration tests
 - [#4420](https://github.com/medic/medic-webapp/issues/4420): Make a shared library for message utils
 - [#4470](https://github.com/medic/medic-webapp/issues/4470): medic-api logs are inconsistently prefixed
 - [#4489](https://github.com/medic/medic-webapp/issues/4489): Module packing is broken
 - [#4506](https://github.com/medic/medic-webapp/issues/4506): Configuration app isn't watched properly
+- [#4536](https://github.com/medic/medic-webapp/issues/4536): Using grunt watch misses changes on admin app and translations
 - [#4541](https://github.com/medic/medic-webapp/issues/4541): Store app settings outside of the ddoc
 - [#4556](https://github.com/medic/medic-webapp/issues/4556): Move ddocs to top-level directory in medic-webapp repo
 - [#4558](https://github.com/medic/medic-webapp/issues/4558): Replace "follow" library with pouch.changes
 - [#4637](https://github.com/medic/medic-webapp/issues/4637): Move /patches from the root to webapp/patches
+- [#4661](https://github.com/medic/medic-webapp/issues/4661): Make sure we've released the latest version of Horti
 - [#4676](https://github.com/medic/medic-webapp/issues/4676): Emit NODE_OPTIONS during API startup
 - [#4683](https://github.com/medic/medic-webapp/issues/4683): Create a shared library for server startup checks
+- [#4741](https://github.com/medic/medic-webapp/issues/4741): App bootstraps without data when changes returns an error
 
 ## 2.18.0
 
@@ -553,12 +591,12 @@ _May 9, 2017_
 
 ### Bug fixes
 
- - Cannot report via SMS about people who are registered in the web app. Issue: #3401
- - Results page CSS messed up in v2.11. Issue: #3369
- - The user needs an associated contact to create a contact. Issue: #3394
- - Error when adding Place with new person. Issue: #3420
- - Error after canceling and re-opening any contact creation form. Issue: #3448
- - namespace-form-fields migration : report bulk errors. Issue: #3371 (second part)
+- Cannot report via SMS about people who are registered in the web app. Issue: #3401
+- Results page CSS messed up in v2.11. Issue: #3369
+- The user needs an associated contact to create a contact. Issue: #3394
+- Error when adding Place with new person. Issue: #3420
+- Error after canceling and re-opening any contact creation form. Issue: #3448
+- namespace-form-fields migration : report bulk errors. Issue: #3371 (second part)
 
 ## 2.11.0
 
@@ -1011,7 +1049,7 @@ _June 8, 2016_
 - Remove clinics from the Facility filter dropdown. Issue: #2218
 - Optimize admin bandwidth concerns. Issue: #2211
 - We request facilities from the server over and over again. Issue: #2210
-- Don't audit _local docs. Issue: #2366
+- Don't audit \_local docs. Issue: #2366
 - All requests to CouchDB time out after 10 seconds. Issue: #2325
 - Long delay loading contact dropdowns. Issue: #2326
 
@@ -1146,12 +1184,11 @@ _June 16, 2015_
 - Fixed compact textforms parser bug with exclamation points. Issue #989
 
 - Fixed bug in compact textforms parser we ignored fields with uppercase
-  letters in the key of the form definition.  Issue #991
+  letters in the key of the form definition. Issue #991
 
 - Fixed bug when creating record with empty message. Issue #990
 
-- Moved raw message to bottom of report body.  Issue: #927
-
+- Moved raw message to bottom of report body. Issue: #927
 
 ## 0.4.6
 
@@ -1166,7 +1203,7 @@ _May 28, 2015_
 - Fixed bug in schedules editor for LMP (last menstrual period) based
   schedules. #973
 
-- Initial support for messages, records and forms API.  See
+- Initial support for messages, records and forms API. See
   https://github.com/medic/medic-api/blob/master/API_v1.md
 
 ## 0.4.4
@@ -1198,7 +1235,7 @@ _February 26, 2015_
 
 - Refactored build process, added grunt, bower and jshint.
 
-- No forms are included by default.  You must upload your forms.  As usual
+- No forms are included by default. You must upload your forms. As usual
   configuration (settings and forms) persists through upgrades.
 
 - Added new translations
@@ -1217,7 +1254,6 @@ _February 26, 2015_
 - Gardener >= 1.1.0
 
 - New [Nginx configuration](https://github.com/medic/medic-os/blob/3aedf0622eb0669aee2e5bbfba95a42faf05b9da/platform/packages/medic-core/settings/medic-core/nginx/nginx.conf), close or redirect port 5984, proxy all requests through medic-api.
-
 
 ## 0.4.2
 
@@ -1249,7 +1285,7 @@ _July 10, 2014_
 
 - Better language support on messages throughout configuration. e.g. you can
   define a reminder schedule using multiple languages and the right language
-  will be used based on the locale of the message.  #486
+  will be used based on the locale of the message. #486
 
 - Added support to configure locales through settings screen #491
 
@@ -1263,7 +1299,7 @@ _July 10, 2014_
 
 - Added support for unique validations across multiple fields. #412
 
-- External IDs can be added to facilities on the facility page.  #503
+- External IDs can be added to facilities on the facility page. #503
 
 - Added `columns` query parameter to allow callers to messages and data_records
   exports to retrieve specific columns in a specific order. #503
@@ -1297,7 +1333,6 @@ _July 10, 2014_
 - No forms are included by default, you must upload your forms. As usual
   configuration (settings and forms) persists through upgrades.
 
-
 ## 0.3.11
 
 _June 19, 2014_
@@ -1315,23 +1350,21 @@ _June 19, 2014_
 
 - Fixed bug and added support for multiple schedules in schedule silencing
 
-    When `silence_for` is specified we should only silence/clear one group, I
-    introduced a bug a few commits ago that would ignore the group and
-    silence/clear based on date. Use the `silence_for` window to match and
-    clear the first group.
+  When `silence_for` is specified we should only silence/clear one group, I
+  introduced a bug a few commits ago that would ignore the group and
+  silence/clear based on date. Use the `silence_for` window to match and
+  clear the first group.
 
-    Also added support for comma separate string on `silence_type` option.
-    In the MCH case we have two schedules that can be generated depending on
-    the form submission/registration: ANC Reminders and ANC Reminders LMP.
-    Now both schedules can be cleared with a single ANCV settings entry.
-
+  Also added support for comma separate string on `silence_type` option.
+  In the MCH case we have two schedules that can be generated depending on
+  the form submission/registration: ANC Reminders and ANC Reminders LMP.
+  Now both schedules can be cleared with a single ANCV settings entry.
 
 ## 0.3.10
 
 _June 12, 2014_
 
 - updated intrahealth-senegal forms
-
 
 ## 0.3.9
 
@@ -1349,9 +1382,8 @@ _May 22, 2014_
 
 - added support for app-settings kanso package.
 
-    Saving settings in dashboard was too slow for use because entire ddoc was
-    being updated.  Using app-settings API fixes that.
-
+  Saving settings in dashboard was too slow for use because entire ddoc was
+  being updated. Using app-settings API fixes that.
 
 ## 0.3.7
 
@@ -1359,13 +1391,11 @@ _May 13, 2014_
 
 - Modified KEMRI form fields to be ordered the same as KEMR form.
 
-
 ## 0.3.6
 
 _April 28, 2014_
 
 - Fixed bug in updating duplicate scheduled reports #483
-
 
 ## 0.3.5
 
@@ -1373,15 +1403,14 @@ _April 16, 2014_
 
 - Major bug fix that was introduced in 0.3.3 where visit reports do not get processed.
 
-    Fixed accept_patient_reports transition so it calls db for readonly actions
-    instead of audit.
+  Fixed accept_patient_reports transition so it calls db for readonly actions
+  instead of audit.
 
 - Allow analytics role to download messages and forms. Issue: #477
 
 - Updated user management to show role for analytics user. Issue: #478
 
 - Initial version of forms for Miraclefeet India
-
 
 ## 0.3.4
 
@@ -1392,9 +1421,8 @@ _April 14, 2014_
 - Change ordering of messages export format for better readability based on
   when the state is triggered. #475
 
-    From: Received, Sent, Pending, Scheduled Cleared, Muted
-    To: Received, Scheduled, Pending, Sent, Cleared, Muted
-
+  From: Received, Sent, Pending, Scheduled Cleared, Muted
+  To: Received, Scheduled, Pending, Sent, Cleared, Muted
 
 ## 0.3.3
 
@@ -1406,50 +1434,50 @@ _April 10, 2014_
 
 - Audit support for data records and facility data #415
 
-    Also includes support for export of audit data as XML or CSV file.
+  Also includes support for export of audit data as XML or CSV file.
 
-    Note: Only new records and record edits will have an audit log entry.  So
-    this means your audit log will only contain changes to records after the
-    upgrade.
+  Note: Only new records and record edits will have an audit log entry. So
+  this means your audit log will only contain changes to records after the
+  upgrade.
 
-    Similarly browsing old revision will stop working for old records because
-    they lack audit log entries.  If this is a major problem for you let us
-    know and we can add backwards compatible revision browsing in the next
-    release.
+  Similarly browsing old revision will stop working for old records because
+  they lack audit log entries. If this is a major problem for you let us
+  know and we can add backwards compatible revision browsing in the next
+  release.
 
-    This has been released as a standalone re-useable module for Node and
-    browser environments: https://github.com/medic/couchdb-audit
+  This has been released as a standalone re-useable module for Node and
+  browser environments: https://github.com/medic/couchdb-audit
 
 - Added support for compact version of TextForms format #428
 
-    In compact Textforms fields are delimited by spaces and determined by order.
-    So no hashes or field keys are required like in classic TextForms format.
-    If your field value has spaces in it then it must be surrounded by quotes
-    unless it is the last field.
+  In compact Textforms fields are delimited by spaces and determined by order.
+  So no hashes or field keys are required like in classic TextForms format.
+  If your field value has spaces in it then it must be surrounded by quotes
+  unless it is the last field.
 
-    Examples:
+  Examples:
 
         REG 4165550000 John Smith
         REG "John Smith" 4165550000
 
 - Include state change timestamps and patient_id in messages export #453
 
-    Old Columns:
+  Old Columns:
 
-    Record UUID, Reported Date, From, Clinic Contact Name, Clinic Name,  Health
-    Center Contact Name, Health Center Name, District Hospital Name, Message
-    Type, Message State, Message Timestamp/Due, Message UUID, Sent By, To
-    Phone, Message Body
+  Record UUID, Reported Date, From, Clinic Contact Name, Clinic Name, Health
+  Center Contact Name, Health Center Name, District Hospital Name, Message
+  Type, Message State, Message Timestamp/Due, Message UUID, Sent By, To
+  Phone, Message Body
 
-    New Columns:
+  New Columns:
 
-    Record UUID, Patient ID, Reported Date, Reported From, Clinic Contact Name,
-    Clinic Name, Health Center Contact Name, Health Center Name, District
-    Hospital Name, Message Type, Message State, Received Timestamp, Sent
-    Timestamp, Pending Timestamp, Scheduled Timestamp, Cleared Timestamp, Muted
-    Timestamp, Message UUID, Sent By, To Phone, Message Body
+  Record UUID, Patient ID, Reported Date, Reported From, Clinic Contact Name,
+  Clinic Name, Health Center Contact Name, Health Center Name, District
+  Hospital Name, Message Type, Message State, Received Timestamp, Sent
+  Timestamp, Pending Timestamp, Scheduled Timestamp, Cleared Timestamp, Muted
+  Timestamp, Message UUID, Sent By, To Phone, Message Body
 
-    Note: These are the default column labels and they are configurable.
+  Note: These are the default column labels and they are configurable.
 
 - Disable facility select and show loading message until data is loaded. #452
 
@@ -1473,7 +1501,6 @@ _April 10, 2014_
 - Fixed bug on facilities screen where delete functions would stack up and
   inadvertantly delete a facility. #469
 
-
 ## 0.3.2
 
 _March 11, 2014 _
@@ -1481,7 +1508,6 @@ _March 11, 2014 _
 - fixed facilities spreadsheet bug #451 in Chrome
 
 - minor user interface tweaks on deletion of facilities modal
-
 
 ## 0.3.1
 
@@ -1497,54 +1523,53 @@ _March 3, 2014 _
 
 - Fixed bug where we failed to retrieve settings on port 80 #438
 
-    This was experienced when proxying to couchdb because http proxying will
-    decode the URL including docid of the show parameter, so the show
-    returns 404.  Solution is to always double URL encode if the show docid
-    contains special characters.
+  This was experienced when proxying to couchdb because http proxying will
+  decode the URL including docid of the show parameter, so the show
+  returns 404. Solution is to always double URL encode if the show docid
+  contains special characters.
 
 - Confirm with user before deleting facility so they can't be deleted by accident. #371
 
-- Added unique Patient ID validation support.  #411 medic-sentinel/pull/50
+- Added unique Patient ID validation support. #411 medic-sentinel/pull/50
 
-    Use unique('patient_id') in your registration validation rules to validate
-    new form submissions that are setting the patient ID values via forms.
+  Use unique('patient_id') in your registration validation rules to validate
+  new form submissions that are setting the patient ID values via forms.
 
-    Validation rules may consist of Pupil.js rules and custom rules.  These
-    cannot be combined as part of the same rule.
+  Validation rules may consist of Pupil.js rules and custom rules. These
+  cannot be combined as part of the same rule.
 
-    Not OK:
+  Not OK:
 
         rule: "regex('[0-9]{5}') && unique('patient_id')"
 
-    OK:
+  OK:
 
         rule: "regex('[0-9]{5}') && max(11111)"
 
-    If for example you want to validate that patient_id is 5 numbers and it
-    is unique (or some other custom validation) you need to define two
-    validation configs/separate rules in your settings. Example validation
-    settings:
+  If for example you want to validate that patient_id is 5 numbers and it
+  is unique (or some other custom validation) you need to define two
+  validation configs/separate rules in your settings. Example validation
+  settings:
 
-    ```
-    [
-      {
-        property: "patient_id",
-        rule: "regex('[0-9]{5}')",
-        message: "Invalid: Patient ID {{patient_id}} must be 5 numbers."
-      },
-      {
-        property: "patient_id",
-        rule: "unique('patient_id')",
-        message: "Invalid: Patient ID {{patient_id}} must be unique."
-      }
-    ]
-    ```
+  ```
+  [
+    {
+      property: "patient_id",
+      rule: "regex('[0-9]{5}')",
+      message: "Invalid: Patient ID {{patient_id}} must be 5 numbers."
+    },
+    {
+      property: "patient_id",
+      rule: "unique('patient_id')",
+      message: "Invalid: Patient ID {{patient_id}} must be unique."
+    }
+  ]
+  ```
 
-- Added Conditional Alerts feature. #437  medic-sentinel/issue/52
+- Added Conditional Alerts feature. #437 medic-sentinel/issue/52
 
-    Configure the Alerts section of the App Settings to send a message when an
-    incoming message meets the configured condition.
-
+  Configure the Alerts section of the App Settings to send a message when an
+  incoming message meets the configured condition.
 
 ## 0.3.0-beta.39 (bugfix)
 
@@ -1552,15 +1577,14 @@ _February 25, 2014_
 
 - Fixed textforms whitespace parser bug when using form list field types. #431
 
-    Textforms parser wasn't trimming space correctly on a field value, so if
-    you had a list defined using those values they would never get matched.
+  Textforms parser wasn't trimming space correctly on a field value, so if
+  you had a list defined using those values they would never get matched.
 
-    Textforms was only matching numeric values of length 2 or more, so if
-    you submitted a one digit number you would not get a numeric match.
+  Textforms was only matching numeric values of length 2 or more, so if
+  you submitted a one digit number you would not get a numeric match.
 
-    Also if the value didn't match numeric or a date format then the
-    whitespace was not being trimmed correctly.
-
+  Also if the value didn't match numeric or a date format then the
+  whitespace was not being trimmed correctly.
 
 ## 0.3.0-beta.38 (debug)
 
@@ -1568,80 +1592,77 @@ _February 13, 2014_
 
 - added logging calls to help debug and identify whitespace parsing bug #431
 
-
 ## 0.3.0-beta.37
 
 _January 21, 2014_
 
 - Fixes to user roles (@marc)
 
-    Matches Transitional V2 in
-    https://docs.google.com/a/medicmobile.org/spreadsheet/ccc?key=0Ao9l2yegOFn7dEJRTEw1Z3RmZm0wTEo4Nk92NjVocnc
+  Matches Transitional V2 in
+  https://docs.google.com/a/medicmobile.org/spreadsheet/ccc?key=0Ao9l2yegOFn7dEJRTEw1Z3RmZm0wTEo4Nk92NjVocnc
 
 - Added support for Kemri Muvuku Form (KEMR)
 
 - Added exclude_cols query param to csv/xml form exports. #421
 
-    For example inlude `exclude_cols=1,5` in your query parameters to
-    remove the first and fifth column of an export.
+  For example inlude `exclude_cols=1,5` in your query parameters to
+  remove the first and fifth column of an export.
 
--  bugfix on export query params and UX adjustments
+- bugfix on export query params and UX adjustments
 
-    Made English CSV export default. SpreadsheetML can be a little buggy
-    because we're using HTML entities (not valid XML).
+  Made English CSV export default. SpreadsheetML can be a little buggy
+  because we're using HTML entities (not valid XML).
 
-    Disabled default month value in exports screen since record count does
-    not reflect the export row totals displayed.  It's probably better UX to
-    have the user set the date knowing they are doing something than having a
-    default that doesn't make sense with the totals on the screen and having
-    to guess why that is.
+  Disabled default month value in exports screen since record count does
+  not reflect the export row totals displayed. It's probably better UX to
+  have the user set the date knowing they are doing something than having a
+  default that doesn't make sense with the totals on the screen and having
+  to guess why that is.
 
 - Added timezone support to exports #394
 
-    Render page contents first and then load the fields data since that was
-    holding up the page load.
+  Render page contents first and then load the fields data since that was
+  holding up the page load.
 
-    Indexing _id as `uuid` in field index so you can search for
-    `uuid:10366976d62ab9a31257b2fad16113ee` now and it shows up in avaialble
-    fields index.  For some reason I think underscore prefixed fields do
-    show up in fields listing on Lucene for some reason.
+  Indexing \_id as `uuid` in field index so you can search for
+  `uuid:10366976d62ab9a31257b2fad16113ee` now and it shows up in avaialble
+  fields index. For some reason I think underscore prefixed fields do
+  show up in fields listing on Lucene for some reason.
 
 - Fixed poor loading on search help #422
 
+* added timezone support to exports #394
 
-- added timezone support to exports #394
-
-    Now dates in the exported spreadsheet should include your locale timezone. Controlled by the `tz` query param.
-
+  Now dates in the exported spreadsheet should include your locale timezone. Controlled by the `tz` query param.
 
 - Added new Messages Export and removed message data from Forms Export
 
-    New http endpoint `/export/messages` to get messages export. Records are
-    always latest first (reverse cronological).  Message export will include
-    all records (valid and invalid), the point of the messages export is to
-    give you access to all your message data, including outgoing error
-    messages.
+  New http endpoint `/export/messages` to get messages export. Records are
+  always latest first (reverse cronological). Message export will include
+  all records (valid and invalid), the point of the messages export is to
+  give you access to all your message data, including outgoing error
+  messages.
 
-    **Warning**: the following URLs are no longer supported:
+  **Warning**: the following URLs are no longer supported:
 
-    ```
-    /{form}/data_records.csv
-    /{form}/data_records.xml
-    /form_data_records.xml
-    /form_data_records.csv
-    ```
+  ```
+  /{form}/data_records.csv
+  /{form}/data_records.xml
+  /form_data_records.xml
+  /form_data_records.csv
+  ```
 
-    Use `/export/forms/{form}` path instead.
+  Use `/export/forms/{form}` path instead.
 
-    **Warning**: Existing form data export format has changed.  Included UUID of
-    the related record so data among the two spreadsheets (messages and form
-    data) can be correlated if need be.  Also removed the message
-    data/columns from form data export. A record can be found via UUID by
-    using `uuid:<the uuid string>` in the search box.
+  **Warning**: Existing form data export format has changed. Included UUID of
+  the related record so data among the two spreadsheets (messages and form
+  data) can be correlated if need be. Also removed the message
+  data/columns from form data export. A record can be found via UUID by
+  using `uuid:<the uuid string>` in the search box.
 
-    Changed default column name of "From" to "Reported From".  Note if this
-    shouldn't change if you have an existing install since it is generated
-    based on your translation settings.
+  Changed default column name of "From" to "Reported From". Note if this
+  shouldn't change if you have an existing install since it is generated
+  based on your translation settings.
 
 ```
     The NEW columns (added UUID column and removed message data):
