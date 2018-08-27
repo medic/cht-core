@@ -4,6 +4,8 @@
 
 "@shared-libs/message-utils@file:../shared-libs/message-utils":
   version "1.0.0"
+  dependencies:
+    underscore "^1.9.1"
 
 ajv@^5.1.0:
   version "5.5.2"
@@ -929,6 +931,8 @@ lie@3.1.1, lie@3.1.x:
 
 "lineage@file:../shared-libs/lineage":
   version "1.0.0"
+  dependencies:
+    underscore "^1.9.1"
 
 lodash.isnull@^3.0.0:
   version "3.0.0"
@@ -1511,9 +1515,9 @@ sax@~1.2.4:
     moment "^2.22.2"
     underscore "^1.9.1"
 
-select2@^4.0.5:
-  version "4.0.5"
-  resolved "https://registry.yarnpkg.com/select2/-/select2-4.0.5.tgz#7aac50692561985b34d3b82ec55e226f8960d40a"
+select2@4.0.3:
+  version "4.0.3"
+  resolved "https://registry.yarnpkg.com/select2/-/select2-4.0.3.tgz#207733fe91eacb9cb1a13f12463401f472449e0f"
   dependencies:
     almond "~0.3.1"
     jquery-mousewheel "~3.1.13"
