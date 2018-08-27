@@ -4,9 +4,9 @@
  *          !!! DEPRECATION WARNING !!!          *
  *************************************************/
 
-var path = require("path"),
-  url = require("url"),
-  nano = require("nano");
+var path = require('path'),
+  url = require('url'),
+  nano = require('nano');
 
 const { COUCH_URL, UNIT_TEST_ENV } = process.env;
 
@@ -17,11 +17,11 @@ if (UNIT_TEST_ENV) {
     request: function() {},
     getPath: function() {},
     settings: {
-      protocol: "http",
-      port: "123",
-      host: "local",
-      db: "medic",
-      ddoc: "medic",
+      protocol: 'http',
+      port: '123',
+      host: 'local',
+      db: 'medic',
+      ddoc: 'medic',
     },
     use: function() {},
     medic: {
@@ -54,17 +54,17 @@ if (UNIT_TEST_ENV) {
   };
 } else if (COUCH_URL) {
   // strip trailing slash from to prevent bugs in path matching
-  const couchUrl = COUCH_URL.replace(/\/$/, "");
-  var baseUrl = couchUrl.substring(0, couchUrl.indexOf("/", 10));
+  const couchUrl = COUCH_URL.replace(/\/$/, '');
+  var baseUrl = couchUrl.substring(0, couchUrl.indexOf('/', 10));
   var parsedUrl = url.parse(couchUrl);
-  var dbName = parsedUrl.path.replace("/", "");
-  var auditDbName = dbName + "-audit";
+  var dbName = parsedUrl.path.replace('/', '');
+  var auditDbName = dbName + '-audit';
   var db = nano(baseUrl);
 
   module.exports = db;
   module.exports.medic = db.use(dbName);
   module.exports.audit = db.use(auditDbName);
-  module.exports._users = db.use("_users");
+  module.exports._users = db.use('_users');
 
   module.exports.settings = {
     protocol: parsedUrl.protocol,
@@ -72,11 +72,11 @@ if (UNIT_TEST_ENV) {
     host: parsedUrl.hostname,
     db: dbName,
     auditDb: auditDbName,
-    ddoc: "medic",
+    ddoc: 'medic',
   };
 
   if (parsedUrl.auth) {
-    var index = parsedUrl.auth.indexOf(":");
+    var index = parsedUrl.auth.indexOf(':');
     module.exports.settings.username = parsedUrl.auth.substring(0, index);
     module.exports.settings.password = parsedUrl.auth.substring(index + 1);
   }
@@ -84,9 +84,9 @@ if (UNIT_TEST_ENV) {
   module.exports.getPath = function() {
     return path.join(
       module.exports.settings.db,
-      "_design",
+      '_design',
       module.exports.settings.ddoc,
-      "_rewrite"
+      '_rewrite'
     );
   };
   module.exports.getCouchDbVersion = function(cb) {
@@ -105,8 +105,7 @@ if (UNIT_TEST_ENV) {
   };
 } else {
   console.log(
-    "Please define a COUCH_URL in your environment e.g. \n" +
-      'export COUCH_URL="http://admin:123qwe@localhost:5984/medic"\n\n' +
-      "If you are running unit tests use UNIT_TEST_ENV=1 in your environment.\n"
+    'Please define a COUCH_URL in your environment.\n' +
+      'If you are running unit tests use UNIT_TEST_ENV=1 in your environment.\n'
   );
 }
