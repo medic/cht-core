@@ -17,13 +17,13 @@ angular-pouchdb@^5.0.2:
     angular ">=1 <2"
     pouchdb-browser "^6.0.7"
 
-angular-route@^1.7.2:
-  version "1.7.2"
-  resolved "https://registry.yarnpkg.com/angular-route/-/angular-route-1.7.2.tgz#a24b7a0c8ef09a3d4e2ca20de7f84e0e857a61ae"
+angular-route@^1.7.3:
+  version "1.7.3"
+  resolved "https://registry.yarnpkg.com/angular-route/-/angular-route-1.7.3.tgz#245c7ea7d18514c1d08201588092db7df210e7c6"
 
-angular-sanitize@^1.7.2:
-  version "1.7.2"
-  resolved "https://registry.yarnpkg.com/angular-sanitize/-/angular-sanitize-1.7.2.tgz#e9f6e6a3e966c479c02dbc5712bee6de031f8eef"
+angular-sanitize@^1.7.3:
+  version "1.7.3"
+  resolved "https://registry.yarnpkg.com/angular-sanitize/-/angular-sanitize-1.7.3.tgz#e1ddaa7337724f9554066fd9e9123486b8881c4a"
 
 angular-translate@^2.18.1:
   version "2.18.1"
@@ -45,9 +45,13 @@ angular-ui-router@^0.4.3:
   version "1.6.10"
   resolved "https://registry.yarnpkg.com/angular/-/angular-1.6.10.tgz#eed3080a34d29d0f681ff119b18ce294e3f74826"
 
-"angular@>=1.2.26 <=1.7", angular@^1.7.2:
+"angular@>=1.2.26 <=1.7":
   version "1.7.2"
   resolved "https://registry.yarnpkg.com/angular/-/angular-1.7.2.tgz#687b955dbe5c533f8d73460461707af00360251f"
+
+angular@^1.7.3:
+  version "1.7.3"
+  resolved "https://registry.yarnpkg.com/angular/-/angular-1.7.3.tgz#0f25a661d079fc84d5ccc877a2ef9d7178575ddb"
 
 argsarray@0.0.1:
   version "0.0.1"
@@ -81,7 +85,7 @@ jquery@3.2.x:
   version "3.2.1"
   resolved "https://registry.yarnpkg.com/jquery/-/jquery-3.2.1.tgz#5c4d9de652af6cd0a770154a631bba12b015c787"
 
-make-plural@^4.1.1:
+make-plural@^4.2.0:
   version "4.2.0"
   resolved "https://registry.yarnpkg.com/make-plural/-/make-plural-4.2.0.tgz#03edfc34a2aee630a57e209369ef26ee3ca69590"
   optionalDependencies:
@@ -91,11 +95,11 @@ messageformat-parser@^3.0.0:
   version "3.0.0"
   resolved "https://registry.yarnpkg.com/messageformat-parser/-/messageformat-parser-3.0.0.tgz#38ae9348eb4834ab19b3a8d682af7babb335f37a"
 
-messageformat@^2.0.2:
-  version "2.0.2"
-  resolved "https://registry.yarnpkg.com/messageformat/-/messageformat-2.0.2.tgz#adb15dad45cd3a3d4900a5611ef757ae26f2508e"
+messageformat@^2.0.4:
+  version "2.0.4"
+  resolved "https://registry.yarnpkg.com/messageformat/-/messageformat-2.0.4.tgz#8d713e6d118e012bb8bd3f8c8aef05fc1418e5ea"
   dependencies:
-    make-plural "^4.1.1"
+    make-plural "^4.2.0"
     messageformat-parser "^3.0.0"
     reserved-words "^0.1.2"
 
