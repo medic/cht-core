@@ -18,5 +18,7 @@
     "mocha": "^5.2.0",
     "sinon": "^6.1.5"
   },
-  "dependencies": {}
+  "dependencies": {
+    "underscore": "^1.9.1"
+  }
 }
