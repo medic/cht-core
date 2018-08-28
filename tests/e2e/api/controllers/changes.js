@@ -804,6 +804,39 @@ describe('changes handler', () => {
           expect(err.message.includes('Error processing your changes')).toEqual(true);
         });
     });
+
+    it('offline users replicate medic-deploy-info doc', () => {
+      const medicDeployDoc = { _id: 'medic-deploy-info', deploy_info: { version: '3.x.x' }};
+      return utils
+        .saveDoc(medicDeployDoc)
+        .then(() => requestChanges('steve', { since: currentSeq }))
+        .then(changes => {
+          expect(changes.results.find(change => change.id === 'medic-deploy-info')).toBeTruthy();
+          return utils.deleteDoc('medic-deploy-info');
+        });
+    });
+
+    it('offline users can not update medic-deploy-info', () => {
+      const medicDeployDoc = { _id: 'medic-deploy-info', deploy_info: { version: '3.x.x' }};
+      return utils
+        .saveDoc(medicDeployDoc)
+        .then(doc => {
+          const options = {
+            path: `/medic-deploy-info?rev=${doc.rev}`,
+            method: 'PUT',
+            auth: `steve:${password}`,
+            body: _.extend({ some: 'data', _rev: doc.rev }, medicDeployDoc)
+          };
+          return utils.requestOnTestDb(options);
+        })
+        .then(() => {
+          expect('here').toEqual('there');
+        })
+        .catch(err => {
+          expect(err.message.startsWith('Request failed')).toBe(true);
+          return utils.deleteDoc('medic-deploy-info');
+        });
+    });
   });
 
   it('should filter the changes to relevant ones', () =>
