@@ -2,7 +2,8 @@ var _ = require('underscore');
 
 var IS_PROD_URL = /^https:\/\/[^.]+.app.medicmobile.org\//,
     BUILDS_DB = 'https://staging.dev.medicmobile.org/_couch/builds',
-    DEPLOY_DOC_ID = 'horti-upgrade';
+    DEPLOY_DOC_ID = 'horti-upgrade',
+    DEPLOY_INFO_DOC_ID = 'medic-deploy-info';
 
 angular.module('controllers').controller('UpgradeCtrl',
   function(
@@ -38,7 +39,7 @@ angular.module('controllers').controller('UpgradeCtrl',
     };
 
     var getExistingDeployment = function() {
-      return DB().get('_design/medic')
+      return DB().get(DEPLOY_INFO_DOC_ID)
         .then(function(ddoc) {
           $scope.currentDeploy = ddoc.deploy_info;
         });
