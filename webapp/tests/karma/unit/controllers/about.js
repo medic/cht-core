@@ -83,7 +83,7 @@ describe('AboutCtrl controller', function() {
   });
 
   it('displays package version if ddoc does not have info', () => {
-    DB.get.withArgs('_design/medic-client').resolves({ _id: '_design/medic-client' });
+    DB.get.withArgs('_design/medic-client').resolves({ _id: '_design/medic-client', deploy_info: undefined });
     scope.version = 'some version';
     createController();
 
