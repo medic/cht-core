@@ -111,27 +111,10 @@ const findUpdatedAppcache = ddoc => {
     });
 };
 
-const findUpdatedDeployInfoDoc = deploy_info => {
-  return db.medic.get(DEPLOY_INFO_DOC_ID)
-    .then(doc => {
-      if (!_.isEqual(doc.deploy_info, deploy_info)) {
-        doc.deploy_info = deploy_info;
-        return doc;
-      }
-    })
-    .catch(err => {
-      if (err.status === 404) {
-        return { _id: DEPLOY_INFO_DOC_ID, deploy_info };
-      }
-      throw err;
-    });
-};
-
 const findUpdated = ddoc => {
   return Promise.all([
-    findUpdatedDdocs(),
-    findUpdatedAppcache(ddoc),
-    findUpdatedDeployInfoDoc(ddoc.deploy_info)
+    findUpdatedDdocs(ddoc.deploy_info),
+    findUpdatedAppcache(ddoc)
   ]).then(results => _.compact(_.flatten(results)));
 };
 
