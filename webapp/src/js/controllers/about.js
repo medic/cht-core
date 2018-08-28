@@ -34,10 +34,10 @@ angular.module('inboxControllers').controller('AboutCtrl',
       }
     };
 
-    DB().allDocs({ key: '_design/medic-client', include_docs: true })
+    DB().get('_design/medic-client')
       .then(function(info) {
-        $scope.version = getDeployVersion(info.rows[0].doc.deploy_info) || $scope.version;
-        $scope.clientDdocVersion = info.rows[0].value.rev.split('-')[0];
+        $scope.version = getDeployVersion(info.deploy_info) || $scope.version;
+        $scope.clientDdocVersion = info._rev.split('-')[0];
       })
       .catch(function(err) {
         $log.error('Couldnt access _design/medic-client for about section', err);
