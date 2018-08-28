@@ -337,7 +337,6 @@ describe('DDoc extraction', () => {
       }
     };
 
-
     const getDdoc = get.withArgs('_design/medic').resolves(ddoc);
     const getDdocAttachment = getAttachment
       .withArgs('_design/medic', 'ddocs/compiled.json')
@@ -465,4 +464,49 @@ describe('DDoc extraction', () => {
     });
   });
 
+  it('does not update medic-deploy-info when no changes', () => {
+    const get = sinon.stub(db.medic, 'get');
+    const getAttachment = sinon.stub(db.medic, 'getAttachment');
+    const medicClient = { _id: '_design/medic-client', _rev: '2', views: {}};
+
+    const attachment = { docs: [ medicClient ] };
+    const ddoc = {
+      _id: '_design/medic',
+      deploy_info: { version: 256, some: 'thing' },
+      _attachments: {
+        'manifest.appcache': {
+          content_type: 'text/cache-manifest',
+          revpos: 2730,
+          digest: 'md5-JRYByZdYixaFg3a4L6X0pw==',
+          length: 1224,
+          stub: true
+        }
+      }
+    };
+    const medicDeployInfo = {
+      _id: 'medic-deploy-info',
+      _rev: 2,
+      deploy_info: { version: 256, some: 'thing' }
+    };
+
+    const getDdoc = get.withArgs('_design/medic').resolves(ddoc);
+    const getDdocAttachment = getAttachment
+      .withArgs('_design/medic', 'ddocs/compiled.json')
+      .resolves(Buffer.from(JSON.stringify(attachment)));
+    const getAppcache = get.withArgs('appcache').resolves({ digest: 'md5-JRYByZdYixaFg3a4L6X0pw==' });
+    const getSettings = get.withArgs('settings').resolves({ });
+    const getDeployInfo = get.withArgs('medic-deploy-info').resolves(medicDeployInfo);
+    const getClient = get.withArgs('_design/medic-client').resolves(medicClient);
+    const bulk = sinon.stub(db.medic, 'bulkDocs').resolves();
+
+    return ddocExtraction.run().then(() => {
+      getDdoc.callCount.should.equal(1);
+      getDdocAttachment.callCount.should.equal(1);
+      getAppcache.callCount.should.equal(1);
+      getSettings.callCount.should.equal(0);
+      getClient.callCount.should.equal(1);
+      getDeployInfo.callCount.should.equal(1);
+      bulk.callCount.should.equal(0);
+    });
+  });
 });
