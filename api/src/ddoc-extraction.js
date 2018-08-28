@@ -102,10 +102,9 @@ const findUpdatedAppcache = ddoc => {
     });
 };
 
-const findUpdatedDeployInfo = deploy_info => {
+const findUpdatedDeployInfoDoc = deploy_info => {
   return db.medic.get(DEPLOY_INFO_DOC_ID)
     .then(doc => {
-
       if (!_.isEqual(doc.deploy_info, deploy_info)) {
         doc.deploy_info = deploy_info;
         return doc;
@@ -123,7 +122,7 @@ const findUpdated = ddoc => {
   return Promise.all([
     findUpdatedDdocs(),
     findUpdatedAppcache(ddoc),
-    findUpdatedDeployInfo(ddoc.deploy_info)
+    findUpdatedDeployInfoDoc(ddoc.deploy_info)
   ]).then(results => _.compact(_.flatten(results)));
 };
 
