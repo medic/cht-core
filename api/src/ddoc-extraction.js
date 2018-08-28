@@ -42,11 +42,7 @@ const isUpdated = (newDdoc, deploy_info) => {
     .then(oldDdoc => {
       // update the deploy info in the medic-client ddoc
       if (newDdoc._id === CLIENT_DDOC_ID) {
-        if (deploy_info) {
-          newDdoc.deploy_info = deploy_info;
-        } else {
-          delete newDdoc.deploy_info;
-        }
+        newDdoc.deploy_info = deploy_info;
       }
 
       // set the rev so we can update if necessary

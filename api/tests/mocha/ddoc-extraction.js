@@ -213,6 +213,7 @@ describe('DDoc extraction', () => {
     ] };
     const ddoc = {
       _id: '_design/medic',
+      deploy_info: 1,
       _attachments: {
         'manifest.appcache': {
           content_type: 'text/cache-manifest',
@@ -225,6 +226,7 @@ describe('DDoc extraction', () => {
     };
     const existingClient = {
       _id: '_design/medic-client',
+      deploy_info: 1,
       _rev: '2',
       views: { doc_by_valid: { map: 'function() { return true; }' } }
     };
@@ -262,6 +264,7 @@ describe('DDoc extraction', () => {
     ] };
     const ddoc = {
       _id: '_design/medic',
+      deploy_info: 1,
       _attachments: {
         'manifest.appcache': {
           content_type: 'text/cache-manifest',
@@ -275,6 +278,7 @@ describe('DDoc extraction', () => {
     const existingClient = {
       _id: '_design/medic-client',
       _rev: '2',
+      deploy_info: 1,
       views: { doc_by_valid: { map: 'function() { return true; }' } }
     };
     const appcache = {
