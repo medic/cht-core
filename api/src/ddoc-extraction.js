@@ -3,7 +3,8 @@ const _ = require('underscore'),
       DDOC_ATTACHMENT_ID = 'ddocs/compiled.json',
       APPCACHE_ATTACHMENT_NAME = 'manifest.appcache',
       APPCACHE_DOC_ID = 'appcache',
-      SERVER_DDOC_ID = '_design/medic';
+      SERVER_DDOC_ID = '_design/medic',
+      CLIENT_DDOC_ID = '_design/medic-client';
 
 const getCompiledDdocs = () => {
   return db.medic.getAttachment(SERVER_DDOC_ID, DDOC_ATTACHMENT_ID)
@@ -36,11 +37,17 @@ const areAttachmentsEqual = (oldDdoc, newDdoc) => {
   });
 };
 
-const isUpdated = newDdoc => {
+const isUpdated = (newDdoc, deploy_info) => {
   return db.medic.get(newDdoc._id, { attachments: true })
     .then(oldDdoc => {
       // set the rev so we can update if necessary
       newDdoc._rev = oldDdoc && oldDdoc._rev;
+
+      // update the deploy info in the medic-client ddoc
+      if (newDdoc._id === CLIENT_DDOC_ID) {
+        newDdoc.deploy_info = deploy_info;
+      }
+
       if (!oldDdoc) {
         // this is a new ddoc - definitely install it
         return newDdoc;
@@ -68,13 +75,13 @@ const isUpdated = newDdoc => {
     });
 };
 
-const findUpdatedDdocs = () => {
+const findUpdatedDdocs = (deploy_info) => {
   return getCompiledDdocs()
     .then(ddocs => {
       if (!ddocs.length) {
         return [];
       }
-      return Promise.all(ddocs.map(ddoc => isUpdated(ddoc)));
+      return Promise.all(ddocs.map(ddoc => isUpdated(ddoc, deploy_info)));
     })
     .then(updated => _.compact(updated));
 };
@@ -103,7 +110,7 @@ const findUpdatedAppcache = ddoc => {
 
 const findUpdated = ddoc => {
   return Promise.all([
-    findUpdatedDdocs(),
+    findUpdatedDdocs(ddoc.deploy_info),
     findUpdatedAppcache(ddoc)
   ]).then(results => _.compact(_.flatten(results)));
 };
