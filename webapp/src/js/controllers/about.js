@@ -24,9 +24,23 @@ angular.module('inboxControllers').controller('AboutCtrl',
         $scope.ddocVersion = 'offline'; // TODO translate?
       });
 
-    DB().allDocs({ key: '_design/medic-client' })
+    var getDeployVersion = function(deployInfo) {
+      if (!deployInfo || !deployInfo.version) {
+        return false;
+      }
+
+      if (deployInfo.version === deployInfo.base_version || !deployInfo.base_version) {
+        return deployInfo.version;
+      }
+
+      return deployInfo.version + ' (~' + deployInfo.base_version + ')';
+    };
+
+    DB()
+      .get('_design/medic-client')
       .then(function(info) {
-        $scope.clientDdocVersion = info.rows[0].value.rev.split('-')[0];
+        $scope.version = getDeployVersion(info.deploy_info) || $scope.version;
+        $scope.clientDdocVersion = info._rev.split('-')[0];
       })
       .catch(function(err) {
         $log.error('Couldnt access _design/medic-client for about section', err);
