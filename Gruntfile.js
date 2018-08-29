@@ -95,36 +95,32 @@ module.exports = function(grunt) {
       },
     },
     browserify: {
-      options: {
-        browserifyOptions: {
-          debug: true,
-        },
-      },
       webapp: {
-        src: 'webapp/src/js/app.js',
+        src: 'webapp/src/js/app.ts',
         dest: 'build/ddocs/medic/_attachments/js/inbox.js',
         browserifyOptions: {
           detectGlobals: false,
         },
         options: {
           transform: ['browserify-ngannotate'],
+          plugin: ['tsify'],
           alias: {
             'enketo-config': './webapp/src/js/enketo/config.json',
-            widgets: './webapp/src/js/enketo/widgets',
+            widgets: './webapp/src/js/enketo/widgets.js',
             './xpath-evaluator-binding':
-              './webapp/src/js/enketo/OpenrosaXpathEvaluatorBinding',
+              './webapp/src/js/enketo/OpenrosaXpathEvaluatorBinding.js',
             'extended-xpath':
-              './webapp/node_modules/openrosa-xpath-evaluator/src/extended-xpath',
+              './webapp/node_modules/openrosa-xpath-evaluator/src/extended-xpath.js',
             'openrosa-xpath-extensions':
-              './webapp/node_modules/openrosa-xpath-evaluator/src/openrosa-xpath-extensions',
-            translator: './webapp/src/js/enketo/translator', // translator for enketo's internal i18n
+              './webapp/node_modules/openrosa-xpath-evaluator/src/openrosa-xpath-extensions.js',
+            translator: './webapp/src/js/enketo/translator.js', // translator for enketo's internal i18n
             '../../js/dropdown.jquery':
-              './webapp/node_modules/bootstrap/js/dropdown', // enketo currently duplicates bootstrap's dropdown code.  working to resolve this upstream https://github.com/enketo/enketo-core/issues/454
+              './webapp/node_modules/bootstrap/js/dropdown.js', // enketo currently duplicates bootstrap's dropdown code.  working to resolve this upstream https://github.com/enketo/enketo-core/issues/454
             'angular-translate-interpolation-messageformat':
-              './webapp/node_modules/angular-translate/dist/angular-translate-interpolation-messageformat/angular-translate-interpolation-messageformat',
+              './webapp/node_modules/angular-translate/dist/angular-translate-interpolation-messageformat/angular-translate-interpolation-messageformat.js',
             'angular-translate-handler-log':
-              './webapp/node_modules/angular-translate/dist/angular-translate-handler-log/angular-translate-handler-log',
-            moment: './webapp/node_modules/moment/moment',
+              './webapp/node_modules/angular-translate/dist/angular-translate-handler-log/angular-translate-handler-log.js',
+            moment: './webapp/node_modules/moment/moment.js',
           },
         },
       },
@@ -409,7 +405,10 @@ module.exports = function(grunt) {
       },
       'yarn-install': {
         cmd: ['webapp', 'api', 'sentinel', 'admin']
-          .map(dir => `echo "[${dir}]" && cd ${dir} && yarn install && cd ..`)
+          .map(
+            dir =>
+              `echo "[${dir}]" && cd ${dir} && yarn install --ignore-engines && cd ..`
+          )
           .join(' && '),
       },
       'start-webdriver': {
@@ -967,7 +966,7 @@ module.exports = function(grunt) {
   grunt.registerTask(
     'dev-webapp-no-dependencies',
     'Build and deploy the webapp for dev, without reinstalling dependencies.',
-    ['build-dev', 'deploy', 'watch']
+    ['build-dev', 'deploy' /*, 'watch'*/]
   );
 
   grunt.registerTask('dev-api', 'Run api and watch for file changes', [

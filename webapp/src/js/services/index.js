@@ -1,8 +1,7 @@
-(function () {
-
+(function() {
   'use strict';
 
-  angular.module('inboxServices', ['ngResource']);
+  angular.module('inboxServices', []);
 
   require('./add-attachment');
   require('./add-read-status');
@@ -93,5 +92,4 @@
   require('./xml-forms-context-utils');
   require('./xslt');
   require('./z-score');
-
-}());
+})();
