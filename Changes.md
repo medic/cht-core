@@ -21,35 +21,33 @@ _July 6, 2018_
 
 ### Improvements
 
-- [#4241](https://github.com/medic/medic-webapp/issues/4241): Targets tab has no Loading spinner on initial load
-- [#4530](https://github.com/medic/medic-webapp/issues/4530): Enketo summary label icons are misaligned
-- [#4516](https://github.com/medic/medic-webapp/issues/4516): Replace medic-reporter
-- [#3344](https://github.com/medic/medic-webapp/issues/3344): Documentation for CouchDB 2.0
-- [#4487](https://github.com/medic/medic-webapp/issues/4487): Person with self as parent
-- [#4096](https://github.com/medic/medic-webapp/issues/4096): Work out if you're allowed to pass `roles` to `/api/v1/users`
-- [#4302](https://github.com/medic/medic-webapp/issues/4302): Remove `messages` from `medic-api` documentation
 - [#3805](https://github.com/medic/medic-webapp/issues/3805): Add Horticulturalist integration tests
+- [#3973](https://github.com/medic/medic-webapp/issues/3973): Value for db-doc attribute is case sensitive
+- [#4096](https://github.com/medic/medic-webapp/issues/4096): Work out if you're allowed to pass `roles` to `/api/v1/users`
+- [#4241](https://github.com/medic/medic-webapp/issues/4241): Targets tab has no Loading spinner on initial load
+- [#4302](https://github.com/medic/medic-webapp/issues/4302): Remove `messages` from `medic-api` documentation
+- [#4487](https://github.com/medic/medic-webapp/issues/4487): Person with self as parent
+- [#4516](https://github.com/medic/medic-webapp/issues/4516): Replace medic-reporter
+- [#4530](https://github.com/medic/medic-webapp/issues/4530): Enketo summary label icons are misaligned
 - [#4562](https://github.com/medic/medic-webapp/issues/4562): Horticulturalist restart behavior
 - [#4564](https://github.com/medic/medic-webapp/issues/4564): Version build info and horti upgrade doc data structures
 - [#4567](https://github.com/medic/medic-webapp/issues/4567): Make horticulturalist view warming output nicer
 - [#4568](https://github.com/medic/medic-webapp/issues/4568): Reduce how long horticulturalist takes node modules down for
 - [#4580](https://github.com/medic/medic-webapp/issues/4580): Horticulturalist shouldn't show older versions
 - [#4604](https://github.com/medic/medic-webapp/issues/4604): Make sure we can't infinitely recurse in the lineage shared library
-- [#4609](https://github.com/medic/medic-webapp/issues/4609): Deny non-admin requests to futon/fauxton/whatever
 - [#4622](https://github.com/medic/medic-webapp/issues/4622): Implement access logging in API
-- [#3973](https://github.com/medic/medic-webapp/issues/3973): Value for db-doc attribute is case sensitive
 
 ### Performance fixes
 
-- [#4497](https://github.com/medic/medic-webapp/issues/4497): DDoc extraction runs too often
-- [#4172](https://github.com/medic/medic-webapp/issues/4172): Changes requests are unsustainably large
-- [#4145](https://github.com/medic/medic-webapp/issues/4145): Split the admin tab out as a new app
-- [#3725](https://github.com/medic/medic-webapp/issues/3725): Add limit of 100 for num_reports_threshold in multi_report_alerts
 - [#3423](https://github.com/medic/medic-webapp/issues/3423): Pull sentinel data out into its own database
+- [#3725](https://github.com/medic/medic-webapp/issues/3725): Add limit of 100 for num_reports_threshold in multi_report_alerts
+- [#4145](https://github.com/medic/medic-webapp/issues/4145): Split the admin tab out as a new app
+- [#4172](https://github.com/medic/medic-webapp/issues/4172): Changes requests are unsustainably large
 - [#4185](https://github.com/medic/medic-webapp/issues/4185): Improve the filtered replication algorithm
 - [#4244](https://github.com/medic/medic-webapp/issues/4244): Write a scalability testing framework
 - [#4284](https://github.com/medic/medic-webapp/issues/4284): Refactor messages_by_contact_date view to reduce more
 - [#4362](https://github.com/medic/medic-webapp/issues/4362): Write a doc minification script to apply migrations to a running instance
+- [#4497](https://github.com/medic/medic-webapp/issues/4497): DDoc extraction runs too often
 - [#4620](https://github.com/medic/medic-webapp/issues/4620): Implement log rotation
 - [#4642](https://github.com/medic/medic-webapp/issues/4642): Output node_env when starting API
 - [#4643](https://github.com/medic/medic-webapp/issues/4643): Enable response body compression
@@ -58,84 +56,86 @@ _July 6, 2018_
 
 ### Bug fixes
 
-- [#4463](https://github.com/medic/medic-webapp/issues/4463): Configuration app, horticulturalist upgrade page no longer blocks if you aren't using horti
-- [#4502](https://github.com/medic/medic-webapp/issues/4502): Show a user friendly error message when contact is not within place
-- [#4446](https://github.com/medic/medic-webapp/issues/4446): Reports not linked to person if missing `patient_id`
-- [#3387](https://github.com/medic/medic-webapp/issues/3387): Couch2 may not require a valid user by default
-- [#4232](https://github.com/medic/medic-webapp/issues/4232): Wrong date shown based on time and timezone
 - [#1140](https://github.com/medic/medic-webapp/issues/1140): Use HTTP Strict Transport Security (HSTS)
-- [#4319](https://github.com/medic/medic-webapp/issues/4319): Browser OOM crash on Enketo db-object prepopulated forms
-- [#4371](https://github.com/medic/medic-webapp/issues/4371): Report RHS action bar not updated for unknown/missing contact
-- [#3923](https://github.com/medic/medic-webapp/issues/3923): Message for the `sys.missing_fields` error is not translated
-- [#4425](https://github.com/medic/medic-webapp/issues/4425): Lineage unit tests do not run on Travis
-- [#4373](https://github.com/medic/medic-webapp/issues/4373):  `{{patient_name}}`  not rendered in the error message and the automated reply.
-- [#4364](https://github.com/medic/medic-webapp/issues/4364): Don't use error code 301 when unauthorized
-- [#4343](https://github.com/medic/medic-webapp/issues/4343): The sms-gateway endpoint can crash api
-- [#3783](https://github.com/medic/medic-webapp/issues/3783): Online-only users never get changes that occured while api was offline
-- [#3835](https://github.com/medic/medic-webapp/issues/3835): Relative date in horticulturalist branches does not show absolute date on hover
-- [#4211](https://github.com/medic/medic-webapp/issues/4211): Export server logs not working
-- [#4243](https://github.com/medic/medic-webapp/issues/4243): Upgrading throbber spins forever when Cancel is clicked on in Horticulturalist's `Update Available` modal 
-- [#3374](https://github.com/medic/medic-webapp/issues/3374): Close hole in SSL for SMSSync
-- [#4465](https://github.com/medic/medic-webapp/issues/4465): Doc conflict when converting old sentinel info docs
-- [#4424](https://github.com/medic/medic-webapp/issues/4424): Pouch timeout weirdness with Medic servers
-- [#2734](https://github.com/medic/medic-webapp/issues/2734): Changes feed filtering can be avoided
-- [#3806](https://github.com/medic/medic-webapp/issues/3806): Horti fails to upgrade through the ui if there is already a staged ddoc
-- [#4412](https://github.com/medic/medic-webapp/issues/4412): User metadata db security
-- [#4088](https://github.com/medic/medic-webapp/issues/4088): User's role changes are only reflected if they log out and in again
-- [#4461](https://github.com/medic/medic-webapp/issues/4461): Select2 dropdowns don't work in the admin app
-- [#4500](https://github.com/medic/medic-webapp/issues/4500): Add/Edit User form does not show required fields in 3.0
-- [#4462](https://github.com/medic/medic-webapp/issues/4462): Checkboxes don't render correctly in the admin app
-- [#4312](https://github.com/medic/medic-webapp/issues/4312): TIMEOUT errors watching changes feed For Some Reason™
-- [#4426](https://github.com/medic/medic-webapp/issues/4426): If one shared-lib test fails it doesn't break the build
-- [#4472](https://github.com/medic/medic-webapp/issues/4472): couch2pg fails to escape certain JSON documents when trying to store them
 - [#3099](https://github.com/medic/medic-webapp/issues/3099): Uncaught exception triggers 500 response for subsequent requests
+- [#3374](https://github.com/medic/medic-webapp/issues/3374): Close hole in SSL for SMSSync
+- [#3387](https://github.com/medic/medic-webapp/issues/3387): Couch2 may not require a valid user by default
+- [#3783](https://github.com/medic/medic-webapp/issues/3783): Online-only users never get changes that occured while api was offline
+- [#3806](https://github.com/medic/medic-webapp/issues/3806): Horti fails to upgrade through the ui if there is already a staged ddoc
+- [#3835](https://github.com/medic/medic-webapp/issues/3835): Relative date in horticulturalist branches does not show absolute date on hover
+- [#3923](https://github.com/medic/medic-webapp/issues/3923): Message for the `sys.missing_fields` error is not translated
+- [#4088](https://github.com/medic/medic-webapp/issues/4088): User's role changes are only reflected if they log out and in again
+- [#4211](https://github.com/medic/medic-webapp/issues/4211): Export server logs not working
+- [#4232](https://github.com/medic/medic-webapp/issues/4232): Wrong date shown based on time and timezone
+- [#4243](https://github.com/medic/medic-webapp/issues/4243): Upgrading throbber spins forever when Cancel is clicked on in Horticulturalist's `Update Available` modal 
+- [#4312](https://github.com/medic/medic-webapp/issues/4312): TIMEOUT errors watching changes feed For Some Reason™
+- [#4319](https://github.com/medic/medic-webapp/issues/4319): Browser OOM crash on Enketo db-object prepopulated forms
+- [#4343](https://github.com/medic/medic-webapp/issues/4343): The sms-gateway endpoint can crash api
+- [#4364](https://github.com/medic/medic-webapp/issues/4364): Don't use error code 301 when unauthorized
+- [#4371](https://github.com/medic/medic-webapp/issues/4371): Report RHS action bar not updated for unknown/missing contact
+- [#4373](https://github.com/medic/medic-webapp/issues/4373):  `{{patient_name}}`  not rendered in the error message and the automated reply.
+- [#4412](https://github.com/medic/medic-webapp/issues/4412): User metadata db security
+- [#4424](https://github.com/medic/medic-webapp/issues/4424): Pouch timeout weirdness with Medic servers
+- [#4425](https://github.com/medic/medic-webapp/issues/4425): Lineage unit tests do not run on Travis
+- [#4426](https://github.com/medic/medic-webapp/issues/4426): If one shared-lib test fails it doesn't break the build
+- [#4446](https://github.com/medic/medic-webapp/issues/4446): Reports not linked to person if missing `patient_id`
+- [#4461](https://github.com/medic/medic-webapp/issues/4461): Select2 dropdowns don't work in the admin app
+- [#4462](https://github.com/medic/medic-webapp/issues/4462): Checkboxes don't render correctly in the admin app
+- [#4463](https://github.com/medic/medic-webapp/issues/4463): Configuration app, horticulturalist upgrade page no longer blocks if you aren't using horti
+- [#4465](https://github.com/medic/medic-webapp/issues/4465): Doc conflict when converting old sentinel info docs
+- [#4472](https://github.com/medic/medic-webapp/issues/4472): couch2pg fails to escape certain JSON documents when trying to store them
+- [#4500](https://github.com/medic/medic-webapp/issues/4500): Add/Edit User form does not show required fields in 3.0
+- [#4502](https://github.com/medic/medic-webapp/issues/4502): Show a user friendly error message when contact is not within place
 - [#4504](https://github.com/medic/medic-webapp/issues/4504): Configuration app: loader throbber doesn't work
 - [#4507](https://github.com/medic/medic-webapp/issues/4507): Upgrade Instance does not show when it is finished
 - [#4546](https://github.com/medic/medic-webapp/issues/4546): Can't SSH in to Docker instances
 - [#4547](https://github.com/medic/medic-webapp/issues/4547): Implement a http to https redirect for Docker instances
 - [#4548](https://github.com/medic/medic-webapp/issues/4548): Error getting zscore-charts
 - [#4584](https://github.com/medic/medic-webapp/issues/4584): Pregnancy reports sent via sms cannot be viewed when user language in not English
-- [#4612](https://github.com/medic/medic-webapp/issues/4612): There are view generation errors
 - [#4645](https://github.com/medic/medic-webapp/issues/4645): Use a robots.txt file to stop spiders crawling our instances
 - [#4673](https://github.com/medic/medic-webapp/issues/4673): Logging out fails if the session is already timed out
+- [#4719](https://github.com/medic/medic-webapp/issues/4719): Fix horticulturalist timeouts
+- [#4754](https://github.com/medic/medic-webapp/issues/4754): Deleting error-report not replicating properly
+- [#4774](https://github.com/medic/medic-webapp/issues/4774): Use user.facility_id saved in `_users` instead of `medic` db
+- [#4792](https://github.com/medic/medic-webapp/issues/4792): Horti versions don't show up correctly in about page
 
 ### Technical issues
 
-- [#4536](https://github.com/medic/medic-webapp/issues/4536): Using grunt watch misses changes on admin app and translations
-- [#4305](https://github.com/medic/medic-webapp/issues/4305): Make node version requirement of v8 and above mandatory
-- [#2504](https://github.com/medic/medic-webapp/issues/2504): Make nools tests run when changes are made
-- [#4229](https://github.com/medic/medic-webapp/issues/4229): Registration transition logs error when all scheduled tasks are in the past
-- [#2583](https://github.com/medic/medic-webapp/issues/2583): Sort out roles
-- [#3343](https://github.com/medic/medic-webapp/issues/3343): Confirm logout on CouchDB 2.0 works properly
-- [#3257](https://github.com/medic/medic-webapp/issues/3257): Determine how we migrate large instances from CouchDB 1.x to CouchDB 2.0
-- [#1876](https://github.com/medic/medic-webapp/issues/1876): Restructure the repository to be more standard and logical
-- [#3019](https://github.com/medic/medic-webapp/issues/3019): Replace kanso
-- [#3436](https://github.com/medic/medic-webapp/issues/3436): edit-user controller has 3 different entry points and 2 different templates
-- [#3826](https://github.com/medic/medic-webapp/issues/3826): Too many hydration / lineage functions
 - [#1002](https://github.com/medic/medic-webapp/issues/1002): Remove the rest of lucene
+- [#1876](https://github.com/medic/medic-webapp/issues/1876): Restructure the repository to be more standard and logical
+- [#2504](https://github.com/medic/medic-webapp/issues/2504): Make nools tests run when changes are made
+- [#2583](https://github.com/medic/medic-webapp/issues/2583): Sort out roles
+- [#3019](https://github.com/medic/medic-webapp/issues/3019): Replace kanso
 - [#3032](https://github.com/medic/medic-webapp/issues/3032): Fix npm shrinkwrap
-- [#3971](https://github.com/medic/medic-webapp/issues/3971): Remove `/api/v1/messages` endpoint
+- [#3257](https://github.com/medic/medic-webapp/issues/3257): Determine how we migrate large instances from CouchDB 1.x to CouchDB 2.0
+- [#3343](https://github.com/medic/medic-webapp/issues/3343): Confirm logout on CouchDB 2.0 works properly
+- [#3436](https://github.com/medic/medic-webapp/issues/3436): edit-user controller has 3 different entry points and 2 different templates
+- [#3528](https://github.com/medic/medic-webapp/issues/3528): CouchDB 2.0: make sure our app doesn't rely on seq order
 - [#3747](https://github.com/medic/medic-webapp/issues/3747): Horticulturalist local mode
 - [#3825](https://github.com/medic/medic-webapp/issues/3825): Horti shouldn't default to starting in MedicOS mode
-- [#3528](https://github.com/medic/medic-webapp/issues/3528): CouchDB 2.0: make sure our app doesn't rely on seq order
+- [#3826](https://github.com/medic/medic-webapp/issues/3826): Too many hydration / lineage functions
+- [#3971](https://github.com/medic/medic-webapp/issues/3971): Remove `/api/v1/messages` endpoint
 - [#4147](https://github.com/medic/medic-webapp/issues/4147): Remove references to SMSSync
-- [#4661](https://github.com/medic/medic-webapp/issues/4661): Make sure we've released the latest version of Horti
-- [#4386](https://github.com/medic/medic-webapp/issues/4386): Bump enketo-core to latest
+- [#4229](https://github.com/medic/medic-webapp/issues/4229): Registration transition logs error when all scheduled tasks are in the past
+- [#4305](https://github.com/medic/medic-webapp/issues/4305): Make node version requirement of v8 and above mandatory
 - [#4306](https://github.com/medic/medic-webapp/issues/4306): Write integration tests against lineage
 - [#4316](https://github.com/medic/medic-webapp/issues/4316): Push docker output to s3 instead of to travis logs
-- [#4367](https://github.com/medic/medic-webapp/issues/4367): Move sms-specific views into medic-sms ddoc
 - [#4317](https://github.com/medic/medic-webapp/issues/4317): Push webdriver output to s3 instead of to travis logs
+- [#4367](https://github.com/medic/medic-webapp/issues/4367): Move sms-specific views into medic-sms ddoc
 - [#4380](https://github.com/medic/medic-webapp/issues/4380): UNIT_TEST_ENV is set 1 on Travis when running integration tests
 - [#4420](https://github.com/medic/medic-webapp/issues/4420): Make a shared library for message utils
 - [#4470](https://github.com/medic/medic-webapp/issues/4470): medic-api logs are inconsistently prefixed
 - [#4489](https://github.com/medic/medic-webapp/issues/4489): Module packing is broken
 - [#4506](https://github.com/medic/medic-webapp/issues/4506): Configuration app isn't watched properly
+- [#4536](https://github.com/medic/medic-webapp/issues/4536): Using grunt watch misses changes on admin app and translations
 - [#4541](https://github.com/medic/medic-webapp/issues/4541): Store app settings outside of the ddoc
 - [#4556](https://github.com/medic/medic-webapp/issues/4556): Move ddocs to top-level directory in medic-webapp repo
 - [#4558](https://github.com/medic/medic-webapp/issues/4558): Replace "follow" library with pouch.changes
 - [#4637](https://github.com/medic/medic-webapp/issues/4637): Move /patches from the root to webapp/patches
+- [#4661](https://github.com/medic/medic-webapp/issues/4661): Make sure we've released the latest version of Horti
 - [#4676](https://github.com/medic/medic-webapp/issues/4676): Emit NODE_OPTIONS during API startup
 - [#4683](https://github.com/medic/medic-webapp/issues/4683): Create a shared library for server startup checks
+- [#4741](https://github.com/medic/medic-webapp/issues/4741): App bootstraps without data when changes returns an error
 
 ## 2.18.0
 
