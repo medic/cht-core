@@ -10,4 +10,4 @@ yarn install
 yarn list || true
 yarn global add grunt-cli --ignore-engines
 cd shared-libs/phone-number && yarn install && cd ../..
-node --stack_size=10000 `which grunt` ci-build
+node --stack_size=10000 --max_old_space_size=8192 `which grunt` ci-build
