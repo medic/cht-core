@@ -177,7 +177,7 @@ _August 27, 2018_
 
 ## 2.18.0
 
-_August 20, 2018_
+_August 29, 2018_
 
 ### Features
 
