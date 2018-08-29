@@ -40,13 +40,14 @@ const areAttachmentsEqual = (oldDdoc, newDdoc) => {
 const isUpdated = (newDdoc, deploy_info) => {
   return db.medic.get(newDdoc._id, { attachments: true })
     .then(oldDdoc => {
+      // set the rev so we can update if necessary
+      newDdoc._rev = oldDdoc && oldDdoc._rev;
+
       // update the deploy info in the medic-client ddoc
       if (newDdoc._id === CLIENT_DDOC_ID) {
         newDdoc.deploy_info = deploy_info;
       }
 
-      // set the rev so we can update if necessary
-      newDdoc._rev = oldDdoc && oldDdoc._rev;
       if (!oldDdoc) {
         // this is a new ddoc - definitely install it
         return newDdoc;

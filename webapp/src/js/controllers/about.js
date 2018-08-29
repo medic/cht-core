@@ -22,19 +22,20 @@ angular.module('inboxControllers').controller('AboutCtrl',
         $scope.ddocVersion = 'offline'; // TODO translate?
       });
 
-    var getDeployVersion = function(buildInfo) {
-      if (!buildInfo || !buildInfo.version) {
+    var getDeployVersion = function(deployInfo) {
+      if (!deployInfo || !deployInfo.version) {
         return false;
       }
 
-      if (buildInfo.version === buildInfo.base_version || !buildInfo.base_version) {
-        return buildInfo.version;
-      } else {
-        return buildInfo.version + ' (~' + buildInfo.base_version + ')';
+      if (deployInfo.version === deployInfo.base_version || !deployInfo.base_version) {
+        return deployInfo.version;
       }
+
+      return deployInfo.version + ' (~' + deployInfo.base_version + ')';
     };
 
-    DB().get('_design/medic-client')
+    DB()
+      .get('_design/medic-client')
       .then(function(info) {
         $scope.version = getDeployVersion(info.deploy_info) || $scope.version;
         $scope.clientDdocVersion = info._rev.split('-')[0];
