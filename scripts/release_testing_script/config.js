@@ -5,30 +5,28 @@ var columnData = {
     name: 'To Do',
     order: 0
   },
-  done: {
-    name: 'Done',
+  pass: {
+    name: 'Pass',
     order: 2
   },
   inProg: {
     name: 'In Progress',
     order: 1
+  },
+  fail:{
+    name: 'Fail',
+    order: 3
   }
 }
 
 module.exports = {
-  gitHubApi: 'https://api.github.com/',
-  gitHub: 'https://github.com/',
-  projects: 'newtewt/release_testing_example/projects',
-  issuesEnd: 'repos/newtewt/release_testing_example/issues',
-  projectCreate: 'repos/newtewt/release_testing_example/projects',
-  repoName: 'release_testing_example',
-  owner: 'newtewt',
-  labels: "Release Testing",
-  columnNames: ["To Do", "In Progress", "Done"],
+  repoName: 'medic-webapp',
+  owner: 'medic',
+  labels: "Release Test",
   columnNamesData: columnData,
+  token: JSON.parse(fs.readFileSync('token.json', 'utf8')).token,
   headers: {
-    'User-Agent': 'newtewt',
-    'Accept': 'application/vnd.github.inertia-preview+json',
-    'Authorization': JSON.parse(fs.readFileSync('token.json', 'utf8')).token
+    'User-Agent': 'medic-qa',
+    'Accept': 'application/vnd.github.inertia-preview+json'
   }
 }

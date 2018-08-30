@@ -1,13 +1,15 @@
-const octokit = require('@octokit/rest')(),
-  config = require('./config');
-
+const config = require('./config'),
+  octokit = require('@octokit/rest')({ headers: config.headers })
 
 async function createProject(projectName) {
+  octokit.authenticate({
+    type: 'token',
+    token: config.token
+  });
   var data = {
     owner: config.owner,
     repo: config.repoName,
-    name: projectName,
-    headers: config.headers
+    name: projectName
   };
   try {
     return octokit.projects.createRepoProject(data);
@@ -20,8 +22,7 @@ async function createProject(projectName) {
 async function addColumnsToProject(columnName, projectId) {
   var data = {
     project_id: projectId,
-    name: columnName,
-    headers: config.headers
+    name: columnName
   };
   try {
     return await octokit.projects.createProjectColumn(data);
@@ -72,7 +73,6 @@ function addIssuesToColumn(columnId, issueIds) {
       column_id: columnId,
       content_id: issueId,
       content_type: 'Issue',
-      headers: config.headers
     };
     try {
       octokit.projects.createProjectCard(data);

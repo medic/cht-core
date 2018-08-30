@@ -1,5 +1,5 @@
-const octokit = require('@octokit/rest')(),
-  config = require('./config');
+const config = require('./config'),
+  octokit = require('@octokit/rest')({ headers: config.headers });
 
 async function issues() {
   data = {
