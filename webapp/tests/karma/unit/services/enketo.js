@@ -825,14 +825,24 @@ describe('Enketo service', function() {
       const jqFind = $.fn.find;
       sinon.stub($.fn, 'find');
       $.fn.find.callsFake(jqFind);
-      $.fn.find.withArgs('input[type=file][name="/my-root-element/my_file"]').returns([{ files: [{ type: 'image' }] }]);
+      $.fn.find
+        .withArgs('input[type=file][name="/my-root-element/my_file"]')
+        .returns([{ files: [{ type: 'image' }] }]);
+      $.fn.find
+        .withArgs('input[type=file][name="/my-root-element/sub_element/sub_sub_element/other_file"]')
+        .returns([{ files: [{ type: 'mytype' }] }]);
       form.validate.resolves(true);
       const content = `
-        <my-root-element id="my-form-internal-id">
+        <my-root-element>
           <name>Mary</name>
           <age>10</age>
           <gender>f</gender>
           <my_file type="file">some image name.png</my_file>
+          <sub_element>
+            <sub_sub_element>
+              <other_file type="file">some other name.png</other_file>
+            </sub_sub_element>
+          </sub_element>
         </my-root-element>
       `;
 
@@ -841,12 +851,17 @@ describe('Enketo service', function() {
       UserContact.resolves({ _id: 'my-user', phone: '8989' });
       dbBulkDocs.callsFake(docs => Promise.resolve([ { ok: true, id: docs[0]._id, rev: '1-abc' } ]));
       return service.save('my-form-internal-id', form, true).then(() => {
-        chai.expect(AddAttachment.callCount).to.equal(2);
+        chai.expect(AddAttachment.callCount).to.equal(3);
         chai.expect(AddAttachment.args[0][1]).to.equal('content');
 
         chai.expect(AddAttachment.args[1][1]).to.equal('user-file/my-form-internal-id/my_file');
         chai.expect(AddAttachment.args[1][2]).to.deep.equal({ type: 'image' });
         chai.expect(AddAttachment.args[1][3]).to.equal('image');
+
+        chai.expect(AddAttachment.args[2][1])
+          .to.equal('user-file/my-form-internal-id/sub_element/sub_sub_element/other_file');
+        chai.expect(AddAttachment.args[2][2]).to.deep.equal({ type: 'mytype' });
+        chai.expect(AddAttachment.args[2][3]).to.equal('mytype');
       });
     });
   });
