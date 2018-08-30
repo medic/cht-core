@@ -432,7 +432,8 @@ angular.module('inboxServices').service('Enketo',
 
       var attach = function(elem, file, type, alreadyEncoded, xpath) {
         xpath = xpath || xpathPath(elem);
-        var filename = 'user-file' + xpath;
+        // replace rootElement node name with form ID
+        var filename = 'user-file/' + doc.form + xpath.slice(xpath.indexOf('/', 1));
         AddAttachment(doc, filename, file, type, alreadyEncoded);
       };
 

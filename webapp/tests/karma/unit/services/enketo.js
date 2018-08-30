@@ -131,7 +131,7 @@ describe('Enketo service', function() {
   });
 
   afterEach(function() {
-    KarmaUtils.restore(EnketoForm, enketoInit, dbGetAttachment, dbGet, dbBulkDocs, transform, createObjectURL, ContactSummary, FileReader.utf8, UserContact, form.validate, form.getDataStr, Language, TranslateFrom, AddAttachment, Search, LineageModelGenerator.contact);
+    KarmaUtils.restore(EnketoForm, enketoInit, dbGetAttachment, dbGet, dbBulkDocs, transform, createObjectURL, ContactSummary, FileReader.utf8, UserContact, form.validate, form.getDataStr, Language, TranslateFrom, AddAttachment, Search, LineageModelGenerator.contact, $.fn.find);
   });
 
   describe('render', function() {
@@ -821,6 +821,34 @@ describe('Enketo service', function() {
       });
     });
 
+    it('attachment names are relative to the form name not the root node name', () => {
+      const jqFind = $.fn.find;
+      sinon.stub($.fn, 'find');
+      $.fn.find.callsFake(jqFind);
+      $.fn.find.withArgs('input[type=file][name="/my-root-element/my_file"]').returns([{ files: [{ type: 'image' }] }]);
+      form.validate.resolves(true);
+      const content = `
+        <my-root-element id="my-form-internal-id">
+          <name>Mary</name>
+          <age>10</age>
+          <gender>f</gender>
+          <my_file type="file">some image name.png</my_file>
+        </my-root-element>
+      `;
+
+      form.getDataStr.returns(content);
+      dbGetAttachment.resolves('<form/>');
+      UserContact.resolves({ _id: 'my-user', phone: '8989' });
+      dbBulkDocs.callsFake(docs => Promise.resolve([ { ok: true, id: docs[0]._id, rev: '1-abc' } ]));
+      return service.save('my-form-internal-id', form, true).then(() => {
+        chai.expect(AddAttachment.callCount).to.equal(2);
+        chai.expect(AddAttachment.args[0][1]).to.equal('content');
+
+        chai.expect(AddAttachment.args[1][1]).to.equal('user-file/my-form-internal-id/my_file');
+        chai.expect(AddAttachment.args[1][2]).to.deep.equal({ type: 'image' });
+        chai.expect(AddAttachment.args[1][3]).to.equal('image');
+      });
+    });
   });
 
 });
