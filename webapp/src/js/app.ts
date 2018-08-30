@@ -9,8 +9,8 @@ import * as angular from 'angular';
 import 'zone.js';
 
 setAngularLib(angular);
-window.PouchDB = require('pouchdb-browser');
-window.PouchDB.plugin(require('pouchdb-debug'));
+window.PouchDB = require('pouchdb-browser').default;
+// window.PouchDB.plugin(require('pouchdb-debug'));
 window.$ = window.jQuery = require('jquery');
 window.d3 = require('d3');
 

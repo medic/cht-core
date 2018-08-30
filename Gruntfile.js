@@ -1,4 +1,5 @@
 const packageJson = require('./package.json'),
+  webpackConfig = require('./webpack.config'),
   releaseName =
     process.env.TRAVIS_TAG || process.env.TRAVIS_BRANCH || 'local-development';
 
@@ -93,6 +94,9 @@ module.exports = function(grunt) {
           },
         ],
       },
+    },
+    webpack: {
+      prod: webpackConfig,
     },
     browserify: {
       webapp: {
@@ -550,7 +554,7 @@ module.exports = function(grunt) {
       'webapp-js': {
         files: ['webapp/src/js/**/*', 'shared-libs/**'],
         tasks: [
-          'browserify:webapp',
+          'webpack',
           'replace:update-app-constants',
           'appcache',
           'couch-compile:primary',
@@ -791,7 +795,7 @@ module.exports = function(grunt) {
   ]);
 
   grunt.registerTask('mmjs', 'Build the JS resources', [
-    'browserify:webapp',
+    'webpack',
     'replace:update-app-constants',
     'ngtemplates:inboxApp',
   ]);
