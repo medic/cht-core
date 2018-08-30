@@ -827,10 +827,10 @@ describe('Enketo service', function() {
       $.fn.find.callsFake(jqFind);
       $.fn.find
         .withArgs('input[type=file][name="/my-root-element/my_file"]')
-        .returns([{ files: [{ type: 'image' }] }]);
+        .returns([{ files: [{ type: 'image', foo: 'bar' }] }]);
       $.fn.find
         .withArgs('input[type=file][name="/my-root-element/sub_element/sub_sub_element/other_file"]')
-        .returns([{ files: [{ type: 'mytype' }] }]);
+        .returns([{ files: [{ type: 'mytype', foo: 'baz' }] }]);
       form.validate.resolves(true);
       const content = `
         <my-root-element>
@@ -855,12 +855,12 @@ describe('Enketo service', function() {
         chai.expect(AddAttachment.args[0][1]).to.equal('content');
 
         chai.expect(AddAttachment.args[1][1]).to.equal('user-file/my-form-internal-id/my_file');
-        chai.expect(AddAttachment.args[1][2]).to.deep.equal({ type: 'image' });
+        chai.expect(AddAttachment.args[1][2]).to.deep.equal({ type: 'image', foo: 'bar' });
         chai.expect(AddAttachment.args[1][3]).to.equal('image');
 
         chai.expect(AddAttachment.args[2][1])
           .to.equal('user-file/my-form-internal-id/sub_element/sub_sub_element/other_file');
-        chai.expect(AddAttachment.args[2][2]).to.deep.equal({ type: 'mytype' });
+        chai.expect(AddAttachment.args[2][2]).to.deep.equal({ type: 'mytype', foo: 'baz' });
         chai.expect(AddAttachment.args[2][3]).to.equal('mytype');
       });
     });
