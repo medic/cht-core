@@ -16,8 +16,8 @@ angular.module('inboxServices').config([
 
     $provide.service('Debug', [
       'ipCookie',
-      'pouchDB',
-      function(ipCookie, pouchDB) {
+      // 'pouchDB',
+      function(ipCookie /*, pouchDB*/) {
         var cookieName = 'medic-webapp-debug';
         var get = function() {
           return Boolean(ipCookie(cookieName));
