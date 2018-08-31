@@ -107,31 +107,26 @@ _.templateSettings = {
     return;
   }
 
-  var ONLINE_ROLE = 'mm-online';
-  var ONLINE_USER_DENIED_ROUTES = ['/tasks', '/messages', '/contacts'];
+  var MAIN_ROUTES = ['tasks', 'messages', 'contacts', 'analytics', 'reports'];
 
-  var isDeniedRoute = function(path, routes) {
-    for(var i=0;i<routes.length;i++) {
-      if(path.indexOf('#'+routes[i]) !== -1) {
-        return true;
+  var matchMainRoute = function(name) {
+    for(var i=0; i < MAIN_ROUTES.length; i++) {
+      if(name.indexOf(MAIN_ROUTES[i])>=0) {
+        return MAIN_ROUTES[i];
       }
     }
-    return false;
-  };
-
-  var accessDeniedRoute = function(path) {
-    return path.substring(0, path.indexOf('#')+1) + '/error/403';
+    return null;
   };
 
   // Detects reloads or route updates (#/something)
-  app.run(function($rootScope, Session) {
-    $rootScope.$on('$locationChangeStart', function(event, next) {
-      if(Session) {
-        var roles = Session.userCtx().roles;
-        if(roles && roles.indexOf(ONLINE_ROLE) !== -1 &&
-            isDeniedRoute(next, ONLINE_USER_DENIED_ROUTES)) {
-          event.preventDefault();
-          window.location.href = accessDeniedRoute(next);
+  app.run(function($rootScope, $state, Session, Auth) {
+    $rootScope.$on('$stateChangeStart', function(event, toState) {
+      if(Session && toState.name.indexOf('error')===-1) {
+        var route = matchMainRoute(toState.name);
+        if(route) {
+          Auth.any([['can_access_'+route]]).catch(function() {
+            $state.go('error', {code: 403});
+          });
         }
       }
     });

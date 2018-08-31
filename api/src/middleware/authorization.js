@@ -16,14 +16,6 @@ const getUserSettings = (req) => {
     .catch(err => err);
 };
 
-const VIEW_MATCH_PERMISSIONS_MAP = {
-  'contacts_by': ['can_access_contacts'],
-  'messages_by': ['can_access_messages'],
-  'reports_by': ['can_access_reports']
-  // tasks? : ['can_access_tasks'],
-  // users? : ['can_access_users']
-};
-
 module.exports = {
   // saves CouchDB _session information as `userCtx` in the `req` object
   getUserCtx: (req, res, next) => {
@@ -53,26 +45,6 @@ module.exports = {
       return res.json(FIREWALL_ERROR);
     }
     next();
-  },
-
-  // enforces permissions for any */_view/* request
-  viewsFirewall: (req, res, next) => {
-    if(req.originalUrl.indexOf('/_view/') === -1) {
-      next();
-    } else {
-      let matchingView = null;
-      for(const view of Object.keys(VIEW_MATCH_PERMISSIONS_MAP)) {
-        if(req.originalUrl.indexOf(view) !== -1) {
-          matchingView = view;
-          break;
-        }
-      }
-      if(matchingView) {
-        auth.check(req, VIEW_MATCH_PERMISSIONS_MAP[matchingView])
-        .then(next)
-        .catch(err => serverUtils.error(err, req, res));
-      }
-    }
   },
 
   // proxies online users requests to CouchDB
