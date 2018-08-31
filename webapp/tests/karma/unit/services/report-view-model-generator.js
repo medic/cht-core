@@ -7,8 +7,7 @@ describe('ReportViewModelGenerator service', () => {
       lineageModelGenerator,
       getSubjectSummaries,
       getSummaries,
-      report,
-      formatted;
+      report;
 
   beforeEach(() => {
     module('inboxApp');
@@ -30,12 +29,10 @@ describe('ReportViewModelGenerator service', () => {
         }
       };
 
-      formatted = { formatted1: 1, formatted2: 2 };
-
-      lineageModelGenerator = { report: sinon.stub().resolves({ doc: report }) };
-      formatDataRecord = sinon.stub().resolves(formatted);
-      getSubjectSummaries = sinon.stub().resolves([{ summary: true, subject: 'subject' }]);
-      getSummaries = sinon.stub().resolves([{ summary: true }]);
+      lineageModelGenerator = { report: sinon.stub() };
+      formatDataRecord = sinon.stub();
+      getSubjectSummaries = sinon.stub();
+      getSummaries = sinon.stub();
 
       $provide.value('LineageModelGenerator', lineageModelGenerator);
       $provide.value('FormatDataRecord', formatDataRecord);
@@ -46,7 +43,14 @@ describe('ReportViewModelGenerator service', () => {
     inject(_ReportViewModelGenerator_ => service = _ReportViewModelGenerator_);
   });
 
+  afterEach(() => sinon.restore());
+
   it('calls services with correct params, returns formatted data and display fields', () => {
+    lineageModelGenerator.report.resolves({ doc: report });
+    formatDataRecord.resolves({ formatted1: 1, formatted2: 2 });
+    getSubjectSummaries.resolves([{ summary: true, subject: 'subject' }]);
+    getSummaries.resolves([{ summary: true }]);
+
     return service(report._id).then(result => {
       chai.expect(lineageModelGenerator.report.callCount).to.equal(1);
       chai.expect(lineageModelGenerator.report.args[0]).to.deep.equal([ 'my-report', { merge: true } ]);
@@ -62,7 +66,6 @@ describe('ReportViewModelGenerator service', () => {
 
       chai.expect(result.doc).to.deep.equal(report);
       chai.expect(result.formatted).to.deep.equal({ formatted1: 1, formatted2: 2, subject: 'subject' });
-      console.log(result.displayFields);
       chai.expect(result.displayFields).to.deep.equal([
         { label: 'report.my-form.field1', value: 1, depth: 0 },
         { label: 'report.my-form.field3', value: 3, depth: 0 },
@@ -72,6 +75,11 @@ describe('ReportViewModelGenerator service', () => {
   });
 
   it('returns correct deep display fields', () => {
+    lineageModelGenerator.report.resolves({ doc: report });
+    formatDataRecord.resolves({});
+    getSubjectSummaries.resolves([{}]);
+    getSummaries.resolves([{}]);
+
     report.fields = {
       field1: 1,
       fields: {
@@ -104,6 +112,11 @@ describe('ReportViewModelGenerator service', () => {
   });
 
   it('returns correct image path', () => {
+    lineageModelGenerator.report.resolves({ doc: report });
+    formatDataRecord.resolves({});
+    getSubjectSummaries.resolves([{}]);
+    getSummaries.resolves([{}]);
+
     report.fields.image = 'some image';
     report.fields.deep = { image2: 'other' };
     report._attachments = {
