@@ -1,7 +1,7 @@
 [
   {
     icon: 'mother-child',
-    title: [{ locale: 'en', content: 'Postnatal visit needed' }],
+    title: [{ locale: 'en', content: 'Pregnancy visit needed' }],
     //TODO title: 'task.pregnancy_danger_sign.title',
     appliesTo: 'reports',
     appliesToType: ['P', 'pregnancy'],
@@ -21,10 +21,18 @@
     events: [
       {
         id: 'pregnancy-danger-sign',
+        days: 0,
         start: 0,
         end: 6,
-        dueDate: function(c) {
-          return new Date(Utils.getMostRecentTimestamp(c.reports, 'F'));
+        dueDate: function(r, event) {
+          return new Date(
+            Utils.addDate(
+              new Date(
+                Utils.getMostRecentTimestamp(c.reports, 'F')
+              ),
+              event.days
+            )
+          );
         },
       },
     ],
@@ -250,8 +258,8 @@
     appliesIf: function(c, r, i) {
       return (
         isCoveredByUseCase(c.contact, 'pnc') &&
-        (i + 1 < r.scheduled_tasks.length &&
-          r.scheduled_tasks[i].group !== r.scheduled_tasks[i + 1].group)
+        (i + 1 >= r.scheduled_tasks.length ||
+         r.scheduled_tasks[i].group !== r.scheduled_tasks[i + 1].group)
       );
     },
     priority: function(c, r) {
