@@ -822,6 +822,38 @@ describe('Enketo service', function() {
       });
     });
 
+    it('saves attachments', () => {
+      const jqFind = $.fn.find;
+      sinon.stub($.fn, 'find');
+      $.fn.find.callsFake(jqFind);
+      $.fn.find
+        .withArgs('input[type=file][name="/my-form/my_file"]')
+        .returns([{ files: [{ type: 'image', foo: 'bar' }] }]);
+
+      form.validate.resolves(true);
+      const content = `
+        <my-form>
+          <name>Mary</name>
+          <age>10</age>
+          <gender>f</gender>
+          <my_file type="file">some image name.png</my_file>
+        </my-form>
+      `;
+
+      form.getDataStr.returns(content);
+      dbGetAttachment.resolves('<form/>');
+      UserContact.resolves({ _id: 'my-user', phone: '8989' });
+      dbBulkDocs.callsFake(docs => Promise.resolve([ { ok: true, id: docs[0]._id, rev: '1-abc' } ]));
+      return service.save('my-form', form, true).then(() => {
+        chai.expect(AddAttachment.callCount).to.equal(2);
+        chai.expect(AddAttachment.args[0][1]).to.equal('content');
+
+        chai.expect(AddAttachment.args[1][1]).to.equal('user-file/my-form/my_file');
+        chai.expect(AddAttachment.args[1][2]).to.deep.equal({ type: 'image', foo: 'bar' });
+        chai.expect(AddAttachment.args[1][3]).to.equal('image');
+      });
+    });
+
     it('attachment names are relative to the form name not the root node name', () => {
       const jqFind = $.fn.find;
       sinon.stub($.fn, 'find');
