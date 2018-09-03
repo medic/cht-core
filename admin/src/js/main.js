@@ -31,6 +31,7 @@ require('./controllers/forms-json');
 require('./controllers/forms-xml');
 require('./controllers/icons');
 require('./controllers/import-translation');
+require('./controllers/message-queue-scheduled');
 require('./controllers/message-test');
 require('./controllers/settings-advanced');
 require('./controllers/settings-backup');
@@ -314,6 +315,19 @@ app.config(function(
       url: '/message-test',
       controller: 'MessageTestCtrl',
       templateUrl: 'templates/message_test.html'
+    })
+    .state('message-queue', {
+      url: '/message-queue',
+      templateUrl: 'templates/message_queue.html'
+    })
+    .state('message-queue.scheduled', {
+      url: '/scheduled',
+      views: {
+        tab: {
+          controller: 'MessageQueueCtrl',
+          templateUrl: 'templates/message_queue_scheduled.html'
+        }
+      }
     });
 });
 
