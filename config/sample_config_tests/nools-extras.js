@@ -1,3 +1,3 @@
-function isHealthyDelivery() {
-  return true;
+function validateReport(report){
+    return report.form === 'assessment';
 }
