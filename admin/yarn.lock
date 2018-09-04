@@ -91,6 +91,11 @@ make-plural@^4.2.0:
   optionalDependencies:
     minimist "^1.2.0"
 
+"message-utils@file:../shared-libs/message-utils":
+  version "1.0.0"
+  dependencies:
+    underscore "^1.9.1"
+
 messageformat-parser@^3.0.0:
   version "3.0.0"
   resolved "https://registry.yarnpkg.com/messageformat-parser/-/messageformat-parser-3.0.0.tgz#38ae9348eb4834ab19b3a8d682af7babb335f37a"

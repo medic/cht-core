@@ -1,6 +1,7 @@
-var _ = require('underscore');
+var messageUtils = require('message-utils'),
+    lineageFactory = require('lineage');
 
-angular.module('services').factory('ImportContacts',
+angular.module('services').factory('MessageQueue',
   function(
     $q,
     DB,
@@ -10,41 +11,218 @@ angular.module('services').factory('ImportContacts',
     'use strict';
     'ngInject';
 
-    var settings;
+    var lineage = lineageFactory($q,DB({ remote: true }));
 
-    var getSettings = function() {
-      if (settings) {
-        return Promise.resolve();
+    var findSummaryByPhone = function(summaries, phone) {
+      var summary = summaries.rows.find(function(summary) {
+        return summary.value.phone === phone;
+      });
+
+      return summary && summary.value;
+    };
+
+    var findPatientByPatientId = function(patients, patient_id) {
+      var patient = patients.rows.find(function(patient) {
+        return patient.value[1] === patient_id;
+      });
+
+      return patient && patient.id;
+    };
+
+    var findContactById = function(hydratedContacts, contactId) {
+      var contact = hydratedContacts.find(function(hydratedContact) {
+        return hydratedContact.id === contactId;
+      });
+
+      return contact && contact.doc;
+    };
+
+    var getRecipients = function(messages) {
+      var phoneNumbers = messages
+        .map(function(row) {
+          return row.message && row.message.to;
+        })
+        .filter(function(item, idx, self) {
+          return item && self.indexOf(item) === idx;
+        });
+
+      return DB({ remote: true })
+        .query('medic-client/contacts_by_phone', { keys: phoneNumbers })
+        .then(function(contactsByPhone) {
+          var ids = contactsByPhone.rows.map(function(row) {
+            return row.id;
+          });
+
+          return DB({ remote: true }).query('medic/doc_summaries_by_id', { keys: ids });
+        })
+        .then(function(summaries) {
+            messages.forEach(function(message) {
+              message.recipient = message.message &&
+                                  message.message.to &&
+                                  findSummaryByPhone(summaries, message.message.to);
+            });
+
+            return messages;
+        });
+    };
+
+    var getPatients = function(messages) {
+      var patientIds = messages
+        .map(function(message) {
+          if (message.message) {
+            return;
+          }
+
+          return message.record.patient_id;
+        })
+        .filter(function(patient_id, idx, self) {
+          return patient_id && self.indexOf(patient_id) === idx;
+        });
+
+      if (!patientIds.length) {
+        return Promise.resolve(messages);
       }
 
-      return Settings().then(function(result) {
-        settings = result;
+      var keys = patientIds.map(function(patientId) {
+        return [ 'shortcode', patientId ];
+      });
+
+      return DB({ remote: true })
+        .query('medic-client/contacts_by_reference', { keys: keys })
+        .then(function(contactsByReference) {
+          messages.forEach(function(message) {
+            message.record.patient_uuid = findPatientByPatientId(contactsByReference, message.record.patient_id) ||
+                                          message.record.patient_uuid;
+          });
+          return messages;
+        });
+    };
+
+    var hydrateContacts = function(messages) {
+      var contactIds = [];
+      messages.forEach(function(message) {
+        contactIds.push(message.record.patient_uuid, message.record.contact && message.record.contact._id);
+      });
+
+      return lineage
+        .fetchLineageByIds(contactIds)
+        .then(function(docList) {
+          return docList.map(function(docs) {
+            var doc = docs.shift();
+            return {
+              id: doc._id,
+              doc: lineage.fillParentsInDocs(doc, docs)
+            };
+          });
+        })
+        .then(function(hydratedDocs) {
+          messages.forEach(function(message) {
+            message.patient = findContactById(hydratedDocs, message.record.patient_uuid);
+            message.contact = findContactById(hydratedDocs, message.record.contact && message.record.contact._id);
+          });
+
+          return messages;
+        });
+    };
+
+    var generateScheduledMessages = function(messages) {
+      return Settings().then(function(settings) {
+        messages.forEach(function(message) {
+          if (message.message) {
+            return;
+          }
+
+          var translate = null;
+          var content = {
+            translationKey: message.task.message_key,
+            message: message.task.message
+          };
+
+          message.message = messageUtils.generate(
+            settings,
+            translate,
+            message,
+            content,
+            message.task.recipient);
+        });
+
+        return messages;
       });
     };
 
-    return function(tab, start, limit, docId) {
-      tab = tab || 'due';
+    return {
+      getScheduled: function(skip, limit) {
+        limit = limit || 50;
 
-      if (tab === '')
-      const options = {
-        limit: limit || 50,
-        start_key: [tab, start || {}],
-        start_key_doc_id: docId,
-      };
+        var options = {
+          limit: limit + 1,
+          start_key: ['scheduled', 0],
+          end_key: ['scheduled', {}],
+          skip: skip || 0
+        };
 
-      if (tab === '')
+        var next = false;
 
-      return $q
-        .all([
-          getSettings(),
-          DB({ remote: true }).query('medic-sms/tasks-messages', options)
-        ])
-        .then(function(results) {
-          var recipients = [];
-          results[1].rows.forEach(function(row) {
+        return DB({ remote: true })
+          .query('medic-admin/message_queue', options)
+          .then(function(results) {
+            if (results.rows.length === options.limit) {
+              // we have a next page
+              results.rows.splice(-1, 1);
+              next = true;
+            }
 
+            var rows = results.rows.map(function(row) {
+              return row.value;
+            });
+
+            return getPatients(rows)
+              .then(hydrateContacts)
+              .then(generateScheduledMessages)
+              .then(getRecipients)
+              .then(function(rows) {
+                return {
+                  rows: rows,
+                  next: next
+                };
+            });
           });
-        });
+      },
+
+      getDue: function(skip, limit) {
+        limit = limit || 50;
+
+        var options = {
+          limit: limit + 1,
+          start_key: ['due', {}],
+          end_key: ['due', 0],
+          skip: skip || 0,
+          descending: true
+        };
+
+        var next = false;
+
+        return DB({ remote: true })
+          .query('medic-admin/message_queue', options)
+          .then(function(results) {
+            if (results.rows.length === options.limit) {
+              // we have a next page
+              results.rows.splice(-1, 1);
+              next = true;
+            }
+
+            var rows = results.rows.map(function(row) {
+              return row.value;
+            });
+
+            return getRecipients(rows).then(function(rows) {
+              return {
+                rows: rows,
+                next: next
+              };
+            });
+          });
+      }
     };
   }
 );

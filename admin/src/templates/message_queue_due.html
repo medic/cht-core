@@ -1,0 +1,52 @@
+<div class="row flex-row selection-heading">
+  <div class="col col-fixed" translate>admin.message.queue.recipient</div>
+  <div class="col col-fixed" translate>admin.message.queue.created</div>
+  <div class="col col-grow" translate>admin.message.queue.message</div>
+  <div class="col col-fixed" translate>admin.message.queue.status</div>
+  <div class="col col-fixed" translate>admin.message.queue.due</div>
+  <div ng-if="displayLastUpdated" class="col col-fixed" translate>admin.message.queue.updated</div>
+</div>
+<div class="row flex-row selection" ng-repeat="message in messages">
+  <div class="col col-fixed">
+    {{message.recipient && message.recipient.name || message.message.to}}
+  </div>
+  <div class="col col-fixed">
+    <relative-date date="message.record.reported_date" date-format="dateFormat"></relative-date>
+    <br/>
+    <a href=" ../../medic/_rewrite/#/reports/{{message.record.id}}" title="{{message.record.id}}" target="_blank">
+      View record
+    </a>
+  </div>
+  <div class="col col-grow">
+    <p class="strong task-group" ng-if="message.task.translation_key" translate translate-values="{ group: message.task.group }">{{message.task.translation_key}}</p>
+    <p class="strong task-group" ng-if="!message.task.translation_key">
+      {{message.task.type}}
+      <span ng-if="message.task.group">: {{message.task.group}}</span>
+    </p>
+    <span>{{message.message.message}}</span>
+  </div>
+  <div class="col col-fixed">
+    <span class="message-state state-{{message.task.state}}">{{message.task.state}}</span>
+  </div>
+  <div class="col col-fixed">
+    <relative-date date="message.due" date-format="dateFormat"></relative-date>
+  </div>
+
+  <div ng-if="displayLastUpdated" class="col col-fixed">
+    <relative-date date="message.task.state_history.timestamp" date-format="dateFormat"></relative-date>
+  </div>
+</div>
+<div class="pagination">
+  <ul class="pagination">
+    <li ng-class="{ disabled: !pagination.prev }">
+      <a aria-label="Previous" ng-click="prevPage()">
+        <span aria-hidden="true">&laquo;</span>
+      </a>
+    </li>
+    <li ng-class="{ disabled: !pagination.next }" >
+      <a aria-label="Next" ng-click="nextPage()">
+        <span aria-hidden="true">&raquo;</span>
+      </a>
+    </li>
+  </ul>
+</div>

@@ -6,7 +6,8 @@ function (doc) {
     id: doc._id,
     reported_date: doc.reported_date,
     contact: doc.contact,
-    patient_id: doc.patient_id || (doc.fields && doc.fields.patient_id)
+    patient_id: doc.patient_id || (doc.fields && doc.fields.patient_id),
+    patient_uuid: doc.fields && doc.fields.patient_uuid
   };
 
   var _emit = function(tasks) {
@@ -24,6 +25,7 @@ function (doc) {
         state: task.state,
         group: task.group,
         translation_key: task.translation_key,
+        type: task.type
       };
 
       if(task.messages) {

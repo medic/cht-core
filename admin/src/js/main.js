@@ -32,6 +32,7 @@ require('./controllers/forms-xml');
 require('./controllers/icons');
 require('./controllers/import-translation');
 require('./controllers/message-queue-scheduled');
+require('./controllers/message-queue-due');
 require('./controllers/message-test');
 require('./controllers/settings-advanced');
 require('./controllers/settings-backup');
@@ -46,6 +47,7 @@ require('./controllers/users');
 
 angular.module('directives', ['ngSanitize']);
 require('./directives/modal');
+require('./directives/relative-date');
 require('./directives/release');
 
 angular.module('filters', ['ngSanitize']);
@@ -59,6 +61,7 @@ require('./services/clean-etag');
 require('./services/create-user');
 require('./services/delete-user');
 require('./services/import-contacts');
+require('./services/message-queue');
 require('./services/properties');
 require('./services/version');
 
@@ -324,8 +327,17 @@ app.config(function(
       url: '/scheduled',
       views: {
         tab: {
-          controller: 'MessageQueueCtrl',
-          templateUrl: 'templates/message_queue_scheduled.html'
+          controller: 'MessageQueueScheduledCtrl',
+          templateUrl: 'templates/message_queue_due.html'
+        }
+      }
+    })
+    .state('message-queue.due', {
+      url: '/due',
+      views: {
+        tab: {
+          controller: 'MessageQueueDueCtrl',
+          templateUrl: 'templates/message_queue_due.html'
         }
       }
     });
