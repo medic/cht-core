@@ -107,6 +107,33 @@ _.templateSettings = {
     return;
   }
 
+  var ROUTE_PERMISSIONS = {
+    tasks: 'can_access_tasks',
+    messages: 'can_access_messages',
+    contacts: 'can_access_contacts',
+    analytics: 'can_access_analytics',
+    reports: 'can_access_reports'
+  };
+
+  var getRequiredPermission = function(route) {
+    var baseRoute = route.split('.')[0];
+    return ROUTE_PERMISSIONS[baseRoute];
+  };
+
+  // Detects reloads or route updates (#/something)
+  app.run(function($rootScope, $state, Auth) {
+    $rootScope.$on('$stateChangeStart', function(event, toState) {
+      if(toState.name.indexOf('error')===-1) {
+        var permission = getRequiredPermission(toState.name);
+        if(permission) {
+          Auth(permission).catch(function() {
+            $state.go('error', {code: 403});
+          });
+        }
+      }
+    });
+  });
+
   bootstrapper(POUCHDB_OPTIONS, function(err) {
     if (err) {
       if (err.redirect) {
