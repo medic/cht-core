@@ -107,24 +107,21 @@ _.templateSettings = {
     return;
   }
 
-  var MAIN_ROUTES = ['tasks', 'messages', 'contacts', 'analytics', 'reports'];
-
-  var matchMainRoute = function(name) {
-    for(var i=0; i < MAIN_ROUTES.length; i++) {
-      if(name.indexOf(MAIN_ROUTES[i])>=0) {
-        return MAIN_ROUTES[i];
-      }
-    }
-    return null;
+  var ROUTE_PERMISSIONS = {
+    tasks: 'can_access_tasks',
+    messages: 'can_access_messages',
+    contacts: 'can_access_contacts',
+    analytics: 'can_access_analytics',
+    reports: 'can_access_reports'
   };
 
   // Detects reloads or route updates (#/something)
-  app.run(function($rootScope, $state, Session, Auth) {
+  app.run(function($rootScope, $state, Auth) {
     $rootScope.$on('$stateChangeStart', function(event, toState) {
-      if(Session && toState.name.indexOf('error')===-1) {
-        var route = matchMainRoute(toState.name);
-        if(route) {
-          Auth.any([['can_access_'+route]]).catch(function() {
+      if(toState.name.indexOf('error')===-1) {
+        var permission = ROUTE_PERMISSIONS[toState.name.split('.')[0]];
+        if(permission) {
+          Auth(permission).catch(function() {
             $state.go('error', {code: 403});
           });
         }
