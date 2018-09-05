@@ -132,6 +132,7 @@ describe('Enketo service', function() {
 
   afterEach(function() {
     KarmaUtils.restore(EnketoForm, enketoInit, dbGetAttachment, dbGet, dbBulkDocs, transform, createObjectURL, ContactSummary, FileReader.utf8, UserContact, form.validate, form.getDataStr, Language, TranslateFrom, AddAttachment, Search, LineageModelGenerator.contact);
+    sinon.restore();
   });
 
   describe('render', function() {
@@ -821,6 +822,81 @@ describe('Enketo service', function() {
       });
     });
 
+    it('saves attachments', () => {
+      const jqFind = $.fn.find;
+      sinon.stub($.fn, 'find');
+      $.fn.find.callsFake(jqFind);
+      $.fn.find
+        .withArgs('input[type=file][name="/my-form/my_file"]')
+        .returns([{ files: [{ type: 'image', foo: 'bar' }] }]);
+
+      form.validate.resolves(true);
+      const content = `
+        <my-form>
+          <name>Mary</name>
+          <age>10</age>
+          <gender>f</gender>
+          <my_file type="file">some image name.png</my_file>
+        </my-form>
+      `;
+
+      form.getDataStr.returns(content);
+      dbGetAttachment.resolves('<form/>');
+      UserContact.resolves({ _id: 'my-user', phone: '8989' });
+      dbBulkDocs.callsFake(docs => Promise.resolve([ { ok: true, id: docs[0]._id, rev: '1-abc' } ]));
+      return service.save('my-form', form, true).then(() => {
+        chai.expect(AddAttachment.callCount).to.equal(2);
+        chai.expect(AddAttachment.args[0][1]).to.equal('content');
+
+        chai.expect(AddAttachment.args[1][1]).to.equal('user-file/my-form/my_file');
+        chai.expect(AddAttachment.args[1][2]).to.deep.equal({ type: 'image', foo: 'bar' });
+        chai.expect(AddAttachment.args[1][3]).to.equal('image');
+      });
+    });
+
+    it('attachment names are relative to the form name not the root node name', () => {
+      const jqFind = $.fn.find;
+      sinon.stub($.fn, 'find');
+      $.fn.find.callsFake(jqFind);
+      $.fn.find
+        .withArgs('input[type=file][name="/my-root-element/my_file"]')
+        .returns([{ files: [{ type: 'image', foo: 'bar' }] }]);
+      $.fn.find
+        .withArgs('input[type=file][name="/my-root-element/sub_element/sub_sub_element/other_file"]')
+        .returns([{ files: [{ type: 'mytype', foo: 'baz' }] }]);
+      form.validate.resolves(true);
+      const content = `
+        <my-root-element>
+          <name>Mary</name>
+          <age>10</age>
+          <gender>f</gender>
+          <my_file type="file">some image name.png</my_file>
+          <sub_element>
+            <sub_sub_element>
+              <other_file type="file">some other name.png</other_file>
+            </sub_sub_element>
+          </sub_element>
+        </my-root-element>
+      `;
+
+      form.getDataStr.returns(content);
+      dbGetAttachment.resolves('<form/>');
+      UserContact.resolves({ _id: 'my-user', phone: '8989' });
+      dbBulkDocs.callsFake(docs => Promise.resolve([ { ok: true, id: docs[0]._id, rev: '1-abc' } ]));
+      return service.save('my-form-internal-id', form, true).then(() => {
+        chai.expect(AddAttachment.callCount).to.equal(3);
+        chai.expect(AddAttachment.args[0][1]).to.equal('content');
+
+        chai.expect(AddAttachment.args[1][1]).to.equal('user-file/my-form-internal-id/my_file');
+        chai.expect(AddAttachment.args[1][2]).to.deep.equal({ type: 'image', foo: 'bar' });
+        chai.expect(AddAttachment.args[1][3]).to.equal('image');
+
+        chai.expect(AddAttachment.args[2][1])
+          .to.equal('user-file/my-form-internal-id/sub_element/sub_sub_element/other_file');
+        chai.expect(AddAttachment.args[2][2]).to.deep.equal({ type: 'mytype', foo: 'baz' });
+        chai.expect(AddAttachment.args[2][3]).to.equal('mytype');
+      });
+    });
   });
 
 });
