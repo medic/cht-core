@@ -20,3 +20,4 @@ dist
 /ddocs/compiled.json
 /packages
 /static
+.vscode/
