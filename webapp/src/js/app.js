@@ -115,11 +115,16 @@ _.templateSettings = {
     reports: 'can_access_reports'
   };
 
+  var getRequiredPermission = function(route) {
+    var baseRoute = route.split('.')[0];
+    return ROUTE_PERMISSIONS[baseRoute];
+  };
+
   // Detects reloads or route updates (#/something)
   app.run(function($rootScope, $state, Auth) {
     $rootScope.$on('$stateChangeStart', function(event, toState) {
       if(toState.name.indexOf('error')===-1) {
-        var permission = ROUTE_PERMISSIONS[toState.name.split('.')[0]];
+        var permission = getRequiredPermission(toState.name);
         if(permission) {
           Auth(permission).catch(function() {
             $state.go('error', {code: 403});
