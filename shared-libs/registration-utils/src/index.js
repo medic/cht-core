@@ -20,11 +20,9 @@ exports.isValidRegistration = function(doc, settings) {
   }
 
   var form = settings.forms && settings.forms[doc.form];
-  if (doc.content_type === 'xml' ||
-      (form && form.public_form) ||
-      (form && doc.contact)) {
-    return true;
-  }
-
-  return false;
+  return Boolean(
+    doc.content_type === 'xml' ||
+    (form && form.public_form) ||
+    (form && doc.contact)
+  );
 };

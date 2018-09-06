@@ -20,8 +20,10 @@ var registrationIdsWithNoPatientContacts = function(batch, settings, callback) {
       var potentialRegistrationIdsToConsider = batch.filter(row => !_.contains(existingContactShortcodes, row[0]));
 
       db.medic.fetch({
-        keys: _.chain(potentialRegistrationIdsToConsider).map(row => row[1]).flatten().value(),
-        include_docs: true
+        keys: _.chain(potentialRegistrationIdsToConsider)
+          .map(row => row[1])
+          .flatten()
+          .value()
       }, function (err, results) {
         if (err) {
           return callback(err);
@@ -142,48 +144,46 @@ module.exports = {
   name: 'create-patient-contacts',
   created: new Date(2017, 2, 13),
   run: promisify(function(callback) {
-    settingsService
-      .get()
-      .then(settings => {
-        db.medic.view('medic-client', 'registered_patients', {}, function(err, results) {
-          if (err) {
-            return callback(err);
-          }
+    settingsService.get().then(settings => {
+      db.medic.view('medic-client', 'registered_patients', {}, function(err, results) {
+        if (err) {
+          return callback(err);
+        }
 
-          if (results.rows.length === 0) {
-            console.log('No registered patients to create contacts from');
-            return callback();
-          }
+        if (results.rows.length === 0) {
+          console.log('No registered patients to create contacts from');
+          return callback();
+        }
 
-          var registrationsForPatientShortcode = _.pairs(
-            _.reduce(results.rows, function(memo, row) {
-              if (!memo[row.key]) {
-                memo[row.key] = [];
-              }
+        var registrationsForPatientShortcode = _.pairs(
+          _.reduce(results.rows, function(memo, row) {
+            if (!memo[row.key]) {
+              memo[row.key] = [];
+            }
 
-              memo[row.key].push(row.id);
-              return memo;
-            }, {})
-          );
+            memo[row.key].push(row.id);
+            return memo;
+          }, {})
+        );
 
-          var progressCount = 0;
-          var total = registrationsForPatientShortcode.length;
+        var progressCount = 0;
+        var total = registrationsForPatientShortcode.length;
 
-          console.log('There are ' + total + ' patients with registrations');
+        console.log('There are ' + total + ' patients with registrations');
 
-          async.doWhilst(
-            function(callback) {
-              var batch = registrationsForPatientShortcode.splice(0, BATCH_SIZE);
-              progressCount += BATCH_SIZE;
+        async.doWhilst(
+          function(callback) {
+            var batch = registrationsForPatientShortcode.splice(0, BATCH_SIZE);
+            progressCount += BATCH_SIZE;
 
-              process.stdout.write('[' + progressCount + '/' + total + '] ');
-              batchCreatePatientContacts(batch, settings, callback);
-            },
-            function() {
-              return registrationsForPatientShortcode.length;
-            },
-            callback);
-        });
+            process.stdout.write('[' + progressCount + '/' + total + '] ');
+            batchCreatePatientContacts(batch, settings, callback);
+          },
+          function() {
+            return registrationsForPatientShortcode.length;
+          },
+          callback);
       });
+    });
   })
 };
