@@ -123,7 +123,13 @@ cd api && yarn install && cd ..
 cd sentinel && yarn install && cd ..
 ```
 
-Then run
+Then do an initial deploy of the webapp:
+
+```shell
+grunt dev-webapp
+```
+
+Once this is complete you can close it, and from now on you can just run:
 
 ```shell
 yarn start
