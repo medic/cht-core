@@ -1,10 +1,10 @@
-const sinon = require('sinon').sandbox.create(),
-      expect = require('chai').expect;
-const utils = require('../src/index');
+var sinon = require('sinon').sandbox.create(),
+    expect = require('chai').expect;
+var utils = require('../src/index');
 
-describe('registrationUtils', () => {
+describe('registrationUtils', function() {
 
-  beforeEach(done => {
+  beforeEach(function(done) {
     sinon.restore();
     done();
   });
