@@ -560,7 +560,9 @@ angular.module('inboxServices').factory('FormatDataRecord',
           var context = {};
           if (results.length === 4) {
             context.patient = results[2];
-            context.registrations = results[3];
+            context.registrations = results[3].filter(function(registration) {
+              return messages.isValidRegistration(registration, settings);
+            });
           }
           return makeDataRecordReadable(doc, settings, language, context);
         });

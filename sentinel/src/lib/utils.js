@@ -3,7 +3,8 @@ const _ = require('underscore'),
       db = require('../db-nano'),
       moment = require('moment'),
       config = require('../config'),
-      taskUtils = require('task-utils');
+      taskUtils = require('task-utils'),
+      messageUtils = require('@shared-libs/message-utils');
 
 /*
  * Get desired locale
@@ -253,7 +254,12 @@ module.exports = {
       if (err) {
         return callback(err);
       }
-      callback(null, data.rows.map(row => row.doc));
+      callback(
+        null,
+        data.rows
+          .map(row => row.doc)
+          .filter(doc => messageUtils.isValidRegistration(doc, config.getAll()))
+      );
     });
   },
   getForm: formCode => {

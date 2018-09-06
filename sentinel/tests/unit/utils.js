@@ -2,7 +2,8 @@ var db = require('../../src/db-nano'),
     sinon = require('sinon').sandbox.create(),
     assert = require('chai').assert,
     utils = require('../../src/lib/utils'),
-    config = require('../../src/config');
+    config = require('../../src/config'),
+    messageUtils = require('@shared-libs/message-utils');
 
 describe('utils', () => {
     afterEach(() => sinon.restore());
@@ -204,6 +205,8 @@ describe('utils', () => {
     });
 
     it('getRegistrations queries by id if given', () => {
+        sinon.stub(messageUtils, 'isValidRegistration').returns(true);
+        sinon.stub(config, 'getAll').returns({ config: 'all' });
         const expectedDoc = { _id: 'a' };
         const expected = [ { doc: expectedDoc } ];
         const given = '22222';
@@ -212,15 +215,18 @@ describe('utils', () => {
             assert.equal(err, null);
             assert.deepEqual(actual, [ expectedDoc ]);
             assert.equal(view.callCount, 1);
+            assert.equal(messageUtils.isValidRegistration.callCount, 1);
+            assert.deepEqual(messageUtils.isValidRegistration.args[0], [expectedDoc, { config: 'all' }]);
             assert.equal(view.args[0][0], 'medic-client');
             assert.equal(view.args[0][1], 'registered_patients');
             assert.equal(view.args[0][2].key, given);
             assert.equal(view.args[0][2].include_docs, true);
-
         });
     });
 
     it('getRegistrations queries by ids if given', () => {
+        sinon.stub(messageUtils, 'isValidRegistration').returns(true);
+        sinon.stub(config, 'getAll').returns({ config: 'all' });
         const expectedDoc1 = { id: 'a' };
         const expectedDoc2 = { id: 'b' };
         const expected = [ { doc: expectedDoc1 } , { doc: expectedDoc2 } ];
@@ -228,6 +234,9 @@ describe('utils', () => {
         const view = sinon.stub(db.medic, 'view').callsArgWith(3, null, { rows: expected });
         return utils.getRegistrations({ db: db, ids: given }, (err, actual) => {
             assert.equal(err, null);
+            assert.equal(messageUtils.isValidRegistration.callCount, 2);
+            assert.deepEqual(messageUtils.isValidRegistration.args[0], [expectedDoc1, { config: 'all' }]);
+            assert.deepEqual(messageUtils.isValidRegistration.args[1], [expectedDoc2, { config: 'all' }]);
             assert.deepEqual(actual, [expectedDoc1, expectedDoc2 ]);
             assert.equal(view.callCount, 1);
             assert.equal(view.args[0][0], 'medic-client');
@@ -244,5 +253,26 @@ describe('utils', () => {
             assert.deepEqual(actual, []);
             assert.equal(view.callCount, 0);
         });
+    });
+
+    it('getRegistrations only returns valid registrations', () => {
+      sinon.stub(messageUtils, 'isValidRegistration');
+      sinon.stub(config, 'getAll').returns({ config: 'all' });
+      const docs = [{ _id: 'a' }, { _id: 'b' }, { _id: 'c' }, { _id: 'd' }, { _id: 'e' }, { _id: 'f' }];
+      sinon.stub(db.medic, 'view').callsArgWith(3, null, { rows: docs.map(doc => ({ doc: doc })) });
+
+      messageUtils.isValidRegistration
+        .withArgs({ _id: 'a' }).returns(true)
+        .withArgs({ _id: 'b' }).returns(false)
+        .withArgs({ _id: 'c' }).returns(false)
+        .withArgs({ _id: 'd' }).returns(true)
+        .withArgs({ _id: 'e' }).returns(false)
+        .withArgs({ _id: 'f' }).returns(false);
+
+      return utils.getRegistrations({ db: db, ids: ['111', '222'] }, (err, actual) => {
+        assert.equal(err, null);
+        assert.equal(messageUtils.isValidRegistration.callCount, 6);
+        assert.deepEqual(actual, [{ _id: 'a' }, { _id: 'd' }]);
+      });
     });
 });

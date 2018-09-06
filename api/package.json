@@ -15,6 +15,7 @@
     "toc": "doctoc --github --maxlevel 2 README.md"
   },
   "dependencies": {
+    "@shared-libs/message-utils": "file:../shared-libs/message-utils",
     "@shared-libs/server-checks": "file:../shared-libs/server-checks",
     "@shared-libs/tombstone-utils": "file:../shared-libs/tombstone-utils",
     "@shared-libs/view-map-utils": "file:../shared-libs/view-map-utils",

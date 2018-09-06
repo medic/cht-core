@@ -18,16 +18,18 @@ describe('create-patient-contacts migration', function() {
   });
 
   it('should ignore registrations that already have patient contacts', function() {
+    var settings = {
+      registrations: [{
+        form: 'A'
+      }]
+    };
     var documents = [
       {
         _id: 'registrationA',
         patient_id: '1234',
         form: 'A',
-        transitions: {
-          registration: {
-            ok: true
-          }
-        }
+        content_type: 'xml',
+        type: 'data_record'
       },
       {
         _id: 'RANDOM_UUID',
@@ -37,6 +39,7 @@ describe('create-patient-contacts migration', function() {
       }
     ];
     return utils.initDb(documents)
+    .then(() => utils.initSettings(settings))
     .then(migrate)
     .then(function() {
       return utils.assertDb(documents);
@@ -44,6 +47,11 @@ describe('create-patient-contacts migration', function() {
   });
 
   it('should ignore registrations that are not "actual" registrations', function() {
+    var settings = {
+      registrations: [{
+        form: 'A'
+      }]
+    };
     var documents = [
       {
         _id: 'registrationA',
@@ -54,14 +62,12 @@ describe('create-patient-contacts migration', function() {
           patient_id: '1234'
         },
         form: 'A',
-        transitions: {
-          registration: {
-            ok: true
-          }
-        }
+        content_type: 'xml',
+        type: 'data_record'
       }
     ];
     return utils.initDb(documents)
+    .then(() => utils.initSettings(settings))
     .then(migrate)
     .then(function() {
       return utils.assertDb(documents);
@@ -69,6 +75,11 @@ describe('create-patient-contacts migration', function() {
   });
 
   it('converts a registration into a patient contact', function() {
+    var settings = {
+      registrations: [{
+        form: 'A'
+      }]
+    };
     var registration = {
       _id: 'registrationA',
       patient_id: '1234',
@@ -78,11 +89,8 @@ describe('create-patient-contacts migration', function() {
       fields: {
         patient_name: 'Testerina'
       },
-      transitions: {
-        registration: {
-          ok: true
-        }
-      }
+      content_type: 'xml',
+      type: 'data_record'
     };
     var contact = {
       _id: 'chw',
@@ -103,6 +111,7 @@ describe('create-patient-contacts migration', function() {
       }
     };
     return utils.initDb([registration, contact])
+    .then(() => utils.initSettings(settings))
     .then(migrate)
     .then(function() {
       return utils.assertDb([registration, contact, patientContact]);
@@ -110,6 +119,11 @@ describe('create-patient-contacts migration', function() {
   });
 
   it('supports patients with multiple registrations', function() {
+    var settings = {
+      registrations: [{
+        form: 'A'
+      }]
+    };
     var registrationA = {
       _id: 'registrationA',
       patient_id: '1234',
@@ -119,11 +133,8 @@ describe('create-patient-contacts migration', function() {
       fields: {
         patient_name: 'Testerina'
       },
-      transitions: {
-        registration: {
-          ok: true
-        }
-      }
+      content_type: 'xml',
+      type: 'data_record'
     };
     var registrationB = {
       _id: 'registrationB',
@@ -134,11 +145,8 @@ describe('create-patient-contacts migration', function() {
         patient_name: 'Testerina',
         patient_id: '1234'
       },
-      transitions: {
-        registration: {
-          ok: true
-        }
-      }
+      content_type: 'xml',
+      type: 'data_record'
     };
     var contact = {
       _id: 'chw',
@@ -159,6 +167,7 @@ describe('create-patient-contacts migration', function() {
       }
     };
     return utils.initDb([registrationA, registrationB, contact])
+    .then(() => utils.initSettings(settings))
     .then(migrate)
     .then(function() {
       return utils.assertDb([registrationA, registrationB, contact, patientContact]);
