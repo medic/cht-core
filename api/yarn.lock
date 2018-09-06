@@ -112,6 +112,19 @@ bcrypt-pbkdf@^1.0.0:
   dependencies:
     tweetnacl "^0.14.3"
 
+bikram-sambat-bootstrap@^1.4.2:
+  version "1.4.2"
+  resolved "https://registry.yarnpkg.com/bikram-sambat-bootstrap/-/bikram-sambat-bootstrap-1.4.2.tgz#eb16584ba00ced95db96dcc083168344798c0b5f"
+  dependencies:
+    bikram-sambat "^1.5.0"
+    eurodigit "^3.1.1"
+
+bikram-sambat@^1.5.0:
+  version "1.5.0"
+  resolved "https://registry.yarnpkg.com/bikram-sambat/-/bikram-sambat-1.5.0.tgz#675ce234e2a9ca08670a280bfb76509a816996b8"
+  dependencies:
+    eurodigit "^3.1.1"
+
 body-parser@1.18.2:
   version "1.18.2"
   resolved "https://registry.yarnpkg.com/body-parser/-/body-parser-1.18.2.tgz#87678a19d84b47d859b83199bd59bce222b10454"
@@ -434,6 +447,10 @@ escape-html@~1.0.3:
 etag@~1.8.1:
   version "1.8.1"
   resolved "https://registry.yarnpkg.com/etag/-/etag-1.8.1.tgz#41ae2eeb65efa62268aebfea83ac7d79299b0887"
+
+eurodigit@^3.1.1:
+  version "3.1.3"
+  resolved "https://registry.yarnpkg.com/eurodigit/-/eurodigit-3.1.3.tgz#a3b66a2383f4faa02a37749e19c24b60bd2849c2"
 
 eventemitter3@^3.0.0:
   version "3.1.0"
