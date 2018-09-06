@@ -5,6 +5,9 @@
 "@shared-libs/message-utils@file:../shared-libs/message-utils":
   version "1.0.0"
 
+"@shared-libs/registration-utils@file:../shared-libs/registration-utils":
+  version "1.0.0"
+
 "@sinonjs/formatio@^2.0.0":
   version "2.0.0"
   resolved "http://registry.npmjs.org/@sinonjs/formatio/-/formatio-2.0.0.tgz#84db7e9eb5531df18a8c5e0bfb6e449e55e654b2"
@@ -930,6 +933,8 @@ performance-now@^2.1.0:
 
 "phone-number@file:../shared-libs/phone-number":
   version "1.0.0"
+  dependencies:
+    google-libphonenumber "^3.1.8"
 
 pojo2xml@^1.7.1:
   version "1.7.1"

@@ -4,7 +4,7 @@ const _ = require('underscore'),
       moment = require('moment'),
       config = require('../config'),
       taskUtils = require('task-utils'),
-      messageUtils = require('@shared-libs/message-utils');
+      registrationUtils = require('@shared-libs/registration-utils');
 
 /*
  * Get desired locale
@@ -258,7 +258,7 @@ module.exports = {
         null,
         data.rows
           .map(row => row.doc)
-          .filter(doc => messageUtils.isValidRegistration(doc, config.getAll()))
+          .filter(doc => registrationUtils.isValidRegistration(doc, config.getAll()))
       );
     });
   },

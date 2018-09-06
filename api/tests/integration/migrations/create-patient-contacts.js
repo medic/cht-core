@@ -77,7 +77,6 @@ describe('create-patient-contacts migration', function() {
         _id: 'registrationB',
         patient_id: '12341',
         fields: {
-          patient_id: '12341',
           patient_name: 'test2'
         },
         form: 'A',
@@ -88,7 +87,6 @@ describe('create-patient-contacts migration', function() {
         _id: 'registrationC',
         patient_id: '12342',
         fields: {
-          patient_id: '12342',
           patient_name: 'test3'
         },
         // form: 'A',          <-- form field is required
@@ -99,7 +97,6 @@ describe('create-patient-contacts migration', function() {
         _id: 'registrationD',
         patient_id: '12343',
         fields: {
-          patient_id: '12343',
           patient_name: 'test4'
         },
         form: 'B',           // <-- form should be configured
@@ -110,13 +107,25 @@ describe('create-patient-contacts migration', function() {
         _id: 'registrationE',
         patient_id: '12344',
         fields: {
-          patient_id: '12344',
           patient_name: 'test5'
         },
         form: 'A',
         content_type: 'other', // when content_type != `xml`, needs a public form or contact property
         type: 'data_record'
       },
+      {
+        _id: 'registrationF',
+        patient_id: '12345',
+        form: 'A',
+        from: '555-5555',
+        reported_date: 'now',
+        fields: {
+          patient_name: 'test6'
+        },
+        content_type: 'xml',
+        type: 'data_record',
+        errors: ['some', 'error'] // invalid when errors are present
+      }
     ];
     return utils.initDb(documents)
     .then(() => utils.initSettings(settings))

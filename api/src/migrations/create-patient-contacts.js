@@ -2,7 +2,7 @@ var _ = require('underscore'),
     {promisify} = require('util'),
     db = require('../db-nano'),
     async = require('async'),
-    messageUtils = require('@shared-libs/message-utils'),
+    registrationUtils = require('@shared-libs/registration-utils'),
     settingsService = require('../services/settings');
 
 var BATCH_SIZE = 100;
@@ -29,7 +29,7 @@ var registrationIdsWithNoPatientContacts = function(batch, settings, callback) {
 
         var registrations = results.rows
           .map(row => row.doc)
-          .filter(doc => messageUtils.isValidRegistration(doc, settings));
+          .filter(doc => registrationUtils.isValidRegistration(doc, settings));
 
         callback(null, registrations);
       });
