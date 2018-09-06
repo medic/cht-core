@@ -2,9 +2,12 @@
 // This is done by checks roughly similar to the `registration` transition filter function
 // Serves as a replacement for checking for `transitions` metadata within the doc itself
 exports.isValidRegistration = function(doc, settings) {
-  if (!doc || (doc.errors && doc.errors.length) ||
-      !settings || !settings.registrations ||
-      doc.type !== 'data_record' || !doc.form) {
+  if (!doc ||
+      (doc.errors && doc.errors.length) ||
+      !settings ||
+      !settings.registrations ||
+      doc.type !== 'data_record' ||
+      !doc.form) {
     return false;
   }
 
