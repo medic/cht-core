@@ -28,6 +28,7 @@
     "express": "^4.16.3",
     "fast-csv": "^2.4.1",
     "google-libphonenumber": "^3.1.8",
+    "gsm": "^0.1.4",
     "helmet": "^3.12.1",
     "http-proxy": "^1.17.0",
     "lineage": "file:../shared-libs/lineage",
@@ -55,6 +56,8 @@
     "doctoc": "^1.3.1"
   },
   "bundledDependencies": [
+    "@shared-libs/message-utils",
+    "@shared-libs/server-checks",
     "@shared-libs/tombstone-utils",
     "@shared-libs/view-map-utils",
     "async",
@@ -66,6 +69,7 @@
     "express",
     "fast-csv",
     "google-libphonenumber",
+    "gsm",
     "helmet",
     "http-proxy",
     "lineage",

@@ -54,17 +54,69 @@ describe('create-patient-contacts migration', function() {
     };
     var documents = [
       {
+        _id: 'chw',
+        type: 'person',
+        parent: { _id: 'parent' },
+        phone: '555-555',
+        reported_date: 'now'
+      },
+      {
         _id: 'registrationA',
         // patient_id: '1234', <-- if a registration doesn't have a patient id here it was not a registration that
         //                         resulted in a patient_id being created, and thus should not have a patient contact
         //                         created for it.
         fields: {
-          patient_id: '1234'
+          patient_id: '1234',
+          patient_name: 'test1'
         },
         form: 'A',
         content_type: 'xml',
         type: 'data_record'
-      }
+      },
+      {
+        _id: 'registrationB',
+        patient_id: '12341',
+        fields: {
+          patient_id: '12341',
+          patient_name: 'test2'
+        },
+        form: 'A',
+        content_type: 'xml',
+        // type: 'data_record' <-- type is required to be `data_record`
+      },
+      {
+        _id: 'registrationC',
+        patient_id: '12342',
+        fields: {
+          patient_id: '12342',
+          patient_name: 'test3'
+        },
+        // form: 'A',          <-- form field is required
+        content_type: 'xml',
+        type: 'data_record'
+      },
+      {
+        _id: 'registrationD',
+        patient_id: '12343',
+        fields: {
+          patient_id: '12343',
+          patient_name: 'test4'
+        },
+        form: 'B',           // <-- form should be configured
+        content_type: 'xml',
+        type: 'data_record'
+      },
+      {
+        _id: 'registrationE',
+        patient_id: '12344',
+        fields: {
+          patient_id: '12344',
+          patient_name: 'test5'
+        },
+        form: 'A',
+        content_type: 'other', // when content_type != `xml`, needs a public form or contact property
+        type: 'data_record'
+      },
     ];
     return utils.initDb(documents)
     .then(() => utils.initSettings(settings))

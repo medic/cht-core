@@ -575,6 +575,10 @@ google-libphonenumber@^3.1.8:
   version "3.1.8"
   resolved "https://registry.yarnpkg.com/google-libphonenumber/-/google-libphonenumber-3.1.8.tgz#076ecc21e2113371b9d67f6b7dd9ac66db9722cc"
 
+gsm@^0.1.4:
+  version "0.1.4"
+  resolved "https://registry.yarnpkg.com/gsm/-/gsm-0.1.4.tgz#f827624d8a24762fa50bc49bfca82c2006d1eb0a"
+
 har-schema@^2.0.0:
   version "2.0.0"
   resolved "https://registry.yarnpkg.com/har-schema/-/har-schema-2.0.0.tgz#a94c2224ebcac04782a0d9035521f24735b7ec92"
