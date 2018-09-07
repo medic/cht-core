@@ -1,3 +1,5 @@
+var moment = require('moment');
+
 angular.module('controllers').controller('MessageQueueDueCtrl',
   function(
     $log,
@@ -9,45 +11,50 @@ angular.module('controllers').controller('MessageQueueDueCtrl',
     'use strict';
     'ngInject';
 
-    var pagination = {
-      skip: 0,
-      limit: 10
-    };
+    var delayInterval = 5 * 60 * 1000; // 5 minutes
+
     $scope.displayLastUpdated = true;
     $scope.pagination = {
-      next: false,
-      prev: false
+      page: 0,
+      perPage: 10,
+      pages: 0
     };
 
     Settings().then(function(settings) {
       $scope.dateFormat = settings.reported_date_format;
     });
 
-    $scope.nextPage = function() {
-      pagination.skip += $scope.messages ? $scope.messages.length : 0;
-      MessageQueue
-        .getDue(pagination.skip, pagination.limit)
-        .then(function(result) {
-          $scope.messages = result.rows;
-          $scope.pagination.next = result.next;
-          $scope.pagination.prev = pagination.skip > 0;
+    var conditionalStyling = function(messages) {
+      var transitionalStates = ['pending', 'forwarded-to-gateway', 'forwarded-by-gateway', 'received', 'send'],
+          now = moment();
+      messages.forEach(function(message) {
+        if (transitionalStates.indexOf(message.state) !== -1) {
+          message.delayed = now.diff(message.state_history.timestamp) > delayInterval;
+        }
+      });
 
-        });
+      return messages;
     };
 
-    $scope.prevPage = function() {
-      pagination.skip = Math.max(0, pagination.skip - pagination.limit);
-      MessageQueue
-        .getDue(pagination.skip, pagination.limit)
-        .then(function(result) {
-          $scope.messages = result.rows;
-          $scope.pagination.next = result.next;
-          $scope.pagination.prev = pagination.skip > 0;
-        });
+    var getSkip = function() {
+      return ($scope.pagination.page - 1) * $scope.pagination.perPage;
     };
 
-    $scope.nextPage();
+    var getItems = function() {
+      return MessageQueue('due', getSkip(), $scope.pagination.limit).then(function(result) {
+        $scope.messages = conditionalStyling(result.rows);
 
+        $scope.pagination.pages = Math.ceil(result.total / $scope.pagination.perPage);
+        $scope.pagination.total = result.total;
+        console.log($scope.pagination);
+      });
+    };
 
+    $scope.goToPage = function(page) {
+      $scope.pagination.page = page;
+      return getItems();
+    };
+
+    $scope.goToPage(1);
   }
 );

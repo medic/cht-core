@@ -49,7 +49,8 @@ function (doc) {
         var value = {
           scheduled_message: {
             message_key: task.message_key,
-            recipient: task.recipient
+            recipient: task.recipient,
+            message: task.message
           },
           task: taskData,
           record: dataRecordData,

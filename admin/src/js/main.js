@@ -47,6 +47,7 @@ require('./controllers/users');
 
 angular.module('directives', ['ngSanitize']);
 require('./directives/modal');
+require('./directives/pagination');
 require('./directives/relative-date');
 require('./directives/release');
 

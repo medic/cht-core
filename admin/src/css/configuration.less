@@ -100,11 +100,12 @@ dl.horizontal {
 .flex-row {
   display: flex;
   align-items: center;
+  cursor: default;
 
   .col {
     padding: 0 15px;
     &.col-fixed {
-      flex: 0 0 155px;
+      flex: 0 0 160px;
     }
 
     &.col-grow {
@@ -161,7 +162,16 @@ dl.horizontal {
     content: "\f056";
   }
 
-  &.state-failed:before {
-    content: "\f071";
+  &.state-failed {
+    color: @error-color;
+    font-weight: bold;
+    &:before {
+      content: "\f071";
+    }
+  }
+
+  &.delayed {
+    color: @warning-color;
+    font-weight: bold;
   }
 }

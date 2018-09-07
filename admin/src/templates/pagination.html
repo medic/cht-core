@@ -1,0 +1,23 @@
+<div class="row flex-row">
+  <div class="col">
+    <div class="pagination">
+      <li ng-class="{ disabled: pagination.page <= 1 }">
+        <a ng-click="goToPage(pagination.page - 1)"><span>&laquo;</span></a>
+      </li>
+
+      <li ng-repeat="p in pagesList" ng-class="{ active: p === pagination.page }">
+        <a ng-if="p !== pagination.page" ng-click="goToPage(p)"><span>{{p}}</span></a>
+        <span ng-if="p === pagination.page">{{p}}</span>
+      </li>
+
+      <li ng-class="{ disabled: pagination.page >= pagination.pages }">
+        <a ng-click="goToPage(pagination.page + 1)"><span>&raquo;</span></a>
+      </li>
+    </div>
+  </div>
+  <div class="col">
+    <span translate translate-values="{ total: pagination.total, first: (pagination.page - 1) * pagination.perPage + 1, last: pagination.page * pagination.perPage }">
+      admin.message.queue.pagination.detail
+    </span>
+  </div>
+</div>
