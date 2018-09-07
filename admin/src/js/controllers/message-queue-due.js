@@ -46,7 +46,6 @@ angular.module('controllers').controller('MessageQueueDueCtrl',
 
         $scope.pagination.pages = Math.ceil(result.total / $scope.pagination.perPage);
         $scope.pagination.total = result.total;
-        console.log($scope.pagination);
       });
     };
 

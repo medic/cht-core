@@ -237,7 +237,6 @@ angular.module('services').factory('MessageQueue',
 
     return function(tab, skip, limit) {
       var options = getOptions(tab, skip, limit);
-      console.log(options);
       return $q
         .all([
           Settings(),
