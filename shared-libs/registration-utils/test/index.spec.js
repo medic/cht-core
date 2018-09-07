@@ -1,126 +1,196 @@
-var sinon = require('sinon').sandbox.create(),
-    expect = require('chai').expect;
-var utils = require('../src/index');
+const sinon = require('sinon').sandbox.create(),
+      chai = require('chai'),
+      utils = require('../src/index');
 
-describe('registrationUtils', function() {
+describe('registrationUtils', () => {
 
-  beforeEach(function(done) {
-    sinon.restore();
-    done();
-  });
+  afterEach(() => sinon.restore());
 
-  describe('isValidRegistration', function() {
-    var config = { registrations: {} };
+  describe('isValidRegistration', () => {
+    const config = { registrations: {} };
 
-    it('should return false when no doc', function() {
-      expect(utils.isValidRegistration(false, config)).to.equal(false);
+    it('should return false when no doc', () => {
+      chai.expect(utils.isValidRegistration(false, config)).to.equal(false);
     });
 
-    it('should return false when doc has errors', function() {
-      var doc = {
+    it('should return false when doc has errors', () => {
+      const doc = {
         type: 'data_record',
         form: 'form',
         content_type: 'xml',
         errors: []
       };
       config.registrations = [{ form: 'form' }];
-      expect(utils.isValidRegistration({ errors: [1] }, config)).to.equal(false);
-      expect(utils.isValidRegistration(doc, config)).to.equal(true);
+      chai.expect(utils.isValidRegistration({ errors: [1] }, config)).to.equal(false);
+      chai.expect(utils.isValidRegistration(doc, config)).to.equal(true);
     });
 
-    it('should return false when no config', function() {
-      var doc = {
+    it('should return false when no config', () => {
+      const doc = {
         type: 'data_record',
         form: 'form',
         content_type: 'xml',
         errors: []
       };
 
-      expect(utils.isValidRegistration(doc, false)).to.equal(false);
-      expect(utils.isValidRegistration(doc, {})).to.equal(false);
+      chai.expect(utils.isValidRegistration(doc, false)).to.equal(false);
+      chai.expect(utils.isValidRegistration(doc, {})).to.equal(false);
     });
 
-    it('should return false when doc is invalid', function() {
+    it('should return false when doc is invalid', () => {
       config.registrations = [{ form: 'form1' }, { form: 'form2' }];
-      config.forms = { form2: {} };
+      config.forms = { form2: {}, form5: {} };
 
-      var invalidDoc1 = {
+      let invalidDoc = {
         type: 'data_record',
         content_type: 'xml',
         contact: true
       };
-      expect(utils.isValidRegistration(invalidDoc1, config)).to.equal(false);
+      // no `form` field
+      chai.expect(utils.isValidRegistration(invalidDoc, config)).to.equal(false);
 
-      var invalidDoc2 = {
+      invalidDoc = {
         type: 'something',
         form: 'form1',
         contact: true
       };
-      expect(utils.isValidRegistration(invalidDoc2, config)).to.equal(false);
+      // missing non-xml form
+      chai.expect(utils.isValidRegistration(invalidDoc, config)).to.equal(false);
 
-      var invalidDoc3 = {
+      invalidDoc = {
+        type: 'data_record',
+        form: 'form5',
+        contact: true
+      };
+      // no registration configuration
+      chai.expect(utils.isValidRegistration(invalidDoc, config)).to.equal(false);
+
+      invalidDoc = {
         type: 'data_record',
         form: 'form3',
         contact: true
       };
-      expect(utils.isValidRegistration(invalidDoc3, config)).to.equal(false);
+      // no registration configuration and form configuration
+      chai.expect(utils.isValidRegistration(invalidDoc, config)).to.equal(false);
 
-      var invalidDoc4 = {
-        type: 'data_record',
-        form: 'form3',
-        contact: true
-      };
-      expect(utils.isValidRegistration(invalidDoc4, config)).to.equal(false);
-
-      var invalidDoc5 = {
+      invalidDoc = {
         type: 'data_record',
         form: 'form2',
       };
-      expect(utils.isValidRegistration(invalidDoc5, config)).to.equal(false);
+      // non-public configured sms form with unknown sender
+      chai.expect(utils.isValidRegistration(invalidDoc, config)).to.equal(false);
+
+      invalidDoc = {
+        type: 'data_record',
+        form: '!!!~~~~////',
+      };
+      // no alphanumeric sequence found in form field
+      chai.expect(utils.isValidRegistration(invalidDoc, config)).to.equal(false);
+
+      invalidDoc = {
+        type: 'data_record',
+        form: '!!!!something~~~~form2',
+      };
+      // invalid form field
+      chai.expect(utils.isValidRegistration(invalidDoc, config)).to.equal(false);
+
+      invalidDoc = {
+        type: 'data_record',
+        form: '!!form4~~something',
+        content_type: 'xml'
+      };
+      // invalid form field
+      chai.expect(utils.isValidRegistration(invalidDoc, config)).to.equal(false);
     });
 
-    it('should return false when form does not have configured registrations', function() {
+    it('should return false when form does not have configured registrations', () => {
       config.registrations = [{ form: 'form1' }];
-      var doc = {
+      const doc = {
         type: 'data_record',
         form: 'form',
         content_type: 'xml',
         errors: []
       };
 
-      expect(utils.isValidRegistration(doc, config)).to.equal(false);
+      chai.expect(utils.isValidRegistration(doc, config)).to.equal(false);
     });
 
-    it('should return true for valid docs', function() {
-      config.registrations = [{ form: 'form1' }, { form: 'form2' }, { form: 'form3' }];
-      config.forms = { form2: {}, form3: { public_form: true } };
+    it('should return true for valid docs', () => {
+      config.registrations = [{ form: 'form1' }, { form: 'form2' }, { form: 'form3' }, { form: 'FORM4' }, { form: 'form5' }];
+      config.forms = { form2: {}, form3: { public_form: true }, FORM5: { } };
 
-      var validDoc1 = {
+      let validDoc = {
         type: 'data_record',
         form: 'form1',
         content_type: 'xml',
       };
-      expect(utils.isValidRegistration(validDoc1, config)).to.equal(true);
+      // configured XML form
+      chai.expect(utils.isValidRegistration(validDoc, config)).to.equal(true);
 
-      var validDoc2 = {
+      validDoc = {
         type: 'data_record',
         form: 'form2',
         contact: true
       };
-      expect(utils.isValidRegistration(validDoc2, config)).to.equal(true);
-      validDoc2.contact = false;
-      expect(utils.isValidRegistration(validDoc2, config)).to.equal(false);
+      // configured SMS form, known sender
+      chai.expect(utils.isValidRegistration(validDoc, config)).to.equal(true);
+      validDoc.contact = false;
+      // configured SMS form, unknown sender
+      chai.expect(utils.isValidRegistration(validDoc, config)).to.equal(false);
 
-      var validDoc3 = {
+      validDoc = {
         type: 'data_record',
         form: 'form3',
         contact: true
       };
-      expect(utils.isValidRegistration(validDoc3, config)).to.equal(true);
-      validDoc3.contact = false;
-      expect(utils.isValidRegistration(validDoc3, config)).to.equal(true);
-    });
+      // configured public SMS form, known sender
+      chai.expect(utils.isValidRegistration(validDoc, config)).to.equal(true);
+      validDoc.contact = false;
+      // configured public SMS form, unknown sender
+      chai.expect(utils.isValidRegistration(validDoc, config)).to.equal(true);
 
+      validDoc = {
+        type: 'data_record',
+        form: 'FORM5',
+        contact: true
+      };
+      // configured SMS form, known sender, unmatched case
+      chai.expect(utils.isValidRegistration(validDoc, config)).to.equal(true);
+
+      validDoc = {
+        type: 'data_record',
+        form: 'form4',
+        content_type: 'xml'
+      };
+      // configured XML form, unmatched case
+      chai.expect(utils.isValidRegistration(validDoc, config)).to.equal(true);
+
+      validDoc = {
+        type: 'data_record',
+        form: '!!form4~~',
+        content_type: 'xml'
+      };
+      // configured XML form, unmatched case, junk characters
+      chai.expect(utils.isValidRegistration(validDoc, config)).to.equal(true);
+    });
   });
 
+  describe('normalizeFormCode', () => {
+    it('returns false for strings that do not match', () => {
+      chai.expect(utils._normalizeFormCode('   ')).to.equal(null);
+      chai.expect(utils._normalizeFormCode('!a!b!c!d')).to.equal(null);
+      chai.expect(utils._normalizeFormCode('some time')).to.equal(null);
+      chai.expect(utils._normalizeFormCode('_some!where-')).to.equal(null);
+      chai.expect(utils._normalizeFormCode('____test____??1')).to.equal(null);
+      chai.expect(utils._normalizeFormCode('$%^&alpha1_-)(&-^')).to.equal(null);
+    });
+
+    it('returns alpha+dash+underscore substring that matches, lowercased', () => {
+      chai.expect(utils._normalizeFormCode('medic')).to.equal('medic');
+      chai.expect(utils._normalizeFormCode('Medic-Mobile')).to.equal('medic-mobile');
+      chai.expect(utils._normalizeFormCode('Medic_Mobile')).to.equal('medic_mobile');
+      chai.expect(utils._normalizeFormCode('someform123')).to.equal('someform123');
+      chai.expect(utils._normalizeFormCode('$%^&alpha1_-)(&^')).to.equal('alpha1_-');
+    });
+  });
 });
