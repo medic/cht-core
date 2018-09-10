@@ -13,6 +13,7 @@
   },
   "dependencies": {
     "@shared-libs/message-utils": "file:../shared-libs/message-utils",
+    "@shared-libs/registration-utils": "file:../shared-libs/registration-utils",
     "angular": "^1.7.2",
     "angular-cookie": "^4.1.0",
     "angular-nvd3": "^1.0.9",
