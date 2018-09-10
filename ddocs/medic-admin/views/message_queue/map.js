@@ -7,7 +7,8 @@ function (doc) {
     reported_date: doc.reported_date,
     contact: doc.contact,
     patient_id: doc.patient_id || (doc.fields && doc.fields.patient_id),
-    patient_uuid: doc.fields && doc.fields.patient_uuid
+    patient_uuid: doc.fields && doc.fields.patient_uuid,
+    form: doc.form
   };
 
   var _emit = function(tasks) {

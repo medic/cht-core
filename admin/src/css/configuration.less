@@ -99,6 +99,7 @@ dl.horizontal {
 
 .flex-row {
   display: flex;
+  flex-wrap: wrap;
   align-items: center;
   cursor: default;
 
@@ -109,7 +110,7 @@ dl.horizontal {
     }
 
     &.col-grow {
-      flex-grow: 1;
+      flex: 1 0 400px;
     }
   }
 }

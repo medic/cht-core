@@ -6,13 +6,18 @@
   <div class="col col-fixed" translate>admin.message.queue.due</div>
   <div ng-if="displayLastUpdated" class="col col-fixed" translate>admin.message.queue.updated</div>
 </div>
+
+<div class="loader-overlay" ng-show="loading">
+  <div class="loader"></div>
+</div>
+
 <div class="row flex-row" ng-repeat="message in messages">
   <div class="col col-fixed">{{message.recipient}}</div>
   <div class="col col-fixed">
-    <relative-date date="message.record.reported_date" date-format="dateFormat"></relative-date>
+    <relative-date date="message.record.reportedDate" date-format="dateFormat"></relative-date>
     <br/>
-    <a href=" ../../medic/_rewrite/#/reports/{{message.record.id}}" title="{{message.record.id}}" target="_blank">
-      View record
+    <a ng-if="message.link" href=" ../../medic/_rewrite/#/reports/{{message.record.id}}" title="{{message.record.id}}" target="_blank">
+      <span translate>admin.message.queue.view.report</span>
     </a>
   </div>
   <div class="col col-grow">
@@ -27,7 +32,7 @@
   </div>
 
   <div ng-if="displayLastUpdated" class="col col-fixed">
-    <relative-date date="message.state_history.timestamp" date-format="dateFormat"></relative-date>
+    <relative-date date="message.stateHistory.timestamp" date-format="dateFormat"></relative-date>
   </div>
 </div>
 <mm-pagination></mm-pagination>

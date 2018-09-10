@@ -1,5 +1,6 @@
 var messageUtils = require('message-utils'),
-    lineageFactory = require('lineage');
+    lineageFactory = require('lineage'),
+    registrationUtils = require('registration-utils');
 
 angular.module('services').factory('MessageQueue',
   function(
@@ -24,7 +25,7 @@ angular.module('services').factory('MessageQueue',
     };
 
     var findPatientUUidByPatientId = function(contactsByReference, patientId) {
-      var patient = contactsByReference.rows.find(function(row) {
+      var patient = contactsByReference.find(function(row) {
         return row.key[1] === patientId;
       });
 
@@ -32,9 +33,9 @@ angular.module('services').factory('MessageQueue',
     };
 
     var findRegistrationsByPatientId = function(registrations, patientId) {
-      return registrations.rows
+      return registrations
         .filter(function(row) {
-          return row.key === patientId && row.doc;
+          return row.key === patientId;
         })
         .map(function(row) {
           return row.doc;
@@ -68,13 +69,13 @@ angular.module('services').factory('MessageQueue',
           return DB({ remote: true }).query('medic/doc_summaries_by_id', { keys: ids });
         })
         .then(function(summaries) {
-            messages.forEach(function(message) {
-              message.recipient = message.message &&
-                                  message.message.to &&
-                                  findSummaryByPhone(summaries, message.message.to);
-            });
+          messages.forEach(function(message) {
+            message.recipient = message.message &&
+                                message.message.to &&
+                                findSummaryByPhone(summaries, message.message.to);
+          });
 
-            return messages;
+          return messages;
         });
     };
 
@@ -106,11 +107,15 @@ angular.module('services').factory('MessageQueue',
           DB({ remote: true }).query('medic-client/registered_patients', { keys: patientIds, include_docs: true })
         ])
         .then(function(results) {
+          var contactsByReference = results[0].rows;
+          var registrations = results[1].rows.filter(function(row) {
+            return registrationUtils.isValidRegistration(row.doc, settings);
+          });
           messages.forEach(function(message) {
             message.context = {
-              patient_uuid: findPatientUUidByPatientId(results[0], message.record.patient_id) ||
+              patient_uuid: findPatientUUidByPatientId(contactsByReference, message.record.patient_id) ||
                             message.record.patient_uuid,
-              registrations: findRegistrationsByPatientId(results[1], message.record.patient_id)
+              registrations: findRegistrationsByPatientId(registrations, message.record.patient_id)
             };
           });
 
@@ -188,20 +193,21 @@ angular.module('services').factory('MessageQueue',
     };
 
     var formatMessages = function(messages) {
-       return messages.map(function(message) {
-         return {
-           record: {
-             id: message.record.id,
-             reported_date: message.record.reported_date
-           },
-           recipient: message.recipient && message.recipient.name || message.message.to,
-           task: getTaskDisplayName(message.task),
-           state: message.task.state,
-           state_history: message.task.state_history,
-           content: message.message.message,
-           due: message.due
-         };
-       });
+      return messages.map(function(message) {
+        return {
+          record: {
+            id: message.record.id,
+            reportedDate: message.record.reported_date
+          },
+          recipient: message.recipient && message.recipient.name || message.message.to,
+          task: getTaskDisplayName(message.task),
+          state: message.task.state,
+          stateHistory: message.task.state_history,
+          content: message.message.message,
+          due: message.due,
+          link: !!message.record.form
+        };
+      });
     };
 
     var getOptions = function(tab, skip, limit) {
@@ -227,7 +233,7 @@ angular.module('services').factory('MessageQueue',
           options.descending = paging.descending = true;
           break;
         case 'muted':
-          options.start_key = paging.start_key = [tab, new Date().getTimestamp()];
+          options.start_key = paging.start_key = [tab, new Date().getTime()];
           options.end_key = paging.end_key = [tab, {}];
           break;
       }

@@ -31,8 +31,7 @@ require('./controllers/forms-json');
 require('./controllers/forms-xml');
 require('./controllers/icons');
 require('./controllers/import-translation');
-require('./controllers/message-queue-scheduled');
-require('./controllers/message-queue-due');
+require('./controllers/message-queue');
 require('./controllers/message-test');
 require('./controllers/settings-advanced');
 require('./controllers/settings-backup');
@@ -322,23 +321,44 @@ app.config(function(
     })
     .state('message-queue', {
       url: '/message-queue',
-      templateUrl: 'templates/message_queue.html'
+      templateUrl: 'templates/message_queue.html',
     })
     .state('message-queue.scheduled', {
       url: '/scheduled',
+      data: {
+        tab: 'scheduled',
+        displayLastUpdated: false
+      },
       views: {
         tab: {
-          controller: 'MessageQueueScheduledCtrl',
-          templateUrl: 'templates/message_queue_due.html'
+          controller: 'MessageQueueCtrl',
+          templateUrl: 'templates/message_queue_tab.html'
         }
       }
     })
     .state('message-queue.due', {
       url: '/due',
+      data: {
+        tab: 'due',
+        displayLastUpdated: true
+      },
       views: {
         tab: {
-          controller: 'MessageQueueDueCtrl',
-          templateUrl: 'templates/message_queue_due.html'
+          controller: 'MessageQueueCtrl',
+          templateUrl: 'templates/message_queue_tab.html'
+        }
+      }
+    })
+    .state('message-queue.muted', {
+      url: '/muted',
+      data: {
+        tab: 'muted',
+        displayLastUpdated: true
+      },
+      views: {
+        tab: {
+          controller: 'MessageQueueCtrl',
+          templateUrl: 'templates/message_queue_tab.html'
         }
       }
     });

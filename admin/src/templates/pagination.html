@@ -1,6 +1,9 @@
 <div class="row flex-row">
-  <div class="col">
+  <div class="col col-grow">
     <div class="pagination">
+      <li>
+        <a ng-click="goToPage(1)"><span>First</span></a>
+      </li>
       <li ng-class="{ disabled: pagination.page <= 1 }">
         <a ng-click="goToPage(pagination.page - 1)"><span>&laquo;</span></a>
       </li>
@@ -9,9 +12,11 @@
         <a ng-if="p !== pagination.page" ng-click="goToPage(p)"><span>{{p}}</span></a>
         <span ng-if="p === pagination.page">{{p}}</span>
       </li>
-
       <li ng-class="{ disabled: pagination.page >= pagination.pages }">
         <a ng-click="goToPage(pagination.page + 1)"><span>&raquo;</span></a>
+      </li>
+      <li>
+        <a ng-click="goToPage(pagination.pages)"><span>Last</span></a>
       </li>
     </div>
   </div>

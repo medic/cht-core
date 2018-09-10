@@ -24,6 +24,7 @@
 }
 .tab-content {
   margin-top: 20px;
+  position: relative;
 }
 .form-control {
   padding-top: 5px;
@@ -72,6 +73,16 @@ ul {
     border-width: 3px;
   }
 }
+
+.loader-overlay {
+  position: absolute;
+  height: 100%;
+  width: 100%;
+  background: rgba(255, 255, 255, 0.3);
+  display: flex;
+  align-items: center;
+}
+
 @-webkit-keyframes loader {
   0% {
     -webkit-transform: rotate(0deg);
