@@ -25,7 +25,7 @@ exports.isValidRegistration = function(doc, settings) {
 
   // Registration transition should be configured for this form
   var registrationConfiguration = settings.registrations.find(function(conf) {
-    return conf.form.toLowerCase() === formCode;
+    return conf && conf.form && String(conf.form).toLowerCase() === formCode;
   });
   if (!registrationConfiguration) {
     return false;

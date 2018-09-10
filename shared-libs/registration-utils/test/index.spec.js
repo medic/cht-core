@@ -37,6 +37,28 @@ describe('registrationUtils', () => {
       chai.expect(utils.isValidRegistration(doc, {})).to.equal(false);
     });
 
+    it('should support invalid configurations', () => {
+      config.registrations = [
+        { some: 'thing' },
+        undefined,
+        false,
+        { form: 22 },
+        { form: ['a', 'b', 'c'] },
+        1234,
+        'medicMobile',
+        [1, 2, 3, 4]
+      ];
+
+      const doc = {
+        type: 'data_record',
+        form: 'form',
+        content_type: 'xml',
+        errors: []
+      };
+
+      chai.expect(utils.isValidRegistration(doc, config)).to.equal(false);
+    });
+
     it('should return false when doc is invalid', () => {
       config.registrations = [{ form: 'form1' }, { form: 'form2' }];
       config.forms = { form2: {}, form5: {} };
