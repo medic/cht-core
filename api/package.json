@@ -15,6 +15,7 @@
     "toc": "doctoc --github --maxlevel 2 README.md"
   },
   "dependencies": {
+    "@shared-libs/registration-utils": "file:../shared-libs/registration-utils",
     "@shared-libs/server-checks": "file:../shared-libs/server-checks",
     "@shared-libs/tombstone-utils": "file:../shared-libs/tombstone-utils",
     "@shared-libs/view-map-utils": "file:../shared-libs/view-map-utils",
@@ -54,6 +55,8 @@
     "doctoc": "^1.3.1"
   },
   "bundledDependencies": [
+    "@shared-libs/registration-utils",
+    "@shared-libs/server-checks",
     "@shared-libs/tombstone-utils",
     "@shared-libs/view-map-utils",
     "async",

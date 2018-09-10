@@ -1,6 +1,7 @@
 var _ = require('underscore'),
     messages = require('@shared-libs/message-utils'),
-    lineageFactory = require('lineage');
+    lineageFactory = require('lineage'),
+    registrationUtils = require('@shared-libs/registration-utils');
 
 angular.module('inboxServices').factory('FormatDataRecord',
   function(
@@ -560,7 +561,9 @@ angular.module('inboxServices').factory('FormatDataRecord',
           var context = {};
           if (results.length === 4) {
             context.patient = results[2];
-            context.registrations = results[3];
+            context.registrations = results[3].filter(function(registration) {
+              return registrationUtils.isValidRegistration(registration, settings);
+            });
           }
           return makeDataRecordReadable(doc, settings, language, context);
         });

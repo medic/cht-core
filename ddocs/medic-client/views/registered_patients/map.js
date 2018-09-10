@@ -7,11 +7,9 @@
 function(doc) {
   var patientId = doc.patient_id || (doc.fields && doc.fields.patient_id);
   if (doc.form &&
+      doc.type === 'data_record' &&
       (!doc.errors || doc.errors.length === 0) &&
-      patientId &&
-      doc.transitions &&
-      doc.transitions.registration &&
-      doc.transitions.registration.ok) {
+      patientId) {
     emit(String(patientId));
   }
 }
