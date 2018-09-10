@@ -5,6 +5,9 @@
 "@shared-libs/message-utils@file:../shared-libs/message-utils":
   version "1.0.0"
 
+"@shared-libs/registration-utils@file:../shared-libs/registration-utils":
+  version "1.0.0"
+
 "@shared-libs/server-checks@file:../shared-libs/server-checks":
   version "1.0.0"
   dependencies:
