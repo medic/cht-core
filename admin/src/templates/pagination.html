@@ -1,28 +1,37 @@
 <div class="row flex-row">
   <div class="col col-grow">
     <div class="pagination">
-      <li>
-        <a ng-click="goToPage(1)"><span>First</span></a>
+      <li ng-show="pagination.detail.firstLast" ng-class="{ disabled: pagination.page === 1 }">
+        <a ng-click="loadPage(1)" translate translate-attr-title="admin.pagination.first">
+          <span><i class="fa fa-angle-double-left"></i></span>
+        </a>
       </li>
       <li ng-class="{ disabled: pagination.page <= 1 }">
-        <a ng-click="goToPage(pagination.page - 1)"><span>&laquo;</span></a>
+        <a ng-click="loadPage(pagination.page - 1)" translate translate-attr-title="admin.pagination.prev">
+          <span><i class="fa fa-angle-left"></i></span>
+        </a>
       </li>
 
-      <li ng-repeat="p in pagesList" ng-class="{ active: p === pagination.page }">
-        <a ng-if="p !== pagination.page" ng-click="goToPage(p)"><span>{{p}}</span></a>
-        <span ng-if="p === pagination.page">{{p}}</span>
+      <li ng-repeat="p in pagination.pagesList" ng-class="{ active: p === pagination.page }">
+        <a ng-click="loadPage(p)">
+          <span>{{p}}</span>
+        </a>
       </li>
       <li ng-class="{ disabled: pagination.page >= pagination.pages }">
-        <a ng-click="goToPage(pagination.page + 1)"><span>&raquo;</span></a>
+        <a ng-click="loadPage(pagination.page + 1)" translate translate-attr-title="admin.pagination.next">
+          <span><i class="fa fa-angle-right"></i></span>
+        </a>
       </li>
-      <li>
-        <a ng-click="goToPage(pagination.pages)"><span>Last</span></a>
+      <li ng-show="pagination.detail.firstLast" ng-class="{ disabled: pagination.page === pagination.pages }">
+        <a ng-click="loadPage(pagination.pages)" translate translate-attr-title="admin.pagination.last">
+          <span><i class="fa fa-angle-double-right"></i></span>
+        </a>
       </li>
     </div>
   </div>
   <div class="col">
-    <span translate translate-values="{ total: pagination.total, first: (pagination.page - 1) * pagination.perPage + 1, last: pagination.page * pagination.perPage }">
-      admin.message.queue.pagination.detail
+    <span translate translate-values="{ total: pagination.total, first: pagination.detail.first, last: pagination.detail.last }">
+      admin.pagination.detail
     </span>
   </div>
 </div>

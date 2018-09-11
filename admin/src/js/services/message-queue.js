@@ -14,7 +14,6 @@ angular.module('services').factory('MessageQueue',
     'ngInject';
 
     var lineage = lineageFactory($q,DB({ remote: true }));
-    var settings;
 
     var findSummaryByPhone = function(summaries, phone) {
       var summary = summaries.rows.find(function(summary) {
@@ -50,14 +49,16 @@ angular.module('services').factory('MessageQueue',
       return contact && contact.doc;
     };
 
+    var compactUnique = function(array) {
+      return array.filter(function(item, idx, self) {
+        return item && self.indexOf(item) === idx;
+      });
+    };
+
     var getRecipients = function(messages) {
-      var phoneNumbers = messages
-        .map(function(row) {
-          return row.message && row.message.to;
-        })
-        .filter(function(item, idx, self) {
-          return item && self.indexOf(item) === idx;
-        });
+      var phoneNumbers = compactUnique(messages.map(function(row) {
+        return row.sms && row.sms.to;
+      }));
 
       return DB({ remote: true })
         .query('medic-client/contacts_by_phone', { keys: phoneNumbers })
@@ -70,9 +71,9 @@ angular.module('services').factory('MessageQueue',
         })
         .then(function(summaries) {
           messages.forEach(function(message) {
-            message.recipient = message.message &&
-                                message.message.to &&
-                                findSummaryByPhone(summaries, message.message.to);
+            message.recipient = message.sms &&
+                                message.sms.to &&
+                                findSummaryByPhone(summaries, message.sms.to);
           });
 
           return messages;
@@ -80,17 +81,13 @@ angular.module('services').factory('MessageQueue',
     };
 
     var getUniquePatientIds = function(messages) {
-      return messages
-        .map(function(message) {
-          // don't process items which already have generated messages
-          return !message.message && message.record.patient_id;
-        })
-        .filter(function(patientId, idx, self) {
-          return patientId && self.indexOf(patientId) === idx;
-        });
+      return compactUnique(messages.map(function(message) {
+        // don't process items which already have generated messages
+        return !message.sms && message.record.patient_id;
+      }));
     };
 
-    var getPatientsAndRegistrations = function(messages) {
+    var getPatientsAndRegistrations = function(messages, settings) {
       var patientIds = getUniquePatientIds(messages);
 
       if (!patientIds.length) {
@@ -126,7 +123,7 @@ angular.module('services').factory('MessageQueue',
     var hydrateContacts = function(messages) {
       var contactIds = [];
       messages.forEach(function(message) {
-        if (!message.message) {
+        if (!message.sms) {
           contactIds.push(message.context.patient_uuid, message.record.contact && message.record.contact._id);
         }
       });
@@ -156,27 +153,28 @@ angular.module('services').factory('MessageQueue',
         });
     };
 
-    var generateScheduledMessages = function(messages) {
+    var generateScheduledMessages = function(messages, settings) {
       var translate = function(key, locale) {
-        return $translate.instant(key, null, 'no-interpolation', locale, null);
+        var interpolation = 'no-interpolation';
+        return $translate.instant(key, null, interpolation, locale, null);
       };
 
       messages.forEach(function(message) {
-        if (message.message) {
+        if (message.sms) {
           return;
         }
 
         var content = {
-          translationKey: message.scheduled_message.message_key,
-          message: message.scheduled_message.message
+          translationKey: message.scheduled_sms.translation_key,
+          message: message.scheduled_sms.content
         };
 
-        message.message = messageUtils.generate(
+        message.sms = messageUtils.generate(
           settings,
           translate,
           message,
           content,
-          message.scheduled_message.recipient,
+          message.scheduled_sms.recipient,
           message.context
         )[0];
       });
@@ -199,75 +197,96 @@ angular.module('services').factory('MessageQueue',
             id: message.record.id,
             reportedDate: message.record.reported_date
           },
-          recipient: message.recipient && message.recipient.name || message.message.to,
+          recipient: message.recipient && message.recipient.name || message.sms.to,
           task: getTaskDisplayName(message.task),
           state: message.task.state,
           stateHistory: message.task.state_history,
-          content: message.message.message,
+          content: message.sms.message,
           due: message.due,
           link: !!message.record.form
         };
       });
     };
 
-    var getOptions = function(tab, skip, limit) {
-      limit = limit || 10;
-      var options = {
-        limit: limit,
+    var getQueryParams = function(tab, skip, limit) {
+      var list = {
+        limit: limit || 10,
         skip: skip || 0,
         reduce: false
       };
-      var paging = {
+
+      var count = {
         reduce: true,
         group_level: 1
       };
 
+      var paging;
       switch (tab) {
         case 'scheduled':
-          options.start_key = paging.start_key = [tab, 0];
-          options.end_key = paging.end_key = [tab, {}];
+          paging = {
+            start_key: [tab, 0],
+            end_key: [tab, {}]
+          };
           break;
         case 'due':
-          options.start_key = paging.start_key = [tab, {}];
-          options.end_key = paging.end_key = [tab, 0];
-          options.descending = paging.descending = true;
+          paging = {
+            start_key: [tab, {}],
+            end_key: [tab, 0],
+            descending: true
+          };
           break;
         case 'muted':
-          options.start_key = paging.start_key = [tab, new Date().getTime()];
-          options.end_key = paging.end_key = [tab, {}];
+          paging = {
+            start_key: [tab, new Date().getTime()],
+            end_key: [tab, {}]
+          };
           break;
       }
 
-      return { query: options, paging: paging  };
+      return {
+        list: Object.assign(list, paging),
+        count: Object.assign(count, paging)
+      };
     };
 
-    return function(tab, skip, limit) {
-      var options = getOptions(tab, skip, limit);
-      return $q
-        .all([
-          Settings(),
-          DB({ remote: true }).query('medic-admin/message_queue', options.query),
-          DB({ remote: true }).query('medic-admin/message_queue', options.paging)
-        ])
-        .then(function(results) {
-          settings = results[0];
+    return {
+      loadTranslations: function() {
+        return Settings().then(function(settings) {
+          return $q.all(settings.locales.map(function(locale) {
+            return $translate('admin.message.queue', {}, undefined, undefined, locale.code);
+          }));
+        });
+      },
 
-          var list = results[1].rows.map(function(row) {
-            return row.value;
-          });
-
-          return getPatientsAndRegistrations(list)
-            .then(hydrateContacts)
-            .then(generateScheduledMessages)
-            .then(getRecipients)
-            .then(function(list) {
-              return {
-                rows: formatMessages(list),
-                total: results[2].rows[0].value
-              };
+      query: function(tab, skip, limit) {
+        var queryParams = getQueryParams(tab, skip, limit);
+        return $q
+          .all([
+            Settings(),
+            DB({ remote: true }).query('medic-admin/message_queue', queryParams.list),
+            DB({ remote: true }).query('medic-admin/message_queue', queryParams.count)
+          ])
+          .then(function(results) {
+            var settings = results[0];
+            var messages = results[1].rows.map(function(row) {
+              return row.value;
             });
 
-        });
+            return getPatientsAndRegistrations(messages, settings)
+              .then(hydrateContacts)
+              .then(function(messages) {
+                return generateScheduledMessages(messages, settings);
+              })
+              .then(getRecipients)
+              .then(function(messages) {
+                return {
+                  messages: formatMessages(messages),
+                  total: results[2].rows[0].value
+                };
+              });
+
+          });
+      }
     };
   }
 );

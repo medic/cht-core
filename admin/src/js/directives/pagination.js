@@ -4,20 +4,31 @@ angular.module('directives').directive('mmPagination', function() {
   return {
     templateUrl: 'templates/pagination.html',
     link: function(scope) {
-      var generatePages = function() {
-        var maxPages = 11;
-        var firstPage = Math.min(Math.max(0, scope.pagination.page - Math.ceil(maxPages / 2)), scope.pagination.pages - maxPages);
+      var paginate = function() {
+        var maxDisplayPages = 11,
+            displayPages = Math.min(maxDisplayPages, scope.pagination.pages);
 
-        scope.pagesList = Array(Math.min(scope.pagination.pages, maxPages)).fill().map(function(x, i) {
+        var firstPage = Math.min(
+          Math.max(0, scope.pagination.page - Math.ceil(displayPages / 2)),
+          scope.pagination.pages - displayPages
+        );
+
+        scope.pagination.pagesList = Array(displayPages).fill().map(function(x, i) {
           return i + firstPage + 1;
         });
+
+        scope.pagination.detail = {
+          first: (scope.pagination.page - 1) * scope.pagination.perPage + 1,
+          last: Math.min(scope.pagination.total, scope.pagination.page * scope.pagination.perPage),
+          firstLast: scope.pagination.pages > maxDisplayPages
+        };
       };
 
       scope.$watch('pagination.pages', function() {
-        generatePages();
+        paginate();
       });
       scope.$watch('pagination.page', function() {
-        generatePages();
+        paginate();
       });
     }
   };

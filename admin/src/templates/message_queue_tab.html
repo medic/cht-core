@@ -1,3 +1,9 @@
+<div class="loader-overlay" ng-show="loading">
+  <div class="loader"></div>
+</div>
+
+<p ng-show="error" class="alert alert-danger" role="alert" translate>admin.message.queue.error</p>
+
 <div class="row flex-row selection-heading">
   <div class="col col-fixed" translate>admin.message.queue.recipient</div>
   <div class="col col-fixed" translate>admin.message.queue.created</div>
@@ -7,26 +13,26 @@
   <div ng-if="displayLastUpdated" class="col col-fixed" translate>admin.message.queue.updated</div>
 </div>
 
-<div class="loader-overlay" ng-show="loading">
-  <div class="loader"></div>
-</div>
-
 <div class="row flex-row" ng-repeat="message in messages">
+
   <div class="col col-fixed">{{message.recipient}}</div>
+
   <div class="col col-fixed">
     <relative-date date="message.record.reportedDate" date-format="dateFormat"></relative-date>
-    <br/>
-    <a ng-if="message.link" href=" ../../medic/_rewrite/#/reports/{{message.record.id}}" title="{{message.record.id}}" target="_blank">
+    <a class="block" ng-if="message.link" href=" ../../medic/_rewrite/#/reports/{{message.record.id}}" target="_blank">
       <span translate>admin.message.queue.view.report</span>
     </a>
   </div>
+
   <div class="col col-grow">
     <p class="strong task-group" ng-if="message.task">{{message.task}}</p>
     <span>{{message.content}}</span>
   </div>
+
   <div class="col col-fixed">
     <span class="message-state state-{{message.state}}" ng-class="{ delayed: message.delayed }">{{message.state}}</span>
   </div>
+
   <div class="col col-fixed">
     <relative-date date="message.due" date-format="dateFormat"></relative-date>
   </div>
@@ -34,5 +40,7 @@
   <div ng-if="displayLastUpdated" class="col col-fixed">
     <relative-date date="message.stateHistory.timestamp" date-format="dateFormat"></relative-date>
   </div>
+
 </div>
+
 <mm-pagination></mm-pagination>

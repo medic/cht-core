@@ -33,7 +33,7 @@ function (doc) {
         task.messages.forEach(function(msg) {
           if (msg.uuid && msg.to && msg.message) {
             var value = {
-              message: {
+              sms: {
                 message: msg.message,
                 to: msg.to
               },
@@ -48,10 +48,10 @@ function (doc) {
       } else {
         // generate the messages before displaying them in the admin console
         var value = {
-          scheduled_message: {
-            message_key: task.message_key,
+          scheduled_sms: {
+            translation_key: task.message_key,
             recipient: task.recipient,
-            message: task.message
+            content: task.message
           },
           task: taskData,
           record: dataRecordData,

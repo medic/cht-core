@@ -96,6 +96,7 @@ require('../../../webapp/src/js/services/session');
 require('../../../webapp/src/js/services/translate');
 require('../../../webapp/src/js/services/translate-from');
 require('../../../webapp/src/js/services/translation-loader');
+require('../../../webapp/src/js/services/translation-null-interpolation');
 require('../../../webapp/src/js/services/update-settings');
 require('../../../webapp/src/js/services/update-user');
 require('../../../webapp/src/js/services/user');
@@ -141,6 +142,7 @@ app.config(function(
   $translateProvider.useLoader('TranslationLoader', {});
   $translateProvider.useSanitizeValueStrategy('escape');
   $translateProvider.addInterpolation('$translateMessageFormatInterpolation');
+  $translateProvider.addInterpolation('TranslationNullInterpolation');
 
   $stateProvider
     .state('settings', {
@@ -324,10 +326,9 @@ app.config(function(
       templateUrl: 'templates/message_queue.html',
     })
     .state('message-queue.scheduled', {
-      url: '/scheduled',
+      url: '/scheduled?page',
       data: {
-        tab: 'scheduled',
-        displayLastUpdated: false
+        tab: 'scheduled'
       },
       views: {
         tab: {
@@ -337,10 +338,9 @@ app.config(function(
       }
     })
     .state('message-queue.due', {
-      url: '/due',
+      url: '/due?page',
       data: {
-        tab: 'due',
-        displayLastUpdated: true
+        tab: 'due'
       },
       views: {
         tab: {
@@ -350,10 +350,9 @@ app.config(function(
       }
     })
     .state('message-queue.muted', {
-      url: '/muted',
+      url: '/muted?page',
       data: {
-        tab: 'muted',
-        displayLastUpdated: true
+        tab: 'muted'
       },
       views: {
         tab: {
