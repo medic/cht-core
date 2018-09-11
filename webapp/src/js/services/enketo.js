@@ -268,6 +268,7 @@ angular.module('inboxServices').service('Enketo',
       formContainer.html(doc.html);
 
       return getEnketoOptions(doc, instanceData).then(function(options) {
+        options = options.modelStr.replace('<generated_name_translation/>', '');
         currentForm = new EnketoForm(wrapper.find('form').first(), options);
         var loadErrors = currentForm.init();
         if (loadErrors && loadErrors.length) {
