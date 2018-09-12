@@ -31,7 +31,7 @@
     "bootstrap-tour": "^0.12.0",
     "bulk-docs-utils": "file:../shared-libs/bulk-docs-utils",
     "chai": "^4.1.2",
-    "enketo-core": "~4.41.2",
+    "enketo-core": "~4.59.0",
     "font-awesome": "^4.7.0",
     "google-libphonenumber": "^3.1.8",
     "gsm": "^0.1.4",
