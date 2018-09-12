@@ -6,7 +6,10 @@
     <a ui-sref="message-queue.due" translate>Due</a>
   </li>
   <li role="presentation" ui-sref-active="active">
-    <a ui-sref="message-queue.muted" translate>Will not send</a>
+    <a ui-sref="message-queue.muted-future" translate>Will not send</a>
+  </li>
+  <li role="presentation" ui-sref-active="active">
+    <a ui-sref="message-queue.muted-past" translate>Did not send</a>
   </li>
 </ul>
-<div class="tab-content" ui-view="tab"></div>
+<div class="tab-content message-queue" ui-view="tab"></div>

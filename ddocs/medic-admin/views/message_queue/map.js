@@ -1,5 +1,5 @@
 function (doc) {
-  var mutedStatuses = ['muted', 'cleared', 'denied'];
+  var mutedStatuses = ['muted', 'cleared', 'denied', 'duplicate'];
   var scheduledStatus = 'scheduled';
 
   var dataRecordData = {
@@ -8,7 +8,9 @@ function (doc) {
     contact: doc.contact,
     patient_id: doc.patient_id || (doc.fields && doc.fields.patient_id),
     patient_uuid: doc.fields && doc.fields.patient_uuid,
-    form: doc.form
+    form: doc.form,
+    fields: doc.fields,
+    locale: doc.locale || (doc.sms_message && doc.sms_message.locale)
   };
 
   var _emit = function(tasks) {

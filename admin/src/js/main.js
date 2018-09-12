@@ -349,10 +349,24 @@ app.config(function(
         }
       }
     })
-    .state('message-queue.muted', {
-      url: '/muted?page',
+    .state('message-queue.muted-future', {
+      url: '/will-not-send?page',
       data: {
-        tab: 'muted'
+        tab: 'muted',
+        descending: false
+      },
+      views: {
+        tab: {
+          controller: 'MessageQueueCtrl',
+          templateUrl: 'templates/message_queue_tab.html'
+        }
+      }
+    })
+    .state('message-queue.muted-past', {
+      url: '/did-not-send?page',
+      data: {
+        tab: 'muted',
+        descending: true
       },
       views: {
         tab: {

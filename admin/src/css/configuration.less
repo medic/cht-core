@@ -101,82 +101,88 @@ dl.horizontal {
   display: block;
 }
 
-.flex-row {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  cursor: default;
+.message-queue {
+  .flex-row {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    cursor: default;
 
-  .col {
-    padding: 0 15px;
-    &.col-fixed {
-      flex: 0 0 160px;
+    .col {
+      padding: 0 15px;
+      &.col-fixed {
+        flex: 0 0 160px;
+      }
+
+      &.col-grow {
+        flex: 1 0 400px;
+      }
     }
-
-    &.col-grow {
-      flex: 1 0 400px;
-    }
-  }
-}
-
-.message-state {
-  display: flex;
-
-  &:before {
-    font-family: 'FontAwesome';
-    font-size: 16px;
-    margin-right: 10px;
-    display: block;
-  }
-  &.state-scheduled:before {
-    content: "\f073";
-  }
-  &.state-muted:before {
-    content: "\f1f6";
   }
 
-  &.state-cleared:before {
-    content: "\f00d";
-  }
+  .message-state {
+    display: flex;
 
-  &.state-pending:before {
-    content: "\f017";
-  }
-
-  &.state-forwarded-to-gateway:before {
-    content: "\f064";
-  }
-
-  &.state-received-by-gateway:before {
-    content: "\f381";
-  }
-
-  &.state-forwarded-by-gateway:before {
-    content: "\f382";
-  }
-
-  &.state-sent:before {
-    content: "\f0e0";
-  }
-
-  &.state-delivered:before {
-    content: "\f058";
-  }
-
-  &.state-denied:before {
-    content: "\f056";
-  }
-
-  &.state-failed {
-    color: @error-color;
-    font-weight: bold;
     &:before {
-      content: "\f071";
+      font-family: 'FontAwesome';
+      font-size: 16px;
+      margin-right: 10px;
+      display: block;
+    }
+    &.state-scheduled:before {
+      content: "\f073";
+    }
+    &.state-muted:before {
+      content: "\f1f6";
+    }
+
+    &.state-cleared:before {
+      content: "\f00d";
+    }
+
+    &.state-pending:before {
+      content: "\f017";
+    }
+
+    &.state-forwarded-to-gateway:before {
+      content: "\f064";
+    }
+
+    &.state-received-by-gateway:before {
+      content: "\f381";
+    }
+
+    &.state-forwarded-by-gateway:before {
+      content: "\f382";
+    }
+
+    &.state-sent:before {
+      content: "\f0e0";
+    }
+
+    &.state-delivered:before {
+      content: "\f058";
+    }
+
+    &.state-denied:before {
+      content: "\f056";
+    }
+
+    &.state-failed {
+      color: @error-color;
+      font-weight: bold;
+      &:before {
+        content: "\f071";
+      }
+    }
+
+    &.delayed {
+      color: @warning-color;
+      font-weight: bold;
     }
   }
 
-  &.delayed {
-    color: @warning-color;
-    font-weight: bold;
+  .pagination .fa {
+    line-height: inherit;
   }
 }

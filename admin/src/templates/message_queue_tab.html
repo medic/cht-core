@@ -1,7 +1,3 @@
-<div class="loader-overlay" ng-show="loading">
-  <div class="loader"></div>
-</div>
-
 <p ng-show="error" class="alert alert-danger" role="alert" translate>admin.message.queue.error</p>
 
 <div class="row flex-row selection-heading">
@@ -12,6 +8,8 @@
   <div class="col col-fixed" translate>admin.message.queue.due</div>
   <div ng-if="displayLastUpdated" class="col col-fixed" translate>admin.message.queue.updated</div>
 </div>
+
+<div class="loader" ng-show="loading"></div>
 
 <div class="row flex-row" ng-repeat="message in messages">
 

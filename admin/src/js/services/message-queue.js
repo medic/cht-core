@@ -2,18 +2,35 @@ var messageUtils = require('message-utils'),
     lineageFactory = require('lineage'),
     registrationUtils = require('registration-utils');
 
-angular.module('services').factory('MessageQueue',
+angular.module('services').factory('MessageQueueUtils',
   function(
     $q,
-    $translate,
-    DB,
-    Settings
+    DB
   ) {
 
     'use strict';
     'ngInject';
 
-    var lineage = lineageFactory($q,DB({ remote: true }));
+    return {
+      messages: messageUtils,
+      lineage: lineageFactory($q,DB({ remote: true })),
+      registrations: registrationUtils
+    };
+  });
+
+angular.module('services').factory('MessageQueue',
+  function(
+    $log,
+    $q,
+    $translate,
+    DB,
+    Languages,
+    MessageQueueUtils,
+    Settings
+  ) {
+
+    'use strict';
+    'ngInject';
 
     var findSummaryByPhone = function(summaries, phone) {
       var summary = summaries.rows.find(function(summary) {
@@ -60,6 +77,10 @@ angular.module('services').factory('MessageQueue',
         return row.sms && row.sms.to;
       }));
 
+      if (!phoneNumbers.length) {
+        return messages;
+      }
+
       return DB({ remote: true })
         .query('medic-client/contacts_by_phone', { keys: phoneNumbers })
         .then(function(contactsByPhone) {
@@ -83,7 +104,7 @@ angular.module('services').factory('MessageQueue',
     var getUniquePatientIds = function(messages) {
       return compactUnique(messages.map(function(message) {
         // don't process items which already have generated messages
-        return !message.sms && message.record.patient_id;
+        return !message.sms && message.record && message.record.patient_id;
       }));
     };
 
@@ -106,7 +127,7 @@ angular.module('services').factory('MessageQueue',
         .then(function(results) {
           var contactsByReference = results[0].rows;
           var registrations = results[1].rows.filter(function(row) {
-            return registrationUtils.isValidRegistration(row.doc, settings);
+            return MessageQueueUtils.registrations.isValidRegistration(row.doc, settings);
           });
           messages.forEach(function(message) {
             message.context = {
@@ -127,19 +148,19 @@ angular.module('services').factory('MessageQueue',
           contactIds.push(message.context.patient_uuid, message.record.contact && message.record.contact._id);
         }
       });
-
+      contactIds = compactUnique(contactIds);
       if (!contactIds.length) {
-        return Promise.resolve(messages);
+        return messages;
       }
 
-      return lineage
+      return MessageQueueUtils.lineage
         .fetchLineageByIds(contactIds)
         .then(function(docList) {
           return docList.map(function(docs) {
             var doc = docs.shift();
             return {
               id: doc._id,
-              doc: lineage.fillParentsInDocs(doc, docs)
+              doc: MessageQueueUtils.lineage.fillParentsInDocs(doc, docs)
             };
           });
         })
@@ -155,8 +176,7 @@ angular.module('services').factory('MessageQueue',
 
     var generateScheduledMessages = function(messages, settings) {
       var translate = function(key, locale) {
-        var interpolation = 'no-interpolation';
-        return $translate.instant(key, null, interpolation, locale, null);
+        return $translate.instant(key, null, 'no-interpolation', locale, null);
       };
 
       messages.forEach(function(message) {
@@ -168,11 +188,17 @@ angular.module('services').factory('MessageQueue',
           translationKey: message.scheduled_sms.translation_key,
           message: message.scheduled_sms.content
         };
+        var pseudoDoc = {
+          _id: message.record.id,
+          contact: message.contact,
+          fields: message.record.fields,
+          locale: message.record.locale
+        };
 
-        message.sms = messageUtils.generate(
+        message.sms = MessageQueueUtils.messages.generate(
           settings,
           translate,
-          message,
+          pseudoDoc,
           content,
           message.scheduled_sms.recipient,
           message.context
@@ -208,9 +234,9 @@ angular.module('services').factory('MessageQueue',
       });
     };
 
-    var getQueryParams = function(tab, skip, limit) {
+    var getParams = function(tab, skip, limit, descending) {
       var list = {
-        limit: limit || 10,
+        limit: limit || 25,
         skip: skip || 0,
         reduce: false
       };
@@ -236,10 +262,20 @@ angular.module('services').factory('MessageQueue',
           };
           break;
         case 'muted':
-          paging = {
-            start_key: [tab, new Date().getTime()],
-            end_key: [tab, {}]
-          };
+          if (descending) {
+            // get all past muted messages, descending from most recent
+            paging = {
+              start_key: [ tab, new Date().getTime() ],
+              end_key: [ tab, 0 ],
+              descending: true
+            };
+          } else {
+            paging = {
+              // get all future muted messages
+              start_key: [ tab, new Date().getTime() ],
+              end_key: [ tab, {} ]
+            };
+          }
           break;
       }
 
@@ -251,20 +287,28 @@ angular.module('services').factory('MessageQueue',
 
     return {
       loadTranslations: function() {
-        return Settings().then(function(settings) {
-          return $q.all(settings.locales.map(function(locale) {
-            return $translate('admin.message.queue', {}, undefined, undefined, locale.code);
-          }));
-        });
+        return Languages()
+          .then(function(languages) {
+            return languages && $q.all(languages.map(function(language) {
+              return language &&
+                     language.code &&
+                     language.code !== 'en' &&
+                     $translate('admin.message.queue', {}, undefined, undefined, language.code);
+            }));
+          })
+          .catch(function(err) {
+            $log.error('Error fetching languages', err);
+            throw(err);
+          });
       },
 
-      query: function(tab, skip, limit) {
-        var queryParams = getQueryParams(tab, skip, limit);
+      query: function(tab, skip, limit, descending) {
+        var params = getParams(tab, skip, limit, descending);
         return $q
           .all([
             Settings(),
-            DB({ remote: true }).query('medic-admin/message_queue', queryParams.list),
-            DB({ remote: true }).query('medic-admin/message_queue', queryParams.count)
+            DB({ remote: true }).query('medic-admin/message_queue', params.list),
+            DB({ remote: true }).query('medic-admin/message_queue', params.count)
           ])
           .then(function(results) {
             var settings = results[0];
