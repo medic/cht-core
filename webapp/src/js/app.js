@@ -41,11 +41,10 @@ var bootstrapper = require('./bootstrapper');
 var router = require('./router');
 var _ = require('underscore');
 _.templateSettings = {
-  interpolate: /\{\{(.+?)\}\}/g
+  interpolate: /\{\{(.+?)\}\}/g,
 };
 
-(function () {
-
+(function() {
   'use strict';
 
   var app = angular.module('inboxApp', [
@@ -59,7 +58,7 @@ _.templateSettings = {
     'inboxServices',
     'pascalprecht.translate',
     'nvd3',
-    'pouchdb'
+    'pouchdb',
   ]);
 
   app.config(function(
@@ -80,14 +79,16 @@ _.templateSettings = {
     $translateProvider.addInterpolation('$translateMessageFormatInterpolation');
     $translateProvider.addInterpolation('TranslationNullInterpolation');
     $translateProvider.useMissingTranslationHandlerLog();
-    $compileProvider.aHrefSanitizationWhitelist(/^\s*(https?|ftp|mailto|tel|sms|file|blob):/);
+    $compileProvider.aHrefSanitizationWhitelist(
+      /^\s*(https?|ftp|mailto|tel|sms|file|blob):/
+    );
     var isDevelopment = window.location.hostname === 'localhost';
     $compileProvider.debugInfoEnabled(isDevelopment);
   });
 
   app.constant('APP_CONFIG', {
     name: '@@APP_CONFIG.name',
-    version: '@@APP_CONFIG.version'
+    version: '@@APP_CONFIG.version',
   });
   var POUCHDB_OPTIONS = {
     local: { auto_compaction: true },
@@ -97,8 +98,8 @@ _.templateSettings = {
         opts.headers.set('Accept', 'application/json');
         opts.credentials = 'same-origin';
         return window.PouchDB.fetch(url, opts);
-      }
-    }
+      },
+    },
   };
   app.constant('POUCHDB_OPTIONS', POUCHDB_OPTIONS);
 
@@ -108,11 +109,11 @@ _.templateSettings = {
   }
 
   var ROUTE_PERMISSIONS = {
-    tasks: 'can_access_tasks',
-    messages: 'can_access_messages',
-    contacts: 'can_access_contacts',
-    analytics: 'can_access_analytics',
-    reports: 'can_access_reports'
+    tasks: 'can_view_tasks',
+    messages: 'can_view_messages',
+    contacts: 'can_view_contacts',
+    analytics: 'can_view_analytics',
+    reports: 'can_view_reports',
   };
 
   var getRequiredPermission = function(route) {
@@ -123,11 +124,11 @@ _.templateSettings = {
   // Detects reloads or route updates (#/something)
   app.run(function($rootScope, $state, Auth) {
     $rootScope.$on('$stateChangeStart', function(event, toState) {
-      if(toState.name.indexOf('error')===-1) {
+      if (toState.name.indexOf('error') === -1) {
         var permission = getRequiredPermission(toState.name);
-        if(permission) {
+        if (permission) {
           Auth(permission).catch(function() {
-            $state.go('error', {code: 403});
+            $state.go('error', { code: 403 });
           });
         }
       }
@@ -139,7 +140,9 @@ _.templateSettings = {
       if (err.redirect) {
         window.location.href = err.redirect;
       } else {
-        $('.bootstrap-layer').html('<div><p>Loading error, please check your connection.</p><a class="btn btn-primary" href="#" onclick="window.location.reload(false);">Try again</a></div>');
+        $('.bootstrap-layer').html(
+          '<div><p>Loading error, please check your connection.</p><a class="btn btn-primary" href="#" onclick="window.location.reload(false);">Try again</a></div>'
+        );
         console.error('Error fetching ddoc from remote server', err);
         setTimeout(function() {
           // retry initial replication automatically after one minute
@@ -149,10 +152,9 @@ _.templateSettings = {
       return;
     }
     angular.element(document).ready(function() {
-      angular.bootstrap(document, [ 'inboxApp' ], {
-        strictDi: true
+      angular.bootstrap(document, ['inboxApp'], {
+        strictDi: true,
       });
     });
   });
-
-}());
+})();
