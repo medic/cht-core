@@ -321,6 +321,41 @@
       "roles": [
         "national_admin"
       ]
+    },
+    {
+      "name": "can_access_tasks",
+      "roles": [
+        "district_admin"
+      ]
+    },
+    {
+      "name": "can_access_messages",
+      "roles": [
+        "national_admin",
+        "district_admin"
+      ]
+    },
+    {
+      "name": "can_access_contacts",
+      "roles": [
+        "national_admin",
+        "district_admin"
+      ]
+    },
+    {
+      "name": "can_access_analytics",
+      "roles": [
+        "national_admin",
+        "district_admin",
+        "analytics"
+      ]
+    },
+    {
+      "name": "can_access_reports",
+      "roles": [
+        "national_admin",
+        "district_admin"
+      ]
     }
   ],
   "setup_complete": true,
