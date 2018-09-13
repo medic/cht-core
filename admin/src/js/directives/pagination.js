@@ -30,6 +30,8 @@ angular.module('directives').directive('mmPagination', function() {
       scope.$watch('pagination.page', function() {
         paginate();
       });
+
+      paginate();
     }
   };
 });

@@ -1,6 +1,6 @@
-<div class="row flex-row">
+<div class="row flex-row" ng-if="pagination.pages">
   <div class="col col-grow">
-    <div class="pagination">
+    <ul class="pagination">
       <li ng-show="pagination.detail.firstLast" ng-class="{ disabled: pagination.page === 1 }">
         <a ng-click="loadPage(1)" translate translate-attr-title="admin.pagination.first">
           <span><i class="fa fa-angle-double-left"></i></span>
@@ -27,7 +27,7 @@
           <span><i class="fa fa-angle-double-right"></i></span>
         </a>
       </li>
-    </div>
+    </ul>
   </div>
   <div class="col">
     <span translate translate-values="{ total: pagination.total, first: pagination.detail.first, last: pagination.detail.last }">
