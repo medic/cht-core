@@ -6,12 +6,12 @@ const user = n => `org.couchdb.user:${n}`;
 
 describe('Users API', () => {
   describe('POST /api/v1/users/{username}', () => {
-    const username = 'testapiuser';
+    const username = 'test' + new Date().getTime();
     const password = 'pass1234!';
     const _usersUser = {
       _id: user(username),
       type: 'user',
-      name: 'testapiuser',
+      name: username,
       password: password,
       facility_id: null,
       roles: [
@@ -20,7 +20,7 @@ describe('Users API', () => {
       ]
     };
 
-    const newPlaceId = 'NewPlaceId';
+    const newPlaceId = 'NewPlaceId' + new Date().getTime();
 
     let cookie;
 
@@ -29,7 +29,7 @@ describe('Users API', () => {
         _id: user(username),
         facility_id: null,
         contact_id: null,
-        name: 'testapiuser',
+        name: username,
         fullname: 'Test Apiuser',
         type: 'user-settings',
         roles: [
@@ -118,12 +118,12 @@ describe('Users API', () => {
           'Content-Type': 'application/json'
         },
         body: {
-          place: 'NewPlaceId'
+          place: newPlaceId
         }
       })
       .then(() => utils.getDoc(user(username)))
       .then(doc => {
-        expect(doc.facility_id).toBe('NewPlaceId');
+        expect(doc.facility_id).toBe(newPlaceId);
       }));
 
     it('401s if a user without the right permissions attempts to modify someone else', () =>
@@ -134,7 +134,7 @@ describe('Users API', () => {
           'Content-Type': 'application/json'
         },
         body: {
-          place: 'NewPlaceId'
+          place: newPlaceId
         },
         auth: `${username}:${password}`
       })

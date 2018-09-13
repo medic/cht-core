@@ -101,8 +101,9 @@ module.exports = {
 
         return usersService
           .updateUser(username, req.body, !!fullPermission)
-          .then(() => {
+          .then(result => {
             console.log(`REQ ${req.id} - Updated user '${username}'. Setting field(s) '${Object.keys(req.body).join(',')}'. Requested by '${requesterContext && requesterContext.name}'.`);
+            return result;
           });
       })
       .then(body => res.json(body))
