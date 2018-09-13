@@ -1,3 +1,3 @@
-function validateReport(report){
-    return report.form === 'assessment';
+function validateReport(report) {
+  return report.form === "assessment";
 }
