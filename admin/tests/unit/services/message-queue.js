@@ -188,352 +188,451 @@ describe('MessageQueue service', function() {
       });
     });
 
-    it('should query for recipient names and format results', () => {
+    it('should format results', () => {
       var messages = [
         {
-          record: { id: 1, reported_date: 1, form: 'a' },
-          sms: { message: 'a', to: '123' },
-          task: { translation_key: 'task1', group: 1, state: 'pending', state_history: { some: 'history' } },
-          due: 1
+          record: {
+            id: 'report_id1',
+            reported_date: 100,
+            form: 'form_name'
+          },
+          sms: {
+            message: 'this is the sms content',
+            to: 'phone1'
+          },
+          task: {
+            translation_key: 'task1',
+            group: 1,
+            state: 'pending',
+            state_history: {
+              state: 'pending',
+              timestamp: 200
+            }
+          },
+          due: 300
         },
         {
-          record: { id: 2, reported_date: 2, form: false },
-          sms: { message: 'b', to: '456' },
-          task: { type: 'task2', group: 1, state: 'sent', state_history: {} },
-          due: 2
-        },
-        {
-          record: { id: 1, reported_date: 1, form: 'P' },
-          sms: { message: 'c', to: 'clinic' },
-          task: { state: 'forwarded-to-gateway' },
-          due: 3
-        },
-        {
-          record: { id: 3, reported_date: 3 },
-          sms: { message: 'd', to: '' },
-          task: { type: 'task3', state: 'delivered' },
-          due: 3
-        },
-        {
-          record: { id: 4, reported_date: 4 },
-          sms: { message: 'e', to: '898989' },
-          task: { type: 'task3', state: 'pending' },
-          due: 4
-        },
-        {
-          record: { id: 4, reported_date: 4 },
-          sms: { message: 'f' },
-          task: { translation_key: 'task2', state: 'pending' },
-          due: 4
-        },
-        {
-          record: { id: 5, reported_date: 6 },
-          sms: { message: 'aaa', to: '123' },
-          task: { type: 'task3', state: 'pending' },
-          due: 5
-        },
-        {
-          record: { id: 6, reported_date: 8 },
-          sms: { message: 'bbb', to: '456' },
-          task: { state: 'pending' },
-          due: 6
-        },
-        {
-          record: { id: 4, reported_date: 4 },
-          sms: { message: 'eee', to: '898989' },
-          task: { state: 'pending' },
-          due: 7
+          record: {
+            id: 'report_id2',
+            reported_date: 120,
+          },
+          sms: {
+            message: 'second sms content',
+            to: 'phone2'
+          },
+          task: {
+            type: 'task2',
+            group: 2,
+            state: 'delivered',
+            state_history: {
+              state: 'delivered',
+              timestamp: 100
+            }
+          },
+          due: 200
         }
       ];
-      query.withArgs('medic-admin/message_queue', sinon.match({ reduce: true })).resolves({ rows: [{ value: 5 }] });
+
+      query.withArgs('medic-admin/message_queue', sinon.match({ reduce: true })).resolves({ rows: [{ value: 2 }] });
       query
         .withArgs('medic-admin/message_queue', sinon.match({ reduce: false }))
         .resolves({ rows: messages.map(message => ({ value: message })) });
+
       query.withArgs('medic-client/contacts_by_phone').resolves({
-        rows: [{ id: 1, value: '123' }, { id: 2, value: '456' }]
-      });
-      query.withArgs('medic/doc_summaries_by_id').resolves({
-        rows: [{ value: { name: 'maria', phone: '123' }}, { value: { name: 'james', phone: '456' }}]
+        rows: [{ id: 'contact1', value: 'contact1', key: 'phone1' }]
       });
 
-      translate.instant.withArgs('task1', { group: 1 }).returns('task one translation');
-      translate.instant.withArgs('task2', { group: undefined }).returns('task two translation');
+      query.withArgs('medic/doc_summaries_by_id').resolves({
+        rows: [{ id: 'contact1', value: { name: 'James', phone: 'phone1' } }]
+      });
+
+      translate.instant.withArgs('task1').returns('task 1 translation');
 
       return service.query('due').then(result => {
-        chai.expect(result.total).to.equal(5);
+        chai.expect(result.total).to.equal(2);
         chai.expect(query.callCount).to.equal(4);
-        chai.expect(query.args[2])
-          .to.deep.equal(['medic-client/contacts_by_phone', { keys: ['123', '456', 'clinic', '898989'] }]);
-        chai.expect(query.args[3])
-          .to.deep.equal(['medic/doc_summaries_by_id', { keys: [1, 2] }]);
 
-        chai.expect(result.messages.length).to.equal(9);
-        chai.expect(result.messages[0]).to.deep.equal({
-          record: { id: 1, reportedDate: 1 },
-          recipient: 'maria',
-          task: 'task one translation',
+        chai.expect(query.args[2]).to.deep.equal([
+          'medic-client/contacts_by_phone',
+          { keys: ['phone1', 'phone2'] }
+        ]);
+
+        chai.expect(query.args[3]).to.deep.equal([
+          'medic/doc_summaries_by_id',
+          { keys: ['contact1'] }
+        ]);
+
+        chai.expect(translate.instant.callCount).to.equal(1);
+        chai.expect(translate.instant.args[0]).to.deep.equal([ 'task1', { group: 1 } ]);
+
+        chai.expect(result.messages).to.deep.equal([{
+          record: { id:  'report_id1', reportedDate: 100 },
+          recipient: 'James',
+          task: 'task 1 translation',
           state: 'pending',
-          stateHistory: { some: 'history' },
-          content: 'a',
-          due: 1,
+          content: 'this is the sms content',
+          stateHistory: { state: 'pending', timestamp: 200 },
+          due: 300,
           link: true
-        });
-
-        chai.expect(result.messages[1]).to.deep.equal({
-          record: { id: 2, reportedDate: 2 },
-          recipient: 'james',
-          task: 'task2:1',
-          state: 'sent',
-          stateHistory: {},
-          content: 'b',
-          due: 2,
-          link: false
-        });
-
-        chai.expect(result.messages[2]).to.deep.equal({
-          record: { id: 1, reportedDate: 1 },
-          recipient: 'clinic',
-          task: false,
-          state: 'forwarded-to-gateway',
-          stateHistory: undefined,
-          content: 'c',
-          due: 3,
-          link: true
-        });
-
-        chai.expect(result.messages[3]).to.deep.equal({
-          record: { id: 3, reportedDate: 3 },
-          recipient: '',
-          task: 'task3',
+        }, {
+          record: { id:  'report_id2', reportedDate: 120 },
+          recipient: 'phone2',
+          task: 'task2:2',
           state: 'delivered',
-          stateHistory: undefined,
-          content: 'd',
-          due: 3,
+          content: 'second sms content',
+          stateHistory: { state: 'delivered', timestamp: 100 },
+          due: 200,
           link: false
-        });
-
-        chai.expect(result.messages[4]).to.deep.equal({
-          record: { id: 4, reportedDate: 4 },
-          recipient: '898989',
-          task: 'task3',
-          state: 'pending',
-          stateHistory: undefined,
-          content: 'e',
-          due: 4,
-          link: false
-        });
-
-        chai.expect(result.messages[5]).to.deep.equal({
-          record: { id: 4, reportedDate: 4 },
-          recipient: undefined,
-          task: 'task two translation',
-          state: 'pending',
-          stateHistory: undefined,
-          content: 'f',
-          due: 4,
-          link: false
-        });
-
-        chai.expect(result.messages[6]).to.deep.equal({
-          record: { id: 5, reportedDate: 6 },
-          recipient: 'maria',
-          task: 'task3',
-          state: 'pending',
-          stateHistory: undefined,
-          content: 'aaa',
-          due: 5,
-          link: false
-        });
-
-        chai.expect(result.messages[7]).to.deep.equal({
-          record: { id: 6, reportedDate: 8 },
-          recipient: 'james',
-          task: false,
-          state: 'pending',
-          stateHistory: undefined,
-          content: 'bbb',
-          due: 6,
-          link: false
-        });
-
-        chai.expect(result.messages[8]).to.deep.equal({
-          record: { id: 4, reportedDate: 4 },
-          recipient: '898989',
-          task: false,
-          state: 'pending',
-          stateHistory: undefined,
-          content: 'eee',
-          due: 7,
-          link: false
-        });
+        }]);
       });
     });
 
-    it('should generate scheduled messages', () => {
-      const settings = { some: 'settings' };
-      Settings.resolves(settings);
+    it('should query for unique recipients', () => {
+      const messages = [{
+        record: { id: 'report_id1', reported_date: 100 },
+        sms: { message: 'sms1', to: 'phone1' },
+        task: { translation_key: 'task1', state: 'pending' },
+        due: 300
+      }, {
+        record: { id: 'report_id2', reported_date: 200 },
+        sms: { message: 'sms1', to: 'phone1' },
+        task: { translation_key: 'task2', state: 'pending' },
+        due: 300
+      }, {
+        record: { id: 'report_id2', reported_date: 200 },
+        sms: { message: 'sms2', to: 'phone2' },
+        task: { translation_key: 'task3', state: 'pending' },
+        due: 300
+      }, {
+        record: { id: 'report_id3', reported_date: 200 },
+        sms: { message: 'sms2', to: 'phone2' },
+        task: { translation_key: 'task3', state: 'pending' },
+        due: 300
+      }, {
+        record: { id: 'report_id3', reported_date: 200 },
+        sms: { message: 'sms2', to: 'phone2' },
+        task: { translation_key: 'task3', state: 'pending' },
+        due: 300
+      }, {
+        record: { id: 'report_id4', reported_date: 200 },
+        sms: { message: 'sms2', to: 'phone2' },
+        task: { translation_key: 'task3', state: 'pending' },
+        due: 300
+      }, {
+        record: { id: 'report_id4', reported_date: 200 },
+        sms: { message: 'sms2', to: false },
+        task: { translation_key: 'task3', state: 'pending' },
+        due: 300
+      }, {
+        record: { id: 'report_id4', reported_date: 200 },
+        sms: { message: 'sms2', to: undefined },
+        task: { translation_key: 'task3', state: 'pending' },
+        due: 300
+      }];
 
-      const messages = [
-        {
-          record: {
-            id: 1,
-            reported_date: 1,
-            form: 'a',
-            patient_id: '12345',
-            contact: { _id: 'c1' },
-            locale: 'en',
-            fields: { some: 'field' }
-          },
-          scheduled_sms: { translation_key: 'message1', recipient: 'clinic' },
-          task: { translation_key: 'task1', group: 1, state: 'pending', state_history: { some: 'history' } },
-          due: 1
-        },
-        {
-          record: {
-            id: 2,
-            reported_date: 1,
-            patient_id: undefined,
-            patient_uuid: 'uuid1',
-            contact: { _id: 'c2' },
-            fields: { one: 'two' },
-            locale: undefined
-          },
-          scheduled_sms: { translation_key: 'message2', recipient: 'reporting_unit' },
-          task: { type: 'task1', group: 1, state: 'pending', state_history: {} },
-          due: 2
-        },
-        {
-          record: {
-            id: 3,
-            reported_date: 1,
-            patient_id: 'notfound',
-            patient_uuid: 'uuid2',
-            contact: { _id: 'uuid1' },
-            fields: undefined,
-            locale: 'es'
-          },
-          scheduled_sms: { translation_key: 'message3', recipient: 'reporting_unit' },
-          task: { type: 'task1', group: 2, state: 'pending', state_history: {} },
-          due: 3
-        },
-        {
-          record: {
-            id: 4,
-            reported_date: 1,
-            patient_id: 'notfound',
-            patient_uuid: false,
-            contact: undefined,
-            fields: { patient_id: 'not_found' },
-            locale: 'sw'
-          },
-          scheduled_sms: { translation_key: 'message4', recipient: 'reporting_unit' },
-          task: { type: 'task1', group: 3, state: 'pending', state_history: {} },
-          due: 4
-        },
-      ];
+      translate.instant.callsFake(t => t);
 
-      const registrations = [
-        { _id: 'r1', type: 'valid', patient_id: '12345' },
-        { _id: 'r2', type: 'invalid', patient_id: '12345' },
-        { _id: 'r3', type: 'valid', patient_id: '12345' },
-      ];
-
-      const patient1 = { _id: 'p1', patient_id: '12345', parent: { _id: 'cl1' }},
-            contact1 = { _id: 'c1', patient_id: '98745', parent: { _id: 'cl1' }},
-            patient2 = { _id: 'uuid1', patient_id: '96963', parent: { _id: 'cl2' }, phone: '789'},
-            contact2 = { _id: 'c2', patient_id: '96321', parent: { _id: 'cl3' }, phone: '299299'},
-            patient3 = { _id: 'uuid2', patient_id: '89745', parent: { _id: 'cl3' }},
-            clinic1 = { _id: 'cl1', type: 'clinic', phone: '+401234' },
-            clinic2 = { _id: 'cl2', type: 'clinic' },
-            clinic3 = { _id: 'cl3', type: 'clinic' };
-
-      query.withArgs('medic-admin/message_queue', sinon.match({ reduce: true })).resolves({ rows: [{ value: 5 }] });
+      query.withArgs('medic-admin/message_queue', sinon.match({ reduce: true })).resolves({ rows: [{ value: 8 }] });
       query
         .withArgs('medic-admin/message_queue', sinon.match({ reduce: false }))
         .resolves({ rows: messages.map(message => ({ value: message })) });
 
       query
-        .withArgs('medic-client/contacts_by_reference', { keys: [['shortcode', '12345'], ['shortcode', 'notfound']] })
-        .resolves({ rows: [{ id: 'p1', key: ['shortcode', '12345'], value: 'p1' }] });
+        .withArgs('medic-client/contacts_by_phone')
+        .resolves({ rows: [ { value: 'contact1', key: 'phone1' }, { value: 'contact2', key: 'phone2' } ] });
 
       query
-        .withArgs('medic-client/registered_patients', { keys: ['12345', 'notfound'], include_docs: true })
-        .resolves({ rows: registrations.map(registration => ({ doc: registration, key: registration.patient_id })) });
-
-      query.withArgs('medic-client/contacts_by_phone').resolves({
-        rows: [{ id: 1, value: '123' }, { id: 2, value: '456' }]
-      });
-      query.withArgs('medic/doc_summaries_by_id').resolves({
-        rows: [{ value: { name: 'maria', phone: '123' }}, { value: { name: 'james', phone: '456' }}]
-      });
-
-      utils.registrations.isValidRegistration.withArgs(sinon.match({ type: 'valid' })).returns(true);
-      utils.registrations.isValidRegistration.withArgs(sinon.match({ type: 'invalid' })).returns(false);
-
-      utils.lineage.fetchLineageByIds
-        .withArgs(['p1', 'c1', 'uuid1', 'c2', 'uuid2'])
-        .resolves([
-          [patient1, clinic1],
-          [contact1, clinic1],
-          [patient2, clinic2],
-          [contact2, clinic3],
-          [patient3, clinic3]
-        ]);
-      utils.lineage.fillParentsInDocs.callsFake((doc, parents) => Object.assign(doc, { parent: parents[0] }));
-      utils.messages.generate
-        .withArgs(settings, sinon.match.func, sinon.match({ _id: 1 })).returns([{
-          message: 'message1 translated',
-          to: clinic1.phone
-        }])
-        .withArgs(settings, sinon.match.func, sinon.match({ _id: 2 })).returns([{
-          message: 'message2 translated',
-          to: contact2.phone
-        }])
-        .withArgs(settings, sinon.match.func, sinon.match({ _id: 3 })).returns([{
-          message: 'message3 translated',
-          to: patient2.phone
-        }])
-        .withArgs(settings, sinon.match.func, sinon.match({ _id: 4 })).returns([{
-          message: 'message4 translated',
-          to: 'reporting_unit'
-        }]);
-
-
-      return service.query('scheduled').then(() => {
-        chai.expect(utils.messages.generate.callCount).to.equal(4);
-
-        const generate1 = utils.messages.generate.args[0];
-        chai.expect(generate1[0]).to.deep.equal({ some: 'settings' });
-        chai.expect(generate1[2]).to.deep.equal({
-          _id: 1,
-          contact: Object.assign(contact1, { parent: clinic1 }),
-          fields: { some: 'field' },
-          locale: 'en'
-        });
-        chai.expect(generate1[3]).to.deep.equal({ translationKey: 'message1', message: undefined });
-        chai.expect(generate1[4]).to.equal('clinic');
-        chai.expect(generate1[5]).to.deep.equal({
-          patient_uuid: 'p1',
-          patient: Object.assign(patient1, { parent: clinic1 }),
-          registrations: [
-            { _id: 'r1', type: 'valid', patient_id: '12345' },
-            { _id: 'r3', type: 'valid', patient_id: '12345' }
+        .withArgs('medic/doc_summaries_by_id')
+        .resolves({
+          rows: [
+            { value: { id: 'contact1', name: 'contact one', phone: 'phone1' } },
+            { value: { id: 'contact2', name: 'contact two', phone: 'phone2' } },
           ]
         });
 
-        const generate2 = utils.messages.generate.args[1];
-        chai.expect(generate2[2]).to.deep.equal({
-          _id: 2,
-          contact: Object.assign(contact2, { parent: clinic3 }),
-          fields: { one: 'two' },
-          locale: undefined
-        });
-        chai.expect(generate2[3]).to.deep.equal({ translationKey: 'message2', message: undefined });
-        chai.expect(generate2[4]).to.equal('reporting_unit');
-        chai.expect(generate2[5]).to.deep.equal({
-          patient_uuid: 'uuid1',
-          patient: Object.assign(patient2, { parent: clinic2 }),
-          registrations: []
+      return service.query('due').then(result => {
+        chai.expect(query.callCount).to.equal(4);
+        chai.expect(query.args[2]).to.deep.equal([
+          'medic-client/contacts_by_phone', { keys: [ 'phone1', 'phone2' ]}
+        ]);
+
+        chai.expect(result.messages[0].recipient).to.equal('contact one');
+        chai.expect(result.messages[1].recipient).to.equal('contact one');
+
+        chai.expect(result.messages[2].recipient).to.equal('contact two');
+        chai.expect(result.messages[3].recipient).to.equal('contact two');
+        chai.expect(result.messages[4].recipient).to.equal('contact two');
+        chai.expect(result.messages[5].recipient).to.equal('contact two');
+
+        chai.expect(result.messages[6].recipient).to.equal(false);
+        chai.expect(result.messages[7].recipient).to.equal(undefined);
+      });
+    });
+
+    it('should query for unique patient ids and contacts', () => {
+      const messages = [{
+        record: { id: 'report_id1', reported_date: 100, patient_id: '1111' },
+        scheduled_sms: { translation_key: 'sms1', recipient: 'recipient' },
+        task: { translation_key: 'task1', state: 'pending' },
+        due: 300
+      }, {
+        record: { id: 'report_id2', reported_date: 200, patient_id: '1111' },
+        scheduled_sms: { translation_key: 'sms2', recipient: 'recipient' },
+        task: { translation_key: 'task2', state: 'pending' },
+        due: 300
+      }, {
+        record: { id: 'report_id2', reported_date: 200, patient_id: '2222' },
+        scheduled_sms: { translation_key: 'sms3', recipient: 'recipient' },
+        task: { translation_key: 'task3', state: 'pending' },
+        due: 300
+      }, {
+        record: { id: 'report_id3', reported_date: 200, patient_id: '1111' },
+        scheduled_sms: { translation_key: 'sms4', recipient: 'recipient' },
+        task: { translation_key: 'task3', state: 'pending' },
+        due: 300
+      }, {
+        record: { id: 'report_id3', reported_date: 200, patient_id: '2222' },
+        scheduled_sms: { translation_key: 'sms5', recipient: 'recipient' },
+        task: { translation_key: 'task3', state: 'pending' },
+        due: 300
+      }, {
+        record: { id: 'report_id4', reported_date: 200, patient_uuid: 'patient1' },
+        scheduled_sms: { translation_key: 'sms6', recipient: 'recipient' },
+        task: { translation_key: 'task3', state: 'pending' },
+        due: 300
+      }, {
+        record: { id: 'report_id4', reported_date: 200, patient_uuid: 'patient1', contact: { _id: 'patient2' } },
+        scheduled_sms: { translation_key: 'sms7', recipient: 'recipient' },
+        task: { translation_key: 'task3', state: 'pending' },
+        due: 300
+      }, {
+        record: { id: 'report_id4', reported_date: 200, contact: { _id: 'patient1' } },
+        scheduled_sms: { translation_key: 'sms8', recipient: 'recipient' },
+        task: { translation_key: 'task3', state: 'pending' },
+        due: 300
+      }, {
+        record: { id: 'report_id4', reported_date: 200, contact: { _id: 'patient3' }, patient_id: '3333' },
+        scheduled_sms: { translation_key: 'sms9', recipient: 'recipient' },
+        task: { translation_key: 'task3', state: 'pending' },
+        due: 300
+      }];
+
+      translate.instant.callsFake(t => t);
+
+      query
+        .withArgs('medic-admin/message_queue', sinon.match({ reduce: true }))
+        .resolves({ rows: [{ value: 22 }] })
+        .withArgs('medic-admin/message_queue', sinon.match({ reduce: false }))
+        .resolves({ rows: messages.map(message => ({ value: message })) });
+
+      query
+        .withArgs('medic-client/contacts_by_reference')
+        .resolves({ rows: [
+            { key: '1111', value: 'patient1' },
+            { key: '2222', value: 'patient2' }
+          ] });
+
+      query.withArgs('medic-client/registered_patients').resolves({ rows: [] });
+
+      utils.lineage.fetchLineageByIds.resolves([
+        [{ _id: 'patient1', patient_id: '1111', name: 'patient one' }],
+        [{ _id: 'patient2', patient_id: '2222', name: 'patient two' }]
+      ]);
+      utils.lineage.fillParentsInDocs.callsFake(doc => doc);
+
+      utils.messages.generate.callsFake((settings, translate, doc, content, recipient) => ([{
+        message: content.translation_key,
+        to: recipient
+      }]));
+
+      query
+        .withArgs('medic-client/contacts_by_phone')
+        .resolves({ rows: [{ key: 'recipient_id', value: 'recipient' }]});
+      query
+        .withArgs('medic/doc_summaries_by_id')
+        .resolves({ rows: [{ key: 'recipient_id', value: { phone: 'recipient' }}]});
+
+      return service.query('tab').then(result => {
+        chai.expect(result.messages.length).to.equal(9);
+
+        chai.expect(query.callCount).to.equal(6);
+        chai.expect(query.args[2]).to.deep.equal([
+          'medic-client/contacts_by_reference',
+          { keys: [['shortcode', '1111'], ['shortcode', '2222'], ['shortcode', '3333']] }
+        ]);
+        chai.expect(query.args[3]).to.deep.equal([
+          'medic-client/registered_patients',
+          { keys: ['1111', '2222', '3333'], include_docs: true }
+        ]);
+
+        chai.expect(utils.lineage.fetchLineageByIds.callCount).to.equal(1);
+        chai.expect(utils.lineage.fetchLineageByIds.args[0]).to.deep.equal([[ 'patient1', 'patient2', 'patient3' ]]);
+
+        chai.expect(query.args[4]).to.deep.equal([
+          'medic-client/contacts_by_phone',
+          { keys: [ 'recipient' ]}
+        ]);
+      });
+    });
+
+    it('filters correct registrations and calls messageUtils with correct parameters', () => {
+      const messages = [{
+        record: {
+          id: 'report_id1',
+          reported_date: 100,
+          patient_id: '1111',
+          contact: { _id: 'contact1' },
+          fields: { example: 'field' },
+          locale: 'fr'
+        },
+        scheduled_sms: { translation_key: 'sms1', recipient: 'recipient1', content: 'sms1_content' },
+        task: { translation_key: 'task1', state: 'pending' },
+        due: 300
+      }, {
+        record: {
+          id: 'report_id2',
+          reported_date: 200,
+          patient_id: '2222',
+          contact: { _id: 'contact2' },
+          fields: undefined,
+          locale: null
+        },
+        scheduled_sms: { translation_key: 'sms2', recipient: 'recipient2' },
+        task: { translation_key: 'task2', state: 'pending' },
+        due: 300
+      }, {
+        record: {
+          id: 'report_id3',
+          reported_date: 200,
+          patient_id: '3333',
+          fields: { example: 'field2' },
+          locale: 'en'
+        },
+        scheduled_sms: { translation_key: 'sms3', recipient: 'recipient3' },
+        task: { translation_key: 'task3', state: 'pending' },
+        due: 300
+      }];
+
+      translate.instant.callsFake(t => t);
+
+      query
+        .withArgs('medic-admin/message_queue', sinon.match({ reduce: true }))
+        .resolves({ rows: [{ value: 22 }] })
+        .withArgs('medic-admin/message_queue', sinon.match({ reduce: false }))
+        .resolves({ rows: messages.map(message => ({ value: message })) });
+
+      query
+        .withArgs('medic-client/contacts_by_reference')
+        .resolves({ rows: [
+            { key: '1111', value: 'patient1' },
+            { key: '2222', value: 'patient2' },
+            { key: '3333', value: 'patient3' }
+          ] });
+
+      query.withArgs('medic-client/registered_patients').resolves({ rows: [
+          { key: '1111', doc: { type: 'valid', patient_id: '1111' } },
+          { key: '1111', doc: { type: 'valid', patient_id: '1111' } },
+          { key: '1111', doc: { type: 'invalid', patient_id: '1111' } },
+          { key: '1111', doc: { type: 'valid', patient_id: '1111' } },
+          { key: '2222', doc: { type: 'valid', patient_id: '2222' } },
+          { key: '2222', doc: { type: 'invalid', patient_id: '2222' } },
+          { key: '3333', doc: { type: 'invalid', patient_id: '3333' } },
+          { key: '3333', doc: { type: 'invalid', patient_id: '3333' } },
+        ]});
+
+      utils.lineage.fetchLineageByIds.resolves([
+        [],
+        [{ _id: 'patient2', patient_id: '2222', name: 'patient two' }],
+        [{ _id: 'patient3', patient_id: '3333', name: 'patient three' }],
+        [{ _id: 'contact1', patient_id: 'c1', name: 'contact one' }],
+        [{ _id: 'contact2', patient_id: 'c2', name: 'contact two' }],
+      ]);
+      utils.lineage.fillParentsInDocs.callsFake(doc => doc);
+
+      utils.messages.generate.callsFake((settings, translate, doc, content, recipient) => ([{
+        message: content.translation_key,
+        to: recipient
+      }]));
+
+      utils.registrations.isValidRegistration
+        .withArgs(sinon.match({ type: 'valid' })).returns(true)
+        .withArgs(sinon.match({ type: 'invalid' })).returns(false);
+
+      query
+        .withArgs('medic-client/contacts_by_phone')
+        .resolves({ rows: [{ key: 'recipient_id', value: 'recipient' }]});
+      query
+        .withArgs('medic/doc_summaries_by_id')
+        .resolves({ rows: [{ key: 'recipient_id', value: { phone: 'recipient' }}]});
+
+      service.query('tab').then(() => {
+        chai.expect(utils.registrations.isValidRegistration.callCount).to.equal(8);
+        chai.expect(utils.messages.generate.callCount).to.equal(3);
+
+        chai.expect(utils.messages.generate.args[0].slice(2)).to.deep.equal([
+          {
+            _id: 'report_id1',
+            contact: { _id: 'contact1', patient_id: 'c1', name: 'contact one' },
+            fields: { example: 'field' },
+            locale: 'fr'
+          },
+          {
+            translationKey: 'sms1',
+            content: 'sms1_content'
+          },
+          'recipient1',
+          {
+            patient: { _id: 'patient1', patient_id: '1111', name: 'patient one' },
+            patient_uuid: 'patient1',
+            registrations: [
+              { key: '1111', doc: { type: 'valid', patient_id: '1111' } },
+              { key: '1111', doc: { type: 'valid', patient_id: '1111' } },
+              { key: '1111', doc: { type: 'valid', patient_id: '1111' } }
+            ]
+          }
+        ]);
+
+        chai.expect(utils.messages.generate.args[1].slice(2)).to.deep.equal([
+          {
+            _id: 'report_id2',
+            contact: { _id: 'contact2', patient_id: 'c2', name: 'contact two' },
+            fields: undefined,
+            locale: null
+          },
+          {
+            translationKey: 'sms2',
+            content: undefined
+          },
+          'recipient2',
+          {
+            patient: { _id: 'patient2', patient_id: '2222', name: 'patient two' },
+            patient_uuid: 'patient2',
+            registrations: [{ key: '2222', doc: { type: 'valid', patient_id: '2222' } }]
+          }
+        ]);
+
+        chai.expect(utils.messages.generate.args[2].slice(2)).to.deep.equal([
+          {
+            _id: 'report_id3',
+            contact: undefined,
+            fields: { example: 'field2' },
+            locale: 'en'
+          },
+          {
+            translationKey: 'sms3',
+            content: undefined
+          },
+          'recipient3',
+          {
+            patient: { _id: 'patient3', patient_id: '3333', name: 'patient three' },
+            patient_uuid: 'patient3',
+            registrations: []
+          }
+        ]);
+
+        chai.expect(query.withArgs('contacts_by_phone').callCount).to.equal(1);
+        chai.expect(query.withArgs('contacts_by_phone').args[0][1]).to.deep.equal({
+          keys: ['recipient1', 'recipient2', 'recipient3']
         });
       });
     });
