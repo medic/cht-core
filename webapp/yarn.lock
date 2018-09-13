@@ -449,9 +449,9 @@ ecdsa-sig-formatter@1.0.10:
   dependencies:
     safe-buffer "^5.0.1"
 
-enketo-core@~4.41.2:
-  version "4.41.9"
-  resolved "https://registry.yarnpkg.com/enketo-core/-/enketo-core-4.41.9.tgz#996a8eb20dd1daad2daa1b13c2a5992c4144aecf"
+enketo-core@4.41.6:
+  version "4.41.6"
+  resolved "https://registry.yarnpkg.com/enketo-core/-/enketo-core-4.41.6.tgz#f99fdd414b8eeb62516d13730decd63c2699ddd5"
   dependencies:
     bootstrap-datepicker "1.7.x"
     bootstrap-slider-basic "3.3.x"

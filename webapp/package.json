@@ -30,7 +30,7 @@
     "bootstrap-daterangepicker": "^2.1.30",
     "bootstrap-tour": "^0.12.0",
     "bulk-docs-utils": "file:../shared-libs/bulk-docs-utils",
-    "enketo-core": "~4.41.2",
+    "enketo-core": "4.41.6",
     "font-awesome": "^4.7.0",
     "google-libphonenumber": "^3.1.11",
     "gsm": "^0.1.4",
