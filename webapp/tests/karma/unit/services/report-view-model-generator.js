@@ -16,16 +16,16 @@ describe('ReportViewModelGenerator service', () => {
         _id: 'my-report',
         form: 'my-form',
         fields: {
+          field: 0,
           field1: 1,
-          field2: 2,
           field3: 3
         },
-        hidden_fields: ['field2'],
+        hidden_fields: ['field'],
         _attachments: {
-          content: { content_type: 'application/xml'},
+          content: { content_type: 'application/xml' },
+          'user-file/my-form/field': { something: '1' },
           'user-file/my-form/field1': { content_type: 'text/html' },
-          'user-file/my-form/field2': { something: '1' },
-          'user-file/my-form/fields/field21': { foo: 'bar' }
+          'user-file/my-form/fields/field21': { foo: 'bar' },
         }
       };
 
