@@ -103,7 +103,7 @@ module.exports = {
           .updateUser(username, req.body, !!fullPermission)
           .then(() => {
             console.log(`REQ ${req.id} - Updated user '${username}'. Setting field(s) '${Object.keys(req.body).join(',')}'. Requested by '${requesterContext && requesterContext.name}'.`);
-          })
+          });
       })
       .then(body => res.json(body))
       .catch(err => serverUtils.error(err, req, res));
