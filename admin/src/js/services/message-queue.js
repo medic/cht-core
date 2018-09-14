@@ -1,5 +1,5 @@
-var messageUtils = require('message-utils'),
-    lineageFactory = require('lineage'),
+var lineageFactory = require('lineage'),
+    messageUtils = require('message-utils'),
     registrationUtils = require('registration-utils');
 
 angular.module('services').factory('MessageQueueUtils',
@@ -12,8 +12,8 @@ angular.module('services').factory('MessageQueueUtils',
     'ngInject';
 
     return {
-      messages: messageUtils,
       lineage: lineageFactory($q,DB({ remote: true })),
+      messages: messageUtils,
       registrations: registrationUtils
     };
   });
@@ -32,26 +32,30 @@ angular.module('services').factory('MessageQueue',
     'use strict';
     'ngInject';
 
-    var findSummaryByPhone = function(summaries, phone) {
+    var findSummary = function(summaries, message) {
+      if (!message.sms || !message.sms.to) {
+        return;
+      }
+
       var summary = summaries.rows.find(function(summary) {
-        return summary.value.phone === phone;
+        return summary.value && summary.value.phone === message.sms.to;
       });
 
       return summary && summary.value;
     };
 
-    var findPatientUUidByPatientId = function(contactsByReference, patientId) {
-      var patient = contactsByReference.find(function(row) {
-        return row.key[1] === patientId;
+    var findPatientUuid = function(contactsByReference, message) {
+      var patient = contactsByReference.rows.find(function(row) {
+        return row.key[1] === message.record.patient_id;
       });
 
-      return patient && patient.id;
+      return patient && patient.id || message.record.patient_uuid;
     };
 
-    var findRegistrationsByPatientId = function(registrations, patientId) {
+    var findRegistrations = function(registrations, message) {
       return registrations
         .filter(function(row) {
-          return row.key === patientId;
+          return row.key === message.record.patient_id;
         })
         .map(function(row) {
           return row.doc;
@@ -64,6 +68,12 @@ angular.module('services').factory('MessageQueue',
       });
 
       return contact && contact.doc;
+    };
+
+    var getValidRegistrations = function(registrations, settings) {
+      return registrations.rows.filter(function(row) {
+        return MessageQueueUtils.registrations.isValidRegistration(row.doc, settings);
+      });
     };
 
     var compactUnique = function(array) {
@@ -92,9 +102,7 @@ angular.module('services').factory('MessageQueue',
         })
         .then(function(summaries) {
           messages.forEach(function(message) {
-            message.recipient = message.sms &&
-                                message.sms.to &&
-                                findSummaryByPhone(summaries, message.sms.to);
+            message.recipient = findSummary(summaries, message);
           });
 
           return messages;
@@ -125,15 +133,13 @@ angular.module('services').factory('MessageQueue',
           DB({ remote: true }).query('medic-client/registered_patients', { keys: patientIds, include_docs: true })
         ])
         .then(function(results) {
-          var contactsByReference = results[0].rows;
-          var registrations = results[1].rows.filter(function(row) {
-            return MessageQueueUtils.registrations.isValidRegistration(row.doc, settings);
-          });
+          var contactsByReference = results[0];
+          var registrations = getValidRegistrations(results[1], settings);
+
           messages.forEach(function(message) {
             message.context = {
-              patient_uuid: findPatientUUidByPatientId(contactsByReference, message.record.patient_id) ||
-                            message.record.patient_uuid,
-              registrations: findRegistrationsByPatientId(registrations, message.record.patient_id)
+              patient_uuid: findPatientUuid(contactsByReference, message),
+              registrations: findRegistrations(registrations, message)
             };
           });
 
@@ -156,15 +162,14 @@ angular.module('services').factory('MessageQueue',
       return MessageQueueUtils.lineage
         .fetchLineageByIds(contactIds)
         .then(function(docList) {
-          return docList.map(function(docs) {
+          var hydratedDocs = docList.map(function(docs) {
             var doc = docs.shift();
             return {
               id: doc._id,
               doc: MessageQueueUtils.lineage.fillParentsInDocs(doc, docs)
             };
           });
-        })
-        .then(function(hydratedDocs) {
+
           messages.forEach(function(message) {
             message.context.patient = findContactById(hydratedDocs, message.context.patient_uuid);
             message.contact = findContactById(hydratedDocs, message.record.contact && message.record.contact._id);

@@ -49,7 +49,7 @@ describe('MessageQueueCtrl controller', () => {
       chai.expect(Settings.callCount).to.equal(1);
       chai.expect(MessageQueue.loadTranslations.callCount).to.equal(1);
       chai.expect(MessageQueue.query.callCount).to.equal(0);
-      chai.expect(scope.loading).to.equal(undefined);
+      chai.expect(scope.loading).to.equal(true);
 
       setTimeout(() => {
         chai.expect(scope.dateFormat).to.equal('my date format');
@@ -121,6 +121,8 @@ describe('MessageQueueCtrl controller', () => {
       setTimeout(() => {
         chai.expect(scope.pagination.page).to.equal(10);
         chai.expect(MessageQueue.query.args[0][1]).to.equal(225);
+        chai.expect(stateGo.callCount).to.equal(1);
+        chai.expect(stateGo.args[0]).to.deep.equal(['.', { page: 10 }, { notify: false }]);
         done();
       });
     });
@@ -134,6 +136,8 @@ describe('MessageQueueCtrl controller', () => {
       setTimeout(() => {
         chai.expect(MessageQueue.query.args[0]).to.deep.equal(['c', 0, 25, false]);
         chai.expect(scope.pagination.page).to.equal(1);
+        chai.expect(stateGo.callCount).to.equal(1);
+        chai.expect(stateGo.args[0]).to.deep.equal(['.', { page: 1 }, { notify: false }]);
         done();
       });
     });
@@ -147,6 +151,8 @@ describe('MessageQueueCtrl controller', () => {
       setTimeout(() => {
         chai.expect(MessageQueue.query.args[0]).to.deep.equal(['d', 0, 25, false]);
         chai.expect(scope.pagination.page).to.equal(1);
+        chai.expect(stateGo.callCount).to.equal(1);
+        chai.expect(stateGo.args[0]).to.deep.equal(['.', { page: 1 }, { notify: false }]);
         done();
       });
     });
@@ -160,6 +166,8 @@ describe('MessageQueueCtrl controller', () => {
       setTimeout(() => {
         chai.expect(MessageQueue.query.args[0]).to.deep.equal(['e', 0, 25, false]);
         chai.expect(scope.pagination.page).to.equal(1);
+        chai.expect(stateGo.callCount).to.equal(1);
+        chai.expect(stateGo.args[0]).to.deep.equal(['.', { page: 1 }, { notify: false }]);
         done();
       });
     });
@@ -173,6 +181,8 @@ describe('MessageQueueCtrl controller', () => {
       setTimeout(() => {
         chai.expect(MessageQueue.query.args[0]).to.deep.equal(['f', 525, 25, false]);
         chai.expect(scope.pagination.page).to.equal(22);
+        chai.expect(stateGo.callCount).to.equal(1);
+        chai.expect(stateGo.args[0]).to.deep.equal(['.', { page: 22 }, { notify: false }]);
         done();
       });
     });
@@ -186,6 +196,8 @@ describe('MessageQueueCtrl controller', () => {
       setTimeout(() => {
         chai.expect(MessageQueue.query.args[0]).to.deep.equal(['g', 0, 25, false]);
         chai.expect(scope.pagination.page).to.equal(1);
+        chai.expect(stateGo.callCount).to.equal(1);
+        chai.expect(stateGo.args[0]).to.deep.equal(['.', { page: 1 }, { notify: false }]);
         done();
       });
     });
@@ -199,13 +211,15 @@ describe('MessageQueueCtrl controller', () => {
       setTimeout(() => {
         chai.expect(MessageQueue.query.args[0]).to.deep.equal(['h', 75, 25, false]);
         chai.expect(scope.pagination.page).to.equal(4);
+        chai.expect(stateGo.callCount).to.equal(1);
+        chai.expect(stateGo.args[0]).to.deep.equal(['.', { page: 4 }, { notify: false }]);
         done();
       });
     });
   });
 
   describe('display', () => {
-    it('assigns scope messages, updates pagination and state', done => {
+    it('assigns scope messages, updates pagination', done => {
       MessageQueue.loadTranslations.resolves();
       MessageQueue.query.resolves({ messages: [{ id: 1}, { id: 2 }, { id: 3 }, { id: 4 }], total: 210 });
       Settings.resolves({});
@@ -221,8 +235,6 @@ describe('MessageQueueCtrl controller', () => {
 
         chai.expect(scope.messages).to.deep.equal([{ id: 1}, { id: 2 }, { id: 3 }, { id: 4 }]);
         chai.expect(scope.error).to.equal(false);
-        chai.expect(stateGo.callCount).to.equal(1);
-        chai.expect(stateGo.args[0]).to.deep.equal(['.', { page: 5 }, { notify: false }]);
         chai.expect(scope.loading).to.equal(false);
         chai.expect(scope.displayLastUpdated).to.equal(true);
         done();

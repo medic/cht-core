@@ -92,16 +92,15 @@ dl.horizontal {
     font-size: 100%;
   }
 }
-
-.strong {
-  font-weight: bold;
-}
-
-.block {
-  display: block;
-}
-
 .message-queue {
+  .strong {
+    font-weight: bold;
+  }
+
+  .block {
+    display: block;
+  }
+
   .flex-row {
     display: flex;
     flex-wrap: wrap;
@@ -113,7 +112,6 @@ dl.horizontal {
       &.col-fixed {
         flex: 0 0 160px;
       }
-
       &.col-grow {
         flex: 1 0 400px;
       }
@@ -135,39 +133,30 @@ dl.horizontal {
     &.state-muted:before {
       content: "\f1f6";
     }
-
     &.state-cleared:before {
       content: "\f00d";
     }
-
     &.state-pending:before {
       content: "\f017";
     }
-
     &.state-forwarded-to-gateway:before {
       content: "\f064";
     }
-
     &.state-received-by-gateway:before {
       content: "\f381";
     }
-
     &.state-forwarded-by-gateway:before {
       content: "\f382";
     }
-
     &.state-sent:before {
       content: "\f0e0";
     }
-
     &.state-delivered:before {
       content: "\f058";
     }
-
     &.state-denied:before {
       content: "\f056";
     }
-
     &.state-failed {
       color: @error-color;
       font-weight: bold;
@@ -182,7 +171,9 @@ dl.horizontal {
     }
   }
 
-  .pagination .fa {
-    line-height: inherit;
+  .pagination {
+    .fa {
+      line-height: inherit;
+    }
   }
 }

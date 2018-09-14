@@ -22,7 +22,6 @@ angular.module('controllers').controller('MessageQueueCtrl',
       if (isNaN(page) || page <= 0) {
         return 1;
       }
-
       return page;
     };
 
@@ -31,8 +30,8 @@ angular.module('controllers').controller('MessageQueueCtrl',
       perPage: 25,
       pages: 0
     };
-
-    $scope.displayLastUpdated = tab === 'scheduled' ? false : true;
+    $scope.displayLastUpdated = tab !== 'scheduled';
+    $scope.loading = true;
 
     var formatMessages = function(messages) {
       if (tab === 'due') {
@@ -52,6 +51,8 @@ angular.module('controllers').controller('MessageQueueCtrl',
       $scope.loading = true;
       $scope.messages = [];
       var skip = ($scope.pagination.page - 1) * $scope.pagination.perPage;
+      // change the state without triggering controller reinitialization
+      $state.go('.', { page: $scope.pagination.page }, { notify: false });
 
       return MessageQueue
         .query(tab, skip, $scope.pagination.perPage, descending)
@@ -64,8 +65,7 @@ angular.module('controllers').controller('MessageQueueCtrl',
           $scope.messages = formatMessages(result.messages);
           $scope.pagination.pages = Math.ceil(result.total / $scope.pagination.perPage);
           $scope.pagination.total = result.total;
-          // change the state without triggering controller reinitialization
-          $state.go('.', { page: $scope.pagination.page }, { notify: false });
+
           $scope.error = false;
         })
         .catch(function(err) {
@@ -79,9 +79,8 @@ angular.module('controllers').controller('MessageQueueCtrl',
 
     $scope.loadPage = function(page) {
       page = normalizePage(page);
-
       if ($scope.pagination.pages && $scope.pagination.pages < page) {
-        return Promise.resolve();
+        return;
       }
 
       $scope.pagination.page = page;

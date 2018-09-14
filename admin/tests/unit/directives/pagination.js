@@ -35,8 +35,8 @@ describe('pagination directive', () => {
 
     const element = compile('<mm-pagination></mm-pagination>')(scope);
     scope.$digest();
-    chai.expect(scope.pagination.pagesList).to.deep.equal([1, 2, 3, 4, 5, 6, 7, 8, 9, 10]);
-    chai.expect(scope.pagination.detail).to.deep.equal({ first: 1, last: 25, firstLast: false });
+    chai.expect(scope.pagination.pageLinks).to.deep.equal([1, 2, 3, 4, 5, 6, 7, 8, 9, 10]);
+    chai.expect(scope.pagination.detail).to.deep.equal({ firstItem: 1, lastItem: 25, displayFirstLastLinks: false });
 
     chai.expect(element.find('ul').children().length).to.equal(14);
     chai.expect(element.find('ul').children().first().hasClass('ng-hide')).to.equal(true);
@@ -53,8 +53,8 @@ describe('pagination directive', () => {
 
     const element = compile('<mm-pagination></mm-pagination>')(scope);
     scope.$digest();
-    chai.expect(scope.pagination.pagesList).to.deep.equal([1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11]);
-    chai.expect(scope.pagination.detail).to.deep.equal({ first: 51, last: 75, firstLast: true });
+    chai.expect(scope.pagination.pageLinks).to.deep.equal([1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11]);
+    chai.expect(scope.pagination.detail).to.deep.equal({ firstItem: 51, lastItem: 75, displayFirstLastLinks: true });
 
     chai.expect(element.find('ul').children().length).to.equal(15);
     chai.expect(element.find('ul').children().first().hasClass('ng-hide')).to.equal(false);
@@ -71,8 +71,8 @@ describe('pagination directive', () => {
 
     const element = compile('<mm-pagination></mm-pagination>')(scope);
     scope.$digest();
-    chai.expect(scope.pagination.pagesList).to.deep.equal([12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22]);
-    chai.expect(scope.pagination.detail).to.deep.equal({ first: 501, last: 525, firstLast: true });
+    chai.expect(scope.pagination.pageLinks).to.deep.equal([12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22]);
+    chai.expect(scope.pagination.detail).to.deep.equal({ firstItem: 501, lastItem: 525, displayFirstLastLinks: true });
 
     chai.expect(element.find('ul').children().length).to.equal(15);
     chai.expect(element.find('ul').children().first().hasClass('ng-hide')).to.equal(false);
@@ -89,8 +89,8 @@ describe('pagination directive', () => {
 
     const element = compile('<mm-pagination></mm-pagination>')(scope);
     scope.$digest();
-    chai.expect(scope.pagination.pagesList).to.deep.equal([7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17]);
-    chai.expect(scope.pagination.detail).to.deep.equal({ first: 276, last: 300, firstLast: true });
+    chai.expect(scope.pagination.pageLinks).to.deep.equal([7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17]);
+    chai.expect(scope.pagination.detail).to.deep.equal({ firstItem: 276, lastItem: 300, displayFirstLastLinks: true });
 
     chai.expect(element.find('ul').children().length).to.equal(15);
   });
@@ -192,23 +192,23 @@ describe('pagination directive', () => {
     const element = compile('<mm-pagination></mm-pagination>')(scope);
     scope.$digest();
     chai.expect(element.find('ul').find('li.active').find('span').text()).to.equal('12');
-    chai.expect(scope.pagination.pagesList).to.deep.equal([7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17]);
-    chai.expect(scope.pagination.detail).to.deep.equal({ first: 111, last: 120, firstLast: true });
+    chai.expect(scope.pagination.pageLinks).to.deep.equal([7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17]);
+    chai.expect(scope.pagination.detail).to.deep.equal({ firstItem: 111, lastItem: 120, displayFirstLastLinks: true });
 
     scope.$apply('pagination.page = 14');
     chai.expect(element.find('ul').find('li.active').find('span').text()).to.equal('14');
-    chai.expect(scope.pagination.pagesList).to.deep.equal([ 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19 ]);
-    chai.expect(scope.pagination.detail).to.deep.equal({ first: 131, last: 140, firstLast: true });
+    chai.expect(scope.pagination.pageLinks).to.deep.equal([ 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19 ]);
+    chai.expect(scope.pagination.detail).to.deep.equal({ firstItem: 131, lastItem: 140, displayFirstLastLinks: true });
 
     scope.$apply('pagination.page = 21');
     chai.expect(element.find('ul').find('li.active').find('span').text()).to.equal('21');
-    chai.expect(scope.pagination.pagesList).to.deep.equal([ 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22 ]);
-    chai.expect(scope.pagination.detail).to.deep.equal({ first: 201, last: 210, firstLast: true });
+    chai.expect(scope.pagination.pageLinks).to.deep.equal([ 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22 ]);
+    chai.expect(scope.pagination.detail).to.deep.equal({ firstItem: 201, lastItem: 210, displayFirstLastLinks: true });
 
     scope.$apply('pagination.pages = 40');
     chai.expect(element.find('ul').find('li.active').find('span').text()).to.equal('21');
-    chai.expect(scope.pagination.pagesList).to.deep.equal([ 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26 ]);
-    chai.expect(scope.pagination.detail).to.deep.equal({ first: 201, last: 210, firstLast: true });
+    chai.expect(scope.pagination.pageLinks).to.deep.equal([ 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26 ]);
+    chai.expect(scope.pagination.detail).to.deep.equal({ firstItem: 201, lastItem: 210, displayFirstLastLinks: true });
   });
 
 });
