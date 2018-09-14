@@ -529,11 +529,6 @@ module.exports = {
       getUpdatedSettingsDoc(username, data),
     ])
       .then(([ user, settings ]) => {
-        // TODO log out what is going to happen
-        //      we need the authenticated username as well
-        //      as the given username and data we already have
-        // https://github.com/medic/medic-webapp/issues/4097
-
         const response = {};
 
         return Promise.resolve()

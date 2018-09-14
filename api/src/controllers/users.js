@@ -66,9 +66,10 @@ module.exports = {
       hasFullPermission(req),
       isUpdatingSelf(req, credentials, username),
       basicAuthValid(credentials, username),
-      isChangingPassword(req)
+      isChangingPassword(req),
+      auth.getUserCtx(req)
     ])
-      .then(([fullPermission, updatingSelf, basic, changingPassword]) => {
+      .then(([fullPermission, updatingSelf, basic, changingPassword, requesterContext]) => {
 
         if (basic === false) {
           // If you're passing basic auth we're going to validate it, even if we
@@ -82,25 +83,28 @@ module.exports = {
           });
         }
 
-        if (fullPermission) {
-          return usersService.updateUser(username, req.body, true);
+        if (!fullPermission) {
+          if (!updatingSelf) {
+            return Promise.reject({
+              message: 'You do not have permissions to modify this person',
+              code: 403
+            });
+          }
+
+          if (_.isUndefined(basic) && changingPassword) {
+            return Promise.reject({
+              message: 'You must authenticate with Basic Auth to modify your password',
+              code: 403
+            });
+          }
         }
 
-        if (!updatingSelf) {
-          return Promise.reject({
-            message: 'You do not have permissions to modify this person',
-            code: 403
+        return usersService
+          .updateUser(username, req.body, !!fullPermission)
+          .then(result => {
+            console.log(`REQ ${req.id} - Updated user '${username}'. Setting field(s) '${Object.keys(req.body).join(',')}'. Requested by '${requesterContext && requesterContext.name}'.`);
+            return result;
           });
-        }
-
-        if (_.isUndefined(basic) && changingPassword) {
-          return Promise.reject({
-            message: 'You must authenticate with Basic Auth to modify your password',
-            code: 403
-          });
-        }
-
-        return usersService.updateUser(username, req.body, false);
       })
       .then(body => res.json(body))
       .catch(err => serverUtils.error(err, req, res));
