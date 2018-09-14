@@ -15,11 +15,13 @@
     "toc": "doctoc --github --maxlevel 2 README.md"
   },
   "dependencies": {
+    "@shared-libs/message-utils": "file:../shared-libs/message-utils",
     "@shared-libs/registration-utils": "file:../shared-libs/registration-utils",
     "@shared-libs/server-checks": "file:../shared-libs/server-checks",
     "@shared-libs/tombstone-utils": "file:../shared-libs/tombstone-utils",
     "@shared-libs/view-map-utils": "file:../shared-libs/view-map-utils",
     "async": "^2.6.0",
+    "bikram-sambat": "^1.5.0",
     "body-parser": "^1.18.2",
     "buffer-shims": "^1.0.0",
     "bulk-docs-utils": "file:../shared-libs/bulk-docs-utils",
@@ -28,6 +30,7 @@
     "express": "^4.16.3",
     "fast-csv": "^2.4.1",
     "google-libphonenumber": "^3.1.11",
+    "gsm": "^0.1.4",
     "helmet": "^3.13.0",
     "http-proxy": "^1.17.0",
     "lineage": "file:../shared-libs/lineage",

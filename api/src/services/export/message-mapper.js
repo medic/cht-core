@@ -1,6 +1,9 @@
 const _ = require('underscore'),
       moment = require('moment'),
-      db = require('../../db-pouch');
+      db = require('../../db-pouch'),
+      config = require('../../config'),
+      messageUtils = require('@shared-libs/message-utils'),
+      registrationUtils = require('@shared-libs/registration-utils');
 
 const normalizeResponse = doc => {
   return {
@@ -94,6 +97,16 @@ const normalizeTasks = doc => {
   return tasks;
 };
 
+const getRecordRegistrations = (registrations, record) => {
+  if (!record.patient || !record.patient.patient_id) {
+    return [];
+  }
+
+  return registrations
+    .filter(row => row.key === record.patient.patient_id)
+    .map(row => row.doc);
+};
+
 module.exports = {
   getDocIds: (options) => {
     return db.medic.query('medic-sms/tasks_messages', options)
@@ -122,8 +135,26 @@ module.exports = {
       ],
       getRows: record => {
         const tasks = normalizeTasks(record);
+
         return _.flatten(tasks.map(task => {
           const history = buildHistory(task);
+
+          if (!task.messages) {
+            const templateContext = _.pick(record, 'patient', 'registrations');
+            const content = {
+              translationKey: task.message_key,
+              message: task.message
+            };
+            task.messages = messageUtils.generate(
+              config.get(),
+              config.translate,
+              record,
+              content,
+              task.recipient,
+              templateContext
+            );
+          }
+
           return task.messages.map(message => [
             record._id,
             record.patient_id,
@@ -143,6 +174,33 @@ module.exports = {
             message.message
           ]);
         }), true);
+      },
+      hydrate: records => {
+        const needRegistrations = records.filter(record => {
+          return record.scheduled_tasks && record.scheduled_tasks.find(task => !task.messages);
+        });
+
+        if (!needRegistrations.length) {
+          return Promise.resolve(records);
+        }
+
+        const patientIds = needRegistrations.map(record => record.patient && record.patient.patient_id);
+        if (!patientIds.length) {
+          return Promise.resolve(records);
+        }
+
+        return db.medic
+          .query('medic-client/registered_patients', { keys: patientIds, include_docs: true })
+          .then(result => {
+            const registrations = result.rows.filter(row =>
+              registrationUtils.isValidRegistration(row.doc, config.get()));
+
+            records.forEach(record => {
+              record.registrations = getRecordRegistrations(registrations, record);
+            });
+
+            return records;
+          });
       }
     });
   }

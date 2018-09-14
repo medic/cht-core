@@ -33,6 +33,8 @@ const csvLineToString = (csvLine) => {
   return joinLine(escapedCsvLine);
 };
 
+const echo = param => param;
+
 class SearchResultReader extends Readable {
 
   constructor(type, filters, searchOptions, readableOptions) {
@@ -52,8 +54,9 @@ class SearchResultReader extends Readable {
   _read() {
     if (!this.getRows) {
       return this.mapper.map(this.filters, this.options)
-        .then(({ header, getRows }) => {
+        .then(({ header, getRows, hydrate }) => {
           this.getRows = getRows;
+          this.hydrate = hydrate || echo;
           this.push(joinLine(header));
         });
     }
@@ -73,6 +76,7 @@ class SearchResultReader extends Readable {
         })
         .then(result => result.rows.map(row => row.doc))
         .then(lineage.hydrateDocs)
+        .then(this.hydrate)
         .then(docs => {
           const lines = docs.map(doc => {
             return this.getRows(doc).map(csvLineToString).join('');
