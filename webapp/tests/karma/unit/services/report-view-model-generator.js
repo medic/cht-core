@@ -69,7 +69,35 @@ describe('ReportViewModelGenerator service', () => {
       chai.expect(result.displayFields).to.deep.equal([
         { label: 'report.my-form.field1', value: 1, depth: 0 },
         { label: 'report.my-form.field3', value: 3, depth: 0 },
+      ]);
+    });
+  });
 
+  it('when fields are nested within hidden groups, the nested fields are hidden', () => {
+    lineageModelGenerator.report.resolves({ doc: report });
+    formatDataRecord.resolves({});
+    getSubjectSummaries.resolves([{}]);
+    getSummaries.resolves([{}]);
+
+    report.fields = {
+      field1: 1,
+      group: {
+        field2: 2,
+        group2: {
+          field3: 3,
+        }
+      },
+      group3: {
+        field4: 3,
+      },
+    };
+    report.hidden_fields = ['group'];
+
+    return service(report._id).then(result => {
+      chai.expect(result.displayFields).to.deep.equal([
+        { label: 'report.my-form.field1', value: 1, depth: 0 },
+        { label: 'report.my-form.group3', depth: 0 },
+        { label: 'report.my-form.group3.field4', value: 3, depth: 1 },
       ]);
     });
   });

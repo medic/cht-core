@@ -69,7 +69,8 @@ angular.module('inboxServices').factory('ReportViewModelGenerator',
       hide.push('inputs');
       return _.reject(fields, function(field) {
         return _.some(hide, function(h) {
-          return label + '.' + h === field.label;
+          const hiddenLabel = label + '.' + h;
+          return hiddenLabel === field.label || field.label.indexOf(hiddenLabel + '.') === 0;
         });
       });
     };
