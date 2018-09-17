@@ -50,10 +50,10 @@ angular.module('controllers').controller('MessageQueueCtrl',
     var query = function() {
       $scope.loading = true;
       $scope.messages = [];
-      var skip = ($scope.pagination.page - 1) * $scope.pagination.perPage;
       // change the state without triggering controller reinitialization
       $state.go('.', { page: $scope.pagination.page }, { notify: false });
 
+      var skip = ($scope.pagination.page - 1) * $scope.pagination.perPage;
       return MessageQueue
         .query(tab, skip, $scope.pagination.perPage, descending)
         .then(function(result) {

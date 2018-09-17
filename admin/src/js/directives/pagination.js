@@ -1,3 +1,10 @@
+// Bootstrap pagination with
+// - a maximum number of 11 page links, surrounding currently selected page.
+// - next & prev links
+// - first & last links - only displayed when nbr of pages > 11
+// - a pagination summary (`Showing a - b of c items`)
+// - no isolated scope
+
 angular.module('directives').directive('mmPagination', function() {
   'use strict';
 

@@ -109,15 +109,11 @@ angular.module('services').factory('MessageQueue',
         });
     };
 
-    var getUniquePatientIds = function(messages) {
-      return compactUnique(messages.map(function(message) {
+    var getPatientsAndRegistrations = function(messages, settings) {
+      var patientIds = compactUnique(messages.map(function(message) {
         // don't process items which already have generated messages
         return !message.sms && message.record && message.record.patient_id;
       }));
-    };
-
-    var getPatientsAndRegistrations = function(messages, settings) {
-      var patientIds = getUniquePatientIds(messages);
 
       if (!patientIds.length) {
         return Promise.resolve(messages);
@@ -298,7 +294,7 @@ angular.module('services').factory('MessageQueue',
               return language &&
                      language.code &&
                      language.code !== 'en' &&
-                     $translate('admin.message.queue', {}, undefined, undefined, language.code);
+                     $translate('admin.message.queue', {}, null, null, language.code);
             }));
           })
           .catch(function(err) {

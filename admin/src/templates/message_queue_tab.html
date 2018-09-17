@@ -11,19 +11,21 @@
 
 <div class="loader" ng-show="loading"></div>
 
-<div class="row selection flex-row" ng-repeat="message in messages">
+<div class="row flex-row selection" ng-repeat="message in messages">
 
   <div class="col col-fixed">{{message.recipient}}</div>
 
   <div class="col col-fixed">
     <relative-date date="message.record.reportedDate" date-format="dateFormat"></relative-date>
-    <a class="block" ng-if="message.link" href=" ../../medic/_rewrite/#/reports/{{message.record.id}}" target="_blank">
-      <span translate>admin.message.queue.view.report</span>
-    </a>
+    <div ng-if="message.link">
+      <a href=" ../../medic/_rewrite/#/reports/{{message.record.id}}" target="_blank">
+        <span translate>admin.message.queue.view.report</span>
+      </a>
+    </div>
   </div>
 
   <div class="col col-grow">
-    <p class="strong task-group" ng-if="message.task">{{message.task}}</p>
+    <p ng-if="message.task"><strong>{{message.task}}</strong></p>
     <span>{{message.content}}</span>
   </div>
 
