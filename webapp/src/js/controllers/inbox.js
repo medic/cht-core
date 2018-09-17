@@ -40,6 +40,7 @@ var feedback = require('../modules/feedback'),
       SendMessage,
       Session,
       SetLanguageCookie,
+      SetDatepickerLanguage,
       Settings,
       Snackbar,
       Tour,
@@ -470,6 +471,7 @@ var feedback = require('../modules/feedback'),
       Language()
         .then(function(language) {
           moment.locale([language, 'en']);
+          SetDatepickerLanguage(language);
           $translate.use(language);
         })
         .catch(function(err) {

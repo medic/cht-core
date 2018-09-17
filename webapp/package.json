@@ -27,6 +27,7 @@
     "async": "^2.6.1",
     "bikram-sambat-bootstrap": "^1.4.2",
     "bootstrap": "^3.3.7",
+    "bootstrap-datepicker": "1.6.x",
     "bootstrap-daterangepicker": "^2.1.30",
     "bootstrap-tour": "^0.12.0",
     "bulk-docs-utils": "file:../shared-libs/bulk-docs-utils",

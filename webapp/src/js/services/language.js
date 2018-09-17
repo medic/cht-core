@@ -22,13 +22,27 @@ var moment = require('moment');
   inboxServices.factory('SetLanguage',
     function(
       $translate,
-      SetLanguageCookie
+      SetLanguageCookie,
+      SetDatepickerLanguage
     ) {
       'ngInject';
       return function(code) {
         moment.locale([code, 'en']);
+        SetDatepickerLanguage(code);
         $translate.use(code);
         SetLanguageCookie(code);
+      };
+    }
+  );
+
+  inboxServices.factory('SetDatepickerLanguage',
+    function() {
+      'ngInject';
+
+      return function(language) {
+        var availableCalendarLanguages = Object.keys($.fn.datepicker.dates);
+        var calendarLanguage = availableCalendarLanguages.indexOf(language) >= 0 ? language : 'en';
+        $.fn.datepicker.defaults.language = calendarLanguage;
       };
     }
   );
