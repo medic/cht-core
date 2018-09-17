@@ -155,12 +155,16 @@ module.exports = {
             );
           }
 
+          const taskType = (task.translation_key && config.translate(task.translation_key, { group: task.group })) ||
+                           task.type ||
+                           'Task Message';
+
           return task.messages.map(message => [
             record._id,
-            record.patient_id,
+            record.patient_id || (record.patient && record.patient.patient_id),
             formatDate(record.reported_date),
             record.from,
-            task.type || 'Task Message',
+            taskType,
             task.state,
             getStateDate('received', task, history),
             getStateDate('scheduled', task, history),
@@ -184,7 +188,10 @@ module.exports = {
           return records;
         }
 
-        const patientIds = needRegistrations.map(record => record.patient && record.patient.patient_id);
+        const patientIds = needRegistrations
+          .map(record => record.patient && record.patient.patient_id)
+          .filter((patientId, idx, self) => patientId && self.indexOf(patientId) === idx);
+
         if (!patientIds.length) {
           return records;
         }
