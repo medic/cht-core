@@ -39,8 +39,7 @@ var feedback = require('../modules/feedback'),
       Select2Search,
       SendMessage,
       Session,
-      SetLanguageCookie,
-      SetDatepickerLanguage,
+      SetLanguage,
       Settings,
       Snackbar,
       Tour,
@@ -470,9 +469,7 @@ var feedback = require('../modules/feedback'),
 
       Language()
         .then(function(language) {
-          moment.locale([language, 'en']);
-          SetDatepickerLanguage(language);
-          $translate.use(language);
+          SetLanguage(language, false);
         })
         .catch(function(err) {
           $log.error('Error loading language', err);

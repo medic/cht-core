@@ -22,27 +22,24 @@ var moment = require('moment');
   inboxServices.factory('SetLanguage',
     function(
       $translate,
-      SetLanguageCookie,
-      SetDatepickerLanguage
+      SetLanguageCookie
     ) {
       'ngInject';
-      return function(code) {
-        moment.locale([code, 'en']);
-        SetDatepickerLanguage(code);
-        $translate.use(code);
-        SetLanguageCookie(code);
-      };
-    }
-  );
-
-  inboxServices.factory('SetDatepickerLanguage',
-    function() {
-      'ngInject';
-
-      return function(language) {
+      
+      var setDatepickerLanguage = function(language) {
         var availableCalendarLanguages = Object.keys($.fn.datepicker.dates);
         var calendarLanguage = availableCalendarLanguages.indexOf(language) >= 0 ? language : 'en';
         $.fn.datepicker.defaults.language = calendarLanguage;
+      };
+
+      return function(code, setLanguageCookie) {
+        moment.locale([code, 'en']);
+        setDatepickerLanguage(code);
+        $translate.use(code);
+
+        if (setLanguageCookie !== false) {
+          SetLanguageCookie(code);
+        }
       };
     }
   );

@@ -1,6 +1,6 @@
 window.EnketoForm = require('enketo-core/src/js/Form');
 
-// Missing Bamanankan (bm) Issue #...
+// Missing Bamanankan (bm) - Issue #4832
 require('bootstrap-datepicker/js/locales/bootstrap-datepicker.es');
 require('bootstrap-datepicker/js/locales/bootstrap-datepicker.fr');
 require('bootstrap-datepicker/js/locales/bootstrap-datepicker.sw');
