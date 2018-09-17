@@ -4,9 +4,6 @@ const utils = require('../utils'),
       moment = require('moment');
 
 describe('registration transition', () => {
-
-  'use strict';
-
   const PHONE = '+64271234567';
   const FORM_NAME = 'Registration';
 
@@ -218,7 +215,7 @@ describe('registration transition', () => {
   };
 
   describe('submits new sms messages', () => {
-    var originalTimeout;
+    let originalTimeout;
 
     beforeEach(done => {
       const body = {
@@ -283,10 +280,8 @@ describe('registration transition', () => {
 
     it('shows content', () => {
       commonElements.goToReports();
-      helper.waitElementToBeClickable(element(by.css('.action-container .general-actions:not(.ng-hide) .fa-plus')));
       helper.waitElementToBeClickable(element(by.css('#reports-list .unfiltered li:first-child')));
       browser.wait(() => element(by.cssContainingText('#reports-list .unfiltered li:first-child h4 span', 'Siobhan')).isPresent(), 10000);
-
       helper.clickElement(element(by.css('#reports-list .unfiltered li:first-child .summary')));
 
       // wait for content to load

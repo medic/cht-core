@@ -30,6 +30,32 @@ module.exports = {
     nextButton.click();
   },
 
+  addHealthCenter: () => {
+    const newHealthCenterButton = element(by.css('[ng-show="actionBar.right.selected[0].child.type"]'));
+    helper.waitUntilReady(newHealthCenterButton);
+    helper.clickElement(newHealthCenterButton);
+    helper.waitUntilReady(element(by.css('[name="/data/health_center"]')));
+    element(by.css('[name="/data/health_center/name"]')).sendKeys('Mavuvu Clinic');
+    browser.actions()
+      .sendKeys(protractor.Key.TAB).perform();
+    browser.actions()
+      .sendKeys(protractor.Key.TAB).perform();
+    browser.actions()
+      .sendKeys(protractor.Key.ENTER).perform();
+    browser.actions()
+      .sendKeys('Kiwi').perform();
+    const contactName = element.all(by.css('.select2-results .name')).get(0);
+    helper.waitElementToBeVisible(contactName);
+    helper.clickElement(contactName);
+    element(by.css('[name="/data/health_center/external_id"]')).sendKeys('1234457');
+    element(by.css('[name="/data/health_center/notes"]')).sendKeys('some notes');
+    const submitButton = element(by.css('.btn.submit.btn-primary'));
+    helper.clickElement(submitButton);
+    const center = element(by.css('.card h2'));
+    helper.waitUntilReady(center);
+    expect(center.getText()).toBe('Mavuvu Clinic');
+  },
+
   completeNewPersonForm: name => {
     helper.waitUntilReady(newPersonTextBox);
     newPersonTextBox.sendKeys(name);
@@ -40,6 +66,7 @@ module.exports = {
     alternativePhoneNumber.sendKeys('+64212345719');
     personNotes.sendKeys('some notes for the person');
     submitButton.click();
+    helper.waitUntilReady(element(by.css('.card .heading')));
   },
 
   refresh: () => {

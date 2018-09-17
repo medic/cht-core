@@ -2,9 +2,6 @@ const utils = require('../utils'),
       auth = require('../auth')();
 
 describe('Integration', () => {
-
-  'use strict';
-
   const message = {
     errors: [],
     form: null,

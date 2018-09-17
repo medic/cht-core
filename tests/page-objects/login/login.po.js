@@ -14,7 +14,7 @@ const getLoginButton = () => {
 };
 
 module.exports = {
-  login: (username, password) => {
+  login: (username, password, shouldFail) => {
     helper.waitUntilReady(getUsernameField());
     getUsernameField().clear();
     getPasswordField().clear();
@@ -22,17 +22,8 @@ module.exports = {
     getPasswordField().sendKeys(password);
     getLoginButton().click();
     browser.waitForAngular();
-  },
-
-  getIncorrectCredeantialsError: () => {
-    return element(by.className('error incorrect'));
-  },
-
-  getIncorrectCredentialsText: () => {
-    return incorrectCredentialsText;
-  },
-
-  getPasswordBlankText: () => {
-    return passwordBlankText;
+    if (shouldFail) {
+      expect(helper.isTextDisplayed(incorrectCredentialsText));
+    }
   }
 };

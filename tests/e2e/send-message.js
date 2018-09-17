@@ -78,12 +78,8 @@ describe('Send message', () => {
   const openSendMessageModal = () => {
     helper.waitElementToBeClickable(element(by.css('.general-actions .send-message')));
     helper.clickElement(element(by.css('.general-actions .send-message')));
-    browser.wait(() => {
-      const modal = element(by.id('send-message'));
-      return modal.isPresent().then(() => {
-        return modal.isDisplayed();
-      });
-    }, 5000);
+    helper.waitElementToPresent(element(by.id('send-message')), 5000);
+    helper.waitElementToBeVisible(element(by.id('send-message')), 5000);
   };
 
   const findSelect2Entry = (selector, expectedValue) => {
@@ -231,16 +227,12 @@ describe('Send message', () => {
     const openMessageContent = (id, name) => {
       common.goToMessages();
       helper.waitUntilReady(element(by.css(messageInList(id))));
-      browser.wait(() => {
-        return element(by.css(messageInList(id))).isPresent();
-      }, 2000);
+      helper.waitElementToPresent(element(by.css(messageInList(id))), 2000);
       clickLhsEntry(id, name);
     };
     const enterMessageText = message => {
       element(by.css('#message-footer textarea')).click();
-      browser.wait(() => {
-        return element(by.css('#message-footer .message-actions .btn-primary')).isDisplayed();
-      });
+      helper.waitElementToBeVisible(element(by.css('#message-footer .message-actions .btn-primary')));
       browser.wait(element(by.css('#message-footer textarea')).sendKeys(message));
     };
     describe('Can send additional messages from message pane', () => {

@@ -112,11 +112,7 @@ describe('Submit Enketo form', () => {
     const submitButton = element(by.css('#report-form .submit'));
     helper.waitUntilReady(submitButton);
     submitButton.click();
-
-    browser.wait(() => {
-      return element(by.css('#reports-content .details ul li:first-child p')).isPresent();
-    }, 10000);
-
+    helper.waitElementToPresent(element(by.css('#reports-content .details ul li:first-child p')));
     browser.sleep(100); // TODO required to make the test deterministic. https://github.com/medic/medic-webapp/issues/3509
     // check the submitted name
     const detail = element(by.css('#reports-content .details ul li:first-child p'));

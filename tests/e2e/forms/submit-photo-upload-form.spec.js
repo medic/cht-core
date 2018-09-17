@@ -36,32 +36,23 @@ describe('Submit Photo Upload form', () => {
 
   it('upload photo', () => {
     common.goToReports();
-    browser.wait(() => {
-      return element(by.css('.action-container .general-actions:not(.ng-hide) .fa-plus')).isPresent();
-    }, 10000);
 
     browser.sleep(1000); // let the refresh work here - #3691
 
     // select form
     const addButton = element(by.css('.action-container .general-actions:not(.ng-hide) .fa-plus'));
-    browser.wait(() => {
-      return addButton.isPresent();
-    }, 10000);
+    helper.waitElementToPresent(addButton);
     helper.clickElement(addButton);
     element(by.css('.action-container .general-actions .dropup.open .dropdown-menu li:first-child a')).click();
-
-    browser.wait(() => {
-      return element(by.css('#photo-upload input[type=file]')).isPresent();
-    }, 10000);
-
+    helper.waitElementToPresent(element(by.css('#photo-upload input[type=file]')));
     element(by.css('#photo-upload input[type=file]'))
       .sendKeys(path.join(__dirname, '../../../webapp/src/img/simprints.png'));
-    browser.wait(() => element(by.css('#photo-upload .file-picker .file-preview img')).isPresent(), 10000);
+    helper.waitElementToPresent(element(by.css('#photo-upload .file-picker .file-preview img')));
     //submit
     photoUpload.submit();
-    browser.wait(() => element(by.css('div.details')).isPresent(), 10000);
+    helper.waitElementToPresent(element(by.css('div.details')));
     expect(element(by.css('div.details')).isPresent()).toBeTruthy();
-    browser.wait(() => element(by.css('.report-image')).isPresent(), 10000);
+    helper.waitElementToPresent(element(by.css('.report-image')));
     expect(element(by.css('.report-image')).isPresent()).toBeTruthy();
   });
 });
