@@ -181,12 +181,12 @@ module.exports = {
         });
 
         if (!needRegistrations.length) {
-          return Promise.resolve(records);
+          return records;
         }
 
         const patientIds = needRegistrations.map(record => record.patient && record.patient.patient_id);
         if (!patientIds.length) {
-          return Promise.resolve(records);
+          return records;
         }
 
         return db.medic
