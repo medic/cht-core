@@ -25,10 +25,21 @@ var moment = require('moment');
       SetLanguageCookie
     ) {
       'ngInject';
-      return function(code) {
+      
+      var setDatepickerLanguage = function(language) {
+        var availableCalendarLanguages = Object.keys($.fn.datepicker.dates);
+        var calendarLanguage = availableCalendarLanguages.indexOf(language) >= 0 ? language : 'en';
+        $.fn.datepicker.defaults.language = calendarLanguage;
+      };
+
+      return function(code, setLanguageCookie) {
         moment.locale([code, 'en']);
+        setDatepickerLanguage(code);
         $translate.use(code);
-        SetLanguageCookie(code);
+
+        if (setLanguageCookie !== false) {
+          SetLanguageCookie(code);
+        }
       };
     }
   );
