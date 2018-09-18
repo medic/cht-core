@@ -44,6 +44,12 @@
   dependencies:
     tslib "^1.9.0"
 
+"@angular/router@^6.1.7":
+  version "6.1.7"
+  resolved "https://registry.yarnpkg.com/@angular/router/-/router-6.1.7.tgz#90294b2497649fd6d6d1507e6e447d9c153e8db8"
+  dependencies:
+    tslib "^1.9.0"
+
 "@angular/upgrade@^6.1.4":
   version "6.1.4"
   resolved "https://registry.yarnpkg.com/@angular/upgrade/-/upgrade-6.1.4.tgz#f318189ce38a56f9f316f12811c9d1663b902252"
@@ -54,6 +60,21 @@
   version "1.0.0"
   dependencies:
     underscore "^1.9.1"
+
+"@uirouter/angular@^2.0.2":
+  version "2.0.2"
+  resolved "https://registry.yarnpkg.com/@uirouter/angular/-/angular-2.0.2.tgz#56b83f5920616c11e8cb54d8db38118f6ef6975d"
+  dependencies:
+    "@uirouter/core" "5.0.21"
+    "@uirouter/rx" "0.5.0"
+
+"@uirouter/core@5.0.21":
+  version "5.0.21"
+  resolved "https://registry.yarnpkg.com/@uirouter/core/-/core-5.0.21.tgz#b6c4c311e9416a1e8ce76b072e042a60224d1b3a"
+
+"@uirouter/rx@0.5.0":
+  version "0.5.0"
+  resolved "https://registry.yarnpkg.com/@uirouter/rx/-/rx-0.5.0.tgz#a0577408488e9523732ef5985a631f7b607fed5b"
 
 ajv@^5.1.0:
   version "5.5.2"

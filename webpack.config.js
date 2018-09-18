@@ -1,28 +1,37 @@
 // var debug = process.env.NODE_ENV !== "production";
 const path = require('path'),
   webpack = require('webpack'),
-  ngAnnotatePlugin = require('ng-annotate-webpack-plugin');
+  ngAnnotatePlugin = require('ng-annotate-webpack-plugin'),
+  AotPlugin = require('@ngtools/webpack').AotPlugin,
+  AngularCompilerPlugin = require('@ngtools/webpack').AngularCompilerPlugin;
+
+// import { AngularCompilerPlugin } from '@ngtools/webpack';
 
 module.exports = {
-  mode: 'production',
+  // mode: 'production',
+  mode: 'development',
   context: __dirname,
   // devtool: debug ? "inline-sourcemap" : null,
-  entry: './webapp/src/js/app.ts',
+  entry: './webapp/src/js/app.module',
   output: {
     path: path.join(__dirname, '/build/ddocs/medic/_attachments/js'),
     filename: 'inbox.js',
   },
   module: {
     rules: [
+      // {
+      //   test: /\.tsx?$/,
+      //   exclude: /node_modules/,
+      //   use: 'ts-loader',
+      // },
       {
-        test: /\.tsx?$/,
-        exclude: /node_modules/,
-        use: 'ts-loader',
-      },
-      {
-        test: /\.js?$/,
+        test: /\.js$/,
         exclude: /node_modules/,
         use: 'ng-annotate-loader',
+      },
+      {
+        test: /\.ts$/,
+        loader: '@ngtools/webpack',
       },
     ],
   },
@@ -46,4 +55,12 @@ module.exports = {
   // plugins: [
   //   new ngAnnotatePlugin({ add: true })
   // ]
+  plugins: [
+    new AngularCompilerPlugin({
+      tsConfigPath: 'tsconfig.json',
+      entryModule: 'webapp/src/js/app.module#AppModule',
+      // mainPath: 'webapp/src/js/app.ts',
+      // sourceMap: true
+    }),
+  ],
 };
