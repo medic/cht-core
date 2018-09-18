@@ -92,24 +92,25 @@ dl.horizontal {
     font-size: 100%;
   }
 }
-.message-queue {
-  .flex-row {
-    display: flex;
-    flex-wrap: wrap;
-    align-items: center;
-    cursor: default;
 
-    .col {
-      padding: 0 15px;
-      &.col-fixed {
-        flex: 0 0 160px;
-      }
-      &.col-grow {
-        flex: 1 0 400px;
-      }
+.flex-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  cursor: default;
+
+  .col {
+    padding: 0 15px;
+    &.col-fixed {
+      flex: 0 0 160px;
+    }
+    &.col-grow {
+      flex: 1 0 400px;
     }
   }
+}
 
+.message-queue {
   .message-state {
     display: flex;
 
@@ -119,46 +120,46 @@ dl.horizontal {
       margin-right: 10px;
       display: block;
     }
-    &.state-scheduled:before {
-      content: "\f073";
+    &.scheduled:before {
+      content: @scheduled-state-icon;
     }
-    &.state-muted:before {
-      content: "\f1f6";
+    &.muted:before {
+      content: @muted-state-icon;
     }
-    &.state-cleared:before {
-      content: "\f00d";
+    &.cleared:before {
+      content: @cleared-state-icon;
     }
-    &.state-pending:before {
-      content: "\f017";
+    &.pending:before {
+      content: @pending-state-icon;
     }
-    &.state-forwarded-to-gateway:before {
-      content: "\f064";
+    &.forwarded-to-gateway:before {
+      content: @forwarded-to-gateway-state-icon;
     }
-    &.state-received-by-gateway:before {
-      content: "\f381";
+    &.received-by-gateway:before {
+      content: @received-by-gateway-state-icon;
     }
-    &.state-forwarded-by-gateway:before {
-      content: "\f382";
+    &.forwarded-by-gateway:before {
+      content: @forwarded-by-gateway-state-icon;
     }
-    &.state-sent:before {
-      content: "\f0e0";
+    &.sent:before {
+      content: @sent-state-icon;
     }
-    &.state-delivered:before {
-      content: "\f058";
+    &.delivered:before {
+      content: @delivered-state-icon;
     }
-    &.state-denied:before {
-      content: "\f056";
+    &.denied:before {
+      content: @denied-state-icon;
     }
-    &.state-failed {
+    &.failed {
       color: @error-color;
       font-weight: bold;
       &:before {
-        content: "\f071";
+        content: @failed-state-icon;
       }
     }
 
     &.delayed {
-      color: @warning-color;
+      color: @primary-color;
       font-weight: bold;
     }
   }

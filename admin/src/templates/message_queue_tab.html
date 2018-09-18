@@ -18,8 +18,8 @@
   <div class="col col-fixed">
     <relative-date date="message.record.reportedDate" date-format="dateFormat"></relative-date>
     <div ng-if="message.link">
-      <a href=" ../../medic/_rewrite/#/reports/{{message.record.id}}" target="_blank">
-        <span translate>admin.message.queue.view.report</span>
+      <a ng-href="{{basePath}}/#/reports/{{message.record.id}}" target="_blank" translate>
+        admin.message.queue.view.report
       </a>
     </div>
   </div>
@@ -30,7 +30,7 @@
   </div>
 
   <div class="col col-fixed">
-    <span class="message-state state-{{message.state}}" ng-class="{ delayed: message.delayed }">{{message.state}}</span>
+    <span class="message-state {{message.state}}" ng-class="{ delayed: message.delayed }">{{message.state}}</span>
   </div>
 
   <div class="col col-fixed">

@@ -2,17 +2,6 @@ function (doc) {
   var mutedStatuses = ['muted', 'cleared', 'denied', 'duplicate'];
   var scheduledStatus = 'scheduled';
 
-  var dataRecordData = {
-    id: doc._id,
-    reported_date: doc.reported_date,
-    contact: doc.contact,
-    patient_id: doc.patient_id || (doc.fields && doc.fields.patient_id),
-    patient_uuid: doc.fields && doc.fields.patient_uuid,
-    form: doc.form,
-    fields: doc.fields,
-    locale: doc.locale || (doc.sms_message && doc.sms_message.locale)
-  };
-
   var _emit = function(tasks) {
     tasks.forEach(function(task) {
       var due = new Date(task.due || task.timestamp || doc.reported_date).getTime();
@@ -40,7 +29,6 @@ function (doc) {
                 to: msg.to
               },
               task: taskData,
-              record: dataRecordData,
               due: due
             };
 
@@ -56,7 +44,6 @@ function (doc) {
             content: task.message
           },
           task: taskData,
-          record: dataRecordData,
           due: due
         };
 

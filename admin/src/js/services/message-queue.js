@@ -46,16 +46,16 @@ angular.module('services').factory('MessageQueue',
 
     var findPatientUuid = function(contactsByReference, message) {
       var patient = contactsByReference.rows.find(function(row) {
-        return row.key[1] === message.record.patient_id;
+        return row.key[1] === message.context.patient_id;
       });
 
-      return patient && patient.id || message.record.patient_uuid;
+      return patient && patient.id || message.context.patient_uuid;
     };
 
     var findRegistrations = function(registrations, message) {
       return registrations
         .filter(function(row) {
-          return row.key === message.record.patient_id;
+          return row.key === message.context.patient_id;
         })
         .map(function(row) {
           return row.doc;
@@ -112,7 +112,7 @@ angular.module('services').factory('MessageQueue',
     var getPatientsAndRegistrations = function(messages, settings) {
       var patientIds = compactUnique(messages.map(function(message) {
         // don't process items which already have generated messages
-        return !message.sms && message.record && message.record.patient_id;
+        return !message.sms && message.context.patient_id;
       }));
 
       if (!patientIds.length) {
@@ -133,10 +133,8 @@ angular.module('services').factory('MessageQueue',
           var registrations = getValidRegistrations(results[1], settings);
 
           messages.forEach(function(message) {
-            message.context = {
-              patient_uuid: findPatientUuid(contactsByReference, message),
-              registrations: findRegistrations(registrations, message)
-            };
+            message.context.patient_uuid = findPatientUuid(contactsByReference, message);
+            message.context.registrations = findRegistrations(registrations, message);
           });
 
           return messages;
@@ -147,7 +145,7 @@ angular.module('services').factory('MessageQueue',
       var contactIds = [];
       messages.forEach(function(message) {
         if (!message.sms) {
-          contactIds.push(message.context.patient_uuid, message.record.contact && message.record.contact._id);
+          contactIds.push(message.context.patient_uuid, message.doc.contact && message.doc.contact._id);
         }
       });
       contactIds = compactUnique(contactIds);
@@ -168,7 +166,7 @@ angular.module('services').factory('MessageQueue',
 
           messages.forEach(function(message) {
             message.context.patient = findContactById(hydratedDocs, message.context.patient_uuid);
-            message.contact = findContactById(hydratedDocs, message.record.contact && message.record.contact._id);
+            message.doc.contact = findContactById(hydratedDocs, message.doc.contact && message.doc.contact._id);
           });
 
           return messages;
@@ -189,17 +187,11 @@ angular.module('services').factory('MessageQueue',
           translationKey: message.scheduled_sms.translation_key,
           message: message.scheduled_sms.content
         };
-        var pseudoDoc = {
-          _id: message.record.id,
-          contact: message.contact,
-          fields: message.record.fields,
-          locale: message.record.locale
-        };
 
         message.sms = MessageQueueUtils.messages.generate(
           settings,
           translate,
-          pseudoDoc,
+          message.doc,
           content,
           message.scheduled_sms.recipient,
           message.context
@@ -221,8 +213,8 @@ angular.module('services').factory('MessageQueue',
       return messages.map(function(message) {
         return {
           record: {
-            id: message.record.id,
-            reportedDate: message.record.reported_date
+            id: message.doc._id,
+            reportedDate: message.doc.reported_date
           },
           recipient: message.recipient && message.recipient.name || message.sms.to,
           task: getTaskDisplayName(message.task),
@@ -230,7 +222,7 @@ angular.module('services').factory('MessageQueue',
           stateHistory: message.task.state_history,
           content: message.sms.message,
           due: message.due,
-          link: !!message.record.form
+          link: !!message.doc.form
         };
       });
     };
@@ -239,7 +231,8 @@ angular.module('services').factory('MessageQueue',
       var list = {
         limit: limit || 25,
         skip: skip || 0,
-        reduce: false
+        reduce: false,
+        include_docs: true
       };
 
       var count = {
@@ -288,7 +281,15 @@ angular.module('services').factory('MessageQueue',
 
     return {
       loadTranslations: function() {
-        return Languages()
+        return new Promise(function(resolve) {
+          var callback = function() {
+            console.log('translation ready');
+            resolve();
+          };
+
+          $translate.onReady(callback);
+        });
+        /*return Languages()
           .then(function(languages) {
             return languages && $q.all(languages.map(function(language) {
               return language &&
@@ -300,7 +301,7 @@ angular.module('services').factory('MessageQueue',
           .catch(function(err) {
             $log.error('Error fetching languages', err);
             throw(err);
-          });
+          });*/
       },
 
       query: function(tab, skip, limit, descending) {
@@ -314,7 +315,14 @@ angular.module('services').factory('MessageQueue',
           .then(function(results) {
             var settings = results[0];
             var messages = results[1].rows.map(function(row) {
-              return row.value;
+              var extras = {
+                doc: row.doc,
+                context: {
+                  patient_id: row.doc.patient_id || (row.doc.fields && row.doc.fields.patient_id),
+                  patient_uuid: row.doc.patient_uuid || (row.doc.fields && row.doc.fields.patient_uuid)
+                }
+              };
+              return Object.assign(extras, row.value);
             });
 
             return getPatientsAndRegistrations(messages, settings)

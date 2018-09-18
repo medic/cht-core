@@ -92,7 +92,7 @@ describe('MessageQueue service', function() {
       return service.query('tab', 10, 5, false).then(result => {
         chai.expect(result).to.deep.equal({ messages: [], total: 0 });
         chai.expect(query.callCount).to.equal(2);
-        chai.expect(query.args[0]).to.deep.equal(['medic-admin/message_queue', { limit: 5, skip: 10, reduce: false }]);
+        chai.expect(query.args[0]).to.deep.equal(['medic-admin/message_queue', { limit: 5, skip: 10, reduce: false, include_docs: true }]);
         chai.expect(query.args[1]).to.deep.equal(['medic-admin/message_queue', { reduce: true, group_level: 1 }]);
       });
     });
@@ -105,7 +105,8 @@ describe('MessageQueue service', function() {
       return service.query('tab').then(result => {
         chai.expect(result).to.deep.equal({ messages: [], total: 0 });
         chai.expect(query.callCount).to.equal(2);
-        chai.expect(query.args[0]).to.deep.equal(['medic-admin/message_queue', { limit: 25, skip: 0, reduce: false }]);
+        chai.expect(query.args[0])
+          .to.deep.equal(['medic-admin/message_queue', { limit: 25, skip: 0, reduce: false, include_docs: true }]);
         chai.expect(query.args[1]).to.deep.equal(['medic-admin/message_queue', { reduce: true, group_level: 1 }]);
       });
     });
@@ -120,7 +121,14 @@ describe('MessageQueue service', function() {
         chai.expect(query.callCount).to.equal(2);
         chai.expect(query.args[0]).to.deep.equal([
           'medic-admin/message_queue',
-          { limit: 25, skip: 0, reduce: false, start_key: ['scheduled', 0], end_key: ['scheduled', {}] }
+          {
+            limit: 25,
+            skip: 0,
+            reduce: false,
+            include_docs: true,
+            start_key: ['scheduled', 0],
+            end_key: ['scheduled', {}]
+          }
         ]);
         chai.expect(query.args[1]).to.deep.equal([
           'medic-admin/message_queue',
@@ -139,7 +147,14 @@ describe('MessageQueue service', function() {
         chai.expect(query.callCount).to.equal(2);
         chai.expect(query.args[0]).to.deep.equal([
           'medic-admin/message_queue',
-          { limit: 25, skip: 0, reduce: false, start_key: ['due', {}], end_key: ['due', 0], descending: true }
+          {
+            limit: 25,
+            skip: 0,
+            reduce: false,
+            include_docs: true,
+            start_key: ['due', {}],
+            end_key: ['due', 0], descending: true
+          }
         ]);
         chai.expect(query.args[1]).to.deep.equal([
           'medic-admin/message_queue',
@@ -159,7 +174,14 @@ describe('MessageQueue service', function() {
         chai.expect(query.callCount).to.equal(2);
         chai.expect(query.args[0]).to.deep.equal([
           'medic-admin/message_queue',
-          { limit: 25, skip: 0, reduce: false, start_key: ['muted', 150000], end_key: ['muted', {}] }
+          {
+            limit: 25,
+            skip: 0,
+            reduce: false,
+            include_docs: true,
+            start_key: ['muted', 150000],
+            end_key: ['muted', {}]
+          }
         ]);
         chai.expect(query.args[1]).to.deep.equal([
           'medic-admin/message_queue',
@@ -179,7 +201,15 @@ describe('MessageQueue service', function() {
         chai.expect(query.callCount).to.equal(2);
         chai.expect(query.args[0]).to.deep.equal([
           'medic-admin/message_queue',
-          { limit: 25, skip: 0, reduce: false, start_key: ['muted', 150000], end_key: ['muted', 0], descending: true }
+          {
+            limit: 25,
+            skip: 0,
+            reduce: false,
+            include_docs: true,
+            start_key: ['muted', 150000],
+            end_key: ['muted', 0],
+            descending: true
+          }
         ]);
         chai.expect(query.args[1]).to.deep.equal([
           'medic-admin/message_queue',
@@ -191,52 +221,53 @@ describe('MessageQueue service', function() {
     it('should format results', () => {
       var messages = [
         {
-          record: {
-            id: 'report_id1',
+          doc: {
+            _id: 'report_id1',
             reported_date: 100,
             form: 'form_name'
           },
-          sms: {
-            message: 'this is the sms content',
-            to: 'phone1'
-          },
-          task: {
-            translation_key: 'task1',
-            group: 1,
-            state: 'pending',
-            state_history: {
+          value: {
+            sms: {
+              message: 'this is the sms content', to: 'phone1'
+            },
+            task: {
+              translation_key: 'task1',
+              group: 1,
               state: 'pending',
-              timestamp: 200
-            }
-          },
-          due: 300
+              state_history: {
+                state: 'pending', timestamp: 200
+              }
+            }, due: 300
+          }
         },
         {
-          record: {
-            id: 'report_id2',
+          doc: {
+            _id: 'report_id2',
             reported_date: 120,
           },
-          sms: {
-            message: 'second sms content',
-            to: 'phone2'
-          },
-          task: {
-            type: 'task2',
-            group: 2,
-            state: 'delivered',
-            state_history: {
+          value: {
+            sms: {
+              message: 'second sms content',
+              to: 'phone2'
+            },
+            task: {
+              type: 'task2',
+              group: 2,
               state: 'delivered',
-              timestamp: 100
-            }
-          },
-          due: 200
+              state_history: {
+                state: 'delivered',
+                timestamp: 100
+              }
+            },
+            due: 200
+          }
         }
       ];
 
       query.withArgs('medic-admin/message_queue', sinon.match({ reduce: true })).resolves({ rows: [{ value: 2 }] });
       query
         .withArgs('medic-admin/message_queue', sinon.match({ reduce: false }))
-        .resolves({ rows: messages.map(message => ({ value: message })) });
+        .resolves({ rows: messages });
 
       query.withArgs('medic-client/contacts_by_phone').resolves({
         rows: [{ id: 'contact1', value: 'contact1', key: 'phone1' }]
@@ -289,45 +320,61 @@ describe('MessageQueue service', function() {
 
     it('should query for unique recipients', () => {
       const messages = [{
-        record: { id: 'report_id1', reported_date: 100 },
-        sms: { message: 'sms1', to: 'phone1' },
-        task: { translation_key: 'task1', state: 'pending' },
-        due: 300
+        doc: { _id: 'report_id1', reported_date: 100 },
+        value: {
+          sms: { message: 'sms1', to: 'phone1' },
+          task: { translation_key: 'task1', state: 'pending' },
+          due: 300
+        }
       }, {
-        record: { id: 'report_id2', reported_date: 200 },
-        sms: { message: 'sms1', to: 'phone1' },
-        task: { translation_key: 'task2', state: 'pending' },
-        due: 300
+        doc: { _id: 'report_id2', reported_date: 200 },
+        value: {
+          sms: { message: 'sms1', to: 'phone1' },
+          task: { translation_key: 'task2', state: 'pending' },
+          due: 300
+        }
       }, {
-        record: { id: 'report_id2', reported_date: 200 },
-        sms: { message: 'sms2', to: 'phone2' },
-        task: { translation_key: 'task3', state: 'pending' },
-        due: 300
+        doc: { _id: 'report_id2', reported_date: 200 },
+        value: {
+          sms: { message: 'sms2', to: 'phone2' },
+          task: { translation_key: 'task3', state: 'pending' },
+          due: 300
+        }
       }, {
-        record: { id: 'report_id3', reported_date: 200 },
-        sms: { message: 'sms2', to: 'phone2' },
-        task: { translation_key: 'task3', state: 'pending' },
-        due: 300
+        doc: { _id: 'report_id3', reported_date: 200 },
+        value: {
+          sms: { message: 'sms2', to: 'phone2' },
+          task: { translation_key: 'task3', state: 'pending' },
+          due: 300
+        }
       }, {
-        record: { id: 'report_id3', reported_date: 200 },
-        sms: { message: 'sms2', to: 'phone2' },
-        task: { translation_key: 'task3', state: 'pending' },
-        due: 300
+        doc: { _id: 'report_id3', reported_date: 200 },
+        value: {
+          sms: { message: 'sms2', to: 'phone2' },
+          task: { translation_key: 'task3', state: 'pending' },
+          due: 300
+        }
       }, {
-        record: { id: 'report_id4', reported_date: 200 },
-        sms: { message: 'sms2', to: 'phone2' },
-        task: { translation_key: 'task3', state: 'pending' },
-        due: 300
+        doc: { _id: 'report_id4', reported_date: 200 },
+        value: {
+          sms: { message: 'sms2', to: 'phone2' },
+          task: { translation_key: 'task3', state: 'pending' },
+          due: 300
+        }
       }, {
-        record: { id: 'report_id4', reported_date: 200 },
-        sms: { message: 'sms2', to: false },
-        task: { translation_key: 'task3', state: 'pending' },
-        due: 300
+        doc: { _id: 'report_id4', reported_date: 200 },
+        value: {
+          sms: { message: 'sms2', to: false },
+          task: { translation_key: 'task3', state: 'pending' },
+          due: 300
+        }
       }, {
-        record: { id: 'report_id4', reported_date: 200 },
-        sms: { message: 'sms2', to: undefined },
-        task: { translation_key: 'task3', state: 'pending' },
-        due: 300
+        doc: { _id: 'report_id4', reported_date: 200 },
+        value: {
+          sms: { message: 'sms2', to: undefined },
+          task: { translation_key: 'task3', state: 'pending' },
+          due: 300
+        }
       }];
 
       translate.instant.callsFake(t => t);
@@ -335,7 +382,7 @@ describe('MessageQueue service', function() {
       query.withArgs('medic-admin/message_queue', sinon.match({ reduce: true })).resolves({ rows: [{ value: 8 }] });
       query
         .withArgs('medic-admin/message_queue', sinon.match({ reduce: false }))
-        .resolves({ rows: messages.map(message => ({ value: message })) });
+        .resolves({ rows: messages });
 
       query
         .withArgs('medic-client/contacts_by_phone')
@@ -371,50 +418,68 @@ describe('MessageQueue service', function() {
 
     it('should query for unique patient ids and contacts', () => {
       const messages = [{
-        record: { id: 'report_id1', reported_date: 100, patient_id: '1111' },
-        scheduled_sms: { translation_key: 'sms1', recipient: 'recipient' },
-        task: { translation_key: 'task1', state: 'pending' },
-        due: 300
+        doc: { _id: 'report_id1', reported_date: 100, patient_id: '1111' },
+        value: {
+          scheduled_sms: { translation_key: 'sms1', recipient: 'recipient' },
+          task: { translation_key: 'task1', state: 'pending' },
+          due: 300
+        }
       }, {
-        record: { id: 'report_id2', reported_date: 200, patient_id: '1111' },
-        scheduled_sms: { translation_key: 'sms2', recipient: 'recipient' },
-        task: { translation_key: 'task2', state: 'pending' },
-        due: 300
+        doc: { _id: 'report_id2', reported_date: 200, fields: { patient_id: '1111' }},
+        value: {
+          scheduled_sms: { translation_key: 'sms2', recipient: 'recipient' },
+          task: { translation_key: 'task2', state: 'pending' },
+          due: 300
+        }
       }, {
-        record: { id: 'report_id2', reported_date: 200, patient_id: '2222' },
-        scheduled_sms: { translation_key: 'sms3', recipient: 'recipient' },
-        task: { translation_key: 'task3', state: 'pending' },
-        due: 300
+        doc: { _id: 'report_id2', reported_date: 200, fields: { patient_id: '2222' } },
+        value: {
+          scheduled_sms: { translation_key: 'sms3', recipient: 'recipient' },
+          task: { translation_key: 'task3', state: 'pending' },
+          due: 300
+        }
       }, {
-        record: { id: 'report_id3', reported_date: 200, patient_id: '1111' },
-        scheduled_sms: { translation_key: 'sms4', recipient: 'recipient' },
-        task: { translation_key: 'task3', state: 'pending' },
-        due: 300
+        doc: { _id: 'report_id3', reported_date: 200, patient_id: '1111' },
+        value: {
+          scheduled_sms: { translation_key: 'sms4', recipient: 'recipient' },
+          task: { translation_key: 'task3', state: 'pending' },
+          due: 300
+        }
       }, {
-        record: { id: 'report_id3', reported_date: 200, patient_id: '2222' },
-        scheduled_sms: { translation_key: 'sms5', recipient: 'recipient' },
-        task: { translation_key: 'task3', state: 'pending' },
-        due: 300
+        doc: { _id: 'report_id3', reported_date: 200, patient_id: '2222' },
+        value: {
+          scheduled_sms: { translation_key: 'sms5', recipient: 'recipient' },
+          task: { translation_key: 'task3', state: 'pending' },
+          due: 300
+        }
       }, {
-        record: { id: 'report_id4', reported_date: 200, patient_uuid: 'patient1' },
-        scheduled_sms: { translation_key: 'sms6', recipient: 'recipient' },
-        task: { translation_key: 'task3', state: 'pending' },
-        due: 300
+        doc: { _id: 'report_id4', reported_date: 200, patient_uuid: 'patient1' },
+        value: {
+          scheduled_sms: { translation_key: 'sms6', recipient: 'recipient' },
+          task: { translation_key: 'task3', state: 'pending' },
+          due: 300
+        }
       }, {
-        record: { id: 'report_id4', reported_date: 200, patient_uuid: 'patient1', contact: { _id: 'patient2' } },
-        scheduled_sms: { translation_key: 'sms7', recipient: 'recipient' },
-        task: { translation_key: 'task3', state: 'pending' },
-        due: 300
+        doc: { _id: 'report_id4', reported_date: 200, fields: { patient_uuid: 'patient1' }, contact: { _id: 'patient2' } },
+        value: {
+          scheduled_sms: { translation_key: 'sms7', recipient: 'recipient' },
+          task: { translation_key: 'task3', state: 'pending' },
+          due: 300
+        }
       }, {
-        record: { id: 'report_id4', reported_date: 200, contact: { _id: 'patient1' } },
-        scheduled_sms: { translation_key: 'sms8', recipient: 'recipient' },
-        task: { translation_key: 'task3', state: 'pending' },
-        due: 300
+        doc: { _id: 'report_id4', reported_date: 200, contact: { _id: 'patient1' } },
+        value: {
+          scheduled_sms: { translation_key: 'sms8', recipient: 'recipient' },
+          task: { translation_key: 'task3', state: 'pending' },
+          due: 300
+        }
       }, {
-        record: { id: 'report_id4', reported_date: 200, contact: { _id: 'patient3' }, patient_id: '3333' },
-        scheduled_sms: { translation_key: 'sms9', recipient: 'recipient' },
-        task: { translation_key: 'task3', state: 'pending' },
-        due: 300
+        doc: { _id: 'report_id4', reported_date: 200, contact: { _id: 'patient3' }, patient_id: '3333' },
+        value: {
+          scheduled_sms: { translation_key: 'sms9', recipient: 'recipient' },
+          task: { translation_key: 'task3', state: 'pending' },
+          due: 300
+        }
       }];
 
       translate.instant.callsFake(t => t);
@@ -423,7 +488,7 @@ describe('MessageQueue service', function() {
         .withArgs('medic-admin/message_queue', sinon.match({ reduce: true }))
         .resolves({ rows: [{ value: 22 }] })
         .withArgs('medic-admin/message_queue', sinon.match({ reduce: false }))
-        .resolves({ rows: messages.map(message => ({ value: message })) });
+        .resolves({ rows: messages });
 
       query
         .withArgs('medic-client/contacts_by_reference')
@@ -477,40 +542,40 @@ describe('MessageQueue service', function() {
 
     it('filters correct registrations and calls messageUtils with correct parameters', () => {
       const messages = [{
-        record: {
-          id: 'report_id1',
+        doc: {
+          _id: 'report_id1',
           reported_date: 100,
           patient_id: '1111',
-          contact: { _id: 'contact1' },
-          fields: { example: 'field' },
-          locale: 'fr'
+          contact: { _id: 'contact1' }
         },
-        scheduled_sms: { translation_key: 'sms1', recipient: 'recipient1', content: 'sms1_content' },
-        task: { translation_key: 'task1', state: 'pending' },
-        due: 300
+        value: {
+          scheduled_sms: { translation_key: 'sms1', recipient: 'recipient1', content: 'sms1_content' },
+          task: { translation_key: 'task1', state: 'pending' },
+          due: 300
+        }
       }, {
-        record: {
-          id: 'report_id2',
+        doc: {
+          _id: 'report_id2',
           reported_date: 200,
-          patient_id: '2222',
-          contact: { _id: 'contact2' },
-          fields: undefined,
-          locale: null
+          fields: { patient_id: '2222' },
+          contact: { _id: 'contact2' }
         },
-        scheduled_sms: { translation_key: 'sms2', recipient: 'recipient2' },
-        task: { translation_key: 'task2', state: 'pending' },
-        due: 300
+        value: {
+          scheduled_sms: { translation_key: 'sms2', recipient: 'recipient2' },
+          task: { translation_key: 'task2', state: 'pending' },
+          due: 300
+        }
       }, {
-        record: {
-          id: 'report_id3',
+        doc: {
+          _id: 'report_id3',
           reported_date: 200,
-          patient_id: '3333',
-          fields: { example: 'field2' },
-          locale: 'en'
+          patient_id: '3333'
         },
-        scheduled_sms: { translation_key: 'sms3', recipient: 'recipient3' },
-        task: { translation_key: 'task3', state: 'pending' },
-        due: 300
+        value: {
+          scheduled_sms: { translation_key: 'sms3', recipient: 'recipient3' },
+          task: { translation_key: 'task3', state: 'pending' },
+          due: 300
+        }
       }];
 
       translate.instant.callsFake(t => t);
@@ -519,7 +584,7 @@ describe('MessageQueue service', function() {
         .withArgs('medic-admin/message_queue', sinon.match({ reduce: true }))
         .resolves({ rows: [{ value: 22 }] })
         .withArgs('medic-admin/message_queue', sinon.match({ reduce: false }))
-        .resolves({ rows: messages.map(message => ({ value: message })) });
+        .resolves({ rows: messages });
 
       query
         .withArgs('medic-client/contacts_by_reference')
@@ -572,9 +637,9 @@ describe('MessageQueue service', function() {
         chai.expect(utils.messages.generate.args[0].slice(2)).to.deep.equal([
           {
             _id: 'report_id1',
+            reported_date: 100,
+            patient_id: '1111',
             contact: { _id: 'contact1', patient_id: 'c1', name: 'contact one' },
-            fields: { example: 'field' },
-            locale: 'fr'
           },
           {
             translationKey: 'sms1',
@@ -595,9 +660,9 @@ describe('MessageQueue service', function() {
         chai.expect(utils.messages.generate.args[1].slice(2)).to.deep.equal([
           {
             _id: 'report_id2',
+            reported_date: 200,
+            fields: { patient_id: '2222' },
             contact: { _id: 'contact2', patient_id: 'c2', name: 'contact two' },
-            fields: undefined,
-            locale: null
           },
           {
             translationKey: 'sms2',
@@ -614,9 +679,8 @@ describe('MessageQueue service', function() {
         chai.expect(utils.messages.generate.args[2].slice(2)).to.deep.equal([
           {
             _id: 'report_id3',
-            contact: undefined,
-            fields: { example: 'field2' },
-            locale: 'en'
+            reported_date: 200,
+            patient_id: '3333'
           },
           {
             translationKey: 'sms3',

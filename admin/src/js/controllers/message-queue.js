@@ -6,6 +6,7 @@ angular.module('controllers').controller('MessageQueueCtrl',
     $q,
     $scope,
     $state,
+    Location,
     MessageQueue,
     Settings
   ) {
@@ -15,7 +16,8 @@ angular.module('controllers').controller('MessageQueueCtrl',
 
     var delayInterval = 5 * 60 * 1000, // 5 minutes
         tab = $state.current.data.tab,
-        descending = $state.current.data.descending;
+        descending = $state.current.data.descending,
+        transitionalStates = [ 'pending', 'forwarded-to-gateway', 'forwarded-by-gateway', 'received', 'sent' ];
 
     var normalizePage = function(page) {
       page = parseInt(page);
@@ -32,11 +34,11 @@ angular.module('controllers').controller('MessageQueueCtrl',
     };
     $scope.displayLastUpdated = tab !== 'scheduled';
     $scope.loading = true;
+    $scope.basePath = Location.path;
 
     var formatMessages = function(messages) {
       if (tab === 'due') {
-        var transitionalStates = [ 'pending', 'forwarded-to-gateway', 'forwarded-by-gateway', 'received', 'sent' ],
-            now = moment();
+        var now = moment();
         messages.forEach(function (message) {
           if (transitionalStates.indexOf(message.state) !== -1 && message.stateHistory) {
             message.delayed = now.diff(message.stateHistory.timestamp) > delayInterval;
