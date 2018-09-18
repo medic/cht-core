@@ -1,7 +1,7 @@
 const helper = require('../../helper');
 
-const incorrectCredentialsText = 'Incorrect user name or password. Please try again.';
-const passwordBlankText = 'Can\'t be blank.';
+const incorrectCredentialsText =
+  'Incorrect user name or password. Please try again.';
 const getUsernameField = () => {
   return element(by.id('user'));
 };
@@ -25,5 +25,5 @@ module.exports = {
     if (shouldFail) {
       expect(helper.isTextDisplayed(incorrectCredentialsText));
     }
-  }
+  },
 };
