@@ -281,15 +281,7 @@ angular.module('services').factory('MessageQueue',
 
     return {
       loadTranslations: function() {
-        return new Promise(function(resolve) {
-          var callback = function() {
-            console.log('translation ready');
-            resolve();
-          };
-
-          $translate.onReady(callback);
-        });
-        /*return Languages()
+        return Languages()
           .then(function(languages) {
             return languages && $q.all(languages.map(function(language) {
               return language &&
@@ -301,7 +293,7 @@ angular.module('services').factory('MessageQueue',
           .catch(function(err) {
             $log.error('Error fetching languages', err);
             throw(err);
-          });*/
+          });
       },
 
       query: function(tab, skip, limit, descending) {
