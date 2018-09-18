@@ -136,6 +136,7 @@ var feedback = require('../modules/feedback'),
       $scope.actionBar = {};
       $scope.tours = [];
       $scope.baseUrl = Location.path;
+      $scope.adminUrl = Location.adminPath;
       $scope.enketoStatus = { saving: false };
       $scope.isAdmin = Session.isAdmin();
 
