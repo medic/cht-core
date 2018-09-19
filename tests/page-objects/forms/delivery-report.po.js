@@ -1089,6 +1089,18 @@ module.exports = {
     return element(by.css('span[data-itext-id=/delivery/inputs:label]'));
   },
 
+  selectForm: () => {
+    const addButton = element(by.css('.action-container .general-actions:not(.ng-hide) .fa-plus'));
+    browser.wait(() => {
+      return addButton.isPresent();
+    }, 10000);
+    helper.clickElement(addButton);
+    element(by.css('.action-container .general-actions .dropup.open .dropdown-menu li:first-child a')).click();
+    browser.wait(() => {
+      return element(by.css('#report-form')).isPresent();
+    }, 10000);
+  },
+
   selectPatientName: (name) => {
     helper.waitElementToBeClickable(element(by.css('button.btn.btn-primary.next-page')));
     element(by.css('.selection')).click();

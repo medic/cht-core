@@ -1,11 +1,9 @@
 const utils = require('../utils'),
+      helper = require('../helper'),
       moment = require('moment'),
       commonElements = require('../page-objects/common/common.po.js');
 
 describe('Filters reports', () => {
-
-  'use strict';
-
   const reports = [
     // one registration half an hour before the start date
     {
@@ -102,10 +100,7 @@ describe('Filters reports', () => {
 
   it('by date', () => {
     commonElements.goToReports();
-
-    browser.wait(() => {
-      return element(by.css('#reports-list .unfiltered li:first-child')).isPresent();
-    }, 10000);
+    helper.waitElementToPresent(element(by.css('#reports-list .unfiltered li:first-child')));
 
     let clear = '';
     for (let i = 0; i < 20; i++) {
@@ -117,13 +112,8 @@ describe('Filters reports', () => {
     element(by.css('.daterangepicker [name="daterangepicker_end"]')).click().sendKeys(clear + '05/17/2016' + protractor.Key.ENTER);
     element(by.css('#freetext')).click(); // blur the datepicker
 
-    browser.wait(() => {
-      return element(by.css('#reports-list .loader')).isPresent();
-    }, 10000);
-
-    browser.wait(() => {
-      return element(by.css('#reports-list .filtered li:first-child')).isPresent();
-    }, 10000);
+    helper.waitElementToPresent(element(by.css('#reports-list .loader')));
+    helper.waitElementToPresent(element(by.css('#reports-list .filtered li:first-child')));
 
     expect(element.all(by.css('#reports-list .filtered li')).count()).toBe(2);
     expect(element.all(by.css('#reports-list .filtered li[data-record-id="' + savedUuids[1] + '"]')).count()).toBe(1);

@@ -1,7 +1,6 @@
-const helper = require('../../helper'),
-      utils = require('../../utils.js'),
-      auth = require('../../auth')(),
-      loginPage = require('../../page-objects/login/login.po.js');
+const auth = require('../../auth')(),
+  commonElements = require('../../page-objects/common/common.po.js'),
+  loginPage = require('../../page-objects/login/login.po.js');
 
 describe('Login tests : ', () => {
   const wrongUsername = 'fakeuser',
@@ -12,10 +11,8 @@ describe('Login tests : ', () => {
   });
 
   it('should try to sign in and verify that credentials were incorrect', () => {
-    browser.manage().deleteAllCookies();
-    browser.driver.get(utils.getLoginUrl());
-    loginPage.login(wrongUsername, wrongPassword);
-    expect(helper.isTextDisplayed(loginPage.getIncorrectCredentialsText()));
+    commonElements.goToLoginPage();
+    loginPage.login(wrongUsername, wrongPassword, true);
     loginPage.login(auth.user, auth.pass);
   });
 });

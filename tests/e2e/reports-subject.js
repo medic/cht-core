@@ -4,9 +4,6 @@ const utils = require('../utils'),
       moment = require('moment');
 
 describe('Reports Summary', () => {
-
-  'use strict';
-
   const PHONE = '+64271234567';
 
   // contacts
@@ -238,14 +235,10 @@ describe('Reports Summary', () => {
   };
 
   const loadReport = () => {
-    commonElements.goToReports();
-    browser.refresh();
-
-    helper.waitElementToBeClickable(element(by.css('.action-container .general-actions:not(.ng-hide) .fa-plus')));
+    commonElements.goToReports(true);
     helper.waitElementToBeClickable(element(by.css('#reports-list .unfiltered li .summary')));
-
     helper.clickElement(element(by.css('#reports-list .unfiltered li .summary')));
-    browser.wait(() => element(by.css('#reports-content .item-summary')).isPresent(), 3000);
+    helper.waitElementToPresent(element(by.css('#reports-content .item-summary')), 3000);
     return Promise.resolve();
   };
 
@@ -373,7 +366,6 @@ describe('Reports Summary', () => {
           testSummaryLineage(['TAG Place', 'Health Center', 'District']);
           expect(getElementText('#reports-content .item-summary .sender .name')).toMatch(`${CAROL.name}`);
           expect(getElementText('#reports-content .item-summary .sender .phone')).toBe(CAROL.phone);
-
         });
     });
 

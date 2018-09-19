@@ -123,9 +123,6 @@ const report = {
 };
 
 describe('sms-gateway api', () => {
-
-  'use strict';
-
   const pollSmsApi = body => {
     const content = JSON.stringify(body);
     return utils.request({
@@ -159,9 +156,7 @@ describe('sms-gateway api', () => {
       helper.clickElement(element(by.id('messages-tab')));
 
       // LHS
-      browser.wait(() => {
-        return element(by.css('#message-list li:first-child')).isPresent();
-      }, 10000);
+      helper.waitElementToPresent(element(by.css('#message-list li:first-child')));
       browser.sleep(1000); // without this the elements are found to be detached...
       helper.waitElementToBeVisible(element(by.css('#message-list li:first-child')));
       expect(helper.getTextFromElement(element(by.css('#message-list li:first-child .heading h4')))).toBe('+64271234567');
@@ -170,9 +165,7 @@ describe('sms-gateway api', () => {
       // RHS
       helper.clickElement(element(by.css('#message-list li:first-child .summary')));
       helper.waitElementToBeVisible(element(by.css('#message-content li.incoming:first-child .data p:first-child')));
-      browser.wait(() => {
-        return element(by.css('#message-content li.incoming:first-child .data p:first-child')).isPresent();
-      }, 10000);
+      helper.waitElementToPresent(element(by.css('#message-content li.incoming:first-child .data p:first-child')));
       browser.sleep(1000); // without this the elements are found to be detached....
       const messageHeader = helper.getTextFromElement(element(by.css('#message-header .name')));
       const messageText = helper.getTextFromElement(element(by.css('#message-content li.incoming:first-child .data p:first-child')));
@@ -210,15 +203,10 @@ describe('sms-gateway api', () => {
 
     it('- shows content', () => {
       commonElements.goToReports();
-      browser.wait(() => {
-        return element(by.css('#reports-list li:first-child')).isPresent();
-      }, 10000);
+      helper.waitElementToPresent(element(by.css('#reports-list li:first-child')));
       helper.waitElementToBeVisible(element(by.css('#reports-list li:first-child')));
       helper.clickElement(element(by.css('#reports-list li:first-child .heading')));
-      browser.wait(() => {
-        return element(by.css('#reports-content .body .item-summary .icon')).isPresent();
-      }, 10000);
-
+      helper.waitElementToPresent(element(by.css('#reports-content .body .item-summary .icon')));
       browser.sleep(100); // without this the elements are found to be detached...
 
       // tasks
@@ -299,9 +287,7 @@ describe('sms-gateway api', () => {
       helper.waitElementToBeVisible(element(by.css('#reports-list li:first-child')));
 
       helper.clickElement(element(by.css('#reports-list li:first-child .heading')));
-      browser.wait(() => {
-        return element(by.css('#reports-content .body .item-summary .icon')).isPresent();
-      }, 10000);
+      helper.waitElementToPresent(element(by.css('#reports-content .body .item-summary .icon')));
 
       browser.sleep(100); // without this the elements are found to be detached...
       // tasks

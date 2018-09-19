@@ -2,9 +2,6 @@ const utils = require('../utils'),
       helper = require('../helper');
 
 describe('Contact summary info', () => {
-
-  'use strict';
-
   const SCRIPT = `
     let cards = [];
     let context = {};
@@ -135,13 +132,9 @@ describe('Contact summary info', () => {
     helper.waitElementToBeVisible(element(by.id('freetext')));
     element(by.id('freetext')).sendKeys(term);
     helper.clickElement(element(by.id('search')));
-    browser.wait(() => {
-      return element(by.css('#contacts-list .filtered .content')).isPresent();
-    }, 10000);
+    helper.waitElementToPresent(element(by.css('#contacts-list .filtered .content')));
     helper.clickElement(element(by.css('#contacts-list .filtered .content')));
-    browser.wait(() => {
-      return element(by.css('#contacts-list')).isPresent();
-    }, 10000);
+    helper.waitElementToPresent(element(by.css('#contacts-list')));
   };
 
   it('contact summary', () => { //disabled.
@@ -156,9 +149,7 @@ describe('Contact summary info', () => {
       selectContact('carol');
     }
     // assert the summary card has the right fields
-    browser.wait(() => {
-      return element(by.css('.content-pane .meta > .card .col-sm-3:nth-child(1) label')).isPresent();
-    }, 10000);
+    helper.waitElementToPresent(element(by.css('.content-pane .meta > .card .col-sm-3:nth-child(1) label')));
     expect(helper.getTextFromElement(element(by.css('.content-pane .meta > .card .col-sm-3:nth-child(1) label')))).toBe('test.pid');
     expect(helper.getTextFromElement(element(by.css('.content-pane .meta > .card .col-sm-3:nth-child(1) p')))).toBe(CAROL.patient_id);
     expect(helper.getTextFromElement(element(by.css('.content-pane .meta > .card .col-sm-3:nth-child(2) label')))).toBe('test.sex');
