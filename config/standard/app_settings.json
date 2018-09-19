@@ -405,7 +405,7 @@
           "name": "on_create",
           "trigger": "add_birth_date",
           "params": "days_since_birth",
-          "bool_expr": "doc.fields.days_since_birth"
+          "bool_expr": "doc.fields.days_since_birth || doc.fields.days_since_birth === 0"
         },
         {
           "name": "on_create",
@@ -417,7 +417,7 @@
           "name": "on_create",
           "trigger": "assign_schedule",
           "params": "Child Health",
-          "bool_expr": "doc.fields.days_since_birth"
+          "bool_expr": "doc.fields.days_since_birth || doc.fields.days_since_birth === 0"
         }
       ],
       "validations": {},
@@ -529,7 +529,7 @@
           "name": "on_create",
           "trigger": "add_birth_date",
           "params": "days_since_birth",
-          "bool_expr": "doc.fields.days_since_birth"
+          "bool_expr": "doc.fields.days_since_birth || doc.fields.days_since_birth === 0"
         },
         {
           "name": "on_create",
