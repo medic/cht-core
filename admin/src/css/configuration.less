@@ -92,3 +92,82 @@ dl.horizontal {
     font-size: 100%;
   }
 }
+
+.flex-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  cursor: default;
+
+  .col {
+    padding: 0 15px;
+    cursor: default;
+    &.col-fixed {
+      flex: 0 0 160px;
+    }
+    &.col-grow {
+      flex: 1 0 400px;
+    }
+  }
+}
+
+.message-queue {
+  .message-state {
+    display: flex;
+
+    &:before {
+      font-family: 'FontAwesome';
+      font-size: 16px;
+      margin-right: 10px;
+      display: block;
+    }
+    &.scheduled:before {
+      content: @scheduled-state-icon;
+    }
+    &.muted:before {
+      content: @muted-state-icon;
+    }
+    &.cleared:before {
+      content: @cleared-state-icon;
+    }
+    &.pending:before {
+      content: @pending-state-icon;
+    }
+    &.forwarded-to-gateway:before {
+      content: @forwarded-to-gateway-state-icon;
+    }
+    &.received-by-gateway:before {
+      content: @received-by-gateway-state-icon;
+    }
+    &.forwarded-by-gateway:before {
+      content: @forwarded-by-gateway-state-icon;
+    }
+    &.sent:before {
+      content: @sent-state-icon;
+    }
+    &.delivered:before {
+      content: @delivered-state-icon;
+    }
+    &.denied:before {
+      content: @denied-state-icon;
+    }
+    &.failed {
+      color: @error-color;
+      font-weight: bold;
+      &:before {
+        content: @failed-state-icon;
+      }
+    }
+
+    &.delayed {
+      color: @primary-color;
+      font-weight: bold;
+    }
+  }
+
+  .pagination {
+    .fa {
+      line-height: inherit;
+    }
+  }
+}

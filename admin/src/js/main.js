@@ -31,6 +31,7 @@ require('./controllers/forms-json');
 require('./controllers/forms-xml');
 require('./controllers/icons');
 require('./controllers/import-translation');
+require('./controllers/message-queue');
 require('./controllers/message-test');
 require('./controllers/settings-advanced');
 require('./controllers/settings-backup');
@@ -45,6 +46,8 @@ require('./controllers/users');
 
 angular.module('directives', ['ngSanitize']);
 require('./directives/modal');
+require('./directives/pagination');
+require('./directives/relative-date');
 require('./directives/release');
 
 angular.module('filters', ['ngSanitize']);
@@ -58,6 +61,7 @@ require('./services/clean-etag');
 require('./services/create-user');
 require('./services/delete-user');
 require('./services/import-contacts');
+require('./services/message-queue');
 require('./services/properties');
 require('./services/version');
 
@@ -92,6 +96,7 @@ require('../../../webapp/src/js/services/session');
 require('../../../webapp/src/js/services/translate');
 require('../../../webapp/src/js/services/translate-from');
 require('../../../webapp/src/js/services/translation-loader');
+require('../../../webapp/src/js/services/translation-null-interpolation');
 require('../../../webapp/src/js/services/update-settings');
 require('../../../webapp/src/js/services/update-user');
 require('../../../webapp/src/js/services/user');
@@ -137,6 +142,7 @@ app.config(function(
   $translateProvider.useLoader('TranslationLoader', {});
   $translateProvider.useSanitizeValueStrategy('escape');
   $translateProvider.addInterpolation('$translateMessageFormatInterpolation');
+  $translateProvider.addInterpolation('TranslationNullInterpolation');
 
   $stateProvider
     .state('settings', {
@@ -314,6 +320,60 @@ app.config(function(
       url: '/message-test',
       controller: 'MessageTestCtrl',
       templateUrl: 'templates/message_test.html'
+    })
+    .state('message-queue', {
+      url: '/message-queue',
+      templateUrl: 'templates/message_queue.html',
+    })
+    .state('message-queue.scheduled', {
+      url: '/scheduled?page',
+      data: {
+        tab: 'scheduled'
+      },
+      views: {
+        tab: {
+          controller: 'MessageQueueCtrl',
+          templateUrl: 'templates/message_queue_tab.html'
+        }
+      }
+    })
+    .state('message-queue.due', {
+      url: '/due?page',
+      data: {
+        tab: 'due'
+      },
+      views: {
+        tab: {
+          controller: 'MessageQueueCtrl',
+          templateUrl: 'templates/message_queue_tab.html'
+        }
+      }
+    })
+    .state('message-queue.muted-future', {
+      url: '/will-not-send?page',
+      data: {
+        tab: 'muted',
+        descending: false
+      },
+      views: {
+        tab: {
+          controller: 'MessageQueueCtrl',
+          templateUrl: 'templates/message_queue_tab.html'
+        }
+      }
+    })
+    .state('message-queue.muted-past', {
+      url: '/did-not-send?page',
+      data: {
+        tab: 'muted',
+        descending: true
+      },
+      views: {
+        tab: {
+          controller: 'MessageQueueCtrl',
+          templateUrl: 'templates/message_queue_tab.html'
+        }
+      }
     });
 });
 

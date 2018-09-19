@@ -16,6 +16,12 @@ module.exports = function(config) {
         flags: ['--headless', '--disable-gpu', '--remote-debugging-port=9222']
       }
     },
+    preprocessors: {
+      'src/**/*.html': ['ng-html2js']
+    },
+    ngHtml2JsPreprocessor: {
+      moduleName: 'templates'
+    },
     files: [
       // used to query html
       'node_modules/jquery/dist/jquery.js',
@@ -26,6 +32,7 @@ module.exports = function(config) {
 
       // application code
       '../build/ddocs/medic-admin/_attachments/main.js',
+      '../build/ddocs/medic-admin/_attachments/templates.js',
 
       // test-specific code
       '../node_modules/chai/chai.js',
@@ -34,7 +41,10 @@ module.exports = function(config) {
       'tests/utils.js',
 
       // test files
-      'tests/unit/**/*.js'
+      'tests/unit/**/*.js',
+
+      // templates
+      'src/**/*.html'
     ]
   });
 

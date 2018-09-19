@@ -1,0 +1,48 @@
+<p ng-show="error" class="alert alert-danger" role="alert" translate>admin.message.queue.error</p>
+
+<div class="row flex-row selection-heading">
+  <div class="col col-fixed" translate>admin.message.queue.recipient</div>
+  <div class="col col-fixed" translate>admin.message.queue.created</div>
+  <div class="col col-grow" translate>admin.message.queue.message</div>
+  <div class="col col-fixed" translate>admin.message.queue.status</div>
+  <div class="col col-fixed" translate>admin.message.queue.due</div>
+  <div ng-if="displayLastUpdated" class="col col-fixed" translate>admin.message.queue.updated</div>
+</div>
+
+<div class="loader" ng-show="loading"></div>
+
+<div class="row flex-row selection" ng-repeat="message in messages">
+
+  <div class="col col-fixed">{{message.recipient}}</div>
+
+  <div class="col col-fixed">
+    <relative-date date="message.record.reportedDate" date-format="dateFormat"></relative-date>
+    <div ng-if="message.link">
+      <a ng-href="{{basePath}}/#/reports/{{message.record.id}}" target="_blank" translate>
+        admin.message.queue.view.report
+      </a>
+    </div>
+  </div>
+
+  <div class="col col-grow">
+    <p ng-if="message.task"><strong>{{message.task}}</strong></p>
+    <span>{{message.content}}</span>
+  </div>
+
+  <div class="col col-fixed">
+    <span class="message-state {{message.state}}" ng-class="{ delayed: message.delayed }" translate>
+      {{'state.' + message.state}}
+    </span>
+  </div>
+
+  <div class="col col-fixed">
+    <relative-date date="message.due" date-format="dateFormat"></relative-date>
+  </div>
+
+  <div ng-if="displayLastUpdated" class="col col-fixed">
+    <relative-date date="message.stateHistory.timestamp" date-format="dateFormat"></relative-date>
+  </div>
+
+</div>
+
+<mm-pagination></mm-pagination>

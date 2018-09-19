@@ -1,0 +1,37 @@
+<div class="row flex-row" ng-if="pagination.pages">
+  <div class="col col-grow">
+    <ul class="pagination">
+      <li ng-show="pagination.detail.displayFirstLastLinks" ng-class="{ disabled: pagination.page === 1 }">
+        <a ng-click="loadPage(1)" translate translate-attr-title="admin.pagination.first">
+          <span><i class="fa fa-angle-double-left"></i></span>
+        </a>
+      </li>
+      <li ng-class="{ disabled: pagination.page <= 1 }">
+        <a ng-click="loadPage(pagination.page - 1)" translate translate-attr-title="admin.pagination.prev">
+          <span><i class="fa fa-angle-left"></i></span>
+        </a>
+      </li>
+
+      <li ng-repeat="p in pagination.pageLinks" ng-class="{ active: p === pagination.page }">
+        <a ng-click="loadPage(p)">
+          <span>{{p}}</span>
+        </a>
+      </li>
+      <li ng-class="{ disabled: pagination.page >= pagination.pages }">
+        <a ng-click="loadPage(pagination.page + 1)" translate translate-attr-title="admin.pagination.next">
+          <span><i class="fa fa-angle-right"></i></span>
+        </a>
+      </li>
+      <li ng-show="pagination.detail.displayFirstLastLinks" ng-class="{ disabled: pagination.page === pagination.pages }">
+        <a ng-click="loadPage(pagination.pages)" translate translate-attr-title="admin.pagination.last">
+          <span><i class="fa fa-angle-double-right"></i></span>
+        </a>
+      </li>
+    </ul>
+  </div>
+  <div class="col">
+    <span translate translate-values="{ total: pagination.total, first: pagination.detail.firstItem, last: pagination.detail.lastItem }">
+      admin.pagination.detail
+    </span>
+  </div>
+</div>
