@@ -13,6 +13,28 @@ const messageStatus = (from, msg) => {
   return status;
 };
 
+const sanitize = x => x && x.toLowerCase().trim();
+
+const isDeniedByList = (from, denyList) => {
+  return denyList && 
+    denyList
+      .split(',')
+      .some(listItem => {
+        const sanitizedItem = sanitize(listItem);
+        return sanitizedItem && sanitize(from).startsWith(sanitizedItem);
+      });
+};
+
+const isDeniedByShortcodes = (from, denyIfShorterThan) => {
+  const allowableLength = parseInt(denyIfShorterThan);
+  return allowableLength > 0 && 
+    sanitize(from).length < allowableLength;
+};
+
+const isDeniedByAlphas = (from, denyWithAlphas) => {
+  return denyWithAlphas === true && from.match(/[a-z]/i);
+};
+
 module.exports = {
     addMessage: (doc, messageConfig, recipient = 'clinic', context = {}) => {
         doc.tasks = doc.tasks || [];
@@ -70,12 +92,16 @@ module.exports = {
         return (message.content && message.content.trim()) || '';
     },
     /*
-     * Return false when the recipient phone matches the denied list.
+     * Return true when the recipient phone is not denied.
      *
-     * outgoing_deny_list is a comma separated list of strings. If a string in
-     * that list matches the beginning of the phone then we set up a response
-     * with a denied state. The pending message process will ignore these
-     * messages and those reports will be left without an auto-reply. The
+     * Deny if any
+     * - recipient phone number matches gateway number
+     * - outgoing_deny_list is a comma delimited list, deny when beginning of the recipient phone number matches any entry
+     * - outgoing_deny_shorter_than is an integer, deny when the recipient phone number is shorter than
+     * - outgoing_deny_with_alphas is a boolean, deny when true and the recipient phone number contains letters
+     * 
+     * When denied, set up a response with a denied state. The pending message process will 
+     * ignore these messages and those reports will be left without an auto-reply. The
      * denied messages still show up in the messages export.
      *
      * @param {String} from - Recipient phone number
@@ -85,21 +111,15 @@ module.exports = {
       if (!from) {
         return true;
       }
+
       if (module.exports.isMessageFromGateway(from)) {
         return false;
       }
-      const conf = config.get('outgoing_deny_list');
-      if (!conf) {
-        return true;
-      }
-      return _.every(conf.split(','), s => {
-        // ignore falsey inputs
-        if (!s) {
-          return true;
-        }
-        // return false if we get a case insensitive starts with match
-        return from.toLowerCase().indexOf(s.trim().toLowerCase()) !== 0;
-      });
+
+      const { outgoing_deny_list, outgoing_deny_shorter_than, outgoing_deny_with_alphas } = config.getAll();
+      return !isDeniedByShortcodes(from, outgoing_deny_shorter_than) &&
+        !isDeniedByAlphas(from, outgoing_deny_with_alphas) &&
+        !isDeniedByList(from, outgoing_deny_list);
     },
     addErrors: function(config, doc, errors, context) {
         errors.forEach(error => module.exports.addError(doc, error, context));

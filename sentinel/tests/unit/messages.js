@@ -252,39 +252,97 @@ describe('messages', () => {
   });
 
 
-  it('describe isOutgoingAllowed', () => {
-      /*
-       * Support comma separated string config to match an outgoing phone number
-       * or MNO (mobile network operator) defined string.
-       */
+
+  describe('isOutgoingAllowed', () => {
+    const isOutgoingAllowedTests = (tests, configKey) => {
+      tests.forEach(test => {
+        const [ configValue, phoneNumber, expectedResult ] = test;
+        const mockConfig = {};
+        mockConfig[configKey] = configValue;
+
+        const stub = sinon.stub(config, 'getAll').returns(mockConfig);
+        assert.equal(messages.isOutgoingAllowed(phoneNumber), expectedResult);
+        stub.restore();
+      });
+    };
+
+    it('outgoing_deny_list', () => {
+        /*
+        * Support comma separated string config to match an outgoing phone number
+        * or MNO (mobile network operator) defined string.
+        */
+        var tests = [
+          // denied
+          ['+123', '+123', false],
+          ['+123', '+123999999', false],
+          ['SAFARI', 'SAFARICOM', false],
+          [' SAFARI', 'SAFARICOM', false],
+          ['SAFARI', ' SAFARICOM', false],
+          ['Safari', 'SAFARICOM', false],
+          ['+123,+456,+789', '+456', false],
+          ['+123,+456,+789', '+4569999999', false],
+          ['SAFARI, ORANGE', 'ORANGE NET', false],
+          ['0', '0000123', false],
+          ['0', '0', false],
+          ['1, , 2', '234', false],
+          // allowed
+          ['+123', '+999', true],
+          ['SAFARI, ORANGE NET', 'ORANGE', true],
+          ['VIVO', 'EM VIVO', true],
+          ['0', '-1', true],
+          // allow falsey inputs
+          ['snarf', undefined, true],
+          ['snarf', null, true],
+          ['', '+123', true],
+          ['', '', true],
+          [',', '', true],
+          [undefined, '', true],
+          [null, '', true],
+        ];
+
+        isOutgoingAllowedTests(tests, 'outgoing_deny_list');
+    });
+
+    it('outgoing_deny_with_alphas', () => {
       var tests = [
         // denied
-        ['+123', '+123', false],
-        ['+123', '+123999999', false],
-        ['SAFARI', 'SAFARICOM', false],
-        ['Safari', 'SAFARICOM', false],
-        ['+123,+456,+789', '+456', false],
-        ['+123,+456,+789', '+4569999999', false],
-        ['SAFARI, ORANGE', 'ORANGE NET', false],
-        ['0', '0000123', false],
-        ['0', '0', false],
+        [true, 'ORANGE', false],
+        [true, 'orange', false],
+        [true, '+23x', false],
         // allowed
-        ['+123', '+999', true],
-        ['SAFARI, ORANGE NET', 'ORANGE', true],
-        ['VIVO', 'EM VIVO', true],
-        ['0', '-1', true],
-        // allow falsey inputs
-        ['snarf', undefined, true],
-        ['snarf', null, true],
-        ['', '+123', true],
-        ['', '', true]
+        [true, '+123', true],
+        [true, '', true],
+        [false, 'ORANGE', true],
+        ['', 'ORANGE', true],
+        [undefined, 'ORANGE', true],
+        [null, 'ORANGE', true],
       ];
-      tests.forEach(function(t) {
-        var s = sinon.stub(config, 'get');
-        s.withArgs('outgoing_deny_list').returns(t[0]);
-        assert.equal(messages.isOutgoingAllowed(t[1]), t[2]);
-        s.restore();
-      });
+
+      isOutgoingAllowedTests(tests, 'outgoing_deny_with_alphas');
+    });
+
+    it('outgoing_deny_shorter_than', () => {
+      var tests = [
+        // denied
+        [5, '+123', false],
+        ['5', '+123', false],
+        ['5', 'ABCD', false],
+        ['5', ' ABCD ', false],
+        ['5.9', 'ABCD', false],
+        
+        // allowed
+        [0, '+123', true],
+        ['5', '12345', true],
+        ['5.9', 'ABCDE', true],
+        ['true', '+123', true],
+        ['', '+123', true],
+        [' ', '+123', true],
+        [undefined, '+123', true],
+        [null, '+123', true],
+      ];
+
+      isOutgoingAllowedTests(tests, 'outgoing_deny_shorter_than');
+    });
   });
 
   it('describe isMessageFromGateway', () => {
