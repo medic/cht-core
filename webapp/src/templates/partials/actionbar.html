@@ -37,11 +37,11 @@
               </a>
             </li>
           </ul>
-          <a class="mm-icon mm-icon-inverse mm-icon-caption select-mode-start" mm-auth="can_bulk_delete_reports" ng-click="setSelectMode(true)">
+          <a class="mm-icon mm-icon-inverse mm-icon-caption select-mode-start" mm-auth="can_bulk_delete_reports" ng-click="setSelectMode(true)" ng-class="{'mm-icon-disabled': !hasReports}">
             <span class="fa fa-check-circle"></span>
             <p translate>select.mode.start</p>
           </a>
-          <a class="mm-icon mm-icon-inverse mm-icon-caption" ng-show="isAdmin" ng-click="actionBar.left.exportFn($event)">
+          <a class="mm-icon mm-icon-inverse mm-icon-caption" ng-show="isAdmin" ng-click="actionBar.left.exportFn($event)" ng-class="{'mm-icon-disabled': !hasReports}">
             <span class="fa fa-arrow-down"></span>
             <p translate>Export</p>
           </a>
