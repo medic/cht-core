@@ -140,7 +140,10 @@ module.exports = {
           const history = buildHistory(task);
 
           if (!task.messages) {
-            const templateContext = _.pick(record, 'patient', 'registrations');
+            const context = {
+              patient: record.patient,
+              registrations: record.registrations
+            };
             const content = {
               translationKey: task.message_key,
               message: task.message
@@ -151,7 +154,7 @@ module.exports = {
               record,
               content,
               task.recipient,
-              templateContext
+              context
             );
           }
 
@@ -199,8 +202,9 @@ module.exports = {
         return db.medic
           .query('medic-client/registered_patients', { keys: patientIds, include_docs: true })
           .then(result => {
-            const registrations = result.rows.filter(row =>
-              registrationUtils.isValidRegistration(row.doc, config.get()));
+            const registrations = result.rows.filter(row => {
+              return registrationUtils.isValidRegistration(row.doc, config.get());
+            });
 
             records.forEach(record => {
               record.registrations = getRecordRegistrations(registrations, record);
