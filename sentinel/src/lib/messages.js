@@ -13,6 +13,28 @@ const messageStatus = (from, msg) => {
   return status;
 };
 
+const sanitize = x => x && x.toLowerCase().trim();
+
+const isDeniedByList = (from, denyList) => {
+  return denyList && 
+    denyList
+      .split(',')
+      .some(listItem => {
+        const sanitizedItem = sanitize(listItem);
+        return sanitizedItem && sanitize(from).startsWith(sanitizedItem);
+      });
+};
+
+const isDeniedByShortcodes = (from, denyIfShorterThan) => {
+  const allowableLength = parseInt(denyIfShorterThan);
+  return allowableLength > 0 && 
+    sanitize(from).length < allowableLength;
+};
+
+const isDeniedByAlphas = (from, denyWithAlphas) => {
+  return denyWithAlphas === true && from.match(/[a-z]/i);
+};
+
 module.exports = {
     addMessage: (doc, messageConfig, recipient = 'clinic', context = {}) => {
         doc.tasks = doc.tasks || [];
@@ -94,24 +116,10 @@ module.exports = {
         return false;
       }
 
-      const outgoingDenyList = config.get('outgoing_deny_list');
-      const outgoingDenyShorts = config.get('outgoing_deny_shorter_than');
-      const outgoingDenyAlphas = config.get('outgoing_deny_with_alphas');
-      const sanitize = x => x && x.toLowerCase().trim();
-      const isNumeric = x => !isNaN(parseFloat(x)) && isFinite(x);
-
-      const isDeniedByList = outgoingDenyList && 
-        outgoingDenyList
-          .split(',')
-          .some(listItem => sanitize(listItem) && sanitize(from).startsWith(sanitize(listItem)));
-
-      const isDeniedByShortcodes = isNumeric(outgoingDenyShorts) &&
-        parseInt(outgoingDenyShorts) > 0 && 
-        sanitize(from).length < parseInt(outgoingDenyShorts);
-      
-      const isDeniedByAlphas = outgoingDenyAlphas === true && from.match(/[a-z]/i);
-
-      return ![isDeniedByList, isDeniedByShortcodes, isDeniedByAlphas].some(d => d);
+      const { outgoing_deny_list, outgoing_deny_shorter_than, outgoing_deny_with_alphas } = config.getAll();
+      return !isDeniedByShortcodes(from, outgoing_deny_shorter_than) &&
+        !isDeniedByAlphas(from, outgoing_deny_with_alphas) &&
+        !isDeniedByList(from, outgoing_deny_list);
     },
     addErrors: function(config, doc, errors, context) {
         errors.forEach(error => module.exports.addError(doc, error, context));

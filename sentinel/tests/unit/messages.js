@@ -257,8 +257,10 @@ describe('messages', () => {
     const isOutgoingAllowedTests = (tests, configKey) => {
       tests.forEach(test => {
         const [ configValue, phoneNumber, expectedResult ] = test;
-        var stub = sinon.stub(config, 'get');
-        stub.withArgs(configKey).returns(configValue);
+        const mockConfig = {};
+        mockConfig[configKey] = configValue;
+
+        const stub = sinon.stub(config, 'getAll').returns(mockConfig);
         assert.equal(messages.isOutgoingAllowed(phoneNumber), expectedResult);
         stub.restore();
       });
@@ -282,6 +284,7 @@ describe('messages', () => {
           ['SAFARI, ORANGE', 'ORANGE NET', false],
           ['0', '0000123', false],
           ['0', '0', false],
+          ['1, , 2', '234', false],
           // allowed
           ['+123', '+999', true],
           ['SAFARI, ORANGE NET', 'ORANGE', true],
@@ -293,6 +296,8 @@ describe('messages', () => {
           ['', '+123', true],
           ['', '', true],
           [',', '', true],
+          [undefined, '', true],
+          [null, '', true],
         ];
 
         isOutgoingAllowedTests(tests, 'outgoing_deny_list');
