@@ -86,6 +86,27 @@ describe('Search service', function() {
         });
     });
 
+    it('does not debounce different queries - medic/medic-webapp/issues/4331)', function() {
+      GetDataRecords
+        .onFirstCall().returns(Promise.resolve([ { id: 'a' } ]))
+        .onSecondCall().returns(Promise.resolve([ { id: 'b' } ]));
+
+      var firstReturned = false;
+      const filters = { foo: 'bar' };
+      service('reports', filters)
+        .then(function(actual) {
+          chai.expect(actual).to.deep.equal([ { id: 'a' } ]);
+          firstReturned = true;
+        });
+      
+      filters.foo = 'test';
+      return service('reports', filters)
+        .then(function(actual) {
+          chai.expect(actual).to.deep.equal([ { id: 'b' } ]);
+          chai.expect(firstReturned).to.equal(true);
+        });
+    });
+
     it('does not debounce different queries', function() {
       GetDataRecords
         .onFirstCall().returns(Promise.resolve([ { id: 'a' } ]))

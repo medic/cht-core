@@ -39,13 +39,13 @@ var _ = require('underscore'),
       // Silently cancel repeated queries.
       var debounce = function(type, filters, options) {
         if (type === _currentQuery.type &&
-            filters === _currentQuery.filters &&
-            _.isEqual(options, _currentQuery.options)) {
+          _.isEqual(filters, _currentQuery.filters) &&
+          _.isEqual(options, _currentQuery.options)) {
           return true;
         }
         _currentQuery.type = type;
-        _currentQuery.filters = filters;
-        _currentQuery.options = options;
+        _currentQuery.filters = Object.assign({}, filters);
+        _currentQuery.options = Object.assign({}, options);
         return false;
       };
 
