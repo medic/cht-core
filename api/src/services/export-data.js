@@ -1,17 +1,17 @@
 var _ = require('underscore'),
-    csv = require('fast-csv'),
-    moment = require('moment'),
-    xmlbuilder = require('xmlbuilder'),
-    config = require('../config'),
-    db = require('../db-nano'),
-    dbPouch = require('../db-pouch'),
-    lineage = require('lineage')(Promise, dbPouch.medic);
+  csv = require('fast-csv'),
+  moment = require('moment'),
+  xmlbuilder = require('xmlbuilder'),
+  config = require('../config'),
+  db = require('../db-nano'),
+  dbPouch = require('../db-pouch'),
+  lineage = require('lineage')(Promise, dbPouch.medic);
 
 var createColumnModels = function(values, options) {
   return _.map(values, function(value) {
     return {
       column: value,
-      label: config.translate(value, options.locale)
+      label: config.translate(value, options.locale),
     };
   });
 };
@@ -19,7 +19,7 @@ var createColumnModels = function(values, options) {
 var safeStringify = function(obj) {
   try {
     return JSON.stringify(obj);
-  } catch(e) {
+  } catch (e) {
     return obj;
   }
 };
@@ -27,26 +27,25 @@ var safeStringify = function(obj) {
 var exportTypes = {
   audit: {
     getRecords: function(callback) {
-      db.audit.list({
-        limit: 1000,
-        include_docs: true
-      }, callback);
+      db.audit.list(
+        {
+          limit: 1000,
+          include_docs: true,
+        },
+        callback
+      );
     },
     generate: function(rows, options) {
       if (!options.columns) {
-        options.columns = createColumnModels([
-          '_id',
-          'Type',
-          'Timestamp',
-          'Author',
-          'Action',
-          'Document'
-        ], options);
+        options.columns = createColumnModels(
+          ['_id', 'Type', 'Timestamp', 'Author', 'Action', 'Document'],
+          options
+        );
       }
       var model = {
         name: config.translate('Audit', options.locale),
         data: [],
-        columns: options.columns
+        columns: options.columns,
       };
       rows.forEach(function(row) {
         _.each(row.doc.history, function(rev) {
@@ -56,28 +55,24 @@ var exportTypes = {
             formatDate(rev.timestamp, options.timezone),
             rev.user,
             rev.action,
-            JSON.stringify(rev.doc)
+            JSON.stringify(rev.doc),
           ]);
         });
       });
-      return [ model ];
-    }
+      return [model];
+    },
   },
   feedback: {
-    ddoc: 'medic-client',
+    ddoc: 'medic-admin',
     view: 'feedback',
     generate: function(rows, options) {
-      options.columns = createColumnModels([
-        '_id',
-        'reported_date',
-        'User',
-        'App Version',
-        'URL',
-        'Info'
-      ], options);
+      options.columns = createColumnModels(
+        ['_id', 'reported_date', 'User', 'App Version', 'URL', 'Info'],
+        options
+      );
       var model = {
         name: config.translate('Feedback', options.locale),
-        columns: options.columns
+        columns: options.columns,
       };
       model.data = _.map(rows, function(row) {
         return [
@@ -86,12 +81,12 @@ var exportTypes = {
           row.doc.meta.user.name,
           row.doc.meta.version,
           row.doc.meta.url,
-          safeStringify(row.doc.info)
+          safeStringify(row.doc.info),
         ];
       });
-      return [ model ];
-    }
-  }
+      return [model];
+    },
+  },
 };
 
 var formatDate = function(date, tz) {
@@ -120,7 +115,7 @@ var outputToCsv = function(options, tabs, callback) {
 
   // csv doesn't support tabs
   var tab = tabs[0];
-  var data = tab && tab.data || [];
+  var data = (tab && tab.data) || [];
 
   if (tab && !options.skipHeader) {
     data.unshift(_.pluck(tab.columns, 'label'));
@@ -136,14 +131,15 @@ var outputToCsv = function(options, tabs, callback) {
 
 var outputToXml = function(options, tabs, callback) {
   callback(null, function(write, done) {
-    var workbook = xmlbuilder.begin({ allowSurrogateChars: true, allowEmpty: true }, write)
+    var workbook = xmlbuilder
+      .begin({ allowSurrogateChars: true, allowEmpty: true }, write)
       .dec({ encoding: 'UTF-8' })
       .ele('Workbook')
       .att('xmlns', 'urn:schemas-microsoft-com:office:spreadsheet')
       .att('xmlns:o', 'urn:schemas-microsoft-com:office:office')
       .att('xmlns:x', 'urn:schemas-microsoft-com:office:excel')
       .att('xmlns:html', 'http://www.w3.org/TR/REC-html140')
-      .att('xmlns:ss','urn:schemas-microsoft-com:office:spreadsheet')
+      .att('xmlns:ss', 'urn:schemas-microsoft-com:office:spreadsheet')
       .ins('mso-application', 'progid="Excel.Sheet"');
 
     var row;
@@ -156,7 +152,7 @@ var outputToXml = function(options, tabs, callback) {
       if (!options.skipHeader) {
         row = table.ele('Row');
         tab.columns.forEach(function(column) {
-          row.ele('Cell').ele('Data', {'ss:Type': 'String'}, column.label);
+          row.ele('Cell').ele('Data', { 'ss:Type': 'String' }, column.label);
           row.up().up();
         });
         row.up();
@@ -168,7 +164,13 @@ var outputToXml = function(options, tabs, callback) {
           // passing '' as a value creates an opening and closing element: <Foo></Foo>
           // passing nothing or undefined create one closed element: <Foo />
           // Converting empty string to undefined to keep it consistent
-          row.ele('Cell').ele('Data', {'ss:Type': 'String'}, cell !== '' ? cell : undefined);
+          row
+            .ele('Cell')
+            .ele(
+              'Data',
+              { 'ss:Type': 'String' },
+              cell !== '' ? cell : undefined
+            );
           row.up().up();
         });
         row.up();
@@ -200,7 +202,7 @@ var getRecords = function(type, params, callback) {
     include_docs: true,
     descending: true,
     startkey: [9999999999999, {}],
-    endkey: [0]
+    endkey: [0],
   };
   db.medic.view(type.ddoc || 'medic', type.view, options, (err, response) => {
     if (err) {
@@ -216,7 +218,7 @@ var getOptions = function(params) {
     locale: params.locale || 'en',
     form: params.form,
     format: params.format,
-    skipHeader: params.skip_header_row
+    skipHeader: params.skip_header_row,
   };
   if (params.filter_state) {
     options.filterState = { state: params.filter_state };
@@ -236,7 +238,7 @@ var getOptions = function(params) {
     var parsedColumns;
     try {
       parsedColumns = JSON.parse(params.columns);
-    } catch(e) {
+    } catch (e) {
       parsedColumns = [];
     }
     options.columns = createColumnModels(parsedColumns, options);
@@ -252,7 +254,9 @@ module.exports = {
       return callback({ code: 404 });
     }
     if (!_.isFunction(type.generate)) {
-      return callback(new Error('Export type must provide a "generate" method'));
+      return callback(
+        new Error('Export type must provide a "generate" method')
+      );
     }
 
     getRecords(type, params, function(err, response) {
@@ -269,8 +273,7 @@ module.exports = {
       } else {
         outputToCsv(options, tabs, callback);
       }
-
     });
   },
-  _lineage: lineage
+  _lineage: lineage,
 };
