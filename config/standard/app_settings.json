@@ -3310,30 +3310,17 @@
       "meta": {
         "code": "IMM",
         "icon": "immunization",
-        "label": {
-          "en": "Immunization Visit (SMS)",
-          "hi": "IMM (SMS)",
-          "id": "IMM (SMS)"
-        }
+        "translation_key": "form.imm.title"
       },
       "fields": {
         "patient_id": {
           "labels": {
-            "tiny": {
-              "en": "id"
-            },
-            "description": {
-              "en": "Patient's ID"
-            },
             "short": {
-              "en": "ID"
+              "translation_key": "patient_id"
             }
           },
           "position": 0,
           "type": "string",
-          "flags": {
-            "input_digits_only": true
-          },
           "length": [
             5,
             13
@@ -3342,14 +3329,8 @@
         },
         "notes": {
           "labels": {
-            "description": {
-              "en": "Notes"
-            },
             "short": {
-              "en": "Notes"
-            },
-            "tiny": {
-              "en": "N"
+              "translation_key": "notes"
             }
           },
           "position": 1,
@@ -3368,30 +3349,23 @@
       "meta": {
         "code": "C_IMM",
         "icon": "immunization",
-        "label": {
-          "en": "Immunization Visit (Collect)",
-          "hi": "IMM (Collect)",
-          "id": "IMM (Collect)"
-        }
+        "translation_key": "form.c_imm.title"
       },
       "fields": {
         "patient_id": {
           "labels": {
             "tiny": {
-              "en": "id"
-            },
-            "description": {
-              "en": "patient_id"
+              "en": "ID"
             },
             "short": {
-              "en": "patient_id"
+              "translation_key": "patient_id"
             }
           },
           "position": 0,
           "type": "string",
           "length": [
             1,
-            10
+            13
           ],
           "required": false
         },
@@ -3400,11 +3374,8 @@
             "tiny": {
               "en": "c"
             },
-            "description": {
-              "en": "visit_confirmed"
-            },
             "short": {
-              "en": "visit_confirmed"
+              "translation_key": "report.c_imm.visit_confirmed"
             }
           },
           "position": 1,
@@ -3420,11 +3391,8 @@
             "tiny": {
               "en": "bcg"
             },
-            "description": {
-              "en": "received_bcg"
-            },
             "short": {
-              "en": "received_bcg"
+              "translation_key": "report.c_imm.received_bcg"
             }
           },
           "position": 3,
@@ -3440,11 +3408,8 @@
             "tiny": {
               "en": "ch1"
             },
-            "description": {
-              "en": "received_cholera_1"
-            },
             "short": {
-              "en": "received_cholera_1"
+              "translation_key": "report.c_imm.received_cholera_1"
             }
           },
           "position": 4,
@@ -3460,11 +3425,8 @@
             "tiny": {
               "en": "ch2"
             },
-            "description": {
-              "en": "received_cholera_2"
-            },
             "short": {
-              "en": "received_cholera_2"
+              "translation_key": "report.c_imm.received_cholera_2"
             }
           },
           "position": 5,
@@ -3480,11 +3442,8 @@
             "tiny": {
               "en": "ch3"
             },
-            "description": {
-              "en": "received_cholera_3"
-            },
             "short": {
-              "en": "received_cholera_3"
+              "translation_key": "report.c_imm.received_cholera_3"
             }
           },
           "position": 6,
@@ -3500,11 +3459,8 @@
             "tiny": {
               "en": "ha1"
             },
-            "description": {
-              "en": "received_hep_a_1"
-            },
             "short": {
-              "en": "received_hep_a_1"
+              "translation_key": "report.c_imm.received_hep_a_1"
             }
           },
           "position": 7,
@@ -3520,11 +3476,8 @@
             "tiny": {
               "en": "ha2"
             },
-            "description": {
-              "en": "received_hep_a_2"
-            },
             "short": {
-              "en": "received_hep_a_2"
+              "translation_key": "report.c_imm.received_hep_a_2"
             }
           },
           "position": 8,
@@ -3540,11 +3493,8 @@
             "tiny": {
               "en": "hpv1"
             },
-            "description": {
-              "en": "received_hpv_1"
-            },
             "short": {
-              "en": "received_hpv_1"
+              "translation_key": "report.c_imm.received_hpv_1"
             }
           },
           "position": 9,
@@ -3560,11 +3510,8 @@
             "tiny": {
               "en": "hpv2"
             },
-            "description": {
-              "en": "received_hpv_2"
-            },
             "short": {
-              "en": "received_hpv_2"
+              "translation_key": "report.c_imm.received_hpv_2"
             }
           },
           "position": 10,
@@ -3580,11 +3527,8 @@
             "tiny": {
               "en": "hpv3"
             },
-            "description": {
-              "en": "received_hpv_3"
-            },
             "short": {
-              "en": "received_hpv_3"
+              "translation_key": "report.c_imm.received_hpv_3"
             }
           },
           "position": 11,
@@ -3600,11 +3544,8 @@
             "tiny": {
               "en": "flu"
             },
-            "description": {
-              "en": "received_flu"
-            },
             "short": {
-              "en": "received_flu"
+              "translation_key": "report.c_imm.received_flu"
             }
           },
           "position": 12,
@@ -3620,11 +3561,8 @@
             "tiny": {
               "en": "je"
             },
-            "description": {
-              "en": "received_jap_enc"
-            },
             "short": {
-              "en": "received_jap_enc"
+              "translation_key": "report.c_imm.received_jap_enc"
             }
           },
           "position": 13,
@@ -3640,11 +3578,8 @@
             "tiny": {
               "en": "mn1"
             },
-            "description": {
-              "en": "received_meningococcal_1"
-            },
             "short": {
-              "en": "received_meningococcal_1"
+              "translation_key": "report.c_imm.received_meningococcal_1"
             }
           },
           "position": 14,
@@ -3660,11 +3595,8 @@
             "tiny": {
               "en": "mn2"
             },
-            "description": {
-              "en": "received_meningococcal_2"
-            },
             "short": {
-              "en": "received_meningococcal_2"
+              "translation_key": "report.c_imm.received_meningococcal_2"
             }
           },
           "position": 15,
@@ -3680,11 +3612,8 @@
             "tiny": {
               "en": "mn3"
             },
-            "description": {
-              "en": "received_meningococcal_3"
-            },
             "short": {
-              "en": "received_meningococcal_3"
+              "translation_key": "report.c_imm.received_meningococcal_3"
             }
           },
           "position": 16,
@@ -3700,11 +3629,8 @@
             "tiny": {
               "en": "mn4"
             },
-            "description": {
-              "en": "received_meningococcal_4"
-            },
             "short": {
-              "en": "received_meningococcal_4"
+              "translation_key": "report.c_imm.received_meningococcal_4"
             }
           },
           "position": 17,
@@ -3720,11 +3646,8 @@
             "tiny": {
               "en": "mmr1"
             },
-            "description": {
-              "en": "received_mmr_1"
-            },
             "short": {
-              "en": "received_mmr_1"
+              "translation_key": "report.c_imm.received_mmr_1"
             }
           },
           "position": 18,
@@ -3740,11 +3663,8 @@
             "tiny": {
               "en": "mmr2"
             },
-            "description": {
-              "en": "received_mmr_2"
-            },
             "short": {
-              "en": "received_mmr_2"
+              "translation_key": "report.c_imm.received_mmr_2"
             }
           },
           "position": 19,
@@ -3760,11 +3680,8 @@
             "tiny": {
               "en": "mmrv1"
             },
-            "description": {
-              "en": "received_mmrv_1"
-            },
             "short": {
-              "en": "received_mmrv_1"
+              "translation_key": "report.c_imm.received_mmrv_1"
             }
           },
           "position": 20,
@@ -3780,11 +3697,8 @@
             "tiny": {
               "en": "mmrv2"
             },
-            "description": {
-              "en": "received_mmrv_2"
-            },
             "short": {
-              "en": "received_mmrv_2"
+              "translation_key": "report.c_imm.received_mmrv_2"
             }
           },
           "position": 21,
@@ -3800,11 +3714,8 @@
             "tiny": {
               "en": "opv0"
             },
-            "description": {
-              "en": "received_polio_0"
-            },
             "short": {
-              "en": "received_polio_0"
+              "translation_key": "report.c_imm.received_polio_0"
             }
           },
           "position": 22,
@@ -3820,11 +3731,8 @@
             "tiny": {
               "en": "opv1"
             },
-            "description": {
-              "en": "received_polio_1"
-            },
             "short": {
-              "en": "received_polio_1"
+              "translation_key": "report.c_imm.received_polio_1"
             }
           },
           "position": 23,
@@ -3840,11 +3748,8 @@
             "tiny": {
               "en": "opv2"
             },
-            "description": {
-              "en": "received_polio_2"
-            },
             "short": {
-              "en": "received_polio_2"
+              "translation_key": "report.c_imm.received_polio_2"
             }
           },
           "position": 24,
@@ -3860,11 +3765,8 @@
             "tiny": {
               "en": "opv3"
             },
-            "description": {
-              "en": "received_polio_3"
-            },
             "short": {
-              "en": "received_polio_3"
+              "translation_key": "report.c_imm.received_polio_3"
             }
           },
           "position": 25,
@@ -3880,11 +3782,8 @@
             "tiny": {
               "en": "penta1"
             },
-            "description": {
-              "en": "received_penta_1"
-            },
             "short": {
-              "en": "received_penta_1"
+              "translation_key": "report.c_imm.received_penta_1"
             }
           },
           "position": 26,
@@ -3900,11 +3799,8 @@
             "tiny": {
               "en": "penta2"
             },
-            "description": {
-              "en": "received_penta_2"
-            },
             "short": {
-              "en": "received_penta_2"
+              "translation_key": "report.c_imm.received_penta_2"
             }
           },
           "position": 27,
@@ -3920,11 +3816,8 @@
             "tiny": {
               "en": "penta3"
             },
-            "description": {
-              "en": "received_penta_3"
-            },
             "short": {
-              "en": "received_penta_3"
+              "translation_key": "report.c_imm.received_penta_3"
             }
           },
           "position": 28,
@@ -3940,11 +3833,8 @@
             "tiny": {
               "en": "pcv1"
             },
-            "description": {
-              "en": "received_pneumococcal_1"
-            },
             "short": {
-              "en": "received_pneumococcal_1"
+              "translation_key": "report.c_imm.received_pneumococcal_1"
             }
           },
           "position": 29,
@@ -3960,11 +3850,8 @@
             "tiny": {
               "en": "pcv2"
             },
-            "description": {
-              "en": "received_pneumococcal_2"
-            },
             "short": {
-              "en": "received_pneumococcal_2"
+              "translation_key": "report.c_imm.received_pneumococcal_2"
             }
           },
           "position": 30,
@@ -3980,11 +3867,8 @@
             "tiny": {
               "en": "pcv3"
             },
-            "description": {
-              "en": "received_pneumococcal_3"
-            },
             "short": {
-              "en": "received_pneumococcal_3"
+              "translation_key": "report.c_imm.received_pneumococcal_3"
             }
           },
           "position": 31,
@@ -4000,11 +3884,8 @@
             "tiny": {
               "en": "pcv4"
             },
-            "description": {
-              "en": "received_pneumococcal_4"
-            },
             "short": {
-              "en": "received_pneumococcal_4"
+              "translation_key": "report.c_imm.received_pneumococcal_4"
             }
           },
           "position": 32,
@@ -4020,11 +3901,8 @@
             "tiny": {
               "en": "rv1"
             },
-            "description": {
-              "en": "received_rotavirus_1"
-            },
             "short": {
-              "en": "received_rotavirus_1"
+              "translation_key": "report.c_imm.received_rotavirus_1"
             }
           },
           "position": 33,
@@ -4040,11 +3918,8 @@
             "tiny": {
               "en": "rv2"
             },
-            "description": {
-              "en": "received_rotavirus_2"
-            },
             "short": {
-              "en": "received_rotavirus_2"
+              "translation_key": "report.c_imm.received_rotavirus_2"
             }
           },
           "position": 34,
@@ -4060,11 +3935,8 @@
             "tiny": {
               "en": "rv3"
             },
-            "description": {
-              "en": "received_rotavirus_3"
-            },
             "short": {
-              "en": "received_rotavirus_3"
+              "translation_key": "report.c_imm.received_rotavirus_3"
             }
           },
           "position": 35,
@@ -4080,11 +3952,8 @@
             "tiny": {
               "en": "ty1"
             },
-            "description": {
-              "en": "received_typhoid_1"
-            },
             "short": {
-              "en": "received_typhoid_1"
+              "translation_key": "report.c_imm.received_typhoid_1"
             }
           },
           "position": 36,
@@ -4100,11 +3969,8 @@
             "tiny": {
               "en": "ty2"
             },
-            "description": {
-              "en": "received_typhoid_2"
-            },
             "short": {
-              "en": "received_typhoid_2"
+              "translation_key": "report.c_imm.received_typhoid_2"
             }
           },
           "position": 37,
@@ -4120,11 +3986,8 @@
             "tiny": {
               "en": "vita"
             },
-            "description": {
-              "en": "received_vitamin_a"
-            },
             "short": {
-              "en": "received_vitamin_a"
+              "translation_key": "report.c_imm.received_vitamin_a"
             }
           },
           "position": 38,
@@ -4140,11 +4003,8 @@
             "tiny": {
               "en": "yf"
             },
-            "description": {
-              "en": "received_yellow_fever"
-            },
             "short": {
-              "en": "received_yellow_fever"
+              "translation_key": "report.c_imm.received_yellow_fever"
             }
           },
           "position": 39,
@@ -4163,11 +4023,7 @@
       "meta": {
         "code": "N",
         "icon": "new-person",
-        "label": {
-          "en": "New Person (SMS)",
-          "hi": "नया व्यक्ति  (SMS)",
-          "id": "Orang Baru (SMS)"
-        }
+        "translation_key": "form.n.title"
       },
       "fields": {
         "patient_name": {
@@ -4175,11 +4031,8 @@
             "tiny": {
               "en": "N"
             },
-            "description": {
-              "en": "Patient Name"
-            },
             "short": {
-              "en": "Name"
+              "translation_key": "report.n.patient_name"
             }
           },
           "position": 0,
@@ -4198,23 +4051,13 @@
       "meta": {
         "code": "CW",
         "icon": "child",
-        "label": {
-          "en": "New Child Registration (SMS)",
-          "hi": "नए बच्चे का रेजिस्ट्रेशन (SMS)",
-          "id": "Baru Anak Pendaftaran (SMS)"
-        }
+        "translation_key": "form.cw.title"
       },
       "fields": {
         "weeks_since_birth": {
           "labels": {
-            "tiny": {
-              "en": "W"
-            },
-            "description": {
-              "en": "weeks since birth"
-            },
             "short": {
-              "en": "Weeks"
+              "translation_key": "report.cw.weeks_since_birth"
             }
           },
           "position": 0,
@@ -4233,14 +4076,8 @@
         },
         "patient_name": {
           "labels": {
-            "tiny": {
-              "en": "N"
-            },
-            "description": {
-              "en": "Patient Name"
-            },
             "short": {
-              "en": "Name"
+              "translation_key": "report.cw.patient_name"
             }
           },
           "position": 1,
@@ -4259,11 +4096,7 @@
       "meta": {
         "code": "CHILD",
         "icon": "child",
-        "label": {
-          "en": "New Child Registration (Collect)",
-          "hi": "नए बच्चे का रेजिस्ट्रेशन (Collect)",
-          "id": "Baru Anak Pendaftaran (Collect)"
-        }
+        "translation_key": "form.child.title"
       },
       "fields": {
         "days_since_birth": {
@@ -4271,11 +4104,8 @@
             "tiny": {
               "en": "D"
             },
-            "description": {
-              "en": "Days since birth"
-            },
             "short": {
-              "en": "Days"
+              "translation_key": "report.child.days_since_birth"
             }
           },
           "position": 0,
@@ -4297,11 +4127,8 @@
             "tiny": {
               "en": "N"
             },
-            "description": {
-              "en": "Patient Name"
-            },
             "short": {
-              "en": "Name"
+              "translation_key": "report.child.patient_name"
             }
           },
           "position": 1,
@@ -4320,20 +4147,13 @@
       "meta": {
         "code": "P",
         "icon": "pregnancy-1",
-        "label": {
-          "en": "New Pregnancy (SMS)",
-          "hi": "नयी गर्भावस्था (SMS)",
-          "id": "Kehamilan Baru (SMS)"
-        }
+        "translation_key": "form.p.title"
       },
       "fields": {
         "patient_id": {
           "labels": {
-            "description": {
-              "en": "Patient ID"
-            },
             "short": {
-              "en": "ID"
+              "translation_key": "patient_id"
             },
             "tiny": {
               "en": "ID"
@@ -4341,9 +4161,6 @@
           },
           "position": 0,
           "type": "string",
-          "flags": {
-            "input_digits_only": true
-          },
           "length": [
             5,
             13
@@ -4355,18 +4172,12 @@
             "tiny": {
               "en": "LMP"
             },
-            "description": {
-              "en": "Weeks since last menstrual period"
-            },
             "short": {
-              "en": "Weeks since LMP"
+              "translation_key": "report.p.last_menstrual_period"
             }
           },
           "position": 1,
           "type": "string",
-          "flags": {
-            "input_digits_only": true
-          },
           "length": [
             1,
             2
@@ -4386,11 +4197,7 @@
       "meta": {
         "code": "V",
         "icon": "clinic",
-        "label": {
-          "en": "Pregnancy Visit (SMS)",
-          "hi": "गर्भावस्था जांच (SMS)",
-          "id": "Kunjungan kehamilan (SMS)"
-        }
+        "translation_key": "form.v.title"
       },
       "fields": {
         "patient_id": {
@@ -4398,18 +4205,12 @@
             "tiny": {
               "en": "id"
             },
-            "description": {
-              "en": "Patient's ID"
-            },
             "short": {
-              "en": "ID"
+              "translation_key": "patient_id"
             }
           },
           "position": 0,
           "type": "string",
-          "flags": {
-            "input_digits_only": true
-          },
           "length": [
             5,
             13
@@ -4418,11 +4219,8 @@
         },
         "notes": {
           "labels": {
-            "description": {
-              "en": "Notes"
-            },
             "short": {
-              "en": "Notes"
+              "translation_key": "notes"
             },
             "tiny": {
               "en": "N"
@@ -4444,11 +4242,7 @@
       "meta": {
         "code": "M",
         "icon": "clinic",
-        "label": {
-          "en": "Postnatal Visit (SMS)",
-          "hi": "गर्भावस्था के बाद की जांच (SMS)",
-          "id": "Kunjungi setelah melahirkan (SMS)"
-        }
+        "translation_key": "form.m.title"
       },
       "fields": {
         "patient_id": {
@@ -4456,18 +4250,12 @@
             "tiny": {
               "en": "id"
             },
-            "description": {
-              "en": "Patient's ID"
-            },
             "short": {
-              "en": "ID"
+              "translation_key": "patient_id"
             }
           },
           "position": 0,
           "type": "string",
-          "flags": {
-            "input_digits_only": true
-          },
           "length": [
             5,
             13
@@ -4482,20 +4270,13 @@
       "meta": {
         "code": "D",
         "icon": "mother-child",
-        "label": {
-          "en": "Delivery Report (SMS)",
-          "hi": "डिलीवरी की रिपोर्ट (SMS)",
-          "id": "Laporan Persalinan (SMS)"
-        }
+        "translation_key": "form.d.title"
       },
       "fields": {
         "patient_id": {
           "labels": {
-            "description": {
-              "en": "Patient ID"
-            },
             "short": {
-              "en": "ID"
+              "translation_key": "patient_id"
             },
             "tiny": {
               "en": "ID"
@@ -4503,9 +4284,6 @@
           },
           "position": 0,
           "type": "string",
-          "flags": {
-            "input_digits_only": true
-          },
           "length": [
             5,
             13
@@ -4514,11 +4292,8 @@
         },
         "delivery_code": {
           "labels": {
-            "description": {
-              "en": "Delivery Code"
-            },
             "short": {
-              "en": "Delivery Code"
+              "translation_key": "report.d.delivery_code"
             },
             "tiny": {
               "en": "C"
@@ -4534,11 +4309,8 @@
         },
         "days_since_birth": {
           "labels": {
-            "description": {
-              "en": "Days since birth"
-            },
             "short": {
-              "en": "Days ago"
+              "translation_key": "report.d.days_since_birth"
             },
             "tiny": {
               "en": "D"
@@ -4560,20 +4332,13 @@
       "meta": {
         "code": "F",
         "icon": "risk",
-        "label": {
-          "en": "Danger Sign Flag (SMS)",
-          "hi": "खतरे की सूचना (SMS)",
-          "id": "Laporan Tanda Bahaya (SMS)"
-        }
+        "translation_key": "form.f.title"
       },
       "fields": {
         "patient_id": {
           "labels": {
-            "description": {
-              "en": "Patient ID"
-            },
             "short": {
-              "en": "ID"
+              "translation_key": "patient_id"
             },
             "tiny": {
               "en": "ID"
@@ -4581,9 +4346,6 @@
           },
           "position": 0,
           "type": "string",
-          "flags": {
-            "input_digits_only": true
-          },
           "length": [
             5,
             13
@@ -4592,11 +4354,8 @@
         },
         "notes": {
           "labels": {
-            "description": {
-              "en": "Notes"
-            },
             "short": {
-              "en": "Notes"
+              "translation_key": "notes"
             },
             "tiny": {
               "en": "N"
@@ -4618,25 +4377,17 @@
       "meta": {
         "code": "PENTA1",
         "icon": "immunization",
-        "label": {
-          "en": " PENTA1 Pentavalent"
-        }
+        "translation_key": "PENTA1 Pentavalent"
       },
       "fields": {
         "patient_id": {
           "labels": {
-            "description": {
-              "en": "Patient ID"
-            },
             "short": {
-              "en": "ID"
+              "translation_key": "patient_id"
             }
           },
           "position": 0,
           "type": "string",
-          "flags": {
-            "input_digits_only": true
-          },
           "length": [
             5,
             13
@@ -4645,11 +4396,8 @@
         },
         "notes": {
           "labels": {
-            "description": {
-              "en": "Notes"
-            },
             "short": {
-              "en": "Notes"
+              "translation_key": "notes"
             }
           },
           "position": 1,
@@ -4668,25 +4416,17 @@
       "meta": {
         "code": "PENTA2",
         "icon": "immunization",
-        "label": {
-          "en": " PENTA2 Pentavalent"
-        }
+        "translation_key": "PENTA2 Pentavalent"
       },
       "fields": {
         "patient_id": {
           "labels": {
-            "description": {
-              "en": "Patient ID"
-            },
             "short": {
-              "en": "ID"
+              "translation_key": "patient_id"
             }
           },
           "position": 0,
           "type": "string",
-          "flags": {
-            "input_digits_only": true
-          },
           "length": [
             5,
             13
@@ -4695,11 +4435,8 @@
         },
         "notes": {
           "labels": {
-            "description": {
-              "en": "Notes"
-            },
             "short": {
-              "en": "Notes"
+              "translation_key": "notes"
             }
           },
           "position": 1,
@@ -4718,25 +4455,17 @@
       "meta": {
         "code": "PENTA3",
         "icon": "immunization",
-        "label": {
-          "en": " PENTA3 Pentavalent"
-        }
+        "translation_key": "PENTA3 Pentavalent"
       },
       "fields": {
         "patient_id": {
           "labels": {
-            "description": {
-              "en": "Patient ID"
-            },
             "short": {
-              "en": "ID"
+              "translation_key": "patient_id"
             }
           },
           "position": 0,
           "type": "string",
-          "flags": {
-            "input_digits_only": true
-          },
           "length": [
             5,
             13
@@ -4745,11 +4474,8 @@
         },
         "notes": {
           "labels": {
-            "description": {
-              "en": "Notes"
-            },
             "short": {
-              "en": "Notes"
+              "translation_key": "notes"
             }
           },
           "position": 1,
@@ -4768,25 +4494,17 @@
       "meta": {
         "code": "BCG",
         "icon": "immunization",
-        "label": {
-          "en": " BCG Bacille Calmette-Guerin"
-        }
+        "translation_key": "BCG Bacille Calmette-Guerin"
       },
       "fields": {
         "patient_id": {
           "labels": {
-            "description": {
-              "en": "Patient ID"
-            },
             "short": {
-              "en": "ID"
+              "translation_key": "patient_id"
             }
           },
           "position": 0,
           "type": "string",
-          "flags": {
-            "input_digits_only": true
-          },
           "length": [
             5,
             13
@@ -4795,11 +4513,8 @@
         },
         "notes": {
           "labels": {
-            "description": {
-              "en": "Notes"
-            },
             "short": {
-              "en": "Notes"
+              "translation_key": "notes"
             }
           },
           "position": 1,
@@ -4818,25 +4533,17 @@
       "meta": {
         "code": "OPV0",
         "icon": "immunization",
-        "label": {
-          "en": " OPV0 Oral Polio"
-        }
+        "translation_key": "OPV0 Oral Polio"
       },
       "fields": {
         "patient_id": {
           "labels": {
-            "description": {
-              "en": "Patient ID"
-            },
             "short": {
-              "en": "ID"
+              "translation_key": "patient_id"
             }
           },
           "position": 0,
           "type": "string",
-          "flags": {
-            "input_digits_only": true
-          },
           "length": [
             5,
             13
@@ -4845,11 +4552,8 @@
         },
         "notes": {
           "labels": {
-            "description": {
-              "en": "Notes"
-            },
             "short": {
-              "en": "Notes"
+              "translation_key": "notes"
             }
           },
           "position": 1,
@@ -4868,25 +4572,17 @@
       "meta": {
         "code": "OPV1",
         "icon": "immunization",
-        "label": {
-          "en": " OPV1 Oral Polio"
-        }
+        "translation_key": "OPV1 Oral Polio"
       },
       "fields": {
         "patient_id": {
           "labels": {
-            "description": {
-              "en": "Patient ID"
-            },
             "short": {
-              "en": "ID"
+              "translation_key": "patient_id"
             }
           },
           "position": 0,
           "type": "string",
-          "flags": {
-            "input_digits_only": true
-          },
           "length": [
             5,
             13
@@ -4895,11 +4591,8 @@
         },
         "notes": {
           "labels": {
-            "description": {
-              "en": "Notes"
-            },
             "short": {
-              "en": "Notes"
+              "translation_key": "notes"
             }
           },
           "position": 1,
@@ -4918,25 +4611,17 @@
       "meta": {
         "code": "OPV2",
         "icon": "immunization",
-        "label": {
-          "en": " OPV2 Oral Polio"
-        }
+        "translation_key": "OPV2 Oral Polio"
       },
       "fields": {
         "patient_id": {
           "labels": {
-            "description": {
-              "en": "Patient ID"
-            },
             "short": {
-              "en": "ID"
+              "translation_key": "patient_id"
             }
           },
           "position": 0,
           "type": "string",
-          "flags": {
-            "input_digits_only": true
-          },
           "length": [
             5,
             13
@@ -4945,11 +4630,8 @@
         },
         "notes": {
           "labels": {
-            "description": {
-              "en": "Notes"
-            },
             "short": {
-              "en": "Notes"
+              "translation_key": "notes"
             }
           },
           "position": 1,
@@ -4968,25 +4650,17 @@
       "meta": {
         "code": "OPV3",
         "icon": "immunization",
-        "label": {
-          "en": " OPV3 Oral Polio"
-        }
+        "translation_key": "OPV3 Oral Polio"
       },
       "fields": {
         "patient_id": {
           "labels": {
-            "description": {
-              "en": "Patient ID"
-            },
             "short": {
-              "en": "ID"
+              "translation_key": "patient_id"
             }
           },
           "position": 0,
           "type": "string",
-          "flags": {
-            "input_digits_only": true
-          },
           "length": [
             5,
             13
@@ -4995,11 +4669,8 @@
         },
         "notes": {
           "labels": {
-            "description": {
-              "en": "Notes"
-            },
             "short": {
-              "en": "Notes"
+              "translation_key": "notes"
             }
           },
           "position": 1,
@@ -5018,25 +4689,17 @@
       "meta": {
         "code": "PCV1",
         "icon": "immunization",
-        "label": {
-          "en": " PCV1 Pneumococcal Pneumonia"
-        }
+        "translation_key": "PCV1 Pneumococcal Pneumonia"
       },
       "fields": {
         "patient_id": {
           "labels": {
-            "description": {
-              "en": "Patient ID"
-            },
             "short": {
-              "en": "ID"
+              "translation_key": "patient_id"
             }
           },
           "position": 0,
           "type": "string",
-          "flags": {
-            "input_digits_only": true
-          },
           "length": [
             5,
             13
@@ -5045,11 +4708,8 @@
         },
         "notes": {
           "labels": {
-            "description": {
-              "en": "Notes"
-            },
             "short": {
-              "en": "Notes"
+              "translation_key": "notes"
             }
           },
           "position": 1,
@@ -5068,25 +4728,17 @@
       "meta": {
         "code": "PCV2",
         "icon": "immunization",
-        "label": {
-          "en": " PCV2 Pneumococcal Pneumonia"
-        }
+        "translation_key": "PCV2 Pneumococcal Pneumonia"
       },
       "fields": {
         "patient_id": {
           "labels": {
-            "description": {
-              "en": "Patient ID"
-            },
             "short": {
-              "en": "ID"
+              "translation_key": "patient_id"
             }
           },
           "position": 0,
           "type": "string",
-          "flags": {
-            "input_digits_only": true
-          },
           "length": [
             5,
             13
@@ -5095,11 +4747,8 @@
         },
         "notes": {
           "labels": {
-            "description": {
-              "en": "Notes"
-            },
             "short": {
-              "en": "Notes"
+              "translation_key": "notes"
             }
           },
           "position": 1,
@@ -5118,25 +4767,17 @@
       "meta": {
         "code": "PCV3",
         "icon": "immunization",
-        "label": {
-          "en": " PCV3 Pneumococcal Pneumonia"
-        }
+        "translation_key": "PCV3 Pneumococcal Pneumonia"
       },
       "fields": {
         "patient_id": {
           "labels": {
-            "description": {
-              "en": "Patient ID"
-            },
             "short": {
-              "en": "ID"
+              "translation_key": "patient_id"
             }
           },
           "position": 0,
           "type": "string",
-          "flags": {
-            "input_digits_only": true
-          },
           "length": [
             5,
             13
@@ -5145,11 +4786,8 @@
         },
         "notes": {
           "labels": {
-            "description": {
-              "en": "Notes"
-            },
             "short": {
-              "en": "Notes"
+              "translation_key": "notes"
             }
           },
           "position": 1,
@@ -5168,25 +4806,17 @@
       "meta": {
         "code": "PCV4",
         "icon": "immunization",
-        "label": {
-          "en": " PCV4 Pneumococcal Pneumonia"
-        }
+        "translation_key": "PCV4 Pneumococcal Pneumonia"
       },
       "fields": {
         "patient_id": {
           "labels": {
-            "description": {
-              "en": "Patient ID"
-            },
             "short": {
-              "en": "ID"
+              "translation_key": "patient_id"
             }
           },
           "position": 0,
           "type": "string",
-          "flags": {
-            "input_digits_only": true
-          },
           "length": [
             5,
             13
@@ -5195,11 +4825,8 @@
         },
         "notes": {
           "labels": {
-            "description": {
-              "en": "Notes"
-            },
             "short": {
-              "en": "Notes"
+              "translation_key": "notes"
             }
           },
           "position": 1,
@@ -5218,25 +4845,17 @@
       "meta": {
         "code": "ROTA1",
         "icon": "immunization",
-        "label": {
-          "en": " ROTA1 Rotavirus"
-        }
+        "translation_key": "ROTA1 Rotavirus"
       },
       "fields": {
         "patient_id": {
           "labels": {
-            "description": {
-              "en": "Patient ID"
-            },
             "short": {
-              "en": "ID"
+              "translation_key": "patient_id"
             }
           },
           "position": 0,
           "type": "string",
-          "flags": {
-            "input_digits_only": true
-          },
           "length": [
             5,
             13
@@ -5245,11 +4864,8 @@
         },
         "notes": {
           "labels": {
-            "description": {
-              "en": "Notes"
-            },
             "short": {
-              "en": "Notes"
+              "translation_key": "notes"
             }
           },
           "position": 1,
@@ -5268,25 +4884,17 @@
       "meta": {
         "code": "ROTA2",
         "icon": "immunization",
-        "label": {
-          "en": " ROTA2 Rotavirus"
-        }
+        "translation_key": "ROTA2 Rotavirus"
       },
       "fields": {
         "patient_id": {
           "labels": {
-            "description": {
-              "en": "Patient ID"
-            },
             "short": {
-              "en": "ID"
+              "translation_key": "patient_id"
             }
           },
           "position": 0,
           "type": "string",
-          "flags": {
-            "input_digits_only": true
-          },
           "length": [
             5,
             13
@@ -5295,11 +4903,8 @@
         },
         "notes": {
           "labels": {
-            "description": {
-              "en": "Notes"
-            },
             "short": {
-              "en": "Notes"
+              "translation_key": "notes"
             }
           },
           "position": 1,
@@ -5318,25 +4923,17 @@
       "meta": {
         "code": "ROTA3",
         "icon": "immunization",
-        "label": {
-          "en": " ROTA3 Rotavirus"
-        }
+        "translation_key": "ROTA3 Rotavirus"
       },
       "fields": {
         "patient_id": {
           "labels": {
-            "description": {
-              "en": "Patient ID"
-            },
             "short": {
-              "en": "ID"
+              "translation_key": "patient_id"
             }
           },
           "position": 0,
           "type": "string",
-          "flags": {
-            "input_digits_only": true
-          },
           "length": [
             5,
             13
@@ -5345,11 +4942,8 @@
         },
         "notes": {
           "labels": {
-            "description": {
-              "en": "Notes"
-            },
             "short": {
-              "en": "Notes"
+              "translation_key": "notes"
             }
           },
           "position": 1,
@@ -5368,25 +4962,17 @@
       "meta": {
         "code": "VITA",
         "icon": "immunization",
-        "label": {
-          "en": " VITA Vitamin A"
-        }
+        "translation_key": "VITA Vitamin A"
       },
       "fields": {
         "patient_id": {
           "labels": {
-            "description": {
-              "en": "Patient ID"
-            },
             "short": {
-              "en": "ID"
+              "translation_key": "patient_id"
             }
           },
           "position": 0,
           "type": "string",
-          "flags": {
-            "input_digits_only": true
-          },
           "length": [
             5,
             13
@@ -5395,11 +4981,8 @@
         },
         "notes": {
           "labels": {
-            "description": {
-              "en": "Notes"
-            },
             "short": {
-              "en": "Notes"
+              "translation_key": "notes"
             }
           },
           "position": 1,
@@ -5418,25 +5001,17 @@
       "meta": {
         "code": "MMR1",
         "icon": "immunization",
-        "label": {
-          "en": " MMR1 Measles Mumps Rubella"
-        }
+        "translation_key": "MMR1 Measles Mumps Rubella"
       },
       "fields": {
         "patient_id": {
           "labels": {
-            "description": {
-              "en": "Patient ID"
-            },
             "short": {
-              "en": "ID"
+              "translation_key": "patient_id"
             }
           },
           "position": 0,
           "type": "string",
-          "flags": {
-            "input_digits_only": true
-          },
           "length": [
             5,
             13
@@ -5445,11 +5020,8 @@
         },
         "notes": {
           "labels": {
-            "description": {
-              "en": "Notes"
-            },
             "short": {
-              "en": "Notes"
+              "translation_key": "notes"
             }
           },
           "position": 1,
@@ -5468,25 +5040,17 @@
       "meta": {
         "code": "MMR2",
         "icon": "immunization",
-        "label": {
-          "en": " MMR2 Measles Mumps Rubella"
-        }
+        "translation_key": "MMR2 Measles Mumps Rubella"
       },
       "fields": {
         "patient_id": {
           "labels": {
-            "description": {
-              "en": "Patient ID"
-            },
             "short": {
-              "en": "ID"
+              "translation_key": "patient_id"
             }
           },
           "position": 0,
           "type": "string",
-          "flags": {
-            "input_digits_only": true
-          },
           "length": [
             5,
             13
@@ -5495,11 +5059,8 @@
         },
         "notes": {
           "labels": {
-            "description": {
-              "en": "Notes"
-            },
             "short": {
-              "en": "Notes"
+              "translation_key": "notes"
             }
           },
           "position": 1,
@@ -5518,25 +5079,17 @@
       "meta": {
         "code": "MMRV1",
         "icon": "immunization",
-        "label": {
-          "en": " MMRV1 Measles Mumps Rubella Varicella"
-        }
+        "translation_key": "MMRV1 Measles Mumps Rubella Varicella"
       },
       "fields": {
         "patient_id": {
           "labels": {
-            "description": {
-              "en": "Patient ID"
-            },
             "short": {
-              "en": "ID"
+              "translation_key": "patient_id"
             }
           },
           "position": 0,
           "type": "string",
-          "flags": {
-            "input_digits_only": true
-          },
           "length": [
             5,
             13
@@ -5545,11 +5098,8 @@
         },
         "notes": {
           "labels": {
-            "description": {
-              "en": "Notes"
-            },
             "short": {
-              "en": "Notes"
+              "translation_key": "notes"
             }
           },
           "position": 1,
@@ -5568,25 +5118,17 @@
       "meta": {
         "code": "MMRV2",
         "icon": "immunization",
-        "label": {
-          "en": " MMRV2 Measles Mumps Rubella Varicella"
-        }
+        "translation_key": "MMRV2 Measles Mumps Rubella Varicella"
       },
       "fields": {
         "patient_id": {
           "labels": {
-            "description": {
-              "en": "Patient ID"
-            },
             "short": {
-              "en": "ID"
+              "translation_key": "patient_id"
             }
           },
           "position": 0,
           "type": "string",
-          "flags": {
-            "input_digits_only": true
-          },
           "length": [
             5,
             13
@@ -5595,11 +5137,8 @@
         },
         "notes": {
           "labels": {
-            "description": {
-              "en": "Notes"
-            },
             "short": {
-              "en": "Notes"
+              "translation_key": "notes"
             }
           },
           "position": 1,
@@ -5618,25 +5157,17 @@
       "meta": {
         "code": "MN1",
         "icon": "immunization",
-        "label": {
-          "en": " MN1 Meningococcal"
-        }
+        "translation_key": "MN1 Meningococcal"
       },
       "fields": {
         "patient_id": {
           "labels": {
-            "description": {
-              "en": "Patient ID"
-            },
             "short": {
-              "en": "ID"
+              "translation_key": "patient_id"
             }
           },
           "position": 0,
           "type": "string",
-          "flags": {
-            "input_digits_only": true
-          },
           "length": [
             5,
             13
@@ -5645,11 +5176,8 @@
         },
         "notes": {
           "labels": {
-            "description": {
-              "en": "Notes"
-            },
             "short": {
-              "en": "Notes"
+              "translation_key": "notes"
             }
           },
           "position": 1,
@@ -5668,25 +5196,17 @@
       "meta": {
         "code": "MN2",
         "icon": "immunization",
-        "label": {
-          "en": " MN2 Meningococcal"
-        }
+        "translation_key": "MN2 Meningococcal"
       },
       "fields": {
         "patient_id": {
           "labels": {
-            "description": {
-              "en": "Patient ID"
-            },
             "short": {
-              "en": "ID"
+              "translation_key": "patient_id"
             }
           },
           "position": 0,
           "type": "string",
-          "flags": {
-            "input_digits_only": true
-          },
           "length": [
             5,
             13
@@ -5695,11 +5215,8 @@
         },
         "notes": {
           "labels": {
-            "description": {
-              "en": "Notes"
-            },
             "short": {
-              "en": "Notes"
+              "translation_key": "notes"
             }
           },
           "position": 1,
@@ -5718,25 +5235,17 @@
       "meta": {
         "code": "MN3",
         "icon": "immunization",
-        "label": {
-          "en": " MN3 Meningococcal"
-        }
+        "translation_key": "MN3 Meningococcal"
       },
       "fields": {
         "patient_id": {
           "labels": {
-            "description": {
-              "en": "Patient ID"
-            },
             "short": {
-              "en": "ID"
+              "translation_key": "patient_id"
             }
           },
           "position": 0,
           "type": "string",
-          "flags": {
-            "input_digits_only": true
-          },
           "length": [
             5,
             13
@@ -5745,11 +5254,8 @@
         },
         "notes": {
           "labels": {
-            "description": {
-              "en": "Notes"
-            },
             "short": {
-              "en": "Notes"
+              "translation_key": "notes"
             }
           },
           "position": 1,
@@ -5768,25 +5274,17 @@
       "meta": {
         "code": "MN4",
         "icon": "immunization",
-        "label": {
-          "en": " MN4 Meningococcal"
-        }
+        "translation_key": "MN4 Meningococcal"
       },
       "fields": {
         "patient_id": {
           "labels": {
-            "description": {
-              "en": "Patient ID"
-            },
             "short": {
-              "en": "ID"
+              "translation_key": "patient_id"
             }
           },
           "position": 0,
           "type": "string",
-          "flags": {
-            "input_digits_only": true
-          },
           "length": [
             5,
             13
@@ -5795,11 +5293,8 @@
         },
         "notes": {
           "labels": {
-            "description": {
-              "en": "Notes"
-            },
             "short": {
-              "en": "Notes"
+              "translation_key": "notes"
             }
           },
           "position": 1,
@@ -5818,25 +5313,17 @@
       "meta": {
         "code": "FLU",
         "icon": "immunization",
-        "label": {
-          "en": " FLU Influenza"
-        }
+        "translation_key": "FLU Influenza"
       },
       "fields": {
         "patient_id": {
           "labels": {
-            "description": {
-              "en": "Patient ID"
-            },
             "short": {
-              "en": "ID"
+              "translation_key": "patient_id"
             }
           },
           "position": 0,
           "type": "string",
-          "flags": {
-            "input_digits_only": true
-          },
           "length": [
             5,
             13
@@ -5845,11 +5332,8 @@
         },
         "notes": {
           "labels": {
-            "description": {
-              "en": "Notes"
-            },
             "short": {
-              "en": "Notes"
+              "translation_key": "notes"
             }
           },
           "position": 1,
@@ -5868,25 +5352,17 @@
       "meta": {
         "code": "HA1",
         "icon": "immunization",
-        "label": {
-          "en": " HA1 Hepatitis A"
-        }
+        "translation_key": "HA1 Hepatitis A"
       },
       "fields": {
         "patient_id": {
           "labels": {
-            "description": {
-              "en": "Patient ID"
-            },
             "short": {
-              "en": "ID"
+              "translation_key": "patient_id"
             }
           },
           "position": 0,
           "type": "string",
-          "flags": {
-            "input_digits_only": true
-          },
           "length": [
             5,
             13
@@ -5895,11 +5371,8 @@
         },
         "notes": {
           "labels": {
-            "description": {
-              "en": "Notes"
-            },
             "short": {
-              "en": "Notes"
+              "translation_key": "notes"
             }
           },
           "position": 1,
@@ -5918,25 +5391,17 @@
       "meta": {
         "code": "HA2",
         "icon": "immunization",
-        "label": {
-          "en": " HA2 Hepatitis A"
-        }
+        "translation_key": "HA2 Hepatitis A"
       },
       "fields": {
         "patient_id": {
           "labels": {
-            "description": {
-              "en": "Patient ID"
-            },
             "short": {
-              "en": "ID"
+              "translation_key": "patient_id"
             }
           },
           "position": 0,
           "type": "string",
-          "flags": {
-            "input_digits_only": true
-          },
           "length": [
             5,
             13
@@ -5945,11 +5410,8 @@
         },
         "notes": {
           "labels": {
-            "description": {
-              "en": "Notes"
-            },
             "short": {
-              "en": "Notes"
+              "translation_key": "notes"
             }
           },
           "position": 1,
@@ -5968,25 +5430,17 @@
       "meta": {
         "code": "JE",
         "icon": "immunization",
-        "label": {
-          "en": " JE Japanese Encephalitis"
-        }
+        "translation_key": "JE Japanese Encephalitis"
       },
       "fields": {
         "patient_id": {
           "labels": {
-            "description": {
-              "en": "Patient ID"
-            },
             "short": {
-              "en": "ID"
+              "translation_key": "patient_id"
             }
           },
           "position": 0,
           "type": "string",
-          "flags": {
-            "input_digits_only": true
-          },
           "length": [
             5,
             13
@@ -5995,11 +5449,8 @@
         },
         "notes": {
           "labels": {
-            "description": {
-              "en": "Notes"
-            },
             "short": {
-              "en": "Notes"
+              "translation_key": "notes"
             }
           },
           "position": 1,
@@ -6018,25 +5469,17 @@
       "meta": {
         "code": "YF",
         "icon": "immunization",
-        "label": {
-          "en": " YF Yellow Fever"
-        }
+        "translation_key": "YF Yellow Fever"
       },
       "fields": {
         "patient_id": {
           "labels": {
-            "description": {
-              "en": "Patient ID"
-            },
             "short": {
-              "en": "ID"
+              "translation_key": "patient_id"
             }
           },
           "position": 0,
           "type": "string",
-          "flags": {
-            "input_digits_only": true
-          },
           "length": [
             5,
             13
@@ -6045,11 +5488,8 @@
         },
         "notes": {
           "labels": {
-            "description": {
-              "en": "Notes"
-            },
             "short": {
-              "en": "Notes"
+              "translation_key": "notes"
             }
           },
           "position": 1,
@@ -6068,25 +5508,17 @@
       "meta": {
         "code": "TY1",
         "icon": "immunization",
-        "label": {
-          "en": " TY1 Typhoid"
-        }
+        "translation_key": "TY1 Typhoid"
       },
       "fields": {
         "patient_id": {
           "labels": {
-            "description": {
-              "en": "Patient ID"
-            },
             "short": {
-              "en": "ID"
+              "translation_key": "patient_id"
             }
           },
           "position": 0,
           "type": "string",
-          "flags": {
-            "input_digits_only": true
-          },
           "length": [
             5,
             13
@@ -6095,11 +5527,8 @@
         },
         "notes": {
           "labels": {
-            "description": {
-              "en": "Notes"
-            },
             "short": {
-              "en": "Notes"
+              "translation_key": "notes"
             }
           },
           "position": 1,
@@ -6118,25 +5547,17 @@
       "meta": {
         "code": "TY2",
         "icon": "immunization",
-        "label": {
-          "en": " TY2 Typhoid"
-        }
+        "translation_key": "TY2 Typhoid"
       },
       "fields": {
         "patient_id": {
           "labels": {
-            "description": {
-              "en": "Patient ID"
-            },
             "short": {
-              "en": "ID"
+              "translation_key": "patient_id"
             }
           },
           "position": 0,
           "type": "string",
-          "flags": {
-            "input_digits_only": true
-          },
           "length": [
             5,
             13
@@ -6145,11 +5566,8 @@
         },
         "notes": {
           "labels": {
-            "description": {
-              "en": "Notes"
-            },
             "short": {
-              "en": "Notes"
+              "translation_key": "notes"
             }
           },
           "position": 1,
@@ -6168,25 +5586,17 @@
       "meta": {
         "code": "HPV1",
         "icon": "immunization",
-        "label": {
-          "en": " HPV1 Human Papillomavirus"
-        }
+        "translation_key": "HPV1 Human Papillomavirus"
       },
       "fields": {
         "patient_id": {
           "labels": {
-            "description": {
-              "en": "Patient ID"
-            },
             "short": {
-              "en": "ID"
+              "translation_key": "patient_id"
             }
           },
           "position": 0,
           "type": "string",
-          "flags": {
-            "input_digits_only": true
-          },
           "length": [
             5,
             13
@@ -6195,11 +5605,8 @@
         },
         "notes": {
           "labels": {
-            "description": {
-              "en": "Notes"
-            },
             "short": {
-              "en": "Notes"
+              "translation_key": "notes"
             }
           },
           "position": 1,
@@ -6218,25 +5625,17 @@
       "meta": {
         "code": "HPV2",
         "icon": "immunization",
-        "label": {
-          "en": " HPV2 Human Papillomavirus"
-        }
+        "translation_key": "HPV2 Human Papillomavirus"
       },
       "fields": {
         "patient_id": {
           "labels": {
-            "description": {
-              "en": "Patient ID"
-            },
             "short": {
-              "en": "ID"
+              "translation_key": "patient_id"
             }
           },
           "position": 0,
           "type": "string",
-          "flags": {
-            "input_digits_only": true
-          },
           "length": [
             5,
             13
@@ -6245,11 +5644,8 @@
         },
         "notes": {
           "labels": {
-            "description": {
-              "en": "Notes"
-            },
             "short": {
-              "en": "Notes"
+              "translation_key": "notes"
             }
           },
           "position": 1,
@@ -6268,25 +5664,17 @@
       "meta": {
         "code": "HPV3",
         "icon": "immunization",
-        "label": {
-          "en": " HPV3 Human Papillomavirus"
-        }
+        "translation_key": "HPV3 Human Papillomavirus"
       },
       "fields": {
         "patient_id": {
           "labels": {
-            "description": {
-              "en": "Patient ID"
-            },
             "short": {
-              "en": "ID"
+              "translation_key": "patient_id"
             }
           },
           "position": 0,
           "type": "string",
-          "flags": {
-            "input_digits_only": true
-          },
           "length": [
             5,
             13
@@ -6295,11 +5683,8 @@
         },
         "notes": {
           "labels": {
-            "description": {
-              "en": "Notes"
-            },
             "short": {
-              "en": "Notes"
+              "translation_key": "notes"
             }
           },
           "position": 1,
@@ -6318,25 +5703,17 @@
       "meta": {
         "code": "CH1",
         "icon": "immunization",
-        "label": {
-          "en": " CH1 Cholera"
-        }
+        "translation_key": "CH1 Cholera"
       },
       "fields": {
         "patient_id": {
           "labels": {
-            "description": {
-              "en": "Patient ID"
-            },
             "short": {
-              "en": "ID"
+              "translation_key": "patient_id"
             }
           },
           "position": 0,
           "type": "string",
-          "flags": {
-            "input_digits_only": true
-          },
           "length": [
             5,
             13
@@ -6345,11 +5722,8 @@
         },
         "notes": {
           "labels": {
-            "description": {
-              "en": "Notes"
-            },
             "short": {
-              "en": "Notes"
+              "translation_key": "notes"
             }
           },
           "position": 1,
@@ -6368,25 +5742,17 @@
       "meta": {
         "code": "CH2",
         "icon": "immunization",
-        "label": {
-          "en": " CH2 Cholera"
-        }
+        "translation_key": "CH2 Cholera"
       },
       "fields": {
         "patient_id": {
           "labels": {
-            "description": {
-              "en": "Patient ID"
-            },
             "short": {
-              "en": "ID"
+              "translation_key": "patient_id"
             }
           },
           "position": 0,
           "type": "string",
-          "flags": {
-            "input_digits_only": true
-          },
           "length": [
             5,
             13
@@ -6395,11 +5761,8 @@
         },
         "notes": {
           "labels": {
-            "description": {
-              "en": "Notes"
-            },
             "short": {
-              "en": "Notes"
+              "translation_key": "notes"
             }
           },
           "position": 1,
@@ -6418,25 +5781,17 @@
       "meta": {
         "code": "CH3",
         "icon": "immunization",
-        "label": {
-          "en": " CH3 Cholera"
-        }
+        "translation_key": "CH3 Cholera"
       },
       "fields": {
         "patient_id": {
           "labels": {
-            "description": {
-              "en": "Patient ID"
-            },
             "short": {
-              "en": "ID"
+              "translation_key": "patient_id"
             }
           },
           "position": 0,
           "type": "string",
-          "flags": {
-            "input_digits_only": true
-          },
           "length": [
             5,
             13
@@ -6445,11 +5800,8 @@
         },
         "notes": {
           "labels": {
-            "description": {
-              "en": "Notes"
-            },
             "short": {
-              "en": "Notes"
+              "translation_key": "notes"
             }
           },
           "position": 1,
@@ -6468,11 +5820,7 @@
       "meta": {
         "code": "OFF",
         "icon": "off",
-        "label": {
-          "en": "Turn Notifications OFF (SMS)",
-          "hi": "सूचना बंद करें (SMS)",
-          "id": "Menonaktifkan Pesan (SMS)"
-        }
+        "translation_key": "form.off.title"
       },
       "fields": {
         "patient_id": {
@@ -6480,35 +5828,25 @@
             "tiny": {
               "en": "ID"
             },
-            "description": {
-              "en": "Patient ID"
-            },
             "short": {
-              "en": "ID"
+              "translation_key": "patient_id"
             }
           },
           "position": 0,
-          "flags": {
-            "input_digits_only": true
-          },
+          "type": "string",
           "length": [
             5,
             13
           ],
-          "type": "string",
           "required": true
         },
         "notes": {
           "labels": {
             "tiny": {
-              "en": "r",
-              "sw": "r"
-            },
-            "description": {
-              "en": "Reason"
+              "en": "r"
             },
             "short": {
-              "en": "Reason"
+              "translation_key": "report.off.reason"
             }
           },
           "position": 1,
@@ -6526,11 +5864,7 @@
       "meta": {
         "code": "ON",
         "icon": "on",
-        "label": {
-          "en": "Turn Notifications ON (SMS)",
-          "hi": "सूचना शूरू करें (SMS)",
-          "id": "Menghidupkan Pesan (SMS)"
-        }
+        "translation_key": "form.on.title"
       },
       "fields": {
         "patient_id": {
@@ -6538,31 +5872,25 @@
             "tiny": {
               "en": "ID"
             },
-            "description": {
-              "en": "Patient ID"
-            },
             "short": {
-              "en": "ID"
+              "translation_key": "patient_id"
             }
           },
           "position": 0,
-          "flags": {
-            "input_digits_only": true
-          },
+          "type": "string",
           "length": [
             5,
             13
           ],
-          "type": "string",
           "required": true
         },
         "notes": {
           "labels": {
-            "description": {
-              "en": "Notes"
+            "tiny": {
+              "en": "N"
             },
             "short": {
-              "en": "Notes"
+              "translation_key": "notes"
             }
           },
           "position": 1,
