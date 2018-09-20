@@ -4,27 +4,7 @@
     <h:title>Turn Notifications ON</h:title>
     <model>
       <itext>
-        <translation lang="Bahasa Indonesia (Indonesian)">
-          <text id="/collect_on/r:label">
-            <value>Catatan</value>
-          </text>
-          <text id="/collect_on/review:label">
-            <value>Mengirimkan laporan untuk menghidupkan pesan untuk ID <output value=" /collect_on/id "/>, dengan catatan: <output value=" /collect_on/r "/></value></text>
-          <text id="/collect_on/id:label">
-            <value>Pasien ID</value>
-          </text>
-        </translation>
-        <translation lang="fr">
-          <text id="/collect_on/r:label">
-            <value>Notes</value>
-          </text>
-          <text id="/collect_on/review:label">
-            <value>Envoi d'un rapport pour activer les notifications pour l'identifiant <output value=" /collect_on/id "/>, avec les notes suivantes: <output value=" /collect_on/r "/></value></text>
-          <text id="/collect_on/id:label">
-            <value>Identifiant du patient</value>
-          </text>
-        </translation>
-        <translation lang="हिन्दी (Hindi)">
+        <translation lang="हिन्दी (hi)">
           <text id="/collect_on/r:label">
             <value>नोट्स</value>
           </text>
@@ -34,18 +14,27 @@
             <value>मरीज का ID</value>
           </text>
         </translation>
-        <translation lang="bengali">
+        <translation lang="Français (fr)">
           <text id="/collect_on/r:label">
-            <value>নোট</value>
+            <value>Notes</value>
           </text>
           <text id="/collect_on/review:label">
-            <value>প্রতিবেদন জমা দেওয়া, আইডি $ {আইডি} এর জন্য বিজ্ঞপ্তিগুলি চালু করুন নিম্নলিখিত টীকা সহ: $ {R}</value>
-          </text>
+            <value>Envoi d'un rapport pour activer les notifications pour l'identifiant <output value=" /collect_on/id "/>, avec les notes suivantes: <output value=" /collect_on/r "/></value></text>
           <text id="/collect_on/id:label">
-            <value>রোগীর আইডি</value>
+            <value>Identifiant du patient</value>
           </text>
         </translation>
-        <translation default="true()" lang="English">
+        <translation lang="Bahasa Indonesia (id)">
+          <text id="/collect_on/r:label">
+            <value>Catatan</value>
+          </text>
+          <text id="/collect_on/review:label">
+            <value>Mengirimkan laporan untuk menghidupkan pesan untuk ID <output value=" /collect_on/id "/>, dengan catatan: <output value=" /collect_on/r "/></value></text>
+          <text id="/collect_on/id:label">
+            <value>Pasien ID</value>
+          </text>
+        </translation>
+        <translation default="true()" lang="English (en)">
           <text id="/collect_on/r:label">
             <value>Notes</value>
           </text>
@@ -55,9 +44,19 @@
             <value>Patient ID</value>
           </text>
         </translation>
+        <translation lang="বাংলা (bn)">
+          <text id="/collect_on/r:label">
+            <value>নোট</value>
+          </text>
+          <text id="/collect_on/review:label">
+            <value>প্রতিবেদন জমা দেওয়া, আইডি <output value=" /collect_on/id "/> এর জন্য বিজ্ঞপ্তিগুলি চালু করুন নিম্নলিখিত টীকা সহ: <output value=" /collect_on/r "/></value></text>
+          <text id="/collect_on/id:label">
+            <value>রোগীর আইডি</value>
+          </text>
+        </translation>
       </itext>
       <instance>
-        <collect_on delimiter="#" id="collect_on" prefix="J1!on!" version="2018-08-21_08-38">
+        <collect_on delimiter="#" id="collect_on" prefix="J1!on!" version="2018-09-19_19-43">
           <id/>
           <r/>
           <review/>
