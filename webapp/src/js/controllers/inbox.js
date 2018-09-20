@@ -142,7 +142,6 @@ var feedback = require('../modules/feedback'),
     $scope.adminUrl = Location.adminPath;
     $scope.enketoStatus = { saving: false };
     $scope.isAdmin = Session.isAdmin();
-    $scope.hasReports = false;
 
     if (
       $window.medicmobile_android &&
@@ -187,10 +186,6 @@ var feedback = require('../modules/feedback'),
           $scope.clearSelected();
         }
       });
-    });
-
-    $scope.$on('HasReports', function(e, hasReports) {
-      $scope.hasReports = hasReports;
     });
 
     // User wants to cancel current flow, or pressed back button, etc.
