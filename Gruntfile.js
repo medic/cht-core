@@ -422,38 +422,38 @@ module.exports = function(grunt) {
         'if [ -z $COUCH_URL ] || [ -z $API_URL ] || [ -z $COUCH_NODE_NAME ]; then ' +
         'echo "Missing required env var.  Check that all are set: ' +
         'COUCH_URL, API_URL, COUCH_NODE_NAME" && exit 1; fi',
-        'undo-patches': {
-          cmd: function() {
-            var modulesToPatch = [
-              'bootstrap-daterangepicker',
-              'font-awesome',
-              'moment',
-            ];
-            return modulesToPatch
-              .map(function(module) {
-                var backupPath = 'webapp/node_modules_backup/' + module;
-                var modulePath = 'webapp/node_modules/' + module;
-                return (
-                  '[ -d ' +
-                  backupPath +
-                  ' ]' +
-                  ' && rm -rf ' +
-                  modulePath +
-                  ' && mv ' +
-                  backupPath +
-                  ' ' +
-                  modulePath +
-                  ' && echo "Module restored: ' +
-                  module +
-                  '"' +
-                  ' || echo "No restore required for: ' +
-                  module +
-                  '"'
-                );
-              })
-              .join(' && ');
-          },
+      'undo-patches': {
+        cmd: function() {
+          var modulesToPatch = [
+            'bootstrap-daterangepicker',
+            'font-awesome',
+            'moment',
+          ];
+          return modulesToPatch
+            .map(function(module) {
+              var backupPath = 'webapp/node_modules_backup/' + module;
+              var modulePath = 'webapp/node_modules/' + module;
+              return (
+                '[ -d ' +
+                backupPath +
+                ' ]' +
+                ' && rm -rf ' +
+                modulePath +
+                ' && mv ' +
+                backupPath +
+                ' ' +
+                modulePath +
+                ' && echo "Module restored: ' +
+                module +
+                '"' +
+                ' || echo "No restore required for: ' +
+                module +
+                '"'
+              );
+            })
+            .join(' && ');
         },
+      },
       'shared-lib-unit': {
         cmd: () => {
           const fs = require('fs');
