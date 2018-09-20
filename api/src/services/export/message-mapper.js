@@ -1,6 +1,9 @@
 const _ = require('underscore'),
       moment = require('moment'),
-      db = require('../../db-pouch');
+      db = require('../../db-pouch'),
+      config = require('../../config'),
+      messageUtils = require('@shared-libs/message-utils'),
+      registrationUtils = require('@shared-libs/registration-utils');
 
 const normalizeResponse = doc => {
   return {
@@ -94,6 +97,16 @@ const normalizeTasks = doc => {
   return tasks;
 };
 
+const getRecordRegistrations = (registrations, record) => {
+  if (!record.patient || !record.patient.patient_id) {
+    return [];
+  }
+
+  return registrations
+    .filter(row => row.key === record.patient.patient_id)
+    .map(row => row.doc);
+};
+
 module.exports = {
   getDocIds: (options) => {
     return db.medic.query('medic-sms/tasks_messages', options)
@@ -124,12 +137,36 @@ module.exports = {
         const tasks = normalizeTasks(record);
         return _.flatten(tasks.map(task => {
           const history = buildHistory(task);
+
+          if (!task.messages) {
+            const context = {
+              patient: record.patient,
+              registrations: record.registrations
+            };
+            const content = {
+              translationKey: task.message_key,
+              message: task.message
+            };
+            task.messages = messageUtils.generate(
+              config.get(),
+              config.translate,
+              record,
+              content,
+              task.recipient,
+              context
+            );
+          }
+
+          const taskType = (task.translation_key && config.translate(task.translation_key, { group: task.group })) ||
+                           task.type ||
+                           'Task Message';
+
           return task.messages.map(message => [
             record._id,
-            record.patient_id,
+            record.patient_id || (record.patient && record.patient.patient_id),
             formatDate(record.reported_date),
             record.from,
-            task.type || 'Task Message',
+            taskType,
             task.state,
             getStateDate('received', task, history),
             getStateDate('scheduled', task, history),
@@ -143,6 +180,37 @@ module.exports = {
             message.message
           ]);
         }), true);
+      },
+      hydrate: records => {
+        const needRegistrations = records.filter(record => {
+          return record.scheduled_tasks && record.scheduled_tasks.find(task => !task.messages);
+        });
+
+        if (!needRegistrations.length) {
+          return records;
+        }
+
+        const patientIds = needRegistrations
+          .map(record => record.patient && record.patient.patient_id)
+          .filter((patientId, idx, self) => patientId && self.indexOf(patientId) === idx);
+
+        if (!patientIds.length) {
+          return records;
+        }
+
+        return db.medic
+          .query('medic-client/registered_patients', { keys: patientIds, include_docs: true })
+          .then(result => {
+            const registrations = result.rows.filter(row => {
+              return registrationUtils.isValidRegistration(row.doc, config.get());
+            });
+
+            records.forEach(record => {
+              record.registrations = getRecordRegistrations(registrations, record);
+            });
+
+            return records;
+          });
       }
     });
   }
