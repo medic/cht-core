@@ -1,8 +1,9 @@
 var _ = require('underscore'),
-    scrollLoader = require('../modules/scroll-loader');
+  scrollLoader = require('../modules/scroll-loader');
 
-angular.module('inboxControllers').controller('ReportsCtrl',
-  function (
+angular
+  .module('inboxControllers')
+  .controller('ReportsCtrl', function(
     $log,
     $scope,
     $state,
@@ -30,7 +31,7 @@ angular.module('inboxControllers').controller('ReportsCtrl',
     // or just the summary in the content pane.
     $scope.selected = [];
     $scope.filters = {
-      search: $stateParams.query
+      search: $stateParams.query,
     };
     $scope.verifyingReport = false;
 
@@ -46,6 +47,7 @@ angular.module('inboxControllers').controller('ReportsCtrl',
         if ($state.params.id) {
           liveList.setSelected($state.params.id);
         }
+        setActionBarData();
         return updated;
       });
     };
@@ -62,7 +64,7 @@ angular.module('inboxControllers').controller('ReportsCtrl',
         LiveList.reports.update(listModel);
         LiveList['report-search'].update(listModel);
       }
-      MarkRead([ model.doc ])
+      MarkRead([model.doc])
         .then($scope.updateUnreadCount)
         .catch(function(err) {
           $log.error('Error marking read', err);
@@ -72,9 +74,7 @@ angular.module('inboxControllers').controller('ReportsCtrl',
     var setTitle = function(model) {
       var formInternalId = model.formInternalId || model.form;
       var form = _.findWhere($scope.forms, { code: formInternalId });
-      var name = (form && form.name) ||
-                 (form && form.title) ||
-                 model.form;
+      var name = (form && form.name) || (form && form.title) || model.form;
       $scope.setTitle(name);
     };
 
@@ -83,10 +83,11 @@ angular.module('inboxControllers').controller('ReportsCtrl',
       model.selected = $scope.selected.map(function(s) {
         return s.doc || s.summary;
       });
-      var doc = !$scope.selectMode &&
-                model.selected &&
-                model.selected.length === 1 &&
-                model.selected[0];
+      var doc =
+        !$scope.selectMode &&
+        model.selected &&
+        model.selected.length === 1 &&
+        model.selected[0];
       if (!doc) {
         return $scope.setRightActionBar(model);
       }
@@ -123,15 +124,16 @@ angular.module('inboxControllers').controller('ReportsCtrl',
         if (liveList.initialised()) {
           liveList.setSelected(model.doc && model.doc._id);
         }
-        refreshing = model.doc &&
-                     $scope.selected.length &&
-                     $scope.selected[0]._id === model.doc._id;
+        refreshing =
+          model.doc &&
+          $scope.selected.length &&
+          $scope.selected[0]._id === model.doc._id;
         if (!refreshing) {
           $scope.verifyingReport = false;
         }
 
         model.expanded = true;
-        $scope.selected = [ model ];
+        $scope.selected = [model];
         setTitle(model);
       }
       setRightActionBar();
@@ -165,8 +167,11 @@ angular.module('inboxControllers').controller('ReportsCtrl',
 
     $scope.deselectReport = function(report) {
       spliceSelected(report._id);
-      $('#reports-list li[data-record-id="' + report._id + '"] input[type="checkbox"]')
-        .prop('checked', false);
+      $(
+        '#reports-list li[data-record-id="' +
+          report._id +
+          '"] input[type="checkbox"]'
+      ).prop('checked', false);
       $scope.settingSelected(true);
     };
 
@@ -179,7 +184,7 @@ angular.module('inboxControllers').controller('ReportsCtrl',
       fetchFormattedReport(report)
         .then(function(model) {
           if (model) {
-            $timeout(function(){
+            $timeout(function() {
               setSelected(model);
               initScroll();
             });
@@ -217,13 +222,17 @@ angular.module('inboxControllers').controller('ReportsCtrl',
           $scope.appending = false;
           $scope.error = false;
           $scope.errorSyntax = false;
-          if (!$state.params.id &&
-              !$scope.isMobile() &&
-              !$scope.selected &&
-              !$scope.selectMode &&
-              $state.is('reports.detail')) {
+          if (
+            !$state.params.id &&
+            !$scope.isMobile() &&
+            !$scope.selected &&
+            !$scope.selectMode &&
+            $state.is('reports.detail')
+          ) {
             $timeout(function() {
-              var id = $('.inbox-items li').first().attr('data-record-id');
+              var id = $('.inbox-items li')
+                .first()
+                .attr('data-record-id');
               $state.go('reports.detail', { id: id }, { location: 'replace' });
             });
           }
@@ -233,9 +242,11 @@ angular.module('inboxControllers').controller('ReportsCtrl',
         .catch(function(err) {
           $scope.error = true;
           $scope.loading = false;
-          if ($scope.filters.search &&
-              err.reason &&
-              err.reason.toLowerCase().indexOf('bad query syntax') !== -1) {
+          if (
+            $scope.filters.search &&
+            err.reason &&
+            err.reason.toLowerCase().indexOf('bad query syntax') !== -1
+          ) {
             // invalid freetext filter query
             $scope.errorSyntax = true;
           }
@@ -249,13 +260,19 @@ angular.module('inboxControllers').controller('ReportsCtrl',
         return;
       }
       $scope.loading = true;
-      if ($scope.filters.search ||
-          ($scope.filters.forms && $scope.filters.forms.selected && $scope.filters.forms.selected.length) ||
-          ($scope.filters.facilities && $scope.filters.facilities.selected && $scope.filters.facilities.selected.length) ||
-          ($scope.filters.date && ($scope.filters.date.to || $scope.filters.date.from)) ||
-          ($scope.filters.valid === true || $scope.filters.valid === false) ||
-          ($scope.filters.verified && $scope.filters.verified.length)
-         ) {
+      if (
+        $scope.filters.search ||
+        ($scope.filters.forms &&
+          $scope.filters.forms.selected &&
+          $scope.filters.forms.selected.length) ||
+        ($scope.filters.facilities &&
+          $scope.filters.facilities.selected &&
+          $scope.filters.facilities.selected.length) ||
+        ($scope.filters.date &&
+          ($scope.filters.date.to || $scope.filters.date.from)) ||
+        ($scope.filters.valid === true || $scope.filters.valid === false) ||
+        ($scope.filters.verified && $scope.filters.verified.length)
+      ) {
         $scope.filtered = true;
         liveList = LiveList['report-search'];
       } else {
@@ -272,8 +289,7 @@ angular.module('inboxControllers').controller('ReportsCtrl',
 
     $scope.$on('ClearSelected', function() {
       $scope.selected = [];
-      $('#reports-list input[type="checkbox"]')
-        .prop('checked', false);
+      $('#reports-list input[type="checkbox"]').prop('checked', false);
       LiveList.reports.clearSelected();
       LiveList['report-search'].clearSelected();
       $scope.verifyingReport = false;
@@ -281,9 +297,10 @@ angular.module('inboxControllers').controller('ReportsCtrl',
 
     $scope.$on('VerifyReport', function(e, valid) {
       if ($scope.selected[0].doc.form) {
-        DB().get($scope.selected[0]._id)
+        DB()
+          .get($scope.selected[0]._id)
           .then(function(message) {
-            message.verified = (message.verified === valid) ? undefined : valid;
+            message.verified = message.verified === valid ? undefined : valid;
             return DB().post(message);
           })
           .catch(function(err) {
@@ -296,7 +313,7 @@ angular.module('inboxControllers').controller('ReportsCtrl',
       Modal({
         templateUrl: 'templates/modals/edit_report.html',
         controller: 'EditReportCtrl',
-        model: { report: $scope.selected[0].doc }
+        model: { report: $scope.selected[0].doc },
       });
     });
 
@@ -322,8 +339,8 @@ angular.module('inboxControllers').controller('ReportsCtrl',
         controller: 'EditMessageGroupCtrl',
         model: {
           report: report,
-          group: angular.copy(group)
-        }
+          group: angular.copy(group),
+        },
       });
     };
 
@@ -366,15 +383,16 @@ angular.module('inboxControllers').controller('ReportsCtrl',
       $scope.search();
     };
 
-    if ($scope.forms) { // if forms are already loaded
+    if ($scope.forms) {
+      // if forms are already loaded
       $scope.search();
-    } else { // otherwise wait for loading to complete
+    } else {
+      // otherwise wait for loading to complete
       $scope.loading = true;
       $scope.$on('formLoadingComplete', function() {
         $scope.search();
-        var doc = $scope.selected &&
-                  $scope.selected[0] &&
-                  $scope.selected[0].doc;
+        var doc =
+          $scope.selected && $scope.selected[0] && $scope.selected[0].doc;
         if (doc) {
           setTitle(doc);
         }
@@ -406,7 +424,9 @@ angular.module('inboxControllers').controller('ReportsCtrl',
       $('#reports-list li').each(function() {
         var id = $(this).attr('data-record-id');
         var found = _.findWhere($scope.selected, { _id: id });
-        $(this).find('input[type="checkbox"]').prop('checked', found);
+        $(this)
+          .find('input[type="checkbox"]')
+          .prop('checked', found);
       });
     };
 
@@ -415,12 +435,12 @@ angular.module('inboxControllers').controller('ReportsCtrl',
       Search('reports', $scope.filters, { limit: 500 })
         .then(function(summaries) {
           $scope.selected = summaries.map(function(summary) {
-            return  {
+            return {
               _id: summary._id,
               summary: summary,
               expanded: false,
               lineage: summary.lineage,
-              contact: summary.contact
+              contact: summary.contact,
             };
           });
           $scope.settingSelected(true);
@@ -438,24 +458,29 @@ angular.module('inboxControllers').controller('ReportsCtrl',
       $('#reports-list input[type="checkbox"]').prop('checked', false);
     };
 
-    $scope.setLeftActionBar({
-      exportFn: function(e) {
-        var exportFilters = _.extendOwn({}, $scope.filters);
-        ['forms', 'facilities'].forEach(function(type) {
-          if (exportFilters[type]) {
-            delete exportFilters[type].options;
-          }
-        });
+    var setActionBarData = function() {
+      $scope.setLeftActionBar({
+        hasResults: $scope.hasReports,
+        exportFn: function(e) {
+          var exportFilters = _.extendOwn({}, $scope.filters);
+          ['forms', 'facilities'].forEach(function(type) {
+            if (exportFilters[type]) {
+              delete exportFilters[type].options;
+            }
+          });
 
-        var $link = $(e.target).closest('a');
-        $link.addClass('mm-icon-disabled');
-        $timeout(function() {
-          $link.removeClass('mm-icon-disabled');
-        }, 2000);
+          var $link = $(e.target).closest('a');
+          $link.addClass('mm-icon-disabled');
+          $timeout(function() {
+            $link.removeClass('mm-icon-disabled');
+          }, 2000);
 
-        Export(exportFilters, 'reports');
-      }
-    });
+          Export(exportFilters, 'reports');
+        },
+      });
+    };
+
+    setActionBarData();
 
     $scope.$on('DeselectAll', deselectAll);
 
@@ -471,16 +496,15 @@ angular.module('inboxControllers').controller('ReportsCtrl',
         if (change.deleted) {
           liveList.remove(change.doc);
           $scope.hasReports = liveList.count() > 0;
+          setActionBarData();
         } else {
           query({ silent: true, limit: liveList.count() });
         }
       },
       filter: function(change) {
-        return change.doc.form ||
-               liveList.containsDeleteStub(change.doc);
-      }
+        return change.doc.form || liveList.containsDeleteStub(change.doc);
+      },
     });
 
     $scope.$on('$destroy', changeListener.unsubscribe);
-  }
-);
+  });
