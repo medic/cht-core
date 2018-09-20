@@ -1,7 +1,8 @@
 var _ = require('underscore');
 
-angular.module('inboxControllers').controller('MessagesCtrl',
-  function (
+angular
+  .module('inboxControllers')
+  .controller('MessagesCtrl', function(
     $log,
     $scope,
     $state,
@@ -26,7 +27,9 @@ angular.module('inboxControllers').controller('MessagesCtrl',
       if (options.changes) {
         MessageListUtils.removeDeleted($scope.messages, options.messages);
         var selectedChanged = MessageListUtils.mergeUpdated(
-          $scope.messages, options.messages, $scope.selected && $scope.selected.id
+          $scope.messages,
+          options.messages,
+          $scope.selected && $scope.selected.id
         );
         if (selectedChanged) {
           $scope.$broadcast('UpdateContactConversation', { silent: true });
@@ -34,6 +37,7 @@ angular.module('inboxControllers').controller('MessagesCtrl',
       } else {
         $scope.messages = options.messages || [];
       }
+      setActionBarData();
     };
 
     var updateConversations = function(options) {
@@ -66,15 +70,17 @@ angular.module('inboxControllers').controller('MessagesCtrl',
 
     updateConversations()
       .then(function() {
-        if (!$state.params.id &&
-            $scope.messages.length &&
-            !$scope.isMobile() &&
-            $state.is('messages.detail')) {
+        if (
+          !$state.params.id &&
+          $scope.messages.length &&
+          !$scope.isMobile() &&
+          $state.is('messages.detail')
+        ) {
           $timeout(function() {
             var first = $('.inbox-items li').first();
             var state = {
               id: first.attr('data-record-id'),
-              type: first.attr('data-record-type')
+              type: first.attr('data-record-type'),
             };
             $state.go('messages.detail', state, { location: 'replace' });
           });
@@ -97,25 +103,26 @@ angular.module('inboxControllers').controller('MessagesCtrl',
         if ($scope.currentTab !== 'messages') {
           return false;
         }
-        return change.doc.kujua_message ||
-               change.doc.sms_message ||
-               change.deleted;
-      }
+        return (
+          change.doc.kujua_message || change.doc.sms_message || change.deleted
+        );
+      },
     });
 
-    $scope.setLeftActionBar({
-      exportFn: function() {
-        Export($scope.filters, 'messages');
-      }
-    });
+    var setActionBarData = function() {
+      $scope.setLeftActionBar({
+        hasResults: $scope.messages.length > 0,
+        exportFn: function() {
+          Export($scope.filters, 'messages');
+        },
+      });
+    };
+
+    setActionBarData();
 
     $scope.$on('$destroy', changeListener.unsubscribe);
 
     if ($stateParams.tour) {
       Tour.start($stateParams.tour);
     }
-  }
-);
-
-
-
+  });

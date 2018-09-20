@@ -152,6 +152,7 @@ var _ = require('underscore'),
           $scope.loading = false;
           $scope.appending = false;
           $scope.hasContacts = liveList.count() > 0;
+          setActionBarData();
         })
         .catch(function(err) {
           $scope.error = true;
@@ -304,6 +305,7 @@ var _ = require('underscore'),
 
     var setActionBarData = function() {
       var data = {
+        hasResults: $scope.hasContacts,
         userFacilityId: usersHomePlace && usersHomePlace._id,
         exportFn: function() {
           Export($scope.filters, 'contacts');

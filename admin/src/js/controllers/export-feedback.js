@@ -1,11 +1,6 @@
-angular.module('controllers').controller('ExportFeedbackCtrl',
-  function (
-    $log,
-    $scope,
-    DB,
-    Export
-  ) {
-
+angular
+  .module('controllers')
+  .controller('ExportFeedbackCtrl', function($log, $scope, DB, Export) {
     'use strict';
     'ngInject';
 
@@ -17,13 +12,15 @@ angular.module('controllers').controller('ExportFeedbackCtrl',
     };
 
     var safeStringify = function(str) {
-      if (typeof str === 'string') { // User typed feedback
+      if (typeof str === 'string') {
+        // User typed feedback
         return str;
       }
-      try { // Pouchdb automated log; can be massive hence the limit
+      try {
+        // Pouchdb automated log; can be massive hence the limit
         str.message = formattedMessage(str.message);
         return JSON.stringify(str);
-      } catch(e) {
+      } catch (e) {
         return str;
       }
     };
@@ -32,20 +29,25 @@ angular.module('controllers').controller('ExportFeedbackCtrl',
       var result = {
         page: {
           number: data.rows.length,
-          total: data.total_rows
-        }
+          total: data.total_rows,
+        },
       };
       result.items = data.rows.map(function(row) {
         return {
           id: row.doc._id,
           time: row.doc.meta.time,
-          info: safeStringify(row.doc.info)
+          info: safeStringify(row.doc.info),
         };
       });
       return result;
     };
 
-    DB().query('medic-client/feedback', { include_docs: true, descending: true, limit: 20 })
+    DB()
+      .query('medic-admin/feedback', {
+        include_docs: true,
+        descending: true,
+        limit: 20,
+      })
       .then(function(data) {
         $scope.feedback = mapFeedback(data);
       })
@@ -59,6 +61,4 @@ angular.module('controllers').controller('ExportFeedbackCtrl',
         $scope.exporting = false;
       });
     };
-
-  }
-);
+  });

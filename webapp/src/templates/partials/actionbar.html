@@ -37,11 +37,11 @@
               </a>
             </li>
           </ul>
-          <a class="mm-icon mm-icon-inverse mm-icon-caption select-mode-start" mm-auth="can_bulk_delete_reports" ng-click="setSelectMode(true)">
+          <a class="mm-icon mm-icon-inverse mm-icon-caption select-mode-start" mm-auth="can_bulk_delete_reports" ng-click="setSelectMode(true)" ng-class="{'mm-icon-disabled': !actionBar.left.hasResults}">
             <span class="fa fa-check-circle"></span>
             <p translate>select.mode.start</p>
           </a>
-          <a class="mm-icon mm-icon-inverse mm-icon-caption" ng-show="isAdmin" ng-click="actionBar.left.exportFn($event)">
+          <a class="mm-icon mm-icon-inverse mm-icon-caption" ng-show="isAdmin" ng-click="actionBar.left.exportFn($event)" ng-class="{'mm-icon-disabled': !actionBar.left.hasResults}">
             <span class="fa fa-arrow-down"></span>
             <p translate>Export</p>
           </a>
@@ -57,7 +57,7 @@
             </span>
             <p translate>{{actionBar.left.addPlaceLabel}}</p>
           </a>
-          <a class="mm-icon mm-icon-inverse mm-icon-caption" ng-show="isAdmin" ng-click="actionBar.left.exportFn()">
+          <a class="mm-icon mm-icon-inverse mm-icon-caption" ng-show="isAdmin" ng-click="actionBar.left.exportFn()" ng-class="{'mm-icon-disabled': !actionBar.left.hasResults}">
             <span class="fa fa-arrow-down"></span>
             <p translate>Export</p>
           </a>
@@ -70,7 +70,7 @@
             <span class="fa fa-plus"></span>
             <p translate>Send Message</p>
           </a>
-          <a class="mm-icon mm-icon-inverse mm-icon-caption" ng-show="isAdmin" ng-click="actionBar.left.exportFn()">
+          <a class="mm-icon mm-icon-inverse mm-icon-caption" ng-show="isAdmin" ng-click="actionBar.left.exportFn()" ng-class="{'mm-icon-disabled': !actionBar.left.hasResults}">
             <span class="fa fa-arrow-down"></span>
             <p translate>Export</p>
           </a>
