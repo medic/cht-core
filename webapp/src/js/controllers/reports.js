@@ -255,6 +255,8 @@ angular
     };
 
     $scope.search = function() {
+      $location.path('/reports/');
+      clearSelected();
       if ($scope.isMobile() && $scope.showContent) {
         // leave content shown
         return;
@@ -287,12 +289,16 @@ angular
       setRightActionBar();
     });
 
-    $scope.$on('ClearSelected', function() {
+    var clearSelected = function() {
       $scope.selected = [];
       $('#reports-list input[type="checkbox"]').prop('checked', false);
       LiveList.reports.clearSelected();
       LiveList['report-search'].clearSelected();
       $scope.verifyingReport = false;
+    };
+
+    $scope.$on('ClearSelected', function() {
+      clearSelected();
     });
 
     $scope.$on('VerifyReport', function(e, valid) {

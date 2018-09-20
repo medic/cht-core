@@ -253,13 +253,19 @@ var _ = require('underscore'),
         });
     };
 
-    $scope.$on('ClearSelected', function() {
+    var clearSelected = function() {
       $scope.selected = null;
       LiveList.contacts.clearSelected();
       LiveList['contact-search'].clearSelected();
+    };
+
+    $scope.$on('ClearSelected', function() {
+      clearSelected();
     });
 
     $scope.search = function() {
+      $location.path('/contacts/');
+      clearSelected();
       $scope.loading = true;
       if ($scope.filters.search || $scope.filters.simprintsIdentities) {
         $scope.filtered = true;
