@@ -4,7 +4,47 @@
     <h:title>New Child</h:title>
     <model>
       <itext>
-        <translation lang="Bahasa Indonesia (Indonesian)">
+        <translation lang="हिन्दी (hi)">
+          <text id="/child/n:label">
+            <value>बच्चे के नाम</value>
+          </text>
+          <text id="/child/birth_date:label">
+            <value>जन्मदिन</value>
+          </text>
+          <text id="/child/n:hint">
+            <value>इस फॉर्म को भेजकर आपको मेडिक आईडी मिल जाएगी</value>
+          </text>
+          <text id="/child/review:label">
+            <value><output value=" /child/n "/> के लिए नई व्यक्ति रिपोर्ट सबमिट करना, जन्म <output value=" /child/birth_date "/> जिसका दिनों में उम्र <output value=" /child/d "/>, और हफ्तों में उम्र <output value=" /child/w "/> है।</value>
+          </text>
+          <text id="/child/birth_date:jr:constraintMsg">
+            <value>जन्मदिन भविष्य में नहीं हो सकता है</value>
+          </text>
+          <text id="/child/w:label">
+            <value>जन्म कितने हफ्ते पहले था</value>
+          </text>
+        </translation>
+        <translation lang="Français (fr)">
+          <text id="/child/n:label">
+            <value>Nom de l'enfant</value>
+          </text>
+          <text id="/child/birth_date:label">
+            <value>Date de naissance</value>
+          </text>
+          <text id="/child/n:hint">
+            <value>En soumettant ce formulaire, vous recevrez un Identifiant associé à cette personne.</value>
+          </text>
+          <text id="/child/review:label">
+            <value>Envoi d'un rapport d'une nouvelle personne pour <output value=" /child/n "/>, née le <output value=" /child/birth_date "/>, donc <output value=" /child/d "/> jours, soit <output value=" /child/w "/> semaines.</value>
+          </text>
+          <text id="/child/birth_date:jr:constraintMsg">
+            <value>La date de naissance ne peut pas être dans le futur</value>
+          </text>
+          <text id="/child/w:label">
+            <value>Nombre de semaines depuis la naissance</value>
+          </text>
+        </translation>
+        <translation lang="Bahasa Indonesia (id)">
           <text id="/child/n:label">
             <value>Child's Name</value>
           </text>
@@ -24,67 +64,7 @@
             <value>Weeks since birth</value>
           </text>
         </translation>
-        <translation lang="fr">
-          <text id="/child/n:label">
-            <value>Nom de l'enfant</value>
-          </text>
-          <text id="/child/birth_date:label">
-            <value>Date de naissance</value>
-          </text>
-          <text id="/child/n:hint">
-            <value>En soumettant ce formulaire, vous recevrez un Identifiant associé à cette personne.</value>
-          </text>
-          <text id="/child/review:label">
-            <value>Envoi d'un rapport d'une nouvelle personne pour <output value=" /child/n "/>, née le $ {birth_date}, donc <output value=" /child/d "/> jours, soit <output value=" /child/w "/> semaines.</value>
-          </text>
-          <text id="/child/birth_date:jr:constraintMsg">
-            <value>La date de naissance ne peut pas être dans le futur</value>
-          </text>
-          <text id="/child/w:label">
-            <value>Nombre de semaines depuis la naissance</value>
-          </text>
-        </translation>
-        <translation lang="हिन्दी (Hindi)">
-          <text id="/child/n:label">
-            <value>बच्चे के नाम</value>
-          </text>
-          <text id="/child/birth_date:label">
-            <value>जन्मदिन</value>
-          </text>
-          <text id="/child/n:hint">
-            <value>इस फॉर्म को भेजकर आपको मेडिक आईडी मिल जाएगी</value>
-          </text>
-          <text id="/child/review:label">
-            <value>$ {N} के लिए नई व्यक्ति रिपोर्ट सबमिट करना, जन्म $ {birth_date} जिसका दिनों में उम्र $ {d}, और हफ्तों में उम्र $ {w} है।</value>
-          </text>
-          <text id="/child/birth_date:jr:constraintMsg">
-            <value>जन्मदिन भविष्य में नहीं हो सकता है</value>
-          </text>
-          <text id="/child/w:label">
-            <value>जन्म कितने हफ्ते पहले था</value>
-          </text>
-        </translation>
-        <translation lang="bengali">
-          <text id="/child/n:label">
-            <value>সন্তানের নাম</value>
-          </text>
-          <text id="/child/birth_date:label">
-            <value>জন্ম তারিখ</value>
-          </text>
-          <text id="/child/n:hint">
-            <value>এই ফর্ম জমা দেওয়ার জন্য আপনাকে এই ব্যক্তির সাথে যুক্ত একটি মেডিকেড আইডি দেবে</value>
-          </text>
-          <text id="/child/review:label">
-            <value>$ {এন}, জন্ম $ {birth_date} <output value=" /child/d "/> দিনের পুরোনো, যা $ {W} পুরাতন সপ্তাহের জন্য নতুন ব্যক্তিকে প্রতিবেদন জমা দেওয়া হচ্ছে।</value>
-          </text>
-          <text id="/child/birth_date:jr:constraintMsg">
-            <value>জন্ম তারিখ ভবিষ্যতে হতে পারে না</value>
-          </text>
-          <text id="/child/w:label">
-            <value>জন্মের পর থেকে সপ্তাহ</value>
-          </text>
-        </translation>
-        <translation default="true()" lang="English">
+        <translation default="true()" lang="English (en)">
           <text id="/child/n:label">
             <value>Child's Name</value>
           </text>
@@ -104,9 +84,29 @@
             <value>Weeks since birth</value>
           </text>
         </translation>
+        <translation lang="বাংলা (bn)">
+          <text id="/child/n:label">
+            <value>সন্তানের নাম</value>
+          </text>
+          <text id="/child/birth_date:label">
+            <value>জন্ম তারিখ</value>
+          </text>
+          <text id="/child/n:hint">
+            <value>এই ফর্ম জমা দেওয়ার জন্য আপনাকে এই ব্যক্তির সাথে যুক্ত একটি মেডিকেড আইডি দেবে</value>
+          </text>
+          <text id="/child/review:label">
+            <value><output value=" /child/n "/>, জন্ম <output value=" /child/birth_date "/> <output value=" /child/d "/> দিনের পুরোনো, যা <output value=" /child/w "/> পুরাতন সপ্তাহের জন্য নতুন ব্যক্তিকে প্রতিবেদন জমা দেওয়া হচ্ছে।</value>
+          </text>
+          <text id="/child/birth_date:jr:constraintMsg">
+            <value>জন্ম তারিখ ভবিষ্যতে হতে পারে না</value>
+          </text>
+          <text id="/child/w:label">
+            <value>জন্মের পর থেকে সপ্তাহ</value>
+          </text>
+        </translation>
       </itext>
       <instance>
-        <child delimiter="#" id="child" prefix="J1!child!" version="2018-08-21_08-38">
+        <child delimiter="#" id="child" prefix="J1!child!" version="2018-09-19_19-35">
           <n/>
           <w/>
           <d/>
