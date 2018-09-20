@@ -135,7 +135,6 @@ module.exports = {
       ],
       getRows: record => {
         const tasks = normalizeTasks(record);
-
         return _.flatten(tasks.map(task => {
           const history = buildHistory(task);
 
