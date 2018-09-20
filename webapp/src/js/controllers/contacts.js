@@ -15,7 +15,6 @@ var _ = require('underscore'),
     $stateParams,
     $timeout,
     $translate,
-    $location,
     Auth,
     Changes,
     ContactSchema,
@@ -253,19 +252,19 @@ var _ = require('underscore'),
         });
     };
 
-    var clearSelected = function() {
+    var clearSelection = function() {
       $scope.selected = null;
       LiveList.contacts.clearSelected();
       LiveList['contact-search'].clearSelected();
     };
 
     $scope.$on('ClearSelected', function() {
-      clearSelected();
+      clearSelection();
     });
 
     $scope.search = function() {
-      $location.path('/contacts/');
-      clearSelected();
+      $state.go('contacts', null, { notify: false });
+      clearSelection();
       $scope.loading = true;
       if ($scope.filters.search || $scope.filters.simprintsIdentities) {
         $scope.filtered = true;

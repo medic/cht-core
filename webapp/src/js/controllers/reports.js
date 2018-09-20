@@ -9,7 +9,6 @@ angular
     $state,
     $stateParams,
     $timeout,
-    $location,
     AddReadStatus,
     Changes,
     DB,
@@ -255,8 +254,8 @@ angular
     };
 
     $scope.search = function() {
-      $location.path('/reports/');
-      clearSelected();
+      $state.go('reports', null, { notify: false });
+      clearSelection();
       if ($scope.isMobile() && $scope.showContent) {
         // leave content shown
         return;
@@ -289,7 +288,7 @@ angular
       setRightActionBar();
     });
 
-    var clearSelected = function() {
+    var clearSelection = function() {
       $scope.selected = [];
       $('#reports-list input[type="checkbox"]').prop('checked', false);
       LiveList.reports.clearSelected();
@@ -298,7 +297,7 @@ angular
     };
 
     $scope.$on('ClearSelected', function() {
-      clearSelected();
+      clearSelection();
     });
 
     $scope.$on('VerifyReport', function(e, valid) {
