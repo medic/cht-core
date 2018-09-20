@@ -20,6 +20,12 @@
           <text id="/c_imm/group_bcg/g_bcg:label">
             <value>क्या <output value=" /c_imm/id "/> को BCG टीकाकरण मिला ?</value>
           </text>
+          <text id="/c_imm/group_review_vaccines/r_pneumococcal_4:label">
+            <value>Pneimococcal 4</value>
+          </text>
+          <text id="/c_imm/group_review_vaccines/r_ipv_2:label">
+            <value>Inactivated Polio 2</value>
+          </text>
           <text id="/c_imm/group_hpv/g_hpv/HPV1:label">
             <value>HPV 1</value>
           </text>
@@ -44,8 +50,8 @@
           <text id="/c_imm/group_rotavirus/g_rotavirus/RV3:label">
             <value>Rotavirus 3</value>
           </text>
-          <text id="/c_imm/group_review:label">
-            <value>दिए गए टीकाकरण ID <output value=" /c_imm/id "/></value>
+          <text id="/c_imm/group_ipv/g_ipv/IPV3:label">
+            <value>Inactivated Polio 3</value>
           </text>
           <text id="/c_imm/group_polio/g_polio/OPV0:label">
             <value>जन्म पे Polio</value>
@@ -61,6 +67,9 @@
           </text>
           <text id="/c_imm/received/opv1:label">
             <value>Polio 1 मिला</value>
+          </text>
+          <text id="/c_imm/group_ipv/g_ipv/IPV2:label">
+            <value>Inactivated Polio 2</value>
           </text>
           <text id="/c_imm/group_mmrv/g_mmrv:label">
             <value><output value=" /c_imm/id "/> को MMRV का कौनसा डोज़ मिला ?</value>
@@ -83,8 +92,11 @@
           <text id="/c_imm/group_vitamin_a/g_vitamin_a:label">
             <value>क्या <output value=" /c_imm/id "/> को Vitamin A टीकाकरण मिला ?</value>
           </text>
-          <text id="/c_imm/group_review_vaccines/r_cholera_1:label">
-            <value>Cholera 1</value>
+          <text id="/c_imm/group_pneumococcal/g_pneumococcal:label">
+            <value><output value=" /c_imm/id "/> को Pneumococcal Pneumonia का कौनसा डोज़ मिला ?</value>
+          </text>
+          <text id="/c_imm/group_ipv/g_ipv:label">
+            <value><output value=" /c_imm/id "/> को Inactivated Polio का कौनसा डोज़ मिला ?</value>
           </text>
           <text id="/c_imm/group_hep_a:label">
             <value>Hepatitis A</value>
@@ -143,6 +155,12 @@
           <text id="/c_imm/group_typhoid/g_typhoid/none:label">
             <value>कोई नहीं</value>
           </text>
+          <text id="/c_imm/group_review_vaccines/r_ipv_3:label">
+            <value>Inactivated Polio 3</value>
+          </text>
+          <text id="/c_imm/group_review_vaccines/r_cholera_1:label">
+            <value>Cholera 1</value>
+          </text>
           <text id="/c_imm/group_cholera/g_cholera/none:label">
             <value>कोई नहीं</value>
           </text>
@@ -181,6 +199,12 @@
           </text>
           <text id="/c_imm/received/opv3:label">
             <value>Polio 3 मिला</value>
+          </text>
+          <text id="/c_imm/group_review_vaccines/r_rotavirus_3:label">
+            <value>Rotavirus 3</value>
+          </text>
+          <text id="/c_imm/group_review_vaccines/r_mmr_2:label">
+            <value>MMR 2</value>
           </text>
           <text id="/c_imm/group_polio:label">
             <value>Polio</value>
@@ -245,11 +269,11 @@
           <text id="/c_imm/group_review_vaccines/r_meningococcal_2:label">
             <value>Meningococcal 2</value>
           </text>
-          <text id="/c_imm/group_review_vaccines/r_bcg:label">
-            <value>BCG</value>
+          <text id="/c_imm/group_select_vaccines/g_vaccines/ipv:label">
+            <value>Inactivated Polio</value>
           </text>
-          <text id="/c_imm/group_review_vaccines/r_pneumococcal_3:label">
-            <value>Pneimococcal 3</value>
+          <text id="/c_imm/group_review:label">
+            <value>दिए गए टीकाकरण ID <output value=" /c_imm/id "/></value>
           </text>
           <text id="/c_imm/received/je:label">
             <value>Japanese Encephalitis मिला</value>
@@ -284,6 +308,9 @@
           <text id="/c_imm/received/ch3:label">
             <value>Cholera 3 मिला</value>
           </text>
+          <text id="/c_imm/group_pneumococcal:label">
+            <value>Pneumococcal Pneumonia</value>
+          </text>
           <text id="/c_imm/received/hpv2:label">
             <value>HPV 2 मिला</value>
           </text>
@@ -299,8 +326,8 @@
           <text id="/c_imm/group_select_vaccines/g_vaccines/yellow_fever:label">
             <value>Yellow Fever</value>
           </text>
-          <text id="/c_imm/group_pneumococcal/g_pneumococcal:label">
-            <value><output value=" /c_imm/id "/> को Pneumococcal Pneumonia का कौनसा डोज़ मिला ?</value>
+          <text id="/c_imm/group_ipv/g_ipv/IPV1:label">
+            <value>Inactivated Polio 1</value>
           </text>
           <text id="/c_imm/group_mmrv/g_mmrv/MMRV1:label">
             <value>MMRV 1</value>
@@ -338,6 +365,9 @@
           <text id="/c_imm/group_mmr/g_mmr/none:label">
             <value>कोई नहीं</value>
           </text>
+          <text id="/c_imm/group_ipv/g_ipv:jr:constraintMsg">
+            <value>अगर कोई और डोज़ चयनित हो तोह आप 'कोई नहीं' को नहीं चुन सकते है |</value>
+          </text>
           <text id="/c_imm/group_pentavalent/g_pentavalent:jr:constraintMsg">
             <value>अगर कोई और डोज़ चयनित हो तोह आप 'कोई नहीं' को नहीं चुन सकते है |</value>
           </text>
@@ -347,8 +377,8 @@
           <text id="/c_imm/group_select_vaccines/g_vaccines:hint">
             <value>लागू होने वाले सभी का चयन करें</value>
           </text>
-          <text id="/c_imm/group_review_vaccines/r_rotavirus_3:label">
-            <value>Rotavirus 3</value>
+          <text id="/c_imm/received/ipv3:label">
+            <value>Inactivated Polio 3 मिला</value>
           </text>
           <text id="/c_imm/group_select_vaccines/g_vaccines/bcg:label">
             <value>BCG</value>
@@ -358,6 +388,9 @@
           </text>
           <text id="/c_imm/group_polio/g_polio/OPV3:label">
             <value>Oral Polio 3</value>
+          </text>
+          <text id="/c_imm/received/ipv2:label">
+            <value>Inactivated Polio 2 मिला</value>
           </text>
           <text id="/c_imm/received/pcv3:label">
             <value>Pneumococcal 3 मिला</value>
@@ -410,6 +443,9 @@
           <text id="/c_imm/group_review_vaccines:label">
             <value>दिए गए टीकाकरण ID <output value=" /c_imm/id "/></value>
           </text>
+          <text id="/c_imm/group_review_vaccines/r_bcg:label">
+            <value>BCG</value>
+          </text>
           <text id="/c_imm/received/bcg:label">
             <value>BCG मिला</value>
           </text>
@@ -428,8 +464,8 @@
           <text id="/c_imm/group_pneumococcal/g_pneumococcal/PCV1:label">
             <value>Pneumococcal 1</value>
           </text>
-          <text id="/c_imm/group_review_vaccines/r_mmr_2:label">
-            <value>MMR 2</value>
+          <text id="/c_imm/group_ipv:label">
+            <value>Inactivated Polio</value>
           </text>
           <text id="/c_imm/received/ha1:label">
             <value>Hepatitis A 1 मिला</value>
@@ -506,14 +542,14 @@
           <text id="/c_imm/received/pcv4:label">
             <value>Pneumococcal 4 मिला</value>
           </text>
-          <text id="/c_imm/group_pneumococcal:label">
-            <value>Pneumococcal Pneumonia</value>
+          <text id="/c_imm/received/ipv1:label">
+            <value>Inactivated Polio 1 मिला</value>
           </text>
           <text id="/c_imm/group_meningococcal/g_meningococcal/MN4:label">
             <value>Meningococcal 4</value>
           </text>
-          <text id="/c_imm/group_review_vaccines/r_pneumococcal_4:label">
-            <value>Pneimococcal 4</value>
+          <text id="/c_imm/group_review_vaccines/r_ipv_1:label">
+            <value>Inactivated Polio 1</value>
           </text>
           <text id="/c_imm/group_pentavalent/g_pentavalent/none:label">
             <value>कोई नहीं</value>
@@ -578,6 +614,9 @@
           <text id="/c_imm/received/ty1:label">
             <value>Typhoid 1 मिला</value>
           </text>
+          <text id="/c_imm/group_ipv/g_ipv/none:label">
+            <value>कोई नहीं</value>
+          </text>
           <text id="/c_imm/group_chw_info/attended_imm/no:label">
             <value>नहीं</value>
           </text>
@@ -595,6 +634,9 @@
           </text>
           <text id="/c_imm/group_select_vaccines/g_vaccines/cholera:label">
             <value>Cholera</value>
+          </text>
+          <text id="/c_imm/group_review_vaccines/r_pneumococcal_3:label">
+            <value>Pneimococcal 3</value>
           </text>
           <text id="/c_imm/group_rotavirus/g_rotavirus:jr:constraintMsg">
             <value>अगर कोई और डोज़ चयनित हो तोह आप 'कोई नहीं' को नहीं चुन सकते है |</value>
@@ -622,6 +664,12 @@
           <text id="/c_imm/group_bcg/g_bcg:label">
             <value>Est-ce que <output value=" /c_imm/id "/> a reçu le vaccin BBG?</value>
           </text>
+          <text id="/c_imm/group_review_vaccines/r_pneumococcal_4:label">
+            <value>Pneumo 4</value>
+          </text>
+          <text id="/c_imm/group_review_vaccines/r_ipv_2:label">
+            <value>IPV 2</value>
+          </text>
           <text id="/c_imm/group_hpv/g_hpv/HPV1:label">
             <value>HPV 1</value>
           </text>
@@ -646,8 +694,8 @@
           <text id="/c_imm/group_rotavirus/g_rotavirus/RV3:label">
             <value>Rota 3</value>
           </text>
-          <text id="/c_imm/group_review:label">
-            <value>Rapport pour <output value=" /c_imm/id "/></value>
+          <text id="/c_imm/group_ipv/g_ipv/IPV3:label">
+            <value>IPV 3</value>
           </text>
           <text id="/c_imm/group_polio/g_polio/OPV0:label">
             <value>OPV 0</value>
@@ -663,6 +711,9 @@
           </text>
           <text id="/c_imm/received/opv1:label">
             <value>OPV 1 reçu</value>
+          </text>
+          <text id="/c_imm/group_ipv/g_ipv/IPV2:label">
+            <value>IPV 2</value>
           </text>
           <text id="/c_imm/group_mmrv/g_mmrv:label">
             <value>Quel vaccin MMRV a reçu <output value=" /c_imm/id "/> ?</value>
@@ -685,8 +736,11 @@
           <text id="/c_imm/group_vitamin_a/g_vitamin_a:label">
             <value>Est-ce que <output value=" /c_imm/id "/> a reçu la Vitamine A ?</value>
           </text>
-          <text id="/c_imm/group_review_vaccines/r_cholera_1:label">
-            <value>Choléra 1</value>
+          <text id="/c_imm/group_pneumococcal/g_pneumococcal:label">
+            <value>Quel vaccin Pneumo a reçu <output value=" /c_imm/id "/> ?</value>
+          </text>
+          <text id="/c_imm/group_ipv/g_ipv:label">
+            <value>Quel vaccin IPV a reçu <output value=" /c_imm/id "/> ?</value>
           </text>
           <text id="/c_imm/group_hep_a:label">
             <value>Hépatite A</value>
@@ -745,6 +799,12 @@
           <text id="/c_imm/group_typhoid/g_typhoid/none:label">
             <value>Aucun</value>
           </text>
+          <text id="/c_imm/group_review_vaccines/r_ipv_3:label">
+            <value>IPV 3</value>
+          </text>
+          <text id="/c_imm/group_review_vaccines/r_cholera_1:label">
+            <value>Choléra 1</value>
+          </text>
           <text id="/c_imm/group_cholera/g_cholera/none:label">
             <value>Aucun</value>
           </text>
@@ -783,6 +843,12 @@
           </text>
           <text id="/c_imm/received/opv3:label">
             <value>OPV 3 reçu</value>
+          </text>
+          <text id="/c_imm/group_review_vaccines/r_rotavirus_3:label">
+            <value>Rota 3</value>
+          </text>
+          <text id="/c_imm/group_review_vaccines/r_mmr_2:label">
+            <value>MMR 2</value>
           </text>
           <text id="/c_imm/group_polio:label">
             <value>Polio</value>
@@ -847,11 +913,11 @@
           <text id="/c_imm/group_review_vaccines/r_meningococcal_2:label">
             <value>Méningococcal 2</value>
           </text>
-          <text id="/c_imm/group_review_vaccines/r_bcg:label">
-            <value>BCG</value>
+          <text id="/c_imm/group_select_vaccines/g_vaccines/ipv:label">
+            <value>Polio inactivée</value>
           </text>
-          <text id="/c_imm/group_review_vaccines/r_pneumococcal_3:label">
-            <value>Pneumo 3</value>
+          <text id="/c_imm/group_review:label">
+            <value>Rapport pour <output value=" /c_imm/id "/></value>
           </text>
           <text id="/c_imm/received/je:label">
             <value>Encépahlite japonaise reçu</value>
@@ -886,6 +952,9 @@
           <text id="/c_imm/received/ch3:label">
             <value>Choléra 3 reçu</value>
           </text>
+          <text id="/c_imm/group_pneumococcal:label">
+            <value>Pneumo</value>
+          </text>
           <text id="/c_imm/received/hpv2:label">
             <value>HPV 2 reçu</value>
           </text>
@@ -901,8 +970,8 @@
           <text id="/c_imm/group_select_vaccines/g_vaccines/yellow_fever:label">
             <value>Fièvre jaune</value>
           </text>
-          <text id="/c_imm/group_pneumococcal/g_pneumococcal:label">
-            <value>Quel vaccin Pneumo a reçu <output value=" /c_imm/id "/> ?</value>
+          <text id="/c_imm/group_ipv/g_ipv/IPV1:label">
+            <value>IPV 1</value>
           </text>
           <text id="/c_imm/group_mmrv/g_mmrv/MMRV1:label">
             <value>MMRV 1</value>
@@ -940,6 +1009,9 @@
           <text id="/c_imm/group_mmr/g_mmr/none:label">
             <value>Aucun</value>
           </text>
+          <text id="/c_imm/group_ipv/g_ipv:jr:constraintMsg">
+            <value>Impossible de sélectionner aucun si une autre dose est sélectionnée.</value>
+          </text>
           <text id="/c_imm/group_pentavalent/g_pentavalent:jr:constraintMsg">
             <value>Impossible de sélectionner aucun si une autre dose est sélectionnée.</value>
           </text>
@@ -949,8 +1021,8 @@
           <text id="/c_imm/group_review_vaccines/r_penta_1:label">
             <value>Penta 1</value>
           </text>
-          <text id="/c_imm/group_review_vaccines/r_rotavirus_3:label">
-            <value>Rota 3</value>
+          <text id="/c_imm/received/ipv3:label">
+            <value>IPV 3 reçu</value>
           </text>
           <text id="/c_imm/group_select_vaccines/g_vaccines/bcg:label">
             <value>BCG</value>
@@ -960,6 +1032,9 @@
           </text>
           <text id="/c_imm/group_polio/g_polio/OPV3:label">
             <value>OPV 3</value>
+          </text>
+          <text id="/c_imm/received/ipv2:label">
+            <value>IPV 2 reçu</value>
           </text>
           <text id="/c_imm/received/pcv3:label">
             <value>Pneumo 3 reçu</value>
@@ -1012,6 +1087,9 @@
           <text id="/c_imm/group_review_vaccines:label">
             <value>Nouveaux vaccins pour <output value=" /c_imm/id "/></value>
           </text>
+          <text id="/c_imm/group_review_vaccines/r_bcg:label">
+            <value>BCG</value>
+          </text>
           <text id="/c_imm/received/bcg:label">
             <value>BCG reçu</value>
           </text>
@@ -1030,8 +1108,8 @@
           <text id="/c_imm/group_pneumococcal/g_pneumococcal/PCV1:label">
             <value>Pneumo 1</value>
           </text>
-          <text id="/c_imm/group_review_vaccines/r_mmr_2:label">
-            <value>MMR 2</value>
+          <text id="/c_imm/group_ipv:label">
+            <value>Polio inactivée</value>
           </text>
           <text id="/c_imm/received/ha1:label">
             <value>Hépatite A 1 reçu</value>
@@ -1108,14 +1186,14 @@
           <text id="/c_imm/received/pcv4:label">
             <value>Pneumo 4 reçu</value>
           </text>
-          <text id="/c_imm/group_pneumococcal:label">
-            <value>Pneumo</value>
+          <text id="/c_imm/received/ipv1:label">
+            <value>IPV 1 reçu</value>
           </text>
           <text id="/c_imm/group_meningococcal/g_meningococcal/MN4:label">
             <value>Méningococcal 4</value>
           </text>
-          <text id="/c_imm/group_review_vaccines/r_pneumococcal_4:label">
-            <value>Pneumo 4</value>
+          <text id="/c_imm/group_review_vaccines/r_ipv_1:label">
+            <value>IPV 1</value>
           </text>
           <text id="/c_imm/group_pentavalent/g_pentavalent/none:label">
             <value>Aucun</value>
@@ -1180,6 +1258,9 @@
           <text id="/c_imm/received/ty1:label">
             <value>Typhoïde 1 reçu</value>
           </text>
+          <text id="/c_imm/group_ipv/g_ipv/none:label">
+            <value>Aucun</value>
+          </text>
           <text id="/c_imm/group_chw_info/attended_imm/no:label">
             <value>Non</value>
           </text>
@@ -1197,6 +1278,9 @@
           </text>
           <text id="/c_imm/group_select_vaccines/g_vaccines/cholera:label">
             <value>Choléra</value>
+          </text>
+          <text id="/c_imm/group_review_vaccines/r_pneumococcal_3:label">
+            <value>Pneumo 3</value>
           </text>
           <text id="/c_imm/group_rotavirus/g_rotavirus:jr:constraintMsg">
             <value>Impossible de sélectionner aucun si une autre dose est sélectionnée.</value>
@@ -1224,6 +1308,12 @@
           <text id="/c_imm/group_bcg/g_bcg:label">
             <value>Apakah <output value=" /c_imm/id "/> menerima vaksin BCG?</value>
           </text>
+          <text id="/c_imm/group_review_vaccines/r_pneumococcal_4:label">
+            <value>Pneimococcal 4</value>
+          </text>
+          <text id="/c_imm/group_review_vaccines/r_ipv_2:label">
+            <value>Inactivated Polio 2</value>
+          </text>
           <text id="/c_imm/group_hpv/g_hpv/HPV1:label">
             <value>HPV 1</value>
           </text>
@@ -1243,13 +1333,13 @@
             <value>Vaksin apakah yang anda ingin laporkan hari ini?</value>
           </text>
           <text id="/c_imm/group_mmr/g_mmr:label">
-            <value>Apa dosis MMR melakukan {patient_name) yang diterima?</value>
+            <value>Apa dosis MMR melakukan <output value=" /c_imm/id "/> yang diterima?</value>
           </text>
           <text id="/c_imm/group_rotavirus/g_rotavirus/RV3:label">
             <value>Rotavirus 3</value>
           </text>
-          <text id="/c_imm/group_review:label">
-            <value>Vaksin yang diberikan ID <output value=" /c_imm/id "/></value>
+          <text id="/c_imm/group_ipv/g_ipv/IPV3:label">
+            <value>Inactivated Polio 3</value>
           </text>
           <text id="/c_imm/group_polio/g_polio/OPV0:label">
             <value>Polio saat lahir</value>
@@ -1266,8 +1356,11 @@
           <text id="/c_imm/received/opv1:label">
             <value>Mendapatkan Polio 1</value>
           </text>
+          <text id="/c_imm/group_ipv/g_ipv/IPV2:label">
+            <value>Inactivated Polio 2</value>
+          </text>
           <text id="/c_imm/group_mmrv/g_mmrv:label">
-            <value>Apa dosis MMRV melakukan {patient_name) yang diterima?</value>
+            <value>Apa dosis MMRV melakukan <output value=" /c_imm/id "/> yang diterima?</value>
           </text>
           <text id="/c_imm/group_hpv/g_hpv:jr:constraintMsg">
             <value>Tidak dapat memilih 'tak satupun' jika dosis lain dipilih.</value>
@@ -1287,8 +1380,11 @@
           <text id="/c_imm/group_vitamin_a/g_vitamin_a:label">
             <value>Apakah <output value=" /c_imm/id "/> menerima vaksin Vitamin A?</value>
           </text>
-          <text id="/c_imm/group_review_vaccines/r_cholera_1:label">
-            <value>Kolera 1</value>
+          <text id="/c_imm/group_pneumococcal/g_pneumococcal:label">
+            <value>Apa dosis Pneumococcal Pneumonia melakukan <output value=" /c_imm/id "/> yang diterima?</value>
+          </text>
+          <text id="/c_imm/group_ipv/g_ipv:label">
+            <value>Apa dosis Polio melakukan <output value=" /c_imm/id "/> yang diterima?</value>
           </text>
           <text id="/c_imm/group_hep_a:label">
             <value>Hepatitis A</value>
@@ -1318,7 +1414,7 @@
             <value>Mendapatkan Rotavirus 3</value>
           </text>
           <text id="/c_imm/group_polio/g_polio:label">
-            <value>Apa dosis Polio melakukan {patient_name) yang diterima?</value>
+            <value>Apa dosis Polio melakukan <output value=" /c_imm/id "/> yang diterima?</value>
           </text>
           <text id="/c_imm/group_review_vaccines/r_pneumococcal_2:label">
             <value>Pneimococcal 2</value>
@@ -1339,13 +1435,19 @@
             <value>Tidak dapat memilih 'tak satupun' jika dosis lain dipilih.</value>
           </text>
           <text id="/c_imm/group_hpv/g_hpv:label">
-            <value>Apa dosis HPV melakukan {patient_name) yang diterima?</value>
+            <value>Apa dosis HPV melakukan <output value=" /c_imm/id "/> yang diterima?</value>
           </text>
           <text id="/c_imm/group_review_vaccines/r_hep_a_2:label">
             <value>Hepatitis A 2</value>
           </text>
           <text id="/c_imm/group_typhoid/g_typhoid/none:label">
             <value>Tak satupun</value>
+          </text>
+          <text id="/c_imm/group_review_vaccines/r_ipv_3:label">
+            <value>Inactivated Polio 3</value>
+          </text>
+          <text id="/c_imm/group_review_vaccines/r_cholera_1:label">
+            <value>Kolera 1</value>
           </text>
           <text id="/c_imm/group_cholera/g_cholera/none:label">
             <value>Tak satupun</value>
@@ -1386,6 +1488,12 @@
           <text id="/c_imm/received/opv3:label">
             <value>Mendapatkan Polio 3</value>
           </text>
+          <text id="/c_imm/group_review_vaccines/r_rotavirus_3:label">
+            <value>Rotavirus 3</value>
+          </text>
+          <text id="/c_imm/group_review_vaccines/r_mmr_2:label">
+            <value>MMR 2</value>
+          </text>
           <text id="/c_imm/group_polio:label">
             <value>Polio</value>
           </text>
@@ -1399,7 +1507,7 @@
             <value>Pneumococcal 3</value>
           </text>
           <text id="/c_imm/group_typhoid/g_typhoid:label">
-            <value>Apa dosis Typhoid melakukan {patient_name) yang diterima?</value>
+            <value>Apa dosis Typhoid melakukan <output value=" /c_imm/id "/> yang diterima?</value>
           </text>
           <text id="/c_imm/group_hpv/g_hpv/none:label">
             <value>Tak satupun</value>
@@ -1423,7 +1531,7 @@
             <value>Apakah <output value=" /c_imm/id "/> menerima vaksin Japanese Encephalitis?</value>
           </text>
           <text id="/c_imm/group_cholera/g_cholera:label">
-            <value>Apa dosis Kolera melakukan ${patient_id) yang diterima?</value>
+            <value>Apa dosis Kolera melakukan <output value=" /c_imm/id "/> yang diterima?</value>
           </text>
           <text id="/c_imm/received/rv1:label">
             <value>Mendapatkan Rotavirus 1</value>
@@ -1449,11 +1557,11 @@
           <text id="/c_imm/group_review_vaccines/r_meningococcal_2:label">
             <value>Meningococcal 2</value>
           </text>
-          <text id="/c_imm/group_review_vaccines/r_bcg:label">
-            <value>BCG</value>
+          <text id="/c_imm/group_select_vaccines/g_vaccines/ipv:label">
+            <value>Inactivated Polio</value>
           </text>
-          <text id="/c_imm/group_review_vaccines/r_pneumococcal_3:label">
-            <value>Pneimococcal 3</value>
+          <text id="/c_imm/group_review:label">
+            <value>Vaksin yang diberikan ID <output value=" /c_imm/id "/></value>
           </text>
           <text id="/c_imm/received/je:label">
             <value>Mendapatkan Japanese Encephalitis</value>
@@ -1465,7 +1573,7 @@
             <value>Pentavalent</value>
           </text>
           <text id="/c_imm/group_rotavirus/g_rotavirus:label">
-            <value>Apa dosis Rotavirus melakukan {patient_name) yang diterima?</value>
+            <value>Apa dosis Rotavirus melakukan <output value=" /c_imm/id "/> yang diterima?</value>
           </text>
           <text id="/c_imm/group_cholera/g_cholera/CH2:label">
             <value>Kolera 2</value>
@@ -1488,6 +1596,9 @@
           <text id="/c_imm/received/ch3:label">
             <value>Mendapatkan Kolera 3</value>
           </text>
+          <text id="/c_imm/group_pneumococcal:label">
+            <value>Pneumococcal Pneumonia</value>
+          </text>
           <text id="/c_imm/received/hpv2:label">
             <value>Mendapatkan HPV 2</value>
           </text>
@@ -1503,8 +1614,8 @@
           <text id="/c_imm/group_select_vaccines/g_vaccines/yellow_fever:label">
             <value>Yellow Fever</value>
           </text>
-          <text id="/c_imm/group_pneumococcal/g_pneumococcal:label">
-            <value>Apa dosis Pneumococcal Pneumonia melakukan {patient_name) yang diterima?</value>
+          <text id="/c_imm/group_ipv/g_ipv/IPV1:label">
+            <value>Inactivated Polio 1</value>
           </text>
           <text id="/c_imm/group_mmrv/g_mmrv/MMRV1:label">
             <value>MMRV 1</value>
@@ -1542,6 +1653,9 @@
           <text id="/c_imm/group_mmr/g_mmr/none:label">
             <value>Tak satupun</value>
           </text>
+          <text id="/c_imm/group_ipv/g_ipv:jr:constraintMsg">
+            <value>Tidak dapat memilih 'tak satupun' jika dosis lain dipilih.</value>
+          </text>
           <text id="/c_imm/group_pentavalent/g_pentavalent:jr:constraintMsg">
             <value>Tidak dapat memilih 'tak satupun' jika dosis lain dipilih.</value>
           </text>
@@ -1551,8 +1665,8 @@
           <text id="/c_imm/group_select_vaccines/g_vaccines:hint">
             <value>Pilih semua yang berlaku</value>
           </text>
-          <text id="/c_imm/group_review_vaccines/r_rotavirus_3:label">
-            <value>Rotavirus 3</value>
+          <text id="/c_imm/received/ipv3:label">
+            <value>Mendapatkan Inactivated Polio 3</value>
           </text>
           <text id="/c_imm/group_select_vaccines/g_vaccines/bcg:label">
             <value>BCG</value>
@@ -1562,6 +1676,9 @@
           </text>
           <text id="/c_imm/group_polio/g_polio/OPV3:label">
             <value>Oral Polio 3</value>
+          </text>
+          <text id="/c_imm/received/ipv2:label">
+            <value>Mendapatkan Inactivated Polio 2</value>
           </text>
           <text id="/c_imm/received/pcv3:label">
             <value>Mendapatkan Pneumococcal 3</value>
@@ -1585,7 +1702,7 @@
             <value>Iya</value>
           </text>
           <text id="/c_imm/group_pentavalent/g_pentavalent:label">
-            <value>Apa dosis Pentavalent melakukan {patient_name) yang diterima?</value>
+            <value>Apa dosis Pentavalent melakukan <output value=" /c_imm/id "/> yang diterima?</value>
           </text>
           <text id="/c_imm/group_meningococcal:label">
             <value>Meningococcal</value>
@@ -1614,6 +1731,9 @@
           <text id="/c_imm/group_review_vaccines:label">
             <value>Vaksin yang diberikan ID <output value=" /c_imm/id "/></value>
           </text>
+          <text id="/c_imm/group_review_vaccines/r_bcg:label">
+            <value>BCG</value>
+          </text>
           <text id="/c_imm/received/bcg:label">
             <value>Mendapatkan BCG</value>
           </text>
@@ -1632,8 +1752,8 @@
           <text id="/c_imm/group_pneumococcal/g_pneumococcal/PCV1:label">
             <value>Pneumococcal 1</value>
           </text>
-          <text id="/c_imm/group_review_vaccines/r_mmr_2:label">
-            <value>MMR 2</value>
+          <text id="/c_imm/group_ipv:label">
+            <value>Inactivated Polio</value>
           </text>
           <text id="/c_imm/received/ha1:label">
             <value>Mendapatkan Hepatitis A 1</value>
@@ -1710,14 +1830,14 @@
           <text id="/c_imm/received/pcv4:label">
             <value>Mendapatkan Pneumococcal 4</value>
           </text>
-          <text id="/c_imm/group_pneumococcal:label">
-            <value>Pneumococcal Pneumonia</value>
+          <text id="/c_imm/received/ipv1:label">
+            <value>Mendapatkan Inactivated Polio 1</value>
           </text>
           <text id="/c_imm/group_meningococcal/g_meningococcal/MN4:label">
             <value>Meningococcal 4</value>
           </text>
-          <text id="/c_imm/group_review_vaccines/r_pneumococcal_4:label">
-            <value>Pneimococcal 4</value>
+          <text id="/c_imm/group_review_vaccines/r_ipv_1:label">
+            <value>Inactivated Polio 1</value>
           </text>
           <text id="/c_imm/group_pentavalent/g_pentavalent/none:label">
             <value>Tak satupun</value>
@@ -1782,6 +1902,9 @@
           <text id="/c_imm/received/ty1:label">
             <value>Mendapatkan Typhoid 1</value>
           </text>
+          <text id="/c_imm/group_ipv/g_ipv/none:label">
+            <value>Tak satupun</value>
+          </text>
           <text id="/c_imm/group_chw_info/attended_imm/no:label">
             <value>Tidak</value>
           </text>
@@ -1795,10 +1918,13 @@
             <value>Pentavalent 2</value>
           </text>
           <text id="/c_imm/group_meningococcal/g_meningococcal:label">
-            <value>Apa dosis Meningococcal melakukan {patient_name) yang diterima?</value>
+            <value>Apa dosis Meningococcal melakukan <output value=" /c_imm/id "/> yang diterima?</value>
           </text>
           <text id="/c_imm/group_select_vaccines/g_vaccines/cholera:label">
             <value>Kolera</value>
+          </text>
+          <text id="/c_imm/group_review_vaccines/r_pneumococcal_3:label">
+            <value>Pneimococcal 3</value>
           </text>
           <text id="/c_imm/group_rotavirus/g_rotavirus:jr:constraintMsg">
             <value>Tidak dapat memilih 'tak satupun' jika dosis lain dipilih.</value>
@@ -1826,6 +1952,12 @@
           <text id="/c_imm/group_bcg/g_bcg:label">
             <value>Did <output value=" /c_imm/id "/> receive the BCG vaccine?</value>
           </text>
+          <text id="/c_imm/group_review_vaccines/r_pneumococcal_4:label">
+            <value>Pneumococcal 4</value>
+          </text>
+          <text id="/c_imm/group_review_vaccines/r_ipv_2:label">
+            <value>Inactivated Polio 2</value>
+          </text>
           <text id="/c_imm/group_hpv/g_hpv/HPV1:label">
             <value>HPV 1</value>
           </text>
@@ -1850,8 +1982,8 @@
           <text id="/c_imm/group_rotavirus/g_rotavirus/RV3:label">
             <value>Rotavirus 3</value>
           </text>
-          <text id="/c_imm/group_review:label">
-            <value>Reporting for ID <output value=" /c_imm/id "/></value>
+          <text id="/c_imm/group_ipv/g_ipv/IPV3:label">
+            <value>Inactivated Polio 3</value>
           </text>
           <text id="/c_imm/group_polio/g_polio/OPV0:label">
             <value>Birth Polio</value>
@@ -1867,6 +1999,9 @@
           </text>
           <text id="/c_imm/received/opv1:label">
             <value>Received Polio 1</value>
+          </text>
+          <text id="/c_imm/group_ipv/g_ipv/IPV2:label">
+            <value>Inactivated Polio 2</value>
           </text>
           <text id="/c_imm/group_mmrv/g_mmrv:label">
             <value>Which dose of MMRV did <output value=" /c_imm/id "/> receive?</value>
@@ -1889,8 +2024,11 @@
           <text id="/c_imm/group_vitamin_a/g_vitamin_a:label">
             <value>Did <output value=" /c_imm/id "/> receive a Vitamin A vaccine?</value>
           </text>
-          <text id="/c_imm/group_review_vaccines/r_cholera_1:label">
-            <value>Cholera 1</value>
+          <text id="/c_imm/group_pneumococcal/g_pneumococcal:label">
+            <value>Which dose of Pneumococcal Pneumonia did <output value=" /c_imm/id "/> receive?</value>
+          </text>
+          <text id="/c_imm/group_ipv/g_ipv:label">
+            <value>Which dose of Inactivated Polio did <output value=" /c_imm/id "/> receive?</value>
           </text>
           <text id="/c_imm/group_hep_a:label">
             <value>Hepatitis A</value>
@@ -1949,6 +2087,12 @@
           <text id="/c_imm/group_typhoid/g_typhoid/none:label">
             <value>None</value>
           </text>
+          <text id="/c_imm/group_review_vaccines/r_ipv_3:label">
+            <value>Inactivated Polio 3</value>
+          </text>
+          <text id="/c_imm/group_review_vaccines/r_cholera_1:label">
+            <value>Cholera 1</value>
+          </text>
           <text id="/c_imm/group_cholera/g_cholera/none:label">
             <value>None</value>
           </text>
@@ -1987,6 +2131,12 @@
           </text>
           <text id="/c_imm/received/opv3:label">
             <value>Received Polio 3</value>
+          </text>
+          <text id="/c_imm/group_review_vaccines/r_rotavirus_3:label">
+            <value>Rotavirus 3</value>
+          </text>
+          <text id="/c_imm/group_review_vaccines/r_mmr_2:label">
+            <value>MMR 2</value>
           </text>
           <text id="/c_imm/group_polio:label">
             <value>Polio</value>
@@ -2051,11 +2201,11 @@
           <text id="/c_imm/group_review_vaccines/r_meningococcal_2:label">
             <value>Meningococcal 2</value>
           </text>
-          <text id="/c_imm/group_review_vaccines/r_bcg:label">
-            <value>BCG</value>
+          <text id="/c_imm/group_select_vaccines/g_vaccines/ipv:label">
+            <value>Inactivated Polio</value>
           </text>
-          <text id="/c_imm/group_review_vaccines/r_pneumococcal_3:label">
-            <value>Pneumococcal 3</value>
+          <text id="/c_imm/group_review:label">
+            <value>Reporting for ID <output value=" /c_imm/id "/></value>
           </text>
           <text id="/c_imm/received/je:label">
             <value>Received Japanese Encephalitis</value>
@@ -2090,6 +2240,9 @@
           <text id="/c_imm/received/ch3:label">
             <value>Received Cholera 3</value>
           </text>
+          <text id="/c_imm/group_pneumococcal:label">
+            <value>Pneumococcal Pneumonia</value>
+          </text>
           <text id="/c_imm/received/hpv2:label">
             <value>Received HPV 2</value>
           </text>
@@ -2105,8 +2258,8 @@
           <text id="/c_imm/group_select_vaccines/g_vaccines/yellow_fever:label">
             <value>Yellow Fever</value>
           </text>
-          <text id="/c_imm/group_pneumococcal/g_pneumococcal:label">
-            <value>Which dose of Pneumococcal Pneumonia did <output value=" /c_imm/id "/> receive?</value>
+          <text id="/c_imm/group_ipv/g_ipv/IPV1:label">
+            <value>Inactivated Polio 1</value>
           </text>
           <text id="/c_imm/group_mmrv/g_mmrv/MMRV1:label">
             <value>MMRV 1</value>
@@ -2144,6 +2297,9 @@
           <text id="/c_imm/group_mmr/g_mmr/none:label">
             <value>None</value>
           </text>
+          <text id="/c_imm/group_ipv/g_ipv:jr:constraintMsg">
+            <value>Cannot select none if another dose is selected.</value>
+          </text>
           <text id="/c_imm/group_pentavalent/g_pentavalent:jr:constraintMsg">
             <value>Cannot select none if another dose is selected.</value>
           </text>
@@ -2153,8 +2309,8 @@
           <text id="/c_imm/group_select_vaccines/g_vaccines:hint">
             <value>Select all that apply</value>
           </text>
-          <text id="/c_imm/group_review_vaccines/r_rotavirus_3:label">
-            <value>Rotavirus 3</value>
+          <text id="/c_imm/received/ipv3:label">
+            <value>Received Inactivated Polio 3</value>
           </text>
           <text id="/c_imm/group_select_vaccines/g_vaccines/bcg:label">
             <value>BCG</value>
@@ -2164,6 +2320,9 @@
           </text>
           <text id="/c_imm/group_polio/g_polio/OPV3:label">
             <value>Oral Polio 3</value>
+          </text>
+          <text id="/c_imm/received/ipv2:label">
+            <value>Received Inactivated Polio 2</value>
           </text>
           <text id="/c_imm/received/pcv3:label">
             <value>Received Pneumococcal 3</value>
@@ -2216,6 +2375,9 @@
           <text id="/c_imm/group_review_vaccines:label">
             <value>New vaccines for ID <output value=" /c_imm/id "/></value>
           </text>
+          <text id="/c_imm/group_review_vaccines/r_bcg:label">
+            <value>BCG</value>
+          </text>
           <text id="/c_imm/received/bcg:label">
             <value>Received BCG</value>
           </text>
@@ -2234,8 +2396,8 @@
           <text id="/c_imm/group_pneumococcal/g_pneumococcal/PCV1:label">
             <value>Pneumococcal 1</value>
           </text>
-          <text id="/c_imm/group_review_vaccines/r_mmr_2:label">
-            <value>MMR 2</value>
+          <text id="/c_imm/group_ipv:label">
+            <value>Inactivated Polio</value>
           </text>
           <text id="/c_imm/received/ha1:label">
             <value>Received Hepatitis A 1</value>
@@ -2312,14 +2474,14 @@
           <text id="/c_imm/received/pcv4:label">
             <value>Received Pneumococcal 4</value>
           </text>
-          <text id="/c_imm/group_pneumococcal:label">
-            <value>Pneumococcal Pneumonia</value>
+          <text id="/c_imm/received/ipv1:label">
+            <value>Received Inactivated Polio 1</value>
           </text>
           <text id="/c_imm/group_meningococcal/g_meningococcal/MN4:label">
             <value>Meningococcal 4</value>
           </text>
-          <text id="/c_imm/group_review_vaccines/r_pneumococcal_4:label">
-            <value>Pneumococcal 4</value>
+          <text id="/c_imm/group_review_vaccines/r_ipv_1:label">
+            <value>Inactivated Polio 1</value>
           </text>
           <text id="/c_imm/group_pentavalent/g_pentavalent/none:label">
             <value>None</value>
@@ -2384,6 +2546,9 @@
           <text id="/c_imm/received/ty1:label">
             <value>Received Typhoid 1</value>
           </text>
+          <text id="/c_imm/group_ipv/g_ipv/none:label">
+            <value>None</value>
+          </text>
           <text id="/c_imm/group_chw_info/attended_imm/no:label">
             <value>No</value>
           </text>
@@ -2401,6 +2566,9 @@
           </text>
           <text id="/c_imm/group_select_vaccines/g_vaccines/cholera:label">
             <value>Cholera</value>
+          </text>
+          <text id="/c_imm/group_review_vaccines/r_pneumococcal_3:label">
+            <value>Pneumococcal 3</value>
           </text>
           <text id="/c_imm/group_rotavirus/g_rotavirus:jr:constraintMsg">
             <value>Cannot select none if another dose is selected.</value>
@@ -2428,6 +2596,12 @@
           <text id="/c_imm/group_bcg/g_bcg:label">
             <value><output value=" /c_imm/id "/> BCG টিকা পেয়েছে কি?</value>
           </text>
+          <text id="/c_imm/group_review_vaccines/r_pneumococcal_4:label">
+            <value>পাইওমোকোকাল 4</value>
+          </text>
+          <text id="/c_imm/group_review_vaccines/r_ipv_2:label">
+            <value>IPV 2</value>
+          </text>
           <text id="/c_imm/group_hpv/g_hpv/HPV1:label">
             <value>HPV (হিউম্যান পাপিলোমাইরাস) 1</value>
           </text>
@@ -2452,8 +2626,8 @@
           <text id="/c_imm/group_rotavirus/g_rotavirus/RV3:label">
             <value>রটাভাইরাস 3</value>
           </text>
-          <text id="/c_imm/group_review:label">
-            <value>আইডি <output value=" /c_imm/id "/> জন্য প্রতিবেদন করা হচ্ছে</value>
+          <text id="/c_imm/group_ipv/g_ipv/IPV3:label">
+            <value>IPV 3</value>
           </text>
           <text id="/c_imm/group_polio/g_polio/OPV0:label">
             <value>পোলিও 0</value>
@@ -2469,6 +2643,9 @@
           </text>
           <text id="/c_imm/received/opv1:label">
             <value>পোলিও 1 প্রাপ্তি</value>
+          </text>
+          <text id="/c_imm/group_ipv/g_ipv/IPV2:label">
+            <value>IPV 2</value>
           </text>
           <text id="/c_imm/group_mmrv/g_mmrv:label">
             <value>MMRV কোন ডোজ <output value=" /c_imm/id "/> পেয়েছেন?</value>
@@ -2491,8 +2668,11 @@
           <text id="/c_imm/group_vitamin_a/g_vitamin_a:label">
             <value><output value=" /c_imm/id "/> ভিটামিন A টিকা পেয়েছে কি?</value>
           </text>
-          <text id="/c_imm/group_review_vaccines/r_cholera_1:label">
-            <value>কলেরা 1</value>
+          <text id="/c_imm/group_pneumococcal/g_pneumococcal:label">
+            <value>পাইওমোকোকাল কোন ডোজ <output value=" /c_imm/id "/> পেয়েছেন?</value>
+          </text>
+          <text id="/c_imm/group_ipv/g_ipv:label">
+            <value><output value=" /c_imm/id "/> কলেরা টিকা পেয়েছে কি?</value>
           </text>
           <text id="/c_imm/group_hep_a:label">
             <value>হেপাটাইটিস A</value>
@@ -2551,6 +2731,12 @@
           <text id="/c_imm/group_typhoid/g_typhoid/none:label">
             <value>কিছুই নয়</value>
           </text>
+          <text id="/c_imm/group_review_vaccines/r_ipv_3:label">
+            <value>IPV 3</value>
+          </text>
+          <text id="/c_imm/group_review_vaccines/r_cholera_1:label">
+            <value>কলেরা 1</value>
+          </text>
           <text id="/c_imm/group_typhoid/g_typhoid/TY2:label">
             <value>টাইফয়েড 2</value>
           </text>
@@ -2589,6 +2775,12 @@
           </text>
           <text id="/c_imm/received/opv3:label">
             <value>পোলিও 3 প্রাপ্তি</value>
+          </text>
+          <text id="/c_imm/group_review_vaccines/r_rotavirus_3:label">
+            <value>রটাভাইরাস 3</value>
+          </text>
+          <text id="/c_imm/group_review_vaccines/r_mmr_2:label">
+            <value>MMR 2( হাম, মাম্প, রুবেলা)</value>
           </text>
           <text id="/c_imm/group_polio:label">
             <value>পোলিও</value>
@@ -2653,11 +2845,11 @@
           <text id="/c_imm/group_review_vaccines/r_meningococcal_2:label">
             <value>মেনিংকোকাল 2</value>
           </text>
-          <text id="/c_imm/group_review_vaccines/r_bcg:label">
-            <value>BCG</value>
+          <text id="/c_imm/group_select_vaccines/g_vaccines/ipv:label">
+            <value>Inactivated Polio</value>
           </text>
-          <text id="/c_imm/group_review_vaccines/r_pneumococcal_3:label">
-            <value>পাইওমোকোকাল 3</value>
+          <text id="/c_imm/group_review:label">
+            <value>আইডি <output value=" /c_imm/id "/> জন্য প্রতিবেদন করা হচ্ছে</value>
           </text>
           <text id="/c_imm/received/je:label">
             <value>জাপানি এনসেফালাইটিস প্রাপ্তি</value>
@@ -2695,6 +2887,9 @@
           <text id="/c_imm/received/ch3:label">
             <value>কলেরা 3 প্রাপ্তি</value>
           </text>
+          <text id="/c_imm/group_pneumococcal:label">
+            <value>পাইওমোকোকাল</value>
+          </text>
           <text id="/c_imm/received/hpv2:label">
             <value>HPV 2 প্রাপ্তি</value>
           </text>
@@ -2710,8 +2905,8 @@
           <text id="/c_imm/group_select_vaccines/g_vaccines/yellow_fever:label">
             <value>হলুদ জ্বর</value>
           </text>
-          <text id="/c_imm/group_pneumococcal/g_pneumococcal:label">
-            <value>পাইওমোকোকাল কোন ডোজ <output value=" /c_imm/id "/> পেয়েছেন?</value>
+          <text id="/c_imm/group_ipv/g_ipv/IPV1:label">
+            <value>IPV 1</value>
           </text>
           <text id="/c_imm/group_mmrv/g_mmrv/MMRV1:label">
             <value>MMRV 1( হাম, মাম্প, রুবেলা, জলবসন্ত)</value>
@@ -2749,6 +2944,9 @@
           <text id="/c_imm/group_mmr/g_mmr/none:label">
             <value>কিছুই নয়</value>
           </text>
+          <text id="/c_imm/group_ipv/g_ipv:jr:constraintMsg">
+            <value>অন্য ডোজ নির্বাচন করা হলে কেউ নির্বাচন করতে পারবেন না।</value>
+          </text>
           <text id="/c_imm/group_pentavalent/g_pentavalent:jr:constraintMsg">
             <value>অন্য ডোজ নির্বাচন করা হলে কেউ নির্বাচন করতে পারবেন না।</value>
           </text>
@@ -2758,8 +2956,8 @@
           <text id="/c_imm/group_select_vaccines/g_vaccines:hint">
             <value>প্রয়োগ করা সমস্ত নির্বাচন করুন</value>
           </text>
-          <text id="/c_imm/group_review_vaccines/r_rotavirus_3:label">
-            <value>রটাভাইরাস 3</value>
+          <text id="/c_imm/received/ipv3:label">
+            <value>Received Inactivated Polio 3</value>
           </text>
           <text id="/c_imm/group_select_vaccines/g_vaccines/bcg:label">
             <value>BCG</value>
@@ -2769,6 +2967,9 @@
           </text>
           <text id="/c_imm/group_polio/g_polio/OPV3:label">
             <value>পোলিও 3</value>
+          </text>
+          <text id="/c_imm/received/ipv2:label">
+            <value>Received Inactivated Polio 2</value>
           </text>
           <text id="/c_imm/received/pcv3:label">
             <value>পাইওমোকোকাল 3 পেয়েছেন</value>
@@ -2821,6 +3022,9 @@
           <text id="/c_imm/group_review_vaccines:label">
             <value>আইডি <output value=" /c_imm/id "/> জন্য নতুন টিকা</value>
           </text>
+          <text id="/c_imm/group_review_vaccines/r_bcg:label">
+            <value>BCG</value>
+          </text>
           <text id="/c_imm/received/bcg:label">
             <value>BCG প্রাপ্তি</value>
           </text>
@@ -2839,8 +3043,8 @@
           <text id="/c_imm/group_pneumococcal/g_pneumococcal/PCV1:label">
             <value>পাইওমোকোকাল 1</value>
           </text>
-          <text id="/c_imm/group_review_vaccines/r_mmr_2:label">
-            <value>MMR 2( হাম, মাম্প, রুবেলা)</value>
+          <text id="/c_imm/group_ipv:label">
+            <value>পোলিও</value>
           </text>
           <text id="/c_imm/received/ha1:label">
             <value>হেপাটাইটিস A 1 প্রাপ্তি</value>
@@ -2914,14 +3118,14 @@
           <text id="/c_imm/received/pcv4:label">
             <value>পাইওমোকোকাল 4 পেয়েছেন</value>
           </text>
-          <text id="/c_imm/group_pneumococcal:label">
-            <value>পাইওমোকোকাল</value>
+          <text id="/c_imm/received/ipv1:label">
+            <value>Received Inactivated Polio 1</value>
           </text>
           <text id="/c_imm/group_meningococcal/g_meningococcal/MN4:label">
             <value>মেনিংকোকাল 4</value>
           </text>
-          <text id="/c_imm/group_review_vaccines/r_pneumococcal_4:label">
-            <value>পাইওমোকোকাল 4</value>
+          <text id="/c_imm/group_review_vaccines/r_ipv_1:label">
+            <value>IPV 1</value>
           </text>
           <text id="/c_imm/group_pentavalent/g_pentavalent/none:label">
             <value>কিছুই নয়</value>
@@ -2986,6 +3190,9 @@
           <text id="/c_imm/received/ty1:label">
             <value>টাইফয়েড 1 পেয়েছেন</value>
           </text>
+          <text id="/c_imm/group_ipv/g_ipv/none:label">
+            <value>কিছুই নয়</value>
+          </text>
           <text id="/c_imm/group_chw_info/attended_imm/no:label">
             <value>না</value>
           </text>
@@ -3004,6 +3211,9 @@
           <text id="/c_imm/group_select_vaccines/g_vaccines/cholera:label">
             <value>কলেরা</value>
           </text>
+          <text id="/c_imm/group_review_vaccines/r_pneumococcal_3:label">
+            <value>পাইওমোকোকাল 3</value>
+          </text>
           <text id="/c_imm/group_rotavirus/g_rotavirus:jr:constraintMsg">
             <value>অন্য ডোজ নির্বাচন করা হলে কেউ নির্বাচন করতে পারবেন না।</value>
           </text>
@@ -3016,7 +3226,7 @@
         </translation>
       </itext>
       <instance>
-        <c_imm delimiter="#" id="c_imm" prefix="J1!c_imm!" version="2018-09-19_19-35">
+        <c_imm delimiter="#" id="c_imm" prefix="J1!c_imm!" version="2018-09-20_12-26">
           <id/>
           <c/>
           <received>
@@ -3043,6 +3253,9 @@
             <opv1/>
             <opv2/>
             <opv3/>
+            <ipv1/>
+            <ipv2/>
+            <ipv3/>
             <dt1/>
             <dt2/>
             <dt3/>
@@ -3094,6 +3307,9 @@
           <group_polio>
             <g_polio/>
           </group_polio>
+          <group_ipv>
+            <g_ipv/>
+          </group_ipv>
           <group_pentavalent>
             <g_pentavalent/>
           </group_pentavalent>
@@ -3140,6 +3356,9 @@
             <r_opv_1/>
             <r_opv_2/>
             <r_opv_3/>
+            <r_ipv_1/>
+            <r_ipv_2/>
+            <r_ipv_3/>
             <r_penta_1/>
             <r_penta_2/>
             <r_penta_3/>
@@ -3186,6 +3405,9 @@
       <bind calculate="if(selected( /c_imm/group_polio/g_polio ,'OPV1'),'yes','no')" nodeset="/c_imm/received/opv1" type="string"/>
       <bind calculate="if(selected( /c_imm/group_polio/g_polio ,'OPV2'),'yes','no')" nodeset="/c_imm/received/opv2" type="string"/>
       <bind calculate="if(selected( /c_imm/group_polio/g_polio ,'OPV3'),'yes','no')" nodeset="/c_imm/received/opv3" type="string"/>
+      <bind calculate="if(selected( /c_imm/group_ipv/g_ipv ,'IPV1'),'yes','no')" nodeset="/c_imm/received/ipv1" type="string"/>
+      <bind calculate="if(selected( /c_imm/group_ipv/g_ipv ,'IPV2'),'yes','no')" nodeset="/c_imm/received/ipv2" type="string"/>
+      <bind calculate="if(selected( /c_imm/group_ipv/g_ipv ,'IPV3'),'yes','no')" nodeset="/c_imm/received/ipv3" type="string"/>
       <bind calculate="if(selected( /c_imm/group_pentavalent/g_pentavalent ,'DT1'),'yes','no')" nodeset="/c_imm/received/dt1" type="string"/>
       <bind calculate="if(selected( /c_imm/group_pentavalent/g_pentavalent ,'DT2'),'yes','no')" nodeset="/c_imm/received/dt2" type="string"/>
       <bind calculate="if(selected( /c_imm/group_pentavalent/g_pentavalent ,'DT3'),'yes','no')" nodeset="/c_imm/received/dt3" type="string"/>
@@ -3223,6 +3445,8 @@
       <bind constraint="(not(selected( /c_imm/group_mmrv/g_mmrv ,'none')) and (selected( /c_imm/group_mmrv/g_mmrv ,'MMRV1') or selected( /c_imm/group_mmrv/g_mmrv ,'MMRV2'))) or selected( /c_imm/group_mmrv/g_mmrv ,'none') and not(selected( /c_imm/group_mmrv/g_mmrv ,'MMRV1') or selected( /c_imm/group_mmrv/g_mmrv ,'MMRV2'))" jr:constraintMsg="jr:itext('/c_imm/group_mmrv/g_mmrv:jr:constraintMsg')" nodeset="/c_imm/group_mmrv/g_mmrv" required="true()" type="select"/>
       <bind nodeset="/c_imm/group_polio" relevant="selected( /c_imm/group_select_vaccines/g_vaccines ,'polio')"/>
       <bind constraint="(not(selected( /c_imm/group_polio/g_polio ,'none')) and (selected( /c_imm/group_polio/g_polio ,'OPV0') or selected( /c_imm/group_polio/g_polio ,'OPV1') or selected( /c_imm/group_polio/g_polio ,'OPV2') or selected( /c_imm/group_polio/g_polio ,'OPV3'))) or selected( /c_imm/group_polio/g_polio ,'none') and not(selected( /c_imm/group_polio/g_polio ,'OPV0') or selected( /c_imm/group_polio/g_polio ,'OPV1') or selected( /c_imm/group_polio/g_polio ,'OPV2') or selected( /c_imm/group_polio/g_polio ,'OPV3'))" jr:constraintMsg="jr:itext('/c_imm/group_polio/g_polio:jr:constraintMsg')" nodeset="/c_imm/group_polio/g_polio" required="true()" type="select"/>
+      <bind nodeset="/c_imm/group_ipv" relevant="selected( /c_imm/group_select_vaccines/g_vaccines ,'ipv')"/>
+      <bind constraint="(not(selected( /c_imm/group_ipv/g_ipv ,'none')) and (selected( /c_imm/group_ipv/g_ipv ,'IPV1') or selected( /c_imm/group_ipv/g_ipv ,'IPV2') or selected( /c_imm/group_ipv/g_ipv ,'IPV3'))) or selected( /c_imm/group_ipv/g_ipv ,'none') and not(selected( /c_imm/group_ipv/g_ipv ,'IPV1') or selected( /c_imm/group_ipv/g_ipv ,'IPV2') or selected( /c_imm/group_ipv/g_ipv ,'IPV3'))" jr:constraintMsg="jr:itext('/c_imm/group_ipv/g_ipv:jr:constraintMsg')" nodeset="/c_imm/group_ipv/g_ipv" required="true()" type="select"/>
       <bind nodeset="/c_imm/group_pentavalent" relevant="selected( /c_imm/group_select_vaccines/g_vaccines ,'penta')"/>
       <bind constraint="(not(selected( /c_imm/group_pentavalent/g_pentavalent ,'none')) and (selected( /c_imm/group_pentavalent/g_pentavalent ,'DT1') or selected( /c_imm/group_pentavalent/g_pentavalent ,'DT2') or selected( /c_imm/group_pentavalent/g_pentavalent ,'DT3'))) or selected( /c_imm/group_pentavalent/g_pentavalent ,'none') and not(selected( /c_imm/group_pentavalent/g_pentavalent ,'DT1') or selected( /c_imm/group_pentavalent/g_pentavalent ,'DT2') or selected( /c_imm/group_pentavalent/g_pentavalent ,'DT3'))" jr:constraintMsg="jr:itext('/c_imm/group_pentavalent/g_pentavalent:jr:constraintMsg')" nodeset="/c_imm/group_pentavalent/g_pentavalent" required="true()" type="select"/>
       <bind nodeset="/c_imm/group_pneumococcal" relevant="selected( /c_imm/group_select_vaccines/g_vaccines ,'pneumococcal')"/>
@@ -3261,6 +3485,9 @@
       <bind nodeset="/c_imm/group_review_vaccines/r_opv_1" readonly="true()" relevant="selected( /c_imm/group_polio/g_polio ,'OPV1')" type="string"/>
       <bind nodeset="/c_imm/group_review_vaccines/r_opv_2" readonly="true()" relevant="selected( /c_imm/group_polio/g_polio ,'OPV2')" type="string"/>
       <bind nodeset="/c_imm/group_review_vaccines/r_opv_3" readonly="true()" relevant="selected( /c_imm/group_polio/g_polio ,'OPV3')" type="string"/>
+      <bind nodeset="/c_imm/group_review_vaccines/r_ipv_1" readonly="true()" relevant="selected( /c_imm/group_ipv/g_ipv ,'IPV1')" type="string"/>
+      <bind nodeset="/c_imm/group_review_vaccines/r_ipv_2" readonly="true()" relevant="selected( /c_imm/group_ipv/g_ipv ,'IPV2')" type="string"/>
+      <bind nodeset="/c_imm/group_review_vaccines/r_ipv_3" readonly="true()" relevant="selected( /c_imm/group_ipv/g_ipv ,'IPV3')" type="string"/>
       <bind nodeset="/c_imm/group_review_vaccines/r_penta_1" readonly="true()" relevant="selected( /c_imm/group_pentavalent/g_pentavalent ,'DT1')" type="string"/>
       <bind nodeset="/c_imm/group_review_vaccines/r_penta_2" readonly="true()" relevant="selected( /c_imm/group_pentavalent/g_pentavalent ,'DT2')" type="string"/>
       <bind nodeset="/c_imm/group_review_vaccines/r_penta_3" readonly="true()" relevant="selected( /c_imm/group_pentavalent/g_pentavalent ,'DT3')" type="string"/>
@@ -3344,6 +3571,10 @@
         <item>
           <label ref="jr:itext('/c_imm/group_select_vaccines/g_vaccines/polio:label')"/>
           <value>polio</value>
+        </item>
+        <item>
+          <label ref="jr:itext('/c_imm/group_select_vaccines/g_vaccines/ipv:label')"/>
+          <value>ipv</value>
         </item>
         <item>
           <label ref="jr:itext('/c_imm/group_select_vaccines/g_vaccines/penta:label')"/>
@@ -3563,6 +3794,28 @@
         </item>
       </select>
     </group>
+    <group ref="/c_imm/group_ipv">
+      <label ref="jr:itext('/c_imm/group_ipv:label')"/>
+      <select ref="/c_imm/group_ipv/g_ipv">
+        <label ref="jr:itext('/c_imm/group_ipv/g_ipv:label')"/>
+        <item>
+          <label ref="jr:itext('/c_imm/group_ipv/g_ipv/IPV1:label')"/>
+          <value>IPV1</value>
+        </item>
+        <item>
+          <label ref="jr:itext('/c_imm/group_ipv/g_ipv/IPV2:label')"/>
+          <value>IPV2</value>
+        </item>
+        <item>
+          <label ref="jr:itext('/c_imm/group_ipv/g_ipv/IPV3:label')"/>
+          <value>IPV3</value>
+        </item>
+        <item>
+          <label ref="jr:itext('/c_imm/group_ipv/g_ipv/none:label')"/>
+          <value>none</value>
+        </item>
+      </select>
+    </group>
     <group ref="/c_imm/group_pentavalent">
       <label ref="jr:itext('/c_imm/group_pentavalent:label')"/>
       <select ref="/c_imm/group_pentavalent/g_pentavalent">
@@ -3758,6 +4011,15 @@
       </input>
       <input appearance="li" ref="/c_imm/group_review_vaccines/r_opv_3">
         <label ref="jr:itext('/c_imm/group_review_vaccines/r_opv_3:label')"/>
+      </input>
+      <input appearance="li" ref="/c_imm/group_review_vaccines/r_ipv_1">
+        <label ref="jr:itext('/c_imm/group_review_vaccines/r_ipv_1:label')"/>
+      </input>
+      <input appearance="li" ref="/c_imm/group_review_vaccines/r_ipv_2">
+        <label ref="jr:itext('/c_imm/group_review_vaccines/r_ipv_2:label')"/>
+      </input>
+      <input appearance="li" ref="/c_imm/group_review_vaccines/r_ipv_3">
+        <label ref="jr:itext('/c_imm/group_review_vaccines/r_ipv_3:label')"/>
       </input>
       <input appearance="li" ref="/c_imm/group_review_vaccines/r_penta_1">
         <label ref="jr:itext('/c_imm/group_review_vaccines/r_penta_1:label')"/>

@@ -3777,6 +3777,57 @@
           ],
           "required": false
         },
+        "received_ipv_1": {
+          "labels": {
+            "tiny": {
+              "en": "ipv1"
+            },
+            "short": {
+              "translation_key": "report.c_imm.received_ipv_1"
+            }
+          },
+          "position": 26,
+          "type": "string",
+          "length": [
+            1,
+            10
+          ],
+          "required": false
+        },
+        "received_ipv_2": {
+          "labels": {
+            "tiny": {
+              "en": "ipv2"
+            },
+            "short": {
+              "translation_key": "report.c_imm.received_ipv_2"
+            }
+          },
+          "position": 27,
+          "type": "string",
+          "length": [
+            1,
+            10
+          ],
+          "required": false
+        },
+        "received_ipv_3": {
+          "labels": {
+            "tiny": {
+              "en": "ipv3"
+            },
+            "short": {
+              "translation_key": "report.c_imm.received_ipv_3"
+            }
+          },
+          "position": 28,
+          "type": "string",
+          "length": [
+            1,
+            10
+          ],
+          "required": false
+        },
         "received_penta_1": {
           "labels": {
             "tiny": {
@@ -3786,7 +3837,7 @@
               "translation_key": "report.c_imm.received_penta_1"
             }
           },
-          "position": 26,
+          "position": 29,
           "type": "string",
           "length": [
             1,
@@ -3803,7 +3854,7 @@
               "translation_key": "report.c_imm.received_penta_2"
             }
           },
-          "position": 27,
+          "position": 30,
           "type": "string",
           "length": [
             1,
@@ -3820,7 +3871,7 @@
               "translation_key": "report.c_imm.received_penta_3"
             }
           },
-          "position": 28,
+          "position": 31,
           "type": "string",
           "length": [
             1,
@@ -3837,7 +3888,7 @@
               "translation_key": "report.c_imm.received_pneumococcal_1"
             }
           },
-          "position": 29,
+          "position": 32,
           "type": "string",
           "length": [
             1,
@@ -3854,7 +3905,7 @@
               "translation_key": "report.c_imm.received_pneumococcal_2"
             }
           },
-          "position": 30,
+          "position": 33,
           "type": "string",
           "length": [
             1,
@@ -3871,7 +3922,7 @@
               "translation_key": "report.c_imm.received_pneumococcal_3"
             }
           },
-          "position": 31,
+          "position": 34,
           "type": "string",
           "length": [
             1,
@@ -3888,7 +3939,7 @@
               "translation_key": "report.c_imm.received_pneumococcal_4"
             }
           },
-          "position": 32,
+          "position": 35,
           "type": "string",
           "length": [
             1,
@@ -3905,7 +3956,7 @@
               "translation_key": "report.c_imm.received_rotavirus_1"
             }
           },
-          "position": 33,
+          "position": 36,
           "type": "string",
           "length": [
             1,
@@ -3922,7 +3973,7 @@
               "translation_key": "report.c_imm.received_rotavirus_2"
             }
           },
-          "position": 34,
+          "position": 37,
           "type": "string",
           "length": [
             1,
@@ -3939,7 +3990,7 @@
               "translation_key": "report.c_imm.received_rotavirus_3"
             }
           },
-          "position": 35,
+          "position": 38,
           "type": "string",
           "length": [
             1,
@@ -3956,7 +4007,7 @@
               "translation_key": "report.c_imm.received_typhoid_1"
             }
           },
-          "position": 36,
+          "position": 39,
           "type": "string",
           "length": [
             1,
@@ -3973,7 +4024,7 @@
               "translation_key": "report.c_imm.received_typhoid_2"
             }
           },
-          "position": 37,
+          "position": 40,
           "type": "string",
           "length": [
             1,
@@ -3990,7 +4041,7 @@
               "translation_key": "report.c_imm.received_vitamin_a"
             }
           },
-          "position": 38,
+          "position": 41,
           "type": "string",
           "length": [
             1,
@@ -4007,7 +4058,7 @@
               "translation_key": "report.c_imm.received_yellow_fever"
             }
           },
-          "position": 39,
+          "position": 42,
           "type": "string",
           "length": [
             1,
@@ -4651,6 +4702,123 @@
         "code": "OPV3",
         "icon": "immunization",
         "translation_key": "OPV3 Oral Polio"
+      },
+      "fields": {
+        "patient_id": {
+          "labels": {
+            "short": {
+              "translation_key": "patient_id"
+            }
+          },
+          "position": 0,
+          "type": "string",
+          "length": [
+            5,
+            13
+          ],
+          "required": true
+        },
+        "notes": {
+          "labels": {
+            "short": {
+              "translation_key": "notes"
+            }
+          },
+          "position": 1,
+          "type": "string",
+          "length": [
+            1,
+            100
+          ],
+          "required": false
+        }
+      },
+      "public_form": false,
+      "use_sentinel": true
+    },
+    "IPV1": {
+      "meta": {
+        "code": "IPV1",
+        "icon": "immunization",
+        "translation_key": "IPV1 Inactivated Polio"
+      },
+      "fields": {
+        "patient_id": {
+          "labels": {
+            "short": {
+              "translation_key": "patient_id"
+            }
+          },
+          "position": 0,
+          "type": "string",
+          "length": [
+            5,
+            13
+          ],
+          "required": true
+        },
+        "notes": {
+          "labels": {
+            "short": {
+              "translation_key": "notes"
+            }
+          },
+          "position": 1,
+          "type": "string",
+          "length": [
+            1,
+            100
+          ],
+          "required": false
+        }
+      },
+      "public_form": false,
+      "use_sentinel": true
+    },
+    "IPV2": {
+      "meta": {
+        "code": "IPV2",
+        "icon": "immunization",
+        "translation_key": "IPV2 Inactivated Polio"
+      },
+      "fields": {
+        "patient_id": {
+          "labels": {
+            "short": {
+              "translation_key": "patient_id"
+            }
+          },
+          "position": 0,
+          "type": "string",
+          "length": [
+            5,
+            13
+          ],
+          "required": true
+        },
+        "notes": {
+          "labels": {
+            "short": {
+              "translation_key": "notes"
+            }
+          },
+          "position": 1,
+          "type": "string",
+          "length": [
+            1,
+            100
+          ],
+          "required": false
+        }
+      },
+      "public_form": false,
+      "use_sentinel": true
+    },
+    "IPV3": {
+      "meta": {
+        "code": "IPV3",
+        "icon": "immunization",
+        "translation_key": "IPV3 Inactivated Polio"
       },
       "fields": {
         "patient_id": {
