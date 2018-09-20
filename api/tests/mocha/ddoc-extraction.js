@@ -79,7 +79,7 @@ describe('DDoc extraction', () => {
             'content_type': 'text/css',
             'data': changedData1
           },
-          'main.js': {
+          'js/main.js': {
             'content_type': 'application/javascript',
             'data': changedData2
           }
@@ -92,7 +92,7 @@ describe('DDoc extraction', () => {
             'content_type': 'text/css',
             'data': unchangedData1
           },
-          'main.js': {
+          'js/main.js': {
             'content_type': 'application/javascript',
             'data': unchangedData2
           }
@@ -127,7 +127,7 @@ describe('DDoc extraction', () => {
           'length': 201807,
           'data': changedData1
         },
-        'main.js': {
+        'js/main.js': {
           'content_type': 'application/javascript',
           'revpos': 442,
           'digest': 'md5-fuGMKFfYIWFhkG0apv8qYg==',
@@ -147,7 +147,7 @@ describe('DDoc extraction', () => {
           'length': 201807,
           'data': unchangedData1
         },
-        'main.js': {
+        'js/main.js': {
           'content_type': 'application/javascript',
           'revpos': 442,
           'digest': 'md5-buGMKFfYIWFhkG0apv8qYg==',

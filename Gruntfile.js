@@ -130,7 +130,7 @@ module.exports = function(grunt) {
       },
       admin: {
         src: 'admin/src/js/main.js',
-        dest: 'build/ddocs/medic-admin/_attachments/main.js',
+        dest: 'build/ddocs/medic-admin/_attachments/js/main.js',
         options: {
           transform: ['browserify-ngannotate'],
           alias: {
@@ -151,10 +151,10 @@ module.exports = function(grunt) {
             'build/ddocs/medic/_attachments/js/templates.js',
           'build/ddocs/medic/_attachments/js/inbox.js':
             'build/ddocs/medic/_attachments/js/inbox.js',
-          'build/ddocs/medic-admin/_attachments/main.js':
-            'build/ddocs/medic-admin/_attachments/main.js',
-          'build/ddocs/medic-admin/_attachments/templates.js':
-            'build/ddocs/medic-admin/_attachments/templates.js',
+          'build/ddocs/medic-admin/_attachments/js/main.js':
+            'build/ddocs/medic-admin/_attachments/js/main.js',
+          'build/ddocs/medic-admin/_attachments/js/templates.js':
+            'build/ddocs/medic-admin/_attachments/js/templates.js',
         },
       },
     },
@@ -671,7 +671,7 @@ module.exports = function(grunt) {
       adminApp: {
         cwd: 'admin/src',
         src: ['templates/**/*.html', '!templates/index.html'],
-        dest: 'build/ddocs/medic-admin/_attachments/templates.js',
+        dest: 'build/ddocs/medic-admin/_attachments/js/templates.js',
         options: {
           htmlmin: {
             collapseBooleanAttributes: true,
@@ -776,10 +776,10 @@ module.exports = function(grunt) {
         'build/ddocs/medic/_attachments/js/inbox.js',
       'build/ddocs/medic/_attachments/js/templates.js':
         'build/ddocs/medic/_attachments/js/templates.js',
-      'build/ddocs/medic-admin/_attachments/main.js':
-        'build/ddocs/medic-admin/_attachments/main.js',
-      'build/ddocs/medic-admin/_attachments/templates.js':
-        'build/ddocs/medic-admin/_attachments/templates.js',
+      'build/ddocs/medic-admin/_attachments/js/main.js':
+        'build/ddocs/medic-admin/_attachments/js/main.js',
+      'build/ddocs/medic-admin/_attachments/js/templates.js':
+        'build/ddocs/medic-admin/_attachments/js/templates.js',
     },
   });
 
