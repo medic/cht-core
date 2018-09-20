@@ -502,7 +502,7 @@ describe('routing', () => {
         .all([
           utils.requestOnTestDb(_.defaults({ path: '/_design/medic-admin/_rewrite' }, offlineRequestOptions), false, true),
           utils.requestOnTestDb(_.defaults({ path: '/_design/medic-admin/_rewrite/' }, offlineRequestOptions), false, true),
-          utils.requestOnTestDb(_.defaults({ path: '/_design/medic-admin/main.css' }, offlineRequestOptions), false, true)
+          utils.requestOnTestDb(_.defaults({ path: '/_design/medic-admin/css/main.css' }, offlineRequestOptions), false, true)
         ])
         .then(results => {
           expect(results[0].includes('administration console')).toBe(true);

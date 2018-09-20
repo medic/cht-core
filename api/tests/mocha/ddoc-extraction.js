@@ -75,7 +75,7 @@ describe('DDoc extraction', () => {
       {
         _id: '_design/updated',
         _attachments: {
-          'main.css': {
+          'css/main.css': {
             'content_type': 'text/css',
             'data': changedData1
           },
@@ -88,7 +88,7 @@ describe('DDoc extraction', () => {
       {
         _id: '_design/unchanged',
         _attachments: {
-          'main.css': {
+          'css/main.css': {
             'content_type': 'text/css',
             'data': unchangedData1
           },
@@ -120,7 +120,7 @@ describe('DDoc extraction', () => {
       _id: '_design/updated',
       _rev: '1',
       _attachments: {
-        'main.css': {
+        'css/main.css': {
           'content_type': 'text/css',
           'revpos': 442,
           'digest': 'md5-GuGMKFfYIWFhkG0apv8qYg==',
@@ -140,7 +140,7 @@ describe('DDoc extraction', () => {
       _id: '_design/unchanged',
       _rev: '1',
       _attachments: {
-        'main.css': {
+        'css/main.css': {
           'content_type': 'text/css',
           'revpos': 442,
           'digest': 'md5-auGMKFfYIWFhkG0apv8qYg==',
