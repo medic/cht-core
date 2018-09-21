@@ -393,7 +393,7 @@ describe('Contacts controller', () => {
         });
     });
 
-    it("when user doesn't have facility_id", () => {
+    it(`when user doesn't have facility_id`, () => {
       userSettings = KarmaUtils.promiseService(null, {});
       getDataRecords = KarmaUtils.promiseService();
       return createController()
