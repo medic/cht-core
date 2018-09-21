@@ -1,6 +1,6 @@
 [
   {"from": "/",             "to": "index.html"},
-  {"from": "/main.css",     "to": "main.css"},
-  {"from": "/main.js",      "to": "main.js"},
-  {"from": "/templates.js", "to": "templates.js"}
+  {"from": "/css/*",        "to": "css/*"},
+  {"from": "/fonts/*",      "to": "fonts/*"},
+  {"from": "/js/*",         "to": "js/*"}
 ]
