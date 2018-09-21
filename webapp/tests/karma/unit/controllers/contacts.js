@@ -278,7 +278,7 @@ describe('Contacts controller', () => {
       });
     });
 
-    it("sets the actionbar partially if it couldn't get forms", () => {
+    it(`sets the actionbar partially if it couldn't get forms`, () => {
       xmlForms.callsArgWith(2, { error: 'no forms brew' }); // call the callback
       return testRightActionBar({ doc: person }, actionBarArgs => {
         assert.equal(actionBarArgs.relevantForms, undefined);
