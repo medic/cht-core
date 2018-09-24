@@ -14,7 +14,7 @@
         days: 0,
         start: 0,
         end: 4,
-        title: "burrito"
+        title: "sample-treatment-followup"
       }
     ],
     resolvedIf: function() {
