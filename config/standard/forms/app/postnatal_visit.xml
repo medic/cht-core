@@ -5,38 +5,67 @@
     <model>
       <itext>
         <translation lang="hi">
-          <text id="/postnatal_visit/group_danger_signs_baby/g_danger_signs_baby:label">
-            <value><output value=" /postnatal_visit/chw_name "/> के साथ पुष्टि करें के क्या बच्चे को इनमें से कोई खतरा है |</value>
+          <text id="/postnatal_visit/group_note/default_chw_sms_note:label">
+            <value>**यह संदेश <output value=" /postnatal_visit/chw_name "/> (<output value=" /postnatal_visit/chw_phone "/>) को भेजा जाएगा:**
+ <output value=" /postnatal_visit/group_note/default_chw_sms_text "/></value></text>
+          <text id="/postnatal_visit/group_review/r_postnatal_details:label">
+            <value>**<output value=" /postnatal_visit/patient_name "/>** आईडी : <output value=" /postnatal_visit/group_review/r_patient_id "/></value></text>
+          <text id="/postnatal_visit/group_note/default_chw_sms:label">
+            <value>-</value>
           </text>
-          <text id="/postnatal_visit/group_review/r_baby_danger_sign9:label">
-            <value>सब कुछ उल्टी कर देता है</value>
+          <text id="/postnatal_visit/group_review/r_baby_danger_sign1:label">
+            <value>बुखार</value>
           </text>
-          <text id="/postnatal_visit/group_review/r_baby_danger_sign4:label">
-            <value>ऐंठन</value>
+          <text id="/postnatal_visit/group_danger_signs_baby:label">
+            <value>बच्चे की खतरे के संकेत</value>
           </text>
-          <text id="/postnatal_visit/group_danger_signs_mom/g_danger_signs_mom/d1:label">
-            <value>उच्च डायस्टोलिक ब्लड प्रेशर</value>
+          <text id="/postnatal_visit/group_danger_signs_mom/g_danger_signs_mom:label">
+            <value><output value=" /postnatal_visit/chw_name "/> के साथ पुष्टि करें के क्या <output value=" /postnatal_visit/patient_name "/> को इनमें से कोई खतरा है |</value>
           </text>
-          <text id="/postnatal_visit/patient_uuid:label">
-            <value>मरीज UUID</value>
+          <text id="/postnatal_visit/group_review/submit:label">
+            <value>**सुनिश्चित करें के यह कार्रवाई पूरा करने के लिए आप सबमिट दबाये |**</value>
           </text>
-          <text id="/postnatal_visit/group_danger_signs_mom/g_danger_signs_mom/d8:label">
-            <value>दुखी महसूस करना या आसानी से रो देना</value>
+          <text id="/postnatal_visit/group_danger_signs_mom/g_danger_signs_mom/d14:label">
+            <value>अन्य खतरे के संकेत</value>
           </text>
-          <text id="/postnatal_visit/group_danger_signs_baby/g_danger_signs_baby/bd3:label">
-            <value>छाती अंदर लेना</value>
+          <text id="/postnatal_visit/group_note/is_sms_edited/no:label">
+            <value>नहीं</value>
           </text>
-          <text id="/postnatal_visit/group_review/r_followup_note1:label">
-            <value>** ये SMS के रूप में <output value=" /postnatal_visit/chw_name "/> <output value=" /postnatal_visit/chw_phone "/> को भेजा जायेगा **</value>
+          <text id="/postnatal_visit/group_danger_signs_mom/g_danger_signs_mom/d4:label">
+            <value>योनि से खून का भारी बहाव</value>
           </text>
-          <text id="/postnatal_visit/group_danger_signs_mom/g_danger_signs_mom/d6:label">
+          <text id="/postnatal_visit/group_danger_signs_baby/g_danger_signs_baby/bd2:label">
+            <value>तेजी से सांस लेना</value>
+          </text>
+          <text id="/postnatal_visit/group_danger_signs_mom/g_danger_signs_mom/d10:label">
+            <value>स्तन में समस्या या दर्द</value>
+          </text>
+          <text id="/postnatal_visit/group_review/r_baby_danger_sign8:label">
+            <value>त्वचा पे बहुत फोड़े</value>
+          </text>
+          <text id="/postnatal_visit/group_review/r_baby_danger_sign7:label">
+            <value>स्तनपान करने में असमर्थ</value>
+          </text>
+          <text id="/postnatal_visit/group_danger_signs_baby/g_danger_signs_baby/bd5:label">
+            <value>दस्त</value>
+          </text>
+          <text id="/postnatal_visit/group_note/default_chw_sms/default:label">
+            <value>-</value>
+          </text>
+          <text id="/postnatal_visit/group_review/r_mom_danger_sign6:label">
             <value>बूँद बूँद कर टपकने वाला पेशाब</value>
           </text>
-          <text id="/postnatal_visit/patient_id:label">
-            <value>मरीज का ID</value>
+          <text id="/postnatal_visit/group_review/r_baby_danger_sign5:label">
+            <value>दस्त</value>
           </text>
-          <text id="/postnatal_visit/group_review/r_mom_danger_sign2:label">
-            <value>ज़्यादा पीलापन</value>
+          <text id="/postnatal_visit/group_note/default_chw_sms/mom_visit:label">
+            <value>-</value>
+          </text>
+          <text id="/postnatal_visit/group_review/r_mom_danger_sign5:label">
+            <value>बुखार या खराब बू वाला जेर</value>
+          </text>
+          <text id="/postnatal_visit/group_review/r_mom_danger_sign10:label">
+            <value>स्तन में समस्या या दर्द</value>
           </text>
           <text id="/postnatal_visit/group_note/g_chw_sms:jr:constraintMsg">
             <value>आपका सन्देश 5 SMS से ऊपर नहीं हो सकता है | कृपया SMS का मूल्य को कम करने के लिए अपना सन्देश छोटा करें |</value>
@@ -44,709 +73,334 @@
           <text id="/postnatal_visit/group_note/is_sms_edited:label">
             <value>क्या आप संदेश में कुछ और कहना चाहते हैं?</value>
           </text>
-          <text id="/postnatal_visit/inputs:label">
-            <value>मरीज</value>
-          </text>
-          <text id="/postnatal_visit/group_danger_signs_mom/g_danger_signs_mom/d10:label">
-            <value>स्तन में समस्या या दर्द</value>
-          </text>
-          <text id="/postnatal_visit/group_note/default_chw_sms/both_visit_both_ds:label">
-            <value>-</value>
-          </text>
-          <text id="/postnatal_visit/group_danger_signs_baby/g_danger_signs_baby/bd10:label">
-            <value>बहुत निद्रालु</value>
-          </text>
-          <text id="/postnatal_visit/chw_name:label">
-            <value>सामुदायिक स्वास्थ्य कर्मी का नाम</value>
-          </text>
-          <text id="/postnatal_visit/group_chw_info/call_button:label">
-            <value>**कृपया <output value=" /postnatal_visit/chw_name "/> के साथ मिल कर देखे के क्या <output value=" /postnatal_visit/patient_name "/> अपने गर्भावस्था के बाद की जांच के लिए आये |** कॉल: <output value=" /postnatal_visit/chw_phone "/></value></text>
-          <text id="/postnatal_visit/group_review/r_baby_danger_sign1:label">
-            <value>बुखार</value>
-          </text>
-          <text id="/postnatal_visit/group_note/default_chw_sms/mom_visit_ds:label">
-            <value>-</value>
-          </text>
-          <text id="/postnatal_visit/inputs/contact/parent/contact/name:label">
-            <value></value>
-          </text>
-          <text id="/postnatal_visit/group_who_assessed/g_who_assessed/both:label">
-            <value>मां और बच्चा दोनों</value>
-          </text>
-          <text id="/postnatal_visit/group_danger_signs_mom:label">
-            <value>माँ की खतरे के संकेत</value>
-          </text>
-          <text id="/postnatal_visit/group_note/default_chw_sms:label">
-            <value>-</value>
-          </text>
-          <text id="/postnatal_visit/group_danger_signs_baby/g_danger_signs_baby:hint">
-            <value>लागू होने वाले सभी का चयन करें</value>
-          </text>
-          <text id="/postnatal_visit/group_danger_signs_mom/g_danger_signs_mom/d12:label">
-            <value>TB के दवाइयां लेना</value>
-          </text>
-          <text id="/postnatal_visit/group_danger_signs_baby/danger_signs_baby_other:label">
-            <value>अन्य क स्पष्ट करें:</value>
-          </text>
-          <text id="/postnatal_visit/group_review/r_mom_danger_sign14:label">
-            <value>अन्य खतरे के संकेत</value>
-          </text>
-          <text id="/postnatal_visit/group_danger_signs_baby/g_danger_signs_baby/bd1:label">
-            <value>बुखार</value>
-          </text>
-          <text id="/postnatal_visit/group_review/r_mom_danger_sign6:label">
-            <value>बूँद बूँद कर टपकने वाला पेशाब</value>
-          </text>
-          <text id="/postnatal_visit/group_review/r_baby_danger_sign11:label">
-            <value>अन्य खतरे के संकेत</value>
-          </text>
-          <text id="/postnatal_visit/group_review/r_visit_no:label">
-            <value>गर्भावस्था की बाद की जांच पूरी नहीं की गयी है</value>
-          </text>
-          <text id="/postnatal_visit/group_review/r_mom_danger_sign5:label">
-            <value>बुखार या खराब बू वाला जेर</value>
-          </text>
-          <text id="/postnatal_visit/inputs/contact/patient_id:label">
-            <value></value>
-          </text>
-          <text id="/postnatal_visit/group_note/default_chw_sms_note:label">
-            <value>**यह संदेश <output value=" /postnatal_visit/chw_name "/> (<output value=" /postnatal_visit/chw_phone "/>) को भेजा जाएगा:**
- <output value=" /postnatal_visit/group_note/default_chw_sms_text "/></value></text>
-          <text id="/postnatal_visit/inputs/contact/phone:label">
-            <value></value>
-          </text>
-          <text id="/postnatal_visit/group_review/r_visit_yes:label">
-            <value>गर्भावस्था की बाद की जांच पूरी की गयी है</value>
-          </text>
-          <text id="/postnatal_visit/group_danger_signs_mom/g_danger_signs_mom/d2:label">
-            <value>ज़्यादा पीलापन</value>
-          </text>
-          <text id="/postnatal_visit/group_note/default_chw_sms/default:label">
-            <value>-</value>
-          </text>
-          <text id="/postnatal_visit/group_danger_signs_mom/g_danger_signs_mom/d3:label">
-            <value>सिरदर्द या चेहरे की सूजन</value>
-          </text>
-          <text id="/postnatal_visit/group_note/default_chw_sms/both_visit_baby_ds:label">
-            <value>-</value>
-          </text>
-          <text id="/postnatal_visit/group_note/default_chw_sms/did_not_attend:label">
-            <value>-</value>
-          </text>
-          <text id="/postnatal_visit/group_danger_signs_mom/g_danger_signs_mom/d14:label">
-            <value>अन्य खतरे के संकेत</value>
-          </text>
-          <text id="/postnatal_visit/inputs/contact/parent/contact/phone:label">
-            <value></value>
-          </text>
-          <text id="/postnatal_visit/chw_sms:label">
-            <value>सामुदायिक स्वास्थ्य कर्मी का नोट</value>
-          </text>
-          <text id="/postnatal_visit/group_review/r_baby_danger_sign5:label">
-            <value>दस्त</value>
-          </text>
-          <text id="/postnatal_visit/group_danger_signs_baby/g_danger_signs_baby/bd9:label">
-            <value>सब कुछ उल्टी कर देता है</value>
-          </text>
-          <text id="/postnatal_visit/group_review/r_mom_danger_sign12:label">
-            <value>TB के दवाइयां लेना</value>
-          </text>
-          <text id="/postnatal_visit/group_review/r_baby_danger_sign6:label">
-            <value>संक्रमित गर्भनाल</value>
-          </text>
-          <text id="/postnatal_visit/group_review/r_followup:label">
-            <value>सुनिश्चित करने के लिए सन्देश &lt;i class="fa fa-envelope"&gt;&lt;/i&gt;</value>
-          </text>
-          <text id="/postnatal_visit/group_review/r_baby_danger_sign10:label">
-            <value>बहुत निद्रालु</value>
-          </text>
-          <text id="/postnatal_visit/group_chw_info/attended_pnc:label">
-            <value>क्या <output value=" /postnatal_visit/patient_name "/> अपने गर्भावस्था के बाद की जांच के लिए आये ?</value>
-          </text>
-          <text id="/postnatal_visit/group_review/r_baby_danger_sign8:label">
-            <value>त्वचा पे बहुत फोड़े</value>
-          </text>
-          <text id="/postnatal_visit/group_danger_signs_mom/g_danger_signs_mom/d7:label">
-            <value>मवाद योनि के आस पास दर्द</value>
-          </text>
-          <text id="/postnatal_visit/group_who_assessed/g_who_assessed/baby:label">
-            <value>बच्चा</value>
-          </text>
-          <text id="/postnatal_visit/group_danger_signs_baby/g_danger_signs_baby/bd5:label">
-            <value>दस्त</value>
-          </text>
-          <text id="/postnatal_visit/group_danger_signs_mom/g_danger_signs_mom:label">
-            <value><output value=" /postnatal_visit/chw_name "/> के साथ पुष्टि करें के क्या <output value=" /postnatal_visit/patient_name "/> को इनमें से कोई खतरा है |</value>
-          </text>
-          <text id="/postnatal_visit/danger_signs_mom:label">
-            <value>माँ की खतरे के संकेत</value>
-          </text>
-          <text id="/postnatal_visit/chw_phone:label">
-            <value>सामुदायिक स्वास्थ्य कर्मी का फोन नंबर</value>
-          </text>
-          <text id="/postnatal_visit/group_review/r_mom_danger_sign13:label">
-            <value>बहुत ज़्यादा थकान</value>
-          </text>
-          <text id="/postnatal_visit/group_review/r_baby_danger_sign3:label">
-            <value>छाती अंदर लेना</value>
-          </text>
-          <text id="/postnatal_visit/group_danger_signs_baby/g_danger_signs_baby/bd8:label">
-            <value>त्वचा पे बहुत फोड़े</value>
-          </text>
-          <text id="/postnatal_visit/danger_signs_baby:label">
-            <value>बच्चे की खतरे के संकेत</value>
+          <text id="/postnatal_visit/group_review/r_followup_note1:label">
+            <value>** ये SMS के रूप में <output value=" /postnatal_visit/chw_name "/> <output value=" /postnatal_visit/chw_phone "/> को भेजा जायेगा **</value>
           </text>
           <text id="/postnatal_visit/group_review/r_mom_danger_sign9:label">
             <value>डिलीवरी के 4 सप्ताह बाद भी योनि से बहाव</value>
-          </text>
-          <text id="/postnatal_visit/group_danger_signs_mom/danger_signs_mom_other:label">
-            <value>अन्य क स्पष्ट करें:</value>
-          </text>
-          <text id="/postnatal_visit/group_note/default_chw_sms/both_visit_mom_ds:label">
-            <value>-</value>
-          </text>
-          <text id="/postnatal_visit/group_review/r_mom_danger_sign8:label">
-            <value>दुखी महसूस करना या आसानी से रो देना</value>
-          </text>
-          <text id="/postnatal_visit/group_chw_info/attended_pnc/no:label">
-            <value>नहीं</value>
-          </text>
-          <text id="/postnatal_visit/group_chw_info/attended_pnc/yes:label">
-            <value>हाँ</value>
-          </text>
-          <text id="/postnatal_visit/group_note/default_chw_sms/baby_visit:label">
-            <value>-</value>
-          </text>
-          <text id="/postnatal_visit/patient_age_in_years:label">
-            <value>साल</value>
-          </text>
-          <text id="/postnatal_visit/group_danger_signs_baby/g_danger_signs_baby/bd11:label">
-            <value>अन्य खतरे के संकेत</value>
-          </text>
-          <text id="/postnatal_visit/group_danger_signs_mom/g_danger_signs_mom/d5:label">
-            <value>बुखार या खराब बू वाला जेर</value>
-          </text>
-          <text id="/postnatal_visit/group_review/r_mom_danger_sign4:label">
-            <value>योनि से खून का भारी बहाव</value>
-          </text>
-          <text id="/postnatal_visit/group_note/is_sms_edited/yes:label">
-            <value>हाँ</value>
-          </text>
-          <text id="/postnatal_visit/group_who_assessed/g_who_assessed:label">
-            <value>आज आप किसको जांचना चाहते है ?</value>
-          </text>
-          <text id="/postnatal_visit/group_review/r_followup_note2:label">
-            <value><output value=" /postnatal_visit/chw_sms "/></value>
-          </text>
-          <text id="/postnatal_visit/group_note/g_chw_sms:label">
-            <value>आप यहां संदेश में कुछ और जोड़ सकते हैं:</value>
           </text>
           <text id="/postnatal_visit/group_danger_signs_baby/g_danger_signs_baby/bd4:label">
             <value>ऐंठन</value>
           </text>
-          <text id="/postnatal_visit/group_review/r_baby_danger_sign7:label">
-            <value>स्तनपान करने में असमर्थ</value>
+          <text id="/postnatal_visit/group_note/g_chw_sms:label">
+            <value>आप यहां संदेश में कुछ और जोड़ सकते हैं:</value>
           </text>
           <text id="/postnatal_visit/group_danger_signs_mom/g_danger_signs_mom/d9:label">
             <value>डिलीवरी के 4 सप्ताह बाद भी योनि से बहाव</value>
           </text>
-          <text id="/postnatal_visit/group_review/r_postnatal_details:label">
-            <value>**<output value=" /postnatal_visit/patient_name "/>** आईडी : <output value=" /postnatal_visit/group_review/r_patient_id "/></value></text>
-          <text id="/postnatal_visit/group_danger_signs_baby/g_danger_signs_baby/bd6:label">
-            <value>संक्रमित गर्भनाल</value>
+          <text id="/postnatal_visit/group_note/default_chw_sms/both_visit_baby_ds:label">
+            <value>-</value>
           </text>
-          <text id="/postnatal_visit/group_danger_signs_mom/g_danger_signs_mom/d4:label">
-            <value>योनि से खून का भारी बहाव</value>
+          <text id="/postnatal_visit/group_note/default_chw_sms/both_visit_mom_ds:label">
+            <value>-</value>
           </text>
-          <text id="/postnatal_visit/group_who_assessed/g_who_assessed/mom:label">
-            <value>माँ</value>
+          <text id="/postnatal_visit/group_danger_signs_baby/danger_signs_baby_other:label">
+            <value>अन्य क स्पष्ट करें:</value>
+          </text>
+          <text id="/postnatal_visit/group_danger_signs_mom/g_danger_signs_mom/d3:label">
+            <value>सिरदर्द या चेहरे की सूजन</value>
           </text>
           <text id="/postnatal_visit/group_danger_signs_baby/g_danger_signs_baby/bd7:label">
             <value>स्तनपान करने में असमर्थ</value>
           </text>
-          <text id="/postnatal_visit/group_review/r_mom_danger_sign11:label">
-            <value>खांसी या साँस लेने में कठिनाई</value>
+          <text id="/postnatal_visit/group_chw_info/attended_pnc/no:label">
+            <value>नहीं</value>
+          </text>
+          <text id="/postnatal_visit/group_danger_signs_baby/g_danger_signs_baby:hint">
+            <value>लागू होने वाले सभी का चयन करें</value>
           </text>
           <text id="/postnatal_visit/group_review/r_mom_danger_sign7:label">
             <value>मवाद योनि के आस पास दर्द</value>
           </text>
-          <text id="/postnatal_visit/group_review/r_baby_danger_sign2:label">
-            <value>तेजी से सांस लेना</value>
+          <text id="/postnatal_visit/group_review/r_mom_danger_sign11:label">
+            <value>खांसी या साँस लेने में कठिनाई</value>
           </text>
-          <text id="/postnatal_visit/group_danger_signs_baby/g_danger_signs_baby/bd2:label">
-            <value>तेजी से सांस लेना</value>
+          <text id="/postnatal_visit/group_danger_signs_mom:label">
+            <value>माँ की खतरे के संकेत</value>
           </text>
-          <text id="/postnatal_visit/group_chw_info/chw_information:label">
-            <value><output value=" /postnatal_visit/patient_name "/> के लिए गर्भावस्था की बाद की जांच दर्ज नहीं की गयी है |</value>
-          </text>
-          <text id="/postnatal_visit/group_note/default_chw_sms/mom_visit:label">
+          <text id="/postnatal_visit/group_note/default_chw_sms/both_visit_both_ds:label">
             <value>-</value>
           </text>
-          <text id="/postnatal_visit/group_review/submit:label">
-            <value>**सुनिश्चित करें के यह कार्रवाई पूरा करने के लिए आप सबमिट दबाये |**</value>
+          <text id="/postnatal_visit/group_review/r_baby_danger_sign3:label">
+            <value>छाती अंदर लेना</value>
           </text>
-          <text id="/postnatal_visit/group_note/g_chw_sms:hint">
-            <value><output value=" /postnatal_visit/chw_name "/> (<output value=" /postnatal_visit/chw_phone "/>) को संदेश भेजा जायेगा | संदेश की लंबाई सीमित है ताकी SMS का मूल्य उच्च ना हो|</value>
+          <text id="/postnatal_visit/danger_signs_baby:label">
+            <value>बच्चे की खतरे के संकेत</value>
           </text>
-          <text id="/postnatal_visit/patient_phone:label">
-            <value>मरीज का फोन नंबर</value>
-          </text>
-          <text id="/postnatal_visit/group_review/r_mom_danger_sign1:label">
-            <value>उच्च डायस्टोलिक ब्लड प्रेशर</value>
-          </text>
-          <text id="/postnatal_visit/group_note:label">
-            <value>सामुदायिक स्वास्थ्य कर्मी के लिए नोट</value>
-          </text>
-          <text id="/postnatal_visit/group_review/r_mom_danger_signs:label">
-            <value>**माँ की खतरे के संकेत**</value>
-          </text>
-          <text id="/postnatal_visit/group_note/default_chw_sms/baby_visit_ds:label">
+          <text id="/postnatal_visit/group_note/default_chw_sms/did_not_attend:label">
             <value>-</value>
           </text>
-          <text id="/postnatal_visit/group_danger_signs_mom/g_danger_signs_mom:hint">
-            <value>लागू होने वाले सभी का चयन करें</value>
-          </text>
-          <text id="/postnatal_visit/group_danger_signs_mom/g_danger_signs_mom/d13:label">
-            <value>बहुत ज़्यादा थकान</value>
-          </text>
-          <text id="/postnatal_visit/inputs/contact/_id:label">
-            <value>मरीज का नाम क्या है?</value>
-          </text>
-          <text id="/postnatal_visit/group_review/r_baby_danger_signs:label">
-            <value>**बच्चे की खतरे के संकेत**</value>
-          </text>
-          <text id="/postnatal_visit/group_note/is_sms_edited/no:label">
-            <value>नहीं</value>
-          </text>
-          <text id="/postnatal_visit/group_chw_info:label">
-            <value>लापता जांच की रिपोर्टों</value>
-          </text>
-          <text id="/postnatal_visit/inputs/contact/sex:label">
-            <value></value>
-          </text>
-          <text id="/postnatal_visit/group_review/r_mom_danger_sign3:label">
-            <value>सिरदर्द या चेहरे की सूजन</value>
-          </text>
-          <text id="/postnatal_visit/group_review/r_visit:label">
-            <value>जांच की जानकारी &lt;i class="fa fa-plus-square"&gt;&lt;/i&gt;</value>
+          <text id="/postnatal_visit/group_note/default_chw_sms/mom_visit_ds:label">
+            <value>-</value>
           </text>
           <text id="/postnatal_visit/group_review/r_summary:label">
             <value>मरीज़ की जानकारी &lt;i class="fa fa-user"&gt;&lt;/i&gt;</value>
           </text>
-          <text id="/postnatal_visit/inputs/contact/date_of_birth:label">
-            <value></value>
+          <text id="/postnatal_visit/group_note:label">
+            <value>सामुदायिक स्वास्थ्य कर्मी के लिए नोट</value>
           </text>
-          <text id="/postnatal_visit/patient_name:label">
-            <value>मरीज का नाम</value>
-          </text>
-          <text id="/postnatal_visit/group_review/r_mom_danger_sign10:label">
-            <value>स्तन में समस्या या दर्द</value>
-          </text>
-          <text id="/postnatal_visit/inputs/contact/name:label">
-            <value></value>
-          </text>
-          <text id="/postnatal_visit/group_danger_signs_baby:label">
-            <value>बच्चे की खतरे के संकेत</value>
+          <text id="/postnatal_visit/group_who_assessed/g_who_assessed/both:label">
+            <value>मां और बच्चा दोनों</value>
           </text>
           <text id="/postnatal_visit/group_danger_signs_mom/g_danger_signs_mom/d11:label">
             <value>खांसी या साँस लेने में कठिनाई</value>
           </text>
-          <text id="/postnatal_visit/inputs/contact/_id:hint">
-            <value>सूची में से एक व्यक्ति को चुनें</value>
-          </text>
-          <text id="/postnatal_visit/group_review/r_danger_signs:label">
-            <value>खतरे के संकेत&lt;i class="fa fa-warning"&gt;&lt;/i&gt;</value>
-          </text>
-        </translation>
-        <translation lang="en">
-          <text id="/postnatal_visit/group_danger_signs_baby/g_danger_signs_baby:label">
-            <value>Confirm with <output value=" /postnatal_visit/chw_name "/> if the baby has any of the following danger signs.</value>
-          </text>
-          <text id="/postnatal_visit/group_review/r_baby_danger_sign9:label">
-            <value>Vomits everything</value>
-          </text>
-          <text id="/postnatal_visit/group_review/r_baby_danger_sign4:label">
-            <value>Convulsions</value>
-          </text>
-          <text id="/postnatal_visit/group_danger_signs_mom/g_danger_signs_mom/d1:label">
-            <value>Elevated diastolic blood pressure</value>
-          </text>
-          <text id="/postnatal_visit/patient_uuid:label">
-            <value>Patient UUID</value>
-          </text>
-          <text id="/postnatal_visit/group_danger_signs_mom/g_danger_signs_mom/d8:label">
-            <value>Feeling unhappy or crying easily</value>
-          </text>
-          <text id="/postnatal_visit/group_danger_signs_baby/g_danger_signs_baby/bd3:label">
-            <value>Chest indrawing</value>
-          </text>
-          <text id="/postnatal_visit/group_review/r_followup_note1:label">
-            <value>**The following will be sent as a SMS to <output value=" /postnatal_visit/chw_name "/> <output value=" /postnatal_visit/chw_phone "/>**</value>
-          </text>
-          <text id="/postnatal_visit/group_danger_signs_mom/g_danger_signs_mom/d6:label">
-            <value>Dribbling urine</value>
-          </text>
-          <text id="/postnatal_visit/patient_id:label">
-            <value>Patient ID</value>
-          </text>
-          <text id="/postnatal_visit/group_review/r_mom_danger_sign2:label">
-            <value>Significant pallor</value>
-          </text>
-          <text id="/postnatal_visit/group_note/g_chw_sms:jr:constraintMsg">
-            <value>Your message cannot be longer than 5 SMS messages. Please shorten your message to reduce SMS costs.</value>
-          </text>
-          <text id="/postnatal_visit/group_note/is_sms_edited:label">
-            <value>Would you like to add a personal note to the message?</value>
-          </text>
-          <text id="/postnatal_visit/inputs:label">
-            <value>Patient</value>
-          </text>
-          <text id="/postnatal_visit/group_danger_signs_mom/g_danger_signs_mom/d10:label">
-            <value>Breast problem or pain</value>
-          </text>
-          <text id="/postnatal_visit/group_note/default_chw_sms/both_visit_both_ds:label">
-            <value>Hi, <output value=" /postnatal_visit/chw_name "/>, Mother <output value=" /postnatal_visit/patient_name "/> (<output value=" /postnatal_visit/group_review/r_patient_id "/>) and baby attended PNC. The nurse reported danger signs in the mother and baby. Please follow up to see if they need additional support. Thank you!</value>
-          </text>
-          <text id="/postnatal_visit/group_danger_signs_baby/g_danger_signs_baby/bd10:label">
-            <value>Very sleepy</value>
-          </text>
-          <text id="/postnatal_visit/chw_name:label">
-            <value>CHW Name</value>
-          </text>
-          <text id="/postnatal_visit/group_chw_info/call_button:label">
-            <value>**Please follow up with <output value=" /postnatal_visit/chw_name "/> to see if <output value=" /postnatal_visit/patient_name "/> attended her PNC visit.**
-Call: <output value=" /postnatal_visit/chw_phone "/></value></text>
-          <text id="/postnatal_visit/group_review/r_baby_danger_sign1:label">
-            <value>Fever</value>
-          </text>
-          <text id="/postnatal_visit/group_note/default_chw_sms/mom_visit_ds:label">
-            <value>Hi, <output value=" /postnatal_visit/chw_name "/>. <output value=" /postnatal_visit/patient_name "/> (<output value=" /postnatal_visit/group_review/r_patient_id "/>) attended PNC. Only the mother was assessed. The nurse reported danger signs in the mother. Please follow up to see if they need additional support. Thank you!</value>
-          </text>
-          <text id="/postnatal_visit/inputs/contact/parent/contact/name:label">
-            <value></value>
-          </text>
-          <text id="/postnatal_visit/group_who_assessed/g_who_assessed/both:label">
-            <value>Both mother and baby</value>
-          </text>
-          <text id="/postnatal_visit/group_danger_signs_mom:label">
-            <value>Mother Danger Signs</value>
-          </text>
-          <text id="/postnatal_visit/group_note/default_chw_sms:label">
-            <value>Default SMS to send to CHW</value>
-          </text>
-          <text id="/postnatal_visit/group_danger_signs_baby/g_danger_signs_baby:hint">
-            <value>Select all that apply</value>
-          </text>
-          <text id="/postnatal_visit/group_danger_signs_mom/g_danger_signs_mom/d12:label">
-            <value>Taking anti-tuberculosis drugs</value>
-          </text>
-          <text id="/postnatal_visit/group_danger_signs_baby/danger_signs_baby_other:label">
-            <value>Specify other:</value>
-          </text>
-          <text id="/postnatal_visit/group_review/r_mom_danger_sign14:label">
-            <value>Other danger signs</value>
-          </text>
-          <text id="/postnatal_visit/group_danger_signs_baby/g_danger_signs_baby/bd1:label">
-            <value>Fever</value>
-          </text>
-          <text id="/postnatal_visit/group_review/r_mom_danger_sign6:label">
-            <value>Dribbling urine</value>
-          </text>
-          <text id="/postnatal_visit/group_review/r_baby_danger_sign11:label">
-            <value>Other danger signs</value>
-          </text>
-          <text id="/postnatal_visit/group_review/r_visit_no:label">
-            <value>Postnatal care visit not completed</value>
-          </text>
-          <text id="/postnatal_visit/group_review/r_mom_danger_sign5:label">
-            <value>Fever or foul-smelling lochia</value>
-          </text>
-          <text id="/postnatal_visit/inputs/contact/patient_id:label">
-            <value></value>
-          </text>
-          <text id="/postnatal_visit/group_note/default_chw_sms_note:label">
-            <value>**The following message will be sent to <output value=" /postnatal_visit/chw_name "/> (<output value=" /postnatal_visit/chw_phone "/>):**
- <output value=" /postnatal_visit/group_note/default_chw_sms_text "/></value></text>
-          <text id="/postnatal_visit/inputs/contact/phone:label">
-            <value></value>
-          </text>
-          <text id="/postnatal_visit/group_review/r_visit_yes:label">
-            <value>Postnatal care visit completed</value>
-          </text>
-          <text id="/postnatal_visit/group_danger_signs_mom/g_danger_signs_mom/d2:label">
-            <value>Significant pallor</value>
-          </text>
-          <text id="/postnatal_visit/group_note/default_chw_sms/default:label">
-            <value>Nice work, <output value=" /postnatal_visit/chw_name "/>! Mother <output value=" /postnatal_visit/patient_name "/> (<output value=" /postnatal_visit/group_review/r_patient_id "/>) and baby attended PNC. Both were assessed and no danger signs were reported. Please continue monitoring them. Thank you!</value>
-          </text>
-          <text id="/postnatal_visit/group_danger_signs_mom/g_danger_signs_mom/d3:label">
-            <value>Headaches or swelling of the face</value>
-          </text>
-          <text id="/postnatal_visit/group_note/default_chw_sms/both_visit_baby_ds:label">
-            <value>Hi, <output value=" /postnatal_visit/chw_name "/>, Mother <output value=" /postnatal_visit/patient_name "/> (<output value=" /postnatal_visit/group_review/r_patient_id "/>) and baby attended PNC. The nurse reported danger signs in the baby. Please follow up to see if they need additional support. Thank you!</value>
-          </text>
-          <text id="/postnatal_visit/group_note/default_chw_sms/did_not_attend:label">
-            <value>Hi <output value=" /postnatal_visit/chw_name "/>, <output value=" /postnatal_visit/patient_name "/> (<output value=" /postnatal_visit/group_review/r_patient_id "/>) did not attend PNC. Please continue to monitor them for danger signs. We will send you a message when they are due for their next visit. Thank you!</value>
-          </text>
-          <text id="/postnatal_visit/group_danger_signs_mom/g_danger_signs_mom/d14:label">
-            <value>Other danger signs</value>
-          </text>
-          <text id="/postnatal_visit/inputs/contact/parent/contact/phone:label">
-            <value></value>
-          </text>
-          <text id="/postnatal_visit/chw_sms:label">
-            <value>CHW's Note</value>
-          </text>
-          <text id="/postnatal_visit/group_review/r_baby_danger_sign5:label">
-            <value>Diarrhea</value>
-          </text>
-          <text id="/postnatal_visit/group_danger_signs_baby/g_danger_signs_baby/bd9:label">
-            <value>Vomits everything</value>
-          </text>
-          <text id="/postnatal_visit/group_review/r_mom_danger_sign12:label">
-            <value>Taking anti-tuberculosis drugs</value>
-          </text>
-          <text id="/postnatal_visit/group_review/r_baby_danger_sign6:label">
-            <value>Infected umblical cord</value>
-          </text>
-          <text id="/postnatal_visit/group_review/r_followup:label">
-            <value>Follow Up Message &lt;i class="fa fa-envelope"&gt;&lt;/i&gt;</value>
-          </text>
           <text id="/postnatal_visit/group_review/r_baby_danger_sign10:label">
-            <value>Very sleepy</value>
-          </text>
-          <text id="/postnatal_visit/group_chw_info/attended_pnc:label">
-            <value>Did <output value=" /postnatal_visit/patient_name "/> attend her PNC visit?</value>
-          </text>
-          <text id="/postnatal_visit/group_review/r_baby_danger_sign8:label">
-            <value>Many skin pustules</value>
-          </text>
-          <text id="/postnatal_visit/group_danger_signs_mom/g_danger_signs_mom/d7:label">
-            <value>Pus or perineal pain</value>
-          </text>
-          <text id="/postnatal_visit/group_who_assessed/g_who_assessed/baby:label">
-            <value>Baby</value>
-          </text>
-          <text id="/postnatal_visit/group_danger_signs_baby/g_danger_signs_baby/bd5:label">
-            <value>Diarrhea</value>
-          </text>
-          <text id="/postnatal_visit/group_danger_signs_mom/g_danger_signs_mom:label">
-            <value>Confirm with <output value=" /postnatal_visit/chw_name "/> if <output value=" /postnatal_visit/patient_name "/> has any of the following danger signs.</value>
-          </text>
-          <text id="/postnatal_visit/danger_signs_mom:label">
-            <value>Mother Danger Signs</value>
-          </text>
-          <text id="/postnatal_visit/chw_phone:label">
-            <value>CHW Phone</value>
-          </text>
-          <text id="/postnatal_visit/group_review/r_mom_danger_sign13:label">
-            <value>Excessive fatigue</value>
-          </text>
-          <text id="/postnatal_visit/group_review/r_baby_danger_sign3:label">
-            <value>Chest indrawing</value>
-          </text>
-          <text id="/postnatal_visit/group_danger_signs_baby/g_danger_signs_baby/bd8:label">
-            <value>Many skin pustules</value>
-          </text>
-          <text id="/postnatal_visit/danger_signs_baby:label">
-            <value>Baby Danger Signs</value>
-          </text>
-          <text id="/postnatal_visit/group_review/r_mom_danger_sign9:label">
-            <value>Vaginal discharge 4 weeks after delivery</value>
-          </text>
-          <text id="/postnatal_visit/group_danger_signs_mom/danger_signs_mom_other:label">
-            <value>Specify other:</value>
-          </text>
-          <text id="/postnatal_visit/group_note/default_chw_sms/both_visit_mom_ds:label">
-            <value>Hi, <output value=" /postnatal_visit/chw_name "/>, Mother <output value=" /postnatal_visit/patient_name "/> (<output value=" /postnatal_visit/group_review/r_patient_id "/>) and baby attended PNC. The nurse reported danger signs in the mother. Please follow up to see if they need additional support. Thank you!</value>
-          </text>
-          <text id="/postnatal_visit/group_review/r_mom_danger_sign8:label">
-            <value>Feeling unhappy or crying easily</value>
-          </text>
-          <text id="/postnatal_visit/group_chw_info/attended_pnc/no:label">
-            <value>No</value>
-          </text>
-          <text id="/postnatal_visit/group_chw_info/attended_pnc/yes:label">
-            <value>Yes</value>
-          </text>
-          <text id="/postnatal_visit/group_note/default_chw_sms/baby_visit:label">
-            <value>Nice work, <output value=" /postnatal_visit/chw_name "/>! The baby of <output value=" /postnatal_visit/patient_name "/> (<output value=" /postnatal_visit/group_review/r_patient_id "/>) attended PNC. Only the baby was assessed. No danger signs were reported. Please continue monitoring them. Thank you!</value>
+            <value>बहुत निद्रालु</value>
           </text>
           <text id="/postnatal_visit/patient_age_in_years:label">
-            <value>Years</value>
+            <value>साल</value>
           </text>
-          <text id="/postnatal_visit/group_danger_signs_baby/g_danger_signs_baby/bd11:label">
-            <value>Other danger signs</value>
+          <text id="/postnatal_visit/group_review/r_followup:label">
+            <value>सुनिश्चित करने के लिए सन्देश &lt;i class="fa fa-envelope"&gt;&lt;/i&gt;</value>
           </text>
-          <text id="/postnatal_visit/group_danger_signs_mom/g_danger_signs_mom/d5:label">
-            <value>Fever or foul-smelling lochia</value>
+          <text id="/postnatal_visit/group_review/r_mom_danger_signs:label">
+            <value>**माँ की खतरे के संकेत**</value>
           </text>
-          <text id="/postnatal_visit/group_review/r_mom_danger_sign4:label">
-            <value>Heavy vaginal bleeding</value>
+          <text id="/postnatal_visit/group_review/r_mom_danger_sign14:label">
+            <value>अन्य खतरे के संकेत</value>
           </text>
-          <text id="/postnatal_visit/group_note/is_sms_edited/yes:label">
-            <value>Yes</value>
+          <text id="/postnatal_visit/group_note/default_chw_sms/baby_visit_ds:label">
+            <value>-</value>
+          </text>
+          <text id="/postnatal_visit/group_danger_signs_mom/danger_signs_mom_other:label">
+            <value>अन्य क स्पष्ट करें:</value>
+          </text>
+          <text id="/postnatal_visit/chw_name:label">
+            <value>सामुदायिक स्वास्थ्य कर्मी का नाम</value>
+          </text>
+          <text id="/postnatal_visit/group_danger_signs_baby/g_danger_signs_baby:label">
+            <value><output value=" /postnatal_visit/chw_name "/> के साथ पुष्टि करें के क्या बच्चे को इनमें से कोई खतरा है |</value>
+          </text>
+          <text id="/postnatal_visit/group_review/r_mom_danger_sign12:label">
+            <value>TB के दवाइयां लेना</value>
+          </text>
+          <text id="/postnatal_visit/group_danger_signs_mom/g_danger_signs_mom/d13:label">
+            <value>बहुत ज़्यादा थकान</value>
+          </text>
+          <text id="/postnatal_visit/group_chw_info:label">
+            <value>लापता जांच की रिपोर्टों</value>
+          </text>
+          <text id="/postnatal_visit/group_review/r_mom_danger_sign2:label">
+            <value>ज़्यादा पीलापन</value>
+          </text>
+          <text id="/postnatal_visit/group_danger_signs_baby/g_danger_signs_baby/bd9:label">
+            <value>सब कुछ उल्टी कर देता है</value>
           </text>
           <text id="/postnatal_visit/group_who_assessed/g_who_assessed:label">
-            <value>Who are you assessing today?</value>
+            <value>आज आप किसको जांचना चाहते है ?</value>
+          </text>
+          <text id="/postnatal_visit/danger_signs_mom:label">
+            <value>माँ की खतरे के संकेत</value>
+          </text>
+          <text id="/postnatal_visit/group_note/default_chw_sms/baby_visit:label">
+            <value>-</value>
+          </text>
+          <text id="/postnatal_visit/group_note/g_chw_sms:hint">
+            <value><output value=" /postnatal_visit/chw_name "/> (<output value=" /postnatal_visit/chw_phone "/>) को संदेश भेजा जायेगा | संदेश की लंबाई सीमित है ताकी SMS का मूल्य उच्च ना हो|</value>
+          </text>
+          <text id="/postnatal_visit/group_review/r_mom_danger_sign4:label">
+            <value>योनि से खून का भारी बहाव</value>
+          </text>
+          <text id="/postnatal_visit/group_review/r_mom_danger_sign3:label">
+            <value>सिरदर्द या चेहरे की सूजन</value>
+          </text>
+          <text id="/postnatal_visit/group_review/r_baby_danger_sign9:label">
+            <value>सब कुछ उल्टी कर देता है</value>
+          </text>
+          <text id="/postnatal_visit/group_chw_info/call_button:label">
+            <value>**कृपया <output value=" /postnatal_visit/chw_name "/> के साथ मिल कर देखे के क्या <output value=" /postnatal_visit/patient_name "/> अपने गर्भावस्था के बाद की जांच के लिए आये |** कॉल: <output value=" /postnatal_visit/chw_phone "/></value></text>
+          <text id="/postnatal_visit/group_danger_signs_mom/g_danger_signs_mom/d8:label">
+            <value>दुखी महसूस करना या आसानी से रो देना</value>
+          </text>
+          <text id="/postnatal_visit/group_who_assessed/g_who_assessed/baby:label">
+            <value>बच्चा</value>
+          </text>
+          <text id="/postnatal_visit/group_danger_signs_baby/g_danger_signs_baby/bd10:label">
+            <value>बहुत निद्रालु</value>
+          </text>
+          <text id="/postnatal_visit/group_review/r_baby_danger_signs:label">
+            <value>**बच्चे की खतरे के संकेत**</value>
+          </text>
+          <text id="/postnatal_visit/group_danger_signs_mom/g_danger_signs_mom:hint">
+            <value>लागू होने वाले सभी का चयन करें</value>
+          </text>
+          <text id="/postnatal_visit/group_review/r_baby_danger_sign2:label">
+            <value>तेजी से सांस लेना</value>
+          </text>
+          <text id="/postnatal_visit/group_review/r_mom_danger_sign1:label">
+            <value>उच्च डायस्टोलिक ब्लड प्रेशर</value>
+          </text>
+          <text id="/postnatal_visit/group_danger_signs_mom/g_danger_signs_mom/d12:label">
+            <value>TB के दवाइयां लेना</value>
+          </text>
+          <text id="/postnatal_visit/group_danger_signs_baby/g_danger_signs_baby/bd3:label">
+            <value>छाती अंदर लेना</value>
+          </text>
+          <text id="/postnatal_visit/group_review/r_mom_danger_sign13:label">
+            <value>बहुत ज़्यादा थकान</value>
+          </text>
+          <text id="/postnatal_visit/group_danger_signs_baby/g_danger_signs_baby/bd11:label">
+            <value>अन्य खतरे के संकेत</value>
+          </text>
+          <text id="/postnatal_visit/patient_name:label">
+            <value>मरीज का नाम</value>
+          </text>
+          <text id="/postnatal_visit/group_chw_info/attended_pnc:label">
+            <value>क्या <output value=" /postnatal_visit/patient_name "/> अपने गर्भावस्था के बाद की जांच के लिए आये ?</value>
+          </text>
+          <text id="/postnatal_visit/patient_id:label">
+            <value>मरीज का ID</value>
+          </text>
+          <text id="/postnatal_visit/group_review/r_visit:label">
+            <value>जांच की जानकारी &lt;i class="fa fa-plus-square"&gt;&lt;/i&gt;</value>
+          </text>
+          <text id="/postnatal_visit/chw_sms:label">
+            <value>सामुदायिक स्वास्थ्य कर्मी का नोट</value>
+          </text>
+          <text id="/postnatal_visit/group_danger_signs_mom/g_danger_signs_mom/d5:label">
+            <value>बुखार या खराब बू वाला जेर</value>
+          </text>
+          <text id="/postnatal_visit/patient_uuid:label">
+            <value>मरीज UUID</value>
+          </text>
+          <text id="/postnatal_visit/chw_phone:label">
+            <value>सामुदायिक स्वास्थ्य कर्मी का फोन नंबर</value>
           </text>
           <text id="/postnatal_visit/group_review/r_followup_note2:label">
             <value><output value=" /postnatal_visit/chw_sms "/></value>
           </text>
-          <text id="/postnatal_visit/group_note/g_chw_sms:label">
-            <value>You can add a personal note to the SMS here:</value>
-          </text>
-          <text id="/postnatal_visit/group_danger_signs_baby/g_danger_signs_baby/bd4:label">
-            <value>Convulsions</value>
-          </text>
-          <text id="/postnatal_visit/group_review/r_baby_danger_sign7:label">
-            <value>Unable to breast feed</value>
-          </text>
-          <text id="/postnatal_visit/group_danger_signs_mom/g_danger_signs_mom/d9:label">
-            <value>Vaginal discharge 4 weeks after delivery</value>
-          </text>
-          <text id="/postnatal_visit/group_review/r_postnatal_details:label">
-            <value>**<output value=" /postnatal_visit/patient_name "/>**
-ID: <output value=" /postnatal_visit/group_review/r_patient_id "/></value></text>
-          <text id="/postnatal_visit/group_danger_signs_baby/g_danger_signs_baby/bd6:label">
-            <value>Infected umblical cord</value>
-          </text>
-          <text id="/postnatal_visit/group_note/default_chw_sms/baby_visit_ds:label">
-            <value>Hi, <output value=" /postnatal_visit/chw_name "/>. The baby of <output value=" /postnatal_visit/patient_name "/> (<output value=" /postnatal_visit/group_review/r_patient_id "/>) attended PNC. Only the baby was assessed. The nurse reported danger signs in the baby. Please follow up to see if they need additional support. Thank you!</value>
-          </text>
-          <text id="/postnatal_visit/group_who_assessed/g_who_assessed/mom:label">
-            <value>Mother</value>
-          </text>
-          <text id="/postnatal_visit/group_danger_signs_baby/g_danger_signs_baby/bd7:label">
-            <value>Unable to breast feed</value>
-          </text>
-          <text id="/postnatal_visit/group_review/r_mom_danger_sign11:label">
-            <value>Cough or breathing difficulty</value>
-          </text>
-          <text id="/postnatal_visit/group_review/r_mom_danger_sign7:label">
-            <value>Pus or perineal pain</value>
-          </text>
-          <text id="/postnatal_visit/group_review/r_baby_danger_sign2:label">
-            <value>Fast breathing</value>
-          </text>
-          <text id="/postnatal_visit/group_danger_signs_baby/g_danger_signs_baby/bd2:label">
-            <value>Fast breathing</value>
-          </text>
-          <text id="/postnatal_visit/group_chw_info/chw_information:label">
-            <value>The postnatal care visit for <output value=" /postnatal_visit/patient_name "/> has not been recorded.</value>
-          </text>
-          <text id="/postnatal_visit/group_note/default_chw_sms/mom_visit:label">
-            <value>Nice work, <output value=" /postnatal_visit/chw_name "/>. <output value=" /postnatal_visit/patient_name "/> (<output value=" /postnatal_visit/group_review/r_patient_id "/>) attended PNC. Only the mother was assessed. No danger signs were reported. Please continue monitoring them. Thank you!</value>
-          </text>
-          <text id="/postnatal_visit/group_review/submit:label">
-            <value>**Be sure you Submit to complete this action.**</value>
-          </text>
-          <text id="/postnatal_visit/group_note/g_chw_sms:hint">
-            <value>Messages are limited in length to avoid high SMS costs.</value>
-          </text>
-          <text id="/postnatal_visit/patient_phone:label">
-            <value>Patient Phone</value>
-          </text>
-          <text id="/postnatal_visit/group_review/r_mom_danger_sign1:label">
-            <value>Elevated diastolic blood pressure</value>
-          </text>
-          <text id="/postnatal_visit/group_note:label">
-            <value>Note to the CHW</value>
-          </text>
-          <text id="/postnatal_visit/group_review/r_mom_danger_signs:label">
-            <value>**Mother Danger Signs**</value>
-          </text>
-          <text id="/postnatal_visit/group_danger_signs_mom/g_danger_signs_mom/d4:label">
-            <value>Heavy vaginal bleeding</value>
-          </text>
-          <text id="/postnatal_visit/group_danger_signs_mom/g_danger_signs_mom:hint">
-            <value>Select all that apply</value>
-          </text>
-          <text id="/postnatal_visit/group_danger_signs_mom/g_danger_signs_mom/d13:label">
-            <value>Excessive fatigue</value>
-          </text>
-          <text id="/postnatal_visit/inputs/contact/_id:label">
-            <value>What is the patient's name?</value>
-          </text>
-          <text id="/postnatal_visit/group_review/r_baby_danger_signs:label">
-            <value>**Baby Danger Signs**</value>
-          </text>
-          <text id="/postnatal_visit/group_note/is_sms_edited/no:label">
-            <value>No</value>
-          </text>
-          <text id="/postnatal_visit/group_chw_info:label">
-            <value>Missing Visit Report</value>
-          </text>
-          <text id="/postnatal_visit/inputs/contact/sex:label">
-            <value></value>
-          </text>
-          <text id="/postnatal_visit/group_review/r_mom_danger_sign3:label">
-            <value>Headaches or swelling of the face</value>
-          </text>
-          <text id="/postnatal_visit/group_review/r_visit:label">
-            <value>Visit Information&lt;i class="fa fa-plus-square"&gt;&lt;/i&gt;</value>
-          </text>
-          <text id="/postnatal_visit/group_review/r_summary:label">
-            <value>Patient Information&lt;i class="fa fa-user"&gt;&lt;/i&gt;</value>
-          </text>
-          <text id="/postnatal_visit/inputs/contact/date_of_birth:label">
-            <value></value>
-          </text>
-          <text id="/postnatal_visit/patient_name:label">
-            <value>Patient Name</value>
-          </text>
-          <text id="/postnatal_visit/group_review/r_mom_danger_sign10:label">
-            <value>Breast problem or pain</value>
-          </text>
-          <text id="/postnatal_visit/inputs/contact/name:label">
-            <value></value>
-          </text>
-          <text id="/postnatal_visit/group_danger_signs_baby:label">
-            <value>Baby Danger Signs</value>
-          </text>
-          <text id="/postnatal_visit/group_danger_signs_mom/g_danger_signs_mom/d11:label">
-            <value>Cough or breathing difficulty</value>
+          <text id="/postnatal_visit/group_chw_info/attended_pnc/yes:label">
+            <value>हाँ</value>
           </text>
           <text id="/postnatal_visit/inputs/contact/_id:hint">
-            <value>Select a person from list</value>
+            <value>सूची में से एक व्यक्ति को चुनें</value>
+          </text>
+          <text id="/postnatal_visit/group_review/r_baby_danger_sign6:label">
+            <value>संक्रमित गर्भनाल</value>
+          </text>
+          <text id="/postnatal_visit/group_review/r_baby_danger_sign11:label">
+            <value>अन्य खतरे के संकेत</value>
+          </text>
+          <text id="/postnatal_visit/inputs:label">
+            <value>मरीज</value>
+          </text>
+          <text id="/postnatal_visit/group_who_assessed/g_who_assessed/mom:label">
+            <value>माँ</value>
           </text>
           <text id="/postnatal_visit/group_review/r_danger_signs:label">
-            <value>Danger Signs&lt;i class="fa fa-warning"&gt;&lt;/i&gt;</value>
+            <value>खतरे के संकेत&lt;i class="fa fa-warning"&gt;&lt;/i&gt;</value>
+          </text>
+          <text id="/postnatal_visit/inputs/contact/_id:label">
+            <value>मरीज का नाम क्या है?</value>
+          </text>
+          <text id="/postnatal_visit/group_review/r_visit_no:label">
+            <value>गर्भावस्था की बाद की जांच पूरी नहीं की गयी है</value>
+          </text>
+          <text id="/postnatal_visit/group_danger_signs_baby/g_danger_signs_baby/bd6:label">
+            <value>संक्रमित गर्भनाल</value>
+          </text>
+          <text id="/postnatal_visit/group_review/r_mom_danger_sign8:label">
+            <value>दुखी महसूस करना या आसानी से रो देना</value>
+          </text>
+          <text id="/postnatal_visit/group_danger_signs_baby/g_danger_signs_baby/bd1:label">
+            <value>बुखार</value>
+          </text>
+          <text id="/postnatal_visit/group_danger_signs_mom/g_danger_signs_mom/d6:label">
+            <value>बूँद बूँद कर टपकने वाला पेशाब</value>
+          </text>
+          <text id="/postnatal_visit/group_danger_signs_baby/g_danger_signs_baby/bd8:label">
+            <value>त्वचा पे बहुत फोड़े</value>
+          </text>
+          <text id="/postnatal_visit/group_review/r_baby_danger_sign4:label">
+            <value>ऐंठन</value>
+          </text>
+          <text id="/postnatal_visit/group_danger_signs_mom/g_danger_signs_mom/d2:label">
+            <value>ज़्यादा पीलापन</value>
+          </text>
+          <text id="/postnatal_visit/group_chw_info/chw_information:label">
+            <value><output value=" /postnatal_visit/patient_name "/> के लिए गर्भावस्था की बाद की जांच दर्ज नहीं की गयी है |</value>
+          </text>
+          <text id="/postnatal_visit/group_review/r_visit_yes:label">
+            <value>गर्भावस्था की बाद की जांच पूरी की गयी है</value>
+          </text>
+          <text id="/postnatal_visit/group_danger_signs_mom/g_danger_signs_mom/d1:label">
+            <value>उच्च डायस्टोलिक ब्लड प्रेशर</value>
+          </text>
+          <text id="/postnatal_visit/group_danger_signs_mom/g_danger_signs_mom/d7:label">
+            <value>मवाद योनि के आस पास दर्द</value>
+          </text>
+          <text id="/postnatal_visit/group_note/is_sms_edited/yes:label">
+            <value>हाँ</value>
+          </text>
+          <text id="/postnatal_visit/patient_phone:label">
+            <value>मरीज का फोन नंबर</value>
           </text>
         </translation>
         <translation lang="id">
-          <text id="/postnatal_visit/group_danger_signs_baby/g_danger_signs_baby:label">
-            <value>Konfirmasikan dengan <output value=" /postnatal_visit/chw_name "/> jika bayi memiliki tanda-tanda bahaya berikut.</value>
+          <text id="/postnatal_visit/group_note/default_chw_sms_note:label">
+            <value>**Pesan ini akan dikirim ke <output value=" /postnatal_visit/chw_name "/> (<output value=" /postnatal_visit/chw_phone "/>):**
+ <output value=" /postnatal_visit/group_note/default_chw_sms_text "/></value></text>
+          <text id="/postnatal_visit/group_review/r_postnatal_details:label">
+            <value>&quot;**<output value=" /postnatal_visit/patient_name "/>**
+ID: <output value=" /postnatal_visit/group_review/r_patient_id "/>&quot;</value>
           </text>
-          <text id="/postnatal_visit/group_review/r_baby_danger_sign9:label">
-            <value>Memuntahkan semuanya</value>
+          <text id="/postnatal_visit/group_note/default_chw_sms:label">
+            <value>-</value>
           </text>
-          <text id="/postnatal_visit/group_review/r_baby_danger_sign4:label">
-            <value>Kejang</value>
+          <text id="/postnatal_visit/group_review/r_baby_danger_sign1:label">
+            <value>Demam</value>
           </text>
-          <text id="/postnatal_visit/group_danger_signs_mom/g_danger_signs_mom/d1:label">
-            <value>Tekanan darah diastolik tinggi</value>
+          <text id="/postnatal_visit/group_danger_signs_baby:label">
+            <value>Tanda-tanda bahaya bayi</value>
           </text>
-          <text id="/postnatal_visit/patient_uuid:label">
-            <value>Pasien UUID</value>
+          <text id="/postnatal_visit/group_danger_signs_mom/g_danger_signs_mom:label">
+            <value>Konfirmasikan dengan <output value=" /postnatal_visit/chw_name "/> jika <output value=" /postnatal_visit/patient_name "/> memiliki tanda-tanda bahaya berikut.</value>
           </text>
-          <text id="/postnatal_visit/group_danger_signs_mom/g_danger_signs_mom/d8:label">
-            <value>Merasa sedih atau menangis dengan mudah</value>
+          <text id="/postnatal_visit/group_review/submit:label">
+            <value>**Pastikan anda sudah mengirim untuk menyelesaikan tindakan ini.**</value>
           </text>
-          <text id="/postnatal_visit/group_danger_signs_baby/g_danger_signs_baby/bd3:label">
-            <value>Tarikandinding dada kedalam</value>
+          <text id="/postnatal_visit/group_danger_signs_mom/g_danger_signs_mom/d14:label">
+            <value>Tanda bahaya lainnya</value>
           </text>
-          <text id="/postnatal_visit/group_review/r_followup_note1:label">
-            <value>**Berikut ini akan dikirim sebagai SMS ke <output value=" /postnatal_visit/chw_name "/> <output value=" /postnatal_visit/chw_phone "/>**</value>
+          <text id="/postnatal_visit/group_note/is_sms_edited/no:label">
+            <value>Tidak</value>
           </text>
-          <text id="/postnatal_visit/group_danger_signs_mom/g_danger_signs_mom/d6:label">
+          <text id="/postnatal_visit/group_danger_signs_mom/g_danger_signs_mom/d4:label">
+            <value>Perdarahan berat dari vagina</value>
+          </text>
+          <text id="/postnatal_visit/group_danger_signs_baby/g_danger_signs_baby/bd2:label">
+            <value>Bernapas cepat</value>
+          </text>
+          <text id="/postnatal_visit/group_danger_signs_mom/g_danger_signs_mom/d10:label">
+            <value>Masalah payudara atau nyeri</value>
+          </text>
+          <text id="/postnatal_visit/group_review/r_baby_danger_sign8:label">
+            <value>Banyak kulit bisul</value>
+          </text>
+          <text id="/postnatal_visit/group_review/r_baby_danger_sign7:label">
+            <value>Tidak dapat menyusui</value>
+          </text>
+          <text id="/postnatal_visit/group_danger_signs_baby/g_danger_signs_baby/bd5:label">
+            <value>Diare</value>
+          </text>
+          <text id="/postnatal_visit/group_note/default_chw_sms/default:label">
+            <value>-</value>
+          </text>
+          <text id="/postnatal_visit/group_review/r_mom_danger_sign6:label">
             <value>Urin di tetes</value>
           </text>
-          <text id="/postnatal_visit/patient_id:label">
-            <value>Pasien ID</value>
+          <text id="/postnatal_visit/group_review/r_baby_danger_sign5:label">
+            <value>Diare</value>
           </text>
-          <text id="/postnatal_visit/group_review/r_mom_danger_sign2:label">
-            <value>Sangat pucat</value>
+          <text id="/postnatal_visit/group_note/default_chw_sms/mom_visit:label">
+            <value>-</value>
+          </text>
+          <text id="/postnatal_visit/group_review/r_mom_danger_sign5:label">
+            <value>Demam atau berbau busuk lokia</value>
+          </text>
+          <text id="/postnatal_visit/group_review/r_mom_danger_sign10:label">
+            <value>Masalah payudara atau nyeri</value>
           </text>
           <text id="/postnatal_visit/group_note/g_chw_sms:jr:constraintMsg">
             <value>Pesan anda tidak boleh lebih dari 5 pesan SMS. Persingkat pesan Anda untuk mengurangi biaya SMS.</value>
@@ -754,327 +408,610 @@ ID: <output value=" /postnatal_visit/group_review/r_patient_id "/></value></text
           <text id="/postnatal_visit/group_note/is_sms_edited:label">
             <value>Apakah Anda ingin menambahkan pesan?</value>
           </text>
-          <text id="/postnatal_visit/inputs:label">
-            <value>Pasien</value>
-          </text>
-          <text id="/postnatal_visit/group_danger_signs_mom/g_danger_signs_mom/d10:label">
-            <value>Masalah payudara atau nyeri</value>
-          </text>
-          <text id="/postnatal_visit/group_note/default_chw_sms/both_visit_both_ds:label">
-            <value>-</value>
-          </text>
-          <text id="/postnatal_visit/group_danger_signs_baby/g_danger_signs_baby/bd10:label">
-            <value>Sangat mengantuk</value>
-          </text>
-          <text id="/postnatal_visit/chw_name:label">
-            <value>Nama Kader</value>
-          </text>
-          <text id="/postnatal_visit/group_chw_info/call_button:label">
-            <value>**Mohon dibicarakan dengan <output value=" /postnatal_visit/chw_name "/> untuk memastikan apakah <output value=" /postnatal_visit/patient_name "/> untuk kunjungan perawatan setelah melahirkan nya.** Sebut: <output value=" /postnatal_visit/chw_phone "/></value></text>
-          <text id="/postnatal_visit/group_review/r_baby_danger_sign1:label">
-            <value>Demam</value>
-          </text>
-          <text id="/postnatal_visit/group_note/default_chw_sms/mom_visit_ds:label">
-            <value>-</value>
-          </text>
-          <text id="/postnatal_visit/inputs/contact/parent/contact/name:label">
-            <value></value>
-          </text>
-          <text id="/postnatal_visit/group_who_assessed/g_who_assessed/both:label">
-            <value>Ibu dan bayi</value>
-          </text>
-          <text id="/postnatal_visit/group_danger_signs_mom:label">
-            <value>Tanda-tanda bahaya ibu</value>
-          </text>
-          <text id="/postnatal_visit/group_note/default_chw_sms:label">
-            <value>-</value>
-          </text>
-          <text id="/postnatal_visit/group_danger_signs_baby/g_danger_signs_baby:hint">
-            <value>Pilih semua yang berlaku</value>
-          </text>
-          <text id="/postnatal_visit/group_danger_signs_mom/g_danger_signs_mom/d12:label">
-            <value>Mengambil obat anti-TBC</value>
-          </text>
-          <text id="/postnatal_visit/group_danger_signs_baby/danger_signs_baby_other:label">
-            <value>Tentukan lainnya:</value>
-          </text>
-          <text id="/postnatal_visit/group_review/r_mom_danger_sign14:label">
-            <value>Tanda bahaya lainnya</value>
-          </text>
-          <text id="/postnatal_visit/group_danger_signs_baby/g_danger_signs_baby/bd1:label">
-            <value>Demam</value>
-          </text>
-          <text id="/postnatal_visit/group_review/r_mom_danger_sign6:label">
-            <value>Urin di tetes</value>
-          </text>
-          <text id="/postnatal_visit/group_review/r_baby_danger_sign11:label">
-            <value>Tanda bahaya lainnya</value>
-          </text>
-          <text id="/postnatal_visit/group_review/r_visit_no:label">
-            <value>Kunjungan perawatan setelah melahirkan tidak lengkap</value>
-          </text>
-          <text id="/postnatal_visit/group_review/r_mom_danger_sign5:label">
-            <value>Demam atau berbau busuk lokia</value>
-          </text>
-          <text id="/postnatal_visit/inputs/contact/patient_id:label">
-            <value></value>
-          </text>
-          <text id="/postnatal_visit/group_note/default_chw_sms_note:label">
-            <value>**Pesan ini akan dikirim ke <output value=" /postnatal_visit/chw_name "/> (<output value=" /postnatal_visit/chw_phone "/>):**
- <output value=" /postnatal_visit/group_note/default_chw_sms_text "/></value></text>
-          <text id="/postnatal_visit/inputs/contact/phone:label">
-            <value></value>
-          </text>
-          <text id="/postnatal_visit/group_review/r_visit_yes:label">
-            <value>Kunjungan perawatan setelah melahirkan lengkap</value>
-          </text>
-          <text id="/postnatal_visit/group_danger_signs_mom/g_danger_signs_mom/d2:label">
-            <value>Sangat pucat</value>
-          </text>
-          <text id="/postnatal_visit/group_note/default_chw_sms/default:label">
-            <value>-</value>
-          </text>
-          <text id="/postnatal_visit/group_danger_signs_mom/g_danger_signs_mom/d3:label">
-            <value>Sakit kepala atau pembengkakan wajah</value>
-          </text>
-          <text id="/postnatal_visit/group_note/default_chw_sms/both_visit_baby_ds:label">
-            <value>-</value>
-          </text>
-          <text id="/postnatal_visit/group_note/default_chw_sms/did_not_attend:label">
-            <value>-</value>
-          </text>
-          <text id="/postnatal_visit/group_danger_signs_mom/g_danger_signs_mom/d14:label">
-            <value>Tanda bahaya lainnya</value>
-          </text>
-          <text id="/postnatal_visit/inputs/contact/parent/contact/phone:label">
-            <value></value>
-          </text>
-          <text id="/postnatal_visit/chw_sms:label">
-            <value>Catatan Kader</value>
-          </text>
-          <text id="/postnatal_visit/group_review/r_baby_danger_sign5:label">
-            <value>Diare</value>
-          </text>
-          <text id="/postnatal_visit/group_danger_signs_baby/g_danger_signs_baby/bd9:label">
-            <value>Memuntahkan semuanya</value>
-          </text>
-          <text id="/postnatal_visit/group_review/r_mom_danger_sign12:label">
-            <value>Mengambil obat anti-TBC</value>
-          </text>
-          <text id="/postnatal_visit/group_review/r_baby_danger_sign6:label">
-            <value>Tali pusar terinfeksi</value>
-          </text>
-          <text id="/postnatal_visit/group_review/r_followup:label">
-            <value>Follow Up Pesan &lt;i class="fa fa-envelope"&gt;&lt;/i&gt;</value>
-          </text>
-          <text id="/postnatal_visit/group_review/r_baby_danger_sign10:label">
-            <value>Sangat mengantuk</value>
-          </text>
-          <text id="/postnatal_visit/group_chw_info/attended_pnc:label">
-            <value>Apakah <output value=" /postnatal_visit/patient_name "/> datang untuk perawatan setelah melahirkan nya?</value>
-          </text>
-          <text id="/postnatal_visit/group_review/r_baby_danger_sign8:label">
-            <value>Banyak kulit bisul</value>
-          </text>
-          <text id="/postnatal_visit/group_danger_signs_mom/g_danger_signs_mom/d7:label">
-            <value>Nanah atau nyeri di dekat vagina</value>
-          </text>
-          <text id="/postnatal_visit/group_who_assessed/g_who_assessed/baby:label">
-            <value>Bayi</value>
-          </text>
-          <text id="/postnatal_visit/group_danger_signs_baby/g_danger_signs_baby/bd5:label">
-            <value>Diare</value>
-          </text>
-          <text id="/postnatal_visit/group_danger_signs_mom/g_danger_signs_mom:label">
-            <value>Konfirmasikan dengan <output value=" /postnatal_visit/chw_name "/> jika <output value=" /postnatal_visit/patient_name "/> memiliki tanda-tanda bahaya berikut.</value>
-          </text>
-          <text id="/postnatal_visit/danger_signs_mom:label">
-            <value>Tanda-tanda bahaya ibu</value>
-          </text>
-          <text id="/postnatal_visit/chw_phone:label">
-            <value>Nomor Telepon Kader</value>
-          </text>
-          <text id="/postnatal_visit/group_review/r_mom_danger_sign13:label">
-            <value>Kelelahan yang berlebihan</value>
-          </text>
-          <text id="/postnatal_visit/group_review/r_baby_danger_sign3:label">
-            <value>Tarikandinding dada kedalam</value>
-          </text>
-          <text id="/postnatal_visit/group_danger_signs_baby/g_danger_signs_baby/bd8:label">
-            <value>Banyak kulit bisul</value>
-          </text>
-          <text id="/postnatal_visit/danger_signs_baby:label">
-            <value>Tanda-tanda bahaya bayi</value>
+          <text id="/postnatal_visit/group_review/r_followup_note1:label">
+            <value>**Berikut ini akan dikirim sebagai SMS ke <output value=" /postnatal_visit/chw_name "/> <output value=" /postnatal_visit/chw_phone "/>**</value>
           </text>
           <text id="/postnatal_visit/group_review/r_mom_danger_sign9:label">
             <value>Merembes dari vagina 4 minggu setelah melahirkan</value>
           </text>
-          <text id="/postnatal_visit/group_danger_signs_mom/danger_signs_mom_other:label">
-            <value>Tentukan lainnya:</value>
-          </text>
-          <text id="/postnatal_visit/group_note/default_chw_sms/both_visit_mom_ds:label">
-            <value>-</value>
-          </text>
-          <text id="/postnatal_visit/group_review/r_mom_danger_sign8:label">
-            <value>Merasa sedih atau menangis dengan mudah</value>
-          </text>
-          <text id="/postnatal_visit/group_chw_info/attended_pnc/no:label">
-            <value>Tidak</value>
-          </text>
-          <text id="/postnatal_visit/group_chw_info/attended_pnc/yes:label">
-            <value>Iya</value>
-          </text>
-          <text id="/postnatal_visit/group_note/default_chw_sms/baby_visit:label">
-            <value>-</value>
-          </text>
-          <text id="/postnatal_visit/patient_age_in_years:label">
-            <value>Umur</value>
-          </text>
-          <text id="/postnatal_visit/group_danger_signs_baby/g_danger_signs_baby/bd11:label">
-            <value>Tanda bahaya lainnya</value>
-          </text>
-          <text id="/postnatal_visit/group_danger_signs_mom/g_danger_signs_mom/d5:label">
-            <value>Demam atau berbau busuk lokia</value>
-          </text>
-          <text id="/postnatal_visit/group_review/r_mom_danger_sign4:label">
-            <value>Perdarahan berat dari vagina</value>
-          </text>
-          <text id="/postnatal_visit/group_note/is_sms_edited/yes:label">
-            <value>Iya</value>
-          </text>
-          <text id="/postnatal_visit/group_who_assessed/g_who_assessed:label">
-            <value>Siapa yang Anda menilai hari ini?</value>
-          </text>
-          <text id="/postnatal_visit/group_review/r_followup_note2:label">
-            <value><output value=" /postnatal_visit/chw_sms "/></value>
+          <text id="/postnatal_visit/group_danger_signs_baby/g_danger_signs_baby/bd4:label">
+            <value>Kejang</value>
           </text>
           <text id="/postnatal_visit/group_note/g_chw_sms:label">
             <value>Anda dapat menambahkan sesuatu yang lain ke pesan di sini:</value>
           </text>
-          <text id="/postnatal_visit/group_danger_signs_baby/g_danger_signs_baby/bd4:label">
-            <value>Kejang</value>
-          </text>
-          <text id="/postnatal_visit/group_review/r_baby_danger_sign7:label">
-            <value>Tidak dapat menyusui</value>
-          </text>
           <text id="/postnatal_visit/group_danger_signs_mom/g_danger_signs_mom/d9:label">
             <value>Merembes dari vagina 4 minggu setelah melahirkan</value>
           </text>
-          <text id="/postnatal_visit/group_review/r_postnatal_details:label">
-            <value>&quot;**<output value=" /postnatal_visit/patient_name "/>**
-ID: <output value=" /postnatal_visit/group_review/r_patient_id "/>&quot;</value>
+          <text id="/postnatal_visit/group_note/default_chw_sms/both_visit_baby_ds:label">
+            <value>-</value>
           </text>
-          <text id="/postnatal_visit/group_danger_signs_baby/g_danger_signs_baby/bd6:label">
-            <value>Tali pusar terinfeksi</value>
+          <text id="/postnatal_visit/group_note/default_chw_sms/both_visit_mom_ds:label">
+            <value>-</value>
           </text>
-          <text id="/postnatal_visit/group_danger_signs_mom/g_danger_signs_mom/d4:label">
-            <value>Perdarahan berat dari vagina</value>
+          <text id="/postnatal_visit/group_danger_signs_baby/danger_signs_baby_other:label">
+            <value>Tentukan lainnya:</value>
           </text>
-          <text id="/postnatal_visit/group_who_assessed/g_who_assessed/mom:label">
-            <value>Ibu</value>
+          <text id="/postnatal_visit/group_danger_signs_mom/g_danger_signs_mom/d3:label">
+            <value>Sakit kepala atau pembengkakan wajah</value>
           </text>
           <text id="/postnatal_visit/group_danger_signs_baby/g_danger_signs_baby/bd7:label">
             <value>Tidak dapat menyusui</value>
           </text>
-          <text id="/postnatal_visit/group_review/r_mom_danger_sign11:label">
-            <value>Batuk atau kesulitan bernafas</value>
+          <text id="/postnatal_visit/group_chw_info/attended_pnc/no:label">
+            <value>Tidak</value>
+          </text>
+          <text id="/postnatal_visit/group_danger_signs_baby/g_danger_signs_baby:hint">
+            <value>Pilih semua yang berlaku</value>
           </text>
           <text id="/postnatal_visit/group_review/r_mom_danger_sign7:label">
             <value>Nanah atau nyeri di dekat vagina</value>
           </text>
-          <text id="/postnatal_visit/group_review/r_baby_danger_sign2:label">
-            <value>Bernapas cepat</value>
+          <text id="/postnatal_visit/group_review/r_mom_danger_sign11:label">
+            <value>Batuk atau kesulitan bernafas</value>
           </text>
-          <text id="/postnatal_visit/group_danger_signs_baby/g_danger_signs_baby/bd2:label">
-            <value>Bernapas cepat</value>
+          <text id="/postnatal_visit/group_danger_signs_mom:label">
+            <value>Tanda-tanda bahaya ibu</value>
           </text>
-          <text id="/postnatal_visit/group_chw_info/chw_information:label">
-            <value>Kunjungan perawatan setelah melahirkan untuk <output value=" /postnatal_visit/patient_name "/> belum terdata.</value>
-          </text>
-          <text id="/postnatal_visit/group_note/default_chw_sms/mom_visit:label">
+          <text id="/postnatal_visit/group_note/default_chw_sms/both_visit_both_ds:label">
             <value>-</value>
           </text>
-          <text id="/postnatal_visit/group_review/submit:label">
-            <value>**Pastikan anda sudah mengirim untuk menyelesaikan tindakan ini.**</value>
+          <text id="/postnatal_visit/group_review/r_baby_danger_sign3:label">
+            <value>Tarikandinding dada kedalam</value>
           </text>
-          <text id="/postnatal_visit/group_note/g_chw_sms:hint">
-            <value>Pesan akan dikirim ke <output value=" /postnatal_visit/chw_name "/> (<output value=" /postnatal_visit/chw_phone "/>). Pesan dibatasi panjang untuk menghindari biaya SMS yang tinggi.</value>
+          <text id="/postnatal_visit/danger_signs_baby:label">
+            <value>Tanda-tanda bahaya bayi</value>
           </text>
-          <text id="/postnatal_visit/patient_phone:label">
-            <value>Nomor Telepon Pasien</value>
-          </text>
-          <text id="/postnatal_visit/group_review/r_mom_danger_sign1:label">
-            <value>Tekanan darah diastolik tinggi</value>
-          </text>
-          <text id="/postnatal_visit/group_note:label">
-            <value>Catatan ke kader</value>
-          </text>
-          <text id="/postnatal_visit/group_review/r_mom_danger_signs:label">
-            <value>**Tanda-tanda bahaya ibu**</value>
-          </text>
-          <text id="/postnatal_visit/group_note/default_chw_sms/baby_visit_ds:label">
+          <text id="/postnatal_visit/group_note/default_chw_sms/did_not_attend:label">
             <value>-</value>
           </text>
-          <text id="/postnatal_visit/group_danger_signs_mom/g_danger_signs_mom:hint">
-            <value>Pilih semua yang berlaku</value>
-          </text>
-          <text id="/postnatal_visit/group_danger_signs_mom/g_danger_signs_mom/d13:label">
-            <value>Kelelahan yang berlebihan</value>
-          </text>
-          <text id="/postnatal_visit/inputs/contact/_id:label">
-            <value>Apa nama pasien?</value>
-          </text>
-          <text id="/postnatal_visit/group_review/r_baby_danger_signs:label">
-            <value>**Tanda-tanda bahaya bayi**</value>
-          </text>
-          <text id="/postnatal_visit/group_note/is_sms_edited/no:label">
-            <value>Tidak</value>
-          </text>
-          <text id="/postnatal_visit/group_chw_info:label">
-            <value>Laporan Kunjungan Hilang</value>
-          </text>
-          <text id="/postnatal_visit/inputs/contact/sex:label">
-            <value></value>
-          </text>
-          <text id="/postnatal_visit/group_review/r_mom_danger_sign3:label">
-            <value>Sakit kepala atau pembengkakan wajah</value>
-          </text>
-          <text id="/postnatal_visit/group_review/r_visit:label">
-            <value>Mengunjungi informasi&lt;i class="fa fa-plus-square"&gt;&lt;/i&gt;</value>
+          <text id="/postnatal_visit/group_note/default_chw_sms/mom_visit_ds:label">
+            <value>-</value>
           </text>
           <text id="/postnatal_visit/group_review/r_summary:label">
             <value>Informasi pasien &lt;i class="fa fa-user"&gt;&lt;/i&gt;</value>
           </text>
-          <text id="/postnatal_visit/inputs/contact/date_of_birth:label">
-            <value></value>
+          <text id="/postnatal_visit/group_note:label">
+            <value>Catatan ke kader</value>
           </text>
-          <text id="/postnatal_visit/patient_name:label">
-            <value>Nama Pasien</value>
-          </text>
-          <text id="/postnatal_visit/group_review/r_mom_danger_sign10:label">
-            <value>Masalah payudara atau nyeri</value>
-          </text>
-          <text id="/postnatal_visit/inputs/contact/name:label">
-            <value></value>
-          </text>
-          <text id="/postnatal_visit/group_danger_signs_baby:label">
-            <value>Tanda-tanda bahaya bayi</value>
+          <text id="/postnatal_visit/group_who_assessed/g_who_assessed/both:label">
+            <value>Ibu dan bayi</value>
           </text>
           <text id="/postnatal_visit/group_danger_signs_mom/g_danger_signs_mom/d11:label">
             <value>Batuk atau kesulitan bernafas</value>
           </text>
+          <text id="/postnatal_visit/group_review/r_baby_danger_sign10:label">
+            <value>Sangat mengantuk</value>
+          </text>
+          <text id="/postnatal_visit/patient_age_in_years:label">
+            <value>Umur</value>
+          </text>
+          <text id="/postnatal_visit/group_review/r_followup:label">
+            <value>Follow Up Pesan &lt;i class="fa fa-envelope"&gt;&lt;/i&gt;</value>
+          </text>
+          <text id="/postnatal_visit/group_review/r_mom_danger_signs:label">
+            <value>**Tanda-tanda bahaya ibu**</value>
+          </text>
+          <text id="/postnatal_visit/group_review/r_mom_danger_sign14:label">
+            <value>Tanda bahaya lainnya</value>
+          </text>
+          <text id="/postnatal_visit/group_note/default_chw_sms/baby_visit_ds:label">
+            <value>-</value>
+          </text>
+          <text id="/postnatal_visit/group_danger_signs_mom/danger_signs_mom_other:label">
+            <value>Tentukan lainnya:</value>
+          </text>
+          <text id="/postnatal_visit/chw_name:label">
+            <value>Nama Kader</value>
+          </text>
+          <text id="/postnatal_visit/group_danger_signs_baby/g_danger_signs_baby:label">
+            <value>Konfirmasikan dengan <output value=" /postnatal_visit/chw_name "/> jika bayi memiliki tanda-tanda bahaya berikut.</value>
+          </text>
+          <text id="/postnatal_visit/group_review/r_mom_danger_sign12:label">
+            <value>Mengambil obat anti-TBC</value>
+          </text>
+          <text id="/postnatal_visit/group_danger_signs_mom/g_danger_signs_mom/d13:label">
+            <value>Kelelahan yang berlebihan</value>
+          </text>
+          <text id="/postnatal_visit/group_chw_info:label">
+            <value>Laporan Kunjungan Hilang</value>
+          </text>
+          <text id="/postnatal_visit/group_review/r_mom_danger_sign2:label">
+            <value>Sangat pucat</value>
+          </text>
+          <text id="/postnatal_visit/group_danger_signs_baby/g_danger_signs_baby/bd9:label">
+            <value>Memuntahkan semuanya</value>
+          </text>
+          <text id="/postnatal_visit/group_who_assessed/g_who_assessed:label">
+            <value>Siapa yang Anda menilai hari ini?</value>
+          </text>
+          <text id="/postnatal_visit/danger_signs_mom:label">
+            <value>Tanda-tanda bahaya ibu</value>
+          </text>
+          <text id="/postnatal_visit/group_note/default_chw_sms/baby_visit:label">
+            <value>-</value>
+          </text>
+          <text id="/postnatal_visit/group_note/g_chw_sms:hint">
+            <value>Pesan akan dikirim ke <output value=" /postnatal_visit/chw_name "/> (<output value=" /postnatal_visit/chw_phone "/>). Pesan dibatasi panjang untuk menghindari biaya SMS yang tinggi.</value>
+          </text>
+          <text id="/postnatal_visit/group_review/r_mom_danger_sign4:label">
+            <value>Perdarahan berat dari vagina</value>
+          </text>
+          <text id="/postnatal_visit/group_review/r_mom_danger_sign3:label">
+            <value>Sakit kepala atau pembengkakan wajah</value>
+          </text>
+          <text id="/postnatal_visit/group_review/r_baby_danger_sign9:label">
+            <value>Memuntahkan semuanya</value>
+          </text>
+          <text id="/postnatal_visit/group_chw_info/call_button:label">
+            <value>**Mohon dibicarakan dengan <output value=" /postnatal_visit/chw_name "/> untuk memastikan apakah <output value=" /postnatal_visit/patient_name "/> untuk kunjungan perawatan setelah melahirkan nya.** Sebut: <output value=" /postnatal_visit/chw_phone "/></value></text>
+          <text id="/postnatal_visit/group_danger_signs_mom/g_danger_signs_mom/d8:label">
+            <value>Merasa sedih atau menangis dengan mudah</value>
+          </text>
+          <text id="/postnatal_visit/group_who_assessed/g_who_assessed/baby:label">
+            <value>Bayi</value>
+          </text>
+          <text id="/postnatal_visit/group_danger_signs_baby/g_danger_signs_baby/bd10:label">
+            <value>Sangat mengantuk</value>
+          </text>
+          <text id="/postnatal_visit/group_review/r_baby_danger_signs:label">
+            <value>**Tanda-tanda bahaya bayi**</value>
+          </text>
+          <text id="/postnatal_visit/group_danger_signs_mom/g_danger_signs_mom:hint">
+            <value>Pilih semua yang berlaku</value>
+          </text>
+          <text id="/postnatal_visit/group_review/r_baby_danger_sign2:label">
+            <value>Bernapas cepat</value>
+          </text>
+          <text id="/postnatal_visit/group_review/r_mom_danger_sign1:label">
+            <value>Tekanan darah diastolik tinggi</value>
+          </text>
+          <text id="/postnatal_visit/group_danger_signs_mom/g_danger_signs_mom/d12:label">
+            <value>Mengambil obat anti-TBC</value>
+          </text>
+          <text id="/postnatal_visit/group_danger_signs_baby/g_danger_signs_baby/bd3:label">
+            <value>Tarikandinding dada kedalam</value>
+          </text>
+          <text id="/postnatal_visit/group_review/r_mom_danger_sign13:label">
+            <value>Kelelahan yang berlebihan</value>
+          </text>
+          <text id="/postnatal_visit/group_danger_signs_baby/g_danger_signs_baby/bd11:label">
+            <value>Tanda bahaya lainnya</value>
+          </text>
+          <text id="/postnatal_visit/patient_name:label">
+            <value>Nama Pasien</value>
+          </text>
+          <text id="/postnatal_visit/group_chw_info/attended_pnc:label">
+            <value>Apakah <output value=" /postnatal_visit/patient_name "/> datang untuk perawatan setelah melahirkan nya?</value>
+          </text>
+          <text id="/postnatal_visit/patient_id:label">
+            <value>Pasien ID</value>
+          </text>
+          <text id="/postnatal_visit/group_review/r_visit:label">
+            <value>Mengunjungi informasi&lt;i class="fa fa-plus-square"&gt;&lt;/i&gt;</value>
+          </text>
+          <text id="/postnatal_visit/chw_sms:label">
+            <value>Catatan Kader</value>
+          </text>
+          <text id="/postnatal_visit/group_danger_signs_mom/g_danger_signs_mom/d5:label">
+            <value>Demam atau berbau busuk lokia</value>
+          </text>
+          <text id="/postnatal_visit/patient_uuid:label">
+            <value>Pasien UUID</value>
+          </text>
+          <text id="/postnatal_visit/chw_phone:label">
+            <value>Nomor Telepon Kader</value>
+          </text>
+          <text id="/postnatal_visit/group_review/r_followup_note2:label">
+            <value><output value=" /postnatal_visit/chw_sms "/></value>
+          </text>
+          <text id="/postnatal_visit/group_chw_info/attended_pnc/yes:label">
+            <value>Iya</value>
+          </text>
           <text id="/postnatal_visit/inputs/contact/_id:hint">
             <value>Pilih orang dari daftar</value>
+          </text>
+          <text id="/postnatal_visit/group_review/r_baby_danger_sign6:label">
+            <value>Tali pusar terinfeksi</value>
+          </text>
+          <text id="/postnatal_visit/group_review/r_baby_danger_sign11:label">
+            <value>Tanda bahaya lainnya</value>
+          </text>
+          <text id="/postnatal_visit/inputs:label">
+            <value>Pasien</value>
+          </text>
+          <text id="/postnatal_visit/group_who_assessed/g_who_assessed/mom:label">
+            <value>Ibu</value>
           </text>
           <text id="/postnatal_visit/group_review/r_danger_signs:label">
             <value>Tanda-tanda bahaya&lt;i class="fa fa-warning"&gt;&lt;/i&gt;</value>
           </text>
+          <text id="/postnatal_visit/inputs/contact/_id:label">
+            <value>Apa nama pasien?</value>
+          </text>
+          <text id="/postnatal_visit/group_review/r_visit_no:label">
+            <value>Kunjungan perawatan setelah melahirkan tidak lengkap</value>
+          </text>
+          <text id="/postnatal_visit/group_danger_signs_baby/g_danger_signs_baby/bd6:label">
+            <value>Tali pusar terinfeksi</value>
+          </text>
+          <text id="/postnatal_visit/group_review/r_mom_danger_sign8:label">
+            <value>Merasa sedih atau menangis dengan mudah</value>
+          </text>
+          <text id="/postnatal_visit/group_danger_signs_baby/g_danger_signs_baby/bd1:label">
+            <value>Demam</value>
+          </text>
+          <text id="/postnatal_visit/group_danger_signs_mom/g_danger_signs_mom/d6:label">
+            <value>Urin di tetes</value>
+          </text>
+          <text id="/postnatal_visit/group_danger_signs_baby/g_danger_signs_baby/bd8:label">
+            <value>Banyak kulit bisul</value>
+          </text>
+          <text id="/postnatal_visit/group_review/r_baby_danger_sign4:label">
+            <value>Kejang</value>
+          </text>
+          <text id="/postnatal_visit/group_danger_signs_mom/g_danger_signs_mom/d2:label">
+            <value>Sangat pucat</value>
+          </text>
+          <text id="/postnatal_visit/group_chw_info/chw_information:label">
+            <value>Kunjungan perawatan setelah melahirkan untuk <output value=" /postnatal_visit/patient_name "/> belum terdata.</value>
+          </text>
+          <text id="/postnatal_visit/group_review/r_visit_yes:label">
+            <value>Kunjungan perawatan setelah melahirkan lengkap</value>
+          </text>
+          <text id="/postnatal_visit/group_danger_signs_mom/g_danger_signs_mom/d1:label">
+            <value>Tekanan darah diastolik tinggi</value>
+          </text>
+          <text id="/postnatal_visit/group_danger_signs_mom/g_danger_signs_mom/d7:label">
+            <value>Nanah atau nyeri di dekat vagina</value>
+          </text>
+          <text id="/postnatal_visit/group_note/is_sms_edited/yes:label">
+            <value>Iya</value>
+          </text>
+          <text id="/postnatal_visit/patient_phone:label">
+            <value>Nomor Telepon Pasien</value>
+          </text>
+        </translation>
+        <translation lang="en">
+          <text id="/postnatal_visit/group_note/default_chw_sms_note:label">
+            <value>**The following message will be sent to <output value=" /postnatal_visit/chw_name "/> (<output value=" /postnatal_visit/chw_phone "/>):**
+ <output value=" /postnatal_visit/group_note/default_chw_sms_text "/></value></text>
+          <text id="/postnatal_visit/group_who_assessed/g_who_assessed/mom:label">
+            <value>Mother</value>
+          </text>
+          <text id="/postnatal_visit/group_review/r_postnatal_details:label">
+            <value>**<output value=" /postnatal_visit/patient_name "/>**
+ID: <output value=" /postnatal_visit/group_review/r_patient_id "/></value></text>
+          <text id="/postnatal_visit/group_review/r_danger_signs:label">
+            <value>Danger Signs&lt;i class="fa fa-warning"&gt;&lt;/i&gt;</value>
+          </text>
+          <text id="/postnatal_visit/group_review/r_baby_danger_sign1:label">
+            <value>Fever</value>
+          </text>
+          <text id="/postnatal_visit/group_danger_signs_baby:label">
+            <value>Baby Danger Signs</value>
+          </text>
+          <text id="/postnatal_visit/group_danger_signs_mom/g_danger_signs_mom:label">
+            <value>Confirm with <output value=" /postnatal_visit/chw_name "/> if <output value=" /postnatal_visit/patient_name "/> has any of the following danger signs.</value>
+          </text>
+          <text id="/postnatal_visit/group_review/submit:label">
+            <value>**Be sure you Submit to complete this action.**</value>
+          </text>
+          <text id="/postnatal_visit/group_danger_signs_mom/g_danger_signs_mom/d14:label">
+            <value>Other danger signs</value>
+          </text>
+          <text id="/postnatal_visit/group_note/is_sms_edited/no:label">
+            <value>No</value>
+          </text>
+          <text id="/postnatal_visit/group_danger_signs_mom/g_danger_signs_mom/d4:label">
+            <value>Heavy vaginal bleeding</value>
+          </text>
+          <text id="/postnatal_visit/group_danger_signs_baby/g_danger_signs_baby/bd2:label">
+            <value>Fast breathing</value>
+          </text>
+          <text id="/postnatal_visit/group_danger_signs_mom/g_danger_signs_mom/d10:label">
+            <value>Breast problem or pain</value>
+          </text>
+          <text id="/postnatal_visit/group_review/r_baby_danger_sign8:label">
+            <value>Many skin pustules</value>
+          </text>
+          <text id="/postnatal_visit/group_review/r_baby_danger_sign7:label">
+            <value>Unable to breast feed</value>
+          </text>
+          <text id="/postnatal_visit/group_danger_signs_baby/g_danger_signs_baby/bd5:label">
+            <value>Diarrhea</value>
+          </text>
+          <text id="/postnatal_visit/group_note/default_chw_sms/default:label">
+            <value>Nice work, <output value=" /postnatal_visit/chw_name "/>! Mother <output value=" /postnatal_visit/patient_name "/> (<output value=" /postnatal_visit/group_review/r_patient_id "/>) and baby attended PNC. Both were assessed and no danger signs were reported. Please continue monitoring them. Thank you!</value>
+          </text>
+          <text id="/postnatal_visit/group_review/r_mom_danger_sign6:label">
+            <value>Dribbling urine</value>
+          </text>
+          <text id="/postnatal_visit/group_review/r_baby_danger_sign5:label">
+            <value>Diarrhea</value>
+          </text>
+          <text id="/postnatal_visit/group_review/r_mom_danger_sign5:label">
+            <value>Fever or foul-smelling lochia</value>
+          </text>
+          <text id="/postnatal_visit/group_review/r_mom_danger_sign10:label">
+            <value>Breast problem or pain</value>
+          </text>
+          <text id="/postnatal_visit/group_note/g_chw_sms:jr:constraintMsg">
+            <value>Your message cannot be longer than 5 SMS messages. Please shorten your message to reduce SMS costs.</value>
+          </text>
+          <text id="/postnatal_visit/group_review/r_summary:label">
+            <value>Patient Information&lt;i class="fa fa-user"&gt;&lt;/i&gt;</value>
+          </text>
+          <text id="/postnatal_visit/group_review/r_followup_note1:label">
+            <value>**The following will be sent as a SMS to <output value=" /postnatal_visit/chw_name "/> <output value=" /postnatal_visit/chw_phone "/>**</value>
+          </text>
+          <text id="/postnatal_visit/group_review/r_mom_danger_sign9:label">
+            <value>Vaginal discharge 4 weeks after delivery</value>
+          </text>
+          <text id="/postnatal_visit/group_danger_signs_baby/g_danger_signs_baby/bd4:label">
+            <value>Convulsions</value>
+          </text>
+          <text id="/postnatal_visit/group_note/g_chw_sms:label">
+            <value>You can add a personal note to the SMS here:</value>
+          </text>
+          <text id="/postnatal_visit/group_danger_signs_mom/g_danger_signs_mom/d9:label">
+            <value>Vaginal discharge 4 weeks after delivery</value>
+          </text>
+          <text id="/postnatal_visit/group_note/default_chw_sms/both_visit_baby_ds:label">
+            <value>Hi, <output value=" /postnatal_visit/chw_name "/>, Mother <output value=" /postnatal_visit/patient_name "/> (<output value=" /postnatal_visit/group_review/r_patient_id "/>) and baby attended PNC. The nurse reported danger signs in the baby. Please follow up to see if they need additional support. Thank you!</value>
+          </text>
+          <text id="/postnatal_visit/group_note/default_chw_sms/both_visit_mom_ds:label">
+            <value>Hi, <output value=" /postnatal_visit/chw_name "/>, Mother <output value=" /postnatal_visit/patient_name "/> (<output value=" /postnatal_visit/group_review/r_patient_id "/>) and baby attended PNC. The nurse reported danger signs in the mother. Please follow up to see if they need additional support. Thank you!</value>
+          </text>
+          <text id="/postnatal_visit/group_danger_signs_baby/danger_signs_baby_other:label">
+            <value>Specify other:</value>
+          </text>
+          <text id="/postnatal_visit/group_danger_signs_mom/g_danger_signs_mom/d3:label">
+            <value>Headaches or swelling of the face</value>
+          </text>
+          <text id="/postnatal_visit/group_danger_signs_baby/g_danger_signs_baby/bd7:label">
+            <value>Unable to breast feed</value>
+          </text>
+          <text id="/postnatal_visit/group_chw_info/attended_pnc/no:label">
+            <value>No</value>
+          </text>
+          <text id="/postnatal_visit/group_danger_signs_baby/g_danger_signs_baby:hint">
+            <value>Select all that apply</value>
+          </text>
+          <text id="/postnatal_visit/group_review/r_mom_danger_sign7:label">
+            <value>Pus or perineal pain</value>
+          </text>
+          <text id="/postnatal_visit/group_review/r_mom_danger_sign11:label">
+            <value>Cough or breathing difficulty</value>
+          </text>
+          <text id="/postnatal_visit/group_danger_signs_mom:label">
+            <value>Mother Danger Signs</value>
+          </text>
+          <text id="/postnatal_visit/group_note/default_chw_sms/both_visit_both_ds:label">
+            <value>Hi, <output value=" /postnatal_visit/chw_name "/>, Mother <output value=" /postnatal_visit/patient_name "/> (<output value=" /postnatal_visit/group_review/r_patient_id "/>) and baby attended PNC. The nurse reported danger signs in the mother and baby. Please follow up to see if they need additional support. Thank you!</value>
+          </text>
+          <text id="/postnatal_visit/group_review/r_baby_danger_sign3:label">
+            <value>Chest indrawing</value>
+          </text>
+          <text id="/postnatal_visit/danger_signs_baby:label">
+            <value>Baby Danger Signs</value>
+          </text>
+          <text id="/postnatal_visit/group_note/default_chw_sms/did_not_attend:label">
+            <value>Hi <output value=" /postnatal_visit/chw_name "/>, <output value=" /postnatal_visit/patient_name "/> (<output value=" /postnatal_visit/group_review/r_patient_id "/>) did not attend PNC. Please continue to monitor them for danger signs. We will send you a message when they are due for their next visit. Thank you!</value>
+          </text>
+          <text id="/postnatal_visit/group_note/default_chw_sms/mom_visit_ds:label">
+            <value>Hi, <output value=" /postnatal_visit/chw_name "/>. <output value=" /postnatal_visit/patient_name "/> (<output value=" /postnatal_visit/group_review/r_patient_id "/>) attended PNC. Only the mother was assessed. The nurse reported danger signs in the mother. Please follow up to see if they need additional support. Thank you!</value>
+          </text>
+          <text id="/postnatal_visit/group_note:label">
+            <value>Note to the CHW</value>
+          </text>
+          <text id="/postnatal_visit/group_who_assessed/g_who_assessed/both:label">
+            <value>Both mother and baby</value>
+          </text>
+          <text id="/postnatal_visit/group_danger_signs_mom/g_danger_signs_mom/d11:label">
+            <value>Cough or breathing difficulty</value>
+          </text>
+          <text id="/postnatal_visit/group_review/r_mom_danger_signs:label">
+            <value>**Mother Danger Signs**</value>
+          </text>
+          <text id="/postnatal_visit/group_review/r_baby_danger_sign10:label">
+            <value>Very sleepy</value>
+          </text>
+          <text id="/postnatal_visit/group_note/default_chw_sms/mom_visit:label">
+            <value>Nice work, <output value=" /postnatal_visit/chw_name "/>. <output value=" /postnatal_visit/patient_name "/> (<output value=" /postnatal_visit/group_review/r_patient_id "/>) attended PNC. Only the mother was assessed. No danger signs were reported. Please continue monitoring them. Thank you!</value>
+          </text>
+          <text id="/postnatal_visit/group_review/r_followup:label">
+            <value>Follow Up Message &lt;i class="fa fa-envelope"&gt;&lt;/i&gt;</value>
+          </text>
+          <text id="/postnatal_visit/group_note/default_chw_sms/baby_visit_ds:label">
+            <value>Hi, <output value=" /postnatal_visit/chw_name "/>. The baby of <output value=" /postnatal_visit/patient_name "/> (<output value=" /postnatal_visit/group_review/r_patient_id "/>) attended PNC. Only the baby was assessed. The nurse reported danger signs in the baby. Please follow up to see if they need additional support. Thank you!</value>
+          </text>
+          <text id="/postnatal_visit/group_review/r_mom_danger_sign14:label">
+            <value>Other danger signs</value>
+          </text>
+          <text id="/postnatal_visit/group_danger_signs_mom/danger_signs_mom_other:label">
+            <value>Specify other:</value>
+          </text>
+          <text id="/postnatal_visit/chw_name:label">
+            <value>CHW Name</value>
+          </text>
+          <text id="/postnatal_visit/group_danger_signs_baby/g_danger_signs_baby:label">
+            <value>Confirm with <output value=" /postnatal_visit/chw_name "/> if the baby has any of the following danger signs.</value>
+          </text>
+          <text id="/postnatal_visit/group_review/r_mom_danger_sign12:label">
+            <value>Taking anti-tuberculosis drugs</value>
+          </text>
+          <text id="/postnatal_visit/group_danger_signs_mom/g_danger_signs_mom/d13:label">
+            <value>Excessive fatigue</value>
+          </text>
+          <text id="/postnatal_visit/group_chw_info:label">
+            <value>Missing Visit Report</value>
+          </text>
+          <text id="/postnatal_visit/group_review/r_mom_danger_sign2:label">
+            <value>Significant pallor</value>
+          </text>
+          <text id="/postnatal_visit/group_danger_signs_baby/g_danger_signs_baby/bd9:label">
+            <value>Vomits everything</value>
+          </text>
+          <text id="/postnatal_visit/group_who_assessed/g_who_assessed:label">
+            <value>Who are you assessing today?</value>
+          </text>
+          <text id="/postnatal_visit/danger_signs_mom:label">
+            <value>Mother Danger Signs</value>
+          </text>
+          <text id="/postnatal_visit/group_note/default_chw_sms/baby_visit:label">
+            <value>Nice work, <output value=" /postnatal_visit/chw_name "/>! The baby of <output value=" /postnatal_visit/patient_name "/> (<output value=" /postnatal_visit/group_review/r_patient_id "/>) attended PNC. Only the baby was assessed. No danger signs were reported. Please continue monitoring them. Thank you!</value>
+          </text>
+          <text id="/postnatal_visit/group_note/g_chw_sms:hint">
+            <value>Messages are limited in length to avoid high SMS costs.</value>
+          </text>
+          <text id="/postnatal_visit/group_review/r_mom_danger_sign4:label">
+            <value>Heavy vaginal bleeding</value>
+          </text>
+          <text id="/postnatal_visit/group_review/r_mom_danger_sign3:label">
+            <value>Headaches or swelling of the face</value>
+          </text>
+          <text id="/postnatal_visit/group_review/r_baby_danger_sign9:label">
+            <value>Vomits everything</value>
+          </text>
+          <text id="/postnatal_visit/group_chw_info/call_button:label">
+            <value>**Please follow up with <output value=" /postnatal_visit/chw_name "/> to see if <output value=" /postnatal_visit/patient_name "/> attended her PNC visit.**
+Call: <output value=" /postnatal_visit/chw_phone "/></value></text>
+          <text id="/postnatal_visit/group_review/r_visit_yes:label">
+            <value>Postnatal care visit completed</value>
+          </text>
+          <text id="/postnatal_visit/group_who_assessed/g_who_assessed/baby:label">
+            <value>Baby</value>
+          </text>
+          <text id="/postnatal_visit/group_danger_signs_baby/g_danger_signs_baby/bd10:label">
+            <value>Very sleepy</value>
+          </text>
+          <text id="/postnatal_visit/group_review/r_baby_danger_signs:label">
+            <value>**Baby Danger Signs**</value>
+          </text>
+          <text id="/postnatal_visit/group_danger_signs_mom/g_danger_signs_mom:hint">
+            <value>Select all that apply</value>
+          </text>
+          <text id="/postnatal_visit/group_review/r_baby_danger_sign2:label">
+            <value>Fast breathing</value>
+          </text>
+          <text id="/postnatal_visit/group_review/r_mom_danger_sign1:label">
+            <value>Elevated diastolic blood pressure</value>
+          </text>
+          <text id="/postnatal_visit/group_danger_signs_mom/g_danger_signs_mom/d12:label">
+            <value>Taking anti-tuberculosis drugs</value>
+          </text>
+          <text id="/postnatal_visit/group_danger_signs_baby/g_danger_signs_baby/bd3:label">
+            <value>Chest indrawing</value>
+          </text>
+          <text id="/postnatal_visit/group_review/r_mom_danger_sign13:label">
+            <value>Excessive fatigue</value>
+          </text>
+          <text id="/postnatal_visit/group_danger_signs_baby/g_danger_signs_baby/bd11:label">
+            <value>Other danger signs</value>
+          </text>
+          <text id="/postnatal_visit/patient_name:label">
+            <value>Patient Name</value>
+          </text>
+          <text id="/postnatal_visit/group_chw_info/attended_pnc:label">
+            <value>Did <output value=" /postnatal_visit/patient_name "/> attend her PNC visit?</value>
+          </text>
+          <text id="/postnatal_visit/patient_id:label">
+            <value>Patient ID</value>
+          </text>
+          <text id="/postnatal_visit/group_review/r_visit:label">
+            <value>Visit Information&lt;i class="fa fa-plus-square"&gt;&lt;/i&gt;</value>
+          </text>
+          <text id="/postnatal_visit/chw_sms:label">
+            <value>CHW's Note</value>
+          </text>
+          <text id="/postnatal_visit/group_danger_signs_mom/g_danger_signs_mom/d5:label">
+            <value>Fever or foul-smelling lochia</value>
+          </text>
+          <text id="/postnatal_visit/patient_uuid:label">
+            <value>Patient UUID</value>
+          </text>
+          <text id="/postnatal_visit/chw_phone:label">
+            <value>CHW Phone</value>
+          </text>
+          <text id="/postnatal_visit/group_review/r_followup_note2:label">
+            <value><output value=" /postnatal_visit/chw_sms "/></value>
+          </text>
+          <text id="/postnatal_visit/group_chw_info/attended_pnc/yes:label">
+            <value>Yes</value>
+          </text>
+          <text id="/postnatal_visit/inputs/contact/_id:hint">
+            <value>Select a person from list</value>
+          </text>
+          <text id="/postnatal_visit/group_review/r_baby_danger_sign6:label">
+            <value>Infected umblical cord</value>
+          </text>
+          <text id="/postnatal_visit/group_review/r_baby_danger_sign11:label">
+            <value>Other danger signs</value>
+          </text>
+          <text id="/postnatal_visit/inputs:label">
+            <value>Patient</value>
+          </text>
+          <text id="/postnatal_visit/group_note/is_sms_edited:label">
+            <value>Would you like to add a personal note to the message?</value>
+          </text>
+          <text id="/postnatal_visit/patient_age_in_years:label">
+            <value>Years</value>
+          </text>
+          <text id="/postnatal_visit/group_note/default_chw_sms:label">
+            <value>Default SMS to send to CHW</value>
+          </text>
+          <text id="/postnatal_visit/group_review/r_visit_no:label">
+            <value>Postnatal care visit not completed</value>
+          </text>
+          <text id="/postnatal_visit/group_danger_signs_baby/g_danger_signs_baby/bd6:label">
+            <value>Infected umblical cord</value>
+          </text>
+          <text id="/postnatal_visit/group_review/r_mom_danger_sign8:label">
+            <value>Feeling unhappy or crying easily</value>
+          </text>
+          <text id="/postnatal_visit/group_danger_signs_baby/g_danger_signs_baby/bd1:label">
+            <value>Fever</value>
+          </text>
+          <text id="/postnatal_visit/inputs/contact/_id:label">
+            <value>What is the patient's name?</value>
+          </text>
+          <text id="/postnatal_visit/group_danger_signs_mom/g_danger_signs_mom/d6:label">
+            <value>Dribbling urine</value>
+          </text>
+          <text id="/postnatal_visit/group_danger_signs_baby/g_danger_signs_baby/bd8:label">
+            <value>Many skin pustules</value>
+          </text>
+          <text id="/postnatal_visit/group_review/r_baby_danger_sign4:label">
+            <value>Convulsions</value>
+          </text>
+          <text id="/postnatal_visit/group_danger_signs_mom/g_danger_signs_mom/d2:label">
+            <value>Significant pallor</value>
+          </text>
+          <text id="/postnatal_visit/group_chw_info/chw_information:label">
+            <value>The postnatal care visit for <output value=" /postnatal_visit/patient_name "/> has not been recorded.</value>
+          </text>
+          <text id="/postnatal_visit/group_danger_signs_mom/g_danger_signs_mom/d8:label">
+            <value>Feeling unhappy or crying easily</value>
+          </text>
+          <text id="/postnatal_visit/group_danger_signs_mom/g_danger_signs_mom/d1:label">
+            <value>Elevated diastolic blood pressure</value>
+          </text>
+          <text id="/postnatal_visit/group_danger_signs_mom/g_danger_signs_mom/d7:label">
+            <value>Pus or perineal pain</value>
+          </text>
+          <text id="/postnatal_visit/group_note/is_sms_edited/yes:label">
+            <value>Yes</value>
+          </text>
+          <text id="/postnatal_visit/patient_phone:label">
+            <value>Patient Phone</value>
+          </text>
         </translation>
       </itext>
       <instance>
-        <postnatal_visit delimiter="#" id="postnatal_visit" prefix="J1!postnatal_visit!" version="2018-06-06_09-53">
+        <postnatal_visit delimiter="#" id="postnatal_visit" prefix="J1!postnatal_visit!" version="2018-09-25_11-49">
           <inputs tag="hidden">
-            <meta tag="hidden">
+            <meta>
               <location>
                 <lat/>
                 <long/>
