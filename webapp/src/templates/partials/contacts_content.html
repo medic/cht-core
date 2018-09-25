@@ -34,7 +34,7 @@
             <div class="col col-xs-12 col-sm-{{field.width || 12}}" ng-repeat="field in selected.summary.fields">
               <div class="cell">
                 <span ng-if="field.icon" class="field-icon" ng-bind-html="field.icon | resourceIcon"></span>
-                <div>
+                <div class="{{field.label}}">
                   <label translate ng-show="field.label">{{field.label}}</label>
                   <p ng-if="field.translate" translate translate-values="{{field.context}}">{{field.value}}</p>
                   <p ng-if="!field.translate && field.filter" ng-bind-html="field.value"></p>
