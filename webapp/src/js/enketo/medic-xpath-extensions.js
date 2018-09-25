@@ -6,8 +6,8 @@ var getValue = function(resultObject) {
     return resultObject;
   }
 
-  if (resultObject.t === 'arr') {
-    return resultObject.v.length > 1 ? resultObject.v : resultObject.v[0];
+  if (resultObject.t === 'arr' && resultObject.v.length) {
+    return resultObject.v[0];
   }
 
   return resultObject.v;
@@ -18,8 +18,11 @@ module.exports = {
     zscoreUtil = _zscoreUtil;
   },
   func: {
-    'z-score': function(chartId, sex, x, y) {
-      var result = zscoreUtil(getValue(chartId), getValue(sex), getValue(x), getValue(y));
+    'z-score': function() {
+      var args = Array.from(arguments).map(function(arg) {
+        return getValue(arg);
+      });
+      var result = zscoreUtil.apply(null, args);
       if (!result) {
           return { t: 'str', v: '' };
       }
