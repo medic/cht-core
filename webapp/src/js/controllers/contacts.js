@@ -264,7 +264,8 @@ var _ = require('underscore'),
     });
 
     $scope.search = function() {
-      $state.go('contacts', null, { notify: false });
+      $state.go('contacts.detail', { id: null }, { notify: false });
+
       clearSelection();
       $scope.loading = true;
       if ($scope.filters.search || $scope.filters.simprintsIdentities) {

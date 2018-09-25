@@ -255,7 +255,7 @@ angular
     };
 
     $scope.search = function() {
-      $state.go('reports', null, { notify: false });
+      $state.go('reports.detail', { id: null }, { notify: false });
       clearSelection();
       if ($scope.isMobile() && $scope.showContent) {
         // leave content shown
@@ -480,7 +480,7 @@ angular
           $timeout(function() {
             $link.removeClass('mm-icon-disabled');
           }, 2000);
-          
+
           Export(exportFilters, 'reports');
         },
       });
