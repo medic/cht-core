@@ -1,6 +1,5 @@
 const helper = require('../../helper'),
       ZScoreForm = require('../../page-objects/forms/z-score.po'),
-      common = require('../../page-objects/common/common.po.js'),
       utils = require('../../utils');
 
 const contactId = 'some_contact_id';
@@ -26,7 +25,7 @@ describe('Submit Z-Score form', () => {
       .catch(done.fail);
   });
 
-  afterEach(done =>{
+  afterEach(done => {
     utils.resetBrowser();
     done();
   });
@@ -34,25 +33,7 @@ describe('Submit Z-Score form', () => {
   afterAll(utils.afterEach);
 
   it('Autofills zscore fields with correct values', () => {
-    common.goToReports();
-    browser.wait(() => {
-      return element(by.css('.action-container .general-actions:not(.ng-hide) .fa-plus')).isPresent();
-    }, 10000);
-
-    browser.sleep(1000); // let the refresh work here - #3691
-
-    // select form
-    const addButton = element(by.css('.action-container .general-actions:not(.ng-hide) .fa-plus'));
-    browser.wait(() => {
-      return addButton.isPresent();
-    }, 10000);
-    helper.clickElement(addButton);
-    element(by.css('.action-container .general-actions .dropup.open .dropdown-menu li:first-child a')).click();
-
-    browser.wait(() => {
-      return element(by.css('[name="/data/my_sex"][value="female"]')).isPresent();
-    }, 10000);
-
+    ZScoreForm.load();
 
     ZScoreForm.setPatient({ sex: 'female', height: 45, weight: 2, age: 0 });
     browser.sleep(100);
@@ -84,25 +65,7 @@ describe('Submit Z-Score form', () => {
   });
 
   it('saves z-score values', () => {
-    common.goToReports();
-    browser.wait(() => {
-      return element(by.css('.action-container .general-actions:not(.ng-hide) .fa-plus')).isPresent();
-    }, 10000);
-
-    browser.sleep(1000); // let the refresh work here - #3691
-
-    // select form
-    const addButton = element(by.css('.action-container .general-actions:not(.ng-hide) .fa-plus'));
-    browser.wait(() => {
-      return addButton.isPresent();
-    }, 10000);
-    helper.clickElement(addButton);
-    element(by.css('.action-container .general-actions .dropup.open .dropdown-menu li:first-child a')).click();
-
-    browser.wait(() => {
-      return element(by.css('[name="/data/my_sex"][value="female"]')).isPresent();
-    }, 10000);
-
+    ZScoreForm.load();
 
     ZScoreForm.setPatient({ sex: 'female', height: 45.1, weight: 3, age: 2 });
     browser.sleep(100);

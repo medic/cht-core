@@ -1,5 +1,6 @@
 const utils = require('../../utils'),
-      helper = require('../../helper');
+      helper = require('../../helper'),
+      common = require('../common/common.po');
 
 const xml = `<h:html xmlns="http://www.w3.org/2002/xforms" xmlns:h="http://www.w3.org/1999/xhtml" xmlns:ev="http://www.w3.org/2001/xml-events" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:jr="http://openrosa.org/javarosa">
   <h:head>
@@ -138,6 +139,27 @@ const clearAndFill = (el, value) => {
 module.exports = {
   configureForm: (contactId, done) => {
     utils.seedTestData(done, contactId, docs);
+  },
+
+  load: () => {
+    common.goToReports();
+    browser.wait(() => {
+      return element(by.css('.action-container .general-actions:not(.ng-hide) .fa-plus')).isPresent();
+    }, 10000);
+
+    browser.sleep(1000); // let the refresh work here - #3691
+
+    // select form
+    const addButton = element(by.css('.action-container .general-actions:not(.ng-hide) .fa-plus'));
+    browser.wait(() => {
+      return addButton.isPresent();
+    }, 10000);
+    helper.clickElement(addButton);
+    element(by.css('.action-container .general-actions .dropup.open .dropdown-menu li:first-child a')).click();
+
+    browser.wait(() => {
+      return element(by.css('[name="/data/my_sex"][value="female"]')).isPresent();
+    }, 10000);
   },
 
   submit: () => {
