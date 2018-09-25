@@ -18,16 +18,5 @@
     "person": true,
     "place": false,
     "expression": "contact.type === 'person' && contact.date_of_birth && ageInYears(contact) <= 5"
-  },
-  "hidden_fields": [
-    "inputs",
-    "patient_uuid",
-    "geolocation",
-    "patient_age_in_years",
-    "patient_contact_phone",
-    "group_chw_info",
-    "group_note",
-    "group_summary",
-    "meta"
-  ]
+  }
 }

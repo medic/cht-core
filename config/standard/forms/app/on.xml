@@ -5,7 +5,7 @@
     <model>
       <instance>
         <on delimiter="#" id="on" prefix="J1!on!" version="2016-12-21">
-          <inputs>
+          <inputs tag="hidden">
             <meta>
               <location>
                 <lat/>
@@ -41,7 +41,7 @@
             <send_note/>
             <chw_note/>
           </group_note>
-          <meta>
+          <meta tag="hidden">
             <instanceID/>
           </meta>
         </on>
