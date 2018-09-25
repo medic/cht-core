@@ -1,22 +1,24 @@
-@import (inline) "reset.css";
-@import "webapp/node_modules/bootstrap/less/bootstrap";
-@import "webapp/node_modules/font-awesome/less/font-awesome";
-@import (inline) "webapp/node_modules/select2/dist/css/select2.css";
-@import (inline) "webapp/node_modules/bootstrap-daterangepicker/daterangepicker.css";
-@import (inline) "webapp/node_modules/nvd3/build/nv.d3.css";
-@import (inline) "webapp/node_modules/bootstrap-tour/build/css/bootstrap-tour.css";
+@import (inline) 'reset.css';
+@import 'webapp/node_modules/bootstrap/less/bootstrap';
+@import 'webapp/node_modules/font-awesome/less/font-awesome';
+@import (inline) 'webapp/node_modules/select2/dist/css/select2.css';
+@import (inline)
+  'webapp/node_modules/bootstrap-daterangepicker/daterangepicker.css';
+@import (inline) 'webapp/node_modules/nvd3/build/nv.d3.css';
+@import (inline)
+  'webapp/node_modules/bootstrap-tour/build/css/bootstrap-tour.css';
 
-@import "variables";
-@import "font";
-@import "mixins";
-@import "theme";
-@import "angular";
-@import "analytics-widgets";
-@import "targets";
-@import "material";
-@import "content-list";
+@import 'variables';
+@import 'font';
+@import 'mixins';
+@import 'theme';
+@import 'angular';
+@import 'analytics-widgets';
+@import 'targets';
+@import 'material';
+@import 'content-list';
 
-@import "enketo/medic";
+@import 'enketo/medic';
 
 .container-fluid {
   overflow: hidden;
@@ -25,37 +27,44 @@
 body {
   overflow-y: hidden;
   &.messages {
-    .header .tabs .selected, .filters {
+    .header .tabs .selected,
+    .filters {
       background-color: @messages-color;
     }
   }
   &.tasks {
-    .header .tabs .selected, .filters {
+    .header .tabs .selected,
+    .filters {
       background-color: @tasks-color;
     }
   }
   &.reports {
-    .header .tabs .selected, .filters {
+    .header .tabs .selected,
+    .filters {
       background-color: @reports-color;
     }
   }
   &.analytics {
-    .header .tabs .selected, .filters {
+    .header .tabs .selected,
+    .filters {
       background-color: @analytics-color;
     }
   }
   &.contacts {
-    .header .tabs .selected, .filters {
+    .header .tabs .selected,
+    .filters {
       background-color: @contacts-color;
     }
   }
   &.userSettings {
-    .header .tabs .selected, .filters {
+    .header .tabs .selected,
+    .filters {
       background-color: @admin-color;
     }
   }
   &.about {
-    .header .tabs .selected, .filters {
+    .header .tabs .selected,
+    .filters {
       background-color: @help-color;
     }
     .filters {
@@ -66,7 +75,8 @@ body {
     }
   }
   &.error {
-    .header .tabs .selected, .filters {
+    .header .tabs .selected,
+    .filters {
       background-color: @error-color;
     }
   }
@@ -128,8 +138,10 @@ body {
     }
   }
 
-  .extras, .tabs {
-    &, a {
+  .extras,
+  .tabs {
+    &,
+    a {
       height: 100%;
     }
     a {
@@ -156,7 +168,7 @@ body {
     }
 
     .open > a {
-      background-color: #FFFFFF;
+      background-color: #ffffff;
 
       .mm-icon {
         color: @medic-slate-color;
@@ -203,54 +215,68 @@ body {
       padding-right: 5px;
 
       &.selected {
-        .button-label, .mm-icon:hover {
+        .button-label,
+        .mm-icon:hover {
           .button-text;
         }
       }
 
       &:hover {
         &.messages-tab {
-          &, .mm-icon-inverse, .mm-icon-inverse:hover {
+          &,
+          .mm-icon-inverse,
+          .mm-icon-inverse:hover {
             color: @messages-color;
           }
         }
         &.tasks-tab {
-          &, .mm-icon-inverse, .mm-icon-inverse:hover {
+          &,
+          .mm-icon-inverse,
+          .mm-icon-inverse:hover {
             color: @tasks-color;
           }
         }
         &.reports-tab {
-          &, .mm-icon-inverse, .mm-icon-inverse:hover {
+          &,
+          .mm-icon-inverse,
+          .mm-icon-inverse:hover {
             color: @reports-color;
           }
         }
         &.analytics-tab {
-          &, .mm-icon-inverse, .mm-icon-inverse:hover {
+          &,
+          .mm-icon-inverse,
+          .mm-icon-inverse:hover {
             color: @analytics-color;
           }
         }
         &.contacts-tab {
-          &, .mm-icon-inverse, .mm-icon-inverse:hover {
+          &,
+          .mm-icon-inverse,
+          .mm-icon-inverse:hover {
             color: @contacts-color;
           }
         }
         &.configuration-tab {
-          &, .mm-icon-inverse, .mm-icon-inverse:hover {
+          &,
+          .mm-icon-inverse,
+          .mm-icon-inverse:hover {
             color: @admin-color;
           }
         }
       }
 
-      &:hover, &:focus {
+      &:hover,
+      &:focus {
         text-decoration: none;
       }
     }
-
   }
 }
 
 .header .dropdown-menu .sync-status {
-  .in_progress, .not_required {
+  .in_progress,
+  .not_required {
     color: @ok-color;
   }
   .required {
@@ -417,7 +443,7 @@ body {
 
 .content .item-content.empty-selection {
   text-align: center;
-  color: #C2C2C2;
+  color: #c2c2c2;
   text-shadow: 1px 1px 4px rgba(255, 255, 255, 1);
   font-size: @font-extra-extra-large;
 
@@ -431,7 +457,7 @@ body {
 }
 
 .content-pane {
-  height: 100%
+  height: 100%;
 }
 .message-content-wrapper {
   height: 100%;
@@ -688,7 +714,7 @@ a.fa:hover {
       display: block;
       width: 0;
       border-width: 15px 15px 0;
-      content: "";
+      content: '';
       margin: 0 auto;
     }
   }
@@ -718,7 +744,7 @@ a.fa:hover {
       .data p {
         border-radius: @radius-size-small 0 0 @radius-size-small;
         background-color: @messages-color;
-        color: #FFFFFF;
+        color: #ffffff;
         float: right;
       }
       .actions {
@@ -741,7 +767,6 @@ a.fa:hover {
 .tasks {
   .item-content {
     .body {
-
       background-color: @form-background-color;
       border: 1px solid @seperator-color;
       border-radius: @radius-size-small;
@@ -764,11 +789,11 @@ a.fa:hover {
       .missing p {
         color: @lightgrey;
       }
-
     }
     label {
       display: block;
       margin: 0;
+      word-break: break-word;
     }
     .task-list > li {
       margin-top: 10px;
@@ -783,7 +808,7 @@ a.fa:hover {
   padding: 5px 10px;
   margin: 0;
   background-color: @label-color;
-  color: #FFFFFF;
+  color: #ffffff;
   font-size: @font-small;
   font-weight: bold;
 }
@@ -872,7 +897,7 @@ a.fa:hover {
     }
 
     .sub-actions {
-      background-color: #FFFFFF;
+      background-color: #ffffff;
       height: 56px;
       padding: 0;
       margin: 0 0 1px 0;
@@ -922,7 +947,8 @@ a.fa:hover {
 }
 
 .reports .action-container .actions .mm-icon {
-  &:hover, &.active {
+  &:hover,
+  &.active {
     border-bottom-color: @reports-color;
   }
 }
@@ -938,8 +964,8 @@ a.fa:hover {
 .reporting,
 .about,
 .configuration {
-  background-color: #FFFFFF;
-  border: 1px solid #E0E0E0;
+  background-color: #ffffff;
+  border: 1px solid #e0e0e0;
   border-width: 0 1px;
   overflow-y: auto;
   overflow-x: hidden;
@@ -1004,7 +1030,8 @@ a.fa:hover {
   z-index: 1050;
 }
 
-.select2-results, .select2-choice {
+.select2-results,
+.select2-choice {
   .sender span {
     margin-right: 10px;
   }
@@ -1016,7 +1043,7 @@ a.fa:hover {
   }
 }
 .select2-results .select2-highlighted .sender .position {
-  color: #FFFFFF;
+  color: #ffffff;
 }
 
 .screenshot {
@@ -1033,7 +1060,8 @@ a.fa:hover {
   .fa {
     margin-right: 2px;
   }
-  .circle, .rectangle {
+  .circle,
+  .rectangle {
     display: inline-block;
     background-color: @background-color;
     border: 1px solid @seperator-color;
@@ -1044,9 +1072,10 @@ a.fa:hover {
   .rectangle {
     padding: 5px 10px;
   }
-  .selected .circle, .selected .rectangle {
+  .selected .circle,
+  .selected .rectangle {
     background-color: @ok-color;
-    color: #FFFFFF;
+    color: #ffffff;
   }
 }
 
@@ -1119,7 +1148,8 @@ a.fa:hover {
   margin-top: 30px;
 }
 
-.mobile-only, #mobile-detection {
+.mobile-only,
+#mobile-detection {
   display: none;
 }
 
@@ -1128,20 +1158,20 @@ a.fa:hover {
   iframe {
     height: 470px;
     border: 0;
-    width: 100%
+    width: 100%;
   }
 }
 
 .lineage {
   margin-bottom: 0;
   li:after {
-    content: "\2022"; /* bullet */
+    content: '\2022'; /* bullet */
     padding: 0 5px;
   }
 }
 
 .lineage li:last-child:after {
-  content: "";
+  content: '';
   padding: 0;
 }
 
@@ -1210,7 +1240,8 @@ a.fa:hover {
       position: absolute;
       top: 0;
       .filter-bar-back a {
-        &:hover, &:active {
+        &:hover,
+        &:active {
           color: @label-color;
         }
       }
