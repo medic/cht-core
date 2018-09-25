@@ -255,6 +255,8 @@ angular
     };
 
     $scope.search = function() {
+      $state.go('reports.detail', { id: null }, { notify: false });
+      clearSelection();
       if ($scope.isMobile() && $scope.showContent) {
         // leave content shown
         return;
@@ -287,12 +289,16 @@ angular
       setRightActionBar();
     });
 
-    $scope.$on('ClearSelected', function() {
+    var clearSelection = function() {
       $scope.selected = [];
       $('#reports-list input[type="checkbox"]').prop('checked', false);
       LiveList.reports.clearSelected();
       LiveList['report-search'].clearSelected();
       $scope.verifyingReport = false;
+    };
+
+    $scope.$on('ClearSelected', function() {
+      clearSelection();
     });
 
     $scope.$on('VerifyReport', function(e, valid) {

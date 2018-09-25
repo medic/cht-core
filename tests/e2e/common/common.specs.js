@@ -1,5 +1,5 @@
 const commonElements = require('../../page-objects/common/common.po.js'),
-      utils = require('../../utils');
+  utils = require('../../utils');
 
 describe('Navigation tests : ', () => {
   beforeEach(utils.beforeEach);
@@ -31,7 +31,6 @@ describe('Navigation tests : ', () => {
   it('should open Analytics or Targets tab', () => {
     commonElements.goToAnalytics();
     expect(browser.getCurrentUrl()).toEqual(utils.getBaseUrl() + 'analytics');
-
   });
 
   it('should open Configuration tab', () => {
