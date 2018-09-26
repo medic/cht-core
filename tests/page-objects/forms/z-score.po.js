@@ -136,6 +136,11 @@ const clearAndFill = (el, value) => {
   el.clear().then(() => el.sendKeys(value));
 };
 
+const clickAndGetValue = el => {
+  el.click();
+  return el.getAttribute('value');
+};
+
 module.exports = {
   configureForm: (contactId, done) => {
     utils.seedTestData(done, contactId, docs);
@@ -185,16 +190,7 @@ module.exports = {
     module.exports.setWeight(patient.weight);
   },
 
-  getHeightForAge: () => {
-    element(by.css('[name="/data/hfa"]')).click();
-    return element(by.css('[name="/data/hfa"]')).getAttribute('value');
-  },
-  getWeightForAge: () => {
-    element(by.css('[name="/data/wfa"]')).click();
-    return element(by.css('[name="/data/wfa"]')).getAttribute('value');
-  },
-  getWeightForHeight: () => {
-    element(by.css('[name="/data/wfh"]')).click();
-    return element(by.css('[name="/data/wfh"]')).getAttribute('value');
-  },
+  getHeightForAge: () => clickAndGetValue(element(by.css('[name="/data/hfa"]'))),
+  getWeightForAge: () => clickAndGetValue(element(by.css('[name="/data/wfa"]'))),
+  getWeightForHeight: () => clickAndGetValue(element(by.css('[name="/data/wfh"]'))),
 };
