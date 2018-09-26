@@ -6,6 +6,7 @@ var getValue = function(resultObject) {
     return resultObject;
   }
 
+  // input fields, evaluated as `UNORDERED_NODE_ITERATOR_TYPE`, are received as arrays with one element
   if (resultObject.t === 'arr' && resultObject.v.length) {
     return resultObject.v[0];
   }
