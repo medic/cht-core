@@ -1,23 +1,20 @@
 const _ = require('underscore'),
-      passwordTester = require('simple-password-tester'),
-      people  = require('../controllers/people'),
-      places = require('../controllers/places'),
-      config = require('../config'),
-      db = require('../db-pouch'),
-      lineage = require('lineage')(Promise, db.medic),
-      getRoles = require('./types-and-roles');
+  passwordTester = require('simple-password-tester'),
+  people = require('../controllers/people'),
+  places = require('../controllers/places'),
+  config = require('../config'),
+  db = require('../db-pouch'),
+  lineage = require('lineage')(Promise, db.medic),
+  getRoles = require('./types-and-roles');
 
 const USER_PREFIX = 'org.couchdb.user:';
 const ONLINE_ROLE = 'mm-online';
 
 const PASSWORD_MINIMUM_LENGTH = 8,
-      PASSWORD_MINIMUM_SCORE = 50,
-      USERNAME_WHITELIST = /^[a-z0-9_-]+$/;
+  PASSWORD_MINIMUM_SCORE = 50,
+  USERNAME_WHITELIST = /^[a-z0-9_-]+$/;
 
-const RESTRICTED_USER_EDITABLE_FIELDS = [
-  'password',
-  'known'
-];
+const RESTRICTED_USER_EDITABLE_FIELDS = ['password', 'known'];
 
 const USER_EDITABLE_FIELDS = RESTRICTED_USER_EDITABLE_FIELDS.concat([
   'place',
@@ -41,11 +38,14 @@ const SETTINGS_EDITABLE_FIELDS = RESTRICTED_SETTINGS_EDITABLE_FIELDS.concat([
   'roles',
 ]);
 
-const ALLOWED_RESTRICTED_EDITABLE_FIELDS =
-  RESTRICTED_SETTINGS_EDITABLE_FIELDS.concat(RESTRICTED_USER_EDITABLE_FIELDS);
+const ALLOWED_RESTRICTED_EDITABLE_FIELDS = RESTRICTED_SETTINGS_EDITABLE_FIELDS.concat(
+  RESTRICTED_USER_EDITABLE_FIELDS
+);
 
 const illegalDataModificationAttempts = data =>
-  Object.keys(data).filter(k => !ALLOWED_RESTRICTED_EDITABLE_FIELDS.includes(k));
+  Object.keys(data).filter(
+    k => !ALLOWED_RESTRICTED_EDITABLE_FIELDS.includes(k)
+  );
 
 /*
  * Set error codes to 400 to minimize 500 errors and stacktraces in the logs.
@@ -59,7 +59,7 @@ const getType = user => {
   return 'unknown';
 };
 
-const getDoc = (id, docs) =>  _.findWhere(docs, { _id: id });
+const getDoc = (id, docs) => _.findWhere(docs, { _id: id });
 
 const getDocID = doc => {
   if (_.isString(doc)) {
@@ -73,57 +73,56 @@ const getDocID = doc => {
 const getAllUserSettings = () => {
   const opts = {
     include_docs: true,
-    key: ['user-settings']
+    key: ['user-settings'],
   };
-  return db.medic.query('medic-client/doc_by_type', opts)
+  return db.medic
+    .query('medic-client/doc_by_type', opts)
     .then(result => result.rows.map(row => row.doc));
 };
 
 const getAllUsers = () => {
-  return db.users.allDocs({ include_docs: true })
-    .then(result => result.rows);
+  return db.users.allDocs({ include_docs: true }).then(result => result.rows);
 };
 
 const getFacilities = () => {
-  return db.medic.query('medic-client/contacts_by_type', { include_docs: true })
+  return db.medic
+    .query('medic-client/contacts_by_type', { include_docs: true })
     .then(result => result.rows.map(row => row.doc));
 };
 
 const validateContact = (id, placeID) => {
-  return db.medic.get(id)
-    .then(doc => {
-      if (doc.type !== 'person') {
-        return Promise.reject(error400('Wrong type, contact is not a person.'));
-      }
-      if (!module.exports._hasParent(doc, placeID)) {
-        return Promise.reject(error400('Contact is not within place.'));
-      }
-      return doc;
-    });
+  return db.medic.get(id).then(doc => {
+    if (doc.type !== 'person') {
+      return Promise.reject(error400('Wrong type, contact is not a person.'));
+    }
+    if (!module.exports._hasParent(doc, placeID)) {
+      return Promise.reject(error400('Contact is not within place.'));
+    }
+    return doc;
+  });
 };
 
 const validateUser = id => {
-  return db.users.get(id)
-    .catch(err => {
-      if (err.status === 404) {
-        err.message = 'Failed to find user.';
-      }
-      return Promise.reject(err);
-    });
+  return db.users.get(id).catch(err => {
+    if (err.status === 404) {
+      err.message = 'Failed to find user.';
+    }
+    return Promise.reject(err);
+  });
 };
 
 const validateUserSettings = id => {
-  return db.medic.get(id)
-    .catch(err => {
-      if (err.status === 404) {
-        err.message = 'Failed to find user settings.';
-      }
-      return Promise.reject(err);
-    });
+  return db.medic.get(id).catch(err => {
+    if (err.status === 404) {
+      err.message = 'Failed to find user settings.';
+    }
+    return Promise.reject(err);
+  });
 };
 
 const validateNewUsernameForDb = (username, database) => {
-  return database.get(createID(username))
+  return database
+    .get(createID(username))
     .catch(err => {
       if (err.status === 404) {
         // username not found - it's valid.
@@ -135,18 +134,30 @@ const validateNewUsernameForDb = (username, database) => {
     })
     .then(user => {
       if (user) {
-        return Promise.reject(error400('Username "' + username + '" already taken.'));
+        return Promise.reject(
+          error400(
+            config.translate('User Name') +
+              ' "' +
+              username +
+              '" ' +
+              config.translate('already taken')
+          )
+        );
       }
     });
 };
 
 const validateNewUsername = username => {
   if (!USERNAME_WHITELIST.test(username)) {
-    return Promise.reject(error400('Invalid user name. Valid characters are lower case letters, numbers, underscore (_), and hyphen (-).'));
+    return Promise.reject(
+      error400(
+        'Invalid user name. Valid characters are lower case letters, numbers, underscore (_), and hyphen (-).'
+      )
+    );
   }
   return Promise.all([
     validateNewUsernameForDb(username, db.users),
-    validateNewUsernameForDb(username, db.medic)
+    validateNewUsernameForDb(username, db.medic),
   ]);
 };
 
@@ -156,7 +167,7 @@ const createUser = (data, response) => {
   return db.users.put(user).then(body => {
     response.user = {
       id: body.id,
-      rev: body.rev
+      rev: body.rev,
     };
   });
 };
@@ -169,7 +180,7 @@ const createContact = (data, response) => {
     data.contact = doc;
     response.contact = {
       id: doc._id,
-      rev: doc._rev
+      rev: doc._rev,
     };
   });
 };
@@ -180,7 +191,7 @@ const createUserSettings = (data, response) => {
   return db.medic.put(settings).then(body => {
     response['user-settings'] = {
       id: body.id,
-      rev: body.rev
+      rev: body.rev,
     };
   });
 };
@@ -213,25 +224,23 @@ const setContactParent = data => {
   if (contactId) {
     // assigning to existing contact
     const placeId = getDocID(data.place);
-    return validateContact(contactId, placeId)
-      .catch(err => {
-        if (err.status !== 404) {
-          return Promise.reject(err);
-        }
-        // try creating the user
-        data.contact.parent = lineage.minifyLineage(data.place);
-      });
+    return validateContact(contactId, placeId).catch(err => {
+      if (err.status !== 404) {
+        return Promise.reject(err);
+      }
+      // try creating the user
+      data.contact.parent = lineage.minifyLineage(data.place);
+    });
   }
   if (data.contact.parent) {
     // contact parent must exist
-    return places.getPlace(data.contact.parent)
-      .then(place => {
-        if (!module.exports._hasParent(place, data.place)) {
-          return Promise.reject(error400('Contact is not within place.'));
-        }
-        // save result to contact object
-        data.contact.parent = lineage.minifyLineage(place);
-      });
+    return places.getPlace(data.contact.parent).then(place => {
+      if (!module.exports._hasParent(place, data.place)) {
+        return Promise.reject(error400('Contact is not within place.'));
+      }
+      // save result to contact object
+      data.contact.parent = lineage.minifyLineage(place);
+    });
   }
   // creating new contact
   data.contact.parent = lineage.minifyLineage(data.place);
@@ -263,25 +272,23 @@ const hasParent = (facility, id) => {
  */
 const mapUsers = (users, settings, facilities) => {
   users = users || [];
-  return users
-    .filter(user => user.id.indexOf(USER_PREFIX) === 0)
-    .map(user => {
-      const setting = getDoc(user.id, settings) || {};
-      return {
-        id: user.id,
-        rev: user.doc._rev,
-        username: user.doc.name,
-        fullname: setting.fullname,
-        email: setting.email,
-        phone: setting.phone,
-        place: getDoc(user.doc.facility_id, facilities),
-        type: getType(user.doc),
-        language: { code: setting.language },
-        contact: getDoc(setting.contact_id, facilities),
-        external_id: setting.external_id,
-        known: user.doc.known
-      };
-    });
+  return users.filter(user => user.id.indexOf(USER_PREFIX) === 0).map(user => {
+    const setting = getDoc(user.id, settings) || {};
+    return {
+      id: user.id,
+      rev: user.doc._rev,
+      username: user.doc.name,
+      fullname: setting.fullname,
+      email: setting.email,
+      phone: setting.phone,
+      place: getDoc(user.doc.facility_id, facilities),
+      type: getType(user.doc),
+      language: { code: setting.language },
+      contact: getDoc(setting.contact_id, facilities),
+      external_id: setting.external_id,
+      known: user.doc.known,
+    };
+  });
 };
 
 const isOffline = roles => {
@@ -294,7 +301,7 @@ const getSettingsUpdates = (username, data) => {
 
   const settings = {
     name: username,
-    type: 'user-settings'
+    type: 'user-settings',
   };
 
   SETTINGS_EDITABLE_FIELDS.forEach(key => {
@@ -337,7 +344,7 @@ const getUserUpdates = (username, data) => {
 
   const user = {
     name: username,
-    type: 'user'
+    type: 'user',
   };
 
   USER_EDITABLE_FIELDS.forEach(key => {
@@ -375,15 +382,19 @@ const deleteUser = id => {
     user._deleted = true;
     return db.medic.put(user);
   });
-  return Promise.all([ usersDbPromise, medicDbPromise ]);
+  return Promise.all([usersDbPromise, medicDbPromise]);
 };
 
 const validatePassword = password => {
   if (password.length < PASSWORD_MINIMUM_LENGTH) {
-    return error400(`The password must be at least ${PASSWORD_MINIMUM_LENGTH} characters long.`);
+    return error400(
+      `The password must be at least ${PASSWORD_MINIMUM_LENGTH} characters long.`
+    );
   }
   if (passwordTester(password) < PASSWORD_MINIMUM_SCORE) {
-    return error400('The password is too easy to guess. Include a range of types of characters to increase the score.');
+    return error400(
+      'The password is too easy to guess. Include a range of types of characters to increase the score.'
+    );
   }
 };
 
@@ -414,7 +425,10 @@ const getUpdatedUserDoc = (username, data) => {
 const getUpdatedSettingsDoc = (username, data) => {
   const userID = createID(username);
   return module.exports._validateUserSettings(userID).then(doc => {
-    const settings = _.extend(doc, module.exports._getSettingsUpdates(username, data));
+    const settings = _.extend(
+      doc,
+      module.exports._getSettingsUpdates(username, data)
+    );
     settings._id = userID;
     return settings;
   });
@@ -429,7 +443,7 @@ module.exports = {
   _createContact: createContact,
   _createPlace: createPlace,
   _createUserSettings: createUserSettings,
-  _getType : getType,
+  _getType: getType,
   _getAllUsers: getAllUsers,
   _getAllUserSettings: getAllUserSettings,
   _getFacilities: getFacilities,
@@ -448,11 +462,10 @@ module.exports = {
     return Promise.all([
       module.exports._getAllUsers(),
       module.exports._getAllUserSettings(),
-      module.exports._getFacilities()
-    ])
-      .then(([ users, settings, facilities ]) => {
-        return mapUsers(users, settings, facilities);
-      });
+      module.exports._getFacilities(),
+    ]).then(([users, settings, facilities]) => {
+      return mapUsers(users, settings, facilities);
+    });
   },
   /*
    * Take the request data and create valid user, user-settings and contact
@@ -464,14 +477,17 @@ module.exports = {
   createUser: data => {
     const missing = missingFields(data);
     if (missing.length > 0) {
-      return Promise.reject(error400('Missing required fields: ' + missing.join(', ')));
+      return Promise.reject(
+        error400('Missing required fields: ' + missing.join(', '))
+      );
     }
     const passwordError = validatePassword(data.password);
     if (passwordError) {
       return Promise.reject(passwordError);
     }
     const response = {};
-    return module.exports._validateNewUsername(data.username)
+    return module.exports
+      ._validateNewUsername(data.username)
       .then(() => module.exports._createPlace(data))
       .then(() => module.exports._setContactParent(data))
       .then(() => module.exports._createContact(data, response))
@@ -502,7 +518,9 @@ module.exports = {
     if (!fullAccess) {
       const illegalAttempts = illegalDataModificationAttempts(data);
       if (illegalAttempts.length) {
-        const err = Error('You do not have permission to modify: ' + illegalAttempts.join(','));
+        const err = Error(
+          'You do not have permission to modify: ' + illegalAttempts.join(',')
+        );
         err.status = 401;
         return Promise.reject(err);
       }
@@ -511,11 +529,16 @@ module.exports = {
     const props = _.uniq(USER_EDITABLE_FIELDS.concat(SETTINGS_EDITABLE_FIELDS));
 
     // Online users can remove place or contact
-    if (!_.isNull(data.place) &&
-        !_.isNull(data.contact) &&
-        !_.some(props, key => (!_.isNull(data[key]) && !_.isUndefined(data[key])))
+    if (
+      !_.isNull(data.place) &&
+      !_.isNull(data.contact) &&
+      !_.some(props, key => !_.isNull(data[key]) && !_.isUndefined(data[key]))
     ) {
-      return Promise.reject(error400('One of the following fields are required: ' + props.join(', ')));
+      return Promise.reject(
+        error400(
+          'One of the following fields are required: ' + props.join(', ')
+        )
+      );
     }
     if (data.password) {
       const passwordError = validatePassword(data.password);
@@ -527,48 +550,54 @@ module.exports = {
     return Promise.all([
       getUpdatedUserDoc(username, data),
       getUpdatedSettingsDoc(username, data),
-    ])
-      .then(([ user, settings ]) => {
-        const response = {};
+    ]).then(([user, settings]) => {
+      const response = {};
 
-        return Promise.resolve()
-          .then(() => {
-            if (data.place) {
-              settings.facility_id = user.facility_id;
-              return places.getPlace(user.facility_id);
-            } else if (_.isNull(data.place)) {
-              if (settings.roles && isOffline(settings.roles)) {
-                return Promise.reject(error400('Place field is required for offline users'));
-              }
-              user.facility_id = null;
-              settings.facility_id = null;
+      return Promise.resolve()
+        .then(() => {
+          if (data.place) {
+            settings.facility_id = user.facility_id;
+            return places.getPlace(user.facility_id);
+          } else if (_.isNull(data.place)) {
+            if (settings.roles && isOffline(settings.roles)) {
+              return Promise.reject(
+                error400('Place field is required for offline users')
+              );
             }
-          })
-          .then(() => {
-            if (data.contact) {
-              return module.exports._validateContact(settings.contact_id, user.facility_id);
-            } else if (_.isNull(data.contact)) {
-              if (settings.roles && isOffline(settings.roles)) {
-                return Promise.reject(error400('Contact field is required for offline users'));
-              }
-              settings.contact_id = null;
+            user.facility_id = null;
+            settings.facility_id = null;
+          }
+        })
+        .then(() => {
+          if (data.contact) {
+            return module.exports._validateContact(
+              settings.contact_id,
+              user.facility_id
+            );
+          } else if (_.isNull(data.contact)) {
+            if (settings.roles && isOffline(settings.roles)) {
+              return Promise.reject(
+                error400('Contact field is required for offline users')
+              );
             }
-          })
-          .then(() => db.users.put(user))
-          .then(resp => {
-            response.user = {
-              id: resp.id,
-              rev: resp.rev
-            };
-          })
-          .then(() => db.medic.put(settings))
-          .then(resp => {
-            response['user-settings'] = {
-              id: resp.id,
-              rev: resp.rev
-            };
-          })
-          .then(() => response);
-      });
-  }
+            settings.contact_id = null;
+          }
+        })
+        .then(() => db.users.put(user))
+        .then(resp => {
+          response.user = {
+            id: resp.id,
+            rev: resp.rev,
+          };
+        })
+        .then(() => db.medic.put(settings))
+        .then(resp => {
+          response['user-settings'] = {
+            id: resp.id,
+            rev: resp.rev,
+          };
+        })
+        .then(() => response);
+    });
+  },
 };
