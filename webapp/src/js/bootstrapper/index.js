@@ -47,7 +47,6 @@
   };
 
   var initialReplication = function(localDb, remoteDb) {
-    setUxStatus(BootstrapTranslator.LOAD_APP);
     var dbSyncStartTime = Date.now();
     var dbSyncStartData = getDataUsage();
     var replicator = localDb.replicate
@@ -144,6 +143,7 @@
     getDdoc(localDb)
       .then(function() {
         // ddoc found - bootstrap immediately
+        setUxStatus(BootstrapTranslator.LOAD_RULES);
         localDb.close();
         callback();
       })

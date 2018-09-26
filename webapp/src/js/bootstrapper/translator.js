@@ -39,7 +39,7 @@ function Translator(locale, translationData) {
   };
 }
 
-// Defines and exports Translator.LOAD_ASSETS as static public var ants
+// Exposes keys from Translations (eg. Translator.LOAD_ASSETS) as static public
 Object.keys(TRANSLATIONS.en).forEach(function (key) {
   Translator[key] = key;
 });
