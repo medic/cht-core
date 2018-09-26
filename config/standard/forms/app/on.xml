@@ -3,8 +3,293 @@
   <h:head>
     <h:title>Turn Notifications ON</h:title>
     <model>
+      <itext>
+        <translation lang="fr">
+          <text id="/on/inputs/source:label">
+            <value>-</value>
+          </text>
+          <text id="/on/chw_sms:label">
+            <value>-</value>
+          </text>
+          <text id="/on/inputs/contact/sex:label">
+            <value>-</value>
+          </text>
+          <text id="/on/inputs/contact/parent/contact/name:label">
+            <value>-</value>
+          </text>
+          <text id="/on/group_note/send_note/yes:label">
+            <value>Oui</value>
+          </text>
+          <text id="/on/inputs:label">
+            <value>-</value>
+          </text>
+          <text id="/on/group_note/chw_note:label">
+            <value>-</value>
+          </text>
+          <text id="/on/inputs/contact/patient_id:label">
+            <value>-</value>
+          </text>
+          <text id="/on/group_note/pregnancy_note:label">
+            <value>-</value>
+          </text>
+          <text id="/on/group_note/send_note:label">
+            <value>-</value>
+          </text>
+          <text id="/on/chw_name:label">
+            <value>-</value>
+          </text>
+          <text id="/on/inputs/contact/parent/contact/phone:label">
+            <value>-</value>
+          </text>
+          <text id="/on/inputs/source_id:label">
+            <value>-</value>
+          </text>
+          <text id="/on/patient_uuid:label">
+            <value>-</value>
+          </text>
+          <text id="/on/group_note:label">
+            <value>-</value>
+          </text>
+          <text id="/on/chw_phone:label">
+            <value>-</value>
+          </text>
+          <text id="/on/inputs/contact/name:label">
+            <value>-</value>
+          </text>
+          <text id="/on/group_note/send_note/no:label">
+            <value>Non</value>
+          </text>
+          <text id="/on/patient_id:label">
+            <value>-</value>
+          </text>
+          <text id="/on/patient_name:label">
+            <value>-</value>
+          </text>
+          <text id="/on/inputs/contact/date_of_birth:label">
+            <value>-</value>
+          </text>
+          <text id="/on/inputs/contact/_id:label">
+            <value>-</value>
+          </text>
+          <text id="/on/inputs/contact/_id:hint">
+            <value>-</value>
+          </text>
+        </translation>
+        <translation lang="hi">
+          <text id="/on/inputs/source:label">
+            <value>-</value>
+          </text>
+          <text id="/on/chw_sms:label">
+            <value>-</value>
+          </text>
+          <text id="/on/inputs/contact/sex:label">
+            <value>-</value>
+          </text>
+          <text id="/on/inputs/contact/parent/contact/name:label">
+            <value>-</value>
+          </text>
+          <text id="/on/group_note/send_note/yes:label">
+            <value>हाँ</value>
+          </text>
+          <text id="/on/inputs:label">
+            <value>-</value>
+          </text>
+          <text id="/on/group_note/chw_note:label">
+            <value>-</value>
+          </text>
+          <text id="/on/inputs/contact/patient_id:label">
+            <value>-</value>
+          </text>
+          <text id="/on/group_note/pregnancy_note:label">
+            <value>-</value>
+          </text>
+          <text id="/on/group_note/send_note:label">
+            <value>-</value>
+          </text>
+          <text id="/on/chw_name:label">
+            <value>-</value>
+          </text>
+          <text id="/on/inputs/contact/parent/contact/phone:label">
+            <value>-</value>
+          </text>
+          <text id="/on/inputs/source_id:label">
+            <value>-</value>
+          </text>
+          <text id="/on/patient_uuid:label">
+            <value>-</value>
+          </text>
+          <text id="/on/group_note:label">
+            <value>-</value>
+          </text>
+          <text id="/on/chw_phone:label">
+            <value>-</value>
+          </text>
+          <text id="/on/inputs/contact/name:label">
+            <value>-</value>
+          </text>
+          <text id="/on/group_note/send_note/no:label">
+            <value>नहीं</value>
+          </text>
+          <text id="/on/patient_id:label">
+            <value>-</value>
+          </text>
+          <text id="/on/patient_name:label">
+            <value>-</value>
+          </text>
+          <text id="/on/inputs/contact/date_of_birth:label">
+            <value>-</value>
+          </text>
+          <text id="/on/inputs/contact/_id:label">
+            <value>-</value>
+          </text>
+          <text id="/on/inputs/contact/_id:hint">
+            <value>-</value>
+          </text>
+        </translation>
+        <translation lang="en">
+          <text id="/on/inputs/source:label">
+            <value>Source</value>
+          </text>
+          <text id="/on/chw_sms:label">
+            <value>Note to the CHW</value>
+          </text>
+          <text id="/on/inputs/contact/sex:label">
+            <value>Sex</value>
+          </text>
+          <text id="/on/inputs/contact/parent/contact/name:label">
+            <value>CHW Name</value>
+          </text>
+          <text id="/on/group_note/send_note/yes:label">
+            <value>Yes</value>
+          </text>
+          <text id="/on/inputs:label">
+            <value>Patient</value>
+          </text>
+          <text id="/on/group_note/chw_note:label">
+            <value>Enter short message to be sent</value>
+          </text>
+          <text id="/on/inputs/contact/patient_id:label">
+            <value>Patient ID</value>
+          </text>
+          <text id="/on/group_note/pregnancy_note:label">
+            <value>An SMS will automatically be sent to <output value=" /on/chw_name "/> (<output value=" /on/chw_phone "/>) to inform them that reminders are turned ON for <output value=" /on/patient_name "/></value></text>
+          <text id="/on/patient_id:label">
+            <value>Patient ID</value>
+          </text>
+          <text id="/on/group_note/send_note:label">
+            <value>Write additional info to send to the CHW?</value>
+          </text>
+          <text id="/on/chw_name:label">
+            <value>CHW Name</value>
+          </text>
+          <text id="/on/inputs/contact/parent/contact/phone:label">
+            <value>CHW Phone</value>
+          </text>
+          <text id="/on/inputs/source_id:label">
+            <value>Source ID</value>
+          </text>
+          <text id="/on/patient_uuid:label">
+            <value>Patient UUID</value>
+          </text>
+          <text id="/on/group_note:label">
+            <value>Turning Notifications ON</value>
+          </text>
+          <text id="/on/chw_phone:label">
+            <value>CHW Phone</value>
+          </text>
+          <text id="/on/inputs/contact/name:label">
+            <value>Name</value>
+          </text>
+          <text id="/on/group_note/send_note/no:label">
+            <value>No</value>
+          </text>
+          <text id="/on/inputs/contact/_id:hint">
+            <value>Select a person from list</value>
+          </text>
+          <text id="/on/patient_name:label">
+            <value>Patient Name</value>
+          </text>
+          <text id="/on/inputs/contact/date_of_birth:label">
+            <value>Date of Birth</value>
+          </text>
+          <text id="/on/inputs/contact/_id:label">
+            <value>What is the patient's name?</value>
+          </text>
+        </translation>
+        <translation lang="id">
+          <text id="/on/inputs/source:label">
+            <value>-</value>
+          </text>
+          <text id="/on/chw_sms:label">
+            <value>-</value>
+          </text>
+          <text id="/on/inputs/contact/sex:label">
+            <value>-</value>
+          </text>
+          <text id="/on/inputs/contact/parent/contact/name:label">
+            <value>-</value>
+          </text>
+          <text id="/on/group_note/send_note/yes:label">
+            <value>Iya</value>
+          </text>
+          <text id="/on/inputs:label">
+            <value>-</value>
+          </text>
+          <text id="/on/group_note/chw_note:label">
+            <value>-</value>
+          </text>
+          <text id="/on/inputs/contact/patient_id:label">
+            <value>-</value>
+          </text>
+          <text id="/on/group_note/pregnancy_note:label">
+            <value>-</value>
+          </text>
+          <text id="/on/group_note/send_note:label">
+            <value>-</value>
+          </text>
+          <text id="/on/chw_name:label">
+            <value>-</value>
+          </text>
+          <text id="/on/inputs/contact/parent/contact/phone:label">
+            <value>-</value>
+          </text>
+          <text id="/on/inputs/source_id:label">
+            <value>-</value>
+          </text>
+          <text id="/on/patient_uuid:label">
+            <value>-</value>
+          </text>
+          <text id="/on/group_note:label">
+            <value>-</value>
+          </text>
+          <text id="/on/chw_phone:label">
+            <value>-</value>
+          </text>
+          <text id="/on/inputs/contact/name:label">
+            <value>-</value>
+          </text>
+          <text id="/on/group_note/send_note/no:label">
+            <value>Tidak</value>
+          </text>
+          <text id="/on/patient_id:label">
+            <value>-</value>
+          </text>
+          <text id="/on/patient_name:label">
+            <value>-</value>
+          </text>
+          <text id="/on/inputs/contact/date_of_birth:label">
+            <value>-</value>
+          </text>
+          <text id="/on/inputs/contact/_id:label">
+            <value>-</value>
+          </text>
+          <text id="/on/inputs/contact/_id:hint">
+            <value>-</value>
+          </text>
+        </translation>
+      </itext>
       <instance>
-        <on delimiter="#" id="on" prefix="J1!on!" version="2016-12-21">
+        <on delimiter="#" id="on" prefix="J1!on!" version="2018-09-26_07-28">
           <inputs tag="hidden">
             <meta>
               <location>
@@ -71,59 +356,60 @@
   </h:head>
   <h:body class="pages">
     <group appearance="field-list" ref="/on/inputs">
-      <label>Patient</label>
+      <label ref="jr:itext('/on/inputs:label')"/>
       <input appearance="hidden" ref="/on/inputs/source">
-        <label>Source</label>
+        <label ref="jr:itext('/on/inputs/source:label')"/>
       </input>
       <input appearance="hidden" ref="/on/inputs/source_id">
-        <label>Source ID</label>
+        <label ref="jr:itext('/on/inputs/source_id:label')"/>
       </input>
       <group ref="/on/inputs/contact">
         <input appearance="db-object" ref="/on/inputs/contact/_id">
-          <label>What is the patient's name?</label>
-          <hint>Select a person from list</hint>
+          <label ref="jr:itext('/on/inputs/contact/_id:label')"/>
+          <hint ref="jr:itext('/on/inputs/contact/_id:hint')"/>
         </input>
         <input appearance="hidden" ref="/on/inputs/contact/patient_id">
-          <label>Patient ID</label>
+          <label ref="jr:itext('/on/inputs/contact/patient_id:label')"/>
         </input>
         <input appearance="hidden" ref="/on/inputs/contact/name">
-          <label>Name</label>
+          <label ref="jr:itext('/on/inputs/contact/name:label')"/>
         </input>
         <input appearance="hidden" ref="/on/inputs/contact/date_of_birth">
-          <label>Date of Birth</label>
+          <label ref="jr:itext('/on/inputs/contact/date_of_birth:label')"/>
         </input>
         <input appearance="hidden" ref="/on/inputs/contact/sex">
-          <label>Sex</label>
+          <label ref="jr:itext('/on/inputs/contact/sex:label')"/>
         </input>
         <group ref="/on/inputs/contact/parent">
           <group ref="/on/inputs/contact/parent/contact">
             <input appearance="hidden" ref="/on/inputs/contact/parent/contact/phone">
-              <label>CHW Phone</label>
+              <label ref="jr:itext('/on/inputs/contact/parent/contact/phone:label')"/>
             </input>
             <input appearance="hidden" ref="/on/inputs/contact/parent/contact/name">
-              <label>CHW Name</label>
+              <label ref="jr:itext('/on/inputs/contact/parent/contact/name:label')"/>
             </input>
           </group>
         </group>
       </group>
     </group>
     <group appearance="field-list" ref="/on/group_note">
-      <label>Turning Notifications ON</label>
+      <label ref="jr:itext('/on/group_note:label')"/>
       <input ref="/on/group_note/pregnancy_note">
-        <label>An SMS will automatically be sent to <output value=" /on/chw_name "/> (<output value=" /on/chw_phone "/>) to inform them that reminders are turned ON for <output value=" /on/patient_name "/></label></input>
+        <label ref="jr:itext('/on/group_note/pregnancy_note:label')"/>
+      </input>
       <select1 ref="/on/group_note/send_note">
-        <label>Write additional info to send to the CHW?</label>
+        <label ref="jr:itext('/on/group_note/send_note:label')"/>
         <item>
-          <label>Yes</label>
+          <label ref="jr:itext('/on/group_note/send_note/yes:label')"/>
           <value>yes</value>
         </item>
         <item>
-          <label>No</label>
+          <label ref="jr:itext('/on/group_note/send_note/no:label')"/>
           <value>no</value>
         </item>
       </select1>
       <input appearance="multiline" ref="/on/group_note/chw_note">
-        <label>Enter short message to be sent</label>
+        <label ref="jr:itext('/on/group_note/chw_note:label')"/>
       </input>
     </group>
   </h:body>
