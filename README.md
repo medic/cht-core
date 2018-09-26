@@ -50,27 +50,23 @@ NB: multiple CouchDB nodes will be more complicated, but the general pattern out
 
 By default CouchDB runs in "admin party" mode, which means you do not need users to read or edit any data. This is great for some, but to use Medic safely we're going to disable this feature.
 
-First, add an admin user:
+First, add an admin user. When prompted to create an admin during installation, use username:`admin` and password:`pass`. Passwords can be changed via [Fauxton](http://localhost:5984/_utils). For more information see the [CouchDB install doc](http://docs.couchdb.org/en/2.0.0/install/).
 
-- If you are running CouchDB 2.x there is a wizard in Fauxton that does this for you, as well as initialising some databases. For more information see the [CouchDB install doc](http://docs.couchdb.org/en/2.0.0/install/).
-- If you are running CouchDB 1.x, run the following command to add an admin user:
+Now that's done, we must reconfigure CouchDB to require authentication. To be able to use Fauxton with authenticated users:
 
 ```shell
-curl -X PUT http://localhost:5984/_config/admins/admin -d '"pass"'
+curl -X PUT http://admin:pass@localhost:5986/_config/httpd/WWW-Authenticate \
+  -d '"Basic realm=\"administrator\""' -H "Content-Type: application/json"
 ```
 
-Now that's done, we must reconfigure CouchDB to require authentication:
+Configure CouchDB to require authentication:
 
 ```shell
-# CouchDB 1.6
-curl -X PUT http://admin:pass@localhost:5984/_config/couch_httpd_auth/require_valid_user \
-  -d '"true"' -H "Content-Type: application/json"
-# CouchDB 2.0
 curl -X PUT http://admin:pass@localhost:5986/_config/chttpd/require_valid_user \
   -d '"true"' -H "Content-Type: application/json"
 ```
 
-Then create an actual admin user (note the username and password are the same as the admin user you created in the first step of this section):
+Then create an actual admin user:
 
 ```shell
 curl -X POST http://admin:pass@localhost:5984/_users \
@@ -81,9 +77,9 @@ curl -X POST http://admin:pass@localhost:5984/_users \
 After following these steps CouchDB should no longer allow unauthorised access:
 
 ```shell
-$ curl http://admin:pass@localhost:5984 # should work
+curl http://admin:pass@localhost:5984 # should work
 {"couchdb":"Welcome","version":"2.0.0","vendor":{"name":"The Apache Software Foundation"}}
-$ curl http://localhost:5984 # should fail
+curl http://localhost:5984 # should fail
 {"error":"unauthorized","reason":"Authentication required."}
 ```
 
@@ -92,7 +88,7 @@ $ curl http://localhost:5984 # should fail
 Our application is larger than CouchDB's default request size, so we must increase it otherwise deployments may fail:
 
 ```shell
-$ curl -X PUT --data '"4294967296"' http://admin:pass@localhost:5984/_node/couchdb@localhost/_config/httpd/max_http_request_size'
+curl -X PUT --data '"4294967296"' http://admin:pass@localhost:5986/_config/httpd/max_http_request_size
 ```
 
 ## Build and run
