@@ -35,8 +35,10 @@
           </div>
 
           <div ng-if="summary.subject.type" class="subject">
-            <span class="name"
+              <a ng-href="#/contacts/{{summary.subject._id || summary.fields.patient_uuid}}">
+                <span class="name"
                   ng-bind="(summary.subject.type === 'name' && summary.subject.value) || summary.subject.name || ('report.subject.unknown' | translate)"></span>
+              </a>
           </div>
           <mm-sender ng-if="!summary.subject.type" message="selection" hide-lineage="true"></mm-sender>
           <div>{{summary | title:forms}}</div>
