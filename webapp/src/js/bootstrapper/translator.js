@@ -1,17 +1,13 @@
 'use strict';
 
-var  TRANSLATIONS = {
+var TRANSLATIONS = {
   en: {
     LOAD_APP:      'Loading app…',
     FETCH_INFO:    function (x) { return 'Fetching info (' + x + ' docs)…'; },
     LOAD_RULES:    'Loading rules…',
     ERROR_MESSAGE: 'Loading error, please check your connection.',
     TRY_AGAIN:     'Try again',
-  },
-  es: {
-    LOAD_RULES:    'Reglas de carga…',
-    FETCH_INFO:    function (x) { return 'Descarga de datos (' + x + ' documentos)…'; },
-  },
+  }
 };
 
 function Translator(locale, translationData) {  
@@ -23,8 +19,8 @@ function Translator(locale, translationData) {
   this.setLocale(locale);
 
   Translator.prototype.translate = function translate(key, arg) {
-    var  locale = this.locale;
-    var  translationData = this.translationData;
+    var locale = this.locale;
+    var translationData = this.translationData;
 
     var lookup =
       (locale && translationData[locale] && translationData[locale][key]) || 
