@@ -1,5 +1,4 @@
 const BootstrapTranslator = require('../../../src/js/bootstrapper/translator'),
-      sinon = require('sinon'),
       { expect } = require('chai');
 
 const translationData = {

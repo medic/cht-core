@@ -4,8 +4,8 @@
 
   var ONLINE_ROLE = 'mm-online';
   
-  const BootstrapTranslator = require('./translator');
-  const translator = new BootstrapTranslator();
+  var  BootstrapTranslator = require('./translator');
+  var  translator = new BootstrapTranslator();
 
   var getUserCtx = function() {
     var userCtx, locale;
@@ -22,8 +22,8 @@
       return;
     }
     try {
-      const parsedCtx = JSON.parse(unescape(decodeURI(userCtx)));
-      return Object.assign(parsedCtx, { locale });
+      var  parsedCtx = JSON.parse(unescape(decodeURI(userCtx)));
+      return Object.assign(parsedCtx, { locale: locale });
     } catch(e) {
       return;
     }
@@ -107,15 +107,15 @@
            hasRole(userCtx, ONLINE_ROLE);
   };
 
-  const setUxStatus = function(translationKey, arg) {
-    const translated = translator.translate(translationKey, arg);
+  var  setUxStatus = function(translationKey, arg) {
+    var  translated = translator.translate(translationKey, arg);
     $('.bootstrap-layer .status').text(translated);
   };
 
-  const setUxError = function() {
-    const errorMessage = translator.translate(BootstrapTranslator.ERROR_MESSAGE);
-    const tryAgain = translator.translate(BootstrapTranslator.TRY_AGAIN);
-    $('.bootstrap-layer').html(`<div><p>${errorMessage}</p><a class="btn btn-primary" href="#" onclick="window.location.reload(false);">${tryAgain}</a></div>`);
+  var  setUxError = function() {
+    var  errorMessage = translator.translate(BootstrapTranslator.ERROR_MESSAGE);
+    var  tryAgain = translator.translate(BootstrapTranslator.TRY_AGAIN);
+    $('.bootstrap-layer').html('<div><p>' + errorMessage + '</p><a class="btn btn-primary" href="#" onclick="window.location.reload(false);">' + tryAgain + '</a></div>');
   };
 
   var getDdoc = function(localDb) {
