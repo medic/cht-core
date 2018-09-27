@@ -216,7 +216,7 @@ const handleReport = (doc, config, callback) => {
 
       addMessagesToDoc(doc, config, registrations);
       addRegistrationToDoc(doc, registrations);
-      if (doc.form == 'V') {
+      if (doc.form === 'V') {
         addMessageUUIDToDoc(doc, registrations, doc.fields.patient_id);
       }
 
