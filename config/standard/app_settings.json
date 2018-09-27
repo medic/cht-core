@@ -335,6 +335,11 @@
         "national_admin",
         "district_admin"
       ]
+    },
+    {
+      "name": "can_view_last_visited_date",
+      "roles": [
+      ]
     }
   ],
   "setup_complete": true,
