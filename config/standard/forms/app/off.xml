@@ -4,175 +4,32 @@
     <h:title>Turn Notifications OFF</h:title>
     <model>
       <itext>
-        <translation lang="fr">
-          <text id="/off/inputs/contact/sex:label">
-            <value>-</value>
-          </text>
-          <text id="/off/group_note/send_note/yes:label">
-            <value>Oui</value>
-          </text>
-          <text id="/off/inputs/contact/name:label">
-            <value>-</value>
-          </text>
-          <text id="/off/group_note:label">
-            <value>-</value>
-          </text>
-          <text id="/off/chw_name:label">
-            <value>-</value>
-          </text>
-          <text id="/off/inputs:label">
-            <value>-</value>
-          </text>
-          <text id="/off/group_note/send_note/no:label">
-            <value>Non</value>
-          </text>
-          <text id="/off/inputs/contact/parent/contact/phone:label">
-            <value>-</value>
-          </text>
-          <text id="/off/inputs/contact/date_of_birth:label">
-            <value>-</value>
-          </text>
-          <text id="/off/inputs/contact/parent/contact/name:label">
-            <value>-</value>
-          </text>
-          <text id="/off/inputs/contact/_id:hint">
-            <value>-</value>
-          </text>
-          <text id="/off/inputs/contact/_id:label">
-            <value>-</value>
-          </text>
-          <text id="/off/chw_sms:label">
-            <value>-</value>
-          </text>
-          <text id="/off/group_note/send_note:label">
-            <value>-</value>
-          </text>
-          <text id="/off/group_note/chw_note:label">
-            <value>-</value>
-          </text>
-          <text id="/off/patient_name:label">
-            <value>-</value>
-          </text>
-          <text id="/off/inputs/source:label">
-            <value>-</value>
-          </text>
-          <text id="/off/chw_phone:label">
-            <value>-</value>
-          </text>
-          <text id="/off/inputs/contact/patient_id:label">
-            <value>-</value>
-          </text>
-          <text id="/off/inputs/source_id:label">
-            <value>-</value>
-          </text>
-          <text id="/off/group_note/pregnancy_note:label">
-            <value>-</value>
-          </text>
-          <text id="/off/patient_uuid:label">
-            <value>-</value>
-          </text>
-          <text id="/off/patient_id:label">
-            <value>-</value>
-          </text>
-        </translation>
-        <translation lang="hi">
-          <text id="/off/inputs/contact/sex:label">
-            <value>-</value>
-          </text>
-          <text id="/off/group_note/send_note/yes:label">
-            <value>हाँ</value>
-          </text>
-          <text id="/off/inputs/contact/name:label">
-            <value>-</value>
-          </text>
-          <text id="/off/group_note:label">
-            <value>-</value>
-          </text>
-          <text id="/off/chw_name:label">
-            <value>-</value>
-          </text>
-          <text id="/off/inputs:label">
-            <value>-</value>
-          </text>
-          <text id="/off/group_note/send_note/no:label">
-            <value>नहीं</value>
-          </text>
-          <text id="/off/inputs/contact/parent/contact/phone:label">
-            <value>-</value>
-          </text>
-          <text id="/off/inputs/contact/date_of_birth:label">
-            <value>-</value>
-          </text>
-          <text id="/off/inputs/contact/parent/contact/name:label">
-            <value>-</value>
-          </text>
-          <text id="/off/inputs/contact/_id:hint">
-            <value>-</value>
-          </text>
-          <text id="/off/inputs/contact/_id:label">
-            <value>-</value>
-          </text>
-          <text id="/off/chw_sms:label">
-            <value>-</value>
-          </text>
-          <text id="/off/group_note/send_note:label">
-            <value>-</value>
-          </text>
-          <text id="/off/group_note/chw_note:label">
-            <value>-</value>
-          </text>
-          <text id="/off/patient_name:label">
-            <value>-</value>
-          </text>
-          <text id="/off/inputs/source:label">
-            <value>-</value>
-          </text>
-          <text id="/off/chw_phone:label">
-            <value>-</value>
-          </text>
-          <text id="/off/inputs/contact/patient_id:label">
-            <value>-</value>
-          </text>
-          <text id="/off/inputs/source_id:label">
-            <value>-</value>
-          </text>
-          <text id="/off/group_note/pregnancy_note:label">
-            <value>-</value>
-          </text>
-          <text id="/off/patient_uuid:label">
-            <value>-</value>
-          </text>
-          <text id="/off/patient_id:label">
-            <value>-</value>
-          </text>
-        </translation>
         <translation lang="en">
-          <text id="/off/inputs/contact/sex:label">
-            <value>Sex</value>
+          <text id="/off/chw_name:label">
+            <value>CHW Name</value>
+          </text>
+          <text id="/off/chw_phone:label">
+            <value>CHW Phone</value>
+          </text>
+          <text id="/off/chw_sms:label">
+            <value>Note to the CHW</value>
+          </text>
+          <text id="/off/group_note/chw_note:label">
+            <value>Enter short message to be sent</value>
+          </text>
+          <text id="/off/group_note/pregnancy_note:label">
+            <value>An SMS will automatically be sent to <output value=" /off/chw_name "/> (<output value=" /off/chw_phone "/>) to inform them that reminders are turned OFF for <output value=" /off/patient_name "/></value></text>
+          <text id="/off/group_note/send_note/no:label">
+            <value>No</value>
           </text>
           <text id="/off/group_note/send_note/yes:label">
             <value>Yes</value>
           </text>
-          <text id="/off/inputs/contact/name:label">
-            <value>Name</value>
+          <text id="/off/group_note/send_note:label">
+            <value>Write additional info to send to the CHW?</value>
           </text>
           <text id="/off/group_note:label">
             <value>Turning Notifications OFF</value>
-          </text>
-          <text id="/off/inputs:label">
-            <value>Patient</value>
-          </text>
-          <text id="/off/patient_id:label">
-            <value>Patient ID</value>
-          </text>
-          <text id="/off/inputs/contact/parent/contact/phone:label">
-            <value>CHW Phone</value>
-          </text>
-          <text id="/off/inputs/contact/date_of_birth:label">
-            <value>Date of Birth</value>
-          </text>
-          <text id="/off/inputs/contact/parent/contact/name:label">
-            <value>CHW Name</value>
           </text>
           <text id="/off/inputs/contact/_id:hint">
             <value>Select a person from list</value>
@@ -180,71 +37,69 @@
           <text id="/off/inputs/contact/_id:label">
             <value>What is the patient's name?</value>
           </text>
-          <text id="/off/chw_sms:label">
-            <value>Note to the CHW</value>
+          <text id="/off/inputs/contact/date_of_birth:label">
+            <value>Date of Birth</value>
           </text>
-          <text id="/off/group_note/send_note:label">
-            <value>Write additional info to send to the CHW?</value>
+          <text id="/off/inputs/contact/name:label">
+            <value>Name</value>
           </text>
-          <text id="/off/chw_name:label">
+          <text id="/off/inputs/contact/parent/contact/name:label">
             <value>CHW Name</value>
           </text>
-          <text id="/off/group_note/chw_note:label">
-            <value>Enter short message to be sent</value>
-          </text>
-          <text id="/off/patient_name:label">
-            <value>Patient Name</value>
-          </text>
-          <text id="/off/inputs/source:label">
-            <value>Source</value>
-          </text>
-          <text id="/off/chw_phone:label">
+          <text id="/off/inputs/contact/parent/contact/phone:label">
             <value>CHW Phone</value>
           </text>
           <text id="/off/inputs/contact/patient_id:label">
             <value>Patient ID</value>
           </text>
+          <text id="/off/inputs/contact/sex:label">
+            <value>Sex</value>
+          </text>
+          <text id="/off/inputs/source:label">
+            <value>Source</value>
+          </text>
           <text id="/off/inputs/source_id:label">
             <value>Source ID</value>
           </text>
-          <text id="/off/group_note/pregnancy_note:label">
-            <value>An SMS will automatically be sent to <output value=" /off/chw_name "/> (<output value=" /off/chw_phone "/>) to inform them that reminders are turned OFF for <output value=" /off/patient_name "/></value></text>
+          <text id="/off/inputs:label">
+            <value>Patient</value>
+          </text>
+          <text id="/off/patient_id:label">
+            <value>Patient ID</value>
+          </text>
+          <text id="/off/patient_name:label">
+            <value>Patient Name</value>
+          </text>
           <text id="/off/patient_uuid:label">
             <value>Patient UUID</value>
           </text>
-          <text id="/off/group_note/send_note/no:label">
-            <value>No</value>
-          </text>
         </translation>
-        <translation lang="id">
-          <text id="/off/inputs/contact/sex:label">
-            <value>-</value>
-          </text>
-          <text id="/off/group_note/send_note/yes:label">
-            <value>Iya</value>
-          </text>
-          <text id="/off/inputs/contact/name:label">
-            <value>-</value>
-          </text>
-          <text id="/off/group_note:label">
-            <value>-</value>
-          </text>
+        <translation lang="es">
           <text id="/off/chw_name:label">
             <value>-</value>
           </text>
-          <text id="/off/inputs:label">
+          <text id="/off/chw_phone:label">
+            <value>-</value>
+          </text>
+          <text id="/off/chw_sms:label">
+            <value>-</value>
+          </text>
+          <text id="/off/group_note/chw_note:label">
+            <value>-</value>
+          </text>
+          <text id="/off/group_note/pregnancy_note:label">
             <value>-</value>
           </text>
           <text id="/off/group_note/send_note/no:label">
-            <value>Tidak</value>
-          </text>
-          <text id="/off/inputs/contact/parent/contact/phone:label">
             <value>-</value>
           </text>
-          <text id="/off/inputs/contact/date_of_birth:label">
+          <text id="/off/group_note/send_note/yes:label">
             <value>-</value>
           </text>
-          <text id="/off/inputs/contact/parent/contact/name:label">
+          <text id="/off/group_note/send_note:label">
+            <value>-</value>
+          </text>
+          <text id="/off/group_note:label">
             <value>-</value>
           </text>
           <text id="/off/inputs/contact/_id:hint">
@@ -253,43 +108,401 @@
           <text id="/off/inputs/contact/_id:label">
             <value>-</value>
           </text>
-          <text id="/off/chw_sms:label">
+          <text id="/off/inputs/contact/date_of_birth:label">
             <value>-</value>
           </text>
-          <text id="/off/group_note/send_note:label">
+          <text id="/off/inputs/contact/name:label">
             <value>-</value>
           </text>
-          <text id="/off/group_note/chw_note:label">
+          <text id="/off/inputs/contact/parent/contact/name:label">
             <value>-</value>
           </text>
-          <text id="/off/patient_name:label">
-            <value>-</value>
-          </text>
-          <text id="/off/inputs/source:label">
-            <value>-</value>
-          </text>
-          <text id="/off/chw_phone:label">
+          <text id="/off/inputs/contact/parent/contact/phone:label">
             <value>-</value>
           </text>
           <text id="/off/inputs/contact/patient_id:label">
             <value>-</value>
           </text>
+          <text id="/off/inputs/contact/sex:label">
+            <value>-</value>
+          </text>
+          <text id="/off/inputs/source:label">
+            <value>-</value>
+          </text>
           <text id="/off/inputs/source_id:label">
             <value>-</value>
           </text>
-          <text id="/off/group_note/pregnancy_note:label">
-            <value>-</value>
-          </text>
-          <text id="/off/patient_uuid:label">
+          <text id="/off/inputs:label">
             <value>-</value>
           </text>
           <text id="/off/patient_id:label">
             <value>-</value>
           </text>
+          <text id="/off/patient_name:label">
+            <value>-</value>
+          </text>
+          <text id="/off/patient_uuid:label">
+            <value>-</value>
+          </text>
+        </translation>
+        <translation lang="fr">
+          <text id="/off/chw_name:label">
+            <value>-</value>
+          </text>
+          <text id="/off/chw_phone:label">
+            <value>-</value>
+          </text>
+          <text id="/off/chw_sms:label">
+            <value>-</value>
+          </text>
+          <text id="/off/group_note/chw_note:label">
+            <value>-</value>
+          </text>
+          <text id="/off/group_note/pregnancy_note:label">
+            <value>-</value>
+          </text>
+          <text id="/off/group_note/send_note/no:label">
+            <value>Non</value>
+          </text>
+          <text id="/off/group_note/send_note/yes:label">
+            <value>Oui</value>
+          </text>
+          <text id="/off/group_note/send_note:label">
+            <value>-</value>
+          </text>
+          <text id="/off/group_note:label">
+            <value>-</value>
+          </text>
+          <text id="/off/inputs/contact/_id:hint">
+            <value>-</value>
+          </text>
+          <text id="/off/inputs/contact/_id:label">
+            <value>-</value>
+          </text>
+          <text id="/off/inputs/contact/date_of_birth:label">
+            <value>-</value>
+          </text>
+          <text id="/off/inputs/contact/name:label">
+            <value>-</value>
+          </text>
+          <text id="/off/inputs/contact/parent/contact/name:label">
+            <value>-</value>
+          </text>
+          <text id="/off/inputs/contact/parent/contact/phone:label">
+            <value>-</value>
+          </text>
+          <text id="/off/inputs/contact/patient_id:label">
+            <value>-</value>
+          </text>
+          <text id="/off/inputs/contact/sex:label">
+            <value>-</value>
+          </text>
+          <text id="/off/inputs/source:label">
+            <value>-</value>
+          </text>
+          <text id="/off/inputs/source_id:label">
+            <value>-</value>
+          </text>
+          <text id="/off/inputs:label">
+            <value>-</value>
+          </text>
+          <text id="/off/patient_id:label">
+            <value>-</value>
+          </text>
+          <text id="/off/patient_name:label">
+            <value>-</value>
+          </text>
+          <text id="/off/patient_uuid:label">
+            <value>-</value>
+          </text>
+        </translation>
+        <translation lang="hi">
+          <text id="/off/chw_name:label">
+            <value>-</value>
+          </text>
+          <text id="/off/chw_phone:label">
+            <value>-</value>
+          </text>
+          <text id="/off/chw_sms:label">
+            <value>-</value>
+          </text>
+          <text id="/off/group_note/chw_note:label">
+            <value>-</value>
+          </text>
+          <text id="/off/group_note/pregnancy_note:label">
+            <value>-</value>
+          </text>
+          <text id="/off/group_note/send_note/no:label">
+            <value>नहीं</value>
+          </text>
+          <text id="/off/group_note/send_note/yes:label">
+            <value>हाँ</value>
+          </text>
+          <text id="/off/group_note/send_note:label">
+            <value>-</value>
+          </text>
+          <text id="/off/group_note:label">
+            <value>-</value>
+          </text>
+          <text id="/off/inputs/contact/_id:hint">
+            <value>-</value>
+          </text>
+          <text id="/off/inputs/contact/_id:label">
+            <value>-</value>
+          </text>
+          <text id="/off/inputs/contact/date_of_birth:label">
+            <value>-</value>
+          </text>
+          <text id="/off/inputs/contact/name:label">
+            <value>-</value>
+          </text>
+          <text id="/off/inputs/contact/parent/contact/name:label">
+            <value>-</value>
+          </text>
+          <text id="/off/inputs/contact/parent/contact/phone:label">
+            <value>-</value>
+          </text>
+          <text id="/off/inputs/contact/patient_id:label">
+            <value>-</value>
+          </text>
+          <text id="/off/inputs/contact/sex:label">
+            <value>-</value>
+          </text>
+          <text id="/off/inputs/source:label">
+            <value>-</value>
+          </text>
+          <text id="/off/inputs/source_id:label">
+            <value>-</value>
+          </text>
+          <text id="/off/inputs:label">
+            <value>-</value>
+          </text>
+          <text id="/off/patient_id:label">
+            <value>-</value>
+          </text>
+          <text id="/off/patient_name:label">
+            <value>-</value>
+          </text>
+          <text id="/off/patient_uuid:label">
+            <value>-</value>
+          </text>
+        </translation>
+        <translation lang="id">
+          <text id="/off/chw_name:label">
+            <value>-</value>
+          </text>
+          <text id="/off/chw_phone:label">
+            <value>-</value>
+          </text>
+          <text id="/off/chw_sms:label">
+            <value>-</value>
+          </text>
+          <text id="/off/group_note/chw_note:label">
+            <value>-</value>
+          </text>
+          <text id="/off/group_note/pregnancy_note:label">
+            <value>-</value>
+          </text>
+          <text id="/off/group_note/send_note/no:label">
+            <value>Tidak</value>
+          </text>
+          <text id="/off/group_note/send_note/yes:label">
+            <value>Iya</value>
+          </text>
+          <text id="/off/group_note/send_note:label">
+            <value>-</value>
+          </text>
+          <text id="/off/group_note:label">
+            <value>-</value>
+          </text>
+          <text id="/off/inputs/contact/_id:hint">
+            <value>-</value>
+          </text>
+          <text id="/off/inputs/contact/_id:label">
+            <value>-</value>
+          </text>
+          <text id="/off/inputs/contact/date_of_birth:label">
+            <value>-</value>
+          </text>
+          <text id="/off/inputs/contact/name:label">
+            <value>-</value>
+          </text>
+          <text id="/off/inputs/contact/parent/contact/name:label">
+            <value>-</value>
+          </text>
+          <text id="/off/inputs/contact/parent/contact/phone:label">
+            <value>-</value>
+          </text>
+          <text id="/off/inputs/contact/patient_id:label">
+            <value>-</value>
+          </text>
+          <text id="/off/inputs/contact/sex:label">
+            <value>-</value>
+          </text>
+          <text id="/off/inputs/source:label">
+            <value>-</value>
+          </text>
+          <text id="/off/inputs/source_id:label">
+            <value>-</value>
+          </text>
+          <text id="/off/inputs:label">
+            <value>-</value>
+          </text>
+          <text id="/off/patient_id:label">
+            <value>-</value>
+          </text>
+          <text id="/off/patient_name:label">
+            <value>-</value>
+          </text>
+          <text id="/off/patient_uuid:label">
+            <value>-</value>
+          </text>
+        </translation>
+        <translation lang="ne">
+          <text id="/off/chw_name:label">
+            <value>-</value>
+          </text>
+          <text id="/off/chw_phone:label">
+            <value>-</value>
+          </text>
+          <text id="/off/chw_sms:label">
+            <value>-</value>
+          </text>
+          <text id="/off/group_note/chw_note:label">
+            <value>-</value>
+          </text>
+          <text id="/off/group_note/pregnancy_note:label">
+            <value>-</value>
+          </text>
+          <text id="/off/group_note/send_note/no:label">
+            <value>-</value>
+          </text>
+          <text id="/off/group_note/send_note/yes:label">
+            <value>-</value>
+          </text>
+          <text id="/off/group_note/send_note:label">
+            <value>-</value>
+          </text>
+          <text id="/off/group_note:label">
+            <value>-</value>
+          </text>
+          <text id="/off/inputs/contact/_id:hint">
+            <value>-</value>
+          </text>
+          <text id="/off/inputs/contact/_id:label">
+            <value>-</value>
+          </text>
+          <text id="/off/inputs/contact/date_of_birth:label">
+            <value>-</value>
+          </text>
+          <text id="/off/inputs/contact/name:label">
+            <value>-</value>
+          </text>
+          <text id="/off/inputs/contact/parent/contact/name:label">
+            <value>-</value>
+          </text>
+          <text id="/off/inputs/contact/parent/contact/phone:label">
+            <value>-</value>
+          </text>
+          <text id="/off/inputs/contact/patient_id:label">
+            <value>-</value>
+          </text>
+          <text id="/off/inputs/contact/sex:label">
+            <value>-</value>
+          </text>
+          <text id="/off/inputs/source:label">
+            <value>-</value>
+          </text>
+          <text id="/off/inputs/source_id:label">
+            <value>-</value>
+          </text>
+          <text id="/off/inputs:label">
+            <value>-</value>
+          </text>
+          <text id="/off/patient_id:label">
+            <value>-</value>
+          </text>
+          <text id="/off/patient_name:label">
+            <value>-</value>
+          </text>
+          <text id="/off/patient_uuid:label">
+            <value>-</value>
+          </text>
+        </translation>
+        <translation lang="sw">
+          <text id="/off/chw_name:label">
+            <value>-</value>
+          </text>
+          <text id="/off/chw_phone:label">
+            <value>-</value>
+          </text>
+          <text id="/off/chw_sms:label">
+            <value>-</value>
+          </text>
+          <text id="/off/group_note/chw_note:label">
+            <value>-</value>
+          </text>
+          <text id="/off/group_note/pregnancy_note:label">
+            <value>-</value>
+          </text>
+          <text id="/off/group_note/send_note/no:label">
+            <value>-</value>
+          </text>
+          <text id="/off/group_note/send_note/yes:label">
+            <value>-</value>
+          </text>
+          <text id="/off/group_note/send_note:label">
+            <value>-</value>
+          </text>
+          <text id="/off/group_note:label">
+            <value>-</value>
+          </text>
+          <text id="/off/inputs/contact/_id:hint">
+            <value>-</value>
+          </text>
+          <text id="/off/inputs/contact/_id:label">
+            <value>-</value>
+          </text>
+          <text id="/off/inputs/contact/date_of_birth:label">
+            <value>-</value>
+          </text>
+          <text id="/off/inputs/contact/name:label">
+            <value>-</value>
+          </text>
+          <text id="/off/inputs/contact/parent/contact/name:label">
+            <value>-</value>
+          </text>
+          <text id="/off/inputs/contact/parent/contact/phone:label">
+            <value>-</value>
+          </text>
+          <text id="/off/inputs/contact/patient_id:label">
+            <value>-</value>
+          </text>
+          <text id="/off/inputs/contact/sex:label">
+            <value>-</value>
+          </text>
+          <text id="/off/inputs/source:label">
+            <value>-</value>
+          </text>
+          <text id="/off/inputs/source_id:label">
+            <value>-</value>
+          </text>
+          <text id="/off/inputs:label">
+            <value>-</value>
+          </text>
+          <text id="/off/patient_id:label">
+            <value>-</value>
+          </text>
+          <text id="/off/patient_name:label">
+            <value>-</value>
+          </text>
+          <text id="/off/patient_uuid:label">
+            <value>-</value>
+          </text>
         </translation>
       </itext>
       <instance>
-        <off delimiter="#" id="off" prefix="J1!off!" version="2018-09-26_07-28">
+        <off delimiter="#" id="off" prefix="J1!off!" version="2018-09-27_07-24">
           <inputs tag="hidden">
             <meta>
               <location>
