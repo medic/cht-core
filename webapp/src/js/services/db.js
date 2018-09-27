@@ -1,7 +1,6 @@
 var _ = require('underscore'),
-  USER_DB_PART = 'user',
-  META_DB_PART = 'meta',
-  TELEMETRY_DB_PART = 'telemetry';
+  USER_DB_SUFFIX = 'user',
+  META_DB_SUFFIX = 'meta';
 
 // Regex to test for characters that are invalid in db names
 // Only lowercase characters (a-z), digits (0-9), and any of the characters _, $, (, ), +, -, and / are allowed.
@@ -34,19 +33,19 @@ angular
       });
     };
 
-    var getDbName = function(remote, suffix) {
+    var getDbName = function(remote, meta) {
       var parts = [];
       if (remote) {
         parts.push(Location.url);
       } else {
         parts.push(Location.dbName);
       }
-      if (!remote || suffix) {
-        parts.push(USER_DB_PART);
+      if (!remote || meta) {
+        parts.push(USER_DB_SUFFIX);
         parts.push(getUsername(remote));
       }
-      if (suffix) {
-        parts.push(suffix);
+      if (meta) {
+        parts.push(META_DB_SUFFIX);
       }
       return parts.join('-');
     };
@@ -64,16 +63,7 @@ angular
       return params;
     };
 
-    var getSuffix = function(options) {
-      if (options.meta) {
-        return META_DB_PART;
-      }
-      if (options.telemetry) {
-        return TELEMETRY_DB_PART;
-      }
-    };
-
-    var constructor = function(options) {
+    var get = function(options) {
       var userCtx = Session.userCtx();
       if (!userCtx) {
         return Session.navigateToLogin();
@@ -81,13 +71,9 @@ angular
       options = options || {};
       _.defaults(options, {
         remote: isOnlineOnly,
+        meta: false,
       });
-
-      if (options.remote && options.telemetry) {
-        throw new Error('We do not support remote telemetry databases');
-      }
-
-      var name = getDbName(options.remote, getSuffix(options));
+      var name = getDbName(options.remote, options.meta);
       if (!cache[name]) {
         var db = pouchDB(name, getParams(options.remote, options.meta));
         cache[name] = db;
@@ -95,14 +81,10 @@ angular
       return cache[name];
     };
 
-    constructor.medic = constructor();
-    constructor.meta = constructor({ meta: true });
-    constructor.telemetry = constructor({ telemetry: true, remote: false });
-
     if (!isOnlineOnly) {
-      constructor().viewCleanup();
-      constructor({ meta: true }).viewCleanup();
+      get({ local: true }).viewCleanup();
+      get({ local: true, meta: true }).viewCleanup();
     }
 
-    return constructor;
+    return get;
   });
