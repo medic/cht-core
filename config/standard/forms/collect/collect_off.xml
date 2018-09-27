@@ -4,63 +4,63 @@
     <h:title>Turn Notifications OFF</h:title>
     <model>
       <itext>
-        <translation lang="हिन्दी (hi)">
-          <text id="/collect_off/review:label">
-            <value>आप ID <output value=" /collect_off/id "/> के लिए सूचनाएं बंद करने के लिए रिपोर्ट भेज रहे हैं, इन नोट्स के साथ: <output value=" /collect_off/r "/></value></text>
-          <text id="/collect_off/id:label">
-            <value>मरीज का ID</value>
-          </text>
-          <text id="/collect_off/r:label">
-            <value>नोट्स</value>
-          </text>
-        </translation>
-        <translation lang="Français (fr)">
-          <text id="/collect_off/review:label">
-            <value>Envoi d'un rapport pour désactiver les notifications pour l'identifiant <output value=" /collect_off/id "/>, avec les notes suivantes: <output value=" /collect_off/r "/></value></text>
-          <text id="/collect_off/id:label">
-            <value>Identifiant du patient</value>
-          </text>
-          <text id="/collect_off/r:label">
-            <value>Notes</value>
-          </text>
-        </translation>
         <translation lang="Bahasa Indonesia (id)">
-          <text id="/collect_off/review:label">
-            <value>Mengirimkan laporan untuk menonaktifkan pesan untuk ID <output value=" /collect_off/id "/>, dengan catatan: <output value=" /collect_off/r "/></value></text>
           <text id="/collect_off/id:label">
             <value>Pasien ID</value>
           </text>
           <text id="/collect_off/r:label">
             <value>Catatan</value>
           </text>
+          <text id="/collect_off/review:label">
+            <value>Mengirimkan laporan untuk menonaktifkan pesan untuk ID <output value=" /collect_off/id "/>, dengan catatan: <output value=" /collect_off/r "/></value></text>
         </translation>
         <translation default="true()" lang="English (en)">
-          <text id="/collect_off/review:label">
-            <value>Submitting report to turn OFF notifications for ID <output value=" /collect_off/id "/>, with the following notes: <output value=" /collect_off/r "/></value></text>
           <text id="/collect_off/id:label">
             <value>Patient ID</value>
           </text>
           <text id="/collect_off/r:label">
             <value>Notes</value>
           </text>
+          <text id="/collect_off/review:label">
+            <value>Submitting report to turn OFF notifications for ID <output value=" /collect_off/id "/>, with the following notes: <output value=" /collect_off/r "/></value></text>
+        </translation>
+        <translation lang="Français (fr)">
+          <text id="/collect_off/id:label">
+            <value>Identifiant du patient</value>
+          </text>
+          <text id="/collect_off/r:label">
+            <value>Notes</value>
+          </text>
+          <text id="/collect_off/review:label">
+            <value>Envoi d'un rapport pour désactiver les notifications pour l'identifiant <output value=" /collect_off/id "/>, avec les notes suivantes: <output value=" /collect_off/r "/></value></text>
+        </translation>
+        <translation lang="हिन्दी (hi)">
+          <text id="/collect_off/id:label">
+            <value>मरीज का ID</value>
+          </text>
+          <text id="/collect_off/r:label">
+            <value>नोट्स</value>
+          </text>
+          <text id="/collect_off/review:label">
+            <value>आप ID <output value=" /collect_off/id "/> के लिए सूचनाएं बंद करने के लिए रिपोर्ट भेज रहे हैं, इन नोट्स के साथ: <output value=" /collect_off/r "/></value></text>
         </translation>
         <translation lang="বাংলা (bn)">
-          <text id="/collect_off/review:label">
-            <value>প্রতিবেদন জমা দেওয়া, আইডি <output value=" /collect_off/id "/> এর জন্য বিজ্ঞপ্তিগুলি বন্ধ করুন নিম্নলিখিত টীকা সহ: <output value=" /collect_off/r "/></value></text>
           <text id="/collect_off/id:label">
             <value>রোগীর আইডি</value>
           </text>
           <text id="/collect_off/r:label">
             <value>নোট</value>
           </text>
+          <text id="/collect_off/review:label">
+            <value>প্রতিবেদন জমা দেওয়া, আইডি <output value=" /collect_off/id "/> এর জন্য বিজ্ঞপ্তিগুলি বন্ধ করুন নিম্নলিখিত টীকা সহ: <output value=" /collect_off/r "/></value></text>
         </translation>
       </itext>
       <instance>
-        <collect_off delimiter="#" id="collect_off" prefix="J1!off!" version="2018-09-19_19-42">
+        <collect_off delimiter="#" id="collect_off" prefix="J1!off!" version="2018-09-27_07-24">
           <id/>
           <r/>
           <review/>
-          <meta>
+          <meta tag="hidden">
             <instanceID/>
           </meta>
         </collect_off>
