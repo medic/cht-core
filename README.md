@@ -52,14 +52,7 @@ By default CouchDB runs in "admin party" mode, which means you do not need users
 
 First, add an admin user. When prompted to create an admin during installation, use username:`admin` and password:`pass`. Passwords can be changed via [Fauxton](http://localhost:5984/_utils). For more information see the [CouchDB install doc](http://docs.couchdb.org/en/2.0.0/install/).
 
-Now that's done, we must reconfigure CouchDB to require authentication. To be able to use Fauxton with authenticated users:
-
-```shell
-curl -X PUT http://admin:pass@localhost:5986/_config/httpd/WWW-Authenticate \
-  -d '"Basic realm=\"administrator\""' -H "Content-Type: application/json"
-```
-
-Configure CouchDB to require authentication:
+Now that's done, we must reconfigure CouchDB to require authentication:
 
 ```shell
 curl -X PUT http://admin:pass@localhost:5986/_config/chttpd/require_valid_user \
@@ -81,6 +74,13 @@ curl http://admin:pass@localhost:5984 # should work
 {"couchdb":"Welcome","version":"2.0.0","vendor":{"name":"The Apache Software Foundation"}}
 curl http://localhost:5984 # should fail
 {"error":"unauthorized","reason":"Authentication required."}
+```
+
+To be able to use Fauxton with authenticated users:
+
+```shell
+curl -X PUT http://admin:pass@localhost:5986/_config/httpd/WWW-Authenticate \
+  -d '"Basic realm=\"administrator\""' -H "Content-Type: application/json"
 ```
 
 ### Increasing `max_request_http_size`
