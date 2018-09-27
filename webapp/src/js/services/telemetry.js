@@ -4,7 +4,10 @@ angular.module('inboxServices').factory('Telemetry', function($log, DB) {
 
   return {
     record: function(key, value) {
-      console.log(key, value);
+      return DB.telemetry.post({
+        key: key,
+        value: value,
+      });
     },
   };
 });
