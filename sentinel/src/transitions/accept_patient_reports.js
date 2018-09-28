@@ -112,45 +112,34 @@ const addRegistrationToDoc = (doc, registrations) => {
   }
 };
 
-const addMessageUUIDToDoc = (doc, registrations, patientId) => {
-  if (registrations.length) {
-    const messages = registrations
-      .map(registration => {
-        if (registration.scheduled_tasks) {
-          var tasks = registration.scheduled_tasks.map(task => {
-            if (task.messages) {
-              return {
-                due: task.due,
-                messages: task.messages.filter(function(message) {
-                  return message.message.indexOf(`V ${patientId}`) > -1;
-                }),
-              };
-            }
+const addMessageUUIDToDoc = (doc, registrations) => {
+  if (registrations.length && doc.sms_message) {
+    var incomingSmsMessage = doc.sms_message;
 
-            return null;
-          });
-
-          tasks = tasks.filter(x => !!x);
-          if (tasks.length > 0) {
-            return tasks;
+    var validTaskMessages = [];
+    registrations.forEach(function(registration) {
+      if (registration.scheduled_tasks) {
+        registration.scheduled_tasks.forEach(function(task) {
+          if (task.messages) {
+            task.messages.forEach(function(message) {
+              if (message.message.indexOf(incomingSmsMessage.message) > -1) {
+                validTaskMessages.push({
+                  due: task.due,
+                  uuid: message.uuid,
+                });
+              }
+            });
           }
-        }
+        });
+      }
+    });
 
-        return null;
-      })
-      .filter(x => !!x)
-      .reduce((acc, curr) => {
-        return acc.concat(curr);
-      }, [])
-      .reduce(
-        (acc, curr) => {
-          return moment(acc.due) > moment(curr.due) ? acc : curr;
-        },
-        { due: '1970-01-01T00:00:00.000Z', messages: [] }
-      ).messages;
+    var sortedValidTaskMessages = validTaskMessages.sort(function(t1, t2) {
+      return moment(t2.due) - moment(t1.due);
+    });
 
-    if (messages.length > 0) {
-      doc.message_uuid = messages[messages.length - 1].uuid;
+    if (sortedValidTaskMessages.length > 0) {
+      doc.message_uuid = sortedValidTaskMessages[0].uuid;
     }
   }
 };
@@ -216,9 +205,7 @@ const handleReport = (doc, config, callback) => {
 
       addMessagesToDoc(doc, config, registrations);
       addRegistrationToDoc(doc, registrations);
-      if (doc.form === 'V') {
-        addMessageUUIDToDoc(doc, registrations, doc.fields.patient_id);
-      }
+      addMessageUUIDToDoc(doc, registrations);
 
       module.exports.silenceRegistrations(config, doc, registrations, callback);
     }
