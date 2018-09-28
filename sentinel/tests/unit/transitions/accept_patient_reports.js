@@ -244,8 +244,7 @@ describe('accept_patient_reports', () => {
               messages: [
                 {
                   uuid: 'k',
-                  message:
-                    "Please remind Patient1 (63344) to visit the health facility for ANC visit this week. When she does let us know with 'V 63374'. Thanks!",
+                  message: `Please remind Patient1 (63344) to visit the health facility for ANC visit this week. When she does let us know with 'V 63374'. Thanks!`,
                 },
               ],
             },
@@ -282,8 +281,7 @@ describe('accept_patient_reports', () => {
               messages: [
                 {
                   uuid: 'k1',
-                  message:
-                    "Please remind Patient1 (63344) to visit the health facility for ANC visit this week. When she does let us know with 'V 63374'. Thanks!",
+                  message: `Please remind Patient1 (63344) to visit the health facility for ANC visit this week. When she does let us know with 'V 63374'. Thanks!`,
                 },
               ],
             },
@@ -292,8 +290,7 @@ describe('accept_patient_reports', () => {
               messages: [
                 {
                   uuid: 'k2',
-                  message:
-                    "Please remind Patient1 (63344) to visit the health facility for ANC visit this week. When she does let us know with 'V 63374'. Thanks!",
+                  message: `Please remind Patient1 (63344) to visit the health facility for ANC visit this week. When she does let us know with 'V 63374'. Thanks!`,
                 },
               ],
             },
@@ -302,8 +299,7 @@ describe('accept_patient_reports', () => {
               messages: [
                 {
                   uuid: 'k3',
-                  message:
-                    "Please remind Patient1 (63344) to visit the health facility for ANC visit this week. When she does let us know with 'V 63384'. Thanks!",
+                  message: `Please remind Patient1 (63344) to visit the health facility for ANC visit this week. When she does let us know with 'V 63384'. Thanks!`,
                 },
               ],
             },
