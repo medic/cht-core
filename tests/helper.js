@@ -111,7 +111,7 @@ module.exports = {
 
   isTextDisplayed: text => {
     const selectedElement = element(
-      by.xpath("//*[text()[normalize-space() =  ' " + text + "']]")
+      by.xpath('//*[text()[normalize-space() =  " ' + text + '"]]')
     );
     return selectedElement.isPresent();
   },
@@ -227,7 +227,7 @@ module.exports = {
       browser.sleep(200);
       return browser
         .executeScript(
-          "return typeof angular === 'undefined' ? 0 : angular.element(document.body).injector().get('$http').pendingRequests." +
+          'return typeof angular === "undefined" ? 0 : angular.element(document.body).injector().get("$http").pendingRequests.' +
             'length'
         )
         .then(res => {

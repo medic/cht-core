@@ -1,5 +1,4 @@
-const utils = require('../../utils'),
-  helper = require('../../helper');
+const helper = require('../../helper');
 
 module.exports = {
   editForm: () => {

@@ -1,5 +1,4 @@
-const helper = require('../../helper'),
-  familyForm = require('../../page-objects/forms/add-family-form.po'),
+const familyForm = require('../../page-objects/forms/add-family-form.po'),
   genericForm = require('../../page-objects/forms/generic-form.po'),
   common = require('../../page-objects/common/common.po.js'),
   utils = require('../../utils'),

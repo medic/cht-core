@@ -65,18 +65,6 @@ module.exports = {
     registerChildren.get(1).click();
   },
 
-  registerChildren: () => {
-    // next, press button
-    const registerChildrenBtn = element.all(
-      by.css('[data-name="/data/repeat/child"]>button')
-    );
-    const childName = element(by.css('[name="/data/repeat/child/name"]'));
-    const ageInYears = element(by.css('[name="/data/repeat/child/age_years"]'));
-    const ageMonths = element(by.css('name="/data/repeat/child/age_months" '));
-    // 0 - female; 1 - male
-    const sex = element.all(by.css('[data-name="/data/repeat/child/sex"]'));
-  },
-
   womenBetween: () => {
     const women = element(
       by.css('[name="/data/other_women/g_women_15_to_49"]')
