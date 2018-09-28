@@ -32,7 +32,7 @@
           </div>
           <div class="row flex grid">
             <div class="col col-xs-12 col-sm-{{field.width || 12}}" ng-repeat="field in selected.summary.fields">
-              <div class="cell">
+              <div class="cell {{field.label | lowercase }}">
                 <span ng-if="field.icon" class="field-icon" ng-bind-html="field.icon | resourceIcon"></span>
                 <div>
                   <label translate ng-show="field.label">{{field.label}}</label>
