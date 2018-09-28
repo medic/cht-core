@@ -226,6 +226,111 @@ describe('accept_patient_reports', () => {
       });
 
     });
+    it('adds message_uuid property', done => {
+      sinon.stub(transition, '_silenceReminders').callsArgWith(3, null, true);
+      const doc = {
+        _id: 'z',
+        fields: { patient_id: 'x' },
+        sms_message: { message: 'V 63374' },
+      };
+      const config = { silence_type: 'x', messages: [] };
+      const registrations = [
+        {
+          _id: 'a',
+          reported_date: '2017-02-05T09:23:07.853Z',
+          scheduled_tasks: [
+            {
+              due: '2018-09-26T18:45:00.000Z',
+              messages: [
+                {
+                  uuid: 'k',
+                  message:
+                    "Please remind Patient1 (63344) to visit the health facility for ANC visit this week. When she does let us know with 'V 63374'. Thanks!",
+                },
+              ],
+            },
+          ],
+        },
+      ];
+      sinon
+        .stub(utils, 'getRegistrations')
+        .callsArgWith(1, null, registrations);
+      transition._handleReport(doc, config, (err, complete) => {
+        complete.should.equal(true);
+        doc.message_uuid.should.equal(
+          registrations[0].scheduled_tasks[0].messages[0].uuid
+        );
+        done();
+      });
+    });
+
+    it('if there are multiple scheduled tasks uses the oldest valid one', done => {
+      sinon.stub(transition, '_silenceReminders').callsArgWith(3, null, true);
+      const doc = {
+        _id: 'z',
+        fields: { patient_id: 'x' },
+        sms_message: { message: 'V 63374' },
+      };
+      const config = { silence_type: 'x', messages: [] };
+      const registrations = [
+        {
+          _id: 'a',
+          reported_date: '2017-02-05T09:23:07.853Z',
+          scheduled_tasks: [
+            {
+              due: '2018-09-26T18:45:00.000Z',
+              messages: [
+                {
+                  uuid: 'k1',
+                  message:
+                    "Please remind Patient1 (63344) to visit the health facility for ANC visit this week. When she does let us know with 'V 63374'. Thanks!",
+                },
+              ],
+            },
+            {
+              due: '2018-11-26T18:45:00.000Z',
+              messages: [
+                {
+                  uuid: 'k2',
+                  message:
+                    "Please remind Patient1 (63344) to visit the health facility for ANC visit this week. When she does let us know with 'V 63374'. Thanks!",
+                },
+              ],
+            },
+            {
+              due: '2018-12-26T18:45:00.000Z',
+              messages: [
+                {
+                  uuid: 'k3',
+                  message:
+                    "Please remind Patient1 (63344) to visit the health facility for ANC visit this week. When she does let us know with 'V 63384'. Thanks!",
+                },
+              ],
+            },
+            {
+              due: '2018-10-26T18:45:00.000Z',
+              messages: [
+                {
+                  uuid: 'k4',
+                  message:
+                    "Please remind Patient1 (63344) to visit the health facility for ANC visit this week. When she does let us know with 'V 63374'. Thanks!",
+                },
+              ],
+            },
+          ],
+        },
+      ];
+      sinon
+        .stub(utils, 'getRegistrations')
+        .callsArgWith(1, null, registrations);
+      transition._handleReport(doc, config, (err, complete) => {
+        complete.should.equal(true);
+        doc.message_uuid.should.equal(
+          registrations[0].scheduled_tasks[1].messages[0].uuid
+        );
+        done();
+      });
+    });
   });
 
   describe('silenceReminders', () => {
