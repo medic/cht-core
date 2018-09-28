@@ -308,8 +308,7 @@ describe('accept_patient_reports', () => {
               messages: [
                 {
                   uuid: 'k4',
-                  message:
-                    "Please remind Patient1 (63344) to visit the health facility for ANC visit this week. When she does let us know with 'V 63374'. Thanks!",
+                  message: `Please remind Patient1 (63344) to visit the health facility for ANC visit this week. When she does let us know with 'V 63374'. Thanks!`,
                 },
               ],
             },
