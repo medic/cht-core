@@ -1,3 +1,7 @@
+// We have to do this again for Karma, as it doesn't run inbox.html
+if (!window.startupTimes) {
+  window.startupTimes = {};
+}
 window.startupTimes.firstCodeExecution = performance.now();
 
 window.PouchDB = require('pouchdb-browser');

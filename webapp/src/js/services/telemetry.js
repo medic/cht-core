@@ -3,7 +3,7 @@ var moment = require('moment'),
 
 angular
   .module('inboxServices')
-  .factory('Telemetry', function($log, $q, $timeout, $window, DB, Session) {
+  .factory('Telemetry', function($log, $q, $window, DB, Session) {
     'use strict';
     'ngInject';
 
@@ -18,20 +18,20 @@ angular
     ].join('-');
 
     var getDb = function() {
-      var dbName = window.localStorage.getItem(DB_ID_KEY);
+      var dbName = $window.localStorage.getItem(DB_ID_KEY);
       if (!dbName) {
         dbName =
           'medic-user-' + Session.userCtx().name + '-telemetry-' + uuid();
-        window.localStorage.setItem(DB_ID_KEY, dbName);
+        $window.localStorage.setItem(DB_ID_KEY, dbName);
       }
       return $window.PouchDB(dbName); // avoid angular-pouch as digest isn't necessary here
     };
 
     var getUniqueDeviceId = function() {
-      var uniqueDeviceId = window.localStorage.getItem(DEVICE_ID_KEY);
+      var uniqueDeviceId = $window.localStorage.getItem(DEVICE_ID_KEY);
       if (!uniqueDeviceId) {
         uniqueDeviceId = uuid();
-        window.localStorage.setItem(DEVICE_ID_KEY, uniqueDeviceId);
+        $window.localStorage.setItem(DEVICE_ID_KEY, uniqueDeviceId);
       }
 
       return uniqueDeviceId;
@@ -39,11 +39,11 @@ angular
 
     var getLastAggregatedDate = function() {
       var date = parseInt(
-        window.localStorage.getItem(LAST_AGGREGATED_DATE_KEY)
+        $window.localStorage.getItem(LAST_AGGREGATED_DATE_KEY)
       );
       if (!date) {
         date = Date.now();
-        window.localStorage.setItem(LAST_AGGREGATED_DATE_KEY, date);
+        $window.localStorage.setItem(LAST_AGGREGATED_DATE_KEY, date);
       }
       return date;
     };
@@ -91,10 +91,9 @@ angular
 
     var generateDeviceStats = function() {
       return {
-        userAgent: navigator.userAgent,
-        language: navigator.language,
-        hardwareConcurrency: navigator.hardwareConcurrency,
-        deviceMemory: navigator.deviceMemory,
+        userAgent: $window.navigator.userAgent,
+        language: $window.navigator.language,
+        hardwareConcurrency: $window.navigator.hardwareConcurrency,
         // TODO: more!
       };
     };
@@ -136,8 +135,8 @@ angular
     };
 
     var reset = function(db) {
-      window.localStorage.removeItem(DB_ID_KEY);
-      window.localStorage.removeItem(LAST_AGGREGATED_DATE_KEY);
+      $window.localStorage.removeItem(DB_ID_KEY);
+      $window.localStorage.removeItem(LAST_AGGREGATED_DATE_KEY);
       return db.destroy();
     };
 
