@@ -259,6 +259,16 @@ module.exports = function(grunt) {
           },
         ],
       },
+      'inbox-file-attachment': {
+        files: [
+          {
+            expand: true,
+            cwd: 'webapp/src/',
+            src: ['templates/inbox.html'],
+            dest: 'build/ddocs/medic/_attachments/',
+          },
+        ],
+      },
       'ddoc-attachments': {
         files: [
           {
@@ -567,7 +577,7 @@ module.exports = function(grunt) {
       },
       'inbox-html-template': {
         files: 'webapp/src/templates/inbox.html',
-        tasks: ['copy:ddoc-attachments', 'watch-webapp-templates'],
+        tasks: ['copy:inbox-file-attachment', 'watch-webapp-templates'],
       },
       'primary-ddoc': {
         files: ['ddocs/medic/**/*'],
