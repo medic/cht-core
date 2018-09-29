@@ -260,14 +260,10 @@ module.exports = function(grunt) {
         ],
       },
       'inbox-file-attachment': {
-        files: [
-          {
-            expand: true,
-            cwd: 'webapp/src/',
-            src: ['templates/inbox.html'],
-            dest: 'build/ddocs/medic/_attachments/',
-          },
-        ],
+        expand: true,
+        cwd: 'webapp/src/',
+        src: 'templates/inbox.html',
+        dest: 'build/ddocs/medic/_attachments/',
       },
       'ddoc-attachments': {
         files: [
