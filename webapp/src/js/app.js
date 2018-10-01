@@ -1,4 +1,5 @@
-// We have to do this again for Karma, as it doesn't run inbox.html
+// While we already do this earlier in inbox.js we have to check again for Karma
+// tests as they don't hit that code
 if (!window.startupTimes) {
   window.startupTimes = {};
 }

@@ -74,6 +74,8 @@ describe('Telemetry service', () => {
       });
     });
 
+    it('defaults the value to 1 if not passed');
+
     it('sets localStorage values', () => {
       storageGetItem.withArgs('medic-greg-telemetry-db').returns(undefined);
       storageGetItem.withArgs('medic-greg-telemetry-date').returns(undefined);
@@ -148,5 +150,9 @@ describe('Telemetry service', () => {
         });
       });
     });
+
+    it(
+      'deals with 409s by making the ID unique and noting the conflict in the new document'
+    );
   });
 });

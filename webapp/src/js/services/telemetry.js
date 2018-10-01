@@ -9,7 +9,13 @@ angular
 
     var queue = $q.resolve();
 
+    // Intentionally scoped to the whole browser (for this domain). We can then
+    // tell if multiple users use the same device
     var DEVICE_ID_KEY = 'medic-telemetry-device-id';
+
+    // Intentionally scoped to the specific user, as they may perform a
+    // different role (online vs. offline being being the most obvious) with
+    // different performance implications
     var DB_ID_KEY = ['medic', Session.userCtx().name, 'telemetry-db'].join('-');
     var LAST_AGGREGATED_DATE_KEY = [
       'medic',
@@ -52,6 +58,7 @@ angular
       return db.post({
         key: key,
         value: value,
+        date_recorded: Date.now(),
       });
     };
 
@@ -72,9 +79,6 @@ angular
         metadata.month,
         metadata.user,
         metadata.deviceId,
-        // TODO: don't commit
-        '[][][][]',
-        uuid(),
       ].join('-');
     };
 
@@ -85,7 +89,9 @@ angular
         month: date.month(),
         user: Session.userCtx().name,
         deviceId: getUniqueDeviceId(),
-        // TODO: more?
+        // REVIEWER: is there anything else we think we should store here?
+        // Candidates would be generic metadata that is not directly device
+        // related or DB related
       };
     };
 
@@ -94,7 +100,16 @@ angular
         userAgent: $window.navigator.userAgent,
         language: $window.navigator.language,
         hardwareConcurrency: $window.navigator.hardwareConcurrency,
-        // TODO: more!
+        screen: {
+          width: $window.screen.availWidth,
+          height: $window.screen.availHeight,
+        },
+        // REVIEWER: while we can expand this in the future are their other
+        // useful things you would like to see here?
+        //
+        // REVIEWER: do we want to ship with extra data pulled from Android via
+        // medic-android? This would allow us to know true android version, disk
+        // space, stuff like that.
       };
     };
 
@@ -141,8 +156,27 @@ angular
     };
 
     return {
-      // TODO: note that you shouldn't hold on to the promise in prod
+      //
+      // Records a piece of telemetry.
+      //
+      // Specifically, a unique key that will be aggregated against, and if you
+      // are recording a timing (as opposed to an event) a value.
+      //
+      // While this function returns a promise, this is primarily for testing.
+      // It is not recommended you hold on to this promise and wait for it to
+      // resolve for performance reasons.
+      //
+      // @param      {String}   key     a unique key that will be aggregated
+      //                                against later
+      // @param      {Number}   value   number to be aggregated. Defaults to 1.
+      // @return     {Promise}  resolves once the data has been recorded and
+      //                        aggregated if required
+      //
       record: function(key, value) {
+        if (value === undefined) {
+          value = 1;
+        }
+
         var db;
         queue = queue
           .then(function() {
