@@ -133,7 +133,7 @@ const validate = (config, doc, callback) => {
     return validation.validate(doc, validations, callback);
 };
 
-// NB: this is very similar to a function in accept_patient_reports, except
+// NB: this is very similar to a function in the registration transition, except
 //     they also allow for an empty event_type
 const messageRelevant = (msg, doc) => {
     if (msg.event_type === 'report_accepted') {
