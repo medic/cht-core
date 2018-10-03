@@ -52,7 +52,6 @@ angular
     $uibModalInstance.rendered.then(initDatePickers);
 
     $scope.$watch('model.group.rows.length', function(newValue, oldValue) {
-      console.log('newValue', newValue);
       initDatePickers();
     });
 
