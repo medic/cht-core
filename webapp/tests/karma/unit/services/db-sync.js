@@ -152,7 +152,7 @@ describe('DBSync service', () => {
         // when you come back online eventually, sync immediately
         service.setOnlineStatus(true);
         expect(from.callCount).to.equal(2);
-        service.sync().then(() => {
+        return service.sync().then(() => {
           // wait for the inprogress sync to complete before continuing the test
           expect(from.callCount).to.equal(2);
 
