@@ -1,19 +1,17 @@
 describe('InboxCtrl controller', () => {
-
   'use strict';
 
   let createController,
-      scope,
-      snackbar,
-      spyState,
-      stubModal,
-      dummyId = 'dummydummy',
-      RecurringProcessManager,
-      changes,
-      changesListener = {},
-      changesSpy,
-      session
-  ;
+    scope,
+    snackbar,
+    spyState,
+    stubModal,
+    dummyId = 'dummydummy',
+    RecurringProcessManager,
+    changes,
+    changesListener = {},
+    changesSpy,
+    session;
 
   beforeEach(() => {
     snackbar = sinon.stub();
@@ -21,10 +19,10 @@ describe('InboxCtrl controller', () => {
 
     RecurringProcessManager = {
       startUpdateRelativeDate: sinon.stub(),
-      stopUpdateRelativeDate: sinon.stub()
+      stopUpdateRelativeDate: sinon.stub(),
     };
 
-    changes = (options) => {
+    changes = options => {
       changesListener[options.key] = options;
     };
     changesSpy = sinon.spy(changes);
@@ -44,11 +42,14 @@ describe('InboxCtrl controller', () => {
       $provide.value('DB', () => {
         return {
           query: KarmaUtils.nullPromise(),
-          info: KarmaUtils.nullPromise()
+          info: KarmaUtils.nullPromise(),
         };
       });
       $provide.value('WatchDesignDoc', sinon.stub());
-      $provide.value('DBSync', sinon.stub());
+      $provide.value('DBSync', {
+        addUpdateListener: sinon.stub(),
+        sync: sinon.stub(),
+      });
       $provide.value('Changes', changes);
       $provide.value('CheckDate', sinon.stub());
       $provide.value('Contact', sinon.stub());
@@ -78,7 +79,9 @@ describe('InboxCtrl controller', () => {
         spyState = {
           go: sinon.spy(),
           current: { name: 'my.state.is.great' },
-          includes: () => { return true; }
+          includes: () => {
+            return true;
+          },
         };
         return spyState;
       });
@@ -92,7 +95,7 @@ describe('InboxCtrl controller', () => {
       $provide.value('Enketo', sinon.stub());
       $provide.constant('APP_CONFIG', {
         name: 'name',
-        version: 'version'
+        version: 'version',
       });
     });
 
@@ -100,8 +103,8 @@ describe('InboxCtrl controller', () => {
       scope = $rootScope.$new();
       createController = () => {
         return $controller('InboxCtrl', {
-          '$scope': scope,
-          '$rootScope': $rootScope
+          $scope: scope,
+          $rootScope: $rootScope,
         });
       };
     });
@@ -123,7 +126,7 @@ describe('InboxCtrl controller', () => {
     });
   });
 
-  it('doesn\'t change state after deleting message', done => {
+  it('do not change state after deleting message', done => {
     spyState.includes = state => {
       return state === 'messages';
     };
@@ -138,9 +141,9 @@ describe('InboxCtrl controller', () => {
     });
   });
 
-  it('doesn\'t deleteContact if user cancels modal', () => {
+  it('do not deleteContact if user cancels modal', () => {
     stubModal.reset();
-    stubModal.returns(Promise.reject({err: 'user cancelled'}));
+    stubModal.returns(Promise.reject({ err: 'user cancelled' }));
 
     scope.deleteDoc(dummyId);
 
@@ -156,13 +159,17 @@ describe('InboxCtrl controller', () => {
     setTimeout(() => {
       scope.$apply();
 
-      chai.expect(RecurringProcessManager.startUpdateRelativeDate.callCount).to.equal(1);
+      chai
+        .expect(RecurringProcessManager.startUpdateRelativeDate.callCount)
+        .to.equal(1);
     });
   });
 
   it('should cancel the relative date update recurring process when destroyed', () => {
     scope.$destroy();
-    chai.expect(RecurringProcessManager.stopUpdateRelativeDate.callCount).to.equal(1);
+    chai
+      .expect(RecurringProcessManager.stopUpdateRelativeDate.callCount)
+      .to.equal(1);
   });
 
   it('should watch changes in facilities, translations, ddoc and user context', () => {
@@ -175,15 +182,47 @@ describe('InboxCtrl controller', () => {
   it('InboxUserContent Changes listener should filter only logged in user, if exists', () => {
     session.userCtx.returns({ name: 'adm', roles: ['alpha', 'omega'] });
     createController();
-    chai.expect(changesListener['inbox-user-context'].filter({ doc: {} })).to.equal(false);
-    chai.expect(changesListener['inbox-user-context'].filter({ doc: { type: 'person'} })).to.equal(false);
-    chai.expect(changesListener['inbox-user-context'].filter({ doc: { type: 'user-settings'} })).to.equal(false);
-    chai.expect(changesListener['inbox-user-context'].filter({ doc: { type: 'user-settings', name: 'a'} })).to.equal(false);
-    chai.expect(changesListener['inbox-user-context'].filter({ doc: { type: 'user-settings', name: 'adm'} })).to.equal(true);
+    chai
+      .expect(changesListener['inbox-user-context'].filter({ doc: {} }))
+      .to.equal(false);
+    chai
+      .expect(
+        changesListener['inbox-user-context'].filter({
+          doc: { type: 'person' },
+        })
+      )
+      .to.equal(false);
+    chai
+      .expect(
+        changesListener['inbox-user-context'].filter({
+          doc: { type: 'user-settings' },
+        })
+      )
+      .to.equal(false);
+    chai
+      .expect(
+        changesListener['inbox-user-context'].filter({
+          doc: { type: 'user-settings', name: 'a' },
+        })
+      )
+      .to.equal(false);
+    chai
+      .expect(
+        changesListener['inbox-user-context'].filter({
+          doc: { type: 'user-settings', name: 'adm' },
+        })
+      )
+      .to.equal(true);
 
     session.userCtx.returns(false);
     createController();
-    chai.expect(changesListener['inbox-user-context'].filter({ doc: { type: 'user-settings', name: 'a'} })).to.equal(false);
+    chai
+      .expect(
+        changesListener['inbox-user-context'].filter({
+          doc: { type: 'user-settings', name: 'a' },
+        })
+      )
+      .to.equal(false);
   });
 
   it('InboxUserContent Changes listener callback should check current session', () => {

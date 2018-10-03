@@ -2,6 +2,7 @@ var _ = require('underscore'),
   READ_ONLY_TYPES = ['form', 'translations'],
   READ_ONLY_IDS = ['resources', 'appcache', 'zscore-charts', 'settings'],
   DDOC_PREFIX = ['_design/'],
+  SYNC_FREQUENCY = 5 * 60 * 1000, // 5 minutes
   META_SYNC_FREQUENCY = 30 * 60 * 1000; // 30 minutes
 
 angular
@@ -10,13 +11,12 @@ angular
     'use strict';
     'ngInject';
 
-    var backOffFunction = function(prev) {
-      if (prev <= 0) {
-        // first run, backoff 1 second
-        return 1000;
-      }
-      // double the backoff, maxing out at 1 minute
-      return Math.min(prev * 2, 60000);
+    var updateListeners = [];
+    var previousOnlineState = true; // assume the user is online
+    var syncIsRecent = false;
+    var intervals = {
+      sync: undefined,
+      meta: undefined,
     };
 
     var authenticationIssue = function(errors) {
@@ -33,34 +33,23 @@ angular
     };
 
     var getOptions = function(direction) {
-      var options = {
-        live: true,
-        retry: true,
-        heartbeat: 10000,
-        back_off_function: backOffFunction,
-      };
+      var options = {};
       if (direction === 'to') {
         options.checkpoint = 'source';
         options.filter = readOnlyFilter;
-        return options;
-      } else {
-        // TODO reenable this when single sided checkpointing is fixed:
-        //      https://github.com/pouchdb/pouchdb/issues/6730
-        // options.checkpoint = 'target';
-        return options;
       }
+
+      // TODO reenable this when single sided checkpointing is fixed:
+      //      https://github.com/pouchdb/pouchdb/issues/6730
+      // options.checkpoint = 'target';
+      return options;
     };
 
-    var replicate = function(direction, updateListener) {
+    var replicate = function(direction) {
       var options = getOptions(direction);
       var remote = DB({ remote: true });
       return DB()
         .replicate[direction](remote, options)
-        .on('active', function() {
-          if (updateListener) {
-            updateListener({ direction: direction, status: 'in_progress' });
-          }
-        })
         .on('denied', function(err) {
           // In theory this could be caused by 401s
           // TODO: work out what `err` looks like and navigate to login
@@ -69,15 +58,6 @@ angular
         })
         .on('error', function(err) {
           $log.error('Error replicating ' + direction + ' remote server', err);
-          if (updateListener) {
-            updateListener({ direction: direction, status: 'required' });
-          }
-        })
-        .on('paused', function(err) {
-          if (updateListener) {
-            var status = err ? 'required' : 'not_required';
-            updateListener({ direction: direction, status: status });
-          }
         })
         .on('complete', function(info) {
           if (!info.ok && authenticationIssue(info.errors)) {
@@ -86,41 +66,153 @@ angular
         });
     };
 
-    var replicateTo = function(updateListener) {
-      return Auth('can_edit')
-        .then(function() {
-          return replicate('to', updateListener);
-        })
-        .catch(function() {
-          // not authorized to replicate to server - that's ok
-          return;
-        });
+    var replicateTo = function() {
+      return $q(function(resolve) {
+        Auth('can_edit')
+          .then(function() {
+            resolve(replicate('to'));
+          })
+          .catch(function() {
+            // not authorized to replicate to server - that's ok
+            sendUpdate({ direction: 'to', disabled: true });
+            resolve();
+          });
+      });
     };
 
-    var replicateFrom = function(updateListener) {
-      return replicate('from', updateListener);
+    var replicateFrom = function() {
+      return replicate('from');
     };
 
-    var syncMeta = function() {
+    var sendUpdateForDirectedReplication = function(func, direction) {
+      return $q(function(resolve, reject) {
+        func
+          .then(function(passthrough) {
+            sendUpdate({
+              direction: direction,
+              directed_replication_status: 'success',
+            });
+            resolve(passthrough);
+          })
+          .catch(function(error) {
+            sendUpdate({
+              direction: direction,
+              directed_replication_status: 'failure',
+            });
+            reject(error);
+          });
+      });
+    };
+
+    var syncMetaAtInterval = function() {
       var remote = DB({ meta: true, remote: true });
       var local = DB({ meta: true });
       local.sync(remote);
     };
 
-    return function(updateListener) {
-      if (Session.isOnlineOnly()) {
-        if (updateListener) {
-          updateListener({ disabled: true });
-        }
+    // inProgressSync prevents multiple concurrent replications
+    var inProgressSync;
+    var sync = function() {
+      if (!previousOnlineState) {
         return $q.resolve();
       }
 
-      syncMeta();
-      $interval(syncMeta, META_SYNC_FREQUENCY);
+      /*
+      Controllers need the status of each directed replication (directed_replication_status) and the 
+      status of the replication as a whole (aggregate_replication_status).
+      */
+      if (!inProgressSync) {
+        inProgressSync = $q
+          .all([
+            sendUpdateForDirectedReplication(replicateFrom(), 'from'),
+            sendUpdateForDirectedReplication(replicateTo(), 'to'),
+          ])
+          .then(function() {
+            syncIsRecent = true;
+            sendUpdate({ aggregate_replication_status: 'not_required' });
+          })
+          .catch(function(err) {
+            $log.error('Error replicating remote server', err);
+            sendUpdate({
+              aggregate_replication_status: 'required',
+              error: err,
+            });
+          })
+          .finally(function() {
+            inProgressSync = undefined;
+          });
+      }
 
-      return $q.all([
-        replicateFrom(updateListener),
-        replicateTo(updateListener),
-      ]);
+      sendUpdate({ aggregate_replication_status: 'in_progress' });
+      return inProgressSync;
+    };
+
+    var sendUpdate = function(update) {
+      _.forEach(updateListeners, function(listener) {
+        listener(update);
+      });
+    };
+
+    var resetSyncInterval = function() {
+      if (intervals.sync) {
+        $interval.cancel(intervals.sync);
+        intervals.sync = undefined;
+      }
+
+      intervals.sync = $interval(function() {
+        syncIsRecent = false;
+        sync();
+      }, SYNC_FREQUENCY);
+    };
+
+    return {
+      /**
+       * Adds a listener function to be notified of replication state changes.
+       *
+       * @param listener {Function} A callback `function (update)`
+       */
+      addUpdateListener: function(listener) {
+        updateListeners.push(listener);
+      },
+
+      /**
+       * Set the current user's online status to control when replications will be attempted.
+       *
+       * @param newOnlineState {Boolean} The current online state of the user.
+       */
+      setOnlineStatus: function(onlineStatus) {
+        if (onlineStatus !== true && onlineStatus !== false) {
+          return;
+        }
+
+        if (previousOnlineState !== onlineStatus) {
+          previousOnlineState = onlineStatus;
+
+          if (previousOnlineState && !syncIsRecent) {
+            resetSyncInterval();
+            return sync();
+          }
+        }
+      },
+
+      /**
+       * Synchronize the local database with the remote database.
+       *
+       * @returns Promise which resolves when both directions of the replication complete.
+       */
+      sync: function() {
+        if (Session.isOnlineOnly()) {
+          sendUpdate({ disabled: true });
+          return $q.resolve();
+        }
+
+        if (!intervals.meta) {
+          intervals.meta = $interval(syncMetaAtInterval, META_SYNC_FREQUENCY);
+          syncMetaAtInterval();
+        }
+
+        resetSyncInterval();
+        return sync();
+      },
     };
   });
