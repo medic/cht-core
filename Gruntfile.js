@@ -569,11 +569,21 @@ module.exports = function(grunt) {
           'webapp/src/templates/**/*',
           '!webapp/src/templates/inbox.html',
         ],
-        tasks: ['ngtemplates:inboxApp', 'watch-webapp-templates'],
+        tasks: [
+          'ngtemplates:inboxApp',
+          'appcache',
+          'couch-compile:primary',
+          'deploy',
+        ],
       },
       'inbox-html-template': {
         files: 'webapp/src/templates/inbox.html',
-        tasks: ['copy:inbox-file-attachment', 'watch-webapp-templates'],
+        tasks: [
+          'copy:inbox-file-attachment',
+          'appcache',
+          'couch-compile:primary',
+          'deploy',
+        ],
       },
       'primary-ddoc': {
         files: ['ddocs/medic/**/*'],
@@ -864,12 +874,6 @@ module.exports = function(grunt) {
     'build-node-modules',
     'Build and pack api and sentinel bundles',
     ['exec:bundle-dependencies', 'exec:pack-node-modules']
-  );
-
-  grunt.registerTask(
-    'watch-webapp-templates',
-    'Watch templates change and deploy',
-    ['appcache', 'couch-compile:primary', 'deploy']
   );
 
   // Test tasks
