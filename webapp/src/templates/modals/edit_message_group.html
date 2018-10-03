@@ -16,7 +16,7 @@
           <span translate>tasks.0.messages.0.message</span>
           <a class="btn btn-link fa fa-trash-o" ng-click="task.deleted = true" ng-hide="task.state !== 'scheduled' && task.state !== 'muted'"></a>
         </label>
-        <input type="text" class="form-control" ng-repeat="message in task.messages" ng-model="message.message" />
+        <input type="text" class="form-control" ng-repeat="message in task.messages" ng-model="message.message" ng-disabled="task.hasOwnProperty('translation_key')"/>
       </div>
 
       <div class="form-group">
