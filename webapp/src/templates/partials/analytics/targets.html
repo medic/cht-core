@@ -45,3 +45,11 @@
     </div>
   </div>
 </div>
+
+<script>
+$('.container-fluid').bind('mousewheel', function(e){
+  if (e.originalEvent.offsetY >= $('div.page').offset().top) {
+    $('div.page').scrollTop($('div.page').scrollTop() + e.originalEvent.deltaY);
+  }
+})
+</script>
