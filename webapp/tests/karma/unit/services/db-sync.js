@@ -55,7 +55,7 @@ describe('DBSync service', () => {
           sync: sync,
         })
       );
-      $provide.value('$q', $q); // bypass $q so we don't have to digest
+      $provide.value('$q', $q);
       $provide.value('Session', {
         isOnlineOnly: isOnlineOnly,
         userCtx: userCtx,
@@ -152,8 +152,9 @@ describe('DBSync service', () => {
         // when you come back online eventually, sync immediately
         service.setOnlineStatus(true);
         expect(from.callCount).to.equal(2);
+
+        // wait for the inprogress sync to complete before continuing the test
         return service.sync().then(() => {
-          // wait for the inprogress sync to complete before continuing the test
           expect(from.callCount).to.equal(2);
 
           // don't sync if you quickly lose and regain connectivity

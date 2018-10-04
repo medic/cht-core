@@ -84,7 +84,7 @@ var feedback = require('../modules/feedback'),
         return;
       }
 
-      // Listen for directed_replication_status updates for replicationStatus.lastSuccess
+      // Listen for directed_replication_status to update replicationStatus.lastSuccess
       var now = Date.now();
       if (update.directed_replication_status === 'success') {
         $scope.replicationStatus.lastSuccess[update.direction] = now;

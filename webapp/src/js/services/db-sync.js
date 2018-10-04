@@ -2,8 +2,8 @@ var _ = require('underscore'),
   READ_ONLY_TYPES = ['form', 'translations'],
   READ_ONLY_IDS = ['resources', 'appcache', 'zscore-charts', 'settings'],
   DDOC_PREFIX = ['_design/'],
-  SYNC_FREQUENCY = 5 * 60 * 1000, // 5 minutes
-  META_SYNC_FREQUENCY = 30 * 60 * 1000; // 30 minutes
+  SYNC_INTERVAL = 5 * 60 * 1000, // 5 minutes
+  META_SYNC_INTERVAL = 30 * 60 * 1000; // 30 minutes
 
 angular
   .module('inboxServices')
@@ -12,9 +12,9 @@ angular
     'ngInject';
 
     var updateListeners = [];
-    var previousOnlineState = true; // assume the user is online
-    var syncIsRecent = false;
-    var intervals = {
+    var knownOnlineState = true; // assume the user is online
+    var syncIsRecent = false; // true when a replication has succeeded within one interval
+    var intervalPromises = {
       sync: undefined,
       meta: undefined,
     };
@@ -39,7 +39,7 @@ angular
         options.filter = readOnlyFilter;
       }
 
-      // TODO reenable this when single sided checkpointing is fixed:
+      // TODO reenable this for 'from' replications when single sided checkpointing is fixed:
       //      https://github.com/pouchdb/pouchdb/issues/6730
       // options.checkpoint = 'target';
       return options;
@@ -74,7 +74,6 @@ angular
           })
           .catch(function() {
             // not authorized to replicate to server - that's ok
-            sendUpdate({ direction: 'to', disabled: true });
             resolve();
           });
       });
@@ -104,7 +103,7 @@ angular
       });
     };
 
-    var syncMetaAtInterval = function() {
+    var syncMeta = function() {
       var remote = DB({ meta: true, remote: true });
       var local = DB({ meta: true });
       local.sync(remote);
@@ -113,7 +112,7 @@ angular
     // inProgressSync prevents multiple concurrent replications
     var inProgressSync;
     var sync = function() {
-      if (!previousOnlineState) {
+      if (!knownOnlineState) {
         return $q.resolve();
       }
 
@@ -154,15 +153,15 @@ angular
     };
 
     var resetSyncInterval = function() {
-      if (intervals.sync) {
-        $interval.cancel(intervals.sync);
-        intervals.sync = undefined;
+      if (intervalPromises.sync) {
+        $interval.cancel(intervalPromises.sync);
+        intervalPromises.sync = undefined;
       }
 
-      intervals.sync = $interval(function() {
+      intervalPromises.sync = $interval(function() {
         syncIsRecent = false;
         sync();
-      }, SYNC_FREQUENCY);
+      }, SYNC_INTERVAL);
     };
 
     return {
@@ -181,14 +180,14 @@ angular
        * @param newOnlineState {Boolean} The current online state of the user.
        */
       setOnlineStatus: function(onlineStatus) {
-        if (onlineStatus !== true && onlineStatus !== false) {
+        if (typeof onlineStatus !== 'boolean') {
           return;
         }
 
-        if (previousOnlineState !== onlineStatus) {
-          previousOnlineState = onlineStatus;
+        if (knownOnlineState !== onlineStatus) {
+          knownOnlineState = onlineStatus;
 
-          if (previousOnlineState && !syncIsRecent) {
+          if (knownOnlineState && !syncIsRecent) {
             resetSyncInterval();
             return sync();
           }
@@ -206,9 +205,9 @@ angular
           return $q.resolve();
         }
 
-        if (!intervals.meta) {
-          intervals.meta = $interval(syncMetaAtInterval, META_SYNC_FREQUENCY);
-          syncMetaAtInterval();
+        if (!intervalPromises.meta) {
+          intervalPromises.meta = $interval(syncMeta, META_SYNC_INTERVAL);
+          syncMeta();
         }
 
         resetSyncInterval();
