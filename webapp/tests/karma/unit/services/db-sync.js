@@ -183,7 +183,7 @@ describe('DBSync service', () => {
         expect(from.args[0][1]).to.not.have.keys('filter', 'checkpoint');
         expect(to.callCount).to.equal(0);
 
-        expect(onUpdate.callCount).to.eq(5);
+        expect(onUpdate.callCount).to.eq(4);
         expect(onUpdate.args[0][0]).to.deep.eq({
           aggregate_replication_status: 'in_progress',
         });
@@ -192,14 +192,10 @@ describe('DBSync service', () => {
           direction: 'from',
         });
         expect(onUpdate.args[2][0]).to.deep.eq({
-          direction: 'to',
-          disabled: true,
-        });
-        expect(onUpdate.args[3][0]).to.deep.eq({
           directed_replication_status: 'success',
           direction: 'to',
         });
-        expect(onUpdate.args[4][0]).to.deep.eq({
+        expect(onUpdate.args[3][0]).to.deep.eq({
           aggregate_replication_status: 'not_required',
         });
       });
