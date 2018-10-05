@@ -67,40 +67,30 @@ angular
     };
 
     var replicateTo = function() {
-      return $q(function(resolve) {
-        Auth('can_edit')
-          .then(function() {
-            resolve(replicate('to'));
-          })
-          .catch(function() {
-            // not authorized to replicate to server - that's ok
-            resolve();
-          });
-      });
-    };
-
-    var replicateFrom = function() {
-      return replicate('from');
+      return Auth('can_edit')
+        .then(function() {
+          return replicate('to');
+        })
+        .catch(function() {
+          // not authorized to replicate to server - that's ok
+        });
     };
 
     var sendUpdateForDirectedReplication = function(func, direction) {
-      return $q(function(resolve, reject) {
-        func
-          .then(function(passthrough) {
-            sendUpdate({
-              direction: direction,
-              directed_replication_status: 'success',
-            });
-            resolve(passthrough);
-          })
-          .catch(function(error) {
-            sendUpdate({
-              direction: direction,
-              directed_replication_status: 'failure',
-            });
-            reject(error);
+      return func
+        .then(function() {
+          sendUpdate({
+            direction: direction,
+            directed_replication_status: 'success',
           });
-      });
+        })
+        .catch(function(error) {
+          sendUpdate({
+            direction: direction,
+            directed_replication_status: 'failure',
+          });
+          return error;
+        });
     };
 
     var syncMeta = function() {
@@ -123,19 +113,22 @@ angular
       if (!inProgressSync) {
         inProgressSync = $q
           .all([
-            sendUpdateForDirectedReplication(replicateFrom(), 'from'),
+            sendUpdateForDirectedReplication(replicate('from'), 'from'),
             sendUpdateForDirectedReplication(replicateTo(), 'to'),
           ])
-          .then(function() {
+          .then(function(results) {
+            // if $q.all is successful, results should be [undefined, undefined]
+            if (!Array.isArray(results)) {
+              $log.error('Error replicating remote server', results);
+              sendUpdate({
+                aggregate_replication_status: 'required',
+                error: results,
+              });
+              return;
+            }
+
             syncIsRecent = true;
             sendUpdate({ aggregate_replication_status: 'not_required' });
-          })
-          .catch(function(err) {
-            $log.error('Error replicating remote server', err);
-            sendUpdate({
-              aggregate_replication_status: 'required',
-              error: err,
-            });
           })
           .finally(function() {
             inProgressSync = undefined;

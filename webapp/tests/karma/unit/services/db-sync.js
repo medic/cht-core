@@ -10,7 +10,6 @@ describe('DBSync service', () => {
     allDocs,
     isOnlineOnly,
     userCtx,
-    $q,
     sync,
     Auth,
     $interval,
@@ -19,7 +18,7 @@ describe('DBSync service', () => {
   beforeEach(() => {
     recursiveOn = sinon.stub();
     recursiveOn.callsFake(() => {
-      const promise = $q.resolve();
+      const promise = Q.resolve();
       promise.on = recursiveOn;
       return promise;
     });
@@ -34,17 +33,6 @@ describe('DBSync service', () => {
     sync = sinon.stub();
     Auth = sinon.stub();
 
-    /*
-    Injecting the $q object requires the use of digest() throughout the tests which is gross
-    Using the defined Q object directly isn't a perfect match because of $q(x) is equivalent to Q.promise(x) while Q(x) is equivalent to $q.resolve(x)
-    */
-    $q = func => Q.promise(func);
-    $q.all = Q.all;
-    $q.resolve = Q.resolve;
-    $q.when = Q.when;
-    $q.defer = Q.defer;
-    $q.reject = Q.reject;
-
     module('inboxApp');
     module($provide => {
       $provide.factory(
@@ -55,7 +43,7 @@ describe('DBSync service', () => {
           sync: sync,
         })
       );
-      $provide.value('$q', $q);
+      $provide.value('$q', Q);
       $provide.value('Session', {
         isOnlineOnly: isOnlineOnly,
         userCtx: userCtx,
@@ -77,8 +65,7 @@ describe('DBSync service', () => {
       allDocs,
       userCtx,
       sync,
-      Auth,
-      $q
+      Auth
     );
   });
 
@@ -93,7 +80,7 @@ describe('DBSync service', () => {
 
     it('starts bi-direction replication for non-admin', () => {
       isOnlineOnly.returns(false);
-      Auth.returns($q.resolve());
+      Auth.returns(Q.resolve());
 
       return service.sync().then(() => {
         expect(Auth.callCount).to.equal(1);
@@ -107,7 +94,7 @@ describe('DBSync service', () => {
 
     it('syncs automatically after interval', () => {
       isOnlineOnly.returns(false);
-      Auth.returns($q.resolve());
+      Auth.returns(Q.resolve());
 
       return service.sync().then(() => {
         expect(from.callCount).to.equal(1);
@@ -118,7 +105,7 @@ describe('DBSync service', () => {
 
     it('does not attempt sync while offline', () => {
       isOnlineOnly.returns(false);
-      Auth.returns($q.resolve());
+      Auth.returns(Q.resolve());
 
       service.setOnlineStatus(false);
       return service.sync().then(() => {
@@ -128,7 +115,7 @@ describe('DBSync service', () => {
 
     it('multiple calls to sync yield one attempt', () => {
       isOnlineOnly.returns(false);
-      Auth.returns($q.resolve());
+      Auth.returns(Q.resolve());
 
       service.sync();
       return service.sync().then(() => {
@@ -138,7 +125,7 @@ describe('DBSync service', () => {
 
     it('sync scenarios based on connectivity state', () => {
       isOnlineOnly.returns(false);
-      Auth.returns($q.resolve());
+      Auth.returns(Q.resolve());
 
       // sync with default online status
       return service.sync().then(() => {
@@ -171,7 +158,7 @@ describe('DBSync service', () => {
 
     it('does not sync to remote if user lacks "can_edit" permission', () => {
       isOnlineOnly.returns(false);
-      Auth.returns($q.reject('unauthorized'));
+      Auth.returns(Q.reject('unauthorized'));
 
       const onUpdate = sinon.stub();
       service.addUpdateListener(onUpdate);
@@ -207,9 +194,9 @@ describe('DBSync service', () => {
 
     before(() => {
       isOnlineOnly.returns(false);
-      Auth.returns($q.resolve());
+      Auth.returns(Q.resolve());
       userCtx.returns({ name: 'mobile', roles: ['district-manager'] });
-      allDocs.returns($q.resolve({ rows: [] }));
+      allDocs.returns(Q.resolve({ rows: [] }));
       to.returns({ on: recursiveOn });
       from.returns({ on: recursiveOn });
       return service.sync().then(() => {
