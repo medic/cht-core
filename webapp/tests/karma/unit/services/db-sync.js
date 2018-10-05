@@ -13,12 +13,14 @@ describe('DBSync service', () => {
     sync,
     Auth,
     $interval,
-    recursiveOn;
+    recursiveOn,
+    replicationResult;
 
   beforeEach(() => {
+    replicationResult = Q.resolve;
     recursiveOn = sinon.stub();
     recursiveOn.callsFake(() => {
-      const promise = Q.resolve();
+      const promise = replicationResult();
       promise.on = recursiveOn;
       return promise;
     });
@@ -120,6 +122,46 @@ describe('DBSync service', () => {
       service.sync();
       return service.sync().then(() => {
         expect(from.callCount).to.equal(1);
+      });
+    });
+
+    it('force sync while offline still syncs', () => {
+      isOnlineOnly.returns(false);
+      Auth.returns(Q.resolve());
+
+      service.setOnlineStatus(false);
+      return service.sync(true).then(() => {
+        expect(from.callCount).to.equal(1);
+      });
+    });
+
+    it('error in replication results in "required" status', () => {
+      isOnlineOnly.returns(false);
+      Auth.returns(Q.resolve());
+
+      replicationResult = () => Q.reject('error');
+      const onUpdate = sinon.stub();
+      service.addUpdateListener(onUpdate);
+
+      return service.sync().then(() => {
+        expect(onUpdate.callCount).to.eq(4);
+        expect(onUpdate.args[0][0]).to.deep.eq({
+          aggregate_replication_status: 'in_progress',
+        });
+        expect(onUpdate.args[1][0]).to.deep.eq({
+          directed_replication_status: 'failure',
+          direction: 'from',
+          error: 'error',
+        });
+        expect(onUpdate.args[2][0]).to.deep.eq({
+          directed_replication_status: 'failure',
+          direction: 'to',
+          error: 'error',
+        });
+        expect(onUpdate.args[3][0]).to.contain({
+          aggregate_replication_status: 'required',
+        });
+        expect(onUpdate.args[3][0].error).to.deep.eq(['error', 'error']);
       });
     });
 

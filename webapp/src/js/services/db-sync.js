@@ -67,12 +67,16 @@ angular
     };
 
     var replicateTo = function() {
+      var AUTH_FAILURE = {};
       return Auth('can_edit')
-        .then(function() {
-          return replicate('to');
-        })
         .catch(function() {
-          // not authorized to replicate to server - that's ok
+          // not authorized to replicate to server - that's ok. Silently skip replication.to
+          return AUTH_FAILURE;
+        })
+        .then(function(err) {
+          if (err !== AUTH_FAILURE) {
+            return replicate('to');
+          }
         });
     };
 
@@ -88,6 +92,7 @@ angular
           sendUpdate({
             direction: direction,
             directed_replication_status: 'failure',
+            error: error,
           });
           return error;
         });
@@ -101,8 +106,8 @@ angular
 
     // inProgressSync prevents multiple concurrent replications
     var inProgressSync;
-    var sync = function() {
-      if (!knownOnlineState) {
+    var sync = function(force) {
+      if (!knownOnlineState && !force) {
         return $q.resolve();
       }
 
@@ -117,12 +122,14 @@ angular
             sendUpdateForDirectedReplication(replicateTo(), 'to'),
           ])
           .then(function(results) {
-            // if $q.all is successful, results should be [undefined, undefined]
-            if (!Array.isArray(results)) {
-              $log.error('Error replicating remote server', results);
+            var errors = _.filter(results, function(result) {
+              return result;
+            });
+            if (errors.length > 0) {
+              $log.error('Error replicating remote server', errors);
               sendUpdate({
                 aggregate_replication_status: 'required',
-                error: results,
+                error: errors,
               });
               return;
             }
@@ -192,7 +199,7 @@ angular
        *
        * @returns Promise which resolves when both directions of the replication complete.
        */
-      sync: function() {
+      sync: function(force) {
         if (Session.isOnlineOnly()) {
           sendUpdate({ disabled: true });
           return $q.resolve();
@@ -204,7 +211,7 @@ angular
         }
 
         resetSyncInterval();
-        return sync();
+        return sync(force);
       },
     };
   });

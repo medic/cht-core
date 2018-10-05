@@ -627,7 +627,7 @@ var feedback = require('../modules/feedback'),
     };
 
     $scope.replicate = function() {
-      DBSync.sync();
+      DBSync.sync(true);
     };
 
     CountMessages.init();
