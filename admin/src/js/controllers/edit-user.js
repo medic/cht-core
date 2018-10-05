@@ -298,7 +298,13 @@ angular.module('controllers').controller('EditUserCtrl',
                   $uibModalInstance.close();
                 })
                 .catch(function(err) {
-                  $scope.setError(err, err.data.error);
+                  if (err.status === 400) {
+                    Translate(err.data.error.key, { username: $scope.editUserModel.username }).then(function(value) {
+                    $scope.setError(err, value);
+                  });
+                  } else {
+                    $scope.setError(err, err.data.error.message);
+                  }
                 });
             });
           })
