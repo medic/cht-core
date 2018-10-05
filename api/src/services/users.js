@@ -93,10 +93,10 @@ const validateContact = (id, placeID) => {
   return db.medic.get(id)
     .then(doc => {
       if (doc.type !== 'person') {
-        return Promise.reject(error400(config.translate('contact.type.wrong')));
+        return Promise.reject(error400('Wrong type, contact is not a person.'));
       }
       if (!module.exports._hasParent(doc, placeID)) {
-        return Promise.reject(error400(config.translate('contact.place.invalid')));
+        return Promise.reject(error400('Contact is not within place.'));
       }
       return doc;
     });
@@ -106,7 +106,7 @@ const validateUser = id => {
   return db.users.get(id)
     .catch(err => {
       if (err.status === 404) {
-        err.message = config.translate('user.not_found');
+        err.message = 'Failed to find user.';
       }
       return Promise.reject(err);
     });
@@ -116,7 +116,7 @@ const validateUserSettings = id => {
   return db.medic.get(id)
     .catch(err => {
       if (err.status === 404) {
-        err.message = config.translate('user.settings.not_found');
+        err.message = 'Failed to find user settings.';
       }
       return Promise.reject(err);
     });
@@ -130,19 +130,19 @@ const validateNewUsernameForDb = (username, database) => {
         return;
       }
       // unexpected error
-      err.message = config.translate('username.new.invalid') + ' ' + err.message;
+      err.message = 'Failed to validate new username: ' + err.message;
       return Promise.reject(err);
     })
     .then(user => {
       if (user) {
-        return Promise.reject(error400(config.translate('username.taken',{ username : username })));
+        return Promise.reject(error400({ message: 'Error updating user', key: 'username.taken' }));
       }
     });
 };
 
 const validateNewUsername = username => {
   if (!USERNAME_WHITELIST.test(username)) {
-    return Promise.reject(error400(config.translate('username.invalid')));
+    return Promise.reject(error400('Invalid user name. Valid characters are lower case letters, numbers, underscore (_), and hyphen (-).'));
   }
   return Promise.all([
     validateNewUsernameForDb(username, db.users),
@@ -227,7 +227,7 @@ const setContactParent = data => {
     return places.getPlace(data.contact.parent)
       .then(place => {
         if (!module.exports._hasParent(place, data.place)) {
-          return Promise.reject(error400(config.translate('contact.place.invalid')));
+          return Promise.reject(error400('Contact is not within place.'));
         }
         // save result to contact object
         data.contact.parent = lineage.minifyLineage(place);
@@ -380,10 +380,10 @@ const deleteUser = id => {
 
 const validatePassword = password => {
   if (password.length < PASSWORD_MINIMUM_LENGTH) {
-    return error400(config.translate(password.length.minimum, { minimum : PASSWORD_MINIMUM_LENGTH }));
+    return error400(`The password must be at least ${PASSWORD_MINIMUM_LENGTH} characters long.`);
   }
   if (passwordTester(password) < PASSWORD_MINIMUM_SCORE) {
-    return error400(config.translate('password.weak'));
+    return error400('The password is too easy to guess. Include a range of types of characters to increase the score.');
   }
 };
 
@@ -464,7 +464,7 @@ module.exports = {
   createUser: data => {
     const missing = missingFields(data);
     if (missing.length > 0) {
-      return Promise.reject(error400(config.translate('fields.required') + ' ' + missing.join(', ')));
+      return Promise.reject(error400('Missing required fields: ' + missing.join(', ')));
     }
     const passwordError = validatePassword(data.password);
     if (passwordError) {
@@ -502,7 +502,7 @@ module.exports = {
     if (!fullAccess) {
       const illegalAttempts = illegalDataModificationAttempts(data);
       if (illegalAttempts.length) {
-        const err = Error(config.translate('permissions.required') + ' ' + illegalAttempts.join(','));
+        const err = Error('You do not have permission to modify: ' + illegalAttempts.join(','));
         err.status = 401;
         return Promise.reject(err);
       }
@@ -515,7 +515,7 @@ module.exports = {
         !_.isNull(data.contact) &&
         !_.some(props, key => (!_.isNull(data[key]) && !_.isUndefined(data[key])))
     ) {
-      return Promise.reject(error400(config.translate('fields.one.required') + ' ' + props.join(', ')));
+      return Promise.reject(error400('One of the following fields are required: ' + props.join(', ')));
     }
     if (data.password) {
       const passwordError = validatePassword(data.password);
@@ -538,7 +538,7 @@ module.exports = {
               return places.getPlace(user.facility_id);
             } else if (_.isNull(data.place)) {
               if (settings.roles && isOffline(settings.roles)) {
-                return Promise.reject(error400(config.translate('fields.place.required')));
+                return Promise.reject(error400('Place field is required for offline users'));
               }
               user.facility_id = null;
               settings.facility_id = null;
@@ -549,7 +549,7 @@ module.exports = {
               return module.exports._validateContact(settings.contact_id, user.facility_id);
             } else if (_.isNull(data.contact)) {
               if (settings.roles && isOffline(settings.roles)) {
-                return Promise.reject(error400(config.translate('fields.contact.required')));
+                return Promise.reject(error400('Contact field is required for offline users'));
               }
               settings.contact_id = null;
             }
