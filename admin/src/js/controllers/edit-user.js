@@ -299,17 +299,21 @@ angular.module('controllers').controller('EditUserCtrl',
                 })
                 .catch(function(err) {
                   if (err.status === 400) {
-                    Translate(err.data.error.key, { username: $scope.editUserModel.username }).then(function(value) {
-                    $scope.setError(err, value);
+                    Translate('username.taken', { username: $scope.editUserModel.username }).then(function(value) {
+                      $scope.setError(err, value);
                   });
                   } else {
-                    $scope.setError(err, err.data.error.message);
+                    Translate('Error\ updating\ user').then(function(value) {
+                      $scope.setError(err, value);
+                    });
                   }
                 });
             });
           })
           .catch(function(err) {
-            $scope.setError(err, 'Error validating user');
+            Translate('error.validating.user').then(function(value) {
+              $scope.setError(err, value);
+            });
           });
       } else {
         $scope.setError();

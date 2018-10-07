@@ -135,7 +135,7 @@ const validateNewUsernameForDb = (username, database) => {
     })
     .then(user => {
       if (user) {
-        return Promise.reject(error400({ message: 'Error updating user', key: 'username.taken' }));
+        return Promise.reject(error400('Username "'+ username +'" already taken.'));
       }
     });
 };
