@@ -186,17 +186,17 @@ module.exports = {
         if (err) {
           logger.error('Error running "isISOWeek" validation', err);
           callback(err, result);
+        } else {
+          const nextYear = doc[yearFieldName] + 1;
+          // The week with January 1st in it is the first week of the year.
+          const isValid =
+            doc[weekFieldName] >= 1 &&
+            doc[weekFieldName] <=
+              moment(`${nextYear}-01-01`)
+                .subtract(7, 'd')
+                .isoWeeks();
+          callback(null, isValid);
         }
-
-        const nextYear = doc[yearFieldName] + 1;
-        // The week with January 1st in it is the first week of the year.
-        const isValid =
-          doc[weekFieldName] >= 1 &&
-          doc[weekFieldName] <=
-            moment(`${nextYear}-01-01`)
-              .subtract(7, 'd')
-              .isoWeeks();
-        callback(null, isValid);
       });
     },
   },
