@@ -195,7 +195,11 @@ module.exports = {
               moment(`${nextYear}-01-01`)
                 .subtract(7, 'd')
                 .isoWeeks();
-          callback(null, isValid);
+          if (isValid) {
+            callback(null, isValid);
+          } else {
+            callback(new Error('Validation failed'), isValid);
+          }
         }
       });
     },
