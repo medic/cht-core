@@ -352,7 +352,7 @@ describe('validations', () => {
       year: 2016,
     };
     validation.validate(doc, validations, function(errors) {
-      assert.equal(view.callCount, 1);
+      assert.equal(view.callCount, 2);
       assert.equal(view.args[0][0], 'medic-client');
       assert.equal(view.args[0][1], 'reports_by_freetext');
       assert.equal(errors.length, 0);
@@ -376,7 +376,7 @@ describe('validations', () => {
       year: 2016,
     };
     validation.validate(doc, validations, function(errors) {
-      assert.equal(view.callCount, 1);
+      assert.equal(view.callCount, 2);
       assert.equal(view.args[0][0], 'medic-client');
       assert.equal(view.args[0][1], 'reports_by_freetext');
       assert.equal(errors.length, 1);
