@@ -86,8 +86,8 @@
               heading="child.doc.name"
               summary="child.doc.title"
               primary-contact="child.isPrimaryContact"
-              is-muted="child.doc.muted"
-              display-muted="!selected.doc.muted"
+              is-muted="child.doc.muted && !selected.doc.muted"
+              display-muted="true"
             />
           </ul>
           <ul ng-if="selected.doc.type === 'clinic'">
@@ -98,8 +98,8 @@
               dob="child.doc.date_of_birth"
               primary-contact="child.isPrimaryContact"
               task-count="child.taskCount"
-              is-muted="child.doc.muted"
-              display-muted="!selected.doc.muted"
+              is-muted="child.doc.muted && !selected.doc.muted"
+              display-muted="true"
             />
           </ul>
           <ul class="action deceased">
@@ -124,8 +124,8 @@
               route="'contacts'"
               heading="child.doc.name"
               summary="'contact.primary_contact_name' | translate:child.doc.contact"
-              is-muted="child.doc.muted"
-              display-muted="!selected.doc.muted"
+              is-muted="child.doc.muted && !selected.doc.muted"
+              display-muted="true"
             />
           </ul>
         </div>
