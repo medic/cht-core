@@ -1,10 +1,10 @@
 var transitions,
-    sinon = require('sinon'),
-    assert = require('chai').assert,
-    db = require('../../src/db-nano'),
-    dbPouch = require('../../src/db-pouch'),
-    config = require('../../src/config'),
-    configGet;
+  sinon = require('sinon'),
+  assert = require('chai').assert,
+  db = require('../../src/db-nano'),
+  dbPouch = require('../../src/db-pouch'),
+  config = require('../../src/config'),
+  configGet;
 
 describe('functional transitions', () => {
   beforeEach(() => {
@@ -12,7 +12,7 @@ describe('functional transitions', () => {
     sinon.stub(dbPouch.medic, 'changes').returns({
       on: () => {
         return { on: () => {} };
-      }
+      },
     });
     transitions = require('../../src/transitions/index');
   });
@@ -25,12 +25,12 @@ describe('functional transitions', () => {
         form: 'V',
         recipient: 'reporting_unit',
         message: 'alert!',
-        condition: 'true'
-      }
+        condition: 'true',
+      },
     });
-    sinon.stub(dbPouch.sentinel, 'get').rejects({status: 404});
-    sinon.stub(dbPouch.medic, 'get').rejects({status: 404});
-    var saveDoc = sinon.stub(db.audit, 'saveDoc').callsArg(1);
+    sinon.stub(dbPouch.sentinel, 'get').rejects({ status: 404 });
+    sinon.stub(dbPouch.medic, 'get').rejects({ status: 404 });
+    var saveDoc = sinon.stub(dbPouch.medic, 'put').callsArg(1);
     var infoDoc = sinon.stub(dbPouch.sentinel, 'put').resolves({});
 
     transitions.loadTransitions();
@@ -39,9 +39,9 @@ describe('functional transitions', () => {
       seq: '44',
       doc: {
         type: 'data_record',
-        form: 'V'
+        form: 'V',
       },
-      info: {}
+      info: {},
     };
     transitions.applyTransitions(change1, function() {
       assert.equal(saveDoc.callCount, 1);
@@ -55,7 +55,7 @@ describe('functional transitions', () => {
         id: 'abc',
         seq: '45',
         doc: saved,
-        info: info
+        info: info,
       };
       transitions.applyTransitions(change2, function() {
         // not updated
@@ -72,13 +72,13 @@ describe('functional transitions', () => {
         form: 'V',
         recipient: 'reporting_unit',
         message: 'alert!',
-        condition: 'doc.fields.last_menstrual_period == 15'
-      }
+        condition: 'doc.fields.last_menstrual_period == 15',
+      },
     });
 
-    sinon.stub(dbPouch.sentinel, 'get').rejects({status: 404});
-    sinon.stub(dbPouch.medic, 'get').rejects({status: 404});
-    var saveDoc = sinon.stub(db.audit, 'saveDoc').callsArg(1);
+    sinon.stub(dbPouch.sentinel, 'get').rejects({ status: 404 });
+    sinon.stub(dbPouch.medic, 'get').rejects({ status: 404 });
+    var saveDoc = sinon.stub(dbPouch.medic, 'put').callsArg(1);
     var infoDoc = sinon.stub(dbPouch.sentinel, 'put').resolves({});
 
     transitions.loadTransitions();
@@ -87,9 +87,9 @@ describe('functional transitions', () => {
       seq: '44',
       doc: {
         type: 'data_record',
-        form: 'V'
+        form: 'V',
       },
-      info: {}
+      info: {},
     };
     transitions.applyTransitions(change1, function() {
       // first run fails so no save
@@ -101,9 +101,9 @@ describe('functional transitions', () => {
         doc: {
           type: 'data_record',
           form: 'V',
-          fields: { last_menstrual_period: 15 }
+          fields: { last_menstrual_period: 15 },
         },
-        info: {}
+        info: {},
       };
       transitions.applyTransitions(change2, function() {
         assert.equal(saveDoc.callCount, 1);
@@ -121,19 +121,21 @@ describe('functional transitions', () => {
       conditional_alerts: {},
       default_responses: {},
     });
-    configGet.withArgs('default_responses').returns({ start_date: '2010-01-01' });
+    configGet
+      .withArgs('default_responses')
+      .returns({ start_date: '2010-01-01' });
     configGet.withArgs('alerts').returns({
       V: {
         form: 'V',
         recipient: 'reporting_unit',
         message: 'alert!',
-        condition: 'doc.fields.last_menstrual_period == 15'
-      }
+        condition: 'doc.fields.last_menstrual_period == 15',
+      },
     });
 
-    sinon.stub(dbPouch.sentinel, 'get').rejects({status: 404});
-    sinon.stub(dbPouch.medic, 'get').rejects({status: 404});
-    var saveDoc = sinon.stub(db.audit, 'saveDoc').callsArg(1);
+    sinon.stub(dbPouch.sentinel, 'get').rejects({ status: 404 });
+    sinon.stub(dbPouch.medic, 'get').rejects({ status: 404 });
+    var saveDoc = sinon.stub(dbPouch.medic, 'put').callsArg(1);
     var infoDoc = sinon.stub(dbPouch.sentinel, 'put').resolves({});
 
     transitions.loadTransitions();
@@ -144,9 +146,9 @@ describe('functional transitions', () => {
         type: 'data_record',
         form: 'V',
         from: '123456798',
-        reported_date: new Date()
+        reported_date: new Date(),
       },
-      info: {}
+      info: {},
     };
     transitions.applyTransitions(change1, function() {
       assert.equal(saveDoc.callCount, 1);
@@ -161,7 +163,7 @@ describe('functional transitions', () => {
         id: 'abc',
         seq: '45',
         doc: doc,
-        info: info
+        info: info,
       };
       transitions.applyTransitions(change2, function() {
         assert.equal(saveDoc.callCount, 2);
@@ -175,5 +177,4 @@ describe('functional transitions', () => {
       });
     });
   });
-
 });

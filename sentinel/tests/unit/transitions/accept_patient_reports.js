@@ -1,14 +1,13 @@
 require('chai').should();
 const sinon = require('sinon'),
-      moment = require('moment'),
-      db = require('../../../src/db-nano'),
-      utils = require('../../../src/lib/utils'),
-      config = require('../../../src/config'),
-      transition = require('../../../src/transitions/accept_patient_reports'),
-      messages = require('../../../src/lib/messages');
+  moment = require('moment'),
+  db = require('../../../src/db-nano'),
+  utils = require('../../../src/lib/utils'),
+  config = require('../../../src/config'),
+  transition = require('../../../src/transitions/accept_patient_reports'),
+  messages = require('../../../src/lib/messages');
 
 describe('accept_patient_reports', () => {
-
   afterEach(done => {
     sinon.restore();
     done();
@@ -22,23 +21,24 @@ describe('accept_patient_reports', () => {
       transition.filter({ form: 'x' }).should.equal(false);
     });
     it('returns true', () => {
-      sinon.stub(config, 'get').returns([ { form: 'x' }, { form: 'z' } ]);
-      transition.filter({
-        form: 'x',
-        type: 'data_record',
-        reported_date: 1
-      }).should.equal(true);
+      sinon.stub(config, 'get').returns([{ form: 'x' }, { form: 'z' }]);
+      transition
+        .filter({
+          form: 'x',
+          type: 'data_record',
+          reported_date: 1,
+        })
+        .should.equal(true);
     });
   });
 
   describe('onMatch', () => {
-
     it('callback empty if form not included', done => {
-      sinon.stub(config, 'get').returns([ { form: 'x' }, { form: 'z' } ]);
+      sinon.stub(config, 'get').returns([{ form: 'x' }, { form: 'z' }]);
       const change = {
         doc: {
-          form: 'y'
-        }
+          form: 'y',
+        },
       };
       transition.onMatch(change).then(changed => {
         (typeof changed).should.equal('undefined');
@@ -47,43 +47,47 @@ describe('accept_patient_reports', () => {
     });
 
     it('with no patient id adds error msg and response', done => {
-      sinon.stub(config, 'get').returns([ { form: 'x' }, { form: 'z' } ]);
+      sinon.stub(config, 'get').returns([{ form: 'x' }, { form: 'z' }]);
       sinon.stub(utils, 'getRegistrations').callsArgWith(1, null, []);
 
       const doc = {
         form: 'x',
-        fields: { patient_id: 'x' }
+        fields: { patient_id: 'x' },
       };
 
       transition.onMatch({ doc: doc }).then(() => {
         doc.errors.length.should.equal(1);
-        doc.errors[0].message.should.equal('messages.generic.registration_not_found');
+        doc.errors[0].message.should.equal(
+          'messages.generic.registration_not_found'
+        );
         done();
       });
     });
-
   });
 
   describe('handleReport', () => {
-
     // Because patients can be created through the UI and not neccessarily have
     // a registration at all
     it('with no registrations does not error', done => {
       const doc = {
         fields: { patient_id: 'x' },
-        from: '+123'
+        from: '+123',
       };
       sinon.stub(utils, 'getRegistrations').callsArgWith(1, null, []);
 
       const config = {
-        messages: [{
-          event_type: 'registration_not_found',
-          message: [{
-            content: 'not found {{patient_id}}',
-            locale: 'en'
-          }],
-          recipient: 'reporting_unit'
-        }]
+        messages: [
+          {
+            event_type: 'registration_not_found',
+            message: [
+              {
+                content: 'not found {{patient_id}}',
+                locale: 'en',
+              },
+            ],
+            recipient: 'reporting_unit',
+          },
+        ],
       };
 
       transition._handleReport(doc, config, () => {
@@ -103,22 +107,27 @@ describe('accept_patient_reports', () => {
           parent: {
             contact: {
               phone: '+1234',
-              name: 'woot'
-            }
-          }
+              name: 'woot',
+            },
+          },
         },
-        patient: patient
+        patient: patient,
       };
       sinon.stub(utils, 'getRegistrations').callsArgWith(1, null, []);
       const config = {
-        messages: [{
-          event_type: 'report_accepted',
-          message: [{
-            content: 'Thank you, {{contact.name}}. ANC visit for {{patient_name}} ({{patient_id}}) has been recorded.',
-            locale: 'en'
-          }],
-          recipient: 'reporting_unit'
-        }]
+        messages: [
+          {
+            event_type: 'report_accepted',
+            message: [
+              {
+                content:
+                  'Thank you, {{contact.name}}. ANC visit for {{patient_name}} ({{patient_id}}) has been recorded.',
+                locale: 'en',
+              },
+            ],
+            recipient: 'reporting_unit',
+          },
+        ],
       };
       transition._handleReport(doc, config, () => {
         doc.tasks[0].messages[0].message.should.equal(
@@ -135,9 +144,11 @@ describe('accept_patient_reports', () => {
       const registrations = [
         { _id: 'a' }, // should not be silenced as it's the doc being processed
         { _id: 'b' }, // should be silenced
-        { _id: 'c' }  // should be silenced
+        { _id: 'c' }, // should be silenced
       ];
-      sinon.stub(utils, 'getRegistrations').callsArgWith(1, null, registrations);
+      sinon
+        .stub(utils, 'getRegistrations')
+        .callsArgWith(1, null, registrations);
       transition._handleReport(doc, config, (err, complete) => {
         complete.should.equal(true);
         transition._silenceReminders.callCount.should.equal(2);
@@ -153,8 +164,12 @@ describe('accept_patient_reports', () => {
       sinon.stub(transition, '_silenceReminders').callsArgWith(3, null, true);
       const doc = { _id: 'z', fields: { patient_id: 'x' } };
       const config = { silence_type: 'x', messages: [] };
-      const registrations = [ { _id: 'a', reported_date: '2017-02-05T09:23:07.853Z' } ];
-      sinon.stub(utils, 'getRegistrations').callsArgWith(1, null, registrations);
+      const registrations = [
+        { _id: 'a', reported_date: '2017-02-05T09:23:07.853Z' },
+      ];
+      sinon
+        .stub(utils, 'getRegistrations')
+        .callsArgWith(1, null, registrations);
       transition._handleReport(doc, config, (err, complete) => {
         complete.should.equal(true);
         doc.registration_id.should.equal(registrations[0]._id);
@@ -169,16 +184,17 @@ describe('accept_patient_reports', () => {
       const registrations = [
         { _id: 'a', reported_date: '2017-02-05T09:23:07.853Z' },
         { _id: 'c', reported_date: '2018-02-05T09:23:07.853Z' },
-        { _id: 'b', reported_date: '2016-02-05T09:23:07.853Z' }
+        { _id: 'b', reported_date: '2016-02-05T09:23:07.853Z' },
       ];
-      sinon.stub(utils, 'getRegistrations').callsArgWith(1, null, registrations);
+      sinon
+        .stub(utils, 'getRegistrations')
+        .callsArgWith(1, null, registrations);
       transition._handleReport(doc, config, (err, complete) => {
         complete.should.equal(true);
         doc.registration_id.should.equal(registrations[1]._id);
         done();
       });
     });
-
   });
 
   describe('silenceReminders', () => {
@@ -186,28 +202,44 @@ describe('accept_patient_reports', () => {
       const reportId = 'reportid';
       const report = {
         _id: reportId,
-        reported_date: 123
+        reported_date: 123,
       };
       const registration = {
         _id: 'test-registration',
         scheduled_tasks: [
           { state: 'scheduled' },
           { state: 'scheduled' },
-          { state: 'pending' }
-        ]
+          { state: 'pending' },
+        ],
       };
 
-      sinon.stub(transition, '_findToClear').returns(registration.scheduled_tasks);
+      sinon
+        .stub(transition, '_findToClear')
+        .returns(registration.scheduled_tasks);
       const setTaskState = sinon.stub(utils, 'setTaskState');
-      sinon.stub(db.audit, 'saveDoc').callsArg(1);
 
       transition._silenceReminders(registration, report, null, () => {
         registration._id.should.equal('test-registration');
         registration.scheduled_tasks.length.should.equal(3);
         setTaskState.callCount.should.equal(3);
-        setTaskState.getCall(0).args.should.deep.equal([{ state: 'scheduled', cleared_by: reportId }, 'cleared']);
-        setTaskState.getCall(1).args.should.deep.equal([{ state: 'scheduled', cleared_by: reportId }, 'cleared']);
-        setTaskState.getCall(2).args.should.deep.equal([{ state: 'pending', cleared_by: reportId }, 'cleared']);
+        setTaskState
+          .getCall(0)
+          .args.should.deep.equal([
+            { state: 'scheduled', cleared_by: reportId },
+            'cleared',
+          ]);
+        setTaskState
+          .getCall(1)
+          .args.should.deep.equal([
+            { state: 'scheduled', cleared_by: reportId },
+            'cleared',
+          ]);
+        setTaskState
+          .getCall(2)
+          .args.should.deep.equal([
+            { state: 'pending', cleared_by: reportId },
+            'cleared',
+          ]);
 
         registration.scheduled_tasks[0].cleared_by.should.equal(reportId);
         registration.scheduled_tasks[1].cleared_by.should.equal(reportId);
@@ -222,30 +254,78 @@ describe('accept_patient_reports', () => {
 
     it('returns no tasks on registrations with none', () => {
       const registration = {
-        scheduled_tasks: []
+        scheduled_tasks: [],
       };
 
-      transition._findToClear(registration, new Date(), {silence_type: 'test'}).should.deep.equal([]);
-      transition._findToClear(registration, new Date(), {silence_type: 'test', silence_for: '1000 years'}).should.deep.equal([]);
+      transition
+        ._findToClear(registration, new Date(), { silence_type: 'test' })
+        .should.deep.equal([]);
+      transition
+        ._findToClear(registration, new Date(), {
+          silence_type: 'test',
+          silence_for: '1000 years',
+        })
+        .should.deep.equal([]);
     });
     describe('without silence_for range', () => {
       const now = moment();
       const registration = {
         scheduled_tasks: [
-          { _id: 1, due: now.clone().subtract(1, 'days'), state: 'pending',       group: 1, type: 'x' },
-          { _id: 2, due: now.clone().add(     1, 'days'), state: 'scheduled',     group: 1, type: 'x' },
-          { _id: 3, due: now.clone().add(     1, 'days'), state: 'scheduled',     group: 2, type: 'x' },
-          { _id: 4, due: now.clone().add(     1, 'days'), state: 'scheduled',     group: 2, type: 'y' },
-          { _id: 5, due: now.clone().add(     1, 'days'), state: 'not-scheduled', group: 2, type: 'y' },
-          { _id: 6, due: now.clone().add(     1, 'days'), state: 'scheduled',     group: 3, type: 'y' }
-        ]};
+          {
+            _id: 1,
+            due: now.clone().subtract(1, 'days'),
+            state: 'pending',
+            group: 1,
+            type: 'x',
+          },
+          {
+            _id: 2,
+            due: now.clone().add(1, 'days'),
+            state: 'scheduled',
+            group: 1,
+            type: 'x',
+          },
+          {
+            _id: 3,
+            due: now.clone().add(1, 'days'),
+            state: 'scheduled',
+            group: 2,
+            type: 'x',
+          },
+          {
+            _id: 4,
+            due: now.clone().add(1, 'days'),
+            state: 'scheduled',
+            group: 2,
+            type: 'y',
+          },
+          {
+            _id: 5,
+            due: now.clone().add(1, 'days'),
+            state: 'not-scheduled',
+            group: 2,
+            type: 'y',
+          },
+          {
+            _id: 6,
+            due: now.clone().add(1, 'days'),
+            state: 'scheduled',
+            group: 3,
+            type: 'y',
+          },
+        ],
+      };
 
       it('returns all scheduled or pending scheduled_tasks of the given type', () => {
-        const results = transition._findToClear(registration, now.valueOf(), {silence_type: 'x'});
+        const results = transition._findToClear(registration, now.valueOf(), {
+          silence_type: 'x',
+        });
         ids(results).should.deep.equal([1, 2, 3]);
       });
       it('or multiple types', () => {
-        const results = transition._findToClear(registration, now.valueOf(), {silence_type: 'x,y'});
+        const results = transition._findToClear(registration, now.valueOf(), {
+          silence_type: 'x,y',
+        });
         ids(results).should.deep.equal([1, 2, 3, 4, 6]);
       });
     });
@@ -255,27 +335,87 @@ describe('accept_patient_reports', () => {
       const registration = {
         scheduled_tasks: [
           // A group with a task before, and after, but not within range
-          { _id: 1,  due: now.clone().subtract(1, 'days'), state: 'sent',      group: 1,  type: 'x'},
-          { _id: 2,  due: now.clone().add(     9, 'days'), state: 'scheduled', group: 1,  type: 'x'},
+          {
+            _id: 1,
+            due: now.clone().subtract(1, 'days'),
+            state: 'sent',
+            group: 1,
+            type: 'x',
+          },
+          {
+            _id: 2,
+            due: now.clone().add(9, 'days'),
+            state: 'scheduled',
+            group: 1,
+            type: 'x',
+          },
           // A group with a task in range and subsequent tasks out of range
-          { _id: 3,  due: now.clone().add(     1, 'days'), state: 'pending',   group: 2,  type: 'x'},
-          { _id: 4,  due: now.clone().add(     9, 'days'), state: 'scheduled', group: 2,  type: 'x'},
+          {
+            _id: 3,
+            due: now.clone().add(1, 'days'),
+            state: 'pending',
+            group: 2,
+            type: 'x',
+          },
+          {
+            _id: 4,
+            due: now.clone().add(9, 'days'),
+            state: 'scheduled',
+            group: 2,
+            type: 'x',
+          },
           // A group that overlaps with the above group and is also a valid group
-          { _id: 31, due: now.clone().add(     2, 'days'), state: 'scheduled', group: 21, type: 'x'},
-          { _id: 41, due: now.clone().add(    10, 'days'), state: 'scheduled', group: 21, type: 'x'},
+          {
+            _id: 31,
+            due: now.clone().add(2, 'days'),
+            state: 'scheduled',
+            group: 21,
+            type: 'x',
+          },
+          {
+            _id: 41,
+            due: now.clone().add(10, 'days'),
+            state: 'scheduled',
+            group: 21,
+            type: 'x',
+          },
           // A group with no tasks in range
-          { _id: 5,  due: now.clone().add(     9, 'days'), state: 'scheduled', group: 3,  type: 'x'},
+          {
+            _id: 5,
+            due: now.clone().add(9, 'days'),
+            state: 'scheduled',
+            group: 3,
+            type: 'x',
+          },
           // A group in range but of a different type
-          { _id: 6,  due: now.clone().add(     1, 'days'), state: 'scheduled', group: 2,  type: 'y'},
-          { _id: 7,  due: now.clone().add(     9, 'days'), state: 'scheduled', group: 2,  type: 'y'},
-        ]
+          {
+            _id: 6,
+            due: now.clone().add(1, 'days'),
+            state: 'scheduled',
+            group: 2,
+            type: 'y',
+          },
+          {
+            _id: 7,
+            due: now.clone().add(9, 'days'),
+            state: 'scheduled',
+            group: 2,
+            type: 'y',
+          },
+        ],
       };
       it('returns all scheduled or pending scheduled_tasks that are in groups with at least one task in the given range', () => {
-        const results = transition._findToClear(registration, now.valueOf(), {silence_type: 'x', silence_for: silence_for});
+        const results = transition._findToClear(registration, now.valueOf(), {
+          silence_type: 'x',
+          silence_for: silence_for,
+        });
         ids(results).should.deep.equal([1, 2, 3, 4, 31, 41]);
       });
       it('also with multiple types', () => {
-        const results = transition._findToClear(registration, now.valueOf(), {silence_type: 'x,y', silence_for: silence_for});
+        const results = transition._findToClear(registration, now.valueOf(), {
+          silence_type: 'x,y',
+          silence_for: silence_for,
+        });
         ids(results).should.deep.equal([1, 2, 3, 4, 31, 41, 6, 7]);
       });
     });
@@ -284,24 +424,31 @@ describe('accept_patient_reports', () => {
   describe('addMessageToDoc', () => {
     it('Does not add a message if the bool_expr fails', () => {
       const doc = {};
-      const config = {messages: [{
-        event_type: 'report_accepted',
-        bool_expr: 'false'
-      }]};
+      const config = {
+        messages: [
+          {
+            event_type: 'report_accepted',
+            bool_expr: 'false',
+          },
+        ],
+      };
       const stub = sinon.stub(messages, 'addMessage');
       transition._addMessageToDoc(doc, config, []);
       stub.callCount.should.equal(0);
     });
     it('Adds a message if the bool_expr passes', () => {
       const doc = {};
-      const config = {messages: [{
-        event_type: 'report_accepted',
-        bool_expr: 'true'
-      }]};
+      const config = {
+        messages: [
+          {
+            event_type: 'report_accepted',
+            bool_expr: 'true',
+          },
+        ],
+      };
       const stub = sinon.stub(messages, 'addMessage');
       transition._addMessageToDoc(doc, config, []);
       stub.callCount.should.equal(1);
     });
   });
-
 });

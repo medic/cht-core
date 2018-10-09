@@ -81,7 +81,7 @@ async@^0.9.0:
   version "0.9.2"
   resolved "https://registry.yarnpkg.com/async/-/async-0.9.2.tgz#aea74d5e61c1f899613bf64bda66d4c78f2fd17d"
 
-async@^2.1.2, async@^2.6.0:
+async@^2.6.0:
   version "2.6.1"
   resolved "https://registry.yarnpkg.com/async/-/async-2.6.1.tgz#b245a23ca71930044ec53fa46aa00a3e87c6a610"
   dependencies:
@@ -282,12 +282,6 @@ cookie@0.3.1:
 core-util-is@1.0.2, core-util-is@~1.0.0:
   version "1.0.2"
   resolved "https://registry.yarnpkg.com/core-util-is/-/core-util-is-1.0.2.tgz#b5fd54220aa2bc5ab57aab7140c940754503c1a7"
-
-couchdb-audit@^1.1.1:
-  version "1.1.1"
-  resolved "https://registry.yarnpkg.com/couchdb-audit/-/couchdb-audit-1.1.1.tgz#9d5d70273c8f5b937a4a0fe690e45b61cf29dd67"
-  dependencies:
-    async "^2.1.2"
 
 dashdash@^1.12.0:
   version "1.14.1"
