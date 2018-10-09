@@ -84,15 +84,15 @@ var feedback = require('../modules/feedback'),
         return;
       }
 
-      // Listen for directed_replication_status to update replicationStatus.lastSuccess
+      // Listen for directedReplicationStatus to update replicationStatus.lastSuccess
       var now = Date.now();
-      if (update.directed_replication_status === 'success') {
+      if (update.directedReplicationStatus === 'success') {
         $scope.replicationStatus.lastSuccess[update.direction] = now;
         return;
       }
 
-      // Listen for aggregate_replication_status updates
-      var status = update.aggregate_replication_status;
+      // Listen for aggregateReplicationStatus updates
+      var status = update.aggregateReplicationStatus;
       var lastTrigger = $scope.replicationStatus.lastTrigger;
       if (status === 'not_required' || status === 'required') {
         var delay = lastTrigger ? (now - lastTrigger) / 1000 : 'unknown';

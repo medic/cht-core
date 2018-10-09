@@ -146,20 +146,20 @@ describe('DBSync service', () => {
       return service.sync().then(() => {
         expect(onUpdate.callCount).to.eq(4);
         expect(onUpdate.args[0][0]).to.deep.eq({
-          aggregate_replication_status: 'in_progress',
+          aggregateReplicationStatus: 'in_progress',
         });
         expect(onUpdate.args[1][0]).to.deep.eq({
-          directed_replication_status: 'failure',
+          directedReplicationStatus: 'failure',
           direction: 'from',
           error: 'error',
         });
         expect(onUpdate.args[2][0]).to.deep.eq({
-          directed_replication_status: 'failure',
+          directedReplicationStatus: 'failure',
           direction: 'to',
           error: 'error',
         });
         expect(onUpdate.args[3][0]).to.contain({
-          aggregate_replication_status: 'required',
+          aggregateReplicationStatus: 'required',
         });
         expect(onUpdate.args[3][0].error).to.deep.eq(['error', 'error']);
       });
@@ -214,18 +214,18 @@ describe('DBSync service', () => {
 
         expect(onUpdate.callCount).to.eq(4);
         expect(onUpdate.args[0][0]).to.deep.eq({
-          aggregate_replication_status: 'in_progress',
+          aggregateReplicationStatus: 'in_progress',
         });
         expect(onUpdate.args[1][0]).to.deep.eq({
-          directed_replication_status: 'success',
+          directedReplicationStatus: 'success',
           direction: 'from',
         });
         expect(onUpdate.args[2][0]).to.deep.eq({
-          directed_replication_status: 'success',
+          directedReplicationStatus: 'success',
           direction: 'to',
         });
         expect(onUpdate.args[3][0]).to.deep.eq({
-          aggregate_replication_status: 'not_required',
+          aggregateReplicationStatus: 'not_required',
         });
       });
     });

@@ -1,5 +1,4 @@
 module.exports = function(config) {
-
   'use strict';
 
   config.set({
@@ -13,21 +12,21 @@ module.exports = function(config) {
     customLaunchers: {
       Chrome_Headless: {
         base: 'Chrome',
-        flags: ['--headless', '--disable-gpu', '--remote-debugging-port=9222']
-      }
+        flags: ['--headless', '--disable-gpu', '--remote-debugging-port=9222'],
+      },
     },
     preprocessors: {
-      'src/templates/**/*.html': ['ng-html2js']
+      'src/templates/**/*.html': ['ng-html2js'],
     },
     ngHtml2JsPreprocessor: {
-      moduleName: 'templates'
+      moduleName: 'templates',
     },
     files: [
       // used to query html
       'node_modules/jquery/dist/jquery.js',
       'node_modules/underscore/underscore.js',
 
-      'tests/karma/q.js',
+      'node_modules/q/q.js',
 
       // application code
       '../build/ddocs/medic/_attachments/js/inbox.js',
@@ -42,8 +41,7 @@ module.exports = function(config) {
       'tests/karma/utils.js',
 
       // test files
-      'tests/karma/unit/**/*.js'
-    ]
+      'tests/karma/unit/**/*.js',
+    ],
   });
-
 };

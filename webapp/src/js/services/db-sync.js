@@ -39,9 +39,6 @@ angular
         options.filter = readOnlyFilter;
       }
 
-      // TODO reenable this for 'from' replications when single sided checkpointing is fixed:
-      //      https://github.com/pouchdb/pouchdb/issues/6730
-      // options.checkpoint = 'target';
       return options;
     };
 
@@ -85,13 +82,13 @@ angular
         .then(function() {
           sendUpdate({
             direction: direction,
-            directed_replication_status: 'success',
+            directedReplicationStatus: 'success',
           });
         })
         .catch(function(error) {
           sendUpdate({
             direction: direction,
-            directed_replication_status: 'failure',
+            directedReplicationStatus: 'failure',
             error: error,
           });
           return error;
@@ -112,8 +109,8 @@ angular
       }
 
       /*
-      Controllers need the status of each directed replication (directed_replication_status) and the 
-      status of the replication as a whole (aggregate_replication_status).
+      Controllers need the status of each directed replication (directedReplicationStatus) and the 
+      status of the replication as a whole (aggregateReplicationStatus).
       */
       if (!inProgressSync) {
         inProgressSync = $q
@@ -128,21 +125,21 @@ angular
             if (errors.length > 0) {
               $log.error('Error replicating remote server', errors);
               sendUpdate({
-                aggregate_replication_status: 'required',
+                aggregateReplicationStatus: 'required',
                 error: errors,
               });
               return;
             }
 
             syncIsRecent = true;
-            sendUpdate({ aggregate_replication_status: 'not_required' });
+            sendUpdate({ aggregateReplicationStatus: 'not_required' });
           })
           .finally(function() {
             inProgressSync = undefined;
           });
       }
 
-      sendUpdate({ aggregate_replication_status: 'in_progress' });
+      sendUpdate({ aggregateReplicationStatus: 'in_progress' });
       return inProgressSync;
     };
 
@@ -180,12 +177,8 @@ angular
        * @param newOnlineState {Boolean} The current online state of the user.
        */
       setOnlineStatus: function(onlineStatus) {
-        if (typeof onlineStatus !== 'boolean') {
-          return;
-        }
-
         if (knownOnlineState !== onlineStatus) {
-          knownOnlineState = onlineStatus;
+          knownOnlineState = !!onlineStatus;
 
           if (knownOnlineState && !syncIsRecent) {
             resetSyncInterval();
