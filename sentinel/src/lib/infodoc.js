@@ -34,15 +34,6 @@ const getInfoDoc = change => {
     .then(doc => updateInfoDoc(doc));
 };
 
-const createInfoDoc = (docId, initialReplicationDate) => {
-  return {
-    _id: infoDocId(docId),
-    type: 'info',
-    doc_id: docId,
-    initial_replication_date: initialReplicationDate,
-  };
-};
-
 const deleteInfoDoc = change => {
   return db.sentinel
     .get(infoDocId(change.id))

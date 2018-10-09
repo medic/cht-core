@@ -1,8 +1,7 @@
 const sinon = require('sinon'),
   assert = require('chai').assert,
   transition = require('../../../src/transitions/update_notifications'),
-  db = require('../../../src/db-nano'),
-  dbPouch = require('../../../src/db-pouch'),
+  db = require('../../../src/db-pouch'),
   utils = require('../../../src/lib/utils');
 
 describe('update_notifications', () => {
@@ -306,7 +305,7 @@ describe('update_notifications', () => {
         .stub(utils, 'getRegistrations')
         .callsArgWithAsync(1, null, [regDoc]);
       sinon.stub(utils, 'getPatientContact').callsArgWithAsync(2, null, []);
-      sinon.stub(dbPouch.medic, 'put').callsArg(1);
+      sinon.stub(db.medic, 'put').callsArg(1);
 
       const change = {
         doc: doc,
@@ -363,7 +362,7 @@ describe('update_notifications', () => {
       const translate = sinon
         .stub(utils, 'translate')
         .returns('translated value');
-      sinon.stub(dbPouch.medic, 'put').callsArg(1);
+      sinon.stub(db.medic, 'put').callsArg(1);
 
       const change = {
         doc: doc,

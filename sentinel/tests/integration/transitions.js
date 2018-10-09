@@ -1,15 +1,14 @@
 var transitions,
   sinon = require('sinon'),
   assert = require('chai').assert,
-  db = require('../../src/db-nano'),
-  dbPouch = require('../../src/db-pouch'),
+  db = require('../../src/db-pouch'),
   config = require('../../src/config'),
   configGet;
 
 describe('functional transitions', () => {
   beforeEach(() => {
     configGet = sinon.stub(config, 'get');
-    sinon.stub(dbPouch.medic, 'changes').returns({
+    sinon.stub(db.medic, 'changes').returns({
       on: () => {
         return { on: () => {} };
       },
@@ -28,10 +27,10 @@ describe('functional transitions', () => {
         condition: 'true',
       },
     });
-    sinon.stub(dbPouch.sentinel, 'get').rejects({ status: 404 });
-    sinon.stub(dbPouch.medic, 'get').rejects({ status: 404 });
-    var saveDoc = sinon.stub(dbPouch.medic, 'put').callsArg(1);
-    var infoDoc = sinon.stub(dbPouch.sentinel, 'put').resolves({});
+    sinon.stub(db.sentinel, 'get').rejects({ status: 404 });
+    sinon.stub(db.medic, 'get').rejects({ status: 404 });
+    var saveDoc = sinon.stub(db.medic, 'put').callsArg(1);
+    var infoDoc = sinon.stub(db.sentinel, 'put').resolves({});
 
     transitions.loadTransitions();
     var change1 = {
@@ -76,10 +75,10 @@ describe('functional transitions', () => {
       },
     });
 
-    sinon.stub(dbPouch.sentinel, 'get').rejects({ status: 404 });
-    sinon.stub(dbPouch.medic, 'get').rejects({ status: 404 });
-    var saveDoc = sinon.stub(dbPouch.medic, 'put').callsArg(1);
-    var infoDoc = sinon.stub(dbPouch.sentinel, 'put').resolves({});
+    sinon.stub(db.sentinel, 'get').rejects({ status: 404 });
+    sinon.stub(db.medic, 'get').rejects({ status: 404 });
+    var saveDoc = sinon.stub(db.medic, 'put').callsArg(1);
+    var infoDoc = sinon.stub(db.sentinel, 'put').resolves({});
 
     transitions.loadTransitions();
     var change1 = {
@@ -133,10 +132,10 @@ describe('functional transitions', () => {
       },
     });
 
-    sinon.stub(dbPouch.sentinel, 'get').rejects({ status: 404 });
-    sinon.stub(dbPouch.medic, 'get').rejects({ status: 404 });
-    var saveDoc = sinon.stub(dbPouch.medic, 'put').callsArg(1);
-    var infoDoc = sinon.stub(dbPouch.sentinel, 'put').resolves({});
+    sinon.stub(db.sentinel, 'get').rejects({ status: 404 });
+    sinon.stub(db.medic, 'get').rejects({ status: 404 });
+    var saveDoc = sinon.stub(db.medic, 'put').callsArg(1);
+    var infoDoc = sinon.stub(db.sentinel, 'put').resolves({});
 
     transitions.loadTransitions();
     var change1 = {

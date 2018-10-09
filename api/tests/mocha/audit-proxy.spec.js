@@ -1,6 +1,5 @@
 const chai = require('chai'),
-  AuditProxy = require('../../src/audit-proxy'),
-  sinon = require('sinon').sandbox.create();
+  AuditProxy = require('../../src/audit-proxy');
 
 describe('audit proxy', () => {
   it('audit audits the request', done => {

@@ -1,7 +1,6 @@
 const sinon = require('sinon'),
   assert = require('chai').assert,
-  db = require('../../src/db-nano'),
-  dbPouch = require('../../src/db-pouch'),
+  db = require('../../src/db-pouch'),
   transitions = require('../../src/transitions/index');
 
 describe('finalize transition', () => {
@@ -9,7 +8,7 @@ describe('finalize transition', () => {
 
   it('save not called if transition results are null', done => {
     const doc = { _rev: '1' };
-    const saveDoc = sinon.stub(dbPouch.medic, 'put');
+    const saveDoc = sinon.stub(db.medic, 'put');
     transitions.finalize(
       {
         change: { doc: doc },
@@ -24,7 +23,7 @@ describe('finalize transition', () => {
 
   it('save is called if transition results have changes', done => {
     const doc = { _rev: '1' };
-    const saveDoc = sinon.stub(dbPouch.medic, 'put').callsArg(1);
+    const saveDoc = sinon.stub(db.medic, 'put').callsArg(1);
     transitions.finalize(
       {
         change: { doc: doc },
@@ -41,10 +40,10 @@ describe('finalize transition', () => {
   it('applyTransition creates transitions property', done => {
     const doc = { _rev: '1' };
     const info = {};
-    sinon.stub(dbPouch.sentinel, 'get').rejects({ status: 404 });
-    sinon.stub(dbPouch.medic, 'get').rejects({ status: 404 });
-    sinon.stub(dbPouch.medic, 'put').resolves({});
-    sinon.stub(dbPouch.sentinel, 'put').resolves({});
+    sinon.stub(db.sentinel, 'get').rejects({ status: 404 });
+    sinon.stub(db.medic, 'get').rejects({ status: 404 });
+    sinon.stub(db.medic, 'put').resolves({});
+    sinon.stub(db.sentinel, 'put').resolves({});
     const transition = {
       onMatch: change => {
         change.doc.foo = 'bar';

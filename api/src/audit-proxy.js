@@ -1,7 +1,6 @@
 var EventEmitter = require('events').EventEmitter,
   util = require('util'),
   passStream = require('pass-stream'),
-  _ = require('underscore'),
   auth = require('./auth'),
   db = require('./db-nano');
 
@@ -13,12 +12,6 @@ function AuditProxy() {
     return new AuditProxy();
   }
 }
-
-var parse = function(data) {
-  try {
-    return JSON.parse(data);
-  } catch (e) {}
-};
 
 /**
  * Audits the request before proxying it on.
