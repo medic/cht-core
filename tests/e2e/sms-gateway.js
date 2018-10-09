@@ -358,7 +358,7 @@ describe('sms-gateway api', () => {
       expect(response.messages[1].content).toBe(messageContent2);
 
       commonElements.goToReports();
-      helper.waitUntilReady('#reports-list li:first-child');
+      helper.waitUntilReady(element(by.css('#reports-list li:first-child')));
 
       helper.clickElement(
         element(by.css('#reports-list li:first-child .heading'))

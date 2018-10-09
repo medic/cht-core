@@ -33,25 +33,6 @@ module.exports = {
     expect(debugMode.getText()).toEqual('Enable debug mode');
   },
 
-  checkConfigurationOptions: () => {
-    helper.waitForAngularComplete();
-    expect(configurationOptions.count()).toEqual(10);
-    const optionNames = helper.getTextFromElements(configurationOptions);
-    expect(optionNames).toEqual([
-      'Settings',
-      'Languages',
-      'Forms',
-      'Import & export',
-      'Upgrade instance',
-      'Users',
-      'Icons',
-      'Targets',
-      'Roles & permissions',
-      'Message list',
-    ]);
-    browser.get(utils.getBaseUrl() + 'messages/');
-  },
-
   checkConfigurationWizard: () => {
     openSubmenu('configuration wizard');
     expect(wizardTitle.getText()).toEqual('Configuration wizard');

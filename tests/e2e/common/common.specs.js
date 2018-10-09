@@ -57,8 +57,10 @@ describe('Navigation tests : ', () => {
     commonElements.checkReportBug();
   });
 
-  it('should open Configuration tab and verify main options', () => {
+  it('should open Configuration app', () => {
     commonElements.goToConfiguration();
-    commonElements.checkConfigurationOptions();
+    const settings = element(by.css('[ui-sref="settings.basic"]'));
+    expect(settings.isPresent()).toBeTruthy();
+    browser.get(utils.getBaseUrl() + 'messages/');
   });
 });
