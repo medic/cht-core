@@ -8,7 +8,6 @@ const medicLogo = element(by.className('logo-full')),
   analyticsLink = element(by.id('analytics-tab')),
   hamburgerMenu = element(by.css('.dropdown.options>a')),
   hamburgerMenuOptions = element.all(by.css('.dropdown.options>ul>li')),
-  configurationOptions = element.all(by.css('.navigation>ul>li')),
   logoutButton = $('[ng-click=logout]'),
   // Configuration wizard
   wizardTitle = element(by.css('.modal-header>h2')),
