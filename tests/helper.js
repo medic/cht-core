@@ -208,9 +208,7 @@ module.exports = {
 
   waitElementToDisappear: elm => {
     browser.wait(() => {
-      return elm.isPresent().then(presenceOfElement => {
-        return !presenceOfElement;
-      });
+      return elm.isDisplayed().then(presenceOfElement => !presenceOfElement);
     }, 10000);
   },
 
