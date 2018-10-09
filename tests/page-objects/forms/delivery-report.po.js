@@ -1,6 +1,6 @@
 const utils = require('../../utils'),
   helper = require('../../helper'),
-  genericForm = require('../../page-objects/forms/fgeneric-form.po');
+  genericForm = require('./generic-form.po');
 
 const xml = require('./data/delivery-report.po.data').xml;
 

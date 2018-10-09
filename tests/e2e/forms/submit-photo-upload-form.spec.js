@@ -1,6 +1,6 @@
 const helper = require('../../helper'),
-  photoUpload = require('../../page-objects/forms/photo-upload.po.js'),
-  common = require('../../page-objects/common/common.po.js'),
+  photoUpload = require('../../page-objects/forms/photo-upload.po'),
+  common = require('../../page-objects/common/common.po'),
   utils = require('../../utils'),
   path = require('path');
 

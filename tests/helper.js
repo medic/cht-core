@@ -216,13 +216,10 @@ module.exports = {
 
   waitElementToPresent: (elm, timeout) => {
     timeout = timeout || 10000;
-    browser.wait(() => {
-      return elm.isPresent();
-    }, timeout);
+    browser.wait(() => elm.isPresent(), timeout);
   },
 
-  waitForAngularComplete: timeout => {
-    timeout = timeout || 15000;
+  waitForAngularComplete: () => {
     return browser.wait(() => {
       browser.sleep(200);
       return browser
@@ -233,7 +230,7 @@ module.exports = {
         .then(res => {
           return res === 0;
         });
-    }, timeout * 1000);
+    }, 15000);
   },
 
   waitForCheckboxToBeChecked: elem => {
