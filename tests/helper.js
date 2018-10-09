@@ -224,9 +224,7 @@ module.exports = {
         .executeScript(
           'return typeof angular === "undefined" ? 0 : angular.element(document.body).injector().get("$http").pendingRequests.length'
         )
-        .then(res => {
-          return res === 0;
-        });
+        .then(res => res === 0);
     }, 15000);
   },
 
