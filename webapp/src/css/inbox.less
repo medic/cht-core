@@ -574,6 +574,10 @@ body {
       }
     }
   }
+
+  card.children .content-row.muted h4 {
+    color: @inactive-color;
+  }
 }
 
 .tasks .item-content {
@@ -1194,7 +1198,8 @@ a.fa:hover {
   text-align: center;
 }
 
-.deceased svg path {
+.deceased svg path,
+.muted svg path {
   fill: @inactive-color;
 }
 

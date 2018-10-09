@@ -655,8 +655,8 @@ module.exports = function(grunt) {
     mochaTest: {
       unit: {
         src: [
-          'webapp/tests/mocha/unit/**/*.spec.js',
-          'api/tests/mocha/**/*.js',
+          //'webapp/tests/mocha/unit/**/*.spec.js',
+          //'api/tests/mocha/**/*.js',
           'sentinel/tests/**/*.js',
         ],
       },
@@ -918,9 +918,9 @@ module.exports = function(grunt) {
 
   grunt.registerTask('unit', 'Lint and unit tests', [
     'jshint',
-    'karma:unit',
-    'karma:admin',
-    'exec:shared-lib-unit',
+    //'karma:unit',
+    //'karma:admin',
+    //'exec:shared-lib-unit',
     'env:unit-test',
     'mochaTest:unit',
     'env:general',

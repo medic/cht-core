@@ -375,6 +375,71 @@ describe('Contacts controller', () => {
         return testTranslation(form, 'a.form.keytranslated');
       });
     });
+
+
+    describe('muted contacts modal', () => {
+      it('should set all forms to not display muted modal when contact is not muted', () => {
+        const forms = [
+          { internalId: 'unmute', icon: 'icon', translation_key: 'form.unmute', title: 'unmute'},
+          { internalId: 'mute', icon: 'icon', translation_key: 'form.mute', title: 'mute'},
+          { internalId: 'visit', icon: 'icon', translation_key: 'form.visit', title: 'visit'}
+        ];
+        xmlForms.callsArgWith(2, null, forms);
+        settings.resolves({
+          muting: {
+            unmute_forms: ['unmute']
+          }
+        });
+
+        return createController()
+          .getSetupPromiseForTesting()
+          .then(() => {
+            return scope.setSelected({ doc: { _id: 'my-contact', muted: false } });
+          })
+          .then(() => {
+            assert(
+              scope.setRightActionBar.called,
+              'right actionBar should be set'
+            );
+            assert.deepEqual(scope.setRightActionBar.args[0][0].relevantForms, [
+              { code: 'unmute', icon: 'icon', title: 'form.unmutetranslated', showUnmuteModal: false},
+              { code: 'mute', icon: 'icon', title: 'form.mutetranslated', showUnmuteModal: false},
+              { code: 'visit', icon: 'icon', title: 'form.visittranslated', showUnmuteModal: false}
+            ]);
+          });
+      });
+
+      it('should set non-unmute forms ti display modal when contact is muted', () => {
+        const forms = [
+          { internalId: 'unmute', icon: 'icon', translation_key: 'form.unmute', title: 'unmute'},
+          { internalId: 'mute', icon: 'icon', translation_key: 'form.mute', title: 'mute'},
+          { internalId: 'visit', icon: 'icon', translation_key: 'form.visit', title: 'visit'}
+        ];
+        xmlForms.callsArgWith(2, null, forms);
+        settings.resolves({
+          muting: {
+            unmute_forms: ['unmute']
+          }
+        });
+
+        return createController()
+          .getSetupPromiseForTesting()
+          .then(() => {
+            return scope.setSelected({ doc: { _id: 'my-contact', muted: true }});
+          })
+          .then(() => {
+            assert(
+              scope.setRightActionBar.called,
+              'right actionBar should be set'
+            );
+            assert.deepEqual(scope.setRightActionBar.args[0][0].relevantForms, [
+              { code: 'unmute', icon: 'icon', title: 'form.unmutetranslated', showUnmuteModal: false},
+              { code: 'mute', icon: 'icon', title: 'form.mutetranslated', showUnmuteModal: true},
+              { code: 'visit', icon: 'icon', title: 'form.visittranslated', showUnmuteModal: true}
+            ]);
+          });
+      });
+    });
   });
 
   describe('sets left actionBar', () => {

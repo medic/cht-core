@@ -62,7 +62,14 @@ angular.module('inboxDirectives').directive('mmContentRow', function() {
       primaryContact: '=',
 
       // integer: (optional) how much tasks to show as pending for this contact
-      taskCount: '='
+      taskCount: '=',
+
+      // boolean: (optional) whether the contact is muted
+      // html-minifier considers `muted` as a boolean attribute, so it will strip its value
+      muted: '=isMuted',
+
+      // boolean: (optional) whether to display the "muted" text along with contact name
+      displayMuted: '='
     }
   };
 });

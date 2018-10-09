@@ -23,12 +23,12 @@ angular.module('inboxServices').factory('Select2Search',
       }
       // format escapes the content for us, and if we just return
       // a string select2 escapes it again, so return an element instead.
-      return $(format.sender(row.doc));
+      return $(format.sender(row.doc, $translate));
     };
 
     var defaultTemplateSelection = function(row) {
       if(row.doc) {
-        return row.doc.name;
+        return row.doc.name + (row.doc.muted ? ' (' + $translate.instant('contact.muted') + ')': '');
       }
       return row.text;
     };

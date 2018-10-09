@@ -85,7 +85,7 @@ describe('functional schedules', () => {
       contact: contact
     };
 
-    transition.onMatch({ doc: doc }).then(complete => {
+    return transition.onMatch({ doc: doc }).then(complete => {
       assert.equal(complete, true);
       assert(doc.tasks);
       assert.equal(doc.tasks && doc.tasks.length, 1);
@@ -150,7 +150,7 @@ describe('functional schedules', () => {
       contact: contact
     };
 
-    transition.onMatch({ doc: doc }).then(complete => {
+    return transition.onMatch({ doc: doc }).then(complete => {
       assert.equal(complete, true);
       assert(doc.tasks);
       assert.equal(doc.tasks && doc.tasks.length, 1);
@@ -422,6 +422,123 @@ describe('functional schedules', () => {
           'thanks Julie');
     });
   });
+
+  it('sets correct task state when patient is muted', () => {
+    sinon.stub(transition, 'getConfig').returns([{
+      form: 'PATR',
+      events: [{
+        name: 'on_create',
+        trigger: 'assign_schedule',
+        params: 'group1',
+        bool_expr: ''
+      } ],
+      validations: [],
+      messages: [{
+        message: [{
+          content: 'thanks {{contact.name}}',
+          locale: 'en'
+        }],
+        recipient: 'reporting_unit'
+      }]
+    }]);
+    sinon.stub(utils, 'getRegistrations').callsArgWithAsync(1, null, []);
+    sinon.stub(schedules, 'getScheduleConfig').returns({
+      name: 'group1',
+      start_from: 'reported_date',
+      registration_response: '',
+      messages: [{
+        message: [{
+          content: 'Mustaches.  Overrated or underrated?',
+          locale: 'en'
+        }],
+        group: 1,
+        offset: '12 weeks',
+        send_time: '',
+        recipient: 'reporting_unit'
+      }]
+    });
+
+    const patient = { muted: true, parent: { contact: { phone: '+5551596' } } };
+    const doc = {
+      reported_date: moment().toISOString(),
+      form: 'PATR',
+      from: contact.phone,
+      contact: contact,
+      fields: { patient_id: '98765' },
+      patient: patient
+    };
+    sinon.stub(utils, 'getPatientContact').callsArgWith(2, null, {_id: 'uuid'});
+    sinon.stub(utils, 'getPatientContactUuid').callsArgWith(2, null, 'uuid');
+
+    return transition.onMatch({ doc: doc })
+      .then(complete => {
+        assert.equal(complete, true);
+        assert(doc.tasks);
+        assert.equal(doc.tasks && doc.tasks.length, 1);
+        assert(doc.scheduled_tasks);
+        assert.equal(doc.scheduled_tasks && doc.scheduled_tasks.length, 1);
+        assert.equal(doc.scheduled_tasks[0].state, 'muted');
+      });
+  });
+
+  it('sets correct task state when patient is not muted', () => {
+    sinon.stub(transition, 'getConfig').returns([{
+      form: 'PATR',
+      events: [{
+        name: 'on_create',
+        trigger: 'assign_schedule',
+        params: 'group1',
+        bool_expr: ''
+      } ],
+      validations: [],
+      messages: [{
+        message: [{
+          content: 'thanks {{contact.name}}',
+          locale: 'en'
+        }],
+        recipient: 'reporting_unit'
+      }]
+    }]);
+    sinon.stub(utils, 'getRegistrations').callsArgWithAsync(1, null, []);
+    sinon.stub(schedules, 'getScheduleConfig').returns({
+      name: 'group1',
+      start_from: 'reported_date',
+      registration_response: '',
+      messages: [{
+        message: [{
+          content: 'Mustaches.  Overrated or underrated?',
+          locale: 'en'
+        }],
+        group: 1,
+        offset: '12 weeks',
+        send_time: '',
+        recipient: 'reporting_unit'
+      }]
+    });
+
+    const patient = { muted: false, parent: { contact: { phone: '+5551596' } } };
+    const doc = {
+      reported_date: moment().toISOString(),
+      form: 'PATR',
+      from: contact.phone,
+      contact: contact,
+      fields: { patient_id: '98765' },
+      patient: patient
+    };
+    sinon.stub(utils, 'getPatientContact').callsArgWith(2, null, {_id: 'uuid'});
+    sinon.stub(utils, 'getPatientContactUuid').callsArgWith(2, null, 'uuid');
+
+    return transition.onMatch({ doc: doc })
+      .then(complete => {
+        assert.equal(complete, true);
+        assert(doc.tasks);
+        assert.equal(doc.tasks && doc.tasks.length, 1);
+        assert(doc.scheduled_tasks);
+        assert.equal(doc.scheduled_tasks && doc.scheduled_tasks.length, 1);
+        assert.equal(doc.scheduled_tasks[0].state, 'scheduled');
+      });
+  });
+
 
   function testMessage(message, expectedTo, expectedContent) {
     assert(/^[a-z0-9-]*$/.test(message.uuid));

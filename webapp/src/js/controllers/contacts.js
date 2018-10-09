@@ -190,6 +190,14 @@ var _ = require('underscore'),
       return key ? $translate.instant(key) : TranslateFrom(label);
     };
 
+    var isUnmuteForm = function(settings, formId) {
+      return Boolean(settings &&
+                     formId &&
+                     settings.muting &&
+                     settings.muting.unmute_forms &&
+                     settings.muting.unmute_forms.includes(formId));
+    };
+
     $scope.setSelected = function(selected) {
       liveList.setSelected(selected.doc._id);
       $scope.selected = selected;
@@ -207,6 +215,7 @@ var _ = require('underscore'),
           getActionBarDataForChild(selectedDoc.type),
           getCanEdit(selectedDoc),
           ContactSummary(selected.doc, selected.reports, selected.lineage),
+          Settings()
         ])
         .then(function(results) {
           $scope.setTitle(results[0]);
@@ -221,6 +230,10 @@ var _ = require('underscore'),
             if (err) {
               $log.error('Error fetching relevant forms', err);
             }
+            var showUnmuteModal = function(formId) {
+              console.log($scope.selected);
+              return $scope.selected.doc.muted && !isUnmuteForm(results[4], formId);
+            };
             var formSummaries =
               forms &&
               forms.map(function(xForm) {
@@ -228,6 +241,7 @@ var _ = require('underscore'),
                   code: xForm.internalId,
                   title: translateTitle(xForm.translation_key, xForm.title),
                   icon: xForm.icon,
+                  showUnmuteModal: showUnmuteModal(xForm.internalId)
                 };
               });
             var canDelete =

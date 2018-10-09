@@ -44,10 +44,13 @@ var _ = require('underscore');
   // Deprecated, use lineage filter instead.
   exports.clinic = exports.lineage;
 
-  exports.sender = function(options) {
+  exports.sender = function(options, $translate) {
     var parts = [];
     if (options.name) {
       parts.push('<span class="name">' + _.escape(options.name) + '</span>');
+    }
+    if (options.muted) {
+      parts.push('<span class="muted">' + _.escape($translate.instant('contact.muted')) + '</span>');
     }
     if (options.phone) {
       parts.push('<span>' + _.escape(options.phone) + '</span>');
