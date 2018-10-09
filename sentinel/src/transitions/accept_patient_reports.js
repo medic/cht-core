@@ -113,34 +113,31 @@ const addRegistrationToDoc = (doc, registrations) => {
 };
 
 const addMessageUUIDToDoc = (doc, registrations) => {
-  if (registrations.length && doc.sms_message) {
-    var incomingSmsMessage = doc.sms_message;
+  if (registrations.length) {
+    var visitReportedDate = doc.reported_date;
 
-    var validTaskMessages = [];
+    var messageFound = false;
     registrations.forEach(function(registration) {
       if (registration.scheduled_tasks) {
-        registration.scheduled_tasks.forEach(function(task) {
-          if (task.messages) {
-            task.messages.forEach(function(message) {
-              if (message.message.indexOf(incomingSmsMessage.message) > -1) {
-                validTaskMessages.push({
-                  due: task.due,
-                  uuid: message.uuid,
-                });
+        registration.scheduled_tasks.forEach(function(task, index) {
+          if (!messageFound) {
+            if (
+              (task.state === 'delivered' || task.state === 'sent') &&
+              task.messages
+            ) {
+              var nextTask = registration.scheduled_tasks[index + 1];
+              if (
+                typeof nextTask !== 'undefined' &&
+                moment(nextTask.due) > moment(visitReportedDate)
+              ) {
+                doc.message_uuid = task.messages[task.messages.length - 1].uuid;
+                messageFound = true;
               }
-            });
+            }
           }
         });
       }
     });
-
-    var sortedValidTaskMessages = validTaskMessages.sort(function(t1, t2) {
-      return moment(t2.due) - moment(t1.due);
-    });
-
-    if (sortedValidTaskMessages.length > 0) {
-      doc.message_uuid = sortedValidTaskMessages[0].uuid;
-    }
   }
 };
 

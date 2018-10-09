@@ -201,7 +201,7 @@ describe('accept_patient_reports', () => {
       const doc = {
         _id: 'z',
         fields: { patient_id: 'x' },
-        sms_message: { message: 'V 63374' },
+        reported_date: '2018-09-28T18:45:00.000Z',
       };
       const config = { silence_type: 'x', messages: [] };
       const registrations = [
@@ -211,10 +211,19 @@ describe('accept_patient_reports', () => {
           scheduled_tasks: [
             {
               due: '2018-09-26T18:45:00.000Z',
+              state: 'sent',
               messages: [
                 {
                   uuid: 'k',
-                  message: `Please remind Patient1 (63344) to visit the health facility for ANC visit this week. When she does let us know with 'V 63374'. Thanks!`,
+                },
+              ],
+            },
+            {
+              due: '2018-10-26T18:45:00.000Z',
+              state: 'scheduled',
+              messages: [
+                {
+                  uuid: 'j',
                 },
               ],
             },
@@ -238,7 +247,7 @@ describe('accept_patient_reports', () => {
       const doc = {
         _id: 'z',
         fields: { patient_id: 'x' },
-        sms_message: { message: 'V 63374' },
+        reported_date: '2019-01-10T18:45:00.000Z',
       };
       const config = { silence_type: 'x', messages: [] };
       const registrations = [
@@ -248,37 +257,46 @@ describe('accept_patient_reports', () => {
           scheduled_tasks: [
             {
               due: '2018-09-26T18:45:00.000Z',
+              state: 'sent',
               messages: [
                 {
                   uuid: 'k1',
-                  message: `Please remind Patient1 (63344) to visit the health facility for ANC visit this week. When she does let us know with 'V 63374'. Thanks!`,
                 },
               ],
             },
             {
               due: '2018-11-26T18:45:00.000Z',
+              state: 'sent',
               messages: [
                 {
                   uuid: 'k2',
-                  message: `Please remind Patient1 (63344) to visit the health facility for ANC visit this week. When she does let us know with 'V 63374'. Thanks!`,
                 },
               ],
             },
             {
               due: '2018-12-26T18:45:00.000Z',
+              state: 'delivered',
               messages: [
                 {
                   uuid: 'k3',
-                  message: `Please remind Patient1 (63344) to visit the health facility for ANC visit this week. When she does let us know with 'V 63384'. Thanks!`,
                 },
               ],
             },
             {
-              due: '2018-10-26T18:45:00.000Z',
+              due: '2019-01-26T18:45:00.000Z',
+              state: 'scheduled',
               messages: [
                 {
                   uuid: 'k4',
-                  message: `Please remind Patient1 (63344) to visit the health facility for ANC visit this week. When she does let us know with 'V 63374'. Thanks!`,
+                },
+              ],
+            },
+            {
+              due: '2019-02-26T18:45:00.000Z',
+              state: 'scheduled',
+              messages: [
+                {
+                  uuid: 'k5',
                 },
               ],
             },
@@ -291,7 +309,7 @@ describe('accept_patient_reports', () => {
       transition._handleReport(doc, config, (err, complete) => {
         complete.should.equal(true);
         doc.message_uuid.should.equal(
-          registrations[0].scheduled_tasks[1].messages[0].uuid
+          registrations[0].scheduled_tasks[2].messages[0].uuid
         );
         done();
       });
