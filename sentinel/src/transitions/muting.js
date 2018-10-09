@@ -54,18 +54,10 @@ const getDescendants = (contactIds = []) => {
 };
 
 const updateRegistration = (registration, muted) => {
-  let registrationChanged;
-  if (muted) {
-    registrationChanged = utils.muteScheduledMessages(registration);
-  } else {
-    registrationChanged = utils.unmuteScheduledMessages(registration);
-  }
+  const registrationChanged =
+          muted ? utils.muteScheduledMessages(registration) : utils.unmuteScheduledMessages(registration);
 
-  if (!registrationChanged) {
-    return;
-  }
-
-  return registration;
+  return registrationChanged && registration;
 };
 
 const updateContacts = (contacts, muted) => {
@@ -96,9 +88,10 @@ const updateRegistrations = (patientIds, muted) => {
 
       registrations.forEach(registration => {
         const updatedRegistration = updateRegistration(registration, muted);
-        if (updatedRegistration) {
-          updatedRegistrations.push(updatedRegistration);
+        if (!updatedRegistration) {
+          return;
         }
+        updatedRegistrations.push(updatedRegistration);
       });
 
       if (!updatedRegistrations.length) {
@@ -113,7 +106,7 @@ const updateRegistrations = (patientIds, muted) => {
 const getEventType = muted => muted ? 'mute' : 'unmute';
 
 const getContactsAndPatientIds = (doc, contact, muted) => {
-  if (contact.muted === muted) {
+  if (Boolean(contact.muted) === muted) {
     // don't update registrations if contact already has desired state
     module.exports._addErr(contact.muted ? 'already_muted' : 'already_unmuted', doc);
     return;
@@ -156,6 +149,21 @@ const getContactsAndPatientIds = (doc, contact, muted) => {
     });
 };
 
+const isRelevantReport = (doc, info ={}) =>
+  Boolean(doc &&
+          doc.form &&
+          doc.type === 'data_record' &&
+          ( isMuteForm(doc.form) || isUnmuteForm(doc.form) ) &&
+          doc.fields &&
+          ( doc.fields.patient_id || doc.fields.place_id ) &&
+          !transitionUtils.hasRun(info, TRANSITION_NAME));
+
+const isRelevantContact = doc =>
+  Boolean(doc &&
+          ['person', 'clinic', 'health_center', 'district_hospital'].includes(doc.type) &&
+          !doc.muted &&
+          utils.isMutedInLineage(doc));
+
 module.exports = {
   init: () => {
     const forms = getConfig()[MUTE_PROPERTY];
@@ -163,17 +171,16 @@ module.exports = {
       throw new Error(`Configuration error. Config must define have a '${CONFIG_NAME}.${MUTE_PROPERTY}' array defined.`);
     }
   },
-  filter: (doc, info = {}) => {
-    return Boolean(doc &&
-                   doc.form &&
-                   doc.type === 'data_record' &&
-                   ( isMuteForm(doc.form) || isUnmuteForm(doc.form) ) &&
-                   doc.fields &&
-                   ( doc.fields.patient_id || doc.fields.place_id ) &&
-                   !transitionUtils.hasRun(info, TRANSITION_NAME));
 
-  },
+  filter: (doc, info = {}) => isRelevantReport(doc, info) || isRelevantContact(doc),
+
   onMatch: change => {
+    if (change.doc.type !== 'data_record') {
+      // new contacts that have muted parents should also get the muted flag
+      change.doc.muted = true;
+      return true;
+    }
+
     const muting = isMuteForm(change.doc.form);
     let targetContact;
 

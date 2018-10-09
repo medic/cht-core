@@ -324,4 +324,63 @@ describe('utils util', () => {
       ]);
     });
   });
+
+  describe('isMutedInLineage', () => {
+    it('should return false when no doc or no parent', () => {
+      utils.isMutedInLineage().should.equal(false);
+      utils.isMutedInLineage({}).should.equal(false);
+      utils.isMutedInLineage({ parent: false }).should.equal(false);
+    });
+
+    it('should return false when no parent is muted', () => {
+      const doc = {
+        _id: 1,
+        parent: {
+          _id: 2,
+          parent: {
+            _id: 3,
+            parent: {
+              _id: 4,
+            }
+          }
+        }
+      };
+
+      utils.isMutedInLineage(doc).should.equal(false);
+      doc.muted = true;
+      utils.isMutedInLineage(doc).should.equal(false);
+    });
+
+    it('should return false when no parent is muted', () => {
+      const doc1 = {
+        _id: 1,
+        parent: {
+          muted: true,
+          _id: 2,
+          parent: {
+            _id: 3,
+            parent: {
+              _id: 4,
+            }
+          }
+        }
+      };
+      utils.isMutedInLineage(doc1).should.equal(true);
+
+      const doc2 = {
+        _id: 1,
+        parent: {
+          _id: 2,
+          parent: {
+            _id: 3,
+            parent: {
+              _id: 4,
+              muted: true
+            }
+          }
+        }
+      };
+      utils.isMutedInLineage(doc2).should.equal(true);
+    });
+  });
 });

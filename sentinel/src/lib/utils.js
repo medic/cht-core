@@ -98,7 +98,6 @@ const addError = (doc, error) => {
   }
   doc.errors = doc.errors || [];
   doc.errors.push(error);
-  console.log(JSON.stringify(doc));
 };
 
 const getReportsWithSameClinicAndForm = (options, callback) => {
@@ -311,5 +310,21 @@ module.exports = {
   isNonEmptyString: expr =>
     typeof expr === 'string' && expr.trim() !== '',
   evalExpression: (expr, context) =>
-    vm.runInNewContext(expr, context)
+    vm.runInNewContext(expr, context),
+
+  isMutedInLineage: doc => {
+    if (!doc || !doc.parent) {
+      return false;
+    }
+
+    let parent = doc.parent;
+    while (parent) {
+      if (parent.muted) {
+        return true;
+      }
+      parent = parent.parent;
+    }
+
+    return false;
+  }
 };
