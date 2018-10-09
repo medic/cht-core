@@ -335,9 +335,7 @@ const applyTransition = ({ key, change, transition }, callback) => {
       logger.debug(
         `finished transition ${key} for seq ${change.seq} doc ${
           change.id
-        } is ` + changed
-          ? 'changed'
-          : 'unchanged'
+        } is ` + changed ? 'changed' : 'unchanged'
       );
       if (!changed) {
         return changed;
