@@ -206,9 +206,11 @@ module.exports = {
     browser.wait(EC.elementToBeClickable(elm), timeout);
   },
 
-  waitElementToDisappear: elm => {
+  waitElementToDisappear: locator => {
     browser.wait(() => {
-      return elm.isDisplayed().then(presenceOfElement => !presenceOfElement);
+      return element(locator)
+        .isDisplayed()
+        .then(presenceOfElement => !presenceOfElement);
     }, 10000);
   },
 

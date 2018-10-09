@@ -125,7 +125,7 @@ module.exports = {
     );
     helper.waitElementToBeVisible(element(by.id('reports-list')));
     helper.waitElementToDisappear(
-      element(by.css('.general-actions>.actions>.mm-icon-disabled>.fa-plus'))
+      by.css('.general-actions>.actions>.mm-icon-disabled>.fa-plus')
     );
     if (refresh) {
       browser.refresh();
