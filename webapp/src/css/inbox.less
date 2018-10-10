@@ -1198,6 +1198,24 @@ a.fa:hover {
   fill: @inactive-color;
 }
 
+.about,
+.analytics {
+  .content {
+    .inner {
+      /* allow the scrollable content to grow to full width */
+      max-width: inherit;
+      .page {
+        max-width: inherit;
+        /* set the max with and center all the children again */
+        > div {
+          max-width: @content-width;
+          margin: 0 auto;
+        }
+      }
+    }
+  }
+}
+
 @media (max-width: 767px) {
   #mobile-detection {
     display: inline;
