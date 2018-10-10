@@ -126,9 +126,7 @@ angular
     // generate a new document for every month, which is part of the _id.
     var storeConflictedAggregate = function(aggregateDoc) {
       aggregateDoc.metadata.conflicted = true;
-      aggregateDoc._id = [aggregateDoc._id, 'conflicted', Date().now()].join(
-        '-'
-      );
+      aggregateDoc._id = [aggregateDoc._id, 'conflicted', Date.now()].join('-');
       return DB().put(aggregateDoc);
     };
 

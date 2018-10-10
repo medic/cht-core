@@ -1,4 +1,4 @@
-describe.only('Telemetry service', () => {
+describe('Telemetry service', () => {
   'use strict';
 
   const NOW = new Date(2018, 10, 10, 12, 33).getTime();
@@ -33,8 +33,8 @@ describe.only('Telemetry service', () => {
     };
 
     DB = {
-      info: sinon.stub().resolves({ some: 'stats' }),
-      put: sinon.stub().resolves(),
+      info: sinon.stub(),
+      put: sinon.stub(),
     };
 
     module($provide => {
@@ -65,16 +65,28 @@ describe.only('Telemetry service', () => {
 
       pouchDb.post = sinon.stub().resolves();
 
-      return service.record('test', 1).then(() => {
+      return service.record('test', 100).then(() => {
         chai.expect(pouchDb.post.callCount).to.equal(1);
         chai
           .expect(pouchDb.post.args[0][0])
-          .to.deep.include({ key: 'test', value: 1 });
+          .to.deep.include({ key: 'test', value: 100 });
+        chai.expect(pouchDb.post.args[0][0].date_recorded).to.exist;
         chai.expect(storageGetItem.callCount).to.equal(2);
       });
     });
 
-    it('defaults the value to 1 if not passed');
+    it('defaults the value to 1 if not passed', () => {
+      storageGetItem.withArgs('medic-greg-telemetry-db').returns('dbname');
+      storageGetItem
+        .withArgs('medic-greg-telemetry-date')
+        .returns(Date.now().toString());
+
+      pouchDb.post = sinon.stub().resolves();
+
+      return service.record('test').then(() => {
+        chai.expect(pouchDb.post.args[0][0].value).to.equal(1);
+      });
+    });
 
     it('sets localStorage values', () => {
       storageGetItem.withArgs('medic-greg-telemetry-db').returns(undefined);
@@ -119,6 +131,8 @@ describe.only('Telemetry service', () => {
           },
         ],
       });
+      DB.info.resolves({ some: 'stats' });
+      DB.put.resolves();
       pouchDb.destroy = sinon.stub().resolves();
 
       $window.navigator.userAgent = 'Agent Smith';
@@ -159,8 +173,46 @@ describe.only('Telemetry service', () => {
       });
     });
 
-    it(
-      'deals with 409s by making the ID unique and noting the conflict in the new document'
-    );
+    it('deals with 409s by making the ID unique and noting the conflict in the new document', () => {
+      storageGetItem.withArgs('medic-greg-telemetry-db').returns('dbname');
+      storageGetItem.withArgs('medic-greg-telemetry-date').returns(
+        moment()
+          .subtract(5, 'weeks')
+          .valueOf()
+          .toString()
+      );
+
+      pouchDb.post = sinon.stub().resolves();
+      pouchDb.query = sinon.stub().resolves({
+        rows: [
+          {
+            key: 'foo',
+            value: 'stats',
+          },
+          {
+            key: 'bar',
+            value: 'more stats',
+          },
+        ],
+      });
+      DB.info.resolves({ some: 'stats' });
+      DB.put.onFirstCall().rejects({ status: 409 });
+      DB.put.onSecondCall().resolves();
+      pouchDb.destroy = sinon.stub().resolves();
+
+      $window.navigator.userAgent = 'Agent Smith';
+      $window.navigator.language = 'klingon';
+      $window.navigator.hardwareConcurrency = 4;
+      $window.screen = {
+        availWidth: 768,
+        availHeight: 1024,
+      };
+
+      return service.record('test', 1).then(() => {
+        chai.expect(DB.put.callCount).to.equal(2);
+        chai.expect(DB.put.args[1][0]._id).to.match(/conflicted/);
+        chai.expect(DB.put.args[1][0].metadata.conflicted).to.equal(true);
+      });
+    });
   });
 });
