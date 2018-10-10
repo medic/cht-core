@@ -7,7 +7,7 @@ ADD haproxy.cfg /usr/local/etc/haproxy
 ADD haproxy.conf /etc/rsyslog.d
 ADD rsyslog.conf /etc/rsyslog.conf
 
-ADD scripts /etc/haproxy/scripts
+# ADD scripts /etc/haproxy/scripts
 COPY entrypoint.sh /
 
 ENTRYPOINT ["/entrypoint.sh"]

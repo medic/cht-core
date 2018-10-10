@@ -1,5 +1,5 @@
-# Setup to run couch behind haproxy
-Proxy to track/audit every couchdb request.
+# Couch behind haproxy setup
+Proxy to track/audit couchdb requests.
 
 #### Start proxy
 
@@ -7,6 +7,9 @@ Proxy to track/audit every couchdb request.
 
 docker-compose build
 docker-compose up
+
+# First time run:
+curl -X PUT 'http://admin:pass@localhost:5984/{_users,_replicator,_global_changes,_metadata,admins}'
 
 ```
 
