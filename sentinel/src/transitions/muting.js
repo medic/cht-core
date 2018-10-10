@@ -17,12 +17,12 @@ const getConfig = () => {
 };
 
 const isMuteForm = form => {
-  return getConfig()[MUTE_PROPERTY].includes(form);
+  return Boolean(getConfig()[MUTE_PROPERTY].find(muteFormId => utils.isFormCodeSame(form, muteFormId)));
 };
 
 const isUnmuteForm = form => {
   const unmuteForms = getConfig()[UNMUTE_PROPERTY];
-  return unmuteForms && unmuteForms.includes(form);
+  return Boolean(unmuteForms && unmuteForms.find(unmuteFormId => utils.isFormCodeSame(form, unmuteFormId)));
 };
 
 const getContact = doc => {
@@ -45,55 +45,45 @@ const getContact = doc => {
     });
 };
 
-const getDescendants = (contactIds = []) => {
-  if (typeof contactIds === 'string') {
-    contactIds = [contactIds];
-  }
-
-  return db.medic.query('medic/contacts_by_depth', { keys: contactIds.map(contactId => ([contactId])) });
+const getDescendants = (contactId) => {
+  return db.medic
+    .query('medic/contacts_by_depth', { key: [contactId] })
+    .then(result => result.rows.map(row => row.id));
 };
 
 const updateRegistration = (registration, muted) => {
-  const registrationChanged =
-          muted ? utils.muteScheduledMessages(registration) : utils.unmuteScheduledMessages(registration);
-
-  return registrationChanged && registration;
+  return muted ? utils.muteScheduledMessages(registration) : utils.unmuteScheduledMessages(registration);
 };
 
 const updateContacts = (contacts, muted) => {
-  contacts.forEach(contact => contact.muted = muted);
+  contacts = contacts.filter(contact => {
+    if (Boolean(contact.muted) === muted) {
+      return false;
+    }
+    contact.muted = muted;
+    return true;
+  });
+
+  if (!contacts.length) {
+    return;
+  }
+
   return db.medic.bulkDocs(contacts);
 };
 
 const updateRegistrations = (patientIds, muted) => {
-  if (!patientIds || !patientIds.length) {
-    return [];
+  if (!patientIds.length) {
+    return Promise.resolve([]);
   }
 
-  const updatedRegistrations = [];
-
+  let updatedRegistrations;
   return new Promise((resolve, reject) => {
       utils.getRegistrations({ ids: patientIds, db: dbNano }, (err, registrations) => {
-        if (err) {
-          return reject(err);
-        }
-
-        resolve(registrations);
+        return err ? reject(err) : resolve(registrations);
       });
     })
     .then(registrations => {
-      if (!registrations.length) {
-        return;
-      }
-
-      registrations.forEach(registration => {
-        const updatedRegistration = updateRegistration(registration, muted);
-        if (!updatedRegistration) {
-          return;
-        }
-        updatedRegistrations.push(updatedRegistration);
-      });
-
+      updatedRegistrations = registrations.filter(registration => updateRegistration(registration, muted));
       if (!updatedRegistrations.length) {
         return;
       }
@@ -113,8 +103,6 @@ const getContactsAndPatientIds = (doc, contact, muted) => {
   }
 
   let rootContactId;
-  const patientIds = [];
-
   if (muted) {
     rootContactId = contact._id;
   } else {
@@ -126,22 +114,17 @@ const getContactsAndPatientIds = (doc, contact, muted) => {
   }
 
   return getDescendants(rootContactId)
-    .then(descendants => {
-      const contactIds = [];
-      descendants.rows.forEach(descendant => {
-        contactIds.push(descendant.id);
-        if (descendant.value) {
-          patientIds.push(descendant.value);
-        }
-      });
-
-      return db.medic.allDocs({ keys: contactIds, include_docs: true });
-    })
+    .then(contactIds => db.medic.allDocs({ keys: contactIds, include_docs: true }))
     .then(result => {
-      const contacts = [];
+      const contacts = [],
+            patientIds = [];
+
       result.rows.forEach(row => {
-        if (row.doc && Boolean(row.doc.muted) !== muted) {
+        if (row.doc) {
           contacts.push(row.doc);
+          if (row.doc.patient_id) {
+            patientIds.push(row.doc.patient_id);
+          }
         }
       });
 
@@ -178,7 +161,11 @@ module.exports = {
     if (change.doc.type !== 'data_record') {
       // new contacts that have muted parents should also get the muted flag
       change.doc.muted = true;
-      return true;
+      if (!change.doc.patient_id) {
+        return Promise.resolve(true);
+      }
+
+      return updateRegistrations([change.doc.patient_id], true).then(() => true);
     }
 
     const muting = isMuteForm(change.doc.form);
@@ -192,9 +179,12 @@ module.exports = {
           return true;
         }
 
-        return updateContacts(result.contacts, muting)
-          .then(() => updateRegistrations(result.patientIds, muting))
-          .then(registrations => {
+        return Promise
+          .all([
+            updateContacts(result.contacts, muting),
+            updateRegistrations(result.patientIds, muting)
+          ])
+          .then(([ contacts, registrations ]) => {
             module.exports._addMsg(getEventType(muting), change.doc, registrations, targetContact);
             return true;
           });
@@ -227,5 +217,8 @@ module.exports = {
     return true;
   },
 
-  _lineage: lineage
+  _lineage: lineage,
+  _getContactsAndPatientIds: getContactsAndPatientIds,
+  _updateContacts: updateContacts,
+  _updateRegistrations: updateRegistrations
 };
