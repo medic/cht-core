@@ -5,7 +5,7 @@ const followFeed = (seq, queue) => {
   return db.medic.changes({ live: true, since: seq })
     .on('change', change => {
       // skip uninteresting documents
-      if (change.id.match(/^_design\//)) {
+      if (change.id.match(/^_design\/|-info$/)) {
         return;
       }
       queue.push(change);
