@@ -1,6 +1,7 @@
 require('chai').should();
 const sinon = require('sinon'),
   moment = require('moment'),
+  db = require('../../../src/db-pouch'),
   utils = require('../../../src/lib/utils'),
   config = require('../../../src/config'),
   transition = require('../../../src/transitions/accept_patient_reports'),
@@ -216,6 +217,7 @@ describe('accept_patient_reports', () => {
         .stub(transition, '_findToClear')
         .returns(registration.scheduled_tasks);
       const setTaskState = sinon.stub(utils, 'setTaskState');
+      sinon.stub(db.medic, 'post').callsArg(1);
 
       transition._silenceReminders(registration, report, null, () => {
         registration._id.should.equal('test-registration');

@@ -53,7 +53,7 @@ describe('update sent by', () => {
     sinon.stub(db.medic, 'get').callsArgWith(1, null, {
       sent_forms: { XXX: tomorrow.toISOString() },
     });
-    // sinon.stub(db.audit, 'saveDoc').callsArgWith(1, null);
+
     const change = {
       doc: {
         form: 'XXX',
