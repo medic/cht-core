@@ -70,7 +70,7 @@ describe('Telemetry service', () => {
         chai
           .expect(pouchDb.post.args[0][0])
           .to.deep.include({ key: 'test', value: 100 });
-        chai.expect(pouchDb.post.args[0][0].date_recorded).to.exist;
+        chai.expect(pouchDb.post.args[0][0].date_recorded).to.be.above(0);
         chai.expect(storageGetItem.callCount).to.equal(2);
       });
     });
