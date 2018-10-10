@@ -147,7 +147,10 @@ angular
         );
       },
       callback: function(change) {
-        if (ContactChangeFilter.matchContact(change, $scope.selected) && ContactChangeFilter.isDeleted(change)) {
+        if (
+          ContactChangeFilter.matchContact(change, $scope.selected) &&
+          ContactChangeFilter.isDeleted(change)
+        ) {
           debouncedReloadContact.cancel();
           var parentId = $scope.selected.doc.parent && $scope.selected.doc.parent._id;
           if (parentId) {

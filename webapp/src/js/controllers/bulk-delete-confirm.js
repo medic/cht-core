@@ -1,6 +1,12 @@
 angular
   .module('inboxControllers')
-  .controller('BulkDeleteConfirm', function($scope, $timeout, $translate, $uibModalInstance, DeleteDocs) {
+  .controller('BulkDeleteConfirm', function(
+    $scope,
+    $timeout,
+    $translate,
+    $uibModalInstance,
+    DeleteDocs
+  ) {
     'use strict';
     'ngInject';
 

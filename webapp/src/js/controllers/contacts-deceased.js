@@ -48,7 +48,10 @@ angular
       callback: function(change) {
         if (change.deleted) {
           var parentId =
-            $scope.selected && $scope.selected.doc && $scope.selected.doc.parent && $scope.selected.doc.parent._id;
+            $scope.selected &&
+            $scope.selected.doc &&
+            $scope.selected.doc.parent &&
+            $scope.selected.doc.parent._id;
           if (parentId) {
             // select the parent
             selectContact(parentId, true);

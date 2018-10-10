@@ -1,4 +1,8 @@
-if (typeof exports === 'object' && typeof exports.nodeName !== 'string' && typeof define !== 'function') {
+if (
+  typeof exports === 'object' &&
+  typeof exports.nodeName !== 'string' &&
+  typeof define !== 'function'
+) {
   var define = function(factory) {
     factory(require, exports, module);
   };
@@ -60,7 +64,10 @@ define(function(require, exports, module) {
   Androiddatepicker.prototype.constructor = Androiddatepicker;
 
   Androiddatepicker.prototype._init = function() {
-    if (!window.medicmobile_android || typeof window.medicmobile_android.datePicker !== 'function') {
+    if (
+      !window.medicmobile_android ||
+      typeof window.medicmobile_android.datePicker !== 'function'
+    ) {
       return;
     }
 

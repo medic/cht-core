@@ -83,7 +83,8 @@ angular
       model.selected = $scope.selected.map(function(s) {
         return s.doc || s.summary;
       });
-      var doc = !$scope.selectMode && model.selected && model.selected.length === 1 && model.selected[0];
+      var doc =
+        !$scope.selectMode && model.selected && model.selected.length === 1 && model.selected[0];
       if (!doc) {
         return $scope.setRightActionBar(model);
       }
@@ -120,7 +121,8 @@ angular
         if (liveList.initialised()) {
           liveList.setSelected(model.doc && model.doc._id);
         }
-        refreshing = model.doc && $scope.selected.length && $scope.selected[0]._id === model.doc._id;
+        refreshing =
+          model.doc && $scope.selected.length && $scope.selected[0]._id === model.doc._id;
         if (!refreshing) {
           $scope.verifyingReport = false;
         }
@@ -160,7 +162,10 @@ angular
 
     $scope.deselectReport = function(report) {
       spliceSelected(report._id);
-      $('#reports-list li[data-record-id="' + report._id + '"] input[type="checkbox"]').prop('checked', false);
+      $('#reports-list li[data-record-id="' + report._id + '"] input[type="checkbox"]').prop(
+        'checked',
+        false
+      );
       $scope.settingSelected(true);
     };
 
@@ -231,7 +236,11 @@ angular
         .catch(function(err) {
           $scope.error = true;
           $scope.loading = false;
-          if ($scope.filters.search && err.reason && err.reason.toLowerCase().indexOf('bad query syntax') !== -1) {
+          if (
+            $scope.filters.search &&
+            err.reason &&
+            err.reason.toLowerCase().indexOf('bad query syntax') !== -1
+          ) {
             // invalid freetext filter query
             $scope.errorSyntax = true;
           }
@@ -249,7 +258,9 @@ angular
       $scope.loading = true;
       if (
         $scope.filters.search ||
-        ($scope.filters.forms && $scope.filters.forms.selected && $scope.filters.forms.selected.length) ||
+        ($scope.filters.forms &&
+          $scope.filters.forms.selected &&
+          $scope.filters.forms.selected.length) ||
         ($scope.filters.facilities &&
           $scope.filters.facilities.selected &&
           $scope.filters.facilities.selected.length) ||

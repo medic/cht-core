@@ -78,7 +78,10 @@ var _ = require('underscore'),
   };
 
   var getTaskDate = function(task) {
-    var current = task.state_history && task.state_history.length && task.state_history[task.state_history.length - 1];
+    var current =
+      task.state_history &&
+      task.state_history.length &&
+      task.state_history[task.state_history.length - 1];
     if (current) {
       if (current.state === 'scheduled') {
         return task.due;

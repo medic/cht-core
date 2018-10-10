@@ -79,7 +79,10 @@ angular
 
     var transformXml = function(xml) {
       return $q
-        .all([XSLT.transform('openrosa2html5form.xsl', xml), XSLT.transform('openrosa2xmlmodel.xsl', xml)])
+        .all([
+          XSLT.transform('openrosa2html5form.xsl', xml),
+          XSLT.transform('openrosa2xmlmodel.xsl', xml),
+        ])
         .then(function(results) {
           var $html = $(results[0]);
           var model = results[1];
@@ -239,7 +242,10 @@ angular
 
     var getEnketoOptions = function(doc, instanceData) {
       return $q
-        .all([EnketoPrepopulationData(doc.model, instanceData), getContactSummary(doc, instanceData)])
+        .all([
+          EnketoPrepopulationData(doc.model, instanceData),
+          getContactSummary(doc, instanceData),
+        ])
         .then(function(results) {
           var instanceStr = results[0];
           var contactSummary = results[1];
@@ -386,7 +392,8 @@ angular
       }
 
       function getId(xpath) {
-        return recordDoc.evaluate(xpath, recordDoc, null, XPathResult.ANY_TYPE, null).iterateNext()._couchId;
+        return recordDoc.evaluate(xpath, recordDoc, null, XPathResult.ANY_TYPE, null).iterateNext()
+          ._couchId;
       }
 
       // Chrome 30 doesn't support $xml.outerHTML: #3880
@@ -442,7 +449,8 @@ angular
         xpath = xpath || xpathPath(elem);
         // replace instance root element node name with form internal ID
         var filename =
-          'user-file' + (xpath.startsWith('/' + doc.form) ? xpath : xpath.replace(/^\/[^\/]+/, '/' + doc.form));
+          'user-file' +
+          (xpath.startsWith('/' + doc.form) ? xpath : xpath.replace(/^\/[^\/]+/, '/' + doc.form));
         AddAttachment(doc, filename, file, type, alreadyEncoded);
       };
 

@@ -29,11 +29,12 @@ var _ = require('underscore');
     };
 
     var getModules = function(settings, scheduledForms) {
-      return _.filter([getReportingRatesModule(settings, scheduledForms), getTargetsModule(settings)], function(
-        module
-      ) {
-        return module.available();
-      });
+      return _.filter(
+        [getReportingRatesModule(settings, scheduledForms), getTargetsModule(settings)],
+        function(module) {
+          return module.available();
+        }
+      );
     };
 
     return function() {

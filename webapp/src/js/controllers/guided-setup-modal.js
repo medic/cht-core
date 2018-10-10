@@ -20,7 +20,10 @@ angular
     var validate = function() {
       var countryCode = $('#guided-setup [name=default-country-code]').val();
       var gatewayNumber = $('#guided-setup [name=gateway-number]').val();
-      if (gatewayNumber && !phoneNumber.validate({ default_country_code: countryCode }, gatewayNumber)) {
+      if (
+        gatewayNumber &&
+        !phoneNumber.validate({ default_country_code: countryCode }, gatewayNumber)
+      ) {
         return {
           valid: false,
           error: 'Phone number not valid',
@@ -128,7 +131,10 @@ angular
       $uibModalInstance.rendered.then(function() {
         $('#guided-setup').on('click', '.horizontal-options a', selectOption);
         $('#guided-setup [name=gateway-number]').on('input', updateNumbers);
-        $('#guided-setup [name=default-country-code]').select2({ width: '20em', data: countries.list });
+        $('#guided-setup [name=default-country-code]').select2({
+          width: '20em',
+          data: countries.list,
+        });
         $('#guided-setup [name=default-country-code]').on('change', updateNumbers);
         Settings()
           .then(function(res) {
@@ -140,12 +146,20 @@ angular
                 $('#guided-setup [name=gateway-number]')
                   .val(res.gateway_number)
                   .trigger('input');
-                $('#primary-contact-content a[data-value=' + res.care_coordinator + ']').trigger('click');
-                $('#language-preference-content .locale a[data-value="' + res.locale + '"]').trigger('click');
-                $('#language-preference-content .locale-outgoing a[data-value="' + res.locale_outgoing + '"]').trigger(
+                $('#primary-contact-content a[data-value=' + res.care_coordinator + ']').trigger(
                   'click'
                 );
-                $('#registration-form-content a[data-value=' + res.anc_registration_lmp + ']').trigger('click');
+                $(
+                  '#language-preference-content .locale a[data-value="' + res.locale + '"]'
+                ).trigger('click');
+                $(
+                  '#language-preference-content .locale-outgoing a[data-value="' +
+                    res.locale_outgoing +
+                    '"]'
+                ).trigger('click');
+                $(
+                  '#registration-form-content a[data-value=' + res.anc_registration_lmp + ']'
+                ).trigger('click');
               });
             }
           })

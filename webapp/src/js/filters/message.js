@@ -26,7 +26,12 @@ var format = require('../modules/format'),
       if (record.message && record.message.message) {
         return record.message.message;
       }
-      if (record.tasks && record.tasks[0] && record.tasks[0].messages && record.tasks[0].messages[0]) {
+      if (
+        record.tasks &&
+        record.tasks[0] &&
+        record.tasks[0].messages &&
+        record.tasks[0].messages[0]
+      ) {
         return record.tasks[0].messages[0].message;
       }
       return $translate.instant('tasks.0.messages.0.message');

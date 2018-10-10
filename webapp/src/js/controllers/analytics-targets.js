@@ -1,6 +1,12 @@
 angular
   .module('inboxControllers')
-  .controller('AnalyticsTargetsCtrl', function($log, $scope, $timeout, RulesEngine, TargetGenerator) {
+  .controller('AnalyticsTargetsCtrl', function(
+    $log,
+    $scope,
+    $timeout,
+    RulesEngine,
+    TargetGenerator
+  ) {
     'use strict';
     'ngInject';
 

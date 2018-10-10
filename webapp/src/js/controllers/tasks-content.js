@@ -27,7 +27,10 @@ angular
         task &&
           task.actions &&
           task.actions.length === 1 &&
-          (!task.fields || task.fields.length === 0 || !task.fields[0].value || task.fields[0].value.length === 0)
+          (!task.fields ||
+            task.fields.length === 0 ||
+            !task.fields[0].value ||
+            task.fields[0].value.length === 0)
       );
     };
 
@@ -54,7 +57,9 @@ angular
         XmlForm(action.form, { include_docs: true })
           .then(function(formDoc) {
             $scope.enketoStatus.edited = false;
-            Enketo.render('#task-report', formDoc.id, action.content, markFormEdited).then(function(formInstance) {
+            Enketo.render('#task-report', formDoc.id, action.content, markFormEdited).then(function(
+              formInstance
+            ) {
               $scope.form = formInstance;
               $scope.loadingForm = false;
               if (formDoc.doc.translation_key) {

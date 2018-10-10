@@ -2,7 +2,14 @@ var _ = require('underscore');
 
 angular
   .module('inboxControllers')
-  .controller('AnalyticsCtrl', function($scope, $state, $stateParams, $timeout, AnalyticsModules, Tour) {
+  .controller('AnalyticsCtrl', function(
+    $scope,
+    $state,
+    $stateParams,
+    $timeout,
+    AnalyticsModules,
+    Tour
+  ) {
     'use strict';
     'ngInject';
 

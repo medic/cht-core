@@ -1,4 +1,8 @@
-if (typeof exports === 'object' && typeof exports.nodeName !== 'string' && typeof define !== 'function') {
+if (
+  typeof exports === 'object' &&
+  typeof exports.nodeName !== 'string' &&
+  typeof define !== 'function'
+) {
   var define = function(factory) {
     factory(require, exports, module);
   };
@@ -37,7 +41,9 @@ define(function(require, exports, module) {
 
     // we need to make it a textarea because text inputs strip out the
     // \n (new line) characters which breaks the encoded file content.
-    var textarea = $input[0].outerHTML.replace(/^<input /, '<textarea ').replace(/<\/input>/, '</textarea>');
+    var textarea = $input[0].outerHTML
+      .replace(/^<input /, '<textarea ')
+      .replace(/<\/input>/, '</textarea>');
     $input.replaceWith(textarea);
     var angularServices = angular.element(document.body).injector();
     var $translate = angularServices.get('$translate');
@@ -64,7 +70,10 @@ define(function(require, exports, module) {
 
     $translate('mrdt.verify').then(function(label) {
       $el.append(
-        '<div><a class="btn btn-default mrdt-verify">' + label + '</a></div>' + '<div><img class="mrdt-preview"/></div>'
+        '<div><a class="btn btn-default mrdt-verify">' +
+          label +
+          '</a></div>' +
+          '<div><img class="mrdt-preview"/></div>'
       );
     });
   };

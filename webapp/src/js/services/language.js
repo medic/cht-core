@@ -34,7 +34,13 @@ var moment = require('moment');
     };
   });
 
-  inboxServices.factory('Language', function($q, ipCookie, SetLanguageCookie, Settings, UserSettings) {
+  inboxServices.factory('Language', function(
+    $q,
+    ipCookie,
+    SetLanguageCookie,
+    Settings,
+    UserSettings
+  ) {
     'ngInject';
 
     var fetchLocale = function() {

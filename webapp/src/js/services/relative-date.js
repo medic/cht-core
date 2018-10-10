@@ -55,7 +55,11 @@ angular.module('inboxServices').factory('RelativeDate', function(FormatDate) {
 
         if (options.age) {
           element.textContent = FormatDate.age(timestamp, options);
-        } else if (!options.withoutTime && moment(timestamp).isSame(moment(), 'day') && options.absoluteToday) {
+        } else if (
+          !options.withoutTime &&
+          moment(timestamp).isSame(moment(), 'day') &&
+          options.absoluteToday
+        ) {
           element.textContent = FormatDate.time(timestamp);
         } else {
           element.textContent = FormatDate.relative(timestamp, options);

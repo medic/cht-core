@@ -62,7 +62,9 @@ angular
         var errorRecipients = _.map(errors, function(error) {
           return templateSelection(error);
         }).join(', ');
-        return $translate('Invalid contact numbers', { recipients: errorRecipients }).then(function(error) {
+        return $translate('Invalid contact numbers', { recipients: errorRecipients }).then(function(
+          error
+        ) {
           $scope.error.phone = error;
         });
       }

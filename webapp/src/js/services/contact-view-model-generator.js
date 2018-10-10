@@ -16,7 +16,14 @@ var _ = require('underscore');
  */
 angular
   .module('inboxServices')
-  .factory('ContactViewModelGenerator', function($log, $q, ContactSchema, DB, LineageModelGenerator, Search) {
+  .factory('ContactViewModelGenerator', function(
+    $log,
+    $q,
+    ContactSchema,
+    DB,
+    LineageModelGenerator,
+    Search
+  ) {
     'ngInject';
     'use strict';
 
@@ -34,7 +41,11 @@ angular
     };
 
     var AGE_COMPARATOR = function(lhs, rhs) {
-      if (lhs.doc.date_of_birth && rhs.doc.date_of_birth && lhs.doc.date_of_birth !== rhs.doc.date_of_birth) {
+      if (
+        lhs.doc.date_of_birth &&
+        rhs.doc.date_of_birth &&
+        lhs.doc.date_of_birth !== rhs.doc.date_of_birth
+      ) {
         return lhs.doc.date_of_birth < rhs.doc.date_of_birth ? -1 : 1;
       }
       if (lhs.doc.date_of_birth && !rhs.doc.date_of_birth) {
@@ -211,7 +222,9 @@ angular
           subjectIds.push(doc.place_id);
         }
       });
-      return Search('reports', { subjectIds: subjectIds }, { include_docs: true }).then(function(reports) {
+      return Search('reports', { subjectIds: subjectIds }, { include_docs: true }).then(function(
+        reports
+      ) {
         reports.forEach(function(report) {
           report.valid = !report.errors || !report.errors.length;
         });

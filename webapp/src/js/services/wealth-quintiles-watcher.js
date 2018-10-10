@@ -13,7 +13,9 @@ angular.module('inboxServices').factory('WealthQuintilesWatcher', function(Chang
       Changes({
         key: 'wealth-quintiles',
         filter: function(change) {
-          return change.doc.fields && Object.keys(change.doc.fields).indexOf('NationalQuintile') !== -1;
+          return (
+            change.doc.fields && Object.keys(change.doc.fields).indexOf('NationalQuintile') !== -1
+          );
         },
         callback: function(change) {
           DB()

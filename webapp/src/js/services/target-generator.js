@@ -6,7 +6,14 @@ var moment = require('moment'),
 
   var inboxServices = angular.module('inboxServices');
 
-  inboxServices.factory('TargetGenerator', function($log, $parse, $q, RulesEngine, Settings, UserContact) {
+  inboxServices.factory('TargetGenerator', function(
+    $log,
+    $parse,
+    $q,
+    RulesEngine,
+    Settings,
+    UserContact
+  ) {
     'ngInect';
 
     var targets = [];

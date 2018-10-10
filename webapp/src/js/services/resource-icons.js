@@ -8,7 +8,9 @@ angular.module('inboxServices').factory('ResourceIcons', function($log, Changes,
   };
 
   var getAttachment = function(name) {
-    return cache.doc && cache.doc.resources[name] && cache.doc._attachments[cache.doc.resources[name]];
+    return (
+      cache.doc && cache.doc.resources[name] && cache.doc._attachments[cache.doc.resources[name]]
+    );
   };
 
   var getHtmlContent = function(name) {

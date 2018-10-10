@@ -46,7 +46,9 @@ angular.module('inboxServices').factory('Auth', function($log, $q, Session, Sett
   };
 
   var authFail = function(reason, permissions, roles) {
-    $log.debug('Auth failed: ' + reason + '. User roles: ' + roles + '. Wanted permissions: ' + permissions);
+    $log.debug(
+      'Auth failed: ' + reason + '. User roles: ' + roles + '. Wanted permissions: ' + permissions
+    );
     return $q.reject();
   };
 
@@ -130,7 +132,12 @@ angular.module('inboxServices').factory('Auth', function($log, $q, Session, Sett
       return Settings().then(function(settings) {
         var validPermissions = permissionsList
           .map(function(permissions, key) {
-            return checkPermissions(requiredPermissions[key], disallowedPermissions[key], roles, settings);
+            return checkPermissions(
+              requiredPermissions[key],
+              disallowedPermissions[key],
+              roles,
+              settings
+            );
           })
           .filter(function(result) {
             return result === true;

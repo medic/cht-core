@@ -2,7 +2,13 @@ var feedback = require('../modules/feedback');
 
 angular
   .module('inboxControllers')
-  .controller('FeedbackCtrl', function($scope, $translate, $uibModalInstance, APP_CONFIG, Snackbar) {
+  .controller('FeedbackCtrl', function(
+    $scope,
+    $translate,
+    $uibModalInstance,
+    APP_CONFIG,
+    Snackbar
+  ) {
     'use strict';
     'ngInject';
 

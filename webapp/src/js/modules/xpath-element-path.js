@@ -35,7 +35,11 @@ Xpath.getElementTreeXPath = function(element) {
       if (sibling.nodeName == element.nodeName) ++index;
     }
 
-    for (var sibling = element.nextSibling; sibling && !hasFollowingSiblings; sibling = sibling.nextSibling) {
+    for (
+      var sibling = element.nextSibling;
+      sibling && !hasFollowingSiblings;
+      sibling = sibling.nextSibling
+    ) {
       if (sibling.nodeName == element.nodeName) hasFollowingSiblings = true;
     }
 

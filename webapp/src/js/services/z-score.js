@@ -102,7 +102,9 @@ angular.module('inboxServices').factory('ZScore', function($log, Changes, DB) {
         }
         var data = table.data[sex];
         if (!data) {
-          $log.error('The ' + tableId + ' z-score table is not configured for ' + sex + ' children');
+          $log.error(
+            'The ' + tableId + ' z-score table is not configured for ' + sex + ' children'
+          );
           // no data for the given sex
           return;
         }

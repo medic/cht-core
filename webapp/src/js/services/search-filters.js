@@ -60,7 +60,11 @@ var _ = require('underscore'),
               if (state.selected.length === 1) {
                 return callback(state.selected.first().text());
               }
-              callback($translate.instant(state.menu.data('filter-label'), { number: state.selected.length }));
+              callback(
+                $translate.instant(state.menu.data('filter-label'), {
+                  number: state.selected.length,
+                })
+              );
             },
             selectAllLabel: $translate.instant('select all'),
             clearLabel: $translate.instant('clear'),

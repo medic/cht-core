@@ -181,7 +181,10 @@ angular.module('inboxServices').service('EnketoTranslation', [
         bindingsFor(principle, principle.type);
         _.each(extras, function(extra, mapping) {
           model.append(
-            new N('bind', { nodeset: xPath(mapping), relevant: xPath(principle.type, mapping) + " = 'NEW'" })
+            new N('bind', {
+              nodeset: xPath(mapping),
+              relevant: xPath(principle.type, mapping) + " = 'NEW'",
+            })
           );
           bindingsFor(extra, mapping);
         });
@@ -198,7 +201,11 @@ angular.module('inboxServices').service('EnketoTranslation', [
         }
 
         var groupFor = function(schema, mapping) {
-          return new N('group', { appearance: 'field-list', ref: xPath(mapping) }, fieldsFor(schema, mapping));
+          return new N(
+            'group',
+            { appearance: 'field-list', ref: xPath(mapping) },
+            fieldsFor(schema, mapping)
+          );
         };
 
         var fieldsFor = function(schema, mapping) {

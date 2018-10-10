@@ -38,7 +38,12 @@ var registerUnhandledErrorHandler = function() {
       });
     } catch (e) {
       // stop infinite loop of exceptions
-      options.console.error('Error while trying to record error', JSON.stringify(error), e.toString(), e);
+      options.console.error(
+        'Error while trying to record error',
+        JSON.stringify(error),
+        e.toString(),
+        e
+      );
     }
   };
 };

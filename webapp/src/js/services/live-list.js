@@ -52,7 +52,9 @@ angular
             return c2.simprints.confidence - c1.simprints.confidence;
           }
           if (c1.type !== c2.type) {
-            return ContactSchema.getTypes().indexOf(c1.type) - ContactSchema.getTypes().indexOf(c2.type);
+            return (
+              ContactSchema.getTypes().indexOf(c1.type) - ContactSchema.getTypes().indexOf(c2.type)
+            );
           }
           var c1Dead = !!c1.date_of_death;
           var c2Dead = !!c2.date_of_death;
@@ -85,10 +87,15 @@ angular
                 });
               }
 
-              var visitCount = Math.min(contact.visitCount, 99) + (contact.visitCount > 99 ? '+' : '');
+              var visitCount =
+                Math.min(contact.visitCount, 99) + (contact.visitCount > 99 ? '+' : '');
               scope.visits = {
                 count: $translate.instant('contacts.visits.count', { count: visitCount }),
-                summary: $translate.instant('contacts.visits.visits', { VISITS: contact.visitCount }, 'messageformat'),
+                summary: $translate.instant(
+                  'contacts.visits.visits',
+                  { VISITS: contact.visitCount },
+                  'messageformat'
+                ),
               };
 
               if (contact.visitCountGoal) {
@@ -101,7 +108,9 @@ angular
                 }
               }
             } else {
-              scope.summary = $translate.instant('contact.primary_contact_name', { name: contact.contact });
+              scope.summary = $translate.instant('contact.primary_contact_name', {
+                name: contact.contact,
+              });
             }
           }
           return renderTemplate(scope);
@@ -158,12 +167,17 @@ angular
           scope.valid = report.valid;
           scope.verified = report.verified;
           var statusIcon =
-            report.valid && report.verified ? 'report-verify-valid-icon.html' : 'report-verify-invalid-icon.html';
+            report.valid && report.verified
+              ? 'report-verify-valid-icon.html'
+              : 'report-verify-invalid-icon.html';
           scope.statusIcon = $templateCache.get('templates/partials/svg-icons/' + statusIcon);
           scope.lineage = (report.subject && report.subject.lineage) || report.lineage;
           scope.unread = !report.read;
           var element = renderTemplate(scope);
-          if (removedDomElement && removedDomElement.find('input[type="checkbox"]').is(':checked')) {
+          if (
+            removedDomElement &&
+            removedDomElement.find('input[type="checkbox"]').is(':checked')
+          ) {
             // updating an item that was selected in select mode
             element = $(element);
             element.find('input[type="checkbox"]').prop('checked', true);

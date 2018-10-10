@@ -83,7 +83,9 @@ var passwordTester = require('simple-password-tester'),
       var validatePasswordStrength = function() {
         var password = $scope.editUserModel.password || '';
         if (password.length < PASSWORD_MINIMUM_LENGTH) {
-          Translate('password.length.minimum', { minimum: PASSWORD_MINIMUM_LENGTH }).then(function(value) {
+          Translate('password.length.minimum', { minimum: PASSWORD_MINIMUM_LENGTH }).then(function(
+            value
+          ) {
             $scope.errors.password = value;
           });
           return false;
@@ -100,7 +102,8 @@ var passwordTester = require('simple-password-tester'),
       var validatePasswordFields = function() {
         return (
           validateRequired('password', 'Password') &&
-          (!$scope.editUserModel.currentPassword || validateRequired('currentPassword', 'Current Password')) &&
+          (!$scope.editUserModel.currentPassword ||
+            validateRequired('currentPassword', 'Current Password')) &&
           validatePasswordStrength() &&
           validateConfirmPasswordMatches()
         );
@@ -120,7 +123,11 @@ var passwordTester = require('simple-password-tester'),
               if (k === 'password') {
                 return model[k] && model[k] !== '';
               }
-              if (['currentPassword', 'passwordConfirm', 'facilitySelect', 'contactSelect'].indexOf(k) !== -1) {
+              if (
+                ['currentPassword', 'passwordConfirm', 'facilitySelect', 'contactSelect'].indexOf(
+                  k
+                ) !== -1
+              ) {
                 // We don't want to return these 'meta' fields
                 return false;
               }

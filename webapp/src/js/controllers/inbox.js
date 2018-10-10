@@ -143,7 +143,10 @@ var feedback = require('../modules/feedback'),
     $scope.enketoStatus = { saving: false };
     $scope.isAdmin = Session.isAdmin();
 
-    if ($window.medicmobile_android && typeof $window.medicmobile_android.getAppVersion === 'function') {
+    if (
+      $window.medicmobile_android &&
+      typeof $window.medicmobile_android.getAppVersion === 'function'
+    ) {
       $scope.android_app_version = $window.medicmobile_android.getAppVersion();
     }
 
@@ -335,7 +338,10 @@ var feedback = require('../modules/feedback'),
               icon: jsonForm.icon,
             };
           });
-          XmlForms('FormsFilter', { contactForms: false, ignoreContext: true }, function(err, xForms) {
+          XmlForms('FormsFilter', { contactForms: false, ignoreContext: true }, function(
+            err,
+            xForms
+          ) {
             if (err) {
               return $log.error('Error fetching form definitions', err);
             }
@@ -673,7 +679,12 @@ var feedback = require('../modules/feedback'),
     Changes({
       key: 'inbox-user-context',
       filter: function(change) {
-        return change.doc.type === 'user-settings' && userCtx && userCtx.name && change.doc.name === userCtx.name;
+        return (
+          change.doc.type === 'user-settings' &&
+          userCtx &&
+          userCtx.name &&
+          change.doc.name === userCtx.name
+        );
       },
       callback: function() {
         Session.init(showUpdateReady);

@@ -1,4 +1,8 @@
-if (typeof exports === 'object' && typeof exports.nodeName !== 'string' && typeof define !== 'function') {
+if (
+  typeof exports === 'object' &&
+  typeof exports.nodeName !== 'string' &&
+  typeof define !== 'function'
+) {
   var define = function(factory) {
     factory(require, exports, module);
   };
@@ -57,7 +61,9 @@ define(function(require, exports, module) {
 
       var value = $textInput.val();
       var disabled = $textInput.prop('readonly');
-      $textInput.replaceWith($textInput[0].outerHTML.replace(/^<input /, '<select ').replace(/<\/input>/, '</select>'));
+      $textInput.replaceWith(
+        $textInput[0].outerHTML.replace(/^<input /, '<select ').replace(/<\/input>/, '</select>')
+      );
       $textInput = $question.find('select');
       var preSelectedOption = $('<option></option>')
         .attr('value', value)
@@ -149,7 +155,9 @@ define(function(require, exports, module) {
 
     $selectInput.find('option').remove();
 
-    var replacementHtml = $selectInput[0].outerHTML.replace(/^<select /, '<input ').replace(/<\/select>/, '</input>');
+    var replacementHtml = $selectInput[0].outerHTML
+      .replace(/^<select /, '<input ')
+      .replace(/<\/select>/, '</input>');
     $selectInput.replaceWith(replacementHtml);
   }
 

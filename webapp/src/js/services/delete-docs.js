@@ -81,7 +81,9 @@ var utilsFactory = require('bulk-docs-utils');
             deferred.reject(err);
           }
         } else {
-          deferred.reject(new Error('Server responded with ' + this.status + ': ' + xhr.statusText));
+          deferred.reject(
+            new Error('Server responded with ' + this.status + ': ' + xhr.statusText)
+          );
         }
       };
       xhr.onerror = function() {

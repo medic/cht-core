@@ -27,7 +27,11 @@ var COOKIE_NAME = 'userCtx',
       ipCookie.remove(COOKIE_NAME, { path: '/' });
       waitForAppCache(function() {
         $window.location.href =
-          '/' + Location.dbName + '/login' + '?redirect=' + encodeURIComponent($window.location.href);
+          '/' +
+          Location.dbName +
+          '/login' +
+          '?redirect=' +
+          encodeURIComponent($window.location.href);
       });
     };
 

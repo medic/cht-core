@@ -172,26 +172,28 @@ angular
       DB()
         .get(placeId || $scope.place._id)
         .then(function(place) {
-          return $q.all([ChildFacility(place), getViewReports(place, dates)]).then(function(results) {
-            var facilities = results[0];
-            var reports = results[1];
+          return $q
+            .all([ChildFacility(place), getViewReports(place, dates)])
+            .then(function(results) {
+              var facilities = results[0];
+              var reports = results[1];
 
-            $scope.totals = reportingUtils.getTotals(facilities, reports, dates);
-            var rows = getRows(place.type, facilities, reports, dates);
-            if (place.type === 'health_center') {
-              $scope.clinics = rows;
-            } else {
-              $scope.facilities = rows;
-            }
-            $scope.chart = [
-              { key: 'valid', y: $scope.totals.complete },
-              { key: 'missing', y: $scope.totals.not_submitted },
-              { key: 'invalid', y: $scope.totals.incomplete },
-            ];
-            $scope.filters.district = findDistrict(place);
-            $scope.place = place;
-            $scope.loadingTotals = false;
-          });
+              $scope.totals = reportingUtils.getTotals(facilities, reports, dates);
+              var rows = getRows(place.type, facilities, reports, dates);
+              if (place.type === 'health_center') {
+                $scope.clinics = rows;
+              } else {
+                $scope.facilities = rows;
+              }
+              $scope.chart = [
+                { key: 'valid', y: $scope.totals.complete },
+                { key: 'missing', y: $scope.totals.not_submitted },
+                { key: 'invalid', y: $scope.totals.incomplete },
+              ];
+              $scope.filters.district = findDistrict(place);
+              $scope.place = place;
+              $scope.loadingTotals = false;
+            });
         })
         .catch(function(err) {
           $log.error('Error setting place.', err);

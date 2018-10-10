@@ -41,11 +41,13 @@ angular
           contact: contact.doc,
         };
         $scope.enketoStatus.edited = false;
-        return Enketo.render('#contact-report', form.id, instanceData, markFormEdited).then(function(formInstance) {
-          $scope.setTitle(TranslateFrom(form.doc.title));
-          $scope.form = formInstance;
-          $scope.loadingForm = false;
-        });
+        return Enketo.render('#contact-report', form.id, instanceData, markFormEdited).then(
+          function(formInstance) {
+            $scope.setTitle(TranslateFrom(form.doc.title));
+            $scope.form = formInstance;
+            $scope.loadingForm = false;
+          }
+        );
       });
     };
 

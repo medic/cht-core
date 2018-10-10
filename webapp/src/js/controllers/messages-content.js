@@ -129,7 +129,8 @@ angular
           .then(function(conversation) {
             $scope.loadingMoreContent = false;
             var contentElem = $('.message-content-wrapper');
-            var scrollToBottom = contentElem.scrollTop() + contentElem.height() + 30 > contentElem[0].scrollHeight;
+            var scrollToBottom =
+              contentElem.scrollTop() + contentElem.height() + 30 > contentElem[0].scrollHeight;
             var first = $('.item-content .body > ul > li').filter(':first');
             conversation.forEach(function(updated) {
               var match = _.findWhere($scope.selected.messages, { id: updated.id });
@@ -151,7 +152,8 @@ angular
               var scroll = false;
               if (options.skip) {
                 var spinnerHeight = 102;
-                scroll = $('.message-content-wrapper li')[conversation.length].offsetTop - spinnerHeight;
+                scroll =
+                  $('.message-content-wrapper li')[conversation.length].offsetTop - spinnerHeight;
               } else if (first.length && scrollToBottom) {
                 scroll = $('.message-content-wrapper')[0].scrollHeight;
               }

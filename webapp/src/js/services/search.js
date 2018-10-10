@@ -15,7 +15,14 @@ var _ = require('underscore'),
     };
   });
 
-  inboxServices.factory('Search', function($log, $q, DB, GetDataRecords, SearchFactory, CalendarInterval) {
+  inboxServices.factory('Search', function(
+    $log,
+    $q,
+    DB,
+    GetDataRecords,
+    SearchFactory,
+    CalendarInterval
+  ) {
     'ngInject';
 
     var _currentQuery = {};
@@ -101,7 +108,10 @@ var _ = require('underscore'),
 
           var result;
           if (extensions.displayLastVisitedDate) {
-            var lastVisitedDatePromise = getLastVisitedDates(searchResults, extensions.visitCountSettings);
+            var lastVisitedDatePromise = getLastVisitedDates(
+              searchResults,
+              extensions.visitCountSettings
+            );
 
             result = $q
               .all({

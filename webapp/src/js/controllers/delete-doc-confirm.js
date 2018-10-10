@@ -1,6 +1,13 @@
 angular
   .module('inboxControllers')
-  .controller('DeleteDocConfirm', function($scope, $translate, $uibModalInstance, DB, ExtractLineage, Snackbar) {
+  .controller('DeleteDocConfirm', function(
+    $scope,
+    $translate,
+    $uibModalInstance,
+    DB,
+    ExtractLineage,
+    Snackbar
+  ) {
     'use strict';
     'ngInject';
 

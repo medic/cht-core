@@ -1,6 +1,13 @@
 angular
   .module('inboxControllers')
-  .controller('AnalyticsReportingCtrl', function($log, $q, $scope, $state, Contacts, ScheduledForms) {
+  .controller('AnalyticsReportingCtrl', function(
+    $log,
+    $q,
+    $scope,
+    $state,
+    Contacts,
+    ScheduledForms
+  ) {
     'use strict';
     'ngInject';
 

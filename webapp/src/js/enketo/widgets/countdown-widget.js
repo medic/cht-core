@@ -1,4 +1,8 @@
-if (typeof exports === 'object' && typeof exports.nodeName !== 'string' && typeof define !== 'function') {
+if (
+  typeof exports === 'object' &&
+  typeof exports.nodeName !== 'string' &&
+  typeof define !== 'function'
+) {
   var define = function(factory) {
     factory(require, exports, module);
   };
@@ -100,7 +104,8 @@ function TimerAnimation(canvas, canvasW, canvasH, duration) {
   var audio = (function() {
     var cached;
 
-    var androidSoundSupport = window.medicmobile_android && typeof window.medicmobile_android.playAlert === 'function';
+    var androidSoundSupport =
+      window.medicmobile_android && typeof window.medicmobile_android.playAlert === 'function';
 
     if (!androidSoundSupport) {
       cached = loadSound();

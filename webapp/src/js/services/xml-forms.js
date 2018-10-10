@@ -2,7 +2,17 @@ var _ = require('underscore');
 
 angular
   .module('inboxServices')
-  .factory('XmlForms', function($log, $parse, $q, Auth, Changes, ContactSchema, DB, UserContact, XmlFormsContextUtils) {
+  .factory('XmlForms', function(
+    $log,
+    $parse,
+    $q,
+    Auth,
+    Changes,
+    ContactSchema,
+    DB,
+    UserContact,
+    XmlFormsContextUtils
+  ) {
     'use strict';
     'ngInject';
 

@@ -66,7 +66,10 @@
   };
 
   var getDataUsage = function() {
-    if (window.medicmobile_android && typeof window.medicmobile_android.getDataUsage === 'function') {
+    if (
+      window.medicmobile_android &&
+      typeof window.medicmobile_android.getDataUsage === 'function'
+    ) {
       return JSON.parse(window.medicmobile_android.getDataUsage());
     }
   };

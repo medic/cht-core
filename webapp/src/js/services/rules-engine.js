@@ -48,11 +48,18 @@ var nools = require('nools'),
 
     var getContactId = function(doc) {
       // get the associated patient or place id to group reports by
-      return doc && (doc.patient_id || doc.place_id || (doc.fields && (doc.fields.patient_id || doc.fields.place_id)));
+      return (
+        doc &&
+        (doc.patient_id ||
+          doc.place_id ||
+          (doc.fields && (doc.fields.patient_id || doc.fields.place_id)))
+      );
     };
 
     var contactHasId = function(contact, id) {
-      return contact && (contact._id === id || contact.patient_id === id || contact.place_id === id);
+      return (
+        contact && (contact._id === id || contact.patient_id === id || contact.place_id === id)
+      );
     };
 
     var deriveFacts = function(dataRecords, contacts) {

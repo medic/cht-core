@@ -34,7 +34,9 @@ angular
       }
       if ($state.params.reportId) {
         // editing
-        return LineageModelGenerator.report($state.params.reportId, { merge: true }).then(function(result) {
+        return LineageModelGenerator.report($state.params.reportId, { merge: true }).then(function(
+          result
+        ) {
           return {
             doc: result.doc,
             formInternalId: result.doc && result.doc.form,

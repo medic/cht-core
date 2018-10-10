@@ -18,7 +18,13 @@ var _ = require('underscore');
 
 angular
   .module('inboxServices')
-  .factory('GetDataRecords', function($q, DB, HydrateContactNames, GetSubjectSummaries, GetSummaries) {
+  .factory('GetDataRecords', function(
+    $q,
+    DB,
+    HydrateContactNames,
+    GetSubjectSummaries,
+    GetSummaries
+  ) {
     'use strict';
     'ngInject';
 

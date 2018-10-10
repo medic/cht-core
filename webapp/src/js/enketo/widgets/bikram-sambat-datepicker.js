@@ -1,4 +1,8 @@
-if (typeof exports === 'object' && typeof exports.nodeName !== 'string' && typeof define !== 'function') {
+if (
+  typeof exports === 'object' &&
+  typeof exports.nodeName !== 'string' &&
+  typeof define !== 'function'
+) {
   var define = function(factory) {
     factory(require, exports, module);
   };
@@ -54,7 +58,11 @@ define(function(require, exports, module) {
       bikram_sambat_bs.initListeners($parent, $realDateInput);
 
       if (initialVal) {
-        bikram_sambat_bs.setDate_greg_text($parent.children('.bikram-sambat-input-group'), $realDateInput, initialVal);
+        bikram_sambat_bs.setDate_greg_text(
+          $parent.children('.bikram-sambat-input-group'),
+          $realDateInput,
+          initialVal
+        );
       }
     });
   };

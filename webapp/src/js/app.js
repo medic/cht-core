@@ -61,7 +61,13 @@ _.templateSettings = {
     'pouchdb',
   ]);
 
-  app.config(function($compileProvider, $locationProvider, $stateProvider, $translateProvider, $urlRouterProvider) {
+  app.config(function(
+    $compileProvider,
+    $locationProvider,
+    $stateProvider,
+    $translateProvider,
+    $urlRouterProvider
+  ) {
     'ngInject';
     $locationProvider.hashPrefix('');
     $urlRouterProvider.otherwise('/error/404');

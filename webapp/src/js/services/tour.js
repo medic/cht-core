@@ -554,7 +554,13 @@ angular
 
     var getTours = function() {
       return $q
-        .all([getMessagesTour(), getTasksTour(), getReportsTour(), getContactsTour(), getAnalyticsTour()])
+        .all([
+          getMessagesTour(),
+          getTasksTour(),
+          getReportsTour(),
+          getContactsTour(),
+          getAnalyticsTour(),
+        ])
         .then(function(results) {
           return _.compact(results);
         });

@@ -4,7 +4,16 @@ var _ = require('underscore'),
 
 angular
   .module('inboxServices')
-  .factory('Select2Search', function($log, $q, $translate, DB, LineageModelGenerator, Search, Session, Settings) {
+  .factory('Select2Search', function(
+    $log,
+    $q,
+    $translate,
+    DB,
+    LineageModelGenerator,
+    Search,
+    Session,
+    Settings
+  ) {
     'use strict';
     'ngInject';
 
@@ -146,13 +155,14 @@ angular
           minimumInputLength: Session.isOnlineOnly() ? 3 : 0,
         });
         if (allowNew) {
-          var button = $('<a class="btn btn-link add-new"><i class="fa fa-plus"></i> ' + addNewText + '</a>').on(
-            'click',
-            function() {
-              selectEl.append($('<option value="NEW" selected="selected">' + addNewText + '</option>'));
-              selectEl.trigger('change');
-            }
-          );
+          var button = $(
+            '<a class="btn btn-link add-new"><i class="fa fa-plus"></i> ' + addNewText + '</a>'
+          ).on('click', function() {
+            selectEl.append(
+              $('<option value="NEW" selected="selected">' + addNewText + '</option>')
+            );
+            selectEl.trigger('change');
+          });
           selectEl.after(button);
         }
 

@@ -94,7 +94,8 @@ angular
       setTitle();
 
       if ($scope.contact.type) {
-        var extras = $scope.contact.type === 'person' ? null : { contact: $scope.dependentPersonSchema };
+        var extras =
+          $scope.contact.type === 'person' ? null : { contact: $scope.dependentPersonSchema };
         return ContactForm.forCreate($scope.contact.type, extras);
       }
       return $q.resolve();

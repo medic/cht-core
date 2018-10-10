@@ -406,7 +406,8 @@ var _ = require('underscore'),
           liveList.remove(change.doc);
         }
 
-        var withIds = isSortedByLastVisited() && !!isRelevantVisitReport(change.doc) && !change.deleted;
+        var withIds =
+          isSortedByLastVisited() && !!isRelevantVisitReport(change.doc) && !change.deleted;
         return _query({ limit: limit, silent: true, withIds: withIds });
       },
       filter: function(change) {
