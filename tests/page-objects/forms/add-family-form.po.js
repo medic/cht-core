@@ -1,7 +1,8 @@
 const utils = require('../../utils'),
-  helper = require('../../helper');
+  helper = require('../../helper'),
+  fs = require('fs');
 
-const xml = require('./data/add-family.po.data').xml;
+const xml = fs.readFileSync(`${__dirname}/../../../demo-forms/multiple-repeats.xml`, "utf8");
 
 const docs = [
   {

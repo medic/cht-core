@@ -1,8 +1,9 @@
 const utils = require('../../utils'),
   helper = require('../../helper'),
-  genericForm = require('./generic-form.po');
+  genericForm = require('./generic-form.po')
+  fs = require('fs');
 
-const xml = require('./data/delivery-report.po.data').xml;
+const xml = fs.readFileSync(`${__dirname}/../../../config/standard/forms/app/delivery.xml`, "utf8");
 
 const docs = [
   {
@@ -82,7 +83,13 @@ module.exports = {
 
   //note to CHW
   getNoteToCHW: () => {
-    return element(by.css('textarea')).getAttribute('value');
+    const locator = '[data-value=" /delivery/group_note/default_chw_sms_text "]';
+    var  e = element.all(by.css(locator)).filter(function(elem) {
+      return elem.getText().then(function(text) {
+        return text;
+      });
+    });
+    return e.first().getText();
   },
 
   //summary page
@@ -103,8 +110,8 @@ module.exports = {
   },
 
   getFollowUpMessage: () => {
-    return element(
-      by.css('[lang="en"] [data-value=" /delivery/group_note/g_chw_sms "]')
-    ).getText();
+    var css = '[lang="en"] [data-value=" /delivery/chw_sms "]';
+    helper.waitElementToBeVisible(element(by.css(css)));
+    return element(by.css(css)).getText();
   },
 };
