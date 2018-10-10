@@ -1212,7 +1212,7 @@ describe('Muting transition', () => {
 
   describe('updateRegistrations', () => {
     it('should do nothing if no patientIds are supplied', () => {
-      return transition._updateRegistrations([], true).then(result => {
+      return transition._updateDataRecords([], true).then(result => {
         chai.expect(result).to.deep.equal([]);
         chai.expect(utils.getRegistrations.callCount).to.equal(0);
       });
@@ -1222,7 +1222,7 @@ describe('Muting transition', () => {
       const patientIds = ['1', '2', '3', '4'];
       utils.getRegistrations.callsArgWith(1, null, []);
 
-      return transition._updateRegistrations(patientIds, true).then(result => {
+      return transition._updateDataRecords(patientIds, true).then(result => {
         chai.expect(result).to.deep.equal([]);
         chai.expect(utils.getRegistrations.callCount).to.equal(1);
         chai.expect(utils.getRegistrations.args[0][0].ids).to.deep.equal(patientIds);
@@ -1244,7 +1244,7 @@ describe('Muting transition', () => {
 
       db.medic.bulkDocs.resolves();
 
-      return transition._updateRegistrations(['a'], true).then(result => {
+      return transition._updateDataRecords(['a'], true).then(result => {
         chai.expect(utils.getRegistrations.callCount).to.equal(1);
         chai.expect(utils.getRegistrations.args[0][0].ids).to.deep.equal(['a']);
         chai.expect(utils.muteScheduledMessages.callCount).to.equal(4);
@@ -1280,7 +1280,7 @@ describe('Muting transition', () => {
 
       db.medic.bulkDocs.resolves();
 
-      return transition._updateRegistrations(['a'], false).then(result => {
+      return transition._updateDataRecords(['a'], false).then(result => {
         chai.expect(utils.getRegistrations.callCount).to.equal(1);
         chai.expect(utils.getRegistrations.args[0][0].ids).to.deep.equal(['a']);
         chai.expect(utils.unmuteScheduledMessages.callCount).to.equal(4);
@@ -1305,7 +1305,7 @@ describe('Muting transition', () => {
       utils.getRegistrations.callsArgWith(1, null, [{ _id: 'r1' }, { _id: 'r2' }, { _id: 'r3' }, { _id: 'r4' }]);
       utils.muteScheduledMessages.returns(false);
 
-      return transition._updateRegistrations(['a'], true).then(result => {
+      return transition._updateDataRecords(['a'], true).then(result => {
         chai.expect(result).to.deep.equal([]);
         chai.expect(db.medic.bulkDocs.callCount).to.equal(0);
         chai.expect(utils.muteScheduledMessages.callCount).to.equal(4);
@@ -1321,7 +1321,7 @@ describe('Muting transition', () => {
       utils.muteScheduledMessages.returns(true);
       db.medic.bulkDocs.rejects({ some: 'err' });
 
-      return transition._updateRegistrations(['a'], true)
+      return transition._updateDataRecords(['a'], true)
         .then(() => chai.expect(false).to.equal('Should have thrown'))
         .catch(err => {
           chai.expect(err).to.deep.equal({ some: 'err' });

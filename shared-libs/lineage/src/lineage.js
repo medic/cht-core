@@ -103,11 +103,19 @@ module.exports = function(Promise, DB) {
     );
   };
 
+  var findPatientUuid = function(doc) {
+    return (
+      doc.type === 'data_record' &&
+      ((doc.fields && doc.fields.patient_uuid) || doc.patient_uuid)
+    );
+  };
+
   var fetchPatientLineage = function(record) {
     var patientId = findPatientId(record);
 
     if (!patientId) {
-      return Promise.resolve([]);
+      var patientUuid = findPatientUuid(record);
+      return patientUuid ? fetchLineageById(patientUuid) : Promise.resolve([]);
     }
 
     return contactUuidByPatientId(patientId)
