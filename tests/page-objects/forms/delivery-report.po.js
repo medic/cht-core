@@ -1,9 +1,9 @@
 const utils = require('../../utils'),
   helper = require('../../helper'),
-  genericForm = require('./generic-form.po')
+  genericForm = require('./generic-form.po'),
   fs = require('fs');
 
-const xml = fs.readFileSync(`${__dirname}/../../../config/standard/forms/app/delivery.xml`, "utf8");
+const xml = fs.readFileSync(`${__dirname}/../../../config/standard/forms/app/delivery.xml`, 'utf8');
 
 const docs = [
   {
