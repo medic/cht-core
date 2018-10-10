@@ -29,9 +29,21 @@ const getInfoDoc = change => {
       if (doc) {
         doc.transitions = doc.transitions || change.doc.transitions || {};
         return doc;
+      } else {
+        return createInfoDoc(change.id, 'unknown');
       }
+      return null;
     })
     .then(doc => updateInfoDoc(doc));
+};
+
+const createInfoDoc = (docId, initialReplicationDate) => {
+  return  {
+    _id: infoDocId(docId),
+    type: 'info',
+    doc_id: docId,
+    initial_replication_date: initialReplicationDate
+  };
 };
 
 const deleteInfoDoc = change => {
