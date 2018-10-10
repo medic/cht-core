@@ -1,4 +1,4 @@
-describe('Telemetry service', () => {
+describe.only('Telemetry service', () => {
   'use strict';
 
   const NOW = new Date(2018, 10, 10, 12, 33).getTime();
@@ -69,7 +69,7 @@ describe('Telemetry service', () => {
         chai.expect(pouchDb.post.callCount).to.equal(1);
         chai
           .expect(pouchDb.post.args[0][0])
-          .to.deep.equal({ key: 'test', value: 1 });
+          .to.deep.include({ key: 'test', value: 1 });
         chai.expect(storageGetItem.callCount).to.equal(2);
       });
     });
@@ -121,20 +121,24 @@ describe('Telemetry service', () => {
       });
       pouchDb.destroy = sinon.stub().resolves();
 
-      $window.navigator.userAgent = 'fake-agent';
+      $window.navigator.userAgent = 'Agent Smith';
       $window.navigator.language = 'klingon';
       $window.navigator.hardwareConcurrency = 4;
+      $window.screen = {
+        availWidth: 768,
+        availHeight: 1024,
+      };
 
       return service.record('test', 1).then(() => {
         chai.expect(pouchDb.post.callCount).to.equal(1);
         chai
           .expect(pouchDb.post.args[0][0])
-          .to.deep.equal({ key: 'test', value: 1 });
+          .to.deep.include({ key: 'test', value: 1 });
         chai.expect(DB.put.callCount).to.equal(1);
 
         const aggregatedDoc = DB.put.args[0][0];
         chai.expect(aggregatedDoc._id).to.match(/telemetry-2018-9-greg/);
-        chai.expect(aggregatedDoc.rows).to.deep.equal({
+        chai.expect(aggregatedDoc.stats).to.deep.equal({
           foo: 'stats',
           bar: 'more stats',
         });
@@ -144,9 +148,13 @@ describe('Telemetry service', () => {
         chai.expect(aggregatedDoc.metadata.user).to.equal('greg');
         chai.expect(aggregatedDoc.dbInfo).to.deep.equal({ some: 'stats' });
         chai.expect(aggregatedDoc.device).to.deep.equal({
-          userAgent: 'fake-agent',
+          userAgent: 'Agent Smith',
           language: 'klingon',
           hardwareConcurrency: 4,
+          screen: {
+            width: 768,
+            height: 1024,
+          },
         });
       });
     });

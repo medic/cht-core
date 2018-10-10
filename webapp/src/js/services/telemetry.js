@@ -72,6 +72,15 @@ angular
       }
     };
 
+    var convertReduceToKeyValues = function(reduce) {
+      var kv = {};
+      reduce.rows.forEach(function(row) {
+        kv[row.key] = row.value;
+      });
+
+      return kv;
+    };
+
     var generateAggregateDocId = function(metadata) {
       return [
         'telemetry',
@@ -113,38 +122,55 @@ angular
       };
     };
 
+    // This should never happen (famous last words..), because we should only
+    // generate a new document for every month, which is part of the _id.
+    var storeConflictedAggregate = function(aggregateDoc) {
+      aggregateDoc.metadata.conflicted = true;
+      aggregateDoc._id = [aggregateDoc._id, 'conflicted', Date().now()].join(
+        '-'
+      );
+      return DB().put(aggregateDoc);
+    };
+
     var aggregate = function(db) {
-      return db
-        .query(
-          {
-            map: function(doc, emit) {
-              emit(doc.key, doc.value);
+      return $q
+        .all([
+          db.query(
+            {
+              map: function(doc, emit) {
+                emit(doc.key, doc.value);
+              },
+              reduce: '_stats',
             },
-            reduce: '_stats',
-          },
-          {
-            group: true,
-          }
-        )
-        .then(function(results) {
+            {
+              group: true,
+            }
+          ),
+          DB().info(),
+        ])
+        .then(function(qAll) {
+          var reduceResult = qAll[0];
+          var infoResult = qAll[1];
+
           var aggregateDoc = {
-            rows: {},
+            type: 'telemetry',
           };
-          results.rows.forEach(function(row) {
-            aggregateDoc.rows[row.key] = row.value;
-          });
 
-          aggregateDoc.type = 'telemetry';
-
+          // REVIEWER: is there a better name than 'stats' for aggregated telemetry records?
+          aggregateDoc.stats = convertReduceToKeyValues(reduceResult);
           aggregateDoc.metadata = generateMetadataSection();
           aggregateDoc._id = generateAggregateDocId(aggregateDoc.metadata);
           aggregateDoc.device = generateDeviceStats();
-          return DB()
-            .info()
-            .then(function(result) {
-              aggregateDoc.dbInfo = result;
+          aggregateDoc.dbInfo = infoResult;
 
-              return DB().put(aggregateDoc);
+          return DB()
+            .put(aggregateDoc)
+            .catch(function(err) {
+              if (err.status === 409) {
+                return storeConflictedAggregate(aggregateDoc);
+              }
+
+              throw err;
             });
         });
     };
