@@ -337,9 +337,6 @@ describe('validations', () => {
   });
 
   it('pass isISOWeek validation on doc', done => {
-    var view = sinon.stub(db.medic, 'view').callsArgWith(3, null, {
-      rows: [],
-    });
     var validations = [
       {
         property: 'week',
@@ -352,18 +349,29 @@ describe('validations', () => {
       year: 2016,
     };
     validation.validate(doc, validations, function(errors) {
-      assert.equal(view.callCount, 2);
-      assert.equal(view.args[0][0], 'medic-client');
-      assert.equal(view.args[0][1], 'reports_by_freetext');
+      assert.equal(errors.length, 0);
+      done();
+    });
+  });
+
+  it('pass isISOWeek validation on doc when no year field is provided', done => {
+    var validations = [
+      {
+        property: 'week',
+        rule: 'isISOWeek("week")',
+      },
+    ];
+    var doc = {
+      _id: 'same',
+      week: 32,
+    };
+    validation.validate(doc, validations, function(errors) {
       assert.equal(errors.length, 0);
       done();
     });
   });
 
   it('fail isISOWeek validation on doc', done => {
-    var view = sinon.stub(db.medic, 'view').callsArgWith(3, null, {
-      rows: [],
-    });
     var validations = [
       {
         property: 'week',
@@ -376,9 +384,23 @@ describe('validations', () => {
       year: 2016,
     };
     validation.validate(doc, validations, function(errors) {
-      assert.equal(view.callCount, 2);
-      assert.equal(view.args[0][0], 'medic-client');
-      assert.equal(view.args[0][1], 'reports_by_freetext');
+      assert.equal(errors.length, 1);
+      done();
+    });
+  });
+
+  it('fail isISOWeek validation on doc when no year field is provided', done => {
+    var validations = [
+      {
+        property: 'week',
+        rule: 'isISOWeek("week")',
+      },
+    ];
+    var doc = {
+      _id: 'same',
+      week: 65,
+    };
+    validation.validate(doc, validations, function(errors) {
       assert.equal(errors.length, 1);
       done();
     });

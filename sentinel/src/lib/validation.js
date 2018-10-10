@@ -181,27 +181,36 @@ module.exports = {
          */
     isISOWeek: (doc, validation, callback) => {
       const weekFieldName = validation.funcArgs[0];
-      const yearFieldName = validation.funcArgs[1];
-      _exists(doc, [weekFieldName, yearFieldName], null, (err, result) => {
-        if (err) {
-          logger.error('Error running "isISOWeek" validation', err);
-          callback(err, result);
+      const yearFieldName =
+        validation.funcArgs.length > 1 ? validation.funcArgs[1] : null;
+      if (
+        !_.has(doc, weekFieldName) ||
+        (yearFieldName && !_.has(doc, yearFieldName))
+      ) {
+        callback(
+          new Error('Validation failed: input field(s) do not exist'),
+          false
+        );
+      } else {
+        const year = yearFieldName
+          ? doc[yearFieldName]
+          : new Date().getFullYear();
+        const isValidISOWeek =
+          /^\d{1,2}$/.test(doc[weekFieldName]) &&
+          /^20\d{2}$/.test(year) &&
+          doc[weekFieldName] >= 1 &&
+          doc[weekFieldName] <= moment(`${year}-01-01`).isoWeeksInYear();
+        if (isValidISOWeek) {
+          callback(null, true);
         } else {
-          const nextYear = doc[yearFieldName] + 1;
-          // The week with January 1st in it is the first week of the year.
-          const isValid =
-            doc[weekFieldName] >= 1 &&
-            doc[weekFieldName] <=
-              moment(`${nextYear}-01-01`)
-                .subtract(7, 'd')
-                .isoWeeks();
-          if (isValid) {
-            callback(null, isValid);
-          } else {
-            callback(new Error('Validation failed'), isValid);
-          }
+          callback(
+            new Error(
+              'Validation failed: the number of week is greater than the maximum'
+            ),
+            false
+          );
         }
-      });
+      }
     },
   },
   /**
