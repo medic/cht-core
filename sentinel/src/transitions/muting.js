@@ -4,8 +4,7 @@ const _ = require('underscore'),
       db = require('../db-pouch'),
       utils = require('../lib/utils'),
       messages = require('../lib/messages'),
-      lineage = require('lineage')(Promise, db.medic),
-      registrationUtils = require('@shared-libs/registration-utils');
+      lineage = require('lineage')(Promise, db.medic);
 
 const TRANSITION_NAME = 'muting',
       CONFIG_NAME = 'muting',
@@ -72,23 +71,13 @@ const updateContacts = (contacts, muted) => {
   return db.medic.bulkDocs(contacts);
 };
 
-const getDataRecords = subjects => {
-  return db.medic
-    .query('medic-client/reports_by_subject', { keys: subjects.map(subject => ([subject])), include_docs: true })
-    .then(result => {
-      return result.rows.filter(registration => {
-        return registrationUtils.isValidRegistration(registration.doc, config.getAll());
-      });
-    });
-};
-
 const updateDataRecords = (subjectIds, muted) => {
   if (!subjectIds.length) {
     return Promise.resolve([]);
   }
 
   let updatedRecords;
-  return getDataRecords(subjectIds)
+  return utils.getReportsBySubject({ db: db.medic, ids: subjectIds, registrations: true })
     .then(dataRecords => {
       updatedRecords = dataRecords.filter(dataRecord => updateDataRecord(dataRecord, muted));
       if (!updatedRecords.length) {
@@ -167,7 +156,7 @@ module.exports = {
     if (change.doc.type !== 'data_record') {
       // new contacts that have muted parents should also get the muted flag
       change.doc.muted = true;
-      return updateDataRecords([_.values(_.pick(change.doc, SUBJECT_PROPERTIES))], true).then(() => true);
+      return updateDataRecords(_.values(_.pick(change.doc, SUBJECT_PROPERTIES)), true).then(() => true);
     }
 
     const muting = isMuteForm(change.doc.form);

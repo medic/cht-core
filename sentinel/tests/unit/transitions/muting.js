@@ -17,7 +17,7 @@ describe('Muting transition', () => {
       bulkDocs: sinon.stub()
     };
 
-    sinon.stub(utils, 'getRegistrations');
+    sinon.stub(utils, 'getReportsBySubject');
     sinon.stub(utils, 'muteScheduledMessages');
     sinon.stub(utils, 'unmuteScheduledMessages');
     sinon.stub(utils, 'isMutedInLineage');
@@ -103,31 +103,21 @@ describe('Muting transition', () => {
 
   describe('onMatch', () => {
     describe('updating new contacts', () => {
-      it('updates contact only when no patient_id', () => {
+      it('updates contact and reports', () => {
         const doc = {
-          type: 'clinic'
-        };
-        return transition.onMatch({ doc }).then(result => {
-          chai.expect(result).to.equal(true);
-          chai.expect(doc.muted).to.equal(true);
-          chai.expect(db.medic.query.callCount).to.equal(0);
-        });
-      });
-
-      it('updates contact and registrations when patient_id', () => {
-        const doc = {
+          _id: 'my-contact',
           type: 'person',
           patient_id: 'patient'
         };
 
-        utils.getRegistrations.callsArgWith(1, null, [{ _id: 'r1' }]);
+        utils.getReportsBySubject.resolves([{ _id: 'r1' }]);
         utils.muteScheduledMessages.returns(true);
         db.medic.bulkDocs.resolves();
         return transition.onMatch({ doc }).then(result => {
           chai.expect(result).to.equal(true);
           chai.expect(doc.muted).to.equal(true);
-          chai.expect(utils.getRegistrations.callCount).to.equal(1);
-          chai.expect(utils.getRegistrations.args[0][0].ids).to.deep.equal(['patient']);
+          chai.expect(utils.getReportsBySubject.callCount).to.equal(1);
+          chai.expect(utils.getReportsBySubject.args[0][0].ids).to.deep.equal(['my-contact', 'patient']);
           chai.expect(utils.muteScheduledMessages.callCount).to.equal(1);
           chai.expect(utils.muteScheduledMessages.args[0]).to.deep.equal([{ _id: 'r1' }]);
           chai.expect(db.medic.bulkDocs.callCount).to.equal(1);
@@ -147,7 +137,7 @@ describe('Muting transition', () => {
           }
         };
 
-        utils.getRegistrations.callsArgWith(1, null, []);
+        utils.getReportsBySubject.resolves([]);
         db.medic.allDocs
           .withArgs(sinon.match.has('key')).resolves({ rows: [{ id: 'contact_uuid' }] })
           .withArgs(sinon.match.has('keys')).resolves({ rows: [{ doc: { _id: 'contact_uuid', patient_id: 'patient' }}]});
@@ -167,8 +157,8 @@ describe('Muting transition', () => {
           chai.expect(transition._lineage.fetchHydratedDoc.args[0]).to.deep.equal(['contact_uuid']);
           chai.expect(db.medic.bulkDocs.callCount).to.equal(1);
           chai.expect(db.medic.bulkDocs.args[0]).to.deep.equal([[{ _id: 'contact_uuid', muted: true, patient_id: 'patient' }]]);
-          chai.expect(utils.getRegistrations.callCount).to.equal(1);
-          chai.expect(utils.getRegistrations.args[0][0].ids).to.deep.equal(['patient']);
+          chai.expect(utils.getReportsBySubject.callCount).to.equal(1);
+          chai.expect(utils.getReportsBySubject.args[0][0].ids).to.deep.equal(['contact_uuid', 'patient']);
         });
       });
 
@@ -182,7 +172,7 @@ describe('Muting transition', () => {
           }
         };
 
-        utils.getRegistrations.callsArgWith(1, null, []);
+        utils.getReportsBySubject.resolves([]);
         db.medic.allDocs
           .withArgs(sinon.match.has('key')).resolves({ rows: [] })
           .withArgs(sinon.match.has('keys')).resolves({ rows: [{ doc: { _id: 'contact_uuid', patient_id: 'patient' }}] });
@@ -222,7 +212,7 @@ describe('Muting transition', () => {
           }
         };
 
-        utils.getRegistrations.callsArgWith(1, null, []);
+        utils.getReportsBySubject.resolves([]);
         db.medic.allDocs
           .withArgs(sinon.match.has('key')).resolves({ rows: [{ id: 'place_uuid' }] })
           .withArgs(sinon.match.has('keys')).resolves({ rows: [{ doc: { _id: 'place_uuid' }}] });
@@ -242,7 +232,8 @@ describe('Muting transition', () => {
           chai.expect(transition._lineage.fetchHydratedDoc.args[0]).to.deep.equal(['place_uuid']);
           chai.expect(db.medic.bulkDocs.callCount).to.equal(1);
           chai.expect(db.medic.bulkDocs.args[0]).to.deep.equal([[{ _id: 'place_uuid', muted: true }]]);
-          chai.expect(utils.getRegistrations.callCount).to.equal(0);
+          chai.expect(utils.getReportsBySubject.callCount).to.equal(1);
+          chai.expect(utils.getReportsBySubject.args[0][0].ids).to.deep.equal(['place_uuid']);
         });
       });
 
@@ -331,7 +322,7 @@ describe('Muting transition', () => {
           }
         };
 
-        utils.getRegistrations.callsArgWith(1, null, []);
+        utils.getReportsBySubject.resolves([]);
         db.medic.allDocs
           .withArgs(sinon.match.has('key')).resolves({ rows: [{ id: 'place_uuid' }] })
           .withArgs(sinon.match.has('keys')).resolves({ rows: [{ doc: { _id: 'place_uuid' }}] });
@@ -351,7 +342,8 @@ describe('Muting transition', () => {
           chai.expect(transition._lineage.fetchHydratedDoc.args[0]).to.deep.equal(['place_uuid']);
           chai.expect(db.medic.bulkDocs.callCount).to.equal(1);
           chai.expect(db.medic.bulkDocs.args[0]).to.deep.equal([[{ _id: 'place_uuid', muted: true }]]);
-          chai.expect(utils.getRegistrations.callCount).to.equal(0);
+          chai.expect(utils.getReportsBySubject.callCount).to.equal(1);
+          chai.expect(utils.getReportsBySubject.args[0][0].ids).to.deep.equal(['place_uuid']);
           chai.expect(utils.muteScheduledMessages.callCount).to.equal(0);
           chai.expect(utils.unmuteScheduledMessages.callCount).to.equal(0);
         });
@@ -367,11 +359,11 @@ describe('Muting transition', () => {
           }
         };
 
-        utils.getRegistrations.callsArgWith(1, null, []);
+        utils.getReportsBySubject.resolves([]);
         db.medic.allDocs
           .withArgs(sinon.match.has('key')).resolves({ rows: [{ id: 'place_uuid' }] })
           .withArgs(sinon.match.has('keys')).resolves({ rows: [
-            { doc: { _id: 'place_uuid' }},
+            { doc: { _id: 'place_uuid', place_id: 'place_id' }},
             { doc: { _id: 'contact1', patient_id: 'patient1' } },
             { doc: { _id: 'contact2', patient_id: 'patient2' } },
             { doc: { _id: 'contact3', patient_id: 'patient3', muted: true } },
@@ -405,14 +397,15 @@ describe('Muting transition', () => {
           chai.expect(transition._lineage.fetchHydratedDoc.args[0]).to.deep.equal(['place_uuid']);
           chai.expect(db.medic.bulkDocs.callCount).to.equal(1);
           chai.expect(db.medic.bulkDocs.args[0]).to.deep.equal([[
-            { _id: 'place_uuid', muted: true },
+            { _id: 'place_uuid', muted: true, place_id: 'place_id' },
             { _id: 'contact1', patient_id: 'patient1', muted: true },
             { _id: 'contact2', patient_id: 'patient2', muted: true },
             { _id: 'contact4', patient_id: 'patient4', muted: true }
           ]]);
-          chai.expect(utils.getRegistrations.callCount).to.equal(1);
-          chai.expect(utils.getRegistrations.args[0][0].ids).to.deep.equal([
-            'patient1', 'patient2', 'patient3', 'patient4', 'patient5'
+          chai.expect(utils.getReportsBySubject.callCount).to.equal(1);
+          chai.expect(utils.getReportsBySubject.args[0][0].ids).to.deep.equal([
+            'place_uuid', 'place_id', 'contact1','patient1', 'contact2', 'patient2',
+            'contact3', 'patient3', 'contact4', 'patient4','contact5', 'patient5'
           ]);
           chai.expect(utils.muteScheduledMessages.callCount).to.equal(0);
           chai.expect(utils.unmuteScheduledMessages.callCount).to.equal(0);
@@ -429,7 +422,7 @@ describe('Muting transition', () => {
           }
         };
 
-        utils.getRegistrations.callsArgWith(1, null, [
+        utils.getReportsBySubject.resolves([
           { _id: 'r1', hasTasks: true },
           { _id: 'r2', hasTasks: false },
           { _id: 'r3', hasTasks: true },
@@ -445,7 +438,7 @@ describe('Muting transition', () => {
         db.medic.allDocs
           .withArgs(sinon.match.has('key')).resolves({ rows: [{ id: 'place_uuid' }] })
           .withArgs(sinon.match.has('keys')).resolves({ rows: [
-            { doc: { _id: 'place_uuid' }},
+            { doc: { _id: 'place_uuid', place_id: 'place_id' }},
             { doc: { _id: 'contact1', patient_id: 'patient1' } },
             { doc: { _id: 'contact2', patient_id: 'patient2' } }
           ]});
@@ -473,13 +466,13 @@ describe('Muting transition', () => {
           chai.expect(transition._lineage.fetchHydratedDoc.args[0]).to.deep.equal(['place_uuid']);
           chai.expect(db.medic.bulkDocs.callCount).to.equal(2);
           chai.expect(db.medic.bulkDocs.args[0]).to.deep.equal([[
-            { _id: 'place_uuid', muted: true },
+            { _id: 'place_uuid', muted: true, place_id: 'place_id' },
             { _id: 'contact1', patient_id: 'patient1', muted: true },
             { _id: 'contact2', patient_id: 'patient2', muted: true },
           ]]);
-          chai.expect(utils.getRegistrations.callCount).to.equal(1);
-          chai.expect(utils.getRegistrations.args[0][0].ids).to.deep.equal([
-            'patient1', 'patient2'
+          chai.expect(utils.getReportsBySubject.callCount).to.equal(1);
+          chai.expect(utils.getReportsBySubject.args[0][0].ids).to.deep.equal([
+            'place_uuid', 'place_id', 'contact1', 'patient1', 'contact2', 'patient2'
           ]);
           chai.expect(db.medic.bulkDocs.args[1]).to.deep.equal([[
             { _id: 'r1', hasTasks: true, mutedTasks: true },
@@ -501,7 +494,7 @@ describe('Muting transition', () => {
           }
         };
 
-        utils.getRegistrations.callsArgWith(1, null, [
+        utils.getReportsBySubject.resolves([
           { _id: 'r1' },
           { _id: 'r2' },
           { _id: 'r3' },
@@ -544,9 +537,9 @@ describe('Muting transition', () => {
             { _id: 'contact1', patient_id: 'patient1', muted: true },
             { _id: 'contact2', patient_id: 'patient2', muted: true },
           ]]);
-          chai.expect(utils.getRegistrations.callCount).to.equal(1);
-          chai.expect(utils.getRegistrations.args[0][0].ids).to.deep.equal([
-            'patient1', 'patient2'
+          chai.expect(utils.getReportsBySubject.callCount).to.equal(1);
+          chai.expect(utils.getReportsBySubject.args[0][0].ids).to.deep.equal([
+            'place_uuid', 'contact1', 'patient1', 'contact2', 'patient2'
           ]);
           chai.expect(utils.muteScheduledMessages.callCount).to.equal(5);
           chai.expect(utils.unmuteScheduledMessages.callCount).to.equal(0);
@@ -598,7 +591,7 @@ describe('Muting transition', () => {
           }
         };
 
-        utils.getRegistrations.callsArgWith(1, null, []);
+        utils.getReportsBySubject.resolves([]);
         db.medic.allDocs
           .withArgs(sinon.match.has('key')).resolves({ rows: [{ id: 'place_uuid' }] })
           .withArgs(sinon.match.has('keys')).resolves({ rows: [{ doc: { _id: 'place_uuid', muted: true }}] });
@@ -618,7 +611,8 @@ describe('Muting transition', () => {
           chai.expect(transition._lineage.fetchHydratedDoc.args[0]).to.deep.equal(['place_uuid']);
           chai.expect(db.medic.bulkDocs.callCount).to.equal(1);
           chai.expect(db.medic.bulkDocs.args[0]).to.deep.equal([[{ _id: 'place_uuid', muted: false }]]);
-          chai.expect(utils.getRegistrations.callCount).to.equal(0);
+          chai.expect(utils.getReportsBySubject.callCount).to.equal(1);
+          chai.expect(utils.getReportsBySubject.args[0][0].ids).to.deep.equal(['place_uuid']);
           chai.expect(utils.muteScheduledMessages.callCount).to.equal(0);
           chai.expect(utils.unmuteScheduledMessages.callCount).to.equal(0);
         });
@@ -634,7 +628,7 @@ describe('Muting transition', () => {
           }
         };
 
-        utils.getRegistrations.callsArgWith(1, null, []);
+        utils.getReportsBySubject.resolves([]);
         db.medic.allDocs
           .withArgs(sinon.match.has('key')).resolves({ rows: [{ id: 'place_uuid' }] })
           .withArgs(sinon.match.has('keys')).resolves({ rows: [
@@ -676,9 +670,10 @@ describe('Muting transition', () => {
             { _id: 'contact3', patient_id: 'patient3', muted: false },
             { _id: 'contact5', patient_id: 'patient5', muted: false }
           ]]);
-          chai.expect(utils.getRegistrations.callCount).to.equal(1);
-          chai.expect(utils.getRegistrations.args[0][0].ids).to.deep.equal([
-            'patient1', 'patient2', 'patient3', 'patient4', 'patient5'
+          chai.expect(utils.getReportsBySubject.callCount).to.equal(1);
+          chai.expect(utils.getReportsBySubject.args[0][0].ids).to.deep.equal([
+            'place_uuid', 'contact1', 'patient1', 'contact2', 'patient2',
+            'contact3', 'patient3', 'contact4', 'patient4', 'contact5', 'patient5'
           ]);
           chai.expect(utils.muteScheduledMessages.callCount).to.equal(0);
           chai.expect(utils.unmuteScheduledMessages.callCount).to.equal(0);
@@ -695,7 +690,7 @@ describe('Muting transition', () => {
           }
         };
 
-        utils.getRegistrations.callsArgWith(1, null, [
+        utils.getReportsBySubject.resolves([
           { _id: 'r1', hasTasks: true },
           { _id: 'r2', hasTasks: false },
           { _id: 'r3', hasTasks: true },
@@ -743,9 +738,9 @@ describe('Muting transition', () => {
             { _id: 'contact1', patient_id: 'patient1', muted: false },
             { _id: 'contact2', patient_id: 'patient2', muted: false },
           ]]);
-          chai.expect(utils.getRegistrations.callCount).to.equal(1);
-          chai.expect(utils.getRegistrations.args[0][0].ids).to.deep.equal([
-            'patient1', 'patient2'
+          chai.expect(utils.getReportsBySubject.callCount).to.equal(1);
+          chai.expect(utils.getReportsBySubject.args[0][0].ids).to.deep.equal([
+            'place_uuid', 'contact1', 'patient1', 'contact2', 'patient2'
           ]);
           chai.expect(db.medic.bulkDocs.args[1]).to.deep.equal([[
             { _id: 'r1', hasTasks: true, unmutedTasks: true },
@@ -767,7 +762,7 @@ describe('Muting transition', () => {
           }
         };
 
-        utils.getRegistrations.callsArgWith(1, null, [
+        utils.getReportsBySubject.resolves([
           { _id: 'r1' },
           { _id: 'r2' },
           { _id: 'r3' },
@@ -810,9 +805,9 @@ describe('Muting transition', () => {
             { _id: 'contact1', patient_id: 'patient1', muted: false },
             { _id: 'contact2', patient_id: 'patient2', muted: false },
           ]]);
-          chai.expect(utils.getRegistrations.callCount).to.equal(1);
-          chai.expect(utils.getRegistrations.args[0][0].ids).to.deep.equal([
-            'patient1', 'patient2'
+          chai.expect(utils.getReportsBySubject.callCount).to.equal(1);
+          chai.expect(utils.getReportsBySubject.args[0][0].ids).to.deep.equal([
+            'place_uuid', 'contact1', 'patient1', 'contact2', 'patient2'
           ]);
           chai.expect(utils.muteScheduledMessages.callCount).to.equal(0);
           chai.expect(utils.unmuteScheduledMessages.callCount).to.equal(5);
@@ -829,7 +824,7 @@ describe('Muting transition', () => {
           }
         };
 
-        utils.getRegistrations.callsArgWith(1, null, [
+        utils.getReportsBySubject.resolves([
           { _id: 'r1', hasTasks: true },
           { _id: 'r2', hasTasks: false },
           { _id: 'r3', hasTasks: true },
@@ -911,9 +906,10 @@ describe('Muting transition', () => {
             { _id: 'contact2', patient_id: 'patient2', muted: false },
             { _id: 'contact3', patient_id: 'patient3', muted: false },
           ]]);
-          chai.expect(utils.getRegistrations.callCount).to.equal(1);
-          chai.expect(utils.getRegistrations.args[0][0].ids).to.deep.equal([
-            'patient1', 'patient2', 'patient3'
+          chai.expect(utils.getReportsBySubject.callCount).to.equal(1);
+          chai.expect(utils.getReportsBySubject.args[0][0].ids).to.deep.equal([
+            'p2', 'p1', 'place_uuid', 'sibling1', 'sibling2',
+            'contact1', 'patient1', 'contact2', 'patient2', 'contact3', 'patient3'
           ]);
           chai.expect(db.medic.bulkDocs.args[1]).to.deep.equal([[
             { _id: 'r1', hasTasks: true, unmutedTasks: true },
@@ -952,7 +948,7 @@ describe('Muting transition', () => {
       };
 
       const contacts = [
-        { _id: 'my-place', muted: false, parent: { _id: 'p1', parent: { _id: 'p2' }}},
+        { _id: 'my-place', muted: false, parent: { _id: 'p1', parent: { _id: 'p2' }}, place_id: 'my-place-id'},
         { _id: 'my-place2', muted: false, parent: { _id: 'my-place', parent: { _id: 'p1', parent: { _id: 'p2' } }}},
         { _id: 'my-place3', parent: { _id: 'my-place', parent: { _id: 'p1', parent: { _id: 'p2' } }}},
         { _id: 'contact1', patient_id: 'patient1', parent: { _id: 'my-place', parent: { _id: 'p1', parent: { _id: 'p2' }}}},
@@ -987,8 +983,10 @@ describe('Muting transition', () => {
         chai.expect(result.contacts[6]).to.equal(contacts[6]);
         chai.expect(result.contacts[7]).to.equal(contacts[7]);
 
-        chai.expect(result.patientIds.length).to.equal(4);
-        chai.expect(result.patientIds).to.deep.equal([ 'patient1', 'patient2', 'patient3', 'patient4' ]);
+        chai.expect(result.subjectIds).to.deep.equal([
+          'my-place', 'my-place-id', 'my-place2', 'my-place3',
+          'contact1', 'patient1', 'contact2', 'patient2', 'contact3', 'patient3', 'my-place4', 'contact4', 'patient4'
+        ]);
 
         chai.expect(db.medic.query.callCount).to.equal(1);
         chai.expect(db.medic.query.args[0]).to.deep.equal(['medic/contacts_by_depth', { key: ['my-place'] }]);
@@ -1044,8 +1042,10 @@ describe('Muting transition', () => {
         chai.expect(result.contacts[6]).to.equal(contacts[6]);
         chai.expect(result.contacts[7]).to.equal(contacts[7]);
 
-        chai.expect(result.patientIds.length).to.equal(4);
-        chai.expect(result.patientIds).to.deep.equal([ 'patient1', 'patient2', 'patient3', 'patient4' ]);
+        chai.expect(result.subjectIds).to.deep.equal([
+          'my-place', 'my-place2', 'my-place3',
+          'contact1', 'patient1', 'contact2', 'patient2', 'contact3', 'patient3', 'my-place4', 'contact4', 'patient4'
+        ]);
 
         chai.expect(db.medic.query.callCount).to.equal(1);
         chai.expect(db.medic.query.args[0]).to.deep.equal(['medic/contacts_by_depth', { key: ['my-place'] }]);
@@ -1078,7 +1078,7 @@ describe('Muting transition', () => {
       const contacts = [
         { _id: 'p2', muted: true },
         { _id: 'p1', muted: true, parent: { _id: 'p2' }},
-        { _id: 'my_place', muted: true, parent: { _id: 'p1', parent: { _id: 'p2' }}},
+        { _id: 'my-place', muted: true, parent: { _id: 'p1', parent: { _id: 'p2' }}},
         { _id: 'contact1', muted: true, patient_id: 'patient1', parent: { _id: 'p2' }},
         { _id: 'contact2', muted: true, patient_id: 'patient2', parent: { _id: 'p1', parent: { _id: 'p2' }}}
       ];
@@ -1102,8 +1102,10 @@ describe('Muting transition', () => {
         chai.expect(result.contacts[3]).to.equal(contacts[3]);
         chai.expect(result.contacts[4]).to.equal(contacts[4]);
 
-        chai.expect(result.patientIds.length).to.equal(2);
-        chai.expect(result.patientIds).to.deep.equal([ 'patient1', 'patient2' ]);
+        chai.expect(result.subjectIds).to.deep.equal([
+          'p2', 'p1', 'my-place',
+          'contact1', 'patient1', 'contact2', 'patient2'
+        ]);
 
         chai.expect(db.medic.query.callCount).to.equal(1);
         chai.expect(db.medic.query.args[0]).to.deep.equal(['medic/contacts_by_depth', { key: ['p2'] }]);
@@ -1214,23 +1216,23 @@ describe('Muting transition', () => {
     it('should do nothing if no patientIds are supplied', () => {
       return transition._updateDataRecords([], true).then(result => {
         chai.expect(result).to.deep.equal([]);
-        chai.expect(utils.getRegistrations.callCount).to.equal(0);
+        chai.expect(utils.getReportsBySubject.callCount).to.equal(0);
       });
     });
 
     it('should request registrations for provided patientIds', () => {
       const patientIds = ['1', '2', '3', '4'];
-      utils.getRegistrations.callsArgWith(1, null, []);
+      utils.getReportsBySubject.resolves([]);
 
       return transition._updateDataRecords(patientIds, true).then(result => {
         chai.expect(result).to.deep.equal([]);
-        chai.expect(utils.getRegistrations.callCount).to.equal(1);
-        chai.expect(utils.getRegistrations.args[0][0].ids).to.deep.equal(patientIds);
+        chai.expect(utils.getReportsBySubject.callCount).to.equal(1);
+        chai.expect(utils.getReportsBySubject.args[0][0].ids).to.deep.equal(patientIds);
       });
     });
 
     it('should mute schedule messages in registrations', () => {
-      utils.getRegistrations.callsArgWith(1, null, [
+      utils.getReportsBySubject.resolves([
         { _id: 'r1', shouldUpdate: true },
         { _id: 'r2', shouldUpdate: false },
         { _id: 'r3', shouldUpdate: false },
@@ -1245,8 +1247,8 @@ describe('Muting transition', () => {
       db.medic.bulkDocs.resolves();
 
       return transition._updateDataRecords(['a'], true).then(result => {
-        chai.expect(utils.getRegistrations.callCount).to.equal(1);
-        chai.expect(utils.getRegistrations.args[0][0].ids).to.deep.equal(['a']);
+        chai.expect(utils.getReportsBySubject.callCount).to.equal(1);
+        chai.expect(utils.getReportsBySubject.args[0][0].ids).to.deep.equal(['a']);
         chai.expect(utils.muteScheduledMessages.callCount).to.equal(4);
         chai.expect(utils.muteScheduledMessages.args[0][0]._id).to.equal('r1');
         chai.expect(utils.muteScheduledMessages.args[1][0]._id).to.equal('r2');
@@ -1266,7 +1268,7 @@ describe('Muting transition', () => {
     });
 
     it('should unmute schedule messages in registrations', () => {
-      utils.getRegistrations.callsArgWith(1, null, [
+      utils.getReportsBySubject.resolves([
         { _id: 'r1', shouldUpdate: true },
         { _id: 'r2', shouldUpdate: false },
         { _id: 'r3', shouldUpdate: false },
@@ -1281,8 +1283,8 @@ describe('Muting transition', () => {
       db.medic.bulkDocs.resolves();
 
       return transition._updateDataRecords(['a'], false).then(result => {
-        chai.expect(utils.getRegistrations.callCount).to.equal(1);
-        chai.expect(utils.getRegistrations.args[0][0].ids).to.deep.equal(['a']);
+        chai.expect(utils.getReportsBySubject.callCount).to.equal(1);
+        chai.expect(utils.getReportsBySubject.args[0][0].ids).to.deep.equal(['a']);
         chai.expect(utils.unmuteScheduledMessages.callCount).to.equal(4);
         chai.expect(utils.unmuteScheduledMessages.args[0][0]._id).to.equal('r1');
         chai.expect(utils.unmuteScheduledMessages.args[1][0]._id).to.equal('r2');
@@ -1302,7 +1304,7 @@ describe('Muting transition', () => {
     });
 
     it('should not call bulkDocs when no registrations need updating', () => {
-      utils.getRegistrations.callsArgWith(1, null, [{ _id: 'r1' }, { _id: 'r2' }, { _id: 'r3' }, { _id: 'r4' }]);
+      utils.getReportsBySubject.resolves([{ _id: 'r1' }, { _id: 'r2' }, { _id: 'r3' }, { _id: 'r4' }]);
       utils.muteScheduledMessages.returns(false);
 
       return transition._updateDataRecords(['a'], true).then(result => {
@@ -1317,7 +1319,7 @@ describe('Muting transition', () => {
     });
 
     it('should throw bulkDocs errors', () => {
-      utils.getRegistrations.callsArgWith(1, null, [{ _id: 'r1' }]);
+      utils.getReportsBySubject.resolves([{ _id: 'r1' }]);
       utils.muteScheduledMessages.returns(true);
       db.medic.bulkDocs.rejects({ some: 'err' });
 
@@ -1325,8 +1327,8 @@ describe('Muting transition', () => {
         .then(() => chai.expect(false).to.equal('Should have thrown'))
         .catch(err => {
           chai.expect(err).to.deep.equal({ some: 'err' });
-          chai.expect(utils.getRegistrations.callCount).to.equal(1);
-          chai.expect(utils.getRegistrations.args[0][0].ids).to.deep.equal(['a']);
+          chai.expect(utils.getReportsBySubject.callCount).to.equal(1);
+          chai.expect(utils.getReportsBySubject.args[0][0].ids).to.deep.equal(['a']);
           chai.expect(utils.muteScheduledMessages.callCount).to.equal(1);
           chai.expect(utils.muteScheduledMessages.args[0]).to.deep.equal([{ _id: 'r1' }]);
           chai.expect(db.medic.bulkDocs.callCount).to.equal(1);

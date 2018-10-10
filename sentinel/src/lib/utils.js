@@ -273,6 +273,26 @@ module.exports = {
     return (new RegExp('^\W*' + formCode + '\\W*$','i')).test(test);
   },
 
+  getReportsBySubject: (options) => {
+    const viewOptions = { include_docs: true };
+    if (options.id) {
+      viewOptions.key = options.id;
+    } else if (options.ids) {
+      viewOptions.keys = options.ids.map(id => ([id]));
+    } else {
+      return Promise.resolve([]);
+    }
+
+    return options.db.query('medic-client/reports_by_subject', viewOptions).then(result => {
+      const reports = result.rows.map(row => row.doc);
+      if (!options.registrations) {
+        return reports;
+      }
+
+      return reports.filter(report => registrationUtils.isValidRegistration(report, config.getAll()));
+    });
+  },
+
   /*
    * Return message from configured translations given key and locale.
    *
