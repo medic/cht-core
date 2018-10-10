@@ -1,5 +1,4 @@
-(function () {
-
+(function() {
   'use strict';
 
   angular.module('inboxDirectives', ['ngSanitize']);
@@ -11,5 +10,4 @@
   require('./report-image');
   require('./sender');
   require('./enter');
-
-}());
+})();

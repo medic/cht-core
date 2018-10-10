@@ -24,6 +24,6 @@ angular.module('inboxServices').factory('XmlFormsContextUtils', function() {
     },
     ageInYears: function(contact) {
       return getDateDiff(contact, 'years');
-    }
+    },
   };
 });

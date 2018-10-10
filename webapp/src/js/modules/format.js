@@ -1,7 +1,6 @@
 var _ = require('underscore');
 
-(function () {
-
+(function() {
   'use strict';
 
   var formatEntity = function(entity, $state) {
@@ -58,5 +57,4 @@ var _ = require('underscore');
     }
     return '<span class="sender">' + parts.join('') + '</span>';
   };
-
-}());
+})();

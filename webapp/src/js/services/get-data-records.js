@@ -16,15 +16,9 @@ var _ = require('underscore');
  * If options.include_docs is true, returns the full doc.
  */
 
-angular.module('inboxServices').factory('GetDataRecords',
-  function(
-    $q,
-    DB,
-    HydrateContactNames,
-    GetSubjectSummaries,
-    GetSummaries
-  ) {
-
+angular
+  .module('inboxServices')
+  .factory('GetDataRecords', function($q, DB, HydrateContactNames, GetSubjectSummaries, GetSummaries) {
     'use strict';
     'ngInject';
 
@@ -48,19 +42,17 @@ angular.module('inboxServices').factory('GetDataRecords',
       }
       var arrayGiven = _.isArray(ids);
       if (!arrayGiven) {
-        ids = [ ids ];
+        ids = [ids];
       }
       if (!ids.length) {
         return $q.resolve([]);
       }
       var getFn = options && options.include_docs ? getDocs : getSummaries;
-      return getFn(ids)
-        .then(function(response) {
-          if (!arrayGiven) {
-            response = response.length ? response[0] : null;
-          }
-          return response;
-        });
+      return getFn(ids).then(function(response) {
+        if (!arrayGiven) {
+          response = response.length ? response[0] : null;
+        }
+        return response;
+      });
     };
-  }
-);
+  });

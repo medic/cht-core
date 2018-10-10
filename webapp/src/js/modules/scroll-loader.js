@@ -1,5 +1,4 @@
-(function () {
-
+(function() {
   'use strict';
 
   exports.init = function(callback) {
@@ -12,5 +11,4 @@
       .off('scroll', _check)
       .on('scroll', _check);
   };
-
-}());
+})();

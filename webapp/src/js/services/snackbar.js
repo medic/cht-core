@@ -4,7 +4,6 @@
  */
 angular.module('inboxServices').service('Snackbar', [
   function() {
-
     'use strict';
 
     var SHOW_DURATION = 5000;
@@ -35,5 +34,5 @@ angular.module('inboxServices').service('Snackbar', [
         show(text);
       }
     };
-  }
+  },
 ]);

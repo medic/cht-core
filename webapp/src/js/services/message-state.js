@@ -1,8 +1,7 @@
 var _ = require('underscore'),
-    taskUtils = require('task-utils');
+  taskUtils = require('task-utils');
 
-(function () {
-
+(function() {
   'use strict';
 
   var inboxServices = angular.module('inboxServices');
@@ -14,8 +13,10 @@ var _ = require('underscore'),
       return taskUtils.setTaskState(task, state, details);
     };
   });
-  
-  inboxServices.factory('MessageState', ['DB', 'SetTaskState',
+
+  inboxServices.factory('MessageState', [
+    'DB',
+    'SetTaskState',
     function(DB, SetTaskState) {
       return {
         any: function(group, state) {
@@ -39,9 +40,8 @@ var _ = require('underscore'),
               }
               return DB().put(doc);
             });
-        }
+        },
       };
-    }
+    },
   ]);
-  
-}());
+})();

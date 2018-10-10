@@ -17,6 +17,6 @@ angular.module('inboxDirectives').directive('mmEnter', function($document) {
       scope.$on('$destroy', function() {
         $document.unbind('keydown keypress', keydownEvent);
       });
-    }
+    },
   };
 });

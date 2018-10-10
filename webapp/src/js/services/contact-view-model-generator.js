@@ -14,15 +14,9 @@ var _ = require('underscore');
  *   label: <the translation key that describes this contact's type>
  * }
  */
-angular.module('inboxServices').factory('ContactViewModelGenerator',
-  function(
-    $log,
-    $q,
-    ContactSchema,
-    DB,
-    LineageModelGenerator,
-    Search
-  ) {
+angular
+  .module('inboxServices')
+  .factory('ContactViewModelGenerator', function($log, $q, ContactSchema, DB, LineageModelGenerator, Search) {
     'ngInject';
     'use strict';
 
@@ -40,9 +34,7 @@ angular.module('inboxServices').factory('ContactViewModelGenerator',
     };
 
     var AGE_COMPARATOR = function(lhs, rhs) {
-      if (lhs.doc.date_of_birth &&
-          rhs.doc.date_of_birth &&
-          lhs.doc.date_of_birth !== rhs.doc.date_of_birth) {
+      if (lhs.doc.date_of_birth && rhs.doc.date_of_birth && lhs.doc.date_of_birth !== rhs.doc.date_of_birth) {
         return lhs.doc.date_of_birth < rhs.doc.date_of_birth ? -1 : 1;
       }
       if (lhs.doc.date_of_birth && !rhs.doc.date_of_birth) {
@@ -66,9 +58,7 @@ angular.module('inboxServices').factory('ContactViewModelGenerator',
 
     var setPrimaryContact = function(model) {
       var parent = model.lineage && model.lineage.length && model.lineage[0];
-      model.isPrimaryContact = parent &&
-        parent.contact &&
-        (parent.contact._id === model.doc._id);
+      model.isPrimaryContact = parent && parent.contact && parent.contact._id === model.doc._id;
       return model;
     };
 
@@ -96,12 +86,14 @@ angular.module('inboxServices').factory('ContactViewModelGenerator',
       if (!contactId) {
         return $q.resolve();
       }
-      return DB().get(contactId).catch(function(err) {
-        if (err.status === 404 || err.error === 'not_found') {
-          return;
-        }
-        throw err;
-      });
+      return DB()
+        .get(contactId)
+        .catch(function(err) {
+          if (err.status === 404 || err.error === 'not_found') {
+            return;
+          }
+          throw err;
+        });
     };
 
     var sortPrimaryContactToTop = function(model) {
@@ -113,10 +105,10 @@ angular.module('inboxServices').factory('ContactViewModelGenerator',
           var newChild = {
             id: primaryContact._id,
             doc: primaryContact,
-            isPrimaryContact: true
+            isPrimaryContact: true,
           };
           if (!model.children.persons) {
-            model.children.persons = [ newChild ];
+            model.children.persons = [newChild];
             return;
           }
           var persons = model.children.persons;
@@ -147,18 +139,22 @@ angular.module('inboxServices').factory('ContactViewModelGenerator',
     };
 
     var getChildren = function(contactId) {
-      return DB().query('medic-client/contacts_by_parent', {
-        key: contactId,
-        include_docs: true
-      })
+      return DB()
+        .query('medic-client/contacts_by_parent', {
+          key: contactId,
+          include_docs: true,
+        })
         .then(function(childrenResponse) {
           return childrenResponse.rows;
         })
         .then(function(children) {
-          var ids = _.compact(children.map(function(child) {
-            return child.doc.contact && child.doc.contact._id;
-          }));
-          return DB().allDocs({ keys: ids, include_docs: true })
+          var ids = _.compact(
+            children.map(function(child) {
+              return child.doc.contact && child.doc.contact._id;
+            })
+          );
+          return DB()
+            .allDocs({ keys: ids, include_docs: true })
             .then(function(contactsResponse) {
               children.forEach(function(child) {
                 var contactId = child.doc.contact && child.doc.contact._id;
@@ -195,8 +191,7 @@ angular.module('inboxServices').factory('ContactViewModelGenerator',
     var addPatientName = function(reports, contacts) {
       reports.forEach(function(report) {
         if (report.fields && !report.fields.patient_name) {
-          var patientId = report.fields.patient_id ||
-                          report.patient_id;
+          var patientId = report.fields.patient_id || report.patient_id;
           var patient = _.findWhere(contacts, { patient_id: patientId });
           if (patient) {
             report.fields.patient_name = patient.name;
@@ -216,31 +211,29 @@ angular.module('inboxServices').factory('ContactViewModelGenerator',
           subjectIds.push(doc.place_id);
         }
       });
-      return Search('reports', { subjectIds: subjectIds }, { include_docs: true })
-        .then(function(reports) {
-          reports.forEach(function(report) {
-            report.valid = !report.errors || !report.errors.length;
-          });
-          return reports;
+      return Search('reports', { subjectIds: subjectIds }, { include_docs: true }).then(function(reports) {
+        reports.forEach(function(report) {
+          report.valid = !report.errors || !report.errors.length;
         });
+        return reports;
+      });
     };
 
     var setReports = function(model) {
-      var contacts = [ model.doc ];
-      [ 'persons', 'deceased' ].forEach(function(type) {
+      var contacts = [model.doc];
+      ['persons', 'deceased'].forEach(function(type) {
         if (model.children[type]) {
           model.children[type].forEach(function(child) {
             contacts.push(child.doc);
           });
         }
       });
-      return getReports(contacts)
-        .then(function(reports) {
-          addPatientName(reports, contacts);
-          reports.sort(REPORTED_DATE_COMPARATOR);
-          model.reports = reports;
-          return model;
-        });
+      return getReports(contacts).then(function(reports) {
+        addPatientName(reports, contacts);
+        reports.sort(REPORTED_DATE_COMPARATOR);
+        model.reports = reports;
+        return model;
+      });
     };
 
     return function(id, options) {
@@ -250,5 +243,4 @@ angular.module('inboxServices').factory('ContactViewModelGenerator',
         .then(setPrimaryContact)
         .then(setSchemaFields);
     };
-  }
-);
+  });

@@ -1,5 +1,4 @@
-(function () {
-
+(function() {
   'use strict';
 
   angular.module('inboxFilters', ['ngSanitize']);
@@ -12,5 +11,4 @@
   require('./resource-icon');
   require('./safe-html');
   require('./translate-from');
-
-}());
+})();

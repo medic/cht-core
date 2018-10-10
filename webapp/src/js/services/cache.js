@@ -1,12 +1,11 @@
-(function () {
-
+(function() {
   'use strict';
 
   var inboxServices = angular.module('inboxServices');
 
-  inboxServices.factory('Cache', ['Changes',
+  inboxServices.factory('Cache', [
+    'Changes',
     function(Changes) {
-
       var caches = [];
 
       Changes({
@@ -18,7 +17,7 @@
               cache.pending = false;
             }
           });
-        }
+        },
       });
 
       /**
@@ -34,12 +33,11 @@
        *     invalidate.
        */
       return function(options) {
-
         var cache = {
           docs: null,
           pending: false,
           invalidate: options.invalidate,
-          callbacks: []
+          callbacks: [],
         };
 
         caches.push(cache);
@@ -65,7 +63,6 @@
           });
         };
       };
-    }
+    },
   ]);
-
-}()); 
+})();

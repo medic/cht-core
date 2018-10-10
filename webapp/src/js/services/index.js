@@ -1,5 +1,4 @@
-(function () {
-
+(function() {
   'use strict';
 
   angular.module('inboxServices', ['ngResource']);
@@ -93,5 +92,4 @@
   require('./xml-forms-context-utils');
   require('./xslt');
   require('./z-score');
-
-}());
+})();

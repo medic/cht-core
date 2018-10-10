@@ -1,14 +1,8 @@
 var _ = require('underscore');
 
-angular.module('inboxControllers').controller('AnalyticsCtrl',
-  function (
-    $scope,
-    $state,
-    $stateParams,
-    $timeout,
-    AnalyticsModules,
-    Tour
-  ) {
+angular
+  .module('inboxControllers')
+  .controller('AnalyticsCtrl', function($scope, $state, $stateParams, $timeout, AnalyticsModules, Tour) {
     'use strict';
     'ngInject';
 
@@ -27,14 +21,16 @@ angular.module('inboxControllers').controller('AnalyticsCtrl',
         if (modules.length === 1) {
           // timeout so this transition finishes before starting the next one
           $timeout(function() {
-            $state.go(modules[0].state, { }, { location: 'replace' });
+            $state.go(modules[0].state, {}, { location: 'replace' });
           });
           return;
         }
       } else {
-        $scope.setSelectedModule(_.findWhere(modules, {
-          state: $state.current.name
-        }));
+        $scope.setSelectedModule(
+          _.findWhere(modules, {
+            state: $state.current.name,
+          })
+        );
       }
 
       $scope.loading = false;
@@ -52,5 +48,4 @@ angular.module('inboxControllers').controller('AnalyticsCtrl',
     $scope.loadContact = function(id) {
       $state.go('reports.detail', { query: 'contact:' + id });
     };
-  }
-);
+  });

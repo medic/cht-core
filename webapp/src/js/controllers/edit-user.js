@@ -1,15 +1,15 @@
 var passwordTester = require('simple-password-tester'),
-    PASSWORD_MINIMUM_LENGTH = 8,
-    PASSWORD_MINIMUM_SCORE = 50;
+  PASSWORD_MINIMUM_LENGTH = 8,
+  PASSWORD_MINIMUM_SCORE = 50;
 
-(function () {
-
+(function() {
   'use strict';
 
   // TODO : too many input possibilities, and two different templates. Refactor.
   // https://github.com/medic/medic-webapp/issues/3436
-  angular.module('inboxControllers').controller('EditUserCtrl',
-    function (
+  angular
+    .module('inboxControllers')
+    .controller('EditUserCtrl', function(
       $log,
       $scope,
       $uibModalInstance,
@@ -32,21 +32,20 @@ var passwordTester = require('simple-password-tester'),
       });
 
       var determineEditUserModel = function() {
-        return UserSettings()
-          .then(function(user) {
-            if (user) {
-              return {
-                id: user._id,
-                username: user.name,
-                fullname: user.fullname,
-                email: user.email,
-                phone: user.phone,
-                language: { code: user.language }
-              };
-            } else {
-              return {};
-            }
-          });
+        return UserSettings().then(function(user) {
+          if (user) {
+            return {
+              id: user._id,
+              username: user.name,
+              fullname: user.fullname,
+              email: user.email,
+              phone: user.phone,
+              language: { code: user.language },
+            };
+          } else {
+            return {};
+          }
+        });
       };
 
       determineEditUserModel()
@@ -99,44 +98,45 @@ var passwordTester = require('simple-password-tester'),
       };
 
       var validatePasswordFields = function() {
-        return validateRequired('password', 'Password') &&
+        return (
+          validateRequired('password', 'Password') &&
           (!$scope.editUserModel.currentPassword || validateRequired('currentPassword', 'Current Password')) &&
           validatePasswordStrength() &&
-          validateConfirmPasswordMatches();
+          validateConfirmPasswordMatches()
+        );
       };
 
       var changedUpdates = function(model) {
-        return determineEditUserModel()
-          .then(function(existingModel) {
-            var updates = {};
-            Object.keys(model)
-              .filter(function(k) {
-                if (k === 'id') {
-                  return false;
-                }
-                if (k === 'language') {
-                  return existingModel[k].code !== (model[k] && model[k].code);
-                }
-                if (k === 'password') {
-                  return model[k] && model[k] !== '';
-                }
-                if (['currentPassword', 'passwordConfirm', 'facilitySelect', 'contactSelect'].indexOf(k) !== -1) {
-                  // We don't want to return these 'meta' fields
-                  return false;
-                }
+        return determineEditUserModel().then(function(existingModel) {
+          var updates = {};
+          Object.keys(model)
+            .filter(function(k) {
+              if (k === 'id') {
+                return false;
+              }
+              if (k === 'language') {
+                return existingModel[k].code !== (model[k] && model[k].code);
+              }
+              if (k === 'password') {
+                return model[k] && model[k] !== '';
+              }
+              if (['currentPassword', 'passwordConfirm', 'facilitySelect', 'contactSelect'].indexOf(k) !== -1) {
+                // We don't want to return these 'meta' fields
+                return false;
+              }
 
-                return existingModel[k] !== model[k];
-              })
-              .forEach(function(k) {
-                if (k === 'language') {
-                  updates[k] = model[k].code;
-                } else {
-                  updates[k] = model[k];
-                }
-              });
+              return existingModel[k] !== model[k];
+            })
+            .forEach(function(k) {
+              if (k === 'language') {
+                updates[k] = model[k].code;
+              } else {
+                updates[k] = model[k];
+              }
+            });
 
-            return updates;
-          });
+          return updates;
+        });
       };
 
       var computeFields = function() {
@@ -157,7 +157,8 @@ var passwordTester = require('simple-password-tester'),
               $window.location.reload(true);
             })
             .catch(function(err) {
-              if (err.status === -1) { //Offline Status
+              if (err.status === -1) {
+                //Offline Status
                 Translate('online.action.message').then(function(value) {
                   $scope.errors.currentPassword = value;
                   $scope.setError();
@@ -187,11 +188,12 @@ var passwordTester = require('simple-password-tester'),
         computeFields();
 
         changedUpdates($scope.editUserModel).then(function(updates) {
-          $q.resolve().then(function() {
-            if (haveUpdates(updates)) {
-              return UpdateUser($scope.editUserModel.username, updates);
-            }
-          })
+          $q.resolve()
+            .then(function() {
+              if (haveUpdates(updates)) {
+                return UpdateUser($scope.editUserModel.username, updates);
+              }
+            })
             .then(function() {
               if (updates.language) {
                 // editing current user, so update language
@@ -205,8 +207,5 @@ var passwordTester = require('simple-password-tester'),
             });
         });
       };
-
-    }
-  );
-
-}());
+    });
+})();

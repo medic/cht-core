@@ -1,15 +1,8 @@
-angular.module('inboxControllers').controller('CheckDateCtrl',
-  function (
-    $scope,
-    $uibModalInstance
-  ) {
+angular.module('inboxControllers').controller('CheckDateCtrl', function($scope, $uibModalInstance) {
+  'use strict';
+  'ngInject';
 
-    'use strict';
-    'ngInject';
-
-    $scope.ok = function() {
-      $uibModalInstance.close();
-    };
-
-  }
-);
+  $scope.ok = function() {
+    $uibModalInstance.close();
+  };
+});

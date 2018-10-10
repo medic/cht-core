@@ -1,5 +1,5 @@
 var zscoreUtil,
-    _ = require('underscore');
+  _ = require('underscore');
 
 var getValue = function(resultObject) {
   if (!_.isObject(resultObject) || !resultObject.t) {
@@ -25,9 +25,9 @@ module.exports = {
       });
       var result = zscoreUtil.apply(null, args);
       if (!result) {
-          return { t: 'str', v: '' };
+        return { t: 'str', v: '' };
       }
       return { t: 'num', v: result };
-    }
-  }
+    },
+  },
 };

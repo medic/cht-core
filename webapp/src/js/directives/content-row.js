@@ -62,7 +62,7 @@ angular.module('inboxDirectives').directive('mmContentRow', function() {
       primaryContact: '=',
 
       // integer: (optional) how much tasks to show as pending for this contact
-      taskCount: '='
-    }
+      taskCount: '=',
+    },
   };
 });

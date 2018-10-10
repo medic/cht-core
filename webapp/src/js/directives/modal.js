@@ -39,7 +39,7 @@ angular.module('inboxDirectives').directive('mmModal', function() {
       onSubmit: '&',
 
       // string: (optional) the expression which, if true, will disable the submit button
-      disableSubmit: '='
-    }
+      disableSubmit: '=',
+    },
   };
 });

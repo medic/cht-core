@@ -1,5 +1,4 @@
-(function () {
-
+(function() {
   'use strict';
 
   var DEFAULT_FILE_NAME = 'download';
@@ -16,4 +15,4 @@
     element.click();
     document.body.removeChild(element);
   };
-}());
+})();

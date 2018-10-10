@@ -1,24 +1,15 @@
 var _ = require('underscore'),
-    format = require('../modules/format'),
-    phoneNumber = require('phone-number');
+  format = require('../modules/format'),
+  phoneNumber = require('phone-number');
 
-angular.module('inboxServices').factory('Select2Search',
-  function(
-    $log,
-    $q,
-    $translate,
-    DB,
-    LineageModelGenerator,
-    Search,
-    Session,
-    Settings
-  ) {
-
+angular
+  .module('inboxServices')
+  .factory('Select2Search', function($log, $q, $translate, DB, LineageModelGenerator, Search, Session, Settings) {
     'use strict';
     'ngInject';
 
     var defaultTemplateResult = function(row) {
-      if(!row.doc) {
+      if (!row.doc) {
         return $('<span>' + (row.text || '&nbsp;') + '</span>');
       }
       // format escapes the content for us, and if we just return
@@ -27,7 +18,7 @@ angular.module('inboxServices').factory('Select2Search',
     };
 
     var defaultTemplateSelection = function(row) {
-      if(row.doc) {
+      if (row.doc) {
         return row.doc.name;
       }
       return row.text;
@@ -38,18 +29,17 @@ angular.module('inboxServices').factory('Select2Search',
     };
 
     return function(selectEl, _types, options) {
-
       options = options || {};
       var currentQuery;
 
       var pageSize = options.pageSize || 20,
-          allowNew = options.allowNew || false,
-          templateResult = options.templateResult || defaultTemplateResult,
-          templateSelection = options.templateSelection || defaultTemplateSelection,
-          sendMessageExtras = options.sendMessageExtras || defaultSendMessageExtras,
-          tags = options.tags || false,
-          initialValue = options.initialValue || selectEl.val(),
-          types = Array.isArray(_types) ? _types : [ _types ];
+        allowNew = options.allowNew || false,
+        templateResult = options.templateResult || defaultTemplateResult,
+        templateSelection = options.templateSelection || defaultTemplateSelection,
+        sendMessageExtras = options.sendMessageExtras || defaultSendMessageExtras,
+        tags = options.tags || false,
+        initialValue = options.initialValue || selectEl.val(),
+        types = Array.isArray(_types) ? _types : [_types];
 
       if (allowNew && types.length !== 1) {
         throw new Error('Unsupported options: cannot allowNew with ' + types.length + ' types');
@@ -62,7 +52,7 @@ angular.module('inboxServices').factory('Select2Search',
         }).map(function(doc) {
           return {
             id: doc._id,
-            doc: doc
+            doc: doc,
           };
         });
       };
@@ -72,11 +62,11 @@ angular.module('inboxServices').factory('Select2Search',
         var skip = ((params.data.page || 1) - 1) * pageSize;
         var filters = {
           types: { selected: types },
-          search: params.data.q
+          search: params.data.q,
         };
         var options = {
           limit: pageSize,
-          skip: skip
+          skip: skip,
         };
 
         Search('contacts', filters, options)
@@ -85,8 +75,8 @@ angular.module('inboxServices').factory('Select2Search',
               successCb({
                 results: sendMessageExtras(prepareRows(documents)),
                 pagination: {
-                  more: documents.length === pageSize
-                }
+                  more: documents.length === pageSize,
+                },
               });
             }
           })
@@ -98,10 +88,9 @@ angular.module('inboxServices').factory('Select2Search',
       };
 
       var getDoc = function(id) {
-        return LineageModelGenerator.contact(id, { merge: true })
-          .then(function(contact) {
-            return contact && contact.doc;
-          });
+        return LineageModelGenerator.contact(id, { merge: true }).then(function(contact) {
+          return contact && contact.doc;
+        });
       };
 
       var resolveInitialValue = function(selectEl, initialValue) {
@@ -146,7 +135,7 @@ angular.module('inboxServices').factory('Select2Search',
         selectEl.select2({
           ajax: {
             delay: 500,
-            transport: query
+            transport: query,
           },
           allowClear: true,
           placeholder: '',
@@ -154,14 +143,16 @@ angular.module('inboxServices').factory('Select2Search',
           templateResult: templateResult,
           templateSelection: templateSelection,
           width: '100%',
-          minimumInputLength: Session.isOnlineOnly() ? 3 : 0
+          minimumInputLength: Session.isOnlineOnly() ? 3 : 0,
         });
         if (allowNew) {
-          var button = $('<a class="btn btn-link add-new"><i class="fa fa-plus"></i> ' + addNewText + '</a>')
-            .on('click', function() {
+          var button = $('<a class="btn btn-link add-new"><i class="fa fa-plus"></i> ' + addNewText + '</a>').on(
+            'click',
+            function() {
               selectEl.append($('<option value="NEW" selected="selected">' + addNewText + '</option>'));
               selectEl.trigger('change');
-            });
+            }
+          );
           selectEl.after(button);
         }
 
@@ -169,9 +160,7 @@ angular.module('inboxServices').factory('Select2Search',
         // !tags -> only support single values, until there is a use-case
         if (!tags) {
           selectEl.on('select2:select', function(e) {
-            var docId = e.params &&
-                        e.params.data &&
-                        e.params.data.id;
+            var docId = e.params && e.params.data && e.params.data.id;
 
             if (docId) {
               getDoc(docId)
@@ -187,9 +176,7 @@ angular.module('inboxServices').factory('Select2Search',
         }
       };
 
-
       initSelect2(selectEl);
       return resolveInitialValue(selectEl, initialValue);
     };
-  }
-);
+  });

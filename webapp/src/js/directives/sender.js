@@ -3,6 +3,6 @@ angular.module('inboxDirectives').directive('mmSender', function() {
   return {
     restrict: 'E',
     scope: { message: '=', sentBy: '=', hideLineage: '=' },
-    templateUrl: 'templates/directives/sender.html'
+    templateUrl: 'templates/directives/sender.html',
   };
 });

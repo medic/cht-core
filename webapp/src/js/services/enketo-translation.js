@@ -1,10 +1,9 @@
 var _ = require('underscore');
 
 function withElements(nodes) {
-  return _.chain(nodes)
-    .filter(function(n) {
-      return n.nodeType === Node.ELEMENT_NODE;
-    });
+  return _.chain(nodes).filter(function(n) {
+    return n.nodeType === Node.ELEMENT_NODE;
+  });
 }
 
 function without() {
@@ -16,10 +15,10 @@ function without() {
 
 function findChildNode(root, childNodeName) {
   return withElements(root.childNodes)
-      .find(function(n) {
-        return n.nodeName === childNodeName;
-      })
-      .value();
+    .find(function(n) {
+      return n.nodeName === childNodeName;
+    })
+    .value();
 }
 
 function xPath() {
@@ -33,16 +32,19 @@ function xPath() {
 function N(tagName, text, attrs, children) {
   var self = this;
   self.tagName = tagName;
-  if(arguments.length === 2) {
-    if(_.isArray(text)) {
-      children = text; text = null;
-    } else if(typeof text === 'object') {
-      attrs = text; text = null;
+  if (arguments.length === 2) {
+    if (_.isArray(text)) {
+      children = text;
+      text = null;
+    } else if (typeof text === 'object') {
+      attrs = text;
+      text = null;
     }
-  } else if(arguments.length === 3) {
-    if(_.isArray(attrs)) {
-      children = attrs; attrs = null;
-      if(typeof text === 'object') {
+  } else if (arguments.length === 3) {
+    if (_.isArray(attrs)) {
+      children = attrs;
+      attrs = null;
+      if (typeof text === 'object') {
         attrs = text;
         text = null;
       }
@@ -58,7 +60,7 @@ function N(tagName, text, attrs, children) {
   };
 
   self.append = function(child_or_children) {
-    if(_.isArray(child_or_children)) {
+    if (_.isArray(child_or_children)) {
       self.children = self.children.concat(child_or_children);
     } else {
       self.children.push(child_or_children);
@@ -74,15 +76,15 @@ function N(tagName, text, attrs, children) {
     _.each(Object.keys(self.attrs).sort(), function(key) {
       xml += ' ' + key + '="' + self.attrs[key] + '"';
     });
-    if(self.text || self.children.length) {
+    if (self.text || self.children.length) {
       xml += '>';
-      if(self.text) {
+      if (self.text) {
         xml += self.text
-            .replace(/&/g, '&amp;')
-            .replace(/</g, '&lt;')
-            .replace(/>/g, '&gt;');
+          .replace(/&/g, '&amp;')
+          .replace(/</g, '&lt;')
+          .replace(/>/g, '&gt;');
       }
-      if(self.children) {
+      if (self.children) {
         _.each(self.children, function(child) {
           xml += child.xml();
         });
@@ -95,9 +97,9 @@ function N(tagName, text, attrs, children) {
   };
 }
 
-
 angular.module('inboxServices').service('EnketoTranslation', [
-  '$translate', '$log',
+  '$translate',
+  '$log',
   function($translate, $log) {
     'use strict';
 
@@ -106,9 +108,9 @@ angular.module('inboxServices').service('EnketoTranslation', [
     function extraAttributesFor(conf) {
       var extras = {};
       var typeString = conf.type;
-      if(typeString === 'text') {
+      if (typeString === 'text') {
         extras.appearance = 'multiline';
-      } else if(/^db:/.test(typeString)) {
+      } else if (/^db:/.test(typeString)) {
         extras.appearance = 'db-object bind-id-only';
       }
       return extras;
@@ -148,15 +150,15 @@ angular.module('inboxServices').service('EnketoTranslation', [
         var instance = new N('instance');
         model.append(instance);
 
-        var instanceContainer = new N('data', { id:principle.type, version:1 });
+        var instanceContainer = new N('data', { id: principle.type, version: 1 });
         instanceContainer.append(modelFor(principle));
-        if(extras) {
+        if (extras) {
           _.each(extras, function(extra, mapping) {
             instanceContainer.append(modelFor(extra, mapping));
           });
         }
         // add some meta (not sure what this is for)
-        instanceContainer.append(new N('meta', [ new N('instanceID') ]));
+        instanceContainer.append(new N('meta', [new N('instanceID')]));
 
         instance.append(instanceContainer);
 
@@ -170,7 +172,7 @@ angular.module('inboxServices').service('EnketoTranslation', [
               nodeset: xPath(mapping, f),
               type: getBindingType(conf),
             };
-            if(conf.required) {
+            if (conf.required) {
               props.required = 'true()';
             }
             model.append(new N('bind', props));
@@ -178,25 +180,25 @@ angular.module('inboxServices').service('EnketoTranslation', [
         };
         bindingsFor(principle, principle.type);
         _.each(extras, function(extra, mapping) {
-          model.append(new N('bind', { nodeset: xPath(mapping), relevant: xPath(principle.type, mapping) + ' = \'NEW\'' }));
+          model.append(
+            new N('bind', { nodeset: xPath(mapping), relevant: xPath(principle.type, mapping) + " = 'NEW'" })
+          );
           bindingsFor(extra, mapping);
         });
 
         return head;
-      }());
+      })();
       root.append(head);
 
       var body = (function generateBody() {
         // N.B. we may not want pages for single-object forms
         var body = new N('h:body');
-        if(extras) {
+        if (extras) {
           body.attrs.class = 'pages';
         }
 
         var groupFor = function(schema, mapping) {
-          return new N('group',
-              { appearance: 'field-list', ref: xPath(mapping) },
-              fieldsFor(schema, mapping));
+          return new N('group', { appearance: 'field-list', ref: xPath(mapping) }, fieldsFor(schema, mapping));
         };
 
         var fieldsFor = function(schema, mapping) {
@@ -220,7 +222,7 @@ angular.module('inboxServices').service('EnketoTranslation', [
           return fields;
         };
 
-        if(extras) {
+        if (extras) {
           body.append(groupFor(principle, principle.type));
         } else {
           body.append(fieldsFor(principle, principle.type));
@@ -233,7 +235,7 @@ angular.module('inboxServices').service('EnketoTranslation', [
         });
 
         return body;
-      }());
+      })();
       root.append(body);
 
       return root.xml();
@@ -241,70 +243,73 @@ angular.module('inboxServices').service('EnketoTranslation', [
 
     self.getHiddenFieldList = function(model) {
       model = $.parseXML(model).firstChild;
-      return model && withElements(model.childNodes)
-        .filter(function(n) {
-          var attr = n.attributes.getNamedItem('tag');
-          return attr && attr.value === 'hidden';
-        })
-        .map(function(n) {
-          return n.nodeName;
-        })
-        .value();
+      return (
+        model &&
+        withElements(model.childNodes)
+          .filter(function(n) {
+            var attr = n.attributes.getNamedItem('tag');
+            return attr && attr.value === 'hidden';
+          })
+          .map(function(n) {
+            return n.nodeName;
+          })
+          .value()
+      );
     };
 
     var nodesToJs = function(data, repeatPaths, path) {
       repeatPaths = repeatPaths || [];
       path = path || '';
       var result = {};
-      withElements(data)
-        .each(function(n) {
-          var dbDocAttribute = n.attributes.getNamedItem('db-doc');
-          if (dbDocAttribute && dbDocAttribute.value === 'true') {
-            return;
-          }
+      withElements(data).each(function(n) {
+        var dbDocAttribute = n.attributes.getNamedItem('db-doc');
+        if (dbDocAttribute && dbDocAttribute.value === 'true') {
+          return;
+        }
 
-          var typeAttribute = n.attributes.getNamedItem('type');
-          var updatedPath = path + '/' + n.nodeName;
-          var value;
+        var typeAttribute = n.attributes.getNamedItem('type');
+        var updatedPath = path + '/' + n.nodeName;
+        var value;
 
-          var hasChildren = withElements(n.childNodes).size().value();
-          if(hasChildren) {
-            value = nodesToJs(n.childNodes, repeatPaths, updatedPath);
-          } else if (typeAttribute && typeAttribute.value === 'binary') {
-            // this is attached to the doc instead of inlined
-            value = '';
-          } else {
-            value = n.textContent;
-          }
+        var hasChildren = withElements(n.childNodes)
+          .size()
+          .value();
+        if (hasChildren) {
+          value = nodesToJs(n.childNodes, repeatPaths, updatedPath);
+        } else if (typeAttribute && typeAttribute.value === 'binary') {
+          // this is attached to the doc instead of inlined
+          value = '';
+        } else {
+          value = n.textContent;
+        }
 
-          if (repeatPaths.indexOf(updatedPath) !== -1) {
-            if (!result[n.nodeName]) {
-              result[n.nodeName] = [];
-            }
-            result[n.nodeName].push(value);
-          } else {
-            result[n.nodeName] = value;
+        if (repeatPaths.indexOf(updatedPath) !== -1) {
+          if (!result[n.nodeName]) {
+            result[n.nodeName] = [];
           }
-        });
+          result[n.nodeName].push(value);
+        } else {
+          result[n.nodeName] = value;
+        }
+      });
       return result;
     };
 
     var repeatsToJs = function(data) {
       var repeatNode = findChildNode(data, 'repeat');
-      if(!repeatNode) {
+      if (!repeatNode) {
         return;
       }
 
       var repeats = {};
 
-      withElements(repeatNode.childNodes)
-        .each(function(repeated) {
-          var key = repeated.nodeName + '_data';
-          if(!repeats[key]) {
-            repeats[key] = [];
-          }
-          repeats[key].push(nodesToJs(repeated.childNodes));
-        });
+      withElements(repeatNode.childNodes).each(function(repeated) {
+        var key = repeated.nodeName + '_data';
+        if (!repeats[key]) {
+          repeats[key] = [];
+        }
+        repeats[key].push(nodesToJs(repeated.childNodes));
+      });
 
       return repeats;
     };
@@ -350,7 +355,7 @@ angular.module('inboxServices').service('EnketoTranslation', [
         .filter(without('meta', 'inputs', 'repeat'))
         .each(function(child) {
           // First child is the main result, rest are siblings
-          if(!result.doc) {
+          if (!result.doc) {
             result.doc = nodesToJs(child.childNodes);
           } else {
             result.siblings[child.nodeName] = nodesToJs(child.childNodes);
@@ -363,8 +368,15 @@ angular.module('inboxServices').service('EnketoTranslation', [
       if (childMatcher) {
         var found = elem.find(childMatcher(name));
         if (found.length > 1) {
-          $log.warn('Using the matcher "' + childMatcher() + '" we found ' + found.length + ' elements, ' +
-            'we should only ever bind one.', elem);
+          $log.warn(
+            'Using the matcher "' +
+              childMatcher() +
+              '" we found ' +
+              found.length +
+              ' elements, ' +
+              'we should only ever bind one.',
+            elem
+          );
         }
         return found;
       } else {
@@ -380,7 +392,7 @@ angular.module('inboxServices').service('EnketoTranslation', [
         var value = pair[1];
 
         if (_.isObject(value)) {
-          if(current.children().length) {
+          if (current.children().length) {
             self.bindJsonToXml(current, value);
           } else {
             current.text(value._id);
@@ -390,6 +402,5 @@ angular.module('inboxServices').service('EnketoTranslation', [
         }
       });
     };
-
-  }
+  },
 ]);

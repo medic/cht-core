@@ -1,5 +1,4 @@
-(function () {
-
+(function() {
   'use strict';
 
   var ONLINE_ROLE = 'mm-online';
@@ -17,7 +16,7 @@
     }
     try {
       return JSON.parse(unescape(decodeURI(userCtx)));
-    } catch(e) {
+    } catch (e) {
       return;
     }
   };
@@ -31,7 +30,7 @@
     var dbName = url.slice(hostLocation, dbNameLocation);
     return {
       name: dbName,
-      remote: url.slice(0, dbNameLocation)
+      remote: url.slice(0, dbNameLocation),
     };
   };
 
@@ -43,30 +42,27 @@
     $('.bootstrap-layer .status').text('Loading app…');
     var dbSyncStartTime = Date.now();
     var dbSyncStartData = getDataUsage();
-    var replicator = localDb.replicate
-      .from(remoteDb, {
-        live: false,
-        retry: false,
-        heartbeat: 10000,
-        timeout: 1000 * 60 * 10, // try for ten minutes then give up
-      });
+    var replicator = localDb.replicate.from(remoteDb, {
+      live: false,
+      retry: false,
+      heartbeat: 10000,
+      timeout: 1000 * 60 * 10, // try for ten minutes then give up
+    });
 
-    replicator
-      .on('change', function(info) {
-        console.log('initialReplication()', 'change', info);
-        $('.bootstrap-layer .status').text('Fetching info (' + info.docs_read + ' docs)…');
-      });
+    replicator.on('change', function(info) {
+      console.log('initialReplication()', 'change', info);
+      $('.bootstrap-layer .status').text('Fetching info (' + info.docs_read + ' docs)…');
+    });
 
-    return replicator
-      .then(function() {
-        var duration = Date.now() - dbSyncStartTime;
-        console.info('Initial sync completed successfully in ' + (duration / 1000) + ' seconds');
-        if (dbSyncStartData) {
-          var dbSyncEndData = getDataUsage();
-          var rx = dbSyncEndData.app.rx - dbSyncStartData.app.rx;
-          console.info('Initial sync received ' + rx + 'B of data');
-        }
-      });
+    return replicator.then(function() {
+      var duration = Date.now() - dbSyncStartTime;
+      console.info('Initial sync completed successfully in ' + duration / 1000 + ' seconds');
+      if (dbSyncStartData) {
+        var dbSyncEndData = getDataUsage();
+        var rx = dbSyncEndData.app.rx - dbSyncStartData.app.rx;
+        console.info('Initial sync received ' + rx + 'B of data');
+      }
+    });
   };
 
   var getDataUsage = function() {
@@ -95,9 +91,11 @@
   };
 
   var hasFullDataAccess = function(userCtx) {
-    return hasRole(userCtx, '_admin') ||
-           hasRole(userCtx, 'national_admin') || // kept for backwards compatibility
-           hasRole(userCtx, ONLINE_ROLE);
+    return (
+      hasRole(userCtx, '_admin') ||
+      hasRole(userCtx, 'national_admin') || // kept for backwards compatibility
+      hasRole(userCtx, ONLINE_ROLE)
+    );
   };
 
   var getDdoc = function(localDb) {
@@ -152,6 +150,5 @@
             callback(err);
           });
       });
-
   };
-}());
+})();

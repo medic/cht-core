@@ -2,8 +2,9 @@ var _ = require('underscore');
 
 // medic-webapp specific config for LiveList.
 // This service should be invoked once at startup.
-angular.module('inboxServices').factory('LiveListConfig',
-  function(
+angular
+  .module('inboxServices')
+  .factory('LiveListConfig', function(
     $log,
     $parse,
     $templateCache,
@@ -39,7 +40,6 @@ angular.module('inboxServices').factory('LiveListConfig',
 
     // Configure LiveList service
     return function($scope) {
-
       var contacts_config = {
         orderBy: function(c1, c2) {
           if (!c1 || !c2) {
@@ -78,15 +78,17 @@ angular.module('inboxServices').factory('LiveListConfig',
                 scope.summary = $translate.instant('contact.last.visited.unknown');
               } else {
                 var now = new Date().getTime();
-                var oneMonthAgo = now - (30 * 24 * 60 * 60 * 1000);
+                var oneMonthAgo = now - 30 * 24 * 60 * 60 * 1000;
                 scope.overdue = contact.lastVisitedDate <= oneMonthAgo;
-                scope.summary = $translate.instant('contact.last.visited.date', { date: relativeDayFilter(contact.lastVisitedDate, true) });
+                scope.summary = $translate.instant('contact.last.visited.date', {
+                  date: relativeDayFilter(contact.lastVisitedDate, true),
+                });
               }
 
               var visitCount = Math.min(contact.visitCount, 99) + (contact.visitCount > 99 ? '+' : '');
               scope.visits = {
                 count: $translate.instant('contacts.visits.count', { count: visitCount }),
-                summary: $translate.instant('contacts.visits.visits', { VISITS: contact.visitCount }, 'messageformat')
+                summary: $translate.instant('contacts.visits.visits', { VISITS: contact.visitCount }, 'messageformat'),
               };
 
               if (contact.visitCountGoal) {
@@ -131,7 +133,7 @@ angular.module('inboxServices').factory('LiveListConfig',
       var reports_config = {
         orderBy: function(r1, r2) {
           var lhs = r1 && r1.reported_date,
-              rhs = r2 && r2.reported_date;
+            rhs = r2 && r2.reported_date;
           if (!lhs && !rhs) {
             return 0;
           }
@@ -155,13 +157,13 @@ angular.module('inboxServices').factory('LiveListConfig',
           scope.showStatus = true;
           scope.valid = report.valid;
           scope.verified = report.verified;
-          var statusIcon = (report.valid && report.verified) ? 'report-verify-valid-icon.html' : 'report-verify-invalid-icon.html';
-          scope.statusIcon = $templateCache.get('templates/partials/svg-icons/'+statusIcon);
-          scope.lineage = report.subject && report.subject.lineage || report.lineage;
+          var statusIcon =
+            report.valid && report.verified ? 'report-verify-valid-icon.html' : 'report-verify-invalid-icon.html';
+          scope.statusIcon = $templateCache.get('templates/partials/svg-icons/' + statusIcon);
+          scope.lineage = (report.subject && report.subject.lineage) || report.lineage;
           scope.unread = !report.read;
           var element = renderTemplate(scope);
-          if (removedDomElement &&
-              removedDomElement.find('input[type="checkbox"]').is(':checked')) {
+          if (removedDomElement && removedDomElement.find('input[type="checkbox"]').is(':checked')) {
             // updating an item that was selected in select mode
             element = $(element);
             element.find('input[type="checkbox"]').prop('checked', true);
@@ -195,7 +197,7 @@ angular.module('inboxServices').factory('LiveListConfig',
         selector: '#tasks-list ul',
         orderBy: function(t1, t2) {
           var lhs = t1 && t1.date,
-              rhs = t2 && t2.date;
+            rhs = t2 && t2.date;
           if (!lhs && !rhs) {
             return 0;
           }
@@ -213,12 +215,12 @@ angular.module('inboxServices').factory('LiveListConfig',
         listItem: function(task) {
           var scope = $scope.$new();
           var dueDate = Date.parse(task.date);
-          var startOfToday = (new Date()).setHours(0, 0, 0, 0);
+          var startOfToday = new Date().setHours(0, 0, 0, 0);
           scope.id = task._id;
           scope.route = 'tasks';
           scope.date = task.date;
           scope.overdue = dueDate < startOfToday;
-          scope.due = !scope.overdue && (dueDate - startOfToday) < TASK_DUE_PERIOD;
+          scope.due = !scope.overdue && dueDate - startOfToday < TASK_DUE_PERIOD;
           scope.icon = task.icon;
           scope.heading = task.contact && task.contact.name;
           scope.summary = translateProperty(task.title, task);
@@ -258,306 +260,306 @@ angular.module('inboxServices').factory('LiveListConfig',
           });
         });
       });
-
     };
+  });
+
+angular.module('inboxServices').factory('LiveList', function($timeout, ResourceIcons) {
+  'ngInject';
+
+  var api = {};
+  var indexes = {};
+
+  function findSortedIndex(list, newItem, orderBy) {
+    // start at the end of the list?
+    var insertIndex = list.length;
+
+    // search to find where to insert this item
+    // TODO binary search more efficient here?  Maybe best to check first if
+    // item can go at end of list, and if not _then_ do binary search
+    while (insertIndex && orderBy(newItem, list[insertIndex - 1]) < 0) {
+      --insertIndex;
+    }
+
+    return insertIndex;
   }
-);
 
-angular.module('inboxServices').factory('LiveList',
-  function(
-    $timeout,
-    ResourceIcons
-  ) {
-    'ngInject';
+  function checkConfig(config) {
+    if (!config.listItem) {
+      throw new Error('No `listItem` set for list.');
+    }
+    if (!config.orderBy) {
+      throw new Error('No `orderBy` set for list.');
+    }
+    if (!config.selector) {
+      throw new Error('No `selector` set for list.');
+    }
+  }
 
-    var api = {};
-    var indexes = {};
+  function listItemFor(idx, doc, removedDomElement) {
+    var li = $(idx.listItem(doc, removedDomElement));
+    if (doc._id === idx.selected) {
+      li.addClass('selected');
+    }
+    return li;
+  }
 
-    function findSortedIndex(list, newItem, orderBy) {
-      // start at the end of the list?
-      var insertIndex = list.length;
+  function _getList(listName) {
+    var idx = indexes[listName];
 
-      // search to find where to insert this item
-      // TODO binary search more efficient here?  Maybe best to check first if
-      // item can go at end of list, and if not _then_ do binary search
-      while (insertIndex && orderBy(newItem, list[insertIndex - 1]) < 0) {
-        --insertIndex;
-      }
-
-      return insertIndex;
+    if (!idx) {
+      throw new Error('LiveList not configured for: ' + listName);
     }
 
-    function checkConfig(config) {
-      if (!config.listItem) {
-        throw new Error('No `listItem` set for list.');
-      }
-      if (!config.orderBy) {
-        throw new Error('No `orderBy` set for list.');
-      }
-      if (!config.selector) {
-        throw new Error('No `selector` set for list.');
-      }
+    return idx.list;
+  }
+
+  function _refresh(listName) {
+    var idx = indexes[listName];
+
+    if (!idx.list) {
+      return;
     }
 
-    function listItemFor(idx, doc, removedDomElement) {
-      var li = $(idx.listItem(doc, removedDomElement));
-      if (doc._id === idx.selected) {
-        li.addClass('selected');
-      }
-      return li;
+    var activeDom = $(idx.selector);
+    if (activeDom.length) {
+      activeDom.empty();
+      _.each(idx.dom, function(li) {
+        activeDom.append(li);
+      });
+      ResourceIcons.replacePlaceholders(activeDom);
+    }
+  }
+
+  function _count(listName) {
+    var idx = indexes[listName];
+    return idx.list && idx.list.length;
+  }
+
+  function _set(listName, items) {
+    var i,
+      len,
+      idx = indexes[listName];
+
+    if (!idx) {
+      throw new Error('LiveList not configured for: ' + listName);
     }
 
-    function _getList(listName) {
-      var idx = indexes[listName];
+    idx.lastUpdate = new Date();
 
-      if (!idx) {
-        throw new Error('LiveList not configured for: ' + listName);
-      }
-
-      return idx.list;
+    // TODO we should sort the list in place with a suitable, efficient algorithm
+    idx.list = [];
+    idx.dom = [];
+    for (i = 0, len = items.length; i < len; ++i) {
+      _insert(listName, items[i], true);
     }
 
-    function _refresh(listName) {
-      var idx = indexes[listName];
+    $(idx.selector)
+      .empty()
+      .append(idx.dom);
+  }
 
-      if (!idx.list) {
-        return;
-      }
+  function _initialised(listName) {
+    return !!indexes[listName].list;
+  }
 
-      var activeDom = $(idx.selector);
-      if(activeDom.length) {
-        activeDom.empty();
-        _.each(idx.dom, function(li) {
-          activeDom.append(li);
-        });
-        ResourceIcons.replacePlaceholders(activeDom);
-      }
-    }
+  function _contains(listName, item) {
+    var i,
+      list = indexes[listName].list;
 
-    function _count(listName) {
-      var idx = indexes[listName];
-      return idx.list && idx.list.length;
-    }
-
-    function _set(listName, items) {
-      var i, len,
-          idx = indexes[listName];
-
-      if (!idx) {
-        throw new Error('LiveList not configured for: ' + listName);
-      }
-
-      idx.lastUpdate = new Date();
-
-      // TODO we should sort the list in place with a suitable, efficient algorithm
-      idx.list = [];
-      idx.dom = [];
-      for (i=0, len=items.length; i<len; ++i) {
-        _insert(listName, items[i], true);
-      }
-
-      $(idx.selector)
-          .empty()
-          .append(idx.dom);
-    }
-
-    function _initialised(listName) {
-      return !!indexes[listName].list;
-    }
-
-    function _contains(listName, item) {
-      var i, list = indexes[listName].list;
-
-      if (!list) {
-        return false;
-      }
-
-      for(i=list.length-1; i>=0; --i) {
-        if(list[i]._id === item._id) {
-          return true;
-        }
-      }
+    if (!list) {
       return false;
     }
 
-    function _insert(listName, newItem, skipDomAppend, removedDomElement) {
-      var idx = indexes[listName];
-
-      if (!idx.list) {
-        return;
-      }
-
-      var li = listItemFor(idx, newItem, removedDomElement);
-
-      var newItemIndex = findSortedIndex(idx.list, newItem, idx.orderBy);
-      idx.list.splice(newItemIndex, 0, newItem);
-      idx.dom.splice(newItemIndex, 0, li);
-
-      if (skipDomAppend) {
-        return;
-      }
-
-      var activeDom = $(idx.selector);
-      if(activeDom.length) {
-        var children = activeDom.children();
-        if (!children.length || newItemIndex === children.length) {
-          activeDom.append(li);
-        } else {
-          activeDom.children().eq(newItemIndex)
-              .before(li);
-        }
+    for (i = list.length - 1; i >= 0; --i) {
+      if (list[i]._id === item._id) {
+        return true;
       }
     }
+    return false;
+  }
 
-    function _update(listName, updatedItem) {
-      var removed = _remove(listName, updatedItem);
-      _insert(listName, updatedItem, false, removed);
+  function _insert(listName, newItem, skipDomAppend, removedDomElement) {
+    var idx = indexes[listName];
+
+    if (!idx.list) {
+      return;
     }
 
-    function _remove(listName, removedItem) {
-      var idx = indexes[listName];
+    var li = listItemFor(idx, newItem, removedDomElement);
 
-      if (!idx.list) {
-        return;
-      }
+    var newItemIndex = findSortedIndex(idx.list, newItem, idx.orderBy);
+    idx.list.splice(newItemIndex, 0, newItem);
+    idx.dom.splice(newItemIndex, 0, li);
 
-      var i = idx.list.length,
-          removeIndex = null;
-      while (i-- > 0 && removeIndex === null) {
-        if(idx.list[i]._id === removedItem._id) {
-          removeIndex = i;
-        }
-      }
-      if (removeIndex !== null) {
-        idx.list.splice(removeIndex, 1);
-        var removed = idx.dom.splice(removeIndex, 1);
-
-        $(idx.selector).children().eq(removeIndex).remove();
-        if (removed.length) {
-          return removed[0];
-        }
-      }
+    if (skipDomAppend) {
+      return;
     }
 
-    function _setSelected(listName, _id) {
-      var i, len, doc,
-          idx = indexes[listName],
-          list = idx.list,
-          previous = idx.selected;
-
-      idx.selected = _id;
-
-      if (!list) {
-        return;
-      }
-
-      for (i=0, len=list.length; i<len; ++i) {
-        doc = list[i];
-        if (doc._id === previous) {
-          idx.dom[i]
-              .removeClass('selected');
-        }
-        if (doc._id === _id) {
-          idx.dom[i]
-              .addClass('selected');
-        }
+    var activeDom = $(idx.selector);
+    if (activeDom.length) {
+      var children = activeDom.children();
+      if (!children.length || newItemIndex === children.length) {
+        activeDom.append(li);
+      } else {
+        activeDom
+          .children()
+          .eq(newItemIndex)
+          .before(li);
       }
     }
+  }
 
-    function _clearSelected(listName) {
-      var i, len,
-          idx = indexes[listName],
-          list = idx.list,
-          previous = idx.selected;
+  function _update(listName, updatedItem) {
+    var removed = _remove(listName, updatedItem);
+    _insert(listName, updatedItem, false, removed);
+  }
 
-      if (!list || !previous) {
-        return;
-      }
+  function _remove(listName, removedItem) {
+    var idx = indexes[listName];
 
-      for (i=0, len=list.length; i<len; ++i) {
-        if (list[i]._id === previous) {
-          idx.dom[i].removeClass('selected');
-        }
-      }
-      delete idx.selected;
+    if (!idx.list) {
+      return;
     }
 
-    function _containsDeleteStub(listName, doc) {
-      // determines if array2 is included in array1
-      var arrayIncludes = function(array1, array2) {
-        return array2.every(function(elem) {
-          return array1.indexOf(elem) !== -1;
-        });
-      };
-      // CouchDB/Fauxton deletes don't include doc fields in the deleted revision
-      // _conflicts, _attachments can be part of the _changes request result
-      var stubProps = [ '_id', '_rev', '_deleted', '_conflicts', '_attachments' ];
-      return arrayIncludes(stubProps, Object.keys(doc)) &&
-             !!doc._deleted &&
-             _contains(listName, doc);
+    var i = idx.list.length,
+      removeIndex = null;
+    while (i-- > 0 && removeIndex === null) {
+      if (idx.list[i]._id === removedItem._id) {
+        removeIndex = i;
+      }
+    }
+    if (removeIndex !== null) {
+      idx.list.splice(removeIndex, 1);
+      var removed = idx.dom.splice(removeIndex, 1);
+
+      $(idx.selector)
+        .children()
+        .eq(removeIndex)
+        .remove();
+      if (removed.length) {
+        return removed[0];
+      }
+    }
+  }
+
+  function _setSelected(listName, _id) {
+    var i,
+      len,
+      doc,
+      idx = indexes[listName],
+      list = idx.list,
+      previous = idx.selected;
+
+    idx.selected = _id;
+
+    if (!list) {
+      return;
     }
 
-    function refreshAll() {
-      var i, now = new Date();
+    for (i = 0, len = list.length; i < len; ++i) {
+      doc = list[i];
+      if (doc._id === previous) {
+        idx.dom[i].removeClass('selected');
+      }
+      if (doc._id === _id) {
+        idx.dom[i].addClass('selected');
+      }
+    }
+  }
 
-      _.forEach(indexes, function(idx, name) {
-        // N.B. no need to update a list that's never been generated
-        if (idx.lastUpdate && !sameDay(idx.lastUpdate, now)) {
-          // regenerate all list contents so relative dates relate to today
-          // instead of yesterday
-          for (i=idx.list.length-1; i>=0; --i) {
-            idx.dom[i] = listItemFor(idx, idx.list[i]);
-          }
+  function _clearSelected(listName) {
+    var i,
+      len,
+      idx = indexes[listName],
+      list = idx.list,
+      previous = idx.selected;
 
-          api[name].refresh();
+    if (!list || !previous) {
+      return;
+    }
 
-          idx.lastUpdate = now;
-        }
+    for (i = 0, len = list.length; i < len; ++i) {
+      if (list[i]._id === previous) {
+        idx.dom[i].removeClass('selected');
+      }
+    }
+    delete idx.selected;
+  }
+
+  function _containsDeleteStub(listName, doc) {
+    // determines if array2 is included in array1
+    var arrayIncludes = function(array1, array2) {
+      return array2.every(function(elem) {
+        return array1.indexOf(elem) !== -1;
       });
+    };
+    // CouchDB/Fauxton deletes don't include doc fields in the deleted revision
+    // _conflicts, _attachments can be part of the _changes request result
+    var stubProps = ['_id', '_rev', '_deleted', '_conflicts', '_attachments'];
+    return arrayIncludes(stubProps, Object.keys(doc)) && !!doc._deleted && _contains(listName, doc);
+  }
 
-      // Schedule this task again for tomorrow
-      $timeout(refreshAll, millisTilMidnight(now));
-    }
+  function refreshAll() {
+    var i,
+      now = new Date();
 
-    function sameDay(d1, d2) {
-      return d1.getDay() === d2.getDay();
-    }
+    _.forEach(indexes, function(idx, name) {
+      // N.B. no need to update a list that's never been generated
+      if (idx.lastUpdate && !sameDay(idx.lastUpdate, now)) {
+        // regenerate all list contents so relative dates relate to today
+        // instead of yesterday
+        for (i = idx.list.length - 1; i >= 0; --i) {
+          idx.dom[i] = listItemFor(idx, idx.list[i]);
+        }
 
-    function millisTilMidnight(now) {
-      var midnight = new Date(now);
+        api[name].refresh();
 
-      midnight.setDate(now.getDate() + 1);
-      midnight.setHours(0);
-      midnight.setMinutes(0);
+        idx.lastUpdate = now;
+      }
+    });
 
-      return midnight.getTime() - now.getTime();
-    }
+    // Schedule this task again for tomorrow
+    $timeout(refreshAll, millisTilMidnight(now));
+  }
 
-    $timeout(refreshAll, millisTilMidnight(new Date()));
+  function sameDay(d1, d2) {
+    return d1.getDay() === d2.getDay();
+  }
 
-    api.$listFor = function(name, config) {
-      checkConfig(config);
+  function millisTilMidnight(now) {
+    var midnight = new Date(now);
 
-      indexes[name] = _.pick(config, 'selector', 'orderBy', 'listItem');
+    midnight.setDate(now.getDate() + 1);
+    midnight.setHours(0);
+    midnight.setMinutes(0);
 
-      api[name] = {
-        insert: _.partial(_insert, name),
-        update: _.partial(_update, name),
-        remove: _.partial(_remove, name),
-        getList: _.partial(_getList, name),
-        set: _.partial(_set, name),
-        refresh: _.partial(_refresh, name),
-        count: _.partial(_count, name),
-        contains: _.partial(_contains, name),
-        initialised: _.partial(_initialised, name),
-        setSelected: _.partial(_setSelected, name),
-        clearSelected: _.partial(_clearSelected, name),
-        containsDeleteStub: _.partial(_containsDeleteStub, name)
-      };
+    return midnight.getTime() - now.getTime();
+  }
 
-      return api[name];
+  $timeout(refreshAll, millisTilMidnight(new Date()));
+
+  api.$listFor = function(name, config) {
+    checkConfig(config);
+
+    indexes[name] = _.pick(config, 'selector', 'orderBy', 'listItem');
+
+    api[name] = {
+      insert: _.partial(_insert, name),
+      update: _.partial(_update, name),
+      remove: _.partial(_remove, name),
+      getList: _.partial(_getList, name),
+      set: _.partial(_set, name),
+      refresh: _.partial(_refresh, name),
+      count: _.partial(_count, name),
+      contains: _.partial(_contains, name),
+      initialised: _.partial(_initialised, name),
+      setSelected: _.partial(_setSelected, name),
+      clearSelected: _.partial(_clearSelected, name),
+      containsDeleteStub: _.partial(_containsDeleteStub, name),
     };
 
-    return api;
-  }
-);
+    return api[name];
+  };
+
+  return api;
+});

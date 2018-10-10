@@ -1,10 +1,6 @@
 var readDocs = require('../modules/read-docs');
 
-angular.module('inboxServices').factory('MarkRead', function(
-  $q,
-  DB
-) {
-
+angular.module('inboxServices').factory('MarkRead', function($q, DB) {
   'use strict';
   'ngInject';
 

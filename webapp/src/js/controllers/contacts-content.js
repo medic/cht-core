@@ -1,8 +1,9 @@
 var _ = require('underscore'),
-    moment = require('moment');
+  moment = require('moment');
 
-angular.module('inboxControllers').controller('ContactsContentCtrl',
-  function(
+angular
+  .module('inboxControllers')
+  .controller('ContactsContentCtrl', function(
     $log,
     $q,
     $scope,
@@ -19,12 +20,10 @@ angular.module('inboxControllers').controller('ContactsContentCtrl',
     ContactChangeFilter,
     Debounce
   ) {
-
     'use strict';
     'ngInject';
 
-    var taskEndDate,
-        reportStartDate;
+    var taskEndDate, reportStartDate;
 
     $scope.filterTasks = function(task) {
       return !taskEndDate || taskEndDate.isAfter(task.date);
@@ -85,16 +84,15 @@ angular.module('inboxControllers').controller('ContactsContentCtrl',
                 $scope.selected.tasks = tasks;
                 children.forEach(function(child) {
                   child.taskCount = tasks.filter(function(task) {
-                    return task.doc &&
-                           task.doc.contact &&
-                           task.doc.contact._id === child.doc._id;
+                    return task.doc && task.doc.contact && task.doc.contact._id === child.doc._id;
                   }).length;
                 });
                 if (!$scope.$$phase) {
                   $scope.$apply();
                 }
               }
-            });
+            }
+          );
         })
         .catch(function() {
           $log.debug('Not authorized to view tasks');
@@ -142,9 +140,11 @@ angular.module('inboxControllers').controller('ContactsContentCtrl',
     var changeListener = Changes({
       key: 'contacts-content',
       filter: function(change) {
-        return ContactChangeFilter.matchContact(change, $scope.selected) ||
-               ContactChangeFilter.isRelevantContact(change, $scope.selected) ||
-               ContactChangeFilter.isRelevantReport(change, $scope.selected);
+        return (
+          ContactChangeFilter.matchContact(change, $scope.selected) ||
+          ContactChangeFilter.isRelevantContact(change, $scope.selected) ||
+          ContactChangeFilter.isRelevantReport(change, $scope.selected)
+        );
       },
       callback: function(change) {
         if (ContactChangeFilter.matchContact(change, $scope.selected) && ContactChangeFilter.isDeleted(change)) {
@@ -152,19 +152,18 @@ angular.module('inboxControllers').controller('ContactsContentCtrl',
           var parentId = $scope.selected.doc.parent && $scope.selected.doc.parent._id;
           if (parentId) {
             // redirect to the parent
-            return $state.go($state.current.name, {id: parentId});
+            return $state.go($state.current.name, { id: parentId });
           } else {
             // top level contact deleted - clear selection
             return $scope.clearSelected();
           }
         }
         return debouncedReloadContact($scope.selected.doc._id, true);
-      }
+      },
     });
 
     $scope.$on('$destroy', function() {
       changeListener.unsubscribe();
       debouncedReloadContact.cancel();
     });
-  }
-);
+  });

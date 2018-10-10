@@ -1,5 +1,6 @@
-angular.module('inboxControllers').controller('ContactsReportCtrl',
-  function (
+angular
+  .module('inboxControllers')
+  .controller('ContactsReportCtrl', function(
     $log,
     $scope,
     $state,
@@ -11,7 +12,6 @@ angular.module('inboxControllers').controller('ContactsReportCtrl',
     TranslateFrom,
     XmlForm
   ) {
-
     'use strict';
     'ngInject';
 
@@ -35,21 +35,18 @@ angular.module('inboxControllers').controller('ContactsReportCtrl',
     var render = function(contact) {
       $scope.setSelected(contact);
       setCancelTarget();
-      return XmlForm($state.params.formId, { include_docs: true })
-        .then(function(form) {
-          var instanceData = {
-            source: 'contact',
-            contact: contact.doc,
-          };
-          $scope.enketoStatus.edited = false;
-          return Enketo
-            .render('#contact-report', form.id, instanceData, markFormEdited)
-            .then(function(formInstance) {
-              $scope.setTitle(TranslateFrom(form.doc.title));
-              $scope.form = formInstance;
-              $scope.loadingForm = false;
-            });
+      return XmlForm($state.params.formId, { include_docs: true }).then(function(form) {
+        var instanceData = {
+          source: 'contact',
+          contact: contact.doc,
+        };
+        $scope.enketoStatus.edited = false;
+        return Enketo.render('#contact-report', form.id, instanceData, markFormEdited).then(function(formInstance) {
+          $scope.setTitle(TranslateFrom(form.doc.title));
+          $scope.form = formInstance;
+          $scope.loadingForm = false;
         });
+      });
     };
 
     $scope.save = function() {
@@ -96,5 +93,4 @@ angular.module('inboxControllers').controller('ContactsReportCtrl',
         Enketo.unload($scope.form);
       }
     });
-  }
-);
+  });

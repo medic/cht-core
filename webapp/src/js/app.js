@@ -61,13 +61,7 @@ _.templateSettings = {
     'pouchdb',
   ]);
 
-  app.config(function(
-    $compileProvider,
-    $locationProvider,
-    $stateProvider,
-    $translateProvider,
-    $urlRouterProvider
-  ) {
+  app.config(function($compileProvider, $locationProvider, $stateProvider, $translateProvider, $urlRouterProvider) {
     'ngInject';
     $locationProvider.hashPrefix('');
     $urlRouterProvider.otherwise('/error/404');
@@ -79,9 +73,7 @@ _.templateSettings = {
     $translateProvider.addInterpolation('$translateMessageFormatInterpolation');
     $translateProvider.addInterpolation('TranslationNullInterpolation');
     $translateProvider.useMissingTranslationHandlerLog();
-    $compileProvider.aHrefSanitizationWhitelist(
-      /^\s*(https?|ftp|mailto|tel|sms|file|blob):/
-    );
+    $compileProvider.aHrefSanitizationWhitelist(/^\s*(https?|ftp|mailto|tel|sms|file|blob):/);
     var isDevelopment = window.location.hostname === 'localhost';
     $compileProvider.debugInfoEnabled(isDevelopment);
   });

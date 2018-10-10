@@ -9,11 +9,15 @@
  *
  */
 angular.module('inboxServices').config([
-  '$provide', '$logProvider', function($provide, $logProvider) {
+  '$provide',
+  '$logProvider',
+  function($provide, $logProvider) {
     'use strict';
 
     $provide.service('Debug', [
-      'ipCookie', 'pouchDB', function(ipCookie, pouchDB) {
+      'ipCookie',
+      'pouchDB',
+      function(ipCookie, pouchDB) {
         var cookieName = 'medic-webapp-debug';
         var get = function() {
           return Boolean(ipCookie(cookieName));
@@ -33,9 +37,9 @@ angular.module('inboxServices').config([
         };
         return {
           get: get,
-          set: set
+          set: set,
         };
-      }
+      },
     ]);
-  }
+  },
 ]);

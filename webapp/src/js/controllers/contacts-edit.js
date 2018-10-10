@@ -1,5 +1,6 @@
-angular.module('inboxControllers').controller('ContactsEditCtrl',
-  function (
+angular
+  .module('inboxControllers')
+  .controller('ContactsEditCtrl', function(
     $log,
     $q,
     $scope,
@@ -13,7 +14,6 @@ angular.module('inboxControllers').controller('ContactsEditCtrl',
     LineageModelGenerator,
     Snackbar
   ) {
-
     'use strict';
     'ngInject';
 
@@ -42,9 +42,12 @@ angular.module('inboxControllers').controller('ContactsEditCtrl',
           key = 'contact.type.place.new';
         }
       }
-      $translate.onReady().then(function() {
-        return $translate(key);
-      }).then($scope.setTitle);
+      $translate
+        .onReady()
+        .then(function() {
+          return $translate(key);
+        })
+        .then($scope.setTitle);
     };
 
     var getFormInstanceData = function() {
@@ -61,10 +64,9 @@ angular.module('inboxControllers').controller('ContactsEditCtrl',
       if (!id) {
         return $q.resolve();
       }
-      return LineageModelGenerator.contact(id, { merge: true })
-        .then(function(result) {
-          return result.doc;
-        });
+      return LineageModelGenerator.contact(id, { merge: true }).then(function(result) {
+        return result.doc;
+      });
     };
 
     var getCategory = function(type) {
@@ -84,7 +86,7 @@ angular.module('inboxControllers').controller('ContactsEditCtrl',
 
       $scope.contact = {
         type: $state.params.type,
-        parent: $state.params.parent_id
+        parent: $state.params.parent_id,
       };
 
       $scope.category = getCategory($scope.contact.type);
@@ -107,9 +109,10 @@ angular.module('inboxControllers').controller('ContactsEditCtrl',
         var container = $('#contact-form');
         if (!form) {
           // Disable next and prev buttons
-          container.find('.form-footer .btn')
-              .filter('.previous-page, .next-page')
-              .addClass('disabled');
+          container
+            .find('.form-footer .btn')
+            .filter('.previous-page, .next-page')
+            .addClass('disabled');
           return;
         }
         $scope.enketoStatus.edited = false;
@@ -167,9 +170,10 @@ angular.module('inboxControllers').controller('ContactsEditCtrl',
       $scope.enketoStatus.saving = true;
       $scope.enketoStatus.error = null;
 
-      return form.validate()
+      return form
+        .validate()
         .then(function(valid) {
-          if(!valid) {
+          if (!valid) {
             throw new Error('Validation failed.');
           }
 
@@ -205,6 +209,4 @@ angular.module('inboxControllers').controller('ContactsEditCtrl',
         }
       }
     });
-
-  }
-);
+  });

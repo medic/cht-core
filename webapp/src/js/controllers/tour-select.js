@@ -1,12 +1,6 @@
-angular.module('inboxControllers').controller('TourSelectCtrl',
-  function(
-    $scope,
-    $state,
-    $translate,
-    $uibModalInstance,
-    Tour
-  ) {
-
+angular
+  .module('inboxControllers')
+  .controller('TourSelectCtrl', function($scope, $state, $translate, $uibModalInstance, Tour) {
     'use strict';
     'ngInject';
 
@@ -23,6 +17,4 @@ angular.module('inboxControllers').controller('TourSelectCtrl',
     $scope.cancel = function() {
       $uibModalInstance.close();
     };
-
-  }
-);
+  });

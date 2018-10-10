@@ -3,8 +3,7 @@ var moment = require('moment');
 /**
  * Wrapper function for moment.localeData() so it can be mocked
  */
-(function () {
-
+(function() {
   'use strict';
 
   var inboxServices = angular.module('inboxServices');
@@ -12,7 +11,6 @@ var moment = require('moment');
   inboxServices.factory('MomentLocaleData', [
     function() {
       return moment.localeData;
-    }
+    },
   ]);
-  
-}()); 
+})();

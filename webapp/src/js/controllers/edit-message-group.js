@@ -2,12 +2,7 @@ var moment = require('moment');
 
 angular
   .module('inboxControllers')
-  .controller('EditMessageGroupCtrl', function(
-    $scope,
-    $uibModalInstance,
-    EditGroup,
-    Settings
-  ) {
+  .controller('EditMessageGroupCtrl', function($scope, $uibModalInstance, EditGroup, Settings) {
     'use strict';
     'ngInject';
 

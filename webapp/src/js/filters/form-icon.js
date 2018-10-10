@@ -1,7 +1,4 @@
-angular.module('inboxFilters').filter('formIcon', function(
-  formIconNameFilter,
-  resourceIconFilter
-) {
+angular.module('inboxFilters').filter('formIcon', function(formIconNameFilter, resourceIconFilter) {
   'use strict';
   'ngInject';
   return function(record, forms) {

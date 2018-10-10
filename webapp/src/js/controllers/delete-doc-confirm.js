@@ -1,13 +1,6 @@
-angular.module('inboxControllers').controller('DeleteDocConfirm',
-  function (
-    $scope,
-    $translate,
-    $uibModalInstance,
-    DB,
-    ExtractLineage,
-    Snackbar
-  ) {
-
+angular
+  .module('inboxControllers')
+  .controller('DeleteDocConfirm', function($scope, $translate, $uibModalInstance, DB, ExtractLineage, Snackbar) {
     'use strict';
     'ngInject';
 
@@ -19,7 +12,8 @@ angular.module('inboxControllers').controller('DeleteDocConfirm',
         doc.contact = ExtractLineage(doc.contact);
       }
 
-      DB().put(doc)
+      DB()
+        .put(doc)
         .then(function() {
           return $translate('document.deleted');
         })
@@ -35,6 +29,4 @@ angular.module('inboxControllers').controller('DeleteDocConfirm',
     $scope.cancel = function() {
       $uibModalInstance.dismiss();
     };
-
-  }
-);
+  });

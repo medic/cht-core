@@ -1,18 +1,8 @@
 var _ = require('underscore');
 
-angular.module('inboxServices').factory('XmlForms',
-  function(
-    $log,
-    $parse,
-    $q,
-    Auth,
-    Changes,
-    ContactSchema,
-    DB,
-    UserContact,
-    XmlFormsContextUtils
-  ) {
-
+angular
+  .module('inboxServices')
+  .factory('XmlForms', function($log, $parse, $q, Auth, Changes, ContactSchema, DB, UserContact, XmlFormsContextUtils) {
     'use strict';
     'ngInject';
 
@@ -38,7 +28,7 @@ angular.module('inboxServices').factory('XmlForms',
       var context = {
         contact: doc,
         user: user,
-        summary: contactSummary
+        summary: contactSummary,
       };
       return $parse(expression)(XmlFormsContextUtils, context);
     };
@@ -47,16 +37,15 @@ angular.module('inboxServices').factory('XmlForms',
       // clone the forms list so we don't affect future filtering
       forms = forms.slice();
       var promises = _.map(forms, _.partial(filter, _, options, user));
-      return $q.all(promises)
-        .then(function(resolutions) {
-          // always splice in reverse...
-          for (var i = resolutions.length - 1; i >= 0; i--) {
-            if (!resolutions[i]) {
-              forms.splice(i, 1);
-            }
+      return $q.all(promises).then(function(resolutions) {
+        // always splice in reverse...
+        for (var i = resolutions.length - 1; i >= 0; i--) {
+          if (!resolutions[i]) {
+            forms.splice(i, 1);
           }
-          return forms;
-        });
+        }
+        return forms;
+      });
     };
 
     var filter = function(form, options, user) {
@@ -82,20 +71,26 @@ angular.module('inboxServices').factory('XmlForms',
 
       if (options.doc) {
         var contactType = options.doc.type;
-        if (contactType === 'person' && (
-            (typeof form.context.person !== 'undefined' && !form.context.person) ||
-            (typeof form.context.person === 'undefined' && form.context.place))) {
+        if (
+          contactType === 'person' &&
+          ((typeof form.context.person !== 'undefined' && !form.context.person) ||
+            (typeof form.context.person === 'undefined' && form.context.place))
+        ) {
           return false;
         }
-        if (ContactSchema.getPlaceTypes().indexOf(contactType) !== -1 && (
-            (typeof form.context.place !== 'undefined' && !form.context.place) ||
-            (typeof form.context.place === 'undefined' && form.context.person))) {
+        if (
+          ContactSchema.getPlaceTypes().indexOf(contactType) !== -1 &&
+          ((typeof form.context.place !== 'undefined' && !form.context.place) ||
+            (typeof form.context.place === 'undefined' && form.context.person))
+        ) {
           return false;
         }
       }
 
-      if (form.context.expression &&
-          !evaluateExpression(form.context.expression, options.doc, user, options.contactSummary)) {
+      if (
+        form.context.expression &&
+        !evaluateExpression(form.context.expression, options.doc, user, options.contactSummary)
+      ) {
         return false;
       }
 
@@ -112,14 +107,13 @@ angular.module('inboxServices').factory('XmlForms',
     };
 
     var notifyAll = function(forms) {
-      return UserContact()
-        .then(function(user) {
-          _.values(listeners).forEach(function(listener) {
-            filterAll(forms, listener.options, user).then(function(results) {
-              listener.callback(null, results);
-            });
+      return UserContact().then(function(user) {
+        _.values(listeners).forEach(function(listener) {
+          filterAll(forms, listener.options, user).then(function(results) {
+            listener.callback(null, results);
           });
         });
+      });
     };
 
     Changes({
@@ -129,14 +123,12 @@ angular.module('inboxServices').factory('XmlForms',
       },
       callback: function() {
         init = getForms();
-        init
-          .then(notifyAll)
-          .catch(function(err) {
-            _.values(listeners).forEach(function(listener) {
-              listener.callback(err);
-            });
+        init.then(notifyAll).catch(function(err) {
+          _.values(listeners).forEach(function(listener) {
+            listener.callback(err);
           });
-      }
+        });
+      },
     });
 
     /**
@@ -162,10 +154,10 @@ angular.module('inboxServices').factory('XmlForms',
         callback = options;
         options = {};
       }
-      var listener = listeners[name] = {
+      var listener = (listeners[name] = {
         options: options,
-        callback: callback
-      };
+        callback: callback,
+      });
       init
         .then(function(forms) {
           UserContact()
@@ -181,5 +173,4 @@ angular.module('inboxServices').factory('XmlForms',
         })
         .catch(callback);
     };
-  }
-);
+  });

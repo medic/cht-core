@@ -1,8 +1,7 @@
 var format = require('../modules/format'),
-    _ = require('underscore');
+  _ = require('underscore');
 
-(function () {
-
+(function() {
   'use strict';
 
   var module = angular.module('inboxFilters');
@@ -15,9 +14,7 @@ var format = require('../modules/format'),
     return record.form;
   };
 
-  module.filter('summary', function(
-    $translate
-  ) {
+  module.filter('summary', function($translate) {
     'ngInject';
     return function(record, forms) {
       if (!record || !forms) {
@@ -29,19 +26,14 @@ var format = require('../modules/format'),
       if (record.message && record.message.message) {
         return record.message.message;
       }
-      if (record.tasks &&
-          record.tasks[0] &&
-          record.tasks[0].messages &&
-          record.tasks[0].messages[0]) {
+      if (record.tasks && record.tasks[0] && record.tasks[0].messages && record.tasks[0].messages[0]) {
         return record.tasks[0].messages[0].message;
       }
       return $translate.instant('tasks.0.messages.0.message');
     };
   });
 
-  module.filter('title', function(
-    $translate
-  ) {
+  module.filter('title', function($translate) {
     'ngInject';
     return function(record, forms) {
       if (!record || !forms) {
@@ -57,10 +49,7 @@ var format = require('../modules/format'),
     };
   });
 
-  module.filter('clinic', function(
-    $log,
-    $state
-  ) {
+  module.filter('clinic', function($log, $state) {
     'ngInject';
     return function(entity) {
       $log.warn('`clinic` filter is deprecated. Use `lineage` filter instead.');
@@ -68,13 +57,10 @@ var format = require('../modules/format'),
     };
   });
 
-  module.filter('lineage', function(
-    $state
-  ) {
+  module.filter('lineage', function($state) {
     'ngInject';
     return function(entity) {
       return format.lineage(entity, $state);
     };
   });
-
-}());
+})();

@@ -1,267 +1,249 @@
 var nools = require('nools'),
-    _ = require('underscore'),
-    nootils = require('medic-nootils'),
-    FIRST_RUN_COMPLETE_TYPE = '_complete',
-    // number of weeks before reported date to assume for start of pregnancy
-    KNOWN_TYPES = [ FIRST_RUN_COMPLETE_TYPE, 'task', 'target' ];
+  _ = require('underscore'),
+  nootils = require('medic-nootils'),
+  FIRST_RUN_COMPLETE_TYPE = '_complete',
+  // number of weeks before reported date to assume for start of pregnancy
+  KNOWN_TYPES = [FIRST_RUN_COMPLETE_TYPE, 'task', 'target'];
 
-(function () {
-
+(function() {
   'use strict';
 
   var inboxServices = angular.module('inboxServices');
 
-  inboxServices.factory('RulesEngine',
-    function(
-      $log,
-      $q,
-      Changes,
-      ContactSchema,
-      Search,
-      Session,
-      Settings,
-      UserContact
-    ) {
+  inboxServices.factory('RulesEngine', function(
+    $log,
+    $q,
+    Changes,
+    ContactSchema,
+    Search,
+    Session,
+    Settings,
+    UserContact
+  ) {
+    'ngInject';
 
-      'ngInject';
+    if (Session.isOnlineOnly()) {
+      // No-op all rules engine work for admins for now
+      return {
+        enabled: false,
+        init: $q.resolve(),
+        complete: $q.resolve(),
+        listen: function() {},
+      };
+    }
 
-      if (Session.isOnlineOnly()) {
-        // No-op all rules engine work for admins for now
-        return {
-          enabled: false,
-          init: $q.resolve(),
-          complete: $q.resolve(),
-          listen: function() {}
-        };
+    var complete = $q.defer();
+    var callbacks = {};
+    callbacks[FIRST_RUN_COMPLETE_TYPE] = {
+      rulesengine: function() {
+        complete.resolve();
+      },
+    };
+    var emissions = {};
+    var facts = [];
+    var session;
+    var err;
+    var flow;
+    var Contact;
+
+    var getContactId = function(doc) {
+      // get the associated patient or place id to group reports by
+      return doc && (doc.patient_id || doc.place_id || (doc.fields && (doc.fields.patient_id || doc.fields.place_id)));
+    };
+
+    var contactHasId = function(contact, id) {
+      return contact && (contact._id === id || contact.patient_id === id || contact.place_id === id);
+    };
+
+    var deriveFacts = function(dataRecords, contacts) {
+      var facts = _.map(contacts, function(contact) {
+        return new Contact({ contact: contact, reports: [] });
+      });
+      dataRecords.forEach(function(report) {
+        var factId = getContactId(report);
+        var fact = _.find(facts, function(fact) {
+          return contactHasId(fact.contact, factId);
+        });
+        if (!fact) {
+          fact = new Contact({ reports: [] });
+          facts.push(fact);
+        }
+        fact.reports.push(report);
+      });
+      return facts;
+    };
+
+    var notifyError = function(_err) {
+      err = _err;
+      _.values(callbacks).forEach(function(cbs) {
+        _.values(cbs).forEach(function(callback) {
+          callback(err);
+        });
+      });
+    };
+
+    var notifyCallbacks = function(fact, type) {
+      if (!emissions[type]) {
+        emissions[type] = {};
       }
+      emissions[type][fact._id] = fact;
+      _.values(callbacks[type]).forEach(function(callback) {
+        callback(null, [fact]);
+      });
+    };
 
-      var complete = $q.defer();
-      var callbacks = {};
-      callbacks[FIRST_RUN_COMPLETE_TYPE] = {
-        rulesengine: function() {
-          complete.resolve();
-        }
-      };
-      var emissions = {};
-      var facts = [];
-      var session;
-      var err;
-      var flow;
-      var Contact;
-
-      var getContactId = function(doc) {
-        // get the associated patient or place id to group reports by
-        return doc && (
-          doc.patient_id ||
-          doc.place_id ||
-          (doc.fields && (doc.fields.patient_id || doc.fields.place_id))
-        );
-      };
-
-      var contactHasId = function(contact, id) {
-        return contact && (
-          contact._id === id ||
-          contact.patient_id === id ||
-          contact.place_id === id
-        );
-      };
-
-      var deriveFacts = function(dataRecords, contacts) {
-        var facts = _.map(contacts, function(contact) {
-          return new Contact({ contact: contact, reports: [] });
+    var assertFacts = function() {
+      KNOWN_TYPES.forEach(function(type) {
+        session.on(type, function(fact) {
+          notifyCallbacks(fact, type);
         });
-        dataRecords.forEach(function(report) {
-          var factId = getContactId(report);
-          var fact = _.find(facts, function(fact) {
-            return contactHasId(fact.contact, factId);
-          });
-          if (!fact) {
-            fact = new Contact({ reports: [] });
-            facts.push(fact);
-          }
-          fact.reports.push(report);
-        });
-        return facts;
-      };
+      });
+      facts.forEach(function(fact) {
+        session.assert(fact);
+      });
+      session.matchUntilHalt().then(
+        // halt
+        function() {
+          notifyError(new Error('Unexpected halt in fact assertion.'));
+        },
+        // error
+        notifyError
+      );
+    };
 
-      var notifyError = function(_err) {
-        err = _err;
-        _.values(callbacks).forEach(function(cbs) {
-          _.values(cbs).forEach(function(callback) {
-            callback(err);
-          });
-        });
-      };
+    var findFact = function(id) {
+      return _.find(facts, function(fact) {
+        return contactHasId(fact.contact, id) || _.findWhere(fact.reports, { _id: id });
+      });
+    };
 
-      var notifyCallbacks = function(fact, type) {
-        if (!emissions[type]) {
-          emissions[type] = {};
-        }
-        emissions[type][fact._id] = fact;
-        _.values(callbacks[type]).forEach(function(callback) {
-          callback(null, [ fact ]);
-        });
-      };
-
-      var assertFacts = function() {
-        KNOWN_TYPES.forEach(function(type) {
-          session.on(type, function(fact) {
-            notifyCallbacks(fact, type);
-          });
-        });
-        facts.forEach(function(fact) {
-          session.assert(fact);
-        });
-        session.matchUntilHalt().then(
-          // halt
-          function() {
-            notifyError(new Error('Unexpected halt in fact assertion.'));
-          },
-          // error
-          notifyError
-        );
-      };
-
-      var findFact = function(id) {
-        return _.find(facts, function(fact) {
-          return contactHasId(fact.contact, id) ||
-                 _.findWhere(fact.reports, { _id: id });
-        });
-      };
-
-      var updateReport = function(doc) {
-        for (var j = 0; j < facts.length; j++) {
-          var fact = facts[j];
-          for (var i = 0; i < fact.reports.length; i++) {
-            if (fact.reports[i]._id === doc._id) {
-              fact.reports[i] = doc;
-              return fact;
-            }
+    var updateReport = function(doc) {
+      for (var j = 0; j < facts.length; j++) {
+        var fact = facts[j];
+        for (var i = 0; i < fact.reports.length; i++) {
+          if (fact.reports[i]._id === doc._id) {
+            fact.reports[i] = doc;
+            return fact;
           }
         }
-      };
+      }
+    };
 
-      var updateFacts = function(change) {
-        var fact;
-        if (change.deleted) {
-          fact = findFact(change.id);
-          if (fact) {
-            if (fact.contact && fact.contact._id === change.id) {
-              // deleted contact
-              fact.contact.deleted = true;
-            } else {
-              // deleted report
-              _.each(fact.reports, function(report) {
-                if (report._id === change.id) {
-                  report.deleted = true;
-                }
-              });
-            }
-            session.modify(fact);
-          }
-        } else if (change.doc.form) {
-          fact = updateReport(change.doc);
-          if (fact) {
-            // updated report
-            session.modify(fact);
+    var updateFacts = function(change) {
+      var fact;
+      if (change.deleted) {
+        fact = findFact(change.id);
+        if (fact) {
+          if (fact.contact && fact.contact._id === change.id) {
+            // deleted contact
+            fact.contact.deleted = true;
           } else {
-            fact = findFact(getContactId(change.doc));
-            if (fact) {
-              // new report for known contact
-              fact.reports.push(change.doc);
-              session.modify(fact);
-            } else {
-              // new report for unknown contact
-              fact = new Contact({ reports: [ change.doc ] });
-              facts.push(fact);
-              session.assert(fact);
-            }
+            // deleted report
+            _.each(fact.reports, function(report) {
+              if (report._id === change.id) {
+                report.deleted = true;
+              }
+            });
           }
+          session.modify(fact);
+        }
+      } else if (change.doc.form) {
+        fact = updateReport(change.doc);
+        if (fact) {
+          // updated report
+          session.modify(fact);
         } else {
-          fact = findFact(change.id);
+          fact = findFact(getContactId(change.doc));
           if (fact) {
-            // updated contact
-            fact.contact = change.doc;
+            // new report for known contact
+            fact.reports.push(change.doc);
             session.modify(fact);
           } else {
-            // new contact
-            fact = new Contact({ contact: change.doc, reports: [] });
+            // new report for unknown contact
+            fact = new Contact({ reports: [change.doc] });
             facts.push(fact);
             session.assert(fact);
           }
         }
-      };
-
-      var registerListener = function() {
-        Changes({
-          key: 'rules-engine',
-          callback: updateFacts,
-          filter: function(change) {
-            return change.doc.form ||
-                   ContactSchema.getTypes().indexOf(change.doc.type) !== -1;
-          }
-        });
-      };
-
-      var initNools = function(settings, user) {
-        flow = nools.getFlow('medic');
-        if (!flow) {
-          flow = nools.compile(settings.tasks.rules, {
-            name: 'medic',
-            scope: { Utils: nootils(settings), user: user }
-          });
+      } else {
+        fact = findFact(change.id);
+        if (fact) {
+          // updated contact
+          fact.contact = change.doc;
+          session.modify(fact);
+        } else {
+          // new contact
+          fact = new Contact({ contact: change.doc, reports: [] });
+          facts.push(fact);
+          session.assert(fact);
         }
-        Contact = flow.getDefined('contact');
-        session = flow.getSession();
-      };
+      }
+    };
 
-      var init = $q.all([ Settings(), UserContact() ])
-        .then(function(results) {
-          var settings = results[0];
-          var user = results[1];
-          if (!settings.tasks || !settings.tasks.rules) {
-            // no rules configured
-            complete.resolve();
-            return $q.resolve();
-          }
-          if (!flow) {
-            initNools(settings, user);
-          }
-          registerListener();
-          var options = {
-            limit: 99999999,
-            force: true,
-            include_docs: true
-          };
-          return $q.all([
-            Search('reports', { valid: true }, options),
-            Search('contacts', {}, options)
-          ])
-            .then(function(results) {
-              facts = deriveFacts(results[0], results[1]);
-              assertFacts();
-            });
-        });
-
-      return {
-        enabled: true,
-        init: init,
-        complete: complete.promise,
-        listen: function(name, type, callback) {
-          if (!callbacks[type]) {
-            callbacks[type] = {};
-          }
-          callbacks[type][name] = callback;
-          init
-            .then(function() {
-              // wait for init to complete
-              callback(err, _.values(emissions[type]));
-            })
-            .catch(callback);
+    var registerListener = function() {
+      Changes({
+        key: 'rules-engine',
+        callback: updateFacts,
+        filter: function(change) {
+          return change.doc.form || ContactSchema.getTypes().indexOf(change.doc.type) !== -1;
         },
-        _nools: nools // exposed for testing
-      };
-    }
-  );
+      });
+    };
 
-}());
+    var initNools = function(settings, user) {
+      flow = nools.getFlow('medic');
+      if (!flow) {
+        flow = nools.compile(settings.tasks.rules, {
+          name: 'medic',
+          scope: { Utils: nootils(settings), user: user },
+        });
+      }
+      Contact = flow.getDefined('contact');
+      session = flow.getSession();
+    };
+
+    var init = $q.all([Settings(), UserContact()]).then(function(results) {
+      var settings = results[0];
+      var user = results[1];
+      if (!settings.tasks || !settings.tasks.rules) {
+        // no rules configured
+        complete.resolve();
+        return $q.resolve();
+      }
+      if (!flow) {
+        initNools(settings, user);
+      }
+      registerListener();
+      var options = {
+        limit: 99999999,
+        force: true,
+        include_docs: true,
+      };
+      return $q
+        .all([Search('reports', { valid: true }, options), Search('contacts', {}, options)])
+        .then(function(results) {
+          facts = deriveFacts(results[0], results[1]);
+          assertFacts();
+        });
+    });
+
+    return {
+      enabled: true,
+      init: init,
+      complete: complete.promise,
+      listen: function(name, type, callback) {
+        if (!callbacks[type]) {
+          callbacks[type] = {};
+        }
+        callbacks[type][name] = callback;
+        init
+          .then(function() {
+            // wait for init to complete
+            callback(err, _.values(emissions[type]));
+          })
+          .catch(callback);
+      },
+      _nools: nools, // exposed for testing
+    };
+  });
+})();

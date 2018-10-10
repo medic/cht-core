@@ -1,12 +1,6 @@
-angular.module('inboxControllers').controller('AnalyticsTargetsCtrl',
-  function (
-    $log,
-    $scope,
-    $timeout,
-    RulesEngine,
-    TargetGenerator
-  ) {
-
+angular
+  .module('inboxControllers')
+  .controller('AnalyticsTargetsCtrl', function($log, $scope, $timeout, RulesEngine, TargetGenerator) {
     'use strict';
     'ngInject';
 
@@ -24,6 +18,4 @@ angular.module('inboxControllers').controller('AnalyticsTargetsCtrl',
         $scope.loading = false;
       });
     });
-
-  }
-);
+  });

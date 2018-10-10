@@ -1,5 +1,6 @@
-angular.module('inboxControllers').controller('ReportsAddCtrl',
-  function (
+angular
+  .module('inboxControllers')
+  .controller('ReportsAddCtrl', function(
     $log,
     $q,
     $scope,
@@ -13,14 +14,14 @@ angular.module('inboxControllers').controller('ReportsAddCtrl',
     Snackbar,
     XmlForm
   ) {
-
     'ngInject';
     'use strict';
 
     var geolocation;
 
     var getSelected = function() {
-      if ($state.params.formId) { // adding
+      if ($state.params.formId) {
+        // adding
         Geolocation()
           .then(function(position) {
             geolocation = position;
@@ -28,17 +29,17 @@ angular.module('inboxControllers').controller('ReportsAddCtrl',
           .catch($log.warn);
 
         return $q.resolve({
-          formInternalId: $state.params.formId
+          formInternalId: $state.params.formId,
         });
       }
-      if ($state.params.reportId) { // editing
-        return LineageModelGenerator.report($state.params.reportId, { merge: true })
-          .then(function(result) {
-            return {
-              doc: result.doc,
-              formInternalId: result.doc && result.doc.form
-            };
-          });
+      if ($state.params.reportId) {
+        // editing
+        return LineageModelGenerator.report($state.params.reportId, { merge: true }).then(function(result) {
+          return {
+            doc: result.doc,
+            formInternalId: result.doc && result.doc.form,
+          };
+        });
       }
       return $q.reject(new Error('Must have either formId or reportId'));
     };
@@ -67,7 +68,8 @@ angular.module('inboxControllers').controller('ReportsAddCtrl',
         return $q.resolve(doc.content);
       }
       // check new style attached form content
-      return DB().getAttachment(doc._id, Enketo.REPORT_ATTACHMENT_NAME)
+      return DB()
+        .getAttachment(doc._id, Enketo.REPORT_ATTACHMENT_NAME)
         .then(FileReader.utf8);
     };
 
@@ -79,46 +81,46 @@ angular.module('inboxControllers').controller('ReportsAddCtrl',
       .then(function(model) {
         $log.debug('setting selected', model);
         $scope.setSelected(model);
-        return $q.all([
-          getReportContent(model.doc),
-          XmlForm(model.formInternalId, { include_docs: true })
-        ]).then(function(results) {
-          $scope.enketoStatus.edited = false;
-          Enketo.render('#report-form', results[1].id, results[0], markFormEdited)
-            .then(function(form) {
-              $scope.form = form;
-              $scope.loadingContent = false;
-            })
-            .then(function() {
-              if (!model.doc || !model.doc._id) {
-                return;
-              }
-              return $q.all($('#report-form input[type=file]')
-                .map(function() {
-                  var $this = $(this);
-                  var attachmentName = 'user-file' + $this.attr('name');
+        return $q
+          .all([getReportContent(model.doc), XmlForm(model.formInternalId, { include_docs: true })])
+          .then(function(results) {
+            $scope.enketoStatus.edited = false;
+            Enketo.render('#report-form', results[1].id, results[0], markFormEdited)
+              .then(function(form) {
+                $scope.form = form;
+                $scope.loadingContent = false;
+              })
+              .then(function() {
+                if (!model.doc || !model.doc._id) {
+                  return;
+                }
+                return $q.all(
+                  $('#report-form input[type=file]').map(function() {
+                    var $this = $(this);
+                    var attachmentName = 'user-file' + $this.attr('name');
 
-                  return DB().getAttachment(model.doc._id, attachmentName)
-                    .then(FileReader.base64)
-                    .then(function(base64) {
-                      var $picker = $this.closest('.question')
-                        .find('.widget.file-picker');
+                    return DB()
+                      .getAttachment(model.doc._id, attachmentName)
+                      .then(FileReader.base64)
+                      .then(function(base64) {
+                        var $picker = $this.closest('.question').find('.widget.file-picker');
 
-                      $picker.find('.file-feedback').empty();
+                        $picker.find('.file-feedback').empty();
 
-                      var $preview = $picker.find('.file-preview');
-                      $preview.empty();
-                      $preview.append('<img src="data:' + base64 + '">');
-                    });
-                }));
-            })
-            .catch(function(err) {
-              $scope.errorTranslationKey = err.translationKey || 'error.loading.form';
-              $scope.loadingContent = false;
-              $scope.contentError = true;
-              $log.error('Error loading form.', err);
-            });
-        });
+                        var $preview = $picker.find('.file-preview');
+                        $preview.empty();
+                        $preview.append('<img src="data:' + base64 + '">');
+                      });
+                  })
+                );
+              })
+              .catch(function(err) {
+                $scope.errorTranslationKey = err.translationKey || 'error.loading.form';
+                $scope.loadingContent = false;
+                $scope.contentError = true;
+                $log.error('Error loading form.', err);
+              });
+          });
       })
       .catch(function(err) {
         $scope.loadingContent = false;
@@ -141,8 +143,7 @@ angular.module('inboxControllers').controller('ReportsAddCtrl',
         .then(function(docs) {
           $log.debug('saved report and associated docs', docs);
           $scope.enketoStatus.saving = false;
-          $translate($state.params.reportId ? 'report.updated' : 'report.created')
-            .then(Snackbar);
+          $translate($state.params.reportId ? 'report.updated' : 'report.created').then(Snackbar);
           $state.go('reports.detail', { id: docs[0]._id });
         })
         .catch(function(err) {
@@ -159,5 +160,4 @@ angular.module('inboxControllers').controller('ReportsAddCtrl',
         Enketo.unload($scope.form);
       }
     });
-  }
-);
+  });

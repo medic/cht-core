@@ -21,7 +21,10 @@ inboxServices.factory('Markdown', [
       html = html.replace(/\*\*([^\s]([^*]*[^\s])?)\*\*/gm, '<strong>$1</strong>');
       html = html.replace(/_([^_\s]([^_]*[^_\s])?)_/gm, '<em>$1</em>');
       html = html.replace(/\*([^*\s]([^\*]*[^*\s])?)\*/gm, '<em>$1</em>');
-      html = html.replace(/\[([^\]]*)\]\(([^\)]+)\)/gm, '<a href="$2" target="_blank" rel="noopener noreferrer">$1</a>');
+      html = html.replace(
+        /\[([^\]]*)\]\(([^\)]+)\)/gm,
+        '<a href="$2" target="_blank" rel="noopener noreferrer">$1</a>'
+      );
       html = html.replace(/\n/gm, '<br />');
 
       // Convert embedded HTML
@@ -29,7 +32,7 @@ inboxServices.factory('Markdown', [
       html = html.replace(/&lt;/g, '<');
       html = html.replace(/&gt;/g, '>');
       html = html.replace(/&quot;/g, '"');
-      html = html.replace(/&#039;/g, '\'');
+      html = html.replace(/&#039;/g, "'");
 
       return html;
     };
@@ -38,19 +41,23 @@ inboxServices.factory('Markdown', [
       return e.each(function() {
         var html,
           $childStore = $('<div/>');
-        $(this).children(':not(input, select, textarea)').each(function(index) {
-          var name = '$$$' + index;
-          translateElement($(this).clone()).appendTo($childStore);
-          $(this).replaceWith(name);
-        });
+        $(this)
+          .children(':not(input, select, textarea)')
+          .each(function(index) {
+            var name = '$$$' + index;
+            translateElement($(this).clone()).appendTo($childStore);
+            $(this).replaceWith(name);
+          });
 
         html = basic($(this).html());
 
         $childStore.children().each(function(i) {
           var regex = new RegExp('\\$\\$\\$' + i);
-          html = html.replace(regex, $(this)[ 0 ].outerHTML);
+          html = html.replace(regex, $(this)[0].outerHTML);
         });
-        $(this).text('').append(html);
+        $(this)
+          .text('')
+          .append(html);
       });
     };
 
@@ -58,5 +65,5 @@ inboxServices.factory('Markdown', [
       basic: basic,
       element: translateElement,
     };
-  }
+  },
 ]);

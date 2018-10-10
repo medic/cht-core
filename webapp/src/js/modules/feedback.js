@@ -1,6 +1,6 @@
 var levels = ['error', 'warn', 'log', 'info'],
-    log = [],
-    options = {};
+  log = [],
+  options = {};
 
 var getUrl = function() {
   var url = options.document && options.document.URL;
@@ -36,7 +36,7 @@ var registerUnhandledErrorHandler = function() {
           options.console.error('Error saving feedback', err);
         }
       });
-    } catch(e) {
+    } catch (e) {
       // stop infinite loop of exceptions
       options.console.error('Error while trying to record error', JSON.stringify(error), e.toString(), e);
     }
@@ -54,11 +54,11 @@ var create = function(info, appInfo, callback) {
         user: userCtx,
         url: getUrl(),
         app: appInfo.name,
-        version: appInfo.version
+        version: appInfo.version,
       },
       info: info,
       log: log,
-      type: 'feedback'
+      type: 'feedback',
     });
   });
 };
@@ -87,5 +87,5 @@ module.exports = {
       }
       options.saveDoc(doc, callback);
     });
-  }
+  },
 };

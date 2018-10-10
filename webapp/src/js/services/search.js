@@ -1,65 +1,53 @@
 var _ = require('underscore'),
-    Search = require('search');
+  Search = require('search');
 
-(function () {
-
+(function() {
   'use strict';
 
   var inboxServices = angular.module('inboxServices');
 
   // To make it easier to mock out
-  inboxServices.factory('SearchFactory',
-    function(
-      $q,
-      DB
-    ) {
+  inboxServices.factory('SearchFactory', function($q, DB) {
+    'ngInject';
 
-      'ngInject';
+    return function() {
+      return Search($q, DB());
+    };
+  });
 
-      return function() {
-        return Search($q, DB());
-      };
-    }
-  );
+  inboxServices.factory('Search', function($log, $q, DB, GetDataRecords, SearchFactory, CalendarInterval) {
+    'ngInject';
 
-  inboxServices.factory('Search',
-    function(
-      $log,
-      $q,
-      DB,
-      GetDataRecords,
-      SearchFactory,
-      CalendarInterval
-    ) {
+    var _currentQuery = {};
 
-      'ngInject';
+    // Silently cancel repeated queries.
+    var debounce = function(type, filters, options) {
+      if (
+        type === _currentQuery.type &&
+        _.isEqual(filters, _currentQuery.filters) &&
+        _.isEqual(options, _currentQuery.options)
+      ) {
+        return true;
+      }
+      _currentQuery.type = type;
+      _currentQuery.filters = Object.assign({}, filters);
+      _currentQuery.options = Object.assign({}, options);
+      return false;
+    };
 
-      var _currentQuery = {};
+    var _search = SearchFactory();
 
-      // Silently cancel repeated queries.
-      var debounce = function(type, filters, options) {
-        if (type === _currentQuery.type &&
-          _.isEqual(filters, _currentQuery.filters) &&
-          _.isEqual(options, _currentQuery.options)) {
-          return true;
-        }
-        _currentQuery.type = type;
-        _currentQuery.filters = Object.assign({}, filters);
-        _currentQuery.options = Object.assign({}, options);
-        return false;
-      };
+    var getLastVisitedDates = function(searchResults, settings) {
+      settings = settings || {};
 
-      var _search = SearchFactory();
-
-      var getLastVisitedDates = function(searchResults, settings) {
-        settings = settings || {};
-
-        return DB().query('medic-client/contacts_by_last_visited', {
+      return DB()
+        .query('medic-client/contacts_by_last_visited', {
           reduce: false,
-          keys: searchResults
-        }).then(function(results) {
+          keys: searchResults,
+        })
+        .then(function(results) {
           var visitStats = {},
-              interval = CalendarInterval.getCurrent(settings.monthStartDate);
+            interval = CalendarInterval.getCurrent(settings.monthStartDate);
 
           results.rows.forEach(function(row) {
             var stats = visitStats[row.key] || { lastVisitedDate: -1, visitCount: 0 };
@@ -79,46 +67,48 @@ var _ = require('underscore'),
               value: {
                 lastVisitedDate: visitStats[key].lastVisitedDate,
                 visitCount: visitStats[key].visitCount,
-                visitCountGoal: settings.visitCountGoal
-              }
+                visitCountGoal: settings.visitCountGoal,
+              },
             };
           });
         });
-      };
+    };
 
-      return function(type, filters, options, extensions, docIds) {
-        $log.debug('Doing Search', type, filters, options, extensions);
+    return function(type, filters, options, extensions, docIds) {
+      $log.debug('Doing Search', type, filters, options, extensions);
 
-        options = options || {};
-        extensions = extensions || {};
-        _.defaults(options, {
-          limit: 50,
-          skip: 0
-        });
+      options = options || {};
+      extensions = extensions || {};
+      _.defaults(options, {
+        limit: 50,
+        skip: 0,
+      });
 
-        if (!options.force && debounce(type, filters, options)) {
-          return $q.resolve([]);
-        }
+      if (!options.force && debounce(type, filters, options)) {
+        return $q.resolve([]);
+      }
 
-        return _search(type, filters, options, extensions)
-          .then(function(searchResults) {
-            if (docIds && docIds.length) {
-              docIds.forEach(function(docId) {
-                if (searchResults.indexOf(docId) === -1) {
-                  searchResults.push(docId);
-                }
-              });
-            }
-            var dataRecordsPromise = GetDataRecords(searchResults, options);
+      return _search(type, filters, options, extensions)
+        .then(function(searchResults) {
+          if (docIds && docIds.length) {
+            docIds.forEach(function(docId) {
+              if (searchResults.indexOf(docId) === -1) {
+                searchResults.push(docId);
+              }
+            });
+          }
+          var dataRecordsPromise = GetDataRecords(searchResults, options);
 
-            var result;
-            if (extensions.displayLastVisitedDate) {
-              var lastVisitedDatePromise = getLastVisitedDates(searchResults, extensions.visitCountSettings);
+          var result;
+          if (extensions.displayLastVisitedDate) {
+            var lastVisitedDatePromise = getLastVisitedDates(searchResults, extensions.visitCountSettings);
 
-              result = $q.all({
+            result = $q
+              .all({
                 dataRecords: dataRecordsPromise,
-                lastVisitedDates: lastVisitedDatePromise
-              }).then(function(r) {
+                lastVisitedDates: lastVisitedDatePromise,
+              })
+              .then(function(r) {
                 r.lastVisitedDates.forEach(function(dateResult) {
                   var relevantDataRecord = r.dataRecords.find(function(dataRecord) {
                     return dataRecord._id === dateResult.key;
@@ -132,21 +122,20 @@ var _ = require('underscore'),
 
                 return r.dataRecords;
               });
-            } else {
-              result = dataRecordsPromise;
-            }
+          } else {
+            result = dataRecordsPromise;
+          }
 
-            return result;
-          })
-          .then(function(results) {
-            _currentQuery = {};
-            return results;
-          })
-          .catch(function(err) {
-            _currentQuery = {};
-            throw err;
-          });
-      };
-    }
-  );
-}());
+          return result;
+        })
+        .then(function(results) {
+          _currentQuery = {};
+          return results;
+        })
+        .catch(function(err) {
+          _currentQuery = {};
+          throw err;
+        });
+    };
+  });
+})();

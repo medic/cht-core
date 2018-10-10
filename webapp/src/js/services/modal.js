@@ -20,57 +20,50 @@
  * - setError(err, message): a function to log the err and translate and
  *       display the message
  */
-angular.module('inboxServices').factory('Modal',
-  function(
-    $log,
-    $q,
-    $rootScope,
-    $uibModal
-  ) {
-    'use strict';
-    'ngInject';
+angular.module('inboxServices').factory('Modal', function($log, $q, $rootScope, $uibModal) {
+  'use strict';
+  'ngInject';
 
-    var instanceCache = {};
+  var instanceCache = {};
 
-    var getScope = function(model) {
-      var scope = $rootScope.$new();
-      scope.model = model;
-      scope.status = {
-        processing: false,
-        error: false
-      };
-      scope.setProcessing = function() {
-        scope.status.processing = true;
-        scope.status.error = false;
-      };
-      scope.setFinished = function() {
-        scope.status.processing = false;
-        scope.status.error = false;
-      };
-      scope.setError = function(err, message) {
-        $log.error('Error submitting modal', err);
-        scope.status.processing = false;
-        scope.status.error = message;
-      };
-      return scope;
+  var getScope = function(model) {
+    var scope = $rootScope.$new();
+    scope.model = model;
+    scope.status = {
+      processing: false,
+      error: false,
     };
-
-    return function(options) {
-      if (!options.templateUrl) {
-        return $q.reject('No templateUrl speficied.');
-      }
-      if (!options.controller) {
-        return $q.reject('No controller speficied.');
-      }
-      options.scope = getScope(options.model);
-      var instance = $uibModal.open(options);
-      if (options.singleton) {
-        if (instanceCache[options.templateUrl]) {
-          instanceCache[options.templateUrl].close();
-        }
-        instanceCache[options.templateUrl] = instance;
-      }
-      return instance.result;
+    scope.setProcessing = function() {
+      scope.status.processing = true;
+      scope.status.error = false;
     };
-  }
-);
+    scope.setFinished = function() {
+      scope.status.processing = false;
+      scope.status.error = false;
+    };
+    scope.setError = function(err, message) {
+      $log.error('Error submitting modal', err);
+      scope.status.processing = false;
+      scope.status.error = message;
+    };
+    return scope;
+  };
+
+  return function(options) {
+    if (!options.templateUrl) {
+      return $q.reject('No templateUrl speficied.');
+    }
+    if (!options.controller) {
+      return $q.reject('No controller speficied.');
+    }
+    options.scope = getScope(options.model);
+    var instance = $uibModal.open(options);
+    if (options.singleton) {
+      if (instanceCache[options.templateUrl]) {
+        instanceCache[options.templateUrl].close();
+      }
+      instanceCache[options.templateUrl] = instance;
+    }
+    return instance.result;
+  };
+});

@@ -143,10 +143,7 @@ var feedback = require('../modules/feedback'),
     $scope.enketoStatus = { saving: false };
     $scope.isAdmin = Session.isAdmin();
 
-    if (
-      $window.medicmobile_android &&
-      typeof $window.medicmobile_android.getAppVersion === 'function'
-    ) {
+    if ($window.medicmobile_android && typeof $window.medicmobile_android.getAppVersion === 'function') {
       $scope.android_app_version = $window.medicmobile_android.getAppVersion();
     }
 
@@ -295,9 +292,7 @@ var feedback = require('../modules/feedback'),
 
     var findIdInContactHierarchy = function(id, hierarchy) {
       return _.find(hierarchy, function(entry) {
-        return (
-          entry.doc._id === id || findIdInContactHierarchy(id, entry.children)
-        );
+        return entry.doc._id === id || findIdInContactHierarchy(id, entry.children);
       });
     };
 
@@ -340,24 +335,20 @@ var feedback = require('../modules/feedback'),
               icon: jsonForm.icon,
             };
           });
-          XmlForms(
-            'FormsFilter',
-            { contactForms: false, ignoreContext: true },
-            function(err, xForms) {
-              if (err) {
-                return $log.error('Error fetching form definitions', err);
-              }
-              var xFormSummaries = xForms.map(function(xForm) {
-                return {
-                  code: xForm.internalId,
-                  title: translateTitle(xForm.translation_key, xForm.title),
-                  icon: xForm.icon,
-                };
-              });
-              $scope.forms = xFormSummaries.concat(jsonFormSummaries);
-              $rootScope.$broadcast('formLoadingComplete');
+          XmlForms('FormsFilter', { contactForms: false, ignoreContext: true }, function(err, xForms) {
+            if (err) {
+              return $log.error('Error fetching form definitions', err);
             }
-          );
+            var xFormSummaries = xForms.map(function(xForm) {
+              return {
+                code: xForm.internalId,
+                title: translateTitle(xForm.translation_key, xForm.title),
+                icon: xForm.icon,
+              };
+            });
+            $scope.forms = xFormSummaries.concat(jsonFormSummaries);
+            $rootScope.$broadcast('formLoadingComplete');
+          });
         })
         .catch(function(err) {
           $rootScope.$broadcast('formLoadingComplete');
@@ -533,10 +524,7 @@ var feedback = require('../modules/feedback'),
         controller: 'DeleteDocConfirm',
         model: { doc: doc },
       }).then(function() {
-        if (
-          !$scope.selectMode &&
-          ($state.includes('contacts') || $state.includes('reports'))
-        ) {
+        if (!$scope.selectMode && ($state.includes('contacts') || $state.includes('reports'))) {
           $state.go($state.current.name, { id: null });
         }
       });
@@ -648,9 +636,7 @@ var feedback = require('../modules/feedback'),
         //       to the login page
         $log.error('Application cache update error', err);
       });
-      if (
-        window.applicationCache.status === window.applicationCache.UPDATEREADY
-      ) {
+      if (window.applicationCache.status === window.applicationCache.UPDATEREADY) {
         showUpdateReady();
       }
       Changes({
@@ -687,12 +673,7 @@ var feedback = require('../modules/feedback'),
     Changes({
       key: 'inbox-user-context',
       filter: function(change) {
-        return (
-          change.doc.type === 'user-settings' &&
-          userCtx &&
-          userCtx.name &&
-          change.doc.name === userCtx.name
-        );
+        return change.doc.type === 'user-settings' && userCtx && userCtx.name && change.doc.name === userCtx.name;
       },
       callback: function() {
         Session.init(showUpdateReady);

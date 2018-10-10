@@ -7,10 +7,10 @@ angular.module('inboxDirectives').directive('mmAuth', function($log, Auth, $pars
     if (attributes.mmAuth) {
       element.addClass('hidden');
       Auth(attributes.mmAuth.split(','))
-        .then(function () {
+        .then(function() {
           element.removeClass('hidden');
         })
-        .catch(function (err) {
+        .catch(function(err) {
           if (err) {
             $log.error('Error checking authorization', err);
           }
@@ -24,9 +24,11 @@ angular.module('inboxDirectives').directive('mmAuth', function($log, Auth, $pars
       var mmAuthAny = mmAuthAnyGetter(scope);
       mmAuthAny = _.isArray(mmAuthAny) ? mmAuthAny : [mmAuthAny];
 
-      if (_.any(mmAuthAny, function(element) {
-        return element === true;
-      })) {
+      if (
+        _.any(mmAuthAny, function(element) {
+          return element === true;
+        })
+      ) {
         return element.removeClass('hidden');
       }
 
@@ -35,18 +37,16 @@ angular.module('inboxDirectives').directive('mmAuth', function($log, Auth, $pars
           return _.isArray(element) || _.isString(element);
         })
         .map(function(element) {
-          return (_.isArray(element) && _.flatten(element)) || [ element ];
+          return (_.isArray(element) && _.flatten(element)) || [element];
         });
 
       if (!permissionsGroups.length) {
         return;
       }
 
-      Auth
-        .any(permissionsGroups)
-        .then(function() {
-          element.removeClass('hidden');
-        });
+      Auth.any(permissionsGroups).then(function() {
+        element.removeClass('hidden');
+      });
     };
 
     if (attributes.mmAuthAny) {
@@ -56,6 +56,6 @@ angular.module('inboxDirectives').directive('mmAuth', function($log, Auth, $pars
   };
   return {
     restrict: 'A',
-    link: link
+    link: link,
   };
 });

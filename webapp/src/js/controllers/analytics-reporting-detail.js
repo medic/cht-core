@@ -1,9 +1,10 @@
 var _ = require('underscore'),
-    d3 = require('d3'),
-    reportingUtils = require('../modules/reporting-rates-utils');
+  d3 = require('d3'),
+  reportingUtils = require('../modules/reporting-rates-utils');
 
-angular.module('inboxControllers').controller('AnalyticsReportingDetailCtrl',
-  function (
+angular
+  .module('inboxControllers')
+  .controller('AnalyticsReportingDetailCtrl', function(
     $log,
     $q,
     $scope,
@@ -14,7 +15,6 @@ angular.module('inboxControllers').controller('AnalyticsReportingDetailCtrl',
     FormatDataRecord,
     Settings
   ) {
-
     'use strict';
     'ngInject';
 
@@ -31,26 +31,14 @@ angular.module('inboxControllers').controller('AnalyticsReportingDetailCtrl',
       });
 
     var TRANSLATION_KEYS = {
-      week: [
-        'week',
-        'week.plural'
-      ],
-      month: [
-        'month',
-        'month.plural'
-      ],
-      quarter: [
-        'quarter',
-        'quarter.plural'
-      ],
-      year: [
-        'year',
-        'year.plural'
-      ]
+      week: ['week', 'week.plural'],
+      month: ['month', 'month.plural'],
+      quarter: ['quarter', 'quarter.plural'],
+      year: ['year', 'year.plural'],
     };
 
     $scope.getTranslationKey = function(key, plural) {
-      return TRANSLATION_KEYS[key][ (plural ? 1 : 0) ];
+      return TRANSLATION_KEYS[key][plural ? 1 : 0];
     };
 
     $scope.expandClinic = function(id) {
@@ -99,7 +87,7 @@ angular.module('inboxControllers').controller('AnalyticsReportingDetailCtrl',
     };
 
     var findDistrict = function(place) {
-      while(place && place.type !== 'district_hospital') {
+      while (place && place.type !== 'district_hospital') {
         place = place.parent;
       }
       return place;
@@ -111,7 +99,7 @@ angular.module('inboxControllers').controller('AnalyticsReportingDetailCtrl',
       rows.forEach(function(facility) {
         facility.chart = [
           { key: 'valid', y: facility.valid_percent },
-          { key: 'missing', y: 100 - facility.valid_percent }
+          { key: 'missing', y: 100 - facility.valid_percent },
         ];
       });
       return rows;
@@ -120,7 +108,7 @@ angular.module('inboxControllers').controller('AnalyticsReportingDetailCtrl',
     var colours = {
       valid: '#009900',
       invalid: '#990000',
-      missing: '#999999'
+      missing: '#999999',
     };
     var colorFunction = function(d) {
       return colours[d.key];
@@ -139,20 +127,20 @@ angular.module('inboxControllers').controller('AnalyticsReportingDetailCtrl',
         width: 220,
         x: xFunction,
         y: yFunction,
-        valueFormat: function(d){
+        valueFormat: function(d) {
           return d3.format(',.0f')(d);
         },
         margin: {
           left: 0,
           top: 20,
           bottom: 0,
-          right: 0
+          right: 0,
         },
         showLabels: true,
         showLegend: false,
         labelType: 'percent',
-        color: colorFunction
-      }
+        color: colorFunction,
+      },
     };
 
     $scope.miniPieChartOptions = {
@@ -162,19 +150,19 @@ angular.module('inboxControllers').controller('AnalyticsReportingDetailCtrl',
         width: 40,
         x: xFunction,
         y: yFunction,
-        valueFormat: function(d){
+        valueFormat: function(d) {
           return d3.format(',.0f')(d);
         },
         margin: {
           left: 0,
           top: 0,
           bottom: 0,
-          right: 0
+          right: 0,
         },
         showLabels: false,
         showLegend: false,
-        color: colorFunction
-      }
+        color: colorFunction,
+      },
     };
 
     var setDistrict = function(placeId) {
@@ -184,30 +172,26 @@ angular.module('inboxControllers').controller('AnalyticsReportingDetailCtrl',
       DB()
         .get(placeId || $scope.place._id)
         .then(function(place) {
-          return $q.all([
-            ChildFacility(place),
-            getViewReports(place, dates)
-          ])
-            .then(function(results) {
-              var facilities = results[0];
-              var reports = results[1];
+          return $q.all([ChildFacility(place), getViewReports(place, dates)]).then(function(results) {
+            var facilities = results[0];
+            var reports = results[1];
 
-              $scope.totals = reportingUtils.getTotals(facilities, reports, dates);
-              var rows = getRows(place.type, facilities, reports, dates);
-              if (place.type === 'health_center') {
-                $scope.clinics = rows;
-              } else {
-                $scope.facilities = rows;
-              }
-              $scope.chart = [
-                { key: 'valid', y: $scope.totals.complete },
-                { key: 'missing', y: $scope.totals.not_submitted },
-                { key: 'invalid', y: $scope.totals.incomplete }
-              ];
-              $scope.filters.district = findDistrict(place);
-              $scope.place = place;
-              $scope.loadingTotals = false;
-            });
+            $scope.totals = reportingUtils.getTotals(facilities, reports, dates);
+            var rows = getRows(place.type, facilities, reports, dates);
+            if (place.type === 'health_center') {
+              $scope.clinics = rows;
+            } else {
+              $scope.facilities = rows;
+            }
+            $scope.chart = [
+              { key: 'valid', y: $scope.totals.complete },
+              { key: 'missing', y: $scope.totals.not_submitted },
+              { key: 'invalid', y: $scope.totals.incomplete },
+            ];
+            $scope.filters.district = findDistrict(place);
+            $scope.place = place;
+            $scope.loadingTotals = false;
+          });
         })
         .catch(function(err) {
           $log.error('Error setting place.', err);
@@ -220,13 +204,14 @@ angular.module('inboxControllers').controller('AnalyticsReportingDetailCtrl',
 
     var getViewReports = function(doc, dates) {
       var params = reportingUtils.getReportingViewArgs(dates),
-          view = 'reports_by_form_year_month_places';
+        view = 'reports_by_form_year_month_places';
 
       if (dates.reporting_freq === 'week') {
         view = 'reports_by_form_year_week_places';
       }
 
-      return DB().query('medic-client/' + view, params)
+      return DB()
+        .query('medic-client/' + view, params)
         .then(function(data) {
           // additional filtering for this facility
           var saved_data = [];
@@ -239,5 +224,4 @@ angular.module('inboxControllers').controller('AnalyticsReportingDetailCtrl',
           return saved_data;
         });
     };
-  }
-);
+  });

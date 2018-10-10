@@ -1,5 +1,6 @@
-angular.module('inboxControllers').controller('TasksContentCtrl',
-  function (
+angular
+  .module('inboxControllers')
+  .controller('TasksContentCtrl', function(
     $log,
     $scope,
     $state,
@@ -11,7 +12,6 @@ angular.module('inboxControllers').controller('TasksContentCtrl',
     Snackbar,
     XmlForm
   ) {
-
     'use strict';
     'ngInject';
 
@@ -25,14 +25,9 @@ angular.module('inboxControllers').controller('TasksContentCtrl',
     var hasOneFormAndNoFields = function(task) {
       return Boolean(
         task &&
-        task.actions &&
-        task.actions.length === 1 &&
-        (
-          !task.fields ||
-          task.fields.length === 0 ||
-          !task.fields[0].value ||
-          task.fields[0].value.length === 0
-        )
+          task.actions &&
+          task.actions.length === 1 &&
+          (!task.fields || task.fields.length === 0 || !task.fields[0].value || task.fields[0].value.length === 0)
       );
     };
 
@@ -59,16 +54,15 @@ angular.module('inboxControllers').controller('TasksContentCtrl',
         XmlForm(action.form, { include_docs: true })
           .then(function(formDoc) {
             $scope.enketoStatus.edited = false;
-            Enketo.render('#task-report', formDoc.id, action.content, markFormEdited)
-              .then(function(formInstance) {
-                $scope.form = formInstance;
-                $scope.loadingForm = false;
-                if (formDoc.doc.translation_key) {
-                  $scope.setTitle($translate.instant(formDoc.doc.translation_key));
-                } else {
-                  $scope.setTitle(TranslateFrom(formDoc.doc.title));
-                }
-              });
+            Enketo.render('#task-report', formDoc.id, action.content, markFormEdited).then(function(formInstance) {
+              $scope.form = formInstance;
+              $scope.loadingForm = false;
+              if (formDoc.doc.translation_key) {
+                $scope.setTitle($translate.instant(formDoc.doc.translation_key));
+              } else {
+                $scope.setTitle(TranslateFrom(formDoc.doc.title));
+              }
+            });
           })
           .catch(function(err) {
             $scope.errorTranslationKey = err.translationKey || 'error.loading.form';
@@ -126,5 +120,4 @@ angular.module('inboxControllers').controller('TasksContentCtrl',
     $scope.form = null;
     $scope.formId = null;
     $scope.setSelected($state.params.id);
-  }
-);
+  });

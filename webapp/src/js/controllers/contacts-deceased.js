@@ -1,5 +1,6 @@
-angular.module('inboxControllers').controller('ContactsDeceasedCtrl',
-  function(
+angular
+  .module('inboxControllers')
+  .controller('ContactsDeceasedCtrl', function(
     $log,
     $scope,
     $stateParams,
@@ -8,7 +9,6 @@ angular.module('inboxControllers').controller('ContactsDeceasedCtrl',
     ContactViewModelGenerator,
     Snackbar
   ) {
-
     'use strict';
     'ngInject';
 
@@ -47,10 +47,8 @@ angular.module('inboxControllers').controller('ContactsDeceasedCtrl',
       },
       callback: function(change) {
         if (change.deleted) {
-          var parentId = $scope.selected &&
-                         $scope.selected.doc &&
-                         $scope.selected.doc.parent &&
-                         $scope.selected.doc.parent._id;
+          var parentId =
+            $scope.selected && $scope.selected.doc && $scope.selected.doc.parent && $scope.selected.doc.parent._id;
           if (parentId) {
             // select the parent
             selectContact(parentId, true);
@@ -62,10 +60,8 @@ angular.module('inboxControllers').controller('ContactsDeceasedCtrl',
           // refresh the updated contact
           selectContact(change.id, true);
         }
-      }
+      },
     });
 
     $scope.$on('$destroy', changeListener.unsubscribe);
-
-  }
-);
+  });

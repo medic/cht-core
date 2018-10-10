@@ -1,11 +1,12 @@
 var uuid = require('uuid/v4'),
-    pojo2xml = require('pojo2xml'),
-    xpathPath = require('../modules/xpath-element-path'),
-    medicXpathExtensions = require('../enketo/medic-xpath-extensions');
+  pojo2xml = require('pojo2xml'),
+  xpathPath = require('../modules/xpath-element-path'),
+  medicXpathExtensions = require('../enketo/medic-xpath-extensions');
 
 /* globals EnketoForm */
-angular.module('inboxServices').service('Enketo',
-  function(
+angular
+  .module('inboxServices')
+  .service('Enketo', function(
     $log,
     $q,
     $translate,
@@ -32,7 +33,7 @@ angular.module('inboxServices').service('Enketo',
     var objUrls = [];
     var xmlCache = {};
     var FORM_ATTACHMENT_NAME = 'xml';
-    var REPORT_ATTACHMENT_NAME = this.REPORT_ATTACHMENT_NAME = 'content';
+    var REPORT_ATTACHMENT_NAME = (this.REPORT_ATTACHMENT_NAME = 'content');
 
     var currentForm;
     this.getCurrentForm = function() {
@@ -54,7 +55,7 @@ angular.module('inboxServices').service('Enketo',
       form.find('img,video,audio').each(function() {
         var elem = $(this);
         var src = elem.attr('src');
-        if (!(/^jr:\/\//.test(src))) {
+        if (!/^jr:\/\//.test(src)) {
           return;
         }
         // Change URL to fragment to prevent browser trying to load it
@@ -77,24 +78,22 @@ angular.module('inboxServices').service('Enketo',
     };
 
     var transformXml = function(xml) {
-      return $q.all([
-        XSLT.transform('openrosa2html5form.xsl', xml),
-        XSLT.transform('openrosa2xmlmodel.xsl', xml)
-      ])
-      .then(function(results) {
-        var $html = $(results[0]);
-        var model = results[1];
-        $html.find('[data-i18n]').each(function() {
-          var $this = $(this);
-          $this.text($translate.instant('enketo.' + $this.attr('data-i18n')));
+      return $q
+        .all([XSLT.transform('openrosa2html5form.xsl', xml), XSLT.transform('openrosa2xmlmodel.xsl', xml)])
+        .then(function(results) {
+          var $html = $(results[0]);
+          var model = results[1];
+          $html.find('[data-i18n]').each(function() {
+            var $this = $(this);
+            $this.text($translate.instant('enketo.' + $this.attr('data-i18n')));
+          });
+          var hasContactSummary = $(model).find('> instance[id="contact-summary"]').length === 1;
+          return {
+            html: $html,
+            model: model,
+            hasContactSummary: hasContactSummary,
+          };
         });
-        var hasContactSummary = $(model).find('> instance[id="contact-summary"]').length === 1;
-        return {
-          html: $html,
-          model: model,
-          hasContactSummary: hasContactSummary
-        };
-      });
     };
 
     var translateXml = function(text, language, title) {
@@ -111,7 +110,8 @@ angular.module('inboxServices').service('Enketo',
     };
 
     var getFormAttachment = function(id) {
-      return DB().getAttachment(id, FORM_ATTACHMENT_NAME)
+      return DB()
+        .getAttachment(id, FORM_ATTACHMENT_NAME)
         .then(FileReader.utf8);
     };
 
@@ -138,14 +138,14 @@ angular.module('inboxServices').service('Enketo',
         return {
           html: form.html.clone(),
           model: form.model,
-          hasContactSummary: form.hasContactSummary
+          hasContactSummary: form.hasContactSummary,
         };
       });
     };
 
     var handleKeypressOnInputField = function(e) {
       // Here we capture both CR and TAB characters, and handle field-skipping
-      if(!window.medicmobile_android || (e.keyCode !== 9 && e.keyCode !== 13)) {
+      if (!window.medicmobile_android || (e.keyCode !== 9 && e.keyCode !== 13)) {
         return;
       }
 
@@ -157,10 +157,12 @@ angular.module('inboxServices').service('Enketo',
       var $thisQuestion = $this.closest('.question');
 
       // If there's another question on the current page, focus on that
-      if($thisQuestion.attr('role') !== 'page') {
-        var $nextQuestion = $thisQuestion.find('~ .question:not(.disabled):not(.or-appearance-hidden), ~ .repeat-buttons button.repeat:not(:disabled)');
-        if($nextQuestion.length) {
-          if($nextQuestion[0].tagName !== 'LABEL') {
+      if ($thisQuestion.attr('role') !== 'page') {
+        var $nextQuestion = $thisQuestion.find(
+          '~ .question:not(.disabled):not(.or-appearance-hidden), ~ .repeat-buttons button.repeat:not(:disabled)'
+        );
+        if ($nextQuestion.length) {
+          if ($nextQuestion[0].tagName !== 'LABEL') {
             // The next question is something complicated, so we can't just
             // focus on it.  Next best thing is to blur the current selection
             // so the on-screen keyboard closes.
@@ -186,7 +188,7 @@ angular.module('inboxServices').service('Enketo',
       // If there's no question on the current page, try to go to change page,
       // or submit the form.
       var next = enketoContainer.find('.btn.next-page:enabled:not(.disabled)');
-      if(next.length) {
+      if (next.length) {
         next.trigger('click');
       } else {
         angular.element(enketoContainer.find('.btn.submit')).triggerHandler('click');
@@ -194,14 +196,13 @@ angular.module('inboxServices').service('Enketo',
     };
 
     var getLineage = function(contact) {
-      return LineageModelGenerator.contact(contact._id)
-        .then(function(model) {
-          return model.lineage;
-        });
+      return LineageModelGenerator.contact(contact._id).then(function(model) {
+        return model.lineage;
+      });
     };
 
     var getContactReports = function(contact) {
-      var subjectIds = [ contact._id ];
+      var subjectIds = [contact._id];
       var shortCode = contact.patient_id || contact.place_id;
       if (shortCode) {
         subjectIds.push(shortCode);
@@ -214,10 +215,8 @@ angular.module('inboxServices').service('Enketo',
       if (!doc.hasContactSummary || !contact) {
         return $q.resolve();
       }
-      return $q.all([
-        getContactReports(contact),
-        getLineage(contact)
-      ])
+      return $q
+        .all([getContactReports(contact), getLineage(contact)])
         .then(function(results) {
           return ContactSummary(contact, results[0], results[1]);
         })
@@ -229,7 +228,7 @@ angular.module('inboxServices').service('Enketo',
           try {
             return {
               id: 'contact-summary',
-              xmlStr: pojo2xml({ context: summary.context })
+              xmlStr: pojo2xml({ context: summary.context }),
             };
           } catch (e) {
             $log.error('Error while converting app_summary.contact_summary.context to xml.');
@@ -239,19 +238,17 @@ angular.module('inboxServices').service('Enketo',
     };
 
     var getEnketoOptions = function(doc, instanceData) {
-      return $q.all([
-        EnketoPrepopulationData(doc.model, instanceData),
-        getContactSummary(doc, instanceData)
-      ])
+      return $q
+        .all([EnketoPrepopulationData(doc.model, instanceData), getContactSummary(doc, instanceData)])
         .then(function(results) {
           var instanceStr = results[0];
           var contactSummary = results[1];
           var options = {
             modelStr: doc.model,
-            instanceStr: instanceStr
+            instanceStr: instanceStr,
           };
           if (contactSummary) {
-            options.external = [ contactSummary ];
+            options.external = [contactSummary];
           }
           return options;
         });
@@ -259,10 +256,11 @@ angular.module('inboxServices').service('Enketo',
 
     var renderFromXmls = function(doc, selector, instanceData) {
       var wrapper = $(selector);
-      wrapper.find('.form-footer')
-             .addClass('end')
-             .find('.previous-page,.next-page')
-             .addClass('disabled');
+      wrapper
+        .find('.form-footer')
+        .addClass('end')
+        .find('.previous-page,.next-page')
+        .addClass('disabled');
 
       var formContainer = wrapper.find('.container').first();
       formContainer.html(doc.html);
@@ -288,20 +286,21 @@ angular.module('inboxServices').service('Enketo',
     };
 
     var overrideNavigationButtons = function(form, $wrapper) {
-      $wrapper.find('.btn.next-page')
+      $wrapper
+        .find('.btn.next-page')
         .off('.pagemode')
         .on('click.pagemode', function() {
-          form.pages.next()
-            .then(function(newPageIndex) {
-              if(typeof newPageIndex === 'number') {
-                window.history.pushState({ enketo_page_number: newPageIndex }, '');
-              }
-              forceRecalculate(form);
-            });
+          form.pages.next().then(function(newPageIndex) {
+            if (typeof newPageIndex === 'number') {
+              window.history.pushState({ enketo_page_number: newPageIndex }, '');
+            }
+            forceRecalculate(form);
+          });
           return false;
         });
 
-      $wrapper.find('.btn.previous-page')
+      $wrapper
+        .find('.btn.previous-page')
         .off('.pagemode')
         .on('click.pagemode', function() {
           window.history.back();
@@ -312,9 +311,11 @@ angular.module('inboxServices').service('Enketo',
 
     var addPopStateHandler = function(form, $wrapper) {
       $(window).on('popstate.enketo-pagemode', function(event) {
-        if(event.originalEvent &&
-            event.originalEvent.state &&
-            typeof event.originalEvent.state.enketo_page_number === 'number') {
+        if (
+          event.originalEvent &&
+          event.originalEvent.state &&
+          typeof event.originalEvent.state.enketo_page_number === 'number'
+        ) {
           var targetPage = event.originalEvent.state.enketo_page_number;
 
           if ($wrapper.find('.container').not(':empty')) {
@@ -355,7 +356,8 @@ angular.module('inboxServices').service('Enketo',
     this.renderContactForm = renderForm;
 
     this.renderFromXmlString = function(selector, xmlString, instanceData, editedListener) {
-      return $q.all([inited, Language()])
+      return $q
+        .all([inited, Language()])
         .then(function(results) {
           return translateXml(xmlString, results[1]);
         })
@@ -370,7 +372,6 @@ angular.module('inboxServices').service('Enketo',
     };
 
     var xmlToDocs = function(doc, record) {
-
       function mapOrAssignId(e, id) {
         if (!id) {
           var $id = $(e).children('_id');
@@ -385,10 +386,7 @@ angular.module('inboxServices').service('Enketo',
       }
 
       function getId(xpath) {
-        return recordDoc
-          .evaluate(xpath, recordDoc, null, XPathResult.ANY_TYPE, null)
-          .iterateNext()
-          ._couchId;
+        return recordDoc.evaluate(xpath, recordDoc, null, XPathResult.ANY_TYPE, null).iterateNext()._couchId;
       }
 
       // Chrome 30 doesn't support $xml.outerHTML: #3880
@@ -396,16 +394,23 @@ angular.module('inboxServices').service('Enketo',
         if (xml.outerHTML) {
           return xml.outerHTML;
         }
-        return $('<temproot>').append($(xml).clone()).html();
+        return $('<temproot>')
+          .append($(xml).clone())
+          .html();
       }
 
       var recordDoc = $.parseXML(record);
       var $record = $($(recordDoc).children()[0]);
       mapOrAssignId($record[0], doc._id || uuid());
 
-      $record.find('[db-doc]')
+      $record
+        .find('[db-doc]')
         .filter(function() {
-          return $(this).attr('db-doc').toLowerCase() === 'true';
+          return (
+            $(this)
+              .attr('db-doc')
+              .toLowerCase() === 'true'
+          );
         })
         .each(function() {
           mapOrAssignId(this);
@@ -417,12 +422,15 @@ angular.module('inboxServices').service('Enketo',
         $ref.text(refId);
       });
 
-      var docsToStore = $record.find('[db-doc=true]').map(function() {
-        var docToStore = EnketoTranslation.reportRecordToJs(getOuterHTML(this));
-        docToStore._id = getId(xpathPath(this));
-        docToStore.reported_date = Date.now();
-        return docToStore;
-      }).get();
+      var docsToStore = $record
+        .find('[db-doc=true]')
+        .map(function() {
+          var docToStore = EnketoTranslation.reportRecordToJs(getOuterHTML(this));
+          docToStore._id = getId(xpathPath(this));
+          docToStore.reported_date = Date.now();
+          return docToStore;
+        })
+        .get();
 
       record = getOuterHTML($record[0]);
 
@@ -433,8 +441,8 @@ angular.module('inboxServices').service('Enketo',
       var attach = function(elem, file, type, alreadyEncoded, xpath) {
         xpath = xpath || xpathPath(elem);
         // replace instance root element node name with form internal ID
-        var filename = 'user-file' +
-                       (xpath.startsWith('/' + doc.form) ? xpath : xpath.replace(/^\/[^\/]+/, '/' + doc.form));
+        var filename =
+          'user-file' + (xpath.startsWith('/' + doc.form) ? xpath : xpath.replace(/^\/[^\/]+/, '/' + doc.form));
         AddAttachment(doc, filename, file, type, alreadyEncoded);
       };
 
@@ -467,7 +475,8 @@ angular.module('inboxServices').service('Enketo',
     };
 
     var saveDocs = function(docs) {
-      return DB().bulkDocs(docs)
+      return DB()
+        .bulkDocs(docs)
         .then(function(results) {
           results.forEach(function(result) {
             if (result.error) {
@@ -488,19 +497,23 @@ angular.module('inboxServices').service('Enketo',
       // update an existing doc.  For convenience, get the latest version
       // and then modify the content.  This will avoid most concurrent
       // edits, but is not ideal.
-      return DB().get(docId).then(function(doc) {
-        // previously XML was stored in the content property
-        // TODO delete this and other "legacy" code support commited against
-        //      the same git commit at some point in the future?
-        delete doc.content;
-        return doc;
-      });
+      return DB()
+        .get(docId)
+        .then(function(doc) {
+          // previously XML was stored in the content property
+          // TODO delete this and other "legacy" code support commited against
+          //      the same git commit at some point in the future?
+          delete doc.content;
+          return doc;
+        });
     };
 
     var getUserContact = function() {
       return UserContact().then(function(contact) {
         if (!contact) {
-          var err = new Error('Your user does not have an associated contact, or does not have access to the associated contact. Talk to your administrator to correct this.');
+          var err = new Error(
+            'Your user does not have an associated contact, or does not have access to the associated contact. Talk to your administrator to correct this.'
+          );
           err.translationKey = 'error.loading.form.no_contact';
           throw err;
         }
@@ -516,7 +529,7 @@ angular.module('inboxServices').service('Enketo',
           content_type: 'xml',
           reported_date: Date.now(),
           contact: ExtractLineage(contact),
-          from: contact && contact.phone
+          from: contact && contact.phone,
         };
       });
     };
@@ -531,7 +544,8 @@ angular.module('inboxServices').service('Enketo',
     };
 
     this.save = function(formInternalId, form, geolocation, docId) {
-      return $q.resolve(form.validate())
+      return $q
+        .resolve(form.validate())
         .then(function(valid) {
           if (!valid) {
             throw new Error('Form is invalid');
@@ -572,5 +586,4 @@ angular.module('inboxServices').service('Enketo',
     this.clearXmlCache = function() {
       xmlCache = {};
     };
-  }
-);
+  });

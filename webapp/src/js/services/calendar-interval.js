@@ -1,7 +1,6 @@
 var moment = require('moment');
 
-(function () {
-
+(function() {
   'use strict';
   'ngInject';
 
@@ -21,7 +20,10 @@ var moment = require('moment');
     var getMinimumStartDate = function(intervalStartDate, relativeDate) {
       return moment
         .min(
-          moment(relativeDate).subtract(1, 'month').date(intervalStartDate).startOf('day'),
+          moment(relativeDate)
+            .subtract(1, 'month')
+            .date(intervalStartDate)
+            .startOf('day'),
           moment(relativeDate).startOf('month')
         )
         .valueOf();
@@ -30,8 +32,13 @@ var moment = require('moment');
     var getMinimumEndDate = function(intervalStartDate, nextMonth, relativeDate) {
       return moment
         .min(
-          moment(relativeDate).add(nextMonth ? 1 : 0, 'month').date(intervalStartDate - 1).endOf('day'),
-          moment(relativeDate).add(nextMonth ? 1 : 0, 'month').endOf('month')
+          moment(relativeDate)
+            .add(nextMonth ? 1 : 0, 'month')
+            .date(intervalStartDate - 1)
+            .endOf('day'),
+          moment(relativeDate)
+            .add(nextMonth ? 1 : 0, 'month')
+            .endOf('month')
         )
         .valueOf();
     };
@@ -48,23 +55,30 @@ var moment = require('moment');
 
         if (intervalStartDate === 1) {
           return {
-            start: moment().startOf('month').valueOf(),
-            end: moment().endOf('month').valueOf()
+            start: moment()
+              .startOf('month')
+              .valueOf(),
+            end: moment()
+              .endOf('month')
+              .valueOf(),
           };
         }
 
         if (intervalStartDate <= moment().date()) {
           return {
-            start: moment().date(intervalStartDate).startOf('day').valueOf(),
-            end: getMinimumEndDate(intervalStartDate, true)
+            start: moment()
+              .date(intervalStartDate)
+              .startOf('day')
+              .valueOf(),
+            end: getMinimumEndDate(intervalStartDate, true),
           };
         }
 
         return {
           start: getMinimumStartDate(intervalStartDate),
-          end: getMinimumEndDate(intervalStartDate)
+          end: getMinimumEndDate(intervalStartDate),
         };
-      }
+      },
     };
   });
-}());
+})();

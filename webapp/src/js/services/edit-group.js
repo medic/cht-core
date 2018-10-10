@@ -7,12 +7,7 @@ var _ = require('underscore');
 
   var getTo = function(dataRecord, group) {
     var to;
-    if (
-      group.rows &&
-      group.rows.length &&
-      group.rows[0].messages &&
-      group.rows[0].messages.length
-    ) {
+    if (group.rows && group.rows.length && group.rows[0].messages && group.rows[0].messages.length) {
       to = group.rows[0].messages[0].to;
     }
     return to || dataRecord.from;

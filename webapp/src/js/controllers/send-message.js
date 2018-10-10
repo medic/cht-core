@@ -1,9 +1,10 @@
 var _ = require('underscore'),
-    phoneNumber = require('phone-number'),
-    format = require('../modules/format');
+  phoneNumber = require('phone-number'),
+  format = require('../modules/format');
 
-angular.module('inboxControllers').controller('SendMessageCtrl',
-  function (
+angular
+  .module('inboxControllers')
+  .controller('SendMessageCtrl', function(
     $q,
     $scope,
     $translate,
@@ -28,10 +29,9 @@ angular.module('inboxControllers').controller('SendMessageCtrl',
       if (message) {
         $scope.error.message = false;
       } else {
-        return translateRequiredField('tasks.0.messages.0.message')
-          .then(function(error) {
-            $scope.error.message = error;
-          });
+        return translateRequiredField('tasks.0.messages.0.message').then(function(error) {
+          $scope.error.message = error;
+        });
       }
     };
 
@@ -47,13 +47,11 @@ angular.module('inboxControllers').controller('SendMessageCtrl',
     };
 
     var validatePhoneNumbers = function(settings, recipients) {
-
       // recipients is mandatory
       if (!recipients || recipients.length === 0) {
-        return translateRequiredField('tasks.0.messages.0.to')
-          .then(function(error) {
-            $scope.error.phone = error;
-          });
+        return translateRequiredField('tasks.0.messages.0.to').then(function(error) {
+          $scope.error.phone = error;
+        });
       }
 
       // all recipients must have a valid phone number
@@ -64,10 +62,9 @@ angular.module('inboxControllers').controller('SendMessageCtrl',
         var errorRecipients = _.map(errors, function(error) {
           return templateSelection(error);
         }).join(', ');
-        return $translate('Invalid contact numbers', { recipients: errorRecipients })
-          .then(function(error) {
-            $scope.error.phone = error;
-          });
+        return $translate('Invalid contact numbers', { recipients: errorRecipients }).then(function(error) {
+          $scope.error.phone = error;
+        });
       }
 
       $scope.error.phone = false;
@@ -76,7 +73,7 @@ angular.module('inboxControllers').controller('SendMessageCtrl',
     var formatPlace = function(row) {
       return $translate.instant('Everyone at', {
         facility: row.doc.name,
-        count: row.descendants && row.descendants.length
+        count: row.descendants && row.descendants.length,
       });
     };
 
@@ -89,13 +86,13 @@ angular.module('inboxControllers').controller('SendMessageCtrl',
 
       var type = row.doc.type;
       var icon = ContactSchema.get()[type].icon,
-          contact;
+        contact;
 
       if (row.everyoneAt) {
         // TODO: maybe with everyone at we want to change the icon to something else?
         contact = format.sender({
           name: formatPlace(row),
-          parent: row.doc.place
+          parent: row.doc.place,
         });
       } else {
         contact = format.sender(row.doc);
@@ -126,7 +123,7 @@ angular.module('inboxControllers').controller('SendMessageCtrl',
           initialValue: initialValue,
           sendMessageExtras: function(results) {
             return _.chain(results)
-              .map(function (result) {
+              .map(function(result) {
                 if (result.doc.type === ContactSchema.get().person.type) {
                   return result;
                 }
@@ -135,8 +132,8 @@ angular.module('inboxControllers').controller('SendMessageCtrl',
                   {
                     id: 'everyoneAt:' + result.id,
                     doc: result.doc,
-                    everyoneAt: true
-                  }
+                    everyoneAt: true,
+                  },
                 ];
               })
               .flatten()
@@ -144,7 +141,7 @@ angular.module('inboxControllers').controller('SendMessageCtrl',
                 return validatePhoneNumber(settings, result);
               })
               .value();
-          }
+          },
         });
       });
     };
@@ -167,10 +164,7 @@ angular.module('inboxControllers').controller('SendMessageCtrl',
         .then(function(settings) {
           var message = $scope.model.message && $scope.model.message.trim();
           var recipients = $('#send-message [name=phone]').select2('data');
-          $q.all([
-            validateMessage(message),
-            validatePhoneNumbers(settings, recipients)
-          ])
+          $q.all([validateMessage(message), validatePhoneNumbers(settings, recipients)])
             .then(function() {
               if (!$scope.error.message && !$scope.error.phone) {
                 return SendMessage(recipients, message).then(function() {
@@ -186,6 +180,4 @@ angular.module('inboxControllers').controller('SendMessageCtrl',
           $scope.setError(err, 'Error sending message');
         });
     };
-
-  }
-);
+  });

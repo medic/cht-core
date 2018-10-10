@@ -3,8 +3,9 @@
  * It should eventually be a page.
  * https://github.com/medic/medic-webapp/issues/2254
  */
-angular.module('inboxControllers').controller('UserLanguageModalCtrl',
-  function(
+angular
+  .module('inboxControllers')
+  .controller('UserLanguageModalCtrl', function(
     $log,
     $q,
     $scope,
@@ -15,7 +16,6 @@ angular.module('inboxControllers').controller('UserLanguageModalCtrl',
     SetLanguage,
     UpdateUser
   ) {
-
     'ngInject';
     'use strict';
 
@@ -67,5 +67,4 @@ angular.module('inboxControllers').controller('UserLanguageModalCtrl',
       $scope.changeLanguage(initialLanguageCode);
       $uibModalInstance.dismiss();
     };
-  }
-);
+  });

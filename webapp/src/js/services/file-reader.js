@@ -25,5 +25,5 @@ angular.module('inboxServices').service('FileReader', [
         return deferred.promise;
       };
     }
-  }
+  },
 ]);

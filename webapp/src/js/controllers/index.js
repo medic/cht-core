@@ -1,5 +1,4 @@
-(function () {
-
+(function() {
   'use strict';
 
   angular.module('inboxControllers', []);
@@ -42,5 +41,4 @@
   require('./user-language-modal');
   require('./version-update');
   require('./welcome-modal');
-
-}());
+})();

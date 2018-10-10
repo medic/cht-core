@@ -5,15 +5,7 @@ var _ = require('underscore'),
 
 angular
   .module('inboxServices')
-  .factory('FormatDataRecord', function(
-    $log,
-    $q,
-    $translate,
-    DB,
-    Language,
-    Settings,
-    FormatDate
-  ) {
+  .factory('FormatDataRecord', function($log, $q, $translate, DB, Language, Settings, FormatDate) {
     'ngInject';
     'use strict';
 
@@ -42,24 +34,13 @@ angular
             return;
           }
           if (result.rows.length > 1) {
-            $log.warn(
-              'More than one patient person document for shortcode "' +
-                patientId +
-                '"'
-            );
+            $log.warn('More than one patient person document for shortcode "' + patientId + '"');
           }
           return lineage.fetchHydratedDoc(result.rows[0].id);
         });
     };
 
-    var fieldsToHtml = function(
-      settings,
-      keys,
-      labels,
-      data_record,
-      def,
-      locale
-    ) {
+    var fieldsToHtml = function(settings, keys, labels, data_record, def, locale) {
       if (!def && data_record && data_record.form) {
         def = getForm(settings, data_record.form);
       }
@@ -149,11 +130,7 @@ angular
     var translateKey = function(settings, key, field, locale) {
       var label;
       if (field) {
-        label = getMessage(
-          settings,
-          field.labels && field.labels.short,
-          locale
-        );
+        label = getMessage(settings, field.labels && field.labels.short, locale);
       } else {
         label = translate(settings, key, locale);
       }
@@ -220,11 +197,7 @@ angular
      * @param {Object} def - form or field definition
      */
     var prettyVal = function(settings, data_record, key, def, locale) {
-      if (
-        !data_record ||
-        _.isUndefined(key) ||
-        _.isUndefined(data_record[key])
-      ) {
+      if (!data_record || _.isUndefined(key) || _.isUndefined(data_record[key])) {
         return;
       }
 
@@ -400,8 +373,7 @@ angular
 
       var result =
         // 0) does it have a translation_key
-        (value.translation_key &&
-          translate(settings, value.translation_key, locale)) ||
+        (value.translation_key && translate(settings, value.translation_key, locale)) ||
         // 1) Look for the requested locale
         _findTranslation(value, locale) ||
         // 2) Look for the default
@@ -409,9 +381,7 @@ angular
         // 3) Look for the English value
         _findTranslation(value, 'en') ||
         // 4) Look for the first translation
-        (value.translations &&
-          value.translations[0] &&
-          value.translations[0].content) ||
+        (value.translations && value.translations[0] && value.translations[0].content) ||
         // 5) Look for the first value
         value[_.first(_.keys(value))];
 
@@ -432,13 +402,7 @@ angular
       if (formatted.form && formatted.content_type !== 'xml') {
         var keys = getFormKeys(getForm(settings, formatted.form));
         var labels = getLabels(settings, keys, formatted.form, language);
-        formatted.fields = fieldsToHtml(
-          settings,
-          keys,
-          labels,
-          formatted,
-          language
-        );
+        formatted.fields = fieldsToHtml(settings, keys, labels, formatted, language);
         includeNonFormFields(settings, formatted, keys, language);
       }
 
@@ -584,10 +548,7 @@ angular
         if (results.length === 4) {
           context.patient = results[2];
           context.registrations = results[3].filter(function(registration) {
-            return registrationUtils.isValidRegistration(
-              registration,
-              settings
-            );
+            return registrationUtils.isValidRegistration(registration, settings);
           });
         }
         return makeDataRecordReadable(doc, settings, language, context);

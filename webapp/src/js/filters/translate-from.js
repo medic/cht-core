@@ -11,16 +11,15 @@
  * // In template : (yields 'Go visit Estelle')
  * {{task.intructionsLabel | translateFrom:task}}
  */
-(function () {
-
+(function() {
   'use strict';
 
   var module = angular.module('inboxFilters');
 
-  module.filter('translateFrom', ['TranslateFrom',
+  module.filter('translateFrom', [
+    'TranslateFrom',
     function(TranslateFrom) {
       return TranslateFrom;
-    }
+    },
   ]);
-
-}());
+})();

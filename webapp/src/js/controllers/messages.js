@@ -70,12 +70,7 @@ angular
 
     updateConversations()
       .then(function() {
-        if (
-          !$state.params.id &&
-          $scope.messages.length &&
-          !$scope.isMobile() &&
-          $state.is('messages.detail')
-        ) {
+        if (!$state.params.id && $scope.messages.length && !$scope.isMobile() && $state.is('messages.detail')) {
           $timeout(function() {
             var first = $('.inbox-items li').first();
             var state = {
@@ -103,9 +98,7 @@ angular
         if ($scope.currentTab !== 'messages') {
           return false;
         }
-        return (
-          change.doc.kujua_message || change.doc.sms_message || change.deleted
-        );
+        return change.doc.kujua_message || change.doc.sms_message || change.deleted;
       },
     });
 

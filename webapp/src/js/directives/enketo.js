@@ -23,7 +23,7 @@ angular.module('inboxDirectives').directive('mmEnketo', function() {
       onCancel: '&',
 
       // function: to be called when submitting the form
-      onSubmit: '&'
-    }
+      onSubmit: '&',
+    },
   };
 });

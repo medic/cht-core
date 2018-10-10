@@ -121,19 +121,14 @@ var _ = require('underscore'),
                 // move it to the top
                 contacts.splice(homeIndex, 1);
                 contacts.unshift(usersHomePlace);
-              } else if (
-                !$scope.filters.search &&
-                !$scope.filters.simprintsIdentities
-              ) {
+              } else if (!$scope.filters.search && !$scope.filters.simprintsIdentities) {
                 contacts.unshift(usersHomePlace);
               }
               if ($scope.filters.simprintsIdentities) {
                 contacts.forEach(function(contact) {
-                  var identity = $scope.filters.simprintsIdentities.find(
-                    function(identity) {
-                      return identity.id === contact.simprints_id;
-                    }
-                  );
+                  var identity = $scope.filters.simprintsIdentities.find(function(identity) {
+                    return identity.id === contact.simprints_id;
+                  });
                   contact.simprints = identity || {
                     confidence: 0,
                     tierNumber: 5,
@@ -143,8 +138,7 @@ var _ = require('underscore'),
             }
           }
 
-          $scope.moreItems = liveList.moreItems =
-            contacts.length >= options.limit;
+          $scope.moreItems = liveList.moreItems = contacts.length >= options.limit;
 
           contacts.forEach(liveList.update);
           liveList.refresh();
@@ -232,10 +226,8 @@ var _ = require('underscore'),
               });
             var canDelete =
               !selected.children ||
-              ((!selected.children.places ||
-                selected.children.places.length === 0) &&
-                (!selected.children.persons ||
-                  selected.children.persons.length === 0));
+              ((!selected.children.places || selected.children.places.length === 0) &&
+                (!selected.children.persons || selected.children.persons.length === 0));
             $scope.setRightActionBar({
               selected: [selectedDoc],
               relevantForms: formSummaries,
@@ -374,8 +366,7 @@ var _ = require('underscore'),
         var uhcSettings = (results[2] && results[2].uhc) || {};
         $scope.visitCountSettings = getVisitCountSettings(uhcSettings);
         if ($scope.lastVisitedDateExtras && uhcSettings.contacts_default_sort) {
-          $scope.sortDirection = $scope.defaultSortDirection =
-            uhcSettings.contacts_default_sort;
+          $scope.sortDirection = $scope.defaultSortDirection = uhcSettings.contacts_default_sort;
         }
 
         setActionBarData();
@@ -403,8 +394,7 @@ var _ = require('underscore'),
         doc.form &&
         doc.fields &&
         doc.fields.visited_contact_uuid &&
-        (liveList.contains({ _id: doc.fields.visited_contact_uuid }) ||
-          isRelevantDelete)
+        (liveList.contains({ _id: doc.fields.visited_contact_uuid }) || isRelevantDelete)
       );
     };
 
@@ -416,10 +406,7 @@ var _ = require('underscore'),
           liveList.remove(change.doc);
         }
 
-        var withIds =
-          isSortedByLastVisited() &&
-          !!isRelevantVisitReport(change.doc) &&
-          !change.deleted;
+        var withIds = isSortedByLastVisited() && !!isRelevantVisitReport(change.doc) && !change.deleted;
         return _query({ limit: limit, silent: true, withIds: withIds });
       },
       filter: function(change) {

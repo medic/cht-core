@@ -12,8 +12,9 @@ var _ = require('underscore');
  *   formatted: <the doc formatted using the FormatDataRecord service>
  * }
  */
-angular.module('inboxServices').factory('ReportViewModelGenerator',
-  function(
+angular
+  .module('inboxServices')
+  .factory('ReportViewModelGenerator', function(
     FormatDataRecord,
     LineageModelGenerator,
     DB,
@@ -33,22 +34,29 @@ angular.module('inboxServices').factory('ReportViewModelGenerator',
         if (_.isObject(value)) {
           results.push({
             label: label,
-            depth: depth
+            depth: depth,
           });
           getFields(doc, results, value, label, depth + 1);
         } else {
           var result = {
             label: label,
             value: value,
-            depth: depth
+            depth: depth,
           };
 
-          var filePath = 'user-file/' + label.split('.').slice(1).join('/');
-          if (doc &&
-              doc._attachments &&
-              doc._attachments[filePath] &&
-              doc._attachments[filePath].content_type &&
-              doc._attachments[filePath].content_type.startsWith('image/')) {
+          var filePath =
+            'user-file/' +
+            label
+              .split('.')
+              .slice(1)
+              .join('/');
+          if (
+            doc &&
+            doc._attachments &&
+            doc._attachments[filePath] &&
+            doc._attachments[filePath].content_type &&
+            doc._attachments[filePath].content_type.startsWith('image/')
+          ) {
             result.imagePath = filePath;
           }
 
@@ -101,5 +109,4 @@ angular.module('inboxServices').factory('ReportViewModelGenerator',
             });
         });
     };
-  }
-);
+  });

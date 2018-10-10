@@ -1,5 +1,4 @@
-(function () {
-
+(function() {
   'use strict';
 
   exports.list = [
@@ -63,7 +62,7 @@
     { id: '243', text: 'Congo, Democratic Republic of the (Zaire) (+243)' },
     { id: '682', text: 'Cook Islands (+682)' },
     { id: '506', text: 'Costa Rica (+506)' },
-    { id: '225', text: 'Côte d\'Ivoire (+225)' },
+    { id: '225', text: "Côte d'Ivoire (+225)" },
     { id: '385', text: 'Croatia (+385)' },
     { id: '53', text: 'Cuba (+53)' },
     { id: '5399', text: 'Guantanamo Bay, Cuba (+53 99)' },
@@ -275,7 +274,6 @@
     { id: '967', text: 'Yemen (+967)' },
     { id: '260', text: 'Zambia (+260)' },
     { id: '255', text: 'Zanzibar (+255)' },
-    { id: '263', text: 'Zimbabwe (+263)' }
+    { id: '263', text: 'Zimbabwe (+263)' },
   ];
-
-}());
+})();
