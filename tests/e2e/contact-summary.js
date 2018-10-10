@@ -1,5 +1,5 @@
 const utils = require('../utils'),
-      helper = require('../helper');
+  helper = require('../helper');
 
 describe('Contact summary info', () => {
   const SCRIPT = `
@@ -53,13 +53,13 @@ describe('Contact summary info', () => {
     reported_date: 1,
     type: 'person',
     name: 'Alice Alison',
-    phone: '+447765902001'
+    phone: '+447765902001',
   };
   const BOB_PLACE = {
     _id: 'bob-contact',
     reported_date: 1,
     type: 'clinic',
-    name: 'Bob Place'
+    name: 'Bob Place',
   };
   const CAROL = {
     _id: 'carol-contact',
@@ -69,7 +69,7 @@ describe('Contact summary info', () => {
     parent: BOB_PLACE,
     patient_id: '05946',
     sex: 'f',
-    date_of_birth: 1462333250374
+    date_of_birth: 1462333250374,
   };
   const DAVID = {
     _id: 'david-contact',
@@ -77,7 +77,7 @@ describe('Contact summary info', () => {
     type: 'person',
     name: 'David Davidson',
     phone: '+447765902002',
-    parent: BOB_PLACE
+    parent: BOB_PLACE,
   };
 
   // reports
@@ -93,10 +93,10 @@ describe('Contact summary info', () => {
       phone: '+555',
       type: 'person',
       _id: '3305E3D0-2970-7B0E-AB97-C3239CD22D32',
-      _rev: '1-fb7fbda241dbf6c2239485c655818a69'
+      _rev: '1-fb7fbda241dbf6c2239485c655818a69',
     },
     from: '+555',
-    hidden_fields: []
+    hidden_fields: [],
   };
   const VISIT = {
     form: 'V',
@@ -109,16 +109,17 @@ describe('Contact summary info', () => {
       phone: '+555',
       type: 'person',
       _id: '3305E3D0-2970-7B0E-AB97-C3239CD22D32',
-      _rev: '1-fb7fbda241dbf6c2239485c655818a69'
+      _rev: '1-fb7fbda241dbf6c2239485c655818a69',
     },
     from: '+555',
-    hidden_fields: []
+    hidden_fields: [],
   };
 
   const DOCS = [ALICE, BOB_PLACE, CAROL, DAVID, PREGNANCY, VISIT];
 
   beforeEach(done => {
-    utils.updateSettings({ contact_summary: SCRIPT })
+    utils
+      .updateSettings({ contact_summary: SCRIPT })
       .then(() => {
         return protractor.promise.all(DOCS.map(utils.saveDoc));
       })
@@ -132,32 +133,70 @@ describe('Contact summary info', () => {
     helper.waitElementToBeVisible(element(by.id('freetext')));
     element(by.id('freetext')).sendKeys(term);
     helper.clickElement(element(by.id('search')));
-    helper.waitElementToPresent(element(by.css('#contacts-list .filtered .content')));
+    helper.waitElementToPresent(
+      element(by.css('#contacts-list .filtered .content'))
+    );
     helper.clickElement(element(by.css('#contacts-list .filtered .content')));
     helper.waitElementToPresent(element(by.css('#contacts-list')));
   };
 
-  it('contact summary', () => { //disabled.
+  it('contact summary', () => {
+    //disabled.
     helper.clickElement(element(by.css('#contacts-tab')));
     try {
       selectContact('carol');
-    }
-    catch (err) {
+    } catch (err) {
       browser.refresh();
-      browser.sleep(500);//wait for browser to settle
+      helper.waitForAngularComplete();
       helper.clickElement(element(by.css('#contacts-tab')));
       selectContact('carol');
     }
     // assert the summary card has the right fields
-    helper.waitElementToPresent(element(by.css('.content-pane .meta > .card .col-sm-3:nth-child(1) label')));
-    expect(helper.getTextFromElement(element(by.css('.content-pane .meta > .card .col-sm-3:nth-child(1) label')))).toBe('test.pid');
-    expect(helper.getTextFromElement(element(by.css('.content-pane .meta > .card .col-sm-3:nth-child(1) p')))).toBe(CAROL.patient_id);
-    expect(helper.getTextFromElement(element(by.css('.content-pane .meta > .card .col-sm-3:nth-child(2) label')))).toBe('test.sex');
-    expect(helper.getTextFromElement(element(by.css('.content-pane .meta > .card .col-sm-3:nth-child(2) p')))).toBe(CAROL.sex);
+    helper.waitElementToPresent(
+      element(
+        by.css('.content-pane .meta > .card .col-sm-3:nth-child(1) label')
+      )
+    );
+    expect(
+      helper.getTextFromElement(
+        element(
+          by.css('.content-pane .meta > .card .col-sm-3:nth-child(1) label')
+        )
+      )
+    ).toBe('test.pid');
+    expect(
+      helper.getTextFromElement(
+        element(by.css('.content-pane .meta > .card .col-sm-3:nth-child(1) p'))
+      )
+    ).toBe(CAROL.patient_id);
+    expect(
+      helper.getTextFromElement(
+        element(
+          by.css('.content-pane .meta > .card .col-sm-3:nth-child(2) label')
+        )
+      )
+    ).toBe('test.sex');
+    expect(
+      helper.getTextFromElement(
+        element(by.css('.content-pane .meta > .card .col-sm-3:nth-child(2) p'))
+      )
+    ).toBe(CAROL.sex);
 
     // assert that the pregnancy card exists and has the right fields.
-    expect(helper.getTextFromElement(element(by.css('.content-pane .meta > div > .card .action-header h3')))).toBe('test.pregnancy');
-    expect(helper.getTextFromElement(element(by.css('.content-pane .meta > div > .card .row label')))).toBe('test.visits');
-    expect(helper.getTextFromElement(element(by.css('.content-pane .meta > div > .card .row p')))).toBe('1');
+    expect(
+      helper.getTextFromElement(
+        element(by.css('.content-pane .meta > div > .card .action-header h3'))
+      )
+    ).toBe('test.pregnancy');
+    expect(
+      helper.getTextFromElement(
+        element(by.css('.content-pane .meta > div > .card .row label'))
+      )
+    ).toBe('test.visits');
+    expect(
+      helper.getTextFromElement(
+        element(by.css('.content-pane .meta > div > .card .row p'))
+      )
+    ).toBe('1');
   });
 });

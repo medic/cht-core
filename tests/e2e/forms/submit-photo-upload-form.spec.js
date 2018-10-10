@@ -1,8 +1,8 @@
 const helper = require('../../helper'),
-      photoUpload = require('../../page-objects/forms/photo-upload.po.js'),
-      common = require('../../page-objects/common/common.po.js'),
-      utils = require('../../utils'),
-      path = require('path');
+  photoUpload = require('../../page-objects/forms/photo-upload.po'),
+  common = require('../../page-objects/common/common.po'),
+  utils = require('../../utils'),
+  path = require('path');
 
 const contactId = 'some_contact_id';
 const doc = {
@@ -15,8 +15,8 @@ const doc = {
   type: 'person',
   reported_date: 1478469976421,
   parent: {
-    _id: 'some_parent'
-  }
+    _id: 'some_parent',
+  },
 };
 
 describe('Submit Photo Upload form', () => {
@@ -27,7 +27,7 @@ describe('Submit Photo Upload form', () => {
       .catch(done.fail);
   });
 
-  afterEach(done =>{
+  afterEach(done => {
     utils.resetBrowser();
     done();
   });
@@ -37,17 +37,26 @@ describe('Submit Photo Upload form', () => {
   it('upload photo', () => {
     common.goToReports();
 
-    browser.sleep(1000); // let the refresh work here - #3691
-
     // select form
-    const addButton = element(by.css('.action-container .general-actions:not(.ng-hide) .fa-plus'));
+    const addButton = element(
+      by.css('.action-container .general-actions:not(.ng-hide) .fa-plus')
+    );
     helper.waitElementToPresent(addButton);
     helper.clickElement(addButton);
-    element(by.css('.action-container .general-actions .dropup.open .dropdown-menu li:first-child a')).click();
-    helper.waitElementToPresent(element(by.css('#photo-upload input[type=file]')));
-    element(by.css('#photo-upload input[type=file]'))
-      .sendKeys(path.join(__dirname, '../../../webapp/src/img/simprints.png'));
-    helper.waitElementToPresent(element(by.css('#photo-upload .file-picker .file-preview img')));
+    element(
+      by.css(
+        '.action-container .general-actions .dropup.open .dropdown-menu li:first-child a'
+      )
+    ).click();
+    helper.waitElementToPresent(
+      element(by.css('#photo-upload input[type=file]'))
+    );
+    element(by.css('#photo-upload input[type=file]')).sendKeys(
+      path.join(__dirname, '../../../webapp/src/img/simprints.png')
+    );
+    helper.waitElementToPresent(
+      element(by.css('#photo-upload .file-picker .file-preview img'))
+    );
     //submit
     photoUpload.submit();
     helper.waitElementToPresent(element(by.css('div.details')));
