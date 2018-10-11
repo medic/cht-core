@@ -1,5 +1,4 @@
-const chai = require('chai'),
-  AuditProxy = require('../../src/audit-proxy');
+const AuditProxy = require('../../src/audit-proxy');
 
 describe('audit proxy', () => {
   it('audit emits error when not authorized', done => {
