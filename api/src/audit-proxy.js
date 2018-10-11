@@ -1,6 +1,5 @@
 var EventEmitter = require('events').EventEmitter,
   util = require('util'),
-  passStream = require('pass-stream'),
   auth = require('./auth'),
   db = require('./db-nano');
 
@@ -43,7 +42,6 @@ AuditProxy.prototype.audit = function(proxy, req, res) {
  * Exposed for testing
  */
 AuditProxy.prototype.setup = function(deps) {
-  passStream = deps.passStream;
   db = deps.db;
   auth = deps.auth;
 };
