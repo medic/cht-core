@@ -99,23 +99,17 @@ module.exports = function(Promise, DB) {
   var findPatientId = function(doc) {
     return (
       doc.type === 'data_record' &&
-      ((doc.fields && doc.fields.patient_id) || doc.patient_id)
-    );
-  };
-
-  var findPatientUuid = function(doc) {
-    return (
-      doc.type === 'data_record' &&
-      ((doc.fields && doc.fields.patient_uuid) || doc.patient_uuid)
+      (
+        (doc.fields && (doc.fields.patient_id || doc.fields.patient_uuid)) ||
+        doc.patient_id
+      )
     );
   };
 
   var fetchPatientLineage = function(record) {
     var patientId = findPatientId(record);
-
     if (!patientId) {
-      var patientUuid = findPatientUuid(record);
-      return patientUuid ? fetchLineageById(patientUuid) : Promise.resolve([]);
+      return Promise.resolve([]);
     }
 
     return contactUuidByPatientId(patientId)
@@ -128,6 +122,10 @@ module.exports = function(Promise, DB) {
     return DB.query('medic-client/contacts_by_reference', {
       key: [ 'shortcode', patientId ]
     }).then(function(results) {
+      if (!results.rows.length) {
+        return patientId;
+      }
+
       if (results.rows.length > 1) {
         console.warn('More than one patient person document for shortcode ' + patientId);
       }

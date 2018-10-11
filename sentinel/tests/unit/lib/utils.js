@@ -383,4 +383,77 @@ describe('utils util', () => {
       utils.isMutedInLineage(doc2).should.equal(true);
     });
   });
+
+  describe('getReportsBySubject', () => {
+    it('should return empty array when no id or ids are provided', () => {
+      return utils.getReportsBySubject({}).then(result => {
+        result.should.deep.equal([]);
+      });
+    });
+
+    it('should query the correct view with key', () => {
+      const db = { query: sinon.stub().resolves({ rows: [] }) };
+
+      return utils.getReportsBySubject({ db, id: '12345' }).then(result => {
+        result.should.deep.equal([]);
+        db.query.callCount.should.equal(1);
+        db.query.args[0].should.deep.equal(['medic-client/reports_by_subject', { key: ['12345'], include_docs: true }]);
+      });
+    });
+
+    it('should query the correct view with keys', () => {
+      const db = { query: sinon.stub().resolves({ rows: [] }) },
+            ids = ['a', 'b', 'c', 'd'];
+
+      return utils.getReportsBySubject({ db, ids }).then(result => {
+        result.should.deep.equal([]);
+        db.query.callCount.should.equal(1);
+        db.query.args[0].should.deep.equal([
+          'medic-client/reports_by_subject',
+          { keys: [['a'], ['b'], ['c'], ['d']], include_docs: true }
+        ]);
+      });
+    });
+
+    it('should return query errors', () => {
+      const db = { query: sinon.stub().rejects({ some: 'error' }) };
+
+      return utils.getReportsBySubject({ db, id: 'a' })
+        .then(result => result.should.equal('Should have thrown'))
+        .catch(err => {
+          err.should.deep.equal({ some: 'error' });
+        });
+    });
+
+    it('should return results', () => {
+      const reports = [{ _id: 'r1' }, { _id: 'r2' }, { _id: 'r3' }],
+            db = { query: sinon.stub().resolves({ rows: reports.map(r => ({ doc: r }))  })};
+
+      return utils.getReportsBySubject({ db, id: 'a' }).then(result => {
+        result.should.deep.equal(reports);
+      });
+    });
+
+    it('should return valid registrations only when requested', () => {
+      const reports = [{ _id: 'r1' }, { _id: 'r2' }, { _id: 'r3' }],
+            db = { query: sinon.stub().resolves({ rows: reports.map(r => ({ doc: r }))  })};
+
+      sinon.stub(registrationUtils, 'isValidRegistration');
+      sinon.stub(config, 'getAll').returns('config');
+      registrationUtils.isValidRegistration
+        .withArgs({ _id: 'r1' }).returns(true)
+        .withArgs({ _id: 'r2' }).returns(true)
+        .withArgs({ _id: 'r3' }).returns(false);
+
+      return utils.getReportsBySubject({ db, id: 'a', registrations: true }).then(result => {
+        result.should.deep.equal([{ _id: 'r1' }, { _id: 'r2' }]);
+        registrationUtils.isValidRegistration.callCount.should.equal(3);
+        registrationUtils.isValidRegistration.args.should.deep.equal([
+          [{ _id: 'r1' }, 'config'],
+          [{ _id: 'r2' }, 'config'],
+          [{ _id: 'r3' }, 'config']
+        ]);
+      });
+    });
+  });
 });
