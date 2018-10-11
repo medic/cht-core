@@ -13,6 +13,7 @@ const findInfoDoc = (database, change) => {
 };
 
 const getInfoDoc = change => {
+  let rev = null;
   return findInfoDoc(dbPouch.sentinel, change)
     .then(doc => {
       if (doc) {
@@ -21,6 +22,7 @@ const getInfoDoc = change => {
       return findInfoDoc(dbPouch.medic, change).then(doc => {
         if (doc) {
           // prepare the doc for saving into the new db
+          rev = doc._rev;
           delete doc._rev;
         }
         return doc;
@@ -36,7 +38,7 @@ const getInfoDoc = change => {
         });
       }
     })
-    .then(doc => updateInfoDoc(doc));
+    .then(doc => updateInfoDoc(doc, rev));
 };
 
 const createInfoDoc = (docId, initialReplicationDate) => {
@@ -82,9 +84,13 @@ const deleteInfoDoc = change => {
     });
 };
 
-const updateInfoDoc = doc => {
+const updateInfoDoc = (doc, legacyRev) => {
   doc.latest_replication_date = new Date();
   return dbPouch.sentinel.put(doc).then(() => {
+    if (legacyRev) {
+      // Removes legacy info doc
+      dbPouch.medic.remove(doc._id, legacyRev);
+    }
     return doc;
   });
 };
