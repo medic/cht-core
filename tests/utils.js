@@ -1,24 +1,28 @@
 const _ = require('underscore'),
-      auth = require('./auth')(),
-      constants = require('./constants'),
-      http = require('http'),
-      path = require('path'),
-      htmlScreenshotReporter = require('protractor-jasmine2-screenshot-reporter'),
-      userSettingsDocId = `org.couchdb.user:${auth.user}`;
+  auth = require('./auth')(),
+  constants = require('./constants'),
+  http = require('http'),
+  path = require('path'),
+  htmlScreenshotReporter = require('protractor-jasmine2-screenshot-reporter'),
+  userSettingsDocId = `org.couchdb.user:${auth.user}`;
 
 const PouchDB = require('pouchdb-core');
 PouchDB.plugin(require('pouchdb-adapter-http'));
 PouchDB.plugin(require('pouchdb-mapreduce'));
-const db = new PouchDB(`http://${auth.user}:${auth.pass}@${constants.COUCH_HOST}:${constants.COUCH_PORT}/${constants.DB_NAME}`);
+const db = new PouchDB(
+  `http://${auth.user}:${auth.pass}@${constants.COUCH_HOST}:${
+    constants.COUCH_PORT
+  }/${constants.DB_NAME}`
+);
 
 let originalSettings;
 
 // First Object is passed to http.request, second is for specific options / flags
 // for this wrapper
-const request = (options, {debug, noAuth, notJson} = {}) => {
+const request = (options, { debug, noAuth, notJson } = {}) => {
   if (typeof options === 'string') {
     options = {
-      path: options
+      path: options,
     };
   }
 
@@ -52,7 +56,11 @@ const request = (options, {debug, noAuth, notJson} = {}) => {
 
         body = JSON.parse(body);
         if (body.error) {
-          const err = new Error(`Request failed: ${options.path},\n  body: ${JSON.stringify(options.body)}\n  response: ${JSON.stringify(body)}`);
+          const err = new Error(
+            `Request failed: ${options.path},\n  body: ${JSON.stringify(
+              options.body
+            )}\n  response: ${JSON.stringify(body)}`
+          );
           err.responseBody = body;
           err.statusCode = res.statusCode;
           deferred.reject(err);
@@ -60,7 +68,9 @@ const request = (options, {debug, noAuth, notJson} = {}) => {
           deferred.fulfill(body);
         }
       } catch (e) {
-        let errorMessage = `Server returned an error for request: ${JSON.stringify(options)}\n  `;
+        let errorMessage = `Server returned an error for request: ${JSON.stringify(
+          options
+        )}\n  `;
 
         if (body === 'Server error') {
           errorMessage += 'Check medic-api logs for details.';
@@ -102,24 +112,26 @@ const updateSettings = updates => {
   }
   return request({
     path: '/api/v1/settings',
-    method: 'GET'
-  }).then(settings => {
-    originalSettings = settings;
-    // Make sure all updated fields are present in originalSettings, to enable reverting later.
-    Object.keys(updates).forEach(updatedField => {
-      if (!_.has(originalSettings, updatedField)) {
-        originalSettings[updatedField] = null;
-      }
+    method: 'GET',
+  })
+    .then(settings => {
+      originalSettings = settings;
+      // Make sure all updated fields are present in originalSettings, to enable reverting later.
+      Object.keys(updates).forEach(updatedField => {
+        if (!_.has(originalSettings, updatedField)) {
+          originalSettings[updatedField] = null;
+        }
+      });
+      return;
+    })
+    .then(() => {
+      return request({
+        path: '/api/v1/settings?replace=1',
+        method: 'PUT',
+        body: JSON.stringify(updates),
+        headers: { 'Content-Type': 'application/json' },
+      });
     });
-    return;
-  }).then(() => {
-    return request({
-      path: '/api/v1/settings?replace=1',
-      method: 'PUT',
-      body: JSON.stringify(updates),
-      headers: { 'Content-Type': 'application/json' }
-    });
-  });
 };
 
 const revertSettings = () => {
@@ -130,7 +142,7 @@ const revertSettings = () => {
     path: '/api/v1/settings?replace=1',
     method: 'PUT',
     body: JSON.stringify(originalSettings),
-    headers: { 'Content-Type': 'application/json' }
+    headers: { 'Content-Type': 'application/json' },
   }).then(() => {
     originalSettings = null;
     return true;
@@ -140,7 +152,10 @@ const revertSettings = () => {
 const deleteAll = (except = []) => {
   // Generate a list of functions to filter documents over
   const ignorables = except.concat(
-    doc => ['translations', 'translations-backup', 'user-settings', 'info'].includes(doc.type),
+    doc =>
+      ['translations', 'translations-backup', 'user-settings', 'info'].includes(
+        doc.type
+      ),
     'appcache',
     'migration-log',
     'resources',
@@ -164,35 +179,41 @@ const deleteAll = (except = []) => {
   ignoreFns.push(doc => ignoreRegex.find(r => doc._id.match(r)));
 
   // Get, filter and delete documents
-  return module.exports.request({
-    path: path.join('/', constants.DB_NAME, '_all_docs?include_docs=true'),
-    method: 'GET'
-  })
-    .then(({rows}) => rows
-      .filter(({doc}) => !ignoreFns.find(fn => fn(doc)))
-      .map(({doc}) => {
-        doc._deleted = true;
-        doc.type = 'tombstone'; // circumvent tombstones being created when DB is cleaned up
-        return doc;
-      }))
+  return module.exports
+    .request({
+      path: path.join('/', constants.DB_NAME, '_all_docs?include_docs=true'),
+      method: 'GET',
+    })
+    .then(({ rows }) =>
+      rows
+        .filter(({ doc }) => !ignoreFns.find(fn => fn(doc)))
+        .map(({ doc }) => {
+          doc._deleted = true;
+          doc.type = 'tombstone'; // circumvent tombstones being created when DB is cleaned up
+          return doc;
+        })
+    )
     .then(toDelete => {
       const ids = toDelete.map(doc => doc._id);
       console.log(`Deleting docs: ${ids}`);
-      return module.exports.request({
-        path: path.join('/', constants.DB_NAME, '_bulk_docs'),
-        method: 'POST',
-        body: JSON.stringify({ docs: toDelete }),
-        headers: { 'content-type': 'application/json' }
-      }).then(response => {
-        console.log(`Deleted docs: ${JSON.stringify(response)}`);
-      });
+      return module.exports
+        .request({
+          path: path.join('/', constants.DB_NAME, '_bulk_docs'),
+          method: 'POST',
+          body: JSON.stringify({ docs: toDelete }),
+          headers: { 'content-type': 'application/json' },
+        })
+        .then(response => {
+          console.log(`Deleted docs: ${JSON.stringify(response)}`);
+        });
     });
 };
 
 const refreshToGetNewSettings = () => {
   // wait for the updates to replicate
   const dialog = element(by.css('#update-available .submit:not(.disabled)'));
-  return browser.wait(protractor.ExpectedConditions.elementToBeClickable(dialog), 10000)
+  return browser
+    .wait(protractor.ExpectedConditions.elementToBeClickable(dialog), 10000)
     .then(() => {
       dialog.click();
     })
@@ -206,7 +227,12 @@ const refreshToGetNewSettings = () => {
       });
     })
     .then(() => {
-      return browser.wait(protractor.ExpectedConditions.elementToBeClickable(element(by.id('contacts-tab'))), 10000);
+      return browser.wait(
+        protractor.ExpectedConditions.elementToBeClickable(
+          element(by.id('contacts-tab'))
+        ),
+        10000
+      );
     });
 };
 
@@ -221,38 +247,49 @@ const revertDb = (except, ignoreRefresh) => {
   });
 };
 
-const deleteUsers = (usernames) => {
-  const userIds = JSON.stringify(usernames.map(user => `org.couchdb.user:${user}`)),
-        method = 'POST',
-        headers = { 'Content-Type': 'application/json' };
+const deleteUsers = usernames => {
+  const userIds = JSON.stringify(
+      usernames.map(user => `org.couchdb.user:${user}`)
+    ),
+    method = 'POST',
+    headers = { 'Content-Type': 'application/json' };
 
-  return Promise
-    .all([
-      request(`/${constants.DB_NAME}/_all_docs?include_docs=true&keys=${userIds}`),
-      request(`/_users/_all_docs?include_docs=true&keys=${userIds}`)
-    ])
-    .then(results => {
-      const docs = results.map(result =>
-        result.rows
-          .map(row => {
-            if (row.doc) {
-              row.doc._deleted = true;
-              row.doc.type = 'tombstone';
-              return row.doc;
-            }
-          })
-          .filter(doc => doc));
+  return Promise.all([
+    request(
+      `/${constants.DB_NAME}/_all_docs?include_docs=true&keys=${userIds}`
+    ),
+    request(`/_users/_all_docs?include_docs=true&keys=${userIds}`),
+  ]).then(results => {
+    const docs = results.map(result =>
+      result.rows
+        .map(row => {
+          if (row.doc) {
+            row.doc._deleted = true;
+            row.doc.type = 'tombstone';
+            return row.doc;
+          }
+        })
+        .filter(doc => doc)
+    );
 
-      return Promise.all([
-        request({ path: `/${constants.DB_NAME}/_bulk_docs`, body: { docs: docs[0]}, method, headers}),
-        request({ path: `/_users/_bulk_docs`, body: { docs: docs[1]}, method, headers})
-      ]);
-    })
-    ;
+    return Promise.all([
+      request({
+        path: `/${constants.DB_NAME}/_bulk_docs`,
+        body: { docs: docs[0] },
+        method,
+        headers,
+      }),
+      request({
+        path: `/_users/_bulk_docs`,
+        body: { docs: docs[1] },
+        method,
+        headers,
+      }),
+    ]);
+  });
 };
 
 module.exports = {
-
   db: db,
 
   request: request,
@@ -267,18 +304,21 @@ module.exports = {
     dest: 'tests/results',
     filename: 'report.html',
     pathBuilder: function(currentSpec) {
-      return currentSpec.fullName.toLowerCase().replace(/[^a-z0-9\s]/g, '').replace(/\s+/g, '_');
-    }
+      return currentSpec.fullName
+        .toLowerCase()
+        .replace(/[^a-z0-9\s]/g, '')
+        .replace(/\s+/g, '_');
+    },
   }),
 
   requestOnTestDb: (options, debug, notJson) => {
     if (typeof options === 'string') {
       options = {
-        path: options
+        path: options,
       };
     }
     options.path = '/' + constants.DB_NAME + (options.path || '');
-    return request(options, {debug: debug, notJson: notJson});
+    return request(options, { debug: debug, notJson: notJson });
   },
 
   saveDoc: doc => {
@@ -288,45 +328,40 @@ module.exports = {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'Content-Length': postData.length
+        'Content-Length': postData.length,
       },
-      body: postData
+      body: postData,
     });
   },
 
-  saveDocs: docs => module.exports.requestOnTestDb({
-    path: '/_bulk_docs',
-    method: 'POST',
-    body: { docs: docs },
-    headers: { 'content-type': 'application/json' }
-  }).then(results => {
-    if (results.find(r => !r.ok)) {
-      throw Error(JSON.stringify(results, null, 2));
-    } else {
-      return results;
-    }
-  }),
+  saveDocs: docs =>
+    module.exports
+      .requestOnTestDb({
+        path: '/_bulk_docs',
+        method: 'POST',
+        body: { docs: docs },
+        headers: { 'content-type': 'application/json' },
+      })
+      .then(results => {
+        if (results.find(r => !r.ok)) {
+          throw Error(JSON.stringify(results, null, 2));
+        } else {
+          return results;
+        }
+      }),
 
   getDoc: id => {
     return module.exports.requestOnTestDb({
       path: `/${id}`,
-      method: 'GET'
-    });
-  },
-
-  getAuditDoc: id => {
-    return module.exports.requestOnTestDb({
-      path: `-audit/${id}-audit`,
-      method: 'GET'
+      method: 'GET',
     });
   },
 
   deleteDoc: id => {
-    return module.exports.getDoc(id)
-      .then(doc => {
-        doc._deleted = true;
-        return module.exports.saveDoc(doc);
-      });
+    return module.exports.getDoc(id).then(doc => {
+      doc._deleted = true;
+      return module.exports.saveDoc(doc);
+    });
   },
 
   /**
@@ -351,12 +386,12 @@ module.exports = {
    * @param      {Boolean}  ignoreRefresh  don't bother refreshing
    * @return     {Promise}  completion promise
    */
-  updateSettings: (updates, ignoreRefresh) => updateSettings(updates)
-      .then(() => {
-        if (!ignoreRefresh) {
-          return refreshToGetNewSettings();
-        }
-      }),
+  updateSettings: (updates, ignoreRefresh) =>
+    updateSettings(updates).then(() => {
+      if (!ignoreRefresh) {
+        return refreshToGetNewSettings();
+      }
+    }),
 
   /**
    * Revert settings and refresh if required
@@ -364,19 +399,18 @@ module.exports = {
    * @param      {Boolean}  ignoreRefresh  don't bother refreshing
    * @return     {Promise}  completion promise
    */
-  revertSettings: ignoreRefresh => revertSettings()
-    .then(() => {
+  revertSettings: ignoreRefresh =>
+    revertSettings().then(() => {
       if (!ignoreRefresh) {
         return refreshToGetNewSettings();
       }
     }),
 
-
   seedTestData: (done, contactId, documents) => {
     protractor.promise
       .all(documents.map(module.exports.saveDoc))
       .then(() => module.exports.getDoc(userSettingsDocId))
-      .then((user) => {
+      .then(user => {
         user.contact_id = contactId;
         return module.exports.saveDoc(user);
       })
@@ -405,13 +439,13 @@ module.exports = {
   },
 
   //check for the update modal before
-  beforeEach:() => {
+  beforeEach: () => {
     if (element(by.css('#update-available')).isPresent()) {
       $('body').sendKeys(protractor.Key.ENTER);
     }
   },
 
- /**
+  /**
    * Reverts the db's settings and documents
    *
    * @param      {Array}  except         documents to ignore, see deleteAllDocs
@@ -421,11 +455,14 @@ module.exports = {
   revertDb: revertDb,
 
   resetBrowser: () => {
-    browser.driver.navigate().refresh().then(() => {
-      return browser.wait(() => {
-        return element(by.css('#messages-tab')).isPresent();
-      }, 10000);
-    });
+    browser.driver
+      .navigate()
+      .refresh()
+      .then(() => {
+        return browser.wait(() => {
+          return element(by.css('#messages-tab')).isPresent();
+        }, 10000);
+      });
   },
 
   countOf: count => {
@@ -435,19 +472,27 @@ module.exports = {
   },
 
   getCouchUrl: () =>
-    `http://${auth.user}:${auth.pass}@${constants.COUCH_HOST}:${constants.COUCH_PORT}/${constants.DB_NAME}`,
+    `http://${auth.user}:${auth.pass}@${constants.COUCH_HOST}:${
+      constants.COUCH_PORT
+    }/${constants.DB_NAME}`,
 
   getBaseUrl: () =>
-    `http://${constants.API_HOST}:${constants.API_PORT}/${constants.DB_NAME}/_design/medic/_rewrite/#/`,
+    `http://${constants.API_HOST}:${constants.API_PORT}/${
+      constants.DB_NAME
+    }/_design/medic/_rewrite/#/`,
 
   getAdminBaseUrl: () =>
-    `http://${constants.API_HOST}:${constants.API_PORT}/${constants.DB_NAME}/_design/medic-admin/_rewrite/#/`,
+    `http://${constants.API_HOST}:${constants.API_PORT}/${
+      constants.DB_NAME
+    }/_design/medic-admin/_rewrite/#/`,
 
   getLoginUrl: () =>
-    `http://${constants.API_HOST}:${constants.API_PORT}/${constants.DB_NAME}/login`,
+    `http://${constants.API_HOST}:${constants.API_PORT}/${
+      constants.DB_NAME
+    }/login`,
 
   // Deletes _users docs and medic/user-settings docs for specified users
   // @param {Array} usernames - list of users to be deleted
   // @return {Promise}
-  deleteUsers: deleteUsers
+  deleteUsers: deleteUsers,
 };
