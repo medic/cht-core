@@ -111,7 +111,6 @@ module.exports = function(Promise, DB) {
     if (!patientId) {
       return Promise.resolve([]);
     }
-
     return contactUuidByPatientId(patientId)
       .then(function(uuid) {
         return fetchLineageById(uuid);
@@ -125,7 +124,6 @@ module.exports = function(Promise, DB) {
       if (!results.rows.length) {
         return patientId;
       }
-
       if (results.rows.length > 1) {
         console.warn('More than one patient person document for shortcode ' + patientId);
       }

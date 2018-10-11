@@ -376,7 +376,6 @@ describe('Contacts controller', () => {
       });
     });
 
-
     describe('muted contacts modal', () => {
       it('should set all forms to not display muted modal when contact is not muted', () => {
         const forms = [

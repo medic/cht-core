@@ -65,7 +65,7 @@ angular.module('inboxDirectives').directive('mmContentRow', function() {
       taskCount: '=',
 
       // boolean: (optional) whether the contact is muted
-      // html-minifier considers `muted` as a boolean attribute, so it will strip its value
+      // html-minifier considers `muted` to be a boolean attribute, so it will strip its value
       muted: '=isMuted',
 
       // boolean: (optional) whether to display the "muted" text along with contact name

@@ -36,8 +36,7 @@ describe('showMutedModal directive', () => {
     const element = compile('<my-element ' +
                             'show-muted-modal to-state="contacts.report" ' +
                             'to-state-params="{ id: actionBar.right.selected[0]._id, formId: form.code }"' +
-                            '>MyForm</my-element>'
-    )(scope);
+                            '>MyForm</my-element>')(scope);
     scope.$digest();
     element.click();
 
@@ -61,8 +60,7 @@ describe('showMutedModal directive', () => {
     const element = compile('<my-element ' +
                             'show-muted-modal to-state="contacts.report" ' +
                             'to-state-params="{ id: actionBar.right.selected[0]._id, formId: form.code }"' +
-                            '>MyForm</my-element>'
-    )(scope);
+                            '>MyForm</my-element>')(scope);
     scope.$digest();
     element.click();
 
@@ -85,8 +83,7 @@ describe('showMutedModal directive', () => {
     const element = compile('<my-element ' +
                             'show-muted-modal to-state="contacts.report" ' +
                             'to-state-params="{ id: actionBar.right.selected[0]._id, formId: form.code }"' +
-                            '>MyForm</my-element>'
-    )(scope);
+                            '>MyForm</my-element>')(scope);
     scope.$digest();
     element.click();
 

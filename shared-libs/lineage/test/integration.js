@@ -238,6 +238,23 @@ const report3 = {
     patient_id: report_patient._id
   }
 };
+const report4 = {
+  _id: 'report4',
+  type: 'data_record',
+  form: 'A',
+  contact: {
+    _id: report_contact._id,
+    parent: {
+      _id: report_parent._id,
+      parent: {
+        _id: report_grandparent._id
+      }
+    }
+  },
+  fields: {
+    patient_id: 'something'
+  }
+};
 const stub_contacts = {
   _id: 'stub_contacts',
   type: 'data_record',
@@ -303,6 +320,7 @@ const fixtures = [
   report,
   report2,
   report3,
+  report4,
   stub_contacts,
   stub_parents,
   sms_doc
@@ -450,7 +468,6 @@ describe('Lineage', function() {
 
     it('attaches patient lineage when using patient_uuid field', () => {
       return lineage.fetchHydratedDoc(report2._id).then(actual => {
-        console.log(JSON.stringify(actual));
         chai.assert.checkDeepProperties(actual, {
           form: 'A',
           patient: {
@@ -475,13 +492,33 @@ describe('Lineage', function() {
 
     it('attaches patient lineage when using patient_id field that contains a uuid', () => {
       return lineage.fetchHydratedDoc(report3._id).then(actual => {
-        console.log(JSON.stringify(actual));
         chai.assert.checkDeepProperties(actual, {
           form: 'A',
           patient: {
             name: report_patient.name,
             parent: { name: report_contact.name }
           },
+          contact: {
+            name: report_contact.name,
+            parent: {
+              name: report_parent.name,
+              contact: { phone: '+123' },
+              parent: {
+                name: report_grandparent.name,
+                contact: { phone: '+456' }
+              }
+            }
+          },
+          parent: undefined
+        });
+      });
+    });
+
+    it('should work when patient is not found', () => {
+      return lineage.fetchHydratedDoc(report4._id).then(actual => {
+        chai.expect(actual.patient).to.equal(undefined);
+        chai.assert.checkDeepProperties(actual, {
+          form: 'A',
           contact: {
             name: report_contact.name,
             parent: {

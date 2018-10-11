@@ -59,6 +59,8 @@ const getDistrictPhone = doc => {
   return f && f.contact && f.contact.phone;
 };
 
+// updates the states of matching scheduled tasks
+// returns the number of updated tasks
 const setTasksStates = (doc, state, predicate) => {
   doc.scheduled_tasks = doc.scheduled_tasks || [];
   return _.compact(_.map(doc.scheduled_tasks, task => {
@@ -333,18 +335,17 @@ module.exports = {
     vm.runInNewContext(expr, context),
 
   isMutedInLineage: doc => {
+    let muted = false;
     if (!doc || !doc.parent) {
-      return false;
+      return muted;
     }
 
     let parent = doc.parent;
-    while (parent) {
-      if (parent.muted) {
-        return true;
-      }
+    while (parent && !muted) {
+      muted = !!parent.muted;
       parent = parent.parent;
     }
 
-    return false;
+    return muted;
   }
 };
