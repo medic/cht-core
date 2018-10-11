@@ -14,6 +14,7 @@ if(UNIT_TEST_ENV) {
     allDocs: stubMe('allDocs'),
     bulkDocs: stubMe('bulkDocs'),
     put: stubMe('put'),
+    remove: stubMe('remove'),
     post: stubMe('post'),
     query: stubMe('query'),
     get: stubMe('get'),
