@@ -105,6 +105,7 @@ angular.module('inboxServices').factory('Select2Search',
           })
           .then(function(doc) {
             doc.muted = ContactMuted(doc);
+            return doc;
           });
       };
 
