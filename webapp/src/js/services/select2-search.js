@@ -101,6 +101,15 @@ angular.module('inboxServices').factory('Select2Search',
         return LineageModelGenerator.contact(id, { merge: true })
           .then(function(contact) {
             return contact && contact.doc;
+          })
+          .then(function(doc) {
+            var parent = doc;
+            while (parent && !doc.muted) {
+              doc.muted = parent.muted;
+              parent = parent.parent;
+            }
+
+            return doc;
           });
       };
 

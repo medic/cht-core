@@ -79,6 +79,17 @@ angular.module('inboxServices').factory('ContactViewModelGenerator',
       return model;
     };
 
+    var setMutedState = function(model) {
+      model.doc.muted = model.doc.muted ||
+                        !!(
+                          model.lineage &&
+                          model.lineage.length &&
+                          _.findWhere(model.lineage, { muted: true })
+                        );
+
+      return model;
+    };
+
     var splitContactsByType = function(children) {
       return _.groupBy(children, function(child) {
         if (child.doc.type === 'person') {
@@ -248,7 +259,8 @@ angular.module('inboxServices').factory('ContactViewModelGenerator',
         .then(setChildren)
         .then(setReports)
         .then(setPrimaryContact)
-        .then(setSchemaFields);
+        .then(setSchemaFields)
+        .then(setMutedState);
     };
   }
 );
