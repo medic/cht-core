@@ -59,27 +59,21 @@ const getMessage = (value, locale) => {
 };
 
 const loadSettings = function() {
-  return settingsService.get()
-    .then(newSettings => {
-      settings = newSettings || {};
-      const original = JSON.stringify(settings);
-      _.defaults(settings, defaults);
-      // add any missing permissions
-      if (settings.permissions) {
-        defaults.permissions.forEach(function(def) {
-          const configured = _.findWhere(settings.permissions, { name: def.name });
-          if (!configured) {
-            settings.permissions.push(def);
-          }
-        });
-      } else {
-        settings.permissions = defaults.permissions;
-      }
-      if (JSON.stringify(settings) !== original) {
-        console.log('Updating settings with new defaults');
-        return settingsService.update(settings);
-      }
-    });
+  return settingsService.get().then(newSettings => {
+    settings = newSettings || {};
+    const original = JSON.stringify(settings);
+    _.defaults(settings, defaults);
+    // add any missing permissions
+    if (settings.permissions) {
+      _.defaults(settings.permissions, defaults.permissions);
+    } else {
+      settings.permissions = defaults.permissions;
+    }
+    if (JSON.stringify(settings) !== original) {
+      console.log('Updating settings with new defaults');
+      return settingsService.update(settings);
+    }
+  });
 };
 
 const loadTranslations = () => {
