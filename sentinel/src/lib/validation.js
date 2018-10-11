@@ -181,34 +181,30 @@ module.exports = {
          */
     isISOWeek: (doc, validation, callback) => {
       const weekFieldName = validation.funcArgs[0];
-      const yearFieldName =
-        validation.funcArgs.length > 1 ? validation.funcArgs[1] : null;
+      const yearFieldName = validation.funcArgs[1] || null;
       if (
         !_.has(doc, weekFieldName) ||
         (yearFieldName && !_.has(doc, yearFieldName))
       ) {
-        callback(
-          new Error('Validation failed: input field(s) do not exist'),
-          false
+        logger.error(
+          'isISOWeek validation failed: input field(s) do not exist'
         );
+        callback(null, false);
       } else {
-        const year = yearFieldName
-          ? doc[yearFieldName]
-          : new Date().getFullYear();
+        // prettier-ignore
+        const year = yearFieldName ? doc[yearFieldName] : new Date().getFullYear();
         const isValidISOWeek =
           /^\d{1,2}$/.test(doc[weekFieldName]) &&
-          /^20\d{2}$/.test(year) &&
+          /^\d{4}$/.test(year) &&
           doc[weekFieldName] >= 1 &&
-          doc[weekFieldName] <= moment(`${year}-01-01`).isoWeeksInYear();
+          doc[weekFieldName] <= moment(year).isoWeeksInYear();
         if (isValidISOWeek) {
           callback(null, true);
         } else {
-          callback(
-            new Error(
-              'Validation failed: the number of week is greater than the maximum'
-            ),
-            false
+          logger.error(
+            'isISOWeek validation failed: the number of week is greater than the maximum'
           );
+          callback(null, false);
         }
       }
     },
