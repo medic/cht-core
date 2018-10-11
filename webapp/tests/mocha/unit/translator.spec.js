@@ -26,7 +26,7 @@ describe('Bootstrap Translator', () => {
 
   it('Translate defaults and setLocale to English', () => {
     expect(translator.translate('LOAD_ASSETS')).to.eq(translationData.en.LOAD_ASSETS);
-    translator.setLocale('es');
+    translator.setLocale('es_EU');
     expect(translator.translate('LOAD_ASSETS')).to.eq(translationData.es.LOAD_ASSETS);
   });
 

@@ -47,6 +47,7 @@
   };
 
   var initialReplication = function(localDb, remoteDb) {
+    setUiStatus('LOAD_APP');
     var dbSyncStartTime = Date.now();
     var dbSyncStartData = getDataUsage();
     var replicator = localDb.replicate
@@ -143,7 +144,6 @@
     getDdoc(localDb)
       .then(function() {
         // ddoc found - bootstrap immediately
-        setUiStatus('LOAD_RULES');
         localDb.close();
         callback();
       })
@@ -156,10 +156,6 @@
             return getDdoc(localDb).catch(function() {
               throw new Error('Initial replication failed');
             });
-          })
-          .then(function() {
-            // replication complete - bootstrap angular
-            setUiStatus('LOAD_RULES');
           })
           .catch(function(err) {
             return err;
