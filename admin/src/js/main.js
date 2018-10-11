@@ -72,7 +72,7 @@ require('../../../webapp/src/js/services/auth');
 require('../../../webapp/src/js/services/cache');
 require('../../../webapp/src/js/services/calendar-interval');
 require('../../../webapp/src/js/services/changes');
-require('../../../webapp/src/js/services/contact-muting');
+require('../../../webapp/src/js/services/contact-muted');
 require('../../../webapp/src/js/services/contact-schema');
 require('../../../webapp/src/js/services/db');
 require('../../../webapp/src/js/services/download-url');
