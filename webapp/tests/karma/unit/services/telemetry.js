@@ -136,7 +136,6 @@ describe('Telemetry service', () => {
       pouchDb.destroy = sinon.stub().resolves();
 
       $window.navigator.userAgent = 'Agent Smith';
-      $window.navigator.language = 'klingon';
       $window.navigator.hardwareConcurrency = 4;
       $window.screen = {
         availWidth: 768,
@@ -152,7 +151,7 @@ describe('Telemetry service', () => {
 
         const aggregatedDoc = DB.put.args[0][0];
         chai.expect(aggregatedDoc._id).to.match(/telemetry-2018-9-greg/);
-        chai.expect(aggregatedDoc.stats).to.deep.equal({
+        chai.expect(aggregatedDoc.metrics).to.deep.equal({
           foo: 'stats',
           bar: 'more stats',
         });
@@ -163,7 +162,6 @@ describe('Telemetry service', () => {
         chai.expect(aggregatedDoc.dbInfo).to.deep.equal({ some: 'stats' });
         chai.expect(aggregatedDoc.device).to.deep.equal({
           userAgent: 'Agent Smith',
-          language: 'klingon',
           hardwareConcurrency: 4,
           screen: {
             width: 768,
@@ -201,7 +199,6 @@ describe('Telemetry service', () => {
       pouchDb.destroy = sinon.stub().resolves();
 
       $window.navigator.userAgent = 'Agent Smith';
-      $window.navigator.language = 'klingon';
       $window.navigator.hardwareConcurrency = 4;
       $window.screen = {
         availWidth: 768,

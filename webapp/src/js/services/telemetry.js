@@ -98,27 +98,21 @@ angular
         month: date.month(),
         user: Session.userCtx().name,
         deviceId: getUniqueDeviceId(),
-        // REVIEWER: is there anything else we think we should store here?
-        // Candidates would be generic metadata that is not directly device
-        // related or DB related
       };
     };
 
     var generateDeviceStats = function() {
       return {
         userAgent: $window.navigator.userAgent,
-        language: $window.navigator.language,
         hardwareConcurrency: $window.navigator.hardwareConcurrency,
         screen: {
           width: $window.screen.availWidth,
           height: $window.screen.availHeight,
         },
-        // REVIEWER: while we can expand this in the future are their other
-        // useful things you would like to see here?
+        // TODO: expose some device information in the medic-android wrapper
+        // and pull it in here. Device memory, phone type, stuff like that
         //
-        // REVIEWER: do we want to ship with extra data pulled from Android via
-        // medic-android? This would allow us to know true android version, disk
-        // space, stuff like that.
+        // https://github.com/medic/medic-webapp/issues/4882
       };
     };
 
@@ -154,8 +148,7 @@ angular
             type: 'telemetry',
           };
 
-          // REVIEWER: is there a better name than 'stats' for aggregated telemetry records?
-          aggregateDoc.stats = convertReduceToKeyValues(reduceResult);
+          aggregateDoc.metrics = convertReduceToKeyValues(reduceResult);
           aggregateDoc.metadata = generateMetadataSection();
           aggregateDoc._id = generateAggregateDocId(aggregateDoc.metadata);
           aggregateDoc.device = generateDeviceStats();
@@ -188,7 +181,7 @@ angular
       //
       // While this function returns a promise, this is primarily for testing.
       // It is not recommended you hold on to this promise and wait for it to
-      // resolve for performance reasons.
+      // resolve, for performance reasons.
       //
       // @param      {String}   key     a unique key that will be aggregated
       //                                against later
