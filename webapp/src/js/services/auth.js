@@ -27,11 +27,11 @@ angular.module('inboxServices').factory('Auth',
 
     var check = function(permissions, userRoles, settings, expected) {
       return _.every(permissions, function(permission) {
-        var required = _.findWhere(settings.permissions, { name: permission });
-        if (!required) {
+        var roles = settings.permissions[permission];
+        if (!roles) {
           return !expected;
         }
-        var found = _.intersection(userRoles, required.roles).length > 0;
+        var found = _.intersection(userRoles, roles).length > 0;
         return expected === found;
       });
     };
