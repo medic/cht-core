@@ -197,7 +197,10 @@ module.exports = {
           /^\d{1,2}$/.test(doc[weekFieldName]) &&
           /^\d{4}$/.test(year) &&
           doc[weekFieldName] >= 1 &&
-          doc[weekFieldName] <= moment(year).isoWeeksInYear();
+          doc[weekFieldName] <=
+            moment()
+              .year(year)
+              .isoWeeksInYear();
         if (isValidISOWeek) {
           callback(null, true);
         } else {
