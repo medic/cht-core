@@ -224,7 +224,7 @@ describe('EditUserCtrl controller', () => {
       });
     });
 
-    it("password doesn't need to be filled when editing user", done => {
+    it(`password doesn't need to be filled when editing user`, done => {
       mockEditAUser(userToEdit);
       Translate.returns(Promise.resolve('something'));
       setTimeout(() => {
@@ -360,7 +360,7 @@ describe('EditUserCtrl controller', () => {
       });
     });
 
-    it("doesn't need associated place and contact if user type is not restricted user", done => {
+    it(`doesn't need associated place and contact if user type is not restricted user`, done => {
       mockEditAUser(userToEdit);
 
       setTimeout(() => {
