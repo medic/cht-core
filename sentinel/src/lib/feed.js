@@ -1,11 +1,12 @@
 const logger = require('./logger'),
-      db = require('../db-pouch');
+  db = require('../db-pouch');
 
 const followFeed = (seq, queue) => {
-  return db.medic.changes({ live: true, since: seq })
+  return db.medic
+    .changes({ live: true, since: seq })
     .on('change', change => {
       // skip uninteresting documents
-      if (change.id.match(/^_design\//)) {
+      if (change.id.match(/^_design\/|-info$/)) {
         return;
       }
       queue.push(change);
@@ -16,5 +17,5 @@ const followFeed = (seq, queue) => {
 };
 
 module.exports = {
-  followFeed: (seq, queue) => followFeed(seq, queue)
+  followFeed: (seq, queue) => followFeed(seq, queue),
 };
