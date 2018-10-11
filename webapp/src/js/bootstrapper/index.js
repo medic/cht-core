@@ -3,9 +3,8 @@
   'use strict';
 
   var ONLINE_ROLE = 'mm-online';
-  
-  var BootstrapTranslator = require('./translator');
-  var translator = new BootstrapTranslator();
+
+  var translator = require('./translator');
 
   var getUserCtx = function() {
     var userCtx, locale;
@@ -23,8 +22,9 @@
     }
     try {
       var parsedCtx = JSON.parse(unescape(decodeURI(userCtx)));
-      return Object.assign(parsedCtx, { locale: locale });
-    } catch(e) {
+      parsedCtx.locale = locale;
+      return parsedCtx;
+    } catch (e) {
       return;
     }
   };
@@ -60,7 +60,7 @@
     replicator
       .on('change', function(info) {
         console.log('initialReplication()', 'change', info);
-        setUxStatus(BootstrapTranslator.FETCH_INFO, info.docs_read || '?');
+        setUiStatus('FETCH_INFO', info.docs_read || '?');
       });
 
     return replicator
@@ -106,14 +106,14 @@
            hasRole(userCtx, ONLINE_ROLE);
   };
 
-  var setUxStatus = function(translationKey, arg) {
+  var setUiStatus = function(translationKey, arg) {
     var translated = translator.translate(translationKey, arg);
     $('.bootstrap-layer .status').text(translated);
   };
 
-  var setUxError = function() {
-    var errorMessage = translator.translate(BootstrapTranslator.ERROR_MESSAGE);
-    var tryAgain = translator.translate(BootstrapTranslator.TRY_AGAIN);
+  var setUiError = function() {
+    var errorMessage = translator.translate('ERROR_MESSAGE');
+    var tryAgain = translator.translate('TRY_AGAIN');
     $('.bootstrap-layer').html('<div><p>' + errorMessage + '</p><a class="btn btn-primary" href="#" onclick="window.location.reload(false);">' + tryAgain + '</a></div>');
   };
 
@@ -133,9 +133,9 @@
     if (hasFullDataAccess(userCtx)) {
       return callback();
     }
-    
-    translator.setLocale(userCtx.locale);
 
+    translator.setLocale(userCtx.locale);
+    
     var username = userCtx.name;
     var localDbName = getLocalDbName(dbInfo, username);
     var localDb = window.PouchDB(localDbName, POUCHDB_OPTIONS.local);
@@ -143,7 +143,7 @@
     getDdoc(localDb)
       .then(function() {
         // ddoc found - bootstrap immediately
-        setUxStatus(BootstrapTranslator.LOAD_RULES);
+        setUiStatus('LOAD_RULES');
         localDb.close();
         callback();
       })
@@ -159,7 +159,7 @@
           })
           .then(function() {
             // replication complete - bootstrap angular
-            setUxStatus(BootstrapTranslator.LOAD_RULES);
+            setUiStatus('LOAD_RULES');
           })
           .catch(function(err) {
             return err;
@@ -172,7 +172,7 @@
                 return redirectToLogin(dbInfo, err, callback);
               }
 
-              setUxError();
+              setUiError();
             }
 
             callback(err);
