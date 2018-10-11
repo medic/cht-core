@@ -28,7 +28,7 @@ angular.module('controllers').controller('AuthorizationPermissionsCtrl',
 
         // add the configured permissions
         $scope.permissions = [];
-        Object.keys(settings.permissions).map(function(key, index) {
+        Object.keys(settings.permissions).map(function(key) {
           $scope.permissions.push({
             name: key,
             roles: makeRoleModel(settings.permissions[key]),
