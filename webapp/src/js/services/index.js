@@ -16,6 +16,7 @@
   require('./child-facility');
   require('./contact-change-filter');
   require('./contact-form');
+  require('./contact-muted');
   require('./contact-save');
   require('./contact-schema');
   require('./contact-summary');

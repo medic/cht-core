@@ -8,6 +8,7 @@ angular.module('inboxServices').factory('Select2Search',
     $q,
     $translate,
     DB,
+    ContactMuted,
     LineageModelGenerator,
     Search,
     Session,
@@ -103,13 +104,7 @@ angular.module('inboxServices').factory('Select2Search',
             return contact && contact.doc;
           })
           .then(function(doc) {
-            var parent = doc;
-            while (parent && !doc.muted) {
-              doc.muted = parent.muted;
-              parent = parent.parent;
-            }
-
-            return doc;
+            doc.muted = ContactMuted(doc);
           });
       };
 

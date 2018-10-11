@@ -18,6 +18,7 @@ angular.module('inboxServices').factory('ContactViewModelGenerator',
   function(
     $log,
     $q,
+    ContactMuted,
     ContactSchema,
     DB,
     LineageModelGenerator,
@@ -80,13 +81,7 @@ angular.module('inboxServices').factory('ContactViewModelGenerator',
     };
 
     var setMutedState = function(model) {
-      model.doc.muted = model.doc.muted ||
-                        !!(
-                          model.lineage &&
-                          model.lineage.length &&
-                          _.findWhere(model.lineage, { muted: true })
-                        );
-
+      model.doc.muted = ContactMuted(model.doc, model.lineage);
       return model;
     };
 
