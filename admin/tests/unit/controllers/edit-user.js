@@ -1,40 +1,44 @@
 describe('EditUserCtrl controller', () => {
-
   'use strict';
 
   let jQuery,
-      mockCreateNewUser,
-      mockEditAUser,
-      mockEditCurrentUser,
-      scope,
-      translationsDbQuery,
-      dbGet,
-      UpdateUser,
-      CreateUser,
-      UserSettings,
-      Translate,
-      Settings,
-      userToEdit;
+    mockCreateNewUser,
+    mockEditAUser,
+    mockEditCurrentUser,
+    scope,
+    translationsDbQuery,
+    dbGet,
+    UpdateUser,
+    CreateUser,
+    UserSettings,
+    Translate,
+    Settings,
+    userToEdit;
 
   beforeEach(() => {
     module('adminApp');
 
     dbGet = sinon.stub();
     translationsDbQuery = sinon.stub();
-    translationsDbQuery.returns(Promise.resolve({ rows: [
-      { value: { code: 'en' } },
-      { value: { code: 'fr' } }
-    ] }));
+    translationsDbQuery.returns(
+      Promise.resolve({
+        rows: [{ value: { code: 'en' } }, { value: { code: 'fr' } }],
+      })
+    );
     UpdateUser = sinon.stub();
     UpdateUser.returns(Promise.resolve());
     CreateUser = sinon.stub();
     CreateUser.returns(Promise.resolve());
     UserSettings = sinon.stub();
-    Settings = sinon.stub().returns(Promise.resolve({ roles: {
-      'district-manager': { name: 'xyz', offline: true },
-      'data-entry': { name: 'abc' },
-      'supervisor': { name: 'qrt', offline: true }
-    }}));
+    Settings = sinon.stub().returns(
+      Promise.resolve({
+        roles: {
+          'district-manager': { name: 'xyz', offline: true },
+          'data-entry': { name: 'abc' },
+          supervisor: { name: 'qrt', offline: true },
+        },
+      })
+    );
     userToEdit = {
       _id: 'user.id',
       name: 'user.name',
@@ -43,8 +47,8 @@ describe('EditUserCtrl controller', () => {
       phone: 'user.phone',
       facility_id: 'abc',
       contact_id: 'xyz',
-      roles: [ 'district-manager' ],
-      language: 'zz'
+      roles: ['district-manager'],
+      language: 'zz',
     };
     Translate = sinon.stub();
 
@@ -55,16 +59,19 @@ describe('EditUserCtrl controller', () => {
       $provide.factory('$uibModalInstance', () => {
         return {
           rendered: Promise.resolve(),
-          close: () => {}
+          close: () => {},
         };
       });
       $provide.factory('processingFunction', () => {
         return null;
       });
-      $provide.factory('DB', KarmaUtils.mockDB({
-        query: translationsDbQuery,
-        get: dbGet
-      }));
+      $provide.factory(
+        'DB',
+        KarmaUtils.mockDB({
+          query: translationsDbQuery,
+          get: dbGet,
+        })
+      );
       $provide.value('UpdateUser', UpdateUser);
       $provide.value('CreateUser', CreateUser);
       $provide.value('UserSettings', UserSettings);
@@ -80,20 +87,24 @@ describe('EditUserCtrl controller', () => {
         scope.setFinished = sinon.stub();
         scope.setError = sinon.stub();
         return $controller('EditUserCtrl', {
-          '$scope': scope,
-          '$rootScope': $rootScope,
-          '$q': Q,
-          'Language': sinon.stub(),
-          'ContactSchema': { getPlaceTypes: () => { return []; } },
-          'Search': sinon.stub(),
-          'Session': {
+          $scope: scope,
+          $rootScope: $rootScope,
+          $q: Q,
+          Language: sinon.stub(),
+          ContactSchema: {
+            getPlaceTypes: () => {
+              return [];
+            },
+          },
+          Search: sinon.stub(),
+          Session: {
             userCtx: () => {
               return { name: 'greg' };
-            }
+            },
           },
-          'Select2Search': sinon.stub(),
-          'SetLanguage': sinon.stub(),
-          '$window': {location: {reload: sinon.stub()}}
+          Select2Search: sinon.stub(),
+          SetLanguage: sinon.stub(),
+          $window: { location: { reload: sinon.stub() } },
         });
       };
       mockEditCurrentUser = user => {
@@ -120,23 +131,25 @@ describe('EditUserCtrl controller', () => {
       Settings,
       translationsDbQuery,
       dbGet,
-      jQuery);
+      jQuery
+    );
   });
 
   const mockFacility = facilityId => {
-    window.$.withArgs('#edit-user-profile [name=facilitySelect]')
-      .returns({ val: () => facilityId });
+    window.$.withArgs('#edit-user-profile [name=facilitySelect]').returns({
+      val: () => facilityId,
+    });
   };
   const mockContact = contactId => {
-    window.$.withArgs('#edit-user-profile [name=contactSelect]')
-      .returns({ val: () => contactId });
+    window.$.withArgs('#edit-user-profile [name=contactSelect]').returns({
+      val: () => contactId,
+    });
   };
-  const mockContactGet = (facilityId) => {
+  const mockContactGet = facilityId => {
     dbGet.returns(Promise.resolve({ parent: { _id: facilityId } }));
   };
 
   describe('initialisation', () => {
-
     it('edits the given user', done => {
       mockEditAUser(userToEdit);
       setTimeout(() => {
@@ -144,8 +157,12 @@ describe('EditUserCtrl controller', () => {
         chai.expect(scope.enabledLocales[0].code).to.equal('en');
         chai.expect(scope.enabledLocales[1].code).to.equal('fr');
         chai.expect(translationsDbQuery.callCount).to.equal(1);
-        chai.expect(translationsDbQuery.args[0][0]).to.equal('medic-client/doc_by_type');
-        chai.expect(translationsDbQuery.args[0][1].key[0]).to.equal('translations');
+        chai
+          .expect(translationsDbQuery.args[0][0])
+          .to.equal('medic-client/doc_by_type');
+        chai
+          .expect(translationsDbQuery.args[0][1].key[0])
+          .to.equal('translations');
         chai.expect(translationsDbQuery.args[0][1].key[1]).to.equal(true);
         chai.expect(scope.editUserModel).to.deep.equal({
           id: userToEdit._id,
@@ -158,19 +175,20 @@ describe('EditUserCtrl controller', () => {
           role: userToEdit.roles[0],
           language: { code: userToEdit.language },
           contactSelect: userToEdit.contact_id,
-          contact: userToEdit.contact_id
+          contact: userToEdit.contact_id,
         });
         done();
       });
     });
-
   });
 
   describe('$scope.editUser', () => {
     it('username must be present', done => {
       mockEditAUser(userToEdit);
       Translate.withArgs('User Name').returns(Promise.resolve('uname'));
-      Translate.withArgs('field is required', { field: 'uname' }).returns(Promise.resolve('uname req'));
+      Translate.withArgs('field is required', { field: 'uname' }).returns(
+        Promise.resolve('uname req')
+      );
       setTimeout(() => {
         scope.editUserModel.id = null;
         scope.editUserModel.username = '';
@@ -191,18 +209,22 @@ describe('EditUserCtrl controller', () => {
         scope.editUserModel.username = 'newuser';
         scope.editUserModel.role = 'data-entry';
         Translate.withArgs('Password').returns(Promise.resolve('pswd'));
-        Translate.withArgs('field is required', { field: 'pswd' }).returns(Promise.resolve('pswd field must be filled'));
+        Translate.withArgs('field is required', { field: 'pswd' }).returns(
+          Promise.resolve('pswd field must be filled')
+        );
         setTimeout(() => {
           scope.editUser();
           setTimeout(() => {
-            chai.expect(scope.errors.password).to.equal('pswd field must be filled');
+            chai
+              .expect(scope.errors.password)
+              .to.equal('pswd field must be filled');
             done();
           });
         });
       });
     });
 
-    it('password doesn\'t need to be filled when editing user', done => {
+    it("password doesn't need to be filled when editing user", done => {
       mockEditAUser(userToEdit);
       Translate.returns(Promise.resolve('something'));
       setTimeout(() => {
@@ -221,7 +243,9 @@ describe('EditUserCtrl controller', () => {
       setTimeout(() => {
         scope.editUserModel.username = 'newuser';
         scope.editUserModel.role = 'data-entry';
-        Translate.withArgs('Passwords must match').returns(Promise.resolve('wrong'));
+        Translate.withArgs('Passwords must match').returns(
+          Promise.resolve('wrong')
+        );
         setTimeout(() => {
           const password = '1QrAs$$3%%kkkk445234234234';
           scope.editUserModel.password = password;
@@ -266,7 +290,9 @@ describe('EditUserCtrl controller', () => {
         mockFacility(null);
         mockContact(userToEdit.contact_id);
         Translate.withArgs('Facility').returns(Promise.resolve('fac'));
-        Translate.withArgs('field is required', { field: 'fac' }).returns(Promise.resolve('fac req'));
+        Translate.withArgs('field is required', { field: 'fac' }).returns(
+          Promise.resolve('fac req')
+        );
 
         // when
         scope.editUser();
@@ -286,8 +312,12 @@ describe('EditUserCtrl controller', () => {
         scope.editUserModel.role = 'district-manager';
         mockFacility(userToEdit.facility_id);
         mockContact(null);
-        Translate.withArgs('associated.contact').returns(Promise.resolve('con'));
-        Translate.withArgs('field is required', { field: 'con' }).returns(Promise.resolve('con req'));
+        Translate.withArgs('associated.contact').returns(
+          Promise.resolve('con')
+        );
+        Translate.withArgs('field is required', { field: 'con' }).returns(
+          Promise.resolve('con req')
+        );
 
         // when
         scope.editUser();
@@ -307,10 +337,16 @@ describe('EditUserCtrl controller', () => {
         scope.editUserModel.role = 'district-manager';
         mockFacility(null);
         mockContact(null);
-        Translate.withArgs('associated.contact').returns(Promise.resolve('con'));
-        Translate.withArgs('field is required', { field: 'con' }).returns(Promise.resolve('con req'));
+        Translate.withArgs('associated.contact').returns(
+          Promise.resolve('con')
+        );
+        Translate.withArgs('field is required', { field: 'con' }).returns(
+          Promise.resolve('con req')
+        );
         Translate.withArgs('Facility').returns(Promise.resolve('fac'));
-        Translate.withArgs('field is required', { field: 'fac' }).returns(Promise.resolve('fac req'));
+        Translate.withArgs('field is required', { field: 'fac' }).returns(
+          Promise.resolve('fac req')
+        );
 
         // when
         scope.editUser();
@@ -324,7 +360,7 @@ describe('EditUserCtrl controller', () => {
       });
     });
 
-    it('doesn\'t need associated place and contact if user type is not restricted user', done => {
+    it("doesn't need associated place and contact if user type is not restricted user", done => {
       mockEditAUser(userToEdit);
 
       setTimeout(() => {
@@ -350,7 +386,9 @@ describe('EditUserCtrl controller', () => {
         mockContact(userToEdit.contact_id);
         mockFacility(userToEdit.facility_id);
         mockContactGet('some-other-id');
-        Translate.withArgs('configuration.user.place.contact').returns(Promise.resolve('outside'));
+        Translate.withArgs('configuration.user.place.contact').returns(
+          Promise.resolve('outside')
+        );
 
         // when
         scope.editUser();
@@ -394,10 +432,37 @@ describe('EditUserCtrl controller', () => {
           chai.expect(updates.phone).to.equal(scope.editUserModel.phone);
           chai.expect(updates.place).to.equal(scope.editUserModel.facility_id);
           chai.expect(updates.contact).to.equal(scope.editUserModel.contact_id);
-          chai.expect(updates.language).to.equal(scope.editUserModel.language.code);
+          chai
+            .expect(updates.language)
+            .to.equal(scope.editUserModel.language.code);
           chai.expect(updates.roles[0]).to.equal(scope.editUserModel.role);
-          chai.expect(updates.password).to.deep.equal(scope.editUserModel.password);
+          chai
+            .expect(updates.password)
+            .to.deep.equal(scope.editUserModel.password);
           done();
+        });
+      });
+    });
+
+    it('associated contact must have place when creating a new user', done => {
+      mockCreateNewUser();
+      setTimeout(() => {
+        scope.editUserModel.username = 'newuser';
+        scope.editUserModel.role = 'data-entry';
+        mockContact('xyz');
+
+        Translate.withArgs('Facility').returns(Promise.resolve('fac'));
+        Translate.withArgs('field is required', { field: 'fac' }).returns(
+          Promise.resolve('place is a required field')
+        );
+        setTimeout(() => {
+          scope.editUser();
+          setTimeout(() => {
+            chai
+              .expect(scope.errors.place)
+              .to.equal('place is a required field');
+            done();
+          });
         });
       });
     });
