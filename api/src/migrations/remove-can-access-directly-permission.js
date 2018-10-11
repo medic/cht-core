@@ -7,11 +7,7 @@ module.exports = {
   run: promisify(function(callback) {
     settingsService.get()
       .then(settings => {
-        if (Array.isArray(settings.permissions)) {
-          settings.permissions = settings.permissions.filter(p => p.name !== 'can_access_directly');
-        } else {
-          delete settings.permissions.can_access_directly;
-        }
+        delete settings.permissions['can_access_directly'];
         return settingsService.update(settings);
       })
       .then(() => callback())
