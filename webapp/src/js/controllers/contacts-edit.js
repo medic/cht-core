@@ -3,6 +3,7 @@ angular.module('inboxControllers').controller('ContactsEditCtrl',
     $log,
     $q,
     $scope,
+    $rootScope,
     $state,
     $timeout,
     $translate,
@@ -100,6 +101,7 @@ angular.module('inboxControllers').controller('ContactsEditCtrl',
 
     var markFormEdited = function() {
       $scope.enketoStatus.edited = true;
+      $rootScope.$broadcast('markLinks');
     };
 
     var renderForm = function(form) {
@@ -180,6 +182,7 @@ angular.module('inboxControllers').controller('ContactsEditCtrl',
               $scope.enketoStatus.saving = false;
               $translate(docId ? 'contact.updated' : 'contact.created').then(Snackbar);
               $state.go('contacts.detail', { id: result.docId });
+              $rootScope.$broadcast('unmarkLinks');
             })
             .catch(function(err) {
               $scope.enketoStatus.saving = false;

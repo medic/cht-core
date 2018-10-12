@@ -2,6 +2,7 @@ angular.module('inboxControllers').controller('TasksContentCtrl',
   function (
     $log,
     $scope,
+    $rootScope,
     $state,
     $translate,
     DB,
@@ -38,6 +39,7 @@ angular.module('inboxControllers').controller('TasksContentCtrl',
 
     var markFormEdited = function() {
       $scope.enketoStatus.edited = true;
+      $rootScope.$broadcast('markLinks');
     };
 
     $scope.performAction = function(action, skipDetails) {
@@ -98,6 +100,7 @@ angular.module('inboxControllers').controller('TasksContentCtrl',
           $scope.clearSelected();
           $scope.clearCancelTarget();
           $state.go('tasks.detail', { id: null });
+          $rootScope.$broadcast('unmarkLinks');
         })
         .catch(function(err) {
           $scope.enketoStatus.saving = false;

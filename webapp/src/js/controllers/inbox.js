@@ -188,6 +188,34 @@ var feedback = require('../modules/feedback'),
       });
     });
 
+    var links = document.getElementsByTagName('a');
+
+    $scope.$on('markLinks', function(){
+      for(var i = 0; i < links.length; i++) {
+        //anchor tags within enketo form to be skipped
+        if($('.enketo').find(links[i]).length === 0) {
+          links[i].addEventListener('click', setLinks, false);
+          links[i].target = '_self';
+        }
+      }
+    });
+
+    $scope.$on('unmarkLinks', function(){
+      for(var i = 0; i < links.length; i++) {
+        if($('.enketo').find(links[i]).length === 0) {
+          links[i].removeEventListener('click', setLinks, false);
+          if(links[i].target === '_self'){
+            links[i].removeAttribute('target');
+          }
+        }
+      }
+    });
+
+    var setLinks = function(e) {
+      e.preventDefault();
+      $scope.navigationCancel();
+    };
+
     // User wants to cancel current flow, or pressed back button, etc.
     $scope.navigationCancel = function() {
       if ($scope.enketoStatus.saving) {

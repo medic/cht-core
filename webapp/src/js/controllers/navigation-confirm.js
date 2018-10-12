@@ -1,6 +1,7 @@
 angular.module('inboxControllers').controller('NavigationConfirmCtrl',
   function (
     $scope,
+    $rootScope,
     $uibModalInstance
   ) {
 
@@ -13,6 +14,7 @@ angular.module('inboxControllers').controller('NavigationConfirmCtrl',
 
     $scope.submit = function() {
       $uibModalInstance.close();
+      $rootScope.$broadcast('unmarkLinks');
     };
 
   }
