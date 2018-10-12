@@ -22,41 +22,39 @@ describe('auth directive', function() {
     });
   });
 
-  describe('mmAuth', () => {
-    it('should be shown when auth does not error', function(done) {
-      Auth.returns(Promise.resolve());
-      var element = compile('<a mm-auth="can_do_stuff">')(scope);
-      scope.$digest();
-      setTimeout(function() {
-        chai.expect(element.hasClass('hidden')).to.equal(false);
-        chai.expect(Auth.callCount).to.equal(1);
-        chai.expect(Auth.args[0][0]).to.deep.equal(['can_do_stuff']);
-        done();
-      });
+  it('should be shown when auth does not error', function(done) {
+    Auth.returns(Promise.resolve());
+    var element = compile('<a mm-auth="can_do_stuff">')(scope);
+    scope.$digest();
+    setTimeout(function() {
+      chai.expect(element.hasClass('hidden')).to.equal(false);
+      chai.expect(Auth.callCount).to.equal(1);
+      chai.expect(Auth.args[0][0]).to.deep.equal(['can_do_stuff']);
+      done();
     });
+  });
 
-    it('should be hidden when auth errors', function(done) {
-      Auth.returns(Promise.reject('boom'));
-      var element = compile('<a mm-auth="can_do_stuff">')(scope);
-      scope.$digest();
-      setTimeout(function() {
-        chai.expect(element.hasClass('hidden')).to.equal(true);
-        chai.expect(Auth.callCount).to.equal(1);
-        chai.expect(Auth.args[0][0]).to.deep.equal(['can_do_stuff']);
-        done();
-      });
+  it('should be hidden when auth errors', function(done) {
+    Auth.returns(Promise.reject('boom'));
+    var element = compile('<a mm-auth="can_do_stuff">')(scope);
+    scope.$digest();
+    setTimeout(function() {
+      chai.expect(element.hasClass('hidden')).to.equal(true);
+      chai.expect(Auth.callCount).to.equal(1);
+      chai.expect(Auth.args[0][0]).to.deep.equal(['can_do_stuff']);
+      done();
     });
+  });
 
-    it('splits comma separated permissions', function(done) {
-      Auth.returns(Promise.resolve());
-      var element = compile('<a mm-auth="can_do_stuff,!can_not_do_stuff">')(scope);
-      scope.$digest();
-      setTimeout(function() {
-        chai.expect(element.hasClass('hidden')).to.equal(false);
-        chai.expect(Auth.callCount).to.equal(1);
-        chai.expect(Auth.args[0][0]).to.deep.equal(['can_do_stuff', '!can_not_do_stuff']);
-        done();
-      });
+  it('splits comma separated permissions', function(done) {
+    Auth.returns(Promise.resolve());
+    var element = compile('<a mm-auth="can_do_stuff,!can_not_do_stuff">')(scope);
+    scope.$digest();
+    setTimeout(function() {
+      chai.expect(element.hasClass('hidden')).to.equal(false);
+      chai.expect(Auth.callCount).to.equal(1);
+      chai.expect(Auth.args[0][0]).to.deep.equal(['can_do_stuff', '!can_not_do_stuff']);
+      done();
     });
   });
 
