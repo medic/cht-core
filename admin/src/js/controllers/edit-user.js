@@ -191,12 +191,9 @@ angular
     };
 
     var validateContactAndFacility = function() {
-      if (!$scope.editUserModel.place && $scope.editUserModel.contact) {
-        return validateRequired('place', 'Facility');
-      }
       var role = $scope.roles && $scope.roles[$scope.editUserModel.role];
       if (!role || !role.offline) {
-        return true;
+        return !$scope.editUserModel.contact || validateRequired('place', 'Facility');
       }
       var hasPlace = validateRequired('place', 'Facility');
       var hasContact = validateRequired('contact', 'associated.contact');
