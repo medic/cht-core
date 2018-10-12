@@ -96,7 +96,7 @@ module.exports = {
 
     // offline users are allowed to access the admin app
     if (req.params.ddocId === 'medic-admin') {
-      return next();
+      return permissionsError(res);
     }
 
     req.params.docId = `_design/${req.params.ddocId}`;

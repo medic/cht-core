@@ -347,4 +347,85 @@ describe('Auth service', function() {
         });
     });
   });
+
+  describe('Auth.roles', () => {
+    it('rejects when no session', () => {
+      userCtx.returns(null);
+      return service
+        .roles([''])
+        .catch(err => chai.expect(err.message).to.equal('Not logged in'));
+    });
+
+    it('should reject when roles is empty string', () => {
+      userCtx.returns({ roles: ['a'] });
+      return service
+        .roles([''])
+        .then(() => chai.expect(true).to.equal('Should have thrown'))
+        .catch(err => chai.expect(err).to.equal(undefined));
+    });
+
+    it('should resolve when user is db admin', () => {
+      userCtx.returns({ roles: ['_admin'] });
+      return service
+        .roles(['a', 'b', 'c'])
+        .catch(() => chai.expect(true).to.equal('Should have passed auth'));
+    });
+
+    it('should reject when user is db admin and there is at least one disallowed role', () => {
+      userCtx.returns({ roles: ['_admin'] });
+      return service
+        .roles(['a', 'b', '!c', 'd', 'e'])
+        .then(() => chai.expect(true).to.equal('Should have thrown'))
+        .catch(err => chai.expect(err).to.equal(undefined));
+    });
+
+    it('should resolve when user has all required roles', () => {
+      userCtx.returns({ roles: ['a', 'b', 'c', 'd', 'e'] });
+      return Promise
+        .all([
+          service.roles(['a']),
+          service.roles(['b', 'c']),
+          service.roles(['d', 'e'])
+        ])
+        .catch(() => chai.expect(true).to.equal('Should have passed auth'));
+    });
+
+    it('should resolve when user has none of the disalowed roles', () => {
+      userCtx.returns({ roles: ['a', 'b', 'c', 'd', 'e'] });
+      return Promise
+        .all([
+          service.roles(['!f']),
+          service.roles(['!g', '!p']),
+          service.roles(['!p', '!role', 'a', 'b'])
+        ])
+        .catch(() => chai.expect(true).to.equal('Should have passed auth'));
+    });
+
+    it('should reject when user has none of the required roles', () => {
+      userCtx.returns({ roles: ['a', 'b', 'c'] });
+
+      return service
+        .roles(['1', '2', '3'])
+        .then(() => chai.expect(true).to.equal('Should have thrown'))
+        .catch(err => chai.expect(err).to.equal(undefined));
+    });
+
+    it('should reject when user has some of the required roles', () => {
+      userCtx.returns({ roles: ['a', 'b', 'c'] });
+
+      return service
+        .roles(['a', 'b', '2'])
+        .then(() => chai.expect(true).to.equal('Should have thrown'))
+        .catch(err => chai.expect(err).to.equal(undefined));
+    });
+
+    it('should reject when user has some of the disallowed roles', () => {
+      userCtx.returns({ roles: ['a', 'b', 'c'] });
+
+      return service
+        .roles(['a', '!b', '!c'])
+        .then(() => chai.expect(true).to.equal('Should have thrown'))
+        .catch(err => chai.expect(err).to.equal(undefined));
+    });
+  });
 });

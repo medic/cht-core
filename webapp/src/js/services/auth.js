@@ -148,6 +148,33 @@ angular.module('inboxServices').factory('Auth',
       });
     };
 
+    auth.roles = function(roles) {
+      if (!_.isArray(roles)) {
+        roles = [ roles ];
+      }
+
+      var requiredRoles = getRequired(roles);
+      var disallowedRoles = getDisallowed(roles);
+
+      return getRoles().then(function(userRoles) {
+        if (_.contains(userRoles, '_admin')) {
+          if (disallowedRoles.length > 0) {
+            return authFail('disallowed role(s) found for admin', roles, userRoles);
+          }
+          return $q.resolve();
+        }
+
+        if (_.intersection(requiredRoles, userRoles).length !== requiredRoles.length) {
+          return authFail('missing required role', roles, userRoles);
+        }
+        if (_.intersection(disallowedRoles, userRoles).length) {
+          return authFail('found disallowed role', roles, userRoles);
+        }
+
+        return $q.resolve();
+      });
+    };
+
     return auth;
   }
 );

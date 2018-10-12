@@ -11,8 +11,10 @@ describe('auth directive', function() {
     module('inboxDirectives');
     Auth = sinon.stub();
     Auth.any = sinon.stub();
+    Auth.roles = sinon.stub();
     module(function ($provide) {
       $provide.value('Auth', Auth);
+      $provide.value('$q', Q);
     });
     inject(function(_$compile_, _$rootScope_) {
       compile = _$compile_;
@@ -20,39 +22,145 @@ describe('auth directive', function() {
     });
   });
 
-  it('should be shown when auth does not error', function(done) {
-    Auth.returns(Promise.resolve());
-    var element = compile('<a mm-auth="can_do_stuff">')(scope);
-    scope.$digest();
-    setTimeout(function() {
-      chai.expect(element.hasClass('hidden')).to.equal(false);
-      chai.expect(Auth.callCount).to.equal(1);
-      chai.expect(Auth.args[0][0]).to.deep.equal(['can_do_stuff']);
-      done();
+  describe('mmAuth', () => {
+    it('should be shown when auth does not error', function(done) {
+      Auth.returns(Promise.resolve());
+      var element = compile('<a mm-auth="can_do_stuff">')(scope);
+      scope.$digest();
+      setTimeout(function() {
+        chai.expect(element.hasClass('hidden')).to.equal(false);
+        chai.expect(Auth.callCount).to.equal(1);
+        chai.expect(Auth.args[0][0]).to.deep.equal(['can_do_stuff']);
+        done();
+      });
+    });
+
+    it('should be hidden when auth errors', function(done) {
+      Auth.returns(Promise.reject('boom'));
+      var element = compile('<a mm-auth="can_do_stuff">')(scope);
+      scope.$digest();
+      setTimeout(function() {
+        chai.expect(element.hasClass('hidden')).to.equal(true);
+        chai.expect(Auth.callCount).to.equal(1);
+        chai.expect(Auth.args[0][0]).to.deep.equal(['can_do_stuff']);
+        done();
+      });
+    });
+
+    it('splits comma separated permissions', function(done) {
+      Auth.returns(Promise.resolve());
+      var element = compile('<a mm-auth="can_do_stuff,!can_not_do_stuff">')(scope);
+      scope.$digest();
+      setTimeout(function() {
+        chai.expect(element.hasClass('hidden')).to.equal(false);
+        chai.expect(Auth.callCount).to.equal(1);
+        chai.expect(Auth.args[0][0]).to.deep.equal(['can_do_stuff', '!can_not_do_stuff']);
+        done();
+      });
     });
   });
 
-  it('should be hidden when auth errors', function(done) {
-    Auth.returns(Promise.reject('boom'));
-    var element = compile('<a mm-auth="can_do_stuff">')(scope);
-    scope.$digest();
-    setTimeout(function() {
-      chai.expect(element.hasClass('hidden')).to.equal(true);
-      chai.expect(Auth.callCount).to.equal(1);
-      chai.expect(Auth.args[0][0]).to.deep.equal(['can_do_stuff']);
-      done();
+  describe('mmAuthRole', () => {
+    it('should be shown when auth does not error', (done) => {
+      Auth.roles.resolves();
+      var element = compile('<a mm-auth mm-auth-role="role_to_have">')(scope);
+      scope.$digest();
+      setTimeout(() => {
+        chai.expect(element.hasClass('hidden')).to.equal(false);
+        chai.expect(Auth.roles.callCount).to.equal(1);
+        chai.expect(Auth.roles.args[0][0]).to.deep.equal(['role_to_have']);
+        done();
+      });
+    });
+
+    it('should be hidden when auth errors', (done) => {
+      Auth.roles.rejects({ some: 'err' });
+      var element = compile('<a mm-auth mm-auth-role="role_to_have">')(scope);
+      scope.$digest();
+      setTimeout(() => {
+        chai.expect(element.hasClass('hidden')).to.equal(true);
+        chai.expect(Auth.roles.callCount).to.equal(1);
+        chai.expect(Auth.roles.args[0][0]).to.deep.equal(['role_to_have']);
+        done();
+      });
+    });
+
+    it('splits comma separated roles', (done) => {
+      Auth.roles.resolves();
+      var element = compile('<a mm-auth mm-auth-role="role_to_have,!role_not_to_have">')(scope);
+      scope.$digest();
+      setTimeout(() => {
+        chai.expect(element.hasClass('hidden')).to.equal(false);
+        chai.expect(Auth.roles.callCount).to.equal(1);
+        chai.expect(Auth.roles.args[0][0]).to.deep.equal(['role_to_have', '!role_not_to_have']);
+        done();
+      });
     });
   });
 
-  it('splits comma separated permissions', function(done) {
-    Auth.returns(Promise.resolve());
-    var element = compile('<a mm-auth="can_do_stuff,!can_not_do_stuff">')(scope);
-    scope.$digest();
-    setTimeout(function() {
-      chai.expect(element.hasClass('hidden')).to.equal(false);
-      chai.expect(Auth.callCount).to.equal(1);
-      chai.expect(Auth.args[0][0]).to.deep.equal(['can_do_stuff', '!can_not_do_stuff']);
-      done();
+  describe('mmAuth + mmAuthRole', () => {
+    it('should be shown when both do not err', (done) => {
+      Auth.resolves();
+      Auth.roles.resolves();
+
+      var element = compile('<a mm-auth="permission_to_have" mm-auth-role="role_to_have">')(scope);
+      scope.$digest();
+      setTimeout(() => {
+        chai.expect(element.hasClass('hidden')).to.equal(false);
+        chai.expect(Auth.roles.callCount).to.equal(1);
+        chai.expect(Auth.roles.args[0][0]).to.deep.equal(['role_to_have']);
+        chai.expect(Auth.callCount).to.equal(1);
+        chai.expect(Auth.args[0][0]).to.deep.equal(['permission_to_have']);
+        done();
+      });
+    });
+
+    it('should be hidden when roles succeed and permissions err', (done) => {
+      Auth.rejects();
+      Auth.roles.resolves();
+
+      var element = compile('<a mm-auth="permission_to_have" mm-auth-role="role_to_have">')(scope);
+      scope.$digest();
+      setTimeout(() => {
+        chai.expect(element.hasClass('hidden')).to.equal(true);
+        chai.expect(Auth.roles.callCount).to.equal(1);
+        chai.expect(Auth.roles.args[ 0 ][ 0 ]).to.deep.equal([ 'role_to_have' ]);
+        chai.expect(Auth.callCount).to.equal(1);
+        chai.expect(Auth.args[ 0 ][ 0 ]).to.deep.equal([ 'permission_to_have' ]);
+        done();
+      });
+    });
+
+    it('should be hidden when roles fail and permissions succeed', (done) => {
+      Auth.resolves();
+      Auth.roles.rejects();
+
+      var element = compile('<a mm-auth="permission_to_have" mm-auth-role="role_to_have">')(scope);
+      scope.$digest();
+      setTimeout(() => {
+        chai.expect(element.hasClass('hidden')).to.equal(true);
+        chai.expect(Auth.roles.callCount).to.equal(1);
+        chai.expect(Auth.roles.args[ 0 ][ 0 ]).to.deep.equal([ 'role_to_have' ]);
+        chai.expect(Auth.callCount).to.equal(1);
+        chai.expect(Auth.args[ 0 ][ 0 ]).to.deep.equal([ 'permission_to_have' ]);
+        done();
+      });
+    });
+
+    it('should be hidden when both fail', (done) => {
+      Auth.rejects();
+      Auth.roles.rejects();
+
+      var element = compile('<a mm-auth="permission_to_have" mm-auth-role="role_to_have">')(scope);
+      scope.$digest();
+      setTimeout(() => {
+        chai.expect(element.hasClass('hidden')).to.equal(true);
+        chai.expect(Auth.roles.callCount).to.equal(1);
+        chai.expect(Auth.roles.args[ 0 ][ 0 ]).to.deep.equal([ 'role_to_have' ]);
+        chai.expect(Auth.callCount).to.equal(1);
+        chai.expect(Auth.args[ 0 ][ 0 ]).to.deep.equal([ 'permission_to_have' ]);
+        done();
+      });
     });
   });
 
