@@ -164,10 +164,10 @@ angular.module('inboxServices').factory('Auth',
           return $q.resolve();
         }
 
-        if (_.intersection(requiredRoles, userRoles).length !== requiredRoles.length) {
+        if (!_.every(requiredRoles, _.partial(_.includes, userRoles))) {
           return authFail('missing required role', roles, userRoles);
         }
-        if (_.intersection(disallowedRoles, userRoles).length) {
+        if (_.some(disallowedRoles, _.partial(_.includes, userRoles))) {
           return authFail('found disallowed role', roles, userRoles);
         }
 
