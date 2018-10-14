@@ -1,6 +1,5 @@
-angular
-  .module('inboxControllers')
-  .controller('TasksContentCtrl', function(
+angular.module('inboxControllers').controller('TasksContentCtrl',
+  function (
     $log,
     $scope,
     $state,
@@ -13,6 +12,7 @@ angular
     Snackbar,
     XmlForm
   ) {
+
     'use strict';
     'ngInject';
 
@@ -26,12 +26,14 @@ angular
     var hasOneFormAndNoFields = function(task) {
       return Boolean(
         task &&
-          task.actions &&
-          task.actions.length === 1 &&
-          (!task.fields ||
-            task.fields.length === 0 ||
-            !task.fields[0].value ||
-            task.fields[0].value.length === 0)
+        task.actions &&
+        task.actions.length === 1 &&
+        (
+          !task.fields ||
+          task.fields.length === 0 ||
+          !task.fields[0].value ||
+          task.fields[0].value.length === 0
+        )
       );
     };
 
@@ -58,26 +60,19 @@ angular
         XmlForm(action.form, { include_docs: true })
           .then(function(formDoc) {
             $scope.enketoStatus.edited = false;
-            Enketo.render(
-              '#task-report',
-              formDoc.id,
-              action.content,
-              markFormEdited
-            ).then(function(formInstance) {
-              $scope.form = formInstance;
-              $scope.loadingForm = false;
-              if (formDoc.doc.translation_key) {
-                $scope.setTitle(
-                  $translate.instant(formDoc.doc.translation_key)
-                );
-              } else {
-                $scope.setTitle(TranslateFrom(formDoc.doc.title));
-              }
-            });
+            Enketo.render('#task-report', formDoc.id, action.content, markFormEdited)
+              .then(function(formInstance) {
+                $scope.form = formInstance;
+                $scope.loadingForm = false;
+                if (formDoc.doc.translation_key) {
+                  $scope.setTitle($translate.instant(formDoc.doc.translation_key));
+                } else {
+                  $scope.setTitle(TranslateFrom(formDoc.doc.title));
+                }
+              });
           })
           .catch(function(err) {
-            $scope.errorTranslationKey =
-              err.translationKey || 'error.loading.form';
+            $scope.errorTranslationKey = err.translationKey || 'error.loading.form';
             $scope.contentError = true;
             $scope.loadingForm = false;
             $log.error('Error loading form.', err);
@@ -89,9 +84,7 @@ angular
 
     $scope.save = function() {
       if ($scope.enketoStatus.saving) {
-        $log.debug(
-          'Attempted to call tasks-content:$scope.save more than once'
-        );
+        $log.debug('Attempted to call tasks-content:$scope.save more than once');
         return;
       }
 
@@ -116,7 +109,7 @@ angular
         });
     };
 
-    $transitions.onStart({}, function(trans) {
+    $transitions.onStart({ }, function(trans) {
       if (trans.to().name.indexOf('tasks.detail') === -1) {
         Enketo.unload($scope.form);
         $scope.unsetSelected();
@@ -134,4 +127,5 @@ angular
     $scope.form = null;
     $scope.formId = null;
     $scope.setSelected($state.params.id);
-  });
+  }
+);

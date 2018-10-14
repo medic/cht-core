@@ -390,7 +390,7 @@ var _ = require('underscore'),
       return setupPromise;
     };
 
-    $transitions.onStart({}, function(trans) {
+    $transitions.onStart({ }, function(trans) {
       if (trans.to().name.indexOf('contacts') === -1) {
         $scope.unsetSelected();
       }

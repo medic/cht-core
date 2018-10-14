@@ -276,7 +276,7 @@ var feedback = require('../modules/feedback'),
       $scope.setShowContent(true);
     };
 
-    $transitions.onSuccess({}, function(trans) {
+    $transitions.onSuccess({ }, function(trans) {
       $scope.currentTab = trans.to().name.split('.')[0];
       if (!$state.includes('reports')) {
         $scope.selectMode = false;

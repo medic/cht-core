@@ -491,7 +491,7 @@ angular
 
     $scope.$on('DeselectAll', deselectAll);
 
-    $transitions.onStart({}, function(trans) {
+    $transitions.onStart({ }, function(trans) {
       if (trans.to().name.indexOf('reports') === -1) {
         $scope.unsetSelected();
       }

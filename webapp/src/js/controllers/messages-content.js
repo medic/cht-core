@@ -6,9 +6,8 @@ var _ = require('underscore');
 //  - the _id of the data_record if there is no discernable phone number
 //  This is determined by its $stateParams.type: 'contact', 'phone' or 'unknown'
 //  respectively
-angular
-  .module('inboxControllers')
-  .controller('MessagesContentCtrl', function(
+angular.module('inboxControllers').controller('MessagesContentCtrl',
+  function (
     $log,
     $q,
     $scope,
@@ -23,11 +22,12 @@ angular
     SendMessage,
     Session
   ) {
+
     'use strict';
     'ngInject';
 
     $scope.send = {
-      message: '',
+      message: ''
     };
 
     var checkScroll = function() {
@@ -66,7 +66,7 @@ angular
       if (type === 'contact') {
         return LineageModelGenerator.contact(id);
       } else if (type === 'phone') {
-        return { name: id };
+        return {name: id};
       } else {
         return {};
       }
@@ -85,7 +85,10 @@ angular
       if (!options.silent) {
         $scope.setLoadingContent(id);
       }
-      $q.all([getContactable(id, type), MessageContacts.conversation(id)])
+      $q.all([
+        getContactable(id, type),
+        MessageContacts.conversation(id)
+      ])
         .then(function(results) {
           var contactModel = results[0];
           var conversation = results[1];
@@ -129,14 +132,10 @@ angular
           .then(function(conversation) {
             $scope.loadingMoreContent = false;
             var contentElem = $('.message-content-wrapper');
-            var scrollToBottom =
-              contentElem.scrollTop() + contentElem.height() + 30 >
-              contentElem[0].scrollHeight;
+            var scrollToBottom = contentElem.scrollTop() + contentElem.height() + 30 > contentElem[0].scrollHeight;
             var first = $('.item-content .body > ul > li').filter(':first');
             conversation.forEach(function(updated) {
-              var match = _.findWhere($scope.selected.messages, {
-                id: updated.id,
-              });
+              var match = _.findWhere($scope.selected.messages, { id: updated.id });
               if (match) {
                 angular.extend(match, updated);
               } else {
@@ -155,9 +154,7 @@ angular
               var scroll = false;
               if (options.skip) {
                 var spinnerHeight = 102;
-                scroll =
-                  $('.message-content-wrapper li')[conversation.length]
-                    .offsetTop - spinnerHeight;
+                scroll = $('.message-content-wrapper li')[conversation.length].offsetTop - spinnerHeight;
               } else if (first.length && scrollToBottom) {
                 scroll = $('.message-content-wrapper')[0].scrollHeight;
               }
@@ -178,11 +175,9 @@ angular
         return;
       }
       var recipient;
-      if ($scope.selected.contact.doc) {
-        // known contact
+      if ($scope.selected.contact.doc) { // known contact
         recipient = { doc: $scope.selected.contact.doc };
-      } else {
-        // unknown sender
+      } else { // unknown sender
         recipient = { doc: { contact: { phone: $scope.selected.id } } };
       }
       SendMessage(recipient, $scope.send.message)
@@ -200,8 +195,8 @@ angular
         controller: 'SendMessageCtrl',
         model: {
           to: $scope.selected.id,
-          message: $scope.send.message,
-        },
+          message: $scope.send.message
+        }
       });
       $scope.send.message = '';
     };
@@ -217,17 +212,16 @@ angular
         }
       },
       filter: function(change) {
-        return (
-          $scope.currentTab === 'messages' &&
+        return $scope.currentTab === 'messages' &&
           $scope.selected &&
-          _.findWhere($scope.selected.messages, { id: change.id })
-        );
-      },
+          _.findWhere($scope.selected.messages, { id: change.id });
+      }
     });
 
     $scope.$on('$destroy', changeListener.unsubscribe);
 
     $('.tooltip').remove();
+
 
     // See $stateParams.id note at top of file
     selectContact($stateParams.id, $stateParams.type);
@@ -243,9 +237,11 @@ angular
         $('#message-footer').removeClass('sending');
       });
 
-    $transitions.onStart({}, function(trans) {
+    $transitions.onStart({ }, function(trans) {
       if (trans.to().name.indexOf('messages.detail') === -1) {
         $scope.unsetSelected();
       }
     });
-  });
+
+  }
+);
