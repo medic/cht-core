@@ -12,7 +12,7 @@ module.exports = {
   mode: 'development',
   context: __dirname,
   // devtool: debug ? "inline-sourcemap" : null,
-  entry: './webapp/src/js/app.module',
+  entry: './webapp/src/js/main',
   output: {
     path: path.join(__dirname, '/build/ddocs/medic/_attachments/js'),
     filename: 'inbox.js',
@@ -59,7 +59,7 @@ module.exports = {
     new AngularCompilerPlugin({
       tsConfigPath: 'tsconfig.json',
       entryModule: 'webapp/src/js/app.module#AppModule',
-      // mainPath: 'webapp/src/js/app.ts',
+      // mainPath: 'webapp/src/js/main.ts',
       // sourceMap: true
     }),
   ],
