@@ -15,6 +15,7 @@ var feedback = require('../modules/feedback'),
     $state,
     $stateParams,
     $timeout,
+    $transitions,
     $translate,
     $window,
     APP_CONFIG,
@@ -275,8 +276,8 @@ var feedback = require('../modules/feedback'),
       $scope.setShowContent(true);
     };
 
-    $scope.$on('$stateChangeSuccess', function(event, toState) {
-      $scope.currentTab = toState.name.split('.')[0];
+    $transitions.onSuccess({}, function(trans) {
+      $scope.currentTab = trans.to().name.split('.')[0];
       if (!$state.includes('reports')) {
         $scope.selectMode = false;
       }

@@ -20,7 +20,7 @@ require('angular-translate');
 require('angular-translate-interpolation-messageformat');
 require('angular-translate-handler-log');
 require('angular-ui-bootstrap');
-require('angular-ui-router');
+var uiRouter = require('@uirouter/angularjs').default;
 
 require('moment');
 require('moment/locale/bm');
@@ -51,7 +51,7 @@ _.templateSettings = {
     'ipCookie',
     'ngRoute',
     'ui.bootstrap',
-    'ui.router',
+    uiRouter,
     'inboxDirectives',
     'inboxFilters',
     'inboxControllers',
@@ -70,10 +70,10 @@ _.templateSettings = {
   ) {
     'ngInject';
     $locationProvider.hashPrefix('');
-    $urlRouterProvider.otherwise('/error/404');
+    // $urlRouterProvider.otherwise('/error/404'); TODO fix this to not infinite loop
     router($stateProvider);
-    $urlRouterProvider.when('', '/home');
-    $urlRouterProvider.when('/messages/{uuid}', '/messages/contact:{uuid}');
+    // $urlRouterProvider.when('', '/home');
+    // $urlRouterProvider.when('/messages/{uuid}', '/messages/contact:{uuid}');
     $translateProvider.useLoader('TranslationLoader', {});
     $translateProvider.useSanitizeValueStrategy('escape');
     $translateProvider.addInterpolation('$translateMessageFormatInterpolation');
