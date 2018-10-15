@@ -6,16 +6,15 @@ angular.module('inboxDirectives').directive('mmAuth', function($log, Auth, $pars
   var link = function(scope, element, attributes) {
     var promises = [];
     if (attributes.mmAuth) {
-      element.addClass('hidden');
       promises.push(Auth(attributes.mmAuth.split(',')));
     }
 
-    if (attributes.mmAuthRole) {
-      element.addClass('hidden');
-      promises.push( Auth.roles(attributes.mmAuthRole.split(',')));
+    if (attributes.mmAuthOnline) {
+      promises.push(Auth.online($parse(attributes.mmAuthOnline)(scope)));
     }
 
     if (promises.length) {
+      element.addClass('hidden');
       $q
         .all(promises)
         .then(function () {

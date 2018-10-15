@@ -148,31 +148,17 @@ angular.module('inboxServices').factory('Auth',
       });
     };
 
-    auth.roles = function(roles) {
-      if (!_.isArray(roles)) {
-        roles = [ roles ];
+    auth.online = function(online) {
+      var userCtx = Session.userCtx();
+      if (!userCtx) {
+        return $q.reject(new Error('Not logged in'));
       }
 
-      var requiredRoles = getRequired(roles);
-      var disallowedRoles = getDisallowed(roles);
+      if (Session.isOnlineOnly(userCtx) !== Boolean(online)) {
+        return authFail(online ? 'user missing online role' : 'user has online role');
+      }
 
-      return getRoles().then(function(userRoles) {
-        if (_.contains(userRoles, '_admin')) {
-          if (disallowedRoles.length > 0) {
-            return authFail('disallowed role(s) found for admin', roles, userRoles);
-          }
-          return $q.resolve();
-        }
-
-        if (!_.every(requiredRoles, _.partial(_.includes, userRoles))) {
-          return authFail('missing required role', roles, userRoles);
-        }
-        if (_.some(disallowedRoles, _.partial(_.includes, userRoles))) {
-          return authFail('found disallowed role', roles, userRoles);
-        }
-
-        return $q.resolve();
-      });
+      return $q.resolve();
     };
 
     return auth;

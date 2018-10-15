@@ -5,16 +5,18 @@ describe('Auth service', function() {
   var service,
       userCtx,
       Settings,
-      $rootScope;
+      $rootScope,
+      isOnlineOnly;
 
   beforeEach(function () {
     module('inboxApp');
     userCtx = sinon.stub();
     Settings = sinon.stub();
+    isOnlineOnly = sinon.stub();
     module(function ($provide) {
       $provide.value('$q', Q);
       $provide.factory('Session', function() {
-        return { userCtx: userCtx };
+        return { userCtx: userCtx, isOnlineOnly: isOnlineOnly };
       });
       $provide.factory('Settings', function() {
         return Settings;
@@ -348,84 +350,103 @@ describe('Auth service', function() {
     });
   });
 
-  describe('Auth.roles', () => {
+  describe('Auth.online', () => {
     it('rejects when no session', () => {
       userCtx.returns(null);
       return service
-        .roles([''])
-        .catch(err => chai.expect(err.message).to.equal('Not logged in'));
+        .online(true)
+        .catch(err => {
+          chai.expect(err.message).to.equal('Not logged in');
+          chai.expect(isOnlineOnly.callCount).to.equal(0);
+        });
     });
 
-    it('should reject when roles is empty string', () => {
+    it('should resolve when requesting online and user is online', () => {
       userCtx.returns({ roles: ['a'] });
-      return service
-        .roles([''])
-        .then(() => chai.expect(true).to.equal('Should have thrown'))
-        .catch(err => chai.expect(err).to.equal(undefined));
-    });
+      isOnlineOnly.returns(true);
 
-    it('should resolve when user is db admin', () => {
-      userCtx.returns({ roles: ['_admin'] });
       return service
-        .roles(['a', 'b', 'c'])
+        .online(true)
+        .then(() => {
+          chai.expect(isOnlineOnly.callCount).to.equal(1);
+          chai.expect(isOnlineOnly.args[0]).to.deep.equal([{ roles: ['a'] }]);
+        })
         .catch(() => chai.expect(true).to.equal('Should have passed auth'));
     });
 
-    it('should reject when user is db admin and there is at least one disallowed role', () => {
-      userCtx.returns({ roles: ['_admin'] });
+    it('should resolve when requesting offline and user is offline', () => {
+      userCtx.returns({ roles: ['a'] });
+      isOnlineOnly.returns(false);
+
       return service
-        .roles(['a', 'b', '!c', 'd', 'e'])
-        .then(() => chai.expect(true).to.equal('Should have thrown'))
-        .catch(err => chai.expect(err).to.equal(undefined));
+        .online(false)
+        .then(() => {
+          chai.expect(isOnlineOnly.callCount).to.equal(1);
+          chai.expect(isOnlineOnly.args[0]).to.deep.equal([{ roles: ['a'] }]);
+        })
+        .catch(() => chai.expect(true).to.equal('Should have passed auth'));
     });
 
-    it('should resolve when user has all required roles', () => {
-      userCtx.returns({ roles: ['a', 'b', 'c', 'd', 'e'] });
+    it('should reject when requesting online and user is offline', () => {
+      userCtx.returns({ roles: ['a', 'b'] });
+      isOnlineOnly.returns(false);
+
+      return service
+        .online(true)
+        .then(() => chai.expect(true).to.equal('Should have thrown'))
+        .catch(err => {
+          chai.expect(err).to.equal(undefined);
+          chai.expect(isOnlineOnly.callCount).to.equal(1);
+          chai.expect(isOnlineOnly.args[0]).to.deep.equal([{ roles: ['a', 'b'] }]);
+        });
+    });
+
+    it('should reject when requesting offline and user is online', () => {
+      userCtx.returns({ roles: ['a', 'b'] });
+      isOnlineOnly.returns(true);
+
+      return service
+        .online(false)
+        .then(() => chai.expect(true).to.equal('Should have thrown'))
+        .catch(err => {
+          chai.expect(err).to.equal(undefined);
+          chai.expect(isOnlineOnly.callCount).to.equal(1);
+          chai.expect(isOnlineOnly.args[0]).to.deep.equal([{ roles: ['a', 'b'] }]);
+        });
+    });
+
+    it('should accept any kind of input truthy input', () => {
+      userCtx.returns({ roles: ['a'] });
+      isOnlineOnly.returns(true);
+
       return Promise
         .all([
-          service.roles(['a']),
-          service.roles(['b', 'c']),
-          service.roles(['d', 'e'])
+          service.online('yes'),
+          service.online('true'),
+          service.online(['something']),
+          service.online({ foo: 'bar' })
         ])
+        .then(() => {
+          chai.expect(isOnlineOnly.callCount).to.equal(4);
+        })
         .catch(() => chai.expect(true).to.equal('Should have passed auth'));
     });
 
-    it('should resolve when user has none of the disalowed roles', () => {
-      userCtx.returns({ roles: ['a', 'b', 'c', 'd', 'e'] });
+    it('should accept any kind of input falsey input', () => {
+      userCtx.returns({ roles: ['a'] });
+      isOnlineOnly.returns(false);
+
       return Promise
         .all([
-          service.roles(['!f']),
-          service.roles(['!g', '!p']),
-          service.roles(['!p', '!role', 'a', 'b'])
+          service.online(),
+          service.online(undefined),
+          service.online(null),
+          service.online(0)
         ])
+        .then(() => {
+          chai.expect(isOnlineOnly.callCount).to.equal(4);
+        })
         .catch(() => chai.expect(true).to.equal('Should have passed auth'));
-    });
-
-    it('should reject when user has none of the required roles', () => {
-      userCtx.returns({ roles: ['a', 'b', 'c'] });
-
-      return service
-        .roles(['1', '2', '3'])
-        .then(() => chai.expect(true).to.equal('Should have thrown'))
-        .catch(err => chai.expect(err).to.equal(undefined));
-    });
-
-    it('should reject when user has some of the required roles', () => {
-      userCtx.returns({ roles: ['a', 'b', 'c'] });
-
-      return service
-        .roles(['a', 'b', '2'])
-        .then(() => chai.expect(true).to.equal('Should have thrown'))
-        .catch(err => chai.expect(err).to.equal(undefined));
-    });
-
-    it('should reject when user has some of the disallowed roles', () => {
-      userCtx.returns({ roles: ['a', 'b', 'c'] });
-
-      return service
-        .roles(['a', '!b', '!c'])
-        .then(() => chai.expect(true).to.equal('Should have thrown'))
-        .catch(err => chai.expect(err).to.equal(undefined));
     });
   });
 });

@@ -94,7 +94,7 @@ module.exports = {
       return next('route');
     }
 
-    // offline users are allowed to access the admin app
+    // offline users are blocked from accessing the admin-app
     if (req.params.ddocId === 'medic-admin') {
       return permissionsError(res);
     }
