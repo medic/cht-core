@@ -155,7 +155,7 @@ angular.module('inboxServices').factory('Auth',
       }
 
       if (Session.isOnlineOnly(userCtx) !== Boolean(online)) {
-        return authFail(online ? 'user missing online role' : 'user has online role');
+        return authFail(online ? 'user missing online role' : 'user has online role', [], userCtx.roles);
       }
 
       return $q.resolve();
