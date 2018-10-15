@@ -77,14 +77,14 @@ describe('Export Data controller', () => {
     });
   });
 
-  describe('V2', () => {
+  describe('V1', () => {
     it('Checks permissions', () => {
       auth.check.returns(Promise.reject({message: 'Bad permissions'}));
       return controller.routeV1({params: {type: 'audit'}, query: {districtId: 'abc'}})
         .then(() => {
           auth.check.callCount.should.equal(1);
           serverUtils.error.args[0][0].message.should.contain('Bad permissions');
-        })
+        });
     });
 
     it ('correct request parameters', () => {
@@ -95,13 +95,13 @@ describe('Export Data controller', () => {
         query: {
           districtId: 'abc'
         }
-      }
-      auth.check.returns(Promise.resolve({user: 'admin', district: 'xyz'}))
+      };
+      auth.check.returns(Promise.resolve({user: 'admin', district: 'xyz'}));
       return controller.routeV1(req, { set: set }).then(() => {
         exportDataV1.get.callCount.should.equal(1);
         exportDataV1.get.args[0][0].should.deep.equal(
           { districtId: 'abc', type: 'audit', form: undefined, district: 'xyz' }
-        )
+        );
       });
     });
   });
