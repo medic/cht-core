@@ -65,8 +65,8 @@ _.templateSettings = {
     $compileProvider,
     $locationProvider,
     $stateProvider,
-    $translateProvider,
-    $urlRouterProvider
+    $translateProvider/*,
+    $urlRouterProvider*/
   ) {
     'ngInject';
     $locationProvider.hashPrefix('');
