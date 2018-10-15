@@ -45,7 +45,7 @@ const getExportPermission = function(type) {
 
 module.exports = {
   routeV1: (req, res) => {
-    auth.check(req, getExportPermission(req.params.type), req.query.district)
+    return auth.check(req, getExportPermission(req.params.type), req.query.district)
       .then(ctx => {
         req.query.type = req.params.type;
         req.query.form = req.params.form || req.query.form;
@@ -66,7 +66,7 @@ module.exports = {
             res.send(exportDataResult);
           }
         });   
-      });
+      }).catch(err => serverUtils.error(err, req, res));
   },
   routeV2: (req, res) => {
     /**
