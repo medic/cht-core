@@ -65,15 +65,23 @@ _.templateSettings = {
     $compileProvider,
     $locationProvider,
     $stateProvider,
-    $translateProvider/*,
-    $urlRouterProvider*/
+    $translateProvider,
+    $urlMatcherFactoryProvider,
+    $urlRouterProvider
   ) {
     'ngInject';
     $locationProvider.hashPrefix('');
-    // $urlRouterProvider.otherwise('/error/404'); TODO fix this to not infinite loop
+    $urlMatcherFactoryProvider.strictMode(false); // allow trailing slashes
+    $urlRouterProvider.otherwise('/error/404');
     router($stateProvider);
-    // $urlRouterProvider.when('', '/home');
-    // $urlRouterProvider.when('/messages/{uuid}', '/messages/contact:{uuid}');
+    $urlRouterProvider.when('', '/home');
+    var OLD_MESSAGES_REGEX = /^(\/messages\/)([^:]+)$/; // matches the deprecated message details URL
+    $urlRouterProvider.rule(function($injector, $location) {
+      var path = $location.path();
+      if (OLD_MESSAGES_REGEX.test(path)) {
+        return path.replace(OLD_MESSAGES_REGEX, '$1contact:$2');
+      }
+    });
     $translateProvider.useLoader('TranslationLoader', {});
     $translateProvider.useSanitizeValueStrategy('escape');
     $translateProvider.addInterpolation('$translateMessageFormatInterpolation');
