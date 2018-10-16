@@ -5,16 +5,18 @@ describe('Auth service', function() {
   var service,
       userCtx,
       Settings,
-      $rootScope;
+      $rootScope,
+      isOnlineOnly;
 
   beforeEach(function () {
     module('inboxApp');
     userCtx = sinon.stub();
     Settings = sinon.stub();
+    isOnlineOnly = sinon.stub();
     module(function ($provide) {
       $provide.value('$q', Q);
       $provide.factory('Session', function() {
-        return { userCtx: userCtx };
+        return { userCtx: userCtx, isOnlineOnly: isOnlineOnly };
       });
       $provide.factory('Settings', function() {
         return Settings;
@@ -345,6 +347,106 @@ describe('Auth service', function() {
         .catch(err => {
           chai.expect(err).to.equal(undefined);
         });
+    });
+  });
+
+  describe('Auth.online', () => {
+    it('rejects when no session', () => {
+      userCtx.returns(null);
+      return service
+        .online(true)
+        .catch(err => {
+          chai.expect(err.message).to.equal('Not logged in');
+          chai.expect(isOnlineOnly.callCount).to.equal(0);
+        });
+    });
+
+    it('should resolve when requesting online and user is online', () => {
+      userCtx.returns({ roles: ['a'] });
+      isOnlineOnly.returns(true);
+
+      return service
+        .online(true)
+        .then(() => {
+          chai.expect(isOnlineOnly.callCount).to.equal(1);
+          chai.expect(isOnlineOnly.args[0]).to.deep.equal([{ roles: ['a'] }]);
+        })
+        .catch(() => chai.expect(true).to.equal('Should have passed auth'));
+    });
+
+    it('should resolve when requesting offline and user is offline', () => {
+      userCtx.returns({ roles: ['a'] });
+      isOnlineOnly.returns(false);
+
+      return service
+        .online(false)
+        .then(() => {
+          chai.expect(isOnlineOnly.callCount).to.equal(1);
+          chai.expect(isOnlineOnly.args[0]).to.deep.equal([{ roles: ['a'] }]);
+        })
+        .catch(() => chai.expect(true).to.equal('Should have passed auth'));
+    });
+
+    it('should reject when requesting online and user is offline', () => {
+      userCtx.returns({ roles: ['a', 'b'] });
+      isOnlineOnly.returns(false);
+
+      return service
+        .online(true)
+        .then(() => chai.expect(true).to.equal('Should have thrown'))
+        .catch(err => {
+          chai.expect(err).to.equal(undefined);
+          chai.expect(isOnlineOnly.callCount).to.equal(1);
+          chai.expect(isOnlineOnly.args[0]).to.deep.equal([{ roles: ['a', 'b'] }]);
+        });
+    });
+
+    it('should reject when requesting offline and user is online', () => {
+      userCtx.returns({ roles: ['a', 'b'] });
+      isOnlineOnly.returns(true);
+
+      return service
+        .online(false)
+        .then(() => chai.expect(true).to.equal('Should have thrown'))
+        .catch(err => {
+          chai.expect(err).to.equal(undefined);
+          chai.expect(isOnlineOnly.callCount).to.equal(1);
+          chai.expect(isOnlineOnly.args[0]).to.deep.equal([{ roles: ['a', 'b'] }]);
+        });
+    });
+
+    it('should accept any kind of input truthy input', () => {
+      userCtx.returns({ roles: ['a'] });
+      isOnlineOnly.returns(true);
+
+      return Promise
+        .all([
+          service.online('yes'),
+          service.online('true'),
+          service.online(['something']),
+          service.online({ foo: 'bar' })
+        ])
+        .then(() => {
+          chai.expect(isOnlineOnly.callCount).to.equal(4);
+        })
+        .catch(() => chai.expect(true).to.equal('Should have passed auth'));
+    });
+
+    it('should accept any kind of input falsey input', () => {
+      userCtx.returns({ roles: ['a'] });
+      isOnlineOnly.returns(false);
+
+      return Promise
+        .all([
+          service.online(),
+          service.online(undefined),
+          service.online(null),
+          service.online(0)
+        ])
+        .then(() => {
+          chai.expect(isOnlineOnly.callCount).to.equal(4);
+        })
+        .catch(() => chai.expect(true).to.equal('Should have passed auth'));
     });
   });
 });
