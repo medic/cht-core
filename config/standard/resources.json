@@ -22,5 +22,7 @@
    "medic-clinic": "medic-clinic.svg",
    "medic-health-center": "medic-health-center.svg",
    "medic-district-hospital": "medic-district-hospital.svg",
-   "medic-person": "medic-person.svg"
+   "medic-person": "medic-person.svg",
+   "medic-chw-area": "medic-chw-area.svg",
+   "medic-family": "medic-family.svg"
 }

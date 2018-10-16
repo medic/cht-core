@@ -8,7 +8,9 @@ const resources = [
   { name: 'medic-person', file: 'medic-person.svg', type: 'image/svg+xml' },
   { name: 'medic-clinic', file: 'medic-clinic.svg', type: 'image/svg+xml' },
   { name: 'medic-health-center', file: 'medic-health-center.svg', type: 'image/svg+xml' },
-  { name: 'medic-district-hospital', file: 'medic-district-hospital.svg', type: 'image/svg+xml' }
+  { name: 'medic-district-hospital', file: 'medic-district-hospital.svg', type: 'image/svg+xml' },
+  { name: 'medic-chw-area', file: 'medic-chw-area.svg', type: 'image/svg+xml' },
+  { name: 'medic-family', file: 'medic-family.svg', type: 'image/svg+xml' }
 ];
 
 module.exports = {
