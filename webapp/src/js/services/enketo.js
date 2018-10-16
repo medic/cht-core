@@ -17,6 +17,7 @@ angular.module('inboxServices').service('Enketo',
     EnketoTranslation,
     ExtractLineage,
     FileReader,
+    Form2Sms,
     Language,
     LineageModelGenerator,
     Search,
@@ -530,6 +531,62 @@ angular.module('inboxServices').service('Enketo',
       form.output.update();
     };
 
+    var submitFormBySmsIfApplicable = function(doc) {
+      function log() {
+        var args = Array.prototype.slice.call(arguments);
+        args.unshift('submitFormBySmsIfApplicable()');
+        $log.error.apply($log, args);
+      }
+      function exiting() {
+        log('EXITING.');
+      }
+
+      log('ENTRY');
+
+      if(!$window.medicmobile_android) {
+        log('Not in android wrapper.');
+        return exiting();
+      }
+
+      if(!$window.medicmobile_android.sms_available) {
+        log('Android wrapper does not have SMS hooks.');
+        return exiting();
+      }
+
+      if(!$window.medicmobile_android.sms_available()) {
+        log('Android wrapper does not have SMS enabled.');
+        log('Check stacktrace to see why the SmsSender failed to initialise.');
+        return exiting();
+      }
+
+      $q.resolve()
+        .then(function() {
+          var parentLog = log;
+          log = function() {
+            var args = Array.prototype.slice.call(arguments);
+            args.unshift('[deferred]');
+            parentLog.apply($log, args);
+          };
+
+          var smsContent = Form2Sms(doc);
+
+          if(!smsContent) {
+            log('Form2Sms did not return any form content for doc:', doc);
+            return exiting();
+          }
+
+          // TODO fetch gateway phone number properly
+          var gatewayPhoneNumber = '+447890123456';
+
+          log('Calling sms_send(' + doc._id + ', ' + gatewayPhoneNumber + ', ' + smsContent + ')...');
+          $window.medicmobile_android.sms_send(doc._id, gatewayPhoneNumber, smsContent);
+          return exiting();
+        });
+
+      log('SMS sending deferred in promise.');
+      return exiting();
+    };
+
     this.save = function(formInternalId, form, geolocation, docId) {
       return $q.resolve(form.validate())
         .then(function(valid) {
@@ -539,6 +596,7 @@ angular.module('inboxServices').service('Enketo',
           if (docId) {
             return update(docId);
           }
+
           return create(formInternalId);
         })
         .then(function(doc) {
@@ -554,7 +612,12 @@ angular.module('inboxServices').service('Enketo',
           }
           return docs;
         })
-        .then(saveDocs);
+        .then(saveDocs)
+        .then(function(docs) {
+          // submit by sms _after_ saveDocs so that the main doc's ID is available
+          submitFormBySmsIfApplicable(docs[0]);
+          return docs;
+        });
     };
 
     this.unload = function(form) {

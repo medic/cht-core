@@ -37,6 +37,7 @@
   require('./export');
   require('./extract-lineage');
   require('./file-reader');
+  require('./form2sms');
   require('./format-data-record');
   require('./format-date');
   require('./geolocation');
