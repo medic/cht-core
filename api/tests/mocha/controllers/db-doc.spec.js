@@ -277,15 +277,16 @@ describe('db-doc controller', () => {
         });
     });
 
-    it('forwards medic-admin requests to the next middleware', () => {
+    it('blocks requests to medic-admin', () => {
       testReq.params = { ddocId: 'medic-admin' };
-      return controller
-        .requestDdoc('medic', testReq, testRes, next)
-        .then(() => {
-          next.callCount.should.equal(1);
-          next.args[0].should.deep.equal([]);
-          service.filterOfflineRequest.callCount.should.equal(0);
-        });
+      controller.requestDdoc('medic', testReq, testRes, next);
+      service.filterOfflineRequest.callCount.should.equal(0);
+      next.callCount.should.equal(0);
+
+      testRes.status.callCount.should.equal(1);
+      testRes.status.args[0].should.deep.equal([403]);
+      testRes.json.callCount.should.deep.equal(1);
+      testRes.json.args[0].should.deep.equal([{ error: 'forbidden', reason: 'Insufficient privileges' }]);
     });
 
     it('constructs correct docId when ddoc is not appddoc and continues request when allowed', () => {

@@ -174,5 +174,18 @@ angular
       });
     };
 
+    auth.online = function(online) {
+      var userCtx = Session.userCtx();
+      if (!userCtx) {
+        return $q.reject(new Error('Not logged in'));
+      }
+
+      if (Session.isOnlineOnly(userCtx) !== Boolean(online)) {
+        return authFail(online ? 'user missing online role' : 'user has online role', [], userCtx.roles);
+      }
+
+      return $q.resolve();
+    };
+
     return auth;
   });
