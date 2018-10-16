@@ -34,11 +34,11 @@ var hasRole = (userCtx, role) => {
 var isDbAdmin = userCtx => hasRole(userCtx, '_admin');
 
 var hasPermission = (userCtx, permission) => {
-  var perm = _.findWhere(config.get('permissions'), { name: permission });
-  if (!perm) {
+  var roles = config.get('permissions')[permission];
+  if (!roles) {
     return false;
   }
-  return _.some(perm.roles, role => _.contains(userCtx.roles, role));
+  return _.some(roles, role => _.contains(userCtx.roles, role));
 };
 
 var checkDistrict = (requested, permitted) => {
