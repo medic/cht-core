@@ -35,6 +35,7 @@
   require('./export');
   require('./extract-lineage');
   require('./file-reader');
+  require('./form2sms');
   require('./format-data-record');
   require('./format-date');
   require('./geolocation');
@@ -93,5 +94,4 @@
   require('./xml-forms-context-utils');
   require('./xslt');
   require('./z-score');
-
 }());
