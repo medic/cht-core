@@ -45,30 +45,28 @@ const getExportPermission = function(type) {
 
 module.exports = {
   routeV1: (req, res) => {
-    auth.check(req, getExportPermission(req.params.type), req.query.district, function(err, ctx) {
-      if (err) {
-        return serverUtils.error(err, req, res, true);
-      }
-      req.query.type = req.params.type;
-      req.query.form = req.params.form || req.query.form;
-      req.query.district = ctx.district;
+    return auth.check(req, getExportPermission(req.params.type), req.query.district)
+      .then(ctx => {
+        req.query.type = req.params.type;
+        req.query.form = req.params.form || req.query.form;
+        req.query.district = ctx.district;
 
-      exportDataV1.get(req.query, function(err, exportDataResult) {
-        if (err) {
-          return serverUtils.error(err, req, res);
-        }
-
-        writeExportHeaders(res, req.params.type, formats[req.query.format] || formats.csv);
-
-        if (_.isFunction(exportDataResult)) {
-          // wants to stream the result back
-          exportDataResult(res.write.bind(res), res.end.bind(res));
-        } else {
-          // has already generated result to return
-          res.send(exportDataResult);
-        }
-      });
-    });
+        exportDataV1.get(req.query, (err, exportDataResult) => {
+          if (err) {
+            return serverUtils.error(err, req, res);
+          }
+  
+          writeExportHeaders(res, req.params.type, formats[req.query.format] || formats.csv);
+  
+          if (_.isFunction(exportDataResult)) {
+            // wants to stream the result back
+            exportDataResult(res.write.bind(res), res.end.bind(res));
+          } else {
+            // has already generated result to return
+            res.send(exportDataResult);
+          }
+        });   
+      }).catch(err => serverUtils.error(err, req, res));
   },
   routeV2: (req, res) => {
     /**
