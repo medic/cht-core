@@ -11,8 +11,10 @@ describe('auth directive', function() {
     module('inboxDirectives');
     Auth = sinon.stub();
     Auth.any = sinon.stub();
+    Auth.online = sinon.stub();
     module(function ($provide) {
       $provide.value('Auth', Auth);
+      $provide.value('$q', Q);
     });
     inject(function(_$compile_, _$rootScope_) {
       compile = _$compile_;
@@ -53,6 +55,110 @@ describe('auth directive', function() {
       chai.expect(Auth.callCount).to.equal(1);
       chai.expect(Auth.args[0][0]).to.deep.equal(['can_do_stuff', '!can_not_do_stuff']);
       done();
+    });
+  });
+
+  describe('mmAuthOnline', () => {
+    it('should be shown when auth does not error', (done) => {
+      Auth.online.resolves();
+      var element = compile('<a mm-auth mm-auth-online="true">')(scope);
+      scope.$digest();
+      setTimeout(() => {
+        chai.expect(element.hasClass('hidden')).to.equal(false);
+        chai.expect(Auth.online.callCount).to.equal(1);
+        chai.expect(Auth.online.args[0]).to.deep.equal([true]);
+        done();
+      });
+    });
+
+    it('should be hidden when auth errors', (done) => {
+      Auth.online.rejects({ some: 'err' });
+      var element = compile('<a mm-auth mm-auth-online="false">')(scope);
+      scope.$digest();
+      setTimeout(() => {
+        chai.expect(element.hasClass('hidden')).to.equal(true);
+        chai.expect(Auth.online.callCount).to.equal(1);
+        chai.expect(Auth.online.args[0]).to.deep.equal([false]);
+        done();
+      });
+    });
+
+    it('parses the attribute value', (done) => {
+      Auth.online.resolves();
+      var element = compile('<a mm-auth mm-auth-online="1 + 2 + 3">')(scope);
+      scope.$digest();
+      setTimeout(() => {
+        chai.expect(element.hasClass('hidden')).to.equal(false);
+        chai.expect(Auth.online.callCount).to.equal(1);
+        chai.expect(Auth.online.args[0]).to.deep.equal([6]);
+        done();
+      });
+    });
+  });
+
+  describe('mmAuth + mmAuthOnline', () => {
+    it('should be shown when both do not err', (done) => {
+      Auth.resolves();
+      Auth.online.resolves();
+
+      var element = compile('<a mm-auth="permission_to_have" mm-auth-online="true">')(scope);
+      scope.$digest();
+      setTimeout(() => {
+        chai.expect(element.hasClass('hidden')).to.equal(false);
+        chai.expect(Auth.online.callCount).to.equal(1);
+        chai.expect(Auth.online.args[0]).to.deep.equal([true]);
+        chai.expect(Auth.callCount).to.equal(1);
+        chai.expect(Auth.args[0][0]).to.deep.equal(['permission_to_have']);
+        done();
+      });
+    });
+
+    it('should be hidden when online succeeds and permissions err', (done) => {
+      Auth.rejects();
+      Auth.online.resolves();
+
+      var element = compile('<a mm-auth="permission_to_have" mm-auth-online="false">')(scope);
+      scope.$digest();
+      setTimeout(() => {
+        chai.expect(element.hasClass('hidden')).to.equal(true);
+        chai.expect(Auth.online.callCount).to.equal(1);
+        chai.expect(Auth.online.args[0]).to.deep.equal([false]);
+        chai.expect(Auth.callCount).to.equal(1);
+        chai.expect(Auth.args[0][0]).to.deep.equal(['permission_to_have']);
+        done();
+      });
+    });
+
+    it('should be hidden when online fails and permissions succeed', (done) => {
+      Auth.resolves();
+      Auth.online.rejects();
+
+      var element = compile('<a mm-auth="permission_to_have" mm-auth-online="true">')(scope);
+      scope.$digest();
+      setTimeout(() => {
+        chai.expect(element.hasClass('hidden')).to.equal(true);
+        chai.expect(Auth.online.callCount).to.equal(1);
+        chai.expect(Auth.online.args[0]).to.deep.equal([true]);
+        chai.expect(Auth.callCount).to.equal(1);
+        chai.expect(Auth.args[0][0]).to.deep.equal(['permission_to_have']);
+        done();
+      });
+    });
+
+    it('should be hidden when both fail', (done) => {
+      Auth.rejects();
+      Auth.online.rejects();
+
+      var element = compile('<a mm-auth="permission_to_have" mm-auth-online="false">')(scope);
+      scope.$digest();
+      setTimeout(() => {
+        chai.expect(element.hasClass('hidden')).to.equal(true);
+        chai.expect(Auth.online.callCount).to.equal(1);
+        chai.expect(Auth.online.args[0]).to.deep.equal([false]);
+        chai.expect(Auth.callCount).to.equal(1);
+        chai.expect(Auth.args[0][0]).to.deep.equal(['permission_to_have']);
+        done();
+      });
     });
   });
 
