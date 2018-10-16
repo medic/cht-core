@@ -65,7 +65,6 @@
     }
   },
   "permissions": {
-    "name": "can_export_messages",
     "can_export_messages": ["national_admin", "district_admin", "analytics"],
     "can_export_forms": ["national_admin", "district_admin", "analytics"],
     "can_export_contacts": ["national_admin", "district_admin"],
