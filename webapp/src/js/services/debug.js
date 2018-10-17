@@ -8,8 +8,13 @@
  *   - display $log.debug() output throughout the app
  *
  */
-angular.module('inboxServices').config([
-  '$provide', '$logProvider', function($provide, $logProvider) {
+angular.module('inboxServices').config(
+  function(
+      $logProvider,
+      $provide,
+      $window
+  ) {
+    'ngInject';
     'use strict';
 
     $provide.service('Debug', [
@@ -22,7 +27,7 @@ angular.module('inboxServices').config([
           // this changes the default angular behavior and hides debug level
           // log messages.
           $logProvider.debugEnabled(bool);
-          var db = pouchDB.debug ? pouchDB : window.PouchDB;
+          var db = pouchDB.debug ? pouchDB : $window.PouchDB;
           if (bool) {
             db.debug.enable('*');
             ipCookie(cookieName, bool, { expires: 360, path: '/' });
@@ -38,4 +43,4 @@ angular.module('inboxServices').config([
       }
     ]);
   }
-]);
+);

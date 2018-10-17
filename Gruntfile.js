@@ -862,6 +862,37 @@ module.exports = function(grunt) {
           pattern: /console\./g,
         },
       },
+      'timeouts-in-angular': {
+        // $timeout() sould be used in place of setTimeout()
+        // $timeout.cancel() should be used in place of clearTimeout()
+        // see: https://docs.angularjs.org/api/ng/service/$timeout
+        files: [
+          {
+            src: [
+              'webapp/src/js/services/**/*.js',
+              'webapp/src/js/controllers/**/*.js',
+            ],
+          },
+        ],
+        options: {
+          pattern: /(set|clear)Timeout/g,
+        },
+      },
+      'window-in-angular': {
+        // $window should be used in preference to window in angular code
+        // see: https://docs.angularjs.org/api/ng/service/$window
+        files: [
+          {
+            src: [
+              'webapp/src/js/services/**/*.js',
+              'webapp/src/js/controllers/**/*.js',
+            ],
+          },
+        ],
+        options: {
+          pattern: /[^$]window\./g,
+        },
+      },
     },
     xmlmin: {
       'enketo-xslt': {
