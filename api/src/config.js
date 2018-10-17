@@ -1,12 +1,12 @@
 const _ = require('underscore'),
-  db = require('./db-pouch'),
-  ddocExtraction = require('./ddoc-extraction'),
-  translations = require('./translations'),
-  defaults = require('./config.default.json'),
-  settingsService = require('./services/settings'),
-  translationCache = {},
-  logger = require('./logger'),
-  viewMapUtils = require('@shared-libs/view-map-utils');
+      db = require('./db-pouch'),
+      ddocExtraction = require('./ddoc-extraction'),
+      translations = require('./translations'),
+      defaults = require('../../config/standard/app_settings.json'),
+      settingsService = require('./services/settings'),
+      translationCache = {},
+      logger = require('./logger'),
+      viewMapUtils = require('@shared-libs/view-map-utils');
 
 let settings = {};
 
