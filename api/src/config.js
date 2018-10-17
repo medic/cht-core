@@ -2,7 +2,7 @@ const _ = require('underscore'),
       db = require('./db-pouch'),
       ddocExtraction = require('./ddoc-extraction'),
       translations = require('./translations'),
-      defaults = require('./config.default.json'),
+      defaults = require('../../config/standard/app_settings.json'),
       settingsService = require('./services/settings'),
       translationCache = {},
       viewMapUtils = require('@shared-libs/view-map-utils');
@@ -75,6 +75,7 @@ const loadSettings = function() {
       } else {
         settings.permissions = defaults.permissions;
       }
+
       if (JSON.stringify(settings) !== original) {
         console.log('Updating settings with new defaults');
         return settingsService.update(settings);
