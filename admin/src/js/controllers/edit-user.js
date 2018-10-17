@@ -333,21 +333,18 @@ angular
                 })
                 .catch(function(err) {
                   if (err.status === 400) {
-                    Translate('username.taken', { username: $scope.editUserModel.username }).then(function(value) {
+                    const parameter = err.data.error.parameter;
+                    Translate(err.data.error.key, (parameter !== undefined) ? {[err.data.error.field]: parameter} : null).then(function(value) {
                       $scope.setError(err, value);
-                  });
+                    });           
                   } else {
-                    Translate('Error\ updating\ user').then(function(value) {
-                      $scope.setError(err, value);
-                    });
+                    $scope.setError(err, 'Error updating user');
                   }
                 });
             });
           })
           .catch(function(err) {
-            Translate('error.validating.user').then(function(value) {
-              $scope.setError(err, value);
-            });
+            $scope.setError(err, 'Error validating user');
           });
       } else {
         $scope.setError();
