@@ -326,7 +326,7 @@ angular.module('services').factory('MessageQueue',
               .then(function(messages) {
                 return {
                   messages: formatMessages(messages),
-                  total: results[2].rows[0].value
+                  total: results[2].rows.length ? results[2].rows[0].value : 0
                 };
               });
 
