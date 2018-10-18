@@ -34,6 +34,7 @@
     "helmet": "^3.13.0",
     "http-proxy": "^1.17.0",
     "lineage": "file:../shared-libs/lineage",
+    "medic-conf": "^1.17.13",
     "moment": "^2.22.0",
     "morgan": "^1.9.0",
     "mustache": "^2.3.2",
