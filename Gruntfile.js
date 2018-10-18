@@ -79,7 +79,7 @@ module.exports = function(grunt) {
       secondary: {
         files: {
           'build/ddocs/medic/_attachments/ddocs/compiled.json':
-            'build/ddocs/medic-*/',
+            ['build/ddocs/medic-*/', 'build/ddocs/resources' ],
         },
       },
     },
@@ -305,6 +305,28 @@ module.exports = function(grunt) {
             ],
             dest: 'build/ddocs/medic/_attachments/',
           },
+        ],
+      },
+      'standard-imgs': {
+        files: [
+          {
+            expand: true,
+            cwd: 'config/standard/resources',
+            src: '**/!(_id)*',
+            dest: 'build/ddocs/resources/_attachments/',
+          },
+          {
+            expand: true,
+            cwd: 'config/standard/resources',
+            src: '_id',
+            dest: 'build/ddocs/resources/',
+          },
+          {
+            expand: true,
+            cwd: 'config/standard/',
+            src: 'resources.json',
+            dest: 'build/ddocs/resources/',
+          }
         ],
       },
       'admin-resources': {
@@ -925,6 +947,7 @@ module.exports = function(grunt) {
   grunt.registerTask('build-ddoc', 'Build the main ddoc', [
     'couch-compile:secondary',
     'copy:ddoc-attachments',
+    'copy:standard-imgs',
     'appcache',
     'couch-compile:primary',
   ]);

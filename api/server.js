@@ -5,6 +5,7 @@ const environment = require('./src/environment'),
 process.on('unhandledRejection', reason => {
   logger.error('Unhandled Rejection:');
   logger.error('%o',reason);
+  logger.error('%o', resason.stack)
 });
 
 serverChecks.check(environment.serverUrl).then(() => {
@@ -20,12 +21,13 @@ serverChecks.check(environment.serverUrl).then(() => {
     .then(() => logger.info('Extracting ddoc…'))
     .then(ddocExtraction.run)
     .then(() => logger.info('DDoc extraction completed successfully'))
-
     .then(() => logger.info('Loading configuration…'))
     .then(config.load)
     .then(() => logger.info('Configuration loaded successfully'))
     .then(config.listen)
-
+    .then(() => console.log('Uploading forms'))
+    .then(config.uploadStandardForms)
+    .then(() => console.log('Uploading forms completed successfully'))
     .then(() => logger.info('Merging translations…'))
     .then(translations.run)
     .then(() => logger.info('Translations merged successfully'))

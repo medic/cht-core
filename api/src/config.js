@@ -6,9 +6,21 @@ const _ = require('underscore'),
       settingsService = require('./services/settings'),
       translationCache = {},
       logger = require('./logger'),
-      viewMapUtils = require('@shared-libs/view-map-utils');
+      viewMapUtils = require('@shared-libs/view-map-utils')
+      contactForms =  require('medic-conf/src/fn/upload-contact-forms'),
+      collectForms =  require('medic-conf/src/fn/upload-collect-forms'),
+      appForms =  require('medic-conf/src/fn/upload-app-forms');
+
 
 let settings = {};
+
+const uploadStandardForms = () => {
+  const standDir = __dirname + '/../../config/standard'
+  const dbName = db.serverUrl + '/medic'
+  contactForms(standDir, dbName);
+  collectForms(standDir, dbName);
+  appForms(standDir, dbName);
+}
 
 const getMessage = (value, locale) => {
   const _findTranslation = (value, locale) => {
@@ -156,4 +168,6 @@ module.exports = {
         process.exit(1);
       });
   },
+
+  uploadStandardForms: uploadStandardForms
 };
