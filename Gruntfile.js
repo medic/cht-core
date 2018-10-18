@@ -310,6 +310,9 @@ module.exports = function(grunt) {
             // * ignore doc_ids when generating replication id (https://github.com/medic/medic-webapp/issues/2404)
             // * improve safari checks (https://github.com/medic/medic-webapp/issues/2797)
             'patch node_modules/pouchdb-browser/lib/index.js < patches/pouchdb-browser.patch',
+
+            // patch enketo to always mark the /inputs group as relevant
+            'patch node_modules/enketo-core/src/js/Form.js < patches/enketo-inputs-always-relevant.patch',
           ];
           return patches.join(' && ');
         }
