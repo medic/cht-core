@@ -4,7 +4,8 @@ var _ = require('underscore'),
     moment = require('moment'),
     utils = require('../lib/utils'),
     messages = require('../lib/messages');
-const messageUtils = require('@shared-libs/message-utils');
+const messageUtils = require('@shared-libs/message-utils'),
+      mutingUtils = require('../lib/muting_utils');
 
 module.exports = {
     // return [hour, minute, timezone]
@@ -69,7 +70,7 @@ module.exports = {
             docStart,
             start,
             now = moment(date.getDate()),
-            muted = patient && (patient.muted || utils.isMutedInLineage(patient)),
+            muted = patient && (patient.muted || mutingUtils.isMutedInLineage(patient)),
             allowedState = muted ? 'muted' : 'scheduled';
 
         // if we  can't find the schedule in config, we're done also if forms

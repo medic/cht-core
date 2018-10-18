@@ -332,20 +332,5 @@ module.exports = {
   isNonEmptyString: expr =>
     typeof expr === 'string' && expr.trim() !== '',
   evalExpression: (expr, context) =>
-    vm.runInNewContext(expr, context),
-
-  isMutedInLineage: doc => {
-    let muted = false;
-    if (!doc || !doc.parent) {
-      return muted;
-    }
-
-    let parent = doc.parent;
-    while (parent && !muted) {
-      muted = !!parent.muted;
-      parent = parent.parent;
-    }
-
-    return muted;
-  }
+    vm.runInNewContext(expr, context)
 };

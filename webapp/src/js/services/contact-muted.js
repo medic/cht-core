@@ -16,17 +16,20 @@ angular.module('inboxServices').service('ContactMuted',
       }
 
       if (lineage) {
-        return !!_.findWhere(lineage, { muted: true });
+        return _.some(lineage, function(parent) {
+          return parent.muted;
+        });
       }
 
-      var parent = doc.parent,
-          muted = false;
-      while (parent && !muted) {
-        muted = parent.muted;
+      var parent = doc.parent;
+      while (parent) {
+        if (parent.muted) {
+          return true;
+        }
         parent = parent.parent;
       }
 
-      return !!muted;
+      return false;
     };
   }
 );

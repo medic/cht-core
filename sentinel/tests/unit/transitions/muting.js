@@ -2,8 +2,8 @@ const sinon = require('sinon'),
       config = require('../../../src/config'),
       chai = require('chai'),
       transitionUtils = require('../../../src/transitions/utils'),
+      mutingUtils = require('../../../src/lib/muting_utils'),
       db = require('../../../src/db-pouch'),
-      utils = require('../../../src/lib/utils'),
       transition = require('../../../src/transitions/muting');
 
 describe('Muting transition', () => {
@@ -17,11 +17,12 @@ describe('Muting transition', () => {
       bulkDocs: sinon.stub()
     };
 
-    sinon.stub(utils, 'getReportsBySubject');
-    sinon.stub(utils, 'muteScheduledMessages');
-    sinon.stub(utils, 'unmuteScheduledMessages');
-    sinon.stub(utils, 'isMutedInLineage');
-    sinon.stub(transition._lineage, 'fetchHydratedDoc');
+    sinon.stub(mutingUtils, 'isMutedInLineage');
+    sinon.stub(mutingUtils, 'updateContact');
+    sinon.stub(mutingUtils, 'getSubjectIds');
+    sinon.stub(mutingUtils, 'updateRegistrations');
+    sinon.stub(mutingUtils, 'updateMuteState');
+    sinon.stub(mutingUtils, 'getContact');
   });
 
   describe('init', () => {
@@ -73,35 +74,261 @@ describe('Muting transition', () => {
     });
 
     it('should return false for invalid contacts', () => {
-      utils.isMutedInLineage.returns(false);
-      chai.expect(transition.filter({ muted: false })).to.equal(false);
-      chai.expect(transition.filter({ muted: false, type: 'something' })).to.equal(false);
-      chai.expect(transition.filter({ muted: false, type: 'person' })).to.equal(false);
-      chai.expect(transition.filter({ muted: false, type: 'clinic' })).to.equal(false);
-      chai.expect(utils.isMutedInLineage.callCount).to.equal(2);
-      chai.expect(utils.isMutedInLineage.args).to.deep.equal([
+      mutingUtils.isMutedInLineage.returns(false);
+      chai.expect(transition.filter({ muted: false }, {})).to.equal(false);
+      chai.expect(transition.filter({ muted: false, type: 'something' }, {})).to.equal(false);
+      chai.expect(transition.filter({ muted: false, type: 'person' }, {})).to.equal(false);
+      chai.expect(transition.filter({ muted: false, type: 'clinic' }, {})).to.equal(false);
+      chai.expect(mutingUtils.isMutedInLineage.callCount).to.equal(2);
+      chai.expect(mutingUtils.isMutedInLineage.args).to.deep.equal([
         [{ muted: false, type: 'person' }],
         [{ muted: false, type: 'clinic' }]
       ]);
     });
 
     it('should return true for valid contacts', () => {
-      utils.isMutedInLineage.returns(true);
-      chai.expect(transition.filter({ muted: false, type: 'person' })).to.equal(true);
-      chai.expect(transition.filter({ muted: false, type: 'clinic' })).to.equal(true);
-      chai.expect(transition.filter({ muted: false, type: 'district_hospital' })).to.equal(true);
-      chai.expect(transition.filter({ muted: false, type: 'health_center' })).to.equal(true);
-      chai.expect(utils.isMutedInLineage.callCount).to.equal(4);
-      chai.expect(utils.isMutedInLineage.args).to.deep.equal([
+      mutingUtils.isMutedInLineage.returns(true);
+      chai.expect(transition.filter({ muted: false, type: 'person' }, {})).to.equal(true);
+      chai.expect(transition.filter({ muted: false, type: 'clinic' }, {})).to.equal(true);
+      chai.expect(transition.filter({ muted: false, type: 'district_hospital' }, {})).to.equal(true);
+      chai.expect(transition.filter({ muted: false, type: 'health_center' }, {})).to.equal(true);
+      chai.expect(mutingUtils.isMutedInLineage.callCount).to.equal(4);
+      chai.expect(mutingUtils.isMutedInLineage.args).to.deep.equal([
         [{ muted: false, type: 'person' }],
         [{ muted: false, type: 'clinic' }],
         [{ muted: false, type: 'district_hospital' }],
         [{ muted: false, type: 'health_center' }]
       ]);
     });
+
+    it('should return false for old contacts', () => {
+      mutingUtils.isMutedInLineage.returns(true);
+      chai.expect(transition.filter({ muted: false, type: 'person' }, { _rev: '2-test' })).to.equal(false);
+    });
   });
 
   describe('onMatch', () => {
+    describe('new contacts', () => {
+      it('should update the contact', () => {
+        const doc = { _id: 'id', type: 'person', patient_id: 'patient' };
+        mutingUtils.updateRegistrations.resolves();
+        mutingUtils.getSubjectIds.returns(['id', 'patient']);
+
+        return transition.onMatch({ doc }).then(result => {
+          chai.expect(result).to.equal(true);
+          chai.expect(mutingUtils.updateContact.callCount).to.equal(1);
+          chai.expect(mutingUtils.updateContact.args[0]).to.deep.equal([doc, true]);
+          chai.expect(mutingUtils.getSubjectIds.callCount).to.equal(1);
+          chai.expect(mutingUtils.getSubjectIds.args[0]).to.deep.equal([doc]);
+          chai.expect(mutingUtils.updateRegistrations.callCount).to.equal(1);
+          chai.expect(mutingUtils.updateRegistrations.args[0]).to.deep.equal([['id', 'patient'], true]);
+        });
+      });
+
+      it('should throw updateRegistrations errors', () => {
+        const doc = { _id: 'id', type: 'person', patient_id: 'patient' };
+        mutingUtils.updateRegistrations.rejects({ some: 'error' });
+        mutingUtils.getSubjectIds.returns(['id', 'patient']);
+
+        return transition
+          .onMatch({ doc })
+          .then(() => chai.expect(true).to.equal('should have thrown'))
+          .catch(err => {
+            chai.expect(err).to.deep.equal({ some: 'error' });
+            chai.expect(mutingUtils.updateContact.callCount).to.equal(1);
+            chai.expect(mutingUtils.updateContact.args[0]).to.deep.equal([doc, true]);
+            chai.expect(mutingUtils.getSubjectIds.callCount).to.equal(1);
+            chai.expect(mutingUtils.getSubjectIds.args[0]).to.deep.equal([doc]);
+            chai.expect(mutingUtils.updateRegistrations.callCount).to.equal(1);
+            chai.expect(mutingUtils.updateRegistrations.args[0]).to.deep.equal([['id', 'patient'], true]);
+          });
+      });
+    });
+
+    describe('muting/unmuting', () => {
+      const mutingConfig = {
+        mute_forms: ['mute'],
+        unmute_forms: ['unmute'],
+        messages: [
+          {
+            event_type: 'contact_not_found',
+            recipient: 'reporting_unit',
+            message: [{
+              locale: 'en',
+              content: 'Contact was not found'
+            }]
+          }, {
+            event_type: 'already_muted',
+            recipient: 'reporting_unit',
+            message: [{
+              locale: 'en',
+              content: 'Contact already muted'
+            }]
+          }, {
+            event_type: 'already_unmuted',
+            recipient: 'reporting_unit',
+            message: [{
+              locale: 'en',
+              content: 'Contact already unmuted'
+            }]
+          }, {
+            event_type: 'mute',
+            recipient: 'reporting_unit',
+            message: [{
+              locale: 'en',
+              content: 'Muting successful'
+            }]
+          }, {
+            event_type: 'unmute',
+            recipient: 'reporting_unit',
+            message: [{
+              locale: 'en',
+              content: 'Unmuting successful'
+            }]
+          }
+        ]
+      };
+
+      it('should load the contact', () => {
+        const doc = { _id: 'report', type: 'data_record', patient_id: 'patient' },
+              contact = { _id: 'contact', patient_id: 'patient' };
+        mutingUtils.getContact.resolves(contact);
+        config.get.returns(mutingConfig);
+
+        return transition.onMatch({ doc }).then(result => {
+          chai.expect(result).to.equal(true);
+          chai.expect(mutingUtils.getContact.callCount).to.equal(1);
+          chai.expect(mutingUtils.getContact.args[0]).to.deep.equal([ doc ]);
+          chai.expect(mutingUtils.updateMuteState.callCount).to.equal(0);
+        });
+      });
+
+      it('should add an error when contact is not found', () => {
+        const doc = { _id: 'report', type: 'data_record' };
+        mutingUtils.getContact.rejects({ message: 'contact_not_found' });
+        config.get.returns(mutingConfig);
+
+        return transition.onMatch({ doc }).then(result => {
+          chai.expect(result).to.equal(true);
+          chai.expect(mutingUtils.getContact.callCount).to.equal(1);
+          chai.expect(mutingUtils.getContact.args[0]).to.deep.equal([ doc ]);
+          chai.expect(doc.errors.length).to.equal(1);
+          chai.expect(doc.errors[0].message).to.equal('Contact was not found');
+          chai.expect(mutingUtils.updateMuteState.callCount).to.equal(0);
+        });
+      });
+
+      it('should throw contact loading errors', () => {
+        const doc = { _id: 'report', type: 'data_record' };
+        mutingUtils.getContact.rejects({ some: 'error' });
+        config.get.returns(mutingConfig);
+
+        return transition
+          .onMatch({ doc })
+          .then(() => chai.expect(true).to.equal('should have thrown'))
+          .catch(err => {
+            chai.expect(err).to.deep.equal({ some: 'error' });
+            chai.expect(mutingUtils.getContact.callCount).to.equal(1);
+            chai.expect(mutingUtils.getContact.args[0]).to.deep.equal([ doc ]);
+            chai.expect(mutingUtils.updateMuteState.callCount).to.equal(0);
+          });
+      });
+
+      it('should add message if contact is already unmuted', () => {
+        const doc = { _id: 'report', type: 'data_record', form: 'unmute' },
+              contact = { _id: 'contact' };
+        mutingUtils.getContact.resolves(contact);
+        config.get.returns(mutingConfig);
+
+        return transition.onMatch({ doc }).then(result => {
+          chai.expect(result).to.equal(true);
+          chai.expect(mutingUtils.getContact.callCount).to.equal(1);
+          chai.expect(mutingUtils.getContact.args[0]).to.deep.equal([ doc ]);
+          chai.expect(mutingUtils.updateMuteState.callCount).to.equal(0);
+          chai.expect(doc.tasks.length).to.equal(1);
+          chai.expect(doc.tasks[0].messages[0].message).to.equal('Contact already unmuted');
+        });
+      });
+
+      it('should add message if contact is already muted', () => {
+        const doc = { _id: 'report', type: 'data_record', form: 'mute' },
+              contact = { _id: 'contact', muted: 12345 };
+        mutingUtils.getContact.resolves(contact);
+        config.get.returns(mutingConfig);
+
+        return transition.onMatch({ doc }).then(result => {
+          chai.expect(result).to.equal(true);
+          chai.expect(mutingUtils.getContact.callCount).to.equal(1);
+          chai.expect(mutingUtils.getContact.args[0]).to.deep.equal([ doc ]);
+          chai.expect(mutingUtils.updateMuteState.callCount).to.equal(0);
+          chai.expect(doc.tasks.length).to.equal(1);
+          chai.expect(doc.tasks[0].messages[0].message).to.equal('Contact already muted');
+        });
+      });
+
+      it('should add message when muting', () => {
+        const doc = { _id: 'report', type: 'data_record', form: 'mute' },
+              contact = { _id: 'contact' };
+
+        mutingUtils.getContact.resolves(contact);
+        config.get.returns(mutingConfig);
+        mutingUtils.updateMuteState.resolves(true);
+
+        return transition.onMatch({ doc }).then(result => {
+          chai.expect(result).to.equal(true);
+          chai.expect(mutingUtils.getContact.callCount).to.equal(1);
+          chai.expect(mutingUtils.getContact.args[0]).to.deep.equal([ doc ]);
+          chai.expect(mutingUtils.updateMuteState.callCount).to.equal(1);
+          chai.expect(mutingUtils.updateMuteState.args[0]).to.deep.equal([ contact, true ]);
+          chai.expect(doc.tasks.length).to.equal(1);
+          chai.expect(doc.tasks[0].messages[0].message).to.equal('Muting successful');
+        });
+      });
+
+      it('should add message when unmuting', () => {
+        const doc = { _id: 'report', type: 'data_record', form: 'unmute' },
+              contact = { _id: 'contact', muted: 1234 };
+
+        mutingUtils.getContact.resolves(contact);
+        config.get.returns(mutingConfig);
+        mutingUtils.updateMuteState.resolves(true);
+
+        return transition.onMatch({ doc }).then(result => {
+          chai.expect(result).to.equal(true);
+          chai.expect(mutingUtils.getContact.callCount).to.equal(1);
+          chai.expect(mutingUtils.getContact.args[0]).to.deep.equal([ doc ]);
+          chai.expect(mutingUtils.updateMuteState.callCount).to.equal(1);
+          chai.expect(mutingUtils.updateMuteState.args[0]).to.deep.equal([ contact, false ]);
+          chai.expect(doc.tasks.length).to.equal(1);
+          chai.expect(doc.tasks[0].messages[0].message).to.equal('Unmuting successful');
+        });
+      });
+
+      it('should throw updateMuteState errors', () => {
+        const doc = { _id: 'report', type: 'data_record', form: 'unmute' },
+              contact = { _id: 'contact', muted: 1234 };
+
+        mutingUtils.getContact.resolves(contact);
+        config.get.returns(mutingConfig);
+        mutingUtils.updateMuteState.rejects({ some: 'error' });
+
+        return transition
+          .onMatch({ doc })
+          .then(() => chai.expect(true).to.equal('should have thrown'))
+          .catch(err => {
+            chai.expect(err).to.deep.equal({ some: 'error' });
+            chai.expect(mutingUtils.getContact.callCount).to.equal(1);
+            chai.expect(mutingUtils.getContact.args[0]).to.deep.equal([ doc ]);
+            chai.expect(mutingUtils.updateMuteState.callCount).to.equal(1);
+            chai.expect(mutingUtils.updateMuteState.args[0]).to.deep.equal([ contact, false ]);
+            chai.expect(doc.tasks).to.equal(undefined);
+            chai.expect(doc.errors).to.equal(undefined);
+          });
+      });
+    });
+  });
+
+  /*describe('onMatch', () => {
     describe('updating new contacts', () => {
       it('updates contact and reports', () => {
         const doc = {
@@ -921,418 +1148,5 @@ describe('Muting transition', () => {
         });
       });
     });
-  });
-
-  describe('getContactsAndPatientIds', () => {
-    it('should return if mute state would not change', () => {
-      let doc = {};
-      const contact = { muted: true };
-      chai.expect(transition._getContactsAndPatientIds(doc, contact, true)).to.equal(undefined);
-      chai.expect(doc.errors.length).to.equal(1);
-      doc = {};
-      contact.muted = false;
-      chai.expect(transition._getContactsAndPatientIds(doc, contact, false)).to.equal(undefined);
-      chai.expect(doc.errors.length).to.equal(1);
-
-      doc = {};
-      delete contact.muted;
-      chai.expect(transition._getContactsAndPatientIds(doc, contact, false)).to.equal(undefined);
-      chai.expect(doc.errors.length).to.equal(1);
-    });
-
-    it('should return all descendants when muting', () => {
-      const hydratedContact = {
-        _id: 'my-place',
-        muted: false,
-        parent: { _id: 'p1', parent: { _id: 'p2' }}
-      };
-
-      const contacts = [
-        { _id: 'my-place', muted: false, parent: { _id: 'p1', parent: { _id: 'p2' }}, place_id: 'my-place-id'},
-        { _id: 'my-place2', muted: false, parent: { _id: 'my-place', parent: { _id: 'p1', parent: { _id: 'p2' } }}},
-        { _id: 'my-place3', parent: { _id: 'my-place', parent: { _id: 'p1', parent: { _id: 'p2' } }}},
-        { _id: 'contact1', patient_id: 'patient1', parent: { _id: 'my-place', parent: { _id: 'p1', parent: { _id: 'p2' }}}},
-        { _id: 'contact2', patient_id: 'patient2', parent: { _id: 'my-place2', parent: { _id: 'my-place', parent: { _id: 'p1', parent: { _id: 'p2' }}}}},
-        { _id: 'contact3', patient_id: 'patient3', parent: { _id: 'my-place3', parent: { _id: 'my-place', parent: { _id: 'p1', parent: { _id: 'p2' }}}}},
-        { _id: 'my-place4', muted: true, parent: { _id: 'my-place', parent: { _id: 'p1', parent: { _id: 'p2' } }}},
-        { _id: 'contact4', muted: true, patient_id: 'patient4', parent: { _id: 'my-place4', parent: { _id: 'my-place', parent: { _id: 'p1', parent: { _id: 'p2' }}}}},
-
-      ];
-
-      db.medic.query.resolves({ rows: [
-          { id: 'my-place', value: null },
-          { id: 'my-place2', value: null },
-          { id: 'my-place3', value: null },
-          { id: 'my-place4', value: null },
-          { id: 'contact1', value: 'patient1' },
-          { id: 'contact2', value: 'patient2' },
-          { id: 'contact3', value: 'patient3' },
-          { id: 'contact4', value: 'patient4' },
-        ]});
-
-      db.medic.allDocs.resolves({ rows: contacts.map(doc => ({ id: doc._id, doc: doc }))});
-      return transition._getContactsAndPatientIds({}, hydratedContact, true).then(result => {
-        chai.expect(result).to.be.an('object');
-        chai.expect(result.contacts.length).to.equal(8);
-        chai.expect(result.contacts[0]).to.equal(contacts[0]);
-        chai.expect(result.contacts[1]).to.equal(contacts[1]);
-        chai.expect(result.contacts[2]).to.equal(contacts[2]);
-        chai.expect(result.contacts[3]).to.equal(contacts[3]);
-        chai.expect(result.contacts[4]).to.equal(contacts[4]);
-        chai.expect(result.contacts[5]).to.equal(contacts[5]);
-        chai.expect(result.contacts[6]).to.equal(contacts[6]);
-        chai.expect(result.contacts[7]).to.equal(contacts[7]);
-
-        chai.expect(result.subjectIds).to.deep.equal([
-          'my-place', 'my-place-id', 'my-place2', 'my-place3',
-          'contact1', 'patient1', 'contact2', 'patient2', 'contact3', 'patient3', 'my-place4', 'contact4', 'patient4'
-        ]);
-
-        chai.expect(db.medic.query.callCount).to.equal(1);
-        chai.expect(db.medic.query.args[0]).to.deep.equal(['medic/contacts_by_depth', { key: ['my-place'] }]);
-
-        chai.expect(db.medic.allDocs.callCount).to.equal(1);
-        chai.expect(db.medic.allDocs.args[0]).to.deep.equal([{
-          keys: [ 'my-place', 'my-place2', 'my-place3', 'my-place4', 'contact1', 'contact2', 'contact3', 'contact4' ],
-          include_docs: true
-        }]);
-      });
-    });
-
-    it('should return all descendants when unmuting and no ancestors are muted', () => {
-      const hydratedContact = {
-        _id: 'my-place',
-        muted: true,
-        parent: { _id: 'p1', parent: { _id: 'p2' }}
-      };
-
-      const contacts = [
-        { _id: 'my-place', muted: true, parent: { _id: 'p1', parent: { _id: 'p2' }}},
-        { _id: 'my-place2', muted: true, parent: { _id: 'my-place', parent: { _id: 'p1', parent: { _id: 'p2' } }}},
-        { _id: 'my-place3', parent: { _id: 'my-place', parent: { _id: 'p1', parent: { _id: 'p2' } }}},
-        { _id: 'contact1', patient_id: 'patient1', parent: { _id: 'my-place', parent: { _id: 'p1', parent: { _id: 'p2' }}}},
-        { _id: 'contact2', patient_id: 'patient2', parent: { _id: 'my-place2', parent: { _id: 'my-place', parent: { _id: 'p1', parent: { _id: 'p2' }}}}},
-        { _id: 'contact3', patient_id: 'patient3', parent: { _id: 'my-place3', parent: { _id: 'my-place', parent: { _id: 'p1', parent: { _id: 'p2' }}}}},
-        { _id: 'my-place4', muted: true, parent: { _id: 'my-place', parent: { _id: 'p1', parent: { _id: 'p2' } }}},
-        { _id: 'contact4', muted: true, patient_id: 'patient4', parent: { _id: 'my-place4', parent: { _id: 'my-place', parent: { _id: 'p1', parent: { _id: 'p2' }}}}},
-
-      ];
-
-      db.medic.query.resolves({ rows: [
-          { id: 'my-place', value: null },
-          { id: 'my-place2', value: null },
-          { id: 'my-place3', value: null },
-          { id: 'my-place4', value: null },
-          { id: 'contact1', value: 'patient1' },
-          { id: 'contact2', value: 'patient2' },
-          { id: 'contact3', value: 'patient3' },
-          { id: 'contact4', value: 'patient4' },
-        ]});
-
-      db.medic.allDocs.resolves({ rows: contacts.map(doc => ({ id: doc._id, doc: doc }))});
-      return transition._getContactsAndPatientIds({}, hydratedContact, false).then(result => {
-        chai.expect(result).to.be.an('object');
-        chai.expect(result.contacts.length).to.equal(8);
-        chai.expect(result.contacts[0]).to.equal(contacts[0]);
-        chai.expect(result.contacts[1]).to.equal(contacts[1]);
-        chai.expect(result.contacts[2]).to.equal(contacts[2]);
-        chai.expect(result.contacts[3]).to.equal(contacts[3]);
-        chai.expect(result.contacts[4]).to.equal(contacts[4]);
-        chai.expect(result.contacts[5]).to.equal(contacts[5]);
-        chai.expect(result.contacts[6]).to.equal(contacts[6]);
-        chai.expect(result.contacts[7]).to.equal(contacts[7]);
-
-        chai.expect(result.subjectIds).to.deep.equal([
-          'my-place', 'my-place2', 'my-place3',
-          'contact1', 'patient1', 'contact2', 'patient2', 'contact3', 'patient3', 'my-place4', 'contact4', 'patient4'
-        ]);
-
-        chai.expect(db.medic.query.callCount).to.equal(1);
-        chai.expect(db.medic.query.args[0]).to.deep.equal(['medic/contacts_by_depth', { key: ['my-place'] }]);
-
-        chai.expect(db.medic.allDocs.callCount).to.equal(1);
-        chai.expect(db.medic.allDocs.args[0]).to.deep.equal([{
-          keys: [ 'my-place', 'my-place2', 'my-place3', 'my-place4', 'contact1', 'contact2', 'contact3', 'contact4' ],
-          include_docs: true
-        }]);
-      });
-    });
-
-    it('should return all descendants of topmost muted ancestor when unmuting', () => {
-      const hydratedPlace = {
-        _id: 'my-place',
-        muted: true,
-        parent: {
-          _id: 'p1',
-          muted: true,
-          parent: {
-            _id: 'p2',
-            muted: true,
-            parent: {
-              _id: 'p3'
-            }
-          }
-        }
-      };
-
-      const contacts = [
-        { _id: 'p2', muted: true },
-        { _id: 'p1', muted: true, parent: { _id: 'p2' }},
-        { _id: 'my-place', muted: true, parent: { _id: 'p1', parent: { _id: 'p2' }}},
-        { _id: 'contact1', muted: true, patient_id: 'patient1', parent: { _id: 'p2' }},
-        { _id: 'contact2', muted: true, patient_id: 'patient2', parent: { _id: 'p1', parent: { _id: 'p2' }}}
-      ];
-
-      db.medic.query.resolves({ rows: [
-          { id: 'p2', value: null },
-          { id: 'p1', value: null },
-          { id: 'my-place', value: null },
-          { id: 'contact1', value: 'patient1' },
-          { id: 'contact2', value: 'patient2' }
-        ]});
-
-      db.medic.allDocs.resolves({ rows: contacts.map(doc => ({ id: doc._id, doc: doc }))});
-
-      return transition._getContactsAndPatientIds({}, hydratedPlace, false).then(result => {
-        chai.expect(result).to.be.an('object');
-        chai.expect(result.contacts.length).to.equal(5);
-        chai.expect(result.contacts[0]).to.equal(contacts[0]);
-        chai.expect(result.contacts[1]).to.equal(contacts[1]);
-        chai.expect(result.contacts[2]).to.equal(contacts[2]);
-        chai.expect(result.contacts[3]).to.equal(contacts[3]);
-        chai.expect(result.contacts[4]).to.equal(contacts[4]);
-
-        chai.expect(result.subjectIds).to.deep.equal([
-          'p2', 'p1', 'my-place',
-          'contact1', 'patient1', 'contact2', 'patient2'
-        ]);
-
-        chai.expect(db.medic.query.callCount).to.equal(1);
-        chai.expect(db.medic.query.args[0]).to.deep.equal(['medic/contacts_by_depth', { key: ['p2'] }]);
-
-        chai.expect(db.medic.allDocs.callCount).to.equal(1);
-        chai.expect(db.medic.allDocs.args[0]).to.deep.equal([{
-          keys: [ 'p2', 'p1', 'my-place', 'contact1', 'contact2' ],
-          include_docs: true
-        }]);
-      });
-    });
-
-    it('should throw db query errors', () => {
-      db.medic.query.rejects({ some: 'err' });
-
-      return transition._getContactsAndPatientIds({}, { _id: 'contact' }, true)
-        .then(() => chai.expect(false).to.equal('Should have thrown'))
-        .catch(err => {
-          chai.expect(err).to.deep.equal({ some: 'err' });
-          chai.expect(db.medic.allDocs.callCount).to.equal(0);
-          chai.expect(db.medic.query.callCount).to.equal(1);
-        });
-    });
-
-    it('should throw db all docs errors', () => {
-      db.medic.query.resolves({ rows: [{ id: 'contact' }] });
-      db.medic.allDocs.rejects({ some: 'error' });
-
-      return transition._getContactsAndPatientIds({}, { _id: 'contact' }, true)
-        .then(() => chai.expect(false).to.equal('Should have thrown'))
-        .catch(err => {
-          chai.expect(err).to.deep.equal({ some: 'error' });
-          chai.expect(db.medic.allDocs.callCount).to.equal(1);
-          chai.expect(db.medic.query.callCount).to.equal(1);
-        });
-    });
-  });
-
-  describe('updateContacts', () => {
-    it('should update all contacts with mute state', () => {
-      const contacts = [ { _id:  'a' }, { _id:  'b' }, { _id:  'c' } ];
-      db.medic.bulkDocs.resolves();
-      return transition._updateContacts(contacts, true).then(() => {
-        chai.expect(db.medic.bulkDocs.callCount).to.equal(1);
-        chai.expect(db.medic.bulkDocs.args[0]).to.deep.equal([[
-          { _id:  'a', muted: true }, { _id:  'b', muted: true }, { _id:  'c', muted: true }
-        ]]);
-      });
-    });
-
-    it('should update all contacts with unmute state', () => {
-      const contacts = [ { _id:  'a', muted: true }, { _id:  'b', muted: true }, { _id:  'c', muted: true } ];
-      db.medic.bulkDocs.resolves();
-      return transition._updateContacts(contacts, false).then(() => {
-        chai.expect(db.medic.bulkDocs.callCount).to.equal(1);
-        chai.expect(db.medic.bulkDocs.args[0]).to.deep.equal([[
-          { _id:  'a', muted: false }, { _id:  'b', muted: false }, { _id:  'c', muted: false }
-        ]]);
-      });
-    });
-
-    it('should only update contacts with different muted state', () => {
-      const contacts = [ { _id:  'a' }, { _id:  'b', muted: true }, { _id:  'c' } ];
-      db.medic.bulkDocs.resolves();
-      return transition._updateContacts(contacts, true).then(() => {
-        chai.expect(db.medic.bulkDocs.callCount).to.equal(1);
-        chai.expect(db.medic.bulkDocs.args[0]).to.deep.equal([[
-          { _id:  'a', muted: true }, { _id:  'c', muted: true }
-        ]]);
-      });
-    });
-
-    it('should only update contacts with different muted state', () => {
-      const contacts = [ { _id:  'a' }, { _id:  'b', muted: true }, { _id:  'c', muted: false } ];
-      db.medic.bulkDocs.resolves();
-      return transition._updateContacts(contacts, false).then(() => {
-        chai.expect(db.medic.bulkDocs.callCount).to.equal(1);
-        chai.expect(db.medic.bulkDocs.args[0]).to.deep.equal([[
-          { _id:  'b', muted: false }
-        ]]);
-      });
-    });
-
-    it('should not call bulkDocs if contacts are empty', () => {
-      chai.expect(transition._updateContacts([], true)).to.equal(undefined);
-      chai.expect(db.medic.bulkDocs.callCount).to.equal(0);
-    });
-
-    it('should not call bulkDocs if all contacts are in correct state', () => {
-      const contacts = [ { _id:  'a' }, { _id:  'b' }, { _id:  'c', muted: false } ];
-      chai.expect(transition._updateContacts(contacts, false)).to.equal(undefined);
-      chai.expect(db.medic.bulkDocs.callCount).to.equal(0);
-    });
-
-    it('should throw bulkDocs errors', () => {
-      db.medic.bulkDocs.rejects({ some: 'error' });
-      return transition._updateContacts([{ _id: 'a'}], true)
-        .then(() => chai.expect(false).to.equal('Should have thrown'))
-        .catch(err => {
-          chai.expect(err).to.deep.equal({ some: 'error' });
-          chai.expect(db.medic.bulkDocs.callCount).to.equal(1);
-          chai.expect(db.medic.bulkDocs.args[0]).to.deep.equal([[{ _id: 'a', muted: true }]]);
-        });
-    });
-  });
-
-  describe('updateRegistrations', () => {
-    it('should do nothing if no patientIds are supplied', () => {
-      return transition._updateDataRecords([], true).then(result => {
-        chai.expect(result).to.deep.equal([]);
-        chai.expect(utils.getReportsBySubject.callCount).to.equal(0);
-      });
-    });
-
-    it('should request registrations for provided patientIds', () => {
-      const patientIds = ['1', '2', '3', '4'];
-      utils.getReportsBySubject.resolves([]);
-
-      return transition._updateDataRecords(patientIds, true).then(result => {
-        chai.expect(result).to.deep.equal([]);
-        chai.expect(utils.getReportsBySubject.callCount).to.equal(1);
-        chai.expect(utils.getReportsBySubject.args[0][0].ids).to.deep.equal(patientIds);
-      });
-    });
-
-    it('should mute schedule messages in registrations', () => {
-      utils.getReportsBySubject.resolves([
-        { _id: 'r1', shouldUpdate: true },
-        { _id: 'r2', shouldUpdate: false },
-        { _id: 'r3', shouldUpdate: false },
-        { _id: 'r4', shouldUpdate: true }
-      ]);
-
-      utils.muteScheduledMessages.callsFake(r => {
-        r.willUpdate = true;
-        return r.shouldUpdate;
-      });
-
-      db.medic.bulkDocs.resolves();
-
-      return transition._updateDataRecords(['a'], true).then(result => {
-        chai.expect(utils.getReportsBySubject.callCount).to.equal(1);
-        chai.expect(utils.getReportsBySubject.args[0][0].ids).to.deep.equal(['a']);
-        chai.expect(utils.muteScheduledMessages.callCount).to.equal(4);
-        chai.expect(utils.muteScheduledMessages.args[0][0]._id).to.equal('r1');
-        chai.expect(utils.muteScheduledMessages.args[1][0]._id).to.equal('r2');
-        chai.expect(utils.muteScheduledMessages.args[2][0]._id).to.equal('r3');
-        chai.expect(utils.muteScheduledMessages.args[3][0]._id).to.equal('r4');
-        chai.expect(db.medic.bulkDocs.callCount).to.equal(1);
-        chai.expect(db.medic.bulkDocs.args[0]).to.deep.equal([[
-          { _id: 'r1', shouldUpdate: true, willUpdate: true },
-          { _id: 'r4', shouldUpdate: true, willUpdate: true }
-        ]]);
-
-        chai.expect(result).to.deep.equal([
-          { _id: 'r1', shouldUpdate: true, willUpdate: true },
-          { _id: 'r4', shouldUpdate: true, willUpdate: true }
-        ]);
-      });
-    });
-
-    it('should unmute schedule messages in registrations', () => {
-      utils.getReportsBySubject.resolves([
-        { _id: 'r1', shouldUpdate: true },
-        { _id: 'r2', shouldUpdate: false },
-        { _id: 'r3', shouldUpdate: false },
-        { _id: 'r4', shouldUpdate: true }
-      ]);
-
-      utils.unmuteScheduledMessages.callsFake(r => {
-        r.willUpdate = true;
-        return r.shouldUpdate;
-      });
-
-      db.medic.bulkDocs.resolves();
-
-      return transition._updateDataRecords(['a'], false).then(result => {
-        chai.expect(utils.getReportsBySubject.callCount).to.equal(1);
-        chai.expect(utils.getReportsBySubject.args[0][0].ids).to.deep.equal(['a']);
-        chai.expect(utils.unmuteScheduledMessages.callCount).to.equal(4);
-        chai.expect(utils.unmuteScheduledMessages.args[0][0]._id).to.equal('r1');
-        chai.expect(utils.unmuteScheduledMessages.args[1][0]._id).to.equal('r2');
-        chai.expect(utils.unmuteScheduledMessages.args[2][0]._id).to.equal('r3');
-        chai.expect(utils.unmuteScheduledMessages.args[3][0]._id).to.equal('r4');
-        chai.expect(db.medic.bulkDocs.callCount).to.equal(1);
-        chai.expect(db.medic.bulkDocs.args[0]).to.deep.equal([[
-          { _id: 'r1', shouldUpdate: true, willUpdate: true },
-          { _id: 'r4', shouldUpdate: true, willUpdate: true }
-        ]]);
-
-        chai.expect(result).to.deep.equal([
-          { _id: 'r1', shouldUpdate: true, willUpdate: true },
-          { _id: 'r4', shouldUpdate: true, willUpdate: true }
-        ]);
-      });
-    });
-
-    it('should not call bulkDocs when no registrations need updating', () => {
-      utils.getReportsBySubject.resolves([{ _id: 'r1' }, { _id: 'r2' }, { _id: 'r3' }, { _id: 'r4' }]);
-      utils.muteScheduledMessages.returns(false);
-
-      return transition._updateDataRecords(['a'], true).then(result => {
-        chai.expect(result).to.deep.equal([]);
-        chai.expect(db.medic.bulkDocs.callCount).to.equal(0);
-        chai.expect(utils.muteScheduledMessages.callCount).to.equal(4);
-        chai.expect(utils.muteScheduledMessages.args[0][0]._id).to.equal('r1');
-        chai.expect(utils.muteScheduledMessages.args[1][0]._id).to.equal('r2');
-        chai.expect(utils.muteScheduledMessages.args[2][0]._id).to.equal('r3');
-        chai.expect(utils.muteScheduledMessages.args[3][0]._id).to.equal('r4');
-      });
-    });
-
-    it('should throw bulkDocs errors', () => {
-      utils.getReportsBySubject.resolves([{ _id: 'r1' }]);
-      utils.muteScheduledMessages.returns(true);
-      db.medic.bulkDocs.rejects({ some: 'err' });
-
-      return transition._updateDataRecords(['a'], true)
-        .then(() => chai.expect(false).to.equal('Should have thrown'))
-        .catch(err => {
-          chai.expect(err).to.deep.equal({ some: 'err' });
-          chai.expect(utils.getReportsBySubject.callCount).to.equal(1);
-          chai.expect(utils.getReportsBySubject.args[0][0].ids).to.deep.equal(['a']);
-          chai.expect(utils.muteScheduledMessages.callCount).to.equal(1);
-          chai.expect(utils.muteScheduledMessages.args[0]).to.deep.equal([{ _id: 'r1' }]);
-          chai.expect(db.medic.bulkDocs.callCount).to.equal(1);
-        });
-    });
-  });
+  });*/
 });
