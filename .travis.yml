@@ -20,7 +20,6 @@ env:
     - TEST_SUITE=performance NODE_VERSION="lts/*" USE_COUCHDB=true USE_YARN=true
   global:
     - COUCH_URL=http://admin:pass@localhost:5984/medic
-    - API_URL=http://admin:pass@localhost:5988
     - COUCH_NODE_NAME=nonode@nohost
     #AWS Access Key Id and AWS Secret Access Key encrypted by travis to access the S3 buckets where reports and screenshots are saved
     - secure: TR1UN2r3beDtIF+VJpLF2ocTv/uxuOKyVWWhzMLre0ZrrBaIP1sLZV7Z4S/km5M92EfPgGW87BogdWE/R+kTTRiPTCbFB/U/3jFKxEZRXKST66YK5JMwsYqb17UtZtFdqEtO9GGbAVzXwpZfMMoXvlKNrors2W32xBm2uIkOSpI=
