@@ -291,6 +291,49 @@ describe('Search service', function() {
           ]);
         });
     });
+
+    it('counts two reports on the same day as the same visit - #4897', () => {
+      GetDataRecords.resolves([{ _id: '1' }, { _id: '2' }]);
+      searchStub.resolves(['1', '2']);
+      db.query
+        .withArgs('medic-client/contacts_by_last_visited')
+        .resolves({
+          rows: [
+            { key: '1', value: moment('2018-08-10 23:59:00').valueOf() }, // count
+            { key: '1', value: moment('2018-08-11 00:01:00').valueOf() }, // count
+            { key: '1', value: moment('2018-08-11 12:00:00').valueOf() }, // dupe
+            { key: '1', value: moment('2018-08-11 23:59:00').valueOf() }, // dupe
+            { key: '1', value: moment('2018-08-12 00:01:00').valueOf() }, // count, last visited
+            { key: '2', value: moment('2018-08-11 12:00:00').valueOf() }, // count
+            { key: '2', value: moment('2018-08-11 20:00:00').valueOf() }, // dupe, last visited
+          ]
+        });
+      const extensions = {
+        displayLastVisitedDate: true,
+        visitCountSettings: {
+          visitCountGoal: 2,
+          monthStartDate: 1
+        }
+      };
+      return service('contacts', {}, {}, extensions).then(actual => {
+        chai.expect(actual).to.deep.equal([
+          {
+            _id: '1',
+            lastVisitedDate: moment('2018-08-12 00:01:00').valueOf(),
+            visitCountGoal: 2,
+            visitCount: 3,
+            sortByLastVisitedDate: undefined
+          },
+          {
+            _id: '2',
+            lastVisitedDate: moment('2018-08-11 20:00:00').valueOf(),
+            visitCountGoal: 2,
+            visitCount: 1,
+            sortByLastVisitedDate: undefined
+          }
+        ]);
+      });
+    });
   });
 
   describe('provided docIds', () => {
