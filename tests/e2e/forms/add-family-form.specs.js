@@ -22,6 +22,7 @@ describe('Family form', () => {
 
   afterAll(utils.afterEach);
 
+/* DISABLED: https://github.com/medic/medic-webapp/issues/4908
   it('Submit Add Family form', () => {
     common.goToReports();
     genericForm.selectForm();
@@ -58,4 +59,5 @@ describe('Family form', () => {
     genericForm.invalidateReport();
     genericForm.validateReport();
   });
+*/
 });
