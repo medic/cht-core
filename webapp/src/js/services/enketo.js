@@ -542,7 +542,7 @@ angular.module('inboxServices').service('Enketo',
           return create(formInternalId);
         })
         .then(function(doc) {
-          return xmlToDocs(doc, form.getDataStr({ irrelevant: false }));
+          return xmlToDocs(doc, form.getDataStr());
         })
         .then(function(docs) {
           if (geolocation) {
