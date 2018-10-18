@@ -425,9 +425,9 @@ module.exports = function(grunt) {
           'until nc -z localhost 4444; do sleep 1; done',
       },
       'check-env-vars':
-        'if [ -z $COUCH_URL ] || [ -z $API_URL ] || [ -z $COUCH_NODE_NAME ]; then ' +
+        'if [ -z $COUCH_URL ] || [ -z $COUCH_NODE_NAME ]; then ' +
         'echo "Missing required env var.  Check that all are set: ' +
-        'COUCH_URL, API_URL, COUCH_NODE_NAME" && exit 1; fi',
+        'COUCH_URL, COUCH_NODE_NAME" && exit 1; fi',
       'undo-patches': {
         cmd: function() {
           var modulesToPatch = [
