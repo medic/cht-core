@@ -304,6 +304,7 @@ module.exports = function(grunt) {
             cwd: 'webapp/node_modules',
             src: [
               'bootstrap-daterangepicker/**',
+              'enketo-core/**',
               'font-awesome/**',
               'moment/**',
             ],
@@ -432,6 +433,7 @@ module.exports = function(grunt) {
         cmd: function() {
           var modulesToPatch = [
             'bootstrap-daterangepicker',
+            'enketo-core',
             'font-awesome',
             'moment',
           ];
@@ -493,6 +495,9 @@ module.exports = function(grunt) {
 
             // patch moment.js to use western arabic (european) numerals in Hindi
             'patch webapp/node_modules/moment/locale/hi.js < webapp/patches/moment-hindi-use-euro-numerals.patch',
+
+            // patch enketo to always mark the /inputs group as relevant
+            'patch webapp/node_modules/enketo-core/src/js/Form.js < webapp/patches/enketo-inputs-always-relevant.patch',
           ];
           return patches.join(' && ');
         },
