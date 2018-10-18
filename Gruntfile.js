@@ -276,6 +276,7 @@ module.exports = function(grunt) {
             cwd: 'webapp/node_modules',
             src: [
               'bootstrap-daterangepicker/**',
+              'enketo-core/**',
               'font-awesome/**',
               'moment/**',
               'pouchdb-browser/**',
@@ -395,6 +396,7 @@ module.exports = function(grunt) {
         cmd: function() {
           var modulesToPatch = [
             'bootstrap-daterangepicker',
+            'enketo-core',
             'font-awesome',
             'moment',
             'pouchdb-browser',
@@ -444,6 +446,9 @@ module.exports = function(grunt) {
             // patch pouch to:
             // * improve safari checks (https://github.com/medic/medic-webapp/issues/2797)
             'patch webapp/node_modules/pouchdb-browser/lib/index.js < webapp/patches/pouchdb-browser.patch',
+
+            // patch enketo to always mark the /inputs group as relevant
+            'patch webapp/node_modules/enketo-core/src/js/Form.js < webapp/patches/enketo-inputs-always-relevant.patch',
           ];
           return patches.join(' && ');
         }
