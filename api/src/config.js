@@ -5,9 +5,20 @@ const _ = require('underscore'),
       defaults = require('../../config/standard/app_settings.json'),
       settingsService = require('./services/settings'),
       translationCache = {},
-      viewMapUtils = require('@shared-libs/view-map-utils');
+      viewMapUtils = require('@shared-libs/view-map-utils')
+      contactForms =  require('medic-conf/src/fn/upload-contact-forms'),
+      collectForms =  require('medic-conf/src/fn/upload-collect-forms'),
+      appForms =  require('medic-conf/src/fn/upload-app-forms');
 
 let settings = {};
+
+const uploadStandardForms = () => {
+  const standDir = __dirname + '/../../config/standard'
+  const dbName = db.serverUrl + '/medic'
+  contactForms(standDir, dbName);
+  collectForms(standDir, dbName);
+  appForms(standDir, dbName);
+}
 
 const getMessage = (value, locale) => {
 
@@ -161,5 +172,6 @@ module.exports = {
         console.error('Error watching changes, restarting', err);
         process.exit(1);
       });
-  }
+  },
+  uploadStandardForms: uploadStandardForms
 };

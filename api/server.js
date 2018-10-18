@@ -4,6 +4,7 @@ const db = require('./src/db-pouch'),
 process.on('unhandledRejection', reason => {
   console.error('Unhandled Rejection:');
   console.error(reason);
+  console.error(reason.stack);
 });
 
 serverChecks.check(db.serverUrl).then(() => {
@@ -24,6 +25,9 @@ serverChecks.check(db.serverUrl).then(() => {
   .then(() => console.log('Loading configuration…'))
   .then(config.load)
   .then(() => console.log('Configuration loaded successfully'))
+  .then(() => console.log('Uploading forms'))
+  .then(config.uploadStandardForms)
+  .then(() => console.log('Uploading forms completed successfully'))
   .then(config.listen)
 
   .then(() => console.log('Merging translations…'))
