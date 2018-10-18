@@ -1,4 +1,5 @@
 var _ = require('underscore'),
+    moment = require('moment'),
     Search = require('search');
 
 (function () {
@@ -57,17 +58,17 @@ var _ = require('underscore'),
         return DB().query('medic-client/contacts_by_last_visited', {
           reduce: false,
           keys: searchResults
-        }).then(function(results) {
+        }).then(function(result) {
           var visitStats = {},
               interval = CalendarInterval.getCurrent(settings.monthStartDate);
 
-          results.rows.forEach(function(row) {
-            var stats = visitStats[row.key] || { lastVisitedDate: -1, visitCount: 0 };
+          result.rows.forEach(function(row) {
+            var stats = visitStats[row.key] || { lastVisitedDate: -1, visitDates: [] };
 
             stats.lastVisitedDate = Math.max(stats.lastVisitedDate, row.value);
 
             if (row.value >= interval.start && row.value <= interval.end) {
-              stats.visitCount++;
+              stats.visitDates.push(moment(row.value).startOf('day').valueOf());
             }
 
             visitStats[row.key] = stats;
@@ -78,7 +79,7 @@ var _ = require('underscore'),
               key: key,
               value: {
                 lastVisitedDate: visitStats[key].lastVisitedDate,
-                visitCount: visitStats[key].visitCount,
+                visitCount: _.uniq(visitStats[key].visitDates).length,
                 visitCountGoal: settings.visitCountGoal
               }
             };
@@ -111,32 +112,29 @@ var _ = require('underscore'),
             }
             var dataRecordsPromise = GetDataRecords(searchResults, options);
 
-            var result;
-            if (extensions.displayLastVisitedDate) {
-              var lastVisitedDatePromise = getLastVisitedDates(searchResults, extensions.visitCountSettings);
-
-              result = $q.all({
-                dataRecords: dataRecordsPromise,
-                lastVisitedDates: lastVisitedDatePromise
-              }).then(function(r) {
-                r.lastVisitedDates.forEach(function(dateResult) {
-                  var relevantDataRecord = r.dataRecords.find(function(dataRecord) {
-                    return dataRecord._id === dateResult.key;
-                  });
-
-                  if (relevantDataRecord) {
-                    _.extend(relevantDataRecord, dateResult.value);
-                    relevantDataRecord.sortByLastVisitedDate = extensions.sortByLastVisitedDate;
-                  }
-                });
-
-                return r.dataRecords;
-              });
-            } else {
-              result = dataRecordsPromise;
+            if (!extensions.displayLastVisitedDate) {
+              return dataRecordsPromise;
             }
 
-            return result;
+            var lastVisitedDatePromise = getLastVisitedDates(searchResults, extensions.visitCountSettings);
+
+            return $q.all({
+              dataRecords: dataRecordsPromise,
+              lastVisitedDates: lastVisitedDatePromise
+            }).then(function(r) {
+              r.lastVisitedDates.forEach(function(dateResult) {
+                var relevantDataRecord = r.dataRecords.find(function(dataRecord) {
+                  return dataRecord._id === dateResult.key;
+                });
+
+                if (relevantDataRecord) {
+                  _.extend(relevantDataRecord, dateResult.value);
+                  relevantDataRecord.sortByLastVisitedDate = extensions.sortByLastVisitedDate;
+                }
+              });
+
+              return r.dataRecords;
+            });
           })
           .then(function(results) {
             _currentQuery = {};
