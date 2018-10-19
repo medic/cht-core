@@ -84,7 +84,7 @@ angular.module('controllers').controller('UpgradeCtrl',
             startkey: [ 'branch', 'medic', 'medic', {}],
             endkey: [ 'branch', 'medic', 'medic'],
             descending: true,
-            limit: 500
+            limit: 50
           }),
           betas: builds({
             startkey: [ 'beta', 'medic', 'medic', {}],
