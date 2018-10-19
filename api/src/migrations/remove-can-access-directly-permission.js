@@ -8,7 +8,7 @@ module.exports = {
     settingsService
       .get()
       .then(settings => {
-        delete settings.permissions['can_access_directly'];
+        delete settings.permissions.can_access_directly;
         return settingsService.update(settings);
       })
       .then(() => callback())
