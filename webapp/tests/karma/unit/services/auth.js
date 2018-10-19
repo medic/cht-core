@@ -51,8 +51,8 @@ describe('Auth service', function() {
   });
 
   it('resolves when user is db admin', function(done) {
-    userCtx.returns({ roles: [ '_admin' ] });
-    service([ 'can_backup_facilities' ]).then(done);
+    userCtx.returns({ roles: ['_admin'] });
+    service(['can_backup_facilities']).then(done);
     $rootScope.$digest();
   });
 
@@ -102,8 +102,6 @@ describe('Auth service', function() {
           permissions: {
             can_backup_facilities: ['national_admin'],
             can_export_messages: [
-
-
               'national_admin',
               'district_admin',
               'analytics',
@@ -167,7 +165,6 @@ describe('Auth service', function() {
 
   it('rejects when user does not have all permissions', function(done) {
     userCtx.returns({ roles: ['district_admin'] });
-
     Settings.returns(
       Promise.resolve({
         permissions: {
