@@ -145,7 +145,6 @@ module.exports = {
   updateRegistrations: updateRegistrations,
   getSubjectIds: getSubjectIds,
   isMutedInLineage: isMutedInLineage,
-
   _getContactsAndSubjectIds: getContactsAndSubjectIds,
   _updateContacts: updateContacts,
   _lineage: lineage
