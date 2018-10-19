@@ -1,13 +1,22 @@
 angular
   .module('inboxServices')
   .service('Form2Sms', function(
-    $log
+    $log,
+    DB
   ) {
     'use strict';
     'ngInject';
 
-    return function() {
-      $log.error('Welcome to Form2Sms');
-      return 'utternonsenseutternonsenseutternonsenseutternonsenseutternonsenseutternonsenseutternonsense';
+    return function(doc) {
+      $log.error('Welcome to Form2Sms', Array.prototype.slice.call(arguments));
+      return DB()
+        .get('form:' + doc.form)
+        .then(function(form) {
+          $log.error('Form2Sms', doc, form);
+          return 'utternonsenseutternonsenseutternonsenseutternonsenseutternonsenseutternonsenseutternonsense';
+        })
+        .catch(function(err) {
+          $log.error('Form2Sms failed: ' + err);
+        });
     };
   });

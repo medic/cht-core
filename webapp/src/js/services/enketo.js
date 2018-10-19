@@ -568,23 +568,21 @@ angular.module('inboxServices').service('Enketo',
             parentLog.apply($log, args);
           };
 
-          var smsContent = Form2Sms(doc);
+          return Form2Sms(doc)
+            .then(function(smsContent) {
 
-          if(!smsContent) {
-            log('Form2Sms did not return any form content for doc:', doc);
-            return exiting();
-          }
+              if(!smsContent) {
+                log('Form2Sms did not return any form content for doc:', doc);
+                return exiting();
+              }
 
-          // TODO fetch gateway phone number properly
-          var gatewayPhoneNumber = '+447890123456';
+              // TODO fetch gateway phone number properly
+              var gatewayPhoneNumber = '+447890123456';
 
-          log('Calling sms_send(' + doc._id + ', ' + gatewayPhoneNumber + ', ' + smsContent + ')...');
-          $window.medicmobile_android.sms_send(doc._id, gatewayPhoneNumber, smsContent);
-          return exiting();
+              log('Calling sms_send(' + doc._id + ', ' + gatewayPhoneNumber + ', ' + smsContent + ')...');
+              $window.medicmobile_android.sms_send(doc._id, gatewayPhoneNumber, smsContent);
+            });
         });
-
-      log('SMS sending deferred in promise.');
-      return exiting();
     }
 
     this.save = function(formInternalId, form, geolocation, docId) {
