@@ -14,14 +14,9 @@ var _ = require('underscore');
   groups.
  */
 
-angular.module('inboxServices').factory('Auth',
-  function(
-    $log,
-    $q,
-    Session,
-    Settings
-  ) {
-
+angular
+  .module('inboxServices')
+  .factory('Auth', function($log, $q, Session, Settings) {
     'ngInject';
     'use strict';
 
@@ -53,7 +48,14 @@ angular.module('inboxServices').factory('Auth',
     };
 
     var authFail = function(reason, permissions, roles) {
-      $log.debug('Auth failed: ' + reason + '. User roles: ' + roles + '. Wanted permissions: ' + permissions);
+      $log.debug(
+        'Auth failed: ' +
+          reason +
+          '. User roles: ' +
+          roles +
+          '. Wanted permissions: ' +
+          permissions
+      );
       return $q.reject();
     };
 
@@ -85,7 +87,7 @@ angular.module('inboxServices').factory('Auth',
     var auth = function(permissions) {
       return getRoles().then(function(roles) {
         if (!_.isArray(permissions)) {
-          permissions = [ permissions ];
+          permissions = [permissions];
         }
 
         var requiredPermissions = getRequired(permissions);
@@ -93,13 +95,22 @@ angular.module('inboxServices').factory('Auth',
 
         if (_.contains(roles, '_admin')) {
           if (disallowedPermissions.length > 0) {
-            return authFail('disallowed permission(s) found for admin', permissions, roles);
+            return authFail(
+              'disallowed permission(s) found for admin',
+              permissions,
+              roles
+            );
           }
           return $q.resolve();
         }
 
         return Settings().then(function(settings) {
-          var result = checkPermissions(requiredPermissions, disallowedPermissions, roles, settings);
+          var result = checkPermissions(
+            requiredPermissions,
+            disallowedPermissions,
+            roles,
+            settings
+          );
           if (result !== true) {
             return authFail(result, permissions, roles);
           }
@@ -118,13 +129,23 @@ angular.module('inboxServices').factory('Auth',
         var requiredPermissions = _.map(permissionsList, function(permissions) {
           return getRequired(permissions);
         });
-        var disallowedPermissions = _.map(permissionsList, function(permissions) {
+        var disallowedPermissions = _.map(permissionsList, function(
+          permissions
+        ) {
           return getDisallowed(permissions);
         });
 
         if (_.contains(roles, '_admin')) {
-          if (_.every(disallowedPermissions, function(permissions) { return permissions.length; })) {
-            return authFail('missing required permission(s)', permissionsList, roles);
+          if (
+            _.every(disallowedPermissions, function(permissions) {
+              return permissions.length;
+            })
+          ) {
+            return authFail(
+              'missing required permission(s)',
+              permissionsList,
+              roles
+            );
           }
 
           return $q.resolve();
@@ -133,7 +154,12 @@ angular.module('inboxServices').factory('Auth',
         return Settings().then(function(settings) {
           var validPermissions = permissionsList
             .map(function(permissions, key) {
-              return checkPermissions(requiredPermissions[key], disallowedPermissions[key], roles, settings);
+              return checkPermissions(
+                requiredPermissions[key],
+                disallowedPermissions[key],
+                roles,
+                settings
+              );
             })
             .filter(function(result) {
               return result === true;
@@ -162,5 +188,4 @@ angular.module('inboxServices').factory('Auth',
     };
 
     return auth;
-  }
-);
+  });

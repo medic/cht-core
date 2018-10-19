@@ -1,11 +1,11 @@
-angular.module('controllers').controller('AuthorizationPermissionsCtrl',
-  function (
+angular
+  .module('controllers')
+  .controller('AuthorizationPermissionsCtrl', function(
     $scope,
     $log,
     Settings,
     UpdateSettings
   ) {
-
     'use strict';
     'ngInject';
 
@@ -60,7 +60,7 @@ angular.module('controllers').controller('AuthorizationPermissionsCtrl',
 
     $scope.submit = function() {
       var settings = {
-        permissions: mapUpdatesToSettings($scope.permissions)
+        permissions: mapUpdatesToSettings($scope.permissions),
       };
       $scope.submitting = true;
       UpdateSettings(settings, { replace: true })
@@ -72,5 +72,4 @@ angular.module('controllers').controller('AuthorizationPermissionsCtrl',
           $scope.submitting = false;
         });
     };
-  }
-);
+  });
