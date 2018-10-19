@@ -1,25 +1,7 @@
 angular
   .module('inboxServices')
   .service('Form2Sms', function(
-    $log,
-    $q,
-    $translate,
-    $window,
-    AddAttachment,
-    ContactSummary,
-    DB,
-    EnketoPrepopulationData,
-    EnketoTranslation,
-    ExtractLineage,
-    FileReader,
-    Language,
-    LineageModelGenerator,
-    Search,
-    TranslateFrom,
-    UserContact,
-    XmlForm,
-    XSLT,
-    ZScore
+    $log
   ) {
     'use strict';
     'ngInject';
