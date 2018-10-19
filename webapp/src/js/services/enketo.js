@@ -531,12 +531,12 @@ angular.module('inboxServices').service('Enketo',
       form.output.update();
     };
 
-    var submitFormBySmsIfApplicable = function(doc) {
-      function log() {
-        var args = Array.prototype.slice.call(arguments);
+    function submitFormBySmsIfApplicable(doc) {
+      let log = function() {
+        const args = Array.prototype.slice.call(arguments);
         args.unshift('submitFormBySmsIfApplicable()');
         $log.error.apply($log, args);
-      }
+      };
       function exiting() {
         log('EXITING.');
       }
@@ -561,14 +561,14 @@ angular.module('inboxServices').service('Enketo',
 
       $q.resolve()
         .then(function() {
-          var parentLog = log;
+          const parentLog = log;
           log = function() {
-            var args = Array.prototype.slice.call(arguments);
+            const args = Array.prototype.slice.call(arguments);
             args.unshift('[deferred]');
             parentLog.apply($log, args);
           };
 
-          var smsContent = Form2Sms(doc);
+          const smsContent = Form2Sms(doc);
 
           if(!smsContent) {
             log('Form2Sms did not return any form content for doc:', doc);
@@ -585,7 +585,7 @@ angular.module('inboxServices').service('Enketo',
 
       log('SMS sending deferred in promise.');
       return exiting();
-    };
+    }
 
     this.save = function(formInternalId, form, geolocation, docId) {
       return $q.resolve(form.validate())
