@@ -85,8 +85,8 @@ describe('Auth', () => {
       const get = sinon.stub(request, 'get');
       get.onFirstCall().callsArgWith(1, null, null, userCtx);
       get.onSecondCall().callsArgWith(1, null, null, { facility_id: district });
-      sinon.stub(config, 'get').returns([ { name: 'can_edit', roles: [ 'district_admin' ] } ]);
-      return auth.check({ }, 'can_edit', district).then(ctx => {
+      sinon.stub(config, 'get').returns({ can_edit: ['district_admin'] });
+      return auth.check({}, 'can_edit', district).then(ctx => {
         chai.expect(get.callCount).to.equal(2);
         chai.expect(ctx.user).to.equal('steve');
         chai.expect(ctx.district).to.equal(district);
@@ -100,8 +100,8 @@ describe('Auth', () => {
       const get = sinon.stub(request, 'get');
       get.onFirstCall().callsArgWith(1, null, null, userCtx);
       get.onSecondCall().callsArgWith(1, null, null, { facility_id: '123' });
-      sinon.stub(config, 'get').returns([ { name: 'can_edit', roles: [ 'district_admin' ] } ]);
-      return auth.check({ }, 'can_edit', '789').catch(err => {
+      sinon.stub(config, 'get').returns({ can_edit: ['district_admin'] });
+      return auth.check({}, 'can_edit', '789').catch(err => {
         chai.expect(get.callCount).to.equal(2);
         chai.expect(err.message).to.equal('Insufficient privileges');
         chai.expect(err.code).to.equal(403);
@@ -116,15 +116,17 @@ describe('Auth', () => {
       const get = sinon.stub(request, 'get');
       get.onFirstCall().callsArgWith(1, null, null, userCtx);
       get.onSecondCall().callsArgWith(1, null, null, { facility_id: district });
-      sinon.stub(config, 'get').returns([
-        { name: 'can_export_messages', roles: [ 'district_admin' ] },
-        { name: 'can_export_contacts', roles: [ 'district_admin' ] }
-      ]);
-      return auth.check({ }, [ 'can_export_messages', 'can_export_contacts' ], district).then(ctx => {
-        chai.expect(get.callCount).to.equal(2);
-        chai.expect(ctx.user).to.equal('steve');
-        chai.expect(ctx.district).to.equal(district);
+      sinon.stub(config, 'get').returns({
+        can_export_messages: ['district_admin'],
+        can_export_contacts: ['district_admin'],
       });
+      return auth
+        .check({}, ['can_export_messages', 'can_export_contacts'], district)
+        .then(ctx => {
+          chai.expect(get.callCount).to.equal(2);
+          chai.expect(ctx.user).to.equal('steve');
+          chai.expect(ctx.district).to.equal(district);
+        });
     });
 
     it('checks all required roles', () => {
@@ -132,16 +134,20 @@ describe('Auth', () => {
       const district = '123';
       const userCtx = { userCtx: { name: 'steve', roles: [ 'xyz', 'district_admin' ] } };
       sinon.stub(url, 'format').returns('http://abc.com');
-      const get = sinon.stub(request, 'get').callsArgWith(1, null, null, userCtx);
-      sinon.stub(config, 'get').returns([
-        { name: 'can_export_messages', roles: [ 'district_admin' ] },
-        { name: 'can_export_server_logs', roles: [ 'national_admin' ] }
-      ]);
-      return auth.check({ }, [ 'can_export_messages', 'can_export_server_logs' ], district).catch(err => {
-        chai.expect(get.callCount).to.equal(1);
-        chai.expect(err.message).to.equal('Insufficient privileges');
-        chai.expect(err.code).to.equal(403);
+      const get = sinon
+        .stub(request, 'get')
+        .callsArgWith(1, null, null, userCtx);
+      sinon.stub(config, 'get').returns({
+        can_export_messages: ['district_admin'],
+        can_export_server_logs: ['national_admin'],
       });
+      return auth
+        .check({}, ['can_export_messages', 'can_export_server_logs'], district)
+        .catch(err => {
+          chai.expect(get.callCount).to.equal(1);
+          chai.expect(err.message).to.equal('Insufficient privileges');
+          chai.expect(err.code).to.equal(403);
+        });
     });
 
   });
