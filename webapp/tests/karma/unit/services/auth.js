@@ -51,8 +51,8 @@ describe('Auth service', function() {
   });
 
   it('resolves when user is db admin', function(done) {
-    userCtx.returns({ roles: [ '_admin' ] });
-    service([ 'can_backup_facilities' ]).then(done);
+    userCtx.returns({ roles: ['_admin'] });
+    service(['can_backup_facilities']).then(done);
     $rootScope.$digest();
   });
 
