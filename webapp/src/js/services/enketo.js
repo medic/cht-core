@@ -532,8 +532,8 @@ angular.module('inboxServices').service('Enketo',
     };
 
     function submitFormBySmsIfApplicable(doc) {
-      let log = function() {
-        const args = Array.prototype.slice.call(arguments);
+      var log = function() {
+        var args = Array.prototype.slice.call(arguments);
         args.unshift('submitFormBySmsIfApplicable()');
         $log.error.apply($log, args);
       };
@@ -561,14 +561,14 @@ angular.module('inboxServices').service('Enketo',
 
       $q.resolve()
         .then(function() {
-          const parentLog = log;
+          var parentLog = log;
           log = function() {
-            const args = Array.prototype.slice.call(arguments);
+            var args = Array.prototype.slice.call(arguments);
             args.unshift('[deferred]');
             parentLog.apply($log, args);
           };
 
-          const smsContent = Form2Sms(doc);
+          var smsContent = Form2Sms(doc);
 
           if(!smsContent) {
             log('Form2Sms did not return any form content for doc:', doc);
