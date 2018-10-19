@@ -1,15 +1,14 @@
 const request = require('request'),
-      url = require('url'),
-      chai = require('chai'),
-      sinon = require('sinon'),
-      auth = require('../../src/auth'),
-      config = require('../../src/config'),
-      db = require('../../src/db-pouch');
+  url = require('url'),
+  chai = require('chai'),
+  sinon = require('sinon'),
+  auth = require('../../src/auth'),
+  config = require('../../src/config'),
+  db = require('../../src/db-pouch');
 
 let originalServerUrl;
 
 describe('Auth', () => {
-
   beforeEach(() => {
     originalServerUrl = db.serverUrl;
   });
@@ -20,11 +19,10 @@ describe('Auth', () => {
   });
 
   describe('check', () => {
-
     it('returns error when not logged in', () => {
       db.serverUrl = 'http://abc.com';
       const get = sinon.stub(request, 'get').callsArgWith(1, null, null);
-      return auth.check({ }).catch(err => {
+      return auth.check({}).catch(err => {
         chai.expect(get.callCount).to.equal(1);
         chai.expect(get.args[0][0].url).to.equal('http://abc.com/_session');
         chai.expect(err.message).to.equal('Not logged in');
@@ -34,8 +32,10 @@ describe('Auth', () => {
 
     it('returns error when no user context', () => {
       db.serverUrl = 'http://abc.com';
-      const get = sinon.stub(request, 'get').callsArgWith(1, null, null, { roles: [] });
-      return auth.check({ }).catch(err => {
+      const get = sinon
+        .stub(request, 'get')
+        .callsArgWith(1, null, null, { roles: [] });
+      return auth.check({}).catch(err => {
         chai.expect(get.callCount).to.equal(1);
         chai.expect(err.message).to.equal('Not logged in');
         chai.expect(err.code).to.equal(401);
@@ -45,7 +45,7 @@ describe('Auth', () => {
     it('returns error when request errors', () => {
       db.serverUrl = 'http://abc.com';
       const get = sinon.stub(request, 'get').callsArgWith(1, 'boom');
-      return auth.check({ }).catch(err => {
+      return auth.check({}).catch(err => {
         chai.expect(get.callCount).to.equal(1);
         chai.expect(get.args[0][0].url).to.equal('http://abc.com/_session');
         chai.expect(err.message).to.equal('Not logged in');
@@ -56,10 +56,12 @@ describe('Auth', () => {
     it('returns error when no has insufficient privilege', () => {
       db.serverUrl = 'http://abc.com';
       const district = '123';
-      const userCtx = { userCtx: { name: 'steve', roles: [ 'xyz' ] } };
-      const get = sinon.stub(request, 'get').callsArgWith(1, null, null, userCtx);
-      sinon.stub(config, 'get').returns([ { name: 'can_edit', roles: [ 'abc' ] } ]);
-      return auth.check({ }, 'can_edit', district).catch(err => {
+      const userCtx = { userCtx: { name: 'steve', roles: ['xyz'] } };
+      const get = sinon
+        .stub(request, 'get')
+        .callsArgWith(1, null, null, userCtx);
+      sinon.stub(config, 'get').returns({ can_edit: ['abc'] });
+      return auth.check({}, 'can_edit', district).catch(err => {
         chai.expect(get.callCount).to.equal(1);
         chai.expect(err.message).to.equal('Insufficient privileges');
         chai.expect(err.code).to.equal(403);
@@ -69,9 +71,11 @@ describe('Auth', () => {
     it('returns username for admin', () => {
       db.serverUrl = 'http://abc.com';
       const district = '123';
-      const userCtx = { userCtx: { name: 'steve', roles: [ '_admin' ] } };
-      const get = sinon.stub(request, 'get').callsArgWith(1, null, null, userCtx);
-      return auth.check({ }, 'can_edit', district).then(ctx => {
+      const userCtx = { userCtx: { name: 'steve', roles: ['_admin'] } };
+      const get = sinon
+        .stub(request, 'get')
+        .callsArgWith(1, null, null, userCtx);
+      return auth.check({}, 'can_edit', district).then(ctx => {
         chai.expect(get.callCount).to.equal(1);
         chai.expect(ctx.user).to.equal('steve');
         chai.expect(ctx.district).to.equal(undefined);
@@ -81,7 +85,9 @@ describe('Auth', () => {
     it('returns username and district', () => {
       db.serverUrl = 'http://abc.com';
       const district = '123';
-      const userCtx = { userCtx: { name: 'steve', roles: [ 'xyz', 'district_admin' ] } };
+      const userCtx = {
+        userCtx: { name: 'steve', roles: ['xyz', 'district_admin'] },
+      };
       const get = sinon.stub(request, 'get');
       get.onFirstCall().callsArgWith(1, null, null, userCtx);
       get.onSecondCall().callsArgWith(1, null, null, { facility_id: district });
@@ -95,7 +101,9 @@ describe('Auth', () => {
 
     it('returns error when requesting unallowed facility', () => {
       db.serverUrl = 'http://abc.com';
-      const userCtx = { userCtx: { name: 'steve', roles: [ 'xyz', 'district_admin' ] } };
+      const userCtx = {
+        userCtx: { name: 'steve', roles: ['xyz', 'district_admin'] },
+      };
       sinon.stub(url, 'format').returns('http://abc.com');
       const get = sinon.stub(request, 'get');
       get.onFirstCall().callsArgWith(1, null, null, userCtx);
@@ -111,7 +119,9 @@ describe('Auth', () => {
     it('accepts multiple required roles', () => {
       db.serverUrl = 'http://abc.com';
       const district = '123';
-      const userCtx = { userCtx: { name: 'steve', roles: [ 'xyz', 'district_admin' ] } };
+      const userCtx = {
+        userCtx: { name: 'steve', roles: ['xyz', 'district_admin'] },
+      };
       sinon.stub(url, 'format').returns('http://abc.com');
       const get = sinon.stub(request, 'get');
       get.onFirstCall().callsArgWith(1, null, null, userCtx);
@@ -132,7 +142,9 @@ describe('Auth', () => {
     it('checks all required roles', () => {
       db.serverUrl = 'http://abc.com';
       const district = '123';
-      const userCtx = { userCtx: { name: 'steve', roles: [ 'xyz', 'district_admin' ] } };
+      const userCtx = {
+        userCtx: { name: 'steve', roles: ['xyz', 'district_admin'] },
+      };
       sinon.stub(url, 'format').returns('http://abc.com');
       const get = sinon
         .stub(request, 'get')
@@ -149,15 +161,15 @@ describe('Auth', () => {
           chai.expect(err.code).to.equal(403);
         });
     });
-
   });
 
   describe('checkUrl', () => {
-
     it('requests the given url and returns status', done => {
       db.serverUrl = 'http://abc.com';
       const format = sinon.stub(url, 'format').returns('http://abc.com');
-      const head = sinon.stub(request, 'head').callsArgWith(1, null, { statusCode: 444 });
+      const head = sinon
+        .stub(request, 'head')
+        .callsArgWith(1, null, { statusCode: 444 });
       auth.checkUrl({ params: { path: '/home/screen' } }, (err, output) => {
         chai.expect(err).to.equal(null);
         chai.expect(format.callCount).to.equal(1);
@@ -168,17 +180,17 @@ describe('Auth', () => {
         done();
       });
     });
-
   });
 
   describe('isOnlineOnly', () => {
-
     it('checks for "admin" role', () => {
       chai.expect(auth.isOnlineOnly({ roles: ['_admin'] })).to.equal(true);
     });
 
     it('checks "national_admin" role', () => {
-      chai.expect(auth.isOnlineOnly({ roles: ['national_admin'] })).to.equal(true);
+      chai
+        .expect(auth.isOnlineOnly({ roles: ['national_admin'] }))
+        .to.equal(true);
     });
 
     it('checks for "mm-online" role', () => {
@@ -186,13 +198,13 @@ describe('Auth', () => {
     });
 
     it('checks for "admin" and "national_admin" roles', () => {
-      chai.expect(auth.isOnlineOnly({ roles: ['district_admin'] })).to.equal(false);
+      chai
+        .expect(auth.isOnlineOnly({ roles: ['district_admin'] }))
+        .to.equal(false);
     });
-
   });
 
   describe('getUserSettings', () => {
-
     it('returns medic user doc with facility_id from couchdb user doc', () => {
       db.serverUrl = 'http://abc.com';
       sinon
@@ -200,14 +212,29 @@ describe('Auth', () => {
         .resolves({ name: 'steve', facility_id: 'steveVille', roles: ['b'] });
       sinon
         .stub(db.medic, 'get')
-        .resolves({ name: 'steve2', facility_id: 'otherville', contact_id: 'steve', roles: ['c'] });
+        .resolves({
+          name: 'steve2',
+          facility_id: 'otherville',
+          contact_id: 'steve',
+          roles: ['c'],
+        });
       return auth.getUserSettings({ name: 'steve' }).then(result => {
-        chai.expect(result).to.deep.equal(
-          { name: 'steve', facility_id: 'steveVille', contact_id: 'steve', roles: ['b'] });
+        chai
+          .expect(result)
+          .to.deep.equal({
+            name: 'steve',
+            facility_id: 'steveVille',
+            contact_id: 'steve',
+            roles: ['b'],
+          });
         chai.expect(db.users.get.callCount).to.equal(1);
-        chai.expect(db.users.get.withArgs('org.couchdb.user:steve').callCount).to.equal(1);
+        chai
+          .expect(db.users.get.withArgs('org.couchdb.user:steve').callCount)
+          .to.equal(1);
         chai.expect(db.medic.get.callCount).to.equal(1);
-        chai.expect(db.medic.get.withArgs('org.couchdb.user:steve').callCount).to.equal(1);
+        chai
+          .expect(db.medic.get.withArgs('org.couchdb.user:steve').callCount)
+          .to.equal(1);
       });
     });
 
@@ -217,30 +244,30 @@ describe('Auth', () => {
       sinon.stub(db.users, 'get').resolves({
         _id: 'org.couchdb.user:my-user',
         name: 'my-user',
-        roles: [ 'a' ],
+        roles: ['a'],
         type: 'user',
         password_scheme: 'abcd',
-        facility_id: 'myUserVille'
+        facility_id: 'myUserVille',
       });
       sinon.stub(db.medic, 'get').resolves({
         _id: 'org.couchdb.user:my-user',
         name: 'my-user-edited',
-        roles: [ '_admin' ],
+        roles: ['_admin'],
         type: 'user-settings',
         some: 'field',
         contact_id: 'my-user-contact',
-        facility_id: 'otherVille'
+        facility_id: 'otherVille',
       });
 
       return auth.getUserSettings({ name: 'my-user' }).then(result => {
         chai.expect(result).to.deep.equal({
           _id: 'org.couchdb.user:my-user',
           name: 'my-user',
-          roles: [ 'a' ],
+          roles: ['a'],
           type: 'user-settings',
           some: 'field',
           contact_id: 'my-user-contact',
-          facility_id: 'myUserVille'
+          facility_id: 'myUserVille',
         });
       });
     });
@@ -262,6 +289,5 @@ describe('Auth', () => {
         chai.expect(err).to.deep.equal({ some: 'err' });
       });
     });
-
   });
 });
