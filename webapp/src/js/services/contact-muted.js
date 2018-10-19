@@ -17,7 +17,7 @@ angular.module('inboxServices').service('ContactMuted',
 
       if (lineage) {
         return _.some(lineage, function(parent) {
-          return parent.muted;
+          return parent && parent.muted;
         });
       }
 

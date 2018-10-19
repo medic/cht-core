@@ -172,21 +172,20 @@ describe('mutingUtils', () => {
       const patientIds = ['1', '2', '3', '4'];
       utils.getReportsBySubject.resolves([]);
 
-      return mutingUtils.updateRegistrations(patientIds, true).then(result => {
-        chai.expect(result).to.deep.equal([]);
+      return mutingUtils.updateRegistrations(patientIds, true).then(() => {
         chai.expect(utils.getReportsBySubject.callCount).to.equal(1);
         chai.expect(utils.getReportsBySubject.args[0][0].ids).to.deep.equal(patientIds);
       });
     });
 
     it('should mute scheduled messages in registrations', () => {
-      utils.getReportsBySubject.resolves([
+      const registrations = [
         { _id: 'r1', shouldUpdate: true },
         { _id: 'r2', shouldUpdate: false },
         { _id: 'r3', shouldUpdate: false },
         { _id: 'r4', shouldUpdate: true }
-      ]);
-
+      ];
+      utils.getReportsBySubject.resolves(registrations);
       utils.muteScheduledMessages.callsFake(r => {
         r.willUpdate = true;
         return r.shouldUpdate;
@@ -194,7 +193,7 @@ describe('mutingUtils', () => {
 
       db.medic.bulkDocs.resolves();
 
-      return mutingUtils.updateRegistrations(['a'], true).then(result => {
+      return mutingUtils.updateRegistrations(['a'], true).then(() => {
         chai.expect(utils.getReportsBySubject.callCount).to.equal(1);
         chai.expect(utils.getReportsBySubject.args[0][0].ids).to.deep.equal(['a']);
         chai.expect(utils.muteScheduledMessages.callCount).to.equal(4);
@@ -207,11 +206,6 @@ describe('mutingUtils', () => {
           { _id: 'r1', shouldUpdate: true, willUpdate: true },
           { _id: 'r4', shouldUpdate: true, willUpdate: true }
         ]]);
-
-        chai.expect(result).to.deep.equal([
-          { _id: 'r1', shouldUpdate: true, willUpdate: true },
-          { _id: 'r4', shouldUpdate: true, willUpdate: true }
-        ]);
       });
     });
 
@@ -230,7 +224,7 @@ describe('mutingUtils', () => {
 
       db.medic.bulkDocs.resolves();
 
-      return mutingUtils.updateRegistrations(['a'], false).then(result => {
+      return mutingUtils.updateRegistrations(['a'], false).then(() => {
         chai.expect(utils.getReportsBySubject.callCount).to.equal(1);
         chai.expect(utils.getReportsBySubject.args[0][0].ids).to.deep.equal(['a']);
         chai.expect(utils.unmuteScheduledMessages.callCount).to.equal(4);
@@ -243,11 +237,6 @@ describe('mutingUtils', () => {
           { _id: 'r1', shouldUpdate: true, willUpdate: true },
           { _id: 'r4', shouldUpdate: true, willUpdate: true }
         ]]);
-
-        chai.expect(result).to.deep.equal([
-          { _id: 'r1', shouldUpdate: true, willUpdate: true },
-          { _id: 'r4', shouldUpdate: true, willUpdate: true }
-        ]);
       });
     });
 
@@ -255,8 +244,7 @@ describe('mutingUtils', () => {
       utils.getReportsBySubject.resolves([{ _id: 'r1' }, { _id: 'r2' }, { _id: 'r3' }, { _id: 'r4' }]);
       utils.muteScheduledMessages.returns(false);
 
-      return mutingUtils.updateRegistrations(['a'], true).then(result => {
-        chai.expect(result).to.deep.equal([]);
+      return mutingUtils.updateRegistrations(['a'], true).then(() => {
         chai.expect(db.medic.bulkDocs.callCount).to.equal(0);
         chai.expect(utils.muteScheduledMessages.callCount).to.equal(4);
         chai.expect(utils.muteScheduledMessages.args[0][0]._id).to.equal('r1');

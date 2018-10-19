@@ -62,8 +62,13 @@ const updateRegistrations = (subjectIds, muted) => {
 
   return utils
     .getReportsBySubject({ db: db.medic, ids: subjectIds, registrations: true })
-    .then(registrations => registrations.filter(registration => updateRegistration(registration, muted)))
-    .then(registrations => db.medic.bulkDocs(registrations));
+    .then(registrations => {
+      registrations = registrations.filter(registration => updateRegistration(registration, muted));
+      if (!registrations.length) {
+        return;
+      }
+      return db.medic.bulkDocs(registrations);
+    });
 };
 
 const getSubjectIds = contact => _.values(_.pick(contact, SUBJECT_PROPERTIES));
