@@ -1,0 +1,14 @@
+version: "3.2"
+services:
+  couchdb:
+    image: couchdb:latest
+    ports:
+      - "5984:5984"
+    volumes:
+      - "couchdb-data:/opt/couchdb/data"
+  medic:
+    build: .
+    volumes:
+    - "./:/data"
+volumes:
+  couchdb-data:
