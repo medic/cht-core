@@ -338,8 +338,7 @@
     },
     {
       "name": "can_view_last_visited_date",
-      "roles": [
-      ]
+      "roles": []
     }
   ],
   "setup_complete": true,
