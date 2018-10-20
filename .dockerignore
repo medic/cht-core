@@ -1,3 +1,4 @@
 *
 !docker-entrypoint.sh
 !docker-nginx.conf
+!docker-setup.sh
