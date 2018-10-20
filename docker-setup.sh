@@ -48,6 +48,12 @@ pushd sentinel
 yarn install
 popd
 
-echo "*** starting the system ***"
-grunt dev-webapp &
-yarn start
+echo "*** starting grunt ***"
+# echo "*** run 'docker-compose exec medic yarn start' to start development server ***"
+# grunt dev-webapp
+
+grunt build-dev
+grunt deploy
+grunt dev-api
+
+# yarn start
