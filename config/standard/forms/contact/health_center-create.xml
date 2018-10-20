@@ -147,10 +147,7 @@
             <value>Set the Primary Contact</value>
           </text>
           <text id="/data/init/custom_place_name:label">
-            <value><output value=" /data/init/custom_place_name_label "/></value>
-          </text>
-          <text id="/data/init/custom_place_name_label_translator/name:label">
-            <value>Name</value>
+            <value>Name of this <output value=" /data/init/place_type_translation "/></value>
           </text>
           <text id="/data/init/generated_name/clinic:label">
             <value><output value=" /data/init/contact_name "/>'s Area</value>
@@ -323,10 +320,7 @@
             <value>Contact primaire</value>
           </text>
           <text id="/data/init/custom_place_name:label">
-            <value><output value=" /data/init/custom_place_name_label "/></value>
-          </text>
-          <text id="/data/init/custom_place_name_label_translator/name:label">
-            <value>Nom</value>
+            <value>Nom pour <output value=" /data/init/place_type_translation "/></value>
           </text>
           <text id="/data/init/generated_name/clinic:label">
             <value>Zone de <output value=" /data/init/contact_name "/></value>
@@ -499,10 +493,7 @@
             <value>प्राथमिक कॉंटॅक्ट चुनें</value>
           </text>
           <text id="/data/init/custom_place_name:label">
-            <value><output value=" /data/init/custom_place_name_label "/></value>
-          </text>
-          <text id="/data/init/custom_place_name_label_translator/name:label">
-            <value>नाम</value>
+            <value>इस स्थान का नाम <output value=" /data/init/place_type_translation "/></value>
           </text>
           <text id="/data/init/generated_name/clinic:label">
             <value><output value=" /data/init/contact_name "/> का क्षेत्र</value>
@@ -675,10 +666,7 @@
             <value>Ditetapkan Sebagai Kontak Utama</value>
           </text>
           <text id="/data/init/custom_place_name:label">
-            <value><output value=" /data/init/custom_place_name_label "/></value>
-          </text>
-          <text id="/data/init/custom_place_name_label_translator/name:label">
-            <value>Nama</value>
+            <value>Masukkan nama tempat ini</value>
           </text>
           <text id="/data/init/generated_name/clinic:label">
             <value>Daerah <output value=" /data/init/contact_name "/></value>
@@ -851,10 +839,7 @@
             <value>प्राथमिक सम्पर्क व्यक्ति</value>
           </text>
           <text id="/data/init/custom_place_name:label">
-            <value><output value=" /data/init/custom_place_name_label "/></value>
-          </text>
-          <text id="/data/init/custom_place_name_label_translator/name:label">
-            <value>नाम</value>
+            <value>यस स्थानको नाम लेख्नुहोस्</value>
           </text>
           <text id="/data/init/generated_name/clinic:label">
             <value><output value=" /data/init/contact_name "/>को क्षेत्र</value>
@@ -1027,10 +1012,7 @@
             <value>Weka mwasiliwa mkuu</value>
           </text>
           <text id="/data/init/custom_place_name:label">
-            <value><output value=" /data/init/custom_place_name_label "/></value>
-          </text>
-          <text id="/data/init/custom_place_name_label_translator/name:label">
-            <value>Jina</value>
+            <value>Jaza jina la eneo hii</value>
           </text>
           <text id="/data/init/generated_name/clinic:label">
             <value>Eneo ya  <output value=" /data/init/contact_name "/></value>
@@ -1059,8 +1041,8 @@
         </translation>
       </itext>
       <instance>
-        <data delimiter="#" id="contact:health_center:create" prefix="J1!contact:health_center:create!" version="2018-09-27_07-24">
-          <inputs tag="hidden">
+        <data delimiter="#" id="contact:health_center:create" prefix="J1!contact:health_center:create!" version="2018-10-19_19-43">
+          <inputs>
             <meta>
               <location>
                 <lat/>
@@ -1097,8 +1079,6 @@
             <select_person/>
             <name/>
             <contact_name/>
-            <custom_place_name_label_translator/>
-            <custom_place_name_label/>
             <custom_place_name/>
             <place_type>health_center</place_type>
             <place_type_translation/>
@@ -1134,8 +1114,6 @@
       <bind nodeset="/data/init/select_person" relevant="selected( /data/init/create_new_person ,'old_person')" required="true()" type="db:person"/>
       <bind nodeset="/data/init/name" type="string"/>
       <bind calculate="coalesce(../name, ../../contact/name)" nodeset="/data/init/contact_name" type="string"/>
-      <bind calculate="&quot;name&quot;" nodeset="/data/init/custom_place_name_label_translator" relevant="selected( /data/init/create_new_person ,'none')" type="select1"/>
-      <bind calculate="jr:choice-name( /data/init/custom_place_name_label_translator ,' /data/init/custom_place_name_label_translator ')" nodeset="/data/init/custom_place_name_label" type="string"/>
       <bind nodeset="/data/init/custom_place_name" relevant="selected( /data/init/create_new_person ,'none') or selected( /data/health_center/is_name_generated , 'false') or selected( /data/health_center/is_name_generated , 'no')" required="true()" type="string"/>
       <bind nodeset="/data/init/place_type" type="select1"/>
       <bind calculate="jr:choice-name( /data/init/place_type ,' /data/init/place_type ')" nodeset="/data/init/place_type_translation" type="string"/>
@@ -1179,7 +1157,7 @@
       </group>
     </group>
     <group appearance="field-list" ref="/data/init">
-      <select1 appearance="horizontal-compact" ref="/data/init/create_new_person">
+      <select1 ref="/data/init/create_new_person">
         <label ref="jr:itext('/data/init/create_new_person:label')"/>
         <item>
           <label ref="jr:itext('/data/init/create_new_person/new_person:label')"/>
@@ -1198,12 +1176,6 @@
         <label ref="jr:itext('/data/init/select_person:label')"/>
       </input>
       <input appearance="hidden" ref="/data/init/name"/>
-      <select1 appearance="hidden" ref="/data/init/custom_place_name_label_translator">
-        <item>
-          <label ref="jr:itext('/data/init/custom_place_name_label_translator/name:label')"/>
-          <value>name</value>
-        </item>
-      </select1>
       <select1 appearance="hidden" ref="/data/init/place_type">
         <label ref="jr:itext('/data/init/place_type:label')"/>
         <item>
@@ -1284,7 +1256,7 @@
         </group>
       </group>
     <group appearance="field-list" ref="/data/health_center">
-      <select1 appearance="horizontal-compact" ref="/data/health_center/is_name_generated">
+      <select1 ref="/data/health_center/is_name_generated">
         <label ref="jr:itext('/data/health_center/is_name_generated:label')"/>
         <item>
           <label ref="jr:itext('/data/health_center/is_name_generated/true:label')"/>
