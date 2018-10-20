@@ -684,8 +684,8 @@
         </translation>
       </itext>
       <instance>
-        <data delimiter="#" id="contact:health_center:edit" prefix="J1!contact:health_center:edit!" version="2018-09-27_07-35">
-          <inputs tag="hidden">
+        <data delimiter="#" id="contact:health_center:edit" prefix="J1!contact:health_center:edit!" version="2018-10-19_19-42">
+          <inputs>
             <meta>
               <location>
                 <lat/>
@@ -782,7 +782,7 @@
           <hint ref="jr:itext('/data/health_center/contact/_id:hint')"/>
         </input>
       </group>
-      <select1 appearance="horizontal-compact" ref="/data/health_center/is_name_generated">
+      <select1 ref="/data/health_center/is_name_generated">
         <label ref="jr:itext('/data/health_center/is_name_generated:label')"/>
         <item>
           <label ref="jr:itext('/data/health_center/is_name_generated/true:label')"/>
