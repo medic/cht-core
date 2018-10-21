@@ -7,14 +7,9 @@ RUN npm install -g grunt-cli &&\
     chmod 777 /usr/local/bin/yarn
 
 COPY docker-nginx.conf /opt
-
-COPY docker-entrypoint.sh docker-setup.sh /opt/
+COPY docker-run.sh /opt/
 WORKDIR /opt
-RUN chmod 777 docker-entrypoint.sh &&\
-    chmod 777 docker-setup.sh
-
+RUN chmod 777 docker-run.sh
 WORKDIR /data
-ENTRYPOINT [ "/opt/docker-entrypoint.sh" ]
-# CMD [ "tail", "-f", "/dev/null" ]
-# CMD [ "yarn", "start" ]
-CMD [ "/opt/docker-setup.sh" ]
+EXPOSE 5988
+CMD [ "/opt/docker-run.sh" ]

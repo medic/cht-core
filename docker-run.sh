@@ -1,5 +1,8 @@
 #!/bin/bash
 
+nginx -c /opt/docker-nginx.conf
+echo "*** Started reverse proxy through nginx ***"
+
 # Wait for couchdb to start
 attempt_counter=0
 max_attempts=10
@@ -49,11 +52,6 @@ yarn install
 popd
 
 echo "*** starting grunt ***"
-# echo "*** run 'docker-compose exec medic yarn start' to start development server ***"
-# grunt dev-webapp
-
 grunt build-dev
 grunt deploy
 grunt dev-api
-
-# yarn start
