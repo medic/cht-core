@@ -4,7 +4,7 @@ images:
 - name: couchdb
   url: couchdb:2
 - name: medic
-  url: registry2.swarm.devfactory.com/parvsharma/medic
+  url: registry2.swarm.devfactory.com/medic/medic
 configs:
 - name: couchdb
   containers:

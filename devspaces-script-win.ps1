@@ -1,4 +1,4 @@
-param($name="medic", $ownername="parvsharma")
+param($name="medic", $ownername="medic")
 
 docker -H build.swarm.devfactory.com build -t $ownername/$name .
 docker -H build.swarm.devfactory.com tag $ownername/$name registry2.swarm.devfactory.com/$ownername/$name
