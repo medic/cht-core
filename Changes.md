@@ -1,5 +1,14 @@
 # Medic Mobile Release Notes
 
+## 2.18.1
+
+_October 23, 2018_
+
+### Bug fixes
+
+- [#4875](https://github.com/medic/medic-webapp/issues/4875): Inputs group not saved when its relevance is set to false
+- [#4897](https://github.com/medic/medic-webapp/issues/4897): Count two visits on the same day as one visit
+
 ## 2.18.0
 
 _August 29, 2018_
