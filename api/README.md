@@ -1058,3 +1058,6 @@ You know that an upgrade has been staged when the `horti-upgrade` document in Co
 ## POST /api/v1/upgrade/complete
 
 Completes a staged upgrade. Throws a `404` if there is no upgrade in the staged position.
+
+
+##
