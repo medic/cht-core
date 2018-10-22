@@ -582,13 +582,13 @@ var canEdit = function(req, res) {
     .check(req, 'can_edit')
     .then(ctx => {
       if (!ctx || !ctx.user) {
-        serverUtils.serverError(e, req, res);
+        serverUtils.serverError('not-authorized', req, res);
         return;
       }
       proxyForAuth.web(req, res);
     })
     .catch(() => {
-      serverUtils.serverError(e, req, res);
+      serverUtils.serverError('not-authorized', req, res);
     });
 };
 
