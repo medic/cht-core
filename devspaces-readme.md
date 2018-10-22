@@ -78,7 +78,7 @@ If there are any changes required in the Dockerfile. Then after making those cha
 ### III. Importing existing collection (Without using the artifacts / via importing the devspaces identified by uuid )
 1. `git clone https://github.com/trilogy-group/medic-webapp.git`<br>
 2. `cd medic-webapp`
-3. **`cndevspaces import f718ec0e-1b5d-4039-8fae-5bcaa17eead5 medic`<br>
+3. **`cndevspaces import 1615cef0-45e3-4aed-9f30-f019579f1805 medic`<br>
     Imports the collections at the uuid into your account. [Read more](http://devspaces-docs.ey.devfactory.com/collections/sharing.html?highlight=import#import)**
 4. `cndevspaces bind -C medic -c medic`<br>
     Binds the current cirectory with the devspaces. This syncs the source code / files in the repo with the host running devspaces. [Read More](http://devspaces-docs.ey.devfactory.com/collections/commands.html#bind)
