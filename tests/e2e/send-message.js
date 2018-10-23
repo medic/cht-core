@@ -35,6 +35,14 @@ describe('Send message', () => {
     name: 'Carol Carolina',
     parent: { _id: DAVID_AREA._id },
   };
+  const JAROL = {
+    _id: 'jarol-contact',
+    reported_date: 1,
+    type: 'person',
+    name: 'Jarol Jarolina',
+    phone: '+558865903003',
+    parent: { _id: DAVID_AREA._id },
+  };
   const DAVID = {
     _id: 'david-contact',
     reported_date: 1,
@@ -44,7 +52,7 @@ describe('Send message', () => {
     parent: { _id: DAVID_AREA._id },
   };
 
-  const CONTACTS = [ALICE, BOB_PLACE, CAROL, DAVID, DAVID_AREA];
+  const CONTACTS = [ALICE, BOB_PLACE, CAROL, JAROL, DAVID, DAVID_AREA];
 
   beforeAll(done => {
     DAVID_AREA.contact = { _id: DAVID._id, phone: '+554465902001' };
@@ -249,6 +257,9 @@ describe('Send message', () => {
         element(by.css(messageInList(CAROL.phone))).isPresent()
       ).toBeFalsy();
       expect(
+        element(by.css(messageInList(JAROL.phone))).isPresent()
+      ).toBeFalsy();
+      expect(
         element(by.css(messageInList(DAVID.phone))).isPresent()
       ).toBeFalsy();
 
@@ -263,6 +274,7 @@ describe('Send message', () => {
       sendMessage();
 
       expect(element.all(by.css(messageInList(CAROL._id))).count()).toBe(0);
+      expect(element.all(by.css(messageInList(JAROL._id))).count()).toBe(0);
       expect(element.all(by.css(messageInList(DAVID._id))).count()).toBe(0);
       clickLhsEntry(DAVID_AREA._id, DAVID_AREA.name);
 

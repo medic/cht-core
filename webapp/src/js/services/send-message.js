@@ -42,30 +42,27 @@ angular.module('inboxServices').factory('SendMessage',
       }
     };
 
+    var mapDescendants = function(results) {
+      return results.rows.map(function(row) {
+        var doc = row.doc;
+        var phone = doc.phone || (doc.contact && doc.contact.phone);
+        return mapRecipient(doc, phone);
+      });
+    };
+
     var descendants = function(recipient) {
       return DB().query('medic-client/contacts_by_parent', {
         include_docs: true,
         key: recipient.doc._id
-      }).then(function(results) {
-        return results.rows.map(function(row) {
-          var doc = row.doc;
-          var phone = doc.contact && doc.contact.phone;
-          return mapRecipient(doc, phone);
-        });
-      });
+      }).then(mapDescendants);
     };
 
     var hydrate = function(recipients) {
       var ids = recipients.map(function(recipient) {
         return recipient.doc._id;
       });
-      return DB().allDocs({ include_docs: true, keys: ids }).then(function(results) {
-        return results.rows.map(function(row) {
-          var doc = row.doc;
-          var phone = doc.phone || (doc.contact && doc.contact.phone);
-          return mapRecipient(doc, phone);
-        });
-      });
+      return DB().allDocs({ include_docs: true, keys: ids })
+        .then(mapDescendants);
     };
 
     var resolvePhoneNumbers = function(recipients) {
@@ -74,6 +71,7 @@ angular.module('inboxServices').factory('SendMessage',
       // it exists in the DB
       return recipients.map(function(recipient) {
         var phone = recipient.text || // from select2
+              recipient.doc.phone ||
                recipient.doc.contact.phone; // from LHS message bar
         return mapRecipient(null, phone);
       });
