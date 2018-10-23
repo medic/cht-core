@@ -53,6 +53,7 @@
     "underscore": "^1.8.3",
     "url": "^0.11.0",
     "uuid": "^3.2.1",
+    "winston": "^3.1.0",
     "xmlbuilder": "^10.0.0"
   },
   "devDependencies": {

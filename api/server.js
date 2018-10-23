@@ -1,9 +1,10 @@
 const db = require('./src/db-pouch'),
-      serverChecks = require('@shared-libs/server-checks');
+      serverChecks = require('@shared-libs/server-checks'),
+      { logger } = require('./src/logger');
 
 process.on('unhandledRejection', reason => {
-  console.error('Unhandled Rejection:');
-  console.error(reason);
+  logger.error('Unhandled Rejection:');
+  logger.error(reason);
 });
 
 serverChecks.check(db.serverUrl).then(() => {
@@ -17,26 +18,26 @@ serverChecks.check(db.serverUrl).then(() => {
 
 
   Promise.resolve()
-  .then(() => console.log('Extracting ddoc…'))
+  .then(() => logger.info('Extracting ddoc…'))
   .then(ddocExtraction.run)
-  .then(() => console.log('DDoc extraction completed successfully'))
+  .then(() => logger.info('DDoc extraction completed successfully'))
 
-  .then(() => console.log('Loading configuration…'))
+  .then(() => logger.info('Loading configuration…'))
   .then(config.load)
-  .then(() => console.log('Configuration loaded successfully'))
+  .then(() => logger.info('Configuration loaded successfully'))
   .then(config.listen)
 
-  .then(() => console.log('Merging translations…'))
+  .then(() => logger.info('Merging translations…'))
   .then(translations.run)
-  .then(() => console.log('Translations merged successfully'))
+  .then(() => logger.info('Translations merged successfully'))
 
-  .then(() => console.log('Running db migrations…'))
+  .then(() => logger.info('Running db migrations…'))
   .then(migrations.run)
-  .then(() => console.log('Database migrations completed successfully'))
+  .then(() => logger.info('Database migrations completed successfully'))
 
   .catch(err => {
-    console.error('Fatal error initialising medic-api');
-    console.error(err);
+    logger.error('Fatal error initialising medic-api');
+    logger.error(err);
     process.exit(1);
   })
 
@@ -54,6 +55,6 @@ serverChecks.check(db.serverUrl).then(() => {
   })
 
   .then(() => app.listen(apiPort, () => {
-    console.log('Medic API listening on port ' + apiPort);
+    logger.info('Medic API listening on port ' + apiPort);
   }));
 });
