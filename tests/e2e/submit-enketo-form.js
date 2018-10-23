@@ -1,9 +1,8 @@
 const utils = require('../utils'),
-      helper = require('../helper'),
-      commonElements = require('../page-objects/common/common.po.js');
-  
-describe('Submit Enketo form', () => {
+  helper = require('../helper'),
+  commonElements = require('../page-objects/common/common.po.js');
 
+describe('Submit Enketo form', () => {
   const xml = `<h:html xmlns="http://www.w3.org/2002/xforms" xmlns:ev="http://www.w3.org/2001/xml-events" xmlns:h="http://www.w3.org/1999/xhtml" xmlns:jr="http://openrosa.org/javarosa" xmlns:orx="http://openrosa.org/xforms/" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
     <h:head>
       <model>
@@ -34,9 +33,9 @@ describe('Submit Enketo form', () => {
       _attachments: {
         xml: {
           content_type: 'application/octet-stream',
-          data: new Buffer(xml).toString('base64')
-        }
-      }
+          data: new Buffer(xml).toString('base64'),
+        },
+      },
     },
     {
       _id: 'c49385b3594af7025ef097114104ef48',
@@ -50,11 +49,11 @@ describe('Submit Enketo form', () => {
         alternate_phone: '',
         notes: '',
         type: 'person',
-        reported_date: 1478469976421
+        reported_date: 1478469976421,
       },
       name: 'Number three district',
       external_id: '',
-      type: 'district_hospital'
+      type: 'district_hospital',
     },
     {
       _id: contactId,
@@ -77,13 +76,13 @@ describe('Submit Enketo form', () => {
           alternate_phone: '',
           notes: '',
           type: 'person',
-          reported_date: 1478469976421
+          reported_date: 1478469976421,
         },
         name: 'Number three district',
         external_id: '',
-        type: 'district_hospital'
-      }
-    }
+        type: 'district_hospital',
+      },
+    },
   ];
 
   beforeAll(done => {
@@ -94,14 +93,25 @@ describe('Submit Enketo form', () => {
 
   it('submits on reports tab', () => {
     commonElements.goToReports();
-    browser.sleep(1000); // let the refresh work - #3691
 
-    const addButton = element(by.css('.action-container .general-actions:not(.ng-hide) .fa-plus'));
+    const addButton = element(
+      by.css('.action-container .general-actions:not(.ng-hide) .fa-plus')
+    );
     helper.waitElementToBeClickable(addButton);
 
     // select form
-    helper.clickElement(element(by.css('.action-container .general-actions:not(.ng-hide) .fa-plus')));
-    helper.clickElement(element(by.css('.action-container .general-actions .dropup.open .dropdown-menu li:first-child a')));
+    helper.clickElement(
+      element(
+        by.css('.action-container .general-actions:not(.ng-hide) .fa-plus')
+      )
+    );
+    helper.clickElement(
+      element(
+        by.css(
+          '.action-container .general-actions .dropup.open .dropdown-menu li:first-child a'
+        )
+      )
+    );
 
     // enter name
     const nameField = element(by.css('#report-form form [name="/data/name"]'));
@@ -112,15 +122,22 @@ describe('Submit Enketo form', () => {
     const submitButton = element(by.css('#report-form .submit'));
     helper.waitUntilReady(submitButton);
     submitButton.click();
-    helper.waitElementToPresent(element(by.css('#reports-content .details ul li:first-child p')));
-    browser.sleep(100); // TODO required to make the test deterministic. https://github.com/medic/medic-webapp/issues/3509
+    helper.waitElementToPresent(
+      element(by.css('#reports-content .details ul li:first-child p'))
+    );
+    helper.waitForAngularComplete();
     // check the submitted name
-    const detail = element(by.css('#reports-content .details ul li:first-child p'));
+    const detail = element(
+      by.css('#reports-content .details ul li:first-child p')
+    );
     helper.waitElementToBeVisible(detail);
-    detail.getText().then(name => {
-      expect(name).toBe('Jones');
-    }, err => {
-      console.log(err);
-    });
+    detail.getText().then(
+      name => {
+        expect(name).toBe('Jones');
+      },
+      err => {
+        console.log(err);
+      }
+    );
   });
 });

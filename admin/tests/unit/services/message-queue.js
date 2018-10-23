@@ -218,6 +218,22 @@ describe('MessageQueue service', function() {
       });
     });
 
+    it('should handle empty results', () => {
+      query
+        .withArgs('medic-admin/message_queue', sinon.match({ reduce: true }))
+        .resolves({ rows: [] });
+      query
+        .withArgs('medic-admin/message_queue', sinon.match({ reduce: false }))
+        .resolves({ rows: [] });
+
+      return service.query('due').then(result => {
+        chai.expect(result.total).to.equal(0);
+        chai.expect(query.callCount).to.equal(2);
+        chai.expect(translate.instant.callCount).to.equal(0);
+        chai.expect(result.messages.length).to.equal(0);
+      });
+    });
+
     it('should format results', () => {
       var messages = [
         {

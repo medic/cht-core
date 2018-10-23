@@ -583,8 +583,6 @@ describe('routing', () => {
         expect(results[2].statusCode).toEqual(403);
         expect(results[2].responseBody.error).toEqual('forbidden');
 
-        // TODO. Understand how this is affected by removing audit
-        // expect(results[3].responseBody.error).toEqual('bad_request');
         expect(results[3].responseBody.error).toEqual('not_implemented');
       });
     });
@@ -683,37 +681,22 @@ describe('routing', () => {
       });
     });
 
-    it('allows access to the admin app', () => {
-      return Promise.all([
-        utils.requestOnTestDb(
-          _.defaults(
-            { path: '/_design/medic-admin/_rewrite' },
-            offlineRequestOptions
-          ),
-          false,
-          true
-        ),
-        utils.requestOnTestDb(
-          _.defaults(
-            { path: '/_design/medic-admin/_rewrite/' },
-            offlineRequestOptions
-          ),
-          false,
-          true
-        ),
-        utils.requestOnTestDb(
-          _.defaults(
-            { path: '/_design/medic-admin/css/main.css' },
-            offlineRequestOptions
-          ),
-          false,
-          true
-        ),
-      ]).then(results => {
-        expect(results[0].includes('administration console')).toBe(true);
-        expect(results[1].includes('administration console')).toBe(true);
-        expect(results[2].includes('html')).toBe(true);
-      });
+    it('blocks access to the admin app', () => {
+      return Promise
+        .all([
+          utils
+            .requestOnTestDb(_.defaults({ path: '/_design/medic-admin/_rewrite' }, offlineRequestOptions), false, true)
+            .catch(err => err),
+          utils
+            .requestOnTestDb(_.defaults({ path: '/_design/medic-admin/_rewrite/' }, offlineRequestOptions), false, true)
+            .catch(err => err),
+          utils
+            .requestOnTestDb(_.defaults({ path: '/_design/medic-admin/css/main.css' }, offlineRequestOptions), false, true)
+            .catch(err => err)
+        ])
+        .then(results => {
+          expect(results.every(result => result.statusCode === 401 && result.responseBody.error === 'unauthorized'));
+        });
     });
 
     it('blocks direct access to CouchDB and to fauxton', () => {

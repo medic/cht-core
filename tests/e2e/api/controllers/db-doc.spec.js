@@ -1302,35 +1302,26 @@ describe('db-doc handler', () => {
   });
 
   describe('interactions with ddocs', () => {
-    it('allows GETting _design/medic-client and _design/medic-admin, blocks all other ddoc GET requests', () => {
-      return Promise.all([
-        utils.requestOnTestDb(
-          _.defaults({ path: '/_design/medic-client' }, offlineRequestOptions)
-        ),
-        utils
-          .requestOnTestDb(
-            _.defaults({ path: '/_design/medic' }, offlineRequestOptions)
-          )
-          .catch(err => err),
-        utils
-          .requestOnTestDb(
-            _.defaults({ path: '/_design/something' }, offlineRequestOptions)
-          )
-          .catch(err => err),
-        utils.requestOnTestDb(
-          _.defaults({ path: '/_design/medic-admin' }, offlineRequestOptions)
-        ),
-      ]).then(results => {
-        expect(results[0]._id).toEqual('_design/medic-client');
+    it('allows GETting _design/medic-client blocks all other ddoc GET requests', () => {
+      return Promise
+        .all([
+          utils.requestOnTestDb(_.defaults({ path: '/_design/medic-client' }, offlineRequestOptions)),
+          utils.requestOnTestDb(_.defaults({ path: '/_design/medic' }, offlineRequestOptions)).catch(err => err),
+          utils.requestOnTestDb(_.defaults({ path: '/_design/something' }, offlineRequestOptions)).catch(err => err),
+          utils.requestOnTestDb(_.defaults({ path: '/_design/medic-admin' }, offlineRequestOptions)).catch(err => err)
+        ])
+        .then(results => {
+          expect(results[0]._id).toEqual('_design/medic-client');
 
-        expect(results[1].statusCode).toEqual(403);
-        expect(results[1].responseBody.error).toEqual('forbidden');
+          expect(results[1].statusCode).toEqual(403);
+          expect(results[1].responseBody.error).toEqual('forbidden');
 
-        expect(results[2].statusCode).toEqual(403);
-        expect(results[2].responseBody.error).toEqual('forbidden');
+          expect(results[2].statusCode).toEqual(403);
+          expect(results[2].responseBody.error).toEqual('forbidden');
 
-        expect(results[3]._id).toEqual('_design/medic-admin');
-      });
+          expect(results[3].statusCode).toEqual(403);
+          expect(results[3].responseBody.error).toEqual('forbidden');
+        });
     });
 
     it('blocks PUTting any ddoc', () => {
