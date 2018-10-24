@@ -333,8 +333,7 @@ angular
                 })
                 .catch(function(err) {
                   if (err.status === 400) {
-                    const parameter = err.data.error.parameter;
-                    Translate(err.data.error.key, (parameter !== undefined) ? {[err.data.error.field]: parameter} : null).then(function(value) {
+                    Translate(err.data.error.translationKey, {[err.data.error.field]: err.data.error.parameter}).then(function(value) {
                       $scope.setError(err, value);
                     });           
                   } else {
