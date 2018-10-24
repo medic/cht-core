@@ -1,6 +1,6 @@
 const db = require('./src/db-pouch'),
       serverChecks = require('@shared-libs/server-checks'),
-      { logger } = require('./src/logger');
+      logger = require('./src/logger');
 
 process.on('unhandledRejection', reason => {
   logger.error('Unhandled Rejection:');

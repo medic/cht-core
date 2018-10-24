@@ -2,6 +2,8 @@ var setState = function(className) {
   document.getElementById('form').className = className;
 };
 
+const logger  = require('../../logger')
+
 var unescape = function(s) {
   return s
     .replace(/&amp;/g,  '&')
@@ -33,7 +35,7 @@ var handleResponse = function(xmlhttp) {
     setState('loginincorrect');
   } else {
     setState('loginerror');
-    console.error('Error logging in', xmlhttp.response);
+    logger.error('Error logging in', xmlhttp.response);
   }
 };
 

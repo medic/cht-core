@@ -7,6 +7,7 @@ const auth = require('../auth'),
       tombstoneUtils = require('@shared-libs/tombstone-utils'),
       uuid = require('uuid/v4'),
       config = require('../config'),
+      logger = require('../logger'),
       DEFAULT_MAX_DOC_IDS = 100;
 
 let inited = false,
@@ -240,8 +241,8 @@ const getChanges = feed => {
       longpollFeeds.push(feed);
     })
     .catch(err => {
-      console.log(feed.id +  ' Error while requesting `normal` changes feed');
-      console.log(err);
+      logger.error(feed.id +  ' Error while requesting `normal` changes feed');
+      logger.error(err);
       // cancel ongoing requests and send error response
       feed.upstreamRequests.forEach(request => request.cancel());
       feed.error = err;
@@ -373,8 +374,8 @@ const getCouchDbConfig = () => {
   // While hardcoded at first, CouchDB 2.1.1 has the option to configure this value
   return dbConfig.get('couchdb', 'changes_doc_ids_optimization_threshold')
     .catch(err => {
-      console.log('Could not read changes_doc_ids_optimization_threshold config value.');
-      console.log(err);
+      logger.error('Could not read changes_doc_ids_optimization_threshold config value.');
+      logger.error(err);
       return DEFAULT_MAX_DOC_IDS;
     })
     .then(value => {

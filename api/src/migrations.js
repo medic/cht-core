@@ -59,6 +59,8 @@ const getLog = () => {
     });
 };
 
+const  logger = require('./logger');
+
 const sortMigrations = (lhs, rhs) => {
   return lhs.created - rhs.created;
 };
@@ -67,7 +69,7 @@ const runMigration = migration => {
   if (!migration.created) {
     return Promise.reject(new Error(`Migration "${migration.name}" has no "created" date property`));
   }
-  console.log(`Running migration ${migration.name}...`);
+  logger.info(`Running migration ${migration.name}...`);
   return migration.run()
     .then(getLog)
     .then(log => {
@@ -84,10 +86,10 @@ const runMigrations = (log, migrations) => {
       chain = chain.then(() => {
         return runMigration(migration)
           .then(() => {
-            console.log(`Migration ${migration.name} completed successfully`);
+            logger.info(`Migration ${migration.name} completed successfully`);
           })
           .catch(err => {
-            console.error(`Migration ${migration.name} failed`);
+            logger.error(`Migration ${migration.name} failed`);
             return Promise.reject(err);
           });
       });

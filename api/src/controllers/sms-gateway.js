@@ -5,6 +5,7 @@
 const db = require('../db-pouch'),
       messageUtils = require('../message-utils'),
       recordUtils = require('./record-utils'),
+      logger = require('../logger'),
 
       // map from the medic-gateway state to the medic-webapp state
       STATUS_MAP = {
@@ -74,7 +75,7 @@ const addNewMessages = req => {
     if(message.from !== undefined && message.content !== undefined) {
       return true;
     }
-    console.log('Message missing required field', JSON.stringify(message));
+    logger.warn('Message missing required field', JSON.stringify(message));
   });
 
   const ids = messages.map(m => m.id);
@@ -83,7 +84,7 @@ const addNewMessages = req => {
     .then(res => res.rows.map(r => r.key))
     .then(seenIds => messages.filter(m => {
       if (seenIds.includes(m.id)) {
-        console.log(`Ignoring message (ID already seen): ${m.id}`);
+        logger.warn(`Ignoring message (ID already seen): ${m.id}`);
       } else {
         return true;
       }
@@ -97,7 +98,7 @@ const addNewMessages = req => {
     .then(results => {
       const allOk = results.every(result => result.ok);
       if (!allOk) {
-        console.error('Failed saving all the new docs', results);
+        logger.error('Failed saving all the new docs', results);
         throw new Error('Failed saving all the new docs');
       }
     });

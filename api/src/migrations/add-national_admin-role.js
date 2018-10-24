@@ -1,6 +1,7 @@
 const _ = require('underscore'),
       {promisify} = require('util'),
       db = require('../db-nano'),
+      logger = require('../logger'),
       series = require('async/series');
 
 const DEFAULT_STRUCTURE = {
@@ -24,7 +25,7 @@ const addRole = (dbname, role, callback) => db.request({
     }
 
     if (!result.admins.roles.includes(role)) {
-      console.log(`Adding ${role} role to ${dbname} admins`);
+      logger.info(`Adding ${role} role to ${dbname} admins`);
       result.admins.roles.push(role);
     }
 

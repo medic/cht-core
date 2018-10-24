@@ -5,6 +5,7 @@ const _ = require('underscore'),
       defaults = require('./config.default.json'),
       settingsService = require('./services/settings'),
       translationCache = {},
+      logger = require('./logger')
       viewMapUtils = require('@shared-libs/view-map-utils');
 
 let settings = {};
@@ -76,7 +77,7 @@ const loadSettings = function() {
         settings.permissions = defaults.permissions;
       }
       if (JSON.stringify(settings) !== original) {
-        console.log('Updating settings with new defaults');
+        logger.info('Updating settings with new defaults');
         return settingsService.update(settings);
       }
     });
@@ -86,7 +87,7 @@ const loadTranslations = () => {
   const options = { key: [ 'translations', true ], include_docs: true };
   db.medic.query('medic-client/doc_by_type', options, (err, result) => {
     if (err) {
-      console.error('Error loading translations - starting up anyway', err);
+      logger.error('Error loading translations - starting up anyway', err);
       return;
     }
     result.rows.forEach(row => {
@@ -98,7 +99,7 @@ const loadTranslations = () => {
 const loadViewMaps = () => {
   db.medic.get('_design/medic', function(err, ddoc) {
     if (err) {
-      console.error('Error loading view maps for medic ddoc', err);
+      logger.error(`Error loading view maps for medic ddoc: ${err}`);
       return;
     }
     viewMapUtils.loadViewMaps(ddoc, 'docs_by_replication_key', 'contacts_by_depth');
@@ -136,28 +137,28 @@ module.exports = {
     db.medic.changes({ live: true, since: 'now' })
       .on('change', change => {
         if (change.id === '_design/medic') {
-          console.log('Detected ddoc change - reloading');
+          logger.info('Detected ddoc change - reloading');
           translations.run().catch(err => {
-            console.error('Failed to update translation docs', err);
+            logger.error(`Failed to update translation docs: ${err}`);
           });
           ddocExtraction.run().catch(err => {
-            console.error('Something went wrong trying to extract ddocs', err);
+            logger.error(`Something went wrong trying to extract ddocs: ${err}`);
             process.exit(1);
           });
           loadViewMaps();
         } else if (change.id === 'settings') {
-          console.log('Detected settings change - reloading');
+          logger.info('Detected settings change - reloading');
           loadSettings().catch(err => {
-            console.error('Failed to reload settings', err);
+            logger.error(`Failed to reload settings: ${err}`);
             process.exit(1);
           });
         } else if (change.id.indexOf('messages-') === 0) {
-          console.log('Detected translations change - reloading');
+          logger.info('Detected translations change - reloading');
           loadTranslations();
         }
       })
       .on('error', err => {
-        console.error('Error watching changes, restarting', err);
+        logger.error(`Error watching changes, restarting: ${err}`);
         process.exit(1);
       });
   }

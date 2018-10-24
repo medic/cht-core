@@ -1,5 +1,6 @@
 const _ = require('underscore'),
       db = require('./db-pouch'),
+      logger = require('./logger'),
       taskUtils = require('task-utils');
 
 const getTaskMessages = function(options, callback) {
@@ -45,13 +46,13 @@ const applyTaskStateChangesToDocs = (taskStateChanges, docs) => {
 
   taskStateChanges.forEach(taskStateChange => {
     if (!taskStateChange.messageId) {
-      return console.error('Message id required', taskStateChange);
+      return logger.error('Message id required', taskStateChange);
     }
 
     const {task, docId} = getTaskAndDocForMessage(taskStateChange.messageId, docs);
 
     if (!task) {
-      return console.error(`Message not found: ${taskStateChange.messageId}`);
+      return logger.error(`Message not found: ${taskStateChange.messageId}`);
     }
 
     if (taskUtils.setTaskState(task, taskStateChange.state, taskStateChange.details)) {
@@ -139,12 +140,12 @@ module.exports = {
           const failures = results.filter(result => !result.ok);
           if (failures.length && !retriesLeft) {
             const failure = `Failed to updateMessageTaskStates: ${JSON.stringify(failures)}`;
-            console.error(failure);
+            logger.error(failure);
             return callback(Error(failure));
           }
 
           if (failures.length) {
-            console.warn(
+            logger.warn(
               `Problems with updateMessageTaskStates: ${JSON.stringify(failures)}\n` +
               `Retrying ${retriesLeft} more times`);
 

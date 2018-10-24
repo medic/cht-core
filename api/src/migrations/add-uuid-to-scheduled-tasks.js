@@ -3,6 +3,7 @@ var db = require('../db-nano'),
     async = require('async'),
     moment = require('moment'),
     uuidV4 = require('uuid/v4'),
+    logger = require('../logger'),
     settingsService = require('../services/settings'),
     BATCH_SIZE = 100;
 
@@ -59,7 +60,7 @@ var runBatch = function(skip, callback) {
     if (err) {
       return callback(err);
     }
-    console.log('        Processing ' + skip + ' to ' + (skip + BATCH_SIZE) + ' docs of ' + result.total_rows + ' total');
+    logger.info('        Processing ' + skip + ' to ' + (skip + BATCH_SIZE) + ' docs of ' + result.total_rows + ' total');
     var toSave = result.rows.filter(update).map(function(row) {
       return row.doc;
     });

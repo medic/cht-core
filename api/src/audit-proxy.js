@@ -4,6 +4,7 @@ var EventEmitter = require('events').EventEmitter,
     _ = require('underscore'),
     auth = require('./auth'),
     db = require('./db-nano'),
+    logger = require('./logger'),
     couchdbAudit = require('couchdb-audit');
 
 module.exports = AuditProxy;
@@ -106,7 +107,7 @@ AuditProxy.prototype.audit = function(proxy, req, res) {
       var ps = passStream(writeFn, endFn);
       var buffer = req.pipe(ps);
       buffer.on('error', function(e) {
-        console.log('ERROR', e);
+        logger.error(e);
         self.emit('error', e);
       });
       buffer.destroy = function() {};

@@ -1,8 +1,7 @@
 const { createLogger, format, transports } = require('winston'),
-    { combine, timestamp, label, prettyPrint } = format,
+    { combine, timestamp, prettyPrint } = format,
     logger = createLogger({
         format: combine(
-            label({ label: 'Medic-API'}),
             timestamp(),
             prettyPrint()
         ),
@@ -18,5 +17,4 @@ if (process.env.NODE_ENV !== 'production') {
     }));
 };
 
-
-module.exports.logger=logger;
+module.exports = logger

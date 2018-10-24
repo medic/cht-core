@@ -1,5 +1,6 @@
 const _ = require('underscore'),
       db = require('./db-pouch'),
+      logger = require('./logger'),
       DDOC_ATTACHMENT_ID = 'ddocs/compiled.json',
       APPCACHE_ATTACHMENT_NAME = 'manifest.appcache',
       APPCACHE_DOC_ID = 'appcache',
@@ -121,7 +122,7 @@ module.exports = {
       .then(findUpdated)
       .then(docs => {
         if (docs.length) {
-          console.log('Updating docs: ' + _.pluck(docs, '_id').join(', '));
+          logger.info('Updating docs: ' + _.pluck(docs, '_id').join(', '));
           return db.medic.bulkDocs({ docs: docs });
         }
       });

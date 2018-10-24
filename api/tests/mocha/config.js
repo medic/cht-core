@@ -1,6 +1,7 @@
 const config = require('../../src/config'),
       sinon = require('sinon'),
       db = require('../../src/db-pouch'),
+      logger = require('../../src/logger'),
       ddocExtraction = require('../../src/ddoc-extraction'),
       translations = require('../../src/translations'),
       settingsService = require('../../src/services/settings'),
@@ -98,7 +99,7 @@ describe('Config', () => {
       on.callCount.should.equal(2);
       const changeCallback = on.args[0][1];
 
-      console.log(changeCallback);
+      logger.info(changeCallback);
       changeCallback(change);
       chai.expect(db.medic.query.callCount).to.equal(0);
       chai.expect(db.medic.get.callCount).to.equal(0);

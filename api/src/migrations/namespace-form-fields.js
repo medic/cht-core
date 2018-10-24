@@ -6,6 +6,7 @@ var async = require('async'),
     _ = require('underscore'),
     {promisify} = require('util'),
     db = require('../db-nano'),
+    logger = require('../logger'),
     settingsService = require('../services/settings'),
     forms;
 
@@ -60,7 +61,7 @@ var runBatch = function(batchSize, skip, callback) {
     if (err) {
       return callback(err);
     }
-    console.log('        Processing ' + skip + ' to ' + (skip + batchSize) + ' docs of ' + result.total_rows + ' total');
+    logger.info('        Processing ' + skip + ' to ' + (skip + batchSize) + ' docs of ' + result.total_rows + ' total');
     var docs = _.uniq(_.pluck(result.rows, 'doc'));
 
     namespace(docs, function(err) {

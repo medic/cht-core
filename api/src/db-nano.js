@@ -8,7 +8,8 @@ var path = require('path'),
   url = require('url'),
   nano = require('nano');
 
-const { COUCH_URL, UNIT_TEST_ENV } = process.env;
+const { COUCH_URL, UNIT_TEST_ENV } = process.env,
+  logger = require('./logger');
 
 if (UNIT_TEST_ENV) {
   // Running tests only
@@ -104,7 +105,7 @@ if (UNIT_TEST_ENV) {
     });
   };
 } else {
-  console.log(
+  logger.info(
     'Please define a COUCH_URL in your environment.\n' +
       'If you are running unit tests use UNIT_TEST_ENV=1 in your environment.\n'
   );

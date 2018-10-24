@@ -1,6 +1,7 @@
 const async = require('async'),
       _ = require('underscore'),
       db = require('./db-nano'),
+      logger = require('./logger'),
       DEFAULT_BATCH_LIMIT = 100; // 100 is a good compromise of performance and stability
 
 const runBatch = (ddocName, viewName, viewParams, iteratee, callback) => {
@@ -8,7 +9,7 @@ const runBatch = (ddocName, viewName, viewParams, iteratee, callback) => {
     if (err) {
       return callback(err);
     }
-    console.log(`        Processing doc ${response.offset}`);
+    logger.info(`        Processing doc ${response.offset}`);
     let nextPage;
     if (response.rows.length === viewParams.limit) {
       const lastRow = response.rows.pop();

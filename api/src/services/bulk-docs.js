@@ -1,6 +1,7 @@
 const db = require('../db-pouch'),
       authorization = require('./authorization'),
-      _ = require('underscore');
+      _ = require('underscore'),
+      logger = require('../logger');
 
 const utils = require('bulk-docs-utils')({
   Promise: Promise,
@@ -17,7 +18,7 @@ const extractDocs = data => {
 const checkForDuplicates = docs => {
   const duplicateErrors = utils.getDuplicateErrors(docs);
   if (duplicateErrors.length > 0) {
-    console.error('Deletion errors', duplicateErrors);
+    logger.error('Deletion errors', duplicateErrors);
     const ids = duplicateErrors.map(error => error.id);
     throw new Error(`Duplicate documents when deleting: ${ids.join(',')}`);
   }

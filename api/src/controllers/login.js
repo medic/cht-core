@@ -8,6 +8,7 @@ const fs = require('fs'),
       config = require('../config'),
       SESSION_COOKIE_RE = /AuthSession\=([^;]*);/,
       ONE_YEAR = 31536000000,
+      logger = require('../logger'),
       production = process.env.NODE_ENV === 'production';
 
 let loginTemplate;
@@ -147,7 +148,7 @@ const setCookies = (req, res, sessionRes) => {
       res.json({ success: true });
     })
     .catch(err => {
-      console.error('Error getting authCtx', err);
+      logger.error('Error getting authCtx', err);
       res.status(401).json({ error: 'Error getting authCtx' });
     });
 };
@@ -165,7 +166,7 @@ module.exports = {
       .catch(() => {
         renderLogin(redirect, (err, body) => {
           if (err) {
-            console.error('Could not find login page');
+            logger.error('Could not find login page');
             throw err;
           }
           res.send(body);
@@ -182,7 +183,7 @@ module.exports = {
         return setCookies(req, res, sessionRes);
       })
       .catch(err => {
-        console.error('Error logging in', err);
+        logger.error('Error logging in', err);
         res.status(500).json({ error: 'Unexpected error logging in' });
       });
   },

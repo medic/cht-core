@@ -2,6 +2,7 @@ var async = require('async'),
     {promisify} = require('util'),
     _ = require('underscore'),
     db = require('../db-nano'),
+    logger = require('../logger'),
     BATCH_SIZE = 100;
 
 var getClinic = function(id, callback) {
@@ -157,7 +158,7 @@ var runBatch = function(skip, callback) {
     if (err) {
       return callback(err);
     }
-    console.log(`        Processing doc ${skip}.`);
+    logger.info(`        Processing doc ${skip}.`);
     var docs = _.pluck(result.rows, 'doc');
     associate(docs, function(err) {
       // keep going if at least one row was found last time

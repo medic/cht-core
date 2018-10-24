@@ -1,6 +1,7 @@
 var async = require('async'),
     {promisify} = require('util'),
     db = require('../db-nano'),
+    logger = require('../logger'),
     people = require('../controllers/people'),
     places = require('../controllers/places');
 
@@ -116,7 +117,7 @@ var createPerson = function(id, callback) {
       .then(() => callback())
       .catch(() => {
         // we tried our best - log the details and exit
-        console.error('Failed to restore contact on facility ' + facilityId + ', contact: ' + JSON.stringify(oldContact));
+        logger.error('Failed to restore contact on facility ' + facilityId + ', contact: ' + JSON.stringify(oldContact));
       });
   };
 

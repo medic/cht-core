@@ -2,6 +2,7 @@ var url = require('url'),
     path = require('path'),
     db = require('./db-nano'),
     isClientHuman = require('./is-client-human'),
+    logger = require('./logger'),
     MEDIC_BASIC_AUTH = 'Basic realm="Medic Mobile Web Services"';
 
 var wantsJSON = function(req) {
@@ -92,7 +93,7 @@ module.exports = {
    * Only to be used when handling unexpected errors.
    */
   serverError: function(err, req, res) {
-    console.error('Server error:\n', err);
+    logger.error('Server error:\n', err);
     if (err.publicMessage) {
       respond(req, res, 500, `Server error: ${err.publicMessage}`);
     } else {

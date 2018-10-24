@@ -1,6 +1,7 @@
 var db = require('../db-nano'),
     {promisify} = require('util'),
     async = require('async'),
+    logger = require('../logger'),
     _ = require('underscore'),
     DDOC_ID = '_design/medic',
     BATCH_SIZE = 100,
@@ -100,7 +101,7 @@ var changeDocIdsBatch = function(skip, callback) {
       // we've reached the end of the database!
       return callback(null, null, false);
     }
-    console.log('        Processing ' + skip + ' to ' + (skip + BATCH_SIZE) + ' docs of ' + result.total_rows + ' total');
+    logger.info('        Processing ' + skip + ' to ' + (skip + BATCH_SIZE) + ' docs of ' + result.total_rows + ' total');
     var oldDocs = result.rows.filter(needsUpdate).map(function(row) {
       return row.doc;
     });

@@ -1,7 +1,8 @@
 const config = require('../../config'),
       mpParser = require('./mp-parser'),
       javarosaParser = require('./javarosa-parser'),
-      textformsParser = require('./textforms-parser');
+      textformsParser = require('./textforms-parser'),
+      logger = require('../../logger');
 
 const MUVUKU_REGEX = /^\s*([A-Za-z]?\d)!.+!.+/;
 
@@ -135,7 +136,7 @@ exports.parseField = (field, raw) => {
       if (field.list) {
         const item = field.list.find(item => String(item[0]) === String(raw));
         if (!item) {
-          console.warn(`Option not available for ${JSON.stringify(raw)} in list.`);
+          logger.warn(`Option not available for ${JSON.stringify(raw)} in list.`);
           return null;
         }
         return config.translate(item[1]);
@@ -158,7 +159,7 @@ exports.parseField = (field, raw) => {
             return config.translate(item[1]);
           }
         }
-        console.warn(`Option not available for ${raw} in list.`);
+        logger.warn(`Option not available for ${raw} in list.`);
       }
       return config.translate(raw);
     case 'date':
@@ -185,7 +186,7 @@ exports.parseField = (field, raw) => {
       // keep months integers, not their list value.
       return parseNum(raw);
     default:
-      console.warn('Unknown field type: ' + field.type);
+      logger.warn('Unknown field type: ' + field.type);
       return raw;
   }
 };
@@ -213,7 +214,7 @@ exports.parse = (def, doc) => {
   parser = getParser(def, doc);
 
   if (!parser) {
-    console.error('Failed to find message parser.');
+    logger.error('Failed to find message parser.');
     return {};
   }
 

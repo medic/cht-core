@@ -1,6 +1,7 @@
 var _ = require('underscore'),
     {promisify} = require('util'),
     db = require('../db-nano'),
+    logger = require('../logger'),
     async = require('async'),
     registrationUtils = require('@shared-libs/registration-utils'),
     settingsService = require('../services/settings');
@@ -67,7 +68,7 @@ var batchCreatePatientContacts = function(batch, settings, callback) {
       .value();
 
     if (!uniqueValidRegistrations.length) {
-      console.log('no new patient registrations in this batch');
+      logger.info('no new patient registrations in this batch');
       return callback();
     }
 
@@ -133,7 +134,7 @@ var batchCreatePatientContacts = function(batch, settings, callback) {
           return callback(new Error('Bulk create errors: ' + JSON.stringify(errors)));
         }
 
-        console.log('batch DONE');
+        logger.info('batch DONE');
         callback();
       });
     });
@@ -151,7 +152,7 @@ module.exports = {
         }
 
         if (results.rows.length === 0) {
-          console.log('No registered patients to create contacts from');
+          logger.info('No registered patients to create contacts from');
           return callback();
         }
 
@@ -169,7 +170,7 @@ module.exports = {
         var progressCount = 0;
         var total = registrationsForPatientShortcode.length;
 
-        console.log('There are ' + total + ' patients with registrations');
+        logger.info('There are ' + total + ' patients with registrations');
 
         async.doWhilst(
           function(callback) {

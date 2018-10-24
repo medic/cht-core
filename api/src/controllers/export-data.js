@@ -1,6 +1,7 @@
 const _ = require('underscore'),
       domain = require('domain'),
-      moment = require('moment');
+      moment = require('moment'),
+      logger = require('../logger');
 
 const auth = require('../auth'),
       serverUtils = require('../server-utils');
@@ -102,9 +103,9 @@ module.exports = {
       }, req, res);
     }
 
-    console.log('v2 export requested for', type);
-    console.log('params:', JSON.stringify(filters, null, 2));
-    console.log('options:', JSON.stringify(options, null, 2));
+    logger.info('v2 export requested for', type);
+    logger.info('params:', JSON.stringify(filters, null, 2));
+    logger.info('options:', JSON.stringify(options, null, 2));
 
     // We currently only support online users (CouchDB admins and National Admins)
     // If we want to support offline users we should either:
@@ -129,10 +130,10 @@ module.exports = {
         d.on('error', err => {
           // Because we've already flushed the headers above we can't use
           // serverUtils anymore, we just have to close the connection
-          console.error('Error exporting v2 data for', type);
-          console.error('params:', JSON.stringify(filters, null, 2));
-          console.error('options:', JSON.stringify(options, null, 2));
-          console.error(err);
+          logger.error('Error exporting v2 data for', type);
+          logger.error('params:', JSON.stringify(filters, null, 2));
+          logger.error('options:', JSON.stringify(options, null, 2));
+          logger.error(err);
           res.end(`--ERROR--\nError exporting data: ${err.message}\n`);
         });
         d.run(() =>

@@ -1,6 +1,7 @@
 var _ = require('underscore'),
     async = require('async'),
     db = require('../../../src/db-nano'),
+    logger = require('../../../src/logger'),
     dbPouch = require('../../../src/db-pouch'),
     DB_PREFIX = 'medic_api_integration_tests__';
 
@@ -275,7 +276,7 @@ function _resetDb() {
 
         db.db.create(dbName, function(err) {
           if(err) {
-            console.log('Could not create' , dbName , 'directly after deleting, pausing and trying again');
+            logger.error(`Could not create ${dbName} directly after deleting, pausing and trying again`);
 
             return setTimeout(function() {
               db.db.create(dbName, function(err) {
@@ -283,7 +284,7 @@ function _resetDb() {
                   return reject(new Error('Error creating ' + dbName + ': ' + err.message));
                 }
 
-                console.log('After a struggle, at', new Date(), 'Re-created ' + dbName);
+                logger.info('After a struggle, at', new Date(), 'Re-created ' + dbName);
                 resolve();
               });
             }, 3000);

@@ -1,5 +1,6 @@
 const _ = require('underscore'),
       auth = require('../auth'),
+      logger = require('../logger'),
       serverUtils = require('../server-utils'),
       usersService = require('../services/users');
 
@@ -29,8 +30,8 @@ const basicAuthValid = (credentials, username) => {
   return new Promise(resolve => {
     auth.validateBasicAuth(credentials, err => {
       if (err) {
-        console.error(`Invalid authorization attempt on /api/v1/users/${username}`);
-        console.error(err);
+        logger.error(`Invalid authorization attempt on /api/v1/users/${username}`);
+        logger.error(err);
         resolve(false); // Incorrect basic auth
       } else {
         resolve(true); // Correct basic auth
@@ -102,7 +103,7 @@ module.exports = {
         return usersService
           .updateUser(username, req.body, !!fullPermission)
           .then(result => {
-            console.log(`REQ ${req.id} - Updated user '${username}'. Setting field(s) '${Object.keys(req.body).join(',')}'. Requested by '${requesterContext && requesterContext.name}'.`);
+            logger.info(`REQ ${req.id} - Updated user '${username}'. Setting field(s) '${Object.keys(req.body).join(',')}'. Requested by '${requesterContext && requesterContext.name}'.`);
             return result;
           });
       })

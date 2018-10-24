@@ -1,6 +1,7 @@
 var _ = require('underscore'),
     {promisify} = require('util'),
     db = require('../db-nano'),
+    logger = require('../logger'),
     async = require('async');
 
 var DDOC_NAME = '_design/medic';
@@ -10,7 +11,7 @@ var BATCH_SIZE = 100;
 var ensureDbExists = function(dbName, callback) {
   db.db.get(dbName, function(err) {
     if (err && err.statusCode === 404) {
-      console.log('DB ' + dbName + ' does not exist, creating');
+      logger.warn(`DB ${dbName} does not exist, creating`);
       return db.db.create(dbName, callback);
     } else {
       return callback();
@@ -23,7 +24,7 @@ var ensureViewDdocExists = function(dbName, callback) {
 
   auditDb.head(DDOC_NAME, function(err) {
     if (err && err.statusCode === 404) {
-      console.log(DDOC_NAME + ' audit ddoc does not exist, creating');
+      logger.warn(`${DDOC_NAME} audit ddoc does not exist, creating`);
       return auditDb.insert(DDOC, DDOC_NAME, callback);
     } else {
       return callback();
@@ -43,7 +44,7 @@ var batchMoveAuditDocs = function(callback) {
 
     // NB: doclist.total_rows returns the total of all docs in the view, not filtered by the key
     //     (ie we can't use it to show progress)
-    console.log('Migrating ' + doclist.rows.length + ' audit docs');
+    logger.info(`Migrating ${doclist.rows.length} audit docs`);
 
     var auditDocIds = doclist.rows.map(function(row) { return row.id;});
 
@@ -81,7 +82,7 @@ module.exports = {
       _.partial(ensureViewDdocExists, db.settings.auditDb)
       ], function(err) {
         if (err) {
-          return console.log('An error occurred creating audit db', err);
+          return logger.error(`An error occurred creating audit db: ${err}`);
         }
 
         var lastLength;
