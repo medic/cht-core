@@ -1,14 +1,14 @@
 const _ = require('underscore'),
-      config = require('../config'),
-      utils = require('../lib/utils'),
-      objectPath = require('object-path'),
-      transitionUtils = require('./utils'),
-      db = require('../db-nano'),
-      TRANSITION_NAME = 'death_reporting',
-      CONFIG_NAME = 'death_reporting',
-      MARK_PROPERTY_NAME = 'mark_deceased_forms',
-      UNDO_PROPERTY_NAME = 'undo_deceased_forms',
-      DATE_FIELD_PROPERTY_NAME = 'date_field';
+  config = require('../config'),
+  utils = require('../lib/utils'),
+  objectPath = require('object-path'),
+  transitionUtils = require('./utils'),
+  db = require('../db-pouch'),
+  TRANSITION_NAME = 'death_reporting',
+  CONFIG_NAME = 'death_reporting',
+  MARK_PROPERTY_NAME = 'mark_deceased_forms',
+  UNDO_PROPERTY_NAME = 'undo_deceased_forms',
+  DATE_FIELD_PROPERTY_NAME = 'date_field';
 
 const getConfig = () => config.get(CONFIG_NAME) || {};
 const getConfirmFormCodes = () => getConfig()[MARK_PROPERTY_NAME] || [];
@@ -19,8 +19,7 @@ const isUndoForm = form => getUndoFormCodes().includes(form);
 
 const getDateOfDeath = report => {
   const config = getDateField();
-  return (config && objectPath.get(report, config)) ||
-         report.reported_date; // default to the date the death was confirmed
+  return (config && objectPath.get(report, config)) || report.reported_date; // default to the date the death was confirmed
 };
 
 const updatePatient = (patient, doc, callback) => {
@@ -32,7 +31,7 @@ const updatePatient = (patient, doc, callback) => {
     // no update required - patient already in required state
     return callback(null, false);
   }
-  db.audit.saveDoc(patient, err => {
+  db.medic.put(patient, err => {
     // return true so the transition is marked as executed
     callback(err, true);
   });
@@ -55,17 +54,21 @@ module.exports = {
   init: () => {
     const forms = getConfirmFormCodes();
     if (!forms || !_.isArray(forms) || !forms.length) {
-      throw new Error(`Configuration error. Config must define have a '${CONFIG_NAME}.${MARK_PROPERTY_NAME}' array defined.`);
+      throw new Error(
+        `Configuration error. Config must define have a '${CONFIG_NAME}.${MARK_PROPERTY_NAME}' array defined.`
+      );
     }
   },
-  filter: (doc, info={}) => {
-    return doc &&
+  filter: (doc, info = {}) => {
+    return (
+      doc &&
       doc.from &&
       doc.type === 'data_record' &&
       (isConfirmForm(doc.form) || isUndoForm(doc.form)) &&
       doc.fields &&
       doc.fields.patient_id &&
-      !transitionUtils.hasRun(info, TRANSITION_NAME);
+      !transitionUtils.hasRun(info, TRANSITION_NAME)
+    );
   },
   onMatch: change => {
     return new Promise((resolve, reject) => {
@@ -85,5 +88,5 @@ module.exports = {
         });
       });
     });
-  }
+  },
 };

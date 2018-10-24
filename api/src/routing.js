@@ -7,10 +7,9 @@ const _ = require('underscore'),
   path = require('path'),
   auth = require('./auth'),
   isClientHuman = require('./is-client-human'),
-  AuditProxy = require('./audit-proxy'),
   target = 'http://' + db.settings.host + ':' + db.settings.port,
   proxy = require('http-proxy').createProxyServer({ target: target }),
-  proxyForAuditing = require('http-proxy').createProxyServer({
+  proxyForAuth = require('http-proxy').createProxyServer({
     target: target,
     selfHandleResponse: true,
   }),
@@ -573,26 +572,30 @@ proxyForChanges.on('proxyRes', (proxyRes, req, res) => {
 // allow offline users to access the app
 app.all(appPrefix + '*', authorization.setAuthorized);
 
-// block offline users requests from accessing CouchDB directly, via AuditProxy or Proxy
+// block offline users requests from accessing CouchDB directly, via Proxy
 // requests which are authorized (fe: by BulkDocsHandler or DbDocHandler) can pass through
 // unauthenticated requests will be redirected to login or given a meaningful error
 app.use(authorization.offlineUserFirewall);
 
-var audit = function(req, res) {
-  var ap = new AuditProxy();
-  ap.on('error', function(e) {
-    serverUtils.serverError(e, req, res);
-  });
-  ap.on('not-authorized', function() {
-    serverUtils.notLoggedIn(req, res);
-  });
-  ap.audit(proxyForAuditing, req, res);
+var canEdit = function(req, res) {
+  auth
+    .check(req, 'can_edit')
+    .then(ctx => {
+      if (!ctx || !ctx.user) {
+        serverUtils.serverError('not-authorized', req, res);
+        return;
+      }
+      proxyForAuth.web(req, res);
+    })
+    .catch(() => {
+      serverUtils.serverError('not-authorized', req, res);
+    });
 };
 
-var auditPath = routePrefix + '*';
-app.put(auditPath, audit);
-app.post(auditPath, audit);
-app.delete(auditPath, audit);
+var editPath = routePrefix + '*';
+app.put(editPath, canEdit);
+app.post(editPath, canEdit);
+app.delete(editPath, canEdit);
 
 app.all('*', function(req, res) {
   proxy.web(req, res);
@@ -602,7 +605,7 @@ proxy.on('error', function(err, req, res) {
   serverUtils.serverError(JSON.stringify(err), req, res);
 });
 
-proxyForAuditing.on('error', function(err, req, res) {
+proxyForAuth.on('error', function(err, req, res) {
   serverUtils.serverError(JSON.stringify(err), req, res);
 });
 
@@ -610,12 +613,12 @@ proxyForChanges.on('error', (err, req, res) => {
   serverUtils.serverError(JSON.stringify(err), req, res);
 });
 
-proxyForAuditing.on('proxyReq', function(proxyReq, req) {
+proxyForAuth.on('proxyReq', function(proxyReq, req) {
   writeParsedBody(proxyReq, req);
 });
 
 // intercept responses from filtered offline endpoints to fill in with forbidden docs stubs
-proxyForAuditing.on('proxyRes', (proxyRes, req, res) => {
+proxyForAuth.on('proxyRes', (proxyRes, req, res) => {
   copyProxyHeaders(proxyRes, res);
 
   if (res.interceptResponse) {

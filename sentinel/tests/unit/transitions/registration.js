@@ -1,15 +1,15 @@
 const should = require('chai').should(),
-      sinon = require('sinon'),
-      db = require('../../../src/db-nano'),
-      transition = require('../../../src/transitions/registration'),
-      schedules = require('../../../src/lib/schedules'),
-      messages = require('../../../src/lib/messages'),
-      utils = require('../../../src/lib/utils'),
-      config = require('../../../src/config'),
-      transitionUtils = require('../../../src/transitions/utils');
+  sinon = require('sinon'),
+  db = require('../../../src/db-nano'),
+  dbPouch = require('../../../src/db-pouch'),
+  transition = require('../../../src/transitions/registration'),
+  schedules = require('../../../src/lib/schedules'),
+  messages = require('../../../src/lib/messages'),
+  utils = require('../../../src/lib/utils'),
+  config = require('../../../src/config'),
+  transitionUtils = require('../../../src/transitions/utils');
 
 describe('registration', () => {
-
   afterEach(done => {
     sinon.restore();
     done();
@@ -21,18 +21,21 @@ describe('registration', () => {
     });
 
     it('is true if the expresison fails', () => {
-      transition._booleanExpressionFails({foo: 'bar'}, `doc.foo !== 'bar'`).should.equal(true);
+      transition
+        ._booleanExpressionFails({ foo: 'bar' }, `doc.foo !== 'bar'`)
+        .should.equal(true);
     });
 
     it('is true if the expression is invalid', () => {
       // TODO: should this error instead of just returning false?
       //       If there is a typo we're not going to know about it
-      transition._booleanExpressionFails({}, `doc.foo.bar === 'smang'`).should.equal(true);
+      transition
+        ._booleanExpressionFails({}, `doc.foo.bar === 'smang'`)
+        .should.equal(true);
     });
   });
 
   describe('addPatient', () => {
-
     it('trigger creates a new patient', done => {
       const patientName = 'jack';
       const submitterId = 'abc';
@@ -41,27 +44,37 @@ describe('registration', () => {
       const reportId = 'def';
       const senderPhoneNumber = '+555123';
       const dob = '2017-03-31T01:15:09.000Z';
-      const change = { doc: {
-        _id: reportId,
-        type: 'data_record',
-        form: 'R',
-        reported_date: 53,
-        from: senderPhoneNumber,
-        fields: { patient_name: patientName },
-        birth_date: dob
-      } };
-      const getPatientContactUuid = sinon.stub(utils, 'getPatientContactUuid').callsArgWith(2);
+      const change = {
+        doc: {
+          _id: reportId,
+          type: 'data_record',
+          form: 'R',
+          reported_date: 53,
+          from: senderPhoneNumber,
+          fields: { patient_name: patientName },
+          birth_date: dob,
+        },
+      };
+      const getPatientContactUuid = sinon
+        .stub(utils, 'getPatientContactUuid')
+        .callsArgWith(2);
       // return expected view results when searching for contacts_by_phone
-      const view = sinon.stub(db.medic, 'view').callsArgWith(3, null, { rows: [ { doc: {
-        _id: submitterId,
-        parent: { _id: parentId }
-      } } ] });
-      const saveDoc = sinon.stub(db.audit, 'saveDoc').callsArgWith(1);
+      const view = sinon.stub(db.medic, 'view').callsArgWith(3, null, {
+        rows: [
+          {
+            doc: {
+              _id: submitterId,
+              parent: { _id: parentId },
+            },
+          },
+        ],
+      });
+      const saveDoc = sinon.stub(dbPouch.medic, 'post').callsArgWith(1);
       const eventConfig = {
         form: 'R',
-        events: [ { name: 'on_create', trigger: 'add_patient' } ]
+        events: [{ name: 'on_create', trigger: 'add_patient' }],
       };
-      sinon.stub(config, 'get').returns([ eventConfig ]);
+      sinon.stub(config, 'get').returns([eventConfig]);
       sinon.stub(transition, 'validate').callsArgWith(2);
       sinon.stub(utils, 'getRegistrations').callsArgWith(1, null, []);
       sinon.stub(transitionUtils, 'addUniqueId').callsFake((doc, callback) => {
@@ -91,21 +104,27 @@ describe('registration', () => {
 
     it('does nothing when patient already added', done => {
       const patientId = '05649';
-      const change = { doc: {
-        type: 'data_record',
-        form: 'R',
-        patient_id: patientId,
-        reported_date: 53,
-        from: '+555123',
-        fields: { patient_name: 'jack' }
-      } };
-      sinon.stub(db.medic, 'view').callsArgWith(3, null, { rows: [ { doc: { parent: { _id: 'papa' } } } ] });
-      const saveDoc = sinon.stub(db.audit, 'saveDoc').callsArgWith(1);
+      const change = {
+        doc: {
+          type: 'data_record',
+          form: 'R',
+          patient_id: patientId,
+          reported_date: 53,
+          from: '+555123',
+          fields: { patient_name: 'jack' },
+        },
+      };
+      sinon
+        .stub(db.medic, 'view')
+        .callsArgWith(3, null, {
+          rows: [{ doc: { parent: { _id: 'papa' } } }],
+        });
+      const saveDoc = sinon.stub(dbPouch.medic, 'post').callsArgWith(1);
       const eventConfig = {
         form: 'R',
-        events: [ { name: 'on_create', trigger: 'add_patient_id' } ]
+        events: [{ name: 'on_create', trigger: 'add_patient_id' }],
       };
-      sinon.stub(config, 'get').returns([ eventConfig ]);
+      sinon.stub(config, 'get').returns([eventConfig]);
       sinon.stub(transition, 'validate').callsArgWith(2);
       transition.onMatch(change).then(() => {
         saveDoc.callCount.should.equal(0);
@@ -120,27 +139,33 @@ describe('registration', () => {
         form: 'R',
         reported_date: 53,
         from: '+555123',
-        fields: { patient_name: 'jack', external_id: patientId},
-        birth_date: '2017-03-31T01:15:09.000Z'
+        fields: { patient_name: 'jack', external_id: patientId },
+        birth_date: '2017-03-31T01:15:09.000Z',
       };
       const change = { doc: doc };
       sinon.stub(utils, 'getPatientContactUuid').callsArgWith(2);
       // return expected view results when searching for contacts_by_phone
-      sinon.stub(db.medic, 'view').callsArgWith(3, null, { rows: [ { doc: { parent: { _id: 'papa' } } } ] });
-      const saveDoc = sinon.stub(db.audit, 'saveDoc').callsArgWith(1);
+      sinon
+        .stub(db.medic, 'view')
+        .callsArgWith(3, null, {
+          rows: [{ doc: { parent: { _id: 'papa' } } }],
+        });
+      const saveDoc = sinon.stub(dbPouch.medic, 'post').callsArgWith(1);
       const eventConfig = {
         form: 'R',
-        events: [ {
-          name: 'on_create',
-          trigger: 'add_patient_id',
-          params: '{"patient_id_field": "external_id"}'
-        } ]
+        events: [
+          {
+            name: 'on_create',
+            trigger: 'add_patient_id',
+            params: '{"patient_id_field": "external_id"}',
+          },
+        ],
       };
-      sinon.stub(config, 'get').returns([ eventConfig ]);
+      sinon.stub(config, 'get').returns([eventConfig]);
       sinon.stub(transition, 'validate').callsArgWith(2);
       sinon.stub(transitionUtils, 'isIdUnique').callsArgWith(2, null, true);
 
-     transition.onMatch(change).then(() => {
+      transition.onMatch(change).then(() => {
         saveDoc.args[0][0].patient_id.should.equal(patientId);
         doc.patient_id.should.equal(patientId);
         (typeof doc.errors).should.equal('undefined');
@@ -155,34 +180,42 @@ describe('registration', () => {
         form: 'R',
         reported_date: 53,
         from: '+555123',
-        fields: { patient_name: 'jack', external_id: patientId},
-        birth_date: '2017-03-31T01:15:09.000Z'
+        fields: { patient_name: 'jack', external_id: patientId },
+        birth_date: '2017-03-31T01:15:09.000Z',
       };
       const change = { doc: doc };
       sinon.stub(utils, 'getPatientContactUuid').callsArgWith(2);
       // return expected view results when searching for contacts_by_phone
-      sinon.stub(db.medic, 'view').callsArgWith(3, null, { rows: [ { doc: { parent: { _id: 'papa' } } } ] });
-      sinon.stub(db.audit, 'saveDoc').callsArgWith(1);
+      sinon
+        .stub(db.medic, 'view')
+        .callsArgWith(3, null, {
+          rows: [{ doc: { parent: { _id: 'papa' } } }],
+        });
+      sinon.stub(dbPouch.medic, 'post').callsArgWith(1);
       const eventConfig = {
         form: 'R',
-        events: [ {
-          name: 'on_create',
-          trigger: 'add_patient',
-          params: '{"patient_id_field": "not_the_external_id"}'
-        } ]
+        events: [
+          {
+            name: 'on_create',
+            trigger: 'add_patient',
+            params: '{"patient_id_field": "not_the_external_id"}',
+          },
+        ],
       };
       const configGet = sinon.stub(config, 'get');
       configGet.withArgs('outgoing_deny_list').returns('');
-      configGet.returns([ eventConfig ]);
+      configGet.returns([eventConfig]);
 
       sinon.stub(transition, 'validate').callsArgWith(2);
 
       transition.onMatch(change).then(() => {
         (typeof doc.patient_id).should.equal('undefined');
-        doc.errors.should.deep.equal([{
-          message: 'messages.generic.no_provided_patient_id',
-          code: 'no_provided_patient_id'
-        }]);
+        doc.errors.should.deep.equal([
+          {
+            message: 'messages.generic.no_provided_patient_id',
+            code: 'no_provided_patient_id',
+          },
+        ]);
         done();
       });
     });
@@ -194,25 +227,31 @@ describe('registration', () => {
         form: 'R',
         reported_date: 53,
         from: '+555123',
-        fields: { patient_name: 'jack', external_id: patientId},
-        birth_date: '2017-03-31T01:15:09.000Z'
+        fields: { patient_name: 'jack', external_id: patientId },
+        birth_date: '2017-03-31T01:15:09.000Z',
       };
       const change = { doc: doc };
       sinon.stub(utils, 'getPatientContactUuid').callsArgWith(2);
       // return expected view results when searching for contacts_by_phone
-      sinon.stub(db.medic, 'view').callsArgWith(3, null, { rows: [ { doc: { parent: { _id: 'papa' } } } ] });
-      sinon.stub(db.audit, 'saveDoc').callsArgWith(1);
+      sinon
+        .stub(db.medic, 'view')
+        .callsArgWith(3, null, {
+          rows: [{ doc: { parent: { _id: 'papa' } } }],
+        });
+      sinon.stub(dbPouch.medic, 'post').callsArgWith(1);
       const eventConfig = {
         form: 'R',
-        events: [ {
-          name: 'on_create',
-          trigger: 'add_patient',
-          params: '{"patient_id_field": "external_id"}'
-        } ]
+        events: [
+          {
+            name: 'on_create',
+            trigger: 'add_patient',
+            params: '{"patient_id_field": "external_id"}',
+          },
+        ],
       };
       const configGet = sinon.stub(config, 'get');
       configGet.withArgs('outgoing_deny_list').returns('');
-      configGet.returns([ eventConfig ]);
+      configGet.returns([eventConfig]);
 
       sinon.stub(transitionUtils, 'isIdUnique').callsArgWith(2, null, false);
 
@@ -220,10 +259,12 @@ describe('registration', () => {
 
       transition.onMatch(change).then(() => {
         (typeof doc.patient_id).should.be.equal('undefined');
-        doc.errors.should.deep.equal([{
-          message: 'messages.generic.provided_patient_id_not_unique',
-          code: 'provided_patient_id_not_unique'
-        }]);
+        doc.errors.should.deep.equal([
+          {
+            message: 'messages.generic.provided_patient_id_not_unique',
+            code: 'provided_patient_id_not_unique',
+          },
+        ]);
         done();
       });
     });
@@ -234,23 +275,29 @@ describe('registration', () => {
       const patientId = '05649';
       const senderPhoneNumber = '+555123';
       const dob = '2017-03-31T01:15:09.000Z';
-      const change = { doc: {
-        type: 'data_record',
-        form: 'R',
-        reported_date: 53,
-        from: senderPhoneNumber,
-        fields: { name: patientName },
-        birth_date: dob
-      } };
+      const change = {
+        doc: {
+          type: 'data_record',
+          form: 'R',
+          reported_date: 53,
+          from: senderPhoneNumber,
+          fields: { name: patientName },
+          birth_date: dob,
+        },
+      };
       sinon.stub(utils, 'getPatientContactUuid').callsArgWith(2);
       // return expected view results when searching for contacts_by_phone
-      sinon.stub(db.medic, 'view').callsArgWith(3, null, { rows: [ { doc: { parent: { _id: submitterId } } } ] });
-      const saveDoc = sinon.stub(db.audit, 'saveDoc').callsArgWith(1);
+      sinon
+        .stub(db.medic, 'view')
+        .callsArgWith(3, null, {
+          rows: [{ doc: { parent: { _id: submitterId } } }],
+        });
+      const saveDoc = sinon.stub(dbPouch.medic, 'post').callsArgWith(1);
       const eventConfig = {
         form: 'R',
-        events: [ { name: 'on_create', trigger: 'add_patient', params: 'name' } ]
+        events: [{ name: 'on_create', trigger: 'add_patient', params: 'name' }],
       };
-      sinon.stub(config, 'get').returns([ eventConfig ]);
+      sinon.stub(config, 'get').returns([eventConfig]);
       sinon.stub(transition, 'validate').callsArgWith(2);
       sinon.stub(utils, 'getRegistrations').callsArgWith(1, null, []);
 
@@ -272,23 +319,35 @@ describe('registration', () => {
       const patientId = '05649';
       const senderPhoneNumber = '+555123';
       const dob = '2017-03-31T01:15:09.000Z';
-      const change = { doc: {
-        type: 'data_record',
-        form: 'R',
-        reported_date: 53,
-        from: senderPhoneNumber,
-        fields: { name: patientName },
-        birth_date: dob
-      } };
+      const change = {
+        doc: {
+          type: 'data_record',
+          form: 'R',
+          reported_date: 53,
+          from: senderPhoneNumber,
+          fields: { name: patientName },
+          birth_date: dob,
+        },
+      };
       sinon.stub(utils, 'getPatientContactUuid').callsArgWith(2);
       // return expected view results when searching for contacts_by_phone
-      sinon.stub(db.medic, 'view').callsArgWith(3, null, { rows: [ { doc: { parent: { _id: submitterId } } } ] });
-      const saveDoc = sinon.stub(db.audit, 'saveDoc').callsArgWith(1);
+      sinon
+        .stub(db.medic, 'view')
+        .callsArgWith(3, null, {
+          rows: [{ doc: { parent: { _id: submitterId } } }],
+        });
+      const saveDoc = sinon.stub(dbPouch.medic, 'post').callsArgWith(1);
       const eventConfig = {
         form: 'R',
-        events: [ { name: 'on_create', trigger: 'add_patient', params: '{"patient_name_field": "name"}' } ]
+        events: [
+          {
+            name: 'on_create',
+            trigger: 'add_patient',
+            params: '{"patient_name_field": "name"}',
+          },
+        ],
       };
-      sinon.stub(config, 'get').returns([ eventConfig ]);
+      sinon.stub(config, 'get').returns([eventConfig]);
       sinon.stub(transition, 'validate').callsArgWith(2);
       sinon.stub(utils, 'getRegistrations').callsArgWith(1, null, []);
 
@@ -310,26 +369,32 @@ describe('registration', () => {
       const patientId = '05649';
       const senderPhoneNumber = '+555123';
       const dob = '2017-03-31T01:15:09.000Z';
-      const change = { doc: {
-        type: 'data_record',
-        form: 'R',
-        reported_date: 53,
-        from: senderPhoneNumber,
-        fields: { name: patientName },
-        birth_date: dob
-      } };
+      const change = {
+        doc: {
+          type: 'data_record',
+          form: 'R',
+          reported_date: 53,
+          from: senderPhoneNumber,
+          fields: { name: patientName },
+          birth_date: dob,
+        },
+      };
       sinon.stub(utils, 'getPatientContactUuid').callsArgWith(2);
       // return expected view results when searching for contacts_by_phone
-      sinon.stub(db.medic, 'view').callsArgWith(3, null, { rows: [ { doc: { parent: { _id: submitterId } } } ] });
-      const saveDoc = sinon.stub(db.audit, 'saveDoc').callsArgWith(1);
+      sinon
+        .stub(db.medic, 'view')
+        .callsArgWith(3, null, {
+          rows: [{ doc: { parent: { _id: submitterId } } }],
+        });
+      const saveDoc = sinon.stub(dbPouch.medic, 'post').callsArgWith(1);
       const eventConfig = {
         form: 'R',
         events: [
           { name: 'on_create', trigger: 'add_patient', params: 'name' },
-          { name: 'on_create', trigger: 'add_patient_id', params: 'name' }
-        ]
+          { name: 'on_create', trigger: 'add_patient_id', params: 'name' },
+        ],
       };
-      sinon.stub(config, 'get').returns([ eventConfig ]);
+      sinon.stub(config, 'get').returns([eventConfig]);
       sinon.stub(transition, 'validate').callsArgWith(2);
       sinon.stub(utils, 'getRegistrations').callsArgWith(1, null, []);
 
@@ -346,49 +411,72 @@ describe('registration', () => {
     });
 
     it('fails when patient_id_field is set to patient_id', done => {
-      const eventConfig = [ {
-        form: 'R',
-        events: [ {
-          name: 'on_create',
-          trigger: 'add_patient',
-          params: '{ "patient_id_field": "patient_id" }'
-        } ]
-      } ];
+      const eventConfig = [
+        {
+          form: 'R',
+          events: [
+            {
+              name: 'on_create',
+              trigger: 'add_patient',
+              params: '{ "patient_id_field": "patient_id" }',
+            },
+          ],
+        },
+      ];
 
       sinon.stub(config, 'get').returns(eventConfig);
       try {
         transition.init();
         done(new Error('Expected validation error'));
-      } catch(e) {
+      } catch (e) {
         (e instanceof Error).should.equal(true);
-        e.message.should.equal('Configuration error. patient_id_field cannot be set to patient_id');
+        e.message.should.equal(
+          'Configuration error. patient_id_field cannot be set to patient_id'
+        );
         done();
       }
     });
-
   });
 
   describe('assign_schedule', () => {
     it('event creates the named schedule', done => {
-      const change = { doc: {
-        type: 'data_record',
-        form: 'R',
-        reported_date: 53,
-        from: '+555123',
-        fields: { patient_id: '05649' }
-      } };
-      sinon.stub(db.medic, 'view').callsArgWith(3, null, { rows: [ { doc: { parent: { _id: 'papa' } } } ] });
-      sinon.stub(db.audit, 'saveDoc').callsArgWith(1);
+      const change = {
+        doc: {
+          type: 'data_record',
+          form: 'R',
+          reported_date: 53,
+          from: '+555123',
+          fields: { patient_id: '05649' },
+        },
+      };
+      sinon
+        .stub(db.medic, 'view')
+        .callsArgWith(3, null, {
+          rows: [{ doc: { parent: { _id: 'papa' } } }],
+        });
+      sinon.stub(dbPouch.medic, 'post').callsArgWith(1);
       const eventConfig = {
         form: 'R',
-        events: [ { name: 'on_create', trigger: 'assign_schedule', params: 'myschedule' } ]
+        events: [
+          {
+            name: 'on_create',
+            trigger: 'assign_schedule',
+            params: 'myschedule',
+          },
+        ],
       };
-      sinon.stub(config, 'get').returns([ eventConfig ]);
+      sinon.stub(config, 'get').returns([eventConfig]);
       sinon.stub(transition, 'validate').callsArgWith(2);
-      const getRegistrations = sinon.stub(utils, 'getRegistrations').callsArgWith(1, null, [ { _id: 'xyz' } ]);
+      const getRegistrations = sinon
+        .stub(utils, 'getRegistrations')
+        .callsArgWith(1, null, [{ _id: 'xyz' }]);
       sinon.stub(schedules, 'getScheduleConfig').returns('someschedule');
-      sinon.stub(utils, 'getPatientContactUuid').callsArgWith(2, null, {_id: 'uuid'});
-      const assignSchedule = sinon.stub(schedules, 'assignSchedule').returns(true);
+      sinon
+        .stub(utils, 'getPatientContactUuid')
+        .callsArgWith(2, null, { _id: 'uuid' });
+      const assignSchedule = sinon
+        .stub(schedules, 'assignSchedule')
+        .returns(true);
       transition.onMatch(change).then(() => {
         assignSchedule.callCount.should.equal(1);
         assignSchedule.args[0][1].should.equal('someschedule');
@@ -400,9 +488,8 @@ describe('registration', () => {
   });
 
   describe('filter', () => {
-
     it('returns false for reports for unknown json form', done => {
-      const doc = { form: 'R', type: 'data_record'};
+      const doc = { form: 'R', type: 'data_record' };
       const getForm = sinon.stub(utils, 'getForm').returns(null);
       const actual = transition.filter(doc);
       getForm.callCount.should.equal(1);
@@ -413,7 +500,9 @@ describe('registration', () => {
 
     it('returns false for reports with no registration configured', done => {
       const doc = { form: 'R', type: 'data_record' };
-      const getForm = sinon.stub(utils, 'getForm').returns({ public_form: false });
+      const getForm = sinon
+        .stub(utils, 'getForm')
+        .returns({ public_form: false });
       const configGet = sinon.stub(config, 'get').returns([{ form: 'XYZ' }]);
       const actual = transition.filter(doc);
       getForm.callCount.should.equal(1);
@@ -425,10 +514,14 @@ describe('registration', () => {
     });
 
     it('returns true for reports from known clinic', done => {
-      const doc = { form: 'R', type: 'data_record'};
-      const getForm = sinon.stub(utils, 'getForm').returns({ public_form: false });
+      const doc = { form: 'R', type: 'data_record' };
+      const getForm = sinon
+        .stub(utils, 'getForm')
+        .returns({ public_form: false });
       const configGet = sinon.stub(config, 'get').returns([{ form: 'R' }]);
-      const getClinicPhone = sinon.stub(utils, 'getClinicPhone').returns('+55555555');
+      const getClinicPhone = sinon
+        .stub(utils, 'getClinicPhone')
+        .returns('+55555555');
       const actual = transition.filter(doc);
       getForm.callCount.should.equal(1);
       getForm.args[0][0].should.equal('R');
@@ -440,8 +533,10 @@ describe('registration', () => {
     });
 
     it('returns false for reports from unknown clinic', done => {
-      const doc = { form: 'R', type: 'data_record'};
-      const getForm = sinon.stub(utils, 'getForm').returns({ public_form: false });
+      const doc = { form: 'R', type: 'data_record' };
+      const getForm = sinon
+        .stub(utils, 'getForm')
+        .returns({ public_form: false });
       const configGet = sinon.stub(config, 'get').returns([{ form: 'R' }]);
       const getClinicPhone = sinon.stub(utils, 'getClinicPhone').returns(null);
       const actual = transition.filter(doc);
@@ -455,8 +550,10 @@ describe('registration', () => {
     });
 
     it('returns true for reports for public forms from unknown clinic', done => {
-      const doc = { form: 'R', type: 'data_record'};
-      const getForm = sinon.stub(utils, 'getForm').returns({ public_form: true });
+      const doc = { form: 'R', type: 'data_record' };
+      const getForm = sinon
+        .stub(utils, 'getForm')
+        .returns({ public_form: true });
       const configGet = sinon.stub(config, 'get').returns([{ form: 'R' }]);
       const getClinicPhone = sinon.stub(utils, 'getClinicPhone').returns(null);
       const actual = transition.filter(doc);
@@ -481,15 +578,15 @@ describe('registration', () => {
       actual.should.equal(true);
       done();
     });
-
   });
 
   describe('trigger param configuration', () => {
-
     it('supports strings', done => {
       const eventConfig = {
         form: 'R',
-        events: [ { name: 'on_create', trigger: 'testparamparsing', params: 'foo' } ]
+        events: [
+          { name: 'on_create', trigger: 'testparamparsing', params: 'foo' },
+        ],
       };
 
       transition.triggers.testparamparsing = (options, cb) => {
@@ -505,7 +602,9 @@ describe('registration', () => {
     it('supports comma-delimited strings as array', done => {
       const eventConfig = {
         form: 'R',
-        events: [ { name: 'on_create', trigger: 'testparamparsing', params: 'foo,bar' } ]
+        events: [
+          { name: 'on_create', trigger: 'testparamparsing', params: 'foo,bar' },
+        ],
       };
 
       transition.triggers.testparamparsing = (options, cb) => {
@@ -521,7 +620,13 @@ describe('registration', () => {
     it('supports arrays as a string', done => {
       const eventConfig = {
         form: 'R',
-        events: [ { name: 'on_create', trigger: 'testparamparsing', params: '["foo","bar", 3]' } ]
+        events: [
+          {
+            name: 'on_create',
+            trigger: 'testparamparsing',
+            params: '["foo","bar", 3]',
+          },
+        ],
       };
 
       transition.triggers.testparamparsing = (options, cb) => {
@@ -537,7 +642,13 @@ describe('registration', () => {
     it('supports JSON as a string', done => {
       const eventConfig = {
         form: 'R',
-        events: [ { name: 'on_create', trigger: 'testparamparsing', params: '{"foo": "bar"}' } ]
+        events: [
+          {
+            name: 'on_create',
+            trigger: 'testparamparsing',
+            params: '{"foo": "bar"}',
+          },
+        ],
       };
 
       transition.triggers.testparamparsing = (options, cb) => {
@@ -545,7 +656,7 @@ describe('registration', () => {
       };
 
       transition.fireConfiguredTriggers(eventConfig, {}).catch(options => {
-        options.params.should.deep.equal({foo: 'bar'});
+        options.params.should.deep.equal({ foo: 'bar' });
         done();
       });
     });
@@ -553,7 +664,13 @@ describe('registration', () => {
     it('supports direct JSON', done => {
       const eventConfig = {
         form: 'R',
-        events: [ { name: 'on_create', trigger: 'testparamparsing', params: {foo: 'bar'} } ]
+        events: [
+          {
+            name: 'on_create',
+            trigger: 'testparamparsing',
+            params: { foo: 'bar' },
+          },
+        ],
       };
 
       transition.triggers.testparamparsing = (options, cb) => {
@@ -561,62 +678,78 @@ describe('registration', () => {
       };
 
       transition.fireConfiguredTriggers(eventConfig, {}).catch(options => {
-        options.params.should.deep.equal({foo: 'bar'});
+        options.params.should.deep.equal({ foo: 'bar' });
         done();
       });
     });
 
     it('fails with no parameters', done => {
-      const eventConfig = [ {
-        form: 'R',
-        events: [ {
-          name: 'on_create',
-          trigger: 'assign_schedule',
-          params: ''
-        } ]
-      } ];
+      const eventConfig = [
+        {
+          form: 'R',
+          events: [
+            {
+              name: 'on_create',
+              trigger: 'assign_schedule',
+              params: '',
+            },
+          ],
+        },
+      ];
 
       sinon.stub(config, 'get').returns(eventConfig);
       try {
         transition.init();
         done(new Error('Expected validation error'));
-      } catch(e) {
+      } catch (e) {
         (e instanceof Error).should.equal(true);
-        e.message.should.equal('Configuration error. Expecting params to be defined as the name of the schedule(s) for R.assign_schedule');
+        e.message.should.equal(
+          'Configuration error. Expecting params to be defined as the name of the schedule(s) for R.assign_schedule'
+        );
         done();
       }
     });
 
     it('fails with object parameters', done => {
-      const eventConfig = [ {
-        form: 'R',
-        events: [ {
-          name: 'on_create',
-          trigger: 'assign_schedule',
-          params: '{ "name": "hello" }'
-        } ]
-      } ];
+      const eventConfig = [
+        {
+          form: 'R',
+          events: [
+            {
+              name: 'on_create',
+              trigger: 'assign_schedule',
+              params: '{ "name": "hello" }',
+            },
+          ],
+        },
+      ];
 
       sinon.stub(config, 'get').returns(eventConfig);
       try {
         transition.init();
         done(new Error('Expected validation error'));
-      } catch(e) {
+      } catch (e) {
         (e instanceof Error).should.equal(true);
-        e.message.should.equal('Configuration error. Expecting params to be a string, comma separated list, or an array for R.assign_schedule: \'{ "name": "hello" }\'');
+        e.message.should.equal(
+          'Configuration error. Expecting params to be a string, comma separated list, or an array for R.assign_schedule: \'{ "name": "hello" }\''
+        );
         done();
       }
     });
 
     it('succeeds with array parameters', done => {
-      const eventConfig = [ {
-        form: 'R',
-        events: [ {
-          name: 'on_create',
-          trigger: 'assign_schedule',
-          params: 'a,b'
-        } ]
-      } ];
+      const eventConfig = [
+        {
+          form: 'R',
+          events: [
+            {
+              name: 'on_create',
+              trigger: 'assign_schedule',
+              params: 'a,b',
+            },
+          ],
+        },
+      ];
 
       sinon.stub(config, 'get').returns(eventConfig);
       transition.init();
@@ -624,22 +757,28 @@ describe('registration', () => {
     });
 
     it('parse failure for invalid JSON propagates to the callbacks', done => {
-      const eventConfig = [ {
-        form: 'R',
-        events: [ {
-          name: 'on_create',
-          trigger: 'testparamparsing',
-          params: '{"foo": "bar"' // missing end "}"
-        } ]
-      } ];
+      const eventConfig = [
+        {
+          form: 'R',
+          events: [
+            {
+              name: 'on_create',
+              trigger: 'testparamparsing',
+              params: '{"foo": "bar"', // missing end "}"
+            },
+          ],
+        },
+      ];
 
       sinon.stub(config, 'get').returns(eventConfig);
       try {
         transition.init();
         done(new Error('Expected validation error'));
-      } catch(e) {
+      } catch (e) {
         (e instanceof Error).should.equal(true);
-        e.message.should.equal('Configuration error. Unable to parse params for R.testparamparsing: \'{"foo": "bar"\'. Error: SyntaxError: Unexpected end of JSON input');
+        e.message.should.equal(
+          'Configuration error. Unable to parse params for R.testparamparsing: \'{"foo": "bar"\'. Error: SyntaxError: Unexpected end of JSON input'
+        );
         done();
       }
     });
@@ -648,29 +787,31 @@ describe('registration', () => {
   describe('addMessages', () => {
     it('prepops and passes the right information to messages.addMessage', done => {
       const testPhone = '1234',
-            testMessage1 = {
-              message: 'A Test Message 1',
-              recipient: testPhone,
-              event_type: 'report_accepted'
-            },
-            testMessage2 = {
-              message: 'A Test Message 2',
-              recipient: testPhone,
-              event_type: 'report_accepted'
-            },
-            testRegistration = 'some registrations',
-            testPatient = 'a patient contact';
+        testMessage1 = {
+          message: 'A Test Message 1',
+          recipient: testPhone,
+          event_type: 'report_accepted',
+        },
+        testMessage2 = {
+          message: 'A Test Message 2',
+          recipient: testPhone,
+          event_type: 'report_accepted',
+        },
+        testRegistration = 'some registrations',
+        testPatient = 'a patient contact';
 
       const addMessage = sinon.stub(messages, 'addMessage');
 
-      sinon.stub(utils, 'getRegistrations').callsArgWith(1, null, testRegistration);
+      sinon
+        .stub(utils, 'getRegistrations')
+        .callsArgWith(1, null, testRegistration);
 
-      const testConfig = { messages: [ testMessage1, testMessage2 ] };
+      const testConfig = { messages: [testMessage1, testMessage2] };
       const testDoc = {
         fields: {
-          patient_id: '12345'
+          patient_id: '12345',
         },
-        patient: testPatient
+        patient: testPatient,
       };
 
       transition.addMessages(testConfig, testDoc, err => {
@@ -682,8 +823,15 @@ describe('registration', () => {
           patient: testPatient,
           registrations: testRegistration,
           templateContext: {
-            next_msg: { minutes: 0, hours: 0, days: 0, weeks: 0, months: 0, years: 0 }
-          }
+            next_msg: {
+              minutes: 0,
+              hours: 0,
+              days: 0,
+              weeks: 0,
+              months: 0,
+              years: 0,
+            },
+          },
         };
         addMessage.args[0][0].should.equal(testDoc);
         addMessage.args[0][1].should.equal(testMessage1);
@@ -698,30 +846,32 @@ describe('registration', () => {
     });
     it('supports ignoring messages based on bool_expr', done => {
       const testPhone = '1234',
-            testMessage1 = {
-              message: 'A Test Message 1',
-              recipient: testPhone,
-              event_type: 'report_accepted'
-            },
-            testMessage2 = {
-              message: 'A Test Message 2',
-              recipient: testPhone,
-              event_type: 'report_accepted',
-              bool_expr: '1 === 2'
-            },
-            testRegistration = 'some registrations',
-            testPatient = 'a patient contact';
+        testMessage1 = {
+          message: 'A Test Message 1',
+          recipient: testPhone,
+          event_type: 'report_accepted',
+        },
+        testMessage2 = {
+          message: 'A Test Message 2',
+          recipient: testPhone,
+          event_type: 'report_accepted',
+          bool_expr: '1 === 2',
+        },
+        testRegistration = 'some registrations',
+        testPatient = 'a patient contact';
 
       const addMessage = sinon.stub(messages, 'addMessage');
 
-      sinon.stub(utils, 'getRegistrations').callsArgWith(1, null, testRegistration);
+      sinon
+        .stub(utils, 'getRegistrations')
+        .callsArgWith(1, null, testRegistration);
 
-      const testConfig = { messages: [ testMessage1, testMessage2 ] };
+      const testConfig = { messages: [testMessage1, testMessage2] };
       const testDoc = {
         fields: {
-          patient_id: '12345'
+          patient_id: '12345',
         },
-        patient: testPatient
+        patient: testPatient,
       };
 
       transition.addMessages(testConfig, testDoc, err => {
@@ -731,8 +881,15 @@ describe('registration', () => {
           patient: testPatient,
           registrations: testRegistration,
           templateContext: {
-            next_msg: { minutes: 0, hours: 0, days: 0, weeks: 0, months: 0, years: 0 }
-          }
+            next_msg: {
+              minutes: 0,
+              hours: 0,
+              days: 0,
+              weeks: 0,
+              months: 0,
+              years: 0,
+            },
+          },
         };
         addMessage.args[0][0].should.equal(testDoc);
         addMessage.args[0][1].should.equal(testMessage1);
