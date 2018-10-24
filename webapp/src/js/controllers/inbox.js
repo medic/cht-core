@@ -193,7 +193,7 @@ var feedback = require('../modules/feedback'),
       $scope.warnOnNavigation = option.value;
     });
 
-    $rootScope.$on('$stateChangeStart', function (event, toState, toParams, fromState){
+    $rootScope.$on('$stateChangeStart', function (event, toState, toParams, fromState, fromParams){
       if(!$scope.enketoStatus.edited){
         return;
       }
@@ -203,8 +203,13 @@ var feedback = require('../modules/feedback'),
       if(!fromState.url.includes('edit')){
         return;
       }
-      event.preventDefault();
-      $scope.navigationCancel(); 
+      if(fromParams.id === toParams.id){
+        return;
+      }
+      if ($scope.cancelCallback) {
+        event.preventDefault();
+        $scope.navigationCancel(); 
+      }
     });
 
     // User wants to cancel current flow, or pressed back button, etc.
