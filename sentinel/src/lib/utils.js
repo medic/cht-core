@@ -4,7 +4,8 @@ const _ = require('underscore'),
       moment = require('moment'),
       config = require('../config'),
       taskUtils = require('task-utils'),
-      registrationUtils = require('@shared-libs/registration-utils');
+      registrationUtils = require('@shared-libs/registration-utils'),
+      logger = require('./logger');
 
 /*
  * Get desired locale
@@ -192,7 +193,7 @@ const getPatient = (db, patientShortcodeId, includeDocs, callback) => {
     }
 
     if (results.rows.length > 1) {
-      console.warn('More than one patient person document for shortcode ' + patientShortcodeId);
+      logger.warn(`More than one patient person document for shortcode ${patientShortcodeId}`);
     }
 
     const patient = results.rows[0];

@@ -3,7 +3,8 @@ var _ = require('underscore'),
     utils = require('./utils'),
     config = require('../config');
 const messageUtils = require('@shared-libs/message-utils'),
-      history = require('./history');
+      history = require('./history'),
+      logger = require('./logger');
 
 const messageStatus = (from, msg) => {
   let status = 'denied';
@@ -80,11 +81,11 @@ module.exports = {
         // otherwise, use the configured messages (deprecated)
         var messages = configuration.messages || configuration.message;
         if (!_.isArray(messages)) {
-            console.warn('Message property should be an array. Please check your configuration.');
+            logger.warn('Message property should be an array. Please check your configuration.');
             return '';
         }
         if (!messages.length) {
-            console.warn('Message property array was empty. Please check your configuration.');
+            logger.warn('Message property array was empty. Please check your configuration.');
             return '';
         }
         // default to first item in messages array in case locale match fails
@@ -141,11 +142,11 @@ module.exports = {
             };
         } else if (_.isObject(error)) {
             if (!error.message) {
-                console.warn('Message property missing on error object.');
+                logger.warn('Message property missing on error object.');
                 error.message = 'Error: ' + JSON.stringify(error);
             }
         } else {
-            console.warn('Error should be an object or string.');
+            logger.warn('Error should be an object or string.');
             error = {
                 message: 'Error: ' + JSON.stringify(error)
             };

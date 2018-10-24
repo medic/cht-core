@@ -4,7 +4,8 @@ var _ = require('underscore'),
     moment = require('moment'),
     utils = require('../lib/utils'),
     messages = require('../lib/messages');
-const messageUtils = require('@shared-libs/message-utils');
+const messageUtils = require('@shared-libs/message-utils'),
+    logger = require('./logger');
 
 module.exports = {
     // return [hour, minute, timezone]
@@ -157,7 +158,7 @@ module.exports = {
                 }
             } else {
                 // bad offset, skip this msg
-                console.error(
+                logger.error(
                     '%s cannot be parsed as a valid offset. Skipping this msg of %s schedule.', msg.offset, schedule.name
                 );
             }

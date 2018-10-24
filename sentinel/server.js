@@ -16,8 +16,8 @@ if (process.env.TEST_ENV) {
 }
 
 process.on('unhandledRejection', reason => {
-  console.error('Unhandled Rejection:');
-  console.error(reason);
+  logger.error('Unhandled Rejection:');
+  logger.error(reason);
 });
 
 const waitForApi = () => new Promise(resolve => {
@@ -58,7 +58,7 @@ serverChecks.check(db.serverUrl)
       });
   })
   .catch(err => {
-    console.error('Fatal error intialising medic-sentinel');
-    console.log(err);
+    logger.error('Fatal error intialising medic-sentinel');
+    logger.error(err);
     process.exit(1);
   });

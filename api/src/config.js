@@ -99,7 +99,7 @@ const loadTranslations = () => {
 const loadViewMaps = () => {
   db.medic.get('_design/medic', function(err, ddoc) {
     if (err) {
-      logger.error(`Error loading view maps for medic ddoc: ${err}`);
+      logger.error('Error loading view maps for medic ddoc', err);
       return;
     }
     viewMapUtils.loadViewMaps(ddoc, 'docs_by_replication_key', 'contacts_by_depth');
@@ -139,17 +139,17 @@ module.exports = {
         if (change.id === '_design/medic') {
           logger.info('Detected ddoc change - reloading');
           translations.run().catch(err => {
-            logger.error(`Failed to update translation docs: ${err}`);
+            logger.error('Failed to update translation docs', err);
           });
           ddocExtraction.run().catch(err => {
-            logger.error(`Something went wrong trying to extract ddocs: ${err}`);
+            logger.error('Something went wrong trying to extract ddocs', err);
             process.exit(1);
           });
           loadViewMaps();
         } else if (change.id === 'settings') {
           logger.info('Detected settings change - reloading');
           loadSettings().catch(err => {
-            logger.error(`Failed to reload settings: ${err}`);
+            logger.error('Failed to reload settings', err);
             process.exit(1);
           });
         } else if (change.id.indexOf('messages-') === 0) {
@@ -158,7 +158,7 @@ module.exports = {
         }
       })
       .on('error', err => {
-        logger.error(`Error watching changes, restarting: ${err}`);
+        logger.error('Error watching changes, restarting', err);
         process.exit(1);
       });
   }

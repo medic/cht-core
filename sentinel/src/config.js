@@ -42,7 +42,7 @@ const initFeed = () => {
       }
     })
     .on('error', err => {
-      console.error('Error watching changes, restarting', err);
+      logger.error('Error watching changes, restarting', err);
       process.exit(1);
     });
 };
@@ -62,7 +62,7 @@ const initConfig = () => {
       require('./transitions').loadTransitions();
     })
     .catch(err => {
-      console.error(err);
+      logger.error(err);
       throw new Error('Error loading configuration');
     });
 };

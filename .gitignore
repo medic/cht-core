@@ -21,5 +21,4 @@ dist
 /packages
 /static
 .vscode/
-error.log
-medic.log
+*/**/log

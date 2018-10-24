@@ -1,6 +1,7 @@
 const sinon = require('sinon'),
       assert = require('chai').assert,
       db = require('../../src/db-nano'),
+      logger = require('../../src/lib/logger'),
       dbPouch = require('../../src/db-pouch'),
       transitions = require('../../src/transitions/index');
 
@@ -57,7 +58,7 @@ describe('finalize transition', () => {
       transition: transition,
       audit: audit
     }, (err, changed) => {
-      console.log('1111');
+      logger.info('1111');
       assert(!err);
       assert(changed);
       assert(info.transitions.x.ok);
