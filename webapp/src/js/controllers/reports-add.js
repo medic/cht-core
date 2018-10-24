@@ -74,7 +74,7 @@ angular.module('inboxControllers').controller('ReportsAddCtrl',
 
     var markFormEdited = function() {
       $scope.enketoStatus.edited = true;
-      $rootScope.$broadcast('markLinks');
+      $rootScope.$broadcast('formOnEdit',{value:true});
     };
 
     getSelected()
@@ -146,7 +146,7 @@ angular.module('inboxControllers').controller('ReportsAddCtrl',
           $translate($state.params.reportId ? 'report.updated' : 'report.created')
             .then(Snackbar);
           $state.go('reports.detail', { id: docs[0]._id });
-          $rootScope.$broadcast('unmarkLinks');
+          $rootScope.$broadcast('formOnEdit',{value:false});
         })
         .catch(function(err) {
           $scope.enketoStatus.saving = false;

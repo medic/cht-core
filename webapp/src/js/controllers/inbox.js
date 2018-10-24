@@ -142,6 +142,7 @@ var feedback = require('../modules/feedback'),
     $scope.adminUrl = Location.adminPath;
     $scope.enketoStatus = { saving: false };
     $scope.isAdmin = Session.isAdmin();
+    $scope.warnOnNavigation = { mode: false };
 
     if (
       $window.medicmobile_android &&
@@ -188,33 +189,23 @@ var feedback = require('../modules/feedback'),
       });
     });
 
-    var links = document.getElementsByTagName('a');
-
-    $scope.$on('markLinks', function(){
-      for(var i = 0; i < links.length; i++) {
-        //anchor tags within enketo form to be skipped
-        if($('.enketo').find(links[i]).length === 0) {
-          links[i].addEventListener('click', setLinks, false);
-          links[i].target = '_self';
-        }
-      }
+    $scope.$on('formOnEdit', function(event,option){
+      $scope.warnOnNavigation = option.value;
     });
 
-    $scope.$on('unmarkLinks', function(){
-      for(var i = 0; i < links.length; i++) {
-        if($('.enketo').find(links[i]).length === 0) {
-          links[i].removeEventListener('click', setLinks, false);
-          if(links[i].target === '_self'){
-            links[i].removeAttribute('target');
-          }
-        }
+    $rootScope.$on('$stateChangeStart', function (event, toState, toParams, fromState){
+      if(!$scope.enketoStatus.edited){
+        return;
       }
+      if(!$scope.warnOnNavigation){
+        return;
+      }
+      if(!fromState.url.includes('edit')){
+        return;
+      }
+      event.preventDefault();
+      $scope.navigationCancel(); 
     });
-
-    var setLinks = function(e) {
-      e.preventDefault();
-      $scope.navigationCancel();
-    };
 
     // User wants to cancel current flow, or pressed back button, etc.
     $scope.navigationCancel = function() {

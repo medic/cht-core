@@ -25,7 +25,7 @@ angular.module('inboxControllers').controller('ContactsReportCtrl',
 
     var markFormEdited = function() {
       $scope.enketoStatus.edited = true;
-      $rootScope.$broadcast('markLinks');
+      $rootScope.$broadcast('formOnEdit',{value:true});
     };
 
     var setCancelTarget = function() {
@@ -68,7 +68,7 @@ angular.module('inboxControllers').controller('ContactsReportCtrl',
           $scope.enketoStatus.saving = false;
           $translate('report.created').then(Snackbar);
           $state.go('contacts.detail', { id: $state.params.id });
-          $rootScope.$broadcast('unmarkLinks');
+          $rootScope.$broadcast('formOnEdit',{value:false});
         })
         .catch(function(err) {
           $scope.enketoStatus.saving = false;

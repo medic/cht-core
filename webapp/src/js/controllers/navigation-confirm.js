@@ -14,7 +14,7 @@ angular.module('inboxControllers').controller('NavigationConfirmCtrl',
 
     $scope.submit = function() {
       $uibModalInstance.close();
-      $rootScope.$broadcast('unmarkLinks');
+      $rootScope.$broadcast('formOnEdit',{value:false});
     };
 
   }

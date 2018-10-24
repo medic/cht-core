@@ -39,7 +39,7 @@ angular.module('inboxControllers').controller('TasksContentCtrl',
 
     var markFormEdited = function() {
       $scope.enketoStatus.edited = true;
-      $rootScope.$broadcast('markLinks');
+      $rootScope.$broadcast('formOnEdit',{value:true});
     };
 
     $scope.performAction = function(action, skipDetails) {
@@ -100,7 +100,7 @@ angular.module('inboxControllers').controller('TasksContentCtrl',
           $scope.clearSelected();
           $scope.clearCancelTarget();
           $state.go('tasks.detail', { id: null });
-          $rootScope.$broadcast('unmarkLinks');
+          $rootScope.$broadcast('formOnEdit',{value:false});
         })
         .catch(function(err) {
           $scope.enketoStatus.saving = false;
