@@ -1,17 +1,17 @@
 var _ = require('underscore'),
-    uuid = require('uuid/v4'),
-    taskUtils = require('task-utils'),
-    phoneNumber = require('phone-number');
+  uuid = require('uuid/v4'),
+  taskUtils = require('task-utils'),
+  phoneNumber = require('phone-number');
 
-angular.module('inboxServices').factory('SendMessage',
-  function(
+angular
+  .module('inboxServices')
+  .factory('SendMessage', function(
     $q,
     DB,
     ExtractLineage,
     Settings,
     UserSettings
   ) {
-
     'use strict';
     'ngInject';
 
@@ -20,7 +20,7 @@ angular.module('inboxServices').factory('SendMessage',
     };
 
     var createMessageDoc = function(user) {
-      return  {
+      return {
         errors: [],
         form: null,
         from: user && user.phone,
@@ -28,14 +28,14 @@ angular.module('inboxServices').factory('SendMessage',
         tasks: [],
         kujua_message: true,
         type: 'data_record',
-        sent_by: (user && user.name) || 'unknown'
+        sent_by: (user && user.name) || 'unknown',
       };
     };
 
     var mapRecipient = function(contact, phone) {
       if (phone) {
         var res = { phone: phone };
-        if(contact) {
+        if (contact) {
           res.contact = contact;
         }
         return res;
@@ -50,18 +50,36 @@ angular.module('inboxServices').factory('SendMessage',
       });
     };
 
+    // Returns contacts and primary contacts for descendant hierarchies
     var descendants = function(recipient) {
-      return DB().query('medic-client/contacts_by_parent', {
-        include_docs: true,
-        key: recipient.doc._id
-      }).then(mapDescendants);
+      return DB()
+        .query('medic-client/contacts_by_parent', {
+          include_docs: true,
+          key: recipient.doc._id,
+        })
+        .then(function(contacts) {
+          var primaryContacts = _.filter(contacts.rows, function(row) {
+            var contact = row.doc.contact;
+            return contact && contact._id && !contact.phone;
+          }).map(function(row) {
+            return { doc: { _id: row.doc.contact._id } };
+          });
+          if (primaryContacts) {
+            return hydrate(primaryContacts).then(function(primaries) {
+              return _.flatten([mapDescendants(contacts), primaries]);
+            });
+          } else {
+            return mapDescendants(contacts);
+          }
+        });
     };
 
     var hydrate = function(recipients) {
       var ids = recipients.map(function(recipient) {
         return recipient.doc._id;
       });
-      return DB().allDocs({ include_docs: true, keys: ids })
+      return DB()
+        .allDocs({ include_docs: true, keys: ids })
         .then(mapDescendants);
     };
 
@@ -70,9 +88,10 @@ angular.module('inboxServices').factory('SendMessage',
       // users will have already got that suggestion in the send-message UI if
       // it exists in the DB
       return recipients.map(function(recipient) {
-        var phone = recipient.text || // from select2
-              recipient.doc.phone ||
-               recipient.doc.contact.phone; // from LHS message bar
+        var phone =
+          recipient.text || // from select2
+          recipient.doc.phone ||
+          recipient.doc.contact.phone; // from LHS message bar
         return mapRecipient(null, phone);
       });
     };
@@ -81,7 +100,7 @@ angular.module('inboxServices').factory('SendMessage',
       var splitRecipients = _.groupBy(recipients, function(recipient) {
         if (recipient.everyoneAt) {
           return 'explode';
-        } else if (recipient.doc && recipient.doc._id){
+        } else if (recipient.doc && recipient.doc._id) {
           return 'hydrate';
         } else {
           return 'resolve';
@@ -92,11 +111,11 @@ angular.module('inboxServices').factory('SendMessage',
       splitRecipients.hydrate = splitRecipients.hydrate || [];
       splitRecipients.resolve = splitRecipients.resolve || [];
 
-      var promises = _.flatten(
-        [splitRecipients.explode.map(descendants),
+      var promises = _.flatten([
+        splitRecipients.explode.map(descendants),
         hydrate(splitRecipients.hydrate),
-        resolvePhoneNumbers(splitRecipients.resolve)]
-      );
+        resolvePhoneNumbers(splitRecipients.resolve),
+      ]);
 
       return $q.all(promises).then(function(recipients) {
         // hydrate() and resolvePhoneNumbers() are promises with multiple values
@@ -113,14 +132,18 @@ angular.module('inboxServices').factory('SendMessage',
 
     var createTask = function(settings, recipient, message, user) {
       var task = {
-        messages: [{
-          from: user && user.phone,
-          sent_by: user && user.name || 'unknown',
-          to: phoneNumber.normalize(settings, recipient.phone) || recipient.phone,
-          contact: ExtractLineage(recipient.contact),
-          message: message,
-          uuid: uuid()
-        }]
+        messages: [
+          {
+            from: user && user.phone,
+            sent_by: (user && user.name) || 'unknown',
+            to:
+              phoneNumber.normalize(settings, recipient.phone) ||
+              recipient.phone,
+            contact: ExtractLineage(recipient.contact),
+            message: message,
+            uuid: uuid(),
+          },
+        ],
       };
       taskUtils.setTaskState(task, 'pending');
       return task;
@@ -130,11 +153,8 @@ angular.module('inboxServices').factory('SendMessage',
       if (!_.isArray(recipients)) {
         recipients = [recipients];
       }
-      return $q.all([
-        UserSettings(),
-        Settings(),
-        formatRecipients(recipients)
-      ])
+      return $q
+        .all([UserSettings(), Settings(), formatRecipients(recipients)])
         .then(function(results) {
           var user = results[0];
           var settings = results[1];
@@ -149,5 +169,4 @@ angular.module('inboxServices').factory('SendMessage',
           return DB().post(doc);
         });
     };
-  }
-);
+  });
