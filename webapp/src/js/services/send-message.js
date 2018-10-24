@@ -59,15 +59,18 @@ angular
         })
         .then(function(contacts) {
           var primaryContacts = _.filter(contacts.rows, function(row) {
-            return (
-              row.doc.contact && row.doc.contact._id && !row.doc.contact.phone
-            );
+            var contact = row.doc.contact;
+            return contact && contact._id && !contact.phone;
           }).map(function(row) {
             return { doc: { _id: row.doc.contact._id } };
           });
-          return hydrate(primaryContacts).then(function(primaries) {
-            return _.flatten([mapDescendants(contacts), primaries]);
-          });
+          if (primaryContacts) {
+            return hydrate(primaryContacts).then(function(primaries) {
+              return _.flatten([mapDescendants(contacts), primaries]);
+            });
+          } else {
+            return mapDescendants(contacts);
+          }
         });
     };
 
