@@ -66,7 +66,7 @@ angular
             return { doc: { _id: row.doc.contact._id } };
           });
           return hydrate(primaryContacts).then(function(primaries) {
-            return _.flatten([primaries, mapDescendants(contacts)]);
+            return _.flatten([mapDescendants(contacts), primaries]);
           });
         });
     };
