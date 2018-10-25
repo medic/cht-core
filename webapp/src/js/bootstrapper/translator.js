@@ -67,6 +67,6 @@ module.exports = {
 // used for testing
 if (process.env.UNIT_TEST_ENV) {
   module.exports._setTranslationData = function(data) {
-    translationData = data ? data : TRANSLATIONS;
+    translationData = data || TRANSLATIONS;
   };
 }
