@@ -22,15 +22,20 @@ describe('Form2Sms service', function() {
   });
 
   afterEach(function() {
-    KarmaUtils.restore($dbGet, $log, $parse);
+    KarmaUtils.restore(dbGet, $log, $parse);
     sinon.restore();
   });
 
   describe('#()', function() {
     it('should return nothing for a non-existent doc', () => TODO());
     it('should return nothing for a non-existent form', () => TODO());
-    it('should parse attached code when relevant to a form', () => TODO());
+    it('should parse attached code for a form', () => TODO());
+    it('should fall back to ODK compact form specification if no custom code is provided', () => TODO());
+    it('should return nothing if neither code nor ODK compact format are provided', () => TODO());
   });
 
 });
+
+function TODO() {
+}
 
