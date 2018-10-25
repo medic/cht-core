@@ -40,6 +40,7 @@
   require('./format-date');
   require('./geolocation');
   require('./get-data-records');
+  require('./get-report-content');
   require('./get-subject-summaries');
   require('./get-summaries');
   require('./hydrate-contact-names');

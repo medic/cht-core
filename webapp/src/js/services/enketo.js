@@ -33,7 +33,6 @@ angular.module('inboxServices').service('Enketo',
     var objUrls = [];
     var xmlCache = {};
     var FORM_ATTACHMENT_NAME = 'xml';
-    var REPORT_ATTACHMENT_NAME = this.REPORT_ATTACHMENT_NAME = 'content';
 
     var currentForm;
     this.getCurrentForm = function() {
@@ -427,7 +426,7 @@ angular.module('inboxServices').service('Enketo',
 
       record = getOuterHTML($record[0]);
 
-      AddAttachment(doc, REPORT_ATTACHMENT_NAME, record, 'application/xml');
+      AddAttachment(doc, GetReportContent.REPORT_ATTACHMENT_NAME, record, 'application/xml');
       doc._id = getId('/*');
       doc.hidden_fields = EnketoTranslation.getHiddenFieldList(record);
 

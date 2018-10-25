@@ -1,9 +1,12 @@
+const odkForm2sms = require('odk-xform-conmpact-record-representation-for-sms');
+
 angular
   .module('inboxServices')
   .service('Form2Sms', function(
     $log,
     $parse,
-    DB
+    DB,
+    GetReportContent
   ) {
     'use strict';
     'ngInject';
@@ -28,7 +31,14 @@ angular
           }
           //#endif DEBUG
 
-          if(!form.xml2sms) return;
+          if(!form.xml2sms) {
+            $log.error('No xml2sms defined on form doc.  Checking for standard odk tags in form submission...');
+            GetReportContent(doc)
+              .then(xml => {
+                $log.error('Fetch XML attachment for form submission', xml);
+                return odkForm2sms(xml);
+              });
+          }
 
           return $parse(form.xml2sms)({ bitfield:bitfield.bind(doc), doc:doc, spaced:spaced, text:text.bind(doc) });
         })

@@ -9,6 +9,7 @@ angular.module('inboxControllers').controller('ReportsAddCtrl',
     Enketo,
     FileReader,
     Geolocation,
+    GetReportContent,
     LineageModelGenerator,
     Snackbar,
     XmlForm
@@ -55,22 +56,6 @@ angular.module('inboxControllers').controller('ReportsAddCtrl',
       $scope.clearCancelTarget();
     }
 
-    var getReportContent = function(doc) {
-      // creating a new doc - no content
-      if (!doc || !doc._id) {
-        return $q.resolve();
-      }
-      // TODO: check doc.content as this is where legacy documents stored
-      //       their XML. Consider removing this check at some point in the
-      //       future.
-      if (doc.content) {
-        return $q.resolve(doc.content);
-      }
-      // check new style attached form content
-      return DB().getAttachment(doc._id, Enketo.REPORT_ATTACHMENT_NAME)
-        .then(FileReader.utf8);
-    };
-
     var markFormEdited = function() {
       $scope.enketoStatus.edited = true;
     };
@@ -80,7 +65,7 @@ angular.module('inboxControllers').controller('ReportsAddCtrl',
         $log.debug('setting selected', model);
         $scope.setSelected(model);
         return $q.all([
-          getReportContent(model.doc),
+          GetReportContent(model.doc),
           XmlForm(model.formInternalId, { include_docs: true })
         ]).then(function(results) {
           $scope.enketoStatus.edited = false;
