@@ -1,6 +1,7 @@
 angular
   .module('inboxServices')
   .service('GetReportContent', function(
+    $q,
     DB,
     FileReader
   ) {
@@ -25,5 +26,5 @@ angular
       // check new style attached form content
       return DB().getAttachment(doc._id, REPORT_ATTACHMENT_NAME)
         .then(FileReader.utf8);
-    };
+    }
   });
