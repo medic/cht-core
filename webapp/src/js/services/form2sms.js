@@ -5,7 +5,7 @@ angular
   .module('inboxServices')
   .service('Form2Sms', function(
     $log,
-    $parse,
+//    $parse,
     DB,
     GetReportContent
   ) {
@@ -13,6 +13,10 @@ angular
     'ngInject';
 
     return function(doc) {
+      if(!doc) {
+        return Promise.resolve();
+      }
+
       $log.error('Welcome to Form2Sms', Array.prototype.slice.call(arguments));
       return DB()
         .get('form:' + doc.form)
@@ -41,14 +45,15 @@ angular
               });
           }
 
-          return $parse(form.xml2sms)({ bitfield:bitfield.bind(doc), doc:doc, spaced:spaced, text:text.bind(doc) });
+//          return $parse(form.xml2sms)({ bitfield:bitfield.bind(doc), doc:doc, spaced:spaced, text:text.bind(doc) });
+          return;
         })
         .catch(function(err) {
           $log.error('Form2Sms failed: ' + err);
         });
     };
   });
-
+/*
 function spaced() {
   return Array.prototype.slice.call(arguments).join(' ');
 }
@@ -66,3 +71,4 @@ function bitfield() {
 function text(fieldName) {
   return (this.fields[fieldName] || fieldName + '.notfound').toString();
 }
+*/
