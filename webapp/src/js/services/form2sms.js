@@ -1,3 +1,4 @@
+/*jshint bitwise: false*/
 var odkForm2sms = require('odk-xform-conmpact-record-representation-for-sms');
 
 angular
