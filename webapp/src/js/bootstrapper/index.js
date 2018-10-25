@@ -157,6 +157,10 @@
               throw new Error('Initial replication failed');
             });
           })
+          .then(function() {
+            // replication complete - bootstrap angular
+            setUiStatus('STARTING_APP');
+          })
           .catch(function(err) {
             return err;
           })
