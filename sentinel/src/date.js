@@ -1,4 +1,4 @@
-const DATE_RE = /(\d{4})(\d{2})(\d{2})(\d{2})?(\d{2})?/,
+var DATE_RE = /(\d{4})(\d{2})(\d{2})(\d{2})?(\d{2})?/,
     sd = require('./config').get('synthetic_date'),
     start_date = new Date(),
     moment = require('moment'),

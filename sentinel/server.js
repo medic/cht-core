@@ -7,7 +7,7 @@ const db = require('./src/db-pouch'),
 
 if (loglevel === 'debug') {
   logger.info(`setting loglevel to ${loglevel}`);
-  transports.console.level = loglevel
+  transports.console.level = loglevel;
 }
 
 if (process.env.TEST_ENV) {

@@ -7,7 +7,7 @@ const transports = {
         format: format.combine(
             // https://github.com/winstonjs/winston/issues/1345
             format(info => {
-                info.level = info.level.toUpperCase()
+                info.level = info.level.toUpperCase();
                 return info;
             })(),
             format.colorize(),
@@ -30,4 +30,4 @@ const logger = createLogger({
     ]
 });
 
-module.exports = logger
+module.exports = logger;
