@@ -1,4 +1,4 @@
-const odkForm2sms = require('odk-xform-conmpact-record-representation-for-sms');
+var odkForm2sms = require('odk-xform-conmpact-record-representation-for-sms');
 
 angular
   .module('inboxServices')
