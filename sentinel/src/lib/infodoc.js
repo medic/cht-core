@@ -1,6 +1,6 @@
 const db = require('../db-nano'),
       dbPouch = require('../db-pouch'),
-      logger = require('../lib/logger'),
+      { logger } = require('../lib/logger'),
       infoDocId = id => id + '-info';
 
 const findInfoDoc = (database, change) => {

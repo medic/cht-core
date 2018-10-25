@@ -3,7 +3,7 @@ PouchDB.plugin(require('pouchdb-adapter-http'));
 PouchDB.plugin(require('pouchdb-mapreduce'));
 
 const { COUCH_URL, UNIT_TEST_ENV } = process.env,
-  logger = require('./lib/logger');
+  { logger } = require('./lib/logger');
 
 if(UNIT_TEST_ENV) {
   const stubMe = functionName => () => {

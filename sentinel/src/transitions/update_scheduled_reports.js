@@ -1,6 +1,6 @@
 var utils = require('../lib/utils'),
     db = require('../db-nano'),
-    logger = require('../lib/logger');
+    { logger } = require('../lib/logger');
 
 module.exports = {
     filter: function(doc) {

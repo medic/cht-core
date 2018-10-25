@@ -1,5 +1,5 @@
 const _ = require('underscore'),
-      logger = require('../lib/logger'),
+      { logger } = require('../lib/logger'),
       transitionUtils = require('./utils'),
       db = require('../db-nano'),
       dbPouch = require('../db-pouch'),

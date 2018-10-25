@@ -1,5 +1,5 @@
 const _ = require('underscore'),
-      logger = require('./logger');
+      { logger } = require('./logger');
 
 const ID_LENGTH_DOC_ID = 'shortcode-id-length',
       ID_LENGTH_PARAM = 'current_length',

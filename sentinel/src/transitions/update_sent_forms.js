@@ -1,7 +1,7 @@
 var _ = require('underscore'),
     moment = require('moment'),
     config = require('../config'),
-    logger = require('../lib/logger'),
+    { logger } = require('../lib/logger'),
     db = require('../db-nano'),
     transitionUtils = require('./utils'),
     NAME = 'update_sent_forms';

@@ -5,7 +5,7 @@ const _ = require('underscore'),
       config = require('../config'),
       taskUtils = require('task-utils'),
       registrationUtils = require('@shared-libs/registration-utils'),
-      logger = require('./logger');
+      { logger } = require('./logger');
 
 /*
  * Get desired locale

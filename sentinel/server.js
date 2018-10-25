@@ -1,13 +1,13 @@
 const request = require('request');
 
 const db = require('./src/db-pouch'),
-      logger = require('./src/lib/logger'),
+      { logger, transports } = require('./src/lib/logger'),
       serverChecks = require('@shared-libs/server-checks'),
       loglevel = process.argv[2];
 
 if (loglevel === 'debug') {
-  logger.info('setting loglevel to %s.', loglevel);
-  logger.transports.Console.level = loglevel;
+  logger.info(`setting loglevel to ${loglevel}`);
+  transports.console.level = loglevel
 }
 
 if (process.env.TEST_ENV) {
@@ -50,8 +50,8 @@ serverChecks.check(db.serverUrl)
     return config.init()
       .then(() => {
         if (!loglevel) {
-          logger.transports.Console.level = config.get('loglevel');
-          logger.debug('loglevel is %s.', logger.transports.Console.level);
+          transports.console.level = config.get('loglevel');
+          logger.info(`loglevel is ${transports.console.level}`);
         }
         require('./src/schedule').checkSchedule();
         logger.info('startup complete.');
@@ -59,6 +59,6 @@ serverChecks.check(db.serverUrl)
   })
   .catch(err => {
     logger.error('Fatal error intialising medic-sentinel');
-    logger.error(err);
+    logger.error(err.toString());
     process.exit(1);
   });

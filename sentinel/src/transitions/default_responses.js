@@ -1,7 +1,7 @@
 var _ = require('underscore'),
     moment = require('moment'),
     config = require('../config'),
-    logger = require('../lib/logger'),
+    { logger } = require('../lib/logger'),
     messages = require('../lib/messages'),
     transitionUtils = require('./utils'),
     NAME = 'default_responses';

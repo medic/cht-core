@@ -1,6 +1,6 @@
 const _ = require('underscore'),
       db = require('./db-pouch'),
-      logger = require('./lib/logger'),
+      { logger } = require('./lib/logger'),
       translations = {};
 
 const DEFAULT_CONFIG = {

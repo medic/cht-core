@@ -9,7 +9,7 @@ const _ = require('underscore'),
       feed = require('../lib/feed'),
       dbPouch = require('../db-pouch'),
       lineage = require('lineage')(Promise, dbPouch.medic),
-      logger = require('../lib/logger'),
+      { logger } = require('../lib/logger'),
       config = require('../config'),
       db = require('../db-nano'),
       infodoc = require('../lib/infodoc'),
@@ -189,7 +189,7 @@ const loadTransitions = () => {
     } catch(e) {
       loadError = true;
       logger.error(`Failed loading transition "${transition}"`);
-      logger.error(e);
+      logger.error(e.toString());
     }
   });
 

@@ -1,4 +1,4 @@
-const logger = require('./logger'),
+const { logger } = require('./logger'),
       db = require('../db-pouch');
 
 const followFeed = (seq, queue) => {

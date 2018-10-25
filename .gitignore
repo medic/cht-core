@@ -21,4 +21,4 @@ dist
 /packages
 /static
 .vscode/
-*/**/log
+**/*log

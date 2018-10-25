@@ -5,7 +5,7 @@ var _ = require('underscore'),
     utils = require('../lib/utils'),
     messages = require('../lib/messages');
 const messageUtils = require('@shared-libs/message-utils'),
-    logger = require('./logger');
+    { logger } = require('./logger');
 
 module.exports = {
     // return [hour, minute, timezone]

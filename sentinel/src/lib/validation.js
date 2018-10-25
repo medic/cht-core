@@ -4,7 +4,7 @@ var _ = require('underscore'),
   pupil = require('./pupil/src/pupil'),
   messages = require('./messages'),
   utils = require('./utils'),
-  logger = require('./logger'),
+  { logger } = require('./logger'),
   db = require('../db-nano');
 
 var _parseDuration = function(duration) {

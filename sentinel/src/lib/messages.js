@@ -4,7 +4,7 @@ var _ = require('underscore'),
     config = require('../config');
 const messageUtils = require('@shared-libs/message-utils'),
       history = require('./history'),
-      logger = require('./logger');
+      { logger } = require('./logger');
 
 const messageStatus = (from, msg) => {
   let status = 'denied';

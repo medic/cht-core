@@ -1,5 +1,5 @@
 const dbPouch = require('../db-pouch'),
-      logger = require('../lib/logger');
+      { logger } = require('../lib/logger');
 
 const METADATA_DOCUMENT = '_local/sentinel-meta-data';
 const OLD_METADATA_DOCUMENT = 'sentinel-meta-data';

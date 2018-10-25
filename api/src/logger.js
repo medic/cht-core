@@ -24,7 +24,7 @@ const logger = createLogger({
         format.timestamp({
             format: 'YYYY-MM-DD HH:mm:ss'
         }),
-        format.printf(info => `${info.timestamp} ${info.level}: ${info.message}`)
+        format.printf(info => `${info.timestamp} ${info.level.toUpperCase()}: ${info.message}`)
     ),
     transports: [
         dailyRotateFileTransport
@@ -36,6 +36,11 @@ if (env !== 'production') {
         new transports.Console({
             level: 'debug',
             format: format.combine(
+                // https://github.com/winstonjs/winston/issues/1345
+                format(info => {
+                    info.level = info.level.toUpperCase()
+                    return info;
+                })(),
                 format.colorize(),
                 format.printf(info => `${info.timestamp} ${info.level}: ${info.message}`)
             )

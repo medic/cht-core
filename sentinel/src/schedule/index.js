@@ -2,7 +2,7 @@ const async = require('async'),
       moment = require('moment'),
       date = require('../date'),
       config = require('../config'),
-      logger = require('../lib/logger'),
+      { logger } = require('../lib/logger'),
       db = require('../db-nano');
 
 const tasks = {
