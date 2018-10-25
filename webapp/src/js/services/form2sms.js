@@ -35,7 +35,7 @@ angular
           if(!form.xml2sms) {
             $log.error('No xml2sms defined on form doc.  Checking for standard odk tags in form submission...');
             GetReportContent(doc)
-              .then(xml => {
+              .then(function(xml) {
                 $log.error('Fetch XML attachment for form submission', xml);
                 return odkForm2sms(xml);
               });
