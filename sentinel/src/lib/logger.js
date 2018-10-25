@@ -1,21 +1,5 @@
 const { createLogger, format, transports: trans } = require('winston'),
-    env = process.env.NODE_ENV || 'development',
-    fs = require('fs'),
-    logDir = 'log';
-require('winston-daily-rotate-file');
-
-// Create the log directory if it does not exist
-if (!fs.existsSync(logDir)) {
-    fs.mkdirSync(logDir);
-}
-
-const dailyRotateFileTransport = new trans.DailyRotateFile({
-    filename: 'medic-%DATE%.log',
-    datePattern: 'YYYY-MM-DD',
-    dirname: logDir,
-    maxSize: '20m',
-    maxFiles: '7d'
-});
+    env = process.env.NODE_ENV || 'development';
 
 const transports = {
     console: new trans.Console({
@@ -29,8 +13,7 @@ const transports = {
             format.colorize(),
             format.printf(info => `${info.timestamp} ${info.level}: ${info.message}`)
         )
-    }),
-    file: dailyRotateFileTransport
+    })
   };
 
 const logger = createLogger({
@@ -43,7 +26,6 @@ const logger = createLogger({
         format.printf(info => `${info.timestamp} ${info.level.toUpperCase()}: ${info.message}`)
     ),
     transports: [
-        transports.file,
         transports.console
     ]
 });
