@@ -532,54 +532,34 @@ angular.module('inboxServices').service('Enketo',
     };
 
     function submitFormBySmsIfApplicable(doc) {
-      var log = function() {
-        var args = Array.prototype.slice.call(arguments);
-        args.unshift('submitFormBySmsIfApplicable()');
-        $log.error.apply($log, args);
-      };
-      function exiting() {
-        log('EXITING.');
-      }
-
-      log('ENTRY');
-
       if(!$window.medicmobile_android) {
-        log('Not in android wrapper.');
-        return exiting();
+        $log.info('Not in android wrapper.');
+        return;
       }
 
       if(!$window.medicmobile_android.sms_available) {
-        log('Android wrapper does not have SMS hooks.');
-        return exiting();
+        $log.info('Android wrapper does not have SMS hooks.');
+        return;
       }
 
       if(!$window.medicmobile_android.sms_available()) {
-        log('Android wrapper does not have SMS enabled.');
-        log('Check stacktrace to see why the SmsSender failed to initialise.');
-        return exiting();
+        $log.warn('Android wrapper does not have SMS enabled.  Check stacktrace to see why the SmsSender failed to initialise.');
+        return;
       }
 
       $q.resolve()
         .then(function() {
-          var parentLog = log;
-          log = function() {
-            var args = Array.prototype.slice.call(arguments);
-            args.unshift('[deferred]');
-            parentLog.apply($log, args);
-          };
-
           return Form2Sms(doc)
             .then(function(smsContent) {
 
               if(!smsContent) {
-                log('Form2Sms did not return any form content for doc:', doc);
-                return exiting();
+                $log.debug('Form2Sms did not return any form content for doc:', doc);
+                return;
               }
 
               // TODO fetch gateway phone number properly
               var gatewayPhoneNumber = '+447890123456';
 
-              log('Calling sms_send(' + doc._id + ', ' + gatewayPhoneNumber + ', ' + smsContent + ')...');
               $window.medicmobile_android.sms_send(doc._id, gatewayPhoneNumber, smsContent);
             });
         });
