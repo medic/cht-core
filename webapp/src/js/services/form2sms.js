@@ -5,7 +5,7 @@ angular
   .module('inboxServices')
   .service('Form2Sms', function(
     $log,
-//    $parse,
+    $parse,
     DB,
     GetReportContent
   ) {
@@ -36,24 +36,29 @@ angular
           }
           //#endif DEBUG
 
-          if(!form.xml2sms) {
-            $log.error('No xml2sms defined on form doc.  Checking for standard odk tags in form submission...');
-            GetReportContent(doc)
-              .then(function(xml) {
-                $log.error('Fetch XML attachment for form submission', xml);
-                return odkForm2sms(xml);
-              });
+          if(form.xml2sms) {
+            return $parse(form.xml2sms)({ bitfield:bitfield.bind(doc), doc:doc, spaced:spaced, text:text.bind(doc) });
+          }
+          $log.error('No xml2sms defined on form doc.  Checking for standard odk tags in form submission...');
+
+          if(true) {
+            return 'helo';
           }
 
-//          return $parse(form.xml2sms)({ bitfield:bitfield.bind(doc), doc:doc, spaced:spaced, text:text.bind(doc) });
-          return;
+          return GetReportContent(doc)
+            .then(function(xml) {
+              $log.error('Fetch XML attachment for form submission', xml);
+              return odkForm2sms(xml);
+            });
+
         })
         .catch(function(err) {
           $log.error('Form2Sms failed: ' + err);
+          return err;
         });
     };
   });
-/*
+
 function spaced() {
   return Array.prototype.slice.call(arguments).join(' ');
 }
@@ -71,4 +76,3 @@ function bitfield() {
 function text(fieldName) {
   return (this.fields[fieldName] || fieldName + '.notfound').toString();
 }
-*/
