@@ -21,6 +21,7 @@ angular.module('inboxServices').service('Enketo',
     GetReportContent,
     Language,
     LineageModelGenerator,
+    Settings,
     Search,
     TranslateFrom,
     UserContact,
@@ -557,10 +558,16 @@ angular.module('inboxServices').service('Enketo',
                 return;
               }
 
-              // TODO fetch gateway phone number properly
-              var gatewayPhoneNumber = '+447890123456';
+              Settings()
+                .then(function(settings) {
+                  var gatewayPhoneNumber = settings.gateway_number;
+                  if(gatewayPhoneNumber) {
+                    $window.medicmobile_android.sms_send(doc._id, gatewayPhoneNumber, smsContent);
+                  } else {
+                    $log.error('No gateway_number provided in app_settings.  Form cannot be submitted by SMS.');
+                  }
+                });
 
-              $window.medicmobile_android.sms_send(doc._id, gatewayPhoneNumber, smsContent);
             });
         });
     }
