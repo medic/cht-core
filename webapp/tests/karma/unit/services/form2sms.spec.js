@@ -7,19 +7,15 @@ describe('Form2Sms service', function() {
   /** @return a mock form ready for putting in #dbContent */
   let service;
   const dbGet = sinon.stub();
-  const dbGetAttachment = sinon.stub();
-//      $parse = sinon.stub();
+  const GetReportContent = sinon.stub();
 
   beforeEach(function() {
     module('inboxApp');
 
     module(function($provide) {
-      $provide.factory('DB', KarmaUtils.mockDB({
-        get: dbGet,
-        getAttachment: dbGetAttachment,
-      }));
       $provide.value('$log', { error: sinon.stub() });
-//      $provide.value('$parse', $parse);
+      $provide.factory('DB', KarmaUtils.mockDB({ get:dbGet }));
+      $provide.value('GetReportContent', GetReportContent);
     });
     inject(function(_Form2Sms_) {
       service = _Form2Sms_;
@@ -44,7 +40,7 @@ describe('Form2Sms service', function() {
 
     it('should return nothing for a non-existent form', () => {
       // given
-      const doc = aSimpleFormSubmission();
+      const doc = aFormSubmission();
       // and there's no form
       dbGet.withArgs(TEST_FORM_ID).returns(Promise.reject());
 
@@ -55,25 +51,55 @@ describe('Form2Sms service', function() {
 
     });
 
-    it('should parse attached code for a form', () => TODO());
-    it('should fall back to ODK compact form specification if no custom code is provided', () => TODO());
+    it('should parse attached code for a form', () => {
+      // given
+      const doc = aFormSubmission();
+      doc.fields = { a:1, b:2, c:3 };
+      // and
+      testFormExistsWithAttachedCode('spaced("T", text("a"), text("b"), text("c"))');
+
+      // when
+      return service(doc)
+
+        .then(smsContent => assert.equal(smsContent, 'T 1 2 3'));
+    });
+
+    it('should fall back to ODK compact form specification if no custom code is provided', () => {
+      // given
+      const doc = aFormSubmission(`
+        <test prefix="T" delimiter="#">
+          <field_one tag="f1">une</field_one>
+          <field_two tag="f2">deux</field_two>
+          <ignored_field>rien</ignored_field>
+        </test>
+      `);
+      // and
+      testFormExists();
+
+      // when
+      return service(doc)
+
+        .then(smsContent => assert.equal(smsContent, 'T#f1#une#f2#deux'));
+
+    });
+
     it('should return nothing if neither code nor ODK compact format are provided', () => TODO());
   });
 
-  function aSimpleFormSubmission() {
+  function testFormExists() {
+    testFormExistsWithAttachedCode(undefined);
+  }
+
+  function testFormExistsWithAttachedCode(code) {
+    dbGet.withArgs(TEST_FORM_ID).returns(Promise.resolve({ xml2sms:code }));
+  }
+
+  function aFormSubmission(xml) {
     const id = 'abc-123';
 
-    const doc = {
-      _id: id,
-      form: TEST_FORM_NAME,
-    };
+    GetReportContent.returns(Promise.resolve(xml));
 
-    const xml = '<test></test>';
-
-    dbGet.withArgs(id).returns(doc);
-    dbGetAttachment.withArgs(id, 'content').returns(xml);
-
-    return doc;
+    return { _id:id, form:TEST_FORM_NAME };
   }
 
 });
