@@ -16,6 +16,7 @@ describe('Form2Sms service', function() {
       $provide.value('$log', { debug:sinon.stub(), error:sinon.stub() });
       $provide.factory('DB', KarmaUtils.mockDB({ get:dbGet }));
       $provide.value('GetReportContent', GetReportContent);
+      $provide.value('Settings', Promise.resolve({ gateway_number:'+1234567890' }));
     });
     inject(function(_Form2Sms_) {
       service = _Form2Sms_;
@@ -83,7 +84,17 @@ describe('Form2Sms service', function() {
 
     });
 
-    it('should return nothing if neither code nor ODK compact format are provided', () => TODO());
+    it('should return nothing if neither code nor ODK compact format are provided', () => {
+      // given
+      const doc = aFormSubmission('<test/>');
+      // and
+      testFormExists();
+
+      // when
+      return service(doc)
+
+        .then(smsContent => assert.isUndefined(smsContent));
+    });
   });
 
   function testFormExists() {
@@ -103,6 +114,3 @@ describe('Form2Sms service', function() {
   }
 
 });
-
-function TODO() {
-}
