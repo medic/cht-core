@@ -20,19 +20,6 @@ angular
       return DB()
         .get('form:' + doc.form)
         .then(function(form) {
-          //#if DEBUG
-          // here we try out some different ways we could define the converter
-          // via the project configuration.
-          switch(doc.form) {
-            case 'patient_assessment':
-              form.xml2sms = 'spaced("PA", text("patient_name"), text("patient_id"), bitfield("accompany_to_cscom", "fast_breathing", "needs_signoff", "refer_to_cscom"))';
-              break;
-            case 'patient_assessment_over_5':
-              form.xml2sms = '"what"';
-              break;
-          }
-          //#endif DEBUG
-
           if(form.xml2sms) {
             return $parse(form.xml2sms)({ bitfield:bitfield.bind(doc), doc:doc, spaced:spaced, text:text.bind(doc) });
           }
