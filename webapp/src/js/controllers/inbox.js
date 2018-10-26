@@ -142,7 +142,6 @@ var feedback = require('../modules/feedback'),
     $scope.adminUrl = Location.adminPath;
     $scope.enketoStatus = { saving: false };
     $scope.isAdmin = Session.isAdmin();
-    $scope.warnOnNavigation = { mode: false };
 
     if (
       $window.medicmobile_android &&
@@ -189,15 +188,12 @@ var feedback = require('../modules/feedback'),
       });
     });
 
-    $scope.$on('formOnEdit', function(event,option){
-      $scope.warnOnNavigation = option.value;
+    $scope.$on('formOnEdit', function(){
+      $scope.enketoStatus.edited = false;
     });
 
     $rootScope.$on('$stateChangeStart', function (event, toState, toParams, fromState, fromParams){
       if(!$scope.enketoStatus.edited){
-        return;
-      }
-      if(!$scope.warnOnNavigation){
         return;
       }
       if(!fromState.url.includes('edit')){

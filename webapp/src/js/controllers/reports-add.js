@@ -3,7 +3,6 @@ angular.module('inboxControllers').controller('ReportsAddCtrl',
     $log,
     $q,
     $scope,
-    $rootScope,
     $state,
     $translate,
     DB,
@@ -74,7 +73,6 @@ angular.module('inboxControllers').controller('ReportsAddCtrl',
 
     var markFormEdited = function() {
       $scope.enketoStatus.edited = true;
-      $rootScope.$broadcast('formOnEdit',{value:true});
     };
 
     getSelected()
@@ -146,13 +144,13 @@ angular.module('inboxControllers').controller('ReportsAddCtrl',
           $translate($state.params.reportId ? 'report.updated' : 'report.created')
             .then(Snackbar);
           $state.go('reports.detail', { id: docs[0]._id });
-          $rootScope.$broadcast('formOnEdit',{value:false});
+          $scope.enketoStatus.edited = false;
         })
         .catch(function(err) {
           $scope.enketoStatus.saving = false;
           $log.error('Error submitting form data: ', err);
           $translate('error.report.save').then(function(msg) {
-            $scope.enketoStatus.error = msg;
+          $scope.enketoStatus.error = msg;
           });
         });
     };
