@@ -113,6 +113,7 @@ describe('Enketo service', function() {
       $provide.value('ContactSummary', ContactSummary);
       $provide.value('Form2Sms', Form2Sms);
       $provide.value('Search', Search);
+      $provide.value('Settings', Promise.resolve({}));
       $provide.value('LineageModelGenerator', LineageModelGenerator);
       $provide.value('FileReader', FileReader);
       $provide.value('UserContact', UserContact);
