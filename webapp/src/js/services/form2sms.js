@@ -17,12 +17,9 @@ angular
         return Promise.resolve();
       }
 
-      $log.error('Welcome to Form2Sms', Array.prototype.slice.call(arguments));
       return DB()
         .get('form:' + doc.form)
         .then(function(form) {
-          $log.error('Form2Sms', doc, form);
-
           //#if DEBUG
           // here we try out some different ways we could define the converter
           // via the project configuration.
@@ -39,14 +36,10 @@ angular
           if(form.xml2sms) {
             return $parse(form.xml2sms)({ bitfield:bitfield.bind(doc), doc:doc, spaced:spaced, text:text.bind(doc) });
           }
-          $log.error('No xml2sms defined on form doc.  Checking for standard odk tags in form submission...');
+          $log.debug('No xml2sms defined on form doc.  Checking for standard odk tags in form submission...');
 
           return GetReportContent(doc)
-            .then(function(xml) {
-              $log.error('Fetch XML attachment for form submission', xml);
-              return odkForm2sms(xml);
-            });
-
+            .then(odkForm2sms);
         })
         .catch(function(err) {
           $log.error('Form2Sms failed: ' + err);
