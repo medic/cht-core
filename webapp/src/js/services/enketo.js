@@ -574,7 +574,6 @@ angular.module('inboxServices').service('Enketo',
           if (docId) {
             return update(docId);
           }
-
           return create(formInternalId);
         })
         .then(function(doc) {
