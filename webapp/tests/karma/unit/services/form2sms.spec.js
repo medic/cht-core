@@ -36,7 +36,6 @@ describe('Form2Sms service', function() {
       return service(NO_FORM)
 
         .then(smsContent => assert.isUndefined(smsContent));
-
     });
 
     it('should return nothing for a non-existent form', () => {
@@ -49,7 +48,6 @@ describe('Form2Sms service', function() {
       return service(doc)
 
         .then(smsContent => assert.isUndefined(smsContent));
-
     });
 
     it('should parse attached code for a form', () => {
@@ -81,7 +79,6 @@ describe('Form2Sms service', function() {
       return service(doc)
 
         .then(smsContent => assert.equal(smsContent, 'T#f1#une#f2#deux'));
-
     });
 
     it('should return nothing if neither code nor ODK compact format are provided', () => {
@@ -106,11 +103,7 @@ describe('Form2Sms service', function() {
   }
 
   function aFormSubmission(xml) {
-    const id = 'abc-123';
-
     GetReportContent.returns(Promise.resolve(xml));
-
-    return { _id:id, form:TEST_FORM_NAME };
+    return { _id:'abc-123', form:TEST_FORM_NAME };
   }
-
 });
