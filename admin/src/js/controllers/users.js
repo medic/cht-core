@@ -12,6 +12,8 @@ angular.module('controllers').controller('UsersCtrl',
     'use strict';
     'ngInject';
 
+    $scope.loading = true;
+
     Settings()
       .then(function(settings) {
         $scope.roles = settings.roles;
