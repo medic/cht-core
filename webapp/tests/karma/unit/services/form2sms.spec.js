@@ -13,7 +13,7 @@ describe('Form2Sms service', function() {
     module('inboxApp');
 
     module(function($provide) {
-      $provide.value('$log', { error: sinon.stub() });
+      $provide.value('$log', { debug:sinon.stub(), error:sinon.stub() });
       $provide.factory('DB', KarmaUtils.mockDB({ get:dbGet }));
       $provide.value('GetReportContent', GetReportContent);
     });
