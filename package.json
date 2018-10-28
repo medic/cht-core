@@ -30,7 +30,7 @@
     "grunt-contrib-cssmin": "^2.2.1",
     "grunt-contrib-jshint": "^1.0.0",
     "grunt-contrib-less": "^2.0.0",
-    "grunt-contrib-uglify": "^3.4.0",
+    "grunt-contrib-uglify-es": "^3.3.0",
     "grunt-contrib-watch": "github:scdf/grunt-contrib-watch#v1.0.0-fix_dirs_firing",
     "grunt-couch": "^1.5.1",
     "grunt-env": "^0.4.4",

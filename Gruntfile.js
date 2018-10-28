@@ -11,6 +11,7 @@ module.exports = function(grunt) {
     ngtemplates: 'grunt-angular-templates',
     protractor: 'grunt-protractor-runner',
     replace: 'grunt-text-replace',
+    uglify: 'grunt-contrib-uglify-es',
   });
   require('time-grunt')(grunt);
 
