@@ -2,7 +2,7 @@ const { createLogger, format, transports: trans } = require('winston'),
     env = process.env.NODE_ENV || 'development';
 
 const transports = {
-    console: new trans.Console({
+    terminal: new trans.Console({
         // change level if in dev environment versus production
         level: env === 'development' ? 'debug' : 'info',
         format: format.combine(
@@ -22,7 +22,7 @@ const transports = {
 
 const logger = createLogger({
     transports: [
-        transports.console
+        transports.terminal
     ]
 });
 
