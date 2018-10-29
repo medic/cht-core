@@ -1,11 +1,6 @@
-medic-api
-=========
+# medic-api
 
 Node server to support medic-webapp.
-
-Currently supports auditing by proxying requests to CouchDB and updating the
-audit history where required.
-
 
 # Table of contents
 
@@ -13,7 +8,6 @@ audit history where required.
 
 <!-- START doctoc generated TOC please keep comment here to allow auto update -->
 <!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
-
 
 - [Development](#development)
   - [Install](#install)
@@ -63,7 +57,7 @@ audit history where required.
 
 ## Install
 
-Get node deps with  `yarn install`.
+Get node deps with `yarn install`.
 
 ## Settings
 
@@ -79,9 +73,9 @@ If you are using CouchDB2.0 you need to also provide your node name. e.g.
 export COUCH_NODE_NAME=couchdb@localhost node server.js
 ```
 
-If you want to allow cross-origin requests, add the flag `--allow-cors` when starting api.  E.g.
+If you want to allow cross-origin requests, add the flag `--allow-cors` when starting api. E.g.
 
-	node server.js --allow-cors
+    node server.js --allow-cors
 
 ## Run
 
@@ -89,7 +83,7 @@ If you want to allow cross-origin requests, add the flag `--allow-cors` when sta
 
 or
 
-	node server.js
+    node server.js
 
 ## Test
 
@@ -112,7 +106,9 @@ Migrations are only run once, and are run in the order they were created, based 
 Migrations that error will cause medic-api to stop on an error, and will be attempted again the next time you start medic-api.
 
 ## Migration script api
+
 Your migration script should have an export that looks like this:
+
 ```js
 module.exports = {
   name: 'your-unique-migration-name',
@@ -122,12 +118,11 @@ module.exports = {
     return callback(err);
     // Or upon success
     return callback();
-  }
-}
+  },
+};
 ```
 
 Place your script in the `/migrations` folder and it will get picked up by medic-api at the next restart.
-
 
 ## Implementation, re-running migrations by hand
 
@@ -148,23 +143,23 @@ So, if you want to re-run a migration, delete its entry in the `migrations` list
 Various properties throughout this API use a timestamp value, the
 following formats are supported:
 
- - ISO 8601 combined date and time with timezone of the format below where "Z"
-   is offset from UTC like "-03", "+1245", or just "Z" which is UTC (0 offset);
+- ISO 8601 combined date and time with timezone of the format below where "Z"
+  is offset from UTC like "-03", "+1245", or just "Z" which is UTC (0 offset);
 
-        YYYY-MM-DDTHH:mm:ssZ
-        YYYY-MM-DDTHH:mm:ss.SSSZ
+       YYYY-MM-DDTHH:mm:ssZ
+       YYYY-MM-DDTHH:mm:ss.SSSZ
 
- - Milliseconds since Unix Epoch
+- Milliseconds since Unix Epoch
 
 A compatible value can be generated using the `toISOString` or `toValue` method
 on a Javascript Date object.
 
 ### Examples
 
-  - 2011-10-10T14:48:00-0300
-  - 2016-07-01T13:48:24+00:00
-  - 2016-07-01T13:48:24Z
-  - 1467383343484 (MS since Epoch)
+- 2011-10-10T14:48:00-0300
+- 2016-07-01T13:48:24+00:00
+- 2016-07-01T13:48:24Z
+- 1467383343484 (MS since Epoch)
 
 # Settings
 
@@ -178,9 +173,9 @@ Returns the settings in JSON format.
 
 ### Query Parameters
 
-| Variable           | Description
-| ------------------ | -------------
-| replace            | Whether to replace existing settings for the given properties or to merge. Defaults to false (merging).
+| Variable | Description                                                                                             |
+| -------- | ------------------------------------------------------------------------------------------------------- |
+| replace  | Whether to replace existing settings for the given properties or to merge. Defaults to false (merging). |
 
 # Export
 
@@ -225,20 +220,20 @@ Download messages.
 
 ### Output
 
-| Column             | Description
-| ------------------ | -------------
-| Record UUID        | The unique ID for the message in the database.
-| Patient ID         | The generated short patient ID for use in SMS.
-| Reported Date      | The date the message was received or generated.
-| From               | This phone number the message is or will be sent from.
-| Contact Name       | The name of the user this message is assigned to.
-| Message Type       | The type of the message
-| Message State      | The state of the message at the time this export was generated
-| Received Timestamp | The datetime the message was received. Only applies to incoming messages.
-| Other Timestamps   | The datetime the message transitioned to each state.
-| Sent By            | The phone number the message was sent from. Only applies to incoming messages.
-| To Phone           | The phone number the message is or will be sent to. Only applies to outgoing messages.
-| Message Body       | The content of the message.
+| Column             | Description                                                                            |
+| ------------------ | -------------------------------------------------------------------------------------- |
+| Record UUID        | The unique ID for the message in the database.                                         |
+| Patient ID         | The generated short patient ID for use in SMS.                                         |
+| Reported Date      | The date the message was received or generated.                                        |
+| From               | This phone number the message is or will be sent from.                                 |
+| Contact Name       | The name of the user this message is assigned to.                                      |
+| Message Type       | The type of the message                                                                |
+| Message State      | The state of the message at the time this export was generated                         |
+| Received Timestamp | The datetime the message was received. Only applies to incoming messages.              |
+| Other Timestamps   | The datetime the message transitioned to each state.                                   |
+| Sent By            | The phone number the message was sent from. Only applies to incoming messages.         |
+| To Phone           | The phone number the message is or will be sent to. Only applies to outgoing messages. |
+| Message Body       | The content of the message.                                                            |
 
 ### Examples
 
@@ -246,20 +241,18 @@ Download messages.
 /api/v1/export/messages
 ```
 
-
 ## GET /api/v1/export/audit
 
 Export a file containing the audit log.
 
 ### Query Parameters
 
-| Variable           | Description
-| ------------------ | -------------
-| format             | The format of the returned file, either 'csv' or 'xml'. Defaults to 'csv'.
-| locale             | Locale for translatable data. Defaults to 'en'.
-| tz                 | The timezone to show date values in, as an offset in minutes from GMT, for example '-120'.
-| skip_header_row    | 'true' to omit the column headings. Defaults to 'false'.
-
+| Variable        | Description                                                                                |
+| --------------- | ------------------------------------------------------------------------------------------ |
+| format          | The format of the returned file, either 'csv' or 'xml'. Defaults to 'csv'.                 |
+| locale          | Locale for translatable data. Defaults to 'en'.                                            |
+| tz              | The timezone to show date values in, as an offset in minutes from GMT, for example '-120'. |
+| skip_header_row | 'true' to omit the column headings. Defaults to 'false'.                                   |
 
 ## GET /api/v1/export/feedback
 
@@ -267,13 +260,12 @@ Export a file containing the user feedback.
 
 ### Query Parameters
 
-| Variable           | Description
-| ------------------ | -------------
-| format             | The format of the returned file, either 'csv' or 'xml'. Defaults to 'csv'.
-| locale             | Locale for translatable data. Defaults to 'en'.
-| tz                 | The timezone to show date values in, as an offset in minutes from GMT, for example '-120'.
-| skip_header_row    | 'true' to omit the column headings. Defaults to 'false'.
-
+| Variable        | Description                                                                                |
+| --------------- | ------------------------------------------------------------------------------------------ |
+| format          | The format of the returned file, either 'csv' or 'xml'. Defaults to 'csv'.                 |
+| locale          | Locale for translatable data. Defaults to 'en'.                                            |
+| tz              | The timezone to show date values in, as an offset in minutes from GMT, for example '-120'. |
+| skip_header_row | 'true' to omit the column headings. Defaults to 'false'.                                   |
 
 ## GET /api/v2/export/contacts
 
@@ -308,9 +300,9 @@ Returns a list of currently installed forms (in all available formats) in JSON f
 
 ### Headers
 
-| Key         | Value        | Description
-| ----------- | ------------ | --------------
-| X-OpenRosa-Version | 1.0    | If this header is specified returns XML formatted forms list.  See [OpenRosa FormListAPI](https://bitbucket.org/javarosa/javarosa/wiki/FormListAPI).
+| Key                | Value | Description                                                                                                                                         |
+| ------------------ | ----- | --------------------------------------------------------------------------------------------------------------------------------------------------- |
+| X-OpenRosa-Version | 1.0   | If this header is specified returns XML formatted forms list. See [OpenRosa FormListAPI](https://bitbucket.org/javarosa/javarosa/wiki/FormListAPI). |
 
 ### Examples
 
@@ -333,7 +325,6 @@ Get OpenRosa XForms compatible forms installed in XML format.
 GET /api/v1/forms
 Host: medic.local
 X-OpenRosa-Version: 1.0
-
 ```
 
 ```
@@ -364,19 +355,16 @@ X-OpenRosa-Version: 1.0
 </xforms>
 ```
 
-
-
 ## GET /api/v1/forms/{{id}}.{{format}}
 
 Return form definition for a given form ID and format.
 
 ### Parameters
 
-| Variable | Description       |
-| -------- | ----------------- |
-| id       | Form identifier   |
-| format   | Format string or file extension. e.g. xml, json   |
-
+| Variable | Description                                     |
+| -------- | ----------------------------------------------- |
+| id       | Form identifier                                 |
+| format   | Format string or file extension. e.g. xml, json |
 
 ### Examples
 
@@ -392,47 +380,44 @@ Get the latest version of the NPYY form in JSON format.
 GET /api/v1/forms/NPYY.json
 ```
 
-
 # Records
 
 ## POST /api/v2/records
 
-Create a new record based on a form.  This requires a form definition exists on the server side matching the form code.
+Create a new record based on a form. This requires a form definition exists on the server side matching the form code.
 
 Records can be created one of two ways, parsing the form data yourself and submitting a JSON object or by submitting the raw message string.
 
 ### Headers
 
-| Key         | Value        | Description
-| ----------- | ------------ | --------------
-|  Content-Type | application/x-www-form-urlencoded | Processes form parameters.
-|  Content-Type | application/json | Processes form data in request body as JSON.
+| Key          | Value                             | Description                                  |
+| ------------ | --------------------------------- | -------------------------------------------- |
+| Content-Type | application/x-www-form-urlencoded | Processes form parameters.                   |
+| Content-Type | application/json                  | Processes form data in request body as JSON. |
 
 Only one variant of the `Content-Type` header may be provided; RFC 2616 does not
 allow multiple content types to appear in a single `Content-Type` header.
 
 #### Form Parameters
 
-| Variable | Description       |
-| -------- | ----------------- |
-| message  | Message string in a supported format like Muvuku or Textforms.  Depending if your Medic Mobile instance is configured in forms-only mode or not you might receive an error if the form is not found.  |
-| from |   Reporting phone number. |
-| reported_date |  Timestamp in MS since Unix Epoch of when the message was received on the gateway. Defaults to now. |
+| Variable      | Description                                                                                                                                                                                         |
+| ------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| message       | Message string in a supported format like Muvuku or Textforms. Depending if your Medic Mobile instance is configured in forms-only mode or not you might receive an error if the form is not found. |
+| from          | Reporting phone number.                                                                                                                                                                             |
+| reported_date | Timestamp in MS since Unix Epoch of when the message was received on the gateway. Defaults to now.                                                                                                  |
 
 #### JSON Properties
 
-Special values reside in the property `_meta`, so you can't have a form field named `_meta`.  Only strings and numbers are currently support as field values.
+Special values reside in the property `_meta`, so you can't have a form field named `_meta`. Only strings and numbers are currently support as field values.
 
 All property names will be lowercased and any properties beginning with `_` (underscore) will be ignored.
 
-
-| Key         | Description       |
-| ----------- | ----------------- |
-| _meta.form  | The form code.    |
-| _meta.from  |  Reporting phone number. |
-| _meta.reported_date |  Timestamp in MS since Unix Epoch of when the message was received on the gateway. Defaults to now. |
-| _meta.locale | Optional locale string.  Example: 'fr' |
-
+| Key                  | Description                                                                                        |
+| -------------------- | -------------------------------------------------------------------------------------------------- |
+| \_meta.form          | The form code.                                                                                     |
+| \_meta.from          | Reporting phone number.                                                                            |
+| \_meta.reported_date | Timestamp in MS since Unix Epoch of when the message was received on the gateway. Defaults to now. |
+| \_meta.locale        | Optional locale string. Example: 'fr'                                                              |
 
 ### Examples
 
@@ -499,7 +484,6 @@ Endpoint used by medic-gateway to send sms messages. More documentation in [the 
 
 # People
 
-
 ## Supported Properties
 
 Use JSON in the request body to specify a person's details.
@@ -508,31 +492,28 @@ Note: this does not accomodate having a `place` field on your form and will like
 
 #### Required
 
-| Key | Description
-| -------- | -----------------
-| name | String used to describe the person.
+| Key  | Description                         |
+| ---- | ----------------------------------- |
+| name | String used to describe the person. |
 
 #### Optional
 
-| Key | Description
-| -------- | -----------------
-| place | String that references a place or object that defines a new place.
-| reported_date |  Timestamp of when the record was reported or created. Defaults to now.
+| Key           | Description                                                            |
+| ------------- | ---------------------------------------------------------------------- |
+| place         | String that references a place or object that defines a new place.     |
+| reported_date | Timestamp of when the record was reported or created. Defaults to now. |
 
 ## POST /api/v1/people
 
 Create new people.
 
-
-
 ### Permissions
 
-By default any user can create or modify a place.  Use these permissions to restrict access:
+By default any user can create or modify a place. Use these permissions to restrict access:
 
 `can_create_people`, `can_create_places`
 
 ### Examples
-
 
 Create new person and place hierarchy.
 
@@ -588,28 +569,27 @@ Use JSON in the request body to specify a place's details.
 
 #### Required Properties
 
-| Key | Description
-| -------- | -----------------
-| name | String used to describe the place.
-| type | Place type
-| parent | String that references a place or object that defines a new place. Optional for District Hospital and National Office types.
+| Key    | Description                                                                                                                  |
+| ------ | ---------------------------------------------------------------------------------------------------------------------------- |
+| name   | String used to describe the place.                                                                                           |
+| type   | Place type                                                                                                                   |
+| parent | String that references a place or object that defines a new place. Optional for District Hospital and National Office types. |
 
 #### Optional Properties
 
-| Key | Description
-| -------- | -----------------
-| contact | String identifier for a person or object that defines a new person.
-| reported_date |  Timestamp of when the record was reported or created. Defaults to now.
+| Key           | Description                                                            |
+| ------------- | ---------------------------------------------------------------------- |
+| contact       | String identifier for a person or object that defines a new person.    |
+| reported_date | Timestamp of when the record was reported or created. Defaults to now. |
 
 #### Place Types
 
-| Key | Description
-| -------- | -----------------
-| clinic | Clinic
-| health_center | Health Center
-| district_hospital | District Hospital
-| national_office | National Office
-
+| Key               | Description       |
+| ----------------- | ----------------- |
+| clinic            | Clinic            |
+| health_center     | Health Center     |
+| district_hospital | District Hospital |
+| national_office   | National Office   |
 
 ## POST /api/v1/places
 
@@ -617,7 +597,7 @@ Create a new place and optionally a contact.
 
 ### Permissions
 
-By default any user can create new places.  Use these permissions to restrict access:
+By default any user can create new places. Use these permissions to restrict access:
 
 `can_create_places`, `can_create_people`
 
@@ -636,7 +616,6 @@ Content-Type: application/json
 }
 ```
 
-
 Create child and parent places.
 
 ```
@@ -652,7 +631,6 @@ Content-Type: application/json
   }
 }
 ```
-
 
 Also creates contact (person).
 
@@ -718,7 +696,7 @@ Update a place and optionally its contact.
 
 ### Permissions
 
-By default any user can update a place.  Use these permissions to restrict access:
+By default any user can update a place. Use these permissions to restrict access:
 
 `can_update_places`
 
@@ -751,34 +729,34 @@ All user related requests are limited to users with admin privileges by default.
 
 ## Supported Properties
 
-Use JSON in the request body to specify user details.  Any properties submitted
-that are not on the list below will be ignored.  Any properties not included
+Use JSON in the request body to specify user details. Any properties submitted
+that are not on the list below will be ignored. Any properties not included
 will be undefined.
 
 #### Required
 
-| Key | Description
-| -------- | -----------------
-| username | String identifier used for authentication.
-| password | Password string used for authentication.  Only allowed to be set, not retrieved.
+| Key      | Description                                                                     |
+| -------- | ------------------------------------------------------------------------------- |
+| username | String identifier used for authentication.                                      |
+| password | Password string used for authentication. Only allowed to be set, not retrieved. |
 
 #### Conditional
 
-| Key | Description | Details
-| -------- | ----------------- | ------
-| roles    | Array of roles. |
-| place    | Place identifier string (UUID) or object this user resides in. | Required if your roles contain `district_admin`.
-| contact  | A person object based on the form configured in the app. | Required if your roles contain `district_admin`.
+| Key     | Description                                                    | Details                                          |
+| ------- | -------------------------------------------------------------- | ------------------------------------------------ |
+| roles   | Array of roles.                                                |
+| place   | Place identifier string (UUID) or object this user resides in. | Required if your roles contain `district_admin`. |
+| contact | A person object based on the form configured in the app.       | Required if your roles contain `district_admin`. |
 
 #### Optional
 
-| Key | Description
-| -------- | -----------------
-| fullname | Full name
-| email    | Email address
-| phone    | Phone number
-| language | Language preference. e.g. "sw" for Swahili
-| known    | Boolean to define if the user has logged in before.  Used mainly to determine whether or not to start a tour on first login.
+| Key      | Description                                                                                                                 |
+| -------- | --------------------------------------------------------------------------------------------------------------------------- |
+| fullname | Full name                                                                                                                   |
+| email    | Email address                                                                                                               |
+| phone    | Phone number                                                                                                                |
+| language | Language preference. e.g. "sw" for Swahili                                                                                  |
+| known    | Boolean to define if the user has logged in before. Used mainly to determine whether or not to start a tour on first login. |
 
 ## GET /api/v1/users
 
@@ -848,12 +826,11 @@ Create a new user with a place and a contact.
 
 `can_create_users`, `can_create_places`, `can_create_people`
 
-
 ### Examples
 
 Create a new user that can authenticate with a username of "mary" and password
 of "secret" that can submit reports and view or modify records associated to
-their place.  The place is created in the background and automatically linked
+their place. The place is created in the background and automatically linked
 to the contact.
 
 ```
@@ -894,7 +871,6 @@ Content-Type: application/json
     "rev": "1-c3b82a0b47cfe68edd9284c89bebbae4"
   }
 }
-
 ```
 
 ### Errors
@@ -908,11 +884,10 @@ Content-Type: text/plain
 Document update conflict.
 ```
 
-
 ## POST /api/v1/users/{{username}}
 
 Allows you to change property values on a user account. Properties listed above
-are supported except for `contact.parent`.  Creating or modifying people
+are supported except for `contact.parent`. Creating or modifying people
 through the user is not supported, see People section.
 
 ### Permissions
@@ -927,13 +902,11 @@ Further more, if you're updating your `password` you must be authenticating via 
 
 ### URL Parameters
 
-| Variable | Description
-| -------- | -----------------
-| username | String identifier used for authentication.
-
+| Variable | Description                                |
+| -------- | ------------------------------------------ |
+| username | String identifier used for authentication. |
 
 ### Examples
-
 
 ```
 POST /api/v1/users/mary
@@ -963,18 +936,17 @@ Content-Type: application/json
 
 ## DELETE /api/v1/users/{{username}}
 
-Delete a user.  Does not affect a person or place associated to a user.
+Delete a user. Does not affect a person or place associated to a user.
 
 ### Permissions
 
 `can_delete_users`
 
-
 ### URL Parameters
 
-| Variable | Description
-| -------- | -----------------
-| username | String identifier used for authentication.
+| Variable | Description                                |
+| -------- | ------------------------------------------ |
+| username | String identifier used for authentication. |
 
 ### Examples
 
@@ -998,9 +970,9 @@ Only available to online users.
 
 ### Parameters
 
-| Parameter | Description
-| --------- | -----------------
-| docs      | Array of JSON objects with `_id` properties
+| Parameter | Description                                 |
+| --------- | ------------------------------------------- |
+| docs      | Array of JSON objects with `_id` properties |
 
 An array of objects each with an `_id` property is required (rather than an array of strings representing ids) to ensure forwards compatibility if we choose to require that any additional document information (such as `_rev`) also be passed in to this endpoint.
 
