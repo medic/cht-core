@@ -18,8 +18,8 @@ angular
       }
 
       return DB()
-        .get('form:' + doc.form)
-        .then(function(form) {
+        .get(`form:${doc.form}`)
+        .then(form => {
           if(form.xml2sms) {
             return $parse(form.xml2sms)({ bitfield:bitfield.bind(doc), doc:doc.fields, concat, spaced, match });
           } else {
@@ -36,17 +36,12 @@ angular
     };
   });
 
-function concat() {
-  return Array.prototype.slice.call(arguments).join('');
-}
-
-function spaced() {
-  return Array.prototype.slice.call(arguments).join(' ');
-}
+const concat = (...args) => args.join('');
+const spaced = (...args) => args.join(' ');
 
 function bitfield() {
   const vals = Array.prototype.slice.call(arguments);
-  const intVal = vals.reduce(function(acc, val) {
+  const intVal = vals.reduce((acc, val) => {
     const bool = val === 'true';
     return (acc << 1) | (bool ? 1 : 0);
   }, 0);
@@ -59,8 +54,8 @@ function match(val, matchers) {
     .split(',')
     .map(it => it.trim())
     .forEach(it => {
-      const parts = it.split(':');
-      matchMap[parts[0]] = parts[1];
+      const [ k, v ] = it.split(':');
+      matchMap[k] = v;
     });
   return matchMap[val] || '';
 }
