@@ -59,7 +59,7 @@ describe('Form2Sms service', function() {
       const doc = aFormSubmission();
       doc.fields = { a:1, b:2, c:3 };
       // and
-      testFormExistsWithAttachedCode('spaced("T", text("a"), text("b"), text("c"))');
+      testFormExistsWithAttachedCode('spaced("T", doc.a, doc.b, doc.c)');
 
       // when
       return service(doc)
@@ -96,6 +96,45 @@ describe('Form2Sms service', function() {
 
         .then(smsContent => assert.isUndefined(smsContent));
     });
+  });
+
+  it('should allow nice encoding of danger signs', () => {
+    // given
+    const doc = aFormSubmission();
+    doc.fields = {
+      s_acc_danger_signs: {
+        s_acc_danger_sign_seizure: 'no',
+        s_acc_danger_sign_loss_consiousness: 'yes',
+        s_acc_danger_sign_unable_drink: 'no',
+        s_acc_danger_sign_confusion: 'yes',
+        s_acc_danger_sign_vomit: 'no',
+        s_acc_danger_sign_chest_indrawing: 'yes',
+        s_acc_danger_sign_wheezing: 'no',
+        s_acc_danger_sign_bleeding: 'yes',
+        s_acc_danger_sign_lathargy: 'no',
+        has_danger_sign: 'true',
+      },
+    };
+
+    // and
+    testFormExistsWithAttachedCode('concat("U5 "' +
+            ', match(doc.s_acc_danger_signs.has_danger_sign, "true:DANGER, false:NO_DANGER")' +
+            ', " "' +
+            ', match(doc.s_acc_danger_signs.s_acc_danger_sign_seizure, "yes:S")' +
+            ', match(doc.s_acc_danger_signs.s_acc_danger_sign_loss_consiousness, "yes:L")' +
+            ', match(doc.s_acc_danger_signs.s_acc_danger_sign_unable_drink, "yes:D")' +
+            ', match(doc.s_acc_danger_signs.s_acc_danger_sign_confusion, "yes:C")' +
+            ', match(doc.s_acc_danger_signs.s_acc_danger_sign_vomit, "yes:V")' +
+            ', match(doc.s_acc_danger_signs.s_acc_danger_sign_chest_indrawing, "yes:I")' +
+            ', match(doc.s_acc_danger_signs.s_acc_danger_sign_wheezing, "yes:W")' +
+            ', match(doc.s_acc_danger_signs.s_acc_danger_sign_bleeding, "yes:B")' +
+            ', match(doc.s_acc_danger_signs.s_acc_danger_sign_lathargy, "yes:Y")' +
+        ')');
+
+    // when
+    return service(doc)
+
+      .then(smsContent => assert.equal(smsContent, 'U5 DANGER LCIB'));
   });
 
   function testFormExists() {
