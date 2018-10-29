@@ -188,10 +188,6 @@ var feedback = require('../modules/feedback'),
       });
     });
 
-    $scope.$on('formOnEdit', function(){
-      $scope.enketoStatus.edited = false;
-    });
-
     $rootScope.$on('$stateChangeStart', function (event, toState, toParams, fromState, fromParams){
       if(!$scope.enketoStatus.edited){
         return;
@@ -227,6 +223,7 @@ var feedback = require('../modules/feedback'),
         controller: 'NavigationConfirmCtrl',
         singleton: true,
       }).then(function() {
+        $scope.enketoStatus.edited = false;
         if ($scope.cancelCallback) {
           $scope.cancelCallback();
         }
