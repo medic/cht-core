@@ -12,7 +12,7 @@
  *  COUCH_URL=http://admin:pass@localhost:5984/medic node index xml-attachments,read-status,linked-contacts 105
  */
 const db = require('../db-pouch').medic,
-      { logger} = require('../logger')
+      { logger} = require('../logger');
 
 const PAGE_LIMIT = 100,
       ALL_MIGRATIONS = {

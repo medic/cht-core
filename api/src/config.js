@@ -5,7 +5,7 @@ const _ = require('underscore'),
       defaults = require('./config.default.json'),
       settingsService = require('./services/settings'),
       translationCache = {},
-      logger = require('./logger')
+      logger = require('./logger'),
       viewMapUtils = require('@shared-libs/view-map-utils');
 
 let settings = {};
