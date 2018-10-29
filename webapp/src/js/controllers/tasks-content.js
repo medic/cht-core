@@ -98,12 +98,13 @@ angular.module('inboxControllers').controller('TasksContentCtrl',
           $scope.clearSelected();
           $scope.clearCancelTarget();
           $state.go('tasks.detail', { id: null });
+          $scope.enketoStatus.edited = false;
         })
         .catch(function(err) {
           $scope.enketoStatus.saving = false;
           $log.error('Error submitting form data: ', err);
           $translate('error.report.save').then(function(msg) {
-            $scope.enketoStatus.error = msg;
+          $scope.enketoStatus.error = msg;
           });
         });
     };

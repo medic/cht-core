@@ -144,12 +144,13 @@ angular.module('inboxControllers').controller('ReportsAddCtrl',
           $translate($state.params.reportId ? 'report.updated' : 'report.created')
             .then(Snackbar);
           $state.go('reports.detail', { id: docs[0]._id });
+          $scope.enketoStatus.edited = false;
         })
         .catch(function(err) {
           $scope.enketoStatus.saving = false;
           $log.error('Error submitting form data: ', err);
           $translate('error.report.save').then(function(msg) {
-            $scope.enketoStatus.error = msg;
+          $scope.enketoStatus.error = msg;
           });
         });
     };

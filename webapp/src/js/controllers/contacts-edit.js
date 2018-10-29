@@ -180,12 +180,13 @@ angular.module('inboxControllers').controller('ContactsEditCtrl',
               $scope.enketoStatus.saving = false;
               $translate(docId ? 'contact.updated' : 'contact.created').then(Snackbar);
               $state.go('contacts.detail', { id: result.docId });
+              $scope.enketoStatus.edited = false;
             })
             .catch(function(err) {
               $scope.enketoStatus.saving = false;
               $log.error('Error submitting form data', err);
               $translate('Error updating contact').then(function(msg) {
-                $scope.enketoStatus.error = msg;
+              $scope.enketoStatus.error = msg;
               });
             });
         })
