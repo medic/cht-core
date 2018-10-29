@@ -3,7 +3,8 @@ const { createLogger, format, transports: trans } = require('winston'),
 
 const transports = {
     console: new trans.Console({
-        level: 'info',
+        // change level if in dev environment versus production
+        level: env === 'development' ? 'debug' : 'info',
         format: format.combine(
             // https://github.com/winstonjs/winston/issues/1345
             format(info => {
@@ -11,20 +12,15 @@ const transports = {
                 return info;
             })(),
             format.colorize(),
+            format.timestamp({
+                format: 'YYYY-MM-DD HH:mm:ss'
+            }),
             format.printf(info => `${info.timestamp} ${info.level}: ${info.message}`)
         )
     })
   };
 
 const logger = createLogger({
-    // change level if in dev environment versus production
-    level: env === 'development' ? 'debug' : 'info',
-    format: format.combine(
-        format.timestamp({
-            format: 'YYYY-MM-DD HH:mm:ss'
-        }),
-        format.printf(info => `${info.timestamp} ${info.level.toUpperCase()}: ${info.message}`)
-    ),
     transports: [
         transports.console
     ]
