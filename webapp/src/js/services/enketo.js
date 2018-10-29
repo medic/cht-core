@@ -532,6 +532,9 @@ angular.module('inboxServices').service('Enketo',
       form.output.update();
     };
 
+    // REVIEW this is quite big and unrelated to enketo itself; maybe it should
+    // be a separate service?  Or combined into the current Form2sms service as
+    // e.g. FormsAsSms service?
     function submitFormBySmsIfApplicable(doc) {
       if(!$window.medicmobile_android) {
         $log.info('Not in android wrapper.');
@@ -548,6 +551,8 @@ angular.module('inboxServices').service('Enketo',
         return;
       }
 
+      // Deliberately not returning this Promise, as we don't want to upset
+      // other workflows if the SMS fails.
       $q.resolve()
         .then(function() {
           return Form2Sms(doc)
@@ -566,6 +571,9 @@ angular.module('inboxServices').service('Enketo',
                   } else {
                     $log.error('No gateway_number provided in app_settings.  Form cannot be submitted by SMS.');
                   }
+                })
+                .catch(function(err) {
+                  $log.error('submitFormBySmsIfApplicable() failed: ' + err);
                 });
 
             });

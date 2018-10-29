@@ -30,7 +30,7 @@ angular
         })
         .catch(function(err) {
           $log.error('Form2Sms failed: ' + err);
-          return err;
+          throw err;
         });
     };
   });
