@@ -28,26 +28,30 @@ describe('Form2Sms service', function() {
   });
 
   describe('#()', function() {
-    it('should return nothing for a non-existent doc', () => {
+    it('should throw for a non-existent doc', () => {
       // given
       var NO_FORM;
 
       // when
       return service(NO_FORM)
 
-        .then(smsContent => assert.isUndefined(smsContent));
+        .then(smsContent => assert.fail(`Should have thrown, but instead returned ${smsContent}`))
+
+        .catch(err => assert.notEqual(err.name, 'AssertionError'));
     });
 
-    it('should return nothing for a non-existent form', () => {
+    it('should throw for a non-existent form', () => {
       // given
       const doc = aFormSubmission();
       // and there's no form
-      dbGet.withArgs(TEST_FORM_ID).returns(Promise.reject());
+      dbGet.withArgs(TEST_FORM_ID).returns(Promise.reject(new Error('expected')));
 
       // when
       return service(doc)
 
-        .then(smsContent => assert.isUndefined(smsContent));
+        .then(smsContent => assert.fail(`Should have thrown, but instead returned ${smsContent}`))
+
+        .catch(err => assert.equal(err.message, 'expected'));
     });
 
     it('should parse attached code for a form', () => {

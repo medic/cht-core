@@ -14,7 +14,7 @@ angular
 
     return function(doc) {
       if(!doc) {
-        return Promise.resolve();
+        return Promise.reject(new Error('No doc provided.'));
       }
 
       return DB()
