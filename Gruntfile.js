@@ -775,6 +775,25 @@ module.exports = function(grunt) {
           pattern: /console\./g,
         },
       },
+      'console-in-node': {
+        files: [
+          {
+            src: [
+              'api/**/*.js',
+              'sentinel/**/*.js',
+
+              // ignore because they are sent to the client side/frontend
+              '!api/src/public/**/*.js',
+
+              // ignore build dirs
+              '!**/node_modules/**',
+            ],
+          },
+        ],
+        options: {
+          pattern: /console\./g,
+        },
+      },
     },
     xmlmin: {
       'enketo-xslt': {

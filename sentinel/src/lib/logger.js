@@ -2,7 +2,7 @@ const { createLogger, format, transports: trans } = require('winston'),
     env = process.env.NODE_ENV || 'development';
 
 const transports = {
-    console: new trans.Console({
+    terminal: new trans.Console({
         level: 'info',
         format: format.combine(
             // https://github.com/winstonjs/winston/issues/1345
@@ -26,7 +26,7 @@ const logger = createLogger({
         format.printf(info => `${info.timestamp} ${info.level.toUpperCase()}: ${info.message}`)
     ),
     transports: [
-        transports.console
+        transports.terminal
     ]
 });
 

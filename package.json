@@ -45,6 +45,7 @@
     "grunt-sass": "^3.0.1",
     "grunt-text-replace": "^0.4.0",
     "grunt-xmlmin": "^0.1.8",
+    "husky": "^1.1.2",
     "jit-grunt": "^0.10.0",
     "jshint-stylish": "^2.1.0",
     "karma": "^3.0.0",

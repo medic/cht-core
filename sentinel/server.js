@@ -7,7 +7,7 @@ const db = require('./src/db-pouch'),
 
 if (loglevel === 'debug') {
   logger.info(`setting loglevel to ${loglevel}`);
-  transports.console.level = loglevel;
+  transports.terminal.level = loglevel;
 }
 
 if (process.env.TEST_ENV) {
@@ -50,8 +50,8 @@ serverChecks.check(db.serverUrl)
     return config.init()
       .then(() => {
         if (!loglevel) {
-          transports.console.level = config.get('loglevel');
-          logger.info(`loglevel is ${transports.console.level}`);
+          transports.terminal.level = config.get('loglevel');
+          logger.info(`loglevel is ${transports.terminal.level}`);
         }
         require('./src/schedule').checkSchedule();
         logger.info('startup complete.');
