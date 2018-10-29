@@ -2,6 +2,7 @@ var moment = require('moment'),
   sinon = require('sinon'),
   assert = require('chai').assert,
   db = require('../../src/db-pouch'),
+  logger = require('../../src/logger'),
   transition = require('../../src/transitions/update_sent_forms');
 
 describe('update sent by', () => {
@@ -40,7 +41,7 @@ describe('update sent by', () => {
     };
     return transition.onMatch(change).then(() => {
       const clinic = save.args[0][0];
-      console.log(clinic);
+      logger.info(clinic);
       assert(clinic.sent_forms);
       assert(clinic.sent_forms.XXX);
       assert.equal(clinic.sent_forms.XXX, now.toISOString());
