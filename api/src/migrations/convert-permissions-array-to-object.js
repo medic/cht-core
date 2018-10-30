@@ -7,11 +7,13 @@ module.exports = {
   run: promisify(function(callback) {
     settingsService.get()
       .then(settings => {
-        var permissions = {};
-        settings.permissions.forEach(function(permission){ 
-          permissions[permission.name] = permission.roles; 
-        });
-        settings.permissions = permissions;
+        if (Array.isArray(settings.permissions)) {
+          var permissions = {};
+          settings.permissions.forEach(function(permission){ 
+            permissions[permission.name] = permission.roles; 
+          });
+          settings.permissions = permissions;
+        }
         return settingsService.update(settings, true);
       })
       .then(() => callback())
