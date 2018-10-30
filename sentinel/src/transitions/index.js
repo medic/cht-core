@@ -83,7 +83,7 @@ const processChange = (change, callback) => {
       ],
       err => {
         if (err) {
-          logger.error(`Error cleaning up deleted doc: ${err}`);
+          logger.error(`Error cleaning up deleted doc: ${err.toString()}`);
         }
 
         tombstoneUtils
@@ -204,7 +204,7 @@ const loadTransitions = () => {
     } catch (e) {
       loadError = true;
       logger.error(`Failed loading transition "${transition}"`);
-      logger.error(e.toString());
+      logger.error(e);
     }
   });
 
@@ -335,9 +335,7 @@ const applyTransition = ({ key, change, transition }, callback) => {
       logger.debug(
         `finished transition ${key} for seq ${change.seq} doc ${
           change.id
-        } is ` + changed
-          ? 'changed'
-          : 'unchanged'
+        } is ` + changed ? 'changed' : 'unchanged'
       );
       if (!changed) {
         return changed;
@@ -422,7 +420,7 @@ const attach = () => {
     return metadata
       .getProcessedSeq()
       .catch(err => {
-        logger.error(`transitions: error fetching processed seq (${err}`);
+        logger.error(`transitions: error fetching processed seq: ${err}`);
       })
       .then(seq => {
         logger.info(`transitions: fetching changes feed, starting from ${seq}`);
