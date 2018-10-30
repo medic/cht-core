@@ -89,6 +89,7 @@ module.exports = {
       })
       .then(auth => {
         if (auth && auth.userCtx && auth.userCtx.name) {
+          req.headers['X-Medic-User'] = auth.userCtx.name;
           return auth.userCtx;
         }
         throw { code: 401, message: 'Not logged in' };
