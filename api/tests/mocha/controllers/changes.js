@@ -7,8 +7,7 @@ const sinon = require('sinon'),
       inherits = require('util').inherits,
       EventEmitter = require('events'),
       _ = require('underscore'),
-      config = require('../../../src/config'),
-      dbConfig = require('../../../src/services/db-config');
+      config = require('../../../src/config');
 
 require('chai').should();
 let testReq,
@@ -121,152 +120,101 @@ describe('Changes controller', () => {
       emitters.push(emitter);
       return emitter;
     });
-    sinon.stub(dbConfig, 'get').resolves(100);
   });
 
   describe('init', () => {
     it('initializes the continuous changes feed and used constants', () => {
-      dbConfig.get.resolves(20);
       defaultSettings.reiterate_changes = false;
-      return controller._init().then(() => {
-        changesSpy.callCount.should.equal(1);
-        changesSpy.args[0][0].should.deep.equal({
-          live: true,
-          include_docs: true,
-          since: 'now',
-          timeout: false,
-        });
-        controller._inited().should.equal(true);
-        controller._getContinuousFeed().should.equal(emitters[0]);
-        controller._getMaxDocIds().should.equal(20);
-        dbConfig.get.callCount.should.equal(1);
-        dbConfig.get.args[0][0].should.equal('couchdb');
-        dbConfig.get.args[0][1].should.equal('changes_doc_ids_optimization_threshold');
+      controller._init();
+      changesSpy.callCount.should.equal(1);
+      changesSpy.args[0][0].should.deep.equal({
+        live: true,
+        include_docs: true,
+        since: 'now',
+        timeout: false,
       });
-    });
-
-    it('uses default values when couchDB config request fails', () => {
-      dbConfig.get.rejects('boom');
-      return controller._init().then(() => {
-        controller._getMaxDocIds().should.equal(100);
-      });
-    });
-
-    it('uses default values when CouchDB config request returns non-numeric values', () => {
-      dbConfig.get.resolves({ some: 'object' });
-      return controller._init().then(() => {
-        controller._getMaxDocIds().should.equal(100);
-      });
-    });
-
-    it('uses default values when CouchDB config request returns lower than 0 value', () => {
-      dbConfig.get.resolves('-100');
-      return controller._init().then(() => {
-        controller._getMaxDocIds().should.equal(100);
-      });
-    });
-
-    it('uses config value when it is valid', () => {
-      dbConfig.get.resolves('400');
-      return controller._init().then(() => {
-        controller._getMaxDocIds().should.equal(400);
-      });
+      controller._inited().should.equal(true);
+      controller._getContinuousFeed().should.equal(emitters[0]);
     });
 
     it('sends changes to be analyzed and updates current seq when changes come in', () => {
       tombstoneUtils.isTombstoneId.withArgs('change').returns(false);
-      return controller._init().then(() => {
-        const emitter = controller._getContinuousFeed();
-        emitter.emit('change', { id: 'change' }, 0, 'newseq');
-        tombstoneUtils.isTombstoneId.callCount.should.equal(1);
-        tombstoneUtils.isTombstoneId.args[0][0].should.equal('change');
-        controller._getCurrentSeq().should.equal('newseq');
-      });
+      controller._init();
+      const emitter = controller._getContinuousFeed();
+      emitter.emit('change', { id: 'change' }, 0, 'newseq');
+      tombstoneUtils.isTombstoneId.callCount.should.equal(1);
+      tombstoneUtils.isTombstoneId.args[0][0].should.equal('change');
+      controller._getCurrentSeq().should.equal('newseq');
     });
 
     it('resets changes listener on error, using last received sequence', () => {
       tombstoneUtils.isTombstoneId.withArgs('change').returns(false);
-      return controller._init().then(() => {
-        const emitter = controller._getContinuousFeed();
-        emitter.emit('change', { id: 'change' }, 0, 'seq-1');
-        emitter.emit('change', { id: 'change' }, 0, 'seq-2');
-        emitter.emit('change', { id: 'change' }, 0, 'seq-3');
-        emitter.emit('error');
-        return Promise.resolve().then(() => {
-          changesSpy.callCount.should.equal(2);
-          changesSpy.args[1][0].since.should.equal('seq-3');
-        });
+      controller._init();
+      const emitter = controller._getContinuousFeed();
+      emitter.emit('change', { id: 'change' }, 0, 'seq-1');
+      emitter.emit('change', { id: 'change' }, 0, 'seq-2');
+      emitter.emit('change', { id: 'change' }, 0, 'seq-3');
+      emitter.emit('error');
+      return Promise.resolve().then(() => {
+        changesSpy.callCount.should.equal(2);
+        changesSpy.args[1][0].since.should.equal('seq-3');
       });
     });
   });
 
   describe('request', () => {
     it('initializes the continuous changes feed', () => {
-      return controller
-        .request(testReq, testRes)
-        .then(() => {
-          changesSpy.callCount.should.equal(1);
-        });
+      controller.request(testReq, testRes)
+      changesSpy.callCount.should.equal(1);
     });
 
     it('only initializes on first call', () => {
-      return controller
-        .request(testReq, testRes)
-        .then(() => controller.request(testReq, testRes))
-        .then(() => controller.request(testReq, testRes))
-        .then(() => controller.request(testReq, testRes))
-        .then(() => {
-          changesSpy.callCount.should.equal(1);
-        });
+      controller.request(testReq, testRes);
+      controller.request(testReq, testRes);
+      controller.request(testReq, testRes);
+      controller.request(testReq, testRes);
+      changesSpy.callCount.should.equal(1);
     });
 
     it('pushes requests to the normal feeds list', () => {
       authorization.getAllowedDocIds.resolves([1, 2, 3]);
-      return controller._init().then(() => {
-        return controller
-          .request(testReq, testRes)
-          .then(() => {
-            testReq.on.callCount.should.equal(1);
-            testReq.on.args[0][0].should.equal('close');
-            testRes.type.callCount.should.equal(1);
-            testRes.type.args[0][0].should.equal('json');
-            const feeds = controller._getNormalFeeds();
-            feeds.length.should.equal(1);
-            testRes.setHeader.callCount.should.equal(0);
-          });
-      });
+      controller._init();
+      controller.request(testReq, testRes);
+      testReq.on.callCount.should.equal(1);
+      testReq.on.args[0][0].should.equal('close');
+      testRes.type.callCount.should.equal(1);
+      testRes.type.args[0][0].should.equal('json');
+      const feeds = controller._getNormalFeeds();
+      feeds.length.should.equal(1);
+      testRes.setHeader.callCount.should.equal(0);
     });
   });
 
   describe('initFeed', () => {
     it('initializes feed with default values', () => {
       authorization.getAllowedDocIds.resolves([1, 2, 3]);
-      return controller._init().then(() => {
-        const emitter = controller._getContinuousFeed();
-        emitter.emit('change', { id: 'change' }, 0, 'seq-1');
-        return controller
-          .request(testReq, testRes)
-          .then(nextTick)
-          .then(() => {
-            const feed = controller._getNormalFeeds()[0];
-            feed.req.should.equal(testReq);
-            feed.res.should.equal(testRes);
-            feed.req.userCtx.should.equal(userCtx);
-            feed.lastSeq.should.equal('seq-1');
-            feed.initSeq.should.equal(0);
-            feed.pendingChanges.length.should.equal(0);
-            feed.results.length.should.equal(0);
-            feed.upstreamRequests.length.should.equal(1);
-            feed.limit.should.equal(100);
-            feed.should.not.have.property('heartbeat');
-            feed.should.not.have.property('timeout');
-            feed.reiterate_changes.should.equal(true);
-            feed.debounceEnd.should.be.a('function');
-            clock.tick(60000);
-            testRes.write.callCount.should.equal(0);
-            testRes.end.callCount.should.equal(0);
-            controller._getNormalFeeds().length.should.equal(1);
-          });
+      controller._init();
+      const emitter = controller._getContinuousFeed();
+      emitter.emit('change', { id: 'change' }, 0, 'seq-1');
+      controller.request(testReq, testRes);
+      return nextTick().then(() => {
+        const feed = controller._getNormalFeeds()[0];
+        feed.req.should.equal(testReq);
+        feed.res.should.equal(testRes);
+        feed.req.userCtx.should.equal(userCtx);
+        feed.lastSeq.should.equal('seq-1');
+        feed.initSeq.should.equal(0);
+        feed.pendingChanges.length.should.equal(0);
+        feed.results.length.should.equal(0);
+        feed.limit.should.equal(100);
+        feed.should.not.have.property('heartbeat');
+        feed.should.not.have.property('timeout');
+        feed.reiterate_changes.should.equal(true);
+        feed.debounceEnd.should.be.a('function');
+        clock.tick(60000);
+        testRes.write.callCount.should.equal(0);
+        testRes.end.callCount.should.equal(0);
+        controller._getNormalFeeds().length.should.equal(1);
       });
     });
 
@@ -275,26 +223,23 @@ describe('Changes controller', () => {
       authorization.getAllowedDocIds.resolves([1, 2, 3]);
       defaultSettings.reiterate_changes = 'something';
       defaultSettings.debounce_interval = false;
-      return controller
-        .request(testReq, testRes)
-        .then(() => {
-          const feed = controller._getNormalFeeds()[0];
-          feed.limit.should.equal(23);
-          feed.heartbeat.should.be.an('Object');
-          feed.timeout.should.be.an('Object');
-          clock.tick(82000);
-          testRes.write.callCount.should.equal(8);
-          testRes.write.args.should.deep.equal([
-            ['\n'], ['\n'], ['\n'], ['\n'], ['\n'], ['\n'], ['\n'], ['\n'] //heartbeats
-          ]);
-          testRes.end.callCount.should.equal(0);
-          controller._getNormalFeeds().length.should.equal(1);
-          clock.tick(30000);
-          testRes.end.callCount.should.equal(1);
-          controller._getNormalFeeds().length.should.equal(0);
-          feed.reiterate_changes.should.equal('something');
-          feed.should.not.have.property('debouncedEnd');
-        });
+      controller.request(testReq, testRes);
+      const feed = controller._getNormalFeeds()[0];
+      feed.limit.should.equal(23);
+      feed.heartbeat.should.be.an('Object');
+      feed.timeout.should.be.an('Object');
+      clock.tick(82000);
+      testRes.write.callCount.should.equal(8);
+      testRes.write.args.should.deep.equal([
+        ['\n'], ['\n'], ['\n'], ['\n'], ['\n'], ['\n'], ['\n'], ['\n'] //heartbeats
+      ]);
+      testRes.end.callCount.should.equal(0);
+      controller._getNormalFeeds().length.should.equal(1);
+      clock.tick(30000);
+      testRes.end.callCount.should.equal(1);
+      controller._getNormalFeeds().length.should.equal(0);
+      feed.reiterate_changes.should.equal('something');
+      feed.should.not.have.property('debouncedEnd');
     });
 
     it('requests user authorization information with correct userCtx', () => {
@@ -303,105 +248,65 @@ describe('Changes controller', () => {
             contactsByDepthKeys = [['facility_id']];
       authorization.getAuthorizationContext.resolves({ subjectIds, contactsByDepthKeys });
       authorization.getAllowedDocIds.resolves(allowedDocIds);
-      return controller
-        .request(testReq, testRes)
-        .then(() => {
-          authorization.getAuthorizationContext.callCount.should.equal(1);
-          authorization.getAuthorizationContext.withArgs(userCtx).callCount.should.equal(1);
-          authorization.getAllowedDocIds.callCount.should.equal(1);
-          authorization.getAllowedDocIds
-            .withArgs(sinon.match({ req: { userCtx }, subjectIds, contactsByDepthKeys }))
-            .callCount.should.equal(1);
-          return Promise.resolve();
-        })
-        .then(() => {
-          const feed = controller._getNormalFeeds()[0];
-          feed.allowedDocIds.should.deep.equal(allowedDocIds);
-        });
+      controller.request(testReq, testRes);
+      return nextTick().then(() => {
+        authorization.getAuthorizationContext.callCount.should.equal(1);
+        authorization.getAuthorizationContext.withArgs(userCtx).callCount.should.equal(1);
+        authorization.getAllowedDocIds.callCount.should.equal(1);
+        authorization.getAllowedDocIds
+          .withArgs(sinon.match({ req: { userCtx }, subjectIds, contactsByDepthKeys }))
+          .callCount.should.equal(1);
+        const feed = controller._getNormalFeeds()[0];
+        feed.allowedDocIds.should.deep.equal(allowedDocIds);
+      });
     });
   });
 
   describe('getChanges', () => {
     it('requests changes with correct default parameters', () => {
-      dbConfig.get.resolves(40);
       authorization.getAllowedDocIds.resolves(['d1', 'd2', 'd3']);
-      return controller
-        .request(testReq, testRes)
-        .then(nextTick)
-        .then(() => {
-          authorization.getAllowedDocIds.callCount.should.equal(1);
-          changesSpy.callCount.should.equal(2);
-          changesSpy.args[1][0].should.deep.equal({
-            since: 0,
-            batch_size: 41,
-            doc_ids: ['d1', 'd2', 'd3']
-          });
+      controller.request(testReq, testRes);
+      return nextTick()
+      .then(nextTick).then(() => {
+        authorization.getAllowedDocIds.callCount.should.equal(1);
+        changesSpy.callCount.should.equal(2);
+        changesSpy.args[1][0].should.deep.equal({
+          since: 0,
+          doc_ids: ['d1', 'd2', 'd3']
         });
+      });
     });
 
     it('requests changes with correct query parameters', () => {
       testReq.query = { limit: 20, view: 'test', something: 'else', conflicts: true, seq_interval: false, since: '22'};
-      dbConfig.get.resolves(40);
       authorization.getAllowedDocIds.resolves(['d1', 'd2', 'd3']);
-      return controller
-        .request(testReq, testRes)
-        .then(nextTick)
-        .then(() => {
-          changesSpy.callCount.should.equal(2);
-          changesSpy.args[1][0].should.deep.equal({
-            since: '22',
-            batch_size: 41,
-            doc_ids: ['d1', 'd2', 'd3'],
-            conflicts: true,
-            seq_interval: false
-          });
-          const feed = controller._getNormalFeeds()[0];
-          feed.upstreamRequests.length.should.equal(1);
+      controller.request(testReq, testRes);
+      return nextTick().then(() => {
+        changesSpy.callCount.should.equal(2);
+        changesSpy.args[1][0].should.deep.equal({
+          since: '22',
+          doc_ids: ['d1', 'd2', 'd3'],
+          conflicts: true,
+          seq_interval: false
         });
+        const feed = controller._getNormalFeeds()[0];
+      });
     });
 
-    it('splits allowedDocIds into correct sized chunks', () => {
-      dbConfig.get.resolves(10);
-      const allowedIds = Array.from({length: 40}, () => Math.floor(Math.random() * 40));
-      authorization.getAllowedDocIds.resolves(allowedIds.slice());
-
-      return controller
-        .request(testReq, testRes)
-        .then(nextTick)
-        .then(() => {
-          changesSpy.callCount.should.equal(5);
-          const resultIds = [];
-          changesSpy.args.forEach((arg, idx) => {
-            if (idx === 0) {
-              return;
-            }
-
-            arg[0].doc_ids.length.should.equal(10);
-            resultIds.push.apply(resultIds, arg[0].doc_ids);
-          });
-          resultIds.should.deep.equal(allowedIds);
-          const feed = controller._getNormalFeeds()[0];
-          feed.upstreamRequests.length.should.equal(4);
-        });
-    });
-
-    it('cancels all upstream requests and sends an error response when one of them errors', () => {
-      dbConfig.get.resolves(10);
+    it('sends an error response when the upstream request errors', () => {
       const allowedIds = Array.from({length: 40}, () => Math.floor(Math.random() * 40));
       authorization.getAllowedDocIds.resolves(allowedIds.slice());
       let feed;
-
-      return controller
-        .request(testReq, testRes)
-        .then(nextTick)
+      controller.request(testReq, testRes);
+      return nextTick()
         .then(() => {
-          changesSpy.callCount.should.equal(5);
+          changesSpy.callCount.should.equal(2);
           feed = controller._getNormalFeeds()[0];
-          feed.upstreamRequests[0].complete('someerror', { status: 'error' });
+          feed.upstreamRequest.complete('someerror', { status: 'error' });
         })
         .then(nextTick)
         .then(() => {
-          changesSpy.callCount.should.equal(5);
+          changesSpy.callCount.should.equal(2);
           feed.ended.should.equal(true);
           testRes.status.callCount.should.equal(1);
           testRes.status.args[0].should.deep.equal([ 500 ]);
@@ -414,21 +319,16 @@ describe('Changes controller', () => {
         });
     });
 
-    it('sends empty response when any of the change feeds are canceled', () => {
-      dbConfig.get.resolves(10);
+    it('sends empty response when the upstream request is cancelled', () => {
       const validatedIds = Array.from({length: 40}, () => Math.floor(Math.random() * 40));
       authorization.getAllowedDocIds.resolves(validatedIds);
       testReq.query = { since: 1 };
 
-      return controller
-        .request(testReq, testRes)
-        .then(nextTick)
+      controller.request(testReq, testRes);
+      return nextTick()
         .then(() => {
           const feed = controller._getNormalFeeds()[0];
-          feed.upstreamRequests[0].complete(null, { results: [], last_seq: 22 });
-          feed.upstreamRequests[1].cancel();
-          feed.upstreamRequests[2].cancel();
-          feed.upstreamRequests[3].complete(null, { results: [], last_seq: 44 });
+          feed.upstreamRequest.cancel();
         })
         .then(nextTick)
         .then(() => {
@@ -438,28 +338,23 @@ describe('Changes controller', () => {
         });
     });
 
-    it('sends complete response when change feeds are finished', () => {
-      dbConfig.get.resolves(10);
+    it('sends complete response when change feed is finished', () => {
       const validatedIds = Array.from({length: 40}, () => Math.floor(Math.random() * 40));
       authorization.getAllowedDocIds.resolves(validatedIds);
       testReq.query = { since: 0 };
 
-      return controller
-        .request(testReq, testRes)
-        .then(nextTick)
+      const expected = { results: [{ id: 1 }, { id: 2 }, { id: 3 }], last_seq: 22 };
+
+      controller.request(testReq, testRes);
+      return nextTick()
         .then(() => {
           const feed = controller._getNormalFeeds()[0];
-          feed.upstreamRequests[0].complete(null, { results: [{ id: 1 }, { id: 2 }, { id: 3 }], last_seq: 22 });
-          feed.upstreamRequests[3].complete(null, { results: [{ id: 4 }, { id: 5 }, { id: 6 }], last_seq: 33 });
-          feed.upstreamRequests[2].complete(null, { results: [], last_seq: 44 });
-          feed.upstreamRequests[1].complete(null, { results: [{ id: 7 }, { id: 8 }], last_seq: 55 });
+          feed.upstreamRequest.complete(null, expected);
         })
         .then(nextTick)
         .then(() => {
-          const concatenatedResults =
-                  [{ id: 1 }, { id: 2 }, { id: 3 }, { id: 7 }, { id: 8 }, { id: 4 }, { id: 5 }, { id: 6 }];
           testRes.write.callCount.should.equal(1);
-          testRes.write.args[0][0].should.equal(JSON.stringify({ results: concatenatedResults, last_seq: 55 }));
+          testRes.write.args[0][0].should.equal(JSON.stringify(expected));
           testRes.end.callCount.should.equal(1);
           controller._getNormalFeeds().length.should.equal(0);
           controller._getLongpollFeeds().length.should.equal(0);
@@ -475,38 +370,31 @@ describe('Changes controller', () => {
       ]);
       testReq.query = { since: 0 };
 
-      return controller
-        .request(testReq, testRes)
+      controller.request(testReq, testRes);
+
+      const expected = {
+        results: [{ id: 1, changes: [] }, { id: 2, changes: [] }, { id: 3, changes: [] }],
+        last_seq: 3
+      };
+
+      return Promise.resolve()
         .then(() => {
           controller._getContinuousFeed().emit('change', { id: 7, changes: [], doc: { _id: 7 } }, 0, 4);
-          return Promise.resolve();
         })
         .then(() => {
           controller._getContinuousFeed().emit('change', { id: 8, changes: [], doc: { _id: 8 } }, 0, 5);
-          return Promise.resolve();
         })
         .then(() => {
           controller._getContinuousFeed().emit('change', { id: 9, changes: [], doc: { _id: 9 } }, 0, 6);
-          return Promise.resolve();
         })
         .then(() => {
           const feed = controller._getNormalFeeds()[0];
-          feed.upstreamRequests[0].complete(null, {
-            results: [{ id: 1, changes: [] }, { id: 2, changes: [] }, { id: 3, changes: [] }], last_seq: 3
-          });
-          feed.upstreamRequests[1].complete(null, {
-            results: [{ id: 4, changes: [] }, { id: 5, changes: [] }, { id: 6, changes: [] }], last_seq: 6
-          });
+          feed.upstreamRequest.complete(null, expected);
         })
         .then(nextTick)
         .then(() => {
-
-          const concatenatedResults = [
-            { id: 1, changes: [] }, { id: 2, changes: [] }, { id: 3, changes: [] }, { id: 4, changes: [] },
-            { id: 5, changes: [] }, { id: 6, changes: [] }, { id: 8, changes: [] }, { id: 9, changes: [] }
-          ];
           testRes.write.callCount.should.equal(1);
-          testRes.write.args[0][0].should.equal(JSON.stringify({ results: concatenatedResults, last_seq: 6 }));
+          testRes.write.args[0][0].should.equal(JSON.stringify(expected));
           testRes.end.callCount.should.equal(1);
           controller._getNormalFeeds().length.should.equal(0);
           controller._getLongpollFeeds().length.should.equal(0);
@@ -521,26 +409,18 @@ describe('Changes controller', () => {
     });
 
     it('when no normal results are received for a non-longpoll, and the results were not canceled, retry', () => {
-      dbConfig.get.resolves(10);
       const validatedIds = Array.from({length: 40}, () => Math.floor(Math.random() * 40));
       authorization.getAllowedDocIds.resolves(validatedIds);
 
-      return controller
-        .request(testReq, testRes)
-        .then(nextTick)
+      controller.request(testReq, testRes);
+      return nextTick()
         .then(() => {
-          const feed = controller._getNormalFeeds()[0];
-          feed.upstreamRequests[0].complete(null, null);
-          feed.upstreamRequests[1].complete(null, false);
-          feed.upstreamRequests[2].complete(null, { something: 'else' });
-          feed.upstreamRequests[3].complete(null, { results: [{ id: 1 }], last_seq: '22' });
+          controller._getNormalFeeds()[0].upstreamRequest.complete(null, false);
         })
         .then(nextTick)
         .then(() => {
           const feeds = controller._getNormalFeeds();
           feeds.length.should.equal(1);
-          const feed = feeds[0];
-          feed.upstreamRequests.length.should.equal(4);
           controller._getLongpollFeeds().length.should.equal(0);
         });
     });
@@ -549,12 +429,11 @@ describe('Changes controller', () => {
       authorization.getAllowedDocIds.resolves([1, 2]);
       testReq.query = { feed: 'longpoll' };
       testReq.id = 'myUniqueId';
-      return controller
-        .request(testReq, testRes)
-        .then(nextTick)
+      controller.request(testReq, testRes);
+      return nextTick()
         .then(() => {
           const feed = controller._getNormalFeeds()[0];
-          feed.upstreamRequests.forEach(upstreamReq => upstreamReq.complete(null, { results: [], last_seq: 1 }));
+          feed.upstreamRequest.complete(null, { results: [], last_seq: 1 });
         })
         .then(nextTick)
         .then(() => {
@@ -564,21 +443,17 @@ describe('Changes controller', () => {
           controller._getLongpollFeeds().length.should.equal(1);
           const feed = controller._getLongpollFeeds()[0];
           feed.id.should.equal('myUniqueId');
-          feed.chunkedAllowedDocIds.should.deep.equal([[1, 2]]);
+          feed.allowedDocIds.should.deep.equal([1, 2]);
         });
     });
 
-    it('cancels all upstreamRequests when request is closed', () => {
+    it('cancels upstreamRequest when request is closed', () => {
       authorization.getAllowedDocIds.resolves([1, 2, 3, 4, 5, 6]);
-      dbConfig.get.resolves(2);
-      return controller
-        .request(testReq, testRes)
-        .then(nextTick)
+      controller.request(testReq, testRes);
+      return nextTick()
         .then(() => {
-          const feed = controller._getNormalFeeds()[0];
-          feed.upstreamRequests.length.should.equal(3);
           reqOnClose();
-          changesCancelSpy.callCount.should.equal(3);
+          changesCancelSpy.callCount.should.equal(1);
           testRes.end.callCount.should.equal(0);
           testRes.write.callCount.should.equal(0);
           controller._getNormalFeeds().length.should.equal(0);
@@ -604,14 +479,13 @@ describe('Changes controller', () => {
 
       let initialFeed;
 
-      return controller
-        .request(testReq, testRes)
-        .then(nextTick)
+      controller.request(testReq, testRes);
+      return nextTick()
         .then(() => {
           const emitter = controller._getContinuousFeed();
           emitter.emit('change', userChange, 0, 20);
           initialFeed = controller._getNormalFeeds()[0];
-          initialFeed.upstreamRequests.forEach(upstreamReq => upstreamReq.complete(null, { results: [], last_seq: 1 }));
+          initialFeed.upstreamRequest.complete(null, { results: [], last_seq: 1 });
         })
         .then(nextTick)
         .then(() => {
@@ -639,9 +513,8 @@ describe('Changes controller', () => {
         { change: { id: 2, changes: [] }, id: 2 }
       ]);
 
-      return controller
-        .request(testReq, testRes)
-        .then(nextTick)
+      controller.request(testReq, testRes);
+      return nextTick()
         .then(() => {
           const emitter = controller._getContinuousFeed();
           const feed = controller._getNormalFeeds()[0];
@@ -653,10 +526,7 @@ describe('Changes controller', () => {
           feed.pendingChanges.length.should.equal(3);
           emitter.emit('change', { id: 1, changes: [], doc: { _id: 1 }}, 0, 4);
           feed.pendingChanges.length.should.equal(4);
-
-          feed.upstreamRequests.forEach(upstreamReq => {
-            upstreamReq.complete(null, { results: [{ id: 22 }], last_seq: 5 });
-          });
+          feed.upstreamRequest.complete(null, { results: [{ id: 22 }], last_seq: 5 });
         })
         .then(nextTick)
         .then(() => {
@@ -689,18 +559,17 @@ describe('Changes controller', () => {
       authorization.getAllowedDocIds.resolves(['a', 'b']);
       testReq.query = { feed: 'longpoll' };
 
-      return controller
-        .request(testReq, testRes)
-        .then(nextTick)
+      controller.request(testReq, testRes);
+      return nextTick()
         .then(() => {
           const feed = controller._getNormalFeeds()[0];
-          feed.upstreamRequests.forEach(upstreamRequest => upstreamRequest.complete(null, { results: [], last_seq: 0 }));
+          feed.upstreamRequest.complete(null, { results: [], last_seq: 0 });
         })
         .then(nextTick)
         .then(() => {
           const emitter = controller._getContinuousFeed();
           const feed = controller._getLongpollFeeds()[0];
-          feed.chunkedAllowedDocIds.should.deep.equal([[ 'a', 'b' ]]);
+          feed.allowedDocIds.should.deep.equal([ 'a', 'b' ]);
           feed.results.length.should.equal(0);
 
           authorization.allowedDoc.withArgs(1).returns(true);
@@ -725,19 +594,18 @@ describe('Changes controller', () => {
       authorization.getAllowedDocIds.resolves([ 'a', 'b']);
       testReq.query = { feed: 'longpoll', timeout: 50000 };
 
-      return controller
-        .request(testReq, testRes)
-        .then(nextTick)
+      controller.request(testReq, testRes);
+      return nextTick()
         .then(() => {
           const feed = controller._getNormalFeeds()[0];
-          feed.upstreamRequests.forEach(upstreamRequest => upstreamRequest.complete(null, { results: [], last_seq: 0 }));
+          feed.upstreamRequest.complete(null, { results: [], last_seq: 0 });
         })
         .then(nextTick)
         .then(() => {
           const emitter = controller._getContinuousFeed();
           const feed = controller._getLongpollFeeds()[0];
           let feedTimeout = feed.timeout;
-          feed.chunkedAllowedDocIds.should.deep.equal([[ 'a', 'b' ]]);
+          feed.allowedDocIds.should.deep.equal([ 'a', 'b' ]);
           feed.results.length.should.equal(0);
           authorization.allowedDoc.returns(true);
           emitter.emit('change', { id: 1, changes: [] }, 0, 1);
@@ -776,12 +644,11 @@ describe('Changes controller', () => {
       authorization.getAllowedDocIds.resolves([ 'a',  'b']);
       testReq.query = { limit: 4, feed: 'longpoll' };
 
-      return controller
-        .request(testReq, testRes)
-        .then(nextTick)
+      controller.request(testReq, testRes);
+      return nextTick()
         .then(() => {
           const feed = controller._getNormalFeeds()[0];
-          feed.upstreamRequests.forEach(upstreamRequest => upstreamRequest.complete(null, { results: [], last_seq: 0 }));
+          feed.upstreamRequest.complete(null, { results: [], last_seq: 0 });
         })
         .then(nextTick)
         .then(() => {
@@ -852,8 +719,7 @@ describe('Changes controller', () => {
           const normalFeeds = controller._getNormalFeeds();
           normalFeeds.length.should.equal(3);
           normalFeeds.forEach(feed => {
-            feed.upstreamRequests.length.should.equal(1);
-            feed.upstreamRequests.forEach(upstreamReq => upstreamReq.complete(null, { results: [], last_seq: 2 }));
+            feed.upstreamRequest.complete(null, { results: [], last_seq: 2 });
           });
           controller._getLongpollFeeds().length.should.equal(0);
         })
@@ -908,12 +774,11 @@ describe('Changes controller', () => {
       authorization.isAuthChange.withArgs('org.couchdb.user:name').returns(true);
       let initialFeed;
 
-      return controller
-        .request(testReq, testRes)
-        .then(nextTick)
+      controller.request(testReq, testRes);
+      return nextTick()
         .then(() => {
           initialFeed = controller._getNormalFeeds()[0];
-          initialFeed.upstreamRequests.forEach(upstreamReq => upstreamReq.complete(null, { results: [], last_seq: 2 }));
+          initialFeed.upstreamRequest.complete(null, { results: [], last_seq: 2 });
         })
         .then(nextTick)
         .then(() => {
@@ -935,7 +800,7 @@ describe('Changes controller', () => {
           normalFeeds.length.should.equal(1);
           const feed = normalFeeds[0];
           feed.id.should.equal('myFeed');
-          feed.chunkedAllowedDocIds.should.deep.equal([[ 'a', 'b', 'c' ]]);
+          feed.allowedDocIds.should.deep.equal([ 'a', 'b', 'c' ]);
           auth.getUserSettings.callCount.should.equal(1);
           authorization.getAllowedDocIds.callCount.should.equal(2);
         });
@@ -945,13 +810,12 @@ describe('Changes controller', () => {
       testReq.query = { feed: 'longpoll' };
       authorization.getAllowedDocIds.resolves([1, 2, 3]);
 
-      return controller
-        .request(testReq, testRes)
-        .then(nextTick)
+      controller.request(testReq, testRes);
+      return nextTick()
         .then(() => {
           controller
             ._getNormalFeeds()[0]
-            .upstreamRequests.forEach(upstreamReq => upstreamReq.complete(null, { results: [], last_seq: 2 }));
+            .upstreamRequest.complete(null, { results: [], last_seq: 2 });
         })
         .then(nextTick)
         .then(() => {
@@ -1020,16 +884,15 @@ describe('Changes controller', () => {
         { change: { id: 'report-1', changes: [] }, id: 'report-1' }
       ]);
 
-      return controller
-        .request(testReq, testRes)
-        .then(nextTick)
+      controller.request(testReq, testRes);
+      return nextTick()
         .then(() => {
           const emitter = controller._getContinuousFeed();
           emitter.emit('change', { id: 'report-3', changes: [], doc: { _id: 'report-3'}}, 0, 1);
           emitter.emit('change', { id: 'report-2', changes: [], doc: { _id: 'report-2'}}, 0, 2);
           controller
             ._getNormalFeeds()[0]
-            .upstreamRequests.forEach(upstreamReq => upstreamReq.complete(null, { results: [], last_seq: 2 }));
+            .upstreamRequest.complete(null, { results: [], last_seq: 2 });
         })
         .then(nextTick)
         .then(() => {
@@ -1065,13 +928,13 @@ describe('Changes controller', () => {
     it('ends the feed when the request is closed', () => {
       testReq.query = { feed: 'longpoll' };
       authorization.getAllowedDocIds.resolves([1, 2, 3]);
-      return controller
-        .request(testReq, testRes)
-        .then(nextTick)
+
+      controller.request(testReq, testRes);
+      return nextTick()
         .then(() => {
           controller
             ._getNormalFeeds()[0]
-            .upstreamRequests.forEach(upstreamReq => upstreamReq.complete(null, { results: [], last_seq: 2 }));
+            .upstreamRequest.complete(null, { results: [], last_seq: 2 });
         })
         .then(nextTick)
         .then(() => {
@@ -1096,13 +959,12 @@ describe('Changes controller', () => {
       authorization.allowedDoc.withArgs('contact-1').returns({ newSubjects: 0 });
       authorization.allowedDoc.withArgs('contact-2').returns(false);
 
-      return controller
-        .request(testReq, testRes)
-        .then(nextTick)
+      controller.request(testReq, testRes);
+      return nextTick()
         .then(() => {
           controller
             ._getNormalFeeds()[0]
-            .upstreamRequests.forEach(upstreamReq => upstreamReq.complete(null, { results: [], last_seq: 2 }));
+            .upstreamRequest.complete(null, { results: [], last_seq: 2 });
         })
         .then(nextTick)
         .then(() => {
@@ -1153,13 +1015,12 @@ describe('Changes controller', () => {
       authorization.updateContext.withArgs(true).returns(2);
       authorization.filterAllowedDocs.onCall(1).returns([ { change: { id: 3, changes: [] }, id: 3 } ]);
 
-      return controller
-        .request(testReq, testRes)
-        .then(nextTick)
+      controller.request(testReq, testRes);
+      return nextTick()
         .then(() => {
           controller
             ._getNormalFeeds()[0]
-            .upstreamRequests.forEach(upstreamReq => upstreamReq.complete(null, { results: [], last_seq: 2 }));
+            .upstreamRequest.complete(null, { results: [], last_seq: 2 });
         })
         .then(nextTick)
         .then(() => {
@@ -1208,13 +1069,12 @@ describe('Changes controller', () => {
       authorization.updateContext.withArgs(true).returns(2);
       authorization.filterAllowedDocs.withArgs(sinon.match.any, []).returns([]);
 
-      return controller
-        .request(testReq, testRes)
-        .then(nextTick)
+      controller.request(testReq, testRes);
+      return nextTick()
         .then(() => {
           controller
             ._getNormalFeeds()[0]
-            .upstreamRequests.forEach(upstreamReq => upstreamReq.complete(null, { results: [], last_seq: 2 }));
+            .upstreamRequest.complete(null, { results: [], last_seq: 2 });
         })
         .then(nextTick)
         .then(() => {
@@ -1238,13 +1098,12 @@ describe('Changes controller', () => {
         .then(nextTick)
         .then(() => {
           const feed = controller._getNormalFeeds()[0];
-          feed.upstreamRequests.length.should.equal(1);
           feed.pendingChanges.should.deep.equal([
             { change: { id: 22, changes: [] }, viewResults: {}, id: 22 },
             { change: { id: 2, changes: [] }, viewResults: {}, id: 2 },
             { change: { id: 11, changes: [] }, viewResults: {}, id: 11 },
           ]);
-          feed.upstreamRequests[0].complete(null, {
+          feed.upstreamRequest.complete(null, {
             results: [{ id: 3, changes: [] }, { id: 1, changes: [] }, { id: 2, changes: [] }],
             last_seq: 5
           });
@@ -1287,14 +1146,11 @@ describe('Changes controller', () => {
       authorization.allowedDoc.withArgs(3).returns({ newSubjects: 0 });
       authorization.allowedDoc.withArgs(4).returns(false);
 
-      return controller
-        .request(testReq, testRes)
-        .then(nextTick)
+      controller.request(testReq, testRes);
+      return nextTick()
         .then(() => {
           controller._getNormalFeeds().forEach(feed => {
-            feed.upstreamRequests.forEach(upstreamReq => {
-              upstreamReq.complete(null, { results: [], last_seq: 5 });
-            });
+            feed.upstreamRequest.complete(null, { results: [], last_seq: 5 });
           });
         })
         .then(nextTick)
@@ -1319,7 +1175,6 @@ describe('Changes controller', () => {
     });
 
     it('resets the feed to being a normal feed if new subjects are added', () => {
-      dbConfig.get.resolves(2);
       defaultSettings.reiterate_changes = false;
       testReq.query = { feed: 'longpoll', since: 'seq' };
       testReq.id = 'myFeed';
@@ -1335,20 +1190,16 @@ describe('Changes controller', () => {
                    .onCall(0).returns(2)
                    .onCall(1).returns(0);
 
-      return controller
-        .request(testReq, testRes)
-        .then(nextTick)
+      controller.request(testReq, testRes);
+      return nextTick()
         .then(() => {
           changesSpy.callCount.should.equal(2);
           changesSpy.args[1][0].should.deep.equal({
-            batch_size: 3,
             doc_ids: ['a', 'b'],
             since: 'seq'
           });
           controller._getNormalFeeds().forEach(feed => {
-            feed.upstreamRequests.forEach(upstreamReq => {
-              upstreamReq.complete(null, { results: [], last_seq: 5 });
-            });
+            feed.upstreamRequest.complete(null, { results: [], last_seq: 5 });
           });
         })
         .then(nextTick)
@@ -1371,7 +1222,6 @@ describe('Changes controller', () => {
           feed.pendingChanges.should.deep.equal([]);
           feed.results.should.deep.equal([]);
           feed.lastSeq.should.equal(feed.initSeq);
-          feed.chunkedAllowedDocIds.should.equal(false);
           feed.hasNewSubjects.should.equal(false);
           feed.subjectIds = ['a', 'b', 'c'];
         })
@@ -1380,27 +1230,25 @@ describe('Changes controller', () => {
           authorization.getAuthorizationContext.callCount.should.equal(1);
           authorization.getAllowedDocIds.callCount.should.equal(2);
 
-          changesSpy.callCount.should.equal(4);
+          changesSpy.callCount.should.equal(3);
           changesSpy.args[2][0].should.deep.equal({
-            batch_size: 3,
-            doc_ids: ['a', 'b'],
-            since: 'seq'
-          });
-          changesSpy.args[3][0].should.deep.equal({
-            batch_size: 3,
-            doc_ids: ['c', 'd'],
+            doc_ids: ['a', 'b', 'c', 'd'],
             since: 'seq'
           });
 
           controller._getLongpollFeeds().length.should.equal(0);
           const feed = controller._getNormalFeeds()[0];
           feed.id.should.equal(testReq.id);
-          feed.upstreamRequests.length.should.equal(2);
-          feed.chunkedAllowedDocIds.should.deep.equal([[ 'a', 'b' ],[ 'c', 'd' ]]);
+          feed.allowedDocIds.should.deep.equal([ 'a', 'b', 'c', 'd' ]);
 
-          feed.upstreamRequests[0].complete(null, { results: [{ id: 1, changes: [{ rev: 1 }] }], last_seq: 4 });
-          feed.upstreamRequests[1].complete(null,
-            { results: [{ id: 3, changes: [{ rev: 1 }] }, { id: 7, changes: [{ rev: 1 }] }], last_seq: 5 });
+          feed.upstreamRequest.complete(null, {
+            results: [
+              { id: 1, changes: [{ rev: 1 }] },
+              { id: 3, changes: [{ rev: 1 }] },
+              { id: 7, changes: [{ rev: 1 }] }
+            ],
+            last_seq: 5
+          });
         })
         .then(nextTick)
         .then(() => {
@@ -1420,13 +1268,12 @@ describe('Changes controller', () => {
       authorization.getAllowedDocIds.resolves([ 'a',  'b' ]);
       testReq.query = { feed: 'longpoll' };
 
-      return controller
-        .request(testReq, testRes)
-        .then(nextTick)
+      controller.request(testReq, testRes);
+      return nextTick()
         .then(() => {
           clock.tick(20000);
           const feed = controller._getNormalFeeds()[0];
-          feed.upstreamRequests.forEach(upstreamRequest => upstreamRequest.complete(null, { results: [], last_seq: 2 }));
+          feed.upstreamRequest.complete(null, { results: [], last_seq: 2 });
         })
         .then(nextTick)
         .then(() => {
@@ -1441,13 +1288,12 @@ describe('Changes controller', () => {
       authorization.getAllowedDocIds.resolves([ 'a',  'b']);
       testReq.query = { feed: 'longpoll', heartbeat: 5000 };
 
-      return controller
-        .request(testReq, testRes)
-        .then(nextTick)
+      controller.request(testReq, testRes);
+      return nextTick()
         .then(() => {
           clock.tick(20000);
           const feed = controller._getNormalFeeds()[0];
-          feed.upstreamRequests.forEach(upstreamRequest => upstreamRequest.complete(null, { results: [], last_seq: 2 }));
+          feed.upstreamRequest.complete(null, { results: [], last_seq: 2 });
         })
         .then(nextTick)
         .then(() => {
@@ -1467,13 +1313,12 @@ describe('Changes controller', () => {
       authorization.getAllowedDocIds.resolves([ 'a',  'b']);
       testReq.query = { feed: 'longpoll' };
 
-      return controller
-        .request(testReq, testRes)
-        .then(nextTick)
+      controller.request(testReq, testRes);
+      return nextTick()
         .then(() => {
           clock.tick(20000);
           const feed = controller._getNormalFeeds()[0];
-          feed.upstreamRequests.forEach(upstreamRequest => upstreamRequest.complete(null, { results: [], last_seq: 2 }));
+          feed.upstreamRequest.complete(null, { results: [], last_seq: 2 });
         })
         .then(nextTick)
         .then(() => {
@@ -1486,16 +1331,14 @@ describe('Changes controller', () => {
 
     it('cancels all upstreamRequests when the timeout is reached', () => {
       authorization.getAllowedDocIds.resolves([1, 2, 3, 4, 5, 6]);
-      dbConfig.get.resolves(2);
       testReq.query = { timeout: 50000 };
-      return controller
-        .request(testReq, testRes)
-        .then(nextTick)
+
+      controller.request(testReq, testRes);
+      return nextTick()
         .then(() => {
           const feed = controller._getNormalFeeds()[0];
-          feed.upstreamRequests.length.should.equal(3);
           clock.tick(50000);
-          changesCancelSpy.callCount.should.equal(3);
+          changesCancelSpy.callCount.should.equal(1);
           testRes.end.callCount.should.equal(1);
           testRes.write.callCount.should.equal(1);
         });
@@ -1505,12 +1348,11 @@ describe('Changes controller', () => {
       authorization.getAllowedDocIds.resolves([ 'a',  'b']);
       testReq.query = { feed: 'longpoll', timeout: 60000, since: 2 };
 
-      return controller
-        .request(testReq, testRes)
-        .then(nextTick)
+      controller.request(testReq, testRes);
+      return nextTick()
         .then(() => {
           const feed = controller._getNormalFeeds()[0];
-          feed.upstreamRequests.forEach(upstreamRequest => upstreamRequest.complete(null, { results: [], last_seq: 2 }));
+          feed.upstreamRequest.complete(null, { results: [], last_seq: 2 });
         })
         .then(nextTick)
         .then(() => {
@@ -1651,39 +1493,29 @@ describe('Changes controller', () => {
     });
   });
 
-  describe('mergeResults', () => {
-    it('merges results from multiple changes feed responses', () => {
-      const responses = [
-        { results: [{ id: 1 }, { id: 2 }] },
-        { results: [{ id: 3 }, { id: 4 }] },
-        { results: [] },
-        { results: [{ id: 5 }] }
-      ];
-
-      const actual = controller._mergeResults(responses);
-      actual.length.should.equal(5);
-      actual.should.deep.equal([{ id: 1 }, { id: 2 }, { id: 3 }, { id: 4 }, { id: 5 } ]);
-    });
+  describe('generateTombstones', () => {
 
     it('converts tombstone changes to their original document counterparts', () => {
-      const responses = [
-        { results: [{ id: '1-tombstone' }, { id: 2 }] },
-        { results: [{ id: 3 }, { id: '4-tombstone' }] },
+      const results = [
+        { id: '1-tombstone' },
+        { id: 2 },
+        { id: 3 },
+        { id: '4-tombstone' }
       ];
       tombstoneUtils.isTombstoneId.withArgs('1-tombstone').returns(true);
       tombstoneUtils.isTombstoneId.withArgs('4-tombstone').returns(true);
       tombstoneUtils.generateChangeFromTombstone.withArgs({ id: '1-tombstone' }).returns({ id: 1 });
       tombstoneUtils.generateChangeFromTombstone.withArgs({ id: '4-tombstone' }).returns({ id: 4 });
 
-      const actual = controller._mergeResults(responses);
-      actual.length.should.equal(4);
-      actual.should.deep.equal([{ id: 1 }, { id: 2 }, { id: 3 }, { id: 4 }]);
+      controller._generateTombstones(results);
+      results.should.deep.equal([{ id: 1 }, { id: 2 }, { id: 3 }, { id: 4 }]);
       tombstoneUtils.isTombstoneId.callCount.should.equal(4);
       tombstoneUtils.isTombstoneId.args.should.deep.equal([ ['1-tombstone'], [2], [3], ['4-tombstone'] ]);
       tombstoneUtils.generateChangeFromTombstone.callCount.should.equal(2);
       tombstoneUtils.generateChangeFromTombstone.args[0][0].should.deep.equal({ id: '1-tombstone' });
       tombstoneUtils.generateChangeFromTombstone.args[1][0].should.deep.equal({ id: '4-tombstone' });
     });
+
   });
 
   describe('processChange', () => {
