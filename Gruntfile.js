@@ -244,7 +244,7 @@ module.exports = function(grunt) {
           {
             expand: true,
             cwd: 'ddocs/',
-            src: ['**/*', '!**/translations/*'],
+            src: ['**/*'],
             dest: 'build/ddocs/',
           },
         ],
@@ -281,7 +281,7 @@ module.exports = function(grunt) {
           },
         ],
       },
-      'standard-imgs': {
+      'standard': {
         files: [
           {
             expand: true,
@@ -300,6 +300,12 @@ module.exports = function(grunt) {
             cwd: 'config/standard/',
             src: 'resources.json',
             dest: 'build/ddocs/resources/',
+          },
+          {
+            expand: true,
+            cwd:'config/standard/translations',
+            src:'*.properties',
+            dest:'build/ddocs/medic/_attachments/translations/'
           }
         ],
       },
@@ -859,7 +865,6 @@ module.exports = function(grunt) {
   grunt.registerTask('build-dev', 'Build the static resources', [
     'exec:clean-build-dir',
     'copy:ddocs',
-    'merge-translations',
     'mmcss',
     'mmjs',
     'enketo-xslt',
@@ -877,7 +882,7 @@ module.exports = function(grunt) {
   grunt.registerTask('build-ddoc', 'Build the main ddoc', [
     'couch-compile:secondary',
     'copy:ddoc-attachments',
-    'copy:standard-imgs',
+    'copy:standard',
     'appcache',
     'couch-compile:primary',
   ]);
@@ -1027,12 +1032,4 @@ module.exports = function(grunt) {
   grunt.registerTask('default', 'Build and deploy the webapp for dev', [
     'dev-webapp',
   ]);
-
-  grunt.registerTask('merge-translations', 'Merge default and standard translations', function(){
-    const merger = require('./scripts/merge-translations');
-    const defPath = 'ddocs/medic/_attachments/translations/'
-    const configPath = 'config/standard/translations/'
-    const destPath = 'build/ddocs/medic/_attachments/translations/'
-    merger(defPath, configPath, destPath)
-  })
 };
