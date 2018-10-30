@@ -14,10 +14,10 @@ services:
 
 env:
   matrix:
-    - TEST_SUITE=standard NODE_VERSION="lts/*" USE_COUCHDB=false USE_YARN=false
+    - TEST_SUITE=standard NODE_VERSION=8 USE_COUCHDB=false USE_YARN=false
     - TEST_SUITE=normal NODE_VERSION=8 USE_COUCHDB=true USE_YARN=true
     - TEST_SUITE=normal NODE_VERSION=9 USE_COUCHDB=true USE_YARN=true
-    - TEST_SUITE=performance NODE_VERSION="lts/*" USE_COUCHDB=true USE_YARN=true
+    - TEST_SUITE=performance NODE_VERSION=8 USE_COUCHDB=true USE_YARN=true
   global:
     - COUCH_URL=http://admin:pass@localhost:5984/medic
     - COUCH_NODE_NAME=nonode@nohost

@@ -188,6 +188,22 @@ var feedback = require('../modules/feedback'),
       });
     });
 
+    $rootScope.$on('$stateChangeStart', function (event, toState, toParams, fromState, fromParams){
+      if(!$scope.enketoStatus.edited){
+        return;
+      }
+      if(!fromState.url.includes('edit')){
+        return;
+      }
+      if(fromParams.id === toParams.id){
+        return;
+      }
+      if ($scope.cancelCallback) {
+        event.preventDefault();
+        $scope.navigationCancel(); 
+      }
+    });
+
     // User wants to cancel current flow, or pressed back button, etc.
     $scope.navigationCancel = function() {
       if ($scope.enketoStatus.saving) {
@@ -207,6 +223,7 @@ var feedback = require('../modules/feedback'),
         controller: 'NavigationConfirmCtrl',
         singleton: true,
       }).then(function() {
+        $scope.enketoStatus.edited = false;
         if ($scope.cancelCallback) {
           $scope.cancelCallback();
         }
