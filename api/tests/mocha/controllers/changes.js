@@ -164,7 +164,7 @@ describe('Changes controller', () => {
 
   describe('request', () => {
     it('initializes the continuous changes feed', () => {
-      controller.request(testReq, testRes)
+      controller.request(testReq, testRes);
       changesSpy.callCount.should.equal(1);
     });
 
@@ -289,7 +289,6 @@ describe('Changes controller', () => {
           conflicts: true,
           seq_interval: false
         });
-        const feed = controller._getNormalFeeds()[0];
       });
     });
 
@@ -1336,7 +1335,6 @@ describe('Changes controller', () => {
       controller.request(testReq, testRes);
       return nextTick()
         .then(() => {
-          const feed = controller._getNormalFeeds()[0];
           clock.tick(50000);
           changesCancelSpy.callCount.should.equal(1);
           testRes.end.callCount.should.equal(1);
