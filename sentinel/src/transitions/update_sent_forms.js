@@ -2,7 +2,7 @@ var _ = require('underscore'),
   moment = require('moment'),
   config = require('../config'),
   logger = require('../lib/logger'),
-  db = require('../db-nano'),
+  db = require('../db-pouch'),
   transitionUtils = require('./utils'),
   NAME = 'update_sent_forms';
 
@@ -48,7 +48,7 @@ module.exports = {
 
       db.medic.get(clinicId, function(err, clinic) {
         if (err) {
-          logger.error(`update_sent_forms: failed to get facility ${err.toString()}`);
+          logger.error(`update_sent_forms: failed to get facility: ${err}`);
           return reject(err);
         }
         _.defaults(clinic, {
@@ -65,7 +65,7 @@ module.exports = {
           return resolve();
         }
 
-        db.audit.saveDoc(clinic, function(err) {
+        db.medic.put(clinic, function(err) {
           if (err) {
             reject(err);
           } else {

@@ -8,7 +8,6 @@ process.on('unhandledRejection', reason => {
 });
 
 serverChecks.check(db.serverUrl).then(() => {
-  console.log('Testing')
   const app = require('./src/routing'),
     config = require('./src/config'),
     migrations = require('./src/migrations'),

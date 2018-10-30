@@ -156,7 +156,7 @@ module.exports = {
         .valueOf();
       _exists(doc, fields, { startDate: startDate }, (err, result) => {
         if (err) {
-          logger.error(`Error running "uniqueWithin" validation: ${err}`);
+          logger.error('Error running "uniqueWithin" validation', err);
         }
         callback(err, !result);
       });
@@ -279,10 +279,10 @@ module.exports = {
         entities = pupil.parser.parse(pupil.lexer.tokenize(config.rule));
       } catch (e) {
         logger.error(`error parsing validation: ${e.toString()}`);
-        return errors.push(`Error on pupil validations: ${SON.stringify(e)}`);
+        return errors.push('Error on pupil validations: ' + JSON.stringify(e));
       }
       _.each(entities, function(entity) {
-        logger.debug('validation rule entity %s', entity);
+        logger.debug(`validation rule entity ${entity}`);
         if (entity.sub && entity.sub.length > 0) {
           _.each(entity.sub, function(e) {
             logger.debug(`validation rule entity sub ${e.funcName}`);

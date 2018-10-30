@@ -1,5 +1,6 @@
 var utils = require('../lib/utils'),
   db = require('../db-nano'),
+  dbPouch = require('../db-pouch'),
   logger = require('../lib/logger');
 
 module.exports = {
@@ -52,7 +53,7 @@ module.exports = {
           docs.push(doc);
         });
 
-        db.audit.bulkSave(
+        dbPouch.medic.bulkDocs(
           docs,
           {
             all_or_nothing: true,
