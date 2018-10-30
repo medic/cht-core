@@ -9,17 +9,18 @@ const _ = require('underscore'),
       viewMapUtils = require('@shared-libs/view-map-utils')
       contactForms =  require('medic-conf/src/fn/upload-contact-forms'),
       collectForms =  require('medic-conf/src/fn/upload-collect-forms'),
-      appForms =  require('medic-conf/src/fn/upload-app-forms');
+      appForms =  require('medic-conf/src/fn/upload-app-forms'),
+      dbnano = require('./db-nano');
 
 
 let settings = {};
 
 const uploadStandardForms = () => {
   const standDir = __dirname + '/../../config/standard'
-  const dbName = db.serverUrl + '/medic'
-  contactForms(standDir, dbName);
-  collectForms(standDir, dbName);
-  appForms(standDir, dbName);
+  const fullDbName = dbnano.config.url + '/' + dbnano.settings.db
+  contactForms(standDir, fullDbName);
+  collectForms(standDir, fullDbName);
+  appForms(standDir, fullDbName);
 }
 
 const getMessage = (value, locale) => {
