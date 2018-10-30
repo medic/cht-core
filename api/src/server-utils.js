@@ -1,9 +1,9 @@
 var url = require('url'),
-    path = require('path'),
-    db = require('./db-nano'),
-    isClientHuman = require('./is-client-human'),
-    logger = require('./logger'),
-    MEDIC_BASIC_AUTH = 'Basic realm="Medic Mobile Web Services"';
+  path = require('path'),
+  db = require('./db-nano'),
+  isClientHuman = require('./is-client-human'),
+  logger = require('./logger'),
+  MEDIC_BASIC_AUTH = 'Basic realm="Medic Mobile Web Services"';
 
 var wantsJSON = function(req) {
   return req.get('Accept') === 'application/json';
@@ -14,7 +14,7 @@ var writeJSON = function(res, code, message, details) {
   res.json({
     code: code,
     error: message,
-    details: details
+    details: details,
   });
 };
 
@@ -24,7 +24,7 @@ var respond = function(req, res, code, message, details) {
   }
   if (!res.headersSent) {
     res.writeHead(code, {
-      'Content-Type': 'text/plain'
+      'Content-Type': 'text/plain',
     });
   }
   if (details) {
@@ -33,16 +33,15 @@ var respond = function(req, res, code, message, details) {
   res.end(message);
 };
 
-const promptForBasicAuth = (res) => {
+const promptForBasicAuth = res => {
   res.writeHead(401, {
     'Content-Type': 'text/plain',
-    'WWW-Authenticate': MEDIC_BASIC_AUTH
+    'WWW-Authenticate': MEDIC_BASIC_AUTH,
   });
   res.end('not logged in');
 };
 
 module.exports = {
-
   MEDIC_BASIC_AUTH: MEDIC_BASIC_AUTH,
 
   /*
@@ -81,7 +80,7 @@ module.exports = {
     if (isClientHuman(req)) {
       var redirectUrl = url.format({
         pathname: path.join('/', db.settings.db, 'login'),
-        query: { redirect: req.url }
+        query: { redirect: req.url },
       });
       res.redirect(302, redirectUrl);
     } else {
@@ -93,7 +92,7 @@ module.exports = {
    * Only to be used when handling unexpected errors.
    */
   serverError: function(err, req, res) {
-    logger.error('Server error:\n', err);
+    logger.error(`Server error: ${err}`);
     if (err.publicMessage) {
       respond(req, res, 500, `Server error: ${err.publicMessage}`);
     } else {
@@ -102,9 +101,14 @@ module.exports = {
   },
 
   emptyJSONBodyError: (req, res) => {
-    return module.exports.error({
-      code: 400,
-      message: 'Request body is empty or Content-Type header was not set to application/json.'
-    }, req, res);
-  }
+    return module.exports.error(
+      {
+        code: 400,
+        message:
+          'Request body is empty or Content-Type header was not set to application/json.',
+      },
+      req,
+      res
+    );
+  },
 };

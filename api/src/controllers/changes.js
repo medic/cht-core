@@ -1,21 +1,21 @@
 const auth = require('../auth'),
-      db = require('../db-pouch'),
-      authorization = require('../services/authorization'),
-      _ = require('underscore'),
-      heartbeatFilter = require('../services/heartbeat-filter'),
-      dbConfig = require('../services/db-config'),
-      tombstoneUtils = require('@shared-libs/tombstone-utils'),
-      uuid = require('uuid/v4'),
-      config = require('../config'),
-      logger = require('../logger'),
-      DEFAULT_MAX_DOC_IDS = 100;
+  db = require('../db-pouch'),
+  authorization = require('../services/authorization'),
+  _ = require('underscore'),
+  heartbeatFilter = require('../services/heartbeat-filter'),
+  dbConfig = require('../services/db-config'),
+  tombstoneUtils = require('@shared-libs/tombstone-utils'),
+  uuid = require('uuid/v4'),
+  config = require('../config'),
+  logger = require('../logger'),
+  DEFAULT_MAX_DOC_IDS = 100;
 
 let inited = false,
-    continuousFeed = false,
-    longpollFeeds = [],
-    normalFeeds = [],
-    currentSeq = 0,
-    MAX_DOC_IDS;
+  continuousFeed = false,
+  longpollFeeds = [],
+  normalFeeds = [],
+  currentSeq = 0,
+  MAX_DOC_IDS;
 
 const split = (array, count) => {
   count = Number.parseInt(count);
@@ -39,7 +39,10 @@ const cleanUp = feed => {
 };
 
 const isLongpoll = req => {
-  return req.query && ['longpoll', 'continuous', 'eventsource'].indexOf(req.query.feed) !== -1;
+  return (
+    req.query &&
+    ['longpoll', 'continuous', 'eventsource'].indexOf(req.query.feed) !== -1
+  );
 };
 
 const defibrillator = feed => {
@@ -82,13 +85,13 @@ const endFeed = (feed, write = true, debounced = false) => {
 const generateResponse = feed => {
   if (feed.error) {
     return {
-      error: 'Error processing your changes'
+      error: 'Error processing your changes',
     };
   }
 
   return {
     results: feed.results,
-    last_seq: feed.lastSeq
+    last_seq: feed.lastSeq,
   };
 };
 
@@ -100,8 +103,10 @@ const appendChange = (results, changeObj) => {
   }
 
   // append missing revs to the list
-  _.difference(changeObj.change.changes.map(rev => rev.rev), result.changes.map(rev => rev.rev))
-    .forEach(rev => result.changes.push({ rev: rev }));
+  _.difference(
+    changeObj.change.changes.map(rev => rev.rev),
+    result.changes.map(rev => rev.rev)
+  ).forEach(rev => result.changes.push({ rev: rev }));
 
   // add the deleted flag, if needed
   if (changeObj.change.deleted) {
@@ -110,16 +115,20 @@ const appendChange = (results, changeObj) => {
 };
 
 // appends allowed `changes` to feed `results`
-const processPendingChanges = (feed) => {
+const processPendingChanges = feed => {
   authorization
     .filterAllowedDocs(feed, feed.pendingChanges)
     .forEach(changeObj => appendChange(feed.results, changeObj));
 };
 
 // returns true if an authorization change is found
-const hasAuthorizationChange = (feed) => {
+const hasAuthorizationChange = feed => {
   return feed.pendingChanges.some(changeObj => {
-    return authorization.isAuthChange(changeObj.id, feed.req.userCtx, changeObj.viewResults);
+    return authorization.isAuthChange(
+      changeObj.id,
+      feed.req.userCtx,
+      changeObj.viewResults
+    );
   });
 };
 
@@ -129,7 +138,9 @@ const validResults = responses => {
 };
 
 const canceledResults = responses => {
-  return responses.find(response => response && response.status === 'cancelled');
+  return responses.find(
+    response => response && response.status === 'cancelled'
+  );
 };
 
 const mergeResults = responses => {
@@ -173,7 +184,7 @@ const resetFeed = feed => {
     results: [],
     lastSeq: feed.initSeq,
     chunkedAllowedDocIds: false,
-    hasNewSubjects: false
+    hasNewSubjects: false,
   });
 };
 
@@ -184,32 +195,36 @@ const restartNormalFeed = feed => {
 
   resetFeed(feed);
 
-  return authorization
-    .getAllowedDocIds(feed)
-    .then(allowedDocIds => {
-      feed.allowedDocIds = allowedDocIds;
-      getChanges(feed);
+  return authorization.getAllowedDocIds(feed).then(allowedDocIds => {
+    feed.allowedDocIds = allowedDocIds;
+    getChanges(feed);
   });
 };
 
 const getChanges = feed => {
   const options = {
-    since: feed.req.query && feed.req.query.since || 0,
+    since: (feed.req.query && feed.req.query.since) || 0,
     // PouchDB batches requests using this value as a limit and keeps issuing requests until the result
     // set length is lower than the limit.
-    batch_size: MAX_DOC_IDS + 1
+    batch_size: MAX_DOC_IDS + 1,
   };
-  _.extend(options, _.pick(feed.req.query, 'style', 'conflicts', 'seq_interval'));
+  _.extend(
+    options,
+    _.pick(feed.req.query, 'style', 'conflicts', 'seq_interval')
+  );
 
-  feed.chunkedAllowedDocIds = feed.chunkedAllowedDocIds || split(feed.allowedDocIds, MAX_DOC_IDS);
+  feed.chunkedAllowedDocIds =
+    feed.chunkedAllowedDocIds || split(feed.allowedDocIds, MAX_DOC_IDS);
   feed.upstreamRequests = feed.chunkedAllowedDocIds.map(docIds => {
     return db.medic
       .changes(_.extend({ doc_ids: docIds }, options))
-      .on('complete', info => feed.lastSeq = info && info.last_seq || feed.lastSeq);
+      .on(
+        'complete',
+        info => (feed.lastSeq = (info && info.last_seq) || feed.lastSeq)
+      );
   });
 
-  return Promise
-    .all(feed.upstreamRequests)
+  return Promise.all(feed.upstreamRequests)
     .then(responses => {
       // if any of the responses was incomplete
       if (!validResults(responses)) {
@@ -241,8 +256,8 @@ const getChanges = feed => {
       longpollFeeds.push(feed);
     })
     .catch(err => {
-      logger.error(feed.id +  ' Error while requesting `normal` changes feed');
-      logger.error(err);
+      logger.error(`${feed.id} Error while requesting "normal" changes feed`);
+      logger.error(err.toString());
       // cancel ongoing requests and send error response
       feed.upstreamRequests.forEach(request => request.cancel());
       feed.error = err;
@@ -255,17 +270,22 @@ const initFeed = (req, res) => {
     id: req.id || uuid(),
     req: req,
     res: res,
-    initSeq: req.query && req.query.since || 0,
-    lastSeq: req.query && req.query.since || currentSeq,
+    initSeq: (req.query && req.query.since) || 0,
+    lastSeq: (req.query && req.query.since) || currentSeq,
     pendingChanges: [],
     results: [],
     upstreamRequests: [],
-    limit: req.query && req.query.limit || config.get('changes_controller').changes_limit,
-    reiterate_changes: config.get('changes_controller').reiterate_changes
+    limit:
+      (req.query && req.query.limit) ||
+      config.get('changes_controller').changes_limit,
+    reiterate_changes: config.get('changes_controller').reiterate_changes,
   };
 
   if (config.get('changes_controller').debounce_interval) {
-    feed.debounceEnd = _.debounce(() => endFeed(feed, true, true), config.get('changes_controller').debounce_interval);
+    feed.debounceEnd = _.debounce(
+      () => endFeed(feed, true, true),
+      config.get('changes_controller').debounce_interval
+    );
   }
 
   defibrillator(feed);
@@ -292,12 +312,10 @@ const processRequest = (req, res) => {
 // restarts the request, refreshing user-settings
 const reauthorizeRequest = feed => {
   endFeed(feed, false);
-  return auth
-    .getUserSettings(feed.req.userCtx)
-    .then(userCtx => {
-      feed.req.userCtx = userCtx;
-      processRequest(feed.req, feed.res);
-    });
+  return auth.getUserSettings(feed.req.userCtx).then(userCtx => {
+    feed.req.userCtx = userCtx;
+    processRequest(feed.req, feed.res);
+  });
 };
 
 const addChangeToLongpollFeed = (feed, changeObj) => {
@@ -316,11 +334,13 @@ const addChangeToLongpollFeed = (feed, changeObj) => {
 
 const processChange = (change, seq) => {
   const changeObj = {
-    change: tombstoneUtils.isTombstoneId(change.id) ? tombstoneUtils.generateChangeFromTombstone(change) : change,
+    change: tombstoneUtils.isTombstoneId(change.id)
+      ? tombstoneUtils.generateChangeFromTombstone(change)
+      : change,
     viewResults: authorization.getViewResults(change.doc),
     get id() {
       return this.change.id;
-    }
+    },
   };
   delete change.doc;
 
@@ -333,14 +353,28 @@ const processChange = (change, seq) => {
   // send the change through to the longpoll feeds which are allowed to see it
   longpollFeeds.forEach(feed => {
     feed.lastSeq = seq;
-    const allowed = authorization.allowedDoc(changeObj.id, feed, changeObj.viewResults),
-          newSubjects = authorization.updateContext(allowed, feed, changeObj.viewResults);
+    const allowed = authorization.allowedDoc(
+        changeObj.id,
+        feed,
+        changeObj.viewResults
+      ),
+      newSubjects = authorization.updateContext(
+        allowed,
+        feed,
+        changeObj.viewResults
+      );
 
     if (!allowed) {
       return feed.reiterate_changes && feed.pendingChanges.push(changeObj);
     }
 
-    if (authorization.isAuthChange(changeObj.id, feed.req.userCtx, changeObj.viewResults)) {
+    if (
+      authorization.isAuthChange(
+        changeObj.id,
+        feed.req.userCtx,
+        changeObj.viewResults
+      )
+    ) {
       return reauthorizeRequest(feed);
     }
 
@@ -372,15 +406,18 @@ const getCouchDbConfig = () => {
   // limit on processing changes feeds with the _doc_ids filter within a
   // reasonable amount of time.
   // While hardcoded at first, CouchDB 2.1.1 has the option to configure this value
-  return dbConfig.get('couchdb', 'changes_doc_ids_optimization_threshold')
+  return dbConfig
+    .get('couchdb', 'changes_doc_ids_optimization_threshold')
     .catch(err => {
-      logger.error('Could not read changes_doc_ids_optimization_threshold config value.');
-      logger.error(err);
+      logger.error(
+        'Could not read changes_doc_ids_optimization_threshold config value.'
+      );
+      logger.error(err.toString());
       return DEFAULT_MAX_DOC_IDS;
     })
     .then(value => {
       value = parseInt(value);
-      const isValidValue = (!isNaN(value) && value > 0);
+      const isValidValue = !isNaN(value) && value > 0;
       MAX_DOC_IDS = isValidValue ? value : DEFAULT_MAX_DOC_IDS;
     });
 };
@@ -430,6 +467,6 @@ if (process.env.UNIT_TEST_ENV) {
     _getCurrentSeq: () => currentSeq,
     _getMaxDocIds: () => MAX_DOC_IDS,
     _inited: () => inited,
-    _getContinuousFeed: () => continuousFeed
+    _getContinuousFeed: () => continuousFeed,
   });
 }

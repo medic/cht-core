@@ -2,7 +2,7 @@ var moment = require('moment'),
   sinon = require('sinon'),
   assert = require('chai').assert,
   db = require('../../src/db-pouch'),
-  { logger } = require('../../src/lib/logger'),
+  logger = require('../../src/lib/logger'),
   transition = require('../../src/transitions/update_sent_forms');
 
 describe('update sent by', () => {

@@ -1,11 +1,11 @@
 const { promisify } = require('util'),
-      fs = require('fs'),
-      readdir = promisify(fs.readdir),
-      path = require('path'),
-      db = require('./db-pouch'),
-      MIGRATION_LOG_ID = 'migration-log',
-      MIGRATION_LOG_TYPE = 'meta',
-      MIGRATIONS_DIR = path.join(__dirname, 'migrations');
+  fs = require('fs'),
+  readdir = promisify(fs.readdir),
+  path = require('path'),
+  db = require('./db-pouch'),
+  MIGRATION_LOG_ID = 'migration-log',
+  MIGRATION_LOG_TYPE = 'meta',
+  MIGRATIONS_DIR = path.join(__dirname, 'migrations');
 
 const hasRun = (log, migration) => {
   if (!log || !log.migrations) {
@@ -17,15 +17,11 @@ const hasRun = (log, migration) => {
 const getLogWithView = () => {
   const options = {
     include_docs: true,
-    key: [ MIGRATION_LOG_TYPE ]
+    key: [MIGRATION_LOG_TYPE],
   };
-  return db.medic.query('medic-client/doc_by_type', options)
-    .then(result => {
-      return result &&
-             result.rows &&
-             result.rows[0] &&
-             result.rows[0].doc;
-    });
+  return db.medic.query('medic-client/doc_by_type', options).then(result => {
+    return result && result.rows && result.rows[0] && result.rows[0].doc;
+  });
 };
 
 const deleteOldLog = oldLog => {
@@ -41,25 +37,23 @@ const createMigrationLog = () => {
       const newLog = {
         _id: MIGRATION_LOG_ID,
         type: MIGRATION_LOG_TYPE,
-        migrations: (oldLog && oldLog.migrations) || []
+        migrations: (oldLog && oldLog.migrations) || [],
       };
-      return db.medic.put(newLog)
-        .then(() => deleteOldLog(oldLog));
+      return db.medic.put(newLog).then(() => deleteOldLog(oldLog));
     })
     .then(() => getLog());
 };
 
 const getLog = () => {
-  return db.medic.get(MIGRATION_LOG_ID)
-    .catch(err => {
-      if (err.status === 404) {
-        return createMigrationLog();
-      }
-      throw err;
-    });
+  return db.medic.get(MIGRATION_LOG_ID).catch(err => {
+    if (err.status === 404) {
+      return createMigrationLog();
+    }
+    throw err;
+  });
 };
 
-const  logger = require('./logger');
+const logger = require('./logger');
 
 const sortMigrations = (lhs, rhs) => {
   return lhs.created - rhs.created;
@@ -67,10 +61,13 @@ const sortMigrations = (lhs, rhs) => {
 
 const runMigration = migration => {
   if (!migration.created) {
-    return Promise.reject(new Error(`Migration "${migration.name}" has no "created" date property`));
+    return Promise.reject(
+      new Error(`Migration "${migration.name}" has no "created" date property`)
+    );
   }
   logger.info(`Running migration ${migration.name}...`);
-  return migration.run()
+  return migration
+    .run()
     .then(getLog)
     .then(log => {
       log.migrations.push(migration.name);
@@ -100,15 +97,15 @@ const runMigrations = (log, migrations) => {
 
 module.exports = {
   run: () => {
-    return Promise.all([ getLog(), module.exports.get() ])
-      .then(([ log, migrations ]) => runMigrations(log, migrations));
+    return Promise.all([getLog(), module.exports.get()]).then(
+      ([log, migrations]) => runMigrations(log, migrations)
+    );
   },
   get: () => {
-    return readdir(MIGRATIONS_DIR)
-      .then(files => {
-        return files
-          .filter(file => file.substr(-3) === '.js')
-          .map(file => require(path.join(MIGRATIONS_DIR, file)));
-      });
-  }
+    return readdir(MIGRATIONS_DIR).then(files => {
+      return files
+        .filter(file => file.substr(-3) === '.js')
+        .map(file => require(path.join(MIGRATIONS_DIR, file)));
+    });
+  },
 };

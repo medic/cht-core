@@ -2,7 +2,7 @@ const _ = require('underscore'),
   async = require('async'),
   utils = require('../lib/utils'),
   transitionUtils = require('./utils'),
-  { logger } = require('../lib/logger'),
+  logger = require('../lib/logger'),
   dbPouch = require('../db-pouch'),
   lineage = require('lineage')(Promise, dbPouch.medic),
   messages = require('../lib/messages'),
@@ -69,7 +69,7 @@ const booleanExpressionFails = (doc, expr) => {
     } catch (err) {
       // TODO should this count as a fail or as a real error
       logger.warn('Failed to eval boolean expression:');
-      logger.error(err.toString());
+      logger.info(err.toString());
       result = true;
     }
   }

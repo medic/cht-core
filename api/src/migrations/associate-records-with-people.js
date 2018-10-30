@@ -1,9 +1,9 @@
 var async = require('async'),
-    {promisify} = require('util'),
-    _ = require('underscore'),
-    db = require('../db-nano'),
-    logger = require('../logger'),
-    BATCH_SIZE = 100;
+  { promisify } = require('util'),
+  _ = require('underscore'),
+  db = require('../db-nano'),
+  logger = require('../logger'),
+  BATCH_SIZE = 100;
 
 var getClinic = function(id, callback) {
   db.medic.get(id, function(err, clinic) {
@@ -106,7 +106,7 @@ var migrate = function(doc, callback) {
 };
 
 var save = function(docs, callback) {
-  db.medic.bulk({ docs : docs }, function(err, results) {
+  db.medic.bulk({ docs: docs }, function(err, results) {
     if (err) {
       return callback(err);
     }
@@ -120,7 +120,9 @@ var save = function(docs, callback) {
       });
 
       if (errors.length) {
-        return callback(new Error('Bulk create errors: ' + JSON.stringify(errors, null, 2)));
+        return callback(
+          new Error('Bulk create errors: ' + JSON.stringify(errors, null, 2))
+        );
       }
     }
 
@@ -129,30 +131,26 @@ var save = function(docs, callback) {
 };
 
 var associate = function(docs, callback) {
-  async.map(
-    docs,
-    migrate,
-    function(err, results) {
-      if (err) {
-        return callback(err);
-      }
-
-      var docs = _.compact(results);
-      if (!docs.length) {
-        return callback();
-      }
-
-      save(docs, callback);
+  async.map(docs, migrate, function(err, results) {
+    if (err) {
+      return callback(err);
     }
-  );
+
+    var docs = _.compact(results);
+    if (!docs.length) {
+      return callback();
+    }
+
+    save(docs, callback);
+  });
 };
 
 var runBatch = function(skip, callback) {
   var options = {
-    key: [ 'data_record' ],
+    key: ['data_record'],
     include_docs: true,
     limit: BATCH_SIZE,
-    skip: skip
+    skip: skip,
   };
   db.medic.view('medic-client', 'doc_by_type', options, function(err, result) {
     if (err) {
@@ -182,5 +180,5 @@ module.exports = {
       },
       callback
     );
-  })
+  }),
 };

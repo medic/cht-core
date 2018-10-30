@@ -3,7 +3,7 @@ PouchDB.plugin(require('pouchdb-adapter-http'));
 PouchDB.plugin(require('pouchdb-mapreduce'));
 
 const { COUCH_URL, UNIT_TEST_ENV } = process.env,
-  { logger } = require('./lib/logger');
+  logger = require('./lib/logger');
 
 if (UNIT_TEST_ENV) {
   const stubMe = functionName => () => {
@@ -53,7 +53,7 @@ if (UNIT_TEST_ENV) {
 } else {
   logger.warn(
     'Please define a COUCH_URL in your environment e.g. \n' +
-      'export COUCH_URL=\'http://admin:123qwe@localhost:5984/medic\'\n\n' +
+      "export COUCH_URL='http://admin:123qwe@localhost:5984/medic'\n\n" +
       'If you are running unit tests use UNIT_TEST_ENV=1 in your environment.\n'
   );
   process.exit(1);

@@ -2,7 +2,7 @@ const async = require('async'),
   moment = require('moment'),
   date = require('../date'),
   config = require('../config'),
-  { logger } = require('../lib/logger'),
+  logger = require('../lib/logger'),
   db = require('../db-nano');
 
 const tasks = {
@@ -55,7 +55,7 @@ exports.checkSchedule = function() {
     ],
     err => {
       if (err) {
-        logger.error('Error running tasks: ' + JSON.stringify(err));
+        logger.error(`Error running tasks: ${JSON.stringify(err)}`);
       }
       _reschedule();
     }
@@ -70,9 +70,6 @@ function _reschedule() {
       .add(5, 'minutes'),
     duration = moment.duration(heartbeat.valueOf() - now.valueOf());
 
-  logger.info(
-    'checking schedule again in',
-    moment.duration(duration).humanize()
-  );
+  logger.info(`checking schedule again in ${moment.duration(duration).humanize()}`);
   setTimeout(exports.checkSchedule, duration.asMilliseconds());
 }

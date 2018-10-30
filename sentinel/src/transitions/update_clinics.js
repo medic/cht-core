@@ -1,5 +1,5 @@
 const _ = require('underscore'),
-  { logger } = require('../lib/logger'),
+  logger = require('../lib/logger'),
   transitionUtils = require('./utils'),
   db = require('../db-nano'),
   dbPouch = require('../db-pouch'),
@@ -22,7 +22,7 @@ const associateContact = (doc, contact, callback) => {
     contact.phone = doc.from;
     dbPouch.medic.put(contact, err => {
       if (err) {
-        logger.error('Error updating contact: ' + JSON.stringify(err, null, 2));
+        logger.error(`Error updating contact: ${JSON.stringify(err, null, 2)}`);
         return callback(err);
       }
       self.setContact(doc, contact, callback);

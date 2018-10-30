@@ -1,7 +1,7 @@
 const _ = require('underscore'),
-      db = require('./db-pouch'),
-      { logger } = require('./lib/logger'),
-      translations = {};
+  db = require('./db-pouch'),
+  logger = require('./lib/logger'),
+  translations = {};
 
 const DEFAULT_CONFIG = {
   schedule_morning_hours: 0,
@@ -10,28 +10,30 @@ const DEFAULT_CONFIG = {
   schedule_evening_minutes: 0,
   synthetic_date: null,
   transitions: {},
-  loglevel: 'info'
+  loglevel: 'info',
 };
 
 let config = DEFAULT_CONFIG;
 
 const loadTranslations = () => {
   const options = {
-    startkey: [ 'translations', false ],
-    endkey: [ 'translations', true ],
-    include_docs: true
+    startkey: ['translations', false],
+    endkey: ['translations', true],
+    include_docs: true,
   };
-  return db.medic.query('medic-client/doc_by_type', options)
+  return db.medic
+    .query('medic-client/doc_by_type', options)
     .then(result => {
-      result.rows.forEach(row => translations[row.doc.code] = row.doc.values);
+      result.rows.forEach(row => (translations[row.doc.code] = row.doc.values));
     })
     .catch(err => {
-      logger.error('Error loading translations - starting up anyway', err);
+      logger.error(`Error loading translations - starting up anyway ${err.toString()}`);
     });
 };
 
 const initFeed = () => {
-  db.medic.changes({ live: true, since: 'now' })
+  db.medic
+    .changes({ live: true, since: 'now' })
     .on('change', change => {
       if (change.id === 'settings') {
         logger.info('Reloading configuration');
@@ -42,13 +44,14 @@ const initFeed = () => {
       }
     })
     .on('error', err => {
-      logger.error('Error watching changes, restarting', err);
+      logger.error(`Error watching changes, restarting: ${err.toString()}`);
       process.exit(1);
     });
 };
 
 const initConfig = () => {
-  return db.medic.get('settings')
+  return db.medic
+    .get('settings')
     .then(doc => {
       _.defaults(doc.settings, DEFAULT_CONFIG);
       config = doc.settings;
@@ -62,7 +65,7 @@ const initConfig = () => {
       require('./transitions').loadTransitions();
     })
     .catch(err => {
-      logger.error(err);
+      logger.error(err.toString());
       throw new Error('Error loading configuration');
     });
 };
@@ -79,7 +82,6 @@ module.exports = {
   },
   init: () => {
     initFeed();
-    return loadTranslations()
-      .then(initConfig);
-  }
+    return loadTranslations().then(initConfig);
+  },
 };

@@ -1,8 +1,8 @@
 const async = require('async'),
-      _ = require('underscore'),
-      db = require('./db-nano'),
-      logger = require('./logger'),
-      DEFAULT_BATCH_LIMIT = 100; // 100 is a good compromise of performance and stability
+  _ = require('underscore'),
+  db = require('./db-nano'),
+  logger = require('./logger'),
+  DEFAULT_BATCH_LIMIT = 100; // 100 is a good compromise of performance and stability
 
 const runBatch = (ddocName, viewName, viewParams, iteratee, callback) => {
   db.medic.view(ddocName, viewName, viewParams, (err, response) => {
@@ -15,7 +15,7 @@ const runBatch = (ddocName, viewName, viewParams, iteratee, callback) => {
       const lastRow = response.rows.pop();
       nextPage = {
         startkey: lastRow.key,
-        startkey_docid: lastRow.id
+        startkey_docid: lastRow.id,
       };
     }
     const docs = response.rows.map(row => row.doc);

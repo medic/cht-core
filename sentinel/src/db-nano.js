@@ -6,7 +6,7 @@
 
 var nano = require('nano'),
   url = require('url'),
-  { logger } = require('./lib/logger');
+  logger = require('./lib/logger');
 
 var couchUrl = process.env.COUCH_URL;
 if (couchUrl) {

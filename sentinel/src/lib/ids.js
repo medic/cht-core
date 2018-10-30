@@ -1,12 +1,12 @@
 const _ = require('underscore'),
-      { logger } = require('./logger');
+  logger = require('./logger');
 
 const ID_LENGTH_DOC_ID = 'shortcode-id-length',
-      ID_LENGTH_PARAM = 'current_length',
-      MIN_ID_LENGTH = 5,
-      INITIAL_ID_LENGTH = MIN_ID_LENGTH,
-      MAX_ID_LENGTH = 13,
-      MAX_IDS_TO_CACHE = 100;
+  ID_LENGTH_PARAM = 'current_length',
+  MIN_ID_LENGTH = 5,
+  INITIAL_ID_LENGTH = MIN_ID_LENGTH,
+  MAX_ID_LENGTH = 13,
+  MAX_IDS_TO_CACHE = 100;
 
 /*
 Is not used to actually directly check ID validity: instead, it introduces an inherent
@@ -15,13 +15,13 @@ two numbers results in a different checksum digit, and thus an invalid id.
  - 1234 -> 12348
  - 1324 -> 13249, a transpose also changes the checksum id
 */
-const addCheckDigit = (digits) => {
+const addCheckDigit = digits => {
   const digitArray = digits.split('');
 
   const offset = digitArray.length + 1;
   const total = _.reduce(
     digitArray,
-    (sum, digit, index) => sum + (Number(digit) * (offset - index)),
+    (sum, digit, index) => sum + Number(digit) * (offset - index),
     0
   );
 
@@ -31,12 +31,17 @@ const addCheckDigit = (digits) => {
   return digitArray.join('');
 };
 
-const randomDigits = (length) =>
-  Math.random().toString().replace('0.', '').substring(0, length);
+const randomDigits = length =>
+  Math.random()
+    .toString()
+    .replace('0.', '')
+    .substring(0, length);
 
-const generateId = (length) => {
+const generateId = length => {
   if (length && typeof length !== 'number') {
-    throw new Error(`generateId requires that you pass it a length ${MIN_ID_LENGTH} <= x <= ${MAX_ID_LENGTH}`);
+    throw new Error(
+      `generateId requires that you pass it a length ${MIN_ID_LENGTH} <= x <= ${MAX_ID_LENGTH}`
+    );
   }
 
   if (length < MIN_ID_LENGTH) {
@@ -67,7 +72,7 @@ const getIdLengthDoc = db =>
           return reject(err);
         } else {
           result = {
-            _id: ID_LENGTH_DOC_ID
+            _id: ID_LENGTH_DOC_ID,
           };
 
           result[ID_LENGTH_PARAM] = INITIAL_ID_LENGTH;
@@ -75,7 +80,8 @@ const getIdLengthDoc = db =>
       }
 
       resolve(result);
-    }));
+    })
+  );
 
 const putIdLengthDoc = (db, idLengthDoc) =>
   new Promise((resolve, reject) =>
@@ -85,14 +91,17 @@ const putIdLengthDoc = (db, idLengthDoc) =>
         // because a human edited it to suite their needs, and their write is more
         // important than ours.
         if (err.statusCode === 409) {
-          logger.warn(`409 while trying to store ${idLengthDoc}. If someone edited this document it is expected.`);
+          logger.warn(
+            `409 while trying to store ${idLengthDoc}. If someone edited this document it is expected.`
+          );
         } else {
           return reject(err);
         }
       }
 
       resolve();
-    }));
+    })
+  );
 
 /*
  * Given a collection of ids return an array of those not used already
@@ -103,22 +112,27 @@ const findUnusedIds = (db, freshIds) => {
     return keys;
   }, []);
   return new Promise((resolve, reject) => {
-    db.medic.view('medic-client', 'contacts_by_reference', { keys: keys }, (err, results) => {
-      if (err) {
-        return reject(err);
+    db.medic.view(
+      'medic-client',
+      'contacts_by_reference',
+      { keys: keys },
+      (err, results) => {
+        if (err) {
+          return reject(err);
+        }
+
+        const uniqueIds = new Set(freshIds);
+
+        results.rows.forEach(row => {
+          uniqueIds.delete(row.key[1]);
+        });
+        resolve(uniqueIds);
       }
-
-      const uniqueIds = new Set(freshIds);
-
-      results.rows.forEach(row => {
-        uniqueIds.delete(row.key[1]);
-      });
-      resolve(uniqueIds);
-    });
+    );
   });
 };
 
-const generateNewIds = (currentIdLength) => {
+const generateNewIds = currentIdLength => {
   const freshIds = new Set();
   do {
     freshIds.add(generateId(currentIdLength));
@@ -138,22 +152,24 @@ const generator = function*(db) {
   }
 
   const getNextValue = () => {
-    const {value, done} = cachedIds.next();
+    const { value, done } = cachedIds.next();
     if (done) {
-      return getIdLengthDoc(db)
-        .then(idLengthDoc =>
-          findUnusedIds(db, generateNewIds(idLengthDoc[ID_LENGTH_PARAM]))
-            .then(unusedIds => {
-              if (unusedIds.size === 0) {
-                // Couldn't do it at this length, increase the length and attempt
-                // getNextValue again, thus attempting another cache replenish
-                logger.warn('Could not create a unique id of length ' + idLengthDoc[ID_LENGTH_PARAM] + ', increasing length');
-                idLengthDoc[ID_LENGTH_PARAM] += 1;
-                return putIdLengthDoc(db, idLengthDoc).then(getNextValue);
-              } else {
-                cachedIds = unusedIds.values();
-                return getNextValue();
-              }}));
+      return getIdLengthDoc(db).then(idLengthDoc =>
+        findUnusedIds(db, generateNewIds(idLengthDoc[ID_LENGTH_PARAM])).then(
+          unusedIds => {
+            if (unusedIds.size === 0) {
+              // Couldn't do it at this length, increase the length and attempt
+              // getNextValue again, thus attempting another cache replenish
+              logger.warn(`Could not create a unique id of length ${idLengthDoc[ID_LENGTH_PARAM]}, increasing length`);
+              idLengthDoc[ID_LENGTH_PARAM] += 1;
+              return putIdLengthDoc(db, idLengthDoc).then(getNextValue);
+            } else {
+              cachedIds = unusedIds.values();
+              return getNextValue();
+            }
+          }
+        )
+      );
     } else {
       return Promise.resolve(value);
     }
@@ -165,12 +181,12 @@ const generator = function*(db) {
 };
 
 module.exports = {
-    _generate: generateId,
+  _generate: generateId,
 
-    /*
+  /*
       Returns a generator that creates random N digit IDs. The last ID is a
       checksum digit. ID length starts at 5 and is increased if it is determined
       that there the ID space has been depleted.
     */
-    generator: generator
+  generator: generator,
 };

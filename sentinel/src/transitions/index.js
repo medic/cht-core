@@ -9,7 +9,7 @@ const _ = require('underscore'),
   feed = require('../lib/feed'),
   dbPouch = require('../db-pouch'),
   lineage = require('lineage')(Promise, dbPouch.medic),
-  { logger } = require('../lib/logger'),
+  logger = require('../lib/logger'),
   config = require('../config'),
   db = require('../db-nano'),
   infodoc = require('../lib/infodoc'),
@@ -83,7 +83,7 @@ const processChange = (change, callback) => {
       ],
       err => {
         if (err) {
-          logger.error('Error cleaning up deleted doc', err);
+          logger.error(`Error cleaning up deleted doc: ${err}`);
         }
 
         tombstoneUtils
@@ -130,7 +130,7 @@ const processChange = (change, callback) => {
       });
     })
     .catch(err => {
-      logger.error(`transitions: fetch failed for ${change.id} (${err})`, err);
+      logger.error(`transitions: fetch failed for ${change.id} (${err})`);
       return callback();
     });
 };
@@ -204,7 +204,7 @@ const loadTransitions = () => {
     } catch (e) {
       loadError = true;
       logger.error(`Failed loading transition "${transition}"`);
-      logger.error(e);
+      logger.error(e.toString());
     }
   });
 
@@ -335,7 +335,9 @@ const applyTransition = ({ key, change, transition }, callback) => {
       logger.debug(
         `finished transition ${key} for seq ${change.seq} doc ${
           change.id
-        } is ` + changed ? 'changed' : 'unchanged'
+        } is ` + changed
+          ? 'changed'
+          : 'unchanged'
       );
       if (!changed) {
         return changed;
@@ -420,7 +422,7 @@ const attach = () => {
     return metadata
       .getProcessedSeq()
       .catch(err => {
-        logger.error('transitions: error fetching processed seq', err);
+        logger.error(`transitions: error fetching processed seq (${err}`);
       })
       .then(seq => {
         logger.info(`transitions: fetching changes feed, starting from ${seq}`);

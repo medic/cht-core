@@ -3,22 +3,21 @@
  * @see https://github.com/medic/medic-gateway
  */
 const db = require('../db-pouch'),
-      messageUtils = require('../message-utils'),
-      recordUtils = require('./record-utils'),
-      logger = require('../logger'),
-
-      // map from the medic-gateway state to the medic-webapp state
-      STATUS_MAP = {
-        UNSENT: 'received-by-gateway',
-        PENDING: 'forwarded-by-gateway',
-        SENT: 'sent',
-        DELIVERED: 'delivered',
-        FAILED: 'failed',
-      };
+  messageUtils = require('../message-utils'),
+  recordUtils = require('./record-utils'),
+  logger = require('../logger'),
+  // map from the medic-gateway state to the medic-webapp state
+  STATUS_MAP = {
+    UNSENT: 'received-by-gateway',
+    PENDING: 'forwarded-by-gateway',
+    SENT: 'sent',
+    DELIVERED: 'delivered',
+    FAILED: 'failed',
+  };
 
 const mapStateFields = update => {
   const result = {
-    messageId: update.id
+    messageId: update.id,
   };
   result.state = STATUS_MAP[update.status];
   if (result.state) {
@@ -35,7 +34,7 @@ const mapStateFields = update => {
 const markMessagesForwarded = messages => {
   const taskStateChanges = messages.map(message => ({
     messageId: message.id,
-    state: 'forwarded-to-gateway'
+    state: 'forwarded-to-gateway',
   }));
   return new Promise((resolve, reject) => {
     messageUtils.updateMessageTaskStates(taskStateChanges, err => {
@@ -50,17 +49,21 @@ const markMessagesForwarded = messages => {
 
 const getOutgoing = () => {
   return new Promise((resolve, reject) => {
-    messageUtils.getMessages({ states: ['pending', 'forwarded-to-gateway'] },
+    messageUtils.getMessages(
+      { states: ['pending', 'forwarded-to-gateway'] },
       (err, pendingMessages) => {
         if (err) {
           return reject(err);
         }
-        resolve(pendingMessages.map(message => ({
-          id: message.id,
-          to: message.to,
-          content: message.message,
-        })));
-    });
+        resolve(
+          pendingMessages.map(message => ({
+            id: message.id,
+            to: message.to,
+            content: message.message,
+          }))
+        );
+      }
+    );
   });
 };
 
@@ -72,33 +75,40 @@ const addNewMessages = req => {
   }
 
   messages = messages.filter(message => {
-    if(message.from !== undefined && message.content !== undefined) {
+    if (message.from !== undefined && message.content !== undefined) {
       return true;
     }
-    logger.warn('Message missing required field', JSON.stringify(message));
+    logger.warn(`Message missing required field: ${SON.stringify(message)}`);
   });
 
   const ids = messages.map(m => m.id);
 
-  return db.medic.query('medic-sms/sms-messages', { keys:ids })
+  return db.medic
+    .query('medic-sms/sms-messages', { keys: ids })
     .then(res => res.rows.map(r => r.key))
-    .then(seenIds => messages.filter(m => {
-      if (seenIds.includes(m.id)) {
-        logger.warn(`Ignoring message (ID already seen): ${m.id}`);
-      } else {
-        return true;
-      }
-    }))
-    .then(messages => messages.map(message => recordUtils.createByForm({
-      from: message.from,
-      message: message.content,
-      gateway_ref: message.id,
-    })))
+    .then(seenIds =>
+      messages.filter(m => {
+        if (seenIds.includes(m.id)) {
+          logger.warn(`Ignoring message (ID already seen): ${m.id}`);
+        } else {
+          return true;
+        }
+      })
+    )
+    .then(messages =>
+      messages.map(message =>
+        recordUtils.createByForm({
+          from: message.from,
+          message: message.content,
+          gateway_ref: message.id,
+        })
+      )
+    )
     .then(docs => db.medic.bulkDocs(docs))
     .then(results => {
       const allOk = results.every(result => result.ok);
       if (!allOk) {
-        logger.error('Failed saving all the new docs', results);
+        logger.error(`Failed saving all the new docs ${results}`);
         throw new Error('Failed saving all the new docs');
       }
     });
