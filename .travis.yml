@@ -93,11 +93,10 @@ after_failure:
     aws s3 cp tests/logs "$S3_PATH"/ --recursive
 
 notifications:
-  webhooks:
-    urls:
-      - https://medic.slack.com/services/hooks/travis?token=xcYT8yusfEdSwLskhBxK4Vwj
+  slack:
+    rooms:
+      - medic:SdzCLsD56UOr5U8ujzOCMDJd#development
+    template:
+      - "%{author}: <%{build_url}|your build> %{result}. Commit: <%{compare_url}|%{commit_message}>"
     on_success: change
     on_failure: always
-  email:
-    recipients:
-      - dev@medicmobile.org
