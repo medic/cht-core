@@ -106,11 +106,10 @@ after_failure:
     fi
 
 notifications:
-  webhooks:
-    urls:
-      - https://medic.slack.com/services/hooks/travis?token=xcYT8yusfEdSwLskhBxK4Vwj
+  slack:
+    rooms:
+      - medic:SdzCLsD56UOr5U8ujzOCMDJd#development
+    template:
+      - "<%{build_url}|%{author}'s build> %{result}. Commit: %{commit_message} (<%{compare_url}|compare>)"
     on_success: change
     on_failure: always
-  email:
-    recipients:
-      - dev@medicmobile.org
