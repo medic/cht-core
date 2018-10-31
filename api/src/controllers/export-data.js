@@ -55,17 +55,17 @@ module.exports = {
           if (err) {
             return serverUtils.error(err, req, res);
           }
-  
+
           writeExportHeaders(res, req.params.type, formats[req.query.format] || formats.csv);
-  
+
           if (_.isFunction(exportDataResult)) {
             // wants to stream the result back
-            exportDataResult(res.write.bind(res), res.end.bind(res));
+            exportDataResult(res.write.bind(res), res.end.bind(res), res.flush.bind(res));
           } else {
             // has already generated result to return
             res.send(exportDataResult);
           }
-        });   
+        });
       }).catch(err => serverUtils.error(err, req, res));
   },
   routeV2: (req, res) => {
