@@ -102,7 +102,7 @@ describe('Config', () => {
       chai.expect(db.medic.changes.callCount).to.equal(1);
       chai
         .expect(db.medic.changes.args[0])
-        .to.deep.equal([{ live: true, since: 'now' }]);
+        .to.deep.equal([{ live: true, since: 'now', return_docs: false }]);
     });
 
     it('does nothing for irrelevant change', () => {
