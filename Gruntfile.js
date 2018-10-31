@@ -961,7 +961,6 @@ module.exports = function(grunt) {
   grunt.registerTask('build-ddoc', 'Build the main ddoc', [
     'couch-compile:secondary',
     'copy:ddoc-attachments',
-    'copy:standard',
     'appcache',
     'couch-compile:primary',
   ]);

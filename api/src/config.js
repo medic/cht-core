@@ -15,7 +15,6 @@ const _ = require('underscore'),
       AdmZip = require('adm-zip'),
       os = require('os');
 
-
 let settings = {};
 
 function uploadStandardForms() {
