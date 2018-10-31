@@ -64,12 +64,12 @@ var runBatch = function(batchSize, skip, callback) {
       return callback(err);
     }
     logger.info(
-      `        Processing ' +
-        ${skip} +
-         to  +
-        (${skip + batchSize}) +
-         docs of  +
-        ${result.total_rows} +
+      `        Processing 
+        ${skip} 
+         to  
+        (${skip + batchSize}) 
+         docs of  
+        ${result.total_rows} 
         ' total`
     );
     var docs = _.uniq(_.pluck(result.rows, 'doc'));

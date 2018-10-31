@@ -27,7 +27,7 @@ const loadTranslations = () => {
       result.rows.forEach(row => (translations[row.doc.code] = row.doc.values));
     })
     .catch(err => {
-      logger.error(`Error loading translations - starting up anyway ${err.toString()}`);
+      logger.error('Error loading translations - starting up anyway: %o', err);
     });
 };
 
@@ -44,7 +44,7 @@ const initFeed = () => {
       }
     })
     .on('error', err => {
-      logger.error(`Error watching changes, restarting: ${err.toString()}`);
+      logger.error('Error watching changes, restarting: %o', err);
       process.exit(1);
     });
 };
@@ -65,7 +65,7 @@ const initConfig = () => {
       require('./transitions').loadTransitions();
     })
     .catch(err => {
-      logger.error(err.toString());
+      logger.error('%o', err);
       throw new Error('Error loading configuration');
     });
 };

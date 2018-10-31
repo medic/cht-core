@@ -35,7 +35,7 @@ const basicAuthValid = (credentials, username) => {
         logger.error(
           `Invalid authorization attempt on /api/v1/users/${username}`
         );
-        logger.error(err.toString());
+        logger.error('%o',err);
         resolve(false); // Incorrect basic auth
       } else {
         resolve(true); // Correct basic auth

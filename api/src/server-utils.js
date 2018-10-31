@@ -92,7 +92,7 @@ module.exports = {
    * Only to be used when handling unexpected errors.
    */
   serverError: function(err, req, res) {
-    logger.error(`Server error: ${err}`);
+    logger.error('Server error: %o', err);
     if (err.publicMessage) {
       respond(req, res, 500, `Server error: ${err.publicMessage}`);
     } else {

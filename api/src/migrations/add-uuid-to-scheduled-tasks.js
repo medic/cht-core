@@ -63,12 +63,12 @@ var runBatch = function(skip, callback) {
       return callback(err);
     }
     logger.info(
-      `        Processing  +
-        ${skip} +
-         to  +
-        (${skip + BATCH_SIZE}) +
-         docs of  +
-        ${result.total_rows} +
+      `        Processing
+        ${skip} 
+         to  
+        (${skip + BATCH_SIZE}) 
+         docs of  
+        ${result.total_rows} 
          total`
     );
     var toSave = result.rows.filter(update).map(function(row) {

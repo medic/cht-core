@@ -12,7 +12,7 @@ const followFeed = (seq, queue) => {
       queue.push(change);
     })
     .on('error', err => {
-      logger.error(`transitions: error from changes feed ${err}`);
+      logger.error('transitions: error from changes feed: %o', err);
     });
 };
 

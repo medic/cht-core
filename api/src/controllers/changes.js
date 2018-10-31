@@ -242,7 +242,7 @@ const getChanges = feed => {
     })
     .catch(err => {
       logger.info(`${feed.id} Error while requesting 'normal' changes feed`);
-      logger.info(err.toString());
+      logger.info(err);
       // cancel ongoing requests and send error response
       feed.upstreamRequests.forEach(request => request.cancel());
       feed.error = err;
@@ -375,7 +375,7 @@ const getCouchDbConfig = () => {
   return dbConfig.get('couchdb', 'changes_doc_ids_optimization_threshold')
     .catch(err => {
       logger.info('Could not read changes_doc_ids_optimization_threshold config value.');
-      logger.info(err.toString());
+      logger.info(err);
       return DEFAULT_MAX_DOC_IDS;
     })
     .then(value => {

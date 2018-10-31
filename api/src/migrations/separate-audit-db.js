@@ -82,7 +82,7 @@ module.exports = {
       _.partial(ensureViewDdocExists, db.settings.auditDb)
       ], function(err) {
         if (err) {
-          return logger.info(`An error occurred creating audit db: ${err.toString()}`);
+          return logger.info(`An error occurred creating audit db: ${err}`);
         }
 
         var lastLength;

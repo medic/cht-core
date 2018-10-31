@@ -97,7 +97,7 @@ const addNewMessages = req => {
     .then(results => {
       const allOk = results.every(result => result.ok);
       if (!allOk) {
-        logger.error(`Failed saving all the new docs: ${results}`);
+        logger.error('Failed saving all the new docs: %o', results);
         throw new Error('Failed saving all the new docs');
       }
     });

@@ -16,7 +16,7 @@ const extractDocs = data => {
 const checkForDuplicates = docs => {
   const duplicateErrors = utils.getDuplicateErrors(docs);
   if (duplicateErrors.length > 0) {
-    logger.error(`Deletion errors: ${duplicateErrors}`);
+    logger.error('Deletion errors: %o', duplicateErrors);
     const ids = duplicateErrors.map(error => error.id);
     throw new Error(`Duplicate documents when deleting: ${ids.join(',')}`);
   }

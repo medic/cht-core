@@ -82,7 +82,7 @@ const loadTranslations = () => {
   const options = { key: ['translations', true], include_docs: true };
   db.medic.query('medic-client/doc_by_type', options, (err, result) => {
     if (err) {
-      logger.error(`Error loading translations - starting up anyway: ${err}`);
+      logger.error('Error loading translations - starting up anyway: %o', err);
       return;
     }
     result.rows.forEach(row => {
@@ -140,17 +140,17 @@ module.exports = {
         if (change.id === '_design/medic') {
           logger.info('Detected ddoc change - reloading');
           translations.run().catch(err => {
-            logger.error(`Failed to update translation docs: ${err}`);
+            logger.error('Failed to update translation docs: %o', err);
           });
           ddocExtraction.run().catch(err => {
-            logger.error(`Something went wrong trying to extract ddocs: ${err}`);
+            logger.error('Something went wrong trying to extract ddocs: %o', err);
             process.exit(1);
           });
           loadViewMaps();
         } else if (change.id === 'settings') {
           logger.info('Detected settings change - reloading');
           loadSettings().catch(err => {
-            logger.error(`Failed to reload settings: ${err}`);
+            logger.error('Failed to reload settings: %o', err);
             process.exit(1);
           });
         } else if (change.id.indexOf('messages-') === 0) {
@@ -159,7 +159,7 @@ module.exports = {
         }
       })
       .on('error', err => {
-        logger.error(`Error watching changes, restarting: ${err}`);
+        logger.error('Error watching changes, restarting: %o', err);
         process.exit(1);
       });
   },

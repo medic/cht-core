@@ -150,7 +150,7 @@ module.exports = {
           logger.error(`Error exporting v2 data for: ${type}`);
           logger.error(`params: ${JSON.stringify(filters, null, 2)}`);
           logger.error(`options: ${JSON.stringify(options, null, 2)}`);
-          logger.error(err.toString());
+          logger.error('%o', err);
           res.end(`--ERROR--\nError exporting data: ${err.message}\n`);
         });
         d.run(() => exportDataV2.export(type, filters, options).pipe(res));

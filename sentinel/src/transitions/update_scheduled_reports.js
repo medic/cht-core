@@ -62,7 +62,7 @@ module.exports = {
           function(err) {
             // cancels transition and marks as incomplete
             if (err) {
-              logger.error(`error doing bulk save: ${err}`);
+              logger.error('error doing bulk save: %o', err);
               return resolve();
             }
             return resolve(true);

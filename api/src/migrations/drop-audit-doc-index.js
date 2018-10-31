@@ -103,12 +103,12 @@ var changeDocIdsBatch = function(skip, callback) {
       return callback(null, null, false);
     }
     logger.info(
-      `        Processing  +
-        ${skip} +
-         to  +
-        (${skip + BATCH_SIZE}) +
-         docs of  +
-        ${result.total_rows} +
+      `        Processing
+        ${skip} 
+         to  
+        (${skip + BATCH_SIZE}) 
+         docs of  
+        ${result.total_rows} 
          total`
     );
     var oldDocs = result.rows.filter(needsUpdate).map(function(row) {

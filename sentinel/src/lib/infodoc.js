@@ -84,7 +84,7 @@ const updateTransition = (change, transition, ok) => {
     };
 
     return db.sentinel.put(doc).catch(err => {
-      logger.error(`Error updating metaData: ${err}`);
+      logger.error('Error updating metaData: %o', err);
     });
   });
 };

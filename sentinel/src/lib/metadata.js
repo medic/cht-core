@@ -66,7 +66,7 @@ const getProcessedSeq = () => {
       return doc.processed_seq;
     })
     .catch(err => {
-      logger.error(`Error getting meta data: ${err}`);
+      logger.error('Error getting meta data: %o',err);
       throw err;
     });
 };
@@ -77,12 +77,12 @@ const updateMetaData = seq => {
       doc.processed_seq = seq;
       return dbPouch.sentinel.put(doc).catch(err => {
         if (err) {
-          logger.error(`Error updating metaData: ${err}`);
+          logger.error('Error updating metaData: %o', err);
         }
       });
     })
     .catch(err => {
-      logger.error(`Error fetching metaData for update: ${err}`);
+      logger.error('Error fetching metaData for update: %o', err);
       return null;
     });
 };

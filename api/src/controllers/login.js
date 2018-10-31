@@ -194,7 +194,7 @@ module.exports = {
         return setCookies(req, res, sessionRes);
       })
       .catch(err => {
-        logger.error(`Error logging in: ${err}`);
+        logger.error('Error logging in: %o', err);
         res.status(500).json({ error: 'Unexpected error logging in' });
       });
   },

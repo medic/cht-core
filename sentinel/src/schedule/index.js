@@ -55,7 +55,7 @@ exports.checkSchedule = function() {
     ],
     err => {
       if (err) {
-        logger.error(`Error running tasks: ${JSON.stringify(err)}`);
+        logger.error('Error running tasks: %o', err);
       }
       _reschedule();
     }

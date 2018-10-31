@@ -170,7 +170,7 @@ module.exports = {
                 const failure = `Failed to updateMessageTaskStates: ${JSON.stringify(
                   failures
                 )}`;
-                logger.error(failure);
+                logger.error('%o',failure);
                 return callback(Error(failure));
               }
 

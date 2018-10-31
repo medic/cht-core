@@ -4,7 +4,7 @@ const db = require('./src/db-pouch'),
 
 process.on('unhandledRejection', reason => {
   logger.error('Unhandled Rejection:');
-  logger.error(reason);
+  logger.error('%o',reason);
 });
 
 serverChecks.check(db.serverUrl).then(() => {
@@ -36,7 +36,7 @@ serverChecks.check(db.serverUrl).then(() => {
 
     .catch(err => {
       logger.error('Fatal error initialising medic-api');
-      logger.error(err);
+      logger.error('%o',err);
       process.exit(1);
     })
 

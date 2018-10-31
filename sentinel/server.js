@@ -11,7 +11,7 @@ if (process.env.TEST_ENV) {
 
 process.on('unhandledRejection', reason => {
   logger.error('Unhandled Rejection:');
-  logger.error(reason);
+  logger.error('%o',reason);
 });
 
 const waitForApi = () =>
@@ -30,7 +30,7 @@ const waitForApi = () =>
             return setTimeout(() => waitLoop(), 10 * 1000);
           }
 
-          logger.info(`Api is ready: , ${body}`);
+          logger.info(`Api is ready: ${body}`);
           resolve();
         }
       );
@@ -53,6 +53,6 @@ serverChecks
   })
   .catch(err => {
     logger.error('Fatal error intialising medic-sentinel');
-    logger.error(err.toString());
+    logger.error('%o',err);
     process.exit(1);
   });
