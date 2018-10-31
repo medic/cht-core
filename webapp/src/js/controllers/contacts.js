@@ -264,7 +264,7 @@ var _ = require('underscore'),
     });
 
     $scope.search = function() {
-      $state.go('contacts.detail', { id: null }, { notify: false });
+      $state.go($state.current, $state.params, { notify: false });
 
       clearSelection();
       $scope.loading = true;
