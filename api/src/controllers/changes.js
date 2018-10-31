@@ -175,6 +175,11 @@ const getChanges = feed => {
   options.doc_ids = feed.allowedDocIds;
   options.since = options.since || 0;
 
+  // Overwrite the default batch_size is 25. By setting it larger than the
+  // doc_ids length we ensure that batching is disabled which works around
+  // a bug where batching sometimes skips changes between batches.
+  options.batch_size = feed.allowedDocIds.length + 1;
+
   feed.upstreamRequest = db.medic.changes(options).on('complete', info => {
     feed.lastSeq = info && info.last_seq || feed.lastSeq;
   });
