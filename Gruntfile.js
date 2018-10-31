@@ -830,6 +830,13 @@ module.exports = function(grunt) {
       'build/ddocs/medic-admin/_attachments/js/templates.js':
         'build/ddocs/medic-admin/_attachments/js/templates.js',
     },
+    zip: {
+      standardForms: {
+        cwd: 'config/standard/forms',
+        src: 'config/standard/forms/**/*',
+        dest: 'build/ddocs/medic/_attachments/forms.zip'
+      }
+    }
   });
 
   // Build tasks
@@ -871,6 +878,8 @@ module.exports = function(grunt) {
   grunt.registerTask('build-dev', 'Build the static resources', [
     'exec:clean-build-dir',
     'copy:ddocs',
+    'zip:standardForms',
+    'copy:standard',
     'mmcss',
     'mmjs',
     'enketo-xslt',
@@ -888,7 +897,6 @@ module.exports = function(grunt) {
   grunt.registerTask('build-ddoc', 'Build the main ddoc', [
     'couch-compile:secondary',
     'copy:ddoc-attachments',
-    'copy:standard',
     'appcache',
     'couch-compile:primary',
   ]);

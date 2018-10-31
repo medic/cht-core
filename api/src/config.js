@@ -9,16 +9,44 @@ const _ = require('underscore'),
       contactForms =  require('medic-conf/src/fn/upload-contact-forms'),
       collectForms =  require('medic-conf/src/fn/upload-collect-forms'),
       appForms =  require('medic-conf/src/fn/upload-app-forms'),
-      dbnano = require('./db-nano');
+      dbnano = require('./db-nano'),
+      fs = require('fs'),
+      AdmZip = require('adm-zip'),
+      os = require('os');
 
 let settings = {};
 
-const uploadStandardForms = () => {
-  const standDir = __dirname + '/../../config/standard'
+function uploadStandardForms() {
+  const tmpDir = os.tmpdir();
+  fs.mkdtemp(tmpDir, function(err, folder){
+    if (err) {console.log(err)};
+    getAttachments(folder)
+  })
+}
+
+function getAttachments(folder) {
+  db.medic.get('_design/medic', {attachments: true})
+  .then(function(doc){
+    extractAttachment(doc._attachments['forms.zip'].data, folder)
+  });
+}
+
+function extractAttachment(data, folder){
+  const zipPath = folder + '/forms.zip';
+  fs.writeFile(zipPath, data, {encoding: 'base64'}, function(err){
+    if (err) {console.log(err)};
+    var zip = new AdmZip(zipPath);
+    zip.extractAllToAsync(folder + '/forms', true, function(x){
+      uploadForms(folder)
+    });
+  })
+}
+
+function uploadForms(folder){
   const fullDbName = dbnano.config.url + '/' + dbnano.settings.db
-  contactForms(standDir, fullDbName);
-  collectForms(standDir, fullDbName);
-  appForms(standDir, fullDbName);
+  contactForms(folder, fullDbName);
+  collectForms(folder, fullDbName);
+  appForms(folder, fullDbName);
 }
 
 const getMessage = (value, locale) => {
