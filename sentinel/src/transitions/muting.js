@@ -30,8 +30,6 @@ const isRelevantReport = (doc, info = {}) =>
           doc.form &&
           doc.type === 'data_record' &&
           ( isMuteForm(doc.form) || isUnmuteForm(doc.form) ) &&
-          doc.fields &&
-          ( doc.fields.patient_id || doc.fields.place_id || doc.fields.patient_uuid ) &&
           !transitionUtils.hasRun(info, TRANSITION_NAME));
 
 const isRelevantContact = (doc, info = {}) =>

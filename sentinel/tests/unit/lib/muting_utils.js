@@ -158,6 +158,28 @@ describe('mutingUtils', () => {
         chai.expect(mutingUtils._lineage.fetchHydratedDoc.args[0]).to.deep.equal(['a']);
       });
     });
+
+    it('should throw when doc has no fields property', () => {
+      return mutingUtils.getContact({})
+        .then(() => chai.expect(true).to.equal('Should have thrown'))
+        .catch(err => {
+          chai.expect(err.message).to.equal('contact_not_found');
+          chai.expect(db.medic.allDocs.callCount).to.equal(0);
+          chai.expect(db.medic.query.callCount).to.equal(0);
+          chai.expect(mutingUtils._lineage.fetchHydratedDoc.callCount).to.equal(0);
+        });
+    });
+
+    it('should throw when doc has no id field', () => {
+      return mutingUtils.getContact({ fields: {} })
+        .then(() => chai.expect(true).to.equal('Should have thrown'))
+        .catch(err => {
+          chai.expect(err.message).to.equal('contact_not_found');
+          chai.expect(db.medic.allDocs.callCount).to.equal(0);
+          chai.expect(db.medic.query.callCount).to.equal(0);
+          chai.expect(mutingUtils._lineage.fetchHydratedDoc.callCount).to.equal(0);
+        });
+    });
   });
 
   describe('updateRegistrations', () => {

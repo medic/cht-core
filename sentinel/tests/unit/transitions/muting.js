@@ -58,15 +58,14 @@ describe('Muting transition', () => {
       chai.expect(transition.filter({ type: 'data_record', form: 'test', fields: {} })).to.equal(false);
       chai.expect(transition.filter({ type: 'data_record', form: 'test', fields: { patient_id: 'a'} })).to.equal(false);
       chai.expect(transition.filter({ type: 'data_record', form: 'test', fields: { place_id: 'a'} })).to.equal(false);
-      chai.expect(transition.filter({ type: 'data_record', form: 'formA'})).to.equal(false);
-      chai.expect(transition.filter({ type: 'data_record', form: 'formA'})).to.equal(false);
-      chai.expect(transition.filter({ type: 'data_record', form: 'formC', fields: { a: 'b'}})).to.equal(false);
     });
 
     it('should return true for valid docs', () => {
       config.get.returns({ mute_forms: ['formA', 'formB'], unmute_forms: ['formC', 'formD'] });
       transitionUtils.hasRun.returns(false);
 
+      chai.expect(transition.filter({ type: 'data_record', form: 'formC', fields: { a: 'b'}})).to.equal(true);
+      chai.expect(transition.filter({ type: 'data_record', form: 'formA'})).to.equal(true);
       chai.expect(transition.filter({ type: 'data_record', form: 'formA', fields: { patient_id: 'a' } })).to.equal(true);
       chai.expect(transition.filter({ type: 'data_record', form: 'formB', fields: { place_id: 'a' } })).to.equal(true);
       chai.expect(transition.filter({ type: 'data_record', form: 'formC', fields: { patient_id: 'a' } })).to.equal(true);

@@ -7,7 +7,11 @@ const SUBJECT_PROPERTIES = ['_id', 'patient_id', 'place_id'],
       BATCH_SIZE = 50;
 
 const getContact = doc => {
-  const contactId = doc.fields.patient_id || doc.fields.place_id || doc.fields.patient_uuid;
+  const contactId = doc.fields && (doc.fields.patient_id || doc.fields.place_id || doc.fields.patient_uuid);
+
+  if (!contactId) {
+    return Promise.reject(new Error('contact_not_found'));
+  }
 
   return db.medic
     .allDocs({ key: contactId })

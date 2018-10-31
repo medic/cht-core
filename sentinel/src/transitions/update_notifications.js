@@ -1,12 +1,10 @@
-var async = require('async'),
-  _ = require('underscore'),
-  config = require('../config'),
-  utils = require('../lib/utils'),
-  messages = require('../lib/messages'),
-  validation = require('../lib/validation'),
-  db = require('../db-pouch'),
-  transitionUtils = require('./utils'),
-  NAME = 'update_notifications';
+var _ = require('underscore'),
+    config = require('../config'),
+    utils = require('../lib/utils'),
+    messages = require('../lib/messages'),
+    validation = require('../lib/validation'),
+    db = require('../db-nano'),
+    NAME = 'update_notifications';
 
 var isConfigured = function(config, eventType) {
   return (
@@ -42,6 +40,8 @@ var getEventType = function(config, doc) {
   }
   return { mute: mute };
 };
+
+const getEventName = mute => mute.mute ? 'on_mute': 'on_unmute';
 
 module.exports = {
   _addErr: function(event_type, config, doc) {
@@ -113,70 +113,40 @@ module.exports = {
         return resolve();
       }
 
-      self.validate(config, doc, function(errors) {
-        if (errors && errors.length > 0) {
-          messages.addErrors(config, doc, errors, { patient: doc.patient });
-          return resolve(true);
-        }
+            logger.info('`update_notifications` transitions is deprecated. Please use `muting` transition instead');
+            self.validate(config, doc, function(errors) {
 
-        async.parallel(
-          {
-            registrations: _.partial(utils.getRegistrations, {
-              db: db,
-              id: patient_id,
-            }),
-            patient: _.partial(utils.getPatientContact, db, patient_id),
-          },
-          (err, { registrations, patient }) => {
-            if (err) {
-              return reject(err);
-            }
-
-            if (patient && registrations.length) {
-              if (eventType.mute) {
-                if (config.confirm_deactivation) {
-                  self._addErr('confirm_deactivation', config, doc);
-                  self._addMsg(
-                    'confirm_deactivation',
-                    config,
-                    doc,
-                    registrations,
-                    patient
-                  );
-                  return resolve(true);
-                } else {
-                  self._addMsg('on_mute', config, doc, registrations, patient);
-                }
-              } else {
-                self._addMsg('on_unmute', config, doc, registrations, patient);
+              if (errors && errors.length > 0) {
+                messages.addErrors(config, doc, errors, { patient: doc.patient });
+                return resolve(true);
               }
-              async.each(
-                registrations,
-                function(registration, callback) {
-                  self.modifyRegistration(
-                    {
-                      mute: eventType.mute,
-                      registration: registration,
-                    },
-                    callback
-                  );
-                },
-                function(err) {
-                  if (err) {
-                    reject(err);
-                  } else {
-                    resolve(true);
+
+              mutingUtils
+                .getContact(change.doc)
+                .then(contact => {
+                  patient = contact;
+
+                  if (Boolean(contact.muted) === eventType.mute) {
+                    // don't update registrations if contact already has desired state
+                    return;
                   }
-                }
-              );
-            } else {
-              self._addErr('patient_not_found', config, doc);
-              self._addMsg('patient_not_found', config, doc);
-              resolve(true);
-            }
-          }
-        );
-      });
-    });
-  },
+
+                  return mutingUtils.updateMuteState(contact, eventType.mute);
+                })
+                .then(() => {
+                  self._addMsg(getEventName(eventType), config, doc, [], patient);
+                  return resolve(true);
+                })
+                .catch(err => {
+                  if (err && err.message === 'contact_not_found') {
+                    self._addErr('patient_not_found', config, doc);
+                    self._addMsg('patient_not_found', config, doc);
+                    return resolve(true);
+                  }
+
+                  reject(err);
+                });
+            });
+        });
+    }
 };
