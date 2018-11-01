@@ -4,11 +4,11 @@
  * Usage:
  * <div contenteditable ng-model="..."
  */
-angular.module('inboxDirectives').directive("contenteditable", function() {
+angular.module('inboxDirectives').directive('contenteditable', function() {
   'use strict';
   return {
-    restrict: "A",
-    require: "ngModel",
+    restrict: 'A',
+    require: 'ngModel',
     link: function(scope, element, attrs, ngModel) {
 
       function read() {
@@ -17,10 +17,10 @@ angular.module('inboxDirectives').directive("contenteditable", function() {
       }
 
       ngModel.$render = function() {
-        element.html(ngModel.$viewValue || "");
+        element.html(ngModel.$viewValue || '');
       };
 
-      element.bind("blur keyup change", function() {
+      element.bind('blur keyup change', function() {
         scope.$apply(read);
       });
     }
