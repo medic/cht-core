@@ -1114,4 +1114,10 @@ module.exports = function(grunt) {
   grunt.registerTask('default', 'Build and deploy the webapp for dev', [
     'dev-webapp',
   ]);
+
+  grunt.registerTask('file-check', 'checking that xlsx and xml are same modified date',function(){
+    const formValidation = require('./scripts/form-validation')
+    return formValidation('config/standard/forms/')
+  }
+  )
 };
