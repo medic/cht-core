@@ -1,4 +1,7 @@
 angular.module('inboxDirectives').directive('showMutedModal', function($parse, $state, Modal) {
+  'use strict';
+  'ngInject';
+
   return {
     restrict: 'A',
     link: function(scope, element, attrs) {

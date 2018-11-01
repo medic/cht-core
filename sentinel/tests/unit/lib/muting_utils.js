@@ -178,8 +178,7 @@ describe('mutingUtils', () => {
 
   describe('updateRegistrations', () => {
     it('should do nothing if no patientIds are supplied', () => {
-      return mutingUtils.updateRegistrations([], true).then(result => {
-        chai.expect(result).to.deep.equal([]);
+      return mutingUtils.updateRegistrations([], true).then(() => {
         chai.expect(utils.getReportsBySubject.callCount).to.equal(0);
       });
     });
@@ -305,7 +304,7 @@ describe('mutingUtils', () => {
     beforeEach(() => clock = sinon.useFakeTimers());
     afterEach(() => clock.restore());
 
-    it('should update all contacts with mute state', () => {
+    it('should update all contacts with muted state', () => {
       const timestamp = 2500;
       clock.tick(timestamp);
 
@@ -319,7 +318,7 @@ describe('mutingUtils', () => {
       });
     });
 
-    it('should update all contacts with unmute state', () => {
+    it('should update all contacts with unmuted state', () => {
       const contacts = [ { _id:  'a', muted: true }, { _id:  'b', muted: 123 }, { _id:  'c', muted: 'something' } ];
       db.medic.bulkDocs.resolves();
       return mutingUtils._updateContacts(contacts, false).then(() => {
@@ -538,7 +537,7 @@ describe('mutingUtils', () => {
         muted: true,
         parent: {
           _id: 'p1',
-          muted: true,
+          muted: false, // simulate incorrect data
           parent: {
             _id: 'p2',
             muted: true,
@@ -1023,7 +1022,6 @@ describe('mutingUtils', () => {
   describe('updateContact', () => {
     beforeEach(() => clock = sinon.useFakeTimers());
     afterEach(() => clock.restore());
-
 
     it('set muted to false', () => {
       clock.tick(2000);

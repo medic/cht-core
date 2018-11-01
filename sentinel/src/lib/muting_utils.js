@@ -8,7 +8,12 @@ const SUBJECT_PROPERTIES = ['_id', 'patient_id', 'place_id'],
       BATCH_SIZE = 50;
 
 const getContact = doc => {
-  const contactId = doc.fields && (doc.fields.patient_id || doc.fields.place_id || doc.fields.patient_uuid);
+  const contactId = doc.fields &&
+                    (
+                      doc.fields.patient_id ||
+                      doc.fields.place_id ||
+                      doc.fields.patient_uuid
+                    );
 
   if (!contactId) {
     return Promise.reject(new Error('contact_not_found'));
@@ -42,10 +47,7 @@ const updateRegistration = (dataRecord, muted) => {
 
 const updateContacts = (contacts, muted) => {
   contacts = contacts.filter(contact => {
-    if (Boolean(contact.muted) === muted) {
-      return false;
-    }
-    return updateContact(contact, muted);
+    return Boolean(contact.muted) !== muted ? updateContact(contact, muted) : false;
   });
 
   if (!contacts.length) {
@@ -56,13 +58,13 @@ const updateContacts = (contacts, muted) => {
 };
 
 const updateContact = (contact, muted) => {
-  contact.muted = muted ? new Date().getTime() : false;
+  contact.muted = muted ? moment().valueOf() : false;
   return contact;
 };
 
 const updateRegistrations = (subjectIds, muted) => {
   if (!subjectIds.length) {
-    return Promise.resolve([]);
+    return Promise.resolve();
   }
 
   return utils
@@ -103,8 +105,8 @@ const updateMuteState = (contact, muted) => {
     rootContactId = contact._id;
   } else {
     let parent = contact;
-    while (parent && parent.muted) {
-      rootContactId = parent._id;
+    while (parent) {
+      rootContactId = parent.muted ? parent._id : rootContactId;
       parent = parent.parent;
     }
   }
@@ -120,33 +122,30 @@ const updateMuteState = (contact, muted) => {
         return promise
           .then(() => getContactsAndSubjectIds(batch))
           .then(result => Promise.all([
-                            updateContacts(result.contacts, muted),
-                            updateRegistrations(result.subjectIds, muted)
-                          ]));
+            updateContacts(result.contacts, muted),
+            updateRegistrations(result.subjectIds, muted)
+          ]));
       }, Promise.resolve())
       .then(() => true);
   });
 };
 
 const isMutedInLineage = doc => {
-  let muted = false;
-  if (!doc || !doc.parent) {
-    return muted;
-  }
-
-  let parent = doc.parent;
-  while (parent && !muted) {
-    muted = !!parent.muted;
+  let parent = doc && doc.parent;
+  while (parent) {
+    if (parent.muted) {
+      return true;
+    }
     parent = parent.parent;
   }
-
-  return muted;
+  return false;
 };
 
 const unmuteMessages = doc => {
-  // only schedule tasks that are relevant
+  // only schedule tasks that have a due date in the present or future
   return utils.setTasksStates(doc, 'scheduled', task => {
-    return task.state === 'muted' && moment(task.due) >= moment().startOf('day') ;
+    return task.state === 'muted' &&
+           moment(task.due) >= moment().startOf('day');
   });
 };
 

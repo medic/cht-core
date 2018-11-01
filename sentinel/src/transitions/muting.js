@@ -32,6 +32,8 @@ const isRelevantReport = (doc, info = {}) =>
           ( isMuteForm(doc.form) || isUnmuteForm(doc.form) ) &&
           !transitionUtils.hasRun(info, TRANSITION_NAME));
 
+// when new contacts are added that have muted parents, they should be set have muted state as well
+// also the schedule associated with their registration should be muted
 const isRelevantContact = (doc, info = {}) =>
   Boolean(doc &&
           !info._rev &&
@@ -51,7 +53,7 @@ module.exports = {
 
   onMatch: change => {
     if (change.doc.type !== 'data_record') {
-      // new contacts that have muted parents should also get the muted flag
+      // process new contacts
       mutingUtils.updateContact(change.doc, true);
       return mutingUtils
         .updateRegistrations(mutingUtils.getSubjectIds(change.doc), true)
