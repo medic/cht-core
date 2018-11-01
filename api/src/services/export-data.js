@@ -130,9 +130,12 @@ var outputToCsv = function(options, tabs, callback) {
 };
 
 var outputToXml = function(options, tabs, callback) {
-  callback(null, function(write, done) {
+  callback(null, function(write, done, flush) {
     var workbook = xmlbuilder
-      .begin({ allowSurrogateChars: true, allowEmpty: true }, write)
+      .begin({ allowSurrogateChars: true, allowEmpty: true }, data => {
+        write(data);
+        flush();
+      })
       .dec({ encoding: 'UTF-8' })
       .ele('Workbook')
       .att('xmlns', 'urn:schemas-microsoft-com:office:spreadsheet')
