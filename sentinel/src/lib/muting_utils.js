@@ -1,7 +1,8 @@
 const _ = require('underscore'),
       db = require('../db-pouch'),
       lineage = require('lineage')(Promise, db.medic),
-      utils = require('./utils');
+      utils = require('./utils'),
+      moment = require('moment');
 
 const SUBJECT_PROPERTIES = ['_id', 'patient_id', 'place_id'],
       BATCH_SIZE = 50;
@@ -36,7 +37,7 @@ const getDescendants = (contactId) => {
 };
 
 const updateRegistration = (dataRecord, muted) => {
-  return muted ? utils.muteScheduledMessages(dataRecord) : utils.unmuteScheduledMessages(dataRecord);
+  return muted ? muteUnsentMessages(dataRecord) : unmuteMessages(dataRecord);
 };
 
 const updateContacts = (contacts, muted) => {
@@ -142,6 +143,19 @@ const isMutedInLineage = doc => {
   return muted;
 };
 
+const unmuteMessages = doc => {
+  // only schedule tasks that are relevant
+  return utils.setTasksStates(doc, 'scheduled', task => {
+    return task.state === 'muted' && moment(task.due) >= moment().startOf('day') ;
+  });
+};
+
+const muteUnsentMessages = doc => {
+  return utils.setTasksStates(doc, 'muted', task => {
+    return task.state === 'scheduled' || task.state === 'pending';
+  });
+};
+
 module.exports = {
   updateMuteState: updateMuteState,
   updateContact: updateContact,
@@ -149,6 +163,8 @@ module.exports = {
   updateRegistrations: updateRegistrations,
   getSubjectIds: getSubjectIds,
   isMutedInLineage: isMutedInLineage,
+  unmuteMessages: unmuteMessages,
+  muteUnsentMessages: muteUnsentMessages,
   _getContactsAndSubjectIds: getContactsAndSubjectIds,
   _updateContacts: updateContacts,
   _lineage: lineage

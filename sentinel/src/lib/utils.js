@@ -211,17 +211,13 @@ module.exports = {
     return (clinic && clinic.contact && clinic.contact.phone) ||
            (doc.contact && doc.contact.phone);
   },
-  unmuteScheduledMessages: doc => {
-    const nbrUpdatedTasks = setTasksStates(doc, 'scheduled', task => {
-      return task.state === 'muted';
+  unmuteMessages: doc => {
+    // only schedule tasks that are relevant
+    return setTasksStates(doc, 'scheduled', task => {
+      return task.state === 'muted' && moment(task.due) >= moment().startOf('day') ;
     });
-    doc.scheduled_tasks = _.filter(doc.scheduled_tasks, task => {
-      return task.state === 'scheduled' ? new Date(task.due) > Date.now() : true;
-    });
-
-    return nbrUpdatedTasks;
   },
-  muteScheduledMessages: doc => {
+  muteUnsentMessages: doc => {
     return setTasksStates(doc, 'muted', task => {
       return task.state === 'scheduled' || task.state === 'pending';
     });

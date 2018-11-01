@@ -2,27 +2,21 @@ const mutingUtils = require('../../../src/lib/muting_utils'),
       sinon = require('sinon'),
       chai = require('chai'),
       db = require('../../../src/db-pouch'),
-      utils = require('../../../src/lib/utils');
+      utils = require('../../../src/lib/utils'),
+      moment = require('moment');
 
 let clock;
 
 describe('mutingUtils', () => {
   beforeEach(() => {
     sinon.stub(utils, 'getReportsBySubject');
-    sinon.stub(utils, 'muteScheduledMessages');
-    sinon.stub(utils, 'unmuteScheduledMessages');
+    sinon.stub(utils, 'setTasksStates');
     sinon.stub(mutingUtils._lineage, 'fetchHydratedDoc');
     sinon.stub(db.medic, 'bulkDocs');
     sinon.stub(db.medic, 'query');
     sinon.stub(db.medic, 'allDocs');
-
-    clock = sinon.useFakeTimers();
   });
-
-  afterEach(() => {
-    sinon.restore();
-    clock.restore();
-  });
+  afterEach(() => sinon.restore());
 
   describe('getContact', () => {
     it('should query allDocs with patient_id field', () => {
@@ -208,7 +202,7 @@ describe('mutingUtils', () => {
         { _id: 'r4', shouldUpdate: true }
       ];
       utils.getReportsBySubject.resolves(registrations);
-      utils.muteScheduledMessages.callsFake(r => {
+      utils.setTasksStates.callsFake(r => {
         r.willUpdate = true;
         return r.shouldUpdate;
       });
@@ -218,11 +212,15 @@ describe('mutingUtils', () => {
       return mutingUtils.updateRegistrations(['a'], true).then(() => {
         chai.expect(utils.getReportsBySubject.callCount).to.equal(1);
         chai.expect(utils.getReportsBySubject.args[0][0].ids).to.deep.equal(['a']);
-        chai.expect(utils.muteScheduledMessages.callCount).to.equal(4);
-        chai.expect(utils.muteScheduledMessages.args[0][0]._id).to.equal('r1');
-        chai.expect(utils.muteScheduledMessages.args[1][0]._id).to.equal('r2');
-        chai.expect(utils.muteScheduledMessages.args[2][0]._id).to.equal('r3');
-        chai.expect(utils.muteScheduledMessages.args[3][0]._id).to.equal('r4');
+        chai.expect(utils.setTasksStates.callCount).to.equal(4);
+        chai.expect(utils.setTasksStates.args[0][0]._id).to.equal('r1');
+        chai.expect(utils.setTasksStates.args[0][1]).to.equal('muted');
+        chai.expect(utils.setTasksStates.args[1][0]._id).to.equal('r2');
+        chai.expect(utils.setTasksStates.args[1][1]).to.equal('muted');
+        chai.expect(utils.setTasksStates.args[2][0]._id).to.equal('r3');
+        chai.expect(utils.setTasksStates.args[2][1]).to.equal('muted');
+        chai.expect(utils.setTasksStates.args[3][0]._id).to.equal('r4');
+        chai.expect(utils.setTasksStates.args[3][1]).to.equal('muted');
         chai.expect(db.medic.bulkDocs.callCount).to.equal(1);
         chai.expect(db.medic.bulkDocs.args[0]).to.deep.equal([[
           { _id: 'r1', shouldUpdate: true, willUpdate: true },
@@ -239,7 +237,7 @@ describe('mutingUtils', () => {
         { _id: 'r4', shouldUpdate: true }
       ]);
 
-      utils.unmuteScheduledMessages.callsFake(r => {
+      utils.setTasksStates.callsFake(r => {
         r.willUpdate = true;
         return r.shouldUpdate;
       });
@@ -249,11 +247,15 @@ describe('mutingUtils', () => {
       return mutingUtils.updateRegistrations(['a'], false).then(() => {
         chai.expect(utils.getReportsBySubject.callCount).to.equal(1);
         chai.expect(utils.getReportsBySubject.args[0][0].ids).to.deep.equal(['a']);
-        chai.expect(utils.unmuteScheduledMessages.callCount).to.equal(4);
-        chai.expect(utils.unmuteScheduledMessages.args[0][0]._id).to.equal('r1');
-        chai.expect(utils.unmuteScheduledMessages.args[1][0]._id).to.equal('r2');
-        chai.expect(utils.unmuteScheduledMessages.args[2][0]._id).to.equal('r3');
-        chai.expect(utils.unmuteScheduledMessages.args[3][0]._id).to.equal('r4');
+        chai.expect(utils.setTasksStates.callCount).to.equal(4);
+        chai.expect(utils.setTasksStates.args[0][0]._id).to.equal('r1');
+        chai.expect(utils.setTasksStates.args[0][1]).to.equal('scheduled');
+        chai.expect(utils.setTasksStates.args[1][0]._id).to.equal('r2');
+        chai.expect(utils.setTasksStates.args[1][1]).to.equal('scheduled');
+        chai.expect(utils.setTasksStates.args[2][0]._id).to.equal('r3');
+        chai.expect(utils.setTasksStates.args[2][1]).to.equal('scheduled');
+        chai.expect(utils.setTasksStates.args[3][0]._id).to.equal('r4');
+        chai.expect(utils.setTasksStates.args[3][1]).to.equal('scheduled');
         chai.expect(db.medic.bulkDocs.callCount).to.equal(1);
         chai.expect(db.medic.bulkDocs.args[0]).to.deep.equal([[
           { _id: 'r1', shouldUpdate: true, willUpdate: true },
@@ -264,21 +266,25 @@ describe('mutingUtils', () => {
 
     it('should not call bulkDocs when no registrations need updating', () => {
       utils.getReportsBySubject.resolves([{ _id: 'r1' }, { _id: 'r2' }, { _id: 'r3' }, { _id: 'r4' }]);
-      utils.muteScheduledMessages.returns(false);
+      utils.setTasksStates.returns(false);
 
       return mutingUtils.updateRegistrations(['a'], true).then(() => {
         chai.expect(db.medic.bulkDocs.callCount).to.equal(0);
-        chai.expect(utils.muteScheduledMessages.callCount).to.equal(4);
-        chai.expect(utils.muteScheduledMessages.args[0][0]._id).to.equal('r1');
-        chai.expect(utils.muteScheduledMessages.args[1][0]._id).to.equal('r2');
-        chai.expect(utils.muteScheduledMessages.args[2][0]._id).to.equal('r3');
-        chai.expect(utils.muteScheduledMessages.args[3][0]._id).to.equal('r4');
+        chai.expect(utils.setTasksStates.callCount).to.equal(4);
+        chai.expect(utils.setTasksStates.args[0][0]._id).to.equal('r1');
+        chai.expect(utils.setTasksStates.args[0][1]).to.equal('muted');
+        chai.expect(utils.setTasksStates.args[1][0]._id).to.equal('r2');
+        chai.expect(utils.setTasksStates.args[1][1]).to.equal('muted');
+        chai.expect(utils.setTasksStates.args[2][0]._id).to.equal('r3');
+        chai.expect(utils.setTasksStates.args[2][1]).to.equal('muted');
+        chai.expect(utils.setTasksStates.args[3][0]._id).to.equal('r4');
+        chai.expect(utils.setTasksStates.args[3][1]).to.equal('muted');
       });
     });
 
     it('should throw bulkDocs errors', () => {
       utils.getReportsBySubject.resolves([{ _id: 'r1' }]);
-      utils.muteScheduledMessages.returns(true);
+      utils.setTasksStates.returns(true);
       db.medic.bulkDocs.rejects({ some: 'err' });
 
       return mutingUtils.updateRegistrations(['a'], true)
@@ -287,14 +293,18 @@ describe('mutingUtils', () => {
           chai.expect(err).to.deep.equal({ some: 'err' });
           chai.expect(utils.getReportsBySubject.callCount).to.equal(1);
           chai.expect(utils.getReportsBySubject.args[0][0].ids).to.deep.equal(['a']);
-          chai.expect(utils.muteScheduledMessages.callCount).to.equal(1);
-          chai.expect(utils.muteScheduledMessages.args[0]).to.deep.equal([{ _id: 'r1' }]);
+          chai.expect(utils.setTasksStates.callCount).to.equal(1);
+          chai.expect(utils.setTasksStates.args[0][0]).to.deep.equal({ _id: 'r1' });
+          chai.expect(utils.setTasksStates.args[0][1]).to.equal('muted');
           chai.expect(db.medic.bulkDocs.callCount).to.equal(1);
         });
     });
   });
 
   describe('updateContacts', () => {
+    beforeEach(() => clock = sinon.useFakeTimers());
+    afterEach(() => clock.restore());
+
     it('should update all contacts with mute state', () => {
       const timestamp = 2500;
       clock.tick(timestamp);
@@ -385,6 +395,9 @@ describe('mutingUtils', () => {
   });
 
   describe('updateMuteState', () => {
+    beforeEach(() => clock = sinon.useFakeTimers());
+    afterEach(() => clock.restore());
+
     it('should update all non-muted descendants when muting', () => {
       const timestamp = 456789;
       clock.tick(timestamp);
@@ -601,7 +614,7 @@ describe('mutingUtils', () => {
         { _id: 'r2' },
         { _id: 'r3' }
       ]);
-      utils.muteScheduledMessages.returns(true);
+      utils.setTasksStates.returns(true);
       db.medic.bulkDocs.resolves();
 
       return mutingUtils.updateMuteState(contact, true).then(result => {
@@ -682,6 +695,9 @@ describe('mutingUtils', () => {
   });
 
   describe('updateMuteState batching', () => {
+    beforeEach(() => clock = sinon.useFakeTimers());
+    afterEach(() => clock.restore());
+
     it('should batch contacts and registrations updates', () => {
       const timestamp = 5000;
       clock.tick(timestamp);
@@ -727,7 +743,7 @@ describe('mutingUtils', () => {
           { _id: 'r9' },
         ]);
 
-      utils.muteScheduledMessages.returns(true);
+      utils.setTasksStates.returns(true);
 
       return mutingUtils.updateMuteState({ _id: 'contact' }, true).then(result => {
         chai.expect(result).to.equal(true);
@@ -826,7 +842,7 @@ describe('mutingUtils', () => {
           { _id: 'r6' },
         ]);
 
-      utils.muteScheduledMessages.returns(true);
+      utils.setTasksStates.returns(true);
 
       return mutingUtils
         .updateMuteState({ _id: 'contact' }, true)
@@ -878,7 +894,7 @@ describe('mutingUtils', () => {
           { _id: 'r6' },
         ]);
 
-      utils.muteScheduledMessages.returns(true);
+      utils.setTasksStates.returns(true);
 
       return mutingUtils
         .updateMuteState({ _id: 'contact' }, true)
@@ -1005,6 +1021,10 @@ describe('mutingUtils', () => {
   });
 
   describe('updateContact', () => {
+    beforeEach(() => clock = sinon.useFakeTimers());
+    afterEach(() => clock.restore());
+
+
     it('set muted to false', () => {
       clock.tick(2000);
       chai.expect(mutingUtils.updateContact({}, false)).to.deep.equal({ muted: false });
@@ -1017,5 +1037,86 @@ describe('mutingUtils', () => {
       clock.tick(timestamp);
       chai.expect(mutingUtils.updateContact({}, true)).to.deep.equal({ muted: timestamp + timestamp });
     });
+  });
+
+  describe('muteUnsentMessages', () => {
+    it('calls setTasksStates with correct arguments', () => {
+      const doc = { _id: 'a' };
+      utils.setTasksStates.returns(2);
+      chai.expect(mutingUtils.muteUnsentMessages(doc)).to.equal(2);
+
+      chai.expect(utils.setTasksStates.callCount).to.equal(1);
+      chai.expect(utils.setTasksStates.args[0][0]).to.deep.equal(doc);
+      chai.expect(utils.setTasksStates.args[0][1]).to.equal('muted');
+    });
+
+    it('filter function should only return true for pending and scheduled tasks', () => {
+      utils.setTasksStates.returns();
+      mutingUtils.muteUnsentMessages({});
+
+      const filterFn = utils.setTasksStates.args[0][2];
+      chai.expect(filterFn({})).to.equal(false);
+      chai.expect(filterFn({ state: 'scheduled' })).to.equal(true);
+      chai.expect(filterFn({ state: 'pending' })).to.equal(true);
+      chai.expect(filterFn({ state: 'sent' })).to.equal(false);
+      chai.expect(filterFn({ state: 'duplicate' })).to.equal(false);
+      chai.expect(filterFn({ state: 'delivered' })).to.equal(false);
+      chai.expect(filterFn({ state: 'anything' })).to.equal(false);
+    });
+
+    it('returns the number of tasks that were updated', () => {
+      const unchangedDoc = { nbr: 0 };
+      const changedDoc = { nbr: 2 };
+      const changedDoc2 = { nbr: 4 };
+
+      utils.setTasksStates.callsFake(doc => doc.nbr);
+
+      mutingUtils.muteUnsentMessages(unchangedDoc).should.equal(0);
+      mutingUtils.muteUnsentMessages(changedDoc).should.equal(2);
+      mutingUtils.muteUnsentMessages(changedDoc2).should.equal(4);
+    });
+  });
+
+  describe('unmuteMessages', () => {
+    it('calls setTasksStates with correct arguments', () => {
+      const doc = { _id: 'a' };
+      utils.setTasksStates.returns();
+      mutingUtils.unmuteMessages(doc);
+
+      chai.expect(utils.setTasksStates.callCount).to.equal(1);
+      chai.expect(utils.setTasksStates.args[0][0]).to.deep.equal(doc);
+      chai.expect(utils.setTasksStates.args[0][1]).to.equal('scheduled');
+    });
+
+    it('filter function should only return true for muted tasks with a date in the future', () => {
+      utils.setTasksStates.returns();
+      mutingUtils.unmuteMessages({});
+
+      const filterFn = utils.setTasksStates.args[0][2];
+      chai.expect(filterFn({})).to.equal(false);
+      chai.expect(filterFn({ state: 'scheduled' })).to.equal(false);
+      chai.expect(filterFn({ state: 'pending' })).to.equal(false);
+      chai.expect(filterFn({ state: 'sent' })).to.equal(false);
+      chai.expect(filterFn({ state: 'duplicate' })).to.equal(false);
+      chai.expect(filterFn({ state: 'delivered' })).to.equal(false);
+      chai.expect(filterFn({ state: 'anything' })).to.equal(false);
+      chai.expect(filterFn({ state: 'muted' })).to.equal(true);
+      chai.expect(filterFn({ state: 'muted', due: moment().subtract(10, 'days').valueOf() })).to.equal(false);
+      chai.expect(filterFn({ state: 'muted', due: moment().valueOf() })).to.equal(true);
+      chai.expect(filterFn({ state: 'muted', due: moment().add(1, 'year') })).to.equal(true);
+    });
+
+    it('returns the number of tasks that were updated', () => {
+      const unchangedDoc = { nbr: 0 };
+      const changedDoc = { nbr: 2 };
+      const changedDoc2 = { nbr: 4 };
+
+      utils.setTasksStates.callsFake(doc => doc.nbr);
+
+      mutingUtils.unmuteMessages(unchangedDoc).should.equal(0);
+      mutingUtils.unmuteMessages(changedDoc).should.equal(2);
+      mutingUtils.unmuteMessages(changedDoc2).should.equal(4);
+    });
+
   });
 });

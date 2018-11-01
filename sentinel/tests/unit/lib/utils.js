@@ -2,8 +2,7 @@ const should = require('chai').should(),
       sinon = require('sinon'),
       registrationUtils = require('@shared-libs/registration-utils'),
       taskUtils = require('task-utils'),
-      config = require('../../../src/config'),
-      moment = require('moment');
+      config = require('../../../src/config');
 
 describe('utils util', () => {
   afterEach(() => sinon.restore());
@@ -84,7 +83,6 @@ describe('utils util', () => {
       should.Throw(() => utils.evalExpression(`doc.foo.bar.smang === 'cats'`, {}));
     });
   });
-
 
   describe('getRegistrations', () => {
     it('works with single key', done => {
@@ -187,144 +185,6 @@ describe('utils util', () => {
     });
   });
 
-  describe('muteScheduledMessages', () => {
-    it('should set all pending and scheduled tasks to muted', () => {
-      const doc = {
-        scheduled_tasks: [
-          { state: 'scheduled' },
-          { state: 'pending' },
-          { state: 'sent' },
-          { state: 'duplicate' }
-        ]
-      };
-
-      sinon.stub(taskUtils, 'setTaskState').callsFake((task, state) => {
-        task.state = state;
-        return true;
-      });
-      utils.muteScheduledMessages(doc).should.equal(2);
-      doc.scheduled_tasks.should.deep.equal([
-        { state: 'muted' }, { state: 'muted' }, { state: 'sent' }, { state: 'duplicate' } ]);
-    });
-
-    it('returns the number of tasks that were updated', () => {
-      const unchangedDoc = { scheduled_tasks: [{ state: 'cleared' }, { state: 'sent' }, { state: 'delivered' }] };
-      const changedDoc = { scheduled_tasks: [{ state: 'scheduled' }, { state: 'sent' }, { state: 'delivered' }] };
-      const changedDoc2 = { scheduled_tasks: [{ state: 'scheduled' }, { state: 'pending' }, { state: 'delivered' }] };
-
-      sinon.stub(taskUtils, 'setTaskState').callsFake((task, state) => {
-        task.state = state;
-        return true;
-      });
-
-      utils.muteScheduledMessages(unchangedDoc).should.equal(0);
-      utils.muteScheduledMessages(changedDoc).should.equal(1);
-      utils.muteScheduledMessages(changedDoc2).should.equal(2);
-      unchangedDoc.scheduled_tasks.should.deep.equal([{ state: 'cleared' }, { state: 'sent' }, { state: 'delivered' }]);
-      changedDoc.scheduled_tasks.should.deep.equal([{ state: 'muted' }, { state: 'sent' }, { state: 'delivered' }] );
-      changedDoc2.scheduled_tasks.should.deep.equal([{ state: 'muted' }, { state: 'muted' }, { state: 'delivered' }] );
-    });
-  });
-
-  describe('unmuteScheduledMessages', () => {
-    it('should set all muted tasks to scheduled', () => {
-      const futureDate = moment().add(1, 'days').valueOf();
-      const doc = {
-        scheduled_tasks: [
-          { state: 'muted', due: futureDate },
-          { state: 'pending' },
-          { state: 'muted', due: futureDate },
-          { state: 'sent' },
-          { state: 'delivered' }
-        ]
-      };
-
-      sinon.stub(taskUtils, 'setTaskState').callsFake((task, state) => {
-        task.state = state;
-        return true;
-      });
-
-      utils.unmuteScheduledMessages(doc).should.equal(2);
-      doc.scheduled_tasks.should.deep.equal([
-        { state: 'scheduled', due: futureDate },
-        { state: 'pending' },
-        { state: 'scheduled', due: futureDate },
-        { state: 'sent' },
-        { state: 'delivered' }
-      ]);
-    });
-
-    it('should return the number of updated tasks', () => {
-      const futureDate = moment().add(1, 'days').valueOf();
-      const unchangedDoc = { scheduled_tasks: [{ state: 'cleared' }, { state: 'sent' }, { state: 'delivered' }] };
-      const changedDoc = {
-        scheduled_tasks: [
-          { state: 'muted', due: futureDate },
-          { state: 'sent' },
-          { state: 'delivered' }
-        ]
-      };
-      const changedDoc2 = {
-        scheduled_tasks: [
-          { state: 'muted', due: futureDate },
-          { state: 'muted', due: futureDate },
-          { state: 'delivered' }
-        ]
-      };
-
-      sinon.stub(taskUtils, 'setTaskState').callsFake((task, state) => {
-        task.state = state;
-        return true;
-      });
-
-      utils.unmuteScheduledMessages(unchangedDoc).should.equal(0);
-      utils.unmuteScheduledMessages(changedDoc).should.equal(1);
-      utils.unmuteScheduledMessages(changedDoc2).should.equal(2);
-      unchangedDoc.scheduled_tasks.should.deep.equal([{ state: 'cleared' }, { state: 'sent' }, { state: 'delivered' }]);
-      changedDoc.scheduled_tasks.should.deep.equal([
-        { state: 'scheduled', due: futureDate },
-        { state: 'sent' },
-        { state: 'delivered' }
-      ]);
-      changedDoc2.scheduled_tasks.should.deep.equal([
-        { state: 'scheduled', due: futureDate },
-        { state: 'scheduled', due: futureDate },
-        { state: 'delivered' }
-      ]);
-    });
-
-    it('should remove all scheduled tasks with a due date in the past', () => {
-      const futureDate = moment().add(1, 'days').valueOf(),
-            pastDate = moment().subtract(1, 'days').valueOf();
-
-      sinon.stub(taskUtils, 'setTaskState').callsFake((task, state) => {
-        task.state = state;
-        return true;
-      });
-
-      const doc = {
-        scheduled_tasks: [
-          { state: 'muted', due: futureDate },
-          { state: 'scheduled', due: futureDate },
-          { state: 'sent', due: futureDate },
-          { state: 'muted', due: pastDate },
-          { state: 'scheduled', due: pastDate },
-          { state: 'sent', due: pastDate },
-          { state: 'muted', due: futureDate },
-        ]
-      };
-
-      utils.unmuteScheduledMessages(doc).should.equal(3);
-      doc.scheduled_tasks.should.deep.equal([
-        { state: 'scheduled', due: futureDate },
-        { state: 'scheduled', due: futureDate },
-        { state: 'sent', due: futureDate },
-        { state: 'sent', due: pastDate },
-        { state: 'scheduled', due: futureDate },
-      ]);
-    });
-  });
-
   describe('getReportsBySubject', () => {
     it('should return empty array when no id or ids are provided', () => {
       return utils.getReportsBySubject({}).then(result => {
@@ -395,6 +255,57 @@ describe('utils util', () => {
           [{ _id: 'r3' }, 'config']
         ]);
       });
+    });
+  });
+
+  describe('setTasksStates', () => {
+    it('should work when doc does not have scheduled tasks', () => {
+      sinon.stub(taskUtils, 'setTaskState');
+      const r = utils.setTasksStates({}, 'state', () => {});
+      r.should.equal(0);
+      taskUtils.setTaskState.callCount.should.equal(0);
+    });
+
+    it('should change task state when the filter returns true', () => {
+      sinon.stub(taskUtils, 'setTaskState').returns(true);
+      const filter = sinon.stub().callsFake(task => task.filtered);
+      const doc = { scheduled_tasks: [
+          { id: 1, filtered: true },
+          { id: 2, filtered: false },
+          { id: 3, filtered: true },
+          { id: 4, filtered: false },
+        ]};
+
+      const r = utils.setTasksStates(doc, 'newState', filter);
+      r.should.equal(2);
+      filter.callCount.should.equal(4);
+      filter.args[0].should.deep.equal([{ id: 1, filtered: true }]);
+      filter.args[1].should.deep.equal([{ id: 2, filtered: false }]);
+      filter.args[2].should.deep.equal([{ id: 3, filtered: true }]);
+      filter.args[3].should.deep.equal([{ id: 4, filtered: false }]);
+      taskUtils.setTaskState.callCount.should.equal(2);
+      taskUtils.setTaskState.args[0].should.deep.equal([ { id: 1, filtered: true }, 'newState' ]);
+      taskUtils.setTaskState.args[1].should.deep.equal([ { id: 3, filtered: true }, 'newState' ]);
+    });
+
+    it('should return nbr of changed tasks', () => {
+      const doc = {
+        scheduled_tasks: [
+          { changed: true },
+          { changed: false },
+          { changed: true },
+          { changed: false },
+          { changed: true },
+          { changed: true },
+        ]
+      };
+      sinon.stub(taskUtils, 'setTaskState');
+      taskUtils.setTaskState.returns(false);
+      taskUtils.setTaskState.withArgs({ changed: true }).returns(true);
+      const filter = sinon.stub().returns(true);
+      const r = utils.setTasksStates(doc, 'newState', filter);
+      r.should.deep.equal(4);
+      taskUtils.setTaskState.callCount.should.equal(6);
     });
   });
 });
