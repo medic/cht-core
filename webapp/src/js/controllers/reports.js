@@ -255,8 +255,10 @@ angular
     };
 
     $scope.search = function() {
-      $state.go('reports.detail', { id: null }, { notify: false });
-      clearSelection();
+      if($scope.filters.search) {
+        $state.go('reports.detail', { id: null }, { notify: false });
+        clearSelection();
+      }
       if ($scope.isMobile() && $scope.showContent) {
         // leave content shown
         return;

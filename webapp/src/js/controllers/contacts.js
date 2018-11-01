@@ -264,9 +264,10 @@ var _ = require('underscore'),
     });
 
     $scope.search = function() {
-      $state.go($state.current, $state.params, { notify: false });
+      if($scope.filters.search) {
+        clearSelection();
+      }
 
-      clearSelection();
       $scope.loading = true;
       if ($scope.filters.search || $scope.filters.simprintsIdentities) {
         $scope.filtered = true;
