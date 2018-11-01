@@ -1,13 +1,15 @@
 const _ = require('underscore'),
-      db = require('./db-pouch'),
-      DDOC_ATTACHMENT_ID = 'ddocs/compiled.json',
-      APPCACHE_ATTACHMENT_NAME = 'manifest.appcache',
-      APPCACHE_DOC_ID = 'appcache',
-      SERVER_DDOC_ID = '_design/medic',
-      CLIENT_DDOC_ID = '_design/medic-client';
+  db = require('./db-pouch'),
+  logger = require('./logger'),
+  DDOC_ATTACHMENT_ID = 'ddocs/compiled.json',
+  APPCACHE_ATTACHMENT_NAME = 'manifest.appcache',
+  APPCACHE_DOC_ID = 'appcache',
+  SERVER_DDOC_ID = '_design/medic',
+  CLIENT_DDOC_ID = '_design/medic-client';
 
 const getCompiledDdocs = () => {
-  return db.medic.getAttachment(SERVER_DDOC_ID, DDOC_ATTACHMENT_ID)
+  return db.medic
+    .getAttachment(SERVER_DDOC_ID, DDOC_ATTACHMENT_ID)
     .then(result => JSON.parse(result.toString()).docs)
     .catch(err => {
       if (err.status === 404) {
@@ -26,19 +28,25 @@ const areAttachmentsEqual = (oldDdoc, newDdoc) => {
     // one ddoc has attachments and the other doesn't
     return false;
   }
-  if (Object.keys(oldDdoc._attachments).length !== Object.keys(newDdoc._attachments).length) {
+  if (
+    Object.keys(oldDdoc._attachments).length !==
+    Object.keys(newDdoc._attachments).length
+  ) {
     // one ddoc has more attachments than the other
     return false;
   }
   // check all attachment data
   return Object.keys(oldDdoc._attachments).every(name => {
-    return newDdoc._attachments[name] &&
-           newDdoc._attachments[name].data === oldDdoc._attachments[name].data;
+    return (
+      newDdoc._attachments[name] &&
+      newDdoc._attachments[name].data === oldDdoc._attachments[name].data
+    );
   });
 };
 
 const isUpdated = (newDdoc, deploy_info) => {
-  return db.medic.get(newDdoc._id, { attachments: true })
+  return db.medic
+    .get(newDdoc._id, { attachments: true })
     .then(oldDdoc => {
       // set the rev so we can update if necessary
       newDdoc._rev = oldDdoc && oldDdoc._rev;
@@ -75,7 +83,7 @@ const isUpdated = (newDdoc, deploy_info) => {
     });
 };
 
-const findUpdatedDdocs = (deploy_info) => {
+const findUpdatedDdocs = deploy_info => {
   return getCompiledDdocs()
     .then(ddocs => {
       if (!ddocs.length) {
@@ -87,12 +95,14 @@ const findUpdatedDdocs = (deploy_info) => {
 };
 
 const findUpdatedAppcache = ddoc => {
-  const attachment = ddoc._attachments && ddoc._attachments[APPCACHE_ATTACHMENT_NAME];
+  const attachment =
+    ddoc._attachments && ddoc._attachments[APPCACHE_ATTACHMENT_NAME];
   const digest = attachment && attachment.digest;
   if (!digest) {
     return;
   }
-  return db.medic.get(APPCACHE_DOC_ID)
+  return db.medic
+    .get(APPCACHE_DOC_ID)
     .then(doc => {
       if (doc.digest !== digest) {
         doc.digest = digest;
@@ -111,19 +121,20 @@ const findUpdatedAppcache = ddoc => {
 const findUpdated = ddoc => {
   return Promise.all([
     findUpdatedDdocs(ddoc.deploy_info),
-    findUpdatedAppcache(ddoc)
+    findUpdatedAppcache(ddoc),
   ]).then(results => _.compact(_.flatten(results)));
 };
 
 module.exports = {
   run: () => {
-    return db.medic.get(SERVER_DDOC_ID)
+    return db.medic
+      .get(SERVER_DDOC_ID)
       .then(findUpdated)
       .then(docs => {
         if (docs.length) {
-          console.log('Updating docs: ' + _.pluck(docs, '_id').join(', '));
+          logger.info(`Updating docs: ${_.pluck(docs, '_id').join(', ')}`);
           return db.medic.bulkDocs({ docs: docs });
         }
       });
-  }
+  },
 };

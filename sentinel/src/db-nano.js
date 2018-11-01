@@ -5,7 +5,8 @@
  *************************************************/
 
 var nano = require('nano'),
-  url = require('url');
+  url = require('url'),
+  logger = require('./lib/logger');
 
 var couchUrl = process.env.COUCH_URL;
 if (couchUrl) {
@@ -43,7 +44,7 @@ if (couchUrl) {
     settings: {},
   };
 } else {
-  console.log(
+  logger.warn(
     'Please define a COUCH_URL in your environment e.g. \n' +
       'export COUCH_URL="http://admin:123qwe@localhost:5984/medic"\n' +
       'If you are running tests use UNIT_TEST_ENV=1 in your environment.\n'

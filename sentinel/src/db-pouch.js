@@ -1,4 +1,5 @@
-const PouchDB = require('pouchdb-core');
+const PouchDB = require('pouchdb-core'),
+  logger = require('../src/lib/logger');
 PouchDB.plugin(require('pouchdb-adapter-http'));
 PouchDB.plugin(require('pouchdb-mapreduce'));
 
@@ -6,7 +7,7 @@ const { COUCH_URL, UNIT_TEST_ENV } = process.env;
 
 if (UNIT_TEST_ENV) {
   const stubMe = functionName => () => {
-    console.error(
+    logger.error(
       new Error(
         `db.${functionName}() not stubbed!  UNIT_TEST_ENV=${UNIT_TEST_ENV}.  Please stub PouchDB functions that will be interacted with in unit tests.`
       )
@@ -50,7 +51,7 @@ if (UNIT_TEST_ENV) {
     fetch: fetchFn,
   });
 } else {
-  console.log(
+  logger.warn(
     'Please define a COUCH_URL in your environment e.g. \n' +
       'export COUCH_URL=\'http://admin:123qwe@localhost:5984/medic\'\n\n' +
       'If you are running unit tests use UNIT_TEST_ENV=1 in your environment.\n'

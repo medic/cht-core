@@ -143,7 +143,7 @@ module.exports = {
     unique: (doc, validation, callback) => {
       _exists(doc, validation.funcArgs, null, (err, result) => {
         if (err) {
-          logger.error('Error running "unique" validation', err);
+          logger.error('Error running "unique" validation: %o', err);
         }
         callback(err, !result);
       });
@@ -156,7 +156,7 @@ module.exports = {
         .valueOf();
       _exists(doc, fields, { startDate: startDate }, (err, result) => {
         if (err) {
-          logger.error('Error running "uniqueWithin" validation', err);
+          logger.error('Error running "uniqueWithin" validation: %o', err);
         }
         callback(err, !result);
       });
@@ -170,7 +170,7 @@ module.exports = {
         { additionalFilter: `form:${formName}` },
         (err, result) => {
           if (err) {
-            logger.error('Error running "exists" validation', err);
+            logger.error('Error running "exists" validation: %o', err);
           }
           callback(err, result);
         }
@@ -275,17 +275,17 @@ module.exports = {
     _.each(validations, function(config, idx) {
       var entities;
       try {
-        logger.debug('validation rule %s', config.rule);
+        logger.debug(`validation rule ${config.rule}`);
         entities = pupil.parser.parse(pupil.lexer.tokenize(config.rule));
       } catch (e) {
-        logger.error('error parsing validation: %s', e);
+        logger.error('error parsing validation: %o', e);
         return errors.push('Error on pupil validations: ' + JSON.stringify(e));
       }
       _.each(entities, function(entity) {
-        logger.debug('validation rule entity %s', entity);
+        logger.debug('validation rule entity: %o', entity);
         if (entity.sub && entity.sub.length > 0) {
           _.each(entity.sub, function(e) {
-            logger.debug('validation rule entity sub %s', e.funcName);
+            logger.debug(`validation rule entity sub ${e.funcName}`);
             if (names.indexOf(e.funcName) >= 0) {
               var v = validations[idx];
               // only update the first time through

@@ -6,6 +6,7 @@ const _ = require('underscore'),
   db = require('./db-nano'),
   path = require('path'),
   auth = require('./auth'),
+  logger = require('./logger'),
   isClientHuman = require('./is-client-human'),
   target = 'http://' + db.settings.host + ':' + db.settings.port,
   proxy = require('http-proxy').createProxyServer({ target: target }),
@@ -77,7 +78,7 @@ app.set('strict routing', true);
 // from different domains (e.g. localhost:5988 vs localhost:8080).  Adding the
 // --allow-cors commandline switch will enable this from within a web browser.
 if (process.argv.slice(2).includes('--allow-cors')) {
-  console.log('WARNING: allowing CORS requests to API!');
+  logger.warn('WARNING: allowing CORS requests to API!');
   app.use((req, res, next) => {
     res.setHeader(
       'Access-Control-Allow-Origin',
@@ -123,7 +124,7 @@ app.use(
 app.use(function(req, res, next) {
   var domain = createDomain();
   domain.on('error', function(err) {
-    console.error('UNCAUGHT EXCEPTION!');
+    logger.error('UNCAUGHT EXCEPTION!');
     serverUtils.serverError(err, req, res);
     domain.dispose();
     process.exit(1);
