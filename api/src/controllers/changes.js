@@ -4,18 +4,15 @@ const auth = require('../auth'),
       _ = require('underscore'),
       serverUtils = require('../server-utils'),
       heartbeatFilter = require('../services/heartbeat-filter'),
-      dbConfig = require('../services/db-config'),
       tombstoneUtils = require('@shared-libs/tombstone-utils'),
       uuid = require('uuid/v4'),
-      config = require('../config'),
-      DEFAULT_MAX_DOC_IDS = 100;
+      config = require('../config');
 
 let inited = false,
     continuousFeed = false,
     longpollFeeds = [],
     normalFeeds = [],
-    currentSeq = 0,
-    MAX_DOC_IDS;
+    currentSeq = 0;
 
 const split = (array, count) => {
   count = Number.parseInt(count);
@@ -33,8 +30,8 @@ const cleanUp = feed => {
   clearInterval(feed.heartbeat);
   clearTimeout(feed.timeout);
 
-  if (feed.upstreamRequests && feed.upstreamRequests.length) {
-    feed.upstreamRequests.forEach(request => request.cancel());
+  if (feed.upstreamRequest) {
+    feed.upstreamRequest.cancel();
   }
 };
 
@@ -140,32 +137,13 @@ const processPendingChanges = (feed, isNormalFeed) => {
   return !authChange;
 };
 
-// checks that all changes requests responses are valid
-const validResults = responses => {
-  return responses.every(response => response && response.results);
-};
-
-const canceledResults = responses => {
-  return responses.find(response => response && response.status === 'cancelled');
-};
-
-const mergeResults = responses => {
-  let results = [];
-  if (responses.length === 1) {
-    results = responses[0].results;
-  } else {
-    responses.forEach(response => {
-      results.push.apply(results, response.results);
-    });
-  }
+const generateTombstones = results => {
   results.forEach((change, idx) => {
     // tombstone changes are converted into their corresponding doc changes
     if (tombstoneUtils.isTombstoneId(change.id)) {
       results[idx] = tombstoneUtils.generateChangeFromTombstone(change);
     }
   });
-
-  return results;
 };
 
 const writeDownstream = (feed, content, end) => {
@@ -189,7 +167,6 @@ const resetFeed = feed => {
     pendingChanges: [],
     results: [],
     lastSeq: feed.initSeq,
-    chunkedAllowedDocIds: false,
     hasNewSubjects: false
   });
 };
@@ -211,37 +188,40 @@ const restartNormalFeed = feed => {
 };
 
 const getChanges = feed => {
-  const options = {
-    since: feed.req.query && feed.req.query.since || 0,
-    // PouchDB batches requests using this value as a limit and keeps issuing requests until the result
-    // set length is lower than the limit.
-    batch_size: MAX_DOC_IDS + 1
-  };
-  _.extend(options, _.pick(feed.req.query, 'style', 'conflicts', 'seq_interval'));
+  const options = _.pick(feed.req.query, 'since', 'style', 'conflicts', 'seq_interval');
+  options.doc_ids = feed.allowedDocIds;
+  options.since = options.since || 0;
 
-  feed.chunkedAllowedDocIds = feed.chunkedAllowedDocIds || split(feed.allowedDocIds, MAX_DOC_IDS);
-  feed.upstreamRequests = feed.chunkedAllowedDocIds.map(docIds => {
-    return db.medic
-      .changes(_.extend({ doc_ids: docIds }, options))
-      .on('complete', info => feed.lastSeq = info && info.last_seq || feed.lastSeq);
+  // Overwrite the default batch_size is 25. By setting it larger than the
+  // doc_ids length we ensure that batching is disabled which works around
+  // a bug where batching sometimes skips changes between batches.
+  options.batch_size = feed.allowedDocIds.length + 1;
+
+  feed.upstreamRequest = db.medic.changes(options).on('complete', info => {
+    feed.lastSeq = info && info.last_seq || feed.lastSeq;
   });
 
-  return Promise
-    .all(feed.upstreamRequests)
-    .then(responses => {
-      // if any of the responses was incomplete
-      if (!validResults(responses)) {
+
+  _.extend(options, _.pick(feed.req.query, 'style', 'conflicts', 'seq_interval'));
+
+  return feed.upstreamRequest
+    .then(response => {
+      const results = response && response.results;
+      // if the response was incomplete
+      if (!results) {
         feed.lastSeq = feed.initSeq;
         feed.results = [];
         // if the request was canceled on purpose, end the feed
-        if (canceledResults(responses)) {
+        if (response && response.status === 'cancelled') {
           return endFeed(feed);
         }
         // retry if malformed response
         return getChanges(feed);
       }
 
-      feed.results = mergeResults(responses);
+      generateTombstones(results);
+      feed.results = results;
+
       if (!processPendingChanges(feed, true)) {
         // if critical auth data changes are received, reset the feed completely
         endFeed(feed, false);
@@ -260,8 +240,8 @@ const getChanges = feed => {
     .catch(err => {
       console.log(feed.id +  ' Error while requesting `normal` changes feed');
       console.log(err);
-      // cancel ongoing requests and send error response
-      feed.upstreamRequests.forEach(request => request.cancel());
+      // cancel upstream request and send error response
+      feed.upstreamRequest.cancel();
       feed.error = err;
       endFeed(feed);
     });
@@ -277,7 +257,6 @@ const initFeed = (req, res, userCtx) => {
     lastSeq: req.query && req.query.since || currentSeq,
     pendingChanges: [],
     results: [],
-    upstreamRequests: [],
     limit: req.query && req.query.limit || config.get('changes_controller').changes_limit,
     reiterate_changes: config.get('changes_controller').reiterate_changes
   };
@@ -375,46 +354,25 @@ const initContinuousFeed = since => {
     });
 };
 
-const getCouchDbConfig = () => {
-  // As per https://issues.apache.org/jira/browse/COUCHDB-1288, there is a 100 doc
-  // limit on processing changes feeds with the _doc_ids filter within a
-  // reasonable amount of time.
-  // While hardcoded at first, CouchDB 2.1.1 has the option to configure this value
-  return dbConfig.get('couchdb', 'changes_doc_ids_optimization_threshold')
-    .catch(err => {
-      console.log('Could not read changes_doc_ids_optimization_threshold config value.');
-      console.log(err);
-      return DEFAULT_MAX_DOC_IDS;
-    })
-    .then(value => {
-      value = parseInt(value);
-      const isValidValue = (!isNaN(value) && value > 0);
-      MAX_DOC_IDS = isValidValue ? value : DEFAULT_MAX_DOC_IDS;
-    });
-};
-
 const init = () => {
-  if (inited) {
-    return Promise.resolve();
+  if (!inited) {
+    inited = true;
+    initContinuousFeed();
   }
-  inited = true;
-
-  return getCouchDbConfig().then(() => initContinuousFeed());
 };
 
 const request = (proxy, req, res) => {
-  return init().then(() => {
-    return auth
-      .getUserCtx(req)
-      .then(userCtx => {
-        if (auth.isOnlineOnly(userCtx)) {
-          return proxy.web(req, res);
-        }
-        res.type('json');
-        return processRequest(req, res, userCtx);
-      })
-      .catch(() => serverUtils.notLoggedIn(req, res));
-  });
+  init();
+  return auth
+    .getUserCtx(req)
+    .then(userCtx => {
+      if (auth.isOnlineOnly(userCtx)) {
+        return proxy.web(req, res);
+      }
+      res.type('json');
+      return processRequest(req, res, userCtx);
+    })
+    .catch(() => serverUtils.notLoggedIn(req, res));
 };
 
 module.exports = {
@@ -430,7 +388,7 @@ if (process.env.UNIT_TEST_ENV) {
     _writeDownstream: writeDownstream,
     _processPendingChanges: processPendingChanges,
     _appendChange: appendChange,
-    _mergeResults: mergeResults,
+    _generateTombstones: generateTombstones,
     _generateResponse: generateResponse,
     _split: split,
     _reset: () => {
@@ -438,12 +396,10 @@ if (process.env.UNIT_TEST_ENV) {
       normalFeeds = [];
       inited = false;
       currentSeq = 0;
-      MAX_DOC_IDS = DEFAULT_MAX_DOC_IDS;
     },
     _getNormalFeeds: () => normalFeeds,
     _getLongpollFeeds: () => longpollFeeds,
     _getCurrentSeq: () => currentSeq,
-    _getMaxDocIds: () => MAX_DOC_IDS,
     _inited: () => inited,
     _getContinuousFeed: () => continuousFeed
   });
