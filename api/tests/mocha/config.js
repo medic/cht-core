@@ -5,7 +5,7 @@ const config = require('../../src/config'),
       translations = require('../../src/translations'),
       settingsService = require('../../src/services/settings'),
       viewMapUtils = require('@shared-libs/view-map-utils'),
-      defaults = require('../../src/config.default.json'),
+      defaults = require('../../../config/standard/app_settings.json'),
       _ = require('underscore'),
       chai = require('chai');
 
