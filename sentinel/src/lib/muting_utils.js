@@ -151,7 +151,8 @@ const unmuteMessages = doc => {
 
 const muteUnsentMessages = doc => {
   return utils.setTasksStates(doc, 'muted', task => {
-    return task.state === 'scheduled' || task.state === 'pending';
+    return task.state === 'scheduled' ||
+           task.state === 'pending';
   });
 };
 

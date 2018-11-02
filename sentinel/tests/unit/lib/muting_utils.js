@@ -1115,6 +1115,5 @@ describe('mutingUtils', () => {
       mutingUtils.unmuteMessages(changedDoc).should.equal(2);
       mutingUtils.unmuteMessages(changedDoc2).should.equal(4);
     });
-
   });
 });

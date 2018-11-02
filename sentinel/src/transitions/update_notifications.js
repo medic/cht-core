@@ -80,8 +80,6 @@ module.exports = {
       doc &&
         doc.form &&
         doc.type === 'data_record' &&
-        doc.fields &&
-        doc.fields.patient_id &&
         !transitionUtils.hasRun(info, NAME)
     );
   },
@@ -106,7 +104,6 @@ module.exports = {
 
       logger.info('`update_notifications` transitions is deprecated. Please use `muting` transition instead');
       self.validate(config, doc, function(errors) {
-
         if (errors && errors.length > 0) {
           messages.addErrors(config, doc, errors, { patient: doc.patient });
           return resolve(true);
@@ -126,7 +123,7 @@ module.exports = {
           })
           .then(() => {
             self._addMsg(getEventName(eventType), config, doc, [], patient);
-            return resolve(true);
+            resolve(true);
           })
           .catch(err => {
             if (err && err.message === 'contact_not_found') {

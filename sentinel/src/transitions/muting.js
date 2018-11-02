@@ -88,6 +88,7 @@ module.exports = {
       .catch(err => {
         if (err && err.message === 'contact_not_found') {
           module.exports._addErr('contact_not_found', change.doc);
+          module.exports._addMsg('contact_not_found', change.doc);
           return true;
         }
 
@@ -96,7 +97,6 @@ module.exports = {
   },
   _addMsg: function(eventType, doc, contact) {
     const msgConfig = _.findWhere(getConfig().messages, { event_type: eventType });
-
     if (msgConfig) {
       messages.addMessage(doc, msgConfig, msgConfig.recipient, { patient: contact });
     }

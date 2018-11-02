@@ -244,7 +244,6 @@ describe('accept_patient_reports', () => {
           ]);
 
         setTaskState.getCall(3).args.should.deep.equal([{ state: 'muted', cleared_by: reportId }, 'cleared']);
-
         registration.scheduled_tasks[0].cleared_by.should.equal(reportId);
         registration.scheduled_tasks[1].cleared_by.should.equal(reportId);
         registration.scheduled_tasks[2].cleared_by.should.equal(reportId);
