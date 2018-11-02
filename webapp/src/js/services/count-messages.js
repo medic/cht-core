@@ -31,6 +31,8 @@
       $translate,
       Settings
     ) {
+      'ngInject';
+      
       return {
         label: label,
         init: function() {
