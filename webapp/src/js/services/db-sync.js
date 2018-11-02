@@ -11,10 +11,10 @@ angular
     'use strict';
     'ngInject';
 
-    var updateListeners = [];
-    var knownOnlineState = true; // assume the user is online
-    var syncIsRecent = false; // true when a replication has succeeded within one interval
-    var intervalPromises = {
+    const updateListeners = [];
+    let knownOnlineState = true; // assume the user is online
+    let syncIsRecent = false; // true when a replication has succeeded within one interval
+    const intervalPromises = {
       sync: undefined,
       meta: undefined,
     };
@@ -63,33 +63,31 @@ angular
         });
     };
 
-    var replicateTo = function() {
-      var AUTH_FAILURE = {};
+    const replicateTo = () => {
+      const AUTH_FAILURE = {};
       return Auth('can_edit')
-        .catch(function() {
-          // not authorized to replicate to server - that's ok. Silently skip replication.to
-          return AUTH_FAILURE;
-        })
-        .then(function(err) {
+        // not authorized to replicate to server - that's ok. Silently skip replication.to
+        .catch(() => AUTH_FAILURE)
+        .then(err => {
           if (err !== AUTH_FAILURE) {
             return replicate('to');
           }
         });
     };
 
-    var sendUpdateForDirectedReplication = function(func, direction) {
+    const sendUpdateForDirectedReplication = (func, direction) => {
       return func
-        .then(function() {
+        .then(() => {
           sendUpdate({
-            direction: direction,
+            direction,
             directedReplicationStatus: 'success',
           });
         })
-        .catch(function(error) {
+        .catch(error => {
           sendUpdate({
-            direction: direction,
+            direction,
             directedReplicationStatus: 'failure',
-            error: error,
+            error,
           });
           return error;
         });
@@ -102,8 +100,8 @@ angular
     };
 
     // inProgressSync prevents multiple concurrent replications
-    var inProgressSync;
-    var sync = function(force) {
+    let inProgressSync;
+    const sync = force => {
       if (!knownOnlineState && !force) {
         return $q.resolve();
       }
@@ -118,10 +116,8 @@ angular
             sendUpdateForDirectedReplication(replicate('from'), 'from'),
             sendUpdateForDirectedReplication(replicateTo(), 'to'),
           ])
-          .then(function(results) {
-            var errors = _.filter(results, function(result) {
-              return result;
-            });
+          .then(results => {
+            const errors = _.filter(results, result => result);
             if (errors.length > 0) {
               $log.error('Error replicating remote server', errors);
               sendUpdate({
@@ -134,7 +130,7 @@ angular
             syncIsRecent = true;
             sendUpdate({ aggregateReplicationStatus: 'not_required' });
           })
-          .finally(function() {
+          .finally(() => {
             inProgressSync = undefined;
           });
       }
@@ -143,19 +139,19 @@ angular
       return inProgressSync;
     };
 
-    var sendUpdate = function(update) {
-      _.forEach(updateListeners, function(listener) {
+    const sendUpdate = update => {
+      _.forEach(updateListeners, listener => {
         listener(update);
       });
     };
 
-    var resetSyncInterval = function() {
+    const resetSyncInterval = () => {
       if (intervalPromises.sync) {
         $interval.cancel(intervalPromises.sync);
         intervalPromises.sync = undefined;
       }
 
-      intervalPromises.sync = $interval(function() {
+      intervalPromises.sync = $interval(() => {
         syncIsRecent = false;
         sync();
       }, SYNC_INTERVAL);
@@ -167,7 +163,7 @@ angular
        *
        * @param listener {Function} A callback `function (update)`
        */
-      addUpdateListener: function(listener) {
+      addUpdateListener: listener => {
         updateListeners.push(listener);
       },
 
@@ -176,7 +172,7 @@ angular
        *
        * @param newOnlineState {Boolean} The current online state of the user.
        */
-      setOnlineStatus: function(onlineStatus) {
+      setOnlineStatus: onlineStatus => {
         if (knownOnlineState !== onlineStatus) {
           knownOnlineState = !!onlineStatus;
 
@@ -192,7 +188,7 @@ angular
        *
        * @returns Promise which resolves when both directions of the replication complete.
        */
-      sync: function(force) {
+      sync: force => {
         if (Session.isOnlineOnly()) {
           sendUpdate({ disabled: true });
           return $q.resolve();

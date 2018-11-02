@@ -1,4 +1,5 @@
 describe('DBSync service', () => {
+
   'use strict';
 
   const { expect } = chai;
@@ -12,8 +13,8 @@ describe('DBSync service', () => {
     userCtx,
     sync,
     Auth,
-    $interval,
     recursiveOn,
+    $interval,
     replicationResult;
 
   beforeEach(() => {
@@ -37,19 +38,16 @@ describe('DBSync service', () => {
 
     module('inboxApp');
     module($provide => {
-      $provide.factory(
-        'DB',
-        KarmaUtils.mockDB({
-          replicate: { to: to, from: from },
-          allDocs: allDocs,
-          sync: sync,
-        })
-      );
-      $provide.value('$q', Q);
+      $provide.factory('DB', KarmaUtils.mockDB({
+        replicate: { to: to, from: from },
+        allDocs: allDocs,
+        sync: sync
+      }));
+      $provide.value('$q', Q); // bypass $q so we don't have to digest
       $provide.value('Session', {
         isOnlineOnly: isOnlineOnly,
-        userCtx: userCtx,
-      });
+        userCtx: userCtx
+      } );
       $provide.value('Auth', Auth);
     });
     inject((_DBSync_, _$interval_) => {
@@ -59,16 +57,7 @@ describe('DBSync service', () => {
   });
 
   afterEach(() => {
-    KarmaUtils.restore(
-      to,
-      from,
-      query,
-      isOnlineOnly,
-      allDocs,
-      userCtx,
-      sync,
-      Auth
-    );
+    KarmaUtils.restore(to, from, query, allDocs, isOnlineOnly, userCtx, sync, Auth);
   });
 
   describe('sync', () => {
@@ -213,7 +202,7 @@ describe('DBSync service', () => {
         expect(to.callCount).to.equal(0);
 
         expect(onUpdate.callCount).to.eq(4);
-        expect(onUpdate.args[0][0]).to.deep.eq({
+        expect(onUpdate.args[0][0]).to.deep.eq({ 
           aggregateReplicationStatus: 'in_progress',
         });
         expect(onUpdate.args[1][0]).to.deep.eq({
@@ -232,6 +221,7 @@ describe('DBSync service', () => {
   });
 
   describe('replicateTo filter', () => {
+
     let filterFunction;
 
     before(() => {
@@ -282,4 +272,5 @@ describe('DBSync service', () => {
       expect(actual).to.equal(true);
     });
   });
+
 });

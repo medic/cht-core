@@ -12,14 +12,14 @@ module.exports = function(config) {
     customLaunchers: {
       Chrome_Headless: {
         base: 'Chrome',
-        flags: ['--headless', '--disable-gpu', '--remote-debugging-port=9222'],
-      },
+        flags: ['--headless', '--disable-gpu', '--remote-debugging-port=9222']
+      }
     },
     preprocessors: {
-      'src/**/*.html': ['ng-html2js'],
+      'src/**/*.html': ['ng-html2js']
     },
     ngHtml2JsPreprocessor: {
-      moduleName: 'templates',
+      moduleName: 'templates'
     },
     files: [
       // used to query html
@@ -43,7 +43,8 @@ module.exports = function(config) {
       'tests/unit/**/*.js',
 
       // templates
-      'src/**/*.html',
-    ],
+      'src/**/*.html'
+    ]
   });
+  
 };
