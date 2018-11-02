@@ -1048,8 +1048,7 @@ module.exports = function(grunt) {
   ]);
 
   grunt.registerTask('file-check', 'checking that xlsx and xml are same modified date',function(){
-    const formValidation = require('./scripts/form-validation')
-    return formValidation('config/standard/forms/')
-  }
-  )
+    const formValidation = require('./scripts/form-validation');
+    return formValidation('config/standard/forms/');
+  });
 };

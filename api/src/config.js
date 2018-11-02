@@ -5,7 +5,7 @@ const _ = require('underscore'),
       defaults = require('../../config/standard/app_settings.json'),
       settingsService = require('./services/settings'),
       translationCache = {},
-      viewMapUtils = require('@shared-libs/view-map-utils')
+      viewMapUtils = require('@shared-libs/view-map-utils'),
       contactForms =  require('medic-conf/src/fn/upload-contact-forms'),
       collectForms =  require('medic-conf/src/fn/upload-collect-forms'),
       appForms =  require('medic-conf/src/fn/upload-app-forms'),
@@ -18,32 +18,49 @@ let settings = {};
 
 function uploadStandardForms() {
   const tmpDir = os.tmpdir();
-  fs.mkdtemp(tmpDir, function(err, folder){
-    if (err) {console.log(err)};
-    getAttachments(folder)
-  })
+  const options = { key: ['form'], limit: 1 };
+  db.medic.query('medic-client/doc_by_type', options, (err, result) => {
+    if (err) {
+      console.error(err);
+      return;
+    }
+    if (result.rows.length === 0) {
+      fs.mkdtemp(tmpDir, function(err, folder){
+        if (err) {
+          console.error(err);
+          return;
+        }
+        getAttachments(folder);
+      });
+    } else {
+      console.log('Forms exist in database already. Will not load standard forms.');
+    }
+  });
 }
 
 function getAttachments(folder) {
   db.medic.get('_design/medic', {attachments: true})
   .then(function(doc){
-    extractAttachment(doc._attachments['forms.zip'].data, folder)
+    extractAttachment(doc._attachments['forms.zip'].data, folder);
   });
 }
 
 function extractAttachment(data, folder){
   const zipPath = folder + '/forms.zip';
   fs.writeFile(zipPath, data, {encoding: 'base64'}, function(err){
-    if (err) {console.log(err)};
+    if (err) {
+      console.error(err);
+      return;
+    }
     var zip = new AdmZip(zipPath);
-    zip.extractAllToAsync(folder + '/forms', true, function(x){
-      uploadForms(folder)
+    zip.extractAllToAsync(folder + '/forms', true, function(){
+      uploadForms(folder);
     });
-  })
+  });
 }
 
 function uploadForms(folder){
-  const fullDbName = dbnano.config.url + '/' + dbnano.settings.db
+  const fullDbName = dbnano.config.url + '/' + dbnano.settings.db;
   contactForms(folder, fullDbName);
   collectForms(folder, fullDbName);
   appForms(folder, fullDbName);
