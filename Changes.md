@@ -1,8 +1,62 @@
 # Medic Mobile Release Notes
 
+## 3.2.0
+
+_TBD_
+
+### Features
+
+- [#649](https://github.com/medic/medic-webapp/issues/649): Add a screen that shows messages queued to be sent 
+- [#3155](https://github.com/medic/medic-webapp/issues/3155): Add validation option for ISO week date
+- [#3675](https://github.com/medic/medic-webapp/issues/3675): Blacklist outgoing messages to carriers
+- [#4767](https://github.com/medic/medic-webapp/issues/4767): Ability to mute families (and maybe individuals)
+
+### Improvements
+
+- [#3414](https://github.com/medic/medic-webapp/issues/3414): Make the patient ID or UUID on the Reports tab a hyperlink
+- [#3705](https://github.com/medic/medic-webapp/issues/3705): Disable 'Select' and 'Export' buttons when there are no reports
+- [#4013](https://github.com/medic/medic-webapp/issues/4013): Add warning dialogue when users navigate away from a form
+- [#4097](https://github.com/medic/medic-webapp/issues/4097): Log each valid `POST /api/v1/users/{username}` with field names
+- [#4294](https://github.com/medic/medic-webapp/issues/4294): On single column pages, remove scroll within a scroll
+- [#4768](https://github.com/medic/medic-webapp/issues/4768): Update the on/off handling to mark an individual as muted
+- [#4895](https://github.com/medic/medic-webapp/issues/4895): Update place icons
+
+### Performance fixes
+
+- [#4834](https://github.com/medic/medic-webapp/issues/4834): Move `medic-client/feedback` view into admin ddoc
+
+### Bug fixes
+
+- [#3327](https://github.com/medic/medic-webapp/issues/3327): Date picker widget is not translated
+- [#3391](https://github.com/medic/medic-webapp/issues/3391): Not all writes to CouchDB go through the audit layer
+- [#3427](https://github.com/medic/medic-webapp/issues/3427): medic-api forms controller should use appropriate protocol
+- [#3707](https://github.com/medic/medic-webapp/issues/3707): GET /api/v1/forms is broken if trailing slash
+- [#3899](https://github.com/medic/medic-webapp/issues/3899): Can create people born in the future with standard configuration
+- [#4331](https://github.com/medic/medic-webapp/issues/4331): Reports incorrectly filtered if filter changes before search returns
+- [#4625](https://github.com/medic/medic-webapp/issues/4625): Reports page can mistakenly hide fields
+- [#4710](https://github.com/medic/medic-webapp/issues/4710): Users without admin permissions can view the configuration area
+- [#4711](https://github.com/medic/medic-webapp/issues/4711): Users without permission to view contacts, tasks, messages can view those pages
+- [#4755](https://github.com/medic/medic-webapp/issues/4755): The image upload enketo widget relies on the form name matching the xml instance element
+- [#4772](https://github.com/medic/medic-webapp/issues/4772): If during user creation associated contact is chosen, 'Place' field has to become required
+- [#4787](https://github.com/medic/medic-webapp/issues/4787): On reports, "Edit" of a scheduled message not working as expected
+- [#4788](https://github.com/medic/medic-webapp/issues/4788): On report details on the RHS, field titles should wrap, not stick out into empty space
+- [#4800](https://github.com/medic/medic-webapp/issues/4800): Horti crashes on subsequent upgrade
+- [#4802](https://github.com/medic/medic-webapp/issues/4802): Cannot get audit log
+- [#4816](https://github.com/medic/medic-webapp/issues/4816): Exporting messages doesn't work with reports with scheduled tasks
+- [#4825](https://github.com/medic/medic-webapp/issues/4825): After searching, the RHS should clear of anything you were previously looking at
+- [#4829](https://github.com/medic/medic-webapp/issues/4829): Unable to access Configuration screen on my local instance of webapp (wrong redirect URL)
+- [#4832](https://github.com/medic/medic-webapp/issues/4832): Date picker widget is not translated for language Bamanankan (bm)
+- [#4837](https://github.com/medic/medic-webapp/issues/4837): Font awesome icons not loading in the administration console
+- [#4899](https://github.com/medic/medic-webapp/issues/4899): Error loading Outgoing Messages tab when there are no results
+- [#4905](https://github.com/medic/medic-webapp/issues/4905): Contacts controllers search is clearing $stateParams when it shouldn't
+
+### Technical issues
+
+- [#4865](https://github.com/medic/medic-webapp/issues/4865): grunt watch doesn't deploy inbox.html changes
+
 ## 3.1.0
 
-_August 27, 2018_
+_TBD_
 
 ### Features
 
@@ -29,7 +83,7 @@ _August 27, 2018_
 - [#4735](https://github.com/medic/medic-webapp/issues/4735): Sentinel scheduled tasks messages ignore config
 - [#4776](https://github.com/medic/medic-webapp/issues/4776): Medic Collect Security Issue
 - [#4778](https://github.com/medic/medic-webapp/issues/4778): Support db-doc GET with open_revs for offline users
-- [#4786](https://github.com/medic/medic-webapp/issues/4786): Allow offline users to access admin app if allowed.
+- [#4786](https://github.com/medic/medic-webapp/issues/4786): Allow offline users to access admin app if allowed
 - [#4789](https://github.com/medic/medic-webapp/issues/4789): Change the text that is displayed on LHS of Reports when there are no results
 
 ### Technical issues
@@ -40,10 +94,11 @@ _August 27, 2018_
 
 ## 3.0.0
 
-_August 27, 2018_
+_October 23, 2018_
 
 ### Migration notes
 
+- The [supported versions for client and server software](https://github.com/medic/medic-docs/blob/master/installation/supported-software.md) have been changed significantly. Make sure your software meets the requirements before upgrading to 3.0.0.
 - [#3971](https://github.com/medic/medic-webapp/issues/3971): The `/api/v1/messages` endpoint has been removed as it was no longer actively used, and contained bugs.
 - [#1002](https://github.com/medic/medic-webapp/issues/1002): The ANC analytics page and the following APIs have been removed as they are no longer used: `/api/active-pregnancies`, `/api/upcoming-appointments`, `/api/missed-appointments`, `/api/upcoming-due-dates`, `/api/high-risk`, `/api/total-births`, `/api/missing-delivery-reports`, `/api/delivery-location`, `/api/visits-completed`, `/api/visits-during`, `/api/monthly-registrations`, `/api/monthly-deliveries`.
 - [#1002](https://github.com/medic/medic-webapp/issues/1002): The `/api/v1/export/messages`, `/api/v1/export/forms`, and `/api/v1/export/contacts` endpoints have been removed in favor of `/api/v2/export/messages`, `/api/v2/export/reports`, and `/api/v2/export/contacts` respectively.
@@ -136,6 +191,12 @@ _August 27, 2018_
 - [#4754](https://github.com/medic/medic-webapp/issues/4754): Deleting error-report not replicating properly
 - [#4774](https://github.com/medic/medic-webapp/issues/4774): Use user.facility_id saved in `_users` instead of `medic` db
 - [#4792](https://github.com/medic/medic-webapp/issues/4792): Horti versions don't show up correctly in about page
+- [#4806](https://github.com/medic/medic-webapp/issues/4806): Fix getting registrations via querying `medic-client/registered_patients`
+- [#4808](https://github.com/medic/medic-webapp/issues/4808): Clicking edit on a district, health center, heatlh area is showing error
+- [#4823](https://github.com/medic/medic-webapp/issues/4823): Error loading form "Could not evaluate:"
+- [#4831](https://github.com/medic/medic-webapp/issues/4831): ANC SMS are not cleared when pregnancy is registered to the patient
+- [#4848](https://github.com/medic/medic-webapp/issues/4848): Zscore Charts are not being found
+- [#4893](https://github.com/medic/medic-webapp/issues/4893): Horticulturalist crashes when view warming
 
 ### Technical issues
 
@@ -174,6 +235,15 @@ _August 27, 2018_
 - [#4676](https://github.com/medic/medic-webapp/issues/4676): Emit NODE_OPTIONS during API startup
 - [#4683](https://github.com/medic/medic-webapp/issues/4683): Create a shared library for server startup checks
 - [#4741](https://github.com/medic/medic-webapp/issues/4741): App bootstraps without data when changes returns an error
+
+## 2.18.1
+
+_October 23, 2018_
+
+### Bug fixes
+
+- [#4875](https://github.com/medic/medic-webapp/issues/4875): Inputs group not saved when its relevance is set to false
+- [#4897](https://github.com/medic/medic-webapp/issues/4897): Count two visits on the same day as one visit
 
 ## 2.18.0
 

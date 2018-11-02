@@ -11,3 +11,7 @@ medic/medic-webapp#[number]
 - [ ] Tested: Unit and/or e2e where appropriate
 - [ ] Internationalised: All user facing text
 - [ ] Backwards compatible: Works with existing data and configuration or includes a migration. Any breaking changes documented in Changes.md.
+
+# License
+
+The software is provided under AGPL-3.0. Contributions to this project are accepted under the same license.

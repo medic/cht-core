@@ -66,12 +66,13 @@ angular.module('inboxControllers').controller('ContactsReportCtrl',
           $scope.enketoStatus.saving = false;
           $translate('report.created').then(Snackbar);
           $state.go('contacts.detail', { id: $state.params.id });
+          $scope.enketoStatus.edited = false;
         })
         .catch(function(err) {
           $scope.enketoStatus.saving = false;
           $log.error('Error submitting form data: ', err);
           $translate('error.report.save').then(function(msg) {
-            $scope.enketoStatus.error = msg;
+          $scope.enketoStatus.error = msg;
           });
         });
     };

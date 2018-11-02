@@ -1,26 +1,28 @@
 const _ = require('underscore'),
-      logger = require('../lib/logger'),
-      transitionUtils = require('./utils'),
-      db = require('../db-nano'),
-      dbPouch = require('../db-pouch'),
-      lineage = require('lineage')(Promise, dbPouch.medic),
-      NAME = 'update_clinics';
+  logger = require('../lib/logger'),
+  transitionUtils = require('./utils'),
+  db = require('../db-nano'),
+  dbPouch = require('../db-pouch'),
+  lineage = require('lineage')(Promise, dbPouch.medic),
+  NAME = 'update_clinics';
 
 const associateContact = (doc, contact, callback) => {
   const self = module.exports;
 
   // reporting phone stayed the same and contact data is up to date
-  if (doc.from === contact.phone &&
-      doc.contact &&
-      contact._id === doc.contact._id) {
+  if (
+    doc.from === contact.phone &&
+    doc.contact &&
+    contact._id === doc.contact._id
+  ) {
     return callback();
   }
 
   if (contact.phone !== doc.from) {
     contact.phone = doc.from;
-    db.audit.saveDoc(contact, err => {
+    dbPouch.medic.put(contact, err => {
       if (err) {
-        logger.error('Error updating contact: ' + JSON.stringify(err, null, 2));
+        logger.error(`Error updating contact: ${JSON.stringify(err, null, 2)}`);
         return callback(err);
       }
       self.setContact(doc, contact, callback);
@@ -42,38 +44,44 @@ const getHydratedContact = (id, callback) => {
 };
 
 const getContact = (doc, callback) => {
-  if (doc.refid) { // use reference id to find clinic if defined
+  if (doc.refid) {
+    // use reference id to find clinic if defined
     let params = {
-      key: [ 'external', doc.refid ],
+      key: ['external', doc.refid],
       include_docs: true,
-      limit: 1
+      limit: 1,
     };
-    db.medic.view('medic-client', 'contacts_by_reference', params, (err, data) => {
-      if (err) {
-        return callback(err);
-      }
-      if (!data.rows.length) {
-        return callback();
-      }
-      const result = data.rows[0].doc;
-      if (result.type === 'person') {
-        return getHydratedContact(result._id, callback);
-      }
-      if (result.type === 'clinic') {
-        const id = result.contact && result.contact._id;
-        if (!id) {
-          return callback(null, result.contact || { parent: result });
+    db.medic.view(
+      'medic-client',
+      'contacts_by_reference',
+      params,
+      (err, data) => {
+        if (err) {
+          return callback(err);
         }
+        if (!data.rows.length) {
+          return callback();
+        }
+        const result = data.rows[0].doc;
+        if (result.type === 'person') {
+          return getHydratedContact(result._id, callback);
+        }
+        if (result.type === 'clinic') {
+          const id = result.contact && result.contact._id;
+          if (!id) {
+            return callback(null, result.contact || { parent: result });
+          }
 
-        return getHydratedContact(id, callback);
+          return getHydratedContact(id, callback);
+        }
+        callback();
       }
-      callback();
-    });
+    );
   } else if (doc.from) {
     let params = {
       key: String(doc.from),
       include_docs: false,
-      limit: 1
+      limit: 1,
     };
     db.medic.view('medic-client', 'contacts_by_phone', params, (err, data) => {
       if (err) {
@@ -98,12 +106,12 @@ const getContact = (doc, callback) => {
  * good place to get phone numbers from.
  */
 module.exports = {
-  filter: (doc, info={}) => {
+  filter: (doc, info = {}) => {
     return Boolean(
       doc &&
-      doc.type === 'data_record' &&
-      !doc.contact &&
-      !transitionUtils.hasRun(info, NAME)
+        doc.type === 'data_record' &&
+        !doc.contact &&
+        !transitionUtils.hasRun(info, NAME)
     );
   },
   onMatch: change => {
@@ -132,5 +140,5 @@ module.exports = {
     });
     callback(null, true);
   },
-  _lineage: lineage
+  _lineage: lineage,
 };

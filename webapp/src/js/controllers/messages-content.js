@@ -169,22 +169,22 @@ angular.module('inboxControllers').controller('MessagesContentCtrl',
       }
     };
 
-    $scope.sendMessage = function() {
+    $scope.sendMessage = () => {
       if (!$scope.selected) {
         $log.error('Error sending message', new Error('No facility selected'));
         return;
       }
-      var recipient;
+      let recipient;
       if ($scope.selected.contact.doc) { // known contact
         recipient = { doc: $scope.selected.contact.doc };
       } else { // unknown sender
         recipient = { doc: { contact: { phone: $scope.selected.id } } };
       }
       SendMessage(recipient, $scope.send.message)
-        .then(function() {
+        .then(() => {
           $scope.send.message = '';
         })
-        .catch(function(err) {
+        .catch(err => {
           $log.error('Error sending message', err);
         });
     };

@@ -1206,9 +1206,9 @@ performance-now@^2.1.0:
   dependencies:
     google-libphonenumber "^3.1.11"
 
-pojo2xml@^1.7.1:
-  version "1.7.1"
-  resolved "https://registry.yarnpkg.com/pojo2xml/-/pojo2xml-1.7.1.tgz#9c4d3f2d9750329c03651c44d561e81e721f7be7"
+pojo2xml@^1.7.2:
+  version "1.7.2"
+  resolved "https://registry.yarnpkg.com/pojo2xml/-/pojo2xml-1.7.2.tgz#932247cadd884438e7d64e79e0a3a52ae74b6d33"
 
 pouchdb-abstract-mapreduce@6.4.3:
   version "6.4.3"

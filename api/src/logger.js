@@ -29,7 +29,6 @@ const logger = createLogger({
     new transports.Console({
       // change level if in dev environment versus production
       level: env === 'development' ? 'debug' : 'info',
-      handleExceptions: true,
       format: format.combine(
         // https://github.com/winstonjs/winston/issues/1345
         format(info => {

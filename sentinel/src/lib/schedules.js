@@ -3,6 +3,7 @@ var _ = require('underscore'),
     date = require('../date'),
     moment = require('moment'),
     utils = require('../lib/utils'),
+    logger = require('../lib/logger'),
     messages = require('../lib/messages');
 const messageUtils = require('@shared-libs/message-utils');
 
@@ -157,8 +158,8 @@ module.exports = {
                 }
             } else {
                 // bad offset, skip this msg
-                console.error(
-                    '%s cannot be parsed as a valid offset. Skipping this msg of %s schedule.', msg.offset, schedule.name
+                logger.error(
+                    `${msg.offset} cannot be parsed as a valid offset. Skipping this msg of ${schedule.name} schedule.`  
                 );
             }
         });

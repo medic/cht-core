@@ -1,14 +1,15 @@
 const fs = require('fs'),
-      url = require('url'),
-      path = require('path'),
-      request = require('request'),
-      _ = require('underscore'),
-      auth = require('../auth'),
-      db = require('../db-nano'),
-      config = require('../config'),
-      SESSION_COOKIE_RE = /AuthSession\=([^;]*);/,
-      ONE_YEAR = 31536000000,
-      production = process.env.NODE_ENV === 'production';
+  url = require('url'),
+  path = require('path'),
+  request = require('request'),
+  _ = require('underscore'),
+  auth = require('../auth'),
+  db = require('../db-nano'),
+  config = require('../config'),
+  SESSION_COOKIE_RE = /AuthSession\=([^;]*);/,
+  ONE_YEAR = 31536000000,
+  logger = require('../logger'),
+  production = process.env.NODE_ENV === 'production';
 
 let loginTemplate;
 
@@ -17,7 +18,13 @@ _.templateSettings = {
 };
 
 const safePath = requested => {
-  const appPrefix = path.join('/', db.settings.db, '_design', db.settings.ddoc, '_rewrite');
+  const appPrefix = path.join(
+    '/',
+    db.settings.db,
+    '_design',
+    db.settings.ddoc,
+    '_rewrite'
+  );
   const dirPrefix = path.join(appPrefix, '/');
 
   if (!requested) {
@@ -27,15 +34,14 @@ const safePath = requested => {
 
   try {
     requested = url.resolve('/', requested);
-  } catch(e) {
+  } catch (e) {
     // invalid url - return the default
     return appPrefix;
   }
 
   const parsed = url.parse(requested);
 
-  if (parsed.path !== appPrefix &&
-      parsed.path.indexOf(dirPrefix) !== 0) {
+  if (parsed.path !== appPrefix && parsed.path.indexOf(dirPrefix) !== 0) {
     // path is not relative to the couch app
     return appPrefix;
   }
@@ -69,7 +75,7 @@ const renderLogin = (redirect, callback) => {
       action: path.join('/', db.settings.db, 'login'),
       redirect: redirect,
       branding: {
-        name: 'Medic Mobile'
+        name: 'Medic Mobile',
       },
       translations: {
         login: config.translate('login'),
@@ -77,16 +83,17 @@ const renderLogin = (redirect, callback) => {
         loginincorrect: config.translate('login.incorrect'),
         loginoffline: config.translate('online.action.message'),
         username: config.translate('User Name'),
-        password: config.translate('Password')
-      }
+        password: config.translate('Password'),
+      },
     });
     callback(null, body);
   });
 };
 
 const getSessionCookie = res => {
-  return _.find(res.headers['set-cookie'], cookie =>
-    cookie.indexOf('AuthSession') === 0
+  return _.find(
+    res.headers['set-cookie'],
+    cookie => cookie.indexOf('AuthSession') === 0
   );
 };
 
@@ -94,29 +101,32 @@ const createSession = req => {
   const user = req.body.user;
   const password = req.body.password;
   return new Promise((resolve, reject) => {
-    request.post({
-      url: url.format({
-        protocol: db.settings.protocol,
-        hostname: db.settings.host,
-        port: db.settings.port,
-        pathname: '_session'
-      }),
-      json: true,
-      body: { name: user, password: password },
-      auth: { user: user, pass: password }
-    }, (err, sessionRes) => {
-      if (err) {
-        return reject(err);
+    request.post(
+      {
+        url: url.format({
+          protocol: db.settings.protocol,
+          hostname: db.settings.host,
+          port: db.settings.port,
+          pathname: '_session',
+        }),
+        json: true,
+        body: { name: user, password: password },
+        auth: { user: user, pass: password },
+      },
+      (err, sessionRes) => {
+        if (err) {
+          return reject(err);
+        }
+        resolve(sessionRes);
       }
-      resolve(sessionRes);
-    });
+    );
   });
 };
 
 const getCookieOptions = () => {
   return {
     sameSite: 'lax', // prevents the browser from sending this cookie along with some cross-site requests
-    secure: production // only transmit when requesting via https unless in development mode
+    secure: production, // only transmit when requesting via https unless in development mode
   };
 };
 
@@ -140,14 +150,15 @@ const setCookies = (req, res, sessionRes) => {
     return;
   }
   const options = { headers: { Cookie: sessionCookie } };
-  return auth.getUserCtx(options)
+  return auth
+    .getUserCtx(options)
     .then(userCtx => {
       setSessionCookie(res, sessionCookie);
       setUserCtxCookie(res, userCtx);
       res.json({ success: true });
     })
     .catch(err => {
-      console.error('Error getting authCtx', err);
+      logger.error(`Error getting authCtx ${err}`);
       res.status(401).json({ error: 'Error getting authCtx' });
     });
 };
@@ -156,7 +167,8 @@ module.exports = {
   safePath: safePath,
   get: (req, res) => {
     const redirect = safePath(req.query.redirect);
-    return auth.getUserCtx(req)
+    return auth
+      .getUserCtx(req)
       .then(userCtx => {
         // already logged in
         setUserCtxCookie(res, userCtx);
@@ -165,7 +177,7 @@ module.exports = {
       .catch(() => {
         renderLogin(redirect, (err, body) => {
           if (err) {
-            console.error('Could not find login page');
+            logger.error('Could not find login page');
             throw err;
           }
           res.send(body);
@@ -182,13 +194,14 @@ module.exports = {
         return setCookies(req, res, sessionRes);
       })
       .catch(err => {
-        console.error('Error logging in', err);
+        logger.error('Error logging in: %o', err);
         res.status(500).json({ error: 'Unexpected error logging in' });
       });
   },
   getIdentity: (req, res) => {
     res.type('application/json');
-    return auth.getUserCtx(req)
+    return auth
+      .getUserCtx(req)
       .then(userCtx => {
         setUserCtxCookie(res, userCtx);
         res.send({ success: true });
@@ -197,5 +210,5 @@ module.exports = {
         res.status(401);
         return res.send();
       });
-  }
+  },
 };
