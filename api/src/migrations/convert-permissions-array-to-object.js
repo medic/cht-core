@@ -13,9 +13,8 @@ module.exports = {
             permissions[permission.name] = permission.roles; 
           });
           settings.permissions = permissions;
-          
-          return settingsService.update(settings, true);
         }
+        return settingsService.update(settings, true);
       })
       .then(() => callback())
       .catch(callback);
