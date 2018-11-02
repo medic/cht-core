@@ -320,4 +320,102 @@ describe('Muting transition', () => {
       });
     });
   });
+
+  describe('validation', () => {
+    it('failure adds error and response', () => {
+      const doc = {
+        type: 'data_record',
+        fields: { patient_id: 'x' },
+        contact: { phone: 'x' },
+      };
+
+      config.get.returns({
+        mute_forms: [],
+        unmute_forms: [],
+        validations: {
+          join_responses: false,
+          list: [
+            {
+              property: 'patient_id',
+              rule: 'regex("^[0-9]{5}$")',
+              message: [
+                {
+                  content: 'patient id needs 5 numbers.',
+                  locale: 'en',
+                },
+              ],
+            },
+          ],
+        }
+      });
+
+      const change = { doc: doc };
+      return transition
+        .onMatch(change)
+        .then(result => {
+          chai.expect(result).to.equal(true);
+          chai.expect(doc.errors.length).to.equal(1);
+          chai.expect(doc.errors[0].message).to.equal('patient id needs 5 numbers.');
+          chai.expect(doc.tasks.length).to.equal(1);
+          chai.expect(doc.tasks[0].messages[0].message).to.equal('patient id needs 5 numbers.');
+          chai.expect(doc.tasks[0].messages[0].to).to.equal('x');
+          chai.expect(mutingUtils.getContact.callCount).to.equal(0);
+          chai.expect(mutingUtils.updateMuteState.callCount).to.equal(0);
+      });
+    });
+
+    it('success should continue execution', () => {
+      const doc = {
+        type: 'data_record',
+        form: 'mute',
+        fields: { patient_id: '12345' },
+        contact: { phone: 'x' },
+      };
+      const contact = { _id: 'contact' };
+
+      config.get.returns({
+        mute_forms: ['mute'],
+        unmute_forms: [],
+        validations: {
+          join_responses: false,
+          list: [
+            {
+              property: 'patient_id',
+              rule: 'regex("^[0-9]{5}$")',
+              message: [
+                {
+                  content: 'patient id needs 5 numbers.',
+                  locale: 'en',
+                },
+              ],
+            },
+          ],
+        },
+        messages: [
+          {
+            event_type: 'mute',
+            recipient: 'reporting_unit',
+            message: [{
+              locale: 'en',
+              content: 'Muting successful'
+            }]
+          }
+        ]
+      });
+      mutingUtils.getContact.resolves(contact);
+      mutingUtils.updateMuteState.resolves(true);
+
+      return transition
+        .onMatch({ doc })
+        .then(result => {
+          chai.expect(result).to.equal(true);
+          chai.expect(doc.errors).to.equal(undefined);
+          chai.expect(mutingUtils.getContact.callCount).to.equal(1);
+          chai.expect(mutingUtils.updateMuteState.callCount).to.equal(1);
+          chai.expect(doc.tasks.length).to.equal(1);
+          chai.expect(doc.tasks[0].messages[0].to).to.equal('x');
+          chai.expect(doc.tasks[0].messages[0].message).to.equal('Muting successful');
+        });
+    });
+  });
 });
