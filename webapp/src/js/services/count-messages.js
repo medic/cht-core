@@ -10,12 +10,6 @@
     return gsmChars.test(message) ? 160 : 70;
   };
 
-  var getSMSPartLimit = function(Settings) {
-    return Settings().then(function(settings) {
-      return settings.multipart_sms_limit || 11;
-    });
-  };
-
   var calculate = function(message) {
     var max = getMax(message);
     return {
@@ -32,55 +26,20 @@
     return translate.instant(key, count);
   };
 
-  inboxServices.factory('CountMessages',
-    function(
-      $translate,
-      Settings
-    ) {
+  inboxServices.factory('CountMessages', ['$translate',
+    function($translate) {
       return {
         label: label,
         init: function() {
-          Settings().then(function(settings) {
-            $('body').on('keyup', '[name=message]', function(e) {
-
-              var target = $(e.target);
-              var message = target.text();
-              target.closest('.message-form')
-                    .find('.count')
-                    .text(label($translate, message));
-
-              var count = calculate(message);
-              var settingsMaximumSMSPart = settings.multipart_sms_limit || 10;
-
-              if (count.messages > settingsMaximumSMSPart) {
-                target.closest('.message-form')
-                      .find('.count')
-                      .addClass('alert-danger')
-                      .closest('mm-modal')
-                      .find('.btn.submit')
-                      .addClass('disabled');
-
-                var settingsMaximumSMSSize = settingsMaximumSMSPart * getMax(message);
-                var regex = new RegExp(`.{${settingsMaximumSMSSize}}(.*)`);
-                var extra = message.match(regex)[1];
-                var newMessage = message.replace(extra, "<span class='alert-danger'>" + extra + "</span>");
-                target.html(newMessage);
-
-              } else {
-
-                target.closest('.message-form')
-                      .find('.count')
-                      .removeClass('alert-danger')
-                      .closest('mm-modal')
-                      .find('.btn.submit')
-                      .removeClass('disabled');
-
-              }
-            });
+          $('body').on('keyup', '[name=message]', function(e) {
+            var target = $(e.target);
+            target.closest('.message-form')
+                  .find('.count')
+                  .text(label($translate, target.val()));
           });
         }
       };
     }
-  );
+  ]);
 
 }());

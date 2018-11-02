@@ -11,6 +11,5 @@
   require('./report-image');
   require('./sender');
   require('./enter');
-  require('./contenteditable');
 
 }());
