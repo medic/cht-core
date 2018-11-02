@@ -26,20 +26,47 @@
     return translate.instant(key, count);
   };
 
-  inboxServices.factory('CountMessages', ['$translate',
-    function($translate) {
+  inboxServices.factory('CountMessages',
+    function(
+      $translate,
+      Settings
+    ) {
       return {
         label: label,
         init: function() {
-          $('body').on('keyup', '[name=message]', function(e) {
-            var target = $(e.target);
-            target.closest('.message-form')
-                  .find('.count')
-                  .text(label($translate, target.val()));
+          Settings().then(function(settings) {
+            $('body').on('keyup', '[name=message]', function(e) {
+
+              var target = $(e.target);
+              var message = target.val();
+              target.closest('.message-form')
+                    .find('.count')
+                    .text(label($translate, message));
+
+              var count = calculate(message);
+              var settingsMaximumSMSPart = settings.multipart_sms_limit || 10;
+
+              if (count.messages > settingsMaximumSMSPart) {
+                target.closest('.message-form')
+                      .find('.count')
+                      .addClass('alert-danger')
+                      .closest('mm-modal')
+                      .find('.btn.submit')
+                      .addClass('disabled');
+              } else {
+                target.closest('.message-form')
+                      .find('.count')
+                      .removeClass('alert-danger')
+                      .closest('mm-modal')
+                      .find('.btn.submit')
+                      .removeClass('disabled');
+
+              }
+            });
           });
         }
       };
     }
-  ]);
+  );
 
 }());

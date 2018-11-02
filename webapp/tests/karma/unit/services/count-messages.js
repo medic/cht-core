@@ -3,10 +3,15 @@ describe('CountMessages service', function() {
   'use strict';
 
   var service,
-      $translate;
+      $translate,
+      Settings;
 
   beforeEach(function() {
+    Settings = sinon.stub();
     module('inboxApp');
+    module(function ($provide) {
+      $provide.value('Settings', Settings);
+    });
     inject(function(_CountMessages_) {
       service = _CountMessages_;
     });
