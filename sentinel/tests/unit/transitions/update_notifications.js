@@ -1,8 +1,8 @@
 const sinon = require('sinon'),
-      assert = require('chai').assert,
-      transition = require('../../../src/transitions/update_notifications'),
-      utils = require('../../../src/lib/utils'),
-      mutingUtils = require('../../../src/lib/muting_utils');
+  assert = require('chai').assert,
+  transition = require('../../../src/transitions/update_notifications'),
+  utils = require('../../../src/lib/utils'),
+  mutingUtils = require('../../../src/lib/muting_utils');
 
 describe('update_notifications', () => {
   afterEach(done => {

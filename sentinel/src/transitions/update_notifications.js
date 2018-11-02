@@ -1,12 +1,12 @@
 var _ = require('underscore'),
-    config = require('../config'),
-    utils = require('../lib/utils'),
-    messages = require('../lib/messages'),
-    validation = require('../lib/validation'),
-    transitionUtils = require('./utils'),
-    NAME = 'update_notifications',
-    mutingUtils = require('../lib/muting_utils'),
-    logger = require('../lib/logger');
+  config = require('../config'),
+  utils = require('../lib/utils'),
+  messages = require('../lib/messages'),
+  validation = require('../lib/validation'),
+  transitionUtils = require('./utils'),
+  NAME = 'update_notifications',
+  mutingUtils = require('../lib/muting_utils'),
+  logger = require('../lib/logger');
 
 var isConfigured = function(config, eventType) {
   return (
@@ -93,10 +93,10 @@ module.exports = {
   onMatch: change => {
     return new Promise((resolve, reject) => {
       var self = module.exports,
-          doc = change.doc,
-          config = module.exports.getConfig(),
-          eventType = getEventType(config, doc),
-          patient;
+        doc = change.doc,
+        config = module.exports.getConfig(),
+        eventType = getEventType(config, doc),
+        patient;
 
       if (!eventType) {
         return resolve();
