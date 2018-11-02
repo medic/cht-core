@@ -13,7 +13,7 @@
       <span class="help-block" ng-show="error.phone">{{error.phone}}</span>
     </div>
     <div class="form-group" ng-class="{ 'has-error': error.message }">
-      <div contenteditable name="message" class="form-control" translate translate-attr-placeholder="tasks.0.messages.0.message" ng-model="model.message"></div>
+      <textarea name="message" class="form-control" translate translate-attr-placeholder="tasks.0.messages.0.message" ng-model="model.message"></textarea>
       <span class="help-block" ng-show="error.message">{{error.message}}</span>
       <span class="count">{{count}}</span>
     </div>
