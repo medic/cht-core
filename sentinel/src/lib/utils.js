@@ -211,17 +211,6 @@ module.exports = {
     return (clinic && clinic.contact && clinic.contact.phone) ||
            (doc.contact && doc.contact.phone);
   },
-  unmuteMessages: doc => {
-    // only schedule tasks that are relevant
-    return setTasksStates(doc, 'scheduled', task => {
-      return task.state === 'muted' && moment(task.due) >= moment().startOf('day') ;
-    });
-  },
-  muteUnsentMessages: doc => {
-    return setTasksStates(doc, 'muted', task => {
-      return task.state === 'scheduled' || task.state === 'pending';
-    });
-  },
   getClinicID: getClinicID,
   getClinic: getClinic,
   getHealthCenter: getHealthCenter,
