@@ -10,6 +10,12 @@
     return gsmChars.test(message) ? 160 : 70;
   };
 
+  var getSMSPartLimit = function(Settings) {
+    return Settings().then(function(settings) {
+      return settings.multipart_sms_limit || 11;
+    });
+  };
+
   var calculate = function(message) {
     var max = getMax(message);
     return {
@@ -57,7 +63,7 @@
                 var settingsMaximumSMSSize = settingsMaximumSMSPart * getMax(message);
                 var regex = new RegExp(`.{${settingsMaximumSMSSize}}(.*)`);
                 var extra = message.match(regex)[1];
-                var newMessage = message.replace(extra, `<span class="alert-danger">${extra}</span>`);
+                var newMessage = message.replace(extra, "<span class='alert-danger'>" + extra + "</span>");
                 target.html(newMessage);
 
               } else {
