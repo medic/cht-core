@@ -76,7 +76,7 @@ var feedback = require('../modules/feedback'),
       unknown: 'fa-question-circle',
     };
 
-    DBSync.addUpdateListener(function(update) {
+    DBSync.addUpdateListener(update => {
       if (update.disabled) {
         $scope.replicationStatus.disabled = true;
         // admins have potentially too much data so bypass local pouch
@@ -92,21 +92,15 @@ var feedback = require('../modules/feedback'),
       }
 
       // Listen for aggregateReplicationStatus updates
-      var status = update.aggregateReplicationStatus;
-      var lastTrigger = $scope.replicationStatus.lastTrigger;
+      const status = update.aggregateReplicationStatus;
+      const lastTrigger = $scope.replicationStatus.lastTrigger;
       if (status === 'not_required' || status === 'required') {
-        var delay = lastTrigger ? (now - lastTrigger) / 1000 : 'unknown';
-        $log.info(
-          'Replication ended after ' + delay + ' seconds with status ' + status
-        );
+        const delay = lastTrigger ? (now - lastTrigger) / 1000 : 'unknown';
+        $log.info('Replication ended after ' + delay + ' seconds with status ' + status);
       } else if (status === 'in_progress') {
         $scope.replicationStatus.lastTrigger = now;
-        var duration = lastTrigger ? (now - lastTrigger) / 1000 : 'unknown';
-        $log.info(
-          'Replication started after ' +
-            duration +
-            ' seconds since previous attempt.'
-        );
+        const duration = lastTrigger ? (now - lastTrigger) / 1000 : 'unknown';
+        $log.info('Replication started after ' + duration + ' seconds since previous attempt.');
       }
 
       $scope.replicationStatus.current = status;
