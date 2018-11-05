@@ -98,8 +98,6 @@ module.exports = {
         eventType = getEventType(config, doc),
         patient;
 
-      console.log(JSON.stringify(eventType));
-
       if (!eventType) {
         return resolve();
       }
