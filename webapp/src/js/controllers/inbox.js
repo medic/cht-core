@@ -1,5 +1,6 @@
 var feedback = require('../modules/feedback'),
   _ = require('underscore'),
+  bootstrapTranslator = require('./../bootstrapper/translator'),
   moment = require('moment');
 
 (function() {
@@ -105,7 +106,8 @@ var feedback = require('../modules/feedback'),
       }
     });
 
-    $('.bootstrap-layer .status').html('Loading rules…');
+    // BootstrapTranslator is used because $translator.onReady has not fired
+    $('.bootstrap-layer .status').html(bootstrapTranslator.translate('LOAD_RULES'));
 
     RulesEngine.init.catch(function() {}).then(function() {
       $scope.dbWarmedUp = true;

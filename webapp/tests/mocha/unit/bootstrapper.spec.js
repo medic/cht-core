@@ -29,7 +29,12 @@ describe('bootstrapper', () => {
       },
       PouchDB: pouchDb
     };
-    $ = sinon.stub().returns({ text:sinon.stub() });
+    
+    $ = sinon.stub().returns({
+      text: sinon.stub(),
+      html: sinon.stub()
+    });
+
     done();
   });
 
