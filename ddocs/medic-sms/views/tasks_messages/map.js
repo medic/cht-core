@@ -7,7 +7,7 @@ function (doc) {
           * uuid, to and message properties are required for message
           * to be processed/valid.
           */
-          if (msg.uuid && msg.to && msg.message) {
+          if (msg.uuid && msg.to) {
             var sendingDueDate = task.due || task.timestamp || // for scheduled_message
                 doc.reported_date; // for immediate reply to form submission
             var val = {
