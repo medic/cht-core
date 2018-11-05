@@ -125,8 +125,7 @@ const updateMuteState = (contact, muted) => {
             updateContacts(result.contacts, muted),
             updateRegistrations(result.subjectIds, muted)
           ]));
-      }, Promise.resolve())
-      .then(() => true);
+      }, Promise.resolve());
   });
 };
 

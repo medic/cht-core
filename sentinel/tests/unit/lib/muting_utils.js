@@ -430,10 +430,10 @@ describe('mutingUtils', () => {
 
       db.medic.allDocs.resolves({ rows: contacts.map(doc => ({ id: doc._id, doc: doc }))});
       utils.getReportsBySubject.resolves([]);
-      db.medic.bulkDocs.resolves();
+      db.medic.bulkDocs.resolves([]);
 
       return mutingUtils.updateMuteState(hydratedContact, true).then(result => {
-        chai.expect(result).to.equal(true);
+        chai.expect(!!result).to.equal(true);
         chai.expect(db.medic.bulkDocs.callCount).to.equal(1);
         chai.expect(db.medic.bulkDocs.args[0]).to.deep.equal([[
           { _id: 'my-place', muted: timestamp, place_id: 'my-place-id'},
@@ -499,7 +499,7 @@ describe('mutingUtils', () => {
       db.medic.bulkDocs.resolves();
 
       return mutingUtils.updateMuteState(hydratedContact, false).then(result => {
-        chai.expect(result).to.equal(true);
+        chai.expect(!!result).to.equal(true);
 
         chai.expect(utils.getReportsBySubject.callCount).to.equal(1);
         chai.expect(utils.getReportsBySubject.args[0]).to.deep.equal([{
@@ -569,7 +569,7 @@ describe('mutingUtils', () => {
       db.medic.bulkDocs.resolves();
 
       return mutingUtils.updateMuteState(hydratedPlace, false).then(result => {
-        chai.expect(result).to.equal(true);
+        chai.expect(!!result).to.equal(true);
 
         chai.expect(db.medic.bulkDocs.callCount).to.equal(1);
         chai.expect(db.medic.bulkDocs.args[0]).to.deep.equal([[
@@ -617,7 +617,7 @@ describe('mutingUtils', () => {
       db.medic.bulkDocs.resolves();
 
       return mutingUtils.updateMuteState(contact, true).then(result => {
-        chai.expect(result).to.equal(true);
+        chai.expect(!!result).to.equal(true);
 
         chai.expect(db.medic.query.callCount).to.equal(1);
         chai.expect(db.medic.query.args[0]).to.deep.equal(['medic/contacts_by_depth', { key: ['contact'] }]);
@@ -745,7 +745,7 @@ describe('mutingUtils', () => {
       utils.setTasksStates.returns(true);
 
       return mutingUtils.updateMuteState({ _id: 'contact' }, true).then(result => {
-        chai.expect(result).to.equal(true);
+        chai.expect(!!result).to.equal(true);
         chai.expect(db.medic.query.callCount).to.equal(1);
         chai.expect(db.medic.allDocs.callCount).to.equal(3);
         chai.expect(db.medic.bulkDocs.callCount).to.equal(6);
