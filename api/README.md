@@ -410,7 +410,7 @@ allow multiple content types to appear in a single `Content-Type` header.
 
 Special values reside in the property `_meta`, so you can't have a form field named `_meta`. Only strings and numbers are currently support as field values.
 
-All property names will be lowercased and any properties beginning with `_` (underscore) will be ignored.
+All property names will be lowercased.
 
 | Key                  | Description                                                                                        |
 | -------------------- | -------------------------------------------------------------------------------------------------- |
