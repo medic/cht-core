@@ -301,16 +301,11 @@ describe('mutingUtils', () => {
   });
 
   describe('updateContacts', () => {
-    beforeEach(() => clock = sinon.useFakeTimers());
-    afterEach(() => clock.restore());
-
     it('should update all contacts with muted state', () => {
       const timestamp = 2500;
-      clock.tick(timestamp);
-
       const contacts = [ { _id:  'a' }, { _id:  'b' }, { _id:  'c' } ];
       db.medic.bulkDocs.resolves();
-      return mutingUtils._updateContacts(contacts, true).then(() => {
+      return mutingUtils._updateContacts(contacts, timestamp).then(() => {
         chai.expect(db.medic.bulkDocs.callCount).to.equal(1);
         chai.expect(db.medic.bulkDocs.args[0]).to.deep.equal([[
           { _id:  'a', muted: timestamp }, { _id:  'b', muted: timestamp }, { _id:  'c', muted: timestamp }
@@ -331,8 +326,6 @@ describe('mutingUtils', () => {
 
     it('should only update contacts with different muted state', () => {
       const timestamp = 65000;
-      clock.tick(timestamp);
-
       const contacts = [
         { _id: 'a' },
         { _id: 'b', muted: true },
@@ -341,7 +334,7 @@ describe('mutingUtils', () => {
         { _id: 'f', muted: 12354 }
       ];
       db.medic.bulkDocs.resolves();
-      return mutingUtils._updateContacts(contacts, true).then(() => {
+      return mutingUtils._updateContacts(contacts, timestamp).then(() => {
         chai.expect(db.medic.bulkDocs.callCount).to.equal(1);
         chai.expect(db.medic.bulkDocs.args[0]).to.deep.equal([[
           { _id:  'a', muted: timestamp },
@@ -381,14 +374,14 @@ describe('mutingUtils', () => {
     });
 
     it('should throw bulkDocs errors', () => {
-      clock.tick(25);
+      const timestamp = 25;
       db.medic.bulkDocs.rejects({ some: 'error' });
-      return mutingUtils._updateContacts([{ _id: 'a'}], true)
+      return mutingUtils._updateContacts([{ _id: 'a'}], timestamp)
         .then(() => chai.expect(false).to.equal('Should have thrown'))
         .catch(err => {
           chai.expect(err).to.deep.equal({ some: 'error' });
           chai.expect(db.medic.bulkDocs.callCount).to.equal(1);
-          chai.expect(db.medic.bulkDocs.args[0]).to.deep.equal([[{ _id: 'a', muted: 25 }]]);
+          chai.expect(db.medic.bulkDocs.args[0]).to.deep.equal([[{ _id: 'a', muted: timestamp }]]);
         });
     });
   });
@@ -1020,20 +1013,14 @@ describe('mutingUtils', () => {
   });
 
   describe('updateContact', () => {
-    beforeEach(() => clock = sinon.useFakeTimers());
-    afterEach(() => clock.restore());
-
     it('set muted to false', () => {
-      clock.tick(2000);
       chai.expect(mutingUtils.updateContact({}, false)).to.deep.equal({ muted: false });
     });
 
-    it('set muted to current timestamp', () => {
+    it('set muted to received value', () => {
       const timestamp = 5000;
-      clock.tick(timestamp);
-      chai.expect(mutingUtils.updateContact({}, true)).to.deep.equal({ muted: timestamp });
-      clock.tick(timestamp);
-      chai.expect(mutingUtils.updateContact({}, true)).to.deep.equal({ muted: timestamp + timestamp });
+      chai.expect(mutingUtils.updateContact({}, timestamp)).to.deep.equal({ muted: timestamp });
+      chai.expect(mutingUtils.updateContact({}, timestamp + timestamp)).to.deep.equal({ muted: timestamp + timestamp });
     });
   });
 

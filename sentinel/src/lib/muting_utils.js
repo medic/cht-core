@@ -47,7 +47,7 @@ const updateRegistration = (dataRecord, muted) => {
 
 const updateContacts = (contacts, muted) => {
   contacts = contacts.filter(contact => {
-    return Boolean(contact.muted) !== muted ? updateContact(contact, muted) : false;
+    return Boolean(contact.muted) !== Boolean(muted) ? updateContact(contact, muted) : false;
   });
 
   if (!contacts.length) {
@@ -58,7 +58,7 @@ const updateContacts = (contacts, muted) => {
 };
 
 const updateContact = (contact, muted) => {
-  contact.muted = muted ? moment().valueOf() : false;
+  contact.muted = muted;
   return contact;
 };
 
@@ -100,6 +100,8 @@ const getContactsAndSubjectIds = (contactIds) => {
 };
 
 const updateMuteState = (contact, muted) => {
+  const timestamp = moment().valueOf();
+
   let rootContactId;
   if (muted) {
     rootContactId = contact._id;
@@ -122,7 +124,7 @@ const updateMuteState = (contact, muted) => {
         return promise
           .then(() => getContactsAndSubjectIds(batch))
           .then(result => Promise.all([
-            updateContacts(result.contacts, muted),
+            updateContacts(result.contacts, muted ? timestamp : false),
             updateRegistrations(result.subjectIds, muted)
           ]));
       }, Promise.resolve());
