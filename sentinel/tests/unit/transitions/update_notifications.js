@@ -57,6 +57,27 @@ describe('update_notifications', () => {
         true
       );
     });
+
+    it('should match when patient_id field is missing #4649', () => {
+      assert.equal(
+        transition.filter({
+          form: 'x',
+          type: 'data_record',
+        }),
+        true
+      );
+    });
+
+    it('should match when patient_id field is empty #4649', () => {
+      assert.equal(
+        transition.filter({
+          form: 'x',
+          type: 'data_record',
+          fields: { patient_id: '' },
+        }),
+        true
+      );
+    });
   });
 
   describe('onMatch', () => {
@@ -416,7 +437,7 @@ describe('update_notifications', () => {
       });
     });
 
-    it('should process the request even when event_type messages not found', () => {
+    it('should process the `on_mute` even when event_type messages not found #3362', () => {
       sinon.stub(transition, 'getConfig').returns({
         messages: [],
         off_form: 'off'
@@ -435,10 +456,7 @@ describe('update_notifications', () => {
       sinon.stub(mutingUtils, 'getContact').resolves({ name: 'Agatha' });
       sinon.stub(mutingUtils, 'updateMuteState').resolves(true);
 
-      const change = {
-        doc: doc,
-        form: 'off'
-      };
+      const change = { doc: doc };
       return transition.onMatch(change).then(changed => {
         assert.equal(changed, true);
         assert.equal(doc.errors.length, 1);
@@ -446,12 +464,47 @@ describe('update_notifications', () => {
         assert.equal(mutingUtils.getContact.callCount, 1);
         assert.deepEqual(mutingUtils.getContact.args[0], [doc]);
         assert.equal(mutingUtils.updateMuteState.callCount, 1);
+        assert.equal(mutingUtils.updateMuteState.args[0], [[{ name: 'Agatha' }, true]]);
         assert.equal(
           doc.errors[0].message,
           'Failed to complete notification request, event type "on_mute" misconfigured.'
         );
       });
+    });
 
+    it('should process the `on_unmute` even when event_type messages not found #3362', () => {
+      sinon.stub(transition, 'getConfig').returns({
+        messages: [],
+        on_form: 'on'
+      });
+
+      const doc = {
+        form: 'on',
+        type: 'data_record',
+        fields: { patient_id: '123' },
+        contact: {
+          phone: '+1234',
+          name: 'woot'
+        }
+      };
+
+      sinon.stub(mutingUtils, 'getContact').resolves({ name: 'Agatha', muted: 123456 });
+      sinon.stub(mutingUtils, 'updateMuteState').resolves(true);
+
+      const change = { doc: doc };
+      return transition.onMatch(change).then(changed => {
+        assert.equal(changed, true);
+        assert.equal(doc.errors.length, 1);
+        assert.equal(doc.tasks, undefined);
+        assert.equal(mutingUtils.getContact.callCount, 1);
+        assert.deepEqual(mutingUtils.getContact.args[0], [doc]);
+        assert.equal(mutingUtils.updateMuteState.callCount, 1);
+        assert.equal(mutingUtils.updateMuteState.args[0], [[{ name: 'Agatha', muted: 123456 }, false]]);
+        assert.equal(
+          doc.errors[0].message,
+          'Failed to complete notification request, event type "on_unmute" misconfigured.'
+        );
+      });
     });
   });
 
