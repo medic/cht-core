@@ -464,7 +464,7 @@ describe('update_notifications', () => {
         assert.equal(mutingUtils.getContact.callCount, 1);
         assert.deepEqual(mutingUtils.getContact.args[0], [doc]);
         assert.equal(mutingUtils.updateMuteState.callCount, 1);
-        assert.equal(mutingUtils.updateMuteState.args[0], [[{ name: 'Agatha' }, true]]);
+        assert.deepEqual(mutingUtils.updateMuteState.args[0], [{ name: 'Agatha' }, true]);
         assert.equal(
           doc.errors[0].message,
           'Failed to complete notification request, event type "on_mute" misconfigured.'
@@ -499,7 +499,7 @@ describe('update_notifications', () => {
         assert.equal(mutingUtils.getContact.callCount, 1);
         assert.deepEqual(mutingUtils.getContact.args[0], [doc]);
         assert.equal(mutingUtils.updateMuteState.callCount, 1);
-        assert.equal(mutingUtils.updateMuteState.args[0], [[{ name: 'Agatha', muted: 123456 }, false]]);
+        assert.deepEqual(mutingUtils.updateMuteState.args[0], [{ name: 'Agatha', muted: 123456 }, false]);
         assert.equal(
           doc.errors[0].message,
           'Failed to complete notification request, event type "on_unmute" misconfigured.'
