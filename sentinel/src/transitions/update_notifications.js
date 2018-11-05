@@ -8,7 +8,7 @@ var _ = require('underscore'),
   mutingUtils = require('../lib/muting_utils'),
   logger = require('../lib/logger');
 
-var isConfigured = function(config, eventType) {
+/*var isConfigured = function(config, eventType) {
   return (
     config &&
     config.messages &&
@@ -19,7 +19,7 @@ var isConfigured = function(config, eventType) {
       );
     })
   );
-};
+};*/
 
 var getEventType = function(config, doc) {
   if (!config.on_form && !config.off_form) {
@@ -35,17 +35,17 @@ var getEventType = function(config, doc) {
     // transition does not apply; return false
     return false;
   }
-  var msg = isConfigured(config, mute ? 'on_mute' : 'on_unmute');
-  if (!msg) {
-    // no configured message for the given eventType
-    return false;
-  }
+
   return { mute: mute };
 };
 
 const getEventName = mute => mute.mute ? 'on_mute': 'on_unmute';
 
 module.exports = {
+  init: () => {
+    logger.info('`update_notifications` transitions is deprecated. Please use `muting` transition instead');
+  },
+
   _addErr: function(event_type, config, doc) {
     var locale = utils.getLocale(doc),
       evConf = _.findWhere(config.messages, {
@@ -98,11 +98,12 @@ module.exports = {
         eventType = getEventType(config, doc),
         patient;
 
+      console.log(JSON.stringify(eventType));
+
       if (!eventType) {
         return resolve();
       }
 
-      logger.info('`update_notifications` transitions is deprecated. Please use `muting` transition instead');
       self.validate(config, doc, function(errors) {
         if (errors && errors.length > 0) {
           messages.addErrors(config, doc, errors, { patient: doc.patient });

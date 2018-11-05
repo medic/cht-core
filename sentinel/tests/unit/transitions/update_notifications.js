@@ -90,7 +90,7 @@ describe('update_notifications', () => {
       });
     });
 
-    it('no configured on or off message returns false', () => {
+    it('no configured on or off message runs transition', () => {
       sinon.stub(transition, 'getConfig').returns({ off_form: 'off' });
       const change = {
         doc: {
@@ -99,8 +99,11 @@ describe('update_notifications', () => {
           fields: { patient_id: 'x' },
         },
       };
+      sinon.stub(mutingUtils, 'getContact').resolves({ _id: 'id', patient_id: 'x' });
+      sinon.stub(mutingUtils, 'updateMuteState').resolves(true);
+
       return transition.onMatch(change).then(changed => {
-        assert.equal(!!changed, false);
+        assert.equal(!!changed, true);
       });
     });
 
@@ -412,6 +415,44 @@ describe('update_notifications', () => {
         assert.equal(mutingUtils.updateMuteState.callCount, 0);
       });
     });
+
+    it('should process the request even when event_type messages not found', () => {
+      sinon.stub(transition, 'getConfig').returns({
+        messages: [],
+        off_form: 'off'
+      });
+
+      const doc = {
+        form: 'off',
+        type: 'data_record',
+        fields: { patient_id: '123' },
+        contact: {
+          phone: '+1234',
+          name: 'woot'
+        }
+      };
+
+      sinon.stub(mutingUtils, 'getContact').resolves({ name: 'Agatha' });
+      sinon.stub(mutingUtils, 'updateMuteState').resolves(true);
+
+      const change = {
+        doc: doc,
+        form: 'off'
+      };
+      return transition.onMatch(change).then(changed => {
+        assert.equal(changed, true);
+        assert.equal(doc.errors.length, 1);
+        assert.equal(doc.tasks, undefined);
+        assert.equal(mutingUtils.getContact.callCount, 1);
+        assert.deepEqual(mutingUtils.getContact.args[0], [doc]);
+        assert.equal(mutingUtils.updateMuteState.callCount, 1);
+        assert.equal(
+          doc.errors[0].message,
+          'Failed to complete notification request, event type "on_mute" misconfigured.'
+        );
+      });
+
+    });
   });
 
   describe('add error', () => {
@@ -457,7 +498,7 @@ describe('update_notifications', () => {
     });
 
     it('when event type message not found', () => {
-      const doc = {};
+      const doc = { form: 'off' };
       const config = {
         messages: [
           {
