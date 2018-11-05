@@ -382,11 +382,7 @@ describe('update_notifications', () => {
       sinon.stub(mutingUtils, 'getContact').resolves({ muted: true, name: 'Agatha' });
       sinon.stub(mutingUtils, 'updateMuteState').resolves();
 
-      const change = {
-        doc: doc,
-        form: 'off'
-      };
-      return transition.onMatch(change).then(changed => {
+      return transition.onMatch({ doc }).then(changed => {
         assert.equal(changed, true);
         assert.equal((doc.errors || []).length, 0);
         assert.equal(doc.tasks.length, 1);
@@ -422,11 +418,7 @@ describe('update_notifications', () => {
       sinon.stub(mutingUtils, 'getContact').resolves({ name: 'Agatha' });
       sinon.stub(mutingUtils, 'updateMuteState').resolves();
 
-      const change = {
-        doc: doc,
-        form: 'off'
-      };
-      return transition.onMatch(change).then(changed => {
+      return transition.onMatch({ doc }).then(changed => {
         assert.equal(changed, true);
         assert.equal((doc.errors || []).length, 0);
         assert.equal(doc.tasks.length, 1);
@@ -456,8 +448,7 @@ describe('update_notifications', () => {
       sinon.stub(mutingUtils, 'getContact').resolves({ name: 'Agatha' });
       sinon.stub(mutingUtils, 'updateMuteState').resolves(true);
 
-      const change = { doc: doc };
-      return transition.onMatch(change).then(changed => {
+      return transition.onMatch({ doc }).then(changed => {
         assert.equal(changed, true);
         assert.equal(doc.errors.length, 1);
         assert.equal(doc.tasks, undefined);
@@ -491,8 +482,7 @@ describe('update_notifications', () => {
       sinon.stub(mutingUtils, 'getContact').resolves({ name: 'Agatha', muted: 123456 });
       sinon.stub(mutingUtils, 'updateMuteState').resolves(true);
 
-      const change = { doc: doc };
-      return transition.onMatch(change).then(changed => {
+      return transition.onMatch({ doc }).then(changed => {
         assert.equal(changed, true);
         assert.equal(doc.errors.length, 1);
         assert.equal(doc.tasks, undefined);
