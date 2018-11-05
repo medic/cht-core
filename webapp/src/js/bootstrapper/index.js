@@ -4,20 +4,27 @@
 
   var ONLINE_ROLE = 'mm-online';
 
+  var translator = require('./translator');
+
   var getUserCtx = function() {
-    var userCtx;
+    var userCtx, locale;
     document.cookie.split(';').forEach(function(c) {
       c = c.trim().split('=', 2);
       if (c[0] === 'userCtx') {
         userCtx = c[1];
+      }
+      if (c[0] === 'locale') {
+        locale = c[1];
       }
     });
     if (!userCtx) {
       return;
     }
     try {
-      return JSON.parse(unescape(decodeURI(userCtx)));
-    } catch(e) {
+      var parsedCtx = JSON.parse(unescape(decodeURI(userCtx)));
+      parsedCtx.locale = locale;
+      return parsedCtx;
+    } catch (e) {
       return;
     }
   };
@@ -40,7 +47,7 @@
   };
 
   var initialReplication = function(localDb, remoteDb) {
-    $('.bootstrap-layer .status').text('Loading app…');
+    setUiStatus('LOAD_APP');
     var dbSyncStartTime = Date.now();
     var dbSyncStartData = getDataUsage();
     var replicator = localDb.replicate
@@ -54,7 +61,7 @@
     replicator
       .on('change', function(info) {
         console.log('initialReplication()', 'change', info);
-        $('.bootstrap-layer .status').text('Fetching info (' + info.docs_read + ' docs)…');
+        setUiStatus('FETCH_INFO', info.docs_read || '?');
       });
 
     return replicator
@@ -100,6 +107,17 @@
            hasRole(userCtx, ONLINE_ROLE);
   };
 
+  var setUiStatus = function(translationKey, arg) {
+    var translated = translator.translate(translationKey, arg);
+    $('.bootstrap-layer .status').text(translated);
+  };
+
+  var setUiError = function() {
+    var errorMessage = translator.translate('ERROR_MESSAGE');
+    var tryAgain = translator.translate('TRY_AGAIN');
+    $('.bootstrap-layer').html('<div><p>' + errorMessage + '</p><a class="btn btn-primary" href="#" onclick="window.location.reload(false);">' + tryAgain + '</a></div>');
+  };
+
   var getDdoc = function(localDb) {
     return localDb.get('_design/medic-client');
   };
@@ -112,11 +130,14 @@
       err.status = 401;
       return redirectToLogin(dbInfo, err, callback);
     }
+
     if (hasFullDataAccess(userCtx)) {
       return callback();
     }
 
-    var username = userCtx && userCtx.name;
+    translator.setLocale(userCtx.locale);
+    
+    var username = userCtx.name;
     var localDbName = getLocalDbName(dbInfo, username);
     var localDb = window.PouchDB(localDbName, POUCHDB_OPTIONS.local);
 
@@ -138,7 +159,7 @@
           })
           .then(function() {
             // replication complete - bootstrap angular
-            $('.bootstrap-layer .status').text('Starting app…');
+            setUiStatus('STARTING_APP');
           })
           .catch(function(err) {
             return err;
@@ -146,9 +167,14 @@
           .then(function(err) {
             localDb.close();
             remoteDb.close();
-            if (err && err.status === 401) {
-              return redirectToLogin(dbInfo, err, callback);
+            if (err) {
+              if (err.status === 401) {
+                return redirectToLogin(dbInfo, err, callback);
+              }
+
+              setUiError();
             }
+
             callback(err);
           });
       });
