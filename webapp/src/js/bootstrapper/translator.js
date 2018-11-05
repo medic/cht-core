@@ -19,7 +19,7 @@ var TRANSLATIONS = {
     },
     LOAD_APP: 'Cargando aplicación…',
     LOAD_RULES: 'Cargando reglas…',
-    STARTING_APP: 'Aplicación de inicio…',
+    STARTING_APP: 'Aplicación iniciando…',
     ERROR_MESSAGE: 'Error al cargar, por favor comprueba la conexión',
     TRY_AGAIN: 'Volver a intentar',
   },
