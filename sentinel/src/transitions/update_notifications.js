@@ -8,19 +8,6 @@ var _ = require('underscore'),
   mutingUtils = require('../lib/muting_utils'),
   logger = require('../lib/logger');
 
-/*var isConfigured = function(config, eventType) {
-  return (
-    config &&
-    config.messages &&
-    config.messages.some(message => {
-      return (
-        message.event_type === eventType &&
-        (message.message || message.translation_key)
-      );
-    })
-  );
-};*/
-
 var getEventType = function(config, doc) {
   if (!config.on_form && !config.off_form) {
     // no configured on or off forms
