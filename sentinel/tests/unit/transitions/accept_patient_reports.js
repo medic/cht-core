@@ -2,6 +2,7 @@ require('chai').should();
 const sinon = require('sinon'),
   moment = require('moment'),
   db = require('../../../src/db-pouch'),
+  dbNano = require('../../../src/db-nano'),
   utils = require('../../../src/lib/utils'),
   config = require('../../../src/config'),
   transition = require('../../../src/transitions/accept_patient_reports'),
@@ -194,6 +195,36 @@ describe('accept_patient_reports', () => {
         doc.registration_id.should.equal(registrations[1]._id);
         done();
       });
+    });
+
+    it('should call utils.getRegistrations with correct DB (#4962)', done => {
+      const doc = {
+        fields: { patient_id: 'x' },
+        from: '+123',
+      };
+      sinon.stub(utils, 'getRegistrations').callsArgWith(1, null, []);
+
+      const config = {
+        messages: [
+          {
+            event_type: 'registration_not_found',
+            message: [
+              {
+                content: 'not found {{patient_id}}',
+                locale: 'en',
+              },
+            ],
+            recipient: 'reporting_unit',
+          },
+        ],
+      };
+
+      transition._handleReport(doc, config, () => {
+        utils.getRegistrations.callCount.should.equal(1);
+        utils.getRegistrations.args[0][0].should.deep.equal({ db: dbNano, id: 'x' });
+        done();
+      });
+
     });
   });
 
