@@ -47,6 +47,7 @@ const AVAILABLE_TRANSITIONS = [
   'update_notifications',
   'update_scheduled_reports',
   'resolve_pending',
+  'muting'
 ];
 
 let processed = 0;
@@ -83,7 +84,7 @@ const processChange = (change, callback) => {
       ],
       err => {
         if (err) {
-          logger.error('Error cleaning up deleted doc', err);
+          logger.error('Error cleaning up deleted doc: %o', err);
         }
 
         tombstoneUtils
@@ -130,7 +131,7 @@ const processChange = (change, callback) => {
       });
     })
     .catch(err => {
-      logger.error(`transitions: fetch failed for ${change.id} (${err})`, err);
+      logger.error('transitions: fetch failed for %s : %o', change.id, err);
       return callback();
     });
 };
@@ -204,7 +205,7 @@ const loadTransitions = () => {
     } catch (e) {
       loadError = true;
       logger.error(`Failed loading transition "${transition}"`);
-      logger.error(e);
+      logger.error('%o', e);
     }
   });
 
@@ -420,7 +421,7 @@ const attach = () => {
     return metadata
       .getProcessedSeq()
       .catch(err => {
-        logger.error('transitions: error fetching processed seq', err);
+        logger.error('transitions: error fetching processed seq: %o', err);
       })
       .then(seq => {
         logger.info(`transitions: fetching changes feed, starting from ${seq}`);

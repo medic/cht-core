@@ -62,7 +62,6 @@ describe('finalize transition', () => {
         transition: transition,
       },
       (err, changed) => {
-        console.log('1111');
         assert(!err);
         assert(changed);
         assert(info.transitions.x.ok);

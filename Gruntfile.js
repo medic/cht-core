@@ -231,7 +231,7 @@ module.exports = function(grunt) {
       options: {
         processors: [
           require('autoprefixer')({
-            browsers: ['last 2 versions', 'Android >= 4.4'],
+            browsers: ['last 2 Firefox versions', 'Chrome >= 54'],
           }),
         ],
       },
@@ -656,6 +656,7 @@ module.exports = function(grunt) {
       unit: {
         src: [
           'webapp/tests/mocha/unit/**/*.spec.js',
+          'webapp/tests/mocha/unit/*.spec.js',
           'api/tests/mocha/**/*.js',
           'sentinel/tests/**/*.js',
         ],
@@ -770,10 +771,29 @@ module.exports = function(grunt) {
 
               // ignored because they don't have access to angular
               '!webapp/src/js/app.js',
-              '!webapp/src/js/bootstrapper.js',
+              '!webapp/src/js/bootstrapper/*.js',
 
               // ignored because its job is to log to console
               '!webapp/src/js/modules/feedback.js',
+            ],
+          },
+        ],
+        options: {
+          pattern: /console\./g,
+        },
+      },
+      'console-in-node': {
+        files: [
+          {
+            src: [
+              'api/**/*.js',
+              'sentinel/**/*.js',
+
+              // ignore because they are sent to the client side/frontend
+              '!api/src/public/**/*.js',
+
+              // ignore build dirs
+              '!**/node_modules/**',
             ],
           },
         ],

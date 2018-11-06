@@ -2,6 +2,7 @@ require('chai').should();
 const sinon = require('sinon'),
   moment = require('moment'),
   db = require('../../../src/db-pouch'),
+  dbNano = require('../../../src/db-nano'),
   utils = require('../../../src/lib/utils'),
   config = require('../../../src/config'),
   transition = require('../../../src/transitions/accept_patient_reports'),
@@ -195,6 +196,36 @@ describe('accept_patient_reports', () => {
         done();
       });
     });
+
+    it('should call utils.getRegistrations with correct DB (#4962)', done => {
+      const doc = {
+        fields: { patient_id: 'x' },
+        from: '+123',
+      };
+      sinon.stub(utils, 'getRegistrations').callsArgWith(1, null, []);
+
+      const config = {
+        messages: [
+          {
+            event_type: 'registration_not_found',
+            message: [
+              {
+                content: 'not found {{patient_id}}',
+                locale: 'en',
+              },
+            ],
+            recipient: 'reporting_unit',
+          },
+        ],
+      };
+
+      transition._handleReport(doc, config, () => {
+        utils.getRegistrations.callCount.should.equal(1);
+        utils.getRegistrations.args[0][0].should.deep.equal({ db: dbNano, id: 'x' });
+        done();
+      });
+
+    });
   });
 
   describe('silenceReminders', () => {
@@ -210,6 +241,7 @@ describe('accept_patient_reports', () => {
           { state: 'scheduled' },
           { state: 'scheduled' },
           { state: 'pending' },
+          { state: 'muted' }
         ],
       };
 
@@ -221,8 +253,8 @@ describe('accept_patient_reports', () => {
 
       transition._silenceReminders(registration, report, null, () => {
         registration._id.should.equal('test-registration');
-        registration.scheduled_tasks.length.should.equal(3);
-        setTaskState.callCount.should.equal(3);
+        registration.scheduled_tasks.length.should.equal(4);
+        setTaskState.callCount.should.equal(4);
         setTaskState
           .getCall(0)
           .args.should.deep.equal([
@@ -242,9 +274,11 @@ describe('accept_patient_reports', () => {
             'cleared',
           ]);
 
+        setTaskState.getCall(3).args.should.deep.equal([{ state: 'muted', cleared_by: reportId }, 'cleared']);
         registration.scheduled_tasks[0].cleared_by.should.equal(reportId);
         registration.scheduled_tasks[1].cleared_by.should.equal(reportId);
         registration.scheduled_tasks[2].cleared_by.should.equal(reportId);
+        registration.scheduled_tasks[3].cleared_by.should.equal(reportId);
         done();
       });
     });

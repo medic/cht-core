@@ -14,6 +14,11 @@ angular.module('inboxServices').factory('HydrateContactNames',
       return (cs && cs.name) || null;
     };
 
+    var findMutedState = function(contactSummaries, id) {
+      var cs = _.findWhere(contactSummaries, { _id: id });
+      return (cs && cs.muted) || false;
+    };
+
     var replaceContactIdsWithNames = function(summaries, contactSummaries) {
       summaries.forEach(function(summary) {
         if (summary.contact) {
@@ -25,6 +30,20 @@ angular.module('inboxServices').factory('HydrateContactNames',
           });
         }
       });
+      return summaries;
+    };
+
+    var getMutedState = function(summaries, contactSummaries) {
+      summaries.forEach(function(summary) {
+        if (summary.muted || !summary.lineage || !summary.lineage.length) {
+          return;
+        }
+
+        summary.muted = !!summary.lineage.find(function(id) {
+          return findMutedState(contactSummaries, id);
+        });
+      });
+
       return summaries;
     };
 
@@ -50,6 +69,7 @@ angular.module('inboxServices').factory('HydrateContactNames',
 
       return GetSummaries(ids)
         .then(function(response) {
+          summaries = getMutedState(summaries, response);
           return replaceContactIdsWithNames(summaries, response);
         });
     };

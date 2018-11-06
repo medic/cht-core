@@ -18,6 +18,7 @@ angular.module('inboxServices').factory('ContactViewModelGenerator',
   function(
     $log,
     $q,
+    ContactMuted,
     ContactSchema,
     DB,
     LineageModelGenerator,
@@ -76,6 +77,11 @@ angular.module('inboxServices').factory('ContactViewModelGenerator',
       var schema = ContactSchema.get(model.doc.type);
       model.icon = schema.icon;
       model.label = schema.label;
+      return model;
+    };
+
+    var setMutedState = function(model) {
+      model.doc.muted = ContactMuted(model.doc, model.lineage);
       return model;
     };
 
@@ -248,7 +254,8 @@ angular.module('inboxServices').factory('ContactViewModelGenerator',
         .then(setChildren)
         .then(setReports)
         .then(setPrimaryContact)
-        .then(setSchemaFields);
+        .then(setSchemaFields)
+        .then(setMutedState);
     };
   }
 );

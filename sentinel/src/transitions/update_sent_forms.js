@@ -48,7 +48,7 @@ module.exports = {
 
       db.medic.get(clinicId, function(err, clinic) {
         if (err) {
-          logger.error('update_sent_forms: failed to get facility %s', err);
+          logger.error('update_sent_forms: failed to get facility: %o', err);
           return reject(err);
         }
         _.defaults(clinic, {
