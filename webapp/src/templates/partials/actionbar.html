@@ -136,7 +136,7 @@
           </a>
           <ul class="dropdown-menu mm-dropdown-menu with-icon" ng-hide="(!actionBar.right.relevantForms || !actionBar.right.relevantForms.length)">
             <li ng-repeat="form in actionBar.right.relevantForms | orderBy: 'title' track by form.code">
-              <a ui-sref="contacts.report({ id: actionBar.right.selected[0]._id, formId: form.code })">
+              <a show-muted-modal to-state="contacts.report" to-state-params="{ id: actionBar.right.selected[0]._id, formId: form.code }">
                 <span ng-bind-html="form.icon | resourceIcon"></span>
                 <span class="content">{{form.title}}</span>
               </a>

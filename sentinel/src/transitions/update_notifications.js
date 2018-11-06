@@ -1,25 +1,12 @@
-var async = require('async'),
-  _ = require('underscore'),
+var _ = require('underscore'),
   config = require('../config'),
   utils = require('../lib/utils'),
   messages = require('../lib/messages'),
   validation = require('../lib/validation'),
-  db = require('../db-pouch'),
   transitionUtils = require('./utils'),
-  NAME = 'update_notifications';
-
-var isConfigured = function(config, eventType) {
-  return (
-    config &&
-    config.messages &&
-    config.messages.some(message => {
-      return (
-        message.event_type === eventType &&
-        (message.message || message.translation_key)
-      );
-    })
-  );
-};
+  NAME = 'update_notifications',
+  mutingUtils = require('../lib/muting_utils'),
+  logger = require('../lib/logger');
 
 var getEventType = function(config, doc) {
   if (!config.on_form && !config.off_form) {
@@ -35,15 +22,17 @@ var getEventType = function(config, doc) {
     // transition does not apply; return false
     return false;
   }
-  var msg = isConfigured(config, mute ? 'on_mute' : 'on_unmute');
-  if (!msg) {
-    // no configured message for the given eventType
-    return false;
-  }
+
   return { mute: mute };
 };
 
+const getEventName = mute => mute.mute ? 'on_mute': 'on_unmute';
+
 module.exports = {
+  init: () => {
+    logger.info('`update_notifications` transitions is deprecated. Please use `muting` transition instead');
+  },
+
   _addErr: function(event_type, config, doc) {
     var locale = utils.getLocale(doc),
       evConf = _.findWhere(config.messages, {
@@ -78,24 +67,11 @@ module.exports = {
       doc &&
         doc.form &&
         doc.type === 'data_record' &&
-        doc.fields &&
-        doc.fields.patient_id &&
         !transitionUtils.hasRun(info, NAME)
     );
   },
   getConfig: function() {
     return _.extend({}, config.get('notifications'));
-  },
-  modifyRegistration: function(options, callback) {
-    var mute = options.mute,
-      registration = options.registration;
-
-    if (mute) {
-      utils.muteScheduledMessages(registration);
-    } else {
-      utils.unmuteScheduledMessages(registration);
-    }
-    db.medic.put(registration, callback);
   },
   validate: function(config, doc, callback) {
     var validations = config.validations && config.validations.list;
@@ -105,9 +81,9 @@ module.exports = {
     return new Promise((resolve, reject) => {
       var self = module.exports,
         doc = change.doc,
-        patient_id = doc.fields && doc.fields.patient_id,
         config = module.exports.getConfig(),
-        eventType = getEventType(config, doc);
+        eventType = getEventType(config, doc),
+        patient;
 
       if (!eventType) {
         return resolve();
@@ -119,64 +95,32 @@ module.exports = {
           return resolve(true);
         }
 
-        async.parallel(
-          {
-            registrations: _.partial(utils.getRegistrations, {
-              db: db,
-              id: patient_id,
-            }),
-            patient: _.partial(utils.getPatientContact, db, patient_id),
-          },
-          (err, { registrations, patient }) => {
-            if (err) {
-              return reject(err);
+        mutingUtils
+          .getContact(change.doc)
+          .then(contact => {
+            patient = contact;
+
+            if (Boolean(contact.muted) === eventType.mute) {
+              // don't update registrations if contact already has desired state
+              return;
             }
 
-            if (patient && registrations.length) {
-              if (eventType.mute) {
-                if (config.confirm_deactivation) {
-                  self._addErr('confirm_deactivation', config, doc);
-                  self._addMsg(
-                    'confirm_deactivation',
-                    config,
-                    doc,
-                    registrations,
-                    patient
-                  );
-                  return resolve(true);
-                } else {
-                  self._addMsg('on_mute', config, doc, registrations, patient);
-                }
-              } else {
-                self._addMsg('on_unmute', config, doc, registrations, patient);
-              }
-              async.each(
-                registrations,
-                function(registration, callback) {
-                  self.modifyRegistration(
-                    {
-                      mute: eventType.mute,
-                      registration: registration,
-                    },
-                    callback
-                  );
-                },
-                function(err) {
-                  if (err) {
-                    reject(err);
-                  } else {
-                    resolve(true);
-                  }
-                }
-              );
-            } else {
+            return mutingUtils.updateMuteState(contact, eventType.mute);
+          })
+          .then(() => {
+            self._addMsg(getEventName(eventType), config, doc, [], patient);
+            resolve(true);
+          })
+          .catch(err => {
+            if (err && err.message === 'contact_not_found') {
               self._addErr('patient_not_found', config, doc);
               self._addMsg('patient_not_found', config, doc);
-              resolve(true);
+              return resolve(true);
             }
-          }
-        );
+
+            reject(err);
+          });
       });
     });
-  },
+  }
 };

@@ -210,6 +210,7 @@ describe('accept_patient_reports', () => {
           { state: 'scheduled' },
           { state: 'scheduled' },
           { state: 'pending' },
+          { state: 'muted' }
         ],
       };
 
@@ -221,8 +222,8 @@ describe('accept_patient_reports', () => {
 
       transition._silenceReminders(registration, report, null, () => {
         registration._id.should.equal('test-registration');
-        registration.scheduled_tasks.length.should.equal(3);
-        setTaskState.callCount.should.equal(3);
+        registration.scheduled_tasks.length.should.equal(4);
+        setTaskState.callCount.should.equal(4);
         setTaskState
           .getCall(0)
           .args.should.deep.equal([
@@ -242,9 +243,11 @@ describe('accept_patient_reports', () => {
             'cleared',
           ]);
 
+        setTaskState.getCall(3).args.should.deep.equal([{ state: 'muted', cleared_by: reportId }, 'cleared']);
         registration.scheduled_tasks[0].cleared_by.should.equal(reportId);
         registration.scheduled_tasks[1].cleared_by.should.equal(reportId);
         registration.scheduled_tasks[2].cleared_by.should.equal(reportId);
+        registration.scheduled_tasks[3].cleared_by.should.equal(reportId);
         done();
       });
     });

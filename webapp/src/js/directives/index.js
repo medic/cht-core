@@ -11,5 +11,6 @@
   require('./report-image');
   require('./sender');
   require('./enter');
+  require('./show-muted-modal');
 
 }());
