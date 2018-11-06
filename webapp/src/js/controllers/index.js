@@ -18,6 +18,7 @@
   require('./contacts-content');
   require('./contacts-deceased');
   require('./contacts-edit');
+  require('./contacts-muted-modal');
   require('./contacts-report');
   require('./delete-doc-confirm');
   require('./edit-message-group');
