@@ -4,10 +4,15 @@
 }
 .body {
   display: flex;
+  max-width: @admin-content-width;
+  font-size: @font-medium;
 }
 .header {
   color: #FFFFFF;
   background-color: #323232;
+}
+.header h1 {
+  font-size: @font-extra-large;
 }
 .content {
   width: 100%;
@@ -15,11 +20,15 @@
 .navigation {
   width: 200px;
   font-size: 16px;
+  background-color: @background-color;
+  padding-left: 10px;
+  margin-right: 10px;
   a {
     display: inline-block;
     padding: 10px 10px 10px 0;
     width: 100%;
     outline: 0;
+    color: #333333;
   }
 }
 .tab-content {

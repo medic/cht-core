@@ -38,8 +38,8 @@
   <div class="form-group">
     <label translate>Phone number conversion</label>
     <p>
-      <span translate>Replace country code for</span>
-      <select id="outgoing-phone-replace-match"></select>
+      <span translate>Replace country code for</span>&nbsp;
+      <select id="outgoing-phone-replace-match"></select>&nbsp;
       <span translate>with</span>
       <input type="text" class="form-control tiny inline" ng-model="advancedSettingsModel.outgoing_phone_replace.replace">
     </p>
@@ -48,13 +48,13 @@
   <div class="form-group" ng-class="{ 'has-error': errors.fields.messagingWindow }">
     <label translate>Messaging window</label>
     <p>
-      <span translate>Send scheduled messages between</span>
+      <span translate>Send scheduled messages between</span>&nbsp;
       <select class="form-control tiny inline" ng-model="advancedSettingsModel.schedule_morning_hours" ng-options="hour.value as hour.name for hour in hours"></select>
-      :
+      &nbsp;:&nbsp;
       <select class="form-control tiny inline" ng-model="advancedSettingsModel.schedule_morning_minutes" ng-options="minute.value as minute.name for minute in minutes"></select>
-      <span translate>and</span>
+      &nbsp;<span translate>and</span>&nbsp;
       <select class="form-control tiny inline" ng-model="advancedSettingsModel.schedule_evening_hours" ng-options="hour.value as hour.name for hour in hours"></select>
-      :
+      &nbsp;:&nbsp;
       <select class="form-control tiny inline" ng-model="advancedSettingsModel.schedule_evening_minutes" ng-options="minute.value as minute.name for minute in minutes"></select>
     </p>
     <p class="error">{{errors.fields.messagingWindow}}</p>
