@@ -71,6 +71,7 @@ angular.module('inboxServices').factory('LiveListConfig',
           scope.primary = contact.home;
           scope.simprintsTier = contact.simprints && contact.simprints.tierNumber;
           scope.dod = contact.date_of_death;
+          scope.muted = contact.muted;
           if (contact.type !== 'person') {
             if (Number.isInteger(contact.lastVisitedDate) && contact.lastVisitedDate >= 0) {
               if (contact.lastVisitedDate === 0) {

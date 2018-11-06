@@ -337,4 +337,46 @@ describe('ContactViewModelGenerator service', () => {
     });
   });
 
+  describe('muting', () => {
+    const runMutingTest = (doc, lineage) => {
+      stubLineageModelGenerator(null, doc, lineage);
+      stubDbGet(null, {});
+      stubSearch(null, []);
+      stubDbQueryChildren(null, doc._id, [], []);
+      return service(doc._id);
+    };
+
+    it('should reflect self muted state when muted', () => {
+      const doc = { _id: 'doc', muted: true };
+      return runMutingTest(doc, []).then(result => {
+        chai.expect(result.doc.muted).to.equal(true);
+      });
+    });
+
+    it('should reflect self unmuted state when no lineage', () => {
+      const doc = { _id: 'doc' };
+      return runMutingTest(doc, []).then(result => {
+        chai.expect(result.doc.muted).to.equal(false);
+      });
+    });
+
+    it('should reflect self unmuted state when no muted lineage', () => {
+      const doc = { _id: 'doc' },
+            lineage = [{ _id: 'p1' }, { _id: 'p2' }];
+
+      return runMutingTest(doc, lineage).then(result => {
+        chai.expect(result.doc.muted).to.equal(false);
+      });
+    });
+
+    it('should reflect muted in lineage state', () => {
+      const doc = { _id: 'doc' },
+            lineage = [{ _id: 'p1' }, { _id: 'p2', muted: true }, { _id: 'p3' }];
+
+      return runMutingTest(doc, lineage).then(result => {
+        chai.expect(result.doc.muted).to.equal(true);
+      });
+    });
+  });
+
 });

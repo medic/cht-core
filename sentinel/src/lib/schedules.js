@@ -4,7 +4,8 @@ var _ = require('underscore'),
     moment = require('moment'),
     utils = require('../lib/utils'),
     messages = require('../lib/messages');
-const messageUtils = require('@shared-libs/message-utils');
+const messageUtils = require('@shared-libs/message-utils'),
+      mutingUtils = require('../lib/muting_utils');
 
 module.exports = {
     // return [hour, minute, timezone]
@@ -68,7 +69,9 @@ module.exports = {
         var self = module.exports,
             docStart,
             start,
-            now = moment(date.getDate());
+            now = moment(date.getDate()),
+            muted = patient && (patient.muted || mutingUtils.isMutedInLineage(patient)),
+            allowedState = muted ? 'muted' : 'scheduled';
 
         // if we  can't find the schedule in config, we're done also if forms
         // mismatch or already run.
@@ -143,7 +146,7 @@ module.exports = {
                             patient: patient
                           });
                     }
-                    const state = messages.isOutgoingAllowed(doc.from) ? 'scheduled' : 'denied';
+                    const state = messages.isOutgoingAllowed(doc.from) ? allowedState : 'denied';
                     utils.setTaskState(task, state);
 
                     doc.scheduled_tasks = doc.scheduled_tasks || [];

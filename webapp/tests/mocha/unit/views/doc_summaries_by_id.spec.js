@@ -24,7 +24,8 @@ const personBis = Object.assign({}, person, {
   simprints_id: 22,
   date_of_death: 10,
   name: '',
-  phone: '0123456789'
+  phone: '0123456789',
+  muted: true
 });
 
 const householdVisit = {
@@ -226,7 +227,8 @@ describe('doc_summaries_by_id view', () => {
         lineage: ['1a1aac55-04d6-40dc-aae2-e67a75a1496d'],
         simprints_id: undefined,
         date_of_death: undefined,
-        contact: undefined
+        contact: undefined,
+        muted: undefined
       }
     });
     assert.deepEqual(emitted[1], {
@@ -239,7 +241,8 @@ describe('doc_summaries_by_id view', () => {
         lineage: ['1a1aac55-04d6-40dc-aae2-e67a75a1496d'],
         simprints_id: 22,
         date_of_death: 10,
-        contact: undefined
+        contact: undefined,
+        muted: true
       }
     });
   });

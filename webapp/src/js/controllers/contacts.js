@@ -165,37 +165,47 @@ var _ = require('underscore'),
         };
       };
 
-      // only admins can edit their own place
-      var getCanEdit = function(selectedDoc) {
-        return setupPromise
-          .then(function() {
-            return Session.isAdmin() || (usersHomePlace._id !== selectedDoc._id);
-          })
-          .catch(function() {
-            return false;
-          });
-      };
+    // only admins can edit their own place
+    var getCanEdit = function(selectedDoc) {
+      return setupPromise
+        .then(function() {
+          return Session.isAdmin() || usersHomePlace._id !== selectedDoc._id;
+        })
+        .catch(function() {
+          return false;
+        });
+    };
 
-      var translateTitle = function(key, label) {
-        return key ? $translate.instant(key) : TranslateFrom(label);
-      };
+    var translateTitle = function(key, label) {
+      return key ? $translate.instant(key) : TranslateFrom(label);
+    };
 
-      $scope.setSelected = function(selected) {
-        liveList.setSelected(selected.doc._id);
-        $scope.selected = selected;
-        $scope.clearCancelTarget();
-        var selectedDoc = selected.doc;
-        var title = '';
-        if (selected.doc.type === 'person') {
-          title = 'contact.profile';
-        } else {
-          title = ContactSchema.get(selected.doc.type).label;
-        }
-        return $q.all([
+    var isUnmuteForm = function(settings, formId) {
+      return Boolean(settings &&
+                     formId &&
+                     settings.muting &&
+                     settings.muting.unmute_forms &&
+                     settings.muting.unmute_forms.includes(formId));
+    };
+
+    $scope.setSelected = function(selected) {
+      liveList.setSelected(selected.doc._id);
+      $scope.selected = selected;
+      $scope.clearCancelTarget();
+      var selectedDoc = selected.doc;
+      var title = '';
+      if (selected.doc.type === 'person') {
+        title = 'contact.profile';
+      } else {
+        title = ContactSchema.get(selected.doc.type).label;
+      }
+      return $q
+        .all([
           $translate(title),
           getActionBarDataForChild(selectedDoc.type),
           getCanEdit(selectedDoc),
-          ContactSummary(selected.doc, selected.reports, selected.lineage)
+          ContactSummary(selected.doc, selected.reports, selected.lineage),
+          Settings()
         ])
           .then(function(results) {
             $scope.setTitle(results[0]);
@@ -210,11 +220,15 @@ var _ = require('underscore'),
               if (err) {
                 $log.error('Error fetching relevant forms', err);
               }
+              var showUnmuteModal = function(formId) {
+                return $scope.selected.doc.muted && !isUnmuteForm(results[4], formId);
+              };
               var formSummaries = forms && forms.map(function(xForm) {
                 return {
                   code: xForm.internalId,
                   title: translateTitle(xForm.translation_key, xForm.title),
-                  icon: xForm.icon
+                  icon: xForm.icon,
+                  showUnmuteModal: showUnmuteModal(xForm.internalId)
                 };
               });
               var canDelete = !selected.children || (

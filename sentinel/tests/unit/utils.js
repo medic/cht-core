@@ -70,48 +70,6 @@ describe('utils', () => {
         });
     });
 
-    it('unmuteScheduledMessages schedules all muted tasks', () => {
-
-        var doc = {
-            scheduled_tasks: [
-                {
-                    due: Date.now().valueOf() + 1000,
-                    state: 'muted'
-                }, {
-                    due: Date.now().valueOf() - 1000,
-                    state: 'muted'
-                }
-            ]
-        };
-
-        utils.unmuteScheduledMessages(doc);
-
-        assert.equal(doc.scheduled_tasks.length, 1);
-        assert.equal(doc.scheduled_tasks[0].state, 'scheduled');
-        assert.equal(doc.scheduled_tasks[0].state_history.length, 1);
-        assert.equal(doc.scheduled_tasks[0].state_history[0].state, 'scheduled');
-        assert(!!doc.scheduled_tasks[0].state_history[0].timestamp);
-    });
-
-    it('muteScheduledMessages mutes all scheduled tasks', () => {
-
-        var doc = {
-            scheduled_tasks: [
-                {
-                    state: 'scheduled'
-                }
-            ]
-        };
-
-        utils.muteScheduledMessages(doc);
-
-        assert.equal(doc.scheduled_tasks.length, 1);
-        assert.equal(doc.scheduled_tasks[0].state, 'muted');
-        assert.equal(doc.scheduled_tasks[0].state_history.length, 1);
-        assert.equal(doc.scheduled_tasks[0].state_history[0].state, 'muted');
-        assert(!!doc.scheduled_tasks[0].state_history[0].timestamp);
-    });
-
     it('translate returns message if key found in translations', () => {
         sinon.stub(config, 'getTranslations').returns({
             en: { sms_received: 'got it!' }

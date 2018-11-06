@@ -55,4 +55,31 @@ describe('HydrateContactNames service', () => {
     });
   });
 
+  it('searches for muted state in lineage', () => {
+    const given = [
+      { contact: 'a', lineage: [ 'b', 'c' ] },
+      { contact: 'd' },
+      { contact: 'c', muted: true },
+      { contact: 'e', lineage: [ 'f', 'g' ] }
+    ];
+
+    const summaries = [
+      { _id: 'a', name: 'arnie' },
+      { _id: 'b', name: 'betty' },
+      { _id: 'c', name: 'carol', muted: true },
+      { _id: 'd', name: 'daisy', muted: true },
+      { _id: 'e', name: 'elena' },
+      { _id: 'f', name: 'felicity' },
+      { _id: 'g', name: 'groot' }
+    ];
+
+    GetSummaries.resolves(summaries);
+    return service(given).then(result => {
+      chai.expect(result[0].muted).to.equal(true);
+      chai.expect(result[1].muted).to.equal(undefined);
+      chai.expect(result[2].muted).to.equal(true);
+      chai.expect(result[3].muted).to.equal(false);
+    });
+  });
+
 });

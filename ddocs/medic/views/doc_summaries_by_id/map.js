@@ -85,7 +85,8 @@ function(doc) {
       contact: doc.contact && doc.contact._id,
       lineage: getLineage(doc.parent),
       simprints_id: doc.simprints_id,
-      date_of_death: doc.date_of_death
+      date_of_death: doc.date_of_death,
+      muted: doc.muted
     });
   }
 }
