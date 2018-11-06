@@ -7,7 +7,8 @@ const should = require('chai').should(),
   messages = require('../../../src/lib/messages'),
   utils = require('../../../src/lib/utils'),
   config = require('../../../src/config'),
-  transitionUtils = require('../../../src/transitions/utils');
+  transitionUtils = require('../../../src/transitions/utils'),
+  acceptPatientReports = require('../../../src/transitions/accept_patient_reports');
 
 describe('registration', () => {
   afterEach(done => {
@@ -895,6 +896,85 @@ describe('registration', () => {
         addMessage.args[0][1].should.equal(testMessage1);
         addMessage.args[0][2].should.equal(testPhone);
         addMessage.args[0][3].should.deep.equal(expectedContext);
+        done();
+      });
+    });
+  });
+
+  describe('clear_schedule', () => {
+    it('should work when doc has no patient', done => {
+      sinon.stub(utils, 'getReportsBySubject').resolves([]);
+
+      transition.triggers.clear_schedule({ doc: {}, params: [] }, err => {
+        (!!err).should.equal(false);
+        done();
+      });
+    });
+
+    it('should query utils.getReportsBySubject with correct params', done => {
+      sinon.stub(utils, 'getReportsBySubject').resolves([]);
+      sinon.stub(utils, 'getSubjectIds').returns(['uuid', 'patient_id']);
+      const doc = { patient: { _id: 'uuid', patient_id: 'patient_id' } };
+      sinon.stub(acceptPatientReports, 'silenceRegistrations').callsArgWith(3, null);
+
+      transition.triggers.clear_schedule({ doc, params: [] }, err => {
+        (!!err).should.equal(false);
+        utils.getSubjectIds.callCount.should.equal(1);
+        utils.getSubjectIds.args[0].should.deep.equal([doc.patient]);
+        utils.getReportsBySubject.callCount.should.equal(1);
+        utils.getReportsBySubject.args[0].should.deep.equal([ {
+          db: dbPouch.medic,
+          ids: ['uuid', 'patient_id'],
+          registrations: true
+        } ]);
+        done();
+      });
+    });
+
+    it('should call silenceRegistrations with correct params', done => {
+      const doc = { _id: 'uuid', patient_id: 'patient_id' },
+            params = ['1', '2', '3', '4'],
+            registrations = ['a', 'b', 'c'];
+      sinon.stub(utils, 'getReportsBySubject').resolves(registrations);
+      sinon.stub(utils, 'getSubjectIds').returns(['uuid', 'patient_id']);
+      sinon.stub(acceptPatientReports, 'silenceRegistrations').callsArgWith(3, null);
+
+      transition.triggers.clear_schedule({ doc, params }, err => {
+        (!!err).should.equal(false);
+        acceptPatientReports.silenceRegistrations.callCount.should.equal(1);
+        acceptPatientReports.silenceRegistrations.args[0][0].should.deep.equal({
+          silence_type: '1,2,3,4',
+          silence_for: null
+        });
+        acceptPatientReports.silenceRegistrations.args[0][1].should.deep.equal(doc);
+        acceptPatientReports.silenceRegistrations.args[0][2].should.deep.equal(registrations);
+        done();
+      });
+    });
+
+    it('should catch getReportsBySubject errors', done => {
+      sinon.stub(utils, 'getReportsBySubject').rejects({ some: 'error' });
+      sinon.stub(utils, 'getSubjectIds').returns([]);
+      sinon.stub(acceptPatientReports, 'silenceRegistrations');
+
+      transition.triggers.clear_schedule({ doc: {}, params: [] }, err => {
+        err.should.deep.equal({ some: 'error' });
+        utils.getReportsBySubject.callCount.should.equal(1);
+        utils.getSubjectIds.callCount.should.equal(1);
+        acceptPatientReports.silenceRegistrations.callCount.should.equal(0);
+        done();
+      });
+    });
+
+    it('should catch silenceRegistrations errors', done => {
+      sinon.stub(utils, 'getReportsBySubject').resolves([]);
+      sinon.stub(utils, 'getSubjectIds').returns([]);
+      sinon.stub(acceptPatientReports, 'silenceRegistrations').callsArgWith(3, { some: 'err' });
+      transition.triggers.clear_schedule({ doc: {}, params: [] }, err => {
+        err.should.deep.equal({ some: 'err' });
+        utils.getReportsBySubject.callCount.should.equal(1);
+        utils.getSubjectIds.callCount.should.equal(1);
+        acceptPatientReports.silenceRegistrations.callCount.should.equal(1);
         done();
       });
     });

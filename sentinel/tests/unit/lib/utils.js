@@ -291,4 +291,19 @@ describe('utils util', () => {
       taskUtils.setTaskState.callCount.should.equal(6);
     });
   });
+
+  describe('getSubjectIds', () => {
+    it('should return correct values', () => {
+      utils.getSubjectIds({}).should.deep.equal([]);
+      utils.getSubjectIds({ _id: 'a' }).should.deep.equal(['a']);
+      utils.getSubjectIds({ patient_id: 'b' }).should.deep.equal(['b']);
+      utils.getSubjectIds({ place_id: 'c' }).should.deep.equal(['c']);
+      utils.getSubjectIds({ _id: '' }).should.deep.equal(['']);
+      utils.getSubjectIds({ patient_id: false }).should.deep.equal([false]);
+      utils.getSubjectIds({ place_id: null }).should.deep.equal([null]);
+      utils.getSubjectIds({ _id: 'a', patient_id: 'b' }).should.deep.equal(['a', 'b']);
+      utils.getSubjectIds({ _id: 'b', place_id: 'c' }).should.deep.equal(['b', 'c']);
+      utils.getSubjectIds({ _id: 'd', place_id: 'f', foo: 'bar' }).should.deep.equal(['d', 'f']);
+    });
+  });
 });
