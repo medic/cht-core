@@ -231,7 +231,7 @@ module.exports = function(grunt) {
       options: {
         processors: [
           require('autoprefixer')({
-            browsers: ['last 2 versions', 'Android >= 4.4'],
+            browsers: ['last 2 Firefox versions', 'Chrome >= 54'],
           }),
         ],
       },
