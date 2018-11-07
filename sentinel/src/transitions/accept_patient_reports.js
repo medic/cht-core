@@ -48,34 +48,11 @@ const getScheduledTasksByType = (registration, type) => {
 
 // find the messages to clear
 const findToClear = (registration, reported_date, config) => {
-
-  // See: https://github.com/medic/medic-docs/blob/master/user/message-states.md#message-states-in-medic-webapp
-  // Both scheduled and pending have not yet been either seen by a gateway or
-  // delivered, so they are both clearable.
-  // Also clear `muted` schedules, as they could be `unmuted` later
-  const typesToClear = ['pending', 'scheduled', 'muted'];
-
-  const reportedDateMoment = moment(reported_date);
-  const taskTypes = config.silence_type.split(',').map(type => type.trim());
-
-  const tasksUnderReview = getScheduledTasksByType(registration, taskTypes);
-
-  if (!config.silence_for) {
-    // No range, all clearable tasks should be cleared
-    return tasksUnderReview.filter(task => typesToClear.includes(task.state));
-  } else {
-    // Clear all tasks that are members of a group that "exists" before the
-    // silenceUntil date. e.g., they have at least one task in their group
-    // whose due date is before silenceUntil.
-    const silenceUntil = reportedDateMoment.clone();
-    silenceUntil.add(date.getDuration(config.silence_for));
-
-    const allTasksBeforeSilenceUntil = tasksUnderReview.filter(
-      task => moment(task.due) <= silenceUntil
-    );
-    const groupTypeCombosToClear = uniqueGroupTypeCombos(
-      allTasksBeforeSilenceUntil
-    );
+    // See: https://github.com/medic/medic-docs/blob/master/user/message-states.md#message-states-in-medic-webapp
+    // Both scheduled and pending have not yet been either seen by a gateway or
+    // delivered, so they are both clearable.
+    // Also clear `muted` schedules, as they could be `unmuted` later
+    const typesToClear = ['pending', 'scheduled', 'muted'];
 
     const reportedDateMoment = moment(reported_date);
     const taskTypes = config.silence_type.split(',').map(type => type.trim());
