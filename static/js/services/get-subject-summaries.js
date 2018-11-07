@@ -5,11 +5,16 @@ angular.module('inboxServices').factory('GetSubjectSummaries',
     $q,
     DB,
     GetSummaries,
-    LineageModelGenerator
+    LineageModelGenerator,
+    HydrateContactNames
   ) {
 
     'use strict';
     'ngInject';
+
+    var isPatientId = function(string) {
+      return string.length < 20;
+    };
 
     var findSubjectId = function(response, id) {
       var parent = _.find(response.rows, function(row) {
@@ -37,28 +42,29 @@ angular.module('inboxServices').factory('GetSubjectSummaries',
       return summaries;
     };
 
-    var findSubjectName = function(response, id) {
-      var parent = _.findWhere(response, { _id: id });
-      return (parent && parent.name) || null;
+    var findSubjectSummary = function(response, id) {
+      return _.findWhere(response, { _id: id });
     };
 
-    var replaceIdsWithNames = function(summaries, response) {
+    var replaceIdsWithNames = function(summaries, subjectsSummaries) {
       summaries.forEach(function(summary) {
         if (summary.subject && summary.subject.type === 'id' && summary.subject.value) {
-          var name = findSubjectName(response, summary.subject.value);
-          if (name) {
+          var subjectSummary = findSubjectSummary(subjectsSummaries, summary.subject.value);
+          if (subjectSummary) {
             summary.subject = {
               _id: summary.subject.value,
-              value: name,
+              value: subjectSummary.name,
+              lineage: subjectSummary.lineage,
               type: 'name'
             };
           }
         }
       });
+
       return summaries;
     };
 
-    var processContactIds = function(summaries) {
+    var processContactIds = function(summaries, hydratedLineage) {
       var ids = _.uniq(_.compact(summaries.map(function(summary) {
         if (summary.subject && summary.subject.type === 'id') {
           return summary.subject.value;
@@ -70,6 +76,9 @@ angular.module('inboxServices').factory('GetSubjectSummaries',
       }
 
       return GetSummaries(ids)
+        .then(function(response) {
+          return hydratedLineage ? response : HydrateContactNames(response);
+        })
         .then(function(response) {
           return replaceIdsWithNames(summaries, response);
         });
@@ -96,7 +105,7 @@ angular.module('inboxServices').factory('GetSubjectSummaries',
 
     var processReferences = function(summaries) {
       var references = _.uniq(_.compact(summaries.map(function(summary) {
-        if (summary.subject && summary.subject.type === 'reference') {
+        if (summary.subject && summary.subject.type === 'reference' && isPatientId(summary.subject.value)) {
           return summary.subject.value;
         }
       })));
@@ -120,16 +129,6 @@ angular.module('inboxServices').factory('GetSubjectSummaries',
       return _.each(summaries, function(summary) {
         if (summary.subject && summary.subject._id) {
           _.extend(summary.subject, _.findWhere(response, {_id: summary.subject._id}));
-        }
-      });
-    };
-
-    var compactSubjectLineage = function(summaries) {
-      return _.each(summaries, function(summary) {
-        if (summary.subject && summary.subject.lineage) {
-          summary.subject.lineage = _.compact(_.map(summary.subject.lineage, function(parent) {
-            return parent && parent.name;
-          }));
         }
       });
     };
@@ -167,13 +166,11 @@ angular.module('inboxServices').factory('GetSubjectSummaries',
       }
 
       return processReferences(summaries)
-        .then(processContactIds)
-        .then(processSubjectLineage)
+        .then(function (summaries) {
+          return processContactIds(summaries, hydratedLineage);
+        })
         .then(function(summaries) {
-          if (!hydratedLineage) {
-            return compactSubjectLineage(summaries);
-          }
-          return summaries;
+          return hydratedLineage ? processSubjectLineage(summaries) : summaries;
         })
         .then(validateSubjects);
     };
