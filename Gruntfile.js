@@ -181,7 +181,6 @@ module.exports = function(grunt) {
         reporter: require('jshint-stylish'),
         ignores: [
           'webapp/src/js/modules/xpath-element-path.js',
-          'webapp/tests/karma/q.js',
           '**/node_modules/**',
           'sentinel/src/lib/pupil/**',
           'build/**',

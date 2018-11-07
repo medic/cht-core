@@ -65,6 +65,7 @@ var feedback = require('../modules/feedback'),
     $scope.replicationStatus = {
       disabled: false,
       lastSuccess: {},
+      lastTrigger: undefined,
       current: 'unknown',
       textKey: 'sync.status.unknown',
     };
@@ -74,7 +75,8 @@ var feedback = require('../modules/feedback'),
       required: 'fa-exclamation-triangle',
       unknown: 'fa-question-circle',
     };
-    DBSync(function(update) {
+
+    DBSync.addUpdateListener(update => {
       if (update.disabled) {
         $scope.replicationStatus.disabled = true;
         // admins have potentially too much data so bypass local pouch
@@ -82,29 +84,33 @@ var feedback = require('../modules/feedback'),
         return;
       }
 
+      // Listen for directedReplicationStatus to update replicationStatus.lastSuccess
       var now = Date.now();
-      if (update.status !== 'required') {
-        var last = $scope.replicationStatus.lastSuccess[update.direction];
+      if (update.directedReplicationStatus === 'success') {
         $scope.replicationStatus.lastSuccess[update.direction] = now;
-        var delay = last ? (now - last) / 1000 : 'unknown';
-        $log.info(
-          'Replicate ' +
-            update.direction +
-            ' server successful with ' +
-            delay +
-            ' seconds since the previous successful replication.'
-        );
+        return;
       }
 
-      if (update.direction === 'to') {
-        if (update.status === 'not_required') {
-          $scope.replicationStatus.lastCompleted = now;
-        }
-        $scope.replicationStatus.current = update.status;
-        $scope.replicationStatus.textKey = 'sync.status.' + update.status;
-        $scope.replicationStatus.icon = SYNC_ICON[update.status];
+      // Listen for aggregateReplicationStatus updates
+      const status = update.aggregateReplicationStatus;
+      const lastTrigger = $scope.replicationStatus.lastTrigger;
+      if (status === 'not_required' || status === 'required') {
+        const delay = lastTrigger ? (now - lastTrigger) / 1000 : 'unknown';
+        $log.info('Replication ended after ' + delay + ' seconds with status ' + status);
+      } else if (status === 'in_progress') {
+        $scope.replicationStatus.lastTrigger = now;
+        const duration = lastTrigger ? (now - lastTrigger) / 1000 : 'unknown';
+        $log.info('Replication started after ' + duration + ' seconds since previous attempt.');
       }
+
+      $scope.replicationStatus.current = status;
+      $scope.replicationStatus.textKey = 'sync.status.' + status;
+      $scope.replicationStatus.icon = SYNC_ICON[status];
     });
+
+    $window.addEventListener('online', () => DBSync.setOnlineStatus(true), false);
+    $window.addEventListener('offline', () => DBSync.setOnlineStatus(false), false);
+    DBSync.sync();
 
     // BootstrapTranslator is used because $translator.onReady has not fired
     $('.bootstrap-layer .status').html(bootstrapTranslator.translate('LOAD_RULES'));
@@ -616,6 +622,10 @@ var feedback = require('../modules/feedback'),
         templateUrl: 'templates/modals/feedback.html',
         controller: 'FeedbackCtrl',
       });
+    };
+
+    $scope.replicate = function() {
+      DBSync.sync(true);
     };
 
     CountMessages.init();
