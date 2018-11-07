@@ -265,6 +265,7 @@ var _ = require('underscore'),
 
     $scope.search = function() {
       if($scope.filters.search) {
+        $state.go('contacts.detail', { id: null }, { notify: false });
         clearSelection();
       }
 
