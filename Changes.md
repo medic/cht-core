@@ -1,8 +1,20 @@
 # Medic Mobile Release Notes
+## 3.2.0
+
+### Features
+
+- [#4767](https://github.com/medic/medic-webapp/issues/4767): Ability to mute families (and maybe individuals)
+
+### Improvements
+
+- [#4768](https://github.com/medic/medic-webapp/issues/4768): Update the on/off handling to mark an individual as muted
+
+### Bug fixes
+
+- [#3362](https://github.com/medic/medic-webapp/issues/3362): The `update_notifications` transition is not working as expected
+- [#4649](https://github.com/medic/medic-webapp/issues/4649):  Automated reply not generated in case OFF/ON texfrom when patient id is not sent by the user.
 
 ## 3.1.0
-
-_August 27, 2018_
 
 ### Features
 
@@ -29,7 +41,7 @@ _August 27, 2018_
 - [#4735](https://github.com/medic/medic-webapp/issues/4735): Sentinel scheduled tasks messages ignore config
 - [#4776](https://github.com/medic/medic-webapp/issues/4776): Medic Collect Security Issue
 - [#4778](https://github.com/medic/medic-webapp/issues/4778): Support db-doc GET with open_revs for offline users
-- [#4786](https://github.com/medic/medic-webapp/issues/4786): Allow offline users to access admin app if allowed.
+- [#4786](https://github.com/medic/medic-webapp/issues/4786): Allow offline users to access admin app if allowed
 - [#4789](https://github.com/medic/medic-webapp/issues/4789): Change the text that is displayed on LHS of Reports when there are no results
 
 ### Technical issues
@@ -40,10 +52,9 @@ _August 27, 2018_
 
 ## 3.0.0
 
-_August 27, 2018_
-
 ### Migration notes
 
+- The [supported versions for client and server software](https://github.com/medic/medic-docs/blob/master/installation/supported-software.md) have been changed significantly. Make sure your software meets the requirements before upgrading to 3.0.0.
 - [#3971](https://github.com/medic/medic-webapp/issues/3971): The `/api/v1/messages` endpoint has been removed as it was no longer actively used, and contained bugs.
 - [#1002](https://github.com/medic/medic-webapp/issues/1002): The ANC analytics page and the following APIs have been removed as they are no longer used: `/api/active-pregnancies`, `/api/upcoming-appointments`, `/api/missed-appointments`, `/api/upcoming-due-dates`, `/api/high-risk`, `/api/total-births`, `/api/missing-delivery-reports`, `/api/delivery-location`, `/api/visits-completed`, `/api/visits-during`, `/api/monthly-registrations`, `/api/monthly-deliveries`.
 - [#1002](https://github.com/medic/medic-webapp/issues/1002): The `/api/v1/export/messages`, `/api/v1/export/forms`, and `/api/v1/export/contacts` endpoints have been removed in favor of `/api/v2/export/messages`, `/api/v2/export/reports`, and `/api/v2/export/contacts` respectively.
@@ -91,6 +102,7 @@ _August 27, 2018_
 - [#4643](https://github.com/medic/medic-webapp/issues/4643): Enable response body compression
 - [#4656](https://github.com/medic/medic-webapp/issues/4656): Remove gammu from the medic-os image
 - [#4669](https://github.com/medic/medic-webapp/issues/4669): Subject summaries are loaded one at a time
+- [#4939](https://github.com/medic/medic-webapp/issues/4939): CouchDB 2 performance issue
 
 ### Bug fixes
 
@@ -111,7 +123,7 @@ _August 27, 2018_
 - [#4343](https://github.com/medic/medic-webapp/issues/4343): The sms-gateway endpoint can crash api
 - [#4364](https://github.com/medic/medic-webapp/issues/4364): Don't use error code 301 when unauthorized
 - [#4371](https://github.com/medic/medic-webapp/issues/4371): Report RHS action bar not updated for unknown/missing contact
-- [#4373](https://github.com/medic/medic-webapp/issues/4373): `{{patient_name}}` not rendered in the error message and the automated reply.
+- [#4373](https://github.com/medic/medic-webapp/issues/4373): `{{patient_name}}` not rendered in the error message and the automated reply
 - [#4412](https://github.com/medic/medic-webapp/issues/4412): User metadata db security
 - [#4424](https://github.com/medic/medic-webapp/issues/4424): Pouch timeout weirdness with Medic servers
 - [#4425](https://github.com/medic/medic-webapp/issues/4425): Lineage unit tests do not run on Travis
@@ -136,6 +148,12 @@ _August 27, 2018_
 - [#4754](https://github.com/medic/medic-webapp/issues/4754): Deleting error-report not replicating properly
 - [#4774](https://github.com/medic/medic-webapp/issues/4774): Use user.facility_id saved in `_users` instead of `medic` db
 - [#4792](https://github.com/medic/medic-webapp/issues/4792): Horti versions don't show up correctly in about page
+- [#4806](https://github.com/medic/medic-webapp/issues/4806): Fix getting registrations via querying `medic-client/registered_patients`
+- [#4808](https://github.com/medic/medic-webapp/issues/4808): Clicking edit on a district, health center, heatlh area is showing error
+- [#4823](https://github.com/medic/medic-webapp/issues/4823): Error loading form "Could not evaluate:"
+- [#4831](https://github.com/medic/medic-webapp/issues/4831): ANC SMS are not cleared when pregnancy is registered to the patient
+- [#4848](https://github.com/medic/medic-webapp/issues/4848): ZScore Charts are not being found
+- [#4893](https://github.com/medic/medic-webapp/issues/4893): Horticulturalist crashes when view warming
 
 ### Technical issues
 
