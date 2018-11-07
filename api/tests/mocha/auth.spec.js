@@ -88,7 +88,7 @@ describe('Auth', () => {
       get.onFirstCall().callsArgWith(1, null, null, userCtx);
       get.onSecondCall().callsArgWith(1, null, null, { facility_id: district });
       sinon.stub(config, 'get').returns({ can_edit: ['district_admin'] });
-      return auth.check({}, 'can_edit', district).then(ctx => {
+      return auth.check({headers: []}, 'can_edit', district).then(ctx => {
         chai.expect(get.callCount).to.equal(2);
         chai.expect(ctx.user).to.equal('steve');
         chai.expect(ctx.district).to.equal(district);
@@ -134,9 +134,7 @@ describe('Auth', () => {
     it('checks all required roles', () => {
       db.serverUrl = 'http://abc.com';
       const district = '123';
-      const userCtx = {
-        userCtx: { name: 'steve', roles: ['xyz', 'district_admin'] },
-      };
+      const userCtx = { userCtx: { name: 'steve', roles: [ 'xyz', 'district_admin' ] } };
       sinon.stub(url, 'format').returns('http://abc.com');
       const get = sinon
         .stub(request, 'get')
