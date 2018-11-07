@@ -1,3 +1,5 @@
+@nav-active-color: #38464d;
+
 .body,
 .header {
   padding: 20px;
@@ -5,6 +7,7 @@
 .body {
   display: flex;
   max-width: @admin-content-width;
+  margin: 0 auto;
   font-size: @font-medium;
 }
 .header {
@@ -21,14 +24,21 @@
   width: 200px;
   font-size: 16px;
   background-color: @background-color;
-  padding-left: 10px;
+  padding-left: 15px;
   margin-right: 10px;
   a {
     display: inline-block;
     padding: 10px 10px 10px 0;
     width: 100%;
     outline: 0;
-    color: #333333;
+    color: @medic-slate-color;
+  }
+  a:hover {
+    text-decoration: none;
+  }
+  a:active {
+    text-decoration: none;
+    color: @nav-active-color;
   }
 }
 .tab-content {
@@ -100,4 +110,19 @@ ul {
     -webkit-transform: rotate(360deg);
     transform: rotate(360deg);
   }
+}
+.nav-tabs>li.active>a {
+	color: @nav-active-color;
+	&:hover {
+		color: @nav-active-color;
+	}
+	&:focus {
+		color: @nav-active-color;
+	}
+}
+.nav-tabs > li > a {
+  color: @medic-slate-color;
+}
+.mb-5 {
+  margin-bottom: 5px;
 }
