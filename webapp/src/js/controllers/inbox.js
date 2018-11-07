@@ -108,6 +108,10 @@ var feedback = require('../modules/feedback'),
       $scope.replicationStatus.icon = SYNC_ICON[status];
     });
 
+    $window.addEventListener('online', () => DBSync.setOnlineStatus(true), false);
+    $window.addEventListener('offline', () => DBSync.setOnlineStatus(false), false);
+    DBSync.sync();
+
     // BootstrapTranslator is used because $translator.onReady has not fired
     $('.bootstrap-layer .status').html(bootstrapTranslator.translate('LOAD_RULES'));
 
