@@ -277,9 +277,11 @@ var _ = require('underscore'),
     });
 
     $scope.search = function() {
-      $state.go('contacts.detail', { id: null }, { notify: false });
+      if($scope.filters.search) {
+        $state.go('contacts.detail', { id: null }, { notify: false });
+        clearSelection();
+      }
 
-      clearSelection();
       $scope.loading = true;
       if ($scope.filters.search || $scope.filters.simprintsIdentities) {
         $scope.filtered = true;
