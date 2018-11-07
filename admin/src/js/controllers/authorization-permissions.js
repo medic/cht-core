@@ -15,7 +15,7 @@ angular.module('controllers').controller('AuthorizationPermissionsCtrl',
       return Object.keys($scope.roles).map(function(key) {
         return {
           name: key,
-          value: roles.indexOf(key) !== -1,
+          enabled: roles.includes(key),
         };
       });
     };
@@ -28,7 +28,7 @@ angular.module('controllers').controller('AuthorizationPermissionsCtrl',
 
         // add the configured permissions
         $scope.permissions = [];
-        Object.keys(settings.permissions).map(function(key) {
+        Object.keys(settings.permissions).forEach(function(key) {
           $scope.permissions.push({
             name: key,
             roles: makeRoleModel(settings.permissions[key]),
@@ -43,7 +43,7 @@ angular.module('controllers').controller('AuthorizationPermissionsCtrl',
     var getEnabledRoles = function(roles) {
       return roles
         .filter(function(role) {
-          return role.value;
+          return role.enabled;
         })
         .map(function(role) {
           return role.name;
@@ -51,11 +51,11 @@ angular.module('controllers').controller('AuthorizationPermissionsCtrl',
     };
 
     var mapUpdatesToSettings = function(updates) {
-      var obj = {};
+      var permissions = {};
       updates.forEach(function(updated) {
-        obj[updated.name] = getEnabledRoles(updated.roles);
+        permissions[updated.name] = getEnabledRoles(updated.roles);
       });
-      return obj;
+      return permissions;
     };
 
     $scope.submit = function() {
