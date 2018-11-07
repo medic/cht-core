@@ -2,7 +2,8 @@ var _ = require('underscore'),
   READ_ONLY_TYPES = ['form', 'translations'],
   READ_ONLY_IDS = ['resources', 'appcache', 'zscore-charts', 'settings'],
   DDOC_PREFIX = ['_design/'],
-  META_SYNC_FREQUENCY = 30 * 60 * 1000; // 30 minutes
+  SYNC_INTERVAL = 5 * 60 * 1000, // 5 minutes
+  META_SYNC_INTERVAL = 30 * 60 * 1000; // 30 minutes
 
 angular
   .module('inboxServices')
@@ -10,13 +11,12 @@ angular
     'use strict';
     'ngInject';
 
-    var backOffFunction = function(prev) {
-      if (prev <= 0) {
-        // first run, backoff 1 second
-        return 1000;
-      }
-      // double the backoff, maxing out at 1 minute
-      return Math.min(prev * 2, 60000);
+    const updateListeners = [];
+    let knownOnlineState = true; // assume the user is online
+    let syncIsRecent = false; // true when a replication has succeeded within one interval
+    const intervalPromises = {
+      sync: undefined,
+      meta: undefined,
     };
 
     var authenticationIssue = function(errors) {
@@ -33,34 +33,20 @@ angular
     };
 
     var getOptions = function(direction) {
-      var options = {
-        live: true,
-        retry: true,
-        heartbeat: 10000,
-        back_off_function: backOffFunction,
-      };
+      var options = {};
       if (direction === 'to') {
         options.checkpoint = 'source';
         options.filter = readOnlyFilter;
-        return options;
-      } else {
-        // TODO reenable this when single sided checkpointing is fixed:
-        //      https://github.com/pouchdb/pouchdb/issues/6730
-        // options.checkpoint = 'target';
-        return options;
       }
+
+      return options;
     };
 
-    var replicate = function(direction, updateListener) {
+    var replicate = function(direction) {
       var options = getOptions(direction);
       var remote = DB({ remote: true });
       return DB()
         .replicate[direction](remote, options)
-        .on('active', function() {
-          if (updateListener) {
-            updateListener({ direction: direction, status: 'in_progress' });
-          }
-        })
         .on('denied', function(err) {
           // In theory this could be caused by 401s
           // TODO: work out what `err` looks like and navigate to login
@@ -69,15 +55,6 @@ angular
         })
         .on('error', function(err) {
           $log.error('Error replicating ' + direction + ' remote server', err);
-          if (updateListener) {
-            updateListener({ direction: direction, status: 'required' });
-          }
-        })
-        .on('paused', function(err) {
-          if (updateListener) {
-            var status = err ? 'required' : 'not_required';
-            updateListener({ direction: direction, status: status });
-          }
         })
         .on('complete', function(info) {
           if (!info.ok && authenticationIssue(info.errors)) {
@@ -86,19 +63,34 @@ angular
         });
     };
 
-    var replicateTo = function(updateListener) {
+    const replicateTo = () => {
+      const AUTH_FAILURE = {};
       return Auth('can_edit')
-        .then(function() {
-          return replicate('to', updateListener);
-        })
-        .catch(function() {
-          // not authorized to replicate to server - that's ok
-          return;
+        // not authorized to replicate to server - that's ok. Silently skip replication.to
+        .catch(() => AUTH_FAILURE)
+        .then(err => {
+          if (err !== AUTH_FAILURE) {
+            return replicate('to');
+          }
         });
     };
 
-    var replicateFrom = function(updateListener) {
-      return replicate('from', updateListener);
+    const sendUpdateForDirectedReplication = (func, direction) => {
+      return func
+        .then(() => {
+          sendUpdate({
+            direction,
+            directedReplicationStatus: 'success',
+          });
+        })
+        .catch(error => {
+          sendUpdate({
+            direction,
+            directedReplicationStatus: 'failure',
+            error,
+          });
+          return error;
+        });
     };
 
     var syncMeta = function() {
@@ -107,20 +99,108 @@ angular
       local.sync(remote);
     };
 
-    return function(updateListener) {
-      if (Session.isOnlineOnly()) {
-        if (updateListener) {
-          updateListener({ disabled: true });
-        }
+    // inProgressSync prevents multiple concurrent replications
+    let inProgressSync;
+    const sync = force => {
+      if (!knownOnlineState && !force) {
         return $q.resolve();
       }
 
-      syncMeta();
-      $interval(syncMeta, META_SYNC_FREQUENCY);
+      /*
+      Controllers need the status of each directed replication (directedReplicationStatus) and the 
+      status of the replication as a whole (aggregateReplicationStatus).
+      */
+      if (!inProgressSync) {
+        inProgressSync = $q
+          .all([
+            sendUpdateForDirectedReplication(replicate('from'), 'from'),
+            sendUpdateForDirectedReplication(replicateTo(), 'to'),
+          ])
+          .then(results => {
+            const errors = _.filter(results, result => result);
+            if (errors.length > 0) {
+              $log.error('Error replicating remote server', errors);
+              sendUpdate({
+                aggregateReplicationStatus: 'required',
+                error: errors,
+              });
+              return;
+            }
 
-      return $q.all([
-        replicateFrom(updateListener),
-        replicateTo(updateListener),
-      ]);
+            syncIsRecent = true;
+            sendUpdate({ aggregateReplicationStatus: 'not_required' });
+          })
+          .finally(() => {
+            inProgressSync = undefined;
+          });
+      }
+
+      sendUpdate({ aggregateReplicationStatus: 'in_progress' });
+      return inProgressSync;
+    };
+
+    const sendUpdate = update => {
+      _.forEach(updateListeners, listener => {
+        listener(update);
+      });
+    };
+
+    const resetSyncInterval = () => {
+      if (intervalPromises.sync) {
+        $interval.cancel(intervalPromises.sync);
+        intervalPromises.sync = undefined;
+      }
+
+      intervalPromises.sync = $interval(() => {
+        syncIsRecent = false;
+        sync();
+      }, SYNC_INTERVAL);
+    };
+
+    return {
+      /**
+       * Adds a listener function to be notified of replication state changes.
+       *
+       * @param listener {Function} A callback `function (update)`
+       */
+      addUpdateListener: listener => {
+        updateListeners.push(listener);
+      },
+
+      /**
+       * Set the current user's online status to control when replications will be attempted.
+       *
+       * @param newOnlineState {Boolean} The current online state of the user.
+       */
+      setOnlineStatus: onlineStatus => {
+        if (knownOnlineState !== onlineStatus) {
+          knownOnlineState = !!onlineStatus;
+
+          if (knownOnlineState && !syncIsRecent) {
+            resetSyncInterval();
+            return sync();
+          }
+        }
+      },
+
+      /**
+       * Synchronize the local database with the remote database.
+       *
+       * @returns Promise which resolves when both directions of the replication complete.
+       */
+      sync: force => {
+        if (Session.isOnlineOnly()) {
+          sendUpdate({ disabled: true });
+          return $q.resolve();
+        }
+
+        if (!intervalPromises.meta) {
+          intervalPromises.meta = $interval(syncMeta, META_SYNC_INTERVAL);
+          syncMeta();
+        }
+
+        resetSyncInterval();
+        return sync(force);
+      },
     };
   });
