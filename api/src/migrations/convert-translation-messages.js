@@ -1,6 +1,7 @@
 const _ = require('underscore'),
   { promisify } = require('util'),
-  db = require('../db-nano');
+  db = require('../db-nano'),
+  properties = require('properties'),;
 
 module.exports = {
   name: 'convert-translation-messages',
@@ -38,30 +39,36 @@ module.exports = {
                   return callback(err);
                 }
 
-                let defaultTranslations = {};
-                let customTranslations = {};
-                Object.keys(translationMessageValues.values).forEach((translationMessageKey) => {
-                  if (translationAttachmentValue.includes(translationMessageKey.replace(' ', '\\ '))) {
-                    defaultTranslations[translationMessageKey] = translationMessageValues.values[translationMessageKey];
-                  } else {
-                    customTranslations[translationMessageKey] = translationMessageValues.values[translationMessageKey];
-                  }
-                });
-
-                delete translationMessageValues.values;
-                translationMessageValues.custom = customTranslations;
-                translationMessageValues.default = defaultTranslations;
-
-                db.request({
-                  db: db.settings.db,
-                  method: 'PUT',
-                  path: translationMessageKey,
-                  body: translationMessageValues
-                },
-                (err) => {
+                properties.parse(translationAttachmentValue.toString('utf8'), (err, translationAttachmentValues) => {
                   if (err) {
                     return callback(err);
                   }
+
+                  let defaultTranslations = {};
+                  let customTranslations = {};
+                  Object.keys(translationMessageValues.values).forEach((translationMessageKey) => {
+                    if (_.has(translationAttachmentValues, translationMessageKey)) {
+                      defaultTranslations[translationMessageKey] = translationMessageValues.values[translationMessageKey];
+                    } else {
+                      customTranslations[translationMessageKey] = translationMessageValues.values[translationMessageKey];
+                    }
+                  });
+
+                  delete translationMessageValues.values;
+                  translationMessageValues.custom = customTranslations;
+                  translationMessageValues.default = defaultTranslations;
+
+                  db.request({
+                    db: db.settings.db,
+                    method: 'PUT',
+                    path: translationMessageKey,
+                    body: translationMessageValues
+                  },
+                  (err) => {
+                    if (err) {
+                      return callback(err);
+                    }
+                  });
                 });
               });
             }

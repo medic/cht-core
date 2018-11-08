@@ -206,7 +206,7 @@ describe('translations', () => {
           type: 'translations',
           default: {
             hello: 'Hello UPDATED',
-            bye: 'Goodbye CUSTOMISED',
+            bye: 'Goodbye UPDATED',
             added: 'ADDED'
           }
         },
@@ -412,7 +412,7 @@ describe('translations', () => {
           type: 'translations',
           default: {
             hello: 'Hello EN UPDATED',
-            bye: 'Goodbye EN CUSTOMISED',
+            bye: 'Goodbye EN UPDATED',
             added: 'EN ADDED'
           }
         },
@@ -432,7 +432,7 @@ describe('translations', () => {
           type: 'translations',
           default: {
             hello: 'Hello FR UPDATED',
-            bye: 'Goodbye FR CUSTOMISED',
+            bye: 'Goodbye FR UPDATED',
             added: 'FR ADDED'
           }
         },
