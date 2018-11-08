@@ -1,5 +1,3 @@
-/*
-DISABLED: see https://github.com/medic/medic-webapp/issues/4942
 const familyForm = require('../../page-objects/forms/family-survey-form.po'),
   genericForm = require('../../page-objects/forms/generic-form.po'),
   common = require('../../page-objects/common/common.po.js'),
@@ -38,11 +36,11 @@ describe('Family Survey form', () => {
     familyForm.fillFamilySurvey(1, 3);
     genericForm.nextPage();
     familyForm.familyConditions(1);
+    genericForm.cancel();
     genericForm.submit();
-    familyForm.reportCheck('no', 3, 'no');
+    familyForm.reportCheck('yes', 2, 'yes');
     genericForm.reportApprove();
     genericForm.invalidateReport();
     genericForm.validateReport();
   });
 });
-*/
