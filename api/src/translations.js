@@ -29,7 +29,7 @@ const createBackup = attachment => {
     _id: [ 'messages', attachment.code, 'backup' ].join('-'),
     type: BACKUP_TYPE,
     code: attachment.code,
-    values: attachment.values
+    default: attachment.default
   };
 };
 
@@ -40,25 +40,25 @@ const createDoc = attachment => {
     code: attachment.code,
     name: LOCAL_NAME_MAP[attachment.code] || attachment.code,
     enabled: true,
-    values: attachment.values
+    default: attachment.default
   };
 };
 
-const merge = (attachments, backups, docs) => {
+const overwrite = (attachments, backups, docs) => {
   const updatedDocs = [];
   const english = _.findWhere(attachments, { code: 'en' });
-  const knownKeys = english ? Object.keys(english.values) : [];
+  const knownKeys = english ? Object.keys(english.default) : [];
   attachments.forEach(attachment => {
     const code = attachment.code;
     if (!code) {
       return;
     }
     knownKeys.forEach(knownKey => {
-      const value = attachment.values[knownKey];
+      const value = attachment.default[knownKey];
       if (_.isUndefined(value) || value === null) {
-        attachment.values[knownKey] = knownKey;
+        attachment.default[knownKey] = knownKey;
       } else if (typeof value !== 'string') {
-        attachment.values[knownKey] = String(value);
+        attachment.default[knownKey] = String(value);
       }
     });
     const backup = _.findWhere(backups, { code: code });
@@ -70,26 +70,15 @@ const merge = (attachments, backups, docs) => {
     }
     const doc = _.findWhere(docs, { code: code });
     if (doc) {
-      // language hasn't been deleted - free to update
-      let updated = false;
-      Object.keys(attachment.values).forEach(key => {
-        const existing = doc.values[key];
-        const backedUp = backup.values[key];
-        const attached = attachment.values[key];
-        if (_.isUndefined(existing) ||
-            (existing === backedUp && backedUp !== attached)) {
-          // new or updated translation
-          doc.values[key] = attachment.values[key];
-          updated = true;
-        }
-      });
-      if (updated) {
+      if (!_.isEqual(doc.default, attachment.default)) {
+        // backup the modified attachment
+        doc.default = attachment.default;
         updatedDocs.push(doc);
       }
     }
-    if (!_.isEqual(backup.values, attachment.values)) {
+    if (!_.isEqual(backup.default, attachment.default)) {
       // backup the modified attachment
-      backup.values = attachment.values;
+      backup.default = attachment.default;
       updatedDocs.push(backup);
     }
   });
@@ -106,7 +95,7 @@ const getAttachment = name => {
           }
           resolve({
             code: extractLocaleCode(name),
-            values: values
+            default: values
           });
         });
       });
@@ -156,7 +145,7 @@ module.exports = {
           return;
         }
         return Promise.all([ getBackups(), getTranslationDocs() ])
-          .then(([ backups, docs ]) => merge(attachments, backups, docs))
+          .then(([ backups, docs ]) => overwrite(attachments, backups, docs))
           .then(updated => {
             if (updated.length) {
               return db.medic.bulkDocs(updated);
