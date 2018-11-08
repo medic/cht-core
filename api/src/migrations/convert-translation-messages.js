@@ -1,7 +1,7 @@
 const _ = require('underscore'),
   { promisify } = require('util'),
   db = require('../db-nano'),
-  properties = require('properties'),;
+  properties = require('properties');
 
 module.exports = {
   name: 'convert-translation-messages',
