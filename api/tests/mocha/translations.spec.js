@@ -103,7 +103,7 @@ describe('translations', () => {
     });
   });
 
-  it('does nothing if translation unchanged', () => {
+  it('overwrites translations that have changed', () => {
     const ddoc = { _attachments: { 'translations/messages-en.properties': {} } };
     const backups = [ { doc: {
       _id: 'messages-en-backup',
@@ -123,11 +123,21 @@ describe('translations', () => {
     const dbView = sinon.stub(db.medic, 'query');
     dbView.onCall(0).resolves({ rows: backups });
     dbView.onCall(1).resolves({ rows: docs });
+    const dbBulk = sinon.stub(db.medic, 'bulkDocs').resolves();
     return translations.run().then(() => {
       chai.expect(dbGet.callCount).to.equal(1);
       chai.expect(dbAttachment.callCount).to.equal(1);
       chai.expect(parse.callCount).to.equal(1);
       chai.expect(dbView.callCount).to.equal(2);
+      chai.expect(dbBulk.callCount).to.equal(1);
+      chai.expect(dbBulk.args[0][0]).to.deep.equal([
+        { // merged translations doc
+          _id: 'messages-en',
+          code: 'en',
+          type: 'translations',
+          default: { hello: 'Hello' }
+        }
+      ]);
     });
   });
 
@@ -162,7 +172,7 @@ describe('translations', () => {
     });
   });
 
-  it('merges updated translations where not modified by configuration', () => {
+  it('overwrites updated translations where not modified by configuration', () => {
     const ddoc = { _attachments: { 'translations/messages-en.properties': {} } };
     const backups = [ { doc: {
       _id: 'messages-en-backup',
@@ -347,7 +357,7 @@ describe('translations', () => {
     });
   });
 
-  it('merges multiple translation files', () => {
+  it('overwrites multiple translation files', () => {
     const ddoc = { _attachments: {
       'translations/messages-en.properties': {},
       'translations/messages-fr.properties': {}
