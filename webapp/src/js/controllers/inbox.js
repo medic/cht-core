@@ -56,15 +56,15 @@ var feedback = require('../modules/feedback'),
 
     window.startupTimes.angularBootstrapped = performance.now();
     Telemetry.record(
-      'boot_time_1_to_first_code_execution',
+      'boot_time:1:to_first_code_execution',
       window.startupTimes.firstCodeExecution - window.startupTimes.start
     );
     Telemetry.record(
-      'boot_time_2_to_bootstrap',
+      'boot_time:2:to_bootstrap',
       window.startupTimes.bootstrapped - window.startupTimes.firstCodeExecution
     );
     Telemetry.record(
-      'boot_time_3_to_angular_bootstrap',
+      'boot_time:3:to_angular_bootstrap',
       window.startupTimes.angularBootstrapped - window.startupTimes.bootstrapped
     );
 
@@ -135,7 +135,7 @@ var feedback = require('../modules/feedback'),
 
       var dbWarmed = performance.now();
       Telemetry.record(
-        'boot_time_4_to_db_warmed',
+        'boot_time:4:to_db_warmed',
         dbWarmed - window.startupTimes.bootstrapped
       );
       Telemetry.record('boot_time', dbWarmed - window.startupTimes.start);
@@ -232,7 +232,7 @@ var feedback = require('../modules/feedback'),
       }
       if ($scope.cancelCallback) {
         event.preventDefault();
-        $scope.navigationCancel(); 
+        $scope.navigationCancel();
       }
     });
 
