@@ -81,7 +81,7 @@ describe('translations', () => {
 
   it('run returns errors from getting translations files', () => {
     const ddoc = { _attachments: { 'translations/messages-en.properties': {} } };
-    const backups = [ { doc: { _id: 'messages-en-backup', values: { hello: 'Hello' } } } ];
+    const backups = [ { doc: { _id: 'messages-en-backup', default: { hello: 'Hello' } } } ];
     const dbGet = sinon.stub(db.medic, 'get').resolves(ddoc);
     const dbAttachment = sinon.stub(db.medic, 'getAttachment').resolves('some buffer');
     const parse = sinon.stub(properties, 'parse').callsArgWith(1, null, { first: '1st' });
@@ -109,13 +109,13 @@ describe('translations', () => {
       _id: 'messages-en-backup',
       code: 'en',
       type: 'translations-backup',
-      values: { hello: 'Hello' }
+      default: { hello: 'Hello' }
     } } ];
     const docs = [ { doc: {
       _id: 'messages-en',
       code: 'en',
       type: 'translations',
-      values: { hello: 'Gidday' }
+      default: { hello: 'Gidday' }
     } } ];
     const dbGet = sinon.stub(db.medic, 'get').resolves(ddoc);
     const dbAttachment = sinon.stub(db.medic, 'getAttachment').resolves('some buffer');
@@ -137,13 +137,13 @@ describe('translations', () => {
       _id: 'messages-en-backup',
       code: 'en',
       type: 'translations-backup',
-      values: { hello: 'Hello', bye: 'Goodbye' }
+      default: { hello: 'Hello', bye: 'Goodbye' }
     } } ];
     const docs = [ { doc: {
       _id: 'messages-en',
       code: 'en',
       type: 'translations',
-      values: { hello: 'Hello', bye: 'Goodbye CUSTOMISED' }
+      default: { hello: 'Hello', bye: 'Goodbye CUSTOMISED' }
     } } ];
     const dbGet = sinon.stub(db.medic, 'get').resolves(ddoc);
     const dbAttachment = sinon.stub(db.medic, 'getAttachment').resolves('some buffer');
@@ -168,13 +168,13 @@ describe('translations', () => {
       _id: 'messages-en-backup',
       code: 'en',
       type: 'translations-backup',
-      values: { hello: 'Hello', bye: 'Goodbye' }
+      default: { hello: 'Hello', bye: 'Goodbye' }
     } } ];
     const docs = [ { doc: {
       _id: 'messages-en',
       code: 'en',
       type: 'translations',
-      values: { hello: 'Hello', bye: 'Goodbye CUSTOMISED' }
+      default: { hello: 'Hello', bye: 'Goodbye CUSTOMISED' }
     } } ];
     const dbGet = sinon.stub(db.medic, 'get').resolves(ddoc);
     const dbAttachment = sinon.stub(db.medic, 'getAttachment').resolves('some buffer');
@@ -194,7 +194,7 @@ describe('translations', () => {
           _id: 'messages-en',
           code: 'en',
           type: 'translations',
-          values: {
+          default: {
             hello: 'Hello UPDATED',
             bye: 'Goodbye CUSTOMISED',
             added: 'ADDED'
@@ -204,7 +204,7 @@ describe('translations', () => {
           _id: 'messages-en-backup',
           code: 'en',
           type: 'translations-backup',
-          values: {
+          default: {
             hello: 'Hello UPDATED',
             bye: 'Goodbye UPDATED',
             added: 'ADDED'
@@ -221,13 +221,13 @@ describe('translations', () => {
       _id: 'messages-en-backup',
       code: 'en',
       type: 'translations-backup',
-      values: { empty: '' }
+      default: { empty: '' }
     } } ];
     const docs = [ { doc: {
       _id: 'messages-en',
       code: 'en',
       type: 'translations',
-      values: { empty: '' }
+      default: { empty: '' }
     } } ];
     sinon.stub(db.medic, 'get').resolves(ddoc);
     sinon.stub(db.medic, 'getAttachment').resolves('some buffer');
@@ -247,13 +247,13 @@ describe('translations', () => {
       _id: 'messages-en-backup',
       code: 'en',
       type: 'translations-backup',
-      values: { hello: 'Hello', bye: 'Goodbye' }
+      default: { hello: 'Hello', bye: 'Goodbye' }
     } } ];
     const docs = [ { doc: {
       _id: 'messages-en',
       code: 'en',
       type: 'translations',
-      values: { hello: 'Hello', bye: 'Goodbye CUSTOMISED' }
+      default: { hello: 'Hello', bye: 'Goodbye CUSTOMISED' }
     } } ];
     const dbGet = sinon.stub(db.medic, 'get').resolves(ddoc);
     const dbAttachment = sinon.stub(db.medic, 'getAttachment').resolves('some buffer');
@@ -275,7 +275,7 @@ describe('translations', () => {
           code: 'fr',
           name: 'Français (French)',
           enabled: true,
-          values: {
+          default: {
             hello: 'Hello UPDATED',
             bye: 'Goodbye UPDATED',
             added: 'ADDED'
@@ -285,7 +285,7 @@ describe('translations', () => {
           _id: 'messages-fr-backup',
           type: 'translations-backup',
           code: 'fr',
-          values: {
+          default: {
             hello: 'Hello UPDATED',
             bye: 'Goodbye UPDATED',
             added: 'ADDED'
@@ -304,20 +304,20 @@ describe('translations', () => {
         _id: 'messages-en-backup',
         type: 'translations-backup',
         code: 'en',
-        values: { hello: 'Hello', bye: 'Goodbye' }
+        default: { hello: 'Hello', bye: 'Goodbye' }
       } },
       { doc: {
         _id: 'messages-fr-backup',
         type: 'translations-backup',
         code: 'fr',
-        values: { hello: 'Hello', bye: 'Goodbye' }
+        default: { hello: 'Hello', bye: 'Goodbye' }
       } }
     ];
     const docs = [ { doc: {
       _id: 'messages-en',
       type: 'translations',
       code: 'en',
-      values: { hello: 'Hello', bye: 'Goodbye' }
+      default: { hello: 'Hello', bye: 'Goodbye' }
     } } ];
     const dbGet = sinon.stub(db.medic, 'get').resolves(ddoc);
     const dbAttachment = sinon.stub(db.medic, 'getAttachment').resolves('some buffer');
@@ -337,7 +337,7 @@ describe('translations', () => {
           _id: 'messages-fr-backup',
           type: 'translations-backup',
           code: 'fr',
-          values: {
+          default: {
             hello: 'Hello UPDATED',
             bye: 'Goodbye UPDATED',
             added: 'ADDED'
@@ -357,13 +357,13 @@ describe('translations', () => {
         _id: 'messages-en-backup',
         code: 'en',
         type: 'translations-backup',
-        values: { hello: 'Hello EN', bye: 'Goodbye EN' }
+        default: { hello: 'Hello EN', bye: 'Goodbye EN' }
       } },
       { doc: {
         _id: 'messages-fr-backup',
         code: 'fr',
         type: 'translations-backup',
-        values: { hello: 'Hello FR', bye: 'Goodbye FR' }
+        default: { hello: 'Hello FR', bye: 'Goodbye FR' }
       } }
     ];
     const docs = [
@@ -371,13 +371,13 @@ describe('translations', () => {
         _id: 'messages-en',
         code: 'en',
         type: 'translations',
-        values: { hello: 'Hello EN', bye: 'Goodbye EN CUSTOMISED' }
+        default: { hello: 'Hello EN', bye: 'Goodbye EN CUSTOMISED' }
       } },
       { doc: {
         _id: 'messages-fr',
         code: 'fr',
         type: 'translations',
-        values: { hello: 'Hello FR', bye: 'Goodbye FR CUSTOMISED' }
+        default: { hello: 'Hello FR', bye: 'Goodbye FR CUSTOMISED' }
       } }
     ];
     const dbGet = sinon.stub(db.medic, 'get').resolves(ddoc);
@@ -400,7 +400,7 @@ describe('translations', () => {
           _id: 'messages-en',
           code: 'en',
           type: 'translations',
-          values: {
+          default: {
             hello: 'Hello EN UPDATED',
             bye: 'Goodbye EN CUSTOMISED',
             added: 'EN ADDED'
@@ -410,7 +410,7 @@ describe('translations', () => {
           _id: 'messages-en-backup',
           code: 'en',
           type: 'translations-backup',
-          values: {
+          default: {
             hello: 'Hello EN UPDATED',
             bye: 'Goodbye EN UPDATED',
             added: 'EN ADDED'
@@ -420,7 +420,7 @@ describe('translations', () => {
           _id: 'messages-fr',
           code: 'fr',
           type: 'translations',
-          values: {
+          default: {
             hello: 'Hello FR UPDATED',
             bye: 'Goodbye FR CUSTOMISED',
             added: 'FR ADDED'
@@ -430,7 +430,7 @@ describe('translations', () => {
           _id: 'messages-fr-backup',
           code: 'fr',
           type: 'translations-backup',
-          values: {
+          default: {
             hello: 'Hello FR UPDATED',
             bye: 'Goodbye FR UPDATED',
             added: 'FR ADDED'
@@ -449,7 +449,7 @@ describe('translations', () => {
         _id: 'messages-en-backup',
         code: 'en',
         type: 'translations-backup',
-        values: { hello: null, bye: 'Goodbye' }
+        default: { hello: null, bye: 'Goodbye' }
       } }
     ];
     const docs = [
@@ -457,7 +457,7 @@ describe('translations', () => {
         _id: 'messages-en',
         code: 'en',
         type: 'translations',
-        values: { hello: null, bye: 'Goodbye' }
+        default: { hello: null, bye: 'Goodbye' }
       } }
     ];
     const dbGet = sinon.stub(db.medic, 'get').resolves(ddoc);
@@ -479,7 +479,7 @@ describe('translations', () => {
           _id: 'messages-en',
           code: 'en',
           type: 'translations',
-          values: {
+          default: {
             hello: 'hello',
             bye: 'Goodbye'
           }
@@ -488,7 +488,7 @@ describe('translations', () => {
           _id: 'messages-en-backup',
           code: 'en',
           type: 'translations-backup',
-          values: {
+          default: {
             hello: 'hello',
             bye: 'Goodbye'
           }
@@ -507,13 +507,13 @@ describe('translations', () => {
         _id: 'messages-en-backup',
         code: 'en',
         type: 'translations-backup',
-        values: { hello: 'Hello', bye: 'Goodbye' }
+        default: { hello: 'Hello', bye: 'Goodbye' }
       } },
       { doc: {
         _id: 'messages-ne-backup',
         code: 'ne',
         type: 'translations-backup',
-        values: { bye: 'Goodbye' }
+        default: { bye: 'Goodbye' }
       } }
     ];
     const docs = [
@@ -521,13 +521,13 @@ describe('translations', () => {
         _id: 'messages-en',
         code: 'en',
         type: 'translations',
-        values: { hello: 'Hello', bye: 'Goodbye' }
+        default: { hello: 'Hello', bye: 'Goodbye' }
       } },
       { doc: {
         _id: 'messages-ne',
         code: 'ne',
         type: 'translations',
-        values: { bye: 'Goodbye' }
+        default: { bye: 'Goodbye' }
       } }
     ];
     const dbGet = sinon.stub(db.medic, 'get').resolves(ddoc);
@@ -550,7 +550,7 @@ describe('translations', () => {
           _id: 'messages-ne',
           code: 'ne',
           type: 'translations',
-          values: {
+          default: {
             hello: 'hello', // defaults to the translation key
             bye: 'Goodbye'
           }
@@ -559,7 +559,7 @@ describe('translations', () => {
           _id: 'messages-ne-backup',
           code: 'ne',
           type: 'translations-backup',
-          values: {
+          default: {
             hello: 'hello',
             bye: 'Goodbye'
           }
@@ -577,7 +577,7 @@ describe('translations', () => {
           _id: 'messages-en-backup',
           code: 'en',
           type: 'translations-backup',
-          values: { hello: null, bye: 0, ciao: false, adios: 23, salut: true }
+          default: { hello: null, bye: 0, ciao: false, adios: 23, salut: true }
         } }
     ];
     const docs = [
@@ -585,7 +585,7 @@ describe('translations', () => {
           _id: 'messages-en',
           code: 'en',
           type: 'translations',
-          values: { hello: null, bye: 0, ciao: false, adios: 23, salut: true }
+          default: { hello: null, bye: 0, ciao: false, adios: 23, salut: true }
         } }
     ];
     const dbGet = sinon.stub(db.medic, 'get').resolves(ddoc);
@@ -607,7 +607,7 @@ describe('translations', () => {
           _id: 'messages-en',
           code: 'en',
           type: 'translations',
-          values: {
+          default: {
             hello: 'hello',
             bye: '0',
             ciao: 'false',
@@ -619,7 +619,7 @@ describe('translations', () => {
           _id: 'messages-en-backup',
           code: 'en',
           type: 'translations-backup',
-          values: {
+          default: {
             hello: 'hello',
             bye: '0',
             ciao: 'false',
