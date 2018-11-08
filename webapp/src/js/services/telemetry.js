@@ -26,8 +26,10 @@ angular
     var getDb = function() {
       var dbName = $window.localStorage.getItem(DB_ID_KEY);
       if (!dbName) {
-        dbName =
-          'medic-user-' + Session.userCtx().name + '-telemetry-' + uuid();
+        // We're adding a UUID onto the end of the DB name to make it unique. In
+        // the past we've had trouble with PouchDB being able to delete a DB and
+        // then instantly create a new DB with the same name.
+        dbName = 'medic-user-' + Session.userCtx().name + '-telemetry-' + uuid();
         $window.localStorage.setItem(DB_ID_KEY, dbName);
       }
       return $window.PouchDB(dbName); // avoid angular-pouch as digest isn't necessary here
@@ -121,7 +123,7 @@ angular
     var storeConflictedAggregate = function(aggregateDoc) {
       aggregateDoc.metadata.conflicted = true;
       aggregateDoc._id = [aggregateDoc._id, 'conflicted', Date.now()].join('-');
-      return DB().put(aggregateDoc);
+      return DB({meta: true}).put(aggregateDoc);
     };
 
     var aggregate = function(db) {
@@ -154,7 +156,7 @@ angular
           aggregateDoc.device = generateDeviceStats();
           aggregateDoc.dbInfo = infoResult;
 
-          return DB()
+          return DB({meta: true})
             .put(aggregateDoc)
             .catch(function(err) {
               if (err.status === 409) {
@@ -179,9 +181,27 @@ angular
       // Specifically, a unique key that will be aggregated against, and if you
       // are recording a timing (as opposed to an event) a value.
       //
-      // While this function returns a promise, this is primarily for testing.
-      // It is not recommended you hold on to this promise and wait for it to
-      // resolve, for performance reasons.
+      // The first time this API is called each month, the telemetry recording
+      // is followed by an aggregation of all of the previous months data.
+      // Aggregation is done using the `_stats` reduce function, which
+      // generates data like so:
+      //
+      // {
+      //   metric_a:  { sum: 492, min: 123, max: 123, count: 4, sumsqr: 60516 },
+      //   metric_b:  { sum: -16, min: -4, max: -4, count: 4, sumsqr: 64 }
+      // }
+      //
+      // See: https://wiki.apache.org/couchdb/Built-In_Reduce_Functions#A_stats
+      //
+      // This single month aggregate document is of type 'telemetry', and is
+      // stored in the user's meta DB (which replicates up to the main server)
+      //
+      // TODO: get all telemetry docs aggregate script, document it's existance here
+      //    https://github.com/medic/medic-webapp/issues/4968
+      //
+      // NOTE: While this function returns a promise, this is primarily for
+      // testing. It is not recommended you hold on to this promise and wait
+      // for it to resolve, for performance reasons.
       //
       // @param      {String}   key     a unique key that will be aggregated
       //                                against later

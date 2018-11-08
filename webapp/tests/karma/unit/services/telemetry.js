@@ -56,7 +56,7 @@ describe('Telemetry service', () => {
     clock.restore();
   });
 
-  describe('Record', () => {
+  describe('record()', () => {
     it('records a piece of telemetry', () => {
       storageGetItem.withArgs('medic-greg-telemetry-db').returns('dbname');
       storageGetItem
@@ -171,7 +171,7 @@ describe('Telemetry service', () => {
       });
     });
 
-    it('deals with 409s by making the ID unique and noting the conflict in the new document', () => {
+    it('deals with conflicts by making the ID unique and noting the conflict in the new document', () => {
       storageGetItem.withArgs('medic-greg-telemetry-db').returns('dbname');
       storageGetItem.withArgs('medic-greg-telemetry-date').returns(
         moment()
