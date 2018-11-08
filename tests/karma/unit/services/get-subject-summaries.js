@@ -5,28 +5,23 @@ describe('GetSubjectSummaries service', () => {
   let service,
       query,
       GetSummaries,
-      lineageModelGenerator;
-
-  const doc = { _id: 'result' };
-  const lineage = [
-    { _id: '1', name: 'one' },
-    { _id: '2', name: 'two' },
-    { _id: '3', name: 'three'}
-  ];
+      lineageModelGenerator,
+      HydrateContactNames;
 
   beforeEach(() => {
     query = sinon.stub();
     GetSummaries = sinon.stub();
+    HydrateContactNames = sinon.stub();
     lineageModelGenerator = {
       reportSubject: sinon.stub()
     };
-    lineageModelGenerator.reportSubject.returns(Promise.resolve({ _id: 'lid', doc: doc, lineage: lineage }));
 
     module('inboxApp');
     module($provide => {
       $provide.factory('DB', KarmaUtils.mockDB({ query: query }));
       $provide.value('$q', Q); // bypass $q so we don't have to digest
       $provide.value('GetSummaries', GetSummaries);
+      $provide.value('HydrateContactNames', HydrateContactNames);
       $provide.value('LineageModelGenerator', lineageModelGenerator);
     });
     inject($injector => service = $injector.get('GetSubjectSummaries'));
@@ -128,13 +123,18 @@ describe('GetSubjectSummaries service', () => {
     ];
 
     GetSummaries.returns(Promise.resolve(summaries));
+    HydrateContactNames.resolves([
+      { _id: 'a', name: 'tom', lineage: ['a', 'b'] },
+      { _id: 'b', name: 'helen', lineage: ['c', 'd'] }
+    ]);
     return service(given).then(actual => {
       chai.expect(actual[0]).to.deep.equal({
         form: 'a',
         subject: {
           _id: 'a',
           type: 'name',
-          value: 'tom'
+          value: 'tom',
+          lineage: ['a', 'b']
         },
         validSubject: true
       });
@@ -144,7 +144,8 @@ describe('GetSubjectSummaries service', () => {
         subject: {
           _id: 'b',
           type: 'name',
-          value: 'helen'
+          value: 'helen',
+          lineage: ['c', 'd']
         },
         validSubject: true
       });
@@ -159,6 +160,7 @@ describe('GetSubjectSummaries service', () => {
       });
       chai.expect(query.callCount).to.equal(0);
       chai.expect(GetSummaries.callCount).to.equal(1);
+      chai.expect(HydrateContactNames.callCount).to.equal(1);
     });
   });
 
@@ -202,6 +204,7 @@ describe('GetSubjectSummaries service', () => {
 
     query.returns(Promise.resolve({ rows: contactReferences }));
     GetSummaries.returns(Promise.resolve(summaries));
+    HydrateContactNames.resolves(summaries);
 
     return service(given).then(actual => {
       chai.expect(actual[0]).to.deep.equal({
@@ -209,7 +212,8 @@ describe('GetSubjectSummaries service', () => {
         subject: {
           _id: 'a',
           type: 'name',
-          value: 'tom'
+          value: 'tom',
+          lineage: undefined
         },
         validSubject: true
       });
@@ -219,7 +223,8 @@ describe('GetSubjectSummaries service', () => {
         subject: {
           _id: 'b',
           type: 'name',
-          value: 'helen'
+          value: 'helen',
+          lineage: undefined
         },
         validSubject: true
       });
@@ -332,6 +337,15 @@ describe('GetSubjectSummaries service', () => {
       { _id: 'lid', name: 'tom' },
     ];
 
+    const lineage = [
+      { _id: '1', name: 'one' },
+      { _id: '2', name: 'two' },
+      { _id: '3', name: 'three'}
+    ];
+
+    const doc = { _id: 'result' };
+
+    lineageModelGenerator.reportSubject.resolves({ _id: 'lid', doc: doc, lineage: lineage });
     query.returns(Promise.resolve({ rows: contactReferences }));
     GetSummaries.returns(Promise.resolve(summaries));
 
@@ -350,6 +364,8 @@ describe('GetSubjectSummaries service', () => {
 
       chai.expect(query.callCount).to.equal(1);
       chai.expect(GetSummaries.callCount).to.equal(1);
+      chai.expect(HydrateContactNames.callCount).to.equal(0);
+      chai.expect(lineageModelGenerator.reportSubject.callCount).to.equal(1);
     });
   });
 
@@ -368,6 +384,9 @@ describe('GetSubjectSummaries service', () => {
 
     query.returns(Promise.resolve({ rows: contactReferences }));
     GetSummaries.returns(Promise.resolve(summaries));
+    HydrateContactNames.resolves([
+      { _id: 'lid', name: 'tom', lineage: ['one', 'two', 'three'] }
+    ]);
 
     return service(given).then(actual => {
       chai.expect(actual[0]).to.deep.equal({
@@ -376,7 +395,6 @@ describe('GetSubjectSummaries service', () => {
           _id: 'lid',
           type: 'name',
           value: 'tom',
-          doc: doc,
           lineage: ['one', 'two', 'three']
         },
         validSubject: true
@@ -384,6 +402,8 @@ describe('GetSubjectSummaries service', () => {
 
       chai.expect(query.callCount).to.equal(1);
       chai.expect(GetSummaries.callCount).to.equal(1);
+      chai.expect(HydrateContactNames.callCount).to.equal(1);
+      chai.expect(lineageModelGenerator.reportSubject.callCount).to.equal(0);
     });
   });
 });

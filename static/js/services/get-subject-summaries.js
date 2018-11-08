@@ -5,15 +5,15 @@ angular.module('inboxServices').factory('GetSubjectSummaries',
     $q,
     DB,
     GetSummaries,
-    LineageModelGenerator,
-    HydrateContactNames
+    HydrateContactNames,
+    LineageModelGenerator
   ) {
 
     'use strict';
     'ngInject';
 
     var isPatientId = function(string) {
-      return string.length < 20;
+      return string && string.length < 20;
     };
 
     var findSubjectId = function(response, id) {
