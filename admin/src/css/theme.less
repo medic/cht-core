@@ -2,13 +2,11 @@
 html {
   font-size: 16px;
 }
-body {
+.body {
+  display: flex;
   max-width: @admin-content-width;
   margin: 0 auto;
   font-size: @font-medium;
-}
-.body {
-  display: flex;
 }
 .header {
   color: #FFFFFF;
@@ -16,16 +14,18 @@ body {
   height: 64px;
   display: flex;
 }
+.header > .container {
+  width: @admin-content-width;
+}
 .header h1 {
   font-size: @font-extra-large;
-  padding-left: 30px;
 }
 .content {
   width: 100%;
   margin: 30px 0 0 30px;
 }
 @media only screen and (max-width: @admin-content-width) {
-  .navigation {
+  .navigation, .header h1 {
     margin-left: 15px;
   }
 }
