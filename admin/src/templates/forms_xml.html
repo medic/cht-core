@@ -26,13 +26,15 @@
 <div class="section">
   <fieldset>
     <legend translate>Installed Forms</legend>
-    <ul>
-      <li ng-repeat="form in xForms | orderBy:'_id' track by form._id" class="row">
-        <div class="col-sm-1" ng-bind-html="form.icon | resourceIcon"></div>
-        <div class="col-sm-6">{{form._id}}</div>
-        <div class="col-sm-5" ng-if="form.translation_key" translate>{{form.translation_key}}</div>
-        <div class="col-sm-5" ng-if="!form.translation_key">{{form.title | translateFrom}}</div>
-      </li>
-    </ul>
+    <div class="container-fluid">
+      <ul>
+        <li ng-repeat="form in xForms | orderBy:'_id' track by form._id" class="row">
+          <div class="col-sm-1" ng-bind-html="form.icon | resourceIcon"></div>
+          <div class="col-sm-6">{{form._id}}</div>
+          <div class="col-sm-5" ng-if="form.translation_key" translate>{{form.translation_key}}</div>
+          <div class="col-sm-5" ng-if="!form.translation_key">{{form.title | translateFrom}}</div>
+        </li>
+      </ul>
+    </div>
   </fieldset>
 </div>
