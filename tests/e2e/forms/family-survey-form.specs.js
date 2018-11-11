@@ -36,11 +36,6 @@ describe('Family Survey form', () => {
     familyForm.fillFamilySurvey(1, 3);
     genericForm.nextPage();
     familyForm.familyConditions(1);
-    genericForm.cancel();
-    genericForm.submit();
-    familyForm.reportCheck('yes', 2, 'yes');
-    genericForm.reportApprove();
-    genericForm.invalidateReport();
-    genericForm.validateReport();
+    familyForm.submit();
   });
 });

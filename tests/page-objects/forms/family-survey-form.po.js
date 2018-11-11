@@ -67,4 +67,11 @@ module.exports = {
       'report.family_survey.improved_cook_stove\n' + haveStove
     );
   },
+
+  submit: () => {
+    const submiButton = element(by.css('[ng-click="onSubmit()"]'));
+    helper.waitElementToBeClickable(submiButton);
+    submiButton.click();
+    expect(element(by.css('div.details')).isPresent()).toBe(false);
+  }
 };

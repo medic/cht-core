@@ -86,11 +86,5 @@ module.exports = {
   waitForPageToBeReady: () => {
     helper.waitElementToBeClickable(element(by.css('.btn-link.cancel')));
     helper.waitForAngularComplete();
-  },
-
-  cancel: () => {
-    const cancelButton = element(by.css('[ng-click="onCancel()"]'));
-    helper.waitElementToBeClickable(cancelButton);
-    cancelButton.click();
   }
 };
