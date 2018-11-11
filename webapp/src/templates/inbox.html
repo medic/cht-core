@@ -8,6 +8,10 @@
     <link rel="shortcut icon" href="img/ico/icon_32.ico">
     <link rel="manifest" href="manifest.json">
     <title>Medic Mobile</title>
+    <script type="text/javascript">
+      window.startupTimes = {};
+      window.startupTimes.start = performance.now();
+    </script>
   </head>
   <body class="inbox {{currentTab}}" ng-controller="InboxCtrl" ng-class="{'show-content': showContent, 'bootstrapped': version && dbWarmedUp, 'select-mode': selectMode}">
 
