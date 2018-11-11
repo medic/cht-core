@@ -3,16 +3,16 @@ describe('InboxCtrl controller', () => {
   'use strict';
 
   let createController,
-      scope,
-      snackbar,
-      spyState,
-      stubModal,
-      dummyId = 'dummydummy',
-      RecurringProcessManager,
-      changes,
-      changesListener = {},
-      changesSpy,
-      session
+    scope,
+    snackbar,
+    spyState,
+    stubModal,
+    dummyId = 'dummydummy',
+    RecurringProcessManager,
+    changes,
+    changesListener = {},
+    changesSpy,
+    session
   ;
 
   beforeEach(() => {
@@ -48,7 +48,10 @@ describe('InboxCtrl controller', () => {
         };
       });
       $provide.value('WatchDesignDoc', sinon.stub());
-      $provide.value('DBSync', sinon.stub());
+      $provide.value('DBSync', {
+        addUpdateListener: sinon.stub(),
+        sync: sinon.stub(),
+      });
       $provide.value('Changes', changes);
       $provide.value('CheckDate', sinon.stub());
       $provide.value('Contact', sinon.stub());
@@ -180,7 +183,7 @@ describe('InboxCtrl controller', () => {
     chai.expect(changesListener['inbox-user-context'].filter({ doc: { type: 'user-settings'} })).to.equal(false);
     chai.expect(changesListener['inbox-user-context'].filter({ doc: { type: 'user-settings', name: 'a'} })).to.equal(false);
     chai.expect(changesListener['inbox-user-context'].filter({ doc: { type: 'user-settings', name: 'adm'} })).to.equal(true);
-
+    
     session.userCtx.returns(false);
     createController();
     chai.expect(changesListener['inbox-user-context'].filter({ doc: { type: 'user-settings', name: 'a'} })).to.equal(false);

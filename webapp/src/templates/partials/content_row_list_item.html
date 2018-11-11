@@ -18,7 +18,7 @@ Places of interest
  - content-row.js contains the scope for this file
  - live-list.js:renderTemplate is where this is consumed by livelist
 -->
-<li data-record-id="{{id}}" class="content-row {{selected ? 'selected' : ''}} {{primary ? 'primary' : ''}} {{unread ? 'unread' : ''}} {{dod ? 'deceased' : ''}} {{visits ? 'visit-count' : ''}}">
+<li data-record-id="{{id}}" class="content-row {{selected ? 'selected' : ''}} {{primary ? 'primary' : ''}} {{unread ? 'unread' : ''}} {{dod ? 'deceased' : ''}} {{visits ? 'visit-count' : ''}} {{muted  ? 'muted': '' }}">
   <a href="#{{route}}/{{id}}">
     <div><input type="checkbox"></div>
     <div class="icon {{icon ? '' : 'ng-hide'}}" ng-bind-html="icon | resourceIcon"></div>
@@ -50,6 +50,7 @@ Places of interest
         </div>
       </div>
       <p ng-bind-html="dob | age:dod"></p>
+      <span class="{{muted && displayMuted ? '' : 'ng-hide' }}" ng-bind-html="'contact.muted' | translate"></span>
       <div class="simprints-stars tier-{{simprintsTier}} {{simprintsTier ? '' : 'ng-hide'}}"></div>
       <div class="detail {{lineage && lineage.length ? '' : 'ng-hide'}}" ng-bind-html="lineage | lineage"></div>
       <div class="warning">{{warning}}</div>

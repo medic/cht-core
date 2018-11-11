@@ -181,7 +181,6 @@ module.exports = function(grunt) {
         reporter: require('jshint-stylish'),
         ignores: [
           'webapp/src/js/modules/xpath-element-path.js',
-          'webapp/tests/karma/q.js',
           '**/node_modules/**',
           'sentinel/src/lib/pupil/**',
           'build/**',
@@ -231,7 +230,7 @@ module.exports = function(grunt) {
       options: {
         processors: [
           require('autoprefixer')({
-            browsers: ['last 2 versions', 'Android >= 4.4'],
+            browsers: ['last 2 Firefox versions', 'Chrome >= 54'],
           }),
         ],
       },
