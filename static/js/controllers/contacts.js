@@ -191,6 +191,7 @@ var _ = require('underscore'),
         } else {
           title = ContactSchema.get(selected.doc.type).label;
         }
+        $scope.loadingSummary = true;
         return $q.all([
           $translate(title),
           getActionBarDataForChild(selectedDoc.type),
@@ -198,6 +199,7 @@ var _ = require('underscore'),
           ContactSummary(selected.doc, selected.reports, selected.lineage)
         ])
           .then(function(results) {
+            $scope.loadingSummary = false;
             $scope.setTitle(results[0]);
             if (results[1]) {
               selectedDoc.child = results[1];

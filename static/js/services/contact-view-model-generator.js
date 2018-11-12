@@ -104,7 +104,7 @@ angular.module('inboxServices').factory('ContactViewModelGenerator',
       });
     };
 
-    var sortPrimaryContactToTop = function(model) {
+    var sortPrimaryContactToTop = function(model, children) {
       return getPrimaryContact(model.doc)
         .then(function(primaryContact) {
           if (!primaryContact) {
@@ -115,11 +115,11 @@ angular.module('inboxServices').factory('ContactViewModelGenerator',
             doc: primaryContact,
             isPrimaryContact: true
           };
-          if (!model.children.persons) {
-            model.children.persons = [ newChild ];
+          if (!children.persons) {
+            children.persons = [ newChild ];
             return;
           }
-          var persons = model.children.persons;
+          var persons = children.persons;
           // remove existing child
           var primaryContactIdx = _.findIndex(persons, function(child) {
             return child.doc._id === primaryContact._id;
@@ -131,19 +131,19 @@ angular.module('inboxServices').factory('ContactViewModelGenerator',
           persons.unshift(newChild);
         })
         .then(function() {
-          return model;
+          return children;
         });
     };
 
-    var sortChildren = function(model) {
-      if (model.children.places) {
-        model.children.places.sort(NAME_COMPARATOR);
+    var sortChildren = function(model, children) {
+      if (children.places) {
+        children.places.sort(NAME_COMPARATOR);
       }
-      if (model.children.persons) {
+      if (children.persons) {
         var personComparator = model.doc.type === 'clinic' ? AGE_COMPARATOR : NAME_COMPARATOR;
-        model.children.persons.sort(personComparator);
+        children.persons.sort(personComparator);
       }
-      return sortPrimaryContactToTop(model);
+      return sortPrimaryContactToTop(model, children);
     };
 
     var getChildren = function(contactId) {
@@ -174,11 +174,11 @@ angular.module('inboxServices').factory('ContactViewModelGenerator',
         });
     };
 
-    var setChildren = function(model) {
-      model.children = {};
+    var loadChildren = function(model) {
       if (model.doc.type === 'person') {
-        return model;
+        return $q.resolve({});
       }
+
       return getChildren(model.doc._id)
         .then(splitContactsByType)
         .then(function(children) {
@@ -187,8 +187,7 @@ angular.module('inboxServices').factory('ContactViewModelGenerator',
             children.childPlacesLabel = childPlacesSchema.pluralLabel;
             children.childPlacesIcon = childPlacesSchema.icon;
           }
-          model.children = children;
-          return sortChildren(model);
+          return sortChildren(model, children);
         });
     };
 
@@ -225,7 +224,7 @@ angular.module('inboxServices').factory('ContactViewModelGenerator',
         });
     };
 
-    var setReports = function(model) {
+    var loadReports = function(model) {
       var contacts = [ model.doc ];
       [ 'persons', 'deceased' ].forEach(function(type) {
         if (model.children[type]) {
@@ -238,17 +237,32 @@ angular.module('inboxServices').factory('ContactViewModelGenerator',
         .then(function(reports) {
           addPatientName(reports, contacts);
           reports.sort(REPORTED_DATE_COMPARATOR);
-          model.reports = reports;
-          return model;
+          return reports;
         });
     };
 
     return function(id, options) {
       return LineageModelGenerator.contact(id, options)
-        .then(setChildren)
-        .then(setReports)
-        .then(setPrimaryContact)
-        .then(setSchemaFields);
+        .then(function(model) {
+          setPrimaryContact(model);
+          setSchemaFields(model);
+
+          model.loadingChildren = true;
+          model.loadingReports = true;
+
+          loadChildren(model)
+            .then(function(children) {
+              model.children = children;
+              model.loadingChildren = false;
+              return loadReports(model, children);
+            })
+            .then(function(reports) {
+              model.reports = reports;
+              model.loadingReports = false;
+            });
+
+          return model;
+        });
     };
   }
 );
