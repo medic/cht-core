@@ -255,7 +255,7 @@ module.exports = {
       const series = registrationConfig.events.map(event => cb => {
         const trigger = self.triggers[event.trigger];
         if (!trigger || event.name !== 'on_create') {
-          return;
+          return cb();
         }
         const obj = _.defaults({}, doc, doc.fields);
 
