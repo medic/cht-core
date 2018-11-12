@@ -24,15 +24,6 @@ const extractLocaleCode = filename => {
   }
 };
 
-const createBackup = attachment => {
-  return {
-    _id: [ 'messages', attachment.code, 'backup' ].join('-'),
-    type: BACKUP_TYPE,
-    code: attachment.code,
-    default: attachment.default
-  };
-};
-
 const createDoc = attachment => {
   return {
     _id: [ 'messages', attachment.code ].join('-'),
@@ -62,11 +53,8 @@ const overwrite = (attachments, backups, docs) => {
       }
     });
     const backup = _.findWhere(backups, { code: code });
-    if (!backup) {
-      // new language
-      updatedDocs.push(createDoc(attachment));
-      updatedDocs.push(createBackup(attachment));
-      return;
+    if (backup) {
+      db.medic.remove(backup);
     }
     const doc = _.findWhere(docs, { code: code });
     if (doc) {
@@ -75,11 +63,8 @@ const overwrite = (attachments, backups, docs) => {
         doc.default = attachment.default;
         updatedDocs.push(doc);
       }
-    }
-    if (!_.isEqual(backup.default, attachment.default)) {
-      // backup the modified attachment
-      backup.default = attachment.default;
-      updatedDocs.push(backup);
+    } else {
+      updatedDocs.push(createDoc(attachment));
     }
   });
   return updatedDocs;
