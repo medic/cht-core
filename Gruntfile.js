@@ -295,6 +295,12 @@ module.exports = function(grunt) {
             src: 'admin/node_modules/font-awesome/fonts/*',
             dest: 'build/ddocs/medic-admin/_attachments/fonts/',
           },
+          {
+            expand: true,
+            cwd: 'admin/src',
+            src: 'img/**',
+            dest: 'build/ddocs/medic-admin/_attachments/',
+          },
         ],
       },
       'libraries-to-patch': {
