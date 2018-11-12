@@ -1,10 +1,9 @@
 const config = require('./config'),
-      logger = require('./lib/logger'),
-      loglevel = process.argv[2];
+      logger = require('./lib/logger');
 
-if (loglevel === 'debug') {
-  logger.info('setting loglevel to %s.', loglevel);
-  logger.transports.Console.level = loglevel;
+if (process.env.DEBUG) {
+  logger.info('setting loglevel to debug');
+  logger.level = 'debug';
 }
 
 if (process.env.TEST_ENV) {
@@ -35,10 +34,6 @@ nodeVersionCheck();
 
 config.init()
   .then(() => {
-    if (!loglevel) {
-      logger.transports.Console.level = config.get('loglevel');
-      logger.debug('loglevel is %s.', logger.transports.Console.level);
-    }
     require('./schedule').checkSchedule();
     logger.info('startup complete.');
   })
