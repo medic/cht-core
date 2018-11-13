@@ -98,6 +98,7 @@ _July 6, 2018_
 - [#4754](https://github.com/medic/medic-webapp/issues/4754): Deleting error-report not replicating properly
 - [#4774](https://github.com/medic/medic-webapp/issues/4774): Use user.facility_id saved in `_users` instead of `medic` db
 - [#4792](https://github.com/medic/medic-webapp/issues/4792): Horti versions don't show up correctly in about page
+- [#4975](https://github.com/medic/medic-webapp/issues/4975): Sentinel hangs on empty trigger config
 
 ### Technical issues
 
