@@ -37,12 +37,12 @@ var mergeTranslations = function(settings, docs) {
       var doc = _.findWhere(docs, { code: translation.locale });
       if (doc) {
         if (_.has(doc, 'values')) {
-          if (!doc.values[setting.key] || translation.content !== translation.generic) {
+          if (!doc.values[setting.key] || translation.content !== translation.default) {
             // only update the doc if it was changed from the default
             doc.values[setting.key] = translation.content;
           }
         } else { 
-          if (!doc.generic[setting.key] || translation.content !== translation.generic) {
+          if (!doc.generic[setting.key] || translation.content !== translation.default) {
             // only update the doc if it was changed from the default
             doc.generic[setting.key] = translation.content;
           }
