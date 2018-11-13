@@ -66,19 +66,17 @@ describe('translations', () => {
 
   it('run returns errors from getting translations files', () => {
     const ddoc = { _attachments: { 'translations/messages-en.properties': {} } };
-    const backups = [ { doc: { _id: 'messages-en-backup', default: { hello: 'Hello' } } } ];
     const dbGet = sinon.stub(db.medic, 'get').resolves(ddoc);
     const dbAttachment = sinon.stub(db.medic, 'getAttachment').resolves('some buffer');
     const parse = sinon.stub(properties, 'parse').callsArgWith(1, null, { first: '1st' });
     const dbView = sinon.stub(db.medic, 'query');
-    dbView.onCall(0).resolves({ rows: backups });
-    dbView.onCall(1).returns(Promise.reject('boom'));
+    dbView.onCall(0).returns(Promise.reject('boom'));
     return translations.run().catch(err => {
       chai.expect(err).to.equal('boom');
       chai.expect(dbGet.callCount).to.equal(1);
       chai.expect(dbAttachment.callCount).to.equal(1);
       chai.expect(parse.callCount).to.equal(1);
-      chai.expect(dbView.callCount).to.equal(2);
+      chai.expect(dbView.callCount).to.equal(1);
       chai.expect(dbView.args[1][0]).to.equal('medic-client/doc_by_type');
       chai.expect(dbView.args[1][1].startkey[0]).to.equal('translations');
       chai.expect(dbView.args[1][1].startkey[1]).to.equal(false);
