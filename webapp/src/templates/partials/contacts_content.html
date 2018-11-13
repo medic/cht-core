@@ -18,7 +18,7 @@
     <div class="material">
       <div class="body meta">
         <div class="card">
-          <div class="row heading" ng-class="{ 'deceased': selected.doc.date_of_death }">
+          <div class="row heading" ng-class="{ 'deceased': selected.doc.date_of_death, muted: selected.doc.muted }">
             <span ng-bind-html="selected.icon | resourceIcon"></span>
             <div class="heading-content">
               <h2>{{selected.doc.name}}</h2>
@@ -28,11 +28,12 @@
                 <span ng-if="selected.doc.parent.type !== 'clinic'" translate>Primary contact</span>
                 <span ng-if="selected.doc.parent.type === 'clinic'" translate>clinic.field.contact</span>
               </div>
+              <div class="muted" ng-if="selected.doc.muted" translate>contact.muted</div>
             </div>
           </div>
           <div class="row flex grid">
             <div class="col col-xs-12 col-sm-{{field.width || 12}}" ng-repeat="field in selected.summary.fields">
-              <div class="cell">
+              <div class="cell {{field.label | lowercase}}">
                 <span ng-if="field.icon" class="field-icon" ng-bind-html="field.icon | resourceIcon"></span>
                 <div>
                   <label translate ng-show="field.label">{{field.label}}</label>
@@ -85,6 +86,8 @@
               heading="child.doc.name"
               summary="child.doc.title"
               primary-contact="child.isPrimaryContact"
+              is-muted="child.doc.muted && !selected.doc.muted"
+              display-muted="true"
             />
           </ul>
           <ul ng-if="selected.doc.type === 'clinic'">
@@ -95,6 +98,8 @@
               dob="child.doc.date_of_birth"
               primary-contact="child.isPrimaryContact"
               task-count="child.taskCount"
+              is-muted="child.doc.muted && !selected.doc.muted"
+              display-muted="true"
             />
           </ul>
           <ul class="action deceased">
@@ -119,6 +124,8 @@
               route="'contacts'"
               heading="child.doc.name"
               summary="'contact.primary_contact_name' | translate:child.doc.contact"
+              is-muted="child.doc.muted && !selected.doc.muted"
+              display-muted="true"
             />
           </ul>
         </div>

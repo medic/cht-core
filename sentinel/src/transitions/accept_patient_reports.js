@@ -7,7 +7,8 @@ var _ = require('underscore'),
   utils = require('../lib/utils'),
   transitionUtils = require('./utils'),
   date = require('../date'),
-  db = require('../db-nano'),
+  db = require('../db-pouch'),
+  dbNano = require('../db-nano'),
   NAME = 'accept_patient_reports';
 
 const _hasConfig = doc => {
@@ -51,7 +52,8 @@ const findToClear = (registration, reported_date, config) => {
   // See: https://github.com/medic/medic-docs/blob/master/user/message-states.md#message-states-in-medic-webapp
   // Both scheduled and pending have not yet been either seen by a gateway or
   // delivered, so they are both clearable.
-  const typesToClear = ['pending', 'scheduled'];
+  // Also clear `muted` schedules, as they could be `unmuted` later
+  const typesToClear = ['pending', 'scheduled', 'muted'];
 
   const reportedDateMoment = moment(reported_date);
   const taskTypes = config.silence_type.split(',').map(type => type.trim());
@@ -100,7 +102,7 @@ const _silenceReminders = (registration, report, config, callback) => {
     utils.setTaskState(task, 'cleared');
     task.cleared_by = report._id;
   });
-  db.audit.saveDoc(registration, callback);
+  db.medic.post(registration, callback);
 };
 
 const addRegistrationToDoc = (doc, registrations) => {
@@ -132,7 +134,7 @@ const addReportUUIDToRegistration = (doc, registrations) => {
               ) {
                 registration.scheduled_tasks[index].report_uuid = doc._id;
 
-                db.audit.saveDoc(registration, function() {});
+                db.medic.post(registration, function() {});
 
                 messageFound = true;
               }
@@ -168,7 +170,7 @@ const validate = (config, doc, callback) => {
   return validation.validate(doc, validations, callback);
 };
 
-// NB: this is very similar to a function in accept_patient_reports, except
+// NB: this is very similar to a function in the registration transition, except
 //     they also allow for an empty event_type
 const messageRelevant = (msg, doc) => {
   if (msg.event_type === 'report_accepted') {
@@ -195,7 +197,7 @@ const addMessagesToDoc = (doc, config, registrations) => {
 const handleReport = (doc, config, callback) => {
   utils.getRegistrations(
     {
-      db: db,
+      db: dbNano,
       id: doc.fields.patient_id,
     },
     (err, registrations) => {
@@ -227,7 +229,7 @@ module.exports = {
   silenceRegistrations: silenceRegistrations,
   onMatch: change => {
     const doc = change.doc;
-
+    
     const config = getConfig(doc.form);
 
     if (!config) {

@@ -1,12 +1,13 @@
 const _ = require('underscore'),
-      moment = require('moment'),
-      sinon = require('sinon'),
-      assert = require('chai').assert,
-      transition = require('../../src/transitions/registration'),
-      db = require('../../src/db-nano'),
-      utils = require('../../src/lib/utils'),
-      transitionUtils = require('../../src/transitions/utils'),
-      date = require('../../src/date');
+  moment = require('moment'),
+  sinon = require('sinon'),
+  assert = require('chai').assert,
+  transition = require('../../src/transitions/registration'),
+  db = require('../../src/db-nano'),
+  dbPouch = require('../../src/db-pouch'),
+  utils = require('../../src/lib/utils'),
+  transitionUtils = require('../../src/transitions/utils'),
+  date = require('../../src/date');
 
 const getMessage = (doc, idx) => {
   if (!doc || !doc.tasks) {
@@ -24,74 +25,98 @@ describe('patient registration', () => {
   afterEach(() => sinon.restore());
 
   beforeEach(() => {
-    sinon.stub(transition, 'getConfig').returns([{
-      form: 'PATR',
-      events: [
-        {
-          name: 'on_create',
-          trigger: 'add_patient_id',
-          params: '',
-          bool_expr: ''
-        }
-      ],
-      validations: [
-        {
-          property: 'patient_name',
-          rule: 'lenMin(1) && lenMax(100)',
-          message: 'Invalid patient name.'
-        }
-      ],
-      messages: [
-        {
-          message: [
+    sinon.stub(transition, 'getConfig').returns([
+      {
+        form: 'PATR',
+        events: [
+          {
+            name: 'on_create',
+            trigger: 'add_patient_id',
+            params: '',
+            bool_expr: '',
+          },
+        ],
+        validations: [
+          {
+            property: 'patient_name',
+            rule: 'lenMin(1) && lenMax(100)',
+            message: 'Invalid patient name.',
+          },
+        ],
+        messages: [
+          {
+            message: [
+              {
+                content: 'thanks {{contact.name}}',
+                locale: 'en',
+              },
+              {
+                content: 'gracias {{contact.name}}',
+                locale: 'es',
+              },
+            ],
+            recipient: 'reporting_unit',
+          },
+          {
+            message: [
+              {
+                content: 'thanks {{fields.caregiver_name}}',
+                locale: 'en',
+              },
+              {
+                content: 'gracias {{fields.caregiver_name}}',
+                locale: 'es',
+              },
+            ],
+            recipient: 'caregiver_phone',
+          },
+        ],
+      },
+      {
+        form: 'P',
+        validations: {
+          join_responses: true,
+          list: [
             {
-              content: 'thanks {{contact.name}}',
-              locale: 'en'
+              property: 'last_menstrual_period',
+              rule: 'integer && between(2,42)',
+              message: [
+                {
+                  content: 'Something something {{patient_name}}',
+                  locale: 'en',
+                },
+              ],
             },
-            {
-              content: 'gracias {{contact.name}}',
-              locale: 'es'
-            }
           ],
-          recipient: 'reporting_unit',
         },
-        {
-          message: [
-            {
-              content: 'thanks {{fields.caregiver_name}}',
-              locale: 'en'
-            },
-            {
-              content: 'gracias {{fields.caregiver_name}}',
-              locale: 'es'
-            }
-          ],
-          recipient: 'caregiver_phone',
-        }
-      ]
-    }, {
-      form: 'P',
-      validations: {
-        join_responses: true,
-        list: [{
-          property: 'last_menstrual_period',
-          rule: 'integer && between(2,42)',
-          message: [{
-            content: 'Something something {{patient_name}}',
-            locale: 'en'
-          }]
-        }]
-      }
-    }]);
+      },
+    ]);
   });
 
   it('getWeeksSinceLMP returns 0 not NaN or null', () => {
     assert.equal(transition.getWeeksSinceLMP({ fields: { lmp: 0 } }), 0);
-    assert.equal(typeof transition.getWeeksSinceLMP({ fields: { lmp: 0 } }), 'number');
-    assert.equal(transition.getWeeksSinceLMP({ fields: { weeks_since_lmp: 0 } }), 0);
-    assert.equal(typeof transition.getWeeksSinceLMP({ fields: { weeks_since_lmp: 0 } }), 'number');
-    assert.equal(transition.getWeeksSinceLMP({ fields: { last_menstrual_period: 0 } }), 0);
-    assert.equal(typeof transition.getWeeksSinceLMP({ fields: { last_menstrual_period: 0 } }), 'number');
+    assert.equal(
+      typeof transition.getWeeksSinceLMP({ fields: { lmp: 0 } }),
+      'number'
+    );
+    assert.equal(
+      transition.getWeeksSinceLMP({ fields: { weeks_since_lmp: 0 } }),
+      0
+    );
+    assert.equal(
+      typeof transition.getWeeksSinceLMP({ fields: { weeks_since_lmp: 0 } }),
+      'number'
+    );
+    assert.equal(
+      transition.getWeeksSinceLMP({ fields: { last_menstrual_period: 0 } }),
+      0
+    );
+    assert.equal(
+      typeof transition.getWeeksSinceLMP({
+        fields: { last_menstrual_period: 0 },
+      }),
+      'number'
+    );
   });
 
   it('getWeeksSinceLMP always returns number', () => {
@@ -100,38 +125,83 @@ describe('patient registration', () => {
 
   it('getWeeksSinceLMP supports three property names', () => {
     assert.equal(transition.getWeeksSinceLMP({ fields: { lmp: '12' } }), 12);
-    assert.equal(transition.getWeeksSinceLMP({ fields: { weeks_since_lmp: '12' } }), 12);
-    assert.equal(transition.getWeeksSinceLMP({ fields: { last_menstrual_period: '12' } }), 12);
+    assert.equal(
+      transition.getWeeksSinceLMP({ fields: { weeks_since_lmp: '12' } }),
+      12
+    );
+    assert.equal(
+      transition.getWeeksSinceLMP({ fields: { last_menstrual_period: '12' } }),
+      12
+    );
   });
 
   it('getYearsSinceDOB supports three property names', () => {
-    assert.equal(transition.getYearsSinceDOB({ fields: { years_since_dob: '12' } }), 12);
-    assert.equal(transition.getYearsSinceDOB({ fields: { years_since_birth: '12' } }), 12);
-    assert.equal(transition.getYearsSinceDOB({ fields: { age_in_years: '12' } }), 12);
+    assert.equal(
+      transition.getYearsSinceDOB({ fields: { years_since_dob: '12' } }),
+      12
+    );
+    assert.equal(
+      transition.getYearsSinceDOB({ fields: { years_since_birth: '12' } }),
+      12
+    );
+    assert.equal(
+      transition.getYearsSinceDOB({ fields: { age_in_years: '12' } }),
+      12
+    );
   });
 
   it('getMonthsSinceDOB supports three property names', () => {
-    assert.equal(transition.getMonthsSinceDOB({ fields: { months_since_dob: '12' } }), 12);
-    assert.equal(transition.getMonthsSinceDOB({ fields: { months_since_birth: '12' } }), 12);
-    assert.equal(transition.getMonthsSinceDOB({ fields: { age_in_months: '12' } }), 12);
+    assert.equal(
+      transition.getMonthsSinceDOB({ fields: { months_since_dob: '12' } }),
+      12
+    );
+    assert.equal(
+      transition.getMonthsSinceDOB({ fields: { months_since_birth: '12' } }),
+      12
+    );
+    assert.equal(
+      transition.getMonthsSinceDOB({ fields: { age_in_months: '12' } }),
+      12
+    );
   });
 
   it('getWeeksSinceDOB supports four property names', () => {
     assert.equal(transition.getWeeksSinceDOB({ fields: { dob: '12' } }), 12);
-    assert.equal(transition.getWeeksSinceDOB({ fields: { weeks_since_dob: '12' } }), 12);
-    assert.equal(transition.getWeeksSinceDOB({ fields: { weeks_since_birth: '12' } }), 12);
-    assert.equal(transition.getWeeksSinceDOB({ fields: { age_in_weeks: '12' } }), 12);
+    assert.equal(
+      transition.getWeeksSinceDOB({ fields: { weeks_since_dob: '12' } }),
+      12
+    );
+    assert.equal(
+      transition.getWeeksSinceDOB({ fields: { weeks_since_birth: '12' } }),
+      12
+    );
+    assert.equal(
+      transition.getWeeksSinceDOB({ fields: { age_in_weeks: '12' } }),
+      12
+    );
   });
 
   it('getDaysSinceDOB supports three property names', () => {
-    assert.equal(transition.getDaysSinceDOB({ fields: { days_since_dob: '12' } }), 12);
-    assert.equal(transition.getDaysSinceDOB({ fields: { days_since_birth: '12' } }), 12);
-    assert.equal(transition.getDaysSinceDOB({ fields: { age_in_days: '12' } }), 12);
+    assert.equal(
+      transition.getDaysSinceDOB({ fields: { days_since_dob: '12' } }),
+      12
+    );
+    assert.equal(
+      transition.getDaysSinceDOB({ fields: { days_since_birth: '12' } }),
+      12
+    );
+    assert.equal(
+      transition.getDaysSinceDOB({ fields: { age_in_days: '12' } }),
+      12
+    );
   });
 
   it('getDOB uses weeks since dob if available', () => {
     const today = 1474942416907,
-          expected = moment(today).startOf('day').subtract(5, 'weeks').valueOf();
+      expected = moment(today)
+        .startOf('day')
+        .subtract(5, 'weeks')
+        .valueOf();
     sinon.stub(date, 'getDate').returns(today);
     sinon.stub(transition, 'getWeeksSinceDOB').returns('5');
     assert.equal(transition.getDOB({ fields: {} }).valueOf(), expected);
@@ -139,7 +209,10 @@ describe('patient registration', () => {
 
   it('getDOB uses days since dob if available', () => {
     const today = 1474942416907,
-          expected = moment(today).startOf('day').subtract(5, 'days').valueOf();
+      expected = moment(today)
+        .startOf('day')
+        .subtract(5, 'days')
+        .valueOf();
     sinon.stub(date, 'getDate').returns(today);
     sinon.stub(transition, 'getWeeksSinceDOB').returns(undefined);
     sinon.stub(transition, 'getDaysSinceDOB').returns('5');
@@ -148,7 +221,9 @@ describe('patient registration', () => {
 
   it('getDOB falls back to today if necessary', () => {
     const today = 1474942416907,
-          expected = moment(today).startOf('day').valueOf();
+      expected = moment(today)
+        .startOf('day')
+        .valueOf();
     sinon.stub(date, 'getDate').returns(today);
     sinon.stub(transition, 'getWeeksSinceDOB').returns(undefined);
     sinon.stub(transition, 'getDaysSinceDOB').returns(undefined);
@@ -156,7 +231,6 @@ describe('patient registration', () => {
   });
 
   it('valid form adds patient_id and patient document', () => {
-
     sinon.stub(utils, 'getPatientContactUuid').callsArgWith(2);
 
     sinon.stub(transitionUtils, 'addUniqueId').callsFake((doc, callback) => {
@@ -168,19 +242,21 @@ describe('patient registration', () => {
       _id: 'docid',
       form: 'PATR',
       fields: { patient_name: 'abc' },
-      reported_date: 'now'
+      reported_date: 'now',
     };
-    sinon.stub(db.medic, 'view').callsArgWith(3, null, {rows: [
-      {
-        doc: {
-          _id: 'the-contact',
-          parent: {
-            _id: 'the-parent'
-          }
-        }
-      }
-    ]});
-    const saveDoc = sinon.stub(db.audit, 'saveDoc').callsArg(1);
+    sinon.stub(db.medic, 'view').callsArgWith(3, null, {
+      rows: [
+        {
+          doc: {
+            _id: 'the-contact',
+            parent: {
+              _id: 'the-parent',
+            },
+          },
+        },
+      ],
+    });
+    const saveDoc = sinon.stub(dbPouch.medic, 'post').callsArg(1);
 
     return transition.onMatch({ doc: doc }).then(changed => {
       assert.equal(changed, true);
@@ -190,23 +266,25 @@ describe('patient registration', () => {
       assert.deepEqual(saveDoc.args[0][0], {
         name: 'abc',
         parent: {
-          _id: 'the-parent'
+          _id: 'the-parent',
         },
         reported_date: 'now',
         type: 'person',
         patient_id: doc.patient_id,
         created_by: 'the-contact',
-        source_id: 'docid'
+        source_id: 'docid',
       });
-
     });
   });
 
   it('registration sets up responses', () => {
-
     sinon.stub(utils, 'getRegistrations').callsArgWith(1, null, []);
-    sinon.stub(utils, 'getPatientContact').callsArgWith(2, null, {_id: 'uuid'});
-    sinon.stub(utils, 'getPatientContactUuid').callsArgWith(2, null, {_id: 'uuid'});
+    sinon
+      .stub(utils, 'getPatientContact')
+      .callsArgWith(2, null, { _id: 'uuid' });
+    sinon
+      .stub(utils, 'getPatientContactUuid')
+      .callsArgWith(2, null, { _id: 'uuid' });
     sinon.stub(transitionUtils, 'addUniqueId').callsArgWith(1);
 
     const doc = {
@@ -219,9 +297,9 @@ describe('patient registration', () => {
       },
       contact: {
         phone: '+1234',
-        name: 'Julie'
+        name: 'Julie',
       },
-      locale: 'en'
+      locale: 'en',
     };
 
     return transition.onMatch({ doc: doc }).then(changed => {
@@ -238,7 +316,7 @@ describe('patient registration', () => {
         delete msg0.uuid;
         assert.deepEqual(msg0, {
           to: '+1234',
-          message: 'thanks Julie'
+          message: 'thanks Julie',
         });
       }
 
@@ -255,18 +333,20 @@ describe('patient registration', () => {
         delete msg1.uuid;
         assert.deepEqual(msg1, {
           to: '+987',
-          message: 'thanks Sam'
+          message: 'thanks Sam',
         });
       }
-
     });
   });
 
   it('registration responses support locale', () => {
-
     sinon.stub(utils, 'getRegistrations').callsArgWith(1, null, []);
-    sinon.stub(utils, 'getPatientContact').callsArgWith(2, null, {_id: 'uuid'});
-    sinon.stub(utils, 'getPatientContactUuid').callsArgWith(2, null, {_id: 'uuid'});
+    sinon
+      .stub(utils, 'getPatientContact')
+      .callsArgWith(2, null, { _id: 'uuid' });
+    sinon
+      .stub(utils, 'getPatientContactUuid')
+      .callsArgWith(2, null, { _id: 'uuid' });
     sinon.stub(transitionUtils, 'addUniqueId').callsArgWith(1);
 
     const doc = {
@@ -282,11 +362,11 @@ describe('patient registration', () => {
         parent: {
           contact: {
             phone: '+1234',
-            name: 'Julie'
-          }
-        }
+            name: 'Julie',
+          },
+        },
       },
-      locale: 'es' //spanish
+      locale: 'es', //spanish
     };
 
     return transition.onMatch({ doc: doc }).then(changed => {
@@ -303,7 +383,7 @@ describe('patient registration', () => {
         delete msg0.uuid;
         assert.deepEqual(msg0, {
           to: '+1234',
-          message: 'gracias Julie'
+          message: 'gracias Julie',
         });
       }
 
@@ -320,10 +400,9 @@ describe('patient registration', () => {
         delete msg1.uuid;
         assert.deepEqual(msg1, {
           to: '+987',
-          message: 'gracias Sam'
+          message: 'gracias Sam',
         });
       }
-
     });
   });
 
@@ -332,7 +411,7 @@ describe('patient registration', () => {
       form: 'P',
       fields: {
         patient_id: '123456',
-        last_menstrual_period: 60
+        last_menstrual_period: 60,
       },
       contact: {
         phone: '+1234',
@@ -340,13 +419,13 @@ describe('patient registration', () => {
         parent: {
           contact: {
             phone: '+1234',
-            name: 'Julie'
-          }
-        }
+            name: 'Julie',
+          },
+        },
       },
       patient: {
-        name: 'Maria'
-      }
+        name: 'Maria',
+      },
     };
 
     return transition.onMatch({ doc: doc }).then(changed => {
@@ -358,5 +437,4 @@ describe('patient registration', () => {
       assert.equal(doc.errors[0].message, 'Something something Maria');
     });
   });
-
 });

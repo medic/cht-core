@@ -1,8 +1,9 @@
 var async = require('async'),
-    {promisify} = require('util'),
-    db = require('../db-nano'),
-    people = require('../controllers/people'),
-    places = require('../controllers/places');
+  { promisify } = require('util'),
+  db = require('../db-nano'),
+  logger = require('../logger'),
+  people = require('../controllers/people'),
+  places = require('../controllers/places');
 
 /**
  * WARNING : THIS MIGRATION IS POTENTIALLY DESTRUCTIVE IF IT MESSES UP HALFWAY, SO GET YOUR SYSTEM
@@ -73,8 +74,13 @@ var createPerson = function(id, callback) {
     delete facility.contact;
     db.medic.insert(facility, function(err) {
       if (err) {
-        return callback(new Error('Failed to delete contact on facility ' + facility._id +
-          JSON.stringify(err, null, 2)));
+        return callback(
+          new Error(
+            'Failed to delete contact on facility ' +
+              facility._id +
+              JSON.stringify(err, null, 2)
+          )
+        );
       }
       callback();
     });
@@ -85,13 +91,21 @@ var createPerson = function(id, callback) {
     var person = {
       name: oldContact.name,
       phone: oldContact.phone,
-      place: facilityId
+      place: facilityId,
     };
-    people.createPerson(person)
+    people
+      .createPerson(person)
       .then(result => callback(null, result.id))
       .catch(err => {
         restoreContact(facilityId, oldContact, function() {
-          callback(new Error('Could not create person for facility ' + facilityId + ': ' + JSON.stringify(err, null, 2)));
+          callback(
+            new Error(
+              'Could not create person for facility ' +
+                facilityId +
+                ': ' +
+                JSON.stringify(err, null, 2)
+            )
+          );
         });
       });
   };
@@ -102,21 +116,35 @@ var createPerson = function(id, callback) {
     if (oldContact.rc_code) {
       updates.place_id = oldContact.rc_code;
     }
-    places.updatePlace(facilityId, updates)
+    places
+      .updatePlace(facilityId, updates)
       .then(() => callback())
       .catch(err => {
         restoreContact(facilityId, oldContact, function() {
-          callback(new Error('Failed to update contact on facility ' + facilityId + ': ' + JSON.stringify(err, null, 2)));
+          callback(
+            new Error(
+              'Failed to update contact on facility ' +
+                facilityId +
+                ': ' +
+                JSON.stringify(err, null, 2)
+            )
+          );
         });
       });
   };
 
   var restoreContact = function(facilityId, oldContact, callback) {
-    places.updatePlace(facilityId, { contact: oldContact })
+    places
+      .updatePlace(facilityId, { contact: oldContact })
       .then(() => callback())
       .catch(() => {
         // we tried our best - log the details and exit
-        console.error('Failed to restore contact on facility ' + facilityId + ', contact: ' + JSON.stringify(oldContact));
+        logger.error(
+          `Failed to restore contact on facility
+            ${facilityId}
+            , contact:
+            ${JSON.stringify(oldContact)}`
+        );
       });
   };
 
@@ -135,17 +163,21 @@ var createPerson = function(id, callback) {
         async.apply(checkContact, facility),
         async.apply(removeContact, facility),
         async.apply(createPerson, facility._id, oldContact),
-        async.apply(resetContact, facility._id, oldContact /* parentId passed from waterfall */)
+        async.apply(
+          resetContact,
+          facility._id,
+          oldContact /* parentId passed from waterfall */
+        ),
       ],
       function(err) {
         if (err && !err.skip) {
           return callback(err);
         }
         return callback();
-    });
+      }
+    );
   });
 };
-
 
 // For a given doc, update its parent to the latest version of the parent doc.
 // Note that since we migrate in order of depth, the grandparents will be already updated.
@@ -221,7 +253,9 @@ var updateParents = function(id, callback) {
     }
 
     if (!facility.parent._id) {
-      return callback(new Error('facility ' + facility._id + ' has a parent without an _id.'));
+      return callback(
+        new Error('facility ' + facility._id + ' has a parent without an _id.')
+      );
     }
 
     if (!facility.parent.contact || !!facility.parent.contact._id) {
@@ -237,8 +271,14 @@ var updateParents = function(id, callback) {
     delete facility.parent;
     db.medic.insert(facility, function(err) {
       if (err) {
-        return callback(new Error('Failed to delete parent on facility ' + facility._id + ' - ' +
-          JSON.stringify(err, null, 2)));
+        return callback(
+          new Error(
+            'Failed to delete parent on facility ' +
+              facility._id +
+              ' - ' +
+              JSON.stringify(err, null, 2)
+          )
+        );
       }
       return callback(null, parentId);
     });
@@ -253,11 +293,18 @@ var updateParents = function(id, callback) {
         }
         return callback(err);
       }
-      places.updatePlace(facilityId, { parent: parentId })
+      places
+        .updatePlace(facilityId, { parent: parentId })
         .then(() => callback())
         .catch(err => {
-          callback(new Error('Failed to update parent on facility ' + facilityId + ' - ' +
-            JSON.stringify(err, null, 2)));
+          callback(
+            new Error(
+              'Failed to update parent on facility ' +
+                facilityId +
+                ' - ' +
+                JSON.stringify(err, null, 2)
+            )
+          );
         });
     });
   };
@@ -274,15 +321,19 @@ var updateParents = function(id, callback) {
       [
         async.apply(checkParent, facility),
         async.apply(removeParent, facility),
-        async.apply(resetParent, facility._id /* parentId passed from waterfall */)
+        async.apply(
+          resetParent,
+          facility._id /* parentId passed from waterfall */
+        ),
       ],
       function(err) {
         if (err && !err.skip) {
           return callback(err);
         }
         return callback();
-      });
-    });
+      }
+    );
+  });
 };
 
 var migrateOneType = function(type, callback) {
@@ -295,16 +346,15 @@ var migrateOneType = function(type, callback) {
     });
   };
 
-  db.medic.view(
-    'medic-client',
-    'contacts_by_type',
-    { key: [ type ] },
-    function(err, result) {
-      if (err) {
-        return callback(err);
-      }
-      async.eachSeries(result.rows, migrate, callback);
-    });
+  db.medic.view('medic-client', 'contacts_by_type', { key: [type] }, function(
+    err,
+    result
+  ) {
+    if (err) {
+      return callback(err);
+    }
+    async.eachSeries(result.rows, migrate, callback);
+  });
 };
 
 module.exports = {
@@ -313,5 +363,5 @@ module.exports = {
   run: promisify(function(callback) {
     var types = ['district_hospital', 'health_center', 'clinic'];
     async.eachSeries(types, migrateOneType, callback);
-  })
+  }),
 };

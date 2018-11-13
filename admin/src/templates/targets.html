@@ -7,21 +7,23 @@
   <div ng-if="!error">
 
     <div class="tab-content">
-      <a class="btn btn-success" ng-if="!configuration.enabled" ng-click="enable()">
-        <i class="fa fa-play"></i>
-        <span translate>analytics.target.enable</span>
-      </a>
-      <a class="btn btn-danger" ng-if="configuration.enabled" ng-click="disable()">
-        <i class="fa fa-stop"></i>
-        <span translate>analytics.target.disable</span>
-      </a>
-      <a class="btn btn-primary" ui-sref="targets-edit">
-        <i class="fa fa-plus"></i>
-        <span translate>analytics.target.add</span>
-      </a>
+      <div class="btn-toolbar">
+        <a class="btn btn-success" ng-if="!configuration.enabled" ng-click="enable()">
+          <i class="fa fa-play"></i>
+          <span translate>analytics.target.enable</span>
+        </a>
+        <a class="btn btn-danger" ng-if="configuration.enabled" ng-click="disable()">
+          <i class="fa fa-stop"></i>
+          <span translate>analytics.target.disable</span>
+        </a>
+        <a class="btn btn-primary" ui-sref="targets-edit">
+          <i class="fa fa-plus"></i>
+          <span translate>analytics.target.add</span>
+        </a>
+      </div>
     </div>
 
-    <div class="tab-content">
+    <div class="tab-content container-fluid">
 
       <div class="row selection-heading">
         <div class="col-xs-1"></div>

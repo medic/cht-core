@@ -1,5 +1,4 @@
-(function () {
-
+(function() {
   'use strict';
 
   angular.module('inboxServices', ['ngResource']);
@@ -16,6 +15,7 @@
   require('./child-facility');
   require('./contact-change-filter');
   require('./contact-form');
+  require('./contact-muted');
   require('./contact-save');
   require('./contact-schema');
   require('./contact-summary');
@@ -76,6 +76,7 @@
   require('./snackbar');
   require('./target-generator');
   require('./tasks-for-contact');
+  require('./telemetry');
   require('./tour');
   require('./translate');
   require('./translate-from');
@@ -93,5 +94,4 @@
   require('./xml-forms-context-utils');
   require('./xslt');
   require('./z-score');
-
-}());
+})();

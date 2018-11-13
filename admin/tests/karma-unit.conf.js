@@ -1,5 +1,4 @@
 module.exports = function(config) {
-
   'use strict';
 
   config.set({
@@ -28,7 +27,7 @@ module.exports = function(config) {
       'node_modules/underscore/underscore.js',
 
       // borrowed from webapp
-      '../webapp/tests/karma/q.js',
+      '../webapp/node_modules/q/q.js',
 
       // application code
       '../build/ddocs/medic-admin/_attachments/js/main.js',
@@ -47,5 +46,5 @@ module.exports = function(config) {
       'src/**/*.html'
     ]
   });
-
+  
 };

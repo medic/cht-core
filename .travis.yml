@@ -14,13 +14,12 @@ services:
 
 env:
   matrix:
-    - TEST_SUITE=standard NODE_VERSION="lts/*" USE_COUCHDB=false USE_YARN=false
+    - TEST_SUITE=standard NODE_VERSION=8 USE_COUCHDB=false USE_YARN=false
     - TEST_SUITE=normal NODE_VERSION=8 USE_COUCHDB=true USE_YARN=true
     - TEST_SUITE=normal NODE_VERSION=9 USE_COUCHDB=true USE_YARN=true
-    - TEST_SUITE=performance NODE_VERSION="lts/*" USE_COUCHDB=true USE_YARN=true
+    - TEST_SUITE=performance NODE_VERSION=8 USE_COUCHDB=true USE_YARN=true
   global:
     - COUCH_URL=http://admin:pass@localhost:5984/medic
-    - API_URL=http://admin:pass@localhost:5988
     - COUCH_NODE_NAME=nonode@nohost
     #AWS Access Key Id and AWS Secret Access Key encrypted by travis to access the S3 buckets where reports and screenshots are saved
     - secure: TR1UN2r3beDtIF+VJpLF2ocTv/uxuOKyVWWhzMLre0ZrrBaIP1sLZV7Z4S/km5M92EfPgGW87BogdWE/R+kTTRiPTCbFB/U/3jFKxEZRXKST66YK5JMwsYqb17UtZtFdqEtO9GGbAVzXwpZfMMoXvlKNrors2W32xBm2uIkOSpI=
@@ -94,11 +93,10 @@ after_failure:
     aws s3 cp tests/logs "$S3_PATH"/ --recursive
 
 notifications:
-  webhooks:
-    urls:
-      - https://medic.slack.com/services/hooks/travis?token=xcYT8yusfEdSwLskhBxK4Vwj
+  slack:
+    rooms:
+      - medic:SdzCLsD56UOr5U8ujzOCMDJd#development
+    template:
+      - "<%{build_url}|%{author}'s build> %{result}. Commit: %{commit_message} (<%{compare_url}|compare>)"
     on_success: change
     on_failure: always
-  email:
-    recipients:
-      - dev@medicmobile.org

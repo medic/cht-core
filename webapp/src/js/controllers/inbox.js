@@ -1,5 +1,6 @@
 var feedback = require('../modules/feedback'),
   _ = require('underscore'),
+  bootstrapTranslator = require('./../bootstrapper/translator'),
   moment = require('moment');
 
 (function() {
@@ -40,6 +41,7 @@ var feedback = require('../modules/feedback'),
     SetLanguage,
     Settings,
     Snackbar,
+    Telemetry,
     Tour,
     TranslateFrom,
     UnreadRecords,
@@ -51,6 +53,20 @@ var feedback = require('../modules/feedback'),
     RecurringProcessManager
   ) {
     'ngInject';
+
+    window.startupTimes.angularBootstrapped = performance.now();
+    Telemetry.record(
+      'boot_time:1:to_first_code_execution',
+      window.startupTimes.firstCodeExecution - window.startupTimes.start
+    );
+    Telemetry.record(
+      'boot_time:2:to_bootstrap',
+      window.startupTimes.bootstrapped - window.startupTimes.firstCodeExecution
+    );
+    Telemetry.record(
+      'boot_time:3:to_angular_bootstrap',
+      window.startupTimes.angularBootstrapped - window.startupTimes.bootstrapped
+    );
 
     Session.init();
 
@@ -64,6 +80,7 @@ var feedback = require('../modules/feedback'),
     $scope.replicationStatus = {
       disabled: false,
       lastSuccess: {},
+      lastTrigger: undefined,
       current: 'unknown',
       textKey: 'sync.status.unknown',
     };
@@ -73,7 +90,8 @@ var feedback = require('../modules/feedback'),
       required: 'fa-exclamation-triangle',
       unknown: 'fa-question-circle',
     };
-    DBSync(function(update) {
+
+    DBSync.addUpdateListener(update => {
       if (update.disabled) {
         $scope.replicationStatus.disabled = true;
         // admins have potentially too much data so bypass local pouch
@@ -81,34 +99,48 @@ var feedback = require('../modules/feedback'),
         return;
       }
 
+      // Listen for directedReplicationStatus to update replicationStatus.lastSuccess
       var now = Date.now();
-      if (update.status !== 'required') {
-        var last = $scope.replicationStatus.lastSuccess[update.direction];
+      if (update.directedReplicationStatus === 'success') {
         $scope.replicationStatus.lastSuccess[update.direction] = now;
-        var delay = last ? (now - last) / 1000 : 'unknown';
-        $log.info(
-          'Replicate ' +
-            update.direction +
-            ' server successful with ' +
-            delay +
-            ' seconds since the previous successful replication.'
-        );
+        return;
       }
 
-      if (update.direction === 'to') {
-        if (update.status === 'not_required') {
-          $scope.replicationStatus.lastCompleted = now;
-        }
-        $scope.replicationStatus.current = update.status;
-        $scope.replicationStatus.textKey = 'sync.status.' + update.status;
-        $scope.replicationStatus.icon = SYNC_ICON[update.status];
+      // Listen for aggregateReplicationStatus updates
+      const status = update.aggregateReplicationStatus;
+      const lastTrigger = $scope.replicationStatus.lastTrigger;
+      if (status === 'not_required' || status === 'required') {
+        const delay = lastTrigger ? (now - lastTrigger) / 1000 : 'unknown';
+        $log.info('Replication ended after ' + delay + ' seconds with status ' + status);
+      } else if (status === 'in_progress') {
+        $scope.replicationStatus.lastTrigger = now;
+        const duration = lastTrigger ? (now - lastTrigger) / 1000 : 'unknown';
+        $log.info('Replication started after ' + duration + ' seconds since previous attempt.');
       }
+
+      $scope.replicationStatus.current = status;
+      $scope.replicationStatus.textKey = 'sync.status.' + status;
+      $scope.replicationStatus.icon = SYNC_ICON[status];
     });
 
-    $('.bootstrap-layer .status').html('Loading rules…');
+    $window.addEventListener('online', () => DBSync.setOnlineStatus(true), false);
+    $window.addEventListener('offline', () => DBSync.setOnlineStatus(false), false);
+    DBSync.sync();
+
+    // BootstrapTranslator is used because $translator.onReady has not fired
+    $('.bootstrap-layer .status').html(bootstrapTranslator.translate('LOAD_RULES'));
 
     RulesEngine.init.catch(function() {}).then(function() {
       $scope.dbWarmedUp = true;
+
+      var dbWarmed = performance.now();
+      Telemetry.record(
+        'boot_time:4:to_db_warmed',
+        dbWarmed - window.startupTimes.bootstrapped
+      );
+      Telemetry.record('boot_time', dbWarmed - window.startupTimes.start);
+
+      delete window.startupTimes;
     });
 
     feedback.init({
@@ -188,6 +220,25 @@ var feedback = require('../modules/feedback'),
       });
     });
 
+    $rootScope.$on('$stateChangeStart', function (event, toState, toParams, fromState, fromParams){
+      if(!$scope.enketoStatus.edited){
+        return;
+      }
+      if(!fromState.url.includes('edit')){
+        return;
+      }
+      if(fromParams.id === toParams.id){
+        return;
+      }
+      if(fromParams.reportId === toParams.id){
+        return;
+      }
+      if ($scope.cancelCallback) {
+        event.preventDefault();
+        $scope.navigationCancel();
+      }
+    });
+
     // User wants to cancel current flow, or pressed back button, etc.
     $scope.navigationCancel = function() {
       if ($scope.enketoStatus.saving) {
@@ -207,6 +258,7 @@ var feedback = require('../modules/feedback'),
         controller: 'NavigationConfirmCtrl',
         singleton: true,
       }).then(function() {
+        $scope.enketoStatus.edited = false;
         if ($scope.cancelCallback) {
           $scope.cancelCallback();
         }
@@ -597,6 +649,10 @@ var feedback = require('../modules/feedback'),
         templateUrl: 'templates/modals/feedback.html',
         controller: 'FeedbackCtrl',
       });
+    };
+
+    $scope.replicate = function() {
+      DBSync.sync(true);
     };
 
     CountMessages.init();

@@ -1,10 +1,11 @@
 const _ = require('underscore'),
-      vm = require('vm'),
-      db = require('../db-nano'),
-      moment = require('moment'),
-      config = require('../config'),
-      taskUtils = require('task-utils'),
-      registrationUtils = require('@shared-libs/registration-utils');
+  vm = require('vm'),
+  db = require('../db-nano'),
+  moment = require('moment'),
+  config = require('../config'),
+  taskUtils = require('task-utils'),
+  registrationUtils = require('@shared-libs/registration-utils'),
+  logger = require('./logger');
 
 /*
  * Get desired locale
@@ -18,11 +19,13 @@ const _ = require('underscore'),
  *
  */
 const getLocale = doc => {
-  return  doc.locale ||
-          (doc.sms_message && doc.sms_message.locale) ||
-          config.get('locale_outgoing') ||
-          config.get('locale') ||
-          'en';
+  return (
+    doc.locale ||
+    (doc.sms_message && doc.sms_message.locale) ||
+    config.get('locale_outgoing') ||
+    config.get('locale') ||
+    'en'
+  );
 };
 
 const getClinicID = doc => {
@@ -59,13 +62,15 @@ const getDistrictPhone = doc => {
   return f && f.contact && f.contact.phone;
 };
 
+// updates the states of matching scheduled tasks
+// returns the number of updated tasks
 const setTasksStates = (doc, state, predicate) => {
   doc.scheduled_tasks = doc.scheduled_tasks || [];
-  _.each(doc.scheduled_tasks, task => {
+  return _.compact(_.map(doc.scheduled_tasks, task => {
     if (predicate.call(this, task)) {
-      taskUtils.setTaskState(task, state);
+      return taskUtils.setTaskState(task, state);
     }
-  });
+  })).length;
 };
 
 const addError = (doc, error) => {
@@ -73,7 +78,7 @@ const addError = (doc, error) => {
     return;
   }
   if (_.isString(error)) {
-    error = {code: 'invalid_report', message: error};
+    error = { code: 'invalid_report', message: error };
   } else if (_.isObject(error)) {
     if (!error.code) {
       // set error code if missing
@@ -118,7 +123,7 @@ const getReportsWithSameClinicAndForm = (options, callback) => {
     {
       startkey: [formName, clinicId],
       endkey: [formName, clinicId],
-      include_docs: true
+      include_docs: true,
     },
     (err, data) => {
       if (err) {
@@ -129,14 +134,20 @@ const getReportsWithSameClinicAndForm = (options, callback) => {
   );
 };
 
-const getReportsWithinTimeWindow = (latestTimestamp, timeWindowInDays, options = {}) => {
-  const timeWindowInMillis = moment.duration({'days' : timeWindowInDays}).asMilliseconds();
+const getReportsWithinTimeWindow = (
+  latestTimestamp,
+  timeWindowInDays,
+  options = {}
+) => {
+  const timeWindowInMillis = moment
+    .duration({ days: timeWindowInDays })
+    .asMilliseconds();
   const startTimestamp = latestTimestamp - timeWindowInMillis;
   _.defaults(options, {
     endkey: [startTimestamp],
     startkey: [latestTimestamp],
     include_docs: true,
-    descending: true // most recent first
+    descending: true, // most recent first
   });
   return new Promise((resolve, reject) => {
     db.medic.view('medic-client', 'reports_by_date', options, (err, data) => {
@@ -179,26 +190,33 @@ const getPatient = (db, patientShortcodeId, includeDocs, callback) => {
     return callback();
   }
   const viewOpts = {
-    key: [ 'shortcode', patientShortcodeId ],
-    include_docs: includeDocs
+    key: ['shortcode', patientShortcodeId],
+    include_docs: includeDocs,
   };
-  db.medic.view('medic-client', 'contacts_by_reference', viewOpts, (err, results) => {
-    if (err) {
-      return callback(err);
-    }
+  db.medic.view(
+    'medic-client',
+    'contacts_by_reference',
+    viewOpts,
+    (err, results) => {
+      if (err) {
+        return callback(err);
+      }
 
-    if (!results.rows.length) {
-      return callback();
-    }
+      if (!results.rows.length) {
+        return callback();
+      }
 
-    if (results.rows.length > 1) {
-      console.warn('More than one patient person document for shortcode ' + patientShortcodeId);
-    }
+      if (results.rows.length > 1) {
+        logger.warn(
+          `More than one patient person document for shortcode ${patientShortcodeId}`
+        );
+      }
 
-    const patient = results.rows[0];
-    const result = includeDocs ? patient.doc : patient.id;
-    return callback(null, result);
-  });
+      const patient = results.rows[0];
+      const result = includeDocs ? patient.doc : patient.id;
+      return callback(null, result);
+    }
+  );
 };
 
 module.exports = {
@@ -206,21 +224,10 @@ module.exports = {
   getLocale: getLocale,
   getClinicPhone: doc => {
     const clinic = getClinic(doc);
-    return (clinic && clinic.contact && clinic.contact.phone) ||
-           (doc.contact && doc.contact.phone);
-  },
-  unmuteScheduledMessages: doc => {
-    setTasksStates(doc, 'scheduled', task => {
-      return task.state === 'muted';
-    });
-    doc.scheduled_tasks = _.filter(doc.scheduled_tasks, task => {
-      return new Date(task.due) > Date.now();
-    });
-  },
-  muteScheduledMessages: doc => {
-    setTasksStates(doc, 'muted', task => {
-      return task.state === 'scheduled';
-    });
+    return (
+      (clinic && clinic.contact && clinic.contact.phone) ||
+      (doc.contact && doc.contact.phone)
+    );
   },
   getClinicID: getClinicID,
   getClinic: getClinic,
@@ -241,7 +248,7 @@ module.exports = {
   */
   getRegistrations: (options, callback) => {
     const viewOptions = {
-      include_docs: true
+      include_docs: true,
     };
     if (options.id) {
       viewOptions.key = options.id;
@@ -250,17 +257,24 @@ module.exports = {
     } else {
       return callback(null, []);
     }
-    options.db.medic.view('medic-client', 'registered_patients', viewOptions, (err, data) => {
-      if (err) {
-        return callback(err);
+    options.db.medic.view(
+      'medic-client',
+      'registered_patients',
+      viewOptions,
+      (err, data) => {
+        if (err) {
+          return callback(err);
+        }
+        callback(
+          null,
+          data.rows
+            .map(row => row.doc)
+            .filter(doc =>
+              registrationUtils.isValidRegistration(doc, config.getAll())
+            )
+        );
       }
-      callback(
-        null,
-        data.rows
-          .map(row => row.doc)
-          .filter(doc => registrationUtils.isValidRegistration(doc, config.getAll()))
-      );
-    });
+    );
   },
   getForm: formCode => {
     const forms = config.get('forms');
@@ -268,7 +282,27 @@ module.exports = {
   },
   isFormCodeSame: (formCode, test) => {
     // case insensitive match with junk padding
-    return (new RegExp('^\W*' + formCode + '\\W*$','i')).test(test);
+    return new RegExp('^W*' + formCode + '\\W*$', 'i').test(test);
+  },
+
+  getReportsBySubject: (options) => {
+    const viewOptions = { include_docs: true };
+    if (options.id) {
+      viewOptions.key = [options.id];
+    } else if (options.ids) {
+      viewOptions.keys = options.ids.map(id => ([id]));
+    } else {
+      return Promise.resolve([]);
+    }
+
+    return options.db.query('medic-client/reports_by_subject', viewOptions).then(result => {
+      const reports = result.rows.map(row => row.doc);
+      if (!options.registrations) {
+        return reports;
+      }
+
+      return reports.filter(report => registrationUtils.isValidRegistration(report, config.getAll()));
+    });
   },
 
   /*
@@ -286,9 +320,10 @@ module.exports = {
    */
   translate: (key, locale) => {
     const translations = config.getTranslations();
-    const msg = (translations[locale] && translations[locale][key]) ||
-                (translations.en && translations.en[key]) ||
-                key;
+    const msg =
+      (translations[locale] && translations[locale][key]) ||
+      (translations.en && translations.en[key]) ||
+      key;
     return msg && msg.trim();
   },
   /*
@@ -305,8 +340,6 @@ module.exports = {
   getPatientContact: (db, patientShortcodeId, callback) => {
     getPatient(db, patientShortcodeId, true, callback);
   },
-  isNonEmptyString: expr =>
-    typeof expr === 'string' && expr.trim() !== '',
-  evalExpression: (expr, context) =>
-    vm.runInNewContext(expr, context)
+  isNonEmptyString: expr => typeof expr === 'string' && expr.trim() !== '',
+  evalExpression: (expr, context) => vm.runInNewContext(expr, context),
 };

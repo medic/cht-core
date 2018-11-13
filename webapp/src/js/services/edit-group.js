@@ -1,17 +1,18 @@
 var _ = require('underscore');
 
-(function () {
-
+(function() {
   'use strict';
 
   var inboxServices = angular.module('inboxServices');
 
   var getTo = function(dataRecord, group) {
     var to;
-    if (group.rows &&
-        group.rows.length &&
-        group.rows[0].messages &&
-        group.rows[0].messages.length) {
+    if (
+      group.rows &&
+      group.rows.length &&
+      group.rows[0].messages &&
+      group.rows[0].messages.length
+    ) {
       to = group.rows[0].messages[0].to;
     }
     return to || dataRecord.from;
@@ -27,7 +28,7 @@ var _ = require('underscore');
           messages: [{ to: to }],
           state: 'scheduled',
           group: group.number,
-          type: group.type
+          type: group.type,
         });
       }
     });
@@ -37,15 +38,17 @@ var _ = require('underscore');
   var update = function(dataRecord, group) {
     var changed = false;
     var tasks = _.where(dataRecord.scheduled_tasks, {
-      group: group.number
+      group: group.number,
     });
     _.each(group.rows, function(updatedTask, i) {
       if (updatedTask.state === 'scheduled') {
         changed = true;
         tasks[i].due = updatedTask.due;
-        _.each(updatedTask.messages, function(updatedMessage, j) {
-          tasks[i].messages[j].message = updatedMessage.message;
-        });
+        if (!updatedTask.translation_key) {
+          _.each(updatedTask.messages, function(updatedMessage, j) {
+            tasks[i].messages[j].message = updatedMessage.message;
+          });
+        }
       }
     });
     return changed;
@@ -66,7 +69,8 @@ var _ = require('underscore');
     return changed;
   };
 
-  inboxServices.factory('EditGroup', ['DB',
+  inboxServices.factory('EditGroup', [
+    'DB',
     function(DB) {
       return function(recordId, group) {
         return DB()
@@ -76,7 +80,8 @@ var _ = require('underscore');
             var mutations = update(dataRecord, group);
             var deletions = remove(dataRecord, group);
             if (additions || mutations || deletions) {
-              return DB().put(dataRecord)
+              return DB()
+                .put(dataRecord)
                 .then(function() {
                   return dataRecord;
                 });
@@ -85,7 +90,6 @@ var _ = require('underscore');
             }
           });
       };
-    }
+    },
   ]);
-  
-}());
+})();

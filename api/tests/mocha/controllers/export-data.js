@@ -5,6 +5,7 @@ const sinon = require('sinon'),
       serverUtils = require('../../../src/server-utils');
 
 const controller = require('../../../src/controllers/export-data'),
+      exportDataV1 = require('../../../src/services/export-data'),
       exportDataV2 = require('../../../src/services/export-data-2');
 
 let set;
@@ -15,6 +16,7 @@ describe('Export Data controller', () => {
     sinon.stub(auth, 'check');
     sinon.stub(auth, 'getUserCtx');
     sinon.stub(auth, 'isOnlineOnly');
+    sinon.stub(exportDataV1, 'get');
     sinon.stub(exportDataV2, 'export');
 
     set = sinon.stub().returns({ set });
@@ -71,6 +73,35 @@ describe('Export Data controller', () => {
           },
           {}
         ]);
+      });
+    });
+  });
+
+  describe('V1', () => {
+    it('Checks permissions', () => {
+      auth.check.returns(Promise.reject({message: 'Bad permissions'}));
+      return controller.routeV1({params: {type: 'audit'}, query: {districtId: 'abc'}})
+        .then(() => {
+          auth.check.callCount.should.equal(1);
+          serverUtils.error.args[0][0].message.should.contain('Bad permissions');
+        });
+    });
+
+    it ('correct request parameters', () => {
+      const req = {
+        params: {
+          type: 'audit'
+        },
+        query: {
+          districtId: 'abc'
+        }
+      };
+      auth.check.returns(Promise.resolve({user: 'admin', district: 'xyz'}));
+      return controller.routeV1(req, { set: set }).then(() => {
+        exportDataV1.get.callCount.should.equal(1);
+        exportDataV1.get.args[0][0].should.deep.equal(
+          { districtId: 'abc', type: 'audit', form: undefined, district: 'xyz' }
+        );
       });
     });
   });

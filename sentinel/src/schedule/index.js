@@ -1,9 +1,9 @@
 const async = require('async'),
-      moment = require('moment'),
-      date = require('../date'),
-      config = require('../config'),
-      logger = require('../lib/logger'),
-      db = require('../db-nano');
+  moment = require('moment'),
+  date = require('../date'),
+  config = require('../config'),
+  logger = require('../lib/logger'),
+  db = require('../db-nano');
 
 const tasks = {
   dueTasks: require('./due_tasks'),
@@ -11,7 +11,9 @@ const tasks = {
 };
 
 function getTime(_hour, _minute) {
-  return moment(0).hours(_hour).minutes(_minute);
+  return moment(0)
+    .hours(_hour)
+    .minutes(_minute);
 }
 
 /*
@@ -19,9 +21,9 @@ function getTime(_hour, _minute) {
  */
 exports.sendable = function(config, now) {
   const afterHours = config.get('schedule_morning_hours') || 0,
-        afterMinutes = config.get('schedule_morning_minutes') || 0,
-        untilHours = config.get('schedule_evening_hours') || 23,
-        untilMinutes = config.get('schedule_evening_minutes') || 0;
+    afterMinutes = config.get('schedule_morning_minutes') || 0,
+    untilHours = config.get('schedule_evening_hours') || 23,
+    untilMinutes = config.get('schedule_evening_minutes') || 0;
 
   now = getTime(now.hours(), now.minutes());
   const after = getTime(afterHours, afterMinutes);
@@ -33,34 +35,41 @@ exports.sendable = function(config, now) {
 exports.checkSchedule = function() {
   const now = moment(date.getDate());
 
-  async.series([
-    cb => {
-      tasks.reminders.execute({
-        db: db,
-        audit: db.audit
-      }, cb);
-    },
-    cb => {
-      if (exports.sendable(config, now)) {
-        tasks.dueTasks.execute(db, db.audit, cb);
-      } else {
-        cb();
+  async.series(
+    [
+      cb => {
+        tasks.reminders.execute(
+          {
+            db: db,
+          },
+          cb
+        );
+      },
+      cb => {
+        if (exports.sendable(config, now)) {
+          tasks.dueTasks.execute(db, cb);
+        } else {
+          cb();
+        }
+      },
+    ],
+    err => {
+      if (err) {
+        logger.error('Error running tasks: %o', err);
       }
+      _reschedule();
     }
-  ], err => {
-    if (err) {
-      logger.error('Error running tasks: ' + JSON.stringify(err));
-    }
-    _reschedule();
-  });
+  );
 };
 
 function _reschedule() {
   const now = moment(),
-        heartbeat = now.clone().startOf('minute').add(5, 'minutes'),
-        duration = moment.duration(heartbeat.valueOf() - now.valueOf());
+    heartbeat = now
+      .clone()
+      .startOf('minute')
+      .add(5, 'minutes'),
+    duration = moment.duration(heartbeat.valueOf() - now.valueOf());
 
-  logger.info('checking schedule again in', moment.duration(duration).humanize());
+  logger.info(`checking schedule again in ${moment.duration(duration).humanize()}`);
   setTimeout(exports.checkSchedule, duration.asMilliseconds());
 }
-

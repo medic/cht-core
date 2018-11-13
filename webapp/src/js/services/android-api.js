@@ -180,7 +180,18 @@ angular.module('inboxServices').factory('AndroidApi',
           } else {
             return $log.error(new Error('Unknown request type: "' + requestType + '"'));
           }
-        }
+        },
+
+        smsStatusUpdate: function(id, destination, content, status, detail) {
+          // prettier-ignore
+          $log.debug('smsStatusUpdate() :: ' +
+              ' id=' + id +
+              ', destination=' + destination +
+              ', content=' + content +
+              ', status=' + status +
+              ', detail=' + detail);
+          // TODO storing status updates for SMS should be implemented as part of #4812
+        },
       }
     };
 

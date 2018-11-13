@@ -1,11 +1,12 @@
 var passwordTester = require('simple-password-tester'),
-    PASSWORD_MINIMUM_LENGTH = 8,
-    PASSWORD_MINIMUM_SCORE = 50,
-    USERNAME_WHITELIST = /^[a-z0-9_-]+$/,
-    ADMIN_ROLE = '_admin';
+  PASSWORD_MINIMUM_LENGTH = 8,
+  PASSWORD_MINIMUM_SCORE = 50,
+  USERNAME_WHITELIST = /^[a-z0-9_-]+$/,
+  ADMIN_ROLE = '_admin';
 
-angular.module('controllers').controller('EditUserCtrl',
-  function (
+angular
+  .module('controllers')
+  .controller('EditUserCtrl', function(
     $log,
     $rootScope,
     $scope,
@@ -76,7 +77,7 @@ angular.module('controllers').controller('EditUserCtrl',
             language: { code: $scope.model.language },
             // ^ Same with contactSelect vs. contact
             contactSelect: $scope.model.contact_id,
-            contact: $scope.model.contact_id
+            contact: $scope.model.contact_id,
           });
         });
       } else {
@@ -95,7 +96,10 @@ angular.module('controllers').controller('EditUserCtrl',
     $uibModalInstance.rendered.then(function() {
       // only the #edit-user-profile modal has these fields
       Select2Search($('#edit-user-profile [name=contactSelect]'), 'person');
-      Select2Search($('#edit-user-profile [name=facilitySelect]'), ContactSchema.getPlaceTypes());
+      Select2Search(
+        $('#edit-user-profile [name=facilitySelect]'),
+        ContactSchema.getPlaceTypes()
+      );
     });
 
     var validateRequired = function(fieldName, fieldDisplayName) {
@@ -119,14 +123,19 @@ angular.module('controllers').controller('EditUserCtrl',
       }
 
       // if existing user : needs both fields, or none
-      if ($scope.editUserModel.password || $scope.editUserModel.passwordConfirm) {
+      if (
+        $scope.editUserModel.password ||
+        $scope.editUserModel.passwordConfirm
+      ) {
         return validatePasswordFields();
       }
       return true;
     };
 
     var validateConfirmPasswordMatches = function() {
-      if ($scope.editUserModel.password !== $scope.editUserModel.passwordConfirm) {
+      if (
+        $scope.editUserModel.password !== $scope.editUserModel.passwordConfirm
+      ) {
         Translate('Passwords must match').then(function(value) {
           $scope.errors.password = value;
         });
@@ -138,7 +147,9 @@ angular.module('controllers').controller('EditUserCtrl',
     var validatePasswordStrength = function() {
       var password = $scope.editUserModel.password || '';
       if (password.length < PASSWORD_MINIMUM_LENGTH) {
-        Translate('password.length.minimum', { minimum: PASSWORD_MINIMUM_LENGTH }).then(function(value) {
+        Translate('password.length.minimum', {
+          minimum: PASSWORD_MINIMUM_LENGTH,
+        }).then(function(value) {
           $scope.errors.password = value;
         });
         return false;
@@ -153,10 +164,13 @@ angular.module('controllers').controller('EditUserCtrl',
     };
 
     var validatePasswordFields = function() {
-      return validateRequired('password', 'Password') &&
-        (!$scope.editUserModel.currentPassword || validateRequired('currentPassword', 'Current Password')) &&
+      return (
+        validateRequired('password', 'Password') &&
+        (!$scope.editUserModel.currentPassword ||
+          validateRequired('currentPassword', 'Current Password')) &&
         validatePasswordStrength() &&
-        validateConfirmPasswordMatches();
+        validateConfirmPasswordMatches()
+      );
     };
 
     var validateName = function() {
@@ -179,7 +193,7 @@ angular.module('controllers').controller('EditUserCtrl',
     var validateContactAndFacility = function() {
       var role = $scope.roles && $scope.roles[$scope.editUserModel.role];
       if (!role || !role.offline) {
-        return true;
+        return !$scope.editUserModel.contact || validateRequired('place', 'Facility');
       }
       var hasPlace = validateRequired('place', 'Facility');
       var hasContact = validateRequired('contact', 'associated.contact');
@@ -192,7 +206,8 @@ angular.module('controllers').controller('EditUserCtrl',
       if (!placeId || !contactId) {
         return $q.resolve(true);
       }
-      return DB().get(contactId)
+      return DB()
+        .get(contactId)
         .then(function(contact) {
           var parent = contact.parent;
           var valid = false;
@@ -211,7 +226,10 @@ angular.module('controllers').controller('EditUserCtrl',
           return valid;
         })
         .catch(function(err) {
-          $log.error('Error trying to validate contact. Trying to save anyway.', err);
+          $log.error(
+            'Error trying to validate contact. Trying to save anyway.',
+            err
+          );
           return true;
         });
     };
@@ -221,44 +239,54 @@ angular.module('controllers').controller('EditUserCtrl',
     };
 
     var changedUpdates = function(model) {
-      return determineEditUserModel()
-        .then(function(existingModel) {
-          var updates = {};
-          Object.keys(model)
-            .filter(function(k) {
-              if (k === 'id') {
-                return false;
-              }
-              if (k === 'language') {
-                return existingModel[k].code !== (model[k] && model[k].code);
-              }
-              if (k === 'password') {
-                return model[k] && model[k] !== '';
-              }
-              if (['currentPassword', 'passwordConfirm', 'facilitySelect', 'contactSelect'].indexOf(k) !== -1) {
-                // We don't want to return these 'meta' fields
-                return false;
-              }
+      return determineEditUserModel().then(function(existingModel) {
+        var updates = {};
+        Object.keys(model)
+          .filter(function(k) {
+            if (k === 'id') {
+              return false;
+            }
+            if (k === 'language') {
+              return existingModel[k].code !== (model[k] && model[k].code);
+            }
+            if (k === 'password') {
+              return model[k] && model[k] !== '';
+            }
+            if (
+              [
+                'currentPassword',
+                'passwordConfirm',
+                'facilitySelect',
+                'contactSelect',
+              ].indexOf(k) !== -1
+            ) {
+              // We don't want to return these 'meta' fields
+              return false;
+            }
 
-              return existingModel[k] !== model[k];
-            })
-            .forEach(function(k) {
-              if (k === 'language') {
-                updates[k] = model[k].code;
-              } else if (k === 'role') {
-                updates.roles = [model[k]];
-              } else {
-                updates[k] = model[k];
-              }
-            });
+            return existingModel[k] !== model[k];
+          })
+          .forEach(function(k) {
+            if (k === 'language') {
+              updates[k] = model[k].code;
+            } else if (k === 'role') {
+              updates.roles = [model[k]];
+            } else {
+              updates[k] = model[k];
+            }
+          });
 
-          return updates;
-        });
+        return updates;
+      });
     };
 
     var computeFields = function() {
-      $scope.editUserModel.place = $('#edit-user-profile [name=facilitySelect]').val();
-      $scope.editUserModel.contact = $('#edit-user-profile [name=contactSelect]').val();
+      $scope.editUserModel.place = $(
+        '#edit-user-profile [name=facilitySelect]'
+      ).val();
+      $scope.editUserModel.contact = $(
+        '#edit-user-profile [name=contactSelect]'
+      ).val();
     };
 
     var haveUpdates = function(updates) {
@@ -270,10 +298,12 @@ angular.module('controllers').controller('EditUserCtrl',
       $scope.setProcessing();
       $scope.errors = {};
       computeFields();
-      if (validateName() &&
-          validateRole() &&
-          validateContactAndFacility() &&
-          validatePasswordForEditUser()) {
+      if (
+        validateName() &&
+        validateRole() &&
+        validateContactAndFacility() &&
+        validatePasswordForEditUser()
+      ) {
         validateContactIsInPlace()
           .then(function(valid) {
             if (!valid) {
@@ -281,20 +311,24 @@ angular.module('controllers').controller('EditUserCtrl',
               return;
             }
             changedUpdates($scope.editUserModel).then(function(updates) {
-              $q.resolve().then(function() {
-                if (!haveUpdates(updates)) {
-                  return;
-                } else if ($scope.editUserModel.id) {
-                  return UpdateUser($scope.editUserModel.username, updates);
-                } else {
-                  return CreateUser(updates);
-                }
-              })
+              $q.resolve()
+                .then(function() {
+                  if (!haveUpdates(updates)) {
+                    return;
+                  } else if ($scope.editUserModel.id) {
+                    return UpdateUser($scope.editUserModel.username, updates);
+                  } else {
+                    return CreateUser(updates);
+                  }
+                })
                 .then(function() {
                   $scope.setFinished();
                   // TODO: change this from a broadcast to a changes watcher
                   //       https://github.com/medic/medic-webapp/issues/4094
-                  $rootScope.$broadcast('UsersUpdated', $scope.editUserModel.id);
+                  $rootScope.$broadcast(
+                    'UsersUpdated',
+                    $scope.editUserModel.id
+                  );
                   $uibModalInstance.close();
                 })
                 .catch(function(err) {
@@ -309,5 +343,4 @@ angular.module('controllers').controller('EditUserCtrl',
         $scope.setError();
       }
     };
-  }
-);
+  });

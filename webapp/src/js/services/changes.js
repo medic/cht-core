@@ -59,7 +59,7 @@ angular.module('inboxServices').factory('Changes',
     var watches = [];
 
     var watchChanges = function(meta) {
-      $log.info('Initiating changes watch');
+      $log.info(`Initiating changes watch (meta=${meta})`);
       var watch = DB({ meta: meta })
         .changes({
           live: true,

@@ -26,7 +26,6 @@
     "buffer-shims": "^1.0.0",
     "bulk-docs-utils": "file:../shared-libs/bulk-docs-utils",
     "compression": "^1.7.3",
-    "couchdb-audit": "^1.1.1",
     "express": "^4.16.3",
     "fast-csv": "^2.4.1",
     "google-libphonenumber": "^3.1.11",
@@ -53,6 +52,7 @@
     "underscore": "^1.8.3",
     "url": "^0.11.0",
     "uuid": "^3.2.1",
+    "winston": "^3.1.0",
     "xmlbuilder": "^10.0.0"
   },
   "devDependencies": {
@@ -68,7 +68,6 @@
     "buffer-shims",
     "bulk-docs-utils",
     "compression",
-    "couchdb-audit",
     "express",
     "fast-csv",
     "google-libphonenumber",

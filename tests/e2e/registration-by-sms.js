@@ -1,3 +1,6 @@
+/**
+ * TEST DISABLED FOR FLAKINESS
+ * @see https://github.com/medic/medic-webapp/issues/4932
 const utils = require('../utils'),
       commonElements = require('../page-objects/common/common.po.js'),
       helper = require('../helper'),
@@ -296,3 +299,4 @@ describe('registration transition', () => {
 
   });
 });
+*/

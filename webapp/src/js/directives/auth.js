@@ -1,12 +1,22 @@
 var _ = require('underscore');
 
-angular.module('inboxDirectives').directive('mmAuth', function($log, Auth, $parse) {
+angular.module('inboxDirectives').directive('mmAuth', function($log, Auth, $parse, $q) {
   'use strict';
   'ngInject';
   var link = function(scope, element, attributes) {
+    var promises = [];
     if (attributes.mmAuth) {
+      promises.push(Auth(attributes.mmAuth.split(',')));
+    }
+
+    if (attributes.mmAuthOnline) {
+      promises.push(Auth.online($parse(attributes.mmAuthOnline)(scope)));
+    }
+
+    if (promises.length) {
       element.addClass('hidden');
-      Auth(attributes.mmAuth.split(','))
+      $q
+        .all(promises)
         .then(function () {
           element.removeClass('hidden');
         })
@@ -46,6 +56,12 @@ angular.module('inboxDirectives').directive('mmAuth', function($log, Auth, $pars
         .any(permissionsGroups)
         .then(function() {
           element.removeClass('hidden');
+        })
+        .catch(function (err) {
+          if (err) {
+            $log.error('Error checking authorization', err);
+          }
+          element.addClass('hidden');
         });
     };
 

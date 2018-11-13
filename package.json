@@ -15,12 +15,6 @@
     "start": "nf start",
     "webdriver": "webdriver-manager update && webdriver-manager start"
   },
-  "husky": {
-    "hooks": {
-      "pre-push": "grunt static-analysis",
-      "pre-commit": "pretty-quick --staged"
-    }
-  },
   "devDependencies": {
     "angular-mocks": "^1.7.3",
     "autoprefixer": "^9.1.3",
@@ -36,7 +30,7 @@
     "grunt-contrib-cssmin": "^2.2.1",
     "grunt-contrib-jshint": "^1.0.0",
     "grunt-contrib-less": "^2.0.0",
-    "grunt-contrib-uglify": "^3.4.0",
+    "grunt-contrib-uglify-es": "^3.3.0",
     "grunt-contrib-watch": "github:scdf/grunt-contrib-watch#v1.0.0-fix_dirs_firing",
     "grunt-couch": "^1.5.1",
     "grunt-env": "^0.4.4",
@@ -51,7 +45,6 @@
     "grunt-sass": "^3.0.1",
     "grunt-text-replace": "^0.4.0",
     "grunt-xmlmin": "^0.1.8",
-    "husky": "^1.0.0-rc.13",
     "jit-grunt": "^0.10.0",
     "jshint-stylish": "^2.1.0",
     "karma": "^3.0.0",
@@ -67,8 +60,6 @@
     "pouchdb-adapter-http": "^7.0.0",
     "pouchdb-core": "^7.0.0",
     "pouchdb-mapreduce": "^7.0.0",
-    "prettier": "^1.13.7",
-    "pretty-quick": "^1.6.0",
     "protractor-jasmine2-screenshot-reporter": "^0.5.0",
     "sinon": "^6.1.5",
     "time-grunt": "^1.3.0",

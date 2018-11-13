@@ -1,10 +1,11 @@
 var db = require('../db-nano'),
-    {promisify} = require('util'),
-    async = require('async'),
-    _ = require('underscore'),
-    DDOC_ID = '_design/medic',
-    BATCH_SIZE = 100,
-    AUDIT_ID_SUFFIX = '-audit';
+  { promisify } = require('util'),
+  async = require('async'),
+  logger = require('../logger'),
+  _ = require('underscore'),
+  DDOC_ID = '_design/medic',
+  BATCH_SIZE = 100,
+  AUDIT_ID_SUFFIX = '-audit';
 
 var dropView = function(callback) {
   db.audit.get(DDOC_ID, function(err, ddoc) {
@@ -17,8 +18,9 @@ var dropView = function(callback) {
 };
 
 var needsUpdate = function(row) {
-  return row.doc.type === 'audit_record' && // is an audit doc, and
-         row.doc.record_id;                 // has old property
+  return (
+    row.doc.type === 'audit_record' && row.doc.record_id // is an audit doc, and
+  ); // has old property
 };
 
 var getAuditId = function(doc) {
@@ -64,7 +66,7 @@ var createNewDocs = function(oldDocs, callback) {
     });
     found.forEach(function(row) {
       var dupe = _.findWhere(merged, { record_id: getRecordId(row.doc) });
-      dupe.history = mergeHistory([ dupe, row.doc ]).history;
+      dupe.history = mergeHistory([dupe, row.doc]).history;
       dupe.auditRev = row.doc._rev;
     });
     var newDocs = merged.map(function(doc) {
@@ -72,7 +74,7 @@ var createNewDocs = function(oldDocs, callback) {
         _id: getAuditId(doc),
         _rev: doc.auditRev,
         type: 'audit_record',
-        history: doc.history
+        history: doc.history,
       };
     });
     db.audit.bulk({ docs: newDocs }, callback);
@@ -90,7 +92,7 @@ var changeDocIdsBatch = function(skip, callback) {
   var options = {
     include_docs: true,
     limit: BATCH_SIZE,
-    skip: skip
+    skip: skip,
   };
   db.audit.list(options, function(err, result) {
     if (err) {
@@ -100,7 +102,15 @@ var changeDocIdsBatch = function(skip, callback) {
       // we've reached the end of the database!
       return callback(null, null, false);
     }
-    console.log('        Processing ' + skip + ' to ' + (skip + BATCH_SIZE) + ' docs of ' + result.total_rows + ' total');
+    logger.info(
+      `        Processing
+        ${skip} 
+         to  
+        (${skip + BATCH_SIZE}) 
+         docs of  
+        ${result.total_rows} 
+         total`
+    );
     var oldDocs = result.rows.filter(needsUpdate).map(function(row) {
       return row.doc;
     });
@@ -160,5 +170,5 @@ module.exports = {
       }
       changeDocIds(callback);
     });
-  })
+  }),
 };

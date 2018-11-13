@@ -11,6 +11,7 @@ module.exports = function(grunt) {
     ngtemplates: 'grunt-angular-templates',
     protractor: 'grunt-protractor-runner',
     replace: 'grunt-text-replace',
+    uglify: 'grunt-contrib-uglify-es',
   });
   require('time-grunt')(grunt);
 
@@ -180,7 +181,6 @@ module.exports = function(grunt) {
         reporter: require('jshint-stylish'),
         ignores: [
           'webapp/src/js/modules/xpath-element-path.js',
-          'webapp/tests/karma/q.js',
           '**/node_modules/**',
           'sentinel/src/lib/pupil/**',
           'build/**',
@@ -230,7 +230,7 @@ module.exports = function(grunt) {
       options: {
         processors: [
           require('autoprefixer')({
-            browsers: ['last 2 versions', 'Android >= 4.4'],
+            browsers: ['last 2 Firefox versions', 'Chrome >= 54'],
           }),
         ],
       },
@@ -258,6 +258,12 @@ module.exports = function(grunt) {
             dest: 'build/ddocs/medic/_attachments/fonts/',
           },
         ],
+      },
+      'inbox-file-attachment': {
+        expand: true,
+        cwd: 'webapp/src/',
+        src: 'templates/inbox.html',
+        dest: 'build/ddocs/medic/_attachments/',
       },
       'ddoc-attachments': {
         files: [
@@ -298,6 +304,7 @@ module.exports = function(grunt) {
             cwd: 'webapp/node_modules',
             src: [
               'bootstrap-daterangepicker/**',
+              'enketo-core/**',
               'font-awesome/**',
               'moment/**',
             ],
@@ -419,13 +426,14 @@ module.exports = function(grunt) {
           'until nc -z localhost 4444; do sleep 1; done',
       },
       'check-env-vars':
-        'if [ -z $COUCH_URL ] || [ -z $API_URL ] || [ -z $COUCH_NODE_NAME ]; then ' +
+        'if [ -z $COUCH_URL ] || [ -z $COUCH_NODE_NAME ]; then ' +
         'echo "Missing required env var.  Check that all are set: ' +
-        'COUCH_URL, API_URL, COUCH_NODE_NAME" && exit 1; fi',
+        'COUCH_URL, COUCH_NODE_NAME" && exit 1; fi',
       'undo-patches': {
         cmd: function() {
           var modulesToPatch = [
             'bootstrap-daterangepicker',
+            'enketo-core',
             'font-awesome',
             'moment',
           ];
@@ -487,6 +495,9 @@ module.exports = function(grunt) {
 
             // patch moment.js to use western arabic (european) numerals in Hindi
             'patch webapp/node_modules/moment/locale/hi.js < webapp/patches/moment-hindi-use-euro-numerals.patch',
+
+            // patch enketo to always mark the /inputs group as relevant
+            'patch webapp/node_modules/enketo-core/src/js/Form.js < webapp/patches/enketo-inputs-always-relevant.patch',
           ];
           return patches.join(' && ');
         },
@@ -570,6 +581,15 @@ module.exports = function(grunt) {
           'deploy',
         ],
       },
+      'inbox-html-template': {
+        files: 'webapp/src/templates/inbox.html',
+        tasks: [
+          'copy:inbox-file-attachment',
+          'appcache',
+          'couch-compile:primary',
+          'deploy',
+        ],
+      },
       'primary-ddoc': {
         files: ['ddocs/medic/**/*'],
         tasks: ['copy:ddocs', 'couch-compile:primary', 'deploy'],
@@ -635,6 +655,7 @@ module.exports = function(grunt) {
       unit: {
         src: [
           'webapp/tests/mocha/unit/**/*.spec.js',
+          'webapp/tests/mocha/unit/*.spec.js',
           'api/tests/mocha/**/*.js',
           'sentinel/tests/**/*.js',
         ],
@@ -749,10 +770,29 @@ module.exports = function(grunt) {
 
               // ignored because they don't have access to angular
               '!webapp/src/js/app.js',
-              '!webapp/src/js/bootstrapper.js',
+              '!webapp/src/js/bootstrapper/*.js',
 
               // ignored because its job is to log to console
               '!webapp/src/js/modules/feedback.js',
+            ],
+          },
+        ],
+        options: {
+          pattern: /console\./g,
+        },
+      },
+      'console-in-node': {
+        files: [
+          {
+            src: [
+              'api/**/*.js',
+              'sentinel/**/*.js',
+
+              // ignore because they are sent to the client side/frontend
+              '!api/src/public/**/*.js',
+
+              // ignore build dirs
+              '!**/node_modules/**',
             ],
           },
         ],

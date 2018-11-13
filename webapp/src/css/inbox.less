@@ -574,6 +574,10 @@ body {
       }
     }
   }
+
+  .card.children .content-row.muted h4 {
+    color: @inactive-color;
+  }
 }
 
 .tasks .item-content {
@@ -1194,8 +1198,29 @@ a.fa:hover {
   text-align: center;
 }
 
-.deceased svg path {
+.deceased svg path,
+.muted svg path,
+.deceased svg circle,
+.muted svg circle {
   fill: @inactive-color;
+}
+
+.about,
+.analytics {
+  .content {
+    .inner {
+      /* allow the scrollable content to grow to full width */
+      max-width: inherit;
+      .page {
+        max-width: inherit;
+        /* set the max with and center all the children again */
+        > div {
+          max-width: @content-width;
+          margin: 0 auto;
+        }
+      }
+    }
+  }
 }
 
 @media (max-width: 767px) {

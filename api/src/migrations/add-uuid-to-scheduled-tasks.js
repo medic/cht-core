@@ -1,10 +1,11 @@
 var db = require('../db-nano'),
-    {promisify} = require('util'),
-    async = require('async'),
-    moment = require('moment'),
-    uuidV4 = require('uuid/v4'),
-    settingsService = require('../services/settings'),
-    BATCH_SIZE = 100;
+  { promisify } = require('util'),
+  async = require('async'),
+  moment = require('moment'),
+  uuidV4 = require('uuid/v4'),
+  logger = require('../logger'),
+  settingsService = require('../services/settings'),
+  BATCH_SIZE = 100;
 
 var updateMessage = function(message) {
   if (message.uuid) {
@@ -29,10 +30,12 @@ var updateTask = function(task) {
 
 var update = function(row) {
   var updated = false;
-  if (row.doc &&
-      row.doc.type === 'data_record' &&
-      row.doc.form &&
-      row.doc.scheduled_tasks) {
+  if (
+    row.doc &&
+    row.doc.type === 'data_record' &&
+    row.doc.form &&
+    row.doc.scheduled_tasks
+  ) {
     row.doc.scheduled_tasks.forEach(function(task) {
       if (updateTask(task)) {
         updated = true;
@@ -53,18 +56,26 @@ var runBatch = function(skip, callback) {
   var options = {
     include_docs: true,
     limit: BATCH_SIZE,
-    skip: skip
+    skip: skip,
   };
   db.medic.list(options, function(err, result) {
     if (err) {
       return callback(err);
     }
-    console.log('        Processing ' + skip + ' to ' + (skip + BATCH_SIZE) + ' docs of ' + result.total_rows + ' total');
+    logger.info(
+      `        Processing
+        ${skip} 
+         to  
+        (${skip + BATCH_SIZE}) 
+         docs of  
+        ${result.total_rows} 
+         total`
+    );
     var toSave = result.rows.filter(update).map(function(row) {
       return row.doc;
     });
     save(toSave, function(err) {
-      var keepGoing = result.total_rows > (skip + BATCH_SIZE);
+      var keepGoing = result.total_rows > skip + BATCH_SIZE;
       callback(err, keepGoing);
     });
   });
@@ -74,12 +85,15 @@ module.exports = {
   name: 'add-uuid-to-scheduled-tasks',
   created: new Date(2017, 1, 5),
   run: promisify(function(callback) {
-    settingsService.get()
+    settingsService
+      .get()
       .then(settings => {
         var schedules = settings.schedules;
-        if (!schedules ||
-            !schedules.length ||
-            (schedules.length === 1 && !schedules[0].name)) {
+        if (
+          !schedules ||
+          !schedules.length ||
+          (schedules.length === 1 && !schedules[0].name)
+        ) {
           return callback();
         }
         var currentSkip = 0;
@@ -95,5 +109,5 @@ module.exports = {
         );
       })
       .catch(callback);
-  })
+  }),
 };

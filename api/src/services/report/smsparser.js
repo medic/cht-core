@@ -1,12 +1,22 @@
 const config = require('../../config'),
-      mpParser = require('./mp-parser'),
-      javarosaParser = require('./javarosa-parser'),
-      textformsParser = require('./textforms-parser');
+  mpParser = require('./mp-parser'),
+  javarosaParser = require('./javarosa-parser'),
+  textformsParser = require('./textforms-parser'),
+  logger = require('../../logger');
 
 const MUVUKU_REGEX = /^\s*([A-Za-z]?\d)!.+!.+/;
 
 const T_TABLE = {
-  /* Devanagari */ '०':'0', '१':'1', '२':'2', '३':'3', '४':'4', '५':'5', '६':'6', '७':'7', '८':'8', '९':'9',
+  /* Devanagari */ '०': '0',
+  '१': '1',
+  '२': '2',
+  '३': '3',
+  '४': '4',
+  '५': '5',
+  '६': '6',
+  '७': '7',
+  '८': '8',
+  '९': '9',
 };
 
 // TODO ensure everything in here is still needed
@@ -22,9 +32,9 @@ const standardiseDigits = original => {
  * @returns {Boolean} The parsed message code string or undefined
  * @api private
  */
-const isMuvukuFormat = exports.isMuvukuFormat = msg => {
-  return (typeof msg === 'string') && MUVUKU_REGEX.test(msg);
-};
+const isMuvukuFormat = (exports.isMuvukuFormat = msg => {
+  return typeof msg === 'string' && MUVUKU_REGEX.test(msg);
+});
 
 /*
  * Escape regex characters, helps to prevent injection issues when accepting
@@ -46,7 +56,10 @@ const stripFormCode = (code, msg) => {
   if (typeof code !== 'string') {
     return msg;
   }
-  return msg.replace(new RegExp(`^\\s*${regexEscape(code)}[\\s!\\-,:#]*`,'i'), '');
+  return msg.replace(
+    new RegExp(`^\\s*${regexEscape(code)}[\\s!\\-,:#]*`, 'i'),
+    ''
+  );
 };
 
 /**
@@ -58,7 +71,7 @@ const stripFormCode = (code, msg) => {
  * @returns {Function|undefined} The parser function or undefined
  * @api private
  */
-const getParser = exports.getParser = (def, doc) => {
+const getParser = (exports.getParser = (def, doc) => {
   const code = def && def.meta && def.meta.code;
   let msg = doc.message;
   if (typeof msg !== 'string') {
@@ -66,7 +79,7 @@ const getParser = exports.getParser = (def, doc) => {
   }
   const match = msg.match(MUVUKU_REGEX);
   if (match && match[1]) {
-    switch(match[1].toUpperCase()) {
+    switch (match[1].toUpperCase()) {
       case '1':
         return mpParser.parse;
       case 'J1':
@@ -81,7 +94,7 @@ const getParser = exports.getParser = (def, doc) => {
   } else {
     return textformsParser.parse;
   }
-};
+});
 
 /**
  * Uses the keys to create a deep key on the obj.
@@ -103,7 +116,7 @@ const createDeepKey = (obj, keys, val) => {
     return;
   }
 
-  if(!obj[key]) {
+  if (!obj[key]) {
     obj[key] = {};
   }
   createDeepKey(obj[key], keys, val);
@@ -120,7 +133,7 @@ const parseNum = raw => {
   return Number(std);
 };
 
-const lower = str => str && str.toLowerCase ? str.toLowerCase() : str;
+const lower = str => (str && str.toLowerCase ? str.toLowerCase() : str);
 
 exports.parseField = (field, raw) => {
   switch (field.type) {
@@ -135,7 +148,9 @@ exports.parseField = (field, raw) => {
       if (field.list) {
         const item = field.list.find(item => String(item[0]) === String(raw));
         if (!item) {
-          console.warn(`Option not available for ${JSON.stringify(raw)} in list.`);
+          logger.warn(
+            `Option not available for ${JSON.stringify(raw)} in list.`
+          );
           return null;
         }
         return config.translate(item[1]);
@@ -158,7 +173,7 @@ exports.parseField = (field, raw) => {
             return config.translate(item[1]);
           }
         }
-        console.warn(`Option not available for ${raw} in list.`);
+        logger.warn(`Option not available for ${raw} in list.`);
       }
       return config.translate(raw);
     case 'date':
@@ -185,7 +200,7 @@ exports.parseField = (field, raw) => {
       // keep months integers, not their list value.
       return parseNum(raw);
     default:
-      console.warn('Unknown field type: ' + field.type);
+      logger.warn(`Unknown field type: ${field.type}`);
       return raw;
   }
 };
@@ -200,11 +215,10 @@ exports.parseField = (field, raw) => {
  * @api public
  */
 exports.parse = (def, doc) => {
-
   let msgData,
-      parser,
-      formData = {},
-      addOmittedFields = false;
+    parser,
+    formData = {},
+    addOmittedFields = false;
 
   if (!def || !doc || !doc.message || !def.fields) {
     return {};
@@ -213,7 +227,7 @@ exports.parse = (def, doc) => {
   parser = getParser(def, doc);
 
   if (!parser) {
-    console.error('Failed to find message parser.');
+    logger.error('Failed to find message parser.');
     return {};
   }
 
@@ -222,14 +236,16 @@ exports.parse = (def, doc) => {
     addOmittedFields = true;
   } else {
     const code = def && def.meta && def.meta.code,
-          msg = stripFormCode(code, doc.message || doc);
+      msg = stripFormCode(code, doc.message || doc);
     if (textformsParser.isCompact(def, msg, doc.locale)) {
       msgData = parser(def, msg);
     } else {
       msgData = parser(msg);
       // replace tiny labels with field keys for textforms
       for (let j of Object.keys(def.fields)) {
-        const label = lower(config.translate(def.fields[j].labels.tiny, doc.locale));
+        const label = lower(
+          config.translate(def.fields[j].labels.tiny, doc.locale)
+        );
         if (j !== label && msgData[label]) {
           msgData[j] = msgData[label];
           msgData[label] = undefined;
@@ -261,11 +277,12 @@ exports.parse = (def, doc) => {
  * @api public
  */
 exports.parseArray = (def, doc) => {
-
   const parser = getParser(def, doc),
-        obj = parser(def, doc);
+    obj = parser(def, doc);
 
-  if (!def || !def.fields) { return []; }
+  if (!def || !def.fields) {
+    return [];
+  }
 
   // collect field keys into array
   const arr = Object.keys(def.fields).map(k => obj[k]);
@@ -287,7 +304,6 @@ exports.parseArray = (def, doc) => {
  * @api public
  */
 exports.getFormCode = msg => {
-
   if (typeof msg !== 'string') {
     return;
   }
@@ -301,7 +317,6 @@ exports.getFormCode = msg => {
   if (match !== null && match.length === 2) {
     return match[1].toUpperCase();
   }
-
 };
 
 /**
@@ -319,10 +334,10 @@ exports.getFormCode = msg => {
 exports.merge = (form, key, data_record, formData) => {
   // support creating subobjects on the record if form defines key with dot
   // notation.
-  if(key.length > 1) {
+  if (key.length > 1) {
     const tmp = key.shift();
-    if(formData[tmp]) {
-      if(!data_record[tmp]) {
+    if (formData[tmp]) {
+      if (!data_record[tmp]) {
         data_record[tmp] = {};
       }
       exports.merge(form, key, data_record[tmp], formData[tmp]);
@@ -331,4 +346,3 @@ exports.merge = (form, key, data_record, formData) => {
     data_record[key[0]] = formData[key[0]];
   }
 };
-
