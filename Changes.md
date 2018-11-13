@@ -53,6 +53,7 @@ _July 6, 2018_
 - [#4643](https://github.com/medic/medic-webapp/issues/4643): Enable response body compression
 - [#4656](https://github.com/medic/medic-webapp/issues/4656): Remove gammu from the medic-os image
 - [#4669](https://github.com/medic/medic-webapp/issues/4669): Subject summaries are loaded one at a time
+- [#4939](https://github.com/medic/medic-webapp/issues/4939): CouchDB 2 performance issue
 
 ### Bug fixes
 
@@ -67,13 +68,13 @@ _July 6, 2018_
 - [#4088](https://github.com/medic/medic-webapp/issues/4088): User's role changes are only reflected if they log out and in again
 - [#4211](https://github.com/medic/medic-webapp/issues/4211): Export server logs not working
 - [#4232](https://github.com/medic/medic-webapp/issues/4232): Wrong date shown based on time and timezone
-- [#4243](https://github.com/medic/medic-webapp/issues/4243): Upgrading throbber spins forever when Cancel is clicked on in Horticulturalist's `Update Available` modal 
+- [#4243](https://github.com/medic/medic-webapp/issues/4243): Upgrading throbber spins forever when Cancel is clicked on in Horticulturalist's `Update Available` modal
 - [#4312](https://github.com/medic/medic-webapp/issues/4312): TIMEOUT errors watching changes feed For Some Reason™
 - [#4319](https://github.com/medic/medic-webapp/issues/4319): Browser OOM crash on Enketo db-object prepopulated forms
 - [#4343](https://github.com/medic/medic-webapp/issues/4343): The sms-gateway endpoint can crash api
 - [#4364](https://github.com/medic/medic-webapp/issues/4364): Don't use error code 301 when unauthorized
 - [#4371](https://github.com/medic/medic-webapp/issues/4371): Report RHS action bar not updated for unknown/missing contact
-- [#4373](https://github.com/medic/medic-webapp/issues/4373):  `{{patient_name}}`  not rendered in the error message and the automated reply.
+- [#4373](https://github.com/medic/medic-webapp/issues/4373): `{{patient_name}}` not rendered in the error message and the automated reply
 - [#4412](https://github.com/medic/medic-webapp/issues/4412): User metadata db security
 - [#4424](https://github.com/medic/medic-webapp/issues/4424): Pouch timeout weirdness with Medic servers
 - [#4425](https://github.com/medic/medic-webapp/issues/4425): Lineage unit tests do not run on Travis
@@ -98,7 +99,13 @@ _July 6, 2018_
 - [#4754](https://github.com/medic/medic-webapp/issues/4754): Deleting error-report not replicating properly
 - [#4774](https://github.com/medic/medic-webapp/issues/4774): Use user.facility_id saved in `_users` instead of `medic` db
 - [#4792](https://github.com/medic/medic-webapp/issues/4792): Horti versions don't show up correctly in about page
-- [#4975](https://github.com/medic/medic-webapp/issues/4975): Sentinel hangs on empty trigger config
+- [#4806](https://github.com/medic/medic-webapp/issues/4806): Fix getting registrations via querying `medic-client/registered_patients`
+- [#4808](https://github.com/medic/medic-webapp/issues/4808): Clicking edit on a district, health center, heatlh area is showing error
+- [#4823](https://github.com/medic/medic-webapp/issues/4823): Error loading form "Could not evaluate:"
+- [#4831](https://github.com/medic/medic-webapp/issues/4831): ANC SMS are not cleared when pregnancy is registered to the patient
+- [#4848](https://github.com/medic/medic-webapp/issues/4848): ZScore Charts are not being found
+- [#4893](https://github.com/medic/medic-webapp/issues/4893): Horticulturalist crashes when view warming
+- [#4975](https://github.com/medic/medic-webapp/issues/4975): Empty triggers cause sentinel to hang
 
 ### Technical issues
 
