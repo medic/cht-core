@@ -1,5 +1,13 @@
 # Medic Mobile Release Notes
 
+## 2.18.2
+
+_unreleased_
+
+### Bug fixes
+
+ - [#4975](https://github.com/medic/medic-webapp/issues/4975): Sentinel hangs on empty trigger config
+
 ## 2.18.1
 
 _October 23, 2018_
