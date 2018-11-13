@@ -86,7 +86,7 @@ describe('translations', () => {
       _id: 'messages-en',
       code: 'en',
       type: 'translations',
-      default: { hello: 'Gidday' }
+      generic: { hello: 'Gidday' }
     } } ];
     const dbGet = sinon.stub(db.medic, 'get').resolves(ddoc);
     const dbAttachment = sinon.stub(db.medic, 'getAttachment').resolves('some buffer');
@@ -105,7 +105,7 @@ describe('translations', () => {
           _id: 'messages-en',
           code: 'en',
           type: 'translations',
-          default: { hello: 'Hello' }
+          generic: { hello: 'Hello' }
         }
       ]);
     });
@@ -117,7 +117,7 @@ describe('translations', () => {
       _id: 'messages-en',
       code: 'en',
       type: 'translations',
-      default: { hello: 'Hello', bye: 'Goodbye CUSTOMISED' }
+      generic: { hello: 'Hello', bye: 'Goodbye CUSTOMISED' }
     } } ];
     const dbGet = sinon.stub(db.medic, 'get').resolves(ddoc);
     const dbAttachment = sinon.stub(db.medic, 'getAttachment').resolves('some buffer');
@@ -141,7 +141,7 @@ describe('translations', () => {
       _id: 'messages-en',
       code: 'en',
       type: 'translations',
-      default: { hello: 'Hello', bye: 'Goodbye CUSTOMISED' }
+      generic: { hello: 'Hello', bye: 'Goodbye CUSTOMISED' }
     } } ];
     const dbGet = sinon.stub(db.medic, 'get').resolves(ddoc);
     const dbAttachment = sinon.stub(db.medic, 'getAttachment').resolves('some buffer');
@@ -160,7 +160,7 @@ describe('translations', () => {
           _id: 'messages-en',
           code: 'en',
           type: 'translations',
-          default: {
+          generic: {
             hello: 'Hello UPDATED',
             bye: 'Goodbye UPDATED',
             added: 'ADDED'
@@ -177,7 +177,7 @@ describe('translations', () => {
       _id: 'messages-en',
       code: 'en',
       type: 'translations',
-      default: { empty: '' }
+      generic: { empty: '' }
     } } ];
     sinon.stub(db.medic, 'get').resolves(ddoc);
     sinon.stub(db.medic, 'getAttachment').resolves('some buffer');
@@ -196,7 +196,7 @@ describe('translations', () => {
       _id: 'messages-en',
       code: 'en',
       type: 'translations',
-      default: { hello: 'Hello', bye: 'Goodbye CUSTOMISED' }
+      generic: { hello: 'Hello', bye: 'Goodbye CUSTOMISED' }
     } } ];
     const dbGet = sinon.stub(db.medic, 'get').resolves(ddoc);
     const dbAttachment = sinon.stub(db.medic, 'getAttachment').resolves('some buffer');
@@ -217,7 +217,7 @@ describe('translations', () => {
           code: 'fr',
           name: 'Français (French)',
           enabled: true,
-          default: {
+          generic: {
             hello: 'Hello UPDATED',
             bye: 'Goodbye UPDATED',
             added: 'ADDED'
@@ -235,7 +235,7 @@ describe('translations', () => {
       _id: 'messages-en',
       type: 'translations',
       code: 'en',
-      default: { hello: 'Hello', bye: 'Goodbye' }
+      generic: { hello: 'Hello', bye: 'Goodbye' }
     } } ];
     const dbGet = sinon.stub(db.medic, 'get').resolves(ddoc);
     const dbAttachment = sinon.stub(db.medic, 'getAttachment').resolves('some buffer');
@@ -254,7 +254,7 @@ describe('translations', () => {
           _id: 'messages-fr',
           code: 'fr',
           type: 'translations',
-          default: {
+          generic: {
             hello: 'Hello UPDATED',
             bye: 'Goodbye UPDATED',
             added: 'ADDED'
@@ -276,13 +276,13 @@ describe('translations', () => {
         _id: 'messages-en',
         code: 'en',
         type: 'translations',
-        default: { hello: 'Hello EN', bye: 'Goodbye EN CUSTOMISED' }
+        generic: { hello: 'Hello EN', bye: 'Goodbye EN CUSTOMISED' }
       } },
       { doc: {
         _id: 'messages-fr',
         code: 'fr',
         type: 'translations',
-        default: { hello: 'Hello FR', bye: 'Goodbye FR CUSTOMISED' }
+        generic: { hello: 'Hello FR', bye: 'Goodbye FR CUSTOMISED' }
       } }
     ];
     const dbGet = sinon.stub(db.medic, 'get').resolves(ddoc);
@@ -304,7 +304,7 @@ describe('translations', () => {
           _id: 'messages-en',
           code: 'en',
           type: 'translations',
-          default: {
+          generic: {
             hello: 'Hello EN UPDATED',
             bye: 'Goodbye EN UPDATED',
             added: 'EN ADDED'
@@ -314,7 +314,7 @@ describe('translations', () => {
           _id: 'messages-fr',
           code: 'fr',
           type: 'translations',
-          default: {
+          generic: {
             hello: 'Hello FR UPDATED',
             bye: 'Goodbye FR UPDATED',
             added: 'FR ADDED'
@@ -333,7 +333,7 @@ describe('translations', () => {
         _id: 'messages-en',
         code: 'en',
         type: 'translations',
-        default: { hello: null, bye: 'Goodbye' }
+        generic: { hello: null, bye: 'Goodbye' }
       } }
     ];
     const dbGet = sinon.stub(db.medic, 'get').resolves(ddoc);
@@ -354,7 +354,7 @@ describe('translations', () => {
           _id: 'messages-en',
           code: 'en',
           type: 'translations',
-          default: {
+          generic: {
             hello: 'hello',
             bye: 'Goodbye'
           }
@@ -373,13 +373,13 @@ describe('translations', () => {
         _id: 'messages-en',
         code: 'en',
         type: 'translations',
-        default: { hello: 'Hello', bye: 'Goodbye' }
+        generic: { hello: 'Hello', bye: 'Goodbye' }
       } },
       { doc: {
         _id: 'messages-ne',
         code: 'ne',
         type: 'translations',
-        default: { bye: 'Goodbye' }
+        generic: { bye: 'Goodbye' }
       } }
     ];
     const dbGet = sinon.stub(db.medic, 'get').resolves(ddoc);
@@ -401,7 +401,7 @@ describe('translations', () => {
           _id: 'messages-ne',
           code: 'ne',
           type: 'translations',
-          default: {
+          generic: {
             hello: 'hello', // defaults to the translation key
             bye: 'Goodbye'
           }
@@ -419,7 +419,7 @@ describe('translations', () => {
           _id: 'messages-en',
           code: 'en',
           type: 'translations',
-          default: { hello: null, bye: 0, ciao: false, adios: 23, salut: true }
+          generic: { hello: null, bye: 0, ciao: false, adios: 23, salut: true }
         } }
     ];
     const dbGet = sinon.stub(db.medic, 'get').resolves(ddoc);
@@ -440,7 +440,7 @@ describe('translations', () => {
           _id: 'messages-en',
           code: 'en',
           type: 'translations',
-          default: {
+          generic: {
             hello: 'hello',
             bye: '0',
             ciao: 'false',

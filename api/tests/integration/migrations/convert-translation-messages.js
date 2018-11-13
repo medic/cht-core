@@ -36,7 +36,7 @@ describe('convert-translation-messages migration', function() {
         _id: 'messages-en',
         code: 'en',
         type: 'translations',
-        default: { Contact: 'Contact', From: 'From' },
+        generic: { Contact: 'Contact', From: 'From' },
         custom: { hello: 'Hello', bye: 'Goodbye CUSTOMISED' },
       }
     ]);
@@ -50,7 +50,7 @@ describe('convert-translation-messages migration', function() {
         _id: 'messages-en',
         code: 'en',
         type: 'translations',
-        default: { Contact: 'Contact', From: 'From', hello: 'Hello', bye: 'Goodbye CUSTOMISED' }
+        generic: { Contact: 'Contact', From: 'From', hello: 'Hello', bye: 'Goodbye CUSTOMISED' }
       }
     ]);
 
@@ -71,7 +71,7 @@ describe('convert-translation-messages migration', function() {
         _id: 'messages-en',
         code: 'en',
         type: 'translations',
-        default: { Contact: 'Contact', From: 'From', hello: 'Hello', bye: 'Goodbye CUSTOMISED' }
+        generic: { Contact: 'Contact', From: 'From', hello: 'Hello', bye: 'Goodbye CUSTOMISED' }
       }
     ]);
   });

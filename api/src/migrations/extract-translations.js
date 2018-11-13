@@ -37,14 +37,14 @@ var mergeTranslations = function(settings, docs) {
       var doc = _.findWhere(docs, { code: translation.locale });
       if (doc) {
         if (_.has(doc, 'values')) {
-          if (!doc.values[setting.key] || translation.content !== translation.default) {
+          if (!doc.values[setting.key] || translation.content !== translation.generic) {
             // only update the doc if it was changed from the default
             doc.values[setting.key] = translation.content;
           }
         } else { 
-          if (!doc.default[setting.key] || translation.content !== translation.default) {
+          if (!doc.generic[setting.key] || translation.content !== translation.generic) {
             // only update the doc if it was changed from the default
-            doc.default[setting.key] = translation.content;
+            doc.generic[setting.key] = translation.content;
           }
         }
       }

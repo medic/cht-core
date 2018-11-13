@@ -32,11 +32,11 @@ module.exports = {
         if (_.has(translationMessageValues, 'values')) {
           const translationAttachmentValues = await getAttachment(translationAttachmentKey);
 
-          let defaultTranslations = {};
+          let genericTranslations = {};
           let customTranslations = {};
           await Promise.all(Object.keys(translationMessageValues.values).map(async (translationMessageKey) => {
             if (_.has(translationAttachmentValues, translationMessageKey)) {
-              defaultTranslations[translationMessageKey] = translationMessageValues.values[translationMessageKey];
+              genericTranslations[translationMessageKey] = translationMessageValues.values[translationMessageKey];
             } else {
               customTranslations[translationMessageKey] = translationMessageValues.values[translationMessageKey];
             }
@@ -44,7 +44,7 @@ module.exports = {
 
           delete translationMessageValues.values;
           translationMessageValues.custom = customTranslations;
-          translationMessageValues.default = defaultTranslations;
+          translationMessageValues.generic = genericTranslations;
 
           await db.medic.put(translationMessageValues);
         }

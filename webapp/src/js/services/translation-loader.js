@@ -36,7 +36,7 @@ angular.module('inboxServices').factory('TranslationLoader',
           return DB().get(DOC_ID_PREFIX + locale);
         })
         .then(function(doc) {
-          let values = Object.assign(doc.default || {}, doc.custom || {});
+          let values = Object.assign(doc.generic || {}, doc.custom || {});
           if (testing) {
             mapTesting(values);
           }

@@ -30,32 +30,32 @@ const createDoc = attachment => {
     code: attachment.code,
     name: LOCAL_NAME_MAP[attachment.code] || attachment.code,
     enabled: true,
-    default: attachment.default
+    generic: attachment.generic
   };
 };
 
 const overwrite = (attachments, docs) => {
   const updatedDocs = [];
   const english = _.findWhere(attachments, { code: 'en' });
-  const knownKeys = english ? Object.keys(english.default) : [];
+  const knownKeys = english ? Object.keys(english.generic) : [];
   attachments.forEach(attachment => {
     const code = attachment.code;
     if (!code) {
       return;
     }
     knownKeys.forEach(knownKey => {
-      const value = attachment.default[knownKey];
+      const value = attachment.generic[knownKey];
       if (_.isUndefined(value) || value === null) {
-        attachment.default[knownKey] = knownKey;
+        attachment.generic[knownKey] = knownKey;
       } else if (typeof value !== 'string') {
-        attachment.default[knownKey] = String(value);
+        attachment.generic[knownKey] = String(value);
       }
     });
     const doc = _.findWhere(docs, { code: code });
     if (doc) {
-      if (!_.isEqual(doc.default, attachment.default)) {
+      if (!_.isEqual(doc.generic, attachment.generic)) {
         // backup the modified attachment
-        doc.default = attachment.default;
+        doc.generic = attachment.generic;
         updatedDocs.push(doc);
       }
     } else {
@@ -75,7 +75,7 @@ const getAttachment = name => {
           }
           resolve({
             code: extractLocaleCode(name),
-            default: values
+            generic: values
           });
         });
       });
