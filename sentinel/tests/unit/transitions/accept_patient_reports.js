@@ -265,9 +265,7 @@ describe('accept_patient_reports', () => {
         .callsArgWith(1, null, registrations);
       transition._handleReport(doc, config, (err, complete) => {
         complete.should.equal(true);
-        doc.message_uuid.should.equal(
-          registrations[0].scheduled_tasks[0].messages[0].uuid
-        );
+        doc._id.should.equal(registrations[0].scheduled_tasks[0].report_uuid);
         done();
       });
     });
@@ -338,9 +336,7 @@ describe('accept_patient_reports', () => {
         .callsArgWith(1, null, registrations);
       transition._handleReport(doc, config, (err, complete) => {
         complete.should.equal(true);
-        doc.message_uuid.should.equal(
-          registrations[0].scheduled_tasks[2].messages[0].uuid
-        );
+        doc._id.should.equal(registrations[0].scheduled_tasks[2].report_uuid);
         done();
       });
     });

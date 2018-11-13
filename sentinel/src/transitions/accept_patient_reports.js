@@ -114,6 +114,38 @@ const addRegistrationToDoc = (doc, registrations) => {
   }
 };
 
+const addReportUUIDToRegistration = (doc, registrations) => {
+  if (registrations.length) {
+    var visitReportedDate = doc.reported_date;
+
+    var messageFound = false;
+    registrations.forEach(function(registration) {
+      if (registration.scheduled_tasks) {
+        registration.scheduled_tasks.forEach(function(task, index) {
+          if (!messageFound) {
+            if (
+              (task.state === 'delivered' || task.state === 'sent') &&
+              task.messages
+            ) {
+              var nextTask = registration.scheduled_tasks[index + 1];
+              if (
+                typeof nextTask !== 'undefined' &&
+                moment(nextTask.due) > moment(visitReportedDate)
+              ) {
+                registration.scheduled_tasks[index].report_uuid = doc._id;
+
+                db.audit.saveDoc(registration, function() {});
+
+                messageFound = true;
+              }
+            }
+          }
+        });
+      }
+    });
+  }
+};
+
 const silenceRegistrations = (config, doc, registrations, callback) => {
   if (!config.silence_type) {
     return callback(null, true);
