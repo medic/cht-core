@@ -200,6 +200,9 @@ var feedback = require('../modules/feedback'),
       if(fromParams.id === toParams.id){
         return;
       }
+      if(fromParams.reportId === toParams.id){
+        return;
+      }
       if ($scope.cancelCallback) {
         event.preventDefault();
         $scope.navigationCancel(); 
