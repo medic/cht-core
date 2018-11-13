@@ -77,12 +77,6 @@ describe('translations', () => {
       chai.expect(dbAttachment.callCount).to.equal(1);
       chai.expect(parse.callCount).to.equal(1);
       chai.expect(dbView.callCount).to.equal(1);
-      chai.expect(dbView.args[1][0]).to.equal('medic-client/doc_by_type');
-      chai.expect(dbView.args[1][1].startkey[0]).to.equal('translations');
-      chai.expect(dbView.args[1][1].startkey[1]).to.equal(false);
-      chai.expect(dbView.args[1][1].endkey[0]).to.equal('translations');
-      chai.expect(dbView.args[1][1].endkey[1]).to.equal(true);
-      chai.expect(dbView.args[1][1].include_docs).to.equal(true);
     });
   });
 
@@ -255,7 +249,20 @@ describe('translations', () => {
       chai.expect(parse.callCount).to.equal(1);
       chai.expect(dbView.callCount).to.equal(1);
       chai.expect(dbBulk.callCount).to.equal(1);
-      chai.expect(dbBulk.args[0][0]).to.deep.equal([]);
+      chai.expect(dbBulk.args[0][0]).to.deep.equal([
+        {
+          _id: 'messages-fr',
+          code: 'fr',
+          type: 'translations',
+          default: {
+            hello: 'Hello UPDATED',
+            bye: 'Goodbye UPDATED',
+            added: 'ADDED'
+          },
+          name: 'Français (French)',
+          enabled: true
+        }
+      ]);
     });
   });
 
