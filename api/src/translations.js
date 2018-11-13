@@ -3,8 +3,7 @@ const _ = require('underscore'),
       db = require('./db-pouch'),
       DDOC_ID = '_design/medic',
       TRANSLATION_FILE_NAME_REGEX = /translations\/messages\-([a-z]*)\.properties/,
-      DOC_TYPE = 'translations',
-      BACKUP_TYPE = 'translations-backup';
+      DOC_TYPE = 'translations';
 
 const LOCAL_NAME_MAP = {
   bm: 'Bamanankan (Bambara)',
@@ -35,7 +34,7 @@ const createDoc = attachment => {
   };
 };
 
-const overwrite = (attachments, backups, docs) => {
+const overwrite = (attachments, docs) => {
   const updatedDocs = [];
   const english = _.findWhere(attachments, { code: 'en' });
   const knownKeys = english ? Object.keys(english.default) : [];
@@ -52,10 +51,6 @@ const overwrite = (attachments, backups, docs) => {
         attachment.default[knownKey] = String(value);
       }
     });
-    const backup = _.findWhere(backups, { code: code });
-    if (backup) {
-      db.medic.remove(backup);
-    }
     const doc = _.findWhere(docs, { code: code });
     if (doc) {
       if (!_.isEqual(doc.default, attachment.default)) {
@@ -123,7 +118,7 @@ module.exports = {
           return;
         }
         return Promise.all([ getTranslationDocs() ])
-          .then(([ backups, docs ]) => overwrite(attachments, backups, docs))
+          .then(([ docs ]) => overwrite(attachments, docs))
           .then(updated => {
             if (updated.length) {
               return db.medic.bulkDocs(updated);
