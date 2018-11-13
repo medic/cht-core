@@ -107,13 +107,6 @@ const getDocs = options => {
     });
 };
 
-const getBackups = () => {
-  return getDocs({
-    key: [ BACKUP_TYPE ],
-    include_docs: true
-  });
-};
-
 const getTranslationDocs = () => {
   return getDocs({
     startkey: [ DOC_TYPE, false ],
@@ -129,7 +122,7 @@ module.exports = {
         if (!attachments.length) {
           return;
         }
-        return Promise.all([ getBackups(), getTranslationDocs() ])
+        return Promise.all([ getTranslationDocs() ])
           .then(([ backups, docs ]) => overwrite(attachments, backups, docs))
           .then(updated => {
             if (updated.length) {
