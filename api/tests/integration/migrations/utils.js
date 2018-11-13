@@ -456,7 +456,7 @@ function insertAttachment(ddoc, attachment) {
         attachment.content, 
         attachment.content_type,
         { rev: ddoc._rev }, 
-        function(err, body) {
+        function(err) {
           if (err) {
             return reject(err);
           }
