@@ -86,7 +86,7 @@ const loadTranslations = () => {
       return;
     }
     result.rows.forEach(row => {
-      translationCache[row.doc.code] = Object.assign(row.doc.custom, row.doc.default);
+      translationCache[row.doc.code] = Object.assign(row.doc.custom || {}, row.doc.default);
     });
   });
 };

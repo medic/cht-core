@@ -437,6 +437,34 @@ function getSettings() {
   });
 }
 
+function getDdoc(ddocId) {
+  return new Promise(function(resolve, reject) {
+    db.medic.get(ddocId, function(err, ddoc) {
+      if (err) {
+        return reject(err);
+      }
+      resolve(ddoc);
+    });
+  });
+}
+
+function insertAttachment(ddoc, attachment) {
+  return new Promise(function(resolve, reject) {
+    db.medic.attachment.insert(
+        ddoc._id, 
+        attachment.key, 
+        attachment.content, 
+        attachment.content_type,
+        { rev: ddoc._rev }, 
+        function(err, body) {
+          if (err) {
+            return reject(err);
+          }
+          resolve();
+    });  
+  });
+}
+
 module.exports = {
   assertDb: assertDb,
   initDb: initDb,
@@ -444,4 +472,6 @@ module.exports = {
   getSettings: getSettings,
   runMigration: runMigration,
   tearDown: tearDown,
+  getDdoc: getDdoc,
+  insertAttachment: insertAttachment
 };

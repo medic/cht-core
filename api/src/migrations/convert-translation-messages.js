@@ -25,34 +25,30 @@ module.exports = {
     try {
       const ddoc = await db.medic.get(DDOC_ID);
       const translationAttachmentKeys = Object.keys(ddoc._attachments).filter(k => k.includes('translations'));
-      translationAttachmentKeys.forEach((translationAttachmentKey) => {
-
+      await Promise.all(translationAttachmentKeys.map(async (translationAttachmentKey) => {
         const translationMessageKey = translationAttachmentKey.match(/translations\/(.+).properties/)[1];
-        const translationMessageKeys = [translationMessageKey, translationMessageKey + '-backup'];
+        const translationMessageValues = await db.medic.get(translationMessageKey);
 
-        translationMessageKeys.forEach(async (translationMessageKey) => {
-          const translationMessageValues = await db.medic.get(translationMessageKey);
-          if (_.has(translationMessageValues, 'values')) {
-            const translationAttachmentValues = await getAttachment(translationAttachmentKey);
+        if (_.has(translationMessageValues, 'values')) {
+          const translationAttachmentValues = await getAttachment(translationAttachmentKey);
 
-            let defaultTranslations = {};
-            let customTranslations = {};
-            Object.keys(translationMessageValues.values).forEach((translationMessageKey) => {
-              if (_.has(translationAttachmentValues, translationMessageKey)) {
-                defaultTranslations[translationMessageKey] = translationMessageValues.values[translationMessageKey];
-              } else {
-                customTranslations[translationMessageKey] = translationMessageValues.values[translationMessageKey];
-              }
-            });
+          let defaultTranslations = {};
+          let customTranslations = {};
+          await Promise.all(Object.keys(translationMessageValues.values).map(async (translationMessageKey) => {
+            if (_.has(translationAttachmentValues, translationMessageKey)) {
+              defaultTranslations[translationMessageKey] = translationMessageValues.values[translationMessageKey];
+            } else {
+              customTranslations[translationMessageKey] = translationMessageValues.values[translationMessageKey];
+            }
+          }));
 
-            delete translationMessageValues.values;
-            translationMessageValues.custom = customTranslations;
-            translationMessageValues.default = defaultTranslations;
+          delete translationMessageValues.values;
+          translationMessageValues.custom = customTranslations;
+          translationMessageValues.default = defaultTranslations;
 
-            await db.medic.put(translationMessageValues);
-          }
-        });
-      });
+          await db.medic.put(translationMessageValues);
+        }
+      }));
       callback();
     } catch (e) {
       callback(e);
