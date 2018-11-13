@@ -66,5 +66,5 @@ module.exports = {
     expect(savedParameters.get(4).getText()).toEqual(
       'report.family_survey.improved_cook_stove\n' + haveStove
     );
-  },
+  }
 };
