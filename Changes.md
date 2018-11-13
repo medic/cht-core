@@ -211,7 +211,8 @@
 - [#4823](https://github.com/medic/medic-webapp/issues/4823): Error loading form "Could not evaluate:"
 - [#4831](https://github.com/medic/medic-webapp/issues/4831): ANC SMS are not cleared when pregnancy is registered to the patient
 - [#4848](https://github.com/medic/medic-webapp/issues/4848): ZScore Charts are not being found
-- [#4893](https://github.com/medic/medic-webapp/issues/4893): Horticulturalist crashes when view warming
+- [#4893](https://github.com/medic/medic-webapp/issues/4893): Horticulturalist crashes when view warming'
+- [#4975](https://github.com/medic/medic-webapp/issues/4975): Sentinel hangs on empty trigger config
 
 ### Technical issues
 
