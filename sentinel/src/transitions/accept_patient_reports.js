@@ -112,7 +112,7 @@ const addRegistrationToDoc = (doc, registrations) => {
   }
 };
 
-const addMessageUUIDToDoc = (doc, registrations) => {
+const addReportUUIDToRegistration = (doc, registrations) => {
   if (registrations.length) {
     var visitReportedDate = doc.reported_date;
 
@@ -130,7 +130,10 @@ const addMessageUUIDToDoc = (doc, registrations) => {
                 typeof nextTask !== 'undefined' &&
                 moment(nextTask.due) > moment(visitReportedDate)
               ) {
-                doc.message_uuid = task.messages[task.messages.length - 1].uuid;
+                registration.scheduled_tasks[index].report_uuid = doc._id;
+
+                db.audit.saveDoc(registration, function() {});
+
                 messageFound = true;
               }
             }
@@ -202,7 +205,7 @@ const handleReport = (doc, config, callback) => {
 
       addMessagesToDoc(doc, config, registrations);
       addRegistrationToDoc(doc, registrations);
-      addMessageUUIDToDoc(doc, registrations);
+      addReportUUIDToRegistration(doc, registrations);
 
       module.exports.silenceRegistrations(config, doc, registrations, callback);
     }
