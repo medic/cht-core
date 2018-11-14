@@ -53,6 +53,9 @@
           <text id="/data/district_hospital/vaccines/hpv:label">
             <value>HPV (Human Papillomavirus)</value>
           </text>
+          <text id="/data/district_hospital/vaccines/ipv:label">
+            <value>Inactivated Polio</value>
+          </text>
           <text id="/data/district_hospital/vaccines/jap_enc:label">
             <value>Japanese Encephalitis</value>
           </text>
@@ -222,6 +225,9 @@
           </text>
           <text id="/data/district_hospital/vaccines/hpv:label">
             <value>HPV (virus du papillome humain)</value>
+          </text>
+          <text id="/data/district_hospital/vaccines/ipv:label">
+            <value>Polio inactivée</value>
           </text>
           <text id="/data/district_hospital/vaccines/jap_enc:label">
             <value>Encéphalite japonaise</value>
@@ -396,6 +402,9 @@
           <text id="/data/district_hospital/vaccines/hpv:label">
             <value>HPV (Human Papillomavirus)</value>
           </text>
+          <text id="/data/district_hospital/vaccines/ipv:label">
+            <value>Inactivated Polio</value>
+          </text>
           <text id="/data/district_hospital/vaccines/jap_enc:label">
             <value>Japanese Encephalitis</value>
           </text>
@@ -569,6 +578,9 @@
           <text id="/data/district_hospital/vaccines/hpv:label">
             <value>HPV (Human Papillomavirus)</value>
           </text>
+          <text id="/data/district_hospital/vaccines/ipv:label">
+            <value>Inactivated Polio</value>
+          </text>
           <text id="/data/district_hospital/vaccines/jap_enc:label">
             <value>Japanese Encephalitis</value>
           </text>
@@ -740,6 +752,9 @@
             <value>-</value>
           </text>
           <text id="/data/district_hospital/vaccines/hpv:label">
+            <value>-</value>
+          </text>
+          <text id="/data/district_hospital/vaccines/ipv:label">
             <value>-</value>
           </text>
           <text id="/data/district_hospital/vaccines/jap_enc:label">
@@ -915,6 +930,9 @@
           <text id="/data/district_hospital/vaccines/hpv:label">
             <value>-</value>
           </text>
+          <text id="/data/district_hospital/vaccines/ipv:label">
+            <value>-</value>
+          </text>
           <text id="/data/district_hospital/vaccines/jap_enc:label">
             <value>-</value>
           </text>
@@ -1041,7 +1059,7 @@
         </translation>
       </itext>
       <instance>
-        <data delimiter="#" id="contact:district_hospital:create" prefix="J1!contact:district_hospital:create!" version="2018-10-19_19-43">
+        <data delimiter="#" id="contact:district_hospital:create" prefix="J1!contact:district_hospital:create!" version="2018-11-14_09-59">
           <inputs>
             <meta>
               <location>
@@ -1327,6 +1345,10 @@
         <item>
           <label ref="jr:itext('/data/district_hospital/vaccines/mmrv:label')"/>
           <value>mmrv</value>
+        </item>
+        <item>
+          <label ref="jr:itext('/data/district_hospital/vaccines/ipv:label')"/>
+          <value>ipv</value>
         </item>
         <item>
           <label ref="jr:itext('/data/district_hospital/vaccines/polio:label')"/>
