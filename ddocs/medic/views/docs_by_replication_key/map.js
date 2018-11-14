@@ -17,8 +17,9 @@ function (doc) {
       // report
       if (doc.contact && doc.errors && doc.errors.length) {
         for (var i = 0; i < doc.errors.length; i++) {
-          // no patient found, fall back to using contact. #3437
-          if (doc.errors[i].code === 'registration_not_found') {
+          // invalid or no patient found, fall back to using contact. #3437
+          if (doc.errors[i].code === 'registration_not_found' ||
+              doc.errors[i].code === 'invalid_patient_id') {
             return doc.contact._id;
           }
         }

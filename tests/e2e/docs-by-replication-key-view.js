@@ -73,6 +73,17 @@ describe('view docs_by_replication_key', () => {
         _id: 'testuser'
       },
       errors: [ { code: 'registration_not_found' } ]
+    },
+    {
+      _id: 'report_with_invalid_patient_id',
+      reported_date: 1,
+      form: 'V',
+      type: 'data_record',
+      patient_id: 'invalid_patient',
+      contact: {
+        _id: 'testuser'
+      },
+      errors: [ { code: 'invalid_patient_id' } ]
     }
   ];
 
@@ -232,6 +243,10 @@ describe('view docs_by_replication_key', () => {
     it('Falls back to contact id when unknown patient', () => {
       expect(docByPlaceIds).toContain('report_with_unknown_patient_id');
     });
+
+    it('Falls back to contact id when invalid patient', () => {
+      expect(docByPlaceIds).toContain('report_with_invalid_patient_id');
+    });
   });
 
   describe('Documents that only pass when unassigned == true', () => {
@@ -259,4 +274,3 @@ describe('view docs_by_replication_key', () => {
   // TODO: test these branches:
   //  - OK() no query id
 });
-
