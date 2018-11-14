@@ -76,73 +76,73 @@
         </translation>
         <translation lang="es">
           <text id="/off/chw_name:label">
-            <value>-</value>
+            <value>Nombre de promotor de salud</value>
           </text>
           <text id="/off/chw_phone:label">
-            <value>-</value>
+            <value>Número de teléfono del promotor de salud</value>
           </text>
           <text id="/off/chw_sms:label">
-            <value>-</value>
+            <value>Nota a promotor de salud</value>
           </text>
           <text id="/off/group_note/chw_note:label">
-            <value>-</value>
+            <value>Escribir mensaje adicional para enviar.</value>
           </text>
           <text id="/off/group_note/pregnancy_note:label">
-            <value>-</value>
+            <value>Enviaremos un mensaje a <output value=" /off/chw_name "/> (<output value=" /off/chw_phone "/>) para informarles que las notificaciones están desactivadas para <output value=" /off/patient_name "/>.</value>
           </text>
           <text id="/off/group_note/send_note/no:label">
-            <value>-</value>
+            <value>No</value>
           </text>
           <text id="/off/group_note/send_note/yes:label">
-            <value>-</value>
+            <value>Si</value>
           </text>
           <text id="/off/group_note/send_note:label">
-            <value>-</value>
+            <value>¿Quieres escribir un mensaje adicional al promotor?</value>
           </text>
           <text id="/off/group_note:label">
-            <value>-</value>
+            <value>Desactivando notificaciones</value>
           </text>
           <text id="/off/inputs/contact/_id:hint">
             <value>-</value>
           </text>
           <text id="/off/inputs/contact/_id:label">
-            <value>-</value>
+            <value>¿Como se llama el paciente?</value>
           </text>
           <text id="/off/inputs/contact/date_of_birth:label">
-            <value>-</value>
+            <value>Fecha de nacimiento</value>
           </text>
           <text id="/off/inputs/contact/name:label">
-            <value>-</value>
+            <value>Nombre</value>
           </text>
           <text id="/off/inputs/contact/parent/contact/name:label">
-            <value>-</value>
+            <value>Nombre del promotor de salud</value>
           </text>
           <text id="/off/inputs/contact/parent/contact/phone:label">
-            <value>-</value>
+            <value>Número de teléfono del promotor de salud</value>
           </text>
           <text id="/off/inputs/contact/patient_id:label">
-            <value>-</value>
+            <value>ID de Paciente</value>
           </text>
           <text id="/off/inputs/contact/sex:label">
-            <value>-</value>
+            <value>Sexo</value>
           </text>
           <text id="/off/inputs/source:label">
-            <value>-</value>
+            <value>Origen</value>
           </text>
           <text id="/off/inputs/source_id:label">
-            <value>-</value>
+            <value>ID de Origen</value>
           </text>
           <text id="/off/inputs:label">
-            <value>-</value>
+            <value>Paciente</value>
           </text>
           <text id="/off/patient_id:label">
-            <value>-</value>
+            <value>ID de Paciente</value>
           </text>
           <text id="/off/patient_name:label">
-            <value>-</value>
+            <value>Nombre de Paciente</value>
           </text>
           <text id="/off/patient_uuid:label">
-            <value>-</value>
+            <value>UUID de Paciente</value>
           </text>
         </translation>
         <translation lang="fr">
@@ -218,19 +218,19 @@
         </translation>
         <translation lang="hi">
           <text id="/off/chw_name:label">
-            <value>-</value>
+            <value>सामुदायिक स्वास्थ्य कर्मी का नाम</value>
           </text>
           <text id="/off/chw_phone:label">
-            <value>-</value>
+            <value>सामुदायिक स्वास्थ्य कर्मी का फोन नंबर</value>
           </text>
           <text id="/off/chw_sms:label">
-            <value>-</value>
+            <value>सामुदायिक स्वास्थ्य कर्मी के लिए नोट</value>
           </text>
           <text id="/off/group_note/chw_note:label">
-            <value>-</value>
+            <value>संक्षिप्त संदेश भेजने के लिए दर्ज करें</value>
           </text>
           <text id="/off/group_note/pregnancy_note:label">
-            <value>-</value>
+            <value>एक SMS स्वचालित रूप से $ {chw_name} ($ {chw_phone}) पर भेजा जाएगा ताकि उन्हें सूचित किया जा सके कि $ {patient_name} के लिए सूचना बंद हैं</value>
           </text>
           <text id="/off/group_note/send_note/no:label">
             <value>नहीं</value>
@@ -239,70 +239,69 @@
             <value>हाँ</value>
           </text>
           <text id="/off/group_note/send_note:label">
-            <value>-</value>
+            <value>CHW को अतिरिक्त नोट लिखें?</value>
           </text>
           <text id="/off/group_note:label">
-            <value>-</value>
+            <value>सूचना बंद करी जा रही हैं</value>
           </text>
           <text id="/off/inputs/contact/_id:hint">
             <value>-</value>
           </text>
           <text id="/off/inputs/contact/_id:label">
-            <value>-</value>
+            <value>मरीज़ का नाम क्या है?</value>
           </text>
           <text id="/off/inputs/contact/date_of_birth:label">
-            <value>-</value>
+            <value>जन्म तिथि</value>
           </text>
           <text id="/off/inputs/contact/name:label">
-            <value>-</value>
+            <value>नाम</value>
           </text>
           <text id="/off/inputs/contact/parent/contact/name:label">
-            <value>-</value>
+            <value>सामुदायिक स्वास्थ्य कर्मी का नाम</value>
           </text>
           <text id="/off/inputs/contact/parent/contact/phone:label">
-            <value>-</value>
+            <value>सामुदायिक स्वास्थ्य कर्मी का फोन नंबर</value>
           </text>
           <text id="/off/inputs/contact/patient_id:label">
-            <value>-</value>
+            <value>मरीज़ का ID</value>
           </text>
           <text id="/off/inputs/contact/sex:label">
-            <value>-</value>
+            <value>लिंग</value>
           </text>
           <text id="/off/inputs/source:label">
-            <value>-</value>
+            <value>स्रोत</value>
           </text>
           <text id="/off/inputs/source_id:label">
-            <value>-</value>
+            <value>स्रोत ID</value>
           </text>
           <text id="/off/inputs:label">
-            <value>-</value>
+            <value>मरीज़</value>
           </text>
           <text id="/off/patient_id:label">
-            <value>-</value>
+            <value>मरीज़ का ID</value>
           </text>
           <text id="/off/patient_name:label">
-            <value>-</value>
+            <value>मरीज़ का नाम</value>
           </text>
           <text id="/off/patient_uuid:label">
-            <value>-</value>
+            <value>मरीज़ का UUID</value>
           </text>
         </translation>
         <translation lang="id">
           <text id="/off/chw_name:label">
-            <value>-</value>
+            <value>Nama Kader</value>
           </text>
           <text id="/off/chw_phone:label">
-            <value>-</value>
+            <value>Nomor Telepon Kader</value>
           </text>
           <text id="/off/chw_sms:label">
-            <value>-</value>
+            <value>Catatan ke kader</value>
           </text>
           <text id="/off/group_note/chw_note:label">
-            <value>-</value>
+            <value>Masukkan pesan singkat untuk dikirim</value>
           </text>
           <text id="/off/group_note/pregnancy_note:label">
-            <value>-</value>
-          </text>
+            <value>SMS akan secara otomatis dikirim ke <output value=" /off/chw_name "/> (<output value=" /off/chw_phone "/>) untuk memberi tahu mereka bahwa pengingat dimatikan untuk <output value=" /off/patient_name "/></value></text>
           <text id="/off/group_note/send_note/no:label">
             <value>Tidak</value>
           </text>
@@ -310,52 +309,52 @@
             <value>Iya</value>
           </text>
           <text id="/off/group_note/send_note:label">
-            <value>-</value>
+            <value>Tulis informasi tambahan untuk dikirim ke CHW?</value>
           </text>
           <text id="/off/group_note:label">
-            <value>-</value>
+            <value>Menonaktifkan pesan</value>
           </text>
           <text id="/off/inputs/contact/_id:hint">
             <value>-</value>
           </text>
           <text id="/off/inputs/contact/_id:label">
-            <value>-</value>
+            <value>Siapa nama pasiennya?</value>
           </text>
           <text id="/off/inputs/contact/date_of_birth:label">
-            <value>-</value>
+            <value>Tanggal Lahir</value>
           </text>
           <text id="/off/inputs/contact/name:label">
-            <value>-</value>
+            <value>Nama</value>
           </text>
           <text id="/off/inputs/contact/parent/contact/name:label">
-            <value>-</value>
+            <value>Nama Kader</value>
           </text>
           <text id="/off/inputs/contact/parent/contact/phone:label">
-            <value>-</value>
+            <value>Nomor Telepon Kader</value>
           </text>
           <text id="/off/inputs/contact/patient_id:label">
-            <value>-</value>
+            <value>Pasien ID</value>
           </text>
           <text id="/off/inputs/contact/sex:label">
-            <value>-</value>
+            <value>Jenis Kelamin</value>
           </text>
           <text id="/off/inputs/source:label">
-            <value>-</value>
+            <value>Sumber</value>
           </text>
           <text id="/off/inputs/source_id:label">
-            <value>-</value>
+            <value>Sumber ID</value>
           </text>
           <text id="/off/inputs:label">
-            <value>-</value>
+            <value>Pasien</value>
           </text>
           <text id="/off/patient_id:label">
-            <value>-</value>
+            <value>Pasien ID</value>
           </text>
           <text id="/off/patient_name:label">
-            <value>-</value>
+            <value>Nama Pasien</value>
           </text>
           <text id="/off/patient_uuid:label">
-            <value>-</value>
+            <value>Pasien UUID</value>
           </text>
         </translation>
         <translation lang="ne">
@@ -431,79 +430,79 @@
         </translation>
         <translation lang="sw">
           <text id="/off/chw_name:label">
-            <value>-</value>
+            <value>Jina la mfanyikazi wa Afya wa Jamii</value>
           </text>
           <text id="/off/chw_phone:label">
-            <value>-</value>
+            <value>Nambari ya Simu ya Mfanyakazi wa Afya wa Jamii</value>
           </text>
           <text id="/off/chw_sms:label">
-            <value>-</value>
+            <value>ujumbe kwa mhudumu wa afya kwa jamii</value>
           </text>
           <text id="/off/group_note/chw_note:label">
-            <value>-</value>
+            <value>Weka ujumbe mfupi utakao tumwa</value>
           </text>
           <text id="/off/group_note/pregnancy_note:label">
-            <value>-</value>
+            <value>Ujumbe utatumwa kwa <output value=" /off/chw_name "/> (<output value=" /off/chw_phone "/>) kumjulisha ya kwamba jumbe za ukumbusho kwa <output value=" /off/patient_name "/> zimerudishwa</value>
           </text>
           <text id="/off/group_note/send_note/no:label">
-            <value>-</value>
+            <value>La</value>
           </text>
           <text id="/off/group_note/send_note/yes:label">
-            <value>-</value>
+            <value>Ndio</value>
           </text>
           <text id="/off/group_note/send_note:label">
-            <value>-</value>
+            <value>Andika ujumbe zaidi ya kutumia CHW?</value>
           </text>
           <text id="/off/group_note:label">
-            <value>-</value>
+            <value>kurudisha jumbe za makumbusho</value>
           </text>
           <text id="/off/inputs/contact/_id:hint">
             <value>-</value>
           </text>
           <text id="/off/inputs/contact/_id:label">
-            <value>-</value>
+            <value>Jina la mgonjwa ni gani?</value>
           </text>
           <text id="/off/inputs/contact/date_of_birth:label">
-            <value>-</value>
+            <value>Tarehe ya kuzaliwa</value>
           </text>
           <text id="/off/inputs/contact/name:label">
-            <value>-</value>
+            <value>Jina</value>
           </text>
           <text id="/off/inputs/contact/parent/contact/name:label">
-            <value>-</value>
+            <value>Jina la mfanyikazi wa Afya wa Jamii</value>
           </text>
           <text id="/off/inputs/contact/parent/contact/phone:label">
-            <value>-</value>
+            <value>Nambari ya Simu ya Mfanyakazi wa Afya wa Jamii</value>
           </text>
           <text id="/off/inputs/contact/patient_id:label">
-            <value>-</value>
+            <value>Namba ya kutambulisha mgonjwa</value>
           </text>
           <text id="/off/inputs/contact/sex:label">
-            <value>-</value>
+            <value>jinsia</value>
           </text>
           <text id="/off/inputs/source:label">
-            <value>-</value>
+            <value>Chanzo</value>
           </text>
           <text id="/off/inputs/source_id:label">
-            <value>-</value>
+            <value>Chanzo ID</value>
           </text>
           <text id="/off/inputs:label">
-            <value>-</value>
+            <value>Mgonjwa</value>
           </text>
           <text id="/off/patient_id:label">
-            <value>-</value>
+            <value>Namba ya kutambulisha mgonjwa</value>
           </text>
           <text id="/off/patient_name:label">
-            <value>-</value>
+            <value>Jina la mgonjwa</value>
           </text>
           <text id="/off/patient_uuid:label">
-            <value>-</value>
+            <value>UUID ya mgonjwa</value>
           </text>
         </translation>
       </itext>
       <instance>
-        <off delimiter="#" id="off" prefix="J1!off!" version="2018-09-27_07-24">
-          <inputs tag="hidden">
+        <off delimiter="#" id="off" prefix="J1!off!" version="2018-11-14_10-16">
+          <inputs>
             <meta>
               <location>
                 <lat/>

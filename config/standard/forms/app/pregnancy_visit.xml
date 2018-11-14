@@ -126,7 +126,7 @@ Call: <output value=" /pregnancy_visit/chw_phone "/></value></text>
             <value>Sudden weight gain or severe swelling of feet, ankles, face, or hands</value>
           </text>
           <text id="/pregnancy_visit/group_review/r_danger_sign7:label">
-            <value>Less movement and kicking from the baby</value>
+            <value>Less movement and kicking from the baby (after week 20 of pregnancy)</value>
           </text>
           <text id="/pregnancy_visit/group_review/r_danger_sign8:label">
             <value>Blood in the urine or painful, burning urination</value>
@@ -196,6 +196,9 @@ ID: <output value=" /pregnancy_visit/group_review/r_patient_id "/></value></text
           </text>
           <text id="/pregnancy_visit/referral_follow_up_needed:label">
             <value>Refer Patient</value>
+          </text>
+          <text id="/pregnancy_visit/visit_confirmed:label">
+            <value>-</value>
           </text>
         </translation>
         <translation lang="es">
@@ -391,6 +394,9 @@ ID: <output value=" /pregnancy_visit/group_review/r_patient_id "/></value></text
           <text id="/pregnancy_visit/referral_follow_up_needed:label">
             <value>-</value>
           </text>
+          <text id="/pregnancy_visit/visit_confirmed:label">
+            <value>-</value>
+          </text>
         </translation>
         <translation lang="fr">
           <text id="/pregnancy_visit/chw_name:label">
@@ -514,7 +520,7 @@ Appelez: <output value=" /pregnancy_visit/chw_phone "/></value></text>
             <value>Prise de poids soudaine ou gonflement important des pieds, des chevilles, du visage ou des mains</value>
           </text>
           <text id="/pregnancy_visit/group_review/r_danger_sign7:label">
-            <value>Moins de mouvement et de coups de pied du bébé</value>
+            <value>Moins de mouvement et de coups de pied du bébé (après 20 semaines de grossesse)</value>
           </text>
           <text id="/pregnancy_visit/group_review/r_danger_sign8:label">
             <value>Du sang dans l'urine ou une miction douloureuse et brûlante</value>
@@ -584,6 +590,9 @@ ID: <output value=" /pregnancy_visit/group_review/r_patient_id "/></value></text
           </text>
           <text id="/pregnancy_visit/referral_follow_up_needed:label">
             <value>Référer le patient</value>
+          </text>
+          <text id="/pregnancy_visit/visit_confirmed:label">
+            <value>-</value>
           </text>
         </translation>
         <translation lang="hi">
@@ -708,7 +717,7 @@ ID: <output value=" /pregnancy_visit/group_review/r_patient_id "/></value></text
             <value>अचानक वजन का बढ़ना या पैर, टखनों, चेहरे या हाथों में गंभीर सूजन</value>
           </text>
           <text id="/pregnancy_visit/group_review/r_danger_sign7:label">
-            <value>बच्चे का कम हिलना या लात मारना</value>
+            <value>बच्चे का कम हिलना या लात मारना (गर्भावस्था के 20 सप्ताह के बाद)</value>
           </text>
           <text id="/pregnancy_visit/group_review/r_danger_sign8:label">
             <value>पेशाब में खून या दर्दनाक, जलता हुआ पेशाब</value>
@@ -778,6 +787,9 @@ ID: <output value=" /pregnancy_visit/group_review/r_patient_id "/></value></text
           </text>
           <text id="/pregnancy_visit/referral_follow_up_needed:label">
             <value>मरीज को स्वास्थ्य केंद्र भेजें।</value>
+          </text>
+          <text id="/pregnancy_visit/visit_confirmed:label">
+            <value>-</value>
           </text>
         </translation>
         <translation lang="id">
@@ -901,7 +913,7 @@ ID: <output value=" /pregnancy_visit/group_review/r_patient_id "/></value></text
             <value>Lonjakan berat badan atau berat pembengkakan kaki, pergelangan kaki, wajah, atau tangan</value>
           </text>
           <text id="/pregnancy_visit/group_review/r_danger_sign7:label">
-            <value>Kurang gerak dan menendang dari bayi</value>
+            <value>Kurang gerak dan menendang dari bayi (setelah minggu 20 kehamilan)</value>
           </text>
           <text id="/pregnancy_visit/group_review/r_danger_sign8:label">
             <value>Darah dalam urin atau nyeri sekali, rasa seperti terbakar saat buang air kecil</value>
@@ -971,6 +983,9 @@ ID: <output value=" /pregnancy_visit/group_review/r_patient_id "/></value></text
           </text>
           <text id="/pregnancy_visit/referral_follow_up_needed:label">
             <value>Merujuk pasien</value>
+          </text>
+          <text id="/pregnancy_visit/visit_confirmed:label">
+            <value>-</value>
           </text>
         </translation>
         <translation lang="ne">
@@ -1166,19 +1181,22 @@ ID: <output value=" /pregnancy_visit/group_review/r_patient_id "/></value></text
           <text id="/pregnancy_visit/referral_follow_up_needed:label">
             <value>-</value>
           </text>
+          <text id="/pregnancy_visit/visit_confirmed:label">
+            <value>-</value>
+          </text>
         </translation>
         <translation lang="sw">
           <text id="/pregnancy_visit/chw_name:label">
-            <value>-</value>
+            <value>Jina la mfanyi kazi wa afya</value>
           </text>
           <text id="/pregnancy_visit/chw_phone:label">
-            <value>-</value>
+            <value>nambari ya simu ya mfanyi kazi wa afya</value>
           </text>
           <text id="/pregnancy_visit/chw_sms:label">
-            <value>-</value>
+            <value>maelezo kwa mfanyikazi wa afya</value>
           </text>
           <text id="/pregnancy_visit/danger_signs:label">
-            <value>-</value>
+            <value>dalili za hatari</value>
           </text>
           <text id="/pregnancy_visit/group_chw_info/attended_anc/no:label">
             <value>-</value>
@@ -1187,16 +1205,16 @@ ID: <output value=" /pregnancy_visit/group_review/r_patient_id "/></value></text
             <value>-</value>
           </text>
           <text id="/pregnancy_visit/group_chw_info/attended_anc:label">
-            <value>-</value>
+            <value>Je! {patient name} alihudhuria ziara yake ya ANC</value>
           </text>
           <text id="/pregnancy_visit/group_chw_info/call_button:label">
-            <value>-</value>
+            <value>Tafadhali fuatilia na {CHW name} kuhakikisha iliwa {patient name} alihudhuria ziara yake ya ANC</value>
           </text>
           <text id="/pregnancy_visit/group_chw_info/chw_information:label">
-            <value>-</value>
+            <value>Ripoti ya tembezi la uja uzito halijarekodiwa</value>
           </text>
           <text id="/pregnancy_visit/group_chw_info:label">
-            <value>-</value>
+            <value>ripoti ya tembezi haipatikani</value>
           </text>
           <text id="/pregnancy_visit/group_danger_signs/g_danger_signs/d1:label">
             <value>-</value>
@@ -1229,10 +1247,10 @@ ID: <output value=" /pregnancy_visit/group_review/r_patient_id "/></value></text
             <value>-</value>
           </text>
           <text id="/pregnancy_visit/group_danger_signs/g_danger_signs:label">
-            <value>-</value>
+            <value>Hakikisha kupitia <output value=" /pregnancy_visit/chw_name "/> ikiwa <output value=" /pregnancy_visit/patient_name "/> ana ishara ya hatari zozote hizi</value>
           </text>
           <text id="/pregnancy_visit/group_danger_signs:label">
-            <value>-</value>
+            <value>Ishara za hatari</value>
           </text>
           <text id="/pregnancy_visit/group_note/default_chw_sms/default:label">
             <value>-</value>
@@ -1244,11 +1262,11 @@ ID: <output value=" /pregnancy_visit/group_review/r_patient_id "/></value></text
             <value>-</value>
           </text>
           <text id="/pregnancy_visit/group_note/default_chw_sms:label">
-            <value>-</value>
+            <value>Ujumbe msingi wa kutuma kwa mfanyikazi wa afya</value>
           </text>
           <text id="/pregnancy_visit/group_note/default_chw_sms_note:label">
-            <value>-</value>
-          </text>
+            <value>Ujumbe ufuatao utatumwa kwa <output value=" /pregnancy_visit/chw_name "/> (<output value=" /pregnancy_visit/chw_phone "/>):**
+ <output value=" /pregnancy_visit/group_note/default_chw_sms_text "/></value></text>
           <text id="/pregnancy_visit/group_note/g_chw_sms:hint">
             <value>-</value>
           </text>
@@ -1256,7 +1274,7 @@ ID: <output value=" /pregnancy_visit/group_review/r_patient_id "/></value></text
             <value>-</value>
           </text>
           <text id="/pregnancy_visit/group_note/g_chw_sms:label">
-            <value>-</value>
+            <value>Unaweza ongeza ujumbe wa kibinafsi hapa</value>
           </text>
           <text id="/pregnancy_visit/group_note/is_sms_edited/no:label">
             <value>-</value>
@@ -1265,73 +1283,73 @@ ID: <output value=" /pregnancy_visit/group_review/r_patient_id "/></value></text
             <value>-</value>
           </text>
           <text id="/pregnancy_visit/group_note/is_sms_edited:label">
-            <value>-</value>
+            <value>je! ungetaka kuongeza ujumbe wa kibinafsi</value>
           </text>
           <text id="/pregnancy_visit/group_note:label">
-            <value>-</value>
+            <value>maelezo kwa mfanyikazi wa afya</value>
           </text>
           <text id="/pregnancy_visit/group_review/r_danger_sign1:label">
-            <value>-</value>
+            <value>Maumivu au kuponda ndani ya tumbo</value>
           </text>
           <text id="/pregnancy_visit/group_review/r_danger_sign2:label">
-            <value>-</value>
+            <value>Kunyunyiza au maji yanayotembea kutoka kwa uke au uke wa kike na harufu mbaya</value>
           </text>
           <text id="/pregnancy_visit/group_review/r_danger_sign3:label">
-            <value>-</value>
+            <value>Kichefuchefu kali au kutapika</value>
           </text>
           <text id="/pregnancy_visit/group_review/r_danger_sign4:label">
-            <value>-</value>
+            <value>Homa ya digrii 38 au zaidi</value>
           </text>
           <text id="/pregnancy_visit/group_review/r_danger_sign5:label">
-            <value>-</value>
+            <value>Maumivu ya kichwa au matatizo mapya ya macho kuona cizuri</value>
           </text>
           <text id="/pregnancy_visit/group_review/r_danger_sign6:label">
-            <value>-</value>
+            <value>uzito wa ghafla au kuvimba kwa miguu, kifundo cha mguu, uso, au mikono</value>
           </text>
           <text id="/pregnancy_visit/group_review/r_danger_sign7:label">
-            <value>-</value>
+            <value>Upungufu wa kutembea kwa mtoto tumboni (baada ya wiki ishirini za uja uzito)</value>
           </text>
           <text id="/pregnancy_visit/group_review/r_danger_sign8:label">
-            <value>-</value>
+            <value>Damu katika mkojo au maumivu, kuwashwa katika kukojoa</value>
           </text>
           <text id="/pregnancy_visit/group_review/r_danger_sign9:label">
-            <value>-</value>
+            <value>Kuhara kusiokwisha</value>
           </text>
           <text id="/pregnancy_visit/group_review/r_followup:label">
-            <value>-</value>
+            <value>Ujumbe kwa kufuatilia &lt;i class="fa fa-envelope"&gt;&lt;/i&gt;</value>
           </text>
           <text id="/pregnancy_visit/group_review/r_followup_note1:label">
-            <value>-</value>
+            <value>**Zifuatazo zitatumwa kama ujumbe mfupi kwa <output value=" /pregnancy_visit/chw_name "/> <output value=" /pregnancy_visit/chw_phone "/>**</value>
           </text>
           <text id="/pregnancy_visit/group_review/r_followup_note2:label">
-            <value>-</value>
+            <value><output value=" /pregnancy_visit/chw_sms "/></value>
           </text>
           <text id="/pregnancy_visit/group_review/r_pregnancy_details:label">
-            <value>-</value>
-          </text>
+            <value>**<output value=" /pregnancy_visit/patient_name "/>**
+ID: <output value=" /pregnancy_visit/group_review/r_patient_id "/></value></text>
           <text id="/pregnancy_visit/group_review/r_referral:label">
-            <value>-</value>
+            <value>Ishara za hatari &lt;i class="fa fa-warning"&gt;&lt;/i&gt;</value>
           </text>
           <text id="/pregnancy_visit/group_review/r_referral_note:label">
-            <value>-</value>
+            <value>**Muelekeze kwenye kituo cha afya kwa ishara za hatari**</value>
           </text>
           <text id="/pregnancy_visit/group_review/r_summary:label">
-            <value>-</value>
+            <value>Ripoti ya mgonjwa</value>
           </text>
           <text id="/pregnancy_visit/group_review/r_visit:label">
-            <value>-</value>
+            <value>ripoti ya ziara</value>
           </text>
           <text id="/pregnancy_visit/group_review/r_visit_no:label">
-            <value>-</value>
+            <value>Ziara za uja uzito zisizo kamilifu</value>
           </text>
           <text id="/pregnancy_visit/group_review/r_visit_unknown:label">
-            <value>-</value>
+            <value>Hamna hakika kuwa ziara ya ujauzito imekamilika</value>
           </text>
           <text id="/pregnancy_visit/group_review/r_visit_yes:label">
-            <value>-</value>
+            <value>Ziara kamilifu za uja uzito</value>
           </text>
           <text id="/pregnancy_visit/group_review/submit:label">
-            <value>-</value>
+            <value>Hakikisha unawasilisha ili kumalizia hatua hii</value>
           </text>
           <text id="/pregnancy_visit/inputs/contact/_id:hint">
             <value>-</value>
@@ -1343,28 +1361,31 @@ ID: <output value=" /pregnancy_visit/group_review/r_patient_id "/></value></text
             <value>-</value>
           </text>
           <text id="/pregnancy_visit/patient_age_in_years:label">
-            <value>-</value>
+            <value>umri</value>
           </text>
           <text id="/pregnancy_visit/patient_id:label">
-            <value>-</value>
+            <value>nambari ya usajili ya mgonjwa</value>
           </text>
           <text id="/pregnancy_visit/patient_name:label">
-            <value>-</value>
+            <value>jina la mgonjwa</value>
           </text>
           <text id="/pregnancy_visit/patient_phone:label">
-            <value>-</value>
+            <value>nambari ya simu ya {Client name}</value>
           </text>
           <text id="/pregnancy_visit/patient_uuid:label">
-            <value>-</value>
+            <value>mgonjwa UUID</value>
           </text>
           <text id="/pregnancy_visit/referral_follow_up_needed:label">
-            <value>-</value>
+            <value>rufaa inahitaji kufuatiliwa</value>
+          </text>
+          <text id="/pregnancy_visit/visit_confirmed:label">
+            <value>Tembezi limethibitishwa</value>
           </text>
         </translation>
       </itext>
       <instance>
-        <pregnancy_visit delimiter="#" id="pregnancy_visit" prefix="J1!pregnancy_visit!" version="2018-09-27_07-24">
-          <inputs tag="hidden">
+        <pregnancy_visit delimiter="#" id="pregnancy_visit" prefix="J1!pregnancy_visit!" version="2018-11-14_10-29">
+          <inputs>
             <meta>
               <location>
                 <lat/>

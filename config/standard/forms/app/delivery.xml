@@ -1356,8 +1356,8 @@ ID: <output value=" /delivery/group_summary/r_patient_id "/></value></text>
         </translation>
       </itext>
       <instance>
-        <delivery delimiter="#" id="delivery" prefix="J1!delivery!" version="2018-09-27_07-24">
-          <inputs tag="hidden">
+        <delivery delimiter="#" id="delivery" prefix="J1!delivery!" version="2018-11-14_10-20">
+          <inputs>
             <meta>
               <location>
                 <lat/>

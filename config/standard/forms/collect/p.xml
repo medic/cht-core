@@ -9,7 +9,7 @@
             <value>Pasien ID</value>
           </text>
           <text id="/p/lmp:jr:constraintMsg">
-            <value>-</value>
+            <value>Nilai harus antara 2 dan 42 minggu</value>
           </text>
           <text id="/p/lmp:label">
             <value>Minggu sejak menstruasi terakhir</value>
@@ -87,7 +87,7 @@
             <value>मरीज का ID</value>
           </text>
           <text id="/p/lmp:jr:constraintMsg">
-            <value>-</value>
+            <value>यह आंकड़ा 2 से 42 सप्ताह के बीच होना चाहिए</value>
           </text>
           <text id="/p/lmp:label">
             <value>पिछली मासिक के बाद कितने साप्ताह बीत चुके</value>
@@ -136,7 +136,7 @@
         </translation>
       </itext>
       <instance>
-        <p delimiter="#" id="p" prefix="J1!p!" version="2018-09-27_07-24">
+        <p delimiter="#" id="p" prefix="J1!p!" version="2018-11-14_10-25">
           <id/>
           <lmp_known/>
           <lmp/>
