@@ -37,8 +37,7 @@
     ],
     priority: {
       level: 'high',
-      label: [{ locale: 'en', content: 'Danger Signs' }],
-      //TODO label: 'task.warning.danger_sign',
+      label: 'task.warning.danger_sign',
     },
     resolvedIf: function(c, r, event, dueDate) {
       return (
@@ -81,8 +80,7 @@
       if (isHighRiskPregnancy(c, r)) {
         return {
           level: 'high',
-          label: [{ locale: 'en', content: 'High Risk' }],
-          // label: 'task.warning.high_risk',
+          label: 'task.warning.high_risk',
         };
       }
     },
@@ -132,8 +130,7 @@
       if (isHighRiskPregnancy(c, r)) {
         return {
           level: 'high',
-          label: [{ locale: 'en', content: 'High Risk' }],
-          //TODO label: 'task.warning.high_risk',
+          label: 'task.warning.high_risk',
         };
       }
     },
@@ -176,8 +173,7 @@
     ],
     priority: {
       level: 'high',
-      label: [{ locale: 'en', content: 'Home Birth' }],
-      //TODO label: 'task.warning.home_birth',
+      label: 'task.warning.home_birth',
     },
     resolvedIf: function(c, r, event, dueDate) {
       // Resolved if there a visit report received in time window or a newer pregnancy
@@ -224,8 +220,7 @@
     ],
     priority: {
       level: 'high',
-      label: [{ locale: 'en', content: 'Danger Signs' }],
-      //TODO label: 'task.warning.danger_sign',
+      label: 'task.warning.danger_sign',
     },
     resolvedIf: function(c, r, event, dueDate) {
       // Only resolved with PNC report received from nurse in time window or a newer pregnancy
@@ -260,8 +255,7 @@
       if (isHomeBirth(r)) {
         return {
           level: 'high',
-          label: [{ locale: 'en', content: 'Home Birth' }],
-          //TODO label: 'task.warning.home_birth',
+          label: 'task.warning.home_birth',
         };
       }
     },
