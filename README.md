@@ -60,6 +60,13 @@ COUCH_NODE_NAME=couchdb@127.0.0.1
 grunt setup-couchdb
 ```
 
+After following these steps CouchDB should no longer allow unauthorised access:
+ ```shell
+curl http://myAdminUser:myAdminPass@localhost:5984 # should work
+{"couchdb":"Welcome","version":"2.0.0","vendor":{"name":"The Apache Software Foundation"}}
+curl http://localhost:5984 # should fail
+{"error":"unauthorized","reason":"Authentication required."}
+
 To be able to use Fauxton with authenticated users:
 
 ```shell
