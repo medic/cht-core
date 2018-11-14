@@ -226,7 +226,8 @@ describe('accept_patient_reports', () => {
       });
 
     });
-    it('adds message_uuid property', done => {
+    
+    it('adds report_uuid property', done => {
       sinon.stub(transition, '_silenceReminders').callsArgWith(3, null, true);
       const doc = {
         _id: 'z',
@@ -337,6 +338,35 @@ describe('accept_patient_reports', () => {
       transition._handleReport(doc, config, (err, complete) => {
         complete.should.equal(true);
         doc._id.should.equal(registrations[0].scheduled_tasks[2].report_uuid);
+        done();
+      });
+    });
+
+    it('should call utils.getRegistrations with correct DB (#4962)', done => {
+      const doc = {
+        fields: { patient_id: 'x' },
+        from: '+123',
+      };
+      sinon.stub(utils, 'getRegistrations').callsArgWith(1, null, []);
+
+      const config = {
+        messages: [
+          {
+            event_type: 'registration_not_found',
+            message: [
+              {
+                content: 'not found {{patient_id}}',
+                locale: 'en',
+              },
+            ],
+            recipient: 'reporting_unit',
+          },
+        ],
+      };
+
+      transition._handleReport(doc, config, () => {
+        utils.getRegistrations.callCount.should.equal(1);
+        utils.getRegistrations.args[0][0].should.deep.equal({ db: dbNano, id: 'x' });
         done();
       });
     });
