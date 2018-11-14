@@ -1,3 +1,10 @@
+// While we already do this earlier in inbox.js we have to check again for Karma
+// tests as they don't hit that code
+if (!window.startupTimes) {
+  window.startupTimes = {};
+}
+window.startupTimes.firstCodeExecution = performance.now();
+
 window.PouchDB = require('pouchdb-browser');
 window.PouchDB.plugin(require('pouchdb-debug'));
 window.$ = window.jQuery = require('jquery');
@@ -140,9 +147,6 @@ _.templateSettings = {
       if (err.redirect) {
         window.location.href = err.redirect;
       } else {
-        $('.bootstrap-layer').html(
-          '<div><p>Loading error, please check your connection.</p><a class="btn btn-primary" href="#" onclick="window.location.reload(false);">Try again</a></div>'
-        );
         console.error('Error fetching ddoc from remote server', err);
         setTimeout(function() {
           // retry initial replication automatically after one minute
@@ -151,6 +155,7 @@ _.templateSettings = {
       }
       return;
     }
+    window.startupTimes.bootstrapped = performance.now();
     angular.element(document).ready(function() {
       angular.bootstrap(document, ['inboxApp'], {
         strictDi: true,

@@ -181,7 +181,6 @@ module.exports = function(grunt) {
         reporter: require('jshint-stylish'),
         ignores: [
           'webapp/src/js/modules/xpath-element-path.js',
-          'webapp/tests/karma/q.js',
           '**/node_modules/**',
           'sentinel/src/lib/pupil/**',
           'build/**',
@@ -231,7 +230,7 @@ module.exports = function(grunt) {
       options: {
         processors: [
           require('autoprefixer')({
-            browsers: ['last 2 versions', 'Android >= 4.4'],
+            browsers: ['last 2 Firefox versions', 'Chrome >= 54'],
           }),
         ],
       },
@@ -656,6 +655,7 @@ module.exports = function(grunt) {
       unit: {
         src: [
           'webapp/tests/mocha/unit/**/*.spec.js',
+          'webapp/tests/mocha/unit/*.spec.js',
           'api/tests/mocha/**/*.js',
           'sentinel/tests/**/*.js',
         ],
@@ -770,7 +770,7 @@ module.exports = function(grunt) {
 
               // ignored because they don't have access to angular
               '!webapp/src/js/app.js',
-              '!webapp/src/js/bootstrapper.js',
+              '!webapp/src/js/bootstrapper/*.js',
 
               // ignored because its job is to log to console
               '!webapp/src/js/modules/feedback.js',

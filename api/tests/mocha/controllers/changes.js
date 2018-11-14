@@ -132,6 +132,7 @@ describe('Changes controller', () => {
         include_docs: true,
         since: 'now',
         timeout: false,
+        return_docs: false,
       });
       controller._inited().should.equal(true);
       controller._getContinuousFeed().should.equal(emitters[0]);
@@ -267,19 +268,21 @@ describe('Changes controller', () => {
       authorization.getAllowedDocIds.resolves(['d1', 'd2', 'd3']);
       controller.request(testReq, testRes);
       return nextTick()
-      .then(nextTick).then(() => {
-        authorization.getAllowedDocIds.callCount.should.equal(1);
-        changesSpy.callCount.should.equal(2);
-        changesSpy.args[1][0].should.deep.equal({
-          since: 0,
-          batch_size: 4,
-          doc_ids: ['d1', 'd2', 'd3']
+        .then(nextTick)
+        .then(() => {
+          authorization.getAllowedDocIds.callCount.should.equal(1);
+          changesSpy.callCount.should.equal(2);
+          changesSpy.args[1][0].should.deep.equal({
+            since: 0,
+            batch_size: 4,
+            doc_ids: ['d1', 'd2', 'd3'],
+            return_docs: true,
         });
       });
     });
 
     it('requests changes with correct query parameters', () => {
-      testReq.query = { limit: 20, view: 'test', something: 'else', conflicts: true, seq_interval: false, since: '22'};
+      testReq.query = { limit: 20, view: 'test', something: 'else', conflicts: true, seq_interval: false, since: '22', return_docs: false };
       authorization.getAllowedDocIds.resolves(['d1', 'd2', 'd3']);
       controller.request(testReq, testRes);
       return nextTick().then(() => {
@@ -289,7 +292,8 @@ describe('Changes controller', () => {
           batch_size: 4,
           doc_ids: ['d1', 'd2', 'd3'],
           conflicts: true,
-          seq_interval: false
+          seq_interval: false,
+          return_docs: true,
         });
       });
     });
@@ -1198,7 +1202,8 @@ describe('Changes controller', () => {
           changesSpy.args[1][0].should.deep.equal({
             batch_size: 3,
             doc_ids: ['a', 'b'],
-            since: 'seq'
+            since: 'seq',
+            return_docs: true,
           });
           controller._getNormalFeeds().forEach(feed => {
             feed.upstreamRequest.complete(null, { results: [], last_seq: 5 });
@@ -1236,7 +1241,8 @@ describe('Changes controller', () => {
           changesSpy.args[2][0].should.deep.equal({
             batch_size: 5,
             doc_ids: ['a', 'b', 'c', 'd'],
-            since: 'seq'
+            since: 'seq',
+            return_docs: true,
           });
 
           controller._getLongpollFeeds().length.should.equal(0);

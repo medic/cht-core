@@ -86,5 +86,5 @@ module.exports = {
   waitForPageToBeReady: () => {
     helper.waitElementToBeClickable(element(by.css('.btn-link.cancel')));
     helper.waitForAngularComplete();
-  },
+  }
 };

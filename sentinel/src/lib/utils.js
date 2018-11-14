@@ -62,13 +62,15 @@ const getDistrictPhone = doc => {
   return f && f.contact && f.contact.phone;
 };
 
+// updates the states of matching scheduled tasks
+// returns the number of updated tasks
 const setTasksStates = (doc, state, predicate) => {
   doc.scheduled_tasks = doc.scheduled_tasks || [];
-  _.each(doc.scheduled_tasks, task => {
+  return _.compact(_.map(doc.scheduled_tasks, task => {
     if (predicate.call(this, task)) {
-      taskUtils.setTaskState(task, state);
+      return taskUtils.setTaskState(task, state);
     }
-  });
+  })).length;
 };
 
 const addError = (doc, error) => {
@@ -227,19 +229,6 @@ module.exports = {
       (doc.contact && doc.contact.phone)
     );
   },
-  unmuteScheduledMessages: doc => {
-    setTasksStates(doc, 'scheduled', task => {
-      return task.state === 'muted';
-    });
-    doc.scheduled_tasks = _.filter(doc.scheduled_tasks, task => {
-      return new Date(task.due) > Date.now();
-    });
-  },
-  muteScheduledMessages: doc => {
-    setTasksStates(doc, 'muted', task => {
-      return task.state === 'scheduled';
-    });
-  },
   getClinicID: getClinicID,
   getClinic: getClinic,
   getHealthCenter: getHealthCenter,
@@ -294,6 +283,26 @@ module.exports = {
   isFormCodeSame: (formCode, test) => {
     // case insensitive match with junk padding
     return new RegExp('^W*' + formCode + '\\W*$', 'i').test(test);
+  },
+
+  getReportsBySubject: (options) => {
+    const viewOptions = { include_docs: true };
+    if (options.id) {
+      viewOptions.key = [options.id];
+    } else if (options.ids) {
+      viewOptions.keys = options.ids.map(id => ([id]));
+    } else {
+      return Promise.resolve([]);
+    }
+
+    return options.db.query('medic-client/reports_by_subject', viewOptions).then(result => {
+      const reports = result.rows.map(row => row.doc);
+      if (!options.registrations) {
+        return reports;
+      }
+
+      return reports.filter(report => registrationUtils.isValidRegistration(report, config.getAll()));
+    });
   },
 
   /*

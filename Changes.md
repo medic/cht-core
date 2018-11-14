@@ -1,28 +1,27 @@
 # Medic Mobile Release Notes
 
-## 3.2.0
-
-_TBD_
+## 3.3.0
 
 ### Features
 
 - [#649](https://github.com/medic/medic-webapp/issues/649): Add a screen that shows messages queued to be sent 
 - [#3155](https://github.com/medic/medic-webapp/issues/3155): Add validation option for ISO week date
 - [#3675](https://github.com/medic/medic-webapp/issues/3675): Blacklist outgoing messages to carriers
-- [#4767](https://github.com/medic/medic-webapp/issues/4767): Ability to mute families (and maybe individuals)
 
 ### Improvements
 
+- [#670](https://github.com/medic/medic-webapp/issues/670): Outgoing message size is not limited
 - [#3414](https://github.com/medic/medic-webapp/issues/3414): Make the patient ID or UUID on the Reports tab a hyperlink
 - [#3705](https://github.com/medic/medic-webapp/issues/3705): Disable 'Select' and 'Export' buttons when there are no reports
 - [#4013](https://github.com/medic/medic-webapp/issues/4013): Add warning dialogue when users navigate away from a form
 - [#4097](https://github.com/medic/medic-webapp/issues/4097): Log each valid `POST /api/v1/users/{username}` with field names
 - [#4294](https://github.com/medic/medic-webapp/issues/4294): On single column pages, remove scroll within a scroll
-- [#4768](https://github.com/medic/medic-webapp/issues/4768): Update the on/off handling to mark an individual as muted
+- [#4680](https://github.com/medic/medic-webapp/issues/4680): Translate our startup messages for non-English speakers
 - [#4895](https://github.com/medic/medic-webapp/issues/4895): Update place icons
 
 ### Performance fixes
 
+- [#4644](https://github.com/medic/medic-webapp/issues/4644): Use asynchronous logging in node apps
 - [#4834](https://github.com/medic/medic-webapp/issues/4834): Move `medic-client/feedback` view into admin ddoc
 
 ### Bug fixes
@@ -33,6 +32,7 @@ _TBD_
 - [#3707](https://github.com/medic/medic-webapp/issues/3707): GET /api/v1/forms is broken if trailing slash
 - [#3899](https://github.com/medic/medic-webapp/issues/3899): Can create people born in the future with standard configuration
 - [#4331](https://github.com/medic/medic-webapp/issues/4331): Reports incorrectly filtered if filter changes before search returns
+- [#4511](https://github.com/medic/medic-webapp/issues/4511): Timestamps incorrectly cleared when adding a message to an ANC reminder group
 - [#4625](https://github.com/medic/medic-webapp/issues/4625): Reports page can mistakenly hide fields
 - [#4710](https://github.com/medic/medic-webapp/issues/4710): Users without admin permissions can view the configuration area
 - [#4711](https://github.com/medic/medic-webapp/issues/4711): Users without permission to view contacts, tasks, messages can view those pages
@@ -49,14 +49,30 @@ _TBD_
 - [#4837](https://github.com/medic/medic-webapp/issues/4837): Font awesome icons not loading in the administration console
 - [#4899](https://github.com/medic/medic-webapp/issues/4899): Error loading Outgoing Messages tab when there are no results
 - [#4905](https://github.com/medic/medic-webapp/issues/4905): Contacts controllers search is clearing $stateParams when it shouldn't
+- [#4942](https://github.com/medic/medic-webapp/issues/4942): Fix failing test: "Family Survey form Submit Family Survey form"
+- [#4962](https://github.com/medic/medic-webapp/issues/4962): accept_patient_reports is broken
 
 ### Technical issues
 
 - [#4865](https://github.com/medic/medic-webapp/issues/4865): grunt watch doesn't deploy inbox.html changes
+- [#4955](https://github.com/medic/medic-webapp/issues/4955): Bump autoprefixer browser support
+
+## 3.2.0
+
+### Features
+
+- [#4767](https://github.com/medic/medic-webapp/issues/4767): Ability to mute families (and maybe individuals)
+
+### Improvements
+
+- [#4768](https://github.com/medic/medic-webapp/issues/4768): Update the on/off handling to mark an individual as muted
+
+### Bug fixes
+
+- [#3362](https://github.com/medic/medic-webapp/issues/3362): The `update_notifications` transition is not working as expected
+- [#4649](https://github.com/medic/medic-webapp/issues/4649):  Automated reply not generated in case OFF/ON texfrom when patient id is not sent by the user.
 
 ## 3.1.0
-
-_TBD_
 
 ### Features
 
@@ -93,8 +109,6 @@ _TBD_
 - [#4664](https://github.com/medic/medic-webapp/issues/4664): Upgrade to PouchDB 7.0
 
 ## 3.0.0
-
-_October 23, 2018_
 
 ### Migration notes
 
@@ -146,6 +160,7 @@ _October 23, 2018_
 - [#4643](https://github.com/medic/medic-webapp/issues/4643): Enable response body compression
 - [#4656](https://github.com/medic/medic-webapp/issues/4656): Remove gammu from the medic-os image
 - [#4669](https://github.com/medic/medic-webapp/issues/4669): Subject summaries are loaded one at a time
+- [#4939](https://github.com/medic/medic-webapp/issues/4939): CouchDB 2 performance issue
 
 ### Bug fixes
 
@@ -166,7 +181,7 @@ _October 23, 2018_
 - [#4343](https://github.com/medic/medic-webapp/issues/4343): The sms-gateway endpoint can crash api
 - [#4364](https://github.com/medic/medic-webapp/issues/4364): Don't use error code 301 when unauthorized
 - [#4371](https://github.com/medic/medic-webapp/issues/4371): Report RHS action bar not updated for unknown/missing contact
-- [#4373](https://github.com/medic/medic-webapp/issues/4373): `{{patient_name}}` not rendered in the error message and the automated reply.
+- [#4373](https://github.com/medic/medic-webapp/issues/4373): `{{patient_name}}` not rendered in the error message and the automated reply
 - [#4412](https://github.com/medic/medic-webapp/issues/4412): User metadata db security
 - [#4424](https://github.com/medic/medic-webapp/issues/4424): Pouch timeout weirdness with Medic servers
 - [#4425](https://github.com/medic/medic-webapp/issues/4425): Lineage unit tests do not run on Travis
@@ -195,8 +210,9 @@ _October 23, 2018_
 - [#4808](https://github.com/medic/medic-webapp/issues/4808): Clicking edit on a district, health center, heatlh area is showing error
 - [#4823](https://github.com/medic/medic-webapp/issues/4823): Error loading form "Could not evaluate:"
 - [#4831](https://github.com/medic/medic-webapp/issues/4831): ANC SMS are not cleared when pregnancy is registered to the patient
-- [#4848](https://github.com/medic/medic-webapp/issues/4848): Zscore Charts are not being found
-- [#4893](https://github.com/medic/medic-webapp/issues/4893): Horticulturalist crashes when view warming
+- [#4848](https://github.com/medic/medic-webapp/issues/4848): ZScore Charts are not being found
+- [#4893](https://github.com/medic/medic-webapp/issues/4893): Horticulturalist crashes when view warming'
+- [#4975](https://github.com/medic/medic-webapp/issues/4975): Sentinel hangs on empty trigger config
 
 ### Technical issues
 

@@ -5,16 +5,20 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <link rel="stylesheet" type="text/css" href="css/inbox.css" />
-    <link rel="shortcut icon" href="img/ico/icon_32.ico">
+    <link rel="shortcut icon" href="/favicon.ico">
     <link rel="manifest" href="manifest.json">
     <title>Medic Mobile</title>
+    <script type="text/javascript">
+      window.startupTimes = {};
+      window.startupTimes.start = performance.now();
+    </script>
   </head>
   <body class="inbox {{currentTab}}" ng-controller="InboxCtrl" ng-class="{'show-content': showContent, 'bootstrapped': version && dbWarmedUp, 'select-mode': selectMode}">
 
     <div class="bootstrap-layer">
       <div>
         <div class="loader"></div>
-        <div class="status">Loading assets…</div>
+        <div class="status"></div>
       </div>
     </div>
 

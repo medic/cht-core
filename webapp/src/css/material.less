@@ -38,7 +38,8 @@
     }
   }
   ul:last-child mm-content-row:last-child,
-  .deceased {
+  .deceased,
+  .muted {
     li {
       border-bottom: 0;
     }
@@ -76,7 +77,7 @@
   h2 {
     margin: 0;
   }
-  .heading-content > * {
+  .heading-content > *:not(.muted) {
     display: inline-block;
     margin-right: 30px;
   }
