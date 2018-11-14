@@ -229,7 +229,7 @@ module.exports = {
   silenceRegistrations: silenceRegistrations,
   onMatch: change => {
     const doc = change.doc;
-    
+
     const config = getConfig(doc.form);
 
     if (!config) {

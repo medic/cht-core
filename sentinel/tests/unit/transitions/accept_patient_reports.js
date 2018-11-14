@@ -310,6 +310,7 @@ describe('accept_patient_reports', () => {
         doc._id.should.equal(registrations[0].scheduled_tasks[2].report_uuid);
         done();
       });
+    });
 
     it('should call utils.getRegistrations with correct DB (#4962)', done => {
       const doc = {
@@ -338,7 +339,6 @@ describe('accept_patient_reports', () => {
         utils.getRegistrations.args[0][0].should.deep.equal({ db: dbNano, id: 'x' });
         done();
       });
-  
     });
   });
 
@@ -369,7 +369,6 @@ describe('accept_patient_reports', () => {
         registration._id.should.equal('test-registration');
         registration.scheduled_tasks.length.should.equal(4);
         setTaskState.callCount.should.equal(4);
-
         setTaskState
           .getCall(0)
           .args.should.deep.equal([
