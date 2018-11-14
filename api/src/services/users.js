@@ -4,7 +4,7 @@ const _ = require('underscore'),
       places = require('../controllers/places'),
       config = require('../config'),
       db = require('../db-pouch'),
-      lineage = require('lineage')(Promise, db.medic),
+      lineage = require('@shared-libs/lineage')(Promise, db.medic),
       getRoles = require('./types-and-roles');
 
 const USER_PREFIX = 'org.couchdb.user:';

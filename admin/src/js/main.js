@@ -11,7 +11,7 @@ require('angular-sanitize');
 require('angular-translate');
 require('angular-translate-interpolation-messageformat');
 require('angular-ui-bootstrap');
-require('angular-ui-router');
+require('@uirouter/angularjs');
 
 angular.module('controllers', []);
 require('./controllers/main');

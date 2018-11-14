@@ -5,7 +5,7 @@ var _ = require('underscore'),
   config = require('../config'),
   db = require('../db-nano'),
   dbPouch = require('../db-pouch'),
-  lineage = require('lineage')(Promise, dbPouch.medic);
+  lineage = require('@shared-libs/lineage')(Promise, dbPouch.medic);
 
 var createColumnModels = function(values, options) {
   return _.map(values, function(value) {

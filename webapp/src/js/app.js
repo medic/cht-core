@@ -27,7 +27,7 @@ require('angular-translate');
 require('angular-translate-interpolation-messageformat');
 require('angular-translate-handler-log');
 require('angular-ui-bootstrap');
-require('angular-ui-router');
+require('@uirouter/angularjs');
 
 require('moment');
 require('moment/locale/bm');

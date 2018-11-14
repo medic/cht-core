@@ -1,5 +1,5 @@
 {
-  "name": "task-utils",
+  "name": "@shared-libs/task-utils",
   "version": "1.0.0",
   "description": "Common task utility functions",
   "main": "src/task-utils.js",

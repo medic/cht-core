@@ -1,4 +1,4 @@
-var phoneNumber = require('phone-number');
+var phoneNumber = require('@shared-libs/phone-number');
 
 angular.module('inboxFilters').filter('phone',
   function(

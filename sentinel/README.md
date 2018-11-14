@@ -2,7 +2,7 @@
 
 ## Install
 
-Get node deps with  `yarn install`.
+Get node deps with  `npm ci`.
 
 ## Run
 

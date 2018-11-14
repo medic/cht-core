@@ -9,7 +9,7 @@ define( function( require, exports, module ) {
     var FormModel = require( 'enketo-core/src/js/Form-model' );
     var Widget = require( 'enketo-core/src/js/Widget' );
     var $ = require( 'jquery' );
-    var phoneNumber = require('phone-number');
+    var phoneNumber = require('@shared-libs/phone-number');
     require( 'enketo-core/src/js/plugins' );
 
     var pluginName = 'phonewidget';

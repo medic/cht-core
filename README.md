@@ -38,7 +38,7 @@ You will need to install the following:
 
 [Node.js](https://nodejs.org) 8.11.x and above
 
-[yarn](https://yarnpkg.com/en/) 1.7.0
+[npm](https://npmjs.com/) 6.x.x and above (to support npm ci)
 
 [CouchDB](https://couchdb.apache.org) v2.x
 
@@ -98,7 +98,7 @@ curl -X PUT --data '"4294967296"' http://admin:pass@localhost:5986/_config/httpd
 ```shell
 git clone https://github.com/medic/medic-webapp
 cd medic-webapp
-yarn install
+npm ci
 ```
 
 ### Deploy all the apps
@@ -113,10 +113,10 @@ COUCH_NODE_NAME=couchdb@localhost
 Then install webapp, admin, api and sentinel dependencies
 
 ```shell
-cd webapp && yarn install && cd ..
-cd admin && yarn install && cd ..
-cd api && yarn install && cd ..
-cd sentinel && yarn install && cd ..
+cd webapp && npm ci && cd ..
+cd admin && npm ci && cd ..
+cd api && npm ci && cd ..
+cd sentinel && npm ci && cd ..
 ```
 
 Then do an initial deploy of the webapp:
@@ -128,14 +128,14 @@ grunt dev-webapp
 Once this is complete you can close it, and from now on you can just run:
 
 ```shell
-yarn start
+npm start
 ```
 
 which will start the webapp, api, and sentinel, and watch for changes in each app.
 
 ### Deploy apps individually
 
-If `yarn start` is not to your taste for whatever reason, the apps can be deployed individually.
+If `npm start` is not to your taste for whatever reason, the apps can be deployed individually.
 
 #### Deploy the webapp
 
@@ -145,7 +145,7 @@ If `yarn start` is not to your taste for whatever reason, the apps can be deploy
 
 ```shell
 cd sentinel
-yarn install
+npm ci
 export COUCH_NODE_NAME=couchdb@localhost
 export COUCH_URL=http://admin:pass@localhost:5984/medic
 ```
@@ -156,7 +156,7 @@ Then run either `node ./server.js` from the sentinel directory or `grunt dev-sen
 
 ```shell
 cd api
-yarn install
+npm ci
 export COUCH_NODE_NAME=couchdb@localhost
 export COUCH_URL=http://admin:pass@localhost:5984/medic
 ```
@@ -198,7 +198,7 @@ They live in the `tests` directories of each app. Run them with grunt: `grunt un
 
 They live in [tests](tests). To run them:
 
-1. Update and start Webdriver: `yarn run webdriver`
+1. Update and start Webdriver: `npm run webdriver`
 2. Run tests: `grunt e2e`
 
 ### API integration tests

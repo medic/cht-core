@@ -94,7 +94,7 @@ if (process.argv.slice(2).includes('--allow-cors')) {
 }
 
 app.use((req, res, next) => {
-  req.id = uuid.v4();
+  req.id = uuid();
   next();
 });
 morgan.token('id', req => req.id);

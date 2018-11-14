@@ -1,5 +1,5 @@
 {
-  "name": "lineage",
+  "name": "@shared-libs/lineage",
   "version": "1.0.0",
   "description": "Lineage and hydration library",
   "main": "src/lineage.js",
@@ -8,13 +8,14 @@
   },
   "author": "",
   "license": "Apache-2.0",
+  "private": true,
   "devDependencies": {
+    "@shared-libs/memdown-medic": "file:../memdown-medic",
     "chai": "^4.1.2",
     "chai-as-promised": "^7.1.1",
     "chai-exclude": "^1.0.9",
     "chai-shallow-deep-equal": "^1.4.6",
     "lodash": "^4.17.10",
-    "memdown-medic": "file:../memdown-medic",
     "mocha": "^5.2.0",
     "sinon": "^6.1.5"
   },

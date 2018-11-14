@@ -1,6 +1,6 @@
 const _ = require('underscore'),
       moment = require('moment'),
-      phoneNumber = require('phone-number'),
+      phoneNumber = require('@shared-libs/phone-number'),
       config = require('../config'),
       smsparser = require('../services/report/smsparser'),
       validate = require('../services/report/validate'),
@@ -252,7 +252,7 @@ const createRecordByJSON = data => {
     if (['string', 'number'].indexOf(typeof data[k]) >= 0) {
       formData[k.toLowerCase()] = data[k];
     }
-  }  
+  }
 
   return getDataRecord(formData, options);
 };

@@ -1,7 +1,7 @@
 const should = require('chai').should(),
       sinon = require('sinon'),
       registrationUtils = require('@shared-libs/registration-utils'),
-      taskUtils = require('task-utils'),
+      taskUtils = require('@shared-libs/task-utils'),
       config = require('../../../src/config');
 
 describe('utils util', () => {
