@@ -242,7 +242,7 @@ var requestBuilders = {
       requests.push(defaultContactRequest());
     }
 
-    if (extensions && extensions.sortByLastVisitedDate) {
+    if (module.exports.shouldSortByLastVisitedDate(extensions)) {
       // Always push this last, search:getIntersection uses the last request
       // result and we'll need it later for sorting
       requests.push(sortByLastVisitedDate());
@@ -290,5 +290,8 @@ module.exports = {
       throw new Error('Unknown type: ' + type);
     }
     return builder(filters, extensions);
+  },
+  shouldSortByLastVisitedDate: function(extensions) {
+    return extensions && extensions.sortByLastVisitedDate;
   }
 };

@@ -52,28 +52,55 @@ var _ = require('underscore'),
 
       var _search = SearchFactory();
 
-      var getLastVisitedDates = function(searchResults, settings) {
+      var getLastVisitedDates = function(searchResults, extendedResults, settings) {
         settings = settings || {};
 
-        return DB().query('medic-client/contacts_by_last_visited', {
-          reduce: false,
-          keys: searchResults
-        }).then(function(result) {
-          var visitStats = {},
-              interval = CalendarInterval.getCurrent(settings.monthStartDate);
+        var interval = CalendarInterval.getCurrent(settings.monthStartDate),
+            visitStats = {},
+            promise;
 
-          result.rows.forEach(function(row) {
-            var stats = visitStats[row.key] || { lastVisitedDate: -1, visitDates: [] };
+        searchResults.forEach(function(id) {
+          visitStats[id] = { lastVisitedDate: -1, visitDates: [] };
+        });
 
-            stats.lastVisitedDate = Math.max(stats.lastVisitedDate, row.value);
-
-            if (row.value >= interval.start && row.value <= interval.end) {
-              stats.visitDates.push(moment(row.value).startOf('day').valueOf());
+        if (extendedResults) {
+          extendedResults.forEach(function(row) {
+            if (visitStats[row.key]) {
+              visitStats[row.key].lastVisitedDate = row.value;
             }
-
-            visitStats[row.key] = stats;
           });
 
+          promise = DB()
+            .query('medic-client/visits_by_date', {
+              start_key: interval.start,
+              end_key: interval.end
+            }).then(function(result) {
+              result.rows.forEach(function (row) {
+                if (visitStats[row.value]) {
+                  visitStats[row.value].visitDates.push(moment(row.key).startOf('day').valueOf());
+                }
+              });
+            });
+        } else {
+          promise = DB().query('medic-client/contacts_by_last_visited', {
+            reduce: false,
+            keys: searchResults
+          }).then(function(result) {
+            result.rows.forEach(function (row) {
+              var stats = visitStats[row.key];
+
+              stats.lastVisitedDate = Math.max(stats.lastVisitedDate, row.value);
+
+              if (row.value >= interval.start && row.value <= interval.end) {
+                stats.visitDates.push(moment(row.value).startOf('day').valueOf());
+              }
+
+              visitStats[row.key] = stats;
+            });
+          });
+        }
+
+        return promise.then(function() {
           return Object.keys(visitStats).map(function(key) {
             return {
               key: key,
@@ -103,6 +130,12 @@ var _ = require('underscore'),
 
         return _search(type, filters, options, extensions)
           .then(function(searchResults) {
+            var extendedResults;
+            if (_.isObject(searchResults) && searchResults.extendedResults) {
+              extendedResults = searchResults.extendedResults;
+              searchResults = searchResults.results;
+            }
+
             if (docIds && docIds.length) {
               docIds.forEach(function(docId) {
                 if (searchResults.indexOf(docId) === -1) {
@@ -116,7 +149,7 @@ var _ = require('underscore'),
               return dataRecordsPromise;
             }
 
-            var lastVisitedDatePromise = getLastVisitedDates(searchResults, extensions.visitCountSettings);
+            var lastVisitedDatePromise = getLastVisitedDates(searchResults, extendedResults, extensions.visitCountSettings);
 
             return $q.all({
               dataRecords: dataRecordsPromise,
