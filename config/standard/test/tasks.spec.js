@@ -166,11 +166,13 @@ describe('Standard Configuration Tasks', function() {
 
     describe('Postnatal visit schedule', function() {
       const postnatalTaskDays = [ 5, 6, 7, 8, 9, 10, 11, 12, 44, 45, 46, 47 ];
-      // FIXME it's not clear why ageInDaysWhenRegistered should influence the
-      // task generation - please explain here.
+      // Tasks are associated to the last scheduled message of each group. 
+      // We won't have scheduled messages before receiving the report, so only
+      // check for tasks between age in days when registered and ten days 
+      // beyond end of PNC period.
       const ageInDaysWhenRegistered = 1;
 
-      range(ageInDaysWhenRegistered, DAYS_IN_PNC+10).forEach(day => {
+      range(0, DAYS_IN_PNC+10).forEach(day => {
 
         describe(`Postnatal period: day ${day}:`, function() {
           if (postnatalTaskDays.includes(day)) {
@@ -413,12 +415,14 @@ describe('Standard Configuration Tasks', function() {
     };
     var immunizationTaskDays = getRangeFromTask(immunizationTasks, weekdayOffset);
     const cwReport = fixtures.reports.cw();
-    // FIXME it's not clear why ageInDaysWhenRegistered should influence the
-    // task generation - please explain here.
+    // Tasks are associated to the last scheduled message of each group. 
+    // We won't have scheduled messages before receiving the report, so only
+    // check for tasks between age in days when registered and ten days 
+    // beyond end of PNC period.
     var ageInDaysWhenRegistered = Math.floor((cwReport.reported_date - (new Date(cwReport.birth_date).getTime()))/MS_IN_DAY);
 
     // Test for 10 days beyond the immunization period
-    range(ageInDaysWhenRegistered, IMMUNIZATION_PERIOD + 10).forEach(day => {
+    range(0, IMMUNIZATION_PERIOD + 10).forEach(day => {
       describe(`Immunization: day ${day}:`, function() {
 
         if (immunizationTaskDays.includes(day)) {
