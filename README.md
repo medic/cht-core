@@ -52,12 +52,12 @@ By default CouchDB runs in "admin party" mode, which means you do not need users
 
 First, add an admin user. When prompted to create an admin during installation, use a strong username and password. Passwords can be changed via [Fauxton](http://localhost:5984/_utils). For more information see the [CouchDB install doc](http://docs.couchdb.org/en/2.0.0/install/). 
 
-Now that's done, we must setup CouchDB:
+Now that's done, we must configure some security settings on CouchDB:
 
 ```shell
 COUCH_URL=http://myAdminUser:myAdminPass@localhost:5984/medic
 COUCH_NODE_NAME=couchdb@127.0.0.1
-grunt setup-couchdb
+grunt secure-couchdb
 ```
 
 After following these steps CouchDB should no longer allow unauthorised access:

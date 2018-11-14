@@ -1048,7 +1048,7 @@ module.exports = function(grunt) {
     'exec:api-dev',
   ]);
 
-  grunt.registerTask('setup-couchdb', 'Basic developer setup for CouchDB', [
+  grunt.registerTask('secure-couchdb', 'Basic developer setup for CouchDB', [
     'exec:setup-admin',
   ]);
 
