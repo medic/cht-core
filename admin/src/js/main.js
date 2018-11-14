@@ -43,6 +43,7 @@ require('./controllers/translation-languages');
 require('./controllers/upgrade');
 require('./controllers/upgrade-confirm');
 require('./controllers/users');
+require('./controllers/images-header-logo');
 
 angular.module('directives', ['ngSanitize']);
 require('./directives/modal');
@@ -253,10 +254,27 @@ app.config(function(
         }
       }
     })
-    .state('icons', {
+    .state('images', {
+      url: '/images',
+      templateUrl: 'templates/images.html'
+    })
+    .state('images.icons', {
       url: '/icons',
-      controller: 'IconsCtrl',
-      templateUrl: 'templates/icons.html'
+      views: {
+        tab: {
+          controller: 'IconsCtrl',
+          templateUrl: 'templates/images_icons.html'
+        }
+      }
+    })
+    .state('images.header', {
+      url: '/header',
+      views: {
+        tab: {
+          controller: 'HeaderLogoCtrl',
+          templateUrl: 'templates/images_header.html'
+        }
+      }
     })
     .state('authorization', {
       url: '/authorization',
