@@ -228,6 +228,7 @@ describe('accept_patient_reports', () => {
     });
     
     it('adds report_uuid property', done => {
+      sinon.stub(db.medic, 'post').resolves({});
       sinon.stub(transition, '_silenceReminders').callsArgWith(3, null, true);
       const doc = {
         _id: 'z',
@@ -272,6 +273,7 @@ describe('accept_patient_reports', () => {
     });
 
     it('if there are multiple scheduled tasks uses the oldest valid one', done => {
+      sinon.stub(db.medic, 'post').resolves({});
       sinon.stub(transition, '_silenceReminders').callsArgWith(3, null, true);
       const doc = {
         _id: 'z',
@@ -369,6 +371,7 @@ describe('accept_patient_reports', () => {
         utils.getRegistrations.args[0][0].should.deep.equal({ db: dbNano, id: 'x' });
         done();
       });
+      
     });
   });
 
