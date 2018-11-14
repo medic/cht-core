@@ -80,9 +80,9 @@ describe('Standard Configuration Tasks', function() {
           assert.equal(tasks.length, 1);
 
           const task = tasks[0];
-          assertPriority(task, 'high', 'Home Birth');
+          assertPriority(task, 'high', 'task.warning.home_birth');
           assertIcon(task, 'mother-child');
-          assertTitle(task, 'Postnatal visit needed');
+          assertTitle(task, 'task.postnatal_home_birth.title');
           assertNotResolved(task);
           assert.deepInclude(task.actions[0].content, {
             "source": "task",
@@ -109,9 +109,9 @@ describe('Standard Configuration Tasks', function() {
           assert.equal(tasks.length, 1);
 
           const task = tasks[0];
-          assertPriority(task, 'high', 'Home Birth');
+          assertPriority(task, 'high', 'task.warning.home_birth');
           assertIcon(task, 'mother-child');
-          assertTitle(task, 'Postnatal visit needed');
+          assertTitle(task, 'task.postnatal_home_birth.title');
           assertResolved(task);
         });
     });
@@ -133,9 +133,9 @@ describe('Standard Configuration Tasks', function() {
           assert.equal(tasks.length, 1);
 
           const task = tasks[0];
-          assertPriority(task, 'high', 'Home Birth');
+          assertPriority(task, 'high', 'task.warning.home_birth');
           assertIcon(task, 'mother-child');
-          assertTitle(task, 'Postnatal visit needed');
+          assertTitle(task, 'task.postnatal_home_birth.title');
           assertResolved(task);
         });
     });
@@ -157,20 +157,22 @@ describe('Standard Configuration Tasks', function() {
           assert.equal(tasks.length, 1);
 
           const task = tasks[0];
-          assertPriority(task, 'high', 'Danger Signs');
+          assertPriority(task, 'high', 'task.warning.danger_sign');
           assertIcon(task, 'mother-child');
-          assertTitle(task, 'Postnatal visit needed');
+          assertTitle(task, 'task.postnatal_danger_sign.title');
           assertType(task, 'postnatal-danger-sign');
         });
     });
 
     describe('Postnatal visit schedule', function() {
       const postnatalTaskDays = [ 5, 6, 7, 8, 9, 10, 11, 12, 44, 45, 46, 47 ];
-      // FIXME it's not clear why ageInDaysWhenRegistered should influence the
-      // task generation - please explain here.
+      // Tasks are associated to the last scheduled message of each group. 
+      // We won't have scheduled messages before receiving the report, so only
+      // check for tasks between age in days when registered and ten days 
+      // beyond end of PNC period.
       const ageInDaysWhenRegistered = 1;
 
-      range(ageInDaysWhenRegistered, DAYS_IN_PNC+10).forEach(day => {
+      range(0, DAYS_IN_PNC+10).forEach(day => {
 
         describe(`Postnatal period: day ${day}:`, function() {
           if (postnatalTaskDays.includes(day)) {
@@ -189,7 +191,7 @@ describe('Standard Configuration Tasks', function() {
                   const task = tasks[0];
                   assertNoPriority(task);
                   assertIcon(task, 'mother-child');
-                  assertTitle(task, 'Missing postnatal visit');
+                  assertTitle(task, 'task.postnatal_missing_visit.title');
                   assertType(task, 'postnatal-missing-visit');
                 });
             });
@@ -263,9 +265,9 @@ describe('Standard Configuration Tasks', function() {
           assert.equal(tasks.length, 1);
 
           const task = tasks[0];
-          assertPriority(task, 'high', 'Danger Signs');
+          assertPriority(task, 'high', 'task.warning.danger_sign');
           assertIcon(task, 'mother-child');
-          assertTitle(task, 'Pregnancy visit needed');
+          assertTitle(task, 'task.pregnancy_danger_sign.title');
           assertType(task, 'pregnancy-danger-sign');
         });
     });
@@ -314,9 +316,9 @@ describe('Standard Configuration Tasks', function() {
           assert.equal(tasks.length, 2);
 
           const task = tasks[0];
-          assertPriority(task, 'high', 'Danger Signs');
+          assertPriority(task, 'high', 'task.warning.danger_sign');
           assertIcon(task, 'mother-child');
-          assertTitle(task, 'Pregnancy visit needed');
+          assertTitle(task, 'task.pregnancy_danger_sign.title');
           assertType(task, 'pregnancy-danger-sign');
           assertResolved(task);
         });
@@ -341,7 +343,7 @@ describe('Standard Configuration Tasks', function() {
                 const task = tasks[0];
                 assertNoPriority(task);
                 assertIcon(task, 'pregnancy-1');
-                assertTitle(task, 'Missing pregnancy visit');
+                assertTitle(task, 'task.pregnancy_missing_visit.title');
                 assertType(task, 'pregnancy-missing-visit');
               });
           });
@@ -373,7 +375,7 @@ describe('Standard Configuration Tasks', function() {
                 const task = tasks[0];
                 assertNoPriority(task);
                 assertIcon(task, 'mother-child');
-                assertTitle(task, 'Missing birth report');
+                assertTitle(task, 'task.pregnancy_missing_birth.title');
                 assertType(task, 'pregnancy-missing-birth');
               });
           });
@@ -413,12 +415,14 @@ describe('Standard Configuration Tasks', function() {
     };
     var immunizationTaskDays = getRangeFromTask(immunizationTasks, weekdayOffset);
     const cwReport = fixtures.reports.cw();
-    // FIXME it's not clear why ageInDaysWhenRegistered should influence the
-    // task generation - please explain here.
+    // Tasks are associated to the last scheduled message of each group. 
+    // We won't have scheduled messages before receiving the report, so only
+    // check for tasks between age in days when registered and ten days 
+    // beyond end of PNC period.
     var ageInDaysWhenRegistered = Math.floor((cwReport.reported_date - (new Date(cwReport.birth_date).getTime()))/MS_IN_DAY);
 
     // Test for 10 days beyond the immunization period
-    range(ageInDaysWhenRegistered, IMMUNIZATION_PERIOD + 10).forEach(day => {
+    range(0, IMMUNIZATION_PERIOD + 10).forEach(day => {
       describe(`Immunization: day ${day}:`, function() {
 
         if (immunizationTaskDays.includes(day)) {
@@ -437,7 +441,7 @@ describe('Standard Configuration Tasks', function() {
                 const task = tasks[0];
                 assertNoPriority(task);
                 assertIcon(task, 'immunization');
-                assertTitle(task, 'Missing immunization visit');
+                assertTitle(task, 'task.immunization_missing_visit.title');
                 assertType(task, 'immunization-missing-visit');
                 assertNotResolved(task);
               });
@@ -466,7 +470,7 @@ describe('Standard Configuration Tasks', function() {
                 const task = tasks[0];
                 assertNoPriority(task);
                 assertIcon(task, 'immunization');
-                assertTitle(task, 'Missing immunization visit');
+                assertTitle(task, 'task.immunization_missing_visit.title');
                 assertType(task, 'immunization-missing-visit');
                 assertResolved(task);
               });
@@ -559,7 +563,7 @@ function assertNoPriority(task) {
 
 function assertPriority(task, expectedLevel, expectedLabel) {
   assert.equal(task.priority, expectedLevel);
-  assert.equal(task.priorityLabel.find(label => label.locale === 'en').content, expectedLabel);
+  assert.equal(task.priorityLabel, expectedLabel);
 }
 
 function assertIcon(task, expectedIcon) {
@@ -567,7 +571,7 @@ function assertIcon(task, expectedIcon) {
 }
 
 function assertTitle(task, expectedTitle) {
-  assert.equal(task.title.find(label => label.locale === 'en').content, expectedTitle);
+  assert.equal(task.title, expectedTitle);
 }
 
 function assertType(task, expectedType) {
