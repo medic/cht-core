@@ -42,7 +42,7 @@
             <value>Sudden weight gain or severe swelling of feet, ankles, face, or hands</value>
           </text>
           <text id="/pregnancy/group_danger_signs/g_danger_signs/d7:label">
-            <value>Less movement and kicking from the baby</value>
+            <value>Less movement and kicking from the baby (after week 20 of pregnancy)</value>
           </text>
           <text id="/pregnancy/group_danger_signs/g_danger_signs/d8:label">
             <value>Blood in the urine or painful, burning urination</value>
@@ -160,7 +160,7 @@
             <value>Sudden weight gain or severe swelling of feet, ankles, face, or hands</value>
           </text>
           <text id="/pregnancy/group_review/r_danger_sign7:label">
-            <value>Less movement and kicking from the baby</value>
+            <value>Less movement and kicking from the baby (after week 20 of pregnancy)</value>
           </text>
           <text id="/pregnancy/group_review/r_danger_sign8:label">
             <value>Blood in the urine or painful, burning urination</value>
@@ -637,7 +637,7 @@ heart conditions, asthma, high blood pressure, known diabetes</value>
             <value>Prise de poids soudaine ou gonflement important des pieds, des chevilles, du visage ou des mains</value>
           </text>
           <text id="/pregnancy/group_danger_signs/g_danger_signs/d7:label">
-            <value>Moins de mouvement et de coups de pied du bébé</value>
+            <value>Moins de mouvement et de coups de pied du bébé (après 20 semaines de grossesse)</value>
           </text>
           <text id="/pregnancy/group_danger_signs/g_danger_signs/d8:label">
             <value>Du sang dans l'urine ou une miction douloureuse et brûlante</value>
@@ -755,7 +755,7 @@ heart conditions, asthma, high blood pressure, known diabetes</value>
             <value>Prise de poids soudaine ou gonflement important des pieds, des chevilles, du visage ou des mains</value>
           </text>
           <text id="/pregnancy/group_review/r_danger_sign7:label">
-            <value>Moins de mouvement et de coups de pied du bébé</value>
+            <value>Moins de mouvement et de coups de pied du bébé (après 20 semaines de grossesse)</value>
           </text>
           <text id="/pregnancy/group_review/r_danger_sign8:label">
             <value>Du sang dans l'urine ou une miction douloureuse et brûlante</value>
@@ -939,7 +939,7 @@ problèmes cardiaques, asthme, hypertension artérielle, diabète connu</value>
             <value>अचानक वजन का बढ़ना या पैर, टखनों, चेहरे या हाथों में गंभीर सूजन</value>
           </text>
           <text id="/pregnancy/group_danger_signs/g_danger_signs/d7:label">
-            <value>बच्चे का कम हिलना या लात मारना</value>
+            <value>बच्चे का कम हिलना या लात मारना (गर्भावस्था के 20 सप्ताह के बाद)</value>
           </text>
           <text id="/pregnancy/group_danger_signs/g_danger_signs/d8:label">
             <value>पेशाब में खून या दर्दनाक, जलता हुआ पेशाब</value>
@@ -1057,7 +1057,7 @@ problèmes cardiaques, asthme, hypertension artérielle, diabète connu</value>
             <value>अचानक वजन का बढ़ना या पैर, टखनों, चेहरे या हाथों में गंभीर सूजन</value>
           </text>
           <text id="/pregnancy/group_review/r_danger_sign7:label">
-            <value>बच्चे का कम हिलना या लात मारना</value>
+            <value>बच्चे का कम हिलना या लात मारना (गर्भावस्था के 20 सप्ताह के बाद)</value>
           </text>
           <text id="/pregnancy/group_review/r_danger_sign8:label">
             <value>पेशाब में खून या दर्दनाक, जलता हुआ पेशाब</value>
@@ -1234,7 +1234,7 @@ problèmes cardiaques, asthme, hypertension artérielle, diabète connu</value>
             <value>Lonjakan berat badan atau berat pembengkakan kaki, pergelangan kaki, wajah, atau tangan</value>
           </text>
           <text id="/pregnancy/group_danger_signs/g_danger_signs/d7:label">
-            <value>Kurang gerak dan menendang dari bayi</value>
+            <value>Kurang gerak dan menendang dari bayi (setelah minggu 20 kehamilan)</value>
           </text>
           <text id="/pregnancy/group_danger_signs/g_danger_signs/d8:label">
             <value>Darah dalam urin atau menyakitkan, terbakar buang air kecil</value>
@@ -1352,7 +1352,7 @@ kehamilan dengan tanda-tanda bahaya untuk <output value=" /pregnancy/patient_nam
             <value>Lonjakan berat badan atau berat pembengkakan kaki, pergelangan kaki, wajah, atau tangan</value>
           </text>
           <text id="/pregnancy/group_review/r_danger_sign7:label">
-            <value>Kurang gerak dan menendang dari bayi</value>
+            <value>Kurang gerak dan menendang dari bayi (setelah minggu 20 kehamilan)</value>
           </text>
           <text id="/pregnancy/group_review/r_danger_sign8:label">
             <value>Darah dalam urin atau menyakitkan, terbakar buang air kecil</value>
@@ -2085,8 +2085,8 @@ Tanggal taksiran persalinan: <output value=" /pregnancy/group_lmp/g_edd "/></val
         </translation>
       </itext>
       <instance>
-        <pregnancy delimiter="#" id="pregnancy" prefix="J1!pregnancy!" version="2018-09-27_07-24">
-          <inputs tag="hidden">
+        <pregnancy delimiter="#" id="pregnancy" prefix="J1!pregnancy!" version="2018-11-14_10-23">
+          <inputs>
             <meta>
               <location>
                 <lat/>

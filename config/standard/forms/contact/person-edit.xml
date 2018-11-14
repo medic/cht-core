@@ -649,7 +649,7 @@
       </itext>
       <instance>
         <data delimiter="#" id="contact:person:edit" prefix="J1!contact:person:edit!" version="2018-09-27_07-24">
-          <inputs tag="hidden">
+          <inputs>
             <meta>
               <location>
                 <lat/>
