@@ -16,6 +16,7 @@ const couchConfig = (() => {
     password,
     dbName: parsedUrl.path.substring(1),
     withPath: path => `${parsedUrl.protocol}//${parsedUrl.auth}@${parsedUrl.host}/${path}`,
+    withPathNoAuth: path => `${parsedUrl.protocol}//${parsedUrl.host}/${path}`,
   };
 })();
 
@@ -404,9 +405,9 @@ module.exports = function(grunt) {
       'setup-admin': {
         stderr: true,
         cmd:
-          `curl -X PUT ${couchConfig.withPath(couchConfig.dbName)}` +
-          ` && curl -X PUT ${couchConfig.withPath('_users')}` +
-          ` && curl -X PUT ${couchConfig.withPath('_node/${COUCH_NODE_NAME}/_config/admins/admin')} -d '"${couchConfig.password}"'` +
+          `curl -X PUT ${couchConfig.withPathNoAuth(couchConfig.dbName)}` +
+          ` && curl -X PUT ${couchConfig.withPathNoAuth('_users')}` +
+          ` && curl -X PUT ${couchConfig.withPathNoAuth('_node/${COUCH_NODE_NAME}/_config/admins/admin')} -d '"${couchConfig.password}"'` +
           ` && curl -X POST ${couchConfig.withPath('_users')} ` +
           ' -H "Content-Type: application/json" ' +
           ` -d '{"_id": "org.couchdb.user:${couchConfig.username}", "name": "${couchConfig.username}", "password":"${couchConfig.password}", "type":"user", "roles":[]}' ` +
@@ -866,7 +867,7 @@ module.exports = function(grunt) {
     agg[key] = gruntInitConfig['couch-push'][key];
     const [ dbName, docPath ] = agg[key].files;
     agg[key].files = {};
-    agg[key].files[couchConfig.withPath(dbName)] = docPath;
+    agg[key].files[couchConfig.withPathNoAuth(dbName)] = docPath;
     return agg;
   }, {});
 
