@@ -4,36 +4,52 @@
     <h:title>Clinic Visit (V)</h:title>
     <model>
       <itext>
-        <translation lang="Bahasa Indonesia (Indonesian)">
-          <text id="/v/review:label">
-            <value>Mengirimkan laporan kunjungan untuk ID <output value=" /v/id "/></value>
-          </text>
+        <translation lang="Bahasa Indonesia (id)">
           <text id="/v/id:label">
             <value>Pasien ID</value>
           </text>
-        </translation>
-        <translation lang="हिन्दी (Hindi)">
           <text id="/v/review:label">
-            <value>ID <output value=" /v/id "/> के लिए जांच की रिपोर्ट भेजें</value>
-          </text>
-          <text id="/v/id:label">
-            <value>मरीज का ID</value>
+            <value>Mengirimkan laporan kunjungan untuk ID <output value=" /v/id "/></value>
           </text>
         </translation>
-        <translation default="true()" lang="English">
+        <translation default="true()" lang="English (en)">
+          <text id="/v/id:label">
+            <value>Patient ID</value>
+          </text>
           <text id="/v/review:label">
             <value>Submitting visit report for ID <output value=" /v/id "/></value>
           </text>
+        </translation>
+        <translation lang="Français (fr)">
           <text id="/v/id:label">
-            <value>Patient ID</value>
+            <value>Identifiant du patient</value>
+          </text>
+          <text id="/v/review:label">
+            <value>Envoi d'un rapport de visite pour l'identifiant <output value=" /v/id "/></value>
+          </text>
+        </translation>
+        <translation lang="हिन्दी (hi)">
+          <text id="/v/id:label">
+            <value>मरीज का ID</value>
+          </text>
+          <text id="/v/review:label">
+            <value>ID <output value=" /v/id "/> के लिए जांच की रिपोर्ट भेजें</value>
+          </text>
+        </translation>
+        <translation lang="বাংলা (bn)">
+          <text id="/v/id:label">
+            <value>রোগীর আইডি</value>
+          </text>
+          <text id="/v/review:label">
+            <value>ID <output value=" /v/id "/> পরিদর্শন রিপোর্ট জমা দেওয়া হল</value>
           </text>
         </translation>
       </itext>
       <instance>
-        <v delimiter="#" id="v" prefix="J1!v!" version="2017-09-14_18-20">
+        <v delimiter="#" id="v" prefix="J1!v!" version="2018-09-27_07-24">
           <id/>
           <review/>
-          <meta>
+          <meta tag="hidden">
             <instanceID/>
           </meta>
         </v>

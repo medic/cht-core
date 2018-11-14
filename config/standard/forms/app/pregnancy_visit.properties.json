@@ -18,15 +18,5 @@
     "person": true,
     "place": false,
     "expression": "!contact || (contact.type === 'person' && summary.pregnant)"
-  },
-  "hidden_fields": [
-    "patient_age_in_years",
-    "patient_phone",
-    "patient_uuid",
-    "group_chw_info",
-    "group_danger_signs",
-    "group_note",
-    "group_review",
-    "meta"
-  ]
+  }
 }
