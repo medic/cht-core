@@ -5,7 +5,10 @@ const packageJson = require('./package.json'),
 
 const couchConfig = (() => {
   const parsedUrl = url.parse(process.env.COUCH_URL);
-  if (!parsedUrl.auth) throw 'COUCH_URL must contain admin authentication information';
+  if (!parsedUrl.auth) {
+    throw 'COUCH_URL must contain admin authentication information';
+  }
+  
   const [ username, password ] = parsedUrl.auth.split(':', 2);
   
   return {
@@ -409,7 +412,7 @@ module.exports = function(grunt) {
         stderr: true,
         cmd:
           `curl -X PUT ${couchConfig.withPath(couchConfig.dbName)}` +
-          `curl -X PUT ${couchConfig.withPath('_users')}` +
+          ` && curl -X PUT ${couchConfig.withPath('_users')}` +
           ` && curl -X PUT ${couchConfig.withPath('_node/${COUCH_NODE_NAME}/_config/admins/admin')} -d '"${couchConfig.password}"'` +
           ` && curl -X POST ${couchConfig.withPath('_users')} ` +
           ' -H "Content-Type: application/json" ' +
