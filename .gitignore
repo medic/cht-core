@@ -18,3 +18,4 @@ coverage/
 dist
 /build/
 config/standard/.gdrive.*.json
+config/*/backups/*
