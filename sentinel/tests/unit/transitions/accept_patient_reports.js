@@ -371,7 +371,6 @@ describe('accept_patient_reports', () => {
         utils.getRegistrations.args[0][0].should.deep.equal({ db: dbNano, id: 'x' });
         done();
       });
-      
     });
   });
 
