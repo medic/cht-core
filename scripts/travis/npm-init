@@ -11,5 +11,4 @@ fi
 npm ci
 npm list || true
 npm install -g grunt-cli --ignore-engines
-cd shared-libs/phone-number && npm ci && cd ../..
 node --stack_size=10000 `which grunt` ci-build
