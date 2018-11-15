@@ -3,7 +3,7 @@
 npm install -g npm@^6.4.1
 npm -v
 
-if [ ${TEST_SUITE} == "standard" ]; then
+if [ "${TEST_SUITE:-}" = "standard" ]; then
 	echo '[medic] skipping grunt'
 	exit 0
 fi
