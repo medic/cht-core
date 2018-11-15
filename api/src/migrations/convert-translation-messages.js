@@ -1,5 +1,4 @@
 const _ = require('underscore'),
-  { promisify } = require('util'),
   db = require('../db-pouch'),
   properties = require('properties'),
   DDOC_ID = '_design/medic';
@@ -21,7 +20,7 @@ const getAttachment = name => {
 module.exports = {
   name: 'convert-translation-messages',
   created: new Date(2018, 11, 8),
-  run: promisify((callback) => {
+  run: () => {
       return db.medic.get(DDOC_ID)
         .then(function(ddoc) {
           const translationAttachmentKeys = Object.keys(ddoc._attachments).filter(k => k.includes('translations'));
@@ -51,8 +50,6 @@ module.exports = {
                 } 
               });
             }));
-        })
-        .then(() => callback())
-        .catch(callback);
-  })
+        });
+  }
 };

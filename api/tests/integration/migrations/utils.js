@@ -384,24 +384,10 @@ function tearDown() {
 }
 
 function runMigration(migration) {
-  try {
-    var migrationPath = '../../../src/migrations/' + migration;
-    migration = require(migrationPath);
-    return new Promise(function(resolve, reject) {
-      try {
-        migration.run(function(err) {
-          if (err) {
-            return reject(err);
-          }
-          resolve();
-        });
-      } catch (err) {
-        reject(err);
-      }
-    });
-  } catch (err) {
-    return Promise.reject(err);
-  }
+  var migrationPath = '../../../src/migrations/' + migration;
+  migration = require(migrationPath);
+  return migration
+    .run();
 }
 
 function initSettings(settings) {
