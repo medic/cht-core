@@ -366,16 +366,7 @@ describe('Changes controller', () => {
         });
     });
 
-    // TODO flaky test? failed once for node 9 and another for node 10
-    // 1 failing
-    //
-    // 1) Changes controller
-    //      getChanges
-    //        pushes allowed pending changes to the results:
-    //    TypeError: Cannot read property 'complete' of undefined
-    //   at Promise.resolve.then.then.then.then (api/tests/mocha/controllers/changes.js:397:32)
-    //
-    it.skip('pushes allowed pending changes to the results', () => {
+    it('pushes allowed pending changes to the results', () => {
       const validatedIds = Array.from({length: 101}, () => Math.floor(Math.random() * 101));
       authorization.getAllowedDocIds.resolves(validatedIds);
       authorization.filterAllowedDocs.returns([
