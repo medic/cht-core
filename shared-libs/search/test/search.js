@@ -12,6 +12,7 @@ describe('Search service', function() {
 
   beforeEach(function() {
     GenerateSearchRequests.generate = sinon.stub();
+    GenerateSearchRequests.shouldSortByLastVisitedDate = sinon.stub();
     DB = {
       query: sinon.stub()
     };
@@ -285,6 +286,26 @@ describe('Search service', function() {
           chai.expect(DB.query.args[1][0]).to.equal('get_stuff');
           chai.expect(DB.query.args[1][1]).to.deep.equal({ key: [ 'b' ] });
         });
+    });
+
+    it('should return extended results when sorting by last visited date', function() {
+      GenerateSearchRequests.shouldSortByLastVisitedDate.returns(true);
+      GenerateSearchRequests.generate.returns([
+        { view: 'contacts_by_type', params: { key: 'clinic' } },
+        { view: 'contacts_by_last_visited', params: { reduce: true } }
+      ]);
+      DB.query.onCall(0).resolves({ rows: [{ id: 'a', value: 1 }, { id: 'b', value: 2 }, { id: 'c', value: 3 }] });
+      DB.query.onCall(1).resolves({ rows: [{ id: 'a', value: 12 }, { id: 'b', value: 13 }, { id: 'd', value: 18 }] });
+
+      return service('contacts', {}, {}, { sortByLastVisitedDate: true }).then(function(result) {
+        chai.expect(result).to.deep.equal({
+          results: ['a', 'b'],
+          extendedResults: [{ id: 'a', value: 12 }, { id: 'b', value: 13 }]
+        });
+        chai.expect(DB.query.callCount).to.equal(2);
+        chai.expect(DB.query.args[0]).to.deep.equal(['contacts_by_type', { key: 'clinic' }]);
+        chai.expect(DB.query.args[1]).to.deep.equal(['contacts_by_last_visited', { reduce: true }]);
+      });
     });
 
   });

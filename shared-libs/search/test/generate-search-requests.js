@@ -1,5 +1,6 @@
 var chai = require('chai'),
-    service = require('../src/generate-search-requests').generate;
+    GenerateSeachRequests = require('../src/generate-search-requests'),
+    service = GenerateSeachRequests.generate;
 
 describe('GenerateSearchRequests service', function() {
 
@@ -364,5 +365,25 @@ describe('GenerateSearchRequests service', function() {
       });
     });
 
+  });
+
+  describe('shouldSortByLastVisitedDate', function() {
+    it('should return false for falsy or empty inputs', function() {
+      chai.expect(GenerateSeachRequests.shouldSortByLastVisitedDate()).to.equal(false);
+      chai.expect(GenerateSeachRequests.shouldSortByLastVisitedDate(false)).to.equal(false);
+      chai.expect(GenerateSeachRequests.shouldSortByLastVisitedDate({})).to.equal(false);
+      chai.expect(GenerateSeachRequests.shouldSortByLastVisitedDate([])).to.equal(false);
+    });
+
+    it('should return false when not sorting by last visited date', function() {
+      chai.expect(GenerateSeachRequests.shouldSortByLastVisitedDate({ a: 1 })).to.equal(false);
+      chai.expect(GenerateSeachRequests.shouldSortByLastVisitedDate({ sortByLastVisitedDate: false })).to.equal(false);
+      chai.expect(GenerateSeachRequests.shouldSortByLastVisitedDate({ sortByLastVisitedDate: null })).to.equal(false);
+    });
+
+    it('should return true when sorting by last visited date', function() {
+      chai.expect(GenerateSeachRequests.shouldSortByLastVisitedDate({ sortByLastVisitedDate: true })).to.equal(true);
+      chai.expect(GenerateSeachRequests.shouldSortByLastVisitedDate({ sortByLastVisitedDate: 'aaa' })).to.equal(true);
+    });
   });
 });

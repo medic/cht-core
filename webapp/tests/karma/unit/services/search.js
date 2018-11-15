@@ -454,7 +454,7 @@ describe('Search service', function() {
               end_key: moment('2018-08-01').endOf('month').valueOf()
             }
           ]);
-          2
+
           chai.expect(result).to.deep.equal([
             {
               _id: '1',

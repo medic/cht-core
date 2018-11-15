@@ -292,6 +292,6 @@ module.exports = {
     return builder(filters, extensions);
   },
   shouldSortByLastVisitedDate: function(extensions) {
-    return extensions && extensions.sortByLastVisitedDate;
+    return Boolean(extensions && extensions.sortByLastVisitedDate);
   }
 };
