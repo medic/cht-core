@@ -5,7 +5,8 @@ const { promisify } = require('util'),
   db = require('./db-pouch'),
   MIGRATION_LOG_ID = 'migration-log',
   MIGRATION_LOG_TYPE = 'meta',
-  MIGRATIONS_DIR = path.join(__dirname, 'migrations');
+  MIGRATIONS_DIR = path.join(__dirname, 'migrations'),
+  logger = require('./logger');
 
 const hasRun = (log, migration) => {
   if (!log || !log.migrations) {
@@ -52,8 +53,6 @@ const getLog = () => {
     throw err;
   });
 };
-
-const logger = require('./logger');
 
 const sortMigrations = (lhs, rhs) => {
   return lhs.created - rhs.created;

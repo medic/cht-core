@@ -77,6 +77,8 @@ var feedback = require('../modules/feedback'),
       Debug.set(false);
     }
 
+    $scope.logo = 'logo';
+
     $scope.replicationStatus = {
       disabled: false,
       lastSuccess: {},

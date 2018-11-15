@@ -49,6 +49,7 @@
   require('./languages');
   require('./lineage-model-generator');
   require('./live-list');
+  require('./logo-images');
   require('./location');
   require('./mark-read');
   require('./markdown');

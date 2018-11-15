@@ -34,7 +34,7 @@ angular.module('controllers').controller('HeaderLogoCtrl',
     };
 
     var getResourcesDoc = function() {
-      return DB().get('resources', { attachments: true });
+      return DB().get('logo', { attachments: true });
     };
 
     getResourcesDoc()
