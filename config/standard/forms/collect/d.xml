@@ -4,15 +4,12 @@
     <h:title>Delivery Report (D)</h:title>
     <model>
       <itext>
-        <translation lang="Bahasa Indonesia (Indonesian)">
-          <text id="/d/review_without_days:label">
-            <value>Mengirimkan laporan kelahiran untuk ID <output value=" /d/id "/>. Persalinan di <output value=" /d/c_label "/>.</value>
+        <translation lang="Bahasa Indonesia (id)">
+          <text id="/d/c/F:label">
+            <value>Fasilitas kesehatan</value>
           </text>
           <text id="/d/c/NS:label">
             <value>Rumah tanpa dukun bersalin</value>
-          </text>
-          <text id="/d/c/F:label">
-            <value>Fasilitas kesehatan</value>
           </text>
           <text id="/d/c/S:label">
             <value>Rumah dengan dukun bersalin</value>
@@ -20,89 +17,37 @@
           <text id="/d/c:label">
             <value>Apa lokasi melahirkan?</value>
           </text>
-          <text id="/d/id:label">
-            <value>Pasien ID</value>
-          </text>
-          <text id="/d/review_with_days:label">
-            <value>Mengirimkan laporan kelahiran untuk ID. Persalinan di <output value=" /d/c_label "/>, dengan tanggal lahir telah dicatat.</value>
-          </text>
           <text id="/d/d:jr:constraintMsg">
             <value>-</value>
           </text>
           <text id="/d/d:label">
             <value>Berapa hari sejak melahirkan?</value>
           </text>
-        </translation>
-        <translation lang="fr">
-          <text id="/d/review_without_days:label">
-            <value>Envoi du rapport d'accouchement pour l'identifiant <output value=" /d/id "/>. Elle a accouché à <output value=" /d/c_label "/>.</value>
-          </text>
-          <text id="/d/c/NS:label">
-            <value>Domicile sans personnel qualifié</value>
-          </text>
-          <text id="/d/c/F:label">
-            <value>Centre de santé</value>
-          </text>
-          <text id="/d/c/S:label">
-            <value>Domicile avec personnel qualifié</value>
-          </text>
-          <text id="/d/c:label">
-            <value>Où est_ce que la femme a accouché ?</value>
-          </text>
           <text id="/d/id:label">
-            <value>Identifiant du patient</value>
+            <value>Pasien ID</value>
           </text>
           <text id="/d/review_with_days:label">
-            <value>Envoi du rapport d'accouchement pour l'identifiant <output value=" /d/id "/>. Elle a accouché à <output value=" /d/c_label "/>, avec la date de naissance enregistrée.</value>
+            <value>Mengirimkan laporan kelahiran untuk ID. Persalinan di <output value=" /d/c_label "/>, dengan tanggal lahir telah dicatat.</value>
           </text>
-          <text id="/d/d:jr:constraintMsg">
-            <value>-</value>
-          </text>
-          <text id="/d/d:label">
-            <value>Depuis combien de jours la femme a accouché ?</value>
+          <text id="/d/review_without_days:label">
+            <value>Mengirimkan laporan kelahiran untuk ID <output value=" /d/id "/>. Persalinan di <output value=" /d/c_label "/>.</value>
           </text>
         </translation>
-        <translation lang="हिन्दी (Hindi)">
-          <text id="/d/review_without_days:label">
-            <value>आप ID <output value=" /d/id "/> के लिए डिलिवरी की रिपोर्ट भेज रहे हैं | डिलीवरी कि स्थान <output value=" /d/c_label "/> |</value>
-          </text>
-          <text id="/d/c/NS:label">
-            <value>घर पर, अनुभवी दाई के सहायता के बिना</value>
-          </text>
-          <text id="/d/c/F:label">
-            <value>स्वास्थ्य केंद्र</value>
-          </text>
-          <text id="/d/c/S:label">
-            <value>घर पर, अनुभवी दाई के सहायता के साथ</value>
-          </text>
-          <text id="/d/c:label">
-            <value>डिलीवरी कहां पर हुई?</value>
-          </text>
-          <text id="/d/id:label">
-            <value>मरीज का ID</value>
-          </text>
-          <text id="/d/review_with_days:label">
-            <value>आप ID <output value=" /d/id "/> के लिए डिलिवरी की रिपोर्ट भेज रहे हैं | डिलीवरी कि स्थान <output value=" /d/c_label "/>, और जन्म की तारीख दर्ज की गयी है |</value>
-          </text>
-          <text id="/d/d:jr:constraintMsg">
-            <value>-</value>
-          </text>
-          <text id="/d/d:label">
-            <value>डिलीवरी के बाद कितने दिन बीत चुके हैं?</value>
-          </text>
-        </translation>
-        <translation default="true()" lang="English">
-          <text id="/d/review_without_days:label">
-            <value>Submitting delivery report for ID <output value=" /d/id "/>. Delivered at <output value=" /d/c_label "/>.</value>
-          </text>
+        <translation default="true()" lang="English (en)">
           <text id="/d/c/F:label">
             <value>Facility</value>
+          </text>
+          <text id="/d/c/NS:label">
+            <value>Home, with no skilled birth attendant</value>
           </text>
           <text id="/d/c/S:label">
             <value>Home, with a skilled birth attendant</value>
           </text>
           <text id="/d/c:label">
             <value>Where did the delivery take place?</value>
+          </text>
+          <text id="/d/d:jr:constraintMsg">
+            <value>The value must be between 0 and 365 days</value>
           </text>
           <text id="/d/d:label">
             <value>How many days since the delivery?</value>
@@ -113,23 +58,106 @@
           <text id="/d/review_with_days:label">
             <value>Submitting delivery report for ID <output value=" /d/id "/>. Delivered at <output value=" /d/c_label "/>, with date of birth noted.</value>
           </text>
-          <text id="/d/d:jr:constraintMsg">
-            <value>The value must be between 0 and 365 days</value>
+          <text id="/d/review_without_days:label">
+            <value>Submitting delivery report for ID <output value=" /d/id "/>. Delivered at <output value=" /d/c_label "/>.</value>
+          </text>
+        </translation>
+        <translation lang="Français (fr)">
+          <text id="/d/c/F:label">
+            <value>Centre de santé</value>
           </text>
           <text id="/d/c/NS:label">
-            <value>Home, with no skilled birth attendant</value>
+            <value>Domicile sans personnel qualifié</value>
           </text>
+          <text id="/d/c/S:label">
+            <value>Domicile avec personnel qualifié</value>
+          </text>
+          <text id="/d/c:label">
+            <value>Où est_ce que la femme a accouché ?</value>
+          </text>
+          <text id="/d/d:jr:constraintMsg">
+            <value>La valeur doit être comprise entre 0 et 365 jours</value>
+          </text>
+          <text id="/d/d:label">
+            <value>Depuis combien de jours la femme a accouché ?</value>
+          </text>
+          <text id="/d/id:label">
+            <value>Identifiant du patient</value>
+          </text>
+          <text id="/d/review_with_days:label">
+            <value>Envoi du rapport d'accouchement pour l'identifiant <output value=" /d/id "/>. Elle a accouché à <output value=" /d/c_label "/>, avec la date de naissance enregistrée.</value>
+          </text>
+          <text id="/d/review_without_days:label">
+            <value>Envoi du rapport d'accouchement pour l'identifiant <output value=" /d/id "/>. Elle a accouché à <output value=" /d/c_label "/>.</value>
+          </text>
+        </translation>
+        <translation lang="हिन्दी (hi)">
+          <text id="/d/c/F:label">
+            <value>स्वास्थ्य केंद्र</value>
+          </text>
+          <text id="/d/c/NS:label">
+            <value>घर पर, अनुभवी दाई के सहायता के बिना</value>
+          </text>
+          <text id="/d/c/S:label">
+            <value>घर पर, अनुभवी दाई के सहायता के साथ</value>
+          </text>
+          <text id="/d/c:label">
+            <value>डिलीवरी कहां पर हुई?</value>
+          </text>
+          <text id="/d/d:jr:constraintMsg">
+            <value>-</value>
+          </text>
+          <text id="/d/d:label">
+            <value>डिलीवरी के बाद कितने दिन बीत चुके हैं?</value>
+          </text>
+          <text id="/d/id:label">
+            <value>मरीज का ID</value>
+          </text>
+          <text id="/d/review_with_days:label">
+            <value>आप ID <output value=" /d/id "/> के लिए डिलिवरी की रिपोर्ट भेज रहे हैं | डिलीवरी कि स्थान <output value=" /d/c_label "/>, और जन्म की तारीख दर्ज की गयी है |</value>
+          </text>
+          <text id="/d/review_without_days:label">
+            <value>आप ID <output value=" /d/id "/> के लिए डिलिवरी की रिपोर्ट भेज रहे हैं | डिलीवरी कि स्थान <output value=" /d/c_label "/> |</value>
+          </text>
+        </translation>
+        <translation lang="বাংলা (bn)">
+          <text id="/d/c/F:label">
+            <value>সুবিধা</value>
+          </text>
+          <text id="/d/c/NS:label">
+            <value>বাড়িতে, দক্ষ জন্ম স্বাস্থ্যকর্মীর অনুপস্থিতিতে</value>
+          </text>
+          <text id="/d/c/S:label">
+            <value>বাড়িতে, দক্ষ জন্ম স্বাস্থ্যকর্মীর উপস্থিতিতে</value>
+          </text>
+          <text id="/d/c:label">
+            <value>ডেলিভারি কোথায় ঘটেছে?</value>
+          </text>
+          <text id="/d/d:jr:constraintMsg">
+            <value>মান 0 এবং 365 দিনের মধ্যে হতে হবে</value>
+          </text>
+          <text id="/d/d:label">
+            <value>প্রসবের পর থেকে কত দিন?</value>
+          </text>
+          <text id="/d/id:label">
+            <value>রোগীর আইডি</value>
+          </text>
+          <text id="/d/review_with_days:label">
+            <value>ID <output value=" /d/id "/> এর প্রসবের রিপোর্ট জমা দেওয়া হচ্ছে। প্রসবের স্থান <output value=" /d/c_label "/> ও জন্মের তারিখ নথিভুক্ত করা হল</value>
+          </text>
+          <text id="/d/review_without_days:label">
+            <value>ID <output value=" /d/id "/> এর প্রসবের রিপোর্ট জমা দেওয়া হচ্ছে। প্রসবের স্থান <output value=" /d/c_label "/></value></text>
         </translation>
       </itext>
       <instance>
-        <d delimiter="#" id="d" prefix="J1!d!" version="2018-06-19_14-25">
+        <d delimiter="#" id="d" prefix="J1!d!" version="2018-09-27_07-24">
           <id/>
           <c/>
           <d/>
           <c_label/>
           <review_with_days/>
           <review_without_days/>
-          <meta>
+          <meta tag="hidden">
             <instanceID/>
           </meta>
         </d>

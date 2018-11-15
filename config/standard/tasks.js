@@ -1,8 +1,7 @@
 [
   {
     icon: 'mother-child',
-    title: [{ locale: 'en', content: 'Pregnancy visit needed' }],
-    //TODO title: 'task.pregnancy_danger_sign.title',
+    title: 'task.pregnancy_danger_sign.title',
     appliesTo: 'reports',
     appliesToType: ['P', 'pregnancy'],
     appliesIf: function(c, r) {
@@ -38,8 +37,7 @@
     ],
     priority: {
       level: 'high',
-      label: [{ locale: 'en', content: 'Danger Signs' }],
-      //TODO label: 'task.warning.danger_sign',
+      label: 'task.warning.danger_sign',
     },
     resolvedIf: function(c, r, event, dueDate) {
       return (
@@ -58,8 +56,7 @@
   // Attach the missing birth schedule to the last scheduled SMS
   {
     icon: 'mother-child',
-    title: [{ locale: 'en', content: 'Missing birth report' }],
-    //TODO title: 'task.pregnancy_missing_birth.title',
+    title: 'task.pregnancy_missing_birth.title',
     appliesTo: 'reports',
     appliesToType: ['P', 'pregnancy'],
     appliesIf: function(c, r) {
@@ -83,8 +80,7 @@
       if (isHighRiskPregnancy(c, r)) {
         return {
           level: 'high',
-          label: [{ locale: 'en', content: 'High Risk' }],
-          // label: 'task.warning.high_risk',
+          label: 'task.warning.high_risk',
         };
       }
     },
@@ -111,8 +107,7 @@
   // Be mindful of overflow when peaking ahead!
   {
     icon: 'pregnancy-1',
-    title: [{ locale: 'en', content: 'Missing pregnancy visit' }],
-    //TODO title: 'task.pregnancy_missing_visit.title',
+    title: 'task.pregnancy_missing_visit.title',
     appliesTo: 'scheduled_tasks',
     appliesToType: ['P', 'pregnancy'],
     appliesIf: function(c, r, i) {
@@ -135,8 +130,7 @@
       if (isHighRiskPregnancy(c, r)) {
         return {
           level: 'high',
-          label: [{ locale: 'en', content: 'High Risk' }],
-          //TODO label: 'task.warning.high_risk',
+          label: 'task.warning.high_risk',
         };
       }
     },
@@ -157,8 +151,7 @@
   // PNC TASK 1: If a home delivery, needs clinic tasks
   {
     icon: 'mother-child',
-    title: [{ locale: 'en', content: 'Postnatal visit needed' }],
-    //TODO title: 'task.postnatal_home_birth.title',
+    title: 'task.postnatal_home_birth.title',
     appliesTo: 'reports',
     appliesToType: ['D', 'delivery'],
     appliesIf: function(c, r) {
@@ -180,8 +173,7 @@
     ],
     priority: {
       level: 'high',
-      label: [{ locale: 'en', content: 'Home Birth' }],
-      //TODO label: 'task.warning.home_birth',
+      label: 'task.warning.home_birth',
     },
     resolvedIf: function(c, r, event, dueDate) {
       // Resolved if there a visit report received in time window or a newer pregnancy
@@ -201,8 +193,7 @@
   // PNC TASK 2: if a F flag sent in 42 days since delivery needs clinic task
   {
     icon: 'mother-child',
-    title: [{ locale: 'en', content: 'Postnatal visit needed' }],
-    //TODO title: 'task.postnatal_danger_sign.title',
+    title: 'task.postnatal_danger_sign.title',
     appliesTo: 'reports',
     appliesToType: ['D', 'delivery'],
     appliesIf: function(c, r) {
@@ -229,8 +220,7 @@
     ],
     priority: {
       level: 'high',
-      label: [{ locale: 'en', content: 'Danger Signs' }],
-      //TODO label: 'task.warning.danger_sign',
+      label: 'task.warning.danger_sign',
     },
     resolvedIf: function(c, r, event, dueDate) {
       // Only resolved with PNC report received from nurse in time window or a newer pregnancy
@@ -251,8 +241,7 @@
   // Associate tasks to the last message of each group. Be mindful of overflow when peaking ahead!
   {
     icon: 'mother-child',
-    title: [{ locale: 'en', content: 'Missing postnatal visit' }],
-    //TODO title: 'task.postnatal_missing_visit.title',
+    title: 'task.postnatal_missing_visit.title',
     appliesTo: 'scheduled_tasks',
     appliesToType: ['D', 'delivery'],
     appliesIf: function(c, r, i) {
@@ -266,8 +255,7 @@
       if (isHomeBirth(r)) {
         return {
           level: 'high',
-          label: [{ locale: 'en', content: 'Home Birth' }],
-          //TODO label: 'task.warning.home_birth',
+          label: 'task.warning.home_birth',
         };
       }
     },
@@ -301,8 +289,7 @@
   // Assign task to specific age in months corresponding to the group number
   {
     icon: 'immunization',
-    title: [{ locale: 'en', content: 'Missing immunization visit' }],
-    //TODO title: 'task.immunization_missing_visit.title',
+    title: 'task.immunization_missing_visit.title',
     appliesTo: 'scheduled_tasks',
     appliesToType: ['CW', 'child_health_registration'],
     appliesIf: function(c, r, i) {
