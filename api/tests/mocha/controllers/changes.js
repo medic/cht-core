@@ -392,6 +392,7 @@ describe('Changes controller', () => {
         .then(() => {
           controller._getContinuousFeed().emit('change', { id: 9, changes: [], doc: { _id: 9 } }, 0, 6);
         })
+        .then(nextTick)
         .then(() => {
           const feed = controller._getNormalFeeds()[0];
           feed.upstreamRequest.complete(null, expected);
