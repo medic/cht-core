@@ -13,7 +13,70 @@ html {
   background-color: #323232;
   height: 64px;
   display: flex;
+
+  .extras {
+    float: right;
+    padding: 20px;
+
+    a{
+      color: #DDDDDD;
+      width: 40px;
+      margin-top: 10px;
+      border-radius: 10px 10px 0 0;
+
+      .mm-icon {
+        width: inherit;
+        font-size: 1.5rem;
+      }
+    }
+
+    .open > a{
+      background-color: #ffffff;
+    }
+  }
+  .mm-icon {
+    margin: 0 auto;
+    font-size: 1.5rem;
+  }
+  .options{
+    .dropdown-menu{
+      position: absolute;
+      z-index: 1000;
+      width: 250px;
+      left: auto;
+      margin-top: 20px;
+      text-align: left;
+      background-color: #fff;
+      background-clip: padding-box;
+
+      a{
+        text-shadow: none;
+        padding: 3px 20px;
+        color: #262626;
+        margin-top: 0;
+        white-space: normal;
+      }
+    }
+  }
+  .dropdown ul a{
+    width: 100%;
+    height: auto;
+  }
 }
+
+.mm-dropdown-menu {
+  top: -20px;
+  right: -26px;
+  padding: 10px 0;
+  margin: 41px 0;
+  overflow-x: hidden;
+  border-radius: 0 0 5px 5px;
+  border: 0;
+  box-shadow: 0 6px 12px rgba(0, 0, 0, 0.4);
+  height: auto;
+  max-height: 80vh;
+}
+
 .header > .container {
   width: @admin-content-width;
 }

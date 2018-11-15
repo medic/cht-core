@@ -31,6 +31,7 @@ require('./controllers/forms-json');
 require('./controllers/forms-xml');
 require('./controllers/icons');
 require('./controllers/import-translation');
+require('./controllers/logout-confirm');
 require('./controllers/message-queue');
 require('./controllers/message-test');
 require('./controllers/settings-advanced');
