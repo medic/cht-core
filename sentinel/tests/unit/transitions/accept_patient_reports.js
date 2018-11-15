@@ -228,7 +228,7 @@ describe('accept_patient_reports', () => {
     });
     
     it('adds report_uuid property', done => {
-      sinon.stub(db.medic, 'post').resolves({});
+      const putRegistration = sinon.stub(db.medic, 'put').resolves({});
       sinon.stub(transition, '_silenceReminders').callsArgWith(3, null, true);
       const doc = {
         _id: 'z',
@@ -267,13 +267,14 @@ describe('accept_patient_reports', () => {
         .callsArgWith(1, null, registrations);
       transition._handleReport(doc, config, (err, complete) => {
         complete.should.equal(true);
-        doc._id.should.equal(registrations[0].scheduled_tasks[0].report_uuid);
+        registrations[0].scheduled_tasks[0].report_uuid.should.equal(doc._id);
+        putRegistration.callCount.should.equal(1);
         done();
       });
     });
 
     it('if there are multiple scheduled tasks uses the oldest valid one', done => {
-      sinon.stub(db.medic, 'post').resolves({});
+      const putRegistration = sinon.stub(db.medic, 'put').resolves({});
       sinon.stub(transition, '_silenceReminders').callsArgWith(3, null, true);
       const doc = {
         _id: 'z',
@@ -339,7 +340,8 @@ describe('accept_patient_reports', () => {
         .callsArgWith(1, null, registrations);
       transition._handleReport(doc, config, (err, complete) => {
         complete.should.equal(true);
-        doc._id.should.equal(registrations[0].scheduled_tasks[2].report_uuid);
+        registrations[0].scheduled_tasks[2].report_uuid.should.equal(doc._id);
+        putRegistration.callCount.should.equal(1);
         done();
       });
     });

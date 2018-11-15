@@ -114,35 +114,41 @@ const addRegistrationToDoc = (doc, registrations) => {
   }
 };
 
-const addReportUUIDToRegistration = (doc, registrations) => {
+const addReportUUIDToRegistration = (doc, registrations, callback) => {
   if (registrations.length) {
+    var validRegistration;
     var visitReportedDate = doc.reported_date;
 
-    var messageFound = false;
-    registrations.forEach(function(registration) {
-      if (registration.scheduled_tasks) {
-        registration.scheduled_tasks.forEach(function(task, index) {
-          if (!messageFound) {
-            if (
-              (task.state === 'delivered' || task.state === 'sent') &&
-              task.messages
-            ) {
-              var nextTask = registration.scheduled_tasks[index + 1];
-              if (
-                typeof nextTask !== 'undefined' &&
-                moment(nextTask.due) > moment(visitReportedDate)
-              ) {
-                registration.scheduled_tasks[index].report_uuid = doc._id;
+    outerloop: {
+      for (var i = 0; i < registrations.length; i++) {
+        var registration = registrations[i];
+        if (registration.scheduled_tasks) {
+          for (var j = 0; j < registration.scheduled_tasks.length; j++) {
+            var task = registration.scheduled_tasks[j];
+            if (['delivered', 'sent'].includes(task.state)) {
+              var nextTask = registration.scheduled_tasks[j + 1] || { due: moment(visitReportedDate).add(1, 'd') };
+              if (nextTask && moment(nextTask.due) > moment(visitReportedDate)) {
+                // We loop through tasks. Once we find one that has either the status "delivered" or "sent" with
+                // a future task with a due date that is after the visit reported date then we have found the task 
+                // linked to the visit. We always link if this is the last scheduled task delivered or sent.
+                validRegistration = registration;
+                validRegistration.scheduled_tasks[j].report_uuid = doc._id;
 
-                db.audit.saveDoc(registration, function() {});
-
-                messageFound = true;
+                break outerloop;
               }
-            }
+            }          
           }
-        });
-      }
-    });
+        }
+      }    
+    }
+
+    if (validRegistration) {
+      db.medic.put(validRegistration, function(err) {
+        if (err) {
+          return callback(err);
+        }
+      });
+    }  
   }
 };
 
@@ -207,6 +213,7 @@ const handleReport = (doc, config, callback) => {
 
       addMessagesToDoc(doc, config, registrations);
       addRegistrationToDoc(doc, registrations);
+      addReportUUIDToRegistration(doc, registrations, callback);
 
       module.exports.silenceRegistrations(config, doc, registrations, callback);
     }
