@@ -46,7 +46,7 @@ module.exports = {
                         translationMessageValues.custom = customTranslations;
                         translationMessageValues.generic = genericTranslations;
                         return db.medic.put(translationMessageValues);
-                      })             
+                      });             
                     });
                 } 
               });

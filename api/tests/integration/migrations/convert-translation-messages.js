@@ -1,5 +1,4 @@
 var utils = require('./utils'),
-    db = require('../../../src/db-pouch'),
     DDOC_ID = '_design/medic';
 
 describe('convert-translation-messages migration', function() {
@@ -24,7 +23,7 @@ describe('convert-translation-messages migration', function() {
     .then(function(ddoc) {
       const attachment = {
         content_type: 'application/octet-stream',
-        content: "Contact = Contact\nFrom = From",
+        content: 'Contact = Contact\nFrom = From',
         key: 'translations/messages-en.properties'
       };      
       
@@ -64,7 +63,7 @@ describe('convert-translation-messages migration', function() {
     .then(function(ddoc) {
       const attachment = {
         content_type: 'application/octet-stream',
-        content: "Contact = Contact\nFrom = From",
+        content: 'Contact = Contact\nFrom = From',
         key: 'translations/messages-en.properties'
       };     
       return utils.insertAttachment(ddoc, attachment);      
