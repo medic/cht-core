@@ -56,62 +56,58 @@ var _ = require('underscore'),
         settings = settings || {};
 
         var interval = CalendarInterval.getCurrent(settings.monthStartDate),
-            visitStats = {},
-            promise;
+            visitStats = {};
+
+        var setLastVisitedDate = function(rows) {
+          rows.forEach(function(row) {
+            if (visitStats[row.key]) {
+              visitStats[row.key].lastVisitedDate = row.value && row.value.max || row.value;
+            }
+          });
+        };
 
         searchResults.forEach(function(id) {
           visitStats[id] = { lastVisitedDate: -1, visitDates: [] };
         });
 
-        if (extendedResults) {
-          extendedResults.forEach(function(row) {
-            if (visitStats[row.key]) {
-              visitStats[row.key].lastVisitedDate = row.value;
-            }
-          });
-
-          promise = DB()
-            .query('medic-client/visits_by_date', {
-              start_key: interval.start,
-              end_key: interval.end
-            }).then(function(result) {
+        var getVisitsInInterval = function() {
+          return DB()
+            .query('medic-client/visits_by_date', { start_key: interval.start, end_key: interval.end })
+            .then(function(result) {
               result.rows.forEach(function (row) {
                 if (visitStats[row.value]) {
                   visitStats[row.value].visitDates.push(moment(row.key).startOf('day').valueOf());
                 }
               });
             });
-        } else {
-          promise = DB().query('medic-client/contacts_by_last_visited', {
-            reduce: false,
-            keys: searchResults
-          }).then(function(result) {
-            result.rows.forEach(function (row) {
-              var stats = visitStats[row.key];
+        };
 
-              stats.lastVisitedDate = Math.max(stats.lastVisitedDate, row.value);
+        var getLastVisited = function() {
+          if (extendedResults) {
+            return setLastVisitedDate(extendedResults);
+          }
 
-              if (row.value >= interval.start && row.value <= interval.end) {
-                stats.visitDates.push(moment(row.value).startOf('day').valueOf());
-              }
+          return DB()
+            .query('medic-client/contacts_by_last_visited', { reduce: true, group: true })
+            .then(function(result) {
+              setLastVisitedDate(result.rows);
+            });
+        };
 
-              visitStats[row.key] = stats;
+        return getVisitsInInterval()
+          .then(getLastVisited)
+          .then(function() {
+            return Object.keys(visitStats).map(function(key) {
+              return {
+                key: key,
+                value: {
+                  lastVisitedDate: visitStats[key].lastVisitedDate,
+                  visitCount: _.uniq(visitStats[key].visitDates).length,
+                  visitCountGoal: settings.visitCountGoal
+                }
+              };
             });
           });
-        }
-
-        return promise.then(function() {
-          return Object.keys(visitStats).map(function(key) {
-            return {
-              key: key,
-              value: {
-                lastVisitedDate: visitStats[key].lastVisitedDate,
-                visitCount: _.uniq(visitStats[key].visitDates).length,
-                visitCountGoal: settings.visitCountGoal
-              }
-            };
-          });
-        });
       };
 
       return function(type, filters, options, extensions, docIds) {

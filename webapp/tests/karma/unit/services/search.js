@@ -98,7 +98,7 @@ describe('Search service', function() {
           chai.expect(actual).to.deep.equal([ { id: 'a' } ]);
           firstReturned = true;
         });
-      
+
       filters.foo = 'test';
       return service('reports', filters)
         .then(function(actual) {
@@ -175,31 +175,40 @@ describe('Search service', function() {
     });
 
     it('queries last visited dates when set', () => {
-      GetDataRecords.resolves([{ _id: '1' }, { _id: '2' }, { _id: '3' }]);
-      searchStub.resolves(['1', '2', '3']);
+      GetDataRecords.resolves([{ _id: '1' }, { _id: '2' }, { _id: '3' }, { _id: '4' }]);
+      searchStub.resolves(['1', '2', '3', '4']);
       db.query
         .withArgs('medic-client/contacts_by_last_visited')
         .resolves({
           rows: [
-            { key: '1', value: 0 },
-            { key: '1', value: moment('2017-09-10').valueOf() },
-            { key: '1', value: moment('2017-12-10').valueOf() },
-            { key: '1', value: moment('2018-01-10').valueOf() },
-            { key: '1', value: moment('2018-01-22').valueOf() },
-            { key: '1', value: moment('2018-03-20').valueOf() },
-            { key: '1', value: moment('2018-04-20').valueOf() },
-            { key: '1', value: moment('2018-07-31').valueOf() },
-            { key: '1', value: moment('2018-08-01').valueOf() },
-            { key: '1', value: moment('2018-08-10').valueOf() },
-            { key: '1', value: moment('2018-08-02').valueOf() },
+            { key: '1', value: { max: moment('2018-08-10').valueOf() } },
+            { key: '2', value: { max: moment('2018-08-18').valueOf() } },
+            { key: '3', value: { max: moment('2018-07-13').valueOf() } },
+            { key: '4', value: { max: -1 } },
+            { key: '5', value: { max: moment('2018-07-21').valueOf() } },
+            { key: '6', value: { max: moment('2018-06-01').valueOf() } },
+            { key: '7', value: { max: moment('2018-07-29').valueOf() } },
+            { key: '8', value: { max: moment('2018-07-30').valueOf() } },
+          ]
+        });
 
-            { key: '2', value: -1 },
-
-            { key: '3' , value: 0 },
-            { key: '3' , value: moment('2018-07-10').valueOf() },
-            { key: '3' , value: moment('2018-07-11').valueOf() },
-            { key: '3' , value: moment('2018-07-12').valueOf() },
-            { key: '3' , value: moment('2018-07-13').valueOf() },
+      db.query
+        .withArgs('medic-client/visits_by_date')
+        .resolves({
+          rows: [
+            { key: moment('2018-08-01').valueOf(), value: '1' },
+            { key: moment('2018-08-02').valueOf(), value: '2' },
+            { key: moment('2018-08-04').valueOf(), value: '2' },
+            { key: moment('2018-08-04').valueOf(), value: '5' },
+            { key: moment('2018-08-05').valueOf(), value: '5' },
+            { key: moment('2018-08-08').valueOf(), value: '5' },
+            { key: moment('2018-08-10').valueOf(), value: '1' },
+            { key: moment('2018-08-10').valueOf(), value: '1' },
+            { key: moment('2018-08-12').valueOf(), value: '6' },
+            { key: moment('2018-08-13').valueOf(), value: '6' },
+            { key: moment('2018-08-16').valueOf(), value: '2' },
+            { key: moment('2018-08-18').valueOf(), value: '2' },
+            { key: moment('2018-08-18').valueOf(), value: '2' },
           ]
         });
 
@@ -208,28 +217,44 @@ describe('Search service', function() {
           chai.expect(searchStub.callCount).to.equal(1);
           chai.expect(searchStub.args[0])
             .to.deep.equal(['contacts', {}, { limit: 50, skip: 0 }, { displayLastVisitedDate: true }]);
-          chai.expect(db.query.callCount).to.equal(1);
-          chai.expect(db.query.args[0])
-            .to.deep.equal([ 'medic-client/contacts_by_last_visited', {reduce: false, keys: ['1', '2', '3']} ]);
+          chai.expect(db.query.callCount).to.equal(2);
+          chai.expect(db.query.args[0]).to.deep.equal([
+            'medic-client/visits_by_date',
+            {
+              start_key: moment('2018-08-01').startOf('day').valueOf(),
+              end_key: moment('2018-08-01').endOf('month').valueOf()
+            }
+          ]);
+          chai.expect(db.query.args[1]).to.deep.equal([
+            'medic-client/contacts_by_last_visited',
+            { reduce: true, group: true }
+          ]);
 
           chai.expect(result).to.deep.equal([
             {
               _id: '1',
               lastVisitedDate: moment('2018-08-10 00:00:00').valueOf(),
               visitCountGoal: undefined,
-              visitCount: 3,
+              visitCount: 2,
               sortByLastVisitedDate: undefined
             },
             {
               _id: '2',
-              lastVisitedDate: -1,
+              lastVisitedDate: moment('2018-08-18 00:00:00').valueOf(),
               visitCountGoal: undefined,
-              visitCount: 0,
+              visitCount: 4,
               sortByLastVisitedDate: undefined
             },
             {
               _id: '3',
               lastVisitedDate: moment('2018-07-13 00:00:00').valueOf(),
+              visitCountGoal: undefined,
+              visitCount: 0,
+              sortByLastVisitedDate: undefined
+            },
+            {
+              _id: '4',
+              lastVisitedDate: -1,
               visitCountGoal: undefined,
               visitCount: 0,
               sortByLastVisitedDate: undefined
@@ -245,27 +270,26 @@ describe('Search service', function() {
         .withArgs('medic-client/contacts_by_last_visited')
         .resolves({
           rows: [
-            { key: '1', value: 0 },
-            { key: '1', value: moment('2017-09-10').valueOf() },
-            { key: '1', value: moment('2017-12-10').valueOf() },
-            { key: '1', value: moment('2018-01-10').valueOf() },
-            { key: '1', value: moment('2018-01-22').valueOf() },
-            { key: '1', value: moment('2018-03-20').valueOf() },
-            { key: '1', value: moment('2018-04-20').valueOf() },
-            { key: '1', value: moment('2018-07-24').valueOf() },
-            { key: '1', value: moment('2018-07-31').valueOf() },
-            { key: '1', value: moment('2018-08-01').valueOf() },
-            { key: '1', value: moment('2018-08-10').valueOf() },
-            { key: '1', value: moment('2018-08-02').valueOf() },
+            { key: '1', value: { max: moment('2018-08-10').valueOf() } },
+            { key: '2', value: { max: -1 } },
+            { key: '3', value: { max: moment('2018-07-25').valueOf() } },
+            { key: '4', value: { max: 0 } },
+            { key: '5', value: { max: -1 } },
+            { key: '6', value: { max: moment('2018-08-16').valueOf() } }
+          ]
+        });
 
-            { key: '2', value: -1 },
-
-            { key: '3', value: 0 },
-            { key: '3', value: moment('2018-07-10').valueOf() },
-            { key: '3', value: moment('2018-07-11').valueOf() },
-            { key: '3', value: moment('2018-07-12').valueOf() },
-            { key: '3', value: moment('2018-07-13').valueOf() },
-            { key: '3', value: moment('2018-07-25').valueOf() }
+      db.query
+        .withArgs('medic-client/visits_by_date')
+        .resolves({
+          rows: [
+            { key: moment('2018-07-25').valueOf(), value: '3' },
+            { key: moment('2018-07-29').valueOf(), value: '1' },
+            { key: moment('2018-08-02').valueOf(), value: '1' },
+            { key: moment('2018-08-03').valueOf(), value: '1' },
+            { key: moment('2018-08-10').valueOf(), value: '1' },
+            { key: moment('2018-08-10').valueOf(), value: '1' },
+            { key: moment('2018-08-16').valueOf(), value: '6' }
           ]
         });
 
@@ -283,9 +307,16 @@ describe('Search service', function() {
           chai.expect(searchStub.callCount).to.equal(1);
           chai.expect(searchStub.args[0])
             .to.deep.equal(['contacts', {}, { limit: 50, skip: 0 }, extensions]);
-          chai.expect(db.query.callCount).to.equal(1);
-          chai.expect(db.query.args[0])
-            .to.deep.equal([ 'medic-client/contacts_by_last_visited', { reduce: false, keys: ['1', '2', '3']} ]);
+          chai.expect(db.query.callCount).to.equal(2);
+          chai.expect(db.query.args[0]).to.deep.equal([
+            'medic-client/visits_by_date',
+            {
+              start_key: moment('2018-07-25').startOf('day').valueOf(),
+              end_key: moment('2018-08-24').endOf('day').valueOf()
+            }
+          ]);
+          chai.expect(db.query.args[1])
+            .to.deep.equal([ 'medic-client/contacts_by_last_visited', { reduce: true, group: true }]);
 
           chai.expect(result).to.deep.equal([
             {
@@ -320,14 +351,30 @@ describe('Search service', function() {
         .withArgs('medic-client/contacts_by_last_visited')
         .resolves({
           rows: [
-            { key: '1', value: moment('2018-08-10 23:59:00').valueOf() }, // count
-            { key: '1', value: moment('2018-08-11 00:01:00').valueOf() }, // count
-            { key: '1', value: moment('2018-08-11 12:00:00').valueOf() }, // dupe
-            { key: '1', value: moment('2018-08-11 23:59:00').valueOf() }, // dupe
-            { key: '1', value: moment('2018-08-12 00:01:00').valueOf() }, // count, last visited
-
-            { key: '2', value: moment('2018-08-11 12:00:00').valueOf() }, // count
-            { key: '2', value: moment('2018-08-11 20:00:00').valueOf() }, // dupe, last visited
+            { key: '1', value: { max: moment('2018-08-12 00:01:00').valueOf() } },
+            { key: '2', value: { max: moment('2018-08-11 20:00:00').valueOf() } },
+            { key: '3', value: { max: moment('2018-08-03').valueOf() } },
+            { key: '4', value: { max: moment('2018-08-04').valueOf() } },
+            { key: '5', value: { max: moment('2018-08-05').valueOf() } },
+            { key: '12', value: { max: moment('2018-08-08').valueOf() } },
+          ]
+        });
+      db.query
+        .withArgs('medic-client/visits_by_date')
+        .resolves({
+          rows: [
+            { key: moment('2018-08-01').valueOf(), value: '3' },
+            { key: moment('2018-08-03').valueOf(), value: '3' },
+            { key: moment('2018-08-04').valueOf(), value: '4' },
+            { key: moment('2018-08-05').valueOf(), value: '5' },
+            { key: moment('2018-08-08').valueOf(), value: '12' },
+            { key: moment('2018-08-10 23:59:00').valueOf(), value: '1' }, // count
+            { key: moment('2018-08-11 00:01:00').valueOf(), value: '1' }, // count
+            { key: moment('2018-08-11 12:00:00').valueOf(), value: '1' }, // dupe
+            { key: moment('2018-08-11 23:59:00').valueOf(), value: '1' }, // dupe
+            { key: moment('2018-08-12 00:01:00').valueOf(), value: '1' }, // count
+            { key: moment('2018-08-11 12:00:00').valueOf(), value: '2' }, // count
+            { key: moment('2018-08-11 20:00:00').valueOf(), value: '2' }, // dupe
           ]
         });
 
@@ -357,6 +404,88 @@ describe('Search service', function() {
           }
         ]);
       });
+    });
+
+    it('should not query visits_by_date when receiving extended results from SearchLib', () => {
+      searchStub.resolves({
+        results: ['1', '2', '3', '4'],
+        extendedResults: [
+          { key: '1', value: { max: moment('2018-08-10').valueOf() } },
+            { key: '2', value: { max: moment('2018-08-18').valueOf() } },
+            { key: '3', value: { max: moment('2018-07-13').valueOf() } },
+            { key: '4', value: { max: -1 } },
+            { key: '5', value: { max: moment('2018-07-21').valueOf() } },
+            { key: '6', value: { max: moment('2018-06-01').valueOf() } },
+            { key: '7', value: { max: moment('2018-07-29').valueOf() } },
+            { key: '8', value: { max: moment('2018-07-30').valueOf() } },
+          ]
+      });
+      GetDataRecords.resolves([{ _id: '1' }, { _id: '2' }, { _id: '3' }, { _id: '4' }]);
+      db.query
+        .withArgs('medic-client/visits_by_date')
+        .resolves({
+          rows: [
+            { key: moment('2018-08-01').valueOf(), value: '1' },
+            { key: moment('2018-08-02').valueOf(), value: '2' },
+            { key: moment('2018-08-04').valueOf(), value: '2' },
+            { key: moment('2018-08-04').valueOf(), value: '5' },
+            { key: moment('2018-08-05').valueOf(), value: '5' },
+            { key: moment('2018-08-08').valueOf(), value: '5' },
+            { key: moment('2018-08-10').valueOf(), value: '1' },
+            { key: moment('2018-08-10').valueOf(), value: '1' },
+            { key: moment('2018-08-12').valueOf(), value: '6' },
+            { key: moment('2018-08-13').valueOf(), value: '6' },
+            { key: moment('2018-08-16').valueOf(), value: '2' },
+            { key: moment('2018-08-18').valueOf(), value: '2' },
+            { key: moment('2018-08-18').valueOf(), value: '2' },
+          ]
+        });
+
+      return service('contacts', {}, {}, { displayLastVisitedDate: true, sortByLastVisitedDate: true })
+        .then(result => {
+          chai.expect(searchStub.callCount).to.equal(1);
+          chai.expect(searchStub.args[0])
+            .to.deep.equal(['contacts', {}, { limit: 50, skip: 0 }, { displayLastVisitedDate: true, sortByLastVisitedDate: true }]);
+          chai.expect(db.query.callCount).to.equal(1);
+          chai.expect(db.query.args[0]).to.deep.equal([
+            'medic-client/visits_by_date',
+            {
+              start_key: moment('2018-08-01').startOf('day').valueOf(),
+              end_key: moment('2018-08-01').endOf('month').valueOf()
+            }
+          ]);
+          2
+          chai.expect(result).to.deep.equal([
+            {
+              _id: '1',
+              lastVisitedDate: moment('2018-08-10 00:00:00').valueOf(),
+              visitCountGoal: undefined,
+              visitCount: 2,
+              sortByLastVisitedDate: true
+            },
+            {
+              _id: '2',
+              lastVisitedDate: moment('2018-08-18 00:00:00').valueOf(),
+              visitCountGoal: undefined,
+              visitCount: 4,
+              sortByLastVisitedDate: true
+            },
+            {
+              _id: '3',
+              lastVisitedDate: moment('2018-07-13 00:00:00').valueOf(),
+              visitCountGoal: undefined,
+              visitCount: 0,
+              sortByLastVisitedDate: true
+            },
+            {
+              _id: '4',
+              lastVisitedDate: -1,
+              visitCountGoal: undefined,
+              visitCount: 0,
+              sortByLastVisitedDate: true
+            }
+          ]);
+        });
     });
   });
 
@@ -396,13 +525,15 @@ describe('Search service', function() {
       GetDataRecords.withArgs(['1', '2', '3', '4']).resolves([
         { _id: '1' }, { _id: '2' }, { _id: '3' }, { _id: '4' }
       ]);
+
+      db.query.withArgs('medic-client/visits_by_date').resolves({ rows: []});
       db.query
         .withArgs('medic-client/contacts_by_last_visited')
-        .resolves({ rows :[
-          { key: '1', value: 1 },
-          { key: '2', value: 2 },
-          { key: '3', value: 3 },
-          { key: '4', value: 4 },
+        .resolves({ rows: [
+          { key: '1', value: { max: 1 } },
+          { key: '2', value: { max: 2 } },
+          { key: '3', value: { max: 3 } },
+          { key: '4', value: { max: 4 } },
         ]});
 
       const extensions = { displayLastVisitedDate: true };
@@ -410,9 +541,13 @@ describe('Search service', function() {
       return service('contacts', {}, {}, extensions, ['3', '4']).then(results => {
         chai.expect(GetDataRecords.callCount).to.equal(1);
         chai.expect(GetDataRecords.args[0][0]).to.deep.equal(['1', '2', '3', '4']);
-        chai.expect(db.query.callCount).to.equal(1);
-        chai.expect(db.query.args[0])
-          .to.deep.equal([ 'medic-client/contacts_by_last_visited', { reduce: false, keys: ['1', '2', '3', '4']} ]);
+        chai.expect(db.query.callCount).to.equal(2);
+        chai.expect(db.query.args[0]).to.deep.equal([
+          'medic-client/visits_by_date',
+          { start_key: moment().startOf('month').valueOf(), end_key: moment().endOf('month').valueOf() }
+        ]);
+        chai.expect(db.query.args[1])
+          .to.deep.equal([ 'medic-client/contacts_by_last_visited', { reduce: true, group: true } ]);
 
         chai.expect(results).to.deep.equal([
           { _id: '1', lastVisitedDate: 1, visitCount: 0, visitCountGoal: undefined, sortByLastVisitedDate: undefined },
