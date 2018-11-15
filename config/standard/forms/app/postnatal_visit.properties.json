@@ -18,20 +18,5 @@
     "person": true,
     "place": false,
     "expression": "!contact || (summary.use_cases && summary.use_cases.pnc && summary.in_pnc_period)"
-  },
-  "hidden_fields": [
-    "inputs",
-    "patient_uuid",
-    "geolocation",
-    "patient_age_in_years",
-    "patient_contact_phone",
-    "group_chw_info",
-    "group_who_assessed",
-    "group_danger_signs_mom",
-    "group_danger_signs_baby",
-    "group_delivery_summary",
-    "group_note",
-    "group_review",
-    "meta"
-  ]  
+  }  
 }

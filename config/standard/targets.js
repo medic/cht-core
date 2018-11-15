@@ -1,6 +1,5 @@
 var targets = [
-
-// Pregnancy related widgets
+  // Pregnancy related widgets
   // TODO could this target be person-based instead of report based?
   {
     id: 'active-pregnancies',
@@ -10,11 +9,12 @@ var targets = [
     translation_key: 'targets.active_pregnancies.title',
     subtitle_translation_key: 'targets.all_time.subtitle',
 
-    appliesToType: 'report',
+    appliesTo: 'reports',
     appliesIf: function(c, r) {
-      if(!isNewestPregnancy(c, r)) return false;
+      if (!isNewestPregnancy(c, r)) return false;
 
-      if(getNewestDeliveryTimestamp(c) < getNewestPregnancyTimestamp(c)) return true;
+      if (getNewestDeliveryTimestamp(c) < getNewestPregnancyTimestamp(c))
+        return true;
 
       var lmp = new Date(r.lmp_date);
       var maxEDD = new Date(now);
@@ -25,7 +25,8 @@ var targets = [
   },
 
   // PREGNANCIES REGISTERED THIS MONTH
-  { // FIXME this seems to count _all_ pregnancy registrations - not just ones made this month
+  {
+    // FIXME this seems to count _all_ pregnancy registrations - not just ones made this month
     id: 'pregnancy-registrations-this-month',
     type: 'count',
     icon: 'pregnancy-1',
@@ -33,10 +34,14 @@ var targets = [
     translation_key: 'targets.pregnancy_registrations.title',
     subtitle_translation_key: 'targets.this_month.subtitle',
 
-    appliesToType: 'report',
+    appliesTo: 'reports',
     appliesIf: isNewestPregnancy,
     emitCustom: function(c, r) {
-      var instance = createTargetInstance('pregnancy-registrations-this-month', r, true);
+      var instance = createTargetInstance(
+        'pregnancy-registrations-this-month',
+        r,
+        true
+      );
       // use contact id to avoid counting multiple pregnancies for same person
       instance._id = c.contact._id + '-' + 'pregnancy-registrations-this-month';
       emitTargetInstance(instance);
@@ -44,7 +49,7 @@ var targets = [
     date: 'reported',
   },
 
-// Birth related widgets
+  // Birth related widgets
   // BIRTHS THIS MONTH
   {
     // FIXME this appears to count all births ever (there's no date check!');
@@ -55,11 +60,10 @@ var targets = [
     translation_key: 'targets.births.title',
     subtitle_translation_key: 'targets.this_month.subtitle',
 
-    appliesToType: 'report',
+    appliesTo: 'reports',
     appliesIf: isHealthyDelivery,
     date: 'reported',
   },
-
 
   // % DELIVERIES ALL TIME WITH 1+ VISITS
   {
@@ -70,11 +74,16 @@ var targets = [
     translation_key: 'targets.delivery_1_visit.title',
     subtitle_translation_key: 'targets.all_time.subtitle',
 
-    appliesToType: 'report',
+    appliesTo: 'reports',
     idType: 'report',
     appliesIf: isHealthyDelivery,
     passesIf: function(c, r) {
-      var visits = countReportsSubmittedInWindow(c.reports, antenatalForms, r.reported_date - MAX_DAYS_IN_PREGNANCY*MS_IN_DAY, r.reported_date);
+      var visits = countReportsSubmittedInWindow(
+        c.reports,
+        antenatalForms,
+        r.reported_date - MAX_DAYS_IN_PREGNANCY * MS_IN_DAY,
+        r.reported_date
+      );
       return visits > 0;
     },
     date: 'now',
@@ -89,11 +98,16 @@ var targets = [
     translation_key: 'targets.delivery_4_visits.title',
     subtitle_translation_key: 'targets.all_time.subtitle',
 
-    appliesToType: 'report',
+    appliesTo: 'reports',
     idType: 'report',
     appliesIf: isHealthyDelivery,
     passesIf: function(c, r) {
-      var visits = countReportsSubmittedInWindow(c.reports, antenatalForms, r.reported_date - MAX_DAYS_IN_PREGNANCY*MS_IN_DAY, r.reported_date);
+      var visits = countReportsSubmittedInWindow(
+        c.reports,
+        antenatalForms,
+        r.reported_date - MAX_DAYS_IN_PREGNANCY * MS_IN_DAY,
+        r.reported_date
+      );
       return visits > 3;
     },
     date: 'now',
@@ -108,15 +122,14 @@ var targets = [
     translation_key: 'targets.facility_deliveries.title',
     subtitle_translation_key: 'targets.all_time.subtitle',
 
-    appliesToType: 'report',
+    appliesTo: 'reports',
     idType: 'report',
     appliesIf: isHealthyDelivery,
     passesIf: isFacilityDelivery,
     date: 'now',
   },
 
-
-// TARGETS FOR 6-WEEK PNC PERIOD
+  // TARGETS FOR 6-WEEK PNC PERIOD
 
   // PNC: WOMEN IN ACTIVE PNC PERIOD
   {
@@ -126,9 +139,11 @@ var targets = [
     goal: -1,
     translation_key: 'targets.active_pnc.title',
     subtitle_translation_key: 'targets.all_time.subtitle',
-    context: "(user.parent.use_cases && user.parent.use_cases.split(' ').indexOf('pnc') !== -1) || (user.parent.parent.use_cases && user.parent.parent.use_cases.split(' ').indexOf('pnc') !== -1)",
+    context:
+      "(user.parent.use_cases && user.parent.use_cases.split(' ').indexOf('pnc') !== -1) || (user.parent.parent.use_cases && user.parent.parent.use_cases.split(' ').indexOf('pnc') !== -1)",
 
-    appliesToType: 'person',
+    appliesTo: 'contacts',
+    appliesToType: ['person'],
     appliesIf: isWomanInActivePncPeriod,
   },
 
@@ -141,9 +156,10 @@ var targets = [
     goal: -1,
     translation_key: 'targets.pnc_registrations.title',
     subtitle_translation_key: 'targets.all_time.subtitle',
-    context: "(user.parent.use_cases && user.parent.use_cases.split(' ').indexOf('pnc') !== -1) || (user.parent.parent.use_cases && user.parent.parent.use_cases.split(' ').indexOf('pnc') !== -1)",
+    context:
+      "(user.parent.use_cases && user.parent.use_cases.split(' ').indexOf('pnc') !== -1) || (user.parent.parent.use_cases && user.parent.parent.use_cases.split(' ').indexOf('pnc') !== -1)",
 
-    appliesToType: 'report',
+    appliesTo: 'reports',
     idType: 'report',
     appliesIf: isHealthyDelivery,
     date: 'reported',
@@ -157,12 +173,17 @@ var targets = [
     goal: -1,
     translation_key: 'targets.pnc_visits.title',
     subtitle_translation_key: 'targets.this_month.subtitle',
-    context: "(user.parent.use_cases && user.parent.use_cases.split(' ').indexOf('pnc') !== -1) || (user.parent.parent.use_cases && user.parent.parent.use_cases.split(' ').indexOf('pnc') !== -1)",
-    appliesToType: 'report',
+    context:
+      "(user.parent.use_cases && user.parent.use_cases.split(' ').indexOf('pnc') !== -1) || (user.parent.parent.use_cases && user.parent.parent.use_cases.split(' ').indexOf('pnc') !== -1)",
+    appliesTo: 'reports',
     idType: 'report',
-    appliesIf: function (c, r) {
-      return postnatalForms.indexOf(r.form) !== -1 ||
-        (deliveryForms.indexOf(r.form) !== -1 && r.fields.delivery_code && r.fields.delivery_code.toUpperCase() === 'F');
+    appliesIf: function(c, r) {
+      return (
+        postnatalForms.indexOf(r.form) !== -1 ||
+        (deliveryForms.indexOf(r.form) !== -1 &&
+          r.fields.delivery_code &&
+          r.fields.delivery_code.toUpperCase() === 'F')
+      );
     },
     date: 'reported',
   },
@@ -175,11 +196,18 @@ var targets = [
     goal: -1,
     translation_key: 'targets.homebirth_no_visits.title',
     subtitle_translation_key: 'targets.all_time.subtitle',
-    context: "(user.parent.use_cases && user.parent.use_cases.split(' ').indexOf('pnc') !== -1) || (user.parent.parent.use_cases && user.parent.parent.use_cases.split(' ').indexOf('pnc') !== -1)",
-    appliesToType: 'person',
+    context:
+      "(user.parent.use_cases && user.parent.use_cases.split(' ').indexOf('pnc') !== -1) || (user.parent.parent.use_cases && user.parent.parent.use_cases.split(' ').indexOf('pnc') !== -1)",
+    appliesTo: 'contacts',
+    appliesToType: ['person'],
     appliesIf: isWomanInActivePncPeriod,
     passesIf: function(c) {
-      return !isFormSubmittedInWindow(c.reports, postnatalForms, getNewestDeliveryTimestamp(c), now.getTime());
+      return !isFormSubmittedInWindow(
+        c.reports,
+        postnatalForms,
+        getNewestDeliveryTimestamp(c),
+        now.getTime()
+      );
     },
   },
 
@@ -192,25 +220,38 @@ var targets = [
     goal: 100,
     translation_key: 'targets.homebirth_1_visit.title',
     subtitle_translation_key: 'targets.all_time.subtitle',
-    context: "(user.parent.use_cases && user.parent.use_cases.split(' ').indexOf('pnc') !== -1) || (user.parent.parent.use_cases && user.parent.parent.use_cases.split(' ').indexOf('pnc') !== -1)",
+    context:
+      "(user.parent.use_cases && user.parent.use_cases.split(' ').indexOf('pnc') !== -1) || (user.parent.parent.use_cases && user.parent.parent.use_cases.split(' ').indexOf('pnc') !== -1)",
 
-    appliesToType: 'report',
+    appliesTo: 'reports',
     appliesIf: function(c, r) {
-      return isHealthyDelivery(c, r) &&
-          r.fields.delivery_code &&
-          r.fields.delivery_code.toUpperCase() !== 'F';
+      return (
+        isHealthyDelivery(c, r) &&
+        r.fields.delivery_code &&
+        r.fields.delivery_code.toUpperCase() !== 'F'
+      );
     },
     passesIf: function(c, r) {
       // Find PNC period based on delivery date, not reported date
       // FIXME r.reported_date changed from r.report_date, as that _appeared_ incorrect
-      var startPNCperiod = new Date(r && (r.birth_date || r.fields.birth_date || r.reported_date));
-      var endPNCperiod = new Date(startPNCperiod.getFullYear(), startPNCperiod.getMonth(), startPNCperiod.getDate() + DAYS_IN_PNC);
+      var startPNCperiod = new Date(
+        r && (r.birth_date || r.fields.birth_date || r.reported_date)
+      );
+      var endPNCperiod = new Date(
+        startPNCperiod.getFullYear(),
+        startPNCperiod.getMonth(),
+        startPNCperiod.getDate() + DAYS_IN_PNC
+      );
 
-      return isFormSubmittedInWindow(c.reports, postnatalForms, startPNCperiod.getTime(), endPNCperiod.getTime());
+      return isFormSubmittedInWindow(
+        c.reports,
+        postnatalForms,
+        startPNCperiod.getTime(),
+        endPNCperiod.getTime()
+      );
     },
     date: 'now',
   },
-
 
   // TODO maybe this target should be person-based?
   {
@@ -220,20 +261,32 @@ var targets = [
     goal: 50,
     translation_key: 'targets.birth_3_visits.title',
     subtitle_translation_key: 'targets.all_time.subtitle',
-    context: "(user.parent.use_cases && user.parent.use_cases.split(' ').indexOf('pnc') !== -1) || (user.parent.parent.use_cases && user.parent.parent.use_cases.split(' ').indexOf('pnc') !== -1)",
+    context:
+      "(user.parent.use_cases && user.parent.use_cases.split(' ').indexOf('pnc') !== -1) || (user.parent.parent.use_cases && user.parent.parent.use_cases.split(' ').indexOf('pnc') !== -1)",
 
-    appliesToType: 'report',
+    appliesTo: 'reports',
     appliesIf: isHealthyDelivery,
     passesIf: function(c, r) {
       // Find PNC period based on delivery date, not reported date
       // FIXME r.reported_date changed from r.report_date, as that _appeared_ incorrect
-      var startPNCperiod = new Date(r && (r.birth_date || r.fields.birth_date || r.reported_date));
-      var endPNCperiod = new Date(startPNCperiod.getFullYear(), startPNCperiod.getMonth(), startPNCperiod.getDate() + DAYS_IN_PNC);
+      var startPNCperiod = new Date(
+        r && (r.birth_date || r.fields.birth_date || r.reported_date)
+      );
+      var endPNCperiod = new Date(
+        startPNCperiod.getFullYear(),
+        startPNCperiod.getMonth(),
+        startPNCperiod.getDate() + DAYS_IN_PNC
+      );
 
       // PNC: WOMEN WITH 3 PNC VISITS, ALL TIME
       // Women who had 3 PNC visits confirmed during their 6-week PNC period (includes V forms and postnatal visit forms) - all-time
-      var postnatalVisits = countReportsSubmittedInWindow(c.reports, postnatalForms, startPNCperiod.getTime(), endPNCperiod.getTime());
-      if (isFacilityDelivery(r)){
+      var postnatalVisits = countReportsSubmittedInWindow(
+        c.reports,
+        postnatalForms,
+        startPNCperiod.getTime(),
+        endPNCperiod.getTime()
+      );
+      if (isFacilityDelivery(r)) {
         postnatalVisits++;
       }
 
@@ -241,7 +294,6 @@ var targets = [
     },
     date: 'now',
   },
-
 
   // IMM: NUMBER OF CHILDREN
   {
@@ -251,14 +303,14 @@ var targets = [
     goal: -1,
     translation_key: 'targets.children_u5.title',
     subtitle_translation_key: 'targets.all_time.subtitle',
-    context: "(user.parent.use_cases && user.parent.use_cases.split(' ').indexOf('imm') !== -1) || (user.parent.parent.use_cases && user.parent.parent.use_cases.split(' ').indexOf('imm') !== -1)",
-
-    appliesToType: 'person',
+    context:
+      "(user.parent.use_cases && user.parent.use_cases.split(' ').indexOf('imm') !== -1) || (user.parent.parent.use_cases && user.parent.parent.use_cases.split(' ').indexOf('imm') !== -1)",
+    appliesTo: 'contacts',
+    appliesToType: ['person'],
     appliesIf: isChildUnder5,
   },
 
-
-// TARGETS FOR CHILDREN UNDER 5 YEARS
+  // TARGETS FOR CHILDREN UNDER 5 YEARS
 
   // IMM: CHILDREN REGISTERED THIS MONTH
   {
@@ -268,13 +320,16 @@ var targets = [
     goal: -1,
     translation_key: 'targets.children_registered.title',
     subtitle_translation_key: 'targets.this_month.subtitle',
-    context: "(user.parent.use_cases && user.parent.use_cases.split(' ').indexOf('imm') !== -1) || (user.parent.parent.use_cases && user.parent.parent.use_cases.split(' ').indexOf('imm') !== -1)",
+    context:
+      "(user.parent.use_cases && user.parent.use_cases.split(' ').indexOf('imm') !== -1) || (user.parent.parent.use_cases && user.parent.parent.use_cases.split(' ').indexOf('imm') !== -1)",
 
-    appliesToType: 'person',
+    appliesTo: 'contacts',
+    appliesToType: ['person'],
     appliesIf: isChildUnder5,
-    date: function(c) { return c.contact.reported_date; },
+    date: function(c) {
+      return c.contact.reported_date;
+    },
   },
-
 
   // IMM: VACCINES DISTRIBUTED THIS MONTH
   {
@@ -284,23 +339,35 @@ var targets = [
     goal: -1,
     translation_key: 'targets.vaccines_given.title',
     subtitle_translation_key: 'targets.this_month.subtitle',
-    context: "(user.parent.use_cases && user.parent.use_cases.split(' ').indexOf('imm') !== -1) || (user.parent.parent.use_cases && user.parent.parent.use_cases.split(' ').indexOf('imm') !== -1)",
+    context:
+      "(user.parent.use_cases && user.parent.use_cases.split(' ').indexOf('imm') !== -1) || (user.parent.parent.use_cases && user.parent.parent.use_cases.split(' ').indexOf('imm') !== -1)",
 
-    appliesToType: 'report',
-    appliesIf: function(c, r) { return immunizationForms.indexOf(r.form) !== -1; },
+    appliesTo: 'reports',
+    appliesIf: function(c, r) {
+      return immunizationForms.indexOf(r.form) !== -1;
+    },
     date: 'reported',
-    emitCustom: function (c, r) {
+    emitCustom: function(c, r) {
       var i, instance;
-      if(r.form === 'immunization_visit' || r.form === 'imm') {
+      if (r.form === 'immunization_visit' || r.form === 'imm') {
         // Multiple vaccine doses can be reported in a single XForm (app or collect)
         var totalDoses = countDoses(r);
-        for(i=0; i<totalDoses; i++) {
-          instance = createTargetInstance('imm-vaccines-given-this-month', r, true);
+        for (i = 0; i < totalDoses; i++) {
+          instance = createTargetInstance(
+            'imm-vaccines-given-this-month',
+            r,
+            true
+          );
           instance._id += i;
           emitTargetInstance(instance);
         }
-      } else { // For TextForms each vaccine is separate report
-        instance = createTargetInstance('imm-vaccines-given-this-month', r, true);
+      } else {
+        // For TextForms each vaccine is separate report
+        instance = createTargetInstance(
+          'imm-vaccines-given-this-month',
+          r,
+          true
+        );
         emitTargetInstance(instance);
       }
     },
@@ -314,12 +381,19 @@ var targets = [
     goal: -1,
     translation_key: 'targets.children_vaccinated.title',
     subtitle_translation_key: 'targets.past_3mos.subtitle',
-    context: "(user.parent.use_cases && user.parent.use_cases.split(' ').indexOf('imm') !== -1) || (user.parent.parent.use_cases && user.parent.parent.use_cases.split(' ').indexOf('imm') !== -1)",
+    context:
+      "(user.parent.use_cases && user.parent.use_cases.split(' ').indexOf('imm') !== -1) || (user.parent.parent.use_cases && user.parent.parent.use_cases.split(' ').indexOf('imm') !== -1)",
 
-    appliesToType: 'person',
+    appliesTo: 'contacts',
+    appliesToType: ['person'],
     appliesIf: isChildUnder5,
     passesIf: function(c) {
-      var visits = countReportsSubmittedInWindow(c.reports, immunizationForms, now.getTime() - 92 * MS_IN_DAY, now.getTime());
+      var visits = countReportsSubmittedInWindow(
+        c.reports,
+        immunizationForms,
+        now.getTime() - 92 * MS_IN_DAY,
+        now.getTime()
+      );
       return visits >= 1;
     },
   },
@@ -332,19 +406,21 @@ var targets = [
     goal: -1,
     translation_key: 'targets.children_not_vaccinated.title',
     subtitle_translation_key: 'targets.all_time.subtitle',
-    context: "(user.parent.use_cases && user.parent.use_cases.split(' ').indexOf('imm') !== -1) || (user.parent.parent.use_cases && user.parent.parent.use_cases.split(' ').indexOf('imm') !== -1)",
+    context:
+      "(user.parent.use_cases && user.parent.use_cases.split(' ').indexOf('imm') !== -1) || (user.parent.parent.use_cases && user.parent.parent.use_cases.split(' ').indexOf('imm') !== -1)",
 
-    appliesToType: 'person',
+    appliesTo: 'contacts',
+    appliesToType: ['person'],
     appliesIf: isChildUnder5,
     passesIf: function(c) {
       var i;
-      for(i=0; i<c.reports.length; ++i) {
-        if(immunizationForms.indexOf(c.reports[i].form !== -1)) {
+      for (i = 0; i < c.reports.length; ++i) {
+        if (immunizationForms.indexOf(c.reports[i].form !== -1)) {
           return false;
         }
       }
       return true;
-    }
+    },
   },
 
   // IMM: CHILDREN WITH BCG REPORTED
@@ -355,9 +431,11 @@ var targets = [
     goal: 100,
     translation_key: 'targets.bcg_reported.title',
     subtitle_translation_key: 'targets.all_time.subtitle',
-    context: "(user.parent.use_cases && user.parent.use_cases.split(' ').indexOf('imm') !== -1) || (user.parent.parent.use_cases && user.parent.parent.use_cases.split(' ').indexOf('imm') !== -1)",
+    context:
+      "(user.parent.use_cases && user.parent.use_cases.split(' ').indexOf('imm') !== -1) || (user.parent.parent.use_cases && user.parent.parent.use_cases.split(' ').indexOf('imm') !== -1)",
 
-    appliesToType: 'person',
+    appliesTo: 'contacts',
+    appliesToType: ['person'],
     appliesIf: isChildUnder5,
     passesIf: isBcgReported,
   },
