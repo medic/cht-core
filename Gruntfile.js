@@ -414,9 +414,24 @@ module.exports = function(grunt) {
       'setup-api-integration': {
         cmd: 'cd api && npm ci',
       },
-      'npm-install': {
+      'npm-ci-shared-libs': {
+        cmd: () => {
+          const fs = require('fs');
+          return fs
+            .readdirSync('shared-libs')
+            .filter(f => fs.lstatSync(`shared-libs/${f}`).isDirectory())
+            .map(
+              lib =>
+                `echo Installing shared library: ${lib} &&
+                  (cd shared-libs/${lib} &&
+                  [ "$(jq .scripts.test package.json)" = "null" ] || npm ci)`
+            )
+            .join(' && ');
+        }
+      },
+      'npm-ci-modules': {
         cmd: ['webapp', 'api', 'sentinel', 'admin']
-          .map(dir => `echo "[${dir}]" && cd ${dir} && npm install && cd ..`)
+          .map(dir => `echo "[${dir}]" && cd ${dir} && npm ci && cd ..`)
           .join(' && '),
       },
       'start-webdriver': {
@@ -827,7 +842,8 @@ module.exports = function(grunt) {
   // Build tasks
   grunt.registerTask('install-dependencies', 'Update and patch dependencies', [
     'exec:undo-patches',
-    'exec:npm-install',
+    'exec:npm-ci-shared-libs',
+    'exec:npm-ci-modules',
     'copy:libraries-to-patch',
     'exec:apply-patches',
   ]);
