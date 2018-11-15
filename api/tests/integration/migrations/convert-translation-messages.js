@@ -7,73 +7,82 @@ describe('convert-translation-messages migration', function() {
     return utils.tearDown();
   });
 
-  it('converts translation messages structure', async () => {
+  it('converts translation messages structure', () => {
 
     // given
-    await utils.initDb([
+    return utils.initDb([
       {
         _id: 'messages-en',
         code: 'en',
         type: 'translations',
         values: { Contact: 'Contact', From: 'From', hello: 'Hello', bye: 'Goodbye CUSTOMISED' }
       }
-    ]);
+    ])
+    .then(function() {
+      return utils.getDdoc(DDOC_ID);
+    })
+    .then(function(ddoc) {
+      const attachment = {
+        content_type: 'application/octet-stream',
+        content: "Contact = Contact\nFrom = From",
+        key: 'translations/messages-en.properties'
+      };      
+      
+      return utils.insertAttachment(ddoc, attachment);  
+    })
+    .then(function() {
+      return utils.runMigration('convert-translation-messages');
+    })
+    .then(function() {
+      return utils.assertDb([
+        {
+          _id: 'messages-en',
+          code: 'en',
+          type: 'translations',
+          generic: { Contact: 'Contact', From: 'From' },
+          custom: { hello: 'Hello', bye: 'Goodbye CUSTOMISED' },
+        }
+      ]);
+    });
 
-    const ddoc = await utils.getDdoc(DDOC_ID);
-    const attachment = {
-      content_type: 'application/octet-stream',
-      content: "Contact = Contact\nFrom = From",
-      key: 'translations/messages-en.properties'
-    };     
-    await utils.insertAttachment(ddoc, attachment);
-
-    // when
-    await utils.runMigration('convert-translation-messages');
-
-    // expect
-    await utils.assertDb([
-      {
-        _id: 'messages-en',
-        code: 'en',
-        type: 'translations',
-        generic: { Contact: 'Contact', From: 'From' },
-        custom: { hello: 'Hello', bye: 'Goodbye CUSTOMISED' },
-      }
-    ]);
   });
 
-  it('does nothing when translation messages have the new structure', async () => {
+  it('does nothing when translation messages have the new structure', () => {
 
     // given
-    await utils.initDb([
+    return utils.initDb([
       {
         _id: 'messages-en',
         code: 'en',
         type: 'translations',
         generic: { Contact: 'Contact', From: 'From', hello: 'Hello', bye: 'Goodbye CUSTOMISED' }
       }
-    ]);
+    ])
+    .then(function() {
+      return utils.getDdoc(DDOC_ID);    
+    })
+    .then(function(ddoc) {
+      const attachment = {
+        content_type: 'application/octet-stream',
+        content: "Contact = Contact\nFrom = From",
+        key: 'translations/messages-en.properties'
+      };     
+      return utils.insertAttachment(ddoc, attachment);      
+    })
+    .then(function() {
+      return utils.runMigration('convert-translation-messages');      
+    })
+    .then(function() {  
+      return utils.assertDb([
+        {
+          _id: 'messages-en',
+          code: 'en',
+          type: 'translations',
+          generic: { Contact: 'Contact', From: 'From', hello: 'Hello', bye: 'Goodbye CUSTOMISED' }
+        }
+      ]);  
+    });
 
-    const ddoc = await utils.getDdoc(DDOC_ID);
-    const attachment = {
-      content_type: 'application/octet-stream',
-      content: "Contact = Contact\nFrom = From",
-      key: 'translations/messages-en.properties'
-    };     
-    await utils.insertAttachment(ddoc, attachment);
-
-    // when
-    await utils.runMigration('convert-translation-messages');
-
-    // expect
-    await utils.assertDb([
-      {
-        _id: 'messages-en',
-        code: 'en',
-        type: 'translations',
-        generic: { Contact: 'Contact', From: 'From', hello: 'Hello', bye: 'Goodbye CUSTOMISED' }
-      }
-    ]);
   });
 
 });

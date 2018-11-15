@@ -185,9 +185,7 @@ module.exports = function(grunt) {
           '**/node_modules/**',
           'sentinel/src/lib/pupil/**',
           'build/**',
-          'config/**',
-          'api/src/migrations/convert-translation-messages.js',               // until jshint
-          'api/tests/integration/migrations/convert-translation-messages.js'  // supports await/async
+          'config/**'
         ],
       },
       all: [
