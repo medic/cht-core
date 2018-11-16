@@ -94,11 +94,8 @@ describe('ContactViewModelGenerator service', () => {
   });
 
   function waitForModelToLoad(model) {
-    return new Promise(resolve => {
-      setTimeout(() => {
-        resolve(model);
-      }, 1000); // TODO there's a better way of doing this than waiting 1s
-    });
+    Q.nextTick();
+    return model;
   }
 
   describe('Place', () => {
