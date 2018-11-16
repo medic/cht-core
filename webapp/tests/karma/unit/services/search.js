@@ -410,14 +410,14 @@ describe('Search service', function() {
       searchStub.resolves({
         results: ['1', '2', '3', '4'],
         extendedResults: [
-          { key: '1', value: { max: moment('2018-08-10').valueOf() } },
-            { key: '2', value: { max: moment('2018-08-18').valueOf() } },
-            { key: '3', value: { max: moment('2018-07-13').valueOf() } },
-            { key: '4', value: { max: -1 } },
-            { key: '5', value: { max: moment('2018-07-21').valueOf() } },
-            { key: '6', value: { max: moment('2018-06-01').valueOf() } },
-            { key: '7', value: { max: moment('2018-07-29').valueOf() } },
-            { key: '8', value: { max: moment('2018-07-30').valueOf() } },
+          { key: '1', value: moment('2018-08-10').valueOf() },
+            { key: '2', value: moment('2018-08-18').valueOf() },
+            { key: '3', value: moment('2018-07-13').valueOf() },
+            { key: '4', value: -1 },
+            { key: '5', value: moment('2018-07-21').valueOf() },
+            { key: '6', value: moment('2018-06-01').valueOf() },
+            { key: '7', value: moment('2018-07-29').valueOf() },
+            { key: '8', value: moment('2018-07-30').valueOf() },
           ]
       });
       GetDataRecords.resolves([{ _id: '1' }, { _id: '2' }, { _id: '3' }, { _id: '4' }]);
