@@ -26,6 +26,7 @@
               </div>
             </div>
           </div>
+
           <div class="loader" ng-if="loadingSummary"></div>
           <div class="row flex grid" ng-if="!loadingSummary">
             <div class="col col-xs-12 col-sm-{{field.width || 12}}" ng-repeat="field in selected.summary.fields">
