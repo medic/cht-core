@@ -94,6 +94,26 @@ describe('ContactViewModelGenerator service', () => {
   });
 
   function waitForModelToLoad(model) {
+    Q.nextTick();
+    Q.nextTick();
+    Q.nextTick();
+    Q.nextTick();
+    Q.nextTick();
+    Q.nextTick();
+    Q.nextTick();
+    Q.nextTick();
+    Q.nextTick();
+    Q.nextTick();
+    Q.nextTick();
+    Q.nextTick();
+    Q.nextTick();
+    Q.nextTick();
+    Q.nextTick();
+    Q.nextTick();
+    Q.nextTick();
+    Q.nextTick();
+    Q.nextTick();
+    Q.nextTick();
     return model;
   }
 
