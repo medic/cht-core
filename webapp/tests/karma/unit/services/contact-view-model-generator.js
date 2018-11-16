@@ -93,13 +93,22 @@ describe('ContactViewModelGenerator service', () => {
     inject(_ContactViewModelGenerator_ => service = _ContactViewModelGenerator_);
   });
 
+  function waitForModelToLoad(model) {
+    return new Promise(resolve => {
+      setTimeout(() => {
+        resolve(model);
+      }, 1000); // TODO there's a better way of doing this than waiting 1s
+    });
+  }
+
   describe('Place', () => {
     const runPlaceTest = (childrenArray, contactsArray) => {
       stubLineageModelGenerator(null, doc);
       stubDbGet(null, childContactPerson);
       stubSearch(null, []);
       stubDbQueryChildren(null, doc._id, childrenArray, contactsArray);
-      return service(doc._id);
+      return service(doc._id)
+        .then(waitForModelToLoad);
     };
 
     it('child places and persons get displayed separately', () => {
