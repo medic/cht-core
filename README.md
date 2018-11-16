@@ -98,7 +98,7 @@ curl -X PUT --data '"4294967296"' http://admin:pass@localhost:5986/_config/httpd
 ```shell
 git clone https://github.com/medic/medic-webapp
 cd medic-webapp
-npm ci
+./npmci.sh
 ```
 
 ### Deploy all the apps
@@ -108,15 +108,6 @@ Create a `.env` file in the app directory with the following contents
 ```shell
 COUCH_URL=http://admin:pass@localhost:5984/medic
 COUCH_NODE_NAME=couchdb@localhost
-```
-
-Then install webapp, admin, api and sentinel dependencies
-
-```shell
-cd webapp && npm ci && cd ..
-cd admin && npm ci && cd ..
-cd api && npm ci && cd ..
-cd sentinel && npm ci && cd ..
 ```
 
 Then do an initial deploy of the webapp:
