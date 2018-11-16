@@ -209,6 +209,7 @@ var _ = require('underscore'),
       } else {
         title = ContactSchema.get(selected.doc.type).label;
       }
+      $scope.loadingSummary = true;
       return $q
         .all([
           $translate(title),
@@ -218,6 +219,7 @@ var _ = require('underscore'),
           Settings()
         ])
         .then(function(results) {
+          $scope.loadingSummary = false;
           $scope.setTitle(results[0]);
           if (results[1]) {
             selectedDoc.child = results[1];
