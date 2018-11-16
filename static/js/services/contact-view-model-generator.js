@@ -254,7 +254,7 @@ angular.module('inboxServices').factory('ContactViewModelGenerator',
             .then(function(children) {
               model.children = children;
               model.loadingChildren = false;
-              return loadReports(model, children);
+              return loadReports(model);
             })
             .then(function(reports) {
               model.reports = reports;
