@@ -94,27 +94,30 @@ describe('ContactViewModelGenerator service', () => {
   });
 
   function waitForModelToLoad(model) {
-    Q.nextTick();
-    Q.nextTick();
-    Q.nextTick();
-    Q.nextTick();
-    Q.nextTick();
-    Q.nextTick();
-    Q.nextTick();
-    Q.nextTick();
-    Q.nextTick();
-    Q.nextTick();
-    Q.nextTick();
-    Q.nextTick();
-    Q.nextTick();
-    Q.nextTick();
-    Q.nextTick();
-    Q.nextTick();
-    Q.nextTick();
-    Q.nextTick();
-    Q.nextTick();
-    Q.nextTick();
-    return model;
+    return Promise.resolve()
+      .then(Q.nextTick)
+      .then(Q.nextTick)
+      .then(Q.nextTick)
+      .then(Q.nextTick)
+      .then(Q.nextTick)
+      .then(Q.nextTick)
+      .then(Q.nextTick)
+      .then(Q.nextTick)
+      .then(Q.nextTick)
+      .then(Q.nextTick)
+      .then(Q.nextTick)
+      .then(Q.nextTick)
+      .then(Q.nextTick)
+      .then(Q.nextTick)
+      .then(Q.nextTick)
+      .then(Q.nextTick)
+      .then(Q.nextTick)
+      .then(Q.nextTick)
+      .then(Q.nextTick)
+      .then(Q.nextTick)
+      .then(Q.nextTick)
+      .then(Q.nextTick)
+      .then(() => model);
   }
 
   describe('Place', () => {
