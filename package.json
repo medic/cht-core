@@ -13,6 +13,7 @@
   },
   "scripts": {
     "start": "nf start",
+    "test": "grunt test",
     "webdriver": "webdriver-manager update && webdriver-manager start"
   },
   "devDependencies": {
