@@ -93,6 +93,7 @@ describe('ContactViewModelGenerator service', () => {
     inject(_ContactViewModelGenerator_ => service = _ContactViewModelGenerator_);
   });
 
+   // REVIEWER: I suspect this should be implemented using Q, but I can't work out how
   function waitForModelToLoad(model) {
     return new Promise(resolve => {
       setTimeout(() => {
@@ -159,9 +160,11 @@ describe('ContactViewModelGenerator service', () => {
       stubDbGet({ status: 404 }, childContactPerson);
       stubSearch(null, []);
       stubDbQueryChildren(null, doc._id, [childPerson]);
-      return service(doc._id).then(model => {
-        assert.equal(model.children.persons.length, 1);
-      });
+      return service(doc._id)
+        .then(waitForModelToLoad)
+        .then(model => {
+          assert.equal(model.children.persons.length, 1);
+        });
     });
 
     it('if contact doesn\'t belong to place, it still gets displayed', () => {
@@ -259,32 +262,38 @@ describe('ContactViewModelGenerator service', () => {
 
     it('sets the returned reports as selected', () => {
       stubSearch(null, [ { _id: 'ab' } ]);
-      return runReportsTest([]).then(model => {
-        chai.expect(model.reports.length).to.equal(1);
-        chai.expect(model.reports[0]._id).to.equal('ab');
-      });
+      return runReportsTest([])
+        .then(waitForModelToLoad)
+        .then(model => {
+          chai.expect(model.reports.length).to.equal(1);
+          chai.expect(model.reports[0]._id).to.equal('ab');
+        });
     });
 
     it('sorts reports by reported_date', () => {
       const report1 = { _id: 'ab', reported_date: 123 };
       const report2 = { _id: 'cd', reported_date: 456 };
       stubSearch(null, [ report1, report2 ]);
-      return runReportsTest([]).then(model => {
-        chai.expect(model.reports.length).to.equal(2);
-        chai.expect(model.reports[0]._id).to.equal(report2._id);
-        chai.expect(model.reports[1]._id).to.equal(report1._id);
-      });
+      return runReportsTest([])
+        .then(waitForModelToLoad)
+        .then(model => {
+          chai.expect(model.reports.length).to.equal(2);
+          chai.expect(model.reports[0]._id).to.equal(report2._id);
+          chai.expect(model.reports[1]._id).to.equal(report1._id);
+        });
     });
 
     it('includes reports from children', () => {
       stubSearch(null, [ { _id: 'ab' },{ _id: 'cd' } ]);
-      return runReportsTest([childPerson, childPerson2, deceasedChildPerson]).then(model => {
-        chai.expect(search.args[0][1].subjectIds).to.deep.equal([ doc._id, childPerson2._id, childPerson._id, deceasedChildPerson._id ]);
-        chai.expect(search.callCount).to.equal(1);
-        chai.expect(model.reports.length).to.equal(2);
-        chai.expect(model.reports[0]._id).to.equal('ab');
-        chai.expect(model.reports[1]._id).to.equal('cd');
-      });
+      return runReportsTest([childPerson, childPerson2, deceasedChildPerson])
+        .then(waitForModelToLoad)
+        .then(model => {
+          chai.expect(search.args[0][1].subjectIds).to.deep.equal([ doc._id, childPerson2._id, childPerson._id, deceasedChildPerson._id ]);
+          chai.expect(search.callCount).to.equal(1);
+          chai.expect(model.reports.length).to.equal(2);
+          chai.expect(model.reports[0]._id).to.equal('ab');
+          chai.expect(model.reports[1]._id).to.equal('cd');
+        });
     });
 
     it('adds patient name to reports', () => {
@@ -292,14 +301,16 @@ describe('ContactViewModelGenerator service', () => {
       const report1 = { _id: 'ab', fields: { patient_id: childPerson.patient_id } };
       const report2 = { _id: 'cd', fields: { patient_id: childPerson.patient_id, patient_name: 'Jack' } };
       stubSearch(null, [ report1, report2 ]);
-      return runReportsTest([childPerson, childPerson2]).then(model => {
-        chai.expect(search.callCount).to.equal(1);
-        chai.expect(model.reports.length).to.equal(2);
-        chai.expect(model.reports[0]._id).to.equal('ab');
-        chai.expect(model.reports[0].fields.patient_name).to.equal(childPerson.name);
-        chai.expect(model.reports[1]._id).to.equal('cd');
-        chai.expect(model.reports[1].fields.patient_name).to.equal('Jack'); // don't add if name already defined
-      });
+      return runReportsTest([childPerson, childPerson2])
+        .then(waitForModelToLoad)
+        .then(model => {
+          chai.expect(search.callCount).to.equal(1);
+          chai.expect(model.reports.length).to.equal(2);
+          chai.expect(model.reports[0]._id).to.equal('ab');
+          chai.expect(model.reports[0].fields.patient_name).to.equal(childPerson.name);
+          chai.expect(model.reports[1]._id).to.equal('cd');
+          chai.expect(model.reports[1].fields.patient_name).to.equal('Jack'); // don't add if name already defined
+        });
     });
 
     it('sorts reports by reported_date, not by parent vs. child', () => {
@@ -308,41 +319,47 @@ describe('ContactViewModelGenerator service', () => {
         { _id: 'bb', reported_date: 345 }
       ];
       stubSearch(null, [ expectedReports[0], expectedReports[1] ]);
-      return runReportsTest([childPerson, childPerson2]).then(model => {
-        chai.expect(search.callCount).to.equal(1);
-        chai.expect(search.args[0][1].subjectIds).to.deep.equal([ doc._id, childPerson2._id, childPerson._id ]);
-        chai.assert.deepEqual(model.reports, [ expectedReports[1], expectedReports[0]]);
-      });
+      return runReportsTest([childPerson, childPerson2])
+        .then(waitForModelToLoad)
+        .then(model => {
+          chai.expect(search.callCount).to.equal(1);
+          chai.expect(search.args[0][1].subjectIds).to.deep.equal([ doc._id, childPerson2._id, childPerson._id ]);
+          chai.assert.deepEqual(model.reports, [ expectedReports[1], expectedReports[0]]);
+        });
     });
 
     it('includes subjectIds in reports search so JSON reports are found', () => {
       doc.patient_id = 'cd';
       doc.place_id = 'ef';
       stubSearch(null, [ { _id: 'ab' } ]);
-      return runReportsTest([], () => {
-        chai.expect(search.callCount).to.equal(1);
-        chai.expect(search.args[0][0]).to.equal('reports');
-        chai.expect(search.args[0][1].subjectIds.length).to.equal(3);
-        chai.expect(search.args[0][1].subjectIds).to.include(doc._id);
-        chai.expect(search.args[0][1].subjectIds).to.include('cd');
-        chai.expect(search.args[0][1].subjectIds).to.include('ef');
-      });
+      return runReportsTest([])
+        .then(waitForModelToLoad)
+        .then(() => {
+          chai.expect(search.callCount).to.equal(1);
+          chai.expect(search.args[0][0]).to.equal('reports');
+          chai.expect(search.args[0][1].subjectIds.length).to.equal(3);
+          chai.expect(search.args[0][1].subjectIds).to.include(doc._id);
+          chai.expect(search.args[0][1].subjectIds).to.include('cd');
+          chai.expect(search.args[0][1].subjectIds).to.include('ef');
+        });
     });
 
     it('adds patient_name to reports', () => {
       const report = { _id: 'ab', fields: { patient_id: childPerson._id} };
       stubSearch(null, [ report ]);
-      return runReportsTest([childPerson], (model) => {
-        // search queried
-        chai.expect(search.callCount).to.equal(1);
-        chai.expect(search.args[0][0]).to.equal('reports');
-        chai.expect(search.args[0][1].subjectIds.length).to.equal(3);
-        chai.expect(search.args[0][1].subjectIds).to.include(doc._id);
+      return runReportsTest([childPerson])
+        .then(waitForModelToLoad)
+        .then(model => {
+          // search queried
+          chai.expect(search.callCount).to.equal(1);
+          chai.expect(search.args[0][0]).to.equal('reports');
+          chai.expect(search.args[0][1].subjectIds.length).to.equal(3);
+          chai.expect(search.args[0][1].subjectIds).to.include(doc._id);
 
-        chai.expect(model.reports.length).to.equal(1);
-        chai.expect(model.reports[0]._id).to.equal('ab');
-        chai.expect(model.reports[0].fields.patient_name).to.equal(childPerson.name);
-      });
+          chai.expect(model.reports.length).to.equal(1);
+          chai.expect(model.reports[0]._id).to.equal('ab');
+          chai.expect(model.reports[0].fields.patient_name).to.equal(childPerson.name);
+        });
     });
   });
 
