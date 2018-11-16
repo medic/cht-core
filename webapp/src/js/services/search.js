@@ -54,17 +54,8 @@ var _ = require('underscore'),
 
       var getLastVisitedDates = function(searchResults, extendedResults, settings) {
         settings = settings || {};
-
         var interval = CalendarInterval.getCurrent(settings.monthStartDate),
             visitStats = {};
-
-        var setLastVisitedDate = function(rows) {
-          rows.forEach(function(row) {
-            if (visitStats[row.key]) {
-              visitStats[row.key].lastVisitedDate = row.value && row.value.max || row.value;
-            }
-          });
-        };
 
         searchResults.forEach(function(id) {
           visitStats[id] = { lastVisitedDate: -1, visitDates: [] };
@@ -82,8 +73,17 @@ var _ = require('underscore'),
             });
         };
 
+        var setLastVisitedDate = function(rows) {
+          rows.forEach(function(row) {
+            if (visitStats[row.key]) {
+              visitStats[row.key].lastVisitedDate = row.value && row.value.max || row.value;
+            }
+          });
+        };
+
         var getLastVisited = function() {
           if (extendedResults) {
+            // when sorting by last visited date, we receive the data from Search library
             return setLastVisitedDate(extendedResults);
           }
 
@@ -127,7 +127,7 @@ var _ = require('underscore'),
         return _search(type, filters, options, extensions)
           .then(function(searchResults) {
             var extendedResults;
-            if (_.isObject(searchResults) && searchResults.extendedResults) {
+            if (searchResults && searchResults.extendedResults) {
               extendedResults = searchResults.extendedResults;
               searchResults = searchResults.results;
             }
@@ -145,7 +145,11 @@ var _ = require('underscore'),
               return dataRecordsPromise;
             }
 
-            var lastVisitedDatePromise = getLastVisitedDates(searchResults, extendedResults, extensions.visitCountSettings);
+            var lastVisitedDatePromise = getLastVisitedDates(
+              searchResults,
+              extendedResults,
+              extensions.visitCountSettings
+            );
 
             return $q.all({
               dataRecords: dataRecordsPromise,
