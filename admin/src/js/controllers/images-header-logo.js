@@ -16,18 +16,19 @@ angular.module('controllers').controller('HeaderLogoCtrl',
       $('#header-upload .uploader').click();
     });
 
-    $scope.name = null;
+    $scope.name = 'logo';
     $scope.error = null;
-    $scope.icons = null;
+    $scope.images = null;
     $scope.loading = true;
 
     var renderResources = function() {
-      $scope.icons = _.map(_.pairs($scope.doc.resources), function(pair) {
-        var icon = $scope.doc._attachments[pair[1]];
+      $scope.images = _.map(_.pairs($scope.doc.resources), function(pair) {
+        var image = $scope.doc._attachments[pair[1]];
         return {
-          name: pair[0],
-          data: icon.data,
-          type: icon.content_type
+          title: pair[0],
+          name: pair[1],
+          data: image.data,
+          type: image.content_type
         };
       });
       $scope.loading = false;
@@ -49,7 +50,7 @@ angular.module('controllers').controller('HeaderLogoCtrl',
     var addAttachment = function(file) {
       $scope.submitting = true;
       DB()
-        .putAttachment('resources', file.name, $scope.doc._rev, file, file.type)
+        .putAttachment('logo', file.name, $scope.doc._rev, file, file.type)
         .then(getResourcesDoc)
         .then(function(doc) {
           doc.resources[$scope.name] = file.name;
@@ -73,11 +74,6 @@ angular.module('controllers').controller('HeaderLogoCtrl',
       if (!$scope.doc) {
         $scope.error = $translate.instant('Error saving settings');
         return;
-      }
-      if (!$scope.name) {
-        $scope.error = $translate.instant('field is required', {
-          field: $translate.instant('Name')
-        });
       }
       var files = $('#header-upload .uploader')[0].files;
       if (!files || files.length === 0) {

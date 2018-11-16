@@ -55,6 +55,7 @@ angular.module('filters', ['ngSanitize']);
 require('./filters/resource-icon');
 require('./filters/translate-from');
 require('./filters/build-version');
+require('./filters/header-logo');
 
 angular.module('services', []);
 require('./services/blob');
@@ -102,6 +103,7 @@ require('../../../webapp/src/js/services/translation-null-interpolation');
 require('../../../webapp/src/js/services/update-settings');
 require('../../../webapp/src/js/services/update-user');
 require('../../../webapp/src/js/services/user');
+require('../../../webapp/src/js/services/logo-images');
 
 var app = angular.module('adminApp', [
   'controllers',

@@ -25,7 +25,7 @@ angular.module('inboxServices').factory('LogoImages',
         if (!image) {
           return '';
         }
-        var content = '<img class="logo-full" title="Medic Mobile | {{version}}"  src="data:' + image.content_type + ';base64,' + image.data + '" />';
+        var content = '<img title="' + name + '"  src="data:' + image.content_type + ';base64,' + image.data + '" />';
         cache.htmlContent[name] = content;
       }
       return cache.htmlContent[name];
