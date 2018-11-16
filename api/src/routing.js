@@ -40,7 +40,7 @@ const _ = require('underscore'),
   appPrefix = pathPrefix + '_design/' + db.settings.ddoc + '/_rewrite/',
   serverUtils = require('./server-utils'),
   appcacheManifest = /\/manifest\.appcache$/,
-  uuid = require('uuid/v4'),
+  uuid = require('uuid'),
   compression = require('compression'),
   app = express();
 

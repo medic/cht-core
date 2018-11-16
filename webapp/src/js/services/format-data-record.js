@@ -1,6 +1,6 @@
 var _ = require('underscore'),
   messages = require('@shared-libs/message-utils'),
-  lineageFactory = require('lineage'),
+  lineageFactory = require('@shared-libs/lineage'),
   registrationUtils = require('@shared-libs/registration-utils');
 
 angular

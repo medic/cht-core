@@ -333,8 +333,8 @@ module.exports = function(grunt) {
             [
               `cd ${module}`,
               `rm -rf node_modules`,
-              `yarn install --production`,
-              `npm pack`, // Use npm until yarn pack is fixed: https://github.com/medic/medic-webapp/issues/4489
+              `npm ci --production`,
+              `npm pack`,
               `mv medic-*.tgz ../build/ddocs/medic/_attachments/`,
               `cd ..`,
             ].join(' && ')
@@ -412,17 +412,33 @@ module.exports = function(grunt) {
         cmd: 'node ./node_modules/bundlesize/index.js',
       },
       'setup-api-integration': {
-        cmd: 'cd api && yarn install',
+        cmd: 'cd api && npm ci',
       },
-      'yarn-install': {
+      'npm-ci-shared-libs': {
+        cmd: () => {
+          const fs = require('fs');
+          return fs
+            .readdirSync('shared-libs')
+            .filter(f => fs.lstatSync(`shared-libs/${f}`).isDirectory())
+            .map(
+              lib =>
+                `echo Installing shared library: ${lib} &&
+                  (cd shared-libs/${lib} &&
+                  [ "$(jq .scripts.test package.json)" = "null" ] || npm ci)`
+            )
+            .join(' && ');
+        }
+      },
+      'npm-ci-modules': {
         cmd: ['webapp', 'api', 'sentinel', 'admin']
-          .map(dir => `echo "[${dir}]" && cd ${dir} && yarn install && cd ..`)
+          .map(dir => `echo "[${dir}]" && cd ${dir} && npm ci && cd ..`)
           .join(' && '),
       },
       'start-webdriver': {
         cmd:
-          'yarn webdriver-manager update && ' +
-          'yarn webdriver-manager start > tests/logs/webdriver.log & ' +
+          'mkdir -p tests/logs && ' +
+          './node_modules/.bin/webdriver-manager update && ' +
+          './node_modules/.bin/webdriver-manager start > tests/logs/webdriver.log & ' +
           'until nc -z localhost 4444; do sleep 1; done',
       },
       'check-env-vars':
@@ -472,7 +488,7 @@ module.exports = function(grunt) {
               lib =>
                 `echo Testing shared library: ${lib} &&
                   (cd shared-libs/${lib} &&
-                  [ "$(jq .scripts.test package.json)" = "null" ] || (yarn install && yarn test))`
+                  [ "$(jq .scripts.test package.json)" = "null" ] || (npm ci && npm test))`
             )
             .join(' && ');
         },
@@ -826,7 +842,8 @@ module.exports = function(grunt) {
   // Build tasks
   grunt.registerTask('install-dependencies', 'Update and patch dependencies', [
     'exec:undo-patches',
-    'exec:yarn-install',
+    'exec:npm-ci-shared-libs',
+    'exec:npm-ci-modules',
     'copy:libraries-to-patch',
     'exec:apply-patches',
   ]);

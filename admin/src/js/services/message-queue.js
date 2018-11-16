@@ -1,6 +1,6 @@
-var lineageFactory = require('lineage'),
-    messageUtils = require('message-utils'),
-    registrationUtils = require('registration-utils');
+var lineageFactory = require('@shared-libs/lineage'),
+    messageUtils = require('@shared-libs/message-utils'),
+    registrationUtils = require('@shared-libs/registration-utils');
 
 angular.module('services').factory('MessageQueueUtils',
   function(

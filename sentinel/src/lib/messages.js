@@ -1,5 +1,5 @@
 var _ = require('underscore'),
-  phoneNumber = require('phone-number'),
+  phoneNumber = require('@shared-libs/phone-number'),
   utils = require('./utils'),
   config = require('../config');
 const messageUtils = require('@shared-libs/message-utils'),
@@ -106,8 +106,8 @@ module.exports = {
      * - outgoing_deny_list is a comma delimited list, deny when beginning of the recipient phone number matches any entry
      * - outgoing_deny_shorter_than is an integer, deny when the recipient phone number is shorter than
      * - outgoing_deny_with_alphas is a boolean, deny when true and the recipient phone number contains letters
-     * 
-     * When denied, set up a response with a denied state. The pending message process will 
+     *
+     * When denied, set up a response with a denied state. The pending message process will
      * ignore these messages and those reports will be left without an auto-reply. The
      * denied messages still show up in the messages export.
      *

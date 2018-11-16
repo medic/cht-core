@@ -1,0 +1,14 @@
+#!/bin/bash -eu
+
+npm install -g npm@^6.4.1
+npm -v
+
+if [ "${TEST_SUITE:-}" = "standard" ]; then
+	echo '[medic] skipping grunt'
+	exit 0
+fi
+
+npm ci
+npm list || true
+npm install -g grunt-cli --ignore-engines
+node --stack_size=10000 `which grunt` ci-build

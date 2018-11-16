@@ -1,5 +1,5 @@
 var _ = require('underscore'),
-    taskUtils = require('task-utils');
+    taskUtils = require('@shared-libs/task-utils');
 
 (function () {
 
@@ -14,7 +14,7 @@ var _ = require('underscore'),
       return taskUtils.setTaskState(task, state, details);
     };
   });
-  
+
   inboxServices.factory('MessageState', ['DB', 'SetTaskState',
     function(DB, SetTaskState) {
       return {
@@ -43,5 +43,5 @@ var _ = require('underscore'),
       };
     }
   ]);
-  
+
 }());

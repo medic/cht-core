@@ -3,7 +3,7 @@ const db = require('../db-pouch'),
   _ = require('underscore'),
   logger = require('../logger');
 
-const utils = require('bulk-docs-utils')({
+const utils = require('@shared-libs/bulk-docs-utils')({
   Promise: Promise,
   DB: db.medic,
 });

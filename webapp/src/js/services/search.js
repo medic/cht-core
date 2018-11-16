@@ -1,6 +1,6 @@
 var _ = require('underscore'),
     moment = require('moment'),
-    Search = require('search');
+    Search = require('@shared-libs/search');
 
 (function () {
 

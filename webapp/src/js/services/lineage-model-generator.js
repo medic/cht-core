@@ -1,4 +1,4 @@
-var lineageFactory = require('lineage');
+var lineageFactory = require('@shared-libs/lineage');
 
 /**
  * Hydrates the given doc by uuid and creates a model which holds

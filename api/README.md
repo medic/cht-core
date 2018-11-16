@@ -4,7 +4,7 @@ Node server to support medic-webapp.
 
 # Table of contents
 
-<!-- To update table of contents run: `yarn toc` -->
+<!-- To update table of contents run: `npm toc` -->
 
 <!-- START doctoc generated TOC please keep comment here to allow auto update -->
 <!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
@@ -57,7 +57,7 @@ Node server to support medic-webapp.
 
 ## Install
 
-Get node deps with `yarn install`.
+Get node deps with `npm ci`.
 
 ## Settings
 

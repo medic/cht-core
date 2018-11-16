@@ -3,7 +3,6 @@ sentinel/settings.js
 sentinel/settings-test.js
 sentinel/Procfile
 npm-debug.log
-yarn-error.log
 node_modules
 node_modules_backup
 /scripts/node_modules/

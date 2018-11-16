@@ -1,6 +1,6 @@
 var _ = require('underscore');
 var partialParse = require('partial-json-parser');
-var utilsFactory = require('bulk-docs-utils');
+var utilsFactory = require('@shared-libs/bulk-docs-utils');
 
 (function () {
 

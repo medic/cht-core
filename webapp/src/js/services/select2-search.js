@@ -1,6 +1,6 @@
 var _ = require('underscore'),
     format = require('../modules/format'),
-    phoneNumber = require('phone-number');
+    phoneNumber = require('@shared-libs/phone-number');
 
 angular.module('inboxServices').factory('Select2Search',
   function(

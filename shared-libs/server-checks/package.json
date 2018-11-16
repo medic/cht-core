@@ -1,5 +1,5 @@
 {
-  "name": "checks",
+  "name": "@shared-libs/server-checks",
   "version": "1.0.0",
   "description": "Server startup checks.",
   "main": "src/checks.js",
@@ -8,6 +8,7 @@
   },
   "author": "",
   "license": "Apache-2.0",
+  "private": true,
   "devDependencies": {
     "chai": "^4.1.2",
     "mocha": "^5.0.0",
