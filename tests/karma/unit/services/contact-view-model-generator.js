@@ -93,31 +93,13 @@ describe('ContactViewModelGenerator service', () => {
     inject(_ContactViewModelGenerator_ => service = _ContactViewModelGenerator_);
   });
 
+  // REVIEWER: I suspect this should be implemented using Q, but I can't work out how
   function waitForModelToLoad(model) {
-    return Promise.resolve()
-      .then(Q.nextTick)
-      .then(Q.nextTick)
-      .then(Q.nextTick)
-      .then(Q.nextTick)
-      .then(Q.nextTick)
-      .then(Q.nextTick)
-      .then(Q.nextTick)
-      .then(Q.nextTick)
-      .then(Q.nextTick)
-      .then(Q.nextTick)
-      .then(Q.nextTick)
-      .then(Q.nextTick)
-      .then(Q.nextTick)
-      .then(Q.nextTick)
-      .then(Q.nextTick)
-      .then(Q.nextTick)
-      .then(Q.nextTick)
-      .then(Q.nextTick)
-      .then(Q.nextTick)
-      .then(Q.nextTick)
-      .then(Q.nextTick)
-      .then(Q.nextTick)
-      .then(() => model);
+    return new Promise(resolve => {
+      setTimeout(() => {
+        resolve(model);
+      }, 1000); // TODO there's a better way of doing this than waiting 1s
+    });
   }
 
   describe('Place', () => {
