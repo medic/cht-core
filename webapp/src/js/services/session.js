@@ -19,8 +19,12 @@ var COOKIE_NAME = 'userCtx',
 
       'ngInject';
 
-      let userCtxCookieValue = ipCookie(COOKIE_NAME);
+      let userCtxCookieValue;
       var getUserCtx = function() {
+        if (!userCtxCookieValue) {
+          userCtxCookieValue = ipCookie(COOKIE_NAME);
+        }
+
         return userCtxCookieValue;
       };
 

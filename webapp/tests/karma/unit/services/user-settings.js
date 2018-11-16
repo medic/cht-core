@@ -14,7 +14,8 @@ describe('UserSettings service', function() {
       $provide.value('Session', { userCtx: userCtx });
       $provide.value('$q', Q); // bypass $q so we don't have to digest
       $provide.factory('DB', KarmaUtils.mockDB({
-        get: get
+        get,
+        info: () => {},
       }));
     });
     inject(function($injector) {
@@ -44,10 +45,22 @@ describe('UserSettings service', function() {
     return service()
       .then(function(actual) {
         chai.expect(actual.id).to.equal('j');
-        chai.expect(userCtx.callCount).to.equal(1);
+        chai.expect(userCtx.called).to.equal(true);
         chai.expect(get.callCount).to.equal(1);
         chai.expect(get.args[0][0]).to.equal('org.couchdb.user:jack');
       });
+  });
+
+  it('is cached', async function() {
+    userCtx.returns({ name: 'jack' });
+    get.returns(Promise.resolve({ id: 'j' }));
+    const first = await service();
+    chai.expect(first.id).to.equal('j');
+    chai.expect(get.callCount).to.equal(1);
+    
+    const second = await service();
+    chai.expect(second.id).to.equal('j');
+    chai.expect(get.callCount).to.equal(1);
   });
 
   it('gets from remote db', function() {
@@ -58,7 +71,7 @@ describe('UserSettings service', function() {
     return service()
       .then(function(actual) {
         chai.expect(actual.id).to.equal('j');
-        chai.expect(userCtx.callCount).to.equal(1);
+        chai.expect(userCtx.called).to.equal(true);
         chai.expect(get.callCount).to.equal(2);
         chai.expect(get.args[0][0]).to.equal('org.couchdb.user:jack');
         chai.expect(get.args[1][0]).to.equal('org.couchdb.user:jack');
@@ -75,7 +88,7 @@ describe('UserSettings service', function() {
         done(new Error('expected error to be thrown'));
       })
       .catch(function(err) {
-        chai.expect(userCtx.callCount).to.equal(1);
+        chai.expect(userCtx.called).to.equal(true);
         chai.expect(get.callCount).to.equal(2);
         chai.expect(get.args[0][0]).to.equal('org.couchdb.user:jack');
         chai.expect(get.args[1][0]).to.equal('org.couchdb.user:jack');
