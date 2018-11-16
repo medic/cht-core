@@ -51,16 +51,19 @@ describe('UserSettings service', function() {
       });
   });
 
-  it('is cached', async function() {
+  it('is cached', function() {
     userCtx.returns({ name: 'jack' });
     get.returns(Promise.resolve({ id: 'j' }));
-    const first = await service();
-    chai.expect(first.id).to.equal('j');
-    chai.expect(get.callCount).to.equal(1);
-    
-    const second = await service();
-    chai.expect(second.id).to.equal('j');
-    chai.expect(get.callCount).to.equal(1);
+    return service()
+      .then(first => {
+        chai.expect(first.id).to.equal('j');
+        chai.expect(get.callCount).to.equal(1);
+        return service();
+      })
+      .then(second => {
+        chai.expect(second.id).to.equal('j');
+        chai.expect(get.callCount).to.equal(1);
+      });
   });
 
   it('gets from remote db', function() {
