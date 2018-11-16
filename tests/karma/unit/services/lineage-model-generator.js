@@ -26,7 +26,7 @@ describe('LineageModelGenerator service', () => {
           done(new Error('expected error to be thrown'));
         })
         .catch(err => {
-          chai.expect(err.message).to.equal('Document not found');
+          chai.expect(err.message).to.equal('Document not found: a');
           chai.expect(err.code).to.equal(404);
           done();
         });
@@ -167,7 +167,7 @@ describe('LineageModelGenerator service', () => {
           done(new Error('expected error to be thrown'));
         })
         .catch(err => {
-          chai.expect(err.message).to.equal('Document not found');
+          chai.expect(err.message).to.equal('Document not found: a');
           chai.expect(err.code).to.equal(404);
           done();
         });
