@@ -19,8 +19,9 @@ var COOKIE_NAME = 'userCtx',
 
       'ngInject';
 
+      let userCtxCookieValue = ipCookie(COOKIE_NAME);
       var getUserCtx = function() {
-        return ipCookie(COOKIE_NAME);
+        return userCtxCookieValue;
       };
 
       var waitForAppCache = function(callback) {
@@ -34,6 +35,7 @@ var COOKIE_NAME = 'userCtx',
       var navigateToLogin = function() {
         $log.warn('User must reauthenticate');
         ipCookie.remove(COOKIE_NAME, { path: '/' });
+        userCtxCookieValue = undefined;
         waitForAppCache(function() {
           $window.location.href = '/' + Location.dbName + '/login' +
             '?redirect=' + encodeURIComponent($window.location.href);

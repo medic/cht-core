@@ -54,15 +54,40 @@
     function(
       $q,
       DB,
-      Session
+      Session,
+      Cache
     ) {
       'ngInject';
-      return function() {
-        var userCtx = Session.userCtx();
+
+      const userDocId = () => {
+        const userCtx = Session.userCtx();
         if (!userCtx) {
-          return $q.reject(new Error('UserCtx not found'));
+          return undefined;
         }
-        return getWithRemoteFallback(DB, 'org.couchdb.user:' + userCtx.name);
+        
+        return 'org.couchdb.user:' + userCtx.name;
+      };
+
+      const cache = Cache({
+        get: function(callback) {
+          getWithRemoteFallback(DB, userDocId())
+            .then(doc => callback(null, doc))
+            .catch(err => callback(err));
+        },
+        invalidate: function(doc) {
+          return doc._id === userDocId();
+        }
+      });
+    
+      return function() {
+        return $q(function (resolve, reject) {
+          cache(function (err, userDoc) {
+            if (err) {
+              return reject(err);
+            }
+            return resolve(userDoc);
+          });
+        });
       };
     }
   );
