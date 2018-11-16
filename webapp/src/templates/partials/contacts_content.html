@@ -70,17 +70,23 @@
         </div>
       </div>
 
-      <div ng-if="selected.children.persons.length || selected.children.deceased.length">
-        <div class="card children persons">
-          <div class="action-header cell">
-            <div ng-show="selected.doc.type !== 'clinic'" class="col-xs-12">
-              <h3 translate>People</h3>
-            </div>
-            <div ng-show="selected.doc.type === 'clinic'" class="col-xs-10">
-              <h3 translate>clinic.field.children</h3>
-            </div>
-            <div ng-show="selected.doc.type === 'clinic'" mm-auth="can_view_tasks" class="col-xs-2 tasks-title" translate>Tasks</div>
+      <div class="card children persons">
+        <div class="action-header cell">
+          <div ng-show="selected.doc.type !== 'clinic'" class="col-xs-12">
+            <h3 translate>People</h3>
           </div>
+          <div ng-show="selected.doc.type === 'clinic'" class="col-xs-10">
+            <h3 translate>clinic.field.children</h3>
+          </div>
+          <div ng-show="selected.doc.type === 'clinic'" mm-auth="can_view_tasks" class="col-xs-2 tasks-title" translate>Tasks</div>
+        </div>
+
+        <div class="loader" ng-if="selected.loadingChildren"></div>
+        <div ng-if="!selected.loadingChildren">
+          <div ng-if="!selected.children.persons.length && !selected.children.deceased.length" translate>
+            contact.no.children
+          </div>
+          <div ng-if="selected.children.persons.length || selected.children.deceased.length">
           <ul ng-if="selected.doc.type !== 'clinic'">
             <mm-content-row ng-repeat="child in selected.children.persons"
               id="child.doc._id"
@@ -175,23 +181,27 @@
               <a ng-click="setReportsTimeWindowMonths()" class="btn btn-link" ng-class="{selected: !reportsTimeWindowMonths}" translate>view.all</a>
             </span>
           </div>
-          <ul>
-            <mm-content-row ng-repeat="report in selected.reports | filter:filterReports as filteredReports track by report._id"
-              id="report._id"
-              route="'reports'"
-              icon="report | formIconName:forms"
-              date="report.reported_date"
-              heading="selected.doc.type === 'person' ? (report | summary:forms) : (report.fields.place_name ? report.fields.place_name : report.fields.patient_name)"
-              summary="selected.doc.type === 'person' ? '' : (report | summary:forms)"
-              show-status="true"
-              valid="report.valid"
-              verified="report.verified"
-            />
-          </ul>
-          <div class="row" ng-show="!filteredReports.length">
-            <div class="cell col">
-              <span ng-show="!reportsTimeWindowMonths" translate>reports.none</span>
-              <span ng-show="reportsTimeWindowMonths" translate translate-values="{MONTHS: reportsTimeWindowMonths}" translate-interpolation="messageformat">reports.none.n.months</span>
+
+          <div class="loader" ng-if="selected.loadingReports"></div>
+          <div ng-if="!selected.loadingReports">
+            <ul>
+              <mm-content-row ng-repeat="report in selected.reports | filter:filterReports as filteredReports track by report._id"
+                id="report._id"
+                route="'reports'"
+                icon="report | formIconName:forms"
+                date="report.reported_date"
+                heading="selected.doc.type === 'person' ? (report | summary:forms) : (report.fields.place_name ? report.fields.place_name : report.fields.patient_name)"
+                summary="selected.doc.type === 'person' ? '' : (report | summary:forms)"
+                show-status="true"
+                valid="report.valid"
+                verified="report.verified"
+              />
+            </ul>
+            <div class="row" ng-show="!filteredReports.length">
+              <div class="cell col">
+                <span ng-show="!reportsTimeWindowMonths" translate>reports.none</span>
+                <span ng-show="reportsTimeWindowMonths" translate translate-values="{MONTHS: reportsTimeWindowMonths}" translate-interpolation="messageformat">reports.none.n.months</span>
+              </div>
             </div>
           </div>
         </div>
