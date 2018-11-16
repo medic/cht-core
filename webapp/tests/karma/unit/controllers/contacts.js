@@ -31,7 +31,8 @@ describe('Contacts controller', () => {
     auth,
     deadListContains,
     deadList,
-    contactSummary;
+    contactSummary,
+    isDbAdmin;
 
   beforeEach(module('inboxApp'));
 
@@ -127,6 +128,7 @@ describe('Contacts controller', () => {
 
     settings = sinon.stub().resolves({});
     auth = sinon.stub().rejects();
+    isDbAdmin = sinon.stub();
 
     createController = () => {
       searchService = sinon.stub();
@@ -156,6 +158,7 @@ describe('Contacts controller', () => {
           isAdmin: () => {
             return isAdmin;
           },
+          isDbAdmin: isDbAdmin
         },
         Settings: settings,
         Simprints: { enabled: () => false },
@@ -1329,6 +1332,27 @@ describe('Contacts controller', () => {
                 });
               });
           });
+        });
+      });
+
+      describe('uhc disabled for DB admins', () => {
+        it('should disable UHC for DB admins', () => {
+          settings.resolves({ uhc: { contacts_default_sort: 'last_visited_date' }});
+          isDbAdmin.returns(true);
+
+          return createController()
+            .getSetupPromiseForTesting()
+            .then(() => {
+              assert.equal(auth.callCount, 0);
+              assert.equal(searchService.callCount, 1);
+              assert.deepEqual(searchService.args[0], [
+                'contacts',
+                { types: { selected: ['childType'] } },
+                { limit: 50 },
+                {},
+                undefined,
+              ]);
+            });
         });
       });
     });

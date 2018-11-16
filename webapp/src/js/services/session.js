@@ -99,6 +99,11 @@ var COOKIE_NAME = 'userCtx',
                hasRole(userCtx, 'national_admin'); // deprecated: kept for backwards compatibility: #4525
       };
 
+      var isDbAdmin = function(userCtx) {
+        userCtx = userCtx || getUserCtx();
+        return hasRole(userCtx, '_admin');
+      };
+
       return {
         logout: logout,
 
@@ -117,6 +122,10 @@ var COOKIE_NAME = 'userCtx',
          * @param {userCtx} (optional) Will get the current userCtx if not provided.
          */
         isAdmin: isAdmin,
+
+        // Returns true if the logged in user is a DB admin
+        // @param {userCtx} (optional) Will get the current userCtx if not provided.
+        isDbAdmin: isDbAdmin,
 
         /**
          * Returns true if the logged in user is online only
