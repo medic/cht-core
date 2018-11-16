@@ -69,14 +69,12 @@ angular.module('inboxServices').factory('ContactViewModelGenerator',
       model.isPrimaryContact = parent &&
         parent.contact &&
         (parent.contact._id === model.doc._id);
-      return model;
     };
 
     var setSchemaFields = function(model) {
       var schema = ContactSchema.get(model.doc.type);
       model.icon = schema.icon;
       model.label = schema.label;
-      return model;
     };
 
     var splitContactsByType = function(children) {
