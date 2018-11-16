@@ -93,7 +93,7 @@ describe('ContactViewModelGenerator service', () => {
     inject(_ContactViewModelGenerator_ => service = _ContactViewModelGenerator_);
   });
 
-  function waitForLoading(model) {
+  function waitForModelToLoad(model) {
     return new Promise(resolve => {
       setTimeout(() => {
         resolve(model);
@@ -108,7 +108,7 @@ describe('ContactViewModelGenerator service', () => {
       stubSearch(null, []);
       stubDbQueryChildren(null, doc._id, childrenArray, contactsArray);
       return service(doc._id)
-        .then(waitForLoading);
+        .then(waitForModelToLoad);
     };
 
     it('child places and persons get displayed separately', () => {
@@ -160,7 +160,7 @@ describe('ContactViewModelGenerator service', () => {
       stubSearch(null, []);
       stubDbQueryChildren(null, doc._id, [childPerson]);
       return service(doc._id)
-        .then(waitForLoading)
+        .then(waitForModelToLoad)
         .then(model => assert.equal(model.children.persons.length, 1));
     });
 
@@ -260,7 +260,7 @@ describe('ContactViewModelGenerator service', () => {
     it('sets the returned reports as selected', () => {
       stubSearch(null, [ { _id: 'ab' } ]);
       return runReportsTest([])
-        .then(waitForLoading)
+        .then(waitForModelToLoad)
         .then(model => {
           chai.expect(model.reports.length).to.equal(1);
           chai.expect(model.reports[0]._id).to.equal('ab');
@@ -272,7 +272,7 @@ describe('ContactViewModelGenerator service', () => {
       const report2 = { _id: 'cd', reported_date: 456 };
       stubSearch(null, [ report1, report2 ]);
       return runReportsTest([])
-        .then(waitForLoading)
+        .then(waitForModelToLoad)
         .then(model => {
           chai.expect(model.reports.length).to.equal(2);
           chai.expect(model.reports[0]._id).to.equal(report2._id);
@@ -283,7 +283,7 @@ describe('ContactViewModelGenerator service', () => {
     it('includes reports from children', () => {
       stubSearch(null, [ { _id: 'ab' },{ _id: 'cd' } ]);
       return runReportsTest([childPerson, childPerson2, deceasedChildPerson])
-        .then(waitForLoading)
+        .then(waitForModelToLoad)
         .then(model => {
           chai.expect(search.args[0][1].subjectIds).to.deep.equal([ doc._id, childPerson2._id, childPerson._id, deceasedChildPerson._id ]);
           chai.expect(search.callCount).to.equal(1);
@@ -299,7 +299,7 @@ describe('ContactViewModelGenerator service', () => {
       const report2 = { _id: 'cd', fields: { patient_id: childPerson.patient_id, patient_name: 'Jack' } };
       stubSearch(null, [ report1, report2 ]);
       return runReportsTest([childPerson, childPerson2])
-        .then(waitForLoading)
+        .then(waitForModelToLoad)
         .then(model => {
           chai.expect(search.callCount).to.equal(1);
           chai.expect(model.reports.length).to.equal(2);
@@ -317,7 +317,7 @@ describe('ContactViewModelGenerator service', () => {
       ];
       stubSearch(null, [ expectedReports[0], expectedReports[1] ]);
       return runReportsTest([childPerson, childPerson2])
-        .then(waitForLoading)
+        .then(waitForModelToLoad)
         .then(model => {
           chai.expect(search.callCount).to.equal(1);
           chai.expect(search.args[0][1].subjectIds).to.deep.equal([ doc._id, childPerson2._id, childPerson._id ]);
