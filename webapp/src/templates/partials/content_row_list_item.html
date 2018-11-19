@@ -41,7 +41,7 @@ Places of interest
         </div>
       </div>
       <div class="summary">
-        <p class="{{overdue ? 'overdue' : ''}}">{{summary}}</p>
+        <p class="{{overdue ? 'overdue' : ''}} {{hydrating ? 'ng-hide' : ''}}">{{summary}}</p>
         <div class="status {{(valid && verified === undefined) ? 'ng-hide' : ''}}">
           <span class="verification-badge {{(valid && verified) ? 'verified' : 'error'}}" ng-bind-html="statusIcon | safeHtml"/>
         </div>

@@ -90,11 +90,11 @@ var _ = require('underscore'),
       return function(type, filters, options, extensions, docIds) {
         $log.debug('Doing Search', type, filters, options, extensions);
 
-        options = options || {};
         extensions = extensions || {};
-        _.defaults(options, {
+        options = _.defaults(options || {}, {
           limit: 50,
-          skip: 0
+          skip: 0,
+          defer_data_records: false,
         });
 
         if (!options.force && debounce(type, filters, options)) {
@@ -110,30 +110,34 @@ var _ = require('underscore'),
                 }
               });
             }
-            var dataRecordsPromise = GetDataRecords(searchResults, options);
+            const dataRecordsPromise = GetDataRecords(searchResults, options);
 
             if (!extensions.displayLastVisitedDate) {
               return dataRecordsPromise;
             }
 
-            var lastVisitedDatePromise = getLastVisitedDates(searchResults, extensions.visitCountSettings);
-
-            return $q.all({
-              dataRecords: dataRecordsPromise,
-              lastVisitedDates: lastVisitedDatePromise
-            }).then(function(r) {
-              r.lastVisitedDates.forEach(function(dateResult) {
-                var relevantDataRecord = r.dataRecords.find(function(dataRecord) {
-                  return dataRecord._id === dateResult.key;
-                });
-
-                if (relevantDataRecord) {
-                  _.extend(relevantDataRecord, dateResult.value);
-                  relevantDataRecord.sortByLastVisitedDate = extensions.sortByLastVisitedDate;
-                }
-              });
-
-              return r.dataRecords;
+            const lastVisitedDatePromise = getLastVisitedDates(searchResults, extensions.visitCountSettings);
+            return dataRecordsPromise.then(function(dataRecords) {
+              return {
+                summaries: dataRecords.summaries,
+                hydrating: $q.all({
+                    dataRecords: dataRecords.hydrating,
+                    lastVisitedDates: lastVisitedDatePromise
+                  }).then(function(r) {
+                    r.lastVisitedDates.forEach(function(dateResult) {
+                      const relevantDataRecord = r.dataRecords.find(function(dataRecord) {
+                        return dataRecord._id === dateResult.key;
+                      });
+      
+                      if (relevantDataRecord) {
+                        _.extend(relevantDataRecord, dateResult.value);
+                        relevantDataRecord.sortByLastVisitedDate = extensions.sortByLastVisitedDate;
+                      }
+                    });
+      
+                    return r.dataRecords;
+                  }),
+              };
             });
           })
           .then(function(results) {

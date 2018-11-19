@@ -57,8 +57,10 @@ var _ = require('underscore'),
     };
 
     var _query = function(options) {
-      options = options || {};
-      options.limit = options.limit || 50;
+      options = _.defaults(options || {}, {
+        limit: 50,
+        defer_data_records: true,
+      });
 
       if (!options.silent) {
         $scope.loading = true;
@@ -102,8 +104,14 @@ var _ = require('underscore'),
         });
       }
 
+      const startTime = new Date().getTime();
       return Search('contacts', actualFilter, options, extensions, docIds)
-        .then(function(contacts) {
+        .then(function(dataRecords) {
+          const contacts = dataRecords.summaries;
+
+          $scope.moreItems = liveList.moreItems =
+            contacts.length >= options.limit;
+
           // If you have a home place make sure its at the top
           if (usersHomePlace) {
             var homeIndex = _.findIndex(contacts, function(contact) {
@@ -143,16 +151,10 @@ var _ = require('underscore'),
             }
           }
 
-          $scope.moreItems = liveList.moreItems =
-            contacts.length >= options.limit;
-
-          contacts.forEach(liveList.update);
-          liveList.refresh();
-          _initScroll();
+          draw(contacts);
           $scope.loading = false;
           $scope.appending = false;
-          $scope.hasContacts = liveList.count() > 0;
-          setActionBarData();
+          dataRecords.hydrating.then(draw);
         })
         .catch(function(err) {
           $scope.error = true;
@@ -264,6 +266,14 @@ var _ = require('underscore'),
           $scope.selected.error = true;
           $scope.setRightActionBar();
         });
+    };
+
+    const draw = (contacts) => {
+      contacts.forEach(liveList.update);
+      liveList.refresh();
+      _initScroll();
+      $scope.hasContacts = liveList.count() > 0;
+      setActionBarData();
     };
 
     var clearSelection = function() {

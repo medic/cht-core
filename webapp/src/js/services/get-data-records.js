@@ -36,31 +36,57 @@ angular.module('inboxServices').factory('GetDataRecords',
         });
     };
 
-    var getSummaries = function(ids) {
+    const getSummaries = function(ids, options) {
+      const setHydratingStatus = (objs, status) => objs.forEach(obj => obj.hydrating = status);
       return GetSummaries(ids)
-        .then(HydrateContactNames)
-        .then(GetSubjectSummaries);
+        .then(summaries => {
+          setHydratingStatus(summaries, true);
+          const hydrating = HydrateContactNames(summaries)
+            .then(GetSubjectSummaries)
+            .then(subjectSummaries => {
+              setHydratingStatus(subjectSummaries, undefined);
+              return subjectSummaries;
+            });
+
+          if (options.defer_data_records) {
+            return $q.resolve({ summaries, hydrating });
+          }
+
+          return hydrating;
+        });
     };
 
     return function(ids, options) {
+      options = _.defaults(options || {}, {
+        defer_data_records: false,
+        include_docs: false,
+      });
+      if (options.include_docs && options.defer_data_records) {
+        return $q.reject(new Error('Invalid GetDataRecords options defer_data_records=true and include_docs=true'));
+      }
       if (!ids) {
         return $q.resolve([]);
       }
-      var arrayGiven = _.isArray(ids);
-      if (!arrayGiven) {
+      var idsIsArray = _.isArray(ids);
+      if (!idsIsArray) {
         ids = [ ids ];
       }
       if (!ids.length) {
         return $q.resolve([]);
       }
-      var getFn = options && options.include_docs ? getDocs : getSummaries;
-      return getFn(ids)
-        .then(function(response) {
-          if (!arrayGiven) {
-            response = response.length ? response[0] : null;
-          }
-          return response;
-        });
+
+      const matchInputFormat = function(response) {
+        if (!idsIsArray) {
+          response = response.length ? response[0] : null;
+        }
+        return response;
+      };
+
+      if(options.include_docs) {
+        return getDocs(ids).then(matchInputFormat);
+      }
+
+      return getSummaries(ids, options).then(matchInputFormat);
     };
   }
 );
