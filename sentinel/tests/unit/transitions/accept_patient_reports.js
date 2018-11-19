@@ -343,7 +343,7 @@ describe('accept_patient_reports', () => {
       transition._handleReport(doc, config, (err, complete) => {
         complete.should.equal(true);
         putRegistration.callCount.should.equal(1);
-        registrations[0].scheduled_tasks[3].report_uuid.should.equal(doc._id);
+        registrations[0].scheduled_tasks[2].report_uuid.should.equal(doc._id);
         done();
       });
     });
