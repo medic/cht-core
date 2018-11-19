@@ -125,13 +125,6 @@ describe('Auth', () => {
         chai.expect(ctx.user).to.equal('steve');
         chai.expect(ctx.district).to.equal(district);
       });
-      return auth
-        .check({headers: []}, ['can_export_messages', 'can_export_contacts'], district)
-        .then(ctx => {
-          chai.expect(get.callCount).to.equal(2);
-          chai.expect(ctx.user).to.equal('steve');
-          chai.expect(ctx.district).to.equal(district);
-        });
     });
 
     it('checks all required roles', () => {
@@ -149,13 +142,6 @@ describe('Auth', () => {
         chai.expect(err.message).to.equal('Insufficient privileges');
         chai.expect(err.code).to.equal(403);
       });
-      return auth
-        .check({headers: []}, ['can_export_messages', 'can_export_server_logs'], district)
-        .catch(err => {
-          chai.expect(get.callCount).to.equal(1);
-          chai.expect(err.message).to.equal('Insufficient privileges');
-          chai.expect(err.code).to.equal(403);
-        });
     });
     
   });
