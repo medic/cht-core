@@ -55,7 +55,7 @@ describe('TranslationLoader service', function() {
       prawn: 'shrimp',
       bbq: 'barbie'
     };
-    DBGet.returns(Promise.resolve({ values: expected }));
+    DBGet.returns(Promise.resolve({ custom: expected }));
     return service(options).then(function(actual) {
       chai.expect(actual).to.deep.equal(expected);
       chai.expect(Settings.callCount).to.equal(0);
@@ -72,7 +72,7 @@ describe('TranslationLoader service', function() {
       bbq: 'grill'
     };
     Settings.returns(Promise.resolve(settings));
-    DBGet.returns(Promise.resolve({ values: expected }));
+    DBGet.returns(Promise.resolve({ custom: expected }));
     return service(options).then(function(actual) {
       chai.expect(actual).to.deep.equal(expected);
       chai.expect(Settings.callCount).to.equal(1);
@@ -89,7 +89,7 @@ describe('TranslationLoader service', function() {
       bbq: 'barbeque'
     };
     Settings.returns(Promise.resolve(settings));
-    DBGet.returns(Promise.resolve({ values: expected }));
+    DBGet.returns(Promise.resolve({ custom: expected }));
     return service(options).then(function(actual) {
       chai.expect(actual).to.deep.equal(expected);
       chai.expect(Settings.callCount).to.equal(1);
@@ -108,7 +108,7 @@ describe('TranslationLoader service', function() {
       prawn: '-prawn-',
       bbq: '-barbeque-'
     };
-    DBGet.returns(Promise.resolve({ values: doc }));
+    DBGet.returns(Promise.resolve({ custom: doc }));
     return service(options).then(function(actual) {
       chai.expect(actual).to.deep.equal(expected);
       chai.expect(Settings.callCount).to.equal(0);

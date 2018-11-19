@@ -36,9 +36,16 @@ var mergeTranslations = function(settings, docs) {
     setting.translations.forEach(function(translation) {
       var doc = _.findWhere(docs, { code: translation.locale });
       if (doc) {
-        if (!doc.values[setting.key] || translation.content !== translation.default) {
-          // only update the doc if it was changed from the default
-          doc.values[setting.key] = translation.content;
+        if (_.has(doc, 'values')) {
+          if (!doc.values[setting.key] || translation.content !== translation.default) {
+            // only update the doc if it was changed from the default
+            doc.values[setting.key] = translation.content;
+          }
+        } else { 
+          if (!doc.generic[setting.key] || translation.content !== translation.default) {
+            // only update the doc if it was changed from the default
+            doc.generic[setting.key] = translation.content;
+          }
         }
       }
     });

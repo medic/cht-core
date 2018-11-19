@@ -184,7 +184,7 @@ module.exports = function(grunt) {
           '**/node_modules/**',
           'sentinel/src/lib/pupil/**',
           'build/**',
-          'config/**',
+          'config/**'
         ],
       },
       all: [

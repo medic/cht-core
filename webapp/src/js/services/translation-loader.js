@@ -36,10 +36,11 @@ angular.module('inboxServices').factory('TranslationLoader',
           return DB().get(DOC_ID_PREFIX + locale);
         })
         .then(function(doc) {
+          let values = Object.assign(doc.generic || {}, doc.custom || {});
           if (testing) {
-            mapTesting(doc.values);
+            mapTesting(values);
           }
-          return doc.values;
+          return values;
         })
         .catch(function(err) {
           if (err.status !== 404) {
