@@ -3,7 +3,9 @@ angular.module('controllers').controller('MainCtrl',
     $log,
     $translate,
     $window,
-    Auth
+    Auth,
+    $scope,
+    Session
   ) {
     'ngInject';
     $translate.use('en');
@@ -11,5 +13,9 @@ angular.module('controllers').controller('MainCtrl',
       $log.error('Insufficient permissions. Must be either "admin" or "nationalAdmin".');
       $window.location.href = '../../../login';
     });
+
+    $scope.logout = function() {
+      Session.logout();
+    };
   }
 );
