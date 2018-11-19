@@ -65,7 +65,7 @@ const loadSettings = function() {
       settings.permissions = defaults.permissions;
     }
     if (JSON.stringify(settings) !== original) {
-      console.log('Updating settings with new defaults');
+      logger.info('Updating settings with new defaults');
       return settingsService.update(settings);
     }
   });
