@@ -260,6 +260,15 @@ describe('accept_patient_reports', () => {
           reported_date: '2017-02-05T09:23:07.853Z',
           scheduled_tasks: [
             {
+              due: '2019-02-26T18:45:00.000Z',
+              state: 'scheduled',
+              messages: [
+                {
+                  uuid: 'k5',
+                },
+              ],
+            },
+            {
               due: '2018-09-26T18:45:00.000Z',
               state: 'sent',
               messages: [
@@ -295,15 +304,6 @@ describe('accept_patient_reports', () => {
                 },
               ],
             },
-            {
-              due: '2019-02-26T18:45:00.000Z',
-              state: 'scheduled',
-              messages: [
-                {
-                  uuid: 'k5',
-                },
-              ],
-            },
           ],
         },
       ];
@@ -313,7 +313,7 @@ describe('accept_patient_reports', () => {
       transition._handleReport(doc, config, (err, complete) => {
         complete.should.equal(true);
         putRegistration.callCount.should.equal(1);
-        registrations[0].scheduled_tasks[2].report_uuid.should.equal(doc._id);
+        registrations[0].scheduled_tasks[3].report_uuid.should.equal(doc._id);
         done();
       });
     });
