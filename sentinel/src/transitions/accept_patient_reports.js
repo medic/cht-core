@@ -120,6 +120,7 @@ const findValidRegistration = (doc, registrations) => {
     for (var i = 0; i < registrations.length; i++) {
       var registration = registrations[i];
       if (registration.scheduled_tasks) {
+        registration.scheduled_tasks = _.sortBy(registration.scheduled_tasks, 'due');
         for (var j = 0; j < registration.scheduled_tasks.length; j++) {
           var task = registration.scheduled_tasks[j];
           if (['delivered', 'sent'].includes(task.state)) {
@@ -135,22 +136,15 @@ const findValidRegistration = (doc, registrations) => {
         }
       }
     } 
-
-    return null;
 };
 
 const addReportUUIDToRegistration = (doc, registrations, callback) => {
-  if (registrations.length) {
-    const validRegistration = findValidRegistration(doc, registrations);
-
+    const validRegistration = registrations.length && findValidRegistration(doc, registrations);
     if (validRegistration) {
       db.medic.put(validRegistration, callback);
-    } else {
-      callback();
-    } 
-  } else {
+    }
+    
     callback();
-  }
 };
 
 const silenceRegistrations = (config, doc, registrations, callback) => {
@@ -214,7 +208,7 @@ const handleReport = (doc, config, callback) => {
 
       addMessagesToDoc(doc, config, registrations);
       addRegistrationToDoc(doc, registrations);
-      addReportUUIDToRegistration(doc, registrations, function(err) {
+      addReportUUIDToRegistration(doc, registrations, err => {
         if (err) {
           return callback(err);
         }
