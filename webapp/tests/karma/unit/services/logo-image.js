@@ -63,7 +63,7 @@ describe('LogoImages service', function() {
         var actual = service.getImg('logo');
         var expected =
           '<span class="header-logo" title="logo">' +
-            '<img src="data:image/svg+xml;base64,TguMzJsMi4xNT" />' +
+            '<img class="logo-full" src="data:image/svg+xml;base64,TguMzJsMi4xNT" />' +
           '</span>';
         chai.expect(actual).to.equal(expected);
         done();
