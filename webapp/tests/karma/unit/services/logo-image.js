@@ -1,4 +1,4 @@
-describe('LogoImages service', function() {
+describe('BrandingImages service', function() {
 
   'use strict';
 
@@ -27,20 +27,20 @@ describe('LogoImages service', function() {
     KarmaUtils.restore(get, Changes, attr);
   });
 
-  describe('getImg function', function() {
+  describe('getLogo function', function() {
 
     it('returns empty string when given no name', function(done) {
       get.returns(Promise.resolve());
-      var service = injector.get('LogoImages');
-      var actual = service.getImg();
+      var service = injector.get('BrandingImages');
+      var actual = service.getLogo();
       chai.expect(actual).to.equal('');
       done();
     });
 
     it('returns empty string when no doc yet', function(done) {
       get.returns(Promise.resolve());
-      var service = injector.get('LogoImages');
-      var actual = service.getImg('logo');
+      var service = injector.get('BrandingImages');
+      var actual = service.getLogo('logo');
       chai.expect(actual).to.equal('<span class="header-logo" title="logo"></span>');
       done();
     });
@@ -58,9 +58,9 @@ describe('LogoImages service', function() {
         }
       };
       get.returns(Promise.resolve(resources));
-      var service = injector.get('LogoImages');
+      var service = injector.get('BrandingImages');
       setTimeout(function() {
-        var actual = service.getImg('logo');
+        var actual = service.getLogo('logo');
         var expected =
           '<span class="header-logo" title="logo">' +
             '<img class="logo-full" src="data:image/svg+xml;base64,TguMzJsMi4xNT" />' +

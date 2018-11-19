@@ -1,6 +1,6 @@
 var _ = require('underscore');
 
-angular.module('controllers').controller('HeaderLogoCtrl',
+angular.module('controllers').controller('BrandingCtrl',
   function(
     $log,
     $scope,
@@ -10,6 +10,8 @@ angular.module('controllers').controller('HeaderLogoCtrl',
 
     'ngInject';
     'use strict';
+
+    const BRANDING_ID = 'branding';
 
     $('#header-upload .choose').on('click', function(_ev) {
       _ev.preventDefault();
@@ -25,8 +27,11 @@ angular.module('controllers').controller('HeaderLogoCtrl',
     $scope.error = null;
     $scope.images = null;
     $scope.loading = true;
+    $scope.favicon = null;
 
     var renderResources = function() {
+      var fav = $scope.doc._attachments['favicon.ico'];
+      $scope.favicon = '<img src="data:' + fav.content_type + ';base64,' + fav.data + '" />';
       var allowed = ['logo'];
       Object.keys($scope.doc.resources)
       .filter(key => !allowed.includes(key))
@@ -44,7 +49,7 @@ angular.module('controllers').controller('HeaderLogoCtrl',
     };
 
     var getResourcesDoc = function() {
-      return DB().get('logo', { attachments: true });
+      return DB().get(BRANDING_ID, { attachments: true });
     };
 
     getResourcesDoc()
@@ -59,10 +64,10 @@ angular.module('controllers').controller('HeaderLogoCtrl',
     var addAttachment = function(file) {
       $scope.submitting = true;
       DB()
-        .putAttachment('logo', file.name, $scope.doc._rev, file, file.type)
+        .putAttachment(BRANDING_ID, 'favicon.ico', $scope.doc._rev, file, file.type)
         .then(getResourcesDoc)
         .then(function(doc) {
-          doc.resources[$scope.name] = file.name;
+          doc.resources[$scope.name] = 'favicon';
           $scope.doc = doc;
           return DB().put(doc);
         })

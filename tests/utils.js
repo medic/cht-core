@@ -159,7 +159,7 @@ const deleteAll = (except = []) => {
     'appcache',
     'migration-log',
     'resources',
-    'logo',
+    'branding',
     'settings',
     /^_design/
   );

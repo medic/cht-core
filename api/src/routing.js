@@ -95,7 +95,12 @@ if (process.argv.slice(2).includes('--allow-cors')) {
 
 app.use((req, res, next) => {
   req.id = uuid.v4();
-  next();
+  if (req.originalUrl === '/favicon.ico') {
+    const url = `${db.settings.protocol}//${db.settings.host}:${process.env.API_PORT || 5988}/${db.settings.db}`;
+    res.redirect(url + '/branding/favicon.ico');
+  } else {
+    next();
+  }
 });
 morgan.token('id', req => req.id);
 app.use(

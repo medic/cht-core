@@ -17,7 +17,7 @@ describe('Protractor utils', () => {
         {id: 'appcache', doc: {_id: 'appcache'}},
         {id: 'migration-log', doc: {_id: 'migration-log'}},
         {id: 'resources', doc: {_id: 'resources'}},
-        {id: 'logo', doc: {_id: 'logo'}},
+        {id: 'branding', doc: {_id: 'branding'}},
         {id: '001', doc: {type: 'translations'}},
         {id: '002', doc: {type: 'translations-backup'}},
         {id: '003', doc: {type: 'user-settings'}},

@@ -45,7 +45,7 @@
           <legend translate>upload.favicon</legend>
       
           <div class="form-group">
-            <label>Favicon</label> *
+            <label>Favicon</label> * <span ng-bind-html="favicon"></span>
             <div>
               <button type="button" class="btn btn-default choose" ng-disabled="uploading">
                 <i class="fa fa-arrow-up"></i>
@@ -64,19 +64,6 @@
             <p class="error">{{error}}</p>
           </div>
         </form>
-    </div>
-    <div class="col-sm-7">
-      <div>
-        <legend>Favicon</legend>
-        <div class="loader" ng-show="loading"></div>
-        <div class="navbar-inverse">
-          <!-- <ul>
-            <li ng-repeat="image in images" class="row">
-              <div class="col-sm-1" ng-bind-html="image.title | headerLogo"></div>
-            </li>
-          </ul> -->
-        </div>
-      </div>
     </div>
   </div>
     

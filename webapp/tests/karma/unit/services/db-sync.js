@@ -272,8 +272,8 @@ describe('DBSync service', () => {
       expect(actual).to.equal(true);
     });
 
-    it('does not replicate the logo doc', () => {
-      const actual = filterFunction({ _id: 'logo' });
+    it('does not replicate the branding doc', () => {
+      const actual = filterFunction({ _id: 'branding' });
       expect(actual).to.equal(false);
     });
   });

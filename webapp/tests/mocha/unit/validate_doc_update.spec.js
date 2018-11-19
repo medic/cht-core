@@ -101,7 +101,7 @@ describe('validate doc update', () => {
   });
 
   it('only db and national admins are allowed to change header logo', done => {
-    const doc = { _id: 'logo' };
+    const doc = { _id: 'branding' };
     assert.isOk(allowedOnServer(userCtx({roles: [ '_admin' ]}), doc));
     assert.isOk(allowedOnServer(userCtx({roles: [ 'national_admin' ]}), doc));
     assert.deepEqual(allowedOnServer(userCtx({roles: [ ]}), doc), disallowed('You are not authorized to edit admin only docs'));

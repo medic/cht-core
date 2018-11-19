@@ -43,7 +43,7 @@ require('./controllers/translation-languages');
 require('./controllers/upgrade');
 require('./controllers/upgrade-confirm');
 require('./controllers/users');
-require('./controllers/images-header-logo');
+require('./controllers/branding');
 
 angular.module('directives', ['ngSanitize']);
 require('./directives/modal');
@@ -103,7 +103,7 @@ require('../../../webapp/src/js/services/translation-null-interpolation');
 require('../../../webapp/src/js/services/update-settings');
 require('../../../webapp/src/js/services/update-user');
 require('../../../webapp/src/js/services/user');
-require('../../../webapp/src/js/services/logo-images');
+require('../../../webapp/src/js/services/branding-images');
 
 var app = angular.module('adminApp', [
   'controllers',
@@ -269,12 +269,12 @@ app.config(function(
         }
       }
     })
-    .state('images.header', {
-      url: '/header',
+    .state('images.branding', {
+      url: '/branding',
       views: {
         tab: {
-          controller: 'HeaderLogoCtrl',
-          templateUrl: 'templates/images_header.html'
+          controller: 'BrandingCtrl',
+          templateUrl: 'templates/images_branding.html'
         }
       }
     })

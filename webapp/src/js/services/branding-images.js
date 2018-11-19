@@ -1,4 +1,4 @@
-angular.module('inboxServices').factory('LogoImages',
+angular.module('inboxServices').factory('BrandingImages',
   function(
     $log,
     Changes,
@@ -7,6 +7,8 @@ angular.module('inboxServices').factory('LogoImages',
 
     'use strict';
     'ngInject';
+
+    const BRANDING_ID = 'branding';
 
     var cache = {
       doc: null,
@@ -46,7 +48,7 @@ angular.module('inboxServices').factory('LogoImages',
 
     var updateResources = function() {
       return DB()
-        .get('logo', { attachments: true })
+        .get(BRANDING_ID, { attachments: true })
         .then(function(res) {
           cache = {
             doc: res,
@@ -62,9 +64,9 @@ angular.module('inboxServices').factory('LogoImages',
     };
 
     Changes({
-      key: 'LogoImages',
+      key: 'BrandingImages',
       filter: function(change) {
-        return change.id === 'logo';
+        return change.id === 'branding';
       },
       callback: updateResources
     });
@@ -72,7 +74,7 @@ angular.module('inboxServices').factory('LogoImages',
     var init = updateResources();
 
     return {
-      getImg: function(name) {
+      getLogo: function(name) {
         if (!name) {
           return '';
         }

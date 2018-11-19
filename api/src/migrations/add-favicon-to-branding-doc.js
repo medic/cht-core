@@ -2,17 +2,18 @@ const fs = require('fs'),
       path = require('path'),
       {promisify} = require('util'),
       asyncEach = require('async/each'),
-      db = require('../db-nano');
+      db = require('../db-nano'),
+      RESOURCE_ID = 'branding';
 
 const resources = [
-  { name: 'logo', file: 'medic-logo-light-full.svg', type: 'image/svg+xml' }
+  { name: 'favicon', file: 'favicon.ico', type: 'image/x-icon' }
 ];
 
 module.exports = {
-  name: 'add-header-image-to-logo-doc',
+  name: 'add-favicon-to-branding-doc',
   created: new Date(2017, 10, 5, 15, 0, 0, 0),
   run: promisify(callback => {
-    db.medic.get('logo', (err, doc) => {
+    db.medic.get(RESOURCE_ID, (err, doc) => {
       if (err) {
         return callback(err);
       }
@@ -26,7 +27,7 @@ module.exports = {
             // don't overwrite the existing attachment
             return callback();
           }
-          const source = path.join(__dirname, '..', 'resources/logo', resource.file);
+          const source = path.join(__dirname, '..', 'resources/ico', resource.file);
           fs.readFile(source, (err, data) => {
             if (err) {
               return callback(err);
