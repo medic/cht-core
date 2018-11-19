@@ -16,12 +16,21 @@ angular.module('controllers').controller('HeaderLogoCtrl',
       $('#header-upload .uploader').click();
     });
 
+    $('#favicon-upload .choose').on('click', function(_ev) {
+      _ev.preventDefault();
+      $('#favicon-upload .uploader').click();
+    });
+
     $scope.name = 'logo';
     $scope.error = null;
     $scope.images = null;
     $scope.loading = true;
 
     var renderResources = function() {
+      var allowed = ['logo'];
+      Object.keys($scope.doc.resources)
+      .filter(key => !allowed.includes(key))
+      .forEach(key => delete $scope.doc.resources[key]);
       $scope.images = _.map(_.pairs($scope.doc.resources), function(pair) {
         var image = $scope.doc._attachments[pair[1]];
         return {
@@ -80,6 +89,33 @@ angular.module('controllers').controller('HeaderLogoCtrl',
         $scope.error = $translate.instant('field is required', {
           field: $translate.instant('image')
         });
+      }
+      // File must be less than 100KB
+      if (files[0].size > 100000) {
+        $scope.error = 'File must be less than 100KB';
+      }
+      if ($scope.error) {
+        return;
+      }
+      addAttachment(files[0]);
+    };
+
+    $scope.submitFav = function() {
+      $scope.error = null;
+      if (!$scope.doc) {
+        $scope.error = $translate.instant('Error saving settings');
+        return;
+      }
+      $scope.name = 'favicon';
+      var files = $('#favicon-upload .uploader')[0].files;
+      if (!files || files.length === 0) {
+        $scope.error = $translate.instant('field is required', {
+          field: $translate.instant('image')
+        });
+      }
+      // File must be less than 100KB
+      if (files[0].size > 10000) {
+        $scope.error = 'File must be less than 10KB';
       }
       if ($scope.error) {
         return;

@@ -1,29 +1,30 @@
-<div class="col-sm-12">
-
-    <form id="header-upload">
-      <legend translate>upload.header.logo</legend>
-  
-      <div class="form-group">
-        <label translate>Logo</label> *
-        <div>
-          <button type="button" class="btn btn-default choose" ng-disabled="uploading">
-            <i class="fa fa-arrow-up"></i>
-            <span translate>Choose file</span>
-          </button>
-          <small class="clearfix text-muted"><em>For better experience upload a GrayScale image with transparent background</em></small>
-          <div class="loader" ng-show="uploading"></div>
-          <div class="hide">
-            <input class="uploader" type="file"  accept="image/*">
+<div class="row">
+  <div class="col-sm-4">
+      <form id="header-upload">
+        <legend translate>upload.header.logo</legend>
+    
+        <div class="form-group">
+          <label translate>Logo</label> *
+          <div>
+            <button type="button" class="btn btn-default choose" ng-disabled="uploading">
+              <i class="fa fa-arrow-up"></i>
+              <span translate>Choose file</span>
+            </button>
+            <div class="loader" ng-show="uploading"></div>
+            <div class="hide">
+              <input class="uploader" type="file"  accept="image/*">
+            </div>
           </div>
         </div>
-      </div>
-  
-      <div class="form-actions">
-        <button type="submit" class="btn btn-primary" ng-click="submit()" ng-disabled="submitting" translate>Submit</button>
-        <div class="loader inline small" ng-show="submitting"></div>
-        <p class="error">{{error}}</p>
-      </div>
-    </form>
+    
+        <div class="form-actions">
+          <button type="submit" class="btn btn-primary" ng-click="submit()" ng-disabled="submitting" translate>Submit</button>
+          <div class="loader inline small" ng-show="submitting"></div>
+          <p class="error">{{error}}</p>
+        </div>
+      </form>
+  </div>
+  <div class="col-sm-7">
     <div>
       <legend>Logo</legend>
       <div class="loader" ng-show="loading"></div>
@@ -35,6 +36,47 @@
         </ul>
       </div>
     </div>
-  
   </div>
-  
+</div>
+
+<div class="row">
+    <div class="col-sm-4">
+        <form id="favicon-upload">
+          <legend translate>upload.favicon</legend>
+      
+          <div class="form-group">
+            <label>Favicon</label> *
+            <div>
+              <button type="button" class="btn btn-default choose" ng-disabled="uploading">
+                <i class="fa fa-arrow-up"></i>
+                <span translate>Choose file</span>
+              </button>
+              <div class="loader" ng-show="uploading"></div>
+              <div class="hide">
+                <input class="uploader" type="file"  accept="image/*">
+              </div>
+            </div>
+          </div>
+      
+          <div class="form-actions">
+            <button type="submit" class="btn btn-primary" ng-click="submitFav()" ng-disabled="submitting" translate>Submit</button>
+            <div class="loader inline small" ng-show="submitting"></div>
+            <p class="error">{{error}}</p>
+          </div>
+        </form>
+    </div>
+    <div class="col-sm-7">
+      <div>
+        <legend>Favicon</legend>
+        <div class="loader" ng-show="loading"></div>
+        <div class="navbar-inverse">
+          <!-- <ul>
+            <li ng-repeat="image in images" class="row">
+              <div class="col-sm-1" ng-bind-html="image.title | headerLogo"></div>
+            </li>
+          </ul> -->
+        </div>
+      </div>
+    </div>
+  </div>
+    
