@@ -10,6 +10,7 @@
             <i class="fa fa-arrow-up"></i>
             <span translate>Choose file</span>
           </button>
+          <small class="clearfix text-muted"><em>For better experience upload a GrayScale image with transparent background</em></small>
           <div class="loader" ng-show="uploading"></div>
           <div class="hide">
             <input class="uploader" type="file"  accept="image/*">
@@ -26,11 +27,13 @@
     <div>
       <legend>Logo</legend>
       <div class="loader" ng-show="loading"></div>
-      <ul>
-        <li ng-repeat="image in images" class="row">
-          <div class="col-sm-1" ng-bind-html="image.title | headerLogo"></div>
-        </li>
-      </ul>
+      <div class="navbar-inverse">
+        <ul>
+          <li ng-repeat="image in images" class="row">
+            <div class="col-sm-1" ng-bind-html="image.title | headerLogo"></div>
+          </li>
+        </ul>
+      </div>
     </div>
   
   </div>
