@@ -1,6 +1,7 @@
 const sinon = require('sinon'),
       chai = require('chai'),
       db = require('../../../src/db-nano'),
+      dbPouch = require('../../../src/db-pouch'),
       migration = require('../../../src/migrations/separate-audit-db.js'),
       ERR_404 = {statusCode: 404};
 
@@ -25,16 +26,16 @@ let originalDbSettings;
 describe('separate-audit-db migration', () => {
 
   beforeEach(() => {
-    originalDbSettings = db.settings;
+    originalDbSettings = dbPouch.settings;
   });
 
   afterEach(() => {
     sinon.restore();
-    db.settings = originalDbSettings;
+    dbPouch.settings = originalDbSettings;
   });
 
   it('creates db, creates view and migrates audit documents', done => {
-    db.settings = {
+    dbPouch.settings = {
       db: 'medic',
       auditDb: 'medic-audit'
     };

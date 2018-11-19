@@ -1,12 +1,15 @@
 var _ = require('underscore'),
     {promisify} = require('util'),
     db = require('../db-nano'),
+    dbPouch = require('../db-pouch'),
     logger = require('../logger'),
     async = require('async');
 
 var DDOC_NAME = '_design/medic';
 var DDOC = {'views': {'audit_records_by_doc': {'map': 'function (doc) {if (doc.type === \'audit_record\') {emit([doc.record_id], 1);}}'}}};
 var BATCH_SIZE = 100;
+
+const getAuditDbName = () => dbPouch.settings.db + '-audit';
 
 var ensureDbExists = function(dbName, callback) {
   db.db.get(dbName, function(err) {
@@ -49,7 +52,7 @@ var batchMoveAuditDocs = function(callback) {
     var auditDocIds = doclist.rows.map(function(row) { return row.id;});
 
     async.parallel([
-      _.partial(db.db.replicate, db.settings.db, db.settings.auditDb, {doc_ids: auditDocIds}),
+      _.partial(db.db.replicate, dbPouch.settings.db, getAuditDbName(), {doc_ids: auditDocIds}),
       _.partial(db.medic.fetchRevs, {keys: auditDocIds})
     ], function(err, results) {
       if (err) {
@@ -78,8 +81,8 @@ module.exports = {
   created: new Date(2016, 2, 18),
   run: promisify(function(callback) {
     async.series([
-      _.partial(ensureDbExists, db.settings.auditDb),
-      _.partial(ensureViewDdocExists, db.settings.auditDb)
+      _.partial(ensureDbExists, getAuditDbName()),
+      _.partial(ensureViewDdocExists, getAuditDbName())
       ], function(err) {
         if (err) {
           return logger.info(`An error occurred creating audit db: ${err}`);

@@ -1,4 +1,6 @@
-const db = require('../db-nano'),
+const db = require('../db-pouch'),
+      request = require('request'),
+      url = require('url'),
       {promisify} = require('util');
 
 const addMemberToDb = (callback) => {
@@ -6,14 +8,20 @@ const addMemberToDb = (callback) => {
     admins: { names:[], roles: ['audit-writer'] },
     members: { names: [], roles:['audit-writer'] }
   };
-  db.request(
-    {
-      db: db.settings.auditDb,
-      path: '/_security',
-      method: 'put',
-      body: securityObject
+  request.put({
+    url: url.format({
+      protocol: db.settings.protocol,
+      hostname: db.settings.host,
+      port: db.settings.port,
+      pathname: `${db.settings.db}-audit/_security`,
+    }),
+    auth: {
+      user: db.settings.username,
+      pass: db.settings.password
     },
-    callback);
+    json: true,
+    body: securityObject
+  }, callback);
 };
 
 module.exports = {

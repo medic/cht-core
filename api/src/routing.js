@@ -3,7 +3,7 @@ const _ = require('underscore'),
   express = require('express'),
   morgan = require('morgan'),
   helmet = require('helmet'),
-  db = require('./db-nano'),
+  db = require('./db-pouch'),
   path = require('path'),
   auth = require('./auth'),
   logger = require('./logger'),
@@ -272,7 +272,7 @@ app.postJson('/api/sms', function(req, res) {
 });
 
 app.all('/api/v1/export/:type/:form?', exportData.routeV1);
-app.all(`/${db.getPath()}/export/:type/:form?`, exportData.routeV1);
+app.all(`/${appPrefix}export/:type/:form?`, exportData.routeV1);
 app.get('/api/v2/export/:type', exportData.routeV2);
 app.postJson('/api/v2/export/:type', exportData.routeV2);
 

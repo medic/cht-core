@@ -1,7 +1,9 @@
 const PouchDB = require('pouchdb-core'),
-  logger = require('./logger');
+  logger = require('./logger'),
+  url = require('url');
 PouchDB.plugin(require('pouchdb-adapter-http'));
 PouchDB.plugin(require('pouchdb-mapreduce'));
+PouchDB.plugin(require('pouchdb-find'));
 
 const { COUCH_URL, UNIT_TEST_ENV } = process.env;
 
@@ -52,6 +54,21 @@ if (UNIT_TEST_ENV) {
 
   const usersDbUrl = module.exports.serverUrl + '/_users';
   module.exports.users = new PouchDB(usersDbUrl);
+
+  const parsedUrl = url.parse(couchUrl);
+  module.exports.settings = {
+    protocol: parsedUrl.protocol,
+    port: parsedUrl.port,
+    host: parsedUrl.hostname,
+    db: parsedUrl.path.replace('/', ''),
+    ddoc: 'medic',
+  };
+  if (parsedUrl.auth) {
+    var index = parsedUrl.auth.indexOf(':');
+    module.exports.settings.username = parsedUrl.auth.substring(0, index);
+    module.exports.settings.password = parsedUrl.auth.substring(index + 1);
+  }
+
 } else {
   logger.warn(
     'Please define a COUCH_URL in your environment e.g. \n' +

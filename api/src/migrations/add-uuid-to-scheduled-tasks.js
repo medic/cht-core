@@ -18,7 +18,9 @@ var updateMessage = function(message) {
 
 var updateTask = function(task) {
   var updated = false;
-  if (moment().isBefore(moment(task.due))) {
+  if (task.messages &&
+      task.messages.length &&
+      moment().isBefore(moment(task.due))) {
     task.messages.forEach(function(task) {
       if (updateMessage(task)) {
         updated = true;
@@ -62,15 +64,7 @@ var runBatch = function(skip, callback) {
     if (err) {
       return callback(err);
     }
-    logger.info(
-      `        Processing
-        ${skip} 
-         to  
-        (${skip + BATCH_SIZE}) 
-         docs of  
-        ${result.total_rows} 
-         total`
-    );
+    logger.info(`Processing ${skip} to (${skip + BATCH_SIZE}) docs of ${result.total_rows} total`);
     var toSave = result.rows.filter(update).map(function(row) {
       return row.doc;
     });

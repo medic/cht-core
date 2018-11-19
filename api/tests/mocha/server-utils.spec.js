@@ -1,6 +1,6 @@
 const sinon = require('sinon'),
       chai = require('chai'),
-      db = require('../../src/db-nano'),
+      db = require('../../src/db-pouch'),
       serverUtils = require('../../src/server-utils'),
       req = {
         url: '',

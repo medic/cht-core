@@ -1,6 +1,6 @@
 const controller = require('../../../src/controllers/login'),
       chai = require('chai'),
-      db = require('../../../src/db-nano'),
+      db = require('../../../src/db-pouch'),
       auth = require('../../../src/auth'),
       sinon = require('sinon'),
       config = require('../../../src/config'),

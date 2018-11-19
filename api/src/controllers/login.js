@@ -4,7 +4,7 @@ const fs = require('fs'),
   request = require('request'),
   _ = require('underscore'),
   auth = require('../auth'),
-  db = require('../db-nano'),
+  db = require('../db-pouch'),
   config = require('../config'),
   SESSION_COOKIE_RE = /AuthSession\=([^;]*);/,
   ONE_YEAR = 31536000000,
@@ -18,13 +18,7 @@ _.templateSettings = {
 };
 
 const safePath = requested => {
-  const appPrefix = path.join(
-    '/',
-    db.settings.db,
-    '_design',
-    db.settings.ddoc,
-    '_rewrite'
-  );
+  const appPrefix = path.join('/', db.settings.db, '_design', db.settings.ddoc, '_rewrite');
   const dirPrefix = path.join(appPrefix, '/');
 
   if (!requested) {
