@@ -67,7 +67,7 @@ describe('UserSettings service', function() {
     userCtx.returns({ name: 'jack' });
     get.returns(Promise.resolve({ id: 'j' }));
     const isExpected = doc => {
-      chai.expect(second.id).to.equal('j');
+      chai.expect(doc.id).to.equal('j');
       chai.expect(get.callCount).to.equal(1);
     };
 
