@@ -13,10 +13,7 @@ describe('UserSettings service', function() {
     module(function ($provide) {
       $provide.value('Session', { userCtx: userCtx });
       $provide.value('$q', Q); // bypass $q so we don't have to digest
-      $provide.factory('DB', KarmaUtils.mockDB({
-        get,
-        info: () => {},
-      }));
+      $provide.factory('DB', KarmaUtils.mockDB({ get }));
     });
     inject(function($injector) {
       service = $injector.get('UserSettings');
@@ -45,7 +42,7 @@ describe('UserSettings service', function() {
     return service()
       .then(function(actual) {
         chai.expect(actual.id).to.equal('j');
-        chai.expect(userCtx.called).to.equal(true);
+        chai.expect(userCtx.callCount).to.equal(1);
         chai.expect(get.callCount).to.equal(1);
         chai.expect(get.args[0][0]).to.equal('org.couchdb.user:jack');
       });
@@ -66,6 +63,20 @@ describe('UserSettings service', function() {
       });
   });
 
+  it('multiple concurrent calls result in single database lookup', function() {
+    userCtx.returns({ name: 'jack' });
+    get.returns(Promise.resolve({ id: 'j' }));
+    const isExpected = doc => {
+      chai.expect(second.id).to.equal('j');
+      chai.expect(get.callCount).to.equal(1);
+    };
+
+    const firstPromise = service();
+    service();
+    service().then(isExpected);
+    firstPromise.then(isExpected);
+  });
+
   it('gets from remote db', function() {
     userCtx.returns({ name: 'jack' });
     get
@@ -74,7 +85,7 @@ describe('UserSettings service', function() {
     return service()
       .then(function(actual) {
         chai.expect(actual.id).to.equal('j');
-        chai.expect(userCtx.called).to.equal(true);
+        chai.expect(userCtx.callCount).to.equal(1);
         chai.expect(get.callCount).to.equal(2);
         chai.expect(get.args[0][0]).to.equal('org.couchdb.user:jack');
         chai.expect(get.args[1][0]).to.equal('org.couchdb.user:jack');
@@ -91,7 +102,7 @@ describe('UserSettings service', function() {
         done(new Error('expected error to be thrown'));
       })
       .catch(function(err) {
-        chai.expect(userCtx.called).to.equal(true);
+        chai.expect(userCtx.callCount).to.equal(1);
         chai.expect(get.callCount).to.equal(2);
         chai.expect(get.args[0][0]).to.equal('org.couchdb.user:jack');
         chai.expect(get.args[1][0]).to.equal('org.couchdb.user:jack');

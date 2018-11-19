@@ -54,8 +54,7 @@
     function(
       $q,
       DB,
-      Session,
-      Cache
+      Session
     ) {
       'ngInject';
 
@@ -66,35 +65,19 @@
         }
       };
 
-      const cache = Cache({
-        get: function(callback) {
-          const docId = userDocId();
-          if (!docId) {
-            return callback(new Error('UserCtx not found'));
-          }
-          getWithRemoteFallback(DB, userDocId())
-            .then(doc => callback(null, doc))
-            .catch(err => callback(err));
-        },
-        invalidate: function(doc) {
-          return doc._id === userDocId();
-        }
-      });
-    
+      let userDoc;
       return function() {
-        const deferred = $q.defer();
-        if (!userDocId()) {
-          deferred.reject(new Error('UserCtx not found'));
-        } else {
-          cache(function (err, userDoc) {
-            if (err) {
-              return deferred.reject(err);
-            }
-            deferred.resolve(userDoc);
-          });
+        if (userDoc) {
+          return userDoc;
         }
-        
-        return deferred.promise;
+
+        const docId = userDocId();
+        if (!docId) {
+          return $q.reject(new Error('UserCtx not found'));
+        }
+      
+        userDoc = getWithRemoteFallback(DB, docId);
+        return userDoc;
       };
     }
   );
