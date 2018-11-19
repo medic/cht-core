@@ -98,7 +98,7 @@ curl -X PUT --data '"4294967296"' http://admin:pass@localhost:5986/_config/httpd
 ```shell
 git clone https://github.com/medic/medic-webapp
 cd medic-webapp
-./npmci.sh
+npm ci
 ```
 
 ### Deploy all the apps
@@ -114,6 +114,8 @@ Then do an initial deploy of the webapp:
 
 ```shell
 grunt dev-webapp
+# or just
+grunt
 ```
 
 Once this is complete you can close it, and from now on you can just run:
