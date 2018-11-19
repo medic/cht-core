@@ -141,7 +141,7 @@ const findValidRegistration = (doc, registrations) => {
 const addReportUUIDToRegistration = (doc, registrations, callback) => {
     const validRegistration = registrations.length && findValidRegistration(doc, registrations);
     if (validRegistration) {
-      db.medic.put(validRegistration, callback);
+      return db.medic.put(validRegistration, callback);
     }
     
     callback();
