@@ -5,7 +5,7 @@ angular.module('controllers').controller('MainCtrl',
     $window,
     Auth,
     $scope,
-    Modal
+    Session
   ) {
     'ngInject';
     $translate.use('en');
@@ -15,11 +15,7 @@ angular.module('controllers').controller('MainCtrl',
     });
 
     $scope.logout = function() {
-      Modal({
-        templateUrl: 'templates/logout_confirm.html',
-        controller: 'LogoutConfirmCtrl',
-        singleton: true,
-      });
+      Session.logout();
     };
   }
 );
