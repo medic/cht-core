@@ -110,19 +110,12 @@ COUCH_URL=http://admin:pass@localhost:5984/medic
 COUCH_NODE_NAME=couchdb@localhost
 ```
 
-Then install webapp, admin, api and sentinel dependencies
-
-```shell
-cd webapp && npm ci && cd ..
-cd admin && npm ci && cd ..
-cd api && npm ci && cd ..
-cd sentinel && npm ci && cd ..
-```
-
 Then do an initial deploy of the webapp:
 
 ```shell
 grunt dev-webapp
+# or just
+grunt
 ```
 
 Once this is complete you can close it, and from now on you can just run:
