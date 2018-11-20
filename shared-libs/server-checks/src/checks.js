@@ -73,7 +73,7 @@ const check = (serverUrl) => {
     .then(nodeVersionCheck)
     .then(envVarsCheck)
     .then(couchDbNoAdminPartyModeCheck)
-    .then(couchDbVersionCheck(serverUrl));
+    .then(() => couchDbVersionCheck(serverUrl));
 };
 
 module.exports = {
