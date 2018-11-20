@@ -537,7 +537,7 @@ describe('routing', () => {
         expect(results[2].statusCode).toEqual(403);
         expect(results[2].responseBody.error).toEqual('forbidden');
 
-        expect(results[3].ok).toEqual(true);
+        expect(results[3].statusCode).toEqual(200);
       });
     });
 

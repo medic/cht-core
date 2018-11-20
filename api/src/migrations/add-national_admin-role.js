@@ -3,7 +3,7 @@ const _ = require('underscore'),
   url = require('url'),
   series = require('async/series'),
   { promisify } = require('util'),
-  db = require('../db-pouch'),
+  environment = require('../environment'),
   logger = require('../logger');
 
 const DEFAULT_STRUCTURE = {
@@ -14,14 +14,14 @@ const DEFAULT_STRUCTURE = {
 const addRole = (dbname, role, callback) => {
   request.get({
     url: url.format({
-      protocol: db.settings.protocol,
-      hostname: db.settings.host,
-      port: db.settings.port,
+      protocol: environment.protocol,
+      hostname: environment.host,
+      port: environment.port,
       pathname: `${dbname}/_security`,
     }),
     auth: {
-      user: db.settings.username,
-      pass: db.settings.password
+      user: environment.username,
+      pass: environment.password
     },
     json: true
   }, (err, result) => {
@@ -42,14 +42,14 @@ const addRole = (dbname, role, callback) => {
 
     request.put({
       url: url.format({
-        protocol: db.settings.protocol,
-        hostname: db.settings.host,
-        port: db.settings.port,
+        protocol: environment.protocol,
+        hostname: environment.host,
+        port: environment.port,
         pathname: `${dbname}/_security`,
       }),
       auth: {
-        user: db.settings.username,
-        pass: db.settings.password
+        user: environment.username,
+        pass: environment.password
       },
       json: true,
       body: result
@@ -64,7 +64,7 @@ module.exports = {
     series(
       [
         _.partial(addRole, '_users', 'national_admin'),
-        _.partial(addRole, db.settings.db, 'national_admin'),
+        _.partial(addRole, environment.db, 'national_admin'),
       ],
       callback
     );

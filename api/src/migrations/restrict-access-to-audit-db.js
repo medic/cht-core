@@ -1,7 +1,7 @@
-const db = require('../db-pouch'),
-      request = require('request'),
+const request = require('request'),
       url = require('url'),
-      {promisify} = require('util');
+      {promisify} = require('util'),
+      environment = require('../environment');
 
 const addMemberToDb = (callback) => {
   const securityObject = {
@@ -10,14 +10,14 @@ const addMemberToDb = (callback) => {
   };
   request.put({
     url: url.format({
-      protocol: db.settings.protocol,
-      hostname: db.settings.host,
-      port: db.settings.port,
-      pathname: `${db.settings.db}-audit/_security`,
+      protocol: environment.protocol,
+      hostname: environment.host,
+      port: environment.port,
+      pathname: `${environment.db}-audit/_security`,
     }),
     auth: {
-      user: db.settings.username,
-      pass: db.settings.password
+      user: environment.username,
+      pass: environment.password
     },
     json: true,
     body: securityObject

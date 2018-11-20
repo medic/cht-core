@@ -1,4 +1,4 @@
-const db = require('./src/db-pouch'),
+const environment = require('./src/environment'),
   serverChecks = require('@shared-libs/server-checks'),
   logger = require('./src/logger');
 
@@ -7,7 +7,7 @@ process.on('unhandledRejection', reason => {
   logger.error('%o',reason);
 });
 
-serverChecks.check(db.serverUrl).then(() => {
+serverChecks.check(environment.serverUrl).then(() => {
   const app = require('./src/routing'),
     config = require('./src/config'),
     migrations = require('./src/migrations'),

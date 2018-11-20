@@ -1,6 +1,6 @@
 const sinon = require('sinon'),
       chai = require('chai'),
-      db = require('../../src/db-pouch'),
+      environment = require('../../src/environment'),
       serverUtils = require('../../src/server-utils'),
       req = {
         url: '',
@@ -14,18 +14,18 @@ const sinon = require('sinon'),
         status: () => {}
       };
 
-let originalDbSettings;
+let originalDb;
 
 describe('Server utils', () => {
 
   beforeEach(() => {
-    originalDbSettings = db.settings;
-    db.settings = { db: 'medic' };
+    originalDb = environment.db;
+    environment.db = 'medic';
   });
 
   afterEach(() => {
+    environment.db = originalDb;
     sinon.restore();
-    db.settings = originalDbSettings;
   });
 
   it('error calls serverError when given string', () => {

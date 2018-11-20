@@ -90,6 +90,7 @@
     "pass-stream",
     "pouchdb-adapter-http",
     "pouchdb-core",
+    "pouchdb-find",
     "pouchdb-mapreduce",
     "properties",
     "request",
