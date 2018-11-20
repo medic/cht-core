@@ -114,6 +114,23 @@ describe('Server Checks service', () => {
       return service.check('something');
     });
 
+
+    it('invalid couchdb version', function() {
+      process = {
+        versions: {node: '9.11.1'},
+        env: {
+          COUCH_URL: 'http://admin:pass@localhost:5984',
+          COUCH_NODE_NAME: 'something'
+        },
+        exit: () => 0
+      };
+      sinon.stub(http, 'get').callsArgWith(1, {statusCode: 401});
+      sinon.stub(request, 'get').callsArgWith(1, 'error');
+      return service.check('something').catch(err => {
+        chai.expect(err).to.equal('error');
+      });
+    });
+
     it('invalid server', function() {
       process = {
         versions: {node: '9.11.1'},
