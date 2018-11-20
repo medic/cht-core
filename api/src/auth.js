@@ -2,7 +2,7 @@ var request = require('request'),
     url = require('url'),
     _ = require('underscore'),
     db = require('./db-pouch'),
-    environment = require('environment'),
+    environment = require('./environment'),
     config = require('./config'),
     ONLINE_ROLE = 'mm-online';
 
