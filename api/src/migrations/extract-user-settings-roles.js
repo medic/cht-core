@@ -4,7 +4,7 @@ var async = require('async'),
     url = require('url'),
     _ = require('underscore'),
     db = require('../db-nano'),
-    dbPouch = require('../db-pouch'),
+    environment = require('../environment'),
     DB_ADMIN_ROLE = '_admin';
 
 var updateUser = function(admins, row, callback) {
@@ -33,14 +33,14 @@ var filterResults = function(rows) {
 var getAdmins = function(callback) {
   request.get({
     url: url.format({
-      protocol: dbPouch.settings.protocol,
-      hostname: dbPouch.settings.host,
-      port: dbPouch.settings.port,
+      protocol: environment.protocol,
+      hostname: environment.host,
+      port: environment.port,
       pathname: '_node/' + process.env.COUCH_NODE_NAME + '/_config/admins',
     }),
     auth: {
-      user: dbPouch.settings.username,
-      pass: dbPouch.settings.password
+      user: environment.username,
+      pass: environment.password
     },
     json: true
   }, function(err, res) {

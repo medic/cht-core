@@ -4,17 +4,10 @@ const sinon = require('sinon'),
       settingsService = require('../../../src/services/settings'),
       migration = require('../../../src/migrations/extract-translations');
 
-let originalDbSettings;
-
 describe('extract-person-contacts migration', () => {
-
-  beforeEach(() => {
-    originalDbSettings = db.settings;
-  });
 
   afterEach(() => {
     sinon.restore();
-    db.settings = originalDbSettings;
   });
 
   it('returns errors from getSettings', done => {

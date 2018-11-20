@@ -1,7 +1,7 @@
 const sinon = require('sinon'),
       chai = require('chai'),
       db = require('../../../src/db-nano'),
-      dbPouch = require('../../../src/db-pouch'),
+      environment = require('../../../src/environment'),
       migration = require('../../../src/migrations/separate-audit-db.js'),
       ERR_404 = {statusCode: 404};
 
@@ -21,24 +21,21 @@ const LAST_VIEW_BATCH = {
   rows: []
 };
 
-let originalDbSettings;
+let originalDb;
 
 describe('separate-audit-db migration', () => {
 
   beforeEach(() => {
-    originalDbSettings = dbPouch.settings;
+    originalDb = environment.db;
   });
 
   afterEach(() => {
     sinon.restore();
-    dbPouch.settings = originalDbSettings;
+    environment.db = originalDb;
   });
 
   it('creates db, creates view and migrates audit documents', done => {
-    dbPouch.settings = {
-      db: 'medic',
-      auditDb: 'medic-audit'
-    };
+    environment.db = 'medic';
 
     const wrappedDbDbGet = sinon.stub(db.db, 'get').withArgs('medic-audit').callsArgWith(1, ERR_404);
     const wrappedDbDbCreate = sinon.stub(db.db, 'create').withArgs('medic-audit').callsArg(1);

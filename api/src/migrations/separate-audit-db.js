@@ -1,7 +1,7 @@
 var _ = require('underscore'),
     {promisify} = require('util'),
     db = require('../db-nano'),
-    dbPouch = require('../db-pouch'),
+    environment = require('../environment'),
     logger = require('../logger'),
     async = require('async');
 
@@ -9,7 +9,7 @@ var DDOC_NAME = '_design/medic';
 var DDOC = {'views': {'audit_records_by_doc': {'map': 'function (doc) {if (doc.type === \'audit_record\') {emit([doc.record_id], 1);}}'}}};
 var BATCH_SIZE = 100;
 
-const getAuditDbName = () => dbPouch.settings.db + '-audit';
+const getAuditDbName = () => environment.db + '-audit';
 
 var ensureDbExists = function(dbName, callback) {
   db.db.get(dbName, function(err) {
@@ -52,7 +52,7 @@ var batchMoveAuditDocs = function(callback) {
     var auditDocIds = doclist.rows.map(function(row) { return row.id;});
 
     async.parallel([
-      _.partial(db.db.replicate, dbPouch.settings.db, getAuditDbName(), {doc_ids: auditDocIds}),
+      _.partial(db.db.replicate, environment.db, getAuditDbName(), {doc_ids: auditDocIds}),
       _.partial(db.medic.fetchRevs, {keys: auditDocIds})
     ], function(err, results) {
       if (err) {
