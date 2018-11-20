@@ -24,20 +24,20 @@ const addRole = (dbname, role, callback) => {
       pass: environment.password
     },
     json: true
-  }, (err, result) => {
+  }, (err, response, body) => {
     if (err) {
       return callback(err);
     }
 
     // In CouchDB 1.x, if you have not written to the _security object before
     // it is empty.
-    if (!result.admins) {
-      result.admins = DEFAULT_STRUCTURE;
+    if (!body.admins) {
+      body.admins = DEFAULT_STRUCTURE;
     }
 
-    if (!result.admins.roles.includes(role)) {
+    if (!body.admins.roles.includes(role)) {
       logger.info(`Adding ${role} role to ${dbname} admins`);
-      result.admins.roles.push(role);
+      body.admins.roles.push(role);
     }
 
     request.put({
@@ -52,7 +52,7 @@ const addRole = (dbname, role, callback) => {
         pass: environment.password
       },
       json: true,
-      body: result
+      body: body
     }, callback);
   });
 };
