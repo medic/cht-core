@@ -4,6 +4,7 @@ const _ = require('underscore'),
   morgan = require('morgan'),
   helmet = require('helmet'),
   db = require('./db-nano'),
+  pouch = require('./db-pouch'),
   path = require('path'),
   auth = require('./auth'),
   logger = require('./logger'),
@@ -96,8 +97,13 @@ if (process.argv.slice(2).includes('--allow-cors')) {
 app.use((req, res, next) => {
   req.id = uuid.v4();
   if (req.originalUrl === '/favicon.ico') {
-    const url = `${db.settings.protocol}//${db.settings.host}:${process.env.API_PORT || 5988}/${db.settings.db}`;
-    res.redirect(url + '/branding/favicon.ico');
+    pouch.medic.get('branding').then(doc => {
+      pouch.medic.getAttachment(doc._id, doc.resources.favicon).then(blob => {
+        res.send(blob);
+      });
+    }).catch(err => {
+      res.end(err);
+    });
   } else {
     next();
   }

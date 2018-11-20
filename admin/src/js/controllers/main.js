@@ -14,7 +14,7 @@ angular.module('controllers').controller('MainCtrl',
       $window.location.href = '../../../login';
     });
     BrandingImages.getAppTitle().then(title => {
-      $scope.title = `${title} | admin console`;
-    })
+      document.title = `${title} | admin console`;
+    });
   }
 );

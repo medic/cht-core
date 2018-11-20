@@ -1,11 +1,11 @@
-var _ = require('underscore');
-
 angular.module('controllers').controller('BrandingCtrl',
   function(
     $log,
     $scope,
     $translate,
-    DB
+    DB,
+    Changes,
+    BrandingImages
   ) {
 
     'ngInject';
@@ -30,7 +30,7 @@ angular.module('controllers').controller('BrandingCtrl',
     $scope.favicon = null;
 
     var renderResources = function() {
-      var fav = $scope.doc._attachments['favicon.ico'];
+      var fav = $scope.doc._attachments[$scope.doc.resources.favicon];
       $scope.favicon = '<img src="data:' + fav.content_type + ';base64,' + fav.data + '" />';
       $scope.loading = false;
     };
@@ -48,13 +48,13 @@ angular.module('controllers').controller('BrandingCtrl',
         $log.error('Error fetching resources file', err);
       });
 
-    var addAttachment = function(file) {
+    var addAttachment = function(file, resource) {
       $scope.submitting = true;
       DB()
-        .putAttachment(BRANDING_ID, 'favicon.ico', $scope.doc._rev, file, file.type)
+        .putAttachment(BRANDING_ID, file.name, $scope.doc._rev, file, file.type)
         .then(getResourcesDoc)
         .then(function(doc) {
-          doc.resources[$scope.name] = 'favicon';
+          doc.resources[resource] = file.name;
           $scope.doc = doc;
           return DB().put(doc);
         })
@@ -89,7 +89,7 @@ angular.module('controllers').controller('BrandingCtrl',
       if ($scope.error) {
         return;
       }
-      addAttachment(files[0]);
+      addAttachment(files[0], $scope.name);
     };
 
     $scope.submitFav = function() {
@@ -98,33 +98,39 @@ angular.module('controllers').controller('BrandingCtrl',
         $scope.error = $translate.instant('Error saving settings');
         return;
       }
-      $scope.name = 'favicon';
       var files = $('#favicon-upload .uploader')[0].files;
       if (!files || files.length === 0) {
         $scope.error = $translate.instant('field is required', {
           field: $translate.instant('image')
         });
       }
-      // File must be less than 100KB
+      // File must be less than 10KB
       if (files[0].size > 10000) {
         $scope.error = 'File must be less than 10KB';
       }
       if ($scope.error) {
         return;
       }
-      addAttachment(files[0]);
+      addAttachment(files[0], 'favicon');
     };
 
     $scope.submitTitle = function() {
       DB().get($scope.doc._id).then(function(doc) {
-        doc['title'] = $scope.doc.title;
-        DB().put(doc).then(function(doc){
-          document.title = $scope.doc.title + ' | admin console';
-        })
-        .catch(function (err) {
-          $scope.error = err;
-        });
+        doc.title = $scope.doc.title;
+        DB().put(doc)
+          .catch(function (err) {
+            $scope.error = err;
+          });
       });
-    }
+    };
+
+    const updateDOM = () => {
+      BrandingImages.getAppTitle();
+    };
+
+    Changes({
+      key: 'branding-changes',
+      callback: updateDOM
+    });
   }
 );

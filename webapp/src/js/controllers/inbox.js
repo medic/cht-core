@@ -81,7 +81,7 @@ var feedback = require('../modules/feedback'),
     $scope.logo = 'logo';
     BrandingImages.getAppTitle().then(title => {
       document.title = title;
-    })
+    });
 
     $scope.replicationStatus = {
       disabled: false,

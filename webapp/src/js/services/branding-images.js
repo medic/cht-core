@@ -46,6 +46,10 @@ angular.module('inboxServices').factory('BrandingImages',
       });
     };
 
+    var updateTitle = (doc) => {
+      document.title = doc.title;
+    };
+
     var updateResources = function() {
       return DB()
         .get(BRANDING_ID, { attachments: true })
@@ -55,6 +59,7 @@ angular.module('inboxServices').factory('BrandingImages',
             htmlContent: {}
           };
           updateDom();
+          updateTitle(res);
         })
         .catch(function(err) {
           if (err.status !== 404) {
@@ -64,10 +69,7 @@ angular.module('inboxServices').factory('BrandingImages',
     };
 
     Changes({
-      key: 'BrandingImages',
-      filter: function(change) {
-        return change.id === 'branding';
-      },
+      key: 'branding-images',
       callback: updateResources
     });
 
@@ -83,11 +85,11 @@ angular.module('inboxServices').factory('BrandingImages',
       getAppTitle: function() {
         return new Promise((resolve, reject) => {
           DB().get(BRANDING_ID).then(doc => {
-            resolve(doc.title)
+            resolve(doc.title);
           }).catch(err => {
-            reject(err)
+            reject(err);
           });
-        })
+        });
       },
       replacePlaceholders: function($elem) {
         init.then(function() {
