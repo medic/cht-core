@@ -80,6 +80,15 @@ angular.module('inboxServices').factory('BrandingImages',
         }
         return getHtml(name);
       },
+      getAppTitle: function() {
+        return new Promise((resolve, reject) => {
+          DB().get(BRANDING_ID).then(doc => {
+            resolve(doc.title)
+          }).catch(err => {
+            reject(err)
+          });
+        })
+      },
       replacePlaceholders: function($elem) {
         init.then(function() {
           updateDom($elem);

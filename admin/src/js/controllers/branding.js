@@ -32,19 +32,6 @@ angular.module('controllers').controller('BrandingCtrl',
     var renderResources = function() {
       var fav = $scope.doc._attachments['favicon.ico'];
       $scope.favicon = '<img src="data:' + fav.content_type + ';base64,' + fav.data + '" />';
-      var allowed = ['logo'];
-      Object.keys($scope.doc.resources)
-      .filter(key => !allowed.includes(key))
-      .forEach(key => delete $scope.doc.resources[key]);
-      $scope.images = _.map(_.pairs($scope.doc.resources), function(pair) {
-        var image = $scope.doc._attachments[pair[1]];
-        return {
-          title: pair[0],
-          name: pair[1],
-          data: image.data,
-          type: image.content_type
-        };
-      });
       $scope.loading = false;
     };
 
@@ -128,5 +115,16 @@ angular.module('controllers').controller('BrandingCtrl',
       addAttachment(files[0]);
     };
 
+    $scope.submitTitle = function() {
+      DB().get($scope.doc._id).then(function(doc) {
+        doc['title'] = $scope.doc.title;
+        DB().put(doc).then(function(doc){
+          document.title = $scope.doc.title + ' | admin console';
+        })
+        .catch(function (err) {
+          $scope.error = err;
+        });
+      });
+    }
   }
 );
