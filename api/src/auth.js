@@ -2,11 +2,12 @@ var request = require('request'),
     url = require('url'),
     _ = require('underscore'),
     db = require('./db-pouch'),
+    environment = require('./environment'),
     config = require('./config'),
     ONLINE_ROLE = 'mm-online';
 
 var get = (path, headers) => {
-  const dbUrl = url.parse(db.serverUrl);
+  const dbUrl = url.parse(environment.serverUrl);
   var fullUrl = url.format({
     protocol: dbUrl.protocol,
     host: dbUrl.host,
@@ -118,7 +119,7 @@ module.exports = {
     if (!req.params || !req.params.path) {
       return callback(new Error('No path given'));
     }
-    const dbUrl = url.parse(db.serverUrl);
+    const dbUrl = url.parse(environment.serverUrl);
     var fullUrl = url.format({
       protocol: dbUrl.protocol,
       host: dbUrl.host,

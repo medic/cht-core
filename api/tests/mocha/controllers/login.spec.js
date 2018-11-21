@@ -1,6 +1,6 @@
 const controller = require('../../../src/controllers/login'),
       chai = require('chai'),
-      db = require('../../../src/db-nano'),
+      environment = require('../../../src/environment'),
       auth = require('../../../src/auth'),
       sinon = require('sinon'),
       config = require('../../../src/config'),
@@ -11,7 +11,7 @@ const controller = require('../../../src/controllers/login'),
 
 let req,
     res,
-    originalDbSettings;
+    originalEnvironment;
 
 describe('login controller', () => {
 
@@ -28,19 +28,24 @@ describe('login controller', () => {
       json: () => {},
       cookie: () => {}
     };
-    originalDbSettings = db.settings;
-    db.settings = {
-      db: DB_NAME,
-      ddoc: DDOC_NAME,
-      protocol: 'http',
-      host: 'test.com',
-      port: 1234,
-      pathname: 'sesh'
-    };
+    originalEnvironment = Object.assign(environment);
+
+    environment.db = DB_NAME;
+    environment.ddoc = DDOC_NAME;
+    environment.protocol = 'http';
+    environment.host = 'test.com';
+    environment.port = 1234;
+    environment.pathname = 'sesh';
   });
 
   afterEach(() => {
-    db.settings = originalDbSettings;
+    environment.db = originalEnvironment.db;
+    environment.ddoc = originalEnvironment.ddoc;
+    environment.protocol = originalEnvironment.protocol;
+    environment.host = originalEnvironment.host;
+    environment.port = originalEnvironment.port;
+    environment.pathname = originalEnvironment.pathname;
+
     sinon.restore();
   });
 

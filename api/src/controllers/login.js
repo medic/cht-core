@@ -4,7 +4,7 @@ const fs = require('fs'),
   request = require('request'),
   _ = require('underscore'),
   auth = require('../auth'),
-  db = require('../db-nano'),
+  environment = require('../environment'),
   config = require('../config'),
   SESSION_COOKIE_RE = /AuthSession\=([^;]*);/,
   ONE_YEAR = 31536000000,
@@ -18,13 +18,7 @@ _.templateSettings = {
 };
 
 const safePath = requested => {
-  const appPrefix = path.join(
-    '/',
-    db.settings.db,
-    '_design',
-    db.settings.ddoc,
-    '_rewrite'
-  );
+  const appPrefix = path.join('/', environment.db, '_design', environment.ddoc, '_rewrite');
   const dirPrefix = path.join(appPrefix, '/');
 
   if (!requested) {
@@ -72,7 +66,7 @@ const renderLogin = (redirect, callback) => {
       return callback(err);
     }
     const body = template({
-      action: path.join('/', db.settings.db, 'login'),
+      action: path.join('/', environment.db, 'login'),
       redirect: redirect,
       branding: {
         name: 'Medic Mobile',
@@ -104,9 +98,9 @@ const createSession = req => {
     request.post(
       {
         url: url.format({
-          protocol: db.settings.protocol,
-          hostname: db.settings.host,
-          port: db.settings.port,
+          protocol: environment.protocol,
+          hostname: environment.host,
+          port: environment.port,
           pathname: '_session',
         }),
         json: true,

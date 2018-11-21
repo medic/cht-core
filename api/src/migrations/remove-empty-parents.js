@@ -1,88 +1,38 @@
-var db = require('../db-nano'),
-    {promisify} = require('util');
+var db = require('../db-pouch');
 
-var emptyParentsView = function(doc) {
-  if (['district_hospital', 'health_center', 'clinic', 'person'].indexOf(doc.type) === -1 ||
-      typeof doc.parent === 'undefined' ||
-      (doc.parent && Object.keys(doc.parent).length)) {
-    return;
-  }
-  emit();
-};
-
-var removeEmptyParents = function(docs, callback) {
-  docs.forEach(function(doc) {
+var removeEmptyParents = docs => {
+  docs.forEach(doc => {
     delete doc.parent;
   });
 
-  db.medic.bulk({
-    docs: docs
-  }, callback);
+  return db.medic.bulkDocs(docs);
 };
 
 module.exports = {
   name: 'remove-empty-parents',
   created: new Date(2016, 7, 10, 13, 37, 0, 0),
-  run: promisify(function(callback) {
-    db.getCouchDbVersion(function(err, version) {
-      if (err) {
-        return callback(err);
-      }
-
-      if (version.major === '1') {
-        db.request({
-          db: db.settings.db,
-          method: 'POST',
-          path: '_temp_view',
-          body: { map: emptyParentsView.toString() },
-          qs: {
-            include_docs: true,
+  run: () => {
+    return db.medic.find({
+      selector: {
+        type: {
+          $in: ['district_hospital', 'health_center', 'clinic', 'person']
+        },
+        $or: [
+        {
+          parent: {
+            $eq: null
           }
-        }, function(err, result) {
-          if (err) {
-            return callback(err);
-          }
-
-          var docs = result.rows.map(function(row) {
-            return row.doc;
-          });
-
-          removeEmptyParents(docs, callback);
-        });
-      } else {
-        db.request({
-          db: db.settings.db,
-          method: 'POST',
-          path: '_find',
-          body: {
-            selector: {
-              type: {
-                $in: ['district_hospital', 'health_center', 'clinic', 'person']
-              },
-              $or: [
-              {
-                parent: {
-                  $eq: null
-                }
-              },
-              {
-                parent: {
-                  $exists: true,
-                  _id: {
-                    $exists: false
-                  }
-                }
-              }]
+        },
+        {
+          parent: {
+            $exists: true,
+            _id: {
+              $exists: false
             }
           }
-        }, function(err, result) {
-          if (err) {
-            return callback(err);
-          }
-
-          removeEmptyParents(result.docs, callback);
-        });
+        }]
       }
-    });
-  })
+    })
+    .then(result => removeEmptyParents(result.docs));
+  }
 };

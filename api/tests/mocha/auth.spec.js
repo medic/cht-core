@@ -4,25 +4,26 @@ const request = require('request'),
       sinon = require('sinon'),
       auth = require('../../src/auth'),
       config = require('../../src/config'),
-      db = require('../../src/db-pouch');
+      db = require('../../src/db-pouch'),
+      environment = require('../../src/environment');
 
 let originalServerUrl;
 
 describe('Auth', () => {
 
   beforeEach(() => {
-    originalServerUrl = db.serverUrl;
+    originalServerUrl = environment.serverUrl;
   });
 
   afterEach(() => {
     sinon.restore();
-    db.serverUrl = originalServerUrl;
+    environment.serverUrl = originalServerUrl;
   });
 
   describe('check', () => {
 
     it('returns error when not logged in', () => {
-      db.serverUrl = 'http://abc.com';
+      environment.serverUrl = 'http://abc.com';
       const get = sinon.stub(request, 'get').callsArgWith(1, null, null);
       return auth.check({ }).catch(err => {
         chai.expect(get.callCount).to.equal(1);
@@ -33,7 +34,7 @@ describe('Auth', () => {
     });
 
     it('returns error when no user context', () => {
-      db.serverUrl = 'http://abc.com';
+      environment.serverUrl = 'http://abc.com';
       const get = sinon.stub(request, 'get').callsArgWith(1, null, null, { roles: [] });
       return auth.check({ }).catch(err => {
         chai.expect(get.callCount).to.equal(1);
@@ -43,7 +44,7 @@ describe('Auth', () => {
     });
 
     it('returns error when request errors', () => {
-      db.serverUrl = 'http://abc.com';
+      environment.serverUrl = 'http://abc.com';
       const get = sinon.stub(request, 'get').callsArgWith(1, 'boom');
       return auth.check({ }).catch(err => {
         chai.expect(get.callCount).to.equal(1);
@@ -54,7 +55,7 @@ describe('Auth', () => {
     });
 
     it('returns error when no has insufficient privilege', () => {
-      db.serverUrl = 'http://abc.com';
+      environment.serverUrl = 'http://abc.com';
       const district = '123';
       const userCtx = { userCtx: { name: 'steve', roles: [ 'xyz' ] } };
       const get = sinon.stub(request, 'get').callsArgWith(1, null, null, userCtx);
@@ -67,7 +68,7 @@ describe('Auth', () => {
     });
 
     it('returns username for admin', () => {
-      db.serverUrl = 'http://abc.com';
+      environment.serverUrl = 'http://abc.com';
       const district = '123';
       const userCtx = { userCtx: { name: 'steve', roles: [ '_admin' ] } };
       const get = sinon.stub(request, 'get').callsArgWith(1, null, null, userCtx);
@@ -79,7 +80,7 @@ describe('Auth', () => {
     });
 
     it('returns username and district', () => {
-      db.serverUrl = 'http://abc.com';
+      environment.serverUrl = 'http://abc.com';
       const district = '123';
       const userCtx = { userCtx: { name: 'steve', roles: [ 'xyz', 'district_admin' ] } };
       const get = sinon.stub(request, 'get');
@@ -94,7 +95,7 @@ describe('Auth', () => {
     });
 
     it('returns error when requesting unallowed facility', () => {
-      db.serverUrl = 'http://abc.com';
+      environment.serverUrl = 'http://abc.com';
       const userCtx = { userCtx: { name: 'steve', roles: [ 'xyz', 'district_admin' ] } };
       sinon.stub(url, 'format').returns('http://abc.com');
       const get = sinon.stub(request, 'get');
@@ -109,7 +110,7 @@ describe('Auth', () => {
     });
 
     it('accepts multiple required roles', () => {
-      db.serverUrl = 'http://abc.com';
+      environment.serverUrl = 'http://abc.com';
       const district = '123';
       const userCtx = { userCtx: { name: 'steve', roles: [ 'xyz', 'district_admin' ] } };
       sinon.stub(url, 'format').returns('http://abc.com');
@@ -128,7 +129,7 @@ describe('Auth', () => {
     });
 
     it('checks all required roles', () => {
-      db.serverUrl = 'http://abc.com';
+      environment.serverUrl = 'http://abc.com';
       const district = '123';
       const userCtx = { userCtx: { name: 'steve', roles: [ 'xyz', 'district_admin' ] } };
       sinon.stub(url, 'format').returns('http://abc.com');
@@ -149,7 +150,7 @@ describe('Auth', () => {
   describe('checkUrl', () => {
 
     it('requests the given url and returns status', done => {
-      db.serverUrl = 'http://abc.com';
+      environment.serverUrl = 'http://abc.com';
       const format = sinon.stub(url, 'format').returns('http://abc.com');
       const head = sinon.stub(request, 'head').callsArgWith(1, null, { statusCode: 444 });
       auth.checkUrl({ params: { path: '/home/screen' } }, (err, output) => {
@@ -188,7 +189,7 @@ describe('Auth', () => {
   describe('getUserSettings', () => {
 
     it('returns medic user doc with facility_id from couchdb user doc', () => {
-      db.serverUrl = 'http://abc.com';
+      environment.serverUrl = 'http://abc.com';
       sinon
         .stub(db.users, 'get')
         .resolves({ name: 'steve', facility_id: 'steveVille', roles: ['b'] });
@@ -206,7 +207,7 @@ describe('Auth', () => {
     });
 
     it('returns name and roles from provided userCtx', () => {
-      db.serverUrl = 'http://abc.com';
+      environment.serverUrl = 'http://abc.com';
 
       sinon.stub(db.users, 'get').resolves({
         _id: 'org.couchdb.user:my-user',
@@ -240,7 +241,7 @@ describe('Auth', () => {
     });
 
     it('throws error if _users user returns an error', () => {
-      db.serverUrl = 'http://abc.com';
+      environment.serverUrl = 'http://abc.com';
       sinon.stub(db.users, 'get').rejects({ some: 'err' });
       sinon.stub(db.medic, 'get').resolves({});
       return auth.getUserSettings({ name: 'steve' }).catch(err => {
@@ -249,7 +250,7 @@ describe('Auth', () => {
     });
 
     it('throws error if medic user-settings returns an error', () => {
-      db.serverUrl = 'http://abc.com';
+      environment.serverUrl = 'http://abc.com';
       sinon.stub(db.users, 'get').resolves({});
       sinon.stub(db.medic, 'get').rejects({ some: 'err' });
       return auth.getUserSettings({ name: 'steve' }).catch(err => {

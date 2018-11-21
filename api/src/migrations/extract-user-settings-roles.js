@@ -4,6 +4,7 @@ var async = require('async'),
     url = require('url'),
     _ = require('underscore'),
     db = require('../db-nano'),
+    environment = require('../environment'),
     DB_ADMIN_ROLE = '_admin';
 
 var updateUser = function(admins, row, callback) {
@@ -30,30 +31,20 @@ var filterResults = function(rows) {
 };
 
 var getAdmins = function(callback) {
-  db.getCouchDbVersion(function(err, version) {
-    if (err) {
-      return callback(err);
-    }
-
-    var v1 = version.major === '1';
-
-    request.get({
-      url: url.format({
-        protocol: db.settings.protocol,
-        hostname: db.settings.host,
-        port: db.settings.port,
-        pathname: v1 ?
-          '_config/admins' :
-          '_node/' + process.env.COUCH_NODE_NAME + '/_config/admins',
-      }),
-      auth: {
-        user: db.settings.username,
-        pass: db.settings.password
-      },
-      json: true
-    }, function(err, res) {
-      callback(err, res && res.body);
-    });
+  request.get({
+    url: url.format({
+      protocol: environment.protocol,
+      hostname: environment.host,
+      port: environment.port,
+      pathname: '_node/' + process.env.COUCH_NODE_NAME + '/_config/admins',
+    }),
+    auth: {
+      user: environment.username,
+      pass: environment.password
+    },
+    json: true
+  }, function(err, res) {
+    callback(err, res && res.body);
   });
 };
 

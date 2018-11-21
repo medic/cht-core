@@ -1,19 +1,27 @@
-const db = require('../db-nano'),
-      {promisify} = require('util');
+const request = require('request'),
+      url = require('url'),
+      {promisify} = require('util'),
+      environment = require('../environment');
 
 const addMemberToDb = (callback) => {
   const securityObject = {
     admins: { names:[], roles: ['audit-writer'] },
     members: { names: [], roles:['audit-writer'] }
   };
-  db.request(
-    {
-      db: db.settings.auditDb,
-      path: '/_security',
-      method: 'put',
-      body: securityObject
+  request.put({
+    url: url.format({
+      protocol: environment.protocol,
+      hostname: environment.host,
+      port: environment.port,
+      pathname: `${environment.db}-audit/_security`,
+    }),
+    auth: {
+      user: environment.username,
+      pass: environment.password
     },
-    callback);
+    json: true,
+    body: securityObject
+  }, callback);
 };
 
 module.exports = {

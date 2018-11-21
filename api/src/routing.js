@@ -3,12 +3,12 @@ const _ = require('underscore'),
   express = require('express'),
   morgan = require('morgan'),
   helmet = require('helmet'),
-  db = require('./db-nano'),
+  environment = require('./environment'),
   path = require('path'),
   auth = require('./auth'),
   logger = require('./logger'),
   isClientHuman = require('./is-client-human'),
-  target = 'http://' + db.settings.host + ':' + db.settings.port,
+  target = 'http://' + environment.host + ':' + environment.port,
   proxy = require('http-proxy').createProxyServer({ target: target }),
   proxyForAuth = require('http-proxy').createProxyServer({
     target: target,
@@ -35,9 +35,9 @@ const _ = require('underscore'),
   staticResources = /\/(templates|static)\//,
   favicon = /\/icon_\d+.ico$/,
   // CouchDB is very relaxed in matching routes
-  routePrefix = '/+' + db.settings.db + '/+',
-  pathPrefix = '/' + db.settings.db + '/',
-  appPrefix = pathPrefix + '_design/' + db.settings.ddoc + '/_rewrite/',
+  routePrefix = '/+' + environment.db + '/+',
+  pathPrefix = '/' + environment.db + '/',
+  appPrefix = pathPrefix + '_design/' + environment.ddoc + '/_rewrite/',
   serverUtils = require('./server-utils'),
   appcacheManifest = /\/manifest\.appcache$/,
   uuid = require('uuid'),
@@ -272,7 +272,7 @@ app.postJson('/api/sms', function(req, res) {
 });
 
 app.all('/api/v1/export/:type/:form?', exportData.routeV1);
-app.all(`/${db.getPath()}/export/:type/:form?`, exportData.routeV1);
+app.all(`/${appPrefix}export/:type/:form?`, exportData.routeV1);
 app.get('/api/v2/export/:type', exportData.routeV2);
 app.postJson('/api/v2/export/:type', exportData.routeV2);
 
@@ -330,10 +330,10 @@ app.postJson('/api/v1/people', function(req, res) {
 
 app.postJson('/api/v1/bulk-delete', bulkDocs.bulkDelete);
 
-app.get(`${appPrefix}app_settings/${db.settings.ddoc}/:path?`, settings.getV0); // deprecated
+app.get(`${appPrefix}app_settings/${environment.ddoc}/:path?`, settings.getV0); // deprecated
 app.get('/api/v1/settings', settings.get);
 
-app.putJson(`${appPrefix}update_settings/${db.settings.ddoc}`, settings.put); // deprecated
+app.putJson(`${appPrefix}update_settings/${environment.ddoc}`, settings.put); // deprecated
 app.putJson('/api/v1/settings', settings.put);
 
 // authorization middleware to proxy online users requests directly to CouchDB
@@ -407,7 +407,7 @@ app.get(
   ddocPath,
   authorization.checkAuth,
   onlineUserProxy,
-  _.partial(dbDocHandler.requestDdoc, db.settings.ddoc),
+  _.partial(dbDocHandler.requestDdoc, environment.ddoc),
   authorization.setAuthorized // adds the `authorized` flag to the `req` object, so it passes the firewall
 );
 
