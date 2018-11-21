@@ -108,13 +108,26 @@ const updateMutingHistories = (contacts, muted, reportId) => {
   }
 
   return infodoc
-    .bulkGet(contacts.map(contact => ({ id: contact._id, doc: contact })))
+    .bulkGet(contacts.map(contact => ({ id: contact._id })))
     .then(infoDocs => infoDocs.map(info => addMutingHistory(info, muted, reportId)))
     .then(infoDocs => infodoc.bulkUpdate(infoDocs));
 };
 
-const updateMutingHistory = (contact, muted, reportId) => {
-  return updateMutingHistories([contact], muted, reportId);
+const updateMutingHistory = (contact, muted) => {
+  const mutedParentId = isMutedInLineage(contact, true);
+
+  return infodoc
+    .bulkGet([{ id: mutedParentId }])
+    .then(infos => {
+      const reportId = infos &&
+                       infos[0] &&
+                       infos[0].muting_history &&
+                       infos[0].muting_history.length &&
+                       infos[0].muting_history[infos[0].muting_history.length - 1] &&
+                       infos[0].muting_history[infos[0].muting_history.length - 1].report_id;
+
+      return updateMutingHistories([contact], muted, reportId);
+    });
 };
 
 const addMutingHistory = (info, muted, reportId) => {
@@ -161,11 +174,11 @@ const updateMuteState = (contact, muted, reportId) => {
   });
 };
 
-const isMutedInLineage = doc => {
+const isMutedInLineage = (doc, returnId) => {
   let parent = doc && doc.parent;
   while (parent) {
     if (parent.muted) {
-      return true;
+      return returnId ? parent._id : true;
     }
     parent = parent.parent;
   }
