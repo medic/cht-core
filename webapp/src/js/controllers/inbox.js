@@ -230,18 +230,17 @@ var feedback = require('../modules/feedback'),
       if(!$scope.enketoStatus.edited){
         return;
       }
-      if(!fromState.url.includes('edit') && !fromState.url.includes('add')){
-        return;
-      }
       if(fromParams.id === toParams.id){
         return;
       }
       if(fromParams.reportId === toParams.id){
         return;
       }
-      if ($scope.cancelCallback) {
-        event.preventDefault();
-        $scope.navigationCancel();
+      if(fromState.url.includes('edit') || fromState.url.includes('add')){
+        if ($scope.cancelCallback) {
+          event.preventDefault();
+          $scope.navigationCancel();
+        }
       }
     });
 
