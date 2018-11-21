@@ -63,22 +63,19 @@ describe('DB service', () => {
 
       // init
       const service = getService();
-      chai.expect(pouchDB.callCount).to.equal(2);
-      chai.expect(pouchDB.args[0][0]).to.equal('medicdb-user-johnny');
-      chai.expect(pouchDB.args[1][0]).to.equal('medicdb-user-johnny-meta');
 
       // get remote
       const actual = service({ remote: true });
       chai.expect(actual.id).to.equal(expected.id);
-      chai.expect(pouchDB.callCount).to.equal(3);
-      chai.expect(pouchDB.args[2][0]).to.equal('ftp//myhost:21/medicdb');
-      chai.expect(pouchDB.args[2][1].skip_setup).to.equal(true);
+      chai.expect(pouchDB.callCount).to.equal(1);
+      chai.expect(pouchDB.args[0][0]).to.equal('ftp//myhost:21/medicdb');
+      chai.expect(pouchDB.args[0][1].skip_setup).to.equal(true);
 
       // get remote meta
       service({ remote: true, meta: true });
-      chai.expect(pouchDB.callCount).to.equal(4);
-      chai.expect(pouchDB.args[3][0]).to.equal('ftp//myhost:21/medicdb-user-johnny-meta');
-      chai.expect(pouchDB.args[3][1].skip_setup).to.equal(false);
+      chai.expect(pouchDB.callCount).to.equal(2);
+      chai.expect(pouchDB.args[1][0]).to.equal('ftp//myhost:21/medicdb-user-johnny-meta');
+      chai.expect(pouchDB.args[1][1].skip_setup).to.equal(false);
     });
 
     it('caches pouchdb instances', () => {
@@ -89,19 +86,16 @@ describe('DB service', () => {
 
       // init
       const service = getService();
-      chai.expect(pouchDB.callCount).to.equal(2);
-      chai.expect(pouchDB.args[0][0]).to.equal('medicdb-user-johnny');
-      chai.expect(pouchDB.args[1][0]).to.equal('medicdb-user-johnny-meta');
 
       // get remote
       const actual1 = service({ remote: true });
       chai.expect(actual1.id).to.equal(expected.id);
-      chai.expect(pouchDB.callCount).to.equal(3);
+      chai.expect(pouchDB.callCount).to.equal(1);
 
       // get remote again
       const actual2 = service({ remote: true });
       chai.expect(actual2.id).to.equal(expected.id);
-      chai.expect(pouchDB.callCount).to.equal(3);
+      chai.expect(pouchDB.callCount).to.equal(1);
     });
 
     /**
@@ -116,20 +110,17 @@ describe('DB service', () => {
 
       // init
       const service = getService();
-      chai.expect(pouchDB.callCount).to.equal(2);
-      chai.expect(pouchDB.args[0][0]).to.equal('medicdb-user-johnny.<>^,?!');
-      chai.expect(pouchDB.args[1][0]).to.equal('medicdb-user-johnny.<>^,?!-meta');
 
       // get remote
       const actual = service({ remote: true });
       chai.expect(actual.id).to.equal(expected.id);
-      chai.expect(pouchDB.callCount).to.equal(3);
-      chai.expect(pouchDB.args[2][0]).to.equal('ftp//myhost:21/medicdb');
+      chai.expect(pouchDB.callCount).to.equal(1);
+      chai.expect(pouchDB.args[0][0]).to.equal('ftp//myhost:21/medicdb');
 
       // get remote meta
       service({ remote: true, meta: true });
-      chai.expect(pouchDB.callCount).to.equal(4);
-      chai.expect(pouchDB.args[3][0]).to.equal('ftp//myhost:21/medicdb-user-johnny(46)(60)(62)(94)(44)(63)(33)-meta');
+      chai.expect(pouchDB.callCount).to.equal(2);
+      chai.expect(pouchDB.args[1][0]).to.equal('ftp//myhost:21/medicdb-user-johnny(46)(60)(62)(94)(44)(63)(33)-meta');
     });
   });
 
@@ -142,18 +133,13 @@ describe('DB service', () => {
 
       // init
       const service = getService();
-      chai.expect(pouchDB.callCount).to.equal(2);
-      chai.expect(expected.viewCleanup.callCount).to.equal(2);
 
       // get local
       const actual = service();
-      chai.expect(pouchDB.callCount).to.equal(2);
+      chai.expect(pouchDB.callCount).to.equal(1);
       chai.expect(actual.id).to.equal(expected.id);
       chai.expect(pouchDB.args[0][0]).to.equal('medicdb-user-johnny');
       chai.expect(pouchDB.args[0][1].auto_compaction).to.equal(true);
-      chai.expect(pouchDB.args[1][0]).to.equal('medicdb-user-johnny-meta');
-      chai.expect(pouchDB.args[1][1].auto_compaction).to.equal(true);
-      chai.expect(expected.viewCleanup.callCount).to.equal(2);
     });
 
     it('caches pouchdb instances', () => {
@@ -163,19 +149,18 @@ describe('DB service', () => {
 
       // init
       const service = getService();
-      chai.expect(pouchDB.callCount).to.equal(2);
 
       // get local
       const actual1 = service();
-      chai.expect(pouchDB.callCount).to.equal(2);
+      chai.expect(pouchDB.callCount).to.equal(1);
       chai.expect(actual1.id).to.equal(expected.id);
 
       // get local again
       const actual2 = service();
-      chai.expect(pouchDB.callCount).to.equal(2);
+      chai.expect(pouchDB.callCount).to.equal(1);
       chai.expect(actual2.id).to.equal(expected.id);
       chai.expect(isOnlineOnly.callCount).to.equal(1);
-      chai.expect(userCtx.callCount).to.equal(8);
+      chai.expect(userCtx.callCount).to.equal(4);
     });
 
     it('returns remote for admin user', () => {
