@@ -1210,6 +1210,7 @@ describe('mutingUtils', () => {
           }
         }
       };
+      mutingUtils.isMutedInLineage(doc2).should.equal(true);
       mutingUtils.isMutedInLineage(doc2, true).should.equal(4);
     });
   });
