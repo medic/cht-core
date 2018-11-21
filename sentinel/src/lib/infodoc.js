@@ -131,7 +131,7 @@ const bulkGet = changes => {
 const bulkUpdate = infoDocs => {
   const legacyDocs = [];
 
-  if (!infoDocs || !infoDocs.legacy) {
+  if (!infoDocs || !infoDocs.length) {
     return;
   }
 
@@ -145,7 +145,7 @@ const bulkUpdate = infoDocs => {
     doc.latest_replication_date = new Date();
   });
 
-  return db.medic.bulkDocs(infoDocs).then(() => {
+  return db.sentinel.bulkDocs(infoDocs).then(() => {
     if (legacyDocs.length) {
       return db.medic.bulkDocs(legacyDocs);
     }
@@ -158,5 +158,6 @@ module.exports = {
   updateTransition: (change, transition, ok) =>
     updateTransition(change, transition, ok),
   bulkGet: bulkGet,
-  bulkUpdate: bulkUpdate
+  bulkUpdate: bulkUpdate,
+  updateInfoDoc: updateInfoDoc
 };

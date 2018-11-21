@@ -163,7 +163,17 @@ describe('infodoc', () => {
 
       return infodoc
         .bulkGet([{ id: 'a' }])
-        .then(r => assert(r))
+        .then(() => assert.fail())
+        .catch(err => assert.deepEqual(err, { some: 'error' }));
+    });
+
+    it('should throw medic all docs errors', () => {
+      sinon.stub(db.sentinel, 'allDocs').resolves({ rows: [{ key: 'a', error: true }] });
+      sinon.stub(db.medic, 'allDocs').rejects({ some: 'error' });
+
+      return infodoc
+        .bulkGet([{ id: 'a' }])
+        .then(() => assert.fail())
         .catch(err => assert.deepEqual(err, { some: 'error' }));
     });
   });
@@ -193,14 +203,71 @@ describe('infodoc', () => {
         assert.deepEqual(db.sentinel.bulkDocs.args[0], [[
           { _id: 'a-info', latest_replication_date: new Date() },
           { _id: 'b-info', latest_replication_date: new Date() },
-          { _id: 'x-info', latest_replication_date: new Date() }
+          { _id: 'c-info', latest_replication_date: new Date() },
+          { _id: 'd-info', latest_replication_date: new Date() }
         ]]);
         assert.equal(db.medic.bulkDocs.callCount, 0);
       });
     });
 
     it('should delete legacy docs', () => {
+      sinon.stub(db.sentinel, 'bulkDocs').resolves();
+      sinon.stub(db.medic, 'bulkDocs').resolves();
+      clock = sinon.useFakeTimers();
 
+      const infoDocs = [
+        { _id: 'a-info', type: 'info', _rev: 'a-rev', legacy: true },
+        { _id: 'b-info', type: 'info', _rev: 'b-rev', legacy: true },
+        { _id: 'c-info', type: 'info', _rev: 'c-rev', legacy: true },
+        { _id: 'd-info', type: 'info', _rev: 'd-rev' },
+        { _id: 'e-info', type: 'info', _rev: 'e-rev' }
+      ];
+
+      return infodoc.bulkUpdate(infoDocs).then(() => {
+        assert.equal(db.sentinel.bulkDocs.callCount, 1);
+        assert.deepEqual(db.sentinel.bulkDocs.args[0], [[
+          { _id: 'a-info', type: 'info', latest_replication_date: new Date() },
+          { _id: 'b-info', type: 'info', latest_replication_date: new Date() },
+          { _id: 'c-info', type: 'info', latest_replication_date: new Date() },
+          { _id: 'd-info', type: 'info', _rev: 'd-rev', latest_replication_date: new Date() },
+          { _id: 'e-info', type: 'info', _rev: 'e-rev', latest_replication_date: new Date() }
+        ]]);
+
+        assert.equal(db.medic.bulkDocs.callCount, 1);
+        assert.deepEqual(db.medic.bulkDocs.args[0], [[
+          { _id: 'a-info', type: 'info', _rev: 'a-rev', _deleted: true },
+          { _id: 'b-info', type: 'info', _rev: 'b-rev', _deleted: true },
+          { _id: 'c-info', type: 'info', _rev: 'c-rev', _deleted: true },
+        ]]);
+      });
+    });
+
+    it('should throw sentinel all docs errors', () => {
+      sinon.stub(db.sentinel, 'bulkDocs').rejects({ some: 'error' });
+      sinon.stub(db.medic, 'bulkDocs').resolves();
+
+      return infodoc
+        .bulkUpdate([{ _id: 'a' }])
+        .then(() => assert.fail())
+        .catch(err => {
+          assert.deepEqual(err, { some: 'error' });
+          assert.equal(db.medic.bulkDocs.callCount, 0);
+          assert.equal(db.sentinel.bulkDocs.callCount, 1);
+        });
+    });
+
+    it('should throw sentinel all docs errors', () => {
+      sinon.stub(db.sentinel, 'bulkDocs').resolves();
+      sinon.stub(db.medic, 'bulkDocs').rejects({ some: 'error' });
+
+      return infodoc
+        .bulkUpdate([{ _id: 'a', legacy: true }])
+        .then(() => assert.fail())
+        .catch(err => {
+          assert.deepEqual(err, { some: 'error' });
+          assert.equal(db.medic.bulkDocs.callCount, 1);
+          assert.equal(db.sentinel.bulkDocs.callCount, 1);
+        });
     });
   });
 });

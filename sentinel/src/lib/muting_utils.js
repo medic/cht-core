@@ -2,7 +2,8 @@ const _ = require('underscore'),
       db = require('../db-pouch'),
       lineage = require('@shared-libs/lineage')(Promise, db.medic),
       utils = require('./utils'),
-      moment = require('moment');
+      moment = require('moment'),
+      infodoc = require('./infodoc');
 
 const SUBJECT_PROPERTIES = ['_id', 'patient_id', 'place_id'],
       BATCH_SIZE = 50;
@@ -46,19 +47,21 @@ const updateRegistration = (dataRecord, muted) => {
 };
 
 const updateContacts = (contacts, muted) => {
-  contacts = contacts.filter(contact => {
-    return Boolean(contact.muted) !== Boolean(muted) ? updateContact(contact, muted) : false;
-  });
-
   if (!contacts.length) {
-    return;
+    return Promise.resolve();
   }
+  contacts.forEach(contact => updateContact(contact, muted));
 
   return db.medic.bulkDocs(contacts);
 };
 
 const updateContact = (contact, muted) => {
-  contact.muted = muted;
+  if (muted) {
+    contact.muted = muted;
+  } else {
+    delete contact.muted;
+  }
+
   return contact;
 };
 
@@ -80,7 +83,7 @@ const updateRegistrations = (subjectIds, muted) => {
 
 const getSubjectIds = contact => _.values(_.pick(contact, SUBJECT_PROPERTIES));
 
-const getContactsAndSubjectIds = (contactIds) => {
+const getContactsAndSubjectIds = (contactIds, muted) => {
   return db.medic
     .allDocs({ keys: contactIds, include_docs: true })
     .then(result => {
@@ -88,7 +91,7 @@ const getContactsAndSubjectIds = (contactIds) => {
             subjectIds = [];
 
       result.rows.forEach(row => {
-        if (!row.doc) {
+        if (!row.doc || Boolean(row.doc.muted) === Boolean(muted)) {
           return;
         }
         contacts.push(row.doc);
@@ -99,8 +102,34 @@ const getContactsAndSubjectIds = (contactIds) => {
     });
 };
 
-const updateMuteState = (contact, muted) => {
-  const timestamp = moment().valueOf();
+const updateMutingHistories = (contacts, muted, reportId) => {
+  if (!contacts.length) {
+    return Promise.resolve();
+  }
+
+  return infodoc
+    .bulkGet(contacts.map(contact => ({ id: contact._id, doc: contact })))
+    .then(infoDocs => infoDocs.map(_.partial(addMutingHistory, _, muted, reportId)))
+    .then(infoDocs => infodoc.bulkUpdate(infoDocs));
+};
+
+const updateMutingHistory = (contact, muted, reportId) => {
+  return updateMutingHistories([contact], muted, reportId);
+};
+
+const addMutingHistory = (infoDoc, muted, reportId) => {
+  infoDoc.muting_history = infoDoc.muting_history || [];
+  infoDoc.muting_history.push({
+    muted: !!muted,
+    date: muted || moment(),
+    report_id: reportId
+  });
+
+  return infoDoc;
+};
+
+const updateMuteState = (contact, muted, reportId) => {
+  muted = muted && moment();
 
   let rootContactId;
   if (muted) {
@@ -122,10 +151,11 @@ const updateMuteState = (contact, muted) => {
     return batches
       .reduce((promise, batch) => {
         return promise
-          .then(() => getContactsAndSubjectIds(batch))
+          .then(() => getContactsAndSubjectIds(batch, muted))
           .then(result => Promise.all([
-            updateContacts(result.contacts, muted ? timestamp : false),
-            updateRegistrations(result.subjectIds, muted)
+            updateContacts(result.contacts, muted),
+            updateRegistrations(result.subjectIds, muted),
+            updateMutingHistories(result.contacts, muted, reportId)
           ]));
       }, Promise.resolve());
   });
@@ -166,7 +196,9 @@ module.exports = {
   isMutedInLineage: isMutedInLineage,
   unmuteMessages: unmuteMessages,
   muteUnsentMessages: muteUnsentMessages,
+  updateMutingHistory: updateMutingHistory,
   _getContactsAndSubjectIds: getContactsAndSubjectIds,
   _updateContacts: updateContacts,
+  _updateMuteHistories: updateMutingHistories,
   _lineage: lineage
 };
