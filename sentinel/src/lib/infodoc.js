@@ -100,13 +100,19 @@ const bulkGet = changes => {
   const infoDocs = [];
 
   if (!changes || !changes.length) {
-    return;
+    return Promise.resolve();
   }
 
   return findInfoDocs(db.sentinel, changes)
     .then(result => {
       const missing = [];
-      result.forEach(row => row.error ? missing.push({ id: getDocId(row.key) }) : infoDocs.push(row.doc));
+      result.forEach(row => {
+        if (row.error) {
+          missing.push({ id: getDocId(row.key) });
+        } else {
+          infoDocs.push(row.doc);
+        }
+      });
 
       if (!missing.length) {
         return [];
@@ -117,11 +123,11 @@ const bulkGet = changes => {
     .then(result => {
       result.forEach(row => {
         if (row.error) {
-          return infoDocs.push(createInfoDoc(getDocId(row.key), 'unknown'));
+          infoDocs.push(createInfoDoc(getDocId(row.key), 'unknown'));
+        } else {
+          row.doc.legacy = true;
+          infoDocs.push(row.doc);
         }
-
-        row.doc.legacy = true;
-        infoDocs.push(row.doc);
       });
 
       return infoDocs;
@@ -132,7 +138,7 @@ const bulkUpdate = infoDocs => {
   const legacyDocs = [];
 
   if (!infoDocs || !infoDocs.length) {
-    return;
+    return Promise.resolve();
   }
 
   infoDocs.forEach(doc => {

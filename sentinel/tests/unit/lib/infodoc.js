@@ -3,15 +3,8 @@ const assert = require('chai').assert,
   db = require('../../../src/db-pouch'),
   infodoc = require('../../../src/lib/infodoc');
 
-let clock;
-
 describe('infodoc', () => {
-  afterEach(() => {
-    sinon.restore();
-    if (clock) {
-      clock.restore();
-    }
-  });
+  afterEach(() => sinon.restore());
 
   it('gets infodoc from medic and moves it to sentinel', () => {
     const change = {id: 'messages-en'};
@@ -41,12 +34,20 @@ describe('infodoc', () => {
       sinon.stub(db.sentinel, 'allDocs');
       sinon.stub(db.medic, 'allDocs');
 
-      assert.equal(infodoc.bulkGet(), undefined);
-      assert.equal(infodoc.bulkGet(false), undefined);
-      assert.equal(infodoc.bulkGet([]), undefined);
+      return Promise
+        .all([
+          infodoc.bulkGet(),
+          infodoc.bulkGet(false),
+          infodoc.bulkGet([])
+        ])
+        .then(results => {
+          assert.equal(results[0], undefined);
+          assert.equal(results[1], undefined);
+          assert.equal(results[2], undefined);
 
-      assert.equal(db.sentinel.allDocs.callCount, 0);
-      assert.equal(db.medic.allDocs.callCount, 0);
+          assert.equal(db.sentinel.allDocs.callCount, 0);
+          assert.equal(db.medic.allDocs.callCount, 0);
+        });
     });
 
     it('should return infodocs when all are found in sentinel db', () => {
@@ -179,22 +180,30 @@ describe('infodoc', () => {
   });
 
   describe('bulkUpdate', () => {
-    it('should do nothing when parameter is empty', () => {
+    let clock;
+
+    beforeEach(() => clock = sinon.useFakeTimers());
+    afterEach(() => sinon.restore());
+
+    it('should do nothing when docs list is empty', () => {
       sinon.stub(db.sentinel, 'bulkDocs');
       sinon.stub(db.medic, 'bulkDocs');
 
-      assert.equal(infodoc.bulkGet(), undefined);
-      assert.equal(infodoc.bulkGet(false), undefined);
-      assert.equal(infodoc.bulkGet([]), undefined);
-
-      assert.equal(db.sentinel.bulkDocs.callCount, 0);
-      assert.equal(db.medic.bulkDocs.callCount, 0);
+      return Promise
+        .all([
+          infodoc.bulkUpdate(),
+          infodoc.bulkUpdate(false),
+          infodoc.bulkUpdate([])
+        ])
+        .then(() => {
+          assert.equal(db.sentinel.bulkDocs.callCount, 0);
+          assert.equal(db.medic.bulkDocs.callCount, 0);
+        });
     });
 
     it('should save all docs when none are legacy', () => {
       sinon.stub(db.sentinel, 'bulkDocs').resolves();
       sinon.stub(db.medic, 'bulkDocs');
-      clock = sinon.useFakeTimers();
 
       const infoDocs = [ { _id: 'a-info' }, { _id: 'b-info' }, { _id: 'c-info' }, { _id: 'd-info' } ];
 
@@ -210,10 +219,9 @@ describe('infodoc', () => {
       });
     });
 
-    it('should delete legacy docs', () => {
+    it('should delete legacy docs after saving', () => {
       sinon.stub(db.sentinel, 'bulkDocs').resolves();
       sinon.stub(db.medic, 'bulkDocs').resolves();
-      clock = sinon.useFakeTimers();
 
       const infoDocs = [
         { _id: 'a-info', type: 'info', _rev: 'a-rev', legacy: true },
@@ -242,7 +250,7 @@ describe('infodoc', () => {
       });
     });
 
-    it('should throw sentinel all docs errors', () => {
+    it('should throw sentinel bulk docs errors', () => {
       sinon.stub(db.sentinel, 'bulkDocs').rejects({ some: 'error' });
       sinon.stub(db.medic, 'bulkDocs').resolves();
 
@@ -256,7 +264,7 @@ describe('infodoc', () => {
         });
     });
 
-    it('should throw sentinel all docs errors', () => {
+    it('should throw medic bulk docs errors', () => {
       sinon.stub(db.sentinel, 'bulkDocs').resolves();
       sinon.stub(db.medic, 'bulkDocs').rejects({ some: 'error' });
 
