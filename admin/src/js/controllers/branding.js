@@ -53,7 +53,7 @@ angular.module('controllers').controller('BrandingCtrl',
       DB()
         .putAttachment(BRANDING_ID, file.name, $scope.doc._rev, file, file.type)
         .then(getResourcesDoc)
-        .then(function(doc) {
+        .then(doc => {
           doc.resources[resource] = file.name;
           $scope.doc = doc;
           return DB().put(doc);
@@ -115,6 +115,15 @@ angular.module('controllers').controller('BrandingCtrl',
     };
 
     $scope.submitTitle = function() {
+      $scope.error = null;
+      if (!$scope.doc.title) {
+        $scope.error = $translate.instant('field is required', {
+          field: $translate.instant('Title')
+        });
+      }
+      if ($scope.error) {
+        return;
+      }
       DB().get($scope.doc._id).then(function(doc) {
         doc.title = $scope.doc.title;
         DB().put(doc)
