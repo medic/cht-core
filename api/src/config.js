@@ -60,14 +60,7 @@ const loadSettings = function() {
     _.defaults(settings, defaults);
     // add any missing permissions
     if (settings.permissions) {
-      defaults.permissions.forEach(function(def) {
-        const configured = _.findWhere(settings.permissions, {
-          name: def.name,
-        });
-        if (!configured) {
-          settings.permissions.push(def);
-        }
-      });
+      _.defaults(settings.permissions, defaults.permissions);
     } else {
       settings.permissions = defaults.permissions;
     }
