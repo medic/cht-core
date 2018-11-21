@@ -82,8 +82,11 @@ angular.module('inboxServices').factory('DB',
     };
 
     if (!isOnlineOnly) {
-      get({ local: true }).viewCleanup();
-      get({ local: true, meta: true }).viewCleanup();
+      // delay the cleanup so it's out of the main startup sequence
+      setTimeout(function() {
+        get({ local: true }).viewCleanup();
+        get({ local: true, meta: true }).viewCleanup()
+      }, 1000);
     }
 
     return get;
