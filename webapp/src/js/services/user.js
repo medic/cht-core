@@ -20,6 +20,7 @@
     function(
       $q,
       DB,
+      UserSettings,
       Session
     ) {
       'ngInject';
@@ -32,7 +33,7 @@
         if (Session.isOnlineOnly(userCtx)) {
           return $q.resolve();
         }
-        return getWithRemoteFallback(DB, 'org.couchdb.user:' + userCtx.name)
+        return UserSettings()
           .then(function(user) {
             if (!user.facility_id) {
               return $q.reject(new Error('No district assigned to district admin.'));

@@ -1,10 +1,10 @@
 const helper = require('../../helper'),
       ZScoreForm = require('../../page-objects/forms/z-score.po'),
+      constants = require('../../constants'),
       utils = require('../../utils');
 
-const contactId = 'some_contact_id';
-const doc = {
-  _id: contactId,
+const userContactDoc = {
+  _id: constants.USER_CONTACT_ID,
   name: 'Jack',
   date_of_birth: '',
   phone: '+64274444444',
@@ -19,9 +19,8 @@ const doc = {
 
 describe('Submit Z-Score form', () => {
   beforeAll(done => {
-    utils
-      .saveDoc(doc)
-      .then(() => ZScoreForm.configureForm(contactId, done))
+    Promise.resolve()
+      .then(() => ZScoreForm.configureForm(userContactDoc, done))
       .catch(done.fail);
   });
 

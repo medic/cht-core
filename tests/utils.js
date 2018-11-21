@@ -157,6 +157,7 @@ const deleteAll = (except = []) => {
         doc.type
       ),
     'appcache',
+    constants.USER_CONTACT_ID,
     'migration-log',
     'resources',
     'settings',
@@ -406,13 +407,16 @@ module.exports = {
       }
     }),
 
-  seedTestData: (done, contactId, documents) => {
+  seedTestData: (done, userContactDoc, documents) => {
     protractor.promise
       .all(documents.map(module.exports.saveDoc))
-      .then(() => module.exports.getDoc(userSettingsDocId))
-      .then(user => {
-        user.contact_id = contactId;
-        return module.exports.saveDoc(user);
+      .then(() => module.exports.getDoc(constants.USER_CONTACT_ID))
+      .then(existingContactDoc => {
+        if (userContactDoc) {
+          _.extend(existingContactDoc, userContactDoc);
+          existingContactDoc._deleted = undefined;
+          return module.exports.saveDoc(existingContactDoc);
+        }
       })
       .then(done)
       .catch(done.fail);

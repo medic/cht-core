@@ -6,15 +6,14 @@ const helper = require('../../helper'),
   userData = require('../../page-objects/forms/data/user.po.data');
 
 describe('Submit Delivery Report', () => {
-  const contactId = userData.contactId;
-  const docs = userData.docs;
+  const { userContactDoc, docs } = userData;
   const noteToCHW =
     'Good news, Jack! Jack () has delivered at the health facility. We will alert you when it is time to refer them for PNC. Please monitor them for danger signs. Thank you!';
 
   beforeAll(done => {
     protractor.promise
       .all(docs.map(utils.saveDoc))
-      .then(() => deliveryReport.configureForm(contactId, done))
+      .then(() => deliveryReport.configureForm(userContactDoc, done))
       .catch(done.fail);
   });
 
