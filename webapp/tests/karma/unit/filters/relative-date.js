@@ -50,4 +50,13 @@ describe('relativeDate filter', function() {
     chai.expect(element.find('span').attr('title')).to.equal('day 0');
     chai.expect(element.text()).to.equal('sometime');
   });
+
+  it('should render a date in the future', function() {
+    scope.date = moment().add(2, 'days').valueOf();
+    var element = compile('<div class="cell contact.age"></div>')(scope);
+    scope.$digest();
+    console.log('elemento');
+    //chai.expect(element.find('span .relative-date').attr('class')).to.equal('relative-date future');
+    chai.expect(element.find('span .relative-date-content').text()).to.equal('2 days');
+  });
 });
