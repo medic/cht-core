@@ -61,6 +61,7 @@ describe('InboxCtrl controller', () => {
       $provide.value('JsonForms', () => Promise.resolve({}));
       $provide.value('Language', () => Promise.resolve({}));
       $provide.value('LiveListConfig', sinon.stub());
+      $provide.value('BrandingImages', { getAppTitle: () => Promise.resolve({}) });
       $provide.factory('Modal', () => {
         stubModal = sinon.stub();
         // ConfirmModal : Always return as if user clicked delete. This ignores the DeleteDocs
