@@ -243,9 +243,15 @@ curl -X DELETE $COUCH_URL
 ```
 ## Configuring Medic
 
-We ship with one "standard" configuration, which can be a useful basis to start with. It is located at [./config/standard[(https://github.com/medic/medic-webapp/tree/master/config/standard).
+We ship with one "standard" configuration, which can be a useful basis to start with. It is located at [./config/standard](https://github.com/medic/medic-webapp/tree/master/config/standard).
 
-Configuration is performed using [Medic Project Configurer](https://github.com/medic/medic-conf). `medic-conf` expects a particular structure (seen in the standard config above). It compiles forms and configuration into the required formats, as well as uploading that configuration and performing other tasks.
+Configuration is performed using [Medic Configurer](https://github.com/medic/medic-conf). `medic-conf` expects a particular structure (seen in the standard config above). It compiles forms and configuration into the required formats, as well as uploading that configuration and performing other tasks.
+
+To import the standard configuration:
+
+1. Install medic-conf: `npm install -g medic-conf`
+2. Navigate to the configuration you want to import: `cd config/standard`
+3. Import the config: `medic-conf --url http://username:password@localhost:5984`
 
 ## Automated Deployment on Travis
 
