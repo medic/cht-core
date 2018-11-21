@@ -50,7 +50,8 @@ var feedback = require('../modules/feedback'),
     UserSettings,
     WealthQuintilesWatcher,
     XmlForms,
-    RecurringProcessManager
+    RecurringProcessManager,
+    BrandingImages
   ) {
     'ngInject';
 
@@ -76,6 +77,11 @@ var feedback = require('../modules/feedback'),
       // Disable debug for everything but localhost
       Debug.set(false);
     }
+
+    $scope.logo = 'logo';
+    BrandingImages.getAppTitle().then(title => {
+      document.title = title;
+    });
 
     $scope.replicationStatus = {
       disabled: false,

@@ -5,7 +5,7 @@
 
     <a ui-sref="home">
       <div class="logo">
-        <img class="logo-full" src="img/medic-logo-light-full.svg" title="Medic Mobile | {{version}}" />
+        <div ng-bind-html="logo | headerLogo"></div>
       </div>
     </a>
 

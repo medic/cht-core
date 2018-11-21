@@ -5,7 +5,8 @@ angular.module('controllers').controller('MainCtrl',
     $window,
     Auth,
     $scope,
-    Session
+    Session,
+    BrandingImages
   ) {
     'ngInject';
     $translate.use('en');
@@ -17,5 +18,9 @@ angular.module('controllers').controller('MainCtrl',
     $scope.logout = function() {
       Session.logout();
     };
+
+    BrandingImages.getAppTitle().then(title => {
+      document.title = `${title} | admin console`;
+    });
   }
 );

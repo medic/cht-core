@@ -272,7 +272,6 @@ module.exports = function(grunt) {
             cwd: 'webapp/src/',
             src: [
               'audio/**/*',
-              'fonts/**/*',
               'img/**/*',
               'templates/inbox.html',
               'ddocs/medic/_attachments/**/*',

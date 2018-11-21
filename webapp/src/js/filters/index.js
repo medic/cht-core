@@ -12,5 +12,6 @@
   require('./resource-icon');
   require('./safe-html');
   require('./translate-from');
+  require('./header-logo');
 
 }());

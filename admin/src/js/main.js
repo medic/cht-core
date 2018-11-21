@@ -43,6 +43,7 @@ require('./controllers/translation-languages');
 require('./controllers/upgrade');
 require('./controllers/upgrade-confirm');
 require('./controllers/users');
+require('./controllers/branding');
 
 angular.module('directives', ['ngSanitize']);
 require('./directives/modal');
@@ -54,6 +55,7 @@ angular.module('filters', ['ngSanitize']);
 require('./filters/resource-icon');
 require('./filters/translate-from');
 require('./filters/build-version');
+require('./filters/header-logo');
 
 angular.module('services', []);
 require('./services/blob');
@@ -101,6 +103,7 @@ require('../../../webapp/src/js/services/translation-null-interpolation');
 require('../../../webapp/src/js/services/update-settings');
 require('../../../webapp/src/js/services/update-user');
 require('../../../webapp/src/js/services/user');
+require('../../../webapp/src/js/services/branding-images');
 
 var app = angular.module('adminApp', [
   'controllers',
@@ -253,10 +256,27 @@ app.config(function(
         }
       }
     })
-    .state('icons', {
+    .state('images', {
+      url: '/images',
+      templateUrl: 'templates/images.html'
+    })
+    .state('images.icons', {
       url: '/icons',
-      controller: 'IconsCtrl',
-      templateUrl: 'templates/icons.html'
+      views: {
+        tab: {
+          controller: 'IconsCtrl',
+          templateUrl: 'templates/images_icons.html'
+        }
+      }
+    })
+    .state('images.branding', {
+      url: '/branding',
+      views: {
+        tab: {
+          controller: 'BrandingCtrl',
+          templateUrl: 'templates/images_branding.html'
+        }
+      }
     })
     .state('authorization', {
       url: '/authorization',

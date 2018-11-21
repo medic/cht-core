@@ -4,6 +4,7 @@ const _ = require('underscore'),
   morgan = require('morgan'),
   helmet = require('helmet'),
   environment = require('./environment'),
+  pouch = require('./db-pouch'),
   path = require('path'),
   auth = require('./auth'),
   logger = require('./logger'),
@@ -95,7 +96,17 @@ if (process.argv.slice(2).includes('--allow-cors')) {
 
 app.use((req, res, next) => {
   req.id = uuid.v4();
-  next();
+  if (req.originalUrl === '/favicon.ico') {
+    pouch.medic.get('branding').then(doc => {
+      pouch.medic.getAttachment(doc._id, doc.resources.favicon).then(blob => {
+        res.send(blob);
+      });
+    }).catch(err => {
+      res.end(err);
+    });
+  } else {
+    next();
+  }
 });
 morgan.token('id', req => req.id);
 app.use(

@@ -1,0 +1,76 @@
+<div class="row">
+  <p class="text-danger">{{error}}</p>
+  <div class="col-sm-4">
+    <form id="app-title">
+      <div class="form-group">
+        <label for="title">Title *</label>
+        <input type="text" name="title" class="form-control" ng-value="doc.title" ng-required="required" ng-model="doc.title">
+      </div>
+      <button type="submit" class="btn btn-primary" ng-click="submitTitle()" ng-disabled="submitting" translate>Submit</button>
+    </form>
+  </div>
+</div>
+
+<div class="row">
+  <div class="col-sm-4">
+      <form id="header-upload">
+        <legend translate>upload.header.logo</legend>
+    
+        <div class="form-group">
+          <label translate>Logo</label> *
+          <div>
+            <button type="button" class="btn btn-default choose" ng-disabled="uploading">
+              <i class="fa fa-arrow-up"></i>
+              <span translate>Choose file</span>
+            </button>
+            <div class="loader" ng-show="uploading"></div>
+            <div class="hide">
+              <input class="uploader" type="file"  accept="image/*">
+            </div>
+          </div>
+        </div>
+    
+        <div class="form-actions">
+          <button type="submit" class="btn btn-primary" ng-click="submit()" ng-disabled="submitting" translate>Submit</button>
+          <div class="loader inline small" ng-show="submitting"></div>
+        </div>
+      </form>
+  </div>
+  <div class="col-sm-7">
+    <div>
+      <legend>Logo</legend>
+      <div class="loader" ng-show="loading"></div>
+      <div class="navbar-inverse">
+        <div ng-bind-html="name | headerLogo"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="row">
+    <div class="col-sm-4">
+        <form id="favicon-upload">
+          <legend translate>upload.favicon</legend>
+      
+          <div class="form-group">
+            <label>Favicon</label> * <span ng-bind-html="favicon"></span>
+            <div>
+              <button type="button" class="btn btn-default choose" ng-disabled="uploading">
+                <i class="fa fa-arrow-up"></i>
+                <span translate>Choose file</span>
+              </button>
+              <div class="loader" ng-show="uploading"></div>
+              <div class="hide">
+                <input class="uploader" type="file"  accept="image/*">
+              </div>
+            </div>
+          </div>
+      
+          <div class="form-actions">
+            <button type="submit" class="btn btn-primary" ng-click="submitFav()" ng-disabled="submitting" translate>Submit</button>
+            <div class="loader inline small" ng-show="submitting"></div>
+          </div>
+        </form>
+    </div>
+  </div>
+    
