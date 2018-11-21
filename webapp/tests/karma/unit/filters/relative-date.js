@@ -53,10 +53,9 @@ describe('relativeDate filter', function() {
 
   it('should render a date in the future', function() {
     scope.date = moment().add(2, 'days').valueOf();
-    var element = compile('<div class="cell contact.age"></div>')(scope);
+    var element = compile('<div ng-bind-html="date | relativeDate"></div>')(scope);
     scope.$digest();
-    console.log('elemento');
-    //chai.expect(element.find('span .relative-date').attr('class')).to.equal('relative-date future');
-    chai.expect(element.find('span .relative-date-content').text()).to.equal('2 days');
+    chai.expect(element.find('span').attr('class')).to.equal('relative-date future');
+    chai.expect(element.text()).to.equal('somerelativetime');
   });
 });
