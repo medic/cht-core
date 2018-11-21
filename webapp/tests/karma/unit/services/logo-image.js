@@ -63,7 +63,7 @@ describe('BrandingImages service', function() {
         var actual = service.getLogo('logo');
         var expected =
           '<span class="header-logo" title="logo">' +
-            '<img class="logo-full" src="data:image/svg+xml;base64,TguMzJsMi4xNT" />' +
+            '<img src="data:image/svg+xml;base64,TguMzJsMi4xNT" />' +
           '</span>';
         chai.expect(actual).to.equal(expected);
         done();

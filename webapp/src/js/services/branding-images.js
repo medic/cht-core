@@ -27,7 +27,7 @@ angular.module('inboxServices').factory('BrandingImages',
         if (!image) {
           return '';
         }
-        var content = '<img class="logo-full" src="data:' + image.content_type + ';base64,' + image.data + '" />';
+        var content = '<img src="data:' + image.content_type + ';base64,' + image.data + '" />';
         cache.htmlContent[name] = content;
       }
       return cache.htmlContent[name];
