@@ -1231,8 +1231,12 @@ describe('mutingUtils', () => {
   });
 
   describe('updateContact', () => {
-    it('set muted to false', () => {
+    it('should remove muted property when unmuting', () => {
       chai.expect(mutingUtils.updateContact({}, false)).to.deep.equal({ });
+      chai.expect(mutingUtils.updateContact({ muted: 'something' }, false)).to.deep.equal({ });
+      chai
+        .expect(mutingUtils.updateContact({ _id: 'a', patient_id: 'b', muted: 'something' }, false))
+        .to.deep.equal({ _id: 'a', patient_id: 'b' });
     });
 
     it('set muted to received value', () => {
