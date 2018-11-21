@@ -107,7 +107,7 @@ const bulkGet = changes => {
     .then(result => {
       const missing = [];
       result.forEach(row => {
-        if (row.error) {
+        if (!row.doc) {
           missing.push({ id: getDocId(row.key) });
         } else {
           infoDocs.push(row.doc);
@@ -122,7 +122,7 @@ const bulkGet = changes => {
     })
     .then(result => {
       result.forEach(row => {
-        if (row.error) {
+        if (!row.doc) {
           infoDocs.push(createInfoDoc(getDocId(row.key), 'unknown'));
         } else {
           row.doc.legacy = true;

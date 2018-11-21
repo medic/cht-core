@@ -50,8 +50,8 @@ const updateContacts = (contacts, muted) => {
   if (!contacts.length) {
     return Promise.resolve();
   }
-  contacts.forEach(contact => updateContact(contact, muted));
 
+  contacts.forEach(contact => updateContact(contact, muted));
   return db.medic.bulkDocs(contacts);
 };
 
@@ -109,7 +109,7 @@ const updateMutingHistories = (contacts, muted, reportId) => {
 
   return infodoc
     .bulkGet(contacts.map(contact => ({ id: contact._id, doc: contact })))
-    .then(infoDocs => infoDocs.map(_.partial(addMutingHistory, _, muted, reportId)))
+    .then(infoDocs => infoDocs.map(info => addMutingHistory(info, muted, reportId)))
     .then(infoDocs => infodoc.bulkUpdate(infoDocs));
 };
 
@@ -117,15 +117,15 @@ const updateMutingHistory = (contact, muted, reportId) => {
   return updateMutingHistories([contact], muted, reportId);
 };
 
-const addMutingHistory = (infoDoc, muted, reportId) => {
-  infoDoc.muting_history = infoDoc.muting_history || [];
-  infoDoc.muting_history.push({
+const addMutingHistory = (info, muted, reportId) => {
+  info.muting_history = info.muting_history || [];
+  info.muting_history.push({
     muted: !!muted,
     date: muted || moment(),
     report_id: reportId
   });
 
-  return infoDoc;
+  return info;
 };
 
 const updateMuteState = (contact, muted, reportId) => {
