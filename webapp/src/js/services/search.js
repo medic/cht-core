@@ -77,7 +77,7 @@ var _ = require('underscore'),
         var setLastVisitedDate = function(rows) {
           rows.forEach(function(row) {
             if (visitStats[row.key]) {
-              visitStats[row.key].lastVisitedDate = row.value && row.value.max || row.value;
+              visitStats[row.key].lastVisitedDate = _.isObject(row.value) ? row.value.max : row.value;
             }
           });
         };

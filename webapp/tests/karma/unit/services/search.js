@@ -490,6 +490,82 @@ describe('Search service', function() {
         });
     });
 
+    it('should handle max correctly', () => {
+      GetDataRecords.resolves([{ _id: '1' }, { _id: '2' }, { _id: '3' }]);
+      searchStub.resolves({ docIds: ['1', '2', '3'] });
+      session.isOnlineOnly.returns(true);
+      db.query
+        .withArgs('medic-client/contacts_by_last_visited')
+        .resolves({
+          rows: [
+            { key: '1', value: { max: 0 } },
+            { key: '2', value: { max: -1 } },
+            { key: '3', value: { max: moment('2018-07-25').valueOf() } }
+          ]
+        });
+
+      db.query
+        .withArgs('medic-client/visits_by_date')
+        .resolves({
+          rows: [
+            { key: moment('2018-07-25').valueOf(), value: '3' },
+            { key: moment('2018-08-16').valueOf(), value: '6' }
+          ]
+        });
+
+      const extensions = {
+        displayLastVisitedDate: true,
+        visitCountSettings: {
+          visitCountGoal: 2,
+          monthStartDate: 25
+        },
+        sortByLastVisitedDate: 'yes!!!!'
+      };
+
+      return service('contacts', {}, {}, extensions )
+        .then(result => {
+          chai.expect(searchStub.callCount).to.equal(1);
+          chai.expect(searchStub.args[0])
+            .to.deep.equal(['contacts', {}, { limit: 50, skip: 0 }, extensions]);
+          chai.expect(db.query.callCount).to.equal(2);
+          chai.expect(db.query.args[0]).to.deep.equal([
+            'medic-client/visits_by_date',
+            {
+              start_key: moment('2018-07-25').startOf('day').valueOf(),
+              end_key: moment('2018-08-24').endOf('day').valueOf()
+            }
+          ]);
+          chai.expect(db.query.args[1]).to.deep.equal([
+            'medic-client/contacts_by_last_visited',
+            { reduce: true, group: true, keys: ['1', '2', '3'] }
+          ]);
+
+          chai.expect(result).to.deep.equal([
+            {
+              _id: '1',
+              lastVisitedDate: 0,
+              visitCountGoal: 2,
+              visitCount: 0,
+              sortByLastVisitedDate: 'yes!!!!'
+            },
+            {
+              _id: '2',
+              lastVisitedDate: -1,
+              visitCountGoal: 2,
+              visitCount: 0,
+              sortByLastVisitedDate: 'yes!!!!'
+            },
+            {
+              _id: '3',
+              lastVisitedDate: moment('2018-07-25 00:00:00').valueOf(),
+              visitCountGoal: 2,
+              visitCount: 1,
+              sortByLastVisitedDate: 'yes!!!!'
+            }
+          ]);
+        });
+    });
+
     it('should not query visits_by_date when receiving extended results from SearchLib', () => {
       searchStub.resolves({
         docIds: ['1', '2', '3', '4'],
