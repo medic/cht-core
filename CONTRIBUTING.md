@@ -6,7 +6,7 @@ At Medic Mobile we welcome and appreciate community contributions.
 
 ### Communication
 
-If you have an idea or a question we'd love to hear from you! The easiest ways to get in touch are by raising issues in the [medic-webapp Github repo](https://github.com/medic/medic-webapp/issues) or by messaging our [Google Group](https://groups.google.com/forum/#!forum/medic-developers).
+If you have an idea or a question we'd love to hear from you! The easiest way to get in touch is by raising issues in the [medic-webapp Github repo](https://github.com/medic/medic-webapp/issues). You can also reach out on our community Slack channel. You can request access via [this _Community Health Toolkit_ page](https://communityhealthtoolkit.org/slack).
 
 ### Submitting code
 
