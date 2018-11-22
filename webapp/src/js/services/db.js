@@ -7,6 +7,7 @@ const META_DB_SUFFIX = 'meta';
 
 angular.module('inboxServices').factory('DB',
   function(
+    $timeout,
     $window,
     Location,
     pouchDB,
@@ -67,7 +68,7 @@ angular.module('inboxServices').factory('DB',
 
     if (!isOnlineOnly) {
       // delay the cleanup so it's out of the main startup sequence
-      setTimeout(() => {
+      $timeout(() => {
         get().viewCleanup();
         get({ meta: true }).viewCleanup();
       }, 1000);
