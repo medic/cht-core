@@ -70,7 +70,8 @@ angular.module('inboxServices').factory('BrandingImages',
 
     Changes({
       key: 'branding-images',
-      callback: updateResources
+      callback: updateResources,
+      filter: change => change.id === BRANDING_ID
     });
 
     var init = updateResources();

@@ -1,23 +1,59 @@
-var db = require('../db-nano'),
-    {promisify} = require('util'),
-    appTitle = 'Medic Mobile';
+const db = require('../db-pouch'),
+  logger = require('../logger'),
+  fs = require('fs'),
+  path = require('path'),
+  BRANDING_ID = 'branding',
+  appTitle = 'Medic Mobile';
 
-var RESOURCES_ID = 'branding';
+const logo = {
+  name: 'logo',
+  file: 'medic-logo-light-full.svg',
+  type: 'image/svg+xml',
+  dir: 'logo'
+};
+const favicon = {
+  name: 'favicon',
+  file: 'favicon.ico',
+  type: 'image/x-icon',
+  dir: 'ico'
+};
+
+const attachDocument = (src, doc, resource) => {
+  return new Promise((resolve, _) => {
+    fs.readFile(src, (err, data) => {
+      if (err) {
+      }
+      db.medic.putAttachment(doc.id, resource.file, doc.rev, new Buffer(data).toString('base64'), resource.type).then(doc => {
+        resolve(doc);
+      })
+    });
+  })
+};
+
+const createDoc = () => {
+  return db.medic.put({
+    _id: BRANDING_ID,
+    title: appTitle,
+    resources: {
+      [logo.name]: logo.file,
+      [favicon.name]: favicon.file
+    }
+  }).then(doc => {
+    const srcLogo = path.join(__dirname, '..', `resources/${logo.dir}`, logo.file);
+    const srcFav = path.join(__dirname, '..', `resources/${favicon.dir}`, favicon.file);
+    attachDocument(srcLogo, doc, logo).then(doc => {
+      attachDocument(srcFav, doc, favicon);
+    });
+  })
+  .catch(err => {
+    logger.error('%o',err);
+  });
+};
 
 module.exports = {
   name: 'add-branding-doc',
-  created: new Date(2015, 9, 25, 16, 0, 0, 0),
-  run: promisify(function(callback) {
-    db.medic.get(RESOURCES_ID, function(err) {
-      if (err) {
-        if (err.statusCode === 404) {
-          db.medic.insert({ _id: RESOURCES_ID, resources: {}, title: appTitle }, callback);
-        } else {
-          callback(err);
-        }
-      } else {
-        callback();
-      }
-    });
-  })
+  created: new Date(2018, 11, 22, 10, 0, 0, 0),
+  run: () => {
+    return createDoc();
+  }
 };

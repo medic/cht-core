@@ -55,7 +55,10 @@ angular.module('filters', ['ngSanitize']);
 require('./filters/resource-icon');
 require('./filters/translate-from');
 require('./filters/build-version');
-require('./filters/header-logo');
+
+// filters we borrow from webapp
+angular.module('inboxFilters', []);
+require('../../../webapp/src/js/filters/header-logo');
 
 angular.module('services', []);
 require('./services/blob');
@@ -109,6 +112,7 @@ var app = angular.module('adminApp', [
   'controllers',
   'directives',
   'filters',
+  'inboxFilters',
   'inboxServices',
   'ipCookie',
   'ngRoute',

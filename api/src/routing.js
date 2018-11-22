@@ -4,7 +4,7 @@ const _ = require('underscore'),
   morgan = require('morgan'),
   helmet = require('helmet'),
   environment = require('./environment'),
-  pouch = require('./db-pouch'),
+  db = require('./db-pouch'),
   path = require('path'),
   auth = require('./auth'),
   logger = require('./logger'),
@@ -96,18 +96,9 @@ if (process.argv.slice(2).includes('--allow-cors')) {
 
 app.use((req, res, next) => {
   req.id = uuid.v4();
-  if (req.originalUrl === '/favicon.ico') {
-    pouch.medic.get('branding').then(doc => {
-      pouch.medic.getAttachment(doc._id, doc.resources.favicon).then(blob => {
-        res.send(blob);
-      });
-    }).catch(err => {
-      res.end(err);
-    });
-  } else {
-    next();
-  }
+  next();
 });
+
 morgan.token('id', req => req.id);
 app.use(
   morgan('REQ :id :remote-addr :remote-user :method :url HTTP/:http-version', {
@@ -160,6 +151,16 @@ app.get('/', function(req, res) {
     // redirect to the app path - redirect to _rewrite
     res.redirect(appPrefix);
   }
+});
+
+app.get('/favicon.ico', (req, res) => {
+  db.medic.get('branding').then(doc => {
+    db.medic.getAttachment(doc._id, doc.resources.favicon).then(blob => {
+      res.send(blob);
+    });
+  }).catch(err => {
+    return serverUtils.serverError(err, req, res);
+  });
 });
 
 app.use(express.static(path.join(__dirname, 'public')));

@@ -272,6 +272,7 @@ module.exports = function(grunt) {
             cwd: 'webapp/src/',
             src: [
               'audio/**/*',
+              'fonts/**/*',
               'img/**/*',
               'templates/inbox.html',
               'ddocs/medic/_attachments/**/*',
@@ -291,7 +292,7 @@ module.exports = function(grunt) {
           {
             expand: true,
             flatten: true,
-            src: 'admin/node_modules/font-awesome/fonts/*',
+            src: ['admin/node_modules/font-awesome/fonts/*', 'admin/src/fonts/**/*'],
             dest: 'build/ddocs/medic-admin/_attachments/fonts/',
           },
         ],

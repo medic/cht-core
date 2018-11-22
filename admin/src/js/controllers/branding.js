@@ -3,9 +3,7 @@ angular.module('controllers').controller('BrandingCtrl',
     $log,
     $scope,
     $translate,
-    DB,
-    Changes,
-    BrandingImages
+    DB
   ) {
 
     'ngInject';
@@ -120,26 +118,13 @@ angular.module('controllers').controller('BrandingCtrl',
         $scope.error = $translate.instant('field is required', {
           field: $translate.instant('Title')
         });
-      }
-      if ($scope.error) {
         return;
       }
-      DB().get($scope.doc._id).then(function(doc) {
-        doc.title = $scope.doc.title;
-        DB().put(doc)
-          .catch(function (err) {
-            $scope.error = err;
-          });
-      });
+      DB().put($scope.doc)
+        .catch(err => {
+          $log.error(err);
+          $scope.error = $translate.instant('Error saving settings');
+        });
     };
-
-    const updateDOM = () => {
-      BrandingImages.getAppTitle();
-    };
-
-    Changes({
-      key: 'branding-changes',
-      callback: updateDOM
-    });
   }
 );
