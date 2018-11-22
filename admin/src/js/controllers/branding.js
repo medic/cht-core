@@ -11,9 +11,9 @@ angular.module('controllers').controller('BrandingCtrl',
 
     const BRANDING_ID = 'branding';
 
-    $('#header-upload .choose').on('click', function(_ev) {
+    $('#image-upload .choose').on('click', function(_ev) {
       _ev.preventDefault();
-      $('#header-upload .uploader').click();
+      $('#image-upload .uploader').click();
     });
 
     $('#favicon-upload .choose').on('click', function(_ev) {
@@ -21,11 +21,10 @@ angular.module('controllers').controller('BrandingCtrl',
       $('#favicon-upload .uploader').click();
     });
 
-    $scope.name = 'logo';
     $scope.error = null;
-    $scope.images = null;
     $scope.loading = true;
     $scope.favicon = null;
+    $scope.logo = 'logo';
 
     var renderResources = function() {
       var fav = $scope.doc._attachments[$scope.doc.resources.favicon];
@@ -68,13 +67,19 @@ angular.module('controllers').controller('BrandingCtrl',
         });
     };
 
-    $scope.submit = function() {
+    $scope.submit = (name) => {
       $scope.error = null;
       if (!$scope.doc) {
         $scope.error = $translate.instant('Error saving settings');
         return;
       }
-      var files = $('#header-upload .uploader')[0].files;
+
+      var files = null;
+      if (name === 'logo') {
+        files = $('#image-upload .uploader')[0].files;
+      } else {
+        files = $('#favicon-upload .uploader')[0].files;
+      }
       if (!files || files.length === 0) {
         $scope.error = $translate.instant('field is required', {
           field: $translate.instant('image')
@@ -87,30 +92,9 @@ angular.module('controllers').controller('BrandingCtrl',
       if ($scope.error) {
         return;
       }
-      addAttachment(files[0], $scope.name);
-    };
-
-    $scope.submitFav = function() {
-      $scope.error = null;
-      if (!$scope.doc) {
-        $scope.error = $translate.instant('Error saving settings');
-        return;
-      }
-      var files = $('#favicon-upload .uploader')[0].files;
-      if (!files || files.length === 0) {
-        $scope.error = $translate.instant('field is required', {
-          field: $translate.instant('image')
-        });
-      }
-      // File must be less than 10KB
-      if (files[0].size > 10000) {
-        $scope.error = 'File must be less than 10KB';
-      }
-      if ($scope.error) {
-        return;
-      }
-      addAttachment(files[0], 'favicon');
-    };
+      addAttachment(files[0], name);
+      
+    }
 
     $scope.submitTitle = function() {
       $scope.error = null;

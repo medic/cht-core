@@ -1,6 +1,7 @@
 angular.module('inboxServices').factory('BrandingImages',
   function(
     $log,
+    $translate,
     Changes,
     DB
   ) {
@@ -44,10 +45,7 @@ angular.module('inboxServices').factory('BrandingImages',
         var $this = $(this);
         $this.html(getHtmlContent($this.attr('title')));
       });
-    };
-
-    var updateTitle = (doc) => {
-      document.title = doc.title;
+      document.getElementById("app").innerHTML = cache.doc.title;
     };
 
     var updateResources = function() {
@@ -59,7 +57,6 @@ angular.module('inboxServices').factory('BrandingImages',
             htmlContent: {}
           };
           updateDom();
-          updateTitle(res);
         })
         .catch(function(err) {
           if (err.status !== 404) {

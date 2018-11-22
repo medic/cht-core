@@ -12,7 +12,7 @@
 </div>
 <div class="row">
   <div class="col-sm-4">
-    <form id="header-upload">
+    <form id="image-upload">
       <legend translate>upload.header.logo</legend>
       <div class="form-group required">
         <label translate>admin.app.logo</label>
@@ -28,7 +28,7 @@
         </div>
       </div>
       <div class="form-actions">
-        <button type="submit" class="btn btn-primary" ng-click="submit()" ng-disabled="submitting" translate>Submit</button>
+        <button type="submit" class="btn btn-primary" ng-click="submit('logo')" ng-disabled="submitting" translate>Submit</button>
         <div class="loader inline small" ng-show="submitting"></div>
       </div>
     </form>
@@ -38,7 +38,7 @@
       <legend translate>admin.app.logo</legend>
       <div class="loader" ng-show="loading"></div>
       <div class="navbar-inverse">
-        <div ng-bind-html="name | headerLogo"></div>
+        <div ng-bind-html="logo | headerLogo"></div>
       </div>
     </div>
   </div>
@@ -60,7 +60,7 @@
       </div>
     </div>
     <div class="form-actions">
-      <button type="submit" class="btn btn-primary" ng-click="submitFav()" ng-disabled="submitting" translate>Submit</button>
+      <button type="submit" class="btn btn-primary" ng-click="submit('favicon')" ng-disabled="submitting" translate>Submit</button>
       <div class="loader inline small" ng-show="submitting"></div>
     </div>
   </form>
