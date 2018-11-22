@@ -71,9 +71,11 @@ module.exports = {
   onMatch: change => {
     if (change.doc.type !== 'data_record') {
       // process new contacts
-      mutingUtils.updateContact(change.doc, true);
+      const muted = new Date();
+      mutingUtils.updateContact(change.doc, muted);
       return mutingUtils
-        .updateRegistrations(mutingUtils.getSubjectIds(change.doc), true)
+        .updateRegistrations(mutingUtils.getSubjectIds(change.doc), muted)
+        .then(() => mutingUtils.updateMutingHistory(change.doc, muted))
         .then(() => true);
     }
 
@@ -98,7 +100,7 @@ module.exports = {
               return;
             }
 
-            return mutingUtils.updateMuteState(contact, muteState);
+            return mutingUtils.updateMuteState(contact, muteState, change.id);
           });
       })
       .then(changed => changed && module.exports._addMsg(getEventType(muteState), change.doc, targetContact))
