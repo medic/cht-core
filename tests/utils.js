@@ -3,8 +3,7 @@ const _ = require('underscore'),
   constants = require('./constants'),
   http = require('http'),
   path = require('path'),
-  htmlScreenshotReporter = require('protractor-jasmine2-screenshot-reporter'),
-  userSettingsDocId = `org.couchdb.user:${auth.user}`;
+  htmlScreenshotReporter = require('protractor-jasmine2-screenshot-reporter');
 
 const PouchDB = require('pouchdb-core');
 PouchDB.plugin(require('pouchdb-adapter-http'));

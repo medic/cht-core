@@ -85,9 +85,9 @@ const setupUserContact = () => {
     path: `/${constants.DB_NAME}/${constants.USER_CONTACT_ID}`,
     method: 'PUT',
     body: JSON.stringify({
-      "_id": constants.USER_CONTACT_ID,
-      "type": "person",
-      "reported_date": 1541679811408
+      _id: constants.USER_CONTACT_ID,
+      type: 'person',
+      reported_date: 1541679811408
     }),
     headers: { 'Content-Type': 'application/json' }
   });
