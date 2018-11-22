@@ -1,6 +1,9 @@
 const db = require('../db-pouch'),
-  logger = require('../lib/logger'),
-  infoDocId = id => id + '-info';
+  logger = require('../lib/logger');
+
+const infoDocId = id => id + '-info';
+
+const getDocId = infoDocId => infoDocId.slice(0, -5);
 
 const findInfoDoc = (database, change) => {
   return database.get(infoDocId(change.id)).catch(err => {
@@ -9,6 +12,12 @@ const findInfoDoc = (database, change) => {
     }
     throw err;
   });
+};
+
+const findInfoDocs = (database, changes) => {
+  return database
+    .allDocs({ keys: changes.map(change => infoDocId(change.id)), include_docs: true })
+    .then(results => results.rows);
 };
 
 const getInfoDoc = change => {
@@ -89,9 +98,73 @@ const updateTransition = (change, transition, ok) => {
   });
 };
 
+const bulkGet = changes => {
+  const infoDocs = [];
+
+  if (!changes || !changes.length) {
+    return Promise.resolve();
+  }
+
+  return findInfoDocs(db.sentinel, changes)
+    .then(result => {
+      const missing = [];
+      result.forEach(row => {
+        if (!row.doc) {
+          missing.push({ id: getDocId(row.key) });
+        } else {
+          infoDocs.push(row.doc);
+        }
+      });
+
+      if (!missing.length) {
+        return [];
+      }
+
+      return findInfoDocs(db.medic, missing);
+    })
+    .then(result => {
+      result.forEach(row => {
+        if (!row.doc) {
+          infoDocs.push(createInfoDoc(getDocId(row.key), 'unknown'));
+        } else {
+          row.doc.legacy = true;
+          infoDocs.push(row.doc);
+        }
+      });
+
+      return infoDocs;
+    });
+};
+
+const bulkUpdate = infoDocs => {
+  const legacyDocs = [];
+
+  if (!infoDocs || !infoDocs.length) {
+    return Promise.resolve();
+  }
+
+  infoDocs.forEach(doc => {
+    if (doc.legacy) {
+      delete doc.legacy;
+      legacyDocs.push(Object.assign({ _deleted: true }, doc));
+      delete doc._rev;
+    }
+
+    doc.latest_replication_date = new Date();
+  });
+
+  return db.sentinel.bulkDocs(infoDocs).then(() => {
+    if (legacyDocs.length) {
+      return db.medic.bulkDocs(legacyDocs);
+    }
+  });
+};
+
 module.exports = {
   get: change => getInfoDoc(change),
   delete: change => deleteInfoDoc(change),
   updateTransition: (change, transition, ok) =>
     updateTransition(change, transition, ok),
+  bulkGet: bulkGet,
+  bulkUpdate: bulkUpdate
 };
