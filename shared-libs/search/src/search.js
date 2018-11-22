@@ -74,7 +74,7 @@ module.exports = function(Promise, DB) {
     return queryView(request);
   };
 
-  var getRows = function(type, requests, options, returnResultsCache) {
+  var getRows = function(type, requests, options, cacheQueryResults) {
     if (requests.length === 1 && requests[0].ordered) {
       // 1 ordered view - let the db do the pagination for us
       return queryViewPaginated(requests[0], options);
@@ -88,7 +88,7 @@ module.exports = function(Promise, DB) {
         return getPageRows(type, results, options);
       })
       .then(function(results) {
-        return returnResultsCache ? { queryResultsCache: queryResultsCache, docIds: results } : results;
+        return cacheQueryResults ? { queryResultsCache: queryResultsCache, docIds: results } : results;
       });
   };
 
@@ -99,7 +99,7 @@ module.exports = function(Promise, DB) {
       skip: 0
     });
 
-    var cacheResults = GenerateSearchRequests.shouldSortByLastVisitedDate(extensions);
+    var cacheQueryResults = GenerateSearchRequests.shouldSortByLastVisitedDate(extensions);
     var requests;
     try {
       requests = GenerateSearchRequests.generate(type, filters, extensions);
@@ -107,9 +107,9 @@ module.exports = function(Promise, DB) {
       return Promise.reject(err);
     }
 
-    return getRows(type, requests, options, cacheResults)
+    return getRows(type, requests, options, cacheQueryResults)
       .then(function(results) {
-        if (cacheResults) {
+        if (cacheQueryResults) {
           return {
             queryResultsCache: results.queryResultsCache,
             docIds: _.pluck(results.docIds, 'id')
