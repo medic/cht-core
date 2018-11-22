@@ -266,6 +266,7 @@ describe('update_notifications', () => {
       const change = {
         doc: doc,
         form: 'off',
+        id: 'report_id'
       };
       return transition.onMatch(change).then(changed => {
         assert.equal(changed, true);
@@ -275,7 +276,7 @@ describe('update_notifications', () => {
         assert.equal(mutingUtils.getContact.callCount, 1);
         assert.deepEqual(mutingUtils.getContact.args[0], [doc]);
         assert.equal(mutingUtils.updateMuteState.callCount, 1);
-        assert.deepEqual(mutingUtils.updateMuteState.args[0], [{ muted: false, name: 'Agatha' }, true]);
+        assert.deepEqual(mutingUtils.updateMuteState.args[0], [{ muted: false, name: 'Agatha' }, true, 'report_id']);
       });
     });
 
@@ -305,6 +306,7 @@ describe('update_notifications', () => {
       const change = {
         doc: doc,
         form: 'off',
+        id: 'report_id'
       };
       return transition.onMatch(change).then(changed => {
         assert.equal(changed, true);
@@ -343,7 +345,8 @@ describe('update_notifications', () => {
 
       const change = {
         doc: doc,
-        form: 'off'
+        form: 'off',
+        id: 'report_id'
       };
       return transition.onMatch(change).then(changed => {
         assert.equal(changed, true);
@@ -353,7 +356,7 @@ describe('update_notifications', () => {
         assert.equal(mutingUtils.getContact.callCount, 1);
         assert.deepEqual(mutingUtils.getContact.args[0], [doc]);
         assert.equal(mutingUtils.updateMuteState.callCount, 1);
-        assert.deepEqual(mutingUtils.updateMuteState.args[0], [{ muted: true, name: 'Agatha' }, false]);
+        assert.deepEqual(mutingUtils.updateMuteState.args[0], [{ muted: true, name: 'Agatha' }, false, 'report_id']);
       });
     });
 
@@ -448,14 +451,14 @@ describe('update_notifications', () => {
       sinon.stub(mutingUtils, 'getContact').resolves({ name: 'Agatha' });
       sinon.stub(mutingUtils, 'updateMuteState').resolves(true);
 
-      return transition.onMatch({ doc }).then(changed => {
+      return transition.onMatch({ doc, id: 'id' }).then(changed => {
         assert.equal(changed, true);
         assert.equal(doc.errors.length, 1);
         assert.equal(doc.tasks, undefined);
         assert.equal(mutingUtils.getContact.callCount, 1);
         assert.deepEqual(mutingUtils.getContact.args[0], [doc]);
         assert.equal(mutingUtils.updateMuteState.callCount, 1);
-        assert.deepEqual(mutingUtils.updateMuteState.args[0], [{ name: 'Agatha' }, true]);
+        assert.deepEqual(mutingUtils.updateMuteState.args[0], [{ name: 'Agatha' }, true, 'id']);
         assert.equal(
           doc.errors[0].message,
           'Failed to complete notification request, event type "on_mute" misconfigured.'
@@ -482,14 +485,14 @@ describe('update_notifications', () => {
       sinon.stub(mutingUtils, 'getContact').resolves({ name: 'Agatha', muted: 123456 });
       sinon.stub(mutingUtils, 'updateMuteState').resolves(true);
 
-      return transition.onMatch({ doc }).then(changed => {
+      return transition.onMatch({ doc, id: 'changeid' }).then(changed => {
         assert.equal(changed, true);
         assert.equal(doc.errors.length, 1);
         assert.equal(doc.tasks, undefined);
         assert.equal(mutingUtils.getContact.callCount, 1);
         assert.deepEqual(mutingUtils.getContact.args[0], [doc]);
         assert.equal(mutingUtils.updateMuteState.callCount, 1);
-        assert.deepEqual(mutingUtils.updateMuteState.args[0], [{ name: 'Agatha', muted: 123456 }, false]);
+        assert.deepEqual(mutingUtils.updateMuteState.args[0], [{ name: 'Agatha', muted: 123456 }, false, 'changeid']);
         assert.equal(
           doc.errors[0].message,
           'Failed to complete notification request, event type "on_unmute" misconfigured.'
