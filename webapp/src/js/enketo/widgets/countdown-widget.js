@@ -53,6 +53,10 @@ define( function( require, exports, module ) {
 
     Timerwidget.prototype._init = function() {
         var $el = $( this.element );
+        var $label = $el.parent();
+        if(!$label.hasClass('disabled') && $label.hasClass('or-branch')) {
+          $label.siblings().removeClass('or-branch');
+        }
 
         // replace the element with a canvas
         var canvas = $('<canvas width="%s" height="%s">'.replace(/%s/g, DIM));
