@@ -43,4 +43,14 @@ describe('ContactMuted service', function() {
     chai.expect(service({ parent: { parent: { muted: true, parent: { } } } })).to.equal(true);
     chai.expect(service({ parent: { parent: { parent: { parent: { muted: true } } } } })).to.equal(true);
   });
+
+  it('should return muted timestamp when contact is muted', () => {
+    chai.expect(service({ muted: 1234 })).to.equal(1234);
+    chai.expect(service({ muted: 'alpha' })).to.equal('alpha');
+  });
+
+  it('should return first muted parent timestamp', () => {
+    chai.expect(service({ parent: { muted: 1, parent: { muted: 2, parent: { muted: 3 } } } })).to.equal(1);
+    chai.expect(service({}, [{ muted: 1 }, { muted: 2 }, { muted: 3 }, {}])).to.equal(1);
+  });
 });

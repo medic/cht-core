@@ -12,19 +12,21 @@ angular.module('inboxServices').service('ContactMuted',
       }
 
       if (doc.muted) {
-        return true;
+        return doc.muted;
       }
 
       if (lineage) {
-        return _.some(lineage, function(parent) {
+        var mutedParent = _.find(lineage, function(parent) {
           return parent && parent.muted;
         });
+
+        return !!mutedParent && mutedParent.muted;
       }
 
       var parent = doc.parent;
       while (parent) {
         if (parent.muted) {
-          return true;
+          return parent.muted;
         }
         parent = parent.parent;
       }
