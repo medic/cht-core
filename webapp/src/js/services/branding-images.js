@@ -1,7 +1,6 @@
 angular.module('inboxServices').factory('BrandingImages',
   function(
     $log,
-    $translate,
     Changes,
     DB
   ) {
