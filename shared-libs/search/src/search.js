@@ -74,21 +74,21 @@ module.exports = function(Promise, DB) {
     return queryView(request);
   };
 
-  var getRows = function(type, requests, options, returnExtendedResults) {
+  var getRows = function(type, requests, options, returnResultsCache) {
     if (requests.length === 1 && requests[0].ordered) {
       // 1 ordered view - let the db do the pagination for us
       return queryViewPaginated(requests[0], options);
     }
     // multiple requests - have to manually paginate
-    var extendedResults;
+    var queryResultsCache;
     return Promise.all(requests.map(queryView))
       .then(getIntersection)
       .then(function(results) {
-        extendedResults = results;
+        queryResultsCache = results;
         return getPageRows(type, results, options);
       })
       .then(function(results) {
-        return returnExtendedResults ? { extendedResults: extendedResults, results: results } : results;
+        return returnResultsCache ? { queryResultsCache: queryResultsCache, docIds: results } : results;
       });
   };
 
@@ -99,7 +99,7 @@ module.exports = function(Promise, DB) {
       skip: 0
     });
 
-    var extendedResults = GenerateSearchRequests.shouldSortByLastVisitedDate(extensions);
+    var cacheResults = GenerateSearchRequests.shouldSortByLastVisitedDate(extensions);
     var requests;
     try {
       requests = GenerateSearchRequests.generate(type, filters, extensions);
@@ -107,15 +107,17 @@ module.exports = function(Promise, DB) {
       return Promise.reject(err);
     }
 
-    return getRows(type, requests, options, extendedResults)
+    return getRows(type, requests, options, cacheResults)
       .then(function(results) {
-        if (extendedResults) {
+        if (cacheResults) {
           return {
-            extendedResults: results.extendedResults,
-            results: _.pluck(results.results, 'id')
+            queryResultsCache: results.queryResultsCache,
+            docIds: _.pluck(results.docIds, 'id')
           };
         } else {
-          return _.pluck(results, 'id');
+          return {
+            docIds: _.pluck(results, 'id')
+          };
         }
       });
   };

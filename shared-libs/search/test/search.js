@@ -57,7 +57,7 @@ describe('Search service', function() {
       DB.query.returns(Promise.resolve({ rows: [] }));
       return service('reports', {})
         .then(function(actual) {
-          chai.expect(actual.length).to.equal(0);
+          chai.expect(actual.docIds.length).to.equal(0);
           chai.expect(GenerateSearchRequests.generate.calledOnce).to.equal(true);
           chai.expect(DB.query.calledOnce).to.equal(true);
         });
@@ -74,8 +74,8 @@ describe('Search service', function() {
       DB.query.returns(Promise.resolve({ rows: [ { id: 3 }, { id: 4 } ] }));
       return service('reports', {})
         .then(function(actual) {
-          chai.expect(actual.length).to.equal(2);
-          chai.expect(actual).to.deep.equal([3,4]);
+          chai.expect(actual.docIds.length).to.equal(2);
+          chai.expect(actual).to.deep.equal({ docIds: [3,4] });
           chai.expect(GenerateSearchRequests.generate.callCount).to.equal(1);
           chai.expect(DB.query.callCount).to.equal(1);
           chai.expect(DB.query.args[0][0]).to.equal('medic-client/reports_by_date');
@@ -84,7 +84,7 @@ describe('Search service', function() {
     });
 
     it('returns results when one filter', function() {
-      var expected = [ 'a', 'b' ];
+      var expected = { docIds: [ 'a', 'b' ] };
       GenerateSearchRequests.generate.returns([{
         view: 'get_stuff',
         params: { key: [ 'a' ] }
@@ -102,7 +102,7 @@ describe('Search service', function() {
     });
 
     it('removes duplicates before pagination', function() {
-      var expected = [ 'a', 'b' ];
+      var expected = { docIds: [ 'a', 'b' ] };
       GenerateSearchRequests.generate.returns([ { view: 'get_stuff', params: { key: [ 'a' ] } } ]);
       DB.query.returns(Promise.resolve({ rows: [ { id: 'a', value: 1 }, { id: 'b', value: 2 }, { id: 'a', value: 1 } ] }));
       return service('reports', {})
@@ -128,7 +128,7 @@ describe('Search service', function() {
       return service('reports', {}, { limit: 10 })
         .then(function(actual) {
           // Intersection gets rid of 0-5,
-          chai.expect(actual).to.deep.equal([5, 6, 7, 8, 9, 10, 11, 12, 13, 14]);
+          chai.expect(actual).to.deep.equal({ docIds: [5, 6, 7, 8, 9, 10, 11, 12, 13, 14] });
           chai.expect(DB.query.callCount).to.equal(2);
         });
     });
@@ -145,7 +145,7 @@ describe('Search service', function() {
       DB.query.returns(Promise.resolve(viewResult));
       return service('reports', {}, { skip: 10 })
         .then(function(actual) {
-          chai.expect(actual).to.deep.equal([0, 1, 2, 3, 4]);
+          chai.expect(actual).to.deep.equal({ docIds: [0, 1, 2, 3, 4] });
           chai.expect(DB.query.callCount).to.equal(2);
         });
     });
@@ -162,13 +162,13 @@ describe('Search service', function() {
       DB.query.returns(Promise.resolve(viewResult));
       return service('reports', {}, { skip: 14, limit: 5 })
         .then(function(actual) {
-          chai.expect(actual).to.deep.equal([14]);
+          chai.expect(actual).to.deep.equal({ docIds: [14] });
           chai.expect(DB.query.callCount).to.equal(2);
         });
     });
 
     it('returns results when multiple filters', function() {
-      var expected = [ 'a', 'b' ];
+      var expected = { docIds: [ 'a', 'b' ] };
       GenerateSearchRequests.generate.returns([
         { view: 'get_stuff', params: { key: [ 'a' ] } },
         { view: 'get_moar_stuff', params: { startkey: [ {} ] } }
@@ -215,7 +215,8 @@ describe('Search service', function() {
       DB.query.returns(Promise.resolve(viewResult));
       return service('reports', {}, { skip: 60, limit: 3 })
         .then(function(actual) {
-          chai.expect(actual.length).to.equal(0);
+          chai.expect(actual.docIds.length).to.equal(0);
+          chai.expect(actual).to.deep.equal({ docIds: [] });
           chai.expect(DB.query.callCount).to.equal(2);
         });
     });
@@ -229,9 +230,9 @@ describe('Search service', function() {
       for (var i = 0; i < 15; i++) {
         viewResult.rows.push({ id: i, value: i });
       }
-      var expected = [];
+      var expected = { docIds: [] };
       for (var j = 0; j < 10; j++) {
-        expected.push(j);
+        expected.docIds.push(j);
       }
       GenerateSearchRequests.generate.returns([
         { view: 'get_stuff', params: { key: [ 'a' ] } },
@@ -250,9 +251,9 @@ describe('Search service', function() {
       for (var i = 0; i < 15; i++) {
         viewResult.rows.push({ id: i, value: i });
       }
-      var expected = [];
+      var expected = { docIds: [] };
       for (var j = 10; j < 15; j++) {
-        expected.push(j);
+        expected.docIds.push(j);
       }
       GenerateSearchRequests.generate.returns([
         { view: 'get_stuff', params: { key: [ 'a' ] } },
@@ -268,7 +269,7 @@ describe('Search service', function() {
 
     it('unions views when necessary - #2445', function() {
       // this tests a performance tweak for a specific use case
-      var expected = ['a', 'b', 'c'];
+      var expected = { docIds: ['a', 'b', 'c'] };
       GenerateSearchRequests.generate.returns([ {
         view: 'get_stuff',
         union: true,
@@ -299,8 +300,8 @@ describe('Search service', function() {
 
       return service('contacts', {}, {}, { sortByLastVisitedDate: true }).then(function(result) {
         chai.expect(result).to.deep.equal({
-          results: ['a', 'b'],
-          extendedResults: [{ id: 'a', value: 12 }, { id: 'b', value: 13 }]
+          docIds: ['a', 'b'],
+          queryResultsCache: [{ id: 'a', value: 12 }, { id: 'b', value: 13 }]
         });
         chai.expect(DB.query.callCount).to.equal(2);
         chai.expect(DB.query.args[0]).to.deep.equal(['contacts_by_type', { key: 'clinic' }]);

@@ -30,7 +30,8 @@ var _ = require('underscore'),
       DB,
       GetDataRecords,
       SearchFactory,
-      CalendarInterval
+      CalendarInterval,
+      Session
     ) {
 
       'ngInject';
@@ -52,7 +53,7 @@ var _ = require('underscore'),
 
       var _search = SearchFactory();
 
-      var getLastVisitedDates = function(searchResults, extendedResults, settings) {
+      var getLastVisitedDates = function(searchResults, searchResultsCache, settings) {
         settings = settings || {};
         var interval = CalendarInterval.getCurrent(settings.monthStartDate),
             visitStats = {};
@@ -82,16 +83,28 @@ var _ = require('underscore'),
         };
 
         var getLastVisited = function() {
-          if (extendedResults) {
+          if (searchResultsCache) {
             // when sorting by last visited date, we receive the data from Search library
-            return setLastVisitedDate(extendedResults);
+            return setLastVisitedDate(searchResultsCache);
           }
 
-          return DB()
-            .query('medic-client/contacts_by_last_visited', { reduce: true, group: true })
-            .then(function(result) {
-              setLastVisitedDate(result.rows);
-            });
+          var query;
+          if (Session.isOnlineOnly()) {
+            query = DB().query(
+              'medic-client/contacts_by_last_visited',
+              { reduce: true, group: true, keys: searchResults }
+            );
+          } else {
+            // querying with keys in PouchDB is very unoptimal
+            query = DB().query(
+              'medic-client/contacts_by_last_visited',
+              { reduce: true, group: true }
+            );
+          }
+
+          return query.then(function(result) {
+            setLastVisitedDate(result.rows);
+          });
         };
 
         return getVisitsInInterval()
@@ -126,28 +139,22 @@ var _ = require('underscore'),
 
         return _search(type, filters, options, extensions)
           .then(function(searchResults) {
-            var extendedResults;
-            if (searchResults && searchResults.extendedResults) {
-              extendedResults = searchResults.extendedResults;
-              searchResults = searchResults.results;
-            }
-
             if (docIds && docIds.length) {
               docIds.forEach(function(docId) {
-                if (searchResults.indexOf(docId) === -1) {
-                  searchResults.push(docId);
+                if (searchResults.docIds.indexOf(docId) === -1) {
+                  searchResults.docIds.push(docId);
                 }
               });
             }
-            var dataRecordsPromise = GetDataRecords(searchResults, options);
+            var dataRecordsPromise = GetDataRecords(searchResults.docIds, options);
 
             if (!extensions.displayLastVisitedDate) {
               return dataRecordsPromise;
             }
 
             var lastVisitedDatePromise = getLastVisitedDates(
-              searchResults,
-              extendedResults,
+              searchResults.docIds,
+              searchResults.queryResultsCache,
               extensions.visitCountSettings
             );
 

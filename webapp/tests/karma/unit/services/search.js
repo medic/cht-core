@@ -6,7 +6,8 @@ describe('Search service', function() {
       GetDataRecords,
       searchStub,
       db,
-      clock;
+      clock,
+      session;
 
   let qAll;
 
@@ -33,8 +34,9 @@ describe('Search service', function() {
     objectToIterable();
     GetDataRecords = sinon.stub();
     searchStub = sinon.stub();
-    searchStub.returns(Promise.resolve());
+    searchStub.returns(Promise.resolve({}));
     db = { query: sinon.stub().resolves() };
+    session = { isOnlineOnly: sinon.stub() };
     module('inboxApp');
     module(function ($provide) {
       $provide.value('$q', Q); // bypass $q so we don't have to digest
@@ -43,6 +45,7 @@ describe('Search service', function() {
       $provide.value('SearchFactory', function() {
         return searchStub;
       });
+      $provide.value('Session', session);
     });
     inject(function($injector) {
       service = $injector.get('Search');
@@ -176,7 +179,7 @@ describe('Search service', function() {
 
     it('queries last visited dates when set', () => {
       GetDataRecords.resolves([{ _id: '1' }, { _id: '2' }, { _id: '3' }, { _id: '4' }]);
-      searchStub.resolves(['1', '2', '3', '4']);
+      searchStub.resolves({ docIds: ['1', '2', '3', '4'] });
       db.query
         .withArgs('medic-client/contacts_by_last_visited')
         .resolves({
@@ -265,7 +268,7 @@ describe('Search service', function() {
 
     it('uses provided settings', () => {
       GetDataRecords.resolves([{ _id: '1' }, { _id: '2' }, { _id: '3' }]);
-      searchStub.resolves(['1', '2', '3']);
+      searchStub.resolves({ docIds: ['1', '2', '3'] });
       db.query
         .withArgs('medic-client/contacts_by_last_visited')
         .resolves({
@@ -346,7 +349,7 @@ describe('Search service', function() {
 
     it('counts two reports on the same day as the same visit - #4897', () => {
       GetDataRecords.resolves([{ _id: '1' }, { _id: '2' }]);
-      searchStub.resolves(['1', '2']);
+      searchStub.resolves({ docIds: ['1', '2'] });
       db.query
         .withArgs('medic-client/contacts_by_last_visited')
         .resolves({
@@ -406,10 +409,91 @@ describe('Search service', function() {
       });
     });
 
+    it('should query with keys when user is online', () => {
+      GetDataRecords.resolves([{ _id: '1' }, { _id: '2' }, { _id: '3' }]);
+      searchStub.resolves({ docIds: ['1', '2', '3'] });
+      session.isOnlineOnly.returns(true);
+      db.query
+        .withArgs('medic-client/contacts_by_last_visited')
+        .resolves({
+          rows: [
+            { key: '1', value: { max: moment('2018-08-10').valueOf() } },
+            { key: '2', value: { max: -1 } },
+            { key: '3', value: { max: moment('2018-07-25').valueOf() } }
+          ]
+        });
+
+      db.query
+        .withArgs('medic-client/visits_by_date')
+        .resolves({
+          rows: [
+            { key: moment('2018-07-25').valueOf(), value: '3' },
+            { key: moment('2018-07-29').valueOf(), value: '1' },
+            { key: moment('2018-08-02').valueOf(), value: '1' },
+            { key: moment('2018-08-03').valueOf(), value: '1' },
+            { key: moment('2018-08-10').valueOf(), value: '1' },
+            { key: moment('2018-08-10').valueOf(), value: '1' },
+            { key: moment('2018-08-16').valueOf(), value: '6' }
+          ]
+        });
+
+      const extensions = {
+        displayLastVisitedDate: true,
+        visitCountSettings: {
+          visitCountGoal: 2,
+          monthStartDate: 25
+        },
+        sortByLastVisitedDate: 'yes!!!!'
+      };
+
+      return service('contacts', {}, {}, extensions )
+        .then(result => {
+          chai.expect(searchStub.callCount).to.equal(1);
+          chai.expect(searchStub.args[0])
+            .to.deep.equal(['contacts', {}, { limit: 50, skip: 0 }, extensions]);
+          chai.expect(db.query.callCount).to.equal(2);
+          chai.expect(db.query.args[0]).to.deep.equal([
+            'medic-client/visits_by_date',
+            {
+              start_key: moment('2018-07-25').startOf('day').valueOf(),
+              end_key: moment('2018-08-24').endOf('day').valueOf()
+            }
+          ]);
+          chai.expect(db.query.args[1]).to.deep.equal([
+            'medic-client/contacts_by_last_visited',
+            { reduce: true, group: true, keys: ['1', '2', '3'] }
+          ]);
+
+          chai.expect(result).to.deep.equal([
+            {
+              _id: '1',
+              lastVisitedDate: moment('2018-08-10 00:00:00').valueOf(),
+              visitCountGoal: 2,
+              visitCount: 4,
+              sortByLastVisitedDate: 'yes!!!!'
+            },
+            {
+              _id: '2',
+              lastVisitedDate: -1,
+              visitCountGoal: 2,
+              visitCount: 0,
+              sortByLastVisitedDate: 'yes!!!!'
+            },
+            {
+              _id: '3',
+              lastVisitedDate: moment('2018-07-25 00:00:00').valueOf(),
+              visitCountGoal: 2,
+              visitCount: 1,
+              sortByLastVisitedDate: 'yes!!!!'
+            }
+          ]);
+        });
+    });
+
     it('should not query visits_by_date when receiving extended results from SearchLib', () => {
       searchStub.resolves({
-        results: ['1', '2', '3', '4'],
-        extendedResults: [
+        docIds: ['1', '2', '3', '4'],
+        queryResultsCache: [
           { key: '1', value: moment('2018-08-10').valueOf() },
             { key: '2', value: moment('2018-08-18').valueOf() },
             { key: '3', value: moment('2018-07-13').valueOf() },
@@ -491,7 +575,7 @@ describe('Search service', function() {
 
   describe('provided docIds', () => {
     it('merges provided docIds with search results', () => {
-      searchStub.resolves([1, 2, 3, 4]);
+      searchStub.resolves({ docIds: [1, 2, 3, 4] });
       GetDataRecords.withArgs([1, 2, 3, 4, 5, 6, 7, 8]).resolves([
         { _id: 1 }, { _id: 2 }, { _id: 3 }, { _id: 4 }, { _id: 5 }, { _id: 6 }, { _id: 7 }, { _id: 8 }
       ]);
@@ -506,7 +590,7 @@ describe('Search service', function() {
     });
 
     it('merges the lists keeping records unique', () => {
-      searchStub.resolves([1, 2, 3, 4]);
+      searchStub.resolves({ docIds: [1, 2, 3, 4] });
       GetDataRecords.withArgs([1, 2, 3, 4, 5]).resolves([
         { _id: 1 }, { _id: 2 }, { _id: 3 }, { _id: 4 }, { _id: 5 }
       ]);
@@ -521,7 +605,7 @@ describe('Search service', function() {
     });
 
     it('queries for last visited date with the full list of ids', () => {
-      searchStub.resolves(['1', '2']);
+      searchStub.resolves({ docIds: ['1', '2'] });
       GetDataRecords.withArgs(['1', '2', '3', '4']).resolves([
         { _id: '1' }, { _id: '2' }, { _id: '3' }, { _id: '4' }
       ]);
@@ -559,7 +643,7 @@ describe('Search service', function() {
     });
 
     it('works for reports too', () => {
-      searchStub.resolves([1, 2, 3]);
+      searchStub.resolves({ docIds: [1, 2, 3] });
       GetDataRecords.withArgs([1, 2, 3, 4, 5]).resolves([
         { _id: 1 }, { _id: 2 }, { _id: 3 }, { _id: 4 }, { _id: 5 }
       ]);
@@ -574,7 +658,7 @@ describe('Search service', function() {
     });
 
     it('has no effect when docIds is empty', () => {
-      searchStub.resolves([1, 2, 3]);
+      searchStub.resolves({ docIds: [1, 2, 3] });
       GetDataRecords.withArgs([1, 2, 3]).resolves([
         { _id: 1 }, { _id: 2 }, { _id: 3 }
       ]);
@@ -589,7 +673,7 @@ describe('Search service', function() {
     });
 
     it('has no effect when docIds is undefined', () => {
-      searchStub.resolves([1, 2, 3]);
+      searchStub.resolves({ docIds: [1, 2, 3] });
       GetDataRecords.withArgs([1, 2, 3]).resolves([
         { _id: 1 }, { _id: 2 }, { _id: 3 }
       ]);
