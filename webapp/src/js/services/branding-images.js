@@ -44,7 +44,7 @@ angular.module('inboxServices').factory('BrandingImages',
         var $this = $(this);
         $this.html(getHtmlContent($this.attr('title')));
       });
-      document.getElementById("app").innerHTML = cache.doc.title;
+      document.getElementById('app').innerHTML = cache.doc.title;
     };
 
     var updateResources = function() {

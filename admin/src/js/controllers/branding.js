@@ -94,7 +94,7 @@ angular.module('controllers').controller('BrandingCtrl',
       }
       addAttachment(files[0], name);
       
-    }
+    };
 
     $scope.submitTitle = function() {
       $scope.error = null;
