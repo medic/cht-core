@@ -15,9 +15,7 @@ describe('UserDistrict service', function() {
     module(function ($provide) {
       $provide.factory('DB', KarmaUtils.mockDB({ get: get }));
       $provide.value('$q', Q); // bypass $q so we don't have to digest
-      $provide.value('UserSettings', function(callback) {
-        callback(null, user);
-      });
+      $provide.value('UserSettings', () => Promise.resolve(user));
       $provide.value('Session', {
         userCtx: function() {
           return userCtx;
@@ -79,15 +77,12 @@ describe('UserDistrict service', function() {
       facility_id: 'x'
     };
 
-    get.onCall(0).returns(Promise.resolve(user));
-    get.onCall(1).returns(Promise.resolve({ type: 'district_hospital' }));
+    get.withArgs('x').returns(Promise.resolve({ type: 'district_hospital' }));
 
     return service()
       .then(function(actual) {
         chai.expect(actual).to.equal('x');
-        chai.expect(get.callCount).to.equal(2);
-        chai.expect(get.args[0][0]).to.equal('org.couchdb.user:jeff');
-        chai.expect(get.args[1][0]).to.equal('x');
+        chai.expect(get.callCount).to.equal(1);
       });
 
   });
@@ -133,9 +128,7 @@ describe('UserDistrict service', function() {
 
     var err404 = {status: 404, name: 'not_found', message: 'missing', error: true, reason: 'missing'};
 
-    get.onCall(0).returns(Promise.resolve(user));
-    get.onCall(1).returns(Promise.reject(err404));
-    get.onCall(2).returns(Promise.reject(err404));
+    get.withArgs('x').returns(Promise.reject(err404));
 
     return service()
       .then(function() {
