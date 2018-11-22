@@ -19,15 +19,16 @@ const favicon = {
 };
 
 const attachDocument = (src, doc, resource) => {
-  return new Promise((resolve, _) => {
+  return new Promise((resolve, reject) => {
     fs.readFile(src, (err, data) => {
       if (err) {
+        return reject(err);
       }
       db.medic.putAttachment(doc.id, resource.file, doc.rev, new Buffer(data).toString('base64'), resource.type).then(doc => {
         resolve(doc);
-      })
+      });
     });
-  })
+  });
 };
 
 const createDoc = () => {
