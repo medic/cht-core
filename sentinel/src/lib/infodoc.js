@@ -1,7 +1,9 @@
 const db = require('../db-pouch'),
-  logger = require('../lib/logger'),
-  infoDocId = id => id + '-info',
-  getDocId = infoDocId => infoDocId.slice(0, -5);
+  logger = require('../lib/logger');
+
+const infoDocId = id => id + '-info';
+
+const getDocId = infoDocId => infoDocId.slice(0, -5);
 
 const findInfoDoc = (database, change) => {
   return database.get(infoDocId(change.id)).catch(err => {
@@ -164,6 +166,5 @@ module.exports = {
   updateTransition: (change, transition, ok) =>
     updateTransition(change, transition, ok),
   bulkGet: bulkGet,
-  bulkUpdate: bulkUpdate,
-  updateInfoDoc: updateInfoDoc
+  bulkUpdate: bulkUpdate
 };

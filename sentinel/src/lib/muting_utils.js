@@ -114,7 +114,7 @@ const updateMutingHistories = (contacts, muted, reportId) => {
 };
 
 const updateMutingHistory = (contact, muted) => {
-  const mutedParentId = isMutedInLineage(contact, true);
+  const mutedParentId = isMutedInLineage(contact);
 
   return infodoc
     .bulkGet([{ id: mutedParentId }])
@@ -174,11 +174,11 @@ const updateMuteState = (contact, muted, reportId) => {
   });
 };
 
-const isMutedInLineage = (doc, returnId) => {
+const isMutedInLineage = doc => {
   let parent = doc && doc.parent;
   while (parent) {
     if (parent.muted) {
-      return returnId ? parent._id : true;
+      return parent._id;
     }
     parent = parent.parent;
   }

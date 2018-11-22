@@ -1152,11 +1152,8 @@ describe('mutingUtils', () => {
   describe('isMutedInLineage', () => {
     it('should return false when no doc or no parent', () => {
       mutingUtils.isMutedInLineage().should.equal(false);
-      mutingUtils.isMutedInLineage(undefined, true).should.equal(false);
       mutingUtils.isMutedInLineage({}).should.equal(false);
-      mutingUtils.isMutedInLineage({}, true).should.equal(false);
       mutingUtils.isMutedInLineage({ parent: false }).should.equal(false);
-      mutingUtils.isMutedInLineage({ parent: false }, true).should.equal(false);
     });
 
     it('should return false when no parent is muted', () => {
@@ -1174,10 +1171,8 @@ describe('mutingUtils', () => {
       };
 
       mutingUtils.isMutedInLineage(doc).should.equal(false);
-      mutingUtils.isMutedInLineage(doc, true).should.equal(false);
       doc.muted = true;
       mutingUtils.isMutedInLineage(doc).should.equal(false);
-      mutingUtils.isMutedInLineage(doc, true).should.equal(false);
     });
 
     it('should return false when no parent is muted', () => {
@@ -1194,8 +1189,7 @@ describe('mutingUtils', () => {
           }
         }
       };
-      mutingUtils.isMutedInLineage(doc1).should.equal(true);
-      mutingUtils.isMutedInLineage(doc1, true).should.equal(2);
+      mutingUtils.isMutedInLineage(doc1).should.equal(2);
 
       const doc2 = {
         _id: 1,
@@ -1210,8 +1204,8 @@ describe('mutingUtils', () => {
           }
         }
       };
-      mutingUtils.isMutedInLineage(doc2).should.equal(true);
-      mutingUtils.isMutedInLineage(doc2, true).should.equal(4);
+
+      mutingUtils.isMutedInLineage(doc2).should.equal(4);
     });
   });
 
