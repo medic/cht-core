@@ -9,7 +9,7 @@
         <ul>
           <li ng-repeat="role in permission.roles" class="checkbox">
             <label>
-              <input type="checkbox" ng-model="role.value"/>
+              <input type="checkbox" ng-model="role.enabled"/>
               <span translate>{{roles[role.name].name}}</span>
             </label>
           </li>
