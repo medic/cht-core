@@ -440,7 +440,6 @@ module.exports = {
       .then(existingContactDoc => {
         if (userContactDoc) {
           _.extend(existingContactDoc, userContactDoc);
-          existingContactDoc._deleted = undefined;
           return module.exports.saveDoc(existingContactDoc);
         }
       })
