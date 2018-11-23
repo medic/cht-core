@@ -39,8 +39,8 @@ class BaseConfig {
         }
 
         browser.driver.wait(setupSettings, 5 * 1000, 'Settings should be setup within 5 seconds');
-        browser.driver.wait(setupUser, 5 * 1000, 'User should be setup within 5 seconds');
         browser.driver.wait(setupUserContact, 5 * 1000, 'User contact should be setup within 5 seconds');
+        browser.driver.wait(setupUser, 5 * 1000, 'User should be setup within 5 seconds');
         browser.driver.sleep(1); // block until previous command has completed
 
         return login(browser);
