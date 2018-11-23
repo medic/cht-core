@@ -109,7 +109,7 @@ angular.module('services').factory('MessageQueue',
         });
     };
 
-    var getPatientsAndRegistrations = function(messages, settings) {
+    var getPatientsUuids = function(messages) {
       var patientIds = compactUnique(messages.map(function(message) {
         // don't process items which already have generated messages
         return !message.sms && message.context.patient_id;
@@ -123,17 +123,33 @@ angular.module('services').factory('MessageQueue',
         return [ 'shortcode', patientId ];
       });
 
-      return $q
-        .all([
-          DB({ remote: true }).query('medic-client/contacts_by_reference', { keys: referenceKeys }),
-          DB({ remote: true }).query('medic-client/registered_patients', { keys: patientIds, include_docs: true })
-        ])
-        .then(function(results) {
-          var contactsByReference = results[0];
-          var registrations = getValidRegistrations(results[1], settings);
-
+      return DB({ remote: true })
+        .query('medic-client/contacts_by_reference', { keys: referenceKeys })
+        .then(function(contactsByReference) {
           messages.forEach(function(message) {
             message.context.patient_uuid = findPatientUuid(contactsByReference, message);
+          });
+          return messages;
+        });
+    };
+
+    var getRegistrations = function(messages, settings) {
+      var patientIds = compactUnique(messages.map(function(message) {
+        // don't process items which already have generated messages
+        // or items without patients
+        return !message.sms && message.context.patient && message.context.patient_id;
+      }));
+
+      if (!patientIds.length) {
+        return Promise.resolve(messages);
+      }
+
+      return DB({ remote: true })
+        .query('medic-client/registered_patients', { keys: patientIds, include_docs: true })
+        .then(function(results) {
+          var registrations = getValidRegistrations(results, settings);
+
+          messages.forEach(function(message) {
             message.context.registrations = findRegistrations(registrations, message);
           });
 
@@ -317,8 +333,11 @@ angular.module('services').factory('MessageQueue',
               return Object.assign(extras, row.value);
             });
 
-            return getPatientsAndRegistrations(messages, settings)
+            return getPatientsUuids(messages)
               .then(hydrateContacts)
+              .then(function(messages) {
+                return getRegistrations(messages, settings);
+              })
               .then(function(messages) {
                 return generateScheduledMessages(messages, settings);
               })
@@ -329,7 +348,6 @@ angular.module('services').factory('MessageQueue',
                   total: results[2].rows.length ? results[2].rows[0].value : 0
                 };
               });
-
           });
       }
     };
