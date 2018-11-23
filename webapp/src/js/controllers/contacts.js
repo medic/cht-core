@@ -337,6 +337,10 @@ var _ = require('underscore'),
       };
 
       var canViewLastVisitedDate = function() {
+        if (Session.isDbAdmin()) {
+          // disable UHC for DB admins
+          return false;
+        }
         return Auth('can_view_last_visited_date')
           .then(function() {
             return true;

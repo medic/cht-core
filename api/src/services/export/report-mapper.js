@@ -38,7 +38,9 @@ const flatten = (fields, prepend=[]) => {
 };
 
 module.exports = {
-  getDocIds: (options, filters) => search('reports', filters, options),
+  getDocIds: (options, filters) => {
+    return search('reports', filters, options).then(results => results.docIds);
+  },
   map: (filters) => {
     // Either selected forms or all currently used forms
     const getForms = () => {
