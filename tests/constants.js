@@ -16,4 +16,10 @@ module.exports = {
 
   // tests create a document with this id to be referenced by org.couchdb.user contact_id
   USER_CONTACT_ID: 'e2e_contact_test_id',
+
+  DEFAULT_USER_CONTACT_DOC: {
+    _id: 'e2e_contact_test_id',
+    type: 'person',
+    reported_date: 1541679811408, 
+  },
 };

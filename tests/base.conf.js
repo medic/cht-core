@@ -39,7 +39,7 @@ class BaseConfig {
         }
 
         browser.driver.wait(setupSettings, 5 * 1000, 'Settings should be setup within 5 seconds');
-        browser.driver.wait(setupUserContact, 5 * 1000, 'User contact should be setup within 5 seconds');
+        browser.driver.wait(utils.setUserContactDoc, 5 * 1000, 'User contact should be setup within 5 seconds');
         browser.driver.wait(setupUser, 5 * 1000, 'User should be setup within 5 seconds');
         browser.driver.sleep(1); // block until previous command has completed
 
@@ -76,19 +76,6 @@ const setupSettings = () => {
     path: '/api/v1/settings',
     method: 'PUT',
     body: JSON.stringify({ setup_complete: true }),
-    headers: { 'Content-Type': 'application/json' }
-  });
-};
-
-const setupUserContact = () => {
-  return utils.request({
-    path: `/${constants.DB_NAME}/${constants.USER_CONTACT_ID}`,
-    method: 'PUT',
-    body: JSON.stringify({
-      _id: constants.USER_CONTACT_ID,
-      type: 'person',
-      reported_date: 1541679811408
-    }),
     headers: { 'Content-Type': 'application/json' }
   });
 };

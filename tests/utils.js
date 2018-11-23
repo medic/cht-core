@@ -236,6 +236,28 @@ const refreshToGetNewSettings = () => {
     });
 };
 
+const setUserContactDoc = () => {
+  const {
+    DB_NAME: dbName,
+    USER_CONTACT_ID: docId,
+    DEFAULT_USER_CONTACT_DOC: defaultDoc
+  } = constants;
+
+  return module.exports.getDoc(docId)
+    .catch(() => ({}))
+    .then(existing => {
+      const rev = _.pick(existing, '_rev');
+      return _.extend(defaultDoc, rev);
+    })
+    .then(newDoc => request({
+      path: `/${dbName}/${docId}`,
+      body: JSON.stringify(newDoc),
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+    }));
+};
+
+
 const revertDb = (except, ignoreRefresh) => {
   return revertSettings().then(needsRefresh => {
     return deleteAll(except).then(() => {
@@ -243,7 +265,7 @@ const revertDb = (except, ignoreRefresh) => {
       if (!ignoreRefresh && needsRefresh) {
         return refreshToGetNewSettings();
       }
-    });
+    }).then(setUserContactDoc);
   });
 };
 
@@ -377,6 +399,11 @@ module.exports = {
    * @return     {Promise}  completion promise
    */
   deleteAllDocs: deleteAll,
+
+  /*
+  * Sets the document referenced by the user's org.couchdb.user document to a default value
+  */
+  setUserContactDoc,
 
   /**
    * Update settings and refresh if required
