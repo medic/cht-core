@@ -1,5 +1,4 @@
 const db = require('../db-pouch'),
-  logger = require('../logger'),
   fs = require('fs'),
   path = require('path'),
   BRANDING_ID = 'branding',
@@ -18,36 +17,50 @@ const favicon = {
   dir: 'ico'
 };
 
-const attachDocument = (src, doc, resource) => {
+const attachDocument = (src, resource) => {
   return new Promise((resolve, reject) => {
     fs.readFile(src, (err, data) => {
       if (err) {
         return reject(err);
       }
-      db.medic.putAttachment(doc.id, resource.file, doc.rev, new Buffer(data).toString('base64'), resource.type).then(doc => {
-        resolve(doc);
+      resolve({
+        content_type: resource.type,
+        data: new Buffer(data).toString('base64')
       });
     });
   });
 };
 
 const createDoc = () => {
-  return db.medic.put({
-    _id: BRANDING_ID,
-    title: appTitle,
-    resources: {
-      [logo.name]: logo.file,
-      [favicon.name]: favicon.file
-    }
-  }).then(doc => {
-    const srcLogo = path.join(__dirname, '..', `resources/${logo.dir}`, logo.file);
-    const srcFav = path.join(__dirname, '..', `resources/${favicon.dir}`, favicon.file);
-    attachDocument(srcLogo, doc, logo).then(doc => {
-      attachDocument(srcFav, doc, favicon);
+
+  const attachment = [];
+  const srcLogo = path.join(__dirname, '..', `resources/${logo.dir}`, logo.file);
+  const srcFav = path.join(__dirname, '..', `resources/${favicon.dir}`, favicon.file);
+
+  return attachDocument(srcLogo, logo).then(resp => {
+    attachment.push(resp);
+    attachDocument(srcFav, favicon).then(resp => {
+      attachment.push(resp);
+      const doc = {
+        _id: BRANDING_ID,
+        title: appTitle,
+        resources: {
+          [logo.name]: logo.file,
+          [favicon.name]: favicon.file
+        },
+        _attachments: {
+          [logo.file]: {
+            content_type: attachment[0].content_type,
+            data: attachment[0].data
+          },
+          [favicon.file]: {
+            content_type: attachment[1].content_type,
+            data: attachment[1].data
+          }
+        }
+      };
+      db.medic.put(doc);
     });
-  })
-  .catch(err => {
-    logger.error('%o',err);
   });
 };
 
