@@ -74,15 +74,22 @@ module.exports = function(Promise, DB) {
     return queryView(request);
   };
 
-  var getRows = function(type, requests, options) {
+  var getRows = function(type, requests, options, cacheQueryResults) {
     if (requests.length === 1 && requests[0].ordered) {
       // 1 ordered view - let the db do the pagination for us
       return queryViewPaginated(requests[0], options);
     }
     // multiple requests - have to manually paginate
+    var queryResultsCache;
     return Promise.all(requests.map(queryView))
       .then(getIntersection)
-      .then(_.partial(getPageRows, type, _, options));
+      .then(function(results) {
+        queryResultsCache = results;
+        return getPageRows(type, results, options);
+      })
+      .then(function(results) {
+        return cacheQueryResults ? { queryResultsCache: queryResultsCache, docIds: results } : results;
+      });
   };
 
   return function(type, filters, options, extensions) {
@@ -92,6 +99,7 @@ module.exports = function(Promise, DB) {
       skip: 0
     });
 
+    var cacheQueryResults = GenerateSearchRequests.shouldSortByLastVisitedDate(extensions);
     var requests;
     try {
       requests = GenerateSearchRequests.generate(type, filters, extensions);
@@ -99,9 +107,18 @@ module.exports = function(Promise, DB) {
       return Promise.reject(err);
     }
 
-    return getRows(type, requests, options, extensions)
+    return getRows(type, requests, options, cacheQueryResults)
       .then(function(results) {
-        return _.pluck(results, 'id');
+        if (cacheQueryResults) {
+          return {
+            queryResultsCache: results.queryResultsCache,
+            docIds: _.pluck(results.docIds, 'id')
+          };
+        } else {
+          return {
+            docIds: _.pluck(results, 'id')
+          };
+        }
       });
   };
 };
