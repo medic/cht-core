@@ -115,7 +115,7 @@ module.exports = {
               return;
             }
 
-            return mutingUtils.updateMuteState(contact, eventType.mute);
+            return mutingUtils.updateMuteState(contact, eventType.mute, change.id);
           })
           .then(() => {
             self._addMsg(getEventName(eventType), config, doc, [], patient);
