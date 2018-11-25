@@ -152,7 +152,8 @@ var _ = require('underscore'),
         RelativeDate: RelativeDate,
         withoutTime: true,
         age: true,
-        end: dod
+        end: dod,
+        class: 'age'
       }));
     };
   });
