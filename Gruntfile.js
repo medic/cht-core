@@ -860,7 +860,7 @@ module.exports = function(grunt) {
       }
 
     Configure the section declaratively above, and here adjust into the format expected by grunt-couch
-    This is required because the name of the kay is variable
+    This is required because the name of the key is variable
   */
   const couchPushConfigKeys = Object.keys(gruntInitConfig['couch-push']);
   gruntInitConfig['couch-push'] = couchPushConfigKeys.reduce((agg, key) => {
