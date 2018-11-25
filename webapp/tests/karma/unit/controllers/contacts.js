@@ -42,6 +42,11 @@ describe('Contacts controller', () => {
     deadList = () => {
       let elements = [];
 
+      const update = e => {
+        if (e !== district || elements[0] !== district) {
+          elements.push(e);
+        }
+      };
       return {
         getList: () => elements,
         initialised: sinon.stub(),
@@ -51,11 +56,8 @@ describe('Contacts controller', () => {
         count: () => elements.length,
         insert: e => elements.push(e),
         set: es => (elements = es),
-        update: e => {
-          if (e !== district || elements[0] !== district) {
-            elements.push(e);
-          }
-        },
+        update,
+        add: es => es.forEach(update),
         remove: () => {
           if (deadListFind()) {
             return elements.pop();
