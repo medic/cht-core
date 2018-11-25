@@ -10,6 +10,7 @@ const DEFAULT_EXPECTED = [
   'appcache',
   'settings',
   'resources',
+  'branding',
   '_design/medic-client'
 ];
 
