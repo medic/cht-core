@@ -291,7 +291,7 @@ app.postJson('/api/v2/export/:type', exportData.routeV2);
 app.post('/api/v1/records', [jsonParser, formParser], records.v1);
 app.post('/api/v2/records', [jsonParser, formParser], records.v2);
 
-app.post('/api/v1/forms/', (req, res) => {
+app.get('/api/v1/forms/', (req, res) => {
   res.redirect(301, '/api/v1/forms');
 });
 app.get('/api/v1/forms', forms.list);
