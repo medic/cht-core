@@ -7,6 +7,7 @@
   require('./add-read-status');
   require('./analytics-modules');
   require('./android-api');
+  require('./branding-images');
   require('./auth');
   require('./cache');
   require('./calendar-interval');
