@@ -32,9 +32,6 @@ const writeExportHeaders = (res, type, format) => {
 };
 
 const getExportPermission = function(type) {
-  if (type === 'audit') {
-    return 'can_export_audit';
-  }
   if (type === 'feedback') {
     return 'can_export_feedback';
   }
