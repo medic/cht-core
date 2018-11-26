@@ -448,9 +448,7 @@ angular.module('inboxServices').factory('LiveList',
         delete idx.dom[removedItem._id];
 
         $(idx.selector).children().eq(removeIndex).remove();
-        if (removed.length) {
-          return removed[0];
-        }
+        return removed;
       }
     }
 
