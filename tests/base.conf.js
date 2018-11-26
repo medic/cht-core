@@ -39,6 +39,7 @@ class BaseConfig {
         }
 
         browser.driver.wait(setupSettings, 5 * 1000, 'Settings should be setup within 5 seconds');
+        browser.driver.wait(utils.setUserContactDoc, 5 * 1000, 'User contact should be setup within 5 seconds');
         browser.driver.wait(setupUser, 5 * 1000, 'User should be setup within 5 seconds');
         browser.driver.sleep(1); // block until previous command has completed
 
@@ -82,6 +83,7 @@ const setupSettings = () => {
 const setupUser = () => {
   return utils.getDoc('org.couchdb.user:' + auth.user)
     .then(doc => {
+      doc.contact_id = constants.USER_CONTACT_ID;
       doc.known = true;
       doc.language = 'en';
       doc.roles = ['_admin'];

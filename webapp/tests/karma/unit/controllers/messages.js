@@ -3,8 +3,7 @@ describe('MessagesCtrl controller', () => {
   'use strict';
 
   let createController,
-      scope,
-      UserDistrict;
+      scope;
 
   beforeEach(module('inboxApp'));
 
@@ -17,7 +16,6 @@ describe('MessagesCtrl controller', () => {
     scope.setSelected = obj => scope.selected = obj;
     scope.setLoadingContent = () => {};
     scope.setLeftActionBar = sinon.stub();
-    UserDistrict = callback => callback();
     createController = () => {
       return $controller('MessagesCtrl', {
         '$scope': scope,

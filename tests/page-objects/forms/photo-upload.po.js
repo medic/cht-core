@@ -44,8 +44,8 @@ const docs = [
   }];
 
 module.exports = {
-  configureForm: (contactId, done) => {
-    utils.seedTestData(done, contactId, docs);
+  configureForm: (userContactDoc, done) => {
+    utils.seedTestData(done, userContactDoc, docs);
   },
 
   submit: () => {

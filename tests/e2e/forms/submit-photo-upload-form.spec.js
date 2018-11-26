@@ -2,11 +2,11 @@ const helper = require('../../helper'),
   photoUpload = require('../../page-objects/forms/photo-upload.po'),
   common = require('../../page-objects/common/common.po'),
   utils = require('../../utils'),
+  constants = require('../../constants'),
   path = require('path');
 
-const contactId = 'some_contact_id';
-const doc = {
-  _id: contactId,
+const userContactDoc = {
+  _id: constants.USER_CONTACT_ID,
   name: 'Jack',
   date_of_birth: '',
   phone: '+64274444444',
@@ -21,9 +21,8 @@ const doc = {
 
 describe('Submit Photo Upload form', () => {
   beforeAll(done => {
-    utils
-      .saveDoc(doc)
-      .then(() => photoUpload.configureForm(contactId, done))
+    Promise.resolve()
+      .then(() => photoUpload.configureForm(userContactDoc, done))
       .catch(done.fail);
   });
 

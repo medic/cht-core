@@ -5,13 +5,12 @@ const familyForm = require('../../page-objects/forms/family-survey-form.po'),
   userData = require('../../page-objects/forms/data/user.po.data');
 
 describe('Family Survey form', () => {
-  const contactId = userData.contactId;
-  const docs = userData.docs;
+  const { userContactDoc, docs } = userData;
 
   beforeAll(done => {
     protractor.promise
       .all(docs.map(utils.saveDoc))
-      .then(() => familyForm.configureForm(contactId, done))
+      .then(() => familyForm.configureForm(userContactDoc, done))
       .catch(done.fail);
   });
 
