@@ -236,12 +236,10 @@ var feedback = require('../modules/feedback'),
       if(fromParams.reportId === toParams.id){
         return;
       }
-      if(fromState.url.includes('edit') || fromState.url.includes('add')){
-        if ($scope.cancelCallback) {
-          event.preventDefault();
-          $scope.navigationCancel();
-        }
-      }
+      if ($scope.cancelCallback) {
+        event.preventDefault();
+        $scope.navigationCancel();
+      }    
     });
 
     // User wants to cancel current flow, or pressed back button, etc.
