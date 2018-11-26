@@ -34,7 +34,7 @@ module.exports = function(grunt) {
   require('time-grunt')(grunt);
 
   // Project configuration
-  const gruntInitConfig = {
+  grunt.initConfig({
     replace: {
       'update-app-constants': {
         src: ['build/ddocs/medic/_attachments/js/inbox.js'],
@@ -80,7 +80,9 @@ module.exports = function(grunt) {
           user: couchConfig.username,
           pass: couchConfig.password,
         },
-        files: [ couchConfig.dbName, 'build/ddocs/medic.json' ],
+        files: {
+          [couchConfig.withPathNoAuth(couchConfig.dbName)]: 'build/ddocs/medic.json',
+        },
       },
       // push just the secondary ddocs to save time in dev
       'localhost-secondary': {
@@ -88,14 +90,18 @@ module.exports = function(grunt) {
           user: couchConfig.username,
           pass: couchConfig.password,
         },
-        files: [ couchConfig.dbName, 'build/ddocs/medic/_attachments/ddocs/compiled.json' ],
+        files: {
+          [couchConfig.withPathNoAuth(couchConfig.dbName)]: 'build/ddocs/medic/_attachments/ddocs/compiled.json',
+        }
       },
       test: {
         options: {
           user: couchConfig.username,
           pass: couchConfig.password,
         },
-        files: [ 'medic-test', 'build/ddocs/medic.json' ],
+        files: {
+          [couchConfig.withPathNoAuth('medic-test')]: 'build/ddocs/medic.json',
+        },
       },
       staging: {
         files: [
@@ -851,27 +857,7 @@ module.exports = function(grunt) {
       'build/ddocs/medic-admin/_attachments/js/templates.js':
         'build/ddocs/medic-admin/_attachments/js/templates.js',
     },
-  };
-
-  /* 
-    grunt-couch expects configuration in the format:
-      files: {
-        'http://localhost:5984/medic': 'path_to_doc',
-      }
-
-    Configure the section declaratively above, and here adjust into the format expected by grunt-couch
-    This is required because the name of the key is variable
-  */
-  const couchPushConfigKeys = Object.keys(gruntInitConfig['couch-push']);
-  gruntInitConfig['couch-push'] = couchPushConfigKeys.reduce((agg, key) => {
-    agg[key] = gruntInitConfig['couch-push'][key];
-    const [ dbName, docPath ] = agg[key].files;
-    agg[key].files = {};
-    agg[key].files[couchConfig.withPathNoAuth(dbName)] = docPath;
-    return agg;
-  }, {});
-
-  grunt.initConfig(gruntInitConfig);
+  });
 
   // Build tasks
   grunt.registerTask('install-dependencies', 'Update and patch dependencies', [
