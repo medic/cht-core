@@ -418,7 +418,6 @@ module.exports = function(grunt) {
                   echo 'ERROR: Links found with target="_blank" but no rel="noopener noreferrer" set.  Please add required rel attribute.')`,
       },
       'setup-admin': {
-        stderr: true,
         cmd:
           `curl -X PUT ${couchConfig.withPathNoAuth(couchConfig.dbName)}` +
           ` && curl -X PUT ${couchConfig.withPathNoAuth('_users')}` +
