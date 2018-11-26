@@ -15,7 +15,7 @@ describe('ExportProperties service', function() {
 
     var doc = {
       code: 'en',
-      values: {
+      generic: {
         'Hello': 'Gidday',
         'Goodbye': 'See ya',
         'New thing': 'New'

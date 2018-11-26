@@ -24,7 +24,7 @@ const loadTranslations = () => {
   return db.medic
     .query('medic-client/doc_by_type', options)
     .then(result => {
-      result.rows.forEach(row => (translations[row.doc.code] = Object.assign(row.doc.custom || {}, row.doc.generic)));
+      result.rows.forEach(row => (translations[row.doc.code] = Object.assign(row.doc.generic, row.doc.custom || {})));
     })
     .catch(err => {
       logger.error('Error loading translations - starting up anyway: %o', err);
