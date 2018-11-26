@@ -47,7 +47,8 @@ const AVAILABLE_TRANSITIONS = [
   'update_notifications',
   'update_scheduled_reports',
   'resolve_pending',
-  'muting'
+  'muting',
+  'nifi'
 ];
 
 let processed = 0;
