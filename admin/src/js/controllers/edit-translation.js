@@ -15,7 +15,9 @@ angular.module('controllers').controller('EditTranslationCtrl',
     $scope.model.values = {};
 
     $scope.model.locales.forEach(function(locale) {
-      var value = $scope.model.key ? locale.custom[$scope.model.key] || locale.generic[$scope.model.key] : null;
+      const custom = locale.custom || {};
+      const generic = locale.generic || {};
+      var value = $scope.model.key ? custom[$scope.model.key] || generic[$scope.model.key] : null;
       $scope.model.values[locale.code] = value;
     });
 
@@ -29,6 +31,10 @@ angular.module('controllers').controller('EditTranslationCtrl',
           ($scope.editing && custom[$scope.model.key] && custom[$scope.model.key] !== newValue) ||
           ($scope.editing && !custom[$scope.model.key] && generic[$scope.model.key] && generic[$scope.model.key] !== newValue)
         ) {
+          if (!locale.custom) {
+            locale.custom = {};
+          }
+
           locale.custom[$scope.model.key] = newValue;
           return true;
         }
