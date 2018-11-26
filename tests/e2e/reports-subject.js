@@ -290,46 +290,47 @@ describe('Reports Summary', () => {
   });
 
   describe('Displays correct LHS and RHS summary', () => {
-    it('Concerning reports using patient_id', () => {
-      const REPORT = {
-        _id: 'REF_REF_V1',
-        form: 'RR',
-        type: 'data_record',
-        from: PHONE,
-        fields: {
-          patient_id: MARIA.patient_id
-        },
-        sms_message: {
-          message_id: 23,
-          from: PHONE,
-          message: `1!RR!${MARIA.patient_id}`,
-          form: 'RR',
-          locale: 'en'
-        },
-        reported_date: moment().subtract(10, 'minutes').valueOf()
-      };
+    // DISABLED FOR FLAKE: https://github.com/medic/medic-webapp/issues/5038
+    // it('Concerning reports using patient_id', () => {
+    //   const REPORT = {
+    //     _id: 'REF_REF_V1',
+    //     form: 'RR',
+    //     type: 'data_record',
+    //     from: PHONE,
+    //     fields: {
+    //       patient_id: MARIA.patient_id
+    //     },
+    //     sms_message: {
+    //       message_id: 23,
+    //       from: PHONE,
+    //       message: `1!RR!${MARIA.patient_id}`,
+    //       form: 'RR',
+    //       locale: 'en'
+    //     },
+    //     reported_date: moment().subtract(10, 'minutes').valueOf()
+    //   };
 
-      return saveReport(REPORT)
-        .then(loadReport)
-        .then(waitForSentinel)
-        .then(() => {
-          //LHS
-          expect(getElementText('#reports-list .unfiltered li .content .heading h4 span')).toBe(MARIA.name);
-          expect(getElementText('#reports-list .unfiltered li .summary')).toBe('REF_REF');
-          //shows subject lineage breadcrumbs
-          testListLineage(['TAG Place', 'Health Center', 'District']);
+    //   return saveReport(REPORT)
+    //     .then(loadReport)
+    //     .then(waitForSentinel)
+    //     .then(() => {
+    //       //LHS
+    //       expect(getElementText('#reports-list .unfiltered li .content .heading h4 span')).toBe(MARIA.name);
+    //       expect(getElementText('#reports-list .unfiltered li .summary')).toBe('REF_REF');
+    //       //shows subject lineage breadcrumbs
+    //       testListLineage(['TAG Place', 'Health Center', 'District']);
 
-          //RHS
-          browser.wait(() => getElementText('#reports-content .item-summary .sender .phone'),
-            10000
-          );
-          expect(getElementText('#reports-content .item-summary .subject .name')).toBe(MARIA.name);
-          expect(getElementText('#reports-content .item-summary .subject + div')).toBe('REF_REF');
-          testSummaryLineage(['TAG Place', 'Health Center', 'District']);
-          expect(getElementText('#reports-content .item-summary .sender .name')).toMatch(`Submitted by ${CAROL.name}`);
-          expect(getElementText('#reports-content .item-summary .sender .phone')).toBe(CAROL.phone);
-        });
-    });
+    //       //RHS
+    //       browser.wait(() => getElementText('#reports-content .item-summary .sender .phone'),
+    //         10000
+    //       );
+    //       expect(getElementText('#reports-content .item-summary .subject .name')).toBe(MARIA.name);
+    //       expect(getElementText('#reports-content .item-summary .subject + div')).toBe('REF_REF');
+    //       testSummaryLineage(['TAG Place', 'Health Center', 'District']);
+    //       expect(getElementText('#reports-content .item-summary .sender .name')).toMatch(`Submitted by ${CAROL.name}`);
+    //       expect(getElementText('#reports-content .item-summary .sender .phone')).toBe(CAROL.phone);
+    //     });
+    // });
 
     it('Concerning reports using doc id', () => {
       const REPORT = {
