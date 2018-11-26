@@ -349,8 +349,9 @@ angular.module('inboxServices').factory('LiveList',
       }
 
       idx.lastUpdate = new Date();
-      idx.list = idx.list.concat(items).sort(idx.orderBy);
-      idx.dom = idx.list.reduce((agg, val) => {
+      idx.list = _.uniq(_.union(items, idx.list), false, _.property('_id'));
+      idx.list.sort(idx.orderBy);
+      idx.dom = items.reduce((agg, val) => {
         agg[val._id] = listItemFor(idx, val);
         return agg;
       }, idx.dom);
