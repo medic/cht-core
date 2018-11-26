@@ -10,38 +10,38 @@ angular.module('inboxServices').factory('BrandingImages',
 
     const BRANDING_ID = 'branding';
 
-    var cache = {
+    const cache = {
       doc: null,
       htmlContent: {}
     };
 
-    var getAttachment = function(name) {
+    const getAttachment = name => {
       return cache.doc &&
              cache.doc.resources[name] &&
              cache.doc._attachments[cache.doc.resources[name]];
     };
 
-    var getHtmlContent = function(name) {
+    const getHtmlContent = name => {
       if (!cache.htmlContent[name]) {
-        var image = getAttachment(name);
+        const image = getAttachment(name);
         if (!image) {
           return '';
         }
-        var content = '<img src="data:' + image.content_type + ';base64,' + image.data + '" />';
+        const content = `<img src="data:${image.content_type};base64,${image.data}" />`;
         cache.htmlContent[name] = content;
       }
       return cache.htmlContent[name];
     };
 
-    var getHtml = function(name) {
-      var image = getHtmlContent(name);
-      return '<span class="header-logo" title="' + name + '">' + image + '</span>';
+    const getHtml = name => {
+      const image = getHtmlContent(name);
+      return `<span class="header-logo" title="${name}">${image}</span>`;
     };
 
-    var updateDom = function($elem) {
+    const updateDom = $elem => {
       $elem = $elem || $(document.body);
-      $elem.find('.header-logo').each(function() {
-        var $this = $(this);
+      $elem.find('.header-logo').each((i, child) => {
+        const $this = $(child);
         $this.html(getHtmlContent($this.attr('title')));
       });
       if(document.getElementById('app')) {
@@ -49,17 +49,15 @@ angular.module('inboxServices').factory('BrandingImages',
       }
     };
 
-    var updateResources = function() {
+    const updateResources = () => {
       return DB()
         .get(BRANDING_ID, { attachments: true })
-        .then(function(res) {
-          cache = {
-            doc: res,
-            htmlContent: {}
-          };
+        .then(res => {
+          cache.doc = res;
+          cache.htmlContent = {};
           updateDom();
         })
-        .catch(function(err) {
+        .catch(err => {
           if (err.status !== 404) {
             $log.error('Error updating icons', err);
           }
@@ -72,26 +70,19 @@ angular.module('inboxServices').factory('BrandingImages',
       filter: change => change.id === BRANDING_ID
     });
 
-    var init = updateResources();
+    const init = updateResources();
 
     return {
-      getLogo: function(name) {
+      getLogo: name => {
         if (!name) {
           return '';
         }
-        return getHtml(name);
+        const html = getHtml(name);
+        return html;
       },
-      getAppTitle: function() {
-        return new Promise((resolve, reject) => {
-          DB().get(BRANDING_ID).then(doc => {
-            resolve(doc.title);
-          }).catch(err => {
-            reject(err);
-          });
-        });
-      },
-      replacePlaceholders: function($elem) {
-        init.then(function() {
+      getAppTitle: () => DB().get(BRANDING_ID).then(doc => doc.title),
+      replacePlaceholders: $elem => {
+        init.then(() => {
           updateDom($elem);
         });
       }
