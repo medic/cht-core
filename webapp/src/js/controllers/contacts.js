@@ -431,13 +431,19 @@ var _ = require('underscore'),
         var limit = liveList.count();
         if (change.deleted && change.doc.type !== 'data_record') {
           liveList.remove(change.doc);
-        }
+        }        
+        liveList.invalidateCache(change.doc);
 
         var withIds =
           isSortedByLastVisited() &&
           !!isRelevantVisitReport(change.doc) &&
           !change.deleted;
-        return _query({ limit: limit, silent: true, withIds: withIds });
+        return _query({
+          limit,
+          withIds,
+          silent: true,
+          reuseExistingDom: true,
+        });
       },
       filter: function(change) {
         return (

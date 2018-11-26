@@ -353,7 +353,8 @@ angular.module('inboxServices').factory('LiveList',
       idx.list = items.sort(idx.orderBy);
       idx.dom = items.reduce((agg, val) => {
         
-        const li = reuseExistingDom && idx.dom[val._id] ? idx.dom[val._id] : listItemFor(idx, val);
+        const useCache = reuseExistingDom && idx.dom[val._id] && !idx.dom[val._id].invalidateCache;
+        const li = useCache ? idx.dom[val._id] : listItemFor(idx, val);
         agg[val._id] = li;
         return agg;
       }, {});
@@ -400,6 +401,15 @@ angular.module('inboxServices').factory('LiveList',
               .before(li);
         }
       }
+    }
+
+    function _invalidateCache(listName, item) {
+      const idx = indexes[listName];
+      if (!idx || !idx.dom || !item || !item._id || !idx.dom[item._id]) {
+        return;
+      }
+
+      idx.dom[item._id].invalidateCache = true;
     }
 
     function _update(listName, updatedItem) {
@@ -529,6 +539,7 @@ angular.module('inboxServices').factory('LiveList',
 
       api[name] = {
         insert: _.partial(_insert, name),
+        invalidateCache: _.partial(_invalidateCache, name),
         update: _.partial(_update, name),
         remove: _.partial(_remove, name),
         getList: _.partial(_getList, name),
