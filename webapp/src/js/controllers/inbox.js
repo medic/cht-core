@@ -224,16 +224,13 @@ var feedback = require('../modules/feedback'),
       if(!$scope.enketoStatus.edited){
         return;
       }
-      if(!fromState.url.includes('edit')){
-        return;
-      }
       if(fromParams.id === toParams.id){
         return;
       }
       if(fromParams.reportId === toParams.id){
         return;
       }
-      if ($scope.cancelCallback) {
+      if($scope.cancelCallback) {
         event.preventDefault();
         $scope.navigationCancel();
       }
