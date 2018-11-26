@@ -91,10 +91,8 @@ describe('EditTranslationCtrl controller', function() {
       chai.expect(updated.length).to.equal(2); // spanish not saved as not updated
       chai.expect(updated[0].code).to.equal('en');
       chai.expect(updated[0].custom['title.key']).to.equal('Hello');
-      chai.expect(updated[0].custom.bye).to.equal('Goodbye');
       chai.expect(updated[1].code).to.equal('fr');
       chai.expect(updated[1].custom['title.key']).to.equal('Bienvenue');
-      chai.expect(updated[1].custom.bye).to.equal('Au revoir');
       done();
     });
   });
