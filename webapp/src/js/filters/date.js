@@ -156,8 +156,7 @@ var _ = require('underscore'),
         RelativeDate: RelativeDate,
         withoutTime: true,
         age: true,
-        end: dod,
-        class: 'age'
+        end: dod
       }));
     };
   });
