@@ -36,8 +36,8 @@ angular.module('controllers').controller('TranslationApplicationCtrl',
       var lhsOption =  showKeys ? DEFAULT_LANGUAGE : $scope.localeModel.lhs;
       var lhsTranslation = findTranslation(lhsOption);
       var rhsTranslation = findTranslation($scope.localeModel.rhs);
-      var lhs = (lhsTranslation && lhsTranslation.values) || {};
-      var rhs = (rhsTranslation && rhsTranslation.values) || {};
+      var lhs = (lhsTranslation && Object.assign(Object.assign({}, lhsTranslation.generic), lhsTranslation.custom || {}));
+      var rhs = (rhsTranslation && Object.assign(Object.assign({}, rhsTranslation.generic), rhsTranslation.custom || {}));
       $scope.translationModels = Object.keys(lhs).map(function(key) {
         return {
           key: key,
@@ -58,21 +58,22 @@ angular.module('controllers').controller('TranslationApplicationCtrl',
           $scope.translations = results.rows;
           $scope.translationOptions = _.union([TRANSLATION_KEYS_OPTION], $scope.translations);
         })
+        .then(function() {
+          updateLocaleModel('en');
+          updateTranslationModels();
+          $scope.$watch('localeModel', function(curr, prev) {
+            if (prev.lhs !== curr.lhs || prev.rhs !== curr.rhs) {
+              updateTranslationModels();
+            }
+          }, true);
+        })
         .catch(function(err) {
           $log.error('Error fetching translation documents', err);
         });
     };
 
-    updateTranslations()
-      .then(function() {
-        updateLocaleModel('en');
-        updateTranslationModels();
-        $scope.$watch('localeModel', function(curr, prev) {
-          if (prev.lhs !== curr.lhs || prev.rhs !== curr.rhs) {
-            updateTranslationModels();
-          }
-        }, true);
-      });
+
+    updateTranslations();
 
     $scope.editTranslation = function(key) {
       Modal({
@@ -82,6 +83,8 @@ angular.module('controllers').controller('TranslationApplicationCtrl',
           key: key,
           locales: _.values($scope.translations)
         }
+      }).then(function(){
+          updateTranslations();
       });
     };
 
