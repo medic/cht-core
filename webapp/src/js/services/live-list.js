@@ -503,7 +503,7 @@ angular.module('inboxServices').factory('LiveList',
     }
 
     function refreshAll() {
-      var i, now = new Date();
+      const now = new Date();
 
       _.forEach(indexes, function(idx, name) {
         // N.B. no need to update a list that's never been generated
@@ -512,7 +512,7 @@ angular.module('inboxServices').factory('LiveList',
           // instead of yesterday
           idx.list.forEach(item => {
             idx.dom[item._id] = listItemFor(idx, item);
-          })
+          });
 
           api[name].refresh();
           idx.lastUpdate = now;
