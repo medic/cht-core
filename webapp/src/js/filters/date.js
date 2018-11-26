@@ -58,6 +58,10 @@ var _ = require('underscore'),
       classes.push('future');
     }
 
+    if(options.age){
+      classes.push('age');
+    }
+
     return options.prefix +
            '<span class="' + classes.join(' ') + '" title="' + absolute + '">' +
              '<span ' +
