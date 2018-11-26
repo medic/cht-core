@@ -338,47 +338,27 @@ angular.module('inboxServices').factory('LiveList',
       return idx.list && idx.list.length;
     }
 
-    function _add(listName, items) {
+    /* 
+    reuseExistingDom is a performance optimization wherein live-list can rely on the changes feed to 
+    specifically update dom elements (via update/remove interfaces) making it safe to re-use existing dom 
+    elements for certain scenarios
+    */ 
+    function _set(listName, items, reuseExistingDom) {
       const idx = indexes[listName];
       if (!idx) {
         throw new Error('LiveList not configured for: ' + listName);
       }
 
-      if (!idx.list) {
-        return;
-      }
-
       idx.lastUpdate = new Date();
-      idx.list = _.uniq(_.union(items, idx.list), false, _.property('_id'));
-      idx.list.sort(idx.orderBy);
+      idx.list = items.sort(idx.orderBy);
       idx.dom = items.reduce((agg, val) => {
-        agg[val._id] = listItemFor(idx, val);
+        
+        const li = reuseExistingDom && idx.dom[val._id] ? idx.dom[val._id] : listItemFor(idx, val);
+        agg[val._id] = li;
         return agg;
-      }, idx.dom);
+      }, {});
 
       _refresh(listName);
-    }
-
-    function _set(listName, items) {
-      var i, len,
-          idx = indexes[listName];
-
-      if (!idx) {
-        throw new Error('LiveList not configured for: ' + listName);
-      }
-
-      idx.lastUpdate = new Date();
-
-      // TODO we should sort the list in place with a suitable, efficient algorithm
-      idx.list = [];
-      idx.dom = {};
-      for (i=0, len=items.length; i<len; ++i) {
-        _insert(listName, items[i], true);
-      }
-
-      const activeDom = $(idx.selector);
-      activeDom.empty();
-      appendDomWithListOrdering(activeDom, idx);
     }
 
     function _initialised(listName) {
@@ -507,9 +487,10 @@ angular.module('inboxServices').factory('LiveList',
         if (idx.lastUpdate && !sameDay(idx.lastUpdate, now)) {
           // regenerate all list contents so relative dates relate to today
           // instead of yesterday
-          idx.list.forEach(item => {
+          for (let i = 0; i < idx.list.length; ++i) {
+            const item = idx.list[i];
             idx.dom[item._id] = listItemFor(idx, item);
-          });
+          }
 
           api[name].refresh();
           idx.lastUpdate = now;
@@ -547,7 +528,6 @@ angular.module('inboxServices').factory('LiveList',
       indexes[name] = _.pick(config, 'selector', 'orderBy', 'listItem');
 
       api[name] = {
-        add: _.partial(_add, name),
         insert: _.partial(_insert, name),
         update: _.partial(_update, name),
         remove: _.partial(_remove, name),

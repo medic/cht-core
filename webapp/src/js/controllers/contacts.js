@@ -7,13 +7,11 @@ var _ = require('underscore'),
   var inboxControllers = angular.module('inboxControllers');
 
   inboxControllers.controller('ContactsCtrl', function(
-    $element,
     $log,
     $q,
     $scope,
     $state,
     $stateParams,
-    $timeout,
     $translate,
     Auth,
     Changes,
@@ -51,7 +49,11 @@ var _ = require('underscore'),
     var _initScroll = function() {
       scrollLoader.init(function() {
         if (!$scope.loading && $scope.moreItems) {
-          _query({ skip: true });
+          _query({
+            append: true,
+            limit: Math.floor(liveList.count() / 50 + 1) * 50,
+            reuseExistingDom: true,
+          });
         }
       });
     };
@@ -65,18 +67,15 @@ var _ = require('underscore'),
         $scope.error = false;
       }
 
-      if (options.skip) {
+      if (options.append) {
         $scope.appending = true;
-        options.skip = liveList.count();
       } else if (!options.silent) {
         liveList.set([]);
         additionalListItem = false;
       }
 
       if (additionalListItem) {
-        if (options.skip) {
-          options.skip -= 1;
-        } else {
+        if (!options.append) {
           options.limit -= 1;
         }
       }
@@ -146,7 +145,7 @@ var _ = require('underscore'),
           $scope.moreItems = liveList.moreItems =
             contacts.length >= options.limit;
 
-          liveList.add(contacts);
+          liveList.set(contacts, !!options.reuseExistingDom);
           _initScroll();
           $scope.loading = false;
           $scope.appending = false;

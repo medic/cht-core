@@ -42,11 +42,6 @@ describe('Contacts controller', () => {
     deadList = () => {
       let elements = [];
 
-      const update = e => {
-        if (e !== district || elements[0] !== district) {
-          elements.push(e);
-        }
-      };
       return {
         getList: () => elements,
         initialised: sinon.stub(),
@@ -56,8 +51,11 @@ describe('Contacts controller', () => {
         count: () => elements.length,
         insert: e => elements.push(e),
         set: es => (elements = es),
-        update,
-        add: es => es.forEach(update),
+        update: e => {
+          if (e !== district || elements[0] !== district) {
+            elements.push(e);
+          }
+        },
         remove: () => {
           if (deadListFind()) {
             return elements.pop();
@@ -567,8 +565,11 @@ describe('Contacts controller', () => {
           const lhs = contactsLiveList.getList();
           assert.equal(lhs.length, 50);
           scrollLoaderCallback();
-          assert.equal(searchService.args[1][2].skip, 50);
-          assert.equal(searchService.args[1][2].limit, 50);
+          assert.deepEqual(searchService.args[1][2], { 
+            reuseExistingDom: true,
+            append: true,
+            limit: 100
+          });
         });
     });
 
@@ -582,8 +583,11 @@ describe('Contacts controller', () => {
           const lhs = contactsLiveList.getList();
           assert.equal(lhs.length, 51);
           scrollLoaderCallback();
-          assert.equal(searchService.args[1][2].skip, 50);
-          assert.equal(searchService.args[1][2].limit, 50);
+          assert.deepEqual(searchService.args[1][2], {
+            reuseExistingDom: true,
+            append: true,
+            limit: 100,
+          });
         });
     });
 
@@ -601,8 +605,11 @@ describe('Contacts controller', () => {
           const lhs = contactsLiveList.getList();
           changesCallback({});
           assert.equal(lhs.length, 10);
-          assert.equal(searchService.args[1][2].limit, 10);
-          assert.equal(searchService.args[1][2].skip, undefined);
+          assert.deepEqual(searchService.args[1][2], {
+            limit: 10,
+            silent: true,
+            withIds: false,
+          });
         });
     });
 
@@ -635,8 +642,7 @@ describe('Contacts controller', () => {
           searchResults = Array(50).fill(searchResult);
           searchService.returns(Promise.resolve(searchResults));
           scope.search();
-          assert.equal(searchService.args[1][2].limit, 50);
-          assert.equal(searchService.args[1][2].skip, undefined);
+          assert.deepEqual(searchService.args[1][2], { limit: 50 });
           return Promise.resolve();
         })
         .then(() => {
@@ -644,8 +650,11 @@ describe('Contacts controller', () => {
           assert.equal(lhs.length, 50);
           //aand paginate the search results, also not skipping the extra place
           scrollLoaderCallback();
-          assert.equal(searchService.args[2][2].skip, 50);
-          assert.equal(searchService.args[2][2].limit, 50);
+          assert.deepEqual(searchService.args[2][2], {
+            limit: 100,
+            append: true,
+            reuseExistingDom: true,
+          });
         });
     });
 
@@ -660,8 +669,11 @@ describe('Contacts controller', () => {
           const lhs = contactsLiveList.getList();
           assert.equal(lhs.length, 50);
           scrollLoaderCallback();
-          assert.equal(searchService.args[1][2].skip, 50);
-          assert.equal(searchService.args[1][2].limit, 50);
+          assert.deepEqual(searchService.args[1][2], {
+            limit: 100,
+            append: true,
+            reuseExistingDom: true,
+          });
         });
     });
 
@@ -674,22 +686,28 @@ describe('Contacts controller', () => {
         .then(() => {
           const lhs = contactsLiveList.getList();
           assert.equal(lhs.length, 51);
-          searchResults = Array(49).fill(searchResult);
+          searchResults = Array(99).fill(searchResult);
           searchResults.push(district);
           searchService.returns(Promise.resolve(searchResults));
           scrollLoaderCallback();
-          assert.equal(searchService.args[1][2].skip, 50);
-          assert.equal(searchService.args[1][2].limit, 50);
+          assert.deepEqual(searchService.args[1][2], {
+            limit: 100,
+            append: true,
+            reuseExistingDom: true,
+          });
           return Promise.resolve();
         })
         .then(() => {
           const lhs = contactsLiveList.getList();
           assert.equal(lhs.length, 100);
-          searchResults = Array(50).fill(searchResult);
+          searchResults = Array(150).fill(searchResult);
           searchService.returns(Promise.resolve(searchResults));
           scrollLoaderCallback();
-          assert.equal(searchService.args[2][2].skip, 100);
-          assert.equal(searchService.args[2][2].limit, 50);
+          assert.deepEqual(searchService.args[2][2], {
+            limit: 150,
+            append: true,
+            reuseExistingDom: true,
+          });
           return Promise.resolve();
         })
         .then(() => {
