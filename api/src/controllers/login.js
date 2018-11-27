@@ -9,6 +9,7 @@ const fs = require('fs'),
   SESSION_COOKIE_RE = /AuthSession\=([^;]*);/,
   ONE_YEAR = 31536000000,
   logger = require('../logger'),
+  db = require('../db-pouch'),
   production = process.env.NODE_ENV === 'production';
 
 let loginTemplate;
@@ -60,7 +61,7 @@ const getLoginTemplate = callback => {
   );
 };
 
-const renderLogin = (redirect, callback) => {
+const renderLogin = (redirect, branding, callback) => {
   getLoginTemplate((err, template) => {
     if (err) {
       return callback(err);
@@ -68,9 +69,7 @@ const renderLogin = (redirect, callback) => {
     const body = template({
       action: path.join('/', environment.db, 'login'),
       redirect: redirect,
-      branding: {
-        name: 'Medic Mobile',
-      },
+      branding: branding,
       translations: {
         login: config.translate('login'),
         loginerror: config.translate('login.error'),
@@ -169,12 +168,19 @@ module.exports = {
         res.redirect(redirect);
       })
       .catch(() => {
-        renderLogin(redirect, (err, body) => {
-          if (err) {
-            logger.error('Could not find login page');
-            throw err;
+        db.medic.get('branding', {attachments: true}).then(doc => {
+          const image = doc._attachments[doc.resources.logo];
+          const branding = {
+            name: doc.title,
+            logo: `data:${image.content_type};base64,${image.data}`
           }
-          res.send(body);
+          renderLogin(redirect, branding, (err, body) => {
+            if (err) {
+              logger.error('Could not find login page');
+              throw err;
+            }
+            res.send(body);
+          });
         });
       });
   },
