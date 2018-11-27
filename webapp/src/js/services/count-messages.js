@@ -18,11 +18,15 @@
     };
   };
 
-  var label = function(translate, value) {
+  var label = function(translate, value, many) {
     var count = calculate(value);
-    var key = count.messages <= 1 ?
-                'message.characters.left' :
-                'message.characters.left.multiple';
+    var key = 'message.characters.left';
+    if (count.messages > 1) {
+      key = 'message.characters.left.multiple';
+      if (many) {
+        key = 'message.characters.left.multiple.many';
+      }
+    }
     return translate.instant(key, count);
   };
 
@@ -42,28 +46,38 @@
 
               var target = $(e.target);
               var message = target.val();
-              target.closest('.message-form')
-                    .find('.count')
-                    .text(label($translate, message));
 
               var count = calculate(message);
               var settingsMaximumSMSPart = settings.multipart_sms_limit || 10;
 
-              if (count.messages > settingsMaximumSMSPart) {
-                target.closest('.message-form')
-                      .find('.count')
-                      .addClass('alert-danger')
-                      .closest('mm-modal')
-                      .find('.btn.submit')
-                      .addClass('disabled');
-              } else {
-                target.closest('.message-form')
-                      .find('.count')
-                      .removeClass('alert-danger')
-                      .closest('mm-modal')
-                      .find('.btn.submit')
-                      .removeClass('disabled');
+              var alertMessage = target.closest('.message-form')
+                                       .find('.count');
+              target.closest('.message-form')
+                    .find('.count')
+                    .text(label($translate, message, (count.messages > settingsMaximumSMSPart)));
 
+              if (count.messages > settingsMaximumSMSPart) {
+                if (alertMessage.siblings('.btn.submit').length) {
+                  alertMessage.addClass('alert-danger')
+                              .siblings('.btn.submit')
+                              .addClass('disabled')
+                } else {
+                  alertMessage.addClass('alert-danger')
+                              .closest('mm-modal')
+                              .find('.btn.submit')
+                              .addClass('disabled')
+                }
+              } else {
+                if (alertMessage.siblings('.btn.submit').length) {
+                  alertMessage.removeClass('alert-danger')
+                              .siblings('.btn.submit')
+                              .removeClass('disabled');
+                } else {
+                  alertMessage.removeClass('alert-danger')
+                              .closest('mm-modal')
+                              .find('.btn.submit')
+                              .removeClass('disabled')
+                }
               }
             });
           });
