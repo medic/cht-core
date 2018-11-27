@@ -165,6 +165,12 @@ describe('messageUtils', () => {
       const actual = utils._extendedTemplateContext(doc, { patient: patient, registrations: registrations });
       actual.name.should.equal('doug');
     });
+
+    it('should allow registrations without a patient', () => {
+      const extras = { registrations: [{ patient_name: 'clone' }] };
+      const result = utils._extendedTemplateContext({}, extras);
+      result.patient_name.should.equal('clone');
+    });
   });
 
   describe('generate', () => {
