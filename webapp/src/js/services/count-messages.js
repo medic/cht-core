@@ -60,12 +60,12 @@
                 if (alertMessage.siblings('.btn.submit').length) {
                   alertMessage.addClass('alert-danger')
                               .siblings('.btn.submit')
-                              .addClass('disabled')
+                              .addClass('disabled');
                 } else {
                   alertMessage.addClass('alert-danger')
                               .closest('mm-modal')
                               .find('.btn.submit')
-                              .addClass('disabled')
+                              .addClass('disabled');
                 }
               } else {
                 if (alertMessage.siblings('.btn.submit').length) {
@@ -76,7 +76,7 @@
                   alertMessage.removeClass('alert-danger')
                               .closest('mm-modal')
                               .find('.btn.submit')
-                              .removeClass('disabled')
+                              .removeClass('disabled');
                 }
               }
             });
