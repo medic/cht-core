@@ -254,16 +254,26 @@ angular.module('inboxServices').factory('ContactViewModelGenerator',
           model.loadingChildren = true;
           model.loadingReports = true;
 
-          loadChildren(model)
-            .then(function(children) {
-              model.children = children;
-              model.loadingChildren = false;
-              return loadReports(model);
-            })
-            .then(function(reports) {
-              model.reports = reports;
-              model.loadingReports = false;
-            });
+          model.reportLoader = new Promise(function(resolve, reject) {
+            loadChildren(model)
+              .then(function(children) {
+                model.children = children;
+                model.loadingChildren = false;
+                return loadReports(model)
+                  .then(function(reports) {
+                    resolve(reports);
+                    return reports;
+                  });
+              })
+              .then(function(reports) {
+                model.reports = reports;
+                model.loadingReports = false;
+              })
+              .catch(function(err) {
+                reject(err);
+                throw err;
+              });
+          });
 
           return model;
         });
