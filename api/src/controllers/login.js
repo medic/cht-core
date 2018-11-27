@@ -173,7 +173,7 @@ module.exports = {
           const branding = {
             name: doc.title,
             logo: `data:${image.content_type};base64,${image.data}`
-          }
+          };
           renderLogin(redirect, branding, (err, body) => {
             if (err) {
               logger.error('Could not find login page');
