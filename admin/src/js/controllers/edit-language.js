@@ -30,7 +30,8 @@ angular.module('controllers').controller('EditLanguageCtrl',
 
     $scope.language = _.clone($scope.model) || {
       enabled: true,
-      values: {},
+      generic: {},
+      custom: {},
       type: 'translations'
     };
 
