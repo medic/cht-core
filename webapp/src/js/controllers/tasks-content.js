@@ -97,8 +97,8 @@ angular.module('inboxControllers').controller('TasksContentCtrl',
           Enketo.unload($scope.form);
           $scope.clearSelected();
           $scope.clearCancelTarget();
-          $state.go('tasks.detail', { id: null });
           $scope.enketoStatus.edited = false;
+          $state.go('tasks.detail', { id: null });
         })
         .catch(function(err) {
           $scope.enketoStatus.saving = false;
