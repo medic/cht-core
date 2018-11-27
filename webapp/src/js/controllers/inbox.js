@@ -233,9 +233,6 @@ var feedback = require('../modules/feedback'),
       if(!fromState.url.includes('edit') && !fromState.url.includes('add')){
         return;
       }
-      if(toParams.id === fromParams.parent_id){
-        return;
-      }
       if(fromParams.id === toParams.id){
         return;
       }
@@ -245,7 +242,7 @@ var feedback = require('../modules/feedback'),
       if ($scope.cancelCallback) {
         event.preventDefault();
         $scope.navigationCancel();
-      }    
+      }
     });
 
     // User wants to cancel current flow, or pressed back button, etc.
