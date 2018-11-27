@@ -83,7 +83,7 @@
 
         <div class="loader" ng-if="selected.loadingChildren"></div>
         <div ng-if="!selected.loadingChildren">
-          <div ng-if="!selected.children.persons.length && !selected.children.deceased.length" translate>
+          <div ng-if="!selected.children.persons.length && !selected.children.deceased.length" translate class="cell col">
             contact.no.children
           </div>
           <div ng-if="selected.children.persons.length || selected.children.deceased.length">
