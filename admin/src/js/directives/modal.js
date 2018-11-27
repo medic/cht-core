@@ -32,14 +32,23 @@ angular.module('directives').directive('mmModal', function() {
       // string: (optional) the key to use for the cancel button (defaults to 'Cancel')
       cancelKey: '=',
 
+      // string: (optional) the key to use for the delete button (defaults to 'Delete')
+      deleteKey: '=',
+
       // function: to be called when dismissing the modal
       onCancel: '&',
 
       // function: to be called when submitting the modal
       onSubmit: '&',
 
+      // function: to be called when deleting the modal
+      onDelete: '&',
+
       // string: (optional) the expression which, if true, will disable the submit button
-      disableSubmit: '='
+      disableSubmit: '=',
+
+      // string: (optional) the expression which, if true, will show the delete button
+      showDelete: '='
     }
   };
 });
