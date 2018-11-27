@@ -179,8 +179,8 @@ angular.module('inboxControllers').controller('ContactsEditCtrl',
               $log.debug('saved report', result);
               $scope.enketoStatus.saving = false;
               $translate(docId ? 'contact.updated' : 'contact.created').then(Snackbar);
-              $state.go('contacts.detail', { id: result.docId });
               $scope.enketoStatus.edited = false;
+              $state.go('contacts.detail', { id: result.docId });
             })
             .catch(function(err) {
               $scope.enketoStatus.saving = false;
