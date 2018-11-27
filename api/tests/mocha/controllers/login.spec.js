@@ -110,7 +110,7 @@ describe('login controller', () => {
       const getUserCtx = sinon.stub(auth, 'getUserCtx').resolves({ name: 'josh' });
       const redirect = sinon.stub(res, 'redirect');
       const cookie = sinon.stub(res, 'cookie').returns(res);
-      const getDoc = sinon.stub(db, 'get').resolves({ doc: { _id: 'branding' }})
+      const getDoc = sinon.stub(db, 'get').resolves({ doc: { _id: 'branding' }});
       controller.get(req, res).then(() => {
         chai.expect(getUserCtx.callCount).to.equal(1);
         chai.expect(getUserCtx.args[0][0]).to.deep.equal(req);
