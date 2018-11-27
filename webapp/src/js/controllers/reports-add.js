@@ -143,8 +143,8 @@ angular.module('inboxControllers').controller('ReportsAddCtrl',
           $scope.enketoStatus.saving = false;
           $translate($state.params.reportId ? 'report.updated' : 'report.created')
             .then(Snackbar);
-          $state.go('reports.detail', { id: docs[0]._id });
           $scope.enketoStatus.edited = false;
+          $state.go('reports.detail', { id: docs[0]._id });
         })
         .catch(function(err) {
           $scope.enketoStatus.saving = false;
