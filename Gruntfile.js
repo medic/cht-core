@@ -1,6 +1,33 @@
-const packageJson = require('./package.json'),
-  releaseName =
-    process.env.TRAVIS_TAG || process.env.TRAVIS_BRANCH || 'local-development';
+const url = require('url');
+const packageJson = require('./package.json');
+
+const {
+  TRAVIS_TAG,
+  TRAVIS_BRANCH,
+  COUCH_URL,
+  COUCH_NODE_NAME,
+  UPLOAD_URL,
+  TRAVIS_BUILD_NUMBER
+} = process.env;
+
+const releaseName = TRAVIS_TAG || TRAVIS_BRANCH || 'local-development';
+
+const couchConfig = (() => {
+  const parsedUrl = url.parse(COUCH_URL);
+  if (!parsedUrl.auth) {
+    throw 'COUCH_URL must contain admin authentication information';
+  }
+  
+  const [ username, password ] = parsedUrl.auth.split(':', 2);
+  
+  return {
+    username,
+    password,
+    dbName: parsedUrl.path.substring(1),
+    withPath: path => `${parsedUrl.protocol}//${parsedUrl.auth}@${parsedUrl.host}/${path}`,
+    withPathNoAuth: path => `${parsedUrl.protocol}//${parsedUrl.host}/${path}`,
+  };
+})();
 
 module.exports = function(grunt) {
   'use strict';
@@ -59,38 +86,37 @@ module.exports = function(grunt) {
     'couch-push': {
       localhost: {
         options: {
-          user: 'admin',
-          pass: 'pass',
+          user: couchConfig.username,
+          pass: couchConfig.password,
         },
         files: {
-          'http://localhost:5984/medic': 'build/ddocs/medic.json',
+          [couchConfig.withPathNoAuth(couchConfig.dbName)]: 'build/ddocs/medic.json',
         },
       },
       // push just the secondary ddocs to save time in dev
       'localhost-secondary': {
         options: {
-          user: 'admin',
-          pass: 'pass',
+          user: couchConfig.username,
+          pass: couchConfig.password,
         },
         files: {
-          'http://localhost:5984/medic':
-            'build/ddocs/medic/_attachments/ddocs/compiled.json',
-        },
+          [couchConfig.withPathNoAuth(couchConfig.dbName)]: 'build/ddocs/medic/_attachments/ddocs/compiled.json',
+        }
       },
       test: {
         options: {
-          user: 'admin',
-          pass: 'pass',
+          user: couchConfig.username,
+          pass: couchConfig.password,
         },
         files: {
-          'http://localhost:5984/medic-test': 'build/ddocs/medic.json',
+          [couchConfig.withPathNoAuth('medic-test')]: 'build/ddocs/medic.json',
         },
       },
       staging: {
         files: [
           {
             src: 'build/ddocs/medic.json',
-            dest: process.env.UPLOAD_URL + '/_couch/builds',
+            dest: UPLOAD_URL + '/_couch/builds',
           },
         ],
       },
@@ -356,12 +382,12 @@ module.exports = function(grunt) {
       'set-ddoc-version': {
         cmd: () => {
           let version;
-          if (process.env.TRAVIS_TAG) {
-            version = process.env.TRAVIS_TAG;
+          if (TRAVIS_TAG) {
+            version = TRAVIS_TAG;
           } else {
             version = require('./package.json').version;
-            if (process.env.TRAVIS_BRANCH === 'master') {
-              version += `-alpha.${process.env.TRAVIS_BUILD_NUMBER}`;
+            if (TRAVIS_BRANCH === 'master') {
+              version += `-alpha.${TRAVIS_BUILD_NUMBER}`;
             }
           }
           return `echo "${version}" > build/ddocs/medic/version`;
@@ -393,18 +419,20 @@ module.exports = function(grunt) {
       },
       'setup-admin': {
         cmd:
-          'curl -X PUT http://localhost:5984/_node/${COUCH_NODE_NAME}/_config/admins/admin -d \'"pass"\'' +
-          ' && curl -X POST http://admin:pass@localhost:5984/_users ' +
+          `curl -X PUT ${couchConfig.withPathNoAuth(couchConfig.dbName)}` +
+          ` && curl -X PUT ${couchConfig.withPathNoAuth('_users')}` +
+          ` && curl -X PUT ${couchConfig.withPathNoAuth('_node/' + COUCH_NODE_NAME + '/_config/admins/admin')} -d '"${couchConfig.password}"'` +
+          ` && curl -X POST ${couchConfig.withPath('_users')} ` +
           ' -H "Content-Type: application/json" ' +
-          ' -d \'{"_id": "org.couchdb.user:admin", "name": "admin", "password":"pass", "type":"user", "roles":[]}\' ' +
-          ' && curl -X PUT --data \'"true"\' http://admin:pass@localhost:5984/_node/${COUCH_NODE_NAME}/_config/chttpd/require_valid_user' +
-          ' && curl -X PUT --data \'"4294967296"\' http://admin:pass@localhost:5984/_node/${COUCH_NODE_NAME}/_config/httpd/max_http_request_size',
+          ` -d '{"_id": "org.couchdb.user:${couchConfig.username}", "name": "${couchConfig.username}", "password":"${couchConfig.password}", "type":"user", "roles":[]}' ` +
+          ` && curl -X PUT --data '"true"' ${couchConfig.withPath('_node/' + COUCH_NODE_NAME + '/_config/chttpd/require_valid_user')}` +
+          ` && curl -X PUT --data '"4294967296"' ${couchConfig.withPath('_node/' + COUCH_NODE_NAME + '/_config/httpd/max_http_request_size')}`,
       },
       'reset-test-databases': {
         stderr: false,
         cmd: ['medic-test', 'medic-test-audit']
           .map(
-            name => `curl -X DELETE http://admin:pass@localhost:5984/${name}`
+            name => `curl -X DELETE ${couchConfig.withPath(name)}`
           )
           .join(' && '),
       },
@@ -1029,6 +1057,10 @@ module.exports = function(grunt) {
 
   grunt.registerTask('dev-api', 'Run api and watch for file changes', [
     'exec:api-dev',
+  ]);
+
+  grunt.registerTask('secure-couchdb', 'Basic developer setup for CouchDB', [
+    'exec:setup-admin',
   ]);
 
   grunt.registerTask(
