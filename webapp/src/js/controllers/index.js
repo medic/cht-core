@@ -32,6 +32,7 @@
   require('./messages');
   require('./messages-content');
   require('./navigation-confirm');
+  require('./reloading-modal');
   require('./reports');
   require('./reports-add');
   require('./reports-content');
@@ -41,7 +42,6 @@
   require('./theme');
   require('./tour-select');
   require('./user-language-modal');
-  require('./version-update');
   require('./welcome-modal');
 
 }());
