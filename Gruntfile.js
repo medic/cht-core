@@ -13,6 +13,9 @@ const {
 const releaseName = TRAVIS_TAG || TRAVIS_BRANCH || 'local-development';
 
 const couchConfig = (() => {
+  if (!COUCH_URL) {
+    throw 'Required environment variable COUCH_URL is undefined. (eg. http://your:pass@localhost:5984/medic)';
+  }
   const parsedUrl = url.parse(COUCH_URL);
   if (!parsedUrl.auth) {
     throw 'COUCH_URL must contain admin authentication information';
