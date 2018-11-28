@@ -116,7 +116,12 @@
                 <li ng-repeat="task in group.rows | orderBy:'timestamp'">
                   <ul>
                     <li ng-repeat="message in task.messages">
+                      <p class="error" ng-if="message.error">
+                        <span translate>messages.errors.invalid</span>
+                        <span translate>{{message.error}}</span>
+                      </p>
                       <p>{{message.message}}</p>
+
                     </li>
                   </ul>
                   <span class="task-state" ng-bind-html="task | state"></span>

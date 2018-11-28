@@ -237,6 +237,14 @@ exports.generate = function(config, translate, doc, content, recipient, extraCon
     result.original_message = message;
   }
 
+  var isMissingPatient = extraContext &&
+                         !extraContext.patient &&
+                         extraContext.registrations &&
+                         extraContext.registrations.length;
+  if (isMissingPatient) {
+    result.error = 'messages.errors.patient.missing';
+  }
+
   return [ result ];
 };
 
@@ -261,6 +269,10 @@ exports.template = function(config, translate, doc, content, extraContext) {
   }
   var context = extendedTemplateContext(doc, extraContext);
   return render(config, template, context, locale);
+};
+
+exports.getError = function(messages) {
+  return messages && messages[0] && messages[0].error;
 };
 
 exports._getRecipient = getRecipient;

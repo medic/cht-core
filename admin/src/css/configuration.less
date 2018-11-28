@@ -163,6 +163,24 @@ dl.horizontal {
       color: @primary-color;
       font-weight: bold;
     }
+
+    &.invalid {
+      color: @error-color;
+      font-weight: bold;
+    }
+  }
+
+  .task-error {
+    color: @failed-state-color;
+    font-size: @font-small;
+
+    &:before {
+      font-family: FontAwesome;
+      font-size: @font-small;
+      margin-right: 5px;
+      vertical-align: middle;
+      content: @failed-state-icon;
+    }
   }
 
   .pagination {

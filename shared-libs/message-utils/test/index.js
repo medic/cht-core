@@ -390,6 +390,50 @@ describe('messageUtils', () => {
 
     });
 
+    describe('errors', () => {
+      it('should add an error when registrations are provided without a patient', () => {
+        const config = {},
+              translate = null,
+              doc = {},
+              content = { message: 'sms' },
+              recipient = '1234',
+              context = { registrations: [{ _id: 'a' }] };
+
+        const messages = utils.generate(config, translate, doc, content, recipient, context);
+        expect(messages[0].message).to.equal('sms');
+        expect(messages[0].to).to.equal('1234');
+        expect(messages[0].error).to.equal('messages.errors.patient.missing');
+      });
+
+      it('should not add an error when no patient and no registrations are provided', () => {
+        const config = {},
+              translate = null,
+              doc = {},
+              content = { message: 'sms' },
+              recipient = '1234',
+              context = { registrations: false };
+
+        const messages = utils.generate(config, translate, doc, content, recipient, context);
+        expect(messages[0].message).to.equal('sms');
+        expect(messages[0].to).to.equal('1234');
+        expect(messages[0].error).to.equal(undefined);
+      });
+
+      it('should not add an error when patient is provided', () => {
+        const config = {},
+              translate = null,
+              doc = {},
+              content = { message: 'sms' },
+              recipient = '1234',
+              context = { patient: { name: 'a' } };
+
+        const messages = utils.generate(config, translate, doc, content, recipient, context);
+        expect(messages[0].message).to.equal('sms');
+        expect(messages[0].to).to.equal('1234');
+        expect(messages[0].error).to.equal(undefined);
+      });
+    });
+
   });
 
   describe('template', () => {
@@ -613,4 +657,18 @@ describe('messageUtils', () => {
 
   });
 
+  describe('getError', () => {
+    it('should work with incorrect param', () => {
+      expect(utils.getError()).to.equal(undefined);
+      expect(utils.getError(false)).to.equal(false);
+      expect(utils.getError({})).to.equal(undefined);
+      expect(utils.getError([])).to.equal(undefined);
+    });
+
+    it('should return correct result', () => {
+      expect(utils.getError([{ a: 1 }])).to.equal(undefined);
+      expect(utils.getError([{ error: false }])).to.equal(false);
+      expect(utils.getError([{ error: 'something' }])).to.equal('something');
+    });
+  });
 });

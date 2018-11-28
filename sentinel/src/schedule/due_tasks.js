@@ -67,16 +67,17 @@ module.exports = {
                   if (err) {
                     return cb(err);
                   }
+                  var changedTasks = false;
                   // set task to pending for gateway to pick up
                   doc.scheduled_tasks.forEach(task => {
                     if (task.due === obj.key) {
-                      utils.setTaskState(task, 'pending');
                       if (!task.messages) {
                         const content = {
                           translationKey: task.message_key,
                           message: task.message,
                         };
-                        task.messages = messageUtils.generate(
+
+                        const messages = messageUtils.generate(
                           config.getAll(),
                           utils.translate,
                           doc,
@@ -84,9 +85,23 @@ module.exports = {
                           task.recipient,
                           context
                         );
+
+                        if (!messageUtils.getError(messages)) {
+                          task.messages = messages;
+                        }
+                      }
+
+                      if (task.messages) {
+                        changedTasks = true;
+                        utils.setTaskState(task, 'pending');
                       }
                     }
                   });
+
+                  if (!changedTasks) {
+                    return cb();
+                  }
+
                   lineage.minify(doc);
                   dbPouch.medic.put(doc, cb);
                 });
