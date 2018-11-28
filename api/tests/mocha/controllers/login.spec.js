@@ -110,11 +110,9 @@ describe('login controller', () => {
       const getUserCtx = sinon.stub(auth, 'getUserCtx').resolves({ name: 'josh' });
       const redirect = sinon.stub(res, 'redirect');
       const cookie = sinon.stub(res, 'cookie').returns(res);
-      const getDoc = sinon.stub(db, 'get').resolves({ doc: { _id: 'branding' }});
-      controller.get(req, res).then(() => {
+      return controller.get(req, res).then(() => {
         chai.expect(getUserCtx.callCount).to.equal(1);
         chai.expect(getUserCtx.args[0][0]).to.deep.equal(req);
-        chai.expect(getDoc.callCount).to.equal(1);
         chai.expect(cookie.callCount).to.equal(1);
         chai.expect(cookie.args[0][0]).to.equal('userCtx');
         chai.expect(cookie.args[0][1]).to.equal('{"name":"josh"}');
@@ -125,11 +123,22 @@ describe('login controller', () => {
 
     it('when not logged in send login page', () => {
       const getUserCtx = sinon.stub(auth, 'getUserCtx').rejects('not logged in');
-      const getDoc = sinon.stub(db, 'get').resolves({ doc: { _id: 'branding' }});
+      const getDoc = sinon.stub(db, 'get').resolves({
+        _id: 'branding',
+        resources: {
+          logo: 'xyz'
+        },
+        _attachments: {
+          xyz: {
+            content_type: 'zes',
+            data: 'xsd'
+          }
+        }
+      });
       const send = sinon.stub(res, 'send');
       const readFile = sinon.stub(fs, 'readFile').callsArgWith(2, null, 'LOGIN PAGE GOES HERE. {{translations.login}}');
       sinon.stub(config, 'translate').returns('TRANSLATED VALUE.');
-      controller.get(req, res).then(() => {
+      return controller.get(req, res).then(() => {
         chai.expect(getUserCtx.callCount).to.equal(1);
         chai.expect(getUserCtx.args[0][0]).to.deep.equal(req);
         chai.expect(getDoc.callCount).to.equal(1);

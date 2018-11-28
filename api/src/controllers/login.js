@@ -181,7 +181,8 @@ module.exports = {
             }
             res.send(body);
           });
-        });
+        })
+        .catch(err => logger.error('Could not find branding doc on couchdb: %o', err));
       });
   },
   post: (req, res) => {
