@@ -1,5 +1,6 @@
 /*
-PouchDB intermittently can emit an unhandled rejection to ineffectively communicates that PouchDB has lost control of the IDB database.
+PouchDB intermittently emits an unhandledrejection to ineffectively communicate that it has catastrophically failed.
+This service detects the event and resolves a promise when it occurs.
 
 DOMException: Failed to execute 'transaction' on 'IDBDatabase': The database connection is closing
 */
