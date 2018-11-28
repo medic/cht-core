@@ -17,7 +17,7 @@ describe('DatabaseConnectionMonitor service', function() {
   
   it('no resolution from another unhandled rejection', function(done) {
     service.onDatabaseClosed().then(() => expect.fail('onDatabaseClosed should not resolve'));
-    new Promise((resolve, reject) => reject(foo));
+    new Promise((resolve, reject) => reject('foo'));
     setTimeout(done, 50);
   });
 
@@ -26,14 +26,15 @@ describe('DatabaseConnectionMonitor service', function() {
     triggerPouchDbDOMException();
   });
 
-  const triggerPouchDbDOMException = () => window.eval(`(async (dbName) => { 
-      let db = new PouchDB(dbName, { auto_compaction: true }); 
-      const write = async i => { 
-        await db.put({ _id: i + 'a', bar: 'bar' }); 
-        return write(i + 1); 
+  const triggerPouchDbDOMException = () => { 
+      let db = new window.PouchDB('test', { auto_compaction: true }); 
+      const write = i => {
+        db.put({ _id: i + 'a', bar: 'bar' }).then(() => {
+          write(i + 1); 
+        });
       };
       write(0); 
       db.destroy(); 
-      db = new PouchDB(dbName, { auto_compaction: true }); 
-  })('testing');`);
+      db = new window.PouchDB('test', { auto_compaction: true }); 
+  };
 });

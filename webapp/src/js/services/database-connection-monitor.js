@@ -14,11 +14,11 @@ angular.module('inboxServices').factory('DatabaseConnectionMonitor',
         if (
           promiseRejectionEvent &&
           promiseRejectionEvent.reason &&
-          promiseRejectionEvent.reason.message === "Failed to execute 'transaction' on 'IDBDatabase': The database connection is closing."
+          promiseRejectionEvent.reason.message === 'Failed to execute \'transaction\' on \'IDBDatabase\': The database connection is closing.'
         ) {
           resolve(promiseRejectionEvent);
         }
-      })
+      });
     });
 
     return {
