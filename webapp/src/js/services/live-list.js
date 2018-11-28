@@ -351,14 +351,15 @@ angular.module('inboxServices').factory('LiveList',
 
       idx.lastUpdate = new Date();
       idx.list = items.sort(idx.orderBy);
-      idx.dom = items.reduce((agg, val) => {
-        
-        const useCache = reuseExistingDom && idx.dom[val._id] && !idx.dom[val._id].invalidateCache;
-        const li = useCache ? idx.dom[val._id] : listItemFor(idx, val);
-        agg[val._id] = li;
-        return agg;
-      }, {});
-
+      const newDom = {};
+      for (let i = 0; i < items.length; ++i) {
+        const item = items[i];
+        const useCache = reuseExistingDom && idx.dom[item._id] && !idx.dom[item._id].invalidateCache;
+        const li = useCache ? idx.dom[item._id] : listItemFor(idx, item);
+        newDom[item._id] = li;
+      }
+      idx.dom = newDom;
+      
       _refresh(listName);
     }
 
