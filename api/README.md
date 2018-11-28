@@ -23,7 +23,6 @@ Node server to support medic-webapp.
 - [Export](#export)
   - [GET /api/v2/export/reports](#get-apiv2exportreports)
   - [GET /api/v2/export/messages](#get-apiv2exportmessages)
-  - [GET /api/v1/export/audit](#get-apiv1exportaudit)
   - [GET /api/v1/export/feedback](#get-apiv1exportfeedback)
   - [GET /api/v2/export/contacts](#get-apiv2exportcontacts)
 - [Forms](#forms)
@@ -240,19 +239,6 @@ Download messages.
 ```
 /api/v1/export/messages
 ```
-
-## GET /api/v1/export/audit
-
-Export a file containing the audit log.
-
-### Query Parameters
-
-| Variable        | Description                                                                                |
-| --------------- | ------------------------------------------------------------------------------------------ |
-| format          | The format of the returned file, either 'csv' or 'xml'. Defaults to 'csv'.                 |
-| locale          | Locale for translatable data. Defaults to 'en'.                                            |
-| tz              | The timezone to show date values in, as an offset in minutes from GMT, for example '-120'. |
-| skip_header_row | 'true' to omit the column headings. Defaults to 'false'.                                   |
 
 ## GET /api/v1/export/feedback
 
