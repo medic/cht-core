@@ -428,6 +428,7 @@ var _ = require('underscore'),
     var changeListener = Changes({
       key: 'contacts-list',
       callback: function(change) {
+        const limit = liveList.count();
         if (change.deleted && change.doc.type !== 'data_record') {
           liveList.remove(change.doc);
         }        
@@ -438,7 +439,7 @@ var _ = require('underscore'),
           !!isRelevantVisitReport(change.doc) &&
           !change.deleted;
         return _query({
-          limit: liveList.count(),
+          limit,
           withIds,
           silent: true,
           reuseExistingDom: true,
