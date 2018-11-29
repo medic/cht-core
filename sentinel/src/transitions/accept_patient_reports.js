@@ -209,7 +209,7 @@ const handleReport = (doc, config, callback) => {
         module.exports.silenceRegistrations(config, doc, registrations, callback);
       });
     })
-    .catch(err => callback(err));
+    .catch(callback);
 };
 
 module.exports = {

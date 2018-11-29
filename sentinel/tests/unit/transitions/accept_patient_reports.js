@@ -349,6 +349,18 @@ describe('accept_patient_reports', () => {
       });
     });
 
+
+    it('should catch utils.getReportsBySubject errors', done => {
+      sinon.stub(utils, 'getReportsBySubject').rejects({ some: 'error' });
+      sinon.stub(utils, 'getSubjectIds').returns(['a', 'b']);
+
+      transition._handleReport({}, {}, (err, complete) => {
+        (!!complete).should.equal(false);
+        err.should.deep.equal({ some: 'error' });
+        utils.getReportsBySubject.callCount.should.equal(1);
+        done();
+      });
+    });
   });
 
   describe('silenceReminders', () => {
