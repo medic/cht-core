@@ -227,7 +227,7 @@ describe('accept_patient_reports', () => {
         done();
       });
     });
-    
+
     it('adds report_uuid property', done => {
       const putRegistration = sinon.stub(db.medic, 'put');
       putRegistration.callsArg(1);
