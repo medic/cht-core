@@ -467,6 +467,10 @@ angular
               t.recipient,
               context
             );
+
+            if (messages.hasError(copy.messages)) {
+              copy.error = true;
+            }
           }
 
           // timestamp is used for sorting in the frontend

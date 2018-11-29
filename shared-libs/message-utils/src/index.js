@@ -271,7 +271,7 @@ exports.template = function(config, translate, doc, content, extraContext) {
   return render(config, template, context, locale);
 };
 
-exports.getError = function(messages) {
+exports.hasError = function(messages) {
   return messages && messages[0] && messages[0].error;
 };
 

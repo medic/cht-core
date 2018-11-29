@@ -657,18 +657,18 @@ describe('messageUtils', () => {
 
   });
 
-  describe('getError', () => {
+  describe('hasError', () => {
     it('should work with incorrect param', () => {
-      expect(utils.getError()).to.equal(undefined);
-      expect(utils.getError(false)).to.equal(false);
-      expect(utils.getError({})).to.equal(undefined);
-      expect(utils.getError([])).to.equal(undefined);
+      expect(utils.hasError()).to.equal(undefined);
+      expect(utils.hasError(false)).to.equal(false);
+      expect(utils.hasError({})).to.equal(undefined);
+      expect(utils.hasError([])).to.equal(undefined);
     });
 
     it('should return correct result', () => {
-      expect(utils.getError([{ a: 1 }])).to.equal(undefined);
-      expect(utils.getError([{ error: false }])).to.equal(false);
-      expect(utils.getError([{ error: 'something' }])).to.equal('something');
+      expect(utils.hasError([{ a: 1 }])).to.equal(undefined);
+      expect(utils.hasError([{ error: false }])).to.equal(false);
+      expect(utils.hasError([{ error: 'something' }])).to.equal('something');
     });
   });
 });

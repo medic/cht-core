@@ -657,6 +657,15 @@ body {
       color: @failed-state-color;
     }
   }
+
+  &.error {
+    .state {
+      color: @failed-state-color;
+      &:before {
+        color: @failed-state-color;
+      }
+    }
+  }
 }
 
 .item-content {
@@ -805,15 +814,14 @@ a.fa:hover {
         margin-top: 0;
       }
 
-      .error {
+      .message-error {
         color: @failed-state-color;
         font-size: @font-small;
 
         &:before {
           font-family: FontAwesome;
-          font-size: @font-small;
           margin-right: 5px;
-          vertical-align: middle;
+          vertical-align: baseline;
           content: @failed-state-icon;
         }
       }

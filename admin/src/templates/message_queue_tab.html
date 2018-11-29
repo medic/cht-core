@@ -29,11 +29,11 @@
 
     <div class="col col-grow">
       <p ng-if="message.task"><strong>{{message.task}}</strong></p>
-      <p class="task-error" ng-if="message.error">
+      <span>{{message.content}}</span>
+      <div class="message-error" ng-if="message.error">
         <span translate>messages.errors.invalid</span>
         <span translate>{{message.error}}</span>
-      </p>
-      <span>{{message.content}}</span>
+      </div>
     </div>
 
     <div class="col col-fixed">

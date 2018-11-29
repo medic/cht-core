@@ -86,7 +86,7 @@ module.exports = {
                           context
                         );
 
-                        if (!messageUtils.getError(messages)) {
+                        if (!messageUtils.hasError(messages)) {
                           task.messages = messages;
                         }
                       }
