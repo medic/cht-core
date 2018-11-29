@@ -431,8 +431,11 @@ var _ = require('underscore'),
         const limit = liveList.count();
         if (change.deleted && change.doc.type !== 'data_record') {
           liveList.remove(change.doc);
-        }        
-        liveList.invalidateCache(change.doc);
+        }
+        liveList.invalidateCache(change.doc._id);
+        if (change.doc.fields) {
+          liveList.invalidateCache(change.doc.fields.visited_contact_uuid);
+        }
 
         const withIds =
           isSortedByLastVisited() &&

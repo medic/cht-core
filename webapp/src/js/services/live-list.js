@@ -404,13 +404,13 @@ angular.module('inboxServices').factory('LiveList',
       }
     }
 
-    function _invalidateCache(listName, item) {
+    function _invalidateCache(listName, id) {
       const idx = indexes[listName];
-      if (!idx || !idx.dom || !item || !item._id || !idx.dom[item._id]) {
+      if (!idx || !idx.dom || !id || !idx.dom[id]) {
         return;
       }
 
-      idx.dom[item._id].invalidateCache = true;
+      idx.dom[id].invalidateCache = true;
     }
 
     function _update(listName, updatedItem) {
