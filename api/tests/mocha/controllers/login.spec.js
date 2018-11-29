@@ -2,6 +2,7 @@ const controller = require('../../../src/controllers/login'),
       chai = require('chai'),
       environment = require('../../../src/environment'),
       auth = require('../../../src/auth'),
+      db = require('../../../src/db-pouch').medic,
       sinon = require('sinon'),
       config = require('../../../src/config'),
       request = require('request'),
@@ -109,7 +110,7 @@ describe('login controller', () => {
       const getUserCtx = sinon.stub(auth, 'getUserCtx').resolves({ name: 'josh' });
       const redirect = sinon.stub(res, 'redirect');
       const cookie = sinon.stub(res, 'cookie').returns(res);
-      controller.get(req, res).then(() => {
+      return controller.get(req, res).then(() => {
         chai.expect(getUserCtx.callCount).to.equal(1);
         chai.expect(getUserCtx.args[0][0]).to.deep.equal(req);
         chai.expect(cookie.callCount).to.equal(1);
@@ -122,18 +123,44 @@ describe('login controller', () => {
 
     it('when not logged in send login page', () => {
       const getUserCtx = sinon.stub(auth, 'getUserCtx').rejects('not logged in');
+      const getDoc = sinon.stub(db, 'get').resolves({
+        _id: 'branding',
+        resources: {
+          logo: 'xyz'
+        },
+        _attachments: {
+          xyz: {
+            content_type: 'zes',
+            data: 'xsd'
+          }
+        }
+      });
       const send = sinon.stub(res, 'send');
       const readFile = sinon.stub(fs, 'readFile').callsArgWith(2, null, 'LOGIN PAGE GOES HERE. {{translations.login}}');
       sinon.stub(config, 'translate').returns('TRANSLATED VALUE.');
-      controller.get(req, res).then(() => {
+      return controller.get(req, res).then(() => {
         chai.expect(getUserCtx.callCount).to.equal(1);
         chai.expect(getUserCtx.args[0][0]).to.deep.equal(req);
+        chai.expect(getDoc.callCount).to.equal(1);
         chai.expect(send.callCount).to.equal(1);
         chai.expect(send.args[0][0]).to.equal('LOGIN PAGE GOES HERE. TRANSLATED VALUE.');
         chai.expect(readFile.callCount).to.equal(1);
       });
     });
 
+    it ('when branding doc missing when not logged in send login page', () => {
+      const getUserCtx = sinon.stub(auth, 'getUserCtx').rejects('not logged in');
+      const getDoc = sinon.stub(db, 'get').rejects({ error: 'not_found', docId: 'branding'});
+      const send = sinon.stub(res, 'send');
+      sinon.stub(config, 'translate').returns('TRANSLATED VALUE.');
+      return controller.get(req, res).then(() => {
+        chai.expect(getUserCtx.callCount).to.equal(1);
+        chai.expect(getUserCtx.args[0][0]).to.deep.equal(req);
+        chai.expect(getDoc.callCount).to.equal(1);
+        chai.expect(send.callCount).to.equal(1);
+        chai.expect(send.args[0][0]).to.equal('LOGIN PAGE GOES HERE. TRANSLATED VALUE.');
+      });
+    });
   });
 
   describe('post', () => {
