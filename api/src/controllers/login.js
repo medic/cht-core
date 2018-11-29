@@ -168,12 +168,21 @@ module.exports = {
         res.redirect(redirect);
       })
       .catch(() => {
-        db.medic.get('branding', {attachments: true}).then(doc => {
+        return db.medic.get('branding', {attachments: true}).then(doc => {
           const image = doc._attachments[doc.resources.logo];
-          const branding = {
+          return {
             name: doc.title,
             logo: `data:${image.content_type};base64,${image.data}`
+          }; 
+        })
+        .catch(err => {
+          logger.error('Could not find branding doc on CouchDB: %o', err);
+          return {
+            name: 'Medic Mobile',
+            logo: '/login/medic-logo-light-full.svg'
           };
+        })
+        .then(branding => {
           renderLogin(redirect, branding, (err, body) => {
             if (err) {
               logger.error('Could not find login page');
@@ -181,8 +190,7 @@ module.exports = {
             }
             res.send(body);
           });
-        })
-        .catch(err => logger.error('Could not find branding doc on couchdb: %o', err));
+        });
       });
   },
   post: (req, res) => {

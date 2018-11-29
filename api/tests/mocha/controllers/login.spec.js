@@ -148,6 +148,19 @@ describe('login controller', () => {
       });
     });
 
+    it ('when branding doc missing when not logged in send login page', () => {
+      const getUserCtx = sinon.stub(auth, 'getUserCtx').rejects('not logged in');
+      const getDoc = sinon.stub(db, 'get').rejects({ error: 'not_found', docId: 'branding'});
+      const send = sinon.stub(res, 'send');
+      sinon.stub(config, 'translate').returns('TRANSLATED VALUE.');
+      return controller.get(req, res).then(() => {
+        chai.expect(getUserCtx.callCount).to.equal(1);
+        chai.expect(getUserCtx.args[0][0]).to.deep.equal(req);
+        chai.expect(getDoc.callCount).to.equal(1);
+        chai.expect(send.callCount).to.equal(1);
+        chai.expect(send.args[0][0]).to.equal('LOGIN PAGE GOES HERE. TRANSLATED VALUE.');
+      });
+    });
   });
 
   describe('post', () => {
