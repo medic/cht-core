@@ -37,7 +37,7 @@
     </div>
 
     <div class="col col-fixed">
-      <span class="message-state {{message.state}}" ng-class="{ delayed: message.delayed, invalid: message.error }" translate>
+      <span class="message-state {{message.state}}" ng-class="{ delayed: message.delayed, 'has-error': message.error }" translate>
         {{'state.' + message.state}}
       </span>
     </div>
