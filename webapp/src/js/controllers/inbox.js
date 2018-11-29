@@ -679,7 +679,7 @@ var feedback = require('../modules/feedback'),
     // https://github.com/medic/medic-webapp/issues/2927
     $rootScope.$on('$stateChangeStart', closeDropdowns);
 
-    DatabaseConnectionMonitor.onDatabaseClosed().then(function() {
+    $rootScope.$on('databaseClosedEvent', function () {
       Modal({
         templateUrl: 'templates/modals/database_closed.html',
         controller: 'ReloadingModalCtrl',
@@ -687,6 +687,7 @@ var feedback = require('../modules/feedback'),
       });
       closeDropdowns();
     });
+    DatabaseConnectionMonitor.listenForDatabaseClosed();
 
     var showUpdateReady = function() {
       Modal({

@@ -5,24 +5,20 @@ This service detects the event and resolves a promise when it occurs.
 DOMException: Failed to execute 'transaction' on 'IDBDatabase': The database connection is closing
 */
 angular.module('inboxServices').factory('DatabaseConnectionMonitor',
-  function($window) {
+  function($window, $rootScope) {
     'use strict';
     'ngInject';
 
-    const promiseToCloseDatabase = new Promise(function(resolve) { 
-      $window.addEventListener('unhandledrejection', function(promiseRejectionEvent) {
+    return {
+      listenForDatabaseClosed: () => $window.addEventListener('unhandledrejection', function(promiseRejectionEvent) {
         if (
           promiseRejectionEvent &&
           promiseRejectionEvent.reason &&
           promiseRejectionEvent.reason.message === 'Failed to execute \'transaction\' on \'IDBDatabase\': The database connection is closing.'
         ) {
-          resolve(promiseRejectionEvent);
+          $rootScope.$emit('databaseClosedEvent', promiseRejectionEvent);
         }
-      });
-    });
-
-    return {
-      onDatabaseClosed: () => promiseToCloseDatabase,
+      }),
     };
   }
 );

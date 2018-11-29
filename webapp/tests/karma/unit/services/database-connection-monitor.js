@@ -3,26 +3,32 @@ const { expect } = chai;
 describe('DatabaseConnectionMonitor service', function() {
   'use strict';
 
-  let service; 
+  let service, rootScope;
 
   beforeEach(function() {
     module('inboxApp');
     module(function ($provide) {
       $provide.value('$window', window);
     });
-    inject(function(_DatabaseConnectionMonitor_) {
+    inject(function(_DatabaseConnectionMonitor_, _$rootScope_) {
       service = _DatabaseConnectionMonitor_;
+      rootScope = _$rootScope_;
     });
   });
   
   it('no resolution from another unhandled rejection', function(done) {
-    service.onDatabaseClosed().then(() => expect.fail('onDatabaseClosed should not resolve'));
+    rootScope.$emit = sinon.stub();
+    service.listenForDatabaseClosed();
     new Promise((resolve, reject) => reject('foo'));
-    setTimeout(done, 50);
+    setTimeout(() => {
+      expect(rootScope.$emit.callCount).to.eq(0);
+      done();
+    }, 50);
   });
 
   it('resolution from DOMException', function(done) {
-    service.onDatabaseClosed().then(() => done());
+    rootScope.$emit = () => done();
+    service.listenForDatabaseClosed();
     triggerPouchDbDOMException();
   });
 
