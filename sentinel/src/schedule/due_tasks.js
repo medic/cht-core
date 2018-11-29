@@ -67,7 +67,7 @@ module.exports = {
                   if (err) {
                     return cb(err);
                   }
-                  var changedTasks = false;
+                  var updatedTasks = false;
                   // set task to pending for gateway to pick up
                   doc.scheduled_tasks.forEach(task => {
                     if (task.due === obj.key) {
@@ -86,19 +86,22 @@ module.exports = {
                           context
                         );
 
+                        // generated messages could have errors, such messages should not be saved
+                        // an example invalid message would be generated when a registration was missing the patient
                         if (!messageUtils.hasError(messages)) {
                           task.messages = messages;
                         }
                       }
 
+                      // only update tasks
                       if (task.messages) {
-                        changedTasks = true;
+                        updatedTasks = true;
                         utils.setTaskState(task, 'pending');
                       }
                     }
                   });
 
-                  if (!changedTasks) {
+                  if (!updatedTasks) {
                     return cb();
                   }
 
