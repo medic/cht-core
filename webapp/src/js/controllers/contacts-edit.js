@@ -11,7 +11,8 @@ angular.module('inboxControllers').controller('ContactsEditCtrl',
     ContactSchema,
     Enketo,
     LineageModelGenerator,
-    Snackbar
+    Snackbar,
+    DB
   ) {
 
     'use strict';
@@ -129,6 +130,23 @@ angular.module('inboxControllers').controller('ContactsEditCtrl',
       };
     };
 
+    var updateReports = function(doc) {
+      DB().query('medic-client/reports_by_place', {
+        key: [doc._id],
+        include_docs: true
+      }).then(function(result) {
+        var updatedDocs = result.rows.map(function(row) {
+          if (row.doc.fields && row.doc.fields.place_id) {
+            row.doc.fields.place_name = doc.name;
+            return row.doc;
+          }
+        }).filter(function(doc) {
+          return doc;
+        });
+        return DB().bulkDocs(updatedDocs);
+      });
+    };
+
     $scope.unmodifiedSchema = ContactSchema.get();
     $scope.dependentPersonSchema = ContactSchema.get('person');
     delete $scope.dependentPersonSchema.fields.parent;
@@ -181,7 +199,10 @@ angular.module('inboxControllers').controller('ContactsEditCtrl',
               $translate(docId ? 'contact.updated' : 'contact.created').then(Snackbar);
               $scope.enketoStatus.edited = false;
               $state.go('contacts.detail', { id: result.docId });
+
+              return result.doc;
             })
+            .then(updateReports)
             .catch(function(err) {
               $scope.enketoStatus.saving = false;
               $log.error('Error submitting form data', err);

@@ -174,7 +174,7 @@ angular.module('inboxServices').service('ContactSave',
                 throw new Error(failureMessage);
               }
 
-              return {docId: preparedDocs.docId, bulkDocsResult: bulkDocsResult};
+              return {docId: preparedDocs.docId, bulkDocsResult: bulkDocsResult, doc: preparedDocs.preparedDocs[0]};
             });
         });
     };
