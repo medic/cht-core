@@ -21,7 +21,7 @@ module.exports = {
   init: () => {
     if (!getNifiUrl()) {
       throw new Error('You must configure the nifi_url to use this transition, eg: { nifi: { url: "http://localhost:9080/contentListener" } }');
-    };
+    }
   },
   filter: (doc, info = {}) => !transitionUtils.hasRun(info, NAME),
   onMatch: change => {
@@ -29,7 +29,7 @@ module.exports = {
       change: change, // TODO hydrate contact?
     };
     const url = getNifiUrl();
-    logger.info(`POSTing to nifi at "${url}":\n${JSON.stringify(body, null, 2)}`);
+    logger.debug(`POSTing to nifi at "${url}":\n${JSON.stringify(body, null, 2)}`);
     return post({
       url: url,
       json: true,
@@ -37,4 +37,3 @@ module.exports = {
     });
   }
 };
-
