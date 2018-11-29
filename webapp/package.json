@@ -19,6 +19,7 @@
     "@shared-libs/registration-utils": "file:../shared-libs/registration-utils",
     "@shared-libs/search": "file:../shared-libs/search",
     "@shared-libs/task-utils": "file:../shared-libs/task-utils",
+    "@shared-libs/translation-utils": "file:../shared-libs/translation-utils",
     "angular": "^1.7.3",
     "angular-cookie": "^4.1.0",
     "angular-nvd3": "^1.0.9",

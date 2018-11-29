@@ -6,7 +6,8 @@ const _ = require('underscore'),
   settingsService = require('./services/settings'),
   translationCache = {},
   logger = require('./logger'),
-  viewMapUtils = require('@shared-libs/view-map-utils');
+  viewMapUtils = require('@shared-libs/view-map-utils'),
+  translationUtils = require('@shared-libs/translation-utils');
 
 let settings = {};
 
@@ -79,7 +80,8 @@ const loadTranslations = () => {
       return;
     }
     result.rows.forEach(row => {
-      translationCache[row.doc.code] = Object.assign(row.doc.generic, row.doc.custom || {});
+      const values = Object.assign(row.doc.generic, row.doc.custom || {});
+      translationCache[row.doc.code] = translationUtils.loadTranslations(values);
     });
   });
 };
