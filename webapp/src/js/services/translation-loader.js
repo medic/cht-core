@@ -1,3 +1,5 @@
+var translationUtils = require('@shared-libs/translation-utils');
+
 var DEFAULT_LOCALE = 'en',
     DOC_ID_PREFIX = 'messages-';
 
@@ -40,7 +42,7 @@ angular.module('inboxServices').factory('TranslationLoader',
           if (testing) {
             mapTesting(values);
           }
-          return values;
+          return translationUtils.loadTranslations(values);
         })
         .catch(function(err) {
           if (err.status !== 404) {
