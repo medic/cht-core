@@ -148,7 +148,7 @@ var _ = require('underscore'),
             contacts.length >= options.limit;
 
           const mergedList = options.paginating ?
-            _.uniq(contacts.concat(liveList.getList()), false, _.property('_id')) 
+            _.uniq(contacts.concat(liveList.getList()), false, _.property('_id'))
             : contacts;
           liveList.set(mergedList, !!options.reuseExistingDom);
 
@@ -438,7 +438,7 @@ var _ = require('underscore'),
         if (change.deleted && change.doc.type !== 'data_record') {
           liveList.remove(change.doc);
         }
-        
+
         if (change.doc) {
           liveList.invalidateCache(change.doc._id);
           if (change.doc.fields) {
