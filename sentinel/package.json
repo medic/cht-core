@@ -45,6 +45,7 @@
     "@shared-libs/server-checks",
     "@shared-libs/task-utils",
     "@shared-libs/tombstone-utils",
+    "@shared-libs/translation-utils",
     "async",
     "bikram-sambat",
     "epi-week",
