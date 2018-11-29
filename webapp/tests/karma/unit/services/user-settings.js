@@ -13,9 +13,7 @@ describe('UserSettings service', function() {
     module(function ($provide) {
       $provide.value('Session', { userCtx: userCtx });
       $provide.value('$q', Q); // bypass $q so we don't have to digest
-      $provide.factory('DB', KarmaUtils.mockDB({
-        get: get
-      }));
+      $provide.factory('DB', KarmaUtils.mockDB({ get }));
     });
     inject(function($injector) {
       service = $injector.get('UserSettings');
@@ -48,6 +46,35 @@ describe('UserSettings service', function() {
         chai.expect(get.callCount).to.equal(1);
         chai.expect(get.args[0][0]).to.equal('org.couchdb.user:jack');
       });
+  });
+
+  it('is cached', function() {
+    userCtx.returns({ name: 'jack' });
+    get.returns(Promise.resolve({ id: 'j' }));
+    return service()
+      .then(first => {
+        chai.expect(first.id).to.equal('j');
+        chai.expect(get.callCount).to.equal(1);
+        return service();
+      })
+      .then(second => {
+        chai.expect(second.id).to.equal('j');
+        chai.expect(get.callCount).to.equal(1);
+      });
+  });
+
+  it('multiple concurrent calls result in single database lookup', function() {
+    userCtx.returns({ name: 'jack' });
+    get.returns(Promise.resolve({ id: 'j' }));
+    const isExpected = doc => {
+      chai.expect(doc.id).to.equal('j');
+      chai.expect(get.callCount).to.equal(1);
+    };
+
+    const firstPromise = service();
+    service();
+    service().then(isExpected);
+    firstPromise.then(isExpected);
   });
 
   it('gets from remote db', function() {

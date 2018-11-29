@@ -50,45 +50,28 @@ NB: multiple CouchDB nodes will be more complicated, but the general pattern out
 
 By default CouchDB runs in "admin party" mode, which means you do not need users to read or edit any data. This is great for some, but to use Medic safely we're going to disable this feature.
 
-First, add an admin user. When prompted to create an admin during installation, use username:`admin` and password:`pass`. Passwords can be changed via [Fauxton](http://localhost:5984/_utils). For more information see the [CouchDB install doc](http://docs.couchdb.org/en/2.0.0/install/).
+First, add an admin user. When prompted to create an admin during installation, use a strong username and password. Passwords can be changed via [Fauxton](http://localhost:5984/_utils). For more information see the [CouchDB install doc](http://docs.couchdb.org/en/2.0.0/install/). 
 
-Now that's done, we must reconfigure CouchDB to require authentication:
-
-```shell
-curl -X PUT http://admin:pass@localhost:5986/_config/chttpd/require_valid_user \
-  -d '"true"' -H "Content-Type: application/json"
-```
-
-Then create an actual admin user:
+Now that's done, we must configure some security settings on CouchDB:
 
 ```shell
-curl -X POST http://admin:pass@localhost:5984/_users \
-  -H "Content-Type: application/json" \
-  -d '{"_id": "org.couchdb.user:admin", "name": "admin", "password":"pass", "type":"user", "roles":[]}'
+COUCH_URL=http://myAdminUser:myAdminPass@localhost:5984/medic
+COUCH_NODE_NAME=couchdb@127.0.0.1
+grunt secure-couchdb
 ```
 
 After following these steps CouchDB should no longer allow unauthorised access:
-
-```shell
-curl http://admin:pass@localhost:5984 # should work
+ ```shell
+curl http://myAdminUser:myAdminPass@localhost:5984 # should work
 {"couchdb":"Welcome","version":"2.0.0","vendor":{"name":"The Apache Software Foundation"}}
 curl http://localhost:5984 # should fail
 {"error":"unauthorized","reason":"Authentication required."}
-```
 
 To be able to use Fauxton with authenticated users:
 
 ```shell
-curl -X PUT http://admin:pass@localhost:5986/_config/httpd/WWW-Authenticate \
+curl -X PUT http://myAdminUser:myAdminPass@localhost:5986/_config/httpd/WWW-Authenticate \
   -d '"Basic realm=\"administrator\""' -H "Content-Type: application/json"
-```
-
-### Increasing `max_request_http_size`
-
-Our application is larger than CouchDB's default request size, so we must increase it otherwise deployments may fail:
-
-```shell
-curl -X PUT --data '"4294967296"' http://admin:pass@localhost:5986/_config/httpd/max_http_request_size
 ```
 
 ## Build and run
@@ -106,7 +89,7 @@ npm ci
 Create a `.env` file in the app directory with the following contents
 
 ```shell
-COUCH_URL=http://admin:pass@localhost:5984/medic
+COUCH_URL=http://myAdminUser:myAdminPass@localhost:5984/medic
 COUCH_NODE_NAME=couchdb@localhost
 ```
 
@@ -140,7 +123,7 @@ If `npm start` is not to your taste for whatever reason, the apps can be deploye
 cd sentinel
 npm ci
 export COUCH_NODE_NAME=couchdb@localhost
-export COUCH_URL=http://admin:pass@localhost:5984/medic
+export COUCH_URL=http://myAdminUser:myAdminPass@localhost:5984/medic
 ```
 
 Then run either `node ./server.js` from the sentinel directory or `grunt dev-sentinel` from the repository directory (which will watch for changes).
@@ -151,7 +134,7 @@ Then run either `node ./server.js` from the sentinel directory or `grunt dev-sen
 cd api
 npm ci
 export COUCH_NODE_NAME=couchdb@localhost
-export COUCH_URL=http://admin:pass@localhost:5984/medic
+export COUCH_URL=http://myAdminUser:myAdminPass@localhost:5984/medic
 ```
 
 Then run either `node ./server.js` from the api directory or `grunt dev-api` from the repository directory (which will watch for changes).
@@ -219,19 +202,19 @@ To use it locally:
 Now use the `horti` tool to bootstrap Medic and launch it:
 
 ```shell
-COUCH_NODE_NAME=couchdb@localhost COUCH_URL=http://admin:pass@localhost:5984/medic horti --local --bootstrap
+COUCH_NODE_NAME=couchdb@localhost COUCH_URL=http://myAdminUser:myAdminPass@localhost:5984/medic horti --local --bootstrap
 ```
 
 This will download, configure and install the latest Master build of medic. If you're looking to deploy a specific version, provide it to the `bootstrap` command:
 
 ```shell
-COUCH_NODE_NAME=couchdb@localhost COUCH_URL=http://admin:pass@localhost:5984/medic horti --local --bootstrap=3.0.0-beta.1
+COUCH_NODE_NAME=couchdb@localhost COUCH_URL=http://myAdminUser:myAdminPass@localhost:5984/medic horti --local --bootstrap=3.0.0-beta.1
 ```
 
 To kill Horti hit CTRL+C. To start Horti (and Medic) again, run the same command as above, but this time don't bootstrap:
 
 ```shell
-COUCH_NODE_NAME=couchdb@localhost COUCH_URL=http://admin:pass@localhost:5984/medic horti --local
+COUCH_NODE_NAME=couchdb@localhost COUCH_URL=http://myAdminUser:myAdminPass@localhost:5984/medic horti --local
 ```
 
 If you wish to change the version of Medic installed, you can either bootstrap again, or use the [Instance Upgrade configuration screen](http://localhost:5988/medic/_design/medic/_rewrite/#/configuration/upgrade).'

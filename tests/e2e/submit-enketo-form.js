@@ -1,5 +1,6 @@
 const utils = require('../utils'),
   helper = require('../helper'),
+  constants = require('../constants'),
   commonElements = require('../page-objects/common/common.po.js');
 
 describe('Submit Enketo form', () => {
@@ -22,7 +23,7 @@ describe('Submit Enketo form', () => {
     </h:body>
   </h:html>`;
 
-  const contactId = '3b3d50d275280d2568cd36281d00348b';
+  const contactId = constants.USER_CONTACT_ID;
 
   const docs = [
     {
@@ -55,38 +56,39 @@ describe('Submit Enketo form', () => {
       external_id: '',
       type: 'district_hospital',
     },
-    {
-      _id: contactId,
-      name: 'Jack',
-      date_of_birth: '',
-      phone: '+64274444444',
-      alternate_phone: '',
-      notes: '',
-      type: 'person',
-      reported_date: 1478469976421,
-      parent: {
-        _id: 'c49385b3594af7025ef097114104ef48',
-        reported_date: 1469578114543,
-        notes: '',
-        contact: {
-          _id: contactId,
-          name: 'Jack',
-          date_of_birth: '',
-          phone: '+64274444444',
-          alternate_phone: '',
-          notes: '',
-          type: 'person',
-          reported_date: 1478469976421,
-        },
-        name: 'Number three district',
-        external_id: '',
-        type: 'district_hospital',
-      },
-    },
   ];
 
+  const userContactDoc = {
+    _id: contactId,
+    name: 'Jack',
+    date_of_birth: '',
+    phone: '+64274444444',
+    alternate_phone: '',
+    notes: '',
+    type: 'person',
+    reported_date: 1478469976421,
+    parent: {
+      _id: 'c49385b3594af7025ef097114104ef48',
+      reported_date: 1469578114543,
+      notes: '',
+      contact: {
+        _id: contactId,
+        name: 'Jack',
+        date_of_birth: '',
+        phone: '+64274444444',
+        alternate_phone: '',
+        notes: '',
+        type: 'person',
+        reported_date: 1478469976421,
+      },
+      name: 'Number three district',
+      external_id: '',
+      type: 'district_hospital',
+    },
+  };
+
   beforeAll(done => {
-    utils.seedTestData(done, contactId, docs);
+    utils.seedTestData(done, userContactDoc, docs);
   });
 
   afterEach(utils.afterEach);

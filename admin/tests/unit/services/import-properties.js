@@ -36,7 +36,7 @@ describe('ImportProperties service', function() {
                   'Goodbye = Au revoir';
     var doc = {
       code: 'fr',
-      values: {
+      generic: {
         'Hello': 'hello',
         'Goodbye': 'bye'
       }
@@ -53,7 +53,11 @@ describe('ImportProperties service', function() {
       .then(function() {
         chai.expect(put.args[0][0]).to.deep.equal({
           code: 'fr',
-          values: {
+          generic: {
+            'Hello': 'hello',
+            'Goodbye': 'bye'
+          },
+          custom: {
             'Hello': 'Bonjour',
             'Goodbye': 'Au revoir'
           }
@@ -68,7 +72,10 @@ describe('ImportProperties service', function() {
                   'Goodbye = Au revoir';
     var doc = {
       code: 'fr',
-      values: {
+      generic: {
+        'Hello': 'hello'
+      },
+      custom: {
         'Hello': 'hello'
       }
     };
@@ -86,7 +93,10 @@ describe('ImportProperties service', function() {
     return service(content, doc).then(function() {
       chai.expect(put.args[0][0]).to.deep.equal({
         code: 'fr',
-        values: {
+        generic: {
+          'Hello': 'hello'
+        },
+        custom: {
           'Hello': 'Bonjour',
           'Goodbye': 'Au revoir'
         }

@@ -29,7 +29,7 @@ angular.module('controllers').controller('TranslationLanguagesCtrl',
         };
       }
 
-      result.missing = totalTranslations - Object.keys(doc.values).length;
+      result.missing = totalTranslations - Object.keys(Object.assign(doc.generic, doc.custom || {})).length;
 
       return result;
     };
@@ -43,7 +43,7 @@ angular.module('controllers').controller('TranslationLanguagesCtrl',
 
     var countTotalTranslations = function(rows) {
       var keys = rows.map(function(row) {
-        return row.doc.values ? Object.keys(row.doc.values) : [];
+        return row.doc.custom || row.doc.generic ? Object.keys(Object.assign(row.doc.generic, row.doc.custom || {})) : [];
       });
       keys = _.uniq(_.flatten(keys));
       return keys.length;

@@ -45,7 +45,7 @@ describe('date filter', function() {
 
     it('should return nicely-formatted output', function() {
       // expect
-      const expected = '<span class="relative-date future" title="2046-01-02">' +
+      const expected = '<span class="relative-date future age" title="2046-01-02">' +
                          '<span class="relative-date-content update-relative-date" ' +
                            'data-date-options="someOptions"' +
                          '>' +

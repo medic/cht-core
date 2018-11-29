@@ -8,7 +8,6 @@ describe('ReportsCtrl controller', () => {
       get,
       post,
       LiveList,
-      UserDistrict,
       MarkRead,
       Search,
       Changes,
@@ -36,9 +35,6 @@ describe('ReportsCtrl controller', () => {
     scope.setRightActionBar = sinon.stub();
     scope.setLeftActionBar = sinon.stub();
     scope.settingSelected = () => {};
-    UserDistrict = () => {
-      return { then: () => {} };
-    };
     LiveList = { reports: {
       initialised: () => true,
       setSelected: sinon.stub(),
@@ -88,7 +84,6 @@ describe('ReportsCtrl controller', () => {
         'Settings': KarmaUtils.nullPromise(),
         'Tour': () => {},
         'UpdateFacility': {},
-        'UserDistrict': UserDistrict,
         'Verified': {}
       });
     };

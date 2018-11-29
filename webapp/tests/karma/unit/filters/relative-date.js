@@ -50,4 +50,12 @@ describe('relativeDate filter', function() {
     chai.expect(element.find('span').attr('title')).to.equal('day 0');
     chai.expect(element.text()).to.equal('sometime');
   });
+
+  it('should render a date in the future', function() {
+    scope.date = moment().add(2, 'days').valueOf();
+    var element = compile('<div ng-bind-html="date | relativeDate"></div>')(scope);
+    scope.$digest();
+    chai.expect(element.find('span').attr('class')).to.equal('relative-date future');
+    chai.expect(element.text()).to.equal('somerelativetime');
+  });
 });

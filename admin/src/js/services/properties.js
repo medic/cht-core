@@ -13,9 +13,37 @@ angular.module('services').factory('ImportProperties',
         return;
       }
       var updated = false;
+      const generic = doc.generic || {};
+      const custom = doc.custom || {};
       Object.keys(parsed).forEach(function(key) {
-        if (doc.values[key] !== parsed[key]) {
-          doc.values[key] = parsed[key];
+        if (generic[key]) {
+          if (generic[key] === parsed[key]) {
+            if (custom[key]) {
+              delete doc.custom[key];
+              updated = true;
+            }
+          } else if (custom[key]) {
+            if (custom[key] !== parsed[key]) {
+              doc.custom[key] = parsed[key];
+              updated = true;
+            }
+          }  else {
+            if (!doc.custom) {
+              doc.custom = {};
+            }
+            doc.custom[key] = parsed[key];
+            updated = true;
+          }
+        } else if (custom[key]) {
+          if (custom[key] !== parsed[key]) {
+            doc.custom[key] = parsed[key];
+            updated = true;
+          }
+        } else {
+          if (!doc.custom) {
+            doc.custom = {};
+          }
+          doc.custom[key] = parsed[key];
           updated = true;
         }
       });
@@ -50,8 +78,9 @@ angular.module('services').factory('ExportProperties',
     'use strict';
     return function(settings, locale) {
       var stringifier = properties.createStringifier();
-      Object.keys(locale.values).forEach(function(key) {
-        stringifier.property({ key: key, value: locale.values[key] });
+      var values = Object.assign(locale.generic, locale.custom || {});
+      Object.keys(values).forEach(function(key) {
+        stringifier.property({ key: key, value: values[key] });
       });
       return properties.stringify(stringifier);
     };
