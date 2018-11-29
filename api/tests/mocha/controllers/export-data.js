@@ -80,7 +80,7 @@ describe('Export Data controller', () => {
   describe('V1', () => {
     it('Checks permissions', () => {
       auth.check.returns(Promise.reject({message: 'Bad permissions'}));
-      return controller.routeV1({params: {type: 'audit'}, query: {districtId: 'abc'}})
+      return controller.routeV1({params: {type: 'feedback'}, query: {districtId: 'abc'}})
         .then(() => {
           auth.check.callCount.should.equal(1);
           serverUtils.error.args[0][0].message.should.contain('Bad permissions');
@@ -90,7 +90,7 @@ describe('Export Data controller', () => {
     it ('correct request parameters', () => {
       const req = {
         params: {
-          type: 'audit'
+          type: 'feedback'
         },
         query: {
           districtId: 'abc'
@@ -100,7 +100,7 @@ describe('Export Data controller', () => {
       return controller.routeV1(req, { set: set }).then(() => {
         exportDataV1.get.callCount.should.equal(1);
         exportDataV1.get.args[0][0].should.deep.equal(
-          { districtId: 'abc', type: 'audit', form: undefined, district: 'xyz' }
+          { districtId: 'abc', type: 'feedback', form: undefined, district: 'xyz' }
         );
       });
     });

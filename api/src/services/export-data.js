@@ -25,43 +25,6 @@ var safeStringify = function(obj) {
 };
 
 var exportTypes = {
-  audit: {
-    getRecords: function(callback) {
-      db.audit.list(
-        {
-          limit: 1000,
-          include_docs: true,
-        },
-        callback
-      );
-    },
-    generate: function(rows, options) {
-      if (!options.columns) {
-        options.columns = createColumnModels(
-          ['_id', 'Type', 'Timestamp', 'Author', 'Action', 'Document'],
-          options
-        );
-      }
-      var model = {
-        name: config.translate('Audit', options.locale),
-        data: [],
-        columns: options.columns,
-      };
-      rows.forEach(function(row) {
-        _.each(row.doc.history, function(rev) {
-          model.data.push([
-            row.doc.record_id,
-            rev.doc.type,
-            formatDate(rev.timestamp, options.timezone),
-            rev.user,
-            rev.action,
-            JSON.stringify(rev.doc),
-          ]);
-        });
-      });
-      return [model];
-    },
-  },
   feedback: {
     ddoc: 'medic-admin',
     view: 'feedback',

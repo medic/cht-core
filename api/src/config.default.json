@@ -89,12 +89,6 @@
       ]
     },
     {
-      "name": "can_export_audit",
-      "roles": [
-        "national_admin"
-      ]
-    },
-    {
       "name": "can_export_feedback",
       "roles": [
         "national_admin"
