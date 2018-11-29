@@ -93,7 +93,7 @@ module.exports = {
                         }
                       }
 
-                      // only update tasks
+                      // only update task states when messages exist
                       if (task.messages) {
                         updatedTasks = true;
                         utils.setTaskState(task, 'pending');
