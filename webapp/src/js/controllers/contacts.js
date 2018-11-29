@@ -50,8 +50,7 @@ var _ = require('underscore'),
       scrollLoader.init(function() {
         if (!$scope.loading && $scope.moreItems) {
           _query({
-            append: true,
-            limit: Math.floor(liveList.count() / 50 + 1) * 50,
+            paginating: true,
             reuseExistingDom: true,
           });
         }
@@ -67,15 +66,18 @@ var _ = require('underscore'),
         $scope.error = false;
       }
 
-      if (options.append) {
+      if (options.paginating) {
         $scope.appending = true;
+        options.skip = liveList.count();
       } else if (!options.silent) {
         liveList.set([]);
         additionalListItem = false;
       }
 
       if (additionalListItem) {
-        if (!options.append) {
+        if (options.skip) {
+          options.skip -= 1;	
+        } else {
           options.limit -= 1;
         }
       }
@@ -145,7 +147,11 @@ var _ = require('underscore'),
           $scope.moreItems = liveList.moreItems =
             contacts.length >= options.limit;
 
-          liveList.set(contacts, !!options.reuseExistingDom);
+          const mergedList = options.paginating ?
+            _.uniq(contacts.concat(liveList.getList()), false, _.property('_id')) 
+            : contacts;
+          liveList.set(mergedList, !!options.reuseExistingDom);
+
           _initScroll();
           $scope.loading = false;
           $scope.appending = false;
@@ -432,9 +438,12 @@ var _ = require('underscore'),
         if (change.deleted && change.doc.type !== 'data_record') {
           liveList.remove(change.doc);
         }
-        liveList.invalidateCache(change.doc._id);
-        if (change.doc.fields) {
-          liveList.invalidateCache(change.doc.fields.visited_contact_uuid);
+        
+        if (change.doc) {
+          liveList.invalidateCache(change.doc._id);
+          if (change.doc.fields) {
+            liveList.invalidateCache(change.doc.fields.visited_contact_uuid);
+          }
         }
 
         const withIds =

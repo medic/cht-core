@@ -568,8 +568,9 @@ describe('Contacts controller', () => {
           scrollLoaderCallback();
           assert.deepEqual(searchService.args[1][2], { 
             reuseExistingDom: true,
-            append: true,
-            limit: 100
+            paginating: true,
+            limit: 50,
+            skip: 50,
           });
         });
     });
@@ -586,8 +587,9 @@ describe('Contacts controller', () => {
           scrollLoaderCallback();
           assert.deepEqual(searchService.args[1][2], {
             reuseExistingDom: true,
-            append: true,
-            limit: 100,
+            paginating: true,
+            limit: 50,
+            skip: 50,
           });
         });
     });
@@ -653,9 +655,10 @@ describe('Contacts controller', () => {
           //aand paginate the search results, also not skipping the extra place
           scrollLoaderCallback();
           assert.deepEqual(searchService.args[2][2], {
-            limit: 100,
-            append: true,
+            limit: 50,
+            paginating: true,
             reuseExistingDom: true,
+            skip: 50,
           });
         });
     });
@@ -672,43 +675,52 @@ describe('Contacts controller', () => {
           assert.equal(lhs.length, 50);
           scrollLoaderCallback();
           assert.deepEqual(searchService.args[1][2], {
-            limit: 100,
-            append: true,
+            limit: 50,
+            paginating: true,
             reuseExistingDom: true,
+            skip: 50,
           });
         });
     });
 
     it('when paginating, does not modify the skip when it finds homeplace on subsequent pages #4085', () => {
-      const searchResult = { _id: 'search-result' };
-      searchResults = Array(50).fill(searchResult);
+      const mockResults = (count, startAt = 0) => {
+        const result = [];
+        for (let i = startAt; i < startAt + count; i++) {
+          result.push({ _id: `search-result${i}` });
+        }
+        return result;
+      };
+      searchResults = mockResults(50);
 
       return createController()
         .getSetupPromiseForTesting({ scrollLoaderStub })
         .then(() => {
           const lhs = contactsLiveList.getList();
           assert.equal(lhs.length, 51);
-          searchResults = Array(99).fill(searchResult);
+          searchResults = mockResults(49, 50);
           searchResults.push(district);
           searchService.returns(Promise.resolve(searchResults));
           scrollLoaderCallback();
           assert.deepEqual(searchService.args[1][2], {
-            limit: 100,
-            append: true,
+            limit: 50,
+            paginating: true,
             reuseExistingDom: true,
+            skip: 50,
           });
           return Promise.resolve();
         })
         .then(() => {
           const lhs = contactsLiveList.getList();
           assert.equal(lhs.length, 100);
-          searchResults = Array(150).fill(searchResult);
+          searchResults = mockResults(50, 100);
           searchService.returns(Promise.resolve(searchResults));
           scrollLoaderCallback();
           assert.deepEqual(searchService.args[2][2], {
-            limit: 150,
-            append: true,
+            limit: 50,
+            paginating: true,
             reuseExistingDom: true,
+            skip: 100,
           });
           return Promise.resolve();
         })
