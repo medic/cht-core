@@ -211,6 +211,24 @@ angular.module('inboxServices').factory('ContactViewModelGenerator',
       });
     };
 
+    var updatePlaceName = function(reports) {
+      let promises = [];
+      reports.forEach(function(report) {
+        if (report.fields && report.fields.place_id) {
+          promises.push(
+            DB()
+              .get(report.fields.place_id)
+              .then(function(place) {
+                report.fields.place_name = place.name;
+              })
+          );
+        }
+      });
+
+      return $q.all(promises)
+               .then(() => reports);
+    };
+
     var getReports = function(contactDocs) {
       var subjectIds = [];
       contactDocs.forEach(function(doc) {
@@ -241,6 +259,7 @@ angular.module('inboxServices').factory('ContactViewModelGenerator',
         }
       });
       return getReports(contacts)
+        .then(updatePlaceName)
         .then(function(reports) {
           addPatientName(reports, contacts);
           reports.sort(REPORTED_DATE_COMPARATOR);
