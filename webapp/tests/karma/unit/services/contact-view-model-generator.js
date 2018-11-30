@@ -95,10 +95,10 @@ describe('ContactViewModelGenerator service', () => {
 
    // REVIEWER: I suspect this should be implemented using Q, but I can't work out how
   function waitForModelToLoad(model) {
-    return new Promise(resolve => {
-      setTimeout(() => {
-        resolve(model);
-      }, 1000); // TODO there's a better way of doing this than waiting 1s
+    return new Promise((resolve, reject) => {
+      model.reportLoader
+        .then(() => resolve(model))
+        .catch(reject);
     });
   }
 
