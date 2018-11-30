@@ -197,6 +197,127 @@ describe('accept_patient_reports', () => {
       });
     });
 
+    it('adds report_uuid property', done => {
+      const putRegistration = sinon.stub(db.medic, 'put');
+      putRegistration.callsArg(1);
+      sinon.stub(transition, '_silenceReminders').callsArgWith(3, null, true);
+      const doc = {
+        _id: 'z',
+        fields: { patient_id: 'x' },
+        reported_date: '2018-09-28T18:45:00.000Z',
+      };
+      const config = { silence_type: 'x', messages: [] };
+      const registrations = [
+        {
+          _id: 'a',
+          reported_date: '2017-02-05T09:23:07.853Z',
+          scheduled_tasks: [
+            {
+              due: '2018-09-26T18:45:00.000Z',
+              state: 'sent',
+              messages: [
+                {
+                  uuid: 'k',
+                },
+              ],
+            },
+            {
+              due: '2018-10-26T18:45:00.000Z',
+              state: 'scheduled',
+              messages: [
+                {
+                  uuid: 'j',
+                },
+              ],
+            },
+          ],
+        },
+      ];
+      sinon
+        .stub(utils, 'getRegistrations')
+        .callsArgWith(1, null, registrations);
+      transition._handleReport(doc, config, (err, complete) => {
+        complete.should.equal(true);
+        putRegistration.callCount.should.equal(1);
+        registrations[0].scheduled_tasks[0].report_uuid.should.equal(doc._id);
+        done();
+      });
+    });
+
+    it('if there are multiple scheduled tasks uses the oldest valid one', done => {
+      const putRegistration = sinon.stub(db.medic, 'put');
+      putRegistration.callsArg(1);
+      sinon.stub(transition, '_silenceReminders').callsArgWith(3, null, true);
+      const doc = {
+        _id: 'z',
+        fields: { patient_id: 'x' },
+        reported_date: '2019-01-10T18:45:00.000Z',
+      };
+      const config = { silence_type: 'x', messages: [] };
+      const registrations = [
+        {
+          _id: 'a',
+          reported_date: '2017-02-05T09:23:07.853Z',
+          scheduled_tasks: [
+            {
+              due: '2019-02-26T18:45:00.000Z',
+              state: 'scheduled',
+              messages: [
+                {
+                  uuid: 'k5',
+                },
+              ],
+            },
+            {
+              due: '2018-09-26T18:45:00.000Z',
+              state: 'sent',
+              messages: [
+                {
+                  uuid: 'k1',
+                },
+              ],
+            },
+            {
+              due: '2018-11-26T18:45:00.000Z',
+              state: 'sent',
+              messages: [
+                {
+                  uuid: 'k2',
+                },
+              ],
+            },
+            {
+              due: '2018-12-26T18:45:00.000Z',
+              state: 'delivered',
+              messages: [
+                {
+                  uuid: 'k3',
+                },
+              ],
+            },
+            {
+              due: '2019-01-26T18:45:00.000Z',
+              state: 'scheduled',
+              messages: [
+                {
+                  uuid: 'k4',
+                },
+              ],
+            },
+          ],
+        },
+      ];
+      sinon
+        .stub(utils, 'getRegistrations')
+        .callsArgWith(1, null, registrations);
+      transition._handleReport(doc, config, (err, complete) => {
+        complete.should.equal(true);
+        putRegistration.callCount.should.equal(1);
+        registrations[0].scheduled_tasks[2].report_uuid.should.equal(doc._id);
+        done();
+      });
+    });
+
     it('should call utils.getRegistrations with correct DB (#4962)', done => {
       const doc = {
         fields: { patient_id: 'x' },
@@ -224,7 +345,6 @@ describe('accept_patient_reports', () => {
         utils.getRegistrations.args[0][0].should.deep.equal({ db: dbNano, id: 'x' });
         done();
       });
-
     });
     
     it('adds report_uuid property', done => {
