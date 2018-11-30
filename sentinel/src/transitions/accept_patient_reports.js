@@ -120,16 +120,17 @@ const findValidRegistration = (doc, registrations) => {
     for (var i = 0; i < registrations.length; i++) {
       var registration = registrations[i];
       if (registration.scheduled_tasks) {
-        registration.scheduled_tasks = _.sortBy(registration.scheduled_tasks, 'due');
-        for (var j = 0; j < registration.scheduled_tasks.length; j++) {
-          var task = registration.scheduled_tasks[j];
+        var scheduled_tasks = _.sortBy(registration.scheduled_tasks, 'due');
+        for (var j = 0; j < scheduled_tasks.length; j++) {
+          var task = scheduled_tasks[j];
           if (['delivered', 'sent'].includes(task.state)) {
-            var nextTask = registration.scheduled_tasks[j + 1] || { due: moment(visitReportedDate).add(1, 'd') };
+            var nextTask = scheduled_tasks[j + 1] || { due: moment(visitReportedDate).add(1, 'd') };
             if (nextTask && moment(nextTask.due) > moment(visitReportedDate)) {
               // We loop through tasks. Once we find one that has either the status "delivered" or "sent" with
               // a future task with a due date that is after the visit reported date then we have found the task 
               // linked to the visit. We always link if this is the last scheduled task delivered or sent.
-              registration.scheduled_tasks[j].report_uuid = doc._id;
+              var taskIndex = _.findIndex(registration.scheduled_tasks, {"due": task.due});
+              registration.scheduled_tasks[taskIndex].report_uuid = doc._id;
               return registration;
             }
           }          
