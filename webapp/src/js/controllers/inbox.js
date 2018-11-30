@@ -226,17 +226,11 @@ var feedback = require('../modules/feedback'),
       });
     });
 
-    $rootScope.$on('$stateChangeStart', function (event, toState, toParams, fromState, fromParams){
+    $rootScope.$on('$stateChangeStart', function (event, toState, toParams, fromState){
       if(!$scope.enketoStatus.edited){
         return;
       }
       if(!fromState.url.includes('edit') && !fromState.url.includes('add')){
-        return;
-      }
-      if(fromParams.id === toParams.id){
-        return;
-      }
-      if(fromParams.reportId === toParams.id){
         return;
       }
       if ($scope.cancelCallback) {
