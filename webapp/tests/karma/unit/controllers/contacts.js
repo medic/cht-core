@@ -339,14 +339,14 @@ describe('Contacts controller', () => {
         return createController()
           .getSetupPromiseForTesting()
           .then(() => {
-            return scope.setSelected({ doc: district });
+            return scope.setSelected({ doc: district, reportLoader: Promise.resolve() });
           })
           .then(() => {
             assert(
               scope.setRightActionBar.called,
               'right actionBar should be set'
             );
-            const actionBarArgs = scope.setRightActionBar.getCall(0).args[0];
+            const actionBarArgs = scope.setRightActionBar.getCall(1).args[0];
             assert.deepEqual(actionBarArgs.relevantForms.length, 1);
             assert.equal(actionBarArgs.relevantForms[0].title, expectedTitle);
           });
@@ -394,14 +394,14 @@ describe('Contacts controller', () => {
         return createController()
           .getSetupPromiseForTesting()
           .then(() => {
-            return scope.setSelected({ doc: { _id: 'my-contact', muted: false } });
+            return scope.setSelected({ doc: { _id: 'my-contact', muted: false }, reportLoader: Promise.resolve() });
           })
           .then(() => {
             assert(
               scope.setRightActionBar.called,
               'right actionBar should be set'
             );
-            assert.deepEqual(scope.setRightActionBar.args[0][0].relevantForms, [
+            assert.deepEqual(scope.setRightActionBar.args[1][0].relevantForms, [
               { code: 'unmute', icon: 'icon', title: 'form.unmutetranslated', showUnmuteModal: false},
               { code: 'mute', icon: 'icon', title: 'form.mutetranslated', showUnmuteModal: false},
               { code: 'visit', icon: 'icon', title: 'form.visittranslated', showUnmuteModal: false}
@@ -425,14 +425,14 @@ describe('Contacts controller', () => {
         return createController()
           .getSetupPromiseForTesting()
           .then(() => {
-            return scope.setSelected({ doc: { _id: 'my-contact', muted: true }});
+            return scope.setSelected({ doc: { _id: 'my-contact', muted: true }, reportLoader: Promise.resolve() });
           })
           .then(() => {
             assert(
               scope.setRightActionBar.called,
               'right actionBar should be set'
             );
-            assert.deepEqual(scope.setRightActionBar.args[0][0].relevantForms, [
+            assert.deepEqual(scope.setRightActionBar.args[1][0].relevantForms, [
               { code: 'unmute', icon: 'icon', title: 'form.unmutetranslated', showUnmuteModal: false},
               { code: 'mute', icon: 'icon', title: 'form.mutetranslated', showUnmuteModal: true},
               { code: 'visit', icon: 'icon', title: 'form.visittranslated', showUnmuteModal: true}
