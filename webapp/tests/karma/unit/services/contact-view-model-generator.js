@@ -79,7 +79,9 @@ describe('ContactViewModelGenerator service', () => {
       const contactId = 'mario';
       childContactPerson = { _id: contactId, name: 'sandy', type: 'person', parent: { _id: parentId } };
       deceasedChildPerson = { _id: 'deceaseduuid', name: 'casper', type: 'person', date_of_death: 123456789, parent: { _id: parentId } };
-      childPerson = { _id: 'peach', type: 'person', name: 'Peach', date_of_birth: '1986-01-01', patient_id:'peach' }; // REVIEWER: this change definitely feels wrong, but where is patient_id meant to come from?
+
+      childPerson = { _id: 'peach', type: 'person', name: 'Peach', date_of_birth: '1986-01-01' };
+
       childPerson2 = { _id: 'zelda', type: 'person', name: 'Zelda', date_of_birth: '1985-01-01' };
       childPlace = { _id: 'happyplace', type: 'mushroom', name: 'Happy Place', contact: { _id: contactId } };
       childPlace2 = { _id: 'happyplace2', type: 'mushroom', name: 'Happy Place 2' };
@@ -345,7 +347,8 @@ describe('ContactViewModelGenerator service', () => {
     });
 
     it('adds patient_name to reports', () => {
-      const report = { _id: 'ab', fields: { patient_id: childPerson._id} };
+      childPerson.patient_id = '12345';
+      const report = { _id: 'ab', fields: { patient_id: childPerson.patient_id } }; // REVIEWER perhaps this test was broken before?  this change is in-line with the pther "adds patient name to reports" test defined above
       stubSearch(null, [ report ]);
       return runReportsTest([childPerson])
         .then(waitForModelToLoad)
