@@ -228,7 +228,7 @@ angular.module('inboxServices').factory('ContactViewModelGenerator',
       return GetDataRecords(reportIds)
               .then(function(dataRecords) {
                 dataRecords.forEach(function(dataRecord) {
-                  var report = _.find(reports, { "_id": dataRecord._id });
+                  var report = _.find(reports, { '_id': dataRecord._id });
                   report.heading = getHeading(dataRecord);
                 });
                 
