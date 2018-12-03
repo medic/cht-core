@@ -18,11 +18,13 @@ angular.module('inboxServices').factory('ContactViewModelGenerator',
   function(
     $log,
     $q,
+    $translate,
     ContactMuted,
     ContactSchema,
     DB,
     LineageModelGenerator,
-    Search
+    Search,
+    GetDataRecords
   ) {
     'ngInject';
     'use strict';
@@ -211,22 +213,27 @@ angular.module('inboxServices').factory('ContactViewModelGenerator',
       });
     };
 
-    var updatePlaceName = function(reports) {
-      let promises = [];
-      reports.forEach(function(report) {
-        if (report.fields && report.fields.place_id) {
-          promises.push(
-            DB()
-              .get(report.fields.place_id)
-              .then(function(place) {
-                report.fields.place_name = place.name;
-              })
-          );
-        }
-      });
+    var getHeading = function(report) {
+      if (report.validSubject) {
+        return report.subject.value;
+      }
+      if (report.subject.name) {
+        return report.subject.name;
+      }
+      return $translate.instant('report.subject.unknown');
+    };
 
-      return $q.all(promises)
-               .then(() => reports);
+    var addHeading = function(reports) {
+      var reportIds = _.pluck(reports, '_id');
+      return GetDataRecords(reportIds)
+              .then(function(dataRecords) {
+                dataRecords.forEach(function(dataRecord) {
+                  var report = _.find(reports, { "_id": dataRecord._id });
+                  report.heading = getHeading(dataRecord);
+                });
+                
+                return reports;
+              });
     };
 
     var getReports = function(contactDocs) {
@@ -259,7 +266,7 @@ angular.module('inboxServices').factory('ContactViewModelGenerator',
         }
       });
       return getReports(contacts)
-        .then(updatePlaceName)
+        .then(addHeading)
         .then(function(reports) {
           addPatientName(reports, contacts);
           reports.sort(REPORTED_DATE_COMPARATOR);
