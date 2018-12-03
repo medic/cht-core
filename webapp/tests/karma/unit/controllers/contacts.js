@@ -207,14 +207,15 @@ describe('Contacts controller', () => {
         })
         .catch(() => {
           assert.deepEqual(scope.selected, { doc: district, error: true });
-          assert(scope.setRightActionBar.called);
-          assert.deepEqual(scope.setRightActionBar.args[0], []);
+          assert.equal(scope.setRightActionBar.callCount, 2);
+          assert.deepEqual(scope.setRightActionBar.args[1], []);
         });
     });
   });
 
   describe('sets right actionBar', () => {
     const testRightActionBar = (selected, assertions) => {
+      selected.reportLoader = Promise.resolve();
       return createController()
         .getSetupPromiseForTesting()
         .then(() => {
@@ -225,7 +226,7 @@ describe('Contacts controller', () => {
             scope.setRightActionBar.called,
             'right actionBar should be set'
           );
-          const actionBarArgs = scope.setRightActionBar.getCall(0).args[0];
+          const actionBarArgs = scope.setRightActionBar.getCall(1).args[0];
           assertions(actionBarArgs);
         });
     };
