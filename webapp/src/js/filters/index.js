@@ -13,5 +13,6 @@
   require('./safe-html');
   require('./translate-from');
   require('./header-logo');
+  require('./partner-image');
 
 }());

@@ -5,7 +5,8 @@ angular.module('inboxControllers').controller('AboutCtrl',
     $scope,
     DB,
     Debug,
-    Session
+    Session,
+    PartnerImages
   ) {
     'use strict';
     'ngInject';
@@ -14,6 +15,10 @@ angular.module('inboxControllers').controller('AboutCtrl',
     $scope.userCtx = Session.userCtx();
 
     $scope.debugOptionEnabled = $scope.url.indexOf('localhost') >= 0;
+
+    PartnerImages.getImages().then(partners => {
+      $scope.partners = partners;
+    });
 
     DB({remote: true}).allDocs({ key: '_design/medic' })
       .then(function(info) {

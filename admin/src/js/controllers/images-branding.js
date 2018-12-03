@@ -11,12 +11,12 @@ angular.module('controllers').controller('BrandingCtrl',
 
     const BRANDING_ID = 'branding';
 
-    $('#image-upload .choose').on('click', function(_ev) {
+    $('#image-upload .choose').on('click', _ev => {
       _ev.preventDefault();
       $('#image-upload .uploader').click();
     });
 
-    $('#favicon-upload .choose').on('click', function(_ev) {
+    $('#favicon-upload .choose').on('click', _ev => {
       _ev.preventDefault();
       $('#favicon-upload .uploader').click();
     });
@@ -26,26 +26,26 @@ angular.module('controllers').controller('BrandingCtrl',
     $scope.favicon = null;
     $scope.logo = 'logo';
 
-    var renderResources = function() {
-      var fav = $scope.doc._attachments[$scope.doc.resources.favicon];
-      $scope.favicon = '<img src="data:' + fav.content_type + ';base64,' + fav.data + '" />';
+    const renderResources = () => {
+      const fav = $scope.doc._attachments[$scope.doc.resources.favicon];
+      $scope.favicon = `<img src="data:${fav.content_type};base64,${fav.data}" />`;
       $scope.loading = false;
     };
 
-    var getResourcesDoc = function() {
+    const getResourcesDoc = () => {
       return DB().get(BRANDING_ID, { attachments: true });
     };
 
     getResourcesDoc()
-      .then(function(doc) {
+      .then(doc => {
         $scope.doc = doc;
         renderResources();
       })
-      .catch(function(err) {
+      .catch(err => {
         $log.error('Error fetching resources file', err);
       });
 
-    var addAttachment = function(file, resource) {
+    const addAttachment = (file, resource) => {
       $scope.submitting = true;
       DB()
         .putAttachment(BRANDING_ID, file.name, $scope.doc._rev, file, file.type)
@@ -55,12 +55,12 @@ angular.module('controllers').controller('BrandingCtrl',
           $scope.doc = doc;
           return DB().put(doc);
         })
-        .then(function(response) {
+        .then(response => {
           $scope.doc._rev = response.rev;
           $scope.submitting = false;
           renderResources();
         })
-        .catch(function(err) {
+        .catch(err => {
           $log.error('Error uploading image', err);
           $scope.submitting = false;
           $scope.error = $translate.instant('Error saving settings');
@@ -96,7 +96,7 @@ angular.module('controllers').controller('BrandingCtrl',
       
     };
 
-    $scope.submitTitle = function() {
+    $scope.submitTitle = () => {
       $scope.error = null;
       if (!$scope.doc.title) {
         $scope.error = $translate.instant('field is required', {
