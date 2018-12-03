@@ -18,11 +18,13 @@ angular.module('inboxServices').factory('ContactViewModelGenerator',
   function(
     $log,
     $q,
+    $translate,
     ContactMuted,
     ContactSchema,
     DB,
     LineageModelGenerator,
-    Search
+    Search,
+    GetDataRecords
   ) {
     'ngInject';
     'use strict';
@@ -211,6 +213,31 @@ angular.module('inboxServices').factory('ContactViewModelGenerator',
       });
     };
 
+    var getHeading = function(report) {
+      if (report.validSubject && report.subject && report.subject.value) {
+        return report.subject.value;
+      }
+      if (report.subject && report.subject.name) {
+        return report.subject.name;
+      }
+      return $translate.instant('report.subject.unknown');
+    };
+
+    var addHeading = function(reports) {
+      var reportIds = _.pluck(reports, '_id');
+      return GetDataRecords(reportIds)
+              .then(function(dataRecords) {
+                dataRecords.forEach(function(dataRecord) {
+                  var report = _.find(reports, { '_id': dataRecord._id });
+                  if (report) {
+                    report.heading = getHeading(dataRecord);
+                  }
+                });
+                
+                return reports;
+              });
+    };
+
     var getReports = function(contactDocs) {
       var subjectIds = [];
       contactDocs.forEach(function(doc) {
@@ -241,6 +268,7 @@ angular.module('inboxServices').factory('ContactViewModelGenerator',
         }
       });
       return getReports(contacts)
+        .then(addHeading)
         .then(function(reports) {
           addPatientName(reports, contacts);
           reports.sort(REPORTED_DATE_COMPARATOR);

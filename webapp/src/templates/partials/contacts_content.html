@@ -179,7 +179,7 @@
               route="'reports'"
               icon="report | formIconName:forms"
               date="report.reported_date"
-              heading="selected.doc.type === 'person' ? (report | summary:forms) : (report.fields.place_name ? report.fields.place_name : report.fields.patient_name)"
+              heading="selected.doc.type === 'person' ? (report | summary:forms) : report.heading"
               summary="selected.doc.type === 'person' ? '' : (report | summary:forms)"
               show-status="true"
               valid="report.valid"
