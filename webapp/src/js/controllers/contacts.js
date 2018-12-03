@@ -224,8 +224,10 @@ var _ = require('underscore'),
           var canEdit = results[2];
 
           $scope.setRightActionBar({
+            relevantForms: [],
             selected: [selectedDoc],
             sendTo: selectedDoc.type === 'person' ? selectedDoc : '',
+            canDelete: false,
             canEdit: canEdit,
           });
 
