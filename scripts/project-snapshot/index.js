@@ -65,93 +65,23 @@ const getCardsForColumn = id => {
     .then(combinePages);
 };
 
-const getCards = projectId => {
+const getColumns = projectId => {
   return github.projects.getProjectColumns({ project_id: projectId })
-    .then(response => Promise.all(response.data.map(column => getCardsForColumn(column.id))))
-    .then(results => results.reduce((acc, curr) => acc.concat(curr), []));
+    .then(response => Promise.all(response.data.map(column => {
+      return getCardsForColumn(column.id).then(cards => [ column.name, cards.length ]);
+    })));
 };
 
-const getIssues = cards => {
-  return Promise.all(cards
-    .filter(card => card.content_url) // cards without content_urls are just freetext cards
-    .map(card => {
-      const parts = card.content_url.split('/');
-      return github.issues.get({
-        owner: parts[4],
-        repo: parts[5],
-        number: parts[7]
-      });
-    })
-  );
-};
-
-const TYPES = [
-  'Type: Feature',
-  'Type: Improvement',
-  'Type: Performance',
-  'Type: Bug', 
-  'Type: Technical issue',
-];
-
-const STATUSES = [
-  'Status: 1 - Triaged',
-  'Status: 2 - Active work',
-  'Status: 3 - Code review',
-  'Status: 4 - Acceptance testing',
-  'Status: 5 - Ready',
-  'Status: 6 - Released',
-];
-
-const group = issues => {
-  const result = {
-    types: {},
-    statuses: {}
-  };
-
-  const errors = [];
-
-  TYPES.forEach(type => result.types[type] = 0);
-  STATUSES.forEach(type => result.statuses[type] = 0);
-
-  issues.forEach(issue => {
-    const matchingTypes = TYPES.filter(type => issue.data.labels.find(label => label.name === type));
-    if (!matchingTypes.length) {
-      errors.push(`Issue doesn't have any Type label: ${issue.data.html_url}`);
-      return;
-    }
-    if (matchingTypes.length > 1) {
-      errors.push(`Issue has too many Type labels: ${issue.data.html_url}`);
-      return;
-    }
-    result.types[matchingTypes[0]]++;
-
-    const matchingStatuses = STATUSES.filter(status => issue.data.labels.find(label => label.name === status));
-    if (!matchingStatuses.length) {
-      errors.push(`Issue doesn't have any Status label: ${issue.data.html_url}`);
-      return;
-    }
-    if (matchingStatuses.length > 1) {
-      errors.push(`Issue has too many Status labels: ${issue.data.html_url}`);
-      return;
-    }
-    result.statuses[matchingStatuses[0]]++;
+const output = columns => {
+  columns.forEach(column => {
+    const name = column[0];
+    const paddedCount = column[1].toString().padStart(4);
+    console.log(`${paddedCount} ${name}`);
   });
-
-  if (errors.length) {
-    console.error(JSON.stringify(errors, null, 2));
-    throw new Error('Some issues are in an invalid state');
-  }
-  return result;
-};
-
-const output = groups => {
-  console.log(JSON.stringify(groups, null, 2));
 };
 
 Promise.resolve()
   .then(getProjectId)
-  .then(getCards)
-  .then(getIssues)
-  .then(group)
+  .then(getColumns)
   .then(output)
   .catch(console.error);
