@@ -1,0 +1,16 @@
+{
+  "name": "@shared-libs/translation-utils",
+  "version": "1.0.0",
+  "description": "Provides helper function to support nested keys in translations.",
+  "main": "src/translation-utils.js",
+  "scripts": {
+    "test": "mocha ./test"
+  },
+  "author": "",
+  "license": "Apache-2.0",
+  "private": true,
+  "devDependencies": {
+    "chai": "^4.2.0",
+    "mocha": "^5.2.0"
+  }
+}

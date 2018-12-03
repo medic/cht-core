@@ -22,7 +22,6 @@ require('./controllers/delete-user');
 require('./controllers/edit-language');
 require('./controllers/edit-translation');
 require('./controllers/edit-user');
-require('./controllers/export-audit-logs');
 require('./controllers/export-contacts');
 require('./controllers/export-feedback');
 require('./controllers/export-messages');
@@ -226,15 +225,6 @@ app.config(function(
         tab: {
           controller: 'ExportFeedbackCtrl',
           templateUrl: 'templates/export_feedback.html'
-        }
-      }
-    })
-    .state('export.auditlogs', {
-      url: '/audit-logs',
-      views: {
-        tab: {
-          controller: 'ExportAuditLogsCtrl',
-          templateUrl: 'templates/export_audit_logs.html'
         }
       }
     })

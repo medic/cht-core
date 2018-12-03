@@ -114,6 +114,40 @@ const addRegistrationToDoc = (doc, registrations) => {
   }
 };
 
+const findValidRegistration = (doc, registrations) => {
+    const visitReportedDate = doc.reported_date;
+
+    for (var i = 0; i < registrations.length; i++) {
+      var registration = registrations[i];
+      if (registration.scheduled_tasks) {
+        var scheduled_tasks = _.sortBy(registration.scheduled_tasks, 'due');
+        for (var j = 0; j < scheduled_tasks.length; j++) {
+          var task = scheduled_tasks[j];
+          if (['delivered', 'sent'].includes(task.state)) {
+            var nextTask = scheduled_tasks[j + 1] || { due: moment(visitReportedDate).add(1, 'd') };
+            if (nextTask && moment(nextTask.due) > moment(visitReportedDate)) {
+              // We loop through tasks. Once we find one that has either the status "delivered" or "sent" with
+              // a future task with a due date that is after the visit reported date then we have found the task 
+              // linked to the visit. We always link if this is the last scheduled task delivered or sent.
+              var taskIndex = _.findIndex(registration.scheduled_tasks, { due: task.due });
+              registration.scheduled_tasks[taskIndex].report_uuid = doc._id;
+              return registration;
+            }
+          }          
+        }
+      }
+    } 
+};
+
+const addReportUUIDToRegistration = (doc, registrations, callback) => {
+    const validRegistration = registrations.length && findValidRegistration(doc, registrations);
+    if (validRegistration) {
+      return db.medic.put(validRegistration, callback);
+    }
+    
+    callback();
+};
+
 const silenceRegistrations = (config, doc, registrations, callback) => {
   if (!config.silence_type) {
     return callback(null, true);
@@ -175,8 +209,13 @@ const handleReport = (doc, config, callback) => {
 
       addMessagesToDoc(doc, config, registrations);
       addRegistrationToDoc(doc, registrations);
+      addReportUUIDToRegistration(doc, registrations, err => {
+        if (err) {
+          return callback(err);
+        }
 
-      module.exports.silenceRegistrations(config, doc, registrations, callback);
+        module.exports.silenceRegistrations(config, doc, registrations, callback);
+      });
     }
   );
 };

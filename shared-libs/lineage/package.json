@@ -11,13 +11,12 @@
   "private": true,
   "devDependencies": {
     "@shared-libs/memdown-medic": "file:../memdown-medic",
-    "chai": "^4.1.2",
+    "chai": "^4.2.0",
     "chai-as-promised": "^7.1.1",
-    "chai-exclude": "^1.0.9",
+    "chai-exclude": "^1.0.12",
     "chai-shallow-deep-equal": "^1.4.6",
-    "lodash": "^4.17.10",
     "mocha": "^5.2.0",
-    "sinon": "^6.1.5"
+    "sinon": "^7.1.1"
   },
   "dependencies": {
     "underscore": "^1.9.1"

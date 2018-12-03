@@ -231,6 +231,15 @@ var feedback = require('../modules/feedback'),
         return;
       }
       if(!fromState.url.includes('edit') && !fromState.url.includes('add')){
+<<<<<<< HEAD
+=======
+        return;
+      }
+      if(fromParams.id === toParams.id){
+        return;
+      }
+      if(fromParams.reportId === toParams.id){
+>>>>>>> master
         return;
       }
       if ($scope.cancelCallback) {

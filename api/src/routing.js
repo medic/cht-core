@@ -34,7 +34,6 @@ const _ = require('underscore'),
   createUserDb = require('./controllers/create-user-db'),
   createDomain = require('domain').create,
   staticResources = /\/(templates|static)\//,
-  favicon = /\/icon_\d+.ico$/,
   // CouchDB is very relaxed in matching routes
   routePrefix = '/+' + environment.db + '/+',
   pathPrefix = '/' + environment.db + '/',
@@ -154,12 +153,19 @@ app.get('/', function(req, res) {
 });
 
 app.get('/favicon.ico', (req, res) => {
+  // Cache for a week. Normally we don't interfere with couch headers, but
+  // due to Chrome (including Android WebView) aggressively requesting
+  // favicons on every page change and window.history update
+  // ( https://github.com/medic/medic-webapp/issues/1913 ), we have to
+  // stage an intervention
+  writeHeaders(req, res, [['Cache-Control', 'public, max-age=604800']]);
   db.medic.get('branding').then(doc => {
     db.medic.getAttachment(doc._id, doc.resources.favicon).then(blob => {
       res.send(blob);
     });
   }).catch(err => {
-    return serverUtils.serverError(err, req, res);
+    res.sendFile('public/favicon.ico' , { root : __dirname});
+    logger.error('Branding doc or/and favicon missing: %o', err);
   });
 });
 
@@ -530,14 +536,7 @@ const copyProxyHeaders = (proxyRes, res) => {
  * ensure we set the value first.
  */
 proxy.on('proxyReq', function(proxyReq, req, res) {
-  if (favicon.test(req.url)) {
-    // Cache for a week.  Normally we don't interferse with couch headers, but
-    // due to Chrome (including Android WebView) aggressively requesting
-    // favicons on every page change and window.history update
-    // (https://github.com/medic/medic-webapp/issues/1913 ), we have to stage an
-    // intervention:
-    writeHeaders(req, res, [['Cache-Control', 'public, max-age=604800']]);
-  } else if (appcacheManifest.test(req.url)) {
+  if (appcacheManifest.test(req.url)) {
     // requesting the appcache manifest
     writeHeaders(req, res, [
       ['Cache-Control', 'must-revalidate'],
