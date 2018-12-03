@@ -370,6 +370,46 @@ describe('ContactViewModelGenerator service', () => {
         chai.expect(model.reports[0].heading).to.equal(dataRecord.subject.value);
       });
     });
+
+    it('does not add heading to reports when there are no valid subject', () => {
+      const report = { _id: 'ab' };
+      const dataRecord = { _id: 'ab', subject: { value: 'ad' } };
+      stubSearch(null, [ report ]);
+      stubGetDataRecords(null, [ dataRecord ]);
+      return runReportsTest([], (model) => {
+        chai.expect(model.reports[0].heading).to.be.an('undefined');
+      });
+    });
+
+    it('does not add heading to reports when there are no valid subject value', () => {
+      const report = { _id: 'ab' };
+      const dataRecord = { _id: 'ab', validSubject: 'ac' };
+      stubSearch(null, [ report ]);
+      stubGetDataRecords(null, [ dataRecord ]);
+      return runReportsTest([], (model) => {
+        chai.expect(model.reports[0].heading).to.equal('report.subject.unknown');
+      });
+    });
+
+    it('does not add heading to reports when no data record is found', () => {
+      const report = { _id: 'ab' };
+      stubSearch(null, [ report ]);
+      stubGetDataRecords(null, [ ]);
+      return runReportsTest([], (model) => {
+        chai.expect(model.reports[0].heading).to.be.an('undefined');
+      });
+    });
+
+    it('adds heading to reports when an array of data records is returned', () => {
+      const report = { _id: 'a' };
+      const dataRecordA = { _id: 'a', validSubject: 'avs', subject: { value: 'asv' } };
+      const dataRecordB = { _id: 'b', validSubject: 'bvs', subject: { value: 'bsv' } };
+      stubSearch(null, [ report ]);
+      stubGetDataRecords(null, [ dataRecordB, dataRecordA ]);
+      return runReportsTest([], (model) => {
+        chai.expect(model.reports[0].heading).to.equal(dataRecordA.subject.value);
+      });
+    });
   });
 
   describe('muting', () => {

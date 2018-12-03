@@ -214,10 +214,10 @@ angular.module('inboxServices').factory('ContactViewModelGenerator',
     };
 
     var getHeading = function(report) {
-      if (report.validSubject) {
+      if (report.validSubject && report.subject && report.subject.value) {
         return report.subject.value;
       }
-      if (report.subject.name) {
+      if (report.subject && report.subject.name) {
         return report.subject.name;
       }
       return $translate.instant('report.subject.unknown');
@@ -229,7 +229,9 @@ angular.module('inboxServices').factory('ContactViewModelGenerator',
               .then(function(dataRecords) {
                 dataRecords.forEach(function(dataRecord) {
                   var report = _.find(reports, { '_id': dataRecord._id });
-                  report.heading = getHeading(dataRecord);
+                  if (report) {
+                    report.heading = getHeading(dataRecord);
+                  }
                 });
                 
                 return reports;
