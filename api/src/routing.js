@@ -164,8 +164,8 @@ app.get('/favicon.ico', (req, res) => {
       res.send(blob);
     });
   }).catch(err => {
-    res.sendFile('public/favicon.ico' , { root : __dirname});
-    logger.error('Branding doc or/and favicon missing: %o', err);
+    res.sendFile('resources/ico/favicon.ico' , { root : __dirname });
+    logger.warn('Branding doc or/and favicon missing: %o', err);
   });
 });
 

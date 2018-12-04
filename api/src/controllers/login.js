@@ -1,4 +1,5 @@
 const fs = require('fs'),
+  { promisify } = require('util'),
   url = require('url'),
   path = require('path'),
   request = require('request'),
@@ -156,6 +157,19 @@ const setCookies = (req, res, sessionRes) => {
     });
 };
 
+const getInlineImage = (data, contentType) => `data:${contentType};base64,${data}`;
+
+const getDefaultBranding = () => {
+  const logoPath = path.join(__dirname, '..', 'resources', 'logo', 'medic-logo-light-full.svg');
+  return promisify(fs.readFile)(logoPath).then(logo => {
+    const data = Buffer.from(logo).toString('base64');
+    return {
+      name: 'Medic Mobile',
+      logo: getInlineImage(data, 'image/svg+xml')
+    };
+  });
+};
+
 module.exports = {
   safePath: safePath,
   get: (req, res) => {
@@ -172,15 +186,12 @@ module.exports = {
           const image = doc._attachments[doc.resources.logo];
           return {
             name: doc.title,
-            logo: `data:${image.content_type};base64,${image.data}`
+            logo: getInlineImage(image.data, image.content_type)
           }; 
         })
         .catch(err => {
-          logger.error('Could not find branding doc on CouchDB: %o', err);
-          return {
-            name: 'Medic Mobile',
-            logo: '/login/medic-logo-light-full.svg'
-          };
+          logger.warn('Could not find branding doc on CouchDB: %o', err);
+          return getDefaultBranding();
         })
         .then(branding => {
           renderLogin(redirect, branding, (err, body) => {
