@@ -80,7 +80,7 @@ const loadTranslations = () => {
       return;
     }
     result.rows.forEach(row => {
-      const values = Object.assign(row.doc.generic, row.doc.custom || {});
+      const values = row.doc.generic ? Object.assign(row.doc.generic, row.doc.custom || {}) : row.doc.values;
       translationCache[row.doc.code] = translationUtils.loadTranslations(values);
     });
   });
