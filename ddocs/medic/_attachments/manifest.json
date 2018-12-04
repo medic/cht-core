@@ -1,14 +1,11 @@
 {
-  "name": "Medic Mobile",
-  "short_name": "Medic Mobile",
-  "start_url": "../",
+  "start_url": "./",
   "display": "standalone",
   "background_color": "#323232",
   "theme_color": "#323232",
-  "description": "Medic Mobile",
   "icons": [{
-    "src": "img/ico/icon_32.png",
+    "src": "/favicon.ico",
     "sizes": "32x32",
-    "type": "image/png"
+    "type": "image"
   }]
 }
