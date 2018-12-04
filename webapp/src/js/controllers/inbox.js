@@ -49,7 +49,8 @@ var feedback = require('../modules/feedback'),
     UserSettings,
     WealthQuintilesWatcher,
     XmlForms,
-    RecurringProcessManager
+    RecurringProcessManager,
+    DatabaseConnectionMonitor
   ) {
     'ngInject';
 
@@ -638,10 +639,20 @@ var feedback = require('../modules/feedback'),
     // https://github.com/medic/medic-webapp/issues/2927
     $rootScope.$on('$stateChangeStart', closeDropdowns);
 
+    $rootScope.$on('databaseClosedEvent', function () {
+      Modal({
+        templateUrl: 'templates/modals/database_closed.html',
+        controller: 'ReloadingModalCtrl',
+        singleton: true,
+      });
+      closeDropdowns();
+    });
+    DatabaseConnectionMonitor.listenForDatabaseClosed();
+
     var showUpdateReady = function() {
       Modal({
         templateUrl: 'templates/modals/version_update.html',
-        controller: 'VersionUpdateCtrl',
+        controller: 'ReloadingModalCtrl',
         singleton: true,
       }).catch(function() {
         $log.debug('Delaying update');

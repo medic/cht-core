@@ -23,6 +23,7 @@
   require('./contact-view-model-generator');
   require('./contacts');
   require('./count-messages');
+  require('./database-connection-monitor');
   require('./db');
   require('./db-sync');
   require('./debounce');

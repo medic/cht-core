@@ -1,4 +1,7 @@
-angular.module('inboxControllers').controller('VersionUpdateCtrl',
+/*
+Controller for the Modal service which executes window.reload when submitted.
+*/
+angular.module('inboxControllers').controller('ReloadingModalCtrl',
   function (
     $scope,
     $uibModalInstance,
