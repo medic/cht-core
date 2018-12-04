@@ -445,7 +445,7 @@ describe('due tasks', () => {
 
     sinon.stub(utils, 'translate').returns('Please visit {{patient_name}} asap');
     sinon.stub(utils, 'getRegistrations').callsArgWith(1, null, [{ fields: { patient_id: '12345' } }]);
-    sinon.stub(utils, 'getPatientContactUuid').callsArgWith(2, null);
+    sinon.stub(utils, 'getPatientContactUuid').callsArgWith(1, null);
     sinon.stub(schedule._lineage, 'fetchHydratedDoc');
     sinon.stub(utils, 'setTaskState');
 
@@ -510,7 +510,7 @@ describe('due tasks', () => {
       assert.equal(utils.translate.args[0][0], 'visit-1');
       assert.equal(utils.getRegistrations.callCount, 1);
       assert.equal(utils.getPatientContactUuid.callCount, 1);
-      assert.equal(utils.getPatientContactUuid.args[0][1], '123');
+      assert.equal(utils.getPatientContactUuid.args[0][0], '123');
       assert.equal(schedule._lineage.fetchHydratedDoc.callCount, 0);
       assert.equal(utils.setTaskState.callCount, 0);
       done();
@@ -524,7 +524,7 @@ describe('due tasks', () => {
 
     sinon.stub(utils, 'translate').returns('Please visit {{patient_name}} asap');
     sinon.stub(utils, 'getRegistrations').callsArgWith(1, null, [{ fields: { patient_id: '12345' } }]);
-    sinon.stub(utils, 'getPatientContactUuid').callsArgWith(2, null);
+    sinon.stub(utils, 'getPatientContactUuid').callsArgWith(1, null);
     sinon.stub(schedule._lineage, 'fetchHydratedDoc');
     sinon.stub(utils, 'setTaskState').callsFake((task, state) => task.state = state);
 
@@ -599,7 +599,7 @@ describe('due tasks', () => {
       assert.equal(utils.translate.args[0][0], 'visit-1');
       assert.equal(utils.getRegistrations.callCount, 1);
       assert.equal(utils.getPatientContactUuid.callCount, 1);
-      assert.equal(utils.getPatientContactUuid.args[0][1], '123');
+      assert.equal(utils.getPatientContactUuid.args[0][0], '123');
       assert.equal(schedule._lineage.fetchHydratedDoc.callCount, 0);
       assert.equal(utils.setTaskState.callCount, 1);
       assert.deepEqual(utils.setTaskState.args[0], [
