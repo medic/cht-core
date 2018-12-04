@@ -165,6 +165,12 @@ describe('messageUtils', () => {
       const actual = utils._extendedTemplateContext(doc, { patient: patient, registrations: registrations });
       actual.name.should.equal('doug');
     });
+
+    it('should allow registrations without a patient', () => {
+      const extras = { registrations: [{ patient_name: 'clone' }] };
+      const result = utils._extendedTemplateContext({}, extras);
+      result.patient_name.should.equal('clone');
+    });
   });
 
   describe('generate', () => {
@@ -382,6 +388,50 @@ describe('messageUtils', () => {
         expect(messages[0].original_message).to.equal(sms);
       });
 
+    });
+
+    describe('errors', () => {
+      it('should add an error when registrations are provided without a patient', () => {
+        const config = {},
+              translate = null,
+              doc = {},
+              content = { message: 'sms' },
+              recipient = '1234',
+              context = { registrations: [{ _id: 'a' }] };
+
+        const messages = utils.generate(config, translate, doc, content, recipient, context);
+        expect(messages[0].message).to.equal('sms');
+        expect(messages[0].to).to.equal('1234');
+        expect(messages[0].error).to.equal('messages.errors.patient.missing');
+      });
+
+      it('should not add an error when no patient and no registrations are provided', () => {
+        const config = {},
+              translate = null,
+              doc = {},
+              content = { message: 'sms' },
+              recipient = '1234',
+              context = { registrations: false };
+
+        const messages = utils.generate(config, translate, doc, content, recipient, context);
+        expect(messages[0].message).to.equal('sms');
+        expect(messages[0].to).to.equal('1234');
+        expect(messages[0].error).to.equal(undefined);
+      });
+
+      it('should not add an error when patient is provided', () => {
+        const config = {},
+              translate = null,
+              doc = {},
+              content = { message: 'sms' },
+              recipient = '1234',
+              context = { patient: { name: 'a' } };
+
+        const messages = utils.generate(config, translate, doc, content, recipient, context);
+        expect(messages[0].message).to.equal('sms');
+        expect(messages[0].to).to.equal('1234');
+        expect(messages[0].error).to.equal(undefined);
+      });
     });
 
   });
@@ -607,4 +657,18 @@ describe('messageUtils', () => {
 
   });
 
+  describe('hasError', () => {
+    it('should work with incorrect param', () => {
+      expect(utils.hasError()).to.equal(undefined);
+      expect(utils.hasError(false)).to.equal(false);
+      expect(utils.hasError({})).to.equal(undefined);
+      expect(utils.hasError([])).to.equal(undefined);
+    });
+
+    it('should return correct result', () => {
+      expect(utils.hasError([{ a: 1 }])).to.equal(undefined);
+      expect(utils.hasError([{ error: false }])).to.equal(false);
+      expect(utils.hasError([{ error: 'something' }])).to.equal('something');
+    });
+  });
 });

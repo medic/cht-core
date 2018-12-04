@@ -67,16 +67,17 @@ module.exports = {
                   if (err) {
                     return cb(err);
                   }
+                  var updatedTasks = false;
                   // set task to pending for gateway to pick up
                   doc.scheduled_tasks.forEach(task => {
                     if (task.due === obj.key) {
-                      utils.setTaskState(task, 'pending');
                       if (!task.messages) {
                         const content = {
                           translationKey: task.message_key,
                           message: task.message,
                         };
-                        task.messages = messageUtils.generate(
+
+                        const messages = messageUtils.generate(
                           config.getAll(),
                           utils.translate,
                           doc,
@@ -84,9 +85,26 @@ module.exports = {
                           task.recipient,
                           context
                         );
+
+                        // generated messages could have errors, such messages should not be saved
+                        // an example invalid message would be generated when a registration was missing the patient
+                        if (!messageUtils.hasError(messages)) {
+                          task.messages = messages;
+                        }
+                      }
+
+                      // only update task states when messages exist
+                      if (task.messages) {
+                        updatedTasks = true;
+                        utils.setTaskState(task, 'pending');
                       }
                     }
                   });
+
+                  if (!updatedTasks) {
+                    return cb();
+                  }
+
                   lineage.minify(doc);
                   dbPouch.medic.put(doc, cb);
                 });

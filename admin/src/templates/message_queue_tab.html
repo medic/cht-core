@@ -30,10 +30,14 @@
     <div class="col col-grow">
       <p ng-if="message.task"><strong>{{message.task}}</strong></p>
       <span>{{message.content}}</span>
+      <div class="message-error" ng-if="message.error">
+        <span translate>messages.errors.invalid</span>
+        <span translate>{{message.error}}</span>
+      </div>
     </div>
 
     <div class="col col-fixed">
-      <span class="message-state {{message.state}}" ng-class="{ delayed: message.delayed }" translate>
+      <span class="message-state {{message.state}}" ng-class="{ delayed: message.delayed, 'has-error': message.error }" translate>
         {{'state.' + message.state}}
       </span>
     </div>

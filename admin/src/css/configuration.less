@@ -121,8 +121,14 @@ dl.horizontal {
       margin-right: 10px;
       display: block;
     }
-    &.scheduled:before {
-      content: @scheduled-state-icon;
+    &.scheduled {
+      &:before {
+        content: @scheduled-state-icon;
+      }
+      &.has-error {
+        color: @error-color;
+        font-weight: bold;
+      }
     }
     &.muted:before {
       content: @muted-state-icon;

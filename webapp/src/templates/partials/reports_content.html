@@ -117,9 +117,13 @@
                   <ul>
                     <li ng-repeat="message in task.messages">
                       <p>{{message.message}}</p>
+                      <div class="message-error" ng-if="message.error">
+                        <span translate>messages.errors.invalid</span>
+                        <span translate>{{message.error}}</span>
+                      </div>
                     </li>
                   </ul>
-                  <span class="task-state" ng-bind-html="task | state"></span>
+                  <span class="task-state {{ task.error ? 'has-error' : ''}}" ng-bind-html="task | state"></span>
                 </li>
                 <li class="clear"></li>
               </ul>

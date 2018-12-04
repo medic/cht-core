@@ -19,6 +19,7 @@
 @import 'content-list';
 
 @import 'enketo/medic';
+@import 'messages';
 
 .container-fluid {
   overflow: hidden;
@@ -654,6 +655,13 @@ body {
       color: @muted-state-color;
     }
     &.failed:before {
+      color: @failed-state-color;
+    }
+  }
+
+  &.has-error .state.scheduled {
+    &,
+    &:before {
       color: @failed-state-color;
     }
   }
