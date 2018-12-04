@@ -57,7 +57,7 @@ describe('registration', () => {
       };
       const getPatientContactUuid = sinon
         .stub(utils, 'getPatientContactUuid')
-        .callsArgWith(2);
+        .callsArgWith(1);
       // return expected view results when searching for contacts_by_phone
       const view = sinon.stub(db.medic, 'view').callsArgWith(3, null, {
         rows: [
@@ -143,7 +143,7 @@ describe('registration', () => {
         birth_date: '2017-03-31T01:15:09.000Z',
       };
       const change = { doc: doc };
-      sinon.stub(utils, 'getPatientContactUuid').callsArgWith(2);
+      sinon.stub(utils, 'getPatientContactUuid').callsArgWith(1);
       // return expected view results when searching for contacts_by_phone
       sinon
         .stub(db.medic, 'view')
@@ -184,7 +184,7 @@ describe('registration', () => {
         birth_date: '2017-03-31T01:15:09.000Z',
       };
       const change = { doc: doc };
-      sinon.stub(utils, 'getPatientContactUuid').callsArgWith(2);
+      sinon.stub(utils, 'getPatientContactUuid').callsArgWith(1);
       // return expected view results when searching for contacts_by_phone
       sinon
         .stub(db.medic, 'view')
@@ -231,7 +231,7 @@ describe('registration', () => {
         birth_date: '2017-03-31T01:15:09.000Z',
       };
       const change = { doc: doc };
-      sinon.stub(utils, 'getPatientContactUuid').callsArgWith(2);
+      sinon.stub(utils, 'getPatientContactUuid').callsArgWith(1);
       // return expected view results when searching for contacts_by_phone
       sinon
         .stub(db.medic, 'view')
@@ -285,7 +285,7 @@ describe('registration', () => {
           birth_date: dob,
         },
       };
-      sinon.stub(utils, 'getPatientContactUuid').callsArgWith(2);
+      sinon.stub(utils, 'getPatientContactUuid').callsArgWith(1);
       // return expected view results when searching for contacts_by_phone
       sinon
         .stub(db.medic, 'view')
@@ -329,7 +329,7 @@ describe('registration', () => {
           birth_date: dob,
         },
       };
-      sinon.stub(utils, 'getPatientContactUuid').callsArgWith(2);
+      sinon.stub(utils, 'getPatientContactUuid').callsArgWith(1);
       // return expected view results when searching for contacts_by_phone
       sinon
         .stub(db.medic, 'view')
@@ -379,7 +379,7 @@ describe('registration', () => {
           birth_date: dob,
         },
       };
-      sinon.stub(utils, 'getPatientContactUuid').callsArgWith(2);
+      sinon.stub(utils, 'getPatientContactUuid').callsArgWith(1);
       // return expected view results when searching for contacts_by_phone
       sinon
         .stub(db.medic, 'view')
@@ -473,7 +473,7 @@ describe('registration', () => {
       sinon.stub(schedules, 'getScheduleConfig').returns('someschedule');
       sinon
         .stub(utils, 'getPatientContactUuid')
-        .callsArgWith(2, null, { _id: 'uuid' });
+        .callsArgWith(1, null, { _id: 'uuid' });
       const assignSchedule = sinon
         .stub(schedules, 'assignSchedule')
         .returns(true);

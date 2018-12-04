@@ -8,7 +8,6 @@ var _ = require('underscore'),
   transitionUtils = require('./utils'),
   date = require('../date'),
   db = require('../db-pouch'),
-  dbNano = require('../db-nano'),
   NAME = 'accept_patient_reports';
 
 const _hasConfig = doc => {
@@ -198,10 +197,7 @@ const addMessagesToDoc = (doc, config, registrations) => {
 
 const handleReport = (doc, config, callback) => {
   utils.getRegistrations(
-    {
-      db: dbNano,
-      id: doc.fields.patient_id,
-    },
+    { id: doc.fields.patient_id, },
     (err, registrations) => {
       if (err) {
         return callback(err);

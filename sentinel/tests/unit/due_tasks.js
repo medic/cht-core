@@ -221,7 +221,7 @@ describe('due tasks', () => {
       .callsArgWith(1, null, []);
     const getPatientContactUuid = sinon
       .stub(utils, 'getPatientContactUuid')
-      .callsArgWith(2, null, patientUuid);
+      .callsArgWith(1, null, patientUuid);
     const fetchHydratedDoc = sinon
       .stub(schedule._lineage, 'fetchHydratedDoc')
       .callsArgWith(1, null, { name: 'jim' });
@@ -309,7 +309,7 @@ describe('due tasks', () => {
       assert.equal(translate.args[0][0], 'visit-1');
       assert.equal(getRegistrations.callCount, 1);
       assert.equal(getPatientContactUuid.callCount, 1);
-      assert.equal(getPatientContactUuid.args[0][1], '123');
+      assert.equal(getPatientContactUuid.args[0][0], '123');
       assert.equal(fetchHydratedDoc.callCount, 1);
       assert.equal(fetchHydratedDoc.args[0][0], patientUuid);
       assert.equal(setTaskState.callCount, 1);
@@ -337,7 +337,7 @@ describe('due tasks', () => {
       .callsArgWith(1, null, []);
     const getPatientContactUuid = sinon
       .stub(utils, 'getPatientContactUuid')
-      .callsArgWith(2, null, patientUuid);
+      .callsArgWith(1, null, patientUuid);
     const fetchHydratedDoc = sinon
       .stub(schedule._lineage, 'fetchHydratedDoc')
       .callsArgWith(1, null, { name: 'jim' });
@@ -422,7 +422,7 @@ describe('due tasks', () => {
       assert.equal(saveDoc.callCount, 1);
       assert.equal(getRegistrations.callCount, 1);
       assert.equal(getPatientContactUuid.callCount, 1);
-      assert.equal(getPatientContactUuid.args[0][1], '123');
+      assert.equal(getPatientContactUuid.args[0][0], '123');
       assert.equal(fetchHydratedDoc.callCount, 1);
       assert.equal(fetchHydratedDoc.args[0][0], patientUuid);
       assert.equal(setTaskState.callCount, 1);
