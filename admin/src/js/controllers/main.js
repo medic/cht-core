@@ -9,9 +9,14 @@ angular.module('controllers').controller('MainCtrl',
   ) {
     'ngInject';
     $translate.use('en');
-    Auth('can_configure').catch(function() {
+    $scope.authorized = false;
+    Auth('can_configure')
+    .then(function() {
+      $scope.authorized = false;
+    })
+    .catch(function() {
       $log.error('Insufficient permissions. Must be either "admin" or "nationalAdmin".');
-      $window.location.href = '../../../login';
+      $window.location.href = '../../login';
     });
 
     $scope.logout = function() {
