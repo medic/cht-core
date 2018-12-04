@@ -19,6 +19,7 @@
 @import 'content-list';
 
 @import 'enketo/medic';
+@import 'messages';
 
 .container-fluid {
   overflow: hidden;
@@ -658,12 +659,10 @@ body {
     }
   }
 
-  &.has-error {
-    .state.scheduled {
+  &.has-error .state.scheduled {
+    &,
+    &:before {
       color: @failed-state-color;
-      &:before {
-        color: @failed-state-color;
-      }
     }
   }
 }
@@ -812,18 +811,6 @@ a.fa:hover {
       margin-top: 10px;
       &:first-child {
         margin-top: 0;
-      }
-
-      .message-error {
-        color: @failed-state-color;
-        font-size: @font-small;
-
-        &:before {
-          font-family: FontAwesome;
-          margin-right: 5px;
-          vertical-align: baseline;
-          content: @failed-state-icon;
-        }
       }
     }
   }
