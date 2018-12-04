@@ -5,6 +5,7 @@ angular.module('controllers').controller('MainCtrl',
     $window,
     Auth,
     $scope,
+    Location,
     Session
   ) {
     'ngInject';
@@ -16,7 +17,7 @@ angular.module('controllers').controller('MainCtrl',
     })
     .catch(function() {
       $log.error('Insufficient permissions. Must be either "admin" or "nationalAdmin".');
-      $window.location.href = '../../login';
+      $window.location.href = Location.path;
     });
 
     $scope.logout = function() {
