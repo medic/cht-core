@@ -5,7 +5,7 @@ const environment = require('./src/environment'),
 process.on('unhandledRejection', reason => {
   logger.error('Unhandled Rejection:');
   logger.error('%o',reason);
-  logger.error('%o', resason.stack)
+  logger.error('%o', reason.stack);
 });
 
 serverChecks.check(environment.serverUrl).then(() => {
