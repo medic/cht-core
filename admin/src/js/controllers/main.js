@@ -12,7 +12,7 @@ angular.module('controllers').controller('MainCtrl',
     $scope.authorized = false;
     Auth('can_configure')
     .then(function() {
-      $scope.authorized = false;
+      $scope.authorized = true;
     })
     .catch(function() {
       $log.error('Insufficient permissions. Must be either "admin" or "nationalAdmin".');
