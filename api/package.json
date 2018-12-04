@@ -37,11 +37,7 @@
     "helmet": "^3.13.0",
     "http-proxy": "^1.17.0",
     "lineage": "file:../shared-libs/lineage",
-<<<<<<< HEAD
     "medic-conf": "^1.18.14",
-=======
-    "medic-conf": "^1.17.13",
->>>>>>> including resources in the compiled.json, copying over resource files(imgs) from standard to build/ddocs, adding medic-conf as dep for api, added func to api/config.js to load the different forms using medic-conf functions as part of startup, added _id to resources for couch-compile to create the json correctly
     "moment": "^2.22.0",
     "morgan": "^1.9.0",
     "mustache": "^2.3.2",
