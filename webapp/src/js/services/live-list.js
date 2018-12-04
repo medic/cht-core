@@ -471,8 +471,9 @@ angular.module('inboxServices').factory('LiveList',
 
       if (idx.dom[idx.selected]) {
         idx.dom[idx.selected].removeClass('selected');
-        delete idx.selected;
       }
+
+      delete idx.selected;
     }
 
     function _containsDeleteStub(listName, doc) {
