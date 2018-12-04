@@ -218,6 +218,9 @@ var _ = require('underscore'),
           $('.filter.multidropdown:not(.no-reset)').each(function() {
             $(this).multiDropdown().reset();
           });
+        },
+        destroy: function() {
+          $('#date-filter').data('daterangepicker').remove();
         }
       };
     }

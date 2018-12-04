@@ -13,7 +13,8 @@ describe('ReportsCtrl controller', () => {
       Changes,
       FormatDataRecord,
       changesCallback,
-      changesFilter;
+      changesFilter,
+      searchFilters;
 
   beforeEach(module('inboxApp'));
 
@@ -35,13 +36,19 @@ describe('ReportsCtrl controller', () => {
     scope.setRightActionBar = sinon.stub();
     scope.setLeftActionBar = sinon.stub();
     scope.settingSelected = () => {};
-    LiveList = { reports: {
-      initialised: () => true,
-      setSelected: sinon.stub(),
-      containsDeleteStub: sinon.stub(),
-      remove: sinon.stub(),
-      count: sinon.stub()
-    }};
+    LiveList = {
+      reports: {
+        initialised: () => true,
+        setSelected: sinon.stub(),
+        containsDeleteStub: sinon.stub(),
+        remove: sinon.stub(),
+        count: sinon.stub(),
+        set: sinon.stub()
+      },
+      'report-search': {
+        set: sinon.stub()
+      }
+    };
     MarkRead = () => {};
     FormatDataRecord = data => {
       return {
@@ -65,6 +72,8 @@ describe('ReportsCtrl controller', () => {
     changesCallback = undefined;
     changesFilter = undefined;
 
+    searchFilters = { destroy: sinon.stub() };
+
     createController = () => {
       return $controller('ReportsCtrl', {
         '$scope': scope,
@@ -80,7 +89,7 @@ describe('ReportsCtrl controller', () => {
         'MessageState': {},
         'ReportViewModelGenerator': {},
         'Search': Search,
-        'SearchFilters': () => {},
+        'SearchFilters': searchFilters,
         'Settings': KarmaUtils.nullPromise(),
         'Tour': () => {},
         'UpdateFacility': {},

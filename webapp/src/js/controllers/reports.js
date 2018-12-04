@@ -515,5 +515,10 @@ angular
       },
     });
 
-    $scope.$on('$destroy', changeListener.unsubscribe);
+    $scope.$on('$destroy', function() {
+      changeListener.unsubscribe();
+      SearchFilters.destroy();
+      LiveList.reports.set([]);
+      LiveList['report-search'].set([]);
+    });
   });

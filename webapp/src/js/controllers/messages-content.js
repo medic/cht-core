@@ -218,7 +218,11 @@ angular.module('inboxControllers').controller('MessagesContentCtrl',
       }
     });
 
-    $scope.$on('$destroy', changeListener.unsubscribe);
+    $scope.$on('$destroy', function() {
+      changeListener.unsubscribe();
+      $('body').off('focus', '#message-footer textarea');
+      $('body').off('blur', '#message-footer textarea');
+    });
 
     $('.tooltip').remove();
 
