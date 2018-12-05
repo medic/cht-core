@@ -32,7 +32,9 @@ describe('Contacts controller', () => {
     deadListContains,
     deadList,
     contactSummary,
-    isDbAdmin;
+    isDbAdmin,
+    liveListInit,
+    liveListReset;
 
   beforeEach(module('inboxApp'));
 
@@ -65,6 +67,7 @@ describe('Contacts controller', () => {
         },
         contains: deadListContains,
         containsDeleteStub: sinon.stub(),
+        setScope: sinon.stub()
       };
     };
 
@@ -130,6 +133,8 @@ describe('Contacts controller', () => {
     settings = sinon.stub().resolves({});
     auth = sinon.stub().rejects();
     isDbAdmin = sinon.stub();
+    liveListInit = sinon.stub();
+    liveListReset = sinon.stub();
 
     createController = () => {
       searchService = sinon.stub();
@@ -152,6 +157,8 @@ describe('Contacts controller', () => {
         LiveList: {
           contacts: contactsLiveList,
           'contact-search': contactSearchLiveList,
+          $init: liveListInit,
+          $reset: liveListReset
         },
         Search: searchService,
         SearchFilters: { freetext: sinon.stub(), reset: sinon.stub() },
@@ -183,6 +190,8 @@ describe('Contacts controller', () => {
           scope.setTitle.getCall(0).args[0],
           typeLabel + 'translated'
         );
+        assert(liveListInit.called);
+        assert.deepEqual(liveListInit.args[0], [scope, 'contacts', 'contact-search']);
       });
   });
 
@@ -1388,6 +1397,15 @@ describe('Contacts controller', () => {
             });
         });
       });
+    });
+  });
+
+  describe('destroy', () => {
+    it('should reset liveList when destroyed', () => {
+      createController();
+      scope.$destroy();
+      assert.equal(liveListReset.callCount, 1);
+      assert.deepEqual(liveListReset.args[0], ['contacts', 'contact-search']);
     });
   });
 });

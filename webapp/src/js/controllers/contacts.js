@@ -34,6 +34,8 @@ var _ = require('underscore'),
 
     var liveList = LiveList.contacts;
 
+    LiveList.$init($scope, 'contacts', 'contact-search');
+
     $scope.loading = true;
     $scope.selected = null;
     $scope.filters = {};
@@ -473,8 +475,7 @@ var _ = require('underscore'),
 
     $scope.$on('$destroy', function () {
       changeListener.unsubscribe();
-      LiveList.contacts.set([]);
-      LiveList['contact-search'].set([]);
+      LiveList.$reset('contacts', 'contact-search');
     });
 
     if ($stateParams.tour) {

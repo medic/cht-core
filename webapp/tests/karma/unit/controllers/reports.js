@@ -14,7 +14,9 @@ describe('ReportsCtrl controller', () => {
       FormatDataRecord,
       changesCallback,
       changesFilter,
-      searchFilters;
+      searchFilters,
+      liveListInit,
+      liveListReset;
 
   beforeEach(module('inboxApp'));
 
@@ -36,6 +38,10 @@ describe('ReportsCtrl controller', () => {
     scope.setRightActionBar = sinon.stub();
     scope.setLeftActionBar = sinon.stub();
     scope.settingSelected = () => {};
+
+    liveListInit = sinon.stub();
+    liveListReset = sinon.stub();
+
     LiveList = {
       reports: {
         initialised: () => true,
@@ -47,7 +53,9 @@ describe('ReportsCtrl controller', () => {
       },
       'report-search': {
         set: sinon.stub()
-      }
+      },
+      $init: liveListInit,
+      $reset: liveListReset
     };
     MarkRead = () => {};
     FormatDataRecord = data => {
@@ -100,6 +108,8 @@ describe('ReportsCtrl controller', () => {
 
   it('set up controller', () => {
     createController();
+    chai.expect(liveListInit.called, true);
+    chai.expect(liveListInit.args[0]).to.deep.equal([scope, 'reports', 'report-search']);
   });
 
   it('when selecting a report, it sets the phone number in the actionbar', done => {
@@ -327,6 +337,16 @@ describe('ReportsCtrl controller', () => {
         chai.expect(LiveList.reports.remove.callCount).to.equal(0);
         chai.expect(Search.callCount).to.equal(1);
       });
+    });
+  });
+
+  describe('destroy', () => {
+    it('should reset liveList and destroy search filters when destroyed', () => {
+      createController();
+      scope.$destroy();
+      chai.expect(liveListReset.callCount).to.equal(1);
+      chai.expect(liveListReset.args[0]).to.deep.equal(['reports', 'report-search']);
+      chai.expect(searchFilters.destroy.callCount).to.equal(1);
     });
   });
 });
