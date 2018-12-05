@@ -38,37 +38,39 @@ describe('reminders', () => {
       });
   });
 
-  it('runReminder calls sendReminder when valid', () => {
+  it('runReminder calls sendReminder when valid', done => {
       var sendReminders,
           matchReminder;
 
       matchReminder = sinon.stub(reminders, 'matchReminder').callsArgWith(1, null, moment());
       sendReminders = sinon.stub(reminders, 'sendReminders').callsArgWith(1, null);
 
-      return reminders.runReminder({}, function(err) {
+      reminders.runReminder({}, function(err) {
           assert.equal(err, null);
           assert.equal(sendReminders.callCount, 1);
+          done();
       });
   });
 
-  it('runReminder does not create document when no match', () => {
+  it('runReminder does not create document when no match', done => {
       var sendReminders,
           matchReminder;
 
       matchReminder = sinon.stub(reminders, 'matchReminder').callsArgWith(1, null, false);
       sendReminders = sinon.stub(reminders, 'sendReminders').callsArgWith(1, null);
 
-      return reminders.runReminder({}, function(err) {
+      reminders.runReminder({}, function(err) {
           assert.equal(err, null);
           assert.equal(sendReminders.callCount, 0);
+          done();
       });
   });
 
-  it('matches reminder with moment if in last hour', () => {
+  it('matches reminder with moment if in last hour', done => {
       var ts = moment().startOf('hour');
       sinon.stub(reminders, 'getReminderWindow').callsArgWithAsync(1, null, moment().subtract(1, 'hour'));
 
-      return reminders.matchReminder({
+      reminders.matchReminder({
           reminder: {
               cron: moment().format('0 HH * * *') // will generate cron job matching the current hour
           }
@@ -76,11 +78,11 @@ describe('reminders', () => {
           assert.equal(err, null);
           assert(matches);
           assert.equal(matches.valueOf(), ts.valueOf());
-
+          done();
       });
   });
 
-  it('runReminder decorates options with moment if found', () => {
+  it('runReminder decorates options with moment if found', done => {
       var sendReminders,
           matchReminder,
           now = moment(),
@@ -89,21 +91,21 @@ describe('reminders', () => {
       matchReminder = sinon.stub(reminders, 'matchReminder').callsArgWith(1, null, now);
       sendReminders = sinon.stub(reminders, 'sendReminders').callsArgWith(1, null);
 
-      return reminders.runReminder(options, function() {
+      reminders.runReminder(options, function() {
           var moment = sendReminders.getCall(0).args[0].moment;
-
           assert(moment);
           assert.equal(moment.valueOf(), now.valueOf());
+          done();
       });
   });
 
-  it('does not match reminder if in next minute', () => {
+  it('does not match reminder if in next minute', done => {
       var past = moment().subtract(1, 'hour'),
           now = moment();
 
       sinon.stub(reminders, 'getReminderWindow').callsArgWithAsync(1, null, past);
 
-      return reminders.matchReminder({
+      reminders.matchReminder({
           reminder: {
                // generate cron job 1 minute into future
               cron: now.clone().add(1, 'minute').format('m HH * * *')
@@ -111,6 +113,7 @@ describe('reminders', () => {
       }, function(err, matches) {
           assert.equal(err, null);
           assert.equal(matches, false);
+          done();
       });
   });
 
@@ -129,16 +132,17 @@ describe('reminders', () => {
       });
   });
 
-  it('sendReminders calls getClinics', () => {
+  it('sendReminders calls getClinics', done => {
       var getClinics = sinon.stub(reminders, 'getClinics').callsArgWith(1, null, []);
 
-      return reminders.sendReminders({}, function(err) {
+      reminders.sendReminders({}, function(err) {
           assert(getClinics.called);
           assert.equal(err, null);
+          done();
       });
   });
 
-  it('getClinics calls db view', () => {
+  it('getClinics calls db view', done => {
       var db = {
           medic: {
               view: function() {}
@@ -154,7 +158,7 @@ describe('reminders', () => {
           ]
       });
 
-      return reminders.getClinics({
+      reminders.getClinics({
           db: db,
           reminder: {}
       }, function(err, clinics) {
@@ -162,10 +166,11 @@ describe('reminders', () => {
           assert.equal(clinics.length, 1);
           assert.equal(_.first(clinics).id, 'xxx');
           assert(db.medic.view.called);
+          done();
       });
   });
 
-  it('getClinics ignores clinics with matching sent_reminders', () => {
+  it('getClinics ignores clinics with matching sent_reminders', done => {
       var db,
           now = moment().startOf('hour');
 
@@ -217,7 +222,7 @@ describe('reminders', () => {
           ]
       });
 
-      return reminders.getClinics({
+      reminders.getClinics({
           reminder:{
               moment: now,
               form: 'XXX'
@@ -225,13 +230,13 @@ describe('reminders', () => {
           db: db
       }, function(err, clinics) {
           var ids = _.pluck(clinics, 'id');
-
           assert.deepEqual(['xxx', 'yyy', 'yyz'], ids);
           assert.equal(clinics.length, 3);
+          done();
       });
   });
 
-  it('sendReminders calls sendReminder for each clinic', () => {
+  it('sendReminders calls sendReminder for each clinic', done => {
       var clinics,
           getClinics,
           sendReminder;
@@ -248,16 +253,17 @@ describe('reminders', () => {
       getClinics = sinon.stub(reminders, 'getClinics').callsArgWith(1, null, clinics);
       sendReminder = sinon.stub(reminders, 'sendReminder').callsArgWithAsync(1, null);
 
-      return reminders.sendReminders({}, function() {
+      reminders.sendReminders({}, function() {
           assert.equal(sendReminder.callCount, 2);
+          done();
       });
   });
 
-  it('sendReminder saves doc with added task to clinic', () => {
+  it('sendReminder saves doc with added task to clinic', done => {
       const db = { medic: { insert: function() {} } };
       const now = moment();
       const saveDoc = sinon.stub(db.medic, 'insert').callsArgWithAsync(1, null);
-      return reminders.sendReminder({
+      reminders.sendReminder({
           clinic: {
               contact: {
                   phone: '+1234'
@@ -283,6 +289,7 @@ describe('reminders', () => {
           assert.equal(message.message, `hi ${year} ${week}`);
           assert.equal(task.form, 'XXX');
           assert.equal(task.ts, now.toISOString());
+          done()
       });
   });
 
@@ -376,7 +383,7 @@ describe('reminders', () => {
       assert.equal(canSend, true);
   });
 
-  it('getReminderWindow returns a day ago when no results from db', () => {
+  it('getReminderWindow returns a day ago when no results from db', done => {
       var db,
           view,
           time = moment().startOf('hour').subtract(1, 'day');
@@ -391,16 +398,17 @@ describe('reminders', () => {
           rows: []
       });
 
-      return reminders.getReminderWindow({
+      reminders.getReminderWindow({
           db: db
       }, function(err, start) {
           assert.equal(err, null);
           assert(start);
           assert.equal(start.valueOf(), time.valueOf());
+          done();
       });
   });
 
-  it('getReminderWindow calls view looking for old events and returns date found', (done) => {
+  it('getReminderWindow calls view looking for old events and returns date found', done => {
       var now = moment();
 
       var db = {
@@ -417,7 +425,7 @@ describe('reminders', () => {
           ]
       });
 
-      return reminders.getReminderWindow({
+      reminders.getReminderWindow({
           reminder: {
               form: 'XXX'
           },
