@@ -80,6 +80,8 @@ const loadTranslations = () => {
       return;
     }
     result.rows.forEach(row => {
+      // If the field generic does not exist then we assume that the translation document 
+      // has not been converted to the new format so we will use the field values
       const values = row.doc.generic ? Object.assign(row.doc.generic, row.doc.custom || {}) : row.doc.values;
       translationCache[row.doc.code] = translationUtils.loadTranslations(values);
     });
