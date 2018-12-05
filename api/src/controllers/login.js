@@ -45,29 +45,18 @@ const safePath = requested => {
   return parsed.path + (parsed.hash || '');
 };
 
-const getLoginTemplate = callback => {
+const getLoginTemplate = () => {
   if (loginTemplate) {
-    return callback(null, loginTemplate);
+    return Promise.resolve(loginTemplate);
   }
-  fs.readFile(
-    path.join(__dirname, '..', 'templates', 'login', 'index.html'),
-    { encoding: 'utf-8' },
-    (err, data) => {
-      if (err) {
-        return callback(err);
-      }
-      loginTemplate = _.template(data);
-      callback(null, loginTemplate);
-    }
-  );
+  const filepath = path.join(__dirname, '..', 'templates', 'login', 'index.html');
+  return promisify(fs.readFile)(filepath, { encoding: 'utf-8' })
+    .then(data => _.template(data));
 };
 
-const renderLogin = (redirect, branding, callback) => {
-  getLoginTemplate((err, template) => {
-    if (err) {
-      return callback(err);
-    }
-    const body = template({
+const renderLogin = (redirect, branding) => {
+  return getLoginTemplate().then(template => {
+    return template({
       action: path.join('/', environment.db, 'login'),
       redirect: redirect,
       branding: branding,
@@ -80,7 +69,6 @@ const renderLogin = (redirect, branding, callback) => {
         password: config.translate('Password'),
       },
     });
-    callback(null, body);
   });
 };
 
@@ -161,13 +149,28 @@ const getInlineImage = (data, contentType) => `data:${contentType};base64,${data
 
 const getDefaultBranding = () => {
   const logoPath = path.join(__dirname, '..', 'resources', 'logo', 'medic-logo-light-full.svg');
-  return promisify(fs.readFile)(logoPath).then(logo => {
+  return promisify(fs.readFile)(logoPath, {}).then(logo => {
     const data = Buffer.from(logo).toString('base64');
     return {
       name: 'Medic Mobile',
       logo: getInlineImage(data, 'image/svg+xml')
     };
   });
+};
+
+const getBranding = () => {
+  return db.medic.get('branding', {attachments: true})
+    .then(doc => {
+      const image = doc._attachments[doc.resources.logo];
+      return {
+        name: doc.title,
+        logo: getInlineImage(image.data, image.content_type)
+      };
+    })
+    .catch(err => {
+      logger.warn('Could not find branding doc on CouchDB: %o', err);
+      return getDefaultBranding();
+    });
 };
 
 module.exports = {
@@ -182,26 +185,13 @@ module.exports = {
         res.redirect(redirect);
       })
       .catch(() => {
-        return db.medic.get('branding', {attachments: true}).then(doc => {
-          const image = doc._attachments[doc.resources.logo];
-          return {
-            name: doc.title,
-            logo: getInlineImage(image.data, image.content_type)
-          }; 
-        })
-        .catch(err => {
-          logger.warn('Could not find branding doc on CouchDB: %o', err);
-          return getDefaultBranding();
-        })
-        .then(branding => {
-          renderLogin(redirect, branding, (err, body) => {
-            if (err) {
-              logger.error('Could not find login page');
-              throw err;
-            }
-            res.send(body);
+        return getBranding()
+          .then(branding => renderLogin(redirect, branding))
+          .then(body => res.send(body))
+          .catch(err => {
+            logger.error('Could not find login page');
+            throw err;
           });
-        });
       });
   },
   post: (req, res) => {
