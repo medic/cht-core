@@ -180,7 +180,7 @@ describe('update_scheduled_reports', () => {
       });
     });
 
-    it('remove duplicates and replace with latest doc', done => {
+    it('remove duplicates and replace with latest doc', () => {
       sinon.stub(db.medic, 'view').callsArgWith(3, null, {
         // ascending records
         rows: [
@@ -228,7 +228,7 @@ describe('update_scheduled_reports', () => {
           reported_date: 200,
         },
       };
-      transition.onMatch(change).then(changed => {
+      return transition.onMatch(change).then(changed => {
         assert.equal(changed, true);
         assert.equal(bulkSave.callCount, 1);
         assert.equal(bulkSave.args[0][0].length, 2);
@@ -242,7 +242,6 @@ describe('update_scheduled_reports', () => {
             assert.equal(doc._deleted, true);
           }
         });
-        done();
       });
     });
   });

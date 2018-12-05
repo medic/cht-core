@@ -134,7 +134,6 @@ describe('patient registration', () => {
       sinon.stub(utils, 'getClinicPhone').returns('somephone');
       sinon.stub(utils, 'getForm').returns({});
       assert(transition.filter(doc));
-
   });
 
   it('is id only', () => {
@@ -148,7 +147,6 @@ describe('patient registration', () => {
       assert.equal(transition.isIdOnly({
           getid: 'x'
       }), true);
-
   });
 
   it('setExpectedBirthDate sets lmp_date and expected_date to null when lmp 0', () => {
@@ -156,7 +154,6 @@ describe('patient registration', () => {
       transition.setExpectedBirthDate(doc);
       assert.equal(doc.lmp_date, null);
       assert.equal(doc.expected_date, null);
-
   });
 
   it('setExpectedBirthDate sets lmp_date and expected_date correctly for lmp: 10', () => {
@@ -168,8 +165,6 @@ describe('patient registration', () => {
       assert(doc.lmp_date);
       assert.equal(doc.lmp_date, start.clone().subtract(10, 'weeks').toISOString());
       assert.equal(doc.expected_date, start.clone().add(30, 'weeks').toISOString());
-
-
   });
 
   it('valid adds lmp_date and patient_id', () => {
@@ -191,12 +186,11 @@ describe('patient registration', () => {
           }
       };
 
-      transition.onMatch({ doc: doc }).then(function(changed) {
+      return transition.onMatch({ doc: doc }).then(function(changed) {
           assert.equal(changed, true);
           assert.equal(doc.lmp_date, start.toISOString());
           assert(doc.patient_id);
           assert.equal(doc.tasks, undefined);
-
       });
   });
 
@@ -213,11 +207,10 @@ describe('patient registration', () => {
           }
       };
 
-      transition.onMatch({ doc: doc }).then(function(changed) {
+      return transition.onMatch({ doc: doc }).then(function(changed) {
           assert.equal(changed, true);
           assert.equal(doc.errors.length, 1);
           assert.equal(doc.errors[0].message, 'messages.generic.registration_not_found');
-
       });
   });
 
@@ -234,10 +227,9 @@ describe('patient registration', () => {
           }
       };
 
-      transition.onMatch({ doc: doc }).then(function(changed) {
+      return transition.onMatch({ doc: doc }).then(function(changed) {
           assert.equal(changed, true);
           assert(!doc.errors);
-
       });
   });
 
@@ -259,12 +251,11 @@ describe('patient registration', () => {
           }
       };
 
-      transition.onMatch({ doc: doc }).then(function(changed) {
+      return transition.onMatch({ doc: doc }).then(function(changed) {
           assert.equal(changed, true);
           assert.equal(doc.lmp_date, null);
           assert(doc.patient_id);
           assert.equal(doc.tasks, undefined);
-
       });
   });
 
@@ -286,12 +277,10 @@ describe('patient registration', () => {
           getid: 'x'
       };
 
-      transition.onMatch({ doc: doc }).then(function(changed) {
+      return transition.onMatch({ doc: doc }).then(function(changed) {
           assert.equal(changed, true);
           assert.equal(doc.lmp_date, undefined);
           assert(doc.patient_id);
-
-
       });
   });
 
@@ -310,12 +299,11 @@ describe('patient registration', () => {
           getid: 'x'
       };
 
-      transition.onMatch({ doc: doc }).then(function(changed) {
+      return transition.onMatch({ doc: doc }).then(function(changed) {
           assert.equal(changed, true);
           assert.equal(doc.patient_id, undefined);
           assert(doc.tasks);
           assert.equal(getMessage(doc), 'Invalid patient name.');
-
       });
   });
 
@@ -330,12 +318,10 @@ describe('patient registration', () => {
           }
       };
 
-      transition.onMatch({ doc: doc }).then(function(changed) {
+      return transition.onMatch({ doc: doc }).then(function(changed) {
           assert.equal(changed, true);
           assert.equal(doc.patient_id, undefined);
           assert.equal(getMessage(doc), 'Invalid patient name.');
-
-
       });
   });
 
@@ -375,14 +361,19 @@ describe('patient registration', () => {
       });
   });
 
-  it('mismatched form returns false', () => {
+  it('mismatched form returns false', done => {
       const doc = {
           form: 'x',
           type: 'data_record'
       };
-      return transition.onMatch({ doc: doc }).catch(function() {
-
-      });
+      transition.onMatch({ doc: doc })
+        .then(() => {
+          done(new Error('Error should have been thrown'));
+        })
+        .catch(() => {
+          // expected
+          done();
+        });
   });
 
   it('missing all fields returns validation errors', () => {
