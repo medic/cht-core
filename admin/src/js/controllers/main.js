@@ -3,13 +3,20 @@ angular.module('controllers').controller('MainCtrl',
     $log,
     $translate,
     $window,
-    Auth
+    Auth,
+    $scope,
+    Location
   ) {
     'ngInject';
     $translate.use('en');
-    Auth('can_configure').catch(function() {
+    $scope.authorized = false;
+    Auth('can_configure')
+    .then(function() {
+      $scope.authorized = true;
+    })
+    .catch(function() {
       $log.error('Insufficient permissions. Must be either "admin" or "nationalAdmin".');
-      $window.location.href = '../../../login';
+      $window.location.href = Location.path;
     });
   }
 );
