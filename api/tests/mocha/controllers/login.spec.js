@@ -148,10 +148,11 @@ describe('login controller', () => {
       });
     });
 
-    it ('when branding doc missing when not logged in send login page', () => {
+    it('when branding doc missing when not logged in send login page', () => {
       const getUserCtx = sinon.stub(auth, 'getUserCtx').rejects('not logged in');
       const getDoc = sinon.stub(db, 'get').rejects({ error: 'not_found', docId: 'branding'});
       const send = sinon.stub(res, 'send');
+      const readFile = sinon.stub(fs, 'readFile').callsArgWith(2, null, 'LOGIN PAGE GOES HERE. {{translations.login}}');
       sinon.stub(config, 'translate').returns('TRANSLATED VALUE.');
       return controller.get(req, res).then(() => {
         chai.expect(getUserCtx.callCount).to.equal(1);
