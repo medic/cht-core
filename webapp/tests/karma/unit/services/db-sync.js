@@ -276,6 +276,11 @@ describe('DBSync service', () => {
       const actual = filterFunction({ _id: 'branding' });
       expect(actual).to.equal(false);
     });
+
+    it('does not replicate the partners doc', () => {
+      const actual = filterFunction({ _id: 'partners' });
+      expect(actual).to.equal(false);
+    });
   });
 
 });

@@ -160,6 +160,7 @@ const deleteAll = (except = []) => {
     'migration-log',
     'resources',
     'branding',
+    'partners',
     'settings',
     /^_design/
   );
