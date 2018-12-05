@@ -289,7 +289,7 @@ describe('reminders', () => {
           assert.equal(message.message, `hi ${year} ${week}`);
           assert.equal(task.form, 'XXX');
           assert.equal(task.ts, now.toISOString());
-          done()
+          done();
       });
   });
 
