@@ -16,7 +16,6 @@ env:
   matrix:
     - TEST_SUITE=standard NODE_VERSION=8 USE_COUCHDB=false
     - TEST_SUITE=normal NODE_VERSION=8 USE_COUCHDB=true
-    - TEST_SUITE=normal NODE_VERSION=10 USE_COUCHDB=true
     - TEST_SUITE=performance NODE_VERSION=8 USE_COUCHDB=true
   global:
     - COUCH_URL=http://admin:pass@localhost:5984/medic
