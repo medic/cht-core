@@ -131,10 +131,6 @@ angular
       })
       .then(purgeCount => {
         $log.info(`Purge complete, purged ${purgeCount} documents`);
-        if (purgeCount) {
-          $log.info('Started background compaction');
-          DB().compact();
-        }
         return purgeCount;
       })
       .catch(err => {
