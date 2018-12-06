@@ -12,11 +12,10 @@ services:
   - docker
 
 env:
-#  matrix:
-#    - TEST_SUITE=standard NODE_VERSION=8 USE_COUCHDB=false
-#    - TEST_SUITE=normal NODE_VERSION=8 USE_COUCHDB=true
-#    - TEST_SUITE=normal NODE_VERSION=10 USE_COUCHDB=true
-#    - TEST_SUITE=performance NODE_VERSION=8 USE_COUCHDB=true
+  matrix:
+    - USE_COUCHDB=true TEST_SUITE=integration NODE_VERSION=8 
+    - USE_COUCHDB=true TEST_SUITE=integration NODE_VERSION=10
+    - USE_COUCHDB=true TEST_SUITE=performance NODE_VERSION=8
   global:
     - COUCH_URL=http://admin:pass@localhost:5984/medic
     - COUCH_NODE_NAME=nonode@nohost
@@ -31,28 +30,25 @@ env:
 before_install:
   - export PATH=$PATH:$HOME/.local/bin
   - export PATH=$HOME/.npm/bin:$PATH
+  - ./scripts/travis/couch-start
 
 install: nvm install $NODE_VERSION
 
 before_script:
   - mkdir tests/logs
   - nvm use $NODE_VERSION
+  - ./scripts/travis/couch-config
 
-#script:
-#  - |
-#    if [[ "$TEST_SUITE" = 'normal' ]]; then
-#      node --stack_size=10000 `which grunt` ci-unit &&
-#      node --stack_size=10000 `which grunt` ci-integration-e2e
-#    elif [[ "$TEST_SUITE" = 'performance' ]]; then
-#      node --stack_size=10000 `which grunt` ci-performance
-#    elif [[ "$TEST_SUITE" = 'standard' ]]; then
-#      cd config/standard &&
-#      npm ci &&
-#      npm run travis
-#    else
-#      echo "ERROR No or unknown value for TEST_SUITE env var ('${TEST_SUITE}')."
-#      exit 1
-#    fi
+script:
+  - |
+    if [[ "$TEST_SUITE" = 'integration' ]]; then
+      node --stack_size=10000 `which grunt` ci-integration-e2e
+    elif [[ "$TEST_SUITE" = 'performance' ]]; then
+      node --stack_size=10000 `which grunt` ci-performance
+    else
+      echo "ERROR No or unknown value for TEST_SUITE env var ('${TEST_SUITE}')."
+      exit 1
+    fi
 
 #jobs:
 #  include:
@@ -61,31 +57,25 @@ before_script:
 #      script: node --stack_size=10000 `which grunt` publish
 #      env: NODE_VERSION=8 PUBLISH_TO=horti
 
+stages:
+  - compile
+  - test
+  - publish
+
+
+
 jobs:
   include:
-
-    - stage: 'Lint, unit test, and build'
+    - stage: compile
       env: NODE_VERSION=10
       before_script: ./scripts/travis/npm-init
       script:
         - node --stack_size=10000 `which grunt` ci-build  # build the app
         - node --stack_size=10000 `which grunt` ci-unit   # run static analysis and unit tests
         - cd config/standard && npm ci && npm run travis  # run standard config tests
-
-    - stage: 'Integration'
-      env:
-        - NODE_VERSION=8
-        - NODE_VERSION=10
-      before_install: /scripts/travis/couch-start
-      before_script: ./scripts/travis/couch-config
-      script:
-        - node --stack_size=10000 `which grunt` ci-integration-e2e
-      script:
-        - node --stack_size=10000 `which grunt` ci-performance
-
-    - stage: 'Publish'
+    - stage: publish
       if: type != pull_request
-      env: NODE_VERSION=8
+      env: NODE_VERSION=10
       script: node --stack_size=10000 `which grunt` publish
 
 #after_failure:
