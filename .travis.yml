@@ -37,6 +37,7 @@ install: nvm install $NODE_VERSION
 before_script:
   - mkdir tests/logs
   - nvm use $NODE_VERSION
+  - npm install -g grunt-cli
   - ./scripts/travis/couch-config
 
 script:
@@ -61,8 +62,6 @@ stages:
   - compile
   - test
   - publish
-
-
 
 jobs:
   include:
