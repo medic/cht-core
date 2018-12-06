@@ -26,7 +26,7 @@ describe('FormatDataRecord service', () => {
 
   afterEach(() => sinon.restore());
 
-  it('generates cleared messages', done => {
+  it('errors messages when they fail to transate', done => {
     const doc = {
       from: '+123456',
       scheduled_tasks: [
@@ -48,7 +48,7 @@ describe('FormatDataRecord service', () => {
         chai.expect(row.messages.length).to.equal(1);
         const message = row.messages[0];
         chai.expect(message.to).to.equal('+123456');
-        chai.expect(message.message).to.equal('some.message');
+        chai.expect(message.error).to.equal('messages.errors.message.empty');
         done();
       })
       .catch(done);
