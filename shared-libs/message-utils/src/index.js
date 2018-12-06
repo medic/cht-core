@@ -229,7 +229,7 @@ exports.generate = function(config, translate, doc, content, recipient, extraCon
     result.error = 'messages.errors.message.empty';
     return [ result ];
   }
-  
+
   var parsed = gsm(message);
   var max = config.multipart_sms_limit || 10;
 
