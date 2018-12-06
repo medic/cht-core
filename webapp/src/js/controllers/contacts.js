@@ -448,8 +448,8 @@ var _ = require('underscore'),
           }
 
           // Invalidate the parent to handle changing primary contacts
-          if (change.doc.parent) {
-            invalidateParents(change.doc.parent._id);
+          if (change.doc.type === 'person' && change.doc.parent) {
+            liveList.invalidateCache(change.doc.parent._id);
           }
         }
 
