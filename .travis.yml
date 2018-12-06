@@ -65,6 +65,7 @@ jobs:
   include:
 
     - stage: 'Lint, unit test, and build'
+      env: NODE_VERSION=10
       before_script: ./scripts/travis/npm-init
       script:
         - node --stack_size=10000 `which grunt` ci-build  # build the app
@@ -72,6 +73,9 @@ jobs:
         - cd config/standard && npm ci && npm run travis  # run standard config tests
 
     - stage: 'Integration'
+      env:
+        - NODE_VERSION=8
+        - NODE_VERSION=10
       before_install: /scripts/travis/couch-start
       before_script: ./scripts/travis/couch-config
       script:
@@ -81,8 +85,8 @@ jobs:
 
     - stage: 'Publish'
       if: type != pull_request
+      env: NODE_VERSION=8
       script: node --stack_size=10000 `which grunt` publish
-      env: NODE_VERSION=8 PUBLISH_TO=horti
 
 #after_failure:
 #  - pip install --user awscli
