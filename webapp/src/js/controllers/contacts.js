@@ -76,7 +76,7 @@ var _ = require('underscore'),
 
       if (additionalListItem) {
         if (options.skip) {
-          options.skip -= 1;	
+          options.skip -= 1;
         } else {
           options.limit -= 1;
         }
@@ -441,8 +441,15 @@ var _ = require('underscore'),
 
         if (change.doc) {
           liveList.invalidateCache(change.doc._id);
+
+          // Invalidate the contact for changing reports with visited_contact_uuid
           if (change.doc.fields) {
             liveList.invalidateCache(change.doc.fields.visited_contact_uuid);
+          }
+
+          // Invalidate the parent to handle changing primary contacts
+          if (change.doc.parent) {
+            invalidateParents(change.doc.parent._id);
           }
         }
 

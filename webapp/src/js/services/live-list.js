@@ -444,12 +444,11 @@ angular.module('inboxServices').factory('LiveList',
 
     function _setSelected(listName, _id) {
       const idx = indexes[listName],
-            list = idx.list,
             previous = idx.selected;
 
       idx.selected = _id;
 
-      if (!list) {
+      if (!idx.list) {
         return;
       }
 
