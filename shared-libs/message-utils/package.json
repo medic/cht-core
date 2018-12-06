@@ -1,7 +1,6 @@
 {
-  "name": "@shared-libs/message-utils",
+  "name": "@medic/message-utils",
   "version": "1.0.0",
-  "private": true,
   "main": "src/index.js",
   "scripts": {
     "test": "mocha ./test"

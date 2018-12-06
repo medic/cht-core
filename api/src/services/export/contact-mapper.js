@@ -1,5 +1,5 @@
 const db = require('../../db-pouch'),
-      search = require('@shared-libs/search')(Promise, db.medic);
+      search = require('@medic/search')(Promise, db.medic);
 
 module.exports = {
   getDocIds: (options, filters) => {

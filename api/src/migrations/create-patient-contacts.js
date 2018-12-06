@@ -3,7 +3,7 @@ var _ = require('underscore'),
   db = require('../db-nano'),
   logger = require('../logger'),
   async = require('async'),
-  registrationUtils = require('@shared-libs/registration-utils'),
+  registrationUtils = require('@medic/registration-utils'),
   settingsService = require('../services/settings');
 
 var BATCH_SIZE = 100;

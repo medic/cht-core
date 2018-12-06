@@ -2,7 +2,7 @@ const request = require('request');
 
 const db = require('./src/db-pouch'),
   logger = require('./src/lib/logger'),
-  serverChecks = require('@shared-libs/server-checks');
+  serverChecks = require('@medic/server-checks');
 
 if (process.env.TEST_ENV) {
   logger.info('TEST_ENV is set, server does not run in test mode.');

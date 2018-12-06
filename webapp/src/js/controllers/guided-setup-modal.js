@@ -1,4 +1,4 @@
-var phoneNumber = require('@shared-libs/phone-number'),
+var phoneNumber = require('@medic/phone-number'),
     countries = require('../modules/countries');
 
 // TODO convert this controller to use angular more and jquery less

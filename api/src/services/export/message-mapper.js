@@ -2,8 +2,8 @@ const _ = require('underscore'),
       moment = require('moment'),
       db = require('../../db-pouch'),
       config = require('../../config'),
-      messageUtils = require('@shared-libs/message-utils'),
-      registrationUtils = require('@shared-libs/registration-utils');
+      messageUtils = require('@medic/message-utils'),
+      registrationUtils = require('@medic/registration-utils');
 
 const normalizeResponse = doc => {
   return {

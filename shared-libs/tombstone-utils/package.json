@@ -1,5 +1,5 @@
 {
-  "name": "@shared-libs/tombstone-utils",
+  "name": "@medic/tombstone-utils",
   "version": "1.0.0",
   "description": "Provides helper function that generate and manage doc tombstones, to be used in _changes handler",
   "main": "src/tombstone-utils.js",
@@ -8,7 +8,6 @@
   },
   "author": "",
   "license": "Apache-2.0",
-  "private": true,
   "devDependencies": {
     "chai": "^4.2.0",
     "mocha": "^5.2.0",

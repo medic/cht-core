@@ -1,7 +1,6 @@
 {
-  "name": "@shared-libs/phone-number",
+  "name": "@medic/phone-number",
   "version": "1.0.0",
-  "private": true,
   "description": "Our phone number validation and formatting utilities",
   "main": "src/phone-number.js",
   "author": "",

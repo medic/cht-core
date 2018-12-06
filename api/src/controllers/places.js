@@ -2,7 +2,7 @@ const _ = require('underscore'),
       people = require('./people'),
       utils = require('./utils'),
       db = require('../db-pouch'),
-      lineage = require('@shared-libs/lineage')(Promise, db.medic),
+      lineage = require('@medic/lineage')(Promise, db.medic),
       PLACE_EDITABLE_FIELDS = ['name', 'parent', 'contact', 'place_id'],
       PLACE_TYPES = ['national_office', 'district_hospital', 'health_center', 'clinic'];
 

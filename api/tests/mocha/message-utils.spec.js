@@ -1,6 +1,6 @@
 const chai = require('chai'),
       sinon = require('sinon'),
-      taskUtils = require('@shared-libs/task-utils'),
+      taskUtils = require('@medic/task-utils'),
       db = require('../../src/db-pouch'),
       controller = require('../../src/message-utils');
 

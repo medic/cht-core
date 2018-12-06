@@ -1,4 +1,4 @@
-var translationUtils = require('@shared-libs/translation-utils');
+var translationUtils = require('@medic/translation-utils');
 
 var DEFAULT_LOCALE = 'en',
     DOC_ID_PREFIX = 'messages-';

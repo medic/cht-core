@@ -1,5 +1,5 @@
 var _ = require('underscore'),
-    taskUtils = require('@shared-libs/task-utils');
+    taskUtils = require('@medic/task-utils');
 
 (function () {
 

@@ -6,8 +6,8 @@ const _ = require('underscore'),
   settingsService = require('./services/settings'),
   translationCache = {},
   logger = require('./logger'),
-  viewMapUtils = require('@shared-libs/view-map-utils'),
-  translationUtils = require('@shared-libs/translation-utils');
+  viewMapUtils = require('@medic/view-map-utils'),
+  translationUtils = require('@medic/translation-utils');
 
 let settings = {};
 

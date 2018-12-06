@@ -1,5 +1,5 @@
 var _ = require('underscore'),
-    phoneNumber = require('@shared-libs/phone-number'),
+    phoneNumber = require('@medic/phone-number'),
     format = require('../modules/format');
 
 angular.module('inboxControllers').controller('SendMessageCtrl',

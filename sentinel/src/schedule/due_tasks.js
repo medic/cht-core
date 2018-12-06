@@ -7,8 +7,8 @@ const async = require('async'),
   date = require('../date'),
   config = require('../config'),
   dbPouch = require('../db-pouch'),
-  lineage = require('@shared-libs/lineage')(Promise, dbPouch.medic),
-  messageUtils = require('@shared-libs/message-utils');
+  lineage = require('@medic/lineage')(Promise, dbPouch.medic),
+  messageUtils = require('@medic/message-utils');
 
 const getPatient = (db, patientShortcodeId, callback) => {
   utils.getPatientContactUuid(db, patientShortcodeId, (err, uuid) => {

@@ -3,7 +3,7 @@ var db = require('../../src/db-nano'),
     assert = require('chai').assert,
     utils = require('../../src/lib/utils'),
     config = require('../../src/config'),
-    registrationUtils = require('@shared-libs/registration-utils');
+    registrationUtils = require('@medic/registration-utils');
 
 describe('utils', () => {
     afterEach(() => sinon.restore());
