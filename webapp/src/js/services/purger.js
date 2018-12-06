@@ -50,11 +50,7 @@ angular
     };
 
     const purgeContact = (fn, {contact, reports}, purgeCount) => {
-      console.log(contact, reports, purgeCount);
-
       const purgeResults = fn(contact, reports);
-
-      console.log(purgeResults);
 
       if (!purgeResults || !purgeResults.length) {
         return purgeCount;
