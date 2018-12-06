@@ -2,7 +2,7 @@ const _ = require('underscore'),
       db = require('../db-pouch'),
       utils = require('./utils'),
       places = require('./places'),
-      lineage = require('@shared-libs/lineage')(Promise, db.medic);
+      lineage = require('@medic/lineage')(Promise, db.medic);
 
 const getPerson = id => {
   return lineage.fetchHydratedDoc(id)

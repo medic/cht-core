@@ -3,8 +3,8 @@ const _ = require('underscore'),
   db = require('../db-nano'),
   moment = require('moment'),
   config = require('../config'),
-  taskUtils = require('@shared-libs/task-utils'),
-  registrationUtils = require('@shared-libs/registration-utils'),
+  taskUtils = require('@medic/task-utils'),
+  registrationUtils = require('@medic/registration-utils'),
   logger = require('./logger');
 
 /*

@@ -1,6 +1,6 @@
 const chai = require('chai');
 const lineageFactory = require('../src/lineage');
-const memdownMedic = require('@shared-libs/memdown-medic');
+const memdownMedic = require('@medic/memdown');
 const cloneDeep = require('lodash/cloneDeep');
 
 let db;

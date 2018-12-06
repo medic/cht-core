@@ -1,8 +1,8 @@
-var _ = require('underscore'),
-  phoneNumber = require('@shared-libs/phone-number'),
+const _ = require('underscore'),
+  phoneNumber = require('@medic/phone-number'),
+  messageUtils = require('@medic/message-utils'),
   utils = require('./utils'),
-  config = require('../config');
-const messageUtils = require('@shared-libs/message-utils'),
+  config = require('../config'),
   history = require('./history'),
   logger = require('./logger');
 

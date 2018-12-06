@@ -3,7 +3,7 @@
  * path.
  *
  * USAGE
- * 	memdownMedic = require('memdown-medic');
+ * 	memdownMedic = require('@medic/memdown');
  * 	memdownMedic('.')
  * 	  .then(db => {
  * 	    db.allDocs()

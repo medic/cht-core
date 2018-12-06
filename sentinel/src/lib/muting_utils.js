@@ -1,6 +1,6 @@
 const _ = require('underscore'),
       db = require('../db-pouch'),
-      lineage = require('@shared-libs/lineage')(Promise, db.medic),
+      lineage = require('@medic/lineage')(Promise, db.medic),
       utils = require('./utils'),
       moment = require('moment'),
       infodoc = require('./infodoc');

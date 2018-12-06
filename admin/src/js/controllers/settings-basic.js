@@ -1,4 +1,4 @@
-var phoneNumber = require('@shared-libs/phone-number'),
+var phoneNumber = require('@medic/phone-number'),
     countries = require('../modules/countries');
 
 angular.module('controllers').controller('SettingsBasicCtrl',

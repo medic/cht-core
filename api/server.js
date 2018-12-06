@@ -1,5 +1,5 @@
 const environment = require('./src/environment'),
-  serverChecks = require('@shared-libs/server-checks'),
+  serverChecks = require('@medic/server-checks'),
   logger = require('./src/logger');
 
 process.on('unhandledRejection', reason => {

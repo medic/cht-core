@@ -7,10 +7,10 @@
     "npm": ">=6.4.1"
   },
   "dependencies": {
-    "@shared-libs/lineage": "file:../shared-libs/lineage",
-    "@shared-libs/message-utils": "file:../shared-libs/message-utils",
-    "@shared-libs/phone-number": "file:../shared-libs/phone-number",
-    "@shared-libs/registration-utils": "file:../shared-libs/registration-utils",
+    "@medic/lineage": "^1.0.0",
+    "@medic/message-utils": "^1.0.0",
+    "@medic/phone-number": "^1.0.0",
+    "@medic/registration-utils": "^1.0.0",
     "angular": "^1.7.5",
     "angular-cookie": "^4.1.0",
     "angular-pouchdb": "^5.0.2",
@@ -22,7 +22,6 @@
     "bikram-sambat": "^1.5.0",
     "bootstrap": "^3.3.7",
     "font-awesome": "^4.7.0",
-    "google-libphonenumber": "^3.2.1",
     "gsm": "^0.1.4",
     "jquery": "3.2.x",
     "messageformat": "^2.0.4",

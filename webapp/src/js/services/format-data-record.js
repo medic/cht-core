@@ -1,7 +1,7 @@
 var _ = require('underscore'),
-  messages = require('@shared-libs/message-utils'),
-  lineageFactory = require('@shared-libs/lineage'),
-  registrationUtils = require('@shared-libs/registration-utils');
+  messages = require('@medic/message-utils'),
+  lineageFactory = require('@medic/lineage'),
+  registrationUtils = require('@medic/registration-utils');
 
 angular
   .module('inboxServices')

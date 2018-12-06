@@ -1,7 +1,7 @@
 const _ = require('underscore'),
   db = require('./db-pouch'),
   logger = require('./lib/logger'),
-  translationUtils = require('@shared-libs/translation-utils'),
+  translationUtils = require('@medic/translation-utils'),
   translations = {};
 
 const DEFAULT_CONFIG = {

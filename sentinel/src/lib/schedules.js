@@ -1,12 +1,12 @@
-var _ = require('underscore'),
+const _ = require('underscore'),
     config = require('../config'),
     date = require('../date'),
     moment = require('moment'),
     utils = require('../lib/utils'),
     logger = require('../lib/logger'),
-    messages = require('../lib/messages');
-const messageUtils = require('@shared-libs/message-utils'),
-      mutingUtils = require('../lib/muting_utils');
+    messages = require('../lib/messages'),
+    messageUtils = require('@medic/message-utils'),
+    mutingUtils = require('../lib/muting_utils');
 
 module.exports = {
     // return [hour, minute, timezone]

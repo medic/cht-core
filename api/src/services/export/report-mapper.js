@@ -2,7 +2,7 @@ const _ = require('underscore'),
       objectPath = require('object-path'),
       moment = require('moment'),
       db = require('../../db-pouch'),
-      search = require('@shared-libs/search')(Promise, db.medic);
+      search = require('@medic/search')(Promise, db.medic);
 
 /**
  * Flattens a given object into an object where the keys are dot-notation

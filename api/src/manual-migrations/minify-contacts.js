@@ -1,5 +1,5 @@
 const db = require('../db-pouch').medic,
-      lineage = require('@shared-libs/lineage')(Promise, db);
+      lineage = require('@medic/lineage')(Promise, db);
 
 module.exports = doc => {
   if ((doc.contact && doc.contact.type) || (doc.parent && doc.parent.type)) {

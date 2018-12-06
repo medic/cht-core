@@ -3,7 +3,7 @@ const _ = require('underscore'),
   transitionUtils = require('./utils'),
   db = require('../db-nano'),
   dbPouch = require('../db-pouch'),
-  lineage = require('@shared-libs/lineage')(Promise, dbPouch.medic),
+  lineage = require('@medic/lineage')(Promise, dbPouch.medic),
   NAME = 'update_clinics';
 
 const associateContact = (doc, contact, callback) => {

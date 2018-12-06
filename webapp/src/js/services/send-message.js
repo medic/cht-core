@@ -1,7 +1,7 @@
 var _ = require('underscore'),
   uuid = require('uuid/v4'),
-  taskUtils = require('@shared-libs/task-utils'),
-  phoneNumber = require('@shared-libs/phone-number');
+  taskUtils = require('@medic/task-utils'),
+  phoneNumber = require('@medic/phone-number');
 
 angular
   .module('inboxServices')
