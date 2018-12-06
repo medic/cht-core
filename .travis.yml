@@ -2,8 +2,7 @@
 # is actually compatible with webdriver-manager.
 language: java
 sudo: true
-jdk:
-  - oraclejdk8
+jdk: oraclejdk8
 
 addons:
   chrome: 'stable'
@@ -13,11 +12,11 @@ services:
   - docker
 
 env:
-  matrix:
-    - TEST_SUITE=standard NODE_VERSION=8 USE_COUCHDB=false
-    - TEST_SUITE=normal NODE_VERSION=8 USE_COUCHDB=true
-    - TEST_SUITE=normal NODE_VERSION=10 USE_COUCHDB=true
-    - TEST_SUITE=performance NODE_VERSION=8 USE_COUCHDB=true
+#  matrix:
+#    - TEST_SUITE=standard NODE_VERSION=8 USE_COUCHDB=false
+#    - TEST_SUITE=normal NODE_VERSION=8 USE_COUCHDB=true
+#    - TEST_SUITE=normal NODE_VERSION=10 USE_COUCHDB=true
+#    - TEST_SUITE=performance NODE_VERSION=8 USE_COUCHDB=true
   global:
     - COUCH_URL=http://admin:pass@localhost:5984/medic
     - COUCH_NODE_NAME=nonode@nohost
@@ -25,13 +24,11 @@ env:
     - secure: TR1UN2r3beDtIF+VJpLF2ocTv/uxuOKyVWWhzMLre0ZrrBaIP1sLZV7Z4S/km5M92EfPgGW87BogdWE/R+kTTRiPTCbFB/U/3jFKxEZRXKST66YK5JMwsYqb17UtZtFdqEtO9GGbAVzXwpZfMMoXvlKNrors2W32xBm2uIkOSpI=
     - secure: Q8RH65NClRBryxfvlwHQjeR4wGs+GXeUBRIBd1kspAM7Uv+5K3iP+q/TPCIrTL/OpJ5tyCYfeq5hKIFFwrY3JikNXnyHICOjXPE6zSLUm8E8NHaP/orPNWjze2x4yDSRCifqzr2ZiXVq9sxlZfNbZ9eyJxpPFTYDSpuN9T5UEE0=
 
-matrix:
-  allow_failures:
-    - env: NODE_VERSION="lts/*" TEST_SUITE=performance
+#matrix:
+#  allow_failures:
+#    - env: NODE_VERSION="lts/*" TEST_SUITE=performance
 
 before_install:
-  - ./scripts/travis/couch-start
-  - pip install --user awscli
   - export PATH=$PATH:$HOME/.local/bin
   - export PATH=$HOME/.npm/bin:$PATH
 
@@ -40,62 +37,84 @@ install: nvm install $NODE_VERSION
 before_script:
   - mkdir tests/logs
   - nvm use $NODE_VERSION
-  - ./scripts/travis/couch-config
-  - ./scripts/travis/npm-init
 
-script:
-  - |
-    if [[ "$TEST_SUITE" = 'normal' ]]; then
-      node --stack_size=10000 `which grunt` ci-unit &&
-      node --stack_size=10000 `which grunt` ci-integration-e2e
-    elif [[ "$TEST_SUITE" = 'performance' ]]; then
-      node --stack_size=10000 `which grunt` ci-performance
-    elif [[ "$TEST_SUITE" = 'standard' ]]; then
-      cd config/standard &&
-      npm ci &&
-      npm run travis
-    else
-      echo "ERROR No or unknown value for TEST_SUITE env var ('${TEST_SUITE}')."
-      exit 1
-    fi
+#script:
+#  - |
+#    if [[ "$TEST_SUITE" = 'normal' ]]; then
+#      node --stack_size=10000 `which grunt` ci-unit &&
+#      node --stack_size=10000 `which grunt` ci-integration-e2e
+#    elif [[ "$TEST_SUITE" = 'performance' ]]; then
+#      node --stack_size=10000 `which grunt` ci-performance
+#    elif [[ "$TEST_SUITE" = 'standard' ]]; then
+#      cd config/standard &&
+#      npm ci &&
+#      npm run travis
+#    else
+#      echo "ERROR No or unknown value for TEST_SUITE env var ('${TEST_SUITE}')."
+#      exit 1
+#    fi
+
+#jobs:
+#  include:
+#    - if: type != pull_request
+#      stage: 'Publish binaries'
+#      script: node --stack_size=10000 `which grunt` publish
+#      env: NODE_VERSION=8 PUBLISH_TO=horti
 
 jobs:
   include:
-    - if: type != pull_request
-      stage: 'Publish binaries'
+
+    - stage: 'Lint, unit test, and build'
+      before_script: ./scripts/travis/npm-init
+      script:
+        - node --stack_size=10000 `which grunt` ci-build  # build the app
+        - node --stack_size=10000 `which grunt` ci-unit   # run static analysis and unit tests
+        - cd config/standard && npm ci && npm run travis  # run standard config tests
+
+    - stage: 'Integration'
+      before_install: /scripts/travis/couch-start
+      before_script: ./scripts/travis/couch-config
+      script:
+        - node --stack_size=10000 `which grunt` ci-integration-e2e
+      script:
+        - node --stack_size=10000 `which grunt` ci-performance
+
+    - stage: 'Publish'
+      if: type != pull_request
       script: node --stack_size=10000 `which grunt` publish
       env: NODE_VERSION=8 PUBLISH_TO=horti
 
-after_failure:
-  - |
-    (cd tests/logs
-      for log in $(ls *.log); do
-        echo "---------- $log ----------"
-        tail "$log"
-        echo "--------------------------"
-      done
-    )
-
-    [[ "$TRAVIS_BUILD_STAGE_NAME" = "Test" ]] || return
-
-    if [[ "$TRAVIS_PULL_REQUEST" = true ]]; then
-      S3_PATH=s3://medic-e2e/PR_$TRAVIS_PULL_REQUEST
-    else
-      S3_PATH=s3://medic-e2e/BUILD_$TRAVIS_BUILD_NUMBER/JOB_$TRAVIS_JOB_NUMBER
-    fi
-
-    echo "Uploading logs and screenshots to ${S3_PATH}..."
-
-    ./scripts/travis/couch-logs
-
-    aws s3 cp tests/results "$S3_PATH"/test-results --recursive
-    aws s3 cp tests/logs "$S3_PATH"/ --recursive
-
-notifications:
-  slack:
-    rooms:
-      - medic:SdzCLsD56UOr5U8ujzOCMDJd#development
-    template:
-      - "<%{build_url}|%{author}'s build> %{result}. Commit: %{commit_message} (<%{compare_url}|compare>)"
-    on_success: change
-    on_failure: always
+#after_failure:
+#  - pip install --user awscli
+#  - |
+#    (cd tests/logs
+#      for log in $(ls *.log); do
+#        echo "---------- $log ----------"
+#        tail "$log"
+#        echo "--------------------------"
+#      done
+#    )
+#
+#    [[ "$TRAVIS_BUILD_STAGE_NAME" = "Test" ]] || return
+#
+#    if [[ "$TRAVIS_PULL_REQUEST" = true ]]; then
+#      S3_PATH=s3://medic-e2e/PR_$TRAVIS_PULL_REQUEST
+#    else
+#      S3_PATH=s3://medic-e2e/BUILD_$TRAVIS_BUILD_NUMBER/JOB_$TRAVIS_JOB_NUMBER
+#    fi
+#
+#    echo "Uploading logs and screenshots to ${S3_PATH}..."
+#
+#    docker logs couch > tests/logs/couch.log 2>&1
+#
+#    aws s3 cp tests/results "$S3_PATH"/test-results --recursive
+#    aws s3 cp tests/logs "$S3_PATH"/ --recursive
+#
+#notifications:
+#  slack:
+#    rooms:
+#      - medic:SdzCLsD56UOr5U8ujzOCMDJd#development
+#    template:
+#      - "<%{build_url}|%{author}'s build> %{result}. Commit: %{commit_message} (<%{compare_url}|compare>)"
+#    on_success: change
+#    on_failure: always
