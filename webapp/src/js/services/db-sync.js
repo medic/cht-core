@@ -24,6 +24,15 @@ angular
     };
 
     var readOnlyFilter = function(doc) {
+      // Never replicate "purged" documents upwards
+      const keys = Object.keys(doc);
+      if (keys.length === 3 &&
+          keys.includes('_id') &&
+          keys.includes('_rev') &&
+          keys.includes('_deleted')) {
+        return false;
+      }
+
       // don't try to replicate read only docs back to the server
       return (
         READ_ONLY_TYPES.indexOf(doc.type) === -1 &&
@@ -107,7 +116,7 @@ angular
       }
 
       /*
-      Controllers need the status of each directed replication (directedReplicationStatus) and the 
+      Controllers need the status of each directed replication (directedReplicationStatus) and the
       status of the replication as a whole (aggregateReplicationStatus).
       */
       if (!inProgressSync) {

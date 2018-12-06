@@ -20,20 +20,24 @@ var feedback = require('../modules/feedback'),
     $window,
     APP_CONFIG,
     Auth,
+    BrandingImages,
     Changes,
     CheckDate,
     ContactSchema,
     CountMessages,
+    DatabaseConnectionMonitor,
     DB,
     DBSync,
     Debug,
     Enketo,
-    PlaceHierarchy,
     JsonForms,
     Language,
     LiveListConfig,
     Location,
     Modal,
+    PlaceHierarchy,
+    Purger,
+    RecurringProcessManager,
     RulesEngine,
     Select2Search,
     SendMessage,
@@ -49,10 +53,7 @@ var feedback = require('../modules/feedback'),
     UpdateUser,
     UserSettings,
     WealthQuintilesWatcher,
-    XmlForms,
-    RecurringProcessManager,
-    DatabaseConnectionMonitor,
-    ResourceIcons
+    XmlForms
   ) {
     'ngInject';
 
@@ -78,7 +79,7 @@ var feedback = require('../modules/feedback'),
       // Disable debug for everything but localhost
       Debug.set(false);
     }
-    
+
     ResourceIcons.getAppTitle().then(title => {
       document.title = title;
     });
