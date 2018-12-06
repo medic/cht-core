@@ -67,7 +67,9 @@ jobs:
   include:
     - stage: compile
       env: NODE_VERSION=10
-      before_script: ./scripts/travis/npm-init
+      before_script:
+        - ./scripts/travis/npm-init
+        - npm install -g grunt-cli
       script:
         - node --stack_size=10000 `which grunt` ci-build  # build the app
         - node --stack_size=10000 `which grunt` ci-unit   # run static analysis and unit tests
@@ -75,6 +77,7 @@ jobs:
     - stage: publish
       if: type != pull_request
       env: NODE_VERSION=10
+      before_script: npm install -g grunt-cli
       script: node --stack_size=10000 `which grunt` publish
 
 #after_failure:
