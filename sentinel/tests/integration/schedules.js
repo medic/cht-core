@@ -256,7 +256,7 @@ describe('functional schedules', () => {
     sinon.stub(schedules, 'getScheduleConfig').returns({});
     sinon.stub(utils, 'getPatientContactUuid').callsArgWith(2, null, {_id: 'uuid'});
     sinon.stub(utils, 'getRegistrations').callsArgWithAsync(1, null, []);
-    sinon.stub(utils, 'translate').withArgs('thanks', 'en').returns('thanks');
+    sinon.stub(utils, 'translate').withArgs('thanks', 'en').returns('Thanks');
 
     const doc = {
       reported_date: moment().toISOString(),
@@ -275,7 +275,7 @@ describe('functional schedules', () => {
       testMessage(
           getMessage(doc, 0),
           '+5551596',
-          'thanks');
+          'Thanks');
     });
   });
 
