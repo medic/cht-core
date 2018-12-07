@@ -6,7 +6,7 @@ if ! [[ "${USE_COUCHDB-}" = "true" ]]; then
 fi
 
 # start couchdb 2.x docker instance
-docker run -d -p 5984:5984 --name couch couchdb:2
+docker run -d -p 5984:5984 --name couch couchdb:2.2.0
 echo "Starting CouchDB 2.x"
 until nc -z localhost 5984; do sleep 1; done
 echo "CouchDB Started"
