@@ -73,6 +73,10 @@ var feedback = require('../modules/feedback'),
 
     Session.init();
 
+    if (!Session.isOnlineOnly()) {
+      Purger();
+    }
+
     if (window.location.href.indexOf('localhost') !== -1) {
       Debug.set(Debug.get()); // Initialize with cookie
     } else {
