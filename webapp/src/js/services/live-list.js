@@ -452,12 +452,12 @@ angular.module('inboxServices').factory('LiveList',
         return;
       }
 
-      if (idx.dom[_id]) {
-        idx.dom[_id].addClass('selected');
-      }
-      
       if (previous && idx.dom[previous]) {
         idx.dom[previous].removeClass('selected');
+      }
+
+      if (idx.dom[_id]) {
+        idx.dom[_id].addClass('selected');
       }
     }
 

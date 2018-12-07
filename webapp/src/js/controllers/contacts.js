@@ -446,11 +446,6 @@ var _ = require('underscore'),
           if (change.doc.fields) {
             liveList.invalidateCache(change.doc.fields.visited_contact_uuid);
           }
-
-          // Invalidate the parent to handle changing primary contacts
-          if (change.doc.type === 'person' && change.doc.parent) {
-            liveList.invalidateCache(change.doc.parent._id);
-          }
         }
 
         const withIds =
