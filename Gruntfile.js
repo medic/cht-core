@@ -123,6 +123,14 @@ module.exports = function(grunt) {
           },
         ],
       },
+      testing: {
+        files: [
+          {
+            src: 'build/ddocs/medic.json',
+            dest: `${UPLOAD_URL}/_couch/builds-${TRAVIS_BUILD_NUMBER}`,
+          },
+        ],
+      }
     },
     browserify: {
       options: {

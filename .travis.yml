@@ -74,6 +74,7 @@ jobs:
         - node --stack_size=10000 `which grunt` ci-build  # build the app
         - node --stack_size=10000 `which grunt` ci-unit   # run static analysis and unit tests
         - cd config/standard && npm ci && npm run travis  # run standard config tests
+        - node --stack_size=10000 `which grunt` couch-push:testing
     - stage: publish
       if: type != pull_request
       env: NODE_VERSION=10
