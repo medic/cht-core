@@ -72,6 +72,16 @@ module.exports = function(grunt) {
           },
         ],
       },
+      'change-ddoc-id-for-testing': {
+        src: ['build/ddocs/medic.json'],
+        overwrite: true,
+        replacements: [
+          {
+            from: '"_id": "_design/medic"',
+            to: `"_id": "medic:medic:test-${TRAVIS_BUILD_NUMBER}"`,
+          },
+        ],
+      },
     },
     'couch-compile': {
       primary: {
@@ -127,7 +137,7 @@ module.exports = function(grunt) {
         files: [
           {
             src: 'build/ddocs/medic.json',
-            dest: `${UPLOAD_URL}/_couch/builds-${TRAVIS_BUILD_NUMBER}`,
+            dest: `${UPLOAD_URL}/_couch/builds_testing`,
           },
         ],
       }
@@ -1083,6 +1093,11 @@ module.exports = function(grunt) {
   grunt.registerTask('publish', 'Publish the ddoc to the staging server', [
     'replace:change-ddoc-id-for-publish',
     'couch-push:staging',
+  ]);
+
+  grunt.registerTask('publish-for-testing', 'Publish the ddoc to the testing server', [
+    'replace:change-ddoc-id-for-testing',
+    'couch-push:testing',
   ]);
 
   grunt.registerTask('default', 'Build and deploy the webapp for dev', [
