@@ -231,20 +231,8 @@ var feedback = require('../modules/feedback'),
         return;
       }
       if(!fromState.url.includes('edit') && !fromState.url.includes('add')){
-<<<<<<< HEAD
-=======
         return;
       }
-<<<<<<< HEAD
-=======
-      if(fromParams.id === toParams.id){
-        return;
-      }
-      if(fromParams.reportId === toParams.id){
->>>>>>> master
-        return;
-      }
->>>>>>> 31aa6595a8fef3912475f061035c16fe26c40226
       if ($scope.cancelCallback) {
         event.preventDefault();
         $scope.navigationCancel();
