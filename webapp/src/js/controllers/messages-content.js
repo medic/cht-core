@@ -220,8 +220,10 @@ angular.module('inboxControllers').controller('MessagesContentCtrl',
 
     $scope.$on('$destroy', function() {
       changeListener.unsubscribe();
-      $('body').off('focus', '#message-footer textarea');
-      $('body').off('blur', '#message-footer textarea');
+      if (!$state.includes('messages.detail')) {
+        $('body').off('focus', '#message-footer textarea');
+        $('body').off('blur', '#message-footer textarea');
+      }
     });
 
     $('.tooltip').remove();

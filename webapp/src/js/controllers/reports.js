@@ -518,8 +518,10 @@ angular
 
     $scope.$on('$destroy', function() {
       changeListener.unsubscribe();
-      SearchFilters.destroy();
-      LiveList.$reset('reports', 'report-search');
-      $('.inbox').off('click', '#reports-list .content-row');
+      if (!$state.includes('reports')) {
+        SearchFilters.destroy();
+        LiveList.$reset('reports', 'report-search');
+        $('.inbox').off('click', '#reports-list .content-row');
+      }
     });
   });
