@@ -37,8 +37,9 @@ install: nvm install $NODE_VERSION
 before_script:
   - mkdir tests/logs
   - nvm use $NODE_VERSION
-  - npm install -g grunt-cli
   - ./scripts/travis/couch-config
+  - npm install -g horticulturalist
+  - HORTI_BUILDS_SERVER=$UPLOAD_URL/_couch/builds_testing horti --local --install=medic:medic:test-$TRAVIS_BUILD_NUMBER
 
 script:
   - |
