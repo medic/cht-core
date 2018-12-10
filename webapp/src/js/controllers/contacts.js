@@ -237,7 +237,9 @@ var _ = require('underscore'),
               $log.error('Error fetching relevant forms', err);
             }
             var showUnmuteModal = function(formId) {
-              return $scope.selected.doc.muted && !isUnmuteForm(results[4], formId);
+              return $scope.selected.doc &&
+                     $scope.selected.doc.muted &&
+                     !isUnmuteForm(results[4], formId);
             };
             var formSummaries =
               forms &&
