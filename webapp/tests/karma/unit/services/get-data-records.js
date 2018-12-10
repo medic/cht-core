@@ -93,7 +93,7 @@ describe('GetDataRecords service', () => {
         lineage: [ 'b', 'c' ]
       };
       GetSummaries.returns(Promise.resolve([summary]));
-      const options = { hydrateDataRecords: false };
+      const options = { hydrateContactNames: false };
       return service('5', options).then(actual => {
         console.log('actual', actual);
         chai.expect(actual).to.deep.equal(summary);
