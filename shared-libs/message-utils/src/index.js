@@ -225,6 +225,11 @@ exports.generate = function(config, translate, doc, content, recipient, extraCon
   };
 
   var message = exports.template(config, translate, doc, content, extraContext);
+  if (!message || (content.translationKey && message === content.translationKey)) {
+    result.error = 'messages.errors.message.empty';
+    return [ result ];
+  }
+  
   var parsed = gsm(message);
   var max = config.multipart_sms_limit || 10;
 
