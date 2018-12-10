@@ -1,0 +1,23 @@
+<?xml version="1.0"?>
+<h:html xmlns="http://www.w3.org/2002/xforms" xmlns:ev="http://www.w3.org/2001/xml-events" xmlns:h="http://www.w3.org/1999/xhtml" xmlns:jr="http://openrosa.org/javarosa" xmlns:orx="http://openrosa.org/xforms" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+  <h:head>
+    <h:title>Nutrition follow-up (collect)</h:title>
+    <model>
+      <instance>
+        <collect_followup_chw delimiter="#" id="CF_collect" prefix="J1!CF!" version="2018-11-15_16-28">
+          <patient_id/>
+          <meta>
+            <instanceID/>
+          </meta>
+        </collect_followup_chw>
+      </instance>
+      <bind constraint="regex(., '[0-9]{5,13}')" nodeset="/collect_followup_chw/patient_id" required="true()" type="int"/>
+      <bind calculate="concat('uuid:', uuid())" nodeset="/collect_followup_chw/meta/instanceID" readonly="true()" type="string"/>
+    </model>
+  </h:head>
+  <h:body>
+    <input ref="/collect_followup_chw/patient_id">
+      <label>Child ID</label>
+    </input>
+  </h:body>
+</h:html>

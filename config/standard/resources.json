@@ -1,9 +1,10 @@
 {
-   "area": "icon-places-clinic.svg",
+   "area": "icon-places-CHW-area@2x.png",
    "branch": "icon-places-clinic.svg",
    "child": "icon-people-child@2x.png",
    "children": "icon-people-children@2x.png",
    "clinic": "icon-places-clinic.svg",
+   "family": "icon-people-family.svg",
    "follow-up": "icon-followup-general@2x.png",
    "household": "icon-places-household@2x.png",
    "immunization": "icon-healthcare-immunization@2x.png",
@@ -18,7 +19,7 @@
    "pregnancy-4": "icon-people-woman-pregnant@2x.png",
    "risk": "icon-healthcare-warning@2x.png",
    "chw": "icon-people-CHW-female@2x.png",
-   "medic-clinic": "icon-places-clinic.svg",
+   "medic-clinic": "medic-clinic.svg",
    "medic-health-center": "medic-health-center.svg",
    "medic-district-hospital": "medic-district-hospital.svg",
    "medic-person": "icon-people-person-general.svg"

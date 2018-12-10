@@ -22,7 +22,6 @@ var postnatalForms = [
 
 var immunizationForms = [
   'IMM',
-  'C_IMM',
   'immunization_visit',
   'PENTA1',
   'PENTA2',
@@ -32,9 +31,6 @@ var immunizationForms = [
   'OPV1',
   'OPV2',
   'OPV3',
-  'IPV1',
-  'IPV2',
-  'IPV3',
   'PCV1',
   'PCV2',
   'PCV3',
@@ -80,9 +76,6 @@ var IMMUNIZATION_DOSES = [
   ['hpv_1','HPV1'],
   ['hpv_2','HPV2'],
   ['hpv_3','HPV3'],
-  ['ipv_1','IPV1'],
-  ['ipv_2','IPV2'],
-  ['ipv_3','IPV3'],
   ['flu','FLU'],
   ['jap_enc','JE'],
   ['meningococcal_1','MN1'],
@@ -118,7 +111,6 @@ var IMMUNIZATION_LIST = [
   'cholera',
   'hep_a',
   'hpv',
-  'ipv',
   'flu',
   'jap_enc',
   'meningococcal',
@@ -370,4 +362,64 @@ function getSubsequentVisits(r) {
     return (v.form === 'pregnancy_visit' || v.form === 'V') && v.reported_date > r.reported_date;
   });
   return subsequentVisits;
+}
+
+function getTreatmentEnrollmentDate(){
+  var date = '';
+  reports.forEach(function(r){
+    if (r.form === 'treatment_enrollment'){
+      var d = new Date(0);
+      d.setUTCSeconds(r.reported_date/1000);
+      date = d.toISOString().slice(0, 10);
+    }
+  });
+  return date;
+}
+
+function getTreatmentProgram(){
+  var treatment_program = '';
+  reports.forEach(function(r){
+    if (r.form === 'treatment_enrollment' && r.fields.enrollment && r.fields.enrollment.program){
+      treatment_program = r.fields.enrollment.program;
+    }
+  });
+  return treatment_program;
+}
+//
+// function getGender(){
+//   var gender = '';
+//   var ms_report = reports.find(function(r){
+//     return r.form === 'malnutrition_screening';
+//   });
+//   if (ms_report) gender = ms_report.fields.zscore.gender;
+//   return gender;
+// }
+
+function getNutritionScreeningReport(){
+  var screening_report = reports.find(function(r){
+    return r.form === 'malnutrition_screening';
+  });
+  return screening_report;
+}
+
+function countFollowups(){
+  var count = 0;
+  reports.forEach(function(r){
+    if (r.form === 'followup' && r.fields.task === 'visit'){
+      count = count + 1;
+    }
+  });
+  return count;
+}
+
+// function getLastFollowupVisitReport(){
+//   return reports.find(function(r){
+//     return r.form === 'followup' && r.fields.task === 'visit';
+//   });
+// }
+
+function getFollowupExitReport(){
+  return reports.find(function(r){
+    return r.form === 'followup' && r.fields.task && r.fields.task === 'exit';
+  });
 }

@@ -1,0 +1,89 @@
+<?xml version="1.0"?>
+<h:html xmlns="http://www.w3.org/2002/xforms" xmlns:ev="http://www.w3.org/2001/xml-events" xmlns:h="http://www.w3.org/1999/xhtml" xmlns:jr="http://openrosa.org/javarosa" xmlns:orx="http://openrosa.org/xforms" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+  <h:head>
+    <h:title>Death Confirmation (collect)</h:title>
+    <model>
+      <instance>
+        <collect_death_confirmation delimiter="#" id="DC" prefix="J1!DC!" version="2018-11-15_16-28">
+          <patient_id/>
+          <death_report>
+            <n_1/>
+            <death/>
+            <date_of_death/>
+            <place/>
+            <other_place/>
+            <n_3/>
+            <n_4/>
+            <notes/>
+          </death_report>
+          <meta>
+            <instanceID/>
+          </meta>
+        </collect_death_confirmation>
+      </instance>
+      <bind constraint="regex(., '[0-9]{5,13}')" nodeset="/collect_death_confirmation/patient_id" required="true()" type="string"/>
+      <bind nodeset="/collect_death_confirmation/death_report/n_1" readonly="true()" type="string"/>
+      <bind nodeset="/collect_death_confirmation/death_report/death" required="true()" type="select1"/>
+      <bind constraint=". &lt;= today()" nodeset="/collect_death_confirmation/death_report/date_of_death" relevant=" /collect_death_confirmation/death_report/death  = 'yes'" required="true()" type="date"/>
+      <bind nodeset="/collect_death_confirmation/death_report/place" relevant=" /collect_death_confirmation/death_report/death  = 'yes'" required="true()" type="select1"/>
+      <bind nodeset="/collect_death_confirmation/death_report/other_place" relevant=" /collect_death_confirmation/death_report/place  = 'other'" required="true()" type="string"/>
+      <bind nodeset="/collect_death_confirmation/death_report/n_3" readonly="true()" relevant=" /collect_death_confirmation/death_report/death  = 'no'" type="string"/>
+      <bind nodeset="/collect_death_confirmation/death_report/n_4" readonly="true()" relevant=" /collect_death_confirmation/death_report/death  = 'yes'" type="string"/>
+      <bind nodeset="/collect_death_confirmation/death_report/notes" type="string"/>
+      <bind calculate="concat('uuid:', uuid())" nodeset="/collect_death_confirmation/meta/instanceID" readonly="true()" type="string"/>
+    </model>
+  </h:head>
+  <h:body>
+    <input ref="/collect_death_confirmation/patient_id">
+      <label>Patient ID</label>
+    </input>
+    <group ref="/collect_death_confirmation/death_report">
+      <label></label>
+      <input ref="/collect_death_confirmation/death_report/n_1">
+        <label>Death report for <output value=" /collect_death_confirmation/patient_id "/> has been submitted. Please follow up with the CHW to see if <output value=" /collect_death_confirmation/patient_id "/> died.
+Call the CHW.</label>
+      </input>
+      <select1 ref="/collect_death_confirmation/death_report/death">
+        <label>Did <output value=" /collect_death_confirmation/patient_id "/> die</label>
+        <item>
+          <label>Yes</label>
+          <value>yes</value>
+        </item>
+        <item>
+          <label>No</label>
+          <value>no</value>
+        </item>
+      </select1>
+      <input ref="/collect_death_confirmation/death_report/date_of_death">
+        <label>Date of death</label>
+      </input>
+      <select1 ref="/collect_death_confirmation/death_report/place">
+        <label>Place of death</label>
+        <item>
+          <label>Home</label>
+          <value>home</value>
+        </item>
+        <item>
+          <label>Health facility</label>
+          <value>facility</value>
+        </item>
+        <item>
+          <label>Other</label>
+          <value>other</value>
+        </item>
+      </select1>
+      <input ref="/collect_death_confirmation/death_report/other_place">
+        <label>Specify other place of death</label>
+      </input>
+      <input ref="/collect_death_confirmation/death_report/n_3">
+        <label>Notify the CHW that <output value=" /collect_death_confirmation/patient_id "/> did not die and therefore schedules will continue as usual</label>
+      </input>
+      <input ref="/collect_death_confirmation/death_report/n_4">
+        <label>Thank you for confirming death report for <output value=" /collect_death_confirmation/patient_id "/></label>
+      </input>
+      <input ref="/collect_death_confirmation/death_report/notes">
+        <label>Additional notes</label>
+      </input>
+    </group>
+  </h:body>
+</h:html>

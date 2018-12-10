@@ -1,0 +1,110 @@
+<?xml version="1.0"?>
+<h:html xmlns="http://www.w3.org/2002/xforms" xmlns:ev="http://www.w3.org/2001/xml-events" xmlns:h="http://www.w3.org/1999/xhtml" xmlns:jr="http://openrosa.org/javarosa" xmlns:orx="http://openrosa.org/xforms" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+  <h:head>
+    <h:title>Nutrition Screening Nurse (collect)</h:title>
+    <model>
+      <instance>
+        <collect_nutrition_screening_nurse delimiter="#" id="GC" prefix="J1!GC!" version="2018-11-15_16-28">
+          <patient_id/>
+          <zscore>
+            <gender/>
+            <weight/>
+            <height/>
+            <muac/>
+            <zscore_wfa/>
+            <zscore_hfa/>
+            <zscore_wfh/>
+            <wfa_message/>
+            <hfa_message/>
+            <wfh_message/>
+            <zscore_wfa_note/>
+            <zscore_hfa_note/>
+            <zscore_wfh_note/>
+            <treatment/>
+            <additional_notes/>
+          </zscore>
+          <meta>
+            <instanceID/>
+          </meta>
+        </collect_nutrition_screening_nurse>
+      </instance>
+      <bind constraint="regex(., '[0-9]{5,13}')" nodeset="/collect_nutrition_screening_nurse/patient_id" required="true()" type="string"/>
+      <bind nodeset="/collect_nutrition_screening_nurse/zscore/gender" required="true()" type="select1"/>
+      <bind constraint=". &gt;= 0.8 and . &lt;= 68.5" jr:constraintMsg="Weight should be between 0.8 kg and 68.5 kg" nodeset="/collect_nutrition_screening_nurse/zscore/weight" required="true()" type="decimal"/>
+      <bind constraint=". &gt;= 45 and . &lt;= 120" jr:constraintMsg="Height should be between 45 cm and 120 cm" nodeset="/collect_nutrition_screening_nurse/zscore/height" required="true()" type="decimal"/>
+      <bind constraint=". &gt;= 5 and . &lt;= 30" jr:constraintMsg="MUAC should be between 5 and 30 cm" nodeset="/collect_nutrition_screening_nurse/zscore/muac" required="false()" type="decimal"/>
+      <bind nodeset="/collect_nutrition_screening_nurse/zscore/zscore_wfa" required="true()" type="decimal"/>
+      <bind nodeset="/collect_nutrition_screening_nurse/zscore/zscore_hfa" required="true()" type="decimal"/>
+      <bind nodeset="/collect_nutrition_screening_nurse/zscore/zscore_wfh" required="true()" type="decimal"/>
+      <bind calculate="if( /collect_nutrition_screening_nurse/zscore/zscore_wfa  = &quot;&quot;, &quot;&quot;, if( ( /collect_nutrition_screening_nurse/zscore/zscore_wfa  &lt; -3), &quot;&lt; -3SD [Severely Malnourished]&quot;, if( ( /collect_nutrition_screening_nurse/zscore/zscore_wfa  &lt; -2 and  /collect_nutrition_screening_nurse/zscore/zscore_wfa  &gt;= -3), &quot;-3SD to &lt; -2SD [Moderately Malnourished]&quot;, if( ( /collect_nutrition_screening_nurse/zscore/zscore_wfa  &lt;= 2 and  /collect_nutrition_screening_nurse/zscore/zscore_wfa  &gt;= -2), &quot;-2SD to 2SD [Normal]&quot;, if( ( /collect_nutrition_screening_nurse/zscore/zscore_wfa  &gt; 2 and  /collect_nutrition_screening_nurse/zscore/zscore_wfa  &lt;= 3), &quot;&gt;2SD [Overweight]&quot;, if( ( /collect_nutrition_screening_nurse/zscore/zscore_wfa  &gt; 3 ), &quot;&gt;3SD [Obese]&quot;, &quot;&quot; ) ) ) ) ) )" nodeset="/collect_nutrition_screening_nurse/zscore/wfa_message" type="string"/>
+      <bind calculate="if( /collect_nutrition_screening_nurse/zscore/zscore_hfa  = &quot;&quot;, &quot;&quot;, if( ( /collect_nutrition_screening_nurse/zscore/zscore_hfa  &lt; -3), &quot;&lt; -3SD [Severely Stunted]&quot;, if( ( /collect_nutrition_screening_nurse/zscore/zscore_hfa  &lt; -2 and  /collect_nutrition_screening_nurse/zscore/zscore_hfa  &gt;= -3), &quot;-3SD to &lt;-2SD [Moderately Stunted]&quot;, if( ( /collect_nutrition_screening_nurse/zscore/zscore_hfa  &lt;= 2 and  /collect_nutrition_screening_nurse/zscore/zscore_hfa  &gt;= -2), &quot;-2SD to 2SD [Normal]&quot;, if( ( /collect_nutrition_screening_nurse/zscore/zscore_hfa  &gt; 2), &quot;&gt;2SD [High]&quot;, &quot;&quot; ) ) ) ) )" nodeset="/collect_nutrition_screening_nurse/zscore/hfa_message" type="string"/>
+      <bind calculate="if( /collect_nutrition_screening_nurse/zscore/zscore_wfh  = &quot;&quot;, &quot;&quot;, if( ( /collect_nutrition_screening_nurse/zscore/zscore_wfh  &lt; -3), &quot;&lt; -3SD [Severely Wasted]&quot;, if( ( /collect_nutrition_screening_nurse/zscore/zscore_wfh  &lt; -2 and  /collect_nutrition_screening_nurse/zscore/zscore_wfh  &gt;= -3), &quot;-3SD to &lt;-2SD [Moderately Wasted]&quot;, if( ( /collect_nutrition_screening_nurse/zscore/zscore_wfh  &lt;= 2 and  /collect_nutrition_screening_nurse/zscore/zscore_wfh  &gt;= -2), &quot;-2SD to 2SD [Normal]&quot;, if( ( /collect_nutrition_screening_nurse/zscore/zscore_wfh  &gt; 2), &quot;&gt;2SD [Overweight]&quot;, &quot;&quot; ) ) ) ))" nodeset="/collect_nutrition_screening_nurse/zscore/wfh_message" type="string"/>
+      <bind nodeset="/collect_nutrition_screening_nurse/zscore/zscore_wfa_note" readonly="true()" relevant=" /collect_nutrition_screening_nurse/zscore/zscore_wfa  != ''" type="string"/>
+      <bind nodeset="/collect_nutrition_screening_nurse/zscore/zscore_hfa_note" readonly="true()" relevant=" /collect_nutrition_screening_nurse/zscore/zscore_hfa  != ''" type="string"/>
+      <bind nodeset="/collect_nutrition_screening_nurse/zscore/zscore_wfh_note" readonly="true()" relevant=" /collect_nutrition_screening_nurse/zscore/zscore_wfh  != ''" type="string"/>
+      <bind nodeset="/collect_nutrition_screening_nurse/zscore/treatment" required="true()" type="select1"/>
+      <bind nodeset="/collect_nutrition_screening_nurse/zscore/additional_notes" type="string"/>
+      <bind calculate="concat('uuid:', uuid())" nodeset="/collect_nutrition_screening_nurse/meta/instanceID" readonly="true()" type="string"/>
+    </model>
+  </h:head>
+  <h:body>
+    <input ref="/collect_nutrition_screening_nurse/patient_id">
+      <label>Patient ID</label>
+    </input>
+    <group ref="/collect_nutrition_screening_nurse/zscore">
+      <label></label>
+      <select1 ref="/collect_nutrition_screening_nurse/zscore/gender">
+        <label>Gender</label>
+        <item>
+          <label>Male</label>
+          <value>male</value>
+        </item>
+        <item>
+          <label>Female</label>
+          <value>female</value>
+        </item>
+      </select1>
+      <input ref="/collect_nutrition_screening_nurse/zscore/weight">
+        <label>Weight (kgs)</label>
+      </input>
+      <input ref="/collect_nutrition_screening_nurse/zscore/height">
+        <label>Height (cms)</label>
+      </input>
+      <input ref="/collect_nutrition_screening_nurse/zscore/muac">
+        <label>MUAC Measurement</label>
+      </input>
+      <input ref="/collect_nutrition_screening_nurse/zscore/zscore_wfa">
+        <label>Weight for age z-score</label>
+      </input>
+      <input ref="/collect_nutrition_screening_nurse/zscore/zscore_hfa">
+        <label>Height for age z-score</label>
+      </input>
+      <input ref="/collect_nutrition_screening_nurse/zscore/zscore_wfh">
+        <label>Weight for height z-score</label>
+      </input>
+      <input ref="/collect_nutrition_screening_nurse/zscore/zscore_wfa_note">
+        <label>Weight for Age: <output value=" /collect_nutrition_screening_nurse/zscore/wfa_message "/></label>
+      </input>
+      <input ref="/collect_nutrition_screening_nurse/zscore/zscore_hfa_note">
+        <label>Height for Age: <output value=" /collect_nutrition_screening_nurse/zscore/hfa_message "/></label>
+      </input>
+      <input ref="/collect_nutrition_screening_nurse/zscore/zscore_wfh_note">
+        <label>Weight for Height: <output value=" /collect_nutrition_screening_nurse/zscore/wfh_message "/></label>
+      </input>
+      <select1 ref="/collect_nutrition_screening_nurse/zscore/treatment">
+        <label>Do you want to enroll(child name) into a treatment program?</label>
+        <item>
+          <label>Yes</label>
+          <value>yes</value>
+        </item>
+        <item>
+          <label>No</label>
+          <value>no</value>
+        </item>
+      </select1>
+      <input ref="/collect_nutrition_screening_nurse/zscore/additional_notes">
+        <label>Additional notes</label>
+      </input>
+    </group>
+  </h:body>
+</h:html>

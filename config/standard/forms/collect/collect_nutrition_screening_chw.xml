@@ -1,0 +1,40 @@
+<?xml version="1.0"?>
+<h:html xmlns="http://www.w3.org/2002/xforms" xmlns:ev="http://www.w3.org/2001/xml-events" xmlns:h="http://www.w3.org/1999/xhtml" xmlns:jr="http://openrosa.org/javarosa" xmlns:orx="http://openrosa.org/xforms" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+  <h:head>
+    <h:title>Nutrition Screening CHW (collect)</h:title>
+    <model>
+      <instance>
+        <collect_nutrition_screening_chw delimiter="#" id="G_collect" prefix="J1!G!" version="2018-11-15_16-28">
+          <patient_id/>
+          <severity/>
+          <meta>
+            <instanceID/>
+          </meta>
+        </collect_nutrition_screening_chw>
+      </instance>
+      <bind constraint="regex(., '[0-9]{5,13}')" nodeset="/collect_nutrition_screening_chw/patient_id" required="true()" type="int"/>
+      <bind nodeset="/collect_nutrition_screening_chw/severity" required="true()" type="select1"/>
+      <bind calculate="concat('uuid:', uuid())" nodeset="/collect_nutrition_screening_chw/meta/instanceID" readonly="true()" type="string"/>
+    </model>
+  </h:head>
+  <h:body>
+    <input ref="/collect_nutrition_screening_chw/patient_id">
+      <label>Child ID</label>
+    </input>
+    <select1 ref="/collect_nutrition_screening_chw/severity">
+      <label>Degree of severity</label>
+      <item>
+        <label>Normal</label>
+        <value>1</value>
+      </item>
+      <item>
+        <label>Moderate</label>
+        <value>2</value>
+      </item>
+      <item>
+        <label>Severe</label>
+        <value>3</value>
+      </item>
+    </select1>
+  </h:body>
+</h:html>

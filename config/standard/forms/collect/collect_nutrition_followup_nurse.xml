@@ -1,0 +1,139 @@
+<?xml version="1.0"?>
+<h:html xmlns="http://www.w3.org/2002/xforms" xmlns:ev="http://www.w3.org/2001/xml-events" xmlns:h="http://www.w3.org/1999/xhtml" xmlns:jr="http://openrosa.org/javarosa" xmlns:orx="http://openrosa.org/xforms" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+  <h:head>
+    <h:title>Followup Report</h:title>
+    <model>
+      <instance>
+        <collect_nutrition_followup_nurse delimiter="#" id="FC" prefix="J1!FC!" version="2018-11-15_16-28">
+          <patient_id/>
+          <task/>
+          <zscore>
+            <gender/>
+            <weight/>
+            <height/>
+            <date_of_birth/>
+            <zscore_wfh/>
+            <muac/>
+          </zscore>
+          <exit>
+            <outcome/>
+            <enrollment_date/>
+            <length_stay/>
+            <stay/>
+            <enroll/>
+          </exit>
+          <meta>
+            <instanceID/>
+          </meta>
+        </collect_nutrition_followup_nurse>
+      </instance>
+      <bind constraint="regex(., '[0-9]{5,13}')" nodeset="/collect_nutrition_followup_nurse/patient_id" required="true()" type="string"/>
+      <bind nodeset="/collect_nutrition_followup_nurse/task" required="true()" type="select1"/>
+      <bind nodeset="/collect_nutrition_followup_nurse/zscore/gender" required="true()" type="select1"/>
+      <bind constraint=". &gt;= 0.8 and . &lt;= 68.5" jr:constraintMsg="Weight should be between 0.8 kg and 68.5 kg" nodeset="/collect_nutrition_followup_nurse/zscore/weight" required="true()" type="decimal"/>
+      <bind constraint=". &gt;= 45 and . &lt;= 120" jr:constraintMsg="Height should be between 45 cm and 120 cm" nodeset="/collect_nutrition_followup_nurse/zscore/height" required="true()" type="decimal"/>
+      <bind constraint=". &lt;= today() and ((decimal-date-time(.)+1770) &gt;= decimal-date-time(today()))" nodeset="/collect_nutrition_followup_nurse/zscore/date_of_birth" required="true()" type="date"/>
+      <bind nodeset="/collect_nutrition_followup_nurse/zscore/zscore_wfh" required="true()" type="decimal"/>
+      <bind constraint=". &gt;= 5 and . &lt;= 30" jr:constraintMsg="MUAC should be between 5 and 30 cm" nodeset="/collect_nutrition_followup_nurse/zscore/muac" type="decimal"/>
+      <bind nodeset="/collect_nutrition_followup_nurse/exit" relevant=" /collect_nutrition_followup_nurse/task  = 'exit'"/>
+      <bind nodeset="/collect_nutrition_followup_nurse/exit/outcome" required="true()" type="select1"/>
+      <bind nodeset="/collect_nutrition_followup_nurse/exit/enrollment_date" relevant=" /collect_nutrition_followup_nurse/exit/outcome  = 'cured'" required="true()" type="date"/>
+      <bind calculate="int(decimal-date-time(today()) - decimal-date-time(date( /collect_nutrition_followup_nurse/exit/enrollment_date )))" nodeset="/collect_nutrition_followup_nurse/exit/length_stay" type="string"/>
+      <bind nodeset="/collect_nutrition_followup_nurse/exit/stay" readonly="true()" relevant=" /collect_nutrition_followup_nurse/exit/outcome  = 'cured'" type="string"/>
+      <bind nodeset="/collect_nutrition_followup_nurse/exit/enroll" relevant=" /collect_nutrition_followup_nurse/exit/outcome  = 'cured'" required="true()" type="select1"/>
+      <bind calculate="concat('uuid:', uuid())" nodeset="/collect_nutrition_followup_nurse/meta/instanceID" readonly="true()" type="string"/>
+    </model>
+  </h:head>
+  <h:body>
+    <input ref="/collect_nutrition_followup_nurse/patient_id">
+      <label>Patient ID</label>
+    </input>
+    <select1 ref="/collect_nutrition_followup_nurse/task">
+      <label>What task would you like to perform?</label>
+      <item>
+        <label>Record follow up visit</label>
+        <value>visit</value>
+      </item>
+      <item>
+        <label>Exit from treatment program</label>
+        <value>exit</value>
+      </item>
+    </select1>
+    <group ref="/collect_nutrition_followup_nurse/zscore">
+      <label></label>
+      <select1 ref="/collect_nutrition_followup_nurse/zscore/gender">
+        <label>Child gender</label>
+        <item>
+          <label>Male</label>
+          <value>male</value>
+        </item>
+        <item>
+          <label>Female</label>
+          <value>female</value>
+        </item>
+      </select1>
+      <input ref="/collect_nutrition_followup_nurse/zscore/weight">
+        <label>Weight (kg)</label>
+      </input>
+      <input ref="/collect_nutrition_followup_nurse/zscore/height">
+        <label>Height/Length (cm)</label>
+      </input>
+      <input ref="/collect_nutrition_followup_nurse/zscore/date_of_birth">
+        <label>Date of birth</label>
+      </input>
+      <input ref="/collect_nutrition_followup_nurse/zscore/zscore_wfh">
+        <label>Weight for height</label>
+      </input>
+      <input ref="/collect_nutrition_followup_nurse/zscore/muac">
+        <label>MUAC Measurement</label>
+      </input>
+    </group>
+    <group ref="/collect_nutrition_followup_nurse/exit">
+      <label></label>
+      <select1 ref="/collect_nutrition_followup_nurse/exit/outcome">
+        <label>Exit outcome</label>
+        <item>
+          <label>Cured</label>
+          <value>cured</value>
+        </item>
+        <item>
+          <label>Transfer to OTP</label>
+          <value>otp</value>
+        </item>
+        <item>
+          <label>Transfer to SFP</label>
+          <value>sfp</value>
+        </item>
+        <item>
+          <label>Transfer to SC</label>
+          <value>sc</value>
+        </item>
+        <item>
+          <label>Transfer to a different site for the same program</label>
+          <value>different_site</value>
+        </item>
+        <item>
+          <label>Non-responsive (non-recovered)</label>
+          <value>nonresponsive</value>
+        </item>
+      </select1>
+      <input ref="/collect_nutrition_followup_nurse/exit/enrollment_date">
+        <label>Enrollment date</label>
+      </input>
+      <input ref="/collect_nutrition_followup_nurse/exit/stay">
+        <label>Length of stay in days: <output value=" /collect_nutrition_followup_nurse/exit/length_stay "/></label>
+      </input>
+      <select1 ref="/collect_nutrition_followup_nurse/exit/enroll">
+        <label>Do you need to enroll the patient in another treatment enrollment program</label>
+        <item>
+          <label>Yes</label>
+          <value>yes</value>
+        </item>
+        <item>
+          <label>No</label>
+          <value>no</value>
+        </item>
+      </select1>
+    </group>
+  </h:body>
+</h:html>

@@ -1,0 +1,227 @@
+<?xml version="1.0"?>
+<h:html xmlns="http://www.w3.org/2002/xforms" xmlns:ev="http://www.w3.org/2001/xml-events" xmlns:h="http://www.w3.org/1999/xhtml" xmlns:jr="http://openrosa.org/javarosa" xmlns:orx="http://openrosa.org/xforms" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+  <h:head>
+    <h:title>Treatment Enrollment (collect)</h:title>
+    <model>
+      <instance>
+        <collect_nutrition_treatment_enrollment delimiter="#" id="TEC" prefix="J1!TEC!" version="2018-11-15_16-28">
+          <patient_id/>
+          <referral>
+            <visit/>
+            <admitted/>
+          </referral>
+          <zscore>
+            <gender/>
+            <admission_type/>
+            <weight/>
+            <height/>
+            <muac/>
+            <zscore_wfh/>
+          </zscore>
+          <enrollment>
+            <enroll/>
+            <facility/>
+            <program/>
+            <n_1/>
+            <n_2/>
+            <n_3/>
+            <target_weight/>
+            <target_muac/>
+            <reasons/>
+            <false_positive_confirmation/>
+          </enrollment>
+          <additional_notes/>
+          <meta>
+            <instanceID/>
+          </meta>
+        </collect_nutrition_treatment_enrollment>
+      </instance>
+      <bind constraint="regex(., '[0-9]{5,13}')" nodeset="/collect_nutrition_treatment_enrollment/patient_id" required="true()" type="string"/>
+      <bind nodeset="/collect_nutrition_treatment_enrollment/referral/visit" required="true()" type="select1"/>
+      <bind nodeset="/collect_nutrition_treatment_enrollment/referral/admitted" relevant=" /collect_nutrition_treatment_enrollment/referral/visit  = 'no'" required="true()" type="select1"/>
+      <bind nodeset="/collect_nutrition_treatment_enrollment/zscore" relevant=" /collect_nutrition_treatment_enrollment/referral/visit  = 'yes'"/>
+      <bind nodeset="/collect_nutrition_treatment_enrollment/zscore/gender" required="true()" type="select1"/>
+      <bind nodeset="/collect_nutrition_treatment_enrollment/zscore/admission_type" required="true()" type="select1"/>
+      <bind constraint=". &gt;= 0.8 and . &lt;= 68.5" jr:constraintMsg="Weight should be between 0.8 kg and 68.5 kg" nodeset="/collect_nutrition_treatment_enrollment/zscore/weight" required="true()" type="decimal"/>
+      <bind constraint=". &gt;= 45 and . &lt;= 120" jr:constraintMsg="Height should be between 45 cm and 120 cm" nodeset="/collect_nutrition_treatment_enrollment/zscore/height" required="true()" type="decimal"/>
+      <bind constraint=". &gt;= 5 and . &lt;= 30" jr:constraintMsg="MUAC should be between 5 and 30 cm" nodeset="/collect_nutrition_treatment_enrollment/zscore/muac" required="true()" type="decimal"/>
+      <bind nodeset="/collect_nutrition_treatment_enrollment/zscore/zscore_wfh" required="true()" type="decimal"/>
+      <bind nodeset="/collect_nutrition_treatment_enrollment/enrollment" relevant=" /collect_nutrition_treatment_enrollment/referral/visit  = 'yes'"/>
+      <bind nodeset="/collect_nutrition_treatment_enrollment/enrollment/enroll" required="true()" type="select1"/>
+      <bind nodeset="/collect_nutrition_treatment_enrollment/enrollment/facility" relevant=" /collect_nutrition_treatment_enrollment/enrollment/enroll  = 'yes'" required="true()" type="select1"/>
+      <bind nodeset="/collect_nutrition_treatment_enrollment/enrollment/program" relevant=" /collect_nutrition_treatment_enrollment/enrollment/enroll  = 'yes' and  /collect_nutrition_treatment_enrollment/enrollment/facility  = 'clinic'" required="true()" type="select1"/>
+      <bind nodeset="/collect_nutrition_treatment_enrollment/enrollment/n_1" readonly="true()" relevant=" /collect_nutrition_treatment_enrollment/enrollment/program  = 'otp'" type="string"/>
+      <bind nodeset="/collect_nutrition_treatment_enrollment/enrollment/n_2" readonly="true()" relevant=" /collect_nutrition_treatment_enrollment/enrollment/program  = 'sfp'" type="string"/>
+      <bind nodeset="/collect_nutrition_treatment_enrollment/enrollment/n_3" readonly="true()" relevant=" /collect_nutrition_treatment_enrollment/enrollment/program  = 'sc'" type="string"/>
+      <bind constraint=". &gt;= 0.8 and . &lt;= 68.5" jr:constraintMsg="Weight should be between 0.8 kg and 68.5 kg" nodeset="/collect_nutrition_treatment_enrollment/enrollment/target_weight" relevant=" /collect_nutrition_treatment_enrollment/enrollment/enroll  = 'yes' and  /collect_nutrition_treatment_enrollment/enrollment/facility  = 'clinic'" type="decimal"/>
+      <bind constraint=". &gt;= 5 and . &lt;= 30" jr:constraintMsg="MUAC should be between 5 and 30 cm" nodeset="/collect_nutrition_treatment_enrollment/enrollment/target_muac" relevant=" /collect_nutrition_treatment_enrollment/enrollment/enroll  = 'yes' and  /collect_nutrition_treatment_enrollment/enrollment/facility  = 'clinic'" type="decimal"/>
+      <bind nodeset="/collect_nutrition_treatment_enrollment/enrollment/reasons" relevant=" /collect_nutrition_treatment_enrollment/enrollment/enroll  = 'no'" required="true()" type="select1"/>
+      <bind nodeset="/collect_nutrition_treatment_enrollment/enrollment/false_positive_confirmation" relevant=" /collect_nutrition_treatment_enrollment/enrollment/reasons  = 'false_positive'" required="true()" type="select1"/>
+      <bind nodeset="/collect_nutrition_treatment_enrollment/additional_notes" type="string"/>
+      <bind calculate="concat('uuid:', uuid())" nodeset="/collect_nutrition_treatment_enrollment/meta/instanceID" readonly="true()" type="string"/>
+    </model>
+  </h:head>
+  <h:body>
+    <input ref="/collect_nutrition_treatment_enrollment/patient_id">
+      <label>Patient ID</label>
+    </input>
+    <group ref="/collect_nutrition_treatment_enrollment/referral">
+      <label></label>
+      <select1 ref="/collect_nutrition_treatment_enrollment/referral/visit">
+        <label>Did the person attend the referral visit</label>
+        <item>
+          <label>Yes</label>
+          <value>yes</value>
+        </item>
+        <item>
+          <label>No</label>
+          <value>no</value>
+        </item>
+      </select1>
+      <select1 ref="/collect_nutrition_treatment_enrollment/referral/admitted">
+        <label>Is the child admitted in any treatment program</label>
+        <item>
+          <label>Yes</label>
+          <value>yes</value>
+        </item>
+        <item>
+          <label>No</label>
+          <value>no</value>
+        </item>
+      </select1>
+    </group>
+    <group ref="/collect_nutrition_treatment_enrollment/zscore">
+      <label></label>
+      <select1 ref="/collect_nutrition_treatment_enrollment/zscore/gender">
+        <label>Child gender</label>
+        <item>
+          <label>Male</label>
+          <value>male</value>
+        </item>
+        <item>
+          <label>Female</label>
+          <value>female</value>
+        </item>
+      </select1>
+      <select1 ref="/collect_nutrition_treatment_enrollment/zscore/admission_type">
+        <label>Type of admission</label>
+        <item>
+          <label>New case</label>
+          <value>new_case</value>
+        </item>
+        <item>
+          <label>Relapse/Readmission</label>
+          <value>relapse</value>
+        </item>
+        <item>
+          <label>Transfers from other OTP</label>
+          <value>otp</value>
+        </item>
+        <item>
+          <label>Transfers from SFP</label>
+          <value>sfp</value>
+        </item>
+        <item>
+          <label>Transfer from SC</label>
+          <value>sc</value>
+        </item>
+        <item>
+          <label>Returned defaulter</label>
+          <value>defaulter</value>
+        </item>
+      </select1>
+      <input ref="/collect_nutrition_treatment_enrollment/zscore/weight">
+        <label>Weight (kg)</label>
+      </input>
+      <input ref="/collect_nutrition_treatment_enrollment/zscore/height">
+        <label>Height/Length (cm)</label>
+      </input>
+      <input ref="/collect_nutrition_treatment_enrollment/zscore/muac">
+        <label>MUAC (cm)</label>
+      </input>
+      <input ref="/collect_nutrition_treatment_enrollment/zscore/zscore_wfh">
+        <label>Weight for height z-score</label>
+      </input>
+    </group>
+    <group ref="/collect_nutrition_treatment_enrollment/enrollment">
+      <label></label>
+      <select1 ref="/collect_nutrition_treatment_enrollment/enrollment/enroll">
+        <label>Would you like to enroll the child into treatment?</label>
+        <item>
+          <label>Yes</label>
+          <value>yes</value>
+        </item>
+        <item>
+          <label>No</label>
+          <value>no</value>
+        </item>
+      </select1>
+      <select1 ref="/collect_nutrition_treatment_enrollment/enrollment/facility">
+        <label>Facility of admission</label>
+        <item>
+          <label>At your clinic</label>
+          <value>clinic</value>
+        </item>
+        <item>
+          <label>Referral to another clinic</label>
+          <value>another_clinic</value>
+        </item>
+      </select1>
+      <select1 ref="/collect_nutrition_treatment_enrollment/enrollment/program">
+        <label>Admission treatment program</label>
+        <item>
+          <label>OTP</label>
+          <value>OTP</value>
+        </item>
+        <item>
+          <label>SFP</label>
+          <value>SFP</value>
+        </item>
+        <item>
+          <label>SC</label>
+          <value>SC</value>
+        </item>
+      </select1>
+      <input ref="/collect_nutrition_treatment_enrollment/enrollment/n_1">
+        <label>OTP admission criteria should be '+ or ++Oedema' or 'MUAC &lt; 11.5cm' or 'Weight for Height Z score &lt;-3'</label>
+      </input>
+      <input ref="/collect_nutrition_treatment_enrollment/enrollment/n_2">
+        <label>SFP admission criteria should be 'MUAC between 11.5 to 12.4cm' or 'Weight for Height Z score ≥ -3 to &lt; -2'</label>
+      </input>
+      <input ref="/collect_nutrition_treatment_enrollment/enrollment/n_3">
+        <label>SC admission criteria should be '+++ Oedema' or 'MUAC &lt; 11.5cm with complications' or 'Weight for Height Z score &lt;-3 with complications'</label>
+      </input>
+      <input ref="/collect_nutrition_treatment_enrollment/enrollment/target_weight">
+        <label>Target Weight (kg)</label>
+      </input>
+      <input ref="/collect_nutrition_treatment_enrollment/enrollment/target_muac">
+        <label>Target MUAC (cm)</label>
+      </input>
+      <select1 ref="/collect_nutrition_treatment_enrollment/enrollment/reasons">
+        <label>Reasons for non enrollment</label>
+        <item>
+          <label>False positive</label>
+          <value>false_positive</value>
+        </item>
+        <item>
+          <label>Chronic malnutrition</label>
+          <value>chronic_malnutrition</value>
+        </item>
+      </select1>
+      <select1 ref="/collect_nutrition_treatment_enrollment/enrollment/false_positive_confirmation">
+        <label>Are you sure that the child is a false postitive?</label>
+        <item>
+          <label>Yes</label>
+          <value>yes</value>
+        </item>
+        <item>
+          <label>No</label>
+          <value>no</value>
+        </item>
+      </select1>
+    </group>
+    <input ref="/collect_nutrition_treatment_enrollment/additional_notes">
+      <label>Additional notes</label>
+    </input>
+  </h:body>
+</h:html>

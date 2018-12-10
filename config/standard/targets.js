@@ -78,13 +78,11 @@ var targets = [
     idType: 'report',
     appliesIf: isHealthyDelivery,
     passesIf: function(c, r) {
-      var visits = countReportsSubmittedInWindow(
-        c.reports,
-        antenatalForms,
-        r.reported_date - MAX_DAYS_IN_PREGNANCY * MS_IN_DAY,
-        r.reported_date
-      );
-      return visits > 0;
+      /* jshint unused:vars */
+      var visits = c.reports.filter(function(r){
+        return ((r.form === 'pregnancy_visit' && r.fields.visit_confirmed && r.fields.visit_confirmed === 'yes') || r.form === 'V') && r.reported_date >= r.reported_date - MAX_DAYS_IN_PREGNANCY * MS_IN_DAY && r.reported_date <= r.reported_date;
+      });
+      return visits.length > 0;
     },
     date: 'now',
   },
@@ -102,13 +100,11 @@ var targets = [
     idType: 'report',
     appliesIf: isHealthyDelivery,
     passesIf: function(c, r) {
-      var visits = countReportsSubmittedInWindow(
-        c.reports,
-        antenatalForms,
-        r.reported_date - MAX_DAYS_IN_PREGNANCY * MS_IN_DAY,
-        r.reported_date
-      );
-      return visits > 3;
+      /* jshint unused:vars */
+      var visits = c.reports.filter(function(r){
+        return ((r.form === 'pregnancy_visit' && r.fields.visit_confirmed && r.fields.visit_confirmed === 'yes') || r.form === 'V') && r.reported_date >= r.reported_date - MAX_DAYS_IN_PREGNANCY * MS_IN_DAY && r.reported_date <= r.reported_date;
+      });
+      return visits.length > 3;
     },
     date: 'now',
   },
@@ -439,4 +435,166 @@ var targets = [
     appliesIf: isChildUnder5,
     passesIf: isBcgReported,
   },
+
+
+  // Nutrition: children under 5 screened for growth monitoring
+  {
+    id: 'children-growth-monitoring',
+    translation_key: 'targets.growth_monitoring.title',
+    subtitle_translation_key: 'targets.this_month.subtitle',
+    type: 'percent',
+    icon: 'child',
+    goal: -1,
+    appliesTo: 'contacts',
+    appliesToType: ['person'],
+    appliesIf: isChildUnder5,
+    passesIf: function(c){
+      /* jshint unused:vars */
+      return c.reports.some(function(r){
+        return r.form === 'G';
+      });
+    },
+    // date: 'reported',
+  },
+
+  // Nutrition: children under 5 underweight
+  {
+    id: 'children-underweight',
+    translation_key: 'targets.underweight.title',
+    subtitle_translation_key: 'targets.this_month.subtitle',
+    type: 'count',
+    icon: 'child',
+    goal: -1,
+    appliesTo: 'contacts',
+    appliesToType: ['person'],
+    appliesIf: isChildUnder5,
+    passesIf: function(c,r){
+        /* jshint unused:vars */
+      return c.reports.some(function(r){
+        return r.form === 'malnutrition_screening' && r.fields.zscore.zscore_wfa < -2;
+      });
+    },
+    // date: 'reported',
+  },
+
+
+  // children under 5 stunted growth
+  {
+    id: 'children-stunted',
+    translation_key: 'targets.stunted.title',
+    subtitle_translation_key: 'targets.this_month.subtitle',
+    type: 'count',
+    icon: 'child',
+    goal: -1,
+    appliesTo: 'contacts',
+    appliesToType: ['person'],
+    appliesIf: isChildUnder5,
+    passesIf: function(c){
+      return c.reports.some(function(r){
+        return r.form === 'malnutrition_screening' && r.fields.zscore.zscore_hfa < -2;
+      });
+    },
+    // date: 'reported',
+  },
+
+
+  // Nutrition: children active MAM
+  {
+    id: 'children-mam',
+    translation_key: 'targets.active_mam.title',
+    subtitle_translation_key: 'targets.this_month.subtitle',
+    type: 'count',
+    icon: 'child',
+    goal: -1,
+    appliesTo: 'contacts',
+    appliesToType: ['person'],
+    appliesIf: isChildUnder5,
+    passesIf: function(c){
+      return c.reports.some(function(r){
+        return r.form === 'treatment_enrollment' && r.fields.zscore && ( (r.fields.zscore.zscore_wfh >= -3 && r.fields.zscore.zscore_wfh < -2) || (r.fields.zscore.muac >= 11.5 && r.fields.zscore.muac < 12.4) );
+      });
+    },
+    // date: 'reported',
+  },
+
+
+  // Nutrition: children active SAM
+  {
+    id: 'children-sam',
+    translation_key: 'targets.active_sam.title',
+    subtitle_translation_key: 'targets.this_month.subtitle',
+    type: 'count',
+    icon: 'child',
+    goal: -1,
+    appliesTo: 'contacts',
+    appliesToType: ['person'],
+    appliesIf: isChildUnder5,
+    passesIf: function(c){
+      return c.reports.some(function(r){
+        return r.form === 'treatment_enrollment' && r.fields.zscore && (r.fields.zscore.zscore_wfh < -3 || r.fields.zscore.muac < 11.5);
+      });
+    },
+    // date: 'reported',
+  },
+
+
+  // children active OTP
+  {
+    id: 'children-otp',
+    translation_key: 'targets.active_otp.title',
+    subtitle_translation_key: 'targets.this_month.subtitle',
+    type: 'count',
+    icon: 'child',
+    goal: -1,
+    appliesTo: 'contacts',
+    appliesToType: ['person'],
+    appliesIf: isChildUnder5,
+    passesIf: function(c){
+      var otp = false;
+      var death = false;
+      var off = false;
+      c.reports.forEach(function(r){
+        if (r.form === 'treatment_enrollment'){
+          otp = r.fields.enrollment && r.fields.enrollment.program && r.fields.enrollment.program === 'OTP';
+        } else if (r.form === 'off'){
+          off = r.fields.off && r.fields.off.reason === 'defaulter';
+        } else if (r.form === 'death_confirmation'){
+          death = r.fields.death_report.death === 'yes';
+        }
+      });
+      return otp && !off && !death;
+    },
+    // date: 'reported',
+  },
+
+
+  // children active SFP
+  {
+    id: 'children-sfp',
+    translation_key: 'targets.active_sfp.title',
+    subtitle_translation_key: 'targets.this_month.subtitle',
+    type: 'count',
+    icon: 'child',
+    goal: -1,
+    appliesTo: 'contacts',
+    appliesToType: ['person'],
+    appliesIf: isChildUnder5,
+    passesIf: function(c){
+      var sfp = false;
+      var death = false;
+      var off = false;
+      c.reports.forEach(function(r){
+        if (r.form === 'treatment_enrollment'){
+          sfp = r.fields.enrollment && r.fields.enrollment.program && r.fields.enrollment.program === 'SFP';
+        } else if (r.form === 'off'){
+          off = r.fields.off && r.fields.off.reason === 'defaulter';
+        } else if (r.form === 'death_confirmation'){
+          death = r.fields.death_report.death === 'yes';
+        }
+      });
+      return sfp && !off && !death;
+    },
+    // date: 'reported',
+  },
+
 ];
