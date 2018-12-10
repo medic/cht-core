@@ -36,13 +36,22 @@ angular.module('inboxServices').factory('GetDataRecords',
         });
     };
 
-    var getSummaries = function(ids) {
+    const getSummaries = function(ids, options) {
       return GetSummaries(ids)
-        .then(HydrateContactNames)
-        .then(GetSubjectSummaries);
+        .then(summaries => {
+          // REVIEWER: Suspect a better interface for this is hydrateDataRecords defaulting as false. Consumer should explicitly ask for hydration.
+          const hydrate = options.hydrateDataRecords !== false;
+          const promiseToSummary = hydrate ? HydrateContactNames(summaries) : Promise.resolve(summaries);
+          return promiseToSummary.then(GetSubjectSummaries);
+        });
     };
 
     return function(ids, options) {
+      options = _.defaults(options || {}, {
+        hydrateDataRecords: true,
+        include_docs: false,
+      });
+      
       if (!ids) {
         return $q.resolve([]);
       }
@@ -53,7 +62,7 @@ angular.module('inboxServices').factory('GetDataRecords',
       if (!ids.length) {
         return $q.resolve([]);
       }
-      var getFn = options && options.include_docs ? getDocs : getSummaries;
+      const getFn = options.include_docs ? getDocs : ids => getSummaries(ids, options);
       return getFn(ids)
         .then(function(response) {
           if (!arrayGiven) {

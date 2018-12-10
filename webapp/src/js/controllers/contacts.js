@@ -60,8 +60,10 @@ var _ = require('underscore'),
     };
 
     var _query = function(options) {
-      options = options || {};
-      options.limit = options.limit || 50;
+      options = _.defaults(options || {}, {
+        limit: 50,
+        hydrateDataRecords: false,
+      });
 
       if (!options.silent) {
         $scope.loading = true;
@@ -460,10 +462,7 @@ var _ = require('underscore'),
           limit,
           withIds,
           silent: true,
-
-          // The logic for updating Primary Contact changes is complex
-          // So redraw everything when a person changes
-          reuseExistingDom: change.doc && change.doc.type !== 'person',
+          reuseExistingDom: true,
         });
       },
       filter: function(change) {
