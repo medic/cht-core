@@ -475,7 +475,9 @@ var _ = require('underscore'),
 
     $scope.$on('$destroy', function () {
       changeListener.unsubscribe();
-      LiveList.$reset('contacts', 'contact-search');
+      if (!$state.includes('contacts')) {
+        LiveList.$reset('contacts', 'contact-search');
+      }
     });
 
     if ($stateParams.tour) {
