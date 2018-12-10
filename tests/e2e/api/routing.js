@@ -567,12 +567,7 @@ describe('routing', () => {
               request
             )
           )
-          .catch(err => err),
-        utils
-          .requestOnTestDb(
-            _.extend({ path: '/_purge' }, onlineRequestOptions, request)
-          )
-          .catch(err => err),
+          .catch(err => err)
       ]).then(results => {
         expect(results[0].statusCode).toEqual(403);
         expect(results[0].responseBody.error).toEqual('forbidden');
@@ -582,8 +577,6 @@ describe('routing', () => {
 
         expect(results[2].statusCode).toEqual(403);
         expect(results[2].responseBody.error).toEqual('forbidden');
-
-        expect(results[3].responseBody.error).toEqual('not_implemented');
       });
     });
 
