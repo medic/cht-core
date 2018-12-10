@@ -1929,7 +1929,7 @@
   "schedules": [
     {
       "name": "OTP",
-      "translation_key": "OTP Schedule",
+      "translation_key": "schedule.nutrition_otp",
       "summary": "",
       "description": "",
       "start_from": "reported_date",
@@ -2034,7 +2034,7 @@
     },
     {
       "name": "SFP",
-      "translation_key": "SFP Schedule",
+      "translation_key": "schedule.nutrition_sfp",
       "summary": "",
       "description": "",
       "start_from": "reported_date",
@@ -2099,7 +2099,7 @@
     },
     {
       "name": "SC",
-      "translation_key": "SC Schedule",
+      "translation_key": "schedule.nutrition_sc",
       "summary": "",
       "description": "",
       "start_from": "reported_date",
@@ -2116,7 +2116,7 @@
     },
     {
       "name": "SC Exit",
-      "translation_key": "SC Exit",
+      "translation_key": "schedule.nutrition_sc_exit",
       "summary": "",
       "description": "",
       "start_from": "reported_date",
@@ -2141,7 +2141,7 @@
     },
     {
       "name": "Nutrition Evaluation",
-      "translation_key": "schedule.registration_anc",
+      "translation_key": "schedule.nutrition",
       "summary": "",
       "description": "",
       "start_from": "reported_date",

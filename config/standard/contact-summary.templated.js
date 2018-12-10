@@ -245,8 +245,7 @@ cards = [
 
 
   {
-    // label: 'contact.profile.growth_monitoring',
-    label: 'Growth Monitoring',
+    label: 'contact.profile.growth_monitoring',
     appliesToType: 'person',
     appliesIf: function() {
       return context.use_cases.gmp && getAgeInMonths() < 60 && getNutritionScreeningReport();
@@ -257,21 +256,21 @@ cards = [
       var screening_report = getNutritionScreeningReport();
 
       fields.push({
-        label: 'Weight',
+        label: 'contact.profile.weight',
         translate: true,
         width: 6,
         value: screening_report.fields.zscore.weight
       });
 
       fields.push({
-        label: 'Height',
+        label: 'contact.profile.height',
         translate: true,
         width: 6,
         value: screening_report.fields.zscore.height
       });
 
       fields.push({
-        label: 'WFA',
+        label: 'contact.profile.wfa',
         translate: true,
         width: 4,
         value: screening_report.fields.zscore.zscore_wfa,
@@ -280,7 +279,7 @@ cards = [
       });
 
       fields.push({
-        label: 'HFA',
+        label: 'contact.profile.hfa',
         translate: true,
         width: 4,
         value: screening_report.fields.zscore.zscore_hfa,
@@ -289,7 +288,7 @@ cards = [
       });
 
       fields.push({
-        label: 'WFH',
+        label: 'contact.profile.wfh',
         translate: true,
         width: 4,
         value: screening_report.fields.zscore.zscore_wfh,
@@ -301,8 +300,7 @@ cards = [
   },
 
   {
-    // label: 'contact.profile.imam_card',
-    label: 'IMAM',
+    label: 'contact.profile.imam',
     appliesToType: 'person',
     appliesIf: function() {
       return Boolean(getTreatmentProgram());
@@ -317,21 +315,21 @@ cards = [
 
       if (enrollment_report){
         fields.push({
-          label: 'Weight',
+          label: 'contact.profile.weight',
           translate: true,
           width: 6,
           value: enrollment_report.fields.zscore.weight
         });
 
         fields.push({
-          label: 'Height',
+          label: 'contact.profile.height',
           translate: true,
           width: 6,
           value: enrollment_report.fields.zscore.height
         });
 
         fields.push({
-          label: 'WFH',
+          label: 'contact.profile.wfh',
           translate: true,
           width: 12,
           value: enrollment_report.fields.zscore.zscore_wfh,
@@ -339,14 +337,14 @@ cards = [
         });
 
         fields.push({
-          label: 'Type of Treatment',
+          label: 'contact.profile.nutrition_program',
           translate: true,
           width: 6,
           value: enrollment_report.fields.enrollment.program
         });
 
         fields.push({
-          label: 'No of Sessions',
+          label: 'contact.profile.sessions',
           value: 'contact.profile.visits.of',
           translate: true,
           width: 6,
@@ -361,8 +359,7 @@ cards = [
   },
 
   {
-    // label: 'contact.profile.imam_history_card',
-    label: 'IMAM History',
+    label: 'contact.profile.imam_history',
     appliesToType: 'person',
     appliesIf: function() {
       return Boolean(getFollowupExitReport());
@@ -384,41 +381,36 @@ cards = [
 
       if (enrollment_report){
 
-        // find latest treatment enrollment; get program value
         fields.push({
-          label: 'Last treatment received',
+          label: 'contact.profile.last_treatment',
           translate: true,
           width: 6,
           value: enrollment_report.fields.enrollment? enrollment_report.fields.enrollment.program: ''
         });
 
-        // exit field in followup form
         fields.push({
-          label: 'Exit Date',
+          label: 'contact.profile.exit_date',
           translate: true,
           width: 6,
           value: exit_report? d.toISOString().slice(0, 10): ''
         });
 
-        // weight at exit: last followup visit weight?
         fields.push({
-          label: 'Weight at exit',
+          label: 'contact.profile.weight_at_exit',
           translate: true,
           width: 6,
           value: exit_report? exit_report.fields.zscore.weight: ''
         });
 
-        // last followup visit height
         fields.push({
-          label: 'Height at exit',
+          label: 'contact.profile.height_at_exit',
           translate: true,
           width: 6,
           value: exit_report? exit_report.fields.zscore.height: ''
         });
 
-        // last followup visit wfh
         fields.push({
-          label: 'WFH z-score',
+          label: 'contact.profile.wfh',
           translate: true,
           width: 12,
           value: exit_report? exit_report.fields.zscore.zscore_wfh: ''
