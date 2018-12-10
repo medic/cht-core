@@ -123,6 +123,7 @@ describe('LiveListSrv', function() {
     // then
     assert.deepEqual(_.keys(service.name), [
       'insert',
+      'invalidateCache',
       'update',
       'remove',
       'getList',

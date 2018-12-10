@@ -7,13 +7,11 @@ var _ = require('underscore'),
   var inboxControllers = angular.module('inboxControllers');
 
   inboxControllers.controller('ContactsCtrl', function(
-    $element,
     $log,
     $q,
     $scope,
     $state,
     $stateParams,
-    $timeout,
     $translate,
     Auth,
     Changes,
@@ -51,7 +49,10 @@ var _ = require('underscore'),
     var _initScroll = function() {
       scrollLoader.init(function() {
         if (!$scope.loading && $scope.moreItems) {
-          _query({ skip: true });
+          _query({
+            paginating: true,
+            reuseExistingDom: true,
+          });
         }
       });
     };
@@ -65,7 +66,7 @@ var _ = require('underscore'),
         $scope.error = false;
       }
 
-      if (options.skip) {
+      if (options.paginating) {
         $scope.appending = true;
         options.skip = liveList.count();
       } else if (!options.silent) {
@@ -146,8 +147,11 @@ var _ = require('underscore'),
           $scope.moreItems = liveList.moreItems =
             contacts.length >= options.limit;
 
-          contacts.forEach(liveList.update);
-          liveList.refresh();
+          const mergedList = options.paginating ?
+            _.uniq(contacts.concat(liveList.getList()), false, _.property('_id'))
+            : contacts;
+          liveList.set(mergedList, !!options.reuseExistingDom);
+
           _initScroll();
           $scope.loading = false;
           $scope.appending = false;
@@ -430,16 +434,33 @@ var _ = require('underscore'),
     var changeListener = Changes({
       key: 'contacts-list',
       callback: function(change) {
-        var limit = liveList.count();
+        const limit = liveList.count();
         if (change.deleted && change.doc.type !== 'data_record') {
           liveList.remove(change.doc);
         }
 
-        var withIds =
+        if (change.doc) {
+          liveList.invalidateCache(change.doc._id);
+
+          // Invalidate the contact for changing reports with visited_contact_uuid
+          if (change.doc.fields) {
+            liveList.invalidateCache(change.doc.fields.visited_contact_uuid);
+          }
+        }
+
+        const withIds =
           isSortedByLastVisited() &&
           !!isRelevantVisitReport(change.doc) &&
           !change.deleted;
-        return _query({ limit: limit, silent: true, withIds: withIds });
+        return _query({
+          limit,
+          withIds,
+          silent: true,
+
+          // The logic for updating Primary Contact changes is complex
+          // So redraw everything when a person changes
+          reuseExistingDom: change.doc && change.doc.type !== 'person',
+        });
       },
       filter: function(change) {
         return (
