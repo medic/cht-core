@@ -60,9 +60,8 @@ var _ = require('underscore'),
     };
 
     var _query = function(options) {
-      options = _.defaults(options || {}, {
-        limit: 50,
-      });
+      options = options || {};
+      options.limit = options.limit || 50;
 
       if (!options.silent) {
         $scope.loading = true;
