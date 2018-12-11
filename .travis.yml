@@ -40,7 +40,10 @@ before_script:
   - npm install -g horticulturalist
   - ./scripts/travis/couch-config
   - sleep 15
-  - HORTI_BUILDS_SERVER=$UPLOAD_URL/_couch/builds_testing horti --local --install=medic:medic:test-$TRAVIS_BUILD_NUMBER
+  - echo "HORTI_BUILDS_SERVER=${UPLOAD_URL}/_couch/builds_testing horti"
+  - echo "--install=medic:medic:test-${TRAVIS_BUILD_NUMBER}"
+  - echo "COUCH_URL=${COUCH_URL}"
+  - COUCH_URL=$COUCH_URL HORTI_BUILDS_SERVER=$UPLOAD_URL/_couch/builds_testing horti --local --install=medic:medic:test-$TRAVIS_BUILD_NUMBER
 
 script:
   - |
