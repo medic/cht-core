@@ -227,10 +227,10 @@ var feedback = require('../modules/feedback'),
     });
 
     $rootScope.$on('$stateChangeStart', function (event, toState, toParams, fromState){
-      if(!$scope.enketoStatus.edited){
+      if (!$scope.enketoStatus.edited){
         return;
       }
-      if(!fromState.url.includes('edit') && !fromState.url.includes('add')){
+      if (!fromState.url.includes('edit') && !fromState.url.includes('add')){
         return;
       }
       if ($scope.cancelCallback) {
