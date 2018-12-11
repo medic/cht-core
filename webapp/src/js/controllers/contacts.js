@@ -228,10 +228,10 @@ var _ = require('underscore'),
           var canEdit = results[2];
 
           $scope.setRightActionBar({
-            relevantForms: [], // REVIEWER: this disables the "New Action" button in action bar until full load is complete
+            relevantForms: [], // this disables the "New Action" button in action bar until full load is complete
             selected: [selectedDoc],
             sendTo: selectedDoc.type === 'person' ? selectedDoc : '',
-            canDelete: false, // REVIEWER: this disables the "Delete" button in action bar until full load is complete
+            canDelete: false, // this disables the "Delete" button in action bar until full load is complete
             canEdit: canEdit,
           });
 
