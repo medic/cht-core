@@ -220,19 +220,18 @@ var _ = require('underscore'),
           getActionBarDataForChild(selectedDoc.type),
           getCanEdit(selectedDoc),
         ])
-        .then(function(results) {
-          $scope.setTitle(results[0]);
-          if (results[1]) {
-            selectedDoc.child = results[1];
+        .then(function([translatedTitle, actionBarDataForChild, canEdit]) {
+          $scope.setTitle(translatedTitle);
+          if (actionBarDataForChild) {
+            selectedDoc.child = actionBarDataForChild;
           }
-          var canEdit = results[2];
 
           $scope.setRightActionBar({
             relevantForms: [], // this disables the "New Action" button in action bar until full load is complete
             selected: [selectedDoc],
             sendTo: selectedDoc.type === 'person' ? selectedDoc : '',
             canDelete: false, // this disables the "Delete" button in action bar until full load is complete
-            canEdit: canEdit,
+            canEdit,
           });
 
           return selected.reportLoader.then(function() {
@@ -240,9 +239,8 @@ var _ = require('underscore'),
               ContactSummary(selected.doc, selected.reports, selected.lineage),
               Settings()
             ])
-            .then(function(results) {
+            .then(function([summary, settings]) {
               $scope.loadingSummary = false;
-              var summary = results[0];
               $scope.selected.summary = summary;
               var options = { doc: selectedDoc, contactSummary: summary.context };
               XmlForms('ContactsCtrl', options, function(err, forms) {
@@ -250,7 +248,7 @@ var _ = require('underscore'),
                   $log.error('Error fetching relevant forms', err);
                 }
                 var showUnmuteModal = function(formId) {
-                  return $scope.selected.doc.muted && !isUnmuteForm(results[1], formId);
+                  return $scope.selected.doc.muted && !isUnmuteForm(settings, formId);
                 };
                 var formSummaries =
                   forms &&
