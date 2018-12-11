@@ -44,7 +44,8 @@ before_script:
   - echo "--install=medic:medic:test-${TRAVIS_BUILD_NUMBER}"
   - echo "COUCH_URL=${COUCH_URL}"
   - curl ${COUCH_URL}
-  - COUCH_URL=$COUCH_URL HORTI_BUILDS_SERVER=$UPLOAD_URL/_couch/builds_testing horti --local --install=medic:medic:test-$TRAVIS_BUILD_NUMBER
+# TODO  - COUCH_URL=$COUCH_URL HORTI_BUILDS_SERVER=$UPLOAD_URL/_couch/builds_testing horti --local --install=medic:medic:test-$TRAVIS_BUILD_NUMBER
+  - COUCH_URL=$COUCH_URL HORTI_BUILDS_SERVER=$UPLOAD_URL/_couch/builds_testing horti --local --install=medic:medic:test-14056
 
 script:
   - |
@@ -65,7 +66,7 @@ script:
 #      env: NODE_VERSION=8 PUBLISH_TO=horti
 
 stages:
-  - compile
+# TODO  - compile
   - test
   - publish
 
