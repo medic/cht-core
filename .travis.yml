@@ -37,6 +37,8 @@ install: nvm install $NODE_VERSION
 before_script:
   - mkdir tests/logs
   - nvm use $NODE_VERSION
+  - ./scripts/travis/npm-init
+  - npm install -g grunt-cli
   - npm install -g horticulturalist
   - ./scripts/travis/couch-config
   - ./scripts/travis/couch-admin
@@ -44,8 +46,8 @@ before_script:
   - echo "--install=medic:medic:test-${TRAVIS_BUILD_NUMBER}"
   - echo "COUCH_URL=${COUCH_URL}"
   - curl ${COUCH_URL}
-# TODO  - COUCH_URL=$COUCH_URL HORTI_BUILDS_SERVER=$UPLOAD_URL/_couch/builds_testing horti --local --install=medic:medic:test-$TRAVIS_BUILD_NUMBER
-  - COUCH_URL=$COUCH_URL HORTI_BUILDS_SERVER=$UPLOAD_URL/_couch/builds_testing horti --local --install=medic:medic:test-14056
+# TODO  - COUCH_URL=$COUCH_URL HORTI_BUILDS_SERVER=$UPLOAD_URL/_couch/builds_testing horti --local --install=medic:medic:test-$TRAVIS_BUILD_NUMBER &
+  - COUCH_URL=$COUCH_URL HORTI_BUILDS_SERVER=$UPLOAD_URL/_couch/builds_testing horti --local --install=medic:medic:test-14056 &
 
 script:
   - |

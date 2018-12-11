@@ -438,6 +438,7 @@ module.exports = function(grunt) {
                       grep -Ev '^\s*//' &&
                   echo 'ERROR: Links found with target="_blank" but no rel="noopener noreferrer" set.  Please add required rel attribute.')`,
       },
+      // TODO: REPLACE THIS WITH /scripts/travis/couch-admin
       'setup-admin': {
         cmd:
           `curl -X PUT ${couchConfig.withPathNoAuth(couchConfig.dbName)}` +
