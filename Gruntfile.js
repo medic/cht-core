@@ -1047,7 +1047,7 @@ module.exports = function(grunt) {
     // 'env:general',
     // 'exec:setup-admin',
     // 'deploy',
-    'mochaTest:api-integration',
+    // TODO move to the compile stage? 'mochaTest:api-integration',
     'exec:start-webdriver',
     'e2e',
   ]);
