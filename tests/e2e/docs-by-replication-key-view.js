@@ -84,6 +84,49 @@ describe('view docs_by_replication_key', () => {
         _id: 'testuser'
       },
       errors: [ { code: 'invalid_patient_id' } ]
+    },
+    {
+      type: 'tombstone',
+      tombstone: {
+        _id: 'form:some_deleted_form',
+        reported_date: 1,
+        type: 'form',
+        _deleted: true
+      },
+    },
+    {
+      type: 'tombstone',
+      tombstone: {
+        _id: 'report_about_patient_deleted',
+        reported_date: 1,
+        form: 'V',
+        type: 'data_record',
+        patient_id: 'testpatient',
+        _deleted: true
+      },
+    },
+    {
+      type: 'tombstone',
+      tombstone: {
+        _id: 'report_about_patient_2_deleted',
+        reported_date: 1,
+        form: 'V',
+        type: 'data_record',
+        fields: { patient_id: 'testpatient' },
+        _deleted: true
+      },
+    },
+    {
+      type: 'tombstone',
+      tombstone: {
+        _id: 'report_with_contact_deleted',
+        reported_date: 1,
+        form: 'V',
+        type: 'data_record',
+        contact: {
+          _id: 'testuser'
+        }
+      },
     }
   ];
 
@@ -118,6 +161,34 @@ describe('view docs_by_replication_key', () => {
       reported_date: 1,
       type: 'data_record',
       contact: 'not_the_testuser'
+    },
+    {
+      type: 'tombstone',
+      tombstone: {
+        _id: 'fakedoctype_deleted',
+        reported_date: 1,
+        type: 'fakedoctype',
+        _deleted: true
+      }
+    },
+    {
+      type: 'tombstone',
+      tombstone: {
+        _id: 'not_the_testuser_deleted',
+        reported_date: 1,
+        type: 'person',
+        _deleted: true
+      },
+    },
+    {
+      type: 'tombstone',
+      tombstone: {
+        _id: 'test_data_record_wrong_user_deleted',
+        reported_date: 1,
+        type: 'data_record',
+        contact: 'not_the_testuser',
+        _deleted: true
+      },
     }
   ];
 
@@ -151,6 +222,16 @@ describe('view docs_by_replication_key', () => {
       _id: 'test_kujua_message_incoming_no_contact',
       reported_date: 1,
       type: 'data_record'
+    },
+    {
+      type: 'tombstone',
+      tombstone: {
+        _id: 'test_kujua_message_no_tasks_deleted',
+        reported_date: 1,
+        type: 'data_record',
+        kujua_message: true,
+        _deleted: true
+      }
     }
   ];
 
@@ -217,13 +298,19 @@ describe('view docs_by_replication_key', () => {
     expect(docByPlaceIds).toContain('form:doc_by_place_test_form');
   });
 
+  it('should always return form deletes', () => {
+    expect(docByPlaceIds).toContain('form:some_deleted_form');
+  });
+
   describe('Documents associated with the person id', () => {
     it('Should return clinics if a recursive parent is the user', () => {
       expect(docByPlaceIds).toContain('report_about_patient');
+      expect(docByPlaceIds).toContain('report_about_patient_deleted');
     });
 
     it('Should return district_hospitals if the recursive parent is the user', () => {
       expect(docByPlaceIds).toContain('report_about_patient_2');
+      expect(docByPlaceIds).toContain('report_about_patient_2_deleted');
     });
 
     it('Should return health_centers if the recursive parent is the user', () => {
@@ -238,6 +325,9 @@ describe('view docs_by_replication_key', () => {
     it('Should check the contact of data records', () => {
       expect(docByPlaceIds).toContain('report_with_contact');
       expect(docByPlaceIds).not.toContain('test_data_record_wrong_user');
+
+      expect(docByPlaceIds).toContain('report_with_contact_deleted');
+      expect(docByPlaceIds).not.toContain('test_data_record_wrong_user_deleted');
     });
 
     it('Falls back to contact id when unknown patient', () => {
@@ -253,6 +343,9 @@ describe('view docs_by_replication_key', () => {
     it('Should pass when no tasks', () => {
       expect(docByPlaceIds_unassigned).toContain('test_kujua_message_no_tasks');
       expect(docByPlaceIds).not.toContain('test_kujua_message_no_tasks');
+
+      expect(docByPlaceIds_unassigned).toContain('test_kujua_message_no_tasks_deleted');
+      expect(docByPlaceIds).not.toContain('test_kujua_message_no_tasks_deleted');
     });
 
     it('Should pass when empty tasks', () => {
