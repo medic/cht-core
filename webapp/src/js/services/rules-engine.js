@@ -231,7 +231,8 @@ var nools = require('nools'),
           var options = {
             limit: 99999999,
             force: true,
-            include_docs: true
+            include_docs: true,
+            hydrateContactNames: true,
           };
           return $q.all([
             Search('reports', { valid: true }, options),

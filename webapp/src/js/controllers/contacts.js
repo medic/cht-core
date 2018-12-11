@@ -62,7 +62,6 @@ var _ = require('underscore'),
     var _query = function(options) {
       options = _.defaults(options || {}, {
         limit: 50,
-        hydrateContactNames: false,
       });
 
       if (!options.silent) {

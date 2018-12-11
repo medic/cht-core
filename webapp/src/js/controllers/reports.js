@@ -198,8 +198,10 @@ angular
     };
 
     var query = function(options) {
-      options = options || {};
-      options.limit = options.limit || 50;
+      options = _.defaults(options || {}, {
+        limit: 50,
+        hydrateContactNames: true,
+      });
       if (!options.silent) {
         $scope.error = false;
         $scope.errorSyntax = false;
@@ -442,7 +444,7 @@ angular
 
     $scope.$on('SelectAll', function() {
       $scope.setLoadingContent(true);
-      Search('reports', $scope.filters, { limit: 500 })
+      Search('reports', $scope.filters, { limit: 500, hydrateContactNames: true })
         .then(function(summaries) {
           $scope.selected = summaries.map(function(summary) {
             return {

@@ -206,7 +206,7 @@ angular.module('inboxServices').service('Enketo',
       if (shortCode) {
         subjectIds.push(shortCode);
       }
-      return Search('reports', { subjectIds: subjectIds }, { include_docs: true });
+      return Search('reports', { subjectIds: subjectIds }, { hydrateContactNames: true, include_docs: true });
     };
 
     var getContactSummary = function(doc, instanceData) {

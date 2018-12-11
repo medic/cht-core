@@ -75,9 +75,10 @@ angular.module('inboxServices').factory('Select2Search',
           types: { selected: types },
           search: params.data.q
         };
-        var options = {
+        const options = {
           limit: pageSize,
-          skip: skip
+          skip: skip,
+          hydrateContactNames: true,
         };
 
         Search('contacts', filters, options)

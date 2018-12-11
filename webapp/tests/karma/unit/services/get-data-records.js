@@ -55,7 +55,7 @@ describe('GetDataRecords service', () => {
       });
     });
 
-    it('single result', () => {
+    it('single hydrated result', () => {
       const expected = {
         _id: '5',
         name: 'five',
@@ -71,7 +71,7 @@ describe('GetDataRecords service', () => {
         }
       ]));
       HydrateContactNames.returns(Promise.resolve([ expected ]));
-      return service('5').then(actual => {
+      return service('5', { hydrateContactNames: true }).then(actual => {
         chai.expect(actual).to.deep.equal(expected);
         chai.expect(GetSummaries.callCount).to.equal(1);
         chai.expect(allDocs.callCount).to.equal(0);
@@ -82,24 +82,6 @@ describe('GetDataRecords service', () => {
           contact: 'a',
           lineage: [ 'b', 'c' ]
         }]);
-      });
-    });
-
-    it('unhydrated', () => {
-      const summary = {
-        _id: '5',
-        name: 'five',
-        contact: 'a',
-        lineage: [ 'b', 'c' ]
-      };
-      GetSummaries.returns(Promise.resolve([summary]));
-      const options = { hydrateContactNames: false };
-      return service('5', options).then(actual => {
-        console.log('actual', actual);
-        chai.expect(actual).to.deep.equal(summary);
-        chai.expect(GetSummaries.callCount).to.equal(1);
-        chai.expect(allDocs.callCount).to.equal(0);
-        chai.expect(HydrateContactNames.callCount).to.equal(0);
       });
     });
 
@@ -115,7 +97,7 @@ describe('GetDataRecords service', () => {
         { _id: '7', name: 'seven' }
       ]));
       HydrateContactNames.returns(Promise.resolve(expected));
-      return service([ '5', '6', '7' ]).then(actual => {
+      return service([ '5', '6', '7' ], { hydrateContactNames: true }).then(actual => {
         chai.expect(actual).to.deep.equal(expected);
         chai.expect(GetSummaries.callCount).to.equal(1);
         chai.expect(GetSummaries.args[0][0]).to.deep.equal([ '5', '6', '7' ]);

@@ -39,7 +39,6 @@ angular.module('inboxServices').factory('GetDataRecords',
     const getSummaries = function(ids, options) {
       return GetSummaries(ids)
         .then(summaries => {
-          // REVIEWER: Suspect a better interface for this is hydrateContactNames defaulting as false. Consumer should explicitly ask for hydration.
           const promiseToSummary = options.hydrateContactNames ? HydrateContactNames(summaries) : Promise.resolve(summaries);
           return promiseToSummary.then(GetSubjectSummaries);
         });
@@ -47,7 +46,7 @@ angular.module('inboxServices').factory('GetDataRecords',
 
     return function(ids, options) {
       options = _.defaults(options || {}, {
-        hydrateContactNames: true,
+        hydrateContactNames: false,
         include_docs: false,
       });
       
