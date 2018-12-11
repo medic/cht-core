@@ -1,0 +1,6 @@
+#!/bin/bash -eu
+
+curl -X PUT 'http://localhost:5984/_node/_local/_config/admins/admin')} -d '"pass"'
+curl -X POST 'http://localhost:5984/_users' -H "Content-Type: application/json" -d '{"_id": "org.couchdb.user:admin", "name": "admin", "password":"pass", "type":"user", "roles":[]}'
+curl -X PUT --data '"true"' 'http://localhost:5984/_node/_local/_config/chttpd/require_valid_user'
+curl -X PUT --data '"4294967296"' 'http://localhost:5984/_node/_local/_config/httpd/max_http_request_size'

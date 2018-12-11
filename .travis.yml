@@ -39,7 +39,7 @@ before_script:
   - nvm use $NODE_VERSION
   - npm install -g horticulturalist
   - ./scripts/travis/couch-config
-  - sleep 15
+  - ./scripts/travis/couch-admin
   - echo "HORTI_BUILDS_SERVER=${UPLOAD_URL}/_couch/builds_testing"
   - echo "--install=medic:medic:test-${TRAVIS_BUILD_NUMBER}"
   - echo "COUCH_URL=${COUCH_URL}"
