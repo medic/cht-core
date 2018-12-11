@@ -461,6 +461,7 @@ module.exports = function(grunt) {
       bundlesize: {
         cmd: 'node ./node_modules/bundlesize/index.js',
       },
+      // TODO remove??
       'setup-api-integration': {
         cmd: 'cd api && npm ci',
       },
@@ -1043,10 +1044,10 @@ module.exports = function(grunt) {
   ]);
 
   grunt.registerTask('ci-integration-e2e', 'Run further tests for CI', [
-    'env:general',
-    'exec:setup-admin',
-    'deploy',
-    'test-api-integration',
+    // 'env:general',
+    // 'exec:setup-admin',
+    // 'deploy',
+    'mochaTest:api-integration',
     'exec:start-webdriver',
     'e2e',
   ]);
