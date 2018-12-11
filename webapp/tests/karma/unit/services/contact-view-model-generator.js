@@ -109,13 +109,8 @@ describe('ContactViewModelGenerator service', () => {
     KarmaUtils.restore(GetDataRecords);
   });
 
-   // REVIEWER: I suspect this should be implemented using Q, but I can't work out how
   function waitForModelToLoad(model) {
-    return new Promise((resolve, reject) => {
-      model.reportLoader
-        .then(() => resolve(model))
-        .catch(reject);
-    });
+    return model.reportLoader.then(() => model);
   }
 
   describe('Place', () => {
