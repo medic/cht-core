@@ -36,6 +36,7 @@ angular
     $scope.verifyingReport = false;
 
     var liveList = LiveList.reports;
+    LiveList.$init($scope, 'reports', 'report-search');
 
     var updateLiveList = function(updated) {
       return AddReadStatus.reports(updated).then(function() {
@@ -515,5 +516,12 @@ angular
       },
     });
 
-    $scope.$on('$destroy', changeListener.unsubscribe);
+    $scope.$on('$destroy', function() {
+      changeListener.unsubscribe();
+      if (!$state.includes('reports')) {
+        SearchFilters.destroy();
+        LiveList.$reset('reports', 'report-search');
+        $('.inbox').off('click', '#reports-list .content-row');
+      }
+    });
   });

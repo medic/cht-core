@@ -63,7 +63,10 @@ angular.module('inboxServices').factory('LiveListConfig',
           return (c1.name || '').toLowerCase() < (c2.name || '').toLowerCase() ? -1 : 1;
         },
         listItem: function(contact) {
-          var scope = $scope.$new();
+          if (!this.scope) {
+            return;
+          }
+          var scope = this.scope.$new(true);
           scope.id = contact._id;
           scope.route = 'contacts';
           scope.icon = ContactSchema.get(contact.type).icon;
@@ -145,7 +148,11 @@ angular.module('inboxServices').factory('LiveListConfig',
           return r2.reported_date - r1.reported_date;
         },
         listItem: function(report, removedDomElement) {
-          var scope = $scope.$new();
+          if (!this.scope) {
+            return;
+          }
+
+          var scope = this.scope.$new(true);
           scope.id = report._id;
           var form = _.findWhere($scope.forms, { code: report.form });
           scope.route = 'reports';
@@ -490,6 +497,10 @@ angular.module('inboxServices').factory('LiveList',
              _contains(listName, doc);
     }
 
+    function _setScope(listName, scope) {
+      indexes[listName].scope = scope;
+    }
+
     function refreshAll() {
       const now = new Date();
 
@@ -551,10 +562,30 @@ angular.module('inboxServices').factory('LiveList',
         initialised: _.partial(_initialised, name),
         setSelected: _.partial(_setSelected, name),
         clearSelected: _.partial(_clearSelected, name),
-        containsDeleteStub: _.partial(_containsDeleteStub, name)
+        containsDeleteStub: _.partial(_containsDeleteStub, name),
+        setScope: _.partial(_setScope, name)
       };
 
       return api[name];
+    };
+
+    api.$init = function(scope) {
+      for (var i = 1; i < arguments.length; i++) {
+        var listName = arguments[i];
+        if (api[listName]) {
+          api[listName].setScope(scope);
+        }
+      }
+    };
+
+    api.$reset = function() {
+      for (var i = 0; i < arguments.length; i++) {
+        var listName = arguments[i];
+        if (api[listName]) {
+          api[listName].setScope();
+          api[listName].set([]);
+        }
+      }
     };
 
     return api;
