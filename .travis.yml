@@ -39,7 +39,8 @@ before_script:
   - nvm use $NODE_VERSION
   - npm install -g horticulturalist
   - ./scripts/travis/couch-config
-  - HORTI_BUILDS_SERVER=${UPLOAD_URL}/_couch/builds_testing horti --local --install=medic:medic:test-${TRAVIS_BUILD_NUMBER}
+  - sleep 15
+  - HORTI_BUILDS_SERVER=$UPLOAD_URL/_couch/builds_testing horti --local --install=medic:medic:test-$TRAVIS_BUILD_NUMBER
 
 script:
   - |
