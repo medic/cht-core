@@ -6,7 +6,8 @@ const auth = require('../auth'),
       tombstoneUtils = require('@medic/tombstone-utils'),
       uuid = require('uuid/v4'),
       config = require('../config'),
-      logger = require('../logger');
+      logger = require('../logger'),
+      serverChecks = require('@medic/server-checks');
 
 let inited = false,
     continuousFeed = false,
@@ -172,6 +173,11 @@ const restartNormalFeed = feed => {
 const getChanges = feed => {
   const options = { return_docs: true };
   _.extend(options, _.pick(feed.req.query, 'since', 'style', 'conflicts', 'seq_interval'));
+
+  if (shouldLimitChangesRequests() && feed.req.query.limit) {
+    options.limit = feed.req.query.limit;
+  }
+
   options.doc_ids = feed.allowedDocIds;
   options.since = options.since || 0;
 
@@ -184,8 +190,10 @@ const getChanges = feed => {
     feed.lastSeq = info && info.last_seq || feed.lastSeq;
   });
 
+  var start = Date.now();
   return feed.upstreamRequest
     .then(response => {
+      console.log('changes request took ' + (Date.now() - start));
       const results = response && response.results;
       // if the response was incomplete
 
@@ -230,6 +238,7 @@ const getChanges = feed => {
 };
 
 const initFeed = (req, res) => {
+  var start = Date.now();
   const feed = {
     id: req.id || uuid(),
     req: req,
@@ -258,7 +267,9 @@ const initFeed = (req, res) => {
       return authorization.getAllowedDocIds(feed);
     })
     .then(allowedDocIds => {
+      console.log('init feed get allowed ids' + (Date.now() - start));
       feed.allowedDocIds = allowedDocIds;
+      console.log('init feed took ' + (Date.now() - start));
       return feed;
     });
 };
@@ -346,10 +357,32 @@ const initContinuousFeed = since => {
     });
 };
 
+const shouldLimitChangesRequests = () => {
+  if (typeof this.cache !== 'undefined') {
+    return this.cache;
+  }
+
+  const MIN_COUCH_VERSION_FOR_BATCHING = '2.3.0',
+        parseVersion = v => v.match(/^([0-9]+)\.([0-9]+)\.([0-9]+).*$/),
+        minVersion = parseVersion(MIN_COUCH_VERSION_FOR_BATCHING),
+        actualVersion = parseVersion(serverChecks.getCouchDbVersion());
+
+  this.cache = true;
+  for (let i = 0; i < 3; i++) {
+    if (minVersion[i] > actualVersion[i]) {
+      this.cache = false;
+      break;
+    }
+  }
+
+  return this.cache;
+};
+
 const init = () => {
   if (!inited) {
     inited = true;
     initContinuousFeed();
+    shouldLimitChangesRequests();
   }
 };
 
