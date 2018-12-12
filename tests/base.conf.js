@@ -33,7 +33,7 @@ class BaseConfig {
         jasmine.getEnv().addReporter(utils.reporter);
         browser.waitForAngularEnabled(false);
 
-        if(options.manageServices) {
+        if(options.manageServices) { // TODO maybe remove this option?
           browser.driver.wait(serviceManager.startAll(), 60 * 1000, 'API and Sentinel should start within 60 seconds');
           browser.driver.sleep(1); // block until previous command has completed
         }

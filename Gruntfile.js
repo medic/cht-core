@@ -1049,7 +1049,7 @@ module.exports = function(grunt) {
     // 'deploy',
     // TODO move to the compile stage? 'mochaTest:api-integration',
     'exec:start-webdriver',
-    'e2e',
+    'protractor:e2e-tests-and-services',
   ]);
 
   grunt.registerTask('ci-performance', 'Run performance tests on CI', [
