@@ -62,6 +62,7 @@ module.exports = function(grunt) {
           },
         ],
       },
+      // TODO remove?
       'change-ddoc-id-for-publish': {
         src: ['build/ddocs/medic.json'],
         overwrite: true,
