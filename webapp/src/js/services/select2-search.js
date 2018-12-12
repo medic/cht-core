@@ -77,7 +77,7 @@ angular.module('inboxServices').factory('Select2Search',
         };
         const options = {
           limit: pageSize,
-          skip: skip,
+          skip,
           hydrateContactNames: true,
         };
 

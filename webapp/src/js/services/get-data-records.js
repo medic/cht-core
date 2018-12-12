@@ -45,7 +45,7 @@ angular.module('inboxServices').factory('GetDataRecords',
     };
 
     return function(ids, options) {
-      options = _.defaults(options || {}, {
+      const opts = _.defaults(options || {}, {
         hydrateContactNames: false,
         include_docs: false,
       });
@@ -60,7 +60,7 @@ angular.module('inboxServices').factory('GetDataRecords',
       if (!ids.length) {
         return $q.resolve([]);
       }
-      const getFn = options.include_docs ? getDocs : ids => getSummaries(ids, options);
+      const getFn = opts.include_docs ? getDocs : ids => getSummaries(ids, opts);
       return getFn(ids)
         .then(function(response) {
           if (!arrayGiven) {

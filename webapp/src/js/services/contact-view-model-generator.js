@@ -249,7 +249,7 @@ angular.module('inboxServices').factory('ContactViewModelGenerator',
           subjectIds.push(doc.place_id);
         }
       });
-      return Search('reports', { subjectIds: subjectIds }, { hydrateContactNames: true, include_docs: true })
+      return Search('reports', { subjectIds: subjectIds }, { include_docs: true })
         .then(function(reports) {
           reports.forEach(function(report) {
             report.valid = !report.errors || !report.errors.length;
