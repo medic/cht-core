@@ -11,7 +11,7 @@ module.exports = {
   COUCH_HOST: 'localhost',
 
   // test database to avoid writing to the dev db
-  DB_NAME: 'medic-test',
+  DB_NAME: 'medic',
   MAIN_DDOC_NAME: 'medic',
 
   // tests create a document with this id to be referenced by org.couchdb.user contact_id
