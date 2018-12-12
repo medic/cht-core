@@ -15,14 +15,7 @@ angular.module('inboxServices').service('SubmitFormBySms',
     GetReportContent,
     Language,
     LineageModelGenerator,
-    Settings,
-    Search,
-    SubmitFormBySms,
-    TranslateFrom,
-    UserContact,
-    XmlForm,
-    XSLT,
-    ZScore
+    Settings
   ) {
     'use strict';
     'ngInject';
