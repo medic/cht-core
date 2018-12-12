@@ -187,7 +187,7 @@ const getCurrentSeq = () => {
 };
 
 // TODO fix - it seems like sentinel is shipping tombstones which is breaking tests - race condition?
-describe.skip('changes handler', () => {
+xdescribe('changes handler', () => {
 
   const DOCS_TO_KEEP = [
     'PARENT_PLACE',
