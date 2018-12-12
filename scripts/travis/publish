@@ -1,0 +1,12 @@
+#!/bin/bash -eu
+
+curl ${UPLOAD_URL}/_couch/builds_testing/medic:medic:test-${TRAVIS_BUILD_NUMBER}?attachments=true -o ddoc.json
+if [[ -z "${TRAVIS_TAG}" ]]; then
+  echo "Publishing ${TRAVIS_TAG}"
+else if [[ -z "${TRAVIS_BRANCH}" ]]; then
+  echo "Publishing ${TRAVIS_BRANCH}"
+else 
+  echo "Not a tag or a branch so not publishing"
+fi
+
+#- cat ddoc.json | sed 's/"_id":"medic:medic:test-[0-9]*"/"_id":"medic:medic:${releaseName}/'

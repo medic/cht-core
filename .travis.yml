@@ -86,11 +86,9 @@ jobs:
     - stage: publish
       if: type != pull_request
       env: NODE_VERSION=10
-      before_script: echo "Don't do anything!"
-      script: #node --stack_size=10000 `which grunt` publish
-        - curl $UPLOAD_URL/_couch/builds_testing/medic:medic:test-$TRAVIS_BUILD_NUMBER?attachments=true -o ddoc.json
-        - echo "Publishing ${TRAVIS_TAG || TRAVIS_BRANCH}"
-        #- cat ddoc.json | sed 's/"_id":"medic:medic:test-[0-9]*"/"_id":"medic:medic:${releaseName}/'
+      before_script:
+      script:
+        - ./scripts/travis/publish
 
 #after_failure:
 #  - pip install --user awscli
