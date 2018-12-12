@@ -46,7 +46,7 @@ before_script:
   - echo "--install=medic:medic:test-${TRAVIS_BUILD_NUMBER}"
   - echo "COUCH_URL=${COUCH_URL}"
   - curl ${COUCH_URL}
-# TODO  - COUCH_URL=$COUCH_URL HORTI_BUILDS_SERVER=$UPLOAD_URL/_couch/builds_testing horti --local --install=medic:medic:test-$TRAVIS_BUILD_NUMBER > tests/logs/horti.log &
+  - COUCH_URL=$COUCH_URL HORTI_BUILDS_SERVER=$UPLOAD_URL/_couch/builds_testing horti --local --install=medic:medic:test-$TRAVIS_BUILD_NUMBER > tests/logs/horti.log &
   - COUCH_URL=$COUCH_URL HORTI_BUILDS_SERVER=$UPLOAD_URL/_couch/builds_testing horti --local --install=medic:medic:test-14056 > tests/logs/horti.log &
 
 script:
@@ -68,7 +68,7 @@ script:
 #      env: NODE_VERSION=8 PUBLISH_TO=horti
 
 stages:
-# TODO  - compile
+  - compile
   - test
   - publish
 
@@ -81,8 +81,8 @@ jobs:
         - npm install -g grunt-cli
       script:
         - node --stack_size=10000 `which grunt` ci-build  # build the app
-# TODO        - node --stack_size=10000 `which grunt` ci-unit   # run static analysis and unit tests
-# TODO        - cd config/standard && npm ci && npm run travis  # run standard config tests
+        - node --stack_size=10000 `which grunt` ci-unit   # run static analysis and unit tests
+        - cd config/standard && npm ci && npm run travis  # run standard config tests
         - node --stack_size=10000 `which grunt` publish-for-testing
     - stage: publish
       if: type != pull_request

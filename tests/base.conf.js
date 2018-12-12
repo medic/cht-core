@@ -60,8 +60,8 @@ module.exports = BaseConfig;
 const listenForApi = () => {
   console.log('Checking API');
   return utils.request({ path: '/api/info' })
-    .catch(err => {
-      console.log('API check failed, trying again in 5 seconds', err);
+    .catch(() => {
+      console.log('API check failed, trying again in 5 seconds');
       return new Promise(resolve => {
         setTimeout(() => {
           resolve(listenForApi());

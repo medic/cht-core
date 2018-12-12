@@ -970,6 +970,7 @@ module.exports = function(grunt) {
   );
 
   // Test tasks
+  // TODO remove?
   grunt.registerTask('e2e', 'Deploy app for testing and run e2e tests', [
     'exec:reset-test-databases',
     'build-admin',
@@ -979,6 +980,7 @@ module.exports = function(grunt) {
     'protractor:e2e-tests-and-services',
   ]);
 
+  // TODO remove?
   grunt.registerTask('test-perf', 'Run performance-specific tests', [
     'exec:reset-test-databases',
     'build-node-modules',
@@ -1053,11 +1055,11 @@ module.exports = function(grunt) {
   ]);
 
   grunt.registerTask('ci-performance', 'Run performance tests on CI', [
-    'env:general',
-    'exec:setup-admin',
+    // 'env:general',
+    // 'exec:setup-admin',
     'exec:start-webdriver',
-    'deploy',
-    'test-perf',
+    // 'deploy',
+    'protractor:performance-tests-and-services',
   ]);
 
   // Dev tasks
