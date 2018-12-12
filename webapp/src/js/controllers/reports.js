@@ -197,11 +197,10 @@ angular
         });
     };
 
-    var query = function(options) {
-      options = _.defaults(options || {}, {
-        limit: 50,
-        hydrateContactNames: true,
-      });
+    var query = function(opts) {
+      const options = Object.assign({}, opts);
+      options.limit = options.limit || 50;
+      options.hydrateContactNames = 'hydrateContactNames' in options ? !!options.hydrateContactNames : true;
       if (!options.silent) {
         $scope.error = false;
         $scope.errorSyntax = false;
