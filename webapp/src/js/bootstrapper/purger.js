@@ -1,5 +1,3 @@
-'use strict';
-
 const LAST_PURGED_DATE_KEY = 'medic-last-purge-date';
 const daysToMs = (days) => 1000 * 60 * 60 * 24 * days;
 
@@ -11,7 +9,7 @@ const daysToMs = (days) => 1000 * 60 * 60 * 24 * days;
  * the count of contacts
  * progress: called every so often, with updated progress TODO: explanation
 */
-module.export = function(DB) {
+module.exports = function(DB) {
 
   const getConfig = () => {
     // TODO: actually pull config out of the ddoc
@@ -79,21 +77,22 @@ module.export = function(DB) {
   const reportsByContact = () => {
     // TODO: in the future this is a great place for a quick-indexing mango query
     return DB.allDocs({include_docs: true})
-      .then(docs => {
+      .then(results => {
         const {
           contactsByContactId,
           reportsByContactId
-        } = docs.reduce((acc, doc) => {
-          if (doc.type === 'report') {
+        } = results.rows.reduce((acc, row) => {
+          const doc = row.doc;
+          if (doc.type === 'data_record') {
             if (!acc.reportsByContactId[doc.contact._id]) {
-              acc.reportsByContactId[doc.contact._id] = [doc]
+              acc.reportsByContactId[doc.contact._id] = [doc];
             } else {
               acc.reportsByContactId[doc.contact._id].push(doc);
             }
           }
 
           if (['district_hospital', 'health_center', 'clinic', 'person'].includes(doc.type)) {
-            contactsByContactId[doc._id] = doc;
+            acc.contactsByContactId[doc._id] = doc;
           }
 
           return acc;
@@ -149,30 +148,24 @@ module.export = function(DB) {
     .then(purgeCount => {
       console.log(`Purge complete, purged ${purgeCount} documents`);
       return purgeCount;
-    })
-    .catch(err => {
-      console.error('Purging service failed');
-      console.error(err);
     });
-  }
+  };
 
   const handlers = {};
   const publish = (name, arguments) => {
     (handlers[name] || []).forEach(callback => {
       callback.apply(null, arguments);
     });
-  }
+  };
 
   const p = Promise.resolve()
     .then(() => begin())
     .then(count => publish('done', count));
 
-  return {
-    on: (type, callback) => {
-      handlers.type = handlers.type || [];
-      handlers.type.push(callback);
-    },
-    // For testing probably
-    _p: p
-  }
+  p.on = (type, callback) => {
+    handlers.type = handlers.type || [];
+    handlers.type.push(callback);
+  };
+
+  return p;
 };
