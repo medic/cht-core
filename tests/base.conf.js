@@ -33,6 +33,8 @@ class BaseConfig {
         jasmine.getEnv().addReporter(utils.reporter);
         browser.waitForAngularEnabled(false);
 
+        browser.driver.wait(listenForApi, 120 * 1000, 'API took too long to start up');
+
         if(options.manageServices) { // TODO maybe remove this option?
           browser.driver.wait(serviceManager.startAll(), 60 * 1000, 'API and Sentinel should start within 60 seconds');
           browser.driver.sleep(1); // block until previous command has completed
@@ -55,6 +57,18 @@ class BaseConfig {
 
 module.exports = BaseConfig;
 
+const listenForApi = () => {
+  console.log('Checking API');
+  return utils.request({ path: '/api/info' })
+    .catch(err => {
+      console.log('API check failed, trying again in 5 seconds', err);
+      return new Promise(resolve => {
+        setTimeout(() => {
+          resolve(listenForApi());
+        }, 5000);
+      });
+    });
+};
 
 const getLoginUrl = () => {
   const redirectUrl = encodeURIComponent(`/${constants.DB_NAME}/_design/${constants.MAIN_DDOC_NAME}/_rewrite/#/messages`);
