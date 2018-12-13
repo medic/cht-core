@@ -6,6 +6,7 @@ angular
   .service('Form2Sms', function(
     $log,
     $parse,
+    $p,
     DB,
     GetReportContent
   ) {
@@ -14,8 +15,7 @@ angular
 
     return function(doc) {
       if(!doc) {
-        // REVIEWER: should this be `$q` instead of Promise?
-        return Promise.reject(new Error('No doc provided.'));
+        return $q.reject(new Error('No doc provided.'));
       }
 
       return DB()
