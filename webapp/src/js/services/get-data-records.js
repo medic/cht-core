@@ -45,10 +45,7 @@ angular.module('inboxServices').factory('GetDataRecords',
     };
 
     return function(ids, options) {
-      const opts = _.defaults(options || {}, {
-        hydrateContactNames: false,
-        include_docs: false,
-      });
+      const opts = _.extend({ hydrateContactNames: false, include_docs: false }, options);
       
       if (!ids) {
         return $q.resolve([]);

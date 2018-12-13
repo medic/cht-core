@@ -198,9 +198,7 @@ angular
     };
 
     var query = function(opts) {
-      const options = Object.assign({}, opts);
-      options.limit = options.limit || 50;
-      options.hydrateContactNames = 'hydrateContactNames' in options ? !!options.hydrateContactNames : true;
+      const options = _.extend({ limit: 50, hydrateContactNames: true }, opts);
       if (!options.silent) {
         $scope.error = false;
         $scope.errorSyntax = false;
@@ -509,7 +507,7 @@ angular
           $scope.hasReports = liveList.count() > 0;
           setActionBarData();
         } else {
-          query({ silent: true, limit: liveList.count() });
+          query({ silent: true, limit: Math.max(50, liveList.count()) });
         }
       },
       filter: function(change) {
