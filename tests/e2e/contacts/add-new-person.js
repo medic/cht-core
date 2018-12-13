@@ -11,7 +11,7 @@ describe('Add new person tests : ', () => {
 
   afterAll(utils.afterEach);
 
-  it.skip('should add new person', () => {
+  xit('should add new person', () => {
     commonElements.goToPeople();
     expect(commonElements.isAt('contacts-list'));
     contactPage.addNewDistrict('BedeDistrict');
