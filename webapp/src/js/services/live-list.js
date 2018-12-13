@@ -102,8 +102,6 @@ angular.module('inboxServices').factory('LiveListConfig',
                   scope.visits.status = 'done';
                 }
               }
-            } else {
-              scope.summary = $translate.instant('contact.primary_contact_name', { name: contact.contact });
             }
           }
           return renderTemplate(scope);

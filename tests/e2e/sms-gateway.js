@@ -317,7 +317,7 @@ describe('sms-gateway api', () => {
             done();
           });
         })
-        .catch(done);
+        .catch(done.fail);
     });
 
     afterEach(done => {

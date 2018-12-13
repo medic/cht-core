@@ -197,9 +197,8 @@ angular
         });
     };
 
-    var query = function(options) {
-      options = options || {};
-      options.limit = options.limit || 50;
+    var query = function(opts) {
+      const options = _.extend({ limit: 50, hydrateContactNames: true }, opts);
       if (!options.silent) {
         $scope.error = false;
         $scope.errorSyntax = false;
@@ -442,7 +441,7 @@ angular
 
     $scope.$on('SelectAll', function() {
       $scope.setLoadingContent(true);
-      Search('reports', $scope.filters, { limit: 500 })
+      Search('reports', $scope.filters, { limit: 500, hydrateContactNames: true })
         .then(function(summaries) {
           $scope.selected = summaries.map(function(summary) {
             return {
@@ -508,7 +507,7 @@ angular
           $scope.hasReports = liveList.count() > 0;
           setActionBarData();
         } else {
-          query({ silent: true, limit: liveList.count() });
+          query({ silent: true, limit: Math.max(50, liveList.count()) });
         }
       },
       filter: function(change) {

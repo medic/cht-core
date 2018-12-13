@@ -1157,7 +1157,7 @@ describe('Contacts controller', () => {
                     assert.deepEqual(searchService.args[i], [
                       'contacts',
                       { types: { selected: ['childType'] } },
-                      { limit: 5, withIds: false, silent: true, reuseExistingDom: i !== 5 },
+                      { limit: 5, withIds: false, silent: true, reuseExistingDom: true },
                       { displayLastVisitedDate: true, visitCountSettings: {} },
                       undefined,
                     ]);
@@ -1200,7 +1200,7 @@ describe('Contacts controller', () => {
                     assert.deepEqual(searchService.args[i], [
                       'contacts',
                       { types: { selected: ['childType'] } },
-                      { limit: 5, withIds: false, silent: true, reuseExistingDom: i !== 5 },
+                      { limit: 5, withIds: false, silent: true, reuseExistingDom: true },
                       {
                         displayLastVisitedDate: true,
                         visitCountSettings: {},
@@ -1243,7 +1243,7 @@ describe('Contacts controller', () => {
                     assert.deepEqual(searchService.args[i], [
                       'contacts',
                       { types: { selected: ['childType'] } },
-                      { limit: 5, withIds: false, silent: true, reuseExistingDom: i !== 5 },
+                      { limit: 5, withIds: false, silent: true, reuseExistingDom: true },
                       { displayLastVisitedDate: true, visitCountSettings: {} },
                       undefined,
                     ]);
@@ -1285,7 +1285,7 @@ describe('Contacts controller', () => {
                     assert.deepEqual(searchService.args[i], [
                       'contacts',
                       { types: { selected: ['childType'] } },
-                      { limit: 5, withIds: false, silent: true, reuseExistingDom: i !== 5 },
+                      { limit: 5, withIds: false, silent: true, reuseExistingDom: true },
                       {
                         displayLastVisitedDate: true,
                         visitCountSettings: {},
@@ -1328,7 +1328,7 @@ describe('Contacts controller', () => {
                     assert.deepEqual(searchService.args[i], [
                       'contacts',
                       { types: { selected: ['childType'] } },
-                      { limit: 5, withIds: false, silent: true, reuseExistingDom: i !== 5 },
+                      { limit: 5, withIds: false, silent: true, reuseExistingDom: true },
                       {},
                       undefined,
                     ]);

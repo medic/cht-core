@@ -477,10 +477,7 @@ var _ = require('underscore'),
           limit,
           withIds,
           silent: true,
-
-          // The logic for updating Primary Contact changes is complex
-          // So redraw everything when a person changes
-          reuseExistingDom: change.doc && change.doc.type !== 'person',
+          reuseExistingDom: true,
         });
       },
       filter: function(change) {
