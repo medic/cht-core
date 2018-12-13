@@ -24,7 +24,7 @@
     "@medic/server-checks": "^1.0.0",
     "@medic/task-utils": "^1.0.0",
     "@medic/tombstone-utils": "^1.0.0",
-    "@medic/translation-utils": "^1.0.0",
+    "@medic/translation-utils": "^1.0.1",
     "@medic/view-map-utils": "^1.0.0",
     "async": "^2.6.1",
     "bikram-sambat": "^1.5.0",
