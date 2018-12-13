@@ -1,4 +1,4 @@
-const http = require('http'),
+const https = require('https'),
       ddocIdRegex = /"_id":"medic:medic:test-[0-9]*","_rev":"[^"]*"/,
       {
         UPLOAD_URL,
@@ -25,7 +25,7 @@ const resetId = ddoc => ddoc.replace(ddocIdRegex, `"_id":"medic:medic:${releaseN
 
 const upload = (ddoc, contentType) => {
   const options = { headers: { 'content-type': contentType } };
-  const req = http.post(postUrl, options, res => {
+  const req = https.post(postUrl, options, res => {
     if (res.statusCode !== 200) {
       return handleError(`post response status code ${res.statusCode}`);
     }
@@ -37,7 +37,7 @@ const upload = (ddoc, contentType) => {
   req.end();
 };
 
-const req = http.get(getUrl, res => {
+const req = https.get(getUrl, res => {
   if (res.statusCode !== 200) {
     return handleError(`get response status code ${res.statusCode}`);
   }
