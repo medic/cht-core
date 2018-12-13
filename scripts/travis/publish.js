@@ -30,6 +30,9 @@ const upload = (ddoc, contentType) => {
     headers: { 'Content-Type': contentType }
   };
   console.log('options: ' + JSON.stringify(options));
+  console.log('url: ' + postUrl);
+  console.log('ddoc:');
+  console.log(ddoc);
   const req = https.request(postUrl, options, res => {
     if (res.statusCode !== 200) {
       handleError(`post response status code ${res.statusCode}`);
