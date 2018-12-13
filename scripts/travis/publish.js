@@ -24,8 +24,12 @@ const handleError = message => {
 const resetId = ddoc => ddoc.replace(ddocIdRegex, `"_id":"medic:medic:${releaseName}"`);
 
 const upload = (ddoc, contentType) => {
-  const options = { headers: { 'content-type': contentType } };
-  const req = https.post(postUrl, options, res => {
+  console.log('uploading release ddoc...');
+  const options = {
+    method: 'POST',
+    headers: { 'content-type': contentType }
+  };
+  const req = https.request(postUrl, options, res => {
     if (res.statusCode !== 200) {
       return handleError(`post response status code ${res.statusCode}`);
     }
@@ -37,6 +41,7 @@ const upload = (ddoc, contentType) => {
   req.end();
 };
 
+console.log('getting test release ddoc...');
 const req = https.get(getUrl, res => {
   if (res.statusCode !== 200) {
     return handleError(`get response status code ${res.statusCode}`);
@@ -47,6 +52,7 @@ const req = https.get(getUrl, res => {
     ddoc += chunk;
   });
   res.on('end', () => {
+    console.log('got test release ddoc');
     const newDdoc = resetId(ddoc);
     upload(newDdoc, contentType);
   });
