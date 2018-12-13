@@ -35,6 +35,8 @@ You can add console.log statements directly to the rules or add a breakpoint to 
 
 Another option is to add a script to package.json. After running `npm install` to install dependencies the `npm test` command will now execute your tests.
 
+[NPM Script Details](https://docs.npmjs.com/misc/scripts)
+
 * Open package.json
 * Add a `test-configs` entry to the scripts
 * Update the `test` script to run by adding `npm run test-configs`
