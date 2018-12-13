@@ -6,7 +6,7 @@ angular
   .service('Form2Sms', function(
     $log,
     $parse,
-    $p,
+    $q,
     DB,
     GetReportContent
   ) {
