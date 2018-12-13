@@ -1,5 +1,6 @@
 const LAST_PURGED_DATE_KEY = 'medic-last-purge-date';
 const daysToMs = (days) => 1000 * 60 * 60 * 24 * days;
+const NOW = Date.now(); // OK to do this here while we only run it once on startup
 
 /*
  * Handlers supported
@@ -20,13 +21,12 @@ module.exports = function(DB) {
   };
 
   const urgeToPurge = (days) => {
-    const now = Date.now();
     const lastPurge = parseInt(
       window.localStorage.getItem(LAST_PURGED_DATE_KEY)
     );
 
-    if (!lastPurge || (now - daysToMs(days)) > lastPurge) {
-      window.localStorage.setItem(LAST_PURGED_DATE_KEY, now);
+    if (!lastPurge || (NOW - daysToMs(days)) > lastPurge) {
+      window.localStorage.setItem(LAST_PURGED_DATE_KEY, NOW);
       return true;
     } else {
       console.log(`No purge needed yet. Last purge ${new Date(lastPurge)}`);
@@ -49,7 +49,11 @@ module.exports = function(DB) {
 
     const safePurgeResults = purgeResults.filter(id => {
       if (reportsById[id]) {
-        return true;
+        if (NOW - daysToMs(90) > reportsById[i].reported_date) {
+          return true;
+        } else {
+          console.warn(`Configured purge function attempted to purge ${id}, which is newer than 90 days old`);
+        }
       } else {
         console.warn(`Configured purge function attempted to purge ${id}, which was not a report id passed to it`);
       }
