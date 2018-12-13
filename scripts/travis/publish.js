@@ -27,21 +27,12 @@ const upload = (ddoc, contentType) => {
   console.log('uploading release ddoc...');
   const options = {
     method: 'POST',
-    headers: { 'content-type': contentType }
+    headers: { 'Content-Type': contentType }
   };
+  console.log('options: ' + JSON.stringify(options));
   const req = https.request(postUrl, options, res => {
     if (res.statusCode !== 200) {
-      // TODO clean this up
-      let body = '';
-      res.on('data', (d) => {
-        body += d;
-      });
-      console.log('headers', res.headers);
-      res.on('end', () => {
-        console.log('body: ' + body);
-        handleError(`post response status code ${res.statusCode}`);
-      });
-      return;
+      handleError(`post response status code ${res.statusCode}`);
     }
     console.log(`${releaseName} published!`);
     process.exit(0);
