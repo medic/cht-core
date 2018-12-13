@@ -88,7 +88,7 @@ jobs:
       env: NODE_VERSION=10
       before_script:
       script:
-        - ./scripts/travis/publish
+        - node ./scripts/travis/publish.js
 
 #after_failure:
 #  - pip install --user awscli
