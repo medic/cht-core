@@ -14,6 +14,7 @@ describe('Form2Sms service', function() {
 
     module(function($provide) {
       $provide.value('$log', { debug:sinon.stub(), error:sinon.stub() });
+      $provide.value('$q', Q);
       $provide.factory('DB', KarmaUtils.mockDB({ get:dbGet }));
       $provide.value('GetReportContent', GetReportContent);
       $provide.value('Settings', Promise.resolve({ gateway_number:'+1234567890' }));
