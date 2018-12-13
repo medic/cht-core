@@ -31,7 +31,15 @@ const upload = (ddoc, contentType) => {
   };
   const req = https.request(postUrl, options, res => {
     if (res.statusCode !== 200) {
-      return handleError(`post response status code ${res.statusCode}`);
+      // TODO clean this up
+      res.on('data', (d) => {
+        process.stdout.write(d);
+      });
+      console.log('headers', res.headers);
+      res.on('end', () => {
+        handleError(`post response status code ${res.statusCode}`);
+      });
+      return;
     }
     console.log(`${releaseName} published!`);
     process.exit(0);
