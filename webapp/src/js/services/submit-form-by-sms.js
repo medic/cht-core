@@ -20,10 +20,7 @@ angular.module('inboxServices').service('SubmitFormBySms',
     'use strict';
     'ngInject';
 
-    // REVIEW this is quite big and unrelated to enketo itself; maybe it should
-    // be a separate service?  Or combined into the current Form2sms service as
-    // e.g. FormsAsSms service?
-    function submitFormBySmsIfApplicable(doc) {
+    return doc => {
       if(!$window.medicmobile_android) {
         $log.info('Not in android wrapper.');
         return;
@@ -66,8 +63,6 @@ angular.module('inboxServices').service('SubmitFormBySms',
 
             });
         });
-    }
-
-    return submitFormBySmsIfApplicable;
+    };
   }
 );
