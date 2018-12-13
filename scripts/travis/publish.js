@@ -32,11 +32,13 @@ const upload = (ddoc, contentType) => {
   const req = https.request(postUrl, options, res => {
     if (res.statusCode !== 200) {
       // TODO clean this up
+      let body = '';
       res.on('data', (d) => {
-        process.stdout.write(d);
+        body += d;
       });
       console.log('headers', res.headers);
       res.on('end', () => {
+        console.log('body: ' + body);
         handleError(`post response status code ${res.statusCode}`);
       });
       return;
