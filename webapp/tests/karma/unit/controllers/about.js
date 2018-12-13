@@ -3,13 +3,13 @@ describe('AboutCtrl controller', function() {
   'use strict';
 
   var createController,
-      $rootScope,
-      scope,
-      $interval,
-      DB,
-      Debug,
-      Session,
-      PartnerImages;
+    $rootScope,
+    scope,
+    $interval,
+    DB,
+    Debug,
+    Session,
+    ResourceIcons;
 
 
   beforeEach(module('inboxApp'));
@@ -26,7 +26,7 @@ describe('AboutCtrl controller', function() {
       info: sinon.stub().resolves(),
     };
     Debug = { get: sinon.stub() };
-    PartnerImages = { getImages: sinon.stub().resolves() };
+    ResourceIcons = { getDocResources: sinon.stub().resolves() };
     createController = function() {
       return $controller('AboutCtrl', {
         $interval: $interval,
@@ -35,7 +35,7 @@ describe('AboutCtrl controller', function() {
         DB: sinon.stub().returns(DB),
         Debug: Debug,
         Session: Session,
-        PartnerImages: PartnerImages
+        ResourceIcons: ResourceIcons
       });
     };
   }));
@@ -96,13 +96,11 @@ describe('AboutCtrl controller', function() {
   });
 
   it ('display partner logo if it exists', () => {
-    PartnerImages.getImages.resolves([{ name: 'Medic Mobile', data: 'xyz', type: 'image/svg+xml'}]);
+    ResourceIcons.getDocResources.resolves(['Medic Mobile']);
     createController();
 
     return Promise.resolve().then(() => {
-      chai.expect(scope.partners[0].name).to.equal('Medic Mobile');
-      chai.expect(scope.partners[0].data).to.equal('xyz');
-      chai.expect(scope.partners[0].type).to.equal('image/svg+xml');
+      chai.expect(scope.partners[0]).to.equal('Medic Mobile');
     });
   });
 });

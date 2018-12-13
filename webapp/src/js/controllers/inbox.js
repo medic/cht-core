@@ -52,7 +52,7 @@ var feedback = require('../modules/feedback'),
     XmlForms,
     RecurringProcessManager,
     DatabaseConnectionMonitor,
-    BrandingImages
+    ResourceIcons
   ) {
     'ngInject';
 
@@ -78,9 +78,8 @@ var feedback = require('../modules/feedback'),
       // Disable debug for everything but localhost
       Debug.set(false);
     }
-
-    $scope.logo = 'logo';
-    BrandingImages.getAppTitle().then(title => {
+    
+    ResourceIcons.getAppTitle().then(title => {
       document.title = title;
     });
 

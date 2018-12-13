@@ -7,7 +7,6 @@
   require('./add-read-status');
   require('./analytics-modules');
   require('./android-api');
-  require('./branding-images');
   require('./auth');
   require('./cache');
   require('./calendar-interval');
@@ -96,5 +95,4 @@
   require('./xml-forms-context-utils');
   require('./xslt');
   require('./z-score');
-  require('./partner-images');
 })();

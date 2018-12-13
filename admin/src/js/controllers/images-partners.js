@@ -1,10 +1,10 @@
-angular.module('controllers').controller('PartnersCtrl',
+angular.module('controllers').controller('ImagesPartnersCtrl',
   function(
     $log,
     $scope,
     $translate,
     DB,
-    PartnerImages
+    ResourceIcons
   ) {
 
     'ngInject';
@@ -23,7 +23,7 @@ angular.module('controllers').controller('PartnersCtrl',
     $scope.images = null;
 
     const renderResources = () => {
-      PartnerImages.getImages().then(images => {
+      ResourceIcons.getDocResources('partners').then(images => {
         $scope.images = images;
         $scope.loading = false;
       });

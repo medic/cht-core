@@ -8,87 +8,126 @@ angular.module('inboxServices').factory('ResourceIcons',
     'use strict';
     'ngInject';
 
-    var cache = {
-      doc: null,
-      htmlContent: {}
-    };
+    const cssClass = ['resource-icon', 'header-logo', 'partner-image'];
+    const docType = ['resources', 'branding', 'partners'];
 
-    var getAttachment = function(name) {
-      return cache.doc &&
-             cache.doc.resources[name] &&
-             cache.doc._attachments[cache.doc.resources[name]];
-    };
-
-    var getHtmlContent = function(name) {
-      if (!cache.htmlContent[name]) {
-        var icon = getAttachment(name);
-        if (!icon) {
-          return '';
-        }
-        var content;
-        if (icon.content_type === 'image/svg+xml') {
-          // SVG: include the raw data in the page so it can be styled
-          content = atob(icon.data);
-        } else {
-          // OTHER: base64 encode the img src
-          content = '<img src="data:' + icon.content_type + ';base64,' + icon.data + '" />';
-        }
-        cache.htmlContent[name] = content;
+    const cache = {
+      resources: {
+        doc: null,
+        htmlContent: null
+      },
+      branding: {
+        doc: null,
+        htmlContent: null
+      },
+      partners: {
+        doc: null,
+        htmlContent: null
       }
-      return cache.htmlContent[name];
     };
 
-    var getHtml = function(name) {
-      var image = getHtmlContent(name);
-      return '<span class="resource-icon" title="' + name + '">' + image + '</span>';
+    const getAttachment = (name, i) => {
+      return cache[i].doc &&
+             cache[i].doc.resources[name] &&
+             cache[i].doc._attachments[cache[i].doc.resources[name]];
     };
 
-    var updateDom = function($elem) {
+    const getHtmlContent = (name, i) => {
+      try {
+        if (!cache[i].htmlContent[name]) {
+          const icon = getAttachment(name, i);
+          if (!icon) {
+            return '';
+          }
+          let content;
+          if (icon.content_type === 'image/svg+xml' && i === 'resources') {
+            // SVG: include the raw data in the page so it can be styled
+            content = atob(icon.data);
+          } else {
+            // OTHER: base64 encode the img src
+            content = `<img src="data:${icon.content_type};base64,${icon.data}" />`;
+          }
+          cache[i].htmlContent[name] = content;
+        }
+        return cache[i].htmlContent[name];
+      } catch(e) {
+        return '&nbsp';
+      }
+    };
+
+    const getHtml = (name, docId) => {
+      const image = getHtmlContent(name, docId);
+      return `<span class="${cssClass[docType.indexOf(docId)]}" title="${name}">${image}</span>`;
+    };
+
+    const updateDom = ($elem, doc) => {
       $elem = $elem || $(document.body);
-      $elem.find('.resource-icon').each(function() {
-        var $this = $(this);
-        $this.html(getHtmlContent($this.attr('title')));
+      const css = cssClass[docType.indexOf(doc)];
+      $elem.find(`.${css}`).each((i, child) => {
+        const $this = $(child);
+        $this.html(getHtmlContent($this.attr('title'), doc));
       });
+      if (document.getElementById('app') && doc === 'branding') {
+        document.getElementById('app').innerHTML = cache[doc].doc.title;
+      }
     };
 
-    var updateResources = function() {
+    const updateResources = docId => {
       return DB()
-        .get('resources', { attachments: true })
-        .then(function(res) {
-          cache = {
-            doc: res,
-            htmlContent: {}
-          };
-          updateDom();
+        .get(docId, { attachments: true })
+        .then(res => {
+          cache[docId].doc = res;
+          cache[docId].htmlContent = {};
+          updateDom($(document.body), docId);
         })
-        .catch(function(err) {
+        .catch(err => {
           if (err.status !== 404) {
             $log.error('Error updating icons', err);
           }
         });
     };
-
-    Changes({
-      key: 'ResourceIcons',
-      filter: function(change) {
-        return change.id === 'resources';
-      },
-      callback: updateResources
+    
+    docType.forEach(doc => {
+      updateResources(doc);
     });
 
-    var init = updateResources();
+    Changes({
+      key: 'resource-icons',
+      filter: change => change.id === 'resources',
+      callback: change => {
+        updateResources(change.id);
+      }
+    });
+
+    Changes({
+      key: 'branding-images',
+      filter: change => change.id === 'branding',
+      callback: change => {
+        updateResources(change.id);
+      }
+    });
+
+    Changes({
+      key: 'partner-images',
+      filter: change => change.id === 'partners',
+      callback: change => {
+        updateResources(change.id);
+      }
+    });
 
     return {
-      getImg: function(name) {
-        if (!name) {
+      getImg: (name, docId) => {
+        if (!name || !docId) {
           return '';
         }
-        return getHtml(name);
+        return getHtml(name, docId);
       },
-      replacePlaceholders: function($elem) {
-        init.then(function() {
-          updateDom($elem);
-        });
+      getDocResources: doc => {
+        return DB().get(doc).then(res => Object.keys(res.resources));
+      },
+      getAppTitle: () => DB().get(docType[1]).then(doc => doc.title),
+      replacePlaceholders: $elem => {
+        updateResources('resources').then(() => updateDom($elem, 'resources'));
       }
     };
 

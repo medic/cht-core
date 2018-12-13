@@ -1,4 +1,4 @@
-angular.module('controllers').controller('BrandingCtrl',
+angular.module('controllers').controller('ImagesBrandingCtrl',
   function(
     $log,
     $scope,

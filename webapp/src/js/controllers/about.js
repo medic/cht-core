@@ -6,7 +6,7 @@ angular.module('inboxControllers').controller('AboutCtrl',
     DB,
     Debug,
     Session,
-    PartnerImages
+    ResourceIcons
   ) {
     'use strict';
     'ngInject';
@@ -16,7 +16,7 @@ angular.module('inboxControllers').controller('AboutCtrl',
 
     $scope.debugOptionEnabled = $scope.url.indexOf('localhost') >= 0;
 
-    PartnerImages.getImages().then(partners => {
+    ResourceIcons.getDocResources('partners').then(partners => {
       $scope.partners = partners;
     });
 
