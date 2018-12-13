@@ -1,5 +1,5 @@
 const http = require('http'),
-      ddocIdRegex = /"_id":"medic:medic:test-[0-9]*","_rev":"[^"]*"/;
+      ddocIdRegex = /"_id":"medic:medic:test-[0-9]*","_rev":"[^"]*"/,
       {
         UPLOAD_URL,
         TRAVIS_BUILD_NUMBER,
