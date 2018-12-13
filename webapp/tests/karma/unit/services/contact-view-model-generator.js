@@ -46,11 +46,8 @@ describe('ContactViewModelGenerator service', () => {
     contacts = contacts.map(doc => {
       return { id: doc._id, doc: { name: doc.name }};
     });
-    var ids = docs.map(child => child.doc.contact && child.doc.contact._id).filter(id => !!id);
     dbQuery.withArgs('medic-client/contacts_by_parent', options)
       .returns(KarmaUtils.promise(err, { rows: docs }));
-    dbAllDocs.withArgs({ keys: ids, include_docs: true })
-      .returns(KarmaUtils.promise(err, { rows: contacts }));
   };
 
   const stubSearch = (err, reports) => {
@@ -220,12 +217,6 @@ describe('ContactViewModelGenerator service', () => {
         model.children.persons.splice(0, 1);
         assert.equal(model.children.persons[0].doc._id, childPerson2._id);
         assert.equal(model.children.persons[1].doc._id, childPerson._id);
-      });
-    });
-
-    it('child contacts are hydrated properly - #3807', () => {
-      return runPlaceTest([childPlace], [childContactPerson]).then(model => {
-        assert.equal(model.children.places[0].doc.contact.name, childContactPerson.name);
       });
     });
 

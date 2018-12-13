@@ -151,33 +151,9 @@ angular.module('inboxServices').factory('ContactViewModelGenerator',
       return sortPrimaryContactToTop(model, children);
     };
 
-    var getChildren = function(contactId) {
-      return DB().query('medic-client/contacts_by_parent', {
-        key: contactId,
-        include_docs: true
-      })
-        .then(function(childrenResponse) {
-          return childrenResponse.rows;
-        })
-        .then(function(children) {
-          var ids = _.compact(children.map(function(child) {
-            return child.doc.contact && child.doc.contact._id;
-          }));
-          return DB().allDocs({ keys: ids, include_docs: true })
-            .then(function(contactsResponse) {
-              children.forEach(function(child) {
-                var contactId = child.doc.contact && child.doc.contact._id;
-                if (contactId) {
-                  var contactRow = _.findWhere(contactsResponse.rows, { id: contactId });
-                  if (contactRow) {
-                    child.doc.contact = contactRow.doc;
-                  }
-                }
-              });
-              return children;
-            });
-        });
-    };
+    const getChildren = contactId => DB()
+      .query('medic-client/contacts_by_parent', { key: contactId, include_docs: true })
+      .then(response => response.rows);
 
     var loadChildren = function(model) {
       model.children = {};
