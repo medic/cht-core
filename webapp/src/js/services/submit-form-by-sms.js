@@ -2,19 +2,8 @@ angular.module('inboxServices').service('SubmitFormBySms',
   function(
     $log,
     $q,
-    $translate,
     $window,
-    AddAttachment,
-    ContactSummary,
-    DB,
-    EnketoPrepopulationData,
-    EnketoTranslation,
-    ExtractLineage,
-    FileReader,
     Form2Sms,
-    GetReportContent,
-    Language,
-    LineageModelGenerator,
     Settings
   ) {
     'use strict';
