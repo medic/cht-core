@@ -11,6 +11,8 @@ services:
   # docker is used for couchdb 2.0 (not currently available as a travis service)
   - docker
 
+# TODO should need USE_COUCHDB any more?
+
 env:
   matrix:
     - USE_COUCHDB=true TEST_SUITE=integration NODE_VERSION=8 
@@ -27,6 +29,8 @@ env:
 #  allow_failures:
 #    - env: NODE_VERSION="lts/*" TEST_SUITE=performance
 
+
+# TODO merge couch-start and couch-config and couch-admin together?
 before_install:
   - export PATH=$PATH:$HOME/.local/bin
   - export PATH=$HOME/.npm/bin:$PATH

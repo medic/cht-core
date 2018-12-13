@@ -37,7 +37,7 @@ const upload = (ddoc, contentType) => {
     process.exit(0);
   });
   req.on('error', e => handleError(e.message));
-  req.write(newDdoc);
+  req.write(ddoc);
   req.end();
 };
 
