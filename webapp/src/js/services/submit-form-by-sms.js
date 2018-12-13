@@ -25,8 +25,6 @@ angular.module('inboxServices').service('SubmitFormBySms',
         return;
       }
 
-      // Deliberately not returning this Promise, as we don't want to upset
-      // other workflows if the SMS fails.
       $q.resolve()
         .then(function() {
           return Form2Sms(doc)
