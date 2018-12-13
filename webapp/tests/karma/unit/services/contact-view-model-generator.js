@@ -160,6 +160,16 @@ describe('ContactViewModelGenerator service', () => {
       });
     });
 
+    it('contact person loaded from children', () => {
+      return runPlaceTest([childContactPerson], []).then(model => {
+          assert.equal(dbGet.callCount, 0);
+          assert.equal(model.children.persons.length, 1);
+          const firstPerson = model.children.persons[0];
+          assert.deepEqual(firstPerson.doc, childContactPerson);
+          assert(firstPerson.isPrimaryContact, 'has isPrimaryContact flag');
+        });
+    });
+
     it('if no contact in parent, persons still get displayed', () => {
       delete doc.contact;
       return runPlaceTest([childPerson, childContactPerson]).then(model => {
