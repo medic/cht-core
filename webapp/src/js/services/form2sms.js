@@ -1,5 +1,5 @@
 /*jshint bitwise: false*/
-const odkForm2sms = require('odk-xform-conmpact-record-representation-for-sms');
+const odkForm2sms = require('odk-xform-compact-record-representation-for-sms');
 
 angular
   .module('inboxServices')
