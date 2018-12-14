@@ -20,9 +20,9 @@ const couchConfig = (() => {
   if (!parsedUrl.auth) {
     throw 'COUCH_URL must contain admin authentication information';
   }
-  
+
   const [ username, password ] = parsedUrl.auth.split(':', 2);
-  
+
   return {
     username,
     password,
@@ -429,7 +429,12 @@ module.exports = function(grunt) {
           ' -H "Content-Type: application/json" ' +
           ` -d '{"_id": "org.couchdb.user:${couchConfig.username}", "name": "${couchConfig.username}", "password":"${couchConfig.password}", "type":"user", "roles":[]}' ` +
           ` && curl -X PUT --data '"true"' ${couchConfig.withPath('_node/' + COUCH_NODE_NAME + '/_config/chttpd/require_valid_user')}` +
-          ` && curl -X PUT --data '"4294967296"' ${couchConfig.withPath('_node/' + COUCH_NODE_NAME + '/_config/httpd/max_http_request_size')}`,
+          ` && curl -X PUT --data '"4294967296"' ${couchConfig.withPath('_node/' + COUCH_NODE_NAME + '/_config/httpd/max_http_request_size')}` +
+          // CouchDB 2.3.0 has a bug where, when using the default configuration value for `recbuf` server_option,
+          // requests with URLs longer than 1460 chars fail with 400 Bad Request.
+          // https://github.com/medic/medic-webapp/issues/5083
+          // https://github.com/apache/couchdb/issues/1810
+          ` && curl -X PUT --data '"[{recbuf, 262144}]"' ${couchConfig.withPath('_node/' + COUCH_NODE_NAME + '/_config/chttpd/server_options')}`
       },
       'reset-test-databases': {
         stderr: false,
