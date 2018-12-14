@@ -188,7 +188,7 @@ angular.module('inboxServices').factory('ContactViewModelGenerator',
             });
         });
     };
-    
+
     var loadChildren = function(model) {
       model.children = {};
       if (model.doc.type === 'person') {
@@ -239,7 +239,7 @@ angular.module('inboxServices').factory('ContactViewModelGenerator',
                     report.heading = getHeading(dataRecord);
                   }
                 });
-                
+
                 return reports;
               });
     };
