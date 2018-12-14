@@ -29,6 +29,8 @@ require('./controllers/export-reports');
 require('./controllers/forms-json');
 require('./controllers/forms-xml');
 require('./controllers/icons');
+require('./controllers/images-branding');
+require('./controllers/images-partners');
 require('./controllers/import-translation');
 require('./controllers/message-queue');
 require('./controllers/message-test');
@@ -42,8 +44,6 @@ require('./controllers/translation-languages');
 require('./controllers/upgrade');
 require('./controllers/upgrade-confirm');
 require('./controllers/users');
-require('./controllers/images-branding');
-require('./controllers/images-partners');
 
 angular.module('directives', ['ngSanitize']);
 require('./directives/modal');

@@ -8,8 +8,8 @@ angular.module('inboxServices').factory('ResourceIcons',
     'use strict';
     'ngInject';
 
-    const cssClass = ['resource-icon', 'header-logo', 'partner-image'];
-    const docType = ['resources', 'branding', 'partners'];
+    const CSS_CLASS = ['resource-icon', 'header-logo', 'partner-image'];
+    const DOC_IDS = ['resources', 'branding', 'partners'];
 
     const cache = {
       resources: {
@@ -57,12 +57,12 @@ angular.module('inboxServices').factory('ResourceIcons',
 
     const getHtml = (name, docId) => {
       const image = getHtmlContent(name, docId);
-      return `<span class="${cssClass[docType.indexOf(docId)]}" title="${name}">${image}</span>`;
+      return `<span class="${CSS_CLASS[DOC_IDS.indexOf(docId)]}" title="${name}">${image}</span>`;
     };
 
     const updateDom = ($elem, doc) => {
       $elem = $elem || $(document.body);
-      const css = cssClass[docType.indexOf(doc)];
+      const css = CSS_CLASS[DOC_IDS.indexOf(doc)];
       $elem.find(`.${css}`).each((i, child) => {
         const $this = $(child);
         $this.html(getHtmlContent($this.attr('title'), doc));
@@ -87,32 +87,12 @@ angular.module('inboxServices').factory('ResourceIcons',
         });
     };
     
-    docType.forEach(doc => {
-      updateResources(doc);
-    });
+    DOC_IDS.forEach(doc => updateResources(doc));
 
     Changes({
       key: 'resource-icons',
-      filter: change => change.id === 'resources',
-      callback: change => {
-        updateResources(change.id);
-      }
-    });
-
-    Changes({
-      key: 'branding-images',
-      filter: change => change.id === 'branding',
-      callback: change => {
-        updateResources(change.id);
-      }
-    });
-
-    Changes({
-      key: 'partner-images',
-      filter: change => change.id === 'partners',
-      callback: change => {
-        updateResources(change.id);
-      }
+      filter: change => DOC_IDS.includes(change.id),
+      callback: change => updateResources(change.id)
     });
 
     return {
@@ -125,9 +105,9 @@ angular.module('inboxServices').factory('ResourceIcons',
       getDocResources: doc => {
         return DB().get(doc).then(res => Object.keys(res.resources));
       },
-      getAppTitle: () => DB().get(docType[1]).then(doc => doc.title),
+      getAppTitle: () => DB().get(DOC_IDS[1]).then(doc => doc.title),
       replacePlaceholders: $elem => {
-        updateResources('resources').then(() => updateDom($elem, 'resources'));
+        updateResources(DOC_IDS[0]).then(() => updateDom($elem, DOC_IDS[0]));
       }
     };
 
