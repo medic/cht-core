@@ -186,4 +186,20 @@ describe('server', () => {
         });
     });
   });
+
+  describe('URL length', () => {
+    it('should support requests with urls over 2000 chars', () => {
+      const opts = {
+        method: 'PUT',
+        path: '/' + new Array(2100).join('a'),
+        body: { _id: new Array(2100).join('a') }
+      };
+
+      return utils
+        .requestOnTestDb(opts)
+        .then(r => {
+          expect(r.ok).toEqual(true);
+        });
+    });
+  });
 });
