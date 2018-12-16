@@ -96,41 +96,51 @@ angular.module('inboxServices').factory('ContactViewModelGenerator',
       });
     };
 
-    var getPrimaryContact = function(doc) {
+    const getPrimaryContact = function(doc, children) {
       var contactId = doc && doc.contact && doc.contact._id;
       if (!contactId) {
         return $q.resolve();
       }
-      return DB().get(contactId).catch(function(err) {
-        if (err.status === 404 || err.error === 'not_found') {
-          return;
-        }
-        throw err;
-      });
+
+      const persons = children.persons || [];
+      const idx = _.findIndex(persons, person => person.doc._id === contactId);
+      if (idx !== -1) {
+        return $q.resolve({
+          idx,
+          doc: persons[idx].doc
+        });
+      }
+
+      // If the primary contact is not a child, fetch the document
+      return DB().get(contactId)
+        .then(doc => ({ idx, doc }))
+        .catch(function(err) {
+          if (err.status === 404 || err.error === 'not_found') {
+            return;
+          }
+          throw err;
+        });
     };
 
     var sortPrimaryContactToTop = function(model, children) {
-      return getPrimaryContact(model.doc)
-        .then(function(primaryContact) {
+      return getPrimaryContact(model.doc, children)
+        .then(function (primaryContact) {
           if (!primaryContact) {
             return;
           }
-          var newChild = {
-            id: primaryContact._id,
-            doc: primaryContact,
+          const newChild = {
+            id: primaryContact.doc._id,
+            doc: primaryContact.doc,
             isPrimaryContact: true
           };
           if (!children.persons) {
             children.persons = [ newChild ];
             return;
           }
-          var persons = children.persons;
+          const persons = children.persons;
           // remove existing child
-          var primaryContactIdx = _.findIndex(persons, function(child) {
-            return child.doc._id === primaryContact._id;
-          });
-          if (primaryContactIdx !== -1) {
-            persons.splice(primaryContactIdx, 1);
+          if (primaryContact.idx !== -1) {
+            persons.splice(primaryContact.idx, 1);
           }
           // push the primary contact on to the start of the array
           persons.unshift(newChild);
@@ -205,7 +215,7 @@ angular.module('inboxServices').factory('ContactViewModelGenerator',
                     report.heading = getHeading(dataRecord);
                   }
                 });
-                
+
                 return reports;
               });
     };
