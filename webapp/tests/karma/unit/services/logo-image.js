@@ -3,9 +3,9 @@ describe('BrandingImages service', function() {
   'use strict';
 
   var get,
-      Changes,
-      injector,
-      attr;
+    Changes,
+    injector,
+    attr;
 
   beforeEach(function() {
     get = sinon.stub();
@@ -31,17 +31,17 @@ describe('BrandingImages service', function() {
 
     it('returns empty string when given no name', function(done) {
       get.returns(Promise.resolve());
-      var service = injector.get('BrandingImages');
-      var actual = service.getLogo();
+      var service = injector.get('ResourceIcons');
+      var actual = service.getImg();
       chai.expect(actual).to.equal('');
       done();
     });
 
     it('returns empty string when no doc yet', function(done) {
       get.returns(Promise.resolve());
-      var service = injector.get('BrandingImages');
-      var actual = service.getLogo('logo');
-      chai.expect(actual).to.equal('<span class="header-logo" title="logo"></span>');
+      var service = injector.get('ResourceIcons');
+      var actual = service.getImg('logo', 'branding');
+      chai.expect(actual).to.equal('<span class="header-logo" title="logo">&nbsp</span>');
       done();
     });
 
@@ -58,9 +58,9 @@ describe('BrandingImages service', function() {
         }
       };
       get.returns(Promise.resolve(resources));
-      var service = injector.get('BrandingImages');
+      var service = injector.get('ResourceIcons');
       setTimeout(function() {
-        var actual = service.getLogo('logo');
+        var actual = service.getImg('logo', 'branding');
         var expected =
           '<span class="header-logo" title="logo">' +
             '<img src="data:image/svg+xml;base64,TguMzJsMi4xNT" />' +

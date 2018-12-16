@@ -11,6 +11,7 @@ const DEFAULT_EXPECTED = [
   'settings',
   'resources',
   'branding',
+  'partners',
   '_design/medic-client'
 ];
 
