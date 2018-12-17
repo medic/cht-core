@@ -4,7 +4,8 @@ const _ = require('underscore'),
       http = require('http'),
       querystring = require('querystring'),
       constants = require('../../../constants'),
-      auth = require('../../../auth')();
+      auth = require('../../../auth')(),
+      semver = require('semver');
 
 const DEFAULT_EXPECTED = [
   'appcache',
@@ -174,6 +175,18 @@ const consumeChanges = (username, results, lastSeq) => {
     }
     results = results.concat(changes.results);
     return consumeChanges(username, results, changes.last_seq);
+  });
+};
+
+const batchedChanges = (username, limit, results = [], lastSeq = 0) => {
+  const opts = { since: lastSeq, limit };
+
+  return requestChanges(username, opts).then(changes => {
+    if (!changes.results.length) {
+      return { results: results, last_seq: changes.last_seq };
+    }
+    results = results.concat(changes.results);
+    return batchedChanges(username, limit, results, changes.last_seq);
   });
 };
 
@@ -423,12 +436,89 @@ describe('changes handler', () => {
   });
 
   describe('Filtered replication', () => {
+    const bobsIds = [...DEFAULT_EXPECTED],
+          stevesIds = [...DEFAULT_EXPECTED],
+          couchVersionForBatching = '2.3.0';
+
+    let shouldBatchChangesRequests;
+
+    beforeAll(done => {
+      const options = {
+        hostname: constants.COUCH_HOST,
+        port: constants.COUCH_PORT,
+        auth: auth.user + ':' + auth.pass,
+        path: '/'
+      };
+
+      const req = http.request(options, res => {
+        let body = '';
+        res.on('data', data => body += data);
+        res.on('end', () => {
+          try {
+            body = JSON.parse(body);
+            shouldBatchChangesRequests = semver.lte(couchVersionForBatching, body.version);
+            done();
+          } catch (e) {
+            done(e);
+          }
+        });
+      });
+
+      req.on('error', e => done(e));
+      req.end();
+    });
+
     beforeEach(done => getCurrentSeq().then(done));
 
-    const bobsIds = [...DEFAULT_EXPECTED],
-          stevesIds = [...DEFAULT_EXPECTED];
+    it('should successfully fully replicate in batches', () => {
+      if (!shouldBatchChangesRequests) {
+        return;
+      }
+      const allowedDocs = createSomeContacts(12, 'fixture:bobville');
+      bobsIds.push(..._.pluck(allowedDocs, '_id'));
+
+      const deniedDocs = createSomeContacts(10, 'irrelevant-place');
+      return Promise.all([
+        utils.saveDocs(allowedDocs),
+        utils.saveDocs(deniedDocs)
+      ])
+        .then(() => batchedChanges('bob', 4))
+        .then(changes => {
+          console.log(changes);
+          assertChangeIds(changes,
+            'org.couchdb.user:bob',
+            'fixture:user:bob',
+            'fixture:bobville',
+            ..._.without(bobsIds, ...DEFAULT_EXPECTED));
+        });
+    });
+
+    it('should batch changes requests, depending on the requested limit', () => {
+      if (!shouldBatchChangesRequests) {
+        return;
+      }
+
+      const allowedDocs = createSomeContacts(12, 'fixture:bobville');
+      bobsIds.push(..._.pluck(allowedDocs, '_id'));
+      const deniedDocs = createSomeContacts(10, 'irrelevant-place'),
+            expectedIds = [ 'org.couchdb.user:bob', 'fixture:user:bob', 'fixture:bobville'].concat(bobsIds);
+
+      return Promise
+        .all([
+          utils.saveDocs(allowedDocs),
+          utils.saveDocs(deniedDocs)
+        ])
+        .then(() => requestChanges('bob', { limit: 4 }))
+        .then(changes => {
+          expect(changes.results.length).toEqual(4);
+          expect(changes.results.every(change => expectedIds.indexOf(change.id) !== -1 || change.id.startsWith('messages-'))).toBe(true);
+        });
+    });
 
     it('returns a full list of allowed changes, regardless of the requested limit', () => {
+      if (shouldBatchChangesRequests) {
+        return;
+      }
       const allowedDocs = createSomeContacts(12, 'fixture:bobville');
       bobsIds.push(..._.pluck(allowedDocs, '_id'));
 

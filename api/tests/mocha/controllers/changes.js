@@ -7,7 +7,8 @@ const sinon = require('sinon'),
       inherits = require('util').inherits,
       EventEmitter = require('events'),
       _ = require('underscore'),
-      config = require('../../../src/config');
+      config = require('../../../src/config'),
+      serverChecks = require('@medic/server-checks');
 
 require('chai').should();
 let testReq,
@@ -71,6 +72,7 @@ describe('Changes controller', () => {
 
     sinon.stub(_, 'now').callsFake(Date.now); // force underscore's debounce to use fake timers!
     sinon.stub(config, 'get').returns(defaultSettings);
+    sinon.stub(serverChecks, 'getCouchDbVersion').returns('2.2.0');
 
     ChangesEmitter = function(opts) {
       changesSpy(opts);
@@ -298,6 +300,25 @@ describe('Changes controller', () => {
       });
     });
 
+    it('should batch changes requests when couchDB version allows it', () => {
+      testReq.query = { limit: 20, view: 'test', something: 'else', conflicts: true, seq_interval: false, since: '22', return_docs: false };
+      authorization.getAllowedDocIds.resolves(['d1', 'd2', 'd3']);
+      serverChecks.getCouchDbVersion.returns('2.3.0');
+      controller.request(testReq, testRes);
+      return nextTick().then(() => {
+        changesSpy.callCount.should.equal(2);
+        changesSpy.args[1][0].should.deep.equal({
+          limit: 20,
+          since: '22',
+          batch_size: 4,
+          doc_ids: ['d1', 'd2', 'd3'],
+          conflicts: true,
+          seq_interval: false,
+          return_docs: true,
+        });
+      });
+    });
+
     it('sends an error response when the upstream request errors', () => {
       const allowedIds = Array.from({length: 40}, () => Math.floor(Math.random() * 40));
       authorization.getAllowedDocIds.resolves(allowedIds.slice());
@@ -363,54 +384,6 @@ describe('Changes controller', () => {
           testRes.end.callCount.should.equal(1);
           controller._getNormalFeeds().length.should.equal(0);
           controller._getLongpollFeeds().length.should.equal(0);
-        });
-    });
-
-    it('pushes allowed pending changes to the results', () => {
-      const validatedIds = Array.from({length: 101}, () => Math.floor(Math.random() * 101));
-      authorization.getAllowedDocIds.resolves(validatedIds);
-      authorization.filterAllowedDocs.returns([
-        { change: { id: 8, changes: [] }, id: 8, viewResults: {} },
-        { change: { id: 9, changes: [] }, id: 9, viewResults: {} }
-      ]);
-      testReq.query = { since: 0 };
-
-      controller.request(testReq, testRes);
-
-      const expected = {
-        results: [{ id: 1, changes: [] }, { id: 2, changes: [] }, { id: 3, changes: [] }],
-        last_seq: 3
-      };
-
-      return Promise.resolve()
-        .then(() => {
-          controller._getContinuousFeed().emit('change', { id: 7, changes: [], doc: { _id: 7 } }, 0, 4);
-        })
-        .then(() => {
-          controller._getContinuousFeed().emit('change', { id: 8, changes: [], doc: { _id: 8 } }, 0, 5);
-        })
-        .then(() => {
-          controller._getContinuousFeed().emit('change', { id: 9, changes: [], doc: { _id: 9 } }, 0, 6);
-        })
-        .then(nextTick)
-        .then(() => {
-          const feed = controller._getNormalFeeds()[0];
-          feed.upstreamRequest.complete(null, expected);
-        })
-        .then(nextTick)
-        .then(() => {
-          testRes.write.callCount.should.equal(1);
-          testRes.write.args[0][0].should.equal(JSON.stringify(expected));
-          testRes.end.callCount.should.equal(1);
-          controller._getNormalFeeds().length.should.equal(0);
-          controller._getLongpollFeeds().length.should.equal(0);
-          authorization.allowedDoc.callCount.should.equal(0);
-          authorization.filterAllowedDocs.callCount.should.equal(1);
-          authorization.filterAllowedDocs.args[0][1].should.deep.equal([
-            { change: { id: 7, changes: [] }, id: 7, viewResults: {} },
-            { change: { id: 8, changes: [] }, id: 8, viewResults: {} },
-            { change: { id: 9, changes: [] }, id: 9, viewResults: {} }
-          ]);
         });
     });
 
@@ -510,52 +483,41 @@ describe('Changes controller', () => {
         });
     });
 
-    it('handles multiple pending changes correctly', () => {
-      testReq.query = { feed: 'longpoll' };
-      authorization.getAllowedDocIds.resolves([1, 2, 3]);
+    it('should not process pending changes for non-longpoll feeds', () => {
+      const validatedIds = Array.from({length: 101}, () => Math.floor(Math.random() * 101));
+      authorization.getAllowedDocIds.resolves(validatedIds);
       authorization.filterAllowedDocs.returns([
-        { change: { id: 1, changes: [] }, id: 1 },
-        { change: { id: 3, changes: [] }, id: 3 },
-        { change: { id: 2, changes: [] }, id: 2 }
+        { change: { id: 8, changes: [] }, id: 8, viewResults: {} },
+        { change: { id: 9, changes: [] }, id: 9, viewResults: {} }
       ]);
+      testReq.query = { since: 0 };
 
       controller.request(testReq, testRes);
-      return nextTick()
+
+      const expected = {
+        results: [{ id: 1, changes: [] }, { id: 2, changes: [] }, { id: 3, changes: [] }],
+        last_seq: 3
+      };
+
+      return Promise.resolve()
         .then(() => {
-          const emitter = controller._getContinuousFeed();
-          const feed = controller._getNormalFeeds()[0];
-          emitter.emit('change', { id: 3, changes: [], doc: { _id: 3 }}, 0, 1);
-          feed.pendingChanges.length.should.equal(1);
-          emitter.emit('change', { id: 2, changes: [], doc: { _id: 2 }}, 0, 2);
-          feed.pendingChanges.length.should.equal(2);
-          emitter.emit('change', { id: 4, changes: [], doc: { _id: 4 }}, 0, 3);
-          feed.pendingChanges.length.should.equal(3);
-          emitter.emit('change', { id: 1, changes: [], doc: { _id: 1 }}, 0, 4);
-          feed.pendingChanges.length.should.equal(4);
-          feed.upstreamRequest.complete(null, { results: [{ id: 22 }], last_seq: 5 });
+          controller._getContinuousFeed().emit('change', { id: 7, changes: [], doc: { _id: 7 } }, 0, 4);
+          controller._getContinuousFeed().emit('change', { id: 8, changes: [], doc: { _id: 8 } }, 0, 5);
+          controller._getContinuousFeed().emit('change', { id: 9, changes: [], doc: { _id: 9 } }, 0, 6);
         })
         .then(nextTick)
         .then(() => {
-          testRes.end.callCount.should.equal(1);
-          controller._getLongpollFeeds().length.should.equal(0);
+          controller._getNormalFeeds()[0].upstreamRequest.complete(null, expected);
+        })
+        .then(nextTick)
+        .then(() => {
           testRes.write.callCount.should.equal(1);
-          testRes.write.args[0][0].should.equal(JSON.stringify({
-            results: [
-              { id: 22 },
-              { id: 1, changes: [] },
-              { id: 3, changes: [] },
-              { id: 2, changes: [] }
-            ],
-            last_seq: 5
-          }));
+          testRes.write.args[0][0].should.equal(JSON.stringify(expected));
+          testRes.end.callCount.should.equal(1);
+          controller._getNormalFeeds().length.should.equal(0);
+          controller._getLongpollFeeds().length.should.equal(0);
           authorization.allowedDoc.callCount.should.equal(0);
-          authorization.filterAllowedDocs.callCount.should.equal(1);
-          authorization.filterAllowedDocs.args[0][1].should.deep.equal([
-            { change: { id: 3, changes: [] }, id: 3, viewResults: {} },
-            { change: { id: 2, changes: [] }, id: 2, viewResults: {} },
-            { change: { id: 4, changes: [] }, id: 4, viewResults: {} },
-            { change: { id: 1, changes: [] }, id: 1, viewResults: {} }
-          ]);
+          authorization.filterAllowedDocs.callCount.should.equal(0);
         });
     });
   });
@@ -825,8 +787,7 @@ describe('Changes controller', () => {
         })
         .then(nextTick)
         .then(() => {
-          authorization.filterAllowedDocs.callCount.should.equal(1);
-          authorization.filterAllowedDocs.args[0][1].should.deep.equal([]);
+          authorization.filterAllowedDocs.callCount.should.equal(0);
 
           const feed = controller._getLongpollFeeds()[0];
           const emitter = controller._getContinuousFeed();
@@ -867,8 +828,8 @@ describe('Changes controller', () => {
             ],
             last_seq: 4
           }));
-          authorization.filterAllowedDocs.callCount.should.equal(2);
-          authorization.filterAllowedDocs.args[1][1].should.deep.equal([
+          authorization.filterAllowedDocs.callCount.should.equal(1);
+          authorization.filterAllowedDocs.args[0][1].should.deep.equal([
             { change: { id: 3, changes: [] }, id: 3, viewResults: {} },
             { change: { id: 2, changes: [] }, id: 2, viewResults: {} },
             { change: { id: 4, changes: [] }, id: 4, viewResults: {} }
@@ -884,8 +845,7 @@ describe('Changes controller', () => {
       authorization.allowedDoc.withArgs('contact-2').returns(false);
 
       authorization.updateContext.withArgs(true).returns(2);
-      authorization.filterAllowedDocs.onCall(0).returns([]);
-      authorization.filterAllowedDocs.onCall(1).returns([
+      authorization.filterAllowedDocs.onCall(0).returns([
         { change: { id: 'report-3', changes: [] }, id: 'report-3' },
         { change: { id: 'report-1', changes: [] }, id: 'report-1' }
       ]);
@@ -1019,7 +979,7 @@ describe('Changes controller', () => {
       authorization.allowedDoc.withArgs(2).returns(true);
 
       authorization.updateContext.withArgs(true).returns(2);
-      authorization.filterAllowedDocs.onCall(1).returns([ { change: { id: 3, changes: [] }, id: 3 } ]);
+      authorization.filterAllowedDocs.onCall(0).returns([ { change: { id: 3, changes: [] }, id: 3 } ]);
 
       controller.request(testReq, testRes);
       return nextTick()
@@ -1030,8 +990,7 @@ describe('Changes controller', () => {
         })
         .then(nextTick)
         .then(() => {
-          authorization.filterAllowedDocs.callCount.should.equal(1);
-          authorization.filterAllowedDocs.args[0][1].should.deep.equal([]);
+          authorization.filterAllowedDocs.callCount.should.equal(0);
           const feed = controller._getLongpollFeeds()[0];
           const emitter = controller._getContinuousFeed();
           clock.tick(1000);
@@ -1053,8 +1012,8 @@ describe('Changes controller', () => {
           emitter.emit('change', { id: 2, changes: [], doc: { _id: 2}}, 0, 4);
           testRes.end.callCount.should.equal(1);
           testRes.write.callCount.should.equal(1);
-          authorization.filterAllowedDocs.callCount.should.equal(2);
-          authorization.filterAllowedDocs.args[1][1].should.deep.equal([
+          authorization.filterAllowedDocs.callCount.should.equal(1);
+          authorization.filterAllowedDocs.args[0][1].should.deep.equal([
             { change: { id: 3, changes: [] }, id: 3, viewResults: {} },
             { change: { id: 4, changes: [] }, id: 4, viewResults: {} }
           ]);
@@ -1099,7 +1058,7 @@ describe('Changes controller', () => {
           authorization.getAllowedDocIds.callCount.should.equal(2);
           emitter.emit('change', { id: 2, changes: [], doc: { _id: 2 }}, 0, 4);
           emitter.emit('change', { id: 11, changes: [], doc: { _id: 11 }}, 0, 5);
-          authorization.filterAllowedDocs.callCount.should.equal(1);
+          authorization.filterAllowedDocs.callCount.should.equal(0);
         })
         .then(nextTick)
         .then(() => {
@@ -1116,7 +1075,7 @@ describe('Changes controller', () => {
           (!!feed.ended).should.equal(false);
           testRes.write.callCount.should.equal(0);
           testRes.end.callCount.should.equal(0);
-          authorization.filterAllowedDocs.callCount.should.equal(1);
+          authorization.filterAllowedDocs.callCount.should.equal(0);
         })
         .then(nextTick)
         .then(() => {
@@ -1127,13 +1086,7 @@ describe('Changes controller', () => {
             results: [{ id: 3, changes: [] }, { id: 1, changes: [] }, { id: 2, changes: [] }],
             last_seq: 5
           }));
-          authorization.filterAllowedDocs.callCount.should.equal(2);
-          authorization.filterAllowedDocs.args[0][1].should.deep.equal([]);
-          authorization.filterAllowedDocs.args[1][1].should.deep.equal([
-            { change: { id: 22, changes: [] }, viewResults: {}, id: 22 },
-            { change: { id: 2, changes: [] }, viewResults: {}, id: 2 },
-            { change: { id: 11, changes: [] }, viewResults: {}, id: 11 }
-          ]);
+          authorization.filterAllowedDocs.callCount.should.equal(0);
           authorization.allowedDoc.callCount.should.equal(3);
           authorization.allowedDoc.args[0][0].should.equal(3);
           authorization.allowedDoc.args[1][0].should.equal(4);
@@ -1728,6 +1681,87 @@ describe('Changes controller', () => {
     it('returns error message when error exists', () => {
       const feed = { results: 'results', lastSeq: 'lastSeq', error: true };
       controller._generateResponse(feed).should.deep.equal({ error: 'Error processing your changes' });
+    });
+  });
+
+  describe('shouldBatchChangesRequests', () => {
+    it('should return false when serverChecks return some invalid string', () => {
+      serverChecks.getCouchDbVersion.returns();
+      controller._shouldBatchChangesRequests().should.equal(false);
+      controller._reset();
+
+      serverChecks.getCouchDbVersion.returns('dsaddada');
+      controller._shouldBatchChangesRequests().should.equal(false);
+      controller._reset();
+
+      serverChecks.getCouchDbVersion.returns([1, 2, 3]);
+      controller._shouldBatchChangesRequests().should.equal(false);
+      controller._reset();
+
+      serverChecks.getCouchDbVersion.returns(undefined);
+      controller._shouldBatchChangesRequests().should.equal(false);
+      controller._reset();
+    });
+
+    it('should return false when serverChecks returns some lower than minimum version', () => {
+      serverChecks.getCouchDbVersion.returns('1.7.1');
+      controller._shouldBatchChangesRequests().should.equal(false);
+      controller._reset();
+
+      serverChecks.getCouchDbVersion.returns('2.1.1.something');
+      controller._shouldBatchChangesRequests().should.equal(false);
+      controller._reset();
+
+      serverChecks.getCouchDbVersion.returns('2.2.9');
+      controller._shouldBatchChangesRequests().should.equal(false);
+      controller._reset();
+
+      serverChecks.getCouchDbVersion.returns('1.9.9');
+      controller._shouldBatchChangesRequests().should.equal(false);
+      controller._reset();
+    });
+
+    it('should return true when serverChecks returns some higher than minimum version', () => {
+      serverChecks.getCouchDbVersion.returns('2.3.0');
+      controller._shouldBatchChangesRequests().should.equal(true);
+      controller._reset();
+
+      serverChecks.getCouchDbVersion.returns('2.3.0.something-beta-characters');
+      controller._shouldBatchChangesRequests().should.equal(true);
+      controller._reset();
+
+      serverChecks.getCouchDbVersion.returns('2.3.1');
+      controller._shouldBatchChangesRequests().should.equal(true);
+      controller._reset();
+
+      serverChecks.getCouchDbVersion.returns('2.4.0');
+      controller._shouldBatchChangesRequests().should.equal(true);
+      controller._reset();
+
+      serverChecks.getCouchDbVersion.returns('3.0.0');
+      controller._shouldBatchChangesRequests().should.equal(true);
+      controller._reset();
+
+      serverChecks.getCouchDbVersion.returns('3.1.0');
+      controller._shouldBatchChangesRequests().should.equal(true);
+      controller._reset();
+    });
+
+    it('should cache results', () => {
+      serverChecks.getCouchDbVersion.returns('2.4.0');
+      controller._shouldBatchChangesRequests().should.equal(true);
+      controller._shouldBatchChangesRequests().should.equal(true);
+      controller._shouldBatchChangesRequests().should.equal(true);
+      controller._shouldBatchChangesRequests().should.equal(true);
+      controller._shouldBatchChangesRequests().should.equal(true);
+      serverChecks.getCouchDbVersion.callCount.should.equal(1);
+      controller._reset();
+      serverChecks.getCouchDbVersion.returns('2.2.0');
+      controller._shouldBatchChangesRequests().should.equal(false);
+      controller._shouldBatchChangesRequests().should.equal(false);
+      controller._shouldBatchChangesRequests().should.equal(false);
+      controller._shouldBatchChangesRequests().should.equal(false);
+      serverChecks.getCouchDbVersion.callCount.should.equal(2);
     });
   });
 });

@@ -13,7 +13,8 @@ let inited = false,
     continuousFeed = false,
     longpollFeeds = [],
     normalFeeds = [],
-    currentSeq = 0;
+    currentSeq = 0,
+    batchChangesRequests = null;
 
 const split = (array, count) => {
   count = Number.parseInt(count);
@@ -174,7 +175,7 @@ const getChanges = feed => {
   const options = { return_docs: true };
   _.extend(options, _.pick(feed.req.query, 'since', 'style', 'conflicts', 'seq_interval'));
 
-  if (shouldLimitChangesRequests() && feed.req.query.limit) {
+  if (shouldBatchChangesRequests() && feed.req.query.limit) {
     options.limit = feed.req.query.limit;
   }
 
@@ -186,15 +187,12 @@ const getChanges = feed => {
   // a bug where batching sometimes skips changes between batches.
   options.batch_size = feed.allowedDocIds.length + 1;
 
-  feed.upstreamRequest = db.medic.changes(options).on('complete', info => {
-    feed.lastSeq = info && info.last_seq || feed.lastSeq;
-  });
+  feed.upstreamRequest = db.medic.changes(options);
 
-  var start = Date.now();
   return feed.upstreamRequest
     .then(response => {
-      console.log('changes request took ' + (Date.now() - start));
       const results = response && response.results;
+      feed.lastSeq = response.last_seq;
       // if the response was incomplete
 
       if (!results) {
@@ -216,8 +214,6 @@ const getChanges = feed => {
         return reauthorizeRequest(feed);
       }
 
-      processPendingChanges(feed);
-
       if (feed.results.length || !isLongpoll(feed.req)) {
         // send response downstream
         return endFeed(feed);
@@ -238,7 +234,6 @@ const getChanges = feed => {
 };
 
 const initFeed = (req, res) => {
-  var start = Date.now();
   const feed = {
     id: req.id || uuid(),
     req: req,
@@ -267,9 +262,7 @@ const initFeed = (req, res) => {
       return authorization.getAllowedDocIds(feed);
     })
     .then(allowedDocIds => {
-      console.log('init feed get allowed ids' + (Date.now() - start));
       feed.allowedDocIds = allowedDocIds;
-      console.log('init feed took ' + (Date.now() - start));
       return feed;
     });
 };
@@ -357,32 +350,37 @@ const initContinuousFeed = since => {
     });
 };
 
-const shouldLimitChangesRequests = () => {
-  if (typeof this.cache !== 'undefined') {
-    return this.cache;
+const shouldBatchChangesRequests = () => {
+  if (!_.isNull(batchChangesRequests)) {
+    return batchChangesRequests;
   }
 
   const MIN_COUCH_VERSION_FOR_BATCHING = '2.3.0',
-        parseVersion = v => v.match(/^([0-9]+)\.([0-9]+)\.([0-9]+).*$/),
+        parseVersion = v => _.isString(v) && v.match(/^([0-9]+)\.([0-9]+)\.([0-9]+).*$/),
         minVersion = parseVersion(MIN_COUCH_VERSION_FOR_BATCHING),
         actualVersion = parseVersion(serverChecks.getCouchDbVersion());
 
-  this.cache = true;
-  for (let i = 0; i < 3; i++) {
-    if (minVersion[i] > actualVersion[i]) {
-      this.cache = false;
-      break;
+  const gt = (a, b) => {
+    for (let i = 0; i < 3; i++) {
+      if (a[i] !== b[i]) {
+        return b[i] > a[i];
+      }
     }
+
+    return true;
+  };
+
+  if (!actualVersion) {
+    return batchChangesRequests = false, batchChangesRequests;
   }
 
-  return this.cache;
+  return batchChangesRequests = gt(minVersion, actualVersion), batchChangesRequests;
 };
 
 const init = () => {
   if (!inited) {
     inited = true;
     initContinuousFeed();
-    shouldLimitChangesRequests();
   }
 };
 
@@ -408,12 +406,14 @@ if (process.env.UNIT_TEST_ENV) {
     _generateTombstones: generateTombstones,
     _hasAuthorizationChange: hasAuthorizationChange,
     _generateResponse: generateResponse,
+    _shouldBatchChangesRequests: shouldBatchChangesRequests,
     _split: split,
     _reset: () => {
       longpollFeeds = [];
       normalFeeds = [];
       inited = false;
       currentSeq = 0;
+      batchChangesRequests = null;
     },
     _getNormalFeeds: () => normalFeeds,
     _getLongpollFeeds: () => longpollFeeds,
