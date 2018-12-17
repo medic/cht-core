@@ -409,7 +409,6 @@ describe('mutingUtils', () => {
         }]);
         chai.expect(utils.getReportsBySubject.callCount).to.equal(1);
         chai.expect(utils.getReportsBySubject.args[0]).to.deep.equal([{
-          db: db.medic,
           ids: [
             'my-place', 'my-place-id', 'my-place2', 'my-place3', 'place3',
             'contact1', 'patient1', 'contact2', 'patient2', 'contact3', 'patient3'
@@ -470,7 +469,6 @@ describe('mutingUtils', () => {
 
         chai.expect(utils.getReportsBySubject.callCount).to.equal(1);
         chai.expect(utils.getReportsBySubject.args[0]).to.deep.equal([{
-          db: db.medic,
           ids: [
             'my-place', 'my-place1', 'my-place2', 'my-place4', 'contact4', 'patient4'
           ],
@@ -567,7 +565,6 @@ describe('mutingUtils', () => {
 
         chai.expect(utils.getReportsBySubject.callCount).to.equal(1);
         chai.expect(utils.getReportsBySubject.args[0]).to.deep.equal([{
-          db: db.medic,
           ids: [ 'p2', 'p1', 'my-place', 'contact1', 'patient1', 'contact2', 'patient2' ],
           registrations: true
         }]);
@@ -618,7 +615,6 @@ describe('mutingUtils', () => {
 
         chai.expect(utils.getReportsBySubject.callCount).to.equal(1);
         chai.expect(utils.getReportsBySubject.args[0]).to.deep.equal([{
-          db: db.medic,
           ids: [ 'contact', 'patient' ],
           registrations: true
         }]);
