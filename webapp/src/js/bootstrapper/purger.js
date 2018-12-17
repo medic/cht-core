@@ -61,8 +61,8 @@ module.exports = function(DB, initialReplication) {
           return true;
         } else {
           return false;
-        };
-      })
+        }
+      });
   };
 
   const urgeToPurge = config => {
@@ -85,7 +85,7 @@ module.exports = function(DB, initialReplication) {
 
       return replicated;
     });
-  }
+  };
 
   const purgeContact = (fn, {contact, reports}, purgeCount) => {
     const purgeResults = fn(contact, reports);

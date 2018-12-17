@@ -78,7 +78,7 @@ function(newDoc, oldDoc, userCtx, secObj) {
   if (newDoc.purged) {
     // Remove this once we move purging to the server side, for now it is to
     // prevent *client-side* purging from leaking into the server side
-    return _err('Purged documents should not be written to CouchDB!')
+    return _err('Purged documents should not be written to CouchDB!');
   }
 
   checkAuthority(newDoc, oldDoc, userCtx, secObj);

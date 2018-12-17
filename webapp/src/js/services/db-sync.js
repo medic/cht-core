@@ -145,7 +145,7 @@ angular
             return DB().info()
             .then(dbInfo => {
               $window.localStorage.setItem(LAST_REPLICATED_SEQ_KEY, dbInfo.update_seq);
-            })
+            });
           })
           .finally(() => {
             inProgressSync = undefined;
