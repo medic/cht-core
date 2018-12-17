@@ -193,19 +193,19 @@ module.exports = function(DB, initialReplication) {
         }
 
         const fn = compile(fnStr);
+        const total = sets.length;
+        let processed = 0;
 
-        publish('start', {totalContacts: sets.length});
-
-        // Reviewer: I am not a fan of having this mutably outside of the reduce
-        // but it's also weird to pass more meta around in the reduce flow, purgeCount
-        // is more than enough IMO. Unsure here..
-        let setsLeft = sets.length;
-
+        publish('start', {totalContacts: total});
         return sets.reduce(
           (p, set) => p
             .then(purgeCount => purgeContact(fn, set, purgeCount))
             .then(purgeCount => {
-              publish('progress', {purged: purgeCount, contactsLeft: --setsLeft});
+              publish('progress', {
+                purged: purgeCount,
+                processed: ++processed,
+                total: total
+              });
               return purgeCount;
             }),
           Promise.resolve(0));
@@ -240,10 +240,11 @@ module.exports = function(DB, initialReplication) {
   };
 
   const handlers = {};
-  const publish = (name, arguments) => {
-    console.debug(`Publishing '${name}' event with:`, arguments);
+  const publish = (name, event) => {
+    console.debug(`Publishing '${name}' event with:`, event);
+
     (handlers[name] || []).forEach(callback => {
-      callback.apply(null, arguments);
+      callback(event);
     });
   };
 
@@ -252,8 +253,8 @@ module.exports = function(DB, initialReplication) {
     .then(count => publish('done', {totalPurged: count}));
 
   p.on = (type, callback) => {
-    handlers.type = handlers.type || [];
-    handlers.type.push(callback);
+    handlers[type] = handlers[type] || [];
+    handlers[type].push(callback);
     return p;
   };
 

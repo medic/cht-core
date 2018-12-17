@@ -161,8 +161,11 @@
             });
           });
       })
-      // TODO: hook up event handlers, output progress etc
-      .then(() => purger(localDb, initialReplicationNeeded))
+      .then(() => purger(localDb, initialReplicationNeeded)
+        .on('start', () => setUiStatus('PURGING'))
+        .on('progress', function(progress) {
+          setUiStatus('PURGE_INFO', progress);
+        }))
       .then(function() {
         // replication complete
         setUiStatus('STARTING_APP');
