@@ -63,7 +63,7 @@ const couchDbVersionCheck = (serverUrl) => {
         return reject(err);
       }
       console.log(`CouchDB Version: ${body.version}`);
-      resolve();
+      resolve(body.version);
     });
   });
 };
@@ -78,8 +78,9 @@ const check = (serverUrl) => {
 
 module.exports = {
   check: (serverUrl) => check(serverUrl),
+  getCouchDbVersion: (serverUrl) => couchDbVersionCheck(serverUrl),
   _nodeVersionCheck: () => nodeVersionCheck(),
   _envVarsCheck: () => envVarsCheck(),
   _couchDbNoAdminPartyModeCheck: () => couchDbNoAdminPartyModeCheck(),
-  _couchDbVersionCheck: (serverUrl) => couchDbVersionCheck(serverUrl)
+
 };

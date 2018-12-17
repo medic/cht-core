@@ -85,14 +85,15 @@ describe('Server Checks service', () => {
 
     it('couchdb valid version check', () => {
       sinon.stub(request, 'get').callsArgWith(1, null, null, {version: '2'});
-      return service._couchDbVersionCheck('something').then(() => {
+      return service.getCouchDbVersion('something').then(result => {
         chai.assert.equal(log(0), 'CouchDB Version: 2');
+        chai.assert.equal(result, '2');
       });
     });
 
     it('couchdb invalid version check', () => {
       sinon.stub(request, 'get').callsArgWith(1, 'error');
-      return service._couchDbVersionCheck('something').catch(err => {
+      return service.getCouchDbVersion('something').catch(err => {
         chai.assert.equal(err, 'error');
       });
     });
