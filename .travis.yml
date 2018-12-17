@@ -92,7 +92,10 @@ jobs:
       env: NODE_VERSION=10
       before_script:
       script:
-        - node ./scripts/travis/publish.js
+        - cd scripts/travis
+        - npm install
+        - node ./publish.js
+# TODO delete test doc
 
 #after_failure:
 #  - pip install --user awscli

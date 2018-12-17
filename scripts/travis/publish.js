@@ -1,5 +1,5 @@
 const https = require('https'),
-      ddocIdRegex = /"_id":"medic:medic:test-[0-9]*","_rev":"[^"]*"/,
+      http = require('http'),
       {
         UPLOAD_URL,
         TRAVIS_BUILD_NUMBER,
@@ -8,57 +8,58 @@ const https = require('https'),
       } = process.env,
       releaseName = TRAVIS_TAG || TRAVIS_BRANCH;
 
+const PouchDB = require('pouchdb-core');
+PouchDB.plugin(require('pouchdb-adapter-http'));
+
 if (!releaseName) {
   console.log('Not a tag or a branch so not publishing');
   process.exit(0);
 }
 
-const getUrl = `${UPLOAD_URL}/_couch/builds_testing/medic:medic:test-${TRAVIS_BUILD_NUMBER}?attachments=true`;
-const postUrl = `${UPLOAD_URL}/_couch/builds/medic:medic:${releaseName}`;
+const testingDb = new PouchDB(`${UPLOAD_URL}/_couch/builds_testing`);
+const stagingDb = new PouchDB(`${UPLOAD_URL}/_couch/builds`);
 
-const handleError = message => {
-  console.error(`problem with request: ${message}`);
-  process.exit(1);
+const testingDocId = `medic:medic:test-${TRAVIS_BUILD_NUMBER}`;
+const stagingDocId = `medic:medic:${releaseName}`;
+
+const get = () => {
+  console.log(`Getting "${testingDocId}"...`);
+  return testingDb.get(testingDocId, { attachments: true });
 };
 
-const resetId = ddoc => ddoc.replace(ddocIdRegex, `"_id":"medic:medic:${releaseName}"`);
+const prepare = doc => {
+  console.log('Checking if already published...');
+  doc._id = stagingDocId;
+  doc._rev = undefined;
+  return stagingDb.get(stagingDocId)
+    .then(current => {
+      console.log(`Exising release found - updating...`);
+      doc._rev = current._rev;
+      return doc;
+    })
+    .catch(err => {
+      if (err.status === 404) {
+        console.log(`No exising release found - creating...`);
+        return doc;
+      }
+      throw err;
+    })
+};
 
-const upload = (ddoc, contentType) => {
-  console.log('uploading release ddoc...');
-  const options = {
-    method: 'POST',
-    headers: { 'Content-Type': contentType }
-  };
-  console.log('options: ' + JSON.stringify(options));
-  console.log('url: ' + postUrl);
-  console.log('ddoc:');
-  console.log(ddoc);
-  const req = https.request(postUrl, options, res => {
-    if (res.statusCode !== 200) {
-      handleError(`post response status code ${res.statusCode}`);
-    }
-    console.log(`${releaseName} published!`);
+const publish = doc => {
+  console.log(`Publishing doc...`);
+  return stagingDb.put(doc);
+};
+
+get()
+  .then(prepare)
+  .then(publish)
+  .then(response => {
+    console.log(`${response.id} published!`);
     process.exit(0);
+  })
+  .catch(err => {
+    console.error('Publishing failed');
+    console.error(err);
+    process.exit(1);
   });
-  req.on('error', e => handleError(e.message));
-  req.write(ddoc);
-  req.end();
-};
-
-console.log('getting test release ddoc...');
-const req = https.get(getUrl, res => {
-  if (res.statusCode !== 200) {
-    return handleError(`get response status code ${res.statusCode}`);
-  }
-  const contentType = res.headers['content-type'];
-  let ddoc = '';
-  res.on('data', chunk => {
-    ddoc += chunk;
-  });
-  res.on('end', () => {
-    console.log('got test release ddoc');
-    const newDdoc = resetId(ddoc);
-    upload(newDdoc, contentType);
-  });
-});
-req.on('error', e => handleError(e.message));
