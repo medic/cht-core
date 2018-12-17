@@ -1,38 +1,91 @@
 const LAST_PURGED_DATE_KEY = 'medic-last-purge-date';
-const daysToMs = (days) => 1000 * 60 * 60 * 24 * days;
-const NOW = Date.now(); // OK to do this here while we only run it once on startup
+const LAST_REPLICATED_SEQ_KEY = 'medic-last-replicated-seq';
 
+const daysToMs = (days) => 1000 * 60 * 60 * 24 * days;
 /*
- * Handlers supported
- * done: called once all purging is complete, first param to callback is
- * total documents purged
- * start: called once we know how many contacts need to be looked through, returns
- * the count of contacts
- * progress: called every so often, with updated progress TODO: explanation
+ * Determines if purging should occur, and performs it if it should.
+ *
+ * You can follow along with published events:
+ *
+ * purge(DB)
+ *  .on('start', ...)
+ *  .on('progress, ...)
+ *  .on('done', ...);
+ *
+ * start: fired once we've worked out what to purge, callback is passed 'totalContacts'
+ * progress: fired after every contact has had purge run over it, callback is passed
+ *   current number of purged documents and how many contacts are left to check
+ * done: fired once purge is complete, callback is passed the total purge count
 */
-module.exports = function(DB) {
+module.exports = function(DB, initialReplication) {
 
   const getConfig = () => {
-    // TODO: actually pull config out of the ddoc
-    return Promise.resolve({
-      fn: 'function(contact, reports) { return reports.map(r => r._id); }',
-      run_every_days: '0'
-    });
+    return DB.get('settings')
+      .then(({settings: {purge}}) => {
+        if (!purge.fn) {
+          // No function means no purge
+          return;
+        }
+
+        purge.run_every_days = parseInt(purge.run_every_days);
+        if (Number.isNaN(purge.run_every_days)) {
+          purge.run_every_days = 30;
+        }
+
+        return purge;
+      });
   };
 
-  const urgeToPurge = (days) => {
+  const purgedRecently = days => {
     const lastPurge = parseInt(
       window.localStorage.getItem(LAST_PURGED_DATE_KEY)
     );
 
-    if (!lastPurge || (NOW - daysToMs(days)) > lastPurge) {
-      window.localStorage.setItem(LAST_PURGED_DATE_KEY, NOW);
-      return true;
-    } else {
-      console.log(`No purge needed yet. Last purge ${new Date(lastPurge)}`);
-      return false;
-    }
+    return lastPurge && (Date.now() - daysToMs(days)) < lastPurge;
   };
+
+  const localDatabaseReplicated = () => {
+    const highestSyncSeq = parseInt(
+      window.localStorage.getItem(LAST_REPLICATED_SEQ_KEY)
+    );
+
+    if (!highestSyncSeq) {
+      return Promise.resolve(false);
+    }
+
+    return DB.info()
+      .then(info => {
+        // I can't imagine how this would happen, but <= is arguably more
+        // correct than ===
+        if (info.update_seq <= highestSyncSeq) {
+          return true;
+        } else {
+          return false;
+        };
+      })
+  };
+
+  const urgeToPurge = config => {
+    if (initialReplication) {
+      console.log('Initial replication just occured, running post-replication purge');
+      return Promise.resolve(true);
+    }
+
+    if (purgedRecently(config.run_every_days)) {
+      console.log('Previous purge was recently, skipping');
+      return Promise.resolve(false);
+    }
+
+    return localDatabaseReplicated().then(replicated => {
+      if (replicated) {
+        console.log('Local DB does not appear to have unreplicated records');
+      } else {
+        console.log('Local DB may have unreplicated records, skipping');
+      }
+
+      return replicated;
+    });
+  }
 
   const purgeContact = (fn, {contact, reports}, purgeCount) => {
     const purgeResults = fn(contact, reports);
@@ -46,14 +99,9 @@ module.exports = function(DB) {
       return acc;
     }, {});
 
-
     const safePurgeResults = purgeResults.filter(id => {
       if (reportsById[id]) {
-        if (NOW - daysToMs(90) > reportsById[i].reported_date) {
-          return true;
-        } else {
-          console.warn(`Configured purge function attempted to purge ${id}, which is newer than 90 days old`);
-        }
+        return true;
       } else {
         console.warn(`Configured purge function attempted to purge ${id}, which was not a report id passed to it`);
       }
@@ -62,7 +110,8 @@ module.exports = function(DB) {
     const toPurge = safePurgeResults.map(id => ({
       _id: id,
       _rev: reportsById[id]._rev,
-      _deleted: true
+      _deleted: true,
+      purged: true
     }));
 
     return DB.bulkDocs(toPurge)
@@ -74,8 +123,32 @@ module.exports = function(DB) {
   };
 
   const compile = fnStr => {
-    /* jshint -W061 */
-    return eval(`(${fnStr})`);
+    try {
+      /* jshint -W061 */
+      return eval(`(${fnStr})`);
+    } catch (err) {
+      console.error(`Failed to parse purge function!\n  ${fnStr}\nFailed with:\n  ${err}`);
+      throw new Error(`Failed to parse purge function: ${err}`);
+    }
+  };
+
+  // Copied and slightly modified from the rules-service:
+  // https://github.com/medic/medic-webapp/blob/master/webapp/src/js/services/rules-engine.js#L52-L67
+  // We want to be consistent with rules
+  var getContactId = function(doc) {
+    // get the associated patient or place id to group reports by
+    return doc && (
+      doc.patient_id ||
+      doc.place_id ||
+      (doc.fields && (doc.fields.patient_id || doc.fields.place_id || doc.fields.patient_uuid))
+    );
+  };
+  var contactHasId = function(contact, id) {
+    return contact && (
+      contact._id === id ||
+      contact.patient_id === id ||
+      contact.place_id === id
+    );
   };
 
   const reportsByContact = () => {
@@ -83,45 +156,45 @@ module.exports = function(DB) {
     return DB.allDocs({include_docs: true})
       .then(results => {
         const {
-          contactsByContactId,
+          contacts,
           reportsByContactId
         } = results.rows.reduce((acc, row) => {
           const doc = row.doc;
           if (doc.type === 'data_record') {
-            if (!acc.reportsByContactId[doc.contact._id]) {
-              acc.reportsByContactId[doc.contact._id] = [doc];
+            const relevantContactId = getContactId(doc);
+
+            if (!acc.reportsByContactId[relevantContactId]) {
+              acc.reportsByContactId[relevantContactId] = [doc];
             } else {
-              acc.reportsByContactId[doc.contact._id].push(doc);
+              acc.reportsByContactId[relevantContactId].push(doc);
             }
           }
 
           if (['district_hospital', 'health_center', 'clinic', 'person'].includes(doc.type)) {
-            acc.contactsByContactId[doc._id] = doc;
+            acc.contacts.push(doc);
           }
 
           return acc;
-        }, {contactsByContactId: {}, reportsByContactId: {}});
+        }, {contacts: [], reportsByContactId: {}});
 
         return Object.keys(reportsByContactId)
           .map(id => ({
-            contact: contactsByContactId[id],
+            contact: contacts.find(c => contactHasId(c, id)),
             reports: reportsByContactId[id]
           }));
       });
   };
 
   const purge = (fnStr) => {
-    console.debug('Searching for contacts to purge documents from');
     return reportsByContact()
       .then(function(sets) {
         if (!sets.length) {
-          console.debug('No reports, aborting purge');
           return 0;
         }
 
         const fn = compile(fnStr);
 
-        publish('start', sets.length);
+        publish('start', {totalContacts: sets.length});
 
         // Reviewer: I am not a fan of having this mutably outside of the reduce
         // but it's also weird to pass more meta around in the reduce flow, purgeCount
@@ -143,20 +216,32 @@ module.exports = function(DB) {
     console.log('Initiating purge');
     return getConfig()
     .then(config => {
-      if (config && urgeToPurge(config.run_every_days)) {
-        return purge(config.fn);
-      } else {
+      if (!config) {
+        console.log('No purge rules configured, skipping');
         return 0;
       }
-    })
-    .then(purgeCount => {
-      console.log(`Purge complete, purged ${purgeCount} documents`);
-      return purgeCount;
+
+      return urgeToPurge(config)
+      .then(shouldPurge => {
+        if (shouldPurge) {
+          return purge(config.fn)
+          .then(purgeCount => {
+            console.log(`Purge complete, purged ${purgeCount} documents`);
+
+            window.localStorage.setItem(LAST_PURGED_DATE_KEY, Date.now());
+
+            return purgeCount;
+          });
+        } else {
+          return 0;
+        }
+      });
     });
   };
 
   const handlers = {};
   const publish = (name, arguments) => {
+    console.debug(`Publishing '${name}' event with:`, arguments);
     (handlers[name] || []).forEach(callback => {
       callback.apply(null, arguments);
     });
@@ -164,12 +249,15 @@ module.exports = function(DB) {
 
   const p = Promise.resolve()
     .then(() => begin())
-    .then(count => publish('done', count));
+    .then(count => publish('done', {totalPurged: count}));
 
   p.on = (type, callback) => {
     handlers.type = handlers.type || [];
     handlers.type.push(callback);
+    return p;
   };
 
   return p;
 };
+
+module.exports.LAST_REPLICATED_SEQ_KEY = LAST_REPLICATED_SEQ_KEY;

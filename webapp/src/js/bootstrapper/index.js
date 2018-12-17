@@ -145,12 +145,15 @@
     var localDb = window.PouchDB(localDbName, POUCHDB_OPTIONS.local);
     var remoteDb = window.PouchDB(dbInfo.remote, POUCHDB_OPTIONS.remote);
 
+    let initialReplicationNeeded;
+
     getDdoc(localDb)
       .then(function() {
         // ddoc found - no need for initial replication
       })
       .catch(function() {
         // no ddoc found - do replication
+        initialReplicationNeeded = true;
         return initialReplication(localDb, remoteDb)
           .then(function() {
             return getDdoc(localDb).catch(function() {
@@ -159,7 +162,7 @@
           });
       })
       // TODO: hook up event handlers, output progress etc
-      .then(() => purger(localDb))
+      .then(() => purger(localDb, initialReplicationNeeded))
       .then(function() {
         // replication complete
         setUiStatus('STARTING_APP');

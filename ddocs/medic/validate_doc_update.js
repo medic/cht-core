@@ -74,6 +74,13 @@ function(newDoc, oldDoc, userCtx, secObj) {
       _err('You are not authorized to edit your own place');
     }
   };
+
+  if (newDoc.purged) {
+    // Remove this once we move purging to the server side, for now it is to
+    // prevent *client-side* purging from leaking into the server side
+    return _err('Purged documents should not be written to CouchDB!')
+  }
+
   checkAuthority(newDoc, oldDoc, userCtx, secObj);
   log('medic validate_doc_update passed for User "' + userCtx.name + '" changing document "' +  newDoc._id + '"');
 }
