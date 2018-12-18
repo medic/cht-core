@@ -60,10 +60,10 @@ const createDoc = () => {
     };
 
     return db.medic.put(doc)
-      .catch(err => {
+      .catch(() => {
         logger.warn(`add-branding-doc migration tried to create '${BRANDING_ID}' doc but it already exists, keeping original`);
       });
-  })
+  });
 };
 
 module.exports = {
