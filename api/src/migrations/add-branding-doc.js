@@ -1,8 +1,9 @@
 const db = require('../db-pouch'),
-  fs = require('fs'),
-  path = require('path'),
-  BRANDING_ID = 'branding',
-  appTitle = 'Medic Mobile';
+      fs = require('fs'),
+      logger = require('../logger'),
+      path = require('path'),
+      BRANDING_ID = 'branding',
+      appTitle = 'Medic Mobile';
 
 const logo = {
   name: 'logo',
@@ -32,42 +33,41 @@ const attachDocument = (src, resource) => {
 };
 
 const createDoc = () => {
-
-  const attachment = [];
   const srcLogo = path.join(__dirname, '..', `resources/${logo.dir}`, logo.file);
   const srcFav = path.join(__dirname, '..', `resources/${favicon.dir}`, favicon.file);
 
-  return attachDocument(srcLogo, logo).then(resp => {
-    attachment.push(resp);
-    attachDocument(srcFav, favicon).then(resp => {
-      attachment.push(resp);
-      const doc = {
-        _id: BRANDING_ID,
-        title: appTitle,
-        resources: {
-          [logo.name]: logo.file,
-          [favicon.name]: favicon.file
+  return Promise.all([
+    () => attachDocument(srcLogo, logo),
+    () => attachDocument(srcFav, favicon)
+  ]).then(attachments => {
+    const doc = {
+      _id: BRANDING_ID,
+      title: appTitle,
+      resources: {
+        [logo.name]: logo.file,
+        [favicon.name]: favicon.file
+      },
+      _attachments: {
+        [logo.file]: {
+          content_type: attachments[0].content_type,
+          data: attachments[0].data
         },
-        _attachments: {
-          [logo.file]: {
-            content_type: attachment[0].content_type,
-            data: attachment[0].data
-          },
-          [favicon.file]: {
-            content_type: attachment[1].content_type,
-            data: attachment[1].data
-          }
+        [favicon.file]: {
+          content_type: attachments[1].content_type,
+          data: attachments[1].data
         }
-      };
-      db.medic.put(doc);
-    });
-  });
+      }
+    };
+
+    return db.medic.put(doc)
+      .catch(err => {
+        logger.warn(`add-branding-doc migration tried to create '${BRANDING_ID}' doc but it already exists, keeping original`);
+      });
+  })
 };
 
 module.exports = {
   name: 'add-branding-doc',
   created: new Date(2018, 11, 22, 10, 0, 0, 0),
-  run: () => {
-    return createDoc();
-  }
+  run: () => createDoc()
 };
