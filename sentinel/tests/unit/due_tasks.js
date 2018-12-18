@@ -42,10 +42,12 @@ describe('due tasks', () => {
         {
           due: due,
           state: 'scheduled',
+          message: 'x'
         },
         {
           due: notDue,
           state: 'scheduled',
+          message: 'y'
         },
       ],
     };
@@ -96,10 +98,12 @@ describe('due tasks', () => {
         {
           due: due,
           state: 'scheduled',
+          message: 'x'
         },
         {
           due: notDue,
           state: 'scheduled',
+          message: 'y'
         },
       ],
     };
@@ -154,6 +158,7 @@ describe('due tasks', () => {
         {
           due: due,
           state: 'scheduled',
+          message: 'x'
         },
       ],
     };
@@ -162,6 +167,7 @@ describe('due tasks', () => {
         {
           due: due,
           state: 'scheduled',
+          message: 'y'
         },
       ],
     };
