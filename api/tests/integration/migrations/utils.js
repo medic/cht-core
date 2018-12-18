@@ -231,8 +231,8 @@ function initDb(content) {
   return _resetDb()
     .then(() => {
       return Promise.all([
-        readFileAsync('../../../../build/medic.json'),
-        readFileAsync('../../../../build/_attachments/ddocs/compiled.json')
+        readFileAsync('../../../../build/ddocs/medic.json'),
+        readFileAsync('../../../../build/ddocs/medic/_attachments/ddocs/compiled.json')
       ]);
     })
     .then(([medic, compiled]) => {
