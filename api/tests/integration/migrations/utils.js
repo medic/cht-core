@@ -1,12 +1,13 @@
-var _ = require('underscore'),
-  async = require('async'),
-  {promisify} = require('util'),
-  fs = require('fs'),
-  readFileAsync = promisify(fs.readFile),
-  db = require('../../../src/db-nano'),
-  logger = require('../../../src/logger'),
-  dbPouch = require('../../../src/db-pouch'),
-  DB_PREFIX = 'medic_api_integration_tests__';
+const _ = require('underscore'),
+      async = require('async'),
+      {promisify} = require('util'),
+      fs = require('fs'),
+      path = require('path'),
+      readFileAsync = promisify(fs.readFile),
+      db = require('../../../src/db-nano'),
+      logger = require('../../../src/logger'),
+      dbPouch = require('../../../src/db-pouch'),
+      DB_PREFIX = 'medic_api_integration_tests__';
 
 const PouchDB = require('pouchdb-core');
 PouchDB.plugin(require('pouchdb-adapter-http'));
@@ -230,11 +231,9 @@ function initDb(content) {
 
   return _resetDb()
     .then(() => {
-      console.log('DIR:' + __dirname);
-      return Promise.all([
-        readFileAsync('../../../../build/ddocs/medic.json'),
-        readFileAsync('../../../../build/ddocs/medic/_attachments/ddocs/compiled.json')
-      ]);
+      const medicPath = path.join(__dirname, '../../../../build/ddocs/medic.json');
+      const compiledPath = path.join(__dirname, '../../../../build/ddocs/medic/_attachments/ddocs/compiled.json');
+      return Promise.all([ readFileAsync(medicPath), readFileAsync(compiledPath) ]);
     })
     .then(([medic, compiled]) => {
       const docs = JSON.parse(compiled).docs;
