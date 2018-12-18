@@ -13,13 +13,14 @@ angular.module('controllers').controller('EditTranslationCtrl',
     $scope.editing = !!$scope.model.key;
     $scope.model.locales = _.pluck($scope.model.locales, 'doc');
     $scope.model.values = {};
+    $scope.is_custom = false;
 
     $scope.model.locales.forEach(function(locale) {
       const custom = locale.custom || {};
       const generic = locale.generic || {};
       var value = $scope.model.key ? custom[$scope.model.key] || generic[$scope.model.key] : null;
       $scope.model.values[locale.code] = value;
-      $scope.is_custom |= _.has(custom, $scope.model.key) 
+      $scope.is_custom = $scope.is_custom || _.has(custom, $scope.model.key);
     });
 
     var getUpdatedLocales = function() {
