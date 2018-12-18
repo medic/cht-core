@@ -235,7 +235,7 @@ function initDb(content) {
         readFileAsync('../../../../build/_attachments/ddocs/compiled.json')
       ]);
     })
-    .then([medic, compiled] => {
+    .then(([medic, compiled]) => {
       const docs = JSON.parse(compiled).docs;
       docs.push(JSON.parse(medic));
       return dbPouch.medic.bulkDocs(docs);
