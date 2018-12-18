@@ -14,7 +14,7 @@ let originalDocument,
     localClose,
     remoteClose;
 
-describe.only('bootstrapper', () => {
+describe('bootstrapper', () => {
 
 // ignore "Read Only" jshint error for overwriting `document` and `window`
 // jshint -W020
