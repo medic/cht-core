@@ -120,7 +120,7 @@ const findUpdatedAppcache = ddoc => {
 
 const findUpdated = ddoc => {
   return Promise.all([
-    findUpdatedDdocs(ddoc.deploy_info),
+    findUpdatedDdocs(ddoc.deploy_info || null),
     findUpdatedAppcache(ddoc),
   ]).then(results => _.compact(_.flatten(results)));
 };
