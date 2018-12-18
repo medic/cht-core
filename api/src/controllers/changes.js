@@ -7,7 +7,8 @@ const auth = require('../auth'),
       uuid = require('uuid/v4'),
       config = require('../config'),
       logger = require('../logger'),
-      serverChecks = require('@medic/server-checks');
+      serverChecks = require('@medic/server-checks'),
+      environment = require('../environment');
 
 let inited = false,
     continuousFeed = false,
@@ -175,7 +176,7 @@ const getChanges = feed => {
   const options = { return_docs: true };
   _.extend(options, _.pick(feed.req.query, 'since', 'style', 'conflicts', 'seq_interval'));
 
-  if (shouldBatchChangesRequests() && feed.req.query.limit) {
+  if (batchChangesRequests && feed.req.query.limit) {
     options.limit = feed.req.query.limit;
   }
 
@@ -350,17 +351,22 @@ const initContinuousFeed = since => {
     });
 };
 
-const shouldBatchChangesRequests = () => {
-  if (!_.isNull(batchChangesRequests)) {
-    return batchChangesRequests;
-  }
+const initServerChecks = () =>
+  serverChecks
+  .getCouchDbVersion(environment.serverUrl)
+  .then(shouldBatchChangesRequests);
 
-  const MIN_COUCH_VERSION_FOR_BATCHING = '2.3.0',
-        parseVersion = v => _.isString(v) && v.match(/^([0-9]+)\.([0-9]+)\.([0-9]+).*$/),
-        minVersion = parseVersion(MIN_COUCH_VERSION_FOR_BATCHING),
-        actualVersion = parseVersion(serverChecks.getCouchDbVersion());
+const shouldBatchChangesRequests = couchDbVersion => {
+  const parseVersion = v => {
+    if (!_.isString(v)) {
+      return false;
+    }
 
-  const gt = (a, b) => {
+    const match = v.match(/^([0-9]+)\.([0-9]+)\.([0-9]+).*$/);
+    return match && match.slice(1, 4);
+  };
+
+  const gte = (a, b) => {
     for (let i = 0; i < 3; i++) {
       if (a[i] !== b[i]) {
         return b[i] > a[i];
@@ -370,24 +376,28 @@ const shouldBatchChangesRequests = () => {
     return true;
   };
 
-  if (!actualVersion) {
-    return batchChangesRequests = false, batchChangesRequests;
-  }
+  const MIN_COUCH_VERSION_FOR_BATCHING = '2.3.0',
+        minVersion = parseVersion(MIN_COUCH_VERSION_FOR_BATCHING),
+        actualVersion = parseVersion(couchDbVersion);
 
-  return batchChangesRequests = gt(minVersion, actualVersion), batchChangesRequests;
+  batchChangesRequests = actualVersion ? gte(minVersion, actualVersion) : false;
 };
 
 const init = () => {
   if (!inited) {
     inited = true;
     initContinuousFeed();
+    return initServerChecks();
   }
+
+  return Promise.resolve();
 };
 
 const request = (req, res) => {
-  init();
-  res.type('json');
-  processRequest(req, res);
+  init().then(() => {
+    res.type('json');
+    processRequest(req, res);
+  });
 };
 
 module.exports = {
@@ -406,7 +416,6 @@ if (process.env.UNIT_TEST_ENV) {
     _generateTombstones: generateTombstones,
     _hasAuthorizationChange: hasAuthorizationChange,
     _generateResponse: generateResponse,
-    _shouldBatchChangesRequests: shouldBatchChangesRequests,
     _split: split,
     _reset: () => {
       longpollFeeds = [];
@@ -419,6 +428,8 @@ if (process.env.UNIT_TEST_ENV) {
     _getLongpollFeeds: () => longpollFeeds,
     _getCurrentSeq: () => currentSeq,
     _inited: () => inited,
-    _getContinuousFeed: () => continuousFeed
+    _getContinuousFeed: () => continuousFeed,
+    _shouldBatchChangesRequests: shouldBatchChangesRequests,
+    _getBatchChangesRequests: () => batchChangesRequests
   });
 }

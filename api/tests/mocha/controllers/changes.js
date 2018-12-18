@@ -8,7 +8,8 @@ const sinon = require('sinon'),
       EventEmitter = require('events'),
       _ = require('underscore'),
       config = require('../../../src/config'),
-      serverChecks = require('@medic/server-checks');
+      serverChecks = require('@medic/server-checks'),
+      environment = require('../../../src/environment');
 
 require('chai').should();
 let testReq,
@@ -20,9 +21,10 @@ let testReq,
     clock,
     emitters,
     reqOnClose,
-    defaultSettings;
+    defaultSettings,
+    realSetTimeout;
 
-const nextTick = () => Promise.resolve().then(() => Promise.resolve()).then(() => Promise.resolve());
+const nextTick = () => new Promise(resolve => realSetTimeout(() => resolve()));
 
 describe('Changes controller', () => {
   afterEach(() => {
@@ -33,6 +35,7 @@ describe('Changes controller', () => {
   });
 
   beforeEach(() => {
+    realSetTimeout = setTimeout;
     clock = sinon.useFakeTimers();
     emitters = [];
     userCtx = { name: 'user', facility_id: 'facility', contact_id: 'contact' };
@@ -72,7 +75,7 @@ describe('Changes controller', () => {
 
     sinon.stub(_, 'now').callsFake(Date.now); // force underscore's debounce to use fake timers!
     sinon.stub(config, 'get').returns(defaultSettings);
-    sinon.stub(serverChecks, 'getCouchDbVersion').returns('2.2.0');
+    sinon.stub(serverChecks, 'getCouchDbVersion').resolves('2.2.0');
 
     ChangesEmitter = function(opts) {
       changesSpy(opts);
@@ -163,6 +166,26 @@ describe('Changes controller', () => {
         changesSpy.args[1][0].since.should.equal('seq-3');
       });
     });
+
+    it('should check if changes requests can be batched', () => {
+      environment.serverUrl = 'someURL';
+      serverChecks.getCouchDbVersion.resolves('2.2.0');
+      return controller._init().then(() => {
+        serverChecks.getCouchDbVersion.callCount.should.equal(1);
+        serverChecks.getCouchDbVersion.args[0].should.deep.equal(['someURL']);
+        controller._getBatchChangesRequests().should.equal(false);
+      });
+    });
+
+    it('should check if changes requests can be batched', () => {
+      environment.serverUrl = 'someOtherURL';
+      serverChecks.getCouchDbVersion.resolves('2.3.0');
+      return controller._init().then(() => {
+        serverChecks.getCouchDbVersion.callCount.should.equal(1);
+        serverChecks.getCouchDbVersion.args[0].should.deep.equal(['someOtherURL']);
+        controller._getBatchChangesRequests().should.equal(true);
+      });
+    });
   });
 
   describe('request', () => {
@@ -183,13 +206,15 @@ describe('Changes controller', () => {
       authorization.getAllowedDocIds.resolves([1, 2, 3]);
       controller._init();
       controller.request(testReq, testRes);
-      testReq.on.callCount.should.equal(1);
-      testReq.on.args[0][0].should.equal('close');
-      testRes.type.callCount.should.equal(1);
-      testRes.type.args[0][0].should.equal('json');
-      const feeds = controller._getNormalFeeds();
-      feeds.length.should.equal(1);
-      testRes.setHeader.callCount.should.equal(0);
+      return nextTick().then(() => {
+        testReq.on.callCount.should.equal(1);
+        testReq.on.args[0][0].should.equal('close');
+        testRes.type.callCount.should.equal(1);
+        testRes.type.args[0][0].should.equal('json');
+        const feeds = controller._getNormalFeeds();
+        feeds.length.should.equal(1);
+        testRes.setHeader.callCount.should.equal(0);
+      });
     });
   });
 
@@ -227,22 +252,24 @@ describe('Changes controller', () => {
       defaultSettings.reiterate_changes = 'something';
       defaultSettings.debounce_interval = false;
       controller.request(testReq, testRes);
-      const feed = controller._getNormalFeeds()[0];
-      feed.limit.should.equal(23);
-      feed.heartbeat.should.be.an('Object');
-      feed.timeout.should.be.an('Object');
-      clock.tick(82000);
-      testRes.write.callCount.should.equal(8);
-      testRes.write.args.should.deep.equal([
-        ['\n'], ['\n'], ['\n'], ['\n'], ['\n'], ['\n'], ['\n'], ['\n'] //heartbeats
-      ]);
-      testRes.end.callCount.should.equal(0);
-      controller._getNormalFeeds().length.should.equal(1);
-      clock.tick(30000);
-      testRes.end.callCount.should.equal(1);
-      controller._getNormalFeeds().length.should.equal(0);
-      feed.reiterate_changes.should.equal('something');
-      feed.should.not.have.property('debouncedEnd');
+      return nextTick().then(() => {
+        const feed = controller._getNormalFeeds()[0];
+        feed.limit.should.equal(23);
+        feed.heartbeat.should.be.an('Object');
+        feed.timeout.should.be.an('Object');
+        clock.tick(82000);
+        testRes.write.callCount.should.equal(8);
+        testRes.write.args.should.deep.equal([
+          ['\n'], ['\n'], ['\n'], ['\n'], ['\n'], ['\n'], ['\n'], ['\n'] //heartbeats
+        ]);
+        testRes.end.callCount.should.equal(0);
+        controller._getNormalFeeds().length.should.equal(1);
+        clock.tick(30000);
+        testRes.end.callCount.should.equal(1);
+        controller._getNormalFeeds().length.should.equal(0);
+        feed.reiterate_changes.should.equal('something');
+        feed.should.not.have.property('debouncedEnd');
+      });
     });
 
     it('requests user authorization information with correct userCtx', () => {
@@ -270,7 +297,6 @@ describe('Changes controller', () => {
       authorization.getAllowedDocIds.resolves(['d1', 'd2', 'd3']);
       controller.request(testReq, testRes);
       return nextTick()
-        .then(nextTick)
         .then(() => {
           authorization.getAllowedDocIds.callCount.should.equal(1);
           changesSpy.callCount.should.equal(2);
@@ -303,7 +329,7 @@ describe('Changes controller', () => {
     it('should batch changes requests when couchDB version allows it', () => {
       testReq.query = { limit: 20, view: 'test', something: 'else', conflicts: true, seq_interval: false, since: '22', return_docs: false };
       authorization.getAllowedDocIds.resolves(['d1', 'd2', 'd3']);
-      serverChecks.getCouchDbVersion.returns('2.3.0');
+      serverChecks.getCouchDbVersion.resolves('2.3.0');
       controller.request(testReq, testRes);
       return nextTick().then(() => {
         changesSpy.callCount.should.equal(2);
@@ -1685,83 +1711,41 @@ describe('Changes controller', () => {
   });
 
   describe('shouldBatchChangesRequests', () => {
-    it('should return false when serverChecks return some invalid string', () => {
-      serverChecks.getCouchDbVersion.returns();
-      controller._shouldBatchChangesRequests().should.equal(false);
-      controller._reset();
-
-      serverChecks.getCouchDbVersion.returns('dsaddada');
-      controller._shouldBatchChangesRequests().should.equal(false);
-      controller._reset();
-
-      serverChecks.getCouchDbVersion.returns([1, 2, 3]);
-      controller._shouldBatchChangesRequests().should.equal(false);
-      controller._reset();
-
-      serverChecks.getCouchDbVersion.returns(undefined);
-      controller._shouldBatchChangesRequests().should.equal(false);
-      controller._reset();
+    it('should not batch when serverChecks returns some invalid string', () => {
+      controller._shouldBatchChangesRequests();
+      controller._getBatchChangesRequests().should.equal(false);
+      controller._shouldBatchChangesRequests('dsaddada');
+      controller._getBatchChangesRequests().should.equal(false);
+      controller._shouldBatchChangesRequests([1, 2, 3]);
+      controller._getBatchChangesRequests().should.equal(false);
+      controller._shouldBatchChangesRequests(undefined);
+      controller._getBatchChangesRequests().should.equal(false);
     });
 
     it('should return false when serverChecks returns some lower than minimum version', () => {
-      serverChecks.getCouchDbVersion.returns('1.7.1');
-      controller._shouldBatchChangesRequests().should.equal(false);
-      controller._reset();
-
-      serverChecks.getCouchDbVersion.returns('2.1.1.something');
-      controller._shouldBatchChangesRequests().should.equal(false);
-      controller._reset();
-
-      serverChecks.getCouchDbVersion.returns('2.2.9');
-      controller._shouldBatchChangesRequests().should.equal(false);
-      controller._reset();
-
-      serverChecks.getCouchDbVersion.returns('1.9.9');
-      controller._shouldBatchChangesRequests().should.equal(false);
-      controller._reset();
+      controller._shouldBatchChangesRequests('1.7.1');
+      controller._getBatchChangesRequests().should.equal(false);
+      controller._shouldBatchChangesRequests('2.1.1.something');
+      controller._getBatchChangesRequests().should.equal(false);
+      controller._shouldBatchChangesRequests('2.2.9');
+      controller._getBatchChangesRequests().should.equal(false);
+      controller._shouldBatchChangesRequests('1.9.9');
+      controller._getBatchChangesRequests().should.equal(false);
     });
 
     it('should return true when serverChecks returns some higher than minimum version', () => {
-      serverChecks.getCouchDbVersion.returns('2.3.0');
-      controller._shouldBatchChangesRequests().should.equal(true);
-      controller._reset();
-
-      serverChecks.getCouchDbVersion.returns('2.3.0.something-beta-characters');
-      controller._shouldBatchChangesRequests().should.equal(true);
-      controller._reset();
-
-      serverChecks.getCouchDbVersion.returns('2.3.1');
-      controller._shouldBatchChangesRequests().should.equal(true);
-      controller._reset();
-
-      serverChecks.getCouchDbVersion.returns('2.4.0');
-      controller._shouldBatchChangesRequests().should.equal(true);
-      controller._reset();
-
-      serverChecks.getCouchDbVersion.returns('3.0.0');
-      controller._shouldBatchChangesRequests().should.equal(true);
-      controller._reset();
-
-      serverChecks.getCouchDbVersion.returns('3.1.0');
-      controller._shouldBatchChangesRequests().should.equal(true);
-      controller._reset();
-    });
-
-    it('should cache results', () => {
-      serverChecks.getCouchDbVersion.returns('2.4.0');
-      controller._shouldBatchChangesRequests().should.equal(true);
-      controller._shouldBatchChangesRequests().should.equal(true);
-      controller._shouldBatchChangesRequests().should.equal(true);
-      controller._shouldBatchChangesRequests().should.equal(true);
-      controller._shouldBatchChangesRequests().should.equal(true);
-      serverChecks.getCouchDbVersion.callCount.should.equal(1);
-      controller._reset();
-      serverChecks.getCouchDbVersion.returns('2.2.0');
-      controller._shouldBatchChangesRequests().should.equal(false);
-      controller._shouldBatchChangesRequests().should.equal(false);
-      controller._shouldBatchChangesRequests().should.equal(false);
-      controller._shouldBatchChangesRequests().should.equal(false);
-      serverChecks.getCouchDbVersion.callCount.should.equal(2);
+      controller._shouldBatchChangesRequests('2.3.0');
+      controller._getBatchChangesRequests().should.equal(true);
+      controller._shouldBatchChangesRequests('2.3.0.something-beta-characters');
+      controller._getBatchChangesRequests().should.equal(true);
+      controller._shouldBatchChangesRequests('2.3.1');
+      controller._getBatchChangesRequests().should.equal(true);
+      controller._shouldBatchChangesRequests('2.4.0');
+      controller._getBatchChangesRequests().should.equal(true);
+      controller._shouldBatchChangesRequests('3.0.0');
+      controller._getBatchChangesRequests().should.equal(true);
+      controller._shouldBatchChangesRequests('3.1.0');
+      controller._getBatchChangesRequests().should.equal(true);
     });
   });
 });
