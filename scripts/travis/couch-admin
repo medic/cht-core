@@ -1,5 +1,5 @@
 #!/bin/bash -eu
-
+#TODO delete this file?
 echo '[medic] creating admin'
 curl -X PUT 'http://localhost:5984/_node/_local/_config/admins/admin' -d '"pass"'
 

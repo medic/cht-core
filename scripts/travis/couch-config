@@ -1,9 +1,5 @@
 #!/bin/bash -eu
 
-if ! [[ "${USE_COUCHDB-}" = "true" ]]; then
-	echo '[medic] skipping couch-config'
-	exit 0
-fi
-
+#TODO delete this file?
 # Create couchdb system tables (this has to be done manually on couchdb 2.0)
 curl -X PUT 'http://localhost:5984/{_users,_replicator,_global_changes,_metadata,admins,medic}'

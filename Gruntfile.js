@@ -1046,13 +1046,13 @@ module.exports = function(grunt) {
     'mochaTest:unit',
   ]);
 
-  grunt.registerTask('ci-integration-e2e', 'Run further tests for CI', [
-    // 'env:general',
-    // 'exec:setup-admin',
-    // 'deploy',
-    // TODO move to the compile stage? 'mochaTest:api-integration',
+  grunt.registerTask('ci-e2e', 'Run e2e tests for CI', [
     'exec:start-webdriver',
     'protractor:e2e-tests-and-services',
+  ]);
+
+  grunt.registerTask('ci-integration', 'Run integration tests for CI', [
+    'mochaTest:api-integration'
   ]);
 
   grunt.registerTask('ci-performance', 'Run performance tests on CI', [
