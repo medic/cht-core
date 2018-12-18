@@ -96,7 +96,7 @@ describe('accept_patient_reports', () => {
         (typeof doc.errors).should.equal('undefined');
         (typeof doc.tasks).should.equal('undefined');
         utils.getReportsBySubject.callCount.should.equal(1);
-        utils.getReportsBySubject.args[0].should.deep.equal([{ db: db.medic, ids: ['x', 'y'], registrations: true }]);
+        utils.getReportsBySubject.args[0].should.deep.equal([{ ids: ['x', 'y'], registrations: true }]);
         utils.getSubjectIds.callCount.should.equal(1);
         utils.getSubjectIds.args[0].should.deep.equal([doc.patient]);
         done();
@@ -195,35 +195,6 @@ describe('accept_patient_reports', () => {
       transition._handleReport(doc, config, (err, complete) => {
         complete.should.equal(true);
         doc.registration_id.should.equal(registrations[1]._id);
-        done();
-      });
-    });
-
-    it('should call utils.getRegistrations with correct DB (#4962)', done => {
-      const doc = {
-        fields: { patient_id: 'x' },
-        from: '+123',
-      };
-      sinon.stub(utils, 'getRegistrations').callsArgWith(1, null, []);
-
-      const config = {
-        messages: [
-          {
-            event_type: 'registration_not_found',
-            message: [
-              {
-                content: 'not found {{patient_id}}',
-                locale: 'en',
-              },
-            ],
-            recipient: 'reporting_unit',
-          },
-        ],
-      };
-
-      transition._handleReport(doc, config, () => {
-        utils.getRegistrations.callCount.should.equal(1);
-        utils.getRegistrations.args[0][0].should.deep.equal({ id: 'x' });
         done();
       });
     });

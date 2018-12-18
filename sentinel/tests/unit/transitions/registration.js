@@ -923,7 +923,6 @@ describe('registration', () => {
         utils.getSubjectIds.args[0].should.deep.equal([doc.patient]);
         utils.getReportsBySubject.callCount.should.equal(1);
         utils.getReportsBySubject.args[0].should.deep.equal([ {
-          db: dbPouch.medic,
           ids: ['uuid', 'patient_id'],
           registrations: true
         } ]);
