@@ -167,23 +167,23 @@ describe('Changes controller', () => {
       });
     });
 
-    it('should check if changes requests can be batched', () => {
+    it('should check if changes requests can be limited', () => {
       environment.serverUrl = 'someURL';
       serverChecks.getCouchDbVersion.resolves('2.2.0');
       return controller._init().then(() => {
         serverChecks.getCouchDbVersion.callCount.should.equal(1);
         serverChecks.getCouchDbVersion.args[0].should.deep.equal(['someURL']);
-        controller._getBatchChangesRequests().should.equal(false);
+        controller._getLimitChangesRequests().should.equal(false);
       });
     });
 
-    it('should check if changes requests can be batched', () => {
+    it('should check if changes requests can be limited', () => {
       environment.serverUrl = 'someOtherURL';
       serverChecks.getCouchDbVersion.resolves('2.3.0');
       return controller._init().then(() => {
         serverChecks.getCouchDbVersion.callCount.should.equal(1);
         serverChecks.getCouchDbVersion.args[0].should.deep.equal(['someOtherURL']);
-        controller._getBatchChangesRequests().should.equal(true);
+        controller._getLimitChangesRequests().should.equal(true);
       });
     });
   });
@@ -326,7 +326,7 @@ describe('Changes controller', () => {
       });
     });
 
-    it('should batch changes requests when couchDB version allows it', () => {
+    it('should limit changes requests when couchDB version allows it', () => {
       testReq.query = { limit: 20, view: 'test', something: 'else', conflicts: true, seq_interval: false, since: '22', return_docs: false };
       authorization.getAllowedDocIds.resolves(['d1', 'd2', 'd3']);
       serverChecks.getCouchDbVersion.resolves('2.3.0');
@@ -509,7 +509,7 @@ describe('Changes controller', () => {
         });
     });
 
-    it('should not process pending changes for non-longpoll feeds', () => {
+    it('should not process pending changes for normal feeds', () => {
       const validatedIds = Array.from({length: 101}, () => Math.floor(Math.random() * 101));
       authorization.getAllowedDocIds.resolves(validatedIds);
       authorization.filterAllowedDocs.returns([
@@ -1671,30 +1671,6 @@ describe('Changes controller', () => {
     });
   });
 
-  describe('split', () => {
-    it('splits as expected', () => {
-      controller._split([1, 2, 3, 4, 5, 6], 3).should.deep.equal([[1, 2, 3], [4, 5, 6]]);
-      controller._split([1, 2, 3, 4], 3).should.deep.equal([[1, 2, 3], [4]]);
-      controller._split([1, 2, 3, 4], 1).should.deep.equal([[1], [2], [3], [4]]);
-      controller._split([1, 2, 3, 4], 0).should.deep.equal([[1, 2, 3, 4]]);
-
-      const array = Array.from({length: 40}, () => Math.floor(Math.random() * 40)),
-            arrayCopy = [...array];
-      const result = controller._split(array, 10);
-      result.length.should.equal(4);
-      _.flatten(result).should.deep.equal(arrayCopy);
-    });
-
-    it('does not crash with invalid count argument', () => {
-      controller._split([1, 2, 3]).should.deep.equal([[1, 2, 3]]);
-      controller._split([1, 2, 3], null).should.deep.equal([[1, 2, 3]]);
-      controller._split([1, 2, 3], undefined).should.deep.equal([[1, 2, 3]]);
-      controller._split([1, 2, 3], false).should.deep.equal([[1, 2, 3]]);
-      controller._split([1, 2, 3], true).should.deep.equal([[1, 2, 3]]);
-      controller._split([1, 2, 3], 'onehundred').should.deep.equal([[1, 2, 3]]);
-    });
-  });
-
   describe('generateResponse', () => {
     it('returns obj with feed results and last seq when no error', () => {
       const feed = { results: 'results', lastSeq: 'lastSeq' };
@@ -1710,42 +1686,42 @@ describe('Changes controller', () => {
     });
   });
 
-  describe('shouldBatchChangesRequests', () => {
-    it('should not batch when serverChecks returns some invalid string', () => {
-      controller._shouldBatchChangesRequests();
-      controller._getBatchChangesRequests().should.equal(false);
-      controller._shouldBatchChangesRequests('dsaddada');
-      controller._getBatchChangesRequests().should.equal(false);
-      controller._shouldBatchChangesRequests([1, 2, 3]);
-      controller._getBatchChangesRequests().should.equal(false);
-      controller._shouldBatchChangesRequests(undefined);
-      controller._getBatchChangesRequests().should.equal(false);
+  describe('shouldLimitChangesRequests', () => {
+    it('should not limit when serverChecks returns some invalid string', () => {
+      controller._shouldLimitChangesRequests();
+      controller._getLimitChangesRequests().should.equal(false);
+      controller._shouldLimitChangesRequests('dsaddada');
+      controller._getLimitChangesRequests().should.equal(false);
+      controller._shouldLimitChangesRequests([1, 2, 3]);
+      controller._getLimitChangesRequests().should.equal(false);
+      controller._shouldLimitChangesRequests(undefined);
+      controller._getLimitChangesRequests().should.equal(false);
     });
 
-    it('should return false when serverChecks returns some lower than minimum version', () => {
-      controller._shouldBatchChangesRequests('1.7.1');
-      controller._getBatchChangesRequests().should.equal(false);
-      controller._shouldBatchChangesRequests('2.1.1.something');
-      controller._getBatchChangesRequests().should.equal(false);
-      controller._shouldBatchChangesRequests('2.2.9');
-      controller._getBatchChangesRequests().should.equal(false);
-      controller._shouldBatchChangesRequests('1.9.9');
-      controller._getBatchChangesRequests().should.equal(false);
+    it('should not limit when serverChecks returns some lower than minimum version', () => {
+      controller._shouldLimitChangesRequests('1.7.1');
+      controller._getLimitChangesRequests().should.equal(false);
+      controller._shouldLimitChangesRequests('2.1.1.something');
+      controller._getLimitChangesRequests().should.equal(false);
+      controller._shouldLimitChangesRequests('2.2.9');
+      controller._getLimitChangesRequests().should.equal(false);
+      controller._shouldLimitChangesRequests('1.9.9');
+      controller._getLimitChangesRequests().should.equal(false);
     });
 
-    it('should return true when serverChecks returns some higher than minimum version', () => {
-      controller._shouldBatchChangesRequests('2.3.0');
-      controller._getBatchChangesRequests().should.equal(true);
-      controller._shouldBatchChangesRequests('2.3.0.something-beta-characters');
-      controller._getBatchChangesRequests().should.equal(true);
-      controller._shouldBatchChangesRequests('2.3.1');
-      controller._getBatchChangesRequests().should.equal(true);
-      controller._shouldBatchChangesRequests('2.4.0');
-      controller._getBatchChangesRequests().should.equal(true);
-      controller._shouldBatchChangesRequests('3.0.0');
-      controller._getBatchChangesRequests().should.equal(true);
-      controller._shouldBatchChangesRequests('3.1.0');
-      controller._getBatchChangesRequests().should.equal(true);
+    it('should limit when serverChecks returns some higher than minimum version', () => {
+      controller._shouldLimitChangesRequests('2.3.0');
+      controller._getLimitChangesRequests().should.equal(true);
+      controller._shouldLimitChangesRequests('2.3.0.something-beta-characters');
+      controller._getLimitChangesRequests().should.equal(true);
+      controller._shouldLimitChangesRequests('2.3.1');
+      controller._getLimitChangesRequests().should.equal(true);
+      controller._shouldLimitChangesRequests('2.4.0');
+      controller._getLimitChangesRequests().should.equal(true);
+      controller._shouldLimitChangesRequests('3.0.0');
+      controller._getLimitChangesRequests().should.equal(true);
+      controller._shouldLimitChangesRequests('3.1.0');
+      controller._getLimitChangesRequests().should.equal(true);
     });
   });
 });

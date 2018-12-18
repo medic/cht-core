@@ -15,19 +15,7 @@ let inited = false,
     longpollFeeds = [],
     normalFeeds = [],
     currentSeq = 0,
-    batchChangesRequests = null;
-
-const split = (array, count) => {
-  count = Number.parseInt(count);
-  if (Number.isNaN(count) || count < 1) {
-    return [array];
-  }
-  const result = [];
-  while (array.length) {
-    result.push(array.splice(0, count));
-  }
-  return result;
-};
+    limitChangesRequests = null;
 
 const cleanUp = feed => {
   clearInterval(feed.heartbeat);
@@ -176,7 +164,10 @@ const getChanges = feed => {
   const options = { return_docs: true };
   _.extend(options, _.pick(feed.req.query, 'since', 'style', 'conflicts', 'seq_interval'));
 
-  if (batchChangesRequests && feed.req.query.limit) {
+  // Prior to version 2.3.0, CouchDB had a bug where requesting _changes filtered by _doc_ids and using limit
+  // would yield an incorrect `last_seq`, resulting in overall incomplete changes.
+  // `limitChangesRequests` should only be true when CouchDB version is gte 2.3.0
+  if (limitChangesRequests && feed.req.query.limit) {
     options.limit = feed.req.query.limit;
   }
 
@@ -354,15 +345,15 @@ const initContinuousFeed = since => {
 const initServerChecks = () =>
   serverChecks
   .getCouchDbVersion(environment.serverUrl)
-  .then(shouldBatchChangesRequests);
+  .then(shouldLimitChangesRequests);
 
-const shouldBatchChangesRequests = couchDbVersion => {
-  const parseVersion = v => {
-    if (!_.isString(v)) {
+const shouldLimitChangesRequests = couchDbVersion => {
+  const parseVersion = version => {
+    if (!_.isString(version)) {
       return false;
     }
 
-    const match = v.match(/^([0-9]+)\.([0-9]+)\.([0-9]+).*$/);
+    const match = version.match(/^([0-9]+)\.([0-9]+)\.([0-9]+).*$/);
     return match && match.slice(1, 4);
   };
 
@@ -376,11 +367,13 @@ const shouldBatchChangesRequests = couchDbVersion => {
     return true;
   };
 
-  const MIN_COUCH_VERSION_FOR_BATCHING = '2.3.0',
-        minVersion = parseVersion(MIN_COUCH_VERSION_FOR_BATCHING),
+  // Prior to version 2.3.0, CouchDB had a bug where requesting _changes filtered by _doc_ids and using limit
+  // would yield an incorrect `last_seq`, resulting in overall incomplete changes.
+  const MIN_COUCH_VERSION_FOR_LIMITING_CHANGES = '2.3.0',
+        minVersion = parseVersion(MIN_COUCH_VERSION_FOR_LIMITING_CHANGES),
         actualVersion = parseVersion(couchDbVersion);
 
-  batchChangesRequests = actualVersion ? gte(minVersion, actualVersion) : false;
+  limitChangesRequests = actualVersion ? gte(minVersion, actualVersion) : false;
 };
 
 const init = () => {
@@ -416,20 +409,19 @@ if (process.env.UNIT_TEST_ENV) {
     _generateTombstones: generateTombstones,
     _hasAuthorizationChange: hasAuthorizationChange,
     _generateResponse: generateResponse,
-    _split: split,
     _reset: () => {
       longpollFeeds = [];
       normalFeeds = [];
       inited = false;
       currentSeq = 0;
-      batchChangesRequests = null;
+      limitChangesRequests = null;
     },
     _getNormalFeeds: () => normalFeeds,
     _getLongpollFeeds: () => longpollFeeds,
     _getCurrentSeq: () => currentSeq,
     _inited: () => inited,
     _getContinuousFeed: () => continuousFeed,
-    _shouldBatchChangesRequests: shouldBatchChangesRequests,
-    _getBatchChangesRequests: () => batchChangesRequests
+    _shouldLimitChangesRequests: shouldLimitChangesRequests,
+    _getLimitChangesRequests: () => limitChangesRequests
   });
 }
