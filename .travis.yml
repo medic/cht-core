@@ -68,6 +68,7 @@ jobs:
       before_script:
         - ./scripts/travis/npm-init
         - npm install -g grunt-cli
+        - mkdir tests/logs
       script:
         - node --stack_size=10000 `which grunt` ci-build       # build the app
         - node --stack_size=10000 `which grunt` ci-unit        # run static analysis and unit tests
