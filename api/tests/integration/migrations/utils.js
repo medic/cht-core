@@ -110,8 +110,8 @@ function assertDb(expectedContents) {
           }
 
           matchDbs(expectedContent, actualContent);
-        });
 
+        });
         resolve();
       }
     );
@@ -235,10 +235,11 @@ function initDb(content) {
       const compiledPath = path.join(__dirname, '../../../../build/ddocs/medic/_attachments/ddocs/compiled.json');
       return Promise.all([ readFileAsync(medicPath), readFileAsync(compiledPath) ]);
     })
-    .then(([medic, compiled]) => {
-      const docs = JSON.parse(compiled).docs;
-      docs.push(JSON.parse(medic));
-      return dbPouch.medic.bulkDocs(docs);
+    .then(([medicString, compiledString]) => {
+      const medicClient = JSON.parse(compiledString).docs
+        .find(doc => doc._id === '_design/medic-client');
+      const medic = JSON.parse(medicString).docs[0];
+      return dbPouch.medic.bulkDocs([ medic, medicClient ]);
     })
     .then(function() {
       switchToRealDbs();
