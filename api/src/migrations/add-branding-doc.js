@@ -37,8 +37,8 @@ const createDoc = () => {
   const srcFav = path.join(__dirname, '..', `resources/${favicon.dir}`, favicon.file);
 
   return Promise.all([
-    () => attachDocument(srcLogo, logo),
-    () => attachDocument(srcFav, favicon)
+    attachDocument(srcLogo, logo),
+    attachDocument(srcFav, favicon)
   ]).then(attachments => {
     const doc = {
       _id: BRANDING_ID,
@@ -60,8 +60,12 @@ const createDoc = () => {
     };
 
     return db.medic.put(doc)
-      .catch(() => {
-        logger.warn(`add-branding-doc migration tried to create '${BRANDING_ID}' doc but it already exists, keeping original`);
+      .catch(err => {
+        if (err.status === 409) {
+          logger.warn(`add-branding-doc migration tried to create '${BRANDING_ID}' doc but it already exists, keeping original`);
+        } else {
+          throw err;
+        }
       });
   });
 };
