@@ -360,13 +360,8 @@ const shouldLimitChangesRequests = couchDbVersion => {
   };
 
   const gte = (a, b) => {
-    for (let i = 0; i < 3; i++) {
-      if (a[i] !== b[i]) {
-        return b[i] > a[i];
-      }
-    }
-
-    return true;
+    const idx = a.findIndex((e, idx) => a[idx] !== b[idx]);
+    return idx === -1 || parseInt(b[idx]) > parseInt(a[idx]);
   };
 
   // Prior to version 2.3.0, CouchDB had a bug where requesting _changes filtered by _doc_ids and using limit
