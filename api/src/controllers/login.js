@@ -128,7 +128,15 @@ const setCookies = (req, res, sessionRes) => {
     .then(userCtx => {
       setSessionCookie(res, sessionCookie);
       setUserCtxCookie(res, userCtx);
-      res.json({ success: true });
+      if (auth.hasAllPermissions(userCtx, 'can_configure')) {
+        res.json({
+          success: true,
+          canCongifure: true,
+          redirect: path.join('/', environment.db, '_design', 'medic-admin', '_rewrite')
+        });
+      } else {
+        res.json({ success: true, canCongifure: false });
+      }
     })
     .catch(err => {
       logger.error(`Error getting authCtx ${err}`);

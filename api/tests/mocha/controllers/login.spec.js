@@ -246,6 +246,29 @@ describe('login controller', () => {
       });
     });
 
+    it('redict admin users to admin app after successful login', () => {
+      req.body = { user: 'sharon', password: 'p4ss' };
+      const postResponse = {
+        statusCode: 200,
+        headers: { 'set-cookie': [ 'AuthSession=abc;' ] }
+      };
+      const post = sinon.stub(request, 'post').callsArgWith(1, null, postResponse);
+      const json = sinon.stub(res, 'json').returns(res);
+      const cookie = sinon.stub(res, 'cookie').returns(res);
+      const userCtx = { name: 'shazza', roles: [ 'project-stuff' ] };
+      const getUserCtx = sinon.stub(auth, 'getUserCtx').resolves(userCtx);
+      const hasAllPermissions = sinon.stub(auth, 'hasAllPermissions').returns(true);
+      return controller.post(req, res).then(() => {
+        chai.expect(post.callCount).to.equal(1);
+        chai.expect(json.callCount).to.equal(1);
+        chai.expect(json.args[0][0]).to.deep.equal({ success: true, canCongifure: true, redirect: '/lg/_design/medic-admin/_rewrite' });
+        chai.expect(cookie.callCount).to.equal(2);
+        chai.expect(getUserCtx.callCount).to.equal(1);
+        chai.expect(getUserCtx.args[0][0].headers.Cookie).to.equal('AuthSession=abc;');
+        chai.expect(hasAllPermissions.callCount).to.equal(1);
+      });
+    });
+
   });
 
   describe('getIdentity', () => {
