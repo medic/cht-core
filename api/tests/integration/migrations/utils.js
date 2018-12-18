@@ -1,5 +1,8 @@
 var _ = require('underscore'),
   async = require('async'),
+  {promisify} = require('util'),
+  fs = require('fs'),
+  readFileAsync = promisify(fs.readFile),
   db = require('../../../src/db-nano'),
   logger = require('../../../src/logger'),
   dbPouch = require('../../../src/db-pouch'),
@@ -226,32 +229,16 @@ function initDb(content) {
   var realMedicDb = db.use('medic');
 
   return _resetDb()
-    .then(function() {
-      // copy ddocs from non-test db
-      return new Promise(function(resolve, reject) {
-        realMedicDb.get('_design/medic', function(err, medicDdoc) {
-          if (err) {
-            return reject(
-              new Error('Error getting _design/medic: ' + err.message)
-            );
-          }
-          resolve(medicDdoc);
-        });
-      });
+    .then(() => {
+      return Promise.all([
+        readFileAsync('../../../../build/medic.json'),
+        readFileAsync('../../../../build/_attachments/ddocs/compiled.json')
+      ]);
     })
-    .then(function(medicDdoc) {
-      delete medicDdoc._rev;
-      delete medicDdoc._attachments;
-      return new Promise(function(resolve, reject) {
-        db.medic.insert(medicDdoc, function(err) {
-          if (err) {
-            return reject(
-              new Error('Error inserting _design/medic: ' + err.message)
-            );
-          }
-          resolve();
-        });
-      });
+    .then([medic, compiled] => {
+      const docs = JSON.parse(compiled).docs;
+      docs.push(JSON.parse(medic));
+      return dbPouch.medic.bulkDocs(docs);
     })
     .then(function() {
       switchToRealDbs();
@@ -283,36 +270,7 @@ function initDb(content) {
       });
     })
     .then(function() {
-      return require('../../../src/ddoc-extraction').run();
-    })
-    .then(function() {
       switchToTestDbs();
-
-      return new Promise(function(resolve, reject) {
-        realMedicDb.get('_design/medic-client', function(err, medicClientDdoc) {
-          if (err) {
-            return reject(
-              new Error('Error getting _design/medic-client: ' + err.message)
-            );
-          }
-          resolve(medicClientDdoc);
-        });
-      });
-    })
-    .then(function(medicClientDdoc) {
-      delete medicClientDdoc._rev;
-      return new Promise(function(resolve, reject) {
-        db.medic.insert(medicClientDdoc, function(err) {
-          if (err) {
-            return reject(
-              new Error('Error inserting _design/medic-client: ' + err.message)
-            );
-          }
-          resolve();
-        });
-      });
-    })
-    .then(function() {
       return Promise.all(
         _.map(content, function(dbContent, dbName) {
           return Promise.all(
