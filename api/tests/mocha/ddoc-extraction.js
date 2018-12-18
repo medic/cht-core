@@ -473,7 +473,7 @@ describe('DDoc extraction', () => {
     });
   });
 
-  it('defaults to null when no info in medic ddoc', () => {
+  it('defaults deploy_info to null #5109', () => {
     const get = sinon.stub(db.medic, 'get');
     const getAttachment = sinon.stub(db.medic, 'getAttachment');
 
@@ -527,7 +527,7 @@ describe('DDoc extraction', () => {
     });
   });
 
-  it('does not write client if both are null', () => {
+  it('does not write medic-client when no changes and existent and new deploy_info is null #5109', () => {
     const get = sinon.stub(db.medic, 'get');
     const getAttachment = sinon.stub(db.medic, 'getAttachment');
 
