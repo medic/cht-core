@@ -22,7 +22,7 @@ module.exports = function(DB, initialReplication) {
   const getConfig = () => {
     return DB.get('settings')
       .then(({settings: {purge}}) => {
-        if (!purge.fn) {
+        if (!(purge && purge.fn)) {
           // No function means no purge
           return;
         }
