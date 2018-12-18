@@ -484,7 +484,6 @@ describe('changes handler', () => {
       ])
         .then(() => batchedChanges('bob', 4))
         .then(changes => {
-          console.log(changes);
           assertChangeIds(changes,
             'org.couchdb.user:bob',
             'fixture:user:bob',
@@ -511,6 +510,7 @@ describe('changes handler', () => {
         .then(() => requestChanges('bob', { limit: 4 }))
         .then(changes => {
           expect(changes.results.every(change => expectedIds.indexOf(change.id) !== -1 || change.id.startsWith('messages-'))).toBe(true);
+          // because we still process pending changes, it's not a given we will receive only 4 changes.
           expect(expectedIds.every(id => changes.results.find(change => change.id === id))).toBe(false);
         });
     });
@@ -771,8 +771,8 @@ describe('changes handler', () => {
                         utils.saveDocs(allowedSteve),
                       ]))
                       .then(resolve);
-                  });
-                }, 1000)
+                  }, 1000);
+                })
               ]);
             })
             .then(([ changes ]) => {
