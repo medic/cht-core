@@ -1,4 +1,4 @@
-const sinon = require('sinon').sandbox.create(),
+const sinon = require('sinon').sandbox,
       chai = require('chai'),
       utils = require('../src/index');
 

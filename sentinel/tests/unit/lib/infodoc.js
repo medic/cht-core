@@ -1,5 +1,5 @@
 const assert = require('chai').assert,
-  sinon = require('sinon').sandbox.create(),
+  sinon = require('sinon').sandbox,
   db = require('../../../src/db-pouch'),
   infodoc = require('../../../src/lib/infodoc');
 
