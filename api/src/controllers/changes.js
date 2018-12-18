@@ -206,6 +206,8 @@ const getChanges = feed => {
         return reauthorizeRequest(feed);
       }
 
+      processPendingChanges(feed);
+
       if (feed.results.length || !isLongpoll(feed.req)) {
         // send response downstream
         return endFeed(feed);

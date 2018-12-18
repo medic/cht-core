@@ -28,7 +28,7 @@ function assertChangeIds(changes) {
   });
 
   var expectedIds = Array.prototype.slice.call(arguments, 1);
-  expect(_.pluck(changes, 'id').sort()).toEqual(expectedIds.sort());
+  expect(_.unique(_.pluck(changes, 'id')).sort()).toEqual(expectedIds.sort());
 }
 
 function requestChanges(username, params = {}) {
@@ -510,8 +510,8 @@ describe('changes handler', () => {
         ])
         .then(() => requestChanges('bob', { limit: 4 }))
         .then(changes => {
-          expect(changes.results.length).toEqual(4);
           expect(changes.results.every(change => expectedIds.indexOf(change.id) !== -1 || change.id.startsWith('messages-'))).toBe(true);
+          expect(expectedIds.every(id => changes.results.find(change => change.id === id))).toBe(false);
         });
     });
 
