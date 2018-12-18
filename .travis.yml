@@ -37,7 +37,7 @@ before_script:
   - ./scripts/travis/npm-init
   - npm install -g grunt-cli
   - npm install -g horticulturalist
-  # - ./scripts/travis/couch-config
+  - ./scripts/travis/couch-config
   # - ./scripts/travis/couch-admin
   - echo "HORTI_BUILDS_SERVER=${UPLOAD_URL}/_couch/builds_testing"
   - echo "--install=medic:medic:test-${TRAVIS_BUILD_NUMBER}"
