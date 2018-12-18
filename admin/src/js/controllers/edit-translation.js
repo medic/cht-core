@@ -19,6 +19,7 @@ angular.module('controllers').controller('EditTranslationCtrl',
       const generic = locale.generic || {};
       var value = $scope.model.key ? custom[$scope.model.key] || generic[$scope.model.key] : null;
       $scope.model.values[locale.code] = value;
+      $scope.is_custom |= _.has(custom, $scope.model.key) 
     });
 
     var getUpdatedLocales = function() {
