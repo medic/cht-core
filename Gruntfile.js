@@ -20,9 +20,9 @@ const couchConfig = (() => {
   if (!parsedUrl.auth) {
     throw 'COUCH_URL must contain admin authentication information';
   }
-  
+
   const [ username, password ] = parsedUrl.auth.split(':', 2);
-  
+
   return {
     username,
     password,
@@ -376,7 +376,7 @@ module.exports = function(grunt) {
             const filePath = `${module}/package.json`;
             const pkg = this.file.readJSON(filePath);
             pkg.bundledDependencies = Object.keys(pkg.dependencies);
-            this.file.write(filePath, JSON.stringify(pkg, undefined, '  '));
+            this.file.write(filePath, JSON.stringify(pkg, undefined, '  ') + '\n');
             console.log(`Updated 'bundledDependencies' for ${filePath}`);
           });
           return 'echo "Node module dependencies updated"';
