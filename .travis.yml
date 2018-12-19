@@ -84,7 +84,6 @@ jobs:
         - cd scripts/travis
         - npm install
         - node ./publish.js
-# TODO delete test doc
 
 after_failure:
   - pip install --user awscli
