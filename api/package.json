@@ -96,6 +96,7 @@
     "properties",
     "request",
     "simple-password-tester",
+    "semver",
     "underscore",
     "url",
     "uuid",
