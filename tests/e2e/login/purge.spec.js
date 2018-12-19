@@ -1,5 +1,4 @@
-const auth = require('../../auth')(),
-      commonElements = require('../../page-objects/common/common.po.js'),
+const commonElements = require('../../page-objects/common/common.po.js'),
       reports = require('../../page-objects/reports/reports.po.js'),
       utils = require('../../utils'),
       loginPage = require('../../page-objects/login/login.po.js');
@@ -135,7 +134,7 @@ describe('Purging on login', () => {
 
   const purgeConfig = {
     fn: 'function(_, rs) { return rs.filter(r => r.form === "a-bad-form-type").map(r => r._id); }'
-  }
+  };
 
   beforeAll(done => {
     return Promise.all([
@@ -160,7 +159,7 @@ describe('Purging on login', () => {
       utils.revertDb()
     ])
     .then(() => done()).catch(done.fail);
-  })
+  });
 
   it('Logging in as a restricted user with configured purge rules should perform a purge', () => {
     utils.resetBrowser();
