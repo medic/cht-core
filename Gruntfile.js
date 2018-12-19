@@ -62,17 +62,6 @@ module.exports = function(grunt) {
           },
         ],
       },
-      // TODO remove?
-      'change-ddoc-id-for-publish': {
-        src: ['build/ddocs/medic.json'],
-        overwrite: true,
-        replacements: [
-          {
-            from: '"_id": "_design/medic"',
-            to: `"_id": "medic:medic:${releaseName}"`,
-          },
-        ],
-      },
       'change-ddoc-id-for-testing': {
         src: ['build/ddocs/medic.json'],
         overwrite: true,
@@ -439,7 +428,6 @@ module.exports = function(grunt) {
                       grep -Ev '^\s*//' &&
                   echo 'ERROR: Links found with target="_blank" but no rel="noopener noreferrer" set.  Please add required rel attribute.')`,
       },
-      // TODO: REPLACE THIS WITH /scripts/travis/couch-admin
       'setup-admin': {
         cmd:
           `curl -X PUT ${couchConfig.withPathNoAuth(couchConfig.dbName)}` +
@@ -462,7 +450,6 @@ module.exports = function(grunt) {
       bundlesize: {
         cmd: 'node ./node_modules/bundlesize/index.js',
       },
-      // TODO remove??
       'setup-api-integration': {
         cmd: 'cd api && npm ci',
       },
@@ -978,7 +965,6 @@ module.exports = function(grunt) {
   );
 
   // Test tasks
-  // TODO remove?
   grunt.registerTask('e2e', 'Deploy app for testing and run e2e tests', [
     'exec:reset-test-databases',
     'build-admin',
@@ -988,7 +974,6 @@ module.exports = function(grunt) {
     'protractor:e2e-tests-and-services',
   ]);
 
-  // TODO remove?
   grunt.registerTask('test-perf', 'Run performance-specific tests', [
     'exec:reset-test-databases',
     'build-node-modules',
@@ -1059,10 +1044,7 @@ module.exports = function(grunt) {
   ]);
 
   grunt.registerTask('ci-performance', 'Run performance tests on CI', [
-    // 'env:general',
-    // 'exec:setup-admin',
     'exec:start-webdriver',
-    // 'deploy',
     'protractor:performance-tests-and-services',
   ]);
 
@@ -1097,11 +1079,6 @@ module.exports = function(grunt) {
     'Run sentinel and watch for file changes',
     ['exec:sentinel-dev']
   );
-
-  grunt.registerTask('publish', 'Publish the ddoc to the staging server', [
-    'replace:change-ddoc-id-for-publish',
-    'couch-push:staging',
-  ]);
 
   grunt.registerTask('publish-for-testing', 'Publish the ddoc to the testing server', [
     'replace:change-ddoc-id-for-testing',

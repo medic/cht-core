@@ -1,7 +1,6 @@
 const utils = require('./utils'),
       constants = require('./constants'),
       auth = require('./auth')();
-const serviceManager = require('./service-manager');
 
 
 class BaseConfig {
@@ -34,12 +33,6 @@ class BaseConfig {
         browser.waitForAngularEnabled(false);
 
         browser.driver.wait(listenForApi, 120 * 1000, 'API took too long to start up');
-
-        if(options.manageServices) { // TODO maybe remove this option?
-          browser.driver.wait(serviceManager.startAll(), 60 * 1000, 'API and Sentinel should start within 60 seconds');
-          browser.driver.sleep(1); // block until previous command has completed
-        }
-
         browser.driver.wait(setupSettings, 5 * 1000, 'Settings should be setup within 5 seconds');
         browser.driver.wait(utils.setUserContactDoc, 5 * 1000, 'User contact should be setup within 5 seconds');
         browser.driver.wait(setupUser, 5 * 1000, 'User should be setup within 5 seconds');
@@ -48,10 +41,6 @@ class BaseConfig {
         return login(browser);
       },
     };
-
-    if(options.manageServices) {
-      this.onCleanUp = serviceManager.stopAll;
-    }
   }
 }
 

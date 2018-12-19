@@ -113,10 +113,10 @@ after_failure:
     aws s3 cp tests/logs "$S3_PATH"/ --recursive
 
 notifications:
- slack:
-   rooms:
-     - medic:SdzCLsD56UOr5U8ujzOCMDJd#development
-   template:
-     - "<%{build_url}|%{author}'s build> %{result}. Commit: %{commit_message} (<%{compare_url}|compare>)"
-   on_success: change
-   on_failure: always
+  slack:
+    rooms:
+      - medic:SdzCLsD56UOr5U8ujzOCMDJd#development
+    template:
+      - "<%{build_url}|%{author}'s build> %{result}. Commit: %{commit_message} (<%{compare_url}|compare>)"
+    on_success: change
+    on_failure: always
