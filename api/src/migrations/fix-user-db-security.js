@@ -23,7 +23,7 @@ module.exports = {
                 resolve();
               });
             });
-          })
+          });
         }, Promise.resolve());
       })
       .then(() => callback())
