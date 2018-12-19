@@ -38,7 +38,6 @@ before_script:
   - npm install -g grunt-cli
   - npm install -g horticulturalist
   - ./scripts/travis/couch-config
-  # - ./scripts/travis/couch-admin
   - echo "HORTI_BUILDS_SERVER=${UPLOAD_URL}/_couch/builds_testing"
   - echo "--install=medic:medic:test-${TRAVIS_BUILD_NUMBER}"
   - echo "COUCH_URL=${COUCH_URL}"
@@ -76,7 +75,6 @@ jobs:
         - node --stack_size=10000 `which grunt` ci-integration # run integration tests
         - cd config/standard && npm ci && npm run travis       # run standard config tests
         - node --stack_size=10000 `which grunt` publish-for-testing
-      after_failure: # overwrite default
     - stage: publish
       if: type != pull_request
       env: NODE_VERSION=10
@@ -86,31 +84,31 @@ jobs:
         - npm install
         - node ./publish.js
 
-after_failure:
-  - pip install --user awscli
-  - |
-    (cd tests/logs
-      for log in $(ls *.log); do
-        echo "---------- $log ----------"
-        tail "$log"
-        echo "--------------------------"
-      done
-    )
+# after_failure:
+#   - pip install --user awscli
+#   - |
+#     (cd tests/logs
+#       for log in $(ls *.log); do
+#         echo "---------- $log ----------"
+#         tail "$log"
+#         echo "--------------------------"
+#       done
+#     )
 
-    [[ "$TRAVIS_BUILD_STAGE_NAME" = "Test" ]] || return
+#     [[ "$TRAVIS_BUILD_STAGE_NAME" = "Test" ]] || return
 
-    if [[ "$TRAVIS_PULL_REQUEST" = true ]]; then
-      S3_PATH=s3://medic-e2e/PR_$TRAVIS_PULL_REQUEST
-    else
-      S3_PATH=s3://medic-e2e/BUILD_$TRAVIS_BUILD_NUMBER/JOB_$TRAVIS_JOB_NUMBER
-    fi
+#     if [[ "$TRAVIS_PULL_REQUEST" = true ]]; then
+#       S3_PATH=s3://medic-e2e/PR_$TRAVIS_PULL_REQUEST
+#     else
+#       S3_PATH=s3://medic-e2e/BUILD_$TRAVIS_BUILD_NUMBER/JOB_$TRAVIS_JOB_NUMBER
+#     fi
 
-    echo "Uploading logs and screenshots to ${S3_PATH}..."
+#     echo "Uploading logs and screenshots to ${S3_PATH}..."
 
-    docker logs couch > tests/logs/couch.log 2>&1
+#     docker logs couch > tests/logs/couch.log 2>&1
 
-    aws s3 cp tests/results "$S3_PATH"/test-results --recursive
-    aws s3 cp tests/logs "$S3_PATH"/ --recursive
+#     aws s3 cp tests/results "$S3_PATH"/test-results --recursive
+#     aws s3 cp tests/logs "$S3_PATH"/ --recursive
 
 #notifications:
 #  slack:
