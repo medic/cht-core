@@ -1048,6 +1048,7 @@ module.exports = function(grunt) {
     'exec:shared-lib-unit',
     'env:unit-test',
     'mochaTest:unit',
+    'env:general',
     'mochaTest:api-integration',
     'exec:test-standard'
   ]);
