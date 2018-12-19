@@ -8,12 +8,13 @@ var TRANSLATIONS = {
       return 'Fetching info (' + x + ' docs)…';
     },
     LOAD_APP: 'Loading app…',
-    PURGING: 'Checking data…',
+    PURGE_INIT: 'Checking data…',
     PURGE_INFO: function(progress) {
       const n = progress.purged;
       const percent = Math.floor((progress.processed / progress.total) * 100);
-      return `Purged ${n} documents (${percent}% complete)…`;
+      return `Cleaned ${n} documents (${percent}% complete)…`;
     },
+    PURGE_AFTER: 'Optimising…',
     LOAD_RULES: 'Loading rules…',
     STARTING_APP: 'Starting app…',
     ERROR_MESSAGE: 'Loading error, please check your connection.',

@@ -162,10 +162,11 @@
           });
       })
       .then(() => purger(localDb, initialReplicationNeeded)
-        .on('start', () => setUiStatus('PURGING'))
+        .on('start', () => setUiStatus('PURGE_INIT'))
         .on('progress', function(progress) {
           setUiStatus('PURGE_INFO', progress);
-        }))
+        })
+        .on('optimise', () => setUiStatus('PURGE_AFTER')))
       .then(function() {
         // replication complete
         setUiStatus('STARTING_APP');

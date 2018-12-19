@@ -250,7 +250,15 @@ module.exports = function(DB, initialReplication) {
 
   const p = Promise.resolve()
     .then(() => begin())
-    .then(count => publish('done', {totalPurged: count}));
+    .then(count => {
+      if (count) {
+        publish('optimise');
+        return DB.compact().then(() => count);
+      } else {
+        return count;
+      }
+    })
+    .then(count => publish('done', {totalPurged: count}))
 
   p.on = (type, callback) => {
     handlers[type] = handlers[type] || [];
