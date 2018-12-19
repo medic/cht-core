@@ -23,7 +23,6 @@ env:
     - secure: TR1UN2r3beDtIF+VJpLF2ocTv/uxuOKyVWWhzMLre0ZrrBaIP1sLZV7Z4S/km5M92EfPgGW87BogdWE/R+kTTRiPTCbFB/U/3jFKxEZRXKST66YK5JMwsYqb17UtZtFdqEtO9GGbAVzXwpZfMMoXvlKNrors2W32xBm2uIkOSpI=
     - secure: Q8RH65NClRBryxfvlwHQjeR4wGs+GXeUBRIBd1kspAM7Uv+5K3iP+q/TPCIrTL/OpJ5tyCYfeq5hKIFFwrY3JikNXnyHICOjXPE6zSLUm8E8NHaP/orPNWjze2x4yDSRCifqzr2ZiXVq9sxlZfNbZ9eyJxpPFTYDSpuN9T5UEE0=
 
-# TODO merge couch-start and couch-config and couch-admin together?
 before_install:
   - export PATH=$PATH:$HOME/.local/bin
   - export PATH=$HOME/.npm/bin:$PATH
@@ -83,8 +82,13 @@ jobs:
         - npm install
         - node ./publish.js
       after_failure: # overwrite default
+      after_script:
+        # clean up testing ddoc
+        - curl -X "DELETE" $UPLOAD_URL/_couch/builds_testing/medic:medic:test-${TRAVIS_BUILD_NUMBER}
 
 after_failure:
+  # clean up testing ddoc
+  - curl -X "DELETE" $UPLOAD_URL/_couch/builds_testing/medic:medic:test-${TRAVIS_BUILD_NUMBER}
   - pip install --user awscli
   - |
     (cd tests/logs
@@ -110,11 +114,11 @@ after_failure:
     aws s3 cp tests/results "$S3_PATH"/test-results --recursive
     aws s3 cp tests/logs "$S3_PATH"/ --recursive
 
-#notifications:
-#  slack:
-#    rooms:
-#      - medic:SdzCLsD56UOr5U8ujzOCMDJd#development
-#    template:
-#      - "<%{build_url}|%{author}'s build> %{result}. Commit: %{commit_message} (<%{compare_url}|compare>)"
-#    on_success: change
-#    on_failure: always
+notifications:
+ slack:
+   rooms:
+     - medic:SdzCLsD56UOr5U8ujzOCMDJd#development
+   template:
+     - "<%{build_url}|%{author}'s build> %{result}. Commit: %{commit_message} (<%{compare_url}|compare>)"
+   on_success: change
+   on_failure: always
