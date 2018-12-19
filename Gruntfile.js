@@ -1046,10 +1046,10 @@ module.exports = function(grunt) {
     'karma:unit',
     'karma:admin',
     'exec:shared-lib-unit',
+    'mochaTest:api-integration',
     'env:unit-test',
     'mochaTest:unit',
     'env:general',
-    'mochaTest:api-integration',
     'exec:test-standard'
   ]);
 
