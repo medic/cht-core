@@ -1770,7 +1770,7 @@ describe('Changes controller', () => {
     it('should not limit when serverChecks returns some lower than minimum version', () => {
       controller._shouldLimitChangesRequests('1.7.1');
       controller._getLimitChangesRequests().should.equal(false);
-      controller._shouldLimitChangesRequests('2.1.1.something');
+      controller._shouldLimitChangesRequests('2.1.1-beta.0');
       controller._getLimitChangesRequests().should.equal(false);
       controller._shouldLimitChangesRequests('2.2.9');
       controller._getLimitChangesRequests().should.equal(false);
@@ -1783,7 +1783,7 @@ describe('Changes controller', () => {
     it('should limit when serverChecks returns some higher than minimum version', () => {
       controller._shouldLimitChangesRequests('2.3.0');
       controller._getLimitChangesRequests().should.equal(true);
-      controller._shouldLimitChangesRequests('2.3.0.something-beta-characters');
+      controller._shouldLimitChangesRequests('2.3.1-beta.1');
       controller._getLimitChangesRequests().should.equal(true);
       controller._shouldLimitChangesRequests('2.3.1');
       controller._getLimitChangesRequests().should.equal(true);

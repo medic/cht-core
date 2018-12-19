@@ -470,10 +470,7 @@ describe('changes handler', () => {
 
     beforeEach(done => getCurrentSeq().then(done));
 
-    it('should successfully fully replicate in batches', () => {
-      if (!shouldBatchChangesRequests) {
-        return;
-      }
+    it('should successfully fully replicate (with or without limit)', () => {
       const allowedDocs = createSomeContacts(12, 'fixture:bobville');
       bobsIds.push(..._.pluck(allowedDocs, '_id'));
 
@@ -492,11 +489,7 @@ describe('changes handler', () => {
         });
     });
 
-    it('should batch changes requests, depending on the requested limit', () => {
-      if (!shouldBatchChangesRequests) {
-        return;
-      }
-
+    it('depending on CouchDB version, should limit changes requests or specifically ignore limit', () => {
       const allowedDocs = createSomeContacts(12, 'fixture:bobville');
       bobsIds.push(..._.pluck(allowedDocs, '_id'));
       const deniedDocs = createSomeContacts(10, 'irrelevant-place'),
@@ -509,31 +502,17 @@ describe('changes handler', () => {
         ])
         .then(() => requestChanges('bob', { limit: 4 }))
         .then(changes => {
-          expect(changes.results.every(change => expectedIds.indexOf(change.id) !== -1 || change.id.startsWith('messages-'))).toBe(true);
-          // because we still process pending changes, it's not a given we will receive only 4 changes.
-          expect(expectedIds.every(id => changes.results.find(change => change.id === id))).toBe(false);
-        });
-    });
-
-    it('returns a full list of allowed changes, regardless of the requested limit', () => {
-      if (shouldBatchChangesRequests) {
-        return;
-      }
-      const allowedDocs = createSomeContacts(12, 'fixture:bobville');
-      bobsIds.push(..._.pluck(allowedDocs, '_id'));
-
-      const deniedDocs = createSomeContacts(10, 'irrelevant-place');
-      return Promise.all([
-          utils.saveDocs(allowedDocs),
-          utils.saveDocs(deniedDocs)
-        ])
-        .then(() => requestChanges('bob', { limit: 7 }))
-        .then(changes => {
-          assertChangeIds(changes,
-            'org.couchdb.user:bob',
-            'fixture:user:bob',
-            'fixture:bobville',
-            ..._.without(bobsIds, ...DEFAULT_EXPECTED));
+          if (shouldBatchChangesRequests) { // when requests should be limited
+            expect(changes.results.every(change => expectedIds.indexOf(change.id) !== -1 || change.id.startsWith('messages-'))).toBe(true);
+            // because we still process pending changes, it's not a given we will receive only 4 changes.
+            expect(expectedIds.every(id => changes.results.find(change => change.id === id))).toBe(false);
+          } else { // when requests should return full replication
+            assertChangeIds(changes,
+              'org.couchdb.user:bob',
+              'fixture:user:bob',
+              'fixture:bobville',
+              ..._.without(bobsIds, ...DEFAULT_EXPECTED));
+          }
         });
     });
 

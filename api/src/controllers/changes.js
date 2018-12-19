@@ -8,7 +8,8 @@ const auth = require('../auth'),
       config = require('../config'),
       logger = require('../logger'),
       serverChecks = require('@medic/server-checks'),
-      environment = require('../environment');
+      environment = require('../environment'),
+      semver = require('semver');
 
 let inited = false,
     continuousFeed = false,
@@ -350,27 +351,12 @@ const initServerChecks = () =>
   .then(shouldLimitChangesRequests);
 
 const shouldLimitChangesRequests = couchDbVersion => {
-  const parseVersion = version => {
-    if (!_.isString(version)) {
-      return false;
-    }
-
-    const match = version.match(/^([0-9]+)\.([0-9]+)\.([0-9]+).*$/);
-    return match && match.slice(1, 4);
-  };
-
-  const gte = (a, b) => {
-    const idx = a.findIndex((e, idx) => a[idx] !== b[idx]);
-    return idx === -1 || parseInt(b[idx]) > parseInt(a[idx]);
-  };
-
   // Prior to version 2.3.0, CouchDB had a bug where requesting _changes filtered by _doc_ids and using limit
   // would yield an incorrect `last_seq`, resulting in overall incomplete changes.
-  const MIN_COUCH_VERSION_FOR_LIMITING_CHANGES = '2.3.0',
-        minVersion = parseVersion(MIN_COUCH_VERSION_FOR_LIMITING_CHANGES),
-        actualVersion = parseVersion(couchDbVersion);
-
-  limitChangesRequests = actualVersion ? gte(minVersion, actualVersion) : false;
+  const MIN_COUCH_VERSION_FOR_LIMITING_CHANGES = '2.3.0';
+  limitChangesRequests = semver.valid(couchDbVersion) ?
+    semver.lte(MIN_COUCH_VERSION_FOR_LIMITING_CHANGES, couchDbVersion) :
+    false;
 };
 
 const init = () => {
