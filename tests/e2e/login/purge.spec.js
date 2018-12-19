@@ -4,7 +4,7 @@ const auth = require('../../auth')(),
       utils = require('../../utils'),
       loginPage = require('../../page-objects/login/login.po.js');
 
-fdescribe('Purging on login', () => {
+describe('Purging on login', () => {
 
   const restrictedUserName = 'e2e_restricted',
         restrictedPass = 'e2e_restricted',
