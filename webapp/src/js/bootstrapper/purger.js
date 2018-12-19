@@ -258,7 +258,7 @@ module.exports = function(DB, initialReplication) {
         return count;
       }
     })
-    .then(count => publish('done', {totalPurged: count}))
+    .then(count => publish('done', {totalPurged: count}));
 
   p.on = (type, callback) => {
     handlers[type] = handlers[type] || [];
