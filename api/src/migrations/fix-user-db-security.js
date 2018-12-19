@@ -8,11 +8,13 @@ module.exports = {
   run: promisify(callback => {
     db.users.allDocs()
       .then(docs => {
-        return Promise.all(docs.rows
+        const usernames = docs.rows
           .map(row => row.id)
           .filter(id => id.indexOf('org.couchdb.user:') === 0)
-          .map(id => id.split(':')[1])
-          .map(username => {
+          .map(id => id.split(':')[1]);
+
+        return usernames.reduce((p, username) => {
+          return p.then(() => {
             return new Promise((resolve, reject) => {
               userDb.setSecurity(userDb.getDbName(username), username, err => {
                 if (err && err.statusCode !== 404) { // db not found is ok
@@ -21,7 +23,8 @@ module.exports = {
                 resolve();
               });
             });
-          }));
+          })
+        }, Promise.resolve());
       })
       .then(() => callback())
       .catch(callback);
