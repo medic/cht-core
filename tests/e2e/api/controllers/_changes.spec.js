@@ -502,11 +502,13 @@ describe('changes handler', () => {
         ])
         .then(() => requestChanges('bob', { limit: 4 }))
         .then(changes => {
-          if (shouldBatchChangesRequests) { // when requests should be limited
+          if (shouldBatchChangesRequests) {
+            // requests should be limited
             expect(changes.results.every(change => expectedIds.indexOf(change.id) !== -1 || change.id.startsWith('messages-'))).toBe(true);
             // because we still process pending changes, it's not a given we will receive only 4 changes.
             expect(expectedIds.every(id => changes.results.find(change => change.id === id))).toBe(false);
-          } else { // when requests should return full replication
+          } else {
+            // requests should return full changes list
             assertChangeIds(changes,
               'org.couchdb.user:bob',
               'fixture:user:bob',
