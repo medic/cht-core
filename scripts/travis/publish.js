@@ -1,3 +1,6 @@
+/*
+ * Publish the ddoc from the testing db to staging.
+ */
 const https = require('https'),
       http = require('http'),
       {

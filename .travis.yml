@@ -83,12 +83,10 @@ jobs:
         - node ./publish.js
       after_failure: # overwrite default
       after_script:
-        # clean up testing ddoc
-        - curl -X "DELETE" $UPLOAD_URL/_couch/builds_testing/medic:medic:test-${TRAVIS_BUILD_NUMBER}
+        - node ./cleanup.js # clean up testing ddoc
 
 after_failure:
-  # clean up testing ddoc
-  - curl -X "DELETE" $UPLOAD_URL/_couch/builds_testing/medic:medic:test-${TRAVIS_BUILD_NUMBER}
+  - node ./cleanup.js # clean up testing ddoc
   - pip install --user awscli
   - |
     (cd tests/logs
