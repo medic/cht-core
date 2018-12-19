@@ -34,7 +34,8 @@ class BaseConfig {
         browser.waitForAngularEnabled(false);
 
         if(options.manageServices) {
-          browser.driver.wait(serviceManager.startAll(), 60 * 1000, 'API and Sentinel should start within 60 seconds');
+          browser.driver.wait(serviceManager.startApi(), 60 * 1000, 'API failed to start within 60sec. Log at webapp/tests/logs/api.e2e.log. If stuck on the extract_user_settings migration check #5113.');
+          browser.driver.wait(serviceManager.startSentinel(), 60 * 1000, 'Sentinel failed to start within 60sec. Log at webapp/tests/logs/sentinel.e2e.log.');
           browser.driver.sleep(1); // block until previous command has completed
         }
 

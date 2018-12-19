@@ -64,12 +64,15 @@ const startServer = (serviceName, startOutput, options={}) => {
 };
 
 // start sentinel serially because it relies on api
-const startAll = () => startServer('api', 'Medic API listening on port')
-           .then(() => startServer('sentinel', 'startup complete.', { logTimestamps:true }));
+const startApi = () => startServer('api', 'Medic API listening on port');
+const startSentinel = () => startServer('sentinel', 'startup complete.', { logTimestamps:true });1
+const startAll = () => startApi.then(startSentinel);
 
 module.exports = {
-  startAll: startAll,
-  stopAll: stopAll,
+  startApi,
+  startSentinel,
+  startAll,
+  stopAll,
 };
 
 // From orbit, just to be sure
