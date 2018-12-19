@@ -70,13 +70,10 @@ jobs:
         - ./scripts/travis/couch-config
         - mkdir tests/logs
       script:
-        # TODO combine these first four into one grunt task so it fails properly
-        - node --stack_size=10000 `which grunt` ci-build       # build the app
-        - node --stack_size=10000 `which grunt` ci-unit        # run static analysis and unit tests
-        - node --stack_size=10000 `which grunt` ci-integration # run integration tests
-        - cd config/standard && npm ci && npm run travis       # run standard config tests
-        - node --stack_size=10000 `which grunt` publish-for-testing
+        - node --stack_size=10000 `which grunt` ci-compile
       after_failure: # overwrite default
+      after_success:
+        - node --stack_size=10000 `which grunt` publish-for-testing
     - stage: publish
       if: type != pull_request
       env: NODE_VERSION=10

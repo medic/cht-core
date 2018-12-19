@@ -530,6 +530,13 @@ module.exports = function(grunt) {
             .join(' && ');
         },
       },
+      'test-standard': {
+        cmd: [
+          'cd config/standard',
+          'npm ci',
+          'npm run travis'
+        ].join(' && ')
+      },
       'shared-lib-unit': {
         cmd: () => {
           const fs = require('fs');
@@ -1030,13 +1037,10 @@ module.exports = function(grunt) {
     'exec:bundlesize',
   ]);
 
-  grunt.registerTask('ci-build', 'build and minify for CI', [
+  grunt.registerTask('ci-compile', 'build, minify, lint, unit, integration test', [
     'install-dependencies',
     'build',
     'build-admin',
-  ]);
-
-  grunt.registerTask('ci-unit', 'Lint, deploy and test for CI', [
     'static-analysis',
     'install-dependencies',
     'karma:unit',
@@ -1044,15 +1048,13 @@ module.exports = function(grunt) {
     'exec:shared-lib-unit',
     'env:unit-test',
     'mochaTest:unit',
+    'mochaTest:api-integration',
+    'exec:test-standard'
   ]);
 
   grunt.registerTask('ci-e2e', 'Run e2e tests for CI', [
     'exec:start-webdriver',
     'protractor:e2e-tests-and-services',
-  ]);
-
-  grunt.registerTask('ci-integration', 'Run integration tests for CI', [
-    'mochaTest:api-integration'
   ]);
 
   grunt.registerTask('ci-performance', 'Run performance tests on CI', [
