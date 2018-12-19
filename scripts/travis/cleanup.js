@@ -2,6 +2,7 @@
  * Delete the artefact from the testing db
  */
 
+const { UPLOAD_URL, TRAVIS_BUILD_NUMBER } = process.env;
 const PouchDB = require('pouchdb-core');
 PouchDB.plugin(require('pouchdb-adapter-http'));
 
