@@ -110,8 +110,8 @@ function assertDb(expectedContents) {
           }
 
           matchDbs(expectedContent, actualContent);
-
         });
+
         resolve();
       }
     );

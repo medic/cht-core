@@ -1,7 +1,7 @@
 #!/bin/bash -eu
 
 # Create couchdb system tables (this has to be done manually on couchdb 2.0)
-curl -X PUT 'http://localhost:5984/{_users,_replicator,_global_changes,_metadata,admins,medic-test}'
+curl -X PUT 'http://localhost:5984/{_users,_replicator,_global_changes,_metadata,admins,medic}'
 
 echo '[medic] creating admin'
 curl -X PUT 'http://localhost:5984/_node/_local/_config/admins/admin' -d '"pass"'
