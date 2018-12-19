@@ -3,19 +3,23 @@ const LAST_REPLICATED_SEQ_KEY = 'medic-last-replicated-seq';
 
 const daysToMs = (days) => 1000 * 60 * 60 * 24 * days;
 /*
- * Determines if purging should occur, and performs it if it should.
+ * Determines if purging should occur, and performs it if it should, resolving
+ * the returned promise once the entire interaction is complete.
  *
  * You can follow along with published events:
  *
  * purge(DB)
  *  .on('start', ...)
  *  .on('progress, ...)
+ *  .on('optimise', ...)
  *  .on('done', ...);
  *
  * start: fired once we've worked out what to purge, callback is passed 'totalContacts'
  * progress: fired after every contact has had purge run over it, callback is passed
- *   current number of purged documents and how many contacts are left to check
- * done: fired once purge is complete, callback is passed the total purge count
+ *   an object containing progress information and current purge count
+ * optimise: fired just before compaction is run. We cannot introspect this effort
+ *   and it may take some time to complete
+ * done: fired once everything is complete, callback is passed the total purge count
 */
 module.exports = function(DB, initialReplication) {
 
