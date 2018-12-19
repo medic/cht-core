@@ -239,6 +239,7 @@ function initDb(content) {
       const medicClient = JSON.parse(compiledString).docs
         .find(doc => doc._id === '_design/medic-client');
       const medic = JSON.parse(medicString).docs[0];
+      delete medic._attachments;
       return dbPouch.medic.bulkDocs([ medic, medicClient ]);
     })
     .then(function() {
