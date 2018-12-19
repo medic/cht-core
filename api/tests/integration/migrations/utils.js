@@ -227,8 +227,6 @@ function initDb(content) {
 
   switchToTestDbs();
 
-  var realMedicDb = db.use('medic');
-
   return _resetDb()
     .then(() => {
       const medicPath = path.join(__dirname, '../../../../build/ddocs/medic.json');
