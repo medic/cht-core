@@ -76,6 +76,7 @@ jobs:
         - node --stack_size=10000 `which grunt` ci-integration # run integration tests
         - cd config/standard && npm ci && npm run travis       # run standard config tests
         - node --stack_size=10000 `which grunt` publish-for-testing
+      after_failure: # overwrite default
     - stage: publish
       if: type != pull_request
       env: NODE_VERSION=10
