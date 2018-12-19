@@ -1,8 +1,8 @@
 const chai = require('chai'),
-      sinon = require('sinon'),
-      service = require('../src/checks'),
-      http = require('http'),
-      request = require('request');
+    sinon = require('sinon'),
+    service = require('../src/checks'),
+    http = require('http'),
+    request = require('request');
 
 describe('Server Checks service', () => {
 
