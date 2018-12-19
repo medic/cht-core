@@ -56,15 +56,17 @@ const couchDbNoAdminPartyModeCheck = () => {
   });
 };
 
-const couchDbVersionCheck = (serverUrl) => {
+const getCouchDbVersion = (serverUrl) => {
   return new Promise((resolve, reject) => {
     request.get({ url: serverUrl, json: true }, (err, response, body) => {
-      if (err) {
-        return reject(err);
-      }
-      console.log(`CouchDB Version: ${body.version}`);
-      resolve(body.version);
+      return err ? reject(err) : resolve(body.version);
     });
+  });
+};
+
+const couchDbVersionCheck = (serverUrl) => {
+  return getCouchDbVersion(serverUrl).then(version => {
+    console.log(`CouchDB Version: ${version}`);
   });
 };
 
@@ -78,9 +80,9 @@ const check = (serverUrl) => {
 
 module.exports = {
   check: (serverUrl) => check(serverUrl),
-  getCouchDbVersion: (serverUrl) => couchDbVersionCheck(serverUrl),
+  getCouchDbVersion: (serverUrl) => getCouchDbVersion(serverUrl),
   _nodeVersionCheck: () => nodeVersionCheck(),
   _envVarsCheck: () => envVarsCheck(),
   _couchDbNoAdminPartyModeCheck: () => couchDbNoAdminPartyModeCheck(),
-
+  _couchDbVersionCheck: (serverUrl) => couchDbVersionCheck(serverUrl)
 };

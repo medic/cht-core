@@ -1,8 +1,8 @@
 const chai = require('chai'),
-    sinon = require('sinon'),
-    service = require('../src/checks'),
-    http = require('http'),
-    request = require('request');
+      sinon = require('sinon'),
+      service = require('../src/checks'),
+      http = require('http'),
+      request = require('request');
 
 describe('Server Checks service', () => {
 
@@ -85,15 +85,14 @@ describe('Server Checks service', () => {
 
     it('couchdb valid version check', () => {
       sinon.stub(request, 'get').callsArgWith(1, null, null, {version: '2'});
-      return service.getCouchDbVersion('something').then(result => {
+      return service._couchDbVersionCheck('something').then(() => {
         chai.assert.equal(log(0), 'CouchDB Version: 2');
-        chai.assert.equal(result, '2');
       });
     });
 
     it('couchdb invalid version check', () => {
       sinon.stub(request, 'get').callsArgWith(1, 'error');
-      return service.getCouchDbVersion('something').catch(err => {
+      return service._couchDbVersionCheck('something').catch(err => {
         chai.assert.equal(err, 'error');
       });
     });
@@ -147,5 +146,28 @@ describe('Server Checks service', () => {
       });
     });
 
+  });
+
+  describe('getCouchDbVersion', () => {
+    it('should return couchdb version', () => {
+      sinon.stub(request, 'get').callsArgWith(1, null, null, { version: '2.2.0' });
+      return service.getCouchDbVersion('someURL').then(version => {
+        chai.expect(version).to.equal('2.2.0');
+        chai.expect(request.get.callCount).to.equal(1);
+        chai.expect(request.get.args[0][0]).to.deep.equal({ url: 'someURL', json: true });
+      });
+    });
+
+    it('should reject errors', () => {
+      sinon.stub(request, 'get').callsArgWith(1, 'someErr', null, null);
+      return service
+        .getCouchDbVersion('someOtherURL')
+        .then(() => chai.expect(false).to.equal('Should have thrown'))
+        .catch(err => {
+          chai.expect(err).to.equal('someErr');
+          chai.expect(request.get.callCount).to.equal(1);
+          chai.expect(request.get.args[0][0]).to.deep.equal({ url: 'someOtherURL', json: true });
+        });
+    });
   });
 });
