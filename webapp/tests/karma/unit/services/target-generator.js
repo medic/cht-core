@@ -51,7 +51,6 @@ describe('TargetGenerator service', function() {
   });
 
   it('returns empty array when no targets are configured', function(done) {
-    RulesEngine.enabled = false;
     Settings.returns(Promise.resolve({}));
     UserContact.returns(Promise.resolve());
     RulesEngine.listen.callsArgWith(2, null, []);
