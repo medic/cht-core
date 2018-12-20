@@ -15,7 +15,7 @@ const PouchDB = require('pouchdb-core');
 PouchDB.plugin(require('pouchdb-adapter-http'));
 
 if (!releaseName) {
-  console.log('Not a tag or a branch so not publishing');
+  console.log('Not a tag or a branch so not publishing. Most likely this is a PR build which is merged with master');
   process.exit(0);
 }
 
