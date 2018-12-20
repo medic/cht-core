@@ -34,7 +34,7 @@ class BaseConfig {
         browser.driver.wait(setupSettings, 5 * 1000, 'Settings should be setup within 5 seconds');
         browser.driver.wait(utils.setUserContactDoc, 5 * 1000, 'User contact should be setup within 5 seconds');
         browser.driver.wait(setupUser, 5 * 1000, 'User should be setup within 5 seconds');
-        browser.driver.sleep(1); // block until previous command has completed
+        browser.driver.sleep(10000); // wait for startup to complete
 
         return login(browser);
       },
@@ -47,14 +47,6 @@ module.exports = BaseConfig;
 const listenForApi = () => {
   console.log('Checking API');
   return utils.request({ path: '/api/info' })
-    .then(() => {
-      // API is up - wait for 10 seconds for everything to finish
-      return new Promise(resolve => {
-        setTimeout(() => {
-          resolve();
-        }, 10000);
-      });
-    })
     .catch(() => {
       console.log('API check failed, trying again in 5 seconds');
       return new Promise(resolve => {

@@ -81,12 +81,13 @@ jobs:
         - cd scripts/travis
         - npm install
         - node ./publish.js
+        - cd ../../
       after_failure: # overwrite default
       after_script:
-        - node ./cleanup.js # clean up testing ddoc
+        - node scripts/travis/cleanup.js # clean up testing ddoc
 
 after_failure:
-  - node ./cleanup.js # clean up testing ddoc
+  - node scripts/travis/cleanup.js # clean up testing ddoc
   - pip install --user awscli
   - |
     (cd tests/logs
