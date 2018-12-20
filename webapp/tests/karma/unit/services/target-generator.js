@@ -13,6 +13,7 @@ describe('TargetGenerator service', function() {
     UserContact = sinon.stub();
     RulesEngine = {
       listen: sinon.stub(),
+      enabled: true
     };
     module('inboxApp');
     module(function ($provide) {
@@ -30,6 +31,16 @@ describe('TargetGenerator service', function() {
     KarmaUtils.restore(Settings, RulesEngine, UserContact);
   });
 
+  it('returns empty array when the rules engine is disabled', function(done) {
+    RulesEngine.enabled = false;
+    Settings.returns(Promise.resolve({}));
+    UserContact.returns(Promise.resolve());
+    injector.get('TargetGenerator')(function(err, actual) {
+      chai.expect(actual).to.deep.equal([]);
+      done();
+    });
+  });
+
   it('returns settings errors', function(done) {
     Settings.returns(Promise.reject('boom'));
     UserContact.returns(Promise.resolve());
@@ -40,6 +51,7 @@ describe('TargetGenerator service', function() {
   });
 
   it('returns empty array when no targets are configured', function(done) {
+    RulesEngine.enabled = false;
     Settings.returns(Promise.resolve({}));
     UserContact.returns(Promise.resolve());
     RulesEngine.listen.callsArgWith(2, null, []);

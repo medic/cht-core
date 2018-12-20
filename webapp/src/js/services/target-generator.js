@@ -113,7 +113,7 @@ var moment = require('moment'),
             })
             .catch(callback);
         } else {
-          callback();
+          callback(null, []);
         }
       };
     }
