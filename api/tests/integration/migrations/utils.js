@@ -201,11 +201,6 @@ const switchToTestDbs = () => {
 };
 
 function initDb(content) {
-  if (Array.isArray(content)) {
-    content = {
-      medic: content,
-    };
-  }
 
   switchToTestDbs();
 
@@ -222,56 +217,9 @@ function initDb(content) {
       delete medic._attachments;
       return dbPouch.medic.bulkDocs([ medic, medicClient ]);
     })
-    // .then(function() {
-    //   switchToRealDbs();
-
-    //   return new Promise(function(resolve, reject) {
-    //     db.medic.insert(
-    //       {
-    //         _id: 'org.couchdb.user:admin',
-    //         name: 'admin',
-    //         roles: [],
-    //         type: 'user-settings',
-    //         language: 'en',
-    //         known: true,
-    //         facility_id: null,
-    //         contact_id: null,
-    //       },
-    //       function(err) {
-    //         // Assume that if the doc already exists, then it's properly set up
-    //         // This may be risky, but hopefully it was done as part of a
-    //         // previous test, or has been set up correctly on a local machine.
-    //         if (err && err.error !== 'conflict') {
-    //           return reject(
-    //             new Error('Error inserting admin user: ' + err.message)
-    //           );
-    //         }
-    //         resolve();
-    //       }
-    //     );
-    //   });
-    // })
-    .then(function() {
-      // switchToTestDbs();
+    .then(() => {
       return Promise.all(
-        _.map(content, function(dbContent, dbName) {
-          return Promise.all(
-            dbContent.map(function(doc) {
-              return new Promise(function(resolve, reject) {
-                db[dbName].insert(doc, function(err) {
-                  if (err) {
-                    return reject(
-                      new Error(
-                        'Error inserting ' + doc._id + ': ' + err.message
-                      )
-                    );
-                  }
-                  resolve();
-                });
-              });
-            })
-          );
-        })
+        content.map(doc => dbPouch.medic.put(doc))
       );
     });
 }

@@ -16,8 +16,6 @@ class BaseConfig {
         chromeOptions: {
           args: ['--headless', '--disable-gpu', '--window-size=1024,768']
         }
-        // browserName: 'firefox',
-        // 'marionette':'true'
       },
       beforeLaunch: function() {
         process.on('uncaughtException', function() {
@@ -49,6 +47,14 @@ module.exports = BaseConfig;
 const listenForApi = () => {
   console.log('Checking API');
   return utils.request({ path: '/api/info' })
+    .then(() => {
+      // API is up - wait for 10 seconds for everything to finish
+      return new Promise(resolve => {
+        setTimeout(() => {
+          resolve();
+        }, 10000);
+      });
+    })
     .catch(() => {
       console.log('API check failed, trying again in 5 seconds');
       return new Promise(resolve => {
