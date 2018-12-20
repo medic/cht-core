@@ -1,4 +1,5 @@
-const commonElements = require('../../page-objects/common/common.po.js'),
+const auth = require('../../auth')(),
+      commonElements = require('../../page-objects/common/common.po.js'),
       reports = require('../../page-objects/reports/reports.po.js'),
       utils = require('../../utils'),
       loginPage = require('../../page-objects/login/login.po.js');
@@ -146,10 +147,13 @@ describe('Purging on login', () => {
       }),
       utils.updateSettings({purge: purgeConfig})
     ])
+    .then(() => utils.beforeAll())
     .then(() => done()).catch(done.fail);
   });
 
   afterAll(done => {
+    commonElements.goToLoginPage();
+    loginPage.loginPage(auth.user, auth.pass);
     return Promise.all([
       utils.request(`/_users/org.couchdb.user:${restrictedUserName}`)
       .then(doc => utils.request({
@@ -160,6 +164,9 @@ describe('Purging on login', () => {
     ])
     .then(() => done()).catch(done.fail);
   });
+
+  beforeEach(utils.beforeEach);
+  afterEach(utils.afterEach);
 
   it('Logging in as a restricted user with configured purge rules should perform a purge', () => {
     utils.resetBrowser();
