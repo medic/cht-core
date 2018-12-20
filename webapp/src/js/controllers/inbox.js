@@ -226,7 +226,7 @@ var feedback = require('../modules/feedback'),
       });
     });
 
-    $rootScope.$on('$stateChangeStart', function (event, toState, toParams, fromState, fromParams){
+    $rootScope.$on('$stateChangeStart', function (event, toState, toParams, fromState){
       if(!$scope.enketoStatus.edited){
         return;
       }
