@@ -43,6 +43,10 @@ var _ = require('underscore'),
     var usersHomePlace;
     var additionalListItem = false;
 
+    $scope.isUsersHomePlace = function(place) {
+      return usersHomePlace ? (place._id === usersHomePlace._id) : false;
+    }
+
     $scope.sortDirection = $scope.defaultSortDirection = 'alpha';
     var isSortedByLastVisited = function() {
       return $scope.sortDirection === 'last_visited_date';

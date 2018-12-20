@@ -122,7 +122,7 @@
         </div>
       </div>
 
-      <div ng-if="selected.children.places" mm-auth="can_view_places">
+      <div ng-if="selected.children.places && !isUsersHomePlace(selected)">
         <div class="card children">
           <div class="action-header cell">
             <h3 translate>{{selected.children.childPlacesLabel}}</h3>
