@@ -152,7 +152,7 @@ describe('Purging on login', () => {
 
   afterAll(done => {
     commonElements.goToLoginPage();
-    loginPage.loginPage(auth.user, auth.pass);
+    loginPage.login(auth.user, auth.pass);
     return Promise.all([
       utils.request(`/_users/org.couchdb.user:${restrictedUserName}`)
       .then(doc => utils.request({
