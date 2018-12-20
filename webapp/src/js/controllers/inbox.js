@@ -233,12 +233,6 @@ var feedback = require('../modules/feedback'),
       if(!fromState.url.includes('edit') && !fromState.url.includes('add')){
         return;
       }
-      if(fromParams.id === toParams.id){
-        return;
-      }
-      if(fromParams.reportId === toParams.id){
-        return;
-      }
       if ($scope.cancelCallback) {
         event.preventDefault();
         $scope.navigationCancel();
