@@ -147,7 +147,6 @@ describe('Purging on login', () => {
       }),
       utils.updateSettings({purge: purgeConfig})
     ])
-    .then(() => utils.beforeAll())
     .then(() => done()).catch(done.fail);
   });
 
