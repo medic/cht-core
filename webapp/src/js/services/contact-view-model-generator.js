@@ -152,15 +152,27 @@ angular.module('inboxServices').factory('ContactViewModelGenerator',
     };
 
     const getChildren = contactId => DB()
-      .query('medic-client/contacts_by_parent', { key: contactId, include_docs: true })
+      .query('medic-client/contacts_by_parent', { startkey: [contactId], endkey: [contactId, {}], include_docs: true })
       .then(response => response.rows);
 
-    var loadChildren = function(model) {
+    const getChildrenOfTypePerson = contactId => DB()
+      .query('medic-client/contacts_by_parent', { key: [contactId, 'person'], include_docs: true })
+      .then(response => response.rows);
+
+    var loadChildren = function(model, options) {
       model.children = {};
       if (model.doc.type === 'person') {
         return $q.resolve({});
       }
-      return getChildren(model.doc._id)
+      var getChildrenOfType = {
+        'all': getChildren,
+        'person': getChildrenOfTypePerson
+      }
+      var type = 'person';
+      if (options.getChildPlaces) {
+        type = 'all';
+      }
+      return getChildrenOfType[type](model.doc._id)
         .then(splitContactsByType)
         .then(function(children) {
           if (children.places && children.places.length) {
@@ -257,8 +269,7 @@ angular.module('inboxServices').factory('ContactViewModelGenerator',
 
           model.loadingChildren = true;
           model.loadingReports = true;
-
-          model.reportLoader = loadChildren(model)
+          model.reportLoader = loadChildren(model, options)
             .then(children => {
               model.children = children;
               model.loadingChildren = false;

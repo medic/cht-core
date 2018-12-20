@@ -21,7 +21,8 @@ angular.module('inboxServices').factory('WealthQuintilesWatcher',
           },
           callback: function(change) {
             DB().query('medic-client/contacts_by_parent', {
-              key: change.doc.fields.place_id,
+              startkey: [change.doc.fields.place_id],
+              endkey: [change.doc.fields.place_id, {}],
               include_docs: true
             }).then(function(result) {
                 var updatedDocs = result.rows.map(function(row) {

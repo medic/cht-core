@@ -40,11 +40,18 @@ var _ = require('underscore'),
     $scope.selected = null;
     $scope.filters = {};
     var defaultTypeFilter = {};
-    var usersHomePlace;
+    var usersHomePlace = null;
     var additionalListItem = false;
 
-    $scope.isUsersHomePlace = function(place) {
-      return usersHomePlace ? (place._id === usersHomePlace._id) : false;
+    $scope.getUsersHomePlace = function() {
+      return new Promise(function (resolve, reject) {
+          (function waitForUsersHomePlace(){
+              if (usersHomePlace || typeof(usersHomePlace) == 'undefined') {
+                return resolve(usersHomePlace);
+              }
+              setTimeout(waitForUsersHomePlace, 100);
+          })();
+      });
     };
 
     $scope.sortDirection = $scope.defaultSortDirection = 'alpha';

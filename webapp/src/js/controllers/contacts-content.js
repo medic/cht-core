@@ -105,20 +105,24 @@ angular.module('inboxControllers').controller('ContactsContentCtrl',
       if (!silent) {
         $scope.setLoadingContent(id);
       }
-      return ContactViewModelGenerator(id)
-        .then(function(model) {
-          var refreshing = ($scope.selected && $scope.selected.doc._id) === id;
-          $scope.setSelected(model);
-          $scope.settingSelected(refreshing);
-          return getTasks();
-        })
-        .catch(function(err) {
-          if (err.code === 404 && !silent) {
-            $translate('error.404.title').then(Snackbar);
-          }
-          $scope.clearSelected();
-          $log.error('Error generating contact view model', err, err.message);
-        });
+
+      $scope.getUsersHomePlace()
+            .then(function (usersHomePlace) {
+        return ContactViewModelGenerator(id, { getChildPlaces: !usersHomePlace || usersHomePlace._id !== id })
+          .then(function(model) {
+            var refreshing = ($scope.selected && $scope.selected.doc._id) === id;
+            $scope.setSelected(model);
+            $scope.settingSelected(refreshing);
+            return getTasks();
+          })
+          .catch(function(err) {
+            if (err.code === 404 && !silent) {
+              $translate('error.404.title').then(Snackbar);
+            }
+            $scope.clearSelected();
+            $log.error('Error generating contact view model', err, err.message);
+          });
+      });
     };
 
     // exposed solely for testing purposes
