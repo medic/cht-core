@@ -44,9 +44,9 @@ var _ = require('underscore'),
     var additionalListItem = false;
 
     $scope.getUsersHomePlace = function() {
-      return new Promise(function (resolve, reject) {
+      return new Promise(function (resolve) {
           (function waitForUsersHomePlace(){
-              if (usersHomePlace || typeof(usersHomePlace) == 'undefined') {
+              if (usersHomePlace || typeof(usersHomePlace) === 'undefined') {
                 return resolve(usersHomePlace);
               }
               setTimeout(waitForUsersHomePlace, 100);
