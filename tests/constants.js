@@ -3,7 +3,7 @@ module.exports = {
   // connection information for the test api instance which is
   // intentionally different from the dev api instance to avoid
   // port collisions
-  API_PORT: 5998,
+  API_PORT: 5988,
   API_HOST: 'localhost',
 
   // connection information for the couchdb instance

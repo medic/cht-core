@@ -1,10 +1,5 @@
 #!/bin/bash -eu
 
-if ! [[ "${USE_COUCHDB-}" = "true" ]]; then
-	echo '[medic] skipping couch-start'
-	exit 0
-fi
-
 # start couchdb 2.x docker instance
 docker run -d -p 5984:5984 --name couch couchdb:2
 echo "Starting CouchDB 2.x"

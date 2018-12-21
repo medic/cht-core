@@ -62,13 +62,13 @@ module.exports = function(grunt) {
           },
         ],
       },
-      'change-ddoc-id-for-publish': {
+      'change-ddoc-id-for-testing': {
         src: ['build/ddocs/medic.json'],
         overwrite: true,
         replacements: [
           {
             from: '"_id": "_design/medic"',
-            to: `"_id": "medic:medic:${releaseName}"`,
+            to: `"_id": "medic:medic:test-${TRAVIS_BUILD_NUMBER}"`,
           },
         ],
       },
@@ -123,6 +123,14 @@ module.exports = function(grunt) {
           },
         ],
       },
+      testing: {
+        files: [
+          {
+            src: 'build/ddocs/medic.json',
+            dest: `${UPLOAD_URL}/_couch/builds_testing`,
+          },
+        ],
+      }
     },
     browserify: {
       options: {
@@ -508,6 +516,13 @@ module.exports = function(grunt) {
             })
             .join(' && ');
         },
+      },
+      'test-standard': {
+        cmd: [
+          'cd config/standard',
+          'npm ci',
+          'npm run travis'
+        ].join(' && ')
       },
       'shared-lib-unit': {
         cmd: () => {
@@ -1007,37 +1022,30 @@ module.exports = function(grunt) {
     'exec:bundlesize',
   ]);
 
-  grunt.registerTask('ci-build', 'build and minify for CI', [
+  grunt.registerTask('ci-compile', 'build, minify, lint, unit, integration test', [
     'install-dependencies',
     'build',
     'build-admin',
-  ]);
-
-  grunt.registerTask('ci-unit', 'Lint, deploy and test for CI', [
     'static-analysis',
     'install-dependencies',
     'karma:unit',
     'karma:admin',
     'exec:shared-lib-unit',
+    'mochaTest:api-integration',
     'env:unit-test',
     'mochaTest:unit',
+    'env:general',
+    'exec:test-standard'
   ]);
 
-  grunt.registerTask('ci-integration-e2e', 'Run further tests for CI', [
-    'env:general',
-    'exec:setup-admin',
-    'deploy',
-    'test-api-integration',
+  grunt.registerTask('ci-e2e', 'Run e2e tests for CI', [
     'exec:start-webdriver',
-    'e2e',
+    'protractor:e2e-tests-and-services',
   ]);
 
   grunt.registerTask('ci-performance', 'Run performance tests on CI', [
-    'env:general',
-    'exec:setup-admin',
     'exec:start-webdriver',
-    'deploy',
-    'test-perf',
+    'protractor:performance-tests-and-services',
   ]);
 
   // Dev tasks
@@ -1072,9 +1080,9 @@ module.exports = function(grunt) {
     ['exec:sentinel-dev']
   );
 
-  grunt.registerTask('publish', 'Publish the ddoc to the staging server', [
-    'replace:change-ddoc-id-for-publish',
-    'couch-push:staging',
+  grunt.registerTask('publish-for-testing', 'Publish the ddoc to the testing server', [
+    'replace:change-ddoc-id-for-testing',
+    'couch-push:testing',
   ]);
 
   grunt.registerTask('default', 'Build and deploy the webapp for dev', [
