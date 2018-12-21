@@ -429,6 +429,7 @@ module.exports = function(grunt) {
           ' -H "Content-Type: application/json" ' +
           ` -d '{"_id": "org.couchdb.user:${couchConfig.username}", "name": "${couchConfig.username}", "password":"${couchConfig.password}", "type":"user", "roles":[]}' ` +
           ` && curl -X PUT --data '"true"' ${couchConfig.withPath('_node/' + COUCH_NODE_NAME + '/_config/chttpd/require_valid_user')}` +
+          ` && curl -X PUT --data '"[{recbuf, 262144}]"' ${couchConfig.withPath('_node/' + COUCH_NODE_NAME + '/_config/chttpd/server_options')}` +
           ` && curl -X PUT --data '"4294967296"' ${couchConfig.withPath('_node/' + COUCH_NODE_NAME + '/_config/httpd/max_http_request_size')}`,
       },
       'reset-test-databases': {
