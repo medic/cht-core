@@ -39,7 +39,7 @@ const createDoc = () => {
   return Promise.all([
     attachDocument(srcLogo, logo),
     attachDocument(srcFav, favicon)
-  ]).then(attachments => {
+  ]).then(([aLogo, aFavicon]) => {
     const doc = {
       _id: BRANDING_ID,
       title: appTitle,
@@ -49,12 +49,12 @@ const createDoc = () => {
       },
       _attachments: {
         [logo.file]: {
-          content_type: attachments[0].content_type,
-          data: attachments[0].data
+          content_type: aLogo.content_type,
+          data: aLogo.data
         },
         [favicon.file]: {
-          content_type: attachments[1].content_type,
-          data: attachments[1].data
+          content_type: aFavicon.content_type,
+          data: aFavicon.data
         }
       }
     };
