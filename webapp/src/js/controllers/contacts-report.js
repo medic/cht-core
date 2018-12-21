@@ -8,12 +8,17 @@ angular.module('inboxControllers').controller('ContactsReportCtrl',
     Enketo,
     Geolocation,
     Snackbar,
+    Telemetry,
     TranslateFrom,
     XmlForm
   ) {
 
     'use strict';
     'ngInject';
+
+    const telemetryData = {
+      preRender: Date.now()
+    };
 
     var geolocation;
     Geolocation()
@@ -48,7 +53,15 @@ angular.module('inboxControllers').controller('ContactsReportCtrl',
               $scope.setTitle(TranslateFrom(form.doc.title));
               $scope.form = formInstance;
               $scope.loadingForm = false;
-            });
+            })
+            .then(() => {
+              telemetryData.postRender = Date.now();
+              telemetryData.form = $state.params.formId;
+
+              Telemetry.record(
+                `contacts:enketo:${telemetryData.form}:add:render`,
+                telemetryData.postRender - telemetryData.preRender);
+            })
         });
     };
 
@@ -57,6 +70,11 @@ angular.module('inboxControllers').controller('ContactsReportCtrl',
         $log.debug('Attempted to call contacts-report:$scope.save more than once');
         return;
       }
+
+      telemetryData.preSave = Date.now();
+      Telemetry.record(
+        `contacts:enketo:${telemetryData.form}:add:user_edit_time`,
+        telemetryData.preSave - telemetryData.postRender);
 
       $scope.enketoStatus.saving = true;
       $scope.enketoStatus.error = null;
@@ -67,6 +85,13 @@ angular.module('inboxControllers').controller('ContactsReportCtrl',
           $translate('report.created').then(Snackbar);
           $scope.enketoStatus.edited = false;
           $state.go('contacts.detail', { id: $state.params.id });
+        })
+        .then(() => {
+          telemetryData.postSave = Date.now();
+
+          Telemetry.record(
+            `contacts:enketo:${telemetryData.form}:add:save`,
+            telemetryData.postSave - telemetryData.preSave);
         })
         .catch(function(err) {
           $scope.enketoStatus.saving = false;

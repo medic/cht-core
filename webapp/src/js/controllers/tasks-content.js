@@ -7,6 +7,7 @@ angular.module('inboxControllers').controller('TasksContentCtrl',
     DB,
     Enketo,
     Geolocation,
+    Telemetry,
     TranslateFrom,
     Snackbar,
     XmlForm
@@ -14,6 +15,10 @@ angular.module('inboxControllers').controller('TasksContentCtrl',
 
     'use strict';
     'ngInject';
+
+    const telemetryData = {
+      preRender: Date.now()
+    };
 
     var geolocation;
     Geolocation()
@@ -68,6 +73,15 @@ angular.module('inboxControllers').controller('TasksContentCtrl',
                 } else {
                   $scope.setTitle(TranslateFrom(formDoc.doc.title));
                 }
+              })
+              .then(() => {
+                telemetryData.postRender = Date.now();
+                telemetryData.action = action.content.doc ? 'edit' : 'add';
+                telemetryData.form = $scope.formId;
+
+                Telemetry.record(
+                  `tasks:enketo:${telemetryData.form}:${telemetryData.action}:render`,
+                  telemetryData.postRender - telemetryData.preRender);
               });
           })
           .catch(function(err) {
@@ -87,6 +101,12 @@ angular.module('inboxControllers').controller('TasksContentCtrl',
         return;
       }
 
+      telemetryData.preSave = Date.now();
+
+      Telemetry.record(
+        `tasks:enketo:${telemetryData.form}:${telemetryData.action}:user_edit_time`,
+        telemetryData.preSave - telemetryData.postRender);
+
       $scope.enketoStatus.saving = true;
       $scope.enketoStatus.error = null;
       Enketo.save($scope.formId, $scope.form, geolocation)
@@ -99,6 +119,13 @@ angular.module('inboxControllers').controller('TasksContentCtrl',
           $scope.clearCancelTarget();
           $scope.enketoStatus.edited = false;
           $state.go('tasks.detail', { id: null });
+        })
+        .then(() => {
+          telemetryData.postSave = Date.now();
+
+          Telemetry.record(
+            `tasks:enketo:${telemetryData.form}:${telemetryData.action}:save`,
+            telemetryData.postSave - telemetryData.preSave);
         })
         .catch(function(err) {
           $scope.enketoStatus.saving = false;
