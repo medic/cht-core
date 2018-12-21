@@ -57,16 +57,9 @@ module.exports = function(DB, initialReplication) {
       return Promise.resolve(false);
     }
 
-    return DB.info()
-      .then(info => {
-        // I can't imagine how this would happen, but <= is arguably more
-        // correct than ===
-        if (info.update_seq <= highestSyncSeq) {
-          return true;
-        } else {
-          return false;
-        }
-      });
+    // I can't imagine how this would happen, but <= is arguably more correct
+    // than === so we'll go with that
+    return DB.info().then(info => parseInt(info.update_seq) <= highestSyncSeq);
   };
 
   const urgeToPurge = config => {
@@ -92,7 +85,14 @@ module.exports = function(DB, initialReplication) {
   };
 
   const purgeContact = (fn, {contact, reports}, purgeCount) => {
-    const purgeResults = fn(contact, reports);
+    let purgeResults;
+    try {
+      purgeResults = fn(contact, reports);
+    } catch (err) {
+      console.error('Purge function threw an exception, skipping this set', err);
+      console.error({passed: {contact: contact, reports: reports}});
+      return purgeCount;
+    }
 
     if (!purgeResults || !purgeResults.length) {
       return purgeCount;
@@ -219,28 +219,28 @@ module.exports = function(DB, initialReplication) {
   const begin = () => {
     console.log('Initiating purge');
     return getConfig()
-    .then(config => {
-      if (!config) {
-        console.log('No purge rules configured, skipping');
-        return 0;
-      }
-
-      return urgeToPurge(config)
-      .then(shouldPurge => {
-        if (shouldPurge) {
-          return purge(config.fn)
-          .then(purgeCount => {
-            console.log(`Purge complete, purged ${purgeCount} documents`);
-
-            window.localStorage.setItem(LAST_PURGED_DATE_KEY, Date.now());
-
-            return purgeCount;
-          });
-        } else {
+      .then(config => {
+        if (!config) {
+          console.log('No purge rules configured, skipping');
           return 0;
         }
+
+        return urgeToPurge(config)
+          .then(shouldPurge => {
+            if (shouldPurge) {
+              return purge(config.fn)
+                .then(purgeCount => {
+                  console.log(`Purge complete, purged ${purgeCount} documents`);
+
+                  window.localStorage.setItem(LAST_PURGED_DATE_KEY, Date.now());
+
+                  return purgeCount;
+                });
+            } else {
+              return 0;
+            }
+          });
       });
-    });
   };
 
   const handlers = {};

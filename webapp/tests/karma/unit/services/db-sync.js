@@ -65,10 +65,6 @@ describe('DBSync service', () => {
   });
 
   describe('sync', () => {
-    // beforeEach(() => {
-    //   info.returns(Q.resolve({update_seq: -999}));
-    // });
-
     it('does nothing for admins', () => {
       isOnlineOnly.returns(true);
       return service.sync().then(() => {
