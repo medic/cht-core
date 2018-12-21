@@ -144,7 +144,7 @@ module.exports = function(DB, initialReplication) {
     return doc && (
       doc.patient_id ||
       doc.place_id ||
-      (doc.fields && (doc.fields.patient_id || doc.fields.place_id))
+      (doc.fields && (doc.fields.patient_id || doc.fields.place_id || doc.fields.patient_uuid))
     );
   };
   var contactHasId = function(contact, id) {
