@@ -61,7 +61,7 @@ angular.module('inboxControllers').controller('ContactsReportCtrl',
               Telemetry.record(
                 `contacts:enketo:${telemetryData.form}:add:render`,
                 telemetryData.postRender - telemetryData.preRender);
-            })
+            });
         });
     };
 
