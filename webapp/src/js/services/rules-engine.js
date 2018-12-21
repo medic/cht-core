@@ -54,7 +54,7 @@ var nools = require('nools'),
         return doc && (
           doc.patient_id ||
           doc.place_id ||
-          (doc.fields && (doc.fields.patient_id || doc.fields.place_id || doc.fields.patient_uuid))
+          (doc.fields && (doc.fields.patient_id || doc.fields.place_id))
         );
       };
 
