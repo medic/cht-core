@@ -6,6 +6,7 @@
     // Custom Globals
     "globals"       : {         // additional predefined global variables
         "_"         : true,
+        "assert"    : true,
         "beforeEach": true,
         "afterEach" : true,
         "before"    : true,

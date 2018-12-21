@@ -69,6 +69,7 @@ describe('Enketo service', function() {
       dbGet = sinon.stub(),
       dbBulkDocs = sinon.stub(),
       ContactSummary = sinon.stub(),
+      Form2Sms = sinon.stub(),
       UserContact = sinon.stub(),
       UserSettings = sinon.stub(),
       createObjectURL = sinon.stub(),
@@ -110,7 +111,9 @@ describe('Enketo service', function() {
         URL: { createObjectURL: createObjectURL }
       });
       $provide.value('ContactSummary', ContactSummary);
+      $provide.value('Form2Sms', Form2Sms);
       $provide.value('Search', Search);
+      $provide.value('Settings', Promise.resolve({}));
       $provide.value('LineageModelGenerator', LineageModelGenerator);
       $provide.value('FileReader', FileReader);
       $provide.value('UserContact', UserContact);
@@ -131,7 +134,7 @@ describe('Enketo service', function() {
   });
 
   afterEach(function() {
-    KarmaUtils.restore(EnketoForm, enketoInit, dbGetAttachment, dbGet, dbBulkDocs, transform, createObjectURL, ContactSummary, FileReader.utf8, UserContact, form.validate, form.getDataStr, Language, TranslateFrom, AddAttachment, Search, LineageModelGenerator.contact);
+    KarmaUtils.restore(EnketoForm, enketoInit, dbGetAttachment, dbGet, dbBulkDocs, transform, createObjectURL, ContactSummary, FileReader.utf8, Form2Sms, UserContact, form.validate, form.getDataStr, Language, TranslateFrom, AddAttachment, Search, LineageModelGenerator.contact);
     sinon.restore();
   });
 

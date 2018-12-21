@@ -17,9 +17,11 @@ angular.module('inboxServices').service('Enketo',
     EnketoTranslation,
     ExtractLineage,
     FileReader,
+    GetReportContent,
     Language,
     LineageModelGenerator,
     Search,
+    SubmitFormBySms,
     TranslateFrom,
     UserContact,
     XmlForm,
@@ -32,7 +34,6 @@ angular.module('inboxServices').service('Enketo',
     var objUrls = [];
     var xmlCache = {};
     var FORM_ATTACHMENT_NAME = 'xml';
-    var REPORT_ATTACHMENT_NAME = this.REPORT_ATTACHMENT_NAME = 'content';
 
     var currentForm;
     this.getCurrentForm = function() {
@@ -426,7 +427,7 @@ angular.module('inboxServices').service('Enketo',
 
       record = getOuterHTML($record[0]);
 
-      AddAttachment(doc, REPORT_ATTACHMENT_NAME, record, 'application/xml');
+      AddAttachment(doc, GetReportContent.REPORT_ATTACHMENT_NAME, record, 'application/xml');
       doc._id = getId('/*');
       doc.hidden_fields = EnketoTranslation.getHiddenFieldList(record);
 
@@ -554,7 +555,12 @@ angular.module('inboxServices').service('Enketo',
           }
           return docs;
         })
-        .then(saveDocs);
+        .then(saveDocs)
+        .then(function(docs) {
+          // submit by sms _after_ saveDocs so that the main doc's ID is available
+          SubmitFormBySms(docs[0]);
+          return docs;
+        });
     };
 
     this.unload = function(form) {

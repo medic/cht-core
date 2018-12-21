@@ -45,6 +45,7 @@
     "moment": "^2.22.2",
     "mustache": "^3.0.1",
     "object-path": "^0.11.4",
+    "odk-xform-compact-record-representation-for-sms": "^1.0.1",
     "openrosa-xpath-evaluator": "^1.5.0",
     "partial-json-parser": "1.0.3",
     "pojo2xml": "^1.7.2",
