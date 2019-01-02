@@ -24,7 +24,8 @@ angular.module('inboxControllers').controller('ContactsContentCtrl',
     'ngInject';
 
     var taskEndDate,
-        reportStartDate;
+        reportStartDate,
+        usersHomePlace;
 
     $scope.filterTasks = function(task) {
       return !taskEndDate || taskEndDate.isAfter(task.date);
@@ -106,27 +107,26 @@ angular.module('inboxControllers').controller('ContactsContentCtrl',
         $scope.setLoadingContent(id);
       }
 
-      $scope.getUsersHomePlace()
-            .then(function (usersHomePlace) {
-        return ContactViewModelGenerator(id, { getChildPlaces: !usersHomePlace || usersHomePlace._id !== id })
-          .then(function(model) {
-            var refreshing = ($scope.selected && $scope.selected.doc._id) === id;
-            $scope.setSelected(model);
-            $scope.settingSelected(refreshing);
-            return getTasks();
-          })
-          .catch(function(err) {
-            if (err.code === 404 && !silent) {
-              $translate('error.404.title').then(Snackbar);
-            }
-            $scope.clearSelected();
-            $log.error('Error generating contact view model', err, err.message);
-          });
-      });
+      return ContactViewModelGenerator(id, { getChildPlaces: !usersHomePlace || usersHomePlace._id !== id })
+        .then(function(model) {
+          var refreshing = ($scope.selected && $scope.selected.doc._id) === id;
+          $scope.setSelected(model);
+          $scope.settingSelected(refreshing);
+          return getTasks();
+        })
+        .catch(function(err) {
+          if (err.code === 404 && !silent) {
+            $translate('error.404.title').then(Snackbar);
+          }
+          $scope.clearSelected();
+          $log.error('Error generating contact view model', err, err.message);
+        });
     };
 
     // exposed solely for testing purposes
-    this.setupPromise = $q.resolve().then(function() {
+    this.setupPromise = $scope.getUserHomePlaceSummary().then(function(homePlace) {
+      usersHomePlace = homePlace;
+
       if ($stateParams.id) {
         return selectContact($stateParams.id);
       }

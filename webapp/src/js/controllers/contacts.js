@@ -40,19 +40,8 @@ var _ = require('underscore'),
     $scope.selected = null;
     $scope.filters = {};
     var defaultTypeFilter = {};
-    var usersHomePlace = null;
+    var usersHomePlace;
     var additionalListItem = false;
-
-    $scope.getUsersHomePlace = function() {
-      return new Promise(function (resolve) {
-          (function waitForUsersHomePlace(){
-              if (usersHomePlace || typeof(usersHomePlace) === 'undefined') {
-                return resolve(usersHomePlace);
-              }
-              setTimeout(waitForUsersHomePlace, 100);
-          })();
-      });
-    };
 
     $scope.sortDirection = $scope.defaultSortDirection = 'alpha';
     var isSortedByLastVisited = function() {
@@ -381,7 +370,7 @@ var _ = require('underscore'),
       $scope.setLeftActionBar(data);
     };
 
-    var getUserHomePlaceSummary = function() {
+    $scope.getUserHomePlaceSummary = function() {
       return UserSettings()
         .then(function(userSettings) {
           if (userSettings.facility_id) {
@@ -422,7 +411,7 @@ var _ = require('underscore'),
     };
 
     var setupPromise = $q
-      .all([getUserHomePlaceSummary(), canViewLastVisitedDate(), Settings()])
+      .all([$scope.getUserHomePlaceSummary(), canViewLastVisitedDate(), Settings()])
       .then(function(results) {
         usersHomePlace = results[0];
         $scope.lastVisitedDateExtras = results[1];

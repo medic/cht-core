@@ -72,6 +72,7 @@ describe('ContactsContentCtrl', () => {
     scope.setSelected = selected => scope.selected = selected;
     scope.clearSelected = sinon.stub();
     scope.settingSelected = sinon.stub();
+    scope.getUserHomePlaceSummary = sinon.stub().resolves({ _id: 'xx' });
     state = {
       current: {
         name: 'something'
