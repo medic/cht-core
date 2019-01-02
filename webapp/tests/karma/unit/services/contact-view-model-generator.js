@@ -37,7 +37,8 @@ describe('ContactViewModelGenerator service', () => {
 
   const stubDbQueryChildren = (err, parentId, docs = [], contacts = []) => {
     const options = {
-      key: parentId,
+      startkey: [parentId],
+      endkey: [parentId, {}],
       include_docs: true
     };
     docs = docs.map(doc => {

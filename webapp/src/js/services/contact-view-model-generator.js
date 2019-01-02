@@ -169,7 +169,7 @@ angular.module('inboxServices').factory('ContactViewModelGenerator',
         'person': getChildrenOfTypePerson
       };
       var type = 'person';
-      if (options.getChildPlaces) {
+      if (options && options.getChildPlaces) {
         type = 'all';
       }
       return getChildrenOfType[type](model.doc._id)
