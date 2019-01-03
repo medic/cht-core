@@ -12,11 +12,16 @@ angular.module('inboxControllers').controller('ReportsAddCtrl',
     GetReportContent,
     LineageModelGenerator,
     Snackbar,
+    Telemetry,
     XmlForm
   ) {
 
     'ngInject';
     'use strict';
+
+    const telemetryData = {
+      preRender: Date.now()
+    };
 
     var geolocation;
 
@@ -97,6 +102,15 @@ angular.module('inboxControllers').controller('ReportsAddCtrl',
                     });
                 }));
             })
+            .then(() => {
+              telemetryData.postRender = Date.now();
+              telemetryData.action = model.doc ? 'edit' : 'add';
+              telemetryData.form = model.formInternalId;
+
+              Telemetry.record(
+                `enketo:reports:${telemetryData.form}:${telemetryData.action}:render`,
+                telemetryData.postRender - telemetryData.preRender);
+            })
             .catch(function(err) {
               $scope.errorTranslationKey = err.translationKey || 'error.loading.form';
               $scope.loadingContent = false;
@@ -116,6 +130,12 @@ angular.module('inboxControllers').controller('ReportsAddCtrl',
         return;
       }
 
+      telemetryData.preSave = Date.now();
+
+      Telemetry.record(
+        `enketo:reports:${telemetryData.form}:${telemetryData.action}:user_edit_time`,
+        telemetryData.preSave - telemetryData.postRender);
+
       $scope.enketoStatus.saving = true;
       $scope.enketoStatus.error = null;
       var model = $scope.selected[0];
@@ -130,6 +150,13 @@ angular.module('inboxControllers').controller('ReportsAddCtrl',
             .then(Snackbar);
           $scope.enketoStatus.edited = false;
           $state.go('reports.detail', { id: docs[0]._id });
+        })
+        .then(() => {
+          telemetryData.postSave = Date.now();
+
+          Telemetry.record(
+            `enketo:reports:${telemetryData.form}:${telemetryData.action}:save`,
+            telemetryData.postSave - telemetryData.preSave);
         })
         .catch(function(err) {
           $scope.enketoStatus.saving = false;
