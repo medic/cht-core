@@ -200,6 +200,33 @@ describe('Authorization service', () => {
           ]);
         });
     });
+
+    it('should skip tombstones of documents that were re-added', () => {
+      const subjectIds = ['subject'];
+      db.medic.query
+        .withArgs('medic/docs_by_replication_key')
+        .resolves({ rows: [
+            { id: 'r1', key: 'subject', value: {} },
+            { id: 'r1_tombstone', key: 'subject', value: {} }, // skipped cause r1 winning is not deleted
+            { id: 'r2', key: 'subject', value: {} },
+            { id: 'r2_tombstone', key: 'subject', value: {} },  // skipped cause r2 winning is not deleted
+            { id: 'r3_tombstone', key: 'subject', value: {} },
+            { id: 'r4_tombstone', key: 'subject', value: {} },
+          ]});
+
+      tombstoneUtils.isTombstoneId.callsFake(id => id.indexOf('tombstone'));
+      tombstoneUtils.extractStub.callsFake(id => ({ id: id.replace('_tombstone', '') }));
+
+      return service
+        .getAllowedDocIds({ subjectIds, userCtx: { name: 'user', facility_id: 'facility_id', contact_id: 'contact_id' } })
+        .then(result => {
+          result.should.deep.equal([
+            '_design/medic-client', 'org.couchdb.user:user',
+            'r1', 'r2',
+            'r3_tombstone', 'r4_tombstone'
+          ]);
+        });
+    });
   });
 
   describe('getViewResults', () => {
