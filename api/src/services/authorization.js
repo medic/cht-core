@@ -182,6 +182,7 @@ const getAuthorizationContext = (userCtx) => {
       }
     });
 
+    authorizationCtx.subjectIds = _.uniq(authorizationCtx.subjectIds);
     authorizationCtx.subjectIds.push(ALL_KEY);
     if (hasAccessToUnassignedDocs(userCtx)) {
       authorizationCtx.subjectIds.push(UNASSIGNED_KEY);

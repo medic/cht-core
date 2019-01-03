@@ -191,6 +191,22 @@ const batchedChanges = (username, limit, results = [], lastSeq = 0) => {
   });
 };
 
+const getChangesForIds = (username, docIds, lastSeq = 0, results = []) => {
+  return requestChanges(username, { since: lastSeq }).then(changes => {
+    changes.results.forEach(change => {
+      if (docIds.includes(change.id)) {
+        results.push(change);
+      }
+    });
+
+    if (docIds.find(id => !results.find(change => change.id === id))) {
+      return getChangesForIds(username, docIds, changes.last_seq, results);
+    }
+
+    return results;
+  });
+};
+
 let currentSeq;
 const getCurrentSeq = () => {
   return utils
@@ -924,6 +940,65 @@ describe('changes handler', () => {
         .catch(err => {
           expect(err).toBeTruthy();
           expect(err.message.includes('Error processing your changes')).toEqual(true);
+        });
+    });
+
+    it('should returns the tombstone of a deleted doc', () => {
+      const contact = createSomeContacts(1, 'fixture:bobville')[0];
+
+      return utils.saveDoc(contact)
+        .then(result => {
+          contact._rev = result.rev;
+          contact._deleted = true;
+
+          return utils.saveDoc(contact);
+        })
+        .then(result => {
+          contact._rev = result.rev;
+          return getChangesForIds('bob', [contact._id], currentSeq);
+        })
+        .then(changes => {
+          expect(changes.length).toEqual(1);
+          expect(changes[0].id).toEqual(contact._id);
+          expect(changes[0].deleted).toEqual(true);
+          expect(changes[0].changes[0].rev).toEqual(contact._rev);
+        });
+    });
+
+    it('should not return tombstone of a deleted doc if doc is re-added', () => {
+      const contact = createSomeContacts(1, 'fixture:bobville')[0];
+
+      return utils.saveDoc(contact)
+        .then(result => {
+          contact._rev = result.rev;
+          contact._deleted = true;
+
+          return utils.saveDoc(contact);
+        })
+        .then(result => {
+          contact._rev = result.rev;
+          return getChangesForIds('bob', [contact._id], currentSeq);
+        })
+        .then(changes => {
+          expect(changes.length).toEqual(1);
+          expect(changes[0].id).toEqual(contact._id);
+          expect(changes[0].deleted).toEqual(true);
+          expect(changes[0].changes[0].rev).toEqual(contact._rev);
+
+          delete(contact._rev);
+          delete(contact._deleted);
+          return utils.saveDoc(contact);
+        })
+        .then(result => {
+          contact._rev = result.rev;
+
+          return getChangesForIds('bob', [contact._id], currentSeq);
+        })
+        .then(changes => {
+          expect(changes.length).toEqual(1);
+          expect(changes[0].id).toEqual(contact._id);
+          expect(changes[0].deleted).toEqual(undefined);
+          expect(changes[0].changes[0].rev).toEqual(contact._rev);
         });
     });
   });
