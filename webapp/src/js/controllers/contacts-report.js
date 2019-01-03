@@ -59,7 +59,7 @@ angular.module('inboxControllers').controller('ContactsReportCtrl',
               telemetryData.form = $state.params.formId;
 
               Telemetry.record(
-                `contacts:enketo:${telemetryData.form}:add:render`,
+                `enketo:contacts:${telemetryData.form}:add:render`,
                 telemetryData.postRender - telemetryData.preRender);
             });
         });
@@ -73,7 +73,7 @@ angular.module('inboxControllers').controller('ContactsReportCtrl',
 
       telemetryData.preSave = Date.now();
       Telemetry.record(
-        `contacts:enketo:${telemetryData.form}:add:user_edit_time`,
+        `enketo:contacts:${telemetryData.form}:add:user_edit_time`,
         telemetryData.preSave - telemetryData.postRender);
 
       $scope.enketoStatus.saving = true;
@@ -90,7 +90,7 @@ angular.module('inboxControllers').controller('ContactsReportCtrl',
           telemetryData.postSave = Date.now();
 
           Telemetry.record(
-            `contacts:enketo:${telemetryData.form}:add:save`,
+            `enketo:contacts:${telemetryData.form}:add:save`,
             telemetryData.postSave - telemetryData.preSave);
         })
         .catch(function(err) {

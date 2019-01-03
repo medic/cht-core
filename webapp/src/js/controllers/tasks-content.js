@@ -80,7 +80,7 @@ angular.module('inboxControllers').controller('TasksContentCtrl',
                 telemetryData.form = $scope.formId;
 
                 Telemetry.record(
-                  `tasks:enketo:${telemetryData.form}:${telemetryData.action}:render`,
+                  `enketo:tasks:${telemetryData.form}:${telemetryData.action}:render`,
                   telemetryData.postRender - telemetryData.preRender);
               });
           })
@@ -104,7 +104,7 @@ angular.module('inboxControllers').controller('TasksContentCtrl',
       telemetryData.preSave = Date.now();
 
       Telemetry.record(
-        `tasks:enketo:${telemetryData.form}:${telemetryData.action}:user_edit_time`,
+        `enketo:tasks:${telemetryData.form}:${telemetryData.action}:user_edit_time`,
         telemetryData.preSave - telemetryData.postRender);
 
       $scope.enketoStatus.saving = true;
@@ -124,7 +124,7 @@ angular.module('inboxControllers').controller('TasksContentCtrl',
           telemetryData.postSave = Date.now();
 
           Telemetry.record(
-            `tasks:enketo:${telemetryData.form}:${telemetryData.action}:save`,
+            `enketo:tasks:${telemetryData.form}:${telemetryData.action}:save`,
             telemetryData.postSave - telemetryData.preSave);
         })
         .catch(function(err) {
