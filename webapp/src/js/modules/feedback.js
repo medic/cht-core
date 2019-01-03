@@ -54,7 +54,8 @@ var create = function(info, appInfo, callback) {
         user: userCtx,
         url: getUrl(),
         app: appInfo.name,
-        version: appInfo.version
+        version: appInfo.version,
+        source: Object.keys(appInfo).length === 0 ? 'automatic' : 'manual'
       },
       info: info,
       log: log,
