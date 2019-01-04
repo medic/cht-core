@@ -52,7 +52,7 @@ define( function( require, exports, module ) {
         } );
 
         $translate( 'simprints.register' ).then( function( label ) {
-            $el.append( '<div><a class="btn btn-default simprints-register"><img src="img/simprints.png" width="20" height="20"/> ' + label + '</a></div>' );
+            $el.append( '<div><a class="btn btn-default simprints-register"><img src="/img/simprints.png" width="20" height="20"/> ' + label + '</a></div>' );
         } );
     };
 

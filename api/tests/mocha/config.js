@@ -3,6 +3,7 @@ const config = require('../../src/config'),
   db = require('../../src/db-pouch'),
   logger = require('../../src/logger'),
   ddocExtraction = require('../../src/ddoc-extraction'),
+  resourceExtraction = require('../../src/resource-extraction'),
   translations = require('../../src/translations'),
   settingsService = require('../../src/services/settings'),
   viewMapUtils = require('@medic/view-map-utils'),
@@ -22,6 +23,7 @@ describe('Config', () => {
     sinon.stub(db.medic, 'changes').returns({ on: on });
     sinon.stub(viewMapUtils, 'loadViewMaps');
     sinon.stub(ddocExtraction, 'run').resolves();
+    sinon.stub(resourceExtraction, 'run').resolves();
     sinon.stub(translations, 'run').resolves();
     sinon.stub(settingsService, 'get').resolves();
     sinon.stub(settingsService, 'update').resolves();
@@ -124,6 +126,7 @@ describe('Config', () => {
       changeCallback(change);
       chai.expect(translations.run.callCount).to.equal(1);
       chai.expect(ddocExtraction.run.callCount).to.equal(1);
+      chai.expect(resourceExtraction.run.callCount).to.equal(1);
       chai.expect(db.medic.get.callCount).to.equal(1);
       chai.expect(db.medic.get.args[0][0]).to.equal('_design/medic');
     });
@@ -135,6 +138,7 @@ describe('Config', () => {
       changeCallback(change);
       chai.expect(translations.run.callCount).to.equal(0);
       chai.expect(ddocExtraction.run.callCount).to.equal(0);
+      chai.expect(resourceExtraction.run.callCount).to.equal(0);
       chai.expect(db.medic.get.callCount).to.equal(0);
 
       chai.expect(db.medic.query.callCount).to.equal(1);

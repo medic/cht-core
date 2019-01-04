@@ -39,7 +39,6 @@ const _ = require('underscore'),
   pathPrefix = '/' + environment.db + '/',
   appPrefix = pathPrefix + '_design/' + environment.ddoc + '/_rewrite/',
   serverUtils = require('./server-utils'),
-  appcacheManifest = /\/manifest\.appcache$/,
   uuid = require('uuid'),
   compression = require('compression'),
   app = express();
@@ -152,6 +151,16 @@ app.get('/', function(req, res) {
   }
 });
 
+/*
+To facilitate service worker prefetch on Chrome <66, serve a version of the app which does not require authentication
+*/
+app.get(appPrefix, (req, res, next) => {
+  if ('_sw-precache' in req.query) {
+    return res.sendFile(path.join(__dirname, 'extracted/templates/inbox.html'));
+  }
+  next();
+});
+
 app.get('/favicon.ico', (req, res) => {
   // Cache for a week. Normally we don't interfere with couch headers, but
   // due to Chrome (including Android WebView) aggressively requesting
@@ -170,6 +179,7 @@ app.get('/favicon.ico', (req, res) => {
 });
 
 app.use(express.static(path.join(__dirname, 'public')));
+app.use(express.static(path.join(__dirname, 'extracted')));
 app.get(routePrefix + 'login', login.get);
 app.get(routePrefix + 'login/identity', login.getIdentity);
 app.postJson(routePrefix + 'login', login.post);
@@ -531,20 +541,32 @@ const copyProxyHeaders = (proxyRes, res) => {
   }
 };
 
+/*
+A service worker can't have a scope broader than its own location.
+To give our service worker control of all resources, create an alias at root.
+*/
+app.get('/service-worker.js', (req, res) => {
+  writeHeaders(req, res, [
+    // For users before Chrome 68 https://developers.google.com/web/updates/2018/06/fresher-sw
+    ['Cache-Control', 'max-age=0'],
+    ['Content-Type', 'application/javascript'],
+  ]);
+
+  res.sendFile(path.join(__dirname, 'extracted/js/service-worker.js'));
+}, authorization.setAuthorized);
+
+// To clear the application cache for users upgrading from legacy clients, serve an empty application manifest
+app.get('/empty.manifest', (req, res) => {
+  writeHeaders(req, res, [['Content-Type', 'text/cache-manifest; charset=utf-8']]);
+  res.send('CACHE MANIFEST\n\nNETWORK:\n*\n');
+});
+
 /**
  * Set cache control on static resources. Must be hacked in to
  * ensure we set the value first.
  */
 proxy.on('proxyReq', function(proxyReq, req, res) {
-  if (appcacheManifest.test(req.url)) {
-    // requesting the appcache manifest
-    writeHeaders(req, res, [
-      ['Cache-Control', 'must-revalidate'],
-      ['Content-Type', 'text/cache-manifest; charset=utf-8'],
-      ['Last-Modified', 'Tue, 28 Apr 2015 02:23:40 GMT'],
-      ['Expires', 'Tue, 28 Apr 2015 02:21:40 GMT'],
-    ]);
-  } else if (
+  if (
     !staticResources.test(req.url) &&
     req.url.indexOf(appPrefix) !== -1
   ) {

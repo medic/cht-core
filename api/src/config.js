@@ -1,6 +1,7 @@
 const _ = require('underscore'),
   db = require('./db-pouch'),
   ddocExtraction = require('./ddoc-extraction'),
+  resourceExtraction = require('./resource-extraction'),
   translations = require('./translations'),
   defaults = require('./config.default.json'),
   settingsService = require('./services/settings'),
@@ -141,6 +142,10 @@ module.exports = {
           });
           ddocExtraction.run().catch(err => {
             logger.error('Something went wrong trying to extract ddocs: %o', err);
+            process.exit(1);
+          });
+          resourceExtraction.run().catch(err => {
+            logger.error('Something went wrong trying to extract resources: %o', err);
             process.exit(1);
           });
           loadViewMaps();

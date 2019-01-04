@@ -2,22 +2,20 @@ const _ = require('underscore'),
   db = require('./db-pouch'),
   logger = require('./logger'),
   DDOC_ATTACHMENT_ID = 'ddocs/compiled.json',
-  APPCACHE_ATTACHMENT_NAME = 'manifest.appcache',
-  APPCACHE_DOC_ID = 'appcache',
+  SERVICEWORKER_ATTACHMENT_NAME = 'js/service-worker.js',
+  SWMETA_DOC_ID = 'serviceWorkerMeta',
   SERVER_DDOC_ID = '_design/medic',
   CLIENT_DDOC_ID = '_design/medic-client';
 
-const getCompiledDdocs = () => {
-  return db.medic
-    .getAttachment(SERVER_DDOC_ID, DDOC_ATTACHMENT_ID)
-    .then(result => JSON.parse(result.toString()).docs)
-    .catch(err => {
-      if (err.status === 404) {
-        return [];
-      }
-      throw err;
-    });
-};
+const getCompiledDdocs = () => db.medic
+  .getAttachment(SERVER_DDOC_ID, DDOC_ATTACHMENT_ID)
+  .then(result => JSON.parse(result.toString()).docs)
+  .catch(err => {
+    if (err.status === 404) {
+      return [];
+    }
+    throw err;
+  });
 
 const areAttachmentsEqual = (oldDdoc, newDdoc) => {
   if (!oldDdoc._attachments && !newDdoc._attachments) {
@@ -44,7 +42,7 @@ const areAttachmentsEqual = (oldDdoc, newDdoc) => {
   });
 };
 
-const isUpdated = (newDdoc, deploy_info) => {
+const extractCompiledDdoc = (newDdoc, deploy_info) => {
   return db.medic
     .get(newDdoc._id, { attachments: true })
     .then(oldDdoc => {
@@ -83,58 +81,62 @@ const isUpdated = (newDdoc, deploy_info) => {
     });
 };
 
-const findUpdatedDdocs = deploy_info => {
+const extractFromCompiledDocs = deploy_info => {
   return getCompiledDdocs()
     .then(ddocs => {
       if (!ddocs.length) {
         return [];
       }
-      return Promise.all(ddocs.map(ddoc => isUpdated(ddoc, deploy_info)));
+      return Promise.all(ddocs.map(ddoc => extractCompiledDdoc(ddoc, deploy_info)));
     })
     .then(updated => _.compact(updated));
 };
 
-const findUpdatedAppcache = ddoc => {
-  const attachment =
-    ddoc._attachments && ddoc._attachments[APPCACHE_ATTACHMENT_NAME];
-  const digest = attachment && attachment.digest;
-  if (!digest) {
+/*
+We need client-side logic to trigger a service worker update when a cached resource changes.
+Since service-worker.js contains a hash of every cached resource, watching it for changes is sufficient to detect a required update.
+To this end, copy the hash of service-worker.js and store it in a new doc (SWMETA_DOC_ID) which replicates to clients.
+The intention is that when this doc changes, clients will refresh their cache.
+*/
+const extractServiceWorkerMetaDoc = ddoc => {
+  const attachment = ddoc._attachments && ddoc._attachments[SERVICEWORKER_ATTACHMENT_NAME];
+  const attachmentDigest = attachment && attachment.digest;
+  if (!attachmentDigest) {
     return;
   }
+
   return db.medic
-    .get(APPCACHE_DOC_ID)
+    .get(SWMETA_DOC_ID)
     .then(doc => {
-      if (doc.digest !== digest) {
-        doc.digest = digest;
+      if (doc.digest !== attachmentDigest) {
+        doc.digest = attachmentDigest;
         return doc;
       }
     })
     .catch(err => {
       if (err.status === 404) {
         // create new appcache doc
-        return { _id: APPCACHE_DOC_ID, digest: digest };
+        return { _id: SWMETA_DOC_ID, digest: attachmentDigest };
       }
       throw err;
     });
 };
 
-const findUpdated = ddoc => {
+const extractFromDdoc = ddoc => {
   return Promise.all([
-    findUpdatedDdocs(ddoc.deploy_info),
-    findUpdatedAppcache(ddoc),
+    extractFromCompiledDocs(ddoc.deploy_info),
+    extractServiceWorkerMetaDoc(ddoc),
   ]).then(results => _.compact(_.flatten(results)));
 };
 
 module.exports = {
-  run: () => {
-    return db.medic
-      .get(SERVER_DDOC_ID)
-      .then(findUpdated)
-      .then(docs => {
-        if (docs.length) {
-          logger.info(`Updating docs: ${_.pluck(docs, '_id').join(', ')}`);
-          return db.medic.bulkDocs({ docs: docs });
-        }
-      });
-  },
+  run: () => db.medic
+    .get(SERVER_DDOC_ID)
+    .then(extractFromDdoc)
+    .then(docs => {
+      if (docs.length) {
+        logger.info(`Updating docs: ${_.pluck(docs, '_id').join(', ')}`);
+        return db.medic.bulkDocs({ docs: docs });
+      }
+    }),
 };

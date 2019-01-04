@@ -22,3 +22,4 @@ dist
 /build/
 config/standard/.gdrive.*.json
 config/*/backups/*
+api/src/extracted/**/*

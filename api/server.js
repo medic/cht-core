@@ -12,6 +12,7 @@ serverChecks.check(environment.serverUrl).then(() => {
     config = require('./src/config'),
     migrations = require('./src/migrations'),
     ddocExtraction = require('./src/ddoc-extraction'),
+    resourceExtraction = require('./src/resource-extraction'),
     translations = require('./src/translations'),
     serverUtils = require('./src/server-utils'),
     apiPort = process.env.API_PORT || 5988;
@@ -20,6 +21,10 @@ serverChecks.check(environment.serverUrl).then(() => {
     .then(() => logger.info('Extracting ddoc…'))
     .then(ddocExtraction.run)
     .then(() => logger.info('DDoc extraction completed successfully'))
+
+    .then(() => logger.info('Extracting resources…'))
+    .then(resourceExtraction.run)
+    .then(() => logger.info('Extracting resources completed successfully'))
 
     .then(() => logger.info('Loading configuration…'))
     .then(config.load)

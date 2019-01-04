@@ -43,6 +43,7 @@ module.exports = function(grunt) {
     replace: 'grunt-text-replace',
     uglify: 'grunt-contrib-uglify-es',
   });
+  require('./grunt.service-worker')(grunt);
   require('time-grunt')(grunt);
 
   // Project configuration
@@ -210,6 +211,7 @@ module.exports = function(grunt) {
         reporter: require('jshint-stylish'),
         ignores: [
           'webapp/src/js/modules/xpath-element-path.js',
+          'api/src/extracted/**/*',
           '**/node_modules/**',
           'sentinel/src/lib/pupil/**',
           'build/**',
@@ -266,6 +268,13 @@ module.exports = function(grunt) {
       dist: {
         src: 'build/ddocs/medic/_attachments/css/*.css',
       },
+    },
+    generateServiceWorker: {
+      config: {
+        rootUrl: '/medic/_design/medic/_rewrite/',
+        staticDirectoryPath: 'build/ddocs/medic/_attachments',
+        scriptOutputPath: 'build/ddocs/medic/_attachments/js/service-worker.js',
+      }
     },
     copy: {
       ddocs: {
@@ -536,7 +545,7 @@ module.exports = function(grunt) {
             // https://github.com/dangrossman/bootstrap-daterangepicker/pull/437
             'patch webapp/node_modules/bootstrap-daterangepicker/daterangepicker.js < webapp/patches/bootstrap-daterangepicker.patch',
 
-            // patch font-awesome to remove version attributes so appcache works
+            // patch font-awesome to remove version attributes
             // https://github.com/FortAwesome/Font-Awesome/issues/3286
             'patch webapp/node_modules/font-awesome/less/path.less < webapp/patches/font-awesome-remove-version-attribute.patch',
 
@@ -601,7 +610,7 @@ module.exports = function(grunt) {
         tasks: [
           'sass',
           'less:webapp',
-          'appcache',
+          'generateServiceWorker',
           'couch-compile:primary',
           'deploy',
         ],
@@ -611,7 +620,7 @@ module.exports = function(grunt) {
         tasks: [
           'browserify:webapp',
           'replace:update-app-constants',
-          'appcache',
+          'generateServiceWorker',
           'couch-compile:primary',
           'deploy',
         ],
@@ -623,7 +632,7 @@ module.exports = function(grunt) {
         ],
         tasks: [
           'ngtemplates:inboxApp',
-          'appcache',
+          'generateServiceWorker',
           'couch-compile:primary',
           'deploy',
         ],
@@ -632,7 +641,7 @@ module.exports = function(grunt) {
         files: 'webapp/src/templates/inbox.html',
         tasks: [
           'copy:inbox-file-attachment',
-          'appcache',
+          'generateServiceWorker',
           'couch-compile:primary',
           'deploy',
         ],
@@ -751,26 +760,6 @@ module.exports = function(grunt) {
             removeScriptTypeAttributes: true,
             removeStyleLinkTypeAttributes: true,
           },
-        },
-      },
-    },
-    appcache: {
-      options: {
-        basePath: 'build/ddocs/medic/_attachments',
-      },
-      inbox: {
-        dest: 'build/ddocs/medic/_attachments/manifest.appcache',
-        network: '*',
-        cache: {
-          patterns: [
-            'build/ddocs/medic/_attachments/manifest.json',
-            'build/ddocs/medic/_attachments/audio/**/*',
-            'build/ddocs/medic/_attachments/css/**/*',
-            'build/ddocs/medic/_attachments/fonts/**/*',
-            'build/ddocs/medic/_attachments/img/**/*',
-            'build/ddocs/medic/_attachments/js/**/*',
-            'build/ddocs/medic/_attachments/xslt/**/*',
-          ],
         },
       },
     },
@@ -927,7 +916,7 @@ module.exports = function(grunt) {
   grunt.registerTask('build-ddoc', 'Build the main ddoc', [
     'couch-compile:secondary',
     'copy:ddoc-attachments',
-    'appcache',
+    'generateServiceWorker',
     'couch-compile:primary',
   ]);
 

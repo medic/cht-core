@@ -23,8 +23,7 @@ describe('DDoc extraction', () => {
     const ddoc = {
       _id: '_design/medic',
       _attachments: {
-        'manifest.appcache': {
-          content_type: 'text/cache-manifest',
+        'js/service-worker.js': {
           revpos: 2730,
           digest: 'md5-JRYByZdYixaFg3a4L6X0pw==',
           length: 1224,
@@ -40,7 +39,7 @@ describe('DDoc extraction', () => {
     const getNew = get.withArgs('_design/new').rejects({ status: 404 });
     const getUpdated = get.withArgs('_design/updated').resolves({ _id: '_design/updated', _rev: '1', views: { doc_by_valed: { map: 'function() { return true; }' } } });
     const getUnchanged = get.withArgs('_design/unchanged').resolves({ _id: '_design/unchanged', _rev: '1', views: { doc_by_valid: { map: 'function() { return true; }' } } });
-    const getAppcache = get.withArgs('appcache').resolves({ digest: 'md5-JRYByZdYixaFg3a4L6X0pw==' });
+    const getSwMeta = get.withArgs('serviceWorkerMeta').resolves({ digest: 'md5-JRYByZdYixaFg3a4L6X0pw==' });
     const getSettings = get.withArgs('settings').resolves({ });
     const bulk = sinon.stub(db.medic, 'bulkDocs').resolves();
 
@@ -50,7 +49,7 @@ describe('DDoc extraction', () => {
       getNew.callCount.should.equal(1);
       getUpdated.callCount.should.equal(1);
       getUnchanged.callCount.should.equal(1);
-      getAppcache.callCount.should.equal(1);
+      getSwMeta.callCount.should.equal(1);
       getSettings.callCount.should.equal(0);
       bulk.callCount.should.equal(1);
       const docs = bulk.args[0][0].docs;
@@ -102,8 +101,7 @@ describe('DDoc extraction', () => {
     const ddoc = {
       _id: '_design/medic',
       _attachments: {
-        'manifest.appcache': {
-          content_type: 'text/cache-manifest',
+        'js/service-worker.js': {
           revpos: 2730,
           digest: 'md5-JRYByZdYixaFg3a4L6X0pw==',
           length: 1224,
@@ -156,7 +154,7 @@ describe('DDoc extraction', () => {
         }
       }
     });
-    const getAppcache = get.withArgs('appcache').resolves({ digest: 'md5-JRYByZdYixaFg3a4L6X0pw==' });
+    const getSwMeta = get.withArgs('serviceWorkerMeta').resolves({ digest: 'md5-JRYByZdYixaFg3a4L6X0pw==' });
     const getSettings = get.withArgs('settings').resolves({ });
     const bulk = sinon.stub(db.medic, 'bulkDocs').resolves();
 
@@ -165,7 +163,7 @@ describe('DDoc extraction', () => {
       getDdocAttachment.callCount.should.equal(1);
       getUpdated.callCount.should.equal(1);
       getUnchanged.callCount.should.equal(1);
-      getAppcache.callCount.should.equal(1);
+      getSwMeta.callCount.should.equal(1);
       getSettings.callCount.should.equal(0);
       bulk.callCount.should.equal(1);
       const docs = bulk.args[0][0].docs;
@@ -179,8 +177,7 @@ describe('DDoc extraction', () => {
     const ddoc = {
       _id: '_design/medic',
       _attachments: {
-        'manifest.appcache': {
-          content_type: 'text/cache-manifest',
+        'js/service-worker.js': {
           revpos: 2730,
           digest: 'md5-JRYByZdYixaFg3a4L6X0pw==',
           length: 1224,
@@ -194,12 +191,12 @@ describe('DDoc extraction', () => {
     const getDdocAttachment = getAttachment
       .withArgs('_design/medic', 'ddocs/compiled.json')
       .rejects({ status: 404 });
-    const getAppcache = get.withArgs('appcache').resolves({ digest: 'md5-JRYByZdYixaFg3a4L6X0pw==' });
+    const getSwMeta = get.withArgs('serviceWorkerMeta').resolves({ digest: 'md5-JRYByZdYixaFg3a4L6X0pw==' });
     const getSettings = get.withArgs('settings').resolves({ });
     return ddocExtraction.run().then(() => {
       getDdoc.callCount.should.equal(1);
       getDdocAttachment.callCount.should.equal(1);
-      getAppcache.callCount.should.equal(1);
+      getSwMeta.callCount.should.equal(1);
       getSettings.callCount.should.equal(0);
     });
   });
@@ -215,8 +212,7 @@ describe('DDoc extraction', () => {
       _id: '_design/medic',
       deploy_info: 1,
       _attachments: {
-        'manifest.appcache': {
-          content_type: 'text/cache-manifest',
+        'js/service-worker.js': {
           revpos: 2730,
           digest: 'md5-JRYByZdYixaFg3a4L6X0pw==',
           length: 1224,
@@ -235,7 +231,7 @@ describe('DDoc extraction', () => {
     const getDdocAttachment = getAttachment
       .withArgs('_design/medic', 'ddocs/compiled.json')
       .resolves(Buffer.from(JSON.stringify(attachment)));
-    const getAppcache = get.withArgs('appcache').rejects({ status: 404 });
+    const getSwMeta = get.withArgs('serviceWorkerMeta').rejects({ status: 404 });
     const getSettings = get.withArgs('settings').resolves({ });
     const getClient = get.withArgs('_design/medic-client').resolves(existingClient);
     const bulk = sinon.stub(db.medic, 'bulkDocs').resolves();
@@ -243,13 +239,13 @@ describe('DDoc extraction', () => {
     return ddocExtraction.run().then(() => {
       getDdoc.callCount.should.equal(1);
       getDdocAttachment.callCount.should.equal(1);
-      getAppcache.callCount.should.equal(1);
+      getSwMeta.callCount.should.equal(1);
       getSettings.callCount.should.equal(0);
       getClient.callCount.should.equal(1);
       bulk.callCount.should.equal(1);
       const docs = bulk.args[0][0].docs;
       chai.expect(docs.length).to.equal(1);
-      docs[0]._id.should.equal('appcache');
+      docs[0]._id.should.equal('serviceWorkerMeta');
       chai.expect(docs[0]._rev).to.equal(undefined);
       docs[0].digest.should.equal('md5-JRYByZdYixaFg3a4L6X0pw==');
     });
@@ -266,8 +262,7 @@ describe('DDoc extraction', () => {
       _id: '_design/medic',
       deploy_info: 1,
       _attachments: {
-        'manifest.appcache': {
-          content_type: 'text/cache-manifest',
+        'js/service-worker.js': {
           revpos: 2730,
           digest: 'md5-JRYByZdYixaFg3a4L6X0pw==',
           length: 1224,
@@ -291,7 +286,7 @@ describe('DDoc extraction', () => {
     const getDdocAttachment = getAttachment
       .withArgs('_design/medic', 'ddocs/compiled.json')
       .resolves(Buffer.from(JSON.stringify(attachment)));
-    const getAppcache = get.withArgs('appcache').resolves(appcache);
+    const getSwMeta = get.withArgs('serviceWorkerMeta').resolves(appcache);
     const getSettings = get.withArgs('settings').resolves({ });
     const getClient = get.withArgs('_design/medic-client').resolves(existingClient);
     const bulk = sinon.stub(db.medic, 'bulkDocs').resolves();
@@ -299,7 +294,7 @@ describe('DDoc extraction', () => {
     return ddocExtraction.run().then(() => {
       getDdoc.callCount.should.equal(1);
       getDdocAttachment.callCount.should.equal(1);
-      getAppcache.callCount.should.equal(1);
+      getSwMeta.callCount.should.equal(1);
       getSettings.callCount.should.equal(0);
       getClient.callCount.should.equal(1);
       bulk.callCount.should.equal(1);
@@ -322,8 +317,7 @@ describe('DDoc extraction', () => {
       _id: '_design/medic',
       deploy_info: { version: 2 },
       _attachments: {
-        'manifest.appcache': {
-          content_type: 'text/cache-manifest',
+        'js/service-worker.js': {
           revpos: 2730,
           digest: 'md5-JRYByZdYixaFg3a4L6X0pw==',
           length: 1224,
@@ -346,7 +340,7 @@ describe('DDoc extraction', () => {
     const getDdocAttachment = getAttachment
       .withArgs('_design/medic', 'ddocs/compiled.json')
       .resolves(Buffer.from(JSON.stringify(attachment)));
-    const getAppcache = get.withArgs('appcache').resolves(appcache);
+    const getSwMeta = get.withArgs('serviceWorkerMeta').resolves(appcache);
     const getSettings = get.withArgs('settings').resolves({ });
     const getClient = get.withArgs('_design/medic-client').resolves(existingClient);
     const bulk = sinon.stub(db.medic, 'bulkDocs').resolves();
@@ -354,7 +348,7 @@ describe('DDoc extraction', () => {
     return ddocExtraction.run().then(() => {
       getDdoc.callCount.should.equal(1);
       getDdocAttachment.callCount.should.equal(1);
-      getAppcache.callCount.should.equal(1);
+      getSwMeta.callCount.should.equal(1);
       getSettings.callCount.should.equal(0);
       getClient.callCount.should.equal(1);
       bulk.callCount.should.equal(1);
@@ -377,8 +371,7 @@ describe('DDoc extraction', () => {
       _id: '_design/medic',
       deploy_info: { version: 2 },
       _attachments: {
-        'manifest.appcache': {
-          content_type: 'text/cache-manifest',
+        'js/service-worker.js': {
           revpos: 2730,
           digest: 'md5-JRYByZdYixaFg3a4L6X0pw==',
           length: 1224,
@@ -402,7 +395,7 @@ describe('DDoc extraction', () => {
     const getDdocAttachment = getAttachment
       .withArgs('_design/medic', 'ddocs/compiled.json')
       .resolves(Buffer.from(JSON.stringify(attachment)));
-    const getAppcache = get.withArgs('appcache').resolves(appcache);
+    const getSwMeta = get.withArgs('serviceWorkerMeta').resolves(appcache);
     const getSettings = get.withArgs('settings').resolves({ });
     const getClient = get.withArgs('_design/medic-client').resolves(existingClient);
     const bulk = sinon.stub(db.medic, 'bulkDocs').resolves();
@@ -410,7 +403,7 @@ describe('DDoc extraction', () => {
     return ddocExtraction.run().then(() => {
       getDdoc.callCount.should.equal(1);
       getDdocAttachment.callCount.should.equal(1);
-      getAppcache.callCount.should.equal(1);
+      getSwMeta.callCount.should.equal(1);
       getSettings.callCount.should.equal(0);
       getClient.callCount.should.equal(1);
       bulk.callCount.should.equal(1);
@@ -433,8 +426,7 @@ describe('DDoc extraction', () => {
       _id: '_design/medic',
       deploy_info: { version: 2 },
       _attachments: {
-        'manifest.appcache': {
-          content_type: 'text/cache-manifest',
+        'js/service-worker.js': {
           revpos: 2730,
           digest: 'md5-JRYByZdYixaFg3a4L6X0pw==',
           length: 1224,
@@ -458,7 +450,7 @@ describe('DDoc extraction', () => {
     const getDdocAttachment = getAttachment
       .withArgs('_design/medic', 'ddocs/compiled.json')
       .resolves(Buffer.from(JSON.stringify(attachment)));
-    const getAppcache = get.withArgs('appcache').resolves(appcache);
+    const getSwMeta = get.withArgs('serviceWorkerMeta').resolves(appcache);
     const getSettings = get.withArgs('settings').resolves({ });
     const getClient = get.withArgs('_design/medic-client').resolves(existingClient);
     const bulk = sinon.stub(db.medic, 'bulkDocs').resolves();
@@ -466,7 +458,7 @@ describe('DDoc extraction', () => {
     return ddocExtraction.run().then(() => {
       getDdoc.callCount.should.equal(1);
       getDdocAttachment.callCount.should.equal(1);
-      getAppcache.callCount.should.equal(1);
+      getSwMeta.callCount.should.equal(1);
       getSettings.callCount.should.equal(0);
       getClient.callCount.should.equal(1);
       bulk.callCount.should.equal(0);
@@ -483,8 +475,7 @@ describe('DDoc extraction', () => {
     const ddoc = {
       _id: '_design/medic',
       _attachments: {
-        'manifest.appcache': {
-          content_type: 'text/cache-manifest',
+        'js/service-worker.js': {
           revpos: 2730,
           digest: 'md5-JRYByZdYixaFg3a4L6X0pw==',
           length: 1224,
@@ -507,7 +498,7 @@ describe('DDoc extraction', () => {
     const getDdocAttachment = getAttachment
       .withArgs('_design/medic', 'ddocs/compiled.json')
       .resolves(Buffer.from(JSON.stringify(attachment)));
-    const getAppcache = get.withArgs('appcache').resolves(appcache);
+    const getSwMeta = get.withArgs('serviceWorkerMeta').resolves(appcache);
     const getSettings = get.withArgs('settings').resolves({ });
     const getClient = get.withArgs('_design/medic-client').resolves(existingClient);
     const bulk = sinon.stub(db.medic, 'bulkDocs').resolves();
@@ -515,7 +506,7 @@ describe('DDoc extraction', () => {
     return ddocExtraction.run().then(() => {
       getDdoc.callCount.should.equal(1);
       getDdocAttachment.callCount.should.equal(1);
-      getAppcache.callCount.should.equal(1);
+      getSwMeta.callCount.should.equal(1);
       getSettings.callCount.should.equal(0);
       getClient.callCount.should.equal(1);
       bulk.callCount.should.equal(0);
@@ -533,8 +524,7 @@ describe('DDoc extraction', () => {
       _id: '_design/medic',
       deploy_info: 'something',
       _attachments: {
-        'manifest.appcache': {
-          content_type: 'text/cache-manifest',
+        'js/service-worker.js': {
           revpos: 2730,
           digest: 'md5-JRYByZdYixaFg3a4L6X0pw==',
           length: 1224,
@@ -557,7 +547,7 @@ describe('DDoc extraction', () => {
     const getDdocAttachment = getAttachment
       .withArgs('_design/medic', 'ddocs/compiled.json')
       .resolves(Buffer.from(JSON.stringify(attachment)));
-    const getAppcache = get.withArgs('appcache').resolves(appcache);
+    const getSwMeta = get.withArgs('serviceWorkerMeta').resolves(appcache);
     const getSettings = get.withArgs('settings').resolves({ });
     const getClient = get.withArgs('_design/medic-client').resolves(existingClient);
     const bulk = sinon.stub(db.medic, 'bulkDocs').resolves();
@@ -565,7 +555,7 @@ describe('DDoc extraction', () => {
     return ddocExtraction.run().then(() => {
       getDdoc.callCount.should.equal(1);
       getDdocAttachment.callCount.should.equal(1);
-      getAppcache.callCount.should.equal(1);
+      getSwMeta.callCount.should.equal(1);
       getSettings.callCount.should.equal(0);
       getClient.callCount.should.equal(1);
       bulk.callCount.should.equal(1);
@@ -587,8 +577,7 @@ describe('DDoc extraction', () => {
     const ddoc = {
       _id: '_design/medic',
       _attachments: {
-        'manifest.appcache': {
-          content_type: 'text/cache-manifest',
+        'js/service-worker.js': {
           revpos: 2730,
           digest: 'md5-JRYByZdYixaFg3a4L6X0pw==',
           length: 1224,
@@ -612,7 +601,7 @@ describe('DDoc extraction', () => {
     const getDdocAttachment = getAttachment
       .withArgs('_design/medic', 'ddocs/compiled.json')
       .resolves(Buffer.from(JSON.stringify(attachment)));
-    const getAppcache = get.withArgs('appcache').resolves(appcache);
+    const getSwMeta = get.withArgs('serviceWorkerMeta').resolves(appcache);
     const getSettings = get.withArgs('settings').resolves({ });
     const getClient = get.withArgs('_design/medic-client').resolves(existingClient);
     const bulk = sinon.stub(db.medic, 'bulkDocs').resolves();
@@ -620,7 +609,7 @@ describe('DDoc extraction', () => {
     return ddocExtraction.run().then(() => {
       getDdoc.callCount.should.equal(1);
       getDdocAttachment.callCount.should.equal(1);
-      getAppcache.callCount.should.equal(1);
+      getSwMeta.callCount.should.equal(1);
       getSettings.callCount.should.equal(0);
       getClient.callCount.should.equal(1);
       bulk.callCount.should.equal(1);

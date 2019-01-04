@@ -25,7 +25,6 @@
     "foreman": "^3.0.1",
     "grunt": "^1.0.3",
     "grunt-angular-templates": "^1.1.0",
-    "grunt-appcache": "^0.2.0",
     "grunt-browserify": "^5.3.0",
     "grunt-contrib-copy": "^1.0.0",
     "grunt-contrib-cssmin": "^3.0.0",
@@ -62,8 +61,10 @@
     "pouchdb-core": "^7.0.0",
     "pouchdb-mapreduce": "^7.0.0",
     "protractor-jasmine2-screenshot-reporter": "^0.5.0",
+    "rewire": "^4.0.1",
     "semver": "^5.6.0",
     "sinon": "^7.1.1",
+    "sw-precache": "^5.2.1",
     "time-grunt": "^2.0.0",
     "underscore": "^1.9.1"
   },

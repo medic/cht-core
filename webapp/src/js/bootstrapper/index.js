@@ -2,9 +2,10 @@
 
   'use strict';
 
-  var ONLINE_ROLE = 'mm-online';
+  const ONLINE_ROLE = 'mm-online';
 
-  var translator = require('./translator');
+  const translator = require('./translator');
+  const registerServiceWorker = require('./swRegister');
 
   var getUserCtx = function() {
     var userCtx, locale;
@@ -136,20 +137,27 @@
     }
 
     translator.setLocale(userCtx.locale);
-    
-    var username = userCtx.name;
-    var localDbName = getLocalDbName(dbInfo, username);
-    var localDb = window.PouchDB(localDbName, POUCHDB_OPTIONS.local);
 
-    getDdoc(localDb)
-      .then(function() {
-        // ddoc found - bootstrap immediately
-        localDb.close();
-        callback();
-      })
-      .catch(function() {
+    /* Question to Reviewer: Want to add new UI state like Downloading App... ? */
+    const onServiceWorkerInstalling = () => setUiStatus('LOAD_APP');
+    const swRegistration = registerServiceWorker(onServiceWorkerInstalling);
+
+    const localDbName = getLocalDbName(dbInfo, userCtx.name);
+    const localDb = window.PouchDB(localDbName, POUCHDB_OPTIONS.local);
+    const testForReplicatedData = getDdoc(localDb)
+      .then(() => true)
+      .catch(() => false);
+
+    Promise.all([swRegistration, testForReplicatedData])
+      .then(function(resolved) {
+        const replicatedDataExists = !!resolved[1];
+        if (replicatedDataExists) {
+          // ddoc found - bootstrap immediately
+          localDb.close();
+          return callback();
+        }
+
         // no ddoc found - do replication
-
         var remoteDb = window.PouchDB(dbInfo.remote, POUCHDB_OPTIONS.remote);
         initialReplication(localDb, remoteDb)
           .then(function() {
@@ -161,9 +169,7 @@
             // replication complete - bootstrap angular
             setUiStatus('STARTING_APP');
           })
-          .catch(function(err) {
-            return err;
-          })
+          .catch(err => err)
           .then(function(err) {
             localDb.close();
             remoteDb.close();
@@ -177,6 +183,10 @@
 
             callback(err);
           });
+      })
+      .catch(err => {
+        setUiError();
+        callback(err);
       });
 
   };
