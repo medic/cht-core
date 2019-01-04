@@ -6,8 +6,6 @@ describe('Session service', function() {
       ipCookie,
       ipCookieRemove,
       location,
-      appCache,
-      appCacheListener,
       $httpBackend,
       Location;
 
@@ -15,15 +13,9 @@ describe('Session service', function() {
     module('inboxApp');
     ipCookie = sinon.stub();
     ipCookieRemove = sinon.stub();
-    appCacheListener = sinon.stub();
     ipCookie.remove = ipCookieRemove;
     Location = {};
     location = {};
-    appCache = {
-      DOWNLOADING: 3,
-      status: 0,
-      addEventListener: appCacheListener
-    };
     module(function ($provide) {
       $provide.factory('ipCookie', function() {
         return ipCookie;
@@ -33,7 +25,6 @@ describe('Session service', function() {
         return {
           angular: { callbacks: [] },
           location: location,
-          applicationCache: appCache
         };
       });
     });
@@ -44,7 +35,7 @@ describe('Session service', function() {
   });
 
   afterEach(function() {
-    KarmaUtils.restore(ipCookie, ipCookieRemove, appCacheListener);
+    KarmaUtils.restore(ipCookie, ipCookieRemove);
   });
 
   it('gets the user context', function(done) {
@@ -133,24 +124,6 @@ describe('Session service', function() {
     service.init();
     $httpBackend.flush();
     chai.expect(ipCookieRemove.callCount).to.equal(0);
-    done();
-  });
-
-  it('waits for app cache download before logging out', function(done) {
-    ipCookie.returns({});
-    location.href = 'CURRENT_URL';
-    Location.dbName = 'DB_NAME';
-    $httpBackend
-      .expect('DELETE', '/_session')
-      .respond(200);
-    appCache.status = 3;
-    service.init();
-    $httpBackend.flush();
-    appCacheListener.args[0][1](); // fire the appcache callback
-    chai.expect(appCacheListener.callCount).to.equal(1);
-    chai.expect(appCacheListener.args[0][0]).to.equal('updateready');
-    chai.expect(location.href).to.equal('/DB_NAME/login?redirect=CURRENT_URL');
-    chai.expect(ipCookieRemove.args[0][0]).to.equal('userCtx');
     done();
   });
 

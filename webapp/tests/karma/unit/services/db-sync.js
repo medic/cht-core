@@ -257,8 +257,8 @@ describe('DBSync service', () => {
       expect(actual).to.equal(false);
     });
 
-    it('does not replicate the appcache doc', () => {
-      const actual = filterFunction({ _id: 'appcache' });
+    it('does not replicate the serviceWorkerMeta doc', () => {
+      const actual = filterFunction({ _id: 'serviceWorkerMeta' });
       expect(actual).to.equal(false);
     });
 

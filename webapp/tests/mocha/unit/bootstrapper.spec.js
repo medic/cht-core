@@ -1,6 +1,6 @@
 const bootstrapper = require('../../../src/js/bootstrapper'),
       sinon = require('sinon'),
-      assert = require('chai').assert,
+      { expect, assert } = require('chai'),
       pouchDbOptions = {
         local: { auto_compaction: true },
         remote: { skip_setup: true }
@@ -12,6 +12,7 @@ let originalDocument,
     localGet,
     localReplicate,
     localClose,
+    registered,
     remoteClose;
 
 describe('bootstrapper', () => {
@@ -34,6 +35,7 @@ describe('bootstrapper', () => {
       remote: true,
       close: remoteClose
     });
+    registered = {};
 
     if (typeof document !== 'undefined') {
       originalDocument = document;
@@ -45,6 +47,11 @@ describe('bootstrapper', () => {
     window = {
       location: {
         href: 'http://localhost:5988/medic/_design/medic/_rewrite/#/messages'
+      },
+      navigator: {
+        serviceWorker: {
+          register: () => Promise.resolve(registered),
+        },
       },
       PouchDB: pouchDb
     };
@@ -203,4 +210,20 @@ describe('bootstrapper', () => {
     });
   });
 
+  it('error results if service worker fails registration', done => {
+    setUserCtxCookie({ name: 'jim' });
+    pouchDb.onCall(0).returns({
+      get: sinon.stub().resolves(),
+      replicate: { from: sinon.stub() },
+      close: sinon.stub()
+    });
+
+    const failingRegister = sinon.stub().rejects('error');
+    window.navigator.serviceWorker.register = failingRegister;
+    bootstrapper(pouchDbOptions, err => {
+      expect(failingRegister.callCount).to.eq(1);
+      expect(err).to.include({ name: 'error' });
+      done();
+    });
+  });
 });

@@ -2,14 +2,13 @@
 angular.module('inboxServices').service('XSLT',
   function(
     $http,
-    $q,
-    Location
+    $q
   ) {
 
     'use strict';
     'ngInject';
 
-    var staticRoot = Location.path + '/xslt/';
+    var staticRoot = '/xslt/';
     var processors = {};
     var xmlSerializer = new XMLSerializer();
 

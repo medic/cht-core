@@ -68,8 +68,8 @@ describe('validate doc update', () => {
     done();
   });
 
-  it('only db and national admins are allowed change appcache doc', done => {
-    const doc = { _id: 'appcache' };
+  it('only db and national admins are allowed change serviceWorkerMeta doc', done => {
+    const doc = { _id: 'serviceWorkerMeta' };
     assert.isOk(allowedOnServer(userCtx({roles: [ '_admin' ]}), doc));
     assert.isOk(allowedOnServer(userCtx({roles: [ 'national_admin' ]}), doc));
     assert.deepEqual(allowedOnServer(userCtx({roles: [ ]}), doc), disallowed('You are not authorized to edit admin only docs'));
