@@ -153,7 +153,6 @@ describe('accept_patient_reports', () => {
         { _id: 'c' }, // should be silenced
       ];
       sinon.stub(utils, 'getReportsBySubject').resolves(registrations);
-
       transition._handleReport(doc, config, (err, complete) => {
         complete.should.equal(true);
         transition._silenceReminders.callCount.should.equal(2);
@@ -173,7 +172,6 @@ describe('accept_patient_reports', () => {
         { _id: 'a', reported_date: '2017-02-05T09:23:07.853Z' },
       ];
       sinon.stub(utils, 'getReportsBySubject').resolves(registrations);
-
       transition._handleReport(doc, config, (err, complete) => {
         complete.should.equal(true);
         doc.registration_id.should.equal(registrations[0]._id);
@@ -191,7 +189,6 @@ describe('accept_patient_reports', () => {
         { _id: 'b', reported_date: '2016-02-05T09:23:07.853Z' },
       ];
       sinon.stub(utils, 'getReportsBySubject').resolves(registrations);
-
       transition._handleReport(doc, config, (err, complete) => {
         complete.should.equal(true);
         doc.registration_id.should.equal(registrations[1]._id);
@@ -244,7 +241,6 @@ describe('accept_patient_reports', () => {
           ],
         },
       ];
-
       sinon.stub(utils, 'getReportsBySubject').resolves(registrations);
       transition._handleReport(doc, config, (err, complete) => {
         complete.should.equal(true);
@@ -316,7 +312,6 @@ describe('accept_patient_reports', () => {
         done();
       });
     });
-
 
     it('should catch utils.getReportsBySubject errors', done => {
       sinon.stub(utils, 'getReportsBySubject').rejects({ some: 'error' });
