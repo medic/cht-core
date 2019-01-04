@@ -224,8 +224,8 @@ const getAllowedDocIds = (feed) => {
       validatedIds.push(row.id);
     });
 
-    // only include tombstones if the winning rev of the document is still deleted (if a doc appears in the view
-    // results, it means that the winning rev is not deleted and the tombstone doc should be skipped)
+    // only include tombstones if the winning rev of the document is deleted
+    // if a doc appears in the view results, it means that the winning rev is not deleted
     tombstoneIds.forEach(tombstoneId => {
       const docId = tombstoneUtils.extractStub(tombstoneId).id;
       if (!validatedIds.includes(docId)) {

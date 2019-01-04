@@ -943,7 +943,7 @@ describe('changes handler', () => {
         });
     });
 
-    it('should returns the tombstone of a deleted doc', () => {
+    it('should return the tombstone of a deleted doc', () => {
       const contact = createSomeContacts(1, 'fixture:bobville')[0];
 
       return utils.saveDoc(contact)
