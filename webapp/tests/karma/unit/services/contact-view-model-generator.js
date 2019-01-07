@@ -37,7 +37,12 @@ describe('ContactViewModelGenerator service', () => {
 
   const stubDbQueryChildren = (err, parentId, docs = [], contacts = []) => {
     const options = {
-      key: parentId,
+      startkey: [parentId],
+      endkey: [parentId, {}],
+      include_docs: true
+    };
+    const optionsForTypePerson = {
+      key: [parentId, 'person'],
       include_docs: true
     };
     docs = docs.map(doc => {
@@ -47,6 +52,8 @@ describe('ContactViewModelGenerator service', () => {
       return { id: doc._id, doc: { name: doc.name }};
     });
     dbQuery.withArgs('medic-client/contacts_by_parent', options)
+      .returns(KarmaUtils.promise(err, { rows: docs }));
+    dbQuery.withArgs('medic-client/contacts_by_parent', optionsForTypePerson)
       .returns(KarmaUtils.promise(err, { rows: docs }));
   };
 

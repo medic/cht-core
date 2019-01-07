@@ -55,7 +55,8 @@ angular
       return DB()
         .query('medic-client/contacts_by_parent', {
           include_docs: true,
-          key: recipient.doc._id,
+          startkey: [recipient.doc._id],
+          endkey: [recipient.doc._id, {}]
         })
         .then(function(contacts) {
           var primaryContacts = _.filter(contacts.rows, function(row) {
