@@ -26,10 +26,6 @@ const medicLogo = element(by.className('logo-full')),
   bugDescriptionField = element(by.css('[placeholder="Bug description"]'));
 
 module.exports = {
-  calm: () => {
-    helper.waitUntilReady(medicLogo);
-  },
-
   checkAbout: () => {
     openSubmenu('about');
     expect(genericSubmitButton.getText()).toEqual('Reload');

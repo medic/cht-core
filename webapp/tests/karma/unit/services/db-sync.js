@@ -9,7 +9,6 @@ describe('DBSync service', () => {
     from,
     query,
     allDocs,
-    info,
     isOnlineOnly,
     userCtx,
     sync,
@@ -32,8 +31,6 @@ describe('DBSync service', () => {
     from.returns({ on: recursiveOn });
     query = sinon.stub();
     allDocs = sinon.stub();
-    info = sinon.stub();
-    info.returns(Q.resolve({update_seq: -99}));
     isOnlineOnly = sinon.stub();
     userCtx = sinon.stub();
     sync = sinon.stub();
@@ -44,8 +41,7 @@ describe('DBSync service', () => {
       $provide.factory('DB', KarmaUtils.mockDB({
         replicate: { to: to, from: from },
         allDocs: allDocs,
-        sync: sync,
-        info: info
+        sync: sync
       }));
       $provide.value('$q', Q); // bypass $q so we don't have to digest
       $provide.value('Session', {
@@ -61,7 +57,7 @@ describe('DBSync service', () => {
   });
 
   afterEach(() => {
-    KarmaUtils.restore(to, from, query, allDocs, info, isOnlineOnly, userCtx, sync, Auth);
+    KarmaUtils.restore(to, from, query, allDocs, isOnlineOnly, userCtx, sync, Auth);
   });
 
   describe('sync', () => {
@@ -206,7 +202,7 @@ describe('DBSync service', () => {
         expect(to.callCount).to.equal(0);
 
         expect(onUpdate.callCount).to.eq(4);
-        expect(onUpdate.args[0][0]).to.deep.eq({
+        expect(onUpdate.args[0][0]).to.deep.eq({ 
           aggregateReplicationStatus: 'in_progress',
         });
         expect(onUpdate.args[1][0]).to.deep.eq({
@@ -233,7 +229,6 @@ describe('DBSync service', () => {
       Auth.returns(Q.resolve());
       userCtx.returns({ name: 'mobile', roles: ['district-manager'] });
       allDocs.returns(Q.resolve({ rows: [] }));
-      info.returns(Q.resolve({update_seq: -99}));
       to.returns({ on: recursiveOn });
       from.returns({ on: recursiveOn });
       return service.sync().then(() => {
