@@ -151,28 +151,27 @@ angular.module('inboxServices').factory('ContactViewModelGenerator',
       return sortPrimaryContactToTop(model, children);
     };
 
-    const getChildren = contactId => DB()
-      .query('medic-client/contacts_by_parent', { startkey: [contactId], endkey: [contactId, {}], include_docs: true })
-      .then(response => response.rows);
-
-    const getChildrenOfTypePerson = contactId => DB()
-      .query('medic-client/contacts_by_parent', { key: [contactId, 'person'], include_docs: true })
-      .then(response => response.rows);
+    const getChildren = (contactId, { getChildPlaces }) => {
+      const options = { include_docs: true };
+      if (getChildPlaces) {
+        // get all types
+        options.startkey = [ contactId ];
+        options.endkey = [ contactId, {} ];
+      } else {
+        // just get people
+        options.key = [ contactId, 'person' ];
+      }
+      return DB().query('medic-client/contacts_by_parent', options)
+        .then(response => response.rows);
+    };
 
     var loadChildren = function(model, options) {
       model.children = {};
       if (model.doc.type === 'person') {
         return $q.resolve({});
       }
-      var getChildrenOfType = {
-        'all': getChildren,
-        'person': getChildrenOfTypePerson
-      };
-      var type = 'person';
-      if (options && options.getChildPlaces) {
-        type = 'all';
-      }
-      return getChildrenOfType[type](model.doc._id)
+
+      return getChildren(model.doc._id, options)
         .then(splitContactsByType)
         .then(function(children) {
           if (children.places && children.places.length) {

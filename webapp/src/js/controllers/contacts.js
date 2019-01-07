@@ -370,7 +370,7 @@ var _ = require('underscore'),
       $scope.setLeftActionBar(data);
     };
 
-    $scope.getUserHomePlaceSummary = function() {
+    var getUserHomePlaceSummary = function() {
       return UserSettings()
         .then(function(userSettings) {
           if (userSettings.facility_id) {
@@ -411,7 +411,7 @@ var _ = require('underscore'),
     };
 
     var setupPromise = $q
-      .all([$scope.getUserHomePlaceSummary(), canViewLastVisitedDate(), Settings()])
+      .all([getUserHomePlaceSummary(), canViewLastVisitedDate(), Settings()])
       .then(function(results) {
         usersHomePlace = results[0];
         $scope.lastVisitedDateExtras = results[1];
