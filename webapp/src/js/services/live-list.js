@@ -223,13 +223,14 @@ angular.module('inboxServices').factory('LiveListConfig',
           scope.id = task._id;
           scope.route = 'tasks';
           scope.date = task.date;
-          scope.overdue = false;
+          scope.overdue = dueDate < startOfToday;
           scope.due = !scope.overdue && (dueDate - startOfToday) < TASK_DUE_PERIOD;
           scope.icon = task.icon;
           scope.heading = task.contact && task.contact.name;
           scope.summary = translateProperty(task.title, task);
           scope.warning = translateProperty(task.priorityLabel, task);
           scope.hideTime = true;
+          scope.unmarkOverdue = true;
           return renderTemplate(scope);
         },
       });

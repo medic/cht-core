@@ -69,7 +69,10 @@ angular.module('inboxDirectives').directive('mmContentRow', function() {
       muted: '=isMuted',
 
       // boolean: (optional) whether to display the "muted" text along with contact name
-      displayMuted: '='
+      displayMuted: '=',
+
+      // boolean: (optional) whether to unmark the overdue row
+      unmarkOverdue: '='
     }
   };
 });
