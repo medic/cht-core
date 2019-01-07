@@ -332,7 +332,7 @@ angular
                   $uibModalInstance.close();
                 })
                 .catch(function(err) {
-                  $scope.setError(err, 'Error updating user');
+                  $scope.setError(err, err.data.error);
                 });
             });
           })
