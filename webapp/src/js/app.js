@@ -147,7 +147,7 @@ _.templateSettings = {
       if (err.redirect) {
         window.location.href = err.redirect;
       } else {
-        console.error('Error fetching ddoc from remote server', err);
+        console.error('Error bootstrapping', err);
         setTimeout(function() {
           // retry initial replication automatically after one minute
           window.location.reload(false);

@@ -5,6 +5,17 @@ const itemSummary = '#reports-content .report-body .item-summary',
       reportBodyDetails = '#reports-content .report-body .details';
 
 module.exports = {
+  expectReportsToExist: uuids => {
+    uuids.forEach(uuid => {
+      expect(browser.isElementPresent(by.css(`#reports-list li[data-record-id="${uuid}"]`))).toBeTruthy();
+    });
+  },
+  expectReportsToNotExist: uuids => {
+    uuids.forEach(uuid => {
+      expect(browser.isElementPresent(by.css(`#reports-list li[data-record-id="${uuid}"]`))).toBeFalsy();
+    });
+  },
+
   collapseSelection: () => {
     element(by.css(itemSummary)).click();
     expect(element(by.css(reportBodyDetails)).isDisplayed()).toBeFalsy();
