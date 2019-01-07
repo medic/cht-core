@@ -6,8 +6,6 @@
 
   var translator = require('./translator');
 
-  var purger = require('./purger');
-
   var getUserCtx = function() {
     var userCtx, locale;
     document.cookie.split(';').forEach(function(c) {
@@ -138,54 +136,47 @@
     }
 
     translator.setLocale(userCtx.locale);
-
+    
     var username = userCtx.name;
     var localDbName = getLocalDbName(dbInfo, username);
-
     var localDb = window.PouchDB(localDbName, POUCHDB_OPTIONS.local);
-    var remoteDb = window.PouchDB(dbInfo.remote, POUCHDB_OPTIONS.remote);
-
-    let initialReplicationNeeded;
 
     getDdoc(localDb)
       .then(function() {
-        // ddoc found - no need for initial replication
+        // ddoc found - bootstrap immediately
+        localDb.close();
+        callback();
       })
       .catch(function() {
         // no ddoc found - do replication
-        initialReplicationNeeded = true;
-        return initialReplication(localDb, remoteDb)
+
+        var remoteDb = window.PouchDB(dbInfo.remote, POUCHDB_OPTIONS.remote);
+        initialReplication(localDb, remoteDb)
           .then(function() {
             return getDdoc(localDb).catch(function() {
               throw new Error('Initial replication failed');
             });
+          })
+          .then(function() {
+            // replication complete - bootstrap angular
+            setUiStatus('STARTING_APP');
+          })
+          .catch(function(err) {
+            return err;
+          })
+          .then(function(err) {
+            localDb.close();
+            remoteDb.close();
+            if (err) {
+              if (err.status === 401) {
+                return redirectToLogin(dbInfo, err, callback);
+              }
+
+              setUiError();
+            }
+
+            callback(err);
           });
-      })
-      .then(() => purger(localDb, initialReplicationNeeded)
-        .on('start', () => setUiStatus('PURGE_INIT'))
-        .on('progress', function(progress) {
-          setUiStatus('PURGE_INFO', progress);
-        })
-        .on('optimise', () => setUiStatus('PURGE_AFTER')))
-      .then(function() {
-        // replication complete
-        setUiStatus('STARTING_APP');
-      })
-      .catch(function(err) {
-        return err;
-      })
-      .then(function(err) {
-        localDb.close();
-        remoteDb.close();
-        if (err) {
-          if (err.status === 401) {
-            return redirectToLogin(dbInfo, err, callback);
-          }
-
-          setUiError();
-        }
-
-        callback(err);
       });
 
   };

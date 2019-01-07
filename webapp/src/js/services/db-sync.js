@@ -1,15 +1,13 @@
-const _ = require('underscore'),
-      READ_ONLY_TYPES = ['form', 'translations'],
-      READ_ONLY_IDS = ['resources', 'branding', 'appcache', 'zscore-charts', 'settings', 'partners'],
-      DDOC_PREFIX = ['_design/'],
-      SYNC_INTERVAL = 5 * 60 * 1000, // 5 minutes
-      META_SYNC_INTERVAL = 30 * 60 * 1000; // 30 minutes
-
-const LAST_REPLICATED_SEQ_KEY = require('../bootstrapper/purger').LAST_REPLICATED_SEQ_KEY;
+var _ = require('underscore'),
+  READ_ONLY_TYPES = ['form', 'translations'],
+  READ_ONLY_IDS = ['resources', 'branding', 'appcache', 'zscore-charts', 'settings', 'partners'],
+  DDOC_PREFIX = ['_design/'],
+  SYNC_INTERVAL = 5 * 60 * 1000, // 5 minutes
+  META_SYNC_INTERVAL = 30 * 60 * 1000; // 30 minutes
 
 angular
   .module('inboxServices')
-  .factory('DBSync', function($interval, $log, $q, $window, Auth, DB, Session) {
+  .factory('DBSync', function($interval, $log, $q, Auth, DB, Session) {
     'use strict';
     'ngInject';
 
@@ -26,16 +24,6 @@ angular
     };
 
     var readOnlyFilter = function(doc) {
-      // Never replicate "purged" documents upwards
-      const keys = Object.keys(doc);
-      if (keys.length === 4 &&
-          keys.includes('_id') &&
-          keys.includes('_rev') &&
-          keys.includes('_deleted') &&
-          keys.includes('purged')) {
-        return false;
-      }
-
       // don't try to replicate read only docs back to the server
       return (
         READ_ONLY_TYPES.indexOf(doc.type) === -1 &&
@@ -119,7 +107,7 @@ angular
       }
 
       /*
-      Controllers need the status of each directed replication (directedReplicationStatus) and the
+      Controllers need the status of each directed replication (directedReplicationStatus) and the 
       status of the replication as a whole (aggregateReplicationStatus).
       */
       if (!inProgressSync) {
@@ -141,11 +129,6 @@ angular
 
             syncIsRecent = true;
             sendUpdate({ aggregateReplicationStatus: 'not_required' });
-
-            return DB().info()
-            .then(dbInfo => {
-              $window.localStorage.setItem(LAST_REPLICATED_SEQ_KEY, dbInfo.update_seq);
-            });
           })
           .finally(() => {
             inProgressSync = undefined;

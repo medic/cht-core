@@ -8,11 +8,7 @@ const bootstrapper = require('../../../src/js/bootstrapper'),
 
 let originalDocument,
     originalWindow,
-    pouchDb,
-    localGet,
-    localReplicate,
-    localClose,
-    remoteClose;
+    pouchDb;
 
 describe('bootstrapper', () => {
 
@@ -20,21 +16,6 @@ describe('bootstrapper', () => {
 // jshint -W020
   beforeEach(done => {
     pouchDb = sinon.stub();
-    localGet = sinon.stub();
-    localReplicate = sinon.stub();
-    localClose = sinon.stub();
-    remoteClose = sinon.stub();
-
-    pouchDb.onCall(0).returns({
-      get: localGet,
-      replicate: { from: localReplicate },
-      close: localClose
-    });
-    pouchDb.onCall(1).returns({
-      remote: true,
-      close: remoteClose
-    });
-
     if (typeof document !== 'undefined') {
       originalDocument = document;
     }
@@ -48,7 +29,7 @@ describe('bootstrapper', () => {
       },
       PouchDB: pouchDb
     };
-
+    
     $ = sinon.stub().returns({
       text: sinon.stub(),
       html: sinon.stub()
@@ -87,32 +68,41 @@ describe('bootstrapper', () => {
 
   it('returns if local db already has client ddoc', done => {
     setUserCtxCookie({ name: 'jim' });
-    localGet.withArgs('_design/medic-client').returns(Promise.resolve({_id: '_design/medic-client'}));
-    localGet.withArgs('settings').returns(Promise.resolve({_id: 'settings', settings: {}}));
-
+    const localGet = sinon.stub().returns(Promise.resolve());
+    const localClose = sinon.stub().returns(Promise.resolve());
+    pouchDb.returns({ get: localGet, close: localClose });
     bootstrapper(pouchDbOptions, err => {
       assert.equal(null, err);
-      assert.equal(pouchDb.callCount, 2);
+      assert.equal(pouchDb.callCount, 1);
       assert.equal(localClose.callCount, 1);
       assert.equal(pouchDb.args[0][0], 'medic-user-jim');
       assert.deepEqual(pouchDb.args[0][1], { auto_compaction: true });
-      assert.equal(localGet.callCount, 2);
+      assert.equal(localGet.callCount, 1);
       assert.equal(localGet.args[0][0], '_design/medic-client');
-      assert.equal(localGet.args[1][0], 'settings');
       done();
     });
   });
 
   it('performs initial replication, checking that ddoc exists', done => {
     setUserCtxCookie({ name: 'jim' });
-    localGet.withArgs('_design/medic-client').onCall(0).rejects();
-    localGet.withArgs('_design/medic-client').onCall(1).resolves();
-    localGet.withArgs('settings').returns(Promise.resolve({_id: 'settings', settings: {}}));
-
+    const localGet = sinon.stub();
+    localGet.onCall(0).rejects();
+    localGet.onCall(1).resolves();
+    const localClose = sinon.stub().returns(Promise.resolve());
+    const remoteClose = sinon.stub().returns(Promise.resolve());
+    const localReplicate = sinon.stub();
+    pouchDb.onCall(0).returns({
+      get: localGet,
+      replicate: { from: localReplicate },
+      close: localClose
+    });
+    pouchDb.onCall(1).returns({
+      remote: true,
+      close: remoteClose
+    });
     const localReplicateResult = Promise.resolve();
     localReplicateResult.on = () => {};
     localReplicate.returns(localReplicateResult);
-
     bootstrapper(pouchDbOptions, err => {
       assert.equal(null, err);
       assert.equal(pouchDb.callCount, 2);
@@ -120,7 +110,7 @@ describe('bootstrapper', () => {
       assert.deepEqual(pouchDb.args[0][1], { auto_compaction: true });
       assert.equal(pouchDb.args[1][0], 'http://localhost:5988/medic');
       assert.deepEqual(pouchDb.args[1][1], { skip_setup: true });
-      assert.equal(localGet.callCount, 3);
+      assert.equal(localGet.callCount, 2);
       assert.equal(localGet.args[0][0], '_design/medic-client');
       assert.equal(localGet.args[1][0], '_design/medic-client');
       assert.equal(localReplicate.callCount, 1);
@@ -138,12 +128,22 @@ describe('bootstrapper', () => {
   });
 
   it('returns redirect to login error when no userCtx cookie found', done => {
-    localGet.withArgs('_design/medic-client').rejects();
-
+    const localGet = sinon.stub().returns(Promise.reject());
+    const localReplicate = sinon.stub();
+    const localClose = sinon.stub().returns(Promise.resolve());
+    const remoteClose = sinon.stub().returns(Promise.resolve());
+    pouchDb.onCall(0).returns({
+      get: localGet,
+      replicate: { from: localReplicate },
+      close: localClose
+    });
+    pouchDb.onCall(1).returns({
+      remote: true,
+      close: remoteClose
+    });
     const localReplicateResult = Promise.reject({ status: 401 });
     localReplicateResult.on = () => {};
     localReplicate.returns(localReplicateResult);
-
     bootstrapper(pouchDbOptions, err => {
       assert.equal(err.status, 401);
       assert.equal(err.redirect, '/medic/login?redirect=http%3A%2F%2Flocalhost%3A5988%2Fmedic%2F_design%2Fmedic%2F_rewrite%2F%23%2Fmessages');
@@ -153,13 +153,22 @@ describe('bootstrapper', () => {
 
   it('returns redirect to login error when initial replication returns unauthorized', done => {
     setUserCtxCookie({ name: 'jim' });
-
-    localGet.withArgs('_design/medic-client').rejects();
-
+    const localGet = sinon.stub().returns(Promise.reject());
+    const localReplicate = sinon.stub();
+    const localClose = sinon.stub().returns(Promise.resolve());
+    const remoteClose = sinon.stub().returns(Promise.resolve());
+    pouchDb.onCall(0).returns({
+      get: localGet,
+      replicate: { from: localReplicate },
+      close: localClose
+    });
+    pouchDb.onCall(1).returns({
+      remote: true,
+      close: remoteClose
+    });
     const localReplicateResult = Promise.reject({ status: 401 });
     localReplicateResult.on = () => {};
     localReplicate.returns(localReplicateResult);
-
     bootstrapper(pouchDbOptions, err => {
       assert.equal(err.status, 401);
       assert.equal(err.redirect, '/medic/login?redirect=http%3A%2F%2Flocalhost%3A5988%2Fmedic%2F_design%2Fmedic%2F_rewrite%2F%23%2Fmessages');
@@ -169,12 +178,22 @@ describe('bootstrapper', () => {
 
   it('returns other errors in initial replication', done => {
     setUserCtxCookie({ name: 'jim' });
-    localGet.withArgs('_design/medic-client').rejects();
-
+    const localGet = sinon.stub().returns(Promise.reject());
+    const localReplicate = sinon.stub();
+    const localClose = sinon.stub().returns(Promise.resolve());
+    const remoteClose = sinon.stub().returns(Promise.resolve());
+    pouchDb.onCall(0).returns({
+      get: localGet,
+      replicate: { from: localReplicate },
+      close: localClose
+    });
+    pouchDb.onCall(1).returns({
+      remote: true,
+      close: remoteClose
+    });
     const localReplicateResult = Promise.reject({ status: 404 });
     localReplicateResult.on = () => {};
     localReplicate.returns(localReplicateResult);
-
     bootstrapper(pouchDbOptions, err => {
       assert.equal(err.status, 404);
       assert.equal(err.redirect, null);
@@ -184,15 +203,22 @@ describe('bootstrapper', () => {
 
   it('returns error if ddoc is not found after successful initial replication', done => {
     setUserCtxCookie({ name: 'jim' });
-
-    localGet.withArgs('_design/medic-client').onCall(0).rejects();
-
+    const localGet = sinon.stub().rejects();
+    const localReplicate = sinon.stub();
+    const localClose = sinon.stub().resolves();
+    const remoteClose = sinon.stub().resolves();
+    pouchDb.onCall(0).returns({
+      get: localGet,
+      replicate: { from: localReplicate },
+      close: localClose
+    });
+    pouchDb.onCall(1).returns({
+      remote: true,
+      close: remoteClose
+    });
     const localReplicateResult = Promise.resolve();
     localReplicateResult.on = sinon.stub();
     localReplicate.returns(localReplicateResult);
-
-    localGet.withArgs('_design/medic-client').onCall(1).rejects();
-
     bootstrapper(pouchDbOptions, err => {
       assert.equal(err.message, 'Initial replication failed');
       assert.equal(localGet.callCount, 2);
