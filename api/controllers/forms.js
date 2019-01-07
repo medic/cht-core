@@ -74,12 +74,13 @@ function listForms(data, callback) {
 }
 
 module.exports = {
-  listForms: function(headers, callback) {
+  listForms: function(req, callback) {
+    var headers = req.headers;
     var format = 'json',
         template;
     if (headers['x-openrosa-version']) {
       format = 'xml';
-      template = 'https://%s/api/v1/forms/{{id}}.xml'.replace('%s', headers.host);
+      template = req.protocol + '://' + headers.host + '/api/v1/forms/{{id}}.xml';
     }
     var opts = {
       include_docs: true

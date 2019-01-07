@@ -100,7 +100,7 @@ exports['listForms sanitizes openrosa response'] = function(test) {
     rows: [1]
   });
   var spy = sinon.spy(db, 'sanitizeResponse');
-  controller.listForms({'x-openrosa-version': '1.0'}, function(err, body, headers) {
+  controller.listForms({ headers:{'x-openrosa-version': '1.0'} }, function(err, body, headers) {
     test.equals(err, null);
     test.equals(spy.callCount, 1);
     test.done();

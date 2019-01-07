@@ -380,7 +380,7 @@ app.post('/api/v1/records', [jsonParser, formParser], function(req, res) {
 });
 
 app.get('/api/v1/forms', function(req, res) {
-  forms.listForms(req.headers, function(err, body, headers) {
+  forms.listForms(req, function(err, body, headers) {
     if (err) {
       return serverUtils.serverError(err, req, res);
     }
