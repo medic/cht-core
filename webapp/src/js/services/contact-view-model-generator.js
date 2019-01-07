@@ -151,7 +151,7 @@ angular.module('inboxServices').factory('ContactViewModelGenerator',
       return sortPrimaryContactToTop(model, children);
     };
 
-    const getChildren = (contactId, { getChildPlaces }) => {
+    const getChildren = (contactId, { getChildPlaces } = {}) => {
       const options = { include_docs: true };
       if (getChildPlaces) {
         // get all types
