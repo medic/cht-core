@@ -79,7 +79,7 @@ module.exports = {
         template;
     if (headers['x-openrosa-version']) {
       format = 'xml';
-      template = 'http://%s/api/v1/forms/{{id}}.xml'.replace('%s', headers.host);
+      template = 'https://%s/api/v1/forms/{{id}}.xml'.replace('%s', headers.host);
     }
     var opts = {
       include_docs: true
