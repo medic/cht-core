@@ -15,11 +15,13 @@ const hash = str => {
         return hash;
     }
 
+    /* jshint ignore:start */
     for (let i = 0; i < this.length; i++) {
         const char = this.charCodeAt(i);
         hash = ((hash << 5) - hash) + char;
         hash = hash & hash; // Convert to 32bit integer
     }
+    /* jshint ignore:end */
 
     return hash;
 };
@@ -50,7 +52,7 @@ module.exports = function(DB, initialReplication) {
     if (errorCount <= MAX_ERROR_COUNT) {
       utils.feedback(msg);
     }
-  }
+  };
 
   const getConfig = () => {
     return DB.get('settings')
@@ -75,7 +77,7 @@ module.exports = function(DB, initialReplication) {
     );
 
     return !lastPurgeHash || lastPurgeHash !== hash(fn);
-  }
+  };
 
   const purgedRecently = days => {
     const lastPurge = parseInt(

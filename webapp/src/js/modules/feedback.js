@@ -74,8 +74,8 @@ var submitExisting = function() {
         options.saveDoc(doc, () => undefined);
       }
     });
-  })
-}
+  });
+};
 
 module.exports = {
   init: function(_options) {
