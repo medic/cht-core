@@ -102,6 +102,12 @@
     const dbSyncStartTime = Date.now();
     const dbSyncStartData = getDataUsage();
 
+    const MAX_SAMPLES = 5; // cannot be less than two
+    const FUDGE_FACTOR = 1.2; // 20% higher time estimates
+    const dates = [];
+    const counts = [];
+    let change = 0;
+
     return purger
       .info()
       .then(info => {
@@ -117,7 +123,54 @@
         replicator
           .on('change', function(info) {
             console.log('initialReplication()', 'change', info);
-            setUiStatus('FETCH_INFO', { count: info.docs_read + localDocCount || '?', total: remoteDocCount });
+
+            // TODO: pull out this entire concept / calcuation into something that
+            // you can initialise and fire events at, which generates named progress bars
+            // on the UI
+            // Then we can have one for replication, and if you need it one for
+            // purging, and those bootstrapping events just initilise a progressor
+            // and it deals with rendering / calc / time remaining etc
+            const docsRead = info.docs_read;
+
+            const idx = change++ % MAX_SAMPLES;
+            dates[idx] = Date.now();
+            counts[idx] = docsRead;
+
+            let percentLeft;
+            let minutes;
+
+            const samples = dates.length;
+            const zero = (idx + 1) % samples;
+
+            let dateDiff = 0;
+            let countsDiff = 0;
+            for (let delta = 0; delta < samples - 1; delta++) {
+              const first = (zero + delta) % samples;
+              const second = (zero + delta + 1) % samples;
+
+              dateDiff += (dates[second] - dates[first]);
+              countsDiff += (counts[second] - counts[first]);
+            }
+            dateDiff /= (samples - 1);
+            countsDiff /= (samples - 1);
+
+            const docChunksLeft = (maximumDocuments - docsRead) / countsDiff;
+            const timeLeft = dateDiff * docChunksLeft;
+
+            minutes = Math.floor((timeLeft * FUDGE_FACTOR) / 1000 / 60);
+
+            if (minutes === 0) {
+              minutes = '<1';
+            }
+
+            percentLeft = Math.floor((docsRead / maximumDocuments) * 100);
+
+            setUiStatus('FETCH_INFO', {
+              percent: percentLeft || '?',
+              minutes: minutes || '?',
+              total: docsRead || '?'
+            });
+
           });
 
         return replicator.then(() => purger.checkpoint(info));
