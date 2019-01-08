@@ -1,7 +1,28 @@
+const utils = require('./utils');
+
 const LAST_PURGED_DATE_KEY = 'medic-last-purge-date';
 const LAST_REPLICATED_SEQ_KEY = 'medic-last-replicated-seq';
+const LAST_PURGE_FN_HASH = 'medic-last-purge-fn-hash';
 
 const daysToMs = (days) => 1000 * 60 * 60 * 24 * days;
+
+// From https://stackoverflow.com/a/7616484/1666
+// with minor ES6 and formatting changes
+const hash = str => {
+    let hash = 0;
+
+    if (str.length === 0) {
+        return hash;
+    }
+
+    for (let i = 0; i < this.length; i++) {
+        const char = this.charCodeAt(i);
+        hash = ((hash << 5) - hash) + char;
+        hash = hash & hash; // Convert to 32bit integer
+    }
+
+    return hash;
+};
 /*
  * Determines if purging should occur, and performs it if it should, resolving
  * the returned promise once the entire interaction is complete.
@@ -22,6 +43,14 @@ const daysToMs = (days) => 1000 * 60 * 60 * 24 * days;
  * done: fired once everything is complete, callback is passed the total purge count
 */
 module.exports = function(DB, initialReplication) {
+  const MAX_ERROR_COUNT = 10;
+  let errorCount = 0;
+  const feedback = msg => {
+    errorCount += 1;
+    if (errorCount <= MAX_ERROR_COUNT) {
+      utils.feedback(msg);
+    }
+  }
 
   const getConfig = () => {
     return DB.get('settings')
@@ -39,6 +68,14 @@ module.exports = function(DB, initialReplication) {
         return purge;
       });
   };
+
+  const purgeFnChanged = fn => {
+    const lastPurgeHash = parseInt(
+      window.localStorage.getItem(LAST_PURGE_FN_HASH)
+    );
+
+    return !lastPurgeHash || lastPurgeHash !== hash(fn);
+  }
 
   const purgedRecently = days => {
     const lastPurge = parseInt(
@@ -68,6 +105,11 @@ module.exports = function(DB, initialReplication) {
       return Promise.resolve(true);
     }
 
+    if (purgeFnChanged(config.fn)) {
+      console.log('Purge function has changed, running purge');
+      return Promise.resolve(true);
+    }
+
     if (purgedRecently(config.run_every_days)) {
       console.log('Previous purge was recently, skipping');
       return Promise.resolve(false);
@@ -91,6 +133,9 @@ module.exports = function(DB, initialReplication) {
     } catch (err) {
       console.error('Purge function threw an exception, skipping this set', err);
       console.error({passed: {contact: contact, reports: reports}});
+
+      feedback('Failed to execute purge function: ' + err);
+
       return purgeCount;
     }
 
@@ -108,6 +153,7 @@ module.exports = function(DB, initialReplication) {
         return true;
       } else {
         console.warn(`Configured purge function attempted to purge ${id}, which was not a report id passed to it`);
+        feedback(`Illegal purge attempted on ${id}`);
       }
     });
 
@@ -131,8 +177,8 @@ module.exports = function(DB, initialReplication) {
       /* jshint -W061 */
       return eval(`(${fnStr})`);
     } catch (err) {
-      console.error(`Failed to parse purge function!\n  ${fnStr}\nFailed with:\n  ${err}`);
-      throw new Error(`Failed to parse purge function: ${err}`);
+      feedback(`Failed to parse purge function: ${err}`);
+      throw new Error(`Failed to parse purge function!\n  ${fnStr}\nFailed with:\n  ${err}`);
     }
   };
 
@@ -191,7 +237,7 @@ module.exports = function(DB, initialReplication) {
 
   const purge = (fnStr) => {
     return reportsByContact()
-      .then(function(sets) {
+      .then(sets => {
         if (!sets.length) {
           return 0;
         }
@@ -233,6 +279,7 @@ module.exports = function(DB, initialReplication) {
                   console.log(`Purge complete, purged ${purgeCount} documents`);
 
                   window.localStorage.setItem(LAST_PURGED_DATE_KEY, Date.now());
+                  window.localStorage.setItem(LAST_PURGE_FN_HASH, hash(config.fn));
 
                   return purgeCount;
                 });

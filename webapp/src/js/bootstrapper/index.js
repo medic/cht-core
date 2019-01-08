@@ -161,13 +161,15 @@
             });
           });
       })
-      .then(() => purger(localDb, initialReplicationNeeded)
-        .on('start', () => setUiStatus('PURGE_INIT'))
-        .on('progress', function(progress) {
-          setUiStatus('PURGE_INFO', progress);
-        })
-        .on('optimise', () => setUiStatus('PURGE_AFTER')))
-      .then(function() {
+      .then(() => {
+        return purger(localDb, initialReplicationNeeded)
+          .on('start', () => setUiStatus('PURGE_INIT'))
+          .on('progress', function(progress) {
+            setUiStatus('PURGE_INFO', progress);
+          })
+          .on('optimise', () => setUiStatus('PURGE_AFTER'))
+          .catch(console.error);
+      }).then(function() {
         // replication complete
         setUiStatus('STARTING_APP');
       })

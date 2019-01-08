@@ -63,6 +63,20 @@ var create = function(info, appInfo, callback) {
   });
 };
 
+var submitExisting = function() {
+  var existing = options.window.bootstrapFeedback || [];
+
+  existing.forEach(function(msg) {
+    create(msg, {}, function(err, doc) {
+      if (!err) {
+        // Intentionally not threading callbacks, we'll just fire and forget
+        // these for simplicity
+        options.saveDoc(doc, () => undefined);
+      }
+    });
+  })
+}
+
 module.exports = {
   init: function(_options) {
     options = _options;
@@ -79,6 +93,7 @@ module.exports = {
       registerConsoleInterceptor();
       registerUnhandledErrorHandler();
     }
+    submitExisting();
   },
   submit: function(info, appInfo, callback) {
     create(info, appInfo, function(err, doc) {
