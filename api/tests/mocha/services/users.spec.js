@@ -589,8 +589,7 @@ describe('Users service', () => {
         chai.expect(err.code).to.equal(400);
         chai.expect(err.message).to.equal('The password must be at least 8 characters long.');
         chai.expect(err.translationKey).to.equal('password.length.minimum');
-        chai.expect(err.field).to.equal('minimum');
-        chai.expect(err.parameter).to.equal('8');
+        chai.expect(err.translationParams).to.equal({'minimum':'8'});
         done();
       });
     });
@@ -696,8 +695,7 @@ describe('Users service', () => {
         chai.expect(err.code).to.equal(400);
         chai.expect(err.message).to.equal('Username "x" already taken.');
         chai.expect(err.translationKey).to.equal('username.taken');
-        chai.expect(err.field).to.equal('username');
-        chai.expect(err.parameter).to.equal('x');
+        chai.expect(err.translationParams).to.equal({'username':'x'});
         chai.expect(insert.callCount).to.equal(0);
         done();
       });
@@ -711,8 +709,7 @@ describe('Users service', () => {
         chai.expect(err.code).to.equal(400);
         chai.expect(err.message).to.equal('Username "x" already taken.');
         chai.expect(err.translationKey).to.equal('username.taken');
-        chai.expect(err.field).to.equal('username');
-        chai.expect(err.parameter).to.equal('x');
+        chai.expect(err.translationParams).to.equal({'username':'x'});
         chai.expect(insert.callCount).to.equal(0);
         done();
       });
@@ -977,8 +974,7 @@ describe('Users service', () => {
       service.updateUser('paul', data, true).catch(err => {
         chai.expect(err.code).to.equal(400);
         chai.expect(err.translationKey).to.equal('password.length.minimum');
-        chai.expect(err.field).to.equal('minimum');
-        chai.expect(err.parameter).to.equal('8');
+        chai.expect(err.translationParams).to.equal({'minimum':'8'});
         chai.expect(err.message).to.equal('The password must be at least 8 characters long.');
         chai.expect(db.medic.put.callCount).to.equal(0);
         chai.expect(db.users.put.callCount).to.equal(0);
@@ -1148,8 +1144,7 @@ describe('Users service', () => {
         chai.expect(err.code).to.equal(400);
         chai.expect(err.message).to.equal('Username "georgi" already taken.');
         chai.expect(err.translationKey).to.equal('username.taken');
-        chai.expect(err.field).to.equal('username');
-        chai.expect(err.parameter).to.equal('georgi');
+        chai.expect(err.translationParams).to.equal({'username':'georgi'});
         done();
       });
     });
@@ -1163,8 +1158,7 @@ describe('Users service', () => {
         chai.expect(err.code).to.equal(400);
         chai.expect(err.message).to.equal('Username "georgi" already taken.');
         chai.expect(err.translationKey).to.equal('username.taken');
-        chai.expect(err.field).to.equal('username');
-        chai.expect(err.parameter).to.equal('georgi');
+        chai.expect(err.translationParams).to.equal({'username':'georgi'});
         done();
       });
     });

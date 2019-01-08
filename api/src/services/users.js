@@ -50,7 +50,7 @@ const illegalDataModificationAttempts = data =>
 /*
  * Set error codes to 400 to minimize 500 errors and stacktraces in the logs.
  */
-const error400 = msg => ({ code: 400, message: msg });
+const error400 = msg => ({ code: 400, message: msg, translationKey: '', translationParams: {} });
 
 const getType = user => {
   if (user.roles && user.roles.length) {
@@ -96,7 +96,7 @@ const validateContact = (id, placeID) => {
         return Promise.reject(error400('Wrong type, contact is not a person.', { translationKey: 'contact.type.wrong'}));
       }
       if (!module.exports._hasParent(doc, placeID)) {
-        return Promise.reject(error400('Contact is not within place.', {translationKey : 'configuration.user.place.contact' }));
+        return Promise.reject(error400('Contact is not within place.', { translationKey: 'configuration.user.place.contact' }));
       }
       return doc;
     });
@@ -135,14 +135,14 @@ const validateNewUsernameForDb = (username, database) => {
     })
     .then(user => {
       if (user) {
-        return Promise.reject(error400({ message: 'Username "'+ username +'" already taken.', translationKey: 'username.taken', field: 'username', parameter: username }));
+        return Promise.reject(error400('Username "'+ username +'" already taken.', { translationKey: 'username.taken', translationParams: {'username': username} }));
       }
     });
 };
 
 const validateNewUsername = username => {
   if (!USERNAME_WHITELIST.test(username)) {
-    return Promise.reject(error400('Invalid user name. Valid characters are lower case letters, numbers, underscore (_), and hyphen (-).', {key: 'username.invalid' }));
+    return Promise.reject(error400('Invalid user name. Valid characters are lower case letters, numbers, underscore (_), and hyphen (-).', { translationKey: 'username.invalid' }));
   }
   return Promise.all([
     validateNewUsernameForDb(username, db.users),
@@ -227,7 +227,7 @@ const setContactParent = data => {
     return places.getPlace(data.contact.parent)
       .then(place => {
         if (!module.exports._hasParent(place, data.place)) {
-          return Promise.reject(error400('Contact is not within place.', {translationKey: 'configuration.user.place.contact' }));
+          return Promise.reject(error400('Contact is not within place.', { translationKey: 'configuration.user.place.contact' }));
         }
         // save result to contact object
         data.contact.parent = lineage.minifyLineage(place);
@@ -380,10 +380,10 @@ const deleteUser = id => {
 
 const validatePassword = password => {
   if (password.length < PASSWORD_MINIMUM_LENGTH) {
-    return error400(`The password must be at least ${PASSWORD_MINIMUM_LENGTH} characters long.`, {translationKey: 'password.length.minimum', field: 'minimum', parameter: PASSWORD_MINIMUM_LENGTH });
+    return error400(`The password must be at least ${PASSWORD_MINIMUM_LENGTH} characters long.`, { translationKey: 'password.length.minimum', translationParams: {'minimum': PASSWORD_MINIMUM_LENGTH} });
   }
   if (passwordTester(password) < PASSWORD_MINIMUM_SCORE) {
-    return error400('The password is too easy to guess. Include a range of types of characters to increase the score.', {translationKey: 'password.weak'});
+    return error400('The password is too easy to guess. Include a range of types of characters to increase the score.', { translationKey: 'password.weak'});
   }
 };
 
@@ -464,7 +464,7 @@ module.exports = {
   createUser: data => {
     const missing = missingFields(data);
     if (missing.length > 0) {
-      return Promise.reject(error400('Missing required fields: ' + missing.join(', '), {translationKey: 'fields.required'}));
+      return Promise.reject(error400('Missing required fields: ' + missing.join(', '), { translationKey: 'fields.required' }));
     }
     const passwordError = validatePassword(data.password);
     if (passwordError) {
@@ -515,7 +515,7 @@ module.exports = {
         !_.isNull(data.contact) &&
         !_.some(props, key => (!_.isNull(data[key]) && !_.isUndefined(data[key])))
     ) {
-      return Promise.reject(error400('One of the following fields are required: ' + props.join(', '), {translationKey: 'fields.one.required '}));
+      return Promise.reject(error400('One of the following fields are required: ' + props.join(', '), { translationKey: 'fields.one.required '}));
     }
     if (data.password) {
       const passwordError = validatePassword(data.password);
@@ -538,7 +538,7 @@ module.exports = {
               return places.getPlace(user.facility_id);
             } else if (_.isNull(data.place)) {
               if (settings.roles && isOffline(settings.roles)) {
-                return Promise.reject(error400('Place field is required for offline users', {translationKey: 'field is required', field: 'field', parameter: 'Place'}));
+                return Promise.reject(error400('Place field is required for offline users', { translationKey: 'field is required', translationParams: {'field': 'Place'}}));
               }
               user.facility_id = null;
               settings.facility_id = null;
@@ -549,7 +549,7 @@ module.exports = {
               return module.exports._validateContact(settings.contact_id, user.facility_id);
             } else if (_.isNull(data.contact)) {
               if (settings.roles && isOffline(settings.roles)) {
-                return Promise.reject(error400('Contact field is required for offline users', {translationKey: 'field is required', field: 'field', parameter: 'Contact'}));
+                return Promise.reject(error400('Contact field is required for offline users', { translationKey: 'field is required', translationParams: {'field': 'Contact'}}));
               }
               settings.contact_id = null;
             }
