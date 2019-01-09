@@ -6,7 +6,7 @@ angular.module('inboxControllers').controller('FeedbackCtrl',
     $scope,
     $translate,
     $uibModalInstance,
-    APP_CONFIG,
+    Translate,
     Snackbar
   ) {
 
@@ -16,17 +16,12 @@ angular.module('inboxControllers').controller('FeedbackCtrl',
     $scope.model = {};
     $scope.error = {};
 
-    var translateRequiredField = function(fieldKey) {
-      return $translate(fieldKey).then(function(field) {
-        return $translate('field is required', { field: field });
-      });
-    };
-
     var validateMessage = function(message) {
       if (message) {
         $scope.error.message = false;
+        return $q.resolve();
       } else {
-        return translateRequiredField('Bug\ description')
+        return Translate.fieldIsRequired('Bug\ description')
           .then(function(error) {
             $scope.error.message = error;
           });
@@ -41,23 +36,35 @@ angular.module('inboxControllers').controller('FeedbackCtrl',
       $scope.setProcessing();
 
       var message = $scope.model.message && $scope.model.message.trim();
-      $q.all([
-        validateMessage(message)
-      ])
-      .then(function() {
-        if (!$scope.error.message) {
-          feedback.submit(message, APP_CONFIG, function(err) {
-            if (err) {
-              $scope.setError(err, 'Error saving feedback');
-              return;
-            }
+      return validateMessage(message)
+        .then(function() {
+          const p = $q.defer();
+
+          if (!$scope.error.message) {
+            feedback.submit(message, true, function(err) {
+              if (err) {
+                $scope.setError(err, 'Error saving feedback');
+                p.reject();
+                return;
+              }
+              $scope.setFinished();
+
+              $translate('feedback.submitted')
+                .then(Snackbar)
+                .then(() => {
+                  $uibModalInstance.close();
+                  p.resolve();
+                })
+                .catch(err => p.reject(err));
+
+            });
+          } else {
             $scope.setFinished();
-            $translate('feedback.submitted').then(Snackbar);
-            $uibModalInstance.close();
-          });
-        }
-        $scope.setFinished();
-      });
+            p.resolve();
+          }
+
+          return p;
+        });
     };
 
   }

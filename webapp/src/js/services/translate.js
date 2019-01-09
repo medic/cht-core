@@ -10,12 +10,15 @@ angular.module('inboxServices').service('Translate',
     'use strict';
     'ngInject';
 
-    return function(translationId, interpolateParams) {
-      return $translate(translationId, interpolateParams)
-        .catch(function() {
-          $log.warn('Translation service could not find a translation for ' + translationId);
-          return translationId;
+    var fieldIsRequired = function(fieldKey) {
+      return $translate(fieldKey)
+        .then(function(field) {
+          return $translate('field is required', { field: field });
         });
     };
+
+    return {
+      fieldIsRequired: fieldIsRequired
+    };    
   }
 );
