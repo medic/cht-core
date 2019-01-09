@@ -1,4 +1,4 @@
-const {version} = require('./utils');
+const {mmVersion} = require('./utils');
 const inquirer = require('inquirer');
 
 const apiTokenQuestion = {
@@ -20,7 +20,7 @@ const projectIdQuestion = {
 };
 
 const questions = {
-  download: [
+  export: [
     apiTokenQuestion,
     projectIdQuestion,
     {
@@ -38,26 +38,26 @@ const questions = {
       default: 'properties'
     },
     {
-      name: 'filepath', type: 'input',
-      message: 'Provide the relative path to the download directory',
-      default: '/downloads'
+      name: 'file', type: 'input',
+      message: 'Enter the relative path to the download directory',
+      default: '.'
     },
     {
       name: 'filters',
       type: 'list',
       message: 'Filter results by:',
-      choices: ['translated', 'untranslated', 'fuzzy', 'not_fuzzy',
+      choices: ['none', 'translated', 'untranslated', 'fuzzy', 'not_fuzzy',
                 'automatic', 'not_automatic', 'proofread', 'not_proofread'],
-      default: ''
+      default: 'none'
     },
     {
       name: 'tags',
       type: 'string',
       message: 'Filter results by tags.\nYou can use either a string for a single tag or a json array for one or multiple tags.',
-      default: ''
+      default: `${mmVersion()}`
     }
   ],
-  upload: [
+  import: [
     apiTokenQuestion,
     projectIdQuestion,
     {
@@ -68,8 +68,8 @@ const questions = {
     },
     {
       name: 'file', type: 'input',
-      message: 'Provide the relative path to the translations file',
-      default: '/../../config/standard/translations/messages-en.properties'
+      message: 'Enter the relative path to the translation file',
+      default: './messages-en.properties'
     },
     {
       name: 'overwrite', type: 'list',
@@ -95,7 +95,7 @@ const questions = {
         \ntags=["name-of-tag", "name-of-another-tag"] \
         \ntags={"all": "name-of-tag"} \
         \ntags={"all": "name-of-tag", "new": ["name-of-tag"], "obsolete": ["name-of-tag", "name-of-another-tag"]}\n\n',
-      default: `{"all": ["${version()}"]}`
+      default: `{"all": ["${mmVersion()}"]}`
     },
     {
       name: 'fuzzy_trigger', type: 'list',
@@ -104,7 +104,7 @@ const questions = {
       default: 'yes'
     }
   ]
-}
+};
 
 module.exports = {
   ask: async (arg) => {
@@ -114,6 +114,11 @@ module.exports = {
         values[key] = values[key] === 'yes' ? 1 : 0;
       }
     });
+    ['filters', 'tags'].forEach(key => {
+      if(['', 'none'].includes(values[key])) {
+        delete values[key];
+      }
+    });
     return values;
   }
-}
+};

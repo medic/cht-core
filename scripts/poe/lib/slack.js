@@ -10,5 +10,5 @@ module.exports = (url) => {
       opts.json.text = msg;
       return post(opts);
     }
-  }
+  };
 };

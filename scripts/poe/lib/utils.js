@@ -17,7 +17,7 @@ module.exports = {
       fs.mkdirSync(dir);
     }
   },
-  version: () => {
+  mmVersion: () => {
     return pkg.version;
   }
-}
+};

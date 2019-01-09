@@ -1,17 +1,16 @@
+const {mkdir, save, mmVersion} = require('./utils');
 const req = require('request');
 const queryString = require('querystring');
 const {promisify} = require('util');
-const {mkdir, save, version} = require('./utils');
 const post = promisify(req.post);
 const fs = require('fs');
-const slack = require('../src/slack')(process.env.SLACK_WEBHOOK_URL);
-
+const slack = require('./slack')(process.env.SLACK_WEBHOOK_URL);
 
 const upload = async (opts) => {
   opts.language = opts.file.split('-').pop().split('.')[0];
   const form = {};
-  form['file'] = fs.createReadStream(__dirname + '/..' + opts['file']);
-  delete opts['file']
+  form.file = fs.createReadStream(`${process.cwd()}/${opts.file}`);
+  delete opts.file;
   Object.keys(opts).forEach((key) => { form[key] = opts[key]; });
   try {
     let res = await post({
@@ -21,8 +20,7 @@ const upload = async (opts) => {
     res = JSON.parse(res.body);
     console.log(opts.language);
     console.log(res.result);
-    slack.send(`Translations ${version()}: ${JSON.stringify(res.result)}`);
-    console.log('---------------------');
+    slack.send(`Translations ${mmVersion()}: ${JSON.stringify(res.result)}`);
     return res.response;
   } catch(err) {
     console.log(err);
@@ -30,13 +28,13 @@ const upload = async (opts) => {
 };
 
 const download = async (opts) => {
-  const dir =`${__dirname}/../${opts.filepath}`;
-  const relativePath = opts.filepath;
+  const dir =`${process.cwd()}/${opts.file}`;
   mkdir(dir);
-  delete opts.filepath;
-  const langs = opts.language === 'all' ? (await languages(opts)) : [opts.language];
+  const relativePath = opts.file;
+  delete opts.file;
+  const langs = opts.language === 'all' ? await languages(opts) : [opts.language];
 
-  const res = langs.map(async (lang) => {
+  const downloads = langs.map(async (lang) => {
     opts.language = lang;
     const form = queryString.stringify(opts);
     const res = await post({
@@ -47,20 +45,16 @@ const download = async (opts) => {
       url: `${process.env.POE_API_URL}/projects/export`,
       body: form});
     const {response, result} = JSON.parse(res.body);
-    console.log(lang);
-    console.log(response);
-    slack.send(`Translations ${version()}: ${JSON.stringify(response)}`);
-    console.log('---------------------');
-    if(response.code != 200) {
+    if(response.code !== '200') {
       console.log(response);
       process.exit(1);
     }
     const file = `messages-${lang}.properties`;
-    console.log(`Saving to: ${relativePath}/${file}`);
+    console.log(`\t${lang} saved to ${relativePath}/${file}`);
     save(result.url, `${dir}/${file}`);
     return response;
   });
-  await Promise.all(res)
+  await Promise.all(downloads);
 };
 
 const languages = async (opts) => {
@@ -73,20 +67,12 @@ const languages = async (opts) => {
     url: `${process.env.POE_API_URL}/languages/list`,
     body: form});
   console.log(res.body);
-  const {response, result} = JSON.parse(res.body);
+  const {result} = JSON.parse(res.body);
   return result.languages.map(lang => lang.code);
-};
-
-const executeCommand = {
-  upload: () => upload,
-  download: () => download
 };
 
 module.exports = {
   upload: async (opts) => upload(opts),
   download: async (opts) => download(opts),
-  languages: async (opts) => languages(opts),
-  execute: async (cmd, opts) => {
-    await executeCommand[cmd]()(opts);
-  }
+  languages: async (opts) => languages(opts)
 };

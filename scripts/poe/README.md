@@ -1,10 +1,11 @@
-Scripts to upload/download translations to/from POEditor
----------------------------------------------------------
+poe cli
+-------
 
 ### Setup
 ```
-npm i
+npm ci
 cp .env.example .env
+npm link
 ```
 
 ### Define your api key and project id
@@ -14,10 +15,10 @@ vi .env
 
 ### Upload translation file
 ```
-npm run upload
+poe import ./messages-en.properties
 ```
 
 # Download Translation file(s)
 ```
-npm run download
+poe export .
 ```
