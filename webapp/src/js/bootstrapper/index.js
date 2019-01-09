@@ -2,12 +2,11 @@
 
   'use strict';
 
-  const ONLINE_ROLE = 'mm-online';
-
-  const translator = require('./translator');
+  const purger = require('./purger');
   const registerServiceWorker = require('./swRegister');
+  const translator = require('./translator');
 
-  var purger = require('./purger');
+  const ONLINE_ROLE = 'mm-online';
 
   var getUserCtx = function() {
     var userCtx, locale;
@@ -141,26 +140,16 @@
 
     translator.setLocale(userCtx.locale);
 
-    /* Question to Reviewer: Want to add new UI state like Downloading App... ? */
     const onServiceWorkerInstalling = () => setUiStatus('LOAD_APP');
     const swRegistration = registerServiceWorker(onServiceWorkerInstalling);
 
     const localDbName = getLocalDbName(dbInfo, userCtx.name);
     const localDb = window.PouchDB(localDbName, POUCHDB_OPTIONS.local);
-    const testForReplicatedData = getDdoc(localDb)
-      .then(() => true)
-      .catch(() => false);
+    const remoteDb = window.PouchDB(dbInfo.remote, POUCHDB_OPTIONS.remote);
 
-    let initialReplicationNeeded;
-    Promise.all([swRegistration, testForReplicatedData])
-      .then(function(resolved) {
-        const replicatedDataExists = !!resolved[1];
-        if (replicatedDataExists) {
-          // ddoc found - bootstrap immediately
-          localDb.close();
-          return callback();
-        }
+    const testReplicationNeeded = () => getDdoc(localDb).then(() => false).catch(() => true);
 
+<<<<<<< HEAD
         // no ddoc found - do replication
         var remoteDb = window.PouchDB(dbInfo.remote, POUCHDB_OPTIONS.remote);
         initialReplicationNeeded = true;
@@ -201,17 +190,46 @@
             if (err) {
               if (err.status === 401) {
                 return redirectToLogin(dbInfo, err, callback);
+=======
+    let isInitialReplicationNeeded;
+    Promise.all([swRegistration, testReplicationNeeded()])
+      .then(function(resolved) {
+        isInitialReplicationNeeded = !!resolved[1];
+
+        if (isInitialReplicationNeeded) {
+          return initialReplication(localDb, remoteDb)
+            .then(testReplicationNeeded)
+            .then(isReplicationStillNeeded => {
+              if (isReplicationStillNeeded) {
+                throw new Error('Initial replication failed');
+>>>>>>> Cleanup merge of purge changes
               }
-
-              setUiError();
-            }
-
-            callback(err);
-          });
+            });
+        }
       })
-      .catch(err => {
-        setUiError();
+      .then(() => purger(localDb, isInitialReplicationNeeded)
+        .on('start', () => setUiStatus('PURGE_INIT'))
+        .on('progress', function(progress) {
+          setUiStatus('PURGE_INFO', progress);
+        })
+        .on('optimise', () => setUiStatus('PURGE_AFTER'))
+        .catch(console.error)
+      )
+      .then(() => setUiStatus('STARTING_APP'))
+      .catch(err => err)
+      .then(function(err) {
+        localDb.close();
+        remoteDb.close();
+        if (err) {
+          if (err.status === 401) {
+            return redirectToLogin(dbInfo, err, callback);
+          }
+
+          setUiError();
+        }
+
         callback(err);
       });
+
   };
 }());
