@@ -11,6 +11,7 @@ var _ = require('underscore');
       $log,
       $scope,
       $stateParams,
+      $translate,
       $timeout,
       Changes,
       MessageState
@@ -73,6 +74,11 @@ var _ = require('underscore');
           $scope.deselectReport(report);
         }
       };
+
+      $scope.labelIsIDorName = (label) => {
+        let val = $translate.instant(label);
+        return val === 'ID' || val === 'Name';
+      }
 
       var changeListener = Changes({
         key: 'reports-content',
