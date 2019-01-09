@@ -230,7 +230,7 @@ var feedback = require('../modules/feedback'),
       if(!$scope.enketoStatus.edited){
         return;
       }
-      if ($scope.cancelCallback) {
+      if($scope.cancelCallback){
         event.preventDefault();
         $scope.navigationCancel();
       }
