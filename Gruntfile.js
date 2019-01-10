@@ -288,7 +288,7 @@ module.exports = function(grunt) {
     },
     generateServiceWorker: {
       config: {
-        rootUrl: `/${couchConfig.dbName}/_design/medic/_rewrite/`,
+        rootUrl: 'APP_PREFIX',
         staticDirectoryPath: 'build/ddocs/medic/_attachments',
         scriptOutputPath: 'build/ddocs/medic/_attachments/js/service-worker.js',
       }

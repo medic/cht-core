@@ -8,7 +8,9 @@ const
   fs = require('fs'),
   path = require('path'),
   db = require('./db-pouch'),
+  environment = require('./environment'),
   logger = require('./logger'),
+  APP_PREFIX_TOKEN = 'APP_PREFIX',
   STATIC_RESOURCE_DESTINATION = path.resolve(`./src/extracted/`),
   isAttachmentCacheable = name => name === 'manifest.json' || !!name.match(/(?:audio|css|fonts|templates|img|js|xslt)\/.*/);
 
@@ -34,7 +36,19 @@ const extractAttachment = attachmentName => db.medic
   .then(raw => new Promise((resolve, reject) => {
     const outputPath = path.join(STATIC_RESOURCE_DESTINATION, attachmentName);
     createFolderIfDne(path.dirname(outputPath));
-    fs.writeFile(outputPath, raw, err => {
+
+    /*
+    Note to reviewer: I'd love to find a better way to handle this.
+    At build time, we can't know what the COUCH_URL will be when API starts.
+    This means, the path we use for inbox.html is unknown until the app starts.
+    If COUCH_URL changes from build to run time then things break (eg. e2e tests build with medic and run with medic-test)
+  
+    In this approach, I'm hydrating a token from the build with the environment values once they are known.
+    An alternative is serving inbox.html from a predictable url (eg. /inbox) instead of relying on rewrites
+    Another option may be to update the swPrecache template to handle this.
+    */
+    const hydrated = attachmentName === 'js/service-worker.js' ? raw.toString().replace(APP_PREFIX_TOKEN, `/${environment.db}/_design/${environment.ddoc}/_rewrite/`) : raw;
+    fs.writeFile(outputPath, hydrated, err => {
       logger.debug(`Extracted attachment ${outputPath}`);
       if (err) {
         return reject(err);

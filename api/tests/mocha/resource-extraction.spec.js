@@ -7,7 +7,7 @@ let fakeDdoc, mockFs, mockDb;
 resourceExtraction.__set__('logger', { debug: () => {} });
 function doMocking(overwrites = {}) {
   const defaultAttachment = {
-    'js/service-worker.js': { digest: 'current' },
+    'js/attached.js': { digest: 'current' },
   };
 
   fakeDdoc = {
@@ -32,13 +32,13 @@ function doMocking(overwrites = {}) {
 
 describe('Resource Extraction', () => {
   it('attachments written to disk', done => {
-    const expected = { content: 'foo' };
+    const expected = { content: { toString: () => 'foo' } };
     doMocking(expected);
     resourceExtraction.run().then(() => {
       expect(mockFs.writeFile.callCount).to.eq(1);
 
       const [actualOutputPath, actualContent] = mockFs.writeFile.args[0];
-      expect(actualOutputPath).to.include('src/extracted/js/service-worker.js');
+      expect(actualOutputPath).to.include('src/extracted/js/attached.js');
       expect(actualContent).to.include(expected.content);
       done();
     });
@@ -53,7 +53,7 @@ describe('Resource Extraction', () => {
         expect(mockFs.writeFile.callCount).to.eq(1);
 
         const [actualOutputPath, actualContent] = mockFs.writeFile.args[0];
-        expect(actualOutputPath).to.include('src/extracted/js/service-worker.js');
+        expect(actualOutputPath).to.include('src/extracted/js/attached.js');
         expect(actualContent).to.include(expected.content);
         done();
       });
@@ -64,15 +64,34 @@ describe('Resource Extraction', () => {
     doMocking(expected);
     resourceExtraction.run()
       .then(() => {
-        fakeDdoc._attachments['js/service-worker.js'].digest = 'update';
+        fakeDdoc._attachments['js/attached.js'].digest = 'update';
         return resourceExtraction.run();
       })
       .then(() => {
         expect(mockFs.writeFile.callCount).to.eq(2);
 
         const [actualOutputPath, actualContent] = mockFs.writeFile.args[1];
-        expect(actualOutputPath).to.include('src/extracted/js/service-worker.js');
+        expect(actualOutputPath).to.include('src/extracted/js/attached.js');
         expect(actualContent).to.include(expected.content);
+        done();
+      });
+  });
+
+  it('service worker hydrated', done => {
+    const expected = {
+      content: { toString: () => 'APP_PREFIX' },
+      attachments: {
+        'js/service-worker.js': { digest: 'current' },
+      }
+    };
+    doMocking(expected);
+    resourceExtraction.run()
+      .then(() => {
+        expect(mockFs.writeFile.callCount).to.eq(1);
+
+        const [actualOutputPath, actualContent] = mockFs.writeFile.args[0];
+        expect(actualOutputPath).to.include('src/extracted/js/service-worker.js');
+        expect(actualContent).to.include('/_design/medic/_rewrite');
         done();
       });
   });
