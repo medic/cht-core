@@ -1,5 +1,3 @@
-const _ = require('underscore');
-
 // Regex to test for characters that are invalid in db names
 // Only lowercase characters (a-z), digits (0-9), and any of the characters _, $, (, ), +, -, and / are allowed.
 // https://wiki.apache.org/couchdb/HTTP_database_API#Naming_and_Addressing
@@ -10,7 +8,7 @@ const META_DB_SUFFIX = 'meta';
 angular.module('inboxServices').factory('DB',
   function(
     $timeout,
-    $rootScope,
+    $window,
     Location,
     pouchDB,
     POUCHDB_OPTIONS,
@@ -57,17 +55,6 @@ angular.module('inboxServices').factory('DB',
       return clone;
     };
 
-    const emitEventOnWrite = function(pouchDb) {
-      const pouchDbWriteOperations = ['putAttachment', 'put', 'bulkDocs'];
-      pouchDbWriteOperations.forEach(function(operation) {
-        pouchDb[operation] = _.wrap(pouchDb[operation], function(original) {
-          const args = Array.from(arguments).splice(1);
-          $rootScope.$emit('dbWriteEvent', { operation, args });
-          return original.apply(pouchDb, args);
-        });
-      });
-    };
-
     const get = ({ remote=isOnlineOnly, meta=false }={}) => {
       if (!Session.userCtx()) {
         return Session.navigateToLogin();
@@ -75,9 +62,6 @@ angular.module('inboxServices').factory('DB',
       const name = getDbName(remote, meta);
       if (!cache[name]) {
         cache[name] = pouchDB(name, getParams(remote, meta));
-        if (!remote && !meta) {
-          emitEventOnWrite(cache[name]);
-        }
       }
       return cache[name];
     };
