@@ -50,7 +50,10 @@ body > div {
   height: calc(100% - 64px);
   font-size: 16px;
   background-color: @background-color;
-  padding: 30px 0 0 15px;
+  padding-top: 30px;
+  li {
+    padding-left: 15px;
+  }
   a {
     display: inline-block;
     padding: 10px 10px 10px 0;
@@ -150,4 +153,11 @@ ul {
 }
 .btn-bottom-spacing  {
   margin-bottom: 5px;
+}
+.active-nav {
+  background-color: #d9d9da;
+  border-left: 5px solid #797979;
+  a {
+    text-decoration: none;
+  }
 }
