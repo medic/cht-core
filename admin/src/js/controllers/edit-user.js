@@ -300,7 +300,6 @@ angular.module('controllers').controller('EditUserCtrl',
                 .catch(function(err) {
                   if (err.status === 400) {
                     Translate(err.data.error.translationKey, err.data.error.translationParams).then(function(value) {
-                      console.log(err.data.error.translationKey);
                       $scope.setError(err, value);
                     });           
                   } else {
