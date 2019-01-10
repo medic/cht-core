@@ -135,7 +135,7 @@ const validateNewUsernameForDb = (username, database) => {
     })
     .then(user => {
       if (user) {
-        return Promise.reject(error400('Username "'+ username +'" already taken.', { translationKey: 'username.taken', translationParams: {'username': username} }));
+        return Promise.reject(error400({ message: 'Username "'+ username +'" already taken.', translationKey: 'username.taken', translationParams: {'username': username} }));
       }
     });
 };
@@ -380,7 +380,7 @@ const deleteUser = id => {
 
 const validatePassword = password => {
   if (password.length < PASSWORD_MINIMUM_LENGTH) {
-    return error400(`The password must be at least ${PASSWORD_MINIMUM_LENGTH} characters long.`, { translationKey: 'password.length.minimum', translationParams: {'minimum': PASSWORD_MINIMUM_LENGTH} });
+    return error400({ message: `The password must be at least ${PASSWORD_MINIMUM_LENGTH} characters long.`, translationKey: 'password.length.minimum', translationParams: {'minimum': PASSWORD_MINIMUM_LENGTH} });
   }
   if (passwordTester(password) < PASSWORD_MINIMUM_SCORE) {
     return error400('The password is too easy to guess. Include a range of types of characters to increase the score.', { translationKey: 'password.weak'});
@@ -538,7 +538,7 @@ module.exports = {
               return places.getPlace(user.facility_id);
             } else if (_.isNull(data.place)) {
               if (settings.roles && isOffline(settings.roles)) {
-                return Promise.reject(error400('Place field is required for offline users', { translationKey: 'field is required', translationParams: {'field': 'Place'}}));
+                return Promise.reject(error400({ message: 'Place field is required for offline users', translationKey: 'field is required', translationParams: {'field': 'Place'}}));
               }
               user.facility_id = null;
               settings.facility_id = null;
@@ -549,7 +549,7 @@ module.exports = {
               return module.exports._validateContact(settings.contact_id, user.facility_id);
             } else if (_.isNull(data.contact)) {
               if (settings.roles && isOffline(settings.roles)) {
-                return Promise.reject(error400('Contact field is required for offline users', { translationKey: 'field is required', translationParams: {'field': 'Contact'}}));
+                return Promise.reject(error400({ message: 'Contact field is required for offline users', translationKey: 'field is required', translationParams: {'field': 'Contact'}}));
               }
               settings.contact_id = null;
             }
