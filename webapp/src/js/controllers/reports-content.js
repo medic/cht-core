@@ -11,7 +11,6 @@ var _ = require('underscore');
       $log,
       $scope,
       $stateParams,
-      $translate,
       $timeout,
       Changes,
       MessageState
@@ -76,8 +75,7 @@ var _ = require('underscore');
       };
 
       $scope.labelIsIDorName = (label) => {
-        let val = $translate.instant(label);
-        return val === 'ID' || val === 'Name';
+        return label.endsWith('.patient_id') || label.endsWith('.patient_uuid') || label.endsWith('.patient_name');
       };
 
       var changeListener = Changes({

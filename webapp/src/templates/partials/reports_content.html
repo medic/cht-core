@@ -35,7 +35,7 @@
           </div>
 
           <div ng-if="summary.subject.type" class="subject">
-              <a class="name" ng-if="summary.subject._id || summary.fields.patient_uuid" ng-href="#/contacts/{{summary.subject._id || summary.fields.patient_uuid}}"
+              <a class="name" ng-if="summary.subject._id || summary.fields.patient_uuid" ui-sref="contacts.detail({ id: summary.subject._id || summary.fields.patient_uuid })"
                 ng-bind="(summary.subject.type === 'name' && summary.subject.value) || summary.subject.name || ('report.subject.unknown' | translate)">
               </a>
               <span class="name" ng-if="!summary.subject._id && !summary.fields.patient_uuid"
@@ -70,7 +70,7 @@
             <label translate>{{field.label}}</label>
             <p ng-hide="field.imagePath">
               <span ng-if="labelIsIDorName(field.label)">
-                  <a class="name" ng-if="summary.subject._id || summary.fields.patient_uuid" ng-href="#/contacts/{{summary.subject._id || summary.fields.patient_uuid}}"
+                  <a class="name" ng-if="summary.subject._id || summary.fields.patient_uuid" ui-sref="contacts.detail({ id: summary.subject._id || summary.fields.patient_uuid })"
                     ng-bind="field.value">
                   </a>
               </span>
