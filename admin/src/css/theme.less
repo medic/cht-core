@@ -2,10 +2,15 @@
 html {
   font-size: 16px;
 }
+body > div {
+  height: 100%;
+}
 .body {
   display: flex;
+  min-height: 100%;
   max-width: @admin-content-width;
-  margin: 0 auto;
+  margin: -64px auto 0 auto;
+  padding-top: 64px;
   font-size: @font-medium;
 }
 .header {
@@ -42,10 +47,10 @@ html {
 }
 .navigation {
   width: 200px;
+  height: calc(100% - 64px);
   font-size: 16px;
   background-color: @background-color;
   padding: 30px 0 0 15px;
-  height: 100%;
   a {
     display: inline-block;
     padding: 10px 10px 10px 0;
