@@ -39,7 +39,8 @@ describe('feedback', () => {
       saveDoc: saveDoc,
       getUserCtx: getUserCtx,
       console: mockConsole,
-      window: mockWindow
+      window: mockWindow,
+      appConfig: { name: 'medic', version: '0.5.0' }
     });
 
     mockConsole.log('Trying to save');
@@ -47,7 +48,7 @@ describe('feedback', () => {
     mockConsole.warn('Saving taking a while');
     mockConsole.error('Failed to save', '404');
 
-    feedback.submit({ message: 'hello world' }, { name: 'medic', version: '0.5.0' }, () => {
+    feedback.submit({ message: 'hello world' }, true, () => {
 
       assert.equal(getUserCtx.callCount, 1);
       assert.equal(saveDoc.callCount, 1);
@@ -81,14 +82,15 @@ describe('feedback', () => {
       saveDoc: saveDoc,
       getUserCtx: getUserCtx,
       console: mockConsole,
-      window: mockWindow
+      window: mockWindow,
+      appConfig: { name: 'medic', version: '0.5.0' }
     });
 
     for (let i = 0; i < 25; i++) {
       mockConsole.log('item ' + i);
     }
 
-    feedback.submit({ message: 'hello world' }, { }, () => {
+    feedback.submit({ message: 'hello world' }, true, () => {
       assert.equal(getUserCtx.callCount, 1);
       assert.equal(saveDoc.callCount, 1);
 
@@ -111,7 +113,8 @@ describe('feedback', () => {
       getUserCtx: getUserCtx,
       console: mockConsole,
       window: mockWindow,
-      document: mockDocument
+      document: mockDocument,
+      appConfig: { name: 'medic', version: '0.5.0' }
     });
 
     mockDocument.URL = 'http://gareth:SUPERSECRET!@somewhere.com';
