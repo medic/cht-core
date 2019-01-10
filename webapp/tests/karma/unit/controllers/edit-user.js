@@ -39,7 +39,7 @@ describe('EditUserCtrl controller', () => {
       language: 'zz'
     };
     translate = sinon.stub();
-    Translate = { fieldIsRequired: (field) => Promise.resolve(`${field} field must be filled`) };
+    Translate = { fieldIsRequired: sinon.stub() };
 
     jQuery = sinon.stub(window, '$');
     window.$.callThrough();
@@ -133,6 +133,7 @@ describe('EditUserCtrl controller', () => {
   // Never when creating a new user, or editing a non-current user.
   describe('$scope.updatePassword', () => {
     it('password must be filled', done => {
+      Translate.fieldIsRequired.withArgs('Password').returns(Promise.resolve('Password field must be filled'));
       mockEditCurrentUser(userToEdit);
       setTimeout(() => {
         scope.editUserModel.password = '';
