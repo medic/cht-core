@@ -115,9 +115,29 @@ app.use(
     // runs with a bunch of defaults: https://github.com/helmetjs/helmet
     hpkp: false, // explicitly block dangerous header
     contentSecurityPolicy: {
+      /* jshint ignore:start */
       directives: {
-        frameSrc: ['\'self\''] // prettier-ignore
+        defaultSrc: ["'none'"],
+        fontSrc: ["'self'"],
+        manifestSrc: ["'self'"],
+        connectSrc: ["'self'"],
+        formAction: ["'self'"],
+        imgSrc: [
+          "'self'",
+          'data:' // unsafe
+        ],
+        scriptSrc: [
+          "'self'",
+          "'sha256-6i0jYw/zxQO6q9fIxqI++wftTrPWB3yxt4tQqy6By6k='", // Explicitly allow the telemetry script setting startupTimes
+          "'unsafe-eval'" // AngularJS and several dependencies require this
+        ],
+        styleSrc: [
+          "'self'",
+          "'unsafe-inline'" // angular-ui-bootstrap
+        ],
       },
+      /* jshint ignore:end */
+      browserSniff: false,
     },
   })
 );
