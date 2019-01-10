@@ -4,9 +4,11 @@ var _ = require('underscore'),
   DDOC_PREFIX = ['_design/'],
   META_SYNC_FREQUENCY = 30 * 60 * 1000; // 30 minutes
 
+const LAST_REPLICATED_SEQ_KEY = require('../bootstrapper/purger').LAST_REPLICATED_SEQ_KEY;
+
 angular
   .module('inboxServices')
-  .factory('DBSync', function($interval, $log, $q, Auth, DB, Session) {
+  .factory('DBSync', function($interval, $log, $q, $window, Auth, DB, Session) {
     'use strict';
     'ngInject';
 
@@ -24,6 +26,16 @@ angular
     };
 
     var readOnlyFilter = function(doc) {
+      // Never replicate "purged" documents upwards
+      const keys = Object.keys(doc);
+      if (keys.length === 4 &&
+          keys.includes('_id') &&
+          keys.includes('_rev') &&
+          keys.includes('_deleted') &&
+          keys.includes('purged')) {
+        return false;
+      }
+
       // don't try to replicate read only docs back to the server
       return (
         READ_ONLY_TYPES.indexOf(doc.type) === -1 &&
@@ -121,6 +133,10 @@ angular
       return $q.all([
         replicateFrom(updateListener),
         replicateTo(updateListener),
-      ]);
+      ]).then(() => {
+        return DB().info().then(dbInfo => {
+          $window.localStorage.setItem(LAST_REPLICATED_SEQ_KEY, dbInfo.update_seq);
+        });
+      });
     };
   });

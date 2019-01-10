@@ -7,6 +7,7 @@ describe('DBSync service', () => {
       from,
       query,
       allDocs,
+      info,
       isOnlineOnly,
       userCtx,
       sync,
@@ -22,6 +23,8 @@ describe('DBSync service', () => {
     from.returns({ on: recursiveOn });
     query = sinon.stub();
     allDocs = sinon.stub();
+    info = sinon.stub();
+    info.returns(Q.resolve({update_seq: -99}));
     isOnlineOnly = sinon.stub();
     userCtx = sinon.stub();
     sync = sinon.stub();
@@ -32,7 +35,8 @@ describe('DBSync service', () => {
       $provide.factory('DB', KarmaUtils.mockDB({
         replicate: { to: to, from: from },
         allDocs: allDocs,
-        sync: sync
+        sync: sync,
+        info: info
       }));
       $provide.value('$q', Q); // bypass $q so we don't have to digest
       $provide.value('Session', {
@@ -47,7 +51,7 @@ describe('DBSync service', () => {
   });
 
   afterEach(() => {
-    KarmaUtils.restore(to, from, query, allDocs, isOnlineOnly, userCtx, sync, Auth);
+    KarmaUtils.restore(to, from, query, allDocs, info, isOnlineOnly, userCtx, sync, Auth);
   });
 
   it('does nothing for admin', () => {
@@ -118,6 +122,7 @@ describe('DBSync service', () => {
       Auth.returns(Promise.resolve());
       userCtx.returns({ name: 'mobile', roles: [ 'district-manager' ] });
       allDocs.returns(Promise.resolve({ rows: [] }));
+      info.returns(Q.resolve({update_seq: -99}));
       to.returns({ on: recursiveOn });
       from.returns({ on: recursiveOn });
       return service().then(() => {
