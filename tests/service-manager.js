@@ -7,6 +7,7 @@ const processes = [];
 let stoppingAll = false;
 
 const stopAll = (code) => {
+  console.log(`[e2e] Sending kill signals to all servers due to code ${code}`);
   stoppingAll = true;
   processes.forEach(module => module.kill());
   processes.length = 0;
@@ -54,7 +55,6 @@ const startServer = (serviceName, startOutput, options={}) => {
       logStream.end(`Exited with code ${code}.`);
       console.log(`[${serviceName}] exited with code ${code}`);
       if(!stoppingAll) {
-        console.log('[e2e] Sending kill signals to all servers…');
         stopAll(code);
       }
     });

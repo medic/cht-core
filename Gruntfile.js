@@ -692,14 +692,9 @@ module.exports = function(grunt) {
       },
     },
     protractor: {
-      'e2e-tests-and-services': {
+      'e2e-tests': {
         options: {
-          configFile: 'tests/e2e.tests-and-services.conf.js',
-        },
-      },
-      'e2e-tests-only': {
-        options: {
-          configFile: 'tests/e2e.tests-only.conf.js',
+          configFile: 'tests/e2e.tests.conf.js',
         },
       },
       'performance-tests-and-services': {
@@ -1002,7 +997,7 @@ module.exports = function(grunt) {
     'build-node-modules',
     'build-ddoc',
     'couch-push:test',
-    'protractor:e2e-tests-and-services',
+    'protractor:e2e-tests',
   ]);
 
   grunt.registerTask('test-perf', 'Run performance-specific tests', [
@@ -1071,7 +1066,7 @@ module.exports = function(grunt) {
 
   grunt.registerTask('ci-e2e', 'Run e2e tests for CI', [
     'exec:start-webdriver',
-    'protractor:e2e-tests-and-services',
+    'protractor:e2e-tests',
   ]);
 
   grunt.registerTask('ci-performance', 'Run performance tests on CI', [
