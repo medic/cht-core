@@ -47,12 +47,12 @@ body > div {
 }
 .navigation {
   width: 200px;
-  height: calc(100% - 64px);
   font-size: 16px;
   background-color: @background-color;
   padding-top: 30px;
   li {
-    padding-left: 15px;
+    padding-left: 10px;
+    border-left: 5px solid transparent;
   }
   a {
     display: inline-block;
@@ -67,6 +67,13 @@ body > div {
   a:active {
     text-decoration: none;
     color: @nav-active-color;
+  }
+  .active-nav {
+    border-left-color: #797979;
+    background-color: #d9d9da;
+    a {
+      text-decoration: none;
+    }
   }
 }
 .tab-content {
@@ -153,11 +160,4 @@ ul {
 }
 .btn-bottom-spacing  {
   margin-bottom: 5px;
-}
-.active-nav {
-  background-color: #d9d9da;
-  border-left: 5px solid #797979;
-  a {
-    text-decoration: none;
-  }
 }
