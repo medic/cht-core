@@ -225,7 +225,7 @@ describe('EditUserCtrl controller', () => {
     it(`password doesn't need to be filled when editing user`, done => {
       mockEditAUser(userToEdit);
       translate.returns(Promise.resolve('something'));
-      Translate.fieldIsRequired = key => Promise.resolve('something');
+      Translate.fieldIsRequired = key => Promise.resolve(key);
       setTimeout(() => {
         chai.expect(scope.editUserModel).not.to.have.property('password');
         scope.editUser();
