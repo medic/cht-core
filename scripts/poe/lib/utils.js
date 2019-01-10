@@ -1,4 +1,5 @@
 const fs = require('fs');
+const chalk = require('chalk');
 const req = require('request');
 const {promisify} = require('util');
 const get = promisify(req.get);
@@ -16,8 +17,15 @@ module.exports = {
     if (!fs.existsSync(dir)){
       fs.mkdirSync(dir);
     }
+    return fs.existsSync(dir);
   },
   mmVersion: () => {
     return pkg.version;
+  },
+  log: (msg) => {
+    console.log(msg);
+  },
+  error: (msg) => {
+    console.log(`${chalk.red('Error: ')}${msg}`);
   }
 };

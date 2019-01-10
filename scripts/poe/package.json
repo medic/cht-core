@@ -1,8 +1,7 @@
 {
   "name": "poe",
   "version": "1.0.0",
-  "description": "",
-  "main": "index.js",
+  "description": "poe cli",
   "keywords": [],
   "author": "",
   "license": "ISC",

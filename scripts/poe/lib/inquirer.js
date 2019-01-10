@@ -1,5 +1,6 @@
 const {mmVersion} = require('./utils');
 const inquirer = require('inquirer');
+const {validTranslations, validDirectory} = require('./validate');
 
 const apiTokenQuestion = {
   name: 'api_token', type: 'input',
@@ -40,7 +41,10 @@ const questions = {
     {
       name: 'file', type: 'input',
       message: 'Enter the relative path to the download directory',
-      default: '.'
+      default: '.',
+      validate: function( value ) {
+        return validDirectory(value) ? true : 'Please enter the download directory.';
+      }
     },
     {
       name: 'filters',
@@ -69,7 +73,10 @@ const questions = {
     {
       name: 'file', type: 'input',
       message: 'Enter the relative path to the translation file',
-      default: './messages-en.properties'
+      default: './messages-en.properties',
+      validate: function( value ) {
+        return validTranslations(value) ? true : 'Please enter the translation file.';
+      }
     },
     {
       name: 'overwrite', type: 'list',

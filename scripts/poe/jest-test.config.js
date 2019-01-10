@@ -2,7 +2,7 @@ module.exports = {
   displayName: 'jest:test',
   testEnvironment: 'node',
   testPathIgnorePatterns: [
-    'bootstrap', 'mocks', 'docs'
+    'bootstrap', 'mocks', 'docs', 'tests/translations'
   ],
   testMatch: [
     '<rootDir>/tests/**/*.js'

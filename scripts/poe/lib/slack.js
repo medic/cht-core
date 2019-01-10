@@ -1,6 +1,4 @@
-const req = require('request');
-const util = require('util');
-const post = util.promisify(req.post);
+const post = require('./post');
 const opts = {url: '', json: {}};
 
 module.exports = (url) => {
@@ -8,7 +6,7 @@ module.exports = (url) => {
   return {
     send: async (msg) => {
       opts.json.text = msg;
-      return post(opts);
+      return await post(opts);
     }
   };
 };
