@@ -78,7 +78,7 @@ var _ = require('underscore');
       $scope.labelIsIDorName = (label) => {
         let val = $translate.instant(label);
         return val === 'ID' || val === 'Name';
-      }
+      };
 
       var changeListener = Changes({
         key: 'reports-content',
