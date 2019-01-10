@@ -98,9 +98,11 @@ var feedback = require('../modules/feedback'),
     };
 
     const updateReplicationStatus = status => {
-      $scope.replicationStatus.current = status;
-      $scope.replicationStatus.textKey = 'sync.status.' + status;
-      $scope.replicationStatus.icon = SYNC_ICON[status];
+      if ($scope.replicationStatus.current !== status) {
+        $scope.replicationStatus.current = status;
+        $scope.replicationStatus.textKey = 'sync.status.' + status;
+        $scope.replicationStatus.icon = SYNC_ICON[status];
+      }
     };
 
     DBSync.addUpdateListener(update => {
@@ -135,11 +137,13 @@ var feedback = require('../modules/feedback'),
 
     $window.addEventListener('online', () => DBSync.setOnlineStatus(true), false);
     $window.addEventListener('offline', () => DBSync.setOnlineStatus(false), false);
-    $rootScope.$on('dbWriteEvent', (event, data) => {
-      const isLocalWrite = data && data.args && data.args[0] && data.args[0]._id && data.args[0]._id.startsWith('_local/');
-      if (!isLocalWrite && !DBSync.isSyncInProgress()) {
-        updateReplicationStatus('required');
-      }
+    Changes({
+      key: 'sync-status',
+      callback: function() {
+        if (!DBSync.isSyncInProgress()) {
+          updateReplicationStatus('required');
+        }
+      },
     });
     DBSync.sync();
 
