@@ -56,18 +56,18 @@ var feedback = require('../modules/feedback'),
   ) {
     'ngInject';
 
-    window.startupTimes.angularBootstrapped = performance.now();
+    $window.startupTimes.angularBootstrapped = performance.now();
     Telemetry.record(
       'boot_time:1:to_first_code_execution',
-      window.startupTimes.firstCodeExecution - window.startupTimes.start
+      $window.startupTimes.firstCodeExecution - $window.startupTimes.start
     );
     Telemetry.record(
       'boot_time:2:to_bootstrap',
-      window.startupTimes.bootstrapped - window.startupTimes.firstCodeExecution
+      $window.startupTimes.bootstrapped - $window.startupTimes.firstCodeExecution
     );
     Telemetry.record(
       'boot_time:3:to_angular_bootstrap',
-      window.startupTimes.angularBootstrapped - window.startupTimes.bootstrapped
+      $window.startupTimes.angularBootstrapped - $window.startupTimes.bootstrapped
     );
 
     Session.init();
@@ -142,11 +142,11 @@ var feedback = require('../modules/feedback'),
       var dbWarmed = performance.now();
       Telemetry.record(
         'boot_time:4:to_db_warmed',
-        dbWarmed - window.startupTimes.bootstrapped
+        dbWarmed - $window.startupTimes.bootstrapped
       );
-      Telemetry.record('boot_time', dbWarmed - window.startupTimes.start);
+      Telemetry.record('boot_time', dbWarmed - $window.startupTimes.start);
 
-      delete window.startupTimes;
+      delete $window.startupTimes;
     });
 
     feedback.init({
