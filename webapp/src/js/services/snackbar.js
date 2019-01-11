@@ -2,9 +2,9 @@
  * Service to show a Material Design style snackbar transient notification.
  * Usage: Snackbar('My notification');
  */
-angular.module('inboxServices').service('Snackbar', [
-  function() {
-
+angular.module('inboxServices').service('Snackbar',
+  function($timeout) {
+    'ngInject';
     'use strict';
 
     var SHOW_DURATION = 5000;
@@ -16,11 +16,11 @@ angular.module('inboxServices').service('Snackbar', [
         .addClass('active')
         .find('.snackbar-content')
         .text(text);
-      hideTimer = setTimeout(hide, SHOW_DURATION);
+      hideTimer = $timeout(hide, SHOW_DURATION);
     };
 
     var hide = function() {
-      clearTimeout(hideTimer);
+      $timeout.cancel(hideTimer);
       hideTimer = null;
       $('#snackbar').removeClass('active');
     };
@@ -28,7 +28,7 @@ angular.module('inboxServices').service('Snackbar', [
     return function(text) {
       if (hideTimer) {
         hide();
-        setTimeout(function() {
+        $timeout(function() {
           show(text);
         }, ANIMATION_DURATION);
       } else {
@@ -36,4 +36,4 @@ angular.module('inboxServices').service('Snackbar', [
       }
     };
   }
-]);
+);

@@ -8,7 +8,8 @@
     function(
       $http,
       $location,
-      $log
+      $log,
+      $window
     ) {
       'ngInject';
 
@@ -37,7 +38,7 @@
         };
 
         if (basicAuthUser) {
-          headers.Authorization = 'Basic ' + window.btoa(basicAuthUser + ':' + basicAuthPass);
+          headers.Authorization = 'Basic ' + $window.btoa(basicAuthUser + ':' + basicAuthPass);
         }
 
         $log.debug('UpdateUser', url, updates);

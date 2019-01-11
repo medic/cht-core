@@ -9,8 +9,9 @@ var _ = require('underscore'),
 
   var ENTER_KEY_CODE = 13;
 
-  inboxServices.factory('SearchFilters', ['$translate',
-    function($translate) {
+  inboxServices.factory('SearchFilters',
+    function($timeout, $translate) {
+      'ngInject';
 
       var isEnter = function(e) {
         return e.which === ENTER_KEY_CODE;
@@ -189,7 +190,7 @@ var _ = require('underscore'),
           });
         })
         .on('show.daterangepicker', function(e, picker) {
-          setTimeout(function() {
+          $timeout(function() {
             if ($('#dateRangeDropdown').is('.disabled')) {
               picker.hide();
             }
@@ -224,6 +225,6 @@ var _ = require('underscore'),
         }
       };
     }
-  ]);
+  );
 
 }());

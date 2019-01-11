@@ -108,7 +108,8 @@ describe('Enketo service', function() {
       $provide.value('XSLT', { transform: transform });
       $provide.value('$window', {
         angular: { callbacks: [] },
-        URL: { createObjectURL: createObjectURL }
+        URL: { createObjectURL: createObjectURL },
+        history: { replaceState: () => {} }
       });
       $provide.value('ContactSummary', ContactSummary);
       $provide.value('Form2Sms', Form2Sms);
