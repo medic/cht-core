@@ -85,7 +85,7 @@ const getIdLengthDoc = db =>
 
 const putIdLengthDoc = (db, idLengthDoc) =>
   new Promise((resolve, reject) =>
-    db.medic.insert(idLengthDoc, err => {
+    db.medic.put(idLengthDoc, err => {
       if (err) {
         // We're OK with a 409, because we're going to presume this is happening
         // because a human edited it to suite their needs, and their write is more
@@ -112,9 +112,8 @@ const findUnusedIds = (db, freshIds) => {
     return keys;
   }, []);
   return new Promise((resolve, reject) => {
-    db.medic.view(
-      'medic-client',
-      'contacts_by_reference',
+    db.medic.query(
+      'medic-client/contacts_by_reference',
       { keys: keys },
       (err, results) => {
         if (err) {

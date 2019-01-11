@@ -12,7 +12,6 @@ const _ = require('underscore'),
   moment = require('moment'),
   config = require('../config'),
   date = require('../date'),
-  db = require('../db-nano'),
   NAME = 'registration',
   XFORM_CONTENT_TYPE = 'xml';
 
@@ -462,7 +461,7 @@ module.exports = {
         return callback(null, true);
       }
 
-      transitionUtils.isIdUnique(db, providedId, (err, isUnique) => {
+      transitionUtils.isIdUnique(providedId, (err, isUnique) => {
         if (err) {
           return callback(err);
         }
@@ -499,9 +498,8 @@ module.exports = {
           return callback();
         }
 
-        db.medic.view(
-          'medic-client',
-          'contacts_by_phone',
+        dbPouch.medic.query(
+          'medic-client/contacts_by_phone',
           {
             key: doc.from,
             include_docs: true,

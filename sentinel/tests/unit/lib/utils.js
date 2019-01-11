@@ -8,7 +8,7 @@ const { expect } = require('chai'),
 describe('utils util', () => {
 
   beforeEach(() => {
-    db.medic.query = sinon.stub();
+    sinon.stub(db.medic, 'query');
   });
   afterEach(() => sinon.restore());
 

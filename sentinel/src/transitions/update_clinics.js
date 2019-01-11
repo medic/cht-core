@@ -1,7 +1,6 @@
 const _ = require('underscore'),
   logger = require('../lib/logger'),
   transitionUtils = require('./utils'),
-  db = require('../db-nano'),
   dbPouch = require('../db-pouch'),
   lineage = require('@medic/lineage')(Promise, dbPouch.medic),
   NAME = 'update_clinics';
@@ -51,9 +50,8 @@ const getContact = (doc, callback) => {
       include_docs: true,
       limit: 1,
     };
-    db.medic.view(
-      'medic-client',
-      'contacts_by_reference',
+    dbPouch.medic.query(
+      'medic-client/contacts_by_reference',
       params,
       (err, data) => {
         if (err) {
@@ -83,7 +81,7 @@ const getContact = (doc, callback) => {
       include_docs: false,
       limit: 1,
     };
-    db.medic.view('medic-client', 'contacts_by_phone', params, (err, data) => {
+    dbPouch.medic.query('medic-client/contacts_by_phone', params, (err, data) => {
       if (err) {
         return callback(err);
       }

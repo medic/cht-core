@@ -3,7 +3,8 @@ var _ = require('underscore'),
     config = require('../config'),
     messages = require('../lib/messages'),
     later = require('later'),
-    moment = require('moment');
+    moment = require('moment'),
+    db = require('../db-pouch');
 
 // set later to use local time
 later.date.localTime();
@@ -37,15 +38,13 @@ module.exports = {
     getSchedule: getSchedule,
     // called from schedule/index.js on the hour, for now
     execute: function(options, callback) {
-        var db = options.db,
-            reminders = config.get('reminders') || [];
+        var reminders = config.get('reminders') || [];
 
         async.eachSeries(reminders, function(reminder, callback) {
             if (!isConfigValid(reminder)) {
                 return callback();
             }
             module.exports.runReminder({
-                db: db,
                 reminder: reminder
             }, callback);
         }, callback);
@@ -111,10 +110,8 @@ module.exports = {
         }
     },
     getClinics: function(options, callback) {
-        var db = options.db;
-
         // gets all clinics
-        db.medic.view('medic-client', 'doc_by_type', {
+        db.medic.query('medic-client/doc_by_type', {
             startkey: [ 'clinic' ],
             endkey: [ 'clinic', {} ],
             include_docs: true
@@ -135,7 +132,6 @@ module.exports = {
     },
     sendReminder: function(options, callback) {
         var clinic = options.clinic,
-            db = options.db,
             moment = options.moment,
             reminder = options.reminder,
             context = {
@@ -152,7 +148,7 @@ module.exports = {
             task.ts = moment.toISOString();
             task.type = 'reminder';
         }
-        db.medic.insert(clinic, callback);
+        db.medic.put(clinic, callback);
     },
     sendReminders: function(options, callback) {
         module.exports.getClinics(options, function(err, clinics) {
@@ -189,13 +185,12 @@ module.exports = {
         });
     },
     getReminderWindow: function(options, callback) {
-        var db = options.db,
-            now = moment(),
+        var now = moment(),
             // at the most, look a day back
             floor = now.clone().startOf('hour').subtract(1, 'day'),
             form = options.reminder && options.reminder.form;
 
-        db.medic.view('medic', 'sent_reminders', {
+        db.medic.query('medic/sent_reminders', {
             descending: true,
             limit: 1,
             startkey: [form, now.toISOString()],

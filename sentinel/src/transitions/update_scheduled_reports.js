@@ -1,5 +1,4 @@
 var utils = require('../lib/utils'),
-  db = require('../db-nano'),
   dbPouch = require('../db-pouch'),
   logger = require('../lib/logger');
 
@@ -114,7 +113,7 @@ module.exports = {
       return callback();
     }
 
-    db.medic.view('medic', view, q, function(err, data) {
+    dbPouch.medic.query(`medic/${view}`, q, function(err, data) {
       callback(err, data && data.rows);
     });
   },

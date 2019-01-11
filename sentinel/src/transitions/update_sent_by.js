@@ -1,5 +1,5 @@
 const transitionUtils = require('./utils'),
-      db = require('../db-nano'),
+      db = require('../db-pouch'),
       NAME = 'update_sent_by';
 
 module.exports = {
@@ -22,7 +22,7 @@ module.exports = {
     onMatch: change => {
         return new Promise((resolve, reject) => {
             var doc = change.doc;
-            db.medic.view('medic-client', 'contacts_by_phone', {
+            db.medic.query('medic-client/contacts_by_phone', {
                 key: doc.from,
                 include_docs: true
             }, function(err, result) {

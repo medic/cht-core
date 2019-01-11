@@ -2,8 +2,7 @@ const async = require('async'),
   moment = require('moment'),
   date = require('../date'),
   config = require('../config'),
-  logger = require('../lib/logger'),
-  db = require('../db-nano');
+  logger = require('../lib/logger');
 
 const tasks = {
   dueTasks: require('./due_tasks'),
@@ -38,16 +37,11 @@ exports.checkSchedule = function() {
   async.series(
     [
       cb => {
-        tasks.reminders.execute(
-          {
-            db: db,
-          },
-          cb
-        );
+        tasks.reminders.execute(cb);
       },
       cb => {
         if (exports.sendable(config, now)) {
-          tasks.dueTasks.execute(db, cb);
+          tasks.dueTasks.execute(cb);
         } else {
           cb();
         }

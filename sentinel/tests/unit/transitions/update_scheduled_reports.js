@@ -1,6 +1,5 @@
 const sinon = require('sinon'),
   assert = require('chai').assert,
-  db = require('../../../src/db-nano'),
   dbPouch = require('../../../src/db-pouch'),
   transition = require('../../../src/transitions/update_scheduled_reports');
 
@@ -133,22 +132,22 @@ describe('update_scheduled_reports', () => {
 
   describe('getDuplicates', () => {
     it('use week view when doc has week property', done => {
-      sinon.stub(db.medic, 'view').callsArg(3);
+      sinon.stub(dbPouch.medic, 'query').callsArg(2);
       transition._getDuplicates({ fields: { week: 9 } }, () => {
         assert.equal(
-          db.medic.view.args[0][1],
-          'reports_by_form_year_week_clinic_id_reported_date'
+          dbPouch.medic.query.args[0][0],
+          'medic/reports_by_form_year_week_clinic_id_reported_date'
         );
         done();
       });
     });
 
     it('use month view when doc has month property', done => {
-      sinon.stub(db.medic, 'view').callsArg(3);
+      sinon.stub(dbPouch.medic, 'query').callsArg(2);
       transition._getDuplicates({ fields: { month: 9 } }, () => {
         assert.equal(
-          db.medic.view.args[0][1],
-          'reports_by_form_year_month_clinic_id_reported_date'
+          dbPouch.medic.query.args[0][0],
+          'medic/reports_by_form_year_month_clinic_id_reported_date'
         );
         done();
       });
@@ -158,8 +157,8 @@ describe('update_scheduled_reports', () => {
   describe('onMatch', () => {
     it('calls bulkDocs with correct arguments', () => {
       const view = sinon
-        .stub(db.medic, 'view')
-        .callsArgWith(3, null, { rows: [] });
+        .stub(dbPouch.medic, 'query')
+        .callsArgWith(2, null, { rows: [] });
       const bulkSave = sinon.stub(dbPouch.medic, 'bulkDocs').callsArg(2);
       const change = {
         doc: {
@@ -181,7 +180,7 @@ describe('update_scheduled_reports', () => {
     });
 
     it('remove duplicates and replace with latest doc', () => {
-      sinon.stub(db.medic, 'view').callsArgWith(3, null, {
+      sinon.stub(dbPouch.medic, 'query').callsArgWith(2, null, {
         // ascending records
         rows: [
           {

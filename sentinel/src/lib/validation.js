@@ -5,7 +5,7 @@ var _ = require('underscore'),
   messages = require('./messages'),
   utils = require('./utils'),
   logger = require('./logger'),
-  db = require('../db-nano');
+  db = require('../db-pouch');
 
 var _parseDuration = function(duration) {
   var parts = duration.split(' ');
@@ -21,9 +21,8 @@ const _getIntersection = responses => {
 };
 
 const _executeExistsRequest = (options, callback) => {
-  db.medic.view(
-    'medic-client',
-    'reports_by_freetext',
+  db.medic.query(
+    'medic-client/reports_by_freetext',
     options,
     (err, response) => callback(err, response) // strip out unnecessary third argument
   );
@@ -53,7 +52,7 @@ const _exists = (doc, fields, options, callback) => {
     if (!ids.length) {
       return callback(null, false);
     }
-    db.medic.fetch({ keys: ids }, (err, result) => {
+    db.medic.allDocs({ keys: ids }, (err, result) => {
       if (err) {
         return callback(err);
       }

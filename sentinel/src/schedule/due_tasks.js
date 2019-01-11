@@ -35,13 +35,12 @@ const getTemplateContext = (doc, callback) => {
 };
 
 module.exports = {
-  execute: function(db, callback) {
+  execute: callback => {
     var now = moment(date.getDate()),
       overdue = now.clone().subtract(7, 'days');
 
-    db.medic.view(
-      'medic',
-      'due_tasks',
+    dbPouch.medic.query(
+      'medic/due_tasks',
       {
         include_docs: true,
         endkey: now.toISOString(),

@@ -9,22 +9,17 @@ describe('due tasks', () => {
   afterEach(() => sinon.restore());
 
   it('due_tasks handles view returning no rows', done => {
-    var db = {
-      view: function() {},
-    };
-
-    var view = sinon.stub(db, 'view').callsArgWith(3, null, {
+    var view = sinon.stub(dbPouch.medic, 'query').callsArgWith(2, null, {
       rows: [],
     });
     var saveDoc = sinon.stub(dbPouch.medic, 'put').callsArgWith(1, null);
 
-    schedule.execute({ medic: db }, function(err) {
+    schedule.execute(function(err) {
       assert.equal(err, undefined);
+      assert.equal(view.callCount, 1);
+      assert.equal(saveDoc.callCount, 0);
       done();
     });
-
-    assert.equal(view.callCount, 1);
-    assert.equal(saveDoc.callCount, 0);
   });
 
   it('set all due scheduled tasks to pending', done => {
@@ -34,9 +29,6 @@ describe('due tasks', () => {
       .toISOString();
     var id = 'xyz';
 
-    var db = {
-      view: function() {},
-    };
     var doc = {
       scheduled_tasks: [
         {
@@ -51,7 +43,7 @@ describe('due tasks', () => {
         },
       ],
     };
-    var view = sinon.stub(db, 'view').callsArgWith(3, null, {
+    var view = sinon.stub(dbPouch.medic, 'query').callsArgWith(2, null, {
       rows: [
         {
           id: id,
@@ -67,7 +59,7 @@ describe('due tasks', () => {
       .returns(Promise.resolve([doc]));
     var setTaskState = sinon.stub(utils, 'setTaskState');
 
-    schedule.execute({ medic: db }, function(err) {
+    schedule.execute( function(err) {
       assert.equal(err, undefined);
       assert.equal(view.callCount, 1);
       assert.equal(saveDoc.callCount, 1);
@@ -110,10 +102,7 @@ describe('due tasks', () => {
     var hydrate = sinon
       .stub(schedule._lineage, 'hydrateDocs')
       .returns(Promise.resolve([doc]));
-    var db = {
-      view: function() {},
-    };
-    var view = sinon.stub(db, 'view').callsArgWith(3, null, {
+    var view = sinon.stub(dbPouch.medic, 'query').callsArgWith(2, null, {
       rows: [
         {
           id: id,
@@ -131,7 +120,7 @@ describe('due tasks', () => {
     var saveDoc = sinon.stub(dbPouch.medic, 'put').callsArgWith(1, null, {});
     var setTaskState = sinon.stub(utils, 'setTaskState');
 
-    schedule.execute({ medic: db }, function(err) {
+    schedule.execute(function(err) {
       assert.equal(err, undefined);
       assert.equal(view.callCount, 1);
       assert.equal(saveDoc.callCount, 1);
@@ -172,10 +161,7 @@ describe('due tasks', () => {
       ],
     };
 
-    var db = {
-      view: function() {},
-    };
-    var view = sinon.stub(db, 'view').callsArgWith(3, null, {
+    var view = sinon.stub(dbPouch.medic, 'query').callsArgWith(2, null, {
       rows: [
         {
           id: id1,
@@ -199,7 +185,7 @@ describe('due tasks', () => {
 
     var setTaskState = sinon.stub(utils, 'setTaskState');
 
-    schedule.execute({ medic: db }, function(err) {
+    schedule.execute(function(err) {
       assert.equal(err, undefined);
       assert.equal(view.callCount, 1);
       assert.equal(saveDoc.callCount, 2);
@@ -233,9 +219,6 @@ describe('due tasks', () => {
       .callsArgWith(1, null, { name: 'jim' });
     const setTaskState = sinon.stub(utils, 'setTaskState');
 
-    const db = {
-      view: () => {},
-    };
     const minified = {
       fields: {
         patient_id: '123',
@@ -293,7 +276,7 @@ describe('due tasks', () => {
         },
       ],
     };
-    const view = sinon.stub(db, 'view').callsArgWith(3, null, {
+    const view = sinon.stub(dbPouch.medic, 'query').callsArgWith(2, null, {
       rows: [
         {
           id: id,
@@ -307,7 +290,7 @@ describe('due tasks', () => {
       .returns(Promise.resolve([hydrated]));
     const saveDoc = sinon.stub(dbPouch.medic, 'put').callsArgWith(1, null, {});
 
-    schedule.execute({ medic: db }, err => {
+    schedule.execute(err => {
       assert.equal(err, undefined);
       assert.equal(view.callCount, 1);
       assert.equal(saveDoc.callCount, 1);
@@ -349,9 +332,6 @@ describe('due tasks', () => {
       .callsArgWith(1, null, { name: 'jim' });
     const setTaskState = sinon.stub(utils, 'setTaskState');
 
-    const db = {
-      view: () => {},
-    };
     const minified = {
       fields: {
         patient_id: '123',
@@ -409,7 +389,7 @@ describe('due tasks', () => {
         },
       ],
     };
-    const view = sinon.stub(db, 'view').callsArgWith(3, null, {
+    const view = sinon.stub(dbPouch.medic, 'query').callsArgWith(2, null, {
       rows: [
         {
           id: id,
@@ -422,7 +402,7 @@ describe('due tasks', () => {
       .stub(schedule._lineage, 'hydrateDocs')
       .returns(Promise.resolve([hydrated]));
     const saveDoc = sinon.stub(dbPouch.medic, 'put').callsArgWith(1, null, {});
-    schedule.execute({ medic: db }, err => {
+    schedule.execute(err => {
       assert.equal(err, undefined);
       assert.equal(view.callCount, 1);
       assert.equal(saveDoc.callCount, 1);
@@ -446,7 +426,6 @@ describe('due tasks', () => {
 
   it('should not crash when registrations are found, but patient is not', done => {
     const due = moment().toISOString(),
-          db = { view: sinon.stub() },
           phone = '123456789';
 
     sinon.stub(utils, 'translate').returns('Please visit {{patient_name}} asap');
@@ -503,13 +482,13 @@ describe('due tasks', () => {
       ],
     };
 
-    db.view.callsArgWith(3, null, { rows: [ { id: 'report_id', key: due, doc: minified }]});
+    sinon.stub(dbPouch.medic, 'query').callsArgWith(2, null, { rows: [ { id: 'report_id', key: due, doc: minified }]});
     sinon.stub(schedule._lineage, 'hydrateDocs').resolves([hydrated]);
     sinon.stub(dbPouch.medic, 'put');
 
-    schedule.execute({ medic: db }, err => {
+    schedule.execute(err => {
       assert.equal(err, undefined);
-      assert.equal(db.view.callCount, 1);
+      assert.equal(dbPouch.medic.query.callCount, 1);
       assert.equal(dbPouch.medic.put.callCount, 0);
 
       assert.equal(utils.translate.callCount, 1);
@@ -525,7 +504,6 @@ describe('due tasks', () => {
 
   it('should not update task state and not save messages when messages lib errors', done => {
     const due = moment().toISOString(),
-          db = { view: sinon.stub() },
           phone = '123456789';
 
     sinon.stub(utils, 'translate').returns('Please visit {{patient_name}} asap');
@@ -592,13 +570,13 @@ describe('due tasks', () => {
       ],
     };
 
-    db.view.callsArgWith(3, null, { rows: [ { id: 'report_id', key: due, doc: minified }]});
+    sinon.stub(dbPouch.medic, 'query').callsArgWith(2, null, { rows: [ { id: 'report_id', key: due, doc: minified }]});
     sinon.stub(schedule._lineage, 'hydrateDocs').resolves([hydrated]);
     sinon.stub(dbPouch.medic, 'put').callsArgWith(1, null, {});
 
-    schedule.execute({ medic: db }, err => {
+    schedule.execute(err => {
       assert.equal(err, undefined);
-      assert.equal(db.view.callCount, 1);
+      assert.equal(dbPouch.medic.query.callCount, 1);
       assert.equal(dbPouch.medic.put.callCount, 1);
 
       assert.equal(utils.translate.callCount, 1);

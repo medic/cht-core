@@ -3,7 +3,6 @@ const _ = require('underscore'),
   sinon = require('sinon'),
   assert = require('chai').assert,
   transition = require('../../src/transitions/registration'),
-  db = require('../../src/db-nano'),
   dbPouch = require('../../src/db-pouch'),
   utils = require('../../src/lib/utils'),
   transitionUtils = require('../../src/transitions/utils'),
@@ -244,7 +243,8 @@ describe('patient registration', () => {
       fields: { patient_name: 'abc' },
       reported_date: 'now',
     };
-    sinon.stub(db.medic, 'view').callsArgWith(3, null, {
+    console.log(dbPouch.medic);
+    sinon.stub(dbPouch.medic, 'query').callsArgWith(2, null, {
       rows: [
         {
           doc: {

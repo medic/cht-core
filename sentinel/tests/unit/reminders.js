@@ -3,7 +3,8 @@ var _ = require('underscore'),
     sinon = require('sinon'),
     assert = require('chai').assert,
     config = require('../../src/config'),
-    reminders = require('../../src/schedule/reminders');
+    reminders = require('../../src/schedule/reminders'),
+    db = require('../../src/db-pouch');
 
 describe('reminders', () => {
   afterEach(() => sinon.restore());
@@ -126,12 +127,7 @@ describe('reminders', () => {
   });
 
   it('getClinics calls db view', done => {
-      var db = {
-          medic: {
-              view: function() {}
-          }
-      };
-      sinon.stub(db.medic, 'view').callsArgWith(3, null, {
+      sinon.stub(db.medic, 'query').callsArgWith(2, null, {
           rows: [
               {
                   doc: {
@@ -142,25 +138,20 @@ describe('reminders', () => {
       });
 
       reminders.getClinics({
-          db: db,
           reminder: {}
       }, function(err, clinics) {
           assert(_.isArray(clinics));
           assert.equal(clinics.length, 1);
           assert.equal(_.first(clinics).id, 'xxx');
-          assert(db.medic.view.called);
+          assert(db.medic.query.called);
           done();
       });
   });
 
   it('getClinics ignores clinics with matching sent_reminders', done => {
       const now = moment().startOf('hour');
-      const db = {
-          medic: {
-              view: function() {}
-          }
-      };
-      sinon.stub(db.medic, 'view').callsArgWith(3, null, {
+
+      sinon.stub(db.medic, 'query').callsArgWith(2, null, {
           rows: [
               {
                   doc: {
@@ -207,8 +198,7 @@ describe('reminders', () => {
           reminder:{
               moment: now,
               form: 'XXX'
-          },
-          db: db
+          }
       }, function(err, clinics) {
           var ids = _.pluck(clinics, 'id');
           assert.deepEqual(['xxx', 'yyy', 'yyz'], ids);
@@ -235,9 +225,8 @@ describe('reminders', () => {
   });
 
   it('sendReminder saves doc with added task to clinic', done => {
-      const db = { medic: { insert: function() {} } };
       const now = moment();
-      const saveDoc = sinon.stub(db.medic, 'insert').callsArgWithAsync(1, null);
+      const saveDoc = sinon.stub(db.medic, 'put').callsArgWith(1, null);
       reminders.sendReminder({
           clinic: {
               contact: {
@@ -352,16 +341,13 @@ describe('reminders', () => {
 
   it('getReminderWindow returns a day ago when no results from db', done => {
       const time = moment().startOf('hour').subtract(1, 'day');
-      const db = {
-          medic: {
-              view: function() {}
-          }
-      };
       sinon.stub(db.medic, 'view').callsArgWithAsync(3, null, { rows: [] });
 
-      reminders.getReminderWindow({
-          db: db
-      }, function(err, start) {
+      sinon.stub(db.medic, 'query').callsArgWith(2, null, {
+          rows: []
+      });
+
+      reminders.getReminderWindow({}, function(err, start) {
           assert.equal(err, null);
           assert(start);
           assert.equal(start.valueOf(), time.valueOf());
@@ -372,13 +358,7 @@ describe('reminders', () => {
   it('getReminderWindow calls view looking for old events and returns date found', done => {
       const now = moment();
 
-      const db = {
-          medic: {
-              view: function() {}
-          }
-      };
-
-      const view = sinon.stub(db.medic, 'view').callsArgWithAsync(3, null, {
+      var view = sinon.stub(db.medic, 'query').callsArgWith(2, null, {
           rows: [
               {
                   key: [ 'XXX', now.clone().subtract(1, 'hour').toISOString() ]
@@ -389,15 +369,13 @@ describe('reminders', () => {
       reminders.getReminderWindow({
           reminder: {
               form: 'XXX'
-          },
-          db: db
+          }
       }, function(err, start) {
           const call = view.getCall(0);
-          const viewOpts = call.args[2];
+          const viewOpts = call.args[1];
 
           assert.equal(view.callCount, 1);
-          assert.equal(call.args[0], 'medic');
-          assert.equal(call.args[1], 'sent_reminders');
+          assert.equal(call.args[0], 'medic/sent_reminders');
 
           assert.equal(viewOpts.limit, 1);
           assert(viewOpts.startkey);

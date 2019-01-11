@@ -1,21 +1,22 @@
 const sinon = require('sinon'),
       assert = require('chai').assert,
       jsc = require('jsverify'),
-      ids = require('../../src/lib/ids.js');
+      ids = require('../../src/lib/ids.js'),
+      db = require('../../src/db-pouch');
 
 const mockDb = (idFilterLogicFn) => {
-  return { medic: {
-    view: sinon.spy((db, view, options, callback) => {
-      const ids = options.keys.slice(0);
-      const toReturn = {
-        rows: idFilterLogicFn(ids).map(id => {return {key: id};})
-      };
+  sinon.stub(db.medic, 'query').callsFake((view, options, callback) => {
+    const ids = options.keys.slice(0);
+    const toReturn = {
+      rows: idFilterLogicFn(ids).map(id => {return {key: id};})
+    };
 
-      callback(null, toReturn);
-    }),
-    get: sinon.stub().callsArgWith(1, null, {_id: 'shortcode-id-length', current_length: 5}),
-    insert: sinon.stub().callsArgWith(1)
-  }};
+    callback(null, toReturn);
+  });
+
+  sinon.stub(db.medic, 'get').callsArgWith(1, null, {_id: 'shortcode-id-length', current_length: 5});
+  sinon.stub(db.medic, 'put').callsArgWith(1);
+  return db;
 };
 
 describe('ids', () => {

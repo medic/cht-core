@@ -7,7 +7,7 @@ const db = require('../../src/db-pouch'),
 
 describe('utils', () => {
   beforeEach(() => {
-    db.medic.query = sinon.stub();
+    sinon.stub(db.medic, 'query');
   });
   afterEach(() => sinon.restore());
 
