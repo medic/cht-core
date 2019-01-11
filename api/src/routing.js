@@ -120,7 +120,7 @@ app.use(
         defaultSrc: ["'none'"],
         fontSrc: ["'self'"],
         manifestSrc: ["'self'"],
-        connectSrc: ["'self'"],
+        connectSrc: ["'self'", "''https://staging.dev.medicmobile.org'"],
         formAction: ["'self'"],
         imgSrc: [
           "'self'",
