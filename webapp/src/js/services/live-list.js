@@ -230,7 +230,6 @@ angular.module('inboxServices').factory('LiveListConfig',
           scope.summary = translateProperty(task.title, task);
           scope.warning = translateProperty(task.priorityLabel, task);
           scope.hideTime = true;
-          scope.unmarkOverdue = true;
           return renderTemplate(scope);
         },
       });
