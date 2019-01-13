@@ -64,15 +64,14 @@
               {{field.label}}
               <span class="fa fa-cogs" ng-show="field.generated" translate translate-attr-title="Generated report field"></span>
             </label>
-            <p>{{field.value}}</p>
+            <span ng-if= "field.url"><a ng-href="{{field.url}}" ng-bind="field.value"></a></span>
+            <span ng-if= "!field.url">{{field.value}}</span>
           </li>
           <li ng-if="selection.formatted.form && selection.formatted.content_type === 'xml'" ng-repeat="field in selection.displayFields" class="indent-{{field.depth}}">
             <label translate>{{field.label}}</label>
             <p ng-hide="field.imagePath">
               <span ng-if="labelIsIDorName(field.label)">
-                  <a class="name" ng-if="summary.subject._id || summary.fields.patient_uuid" ui-sref="contacts.detail({ id: summary.subject._id || summary.fields.patient_uuid })"
-                    ng-bind="field.value">
-                  </a>
+                <a ng-href="{{summary.fields.url}}" ng-bind="field.value"></a>
               </span>
               <span ng-if="!labelIsIDorName(field.label)">
                   {{ field.value }}

@@ -14,6 +14,7 @@ var _ = require('underscore');
  */
 angular.module('inboxServices').factory('ReportViewModelGenerator',
   function(
+    $state,
     FormatDataRecord,
     LineageModelGenerator,
     DB,
@@ -75,6 +76,11 @@ angular.module('inboxServices').factory('ReportViewModelGenerator',
       });
     };
 
+    const addContactUrl = (obj, model) => {
+      Object.assign(obj, { url: $state.href('contacts.detail',
+        { id: model.formatted.subject._id || model.formatted.fields.patient_uuid })});
+    };
+
     return function(id) {
       return LineageModelGenerator.report(id, { merge: true })
         .then(function(model) {
@@ -96,7 +102,17 @@ angular.module('inboxServices').factory('ReportViewModelGenerator',
               if (summaries && summaries.length) {
                 model.formatted.subject = summaries.pop().subject;
               }
-
+              if (_.isArray(model.formatted.fields.data)) {
+                const labels = ['Medic ID', 'Name'];
+                model.formatted.fields.data.forEach((obj, i) => {
+                  if(labels.includes(model.formatted.fields.headers[i].head)) {
+                    addContactUrl(obj, model);
+                  }
+                });
+              }
+              if (model.formatted.content_type) {
+                addContactUrl(model.formatted.fields, model);
+              }
               return model;
             });
         });
