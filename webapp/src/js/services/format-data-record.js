@@ -85,17 +85,13 @@ angular
           if (def && def[key]) {
             def = def[key];
           }
-          let payload = {
+
+          fields.push({
             isArray: false,
             value: prettyVal(settings, data, key, def, locale),
             label: label,
-          };
-          if (patient_fields.includes(key)) {
-            payload = Object.assign(payload, { hasUrl: true});
-          } else {
-            payload = Object.assign(payload, { hasUrl: false});
-          }
-          fields.push(payload);
+            hasUrl: patient_fields.includes(key)
+          });
         }
       });
       return fields;
@@ -307,19 +303,14 @@ angular
         if (_.contains(dateFields, field)) {
           value = formatDateField(value, field);
         }
-
-        let payload = {
+        
+        doc.fields.unshift({
           label: label,
           value: value,
           isArray: false,
           generated: true,
-        };
-        if (patient_fields.includes(field)) {
-          payload = Object.assign(payload, { hasUrl: true });
-        } else {
-          payload = Object.assign(payload, { hasUrl: false });
-        }
-        doc.fields.unshift(payload);
+          hasUrl: patient_fields.includes(field)
+        });
       });
     };
 
