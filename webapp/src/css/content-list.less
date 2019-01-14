@@ -27,6 +27,27 @@
     }
   }
 
+  .date {
+    color: @label-color;
+    white-space: nowrap;
+    
+    &.due {
+      color: @unread-color;
+      font-weight: bold;
+    }
+  }
+
+  &.overdue {
+    .date {
+      color: @high-risk-color;
+      font-weight: bold;
+    }
+    
+    &.visit-count .summary p {
+      color: @high-risk-color;
+    }
+  }
+
   input[type="checkbox"] {
     display: none;
     float: left;
@@ -74,19 +95,6 @@
         margin: 0;
       }
 
-      .date {
-        color: @label-color;
-        white-space: nowrap;
-        &.due {
-          color: @unread-color;
-          font-weight: bold;
-        }
-        &.overdue {
-          color: @high-risk-color;
-          font-weight: bold;
-        }
-      }
-
       .date,
       .detail {
         font-size: @font-small;
@@ -108,10 +116,6 @@
         display: flex;
         justify-content: space-between;
         align-items: baseline;
-
-        .overdue {
-          color: @high-risk-color;
-        }
       }
 
       .heading h4,
