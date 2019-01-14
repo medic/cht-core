@@ -305,6 +305,7 @@ angular
     });
 
     $scope.$on('VerifyReport', function(e, valid) {
+      $scope.loadingContent = true;
       if ($scope.selected[0].doc.form) {
         DB()
           .get($scope.selected[0]._id)
@@ -314,6 +315,9 @@ angular
           })
           .catch(function(err) {
             $log.error('Error verifying message', err);
+          })
+          .finally(() => {
+            $scope.loadingContent = false;
           });
       }
     });
