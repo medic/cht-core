@@ -1,5 +1,5 @@
 /**
- * A simple wrapper of $translate which allows for unit test mocking
+ * Service to encapsulate repeatedly used translation logic
  */
 angular.module('inboxServices').service('Translate',
   function(
