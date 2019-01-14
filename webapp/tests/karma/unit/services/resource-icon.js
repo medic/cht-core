@@ -179,7 +179,8 @@ describe('ResourceIcons service', function() {
           .to.equal(undefined);
 
         Changes.args[0][0].callback({ id: 'resources' }); // invoke the changes listener
-        service.replacePlaceholders(dom);
+        var bypassCache = true;
+        service.replacePlaceholders(dom, bypassCache);
         setTimeout(function() {
           chai.expect(dom.find('.resource-icon[title="child"] img').attr('src'))
             .to.equal('data:image/png;base64,kiddlywinks');
