@@ -10,6 +10,7 @@ var _ = require('underscore');
     function (
       $log,
       $scope,
+      $state,
       $stateParams,
       $timeout,
       Changes,
@@ -77,6 +78,8 @@ var _ = require('underscore');
       $scope.labelIsIDorName = (label) => {
         return label.endsWith('.patient_id') || label.endsWith('.patient_uuid') || label.endsWith('.patient_name');
       };
+
+      $scope.contactLink = (id) => $state.href('contacts.detail', { id: id });
 
       var changeListener = Changes({
         key: 'reports-content',

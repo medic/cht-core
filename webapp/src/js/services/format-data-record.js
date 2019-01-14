@@ -18,6 +18,7 @@ angular
     'use strict';
 
     var lineage = lineageFactory($q, DB());
+    const patient_fields = ['patient_id', 'patient_uuid', 'patient_name'];
 
     var getRegistrations = function(patientId) {
       var options = {
@@ -68,35 +69,35 @@ angular
         def = getForm(settings, def);
       }
 
-      var fields = {
-        headers: [],
-        data: [],
-      };
+      var fields = [];
 
       var data = _.extend({}, data_record, data_record.fields);
 
       _.each(keys, function(key) {
         if (_.isArray(key)) {
-          fields.headers.push({ head: titleize(key[0]) });
-          fields.data.push(
+          fields.push(
             _.extend(fieldsToHtml(key[1], labels, data[key[0]], def, locale), {
               isArray: true,
             })
           );
         } else {
           var label = labels.shift();
-          fields.headers.push({ head: getMessage(settings, label) });
           if (def && def[key]) {
             def = def[key];
           }
-          fields.data.push({
+          let payload = {
             isArray: false,
             value: prettyVal(settings, data, key, def, locale),
             label: label,
-          });
+          };
+          if (patient_fields.includes(key)) {
+            payload = Object.assign(payload, { hasUrl: true});
+          } else {
+            payload = Object.assign(payload, { hasUrl: false});
+          }
+          fields.push(payload);
         }
       });
-
       return fields;
     };
 
@@ -307,16 +308,18 @@ angular
           value = formatDateField(value, field);
         }
 
-        doc.fields.data.unshift({
+        let payload = {
           label: label,
           value: value,
           isArray: false,
           generated: true,
-        });
-
-        doc.fields.headers.unshift({
-          head: label,
-        });
+        };
+        if (patient_fields.includes(field)) {
+          payload = Object.assign(payload, { hasUrl: true });
+        } else {
+          payload = Object.assign(payload, { hasUrl: false });
+        }
+        doc.fields.unshift(payload);
       });
     };
 
