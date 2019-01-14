@@ -59,7 +59,7 @@
 
       <div class="details" ng-show="selection.expanded">
         <ul>
-          <li ng-if="selection.formatted.form && selection.formatted.content_type !== 'xml'" ng-repeat="field in selection.formatted.fields">
+          <li ng-if="selection.formatted.form && selection.formatted.content_type !== 'xml'" ng-repeat="field in selection.formatted.fields.data">
             <label>
               {{field.label}}
               <span class="fa fa-cogs" ng-show="field.generated" translate translate-attr-title="Generated report field"></span>

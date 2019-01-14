@@ -69,24 +69,28 @@ angular
         def = getForm(settings, def);
       }
 
-      var fields = [];
+      var fields = {
+        headers: [],
+        data: [],
+      };
 
       var data = _.extend({}, data_record, data_record.fields);
 
       _.each(keys, function(key) {
         if (_.isArray(key)) {
-          fields.push(
+          fields.headers.push({ head: titleize(key[0]) });
+          fields.data.push(
             _.extend(fieldsToHtml(key[1], labels, data[key[0]], def, locale), {
               isArray: true,
             })
           );
         } else {
           var label = labels.shift();
+          fields.headers.push({ head: getMessage(settings, label) });
           if (def && def[key]) {
             def = def[key];
           }
-
-          fields.push({
+          fields.data.push({
             isArray: false,
             value: prettyVal(settings, data, key, def, locale),
             label: label,
@@ -94,6 +98,7 @@ angular
           });
         }
       });
+
       return fields;
     };
 
@@ -303,13 +308,17 @@ angular
         if (_.contains(dateFields, field)) {
           value = formatDateField(value, field);
         }
-        
-        doc.fields.unshift({
+
+        doc.fields.data.unshift({
           label: label,
           value: value,
           isArray: false,
           generated: true,
           hasUrl: patient_fields.includes(field)
+        });
+
+        doc.fields.headers.unshift({
+          head: label,
         });
       });
     };
