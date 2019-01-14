@@ -1,4 +1,3 @@
-
 // returns the only continuous alphanumeric + dash + underscore sequence in lower case
 var normalizeFormCode = function(formCode) {
   var match = formCode.match(/^[^\w-]*([\w-]+)[^\w-]*$/);
@@ -46,3 +45,23 @@ exports.isValidRegistration = function(doc, settings) {
 };
 
 exports._normalizeFormCode = normalizeFormCode;
+
+var SUBJECT_PROPERTIES = ['_id', 'patient_id', 'place_id'];
+exports.getSubjectIds = function(contact) {
+  var subjectIds = [];
+  SUBJECT_PROPERTIES.forEach(function(prop) {
+    if (contact[prop]) {
+      subjectIds.push(contact[prop]);
+    }
+  });
+
+  return subjectIds;
+};
+
+exports.getPatientId = function(report) {
+  return report && (
+    report.patient_id ||
+    report.place_id ||
+    (report.fields && (report.fields.patient_id || report.fields.place_id || report.fields.patient_uuid))
+  );
+};
