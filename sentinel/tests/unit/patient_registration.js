@@ -243,7 +243,6 @@ describe('patient registration', () => {
       fields: { patient_name: 'abc' },
       reported_date: 'now',
     };
-    console.log(dbPouch.medic);
     sinon.stub(dbPouch.medic, 'query').callsArgWith(2, null, {
       rows: [
         {
