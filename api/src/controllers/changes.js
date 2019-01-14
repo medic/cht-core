@@ -171,7 +171,7 @@ const restartNormalFeed = feed => {
 
 const getChanges = feed => {
   const options = { return_docs: true };
-  _.extend(options, _.pick(feed.req.query, 'since', 'style', 'conflicts', 'seq_interval'));
+  _.extend(options, _.pick(feed.req.query, 'since', 'style', 'conflicts'));
   options.doc_ids = feed.allowedDocIds;
   options.since = options.since || 0;
 

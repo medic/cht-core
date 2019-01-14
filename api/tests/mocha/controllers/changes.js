@@ -292,7 +292,6 @@ describe('Changes controller', () => {
           batch_size: 4,
           doc_ids: ['d1', 'd2', 'd3'],
           conflicts: true,
-          seq_interval: false,
           return_docs: true,
         });
       });
