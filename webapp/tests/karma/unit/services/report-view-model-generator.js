@@ -47,7 +47,7 @@ describe('ReportViewModelGenerator service', () => {
 
   it('calls services with correct params, returns formatted data and display fields', () => {
     lineageModelGenerator.report.resolves({ doc: report });
-    formatDataRecord.resolves({ formatted1: 1, formatted2: 2 });
+    formatDataRecord.resolves({fields: { headers: [{ head: 'Name' }], data: [{ label: 'Name' }]}});
     getSubjectSummaries.resolves([{ summary: true, subject: 'subject' }]);
     getSummaries.resolves([{ summary: true }]);
 
@@ -65,7 +65,7 @@ describe('ReportViewModelGenerator service', () => {
       chai.expect(getSubjectSummaries.args[0]).to.deep.equal([[{ summary: true }], true]);
 
       chai.expect(result.doc).to.deep.equal(report);
-      chai.expect(result.formatted).to.deep.equal({ formatted1: 1, formatted2: 2, subject: 'subject' });
+      chai.expect(result.formatted).to.deep.equal({fields: {headers: [{head:'Name'}], data:[{label:'Name', url: '#/contacts/'}]}, subject: 'subject'});
       chai.expect(result.displayFields).to.deep.equal([
         { label: 'report.my-form.field1', value: 1, depth: 0 },
         { label: 'report.my-form.field3', value: 3, depth: 0 },
@@ -75,8 +75,8 @@ describe('ReportViewModelGenerator service', () => {
 
   it('when fields are nested within hidden groups, the nested fields are hidden', () => {
     lineageModelGenerator.report.resolves({ doc: report });
-    formatDataRecord.resolves({});
-    getSubjectSummaries.resolves([{}]);
+    formatDataRecord.resolves({fields: { headers: [{ head: 'Name' }], data: [{ label: 'Name' }]}});
+    getSubjectSummaries.resolves([{ summary: true, subject: 'subject' }]);
     getSummaries.resolves([{}]);
 
     report.fields = {
@@ -104,8 +104,8 @@ describe('ReportViewModelGenerator service', () => {
 
   it('returns correct deep display fields', () => {
     lineageModelGenerator.report.resolves({ doc: report });
-    formatDataRecord.resolves({});
-    getSubjectSummaries.resolves([{}]);
+    formatDataRecord.resolves({fields: { headers: [{ head: 'Name' }], data: [{ label: 'Name' }]}});
+    getSubjectSummaries.resolves([{ summary: true, subject: 'subject' }]);
     getSummaries.resolves([{}]);
 
     report.fields = {
@@ -141,8 +141,8 @@ describe('ReportViewModelGenerator service', () => {
 
   it('returns correct image path', () => {
     lineageModelGenerator.report.resolves({ doc: report });
-    formatDataRecord.resolves({});
-    getSubjectSummaries.resolves([{}]);
+    formatDataRecord.resolves({fields: { headers: [{ head: 'Name' }], data: [{ label: 'Name' }]}});
+    getSubjectSummaries.resolves([{ summary: true, subject: 'subject' }]);
     getSummaries.resolves([{}]);
 
     report.fields.image = 'some image';
