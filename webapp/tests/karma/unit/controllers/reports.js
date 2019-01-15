@@ -38,6 +38,7 @@ describe('ReportsCtrl controller', () => {
     scope.setRightActionBar = sinon.stub();
     scope.setLeftActionBar = sinon.stub();
     scope.settingSelected = () => {};
+    scope.setLoadingSubActionBar = sinon.stub();
 
     liveListInit = sinon.stub();
     liveListReset = sinon.stub();
