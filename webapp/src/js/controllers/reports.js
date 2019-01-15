@@ -34,7 +34,6 @@ angular
       search: $stateParams.query,
     };
     $scope.verifyingReport = false;
-    $scope.verifyingMode = false;
 
     var liveList = LiveList.reports;
     LiveList.$init($scope, 'reports', 'report-search');
