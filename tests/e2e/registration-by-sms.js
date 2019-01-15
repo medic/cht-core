@@ -293,6 +293,5 @@ describe('registration transition', () => {
       checkScheduledTask(2, 'ANC Reminders LMP:2', 'Visit 2 reminder for Siobhan');
       checkScheduledTask(3, 'ANC Reminders LMP:3', 'LMP ' + expected_date.locale('sw').format('ddd, MMM Do, YYYY'));
     });
-
   });
 });
