@@ -161,6 +161,7 @@ var feedback = require('../modules/feedback'),
       getUserCtx: function(callback) {
         callback(null, Session.userCtx());
       },
+      appConfig: APP_CONFIG
     });
 
     LiveListConfig($scope);
