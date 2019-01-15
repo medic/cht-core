@@ -317,7 +317,7 @@ angular
             $log.error('Error verifying message', err);
           })
           .finally(() => {
-            $scope.selected[0].verified = valid;
+            $scope.selected[0].doc.verified = valid;
             $scope.setLoadingSubActionBar(false);
           });
       }
