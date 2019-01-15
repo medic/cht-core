@@ -10,7 +10,6 @@ var _ = require('underscore');
     function (
       $log,
       $scope,
-      $state,
       $stateParams,
       $timeout,
       Changes,
