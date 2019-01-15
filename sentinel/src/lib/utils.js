@@ -5,8 +5,7 @@ const _ = require('underscore'),
   config = require('../config'),
   taskUtils = require('@medic/task-utils'),
   registrationUtils = require('@medic/registration-utils'),
-  logger = require('./logger'),
-  SUBJECT_PROPERTIES = ['_id', 'patient_id', 'place_id'];
+  logger = require('./logger');
 
 /*
  * Get desired locale
@@ -314,5 +313,5 @@ module.exports = {
   isNonEmptyString: expr => typeof expr === 'string' && expr.trim() !== '',
   evalExpression: (expr, context) => vm.runInNewContext(expr, context),
 
-  getSubjectIds: contact => _.values(_.pick(contact, SUBJECT_PROPERTIES))
+  getSubjectIds: contact => registrationUtils.getSubjectIds(contact)
 };
