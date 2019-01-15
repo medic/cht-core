@@ -1,4 +1,5 @@
-var _ = require('underscore');
+var _ = require('underscore'),
+    registrationUtils = require('@medic/registration-utils');
 
 /**
  * Hydrates the given contact by uuid and creates a model which
@@ -234,14 +235,9 @@ angular.module('inboxServices').factory('ContactViewModelGenerator',
     var getReports = function(contactDocs) {
       var subjectIds = [];
       contactDocs.forEach(function(doc) {
-        subjectIds.push(doc._id);
-        if (doc.patient_id) {
-          subjectIds.push(doc.patient_id);
-        }
-        if (doc.place_id) {
-          subjectIds.push(doc.place_id);
-        }
+        subjectIds.push(registrationUtils.getSubjectIds(doc));
       });
+      subjectIds = _.flatten(subjectIds);
       return Search('reports', { subjectIds: subjectIds }, { include_docs: true })
         .then(function(reports) {
           reports.forEach(function(report) {
