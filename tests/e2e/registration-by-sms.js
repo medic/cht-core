@@ -1,6 +1,3 @@
-/**
- * TEST DISABLED FOR FLAKINESS
- * @see https://github.com/medic/medic-webapp/issues/4932
 const utils = require('../utils'),
       commonElements = require('../page-objects/common/common.po.js'),
       helper = require('../helper'),
@@ -282,7 +279,7 @@ describe('registration transition', () => {
     };
 
     it('shows content', () => {
-      commonElements.goToReports();
+      commonElements.goToReports(true);
       helper.waitElementToBeClickable(element(by.css('#reports-list .unfiltered li:first-child')));
       browser.wait(() => element(by.cssContainingText('#reports-list .unfiltered li:first-child h4 span', 'Siobhan')).isPresent(), 10000);
       helper.clickElement(element(by.css('#reports-list .unfiltered li:first-child .summary')));
@@ -299,4 +296,3 @@ describe('registration transition', () => {
 
   });
 });
-*/
