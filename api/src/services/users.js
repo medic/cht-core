@@ -50,7 +50,7 @@ const illegalDataModificationAttempts = data =>
 /*
  * Set error codes to 400 to minimize 500 errors and stacktraces in the logs.
  */
-const error400 = msg => ({ code: 400, message: msg, translationKey: '', translationParams: {} });
+const error400 = (msg, key, params) => ({ code: 400, message: msg, translationKey: key, translationParams: params });
 
 const getType = user => {
   if (user.roles && user.roles.length) {
