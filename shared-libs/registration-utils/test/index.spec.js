@@ -218,6 +218,7 @@ describe('registrationUtils', () => {
 
   describe('getSubjectIds', () => {
     it('should return correct values', () => {
+      chai.expect(utils.getSubjectIds(false)).to.deep.equal([]);
       chai.expect(utils.getSubjectIds({})).to.deep.equal([]);
       chai.expect(utils.getSubjectIds({ _id: 'a' })).to.deep.equal(['a']);
       chai.expect(utils.getSubjectIds({ patient_id: 'b' })).to.deep.equal(['b']);

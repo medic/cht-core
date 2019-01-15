@@ -46,10 +46,14 @@ exports.isValidRegistration = function(doc, settings) {
 
 exports._normalizeFormCode = normalizeFormCode;
 
-var SUBJECT_PROPERTIES = ['_id', 'patient_id', 'place_id'];
 exports.getSubjectIds = function(contact) {
   var subjectIds = [];
-  SUBJECT_PROPERTIES.forEach(function(prop) {
+
+  if (!contact) {
+    return subjectIds;
+  }
+
+  ['_id', 'patient_id', 'place_id'].forEach(function(prop) {
     if (contact[prop]) {
       subjectIds.push(contact[prop]);
     }
