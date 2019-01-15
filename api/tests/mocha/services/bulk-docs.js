@@ -11,9 +11,9 @@ const testDocs = [
   { _id: 'c' }
 ];
 let testRes,
-    testReq,
+    testReq, /*eslint-disable-line no-unused-vars */
     userCtx,
-    next;
+    next; /*eslint-disable-line no-unused-vars */
 
 describe('Bulk Docs Service', function () {
   beforeEach(function() {

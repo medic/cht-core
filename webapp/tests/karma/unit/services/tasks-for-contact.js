@@ -2,7 +2,7 @@ describe('TasksForContact service', function() {
   'use strict';
 
   var childPersonId,
-    childPersonId2,
+    childPersonId2, /*eslint-disable-line no-unused-vars */
     docId,
     rulesEngine,
     rulesEngineListen,

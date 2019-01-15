@@ -2,7 +2,7 @@ describe('UpdateUser service', function() {
 
   'use strict';
 
-  var scope,
+  var scope, /* eslint-disable-line no-unused-vars */
       service,
       $http;
 
@@ -59,7 +59,7 @@ describe('CreateUser service', function() {
 
   'use strict';
 
-  var scope,
+  var scope, /* eslint-disable-line no-unused-vars */
       service,
       $http;
 
@@ -101,7 +101,7 @@ describe('DeleteUser service', function() {
 
   'use strict';
 
-  var scope,
+  var scope, /* eslint-disable-line no-unused-vars */
       service,
       $http;
 

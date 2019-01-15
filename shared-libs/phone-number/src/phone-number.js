@@ -1,3 +1,4 @@
+/* eslint-disable no-empty */
 /**
 * Our wrapper around google's libphonenumber.
 */

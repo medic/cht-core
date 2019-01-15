@@ -85,7 +85,7 @@ describe('utils util', () => {
         .should.equal(66);
     });
     it('throws an exception if the expression errors', () => {
-      should.Throw(() => utils.evalExpression(`doc.foo.bar.smang === 'cats'`, {}));
+      should.Throw(() => utils.evalExpression(`doc.foo.bar.smang === 'cats'`, {})); /* eslint-disable-line new-cap */
     });
   });
 

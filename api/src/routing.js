@@ -116,7 +116,7 @@ app.use(
     // runs with a bunch of defaults: https://github.com/helmetjs/helmet
     hpkp: false, // explicitly block dangerous header
     contentSecurityPolicy: {
-      /* jshint ignore:start */
+      /* eslint-disable quotes */
       directives: {
         defaultSrc: ["'none'"],
         fontSrc: ["'self'"],
@@ -140,7 +140,6 @@ app.use(
           "'unsafe-inline'" // angular-ui-bootstrap
         ],
       },
-      /* jshint ignore:end */
       browserSniff: false,
     },
   })
@@ -659,7 +658,7 @@ proxyForAuth.on('proxyRes', (proxyRes, req, res) => {
   copyProxyHeaders(proxyRes, res);
 
   if (res.interceptResponse) {
-    let body = new Buffer('');
+    let body = Buffer.from('');
     proxyRes.on('data', data => (body = Buffer.concat([body, data])));
     proxyRes.on('end', () => res.interceptResponse(req, res, body.toString()));
   } else {

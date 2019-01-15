@@ -15,13 +15,11 @@ const hash = str => {
         return hash;
     }
 
-    /* jshint ignore:start */
     for (let i = 0; i < this.length; i++) {
         const char = this.charCodeAt(i);
-        hash = ((hash << 5) - hash) + char;
-        hash = hash & hash; // Convert to 32bit integer
+        hash = ((hash << 5) - hash) + char; /* eslint-disable-line no-bitwise */
+        hash = hash & hash; /* eslint-disable-line no-bitwise */ // Convert to 32bit integer
     }
-    /* jshint ignore:end */
 
     return hash;
 };
@@ -192,7 +190,7 @@ module.exports = function(DB, initialReplication) {
     return doc && (
       doc.patient_id ||
       doc.place_id ||
-      (doc.fields && (doc.fields.patient_id || doc.fields.place_id || doc.fields.patient_uuid))
+      (doc.fields && (doc.fields.patient_id || doc.fields.place_id))
     );
   };
   var contactHasId = function(contact, id) {

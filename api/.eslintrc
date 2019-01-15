@@ -1,0 +1,32 @@
+{
+  "env": {
+    "browser": false,
+    "jquery": false
+  },
+  "rules": {
+    "eqeqeq": "off",
+    "new-cap": [
+      "error",
+      {
+        "newIsCap": true
+      }
+    ],
+    "no-console": "error"
+  },
+  "overrides": [
+    {
+      "env": {
+        "browser": true
+      },
+      "files": [
+        "src/public/**/*.js"
+      ],
+      "rules": {
+        "no-console": "off"
+      }
+    }
+  ],
+  "globals": {
+    "emit": true
+  }
+}

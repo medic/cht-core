@@ -35,6 +35,7 @@
     "grunt-contrib-watch": "github:scdf/grunt-contrib-watch#v1.0.0-fix_dirs_firing",
     "grunt-couch": "^1.5.1",
     "grunt-env": "^0.4.4",
+    "grunt-eslint": "^21.0.0",
     "grunt-exec": "^3.0.0",
     "grunt-karma": "^3.0.1",
     "grunt-mocha-test": "^0.13.3",

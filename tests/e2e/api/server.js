@@ -42,7 +42,9 @@ describe('server', () => {
           if (res.headers['content-type'] === 'application/json' && typeof body === 'string') {
             try {
               body = JSON.parse(body);
-            } catch (err) {}
+            } catch (err) {
+              return reject(err);
+            }
           }
 
           resolve({ res, body });

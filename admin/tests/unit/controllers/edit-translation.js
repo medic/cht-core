@@ -1,3 +1,4 @@
+/* eslint-disable no-unused-vars */
 describe('EditTranslationCtrl controller', function() {
 
   'use strict';

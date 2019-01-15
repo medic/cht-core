@@ -1,0 +1,8 @@
+{
+  "globals": {
+    "angular": true
+  },
+  "rules": {
+    "no-console": "error"
+  }
+}

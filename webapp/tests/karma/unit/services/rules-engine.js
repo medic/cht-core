@@ -1,3 +1,4 @@
+/* eslint-disable quotes */
 describe('RulesEngine service', function() {
 
   'use strict';
@@ -9,7 +10,6 @@ describe('RulesEngine service', function() {
       injector,
       nools;
 
-  /* jshint quotmark: false */
   var rules =
     "define Contact {" +
     "  contact: null," +
@@ -100,7 +100,6 @@ describe('RulesEngine service', function() {
     "    });" +
     "  }" +
     "}";
-  /* jshint quotmark: true */
 
   var dataRecords = [
     {

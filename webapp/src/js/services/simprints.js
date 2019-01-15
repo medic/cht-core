@@ -18,8 +18,7 @@ angular.module('inboxServices').service('Simprints',
     var currentRequest = {};
 
     var request = function(endpoint) {
-      /* jslint bitwise: true */
-      var requestId = Math.floor(Math.random() * Number.MAX_SAFE_INTEGER) & SP_ID_MASK;
+      var requestId = Math.floor(Math.random() * Number.MAX_SAFE_INTEGER) & SP_ID_MASK; /* eslint-disable-line no-bitwise */
       currentRequest = {
         id: requestId,
         deferred: $q.defer()
