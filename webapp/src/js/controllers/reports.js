@@ -34,6 +34,7 @@ angular
       search: $stateParams.query,
     };
     $scope.verifyingReport = false;
+    $scope.verifyingMode = false;
 
     var liveList = LiveList.reports;
     LiveList.$init($scope, 'reports', 'report-search');
@@ -305,8 +306,8 @@ angular
     });
 
     $scope.$on('VerifyReport', function(e, valid) {
-      $scope.loadingContent = true;
       if ($scope.selected[0].doc.form) {
+        $scope.setLoadingSubActionBar(true);
         DB()
           .get($scope.selected[0]._id)
           .then(function(message) {
@@ -317,7 +318,8 @@ angular
             $log.error('Error verifying message', err);
           })
           .finally(() => {
-            $scope.loadingContent = false;
+            $scope.selected[0].verified = valid;
+            $scope.setLoadingSubActionBar(false);
           });
       }
     });
