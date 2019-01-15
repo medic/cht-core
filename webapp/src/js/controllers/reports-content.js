@@ -79,8 +79,6 @@ var _ = require('underscore');
         return label.endsWith('.patient_id') || label.endsWith('.patient_uuid') || label.endsWith('.patient_name');
       };
 
-      $scope.contactLink = (id) => $state.href('contacts.detail', { id: id });
-
       var changeListener = Changes({
         key: 'reports-content',
         filter: function(change) {
