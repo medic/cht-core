@@ -42,6 +42,7 @@ const _ = require('underscore'),
   appcacheManifest = /\/manifest\.appcache$/,
   uuid = require('uuid'),
   compression = require('compression'),
+  BUILDS_DB = 'https://staging.dev.medicmobile.org/_couch/builds',
   app = express();
 
 // requires content-type application/json header
@@ -120,7 +121,10 @@ app.use(
         defaultSrc: ["'none'"],
         fontSrc: ["'self'"],
         manifestSrc: ["'self'"],
-        connectSrc: ["'self'", "''https://staging.dev.medicmobile.org'"],
+        connectSrc: [
+          "'self'",
+          BUILDS_DB,
+        ],
         formAction: ["'self'"],
         imgSrc: [
           "'self'",
