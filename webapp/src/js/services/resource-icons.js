@@ -95,6 +95,8 @@ angular.module('inboxServices').factory('ResourceIcons',
       callback: change => updateResources(change.id)
     });
 
+    var initResources = updateResources(DOC_IDS[0]);
+
     return {
       getImg: (name, docId) => {
         if (!name || !docId) {
@@ -106,12 +108,10 @@ angular.module('inboxServices').factory('ResourceIcons',
         return DB().get(doc).then(res => Object.keys(res.resources));
       },
       getAppTitle: () => DB().get(DOC_IDS[1]).then(doc => doc.title),
-      replacePlaceholders: ($elem, bypassCache = false) => {
-        if (!bypassCache && cache[DOC_IDS[0]].doc) {
+      replacePlaceholders: $elem => {
+        initResources.then(function() {
           updateDom($elem, DOC_IDS[0]);
-        } else {
-          updateResources(DOC_IDS[0]).then(() => updateDom($elem, DOC_IDS[0]));
-        }
+        });
       }
     };
 
