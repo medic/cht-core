@@ -95,7 +95,7 @@ angular.module('inboxServices').factory('ResourceIcons',
       callback: change => updateResources(change.id)
     });
 
-    var initResources = updateResources(DOC_IDS[0]);
+    var init = updateResources(DOC_IDS[0]);
 
     return {
       getImg: (name, docId) => {
@@ -109,7 +109,7 @@ angular.module('inboxServices').factory('ResourceIcons',
       },
       getAppTitle: () => DB().get(DOC_IDS[1]).then(doc => doc.title),
       replacePlaceholders: $elem => {
-        initResources.then(function() {
+        init.then(function() {
           updateDom($elem, DOC_IDS[0]);
         });
       }
