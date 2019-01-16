@@ -315,10 +315,6 @@ angular
           })
           .catch(function(err) {
             $log.error('Error verifying message', err);
-          })
-          .finally(() => {
-            $scope.selected[0].doc.verified = valid;
-            $scope.setLoadingSubActionBar(false);
           });
       }
     });
@@ -507,6 +503,8 @@ angular
     var changeListener = Changes({
       key: 'reports-list',
       callback: function(change) {
+        $scope.setLoadingSubActionBar(false);
+
         if (change.deleted) {
           liveList.remove(change.doc);
           $scope.hasReports = liveList.count() > 0;
