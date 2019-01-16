@@ -21,11 +21,65 @@ body > div {
 
   .extras {
     float: right;
-    padding: 20px;
+    padding-right: 5px;
+    height: 100%;
 
-    a{
-      color: @button-text-inverse-color;
-      margin-top: 10px;
+    a { 
+      margin-top: 15px;
+      border-radius: 10px 10px 0 0;
+      height: 100%;
+      cursor: pointer;
+      display: inline-block;
+
+      .mm-icon {
+        width: inherit;
+      }
+    }
+    .dropdown-menu a {
+      border-radius: 0;
+    }
+    .dropdown ul a {
+      width: 100%;
+      height: auto;
+    }
+    .options .dropdown-menu {
+      width: 250px;
+      left: auto;
+      margin-top: 30px;
+      a {
+        &.no-click:hover {
+          background-color: transparent;
+          cursor: default;
+        }
+      }
+    }
+    .mm-icon {
+      margin: 0 auto;
+      font-size: 1.5rem;
+    }
+    .mm-icon-inverse, .mm-icon-inverse:focus {
+      color: #DDDDDD;
+      text-shadow: rgba(0, 0, 0, 0.5) 1px 1px 2px;
+    }
+    .open > a {
+      background-color: #ffffff;
+    }
+    .open > a .mm-icon {
+      color: #323232;
+      text-align: center;
+      padding-top: 5px;
+    }
+    .mm-dropdown-menu {
+      top: 0;
+      right: 0;
+      padding: 10px 0;
+      margin: 41px 0;
+      overflow-x: hidden;
+      border-radius: 0 0 5px 5px;
+      border: 0;
+      box-shadow: 0 6px 12px rgba(0, 0, 0, 0.4);
+      height: auto;
+      max-height: 80vh;
     }
   }
 }

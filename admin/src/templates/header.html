@@ -4,9 +4,27 @@
       <h1 translate>admin.app.name</h1>
     </div>
     <div class="extras">
-      <a href="#" ng-click="logout()">
-        <span translate>Log Out</span>
-      </a>
+      <span class="dropdown options">
+        <a data-toggle="dropdown">
+          <div class="mm-icon mm-icon-inverse">
+            <span class="fa fa-fw fa-bars"></span>
+          </div>
+        </a>
+        <ul role="menu" class="dropdown-menu mm-dropdown-menu">
+          <li role="presentation" mm-auth="can_configure">
+            <a ng-href="{{baseUrl}}" role="menuitem" tabindex="-1" rel="noopener noreferrer">
+              <i class="fa fa-fw fa-cog"></i>
+              <span translate>app.name</span>
+            </a>
+          </li>
+          <li role="presentation" mm-auth="can_configure">
+            <a role="menuitem" tabindex="-1" rel="external" ng-click="logout()">
+              <i class="fa fa-fw fa-power-off"></i>
+              <span translate>Log Out</span>
+            </a>
+          </li>
+        </ul>
+      </span>
     </div>
   </div>
 </nav>

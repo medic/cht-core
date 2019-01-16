@@ -20,6 +20,8 @@ angular.module('controllers').controller('MainCtrl',
       $window.location.href = Location.path;
     });
 
+
+    $scope.baseUrl = Location.path;
     $scope.logout = function() {
       Session.logout();
     };
