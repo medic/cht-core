@@ -62,6 +62,7 @@
     "pouchdb-core": "^7.0.0",
     "pouchdb-mapreduce": "^7.0.0",
     "protractor-jasmine2-screenshot-reporter": "^0.5.0",
+    "rewire": "^4.0.1",
     "semver": "^5.6.0",
     "sinon": "^7.1.1",
     "time-grunt": "^2.0.0",
