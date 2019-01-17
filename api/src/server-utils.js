@@ -54,8 +54,8 @@ module.exports = {
     }
     // https://github.com/nodejs/node/issues/9027
     let code = err.code || err.statusCode || 500;
-    if (typeof code !== 'number') {
-      console.warn('Non-numeric error code: ' + code);
+    if (!Number.isInteger(code)) {
+      logger.warn(`Non-numeric error code: ${code}`);
       code = 502;
     }
     if (code === 401) {
