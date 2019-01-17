@@ -52,7 +52,12 @@ module.exports = {
     if (typeof err === 'string') {
       return module.exports.serverError(err, req, res);
     }
-    var code = err.code || err.statusCode || err.status || 500;
+    // https://github.com/nodejs/node/issues/9027
+    let code = err.code || err.statusCode || 500;
+    if (typeof code !== 'number') {
+      console.warn('Non-numeric error code: ' + code);
+      code = 502;
+    }
     if (code === 401) {
       return module.exports.notLoggedIn(req, res, showPrompt);
     }
