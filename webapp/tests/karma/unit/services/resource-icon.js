@@ -162,9 +162,8 @@ describe('ResourceIcons service', function() {
       };
       get.onCall(0).returns(Promise.resolve())
         .onCall(1).returns(Promise.resolve())
-        .onCall(2).returns(Promise.resolve())
-        .onCall(3).returns(Promise.resolve(resources1))
-        .onCall(4).returns(Promise.resolve(resources2));
+        .onCall(2).returns(Promise.resolve(resources1))
+        .onCall(3).returns(Promise.resolve(resources2));
       var dom = $('<ul>' +
                   '<li><img class="resource-icon" title="child"/></li>' +
                   '<li><img class="resource-icon" title="adult"/></li>' +
@@ -184,7 +183,7 @@ describe('ResourceIcons service', function() {
             .to.equal('data:image/png;base64,kiddlywinks');
           chai.expect(dom.find('.resource-icon[title="adult"] img').attr('src'))
             .to.equal('data:image/png;base64,coffinstuffer');
-          chai.expect(get.callCount).to.equal(5);
+          chai.expect(get.callCount).to.equal(4);
           done();
         });
       });
