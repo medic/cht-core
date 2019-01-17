@@ -86,7 +86,7 @@ describe('birth registration', () => {
 
   it('valid form adds patient_id and expected_date', () => {
       // doc already exists bc we aren't testing the create patient step
-      sinon.stub(utils, 'getPatientContactUuid').callsArgWith(2, null, {_id: 'UUID'});
+      sinon.stub(utils, 'getPatientContactUuid').callsArgWith(1, null, {_id: 'UUID'});
 
       sinon.stub(transitionUtils, 'addUniqueId').callsFake((doc, callback) => {
           doc.patient_id = 12345;

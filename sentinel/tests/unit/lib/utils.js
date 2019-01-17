@@ -2,9 +2,14 @@ const should = require('chai').should(),
       sinon = require('sinon'),
       registrationUtils = require('@medic/registration-utils'),
       taskUtils = require('@medic/task-utils'),
-      config = require('../../../src/config');
+      config = require('../../../src/config'),
+      db = require('../../../src/db-pouch');
 
 describe('utils util', () => {
+
+  beforeEach(() => {
+    db.medic.query = sinon.stub();
+  });
   afterEach(() => sinon.restore());
 
   const utils = require('../../../src/lib/utils');
@@ -88,19 +93,13 @@ describe('utils util', () => {
     it('works with single key', done => {
       sinon.stub(config, 'getAll').returns({});
       sinon.stub(registrationUtils, 'isValidRegistration').returns(true);
-      const db = {
-        medic: {
-          view: sinon.stub().callsArgWith(3, null, { rows: [] })
-        }
-      };
-
-      utils.getRegistrations({ db: db, id: 'my_id' }, (err, result) => {
+      db.medic.query.resolves({ rows: [] });
+      utils.getRegistrations({ id: 'my_id' }, (err, result) => {
         (!!err).should.equal(false);
         result.should.deep.equal([]);
-        db.medic.view.callCount.should.equal(1);
-        db.medic.view.args[0][0].should.equal('medic-client');
-        db.medic.view.args[0][1].should.equal('registered_patients');
-        db.medic.view.args[0][2].should.deep.equal({
+        db.medic.query.callCount.should.equal(1);
+        db.medic.query.args[0][0].should.equal('medic-client/registered_patients');
+        db.medic.query.args[0][1].should.deep.equal({
           include_docs: true,
           key: 'my_id'
         });
@@ -111,19 +110,13 @@ describe('utils util', () => {
     it('should work with multiple keys', done => {
       sinon.stub(config, 'getAll').returns({});
       sinon.stub(registrationUtils, 'isValidRegistration').returns(true);
-      const db = {
-        medic: {
-          view: sinon.stub().callsArgWith(3, null, { rows: [] })
-        }
-      };
-
-      utils.getRegistrations({ db: db, ids: ['1', '2', '3'] }, (err, result) => {
+      db.medic.query.resolves({ rows: [] });
+      utils.getRegistrations({ ids: ['1', '2', '3'] }, (err, result) => {
         (!!err).should.equal(false);
         result.should.deep.equal([]);
-        db.medic.view.callCount.should.equal(1);
-        db.medic.view.args[0][0].should.equal('medic-client');
-        db.medic.view.args[0][1].should.equal('registered_patients');
-        db.medic.view.args[0][2].should.deep.equal({
+        db.medic.query.callCount.should.equal(1);
+        db.medic.query.args[0][0].should.equal('medic-client/registered_patients');
+        db.medic.query.args[0][1].should.deep.equal({
           include_docs: true,
           keys: ['1', '2', '3']
         });
@@ -134,13 +127,8 @@ describe('utils util', () => {
     it('should catch db errors', done => {
       sinon.stub(config, 'getAll');
       sinon.stub(registrationUtils, 'isValidRegistration');
-      const db = {
-        medic: {
-          view: sinon.stub().callsArgWith(3, { some: 'error' })
-        }
-      };
-
-      utils.getRegistrations({ db: db, id: 'my_id' }, (err, result) => {
+      db.medic.query.rejects({ some: 'error' });
+      utils.getRegistrations({ id: 'my_id' }, (err, result) => {
         err.should.deep.equal({ some: 'error' });
         (!!result).should.equal(false);
         done();
@@ -158,19 +146,14 @@ describe('utils util', () => {
         { _id: 'reg4', valid: true },
         { _id: 'reg5', valid: false }
       ];
-      const db = {
-        medic: {
-          view: sinon.stub().callsArgWith(3, null, { rows: registrations.map(registration => ({ doc: registration }))})
-        }
-      };
-
-      utils.getRegistrations({ db: db, id: 'my_id' }, (err, result) => {
+      db.medic.query.resolves({ rows: registrations.map(registration => ({ doc: registration }))});
+      utils.getRegistrations({ id: 'my_id' }, (err, result) => {
         (!!err).should.equal(false);
         result.should.deep.equal([
           { _id: 'reg1', valid: true },
           { _id: 'reg4', valid: true }
         ]);
-        db.medic.view.callCount.should.equal(1);
+        db.medic.query.callCount.should.equal(1);
         config.getAll.callCount.should.equal(5);
         registrationUtils.isValidRegistration.callCount.should.equal(5);
         registrationUtils.isValidRegistration.args.should.deep.equal([
@@ -193,23 +176,23 @@ describe('utils util', () => {
     });
 
     it('should query the correct view with key', () => {
-      const db = { query: sinon.stub().resolves({ rows: [] }) };
+      db.medic.query.resolves({ rows: [] });
 
-      return utils.getReportsBySubject({ db, id: '12345' }).then(result => {
+      return utils.getReportsBySubject({ id: '12345' }).then(result => {
         result.should.deep.equal([]);
-        db.query.callCount.should.equal(1);
-        db.query.args[0].should.deep.equal(['medic-client/reports_by_subject', { key: ['12345'], include_docs: true }]);
+        db.medic.query.callCount.should.equal(1);
+        db.medic.query.args[0].should.deep.equal(['medic-client/reports_by_subject', { key: ['12345'], include_docs: true }]);
       });
     });
 
     it('should query the correct view with keys', () => {
-      const db = { query: sinon.stub().resolves({ rows: [] }) },
-            ids = ['a', 'b', 'c', 'd'];
+      db.medic.query.resolves({ rows: [] });
+      const ids = ['a', 'b', 'c', 'd'];
 
-      return utils.getReportsBySubject({ db, ids }).then(result => {
+      return utils.getReportsBySubject({ ids }).then(result => {
         result.should.deep.equal([]);
-        db.query.callCount.should.equal(1);
-        db.query.args[0].should.deep.equal([
+        db.medic.query.callCount.should.equal(1);
+        db.medic.query.args[0].should.deep.equal([
           'medic-client/reports_by_subject',
           { keys: [['a'], ['b'], ['c'], ['d']], include_docs: true }
         ]);
@@ -217,9 +200,9 @@ describe('utils util', () => {
     });
 
     it('should return query errors', () => {
-      const db = { query: sinon.stub().rejects({ some: 'error' }) };
+      db.medic.query.rejects({ some: 'error' });
 
-      return utils.getReportsBySubject({ db, id: 'a' })
+      return utils.getReportsBySubject({ id: 'a' })
         .then(result => result.should.equal('Should have thrown'))
         .catch(err => {
           err.should.deep.equal({ some: 'error' });
@@ -227,17 +210,17 @@ describe('utils util', () => {
     });
 
     it('should return results', () => {
-      const reports = [{ _id: 'r1' }, { _id: 'r2' }, { _id: 'r3' }],
-            db = { query: sinon.stub().resolves({ rows: reports.map(r => ({ doc: r }))  })};
+      const reports = [{ _id: 'r1' }, { _id: 'r2' }, { _id: 'r3' }];
+      db.medic.query.resolves({ rows: reports.map(r => ({ doc: r })) });
 
-      return utils.getReportsBySubject({ db, id: 'a' }).then(result => {
+      return utils.getReportsBySubject({ id: 'a' }).then(result => {
         result.should.deep.equal(reports);
       });
     });
 
     it('should return valid registrations only when requested', () => {
-      const reports = [{ _id: 'r1' }, { _id: 'r2' }, { _id: 'r3' }],
-            db = { query: sinon.stub().resolves({ rows: reports.map(r => ({ doc: r }))  })};
+      const reports = [{ _id: 'r1' }, { _id: 'r2' }, { _id: 'r3' }];
+      db.medic.query.resolves({ rows: reports.map(r => ({ doc: r })) });
 
       sinon.stub(registrationUtils, 'isValidRegistration');
       sinon.stub(config, 'getAll').returns('config');
@@ -246,7 +229,7 @@ describe('utils util', () => {
         .withArgs({ _id: 'r2' }).returns(true)
         .withArgs({ _id: 'r3' }).returns(false);
 
-      return utils.getReportsBySubject({ db, id: 'a', registrations: true }).then(result => {
+      return utils.getReportsBySubject({ id: 'a', registrations: true }).then(result => {
         result.should.deep.equal([{ _id: 'r1' }, { _id: 'r2' }]);
         registrationUtils.isValidRegistration.callCount.should.equal(3);
         registrationUtils.isValidRegistration.args.should.deep.equal([

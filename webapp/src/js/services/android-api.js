@@ -9,6 +9,7 @@ angular.module('inboxServices').factory('AndroidApi',
     $log,
     $rootScope,
     $state,
+    $window,
     MRDT,
     Session,
     Simprints
@@ -55,7 +56,7 @@ angular.module('inboxServices').factory('AndroidApi',
 
       // On an Enketo form, go to the previous page (if there is one)
       if ($container.find('.enketo .btn.previous-page:visible:enabled:not(".disabled")').length) {
-        window.history.back();
+        $window.history.back();
         return true;
       }
 

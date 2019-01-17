@@ -108,6 +108,14 @@ describe('validate doc update', () => {
     done();
   });
 
+  it('only db and national admins are allowed to add partners', done => {
+    const doc = { _id: 'partners' };
+    assert.isOk(allowedOnServer(userCtx({roles: [ '_admin' ]}), doc));
+    assert.isOk(allowedOnServer(userCtx({roles: [ 'national_admin' ]}), doc));
+    assert.deepEqual(allowedOnServer(userCtx({roles: [ ]}), doc), disallowed('You are not authorized to edit admin only docs'));
+    done();
+  });
+
   it('allowed returns false on empty userCtx', done => {
     assert.deepEqual(allowedOnServer({}, {}), disallowed('You must be logged in to edit documents'));
     done();

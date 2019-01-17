@@ -1,9 +1,11 @@
-var _ = require('underscore'),
-  async = require('async'),
-  db = require('../../../src/db-nano'),
-  logger = require('../../../src/logger'),
-  dbPouch = require('../../../src/db-pouch'),
-  DB_PREFIX = 'medic_api_integration_tests__';
+const _ = require('underscore'),
+      {promisify} = require('util'),
+      fs = require('fs'),
+      path = require('path'),
+      readFileAsync = promisify(fs.readFile),
+      db = require('../../../src/db-nano'),
+      logger = require('../../../src/logger'),
+      dbPouch = require('../../../src/db-pouch');
 
 const PouchDB = require('pouchdb-core');
 PouchDB.plugin(require('pouchdb-adapter-http'));
@@ -62,55 +64,36 @@ function matches(expected, actual) {
   }
 }
 
-function assertDb(expectedContents) {
-  if (Array.isArray(expectedContents)) {
-    expectedContents = {
-      medic: expectedContents,
-    };
-  }
+function assertDb(expected) {
   return new Promise(function(resolve, reject) {
-    async.map(
-      Object.keys(expectedContents),
-      function(dbName, callback) {
-        db.request(
-          {
-            path: DB_PREFIX + dbName + '/_all_docs',
-            method: 'GET',
-            qs: { include_docs: true },
-          },
-          callback
-        );
-      },
-      function(err, results) {
-        if (err) {
-          return reject(err);
-        }
-
-        Object.keys(expectedContents).forEach(function(key, i) {
-          var expectedContent = expectedContents[key];
-          var actualContent = results[i].rows.map(function(row) {
-            return _.omit(row.doc, ['_rev']);
-          });
-          expectedContent.sort(byId);
-          actualContent.sort(byId);
-
-          // remove standard ddocs from actualContent
-          if (key === 'medic') {
-            actualContent = actualContent.filter(function(doc) {
-              return (
-                doc._id !== '_design/medic' &&
-                doc._id !== '_design/medic-client' &&
-                doc._id !== 'settings'
-              );
-            });
-          }
-
-          matchDbs(expectedContent, actualContent);
-        });
-
-        resolve();
+    const options = {
+      path: 'medic-test/_all_docs',
+      method: 'GET',
+      qs: { include_docs: true },
+    };
+    db.request(options, function(err, results) {
+      if (err) {
+        return reject(err);
       }
-    );
+
+      var actual = results.rows.map(function(row) {
+        return _.omit(row.doc, ['_rev']);
+      });
+      expected.sort(byId);
+      actual.sort(byId);
+
+      // remove standard ddocs from actual
+      actual = actual.filter(function(doc) {
+        return (
+          doc._id !== '_design/medic' &&
+          doc._id !== '_design/medic-client' &&
+          doc._id !== 'settings'
+        );
+      });
+
+      matchDbs(expected, actual);
+      resolve();
+    });
   });
 }
 
@@ -192,10 +175,9 @@ const switchToRealDbs = () => {
 };
 
 const switchToTestDbs = () => {
-  db.audit = db.use(DB_PREFIX + 'audit');
-  db.medic = db.use(DB_PREFIX + 'medic');
+  db.medic = db.use('medic-test');
   dbPouch.medic = new PouchDB(
-    realPouchDb.name.replace(/medic$/, DB_PREFIX + 'medic')
+    realPouchDb.name.replace(/medic$/, 'medic-test')
   );
 
   // hijack calls to db.request and make sure that they are made to the correct
@@ -203,180 +185,78 @@ const switchToTestDbs = () => {
   db.request = function() {
     var args = Array.prototype.slice.call(arguments);
     var targetDb = args[0].db;
-    if (targetDb && targetDb.indexOf(DB_PREFIX) !== 0) {
-      args[0].db = DB_PREFIX + targetDb;
+    if (targetDb) {
+      if (targetDb === 'medic') {
+        args[0].db = 'medic-test';
+      } else if (targetDb !== 'medic-test') {
+        throw new Error(`Unexpected targetDb: "${targetDb}"`);
+      }
     }
     return dbRequest.apply(db, args);
   };
 
   db.getPath = function() {
-    return DB_PREFIX + 'medic/_design/medic/_rewrite';
+    return 'medic-test/_design/medic/_rewrite';
   };
 };
 
 function initDb(content) {
-  if (Array.isArray(content)) {
-    content = {
-      medic: content,
-    };
-  }
 
   switchToTestDbs();
 
-  var realMedicDb = db.use('medic');
-
   return _resetDb()
-    .then(function() {
-      // copy ddocs from non-test db
-      return new Promise(function(resolve, reject) {
-        realMedicDb.get('_design/medic', function(err, medicDdoc) {
-          if (err) {
-            return reject(
-              new Error('Error getting _design/medic: ' + err.message)
-            );
-          }
-          resolve(medicDdoc);
-        });
-      });
+    .then(() => {
+      const medicPath = path.join(__dirname, '../../../../build/ddocs/medic.json');
+      const compiledPath = path.join(__dirname, '../../../../build/ddocs/medic/_attachments/ddocs/compiled.json');
+      return Promise.all([ readFileAsync(medicPath), readFileAsync(compiledPath) ]);
     })
-    .then(function(medicDdoc) {
-      delete medicDdoc._rev;
-      delete medicDdoc._attachments;
-      return new Promise(function(resolve, reject) {
-        db.medic.insert(medicDdoc, function(err) {
-          if (err) {
-            return reject(
-              new Error('Error inserting _design/medic: ' + err.message)
-            );
-          }
-          resolve();
-        });
-      });
+    .then(([medicString, compiledString]) => {
+      const medicClient = JSON.parse(compiledString).docs
+        .find(doc => doc._id === '_design/medic-client');
+      const medic = JSON.parse(medicString).docs[0];
+      delete medic._attachments;
+      return dbPouch.medic.bulkDocs([ medic, medicClient ]);
     })
-    .then(function() {
-      switchToRealDbs();
-
-      return new Promise(function(resolve, reject) {
-        db.medic.insert(
-          {
-            _id: 'org.couchdb.user:admin',
-            name: 'admin',
-            roles: [],
-            type: 'user-settings',
-            language: 'en',
-            known: true,
-            facility_id: null,
-            contact_id: null,
-          },
-          function(err) {
-            // Assume that if the doc already exists, then it's properly set up
-            // This may be risky, but hopefully it was done as part of a
-            // previous test, or has been set up correctly on a local machine.
-            if (err && err.error !== 'conflict') {
-              return reject(
-                new Error('Error inserting admin user: ' + err.message)
-              );
-            }
-            resolve();
-          }
-        );
-      });
-    })
-    .then(function() {
-      return require('../../../src/ddoc-extraction').run();
-    })
-    .then(function() {
-      switchToTestDbs();
-
-      return new Promise(function(resolve, reject) {
-        realMedicDb.get('_design/medic-client', function(err, medicClientDdoc) {
-          if (err) {
-            return reject(
-              new Error('Error getting _design/medic-client: ' + err.message)
-            );
-          }
-          resolve(medicClientDdoc);
-        });
-      });
-    })
-    .then(function(medicClientDdoc) {
-      delete medicClientDdoc._rev;
-      return new Promise(function(resolve, reject) {
-        db.medic.insert(medicClientDdoc, function(err) {
-          if (err) {
-            return reject(
-              new Error('Error inserting _design/medic-client: ' + err.message)
-            );
-          }
-          resolve();
-        });
-      });
-    })
-    .then(function() {
+    .then(() => {
       return Promise.all(
-        _.map(content, function(dbContent, dbName) {
-          return Promise.all(
-            dbContent.map(function(doc) {
-              return new Promise(function(resolve, reject) {
-                db[dbName].insert(doc, function(err) {
-                  if (err) {
-                    return reject(
-                      new Error(
-                        'Error inserting ' + doc._id + ': ' + err.message
-                      )
-                    );
-                  }
-                  resolve();
-                });
-              });
-            })
-          );
-        })
+        content.map(doc => dbPouch.medic.put(doc))
       );
     });
 }
 
 function _resetDb() {
-  return Promise.all(
-    [DB_PREFIX + 'audit', DB_PREFIX + 'medic'].map(function(dbName) {
-      return new Promise(function(resolve, reject) {
-        db.db.destroy(dbName, function(err) {
-          if (err && err.statusCode !== 404) {
-            return reject(
-              new Error('Error deleting ' + dbName + ': ' + err.message)
-            );
-          }
+  return new Promise(function(resolve, reject) {
+    db.db.destroy('medic-test', function(err) {
+      if (err && err.statusCode !== 404) {
+        return reject(
+          new Error('Error deleting "medic-test": ' + err.message)
+        );
+      }
 
-          db.db.create(dbName, function(err) {
-            if (err) {
-              logger.error(
-                `Could not create ${dbName} directly after deleting, pausing and trying again`
-              );
+      db.db.create('medic-test', function(err) {
+        if (err) {
+          logger.error(
+            `Could not create "medic-test" directly after deleting, pausing and trying again`
+          );
 
-              return setTimeout(function() {
-                db.db.create(dbName, function(err) {
-                  if (err) {
-                    return reject(
-                      new Error('Error creating ' + dbName + ': ' + err.message)
-                    );
-                  }
+          return setTimeout(function() {
+            db.db.create('medic-test', function(err) {
+              if (err) {
+                return reject(
+                  new Error('Error creating "medic-test": ' + err.message)
+                );
+              }
 
-                  logger.info(
-                    'After a struggle, at',
-                    new Date(),
-                    'Re-created ' + dbName
-                  );
-                  resolve();
-                });
-              }, 3000);
-            } else {
+              logger.info(`After a struggle, at ${new Date()}, re-created "medic-test"`);
               resolve();
-            }
-          });
-        });
+            });
+          }, 3000);
+        } else {
+          resolve();
+        }
       });
-    })
-  );
+    });
+  });
 }
 
 function tearDown() {
@@ -386,8 +266,7 @@ function tearDown() {
 function runMigration(migration) {
   var migrationPath = '../../../src/migrations/' + migration;
   migration = require(migrationPath);
-  return migration
-    .run();
+  return migration.run();
 }
 
 function initSettings(settings) {

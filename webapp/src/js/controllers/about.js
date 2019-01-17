@@ -3,17 +3,23 @@ angular.module('inboxControllers').controller('AboutCtrl',
     $interval,
     $log,
     $scope,
+    $window,
     DB,
     Debug,
-    Session
+    Session,
+    ResourceIcons
   ) {
     'use strict';
     'ngInject';
 
-    $scope.url = window.location.hostname;
+    $scope.url = $window.location.hostname;
     $scope.userCtx = Session.userCtx();
 
     $scope.debugOptionEnabled = $scope.url.indexOf('localhost') >= 0;
+
+    ResourceIcons.getDocResources('partners').then(partners => {
+      $scope.partners = partners;
+    });
 
     DB({remote: true}).allDocs({ key: '_design/medic' })
       .then(function(info) {
@@ -47,18 +53,18 @@ angular.module('inboxControllers').controller('AboutCtrl',
       });
 
     $scope.reload = function() {
-      window.location.reload(false);
+      $window.location.reload(false);
     };
     $scope.enableDebugModel = {
       val: Debug.get()
     };
     $scope.$watch('enableDebugModel.val', Debug.set);
 
-    if (window.medicmobile_android && typeof window.medicmobile_android.getDataUsage === 'function') {
-      $scope.androidDataUsage = JSON.parse(window.medicmobile_android.getDataUsage());
+    if ($window.medicmobile_android && typeof $window.medicmobile_android.getDataUsage === 'function') {
+      $scope.androidDataUsage = JSON.parse($window.medicmobile_android.getDataUsage());
 
       var dataUsageUpdate = $interval(function() {
-        $scope.androidDataUsage = JSON.parse(window.medicmobile_android.getDataUsage());
+        $scope.androidDataUsage = JSON.parse($window.medicmobile_android.getDataUsage());
       }, 2000);
 
       $scope.$on('$destroy', function() {

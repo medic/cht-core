@@ -147,4 +147,27 @@ describe('Server Checks service', () => {
     });
 
   });
+
+  describe('getCouchDbVersion', () => {
+    it('should return couchdb version', () => {
+      sinon.stub(request, 'get').callsArgWith(1, null, null, { version: '2.2.0' });
+      return service.getCouchDbVersion('someURL').then(version => {
+        chai.expect(version).to.equal('2.2.0');
+        chai.expect(request.get.callCount).to.equal(1);
+        chai.expect(request.get.args[0][0]).to.deep.equal({ url: 'someURL', json: true });
+      });
+    });
+
+    it('should reject errors', () => {
+      sinon.stub(request, 'get').callsArgWith(1, 'someErr', null, null);
+      return service
+        .getCouchDbVersion('someOtherURL')
+        .then(() => chai.expect(false).to.equal('Should have thrown'))
+        .catch(err => {
+          chai.expect(err).to.equal('someErr');
+          chai.expect(request.get.callCount).to.equal(1);
+          chai.expect(request.get.args[0][0]).to.deep.equal({ url: 'someOtherURL', json: true });
+        });
+    });
+  });
 });

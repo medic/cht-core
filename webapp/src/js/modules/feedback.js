@@ -31,7 +31,7 @@ var registerUnhandledErrorHandler = function() {
   options.window.onerror = function(message, file, line) {
     var error = { message: message, file: file, line: line };
     try {
-      module.exports.submit(error, {}, function(err) {
+      module.exports.submit(error, false, function(err) {
         if (err) {
           options.console.error('Error saving feedback', err);
         }
@@ -43,7 +43,7 @@ var registerUnhandledErrorHandler = function() {
   };
 };
 
-var create = function(info, appInfo, callback) {
+var create = function(info, isManual, callback) {
   options.getUserCtx(function(err, userCtx) {
     if (err) {
       return callback(err);
@@ -53,12 +53,27 @@ var create = function(info, appInfo, callback) {
         time: new Date().toISOString(),
         user: userCtx,
         url: getUrl(),
-        app: appInfo.name,
-        version: appInfo.version
+        app: options.appConfig.name,
+        version: options.appConfig.version,
+        source: isManual ? 'manual' : 'automatic'
       },
       info: info,
       log: log,
       type: 'feedback'
+    });
+  });
+};
+
+var submitExisting = function() {
+  var existing = options.window.bootstrapFeedback || [];
+
+  existing.forEach(function(msg) {
+    create(msg, {}, function(err, doc) {
+      if (!err) {
+        // Intentionally not threading callbacks, we'll just fire and forget
+        // these for simplicity
+        options.saveDoc(doc, () => undefined);
+      }
     });
   });
 };
@@ -79,9 +94,10 @@ module.exports = {
       registerConsoleInterceptor();
       registerUnhandledErrorHandler();
     }
+    submitExisting();
   },
-  submit: function(info, appInfo, callback) {
-    create(info, appInfo, function(err, doc) {
+  submit: function(info, isManual, callback) {
+    create(info, isManual, function(err, doc) {
       if (err) {
         return callback(err);
       }

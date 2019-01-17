@@ -2,7 +2,6 @@ require('chai').should();
 const sinon = require('sinon'),
   moment = require('moment'),
   db = require('../../../src/db-pouch'),
-  dbNano = require('../../../src/db-nano'),
   utils = require('../../../src/lib/utils'),
   config = require('../../../src/config'),
   transition = require('../../../src/transitions/accept_patient_reports'),
@@ -221,7 +220,7 @@ describe('accept_patient_reports', () => {
 
       transition._handleReport(doc, config, () => {
         utils.getRegistrations.callCount.should.equal(1);
-        utils.getRegistrations.args[0][0].should.deep.equal({ db: dbNano, id: 'x' });
+        utils.getRegistrations.args[0][0].should.deep.equal({ id: 'x' });
         done();
       });
     });

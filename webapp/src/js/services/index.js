@@ -7,7 +7,6 @@
   require('./add-read-status');
   require('./analytics-modules');
   require('./android-api');
-  require('./branding-images');
   require('./auth');
   require('./cache');
   require('./calendar-interval');
@@ -37,10 +36,12 @@
   require('./export');
   require('./extract-lineage');
   require('./file-reader');
+  require('./form2sms');
   require('./format-data-record');
   require('./format-date');
   require('./geolocation');
   require('./get-data-records');
+  require('./get-report-content');
   require('./get-subject-summaries');
   require('./get-summaries');
   require('./hydrate-contact-names');
@@ -76,6 +77,7 @@
   require('./settings');
   require('./simprints');
   require('./snackbar');
+  require('./submit-form-by-sms');
   require('./target-generator');
   require('./tasks-for-contact');
   require('./telemetry');

@@ -7,7 +7,9 @@ const sinon = require('sinon'),
       inherits = require('util').inherits,
       EventEmitter = require('events'),
       _ = require('underscore'),
-      config = require('../../../src/config');
+      config = require('../../../src/config'),
+      serverChecks = require('@medic/server-checks'),
+      environment = require('../../../src/environment');
 
 require('chai').should();
 let testReq,
@@ -19,9 +21,10 @@ let testReq,
     clock,
     emitters,
     reqOnClose,
-    defaultSettings;
+    defaultSettings,
+    realSetTimeout;
 
-const nextTick = () => Promise.resolve().then(() => Promise.resolve()).then(() => Promise.resolve());
+const nextTick = () => new Promise(resolve => realSetTimeout(() => resolve()));
 
 describe('Changes controller', () => {
   afterEach(() => {
@@ -32,6 +35,7 @@ describe('Changes controller', () => {
   });
 
   beforeEach(() => {
+    realSetTimeout = setTimeout;
     clock = sinon.useFakeTimers();
     emitters = [];
     userCtx = { name: 'user', facility_id: 'facility', contact_id: 'contact' };
@@ -71,6 +75,7 @@ describe('Changes controller', () => {
 
     sinon.stub(_, 'now').callsFake(Date.now); // force underscore's debounce to use fake timers!
     sinon.stub(config, 'get').returns(defaultSettings);
+    sinon.stub(serverChecks, 'getCouchDbVersion').resolves('2.2.0');
 
     ChangesEmitter = function(opts) {
       changesSpy(opts);
@@ -161,6 +166,26 @@ describe('Changes controller', () => {
         changesSpy.args[1][0].since.should.equal('seq-3');
       });
     });
+
+    it('should check if changes requests can be limited', () => {
+      environment.serverUrl = 'someURL';
+      serverChecks.getCouchDbVersion.resolves('2.2.0');
+      return controller._init().then(() => {
+        serverChecks.getCouchDbVersion.callCount.should.equal(1);
+        serverChecks.getCouchDbVersion.args[0].should.deep.equal(['someURL']);
+        controller._getLimitChangesRequests().should.equal(false);
+      });
+    });
+
+    it('should check if changes requests can be limited', () => {
+      environment.serverUrl = 'someOtherURL';
+      serverChecks.getCouchDbVersion.resolves('2.3.0');
+      return controller._init().then(() => {
+        serverChecks.getCouchDbVersion.callCount.should.equal(1);
+        serverChecks.getCouchDbVersion.args[0].should.deep.equal(['someOtherURL']);
+        controller._getLimitChangesRequests().should.equal(true);
+      });
+    });
   });
 
   describe('request', () => {
@@ -181,13 +206,15 @@ describe('Changes controller', () => {
       authorization.getAllowedDocIds.resolves([1, 2, 3]);
       controller._init();
       controller.request(testReq, testRes);
-      testReq.on.callCount.should.equal(1);
-      testReq.on.args[0][0].should.equal('close');
-      testRes.type.callCount.should.equal(1);
-      testRes.type.args[0][0].should.equal('json');
-      const feeds = controller._getNormalFeeds();
-      feeds.length.should.equal(1);
-      testRes.setHeader.callCount.should.equal(0);
+      return nextTick().then(() => {
+        testReq.on.callCount.should.equal(1);
+        testReq.on.args[0][0].should.equal('close');
+        testRes.type.callCount.should.equal(1);
+        testRes.type.args[0][0].should.equal('json');
+        const feeds = controller._getNormalFeeds();
+        feeds.length.should.equal(1);
+        testRes.setHeader.callCount.should.equal(0);
+      });
     });
   });
 
@@ -225,22 +252,24 @@ describe('Changes controller', () => {
       defaultSettings.reiterate_changes = 'something';
       defaultSettings.debounce_interval = false;
       controller.request(testReq, testRes);
-      const feed = controller._getNormalFeeds()[0];
-      feed.limit.should.equal(23);
-      feed.heartbeat.should.be.an('Object');
-      feed.timeout.should.be.an('Object');
-      clock.tick(82000);
-      testRes.write.callCount.should.equal(8);
-      testRes.write.args.should.deep.equal([
-        ['\n'], ['\n'], ['\n'], ['\n'], ['\n'], ['\n'], ['\n'], ['\n'] //heartbeats
-      ]);
-      testRes.end.callCount.should.equal(0);
-      controller._getNormalFeeds().length.should.equal(1);
-      clock.tick(30000);
-      testRes.end.callCount.should.equal(1);
-      controller._getNormalFeeds().length.should.equal(0);
-      feed.reiterate_changes.should.equal('something');
-      feed.should.not.have.property('debouncedEnd');
+      return nextTick().then(() => {
+        const feed = controller._getNormalFeeds()[0];
+        feed.limit.should.equal(23);
+        feed.heartbeat.should.be.an('Object');
+        feed.timeout.should.be.an('Object');
+        clock.tick(82000);
+        testRes.write.callCount.should.equal(8);
+        testRes.write.args.should.deep.equal([
+          ['\n'], ['\n'], ['\n'], ['\n'], ['\n'], ['\n'], ['\n'], ['\n'] //heartbeats
+        ]);
+        testRes.end.callCount.should.equal(0);
+        controller._getNormalFeeds().length.should.equal(1);
+        clock.tick(30000);
+        testRes.end.callCount.should.equal(1);
+        controller._getNormalFeeds().length.should.equal(0);
+        feed.reiterate_changes.should.equal('something');
+        feed.should.not.have.property('debouncedEnd');
+      });
     });
 
     it('requests user authorization information with correct userCtx', () => {
@@ -268,7 +297,6 @@ describe('Changes controller', () => {
       authorization.getAllowedDocIds.resolves(['d1', 'd2', 'd3']);
       controller.request(testReq, testRes);
       return nextTick()
-        .then(nextTick)
         .then(() => {
           authorization.getAllowedDocIds.callCount.should.equal(1);
           changesSpy.callCount.should.equal(2);
@@ -292,7 +320,24 @@ describe('Changes controller', () => {
           batch_size: 4,
           doc_ids: ['d1', 'd2', 'd3'],
           conflicts: true,
-          seq_interval: false,
+          return_docs: true,
+        });
+      });
+    });
+
+    it('should limit changes requests when couchDB version allows it', () => {
+      testReq.query = { limit: 20, view: 'test', something: 'else', conflicts: true, seq_interval: false, since: '22', return_docs: false };
+      authorization.getAllowedDocIds.resolves(['d1', 'd2', 'd3']);
+      serverChecks.getCouchDbVersion.resolves('2.3.0');
+      controller.request(testReq, testRes);
+      return nextTick().then(() => {
+        changesSpy.callCount.should.equal(2);
+        changesSpy.args[1][0].should.deep.equal({
+          limit: 20,
+          since: '22',
+          batch_size: 4,
+          doc_ids: ['d1', 'd2', 'd3'],
+          conflicts: true,
           return_docs: true,
         });
       });
@@ -366,6 +411,7 @@ describe('Changes controller', () => {
         });
     });
 
+
     it('pushes allowed pending changes to the results', () => {
       const validatedIds = Array.from({length: 101}, () => Math.floor(Math.random() * 101));
       authorization.getAllowedDocIds.resolves(validatedIds);
@@ -382,7 +428,7 @@ describe('Changes controller', () => {
         last_seq: 3
       };
 
-      return Promise.resolve()
+      return nextTick()
         .then(() => {
           controller._getContinuousFeed().emit('change', { id: 7, changes: [], doc: { _id: 7 } }, 0, 4);
         })
@@ -1692,30 +1738,6 @@ describe('Changes controller', () => {
     });
   });
 
-  describe('split', () => {
-    it('splits as expected', () => {
-      controller._split([1, 2, 3, 4, 5, 6], 3).should.deep.equal([[1, 2, 3], [4, 5, 6]]);
-      controller._split([1, 2, 3, 4], 3).should.deep.equal([[1, 2, 3], [4]]);
-      controller._split([1, 2, 3, 4], 1).should.deep.equal([[1], [2], [3], [4]]);
-      controller._split([1, 2, 3, 4], 0).should.deep.equal([[1, 2, 3, 4]]);
-
-      const array = Array.from({length: 40}, () => Math.floor(Math.random() * 40)),
-            arrayCopy = [...array];
-      const result = controller._split(array, 10);
-      result.length.should.equal(4);
-      _.flatten(result).should.deep.equal(arrayCopy);
-    });
-
-    it('does not crash with invalid count argument', () => {
-      controller._split([1, 2, 3]).should.deep.equal([[1, 2, 3]]);
-      controller._split([1, 2, 3], null).should.deep.equal([[1, 2, 3]]);
-      controller._split([1, 2, 3], undefined).should.deep.equal([[1, 2, 3]]);
-      controller._split([1, 2, 3], false).should.deep.equal([[1, 2, 3]]);
-      controller._split([1, 2, 3], true).should.deep.equal([[1, 2, 3]]);
-      controller._split([1, 2, 3], 'onehundred').should.deep.equal([[1, 2, 3]]);
-    });
-  });
-
   describe('generateResponse', () => {
     it('returns obj with feed results and last seq when no error', () => {
       const feed = { results: 'results', lastSeq: 'lastSeq' };
@@ -1728,6 +1750,51 @@ describe('Changes controller', () => {
     it('returns error message when error exists', () => {
       const feed = { results: 'results', lastSeq: 'lastSeq', error: true };
       controller._generateResponse(feed).should.deep.equal({ error: 'Error processing your changes' });
+    });
+  });
+
+  describe('shouldLimitChangesRequests', () => {
+    it('should not limit when serverChecks returns some invalid string', () => {
+      controller._shouldLimitChangesRequests();
+      controller._getLimitChangesRequests().should.equal(false);
+      controller._shouldLimitChangesRequests('dsaddada');
+      controller._getLimitChangesRequests().should.equal(false);
+      controller._shouldLimitChangesRequests([1, 2, 3]);
+      controller._getLimitChangesRequests().should.equal(false);
+      controller._shouldLimitChangesRequests(undefined);
+      controller._getLimitChangesRequests().should.equal(false);
+    });
+
+    it('should not limit when serverChecks returns some lower than minimum version', () => {
+      controller._shouldLimitChangesRequests('1.7.1');
+      controller._getLimitChangesRequests().should.equal(false);
+      controller._shouldLimitChangesRequests('2.1.1-beta.0');
+      controller._getLimitChangesRequests().should.equal(false);
+      controller._shouldLimitChangesRequests('2.2.9');
+      controller._getLimitChangesRequests().should.equal(false);
+      controller._shouldLimitChangesRequests('1.9.9');
+      controller._getLimitChangesRequests().should.equal(false);
+      controller._shouldLimitChangesRequests('1.7.55');
+      controller._getLimitChangesRequests().should.equal(false);
+    });
+
+    it('should limit when serverChecks returns some higher than minimum version', () => {
+      controller._shouldLimitChangesRequests('2.3.0');
+      controller._getLimitChangesRequests().should.equal(true);
+      controller._shouldLimitChangesRequests('2.3.1-beta.1');
+      controller._getLimitChangesRequests().should.equal(true);
+      controller._shouldLimitChangesRequests('2.3.1');
+      controller._getLimitChangesRequests().should.equal(true);
+      controller._shouldLimitChangesRequests('2.4.0');
+      controller._getLimitChangesRequests().should.equal(true);
+      controller._shouldLimitChangesRequests('3.0.0');
+      controller._getLimitChangesRequests().should.equal(true);
+      controller._shouldLimitChangesRequests('3.1.0');
+      controller._getLimitChangesRequests().should.equal(true);
+      controller._shouldLimitChangesRequests('2.10.0');
+      controller._getLimitChangesRequests().should.equal(true);
+      controller._shouldLimitChangesRequests('2.20.0');
+      controller._getLimitChangesRequests().should.equal(true);
     });
   });
 });

@@ -30,7 +30,7 @@ describe('death_reporting', () => {
       });
       const getPatientContact = sinon
         .stub(utils, 'getPatientContact')
-        .callsArgWith(2, null, patient);
+        .callsArgWith(1, null, patient);
       const saveDoc = sinon.stub(db.medic, 'put').callsArg(1);
       const get = sinon.stub(db.medic, 'get').callsArgWith(1, null, patient);
       transition.onMatch(change).then(changed => {
@@ -65,14 +65,13 @@ describe('death_reporting', () => {
       });
       const getPatientContact = sinon
         .stub(utils, 'getPatientContact')
-        .callsArgWith(2, null, patient);
+        .callsArgWith(1, null, patient);
       const saveDoc = sinon.stub(db.medic, 'put').callsArg(1);
       sinon.stub(db.medic, 'get').callsArgWith(1, { statusCode: 404 });
       transition.onMatch(change).then(changed => {
         changed.should.equal(true);
         getPatientContact.callCount.should.equal(1);
-        getPatientContact.args[0][0].should.equal(db);
-        getPatientContact.args[0][1].should.equal(patientId);
+        getPatientContact.args[0][0].should.equal(patientId);
         saveDoc.callCount.should.equal(1);
         saveDoc.args[0][0].should.deep.equal({
           name: 'greg',
@@ -101,7 +100,7 @@ describe('death_reporting', () => {
         undo_deceased_forms: ['death-undo'],
         date_field: 'fields.death.date',
       });
-      sinon.stub(utils, 'getPatientContact').callsArgWith(2, null, patient);
+      sinon.stub(utils, 'getPatientContact').callsArgWith(1, null, patient);
       const saveDoc = sinon.stub(db.medic, 'put').callsArg(1);
       sinon.stub(db.medic, 'get').callsArgWith(1, null, patient);
       return transition.onMatch(change).then(changed => {
@@ -129,14 +128,13 @@ describe('death_reporting', () => {
       });
       const getPatientContact = sinon
         .stub(utils, 'getPatientContact')
-        .callsArgWith(2, null, patient);
+        .callsArgWith(1, null, patient);
       const saveDoc = sinon.stub(db.medic, 'put').callsArg(1);
       sinon.stub(db.medic, 'get').callsArgWith(1, { statusCode: 404 });
       transition.onMatch(change).then(changed => {
         changed.should.equal(true);
         getPatientContact.callCount.should.equal(1);
-        getPatientContact.args[0][0].should.equal(db);
-        getPatientContact.args[0][1].should.equal(patientId);
+        getPatientContact.args[0][0].should.equal(patientId);
         saveDoc.callCount.should.equal(1);
         saveDoc.args[0][0].should.deep.equal({ name: 'greg' });
         done();
@@ -158,14 +156,13 @@ describe('death_reporting', () => {
       });
       const getPatientContact = sinon
         .stub(utils, 'getPatientContact')
-        .callsArgWith(2, null, patient);
+        .callsArgWith(1, null, patient);
       const saveDoc = sinon.stub(db.medic, 'put').callsArg(1);
       sinon.stub(db.medic, 'get').callsArgWith(1, { statusCode: 404 });
       transition.onMatch(change).then(changed => {
         changed.should.equal(false);
         getPatientContact.callCount.should.equal(1);
-        getPatientContact.args[0][0].should.equal(db);
-        getPatientContact.args[0][1].should.equal(patientId);
+        getPatientContact.args[0][0].should.equal(patientId);
         saveDoc.callCount.should.equal(0);
         done();
       });
@@ -185,7 +182,7 @@ describe('death_reporting', () => {
       });
       const getPatientContact = sinon
         .stub(utils, 'getPatientContact')
-        .callsArgWith(2);
+        .callsArgWith(1);
       const saveDoc = sinon.stub(db.medic, 'put').callsArg(1);
       const get = sinon
         .stub(db.medic, 'get')

@@ -11,6 +11,7 @@ describe('EditUserCtrl controller', () => {
     UpdateUser,
     CreateUser,
     UserSettings,
+    translate,
     Translate,
     Settings,
     userToEdit;
@@ -50,7 +51,8 @@ describe('EditUserCtrl controller', () => {
       roles: ['district-manager'],
       language: 'zz',
     };
-    Translate = sinon.stub();
+    translate = sinon.stub();
+    Translate = { fieldIsRequired: sinon.stub() };
 
     jQuery = sinon.stub(window, '$');
     window.$.callThrough();
@@ -75,11 +77,12 @@ describe('EditUserCtrl controller', () => {
       $provide.value('UpdateUser', UpdateUser);
       $provide.value('CreateUser', CreateUser);
       $provide.value('UserSettings', UserSettings);
+      $provide.value('translate', translate);
       $provide.value('Translate', Translate);
       $provide.value('Settings', Settings);
     });
 
-    inject(($rootScope, $controller) => {
+    inject((translate, $rootScope, $controller) => {
       const createController = model => {
         scope = $rootScope.$new();
         scope.model = model;
@@ -105,6 +108,7 @@ describe('EditUserCtrl controller', () => {
           Select2Search: sinon.stub(),
           SetLanguage: sinon.stub(),
           $window: { location: { reload: sinon.stub() } },
+          $translate: translate
         });
       };
       mockEditCurrentUser = user => {
@@ -185,10 +189,7 @@ describe('EditUserCtrl controller', () => {
   describe('$scope.editUser', () => {
     it('username must be present', done => {
       mockEditAUser(userToEdit);
-      Translate.withArgs('User Name').returns(Promise.resolve('uname'));
-      Translate.withArgs('field is required', { field: 'uname' }).returns(
-        Promise.resolve('uname req')
-      );
+      Translate.fieldIsRequired.withArgs('User Name').returns(Promise.resolve('User Name field must be filled'));
       setTimeout(() => {
         scope.editUserModel.id = null;
         scope.editUserModel.username = '';
@@ -197,7 +198,7 @@ describe('EditUserCtrl controller', () => {
         scope.editUserModel.passwordConfirm = scope.editUserModel.password;
         scope.editUser();
         setTimeout(() => {
-          chai.expect(scope.errors.username).to.equal('uname req');
+          chai.expect(scope.errors.username).to.equal('User Name field must be filled');
           done();
         });
       });
@@ -208,16 +209,13 @@ describe('EditUserCtrl controller', () => {
       setTimeout(() => {
         scope.editUserModel.username = 'newuser';
         scope.editUserModel.role = 'data-entry';
-        Translate.withArgs('Password').returns(Promise.resolve('pswd'));
-        Translate.withArgs('field is required', { field: 'pswd' }).returns(
-          Promise.resolve('pswd field must be filled')
-        );
+        Translate.fieldIsRequired.withArgs('Password').returns(Promise.resolve('Password field is a required field'));
         setTimeout(() => {
           scope.editUser();
           setTimeout(() => {
             chai
               .expect(scope.errors.password)
-              .to.equal('pswd field must be filled');
+              .to.equal('Password field is a required field');
             done();
           });
         });
@@ -226,7 +224,8 @@ describe('EditUserCtrl controller', () => {
 
     it(`password doesn't need to be filled when editing user`, done => {
       mockEditAUser(userToEdit);
-      Translate.returns(Promise.resolve('something'));
+      translate.returns(Promise.resolve('something'));
+      Translate.fieldIsRequired = key => Promise.resolve(key);
       setTimeout(() => {
         chai.expect(scope.editUserModel).not.to.have.property('password');
         scope.editUser();
@@ -243,7 +242,7 @@ describe('EditUserCtrl controller', () => {
       setTimeout(() => {
         scope.editUserModel.username = 'newuser';
         scope.editUserModel.role = 'data-entry';
-        Translate.withArgs('Passwords must match').returns(
+        translate.withArgs('Passwords must match').returns(
           Promise.resolve('wrong')
         );
         setTimeout(() => {
@@ -289,17 +288,14 @@ describe('EditUserCtrl controller', () => {
         scope.editUserModel.role = 'district-manager';
         mockFacility(null);
         mockContact(userToEdit.contact_id);
-        Translate.withArgs('Facility').returns(Promise.resolve('fac'));
-        Translate.withArgs('field is required', { field: 'fac' }).returns(
-          Promise.resolve('fac req')
-        );
+        Translate.fieldIsRequired.withArgs('Facility').returns(Promise.resolve('Facility field is a required field'));
 
         // when
         scope.editUser();
 
         // expect
         setTimeout(() => {
-          chai.expect(scope.errors.place).to.equal('fac req');
+          chai.expect(scope.errors.place).to.equal('Facility field is a required field');
           done();
         });
       });
@@ -312,19 +308,14 @@ describe('EditUserCtrl controller', () => {
         scope.editUserModel.role = 'district-manager';
         mockFacility(userToEdit.facility_id);
         mockContact(null);
-        Translate.withArgs('associated.contact').returns(
-          Promise.resolve('con')
-        );
-        Translate.withArgs('field is required', { field: 'con' }).returns(
-          Promise.resolve('con req')
-        );
+        Translate.fieldIsRequired.withArgs('associated.contact').returns(Promise.resolve('An associated contact is required'));
 
         // when
         scope.editUser();
 
         // expect
         setTimeout(() => {
-          chai.expect(scope.errors.contact).to.equal('con req');
+          chai.expect(scope.errors.contact).to.equal('An associated contact is required');
           done();
         });
       });
@@ -337,24 +328,16 @@ describe('EditUserCtrl controller', () => {
         scope.editUserModel.role = 'district-manager';
         mockFacility(null);
         mockContact(null);
-        Translate.withArgs('associated.contact').returns(
-          Promise.resolve('con')
-        );
-        Translate.withArgs('field is required', { field: 'con' }).returns(
-          Promise.resolve('con req')
-        );
-        Translate.withArgs('Facility').returns(Promise.resolve('fac'));
-        Translate.withArgs('field is required', { field: 'fac' }).returns(
-          Promise.resolve('fac req')
-        );
-
+        Translate.fieldIsRequired.withArgs('associated.contact').returns(Promise.resolve('An associated contact is required'));
+        Translate.fieldIsRequired.withArgs('Facility').returns(Promise.resolve('Facility field is required'));
+        
         // when
         scope.editUser();
 
         // expect
         setTimeout(() => {
-          chai.expect(scope.errors.place).to.equal('fac req');
-          chai.expect(scope.errors.contact).to.equal('con req');
+          chai.expect(scope.errors.place).to.equal('Facility field is required');
+          chai.expect(scope.errors.contact).to.equal('An associated contact is required');
           done();
         });
       });
@@ -386,7 +369,7 @@ describe('EditUserCtrl controller', () => {
         mockContact(userToEdit.contact_id);
         mockFacility(userToEdit.facility_id);
         mockContactGet('some-other-id');
-        Translate.withArgs('configuration.user.place.contact').returns(
+        translate.withArgs('configuration.user.place.contact').returns(
           Promise.resolve('outside')
         );
 
@@ -451,16 +434,13 @@ describe('EditUserCtrl controller', () => {
         scope.editUserModel.role = 'data-entry';
         mockContact('xyz');
 
-        Translate.withArgs('Facility').returns(Promise.resolve('fac'));
-        Translate.withArgs('field is required', { field: 'fac' }).returns(
-          Promise.resolve('place is a required field')
-        );
+        Translate.fieldIsRequired.withArgs('Facility').returns(Promise.resolve('Facility field is a required field'));
         setTimeout(() => {
           scope.editUser();
           setTimeout(() => {
             chai
               .expect(scope.errors.place)
-              .to.equal('place is a required field');
+              .to.equal('Facility field is a required field');
             done();
           });
         });

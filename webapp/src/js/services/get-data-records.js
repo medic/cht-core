@@ -36,13 +36,17 @@ angular.module('inboxServices').factory('GetDataRecords',
         });
     };
 
-    var getSummaries = function(ids) {
+    const getSummaries = function(ids, options) {
       return GetSummaries(ids)
-        .then(HydrateContactNames)
-        .then(GetSubjectSummaries);
+        .then(summaries => {
+          const promiseToSummary = options.hydrateContactNames ? HydrateContactNames(summaries) : Promise.resolve(summaries);
+          return promiseToSummary.then(GetSubjectSummaries);
+        });
     };
 
     return function(ids, options) {
+      const opts = _.extend({ hydrateContactNames: false, include_docs: false }, options);
+      
       if (!ids) {
         return $q.resolve([]);
       }
@@ -53,7 +57,7 @@ angular.module('inboxServices').factory('GetDataRecords',
       if (!ids.length) {
         return $q.resolve([]);
       }
-      var getFn = options && options.include_docs ? getDocs : getSummaries;
+      const getFn = opts.include_docs ? getDocs : ids => getSummaries(ids, opts);
       return getFn(ids)
         .then(function(response) {
           if (!arrayGiven) {

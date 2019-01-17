@@ -29,6 +29,8 @@ require('./controllers/export-reports');
 require('./controllers/forms-json');
 require('./controllers/forms-xml');
 require('./controllers/icons');
+require('./controllers/images-branding');
+require('./controllers/images-partners');
 require('./controllers/import-translation');
 require('./controllers/message-queue');
 require('./controllers/message-test');
@@ -42,7 +44,6 @@ require('./controllers/translation-languages');
 require('./controllers/upgrade');
 require('./controllers/upgrade-confirm');
 require('./controllers/users');
-require('./controllers/branding');
 
 angular.module('directives', ['ngSanitize']);
 require('./directives/modal');
@@ -51,13 +52,12 @@ require('./directives/relative-date');
 require('./directives/release');
 
 angular.module('filters', ['ngSanitize']);
-require('./filters/resource-icon');
 require('./filters/translate-from');
 require('./filters/build-version');
 
 // filters we borrow from webapp
 angular.module('inboxFilters', []);
-require('../../../webapp/src/js/filters/header-logo');
+require('../../../webapp/src/js/filters/resource-icon');
 
 angular.module('services', []);
 require('./services/blob');
@@ -105,7 +105,6 @@ require('../../../webapp/src/js/services/translation-null-interpolation');
 require('../../../webapp/src/js/services/update-settings');
 require('../../../webapp/src/js/services/update-user');
 require('../../../webapp/src/js/services/user');
-require('../../../webapp/src/js/services/branding-images');
 
 var app = angular.module('adminApp', [
   'controllers',
@@ -267,8 +266,17 @@ app.config(function(
       url: '/branding',
       views: {
         tab: {
-          controller: 'BrandingCtrl',
+          controller: 'ImagesBrandingCtrl',
           templateUrl: 'templates/images_branding.html'
+        }
+      }
+    })
+    .state('images.partners', {
+      url: '/partners',
+      views: {
+        tab: {
+          controller: 'ImagesPartnersCtrl',
+          templateUrl: 'templates/images_partners.html'
         }
       }
     })

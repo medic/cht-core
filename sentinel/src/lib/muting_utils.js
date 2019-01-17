@@ -71,7 +71,7 @@ const updateRegistrations = (subjectIds, muted) => {
   }
 
   return utils
-    .getReportsBySubject({ db: db.medic, ids: subjectIds, registrations: true })
+    .getReportsBySubject({ ids: subjectIds, registrations: true })
     .then(registrations => {
       registrations = registrations.filter(registration => updateRegistration(registration, muted));
       if (!registrations.length) {

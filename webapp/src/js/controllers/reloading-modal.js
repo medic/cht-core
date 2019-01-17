@@ -1,5 +1,5 @@
 /*
-Controller for the Modal service which executes window.reload when submitted.
+Controller for the Modal service which executes $window.reload when submitted.
 */
 angular.module('inboxControllers').controller('ReloadingModalCtrl',
   function (

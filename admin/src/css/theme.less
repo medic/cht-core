@@ -2,10 +2,15 @@
 html {
   font-size: 16px;
 }
+body > div {
+  height: 100%;
+}
 .body {
   display: flex;
+  min-height: 100%;
   max-width: @admin-content-width;
-  margin: 0 auto;
+  margin: -64px auto 0 auto;
+  padding-top: 64px;
   font-size: @font-medium;
 }
 .header {
@@ -44,7 +49,11 @@ html {
   width: 200px;
   font-size: 16px;
   background-color: @background-color;
-  padding-left: 15px;
+  padding-top: 30px;
+  li {
+    padding-left: 10px;
+    border-left: 5px solid transparent;
+  }
   a {
     display: inline-block;
     padding: 10px 10px 10px 0;
@@ -58,6 +67,13 @@ html {
   a:active {
     text-decoration: none;
     color: @nav-active-color;
+  }
+  .active-nav {
+    border-left-color: #797979;
+    background-color: #d9d9da;
+    a {
+      text-decoration: none;
+    }
   }
 }
 .tab-content {

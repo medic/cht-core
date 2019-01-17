@@ -64,8 +64,8 @@ describe('LiveListSrv', function() {
     assert.ok(service);
   });
 
-  it('should provide a single API method', function() {
-    assert.deepEqual(_.keys(service), ['$listFor']);
+  it('should provide correct API methods', function() {
+    assert.deepEqual(_.keys(service), ['$listFor', '$init', '$reset']);
   });
 
   describe('failures related to a missing piece of config', function() {
@@ -106,7 +106,7 @@ describe('LiveListSrv', function() {
     service.$listFor('name', config);
 
     // then
-    assert.deepEqual(_.keys(service), ['$listFor', 'name']);
+    assert.deepEqual(_.keys(service), ['$listFor', '$init', '$reset', 'name']);
   });
 
   it('should provide a defined set of functions on initialised lists', function() {
@@ -123,6 +123,7 @@ describe('LiveListSrv', function() {
     // then
     assert.deepEqual(_.keys(service.name), [
       'insert',
+      'invalidateCache',
       'update',
       'remove',
       'getList',
@@ -133,7 +134,8 @@ describe('LiveListSrv', function() {
       'initialised',
       'setSelected',
       'clearSelected',
-      'containsDeleteStub'
+      'containsDeleteStub',
+      'setScope'
     ]);
   });
 
@@ -539,6 +541,76 @@ describe('LiveListSrv', function() {
       const doc = { _id: 'a', _rev: 'b', _deleted: true };
       service.testing.set([{ _id: 'a' }]);
       assert.equal(service.testing.containsDeleteStub(doc), true);
+    });
+  });
+
+  describe('$init', () => {
+    it('should work when no params are set, with no lists and with missing lists', () => {
+      service.$init();
+      service.$init('foo');
+      service.$init('foo', 'bar');
+    });
+
+    it('should set the scope of all given existent lists', () => {
+      const scope = 'foo',
+            config = { listItem: sinon.stub(), orderBy: 'name', selector: 'list' };
+      service.$listFor('one', config);
+      service.$listFor('two', config);
+      service.$listFor('three', config);
+      sinon.spy(service.one, 'setScope');
+      sinon.spy(service.two, 'setScope');
+      sinon.spy(service.three, 'setScope');
+      service.$init(scope, 'one', 'two', 'three', 'four', 'five');
+      assert.equal(service.one.setScope.callCount, 1);
+      assert.deepEqual(service.one.setScope.args[0], [scope]);
+      assert.equal(service.two.setScope.callCount, 1);
+      assert.deepEqual(service.two.setScope.args[0], [scope]);
+      assert.equal(service.three.setScope.callCount, 1);
+      assert.deepEqual(service.three.setScope.args[0], [scope]);
+      assert.equal(service.four, undefined);
+      assert.equal(service.five, undefined);
+    });
+  });
+
+  describe('$reset', () => {
+    it('should work when no lists or with missing lists', () => {
+      service.$reset();
+      service.$reset('foo');
+      service.$reset('foo', 'bar');
+    });
+
+    it('should empty and reset scope of given existent lists', () => {
+      const scope = 'foo',
+            config = { listItem: sinon.stub(), orderBy: sinon.stub(), selector: 'list' };
+      service.$listFor('one', config);
+      service.$listFor('two', config);
+      service.$listFor('three', config);
+      service.one.setScope(scope);
+      service.one.set(['a', 'b', 'c']);
+      service.two.setScope(scope);
+      service.two.set(['1', '2', '3']);
+      service.three.setScope(scope);
+      service.three.set(['somewhere']);
+
+      sinon.spy(service.one, 'setScope');
+      sinon.spy(service.two, 'setScope');
+      sinon.spy(service.three, 'setScope');
+
+      service.$reset('one', 'two', 'three', 'four', 'five');
+      assert.deepEqual(service.one.getList(), []);
+      assert.equal(service.one.setScope.callCount, 1);
+      assert.deepEqual(service.one.setScope.args[0], []);
+
+      assert.deepEqual(service.two.getList(), []);
+      assert.equal(service.two.setScope.callCount, 1);
+      assert.deepEqual(service.two.setScope.args[0], []);
+
+      assert.deepEqual(service.three.getList(), []);
+      assert.equal(service.three.setScope.callCount, 1);
+      assert.deepEqual(service.three.setScope.args[0], []);
+
+      assert.equal(service.four, undefined);
+      assert.equal(service.five, undefined);
     });
   });
 
