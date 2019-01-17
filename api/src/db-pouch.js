@@ -23,15 +23,26 @@ if (UNIT_TEST_ENV) {
     'getAttachment',
     'changes',
   ];
+  const GLOBAL_FUNCTIONS_TO_STUB = [
+    'get',
+    'exists'
+  ];
+
+  const notStubbed = (first, second) => {
+    const name = second ? `${first}.${second}` : first;
+    logger.error(new Error(`${name}() not stubbed!  UNIT_TEST_ENV=${UNIT_TEST_ENV}.  Please stub PouchDB functions that will be interacted with in unit tests.`));
+    process.exit(1);
+  };
 
   DBS_TO_STUB.forEach(db => {
     module.exports[db] = {};
     DB_FUNCTIONS_TO_STUB.forEach(fn => {
-      module.exports[db][fn] = () => {
-        logger.error(new Error(`${db}.${fn}() not stubbed!  UNIT_TEST_ENV=${UNIT_TEST_ENV}.  Please stub PouchDB functions that will be interacted with in unit tests.`));
-        process.exit(1);
-      };
+      module.exports[db][fn] = () => notStubbed(db, fn);
     });
+  });
+
+  GLOBAL_FUNCTIONS_TO_STUB.forEach(fn => {
+     module.exports[fn] = () => notStubbed(fn);
   });
 } else {
   const DB = new PouchDB(environment.couchUrl, {
@@ -40,7 +51,19 @@ if (UNIT_TEST_ENV) {
       return PouchDB.fetch(url, opts);
     },
   });
+  const getDbUrl = name => `${environment.serverUrl}/${name}`;
   DB.setMaxListeners(0);
   module.exports.medic = DB;
-  module.exports.users = new PouchDB(environment.serverUrl + '/_users');
+  module.exports.users = new PouchDB(getDbUrl('/_users'));
+
+  // Get the DB with the given name
+  module.exports.get = name => new PouchDB(getDbUrl(name));
+
+  // Resolves true if the DB with the given name exists
+  module.exports.exists = name => {
+    const db = new PouchDB(getDbUrl(name), { skip_setup: true });
+    return db.info()
+      .then(() => true)
+      .catch(() => false);
+  };
 }

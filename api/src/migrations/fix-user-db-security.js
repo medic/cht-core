@@ -15,14 +15,13 @@ module.exports = {
 
         return usernames.reduce((p, username) => {
           return p.then(() => {
-            return new Promise((resolve, reject) => {
-              userDb.setSecurity(userDb.getDbName(username), username, err => {
-                if (err && err.statusCode !== 404) { // db not found is ok
-                  return reject(err);
+            return userDb.setSecurity(userDb.getDbName(username), username)
+              .catch(err => {
+                if (err && err.status !== 404) {
+                  throw err;
                 }
-                resolve();
+                // db not found is ok
               });
-            });
           });
         }, Promise.resolve());
       })
