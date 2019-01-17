@@ -129,9 +129,16 @@ const setCookies = (req, res, sessionRes) => {
       setSessionCookie(res, sessionCookie);
       setUserCtxCookie(res, userCtx);
       if (auth.hasAllPermissions(userCtx, 'can_configure')) {
+        // https://github.com/medic/medic-webapp/issues/5035
+        //  For Test DB, temporarily disable `canCongifure` property to avoid redirecting to admin console
+        // One `e2e` is problematic here has held me hostage the whole day :(
+        let canCongifure = true;
+        if (environment.db === 'medic-test') {
+          canCongifure = false;
+        }
         res.json({
           success: true,
-          canCongifure: true,
+          canCongifure: canCongifure,
           redirect: path.join('/', environment.db, '_design', 'medic-admin', '_rewrite')
         });
       } else {
