@@ -5873,6 +5873,201 @@
       "public_form": false,
       "use_sentinel": true
     },
+    "HB": {
+      "meta": {
+        "code": "HB",
+        "icon": "immunization",
+        "translation_key": "HB Hepatitis B"
+      },
+      "fields": {
+        "patient_id": {
+          "labels": {
+            "short": {
+              "translation_key": "patient_id"
+            }
+          },
+          "position": 0,
+          "type": "string",
+          "length": [
+            5,
+            13
+          ],
+          "required": true
+        },
+        "notes": {
+          "labels": {
+            "short": {
+              "translation_key": "notes"
+            }
+          },
+          "position": 1,
+          "type": "string",
+          "length": [
+            1,
+            100
+          ],
+          "required": false
+        }
+      },
+      "public_form": false,
+      "use_sentinel": true
+    },
+    "DPT4": {
+      "meta": {
+        "code": "DPT4",
+        "icon": "immunization",
+        "translation_key": "DPT4 DPT Booster 1"
+      },
+      "fields": {
+        "patient_id": {
+          "labels": {
+            "short": {
+              "translation_key": "patient_id"
+            }
+          },
+          "position": 0,
+          "type": "string",
+          "length": [
+            5,
+            13
+          ],
+          "required": true
+        },
+        "notes": {
+          "labels": {
+            "short": {
+              "translation_key": "notes"
+            }
+          },
+          "position": 1,
+          "type": "string",
+          "length": [
+            1,
+            100
+          ],
+          "required": false
+        }
+      },
+      "public_form": false,
+      "use_sentinel": true
+    },
+    "DPT5": {
+      "meta": {
+        "code": "DPT5",
+        "icon": "immunization",
+        "translation_key": "DPT5 DPT Booster 2"
+      },
+      "fields": {
+        "patient_id": {
+          "labels": {
+            "short": {
+              "translation_key": "patient_id"
+            }
+          },
+          "position": 0,
+          "type": "string",
+          "length": [
+            5,
+            13
+          ],
+          "required": true
+        },
+        "notes": {
+          "labels": {
+            "short": {
+              "translation_key": "notes"
+            }
+          },
+          "position": 1,
+          "type": "string",
+          "length": [
+            1,
+            100
+          ],
+          "required": false
+        }
+      },
+      "public_form": false,
+      "use_sentinel": true
+    },
+    "FIPV1": {
+      "meta": {
+        "code": "FIPV1",
+        "icon": "immunization",
+        "translation_key": "fIPV1 Fractional IPV 1"
+      },
+      "fields": {
+        "patient_id": {
+          "labels": {
+            "short": {
+              "translation_key": "patient_id"
+            }
+          },
+          "position": 0,
+          "type": "string",
+          "length": [
+            5,
+            13
+          ],
+          "required": true
+        },
+        "notes": {
+          "labels": {
+            "short": {
+              "translation_key": "notes"
+            }
+          },
+          "position": 1,
+          "type": "string",
+          "length": [
+            1,
+            100
+          ],
+          "required": false
+        }
+      },
+      "public_form": false,
+      "use_sentinel": true
+    },
+    "FIPV2": {
+      "meta": {
+        "code": "FIPV2",
+        "icon": "immunization",
+        "translation_key": "fIPV2 Fractional IPV 2"
+      },
+      "fields": {
+        "patient_id": {
+          "labels": {
+            "short": {
+              "translation_key": "patient_id"
+            }
+          },
+          "position": 0,
+          "type": "string",
+          "length": [
+            5,
+            13
+          ],
+          "required": true
+        },
+        "notes": {
+          "labels": {
+            "short": {
+              "translation_key": "notes"
+            }
+          },
+          "position": 1,
+          "type": "string",
+          "length": [
+            1,
+            100
+          ],
+          "required": false
+        }
+      },
+      "public_form": false,
+      "use_sentinel": true
+    },
     "OFF": {
       "meta": {
         "code": "OFF",
