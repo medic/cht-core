@@ -447,6 +447,9 @@ module.exports = function(grunt) {
           )
           .join(' && '),
       },
+      'e2e-servers': {
+        cmd: 'node ./scripts/e2e-servers.js &'
+      },
       bundlesize: {
         cmd: 'node ./node_modules/bundlesize/index.js',
       },
@@ -993,10 +996,8 @@ module.exports = function(grunt) {
   // Test tasks
   grunt.registerTask('e2e', 'Deploy app for testing and run e2e tests', [
     'exec:reset-test-databases',
-    'build-admin',
-    'build-node-modules',
-    'build-ddoc',
     'couch-push:test',
+    'exec:e2e-servers',
     'protractor:e2e-tests',
   ]);
 
