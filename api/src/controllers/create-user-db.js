@@ -15,13 +15,7 @@ const checkPermissions = req => {
 
 module.exports = (req, res) => {
   return checkPermissions(req)
-    .then(username => {
-      userDb.create(username, err => {
-        if (err) {
-          throw err;
-        }
-        res.json({ ok: true });
-      });
-    })
+    .then(username => userDb.create(username))
+    .then(() => res.json({ ok: true }))
     .catch(err => serverUtils.error(err, req, res));
 };
