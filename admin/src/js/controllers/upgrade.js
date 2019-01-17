@@ -12,10 +12,10 @@ angular.module('controllers').controller('UpgradeCtrl',
     $scope,
     $timeout,
     $window,
+    $translate,
     Changes,
     DB,
     pouchDB,
-    Translate,
     Version,
     Modal
   ) {
@@ -103,7 +103,7 @@ angular.module('controllers').controller('UpgradeCtrl',
         });
       })
       .catch(function(err) {
-        return Translate('instance.upgrade.error.version_fetch')
+        return $translate('instance.upgrade.error.version_fetch')
           .then(function(msg) {
             $log.error(msg, err);
             $scope.error = msg;
@@ -159,7 +159,7 @@ angular.module('controllers').controller('UpgradeCtrl',
         .catch(function(err) {
           err = err.responseText || err.statusText;
 
-          return Translate('instance.upgrade.error.deploy')
+          return $translate('instance.upgrade.error.deploy')
             .then(function(msg) {
               $log.error(msg, err);
               $scope.error = msg;

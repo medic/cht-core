@@ -11,7 +11,8 @@ angular.module('inboxControllers').controller('SendMessageCtrl',
     ContactSchema,
     Select2Search,
     SendMessage,
-    Settings
+    Settings,
+    Translate
   ) {
     'ngInject';
     'use strict';
@@ -28,7 +29,7 @@ angular.module('inboxControllers').controller('SendMessageCtrl',
       if (message) {
         $scope.error.message = false;
       } else {
-        return translateRequiredField('tasks.0.messages.0.message')
+        return Translate.fieldIsRequired('tasks.0.messages.0.message')
           .then(function(error) {
             $scope.error.message = error;
           });
