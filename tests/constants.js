@@ -1,4 +1,4 @@
-const IS_TRAVIS = !!process.env.TRAVIS_TAG;
+const IS_TRAVIS = !!process.env.TEST_SUITE;
 
 module.exports = {
 
