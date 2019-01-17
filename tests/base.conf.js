@@ -68,7 +68,9 @@ const login = browser => {
   browser.driver.findElement(by.name('password')).sendKeys(auth.pass);
   browser.driver.findElement(by.id('login')).click();
   // Login takes some time, so wait until it's done.
-  const bootstrappedCheck = () => element(by.css('.navbar-header')).isPresent();
+  browser.driver.findElement(by.className('mm-icon mm-icon-inverse')).click();
+  browser.driver.findElement(by.id('app')).click();
+  const bootstrappedCheck = () => element(by.css('body.bootstrapped')).isPresent();
   return browser.driver.wait(bootstrappedCheck, 20 * 1000, 'Login should be complete within 20 seconds');
 };
 
