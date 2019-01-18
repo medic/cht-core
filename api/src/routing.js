@@ -32,7 +32,6 @@ const _ = require('underscore'),
   bulkDocs = require('./controllers/bulk-docs'),
   authorization = require('./middleware/authorization'),
   createUserDb = require('./controllers/create-user-db'),
-  createDomain = require('domain').create,
   staticResources = /\/(templates|static)\//,
   // CouchDB is very relaxed in matching routes
   routePrefix = '/+' + environment.db + '/+',
@@ -51,8 +50,8 @@ var jsonParser = bodyParser.json({ limit: '32mb' });
 process
   .on('unhandledRejection', (reason, p) => {
     logger.error('UNHANDLED REJECTION!');
-    logger.error(reason)
-    logger.error(p)
+    logger.error(reason);
+    logger.error(p);
   })
   .on('uncaughtException', err => {
     logger.error('UNCAUGHT EXCEPTION!');
