@@ -48,6 +48,18 @@ const _ = require('underscore'),
 // requires content-type application/json header
 var jsonParser = bodyParser.json({ limit: '32mb' });
 
+process
+  .on('unhandledRejection', (reason, p) => {
+    logger.error('UNHANDLED REJECTION!');
+    logger.error(reason)
+    logger.error(p)
+  })
+  .on('uncaughtException', err => {
+    logger.error('UNCAUGHT EXCEPTION!');
+    logger.error(err);
+    process.exit(1);
+  });
+
 const handleJsonRequest = (method, path, callback) => {
   app[method](path, jsonParser, (req, res, next) => {
     const contentType = req.headers['content-type'];
@@ -145,18 +157,6 @@ app.use(
     },
   })
 );
-
-app.use(function(req, res, next) {
-  var domain = createDomain();
-  domain.on('error', function(err) {
-    logger.error('UNCAUGHT EXCEPTION!');
-    serverUtils.serverError(err, req, res);
-    domain.dispose();
-    process.exit(1);
-  });
-  domain.enter();
-  next();
-});
 
 // requires `req` header `Accept-Encoding` to be `gzip` or `deflate`
 // requires `res` `Content-Type` to be compressible (see https://github.com/jshttp/mime-db/blob/master/db.json)
