@@ -2,7 +2,7 @@ const fs = require('fs'),
   { promisify } = require('util'),
   url = require('url'),
   path = require('path'),
-  request = require('request'),
+  request = require('request-promise-native'),
   _ = require('underscore'),
   auth = require('../auth'),
   environment = require('../environment'),
@@ -82,26 +82,16 @@ const getSessionCookie = res => {
 const createSession = req => {
   const user = req.body.user;
   const password = req.body.password;
-  return new Promise((resolve, reject) => {
-    request.post(
-      {
-        url: url.format({
-          protocol: environment.protocol,
-          hostname: environment.host,
-          port: environment.port,
-          pathname: '_session',
-        }),
-        json: true,
-        body: { name: user, password: password },
-        auth: { user: user, pass: password },
-      },
-      (err, sessionRes) => {
-        if (err) {
-          return reject(err);
-        }
-        resolve(sessionRes);
-      }
-    );
+  return request.post({
+    url: url.format({
+      protocol: environment.protocol,
+      hostname: environment.host,
+      port: environment.port,
+      pathname: '_session',
+    }),
+    json: true,
+    body: { name: user, password: password },
+    auth: { user: user, pass: password },
   });
 };
 

@@ -1,6 +1,6 @@
 var async = require('async'),
     {promisify} = require('util'),
-    request = require('request'),
+    request = require('request-promise-native'),
     url = require('url'),
     _ = require('underscore'),
     db = require('../db-nano'),
@@ -30,8 +30,8 @@ var filterResults = function(rows) {
   });
 };
 
-var getAdmins = function(callback) {
-  request.get({
+var getAdmins = function() {
+  return request.get({
     url: url.format({
       protocol: environment.protocol,
       hostname: environment.host,
@@ -43,31 +43,28 @@ var getAdmins = function(callback) {
       pass: environment.password
     },
     json: true
-  }, function(err, res) {
-    callback(err, res && res.body);
   });
 };
 
 module.exports = {
   name: 'extract-user-settings-roles',
   created: new Date(2016, 4, 26, 15, 10, 0, 0),
-  run: promisify(function(callback) {
-    getAdmins(function(err, admins) {
-      if (err) {
-        return callback(err);
-      }
-      db._users.list({ include_docs: true }, function(err, result) {
-        if (err) {
-          return callback(err);
-        }
-        async.eachSeries(
-          filterResults(result.rows),
-          function(row, callback) {
-            updateUser(admins, row, callback);
-          },
-          callback
-        );
+  run: () => {
+    return getAdmins().then(admins => {
+      promisify(function(callback) {
+        db._users.list({ include_docs: true }, function(err, result) {
+          if (err) {
+            return callback(err);
+          }
+          async.eachSeries(
+            filterResults(result.rows),
+            function(row, callback) {
+              updateUser(admins, row, callback);
+            },
+            callback
+          );
+        });
       });
     });
-  })
+  }
 };

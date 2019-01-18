@@ -276,16 +276,17 @@ app.get('/api/info', function(req, res) {
 });
 
 app.get('/api/auth/:path', function(req, res) {
-  auth.checkUrl(req, function(err, output) {
-    if (err) {
-      return serverUtils.serverError(err, req, res);
-    }
-    if (output.status >= 400 && output.status < 500) {
-      res.status(403).send('Forbidden');
-    } else {
-      res.json(output);
-    }
-  });
+  auth.checkUrl(req)
+    .then(status => {
+      if (status && status >= 400 && status < 500) {
+        res.status(403).send('Forbidden');
+      } else {
+        res.json({ status: status });
+      }
+    })
+    .catch(err => {
+      serverUtils.serverError(err, req, res);
+    });
 });
 
 app.post('/api/v1/upgrade', jsonParser, upgrade.upgrade);

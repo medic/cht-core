@@ -49,6 +49,7 @@
     "pouchdb-mapreduce": "^7.0.0",
     "properties": "^1.2.1",
     "request": "^2.88.0",
+    "request-promise-native": "^1.0.5",
     "semver": "^5.6.0",
     "simple-password-tester": "^1.0.0",
     "underscore": "^1.9.1",
