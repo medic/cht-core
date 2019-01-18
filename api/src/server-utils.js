@@ -53,7 +53,7 @@ module.exports = {
       return module.exports.serverError(err, req, res);
     }
     // https://github.com/nodejs/node/issues/9027
-    let code = err.code || err.statusCode || 500;
+    let code = err.code || err.statusCode || err.status || 500;
     if (!Number.isInteger(code)) {
       logger.warn(`Non-numeric error code: ${code}`);
       code = 500;
