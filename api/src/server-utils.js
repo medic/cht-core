@@ -56,7 +56,7 @@ module.exports = {
     let code = err.code || err.statusCode || 500;
     if (!Number.isInteger(code)) {
       logger.warn(`Non-numeric error code: ${code}`);
-      code = 502;
+      code = 500;
     }
     if (code === 401) {
       return module.exports.notLoggedIn(req, res, showPrompt);

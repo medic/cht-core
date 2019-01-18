@@ -157,7 +157,7 @@ describe('Users API', () => {
       })
       .then(() => fail('You should get an error in this situation'))
       .catch(err => {
-        expect(err.responseBody).toBe('not logged in');
+        expect(err.responseBody).toBe('Server error');
       }));
 
     it('Allows for users to modify themselves with a cookie', () =>
