@@ -57,6 +57,7 @@ angular
     };
 
     var storeIt = function(db, key, value) {
+      $log.info(`Recording ${key} => ${value}`);
       return db.post({
         key: key,
         value: value,
