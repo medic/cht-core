@@ -1242,13 +1242,15 @@ pouchdb-binary-utils@6.4.3:
   dependencies:
     buffer-from "0.1.1"
 
-pouchdb-browser@^6.0.7, pouchdb-browser@^7.0.0:
-  version "7.0.0"
-  resolved "https://registry.yarnpkg.com/pouchdb-browser/-/pouchdb-browser-7.0.0.tgz#d493fd738f21f7c91f17bbb7ee7ad97c2072e546"
+pouchdb-browser@^6.0.7, pouchdb-browser@^6.4.3:
+  version "6.4.3"
+  resolved "https://registry.yarnpkg.com/pouchdb-browser/-/pouchdb-browser-6.4.3.tgz#980de389abdb7850a8196525ca96c3b93d79b359"
   dependencies:
     argsarray "0.0.1"
+    debug "3.1.0"
     immediate "3.0.6"
     inherits "2.0.3"
+    lie "3.1.1"
     spark-md5 "3.0.0"
     uuid "3.2.1"
     vuvuzela "1.0.3"
@@ -1286,12 +1288,6 @@ pouchdb-core@^6.4.3:
 pouchdb-debug@6.4.3:
   version "6.4.3"
   resolved "https://registry.yarnpkg.com/pouchdb-debug/-/pouchdb-debug-6.4.3.tgz#d5ee0d0f638c455ef947fe6658030db1480c72c0"
-  dependencies:
-    debug "3.1.0"
-
-pouchdb-debug@^7.0.0:
-  version "7.0.0"
-  resolved "https://registry.yarnpkg.com/pouchdb-debug/-/pouchdb-debug-7.0.0.tgz#db028678b952206ec64fd6fa76aa1dc62c0fe9a5"
   dependencies:
     debug "3.1.0"
 

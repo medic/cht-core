@@ -46,8 +46,7 @@
     "partial-json-parser": "1.0.2",
     "phone-number": "file:../shared-libs/phone-number",
     "pojo2xml": "^1.7.1",
-    "pouchdb-browser": "^7.0.0",
-    "pouchdb-debug": "^7.0.0",
+    "pouchdb-browser": "^6.4.3",
     "search": "file:../shared-libs/search",
     "select2": "4.0.3",
     "simple-password-tester": "^1.0.0",
@@ -58,7 +57,7 @@
   "devDependencies": {},
   "resolutions": {
     "**/jquery": "3.2.x",
-    "**/pouchdb-browser": "^7.0.0",
+    "**/pouchdb-browser": "^6.4.3",
     "**/moment": "^2.22.2"
   }
 }

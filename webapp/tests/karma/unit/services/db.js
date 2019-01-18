@@ -55,7 +55,7 @@ describe('DB service', () => {
 
   describe('get remote', () => {
 
-    it('sets skip setup', () => {
+    it('sets ajax timeout', () => {
       isOnlineOnly.returns(false);
       Location.dbName = 'medicdb';
       Location.url = 'ftp//myhost:21/medicdb';
@@ -72,13 +72,13 @@ describe('DB service', () => {
       chai.expect(actual.id).to.equal(expected.id);
       chai.expect(pouchDB.callCount).to.equal(3);
       chai.expect(pouchDB.args[2][0]).to.equal('ftp//myhost:21/medicdb');
-      chai.expect(pouchDB.args[2][1].skip_setup).to.equal(true);
+      chai.expect(pouchDB.args[2][1]).to.deep.equal({ skip_setup: true, ajax: { timeout: 30000 } });
 
       // get remote meta
       service({ remote: true, meta: true });
       chai.expect(pouchDB.callCount).to.equal(4);
       chai.expect(pouchDB.args[3][0]).to.equal('ftp//myhost:21/medicdb-user-johnny-meta');
-      chai.expect(pouchDB.args[3][1].skip_setup).to.equal(false);
+      chai.expect(pouchDB.args[3][1]).to.deep.equal({ skip_setup: false, ajax: { timeout: 30000 } });
     });
 
     it('caches pouchdb instances', () => {
@@ -125,17 +125,19 @@ describe('DB service', () => {
       chai.expect(actual.id).to.equal(expected.id);
       chai.expect(pouchDB.callCount).to.equal(3);
       chai.expect(pouchDB.args[2][0]).to.equal('ftp//myhost:21/medicdb');
+      chai.expect(pouchDB.args[2][1]).to.deep.equal({ skip_setup: true, ajax: { timeout: 30000 } });
 
       // get remote meta
       service({ remote: true, meta: true });
       chai.expect(pouchDB.callCount).to.equal(4);
       chai.expect(pouchDB.args[3][0]).to.equal('ftp//myhost:21/medicdb-user-johnny(46)(60)(62)(94)(44)(63)(33)-meta');
+      chai.expect(pouchDB.args[3][1]).to.deep.equal({ skip_setup: false, ajax: { timeout: 30000 } });
     });
   });
 
   describe('get local', () => {
 
-    it('sets auto compaction', () => {
+    it('sets ajax timeout', () => {
       isOnlineOnly.returns(false);
       Location.dbName = 'medicdb';
       userCtx.returns({ name: 'johnny' });
@@ -193,12 +195,14 @@ describe('DB service', () => {
       chai.expect(pouchDB.callCount).to.equal(1);
       chai.expect(actual.id).to.equal(expected.id);
       chai.expect(pouchDB.args[0][0]).to.equal('ftp//myhost:21/medicdb');
+      chai.expect(pouchDB.args[0][1]).to.deep.equal({ skip_setup: true, ajax: { timeout: 30000 } });
       chai.expect(expected.viewCleanup.callCount).to.equal(0);
 
       // get locale  meta returns remote meta
       service({ meta: true });
       chai.expect(pouchDB.callCount).to.equal(2);
       chai.expect(pouchDB.args[1][0]).to.equal('ftp//myhost:21/medicdb-user-johnny-meta');
+      chai.expect(pouchDB.args[1][1]).to.deep.equal({ skip_setup: false, ajax: { timeout: 30000 } });
     });
 
   });
