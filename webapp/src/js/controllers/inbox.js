@@ -559,6 +559,10 @@ var feedback = require('../modules/feedback'),
       });
     });
 
+    $scope.setSubActionBarStatus = function(verified) {
+      $scope.actionBar.right.verified = verified;
+    };
+
     $scope.setRightActionBar = function(model) {
       if (!$scope.actionBar) {
         $scope.actionBar = {};

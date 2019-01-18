@@ -304,6 +304,14 @@ angular
       clearSelection();
     });
 
+    $scope.$on('EditReport', function() {
+      Modal({
+        templateUrl: 'templates/modals/edit_report.html',
+        controller: 'EditReportCtrl',
+        model: { report: $scope.selected[0].doc },
+      });
+    });
+
     $scope.$on('VerifyReport', function(e, valid) {
       if ($scope.selected[0].doc.form) {
         $scope.setLoadingSubActionBar(true);
@@ -315,16 +323,13 @@ angular
           })
           .catch(function(err) {
             $log.error('Error verifying message', err);
+          })
+          .finally(() => {
+            $scope.$broadcast('VerifiedReport', valid);
+
+            $scope.setLoadingSubActionBar(false);
           });
       }
-    });
-
-    $scope.$on('EditReport', function() {
-      Modal({
-        templateUrl: 'templates/modals/edit_report.html',
-        controller: 'EditReportCtrl',
-        model: { report: $scope.selected[0].doc },
-      });
     });
 
     var initScroll = function() {
@@ -503,8 +508,6 @@ angular
     var changeListener = Changes({
       key: 'reports-list',
       callback: function(change) {
-        $scope.setLoadingSubActionBar(false);
-
         if (change.deleted) {
           liveList.remove(change.doc);
           $scope.hasReports = liveList.count() > 0;

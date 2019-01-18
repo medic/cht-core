@@ -92,7 +92,9 @@ var _ = require('underscore');
             var selected = $scope.selected;
             $scope.refreshReportSilently(change.doc)
               .then(function() {
-                if(selected[0].formatted.verified !== change.doc.verified) {
+                if(selected[0].formatted.verified !== change.doc.verified || 
+                   ("oldVerified" in selected[0].formatted && 
+                    selected[0].formatted.oldVerified !== change.doc.verified)) {
                   $scope.selected = selected;
                   $timeout(function() {
                     $scope.selected[0].formatted.verified = change.doc.verified;
@@ -104,6 +106,16 @@ var _ = require('underscore');
       });
 
       $scope.$on('$destroy', changeListener.unsubscribe);
+
+      $scope.$on('VerifiedReport', function(e, valid) {
+        var oldVerified = $scope.selected[0].formatted.verified;
+        var newVerified = oldVerified === valid ? undefined : valid;
+
+        $scope.selected[0].formatted.verified = newVerified;
+        $scope.selected[0].formatted.oldVerified = oldVerified;
+
+        $scope.setSubActionBarStatus(newVerified);
+      });
     }
   );
 
