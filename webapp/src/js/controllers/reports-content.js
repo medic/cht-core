@@ -93,7 +93,7 @@ var _ = require('underscore');
             $scope.refreshReportSilently(change.doc)
               .then(function() {
                 if(selected[0].formatted.verified !== change.doc.verified || 
-                   ("oldVerified" in selected[0].formatted && 
+                   ('oldVerified' in selected[0].formatted && 
                     selected[0].formatted.oldVerified !== change.doc.verified)) {
                   $scope.selected = selected;
                   $timeout(function() {
