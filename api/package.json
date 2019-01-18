@@ -96,6 +96,7 @@
     "pouchdb-mapreduce",
     "properties",
     "request",
+    "request-promise-native",
     "semver",
     "simple-password-tester",
     "underscore",
