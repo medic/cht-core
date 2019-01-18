@@ -20,15 +20,9 @@ angular.module('services').factory('XmlForms',
 
     var getForms = function() {
       return DB()
-        .query('medic-client/forms', { include_docs: true })
+        .querydb.find({selector: {type: 'form', '_attachments.xml': {$exists: true}}})
         .then(function(res) {
-          return res.rows
-            .filter(function(row) {
-              return row.doc._attachments.xml;
-            })
-            .map(function(row) {
-              return row.doc;
-            });
+          return res.docs;
         });
     };
 

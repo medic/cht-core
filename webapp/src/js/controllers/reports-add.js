@@ -71,7 +71,7 @@ angular.module('inboxControllers').controller('ReportsAddCtrl',
         $scope.setSelected(model);
         return $q.all([
           GetReportContent(model.doc),
-          XmlForm(model.formInternalId, { include_docs: true })
+          XmlForm(model.formInternalId)
         ]).then(function(results) {
           $scope.enketoStatus.edited = false;
           Enketo.render('#report-form', results[1].id, results[0], markFormEdited)

@@ -72,13 +72,18 @@ var feedback = require('../modules/feedback'),
 
     Session.init();
 
+
+    // MOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOVE THIS
+    DB().createIndex({index: {fields: ['type']}});
+    // MOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOVE THIS
+
     if ($window.location.href.indexOf('localhost') !== -1) {
       Debug.set(Debug.get()); // Initialize with cookie
     } else {
       // Disable debug for everything but localhost
       Debug.set(false);
     }
-    
+
     ResourceIcons.getAppTitle().then(title => {
       document.title = title;
     });

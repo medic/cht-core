@@ -6,11 +6,13 @@ angular.module('inboxServices').factory('XmlForm',
     'use strict';
     'ngInject';
 
-    return function(internalId, options) {
-      options = options || {};
-      options.key = internalId;
+    return function(internalId, fields) {
+      const options = {selector: {type: 'form', '_attachments.xml': {$exists: true}, key: internalId}};
+      if (fields) {
+        options.fields = fields;
+      }
       return DB()
-        .query('medic-client/forms', options)
+        .find(options)
         .then(function(result) {
           if (!result.rows.length) {
             throw new Error('No form found for internalId: ' + internalId);
@@ -18,7 +20,7 @@ angular.module('inboxServices').factory('XmlForm',
           if (result.rows.length > 1) {
             throw new Error('Multiple forms found for internalId: ' + internalId);
           }
-          return result.rows[0];
+          return result.docs[0];
         });
     };
   }

@@ -10,9 +10,10 @@ angular.module('inboxServices').service('ContactForm',
     'use strict';
     'ngInject';
 
-    var withAvailableForms = DB().query('medic-client/forms').then(function(res) {
-      return _.pluck(res.rows, 'id');
-    });
+    var withAvailableForms = DB.find({selector: {type: 'form', '_attachments.xml': {$exists: true}}, fields: ['_id']})
+      .then(function(res) {
+        return _.pluck(res.docs, '_id');
+      });
 
     var getFormById = function(availableForms, id) {
       if (_.contains(availableForms, id)) {

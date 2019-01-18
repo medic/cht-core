@@ -458,9 +458,11 @@ angular.module('inboxServices').service('Enketo',
 
       docsToStore.unshift(doc);
 
-      return XmlForm(doc.form)
+      // FIXME: we don't need to just get the _id and then the attachment, the
+      // attachment is already returned in the XmlForm query!
+      return XmlForm(doc.form, ['_id'])
         .then(function(form) {
-          return getFormAttachment(form.id);
+          return getFormAttachment(form._id);
         })
         .then(function(form) {
           doc.fields = EnketoTranslation.reportRecordToJs(record, form);
