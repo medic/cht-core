@@ -5,7 +5,8 @@ if (!window.startupTimes) {
 }
 window.startupTimes.firstCodeExecution = performance.now();
 
-window.PouchDB = require('pouchdb-browser');
+window.PouchDB = require('../pouchdb-browser');
+window.PouchDB.plugin(require('../pouchdb-find'));
 window.PouchDB.plugin(require('pouchdb-debug'));
 window.$ = window.jQuery = require('jquery');
 window.d3 = require('d3');

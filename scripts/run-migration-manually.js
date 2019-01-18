@@ -1,4 +1,4 @@
-#!/bin/node
+#!/usr/local/bin/node
 
 // Intentionally not ES6 because it may be run on old systems with an old node
 

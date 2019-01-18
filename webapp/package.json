@@ -49,7 +49,6 @@
     "openrosa-xpath-evaluator": "^1.5.0",
     "partial-json-parser": "1.0.3",
     "pojo2xml": "^1.7.2",
-    "pouchdb-browser": "^7.0.0",
     "pouchdb-debug": "^7.0.0",
     "select2": "4.0.3",
     "simple-password-tester": "^1.0.0",
