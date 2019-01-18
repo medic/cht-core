@@ -90,6 +90,7 @@ const createSession = req => {
       pathname: '_session',
     }),
     json: true,
+    resolveWithFullResponse: true,
     body: { name: user, password: password },
     auth: { user: user, pass: password },
   });
