@@ -128,22 +128,12 @@ const setCookies = (req, res, sessionRes) => {
     .then(userCtx => {
       setSessionCookie(res, sessionCookie);
       setUserCtxCookie(res, userCtx);
-      if (auth.hasAllPermissions(userCtx, 'can_configure')) {
-        // https://github.com/medic/medic-webapp/issues/5035
-        //  For Test DB, temporarily disable `canCongifure` property to avoid redirecting to admin console
-        // One `e2e` is problematic here has held me hostage the whole day :(
-        let canCongifure = true;
-        if (environment.db === 'medic-test') {
-          canCongifure = false;
-        }
-        res.json({
-          success: true,
-          canCongifure: canCongifure,
-          redirect: path.join('/', environment.db, '_design', 'medic-admin', '_rewrite')
-        });
-      } else {
-        res.json({ success: true, canCongifure: false });
-      }
+      // https://github.com/medic/medic-webapp/issues/5035
+      //  For Test DB, temporarily disable `canCongifure` property to avoid redirecting to admin console
+      // One `e2e` is problematic 
+      const designDoc  = auth.hasAllPermissions(userCtx, 'can_configure') &&
+        environment.db !== 'medic-test' ? 'medic-admin' : 'medic';
+      res.status(307).send(path.join('/', environment.db, '_design', designDoc, '_rewrite'));
     })
     .catch(err => {
       logger.error(`Error getting authCtx ${err}`);

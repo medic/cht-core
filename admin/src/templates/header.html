@@ -1,30 +1,23 @@
 <nav class="header">
   <div class="container">
     <div class="navbar-header">
-      <h1 translate>admin.app.name</h1>
+      <span class="navbar-brand" translate>admin.app.name</span>
     </div>
-    <div class="extras">
-      <span class="dropdown options">
-        <a data-toggle="dropdown">
-          <div class="mm-icon mm-icon-inverse">
-            <span class="fa fa-fw fa-bars"></span>
-          </div>
-        </a>
-        <ul role="menu" class="dropdown-menu mm-dropdown-menu">
-          <li role="presentation" mm-auth="can_configure">
-            <a id="app" ng-href="{{baseUrl}}" role="menuitem" tabindex="-1" rel="noopener noreferrer">
-              <i class="fa fa-fw fa-cog"></i>
-              <span translate>app.name</span>
-            </a>
-          </li>
-          <li role="presentation" mm-auth="can_configure">
-            <a role="menuitem" tabindex="-1" rel="external" ng-click="logout()">
-              <i class="fa fa-fw fa-power-off"></i>
-              <span translate>Log Out</span>
-            </a>
-          </li>
-        </ul>
-      </span>
+    <div class="collapse navbar-collapse">
+      <ul class="nav navbar-nav navbar-right">
+        <li>
+          <a ng-href="{{webAppUrl}}">
+            <i class="fa fa-fw fa-home"></i>
+            <span translate>app.name</span>
+          </a>
+        </li>
+        <li>
+          <a ng-click="logout()">
+            <i class="fa fa-fw fa-power-off"></i>
+            <span translate>Log Out</span>
+          </a>
+        </li>
+      </ul>
     </div>
   </div>
 </nav>

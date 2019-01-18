@@ -21,7 +21,7 @@ angular.module('controllers').controller('MainCtrl',
     });
 
 
-    $scope.baseUrl = Location.path;
+    $scope.webAppUrl = Location.path;
     $scope.logout = function() {
       Session.logout();
     };
