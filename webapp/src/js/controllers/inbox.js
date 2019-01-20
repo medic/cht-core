@@ -629,7 +629,11 @@ var feedback = require('../modules/feedback'),
           //       to the login page
           $log.error('Application cache update error', err);
         });
-        if (window.applicationCache.status === window.applicationCache.UPDATEREADY) {
+
+        if (
+          window.applicationCache.status === window.applicationCache.UPDATEREADY ||
+          window.applicationCache.status === window.applicationCache.UNCACHED
+        ) {
           showUpdateReady();
         }
         Changes({
