@@ -83,6 +83,20 @@ describe('Server utils', () => {
     chai.expect(end.args[0][0]).to.equal('Server error');
   });
 
+  it('error 500 for any non-numeric error code', () => {
+    const writeHead = sinon.stub(res, 'writeHead');
+    serverUtils.error({ code: '100' }, req, res);
+    chai.expect(writeHead.callCount).to.eq(1);
+    chai.expect(writeHead.args[0][0]).to.eq(500);
+  });
+
+  it('error 500 for unparseable non-numeric error code', () => {
+    const writeHead = sinon.stub(res, 'writeHead');
+    serverUtils.error({ code: 'foo' }, req, res);
+    chai.expect(writeHead.callCount).to.eq(1);
+    chai.expect(writeHead.args[0][0]).to.eq(500);
+  });
+
   it('notLoggedIn redirects to login page for human user', () => {
     const redirect = sinon.stub(res, 'redirect');
     req.url = 'someurl';
