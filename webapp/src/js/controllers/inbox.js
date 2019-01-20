@@ -673,7 +673,8 @@ var feedback = require('../modules/feedback'),
         $log.error('Application cache update error', err);
       });
       if (
-        window.applicationCache.status === window.applicationCache.UPDATEREADY
+        window.applicationCache.status === window.applicationCache.UPDATEREADY ||
+        window.applicationCache.status === window.applicationCache.UNCACHED
       ) {
         showUpdateReady();
       }
