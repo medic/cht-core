@@ -301,6 +301,7 @@ module.exports = function(grunt) {
               'enketo-core/**',
               'font-awesome/**',
               'moment/**',
+              'pouchdb-browser/**',
             ],
             dest: 'webapp/node_modules_backup',
           },
@@ -430,6 +431,7 @@ module.exports = function(grunt) {
             'enketo-core',
             'font-awesome',
             'moment',
+            'pouchdb-browser',
           ];
           return modulesToPatch
             .map(function(module) {
@@ -492,6 +494,10 @@ module.exports = function(grunt) {
 
             // patch enketo to always mark the /inputs group as relevant
             'patch webapp/node_modules/enketo-core/src/js/Form.js < webapp/patches/enketo-inputs-always-relevant.patch',
+
+            // patch pouch to:
+            // * improve safari checks (https://github.com/medic/medic-webapp/issues/2797)
+            'patch webapp/node_modules/pouchdb-browser/lib/index.js < webapp/patches/pouchdb-browser.patch',
           ];
           return patches.join(' && ');
         },
