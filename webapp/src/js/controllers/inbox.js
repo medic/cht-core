@@ -78,7 +78,7 @@ var feedback = require('../modules/feedback'),
       // Disable debug for everything but localhost
       Debug.set(false);
     }
-    
+
     ResourceIcons.getAppTitle().then(title => {
       document.title = title;
     });
@@ -95,6 +95,14 @@ var feedback = require('../modules/feedback'),
       not_required: 'fa-check',
       required: 'fa-exclamation-triangle',
       unknown: 'fa-question-circle',
+    };
+
+    const updateReplicationStatus = status => {
+      if ($scope.replicationStatus.current !== status) {
+        $scope.replicationStatus.current = status;
+        $scope.replicationStatus.textKey = 'sync.status.' + status;
+        $scope.replicationStatus.icon = SYNC_ICON[status];
+      }
     };
 
     DBSync.addUpdateListener(update => {
@@ -124,13 +132,19 @@ var feedback = require('../modules/feedback'),
         $log.info('Replication started after ' + duration + ' seconds since previous attempt.');
       }
 
-      $scope.replicationStatus.current = status;
-      $scope.replicationStatus.textKey = 'sync.status.' + status;
-      $scope.replicationStatus.icon = SYNC_ICON[status];
+      updateReplicationStatus(status);
     });
 
     $window.addEventListener('online', () => DBSync.setOnlineStatus(true), false);
     $window.addEventListener('offline', () => DBSync.setOnlineStatus(false), false);
+    Changes({
+      key: 'sync-status',
+      callback: function() {
+        if (!DBSync.isSyncInProgress()) {
+          updateReplicationStatus('required');
+        }
+      },
+    });
     DBSync.sync();
 
     // BootstrapTranslator is used because $translator.onReady has not fired
