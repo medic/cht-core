@@ -12,6 +12,7 @@ var _ = require('underscore'),
     $scope,
     $state,
     $stateParams,
+    $transitions,
     $translate,
     Auth,
     Changes,
@@ -433,8 +434,8 @@ var _ = require('underscore'),
       return setupPromise;
     };
 
-    $scope.$on('$stateChangeStart', function(event, toState) {
-      if (toState.name.indexOf('contacts') === -1) {
+    $transitions.onStart({}, function(trans) {
+      if (trans.to().name.indexOf('contacts') === -1) {
         $scope.unsetSelected();
       }
     });

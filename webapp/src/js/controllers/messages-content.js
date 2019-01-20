@@ -14,6 +14,7 @@ angular.module('inboxControllers').controller('MessagesContentCtrl',
     $state,
     $stateParams,
     $timeout,
+    $transitions,
     Changes,
     LineageModelGenerator,
     MarkRead,
@@ -243,8 +244,8 @@ angular.module('inboxControllers').controller('MessagesContentCtrl',
         $('#message-footer').removeClass('sending');
       });
 
-    $scope.$on('$stateChangeStart', function(event, toState) {
-      if (toState.name.indexOf('messages.detail') === -1) {
+    $transitions.onStart({}, function(trans) {
+      if (trans.to().name.indexOf('messages.detail') === -1) {
         $scope.unsetSelected();
       }
     });

@@ -9,6 +9,7 @@ angular
     $state,
     $stateParams,
     $timeout,
+    $transitions,
     AddReadStatus,
     Changes,
     DB,
@@ -493,8 +494,8 @@ angular
 
     $scope.$on('DeselectAll', deselectAll);
 
-    $scope.$on('$stateChangeStart', function(event, toState) {
-      if (toState.name.indexOf('reports') === -1) {
+    $transitions.onStart({}, function(trans) {
+      if (trans.to().name.indexOf('reports') === -1) {
         $scope.unsetSelected();
       }
     });

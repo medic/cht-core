@@ -16,6 +16,7 @@ var feedback = require('../modules/feedback'),
     $state,
     $stateParams,
     $timeout,
+    $transitions,
     $translate,
     $window,
     APP_CONFIG,
@@ -241,12 +242,12 @@ var feedback = require('../modules/feedback'),
       });
     });
 
-    $rootScope.$on('$stateChangeStart', function (event){
+    $transitions.onStart({}, function(trans) {
       if(!$scope.enketoStatus.edited){
         return;
       }
       if($scope.cancelCallback){
-        event.preventDefault();
+        trans.abort();
         $scope.navigationCancel();
       }
     });
@@ -339,8 +340,8 @@ var feedback = require('../modules/feedback'),
       $scope.setShowContent(true);
     };
 
-    $scope.$on('$stateChangeSuccess', function(event, toState) {
-      $scope.currentTab = toState.name.split('.')[0];
+    $transitions.onSuccess({}, function(trans) {
+      $scope.currentTab = trans.to().name.split('.')[0];
       if (!$state.includes('reports')) {
         $scope.selectMode = false;
       }
@@ -682,7 +683,7 @@ var feedback = require('../modules/feedback'),
 
     // close all select2 menus on navigation
     // https://github.com/medic/medic-webapp/issues/2927
-    $rootScope.$on('$stateChangeStart', closeDropdowns);
+    $transitions.onStart({}, closeDropdowns);
 
     $rootScope.$on('databaseClosedEvent', function () {
       Modal({

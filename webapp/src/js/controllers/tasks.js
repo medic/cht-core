@@ -12,6 +12,7 @@ var _ = require('underscore');
       $state,
       $stateParams,
       $timeout,
+      $transitions,
       $window,
       $translate,
       LiveList,
@@ -93,8 +94,8 @@ var _ = require('underscore');
         }
       });
 
-      $scope.$on('$stateChangeStart', function(event, toState) {
-        if (toState.name.indexOf('tasks') === -1) {
+      $transitions.onStart({}, function(trans) {
+        if (trans.to().name.indexOf('tasks') === -1) {
           $scope.unsetSelected();
         }
       });
