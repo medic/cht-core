@@ -576,7 +576,7 @@
         </translation>
       </itext>
       <instance>
-        <data delimiter="#" id="contact:person:create" prefix="J1!contact:person:create!" version="2019-01-21  19-46">
+        <data delimiter="#" id="contact:person:create" prefix="J1!contact:person:create!" version="2019-01-21_10-34">
           <inputs>
             <meta>
               <location>
@@ -622,7 +622,7 @@
           </meta>
         </data>
       </instance>
-      <bind nodeset="/data/inputs" relevant="0"/>
+      <bind nodeset="/data/inputs" relevant="false()"/>
       <bind nodeset="/data/inputs/user/contact_id" type="string"/>
       <bind nodeset="/data/inputs/user/facility_id" type="string"/>
       <bind nodeset="/data/inputs/user/name" type="string"/>
@@ -635,8 +635,8 @@
       <bind nodeset="/data/person/type" type="string"/>
       <bind nodeset="/data/person/name" required="true()" type="string"/>
       <bind constraint=". &lt;= today()" jr:constraintMsg="jr:itext('/data/person/date_of_birth:jr:constraintMsg')" nodeset="/data/person/date_of_birth" type="date"/>
-      <bind constraint="1" jr:constraintMsg="jr:itext('/data/person/phone:jr:constraintMsg')" nodeset="/data/person/phone" type="tel"/>
-      <bind constraint="1" jr:constraintMsg="jr:itext('/data/person/phone_alternate:jr:constraintMsg')" nodeset="/data/person/phone_alternate" type="tel"/>
+      <bind constraint="true()" jr:constraintMsg="jr:itext('/data/person/phone:jr:constraintMsg')" nodeset="/data/person/phone" type="tel"/>
+      <bind constraint="true()" jr:constraintMsg="jr:itext('/data/person/phone_alternate:jr:constraintMsg')" nodeset="/data/person/phone_alternate" type="tel"/>
       <bind nodeset="/data/person/sex" type="select1"/>
       <bind nodeset="/data/person/role" type="select1"/>
       <bind nodeset="/data/person/role_other" relevant="selected(  /data/person/role ,'other')" required="true()" type="string"/>
