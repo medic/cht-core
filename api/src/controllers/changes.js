@@ -82,20 +82,23 @@ const generateResponse = feed => {
 };
 
 // any doc ID should only appear once in the changes feed, with a list of changed revs attached to it
-const appendChange = (results, changeObj, deleteSeq = false) => {
+const appendChange = (results, changeObj, seq) => {
   const result = _.findWhere(results, { id: changeObj.id });
   if (!result) {
     const change = JSON.parse(JSON.stringify(changeObj.change));
-    if (deleteSeq) {
-      // PouchDB will pick the seq of the last change in a batch or the last_seq of the whole result to update
-      // the Checkpointer doc.
-      // When batching, because we don't know how far along our whole changes feed we are,
-      // we push these changes to our normal feeds every time, even if they are out of place,
-      // to avoid the possibility of them being skipped.
-      // Therefore, their seq is deleted to avoid PouchDB setting a Checkpointer with a future seq, and force PouchDB to
-      // use result last_seq
-      delete change.seq;
+
+    // PouchDB (7.0.0) will pick the seq of the last change in a batch or the last_seq of the whole result to update
+    // the Checkpointer doc. It also uses this seq as a since param in the next changes request, to fix
+    // https://github.com/pouchdb/pouchdb/issues/6809
+    // When batching, because we don't know how far along our whole changes feed we are,
+    // we push these changes to our normal feeds every time, even if they are out of place,
+    // to avoid the possibility of them being skipped.
+    // Therefore, their seq is changed to equal the feed's last_seq to avoid PouchDB setting a Checkpointer
+    // with a future seq and to use a correct seq when requesting the next batch of changes.
+    if (seq) {
+      change.seq = seq;
     }
+
     return results.push(change);
   }
 
@@ -110,10 +113,10 @@ const appendChange = (results, changeObj, deleteSeq = false) => {
 };
 
 // appends allowed `changes` to feed `results`
-const processPendingChanges = (feed, deleteSeq = false) => {
+const processPendingChanges = (feed, forceSeq = false) => {
   authorization
     .filterAllowedDocs(feed, feed.pendingChanges)
-    .forEach(changeObj => appendChange(feed.results, changeObj, deleteSeq));
+    .forEach(changeObj => appendChange(feed.results, changeObj, forceSeq && feed.lastSeq));
 };
 
 // returns true if an authorization change is found
@@ -275,6 +278,9 @@ const initFeed = (req, res) => {
 
 const processRequest = (req, res) => {
   initFeed(req, res).then(getChanges);
+  /*initFeed(req, res).then(feed => {
+    setTimeout(() => getChanges(feed), 5000);
+  });*/
 };
 
 // restarts the request, refreshing user-settings

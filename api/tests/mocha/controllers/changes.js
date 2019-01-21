@@ -475,7 +475,7 @@ describe('Changes controller', () => {
         });
     });
 
-    it('pushes allowed pending changes to the results, excluding their seq when batching', () => {
+    it('pushes allowed pending changes to the results, updating their seq when batching', () => {
       const validatedIds = Array.from({length: 101}, () => Math.floor(Math.random() * 101));
       serverChecks.getCouchDbVersion.resolves('2.3.0');
       authorization.getAllowedDocIds.resolves(validatedIds);
@@ -521,8 +521,8 @@ describe('Changes controller', () => {
               { id: 1, changes: [], seq: 1 },
               { id: 2, changes: [], seq: 2 },
               { id: 3, changes: [], seq: 3 },
-              { id: 8, changes: [] },
-              { id: 9, changes: [] }
+              { id: 8, changes: [], seq: 3 },
+              { id: 9, changes: [], seq: 3 }
             ],
             last_seq: 3
           }));

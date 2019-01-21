@@ -558,7 +558,7 @@ describe('changes handler', () => {
         ]))
         .then(([ p, changes ]) => {
           expect(ids.every(id => changes.find(change => change.id === id))).toBe(true);
-          expect(changes.some(change => !change.seq)).toBe(true);
+          expect(changes.some(change => !change.seq)).toBe(false);
         });
     });
 
