@@ -1,4 +1,9 @@
 {
+  "env": {
+    "browser": true,
+    "commonjs": true,
+    "jquery": true
+  },
   "globals": {
     "angular": true
   },

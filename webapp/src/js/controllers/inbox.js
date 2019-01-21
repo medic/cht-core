@@ -677,9 +677,7 @@ var feedback = require('../modules/feedback'),
         // initialised yet
         try {
           $(this).select2('close');
-        } catch (e) {
-          $log.error('Error', e);
-        }
+        } catch (e) {} /* eslint-disable-line no-empty */
       });
     };
 

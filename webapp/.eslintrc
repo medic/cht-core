@@ -1,4 +1,9 @@
 {
+  "env": {
+    "browser": true,
+    "jquery": true,
+    "node": true
+  },
   "globals": {
     "angular": true,
     "Tour": true

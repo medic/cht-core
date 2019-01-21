@@ -1,16 +1,10 @@
 {
   "env": {
-    "browser": true,
-    "es6": true,
-    "jasmine": true,
-    "jquery": true,
-    "mocha": true,
-    "node": true
+    "es6": true
   },
   "extends": "eslint:recommended",
   "parserOptions": {
-    "ecmaVersion": 6,
-    "sourceType": "module"
+    "ecmaVersion": 6
   },
   "rules": {
     "curly": "error",
@@ -74,6 +68,12 @@
       },
       "rules": {
         "no-global-assign": "off"
+      }
+    },
+    {
+      "files": [ "Gruntfile.js" ],
+      "env": {
+        "node": true
       }
     }
   ]

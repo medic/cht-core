@@ -1,7 +1,6 @@
 {
   "env": {
-    "browser": false,
-    "jquery": false
+    "node": true
   },
   "rules": {
     "eqeqeq": "off",

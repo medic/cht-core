@@ -1,8 +1,6 @@
 {
   "env": {
-    "browser": false,
-    "jquery": false,
-    "jasmine": false
+    "node": true
   },
   "rules": {
     "eqeqeq": "off",
