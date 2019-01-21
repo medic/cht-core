@@ -2,16 +2,6 @@ var setState = function(className) {
   document.getElementById('form').className = className;
 };
 
-var unescape = function(s) {
-  return s
-    .replace(/&amp;/g,  '&')
-    .replace(/&lt;/g,   '<')
-    .replace(/&gt;/g,   '>')
-    .replace(/&quot;/g, '"')
-    .replace(/&#x27;/g, '\'')
-    .replace(/&#x60;/g, '`');
-};
-
 var post = function(url, payload, callback) {
   var xmlhttp = new XMLHttpRequest();
   xmlhttp.onreadystatechange = function() {
