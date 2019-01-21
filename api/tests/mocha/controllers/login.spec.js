@@ -5,7 +5,7 @@ const controller = require('../../../src/controllers/login'),
       db = require('../../../src/db-pouch').medic,
       sinon = require('sinon'),
       config = require('../../../src/config'),
-      request = require('request'),
+      request = require('request-promise-native'),
       fs = require('fs'),
       DB_NAME = 'lg',
       DDOC_NAME = 'medic';
@@ -168,7 +168,7 @@ describe('login controller', () => {
 
     it('returns errors from session create', () => {
       req.body = { user: 'sharon', password: 'p4ss' };
-      const post = sinon.stub(request, 'post').callsArgWith(1, 'boom');
+      const post = sinon.stub(request, 'post').rejects('boom');
       const status = sinon.stub(res, 'status').returns(res);
       const json = sinon.stub(res, 'json').returns(res);
       return controller.post(req, res).then(() => {
@@ -182,7 +182,7 @@ describe('login controller', () => {
 
     it('returns invalid credentials', () => {
       req.body = { user: 'sharon', password: 'p4ss' };
-      const post = sinon.stub(request, 'post').callsArgWith(1, null, { statusCode: 401 });
+      const post = sinon.stub(request, 'post').resolves({ statusCode: 401 });
       const status = sinon.stub(res, 'status').returns(res);
       const json = sinon.stub(res, 'json').returns(res);
       return controller.post(req, res).then(() => {
@@ -200,7 +200,7 @@ describe('login controller', () => {
         statusCode: 200,
         headers: { 'set-cookie': [ 'AuthSession=abc;' ] }
       };
-      const post = sinon.stub(request, 'post').callsArgWith(1, null, postResponse);
+      const post = sinon.stub(request, 'post').resolves(postResponse);
       const status = sinon.stub(res, 'status').returns(res);
       const json = sinon.stub(res, 'json').returns(res);
       const getUserCtx = sinon.stub(auth, 'getUserCtx').rejects('boom');
@@ -220,7 +220,7 @@ describe('login controller', () => {
         statusCode: 200,
         headers: { 'set-cookie': [ 'AuthSession=abc;' ] }
       };
-      const post = sinon.stub(request, 'post').callsArgWith(1, null, postResponse);
+      const post = sinon.stub(request, 'post').resolves(postResponse);
       const json = sinon.stub(res, 'json').returns(res);
       const cookie = sinon.stub(res, 'cookie').returns(res);
       const userCtx = { name: 'shazza', roles: [ 'project-stuff' ] };

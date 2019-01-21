@@ -1,4 +1,4 @@
-const request = require('request');
+const request = require('request-promise-native');
 const url = require('url');
 const db = require('../db-pouch');
 const environment = require('../environment');
@@ -29,29 +29,22 @@ const ddoc = {
 };
 
 const setSecurity = (dbName, username) => {
-  return new Promise((resolve, reject) => {
-    request.put({
-      url: url.format({
-        protocol: environment.protocol,
-        hostname: environment.host,
-        port: environment.port,
-        pathname: `${dbName}/_security`,
-      }),
-      auth: {
-        user: environment.username,
-        pass: environment.password
-      },
-      json: true,
-      body: {
-        admins: { names: [ username ], roles: [] },
-        members: { names: [ username ], roles: [] }
-      }
-    }, err => {
-      if (err) {
-        return reject(err);
-      }
-      resolve();
-    });
+  return request.put({
+    url: url.format({
+      protocol: environment.protocol,
+      hostname: environment.host,
+      port: environment.port,
+      pathname: `${dbName}/_security`,
+    }),
+    auth: {
+      user: environment.username,
+      pass: environment.password
+    },
+    json: true,
+    body: {
+      admins: { names: [ username ], roles: [] },
+      members: { names: [ username ], roles: [] }
+    }
   });
 };
 

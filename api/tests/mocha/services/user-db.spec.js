@@ -1,7 +1,7 @@
 const service = require('../../../src/services/user-db');
 const db = require('../../../src/db-pouch');
 const environment = require('../../../src/environment');
-const request = require('request');
+const request = require('request-promise-native');
 const chai = require('chai');
 const sinon = require('sinon');
 
@@ -45,7 +45,7 @@ describe('User DB service', () => {
       const create = sinon.stub(db, 'exists').resolves(false);
       const get = sinon.stub(db, 'get').resolves(userDb);
       const dbPut = sinon.stub(userDb, 'put').resolves();
-      const requestPut = sinon.stub(request, 'put').callsArgWith(1);
+      const requestPut = sinon.stub(request, 'put').resolves();
       environment.protocol = 'http:';
       environment.host = 'localhost';
       environment.port = '7357';
