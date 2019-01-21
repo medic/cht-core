@@ -52,11 +52,7 @@ const startApi = () => startServer('api');
 const startSentinel = () => startServer('sentinel');
 const startAll = () => Promise.all([startApi(), startSentinel()]);
 
-console.log(`Before running this script, don't forget to start webdriver:
-
-	npm run webdriver
-
-To see log files:
+console.log(`To see service log files:
 
 	tail -f logs/api.e2e.log
 	tail -f logs/sentinel.e2e.log

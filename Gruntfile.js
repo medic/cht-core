@@ -995,6 +995,7 @@ module.exports = function(grunt) {
 
   // Test tasks
   grunt.registerTask('e2e', 'Deploy app for testing and run e2e tests', [
+    'exec:start-webdriver',
     'exec:reset-test-databases',
     'couch-push:test',
     'exec:e2e-servers',
