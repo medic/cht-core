@@ -10,6 +10,18 @@ const {
   TRAVIS_BUILD_NUMBER
 } = process.env;
 
+const APPCACHE_OPTIONS = {
+  patterns: [
+    'build/ddocs/medic/_attachments/manifest.json',
+    'build/ddocs/medic/_attachments/audio/**/*',
+    'build/ddocs/medic/_attachments/css/**/*',
+    'build/ddocs/medic/_attachments/fonts/**/*',
+    'build/ddocs/medic/_attachments/img/**/*',
+    'build/ddocs/medic/_attachments/js/**/*',
+    'build/ddocs/medic/_attachments/xslt/**/*',
+  ],
+};
+
 const releaseName = TRAVIS_TAG || TRAVIS_BRANCH || 'local-development';
 
 const couchConfig = (() => {
@@ -776,18 +788,14 @@ module.exports = function(grunt) {
       inbox: {
         dest: 'build/ddocs/medic/_attachments/manifest.appcache',
         network: '*',
-        cache: {
-          patterns: [
-            'build/ddocs/medic/_attachments/manifest.json',
-            'build/ddocs/medic/_attachments/audio/**/*',
-            'build/ddocs/medic/_attachments/css/**/*',
-            'build/ddocs/medic/_attachments/fonts/**/*',
-            'build/ddocs/medic/_attachments/img/**/*',
-            'build/ddocs/medic/_attachments/js/**/*',
-            'build/ddocs/medic/_attachments/xslt/**/*',
-          ],
-        },
+        cache: APPCACHE_OPTIONS,
       },
+      obsolete: {
+        dest: 'build/ddocs/medic/_attachments/static/dist/manifest.appcache',
+        network: '*',
+        baseUrl: '../../',
+        cache: APPCACHE_OPTIONS,
+      }
     },
     sass: {
       options: {
