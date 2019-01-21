@@ -8,7 +8,7 @@ describe('MessageQueue service', function() {
       utils,
       query,
       translate,
-      rootScope, /* eslint-disable-line no-unused-vars */
+      rootScope,
       clock;
 
   beforeEach(() => {

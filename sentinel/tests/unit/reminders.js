@@ -40,7 +40,7 @@ describe('reminders', () => {
 
   it('runReminder calls sendReminder when valid', done => {
       var sendReminders,
-          matchReminder; /* eslint-disable-line no-unused-vars */
+          matchReminder;
 
       matchReminder = sinon.stub(reminders, 'matchReminder').callsArgWith(1, null, moment());
       sendReminders = sinon.stub(reminders, 'sendReminders').callsArgWith(1, null);
@@ -54,7 +54,7 @@ describe('reminders', () => {
 
   it('runReminder does not create document when no match', done => {
       var sendReminders,
-          matchReminder; /* eslint-disable-line no-unused-vars */
+          matchReminder;
 
       matchReminder = sinon.stub(reminders, 'matchReminder').callsArgWith(1, null, false);
       sendReminders = sinon.stub(reminders, 'sendReminders').callsArgWith(1, null);
@@ -84,7 +84,7 @@ describe('reminders', () => {
 
   it('runReminder decorates options with moment if found', done => {
       var sendReminders,
-          matchReminder, /* eslint-disable-line no-unused-vars */
+          matchReminder,
           now = moment(),
           options = {};
 
@@ -238,7 +238,7 @@ describe('reminders', () => {
 
   it('sendReminders calls sendReminder for each clinic', done => {
       var clinics,
-          getClinics, /* eslint-disable-line no-unused-vars */
+          getClinics,
           sendReminder;
 
       clinics = [
@@ -385,7 +385,7 @@ describe('reminders', () => {
 
   it('getReminderWindow returns a day ago when no results from db', done => {
       var db,
-          view, /* eslint-disable-line no-unused-vars */
+          view,
           time = moment().startOf('hour').subtract(1, 'day');
 
       db = {

@@ -16,12 +16,7 @@
     "no-console": "off",
     "no-extra-boolean-cast": "off",
     "no-undef": "error",
-    "no-unused-vars": [
-      "error",
-      {
-        "args": "none"
-      }
-    ],
+    "no-unused-vars": "off",
     "no-useless-escape": "off",
     "semi": [
       "error",

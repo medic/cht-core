@@ -2,7 +2,7 @@ const chai = require('chai'),
       utils = require('../../../src/controllers/utils'),
       sinon = require('sinon');
 
-let clock; /* eslint-disable-line no-unused-vars */
+let clock;
 
 describe('controller utils', () => {
 

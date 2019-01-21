@@ -357,7 +357,6 @@ var feedback = require('../modules/feedback'),
     };
     updateAvailableFacilities();
 
-    /* eslint-disable-next-line no-unused-vars */
     var findIdInContactHierarchy = function(id, hierarchy) {
       return _.find(hierarchy, function(entry) {
         return (

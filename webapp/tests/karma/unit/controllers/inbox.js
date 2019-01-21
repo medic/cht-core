@@ -10,7 +10,7 @@ describe('InboxCtrl controller', () => {
     RecurringProcessManager,
     changes,
     changesListener = {},
-    changesSpy, /* eslint-disable-line no-unused-vars */
+    changesSpy,
     session;
 
   beforeEach(() => {

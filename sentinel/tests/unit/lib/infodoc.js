@@ -180,7 +180,7 @@ describe('infodoc', () => {
   });
 
   describe('bulkUpdate', () => {
-    let clock; /* eslint-disable-line no-unused-vars */
+    let clock;
 
     beforeEach(() => clock = sinon.useFakeTimers());
     afterEach(() => sinon.restore());

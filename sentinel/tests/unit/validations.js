@@ -3,7 +3,7 @@ var moment = require('moment'),
   db = require('../../src/db-nano'),
   sinon = require('sinon'),
   assert = require('chai').assert,
-  clock; /* eslint-disable-line no-unused-vars */
+  clock;
 
 describe('validations', () => {
   afterEach(() => sinon.restore());

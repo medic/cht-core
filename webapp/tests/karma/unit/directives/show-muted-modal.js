@@ -4,7 +4,7 @@ describe('showMutedModal directive', () => {
 
   let compile,
       scope,
-      document, /* eslint-disable-line no-unused-vars */
+      document,
       Modal,
       state;
 

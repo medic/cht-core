@@ -4,7 +4,7 @@ describe('EditUserCtrl controller', () => {
 
   let jQuery,
       mockEditCurrentUser,
-      mockEditAUser, /* eslint-disable-line no-unused-vars */
+      mockEditAUser,
       scope,
       translationsDbQuery,
       UpdateUser,

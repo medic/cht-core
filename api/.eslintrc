@@ -3,13 +3,6 @@
     "node": true
   },
   "rules": {
-    "eqeqeq": "off",
-    "new-cap": [
-      "error",
-      {
-        "newIsCap": true
-      }
-    ],
     "no-console": "error"
   },
   "overrides": [
