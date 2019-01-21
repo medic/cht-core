@@ -82,10 +82,21 @@ const generateResponse = feed => {
 };
 
 // any doc ID should only appear once in the changes feed, with a list of changed revs attached to it
-const appendChange = (results, changeObj) => {
+const appendChange = (results, changeObj, deleteSeq = false) => {
   const result = _.findWhere(results, { id: changeObj.id });
   if (!result) {
-    return results.push(JSON.parse(JSON.stringify(changeObj.change)));
+    const change = JSON.parse(JSON.stringify(changeObj.change));
+    if (deleteSeq) {
+      // PouchDB will pick the seq of the last change in a batch or the last_seq of the whole result to update
+      // the Checkpointer doc.
+      // When batching, because we don't know how far along our whole changes feed we are,
+      // we push these changes to our normal feeds every time, even if they are out of place,
+      // to avoid the possibility of them being skipped.
+      // Therefore, their seq is deleted to avoid PouchDB setting a Checkpointer with a future seq, and force PouchDB to
+      // use result last_seq
+      delete change.seq;
+    }
+    return results.push(change);
   }
 
   // append missing revs to the list
@@ -99,10 +110,10 @@ const appendChange = (results, changeObj) => {
 };
 
 // appends allowed `changes` to feed `results`
-const processPendingChanges = (feed) => {
+const processPendingChanges = (feed, deleteSeq = false) => {
   authorization
     .filterAllowedDocs(feed, feed.pendingChanges)
-    .forEach(changeObj => appendChange(feed.results, changeObj));
+    .forEach(changeObj => appendChange(feed.results, changeObj, deleteSeq));
 };
 
 // returns true if an authorization change is found
@@ -207,7 +218,7 @@ const getChanges = feed => {
         return reauthorizeRequest(feed);
       }
 
-      processPendingChanges(feed);
+      processPendingChanges(feed, limitChangesRequests);
 
       if (feed.results.length || !isLongpoll(feed.req)) {
         // send response downstream
@@ -300,14 +311,6 @@ const processChange = (change, seq) => {
     }
   };
   delete change.doc;
-  // PouchDB will pick the seq of the last change in a batch or the last_seq of the whole result to update
-  // the Checkpointer doc.
-  // When batching, because we don't know how far along our whole changes feed we are,
-  // we push these changes to our normal feeds every time, even if they are out of place,
-  // to avoid the possibility of them being skipped.
-  // Therefore, their seq is deleted to avoid PouchDB setting a Checkpointer with a future seq, and force PouchDB to
-  // use result last_seq
-  delete change.seq;
 
   // inform the normal feeds that a change was received while they were processing
   normalFeeds.forEach(feed => feed.pendingChanges.push(changeObj));

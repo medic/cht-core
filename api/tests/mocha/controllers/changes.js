@@ -412,19 +412,19 @@ describe('Changes controller', () => {
     });
 
 
-    it('pushes allowed pending changes to the results, excluding their seq', () => {
+    it('pushes allowed pending changes to the results, including their seq when not batching', () => {
       const validatedIds = Array.from({length: 101}, () => Math.floor(Math.random() * 101));
       authorization.getAllowedDocIds.resolves(validatedIds);
       authorization.filterAllowedDocs.returns([
-        { change: { id: 8, changes: [] }, id: 8, viewResults: {} },
-        { change: { id: 9, changes: [] }, id: 9, viewResults: {} }
+        { change: { id: 8, changes: [], seq: 8 }, id: 8, viewResults: {} },
+        { change: { id: 9, changes: [], seq: 9 }, id: 9, viewResults: {} }
       ]);
       testReq.query = { since: 0 };
 
       controller.request(testReq, testRes);
 
       const expected = {
-        results: [{ id: 1, changes: [] }, { id: 2, changes: [] }, { id: 3, changes: [] }],
+        results: [{ id: 1, changes: [], seq: 1 }, { id: 2, changes: [], seq: 2 }, { id: 3, changes: [], seq: 3 }],
         last_seq: 3
       };
 
@@ -443,9 +443,9 @@ describe('Changes controller', () => {
           const feed = controller._getNormalFeeds()[0];
           feed.pendingChanges.length.should.equal(3);
           feed.pendingChanges.should.deep.equal([
-            { change: { id: 7, changes: [] }, id: 7, viewResults: {} },
-            { change: { id: 8, changes: [] }, id: 8, viewResults: {} },
-            { change: { id: 9, changes: [] }, id: 9, viewResults: {} }
+            { change: { id: 7, changes: [], seq: 4 }, id: 7, viewResults: {} },
+            { change: { id: 8, changes: [], seq: 5 }, id: 8, viewResults: {} },
+            { change: { id: 9, changes: [], seq: 6 }, id: 9, viewResults: {} }
           ]);
           feed.upstreamRequest.complete(null, expected);
         })
@@ -454,9 +454,73 @@ describe('Changes controller', () => {
           testRes.write.callCount.should.equal(1);
           testRes.write.args[0][0].should.equal(JSON.stringify({
             results: [
-              { id: 1, changes: [] },
-              { id: 2, changes: [] },
-              { id: 3, changes: [] },
+              { id: 1, changes: [], seq: 1 },
+              { id: 2, changes: [], seq: 2 },
+              { id: 3, changes: [], seq: 3 },
+              { id: 8, changes: [], seq: 8 },
+              { id: 9, changes: [], seq: 9 }
+            ],
+            last_seq: 3
+          }));
+          testRes.end.callCount.should.equal(1);
+          controller._getNormalFeeds().length.should.equal(0);
+          controller._getLongpollFeeds().length.should.equal(0);
+          authorization.allowedDoc.callCount.should.equal(0);
+          authorization.filterAllowedDocs.callCount.should.equal(1);
+          authorization.filterAllowedDocs.args[0][1].should.deep.equal([
+            { change: { id: 7, changes: [], seq: 4 }, id: 7, viewResults: {} },
+            { change: { id: 8, changes: [], seq: 5 }, id: 8, viewResults: {} },
+            { change: { id: 9, changes: [], seq: 6 }, id: 9, viewResults: {} }
+          ]);
+        });
+    });
+
+    it('pushes allowed pending changes to the results, excluding their seq when batching', () => {
+      const validatedIds = Array.from({length: 101}, () => Math.floor(Math.random() * 101));
+      serverChecks.getCouchDbVersion.resolves('2.3.0');
+      authorization.getAllowedDocIds.resolves(validatedIds);
+      authorization.filterAllowedDocs.returns([
+        { change: { id: 8, changes: [], seq: 8 }, id: 8, viewResults: {} },
+        { change: { id: 9, changes: [], seq: 9 }, id: 9, viewResults: {} }
+      ]);
+      testReq.query = { since: 0 };
+
+      controller.request(testReq, testRes);
+
+      const expected = {
+        results: [{ id: 1, changes: [], seq: 1 }, { id: 2, changes: [], seq: 2 }, { id: 3, changes: [], seq: 3 }],
+        last_seq: 3
+      };
+
+      return nextTick()
+        .then(() => {
+          controller._getContinuousFeed().emit('change', { id: 7, changes: [], doc: { _id: 7 }, seq: 4 }, 0, 4);
+        })
+        .then(() => {
+          controller._getContinuousFeed().emit('change', { id: 8, changes: [], doc: { _id: 8 }, seq: 5 }, 0, 5);
+        })
+        .then(() => {
+          controller._getContinuousFeed().emit('change', { id: 9, changes: [], doc: { _id: 9 }, seq: 6 }, 0, 6);
+        })
+        .then(nextTick)
+        .then(() => {
+          const feed = controller._getNormalFeeds()[0];
+          feed.pendingChanges.length.should.equal(3);
+          feed.pendingChanges.should.deep.equal([
+            { change: { id: 7, changes: [], seq: 4 }, id: 7, viewResults: {} },
+            { change: { id: 8, changes: [], seq: 5 }, id: 8, viewResults: {} },
+            { change: { id: 9, changes: [], seq: 6 }, id: 9, viewResults: {} }
+          ]);
+          feed.upstreamRequest.complete(null, expected);
+        })
+        .then(nextTick)
+        .then(() => {
+          testRes.write.callCount.should.equal(1);
+          testRes.write.args[0][0].should.equal(JSON.stringify({
+            results: [
+              { id: 1, changes: [], seq: 1 },
+              { id: 2, changes: [], seq: 2 },
+              { id: 3, changes: [], seq: 3 },
               { id: 8, changes: [] },
               { id: 9, changes: [] }
             ],
@@ -468,9 +532,9 @@ describe('Changes controller', () => {
           authorization.allowedDoc.callCount.should.equal(0);
           authorization.filterAllowedDocs.callCount.should.equal(1);
           authorization.filterAllowedDocs.args[0][1].should.deep.equal([
-            { change: { id: 7, changes: [] }, id: 7, viewResults: {} },
-            { change: { id: 8, changes: [] }, id: 8, viewResults: {} },
-            { change: { id: 9, changes: [] }, id: 9, viewResults: {} }
+            { change: { id: 7, changes: [], seq: 4 }, id: 7, viewResults: {} },
+            { change: { id: 8, changes: [], seq: 5 }, id: 8, viewResults: {} },
+            { change: { id: 9, changes: [], seq: 6 }, id: 9, viewResults: {} }
           ]);
         });
     });
