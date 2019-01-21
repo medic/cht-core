@@ -430,17 +430,23 @@ describe('Changes controller', () => {
 
       return nextTick()
         .then(() => {
-          controller._getContinuousFeed().emit('change', { id: 7, changes: [], doc: { _id: 7 } }, 0, 4);
+          controller._getContinuousFeed().emit('change', { id: 7, changes: [], doc: { _id: 7 }, seq: 4 }, 0, 4);
         })
         .then(() => {
-          controller._getContinuousFeed().emit('change', { id: 8, changes: [], doc: { _id: 8 } }, 0, 5);
+          controller._getContinuousFeed().emit('change', { id: 8, changes: [], doc: { _id: 8 }, seq: 5 }, 0, 5);
         })
         .then(() => {
-          controller._getContinuousFeed().emit('change', { id: 9, changes: [], doc: { _id: 9 } }, 0, 6);
+          controller._getContinuousFeed().emit('change', { id: 9, changes: [], doc: { _id: 9 }, seq: 6 }, 0, 6);
         })
         .then(nextTick)
         .then(() => {
           const feed = controller._getNormalFeeds()[0];
+          feed.pendingChanges.length.should.equal(3);
+          feed.pendingChanges.should.deep.equal([
+            { change: { id: 7, changes: [] }, id: 7, viewResults: {} },
+            { change: { id: 8, changes: [] }, id: 8, viewResults: {} },
+            { change: { id: 9, changes: [] }, id: 9, viewResults: {} }
+          ]);
           feed.upstreamRequest.complete(null, expected);
         })
         .then(nextTick)
