@@ -133,6 +133,7 @@ const setCookies = (req, res, sessionRes) => {
       // One `e2e` is problematic 
       const designDoc  = auth.hasAllPermissions(userCtx, 'can_configure') &&
         environment.db !== 'medic-test' ? 'medic-admin' : 'medic';
+        
       res.status(302).send(path.join('/', environment.db, '_design', designDoc, '_rewrite'));
     })
     .catch(err => {
