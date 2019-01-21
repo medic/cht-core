@@ -412,7 +412,7 @@ describe('Changes controller', () => {
     });
 
 
-    it('pushes allowed pending changes to the results', () => {
+    it('pushes allowed pending changes to the results, excluding their seq', () => {
       const validatedIds = Array.from({length: 101}, () => Math.floor(Math.random() * 101));
       authorization.getAllowedDocIds.resolves(validatedIds);
       authorization.filterAllowedDocs.returns([
@@ -446,7 +446,16 @@ describe('Changes controller', () => {
         .then(nextTick)
         .then(() => {
           testRes.write.callCount.should.equal(1);
-          testRes.write.args[0][0].should.equal(JSON.stringify(expected));
+          testRes.write.args[0][0].should.equal(JSON.stringify({
+            results: [
+              { id: 1, changes: [] },
+              { id: 2, changes: [] },
+              { id: 3, changes: [] },
+              { id: 8, changes: [] },
+              { id: 9, changes: [] }
+            ],
+            last_seq: 3
+          }));
           testRes.end.callCount.should.equal(1);
           controller._getNormalFeeds().length.should.equal(0);
           controller._getLongpollFeeds().length.should.equal(0);
@@ -1570,7 +1579,6 @@ describe('Changes controller', () => {
       tombstoneUtils.generateChangeFromTombstone.args[0][0].should.deep.equal({ id: '1-tombstone' });
       tombstoneUtils.generateChangeFromTombstone.args[1][0].should.deep.equal({ id: '4-tombstone' });
     });
-
   });
 
   describe('processChange', () => {
@@ -1589,7 +1597,7 @@ describe('Changes controller', () => {
       });
     });
 
-    it('updates the lastSeq property of all normal and longpoll feeds', () => {
+    it('updates the lastSeq property for longpoll feeds, but not for normal feeds', () => {
       const normalFeeds = controller._getNormalFeeds();
       const longpollFeeds = controller._getLongpollFeeds();
       const normalFeed = { lastSeq: 0, pendingChanges: [], req: testReq, res: testRes };
@@ -1598,7 +1606,7 @@ describe('Changes controller', () => {
       longpollFeeds.push(longpollFeed);
 
       controller._processChange({ id: 1, doc: { _id: 1 }}, 'seq');
-      normalFeed.lastSeq.should.equal('seq');
+      normalFeed.lastSeq.should.equal(0);
       longpollFeed.lastSeq.should.equal('seq');
     });
 

@@ -300,12 +300,17 @@ const processChange = (change, seq) => {
     }
   };
   delete change.doc;
+  // PouchDB will pick the seq of the last change in a batch or the last_seq of the whole result to update
+  // the Checkpointer doc.
+  // When batching, because we don't know how far along our whole changes feed we are,
+  // we push these changes to our normal feeds every time, even if they are out of place,
+  // to avoid the possibility of them being skipped.
+  // Therefore, their seq is deleted to avoid PouchDB setting a Checkpointer with a future seq, and force PouchDB to
+  // use result last_seq
+  delete change.seq;
 
   // inform the normal feeds that a change was received while they were processing
-  normalFeeds.forEach(feed => {
-    feed.lastSeq = seq;
-    feed.pendingChanges.push(changeObj);
-  });
+  normalFeeds.forEach(feed => feed.pendingChanges.push(changeObj));
 
   // send the change through to the longpoll feeds which are allowed to see it
   longpollFeeds.forEach(feed => {
