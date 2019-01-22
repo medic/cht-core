@@ -6,25 +6,16 @@ const auth = require('../auth'),
       tombstoneUtils = require('@shared-libs/tombstone-utils'),
       uuid = require('uuid/v4'),
       config = require('../config'),
-      logger = require('../logger');
+      logger = require('../logger'),
+      serverChecks = require('@shared-libs/server-checks'),
+      semver = require('semver');
 
 let inited = false,
     continuousFeed = false,
     longpollFeeds = [],
     normalFeeds = [],
-    currentSeq = 0;
-
-const split = (array, count) => {
-  count = Number.parseInt(count);
-  if (Number.isNaN(count) || count < 1) {
-    return [array];
-  }
-  const result = [];
-  while (array.length) {
-    result.push(array.splice(0, count));
-  }
-  return result;
-};
+    currentSeq = 0,
+    limitChangesRequests = null;
 
 const cleanUp = feed => {
   clearInterval(feed.heartbeat);
@@ -90,10 +81,24 @@ const generateResponse = feed => {
 };
 
 // any doc ID should only appear once in the changes feed, with a list of changed revs attached to it
-const appendChange = (results, changeObj) => {
+const appendChange = (results, changeObj, seq) => {
   const result = _.findWhere(results, { id: changeObj.id });
   if (!result) {
-    return results.push(JSON.parse(JSON.stringify(changeObj.change)));
+    const change = JSON.parse(JSON.stringify(changeObj.change));
+
+    // PouchDB (7.0.0) will pick the seq of the last change in a batch or the last_seq of the whole result to update
+    // the Checkpointer doc. It also uses this seq as a since param in the next changes request, to fix
+    // https://github.com/pouchdb/pouchdb/issues/6809
+    // When batching, because we don't know how far along our whole changes feed we are,
+    // we push these changes to our normal feeds every time, even if they are out of place,
+    // to avoid the possibility of them being skipped.
+    // Therefore, their seq is changed to equal the feed's last_seq to avoid PouchDB setting a Checkpointer
+    // with a future seq and to use a correct seq when requesting the next batch of changes.
+    if (seq) {
+      change.seq = seq;
+    }
+
+    return results.push(change);
   }
 
   // append missing revs to the list
@@ -107,10 +112,10 @@ const appendChange = (results, changeObj) => {
 };
 
 // appends allowed `changes` to feed `results`
-const processPendingChanges = (feed) => {
+const processPendingChanges = (feed, forceSeq = false) => {
   authorization
     .filterAllowedDocs(feed, feed.pendingChanges)
-    .forEach(changeObj => appendChange(feed.results, changeObj));
+    .forEach(changeObj => appendChange(feed.results, changeObj, forceSeq && feed.lastSeq));
 };
 
 // returns true if an authorization change is found
@@ -172,6 +177,14 @@ const restartNormalFeed = feed => {
 const getChanges = feed => {
   const options = { return_docs: true };
   _.extend(options, _.pick(feed.req.query, 'since', 'style', 'conflicts'));
+
+  // Prior to version 2.3.0, CouchDB had a bug where requesting _changes filtered by _doc_ids and using limit
+  // would yield an incorrect `last_seq`, resulting in overall incomplete changes.
+  // `limitChangesRequests` should only be true when CouchDB version is gte 2.3.0
+  if (limitChangesRequests && feed.req.query.limit) {
+    options.limit = feed.req.query.limit;
+  }
+
   options.doc_ids = feed.allowedDocIds;
   options.since = options.since || 0;
 
@@ -180,13 +193,12 @@ const getChanges = feed => {
   // a bug where batching sometimes skips changes between batches.
   options.batch_size = feed.allowedDocIds.length + 1;
 
-  feed.upstreamRequest = db.medic.changes(options).on('complete', info => {
-    feed.lastSeq = info && info.last_seq || feed.lastSeq;
-  });
+  feed.upstreamRequest = db.medic.changes(options);
 
   return feed.upstreamRequest
     .then(response => {
       const results = response && response.results;
+      feed.lastSeq = response.last_seq;
       // if the response was incomplete
 
       if (!results) {
@@ -208,7 +220,7 @@ const getChanges = feed => {
         return reauthorizeRequest(feed);
       }
 
-      processPendingChanges(feed);
+      processPendingChanges(feed, limitChangesRequests);
 
       if (feed.results.length || !isLongpoll(feed.req)) {
         // send response downstream
@@ -303,10 +315,7 @@ const processChange = (change, seq) => {
   delete change.doc;
 
   // inform the normal feeds that a change was received while they were processing
-  normalFeeds.forEach(feed => {
-    feed.lastSeq = seq;
-    feed.pendingChanges.push(changeObj);
-  });
+  normalFeeds.forEach(feed => feed.pendingChanges.push(changeObj));
 
   // send the change through to the longpoll feeds which are allowed to see it
   longpollFeeds.forEach(feed => {
@@ -346,17 +355,35 @@ const initContinuousFeed = since => {
     });
 };
 
+const initServerChecks = () =>
+  serverChecks
+  .getCouchDbVersion(db.serverUrl)
+  .then(shouldLimitChangesRequests);
+
+const shouldLimitChangesRequests = couchDbVersion => {
+  // Prior to version 2.3.0, CouchDB had a bug where requesting _changes filtered by _doc_ids and using limit
+  // would yield an incorrect `last_seq`, resulting in overall incomplete changes.
+  const MIN_COUCH_VERSION_FOR_LIMITING_CHANGES = '2.3.0';
+  limitChangesRequests = semver.valid(couchDbVersion) ?
+    semver.lte(MIN_COUCH_VERSION_FOR_LIMITING_CHANGES, couchDbVersion) :
+    false;
+};
+
 const init = () => {
   if (!inited) {
     inited = true;
     initContinuousFeed();
+    return initServerChecks();
   }
+
+  return Promise.resolve();
 };
 
 const request = (req, res) => {
-  init();
-  res.type('json');
-  processRequest(req, res);
+  init().then(() => {
+    res.type('json');
+    processRequest(req, res);
+  });
 };
 
 module.exports = {
@@ -375,17 +402,19 @@ if (process.env.UNIT_TEST_ENV) {
     _generateTombstones: generateTombstones,
     _hasAuthorizationChange: hasAuthorizationChange,
     _generateResponse: generateResponse,
-    _split: split,
     _reset: () => {
       longpollFeeds = [];
       normalFeeds = [];
       inited = false;
       currentSeq = 0;
+      limitChangesRequests = null;
     },
     _getNormalFeeds: () => normalFeeds,
     _getLongpollFeeds: () => longpollFeeds,
     _getCurrentSeq: () => currentSeq,
     _inited: () => inited,
-    _getContinuousFeed: () => continuousFeed
+    _getContinuousFeed: () => continuousFeed,
+    _shouldLimitChangesRequests: shouldLimitChangesRequests,
+    _getLimitChangesRequests: () => limitChangesRequests
   });
 }
