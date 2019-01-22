@@ -15,9 +15,9 @@ var nools = require('nools'),
     function(
       $log,
       $q,
+      DB,
       Changes,
       ContactSchema,
-      Search,
       Session,
       Settings,
       UserContact
@@ -228,17 +228,12 @@ var nools = require('nools'),
             initNools(settings, user);
           }
           registerListener();
-          var options = {
-            limit: 99999999,
-            force: true,
-            include_docs: true
-          };
           return $q.all([
-            Search('reports', { valid: true }, options),
-            Search('contacts', {}, options)
+            DB().find({selector: {type: 'data_record', $or: [{errors: {$exists: false}}, {errors: {$size: 0}}]}}),
+            DB().find({selector: {type: {$in: ['district_hospital', 'health_center', 'clinic', 'person']}}})
           ])
             .then(function(results) {
-              facts = deriveFacts(results[0], results[1]);
+              facts = deriveFacts(results[0].docs, results[1].docs);
               assertFacts();
             });
         });

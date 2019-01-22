@@ -17,9 +17,11 @@ angular.module('inboxServices').factory('Contacts',
     ContactSchema.getPlaceTypes().forEach(function(type) {
       cacheByType[type] = Cache({
         get: function(callback) {
-          DB().query('medic-client/contacts_by_type', { include_docs: true, key: [type] })
-            .then(function(result) {
-              callback(null, _.pluck(result.rows, 'doc'));
+          // TODO: benchmark using an $in clause instead of calling the same
+          // query 5 times
+          DB().find({selector: {type: type}})
+            .then(function(results) {
+              callback(null, results.docs);
             })
             .catch(callback);
         },
