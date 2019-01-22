@@ -459,6 +459,9 @@ module.exports = function(grunt) {
           )
           .join(' && '),
       },
+      'e2e-servers': {
+        cmd: 'node ./scripts/e2e-servers.js &'
+      },
       bundlesize: {
         cmd: 'node ./node_modules/bundlesize/index.js',
       },
@@ -704,14 +707,9 @@ module.exports = function(grunt) {
       },
     },
     protractor: {
-      'e2e-tests-and-services': {
+      'e2e-tests': {
         options: {
-          configFile: 'tests/e2e.tests-and-services.conf.js',
-        },
-      },
-      'e2e-tests-only': {
-        options: {
-          configFile: 'tests/e2e.tests-only.conf.js',
+          configFile: 'tests/e2e.tests.conf.js',
         },
       },
       'performance-tests-and-services': {
@@ -1005,12 +1003,11 @@ module.exports = function(grunt) {
 
   // Test tasks
   grunt.registerTask('e2e', 'Deploy app for testing and run e2e tests', [
+    'exec:start-webdriver',
     'exec:reset-test-databases',
-    'build-admin',
-    'build-node-modules',
-    'build-ddoc',
     'couch-push:test',
-    'protractor:e2e-tests-and-services',
+    'exec:e2e-servers',
+    'protractor:e2e-tests',
   ]);
 
   grunt.registerTask('test-perf', 'Run performance-specific tests', [
@@ -1079,7 +1076,7 @@ module.exports = function(grunt) {
 
   grunt.registerTask('ci-e2e', 'Run e2e tests for CI', [
     'exec:start-webdriver',
-    'protractor:e2e-tests-and-services',
+    'protractor:e2e-tests',
   ]);
 
   grunt.registerTask('ci-performance', 'Run performance tests on CI', [
