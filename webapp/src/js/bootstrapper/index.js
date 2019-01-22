@@ -117,7 +117,8 @@
   var setUiError = function() {
     var errorMessage = translator.translate('ERROR_MESSAGE');
     var tryAgain = translator.translate('TRY_AGAIN');
-    $('.bootstrap-layer').html('<div><p>' + errorMessage + '</p><a class="btn btn-primary" href="#" onclick="window.location.reload(false);">' + tryAgain + '</a></div>');
+    $('.bootstrap-layer').html('<div><p>' + errorMessage + '</p><a id="btn-reload" class="btn btn-primary" href="#">' + tryAgain + '</a></div>');
+    $('#btn-reload').click(() => window.location.reload(false));
   };
 
   var getDdoc = function(localDb) {
