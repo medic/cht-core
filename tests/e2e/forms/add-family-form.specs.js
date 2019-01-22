@@ -58,4 +58,5 @@ describe('Family form', () => {
     genericForm.invalidateReport();
     genericForm.validateReport();
   });
+  
 });
