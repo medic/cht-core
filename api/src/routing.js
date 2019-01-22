@@ -42,6 +42,7 @@ const _ = require('underscore'),
   appcacheManifest = /\/manifest\.appcache$/,
   uuid = require('uuid'),
   compression = require('compression'),
+  BUILDS_DB = 'https://staging.dev.medicmobile.org/_couch/builds', // jshint ignore:line
   app = express();
 
 // requires content-type application/json header
@@ -120,7 +121,10 @@ app.use(
         defaultSrc: ["'none'"],
         fontSrc: ["'self'"],
         manifestSrc: ["'self'"],
-        connectSrc: ["'self'"],
+        connectSrc: [
+          "'self'",
+          BUILDS_DB,
+        ],
         formAction: ["'self'"],
         imgSrc: [
           "'self'",
@@ -272,16 +276,17 @@ app.get('/api/info', function(req, res) {
 });
 
 app.get('/api/auth/:path', function(req, res) {
-  auth.checkUrl(req, function(err, output) {
-    if (err) {
-      return serverUtils.serverError(err, req, res);
-    }
-    if (output.status >= 400 && output.status < 500) {
-      res.status(403).send('Forbidden');
-    } else {
-      res.json(output);
-    }
-  });
+  auth.checkUrl(req)
+    .then(status => {
+      if (status && status >= 400 && status < 500) {
+        res.status(403).send('Forbidden');
+      } else {
+        res.json({ status: status });
+      }
+    })
+    .catch(err => {
+      serverUtils.serverError(err, req, res);
+    });
 });
 
 app.post('/api/v1/upgrade', jsonParser, upgrade.upgrade);

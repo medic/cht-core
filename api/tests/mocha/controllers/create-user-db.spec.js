@@ -39,7 +39,7 @@ describe('create-user-db controller', () => {
     const req = { url: '/medic-user-gareth-meta/' };
     const res = { json: sinon.stub() };
     sinon.stub(auth, 'getUserCtx').resolves({ name: 'gareth' });
-    const create = sinon.stub(userDb, 'create').callsArgWith(1);
+    const create = sinon.stub(userDb, 'create').resolves();
     return controller(req, res).then(() => {
       chai.expect(res.json.callCount).to.equal(1);
       chai.expect(res.json.args[0][0]).to.deep.equal({ ok: true });

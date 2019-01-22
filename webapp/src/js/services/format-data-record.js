@@ -18,6 +18,7 @@ angular
     'use strict';
 
     var lineage = lineageFactory($q, DB());
+    const patient_fields = ['patient_id', 'patient_uuid', 'patient_name'];
 
     var getRegistrations = function(patientId) {
       var options = {
@@ -93,6 +94,7 @@ angular
             isArray: false,
             value: prettyVal(settings, data, key, def, locale),
             label: label,
+            hasUrl: patient_fields.includes(key)
           });
         }
       });
@@ -312,6 +314,7 @@ angular
           value: value,
           isArray: false,
           generated: true,
+          hasUrl: patient_fields.includes(field)
         });
 
         doc.fields.headers.unshift({

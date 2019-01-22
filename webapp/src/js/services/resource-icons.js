@@ -87,7 +87,9 @@ angular.module('inboxServices').factory('ResourceIcons',
         });
     };
     
-    DOC_IDS.forEach(doc => updateResources(doc));
+    DOC_IDS.slice(1).forEach(doc => updateResources(doc));
+
+    var initResources = updateResources(DOC_IDS[0]);
 
     Changes({
       key: 'resource-icons',
@@ -107,7 +109,9 @@ angular.module('inboxServices').factory('ResourceIcons',
       },
       getAppTitle: () => DB().get(DOC_IDS[1]).then(doc => doc.title),
       replacePlaceholders: $elem => {
-        updateResources(DOC_IDS[0]).then(() => updateDom($elem, DOC_IDS[0]));
+        initResources.then(function() {
+          updateDom($elem, DOC_IDS[0]);
+        });
       }
     };
 

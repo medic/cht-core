@@ -185,6 +185,11 @@ angular
       },
 
       /**
+       * Boolean representing if sync is curently in progress
+       */
+      isSyncInProgress: () => !!inProgressSync,
+
+      /**
        * Set the current user's online status to control when replications will be attempted.
        *
        * @param newOnlineState {Boolean} The current online state of the user.

@@ -74,6 +74,10 @@ var _ = require('underscore');
         }
       };
 
+      $scope.labelIsIDorName = (label) => {
+        return label.endsWith('.patient_id') || label.endsWith('.patient_uuid') || label.endsWith('.patient_name');
+      };
+
       var changeListener = Changes({
         key: 'reports-content',
         filter: function(change) {
