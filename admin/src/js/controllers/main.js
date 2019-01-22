@@ -3,6 +3,7 @@ angular.module('controllers').controller('MainCtrl',
     $log,
     $translate,
     $window,
+    $state,
     Auth,
     $scope,
     Location,
@@ -25,5 +26,6 @@ angular.module('controllers').controller('MainCtrl',
     $scope.logout = function() {
       Session.logout();
     };
+    $scope.checkActive = state => $state.includes(state);
   }
 );
