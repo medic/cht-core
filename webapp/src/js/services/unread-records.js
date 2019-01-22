@@ -13,7 +13,7 @@ angular.module('inboxServices').factory('UnreadRecords', function(
   'ngInject';
 
   var getTotal = function() {
-    return DB().query('medic-client/data_records_by_type', { group: true });
+    return DB().find({selector: {type: 'data_record'}}).then(results => results.docs.length);
   };
 
   var getRead = function() {
