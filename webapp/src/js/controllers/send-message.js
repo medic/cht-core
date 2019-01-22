@@ -19,12 +19,6 @@ angular.module('inboxControllers').controller('SendMessageCtrl',
 
     $scope.error = {};
 
-    var translateRequiredField = function(fieldKey) {
-      return $translate(fieldKey).then(function(field) {
-        return $translate('field is required', { field: field });
-      });
-    };
-
     var validateMessage = function(message) {
       if (message) {
         $scope.error.message = false;
@@ -51,7 +45,7 @@ angular.module('inboxControllers').controller('SendMessageCtrl',
 
       // recipients is mandatory
       if (!recipients || recipients.length === 0) {
-        return translateRequiredField('tasks.0.messages.0.to')
+        return Translate.fieldIsRequired('tasks.0.messages.0.to')
           .then(function(error) {
             $scope.error.phone = error;
           });
