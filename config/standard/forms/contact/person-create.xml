@@ -125,7 +125,7 @@
             <value>Nom</value>
           </text>
           <text id="/data/person/date_of_birth:jr:constraintMsg">
-            <value>-</value>
+            <value>La date de naissance ne peut pas être dans le futur</value>
           </text>
           <text id="/data/person/date_of_birth:label">
             <value>Date de naissance</value>
@@ -220,7 +220,7 @@
             <value>लॉग इन यूज़र का नाम</value>
           </text>
           <text id="/data/person/date_of_birth:jr:constraintMsg">
-            <value>-</value>
+            <value>जन्म की तारीख भविष्य में नहीं हो सकती</value>
           </text>
           <text id="/data/person/date_of_birth:label">
             <value>जन्म की तारीख</value>
@@ -576,7 +576,7 @@
         </translation>
       </itext>
       <instance>
-        <data delimiter="#" id="contact:person:create" prefix="J1!contact:person:create!" version="2019-01-21_10-34">
+        <data delimiter="#" id="contact:person:create" prefix="J1!contact:person:create!" version="2019-01-22_12-31">
           <inputs>
             <meta>
               <location>
