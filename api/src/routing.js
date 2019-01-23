@@ -41,7 +41,7 @@ const _ = require('underscore'),
   appcacheManifest = /\/manifest\.appcache$/,
   uuid = require('uuid'),
   compression = require('compression'),
-  BUILDS_DB = 'https://staging.dev.medicmobile.org/_couch/builds', // jshint ignore:line
+  BUILDS_DB = 'https://staging.dev.medicmobile.org/_couch/builds/', // jshint ignore:line
   app = express();
 
 // requires content-type application/json header
