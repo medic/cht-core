@@ -10,9 +10,6 @@ angular.module('inboxControllers').controller('NavigationConfirmCtrl',
 
     $scope.cancel = function() {
       $uibModalInstance.dismiss();
-      if ($state.current.name.includes('report')) {
-        $('div.material').removeClass('ng-hide');
-      }
     };
 
     $scope.submit = function() {

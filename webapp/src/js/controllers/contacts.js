@@ -291,20 +291,10 @@ var _ = require('underscore'),
         });
     };
 
-    var clearSelection = function() {
-      $scope.selected = null;
-      LiveList.contacts.clearSelected();
-      LiveList['contact-search'].clearSelected();
-    };
-
-    $scope.$on('ClearSelected', function() {
-      clearSelection();
-    });
-
     $scope.search = function() {
       if($scope.filters.search) {
         $state.go('contacts.detail', { id: null }, { notify: false });
-        clearSelection();
+        $scope.clearSelection();
       }
 
       $scope.loading = true;
@@ -501,3 +491,4 @@ var _ = require('underscore'),
     }
   });
 })();
+

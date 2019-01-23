@@ -31,6 +31,7 @@ var feedback = require('../modules/feedback'),
     PlaceHierarchy,
     JsonForms,
     Language,
+    LiveList,
     LiveListConfig,
     Location,
     Modal,
@@ -226,14 +227,36 @@ var feedback = require('../modules/feedback'),
       });
     });
 
-    $rootScope.$on('$stateChangeStart', function (event){
-      if(!$scope.enketoStatus.edited){
+    $rootScope.$on('$stateChangeStart', function (event, toState, toParams, fromState){
+      if (!$scope.enketoStatus.edited){
         return;
       }
-      if($scope.cancelCallback){
+      if (toState.name.split('.')[0] !== fromState.name.split('.')[0]){
+        $scope.clearSelection();
+      }
+      if ($scope.cancelCallback){
         event.preventDefault();
         $scope.navigationCancel();
       }
+    });
+
+    $scope.clearSelection = function() {
+      if ($state.current.name.split('.')[0] === 'contacts'){
+        $scope.selected = null;
+        LiveList.contacts.clearSelected();
+        LiveList['contact-search'].clearSelected();
+      }
+      else if ($state.current.name.split('.')[0] === 'reports'){
+        $scope.selected = {};
+        LiveList.reports.clearSelected();
+        LiveList['report-search'].clearSelected();
+        $('#reports-list input[type="checkbox"]').prop('checked', false);
+        $scope.verifyingReport = false;
+      }
+    };
+
+    $scope.$on('ClearSelected', function() {
+      $scope.clearSelection();
     });
 
     // User wants to cancel current flow, or pressed back button, etc.
