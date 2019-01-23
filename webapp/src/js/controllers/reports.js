@@ -315,12 +315,25 @@ angular
     $scope.$on('VerifyReport', function(e, valid) {
       if ($scope.selected[0].doc.form) {
         $scope.setLoadingSubActionBar(true);
+
+        var doc = $scope.selected[0].doc;
+
+        if (doc.contact) {
+          var decycledContact = { '_id': doc.contact._id, parent: doc.contact.parent };
+          (function decycle(doc) {
+              if (doc.parent) {
+                doc.parent = doc.parent.parent ?  { '_id': doc.parent._id, 'parent' : doc.parent.parent } : { '_id': doc.parent._id };
+                decycle(doc.parent);
+              }
+          })(decycledContact);
+          
+          doc.contact = decycledContact;
+        }
+        
+        doc.verified = doc.verified === valid ? undefined : valid;
+
         DB()
-          .get($scope.selected[0]._id)
-          .then(function(message) {
-            message.verified = message.verified === valid ? undefined : valid;
-            return DB().post(message);
-          })
+          .post(doc)
           .catch(function(err) {
             $log.error('Error verifying message', err);
           })
