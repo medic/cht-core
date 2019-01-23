@@ -191,7 +191,7 @@ const batchedChanges = (username, limit, results = [], lastSeq = 0) => {
   });
 };
 
-const getChangesForIds = (username, docIds, lastSeq = 0, limit = 100, results = []) => {
+const getChangesForIds = (username, docIds, retry = false, lastSeq = 0, limit = 100, results = []) => {
   return requestChanges(username, { since: lastSeq, limit }).then(changes => {
     changes.results.forEach(change => {
       if (docIds.includes(change.id)) {
@@ -199,12 +199,11 @@ const getChangesForIds = (username, docIds, lastSeq = 0, limit = 100, results = 
       }
     });
 
-    // simulate PouchDB seq selection
-    const last_seq = changes.results.length && changes.results[changes.results.length - 1].seq ||
-                     changes.last_seq;
+    // simulate PouchDB 7.0.0 seq selection
+    const last_seq = changes.results.length ? changes.results[changes.results.length - 1].seq : changes.last_seq;
 
-    if (docIds.find(id => !results.find(change => change.id === id)) || changes.results.length) {
-      return getChangesForIds(username, docIds, last_seq, limit, results);
+    if (docIds.find(id => !results.find(change => change.id === id)) || (retry && changes.results.length)) {
+      return getChangesForIds(username, docIds, retry, last_seq, limit, results);
     }
 
     return results;
@@ -554,7 +553,7 @@ describe('changes handler', () => {
         .saveDocs(allowedDocs2)
         .then(() => Promise.all([
           promise,
-          getChangesForIds('bob', ids, currentSeq, 4),
+          getChangesForIds('bob', ids, true, currentSeq, 4),
         ]))
         .then(([ p, changes ]) => {
           expect(ids.every(id => changes.find(change => change.id === id))).toBe(true);
@@ -982,7 +981,7 @@ describe('changes handler', () => {
         })
         .then(result => {
           contact._rev = result.rev;
-          return getChangesForIds('bob', [contact._id], currentSeq);
+          return getChangesForIds('bob', [contact._id], false, currentSeq);
         })
         .then(changes => {
           expect(changes.length).toEqual(1);
@@ -1004,7 +1003,7 @@ describe('changes handler', () => {
         })
         .then(result => {
           contact._rev = result.rev;
-          return getChangesForIds('bob', [contact._id], currentSeq);
+          return getChangesForIds('bob', [contact._id], false, currentSeq);
         })
         .then(changes => {
           expect(changes.length).toEqual(1);
@@ -1019,7 +1018,7 @@ describe('changes handler', () => {
         .then(result => {
           contact._rev = result.rev;
 
-          return getChangesForIds('bob', [contact._id], currentSeq);
+          return getChangesForIds('bob', [contact._id], false, currentSeq);
         })
         .then(changes => {
           expect(changes.length).toEqual(1);
