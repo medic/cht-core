@@ -2,10 +2,16 @@ const environment = require('./src/environment'),
   serverChecks = require('@medic/server-checks'),
   logger = require('./src/logger');
 
-process.on('unhandledRejection', reason => {
-  logger.error('Unhandled Rejection:');
-  logger.error('%o',reason);
-});
+process
+  .on('unhandledRejection', reason => {
+    logger.error('UNHANDLED REJECTION!');
+    logger.error('  Reason: %o', reason);
+  })
+  .on('uncaughtException', err => {
+    logger.error('UNCAUGHT EXCEPTION!');
+    logger.error('  Error: %o', err);
+    process.exit(1);
+  });
 
 serverChecks.check(environment.serverUrl).then(() => {
   const app = require('./src/routing'),

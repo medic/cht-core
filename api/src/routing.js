@@ -32,7 +32,6 @@ const _ = require('underscore'),
   bulkDocs = require('./controllers/bulk-docs'),
   authorization = require('./middleware/authorization'),
   createUserDb = require('./controllers/create-user-db'),
-  createDomain = require('domain').create,
   staticResources = /\/(templates|static)\//,
   // CouchDB is very relaxed in matching routes
   routePrefix = '/+' + environment.db + '/+',
@@ -145,18 +144,6 @@ app.use(
     },
   })
 );
-
-app.use(function(req, res, next) {
-  var domain = createDomain();
-  domain.on('error', function(err) {
-    logger.error('UNCAUGHT EXCEPTION!');
-    serverUtils.serverError(err, req, res);
-    domain.dispose();
-    process.exit(1);
-  });
-  domain.enter();
-  next();
-});
 
 // requires `req` header `Accept-Encoding` to be `gzip` or `deflate`
 // requires `res` `Content-Type` to be compressible (see https://github.com/jshttp/mime-db/blob/master/db.json)

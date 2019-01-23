@@ -172,7 +172,7 @@ const getBranding = () => {
 
 module.exports = {
   safePath: safePath,
-  get: (req, res) => {
+  get: (req, res, next) => {
     const redirect = safePath(req.query.redirect);
     return auth
       .getUserCtx(req)
@@ -185,10 +185,7 @@ module.exports = {
         return getBranding()
           .then(branding => renderLogin(redirect, branding))
           .then(body => res.send(body))
-          .catch(err => {
-            logger.error('Could not find login page');
-            throw err;
-          });
+          .catch(next);
       });
   },
   post: (req, res) => {
