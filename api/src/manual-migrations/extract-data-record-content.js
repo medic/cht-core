@@ -6,7 +6,7 @@ function btoa(str) {
   if (str instanceof Buffer) {
     buffer = str;
   } else {
-    buffer = new Buffer(str.toString(), 'binary');
+    buffer = Buffer.from(str.toString(), 'binary');
   }
 
   return buffer.toString('base64');

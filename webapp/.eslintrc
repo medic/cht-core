@@ -1,0 +1,31 @@
+{
+  "env": {
+    "browser": true,
+    "jquery": true,
+    "node": true
+  },
+  "globals": {
+    "angular": true,
+    "Tour": true
+  },
+  "overrides": [
+    {
+      "files": [
+        "src/js/**/*.js"
+      ],
+      "rules": {
+        "no-console": "error"
+      }
+    },
+    {
+      "files": [
+        "src/js/app.js",
+        "src/js/modules/feedback.js",
+        "src/js/bootstrapper/*.js"
+      ],
+      "rules": {
+        "no-console": "off"
+      }
+    }
+  ]
+}

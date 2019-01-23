@@ -676,7 +676,9 @@ var feedback = require('../modules/feedback'),
         // initialised yet
         try {
           $(this).select2('close');
-        } catch (e) {}
+        } catch (e) {
+          // exception thrown on clicking 'close'
+        }
       });
     };
 

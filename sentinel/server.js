@@ -6,7 +6,7 @@ const db = require('./src/db-pouch'),
 
 if (process.env.TEST_ENV) {
   logger.info('TEST_ENV is set, server does not run in test mode.');
-  return;
+  process.exit(1);
 }
 
 process.on('unhandledRejection', reason => {

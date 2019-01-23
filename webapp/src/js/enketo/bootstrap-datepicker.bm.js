@@ -2,7 +2,7 @@
 https://github.com/uxsolutions/bootstrap-datepicker/pull/2431 tracks contribution of this file to bootstrap-datepicker
 */
 
-// jshint ignore: start
+/* eslint-disable */
 
 /**
  * Bamanankan (bm) translation for bootstrap-datepicker
