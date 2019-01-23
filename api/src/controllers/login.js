@@ -165,7 +165,7 @@ const setCookies = (req, res, sessionRes) => {
 
 module.exports = {
   safePath: safePath,
-  get: (req, res) => {
+  get: (req, res, next) => {
     const redirect = safePath(req.query.redirect);
     return auth
       .getUserCtx(req)
@@ -178,7 +178,7 @@ module.exports = {
         renderLogin(redirect, (err, body) => {
           if (err) {
             logger.error('Could not find login page');
-            throw err;
+            return next(err);
           }
           res.send(body);
         });
