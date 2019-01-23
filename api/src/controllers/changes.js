@@ -212,11 +212,11 @@ const getChanges = feed => {
       }
 
       // Fixes race condition where a new doc is added while the changes feed is active,
-      // but our continuousFeed listener receives the change after the request has been sent.
-      // When receiving empty results, PouchDB considers replication complete and
-      // uses last_seq to write it's checkpointer doc.
-      // By not advancing the checkpointer seq when there are no results, we make sure this docs will be part of
-      // the next _changes response.
+      // but our continuousFeed listener receives the change after the response has been sent.
+      // When receiving empty results, PouchDB considers replication to be complete and
+      // uses reponse.last_seq to write it's checkpointer doc.
+      // By not advancing the checkpointer seq when there are no results, we make sure these docs will be retrieved
+      // in the next replication attempt.
       feed.lastSeq = results.length ? response.last_seq : feed.initSeq;
 
       generateTombstones(results);
