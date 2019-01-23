@@ -1,4 +1,5 @@
 const should = require('chai').should(),
+      { expect } = require('chai'),
       sinon = require('sinon'),
       registrationUtils = require('@medic/registration-utils'),
       taskUtils = require('@medic/task-utils'),
@@ -85,7 +86,7 @@ describe('utils util', () => {
         .should.equal(66);
     });
     it('throws an exception if the expression errors', () => {
-      should.Throw(() => utils.evalExpression(`doc.foo.bar.smang === 'cats'`, {})); /* eslint-disable-line new-cap */
+      expect(() => utils.evalExpression(`doc.foo.bar.smang === 'cats'`, {})).to.throw();
     });
   });
 

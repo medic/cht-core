@@ -116,28 +116,27 @@ app.use(
     // runs with a bunch of defaults: https://github.com/helmetjs/helmet
     hpkp: false, // explicitly block dangerous header
     contentSecurityPolicy: {
-      /* eslint-disable quotes */
       directives: {
-        defaultSrc: ["'none'"],
-        fontSrc: ["'self'"],
-        manifestSrc: ["'self'"],
+        defaultSrc: [`'none'`],
+        fontSrc: [`'self'`],
+        manifestSrc: [`'self'`],
         connectSrc: [
-          "'self'",
+          `'self'`,
           BUILDS_DB,
         ],
-        formAction: ["'self'"],
+        formAction: [`'self'`],
         imgSrc: [
-          "'self'",
+          `'self'`,
           'data:' // unsafe
         ],
         scriptSrc: [
-          "'self'",
-          "'sha256-6i0jYw/zxQO6q9fIxqI++wftTrPWB3yxt4tQqy6By6k='", // Explicitly allow the telemetry script setting startupTimes
-          "'unsafe-eval'" // AngularJS and several dependencies require this
+          `'self'`,
+          `'sha256-6i0jYw/zxQO6q9fIxqI++wftTrPWB3yxt4tQqy6By6k='`, // Explicitly allow the telemetry script setting startupTimes
+          `'unsafe-eval'` // AngularJS and several dependencies require this
         ],
         styleSrc: [
-          "'self'",
-          "'unsafe-inline'" // angular-ui-bootstrap
+          `'self'`,
+          `'unsafe-inline'` // angular-ui-bootstrap
         ],
       },
       browserSniff: false,

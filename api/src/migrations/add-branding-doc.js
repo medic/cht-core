@@ -26,7 +26,7 @@ const attachDocument = (src, resource) => {
       }
       resolve({
         content_type: resource.type,
-        data: Buffer.from(data).toString('base64')
+        data: Buffer.from(data, 'base64')
       });
     });
   });

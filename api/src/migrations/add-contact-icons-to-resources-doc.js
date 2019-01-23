@@ -37,7 +37,7 @@ module.exports = {
             doc.resources[resource.name] = resource.file;
             doc._attachments[resource.file] = {
               content_type: resource.type,
-              data: Buffer.from(data).toString('base64')
+              data: Buffer.from(data, 'base64')
             };
             callback();
           });

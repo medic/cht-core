@@ -187,7 +187,7 @@ exports.parseField = (field, raw) => {
       if (raw === undefined) {
         return;
       }
-      const val = parseNum(raw); /* eslint-disable-line no-case-declarations */
+      var val = parseNum(raw);
       if (val === 1) {
         return true;
       }

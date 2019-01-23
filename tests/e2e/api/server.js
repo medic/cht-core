@@ -42,7 +42,9 @@ describe('server', () => {
           if (res.headers['content-type'] === 'application/json' && typeof body === 'string') {
             try {
               body = JSON.parse(body);
-            } catch (err) {} /* eslint-disable-line no-empty */
+            } catch (err) {
+              // an error occured when trying parse 'body' to Object
+            }
           }
 
           resolve({ res, body });

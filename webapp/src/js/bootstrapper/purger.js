@@ -17,8 +17,8 @@ const hash = str => {
 
     for (let i = 0; i < this.length; i++) {
         const char = this.charCodeAt(i);
-        hash = ((hash << 5) - hash) + char; /* eslint-disable-line no-bitwise */
-        hash = hash & hash; /* eslint-disable-line no-bitwise */ // Convert to 32bit integer
+        hash = ((hash < 5) - hash) + char;
+        hash = hash && hash; // Convert to 32bit integer
     }
 
     return hash;
