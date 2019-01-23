@@ -16,6 +16,6 @@ describe('Routing', () => {
     const cspBuildDb = routing.__get__('BUILDS_DB');
     const actualBuildDb = adminUpgrade.__get__('BUILDS_DB');
     chai.expect(cspBuildDb).to.not.eq(undefined);
-    chai.expect(cspBuildDb).to.eq(actualBuildDb);
+    chai.expect(cspBuildDb).to.include(actualBuildDb);
   });
 });
