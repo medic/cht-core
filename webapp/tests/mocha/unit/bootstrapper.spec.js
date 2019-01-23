@@ -51,6 +51,7 @@ describe('bootstrapper', () => {
 
     $ = sinon.stub().returns({
       text: sinon.stub(),
+      click: sinon.stub(),
       html: sinon.stub()
     });
 
