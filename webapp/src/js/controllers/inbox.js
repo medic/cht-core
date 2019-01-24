@@ -228,11 +228,18 @@ var feedback = require('../modules/feedback'),
     });
 
     $rootScope.$on('$stateChangeStart', function (event, toState, toParams, fromState){
-      if (!$scope.enketoStatus.edited){
-        return;
+      if (toState.name.indexOf('reports') === -1 || toState.name.indexOf('contacts') === -1 || toState.name.indexOf('tasks') === -1 || toState.name.indexOf('messages.detail') === -1) {
+        $scope.unsetSelected();
+      }
+      if (toState.name.indexOf('tasks.detail') === -1) {
+        Enketo.unload($scope.form);
+        $scope.unsetSelected();
       }
       if (toState.name.split('.')[0] !== fromState.name.split('.')[0]){
         $scope.clearSelection();
+      }
+      if (!$scope.enketoStatus.edited){
+        return;
       }
       if ($scope.cancelCallback){
         event.preventDefault();
@@ -241,23 +248,12 @@ var feedback = require('../modules/feedback'),
     });
 
     $scope.clearSelection = function() {
-      if ($state.current.name.split('.')[0] === 'contacts'){
-        $scope.selected = null;
-        LiveList.contacts.clearSelected();
-        LiveList['contact-search'].clearSelected();
-      }
-      else if ($state.current.name.split('.')[0] === 'reports'){
-        $scope.selected = {};
-        LiveList.reports.clearSelected();
-        LiveList['report-search'].clearSelected();
-        $('#reports-list input[type="checkbox"]').prop('checked', false);
-        $scope.verifyingReport = false;
-      }
+      $scope.selected = [];
+      $('#reports-list input[type="checkbox"]').prop('checked', false);
+      LiveList.reports.clearSelected();
+      LiveList['report-search'].clearSelected();
+      $scope.verifyingReport = false;
     };
-
-    $scope.$on('ClearSelected', function() {
-      $scope.clearSelection();
-    });
 
     // User wants to cancel current flow, or pressed back button, etc.
     $scope.navigationCancel = function() {

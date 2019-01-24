@@ -292,6 +292,10 @@ angular
       setRightActionBar();
     });
 
+    $scope.$on('ClearSelected', function() {
+      $scope.clearSelection();
+    });
+    
     $scope.$on('VerifyReport', function(e, valid) {
       if ($scope.selected[0].doc.form) {
         DB()
@@ -480,12 +484,6 @@ angular
     setActionBarData();
 
     $scope.$on('DeselectAll', deselectAll);
-
-    $scope.$on('$stateChangeStart', function(event, toState) {
-      if (toState.name.indexOf('reports') === -1) {
-        $scope.unsetSelected();
-      }
-    });
 
     var changeListener = Changes({
       key: 'reports-list',

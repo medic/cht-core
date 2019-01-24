@@ -92,12 +92,6 @@ var _ = require('underscore');
         }
       });
 
-      $scope.$on('$stateChangeStart', function(event, toState) {
-        if (toState.name.indexOf('tasks') === -1) {
-          $scope.unsetSelected();
-        }
-      });
-
       if ($stateParams.tour) {
         Tour.start($stateParams.tour);
       }

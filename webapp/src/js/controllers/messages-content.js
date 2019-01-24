@@ -243,11 +243,5 @@ angular.module('inboxControllers').controller('MessagesContentCtrl',
         $('#message-footer').removeClass('sending');
       });
 
-    $scope.$on('$stateChangeStart', function(event, toState) {
-      if (toState.name.indexOf('messages.detail') === -1) {
-        $scope.unsetSelected();
-      }
-    });
-
   }
 );
