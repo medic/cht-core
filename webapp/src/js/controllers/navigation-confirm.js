@@ -1,7 +1,6 @@
 angular.module('inboxControllers').controller('NavigationConfirmCtrl',
   function (
     $scope,
-    $state,
     $uibModalInstance
   ) {
 
