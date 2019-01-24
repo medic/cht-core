@@ -264,11 +264,18 @@ var feedback = require('../modules/feedback'),
     });
 
     $scope.clearSelection = function() {
-      $scope.selected = [];
-      $('#reports-list input[type="checkbox"]').prop('checked', false);
-      LiveList.reports.clearSelected();
-      LiveList['report-search'].clearSelected();
-      $scope.verifyingReport = false;
+      if ($state.current.name.split('.')[0] === 'contacts'){
+        $scope.selected = null;
+        LiveList.contacts.clearSelected();
+        LiveList['contact-search'].clearSelected();
+      }
+      else if ($state.current.name.split('.')[0] === 'reports'){
+        $scope.selected = {};
+        LiveList.reports.clearSelected();
+        LiveList['report-search'].clearSelected();
+        $('#reports-list input[type="checkbox"]').prop('checked', false);
+        $scope.verifyingReport = false;
+      }
     };
 
     // User wants to cancel current flow, or pressed back button, etc.
