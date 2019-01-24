@@ -1,6 +1,5 @@
 angular.module('controllers').controller('DeleteDocConfirm',
   function (
-    $rootScope,
     $scope,
     $translate,
     $uibModalInstance,
@@ -22,7 +21,6 @@ angular.module('controllers').controller('DeleteDocConfirm',
       DB().put(doc)
         .then(function() {
           $uibModalInstance.close();
-          $rootScope.$broadcast('LanguagesUpdated');
         })
         .catch(function(err) {
           $scope.setError(err, 'Error deleting document');

@@ -10,7 +10,8 @@ angular.module('controllers').controller('TranslationLanguagesCtrl',
     ExportProperties,
     Modal,
     Settings,
-    UpdateSettings
+    UpdateSettings,
+    Changes
   ) {
 
     'use strict';
@@ -81,6 +82,14 @@ angular.module('controllers').controller('TranslationLanguagesCtrl',
         });
     };
 
+    const changeListener = Changes({
+      key: 'update-languages',
+      filter: change => change.doc.type === 'translations',
+      callback: () => getLanguages()
+    });
+    
+    $scope.$on('$destroy', changeListener.unsubscribe);
+
     $scope.editLanguage = function(doc) {
       Modal({
         templateUrl: 'templates/edit_language.html',
@@ -127,10 +136,6 @@ angular.module('controllers').controller('TranslationLanguagesCtrl',
         model: { doc: doc }
       });
     };
-
-    $scope.$on('LanguagesUpdated', () => {
-      getLanguages();
-    });
 
     getLanguages();
   }
