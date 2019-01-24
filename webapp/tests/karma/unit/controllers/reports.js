@@ -38,6 +38,7 @@ describe('ReportsCtrl controller', () => {
     scope.setRightActionBar = sinon.stub();
     scope.setLeftActionBar = sinon.stub();
     scope.settingSelected = () => {};
+    scope.setLoadingSubActionBar = sinon.stub();
 
     liveListInit = sinon.stub();
     liveListReset = sinon.stub();
@@ -131,148 +132,120 @@ describe('ReportsCtrl controller', () => {
 
   describe('verifying reports', () => {
     it('unverified report to verified - valid', () => {
-      get.returns(Promise.resolve({ _id: 'def', name: 'hello' }));
       post.returns(Promise.resolve());
 
       createController();
       scope.selected[0] = {
         _id: 'abc',
-        doc: { form: 'P' }
+        doc: { _id: 'def', name: 'hello', form: 'P' }
       };
       scope.$broadcast('VerifyReport', true);
       return Promise.resolve().then(() => {
-        chai.expect(get.callCount).to.equal(1);
-        chai.expect(get.args[0]).to.deep.equal(['abc']);
         chai.expect(post.callCount).to.equal(1);
         chai.expect(post.args[0]).to.deep.equal([{
           _id: 'def',
           name: 'hello',
+          form: 'P',
           verified: true,
         }]);
       });
     });
 
     it('unverified report to verified - invalid', () => {
-      get.returns(Promise.resolve({ _id: 'def', name: 'hello' }));
       post.returns(Promise.resolve());
 
       createController();
       scope.selected[0] = {
         _id: 'abc',
-        doc: { form: 'P' }
+        doc: { _id: 'def', name: 'hello', form: 'P' }
       };
       scope.$broadcast('VerifyReport', false);
       return Promise.resolve().then(() => {
-        chai.expect(get.callCount).to.equal(1);
-        chai.expect(get.args[0]).to.deep.equal(['abc']);
         chai.expect(post.callCount).to.equal(1);
         chai.expect(post.args[0]).to.deep.equal([{
           _id: 'def',
           name: 'hello',
+          form: 'P',
           verified: false
         }]);
       });
     });
 
     it('verified valid to verified invalid', () => {
-      get.returns(Promise.resolve({
-        _id: 'def',
-        name: 'hello',
-        verified: true
-      }));
       post.returns(Promise.resolve());
 
       createController();
       scope.selected[0] = {
         _id: 'abc',
-        doc: { form: 'P' }
+        doc: { _id: 'def', name: 'hello', verified: true, form: 'P' }
       };
       scope.$broadcast('VerifyReport', false);
       return Promise.resolve().then(() => {
-        chai.expect(get.callCount).to.equal(1);
-        chai.expect(get.args[0]).to.deep.equal(['abc']);
         chai.expect(post.callCount).to.equal(1);
         chai.expect(post.args[0]).to.deep.equal([{
           _id: 'def',
           name: 'hello',
+          form: 'P',
           verified: false
         }]);
       });
     });
 
     it('verified invalid to unverified', () => {
-      get.returns(Promise.resolve({
-        _id: 'def',
-        name: 'hello',
-        verified: false
-      }));
       post.returns(Promise.resolve());
 
       createController();
       scope.selected[0] = {
         _id: 'abc',
-        doc: { form: 'P' }
+        doc: { _id: 'def', name: 'hello', verified: false, form: 'P' }
       };
       scope.$broadcast('VerifyReport', false);
       return Promise.resolve().then(() => {
-        chai.expect(get.callCount).to.equal(1);
-        chai.expect(get.args[0]).to.deep.equal(['abc']);
         chai.expect(post.callCount).to.equal(1);
         chai.expect(post.args[0]).to.deep.equal([{
           _id: 'def',
           name: 'hello',
+          form: 'P',
           verified: undefined
         }]);
       });
     });
 
     it('verified invalid to verified valid', () => {
-      get.returns(Promise.resolve({
-        _id: 'def',
-        name: 'hello',
-        verified: false
-      }));
       post.returns(Promise.resolve());
 
       createController();
       scope.selected[0] = {
         _id: 'abc',
-        doc: { form: 'P' }
+        doc: { _id: 'def', name: 'hello', verified: false, form: 'P' }
       };
       scope.$broadcast('VerifyReport', true);
       return Promise.resolve().then(() => {
-        chai.expect(get.callCount).to.equal(1);
-        chai.expect(get.args[0]).to.deep.equal(['abc']);
         chai.expect(post.callCount).to.equal(1);
         chai.expect(post.args[0]).to.deep.equal([{
           _id: 'def',
           name: 'hello',
+          form: 'P',
           verified: true
         }]);
       });
     });
 
     it('verified valid to unverified', () => {
-      get.returns(Promise.resolve({
-        _id: 'def',
-        name: 'hello',
-        verified: true
-      }));
       post.returns(Promise.resolve());
 
       createController();
       scope.selected[0] = {
         _id: 'abc',
-        doc: { form: 'P' }
+        doc: { _id: 'def', name: 'hello', verified: true, form: 'P' }
       };
       scope.$broadcast('VerifyReport', true);
       return Promise.resolve().then(() => {
-        chai.expect(get.callCount).to.equal(1);
-        chai.expect(get.args[0]).to.deep.equal(['abc']);
         chai.expect(post.callCount).to.equal(1);
         chai.expect(post.args[0]).to.deep.equal([{
           _id: 'def',
           name: 'hello',
+          form: 'P',
           verified: undefined
         }]);
       });

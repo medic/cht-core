@@ -182,6 +182,7 @@ var feedback = require('../modules/feedback'),
     CheckDate();
 
     $scope.loadingContent = false;
+    $scope.loadingSubActionBar = false;
     $scope.error = false;
     $scope.errorSyntax = false;
     $scope.appending = false;
@@ -337,6 +338,10 @@ var feedback = require('../modules/feedback'),
     $scope.setLoadingContent = function(id) {
       $scope.loadingContent = id;
       $scope.setShowContent(true);
+    };
+
+    $scope.setLoadingSubActionBar = function(loadingSubActionBar) {
+      $scope.loadingSubActionBar = loadingSubActionBar;
     };
 
     $scope.$on('$stateChangeSuccess', function(event, toState) {
@@ -568,6 +573,10 @@ var feedback = require('../modules/feedback'),
         },
       });
     });
+
+    $scope.setSubActionBarStatus = function(verified) {
+      $scope.actionBar.right.verified = verified;
+    };
 
     $scope.setRightActionBar = function(model) {
       if (!$scope.actionBar) {

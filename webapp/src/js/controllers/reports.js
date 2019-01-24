@@ -1,5 +1,6 @@
 var _ = require('underscore'),
-  scrollLoader = require('../modules/scroll-loader');
+  scrollLoader = require('../modules/scroll-loader'),
+  lineageFactory = require('@medic/lineage');
 
 angular
   .module('inboxControllers')
@@ -23,6 +24,8 @@ angular
   ) {
     'use strict';
     'ngInject';
+
+    var lineage = lineageFactory();
 
     // selected objects have the form
     //    { _id: 'abc', summary: { ... }, report: { ... }, expanded: false }
@@ -304,26 +307,36 @@ angular
       clearSelection();
     });
 
-    $scope.$on('VerifyReport', function(e, valid) {
-      if ($scope.selected[0].doc.form) {
-        DB()
-          .get($scope.selected[0]._id)
-          .then(function(message) {
-            message.verified = message.verified === valid ? undefined : valid;
-            return DB().post(message);
-          })
-          .catch(function(err) {
-            $log.error('Error verifying message', err);
-          });
-      }
-    });
-
     $scope.$on('EditReport', function() {
       Modal({
         templateUrl: 'templates/modals/edit_report.html',
         controller: 'EditReportCtrl',
         model: { report: $scope.selected[0].doc },
       });
+    });
+
+    $scope.$on('VerifyReport', function(e, valid) {
+      if ($scope.selected[0].doc.form) {
+        $scope.setLoadingSubActionBar(true);
+
+        var doc = $scope.selected[0].doc;
+        if (doc.contact) {
+          doc.contact = lineage.minifyLineage(doc.contact);
+        }
+        
+        doc.verified = doc.verified === valid ? undefined : valid;
+
+        DB()
+          .post(doc)
+          .catch(function(err) {
+            $log.error('Error verifying message', err);
+          })
+          .finally(() => {
+            $scope.$broadcast('VerifiedReport', valid);
+
+            $scope.setLoadingSubActionBar(false);
+          });
+      }
     });
 
     var initScroll = function() {
