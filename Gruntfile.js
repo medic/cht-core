@@ -585,6 +585,8 @@ module.exports = function(grunt) {
           return patches.join(' && ');
         },
       },
+      audit: { cmd: './scripts/audit-all.sh' },
+      'audit-whitelist': { cmd: 'git diff $(cat .auditignore | git hash-object -w --stdin) $(./scripts/audit-all.sh | git hash-object -w --stdin) --word-diff --exit-code' },
     },
     watch: {
       options: {
@@ -1056,6 +1058,7 @@ module.exports = function(grunt) {
 
   grunt.registerTask('unit', 'Lint and unit tests', [
     'exec:eslint',
+    'exec:audit-whitelist',
     'karma:unit',
     'karma:admin',
     'exec:shared-lib-unit',
@@ -1113,7 +1116,7 @@ module.exports = function(grunt) {
   grunt.registerTask('static-analysis', 'Static analysis checks', [
     'regex-check',
     'exec:blank-link-check',
-    'exec:eslint',
+    'exec:audit-whitelist',
   ]);
 
   grunt.registerTask('eslint', 'Runs eslint', ['exec:eslint']);
