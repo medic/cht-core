@@ -128,6 +128,10 @@ angular.module('controllers').controller('TranslationLanguagesCtrl',
       });
     };
 
+    $scope.$on('LanguagesUpdated', () => {
+      getLanguages();
+    });
+
     getLanguages();
   }
 );

@@ -2,6 +2,7 @@ var _ = require('underscore');
 
 angular.module('controllers').controller('EditLanguageCtrl',
   function (
+    $rootScope,
     $scope,
     $translate,
     $uibModalInstance,
@@ -46,6 +47,7 @@ angular.module('controllers').controller('EditLanguageCtrl',
           .then(function() {
             $scope.setFinished();
             $uibModalInstance.close();
+            $rootScope.$broadcast('LanguagesUpdated');
           })
           .catch(function(err) {
             $scope.setError(err, 'Error saving settings');
