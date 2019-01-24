@@ -1,5 +1,6 @@
 var _ = require('underscore'),
-  scrollLoader = require('../modules/scroll-loader');
+  scrollLoader = require('../modules/scroll-loader'),
+  lineageFactory = require('@medic/lineage');
 
 angular
   .module('inboxControllers')
@@ -23,6 +24,8 @@ angular
   ) {
     'use strict';
     'ngInject';
+
+    var lineage = lineageFactory();
 
     // selected objects have the form
     //    { _id: 'abc', summary: { ... }, report: { ... }, expanded: false }
@@ -317,19 +320,7 @@ angular
         $scope.setLoadingSubActionBar(true);
 
         var doc = $scope.selected[0].doc;
-
-        if (doc.contact) {
-          var decycledContact = { '_id': doc.contact._id, parent: doc.contact.parent };
-          (function decycle(doc) {
-              if (doc.parent) {
-                doc.parent = doc.parent.parent ?  { '_id': doc.parent._id, 'parent' : doc.parent.parent } : { '_id': doc.parent._id };
-                decycle(doc.parent);
-              }
-          })(decycledContact);
-          
-          doc.contact = decycledContact;
-        }
-        
+        doc.contact = lineage.minifyLineage(doc.contact);
         doc.verified = doc.verified === valid ? undefined : valid;
 
         DB()
