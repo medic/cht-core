@@ -127,6 +127,8 @@ angular.module('controllers').controller('UpgradeCtrl',
       return Version.compare(currentVersion, releaseVersion) > 0;
     };
 
+    $scope.reloadPage = () => window.location.reload();
+
     $scope.upgrade = function(version, action) {
       Modal({
         templateUrl: 'templates/upgrade_confirm.html',
