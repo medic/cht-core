@@ -32,7 +32,6 @@ const _ = require('underscore'),
   bulkDocs = require('./controllers/bulk-docs'),
   authorization = require('./middleware/authorization'),
   createUserDb = require('./controllers/create-user-db'),
-  createDomain = require('domain').create,
   staticResources = /\/(templates|static)\//,
   // CouchDB is very relaxed in matching routes
   routePrefix = '/+' + environment.db + '/+',
@@ -42,6 +41,7 @@ const _ = require('underscore'),
   appcacheManifest = /\/manifest\.appcache$/,
   uuid = require('uuid'),
   compression = require('compression'),
+  BUILDS_DB = 'https://staging.dev.medicmobile.org/_couch/builds/', // jshint ignore:line
   app = express();
 
 // requires content-type application/json header
@@ -116,23 +116,32 @@ app.use(
     hpkp: false, // explicitly block dangerous header
     contentSecurityPolicy: {
       directives: {
-        frameSrc: ['\'self\''] // prettier-ignore
+        defaultSrc: [`'none'`],
+        fontSrc: [`'self'`],
+        manifestSrc: [`'self'`],
+        connectSrc: [
+          `'self'`,
+          BUILDS_DB,
+        ],
+        formAction: [`'self'`],
+        imgSrc: [
+          `'self'`,
+          'data:' // unsafe
+        ],
+        scriptSrc: [
+          `'self'`,
+          `'sha256-6i0jYw/zxQO6q9fIxqI++wftTrPWB3yxt4tQqy6By6k='`, // Explicitly allow the telemetry script setting startupTimes
+          `'unsafe-eval'` // AngularJS and several dependencies require this
+        ],
+        styleSrc: [
+          `'self'`,
+          `'unsafe-inline'` // angular-ui-bootstrap
+        ],
       },
+      browserSniff: false,
     },
   })
 );
-
-app.use(function(req, res, next) {
-  var domain = createDomain();
-  domain.on('error', function(err) {
-    logger.error('UNCAUGHT EXCEPTION!');
-    serverUtils.serverError(err, req, res);
-    domain.dispose();
-    process.exit(1);
-  });
-  domain.enter();
-  next();
-});
 
 // requires `req` header `Accept-Encoding` to be `gzip` or `deflate`
 // requires `res` `Content-Type` to be compressible (see https://github.com/jshttp/mime-db/blob/master/db.json)
@@ -252,16 +261,17 @@ app.get('/api/info', function(req, res) {
 });
 
 app.get('/api/auth/:path', function(req, res) {
-  auth.checkUrl(req, function(err, output) {
-    if (err) {
-      return serverUtils.serverError(err, req, res);
-    }
-    if (output.status >= 400 && output.status < 500) {
-      res.status(403).send('Forbidden');
-    } else {
-      res.json(output);
-    }
-  });
+  auth.checkUrl(req)
+    .then(status => {
+      if (status && status >= 400 && status < 500) {
+        res.status(403).send('Forbidden');
+      } else {
+        res.json({ status: status });
+      }
+    })
+    .catch(err => {
+      serverUtils.serverError(err, req, res);
+    });
 });
 
 app.post('/api/v1/upgrade', jsonParser, upgrade.upgrade);
@@ -634,7 +644,7 @@ proxyForAuth.on('proxyRes', (proxyRes, req, res) => {
   copyProxyHeaders(proxyRes, res);
 
   if (res.interceptResponse) {
-    let body = new Buffer('');
+    let body = Buffer.from('');
     proxyRes.on('data', data => (body = Buffer.concat([body, data])));
     proxyRes.on('end', () => res.interceptResponse(req, res, body.toString()));
   } else {

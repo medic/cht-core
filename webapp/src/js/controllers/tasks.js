@@ -12,6 +12,7 @@ var _ = require('underscore');
       $state,
       $stateParams,
       $timeout,
+      $window,
       $translate,
       LiveList,
       RulesEngine,
@@ -49,7 +50,7 @@ var _ = require('underscore');
       };
 
       $scope.refreshTaskList = function() {
-        window.location.reload();
+        $window.location.reload();
       };
 
       $scope.$on('ClearSelected', function() {

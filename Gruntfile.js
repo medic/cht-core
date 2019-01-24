@@ -10,6 +10,18 @@ const {
   TRAVIS_BUILD_NUMBER
 } = process.env;
 
+const APPCACHE_OPTIONS = {
+  patterns: [
+    'build/ddocs/medic/_attachments/manifest.json',
+    'build/ddocs/medic/_attachments/audio/**/*',
+    'build/ddocs/medic/_attachments/css/**/*',
+    'build/ddocs/medic/_attachments/fonts/**/*',
+    'build/ddocs/medic/_attachments/img/**/*',
+    'build/ddocs/medic/_attachments/js/**/*',
+    'build/ddocs/medic/_attachments/xslt/**/*',
+  ],
+};
+
 const releaseName = TRAVIS_TAG || TRAVIS_BRANCH || 'local-development';
 
 const couchConfig = (() => {
@@ -212,19 +224,8 @@ module.exports = function(grunt) {
         },
       },
     },
-    jshint: {
-      options: {
-        jshintrc: true,
-        reporter: require('jshint-stylish'),
-        ignores: [
-          'webapp/src/js/modules/xpath-element-path.js',
-          '**/node_modules/**',
-          'sentinel/src/lib/pupil/**',
-          'build/**',
-          'config/**'
-        ],
-      },
-      all: [
+    eslint: {
+      target: [
         'Gruntfile.js',
         'webapp/src/**/*.js',
         'webapp/tests/**/*.js',
@@ -233,8 +234,13 @@ module.exports = function(grunt) {
         'sentinel/**/*.js',
         'shared-libs/**/*.js',
         'admin/**/*.js',
-        'ddocs/**/*.js',
-      ],
+        '!ddocs/**/*.js',
+        '!webapp/src/js/modules/xpath-element-path.js',
+        '!**/node_modules/**',
+        '!sentinel/src/lib/pupil/**',
+        '!build/**',
+        '!config/**'
+      ]
     },
     less: {
       webapp: {
@@ -446,6 +452,9 @@ module.exports = function(grunt) {
             name => `curl -X DELETE ${couchConfig.withPath(name)}`
           )
           .join(' && '),
+      },
+      'e2e-servers': {
+        cmd: 'node ./scripts/e2e-servers.js &'
       },
       bundlesize: {
         cmd: 'node ./node_modules/bundlesize/index.js',
@@ -692,14 +701,9 @@ module.exports = function(grunt) {
       },
     },
     protractor: {
-      'e2e-tests-and-services': {
+      'e2e-tests': {
         options: {
-          configFile: 'tests/e2e.tests-and-services.conf.js',
-        },
-      },
-      'e2e-tests-only': {
-        options: {
-          configFile: 'tests/e2e.tests-only.conf.js',
+          configFile: 'tests/e2e.tests.conf.js',
         },
       },
       'performance-tests-and-services': {
@@ -776,18 +780,14 @@ module.exports = function(grunt) {
       inbox: {
         dest: 'build/ddocs/medic/_attachments/manifest.appcache',
         network: '*',
-        cache: {
-          patterns: [
-            'build/ddocs/medic/_attachments/manifest.json',
-            'build/ddocs/medic/_attachments/audio/**/*',
-            'build/ddocs/medic/_attachments/css/**/*',
-            'build/ddocs/medic/_attachments/fonts/**/*',
-            'build/ddocs/medic/_attachments/img/**/*',
-            'build/ddocs/medic/_attachments/js/**/*',
-            'build/ddocs/medic/_attachments/xslt/**/*',
-          ],
-        },
+        cache: APPCACHE_OPTIONS,
       },
+      obsolete: {
+        dest: 'build/ddocs/medic/_attachments/static/dist/manifest.appcache',
+        network: '*',
+        baseUrl: '../../',
+        cache: APPCACHE_OPTIONS,
+      }
     },
     sass: {
       options: {
@@ -860,6 +860,37 @@ module.exports = function(grunt) {
         ],
         options: {
           pattern: /console\./g,
+        },
+      },
+      'timeouts-in-angular': {
+        // $timeout() sould be used in place of setTimeout()
+        // $timeout.cancel() should be used in place of clearTimeout()
+        // see: https://docs.angularjs.org/api/ng/service/$timeout
+        files: [
+          {
+            src: [
+              'webapp/src/js/services/**/*.js',
+              'webapp/src/js/controllers/**/*.js',
+            ],
+          },
+        ],
+        options: {
+          pattern: /(set|clear)Timeout/g,
+        },
+      },
+      'window-in-angular': {
+        // $window should be used in preference to window in angular code
+        // see: https://docs.angularjs.org/api/ng/service/$window
+        files: [
+          {
+            src: [
+              'webapp/src/js/services/**/*.js',
+              'webapp/src/js/controllers/**/*.js',
+            ],
+          },
+        ],
+        options: {
+          pattern: /[^$]window\./g,
         },
       },
     },
@@ -966,12 +997,11 @@ module.exports = function(grunt) {
 
   // Test tasks
   grunt.registerTask('e2e', 'Deploy app for testing and run e2e tests', [
+    'exec:start-webdriver',
     'exec:reset-test-databases',
-    'build-admin',
-    'build-node-modules',
-    'build-ddoc',
     'couch-push:test',
-    'protractor:e2e-tests-and-services',
+    'exec:e2e-servers',
+    'protractor:e2e-tests',
   ]);
 
   grunt.registerTask('test-perf', 'Run performance-specific tests', [
@@ -985,7 +1015,7 @@ module.exports = function(grunt) {
   grunt.registerTask(
     'unit-continuous',
     'Lint, karma unit tests running on a loop',
-    ['jshint', 'karma:unit-continuous']
+    ['eslint', 'karma:unit-continuous']
   );
 
   grunt.registerTask(
@@ -999,7 +1029,7 @@ module.exports = function(grunt) {
   );
 
   grunt.registerTask('unit', 'Lint and unit tests', [
-    'jshint',
+    'eslint',
     'karma:unit',
     'karma:admin',
     'exec:shared-lib-unit',
@@ -1040,7 +1070,7 @@ module.exports = function(grunt) {
 
   grunt.registerTask('ci-e2e', 'Run e2e tests for CI', [
     'exec:start-webdriver',
-    'protractor:e2e-tests-and-services',
+    'protractor:e2e-tests',
   ]);
 
   grunt.registerTask('ci-performance', 'Run performance tests on CI', [
@@ -1057,7 +1087,7 @@ module.exports = function(grunt) {
   grunt.registerTask('static-analysis', 'Static analysis checks', [
     'regex-check',
     'exec:blank-link-check',
-    'jshint',
+    'eslint',
   ]);
 
   grunt.registerTask(

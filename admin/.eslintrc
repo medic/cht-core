@@ -1,0 +1,13 @@
+{
+  "env": {
+    "browser": true,
+    "commonjs": true,
+    "jquery": true
+  },
+  "globals": {
+    "angular": true
+  },
+  "rules": {
+    "no-console": "error"
+  }
+}

@@ -14,7 +14,7 @@ const docs = [
     _attachments: {
       xml: {
         content_type: 'application/octet-stream',
-        data: new Buffer(xml).toString('base64'),
+        data: Buffer.from(xml).toString('base64'),
       },
     },
   },

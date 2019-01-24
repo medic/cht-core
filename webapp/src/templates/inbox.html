@@ -4,14 +4,14 @@
   <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <link rel="stylesheet" type="text/css" href="css/inbox.css" />
-    <link rel="shortcut icon" href="/favicon.ico">
-    <link rel="manifest" href="manifest.json">
-    <title id="app"></title>
     <script type="text/javascript">
       window.startupTimes = {};
       window.startupTimes.start = performance.now();
     </script>
+    <link rel="stylesheet" type="text/css" href="css/inbox.css" />
+    <link rel="shortcut icon" href="/favicon.ico">
+    <link rel="manifest" href="manifest.json">
+    <title id="app"></title>
   </head>
   <body class="inbox {{currentTab}}" ng-controller="InboxCtrl" ng-class="{'show-content': showContent, 'bootstrapped': version && dbWarmedUp, 'select-mode': selectMode}">
 

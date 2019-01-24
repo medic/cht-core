@@ -1,0 +1,24 @@
+{
+  "env": {
+    "node": true
+  },
+  "rules": {
+    "no-console": "error"
+  },
+  "overrides": [
+    {
+      "env": {
+        "browser": true
+      },
+      "files": [
+        "src/public/**/*.js"
+      ],
+      "rules": {
+        "no-console": "off"
+      }
+    }
+  ],
+  "globals": {
+    "emit": true
+  }
+}

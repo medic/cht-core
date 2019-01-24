@@ -13,7 +13,7 @@ angular.module('inboxServices').config([
     'use strict';
 
     $provide.service('Debug', [
-      'ipCookie', 'pouchDB', function(ipCookie, pouchDB) {
+      '$window', 'ipCookie', 'pouchDB', function($window, ipCookie, pouchDB) {
         var cookieName = 'medic-webapp-debug';
         var get = function() {
           return Boolean(ipCookie(cookieName));
@@ -22,7 +22,7 @@ angular.module('inboxServices').config([
           // this changes the default angular behavior and hides debug level
           // log messages.
           $logProvider.debugEnabled(bool);
-          var db = pouchDB.debug ? pouchDB : window.PouchDB;
+          var db = pouchDB.debug ? pouchDB : $window.PouchDB;
           if (bool) {
             db.debug.enable('*');
             ipCookie(cookieName, bool, { expires: 360, path: '/' });

@@ -57,29 +57,29 @@ var feedback = require('../modules/feedback'),
   ) {
     'ngInject';
 
-    window.startupTimes.angularBootstrapped = performance.now();
+    $window.startupTimes.angularBootstrapped = performance.now();
     Telemetry.record(
       'boot_time:1:to_first_code_execution',
-      window.startupTimes.firstCodeExecution - window.startupTimes.start
+      $window.startupTimes.firstCodeExecution - $window.startupTimes.start
     );
     Telemetry.record(
       'boot_time:2:to_bootstrap',
-      window.startupTimes.bootstrapped - window.startupTimes.firstCodeExecution
+      $window.startupTimes.bootstrapped - $window.startupTimes.firstCodeExecution
     );
     Telemetry.record(
       'boot_time:3:to_angular_bootstrap',
-      window.startupTimes.angularBootstrapped - window.startupTimes.bootstrapped
+      $window.startupTimes.angularBootstrapped - $window.startupTimes.bootstrapped
     );
 
     Session.init();
 
-    if (window.location.href.indexOf('localhost') !== -1) {
+    if ($window.location.href.indexOf('localhost') !== -1) {
       Debug.set(Debug.get()); // Initialize with cookie
     } else {
       // Disable debug for everything but localhost
       Debug.set(false);
     }
-    
+
     ResourceIcons.getAppTitle().then(title => {
       document.title = title;
     });
@@ -96,6 +96,14 @@ var feedback = require('../modules/feedback'),
       not_required: 'fa-check',
       required: 'fa-exclamation-triangle',
       unknown: 'fa-question-circle',
+    };
+
+    const updateReplicationStatus = status => {
+      if ($scope.replicationStatus.current !== status) {
+        $scope.replicationStatus.current = status;
+        $scope.replicationStatus.textKey = 'sync.status.' + status;
+        $scope.replicationStatus.icon = SYNC_ICON[status];
+      }
     };
 
     DBSync.addUpdateListener(update => {
@@ -125,13 +133,19 @@ var feedback = require('../modules/feedback'),
         $log.info('Replication started after ' + duration + ' seconds since previous attempt.');
       }
 
-      $scope.replicationStatus.current = status;
-      $scope.replicationStatus.textKey = 'sync.status.' + status;
-      $scope.replicationStatus.icon = SYNC_ICON[status];
+      updateReplicationStatus(status);
     });
 
     $window.addEventListener('online', () => DBSync.setOnlineStatus(true), false);
     $window.addEventListener('offline', () => DBSync.setOnlineStatus(false), false);
+    Changes({
+      key: 'sync-status',
+      callback: function() {
+        if (!DBSync.isSyncInProgress()) {
+          updateReplicationStatus('required');
+        }
+      },
+    });
     DBSync.sync();
 
     // BootstrapTranslator is used because $translator.onReady has not fired
@@ -143,11 +157,11 @@ var feedback = require('../modules/feedback'),
       var dbWarmed = performance.now();
       Telemetry.record(
         'boot_time:4:to_db_warmed',
-        dbWarmed - window.startupTimes.bootstrapped
+        dbWarmed - $window.startupTimes.bootstrapped
       );
-      Telemetry.record('boot_time', dbWarmed - window.startupTimes.start);
+      Telemetry.record('boot_time', dbWarmed - $window.startupTimes.start);
 
-      delete window.startupTimes;
+      delete $window.startupTimes;
     });
 
     feedback.init({
@@ -162,6 +176,7 @@ var feedback = require('../modules/feedback'),
       getUserCtx: function(callback) {
         callback(null, Session.userCtx());
       },
+      appConfig: APP_CONFIG
     });
 
     LiveListConfig($scope);
@@ -680,7 +695,9 @@ var feedback = require('../modules/feedback'),
         // initialised yet
         try {
           $(this).select2('close');
-        } catch (e) {}
+        } catch (e) {
+          // exception thrown on clicking 'close'
+        }
       });
     };
 
@@ -723,15 +740,16 @@ var feedback = require('../modules/feedback'),
       },
     });
 
-    if (window.applicationCache) {
-      window.applicationCache.addEventListener('updateready', showUpdateReady);
-      window.applicationCache.addEventListener('error', function(err) {
+    if ($window.applicationCache) {
+      $window.applicationCache.addEventListener('updateready', showUpdateReady);
+      $window.applicationCache.addEventListener('error', function(err) {
         // TODO: once we trigger this work out what a 401 looks like and redirect
         //       to the login page
         $log.error('Application cache update error', err);
       });
       if (
-        window.applicationCache.status === window.applicationCache.UPDATEREADY
+        $window.applicationCache.status === $window.applicationCache.UPDATEREADY ||
+        $window.applicationCache.status === $window.applicationCache.UNCACHED
       ) {
         showUpdateReady();
       }
@@ -747,10 +765,10 @@ var feedback = require('../modules/feedback'),
         },
         callback: function() {
           // if the manifest hasn't changed, prompt user to reload settings
-          window.applicationCache.addEventListener('noupdate', showUpdateReady);
+          $window.applicationCache.addEventListener('noupdate', showUpdateReady);
           // check if the manifest has changed. if it has, download and prompt
           try {
-            window.applicationCache.update();
+            $window.applicationCache.update();
           } catch (e) {
             // chrome incognito mode active
             $log.error('Error updating the appcache.', e);

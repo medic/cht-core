@@ -2,7 +2,7 @@ const fs = require('fs'),
   { promisify } = require('util'),
   url = require('url'),
   path = require('path'),
-  request = require('request'),
+  request = require('request-promise-native'),
   _ = require('underscore'),
   auth = require('../auth'),
   environment = require('../environment'),
@@ -82,26 +82,17 @@ const getSessionCookie = res => {
 const createSession = req => {
   const user = req.body.user;
   const password = req.body.password;
-  return new Promise((resolve, reject) => {
-    request.post(
-      {
-        url: url.format({
-          protocol: environment.protocol,
-          hostname: environment.host,
-          port: environment.port,
-          pathname: '_session',
-        }),
-        json: true,
-        body: { name: user, password: password },
-        auth: { user: user, pass: password },
-      },
-      (err, sessionRes) => {
-        if (err) {
-          return reject(err);
-        }
-        resolve(sessionRes);
-      }
-    );
+  return request.post({
+    url: url.format({
+      protocol: environment.protocol,
+      hostname: environment.host,
+      port: environment.port,
+      pathname: '_session',
+    }),
+    json: true,
+    resolveWithFullResponse: true,
+    body: { name: user, password: password },
+    auth: { user: user, pass: password },
   });
 };
 
@@ -137,7 +128,13 @@ const setCookies = (req, res, sessionRes) => {
     .then(userCtx => {
       setSessionCookie(res, sessionCookie);
       setUserCtxCookie(res, userCtx);
-      res.json({ success: true });
+      // https://github.com/medic/medic-webapp/issues/5035
+      //  For Test DB, temporarily disable `canCongifure` property to avoid redirecting to admin console
+      // One `e2e` is problematic 
+      const designDoc  = auth.hasAllPermissions(userCtx, 'can_configure') &&
+        environment.db !== 'medic-test' ? 'medic-admin' : 'medic';
+        
+      res.status(302).send(path.join('/', environment.db, '_design', designDoc, '_rewrite'));
     })
     .catch(err => {
       logger.error(`Error getting authCtx ${err}`);
@@ -175,7 +172,7 @@ const getBranding = () => {
 
 module.exports = {
   safePath: safePath,
-  get: (req, res) => {
+  get: (req, res, next) => {
     const redirect = safePath(req.query.redirect);
     return auth
       .getUserCtx(req)
@@ -188,10 +185,7 @@ module.exports = {
         return getBranding()
           .then(branding => renderLogin(redirect, branding))
           .then(body => res.send(body))
-          .catch(err => {
-            logger.error('Could not find login page');
-            throw err;
-          });
+          .catch(next);
       });
   },
   post: (req, res) => {

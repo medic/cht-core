@@ -2,10 +2,11 @@ var feedback = require('../modules/feedback');
 
 angular.module('inboxControllers').controller('FeedbackCtrl',
   function (
+    $q,
     $scope,
     $translate,
     $uibModalInstance,
-    APP_CONFIG,
+    Translate,
     Snackbar
   ) {
 
@@ -13,6 +14,19 @@ angular.module('inboxControllers').controller('FeedbackCtrl',
     'ngInject';
 
     $scope.model = {};
+    $scope.error = {};
+
+    var validateMessage = function(message) {
+      if (message) {
+        $scope.error.message = false;
+        return $q.resolve();
+      } else {
+        return Translate.fieldIsRequired('Bug\ description')
+          .then(function(error) {
+            $scope.error.message = error;
+          });
+      }
+    };
 
     $scope.cancel = function() {
       $uibModalInstance.dismiss();
@@ -20,15 +34,37 @@ angular.module('inboxControllers').controller('FeedbackCtrl',
 
     $scope.submit = function() {
       $scope.setProcessing();
-      feedback.submit($scope.model.message, APP_CONFIG, function(err) {
-        if (err) {
-          $scope.setError(err, 'Error saving feedback');
-          return;
-        }
-        $scope.setFinished();
-        $translate('feedback.submitted').then(Snackbar);
-        $uibModalInstance.close();
-      });
+
+      var message = $scope.model.message && $scope.model.message.trim();
+      return validateMessage(message)
+        .then(function() {
+          const p = $q.defer();
+
+          if (!$scope.error.message) {
+            feedback.submit(message, true, function(err) {
+              if (err) {
+                $scope.setError(err, 'Error saving feedback');
+                p.reject();
+                return;
+              }
+              $scope.setFinished();
+
+              $translate('feedback.submitted')
+                .then(Snackbar)
+                .then(() => {
+                  $uibModalInstance.close();
+                  p.resolve();
+                })
+                .catch(err => p.reject(err));
+
+            });
+          } else {
+            $scope.setFinished();
+            p.resolve();
+          }
+
+          return p;
+        });
     };
 
   }

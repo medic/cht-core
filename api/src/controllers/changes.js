@@ -163,7 +163,7 @@ const restartNormalFeed = feed => {
 
 const getChanges = feed => {
   const options = { return_docs: true };
-  _.extend(options, _.pick(feed.req.query, 'since', 'style', 'conflicts', 'seq_interval'));
+  _.extend(options, _.pick(feed.req.query, 'since', 'style', 'conflicts'));
 
   // Prior to version 2.3.0, CouchDB had a bug where requesting _changes filtered by _doc_ids and using limit
   // would yield an incorrect `last_seq`, resulting in overall incomplete changes.
