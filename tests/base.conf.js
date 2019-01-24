@@ -30,7 +30,7 @@ class BaseConfig {
         jasmine.getEnv().addReporter(utils.reporter);
         browser.waitForAngularEnabled(false);
 
-        browser.driver.wait(listenForApi, 120 * 1000, 'API took too long to start up');
+        browser.driver.wait(listenForApi(), 120 * 1000, 'API took too long to start up');
         browser.driver.wait(setupSettings, 5 * 1000, 'Settings should be setup within 5 seconds');
         browser.driver.wait(utils.setUserContactDoc, 5 * 1000, 'User contact should be setup within 5 seconds');
         browser.driver.wait(setupUser, 5 * 1000, 'User should be setup within 5 seconds');
