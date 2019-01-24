@@ -320,7 +320,9 @@ angular
         $scope.setLoadingSubActionBar(true);
 
         var doc = $scope.selected[0].doc;
-        doc.contact = lineage.minifyLineage(doc.contact);
+        if (doc.contact) {
+          doc.contact = lineage.minifyLineage(doc.contact);
+        }
         doc.verified = doc.verified === valid ? undefined : valid;
 
         DB()
