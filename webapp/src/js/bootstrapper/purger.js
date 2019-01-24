@@ -44,7 +44,7 @@ const hash = str => {
  *   and it may take some time to complete
  * done: fired once everything is complete, callback is passed the total purge count
 */
-module.exports = function(DB, initialReplication) {
+module.exports = function(DB, userCtx, initialReplication) {
   const MAX_ERROR_COUNT = 10;
   let errorCount = 0;
   const feedback = msg => {
@@ -128,10 +128,10 @@ module.exports = function(DB, initialReplication) {
     });
   };
 
-  const purgeContact = (fn, {contact, reports}, purgeCount) => {
+  const purgeContact = (fn, userCtx, {contact, reports}, purgeCount) => {
     let purgeResults;
     try {
-      purgeResults = fn(contact, reports);
+      purgeResults = fn(userCtx, contact, reports);
     } catch (err) {
       console.error('Purge function threw an exception, skipping this set', err);
       console.error({passed: {contact: contact, reports: reports}});
@@ -237,7 +237,7 @@ module.exports = function(DB, initialReplication) {
       });
   };
 
-  const purge = (fnStr) => {
+  const purge = (fnStr, userCtx) => {
     return reportsByContact()
       .then(sets => {
         if (!sets.length) {
@@ -251,7 +251,7 @@ module.exports = function(DB, initialReplication) {
         publish('start', {totalContacts: total});
         return sets.reduce(
           (p, set) => p
-            .then(purgeCount => purgeContact(fn, set, purgeCount))
+            .then(purgeCount => purgeContact(fn, userCtx, set, purgeCount))
             .then(purgeCount => {
               publish('progress', {
                 purged: purgeCount,
@@ -264,7 +264,7 @@ module.exports = function(DB, initialReplication) {
       });
   };
 
-  const begin = () => {
+  const begin = (userCtx) => {
     console.log('Initiating purge');
     return getConfig()
       .then(config => {
@@ -276,7 +276,7 @@ module.exports = function(DB, initialReplication) {
         return urgeToPurge(config)
           .then(shouldPurge => {
             if (shouldPurge) {
-              return purge(config.fn)
+              return purge(config.fn, userCtx)
                 .then(purgeCount => {
                   console.log(`Purge complete, purged ${purgeCount} documents`);
 
@@ -302,7 +302,7 @@ module.exports = function(DB, initialReplication) {
   };
 
   const p = Promise.resolve()
-    .then(() => begin())
+    .then(() => begin(userCtx))
     .then(count => {
       if (count) {
         publish('optimise');

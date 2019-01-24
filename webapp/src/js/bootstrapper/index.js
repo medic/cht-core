@@ -163,7 +163,7 @@
           });
       })
       .then(() => {
-        return purger(localDb, initialReplicationNeeded)
+        return purger(localDb, userCtx, initialReplicationNeeded)
           .on('start', () => setUiStatus('PURGE_INIT'))
           .on('progress', function(progress) {
             setUiStatus('PURGE_INFO', progress);

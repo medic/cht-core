@@ -133,8 +133,16 @@ describe('Purging on login', () => {
     }
   ];
 
-  const purgeConfig = {
-    fn: 'function(_, rs) { return rs.filter(r => r.form === "a-bad-form-type").map(r => r._id); }'
+  const purgeFn = (userCtx, contact, reports) => {
+    if (!userCtx.roles.includes('data_entry')) {
+      // wrong user type - don't purge
+      return [];
+    }
+    if (contact.type !== 'person') {
+      // report not about person - don't purge
+      return [];
+    }
+    return reports.filter(r => r.form === 'a-bad-form-type').map(r => r._id);
   };
 
   beforeAll(done => {
@@ -145,7 +153,7 @@ describe('Purging on login', () => {
         method: 'PUT',
         body: JSON.stringify(restrictedUser)
       }),
-      utils.updateSettings({purge: purgeConfig})
+      utils.updateSettings({purge: { fn: purgeFn.toString() }})
     ])
     .then(() => done()).catch(done.fail);
   });
