@@ -38,7 +38,6 @@ describe('convert-translation-messages migration', function() {
           _id: 'messages-en',
           code: 'en',
           type: 'translations',
-          generic: { Contact: 'Contact', From: 'From' },
           custom: { hello: 'Hello', bye: 'Goodbye CUSTOMISED' },
         }
       ]);
