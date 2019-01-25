@@ -53,7 +53,7 @@ describe('convert-translation-messages migration', function() {
         _id: 'messages-en',
         code: 'en',
         type: 'translations',
-        generic: { Contact: 'Contact', From: 'From', hello: 'Hello' },
+        generic: { Contact: 'Contact', From: 'From', hello: 'Hi' },
         values: { hello: 'Bonjour', bye: 'Goodbye CUSTOMISED' }
       }
     ])
@@ -78,7 +78,7 @@ describe('convert-translation-messages migration', function() {
           _id: 'messages-en',
           code: 'en',
           type: 'translations',
-          generic: { Contact: 'Contact', From: 'From', hello: 'Hello' },
+          generic: { Contact: 'Contact', From: 'From', hello: 'Hi' },
           custom: { hello: 'Bonjour', bye: 'Goodbye CUSTOMISED' },
         }
       ]);
