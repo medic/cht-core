@@ -30,10 +30,7 @@ class BaseConfig {
         jasmine.getEnv().addReporter(utils.reporter);
         browser.waitForAngularEnabled(false);
 
-        browser.driver.wait(listenForApi(), 120 * 1000, 'API took too long to start up');
-        browser.driver.wait(setupSettings(), 5 * 1000, 'Settings should be setup within 5 seconds');
-        browser.driver.wait(utils.setUserContactDoc(), 5 * 1000, 'User contact should be setup within 5 seconds');
-        browser.driver.wait(setupUser(), 5 * 1000, 'User should be setup within 5 seconds');
+        browser.driver.wait(startApi(), 135 * 1000, 'API took too long to start up');
         browser.driver.sleep(10000); // wait for startup to complete
 
         return login(browser);
@@ -43,6 +40,16 @@ class BaseConfig {
 }
 
 module.exports = BaseConfig;
+
+const runAndLog = (msg, func) => {
+  console.log(`API startup: ${msg}`);
+  return func();
+};
+
+const startApi = () => listenForApi()
+  .then(() => runAndLog('Settings setup', setupSettings))
+  .then(() => runAndLog('User contact doc setup', utils.setUserContactDoc))
+  .then(() => runAndLog('User setup', setupUser));
 
 const listenForApi = () => {
   console.log('Checking API');
