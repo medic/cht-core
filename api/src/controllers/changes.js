@@ -92,7 +92,7 @@ const appendChange = (results, changeObj, seq) => {
     // When batching, because we don't know how far along our whole changes feed we are,
     // we push these changes to our normal feeds every time, even if they are out of place,
     // to avoid the possibility of them being skipped.
-    // Therefore, their seq is changed to equal the feed's last_seq to avoid PouchDB setting a Checkpointer
+    // Therefore, their seq is changed to equal the feed's last change seq to avoid PouchDB setting a Checkpointer
     // with a future seq and to use a correct seq when requesting the next batch of changes.
     if (seq) {
       change.seq = seq;
@@ -115,7 +115,7 @@ const appendChange = (results, changeObj, seq) => {
 const processPendingChanges = (feed, forceSeq = false) => {
   authorization
     .filterAllowedDocs(feed, feed.pendingChanges)
-    .forEach(changeObj => appendChange(feed.results, changeObj, forceSeq && feed.lastSeq));
+    .forEach(changeObj => appendChange(feed.results, changeObj, forceSeq));
 };
 
 // returns true if an authorization change is found
@@ -214,9 +214,9 @@ const getChanges = feed => {
       // but our continuousFeed listener receives the change after the response has been sent.
       // When receiving empty results, PouchDB considers replication to be complete and
       // uses reponse.last_seq to write it's checkpointer doc.
-      // By not advancing the checkpointer seq when there are no results, we make sure these docs will be retrieved
+      // By not advancing the checkpointer seq past our last change, we make sure these docs will be retrieved
       // in the next replication attempt.
-      feed.lastSeq = results.length ? response.last_seq : feed.initSeq;
+      feed.lastSeq = results.length ? results.slice(-1)[0].seq : feed.initSeq;
 
       generateTombstones(results);
       feed.results = results;
@@ -226,7 +226,7 @@ const getChanges = feed => {
         return reauthorizeRequest(feed);
       }
 
-      processPendingChanges(feed, limitChangesRequests);
+      processPendingChanges(feed, limitChangesRequests && feed.lastSeq);
 
       if (feed.results.length || !isLongpoll(feed.req)) {
         // send response downstream
