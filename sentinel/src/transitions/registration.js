@@ -386,21 +386,20 @@ module.exports = {
         silence_for: null,
       };
 
-      utils.getRegistrations(
-        { id: options.doc.fields && options.doc.fields.patient_id, },
-        (err, registrations) => {
-          if (err) {
-            return cb(err);
-          }
-
+      utils
+        .getReportsBySubject({
+          ids: utils.getSubjectIds(options.doc.patient),
+          registrations: true
+        })
+        .then(registrations => {
           acceptPatientReports.silenceRegistrations(
             config,
             options.doc,
             registrations,
             cb
           );
-        }
-      );
+        })
+        .catch(cb);
     },
   },
   addMessages: (config, doc, callback) => {

@@ -1,4 +1,5 @@
-const utils = require('./utils');
+const utils = require('./utils'),
+      registrationUtils = require('@medic/registration-utils');
 
 const LAST_PURGED_DATE_KEY = 'medic-last-purge-date';
 const LAST_REPLICATED_SEQ_KEY = 'medic-last-replicated-seq';
@@ -184,23 +185,12 @@ module.exports = function(DB, userCtx, initialReplication) {
     }
   };
 
-  // Copied and slightly modified from the rules-service:
-  // https://github.com/medic/medic-webapp/blob/master/webapp/src/js/services/rules-engine.js#L52-L67
-  // We want to be consistent with rules
   var getContactId = function(doc) {
     // get the associated patient or place id to group reports by
-    return doc && (
-      doc.patient_id ||
-      doc.place_id ||
-      (doc.fields && (doc.fields.patient_id || doc.fields.place_id || doc.fields.patient_uuid))
-    );
+    return registrationUtils.getPatientId(doc);
   };
   var contactHasId = function(contact, id) {
-    return contact && (
-      contact._id === id ||
-      contact.patient_id === id ||
-      contact.place_id === id
-    );
+    return registrationUtils.getSubjectIds(contact).includes(id);
   };
 
   const reportsByContact = () => {

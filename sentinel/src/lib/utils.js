@@ -312,4 +312,6 @@ module.exports = {
   },
   isNonEmptyString: expr => typeof expr === 'string' && expr.trim() !== '',
   evalExpression: (expr, context) => vm.runInNewContext(expr, context),
+
+  getSubjectIds: contact => registrationUtils.getSubjectIds(contact)
 };
