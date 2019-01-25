@@ -19,9 +19,9 @@ env:
   global:
     - COUCH_URL=http://admin:pass@localhost:5984/medic-test
     - COUCH_NODE_NAME=nonode@nohost
-    #AWS Access Key Id and AWS Secret Access Key encrypted by travis to access the S3 buckets where reports and screenshots are saved
-    - secure: TR1UN2r3beDtIF+VJpLF2ocTv/uxuOKyVWWhzMLre0ZrrBaIP1sLZV7Z4S/km5M92EfPgGW87BogdWE/R+kTTRiPTCbFB/U/3jFKxEZRXKST66YK5JMwsYqb17UtZtFdqEtO9GGbAVzXwpZfMMoXvlKNrors2W32xBm2uIkOSpI=
-    - secure: Q8RH65NClRBryxfvlwHQjeR4wGs+GXeUBRIBd1kspAM7Uv+5K3iP+q/TPCIrTL/OpJ5tyCYfeq5hKIFFwrY3JikNXnyHICOjXPE6zSLUm8E8NHaP/orPNWjze2x4yDSRCifqzr2ZiXVq9sxlZfNbZ9eyJxpPFTYDSpuN9T5UEE0=
+    # AWS_ACCESS_KEY_ID and AWS_SECRET_ACCESS_KEY for log upload
+    - secure: VbSeKGaVmUDZs0v+uRBl2RwcjypzkLeSXLI4BOocKfTavUFkpLvtqGWmhXJwwF6x49wxZyIhNLzPQbcefRok2p2f7KNeOccGmVdNNBbjmxc3oNKNo0rX/qyaA95cyaKEJV2MSoWYhIoBP17T4El8uOOoSqOgV/RQrhj1Lw8pDSU=
+    - secure: HmzocDPXwqYiNH9Lt9gvmeuyXlYpaLjNkY0Je1nehXwMx3a9YOn4STfNQJuaCXv3l0SlnLFMnFG1vIH6EEJEhl/Wzn4Ze7FPr8+eVL5pb8Nlc8GNZpZ9l7gk2gGSfDMaK8n6osr2jR4+SzttsrI/0LsAx+yDExLores8ANg4mRU=
 
 before_install:
   - export PATH=$PATH:$HOME/.local/bin
