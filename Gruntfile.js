@@ -224,19 +224,8 @@ module.exports = function(grunt) {
         },
       },
     },
-    jshint: {
-      options: {
-        jshintrc: true,
-        reporter: require('jshint-stylish'),
-        ignores: [
-          'webapp/src/js/modules/xpath-element-path.js',
-          '**/node_modules/**',
-          'sentinel/src/lib/pupil/**',
-          'build/**',
-          'config/**'
-        ],
-      },
-      all: [
+    eslint: {
+      target: [
         'Gruntfile.js',
         'webapp/src/**/*.js',
         'webapp/tests/**/*.js',
@@ -245,8 +234,13 @@ module.exports = function(grunt) {
         'sentinel/**/*.js',
         'shared-libs/**/*.js',
         'admin/**/*.js',
-        'ddocs/**/*.js',
-      ],
+        '!ddocs/**/*.js',
+        '!webapp/src/js/modules/xpath-element-path.js',
+        '!**/node_modules/**',
+        '!sentinel/src/lib/pupil/**',
+        '!build/**',
+        '!config/**'
+      ]
     },
     less: {
       webapp: {
@@ -1021,7 +1015,7 @@ module.exports = function(grunt) {
   grunt.registerTask(
     'unit-continuous',
     'Lint, karma unit tests running on a loop',
-    ['jshint', 'karma:unit-continuous']
+    ['eslint', 'karma:unit-continuous']
   );
 
   grunt.registerTask(
@@ -1035,7 +1029,7 @@ module.exports = function(grunt) {
   );
 
   grunt.registerTask('unit', 'Lint and unit tests', [
-    'jshint',
+    'eslint',
     'karma:unit',
     'karma:admin',
     'exec:shared-lib-unit',
@@ -1093,7 +1087,7 @@ module.exports = function(grunt) {
   grunt.registerTask('static-analysis', 'Static analysis checks', [
     'regex-check',
     'exec:blank-link-check',
-    'jshint',
+    'eslint',
   ]);
 
   grunt.registerTask(

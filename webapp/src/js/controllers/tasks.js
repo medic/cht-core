@@ -94,12 +94,6 @@ var _ = require('underscore');
         }
       });
 
-      $transitions.onStart({}, function(trans) {
-        if (trans.to().name.indexOf('tasks') === -1) {
-          $scope.unsetSelected();
-        }
-      });
-
       if ($stateParams.tour) {
         Tour.start($stateParams.tour);
       }

@@ -137,13 +137,6 @@ angular.module('inboxControllers').controller('TasksContentCtrl',
         });
     };
 
-    $transitions.onStart({}, function(trans) {
-      if (trans.to().name.indexOf('tasks.detail') === -1) {
-        Enketo.unload($scope.form);
-        $scope.unsetSelected();
-      }
-    });
-
     // Wait for `selected` to be set during tasks generation and load the
     // form if we have no other description or instructions in the task.
     $scope.$watch('selected', function() {

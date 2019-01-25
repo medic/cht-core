@@ -32,6 +32,7 @@ var feedback = require('../modules/feedback'),
     PlaceHierarchy,
     JsonForms,
     Language,
+    LiveList,
     LiveListConfig,
     Location,
     Modal,
@@ -183,6 +184,7 @@ var feedback = require('../modules/feedback'),
     CheckDate();
 
     $scope.loadingContent = false;
+    $scope.loadingSubActionBar = false;
     $scope.error = false;
     $scope.errorSyntax = false;
     $scope.appending = false;
@@ -243,14 +245,39 @@ var feedback = require('../modules/feedback'),
     });
 
     $transitions.onStart({}, function(trans) {
-      if(!$scope.enketoStatus.edited){
+      if (trans.to().name.indexOf('reports') === -1 || trans.to().name.indexOf('contacts') === -1 || trans.to().name.indexOf('tasks') === -1 || toState.name.indexOf('messages.detail') === -1) {
+        $scope.unsetSelected();
+      }
+      if (trans.to().name.indexOf('tasks.detail') === -1) {
+        Enketo.unload($scope.form);
+        $scope.unsetSelected();
+      }
+      if (trans.to().name.split('.')[0] !== trans.from().name.split('.')[0]){
+        $scope.clearSelection();
+      }
+      if (!$scope.enketoStatus.edited){
         return;
       }
-      if($scope.cancelCallback){
-        trans.abort();
+      if ($scope.cancelCallback){
+        event.preventDefault();
         $scope.navigationCancel();
       }
     });
+
+    $scope.clearSelection = function() {
+      if ($state.current.name.split('.')[0] === 'contacts'){
+        $scope.selected = null;
+        LiveList.contacts.clearSelected();
+        LiveList['contact-search'].clearSelected();
+      }
+      else if ($state.current.name.split('.')[0] === 'reports'){
+        $scope.selected = {};
+        LiveList.reports.clearSelected();
+        LiveList['report-search'].clearSelected();
+        $('#reports-list input[type="checkbox"]').prop('checked', false);
+        $scope.verifyingReport = false;
+      }
+    };
 
     // User wants to cancel current flow, or pressed back button, etc.
     $scope.navigationCancel = function() {
@@ -338,6 +365,10 @@ var feedback = require('../modules/feedback'),
     $scope.setLoadingContent = function(id) {
       $scope.loadingContent = id;
       $scope.setShowContent(true);
+    };
+
+    $scope.setLoadingSubActionBar = function(loadingSubActionBar) {
+      $scope.loadingSubActionBar = loadingSubActionBar;
     };
 
     $transitions.onSuccess({}, function(trans) {
@@ -570,6 +601,10 @@ var feedback = require('../modules/feedback'),
       });
     });
 
+    $scope.setSubActionBarStatus = function(verified) {
+      $scope.actionBar.right.verified = verified;
+    };
+
     $scope.setRightActionBar = function(model) {
       if (!$scope.actionBar) {
         $scope.actionBar = {};
@@ -677,7 +712,9 @@ var feedback = require('../modules/feedback'),
         // initialised yet
         try {
           $(this).select2('close');
-        } catch (e) {}
+        } catch (e) {
+          // exception thrown on clicking 'close'
+        }
       });
     };
 

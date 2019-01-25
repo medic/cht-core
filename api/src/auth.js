@@ -140,7 +140,7 @@ module.exports = {
 
     let username, password;
     try {
-      [username, password] = new Buffer(authHeader.split(' ')[1], 'base64').toString().split(':');
+      [username, password] = Buffer.from(authHeader.split(' ')[1], 'base64').toString().split(':');
     } catch (err) {
       throw Error('Corrupted Auth header');
     }

@@ -36,7 +36,7 @@
     </div>
     <div ng-show="deployDoc._deleted">
       <p class="col-xs-10" translate>instance.upgrade.complete</p>
-      <button class="col-xs-2 btn btn-primary" onclick="window.location.reload()" translate>reload.app</button>
+      <button class="col-xs-2 btn btn-primary" ng-click="reloadPage()" translate>reload.app</button>
     </div>
   </div>
 

@@ -43,7 +43,6 @@ const getInfoDoc = change => {
       } else {
         return createInfoDoc(change.id, 'unknown');
       }
-      return null;
     })
     .then(doc => updateInfoDoc(doc, rev));
 };

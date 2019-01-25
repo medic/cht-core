@@ -292,20 +292,14 @@ var _ = require('underscore'),
         });
     };
 
-    var clearSelection = function() {
-      $scope.selected = null;
-      LiveList.contacts.clearSelected();
-      LiveList['contact-search'].clearSelected();
-    };
-
     $scope.$on('ClearSelected', function() {
-      clearSelection();
+      $scope.clearSelection();
     });
 
     $scope.search = function() {
       if($scope.filters.search) {
         $state.go('contacts.detail', { id: null }, { notify: false });
-        clearSelection();
+        $scope.clearSelection();
       }
 
       $scope.loading = true;
@@ -433,12 +427,6 @@ var _ = require('underscore'),
       }
       return setupPromise;
     };
-
-    $transitions.onStart({}, function(trans) {
-      if (trans.to().name.indexOf('contacts') === -1) {
-        $scope.unsetSelected();
-      }
-    });
 
     var isRelevantVisitReport = function(doc) {
       var isRelevantDelete = doc._deleted && isSortedByLastVisited();

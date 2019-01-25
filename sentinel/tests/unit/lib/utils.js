@@ -1,4 +1,5 @@
 const should = require('chai').should(),
+      { expect } = require('chai'),
       sinon = require('sinon'),
       registrationUtils = require('@medic/registration-utils'),
       taskUtils = require('@medic/task-utils'),
@@ -85,7 +86,7 @@ describe('utils util', () => {
         .should.equal(66);
     });
     it('throws an exception if the expression errors', () => {
-      should.Throw(() => utils.evalExpression(`doc.foo.bar.smang === 'cats'`, {}));
+      expect(() => utils.evalExpression(`doc.foo.bar.smang === 'cats'`, {})).to.throw();
     });
   });
 
@@ -289,6 +290,15 @@ describe('utils util', () => {
       const r = utils.setTasksStates(doc, 'newState', filter);
       r.should.deep.equal(4);
       taskUtils.setTaskState.callCount.should.equal(6);
+    });
+  });
+
+  describe('getSubjectIds', () => {
+    it('should call registration_utils method', () => {
+      sinon.stub(registrationUtils, 'getSubjectIds').returns(['a', 'b']);
+      utils.getSubjectIds({ _id: 'a' }).should.deep.equal(['a', 'b']);
+      registrationUtils.getSubjectIds.callCount.should.equal(1);
+      registrationUtils.getSubjectIds.args[0].should.deep.equal([{ _id: 'a' }]);
     });
   });
 });

@@ -41,7 +41,7 @@ const _ = require('underscore'),
   appcacheManifest = /\/manifest\.appcache$/,
   uuid = require('uuid'),
   compression = require('compression'),
-  BUILDS_DB = 'https://staging.dev.medicmobile.org/_couch/builds', // jshint ignore:line
+  BUILDS_DB = 'https://staging.dev.medicmobile.org/_couch/builds/', // jshint ignore:line
   app = express();
 
 // requires content-type application/json header
@@ -115,31 +115,29 @@ app.use(
     // runs with a bunch of defaults: https://github.com/helmetjs/helmet
     hpkp: false, // explicitly block dangerous header
     contentSecurityPolicy: {
-      /* jshint ignore:start */
       directives: {
-        defaultSrc: ["'none'"],
-        fontSrc: ["'self'"],
-        manifestSrc: ["'self'"],
+        defaultSrc: [`'none'`],
+        fontSrc: [`'self'`],
+        manifestSrc: [`'self'`],
         connectSrc: [
-          "'self'",
+          `'self'`,
           BUILDS_DB,
         ],
-        formAction: ["'self'"],
+        formAction: [`'self'`],
         imgSrc: [
-          "'self'",
+          `'self'`,
           'data:' // unsafe
         ],
         scriptSrc: [
-          "'self'",
-          "'sha256-6i0jYw/zxQO6q9fIxqI++wftTrPWB3yxt4tQqy6By6k='", // Explicitly allow the telemetry script setting startupTimes
-          "'unsafe-eval'" // AngularJS and several dependencies require this
+          `'self'`,
+          `'sha256-6i0jYw/zxQO6q9fIxqI++wftTrPWB3yxt4tQqy6By6k='`, // Explicitly allow the telemetry script setting startupTimes
+          `'unsafe-eval'` // AngularJS and several dependencies require this
         ],
         styleSrc: [
-          "'self'",
-          "'unsafe-inline'" // angular-ui-bootstrap
+          `'self'`,
+          `'unsafe-inline'` // angular-ui-bootstrap
         ],
       },
-      /* jshint ignore:end */
       browserSniff: false,
     },
   })
@@ -646,7 +644,7 @@ proxyForAuth.on('proxyRes', (proxyRes, req, res) => {
   copyProxyHeaders(proxyRes, res);
 
   if (res.interceptResponse) {
-    let body = new Buffer('');
+    let body = Buffer.from('');
     proxyRes.on('data', data => (body = Buffer.concat([body, data])));
     proxyRes.on('end', () => res.interceptResponse(req, res, body.toString()));
   } else {

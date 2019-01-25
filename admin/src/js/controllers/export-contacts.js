@@ -6,7 +6,8 @@ angular.module('controllers').controller('ExportContactsCtrl',
     Export,
     FileReader,
     ImportContacts,
-    JsonParse
+    JsonParse,
+    Translate
   ) {
 
     'use strict';
@@ -25,11 +26,10 @@ angular.module('controllers').controller('ExportContactsCtrl',
     $scope.import = function() {
       var file = $('#import-contacts [name="contacts"]').prop('files')[0];
       if (!file) {
-        $translate('Contacts').then(function(fieldName) {
-          $translate('field is required', { field: fieldName }).then(function(message) {
+        Translate.fieldIsRequired('Contacts')
+          .then(function(message) {
             $scope.error = message;
           });
-        });
         return;
       }
       $scope.error = false;

@@ -74,7 +74,7 @@ module.exports = {
       const muted = new Date();
       mutingUtils.updateContact(change.doc, muted);
       return mutingUtils
-        .updateRegistrations(mutingUtils.getSubjectIds(change.doc), muted)
+        .updateRegistrations(utils.getSubjectIds(change.doc), muted)
         .then(() => mutingUtils.updateMutingHistory(change.doc, muted))
         .then(() => true);
     }

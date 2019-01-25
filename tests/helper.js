@@ -3,7 +3,7 @@ const fs = require('fs'),
 
 function writeScreenShot(data, filename) {
   const stream = fs.createWriteStream('./tests/results/' + filename);
-  stream.write(new Buffer(data, 'base64'));
+  stream.write(Buffer.from(data, 'base64'));
   stream.end();
 }
 function handleUpdateModal() {

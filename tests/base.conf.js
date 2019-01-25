@@ -26,6 +26,11 @@ class BaseConfig {
           utils.reporter.beforeLaunch(resolve);
         });
       },
+      afterLaunch: function(exitCode) {
+        return new Promise(function(resolve) {
+          utils.reporter.afterLaunch(resolve.bind(this, exitCode));
+        });
+      },
       onPrepare: () => {
         jasmine.getEnv().addReporter(utils.reporter);
         browser.waitForAngularEnabled(false);
