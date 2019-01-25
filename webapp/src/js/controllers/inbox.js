@@ -245,7 +245,7 @@ var feedback = require('../modules/feedback'),
     });
 
     $transitions.onStart({}, function(trans) {
-      if (trans.to().name.indexOf('reports') === -1 || trans.to().name.indexOf('contacts') === -1 || trans.to().name.indexOf('tasks') === -1 || toState.name.indexOf('messages.detail') === -1) {
+      if (trans.to().name.indexOf('reports') === -1 || trans.to().name.indexOf('contacts') === -1 || trans.to().name.indexOf('tasks') === -1 || trans.to().name.indexOf('messages.detail') === -1) {
         $scope.unsetSelected();
       }
       if (trans.to().name.indexOf('tasks.detail') === -1) {
