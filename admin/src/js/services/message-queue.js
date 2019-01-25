@@ -288,7 +288,7 @@ angular.module('services').factory('MessageQueue',
               return language &&
                      language.code &&
                      language.code !== 'en' &&
-                     $translate('admin.message.queue', {}, null, null, language.code);
+                     $translate('admin.message.queue', {}, null, 'admin.message.queue', language.code);
             }));
           })
           .catch(function(err) {
