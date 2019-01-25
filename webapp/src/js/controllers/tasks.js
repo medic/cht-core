@@ -12,7 +12,6 @@ var _ = require('underscore');
       $state,
       $stateParams,
       $timeout,
-      $transitions,
       $window,
       $translate,
       LiveList,

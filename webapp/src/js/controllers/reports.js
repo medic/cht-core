@@ -10,7 +10,6 @@ angular
     $state,
     $stateParams,
     $timeout,
-    $transitions,
     AddReadStatus,
     Changes,
     DB,
