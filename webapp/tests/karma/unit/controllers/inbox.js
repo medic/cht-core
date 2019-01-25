@@ -44,7 +44,8 @@ describe('InboxCtrl controller', () => {
       $provide.value('DB', () => {
         return {
           query: KarmaUtils.nullPromise(),
-          info: KarmaUtils.nullPromise()
+          info: KarmaUtils.nullPromise(),
+          get: KarmaUtils.nullPromise(),
         };
       });
       $provide.value('WatchDesignDoc', sinon.stub());
