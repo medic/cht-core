@@ -6,12 +6,12 @@ angular.module('controllers').controller('TranslationLanguagesCtrl',
     $q,
     $scope,
     Blob,
+    Changes,
     DB,
     ExportProperties,
     Modal,
     Settings,
-    UpdateSettings,
-    Changes
+    UpdateSettings
   ) {
 
     'use strict';
