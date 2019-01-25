@@ -1,31 +1,3 @@
-[low] Regular Expression Denial of Service in uglify-js (#48) in ./config/standard
-[low] Regular Expression Denial of Service in uglify-js (#48) in ./config/sample_config_tests
-[high] Insufficient Entropy in cryptiles (#720) in ./tests/scalability
-[low] Prototype Pollution in lodash (#577) in ./api
-[low] Regular Expression Denial of Service in uglify-js (#48) in ./webapp
-[low] Regular Expression Denial of Service in debug (#534) in ./scripts/conflicts
-[moderate] Prototype pollution in hoek (#566) in ./scripts/conflicts
-[moderate] Memory Exposure in tunnel-agent (#598) in ./scripts/conflicts
-[high] Regular Expression Denial of Service in sshpk (#606) in ./scripts/conflicts
-[moderate] Out-of-bounds Read in stringstream (#664) in ./scripts/conflicts
-[moderate] ReDoS via long string of semicolons in tough-cookie (#130) in ./scripts
-[critical] Arbitrary Code Injection in pouchdb (#143) in ./scripts
-[high] Regular Expression Denial of Service in tough-cookie (#525) in ./scripts
-[low] Regular Expression Denial of Service in debug (#534) in ./scripts
-[moderate] Prototype pollution in hoek (#566) in ./scripts
-[moderate] Memory Exposure in tunnel-agent (#598) in ./scripts
-[high] Regular Expression Denial of Service in sshpk (#606) in ./scripts
-[low] Prototype Pollution in deep-extend (#612) in ./scripts
-[moderate] Out-of-bounds Read in stringstream (#664) in ./scripts
-[low] Regular Expression Denial of Service in uglify-js (#48) in ./sentinel/src/lib/pupil
-[low] Arbitrary File Write in cli (#95) in ./sentinel/src/lib/pupil
-[high] Regular Expression Denial of Service in minimatch (#118) in ./sentinel/src/lib/pupil
-[low] Prototype Pollution in lodash (#577) in ./sentinel/src/lib/pupil
-[moderate] Regular Expression Denial of Service in underscore.string (#745) in ./sentinel/src/lib/pupil
-[moderate] ReDoS via long string of semicolons in tough-cookie (#130) in .
 [high] Regular Expression Denial of Service in tough-cookie (#525) in .
-[low] Regular Expression Denial of Service in debug (#534) in .
-[moderate] Regular Expression Denial of Service in mime (#535) in .
-[moderate] Prototype pollution in hoek (#566) in .
-[low] Prototype Pollution in lodash (#577) in .
-[moderate] Memory Exposure in tunnel-agent (#598) in .
+[high] Regular Expression Denial of Service in minimatch (#118) in ./sentinel/src/lib/pupil
+[high] Insufficient Entropy in cryptiles (#720) in ./tests/scalability
