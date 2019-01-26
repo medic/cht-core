@@ -16,6 +16,7 @@ var feedback = require('../modules/feedback'),
     $state,
     $stateParams,
     $timeout,
+    $transitions,
     $translate,
     $window,
     APP_CONFIG,
@@ -243,15 +244,15 @@ var feedback = require('../modules/feedback'),
       });
     });
 
-    $rootScope.$on('$stateChangeStart', function (event, toState, toParams, fromState){
-      if (toState.name.indexOf('reports') === -1 || toState.name.indexOf('contacts') === -1 || toState.name.indexOf('tasks') === -1 || toState.name.indexOf('messages.detail') === -1) {
+    $transitions.onStart({}, function(trans) {
+      if (trans.to().name.indexOf('reports') === -1 || trans.to().name.indexOf('contacts') === -1 || trans.to().name.indexOf('tasks') === -1 || trans.to().name.indexOf('messages.detail') === -1) {
         $scope.unsetSelected();
       }
-      if (toState.name.indexOf('tasks.detail') === -1) {
+      if (trans.to().name.indexOf('tasks.detail') === -1) {
         Enketo.unload($scope.form);
         $scope.unsetSelected();
       }
-      if (toState.name.split('.')[0] !== fromState.name.split('.')[0]){
+      if (trans.to().name.split('.')[0] !== trans.from().name.split('.')[0]){
         $scope.clearSelection();
       }
       if (!$scope.enketoStatus.edited){
@@ -370,8 +371,8 @@ var feedback = require('../modules/feedback'),
       $scope.loadingSubActionBar = loadingSubActionBar;
     };
 
-    $scope.$on('$stateChangeSuccess', function(event, toState) {
-      $scope.currentTab = toState.name.split('.')[0];
+    $transitions.onSuccess({}, function(trans) {
+      $scope.currentTab = trans.to().name.split('.')[0];
       if (!$state.includes('reports')) {
         $scope.selectMode = false;
       }
@@ -719,7 +720,7 @@ var feedback = require('../modules/feedback'),
 
     // close all select2 menus on navigation
     // https://github.com/medic/medic-webapp/issues/2927
-    $rootScope.$on('$stateChangeStart', closeDropdowns);
+    $transitions.onStart({}, closeDropdowns);
 
     $rootScope.$on('databaseClosedEvent', function () {
       Modal({

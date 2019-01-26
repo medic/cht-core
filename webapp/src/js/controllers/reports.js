@@ -315,7 +315,7 @@ angular
         if (doc.contact) {
           doc.contact = lineage.minifyLineage(doc.contact);
         }
-        
+
         doc.verified = doc.verified === valid ? undefined : valid;
 
         DB()
