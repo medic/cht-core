@@ -370,6 +370,9 @@ module.exports = function(grunt) {
       'clean-build-dir': {
         cmd: 'rm -rf build && mkdir build',
       },
+      'fast-eslint': {
+        cmd: './node_modules/.bin/eslint --color --ignore-pattern "ddocs/**/*.js" --ignore-pattern "webapp/src/js/modules/xpath-element-path.js" --ignore-pattern "**/node_modules/**" --ignore-pattern "sentinel/src/lib/pupil/**" --ignore-pattern "build/**" --ignore-pattern "config/**" "Gruntfile.js" "webapp/src/**/*.js" "webapp/tests/**/*.js" "tests/**/*.js" "api/**/*.js" "sentinel/**/*.js" "shared-libs/**/*.js" "admin/**/*.js"'
+      },
       'pack-node-modules': {
         cmd: ['api', 'sentinel']
           .map(module =>
@@ -1015,7 +1018,7 @@ module.exports = function(grunt) {
   grunt.registerTask(
     'unit-continuous',
     'Lint, karma unit tests running on a loop',
-    ['eslint', 'karma:unit-continuous']
+    ['exec:fast-eslint', 'karma:unit-continuous']
   );
 
   grunt.registerTask(
@@ -1029,7 +1032,7 @@ module.exports = function(grunt) {
   );
 
   grunt.registerTask('unit', 'Lint and unit tests', [
-    'eslint',
+    'exec:fast-eslint',
     'karma:unit',
     'karma:admin',
     'exec:shared-lib-unit',
@@ -1087,7 +1090,7 @@ module.exports = function(grunt) {
   grunt.registerTask('static-analysis', 'Static analysis checks', [
     'regex-check',
     'exec:blank-link-check',
-    'eslint',
+    'exec:fast-eslint',
   ]);
 
   grunt.registerTask(
