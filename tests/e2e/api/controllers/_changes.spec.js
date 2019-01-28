@@ -198,8 +198,7 @@ const getChangesForIds = (username, docIds, lastSeq = 0, limit = 100, results = 
     });
 
     // simulate PouchDB seq selection
-    const last_seq = changes.results.length && changes.results[changes.results.length - 1].seq ||
-                     changes.last_seq;
+    const last_seq = changes.results.length ? changes.results[changes.results.length - 1].seq : changes.last_seq;
 
     if (docIds.find(id => !results.find(change => change.id === id)) || changes.results.length) {
       return getChangesForIds(username, docIds, last_seq, limit, results);
