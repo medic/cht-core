@@ -149,7 +149,7 @@ app.use(
 app.use(compression());
 
 // TODO: investigate blocking writes to _users from the outside. Reads maybe as well, though may be harder
-//       https://github.com/medic/medic-webapp/issues/4089
+//       https://github.com/medic/medic/issues/4089
 
 app.get('/', function(req, res) {
   if (req.headers.accept === 'application/json') {
@@ -165,7 +165,7 @@ app.get('/favicon.ico', (req, res) => {
   // Cache for a week. Normally we don't interfere with couch headers, but
   // due to Chrome (including Android WebView) aggressively requesting
   // favicons on every page change and window.history update
-  // ( https://github.com/medic/medic-webapp/issues/1913 ), we have to
+  // ( https://github.com/medic/medic/issues/1913 ), we have to
   // stage an intervention
   writeHeaders(req, res, [['Cache-Control', 'public, max-age=604800']]);
   db.medic.get('branding').then(doc => {

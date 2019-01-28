@@ -322,7 +322,7 @@ angular
                 .then(function() {
                   $scope.setFinished();
                   // TODO: change this from a broadcast to a changes watcher
-                  //       https://github.com/medic/medic-webapp/issues/4094
+                  //       https://github.com/medic/medic/issues/4094
                   $rootScope.$broadcast(
                     'UsersUpdated',
                     $scope.editUserModel.id

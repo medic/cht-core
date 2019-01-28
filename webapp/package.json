@@ -1,11 +1,11 @@
 {
-  "name": "medic-webapp",
+  "name": "medic",
   "version": "0.1.0",
   "private": true,
   "license": "Apache-2.0",
   "repository": {
     "type": "git",
-    "url": "git://github.com/medic/medic-webapp.git"
+    "url": "git://github.com/medic/medic.git"
   },
   "engines": {
     "node": ">=8.11.0",

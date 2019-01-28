@@ -12,7 +12,7 @@ angular.module('inboxServices').factory('GetSummaries',
     // WARNING: This is a copy of the medic/doc_summaries_by_id view
     // with some minor modifications and needs to be kept in sync until
     // this workaround is no longer needed.
-    // https://github.com/medic/medic-webapp/issues/4666
+    // https://github.com/medic/medic/issues/4666
     var summarise = function(doc) {
       if (!doc) {
         return;

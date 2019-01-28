@@ -210,7 +210,7 @@ describe('libphonenumber', () => {
   });
 
   // Test for overly permissive validation
-  // https://github.com/medic/medic-webapp/issues/2196
+  // https://github.com/medic/medic/issues/2196
   it('validate returns false when given LGs bad phone number example', () => {
     var actual = phonenumber.validate({default_country_code: COUNTRY_CODES.uganda}, '+25601234');
     assert.isFalse(actual);

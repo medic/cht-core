@@ -121,7 +121,7 @@ define( function( require, exports, module ) {
      * cloning repeated sections of a form.  It's actually called on the cloned
      * copy of a question, and for some reason for this widget needs to destroy
      * and then re-create the select2.
-     * @see https://github.com/medic/medic-webapp/issues/3487
+     * @see https://github.com/medic/medic/issues/3487
      */
     Dbobjectwidget.prototype.destroy = function( element ) {
         deconstruct( element );

@@ -7,7 +7,7 @@ var passwordTester = require('simple-password-tester'),
   'use strict';
 
   // TODO : too many input possibilities, and two different templates. Refactor.
-  // https://github.com/medic/medic-webapp/issues/3436
+  // https://github.com/medic/medic/issues/3436
   angular.module('inboxControllers').controller('EditUserCtrl',
     function (
       $log,

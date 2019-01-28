@@ -719,7 +719,7 @@ var feedback = require('../modules/feedback'),
     };
 
     // close all select2 menus on navigation
-    // https://github.com/medic/medic-webapp/issues/2927
+    // https://github.com/medic/medic/issues/2927
     $transitions.onStart({}, closeDropdowns);
 
     $rootScope.$on('databaseClosedEvent', function () {
