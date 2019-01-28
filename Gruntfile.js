@@ -224,24 +224,6 @@ module.exports = function(grunt) {
         },
       },
     },
-    eslint: {
-      target: [
-        'Gruntfile.js',
-        'webapp/src/**/*.js',
-        'webapp/tests/**/*.js',
-        'tests/**/*.js',
-        'api/**/*.js',
-        'sentinel/**/*.js',
-        'shared-libs/**/*.js',
-        'admin/**/*.js',
-        '!ddocs/**/*.js',
-        '!webapp/src/js/modules/xpath-element-path.js',
-        '!**/node_modules/**',
-        '!sentinel/src/lib/pupil/**',
-        '!build/**',
-        '!config/**'
-      ]
-    },
     less: {
       webapp: {
         files: {
@@ -369,6 +351,36 @@ module.exports = function(grunt) {
     exec: {
       'clean-build-dir': {
         cmd: 'rm -rf build && mkdir build',
+      },
+      // Running this via exec instead of inside the grunt process makes eslint
+      // run ~4x faster. For some reason. Maybe cpu core related.
+      'eslint': {
+        cmd: () => {
+          const cmd = './node_modules/.bin/eslint --color';
+          const paths = [
+            'Gruntfile.js',
+            'webapp/src/**/*.js',
+            'webapp/tests/**/*.js',
+            'tests/**/*.js',
+            'api/**/*.js',
+            'sentinel/**/*.js',
+            'shared-libs/**/*.js',
+            'admin/**/*.js',
+          ];
+          const ignore = [
+            'ddocs/**/*.js',
+            'webapp/src/js/modules/xpath-element-path.js',
+            '**/node_modules/**',
+            'sentinel/src/lib/pupil/**',
+            'build/**',
+            'config/**'
+          ];
+
+          return [cmd]
+            .concat(ignore.map(glob => `--ignore-pattern "${glob}"`))
+            .concat(paths.map(glob => `"${glob}"`))
+            .join(' ');
+        }
       },
       'pack-node-modules': {
         cmd: ['api', 'sentinel']
@@ -1029,7 +1041,7 @@ module.exports = function(grunt) {
   grunt.registerTask(
     'unit-continuous',
     'Lint, karma unit tests running on a loop',
-    ['eslint', 'karma:unit-continuous']
+    ['exec:eslint', 'karma:unit-continuous']
   );
 
   grunt.registerTask(
@@ -1043,7 +1055,7 @@ module.exports = function(grunt) {
   );
 
   grunt.registerTask('unit', 'Lint and unit tests', [
-    'eslint',
+    'exec:eslint',
     'karma:unit',
     'karma:admin',
     'exec:shared-lib-unit',
@@ -1101,8 +1113,10 @@ module.exports = function(grunt) {
   grunt.registerTask('static-analysis', 'Static analysis checks', [
     'regex-check',
     'exec:blank-link-check',
-    'eslint',
+    'exec:eslint',
   ]);
+
+  grunt.registerTask('eslint', 'Runs eslint', ['exec:eslint']);
 
   grunt.registerTask(
     'dev-webapp-no-dependencies',
