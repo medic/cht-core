@@ -706,9 +706,9 @@ module.exports = function(grunt) {
           configFile: 'tests/e2e.tests.conf.js',
         },
       },
-      'e2e-tests-headless': {
+      'e2e-tests-ci': {
         options: {
-          configFile: 'tests/e2e.tests.headless.conf.js',
+          configFile: 'tests/e2e.tests.ci.conf.js',
         },
       },
       'performance-tests-and-services': {
@@ -1075,7 +1075,7 @@ module.exports = function(grunt) {
 
   grunt.registerTask('ci-e2e', 'Run e2e tests for CI', [
     'exec:start-webdriver',
-    'protractor:e2e-tests-headless',
+    'protractor:e2e-tests-ci',
   ]);
 
   grunt.registerTask('ci-performance', 'Run performance tests on CI', [
