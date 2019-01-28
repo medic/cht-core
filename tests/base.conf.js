@@ -2,9 +2,12 @@ const utils = require('./utils'),
       constants = require('./constants'),
       auth = require('./auth')();
 
-
 class BaseConfig {
-  constructor(testSrcDir) {
+  constructor(testSrcDir, { headless=true }={}) {
+    const chromeArgs = [ '--window-size=1024,768' ];
+    if (headless) {
+      chromeArgs.push('--headless', '--disable-gpu');
+    }
     this.config = {
       seleniumAddress: 'http://localhost:4444/wd/hub',
 
@@ -14,7 +17,7 @@ class BaseConfig {
       capabilities: {
         browserName: 'chrome',
         chromeOptions: {
-          args: ['--headless', '--disable-gpu', '--window-size=1024,768']
+          args: chromeArgs
         }
       },
       beforeLaunch: function() {

@@ -706,6 +706,11 @@ module.exports = function(grunt) {
           configFile: 'tests/e2e.tests.conf.js',
         },
       },
+      'e2e-tests-debug': {
+        options: {
+          configFile: 'tests/e2e.tests.debug.conf.js',
+        },
+      },
       'performance-tests-and-services': {
         options: {
           configFile: 'tests/performance.tests-and-services.conf.js',
@@ -996,12 +1001,21 @@ module.exports = function(grunt) {
   );
 
   // Test tasks
-  grunt.registerTask('e2e', 'Deploy app for testing and run e2e tests', [
+  grunt.registerTask('e2e-deploy', 'Deploy app for testing', [
     'exec:start-webdriver',
     'exec:reset-test-databases',
     'couch-push:test',
     'exec:e2e-servers',
+  ]);
+
+  grunt.registerTask('e2e', 'Deploy app for testing and run e2e tests', [
+    'e2e-deploy',
     'protractor:e2e-tests',
+  ]);
+
+  grunt.registerTask('e2e-debug', 'Deploy app for testing and run e2e tests in a visible Chrome window', [
+    'e2e-deploy',
+    'protractor:e2e-tests-debug',
   ]);
 
   grunt.registerTask('test-perf', 'Run performance-specific tests', [
