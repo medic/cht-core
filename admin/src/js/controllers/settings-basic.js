@@ -33,13 +33,9 @@ angular.module('controllers').controller('SettingsBasicCtrl',
       return true;
     };
 
-    var validate = function() {
-      return validateGatewayNumber();
-    };
-
     $scope.submitBasicSettings = function() {
       $scope.basicSettingsModel.error = {};
-      if (validate()) {
+      if (validateGatewayNumber()) {
         $scope.status = { loading: true };
         var settings = {
           locale: $scope.basicSettingsModel.locale,
