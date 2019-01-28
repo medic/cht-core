@@ -3,7 +3,7 @@ const utils = require('./utils'),
       auth = require('./auth')();
 
 class BaseConfig {
-  constructor(testSrcDir, { headless=false }={}) {
+  constructor(testSrcDir, { headless=true }={}) {
     this.config = {
       seleniumAddress: 'http://localhost:4444/wd/hub',
 

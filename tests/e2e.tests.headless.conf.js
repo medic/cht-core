@@ -1,2 +1,2 @@
 const BaseConfig = require('./base.conf.js');
-module.exports = new BaseConfig('e2e', { headless: true });
+module.exports = new BaseConfig('e2e');
