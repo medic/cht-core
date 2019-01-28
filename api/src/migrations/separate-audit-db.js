@@ -1,6 +1,7 @@
 var _ = require('underscore'),
     {promisify} = require('util'),
-    db = require('../db-nano'),
+    db = require('../db-pouch'),
+    PouchDB = require('pouchdb-core'),
     environment = require('../environment'),
     logger = require('../logger'),
     async = require('async');
@@ -9,34 +10,19 @@ var DDOC_NAME = '_design/medic';
 var DDOC = {'views': {'audit_records_by_doc': {'map': 'function (doc) {if (doc.type === \'audit_record\') {emit([doc.record_id], 1);}}'}}};
 var BATCH_SIZE = 100;
 
-const getAuditDbName = () => environment.db + '-audit';
-
-var ensureDbExists = function(dbName, callback) {
-  db.db.get(dbName, function(err) {
-    if (err && err.statusCode === 404) {
-      logger.info(`DB ${dbName} does not exist, creating`);
-      return db.db.create(dbName, callback);
-    } else {
-      return callback();
-    }
-  });
-};
-
-var ensureViewDdocExists = function(dbName, callback) {
-  var auditDb = db.use(dbName);
-
-  auditDb.head(DDOC_NAME, function(err) {
-    if (err && err.statusCode === 404) {
+var ensureViewDdocExists = function(auditDb, callback) {
+  auditDb.get(DDOC_NAME, function(err) {
+    if (err && err.status === 404) {
       logger.info(`${DDOC_NAME} audit ddoc does not exist, creating`);
-      return auditDb.insert(DDOC, DDOC_NAME, callback);
+      return auditDb.put(DDOC, DDOC_NAME, callback);
     } else {
       return callback();
     }
   });
 };
 
-var batchMoveAuditDocs = function(callback) {
-  db.medic.view('medic-client', 'doc_by_type', { key: ['audit_record'], limit: BATCH_SIZE}, function(err, doclist) {
+var batchMoveAuditDocs = function(auditDb, callback) {
+  db.medic.query('medic-client/doc_by_type', { key: ['audit_record'], limit: BATCH_SIZE}, function(err, doclist) {
     if (err) {
       return callback(err);
     }
@@ -51,28 +37,24 @@ var batchMoveAuditDocs = function(callback) {
 
     var auditDocIds = doclist.rows.map(function(row) { return row.id;});
 
-    async.parallel([
-      _.partial(db.db.replicate, environment.db, getAuditDbName(), {doc_ids: auditDocIds}),
-      _.partial(db.medic.fetchRevs, {keys: auditDocIds})
-    ], function(err, results) {
-      if (err) {
-        return callback(err);
-      }
-
-      var bulkDeleteBody = {
-        docs: results[1][0].rows.map(function(doc_rev) {
-          return {
-            _id: doc_rev.id,
-            _rev: doc_rev.value.rev,
-            _deleted: true
-          };
-        })
-      };
-
-      db.medic.bulk(bulkDeleteBody, function(err, response) {
-        return callback(err, response && response.length);
-      });
-    });
+    PouchDB.replicate(db.medic, auditDb, { doc_ids: auditDocIds })
+      .on('complete', () => {
+        db.medic.allDocs({ keys: auditDocIds })
+          .then(stubs => {
+            var bulkDeleteBody = stubs.rows.map(row => {
+              return {
+                _id: row.id,
+                _rev: row.value.rev,
+                _deleted: true
+              };
+            });
+            return db.medic.bulkDocs(bulkDeleteBody)
+              .then(response => response.length);
+          })
+          .catch(callback);
+      })
+      .on('denied', callback)
+      .on('error', callback);
   });
 };
 
@@ -80,27 +62,24 @@ module.exports = {
   name: 'separate-audit-db',
   created: new Date(2016, 2, 18),
   run: promisify(function(callback) {
-    async.series([
-      _.partial(ensureDbExists, getAuditDbName()),
-      _.partial(ensureViewDdocExists, getAuditDbName())
-      ], function(err) {
-        if (err) {
-          return logger.info(`An error occurred creating audit db: ${err}`);
-        }
+    const auditDb = db.get(environment.db + '-audit');
+    ensureViewDdocExists(auditDb, err => {
+      if (err) {
+        return logger.info(`An error occurred creating audit db: ${err}`);
+      }
 
-        var lastLength;
-        async.doUntil(
-          function(callback) {
-            batchMoveAuditDocs(function(err, changed) {
-              lastLength = changed;
-
-              return callback(err);
-            });
-          },
-          function() {
-            return lastLength === 0;
-          },
-          callback);
+      var lastLength;
+      async.doUntil(
+        function(callback) {
+          batchMoveAuditDocs(auditDb, function(err, changed) {
+            lastLength = changed;
+            return callback(err);
+          });
+        },
+        function() {
+          return lastLength === 0;
+        },
+        callback);
     });
   })
 };

@@ -3,9 +3,8 @@ var _ = require('underscore'),
   moment = require('moment'),
   xmlbuilder = require('xmlbuilder'),
   config = require('../config'),
-  db = require('../db-nano'),
-  dbPouch = require('../db-pouch'),
-  lineage = require('@medic/lineage')(Promise, dbPouch.medic);
+  db = require('../db-pouch'),
+  lineage = require('@medic/lineage')(Promise, db.medic);
 
 var createColumnModels = function(values, options) {
   return _.map(values, function(value) {
@@ -164,13 +163,14 @@ var getRecords = function(type, params, callback) {
   if (!type.view) {
     return callback(new Error('This export must have a "query" param'));
   }
+  const ddoc = type.ddoc || 'medic';
   const options = {
     include_docs: true,
     descending: true,
     startkey: [9999999999999, {}],
     endkey: [0],
   };
-  db.medic.view(type.ddoc || 'medic', type.view, options, (err, response) => {
+  db.medic.query(`${ddoc}/${type.view}`, options, (err, response) => {
     if (err) {
       return callback(err);
     }

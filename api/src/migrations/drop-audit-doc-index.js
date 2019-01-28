@@ -1,4 +1,4 @@
-var db = require('../db-nano'),
+var db = require('../db-pouch'),
   { promisify } = require('util'),
   async = require('async'),
   logger = require('../logger'),
@@ -13,7 +13,7 @@ var dropView = function(callback) {
       return callback(err);
     }
     delete ddoc.views;
-    db.audit.insert(ddoc, callback);
+    db.audit.put(ddoc, callback);
   });
 };
 
@@ -57,7 +57,7 @@ var mergeDupes = function(oldDocs) {
 var createNewDocs = function(oldDocs, callback) {
   var merged = mergeDupes(oldDocs);
   var ids = merged.map(getAuditId);
-  db.audit.list({ keys: ids, include_docs: true }, function(err, results) {
+  db.audit.allDocs({ keys: ids, include_docs: true }, function(err, results) {
     if (err) {
       return callback(err);
     }
@@ -77,7 +77,7 @@ var createNewDocs = function(oldDocs, callback) {
         history: doc.history,
       };
     });
-    db.audit.bulk({ docs: newDocs }, callback);
+    db.audit.bulkDocs(newDocs, callback);
   });
 };
 
@@ -85,7 +85,7 @@ var deleteOldDocs = function(oldDocs, callback) {
   oldDocs.forEach(function(doc) {
     doc._deleted = true;
   });
-  db.audit.bulk({ docs: oldDocs }, callback);
+  db.audit.bulkDocs(oldDocs, callback);
 };
 
 var changeDocIdsBatch = function(skip, callback) {
@@ -94,7 +94,7 @@ var changeDocIdsBatch = function(skip, callback) {
     limit: BATCH_SIZE,
     skip: skip,
   };
-  db.audit.list(options, function(err, result) {
+  db.audit.allDocs(options, function(err, result) {
     if (err) {
       return callback(err);
     }

@@ -1,13 +1,11 @@
-var db = require('../db-nano'),
-  { promisify } = require('util'),
-  async = require('async'),
-  moment = require('moment'),
-  uuidV4 = require('uuid/v4'),
-  logger = require('../logger'),
-  settingsService = require('../services/settings'),
-  BATCH_SIZE = 100;
+const db = require('../db-pouch');
+const moment = require('moment');
+const uuidV4 = require('uuid/v4');
+const logger = require('../logger');
+const settingsService = require('../services/settings');
+const BATCH_SIZE = 100;
 
-var updateMessage = function(message) {
+const updateMessage = message => {
   if (message.uuid) {
     // already has the required uuid
     return false;
@@ -16,12 +14,12 @@ var updateMessage = function(message) {
   return true;
 };
 
-var updateTask = function(task) {
-  var updated = false;
+const updateTask = task => {
+  let updated = false;
   if (task.messages &&
       task.messages.length &&
       moment().isBefore(moment(task.due))) {
-    task.messages.forEach(function(task) {
+    task.messages.forEach(task => {
       if (updateMessage(task)) {
         updated = true;
       }
@@ -30,15 +28,15 @@ var updateTask = function(task) {
   return updated;
 };
 
-var update = function(row) {
-  var updated = false;
+const update = row => {
+  let updated = false;
   if (
     row.doc &&
     row.doc.type === 'data_record' &&
     row.doc.form &&
     row.doc.scheduled_tasks
   ) {
-    row.doc.scheduled_tasks.forEach(function(task) {
+    row.doc.scheduled_tasks.forEach(task => {
       if (updateTask(task)) {
         updated = true;
       }
@@ -47,30 +45,20 @@ var update = function(row) {
   return updated;
 };
 
-var save = function(docs, callback) {
-  if (!docs.length) {
-    return callback();
-  }
-  db.medic.bulk({ docs: docs }, callback);
-};
-
-var runBatch = function(skip, callback) {
-  var options = {
+const runBatch = skip => {
+  const options = {
     include_docs: true,
     limit: BATCH_SIZE,
     skip: skip,
   };
-  db.medic.list(options, function(err, result) {
-    if (err) {
-      return callback(err);
-    }
+  return db.medic.allDocs(options).then(result => {
     logger.info(`Processing ${skip} to (${skip + BATCH_SIZE}) docs of ${result.total_rows} total`);
-    var toSave = result.rows.filter(update).map(function(row) {
-      return row.doc;
-    });
-    save(toSave, function(err) {
-      var keepGoing = result.total_rows > skip + BATCH_SIZE;
-      callback(err, keepGoing);
+    const toSave = result.rows.filter(update).map(row => row.doc);
+    return db.medic.bulkDocs(toSave).then(() => {
+      const nextSkip = skip + BATCH_SIZE;
+      if (result.total_rows > nextSkip) {
+        return runBatch(nextSkip);
+      }
     });
   });
 };
@@ -78,30 +66,18 @@ var runBatch = function(skip, callback) {
 module.exports = {
   name: 'add-uuid-to-scheduled-tasks',
   created: new Date(2017, 1, 5),
-  run: promisify(function(callback) {
-    settingsService
-      .get()
+  run: () => {
+    return settingsService.get()
       .then(settings => {
-        var schedules = settings.schedules;
+        const schedules = settings.schedules;
         if (
           !schedules ||
           !schedules.length ||
           (schedules.length === 1 && !schedules[0].name)
         ) {
-          return callback();
+          return;
         }
-        var currentSkip = 0;
-        async.doWhilst(
-          function(callback) {
-            runBatch(currentSkip, callback);
-          },
-          function(more) {
-            currentSkip += BATCH_SIZE;
-            return more;
-          },
-          callback
-        );
-      })
-      .catch(callback);
-  }),
+        return runBatch(0);
+      });
+  }
 };
