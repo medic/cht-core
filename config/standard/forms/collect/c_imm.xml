@@ -51,13 +51,13 @@
             <value>Laporan Kunjungan Hilang</value>
           </text>
           <text id="/c_imm/group_dpt/g_dpt/DPT4:label">
-            <value>-</value>
+            <value>DPT Booster 1</value>
           </text>
           <text id="/c_imm/group_dpt/g_dpt/DPT5:label">
-            <value>-</value>
+            <value>DPT Booster 2</value>
           </text>
           <text id="/c_imm/group_dpt/g_dpt/none:label">
-            <value>-</value>
+            <value>Tak satupun</value>
           </text>
           <text id="/c_imm/group_dpt/g_dpt:jr:constraintMsg">
             <value>-</value>
@@ -452,9 +452,6 @@
           <text id="/c_imm/group_select_vaccines/g_vaccines/dpt:label">
             <value>DPT Booster</value>
           </text>
-          <text id="/c_imm/group_select_vaccines/g_vaccines/fipv:label">
-            <value>Fractional Inactivated Polio (fIPV)</value>
-          </text>
           <text id="/c_imm/group_select_vaccines/g_vaccines/flu:label">
             <value>Influenza</value>
           </text>
@@ -463,9 +460,6 @@
           </text>
           <text id="/c_imm/group_select_vaccines/g_vaccines/hpv:label">
             <value>HPV (Human Papillomavirus)</value>
-          </text>
-          <text id="/c_imm/group_select_vaccines/g_vaccines/ipv:label">
-            <value>Inactivated Polio</value>
           </text>
           <text id="/c_imm/group_select_vaccines/g_vaccines/jap_enc:label">
             <value>Japanese Encephalitis</value>
@@ -1138,9 +1132,6 @@
           <text id="/c_imm/group_select_vaccines/g_vaccines/dpt:label">
             <value>DPT Booster</value>
           </text>
-          <text id="/c_imm/group_select_vaccines/g_vaccines/fipv:label">
-            <value>Fractional Inactivated Polio (fIPV)</value>
-          </text>
           <text id="/c_imm/group_select_vaccines/g_vaccines/flu:label">
             <value>Influenza</value>
           </text>
@@ -1149,9 +1140,6 @@
           </text>
           <text id="/c_imm/group_select_vaccines/g_vaccines/hpv:label">
             <value>HPV (Human Papillomavirus)</value>
-          </text>
-          <text id="/c_imm/group_select_vaccines/g_vaccines/ipv:label">
-            <value>Inactivated Polio</value>
           </text>
           <text id="/c_imm/group_select_vaccines/g_vaccines/jap_enc:label">
             <value>Japanese Encephalitis</value>
@@ -1609,19 +1597,19 @@
             <value>Pneumo</value>
           </text>
           <text id="/c_imm/group_polio/g_polio/FIPV1:label">
-            <value>-</value>
+            <value>fIPV 1</value>
           </text>
           <text id="/c_imm/group_polio/g_polio/FIPV2:label">
-            <value>-</value>
+            <value>fIPV 2</value>
           </text>
           <text id="/c_imm/group_polio/g_polio/IPV1:label">
-            <value>-</value>
+            <value>IPV 1</value>
           </text>
           <text id="/c_imm/group_polio/g_polio/IPV2:label">
-            <value>-</value>
+            <value>IPV 2</value>
           </text>
           <text id="/c_imm/group_polio/g_polio/IPV3:label">
-            <value>-</value>
+            <value>IPV 3</value>
           </text>
           <text id="/c_imm/group_polio/g_polio/OPV0:label">
             <value>OPV 0</value>
@@ -1822,10 +1810,7 @@
             <value>Choléra</value>
           </text>
           <text id="/c_imm/group_select_vaccines/g_vaccines/dpt:label">
-            <value>-</value>
-          </text>
-          <text id="/c_imm/group_select_vaccines/g_vaccines/fipv:label">
-            <value>-</value>
+            <value>DPT Booster</value>
           </text>
           <text id="/c_imm/group_select_vaccines/g_vaccines/flu:label">
             <value>Grippe</value>
@@ -1835,9 +1820,6 @@
           </text>
           <text id="/c_imm/group_select_vaccines/g_vaccines/hpv:label">
             <value>HPV</value>
-          </text>
-          <text id="/c_imm/group_select_vaccines/g_vaccines/ipv:label">
-            <value>Polio inactivée</value>
           </text>
           <text id="/c_imm/group_select_vaccines/g_vaccines/jap_enc:label">
             <value>Encéphalite japonaise</value>
@@ -2109,13 +2091,13 @@
             <value>लापता जांच की रिपोर्टों</value>
           </text>
           <text id="/c_imm/group_dpt/g_dpt/DPT4:label">
-            <value>-</value>
+            <value>DPT Booster 1</value>
           </text>
           <text id="/c_imm/group_dpt/g_dpt/DPT5:label">
-            <value>-</value>
+            <value>DPT Booster 2</value>
           </text>
           <text id="/c_imm/group_dpt/g_dpt/none:label">
-            <value>-</value>
+            <value>कोई नहीं</value>
           </text>
           <text id="/c_imm/group_dpt/g_dpt:jr:constraintMsg">
             <value>-</value>
@@ -2510,9 +2492,6 @@
           <text id="/c_imm/group_select_vaccines/g_vaccines/dpt:label">
             <value>DPT Booster</value>
           </text>
-          <text id="/c_imm/group_select_vaccines/g_vaccines/fipv:label">
-            <value>Fractional Inactivated Polio (fIPV)</value>
-          </text>
           <text id="/c_imm/group_select_vaccines/g_vaccines/flu:label">
             <value>Influenza</value>
           </text>
@@ -2521,9 +2500,6 @@
           </text>
           <text id="/c_imm/group_select_vaccines/g_vaccines/hpv:label">
             <value>HPV (Human Papillomavirus)</value>
-          </text>
-          <text id="/c_imm/group_select_vaccines/g_vaccines/ipv:label">
-            <value>Inactivated Polio</value>
           </text>
           <text id="/c_imm/group_select_vaccines/g_vaccines/jap_enc:label">
             <value>Japanese Encephalitis</value>
@@ -2981,19 +2957,19 @@
             <value>পাইওমোকোকাল</value>
           </text>
           <text id="/c_imm/group_polio/g_polio/FIPV1:label">
-            <value>-</value>
+            <value>fIPV 1</value>
           </text>
           <text id="/c_imm/group_polio/g_polio/FIPV2:label">
-            <value>-</value>
+            <value>fIPV 2</value>
           </text>
           <text id="/c_imm/group_polio/g_polio/IPV1:label">
-            <value>-</value>
+            <value>আইপিভি 1</value>
           </text>
           <text id="/c_imm/group_polio/g_polio/IPV2:label">
-            <value>-</value>
+            <value>আইপিভি 2</value>
           </text>
           <text id="/c_imm/group_polio/g_polio/IPV3:label">
-            <value>-</value>
+            <value>আইপিভি 3</value>
           </text>
           <text id="/c_imm/group_polio/g_polio/OPV0:label">
             <value>পোলিও 0</value>
@@ -3194,10 +3170,7 @@
             <value>কলেরা</value>
           </text>
           <text id="/c_imm/group_select_vaccines/g_vaccines/dpt:label">
-            <value>-</value>
-          </text>
-          <text id="/c_imm/group_select_vaccines/g_vaccines/fipv:label">
-            <value>-</value>
+            <value>ডিপিটি বুস্টার</value>
           </text>
           <text id="/c_imm/group_select_vaccines/g_vaccines/flu:label">
             <value>ইনফ্লুয়েঞ্জা</value>
@@ -3207,9 +3180,6 @@
           </text>
           <text id="/c_imm/group_select_vaccines/g_vaccines/hpv:label">
             <value>HPV (হিউম্যান পাপিলোমাইরাস)</value>
-          </text>
-          <text id="/c_imm/group_select_vaccines/g_vaccines/ipv:label">
-            <value>Inactivated Polio</value>
           </text>
           <text id="/c_imm/group_select_vaccines/g_vaccines/jap_enc:label">
             <value>জাপানি এনসেফালাইটিস</value>
@@ -3436,7 +3406,7 @@
         </translation>
       </itext>
       <instance>
-        <c_imm delimiter="#" id="c_imm" prefix="J1!c_imm!" version="2019-01-28_02-53">
+        <c_imm delimiter="#" id="c_imm" prefix="J1!c_imm!" version="2019-01-28_05-30">
           <id/>
           <c/>
           <received>
@@ -3797,14 +3767,6 @@
         <item>
           <label ref="jr:itext('/c_imm/group_select_vaccines/g_vaccines/polio:label')"/>
           <value>polio</value>
-        </item>
-        <item>
-          <label ref="jr:itext('/c_imm/group_select_vaccines/g_vaccines/ipv:label')"/>
-          <value>ipv</value>
-        </item>
-        <item>
-          <label ref="jr:itext('/c_imm/group_select_vaccines/g_vaccines/fipv:label')"/>
-          <value>fipv</value>
         </item>
         <item>
           <label ref="jr:itext('/c_imm/group_select_vaccines/g_vaccines/penta:label')"/>
