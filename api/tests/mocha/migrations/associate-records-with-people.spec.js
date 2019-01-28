@@ -483,6 +483,7 @@ describe('associate-records-with-people migration', () => {
 
   const clone = original => JSON.parse(JSON.stringify(original));
 
+// TODO I DON'T KNOW HOW THIS IS WORKING...
   it('run does nothing if no data records', done => {
     const getView = sinon.stub(db.medic, 'query').resolves({ rows: [] });
     migration.run(err => {
