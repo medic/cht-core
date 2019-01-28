@@ -23,6 +23,7 @@
     "bundlesize": "^0.17.0",
     "chai": "^4.2.0",
     "eslint": "^5.1.0",
+    "eslint-plugin-compat": "^2.6.3",
     "foreman": "^3.0.1",
     "grunt": "^1.0.3",
     "grunt-angular-templates": "^1.1.0",
