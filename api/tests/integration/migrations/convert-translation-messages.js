@@ -38,8 +38,48 @@ describe('convert-translation-messages migration', function() {
           _id: 'messages-en',
           code: 'en',
           type: 'translations',
-          generic: { Contact: 'Contact', From: 'From' },
           custom: { hello: 'Hello', bye: 'Goodbye CUSTOMISED' },
+        }
+      ]);
+    });
+
+  });
+
+  it('converts translation messages structure following an upgrade after merging', () => {
+
+    // given
+    return utils.initDb([
+      {
+        _id: 'messages-en',
+        code: 'en',
+        type: 'translations',
+        generic: { Contact: 'Contact', From: 'From', hello: 'Hi' },
+        values: { hello: 'Bonjour', bye: 'Goodbye CUSTOMISED' }
+      }
+    ])
+    .then(function() {
+      return utils.getDdoc(DDOC_ID);
+    })
+    .then(function(ddoc) {
+      const attachment = {
+        content_type: 'application/octet-stream',
+        content: 'Contact = Contact\nFrom = From',
+        key: 'translations/messages-en.properties'
+      };      
+      
+      return utils.insertAttachment(ddoc, attachment);  
+    })
+    .then(function() {
+      return utils.runMigration('convert-translation-messages');
+    })
+    .then(function() {
+      return utils.assertDb([
+        {
+          _id: 'messages-en',
+          code: 'en',
+          type: 'translations',
+          generic: { Contact: 'Contact', From: 'From', hello: 'Hi' },
+          custom: { hello: 'Bonjour', bye: 'Goodbye CUSTOMISED' },
         }
       ]);
     });
