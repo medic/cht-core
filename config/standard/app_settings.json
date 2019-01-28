@@ -3717,6 +3717,40 @@
           ],
           "required": false
         },
+        "received_fipv_1": {
+          "labels": {
+            "tiny": {
+              "en": "fipv1"
+            },
+            "short": {
+              "translation_key": "report.c_imm.received_fipv_1"
+            }
+          },
+          "position": 29,
+          "type": "string",
+          "length": [
+            1,
+            10
+          ],
+          "required": false
+        },
+        "received_fipv_2": {
+          "labels": {
+            "tiny": {
+              "en": "fipv2"
+            },
+            "short": {
+              "translation_key": "report.c_imm.received_fipv_2"
+            }
+          },
+          "position": 30,
+          "type": "string",
+          "length": [
+            1,
+            10
+          ],
+          "required": false
+        },
         "received_penta_1": {
           "labels": {
             "tiny": {
@@ -3726,7 +3760,7 @@
               "translation_key": "report.c_imm.received_penta_1"
             }
           },
-          "position": 29,
+          "position": 31,
           "type": "string",
           "length": [
             1,
@@ -3743,7 +3777,7 @@
               "translation_key": "report.c_imm.received_penta_2"
             }
           },
-          "position": 30,
+          "position": 32,
           "type": "string",
           "length": [
             1,
@@ -3760,7 +3794,41 @@
               "translation_key": "report.c_imm.received_penta_3"
             }
           },
-          "position": 31,
+          "position": 33,
+          "type": "string",
+          "length": [
+            1,
+            10
+          ],
+          "required": false
+        },
+        "received_dpt_4": {
+          "labels": {
+            "tiny": {
+              "en": "dpt4"
+            },
+            "short": {
+              "translation_key": "report.c_imm.received_dpt_4"
+            }
+          },
+          "position": 34,
+          "type": "string",
+          "length": [
+            1,
+            10
+          ],
+          "required": false
+        },
+        "received_dpt_5": {
+          "labels": {
+            "tiny": {
+              "en": "dpt5"
+            },
+            "short": {
+              "translation_key": "report.c_imm.received_dpt_5"
+            }
+          },
+          "position": 35,
           "type": "string",
           "length": [
             1,
@@ -3777,7 +3845,7 @@
               "translation_key": "report.c_imm.received_pneumococcal_1"
             }
           },
-          "position": 32,
+          "position": 36,
           "type": "string",
           "length": [
             1,
@@ -3794,7 +3862,7 @@
               "translation_key": "report.c_imm.received_pneumococcal_2"
             }
           },
-          "position": 33,
+          "position": 37,
           "type": "string",
           "length": [
             1,
@@ -3811,7 +3879,7 @@
               "translation_key": "report.c_imm.received_pneumococcal_3"
             }
           },
-          "position": 34,
+          "position": 38,
           "type": "string",
           "length": [
             1,
@@ -3828,7 +3896,7 @@
               "translation_key": "report.c_imm.received_pneumococcal_4"
             }
           },
-          "position": 35,
+          "position": 39,
           "type": "string",
           "length": [
             1,
@@ -3845,7 +3913,7 @@
               "translation_key": "report.c_imm.received_rotavirus_1"
             }
           },
-          "position": 36,
+          "position": 40,
           "type": "string",
           "length": [
             1,
@@ -3862,7 +3930,7 @@
               "translation_key": "report.c_imm.received_rotavirus_2"
             }
           },
-          "position": 37,
+          "position": 41,
           "type": "string",
           "length": [
             1,
@@ -3879,7 +3947,7 @@
               "translation_key": "report.c_imm.received_rotavirus_3"
             }
           },
-          "position": 38,
+          "position": 42,
           "type": "string",
           "length": [
             1,
@@ -3896,7 +3964,7 @@
               "translation_key": "report.c_imm.received_typhoid_1"
             }
           },
-          "position": 39,
+          "position": 43,
           "type": "string",
           "length": [
             1,
@@ -3913,7 +3981,7 @@
               "translation_key": "report.c_imm.received_typhoid_2"
             }
           },
-          "position": 40,
+          "position": 44,
           "type": "string",
           "length": [
             1,
@@ -3930,7 +3998,7 @@
               "translation_key": "report.c_imm.received_vitamin_a"
             }
           },
-          "position": 41,
+          "position": 45,
           "type": "string",
           "length": [
             1,
@@ -3947,7 +4015,7 @@
               "translation_key": "report.c_imm.received_yellow_fever"
             }
           },
-          "position": 42,
+          "position": 46,
           "type": "string",
           "length": [
             1,
