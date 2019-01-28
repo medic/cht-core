@@ -19,7 +19,7 @@ env:
   global:
     - COUCH_URL=http://admin:pass@localhost:5984/medic-test
     - COUCH_NODE_NAME=nonode@nohost
-    # AWS_ACCESS_KEY_ID and AWS_SECRET_ACCESS_KEY for log upload
+    # AWS_ACCESS_KEY_ID and AWS_SECRET_ACCESS_KEY for log uploading
     - secure: VbSeKGaVmUDZs0v+uRBl2RwcjypzkLeSXLI4BOocKfTavUFkpLvtqGWmhXJwwF6x49wxZyIhNLzPQbcefRok2p2f7KNeOccGmVdNNBbjmxc3oNKNo0rX/qyaA95cyaKEJV2MSoWYhIoBP17T4El8uOOoSqOgV/RQrhj1Lw8pDSU=
     - secure: HmzocDPXwqYiNH9Lt9gvmeuyXlYpaLjNkY0Je1nehXwMx3a9YOn4STfNQJuaCXv3l0SlnLFMnFG1vIH6EEJEhl/Wzn4Ze7FPr8+eVL5pb8Nlc8GNZpZ9l7gk2gGSfDMaK8n6osr2jR4+SzttsrI/0LsAx+yDExLores8ANg4mRU=
 
