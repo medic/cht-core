@@ -32,6 +32,6 @@ angular.module('controllers').controller('MainCtrl',
         return true;
       }
       return $state.includes(state);
-    }
+    };
   }
 );
