@@ -6,7 +6,7 @@ class BaseConfig {
   constructor(testSrcDir, { headless=true }={}) {
     const chromeArgs = [ '--window-size=1024,768' ];
     if (headless) {
-      chromeArgs.push([ '--headless', '--disable-gpu' ]);
+      chromeArgs.push('--headless', '--disable-gpu');
     }
     this.config = {
       seleniumAddress: 'http://localhost:4444/wd/hub',
