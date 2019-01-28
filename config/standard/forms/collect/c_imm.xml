@@ -68,24 +68,6 @@
           <text id="/c_imm/group_dpt:label">
             <value>-</value>
           </text>
-          <text id="/c_imm/group_fipv/g_fipv/FIPV1:label">
-            <value>-</value>
-          </text>
-          <text id="/c_imm/group_fipv/g_fipv/FIPV2:label">
-            <value>-</value>
-          </text>
-          <text id="/c_imm/group_fipv/g_fipv/none:label">
-            <value>-</value>
-          </text>
-          <text id="/c_imm/group_fipv/g_fipv:jr:constraintMsg">
-            <value>-</value>
-          </text>
-          <text id="/c_imm/group_fipv/g_fipv:label">
-            <value>-</value>
-          </text>
-          <text id="/c_imm/group_fipv:label">
-            <value>-</value>
-          </text>
           <text id="/c_imm/group_flu/g_flu/no:label">
             <value>Tidak</value>
           </text>
@@ -136,27 +118,6 @@
           </text>
           <text id="/c_imm/group_hpv:label">
             <value>HPV (Human Papillomavirus)</value>
-          </text>
-          <text id="/c_imm/group_ipv/g_ipv/IPV1:label">
-            <value>Inactivated Polio 1</value>
-          </text>
-          <text id="/c_imm/group_ipv/g_ipv/IPV2:label">
-            <value>Inactivated Polio 2</value>
-          </text>
-          <text id="/c_imm/group_ipv/g_ipv/IPV3:label">
-            <value>Inactivated Polio 3</value>
-          </text>
-          <text id="/c_imm/group_ipv/g_ipv/none:label">
-            <value>Tak satupun</value>
-          </text>
-          <text id="/c_imm/group_ipv/g_ipv:jr:constraintMsg">
-            <value>Tidak dapat memilih 'tak satupun' jika dosis lain dipilih.</value>
-          </text>
-          <text id="/c_imm/group_ipv/g_ipv:label">
-            <value>Apa dosis Polio melakukan <output value=" /c_imm/id "/> yang diterima?</value>
-          </text>
-          <text id="/c_imm/group_ipv:label">
-            <value>Inactivated Polio</value>
           </text>
           <text id="/c_imm/group_jap_enc/g_jap_enc/no:label">
             <value>Tidak</value>
@@ -274,6 +235,21 @@
           </text>
           <text id="/c_imm/group_pneumococcal:label">
             <value>Pneumococcal Pneumonia</value>
+          </text>
+          <text id="/c_imm/group_polio/g_polio/FIPV1:label">
+            <value>Fractional IPV 1</value>
+          </text>
+          <text id="/c_imm/group_polio/g_polio/FIPV2:label">
+            <value>Fractional IPV 2</value>
+          </text>
+          <text id="/c_imm/group_polio/g_polio/IPV1:label">
+            <value>Inactivated Polio 1</value>
+          </text>
+          <text id="/c_imm/group_polio/g_polio/IPV2:label">
+            <value>Inactivated Polio 2</value>
+          </text>
+          <text id="/c_imm/group_polio/g_polio/IPV3:label">
+            <value>Inactivated Polio 3</value>
           </text>
           <text id="/c_imm/group_polio/g_polio/OPV0:label">
             <value>Polio saat lahir</value>
@@ -591,10 +567,10 @@
             <value>Mendapatkan Kolera 3</value>
           </text>
           <text id="/c_imm/received/dpt4:label">
-            <value>-</value>
+            <value>Mendapatkan DPT Booster 1</value>
           </text>
           <text id="/c_imm/received/dpt5:label">
-            <value>-</value>
+            <value>Mendapatkan DPT Booster 2</value>
           </text>
           <text id="/c_imm/received/dt1:label">
             <value>Mendapatkan Pentavalent 1</value>
@@ -606,10 +582,10 @@
             <value>Mendapatkan Pentavalent 3</value>
           </text>
           <text id="/c_imm/received/fipv1:label">
-            <value>-</value>
+            <value>Mendapatkan Fractional Inactivated Polio 1</value>
           </text>
           <text id="/c_imm/received/fipv2:label">
-            <value>-</value>
+            <value>Mendapatkan Fractional Inactivated Polio 2</value>
           </text>
           <text id="/c_imm/received/flu:label">
             <value>Mendapatkan Flu</value>
@@ -778,24 +754,6 @@
           <text id="/c_imm/group_dpt:label">
             <value>DPT Booster</value>
           </text>
-          <text id="/c_imm/group_fipv/g_fipv/FIPV1:label">
-            <value>Fractional IPV 1</value>
-          </text>
-          <text id="/c_imm/group_fipv/g_fipv/FIPV2:label">
-            <value>Fractional IPV 2</value>
-          </text>
-          <text id="/c_imm/group_fipv/g_fipv/none:label">
-            <value>None</value>
-          </text>
-          <text id="/c_imm/group_fipv/g_fipv:jr:constraintMsg">
-            <value>Cannot select none if another dose is selected.</value>
-          </text>
-          <text id="/c_imm/group_fipv/g_fipv:label">
-            <value>Which dose of Inactivated Polio did <output value=" /c_imm/id "/> receive?</value>
-          </text>
-          <text id="/c_imm/group_fipv:label">
-            <value>Fractional Inactivated Polio</value>
-          </text>
           <text id="/c_imm/group_flu/g_flu/no:label">
             <value>No</value>
           </text>
@@ -846,27 +804,6 @@
           </text>
           <text id="/c_imm/group_hpv:label">
             <value>HPV (Human Papillomavirus)</value>
-          </text>
-          <text id="/c_imm/group_ipv/g_ipv/IPV1:label">
-            <value>Inactivated Polio 1</value>
-          </text>
-          <text id="/c_imm/group_ipv/g_ipv/IPV2:label">
-            <value>Inactivated Polio 2</value>
-          </text>
-          <text id="/c_imm/group_ipv/g_ipv/IPV3:label">
-            <value>Inactivated Polio 3</value>
-          </text>
-          <text id="/c_imm/group_ipv/g_ipv/none:label">
-            <value>None</value>
-          </text>
-          <text id="/c_imm/group_ipv/g_ipv:jr:constraintMsg">
-            <value>Cannot select none if another dose is selected.</value>
-          </text>
-          <text id="/c_imm/group_ipv/g_ipv:label">
-            <value>Which dose of Inactivated Polio did <output value=" /c_imm/id "/> receive?</value>
-          </text>
-          <text id="/c_imm/group_ipv:label">
-            <value>Inactivated Polio</value>
           </text>
           <text id="/c_imm/group_jap_enc/g_jap_enc/no:label">
             <value>No</value>
@@ -984,6 +921,21 @@
           </text>
           <text id="/c_imm/group_pneumococcal:label">
             <value>Pneumococcal Pneumonia</value>
+          </text>
+          <text id="/c_imm/group_polio/g_polio/FIPV1:label">
+            <value>Fractional IPV 1</value>
+          </text>
+          <text id="/c_imm/group_polio/g_polio/FIPV2:label">
+            <value>Fractional IPV 2</value>
+          </text>
+          <text id="/c_imm/group_polio/g_polio/IPV1:label">
+            <value>Inactivated Polio 1</value>
+          </text>
+          <text id="/c_imm/group_polio/g_polio/IPV2:label">
+            <value>Inactivated Polio 2</value>
+          </text>
+          <text id="/c_imm/group_polio/g_polio/IPV3:label">
+            <value>Inactivated Polio 3</value>
           </text>
           <text id="/c_imm/group_polio/g_polio/OPV0:label">
             <value>Birth Polio</value>
@@ -1488,24 +1440,6 @@
           <text id="/c_imm/group_dpt:label">
             <value>-</value>
           </text>
-          <text id="/c_imm/group_fipv/g_fipv/FIPV1:label">
-            <value>-</value>
-          </text>
-          <text id="/c_imm/group_fipv/g_fipv/FIPV2:label">
-            <value>-</value>
-          </text>
-          <text id="/c_imm/group_fipv/g_fipv/none:label">
-            <value>-</value>
-          </text>
-          <text id="/c_imm/group_fipv/g_fipv:jr:constraintMsg">
-            <value>-</value>
-          </text>
-          <text id="/c_imm/group_fipv/g_fipv:label">
-            <value>-</value>
-          </text>
-          <text id="/c_imm/group_fipv:label">
-            <value>-</value>
-          </text>
           <text id="/c_imm/group_flu/g_flu/no:label">
             <value>Non</value>
           </text>
@@ -1556,27 +1490,6 @@
           </text>
           <text id="/c_imm/group_hpv:label">
             <value>HPV</value>
-          </text>
-          <text id="/c_imm/group_ipv/g_ipv/IPV1:label">
-            <value>IPV 1</value>
-          </text>
-          <text id="/c_imm/group_ipv/g_ipv/IPV2:label">
-            <value>IPV 2</value>
-          </text>
-          <text id="/c_imm/group_ipv/g_ipv/IPV3:label">
-            <value>IPV 3</value>
-          </text>
-          <text id="/c_imm/group_ipv/g_ipv/none:label">
-            <value>Aucun</value>
-          </text>
-          <text id="/c_imm/group_ipv/g_ipv:jr:constraintMsg">
-            <value>Impossible de sélectionner aucun si une autre dose est sélectionnée.</value>
-          </text>
-          <text id="/c_imm/group_ipv/g_ipv:label">
-            <value>Quel vaccin IPV a reçu <output value=" /c_imm/id "/> ?</value>
-          </text>
-          <text id="/c_imm/group_ipv:label">
-            <value>Polio inactivée</value>
           </text>
           <text id="/c_imm/group_jap_enc/g_jap_enc/no:label">
             <value>Non</value>
@@ -1694,6 +1607,21 @@
           </text>
           <text id="/c_imm/group_pneumococcal:label">
             <value>Pneumo</value>
+          </text>
+          <text id="/c_imm/group_polio/g_polio/FIPV1:label">
+            <value>-</value>
+          </text>
+          <text id="/c_imm/group_polio/g_polio/FIPV2:label">
+            <value>-</value>
+          </text>
+          <text id="/c_imm/group_polio/g_polio/IPV1:label">
+            <value>-</value>
+          </text>
+          <text id="/c_imm/group_polio/g_polio/IPV2:label">
+            <value>-</value>
+          </text>
+          <text id="/c_imm/group_polio/g_polio/IPV3:label">
+            <value>-</value>
           </text>
           <text id="/c_imm/group_polio/g_polio/OPV0:label">
             <value>OPV 0</value>
@@ -2011,10 +1939,10 @@
             <value>Choléra 3 reçu</value>
           </text>
           <text id="/c_imm/received/dpt4:label">
-            <value>-</value>
+            <value>DPT Booster 1 reçu</value>
           </text>
           <text id="/c_imm/received/dpt5:label">
-            <value>-</value>
+            <value>DPT Booster 2 reçu</value>
           </text>
           <text id="/c_imm/received/dt1:label">
             <value>Penta 1 reçu</value>
@@ -2026,10 +1954,10 @@
             <value>Penta 3 reçu</value>
           </text>
           <text id="/c_imm/received/fipv1:label">
-            <value>-</value>
+            <value>fIPV 1 reçu</value>
           </text>
           <text id="/c_imm/received/fipv2:label">
-            <value>-</value>
+            <value>fIPV 2 reçu</value>
           </text>
           <text id="/c_imm/received/flu:label">
             <value>Grippe reçu</value>
@@ -2198,24 +2126,6 @@
           <text id="/c_imm/group_dpt:label">
             <value>-</value>
           </text>
-          <text id="/c_imm/group_fipv/g_fipv/FIPV1:label">
-            <value>-</value>
-          </text>
-          <text id="/c_imm/group_fipv/g_fipv/FIPV2:label">
-            <value>-</value>
-          </text>
-          <text id="/c_imm/group_fipv/g_fipv/none:label">
-            <value>-</value>
-          </text>
-          <text id="/c_imm/group_fipv/g_fipv:jr:constraintMsg">
-            <value>-</value>
-          </text>
-          <text id="/c_imm/group_fipv/g_fipv:label">
-            <value>-</value>
-          </text>
-          <text id="/c_imm/group_fipv:label">
-            <value>-</value>
-          </text>
           <text id="/c_imm/group_flu/g_flu/no:label">
             <value>नहीं</value>
           </text>
@@ -2266,27 +2176,6 @@
           </text>
           <text id="/c_imm/group_hpv:label">
             <value>HPV (Human Papillomavirus)</value>
-          </text>
-          <text id="/c_imm/group_ipv/g_ipv/IPV1:label">
-            <value>Inactivated Polio 1</value>
-          </text>
-          <text id="/c_imm/group_ipv/g_ipv/IPV2:label">
-            <value>Inactivated Polio 2</value>
-          </text>
-          <text id="/c_imm/group_ipv/g_ipv/IPV3:label">
-            <value>Inactivated Polio 3</value>
-          </text>
-          <text id="/c_imm/group_ipv/g_ipv/none:label">
-            <value>कोई नहीं</value>
-          </text>
-          <text id="/c_imm/group_ipv/g_ipv:jr:constraintMsg">
-            <value>अगर कोई और डोज़ चयनित हो तोह आप 'कोई नहीं' को नहीं चुन सकते है |</value>
-          </text>
-          <text id="/c_imm/group_ipv/g_ipv:label">
-            <value><output value=" /c_imm/id "/> को Inactivated Polio का कौनसा डोज़ मिला ?</value>
-          </text>
-          <text id="/c_imm/group_ipv:label">
-            <value>Inactivated Polio</value>
           </text>
           <text id="/c_imm/group_jap_enc/g_jap_enc/no:label">
             <value>नहीं</value>
@@ -2404,6 +2293,21 @@
           </text>
           <text id="/c_imm/group_pneumococcal:label">
             <value>Pneumococcal Pneumonia</value>
+          </text>
+          <text id="/c_imm/group_polio/g_polio/FIPV1:label">
+            <value>Fractional IPV 1</value>
+          </text>
+          <text id="/c_imm/group_polio/g_polio/FIPV2:label">
+            <value>Fractional IPV 2</value>
+          </text>
+          <text id="/c_imm/group_polio/g_polio/IPV1:label">
+            <value>Inactivated Polio 1</value>
+          </text>
+          <text id="/c_imm/group_polio/g_polio/IPV2:label">
+            <value>Inactivated Polio 2</value>
+          </text>
+          <text id="/c_imm/group_polio/g_polio/IPV3:label">
+            <value>Inactivated Polio 3</value>
           </text>
           <text id="/c_imm/group_polio/g_polio/OPV0:label">
             <value>जन्म पे Polio</value>
@@ -2721,10 +2625,10 @@
             <value>Cholera 3 मिला</value>
           </text>
           <text id="/c_imm/received/dpt4:label">
-            <value>-</value>
+            <value>DPT Booster 1 मिला</value>
           </text>
           <text id="/c_imm/received/dpt5:label">
-            <value>-</value>
+            <value>DPT Booster 2 मिला</value>
           </text>
           <text id="/c_imm/received/dt1:label">
             <value>Pentavalent 1 मिला</value>
@@ -2736,10 +2640,10 @@
             <value>Pentavalent 3 मिला</value>
           </text>
           <text id="/c_imm/received/fipv1:label">
-            <value>-</value>
+            <value>Fractional Inactivated Polio 1 मिला</value>
           </text>
           <text id="/c_imm/received/fipv2:label">
-            <value>-</value>
+            <value>Fractional Inactivated Polio 2 मिला</value>
           </text>
           <text id="/c_imm/received/flu:label">
             <value>Flu मिला</value>
@@ -2908,24 +2812,6 @@
           <text id="/c_imm/group_dpt:label">
             <value>-</value>
           </text>
-          <text id="/c_imm/group_fipv/g_fipv/FIPV1:label">
-            <value>-</value>
-          </text>
-          <text id="/c_imm/group_fipv/g_fipv/FIPV2:label">
-            <value>-</value>
-          </text>
-          <text id="/c_imm/group_fipv/g_fipv/none:label">
-            <value>-</value>
-          </text>
-          <text id="/c_imm/group_fipv/g_fipv:jr:constraintMsg">
-            <value>-</value>
-          </text>
-          <text id="/c_imm/group_fipv/g_fipv:label">
-            <value>-</value>
-          </text>
-          <text id="/c_imm/group_fipv:label">
-            <value>-</value>
-          </text>
           <text id="/c_imm/group_flu/g_flu/no:label">
             <value>না</value>
           </text>
@@ -2976,27 +2862,6 @@
           </text>
           <text id="/c_imm/group_hpv:label">
             <value>HPV (হিউম্যান পাপিলোমাইরাস)</value>
-          </text>
-          <text id="/c_imm/group_ipv/g_ipv/IPV1:label">
-            <value>IPV 1</value>
-          </text>
-          <text id="/c_imm/group_ipv/g_ipv/IPV2:label">
-            <value>IPV 2</value>
-          </text>
-          <text id="/c_imm/group_ipv/g_ipv/IPV3:label">
-            <value>IPV 3</value>
-          </text>
-          <text id="/c_imm/group_ipv/g_ipv/none:label">
-            <value>কিছুই নয়</value>
-          </text>
-          <text id="/c_imm/group_ipv/g_ipv:jr:constraintMsg">
-            <value>অন্য ডোজ নির্বাচন করা হলে কেউ নির্বাচন করতে পারবেন না।</value>
-          </text>
-          <text id="/c_imm/group_ipv/g_ipv:label">
-            <value><output value=" /c_imm/id "/> কলেরা টিকা পেয়েছে কি?</value>
-          </text>
-          <text id="/c_imm/group_ipv:label">
-            <value>পোলিও</value>
           </text>
           <text id="/c_imm/group_jap_enc/g_jap_enc/no:label">
             <value>না</value>
@@ -3115,6 +2980,21 @@
           <text id="/c_imm/group_pneumococcal:label">
             <value>পাইওমোকোকাল</value>
           </text>
+          <text id="/c_imm/group_polio/g_polio/FIPV1:label">
+            <value>-</value>
+          </text>
+          <text id="/c_imm/group_polio/g_polio/FIPV2:label">
+            <value>-</value>
+          </text>
+          <text id="/c_imm/group_polio/g_polio/IPV1:label">
+            <value>-</value>
+          </text>
+          <text id="/c_imm/group_polio/g_polio/IPV2:label">
+            <value>-</value>
+          </text>
+          <text id="/c_imm/group_polio/g_polio/IPV3:label">
+            <value>-</value>
+          </text>
           <text id="/c_imm/group_polio/g_polio/OPV0:label">
             <value>পোলিও 0</value>
           </text>
@@ -3161,10 +3041,10 @@
             <value>কলেরা 3</value>
           </text>
           <text id="/c_imm/group_review_vaccines/r_dpt_4:label">
-            <value>-</value>
+            <value>ডিপিটি বুস্টার 1</value>
           </text>
           <text id="/c_imm/group_review_vaccines/r_dpt_5:label">
-            <value>-</value>
+            <value>ডিপিটি বুস্টার 2</value>
           </text>
           <text id="/c_imm/group_review_vaccines/r_end:label">
             <value>-</value>
@@ -3431,10 +3311,10 @@
             <value>কলেরা 3 প্রাপ্তি</value>
           </text>
           <text id="/c_imm/received/dpt4:label">
-            <value>-</value>
+            <value>ডিপিটি বুস্টার 1 পান</value>
           </text>
           <text id="/c_imm/received/dpt5:label">
-            <value>-</value>
+            <value>ডিপিটি বুস্টার 2 পান</value>
           </text>
           <text id="/c_imm/received/dt1:label">
             <value>পেন্টাগলেন্ট 1 প্রাপ্ত</value>
@@ -3446,10 +3326,10 @@
             <value>পেন্টাগলেন্ট 3 প্রাপ্ত</value>
           </text>
           <text id="/c_imm/received/fipv1:label">
-            <value>-</value>
+            <value>Received Fractional Inactivated Polio 1</value>
           </text>
           <text id="/c_imm/received/fipv2:label">
-            <value>-</value>
+            <value>Received Fractional Inactivated Polio 2</value>
           </text>
           <text id="/c_imm/received/flu:label">
             <value>Flu প্রাপ্তি</value>
@@ -3556,7 +3436,7 @@
         </translation>
       </itext>
       <instance>
-        <c_imm delimiter="#" id="c_imm" prefix="J1!c_imm!" version="2019-01-17_03-50">
+        <c_imm delimiter="#" id="c_imm" prefix="J1!c_imm!" version="2019-01-28_02-53">
           <id/>
           <c/>
           <received>
@@ -3641,12 +3521,6 @@
           <group_polio>
             <g_polio/>
           </group_polio>
-          <group_ipv>
-            <g_ipv/>
-          </group_ipv>
-          <group_fipv>
-            <g_fipv/>
-          </group_fipv>
           <group_pentavalent>
             <g_pentavalent/>
           </group_pentavalent>
@@ -3749,11 +3623,11 @@
       <bind calculate="if(selected( /c_imm/group_polio/g_polio ,'OPV1'),'yes','no')" nodeset="/c_imm/received/opv1" type="string"/>
       <bind calculate="if(selected( /c_imm/group_polio/g_polio ,'OPV2'),'yes','no')" nodeset="/c_imm/received/opv2" type="string"/>
       <bind calculate="if(selected( /c_imm/group_polio/g_polio ,'OPV3'),'yes','no')" nodeset="/c_imm/received/opv3" type="string"/>
-      <bind calculate="if(selected( /c_imm/group_ipv/g_ipv ,'IPV1'),'yes','no')" nodeset="/c_imm/received/ipv1" type="string"/>
-      <bind calculate="if(selected( /c_imm/group_ipv/g_ipv ,'IPV2'),'yes','no')" nodeset="/c_imm/received/ipv2" type="string"/>
-      <bind calculate="if(selected( /c_imm/group_ipv/g_ipv ,'IPV3'),'yes','no')" nodeset="/c_imm/received/ipv3" type="string"/>
-      <bind calculate="if(selected( /c_imm/group_fipv/g_fipv ,'FIPV1'),'yes','no')" nodeset="/c_imm/received/fipv1" type="string"/>
-      <bind calculate="if(selected( /c_imm/group_fipv/g_fipv ,'FIPV2'),'yes','no')" nodeset="/c_imm/received/fipv2" type="string"/>
+      <bind calculate="if(selected( /c_imm/group_polio/g_polio ,'IPV1'),'yes','no')" nodeset="/c_imm/received/ipv1" type="string"/>
+      <bind calculate="if(selected( /c_imm/group_polio/g_polio ,'IPV2'),'yes','no')" nodeset="/c_imm/received/ipv2" type="string"/>
+      <bind calculate="if(selected( /c_imm/group_polio/g_polio ,'IPV3'),'yes','no')" nodeset="/c_imm/received/ipv3" type="string"/>
+      <bind calculate="if(selected( /c_imm/group_polio/g_polio ,'FIPV1'),'yes','no')" nodeset="/c_imm/received/fipv1" type="string"/>
+      <bind calculate="if(selected( /c_imm/group_polio/g_polio ,'FIPV2'),'yes','no')" nodeset="/c_imm/received/fipv2" type="string"/>
       <bind calculate="if(selected( /c_imm/group_pentavalent/g_pentavalent ,'DT1'),'yes','no')" nodeset="/c_imm/received/dt1" type="string"/>
       <bind calculate="if(selected( /c_imm/group_pentavalent/g_pentavalent ,'DT2'),'yes','no')" nodeset="/c_imm/received/dt2" type="string"/>
       <bind calculate="if(selected( /c_imm/group_pentavalent/g_pentavalent ,'DT3'),'yes','no')" nodeset="/c_imm/received/dt3" type="string"/>
@@ -3792,14 +3666,11 @@
       <bind nodeset="/c_imm/group_mmrv" relevant="selected( /c_imm/group_select_vaccines/g_vaccines ,'mmrv')"/>
       <bind constraint="(not(selected( /c_imm/group_mmrv/g_mmrv ,'none')) and (selected( /c_imm/group_mmrv/g_mmrv ,'MMRV1') or selected( /c_imm/group_mmrv/g_mmrv ,'MMRV2'))) or selected( /c_imm/group_mmrv/g_mmrv ,'none') and not(selected( /c_imm/group_mmrv/g_mmrv ,'MMRV1') or selected( /c_imm/group_mmrv/g_mmrv ,'MMRV2'))" jr:constraintMsg="jr:itext('/c_imm/group_mmrv/g_mmrv:jr:constraintMsg')" nodeset="/c_imm/group_mmrv/g_mmrv" required="true()" type="select"/>
       <bind nodeset="/c_imm/group_polio" relevant="selected( /c_imm/group_select_vaccines/g_vaccines ,'polio')"/>
-      <bind constraint="(not(selected( /c_imm/group_polio/g_polio ,'none')) and (selected( /c_imm/group_polio/g_polio ,'OPV0') or selected( /c_imm/group_polio/g_polio ,'OPV1') or selected( /c_imm/group_polio/g_polio ,'OPV2') or selected( /c_imm/group_polio/g_polio ,'OPV3'))) or selected( /c_imm/group_polio/g_polio ,'none') and not(selected( /c_imm/group_polio/g_polio ,'OPV0') or selected( /c_imm/group_polio/g_polio ,'OPV1') or selected( /c_imm/group_polio/g_polio ,'OPV2') or selected( /c_imm/group_polio/g_polio ,'OPV3'))" jr:constraintMsg="jr:itext('/c_imm/group_polio/g_polio:jr:constraintMsg')" nodeset="/c_imm/group_polio/g_polio" required="true()" type="select"/>
-      <bind nodeset="/c_imm/group_ipv" relevant="selected( /c_imm/group_select_vaccines/g_vaccines ,'ipv')"/>
-      <bind constraint="(not(selected( /c_imm/group_ipv/g_ipv ,'none')) and (selected( /c_imm/group_ipv/g_ipv ,'IPV1') or selected( /c_imm/group_ipv/g_ipv ,'IPV2') or selected( /c_imm/group_ipv/g_ipv ,'IPV3'))) or selected( /c_imm/group_ipv/g_ipv ,'none') and not(selected( /c_imm/group_ipv/g_ipv ,'IPV1') or selected( /c_imm/group_ipv/g_ipv ,'IPV2') or selected( /c_imm/group_ipv/g_ipv ,'IPV3'))" jr:constraintMsg="jr:itext('/c_imm/group_ipv/g_ipv:jr:constraintMsg')" nodeset="/c_imm/group_ipv/g_ipv" required="true()" type="select"/>
-      <bind constraint="(not(selected( /c_imm/group_fipv/g_fipv ,'none')) and (selected( /c_imm/group_fipv/g_fipv ,'FIPV1') or selected( /c_imm/group_fipv/g_fipv ,'FIPV2'))) or (selected( /c_imm/group_fipv/g_fipv ,'none') and (not(selected( /c_imm/group_fipv/g_fipv ,'FIPV1') or selected( /c_imm/group_fipv/g_fipv ,'FIPV2')))" jr:constraintMsg="jr:itext('/c_imm/group_fipv/g_fipv:jr:constraintMsg')" nodeset="/c_imm/group_fipv/g_fipv" required="true()" type="select"/>
+      <bind constraint="(not(selected( /c_imm/group_polio/g_polio ,'none')) and (selected( /c_imm/group_polio/g_polio ,'OPV0') or selected( /c_imm/group_polio/g_polio ,'OPV1') or selected( /c_imm/group_polio/g_polio ,'OPV2') or selected( /c_imm/group_polio/g_polio ,'OPV3') or selected( /c_imm/group_polio/g_polio ,'IPV1') or selected( /c_imm/group_polio/g_polio ,'IPV2') or selected( /c_imm/group_polio/g_polio ,'IPV3') or selected( /c_imm/group_polio/g_polio ,'FIPV1') or selected( /c_imm/group_polio/g_polio ,'FIPV2'))) or selected( /c_imm/group_polio/g_polio ,'none') and not(selected( /c_imm/group_polio/g_polio ,'OPV0') or selected( /c_imm/group_polio/g_polio ,'OPV1') or selected( /c_imm/group_polio/g_polio ,'OPV2') or selected( /c_imm/group_polio/g_polio ,'OPV3') or selected( /c_imm/group_polio/g_polio ,'IPV1') or selected( /c_imm/group_polio/g_polio ,'IPV2') or selected( /c_imm/group_polio/g_polio ,'IPV3') or selected( /c_imm/group_polio/g_polio ,'FIPV1') or selected( /c_imm/group_polio/g_polio ,'FIPV2'))" jr:constraintMsg="jr:itext('/c_imm/group_polio/g_polio:jr:constraintMsg')" nodeset="/c_imm/group_polio/g_polio" required="true()" type="select"/>
       <bind nodeset="/c_imm/group_pentavalent" relevant="selected( /c_imm/group_select_vaccines/g_vaccines ,'penta')"/>
       <bind constraint="(not(selected( /c_imm/group_pentavalent/g_pentavalent ,'none')) and (selected( /c_imm/group_pentavalent/g_pentavalent ,'DT1') or selected( /c_imm/group_pentavalent/g_pentavalent ,'DT2') or selected( /c_imm/group_pentavalent/g_pentavalent ,'DT3'))) or selected( /c_imm/group_pentavalent/g_pentavalent ,'none') and not(selected( /c_imm/group_pentavalent/g_pentavalent ,'DT1') or selected( /c_imm/group_pentavalent/g_pentavalent ,'DT2') or selected( /c_imm/group_pentavalent/g_pentavalent ,'DT3'))" jr:constraintMsg="jr:itext('/c_imm/group_pentavalent/g_pentavalent:jr:constraintMsg')" nodeset="/c_imm/group_pentavalent/g_pentavalent" required="true()" type="select"/>
       <bind nodeset="/c_imm/group_dpt" relevant="selected( /c_imm/group_select_vaccines/g_vaccines ,'dpt')"/>
-      <bind constraint="(not(selected( /c_imm/group_dpt/g_dpt ,'none')) and (selected( /c_imm/group_dpt/g_dpt ,'DPT4') or selected( /c_imm/group_dpt/g_dpt ,'DPT5'))) or (selected( /c_imm/group_ipv/g_ipv ,'none') and (not(selected( /c_imm/group_ipv/g_ipv ,'DPT4') or selected( /c_imm/group_ipv/g_ipv ,'DPT5')))" jr:constraintMsg="jr:itext('/c_imm/group_dpt/g_dpt:jr:constraintMsg')" nodeset="/c_imm/group_dpt/g_dpt" relevant="true()" type="select"/>
+      <bind constraint="(not(selected( /c_imm/group_dpt/g_dpt , 'none')) and (selected( /c_imm/group_dpt/g_dpt , 'DPT4') or selected( /c_imm/group_dpt/g_dpt , 'DPT5'))) or selected( /c_imm/group_dpt/g_dpt , 'none') and not(selected( /c_imm/group_dpt/g_dpt , 'DPT4') or selected( /c_imm/group_dpt/g_dpt ,'DPT5'))" jr:constraintMsg="jr:itext('/c_imm/group_dpt/g_dpt:jr:constraintMsg')" nodeset="/c_imm/group_dpt/g_dpt" relevant="true()" type="select"/>
       <bind nodeset="/c_imm/group_pneumococcal" relevant="selected( /c_imm/group_select_vaccines/g_vaccines ,'pneumococcal')"/>
       <bind constraint="(not(selected( /c_imm/group_pneumococcal/g_pneumococcal ,'none')) and (selected( /c_imm/group_pneumococcal/g_pneumococcal ,'PCV1') or selected( /c_imm/group_pneumococcal/g_pneumococcal ,'PCV2') or selected( /c_imm/group_pneumococcal/g_pneumococcal ,'PCV3') or selected( /c_imm/group_pneumococcal/g_pneumococcal ,'PCV4'))) or selected( /c_imm/group_pneumococcal/g_pneumococcal ,'none') and not(selected( /c_imm/group_pneumococcal/g_pneumococcal ,'PCV1') or selected( /c_imm/group_pneumococcal/g_pneumococcal ,'PCV2') or selected( /c_imm/group_pneumococcal/g_pneumococcal ,'PCV3') or selected( /c_imm/group_pneumococcal/g_pneumococcal ,'PCV4'))" jr:constraintMsg="jr:itext('/c_imm/group_pneumococcal/g_pneumococcal:jr:constraintMsg')" nodeset="/c_imm/group_pneumococcal/g_pneumococcal" required="true()" type="select"/>
       <bind nodeset="/c_imm/group_rotavirus" relevant="selected( /c_imm/group_select_vaccines/g_vaccines ,'rotavirus')"/>
@@ -3836,11 +3707,11 @@
       <bind nodeset="/c_imm/group_review_vaccines/r_opv_1" readonly="true()" relevant="selected( /c_imm/group_polio/g_polio ,'OPV1')" type="string"/>
       <bind nodeset="/c_imm/group_review_vaccines/r_opv_2" readonly="true()" relevant="selected( /c_imm/group_polio/g_polio ,'OPV2')" type="string"/>
       <bind nodeset="/c_imm/group_review_vaccines/r_opv_3" readonly="true()" relevant="selected( /c_imm/group_polio/g_polio ,'OPV3')" type="string"/>
-      <bind nodeset="/c_imm/group_review_vaccines/r_ipv_1" readonly="true()" relevant="selected( /c_imm/group_ipv/g_ipv ,'IPV1')" type="string"/>
-      <bind nodeset="/c_imm/group_review_vaccines/r_ipv_2" readonly="true()" relevant="selected( /c_imm/group_ipv/g_ipv ,'IPV2')" type="string"/>
-      <bind nodeset="/c_imm/group_review_vaccines/r_ipv_3" readonly="true()" relevant="selected( /c_imm/group_ipv/g_ipv ,'IPV3')" type="string"/>
-      <bind nodeset="/c_imm/group_review_vaccines/r_fipv_1" readonly="true()" relevant="selected( /c_imm/group_fipv/g_fipv ,'FIPV1')" type="string"/>
-      <bind nodeset="/c_imm/group_review_vaccines/r_fipv_2" readonly="true()" relevant="selected( /c_imm/group_fipv/g_fipv ,'FIPV2')" type="string"/>
+      <bind nodeset="/c_imm/group_review_vaccines/r_ipv_1" readonly="true()" relevant="selected( /c_imm/group_polio/g_polio ,'IPV1')" type="string"/>
+      <bind nodeset="/c_imm/group_review_vaccines/r_ipv_2" readonly="true()" relevant="selected( /c_imm/group_polio/g_polio ,'IPV2')" type="string"/>
+      <bind nodeset="/c_imm/group_review_vaccines/r_ipv_3" readonly="true()" relevant="selected( /c_imm/group_polio/g_polio ,'IPV3')" type="string"/>
+      <bind nodeset="/c_imm/group_review_vaccines/r_fipv_1" readonly="true()" relevant="selected( /c_imm/group_polio/g_polio ,'FIPV1')" type="string"/>
+      <bind nodeset="/c_imm/group_review_vaccines/r_fipv_2" readonly="true()" relevant="selected( /c_imm/group_polio/g_polio ,'FIPV2')" type="string"/>
       <bind nodeset="/c_imm/group_review_vaccines/r_penta_1" readonly="true()" relevant="selected( /c_imm/group_pentavalent/g_pentavalent ,'DT1')" type="string"/>
       <bind nodeset="/c_imm/group_review_vaccines/r_penta_2" readonly="true()" relevant="selected( /c_imm/group_pentavalent/g_pentavalent ,'DT2')" type="string"/>
       <bind nodeset="/c_imm/group_review_vaccines/r_penta_3" readonly="true()" relevant="selected( /c_imm/group_pentavalent/g_pentavalent ,'DT3')" type="string"/>
@@ -4152,47 +4023,27 @@
           <value>OPV3</value>
         </item>
         <item>
-          <label ref="jr:itext('/c_imm/group_polio/g_polio/none:label')"/>
-          <value>none</value>
-        </item>
-      </select>
-    </group>
-    <group ref="/c_imm/group_ipv">
-      <label ref="jr:itext('/c_imm/group_ipv:label')"/>
-      <select ref="/c_imm/group_ipv/g_ipv">
-        <label ref="jr:itext('/c_imm/group_ipv/g_ipv:label')"/>
-        <item>
-          <label ref="jr:itext('/c_imm/group_ipv/g_ipv/IPV1:label')"/>
+          <label ref="jr:itext('/c_imm/group_polio/g_polio/IPV1:label')"/>
           <value>IPV1</value>
         </item>
         <item>
-          <label ref="jr:itext('/c_imm/group_ipv/g_ipv/IPV2:label')"/>
+          <label ref="jr:itext('/c_imm/group_polio/g_polio/IPV2:label')"/>
           <value>IPV2</value>
         </item>
         <item>
-          <label ref="jr:itext('/c_imm/group_ipv/g_ipv/IPV3:label')"/>
+          <label ref="jr:itext('/c_imm/group_polio/g_polio/IPV3:label')"/>
           <value>IPV3</value>
         </item>
         <item>
-          <label ref="jr:itext('/c_imm/group_ipv/g_ipv/none:label')"/>
-          <value>none</value>
-        </item>
-      </select>
-    </group>
-    <group appearance="selected(${g_vaccines},'fipv')" ref="/c_imm/group_fipv">
-      <label ref="jr:itext('/c_imm/group_fipv:label')"/>
-      <select ref="/c_imm/group_fipv/g_fipv">
-        <label ref="jr:itext('/c_imm/group_fipv/g_fipv:label')"/>
-        <item>
-          <label ref="jr:itext('/c_imm/group_fipv/g_fipv/FIPV1:label')"/>
+          <label ref="jr:itext('/c_imm/group_polio/g_polio/FIPV1:label')"/>
           <value>FIPV1</value>
         </item>
         <item>
-          <label ref="jr:itext('/c_imm/group_fipv/g_fipv/FIPV2:label')"/>
+          <label ref="jr:itext('/c_imm/group_polio/g_polio/FIPV2:label')"/>
           <value>FIPV2</value>
         </item>
         <item>
-          <label ref="jr:itext('/c_imm/group_fipv/g_fipv/none:label')"/>
+          <label ref="jr:itext('/c_imm/group_polio/g_polio/none:label')"/>
           <value>none</value>
         </item>
       </select>
