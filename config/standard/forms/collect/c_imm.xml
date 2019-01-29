@@ -566,15 +566,6 @@
           <text id="/c_imm/received/dpt5:label">
             <value>Mendapatkan DPT Booster 2</value>
           </text>
-          <text id="/c_imm/received/dt1:label">
-            <value>Mendapatkan Pentavalent 1</value>
-          </text>
-          <text id="/c_imm/received/dt2:label">
-            <value>Mendapatkan Pentavalent 2</value>
-          </text>
-          <text id="/c_imm/received/dt3:label">
-            <value>Mendapatkan Pentavalent 3</value>
-          </text>
           <text id="/c_imm/received/fipv1:label">
             <value>Mendapatkan Fractional Inactivated Polio 1</value>
           </text>
@@ -658,6 +649,15 @@
           </text>
           <text id="/c_imm/received/pcv4:label">
             <value>Mendapatkan Pneumococcal 4</value>
+          </text>
+          <text id="/c_imm/received/penta1:label">
+            <value>Mendapatkan Pentavalent 1</value>
+          </text>
+          <text id="/c_imm/received/penta2:label">
+            <value>Mendapatkan Pentavalent 2</value>
+          </text>
+          <text id="/c_imm/received/penta3:label">
+            <value>Mendapatkan Pentavalent 3</value>
           </text>
           <text id="/c_imm/received/rv1:label">
             <value>Mendapatkan Rotavirus 1</value>
@@ -1246,15 +1246,6 @@
           <text id="/c_imm/received/dpt5:label">
             <value>Received DPT Booster 2</value>
           </text>
-          <text id="/c_imm/received/dt1:label">
-            <value>Received Pentavalent 1</value>
-          </text>
-          <text id="/c_imm/received/dt2:label">
-            <value>Received Pentavalent 2</value>
-          </text>
-          <text id="/c_imm/received/dt3:label">
-            <value>Received Pentavalent 3</value>
-          </text>
           <text id="/c_imm/received/fipv1:label">
             <value>Received fractional Inactivated Polio 1</value>
           </text>
@@ -1338,6 +1329,15 @@
           </text>
           <text id="/c_imm/received/pcv4:label">
             <value>Received Pneumococcal 4</value>
+          </text>
+          <text id="/c_imm/received/penta1:label">
+            <value>Received Pentavalent 1</value>
+          </text>
+          <text id="/c_imm/received/penta2:label">
+            <value>Received Pentavalent 2</value>
+          </text>
+          <text id="/c_imm/received/penta3:label">
+            <value>Received Pentavalent 3</value>
           </text>
           <text id="/c_imm/received/rv1:label">
             <value>Received Rotavirus 1</value>
@@ -1926,15 +1926,6 @@
           <text id="/c_imm/received/dpt5:label">
             <value>DPT Booster 2 reçu</value>
           </text>
-          <text id="/c_imm/received/dt1:label">
-            <value>Penta 1 reçu</value>
-          </text>
-          <text id="/c_imm/received/dt2:label">
-            <value>Penta 2 reçu</value>
-          </text>
-          <text id="/c_imm/received/dt3:label">
-            <value>Penta 3 reçu</value>
-          </text>
           <text id="/c_imm/received/fipv1:label">
             <value>fIPV 1 reçu</value>
           </text>
@@ -2018,6 +2009,15 @@
           </text>
           <text id="/c_imm/received/pcv4:label">
             <value>Pneumo 4 reçu</value>
+          </text>
+          <text id="/c_imm/received/penta1:label">
+            <value>Penta 1 reçu</value>
+          </text>
+          <text id="/c_imm/received/penta2:label">
+            <value>Penta 2 reçu</value>
+          </text>
+          <text id="/c_imm/received/penta3:label">
+            <value>Penta 3 reçu</value>
           </text>
           <text id="/c_imm/received/rv1:label">
             <value>Rota 1 reçu</value>
@@ -2606,15 +2606,6 @@
           <text id="/c_imm/received/dpt5:label">
             <value>DPT Booster 2 मिला</value>
           </text>
-          <text id="/c_imm/received/dt1:label">
-            <value>Pentavalent 1 मिला</value>
-          </text>
-          <text id="/c_imm/received/dt2:label">
-            <value>Pentavalent 2 मिला</value>
-          </text>
-          <text id="/c_imm/received/dt3:label">
-            <value>Pentavalent 3 मिला</value>
-          </text>
           <text id="/c_imm/received/fipv1:label">
             <value>Fractional Inactivated Polio 1 मिला</value>
           </text>
@@ -2698,6 +2689,15 @@
           </text>
           <text id="/c_imm/received/pcv4:label">
             <value>Pneumococcal 4 मिला</value>
+          </text>
+          <text id="/c_imm/received/penta1:label">
+            <value>Pentavalent 1 मिला</value>
+          </text>
+          <text id="/c_imm/received/penta2:label">
+            <value>Pentavalent 2 मिला</value>
+          </text>
+          <text id="/c_imm/received/penta3:label">
+            <value>Pentavalent 3 मिला</value>
           </text>
           <text id="/c_imm/received/rv1:label">
             <value>Rotavirus 1 मिला</value>
@@ -3286,15 +3286,6 @@
           <text id="/c_imm/received/dpt5:label">
             <value>ডিপিটি বুস্টার 2 পান</value>
           </text>
-          <text id="/c_imm/received/dt1:label">
-            <value>পেন্টাগলেন্ট 1 প্রাপ্ত</value>
-          </text>
-          <text id="/c_imm/received/dt2:label">
-            <value>পেন্টাগলেন্ট 2 প্রাপ্ত</value>
-          </text>
-          <text id="/c_imm/received/dt3:label">
-            <value>পেন্টাগলেন্ট 3 প্রাপ্ত</value>
-          </text>
           <text id="/c_imm/received/fipv1:label">
             <value>Received Fractional Inactivated Polio 1</value>
           </text>
@@ -3379,6 +3370,15 @@
           <text id="/c_imm/received/pcv4:label">
             <value>পাইওমোকোকাল 4 পেয়েছেন</value>
           </text>
+          <text id="/c_imm/received/penta1:label">
+            <value>পেন্টাগলেন্ট 1 প্রাপ্ত</value>
+          </text>
+          <text id="/c_imm/received/penta2:label">
+            <value>পেন্টাগলেন্ট 2 প্রাপ্ত</value>
+          </text>
+          <text id="/c_imm/received/penta3:label">
+            <value>পেন্টাগলেন্ট 3 প্রাপ্ত</value>
+          </text>
           <text id="/c_imm/received/rv1:label">
             <value>রটাভাইরাস 1 পেয়েছেন</value>
           </text>
@@ -3406,7 +3406,7 @@
         </translation>
       </itext>
       <instance>
-        <c_imm delimiter="#" id="c_imm" prefix="J1!c_imm!" version="2019-01-28_05-30">
+        <c_imm delimiter="#" id="c_imm" prefix="J1!c_imm!" version="2019-01-29_03-15">
           <id/>
           <c/>
           <received>
@@ -3438,9 +3438,9 @@
             <ipv3/>
             <fipv1/>
             <fipv2/>
-            <dt1/>
-            <dt2/>
-            <dt3/>
+            <penta1/>
+            <penta2/>
+            <penta3/>
             <dpt4/>
             <dpt5/>
             <pcv1/>
@@ -3598,9 +3598,9 @@
       <bind calculate="if(selected( /c_imm/group_polio/g_polio ,'IPV3'),'yes','no')" nodeset="/c_imm/received/ipv3" type="string"/>
       <bind calculate="if(selected( /c_imm/group_polio/g_polio ,'FIPV1'),'yes','no')" nodeset="/c_imm/received/fipv1" type="string"/>
       <bind calculate="if(selected( /c_imm/group_polio/g_polio ,'FIPV2'),'yes','no')" nodeset="/c_imm/received/fipv2" type="string"/>
-      <bind calculate="if(selected( /c_imm/group_pentavalent/g_pentavalent ,'DT1'),'yes','no')" nodeset="/c_imm/received/dt1" type="string"/>
-      <bind calculate="if(selected( /c_imm/group_pentavalent/g_pentavalent ,'DT2'),'yes','no')" nodeset="/c_imm/received/dt2" type="string"/>
-      <bind calculate="if(selected( /c_imm/group_pentavalent/g_pentavalent ,'DT3'),'yes','no')" nodeset="/c_imm/received/dt3" type="string"/>
+      <bind calculate="if(selected( /c_imm/group_pentavalent/g_pentavalent ,'DT1'),'yes','no')" nodeset="/c_imm/received/penta1" type="string"/>
+      <bind calculate="if(selected( /c_imm/group_pentavalent/g_pentavalent ,'DT2'),'yes','no')" nodeset="/c_imm/received/penta2" type="string"/>
+      <bind calculate="if(selected( /c_imm/group_pentavalent/g_pentavalent ,'DT3'),'yes','no')" nodeset="/c_imm/received/penta3" type="string"/>
       <bind calculate="if(selected( /c_imm/group_dpt/g_dpt ,'DPT4'),'yes','no')" nodeset="/c_imm/received/dpt4" type="string"/>
       <bind calculate="if(selected( /c_imm/group_dpt/g_dpt ,'DPT5'),'yes','no')" nodeset="/c_imm/received/dpt5" type="string"/>
       <bind calculate="if(selected( /c_imm/group_pneumococcal/g_pneumococcal ,'PCV1'),'yes','no')" nodeset="/c_imm/received/pcv1" type="string"/>
