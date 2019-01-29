@@ -217,7 +217,7 @@ const getChanges = feed => {
       // uses reponse.last_seq to write it's checkpointer doc.
       // By not advancing the checkpointer seq past our last change, we make sure these docs will be retrieved
       // in the next replication attempt.
-      feed.lastSeq = results.length ? results.slice(-1)[0].seq : feed.initSeq;
+      feed.lastSeq = results.length ? results[results.length - 1].seq : feed.currentSeq;
 
       generateTombstones(results);
       feed.results = results;
@@ -255,6 +255,7 @@ const initFeed = (req, res) => {
     res: res,
     initSeq: req.query && req.query.since || 0,
     lastSeq: req.query && req.query.since || currentSeq,
+    currentSeq: currentSeq,
     pendingChanges: [],
     results: [],
     limit: req.query && req.query.limit || config.get('changes_controller').changes_limit,
