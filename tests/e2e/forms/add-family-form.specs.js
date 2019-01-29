@@ -22,7 +22,7 @@ describe('Family form', () => {
 
   afterAll(utils.afterEach);
 
-  it.ignore('Submit Add Family form', () => {
+  it('Submit Add Family form', () => {
     common.goToReports(true);
     genericForm.selectForm();
     familyForm.fillPrimaryCaregiver('test');

@@ -78,6 +78,7 @@ module.exports = {
     const reportValidMessage = element(
       by.css('.verify-valid>span:last-of-type')
     );
+    helper.waitElementToBeClickable(reportValidBtn);
     reportValidBtn.click();
     helper.waitUntilReady(reportValidIcon);
     expect(reportValidMessage.getText()).toEqual('Correct');
