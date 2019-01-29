@@ -241,13 +241,9 @@ To import the standard configuration:
 
 Code is automatically published via [Travis CI](https://travis-ci.org/medic/medic-webapp) to the [staging server](https://staging.dev.medicmobile.org).
 
-## Help
-
-Join our [Google Group](https://groups.google.com/forum/#!forum/medic-developers) or file an issue on Github. You can also post questions, and look for answers, on our [AnswerHub site](http://medicmobile.cloud.answerhub.com/).
-
 ## Contributing
 
-At Medic Mobile we welcome and appreciate community contributions. If you have an idea or a question we'd love to hear from you! The easiest ways to get in touch are by raising issues in the [medic-webapp Github repo](https://github.com/medic/medic-webapp/issues) or by messaging our [Google Group](https://groups.google.com/forum/#!forum/medic-developers). For more info check out our [contributor guidelines](CONTRIBUTING.md).
+At Medic Mobile we are the technical steward of the [Community Health Toolkit](https://communityhealthtoolkit.org). We welcome and appreciate contributions, and support new developers to use the tools whenever possible. If you have an idea or a question we'd love to hear from you! The easiest ways to get in touch are by raising issues in the [medic-webapp Github repo](https://github.com/medic/medic-webapp/issues) or [joining our Slack channel](https://communityhealthtoolkit.org/slack). For more info check out our [contributor guidelines](CONTRIBUTING.md).
 
 ## Build Status
 
