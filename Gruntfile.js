@@ -368,7 +368,6 @@ module.exports = function(grunt) {
             'admin/**/*.js',
           ];
           const ignore = [
-            'ddocs/**/*.js',
             'webapp/src/js/modules/xpath-element-path.js',
             '**/node_modules/**',
             'sentinel/src/lib/pupil/**',
