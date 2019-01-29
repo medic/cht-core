@@ -3,5 +3,8 @@
   "env": {
     "couchdb/couchdb": true,
   },
-  "plugins": ["couchdb"]
+  "plugins": ["couchdb"],
+  "parserOptions": {
+    "ecmaVersion": 5,
+  }
 }
