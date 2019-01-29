@@ -1,6 +1,6 @@
 const openrosaFormList = require('openrosa-formlist'),
   serverUtils = require('../server-utils'),
-  db = require('../db-pouch');
+  db = require('../db');
 
 const XML_RESPONSE_HEADERS = {
   'Content-Type': 'text/xml; charset=utf-8',

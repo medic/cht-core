@@ -1,4 +1,4 @@
-const db = require('./db-pouch');
+const db = require('./db');
 const logger = require('./logger');
 const DEFAULT_BATCH_LIMIT = 100; // 100 is a good compromise of performance and stability
 

@@ -1,7 +1,7 @@
 const sinon = require('sinon').sandbox.create();
 require('chai').should();
 const service = require('../../../src/services/bulk-get'),
-      db = require('../../../src/db-pouch'),
+      db = require('../../../src/db'),
       authorization = require('../../../src/services/authorization');
 
 let userCtx,

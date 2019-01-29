@@ -1,4 +1,4 @@
-const DB = require('../db-pouch').medic;
+const DB = require('../db').medic;
 
 const HORTI_UPGRADE_DOC = 'horti-upgrade';
 

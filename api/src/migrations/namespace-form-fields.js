@@ -5,7 +5,7 @@
 var async = require('async'),
   _ = require('underscore'),
   { promisify } = require('util'),
-  db = require('../db-nano'),
+  db = require('../db'),
   logger = require('../logger'),
   settingsService = require('../services/settings'),
   forms;
@@ -28,7 +28,7 @@ var namespace = function(docs, callback) {
     });
   });
 
-  db.medic.bulk({ docs: docs }, function(err, results) {
+  db.medic.bulkDocs(docs, function(err, results) {
     if (err) {
       return callback(err);
     }
@@ -59,7 +59,7 @@ var runBatch = function(batchSize, skip, callback) {
     limit: batchSize,
     skip: skip,
   };
-  db.medic.view('medic-client', 'doc_by_type', options, function(err, result) {
+  db.medic.query('medic-client/doc_by_type', options, function(err, result) {
     if (err) {
       return callback(err);
     }

@@ -3,7 +3,7 @@ const _ = require('underscore'),
       people  = require('../controllers/people'),
       places = require('../controllers/places'),
       config = require('../config'),
-      db = require('../db-pouch'),
+      db = require('../db'),
       lineage = require('@medic/lineage')(Promise, db.medic),
       getRoles = require('./types-and-roles');
 

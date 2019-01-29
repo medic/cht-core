@@ -1,7 +1,7 @@
 const chai = require('chai'),
       sinon = require('sinon'),
       migrations = require('../../src/migrations'),
-      db = require('../../src/db-pouch');
+      db = require('../../src/db');
 
 describe('migrations', () => {
 

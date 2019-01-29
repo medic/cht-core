@@ -1,5 +1,5 @@
 const service = require('../../../src/services/user-db');
-const db = require('../../../src/db-pouch');
+const db = require('../../../src/db');
 const environment = require('../../../src/environment');
 const request = require('request-promise-native');
 const chai = require('chai');

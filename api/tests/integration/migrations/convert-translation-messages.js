@@ -26,7 +26,6 @@ describe('convert-translation-messages migration', function() {
         content: 'Contact = Contact\nFrom = From',
         key: 'translations/messages-en.properties'
       };      
-      
       return utils.insertAttachment(ddoc, attachment);  
     })
     .then(function() {

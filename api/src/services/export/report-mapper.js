@@ -1,7 +1,7 @@
 const _ = require('underscore'),
       objectPath = require('object-path'),
       moment = require('moment'),
-      db = require('../../db-pouch'),
+      db = require('../../db'),
       search = require('@medic/search')(Promise, db.medic);
 
 /**

@@ -4,7 +4,7 @@ const chai = require('chai'),
       people = require('../../../src/controllers/people'),
       places = require('../../../src/controllers/places'),
       config = require('../../../src/config'),
-      db = require('../../../src/db-pouch'),
+      db = require('../../../src/db'),
       COMPLEX_PASSWORD = '23l4ijk3nSDELKSFnwekirh';
 
 const facilitya = { _id: 'a', name: 'aaron' },

@@ -1,5 +1,5 @@
 const _ = require('underscore'),
-  db = require('./db-pouch'),
+  db = require('./db'),
   logger = require('./logger'),
   DDOC_ATTACHMENT_ID = 'ddocs/compiled.json',
   APPCACHE_ATTACHMENT_NAME = 'manifest.appcache',

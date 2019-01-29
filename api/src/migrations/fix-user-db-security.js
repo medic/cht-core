@@ -1,4 +1,4 @@
-const db = require('../db-pouch'),
+const db = require('../db'),
       {promisify} = require('util'),
       userDb = require('../services/user-db');
 

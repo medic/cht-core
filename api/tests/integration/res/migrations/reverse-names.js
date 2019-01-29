@@ -1,26 +1,18 @@
-var _ = require('underscore'),
-    db = require('../../../../src/db-nano');
+const db = require('../../../../src/db');
 
 module.exports = {
   name: 'extract-person-contacts',
   created: new Date(),
-  run: function() {
-    return new Promise(function(resolve, reject) {
-      db.medic.list({ include_docs:true }, function(err, body) {
-        Promise.all(_.map(body.rows, function(row) {
-          return new Promise(function(resolve, reject) {
-            var doc = row.doc;
-            if(doc._id.indexOf('_design/') === 0) { return resolve(); }
-            doc.name = doc.name.split('').reverse().join('');
-            db.medic.insert(doc, function(err) {
-              if(err) { return reject(err); }
-              resolve();
-            });
-          });
-        }))
-        .then(resolve)
-        .catch(reject);
-      });
+  run: () => {
+    return db.medic.allDocs({ include_docs: true }).then(body => {
+      return Promise.all(body.rows.map(row => {
+        const doc = row.doc;
+        if (doc._id.indexOf('_design/') === 0) {
+          return;
+        }
+        doc.name = doc.name.split('').reverse().join('');
+        return db.medic.put(doc);
+      }));
     });
   }
 };

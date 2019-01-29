@@ -1,5 +1,5 @@
 const authorization = require('./authorization'),
-      db = require('../db-pouch'),
+      db = require('../db'),
       _ = require('underscore');
 
 // filters response from CouchDB only to include successfully read and allowed docs

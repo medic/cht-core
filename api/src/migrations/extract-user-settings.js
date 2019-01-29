@@ -1,7 +1,7 @@
 var async = require('async'),
     {promisify} = require('util'),
     _ = require('underscore'),
-    db = require('../db-nano');
+    db = require('../db');
 
 var fieldsToIncludeInBoth = [ '_id', 'name', 'facility_id', 'roles' ];
 var fieldsToOmitFromSettings = [ '_rev', 'salt', 'derived_key', 'password_scheme', 'iterations', 'type' ];
@@ -9,7 +9,7 @@ var fieldsToIncludeInUser = fieldsToOmitFromSettings.concat(fieldsToIncludeInBot
 
 var updateUser = function(row, callback) {
   var user = _.pick(row.doc, fieldsToIncludeInUser);
-  db._users.insert(user, callback);
+  db.users.put(user, callback);
 };
 
 var migrateUser = function(row, callback) {
@@ -23,7 +23,7 @@ var migrateUser = function(row, callback) {
     }
     // Uppercase in the login! Change it to lowercase.
     var lowercaseId = row.doc._id.toLowerCase();
-    db._users.get(lowercaseId, function(err) {
+    db.users.get(lowercaseId, function(err) {
       if (!err || err.error !== 'not_found') {
         // Existing user called lowercase. Conflict!
         return callback(new Error('Cannot create lowercase username ' + lowercaseId + ', user already exists.'));
@@ -37,7 +37,7 @@ var migrateUser = function(row, callback) {
           return callback(err);
         }
         uppercaseUser._deleted = true;
-        db._users.insert(uppercaseUser, callback);
+        db.users.put(uppercaseUser, callback);
       });
     });
   });
@@ -50,7 +50,7 @@ var splitUser = function(row, callback) {
   if (settings.known === 'true') {
     settings.known = true;
   }
-  db.medic.insert(settings, function(err) {
+  db.medic.put(settings, function(err) {
     if (err) {
       return callback(err);
     }
@@ -68,7 +68,7 @@ module.exports = {
   name: 'extract-user-settings',
   created: new Date(2015, 7, 29, 9, 50, 0, 0),
   run: promisify(function(callback) {
-    db._users.list({ include_docs: true }, function(err, result) {
+    db.users.allDocs({ include_docs: true }, function(err, result) {
       if (err) {
         return callback(err);
       }

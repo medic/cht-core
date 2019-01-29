@@ -1,7 +1,7 @@
 var request = require('request-promise-native'),
     url = require('url'),
     _ = require('underscore'),
-    db = require('./db-pouch'),
+    db = require('./db'),
     environment = require('./environment'),
     config = require('./config'),
     ONLINE_ROLE = 'mm-online';

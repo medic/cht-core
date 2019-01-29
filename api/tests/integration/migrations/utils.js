@@ -1,17 +1,17 @@
-const _ = require('underscore'),
-      {promisify} = require('util'),
-      fs = require('fs'),
-      path = require('path'),
-      readFileAsync = promisify(fs.readFile),
-      db = require('../../../src/db-nano'),
-      logger = require('../../../src/logger'),
-      dbPouch = require('../../../src/db-pouch');
+const _ = require('underscore');
+const {promisify} = require('util');
+const fs = require('fs');
+const path = require('path');
+const readFileAsync = promisify(fs.readFile);
+const logger = require('../../../src/logger');
+const db = require('../../../src/db');
+const request = require('request-promise-native');
 
 const PouchDB = require('pouchdb-core');
 PouchDB.plugin(require('pouchdb-adapter-http'));
 PouchDB.plugin(require('pouchdb-mapreduce'));
 
-function byId(a, b) {
+const byId = (a, b) => {
   if (a._id === b._id) {
     return 0;
   } else if (a._id < b._id) {
@@ -19,9 +19,9 @@ function byId(a, b) {
   } else {
     return 1;
   }
-}
+};
 
-function matches(expected, actual) {
+const matches = (expected, actual) => {
   var i, k;
 
   if (typeof expected === 'string') {
@@ -62,23 +62,12 @@ function matches(expected, actual) {
     }
     return true;
   }
-}
+};
 
-function assertDb(expected) {
-  return new Promise(function(resolve, reject) {
-    const options = {
-      path: 'medic-test/_all_docs',
-      method: 'GET',
-      qs: { include_docs: true },
-    };
-    db.request(options, function(err, results) {
-      if (err) {
-        return reject(err);
-      }
-
-      var actual = results.rows.map(function(row) {
-        return _.omit(row.doc, ['_rev']);
-      });
+const assertDb = expected => {
+  return db.get('medic-test').allDocs({ include_docs: true })
+    .then(results => {
+      var actual = results.rows.map(row =>_.omit(row.doc, ['_rev']));
       expected.sort(byId);
       actual.sort(byId);
 
@@ -92,12 +81,10 @@ function assertDb(expected) {
       });
 
       matchDbs(expected, actual);
-      resolve();
     });
-  });
-}
+};
 
-function matchDbs(expected, actual) {
+const matchDbs = (expected, actual) => {
   var errors = [];
 
   // split expected data into docs with an ID and those without
@@ -161,46 +148,20 @@ function matchDbs(expected, actual) {
       'Database contents not as expected: \n\t' + errors.join(';\n\t')
     );
   }
-}
+};
 
-const dbPath = db.getPath,
-  dbRequest = db.request;
-const realPouchDb = dbPouch.medic;
+const realPouchDb = db.medic;
 const switchToRealDbs = () => {
-  db.request = dbRequest;
-  db.getPath = dbPath;
-  db.audit = db.use('audit');
-  db.medic = db.use('medic');
-  dbPouch.medic = realPouchDb;
+  db.medic = realPouchDb;
 };
 
 const switchToTestDbs = () => {
-  db.medic = db.use('medic-test');
-  dbPouch.medic = new PouchDB(
+  db.medic = new PouchDB(
     realPouchDb.name.replace(/medic$/, 'medic-test')
   );
-
-  // hijack calls to db.request and make sure that they are made to the correct
-  // database.
-  db.request = function() {
-    var args = Array.prototype.slice.call(arguments);
-    var targetDb = args[0].db;
-    if (targetDb) {
-      if (targetDb === 'medic') {
-        args[0].db = 'medic-test';
-      } else if (targetDb !== 'medic-test') {
-        throw new Error(`Unexpected targetDb: "${targetDb}"`);
-      }
-    }
-    return dbRequest.apply(db, args);
-  };
-
-  db.getPath = function() {
-    return 'medic-test/_design/medic/_rewrite';
-  };
 };
 
-function initDb(content) {
+const initDb = content => {
 
   switchToTestDbs();
 
@@ -215,120 +176,86 @@ function initDb(content) {
         .find(doc => doc._id === '_design/medic-client');
       const medic = JSON.parse(medicString).docs[0];
       delete medic._attachments;
-      return dbPouch.medic.bulkDocs([ medic, medicClient ]);
+      return db.medic.bulkDocs([ medic, medicClient ]);
     })
     .then(() => {
       return Promise.all(
-        content.map(doc => dbPouch.medic.put(doc))
+        content.map(doc => db.medic.put(doc))
       );
     });
-}
+};
 
-function _resetDb() {
-  return new Promise(function(resolve, reject) {
-    db.db.destroy('medic-test', function(err) {
-      if (err && err.statusCode !== 404) {
-        return reject(
-          new Error('Error deleting "medic-test": ' + err.message)
-        );
+const _resetDb = () => {
+  return db.exists('medic-test')
+    .then(exists => {
+      if (exists) {
+        return db.get('medic-test').destroy();
       }
-
-      db.db.create('medic-test', function(err) {
-        if (err) {
-          logger.error(
-            `Could not create "medic-test" directly after deleting, pausing and trying again`
-          );
-
-          return setTimeout(function() {
-            db.db.create('medic-test', function(err) {
-              if (err) {
-                return reject(
-                  new Error('Error creating "medic-test": ' + err.message)
-                );
-              }
-
+    })
+    .then(() => {
+      return db.get('medic-test');
+    })
+    .catch(err => {
+      logger.error('Could not create "medic-test" directly after deleting, pausing and trying again');
+      return new Promise(function(resolve, reject) {
+        setTimeout(function() {
+          db.get('medic-test')
+            .then(() => {
               logger.info(`After a struggle, at ${new Date()}, re-created "medic-test"`);
               resolve();
+            })
+            .catch(err => {
+              reject(new Error('Error creating "medic-test": ' + err.message));
             });
-          }, 3000);
-        } else {
-          resolve();
-        }
+        }, 3000);
       });
     });
-  });
-}
+};
 
-function tearDown() {
+const tearDown = () => {
   switchToRealDbs();
-}
+};
 
-function runMigration(migration) {
+const runMigration = migration => {
   var migrationPath = '../../../src/migrations/' + migration;
   migration = require(migrationPath);
   return migration.run();
-}
+};
 
-function initSettings(settings) {
+const initSettings = settings => {
   return getSettings()
     .then(function(doc) {
       _.extend(doc.settings, settings);
       return doc;
     })
-    .then(function(doc) {
-      return new Promise(function(resolve, reject) {
-        db.medic.insert(doc, function(err) {
-          if (err) {
-            return reject(err);
-          }
-          setTimeout(resolve, 1000);
-        });
+    .then(doc => db.medic.put(doc))
+    .then(() => {
+      return new Promise(resolve => {
+        setTimeout(resolve, 1000);
       });
     });
-}
+};
 
-function getSettings() {
-  return new Promise(function(resolve, reject) {
-    db.medic.get('settings', function(err, doc) {
-      if (err) {
-        if (err.statusCode === 404) {
-          doc = { _id: 'settings', settings: {} };
-        } else {
-          return reject(err);
-        }
-      }
-      resolve(doc);
-    });
+const getSettings = () => {
+  return db.medic.get('settings').catch(err => {
+    if (err.status === 404) {
+      return { _id: 'settings', settings: {} };
+    }
+    throw err;
   });
-}
+};
 
-function getDdoc(ddocId) {
-  return new Promise(function(resolve, reject) {
-    db.medic.get(ddocId, function(err, ddoc) {
-      if (err) {
-        return reject(err);
-      }
-      resolve(ddoc);
-    });
-  });
-}
+const getDdoc = ddocId => db.medic.get(ddocId);
 
-function insertAttachment(ddoc, attachment) {
-  return new Promise(function(resolve, reject) {
-    db.medic.attachment.insert(
-        ddoc._id, 
-        attachment.key, 
-        attachment.content, 
-        attachment.content_type,
-        { rev: ddoc._rev }, 
-        function(err) {
-          if (err) {
-            return reject(err);
-          }
-          resolve();
-    });  
-  });
-}
+const insertAttachment = (ddoc, attachment) => {
+  return db.medic.putAttachment(
+    ddoc._id,
+    attachment.key,
+    ddoc._rev,
+    Buffer.from(attachment.content).toString('base64'),
+    attachment.content_type
+  );
+};
 
 module.exports = {
   assertDb: assertDb,

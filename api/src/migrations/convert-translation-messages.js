@@ -1,5 +1,5 @@
 const _ = require('underscore'),
-  db = require('../db-pouch'),
+  db = require('../db'),
   properties = require('properties'),
   DDOC_ID = '_design/medic';
 
