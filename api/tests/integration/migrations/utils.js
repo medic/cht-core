@@ -252,7 +252,7 @@ const insertAttachment = (ddoc, attachment) => {
     ddoc._id,
     attachment.key,
     ddoc._rev,
-    attachment.content,
+    Buffer.from(attachment.content).toString('base64'),
     attachment.content_type
   );
 };

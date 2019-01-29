@@ -27,6 +27,7 @@ var registrationIdsWithNoPatientContacts = function(batch, settings, callback) {
 
       db.medic.allDocs(
         {
+          include_docs: true,
           keys: _.chain(potentialRegistrationIdsToConsider)
             .map(row => row[1])
             .flatten()
@@ -147,7 +148,7 @@ var batchCreatePatientContacts = function(batch, settings, callback) {
           'Storing ' + patientPersons.length + ' new patient contacts.. '
         );
 
-        db.medic.bulk({ docs: patientPersons }, function(err, results) {
+        db.medic.bulkDocs(patientPersons, function(err, results) {
           if (err) {
             return callback(err);
           }
