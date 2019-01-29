@@ -45,7 +45,7 @@ describe('separate-audit-db migration', () => {
     const wrappedDbDbCreate = sinon.stub(db, 'get').returns(auditDb);
 
     const wrappedAuditDbGet = sinon.stub(auditDb, 'get').callsArgWith(1, ERR_404);
-    const wrappedAuditDbPut = sinon.stub(auditDb, 'put').callsArg(2);
+    const wrappedAuditDbPut = sinon.stub(auditDb, 'put').callsArg(1);
 
     const wrappedMedicView = sinon.stub(db.medic, 'query');
     wrappedMedicView.onFirstCall().callsArgWith(2, null, FIRST_VIEW_BATCH);
