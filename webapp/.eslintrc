@@ -4,9 +4,13 @@
     "jquery": true,
     "node": true
   },
+  "plugins": ["compat"],
   "globals": {
     "angular": true,
     "Tour": true
+  },
+  "rules": {
+    "compat/compat": "error"
   },
   "overrides": [
     {

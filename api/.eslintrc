@@ -2,6 +2,7 @@
   "env": {
     "node": true
   },
+  "plugins": ["compat"],
   "rules": {
     "no-console": "error"
   },
@@ -14,7 +15,8 @@
         "src/public/**/*.js"
       ],
       "rules": {
-        "no-console": "off"
+        "no-console": "off",
+        "compat/compat": "error"
       }
     }
   ],
