@@ -22,6 +22,7 @@ if (UNIT_TEST_ENV) {
     'get',
     'getAttachment',
     'changes',
+    'info',
   ];
   const GLOBAL_FUNCTIONS_TO_STUB = [
     'get',

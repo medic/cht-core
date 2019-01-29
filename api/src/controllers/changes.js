@@ -82,10 +82,24 @@ const generateResponse = feed => {
 };
 
 // any doc ID should only appear once in the changes feed, with a list of changed revs attached to it
-const appendChange = (results, changeObj) => {
+const appendChange = (results, changeObj, forceSeq = false) => {
   const result = _.findWhere(results, { id: changeObj.id });
   if (!result) {
-    return results.push(JSON.parse(JSON.stringify(changeObj.change)));
+    const change = JSON.parse(JSON.stringify(changeObj.change));
+
+    // PouchDB (7.0.0) will pick the seq of the last change in a batch or the last_seq of the whole result to update
+    // the Checkpointer doc. It also uses this seq as a since param in the next changes request, to fix
+    // https://github.com/pouchdb/pouchdb/issues/6809
+    // When batching, because we don't know how far along our whole changes feed we are,
+    // we push these changes to our normal feeds every time, even if they are out of place,
+    // to avoid the possibility of them being skipped.
+    // Therefore, their seq is changed to equal the feed's last change seq to avoid PouchDB setting a Checkpointer
+    // with a future seq and to use a correct seq when requesting the next batch of changes.
+    if (forceSeq) {
+      change.seq = forceSeq;
+    }
+
+    return results.push(change);
   }
 
   // append missing revs to the list
@@ -99,10 +113,10 @@ const appendChange = (results, changeObj) => {
 };
 
 // appends allowed `changes` to feed `results`
-const processPendingChanges = (feed) => {
+const processPendingChanges = (feed, forceSeq = false) => {
   authorization
     .filterAllowedDocs(feed, feed.pendingChanges)
-    .forEach(changeObj => appendChange(feed.results, changeObj));
+    .forEach(changeObj => appendChange(feed.results, changeObj, forceSeq));
 };
 
 // returns true if an authorization change is found
@@ -185,9 +199,7 @@ const getChanges = feed => {
   return feed.upstreamRequest
     .then(response => {
       const results = response && response.results;
-      feed.lastSeq = response.last_seq;
       // if the response was incomplete
-
       if (!results) {
         feed.lastSeq = feed.initSeq;
         feed.results = [];
@@ -199,6 +211,14 @@ const getChanges = feed => {
         return getChanges(feed);
       }
 
+      // Fixes race condition where a new doc is added while the changes feed is active,
+      // but our continuousFeed listener receives the change after the response has been sent.
+      // When receiving empty results, PouchDB considers replication to be complete and
+      // uses reponse.last_seq to write it's checkpointer doc.
+      // By not advancing the checkpointer seq past our last change, we make sure these docs will be retrieved
+      // in the next replication attempt.
+      feed.lastSeq = results.length ? results[results.length - 1].seq : feed.currentSeq;
+
       generateTombstones(results);
       feed.results = results;
 
@@ -207,7 +227,7 @@ const getChanges = feed => {
         return reauthorizeRequest(feed);
       }
 
-      processPendingChanges(feed);
+      processPendingChanges(feed, limitChangesRequests && feed.lastSeq);
 
       if (feed.results.length || !isLongpoll(feed.req)) {
         // send response downstream
@@ -235,6 +255,7 @@ const initFeed = (req, res) => {
     res: res,
     initSeq: req.query && req.query.since || 0,
     lastSeq: req.query && req.query.since || currentSeq,
+    currentSeq: currentSeq,
     pendingChanges: [],
     results: [],
     limit: req.query && req.query.limit || config.get('changes_controller').changes_limit,
@@ -302,10 +323,7 @@ const processChange = (change, seq) => {
   delete change.doc;
 
   // inform the normal feeds that a change was received while they were processing
-  normalFeeds.forEach(feed => {
-    feed.lastSeq = seq;
-    feed.pendingChanges.push(changeObj);
-  });
+  normalFeeds.forEach(feed => feed.pendingChanges.push(changeObj));
 
   // send the change through to the longpoll feeds which are allowed to see it
   longpollFeeds.forEach(feed => {
@@ -359,11 +377,16 @@ const shouldLimitChangesRequests = couchDbVersion => {
     false;
 };
 
+const initCurrentSeq = () => db.medic.info().then(info => currentSeq = info.update_seq);
+
 const init = () => {
   if (!inited) {
     inited = true;
     initContinuousFeed();
-    return initServerChecks();
+    return Promise.all([
+      initCurrentSeq(),
+      initServerChecks()
+    ]);
   }
 
   return Promise.resolve();
