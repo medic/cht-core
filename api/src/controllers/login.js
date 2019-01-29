@@ -10,7 +10,7 @@ const fs = require('fs'),
   SESSION_COOKIE_RE = /AuthSession\=([^;]*);/,
   ONE_YEAR = 31536000000,
   logger = require('../logger'),
-  db = require('../db-pouch'),
+  db = require('../db'),
   production = process.env.NODE_ENV === 'production';
 
 let loginTemplate;

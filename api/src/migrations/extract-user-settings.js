@@ -1,7 +1,7 @@
 var async = require('async'),
     {promisify} = require('util'),
     _ = require('underscore'),
-    db = require('../db-pouch');
+    db = require('../db');
 
 var fieldsToIncludeInBoth = [ '_id', 'name', 'facility_id', 'roles' ];
 var fieldsToOmitFromSettings = [ '_rev', 'salt', 'derived_key', 'password_scheme', 'iterations', 'type' ];

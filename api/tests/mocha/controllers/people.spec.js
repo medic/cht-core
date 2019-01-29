@@ -2,7 +2,7 @@ const controller = require('../../../src/controllers/people'),
       chai = require('chai'),
       places = require('../../../src/controllers/places'),
       cutils = require('../../../src/controllers/utils'),
-      db = require('../../../src/db-pouch'),
+      db = require('../../../src/db'),
       sinon = require('sinon');
 
 describe('people controller', () => {

@@ -1,4 +1,4 @@
-var db = require('../db-pouch');
+var db = require('../db');
 
 module.exports = {
   name: 'drop-couchmark-db',

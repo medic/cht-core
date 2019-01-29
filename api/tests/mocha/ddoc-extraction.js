@@ -1,6 +1,6 @@
 const ddocExtraction = require('../../src/ddoc-extraction'),
       sinon = require('sinon'),
-      db = require('../../src/db-pouch'),
+      db = require('../../src/db'),
       chai = require('chai');
 
 require('chai').should();

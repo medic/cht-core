@@ -2,7 +2,7 @@ const chai = require('chai'),
       controller = require('../../../src/controllers/sms-gateway'),
       messageUtils = require('../../../src/message-utils'),
       recordUtils = require('../../../src/controllers/record-utils'),
-      db = require('../../../src/db-pouch'),
+      db = require('../../../src/db'),
       sinon = require('sinon');
 
 describe('sms-gateway controller', () => {

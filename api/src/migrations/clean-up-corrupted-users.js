@@ -1,6 +1,6 @@
 var doWhilst = require('async/doWhilst'),
     {promisify} = require('util'),
-    db = require('../db-pouch'),
+    db = require('../db'),
     BATCH_SIZE = 100;
 
 var update = function(docs, callback) {

@@ -2,7 +2,7 @@
  * This module implements GET and POST to support medic-gateway's API
  * @see https://github.com/medic/medic-gateway
  */
-const db = require('../db-pouch'),
+const db = require('../db'),
       messageUtils = require('../message-utils'),
       recordUtils = require('./record-utils'),
       logger = require('../logger'),

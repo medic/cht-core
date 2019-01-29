@@ -1,5 +1,5 @@
 const { Readable } = require('stream'),
-      db = require('../db-pouch'),
+      db = require('../db'),
       lineage = require('@medic/lineage')(Promise, db.medic);
 
 const BATCH = 100;

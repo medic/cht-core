@@ -1,6 +1,6 @@
 const request = require('request-promise-native');
 const url = require('url');
-const db = require('../db-pouch');
+const db = require('../db');
 const environment = require('../environment');
 const DB_ADMIN_ROLE = '_admin';
 
@@ -43,9 +43,9 @@ module.exports = {
   created: new Date(2016, 4, 26, 15, 10, 0, 0),
   run: () => {
     return getAdmins().then(admins => {
-      return db.users.allDocs({ include_docs: true }).then(results => {
-        const userDocs = result.rows.filter(row => row.id.indexOf('org.couchdb.user:') === 0);
-        return Promise.all(userDocs.map(doc => updateUser(admins, row)));
+      return db.users.allDocs({ include_docs: true }).then(result => {
+        const userRows = result.rows.filter(row => row.id.indexOf('org.couchdb.user:') === 0);
+        return Promise.all(userRows.map(row => updateUser(admins, row)));
       });
     });
   }

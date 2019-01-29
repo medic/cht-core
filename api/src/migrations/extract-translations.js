@@ -1,12 +1,12 @@
 const _ = require('underscore');
-const db = require('../db-pouch');
+const db = require('../db');
 const settingsService = require('../services/settings');
 const DOC_TYPE = 'translations';
 
 const getDocs = () => {
   const options = { key: [ DOC_TYPE, true ], include_docs: true };
   return db.medic.query('medic-client/doc_by_type', options)
-    .then(response => _.pluck(response.rows, 'doc');
+    .then(response => _.pluck(response.rows, 'doc'));
 };
 
 const mergeEnabled = (settings, docs) => {
@@ -70,5 +70,5 @@ module.exports = {
         return settingsService.update({ translations: null, locales: null });
       });
     });
-  };
+  }
 };

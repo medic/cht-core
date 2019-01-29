@@ -1,5 +1,5 @@
 const auth = require('../auth'),
-      db = require('../db-pouch'),
+      db = require('../db'),
       authorization = require('../services/authorization'),
       _ = require('underscore'),
       heartbeatFilter = require('../services/heartbeat-filter'),

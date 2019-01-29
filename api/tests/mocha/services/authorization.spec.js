@@ -1,4 +1,4 @@
-const db = require('../../../src/db-pouch'),
+const db = require('../../../src/db'),
       sinon = require('sinon'),
       config = require('../../../src/config'),
       auth = require('../../../src/auth'),

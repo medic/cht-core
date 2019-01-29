@@ -1,5 +1,5 @@
 const _ = require('underscore'),
-  db = require('./db-pouch'),
+  db = require('./db'),
   logger = require('./logger'),
   taskUtils = require('@medic/task-utils');
 

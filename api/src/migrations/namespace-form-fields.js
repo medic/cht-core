@@ -5,7 +5,7 @@
 var async = require('async'),
   _ = require('underscore'),
   { promisify } = require('util'),
-  db = require('../db-pouch'),
+  db = require('../db'),
   logger = require('../logger'),
   settingsService = require('../services/settings'),
   forms;

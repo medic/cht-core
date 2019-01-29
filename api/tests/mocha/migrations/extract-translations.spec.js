@@ -1,6 +1,6 @@
 const sinon = require('sinon'),
       chai = require('chai'),
-      db = require('../../../src/db-nano'),
+      db = require('../../../src/db'),
       settingsService = require('../../../src/services/settings'),
       migration = require('../../../src/migrations/extract-translations');
 
@@ -12,24 +12,23 @@ describe('extract-person-contacts migration', () => {
 
   it('returns errors from getSettings', done => {
     const getSettings = sinon.stub(settingsService, 'get').returns(Promise.reject('boom'));
-    migration.run(err => {
+    migration.run().catch(err => {
       chai.expect(err).to.equal('boom');
       chai.expect(getSettings.callCount).to.equal(1);
       done();
     });
   });
 
-  it('does nothing if no configured translations', done => {
+  it('does nothing if no configured translations', () => {
     const translations = [];
     const locales = [];
-    const getSettings = sinon.stub(settingsService, 'get').returns(Promise.resolve({ translations: translations, locales: locales }));
-    const view = sinon.stub(db.medic, 'view');
-    const bulk = sinon.stub(db.medic, 'bulk');
-    migration.run(err => {
+    const getSettings = sinon.stub(settingsService, 'get').resolves({ translations: translations, locales: locales });
+    const view = sinon.stub(db.medic, 'query');
+    const bulk = sinon.stub(db.medic, 'bulkDocs');
+    return migration.run().then(() => {
       chai.expect(getSettings.callCount).to.equal(1);
       chai.expect(view.callCount).to.equal(0);
       chai.expect(bulk.callCount).to.equal(0);
-      done(err);
     });
   });
 
@@ -47,10 +46,10 @@ describe('extract-person-contacts migration', () => {
       { code: 'en', name: 'English' },
       { code: 'es', name: 'Español (Spanish)' }
     ];
-    const getSettings = sinon.stub(settingsService, 'get').returns(Promise.resolve({ translations: translations, locales: locales }));
-    const view = sinon.stub(db.medic, 'view').callsArgWith(3, 'boom');
-    const bulk = sinon.stub(db.medic, 'bulk');
-    migration.run(err => {
+    const getSettings = sinon.stub(settingsService, 'get').resolves({ translations: translations, locales: locales });
+    const view = sinon.stub(db.medic, 'query').returns(Promise.reject('boom'));
+    const bulk = sinon.stub(db.medic, 'bulkDocs');
+    migration.run().catch(err => {
       chai.expect(err).to.equal('boom');
       chai.expect(getSettings.callCount).to.equal(1);
       chai.expect(view.callCount).to.equal(1);
@@ -59,7 +58,7 @@ describe('extract-person-contacts migration', () => {
     });
   });
 
-  it('does nothing if no docs', done => {
+  it('does nothing if no docs', () => {
     // should only happen if a configurer has deleted all the docs...
     const translations = [
       { key: 'hello', default: 'Hi', translations: [
@@ -75,18 +74,17 @@ describe('extract-person-contacts migration', () => {
       { code: 'es', name: 'Español (Spanish)' }
     ];
     const docs = { rows: [] };
-    const getSettings = sinon.stub(settingsService, 'get').returns(Promise.resolve({ translations: translations, locales: locales }));
-    const view = sinon.stub(db.medic, 'view').callsArgWith(3, null, docs);
-    const bulk = sinon.stub(db.medic, 'bulk');
-    const updateSettings = sinon.stub(settingsService, 'update').returns(Promise.resolve());
-    migration.run(err => {
+    const getSettings = sinon.stub(settingsService, 'get').resolves({ translations: translations, locales: locales });
+    const view = sinon.stub(db.medic, 'query').resolves(docs);
+    const bulk = sinon.stub(db.medic, 'bulkDocs');
+    const updateSettings = sinon.stub(settingsService, 'update').resolves();
+    return migration.run().then(() => {
       chai.expect(getSettings.callCount).to.equal(1);
       chai.expect(view.callCount).to.equal(1);
       chai.expect(bulk.callCount).to.equal(0);
       chai.expect(updateSettings.callCount).to.equal(1);
       chai.expect(updateSettings.args[0][0].translations).to.equal(null);
       chai.expect(updateSettings.args[0][0].locales).to.equal(null);
-      done(err);
     });
   });
 
@@ -117,11 +115,11 @@ describe('extract-person-contacts migration', () => {
         }
       } }
     ] };
-    const getSettings = sinon.stub(settingsService, 'get').returns(Promise.resolve({ translations: translations, locales: locales }));
-    const view = sinon.stub(db.medic, 'view').callsArgWith(3, null, docs);
-    const bulk = sinon.stub(db.medic, 'bulk').callsArgWith(1, 'boom');
+    const getSettings = sinon.stub(settingsService, 'get').resolves({ translations: translations, locales: locales });
+    const view = sinon.stub(db.medic, 'query').resolves(docs);
+    const bulk = sinon.stub(db.medic, 'bulkDocs').returns(Promise.reject('boom'));
     const updateSettings = sinon.stub(settingsService, 'update');
-    migration.run(err => {
+    migration.run().catch(err => {
       chai.expect(err).to.equal('boom');
       chai.expect(getSettings.callCount).to.equal(1);
       chai.expect(view.callCount).to.equal(1);
@@ -158,11 +156,11 @@ describe('extract-person-contacts migration', () => {
         }
       } }
     ] };
-    const getSettings = sinon.stub(settingsService, 'get').returns(Promise.resolve({ translations: translations, locales: locales }));
-    const view = sinon.stub(db.medic, 'view').callsArgWith(3, null, docs);
-    const bulk = sinon.stub(db.medic, 'bulk').callsArgWith(1);
+    const getSettings = sinon.stub(settingsService, 'get').resolves({ translations: translations, locales: locales });
+    const view = sinon.stub(db.medic, 'query').resolves(docs);
+    const bulk = sinon.stub(db.medic, 'bulkDocs').resolves();
     const updateSettings = sinon.stub(settingsService, 'update').returns(Promise.reject('boom'));
-    migration.run(err => {
+    migration.run().catch(err => {
       chai.expect(err).to.equal('boom');
       chai.expect(getSettings.callCount).to.equal(1);
       chai.expect(view.callCount).to.equal(1);
@@ -172,7 +170,7 @@ describe('extract-person-contacts migration', () => {
     });
   });
 
-  it('merges configuration into docs', done => {
+  it('merges configuration into docs', () => {
     const translations = [
       { key: 'hello', default: 'Hi', translations: [
         { locale: 'en', content: 'Hello configured' },
@@ -223,11 +221,11 @@ describe('extract-person-contacts migration', () => {
         }
       } }
     ] };
-    const getSettings = sinon.stub(settingsService, 'get').returns(Promise.resolve({ translations: translations, locales: locales }));
-    const view = sinon.stub(db.medic, 'view').callsArgWith(3, null, docs);
-    const bulk = sinon.stub(db.medic, 'bulk').callsArgWith(1);
-    const updateSettings = sinon.stub(settingsService, 'update').returns(Promise.resolve());
-    migration.run(err => {
+    const getSettings = sinon.stub(settingsService, 'get').resolves({ translations: translations, locales: locales });
+    const view = sinon.stub(db.medic, 'query').resolves(docs);
+    const bulk = sinon.stub(db.medic, 'bulk').resolves();
+    const updateSettings = sinon.stub(settingsService, 'update').resolves();
+    return migration.run().then(() => {
       chai.expect(getSettings.callCount).to.equal(1);
       chai.expect(view.callCount).to.equal(1);
       chai.expect(view.args[0][0]).to.equal('medic-client');
@@ -277,7 +275,6 @@ describe('extract-person-contacts migration', () => {
       chai.expect(updateSettings.callCount).to.equal(1);
       chai.expect(updateSettings.args[0][0].translations).to.equal(null);
       chai.expect(updateSettings.args[0][0].locales).to.equal(null);
-      done(err);
     });
   });
 

@@ -4,7 +4,7 @@ const request = require('request-promise-native'),
       sinon = require('sinon'),
       auth = require('../../src/auth'),
       config = require('../../src/config'),
-      db = require('../../src/db-pouch'),
+      db = require('../../src/db'),
       environment = require('../../src/environment');
 
 let originalServerUrl;

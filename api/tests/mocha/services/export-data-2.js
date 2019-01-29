@@ -1,6 +1,6 @@
 require('chai').should();
 
-const db = require('../../../src/db-pouch'),
+const db = require('../../../src/db'),
       service = require('../../../src/services/export-data-2'),
       reportMapper = require('../../../src/services/export/report-mapper'),
       contactMapper = require('../../../src/services/export/contact-mapper'),

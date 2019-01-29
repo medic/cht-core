@@ -1,6 +1,6 @@
 const sinon = require('sinon'),
       chai = require('chai'),
-      db = require('../../../src/db-nano'),
+      db = require('../../../src/db'),
       people = require('../../../src/controllers/people'),
       places = require('../../../src/controllers/places'),
       migration = require('../../../src/migrations/extract-person-contacts');
@@ -14,9 +14,9 @@ let createPerson,
 describe('extract-person-contacts migration', () => {
 
   beforeEach(() => {
-    getView = sinon.stub(db.medic, 'view');
+    getView = sinon.stub(db.medic, 'query');
     getDoc = sinon.stub(db.medic, 'get');
-    insertDoc = sinon.stub(db.medic, 'insert');
+    insertDoc = sinon.stub(db.medic, 'put');
     updatePlace = sinon.stub(places, 'updatePlace');
     createPerson = sinon.stub(people, 'createPerson');
   });
@@ -26,8 +26,8 @@ describe('extract-person-contacts migration', () => {
   });
 
   it('run does nothing if no facilities', done => {
-    getView.callsArgWith(3, null, { rows: [] });
-    getDoc.callsArgWith(1, null, {  });
+    getView.resolves({ rows: [] });
+    getDoc.resolves({  });
     migration.run(err => {
       // Called once per place type.
       chai.expect(getView.callCount).to.equal(3);
@@ -42,32 +42,31 @@ describe('extract-person-contacts migration', () => {
 
   it('run attempts to revert the contact on error', done => {
     // Migrate one type: Get the 3 levels of hierarchy
-    getView.onCall(0).callsArgWith(3, null, { rows: [ { id: 'a' }] });
-    getView.onCall(1).callsArgWith(3, null, { rows: [ ] });
-    getView.onCall(2).callsArgWith(3, null, { rows: [ ] });
+    getView.onCall(0).resolves({ rows: [ { id: 'a' }] });
+    getView.onCall(1).resolves({ rows: [ ] });
+    getView.onCall(2).resolves({ rows: [ ] });
 
     // updateParents: Get doc for parent update
-    getDoc.onCall(0).callsArgWith(1, null, {
+    getDoc.onCall(0).resolves({
         _id: 'a',
         contact: { name: 'name', phone: 'phone'},
         parent: {_id: 'b', contact: { name: 'name1', 'phone': 'phone1' }}
       });
     // removeParent : insert place with deleted parent
-    insertDoc.onCall(0).callsArg(1);
+    insertDoc.onCall(0).resolves();
     // resetParent: get parent to reset
-    getDoc.onCall(1).callsArgWith(1, null, { _id: 'b', contact: {}, newKey: 'newValue' });
+    getDoc.onCall(1).resolves({ _id: 'b', contact: {}, newKey: 'newValue' });
     // resetParent: update the place
     updatePlace.onCall(0).resolves();
 
     // Get doc for contact update
-    getDoc.onCall(2).callsArgWith(1, null,
-      {
-        _id: 'a',
-        contact: { name: 'name', phone: 'phone'},
-        parent: { _id: 'b', contact: {_id: 'f'}}
-      });
+    getDoc.onCall(2).resolves({
+      _id: 'a',
+      contact: { name: 'name', phone: 'phone'},
+      parent: { _id: 'b', contact: {_id: 'f'}}
+    });
     // Update doc : deleted contact
-    insertDoc.onCall(1).callsArg(1);
+    insertDoc.onCall(1).resolves();
     // Create person doc
     createPerson.onCall(0).resolves({ id: 'c'});
     // Update doc : reset the contact field

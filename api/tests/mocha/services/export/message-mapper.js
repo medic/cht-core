@@ -3,7 +3,7 @@ const sinon = require('sinon'),
       service = require('../../../../src/services/export/message-mapper'),
       messageUtils = require('@medic/message-utils'),
       registrationUtils = require('@medic/registration-utils'),
-      db = require('../../../../src/db-pouch'),
+      db = require('../../../../src/db'),
       config = require('../../../../src/config');
 
 describe('Message mapper', () => {

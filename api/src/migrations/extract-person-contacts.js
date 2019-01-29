@@ -1,6 +1,6 @@
 var async = require('async'),
   { promisify } = require('util'),
-  db = require('../db-pouch'),
+  db = require('../db'),
   logger = require('../logger'),
   people = require('../controllers/people'),
   places = require('../controllers/places');

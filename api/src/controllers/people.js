@@ -1,5 +1,5 @@
 const _ = require('underscore'),
-      db = require('../db-pouch'),
+      db = require('../db'),
       utils = require('./utils'),
       places = require('./places'),
       lineage = require('@medic/lineage')(Promise, db.medic);

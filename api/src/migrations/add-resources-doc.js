@@ -1,4 +1,4 @@
-const db = require('../db-pouch');
+const db = require('../db');
 const RESOURCES_ID = 'resources';
 
 module.exports = {

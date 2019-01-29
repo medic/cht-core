@@ -1,5 +1,5 @@
 const _ = require('underscore'),
-  db = require('./db-pouch'),
+  db = require('./db'),
   ddocExtraction = require('./ddoc-extraction'),
   translations = require('./translations'),
   defaults = require('./config.default.json'),

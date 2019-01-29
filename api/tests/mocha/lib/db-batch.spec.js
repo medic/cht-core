@@ -1,5 +1,5 @@
 const lib = require('../../../src/db-batch'),
-      db = require('../../../src/db-pouch'),
+      db = require('../../../src/db'),
       chai = require('chai'),
       sinon = require('sinon'),
       viewName = 'myddoc/myview',

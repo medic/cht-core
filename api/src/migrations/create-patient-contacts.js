@@ -1,6 +1,6 @@
 var _ = require('underscore'),
   { promisify } = require('util'),
-  db = require('../db-pouch'),
+  db = require('../db'),
   logger = require('../logger'),
   async = require('async'),
   registrationUtils = require('@medic/registration-utils'),

@@ -1,5 +1,5 @@
 const _ = require('underscore');
-const db = require('../db-pouch');
+const db = require('../db');
 const batch = require('../db-batch');
 
 const getClinic = id => {
@@ -17,7 +17,7 @@ const getClinic = id => {
     })
     .catch(err => {
       if (err.status === 404) {
-        return();
+        return;
       }
       throw err;
     });
@@ -25,14 +25,14 @@ const getClinic = id => {
 
 const getContact = (contactId, clinicId) => {
   if (!contactId) {
-    return getClinic(clinicId, callback);
+    return getClinic(clinicId);
   }
   return db.medic.get(contactId).catch(err => {
     if (err.status === 404) {
       return getClinic(clinicId);
     }
     throw err;
-  })
+  });
 };
 
 const getContactForOutgoingMessages = message => {

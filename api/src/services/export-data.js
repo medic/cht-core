@@ -3,7 +3,7 @@ var _ = require('underscore'),
   moment = require('moment'),
   xmlbuilder = require('xmlbuilder'),
   config = require('../config'),
-  db = require('../db-pouch'),
+  db = require('../db'),
   lineage = require('@medic/lineage')(Promise, db.medic);
 
 var createColumnModels = function(values, options) {

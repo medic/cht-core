@@ -1,4 +1,4 @@
-const db = require('../db-pouch'),
+const db = require('../db'),
       auth = require('../auth'),
       serverUtils = require('../server-utils'),
       recordUtils = require('./record-utils');

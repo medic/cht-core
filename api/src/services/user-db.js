@@ -1,6 +1,6 @@
 const request = require('request-promise-native');
 const url = require('url');
-const db = require('../db-pouch');
+const db = require('../db');
 const environment = require('../environment');
 
 // Regex to test for characters that are invalid in db names

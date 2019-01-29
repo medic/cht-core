@@ -4,7 +4,7 @@ const fs = require('fs');
 const path = require('path');
 const readFileAsync = promisify(fs.readFile);
 const logger = require('../../../src/logger');
-const db = require('../../../src/db-pouch');
+const db = require('../../../src/db');
 const request = require('request-promise-native');
 
 const PouchDB = require('pouchdb-core');
@@ -19,7 +19,7 @@ const byId = (a, b) => {
   } else {
     return 1;
   }
-}
+};
 
 const matches = (expected, actual) => {
   var i, k;
@@ -62,9 +62,9 @@ const matches = (expected, actual) => {
     }
     return true;
   }
-}
+};
 
-const assertDb => expected {
+const assertDb = expected => {
   return db.get('medic-test').allDocs({ include_docs: true })
     .then(results => {
       var actual = results.rows.map(row =>_.omit(row.doc, ['_rev']));
@@ -82,9 +82,9 @@ const assertDb => expected {
 
       matchDbs(expected, actual);
     });
-}
+};
 
-const matchDbs =>(expected, actual) {
+const matchDbs = (expected, actual) => {
   var errors = [];
 
   // split expected data into docs with an ID and those without
@@ -148,7 +148,7 @@ const matchDbs =>(expected, actual) {
       'Database contents not as expected: \n\t' + errors.join(';\n\t')
     );
   }
-}
+};
 
 const realPouchDb = db.medic;
 const switchToRealDbs = () => {
@@ -183,7 +183,7 @@ const initDb = content => {
         content.map(doc => db.medic.put(doc))
       );
     });
-}
+};
 
 const _resetDb = () => {
   return db.exists('medic-test')
@@ -210,17 +210,17 @@ const _resetDb = () => {
         }, 3000);
       });
     });
-}
+};
 
 const tearDown = () => {
   switchToRealDbs();
-}
+};
 
 const runMigration = migration => {
   var migrationPath = '../../../src/migrations/' + migration;
   migration = require(migrationPath);
   return migration.run();
-}
+};
 
 const initSettings = settings => {
   return getSettings()
@@ -228,13 +228,13 @@ const initSettings = settings => {
       _.extend(doc.settings, settings);
       return doc;
     })
-    .then(doc => return db.medic.put(doc))
+    .then(doc => db.medic.put(doc))
     .then(() => {
       return new Promise(resolve => {
         setTimeout(resolve, 1000);
       });
     });
-}
+};
 
 const getSettings = () => {
   return db.medic.get('settings').catch(err => {
@@ -243,7 +243,7 @@ const getSettings = () => {
     }
     throw err;
   });
-}
+};
 
 const getDdoc = ddocId => db.medic.get(ddocId);
 
@@ -255,7 +255,7 @@ const insertAttachment = (ddoc, attachment) => {
     attachment.content,
     attachment.content_type
   );
-}
+};
 
 module.exports = {
   assertDb: assertDb,

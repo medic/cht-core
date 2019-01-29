@@ -1,4 +1,4 @@
-const db = require('../db-pouch'),
+const db = require('../db'),
       userDb = require('../services/user-db'),
       batch = require('../db-batch');
 

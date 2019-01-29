@@ -11,7 +11,7 @@
  * Example:
  *  COUCH_URL=http://admin:pass@localhost:5984/medic node index xml-attachments,read-status,linked-contacts 105
  */
-const db = require('../db-pouch').medic,
+const db = require('../db').medic,
   logger = require('../logger');
 
 const PAGE_LIMIT = 100,

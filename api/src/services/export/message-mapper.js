@@ -1,6 +1,6 @@
 const _ = require('underscore'),
       moment = require('moment'),
-      db = require('../../db-pouch'),
+      db = require('../../db'),
       config = require('../../config'),
       messageUtils = require('@medic/message-utils'),
       registrationUtils = require('@medic/registration-utils');

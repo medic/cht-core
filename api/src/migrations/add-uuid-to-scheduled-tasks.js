@@ -1,4 +1,4 @@
-const db = require('../db-pouch');
+const db = require('../db');
 const moment = require('moment');
 const uuidV4 = require('uuid/v4');
 const logger = require('../logger');

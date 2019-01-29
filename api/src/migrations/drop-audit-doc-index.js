@@ -1,4 +1,4 @@
-var db = require('../db-pouch'),
+var db = require('../db'),
   { promisify } = require('util'),
   async = require('async'),
   logger = require('../logger'),

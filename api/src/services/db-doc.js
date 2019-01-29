@@ -1,4 +1,4 @@
-const db = require('../db-pouch'),
+const db = require('../db'),
       authorization = require('./authorization'),
       _ = require('underscore');
 

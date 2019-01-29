@@ -1,6 +1,6 @@
 var _ = require('underscore'),
     {promisify} = require('util'),
-    db = require('../db-pouch'),
+    db = require('../db'),
     PouchDB = require('pouchdb-core'),
     environment = require('../environment'),
     logger = require('../logger'),

@@ -1,4 +1,4 @@
-const db = require('../../../../src/db-pouch');
+const db = require('../../../../src/db');
 
 module.exports = {
   name: 'extract-person-contacts',

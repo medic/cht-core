@@ -1,6 +1,6 @@
 const chai = require('chai'),
       sinon = require('sinon'),
-      db = require('../../../src/db-pouch'),
+      db = require('../../../src/db'),
       service = require('../../../src/services/upgrade');
 
 describe('Upgrade service', () => {
