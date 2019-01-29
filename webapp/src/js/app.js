@@ -29,7 +29,9 @@ require('angular-translate-handler-log');
 require('angular-ui-bootstrap');
 var uiRouter = require('@uirouter/angularjs').default;
 
+var redux = require('redux');
 require('ng-redux');
+var reducers = require('./reducers');
 
 require('moment');
 require('moment/locale/bm');
@@ -41,6 +43,8 @@ require('moment/locale/ne');
 require('moment/locale/sw');
 
 require('./services');
+require('./actions');
+require('./components');
 require('./controllers');
 require('./filters');
 require('./directives');
@@ -64,6 +68,7 @@ _.templateSettings = {
     uiRouter,
     'inboxDirectives',
     'inboxFilters',
+    'inboxComponents',
     'inboxControllers',
     'inboxServices',
     'pascalprecht.translate',
@@ -95,11 +100,7 @@ _.templateSettings = {
     );
     var isDevelopment = window.location.hostname === 'localhost';
     $compileProvider.debugInfoEnabled(isDevelopment);
-    var reducers = {
-      contacts: function() {
-        return 'hello world';
-      }
-    };
+    // var reducer = redux.combineReducers(reducers);
     $ngReduxProvider.createStoreWith(reducers, [], [window.__REDUX_DEVTOOLS_EXTENSION__()]);
   });
 
@@ -139,7 +140,7 @@ _.templateSettings = {
   };
 
   // Detects reloads or route updates (#/something)
-  app.run(function($rootScope, $state, $transitions, Auth) {
+  app.run(function($rootScope, $state, $transitions, Auth, $ngRedux, $timeout) {
     $transitions.onStart({}, function(trans) {
       if (trans.to().name.indexOf('error') === -1) {
         var permission = getRequiredPermission(trans.to().name);

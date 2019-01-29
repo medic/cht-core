@@ -3,6 +3,7 @@
   'use strict';
 
   angular.module('inboxControllers', []);
+  angular.module('inboxComponents', []);
 
   require('./inbox');
 

@@ -10,6 +10,7 @@ var feedback = require('../modules/feedback'),
 
   inboxControllers.controller('InboxCtrl', function(
     $log,
+    $ngRedux,
     $q,
     $rootScope,
     $scope,
@@ -19,6 +20,7 @@ var feedback = require('../modules/feedback'),
     $transitions,
     $translate,
     $window,
+    Actions,
     APP_CONFIG,
     Auth,
     Changes,
@@ -74,6 +76,8 @@ var feedback = require('../modules/feedback'),
     );
 
     Session.init();
+
+    var actions = Actions($ngRedux.dispatch);
 
     if ($window.location.href.indexOf('localhost') !== -1) {
       Debug.set(Debug.get()); // Initialize with cookie
@@ -247,11 +251,11 @@ var feedback = require('../modules/feedback'),
 
     $transitions.onStart({}, function(trans) {
       if (trans.to().name.indexOf('reports') === -1 || trans.to().name.indexOf('contacts') === -1 || trans.to().name.indexOf('tasks') === -1 || trans.to().name.indexOf('messages.detail') === -1) {
-        $scope.unsetSelected();
+        actions.unsetSelected();
       }
       if (trans.to().name.indexOf('tasks.detail') === -1) {
         Enketo.unload($scope.form);
-        $scope.unsetSelected();
+        actions.unsetSelected();
       }
       if (trans.to().name.split('.')[0] !== trans.from().name.split('.')[0]){
         $scope.clearSelection();
