@@ -6,14 +6,17 @@ var _ = require('underscore'),
     async = require('async');
 
 var DDOC_NAME = '_design/medic';
-var DDOC = {'views': {'audit_records_by_doc': {'map': 'function (doc) {if (doc.type === \'audit_record\') {emit([doc.record_id], 1);}}'}}};
+var DDOC = {
+  _id: DDOC_NAME,
+  views: {'audit_records_by_doc': {'map': 'function (doc) {if (doc.type === \'audit_record\') {emit([doc.record_id], 1);}}'}}
+};
 var BATCH_SIZE = 100;
 
 var ensureViewDdocExists = function(auditDb, callback) {
   auditDb.get(DDOC_NAME, function(err) {
     if (err && err.status === 404) {
       logger.info(`${DDOC_NAME} audit ddoc does not exist, creating`);
-      return auditDb.put(DDOC, DDOC_NAME, callback);
+      return auditDb.put(DDOC, callback);
     } else {
       return callback();
     }
