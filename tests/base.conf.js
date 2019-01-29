@@ -1,6 +1,8 @@
-const utils = require('./utils'),
-      constants = require('./constants'),
-      auth = require('./auth')();
+const fs = require('fs');
+const utils = require('./utils');
+const constants = require('./constants');
+const auth = require('./auth')();
+const browserLogStream = fs.createWriteStream(__dirname + '/../tests/logs/browser.console.log');
 
 class BaseConfig {
   constructor(testSrcDir, { headless=true }={}) {
@@ -40,6 +42,16 @@ class BaseConfig {
 
         browser.driver.wait(startApi(), 135 * 1000, 'API took too long to start up');
         browser.driver.sleep(10000); // wait for startup to complete
+
+        afterEach(() => {
+          browser.manage().logs().get('browser').then(logs => {
+            const formatted = logs
+              .filter(log => log.level.value_ > 900)
+              .map(log => `[${log.level.name_}] ${log.message}\n`)
+              .forEach(log => browserLogStream.write(log));
+            browserLogStream.write('\n~~~~~~~~~~~~~~~~~~~~~\n\n');
+          });
+        });
 
         return login(browser);
       },
