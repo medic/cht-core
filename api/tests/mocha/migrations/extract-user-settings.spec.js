@@ -48,7 +48,7 @@ describe('extract-user-settings migration', () => {
   });
 
   it('returns list errors', done => {
-    const list = sinon.stub(db.users, 'allDocs').returns(Promise.reject('boom'));
+    const list = sinon.stub(db.users, 'allDocs').callsArgWith(1, 'boom');
     migration.run().catch(err => {
       chai.expect(err).to.equal('boom');
       chai.expect(list.callCount).to.equal(1);
@@ -58,23 +58,23 @@ describe('extract-user-settings migration', () => {
   });
 
   it('does nothing if no users', () => {
-    const list = sinon.stub(db.users, 'allDocs').resolves({ rows: [] });
+    const list = sinon.stub(db.users, 'allDocs').callsArgWith(1, null, { rows: [] });
     return migration.run().then(() => {
       chai.expect(list.callCount).to.equal(1);
     });
   });
 
   it('ignores users ddoc', () => {
-    const list = sinon.stub(db.users, 'allDocs').resolves({ rows: [ ddoc ] });
+    const list = sinon.stub(db.users, 'allDocs').callsArgWith(1, null, { rows: [ ddoc ] });
     return migration.run().then(() => {
       chai.expect(list.callCount).to.equal(1);
     });
   });
 
   it('returns errors from insert', done => {
-    const list = sinon.stub(db.users, 'allDocs').resolves({ rows: [ ddoc, userA, userB ] });
-    sinon.stub(db.medic, 'get').returns(Promise.reject({ error: 'not_found'}));
-    sinon.stub(db.medic, 'put').returns(Promise.reject('boom'));
+    const list = sinon.stub(db.users, 'allDocs').callsArgWith(1, null, { rows: [ ddoc, userA, userB ] });
+    sinon.stub(db.medic, 'get').callsArgWith(1, { error: 'not_found'});
+    sinon.stub(db.medic, 'put').callsArgWith(1, 'boom');
     migration.run().catch(err => {
       chai.expect(err).to.equal('boom');
       chai.expect(list.callCount).to.equal(1);
@@ -83,13 +83,13 @@ describe('extract-user-settings migration', () => {
   });
 
   it('returns errors from update', done => {
-    sinon.stub(db.users, 'allDocs').resolves({ rows: [ ddoc, userA, userB ] });
-    sinon.stub(db.medic, 'get').returns(Promise.reject({ error: 'not_found'}));
-    const medicInsert = sinon.stub(db.medic, 'insert');
+    sinon.stub(db.users, 'allDocs').callsArgWith(1, null, { rows: [ ddoc, userA, userB ] });
+    sinon.stub(db.medic, 'get').callsArgWith(1, { error: 'not_found'});
+    const medicInsert = sinon.stub(db.medic, 'put');
     medicInsert
       .onFirstCall().callsArg(1)
       .onSecondCall().callsArg(1);
-    sinon.stub(db._users, 'insert').callsArgWith(1, 'boom');
+    sinon.stub(db.users, 'put').callsArgWith(1, 'boom');
 
     migration.run().catch(err => {
       chai.expect(err).to.equal('boom');
@@ -98,17 +98,17 @@ describe('extract-user-settings migration', () => {
   });
 
   it('saves doc for settings', () => {
-    const list = sinon.stub(db.users, 'allDocs').resolves({ rows: [ ddoc, userA, userB ] });
+    const list = sinon.stub(db.users, 'allDocs').callsArgWith(1, null, { rows: [ ddoc, userA, userB ] });
     // user-settings doesn't exist yet.
-    sinon.stub(db.medic, 'get').returns(Promise.reject({ error: 'not_found'}));
+    sinon.stub(db.medic, 'get').callsArgWith(1, { error: 'not_found'});
     const medicInsert = sinon.stub(db.medic, 'put');
     medicInsert
-      .onFirstCall().resolves()
-      .onSecondCall().resolves();
-    const userUpdate = sinon.stub(db._users, 'put');
+      .onFirstCall().callsArg(1)
+      .onSecondCall().callsArg(1);
+    const userUpdate = sinon.stub(db.users, 'put');
     userUpdate
-      .onFirstCall().resolves()
-      .onSecondCall().resolves();
+      .onFirstCall().callsArg(1)
+      .onSecondCall().callsArg(1);
 
     return migration.run().then(() => {
       chai.expect(list.callCount).to.equal(1);
@@ -163,11 +163,11 @@ describe('extract-user-settings migration', () => {
   it('converts "known" field to boolean', () => {
     // String value instead of boolean.
     userA.known = 'true';
-    sinon.stub(db.users, 'allDocs').resolves({ rows: [ ddoc, userA ] });
+    sinon.stub(db.users, 'allDocs').callsArgWith(1, null, { rows: [ ddoc, userA ] });
     // user-settings doesn't exist yet.
-    sinon.stub(db.medic, 'get').returns(Promise.reject({ error: 'not_found'}));
-    const medicInsert = sinon.stub(db.medic, 'put').resolves();
-    sinon.stub(db.users, 'put').resolves();
+    sinon.stub(db.medic, 'get').callsArgWith(1, { error: 'not_found'});
+    const medicInsert = sinon.stub(db.medic, 'put').callsArg(1);
+    sinon.stub(db.users, 'put').callsArg(1);
 
     return migration.run().then(() => {
       chai.expect(medicInsert.args[0][0].known).to.equal(true);
@@ -175,16 +175,14 @@ describe('extract-user-settings migration', () => {
   });
 
   it('skips and does not fail when user-settings already exists', () => {
-    const list = sinon.stub(db.users, 'allDocs').resolves({
-      rows: [ ddoc, userA, userB ]
-    });
+    const list = sinon.stub(db.users, 'allDocs').callsArgWith(1, null, { rows: [ ddoc, userA, userB ] });
     const medicGet = sinon.stub(db.medic, 'get');
     medicGet
       // user-settings already exists for userA
-      .onFirstCall().resolves({ _id: userA.id })
-      .onSecondCall().returns(Promise.reject({ error: 'not_found' }));
-    const medicInsert = sinon.stub(db.medic, 'put').resolves();
-    const userUpdate = sinon.stub(db.users, 'put').resolves();
+      .onFirstCall().callsArgWith(1, null, { _id: userA.id })
+      .onSecondCall().callsArgWith(1, { error: 'not_found' });
+    const medicInsert = sinon.stub(db.medic, 'put').callsArg(1);
+    const userUpdate = sinon.stub(db.users, 'put').callsArg(1);
     return migration.run().then(() => {
       chai.expect(list.callCount).to.equal(1);
       chai.expect(medicGet.callCount).to.equal(2);
@@ -203,13 +201,13 @@ describe('extract-user-settings migration', () => {
     userA.doc._id = 'org.couchdb.user:Aa';
     userA.doc.name = 'Aa';
 
-    sinon.stub(db.users, 'allDocs').resolves({ rows: [ ddoc, userA ] });
+    sinon.stub(db.users, 'allDocs').callsArgWith(1, null, { rows: [ ddoc, userA ] });
     // user-settings doesn't exist yet.
-    sinon.stub(db.medic, 'get').returns(Promise.reject({ error: 'not_found'}));
+    sinon.stub(db.medic, 'get').callsArgWith(1, { error: 'not_found'});
     // _users doesn't exist yet.
-    sinon.stub(db.users, 'get').returns(Promise.reject({ error: 'not_found'}));
-    const medicInsert = sinon.stub(db.medic, 'put').resolves();
-    const userUpdate = sinon.stub(db.users, 'put').resolves();
+    sinon.stub(db.users, 'get').callsArgWith(1, { error: 'not_found'});
+    const medicInsert = sinon.stub(db.medic, 'put').callsArg(1);
+    const userUpdate = sinon.stub(db.users, 'put').callsArg(1);
 
     return migration.run().then(() => {
       chai.expect(medicInsert.callCount).to.equal(1);

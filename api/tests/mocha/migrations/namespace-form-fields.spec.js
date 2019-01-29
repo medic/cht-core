@@ -7,14 +7,14 @@ const sinon = require('sinon'),
 const makeStubs = (...viewBatches) => {
   const getView = sinon.stub(db.medic, 'query');
   if (viewBatches.length === 0) {
-    getView.resolves({ total_rows: 0, rows: [] });
+    getView.callsArgWith(2, null, ({ total_rows: 0, rows: [] }));
   } else {
     const totalRows = viewBatches.reduce(
       (total, batch) => total + batch.length,
       0
     );
     viewBatches.forEach(function(batch, index) {
-      getView.onCall(index).resolves({
+      getView.onCall(index).callsArgWith(2, null, {
         total_rows: totalRows,
         rows: batch.map(doc => ({ doc }))
       });
@@ -23,7 +23,7 @@ const makeStubs = (...viewBatches) => {
 
   return {
     getConfig: sinon.stub(settingsService, 'get').resolves({ forms: forms }),
-    bulk: sinon.stub(db.medic, 'bulkDocs').resolves(),
+    bulk: sinon.stub(db.medic, 'bulkDocs').callsArgWith(1),
     getView: getView
   };
 };
@@ -124,13 +124,13 @@ describe('namespace-form-fields migration', () => {
     return migration.run().then(() => {
       chai.expect(stubs.getView.callCount).to.equal(1);
       chai.expect(stubs.bulk.callCount).to.equal(1);
-      chai.expect(stubs.bulk.args[0][0].docs[0].fields).to.deep.equal(expected);
-      chai.expect(stubs.bulk.args[0][0].docs[0].last_menstrual_period).to.equal(undefined);
-      chai.expect(stubs.bulk.args[0][0].docs[0].patient_name).to.equal(undefined);
+      chai.expect(stubs.bulk.args[0][0][0].fields).to.deep.equal(expected);
+      chai.expect(stubs.bulk.args[0][0][0].last_menstrual_period).to.equal(undefined);
+      chai.expect(stubs.bulk.args[0][0][0].patient_name).to.equal(undefined);
     });
   });
 
-  it('run migrates in batches', () => {
+  it('run migrates in batches', done => {
     const BATCH_SIZE = 1;
     const docs = [
         {
@@ -159,21 +159,23 @@ describe('namespace-form-fields migration', () => {
       }
     ];
     const stubs = makeStubs([docs[0]], [docs[1]]);
-    return migration._runWithBatchSize(BATCH_SIZE).then(() => {
+    migration._runWithBatchSize(BATCH_SIZE, function(err) {
       chai.expect(stubs.getView.callCount).to.equal(2);
       chai.expect(stubs.bulk.callCount).to.equal(2);
 
-      chai.expect(stubs.bulk.args[0][0].docs[0].fields).to.deep.equal(expected[0]);
-      chai.expect(stubs.bulk.args[0][0].docs[0].last_menstrual_period).to.equal(undefined);
-      chai.expect(stubs.bulk.args[0][0].docs[0].patient_name).to.equal(undefined);
+      chai.expect(stubs.bulk.args[0][0][0].fields).to.deep.equal(expected[0]);
+      chai.expect(stubs.bulk.args[0][0][0].last_menstrual_period).to.equal(undefined);
+      chai.expect(stubs.bulk.args[0][0][0].patient_name).to.equal(undefined);
 
-      chai.expect(stubs.bulk.args[1][0].docs[0].fields).to.deep.equal(expected[1]);
-      chai.expect(stubs.bulk.args[1][0].docs[0].last_menstrual_period).to.equal(undefined);
-      chai.expect(stubs.bulk.args[1][0].docs[0].patient_name).to.equal(undefined);
+      chai.expect(stubs.bulk.args[1][0][0].fields).to.deep.equal(expected[1]);
+      chai.expect(stubs.bulk.args[1][0][0].last_menstrual_period).to.equal(undefined);
+      chai.expect(stubs.bulk.args[1][0][0].patient_name).to.equal(undefined);
+      chai.expect(!!err).to.equal(true);
+      done();
     });
   });
 
-  it('reports bulk update errors', () => {
+  it('reports bulk update errors', done => {
     const BATCH_SIZE = 2;
     const docs = [
         {
@@ -194,7 +196,7 @@ describe('namespace-form-fields migration', () => {
 
     const stubs = {
       getConfig: sinon.stub(settingsService, 'get').resolves({ forms: forms }),
-      bulk: sinon.stub(db.medic, 'bulkDocs').resolves([
+      bulk: sinon.stub(db.medic, 'bulkDocs').callsArgWith(1, null, [
         {
           id: 'a',
           error: 'conflict',
@@ -206,15 +208,17 @@ describe('namespace-form-fields migration', () => {
           rev: 'blah'
         }
       ]),
-      getView: sinon.stub(db.medic, 'query').resolves({
+      getView: sinon.stub(db.medic, 'query').callsArgWith(2, null, {
         total_rows: 2,
         rows: [ { doc: docs[0]}, { doc: docs[1] }]
       })
     };
 
-    return migration._runWithBatchSize(BATCH_SIZE).then(() => {
+    migration._runWithBatchSize(BATCH_SIZE, function(err) {
       chai.expect(stubs.getView.callCount).to.equal(1);
       chai.expect(stubs.bulk.callCount).to.equal(1);
+      chai.expect(!!err).to.equal(true);
+      done();
     });
   });
 

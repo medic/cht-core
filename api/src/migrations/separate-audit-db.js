@@ -1,7 +1,6 @@
 var _ = require('underscore'),
     {promisify} = require('util'),
     db = require('../db'),
-    PouchDB = require('pouchdb-core'),
     environment = require('../environment'),
     logger = require('../logger'),
     async = require('async');
@@ -37,7 +36,7 @@ var batchMoveAuditDocs = function(auditDb, callback) {
 
     var auditDocIds = doclist.rows.map(function(row) { return row.id;});
 
-    PouchDB.replicate(db.medic, auditDb, { doc_ids: auditDocIds })
+    db.medic.replicate.to(auditDb, { doc_ids: auditDocIds })
       .on('complete', () => {
         db.medic.allDocs({ keys: auditDocIds })
           .then(stubs => {
@@ -49,7 +48,7 @@ var batchMoveAuditDocs = function(auditDb, callback) {
               };
             });
             return db.medic.bulkDocs(bulkDeleteBody)
-              .then(response => response.length);
+              .then(response => callback(null, response.length));
           })
           .catch(callback);
       })

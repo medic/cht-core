@@ -4,7 +4,7 @@ const sinon = require('sinon'),
       settingsService = require('../../../src/services/settings'),
       migration = require('../../../src/migrations/extract-translations');
 
-describe('extract-person-contacts migration', () => {
+describe('extract-translations migration', () => {
 
   afterEach(() => {
     sinon.restore();
@@ -223,18 +223,17 @@ describe('extract-person-contacts migration', () => {
     ] };
     const getSettings = sinon.stub(settingsService, 'get').resolves({ translations: translations, locales: locales });
     const view = sinon.stub(db.medic, 'query').resolves(docs);
-    const bulk = sinon.stub(db.medic, 'bulk').resolves();
+    const bulk = sinon.stub(db.medic, 'bulkDocs').resolves();
     const updateSettings = sinon.stub(settingsService, 'update').resolves();
     return migration.run().then(() => {
       chai.expect(getSettings.callCount).to.equal(1);
       chai.expect(view.callCount).to.equal(1);
-      chai.expect(view.args[0][0]).to.equal('medic-client');
-      chai.expect(view.args[0][1]).to.equal('doc_by_type');
-      chai.expect(view.args[0][2].key[0]).to.equal('translations');
-      chai.expect(view.args[0][2].key[1]).to.equal(true);
-      chai.expect(view.args[0][2].include_docs).to.equal(true);
+      chai.expect(view.args[0][0]).to.equal('medic-client/doc_by_type');
+      chai.expect(view.args[0][1].key[0]).to.equal('translations');
+      chai.expect(view.args[0][1].key[1]).to.equal(true);
+      chai.expect(view.args[0][1].include_docs).to.equal(true);
       chai.expect(bulk.callCount).to.equal(1);
-      chai.expect(bulk.args[0][0].docs).to.deep.equal([
+      chai.expect(bulk.args[0][0]).to.deep.equal([
         {
           _id: 'messages-en',
           _rev: '4-f052fe152cd3989aa14dd80f4267607c',

@@ -38,7 +38,7 @@ const getContact = (contactId, clinicId) => {
 const getContactForOutgoingMessages = message => {
   const facility = message.facility;
   if (facility.type === 'person') {
-    return facility;
+    return Promise.resolve(facility);
   }
   return getContact(facility.contact._id, facility._id);
 };
