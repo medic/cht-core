@@ -124,6 +124,8 @@ describe('Changes controller', () => {
       emitters.push(emitter);
       return emitter;
     });
+
+    sinon.stub(db.medic, 'info').resolves({ update_seq: '' });
   });
 
   describe('init', () => {
@@ -185,6 +187,13 @@ describe('Changes controller', () => {
         controller._getLimitChangesRequests().should.equal(true);
       });
     });
+
+    it('should initialize currentSeq', () => {
+      db.medic.info.resolves({ update_seq: 'my_seq' });
+      return controller._init().then(() => {
+        controller._getCurrentSeq().should.equal('my_seq');
+      });
+    });
   });
 
   describe('request', () => {
@@ -220,28 +229,42 @@ describe('Changes controller', () => {
   describe('initFeed', () => {
     it('initializes feed with default values', () => {
       authorization.getAllowedDocIds.resolves([1, 2, 3]);
-      controller._init();
-      const emitter = controller._getContinuousFeed();
-      emitter.emit('change', { id: 'change' }, 0, 'seq-1');
+      return controller
+        ._init()
+        .then(() => {
+          const emitter = controller._getContinuousFeed();
+          emitter.emit('change', { id: 'change' }, 0, 'seq-1');
+          controller.request(testReq, testRes);
+        })
+        .then(nextTick)
+        .then(() => {
+          const feed = controller._getNormalFeeds()[0];
+          feed.req.should.equal(testReq);
+          feed.res.should.equal(testRes);
+          feed.req.userCtx.should.equal(userCtx);
+          feed.lastSeq.should.equal('seq-1');
+          feed.initSeq.should.equal(0);
+          feed.currentSeq.should.equal('seq-1');
+          feed.pendingChanges.length.should.equal(0);
+          feed.results.length.should.equal(0);
+          feed.limit.should.equal(100);
+          feed.should.not.have.property('heartbeat');
+          feed.should.not.have.property('timeout');
+          feed.reiterate_changes.should.equal(true);
+          feed.debounceEnd.should.be.a('function');
+          clock.tick(60000);
+          testRes.write.callCount.should.equal(0);
+          testRes.end.callCount.should.equal(0);
+          controller._getNormalFeeds().length.should.equal(1);
+      });
+    });
+
+    it('should initialize the feed with correct current_seq', () => {
+      db.medic.info.resolves({ update_seq: '12-seq' });
       controller.request(testReq, testRes);
       return nextTick().then(() => {
         const feed = controller._getNormalFeeds()[0];
-        feed.req.should.equal(testReq);
-        feed.res.should.equal(testRes);
-        feed.req.userCtx.should.equal(userCtx);
-        feed.lastSeq.should.equal('seq-1');
-        feed.initSeq.should.equal(0);
-        feed.pendingChanges.length.should.equal(0);
-        feed.results.length.should.equal(0);
-        feed.limit.should.equal(100);
-        feed.should.not.have.property('heartbeat');
-        feed.should.not.have.property('timeout');
-        feed.reiterate_changes.should.equal(true);
-        feed.debounceEnd.should.be.a('function');
-        clock.tick(60000);
-        testRes.write.callCount.should.equal(0);
-        testRes.end.callCount.should.equal(0);
-        controller._getNormalFeeds().length.should.equal(1);
+        feed.currentSeq.should.equal('12-seq');
       });
     });
 
@@ -702,6 +725,38 @@ describe('Changes controller', () => {
           testRes.write.args[0][0].should.equal(JSON.stringify({
             results: [{ id: 1, seq: 1 }, { id: 2, seq: 2 }, { id: 3, seq: 3 }],
             last_seq: 3
+          }));
+          testRes.end.callCount.should.equal(1);
+          controller._getNormalFeeds().length.should.equal(0);
+          controller._getLongpollFeeds().length.should.equal(0);
+        });
+    });
+
+    it('should copy currentSeq when results are empty', () => {
+      testReq.query = { since: 10 };
+      db.medic.info.resolves({ update_seq: 21 });
+      authorization.getAllowedDocIds.resolves([1, 2]);
+      controller.request(testReq, testRes);
+      const emitter = controller._getContinuousFeed();
+      emitter.emit('change', { id: 22, changes: [], doc: { _id: 22 }}, 0, 22);
+      return nextTick()
+        .then(() => {
+          emitter.emit('change', { id: 23, changes: [], doc: { _id: 23 }}, 0, 23);
+          emitter.emit('change', { id: 24, changes: [], doc: { _id: 24 }}, 0, 24);
+          emitter.emit('change', { id: 25, changes: [], doc: { _id: 25 }}, 0, 25);
+          emitter.emit('change', { id: 26, changes: [], doc: { _id: 26 }}, 0, 26);
+        })
+        .then(nextTick)
+        .then(() => {
+          const feed = controller._getNormalFeeds()[0];
+          feed.upstreamRequest.complete(null, { results: [], last_seq: 26 });
+        })
+        .then(nextTick)
+        .then(() => {
+          testRes.write.callCount.should.equal(1);
+          testRes.write.args[0][0].should.equal(JSON.stringify({
+            results: [],
+            last_seq: 21
           }));
           testRes.end.callCount.should.equal(1);
           controller._getNormalFeeds().length.should.equal(0);
@@ -1678,7 +1733,6 @@ describe('Changes controller', () => {
       tombstoneUtils.generateChangeFromTombstone.args[0][0].should.deep.equal({ id: '1-tombstone' });
       tombstoneUtils.generateChangeFromTombstone.args[1][0].should.deep.equal({ id: '4-tombstone' });
     });
-
   });
 
   describe('processChange', () => {

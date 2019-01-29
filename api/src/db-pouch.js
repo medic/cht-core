@@ -25,6 +25,7 @@ if (UNIT_TEST_ENV) {
     get: stubMe('get'),
     getAttachment: stubMe('getAttachment'),
     changes: stubMe('changes'),
+    info: stubMe('info'),
   };
 
   module.exports.users = {

@@ -81,7 +81,7 @@ const generateResponse = feed => {
 };
 
 // any doc ID should only appear once in the changes feed, with a list of changed revs attached to it
-const appendChange = (results, changeObj, seq) => {
+const appendChange = (results, changeObj, forceSeq = false) => {
   const result = _.findWhere(results, { id: changeObj.id });
   if (!result) {
     const change = JSON.parse(JSON.stringify(changeObj.change));
@@ -94,8 +94,8 @@ const appendChange = (results, changeObj, seq) => {
     // to avoid the possibility of them being skipped.
     // Therefore, their seq is changed to equal the feed's last change seq to avoid PouchDB setting a Checkpointer
     // with a future seq and to use a correct seq when requesting the next batch of changes.
-    if (seq) {
-      change.seq = seq;
+    if (forceSeq) {
+      change.seq = forceSeq;
     }
 
     return results.push(change);
@@ -216,7 +216,7 @@ const getChanges = feed => {
       // uses reponse.last_seq to write it's checkpointer doc.
       // By not advancing the checkpointer seq past our last change, we make sure these docs will be retrieved
       // in the next replication attempt.
-      feed.lastSeq = results.length ? results.slice(-1)[0].seq : feed.initSeq;
+      feed.lastSeq = results.length ? results[results.length - 1].seq : feed.currentSeq;
 
       generateTombstones(results);
       feed.results = results;
@@ -254,6 +254,7 @@ const initFeed = (req, res) => {
     res: res,
     initSeq: req.query && req.query.since || 0,
     lastSeq: req.query && req.query.since || currentSeq,
+    currentSeq: currentSeq,
     pendingChanges: [],
     results: [],
     limit: req.query && req.query.limit || config.get('changes_controller').changes_limit,
@@ -375,11 +376,16 @@ const shouldLimitChangesRequests = couchDbVersion => {
     false;
 };
 
+const initCurrentSeq = () => db.medic.info().then(info => currentSeq = info.update_seq);
+
 const init = () => {
   if (!inited) {
     inited = true;
     initContinuousFeed();
-    return initServerChecks();
+    return Promise.all([
+      initCurrentSeq(),
+      initServerChecks()
+    ]);
   }
 
   return Promise.resolve();
