@@ -377,11 +377,16 @@ const shouldLimitChangesRequests = couchDbVersion => {
     false;
 };
 
+const initCurrentSeq = () => db.medic.info().then(info => currentSeq = info.update_seq);
+
 const init = () => {
   if (!inited) {
     inited = true;
     initContinuousFeed();
-    return initServerChecks();
+    return Promise.all([
+      initCurrentSeq(),
+      initServerChecks()
+    ]);
   }
 
   return Promise.resolve();
