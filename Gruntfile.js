@@ -1109,6 +1109,7 @@ module.exports = function(grunt) {
   grunt.registerTask('static-analysis', 'Static analysis checks', [
     'regex-check',
     'exec:blank-link-check',
+    'exec:eslint',
     'exec:audit-whitelist',
   ]);
 
