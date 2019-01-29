@@ -7,7 +7,7 @@ For latest changes and release announcements see our [change log](Changes.md).
 
 Medic Mobile combines messaging, data collection, and analytics for health workers and health systems in hard-to-reach areas with or without internet connectivity.
 
-The `medic-webapp` repository is the core tool of the Medic Mobile stack. When health workers submit data — using text messages (SMS), our mobile applications, or our SIM applications — the web app confirms data submission, generates unique IDs, and schedules automated reminder messages based on user-defined configurations. All information submitted by mobile users can be viewed, filtered, verified, and exported using the reports tab in the web application.
+The `medic` repository is the core tool of the Medic Mobile stack. When health workers submit data — using text messages (SMS), our mobile applications, or our SIM applications — the web app confirms data submission, generates unique IDs, and schedules automated reminder messages based on user-defined configurations. All information submitted by mobile users can be viewed, filtered, verified, and exported using the reports tab in the web application.
 
 The web app is fully responsive with a mobile-first design, and supports localization using any written language. It can be installed locally, as part of a virtual machine (see [medic-os](https://github.com/medic/medic-os)), or in the cloud.
 
@@ -22,7 +22,7 @@ For more information about the SMS exchange protocol between webapp and gateway,
 
 If you want to get up and running with no fuss, [you can use Horticulturalist](#deploy-locally-using-horticulturalist-beta).
 
-If you want to use our standard configuration, [you can use the Medic Project Configurer](https://github.com/medic/medic-conf) in the [./config/standard](https://github.com/medic/medic-webapp/tree/master/config/standard) directory once Horticuluralist has successfully started.
+If you want to use our standard configuration, [you can use the Medic Project Configurer](https://github.com/medic/medic-conf) in the [./config/standard](https://github.com/medic/medic/tree/master/config/standard) directory once Horticuluralist has successfully started.
 
 If you want to develop against Medic, follow the Development Setup below.
 
@@ -80,8 +80,8 @@ curl -X PUT 'http://myAdminUser:myAdminPass@localhost:5984/_node/$COUCH_NODE_NAM
 ### Build the webapp
 
 ```shell
-git clone https://github.com/medic/medic-webapp
-cd medic-webapp
+git clone https://github.com/medic/medic
+cd medic
 npm ci
 ```
 
@@ -146,7 +146,7 @@ Navigate your browser to [`http://localhost:5988/medic/login`](http://localhost:
 
 ### Data
 
-To fill your app with generated data, you can batch-load messages from a CSV file, with the [load_messages.js](https://github.com/medic/medic-webapp/blob/master/scripts/load_messages.js) script.
+To fill your app with generated data, you can batch-load messages from a CSV file, with the [load_messages.js](https://github.com/medic/medic/blob/master/scripts/load_messages.js) script.
 
 Use `curl` to submit a single message:
 
@@ -184,7 +184,7 @@ They live in [tests](tests). To run them:
 
 ### Integration tests
 
-[Travis](https://travis-ci.org/medic/medic-webapp) runs `grunt ci` every time some new code is pushed to github.
+[Travis](https://travis-ci.org/medic/medic) runs `grunt ci` every time some new code is pushed to github.
 
 ## Other deployment steps
 
@@ -227,7 +227,7 @@ curl -X DELETE $COUCH_URL
 ```
 ## Configuring Medic
 
-We ship with one "standard" configuration, which can be a useful basis to start with. It is located at [./config/standard](https://github.com/medic/medic-webapp/tree/master/config/standard).
+We ship with one "standard" configuration, which can be a useful basis to start with. It is located at [./config/standard](https://github.com/medic/medic/tree/master/config/standard).
 
 Configuration is performed using [Medic Configurer](https://github.com/medic/medic-conf). `medic-conf` expects a particular structure (seen in the standard config above). It compiles forms and configuration into the required formats, as well as uploading that configuration and performing other tasks.
 
@@ -239,17 +239,17 @@ To import the standard configuration:
 
 ## Automated Deployment on Travis
 
-Code is automatically published via [Travis CI](https://travis-ci.org/medic/medic-webapp) to the [staging server](https://staging.dev.medicmobile.org).
+Code is automatically published via [Travis CI](https://travis-ci.org/medic/medic) to the [staging server](https://staging.dev.medicmobile.org).
 
 ## Contributing
 
-At Medic Mobile we are the technical steward of the [Community Health Toolkit](https://communityhealthtoolkit.org). We welcome and appreciate contributions, and support new developers to use the tools whenever possible. If you have an idea or a question we'd love to hear from you! The easiest ways to get in touch are by raising issues in the [medic-webapp Github repo](https://github.com/medic/medic-webapp/issues) or [joining our Slack channel](https://communityhealthtoolkit.org/slack). For more info check out our [contributor guidelines](CONTRIBUTING.md).
+At Medic Mobile we are the technical steward of the [Community Health Toolkit](https://communityhealthtoolkit.org). We welcome and appreciate contributions, and support new developers to use the tools whenever possible. If you have an idea or a question we'd love to hear from you! The easiest ways to get in touch are by raising issues in the [medic Github repo](https://github.com/medic/medic/issues) or [joining our Slack channel](https://communityhealthtoolkit.org/slack). For more info check out our [contributor guidelines](CONTRIBUTING.md).
 
 ## Build Status
 
-Builds brought to you courtesy of [Travis CI](https://travis-ci.org/medic/medic-webapp).
+Builds brought to you courtesy of [Travis CI](https://travis-ci.org/medic/medic).
 
-[![Build Status](https://travis-ci.org/medic/medic-webapp.png?branch=master)](https://travis-ci.org/medic/medic-webapp/branches)
+[![Build Status](https://travis-ci.org/medic/medic.png?branch=master)](https://travis-ci.org/medic/medic/branches)
 
 ## Copyright
 

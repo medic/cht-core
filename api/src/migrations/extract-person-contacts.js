@@ -8,7 +8,7 @@ var async = require('async'),
 /**
  * WARNING : THIS MIGRATION IS POTENTIALLY DESTRUCTIVE IF IT MESSES UP HALFWAY, SO GET YOUR SYSTEM
  * OFFLINE BEFORE RUNNING IT!
- * See upgrade checklist : https://github.com/medic/medic-webapp/issues/2400
+ * See upgrade checklist : https://github.com/medic/medic/issues/2400
  *
  * This migration updates old-style contacts (`contact: { name:..., phone: ...}`) to new-style contacts
  * (`contact: {_id:..., name:..., phone: ..., parent: ...}`).

@@ -1,7 +1,7 @@
 // TODO: consider rewriting to not support skip and limit.
 // Skip and Limit are not considered fast:
 //    http://docs.couchdb.org/en/latest/ddocs/views/pagination.html
-//    https://github.com/medic/medic-webapp/issues/4206
+//    https://github.com/medic/medic/issues/4206
 var _ = require('underscore'),
     GenerateSearchRequests = require('./generate-search-requests');
 

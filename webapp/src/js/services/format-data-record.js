@@ -272,7 +272,7 @@ angular
       // NB: The 5th parameter must be explicitely null to disable sanitization.
       // The result will be sanitized by angular when it's rendered, so using
       // the default sanitization would result in double encoding.
-      // Issue: medic/medic-webapp#4618
+      // Issue: medic/medic#4618
       return $translate.instant(key, ctx, interpolation, locale, null);
     };
 

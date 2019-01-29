@@ -89,7 +89,7 @@ describe('Search service', function() {
         });
     });
 
-    it('does not debounce different queries - medic/medic-webapp/issues/4331)', function() {
+    it('does not debounce different queries - medic/medic/issues/4331)', function() {
       GetDataRecords
         .onFirstCall().returns(Promise.resolve([ { id: 'a' } ]))
         .onSecondCall().returns(Promise.resolve([ { id: 'b' } ]));

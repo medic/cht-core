@@ -47,7 +47,7 @@ const validatePerson = obj => {
  * Warning: not doing validation of the data against a form yet.  The form is
  * user defined in settings so being liberal with what gets saved to the
  * database. Ideally CouchDB would validate a given object against a form in
- * validate_doc_update. https://github.com/medic/medic-webapp/issues/2203
+ * validate_doc_update. https://github.com/medic/medic/issues/2203
  */
 const createPerson = data => {
   data.type = 'person';
