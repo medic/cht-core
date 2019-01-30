@@ -44,7 +44,6 @@ require('moment/locale/sw');
 
 require('./services');
 require('./actions');
-require('./components');
 require('./controllers');
 require('./filters');
 require('./directives');
@@ -68,7 +67,6 @@ _.templateSettings = {
     uiRouter,
     'inboxDirectives',
     'inboxFilters',
-    'inboxComponents',
     'inboxControllers',
     'inboxServices',
     'pascalprecht.translate',

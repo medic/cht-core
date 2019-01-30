@@ -1,6 +1,5 @@
-angular.module('inboxComponents').component('contactsEdit', {
-  templateUrl: 'templates/partials/contacts_edit.html',
-  controller: function (
+angular.module('inboxControllers').controller('ContactsEditCtrl',
+  function (
     $log,
     $ngRedux,
     $q,
@@ -21,17 +20,10 @@ angular.module('inboxComponents').component('contactsEdit', {
     'ngInject';
 
     var ctrl = this;
-    ctrl.mapStateToThis = function(state) {
-      return {
-        enketoStatus: state.enketoStatus,
-        loadingContent: state.loadingContent,
-        showContent: state.showContent
-      };
-    };
-    var unsubscribe = $ngRedux.connect(ctrl.mapStateToThis, Actions)(ctrl);
+    var unsubscribe = $ngRedux.connect(null, Actions)(ctrl);
 
-    ctrl.setLoadingContent(true);
-    ctrl.setShowContent(true);
+    $scope.setLoadingContent(true);
+    $scope.setShowContent(true);
     ctrl.setCancelCallback(function() {
       if ($state.params.from === 'list') {
         $state.go('contacts.detail', { id: null });
@@ -42,14 +34,14 @@ angular.module('inboxComponents').component('contactsEdit', {
 
     var setTitle = function() {
       var key = '';
-      if (ctrl.category === 'person') {
-        if (ctrl.contactId) {
+      if ($scope.category === 'person') {
+        if ($scope.contactId) {
           key = 'contact.type.person.edit';
         } else {
           key = 'contact.type.person.new';
         }
       } else {
-        if (ctrl.contactId) {
+        if ($scope.contactId) {
           key = 'contact.type.place.edit';
         } else {
           key = 'contact.type.place.new';
@@ -57,15 +49,15 @@ angular.module('inboxComponents').component('contactsEdit', {
       }
       $translate.onReady().then(function() {
         return $translate(key);
-      }).then(ctrl.setTitle);
+      }).then($scope.setTitle);
     };
 
     var getFormInstanceData = function() {
-      if (!ctrl.contact || !ctrl.contact.type) {
+      if (!$scope.contact || !$scope.contact.type) {
         return null;
       }
       var result = {};
-      result[ctrl.contact.type] = ctrl.contact;
+      result[$scope.contact.type] = $scope.contact;
       return result;
     };
 
@@ -85,34 +77,34 @@ angular.module('inboxComponents').component('contactsEdit', {
     };
 
     var getForm = function(contact) {
-      ctrl.primaryContact = {}; // TODO delete?
-      ctrl.original = contact;
+      $scope.primaryContact = {}; // TODO delete?
+      $scope.original = contact;
       if (contact) {
-        ctrl.contact = contact;
-        ctrl.contactId = contact._id;
-        ctrl.category = getCategory(contact.type);
+        $scope.contact = contact;
+        $scope.contactId = contact._id;
+        $scope.category = getCategory(contact.type);
         setTitle();
-        return ContactForm.forEdit(contact.type, { contact: ctrl.dependentPersonSchema });
+        return ContactForm.forEdit(contact.type, { contact: $scope.dependentPersonSchema });
       }
 
-      ctrl.contact = {
+      $scope.contact = {
         type: $state.params.type,
         parent: $state.params.parent_id
       };
 
-      ctrl.category = getCategory(ctrl.contact.type);
-      ctrl.contactId = null;
+      $scope.category = getCategory($scope.contact.type);
+      $scope.contactId = null;
       setTitle();
 
-      if (ctrl.contact.type) {
-        var extras = ctrl.contact.type === 'person' ? null : { contact: ctrl.dependentPersonSchema };
-        return ContactForm.forCreate(ctrl.contact.type, extras);
+      if ($scope.contact.type) {
+        var extras = $scope.contact.type === 'person' ? null : { contact: $scope.dependentPersonSchema };
+        return ContactForm.forCreate($scope.contact.type, extras);
       }
       return $q.resolve();
     };
 
     var markFormEdited = function() {
-      ctrl.setEnketoEditedStatus(true);
+      $scope.setEnketoEditedStatus(true);
     };
 
     var renderForm = function(form) {
@@ -125,7 +117,7 @@ angular.module('inboxComponents').component('contactsEdit', {
               .addClass('disabled');
           return;
         }
-        ctrl.setEnketoEditedStatus(false);
+        $scope.setEnketoEditedStatus(false);
         var instanceData = getFormInstanceData();
         if (form.id) {
           return Enketo.renderContactForm('#contact-form', form.id, instanceData, markFormEdited);
@@ -135,23 +127,23 @@ angular.module('inboxComponents').component('contactsEdit', {
     };
 
     var setEnketoContact = function(formInstance) {
-      ctrl.enketoContact = {
-        type: ctrl.contact.type,
+      $scope.enketoContact = {
+        type: $scope.contact.type,
         formInstance: formInstance,
-        docId: ctrl.contactId,
+        docId: $scope.contactId,
       };
     };
 
-    ctrl.unmodifiedSchema = ContactSchema.get();
-    ctrl.dependentPersonSchema = ContactSchema.get('person');
-    delete ctrl.dependentPersonSchema.fields.parent;
+    $scope.unmodifiedSchema = ContactSchema.get();
+    $scope.dependentPersonSchema = ContactSchema.get('person');
+    delete $scope.dependentPersonSchema.fields.parent;
 
     getContact()
       .then(function(contact) {
         if (!contact) {
           // adding a new contact, deselect the old one
-          ctrl.clearSelected();
-          ctrl.settingSelected();
+          $scope.clearSelected();
+          $scope.settingSelected();
         }
 
         return contact;
@@ -160,25 +152,25 @@ angular.module('inboxComponents').component('contactsEdit', {
       .then(renderForm)
       .then(setEnketoContact)
       .then(function() {
-        ctrl.setLoadingContent(false);
+        $scope.setLoadingContent(false);
       })
       .catch(function(err) {
-        ctrl.errorTranslationKey = err.translationKey || 'error.loading.form';
-        ctrl.setLoadingContent(false);
-        ctrl.contentError = true; // TODO it seems that this should just be local, not global?
+        $scope.errorTranslationKey = err.translationKey || 'error.loading.form';
+        $scope.setLoadingContent(false);
+        $scope.contentError = true; // TODO it seems that this should just be local, not global?
         $log.error('Error loading contact form.', err);
       });
 
-    ctrl.save = function() {
-      if (ctrl.enketoStatus.saving) {
-        $log.debug('Attempted to call contacts-edit:ctrl.save more than once');
+    $scope.save = function() {
+      if ($scope.enketoStatus.saving) {
+        $log.debug('Attempted to call contacts-edit:$scope.save more than once');
         return;
       }
 
-      var form = ctrl.enketoContact.formInstance;
-      var docId = ctrl.enketoContact.docId;
-      ctrl.setEnketoSavingStatus(true);
-      ctrl.setEnketoError(null);
+      var form = $scope.enketoContact.formInstance;
+      var docId = $scope.enketoContact.docId;
+      $scope.setEnketoSavingStatus(true);
+      $scope.setEnketoError(null);
 
       return form.validate()
         .then(function(valid) {
@@ -186,27 +178,27 @@ angular.module('inboxComponents').component('contactsEdit', {
             throw new Error('Validation failed.');
           }
 
-          var type = ctrl.enketoContact.type;
-          return ContactSave(ctrl.unmodifiedSchema[type], form, docId, type)
+          var type = $scope.enketoContact.type;
+          return ContactSave($scope.unmodifiedSchema[type], form, docId, type)
             .then(function(result) {
               $log.debug('saved report', result);
-              ctrl.setEnketoSavingStatus(false);
+              $scope.setEnketoSavingStatus(false);
               $translate(docId ? 'contact.updated' : 'contact.created').then(Snackbar);
-              ctrl.setEnketoEditedStatus(false);
+              $scope.setEnketoEditedStatus(false);
               $state.go('contacts.detail', { id: result.docId });
             })
             .catch(function(err) {
-              ctrl.setEnketoSavingStatus(false);
+              $scope.setEnketoSavingStatus(false);
               $log.error('Error submitting form data', err);
               $translate('Error updating contact').then(function(msg) {
-              ctrl.setEnketoError(msg);
+              $scope.setEnketoError(msg);
               });
             });
         })
         .catch(function() {
           // validation messages will be displayed for individual fields.
           // That's all we want, really.
-          ctrl.setEnketoSavingStatus(false);
+          $scope.setEnketoSavingStatus(false);
           $scope.$apply(); // TODO still necessary with redux?
         });
     };
@@ -214,12 +206,12 @@ angular.module('inboxComponents').component('contactsEdit', {
     $scope.$on('$destroy', function() {
       unsubscribe();
       if (!$state.includes('contacts.add')) {
-        ctrl.setTitle();
-        if (ctrl.enketoContact && ctrl.enketoContact.formInstance) {
-          Enketo.unload(ctrl.enketoContact.formInstance);
+        $scope.setTitle();
+        if ($scope.enketoContact && $scope.enketoContact.formInstance) {
+          Enketo.unload($scope.enketoContact.formInstance);
         }
       }
     });
 
   }
-});
+);

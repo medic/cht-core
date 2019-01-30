@@ -192,7 +192,8 @@
         },
         views: {
           content: {
-            component: 'contactsEdit'
+            controller: 'ContactsEditCtrl',
+            templateUrl: 'templates/partials/contacts_edit.html'
           }
         }
       })
