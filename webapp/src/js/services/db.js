@@ -50,6 +50,8 @@ angular.module('inboxServices').factory('DB',
     const getParams = (remote, meta) => {
       const clone = Object.assign({}, remote ? POUCHDB_OPTIONS.remote : POUCHDB_OPTIONS.local);
       if (remote && meta) {
+        // Don't create user DBs remotely, we do this ourselves in /api/services/user-db:create,
+        // which is called in routing when a user tries to access the DB
         clone.skip_setup = false;
       }
       return clone;
