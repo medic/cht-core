@@ -343,7 +343,7 @@ var _ = require('underscore'),
         hasResults: $scope.hasContacts,
         userFacilityId: usersHomePlace && usersHomePlace._id,
         exportFn: function() {
-          Export($scope.filters, 'contacts');
+          Export('contacts', $scope.filters);
         },
       };
       var type;

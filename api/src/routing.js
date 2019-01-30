@@ -299,10 +299,8 @@ app.postJson('/api/sms', function(req, res) {
     .catch(err => serverUtils.error(err, req, res));
 });
 
-app.all('/api/v1/export/:type/:form?', exportData.routeV1);
-app.all(`/${appPrefix}export/:type/:form?`, exportData.routeV1);
-app.get('/api/v2/export/:type', exportData.routeV2);
-app.postJson('/api/v2/export/:type', exportData.routeV2);
+app.get('/api/v2/export/:type', exportData.get);
+app.postJson('/api/v2/export/:type', exportData.get);
 
 app.post('/api/v1/records', [jsonParser, formParser], records.v1);
 app.post('/api/v2/records', [jsonParser, formParser], records.v2);

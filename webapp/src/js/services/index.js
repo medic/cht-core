@@ -28,7 +28,6 @@
   require('./debounce');
   require('./debug');
   require('./delete-docs');
-  require('./download-url');
   require('./edit-group');
   require('./enketo');
   require('./enketo-prepopulation-data');

@@ -17,10 +17,7 @@ angular.module('controllers').controller('ExportContactsCtrl',
     $scope.overwrite = false;
 
     $scope.export = function() {
-      $scope.exporting = true;
-      Export({}, 'contacts').then(function() {
-        $scope.exporting = false;
-      });
+      Export('contacts');
     };
 
     $scope.import = function() {

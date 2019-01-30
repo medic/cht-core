@@ -113,7 +113,7 @@ angular
       $scope.setLeftActionBar({
         hasResults: $scope.messages.length > 0,
         exportFn: function() {
-          Export($scope.filters, 'messages');
+          Export('messages', $scope.filters);
         },
       });
     };

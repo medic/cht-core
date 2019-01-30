@@ -1,13 +1,11 @@
-const _ = require('underscore'),
-      domain = require('domain'),
-      moment = require('moment'),
-      logger = require('../logger');
+const domain = require('domain');
+const moment = require('moment');
+const logger = require('../logger');
 
-const auth = require('../auth'),
-      serverUtils = require('../server-utils');
+const auth = require('../auth');
+const serverUtils = require('../server-utils');
 
-const exportDataV1 = require('../services/export-data'),
-      exportDataV2 = require('../services/export-data-2');
+const service = require('../services/export-data');
 
 const formats = {
   xml: {
@@ -31,7 +29,7 @@ const writeExportHeaders = (res, type, format) => {
     .set('Content-Disposition', 'attachment; filename=' + filename);
 };
 
-const getExportPermission = function(type) {
+const getExportPermission = type => {
   if (type === 'feedback') {
     return 'can_export_feedback';
   }
@@ -42,31 +40,7 @@ const getExportPermission = function(type) {
 };
 
 module.exports = {
-  routeV1: (req, res) => {
-    return auth.check(req, getExportPermission(req.params.type), req.query.district)
-      .then(ctx => {
-        req.query.type = req.params.type;
-        req.query.form = req.params.form || req.query.form;
-        req.query.district = ctx.district;
-
-        exportDataV1.get(req.query, (err, exportDataResult) => {
-          if (err) {
-            return serverUtils.error(err, req, res);
-          }
-
-          writeExportHeaders(res, req.params.type, formats[req.query.format] || formats.csv);
-
-          if (_.isFunction(exportDataResult)) {
-            // wants to stream the result back
-            exportDataResult(res.write.bind(res), res.end.bind(res), res.flush.bind(res));
-          } else {
-            // has already generated result to return
-            res.send(exportDataResult);
-          }
-        });
-      }).catch(err => serverUtils.error(err, req, res));
-  },
-  routeV2: (req, res) => {
+  get: (req, res) => {
     /**
      * Integer values get parsed in by express as strings. This will not do!
      */
@@ -93,9 +67,9 @@ module.exports = {
 
     correctFilterTypes(filters);
 
-    if (!exportDataV2.isSupported(type)) {
+    if (!service.isSupported(type)) {
       return serverUtils.error({
-        message: `v2 export only supports ${exportDataV2.supportedExports}`,
+        message: `v2 export only supports ${service.supportedExports}`,
         code: 404
       }, req, res);
     }
@@ -134,7 +108,7 @@ module.exports = {
           res.end(`--ERROR--\nError exporting data: ${err.message}\n`);
         });
         d.run(() =>
-          exportDataV2
+          service
             .export(type, filters, options)
             .pipe(res));
       }).catch(err => serverUtils.error(err, req, res));

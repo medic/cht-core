@@ -8,10 +8,7 @@ angular.module('controllers').controller('ExportReportsCtrl',
     'ngInject';
 
     $scope.export = function() {
-      $scope.exporting = true;
-      Export({}, 'reports').then(function() {
-        $scope.exporting = false;
-      });
+      Export('reports');
     };
 
   }
