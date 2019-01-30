@@ -67,7 +67,7 @@ describe('death_reporting', () => {
         .stub(utils, 'getPatientContact')
         .callsArgWith(1, null, patient);
       const saveDoc = sinon.stub(db.medic, 'put').callsArg(1);
-      sinon.stub(db.medic, 'get').callsArgWith(1, { statusCode: 404 });
+      sinon.stub(db.medic, 'get').callsArgWith(1, { status: 404 });
       transition.onMatch(change).then(changed => {
         changed.should.equal(true);
         getPatientContact.callCount.should.equal(1);
@@ -130,7 +130,7 @@ describe('death_reporting', () => {
         .stub(utils, 'getPatientContact')
         .callsArgWith(1, null, patient);
       const saveDoc = sinon.stub(db.medic, 'put').callsArg(1);
-      sinon.stub(db.medic, 'get').callsArgWith(1, { statusCode: 404 });
+      sinon.stub(db.medic, 'get').callsArgWith(1, { status: 404 });
       transition.onMatch(change).then(changed => {
         changed.should.equal(true);
         getPatientContact.callCount.should.equal(1);
@@ -158,7 +158,7 @@ describe('death_reporting', () => {
         .stub(utils, 'getPatientContact')
         .callsArgWith(1, null, patient);
       const saveDoc = sinon.stub(db.medic, 'put').callsArg(1);
-      sinon.stub(db.medic, 'get').callsArgWith(1, { statusCode: 404 });
+      sinon.stub(db.medic, 'get').callsArgWith(1, { status: 404 });
       transition.onMatch(change).then(changed => {
         changed.should.equal(false);
         getPatientContact.callCount.should.equal(1);
@@ -186,7 +186,7 @@ describe('death_reporting', () => {
       const saveDoc = sinon.stub(db.medic, 'put').callsArg(1);
       const get = sinon
         .stub(db.medic, 'get')
-        .callsArgWith(1, { statusCode: 404 });
+        .callsArgWith(1, { status: 404 });
       transition.onMatch(change).then(changed => {
         (!!changed).should.equal(false);
         get.callCount.should.equal(1);
