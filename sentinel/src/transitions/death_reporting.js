@@ -39,7 +39,7 @@ const updatePatient = (patient, doc, callback) => {
 
 const getPatient = (patientId, callback) => {
   db.medic.get(patientId, (err, patient) => {
-    if (err && err.statusCode !== 404) {
+    if (err && err.status !== 404) {
       return callback(err);
     }
     if (patient) {

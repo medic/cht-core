@@ -68,7 +68,7 @@ const getIdLengthDoc = db =>
   new Promise((resolve, reject) =>
     db.medic.get(ID_LENGTH_DOC_ID, (err, result) => {
       if (err) {
-        if (err.statusCode !== 404) {
+        if (err.status !== 404) {
           return reject(err);
         } else {
           result = {
@@ -90,7 +90,7 @@ const putIdLengthDoc = (db, idLengthDoc) =>
         // We're OK with a 409, because we're going to presume this is happening
         // because a human edited it to suite their needs, and their write is more
         // important than ours.
-        if (err.statusCode === 409) {
+        if (err.status === 409) {
           logger.warn(
             `409 while trying to store ${idLengthDoc}. If someone edited this document it is expected.`
           );
