@@ -4,7 +4,7 @@ var _ = require('underscore'),
     messages = require('../lib/messages'),
     later = require('later'),
     moment = require('moment'),
-    db = require('../db-pouch');
+    db = require('../db');
 
 // set later to use local time
 later.date.localTime();

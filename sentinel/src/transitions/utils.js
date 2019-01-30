@@ -1,4 +1,4 @@
-const db = require('../db-pouch'),
+const db = require('../db'),
       messages = require('../lib/messages'),
       utils = require('../lib/utils'),
       idGenerator = require('../lib/ids').generator(db);

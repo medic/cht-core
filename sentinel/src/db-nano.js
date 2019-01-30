@@ -1,6 +1,6 @@
 /*************************************************
  *          !!! DEPRECATION WARNING !!!          *
- * Please use db-pouch in preference to db-nano! *
+ * Please use db in preference to db-nano! *
  *          !!! DEPRECATION WARNING !!!          *
  *************************************************/
 

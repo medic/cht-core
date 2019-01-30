@@ -1,6 +1,6 @@
 const request = require('request');
 
-const db = require('./src/db-pouch'),
+const db = require('./src/db'),
   logger = require('./src/lib/logger'),
   serverChecks = require('@medic/server-checks');
 

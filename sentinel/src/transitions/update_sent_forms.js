@@ -2,7 +2,7 @@ var _ = require('underscore'),
   moment = require('moment'),
   config = require('../config'),
   logger = require('../lib/logger'),
-  db = require('../db-pouch'),
+  db = require('../db'),
   transitionUtils = require('./utils'),
   NAME = 'update_sent_forms';
 

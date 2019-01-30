@@ -1,7 +1,7 @@
 var transitions,
   sinon = require('sinon'),
   assert = require('chai').assert,
-  db = require('../../src/db-pouch'),
+  db = require('../../src/db'),
   config = require('../../src/config'),
   configGet;
 

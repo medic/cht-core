@@ -1,6 +1,6 @@
 const sinon = require('sinon'),
   assert = require('chai').assert,
-  db = require('../../src/db-pouch'),
+  db = require('../../src/db'),
   transitions = require('../../src/transitions/index');
 
 describe('finalize transition', () => {

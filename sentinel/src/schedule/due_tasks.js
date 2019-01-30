@@ -6,8 +6,8 @@ const async = require('async'),
   utils = require('../lib/utils'),
   date = require('../date'),
   config = require('../config'),
-  dbPouch = require('../db-pouch'),
-  lineage = require('@medic/lineage')(Promise, dbPouch.medic),
+  db = require('../db'),
+  lineage = require('@medic/lineage')(Promise, db.medic),
   messageUtils = require('@medic/message-utils');
 
 const getPatient = (patientShortcodeId, callback) => {
@@ -39,7 +39,7 @@ module.exports = {
     var now = moment(date.getDate()),
       overdue = now.clone().subtract(7, 'days');
 
-    dbPouch.medic.query(
+    db.medic.query(
       'medic/due_tasks',
       {
         include_docs: true,
@@ -105,7 +105,7 @@ module.exports = {
                   }
 
                   lineage.minify(doc);
-                  dbPouch.medic.put(doc, cb);
+                  db.medic.put(doc, cb);
                 });
               })
               .catch(cb);

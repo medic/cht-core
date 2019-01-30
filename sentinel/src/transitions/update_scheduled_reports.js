@@ -1,5 +1,5 @@
 var utils = require('../lib/utils'),
-  dbPouch = require('../db-pouch'),
+  db = require('../db'),
   logger = require('../lib/logger');
 
 module.exports = {
@@ -52,7 +52,7 @@ module.exports = {
           docs.push(doc);
         });
 
-        dbPouch.medic.bulkDocs(
+        db.medic.bulkDocs(
           docs,
           {
             all_or_nothing: true,
@@ -113,7 +113,7 @@ module.exports = {
       return callback();
     }
 
-    dbPouch.medic.query(`medic/${view}`, q, function(err, data) {
+    db.medic.query(`medic/${view}`, q, function(err, data) {
       callback(err, data && data.rows);
     });
   },

@@ -1,6 +1,6 @@
 const assert = require('chai').assert,
   sinon = require('sinon').sandbox.create(),
-  db = require('../../../src/db-pouch'),
+  db = require('../../../src/db'),
   infodoc = require('../../../src/lib/infodoc');
 
 describe('infodoc', () => {

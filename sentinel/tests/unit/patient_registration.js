@@ -3,7 +3,7 @@ const _ = require('underscore'),
   sinon = require('sinon'),
   assert = require('chai').assert,
   transition = require('../../src/transitions/registration'),
-  dbPouch = require('../../src/db-pouch'),
+  db = require('../../src/db'),
   utils = require('../../src/lib/utils'),
   transitionUtils = require('../../src/transitions/utils'),
   date = require('../../src/date');
@@ -243,7 +243,7 @@ describe('patient registration', () => {
       fields: { patient_name: 'abc' },
       reported_date: 'now',
     };
-    sinon.stub(dbPouch.medic, 'query').callsArgWith(2, null, {
+    sinon.stub(db.medic, 'query').callsArgWith(2, null, {
       rows: [
         {
           doc: {
@@ -255,7 +255,7 @@ describe('patient registration', () => {
         },
       ],
     });
-    const saveDoc = sinon.stub(dbPouch.medic, 'post').callsArg(1);
+    const saveDoc = sinon.stub(db.medic, 'post').callsArg(1);
 
     return transition.onMatch({ doc: doc }).then(changed => {
       assert.equal(changed, true);

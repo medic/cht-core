@@ -2,7 +2,7 @@ const sinon = require('sinon'),
       assert = require('chai').assert,
       jsc = require('jsverify'),
       ids = require('../../src/lib/ids.js'),
-      db = require('../../src/db-pouch');
+      db = require('../../src/db');
 
 const mockDb = (idFilterLogicFn) => {
   sinon.stub(db.medic, 'query').callsFake((view, options, callback) => {

@@ -1,6 +1,6 @@
 var moment = require('moment'),
   validation = require('../../src/lib/validation'),
-  db = require('../../src/db-pouch'),
+  db = require('../../src/db'),
   sinon = require('sinon'),
   assert = require('chai').assert,
   clock;

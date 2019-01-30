@@ -1,6 +1,6 @@
 const sinon = require('sinon'),
   assert = require('chai').assert,
-  dbPouch = require('../../../src/db-pouch'),
+  db = require('../../../src/db'),
   transition = require('../../../src/transitions/update_scheduled_reports');
 
 describe('update_scheduled_reports', () => {
@@ -132,10 +132,10 @@ describe('update_scheduled_reports', () => {
 
   describe('getDuplicates', () => {
     it('use week view when doc has week property', done => {
-      sinon.stub(dbPouch.medic, 'query').callsArg(2);
+      sinon.stub(db.medic, 'query').callsArg(2);
       transition._getDuplicates({ fields: { week: 9 } }, () => {
         assert.equal(
-          dbPouch.medic.query.args[0][0],
+          db.medic.query.args[0][0],
           'medic/reports_by_form_year_week_clinic_id_reported_date'
         );
         done();
@@ -143,10 +143,10 @@ describe('update_scheduled_reports', () => {
     });
 
     it('use month view when doc has month property', done => {
-      sinon.stub(dbPouch.medic, 'query').callsArg(2);
+      sinon.stub(db.medic, 'query').callsArg(2);
       transition._getDuplicates({ fields: { month: 9 } }, () => {
         assert.equal(
-          dbPouch.medic.query.args[0][0],
+          db.medic.query.args[0][0],
           'medic/reports_by_form_year_month_clinic_id_reported_date'
         );
         done();
@@ -157,9 +157,9 @@ describe('update_scheduled_reports', () => {
   describe('onMatch', () => {
     it('calls bulkDocs with correct arguments', () => {
       const view = sinon
-        .stub(dbPouch.medic, 'query')
+        .stub(db.medic, 'query')
         .callsArgWith(2, null, { rows: [] });
-      const bulkSave = sinon.stub(dbPouch.medic, 'bulkDocs').callsArg(2);
+      const bulkSave = sinon.stub(db.medic, 'bulkDocs').callsArg(2);
       const change = {
         doc: {
           _id: 'abc',
@@ -180,7 +180,7 @@ describe('update_scheduled_reports', () => {
     });
 
     it('remove duplicates and replace with latest doc', () => {
-      sinon.stub(dbPouch.medic, 'query').callsArgWith(2, null, {
+      sinon.stub(db.medic, 'query').callsArgWith(2, null, {
         // ascending records
         rows: [
           {
@@ -213,7 +213,7 @@ describe('update_scheduled_reports', () => {
           },
         ],
       });
-      const bulkSave = sinon.stub(dbPouch.medic, 'bulkDocs').callsArg(2);
+      const bulkSave = sinon.stub(db.medic, 'bulkDocs').callsArg(2);
       const change = {
         doc: {
           _id: 'xyz',

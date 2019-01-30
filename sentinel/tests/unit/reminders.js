@@ -4,7 +4,7 @@ var _ = require('underscore'),
     assert = require('chai').assert,
     config = require('../../src/config'),
     reminders = require('../../src/schedule/reminders'),
-    db = require('../../src/db-pouch');
+    db = require('../../src/db');
 
 describe('reminders', () => {
   afterEach(() => sinon.restore());

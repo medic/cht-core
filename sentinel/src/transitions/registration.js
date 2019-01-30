@@ -3,8 +3,8 @@ const _ = require('underscore'),
   utils = require('../lib/utils'),
   transitionUtils = require('./utils'),
   logger = require('../lib/logger'),
-  dbPouch = require('../db-pouch'),
-  lineage = require('@medic/lineage')(Promise, dbPouch.medic),
+  db = require('../db'),
+  lineage = require('@medic/lineage')(Promise, db.medic),
   messages = require('../lib/messages'),
   validation = require('../lib/validation'),
   schedules = require('../lib/schedules'),
@@ -498,7 +498,7 @@ module.exports = {
           return callback();
         }
 
-        dbPouch.medic.query(
+        db.medic.query(
           'medic-client/contacts_by_phone',
           {
             key: doc.from,
@@ -524,7 +524,7 @@ module.exports = {
             if (doc.birth_date) {
               patient.date_of_birth = doc.birth_date;
             }
-            dbPouch.medic.post(patient, callback);
+            db.medic.post(patient, callback);
           }
         );
       }

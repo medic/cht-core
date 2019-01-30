@@ -2,17 +2,17 @@ const sinon = require('sinon'),
   assert = require('chai').assert,
   moment = require('moment'),
   utils = require('../../src/lib/utils'),
-  dbPouch = require('../../src/db-pouch'),
+  db = require('../../src/db'),
   schedule = require('../../src/schedule/due_tasks');
 
 describe('due tasks', () => {
   afterEach(() => sinon.restore());
 
   it('due_tasks handles view returning no rows', done => {
-    var view = sinon.stub(dbPouch.medic, 'query').callsArgWith(2, null, {
+    var view = sinon.stub(db.medic, 'query').callsArgWith(2, null, {
       rows: [],
     });
-    var saveDoc = sinon.stub(dbPouch.medic, 'put').callsArgWith(1, null);
+    var saveDoc = sinon.stub(db.medic, 'put').callsArgWith(1, null);
 
     schedule.execute(function(err) {
       assert.equal(err, undefined);
@@ -43,7 +43,7 @@ describe('due tasks', () => {
         },
       ],
     };
-    var view = sinon.stub(dbPouch.medic, 'query').callsArgWith(2, null, {
+    var view = sinon.stub(db.medic, 'query').callsArgWith(2, null, {
       rows: [
         {
           id: id,
@@ -53,7 +53,7 @@ describe('due tasks', () => {
       ],
     });
 
-    var saveDoc = sinon.stub(dbPouch.medic, 'put').callsArgWith(1, null, {});
+    var saveDoc = sinon.stub(db.medic, 'put').callsArgWith(1, null, {});
     var hydrate = sinon
       .stub(schedule._lineage, 'hydrateDocs')
       .returns(Promise.resolve([doc]));
@@ -102,7 +102,7 @@ describe('due tasks', () => {
     var hydrate = sinon
       .stub(schedule._lineage, 'hydrateDocs')
       .returns(Promise.resolve([doc]));
-    var view = sinon.stub(dbPouch.medic, 'query').callsArgWith(2, null, {
+    var view = sinon.stub(db.medic, 'query').callsArgWith(2, null, {
       rows: [
         {
           id: id,
@@ -117,7 +117,7 @@ describe('due tasks', () => {
       ],
     });
 
-    var saveDoc = sinon.stub(dbPouch.medic, 'put').callsArgWith(1, null, {});
+    var saveDoc = sinon.stub(db.medic, 'put').callsArgWith(1, null, {});
     var setTaskState = sinon.stub(utils, 'setTaskState');
 
     schedule.execute(function(err) {
@@ -161,7 +161,7 @@ describe('due tasks', () => {
       ],
     };
 
-    var view = sinon.stub(dbPouch.medic, 'query').callsArgWith(2, null, {
+    var view = sinon.stub(db.medic, 'query').callsArgWith(2, null, {
       rows: [
         {
           id: id1,
@@ -181,7 +181,7 @@ describe('due tasks', () => {
       .returns(Promise.resolve([doc1]))
       .onCall(1)
       .returns(Promise.resolve([doc2]));
-    var saveDoc = sinon.stub(dbPouch.medic, 'put').callsArgWith(1, null, {});
+    var saveDoc = sinon.stub(db.medic, 'put').callsArgWith(1, null, {});
 
     var setTaskState = sinon.stub(utils, 'setTaskState');
 
@@ -276,7 +276,7 @@ describe('due tasks', () => {
         },
       ],
     };
-    const view = sinon.stub(dbPouch.medic, 'query').callsArgWith(2, null, {
+    const view = sinon.stub(db.medic, 'query').callsArgWith(2, null, {
       rows: [
         {
           id: id,
@@ -288,7 +288,7 @@ describe('due tasks', () => {
     sinon
       .stub(schedule._lineage, 'hydrateDocs')
       .returns(Promise.resolve([hydrated]));
-    const saveDoc = sinon.stub(dbPouch.medic, 'put').callsArgWith(1, null, {});
+    const saveDoc = sinon.stub(db.medic, 'put').callsArgWith(1, null, {});
 
     schedule.execute(err => {
       assert.equal(err, undefined);
@@ -389,7 +389,7 @@ describe('due tasks', () => {
         },
       ],
     };
-    const view = sinon.stub(dbPouch.medic, 'query').callsArgWith(2, null, {
+    const view = sinon.stub(db.medic, 'query').callsArgWith(2, null, {
       rows: [
         {
           id: id,
@@ -401,7 +401,7 @@ describe('due tasks', () => {
     sinon
       .stub(schedule._lineage, 'hydrateDocs')
       .returns(Promise.resolve([hydrated]));
-    const saveDoc = sinon.stub(dbPouch.medic, 'put').callsArgWith(1, null, {});
+    const saveDoc = sinon.stub(db.medic, 'put').callsArgWith(1, null, {});
     schedule.execute(err => {
       assert.equal(err, undefined);
       assert.equal(view.callCount, 1);
@@ -482,14 +482,14 @@ describe('due tasks', () => {
       ],
     };
 
-    sinon.stub(dbPouch.medic, 'query').callsArgWith(2, null, { rows: [ { id: 'report_id', key: due, doc: minified }]});
+    sinon.stub(db.medic, 'query').callsArgWith(2, null, { rows: [ { id: 'report_id', key: due, doc: minified }]});
     sinon.stub(schedule._lineage, 'hydrateDocs').resolves([hydrated]);
-    sinon.stub(dbPouch.medic, 'put');
+    sinon.stub(db.medic, 'put');
 
     schedule.execute(err => {
       assert.equal(err, undefined);
-      assert.equal(dbPouch.medic.query.callCount, 1);
-      assert.equal(dbPouch.medic.put.callCount, 0);
+      assert.equal(db.medic.query.callCount, 1);
+      assert.equal(db.medic.put.callCount, 0);
 
       assert.equal(utils.translate.callCount, 1);
       assert.equal(utils.translate.args[0][0], 'visit-1');
@@ -570,14 +570,14 @@ describe('due tasks', () => {
       ],
     };
 
-    sinon.stub(dbPouch.medic, 'query').callsArgWith(2, null, { rows: [ { id: 'report_id', key: due, doc: minified }]});
+    sinon.stub(db.medic, 'query').callsArgWith(2, null, { rows: [ { id: 'report_id', key: due, doc: minified }]});
     sinon.stub(schedule._lineage, 'hydrateDocs').resolves([hydrated]);
-    sinon.stub(dbPouch.medic, 'put').callsArgWith(1, null, {});
+    sinon.stub(db.medic, 'put').callsArgWith(1, null, {});
 
     schedule.execute(err => {
       assert.equal(err, undefined);
-      assert.equal(dbPouch.medic.query.callCount, 1);
-      assert.equal(dbPouch.medic.put.callCount, 1);
+      assert.equal(db.medic.query.callCount, 1);
+      assert.equal(db.medic.put.callCount, 1);
 
       assert.equal(utils.translate.callCount, 1);
       assert.equal(utils.translate.args[0][0], 'visit-1');
@@ -594,16 +594,16 @@ describe('due tasks', () => {
         },
         'pending'
       ]);
-      assert.equal(dbPouch.medic.put.callCount, 1);
-      assert.equal(dbPouch.medic.put.args[0][0].scheduled_tasks.length, 2);
-      assert.deepEqual(dbPouch.medic.put.args[0][0].scheduled_tasks[0], {
+      assert.equal(db.medic.put.callCount, 1);
+      assert.equal(db.medic.put.args[0][0].scheduled_tasks.length, 2);
+      assert.deepEqual(db.medic.put.args[0][0].scheduled_tasks[0], {
         due: due,
         state: 'scheduled',
         message_key: 'visit-1',
         recipient: 'clinic',
       });
 
-      assert.deepEqual(dbPouch.medic.put.args[0][0].scheduled_tasks[1], {
+      assert.deepEqual(db.medic.put.args[0][0].scheduled_tasks[1], {
         due: due,
         state: 'pending',
         messages: [{ message: 'visit-ad', to: phone}]

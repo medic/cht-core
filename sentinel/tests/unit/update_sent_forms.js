@@ -1,7 +1,7 @@
 var moment = require('moment'),
   sinon = require('sinon'),
   assert = require('chai').assert,
-  db = require('../../src/db-pouch'),
+  db = require('../../src/db'),
   logger = require('../../src/lib/logger'),
   transition = require('../../src/transitions/update_sent_forms');
 

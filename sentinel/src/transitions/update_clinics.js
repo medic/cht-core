@@ -1,8 +1,8 @@
 const _ = require('underscore'),
   logger = require('../lib/logger'),
   transitionUtils = require('./utils'),
-  dbPouch = require('../db-pouch'),
-  lineage = require('@medic/lineage')(Promise, dbPouch.medic),
+  db = require('../db'),
+  lineage = require('@medic/lineage')(Promise, db.medic),
   NAME = 'update_clinics';
 
 const associateContact = (doc, contact, callback) => {
@@ -19,7 +19,7 @@ const associateContact = (doc, contact, callback) => {
 
   if (contact.phone !== doc.from) {
     contact.phone = doc.from;
-    dbPouch.medic.put(contact, err => {
+    db.medic.put(contact, err => {
       if (err) {
         logger.error(`Error updating contact: ${JSON.stringify(err, null, 2)}`);
         return callback(err);
@@ -50,7 +50,7 @@ const getContact = (doc, callback) => {
       include_docs: true,
       limit: 1,
     };
-    dbPouch.medic.query(
+    db.medic.query(
       'medic-client/contacts_by_reference',
       params,
       (err, data) => {
@@ -81,7 +81,7 @@ const getContact = (doc, callback) => {
       include_docs: false,
       limit: 1,
     };
-    dbPouch.medic.query('medic-client/contacts_by_phone', params, (err, data) => {
+    db.medic.query('medic-client/contacts_by_phone', params, (err, data) => {
       if (err) {
         return callback(err);
       }

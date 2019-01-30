@@ -1,4 +1,4 @@
-const db = require('../../src/db-pouch'),
+const db = require('../../src/db'),
       sinon = require('sinon'),
       assert = require('chai').assert,
       utils = require('../../src/lib/utils'),

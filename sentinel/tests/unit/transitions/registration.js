@@ -1,6 +1,6 @@
 const should = require('chai').should(),
   sinon = require('sinon'),
-  dbPouch = require('../../../src/db-pouch'),
+  db = require('../../../src/db'),
   transition = require('../../../src/transitions/registration'),
   schedules = require('../../../src/lib/schedules'),
   messages = require('../../../src/lib/messages'),
@@ -59,7 +59,7 @@ describe('registration', () => {
         .stub(utils, 'getPatientContactUuid')
         .callsArgWith(1);
       // return expected view results when searching for contacts_by_phone
-      const view = sinon.stub(dbPouch.medic, 'query').callsArgWith(2, null, {
+      const view = sinon.stub(db.medic, 'query').callsArgWith(2, null, {
         rows: [
           {
             doc: {
@@ -69,7 +69,7 @@ describe('registration', () => {
           },
         ],
       });
-      const saveDoc = sinon.stub(dbPouch.medic, 'post').callsArgWith(1);
+      const saveDoc = sinon.stub(db.medic, 'post').callsArgWith(1);
       const eventConfig = {
         form: 'R',
         events: [{ name: 'on_create', trigger: 'add_patient' }],
@@ -114,11 +114,11 @@ describe('registration', () => {
         },
       };
       sinon
-        .stub(dbPouch.medic, 'query')
+        .stub(db.medic, 'query')
         .callsArgWith(2, null, {
           rows: [{ doc: { parent: { _id: 'papa' } } }],
         });
-      const saveDoc = sinon.stub(dbPouch.medic, 'post').callsArgWith(1);
+      const saveDoc = sinon.stub(db.medic, 'post').callsArgWith(1);
       const eventConfig = {
         form: 'R',
         events: [{ name: 'on_create', trigger: 'add_patient_id' }],
@@ -145,11 +145,11 @@ describe('registration', () => {
       sinon.stub(utils, 'getPatientContactUuid').callsArgWith(1);
       // return expected view results when searching for contacts_by_phone
       sinon
-        .stub(dbPouch.medic, 'query')
+        .stub(db.medic, 'query')
         .callsArgWith(2, null, {
           rows: [{ doc: { parent: { _id: 'papa' } } }],
         });
-      const saveDoc = sinon.stub(dbPouch.medic, 'post').callsArgWith(1);
+      const saveDoc = sinon.stub(db.medic, 'post').callsArgWith(1);
       const eventConfig = {
         form: 'R',
         events: [
@@ -185,11 +185,11 @@ describe('registration', () => {
       sinon.stub(utils, 'getPatientContactUuid').callsArgWith(1);
       // return expected view results when searching for contacts_by_phone
       sinon
-        .stub(dbPouch.medic, 'query')
+        .stub(db.medic, 'query')
         .callsArgWith(2, null, {
           rows: [{ doc: { parent: { _id: 'papa' } } }],
         });
-      sinon.stub(dbPouch.medic, 'post').callsArgWith(1);
+      sinon.stub(db.medic, 'post').callsArgWith(1);
       const eventConfig = {
         form: 'R',
         events: [
@@ -231,11 +231,11 @@ describe('registration', () => {
       sinon.stub(utils, 'getPatientContactUuid').callsArgWith(1);
       // return expected view results when searching for contacts_by_phone
       sinon
-        .stub(dbPouch.medic, 'query')
+        .stub(db.medic, 'query')
         .callsArgWith(2, null, {
           rows: [{ doc: { parent: { _id: 'papa' } } }],
         });
-      sinon.stub(dbPouch.medic, 'post').callsArgWith(1);
+      sinon.stub(db.medic, 'post').callsArgWith(1);
       const eventConfig = {
         form: 'R',
         events: [
@@ -284,11 +284,11 @@ describe('registration', () => {
       sinon.stub(utils, 'getPatientContactUuid').callsArgWith(1);
       // return expected view results when searching for contacts_by_phone
       sinon
-        .stub(dbPouch.medic, 'query')
+        .stub(db.medic, 'query')
         .callsArgWith(2, null, {
           rows: [{ doc: { parent: { _id: submitterId } } }],
         });
-      const saveDoc = sinon.stub(dbPouch.medic, 'post').callsArgWith(1);
+      const saveDoc = sinon.stub(db.medic, 'post').callsArgWith(1);
       const eventConfig = {
         form: 'R',
         events: [{ name: 'on_create', trigger: 'add_patient', params: 'name' }],
@@ -328,11 +328,11 @@ describe('registration', () => {
       sinon.stub(utils, 'getPatientContactUuid').callsArgWith(1);
       // return expected view results when searching for contacts_by_phone
       sinon
-        .stub(dbPouch.medic, 'query')
+        .stub(db.medic, 'query')
         .callsArgWith(2, null, {
           rows: [{ doc: { parent: { _id: submitterId } } }],
         });
-      const saveDoc = sinon.stub(dbPouch.medic, 'post').callsArgWith(1);
+      const saveDoc = sinon.stub(db.medic, 'post').callsArgWith(1);
       const eventConfig = {
         form: 'R',
         events: [
@@ -378,11 +378,11 @@ describe('registration', () => {
       sinon.stub(utils, 'getPatientContactUuid').callsArgWith(1);
       // return expected view results when searching for contacts_by_phone
       sinon
-        .stub(dbPouch.medic, 'query')
+        .stub(db.medic, 'query')
         .callsArgWith(2, null, {
           rows: [{ doc: { parent: { _id: submitterId } } }],
         });
-      const saveDoc = sinon.stub(dbPouch.medic, 'post').callsArgWith(1);
+      const saveDoc = sinon.stub(db.medic, 'post').callsArgWith(1);
       const eventConfig = {
         form: 'R',
         events: [
@@ -446,11 +446,11 @@ describe('registration', () => {
         },
       };
       sinon
-        .stub(dbPouch.medic, 'query')
+        .stub(db.medic, 'query')
         .callsArgWith(2, null, {
           rows: [{ doc: { parent: { _id: 'papa' } } }],
         });
-      sinon.stub(dbPouch.medic, 'post').callsArgWith(1);
+      sinon.stub(db.medic, 'post').callsArgWith(1);
       const eventConfig = {
         form: 'R',
         events: [

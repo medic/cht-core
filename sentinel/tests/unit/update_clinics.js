@@ -1,6 +1,6 @@
 const sinon = require('sinon'),
   assert = require('chai').assert,
-  dbPouch = require('../../src/db-pouch'),
+  dbPouch = require('../../src/db'),
   transition = require('../../src/transitions/update_clinics'),
   phone = '+34567890123';
 

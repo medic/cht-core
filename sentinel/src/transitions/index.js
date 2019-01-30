@@ -7,11 +7,11 @@ const _ = require('underscore'),
   async = require('async'),
   utils = require('../lib/utils'),
   feed = require('../lib/feed'),
-  dbPouch = require('../db-pouch'),
-  lineage = require('@medic/lineage')(Promise, dbPouch.medic),
+  db = require('../db'),
+  lineage = require('@medic/lineage')(Promise, db.medic),
   logger = require('../lib/logger'),
   config = require('../config'),
-  db = require('../db-nano'),
+  dbNano = require('../db-nano'),
   infodoc = require('../lib/infodoc'),
   metadata = require('../lib/metadata'),
   tombstoneUtils = require('@medic/tombstone-utils'),
@@ -88,7 +88,7 @@ const processChange = (change, callback) => {
         }
 
         tombstoneUtils
-          .processChange(Promise, dbPouch.medic, change, logger)
+          .processChange(Promise, db.medic, change, logger)
           .then(() => {
             processed++;
             metadata
@@ -143,7 +143,7 @@ const deleteReadDocs = (change, callback) => {
     type => `read:${type}:${change.id}`
   );
 
-  db.db.list((err, dbs) => {
+  dbNano.db.list((err, dbs) => {
     if (err) {
       return callback(err);
     }
@@ -153,7 +153,7 @@ const deleteReadDocs = (change, callback) => {
     async.each(
       userDbs,
       (userDb, callback) => {
-        const metaDb = db.use(userDb);
+        const metaDb = dbNano.use(userDb);
         metaDb.fetch({ keys: possibleReadDocIds }, (err, results) => {
           if (err) {
             return callback(err);
@@ -294,7 +294,7 @@ const finalize = ({ change, results }, callback) => {
   logger.debug(`calling saveDoc on doc ${change.id} seq ${change.seq}`);
 
   lineage.minify(change.doc);
-  dbPouch.medic.put(change.doc, err => {
+  db.medic.put(change.doc, err => {
     // todo: how to handle a failed save? for now just
     // waiting until next change and try again.
     if (err) {

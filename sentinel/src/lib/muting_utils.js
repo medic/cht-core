@@ -1,4 +1,4 @@
-const db = require('../db-pouch'),
+const db = require('../db'),
       lineage = require('@medic/lineage')(Promise, db.medic),
       utils = require('./utils'),
       moment = require('moment'),

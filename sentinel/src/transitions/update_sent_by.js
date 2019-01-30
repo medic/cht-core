@@ -1,5 +1,5 @@
 const transitionUtils = require('./utils'),
-      db = require('../db-pouch'),
+      db = require('../db'),
       NAME = 'update_sent_by';
 
 module.exports = {
