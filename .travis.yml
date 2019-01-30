@@ -88,30 +88,6 @@ jobs:
 
 after_failure:
   - node scripts/travis/cleanup.js # clean up testing ddoc
-  - pip install --user awscli
-  - |
-    (cd tests/logs
-      for log in $(ls *.log); do
-        echo "---------- $log ----------"
-        tail "$log"
-        echo "--------------------------"
-      done
-    )
-
-    [[ "$TRAVIS_BUILD_STAGE_NAME" = "Test" ]] || return
-
-    if [[ "$TRAVIS_PULL_REQUEST" = true ]]; then
-      S3_PATH=s3://medic-e2e/PR_$TRAVIS_PULL_REQUEST
-    else
-      S3_PATH=s3://medic-e2e/BUILD_$TRAVIS_BUILD_NUMBER/JOB_$TRAVIS_JOB_NUMBER
-    fi
-
-    echo "Uploading logs and screenshots to ${S3_PATH}..."
-
-    docker logs couch > tests/logs/couch.log 2>&1
-
-    aws s3 cp tests/results "$S3_PATH"/test-results --recursive
-    aws s3 cp tests/logs "$S3_PATH"/ --recursive
 
 notifications:
   slack:
