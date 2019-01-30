@@ -63,7 +63,7 @@
     replicator
       .on('change', function(info) {
         console.log('initialReplication()', 'change', info);
-        setUiStatus('FETCH_INFO', info.docs_read || '?');
+        setUiStatus('FETCH_INFO', { count: info.docs_read || '?' });
       });
 
     return replicator
@@ -109,8 +109,8 @@
            hasRole(userCtx, ONLINE_ROLE);
   };
 
-  var setUiStatus = function(translationKey, arg) {
-    var translated = translator.translate(translationKey, arg);
+  var setUiStatus = function(translationKey, args) {
+    var translated = translator.translate(translationKey, args);
     $('.bootstrap-layer .status').text(translated);
   };
 
@@ -166,7 +166,10 @@
         return purger(localDb, userCtx, initialReplicationNeeded)
           .on('start', () => setUiStatus('PURGE_INIT'))
           .on('progress', function(progress) {
-            setUiStatus('PURGE_INFO', progress);
+            setUiStatus('PURGE_INFO', {
+              count: progress.purged,
+              precent: Math.floor((progress.processed / progress.total) * 100)
+            });
           })
           .on('optimise', () => setUiStatus('PURGE_AFTER'))
           .catch(console.error);
