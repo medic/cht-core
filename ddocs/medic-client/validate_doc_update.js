@@ -1,4 +1,4 @@
-function(newDoc, oldDoc, userCtx, secObj) {
+function(newDoc, oldDoc, userCtx) {
   /*
     LOCAL DOCUMENT VALIDATION
 

@@ -359,16 +359,16 @@ module.exports = function(grunt) {
           const cmd = './node_modules/.bin/eslint --color';
           const paths = [
             'Gruntfile.js',
-            'webapp/src/**/*.js',
-            'webapp/tests/**/*.js',
-            'tests/**/*.js',
+            'admin/**/*.js',
             'api/**/*.js',
+            'ddocs/**/*.js',
             'sentinel/**/*.js',
             'shared-libs/**/*.js',
-            'admin/**/*.js',
+            'tests/**/*.js',
+            'webapp/src/**/*.js',
+            'webapp/tests/**/*.js',
           ];
           const ignore = [
-            'ddocs/**/*.js',
             'webapp/src/js/modules/xpath-element-path.js',
             '**/node_modules/**',
             'sentinel/src/lib/pupil/**',
