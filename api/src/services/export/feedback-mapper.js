@@ -12,9 +12,8 @@ const formatDate = date => {
 const safeStringify = obj => {
   try {
     return JSON.stringify(obj)
-      .replace(/,/g, '.')
+      .replace(/,/g, '\\,')
       .substring(0, MAX_CHARS);
-      // .replace(/\n/g, '');
   } catch (e) {
     return obj;
   }
