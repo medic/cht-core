@@ -42,7 +42,7 @@ describe('User DB service', () => {
 
     it('creates the db if it does not exist', () => {
       const userDb = { put: function() {} };
-      const create = sinon.stub(db, 'exists').resolves({error: 'not_found'});
+      const create = sinon.stub(db, 'exists').resolves(false);
       const get = sinon.stub(db, 'get').returns(userDb);
       const dbPut = sinon.stub(userDb, 'put').resolves();
       const requestPut = sinon.stub(request, 'put').resolves();
