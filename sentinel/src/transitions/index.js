@@ -11,7 +11,6 @@ const _ = require('underscore'),
   lineage = require('@medic/lineage')(Promise, db.medic),
   logger = require('../lib/logger'),
   config = require('../config'),
-  dbNano = require('../db-nano'),
   infodoc = require('../lib/infodoc'),
   metadata = require('../lib/metadata'),
   tombstoneUtils = require('@medic/tombstone-utils'),
@@ -67,45 +66,22 @@ const processChange = (change, callback) => {
     );
   }
   if (change.deleted) {
-    // don't run transitions on deleted docs, but do clean up
-    async.parallel(
-      [
-        callback => {
-          infodoc
-            .delete(change)
-            .then(() => {
-              callback();
-            })
-            .catch(err => {
-              callback(err);
-            });
-        },
-        async.apply(deleteReadDocs, change),
-      ],
-      err => {
-        if (err) {
-          logger.error('Error cleaning up deleted doc: %o', err);
-        }
-
-        tombstoneUtils
-          .processChange(Promise, db.medic, change, logger)
-          .then(() => {
-            processed++;
-            metadata
-              .update(change.seq)
-              .then(() => {
-                callback();
-              })
-              .catch(err => {
-                callback(err);
-              });
-          })
-          .catch(err => {
-            callback(err);
-          });
-      }
-    );
-    return;
+    return Promise
+      .all([
+        infodoc.delete(change),
+        deleteReadDocs(change)
+      ])
+      .catch(err => {
+        logger.error('Error cleaning up deleted doc: %o', err);
+      })
+      .then(() => tombstoneUtils.processChange(Promise, db.medic, change, logger))
+      .then(() => {
+        processed++;
+        return metadata
+          .update(change.seq)
+          .then(() => callback());
+      })
+      .catch(callback);
   }
 
   lineage
@@ -136,45 +112,31 @@ const processChange = (change, callback) => {
     });
 };
 
-const deleteReadDocs = (change, callback) => {
+const deleteReadDocs = change => {
   // we don't know if the deleted doc was a report or a message so
   // attempt to delete both
   const possibleReadDocIds = ['report', 'message'].map(
     type => `read:${type}:${change.id}`
   );
 
-  dbNano.db.list((err, dbs) => {
-    if (err) {
-      return callback(err);
-    }
-
+  return db.allDbs().then(dbs => {
     const userDbs = dbs.filter(db => db.indexOf('medic-user-') === 0);
 
-    async.each(
-      userDbs,
-      (userDb, callback) => {
-        const metaDb = dbNano.use(userDb);
-        metaDb.fetch({ keys: possibleReadDocIds }, (err, results) => {
-          if (err) {
-            return callback(err);
+    return Promise.all(userDbs.map(userDb => {
+      const metaDb = db.metaDb(userDb);
+      return metaDb.allDocs({ keys: possibleReadDocIds }).then(results => {
+        const row = results.rows.find(row => !row.error);
+        if (!row) {
+          return;
+        }
+
+        return metaDb.remove(row.id, row.value.rev).catch(err => {
+          if (err.status !== 404 && err.status !== 409) {
+            throw err;
           }
-          // find which of the possible ids was the right one
-          const row = results.rows.find(row => !!row.doc);
-          if (!row) {
-            return callback();
-          }
-          row.doc._deleted = true;
-          metaDb.insert(row.doc, err => {
-            // ignore 404s or 409s - the doc was probably deleted client side already
-            if (err && err.statusCode !== 404 && err.statusCode !== 409) {
-              return callback(err);
-            }
-            callback();
-          });
         });
-      },
-      callback
-    );
+      });
+    }));
   });
 };
 

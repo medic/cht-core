@@ -5,6 +5,8 @@ PouchDB.plugin(require('pouchdb-mapreduce'));
 
 const { COUCH_URL, UNIT_TEST_ENV } = process.env;
 
+const request = require('request');
+
 if (UNIT_TEST_ENV) {
   const stubMe = functionName => () => {
     logger.error(
@@ -35,6 +37,9 @@ if (UNIT_TEST_ENV) {
     get: stubMe('get'),
     changes: stubMe('changes'),
   };
+
+  module.exports.allDbs = stubMe('allDbs');
+  module.exports.metaDb = stubMe('metaDb');
 } else if (COUCH_URL) {
   // strip trailing slash from to prevent bugs in path matching
   const couchUrl = COUCH_URL && COUCH_URL.replace(/\/$/, '');
@@ -50,6 +55,13 @@ if (UNIT_TEST_ENV) {
   module.exports.sentinel = new PouchDB(`${couchUrl}-sentinel`, {
     fetch: fetchFn,
   });
+
+  module.exports.allDbs = () => new Promise((resolve, reject) => {
+    request({ url: module.exports.serverUrl + '/_all_dbs', json: true }, (err, response, body) => {
+      return err ? reject(err) : resolve(body);
+    });
+  });
+  module.exports.metaDb = db => new PouchDB(module.exports.serverUrl + '/' + db);
 } else {
   logger.warn(
     'Please define a COUCH_URL in your environment e.g. \n' +

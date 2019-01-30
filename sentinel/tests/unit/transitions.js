@@ -2,7 +2,6 @@ const sinon = require('sinon'),
   assert = require('chai').assert,
   _ = require('underscore'),
   config = require('../../src/config'),
-  dbNano = require('../../src/db-nano'),
   db = require('../../src/db'),
   infodoc = require('../../src/lib/infodoc'),
   transitions = require('../../src/transitions'),
@@ -407,7 +406,7 @@ describe('transitions', () => {
       .resolves({ _id: '_local/sentinel-meta-data', processed_seq: 12 });
     sinon.stub(infodoc, 'delete').resolves();
 
-    sinon.stub(dbNano.db, 'list').callsArgWith(0, null, []);
+    sinon.stub(db, 'allDbs').resolves([]);
 
     const on = sinon.stub().returns({ on: () => ({ cancel: () => null }) });
     const feed = sinon.stub(db.medic, 'changes').returns({ on: on });
@@ -446,7 +445,7 @@ describe('transitions', () => {
       .resolves({ _id: '_local/sentinel-meta-data', processed_seq: 12 });
     sinon.stub(infodoc, 'delete').resolves();
 
-    sinon.stub(dbNano.db, 'list').callsArgWith(0, null, []);
+    sinon.stub(db, 'allDbs').resolves([]);
 
     const on = sinon.stub().returns({ on: () => ({ cancel: () => null }) });
     const feed = sinon.stub(db.medic, 'changes').returns({ on: on });
@@ -514,57 +513,63 @@ describe('transitions', () => {
     });
   });
 
-  it('deleteReadDocs handles missing read doc', done => {
+  it('deleteReadDocs handles missing read doc', () => {
     const given = { id: 'abc' };
     const metaDb = {
-      info: function() {},
-      fetch: function() {},
+      remove: sinon.stub(),
+      allDocs: sinon.stub().resolves({
+        rows: [
+          { key: 'read:message:abc', error: 'notfound' },
+          { key: 'read:report:abc', error: 'notfound' }
+        ]
+      }),
     };
-    sinon.stub(dbNano.db, 'list').callsArgWith(0, null, ['medic-user-gareth-meta']);
-    sinon.stub(dbNano, 'use').returns(metaDb);
-    sinon
-      .stub(metaDb, 'fetch')
-      .callsArgWith(1, null, { rows: [{ error: 'notfound' }] });
-    transitions._deleteReadDocs(given, err => {
-      assert.equal(err, undefined);
-      done();
-    });
+    sinon.stub(db, 'allDbs').resolves(['medic-user-gareth-meta']);
+    sinon.stub(db, 'metaDb').returns(metaDb);
+    return transitions
+      ._deleteReadDocs(given)
+      .then(() => {
+        assert.equal(db.allDbs.callCount, 1);
+        assert.equal(db.metaDb.callCount, 1);
+        assert.deepEqual(db.metaDb.args[0], ['medic-user-gareth-meta']);
+        assert.equal(metaDb.allDocs.callCount, 1);
+        assert.deepEqual(metaDb.allDocs.args[0], [{ keys: ['read:report:abc', 'read:message:abc'] }]);
+        assert.equal(metaDb.remove.callCount, 0);
+      });
   });
 
-  it('deleteReadDocs deletes read doc for all admins', done => {
+  it('deleteReadDocs deletes read doc for all admins', () => {
     const given = { id: 'abc' };
     const metaDb = {
-      info: function() {},
-      fetch: function() {},
-      insert: function() {},
+      allDocs: sinon.stub().resolves({
+        rows: [
+          { key: 'read:message:abc', error: 'notfound' },
+          { key: 'read:report:abc', id: 'read:report:abc', value: { rev: '1-rev' } }
+        ]
+      }),
+      remove: sinon.stub().resolves()
     };
-    const list = sinon.stub(dbNano.db, 'list').callsArgWith(0, null, [
+    const list = sinon.stub(db, 'allDbs').resolves([
       'medic-user-gareth-meta',
       'medic-user-jim-meta',
       'medic', // not a user db - must be ignored
     ]);
-    const use = sinon.stub(dbNano, 'use').returns(metaDb);
-    const fetch = sinon.stub(metaDb, 'fetch').callsArgWith(1, null, {
-      rows: [{ error: 'notfound' }, { doc: { id: 'xyz' } }],
-    });
-    const insert = sinon.stub(metaDb, 'insert').callsArg(1);
-    transitions._deleteReadDocs(given, err => {
-      assert.equal(err, undefined);
+    const use = sinon.stub(db, 'metaDb').returns(metaDb);
+    return transitions._deleteReadDocs(given).then(() => {
       assert.equal(list.callCount, 1);
       assert.equal(use.callCount, 2);
       assert.equal(use.args[0][0], 'medic-user-gareth-meta');
       assert.equal(use.args[1][0], 'medic-user-jim-meta');
-      assert.equal(fetch.callCount, 2);
-      assert.equal(fetch.args[0][0].keys.length, 2);
-      assert.equal(fetch.args[0][0].keys[0], 'read:report:abc');
-      assert.equal(fetch.args[0][0].keys[1], 'read:message:abc');
-      assert.equal(fetch.args[1][0].keys.length, 2);
-      assert.equal(fetch.args[1][0].keys[0], 'read:report:abc');
-      assert.equal(fetch.args[1][0].keys[1], 'read:message:abc');
-      assert.equal(insert.callCount, 2);
-      assert.equal(insert.args[0][0]._deleted, true);
-      assert.equal(insert.args[1][0]._deleted, true);
-      done();
+      assert.equal(metaDb.allDocs.callCount, 2);
+      assert.equal(metaDb.allDocs.args[0][0].keys.length, 2);
+      assert.equal(metaDb.allDocs.args[0][0].keys[0], 'read:report:abc');
+      assert.equal(metaDb.allDocs.args[0][0].keys[1], 'read:message:abc');
+      assert.equal(metaDb.allDocs.args[1][0].keys.length, 2);
+      assert.equal(metaDb.allDocs.args[1][0].keys[0], 'read:report:abc');
+      assert.equal(metaDb.allDocs.args[1][0].keys[1], 'read:message:abc');
+      assert.equal(metaDb.remove.callCount, 2);
+      assert.deepEqual(metaDb.remove.args[0], ['read:report:abc', '1-rev']);
+      assert.deepEqual(metaDb.remove.args[1], ['read:report:abc', '1-rev']);
     });
   });
 });
