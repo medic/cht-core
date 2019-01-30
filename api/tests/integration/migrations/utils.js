@@ -199,7 +199,7 @@ const _resetDb = () => {
       logger.error('Could not create "medic-test" directly after deleting, pausing and trying again');
       return new Promise(function(resolve, reject) {
         setTimeout(function() {
-          db.get('medic-test')
+          db.exists('medic-test')
             .then(() => {
               logger.info(`After a struggle, at ${new Date()}, re-created "medic-test"`);
               resolve();
