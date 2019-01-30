@@ -464,7 +464,7 @@ module.exports = {
   createUser: data => {
     const missing = missingFields(data);
     if (missing.length > 0) {
-      return Promise.reject(error400('Missing required fields: ','fields.required', { 'fields': missing.join(', ')} ));
+      return Promise.reject(error400('Missing required fields: ' + missing.join(', '),'fields.required', { 'fields': missing.join(', ')} ));
     }
     const passwordError = validatePassword(data.password);
     if (passwordError) {
@@ -515,7 +515,7 @@ module.exports = {
         !_.isNull(data.contact) &&
         !_.some(props, key => (!_.isNull(data[key]) && !_.isUndefined(data[key])))
     ) {
-      return Promise.reject(error400('One of the following fields are required: ','fields.one.required', { 'fields': props.join(', ')} ));
+      return Promise.reject(error400('One of the following fields are required: ' + props.join(', '),'fields.one.required', { 'fields': props.join(', ')} ));
     }
     if (data.password) {
       const passwordError = validatePassword(data.password);
