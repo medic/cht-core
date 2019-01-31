@@ -1,6 +1,7 @@
 const sinon = require('sinon'),
-      db = require('../../../src/db'),
       chai = require('chai'),
+      request = require('request-promise-native'),
+      db = require('../../../src/db'),
       migration = require('../../../src/migrations/associate-records-with-people');
 
 describe('associate-records-with-people migration', () => {
@@ -484,7 +485,7 @@ describe('associate-records-with-people migration', () => {
   const clone = original => JSON.parse(JSON.stringify(original));
 
   it('run does nothing if no data records', () => {
-    const getView = sinon.stub(db.medic, 'query').resolves({ rows: [] });
+    const getView = sinon.stub(request, 'get').resolves({ rows: [] });
     return migration.run().then(() => {
       chai.expect(getView.callCount).to.equal(1);
     });
@@ -492,7 +493,7 @@ describe('associate-records-with-people migration', () => {
 
   it('run does nothing if outgoing message already migrated', () => {
     const rows = [ { doc: { tasks: [ { messages: [ { contact: { _id: 'a' } } ] } ] } } ];
-    const getView = sinon.stub(db.medic, 'query').resolves({ rows: rows });
+    const getView = sinon.stub(request, 'get').resolves({ rows: rows });
     return migration.run().then(() => {
       chai.expect(getView.callCount).to.equal(1);
     });
@@ -500,7 +501,7 @@ describe('associate-records-with-people migration', () => {
 
   it('run does nothing if outgoing message has no facility', () => {
     const rows = [ { doc: { tasks: [ { messages: [ { to: '+6427555', } ] } ] } } ];
-    const getView = sinon.stub(db.medic, 'query').resolves({ rows: rows });
+    const getView = sinon.stub(request, 'get').resolves({ rows: rows });
     return migration.run().then(() => {
       chai.expect(getView.callCount).to.equal(1);
     });
@@ -508,7 +509,7 @@ describe('associate-records-with-people migration', () => {
 
   it('run migrates outgoing message', () => {
     const rows = [ { doc: clone(outgoingMessage) } ];
-    sinon.stub(db.medic, 'query').resolves({ rows: rows });
+    sinon.stub(request, 'get').resolves({ rows: rows });
     const getDoc = sinon.stub(db.medic, 'get').resolves(contact);
     const bulk = sinon.stub(db.medic, 'bulkDocs').resolves();
     return migration.run().then(() => {
@@ -523,7 +524,7 @@ describe('associate-records-with-people migration', () => {
 
   it('run migrates outgoing message to facility without contact id - #2545', () => {
     const rows = [ { doc: clone(outgoingMessageWithoutContactId) } ];
-    sinon.stub(db.medic, 'query').resolves({ rows: rows });
+    sinon.stub(request, 'get').resolves({ rows: rows });
     const getDoc = sinon.stub(db.medic, 'get').resolves(clinic);
     const bulk = sinon.stub(db.medic, 'bulkDocs').resolves();
     return migration.run().then(() => {
@@ -540,7 +541,7 @@ describe('associate-records-with-people migration', () => {
 
   it('run migrates outgoing message to person', () => {
     const rows = [ { doc: clone(outgoingMessageToPerson) } ];
-    sinon.stub(db.medic, 'query').resolves({ rows: rows });
+    sinon.stub(request, 'get').resolves({ rows: rows });
     const bulk = sinon.stub(db.medic, 'bulkDocs').resolves();
     return migration.run().then(() => {
       chai.expect(bulk.callCount).to.equal(1);
@@ -552,7 +553,7 @@ describe('associate-records-with-people migration', () => {
 
   it('run does nothing if incoming message already migrated', () => {
     const rows = [ { doc: { sms_message: { message: 'incoming', }, contact: { _id: 'a' } } } ];
-    sinon.stub(db.medic, 'query').resolves({ rows: rows });
+    sinon.stub(request, 'get').resolves({ rows: rows });
     const bulk = sinon.stub(db.medic, 'bulkDocs');
     return migration.run().then(() => {
       chai.expect(bulk.callCount).to.equal(0);
@@ -561,7 +562,7 @@ describe('associate-records-with-people migration', () => {
 
   it('run does nothing if incoming message has no facility', () => {
     const rows = [ { doc: { sms_message: { message: 'incoming' } } } ];
-    sinon.stub(db.medic, 'query').resolves({ rows: rows });
+    sinon.stub(request, 'get').resolves({ rows: rows });
     const bulk = sinon.stub(db.medic, 'bulkDocs');
     return migration.run().then(() => {
       chai.expect(bulk.callCount).to.equal(0);
@@ -570,7 +571,7 @@ describe('associate-records-with-people migration', () => {
 
   it('run migrates incoming message', () => {
     const rows = [ { doc: clone(incomingMessage) } ];
-    sinon.stub(db.medic, 'query').resolves({ rows: rows });
+    sinon.stub(request, 'get').resolves({ rows: rows });
     const getDoc = sinon.stub(db.medic, 'get').resolves(clone(contact));
     const bulk = sinon.stub(db.medic, 'bulkDocs').resolves();
     return migration.run().then(() => {
@@ -584,7 +585,7 @@ describe('associate-records-with-people migration', () => {
 
   it('run migrates incoming report', () => {
     const rows = [ { doc: clone(incomingReport) } ];
-    sinon.stub(db.medic, 'query').resolves({ rows: rows });
+    sinon.stub(request, 'get').resolves({ rows: rows });
     const getDoc = sinon.stub(db.medic, 'get').resolves(clone(contact));
     const bulk = sinon.stub(db.medic, 'bulkDocs').resolves();
     return migration.run().then(() => {
@@ -598,7 +599,7 @@ describe('associate-records-with-people migration', () => {
 
   it('run migrates incoming report with no contact id - #2970', () => {
     const rows = [ { doc: clone(incomingReportWithoutContactId) } ];
-    sinon.stub(db.medic, 'query').resolves({ rows: rows });
+    sinon.stub(request, 'get').resolves({ rows: rows });
     const getDoc = sinon.stub(db.medic, 'get').resolves(clone(clinic));
     const bulk = sinon.stub(db.medic, 'bulkDocs').resolves();
     return migration.run().then(() => {
@@ -619,7 +620,7 @@ describe('associate-records-with-people migration', () => {
       { doc: clone(incomingMessage) },
       { doc: clone(incomingReport) }
     ];
-    sinon.stub(db.medic, 'query').resolves({ rows: rows });
+    sinon.stub(request, 'get').resolves({ rows: rows });
     const getDoc = sinon.stub(db.medic, 'get');
     getDoc.onCall(0).resolves(contact);
     getDoc.onCall(1).resolves(contact);
@@ -636,7 +637,7 @@ describe('associate-records-with-people migration', () => {
 
   it('run migrates outgoing message with deleted contact', () => {
     const rows = [ { doc: clone(outgoingMessage) } ];
-    sinon.stub(db.medic, 'query').resolves({ rows: rows });
+    sinon.stub(request, 'get').resolves({ rows: rows });
     const getDoc = sinon.stub(db.medic, 'get');
     getDoc.onCall(0).returns(Promise.reject({ status: 404 }));
     getDoc.onCall(1).resolves(clinic);
@@ -656,7 +657,7 @@ describe('associate-records-with-people migration', () => {
 
   it('run migrates incoming message with deleted contact and deleted clinic', () => {
     const rows = [ { doc: clone(incomingMessage) } ];
-    sinon.stub(db.medic, 'query').resolves({ rows: rows });
+    sinon.stub(request, 'get').resolves({ rows: rows });
     const getDoc = sinon.stub(db.medic, 'get');
     getDoc.onCall(0).returns(Promise.reject({ status: 404 }));
     getDoc.onCall(1).returns(Promise.reject({ status: 404 }));
@@ -674,7 +675,7 @@ describe('associate-records-with-people migration', () => {
 
   it('run migrates incoming message with deleted contact and clinic has no contact', () => {
     const rows = [ { doc: clone(incomingMessage) } ];
-    sinon.stub(db.medic, 'query').resolves({ rows: rows });
+    sinon.stub(request, 'get').resolves({ rows: rows });
     const getDoc = sinon.stub(db.medic, 'get');
     getDoc.onCall(0).returns(Promise.reject({ status: 404 }));
     getDoc.onCall(1).resolves({ _id: 'a' });
