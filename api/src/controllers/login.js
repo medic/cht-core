@@ -145,7 +145,7 @@ const setCookies = (req, res, sessionRes) => {
       setSessionCookie(res, sessionCookie);
       setUserCtxCookie(res, userCtx);
       return auth.getUserSettings(userCtx).then(settings => {
-        setLocaleCookie(res, settings.language)
+        setLocaleCookie(res, settings.language);
         res.status(302).send(getRedirectUrl(userCtx));
       });
     })
