@@ -168,7 +168,7 @@
           .on('progress', function(progress) {
             setUiStatus('PURGE_INFO', {
               count: progress.purged,
-              precent: Math.floor((progress.processed / progress.total) * 100)
+              percent: Math.floor((progress.processed / progress.total) * 100)
             });
           })
           .on('optimise', () => setUiStatus('PURGE_AFTER'))
