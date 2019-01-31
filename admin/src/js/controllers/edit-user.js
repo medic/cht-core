@@ -330,7 +330,13 @@ angular
                   $uibModalInstance.close();
                 })
                 .catch(function(err) {
-                  $scope.setError(err, 'Error updating user');
+                  if (err && err.data && err.data.error && err.data.error.translationKey) {
+                    Translate(err.data.error.translationKey, err.data.error.translationParams).then(function(value) {
+                      $scope.setError(err, value);
+                    });           
+                  } else {
+                    $scope.setError(err, 'Error updating user');
+                  }
                 });
             });
           })
