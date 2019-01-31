@@ -136,7 +136,7 @@ _.templateSettings = {
   };
 
   // Detects reloads or route updates (#/something)
-  app.run(function($rootScope, $state, $transitions, Auth, $ngRedux, $timeout) {
+  app.run(function($rootScope, $state, $transitions, Auth) {
     $transitions.onStart({}, function(trans) {
       if (trans.to().name.indexOf('error') === -1) {
         var permission = getRequiredPermission(trans.to().name);
