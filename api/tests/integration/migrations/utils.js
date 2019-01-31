@@ -185,7 +185,11 @@ const initDb = content => {
     });
 };
 
-const _resetDb = () => {
+const _resetDb = (attempts = 0) => {
+  if (attempts === 3) {
+    return Promise.reject(new Error('Unable to reset medic-test db'));
+  }
+
   return db.exists('medic-test')
     .then(exists => {
       if (exists) {
@@ -197,17 +201,9 @@ const _resetDb = () => {
     })
     .catch(err => {
       logger.error('Could not create "medic-test" directly after deleting, pausing and trying again');
-      return new Promise(function(resolve, reject) {
-        setTimeout(function() {
-          db.exists('medic-test')
-            .then(() => {
-              logger.info(`After a struggle, at ${new Date()}, re-created "medic-test"`);
-              resolve();
-            })
-            .catch(err => {
-              reject(new Error('Error creating "medic-test": ' + err.message));
-            });
-        }, 3000);
+      logger.error(err);
+      return new Promise(resolve => {
+        setTimeout(() => resolve(_resetDb(attempts + 1)), 3000);
       });
     });
 };

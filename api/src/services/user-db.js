@@ -65,7 +65,7 @@ module.exports = {
       if (!found) {
         const database = db.get(dbName);
         return database.put(ddoc)
-          .then(result => {
+          .then(() => {
             return setSecurity(dbName, username);
           });
       }
