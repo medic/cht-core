@@ -64,7 +64,11 @@ if (UNIT_TEST_ENV) {
   module.exports.exists = name => {
     const db = new PouchDB(getDbUrl(name), { skip_setup: true });
     return db.info()
-      .then(() => true)
+      .then(result => {
+        // In at least PouchDB 7.0.0, info() on a non-existant db doesn't throw,
+        // instead it returns the error structure
+        return  !result.error;
+      })
       .catch(() => false);
   };
 }

@@ -63,9 +63,11 @@ module.exports = {
     const dbName = module.exports.getDbName(username);
     return db.exists(dbName).then(found => {
       if (!found) {
-        return db.get(dbName)
-          .then(database => database.put(ddoc))
-          .then(() => setSecurity(dbName, username));
+        const database = db.get(dbName);
+        return database.put(ddoc)
+          .then(() => {
+            return setSecurity(dbName, username);
+          });
       }
     });
   }
