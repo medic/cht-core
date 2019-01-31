@@ -9,16 +9,22 @@ var _ = require('underscore');
   inboxControllers.controller('ReportsContentCtrl',
     function (
       $log,
+      $ngRedux,
       $scope,
       $stateParams,
       $timeout,
+      Actions,
       Changes,
       MessageState
     ) {
 
       'ngInject';
+
+      var ctrl = this;
+      var unsubscribe = $ngRedux.connect(null, Actions)(ctrl);
+
       $scope.selectReport($stateParams.id);
-      $scope.clearCancelTarget();
+      ctrl.clearCancelCallback();
       $('.tooltip').remove();
 
       $scope.canMute = function(group) {
@@ -96,8 +102,8 @@ var _ = require('underscore');
             var selected = $scope.selected;
             $scope.refreshReportSilently(change.doc)
               .then(function() {
-                if(selected[0].formatted.verified !== change.doc.verified || 
-                   ('oldVerified' in selected[0].formatted && 
+                if(selected[0].formatted.verified !== change.doc.verified ||
+                   ('oldVerified' in selected[0].formatted &&
                     selected[0].formatted.oldVerified !== change.doc.verified)) {
                   $scope.selected = selected;
                   $timeout(function() {
@@ -109,7 +115,10 @@ var _ = require('underscore');
         }
       });
 
-      $scope.$on('$destroy', changeListener.unsubscribe);
+      $scope.$on('$destroy', function() {
+        unsubscribe();
+        changeListener.unsubscribe();
+      });
 
       $scope.$on('VerifiedReport', function(e, valid) {
         var oldVerified = $scope.selected[0].formatted.verified;

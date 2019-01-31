@@ -53,6 +53,10 @@ var _ = require('underscore');
         $window.location.reload();
       };
 
+      $scope.$on('ClearSelected', function() {
+        $scope.selected = null;
+      });
+
       $timeout(function() {
         LiveList.tasks.refresh();
       });

@@ -295,6 +295,10 @@ angular
       setRightActionBar();
     });
 
+    $scope.$on('ClearSelected', function() {
+      $scope.clearSelection();
+    });
+
     $scope.$on('EditReport', function() {
       Modal({
         templateUrl: 'templates/modals/edit_report.html',

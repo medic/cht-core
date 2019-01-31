@@ -8,11 +8,13 @@ var _ = require('underscore'),
 
   inboxControllers.controller('ContactsCtrl', function(
     $log,
+    $ngRedux,
     $q,
     $scope,
     $state,
     $stateParams,
     $translate,
+    Actions,
     Auth,
     Changes,
     ContactSchema,
@@ -31,6 +33,9 @@ var _ = require('underscore'),
     XmlForms
   ) {
     'ngInject';
+
+    var ctrl = this;
+    var unsubscribe = $ngRedux.connect(null, Actions)(ctrl);
 
     var liveList = LiveList.contacts;
 
@@ -207,7 +212,7 @@ var _ = require('underscore'),
     $scope.setSelected = function(selected) {
       liveList.setSelected(selected.doc._id);
       $scope.selected = selected;
-      $scope.clearCancelTarget();
+      ctrl.clearCancelCallback();
       var selectedDoc = selected.doc;
       var title = '';
       if (selected.doc.type === 'person') {
@@ -290,6 +295,10 @@ var _ = require('underscore'),
           $scope.setRightActionBar();
         });
     };
+
+    $scope.$on('ClearSelected', function() {
+      $scope.clearSelection();
+    });
 
     $scope.search = function() {
       if($scope.filters.search) {
@@ -474,6 +483,7 @@ var _ = require('underscore'),
     });
 
     $scope.$on('$destroy', function () {
+      unsubscribe();
       changeListener.unsubscribe();
       if (!$state.includes('contacts')) {
         LiveList.$reset('contacts', 'contact-search');

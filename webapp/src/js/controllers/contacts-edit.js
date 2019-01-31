@@ -22,7 +22,7 @@ angular.module('inboxControllers').controller('ContactsEditCtrl',
     var ctrl = this;
     var unsubscribe = $ngRedux.connect(null, Actions)(ctrl);
 
-    $scope.setLoadingContent(true);
+    $scope.loadingContent = true;
     $scope.setShowContent(true);
     ctrl.setCancelCallback(function() {
       if ($state.params.from === 'list') {
@@ -77,7 +77,7 @@ angular.module('inboxControllers').controller('ContactsEditCtrl',
     };
 
     var getForm = function(contact) {
-      $scope.primaryContact = {}; // TODO delete?
+      $scope.primaryContact = {};
       $scope.original = contact;
       if (contact) {
         $scope.contact = contact;
@@ -104,7 +104,7 @@ angular.module('inboxControllers').controller('ContactsEditCtrl',
     };
 
     var markFormEdited = function() {
-      $scope.setEnketoEditedStatus(true);
+      $scope.enketoStatus.edited = true;
     };
 
     var renderForm = function(form) {
@@ -117,7 +117,7 @@ angular.module('inboxControllers').controller('ContactsEditCtrl',
               .addClass('disabled');
           return;
         }
-        $scope.setEnketoEditedStatus(false);
+        $scope.enketoStatus.edited = false;
         var instanceData = getFormInstanceData();
         if (form.id) {
           return Enketo.renderContactForm('#contact-form', form.id, instanceData, markFormEdited);
@@ -152,12 +152,12 @@ angular.module('inboxControllers').controller('ContactsEditCtrl',
       .then(renderForm)
       .then(setEnketoContact)
       .then(function() {
-        $scope.setLoadingContent(false);
+        $scope.loadingContent = false;
       })
       .catch(function(err) {
         $scope.errorTranslationKey = err.translationKey || 'error.loading.form';
-        $scope.setLoadingContent(false);
-        $scope.contentError = true; // TODO it seems that this should just be local, not global?
+        $scope.loadingContent = false;
+        $scope.contentError = true;
         $log.error('Error loading contact form.', err);
       });
 
@@ -169,8 +169,8 @@ angular.module('inboxControllers').controller('ContactsEditCtrl',
 
       var form = $scope.enketoContact.formInstance;
       var docId = $scope.enketoContact.docId;
-      $scope.setEnketoSavingStatus(true);
-      $scope.setEnketoError(null);
+      $scope.enketoStatus.saving = true;
+      $scope.enketoStatus.error = null;
 
       return form.validate()
         .then(function(valid) {
@@ -182,24 +182,24 @@ angular.module('inboxControllers').controller('ContactsEditCtrl',
           return ContactSave($scope.unmodifiedSchema[type], form, docId, type)
             .then(function(result) {
               $log.debug('saved report', result);
-              $scope.setEnketoSavingStatus(false);
+              $scope.enketoStatus.saving = false;
               $translate(docId ? 'contact.updated' : 'contact.created').then(Snackbar);
-              $scope.setEnketoEditedStatus(false);
+              $scope.enketoStatus.edited = false;
               $state.go('contacts.detail', { id: result.docId });
             })
             .catch(function(err) {
-              $scope.setEnketoSavingStatus(false);
+              $scope.enketoStatus.saving = false;
               $log.error('Error submitting form data', err);
               $translate('Error updating contact').then(function(msg) {
-              $scope.setEnketoError(msg);
+                $scope.enketoStatus.error = msg;
               });
             });
         })
         .catch(function() {
           // validation messages will be displayed for individual fields.
           // That's all we want, really.
-          $scope.setEnketoSavingStatus(false);
-          $scope.$apply(); // TODO still necessary with redux?
+          $scope.enketoStatus.saving = false;
+          $scope.$apply();
         });
     };
 

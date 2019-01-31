@@ -1,9 +1,11 @@
 angular.module('inboxControllers').controller('ContactsReportCtrl',
   function (
     $log,
+    $ngRedux,
     $scope,
     $state,
     $translate,
+    Actions,
     ContactViewModelGenerator,
     Enketo,
     Geolocation,
@@ -20,6 +22,9 @@ angular.module('inboxControllers').controller('ContactsReportCtrl',
       preRender: Date.now()
     };
 
+    var ctrl = this;
+    var unsubscribe = $ngRedux.connect(null, Actions)(ctrl);
+
     var geolocation;
     Geolocation()
       .then(function(position) {
@@ -31,15 +36,15 @@ angular.module('inboxControllers').controller('ContactsReportCtrl',
       $scope.enketoStatus.edited = true;
     };
 
-    var setCancelTarget = function() {
-      $scope.setCancelTarget(function() {
+    var setCancelCallback = function() {
+      ctrl.setCancelCallback(function() {
         $state.go('contacts.detail', { id: $state.params.id });
       });
     };
 
     var render = function(contact) {
       $scope.setSelected(contact);
-      setCancelTarget();
+      setCancelCallback();
       return XmlForm($state.params.formId, { include_docs: true })
         .then(function(form) {
           var instanceData = {
@@ -106,7 +111,7 @@ angular.module('inboxControllers').controller('ContactsReportCtrl',
     $scope.loadingForm = true;
     $scope.setRightActionBar();
     $scope.setShowContent(true);
-    setCancelTarget();
+    setCancelCallback();
     ContactViewModelGenerator($state.params.id, { merge: true })
       .then(render)
       .catch(function(err) {
@@ -117,6 +122,7 @@ angular.module('inboxControllers').controller('ContactsReportCtrl',
       });
 
     $scope.$on('$destroy', function() {
+      unsubscribe();
       if (!$state.includes('contacts.report')) {
         $scope.setTitle();
         Enketo.unload($scope.form);
