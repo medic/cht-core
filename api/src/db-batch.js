@@ -54,7 +54,6 @@ module.exports.view = (viewName, viewParams, iteratee) => {
   // add 1 so we know where to start from next iteration
   const [ddoc, view] = viewName.split('/');
   viewParams.key = JSON.stringify(viewParams.key);
-  // console.log('viewParams.key', JSON.stringify(viewParams.key));
   viewParams.limit = (viewParams.limit || DEFAULT_BATCH_LIMIT) + 1;
   viewParams.include_docs = true;
   return Promise.resolve().then(() => {
