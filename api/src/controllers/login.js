@@ -116,6 +116,22 @@ const setUserCtxCookie = (res, userCtx) => {
   res.cookie('userCtx', JSON.stringify(userCtx), options);
 };
 
+const setLocaleCookie = (res, locale) => {
+  const options = getCookieOptions();
+  options.maxAge = ONE_YEAR;
+  res.cookie('locale', locale, options);
+};
+
+const getRedirectUrl = userCtx => {
+  // https://github.com/medic/medic/issues/5035
+  // For Test DB, temporarily disable `canCongifure` property to avoid redirecting to admin console
+  // One `e2e` is problematic
+  const designDoc  = auth.hasAllPermissions(userCtx, 'can_configure') &&
+    environment.db !== 'medic-test' ? 'medic-admin' : 'medic';
+
+  return path.join('/', environment.db, '_design', designDoc, '_rewrite');
+};
+
 const setCookies = (req, res, sessionRes) => {
   const sessionCookie = getSessionCookie(sessionRes);
   if (!sessionCookie) {
@@ -128,13 +144,10 @@ const setCookies = (req, res, sessionRes) => {
     .then(userCtx => {
       setSessionCookie(res, sessionCookie);
       setUserCtxCookie(res, userCtx);
-      // https://github.com/medic/medic/issues/5035
-      //  For Test DB, temporarily disable `canCongifure` property to avoid redirecting to admin console
-      // One `e2e` is problematic
-      const designDoc  = auth.hasAllPermissions(userCtx, 'can_configure') &&
-        environment.db !== 'medic-test' ? 'medic-admin' : 'medic';
-
-      res.status(302).send(path.join('/', environment.db, '_design', designDoc, '_rewrite'));
+      return auth.getUserSettings(userCtx).then(settings => {
+        setLocaleCookie(res, settings.language)
+        res.status(302).send(getRedirectUrl(userCtx));
+      });
     })
     .catch(err => {
       logger.error(`Error getting authCtx ${err}`);
