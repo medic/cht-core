@@ -627,7 +627,7 @@ describe('accept_patient_reports', () => {
         },
       ];
       sinon.stub(utils, 'getReportsBySubject').resolves(registrations);
-      transition._handleReport(doc, config, (err, complete) => {console.log('err1',err);console.log('coco1',registrations[0].scheduled_tasks);
+      transition._handleReport(doc, config, (err, complete) => {
         complete.should.equal(true);
         (typeof registrations[0].scheduled_tasks[0].responded_to_by).should.equal('undefined');
         (typeof registrations[0].scheduled_tasks[1].responded_to_by).should.equal('undefined');
