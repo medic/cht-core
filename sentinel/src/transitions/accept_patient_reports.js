@@ -113,33 +113,53 @@ const addRegistrationToDoc = (doc, registrations) => {
   }
 };
 
-const findValidRegistration = (doc, registrations) => {
+const findValidRegistration = (doc, config, registrations) => {
     const visitReportedDate = doc.reported_date;
 
     for (var i = 0; i < registrations.length; i++) {
       var registration = registrations[i];
       if (registration.scheduled_tasks) {
-        var scheduled_tasks = _.sortBy(registration.scheduled_tasks, 'due');
-        for (var j = 0; j < scheduled_tasks.length; j++) {
-          var task = scheduled_tasks[j];
-          if (['delivered', 'sent'].includes(task.state)) {
-            var nextTask = scheduled_tasks[j + 1] || { due: moment(visitReportedDate).add(1, 'd') };
-            if (nextTask && moment(nextTask.due) > moment(visitReportedDate)) {
-              // We loop through tasks. Once we find one that has either the status "delivered" or "sent" with
-              // a future task with a due date that is after the visit reported date then we have found the task
-              // linked to the visit. We always link if this is the last scheduled task delivered or sent.
-              var taskIndex = _.findIndex(registration.scheduled_tasks, { due: task.due });
-              registration.scheduled_tasks[taskIndex].report_uuid = doc._id;
-              return registration;
+        var scheduledTasks = _.sortBy(registration.scheduled_tasks, 'due');
+        if (moment(visitReportedDate) < moment(scheduledTasks[0].due)) {
+          continue;
+        }
+        for (var j = scheduledTasks.length - 1; j >= 0; j--) {
+          var task = scheduledTasks[j];
+          var prevTask = scheduledTasks[j - 1];
+
+          var silenceFor = date.getDuration(config.silence_for);
+
+          var silenceStart = moment(task.due).clone();
+          silenceStart.subtract(silenceFor);
+          if (silenceStart < moment(visitReportedDate) &&
+            task.state === 'cleared' && 
+            prevTask &&
+            prevTask.group !== task.group) {
+            break;
+          }
+
+          if (moment(task.due) < moment(visitReportedDate) && 
+              ['delivered', 'sent'].includes(task.state)) {
+            // We loop through tasks. Once we find one that has either the status "delivered" or "sent" with
+            // a future task with a due date that is after the visit reported date then we have found the task
+            // linked to the visit. We always link if this is the last scheduled task delivered or sent.
+            var taskIndex = _.findIndex(registration.scheduled_tasks, { due: task.due });
+            if (registration.scheduled_tasks[taskIndex].responded_to_by) {
+              registration.scheduled_tasks[taskIndex].responded_to_by.push(doc._id);
+            } else {
+              registration.scheduled_tasks[taskIndex].responded_to_by = [doc._id];
             }
+            return registration;
           }
         }
       }
     }
+
+    return false;
 };
 
-const addReportUUIDToRegistration = (doc, registrations, callback) => {
-    const validRegistration = registrations.length && findValidRegistration(doc, registrations);
+const addReportUUIDToRegistration = (doc, config, registrations, callback) => {
+    const validRegistration = registrations.length && findValidRegistration(doc, config, registrations);
     if (validRegistration) {
       return db.medic.put(validRegistration, callback);
     }
@@ -201,7 +221,7 @@ const handleReport = (doc, config, callback) => {
     .then(registrations => {
       addMessagesToDoc(doc, config, registrations);
       addRegistrationToDoc(doc, registrations);
-      addReportUUIDToRegistration(doc, registrations, err => {
+      addReportUUIDToRegistration(doc, config, registrations, err => {
         if (err) {
           return callback(err);
         }

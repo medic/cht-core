@@ -196,47 +196,164 @@ describe('accept_patient_reports', () => {
       });
     });
 
-    it('adds report_uuid property', done => {
-      const putRegistration = sinon.stub(db.medic, 'put');
-      putRegistration.callsArg(1);
+    // Helpful diagram for the next 5 tests:
+    // https://github.com/medic/medic/issues/4694#issuecomment-459460521
+    it('does not associate visit to anything since no reminder messages have been sent yet', done => {
       sinon.stub(transition, '_silenceReminders').callsArgWith(3, null, true);
       const doc = {
         _id: 'z',
         fields: { patient_id: 'x' },
-        reported_date: '2018-09-28T18:45:00.000Z',
+        reported_date: '2018-09-17T18:45:00.000Z',
       };
-      const config = { silence_type: 'x', messages: [] };
+      const config = { silence_type: 'x', silence_for: "8 days", messages: [] };
       const registrations = [
         {
           _id: 'a',
           reported_date: '2017-02-05T09:23:07.853Z',
           scheduled_tasks: [
             {
-              due: '2019-02-26T18:45:00.000Z',
+              due: '2018-09-28T19:45:00.000Z',
               state: 'scheduled',
               messages: [
                 {
                   uuid: 'k5',
                 },
               ],
+              group: 1
             },
             {
-              due: '2018-09-26T18:45:00.000Z',
-              state: 'sent',
+              due: '2018-10-28T20:45:00.000Z',
+              state: 'scheduled',
               messages: [
                 {
                   uuid: 'k',
                 },
               ],
+              group: 1
             },
             {
-              due: '2018-10-26T18:45:00.000Z',
+              due: '2018-11-28T21:45:00.000Z',
               state: 'scheduled',
               messages: [
                 {
                   uuid: 'j',
                 },
               ],
+              group: 1
+            },
+          ],
+        },
+      ];
+      sinon.stub(utils, 'getReportsBySubject').resolves(registrations);
+      transition._handleReport(doc, config, (err, complete) => {
+        complete.should.equal(true);
+        (typeof registrations[0].scheduled_tasks[0].responded_to_by).should.equal('undefined');
+        (typeof registrations[0].scheduled_tasks[1].responded_to_by).should.equal('undefined');
+        (typeof registrations[0].scheduled_tasks[2].responded_to_by).should.equal('undefined');
+        done();
+      });
+    });
+
+    it('does not associate visit to anything since it is not responding to a reminder', done => {
+      sinon.stub(transition, '_silenceReminders').callsArgWith(3, null, true);
+      const doc = {
+        _id: 'z',
+        fields: { patient_id: 'x' },
+        reported_date: '2018-09-28T18:45:00.000Z',
+      };
+      const config = { silence_type: 'x', silence_for: "8 days", messages: [] };
+      const registrations = [
+        {
+          _id: 'a',
+          reported_date: '2017-02-05T09:23:07.853Z',
+          scheduled_tasks: [
+            {
+              due: '2018-09-28T19:45:00.000Z',
+              state: 'cleared',
+              messages: [
+                {
+                  uuid: 'k5',
+                },
+              ],
+              group: 1
+            },
+            {
+              due: '2018-10-28T20:45:00.000Z',
+              state: 'cleared',
+              messages: [
+                {
+                  uuid: 'k',
+                },
+              ],
+              group: 1
+            },
+            {
+              due: '2018-11-28T21:45:00.000Z',
+              state: 'cleared',
+              messages: [
+                {
+                  uuid: 'j',
+                },
+              ],
+              group: 1
+            },
+          ],
+        },
+      ];
+      sinon.stub(utils, 'getReportsBySubject').resolves(registrations);
+      transition._handleReport(doc, config, (err, complete) => {
+        complete.should.equal(true);
+        (typeof registrations[0].scheduled_tasks[0].responded_to_by).should.equal('undefined');
+        (typeof registrations[0].scheduled_tasks[1].responded_to_by).should.equal('undefined');
+        (typeof registrations[0].scheduled_tasks[2].responded_to_by).should.equal('undefined');
+        done();
+      });
+    });
+
+    it('associates visit to Group 1 Message 1', done => {
+      const putRegistration = sinon.stub(db.medic, 'put');
+      putRegistration.callsArg(1);
+      sinon.stub(transition, '_silenceReminders').callsArgWith(3, null, true);
+      const doc = {
+        _id: 'z',
+        fields: { patient_id: 'x' },
+        reported_date: '2018-09-28T19:45:00.000Z',
+      };
+      const config = { silence_type: 'x', silence_for: "8 days", messages: [] };
+      const registrations = [
+        {
+          _id: 'a',
+          reported_date: '2017-02-05T09:23:07.853Z',
+          scheduled_tasks: [
+            {
+              due: '2018-09-28T18:45:00.000Z',
+              state: 'sent',
+              messages: [
+                {
+                  uuid: 'k5',
+                },
+              ],
+              group: 1
+            },
+            {
+              due: '2018-09-28T20:45:00.000Z',
+              state: 'cleared',
+              messages: [
+                {
+                  uuid: 'k',
+                },
+              ],
+              group: 1
+            },
+            {
+              due: '2018-11-28T21:45:00.000Z',
+              state: 'cleared',
+              messages: [
+                {
+                  uuid: 'j',
+                },
+              ],
+              group: 1
             },
           ],
         },
@@ -245,21 +362,154 @@ describe('accept_patient_reports', () => {
       transition._handleReport(doc, config, (err, complete) => {
         complete.should.equal(true);
         putRegistration.callCount.should.equal(1);
-        registrations[0].scheduled_tasks[1].report_uuid.should.equal(doc._id);
+        registrations[0].scheduled_tasks[0].responded_to_by.should.deep.equal([doc._id]);
+        (typeof registrations[0].scheduled_tasks[1].responded_to_by).should.equal('undefined');
+        (typeof registrations[0].scheduled_tasks[2].responded_to_by).should.equal('undefined');
         done();
       });
     });
 
-    it('if there are multiple scheduled tasks uses the oldest valid one', done => {
+    it('stores visit UUIDs in an array, since there can be multiple', done => {
+      const putRegistration = sinon.stub(db.medic, 'put');
+      putRegistration.callsArg(1);
+      sinon.stub(transition, '_silenceReminders').callsArgWith(3, null, true);
+      const doc1 = {
+        _id: 'z',
+        fields: { patient_id: 'x' },
+        reported_date: '2018-09-28T20:45:00.000Z',
+      };
+      const doc2 = {
+        _id: 'z',
+        fields: { patient_id: 'x' },
+        reported_date: '2018-09-28T21:45:00.000Z',
+      };
+      const config = { silence_type: 'x', silence_for: "8 days", messages: [] };
+      const registrations = [
+        {
+          _id: 'a',
+          reported_date: '2017-02-05T09:23:07.853Z',
+          scheduled_tasks: [
+            {
+              due: '2018-09-28T18:45:00.000Z',
+              state: 'sent',
+              messages: [
+                {
+                  uuid: 'k5',
+                },
+              ],
+              group: 1
+            },
+            {
+              due: '2018-09-28T19:45:00.000Z',
+              state: 'sent',
+              messages: [
+                {
+                  uuid: 'k',
+                },
+              ],
+              group: 1
+            },
+            {
+              due: '2018-11-28T21:45:00.000Z',
+              state: 'cleared',
+              messages: [
+                {
+                  uuid: 'j',
+                },
+              ],
+              group: 1
+            },
+          ],
+        },
+      ];
+      sinon.stub(utils, 'getReportsBySubject').resolves(registrations);
+      transition._handleReport(doc1, config, (err, complete) => {
+        complete.should.equal(true);
+        putRegistration.callCount.should.equal(1);
+        (typeof registrations[0].scheduled_tasks[0].responded_to_by).should.equal('undefined');
+        registrations[0].scheduled_tasks[1].responded_to_by.should.deep.equal([doc1._id]);
+        (typeof registrations[0].scheduled_tasks[2].responded_to_by).should.equal('undefined');
+
+        transition._handleReport(doc2, config, (err, complete) => {
+          complete.should.equal(true);
+          putRegistration.callCount.should.equal(2);
+          (typeof registrations[0].scheduled_tasks[0].responded_to_by).should.equal('undefined');
+          registrations[0].scheduled_tasks[1].responded_to_by.should.deep.equal([doc1._id, doc2._id]);
+          (typeof registrations[0].scheduled_tasks[2].responded_to_by).should.equal('undefined');
+          done();
+        });
+      });
+    });
+
+    it('associates visit to Group 1 Message 2.', done => {
       const putRegistration = sinon.stub(db.medic, 'put');
       putRegistration.callsArg(1);
       sinon.stub(transition, '_silenceReminders').callsArgWith(3, null, true);
       const doc = {
         _id: 'z',
         fields: { patient_id: 'x' },
-        reported_date: '2019-01-10T18:45:00.000Z',
+        reported_date: '2018-09-28T20:45:00.000Z',
       };
-      const config = { silence_type: 'x', messages: [] };
+      const config = { silence_type: 'x', silence_for: "8 days", messages: [] };
+      const registrations = [
+        {
+          _id: 'a',
+          reported_date: '2017-02-05T09:23:07.853Z',
+          scheduled_tasks: [
+            {
+              due: '2018-09-28T18:45:00.000Z',
+              state: 'sent',
+              messages: [
+                {
+                  uuid: 'k5',
+                },
+              ],
+              group: 1
+            },
+            {
+              due: '2018-09-28T19:45:00.000Z',
+              state: 'sent',
+              messages: [
+                {
+                  uuid: 'k',
+                },
+              ],
+              group: 1
+            },
+            {
+              due: '2018-11-28T21:45:00.000Z',
+              state: 'cleared',
+              messages: [
+                {
+                  uuid: 'j',
+                },
+              ],
+              group: 1
+            },
+          ],
+        },
+      ];
+      sinon.stub(utils, 'getReportsBySubject').resolves(registrations);
+      transition._handleReport(doc, config, (err, complete) => {
+        complete.should.equal(true);
+        putRegistration.callCount.should.equal(1);
+        (typeof registrations[0].scheduled_tasks[0].responded_to_by).should.equal('undefined');
+        registrations[0].scheduled_tasks[1].responded_to_by.should.deep.equal([doc._id]);
+        (typeof registrations[0].scheduled_tasks[2].responded_to_by).should.equal('undefined');
+        done();
+      });
+    });
+
+    it('associates visit to Group 1 Message 3', done => {
+      const putRegistration = sinon.stub(db.medic, 'put');
+      putRegistration.callsArg(1);
+      sinon.stub(transition, '_silenceReminders').callsArgWith(3, null, true);
+      const doc = {
+        _id: 'z',
+        fields: { patient_id: 'x' },
+        reported_date: '2018-12-15T18:45:00.000Z',
+      };
+      const config = { silence_type: 'x', silence_for: "8 days", messages: [] };
       const registrations = [
         {
           _id: 'a',
@@ -273,24 +523,27 @@ describe('accept_patient_reports', () => {
                   uuid: 'k1',
                 },
               ],
+              group: 1
             },
             {
-              due: '2018-11-26T18:45:00.000Z',
+              due: '2018-10-26T18:45:00.000Z',
               state: 'sent',
               messages: [
                 {
                   uuid: 'k2',
                 },
               ],
+              group: 1
             },
             {
-              due: '2018-12-26T18:45:00.000Z',
-              state: 'delivered',
+              due: '2018-11-26T18:45:00.000Z',
+              state: 'sent',
               messages: [
                 {
                   uuid: 'k3',
                 },
               ],
+              group: 1
             },
             {
               due: '2019-01-26T18:45:00.000Z',
@@ -300,6 +553,7 @@ describe('accept_patient_reports', () => {
                   uuid: 'k4',
                 },
               ],
+              group: 2
             },
           ],
         },
@@ -308,7 +562,77 @@ describe('accept_patient_reports', () => {
       transition._handleReport(doc, config, (err, complete) => {
         complete.should.equal(true);
         putRegistration.callCount.should.equal(1);
-        registrations[0].scheduled_tasks[2].report_uuid.should.equal(doc._id);
+        (typeof registrations[0].scheduled_tasks[0].responded_to_by).should.equal('undefined');
+        (typeof registrations[0].scheduled_tasks[1].responded_to_by).should.equal('undefined');
+        registrations[0].scheduled_tasks[2].responded_to_by.should.deep.equal([doc._id]);
+        (typeof registrations[0].scheduled_tasks[3].responded_to_by).should.equal('undefined');
+        done();
+      });
+    });
+
+    it('does not associate visit to anything since it is within the silence_for range', done => {
+      sinon.stub(transition, '_silenceReminders').callsArgWith(3, null, true);
+      const doc = {
+        _id: 'z',
+        fields: { patient_id: 'x' },
+        reported_date: '2019-01-20T18:45:00.000Z',
+      };
+      const config = { silence_type: 'x', silence_for: "8 days", messages: [] };
+      const registrations = [
+        {
+          _id: 'a',
+          reported_date: '2017-02-05T09:23:07.853Z',
+          scheduled_tasks: [
+            {
+              due: '2018-09-26T18:45:00.000Z',
+              state: 'sent',
+              messages: [
+                {
+                  uuid: 'k1',
+                },
+              ],
+              group: 1
+            },
+            {
+              due: '2018-10-26T18:45:00.000Z',
+              state: 'sent',
+              messages: [
+                {
+                  uuid: 'k2',
+                },
+              ],
+              group: 1
+            },
+            {
+              due: '2018-11-26T18:45:00.000Z',
+              state: 'sent',
+              messages: [
+                {
+                  uuid: 'k3',
+                },
+              ],
+              group: 1
+            },
+            {
+              due: '2019-01-26T18:45:00.000Z',
+              state: 'cleared',
+              messages: [
+                {
+                  uuid: 'k4',
+                },
+              ],
+              group: 2
+            },
+          ],
+        },
+      ];
+      sinon.stub(utils, 'getReportsBySubject').resolves(registrations);
+      transition._handleReport(doc, config, (err, complete) => {console.log('err1',err);console.log('coco1',registrations[0].scheduled_tasks);
+        complete.should.equal(true);
+        (typeof registrations[0].scheduled_tasks[0].responded_to_by).should.equal('undefined');
+        (typeof registrations[0].scheduled_tasks[1].responded_to_by).should.equal('undefined');
+        (typeof registrations[0].scheduled_tasks[2].responded_to_by).should.equal('undefined');
+        (typeof registrations[0].scheduled_tasks[3].responded_to_by).should.equal('undefined');
         done();
       });
     });
