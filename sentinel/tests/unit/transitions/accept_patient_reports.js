@@ -205,7 +205,7 @@ describe('accept_patient_reports', () => {
         fields: { patient_id: 'x' },
         reported_date: '2018-09-17T18:45:00.000Z',
       };
-      const config = { silence_type: 'x', silence_for: "8 days", messages: [] };
+      const config = { silence_type: 'x', silence_for: '8 days', messages: [] };
       const registrations = [
         {
           _id: 'a',
@@ -261,7 +261,7 @@ describe('accept_patient_reports', () => {
         fields: { patient_id: 'x' },
         reported_date: '2018-09-28T18:45:00.000Z',
       };
-      const config = { silence_type: 'x', silence_for: "8 days", messages: [] };
+      const config = { silence_type: 'x', silence_for: '8 days', messages: [] };
       const registrations = [
         {
           _id: 'a',
@@ -319,7 +319,7 @@ describe('accept_patient_reports', () => {
         fields: { patient_id: 'x' },
         reported_date: '2018-09-28T19:45:00.000Z',
       };
-      const config = { silence_type: 'x', silence_for: "8 days", messages: [] };
+      const config = { silence_type: 'x', silence_for: '8 days', messages: [] };
       const registrations = [
         {
           _id: 'a',
@@ -383,7 +383,7 @@ describe('accept_patient_reports', () => {
         fields: { patient_id: 'x' },
         reported_date: '2018-09-28T21:45:00.000Z',
       };
-      const config = { silence_type: 'x', silence_for: "8 days", messages: [] };
+      const config = { silence_type: 'x', silence_for: '8 days', messages: [] };
       const registrations = [
         {
           _id: 'a',
@@ -450,7 +450,7 @@ describe('accept_patient_reports', () => {
         fields: { patient_id: 'x' },
         reported_date: '2018-09-28T20:45:00.000Z',
       };
-      const config = { silence_type: 'x', silence_for: "8 days", messages: [] };
+      const config = { silence_type: 'x', silence_for: '8 days', messages: [] };
       const registrations = [
         {
           _id: 'a',
@@ -509,7 +509,7 @@ describe('accept_patient_reports', () => {
         fields: { patient_id: 'x' },
         reported_date: '2018-12-15T18:45:00.000Z',
       };
-      const config = { silence_type: 'x', silence_for: "8 days", messages: [] };
+      const config = { silence_type: 'x', silence_for: '8 days', messages: [] };
       const registrations = [
         {
           _id: 'a',
@@ -577,7 +577,7 @@ describe('accept_patient_reports', () => {
         fields: { patient_id: 'x' },
         reported_date: '2019-01-20T18:45:00.000Z',
       };
-      const config = { silence_type: 'x', silence_for: "8 days", messages: [] };
+      const config = { silence_type: 'x', silence_for: '8 days', messages: [] };
       const registrations = [
         {
           _id: 'a',
