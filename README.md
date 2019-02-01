@@ -20,11 +20,12 @@ For more information about the SMS exchange protocol between webapp and gateway,
 
 ## Easy local deployment
 
-If you want to get up and running with no fuss, [you can use Horticulturalist](#deploy-locally-using-horticulturalist-beta).
+If you want to get up and running with no fuss, [you can use Docker](https://github.com/medic/medic-docs/blob/master/installation/public-docker-image-setup.md).
 
-If you want to use our standard configuration, [you can use the Medic Project Configurer](https://github.com/medic/medic-conf) in the [./config/standard](https://github.com/medic/medic/tree/master/config/standard) directory once Horticuluralist has successfully started.
+Once up and running you can [create your own custom application](https://github.com/medic/medic-docs/blob/master/configuration/developing-community-health-applications.md), or set up the standard application by running [the Medic Configurer](https://github.com/medic/medic-conf) on the [./config/standard](https://github.com/medic/medic/tree/master/config/standard) directory.
 
-If you want to develop against Medic, follow the Development Setup below.
+If you want to develop against the underlying framework of Medic, follow the _Development Setup_ below. For a simpler setup, [you can use Horticulturalist](#deploy-locally-using-horticulturalist-beta).
+
 
 ## Development Setup
 
