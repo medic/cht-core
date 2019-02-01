@@ -10,8 +10,8 @@ const async = require('async'),
   lineage = require('@medic/lineage')(Promise, dbPouch.medic),
   messageUtils = require('@medic/message-utils');
 
-const getPatient = (db, patientShortcodeId, callback) => {
-  utils.getPatientContactUuid(db, patientShortcodeId, (err, uuid) => {
+const getPatient = (patientShortcodeId, callback) => {
+  utils.getPatientContactUuid(patientShortcodeId, (err, uuid) => {
     if (err || !uuid) {
       return callback(err);
     }
@@ -19,7 +19,7 @@ const getPatient = (db, patientShortcodeId, callback) => {
   });
 };
 
-const getTemplateContext = (db, doc, callback) => {
+const getTemplateContext = (doc, callback) => {
   const patientShortcodeId = doc.fields && doc.fields.patient_id;
   if (!patientShortcodeId) {
     return callback();
@@ -27,8 +27,8 @@ const getTemplateContext = (db, doc, callback) => {
   async.parallel(
     {
       registrations: callback =>
-        utils.getRegistrations({ db: db, id: patientShortcodeId }, callback),
-      patient: callback => getPatient(db, patientShortcodeId, callback),
+        utils.getRegistrations({ id: patientShortcodeId }, callback),
+      patient: callback => getPatient(patientShortcodeId, callback),
     },
     callback
   );
@@ -63,7 +63,7 @@ module.exports = {
               .hydrateDocs([obj.doc])
               .then(function(docs) {
                 const doc = docs[0];
-                getTemplateContext(db, doc, (err, context) => {
+                getTemplateContext(doc, (err, context) => {
                   if (err) {
                     return cb(err);
                   }

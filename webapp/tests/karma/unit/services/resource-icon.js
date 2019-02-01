@@ -3,9 +3,9 @@ describe('ResourceIcons service', function() {
   'use strict';
 
   var get,
-      Changes,
-      injector,
-      attr;
+    Changes,
+    injector,
+    attr;
 
   beforeEach(function() {
     get = sinon.stub();
@@ -40,10 +40,11 @@ describe('ResourceIcons service', function() {
     it('returns empty string when no doc yet', function(done) {
       get.returns(Promise.resolve());
       var service = injector.get('ResourceIcons');
-      var actual = service.getImg('delivery');
-      chai.expect(actual).to.equal('<span class="resource-icon" title="delivery"></span>');
+      var actual = service.getImg('delivery', 'resources');
+      chai.expect(actual).to.equal('<span class="resource-icon" title="delivery">&nbsp</span>');
       done();
     });
+
 
     it('returns img when resources doc already cached', function(done) {
       var resources = {
@@ -65,7 +66,7 @@ describe('ResourceIcons service', function() {
       get.returns(Promise.resolve(resources));
       var service = injector.get('ResourceIcons');
       setTimeout(function() {
-        var actual = service.getImg('child');
+        var actual = service.getImg('child', 'resources');
         var expected =
           '<span class="resource-icon" title="child">' +
             '<img src="data:image/png;base64,kiddlywinks" />' +
@@ -93,7 +94,7 @@ describe('ResourceIcons service', function() {
       get.returns(Promise.resolve(resources));
       var service = injector.get('ResourceIcons');
       setTimeout(function() {
-        var actual = service.getImg('mother');
+        var actual = service.getImg('mother', 'resources');
         var expected = '<span class="resource-icon" title="mother">' + data + '</span>';
         chai.expect(actual).to.equal(expected);
         done();
@@ -159,9 +160,10 @@ describe('ResourceIcons service', function() {
           }
         }
       };
-      get
-        .onFirstCall().returns(Promise.resolve(resources1))
-        .onSecondCall().returns(Promise.resolve(resources2));
+      get.onCall(0).returns(Promise.resolve())
+        .onCall(1).returns(Promise.resolve())
+        .onCall(2).returns(Promise.resolve(resources1))
+        .onCall(3).returns(Promise.resolve(resources2));
       var dom = $('<ul>' +
                   '<li><img class="resource-icon" title="child"/></li>' +
                   '<li><img class="resource-icon" title="adult"/></li>' +
@@ -174,14 +176,14 @@ describe('ResourceIcons service', function() {
         chai.expect(dom.find('.resource-icon[title="adult"] img').attr('src'))
           .to.equal(undefined);
 
-        Changes.args[0][0].callback(); // invoke the changes listener
+        Changes.args[0][0].callback({ id: 'resources' }); // invoke the changes listener
         service.replacePlaceholders(dom);
         setTimeout(function() {
           chai.expect(dom.find('.resource-icon[title="child"] img').attr('src'))
             .to.equal('data:image/png;base64,kiddlywinks');
           chai.expect(dom.find('.resource-icon[title="adult"] img').attr('src'))
             .to.equal('data:image/png;base64,coffinstuffer');
-          chai.expect(get.callCount).to.equal(2);
+          chai.expect(get.callCount).to.equal(4);
           done();
         });
       });

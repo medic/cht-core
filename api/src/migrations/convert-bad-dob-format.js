@@ -1,4 +1,4 @@
-var db = require('../db-pouch'),
+var db = require('../db'),
     moment = require('moment');
 
 const convertBadDobFormat = docs => {

@@ -179,7 +179,7 @@ const saveFormToDb = doc => {
     .then(() => db.put(doc))
     .then(res => {
       const xml = '<xform/>';
-      const body = new Buffer(xml).toString('base64');
+      const body = Buffer.from(xml).toString('base64');
       return db.putAttachment(doc._id, 'xml', res.rev, body, {
         type: 'text/xml',
         length: xml.length,

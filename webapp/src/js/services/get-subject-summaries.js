@@ -150,6 +150,11 @@ angular.module('inboxServices').factory('GetSubjectSummaries',
 
     return function(summaries, hydratedLineage) {
       var containsReports = false;
+
+      if (!summaries) {
+        return [];
+      }
+
       summaries.forEach(function (summary) {
         if (summary.form) {
           containsReports = true;

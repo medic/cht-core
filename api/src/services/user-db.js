@@ -1,5 +1,7 @@
-const db = require('../db-nano'),
-      async = require('async');
+const request = require('request-promise-native');
+const url = require('url');
+const db = require('../db');
+const environment = require('../environment');
 
 // Regex to test for characters that are invalid in db names
 // Only lowercase characters (a-z), digits (0-9), and any of the characters _, $, (, ), +, -, and / are allowed.
@@ -26,24 +28,24 @@ const ddoc = {
   }
 };
 
-const createDb = (dbName, callback) => {
-  db.db.create(dbName, callback);
-};
-
-const setSecurity = (dbName, username, callback) => {
-  db.request({
-    db: dbName,
-    path: '/_security',
-    method: 'PUT',
+const setSecurity = (dbName, username) => {
+  return request.put({
+    url: url.format({
+      protocol: environment.protocol,
+      hostname: environment.host,
+      port: environment.port,
+      pathname: `${dbName}/_security`,
+    }),
+    auth: {
+      user: environment.username,
+      pass: environment.password
+    },
+    json: true,
     body: {
       admins: { names: [ username ], roles: [] },
-      members: { names: [ username ], roles:[] }
+      members: { names: [ username ], roles: [] }
     }
-  }, callback);
-};
-
-const putDdoc = (dbName, callback) => {
-  db.use(dbName).insert(ddoc, callback);
+  });
 };
 
 /**
@@ -57,12 +59,16 @@ const escapeUsername = name => name.replace(DB_NAME_BLACKLIST, match => {
 module.exports = {
   getDbName: username => `medic-user-${escapeUsername(username)}-meta`,
   setSecurity: setSecurity,
-  create: (username, callback) => {
+  create: username => {
     const dbName = module.exports.getDbName(username);
-    async.series([
-      async.apply(createDb, dbName),
-      async.apply(setSecurity, dbName, username),
-      async.apply(putDdoc, dbName)
-    ], callback);
+    return db.exists(dbName).then(found => {
+      if (!found) {
+        const database = db.get(dbName);
+        return database.put(ddoc)
+          .then(() => {
+            return setSecurity(dbName, username);
+          });
+      }
+    });
   }
 };

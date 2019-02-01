@@ -1,5 +1,5 @@
 const _ = require('underscore'),
-  db = require('../db-pouch'),
+  db = require('../db'),
   properties = require('properties'),
   DDOC_ID = '_design/medic';
 
@@ -31,19 +31,15 @@ module.exports = {
                 if (_.has(translationMessageValues, 'values')) {
                   return getAttachment(translationAttachmentKey)
                     .then((translationAttachmentValues) => {
-                      let genericTranslations = {};
                       let customTranslations = {}; 
                       return Promise.all(Object.keys(translationMessageValues.values).map((translationMessageKey) => {
-                        if (_.has(translationAttachmentValues, translationMessageKey)) {
-                          genericTranslations[translationMessageKey] = translationMessageValues.values[translationMessageKey];
-                        } else {
+                        if (!_.has(translationAttachmentValues, translationMessageKey)) {
                           customTranslations[translationMessageKey] = translationMessageValues.values[translationMessageKey];
                         }
                       }))
                       .then (() => {
                         delete translationMessageValues.values;
                         translationMessageValues.custom = customTranslations;
-                        translationMessageValues.generic = genericTranslations;
                         return db.medic.put(translationMessageValues);
                       });             
                     });

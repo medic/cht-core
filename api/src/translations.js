@@ -1,6 +1,6 @@
 const _ = require('underscore'),
       properties = require('properties'),
-      db = require('./db-pouch'),
+      db = require('./db'),
       DDOC_ID = '_design/medic',
       TRANSLATION_FILE_NAME_REGEX = /translations\/messages\-([a-z]*)\.properties/,
       DOC_TYPE = 'translations';

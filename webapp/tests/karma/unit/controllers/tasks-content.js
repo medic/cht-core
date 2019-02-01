@@ -30,7 +30,8 @@ describe('TasksContentCtrl', function() {
           $q: Q,
           Enketo: { render: render },
           DB: sinon.stub(),
-          XmlForm: XmlForm
+          XmlForm: XmlForm,
+          Telemetry: { record: sinon.stub() }
         });
       };
     });

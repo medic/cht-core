@@ -1,7 +1,7 @@
 // WARNING: This is a copy of the GetSummaries service
 // with some minor modifications and needs to be kept in sync until
 // this workaround is no longer needed.
-// https://github.com/medic/medic-webapp/issues/4666
+// https://github.com/medic/medic/issues/4666
 
 function(doc) {
   var getLineage = function(contact) {

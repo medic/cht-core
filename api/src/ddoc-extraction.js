@@ -1,5 +1,5 @@
 const _ = require('underscore'),
-  db = require('./db-pouch'),
+  db = require('./db'),
   logger = require('./logger'),
   DDOC_ATTACHMENT_ID = 'ddocs/compiled.json',
   APPCACHE_ATTACHMENT_NAME = 'manifest.appcache',
@@ -52,7 +52,7 @@ const isUpdated = (newDdoc, deploy_info) => {
       newDdoc._rev = oldDdoc && oldDdoc._rev;
 
       // update the deploy info in the medic-client ddoc
-      if (newDdoc._id === CLIENT_DDOC_ID) {
+      if (newDdoc._id === CLIENT_DDOC_ID && (deploy_info || newDdoc.deploy_info)) {
         newDdoc.deploy_info = deploy_info;
       }
 

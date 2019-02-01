@@ -8,7 +8,6 @@ var _ = require('underscore'),
   transitionUtils = require('./utils'),
   date = require('../date'),
   db = require('../db-pouch'),
-  dbNano = require('../db-nano'),
   NAME = 'accept_patient_reports';
 
 const _hasConfig = doc => {
@@ -49,7 +48,7 @@ const getScheduledTasksByType = (registration, type) => {
 
 // find the messages to clear
 const findToClear = (registration, reported_date, config) => {
-  // See: https://github.com/medic/medic-docs/blob/master/user/message-states.md#message-states-in-medic-webapp
+  // See: https://github.com/medic/medic-docs/blob/master/user/message-states.md#message-states-in-medic
   // Both scheduled and pending have not yet been either seen by a gateway or
   // delivered, so they are both clearable.
   // Also clear `muted` schedules, as they could be `unmuted` later
@@ -127,16 +126,16 @@ const findValidRegistration = (doc, registrations) => {
             var nextTask = scheduled_tasks[j + 1] || { due: moment(visitReportedDate).add(1, 'd') };
             if (nextTask && moment(nextTask.due) > moment(visitReportedDate)) {
               // We loop through tasks. Once we find one that has either the status "delivered" or "sent" with
-              // a future task with a due date that is after the visit reported date then we have found the task 
+              // a future task with a due date that is after the visit reported date then we have found the task
               // linked to the visit. We always link if this is the last scheduled task delivered or sent.
               var taskIndex = _.findIndex(registration.scheduled_tasks, { due: task.due });
               registration.scheduled_tasks[taskIndex].report_uuid = doc._id;
               return registration;
             }
-          }          
+          }
         }
       }
-    } 
+    }
 };
 
 const addReportUUIDToRegistration = (doc, registrations, callback) => {
@@ -144,7 +143,7 @@ const addReportUUIDToRegistration = (doc, registrations, callback) => {
     if (validRegistration) {
       return db.medic.put(validRegistration, callback);
     }
-    
+
     callback();
 };
 
@@ -197,16 +196,9 @@ const addMessagesToDoc = (doc, config, registrations) => {
 };
 
 const handleReport = (doc, config, callback) => {
-  utils.getRegistrations(
-    {
-      db: dbNano,
-      id: doc.fields.patient_id,
-    },
-    (err, registrations) => {
-      if (err) {
-        return callback(err);
-      }
-
+  utils
+    .getReportsBySubject({ ids: utils.getSubjectIds(doc.patient), registrations: true })
+    .then(registrations => {
       addMessagesToDoc(doc, config, registrations);
       addRegistrationToDoc(doc, registrations);
       addReportUUIDToRegistration(doc, registrations, err => {
@@ -216,8 +208,8 @@ const handleReport = (doc, config, callback) => {
 
         module.exports.silenceRegistrations(config, doc, registrations, callback);
       });
-    }
-  );
+    })
+    .catch(callback);
 };
 
 module.exports = {

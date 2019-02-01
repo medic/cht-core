@@ -26,7 +26,7 @@ const getOrgProject = name => {
 };
 
 const getRepoProject = name => {
-  return github.projects.getRepoProjects({ owner: 'medic', repo: 'medic-webapp' })
+  return github.projects.getRepoProjects({ owner: 'medic', repo: 'medic' })
     .then(response => projectByName(response.data, name));
 };
 

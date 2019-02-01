@@ -42,4 +42,77 @@ describe('Translation Utils Lib', () => {
     expect(lib.loadTranslations(translations)).to.deep.equal(expected);
   });
 
+  it('deals with keys with number values', () => {
+    const translations = {
+      'one': 1,
+      'two': '${one} two'
+    };
+    const expected = {
+      'one': 1,
+      'two': '1 two'
+    };
+    expect(lib.loadTranslations(translations)).to.deep.equal(expected);
+  });
+
+  it('deals with keys with boolean values', () => {
+    const translations = {
+      'one': true,
+      'two': '${one} two'
+    };
+    const expected = {
+      'one': true,
+      'two': '${one} two'
+    };
+    expect(lib.loadTranslations(translations)).to.deep.equal(expected);
+  });
+
+  it('deals with keys with null values', () => {
+    const translations = {
+      'one': null,
+      'two': '${one} two'
+    };
+    const expected = {
+      'one': null,
+      'two': '${one} two'
+    };
+    expect(lib.loadTranslations(translations)).to.deep.equal(expected);
+  });
+
+  it('deals with keys with undefined values', () => {
+    const translations = {
+      'one': undefined,
+      'two': '${one} two'
+    };
+    const expected = {
+      'one': undefined,
+      'two': '${one} two'
+    };
+    expect(lib.loadTranslations(translations)).to.deep.equal(expected);
+  });
+
+  it('deals with keys with object values', () => {
+    const translations = {
+      'one': {},
+      'two': '${one} two'
+    };
+    const expected = {
+      'one': {},
+      'two': '${one} two'
+    };
+    expect(lib.loadTranslations(translations)).to.deep.equal(expected);
+  });
+
+  it('deals with keys with symbol values', () => {
+    const symb = Symbol();
+    const translations = {
+      'one': symb,
+      'two': '${one} two'
+    };
+    const expected = {
+      'one': symb,
+      'two': '${one} two'
+    };
+    expect(lib.loadTranslations(translations)).to.deep.equal(expected);
+  });
+
 });

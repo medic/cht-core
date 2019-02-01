@@ -1,19 +1,20 @@
-var db = require('../db-nano'),
+var db = require('../db'),
   { promisify } = require('util'),
   async = require('async'),
   logger = require('../logger'),
   _ = require('underscore'),
+  environment = require('../environment'),
   DDOC_ID = '_design/medic',
   BATCH_SIZE = 100,
   AUDIT_ID_SUFFIX = '-audit';
 
-var dropView = function(callback) {
-  db.audit.get(DDOC_ID, function(err, ddoc) {
+var dropView = function(auditDb, callback) {
+  auditDb.get(DDOC_ID, function(err, ddoc) {
     if (err) {
       return callback(err);
     }
     delete ddoc.views;
-    db.audit.insert(ddoc, callback);
+    auditDb.put(ddoc, callback);
   });
 };
 
@@ -54,10 +55,10 @@ var mergeDupes = function(oldDocs) {
   });
 };
 
-var createNewDocs = function(oldDocs, callback) {
+var createNewDocs = function(auditDb, oldDocs, callback) {
   var merged = mergeDupes(oldDocs);
   var ids = merged.map(getAuditId);
-  db.audit.list({ keys: ids, include_docs: true }, function(err, results) {
+  auditDb.allDocs({ keys: ids, include_docs: true }, function(err, results) {
     if (err) {
       return callback(err);
     }
@@ -77,24 +78,24 @@ var createNewDocs = function(oldDocs, callback) {
         history: doc.history,
       };
     });
-    db.audit.bulk({ docs: newDocs }, callback);
+    auditDb.bulkDocs(newDocs, callback);
   });
 };
 
-var deleteOldDocs = function(oldDocs, callback) {
+var deleteOldDocs = function(auditDb, oldDocs, callback) {
   oldDocs.forEach(function(doc) {
     doc._deleted = true;
   });
-  db.audit.bulk({ docs: oldDocs }, callback);
+  auditDb.bulkDocs(oldDocs, callback);
 };
 
-var changeDocIdsBatch = function(skip, callback) {
+var changeDocIdsBatch = function(auditDb, skip, callback) {
   var options = {
     include_docs: true,
     limit: BATCH_SIZE,
     skip: skip,
   };
-  db.audit.list(options, function(err, result) {
+  auditDb.allDocs(options, function(err, result) {
     if (err) {
       return callback(err);
     }
@@ -102,15 +103,7 @@ var changeDocIdsBatch = function(skip, callback) {
       // we've reached the end of the database!
       return callback(null, null, false);
     }
-    logger.info(
-      `        Processing
-        ${skip} 
-         to  
-        (${skip + BATCH_SIZE}) 
-         docs of  
-        ${result.total_rows} 
-         total`
-    );
+    logger.info(`        Processing ${skip} to (${skip + BATCH_SIZE}) docs of ${result.total_rows} total`);
     var oldDocs = result.rows.filter(needsUpdate).map(function(row) {
       return row.doc;
     });
@@ -118,11 +111,11 @@ var changeDocIdsBatch = function(skip, callback) {
       // no old docs in this batch
       return callback(null, skip + BATCH_SIZE, true);
     }
-    createNewDocs(oldDocs, function(err) {
+    createNewDocs(auditDb, oldDocs, function(err) {
       if (err) {
         return callback(err);
       }
-      deleteOldDocs(oldDocs, function(err) {
+      deleteOldDocs(auditDb, oldDocs, function(err) {
         if (err) {
           return callback(err);
         }
@@ -139,12 +132,12 @@ var changeDocIdsBatch = function(skip, callback) {
   });
 };
 
-var changeDocIds = function(callback) {
+var changeDocIds = function(auditDb, callback) {
   var skip = 0;
   var again = true;
   async.doWhilst(
     function(callback) {
-      changeDocIdsBatch(skip, function(err, _skip, _again) {
+      changeDocIdsBatch(auditDb, skip, function(err, _skip, _again) {
         if (err) {
           return callback(err);
         }
@@ -164,11 +157,12 @@ module.exports = {
   name: 'drop-audit-doc-index',
   created: new Date(2016, 11, 1),
   run: promisify(function(callback) {
-    dropView(function(err) {
+    const auditDb = db.get(environment.db + '-audit');
+    dropView(auditDb, function(err) {
       if (err) {
         return callback(err);
       }
-      changeDocIds(callback);
+      changeDocIds(auditDb, callback);
     });
   }),
 };

@@ -20,7 +20,7 @@ var columnData = {
 }
 
 module.exports = {
-  repoName: 'medic-webapp',
+  repoName: 'medic',
   owner: 'medic',
   labels: "Release Test",
   columnNamesData: columnData,

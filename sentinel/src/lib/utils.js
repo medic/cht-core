@@ -1,6 +1,6 @@
 const _ = require('underscore'),
   vm = require('vm'),
-  db = require('../db-nano'),
+  db = require('../db-pouch'),
   moment = require('moment'),
   config = require('../config'),
   taskUtils = require('@medic/task-utils'),
@@ -105,33 +105,22 @@ const addError = (doc, error) => {
   doc.errors.push(error);
 };
 
-const getReportsWithSameClinicAndForm = (options, callback) => {
-  options = options || {};
+const getReportsWithSameClinicAndForm = (options={}) => {
   const formName = options.formName,
     clinicId = getClinicID(options.doc);
 
   if (!formName) {
-    return callback('Missing required argument `formName` for match query.');
+    return Promise.reject('Missing required argument `formName` for match query.');
   }
   if (!clinicId) {
-    return callback('Missing required argument `clinicId` for match query.');
+    return Promise.reject('Missing required argument `clinicId` for match query.');
   }
 
-  db.medic.view(
-    'medic',
-    'reports_by_form_and_clinic',
-    {
-      startkey: [formName, clinicId],
-      endkey: [formName, clinicId],
-      include_docs: true,
-    },
-    (err, data) => {
-      if (err) {
-        return callback(err);
-      }
-      callback(null, data.rows);
-    }
-  );
+  return db.medic.query('medic/reports_by_form_and_clinic', {
+    startkey: [formName, clinicId],
+    endkey: [formName, clinicId],
+    include_docs: true,
+  }).then(data => data.rows);
 };
 
 const getReportsWithinTimeWindow = (
@@ -149,15 +138,8 @@ const getReportsWithinTimeWindow = (
     include_docs: true,
     descending: true, // most recent first
   });
-  return new Promise((resolve, reject) => {
-    db.medic.view('medic-client', 'reports_by_date', options, (err, data) => {
-      if (err) {
-        reject(err);
-      } else {
-        resolve(data.rows.map(row => row.doc));
-      }
-    });
-  });
+  return db.medic.query('medic-client/reports_by_date', options)
+    .then(data => data.rows.map(row => row.doc));
 };
 
 /*
@@ -185,38 +167,28 @@ const getVal = (obj, path) => {
   return obj;
 };
 
-const getPatient = (db, patientShortcodeId, includeDocs, callback) => {
+const getPatient = (patientShortcodeId, includeDocs) => {
   if (!patientShortcodeId) {
-    return callback();
+    return Promise.resolve();
   }
   const viewOpts = {
     key: ['shortcode', patientShortcodeId],
     include_docs: includeDocs,
   };
-  db.medic.view(
-    'medic-client',
-    'contacts_by_reference',
-    viewOpts,
-    (err, results) => {
-      if (err) {
-        return callback(err);
-      }
-
-      if (!results.rows.length) {
-        return callback();
-      }
-
-      if (results.rows.length > 1) {
-        logger.warn(
-          `More than one patient person document for shortcode ${patientShortcodeId}`
-        );
-      }
-
-      const patient = results.rows[0];
-      const result = includeDocs ? patient.doc : patient.id;
-      return callback(null, result);
+  return db.medic.query('medic-client/contacts_by_reference', viewOpts).then(results => {
+    if (!results.rows.length) {
+      return;
     }
-  );
+
+    if (results.rows.length > 1) {
+      logger.warn(
+        `More than one patient person document for shortcode ${patientShortcodeId}`
+      );
+    }
+
+    const patient = results.rows[0];
+    return includeDocs ? patient.doc : patient.id;
+  });
 };
 
 module.exports = {
@@ -257,14 +229,8 @@ module.exports = {
     } else {
       return callback(null, []);
     }
-    options.db.medic.view(
-      'medic-client',
-      'registered_patients',
-      viewOptions,
-      (err, data) => {
-        if (err) {
-          return callback(err);
-        }
+    db.medic.query('medic-client/registered_patients', viewOptions)
+      .then(data => {
         callback(
           null,
           data.rows
@@ -273,8 +239,8 @@ module.exports = {
               registrationUtils.isValidRegistration(doc, config.getAll())
             )
         );
-      }
-    );
+      })
+      .catch(callback);
   },
   getForm: formCode => {
     const forms = config.get('forms');
@@ -295,7 +261,7 @@ module.exports = {
       return Promise.resolve([]);
     }
 
-    return options.db.query('medic-client/reports_by_subject', viewOptions).then(result => {
+    return db.medic.query('medic-client/reports_by_subject', viewOptions).then(result => {
       const reports = result.rows.map(row => row.doc);
       if (!options.registrations) {
         return reports;
@@ -330,16 +296,22 @@ module.exports = {
    * Given a patient "shortcode" (as used in SMS reports), return the _id
    * of the patient's person contact to the caller
    */
-  getPatientContactUuid: (db, patientShortcodeId, callback) => {
-    getPatient(db, patientShortcodeId, false, callback);
+  getPatientContactUuid: (patientShortcodeId, callback) => {
+    getPatient(patientShortcodeId, false)
+      .then(results => callback(null, results))
+      .catch(callback);
   },
   /*
    * Given a patient "shortcode" (as used in SMS reports), return the
    * patient's person record
    */
-  getPatientContact: (db, patientShortcodeId, callback) => {
-    getPatient(db, patientShortcodeId, true, callback);
+  getPatientContact: (patientShortcodeId, callback) => {
+    getPatient(patientShortcodeId, true)
+      .then(results => callback(null, results))
+      .catch(callback);
   },
   isNonEmptyString: expr => typeof expr === 'string' && expr.trim() !== '',
   evalExpression: (expr, context) => vm.runInNewContext(expr, context),
+
+  getSubjectIds: contact => registrationUtils.getSubjectIds(contact)
 };

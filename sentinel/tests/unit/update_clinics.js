@@ -101,7 +101,7 @@ describe('update clinic', () => {
     });
   });
 
-  it('handles clinic ref id not found - medic/medic-webapp#2636', () => {
+  it('handles clinic ref id not found - medic/medic#2636', () => {
     var doc = {
       type: 'data_record',
       from: '+12345',

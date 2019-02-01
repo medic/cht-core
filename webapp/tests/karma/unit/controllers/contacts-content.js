@@ -227,7 +227,7 @@ describe('ContactsContentCtrl', () => {
           chai.assert.equal(contactChangeFilter.matchContact.callCount, 2);
           chai.assert.equal(contactChangeFilter.isRelevantContact.callCount, 1);
           chai.assert.equal(contactViewModelGenerator.callCount, 2);
-          chai.assert.equal(contactViewModelGenerator.getCall(1).args, doc._id);
+          chai.assert.equal(contactViewModelGenerator.getCall(1).args[0], doc._id);
           chai.assert.equal(scope.clearSelected.callCount, 0);
         });
       });
@@ -242,7 +242,7 @@ describe('ContactsContentCtrl', () => {
           chai.assert.equal(contactChangeFilter.isRelevantContact.callCount, 1);
           chai.assert.equal(contactChangeFilter.isRelevantReport.callCount, 1);
           chai.assert.equal(contactViewModelGenerator.callCount, 2);
-          chai.assert.equal(contactViewModelGenerator.getCall(1).args, doc._id);
+          chai.assert.equal(contactViewModelGenerator.getCall(1).args[0], doc._id);
           chai.assert.equal(scope.clearSelected.callCount, 0);
         });
       });

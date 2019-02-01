@@ -1,4 +1,4 @@
-const db = require('../db-pouch'),
+const db = require('../db'),
       {promisify} = require('util'),
       userDb = require('../services/user-db');
 
@@ -8,20 +8,22 @@ module.exports = {
   run: promisify(callback => {
     db.users.allDocs()
       .then(docs => {
-        return Promise.all(docs.rows
+        const usernames = docs.rows
           .map(row => row.id)
           .filter(id => id.indexOf('org.couchdb.user:') === 0)
-          .map(id => id.split(':')[1])
-          .map(username => {
-            return new Promise((resolve, reject) => {
-              userDb.setSecurity(userDb.getDbName(username), username, err => {
-                if (err && err.statusCode !== 404) { // db not found is ok
-                  return reject(err);
+          .map(id => id.split(':')[1]);
+
+        return usernames.reduce((p, username) => {
+          return p.then(() => {
+            return userDb.setSecurity(userDb.getDbName(username), username)
+              .catch(err => {
+                if (err.statusCode !== 404) {
+                  throw err;
                 }
-                resolve();
+                // db not found is ok
               });
-            });
-          }));
+          });
+        }, Promise.resolve());
       })
       .then(() => callback())
       .catch(callback);

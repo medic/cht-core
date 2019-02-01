@@ -1,184 +1,126 @@
-var async = require('async'),
-  { promisify } = require('util'),
-  _ = require('underscore'),
-  db = require('../db-nano'),
-  logger = require('../logger'),
-  BATCH_SIZE = 100;
+const _ = require('underscore');
+const db = require('../db');
+const batch = require('../db-batch');
 
-var getClinic = function(id, callback) {
-  db.medic.get(id, function(err, clinic) {
-    if (err) {
-      if (err.statusCode === 404) {
-        return callback();
+const getClinic = id => {
+  return db.medic.get(id)
+    .then(clinic => {
+      const contact = clinic.contact;
+      if (!contact) {
+        return;
       }
-      return callback(err);
-    }
-    var contact = clinic.contact;
-    if (!contact) {
-      return callback();
-    }
-    if (!contact.parent) {
-      clinic.contact = _.clone(clinic.contact);
-      contact.parent = clinic;
-    }
-    callback(null, contact);
-  });
+      if (!contact.parent) {
+        clinic.contact = _.clone(clinic.contact);
+        contact.parent = clinic;
+      }
+      return contact;
+    })
+    .catch(err => {
+      if (err.status === 404) {
+        return;
+      }
+      throw err;
+    });
 };
 
-var getContact = function(contactId, clinicId, callback) {
+const getContact = (contactId, clinicId) => {
   if (!contactId) {
-    return getClinic(clinicId, callback);
+    return getClinic(clinicId);
   }
-  db.medic.get(contactId, function(err, contact) {
-    if (err) {
-      if (err.statusCode === 404) {
-        return getClinic(clinicId, callback);
-      }
-      return callback(err);
+  return db.medic.get(contactId).catch(err => {
+    if (err.status === 404) {
+      return getClinic(clinicId);
     }
-    callback(null, contact);
+    throw err;
   });
 };
 
-var getContactForOutgoingMessages = function(message, callback) {
-  var facility = message.facility;
+const getContactForOutgoingMessages = message => {
+  const facility = message.facility;
   if (facility.type === 'person') {
-    return callback(null, facility);
+    return Promise.resolve(facility);
   }
-  getContact(facility.contact._id, facility._id, callback);
+  return getContact(facility.contact._id, facility._id);
 };
 
-var migrateOutgoingMessages = function(message, callback) {
-  getContactForOutgoingMessages(message, function(err, contact) {
-    if (err) {
-      return callback(err);
-    }
+const migrateOutgoingMessages = message => {
+  return getContactForOutgoingMessages(message).then(contact => {
     message.contact = contact;
     delete message.facility;
-    callback();
   });
 };
 
-var migrateOutgoingTasks = function(task, callback) {
-  async.each(task.messages, migrateOutgoingMessages, callback);
+const migrateOutgoingTasks = task => {
+  return Promise.all(task.messages.map(migrateOutgoingMessages));
 };
 
-var migrateOutgoing = function(doc, callback) {
-  var ignore = _.every(doc.tasks, function(task) {
-    return _.every(task.messages, function(message) {
+const migrateOutgoing = doc => {
+  const ignore = _.every(doc.tasks, task => {
+    return _.every(task.messages, message => {
       return (message.contact && message.contact._id) || !message.facility;
     });
   });
   if (ignore) {
-    return callback();
+    return;
   }
-  async.each(doc.tasks, migrateOutgoingTasks, function(err) {
-    callback(err, doc);
-  });
+  return Promise.all(doc.tasks.map(migrateOutgoingTasks))
+    .then(() => doc);
 };
 
-var migrateIncoming = function(doc, callback) {
+const migrateIncoming = doc => {
   if (doc.contact) {
     // already migrated
-    return callback();
+    return;
   }
-  var clinic = doc.related_entities && doc.related_entities.clinic;
+  const clinic = doc.related_entities && doc.related_entities.clinic;
   if (!clinic) {
-    return callback();
+    return;
   }
-  var contactId = clinic.contact && clinic.contact._id;
-  getContact(contactId, clinic._id, function(err, contact) {
-    if (err) {
-      return callback(err);
-    }
+  const contactId = clinic.contact && clinic.contact._id;
+  return getContact(contactId, clinic._id).then(contact => {
     doc.contact = contact;
     delete doc.related_entities;
-    callback(null, doc);
+    return doc;
   });
 };
 
-var migrate = function(doc, callback) {
+const migrate = doc => {
   if (doc.sms_message) {
-    migrateIncoming(doc, callback);
+    return migrateIncoming(doc);
   } else {
-    migrateOutgoing(doc, callback);
+    return migrateOutgoing(doc);
   }
 };
 
-var save = function(docs, callback) {
-  db.medic.bulk({ docs: docs }, function(err, results) {
-    if (err) {
-      return callback(err);
-    }
-
+const save = docs => {
+  return db.medic.bulkDocs(docs).then(results => {
     if (results && results.length) {
-      var errors = [];
-      results.forEach(function(result) {
+      const errors = [];
+      results.forEach(result => {
         if (!result.ok) {
           errors.push(new Error(result.error + ' - ' + result.reason));
         }
       });
-
       if (errors.length) {
-        return callback(
-          new Error('Bulk create errors: ' + JSON.stringify(errors, null, 2))
-        );
+        throw new Error('Bulk create errors: ' + JSON.stringify(errors, null, 2));
       }
     }
-
-    callback();
   });
 };
 
-var associate = function(docs, callback) {
-  async.map(docs, migrate, function(err, results) {
-    if (err) {
-      return callback(err);
+const associate = docs => {
+  return Promise.all(docs.map(migrate)).then(results => {
+    const docs = _.compact(results);
+    if (docs.length) {
+      return save(docs);
     }
-
-    var docs = _.compact(results);
-    if (!docs.length) {
-      return callback();
-    }
-
-    save(docs, callback);
-  });
-};
-
-var runBatch = function(skip, callback) {
-  var options = {
-    key: ['data_record'],
-    include_docs: true,
-    limit: BATCH_SIZE,
-    skip: skip,
-  };
-  db.medic.view('medic-client', 'doc_by_type', options, function(err, result) {
-    if (err) {
-      return callback(err);
-    }
-    logger.info(`        Processing doc ${skip}.`);
-    var docs = _.pluck(result.rows, 'doc');
-    associate(docs, function(err) {
-      // keep going if at least one row was found last time
-      callback(err, !!result.rows.length);
-    });
   });
 };
 
 module.exports = {
   name: 'associate-records-with-people',
   created: new Date(2015, 5, 13, 11, 41, 0, 0),
-  run: promisify(function(callback) {
-    var currentSkip = 0;
-    async.doWhilst(
-      function(callback) {
-        runBatch(currentSkip, callback);
-      },
-      function(keepGoing) {
-        currentSkip += BATCH_SIZE;
-        return keepGoing;
-      },
-      callback
-    );
-  }),
+  run: () => {
+    return batch.view('medic-client/doc_by_type', { key: [ 'data_record' ] }, associate);
+  }
 };

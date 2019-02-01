@@ -10,6 +10,18 @@ const {
   TRAVIS_BUILD_NUMBER
 } = process.env;
 
+const APPCACHE_OPTIONS = {
+  patterns: [
+    'build/ddocs/medic/_attachments/manifest.json',
+    'build/ddocs/medic/_attachments/audio/**/*',
+    'build/ddocs/medic/_attachments/css/**/*',
+    'build/ddocs/medic/_attachments/fonts/**/*',
+    'build/ddocs/medic/_attachments/img/**/*',
+    'build/ddocs/medic/_attachments/js/**/*',
+    'build/ddocs/medic/_attachments/xslt/**/*',
+  ],
+};
+
 const releaseName = TRAVIS_TAG || TRAVIS_BRANCH || 'local-development';
 
 const couchConfig = (() => {
@@ -20,9 +32,9 @@ const couchConfig = (() => {
   if (!parsedUrl.auth) {
     throw 'COUCH_URL must contain admin authentication information';
   }
-  
+
   const [ username, password ] = parsedUrl.auth.split(':', 2);
-  
+
   return {
     username,
     password,
@@ -62,13 +74,13 @@ module.exports = function(grunt) {
           },
         ],
       },
-      'change-ddoc-id-for-publish': {
+      'change-ddoc-id-for-testing': {
         src: ['build/ddocs/medic.json'],
         overwrite: true,
         replacements: [
           {
             from: '"_id": "_design/medic"',
-            to: `"_id": "medic:medic:${releaseName}"`,
+            to: `"_id": "medic:medic:test-${TRAVIS_BUILD_NUMBER}"`,
           },
         ],
       },
@@ -123,6 +135,14 @@ module.exports = function(grunt) {
           },
         ],
       },
+      testing: {
+        files: [
+          {
+            src: 'build/ddocs/medic.json',
+            dest: `${UPLOAD_URL}/_couch/builds_testing`,
+          },
+        ],
+      }
     },
     browserify: {
       options: {
@@ -203,30 +223,6 @@ module.exports = function(grunt) {
           },
         },
       },
-    },
-    jshint: {
-      options: {
-        jshintrc: true,
-        reporter: require('jshint-stylish'),
-        ignores: [
-          'webapp/src/js/modules/xpath-element-path.js',
-          '**/node_modules/**',
-          'sentinel/src/lib/pupil/**',
-          'build/**',
-          'config/**'
-        ],
-      },
-      all: [
-        'Gruntfile.js',
-        'webapp/src/**/*.js',
-        'webapp/tests/**/*.js',
-        'tests/**/*.js',
-        'api/**/*.js',
-        'sentinel/**/*.js',
-        'shared-libs/**/*.js',
-        'admin/**/*.js',
-        'ddocs/**/*.js',
-      ],
     },
     less: {
       webapp: {
@@ -356,6 +352,36 @@ module.exports = function(grunt) {
       'clean-build-dir': {
         cmd: 'rm -rf build && mkdir build',
       },
+      // Running this via exec instead of inside the grunt process makes eslint
+      // run ~4x faster. For some reason. Maybe cpu core related.
+      'eslint': {
+        cmd: () => {
+          const cmd = './node_modules/.bin/eslint --color';
+          const paths = [
+            'Gruntfile.js',
+            'admin/**/*.js',
+            'api/**/*.js',
+            'ddocs/**/*.js',
+            'sentinel/**/*.js',
+            'shared-libs/**/*.js',
+            'tests/**/*.js',
+            'webapp/src/**/*.js',
+            'webapp/tests/**/*.js',
+          ];
+          const ignore = [
+            'webapp/src/js/modules/xpath-element-path.js',
+            '**/node_modules/**',
+            'sentinel/src/lib/pupil/**',
+            'build/**',
+            'config/**'
+          ];
+
+          return [cmd]
+            .concat(ignore.map(glob => `--ignore-pattern "${glob}"`))
+            .concat(paths.map(glob => `"${glob}"`))
+            .join(' ');
+        }
+      },
       'pack-node-modules': {
         cmd: ['api', 'sentinel']
           .map(module =>
@@ -376,7 +402,7 @@ module.exports = function(grunt) {
             const filePath = `${module}/package.json`;
             const pkg = this.file.readJSON(filePath);
             pkg.bundledDependencies = Object.keys(pkg.dependencies);
-            this.file.write(filePath, JSON.stringify(pkg, undefined, '  '));
+            this.file.write(filePath, JSON.stringify(pkg, undefined, '  ') + '\n');
             console.log(`Updated 'bundledDependencies' for ${filePath}`);
           });
           return 'echo "Node module dependencies updated"';
@@ -433,11 +459,14 @@ module.exports = function(grunt) {
       },
       'reset-test-databases': {
         stderr: false,
-        cmd: ['medic-test', 'medic-test-audit']
+        cmd: ['medic-test', 'medic-test-audit', 'medic-test-user-admin-meta']
           .map(
             name => `curl -X DELETE ${couchConfig.withPath(name)}`
           )
           .join(' && '),
+      },
+      'e2e-servers': {
+        cmd: 'node ./scripts/e2e-servers.js &'
       },
       bundlesize: {
         cmd: 'node ./node_modules/bundlesize/index.js',
@@ -508,6 +537,13 @@ module.exports = function(grunt) {
             })
             .join(' && ');
         },
+      },
+      'test-standard': {
+        cmd: [
+          'cd config/standard',
+          'npm ci',
+          'npm run travis'
+        ].join(' && ')
       },
       'shared-lib-unit': {
         cmd: () => {
@@ -677,14 +713,14 @@ module.exports = function(grunt) {
       },
     },
     protractor: {
-      'e2e-tests-and-services': {
+      'e2e-tests': {
         options: {
-          configFile: 'tests/e2e.tests-and-services.conf.js',
+          configFile: 'tests/e2e.tests.conf.js',
         },
       },
-      'e2e-tests-only': {
+      'e2e-tests-debug': {
         options: {
-          configFile: 'tests/e2e.tests-only.conf.js',
+          configFile: 'tests/e2e.tests.debug.conf.js',
         },
       },
       'performance-tests-and-services': {
@@ -761,18 +797,14 @@ module.exports = function(grunt) {
       inbox: {
         dest: 'build/ddocs/medic/_attachments/manifest.appcache',
         network: '*',
-        cache: {
-          patterns: [
-            'build/ddocs/medic/_attachments/manifest.json',
-            'build/ddocs/medic/_attachments/audio/**/*',
-            'build/ddocs/medic/_attachments/css/**/*',
-            'build/ddocs/medic/_attachments/fonts/**/*',
-            'build/ddocs/medic/_attachments/img/**/*',
-            'build/ddocs/medic/_attachments/js/**/*',
-            'build/ddocs/medic/_attachments/xslt/**/*',
-          ],
-        },
+        cache: APPCACHE_OPTIONS,
       },
+      obsolete: {
+        dest: 'build/ddocs/medic/_attachments/static/dist/manifest.appcache',
+        network: '*',
+        baseUrl: '../../',
+        cache: APPCACHE_OPTIONS,
+      }
     },
     sass: {
       options: {
@@ -845,6 +877,37 @@ module.exports = function(grunt) {
         ],
         options: {
           pattern: /console\./g,
+        },
+      },
+      'timeouts-in-angular': {
+        // $timeout() sould be used in place of setTimeout()
+        // $timeout.cancel() should be used in place of clearTimeout()
+        // see: https://docs.angularjs.org/api/ng/service/$timeout
+        files: [
+          {
+            src: [
+              'webapp/src/js/services/**/*.js',
+              'webapp/src/js/controllers/**/*.js',
+            ],
+          },
+        ],
+        options: {
+          pattern: /(set|clear)Timeout/g,
+        },
+      },
+      'window-in-angular': {
+        // $window should be used in preference to window in angular code
+        // see: https://docs.angularjs.org/api/ng/service/$window
+        files: [
+          {
+            src: [
+              'webapp/src/js/services/**/*.js',
+              'webapp/src/js/controllers/**/*.js',
+            ],
+          },
+        ],
+        options: {
+          pattern: /[^$]window\./g,
         },
       },
     },
@@ -950,13 +1013,21 @@ module.exports = function(grunt) {
   );
 
   // Test tasks
-  grunt.registerTask('e2e', 'Deploy app for testing and run e2e tests', [
+  grunt.registerTask('e2e-deploy', 'Deploy app for testing', [
+    'exec:start-webdriver',
     'exec:reset-test-databases',
-    'build-admin',
-    'build-node-modules',
-    'build-ddoc',
     'couch-push:test',
-    'protractor:e2e-tests-and-services',
+    'exec:e2e-servers',
+  ]);
+
+  grunt.registerTask('e2e', 'Deploy app for testing and run e2e tests', [
+    'e2e-deploy',
+    'protractor:e2e-tests',
+  ]);
+
+  grunt.registerTask('e2e-debug', 'Deploy app for testing and run e2e tests in a visible Chrome window', [
+    'e2e-deploy',
+    'protractor:e2e-tests-debug',
   ]);
 
   grunt.registerTask('test-perf', 'Run performance-specific tests', [
@@ -970,7 +1041,7 @@ module.exports = function(grunt) {
   grunt.registerTask(
     'unit-continuous',
     'Lint, karma unit tests running on a loop',
-    ['jshint', 'karma:unit-continuous']
+    ['exec:eslint', 'karma:unit-continuous']
   );
 
   grunt.registerTask(
@@ -984,7 +1055,7 @@ module.exports = function(grunt) {
   );
 
   grunt.registerTask('unit', 'Lint and unit tests', [
-    'jshint',
+    'exec:eslint',
     'karma:unit',
     'karma:admin',
     'exec:shared-lib-unit',
@@ -1007,37 +1078,30 @@ module.exports = function(grunt) {
     'exec:bundlesize',
   ]);
 
-  grunt.registerTask('ci-build', 'build and minify for CI', [
+  grunt.registerTask('ci-compile', 'build, minify, lint, unit, integration test', [
     'install-dependencies',
     'build',
     'build-admin',
-  ]);
-
-  grunt.registerTask('ci-unit', 'Lint, deploy and test for CI', [
     'static-analysis',
     'install-dependencies',
     'karma:unit',
     'karma:admin',
     'exec:shared-lib-unit',
+    'mochaTest:api-integration',
     'env:unit-test',
     'mochaTest:unit',
+    'env:general',
+    'exec:test-standard'
   ]);
 
-  grunt.registerTask('ci-integration-e2e', 'Run further tests for CI', [
-    'env:general',
-    'exec:setup-admin',
-    'deploy',
-    'test-api-integration',
+  grunt.registerTask('ci-e2e', 'Run e2e tests for CI', [
     'exec:start-webdriver',
-    'e2e',
+    'protractor:e2e-tests',
   ]);
 
   grunt.registerTask('ci-performance', 'Run performance tests on CI', [
-    'env:general',
-    'exec:setup-admin',
     'exec:start-webdriver',
-    'deploy',
-    'test-perf',
+    'protractor:performance-tests-and-services',
   ]);
 
   // Dev tasks
@@ -1049,8 +1113,10 @@ module.exports = function(grunt) {
   grunt.registerTask('static-analysis', 'Static analysis checks', [
     'regex-check',
     'exec:blank-link-check',
-    'jshint',
+    'exec:eslint',
   ]);
+
+  grunt.registerTask('eslint', 'Runs eslint', ['exec:eslint']);
 
   grunt.registerTask(
     'dev-webapp-no-dependencies',
@@ -1072,9 +1138,9 @@ module.exports = function(grunt) {
     ['exec:sentinel-dev']
   );
 
-  grunt.registerTask('publish', 'Publish the ddoc to the staging server', [
-    'replace:change-ddoc-id-for-publish',
-    'couch-push:staging',
+  grunt.registerTask('publish-for-testing', 'Publish the ddoc to the testing server', [
+    'replace:change-ddoc-id-for-testing',
+    'couch-push:testing',
   ]);
 
   grunt.registerTask('default', 'Build and deploy the webapp for dev', [

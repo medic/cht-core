@@ -1,6 +1,6 @@
 {
   "name": "@medic/translation-utils",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Provides helper function to support nested keys in translations.",
   "main": "src/translation-utils.js",
   "scripts": {

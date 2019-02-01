@@ -31,6 +31,34 @@ describe('FormatDataRecord service', () => {
       from: '+123456',
       scheduled_tasks: [
         {
+          message: 'Some message',
+          state: 'cleared',
+          recipient: 'reporting_unit'
+        }
+      ]
+    };
+    const settings = {};
+    Settings.returns(Promise.resolve(settings));
+    Language.returns(Promise.resolve('en'));
+    service(doc)
+      .then(formatted => {
+        chai.expect(formatted.scheduled_tasks_by_group.length).to.equal(1);
+        chai.expect(formatted.scheduled_tasks_by_group[0].rows.length).to.equal(1);
+        const row = formatted.scheduled_tasks_by_group[0].rows[0];
+        chai.expect(row.messages.length).to.equal(1);
+        const message = row.messages[0];
+        chai.expect(message.to).to.equal('+123456');
+        chai.expect(message.message).to.equal('Some message');
+        done();
+      })
+      .catch(done);
+  });
+
+  it('errors messages when they fail to transate', done => {
+    const doc = {
+      from: '+123456',
+      scheduled_tasks: [
+        {
           message_key: 'some.message',
           state: 'cleared',
           recipient: 'reporting_unit'
@@ -48,7 +76,7 @@ describe('FormatDataRecord service', () => {
         chai.expect(row.messages.length).to.equal(1);
         const message = row.messages[0];
         chai.expect(message.to).to.equal('+123456');
-        chai.expect(message.message).to.equal('some.message');
+        chai.expect(message.error).to.equal('messages.errors.message.empty');
         done();
       })
       .catch(done);

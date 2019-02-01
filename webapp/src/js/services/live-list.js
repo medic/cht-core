@@ -1,6 +1,6 @@
 var _ = require('underscore');
 
-// medic-webapp specific config for LiveList.
+// medic specific config for LiveList.
 // This service should be invoked once at startup.
 angular.module('inboxServices').factory('LiveListConfig',
   function(
@@ -63,7 +63,10 @@ angular.module('inboxServices').factory('LiveListConfig',
           return (c1.name || '').toLowerCase() < (c2.name || '').toLowerCase() ? -1 : 1;
         },
         listItem: function(contact) {
-          var scope = $scope.$new();
+          if (!this.scope) {
+            return;
+          }
+          var scope = this.scope.$new(true);
           scope.id = contact._id;
           scope.route = 'contacts';
           scope.icon = ContactSchema.get(contact.type).icon;
@@ -99,8 +102,6 @@ angular.module('inboxServices').factory('LiveListConfig',
                   scope.visits.status = 'done';
                 }
               }
-            } else {
-              scope.summary = $translate.instant('contact.primary_contact_name', { name: contact.contact });
             }
           }
           return renderTemplate(scope);
@@ -145,7 +146,11 @@ angular.module('inboxServices').factory('LiveListConfig',
           return r2.reported_date - r1.reported_date;
         },
         listItem: function(report, removedDomElement) {
-          var scope = $scope.$new();
+          if (!this.scope) {
+            return;
+          }
+
+          var scope = this.scope.$new(true);
           scope.id = report._id;
           var form = _.findWhere($scope.forms, { code: report.form });
           scope.route = 'reports';
@@ -328,9 +333,7 @@ angular.module('inboxServices').factory('LiveList',
       var activeDom = $(idx.selector);
       if(activeDom.length) {
         activeDom.empty();
-        _.each(idx.dom, function(li) {
-          activeDom.append(li);
-        });
+        appendDomWithListOrdering(activeDom, idx);
         ResourceIcons.replacePlaceholders(activeDom);
       }
     }
@@ -340,26 +343,29 @@ angular.module('inboxServices').factory('LiveList',
       return idx.list && idx.list.length;
     }
 
-    function _set(listName, items) {
-      var i, len,
-          idx = indexes[listName];
-
+    /* 
+    reuseExistingDom is a performance optimization wherein live-list can rely on the changes feed to 
+    specifically update dom elements (via update/remove interfaces) making it safe to re-use existing dom 
+    elements for certain scenarios
+    */ 
+    function _set(listName, items, reuseExistingDom) {
+      const idx = indexes[listName];
       if (!idx) {
         throw new Error('LiveList not configured for: ' + listName);
       }
 
       idx.lastUpdate = new Date();
-
-      // TODO we should sort the list in place with a suitable, efficient algorithm
-      idx.list = [];
-      idx.dom = [];
-      for (i=0, len=items.length; i<len; ++i) {
-        _insert(listName, items[i], true);
+      idx.list = items.sort(idx.orderBy);
+      const newDom = {};
+      for (let i = 0; i < items.length; ++i) {
+        const item = items[i];
+        const useCache = reuseExistingDom && idx.dom[item._id] && !idx.dom[item._id].invalidateCache;
+        const li = useCache ? idx.dom[item._id] : listItemFor(idx, item);
+        newDom[item._id] = li;
       }
-
-      $(idx.selector)
-          .empty()
-          .append(idx.dom);
+      idx.dom = newDom;
+      
+      _refresh(listName);
     }
 
     function _initialised(listName) {
@@ -367,18 +373,11 @@ angular.module('inboxServices').factory('LiveList',
     }
 
     function _contains(listName, item) {
-      var i, list = indexes[listName].list;
-
-      if (!list) {
+      if (!indexes[listName].list) {
         return false;
       }
 
-      for(i=list.length-1; i>=0; --i) {
-        if(list[i]._id === item._id) {
-          return true;
-        }
-      }
-      return false;
+      return !!indexes[listName].dom[item._id];
     }
 
     function _insert(listName, newItem, skipDomAppend, removedDomElement) {
@@ -392,7 +391,7 @@ angular.module('inboxServices').factory('LiveList',
 
       var newItemIndex = findSortedIndex(idx.list, newItem, idx.orderBy);
       idx.list.splice(newItemIndex, 0, newItem);
-      idx.dom.splice(newItemIndex, 0, li);
+      idx.dom[newItem._id] = li;
 
       if (skipDomAppend) {
         return;
@@ -408,6 +407,15 @@ angular.module('inboxServices').factory('LiveList',
               .before(li);
         }
       }
+    }
+
+    function _invalidateCache(listName, id) {
+      const idx = indexes[listName];
+      if (!idx || !idx.dom || !id || !idx.dom[id]) {
+        return;
+      }
+
+      idx.dom[id].invalidateCache = true;
     }
 
     function _update(listName, updatedItem) {
@@ -431,55 +439,44 @@ angular.module('inboxServices').factory('LiveList',
       }
       if (removeIndex !== null) {
         idx.list.splice(removeIndex, 1);
-        var removed = idx.dom.splice(removeIndex, 1);
+        const removed = idx.dom[removedItem._id];
+        delete idx.dom[removedItem._id];
 
         $(idx.selector).children().eq(removeIndex).remove();
-        if (removed.length) {
-          return removed[0];
-        }
+        return removed;
       }
     }
 
     function _setSelected(listName, _id) {
-      var i, len, doc,
-          idx = indexes[listName],
-          list = idx.list,
-          previous = idx.selected;
+      const idx = indexes[listName],
+            previous = idx.selected;
 
       idx.selected = _id;
 
-      if (!list) {
+      if (!idx.list) {
         return;
       }
 
-      for (i=0, len=list.length; i<len; ++i) {
-        doc = list[i];
-        if (doc._id === previous) {
-          idx.dom[i]
-              .removeClass('selected');
-        }
-        if (doc._id === _id) {
-          idx.dom[i]
-              .addClass('selected');
-        }
+      if (previous && idx.dom[previous]) {
+        idx.dom[previous].removeClass('selected');
+      }
+
+      if (idx.dom[_id]) {
+        idx.dom[_id].addClass('selected');
       }
     }
 
     function _clearSelected(listName) {
-      var i, len,
-          idx = indexes[listName],
-          list = idx.list,
-          previous = idx.selected;
+      const idx = indexes[listName];
 
-      if (!list || !previous) {
+      if (!idx.list || !idx.selected) {
         return;
       }
 
-      for (i=0, len=list.length; i<len; ++i) {
-        if (list[i]._id === previous) {
-          idx.dom[i].removeClass('selected');
-        }
+      if (idx.dom[idx.selected]) {
+        idx.dom[idx.selected].removeClass('selected');
       }
+
       delete idx.selected;
     }
 
@@ -498,20 +495,24 @@ angular.module('inboxServices').factory('LiveList',
              _contains(listName, doc);
     }
 
+    function _setScope(listName, scope) {
+      indexes[listName].scope = scope;
+    }
+
     function refreshAll() {
-      var i, now = new Date();
+      const now = new Date();
 
       _.forEach(indexes, function(idx, name) {
         // N.B. no need to update a list that's never been generated
         if (idx.lastUpdate && !sameDay(idx.lastUpdate, now)) {
           // regenerate all list contents so relative dates relate to today
           // instead of yesterday
-          for (i=idx.list.length-1; i>=0; --i) {
-            idx.dom[i] = listItemFor(idx, idx.list[i]);
+          for (let i = 0; i < idx.list.length; ++i) {
+            const item = idx.list[i];
+            idx.dom[item._id] = listItemFor(idx, item);
           }
 
           api[name].refresh();
-
           idx.lastUpdate = now;
         }
       });
@@ -534,6 +535,11 @@ angular.module('inboxServices').factory('LiveList',
       return midnight.getTime() - now.getTime();
     }
 
+    function appendDomWithListOrdering(activeDom, idx) {
+      const orderedDom = idx.list.map(item => idx.dom[item._id]);
+      activeDom.append(orderedDom);
+    }
+
     $timeout(refreshAll, millisTilMidnight(new Date()));
 
     api.$listFor = function(name, config) {
@@ -543,6 +549,7 @@ angular.module('inboxServices').factory('LiveList',
 
       api[name] = {
         insert: _.partial(_insert, name),
+        invalidateCache: _.partial(_invalidateCache, name),
         update: _.partial(_update, name),
         remove: _.partial(_remove, name),
         getList: _.partial(_getList, name),
@@ -553,10 +560,30 @@ angular.module('inboxServices').factory('LiveList',
         initialised: _.partial(_initialised, name),
         setSelected: _.partial(_setSelected, name),
         clearSelected: _.partial(_clearSelected, name),
-        containsDeleteStub: _.partial(_containsDeleteStub, name)
+        containsDeleteStub: _.partial(_containsDeleteStub, name),
+        setScope: _.partial(_setScope, name)
       };
 
       return api[name];
+    };
+
+    api.$init = function(scope) {
+      for (var i = 1; i < arguments.length; i++) {
+        var listName = arguments[i];
+        if (api[listName]) {
+          api[listName].setScope(scope);
+        }
+      }
+    };
+
+    api.$reset = function() {
+      for (var i = 0; i < arguments.length; i++) {
+        var listName = arguments[i];
+        if (api[listName]) {
+          api[listName].setScope();
+          api[listName].set([]);
+        }
+      }
     };
 
     return api;

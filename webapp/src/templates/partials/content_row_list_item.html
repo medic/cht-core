@@ -18,7 +18,7 @@ Places of interest
  - content-row.js contains the scope for this file
  - live-list.js:renderTemplate is where this is consumed by livelist
 -->
-<li data-record-id="{{id}}" class="content-row {{selected ? 'selected' : ''}} {{primary ? 'primary' : ''}} {{unread ? 'unread' : ''}} {{dod ? 'deceased' : ''}} {{visits ? 'visit-count' : ''}} {{muted  ? 'muted': '' }}">
+<li data-record-id="{{id}}" class="content-row {{selected ? 'selected' : ''}} {{primary ? 'primary' : ''}} {{unread ? 'unread' : ''}} {{dod ? 'deceased' : ''}} {{visits ? 'visit-count' : ''}} {{muted  ? 'muted': '' }} {{overdue ? 'overdue' : ''}}">
   <a href="#{{route}}/{{id}}">
     <div><input type="checkbox"></div>
     <div class="icon {{icon ? '' : 'ng-hide'}}" ng-bind-html="icon | resourceIcon"></div>
@@ -28,7 +28,7 @@ Places of interest
           <i class="fa fa-star primary {{primaryContact ? '' : 'ng-hide'}}" translate translate-attr-title="Primary contact"></i>
           <span>{{heading}}</span>
         </h4>
-        <div class="date {{due ? 'due' : ''}} {{overdue ? 'overdue' : ''}}">
+        <div class="date {{due ? 'due' : ''}}">
           <span class="{{hideTime ? 'ng-hide' : ''}}" ng-bind-html="date | relativeDate"></span>
           <span class="{{hideTime ? '' : 'ng-hide'}}" ng-bind-html="date | relativeDay"></span>
           <span ng-if="!date && dod" ng-bind-html="dod | dateOfDeath"></span>
@@ -41,7 +41,7 @@ Places of interest
         </div>
       </div>
       <div class="summary">
-        <p class="{{overdue ? 'overdue' : ''}}">{{summary}}</p>
+        <p>{{summary}}</p>
         <div class="status {{(valid && verified === undefined) ? 'ng-hide' : ''}}">
           <span class="verification-badge {{(valid && verified) ? 'verified' : 'error'}}" ng-bind-html="statusIcon | safeHtml"/>
         </div>

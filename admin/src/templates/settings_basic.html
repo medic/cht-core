@@ -15,9 +15,9 @@
   </div>
 
   <div class="form-group" ng-class="{ 'has-error': basicSettingsModel.error.default_country_code }">
-    <label for="default-country-code" translate>Default country code</label> *
+    <label for="default-country-code" translate>Default country code</label> 
     <div>
-      <select id="default-country-code" name="default-country-code"></select>
+      <select id="default-country-code" name="default-country-code"><option></option></select>
     </div>
     <p class="help-block" translate>Default country code help</p>
     <p class="help-block" ng-if="basicSettingsModel.error.default_country_code">
@@ -26,7 +26,7 @@
   </div>
 
   <div class="form-group" ng-class="{ 'has-error': basicSettingsModel.error.gateway_number }">
-    <label for="gateway-number" translate>Gateway number</label> *
+    <label for="gateway-number" translate>Gateway number</label> 
     <input type="text" class="form-control small" id="gateway-number" ng-model="basicSettingsModel.gateway_number">
     <p class="help-block" translate>Gateway number help</p>
     <p class="help-block" ng-if="basicSettingsModel.error.gateway_number">

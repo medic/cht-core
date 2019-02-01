@@ -12,6 +12,7 @@ angular
     $scope,
     $uibModalInstance,
     $q,
+    $translate,
     ContactSchema,
     CreateUser,
     DB,
@@ -104,10 +105,7 @@ angular
 
     var validateRequired = function(fieldName, fieldDisplayName) {
       if (!$scope.editUserModel[fieldName]) {
-        Translate(fieldDisplayName)
-          .then(function(field) {
-            return Translate('field is required', { field: field });
-          })
+        Translate.fieldIsRequired(fieldDisplayName)
           .then(function(value) {
             $scope.errors[fieldName] = value;
           });
@@ -136,7 +134,7 @@ angular
       if (
         $scope.editUserModel.password !== $scope.editUserModel.passwordConfirm
       ) {
-        Translate('Passwords must match').then(function(value) {
+        $translate('Passwords must match').then(function(value) {
           $scope.errors.password = value;
         });
         return false;
@@ -147,7 +145,7 @@ angular
     var validatePasswordStrength = function() {
       var password = $scope.editUserModel.password || '';
       if (password.length < PASSWORD_MINIMUM_LENGTH) {
-        Translate('password.length.minimum', {
+        $translate('password.length.minimum', {
           minimum: PASSWORD_MINIMUM_LENGTH,
         }).then(function(value) {
           $scope.errors.password = value;
@@ -155,7 +153,7 @@ angular
         return false;
       }
       if (passwordTester(password) < PASSWORD_MINIMUM_SCORE) {
-        Translate('password.weak').then(function(value) {
+        $translate('password.weak').then(function(value) {
           $scope.errors.password = value;
         });
         return false;
@@ -182,7 +180,7 @@ angular
         return false;
       }
       if (!USERNAME_WHITELIST.test($scope.editUserModel.username)) {
-        Translate('username.invalid').then(function(value) {
+        $translate('username.invalid').then(function(value) {
           $scope.errors.username = value;
         });
         return false;
@@ -219,7 +217,7 @@ angular
             parent = parent.parent;
           }
           if (!valid) {
-            Translate('configuration.user.place.contact').then(function(value) {
+            $translate('configuration.user.place.contact').then(function(value) {
               $scope.errors.contact = value;
             });
           }
@@ -324,7 +322,7 @@ angular
                 .then(function() {
                   $scope.setFinished();
                   // TODO: change this from a broadcast to a changes watcher
-                  //       https://github.com/medic/medic-webapp/issues/4094
+                  //       https://github.com/medic/medic/issues/4094
                   $rootScope.$broadcast(
                     'UsersUpdated',
                     $scope.editUserModel.id
@@ -332,7 +330,13 @@ angular
                   $uibModalInstance.close();
                 })
                 .catch(function(err) {
-                  $scope.setError(err, 'Error updating user');
+                  if (err && err.data && err.data.error && err.data.error.translationKey) {
+                    Translate(err.data.error.translationKey, err.data.error.translationParams).then(function(value) {
+                      $scope.setError(err, value);
+                    });           
+                  } else {
+                    $scope.setError(err, 'Error updating user');
+                  }
                 });
             });
           })

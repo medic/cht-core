@@ -46,7 +46,7 @@ const getPatient = (patientId, callback) => {
       return callback(null, patient);
     }
     // no patient found - maybe the ID is a shortcode...
-    utils.getPatientContact(db, patientId, callback);
+    utils.getPatientContact(patientId, callback);
   });
 };
 

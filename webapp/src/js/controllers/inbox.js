@@ -16,6 +16,7 @@ var feedback = require('../modules/feedback'),
     $state,
     $stateParams,
     $timeout,
+    $transitions,
     $translate,
     $window,
     APP_CONFIG,
@@ -31,6 +32,7 @@ var feedback = require('../modules/feedback'),
     PlaceHierarchy,
     JsonForms,
     Language,
+    LiveList,
     LiveListConfig,
     Location,
     Modal,
@@ -52,35 +54,34 @@ var feedback = require('../modules/feedback'),
     XmlForms,
     RecurringProcessManager,
     DatabaseConnectionMonitor,
-    BrandingImages
+    ResourceIcons
   ) {
     'ngInject';
 
-    window.startupTimes.angularBootstrapped = performance.now();
+    $window.startupTimes.angularBootstrapped = performance.now();
     Telemetry.record(
       'boot_time:1:to_first_code_execution',
-      window.startupTimes.firstCodeExecution - window.startupTimes.start
+      $window.startupTimes.firstCodeExecution - $window.startupTimes.start
     );
     Telemetry.record(
       'boot_time:2:to_bootstrap',
-      window.startupTimes.bootstrapped - window.startupTimes.firstCodeExecution
+      $window.startupTimes.bootstrapped - $window.startupTimes.firstCodeExecution
     );
     Telemetry.record(
       'boot_time:3:to_angular_bootstrap',
-      window.startupTimes.angularBootstrapped - window.startupTimes.bootstrapped
+      $window.startupTimes.angularBootstrapped - $window.startupTimes.bootstrapped
     );
 
     Session.init();
 
-    if (window.location.href.indexOf('localhost') !== -1) {
+    if ($window.location.href.indexOf('localhost') !== -1) {
       Debug.set(Debug.get()); // Initialize with cookie
     } else {
       // Disable debug for everything but localhost
       Debug.set(false);
     }
 
-    $scope.logo = 'logo';
-    BrandingImages.getAppTitle().then(title => {
+    ResourceIcons.getAppTitle().then(title => {
       document.title = title;
     });
 
@@ -96,6 +97,14 @@ var feedback = require('../modules/feedback'),
       not_required: 'fa-check',
       required: 'fa-exclamation-triangle',
       unknown: 'fa-question-circle',
+    };
+
+    const updateReplicationStatus = status => {
+      if ($scope.replicationStatus.current !== status) {
+        $scope.replicationStatus.current = status;
+        $scope.replicationStatus.textKey = 'sync.status.' + status;
+        $scope.replicationStatus.icon = SYNC_ICON[status];
+      }
     };
 
     DBSync.addUpdateListener(update => {
@@ -125,13 +134,19 @@ var feedback = require('../modules/feedback'),
         $log.info('Replication started after ' + duration + ' seconds since previous attempt.');
       }
 
-      $scope.replicationStatus.current = status;
-      $scope.replicationStatus.textKey = 'sync.status.' + status;
-      $scope.replicationStatus.icon = SYNC_ICON[status];
+      updateReplicationStatus(status);
     });
 
     $window.addEventListener('online', () => DBSync.setOnlineStatus(true), false);
     $window.addEventListener('offline', () => DBSync.setOnlineStatus(false), false);
+    Changes({
+      key: 'sync-status',
+      callback: function() {
+        if (!DBSync.isSyncInProgress()) {
+          updateReplicationStatus('required');
+        }
+      },
+    });
     DBSync.sync();
 
     // BootstrapTranslator is used because $translator.onReady has not fired
@@ -143,11 +158,11 @@ var feedback = require('../modules/feedback'),
       var dbWarmed = performance.now();
       Telemetry.record(
         'boot_time:4:to_db_warmed',
-        dbWarmed - window.startupTimes.bootstrapped
+        dbWarmed - $window.startupTimes.bootstrapped
       );
-      Telemetry.record('boot_time', dbWarmed - window.startupTimes.start);
+      Telemetry.record('boot_time', dbWarmed - $window.startupTimes.start);
 
-      delete window.startupTimes;
+      delete $window.startupTimes;
     });
 
     feedback.init({
@@ -162,12 +177,14 @@ var feedback = require('../modules/feedback'),
       getUserCtx: function(callback) {
         callback(null, Session.userCtx());
       },
+      appConfig: APP_CONFIG
     });
 
     LiveListConfig($scope);
     CheckDate();
 
     $scope.loadingContent = false;
+    $scope.loadingSubActionBar = false;
     $scope.error = false;
     $scope.errorSyntax = false;
     $scope.appending = false;
@@ -227,24 +244,40 @@ var feedback = require('../modules/feedback'),
       });
     });
 
-    $rootScope.$on('$stateChangeStart', function (event, toState, toParams, fromState, fromParams){
-      if(!$scope.enketoStatus.edited){
+    $transitions.onStart({}, function(trans) {
+      if (trans.to().name.indexOf('reports') === -1 || trans.to().name.indexOf('contacts') === -1 || trans.to().name.indexOf('tasks') === -1 || trans.to().name.indexOf('messages.detail') === -1) {
+        $scope.unsetSelected();
+      }
+      if (trans.to().name.indexOf('tasks.detail') === -1) {
+        Enketo.unload($scope.form);
+        $scope.unsetSelected();
+      }
+      if (trans.to().name.split('.')[0] !== trans.from().name.split('.')[0]){
+        $scope.clearSelection();
+      }
+      if (!$scope.enketoStatus.edited){
         return;
       }
-      if(!fromState.url.includes('edit') && !fromState.url.includes('add')){
-        return;
-      }
-      if(fromParams.id === toParams.id){
-        return;
-      }
-      if(fromParams.reportId === toParams.id){
-        return;
-      }
-      if ($scope.cancelCallback) {
+      if ($scope.cancelCallback){
         event.preventDefault();
         $scope.navigationCancel();
       }
     });
+
+    $scope.clearSelection = function() {
+      if ($state.current.name.split('.')[0] === 'contacts'){
+        $scope.selected = null;
+        LiveList.contacts.clearSelected();
+        LiveList['contact-search'].clearSelected();
+      }
+      else if ($state.current.name.split('.')[0] === 'reports'){
+        $scope.selected = {};
+        LiveList.reports.clearSelected();
+        LiveList['report-search'].clearSelected();
+        $('#reports-list input[type="checkbox"]').prop('checked', false);
+        $scope.verifyingReport = false;
+      }
+    };
 
     // User wants to cancel current flow, or pressed back button, etc.
     $scope.navigationCancel = function() {
@@ -334,8 +367,12 @@ var feedback = require('../modules/feedback'),
       $scope.setShowContent(true);
     };
 
-    $scope.$on('$stateChangeSuccess', function(event, toState) {
-      $scope.currentTab = toState.name.split('.')[0];
+    $scope.setLoadingSubActionBar = function(loadingSubActionBar) {
+      $scope.loadingSubActionBar = loadingSubActionBar;
+    };
+
+    $transitions.onSuccess({}, function(trans) {
+      $scope.currentTab = trans.to().name.split('.')[0];
       if (!$state.includes('reports')) {
         $scope.selectMode = false;
       }
@@ -564,6 +601,10 @@ var feedback = require('../modules/feedback'),
       });
     });
 
+    $scope.setSubActionBarStatus = function(verified) {
+      $scope.actionBar.right.verified = verified;
+    };
+
     $scope.setRightActionBar = function(model) {
       if (!$scope.actionBar) {
         $scope.actionBar = {};
@@ -671,13 +712,15 @@ var feedback = require('../modules/feedback'),
         // initialised yet
         try {
           $(this).select2('close');
-        } catch (e) {}
+        } catch (e) {
+          // exception thrown on clicking 'close'
+        }
       });
     };
 
     // close all select2 menus on navigation
-    // https://github.com/medic/medic-webapp/issues/2927
-    $rootScope.$on('$stateChangeStart', closeDropdowns);
+    // https://github.com/medic/medic/issues/2927
+    $transitions.onStart({}, closeDropdowns);
 
     $rootScope.$on('databaseClosedEvent', function () {
       Modal({
@@ -714,15 +757,16 @@ var feedback = require('../modules/feedback'),
       },
     });
 
-    if (window.applicationCache) {
-      window.applicationCache.addEventListener('updateready', showUpdateReady);
-      window.applicationCache.addEventListener('error', function(err) {
+    if ($window.applicationCache) {
+      $window.applicationCache.addEventListener('updateready', showUpdateReady);
+      $window.applicationCache.addEventListener('error', function(err) {
         // TODO: once we trigger this work out what a 401 looks like and redirect
         //       to the login page
         $log.error('Application cache update error', err);
       });
       if (
-        window.applicationCache.status === window.applicationCache.UPDATEREADY
+        $window.applicationCache.status === $window.applicationCache.UPDATEREADY ||
+        $window.applicationCache.status === $window.applicationCache.UNCACHED
       ) {
         showUpdateReady();
       }
@@ -738,10 +782,10 @@ var feedback = require('../modules/feedback'),
         },
         callback: function() {
           // if the manifest hasn't changed, prompt user to reload settings
-          window.applicationCache.addEventListener('noupdate', showUpdateReady);
+          $window.applicationCache.addEventListener('noupdate', showUpdateReady);
           // check if the manifest has changed. if it has, download and prompt
           try {
-            window.applicationCache.update();
+            $window.applicationCache.update();
           } catch (e) {
             // chrome incognito mode active
             $log.error('Error updating the appcache.', e);

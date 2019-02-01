@@ -1,6 +1,6 @@
 var _ = require('underscore'),
   { promisify } = require('util'),
-  db = require('../db-nano'),
+  db = require('../db'),
   logger = require('../logger'),
   async = require('async'),
   registrationUtils = require('@medic/registration-utils'),
@@ -9,9 +9,8 @@ var _ = require('underscore'),
 var BATCH_SIZE = 100;
 
 var registrationIdsWithNoPatientContacts = function(batch, settings, callback) {
-  db.medic.view(
-    'medic-client',
-    'contacts_by_reference',
+  db.medic.query(
+    'medic-client/contacts_by_reference',
     {
       keys: batch.map(row => ['shortcode', row[0]]),
     },
@@ -26,8 +25,9 @@ var registrationIdsWithNoPatientContacts = function(batch, settings, callback) {
         row => !_.contains(existingContactShortcodes, row[0])
       );
 
-      db.medic.fetch(
+      db.medic.allDocs(
         {
+          include_docs: true,
           keys: _.chain(potentialRegistrationIdsToConsider)
             .map(row => row[1])
             .flatten()
@@ -99,9 +99,8 @@ var batchCreatePatientContacts = function(batch, settings, callback) {
       .uniq()
       .value();
 
-    db.medic.view(
-      'medic-client',
-      'contacts_by_phone',
+    db.medic.query(
+      'medic-client/contacts_by_phone',
       {
         keys: contactPhoneNumbers,
         include_docs: true,
@@ -149,7 +148,7 @@ var batchCreatePatientContacts = function(batch, settings, callback) {
           'Storing ' + patientPersons.length + ' new patient contacts.. '
         );
 
-        db.medic.bulk({ docs: patientPersons }, function(err, results) {
+        db.medic.bulkDocs(patientPersons, function(err, results) {
           if (err) {
             return callback(err);
           }
@@ -177,7 +176,7 @@ module.exports = {
   created: new Date(2017, 2, 13),
   run: promisify(function(callback) {
     settingsService.get().then(settings => {
-      db.medic.view('medic-client', 'registered_patients', {}, function(
+      db.medic.query('medic-client/registered_patients', {}, function(
         err,
         results
       ) {

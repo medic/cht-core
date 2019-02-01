@@ -77,7 +77,7 @@ formInternalId="$(sed -e '1,/<instance>/d' $XFORM_PATH | grep -E 'id="[^"]+"' | 
 
 if [[ "$formInternalId" != "$ID" ]]; then
   echo "[$SELF] WARNING: ID supplied on CLI and ID in form XML are different."
-  echo "[$SELF] WARNING  |  This may not be allowed in future - see: https://github.com/medic/medic-webapp/issues/3342"
+  echo "[$SELF] WARNING  |  This may not be allowed in future - see: https://github.com/medic/medic/issues/3342"
   echo "[$SELF] WARNING  |  If this is a new project, please make IDs match."
   echo "[$SELF] WARNING  |  id on CLI: $ID"
   echo "[$SELF] WARNING  |  id in XML: $formInternalId"
@@ -86,7 +86,7 @@ fi
 lowercaseId="$(tr '[:upper:]' '[:lower:]' <<< "$formInternalId")"
 if [[ "$formInternalId" != "$lowercaseId" ]]; then
   echo "[$SELF] WARNING ID specified in form XML contains upper-case characters."
-  echo "[$SELF] WARNING  |  This may not be allowed in future: https://github.com/medic/medic-webapp/issues/3342"
+  echo "[$SELF] WARNING  |  This may not be allowed in future: https://github.com/medic/medic/issues/3342"
   echo "[$SELF] WARNING  |  If this is a new project, please change the XML ID lower-case."
 fi
 

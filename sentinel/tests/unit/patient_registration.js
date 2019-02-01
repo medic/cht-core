@@ -231,7 +231,7 @@ describe('patient registration', () => {
   });
 
   it('valid form adds patient_id and patient document', () => {
-    sinon.stub(utils, 'getPatientContactUuid').callsArgWith(2);
+    sinon.stub(utils, 'getPatientContactUuid').callsArgWith(1);
 
     sinon.stub(transitionUtils, 'addUniqueId').callsFake((doc, callback) => {
       doc.patient_id = 12345;
@@ -281,10 +281,10 @@ describe('patient registration', () => {
     sinon.stub(utils, 'getRegistrations').callsArgWith(1, null, []);
     sinon
       .stub(utils, 'getPatientContact')
-      .callsArgWith(2, null, { _id: 'uuid' });
+      .callsArgWith(1, null, { _id: 'uuid' });
     sinon
       .stub(utils, 'getPatientContactUuid')
-      .callsArgWith(2, null, { _id: 'uuid' });
+      .callsArgWith(1, null, { _id: 'uuid' });
     sinon.stub(transitionUtils, 'addUniqueId').callsArgWith(1);
 
     const doc = {
@@ -343,10 +343,10 @@ describe('patient registration', () => {
     sinon.stub(utils, 'getRegistrations').callsArgWith(1, null, []);
     sinon
       .stub(utils, 'getPatientContact')
-      .callsArgWith(2, null, { _id: 'uuid' });
+      .callsArgWith(1, null, { _id: 'uuid' });
     sinon
       .stub(utils, 'getPatientContactUuid')
-      .callsArgWith(2, null, { _id: 'uuid' });
+      .callsArgWith(1, null, { _id: 'uuid' });
     sinon.stub(transitionUtils, 'addUniqueId').callsArgWith(1);
 
     const doc = {

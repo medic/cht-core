@@ -1,4 +1,4 @@
-const db = require('../db-pouch'),
+const db = require('../db'),
       DDOCS_TO_REMOVE = ['_design/kujua-sentinel', '_design/erlang_filters'];
 
 const remove = id => {

@@ -2,8 +2,7 @@
 # is actually compatible with webdriver-manager.
 language: java
 sudo: true
-jdk:
-  - oraclejdk8
+jdk: oraclejdk8
 
 addons:
   chrome: 'stable'
@@ -14,59 +13,82 @@ services:
 
 env:
   matrix:
-    - TEST_SUITE=standard NODE_VERSION=8 USE_COUCHDB=false
-    - TEST_SUITE=normal NODE_VERSION=8 USE_COUCHDB=true
-    - TEST_SUITE=normal NODE_VERSION=10 USE_COUCHDB=true
-    - TEST_SUITE=performance NODE_VERSION=8 USE_COUCHDB=true
+    - TEST_SUITE=integration NODE_VERSION=8
+    - TEST_SUITE=integration NODE_VERSION=10
+    - TEST_SUITE=performance NODE_VERSION=10
   global:
-    - COUCH_URL=http://admin:pass@localhost:5984/medic
+    - COUCH_URL=http://admin:pass@localhost:5984/medic-test
     - COUCH_NODE_NAME=nonode@nohost
     #AWS Access Key Id and AWS Secret Access Key encrypted by travis to access the S3 buckets where reports and screenshots are saved
     - secure: TR1UN2r3beDtIF+VJpLF2ocTv/uxuOKyVWWhzMLre0ZrrBaIP1sLZV7Z4S/km5M92EfPgGW87BogdWE/R+kTTRiPTCbFB/U/3jFKxEZRXKST66YK5JMwsYqb17UtZtFdqEtO9GGbAVzXwpZfMMoXvlKNrors2W32xBm2uIkOSpI=
     - secure: Q8RH65NClRBryxfvlwHQjeR4wGs+GXeUBRIBd1kspAM7Uv+5K3iP+q/TPCIrTL/OpJ5tyCYfeq5hKIFFwrY3JikNXnyHICOjXPE6zSLUm8E8NHaP/orPNWjze2x4yDSRCifqzr2ZiXVq9sxlZfNbZ9eyJxpPFTYDSpuN9T5UEE0=
 
-matrix:
-  allow_failures:
-    - env: NODE_VERSION="lts/*" TEST_SUITE=performance
-
 before_install:
-  - ./scripts/travis/couch-start
-  - pip install --user awscli
   - export PATH=$PATH:$HOME/.local/bin
   - export PATH=$HOME/.npm/bin:$PATH
+  - ./scripts/travis/couch-start
 
 install: nvm install $NODE_VERSION
 
 before_script:
   - mkdir tests/logs
   - nvm use $NODE_VERSION
-  - ./scripts/travis/couch-config
   - ./scripts/travis/npm-init
+  - npm install -g grunt-cli
+  - npm install -g horticulturalist
+  - ./scripts/travis/couch-config
+  - echo "HORTI_BUILDS_SERVER=${UPLOAD_URL}/_couch/builds_testing"
+  - echo "--install=medic:medic:test-${TRAVIS_BUILD_NUMBER}"
+  - echo "COUCH_URL=${COUCH_URL}"
+  - curl ${COUCH_URL}
+  - COUCH_URL=$COUCH_URL HORTI_BUILDS_SERVER=$UPLOAD_URL/_couch/builds_testing horti --local --install=medic:medic:test-$TRAVIS_BUILD_NUMBER > tests/logs/horti.log &
 
 script:
   - |
-    if [[ "$TEST_SUITE" = 'normal' ]]; then
-      node --stack_size=10000 `which grunt` ci-unit &&
-      node --stack_size=10000 `which grunt` ci-integration-e2e
+    if [[ "$TEST_SUITE" = 'integration' ]]; then
+      node --stack_size=10000 `which grunt` ci-e2e
     elif [[ "$TEST_SUITE" = 'performance' ]]; then
       node --stack_size=10000 `which grunt` ci-performance
-    elif [[ "$TEST_SUITE" = 'standard' ]]; then
-      cd config/standard &&
-      npm ci &&
-      npm run travis
     else
       echo "ERROR No or unknown value for TEST_SUITE env var ('${TEST_SUITE}')."
       exit 1
     fi
 
+stages:
+  - compile
+  - test
+  - publish
+
 jobs:
   include:
-    - if: type != pull_request
-      stage: 'Publish binaries'
-      script: node --stack_size=10000 `which grunt` publish
-      env: NODE_VERSION=8 PUBLISH_TO=horti
+    - stage: compile
+      env: NODE_VERSION=10
+      before_script:
+        - ./scripts/travis/npm-init
+        - npm install -g grunt-cli
+        - ./scripts/travis/couch-config
+        - mkdir tests/logs
+      script:
+        - node --stack_size=10000 `which grunt` ci-compile
+      after_failure: # overwrite default
+      after_success:
+        - node --stack_size=10000 `which grunt` publish-for-testing
+    - stage: publish
+      if: type != pull_request
+      env: NODE_VERSION=10
+      before_script: # overwrite default
+      script:
+        - cd scripts/travis
+        - npm install
+        - node ./publish.js
+        - cd ../../
+      after_failure: # overwrite default
+      after_script:
+        - node scripts/travis/cleanup.js # clean up testing ddoc
 
 after_failure:
+  - node scripts/travis/cleanup.js # clean up testing ddoc
+  - pip install --user awscli
   - |
     (cd tests/logs
       for log in $(ls *.log); do
@@ -86,7 +108,7 @@ after_failure:
 
     echo "Uploading logs and screenshots to ${S3_PATH}..."
 
-    ./scripts/travis/couch-logs
+    docker logs couch > tests/logs/couch.log 2>&1
 
     aws s3 cp tests/results "$S3_PATH"/test-results --recursive
     aws s3 cp tests/logs "$S3_PATH"/ --recursive
@@ -96,6 +118,6 @@ notifications:
     rooms:
       - medic:SdzCLsD56UOr5U8ujzOCMDJd#development
     template:
-      - "<%{build_url}|%{author}'s build> %{result}. Commit: %{commit_message} (<%{compare_url}|compare>)"
+      - "[webapp] <%{build_url}|%{author}'s build> %{result}. Commit: %{commit_message} (<%{compare_url}|compare>)"
     on_success: change
     on_failure: always

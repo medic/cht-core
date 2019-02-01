@@ -13,7 +13,10 @@ describe('ReportsCtrl controller', () => {
       Changes,
       FormatDataRecord,
       changesCallback,
-      changesFilter;
+      changesFilter,
+      searchFilters,
+      liveListInit,
+      liveListReset;
 
   beforeEach(module('inboxApp'));
 
@@ -35,13 +38,26 @@ describe('ReportsCtrl controller', () => {
     scope.setRightActionBar = sinon.stub();
     scope.setLeftActionBar = sinon.stub();
     scope.settingSelected = () => {};
-    LiveList = { reports: {
-      initialised: () => true,
-      setSelected: sinon.stub(),
-      containsDeleteStub: sinon.stub(),
-      remove: sinon.stub(),
-      count: sinon.stub()
-    }};
+    scope.setLoadingSubActionBar = sinon.stub();
+
+    liveListInit = sinon.stub();
+    liveListReset = sinon.stub();
+
+    LiveList = {
+      reports: {
+        initialised: () => true,
+        setSelected: sinon.stub(),
+        containsDeleteStub: sinon.stub(),
+        remove: sinon.stub(),
+        count: sinon.stub(),
+        set: sinon.stub()
+      },
+      'report-search': {
+        set: sinon.stub()
+      },
+      $init: liveListInit,
+      $reset: liveListReset
+    };
     MarkRead = () => {};
     FormatDataRecord = data => {
       return {
@@ -65,6 +81,8 @@ describe('ReportsCtrl controller', () => {
     changesCallback = undefined;
     changesFilter = undefined;
 
+    searchFilters = { destroy: sinon.stub() };
+
     createController = () => {
       return $controller('ReportsCtrl', {
         '$scope': scope,
@@ -80,7 +98,7 @@ describe('ReportsCtrl controller', () => {
         'MessageState': {},
         'ReportViewModelGenerator': {},
         'Search': Search,
-        'SearchFilters': () => {},
+        'SearchFilters': searchFilters,
         'Settings': KarmaUtils.nullPromise(),
         'Tour': () => {},
         'UpdateFacility': {},
@@ -91,6 +109,8 @@ describe('ReportsCtrl controller', () => {
 
   it('set up controller', () => {
     createController();
+    chai.expect(liveListInit.called, true);
+    chai.expect(liveListInit.args[0]).to.deep.equal([scope, 'reports', 'report-search']);
   });
 
   it('when selecting a report, it sets the phone number in the actionbar', done => {
@@ -112,148 +132,120 @@ describe('ReportsCtrl controller', () => {
 
   describe('verifying reports', () => {
     it('unverified report to verified - valid', () => {
-      get.returns(Promise.resolve({ _id: 'def', name: 'hello' }));
       post.returns(Promise.resolve());
 
       createController();
       scope.selected[0] = {
         _id: 'abc',
-        doc: { form: 'P' }
+        doc: { _id: 'def', name: 'hello', form: 'P' }
       };
       scope.$broadcast('VerifyReport', true);
       return Promise.resolve().then(() => {
-        chai.expect(get.callCount).to.equal(1);
-        chai.expect(get.args[0]).to.deep.equal(['abc']);
         chai.expect(post.callCount).to.equal(1);
         chai.expect(post.args[0]).to.deep.equal([{
           _id: 'def',
           name: 'hello',
+          form: 'P',
           verified: true,
         }]);
       });
     });
 
     it('unverified report to verified - invalid', () => {
-      get.returns(Promise.resolve({ _id: 'def', name: 'hello' }));
       post.returns(Promise.resolve());
 
       createController();
       scope.selected[0] = {
         _id: 'abc',
-        doc: { form: 'P' }
+        doc: { _id: 'def', name: 'hello', form: 'P' }
       };
       scope.$broadcast('VerifyReport', false);
       return Promise.resolve().then(() => {
-        chai.expect(get.callCount).to.equal(1);
-        chai.expect(get.args[0]).to.deep.equal(['abc']);
         chai.expect(post.callCount).to.equal(1);
         chai.expect(post.args[0]).to.deep.equal([{
           _id: 'def',
           name: 'hello',
+          form: 'P',
           verified: false
         }]);
       });
     });
 
     it('verified valid to verified invalid', () => {
-      get.returns(Promise.resolve({
-        _id: 'def',
-        name: 'hello',
-        verified: true
-      }));
       post.returns(Promise.resolve());
 
       createController();
       scope.selected[0] = {
         _id: 'abc',
-        doc: { form: 'P' }
+        doc: { _id: 'def', name: 'hello', verified: true, form: 'P' }
       };
       scope.$broadcast('VerifyReport', false);
       return Promise.resolve().then(() => {
-        chai.expect(get.callCount).to.equal(1);
-        chai.expect(get.args[0]).to.deep.equal(['abc']);
         chai.expect(post.callCount).to.equal(1);
         chai.expect(post.args[0]).to.deep.equal([{
           _id: 'def',
           name: 'hello',
+          form: 'P',
           verified: false
         }]);
       });
     });
 
     it('verified invalid to unverified', () => {
-      get.returns(Promise.resolve({
-        _id: 'def',
-        name: 'hello',
-        verified: false
-      }));
       post.returns(Promise.resolve());
 
       createController();
       scope.selected[0] = {
         _id: 'abc',
-        doc: { form: 'P' }
+        doc: { _id: 'def', name: 'hello', verified: false, form: 'P' }
       };
       scope.$broadcast('VerifyReport', false);
       return Promise.resolve().then(() => {
-        chai.expect(get.callCount).to.equal(1);
-        chai.expect(get.args[0]).to.deep.equal(['abc']);
         chai.expect(post.callCount).to.equal(1);
         chai.expect(post.args[0]).to.deep.equal([{
           _id: 'def',
           name: 'hello',
+          form: 'P',
           verified: undefined
         }]);
       });
     });
 
     it('verified invalid to verified valid', () => {
-      get.returns(Promise.resolve({
-        _id: 'def',
-        name: 'hello',
-        verified: false
-      }));
       post.returns(Promise.resolve());
 
       createController();
       scope.selected[0] = {
         _id: 'abc',
-        doc: { form: 'P' }
+        doc: { _id: 'def', name: 'hello', verified: false, form: 'P' }
       };
       scope.$broadcast('VerifyReport', true);
       return Promise.resolve().then(() => {
-        chai.expect(get.callCount).to.equal(1);
-        chai.expect(get.args[0]).to.deep.equal(['abc']);
         chai.expect(post.callCount).to.equal(1);
         chai.expect(post.args[0]).to.deep.equal([{
           _id: 'def',
           name: 'hello',
+          form: 'P',
           verified: true
         }]);
       });
     });
 
     it('verified valid to unverified', () => {
-      get.returns(Promise.resolve({
-        _id: 'def',
-        name: 'hello',
-        verified: true
-      }));
       post.returns(Promise.resolve());
 
       createController();
       scope.selected[0] = {
         _id: 'abc',
-        doc: { form: 'P' }
+        doc: { _id: 'def', name: 'hello', verified: true, form: 'P' }
       };
       scope.$broadcast('VerifyReport', true);
       return Promise.resolve().then(() => {
-        chai.expect(get.callCount).to.equal(1);
-        chai.expect(get.args[0]).to.deep.equal(['abc']);
         chai.expect(post.callCount).to.equal(1);
         chai.expect(post.args[0]).to.deep.equal([{
           _id: 'def',
           name: 'hello',
+          form: 'P',
           verified: undefined
         }]);
       });
@@ -318,6 +310,16 @@ describe('ReportsCtrl controller', () => {
         chai.expect(LiveList.reports.remove.callCount).to.equal(0);
         chai.expect(Search.callCount).to.equal(1);
       });
+    });
+  });
+
+  describe('destroy', () => {
+    it('should reset liveList and destroy search filters when destroyed', () => {
+      createController();
+      scope.$destroy();
+      chai.expect(liveListReset.callCount).to.equal(1);
+      chai.expect(liveListReset.args[0]).to.deep.equal(['reports', 'report-search']);
+      chai.expect(searchFilters.destroy.callCount).to.equal(1);
     });
   });
 });

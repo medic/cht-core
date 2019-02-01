@@ -1,12 +1,23 @@
 <nav class="header">
   <div class="container">
     <div class="navbar-header">
-      <h1 translate>admin.app.name</h1>
+      <span class="navbar-brand" translate>admin.app.name</span>
     </div>
-    <div class="extras">
-      <a href="#" ng-click="logout()">
-        <span translate>Log Out</span>
-      </a>
+    <div class="collapse navbar-collapse">
+      <ul class="nav navbar-nav navbar-right">
+        <li>
+          <a ng-href="{{webAppUrl}}">
+            <i class="fa fa-fw fa-home"></i>
+            <span translate>app.name</span>
+          </a>
+        </li>
+        <li>
+          <a ng-click="logout()">
+            <i class="fa fa-fw fa-power-off"></i>
+            <span translate>Log Out</span>
+          </a>
+        </li>
+      </ul>
     </div>
   </div>
 </nav>

@@ -7,7 +7,7 @@ var passwordTester = require('simple-password-tester'),
   'use strict';
 
   // TODO : too many input possibilities, and two different templates. Refactor.
-  // https://github.com/medic/medic-webapp/issues/3436
+  // https://github.com/medic/medic/issues/3436
   angular.module('inboxControllers').controller('EditUserCtrl',
     function (
       $log,
@@ -15,6 +15,7 @@ var passwordTester = require('simple-password-tester'),
       $uibModalInstance,
       $q,
       $window,
+      $translate,
       Languages,
       SetLanguage,
       Translate,
@@ -59,10 +60,7 @@ var passwordTester = require('simple-password-tester'),
 
       var validateRequired = function(fieldName, fieldDisplayName) {
         if (!$scope.editUserModel[fieldName]) {
-          Translate(fieldDisplayName)
-            .then(function(field) {
-              return Translate('field is required', { field: field });
-            })
+          Translate.fieldIsRequired(fieldDisplayName)
             .then(function(value) {
               $scope.errors[fieldName] = value;
             });
@@ -73,7 +71,7 @@ var passwordTester = require('simple-password-tester'),
 
       var validateConfirmPasswordMatches = function() {
         if ($scope.editUserModel.password !== $scope.editUserModel.passwordConfirm) {
-          Translate('Passwords must match').then(function(value) {
+          $translate('Passwords must match').then(function(value) {
             $scope.errors.password = value;
           });
           return false;
@@ -84,13 +82,13 @@ var passwordTester = require('simple-password-tester'),
       var validatePasswordStrength = function() {
         var password = $scope.editUserModel.password || '';
         if (password.length < PASSWORD_MINIMUM_LENGTH) {
-          Translate('password.length.minimum', { minimum: PASSWORD_MINIMUM_LENGTH }).then(function(value) {
+          $translate('password.length.minimum', { minimum: PASSWORD_MINIMUM_LENGTH }).then(function(value) {
             $scope.errors.password = value;
           });
           return false;
         }
         if (passwordTester(password) < PASSWORD_MINIMUM_SCORE) {
-          Translate('password.weak').then(function(value) {
+          $translate('password.weak').then(function(value) {
             $scope.errors.password = value;
           });
           return false;
@@ -158,12 +156,12 @@ var passwordTester = require('simple-password-tester'),
             })
             .catch(function(err) {
               if (err.status === -1) { //Offline Status
-                Translate('online.action.message').then(function(value) {
+                $translate('online.action.message').then(function(value) {
                   $scope.errors.currentPassword = value;
                   $scope.setError();
                 });
               } else if (err.status === 401) {
-                Translate('password.incorrect').then(function(value) {
+                $translate('password.incorrect').then(function(value) {
                   $scope.errors.currentPassword = value;
                   $scope.setError();
                 });

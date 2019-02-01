@@ -27,6 +27,10 @@
       })
       .state('messages.detail', {
         url: '/{type}:{id}',
+        params: {
+          type: null,
+          id: null
+        },
         views: {
           content: {
             controller: 'MessagesContentCtrl',
@@ -43,6 +47,9 @@
       })
       .state('reports.add', {
         url: '/add/:formId',
+        params: {
+          formId: null
+        },
         views: {
           content: {
             controller: 'ReportsAddCtrl',
@@ -52,6 +59,9 @@
       })
       .state('reports.edit', {
         url: '/edit/:reportId',
+        params: {
+          reportId: null
+        },
         views: {
           content: {
             controller: 'ReportsAddCtrl',
@@ -61,6 +71,9 @@
       })
       .state('reports.detail', {
         url: '/:id',
+        params: {
+          id: null
+        },
         views: {
           content: {
             controller: 'ReportsContentCtrl',
@@ -86,6 +99,10 @@
       })
       .state('analytics.reporting.detail', {
         url: '/:form/:place',
+        params: {
+          form: null,
+          place: null
+        },
         views: {
           detail: {
             controller: 'AnalyticsReportingDetailCtrl',
@@ -120,6 +137,10 @@
       })
       .state('contacts.report', {
         url: '/:id/report/:formId',
+        params: {
+          id: null,
+          formId: null
+        },
         views: {
           content: {
             controller: 'ContactsReportCtrl',
@@ -129,6 +150,9 @@
       })
       .state('contacts.deceased', {
         url: '/:id/deceased',
+        params: {
+          id: null
+        },
         views: {
           content: {
             controller: 'ContactsDeceasedCtrl',
@@ -138,6 +162,9 @@
       })
       .state('contacts.detail', {
         url: '/:id',
+        params: {
+          id: null
+        },
         views: {
           content: {
             controller: 'ContactsContentCtrl',
@@ -147,6 +174,10 @@
       })
       .state('contacts.addChild', {
         url: '/:parent_id/add/:type?from',
+        params: {
+          parent_id: null,
+          type: null
+        },
         views: {
           content: {
             controller: 'ContactsEditCtrl',
@@ -156,6 +187,9 @@
       })
       .state('contacts.edit', {
         url: '/:id/edit',
+        params: {
+          id: null
+        },
         views: {
           content: {
             controller: 'ContactsEditCtrl',
@@ -172,6 +206,9 @@
       })
       .state('tasks.detail', {
         url: '/:id',
+        params: {
+          id: null
+        },
         views: {
           content: {
             controller: 'TasksContentCtrl',

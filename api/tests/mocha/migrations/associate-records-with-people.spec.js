@@ -1,6 +1,7 @@
 const sinon = require('sinon'),
-      db = require('../../../src/db-nano'),
       chai = require('chai'),
+      request = require('request-promise-native'),
+      db = require('../../../src/db'),
       migration = require('../../../src/migrations/associate-records-with-people');
 
 describe('associate-records-with-people migration', () => {
@@ -483,299 +484,210 @@ describe('associate-records-with-people migration', () => {
 
   const clone = original => JSON.parse(JSON.stringify(original));
 
-  it('run does nothing if no data records', done => {
-    const getView = sinon.stub(db.medic, 'view').callsArgWith(3, null, { rows: [] });
-    migration.run(err => {
-      chai.expect(err).to.equal(null);
+  it('run does nothing if no data records', () => {
+    const getView = sinon.stub(request, 'get').resolves({ rows: [] });
+    return migration.run().then(() => {
       chai.expect(getView.callCount).to.equal(1);
-      done();
     });
   });
 
-  it('run does nothing if outgoing message already migrated', done => {
+  it('run does nothing if outgoing message already migrated', () => {
     const rows = [ { doc: { tasks: [ { messages: [ { contact: { _id: 'a' } } ] } ] } } ];
-    const getView = sinon.stub(db.medic, 'view');
-    getView.onCall(0).callsArgWith(3, null, { rows: rows });
-    getView.onCall(1).callsArgWith(3, null, { rows: [] });
-    migration.run(err => {
-      chai.expect(err).to.equal(null);
-      chai.expect(getView.callCount).to.equal(2);
-      chai.expect(getView.args[0][2].skip).to.equal(0);
-      chai.expect(getView.args[1][2].skip).to.equal(100);
-      done();
+    const getView = sinon.stub(request, 'get').resolves({ rows: rows });
+    return migration.run().then(() => {
+      chai.expect(getView.callCount).to.equal(1);
     });
   });
 
-  it('run does nothing if outgoing message has no facility', done => {
+  it('run does nothing if outgoing message has no facility', () => {
     const rows = [ { doc: { tasks: [ { messages: [ { to: '+6427555', } ] } ] } } ];
-    const getView = sinon.stub(db.medic, 'view');
-    getView.onCall(0).callsArgWith(3, null, { rows: rows });
-    getView.onCall(1).callsArgWith(3, null, { rows: [] });
-    migration.run(err => {
-      chai.expect(err).to.equal(null);
-      chai.expect(getView.callCount).to.equal(2);
-      done();
+    const getView = sinon.stub(request, 'get').resolves({ rows: rows });
+    return migration.run().then(() => {
+      chai.expect(getView.callCount).to.equal(1);
     });
   });
 
-  it('run migrates outgoing message', done => {
+  it('run migrates outgoing message', () => {
     const rows = [ { doc: clone(outgoingMessage) } ];
-    const getView = sinon.stub(db.medic, 'view');
-    getView.onCall(0).callsArgWith(3, null, { rows: rows });
-    getView.onCall(1).callsArgWith(3, null, { rows: [] });
-    const getDoc = sinon.stub(db.medic, 'get').callsArgWith(1, null, contact);
-    const bulk = sinon.stub(db.medic, 'bulk').callsArg(1);
-    migration.run(err => {
-      chai.expect(err).to.equal(null);
-      chai.expect(getView.callCount).to.equal(2);
+    sinon.stub(request, 'get').resolves({ rows: rows });
+    const getDoc = sinon.stub(db.medic, 'get').resolves(contact);
+    const bulk = sinon.stub(db.medic, 'bulkDocs').resolves();
+    return migration.run().then(() => {
       chai.expect(getDoc.callCount).to.equal(1);
       chai.expect(getDoc.args[0][0]).to.equal(contact._id);
       chai.expect(bulk.callCount).to.equal(1);
-      const message = bulk.args[0][0].docs[0].tasks[0].messages[0];
+      const message = bulk.args[0][0][0].tasks[0].messages[0];
       chai.expect(message.facility).to.equal(undefined);
       chai.expect(message.contact).to.deep.equal(contact);
-      done();
     });
   });
 
-  it('run migrates outgoing message to facility without contact id - #2545', done => {
+  it('run migrates outgoing message to facility without contact id - #2545', () => {
     const rows = [ { doc: clone(outgoingMessageWithoutContactId) } ];
-    const getView = sinon.stub(db.medic, 'view');
-    getView.onCall(0).callsArgWith(3, null, { rows: rows });
-    getView.onCall(1).callsArgWith(3, null, { rows: [] });
-    const getDoc = sinon.stub(db.medic, 'get').callsArgWith(1, null, clinic);
-    const bulk = sinon.stub(db.medic, 'bulk').callsArg(1);
-    migration.run(err => {
-      chai.expect(err).to.equal(null);
-      chai.expect(getView.callCount).to.equal(2);
+    sinon.stub(request, 'get').resolves({ rows: rows });
+    const getDoc = sinon.stub(db.medic, 'get').resolves(clinic);
+    const bulk = sinon.stub(db.medic, 'bulkDocs').resolves();
+    return migration.run().then(() => {
       chai.expect(getDoc.callCount).to.equal(1);
       chai.expect(getDoc.args[0][0]).to.equal(clinic._id);
       chai.expect(bulk.callCount).to.equal(1);
-      const message = bulk.args[0][0].docs[0].tasks[0].messages[0];
+      const message = bulk.args[0][0][0].tasks[0].messages[0];
       chai.expect(message.facility).to.equal(undefined);
       chai.expect(message.contact.phone).to.deep.equal(clinic.contact.phone);
       chai.expect(message.contact.name).to.deep.equal(clinic.contact.name);
       chai.expect(message.contact.parent).to.deep.equal(clinic);
-      done();
     });
   });
 
-  it('run migrates outgoing message to person', done => {
+  it('run migrates outgoing message to person', () => {
     const rows = [ { doc: clone(outgoingMessageToPerson) } ];
-    const getView = sinon.stub(db.medic, 'view');
-    getView.onCall(0).callsArgWith(3, null, { rows: rows });
-    getView.onCall(1).callsArgWith(3, null, { rows: [] });
-    const bulk = sinon.stub(db.medic, 'bulk').callsArg(1);
-    migration.run(err => {
-      chai.expect(err).to.equal(null);
-      chai.expect(getView.callCount).to.equal(2);
+    sinon.stub(request, 'get').resolves({ rows: rows });
+    const bulk = sinon.stub(db.medic, 'bulkDocs').resolves();
+    return migration.run().then(() => {
       chai.expect(bulk.callCount).to.equal(1);
-      const message = bulk.args[0][0].docs[0].tasks[0].messages[0];
+      const message = bulk.args[0][0][0].tasks[0].messages[0];
       chai.expect(message.facility).to.equal(undefined);
       chai.expect(message.contact).to.deep.equal(outgoingMessageToPerson.tasks[0].messages[0].facility);
-      done();
     });
   });
 
-  it('run does nothing if incoming message already migrated', done => {
+  it('run does nothing if incoming message already migrated', () => {
     const rows = [ { doc: { sms_message: { message: 'incoming', }, contact: { _id: 'a' } } } ];
-    const getView = sinon.stub(db.medic, 'view');
-    getView.onCall(0).callsArgWith(3, null, { rows: rows });
-    getView.onCall(1).callsArgWith(3, null, { rows: [] });
-    const bulk = sinon.stub(db.medic, 'bulk');
-    migration.run(err => {
-      chai.expect(err).to.equal(null);
-      chai.expect(getView.callCount).to.equal(2);
+    sinon.stub(request, 'get').resolves({ rows: rows });
+    const bulk = sinon.stub(db.medic, 'bulkDocs');
+    return migration.run().then(() => {
       chai.expect(bulk.callCount).to.equal(0);
-      done();
     });
   });
 
-  it('run does nothing if incoming message has no facility', done => {
+  it('run does nothing if incoming message has no facility', () => {
     const rows = [ { doc: { sms_message: { message: 'incoming' } } } ];
-    const getView = sinon.stub(db.medic, 'view');
-    getView.onCall(0).callsArgWith(3, null, { rows: rows });
-    getView.onCall(1).callsArgWith(3, null, { rows: [] });
-    const bulk = sinon.stub(db.medic, 'bulk');
-    migration.run(err => {
-      chai.expect(err).to.equal(null);
+    sinon.stub(request, 'get').resolves({ rows: rows });
+    const bulk = sinon.stub(db.medic, 'bulkDocs');
+    return migration.run().then(() => {
       chai.expect(bulk.callCount).to.equal(0);
-      done();
     });
   });
 
-  it('run migrates incoming message', done => {
+  it('run migrates incoming message', () => {
     const rows = [ { doc: clone(incomingMessage) } ];
-    const getView = sinon.stub(db.medic, 'view');
-    getView.onCall(0).callsArgWith(3, null, { rows: rows });
-    getView.onCall(1).callsArgWith(3, null, { rows: [] });
-    const getDoc = sinon.stub(db.medic, 'get').callsArgWith(1, null, clone(contact));
-    const bulk = sinon.stub(db.medic, 'bulk').callsArg(1);
-    migration.run(err => {
-      chai.expect(err).to.equal(null);
+    sinon.stub(request, 'get').resolves({ rows: rows });
+    const getDoc = sinon.stub(db.medic, 'get').resolves(clone(contact));
+    const bulk = sinon.stub(db.medic, 'bulkDocs').resolves();
+    return migration.run().then(() => {
       chai.expect(getDoc.callCount).to.equal(1);
       chai.expect(getDoc.args[0][0]).to.equal(contact._id);
       chai.expect(bulk.callCount).to.equal(1);
-      chai.expect(bulk.args[0][0].docs[0].related_entities).to.equal(undefined);
-      chai.expect(bulk.args[0][0].docs[0].contact).to.deep.equal(contact);
-      done();
+      chai.expect(bulk.args[0][0][0].related_entities).to.equal(undefined);
+      chai.expect(bulk.args[0][0][0].contact).to.deep.equal(contact);
     });
   });
 
-  it('run migrates incoming report', done => {
+  it('run migrates incoming report', () => {
     const rows = [ { doc: clone(incomingReport) } ];
-    const getView = sinon.stub(db.medic, 'view');
-    getView.onCall(0).callsArgWith(3, null, { rows: rows });
-    getView.onCall(1).callsArgWith(3, null, { rows: [] });
-    const getDoc = sinon.stub(db.medic, 'get').callsArgWith(1, null, clone(contact));
-    const bulk = sinon.stub(db.medic, 'bulk').callsArg(1);
-    migration.run(err => {
-      chai.expect(err).to.equal(null);
+    sinon.stub(request, 'get').resolves({ rows: rows });
+    const getDoc = sinon.stub(db.medic, 'get').resolves(clone(contact));
+    const bulk = sinon.stub(db.medic, 'bulkDocs').resolves();
+    return migration.run().then(() => {
       chai.expect(getDoc.callCount).to.equal(1);
       chai.expect(getDoc.args[0][0]).to.equal(contact._id);
       chai.expect(bulk.callCount).to.equal(1);
-      chai.expect(bulk.args[0][0].docs[0].related_entities).to.equal(undefined);
-      chai.expect(bulk.args[0][0].docs[0].contact).to.deep.equal(contact);
-      done();
+      chai.expect(bulk.args[0][0][0].related_entities).to.equal(undefined);
+      chai.expect(bulk.args[0][0][0].contact).to.deep.equal(contact);
     });
   });
 
-  it('run migrates incoming report with no contact id - #2970', done => {
+  it('run migrates incoming report with no contact id - #2970', () => {
     const rows = [ { doc: clone(incomingReportWithoutContactId) } ];
-    const getView = sinon.stub(db.medic, 'view');
-    getView.onCall(0).callsArgWith(3, null, { rows: rows });
-    getView.onCall(1).callsArgWith(3, null, { rows: [] });
-    const getDoc = sinon.stub(db.medic, 'get').callsArgWith(1, null, clone(clinic));
-    const bulk = sinon.stub(db.medic, 'bulk').callsArg(1);
-    migration.run(err => {
-      chai.expect(err).to.equal(null);
+    sinon.stub(request, 'get').resolves({ rows: rows });
+    const getDoc = sinon.stub(db.medic, 'get').resolves(clone(clinic));
+    const bulk = sinon.stub(db.medic, 'bulkDocs').resolves();
+    return migration.run().then(() => {
       chai.expect(getDoc.callCount).to.equal(1);
       chai.expect(getDoc.args[0][0]).to.equal(clinic._id);
       chai.expect(bulk.callCount).to.equal(1);
-      const report = bulk.args[0][0].docs[0];
+      const report = bulk.args[0][0][0];
       chai.expect(report.related_entities).to.equal(undefined);
       chai.expect(report.contact.phone).to.equal(clinic.contact.phone);
       chai.expect(report.contact.name).to.equal(clinic.contact.name);
       chai.expect(report.contact.parent).to.deep.equal(clinic);
-      done();
     });
   });
 
-  it('run migrates multiple data records', done => {
+  it('run migrates multiple data records', () => {
     const rows = [
       { doc: clone(outgoingMessage) },
       { doc: clone(incomingMessage) },
       { doc: clone(incomingReport) }
     ];
-    const getView = sinon.stub(db.medic, 'view');
-    getView.onCall(0).callsArgWith(3, null, { rows: rows });
-    getView.onCall(1).callsArgWith(3, null, { rows: [] });
+    sinon.stub(request, 'get').resolves({ rows: rows });
     const getDoc = sinon.stub(db.medic, 'get');
-    getDoc.onCall(0).callsArgWith(1, null, contact);
-    getDoc.onCall(1).callsArgWith(1, null, contact);
-    getDoc.onCall(2).callsArgWith(1, null, contact);
-    const bulk = sinon.stub(db.medic, 'bulk').callsArg(1);
-    migration.run(err => {
-      chai.expect(err).to.equal(null);
+    getDoc.onCall(0).resolves(contact);
+    getDoc.onCall(1).resolves(contact);
+    getDoc.onCall(2).resolves(contact);
+    const bulk = sinon.stub(db.medic, 'bulkDocs').resolves();
+    return migration.run().then(() => {
       chai.expect(getDoc.callCount).to.equal(3);
       chai.expect(getDoc.args[0][0]).to.equal(contact._id);
       chai.expect(getDoc.args[1][0]).to.equal(contact._id);
       chai.expect(getDoc.args[2][0]).to.equal(contact._id);
       chai.expect(bulk.callCount).to.equal(1);
-      done();
     });
   });
 
-  it('run migrates outgoing message with deleted contact', done => {
+  it('run migrates outgoing message with deleted contact', () => {
     const rows = [ { doc: clone(outgoingMessage) } ];
-    const getView = sinon.stub(db.medic, 'view');
-    getView.onCall(0).callsArgWith(3, null, { rows: rows });
-    getView.onCall(1).callsArgWith(3, null, { rows: [] });
+    sinon.stub(request, 'get').resolves({ rows: rows });
     const getDoc = sinon.stub(db.medic, 'get');
-    getDoc.onCall(0).callsArgWith(1, { statusCode: 404 });
-    getDoc.onCall(1).callsArgWith(1, null, clinic);
-    const bulk = sinon.stub(db.medic, 'bulk').callsArg(1);
-    migration.run(err => {
-      chai.expect(err).to.equal(null);
+    getDoc.onCall(0).returns(Promise.reject({ status: 404 }));
+    getDoc.onCall(1).resolves(clinic);
+    const bulk = sinon.stub(db.medic, 'bulkDocs').resolves();
+    return migration.run().then(() => {
       chai.expect(getDoc.callCount).to.equal(2);
       chai.expect(getDoc.args[0][0]).to.equal(contact._id);
       chai.expect(getDoc.args[1][0]).to.equal(clinic._id);
       chai.expect(bulk.callCount).to.equal(1);
-      const message = bulk.args[0][0].docs[0].tasks[0].messages[0];
+      const message = bulk.args[0][0][0].tasks[0].messages[0];
       chai.expect(message.facility).to.equal(undefined);
       chai.expect(message.contact.phone).to.equal(clinic.contact.phone);
       chai.expect(message.contact.name).to.equal(clinic.contact.name);
       chai.expect(message.contact.parent).to.deep.equal(clinic);
-      done();
     });
   });
 
-  it('run migrates incoming message with deleted contact and deleted clinic', done => {
+  it('run migrates incoming message with deleted contact and deleted clinic', () => {
     const rows = [ { doc: clone(incomingMessage) } ];
-    const getView = sinon.stub(db.medic, 'view');
-    getView.onCall(0).callsArgWith(3, null, { rows: rows });
-    getView.onCall(1).callsArgWith(3, null, { rows: [] });
+    sinon.stub(request, 'get').resolves({ rows: rows });
     const getDoc = sinon.stub(db.medic, 'get');
-    getDoc.onCall(0).callsArgWith(1, { statusCode: 404 });
-    getDoc.onCall(1).callsArgWith(1, { statusCode: 404 });
-    const bulk = sinon.stub(db.medic, 'bulk').callsArg(1);
-    migration.run(err => {
-      chai.expect(err).to.equal(null);
+    getDoc.onCall(0).returns(Promise.reject({ status: 404 }));
+    getDoc.onCall(1).returns(Promise.reject({ status: 404 }));
+    const bulk = sinon.stub(db.medic, 'bulkDocs').resolves();
+    return migration.run().then(() => {
       chai.expect(getDoc.callCount).to.equal(2);
       chai.expect(getDoc.args[0][0]).to.equal(contact._id);
       chai.expect(getDoc.args[1][0]).to.equal(clinic._id);
       chai.expect(bulk.callCount).to.equal(1);
-      const message = bulk.args[0][0].docs[0];
+      const message = bulk.args[0][0][0];
       chai.expect(message.related_entities).to.equal(undefined);
       chai.expect(message.contact).to.equal(undefined);
-      done();
     });
   });
 
-  it('run migrates incoming message with deleted contact and clinic has no contact', done => {
+  it('run migrates incoming message with deleted contact and clinic has no contact', () => {
     const rows = [ { doc: clone(incomingMessage) } ];
-    const getView = sinon.stub(db.medic, 'view');
-    getView.onCall(0).callsArgWith(3, null, { rows: rows });
-    getView.onCall(1).callsArgWith(3, null, { rows: [] });
+    sinon.stub(request, 'get').resolves({ rows: rows });
     const getDoc = sinon.stub(db.medic, 'get');
-    getDoc.onCall(0).callsArgWith(1, { statusCode: 404 });
-    getDoc.onCall(1).callsArgWith(1, null, { _id: 'a' });
-    const bulk = sinon.stub(db.medic, 'bulk').callsArg(1);
-    migration.run(err => {
-      chai.expect(err).to.equal(null);
+    getDoc.onCall(0).returns(Promise.reject({ status: 404 }));
+    getDoc.onCall(1).resolves({ _id: 'a' });
+    const bulk = sinon.stub(db.medic, 'bulkDocs').resolves();
+    return migration.run().then(() => {
       chai.expect(getDoc.callCount).to.equal(2);
       chai.expect(getDoc.args[0][0]).to.equal(contact._id);
       chai.expect(getDoc.args[1][0]).to.equal(clinic._id);
       chai.expect(bulk.callCount).to.equal(1);
-      const message = bulk.args[0][0].docs[0];
+      const message = bulk.args[0][0][0];
       chai.expect(message.related_entities).to.equal(undefined);
       chai.expect(message.contact).to.equal(undefined);
-      done();
-    });
-  });
-
-  it('run keeps iterating until the view returns no results', done => {
-    const rows1 = [ { doc: clone(incomingMessage) } ];
-    const rows2 = [ { doc: clone(outgoingMessage) } ];
-    const getView = sinon.stub(db.medic, 'view');
-    getView.onCall(0).callsArgWith(3, null, { rows: rows1 });
-    getView.onCall(1).callsArgWith(3, null, { rows: rows2 });
-    getView.onCall(2).callsArgWith(3, null, { rows: [] });
-    const getDoc = sinon.stub(db.medic, 'get');
-    getDoc.onCall(0).callsArgWith(1, null, clone(contact));
-    getDoc.onCall(1).callsArgWith(1, null, clone(contact));
-    const bulk = sinon.stub(db.medic, 'bulk').callsArg(1);
-    migration.run(err => {
-      chai.expect(err).to.equal(null);
-      chai.expect(getView.callCount).to.equal(3);
-      chai.expect(bulk.callCount).to.equal(2);
-      const message1 = bulk.args[0][0].docs[0];
-      chai.expect(message1.related_entities).to.equal(undefined);
-      chai.expect(message1.contact).to.deep.equal(contact);
-      const message2 = bulk.args[1][0].docs[0].tasks[0].messages[0];
-      chai.expect(message2.facility).to.equal(undefined);
-      chai.expect(message2.contact).to.deep.equal(contact);
-      done();
     });
   });
 

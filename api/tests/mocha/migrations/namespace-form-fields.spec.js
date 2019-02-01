@@ -1,33 +1,29 @@
 const sinon = require('sinon'),
       chai = require('chai'),
-      db = require('../../../src/db-nano'),
+      db = require('../../../src/db'),
       settingsService = require('../../../src/services/settings'),
       migration = require('../../../src/migrations/namespace-form-fields');
 
 const makeStubs = (...viewBatches) => {
-  const getView = sinon.stub(db.medic, 'view');
+  const getView = sinon.stub(db.medic, 'query');
   if (viewBatches.length === 0) {
-    getView.callsArgWith(3, null,
-      {
-        total_rows: 0,
-        rows: []
-      });
+    getView.callsArgWith(2, null, ({ total_rows: 0, rows: [] }));
   } else {
     const totalRows = viewBatches.reduce(
       (total, batch) => total + batch.length,
-      0);
+      0
+    );
     viewBatches.forEach(function(batch, index) {
-      getView.onCall(index).callsArgWith(3, null,
-        {
-          total_rows: totalRows,
-          rows: batch.map(function(doc) { return {doc: doc}; })
-        });
+      getView.onCall(index).callsArgWith(2, null, {
+        total_rows: totalRows,
+        rows: batch.map(doc => ({ doc }))
+      });
     });
   }
 
   return {
     getConfig: sinon.stub(settingsService, 'get').resolves({ forms: forms }),
-    bulk: sinon.stub(db.medic, 'bulk').callsArgWith(1, null, null),
+    bulk: sinon.stub(db.medic, 'bulkDocs').callsArgWith(1),
     getView: getView
   };
 };
@@ -81,15 +77,14 @@ describe('namespace-form-fields migration', () => {
     sinon.restore();
   });
 
-  it('run does nothing if no data records', done => {
+  it('run does nothing if no data records', () => {
     const stubs = makeStubs();
-    migration.run(err => {
+    return migration.run().then(() => {
       chai.expect(stubs.getView.callCount).to.equal(1);
-      done(err);
     });
   });
 
-  it('run does nothing if report already migrated', done => {
+  it('run does nothing if report already migrated', () => {
     const doc = {
       _id: 'a',
       reported_date: '123',
@@ -97,25 +92,23 @@ describe('namespace-form-fields migration', () => {
       fields: { name: 'michael' }
     };
     const stubs = makeStubs([doc]);
-    migration.run(err => {
+    return migration.run().then(() => {
       chai.expect(stubs.getView.callCount).to.equal(1);
-      done(err);
     });
   });
 
-  it('run does nothing if no form', done => {
+  it('run does nothing if no form', () => {
     const doc = {
       _id: 'a',
       reported_date: '123'
     };
     const stubs = makeStubs([doc]);
-    migration.run(err => {
+    return migration.run().then(() => {
       chai.expect(stubs.getView.callCount).to.equal(1);
-      done(err);
     });
   });
 
-  it('run migrates report', done => {
+  it('run migrates report', () => {
     const doc = {
       _id: 'a',
       reported_date: '123',
@@ -128,13 +121,12 @@ describe('namespace-form-fields migration', () => {
       patient_name: 'sarah'
     };
     const stubs = makeStubs([doc]);
-    migration.run(err => {
+    return migration.run().then(() => {
       chai.expect(stubs.getView.callCount).to.equal(1);
       chai.expect(stubs.bulk.callCount).to.equal(1);
-      chai.expect(stubs.bulk.args[0][0].docs[0].fields).to.deep.equal(expected);
-      chai.expect(stubs.bulk.args[0][0].docs[0].last_menstrual_period).to.equal(undefined);
-      chai.expect(stubs.bulk.args[0][0].docs[0].patient_name).to.equal(undefined);
-      done(err);
+      chai.expect(stubs.bulk.args[0][0][0].fields).to.deep.equal(expected);
+      chai.expect(stubs.bulk.args[0][0][0].last_menstrual_period).to.equal(undefined);
+      chai.expect(stubs.bulk.args[0][0][0].patient_name).to.equal(undefined);
     });
   });
 
@@ -171,15 +163,15 @@ describe('namespace-form-fields migration', () => {
       chai.expect(stubs.getView.callCount).to.equal(2);
       chai.expect(stubs.bulk.callCount).to.equal(2);
 
-      chai.expect(stubs.bulk.args[0][0].docs[0].fields).to.deep.equal(expected[0]);
-      chai.expect(stubs.bulk.args[0][0].docs[0].last_menstrual_period).to.equal(undefined);
-      chai.expect(stubs.bulk.args[0][0].docs[0].patient_name).to.equal(undefined);
+      chai.expect(stubs.bulk.args[0][0][0].fields).to.deep.equal(expected[0]);
+      chai.expect(stubs.bulk.args[0][0][0].last_menstrual_period).to.equal(undefined);
+      chai.expect(stubs.bulk.args[0][0][0].patient_name).to.equal(undefined);
 
-      chai.expect(stubs.bulk.args[1][0].docs[0].fields).to.deep.equal(expected[1]);
-      chai.expect(stubs.bulk.args[1][0].docs[0].last_menstrual_period).to.equal(undefined);
-      chai.expect(stubs.bulk.args[1][0].docs[0].patient_name).to.equal(undefined);
-
-      done(err);
+      chai.expect(stubs.bulk.args[1][0][0].fields).to.deep.equal(expected[1]);
+      chai.expect(stubs.bulk.args[1][0][0].last_menstrual_period).to.equal(undefined);
+      chai.expect(stubs.bulk.args[1][0][0].patient_name).to.equal(undefined);
+      chai.expect(!!err).to.equal(true);
+      done();
     });
   });
 
@@ -204,24 +196,22 @@ describe('namespace-form-fields migration', () => {
 
     const stubs = {
       getConfig: sinon.stub(settingsService, 'get').resolves({ forms: forms }),
-      bulk: sinon.stub(db.medic, 'bulk').callsArgWith(1, null,
-        [
-          {
-            id: 'a',
-            error: 'conflict',
-            reason: 'Document update conflict.'
-          },
-          {
-            ok: true,
-            id: 'b',
-            rev: 'blah'
-          }
-        ]),
-      getView: sinon.stub(db.medic, 'view').callsArgWith(3, null,
+      bulk: sinon.stub(db.medic, 'bulkDocs').callsArgWith(1, null, [
         {
-          total_rows: 2,
-          rows: [ { doc: docs[0]}, { doc: docs[1] }]
-        })
+          id: 'a',
+          error: 'conflict',
+          reason: 'Document update conflict.'
+        },
+        {
+          ok: true,
+          id: 'b',
+          rev: 'blah'
+        }
+      ]),
+      getView: sinon.stub(db.medic, 'query').callsArgWith(2, null, {
+        total_rows: 2,
+        rows: [ { doc: docs[0]}, { doc: docs[1] }]
+      })
     };
 
     migration._runWithBatchSize(BATCH_SIZE, function(err) {

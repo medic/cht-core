@@ -1,9 +1,9 @@
 const sinon = require('sinon'),
       chai = require('chai'),
-      db = require('../../../src/db-nano'),
+      db = require('../../../src/db'),
       environment = require('../../../src/environment'),
       migration = require('../../../src/migrations/separate-audit-db.js'),
-      ERR_404 = {statusCode: 404};
+      ERR_404 = { status: 404 };
 
 const FIRST_VIEW_BATCH = {
   rows: [
@@ -11,12 +11,12 @@ const FIRST_VIEW_BATCH = {
     {id: 'abc456'},
   ]
 };
-const VIEW_REVS = [{
+const VIEW_REVS = {
   rows: [
     {id: 'abc123', value: {rev: '1-123'}},
     {id: 'abc456', value: {rev: '1-456'}},
   ]
-}];
+};
 const LAST_VIEW_BATCH = {
   rows: []
 };
@@ -34,43 +34,56 @@ describe('separate-audit-db migration', () => {
     environment.db = originalDb;
   });
 
-  it('creates db, creates view and migrates audit documents', done => {
+  it('creates db, creates view and migrates audit documents', () => {
     environment.db = 'medic';
 
-    const wrappedDbDbGet = sinon.stub(db.db, 'get').withArgs('medic-audit').callsArgWith(1, ERR_404);
-    const wrappedDbDbCreate = sinon.stub(db.db, 'create').withArgs('medic-audit').callsArg(1);
-
     const auditDb = {
-      head: () => {},
-      insert: () => {}
+      get: () => {},
+      put: () => {}
     };
 
-    const wrappedAuditDbHead = sinon.stub(auditDb, 'head').withArgs('_design/medic').callsArgWith(1, ERR_404);
-    const wrappedAuditDbInsert = sinon.stub(auditDb, 'insert').callsArg(2);
-    sinon.stub(db, 'use').withArgs('medic-audit').returns(auditDb);
+    const wrappedDbDbCreate = sinon.stub(db, 'get').returns(auditDb);
 
-    const wrappedMedicView = sinon.stub(db.medic, 'view');
-    wrappedMedicView.onFirstCall().callsArgWith(3, null, FIRST_VIEW_BATCH);
-    wrappedMedicView.onSecondCall().callsArgWith(3, null, LAST_VIEW_BATCH);
+    const wrappedAuditDbGet = sinon.stub(auditDb, 'get').callsArgWith(1, ERR_404);
+    const wrappedAuditDbPut = sinon.stub(auditDb, 'put').callsArg(1);
 
-    const wrappedDbReplicate = sinon.stub(db.db, 'replicate').callsArg(3);
-    const wrappedMedicFetchRevs = sinon.stub(db.medic, 'fetchRevs').callsArgWith(1, null, VIEW_REVS);
+    const wrappedMedicView = sinon.stub(db.medic, 'query');
+    wrappedMedicView.onFirstCall().callsArgWith(2, null, FIRST_VIEW_BATCH);
+    wrappedMedicView.onSecondCall().callsArgWith(2, null, LAST_VIEW_BATCH);
 
-    const wrappedMedicBulk = sinon.stub(db.medic, 'bulk').callsArgWith(1, null, [1, 2, 3]);
+    let replicationCompleteListener;
+    const recursiveOn = sinon.stub();
+    recursiveOn.returns(recursiveOn);
+    db.medic.replicate = { to: sinon.stub() };
+    db.medic.replicate.to.returns({
+      on: (event, callback) => {
+        replicationCompleteListener = callback;
+        return {
+          on: () => ({
+            on: () => {}
+          })
+        };
+      }
+    });
 
-    migration.run(err => {
-      chai.expect(wrappedDbDbGet.callCount).to.equal(1);
+    const wrappedMedicAllDocs = sinon.stub(db.medic, 'allDocs').resolves(VIEW_REVS);
+    const wrappedMedicBulk = sinon.stub(db.medic, 'bulkDocs').resolves([1, 2, 3]);
+
+    const result = migration.run().then(() => {
       chai.expect(wrappedDbDbCreate.callCount).to.equal(1);
-      chai.expect(wrappedAuditDbHead.callCount).to.equal(1);
-      chai.expect(wrappedAuditDbInsert.callCount).to.equal(1);
+      chai.expect(wrappedAuditDbGet.callCount).to.equal(1);
+      chai.expect(wrappedAuditDbPut.callCount).to.equal(1);
 
       chai.expect(wrappedMedicView.callCount).to.equal(2);
-      chai.expect(wrappedDbReplicate.callCount).to.equal(1);
-      chai.expect(wrappedMedicFetchRevs.callCount).to.equal(1);
+      chai.expect(wrappedMedicAllDocs.callCount).to.equal(1);
 
       chai.expect(wrappedMedicBulk.callCount).to.equal(1);
-
-      done(err);
     });
+
+    setTimeout(() => {
+      replicationCompleteListener();
+    });
+
+    return result;
   });
 });

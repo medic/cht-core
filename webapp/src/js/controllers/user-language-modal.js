@@ -1,7 +1,7 @@
 /**
  * Note : this modal is really a full-fledged page, it does more than UI stuff (does the language changing).
  * It should eventually be a page.
- * https://github.com/medic/medic-webapp/issues/2254
+ * https://github.com/medic/medic/issues/2254
  */
 angular.module('inboxControllers').controller('UserLanguageModalCtrl',
   function(

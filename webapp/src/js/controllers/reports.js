@@ -1,5 +1,6 @@
 var _ = require('underscore'),
-  scrollLoader = require('../modules/scroll-loader');
+  scrollLoader = require('../modules/scroll-loader'),
+  lineageFactory = require('@medic/lineage');
 
 angular
   .module('inboxControllers')
@@ -24,6 +25,8 @@ angular
     'use strict';
     'ngInject';
 
+    var lineage = lineageFactory();
+
     // selected objects have the form
     //    { _id: 'abc', summary: { ... }, report: { ... }, expanded: false }
     // where the summary is the data required for the collapsed view,
@@ -36,6 +39,7 @@ angular
     $scope.verifyingReport = false;
 
     var liveList = LiveList.reports;
+    LiveList.$init($scope, 'reports', 'report-search');
 
     var updateLiveList = function(updated) {
       return AddReadStatus.reports(updated).then(function() {
@@ -196,9 +200,8 @@ angular
         });
     };
 
-    var query = function(options) {
-      options = options || {};
-      options.limit = options.limit || 50;
+    var query = function(opts) {
+      const options = _.extend({ limit: 50, hydrateContactNames: true }, opts);
       if (!options.silent) {
         $scope.error = false;
         $scope.errorSyntax = false;
@@ -258,7 +261,7 @@ angular
       // clears report selection for any text search or filter selection
       if($scope.filters.search || Object.keys($scope.filters).length > 1) {
         $state.go('reports.detail', { id: null }, { notify: false });
-        clearSelection();
+        $scope.clearSelection();
       }
       if ($scope.isMobile() && $scope.showContent) {
         // leave content shown
@@ -292,30 +295,8 @@ angular
       setRightActionBar();
     });
 
-    var clearSelection = function() {
-      $scope.selected = [];
-      $('#reports-list input[type="checkbox"]').prop('checked', false);
-      LiveList.reports.clearSelected();
-      LiveList['report-search'].clearSelected();
-      $scope.verifyingReport = false;
-    };
-
     $scope.$on('ClearSelected', function() {
-      clearSelection();
-    });
-
-    $scope.$on('VerifyReport', function(e, valid) {
-      if ($scope.selected[0].doc.form) {
-        DB()
-          .get($scope.selected[0]._id)
-          .then(function(message) {
-            message.verified = message.verified === valid ? undefined : valid;
-            return DB().post(message);
-          })
-          .catch(function(err) {
-            $log.error('Error verifying message', err);
-          });
-      }
+      $scope.clearSelection();
     });
 
     $scope.$on('EditReport', function() {
@@ -324,6 +305,30 @@ angular
         controller: 'EditReportCtrl',
         model: { report: $scope.selected[0].doc },
       });
+    });
+
+    $scope.$on('VerifyReport', function(e, valid) {
+      if ($scope.selected[0].doc.form) {
+        $scope.setLoadingSubActionBar(true);
+
+        var doc = $scope.selected[0].doc;
+        if (doc.contact) {
+          doc.contact = lineage.minifyLineage(doc.contact);
+        }
+
+        doc.verified = doc.verified === valid ? undefined : valid;
+
+        DB()
+          .post(doc)
+          .catch(function(err) {
+            $log.error('Error verifying message', err);
+          })
+          .finally(() => {
+            $scope.$broadcast('VerifiedReport', valid);
+
+            $scope.setLoadingSubActionBar(false);
+          });
+      }
     });
 
     var initScroll = function() {
@@ -441,7 +446,7 @@ angular
 
     $scope.$on('SelectAll', function() {
       $scope.setLoadingContent(true);
-      Search('reports', $scope.filters, { limit: 500 })
+      Search('reports', $scope.filters, { limit: 500, hydrateContactNames: true })
         .then(function(summaries) {
           $scope.selected = summaries.map(function(summary) {
             return {
@@ -493,12 +498,6 @@ angular
 
     $scope.$on('DeselectAll', deselectAll);
 
-    $scope.$on('$stateChangeStart', function(event, toState) {
-      if (toState.name.indexOf('reports') === -1) {
-        $scope.unsetSelected();
-      }
-    });
-
     var changeListener = Changes({
       key: 'reports-list',
       callback: function(change) {
@@ -507,7 +506,7 @@ angular
           $scope.hasReports = liveList.count() > 0;
           setActionBarData();
         } else {
-          query({ silent: true, limit: liveList.count() });
+          query({ silent: true, limit: Math.max(50, liveList.count()) });
         }
       },
       filter: function(change) {
@@ -515,5 +514,12 @@ angular
       },
     });
 
-    $scope.$on('$destroy', changeListener.unsubscribe);
+    $scope.$on('$destroy', function() {
+      changeListener.unsubscribe();
+      if (!$state.includes('reports')) {
+        SearchFilters.destroy();
+        LiveList.$reset('reports', 'report-search');
+        $('.inbox').off('click', '#reports-list .content-row');
+      }
+    });
   });

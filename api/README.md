@@ -1,6 +1,6 @@
 # medic-api
 
-Node server to support medic-webapp.
+Node server to support the medic app.
 
 # Table of contents
 

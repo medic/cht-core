@@ -5,7 +5,7 @@
 
     <a ui-sref="home">
       <div class="logo">
-        <div class="logo-full" ng-bind-html="logo | headerLogo"></div>
+        <div class="logo-full" ng-bind-html="'logo' | headerLogo"></div>
       </div>
     </a>
 
@@ -49,9 +49,9 @@
             </a>
           </li>
           <li role="presentation" mm-auth="can_configure" mm-auth-online="true">
-            <a ng-href="{{adminUrl}}" role="menuitem" tabindex="-1" target="_blank" rel="noopener noreferrer">
+            <a ng-href="{{adminUrl}}" role="menuitem" tabindex="-1" rel="noopener noreferrer">
               <i class="fa fa-fw fa-cog"></i>
-              <span translate>Configuration</span>
+              <span translate>admin.app.name</span>
             </a>
           </li>
           <li role="presentation" mm-auth="can_configure">

@@ -133,7 +133,7 @@ describe('FormatDate service', function() {
     /**
      * It doesn't matter how many hours away something is, if we cross
      * two day boundaries then we call that 'in 2 days'.
-     * https://github.com/medic/medic-webapp/issues/1757
+     * https://github.com/medic/medic/issues/1757
      */
     it('returns "in 2 days" when two sleeps away', function(done) {
       relativeTime.returns('2 days');

@@ -24,7 +24,8 @@ angular.module('inboxControllers').controller('ContactsContentCtrl',
     'ngInject';
 
     var taskEndDate,
-        reportStartDate;
+        reportStartDate,
+        usersHomePlaceId;
 
     $scope.filterTasks = function(task) {
       return !taskEndDate || taskEndDate.isAfter(task.date);
@@ -105,7 +106,8 @@ angular.module('inboxControllers').controller('ContactsContentCtrl',
       if (!silent) {
         $scope.setLoadingContent(id);
       }
-      return ContactViewModelGenerator(id)
+
+      return ContactViewModelGenerator(id, { getChildPlaces: !usersHomePlaceId || usersHomePlaceId !== id })
         .then(function(model) {
           var refreshing = ($scope.selected && $scope.selected.doc._id) === id;
           $scope.setSelected(model);
@@ -122,7 +124,9 @@ angular.module('inboxControllers').controller('ContactsContentCtrl',
     };
 
     // exposed solely for testing purposes
-    this.setupPromise = $q.resolve().then(function() {
+    this.setupPromise = getHomePlaceId().then(function(id) {
+      usersHomePlaceId = id;
+
       if ($stateParams.id) {
         return selectContact($stateParams.id);
       }
@@ -130,11 +134,9 @@ angular.module('inboxControllers').controller('ContactsContentCtrl',
       if ($scope.isMobile()) {
         return;
       }
-      return getHomePlaceId().then(function(id) {
-        if (id) {
-          return selectContact(id, true);
-        }
-      });
+      if (id) {
+        return selectContact(id, true);
+      }
     });
 
     var debouncedReloadContact = Debounce(selectContact, 1000, 10 * 1000);

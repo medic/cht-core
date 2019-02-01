@@ -3,12 +3,13 @@ describe('AboutCtrl controller', function() {
   'use strict';
 
   var createController,
-      $rootScope,
-      scope,
-      $interval,
-      DB,
-      Debug,
-      Session;
+    $rootScope,
+    scope,
+    $interval,
+    DB,
+    Debug,
+    Session,
+    ResourceIcons;
 
 
   beforeEach(module('inboxApp'));
@@ -25,6 +26,7 @@ describe('AboutCtrl controller', function() {
       info: sinon.stub().resolves(),
     };
     Debug = { get: sinon.stub() };
+    ResourceIcons = { getDocResources: sinon.stub().resolves() };
     createController = function() {
       return $controller('AboutCtrl', {
         $interval: $interval,
@@ -32,7 +34,8 @@ describe('AboutCtrl controller', function() {
         $scope: scope,
         DB: sinon.stub().returns(DB),
         Debug: Debug,
-        Session: Session
+        Session: Session,
+        ResourceIcons: ResourceIcons
       });
     };
   }));
@@ -89,6 +92,15 @@ describe('AboutCtrl controller', function() {
 
     return Promise.resolve().then(() => {
       chai.expect(scope.version).to.equal('some version');
+    });
+  });
+
+  it ('display partner logo if it exists', () => {
+    ResourceIcons.getDocResources.resolves(['Medic Mobile']);
+    createController();
+
+    return Promise.resolve().then(() => {
+      chai.expect(scope.partners[0]).to.equal('Medic Mobile');
     });
   });
 });

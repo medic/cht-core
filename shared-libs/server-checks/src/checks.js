@@ -50,21 +50,23 @@ const couchDbNoAdminPartyModeCheck = () => {
       } else {
         console.error('Expected a 401 when accessing db without authentication.');
         console.error(`Instead we got a ${statusCode}`);
-        reject(new Error('CouchDB security seems to be misconfigured, see: https://github.com/medic/medic-webapp#enabling-a-secure-couchdb'));
+        reject(new Error('CouchDB security seems to be misconfigured, see: https://github.com/medic/medic#enabling-a-secure-couchdb'));
       }
     });
   });
 };
 
-const couchDbVersionCheck = (serverUrl) => {
+const getCouchDbVersion = (serverUrl) => {
   return new Promise((resolve, reject) => {
     request.get({ url: serverUrl, json: true }, (err, response, body) => {
-      if (err) {
-        return reject(err);
-      }
-      console.log(`CouchDB Version: ${body.version}`);
-      resolve();
+      return err ? reject(err) : resolve(body.version);
     });
+  });
+};
+
+const couchDbVersionCheck = (serverUrl) => {
+  return getCouchDbVersion(serverUrl).then(version => {
+    console.log(`CouchDB Version: ${version}`);
   });
 };
 
@@ -78,6 +80,7 @@ const check = (serverUrl) => {
 
 module.exports = {
   check: (serverUrl) => check(serverUrl),
+  getCouchDbVersion: (serverUrl) => getCouchDbVersion(serverUrl),
   _nodeVersionCheck: () => nodeVersionCheck(),
   _envVarsCheck: () => envVarsCheck(),
   _couchDbNoAdminPartyModeCheck: () => couchDbNoAdminPartyModeCheck(),

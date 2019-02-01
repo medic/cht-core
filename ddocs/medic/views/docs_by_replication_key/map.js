@@ -1,16 +1,17 @@
 function (doc) {
+  if (doc.type === 'tombstone' && doc.tombstone) {
+    doc = doc.tombstone;
+  }
+
   if (doc._id === 'resources' ||
       doc._id === 'branding' ||
+      doc._id === 'partners' ||
       doc._id === 'appcache' ||
       doc._id === 'zscore-charts' ||
       doc._id === 'settings' ||
       doc.type === 'form' ||
       doc.type === 'translations') {
     return emit('_all', {});
-  }
-
-  if (doc.type === 'tombstone' && doc.tombstone) {
-    doc = doc.tombstone;
   }
 
   var getSubject = function() {

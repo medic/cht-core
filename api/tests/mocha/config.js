@@ -1,6 +1,6 @@
 const config = require('../../src/config'),
   sinon = require('sinon'),
-  db = require('../../src/db-pouch'),
+  db = require('../../src/db'),
   logger = require('../../src/logger'),
   ddocExtraction = require('../../src/ddoc-extraction'),
   translations = require('../../src/translations'),

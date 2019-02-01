@@ -27,7 +27,7 @@ const getRegistrations = (patientId, callback) => {
   if (!patientId) {
     return callback();
   }
-  utils.getRegistrations({ db: db, id: patientId }, callback);
+  utils.getRegistrations({ id: patientId }, callback);
 };
 
 const getPatientNameField = params => {
@@ -281,7 +281,6 @@ module.exports = {
         // We're attaching this registration to an existing patient, let's
         // make sure it's valid
         return utils.getPatientContactUuid(
-          db,
           patientId,
           (err, patientContactId) => {
             if (err) {
@@ -387,24 +386,20 @@ module.exports = {
         silence_for: null,
       };
 
-      utils.getRegistrations(
-        {
-          db: db,
-          id: options.doc.fields && options.doc.fields.patient_id,
-        },
-        (err, registrations) => {
-          if (err) {
-            return cb(err);
-          }
-
+      utils
+        .getReportsBySubject({
+          ids: utils.getSubjectIds(options.doc.patient),
+          registrations: true
+        })
+        .then(registrations => {
           acceptPatientReports.silenceRegistrations(
             config,
             options.doc,
             registrations,
             cb
           );
-        }
-      );
+        })
+        .catch(cb);
     },
   },
   addMessages: (config, doc, callback) => {
@@ -494,7 +489,6 @@ module.exports = {
       patientNameField = getPatientNameField(options.params);
 
     utils.getPatientContactUuid(
-      db,
       patientShortcode,
       (err, patientContactId) => {
         if (err) {

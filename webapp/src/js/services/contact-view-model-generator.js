@@ -1,4 +1,5 @@
-var _ = require('underscore');
+var _ = require('underscore'),
+    registrationUtils = require('@medic/registration-utils');
 
 /**
  * Hydrates the given contact by uuid and creates a model which
@@ -72,19 +73,16 @@ angular.module('inboxServices').factory('ContactViewModelGenerator',
       model.isPrimaryContact = parent &&
         parent.contact &&
         (parent.contact._id === model.doc._id);
-      return model;
     };
 
     var setSchemaFields = function(model) {
       var schema = ContactSchema.get(model.doc.type);
       model.icon = schema.icon;
       model.label = schema.label;
-      return model;
     };
 
     var setMutedState = function(model) {
       model.doc.muted = ContactMuted(model.doc, model.lineage);
-      return model;
     };
 
     var splitContactsByType = function(children) {
@@ -99,95 +97,92 @@ angular.module('inboxServices').factory('ContactViewModelGenerator',
       });
     };
 
-    var getPrimaryContact = function(doc) {
+    const getPrimaryContact = function(doc, children) {
       var contactId = doc && doc.contact && doc.contact._id;
       if (!contactId) {
         return $q.resolve();
       }
-      return DB().get(contactId).catch(function(err) {
-        if (err.status === 404 || err.error === 'not_found') {
-          return;
-        }
-        throw err;
-      });
+
+      const persons = children.persons || [];
+      const idx = _.findIndex(persons, person => person.doc._id === contactId);
+      if (idx !== -1) {
+        return $q.resolve({
+          idx,
+          doc: persons[idx].doc
+        });
+      }
+
+      // If the primary contact is not a child, fetch the document
+      return DB().get(contactId)
+        .then(doc => ({ idx, doc }))
+        .catch(function(err) {
+          if (err.status === 404 || err.error === 'not_found') {
+            return;
+          }
+          throw err;
+        });
     };
 
-    var sortPrimaryContactToTop = function(model) {
-      return getPrimaryContact(model.doc)
-        .then(function(primaryContact) {
+    var sortPrimaryContactToTop = function(model, children) {
+      return getPrimaryContact(model.doc, children)
+        .then(function (primaryContact) {
           if (!primaryContact) {
             return;
           }
-          var newChild = {
-            id: primaryContact._id,
-            doc: primaryContact,
+          const newChild = {
+            id: primaryContact.doc._id,
+            doc: primaryContact.doc,
             isPrimaryContact: true
           };
-          if (!model.children.persons) {
-            model.children.persons = [ newChild ];
+          if (!children.persons) {
+            children.persons = [ newChild ];
             return;
           }
-          var persons = model.children.persons;
+          const persons = children.persons;
           // remove existing child
-          var primaryContactIdx = _.findIndex(persons, function(child) {
-            return child.doc._id === primaryContact._id;
-          });
-          if (primaryContactIdx !== -1) {
-            persons.splice(primaryContactIdx, 1);
+          if (primaryContact.idx !== -1) {
+            persons.splice(primaryContact.idx, 1);
           }
           // push the primary contact on to the start of the array
           persons.unshift(newChild);
         })
         .then(function() {
-          return model;
+          return children;
         });
     };
 
-    var sortChildren = function(model) {
-      if (model.children.places) {
-        model.children.places.sort(NAME_COMPARATOR);
+    var sortChildren = function(model, children) {
+      if (children.places) {
+        children.places.sort(NAME_COMPARATOR);
       }
-      if (model.children.persons) {
+      if (children.persons) {
         var personComparator = model.doc.type === 'clinic' ? AGE_COMPARATOR : NAME_COMPARATOR;
-        model.children.persons.sort(personComparator);
+        children.persons.sort(personComparator);
       }
-      return sortPrimaryContactToTop(model);
+      return sortPrimaryContactToTop(model, children);
     };
 
-    var getChildren = function(contactId) {
-      return DB().query('medic-client/contacts_by_parent', {
-        key: contactId,
-        include_docs: true
-      })
-        .then(function(childrenResponse) {
-          return childrenResponse.rows;
-        })
-        .then(function(children) {
-          var ids = _.compact(children.map(function(child) {
-            return child.doc.contact && child.doc.contact._id;
-          }));
-          return DB().allDocs({ keys: ids, include_docs: true })
-            .then(function(contactsResponse) {
-              children.forEach(function(child) {
-                var contactId = child.doc.contact && child.doc.contact._id;
-                if (contactId) {
-                  var contactRow = _.findWhere(contactsResponse.rows, { id: contactId });
-                  if (contactRow) {
-                    child.doc.contact = contactRow.doc;
-                  }
-                }
-              });
-              return children;
-            });
-        });
+    const getChildren = (contactId, { getChildPlaces } = {}) => {
+      const options = { include_docs: true };
+      if (getChildPlaces) {
+        // get all types
+        options.startkey = [ contactId ];
+        options.endkey = [ contactId, {} ];
+      } else {
+        // just get people
+        options.key = [ contactId, 'person' ];
+      }
+      return DB().query('medic-client/contacts_by_parent', options)
+        .then(response => response.rows);
     };
 
-    var setChildren = function(model) {
+    var loadChildren = function(model, options) {
       model.children = {};
       if (model.doc.type === 'person') {
-        return model;
+        return $q.resolve({});
       }
-      return getChildren(model.doc._id)
+
+      return getChildren(model.doc._id, options)
         .then(splitContactsByType)
         .then(function(children) {
           if (children.places && children.places.length) {
@@ -195,8 +190,7 @@ angular.module('inboxServices').factory('ContactViewModelGenerator',
             children.childPlacesLabel = childPlacesSchema.pluralLabel;
             children.childPlacesIcon = childPlacesSchema.icon;
           }
-          model.children = children;
-          return sortChildren(model);
+          return sortChildren(model, children);
         });
     };
 
@@ -233,7 +227,7 @@ angular.module('inboxServices').factory('ContactViewModelGenerator',
                     report.heading = getHeading(dataRecord);
                   }
                 });
-                
+
                 return reports;
               });
     };
@@ -241,14 +235,9 @@ angular.module('inboxServices').factory('ContactViewModelGenerator',
     var getReports = function(contactDocs) {
       var subjectIds = [];
       contactDocs.forEach(function(doc) {
-        subjectIds.push(doc._id);
-        if (doc.patient_id) {
-          subjectIds.push(doc.patient_id);
-        }
-        if (doc.place_id) {
-          subjectIds.push(doc.place_id);
-        }
+        subjectIds.push(registrationUtils.getSubjectIds(doc));
       });
+      subjectIds = _.flatten(subjectIds);
       return Search('reports', { subjectIds: subjectIds }, { include_docs: true })
         .then(function(reports) {
           reports.forEach(function(report) {
@@ -258,7 +247,7 @@ angular.module('inboxServices').factory('ContactViewModelGenerator',
         });
     };
 
-    var setReports = function(model) {
+    var loadReports = function(model) {
       var contacts = [ model.doc ];
       [ 'persons', 'deceased' ].forEach(function(type) {
         if (model.children[type]) {
@@ -272,18 +261,32 @@ angular.module('inboxServices').factory('ContactViewModelGenerator',
         .then(function(reports) {
           addPatientName(reports, contacts);
           reports.sort(REPORTED_DATE_COMPARATOR);
-          model.reports = reports;
-          return model;
+          return reports;
         });
     };
 
     return function(id, options) {
       return LineageModelGenerator.contact(id, options)
-        .then(setChildren)
-        .then(setReports)
-        .then(setPrimaryContact)
-        .then(setSchemaFields)
-        .then(setMutedState);
+        .then(function(model) {
+          setPrimaryContact(model);
+          setSchemaFields(model);
+          setMutedState(model);
+
+          model.loadingChildren = true;
+          model.loadingReports = true;
+          model.reportLoader = loadChildren(model, options)
+            .then(children => {
+              model.children = children;
+              model.loadingChildren = false;
+              return loadReports(model);
+            })
+            .then(reports => {
+              model.reports = reports;
+              model.loadingReports = false;
+            });
+
+          return model;
+        });
     };
   }
 );

@@ -1,6 +1,6 @@
 const controller = require('../../../src/controllers/records'),
       chai = require('chai'),
-      db = require('../../../src/db-pouch'),
+      db = require('../../../src/db'),
       auth = require('../../../src/auth'),
       recordUtils = require('../../../src/controllers/record-utils'),
       sinon = require('sinon');

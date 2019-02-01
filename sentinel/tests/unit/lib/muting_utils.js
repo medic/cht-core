@@ -409,7 +409,6 @@ describe('mutingUtils', () => {
         }]);
         chai.expect(utils.getReportsBySubject.callCount).to.equal(1);
         chai.expect(utils.getReportsBySubject.args[0]).to.deep.equal([{
-          db: db.medic,
           ids: [
             'my-place', 'my-place-id', 'my-place2', 'my-place3', 'place3',
             'contact1', 'patient1', 'contact2', 'patient2', 'contact3', 'patient3'
@@ -470,7 +469,6 @@ describe('mutingUtils', () => {
 
         chai.expect(utils.getReportsBySubject.callCount).to.equal(1);
         chai.expect(utils.getReportsBySubject.args[0]).to.deep.equal([{
-          db: db.medic,
           ids: [
             'my-place', 'my-place1', 'my-place2', 'my-place4', 'contact4', 'patient4'
           ],
@@ -567,7 +565,6 @@ describe('mutingUtils', () => {
 
         chai.expect(utils.getReportsBySubject.callCount).to.equal(1);
         chai.expect(utils.getReportsBySubject.args[0]).to.deep.equal([{
-          db: db.medic,
           ids: [ 'p2', 'p1', 'my-place', 'contact1', 'patient1', 'contact2', 'patient2' ],
           registrations: true
         }]);
@@ -618,7 +615,6 @@ describe('mutingUtils', () => {
 
         chai.expect(utils.getReportsBySubject.callCount).to.equal(1);
         chai.expect(utils.getReportsBySubject.args[0]).to.deep.equal([{
-          db: db.medic,
           ids: [ 'contact', 'patient' ],
           registrations: true
         }]);
@@ -1206,21 +1202,6 @@ describe('mutingUtils', () => {
       };
 
       mutingUtils.isMutedInLineage(doc2).should.equal(4);
-    });
-  });
-
-  describe('getSubjectIds', () => {
-    it('should return correct values', () => {
-      chai.expect(mutingUtils.getSubjectIds({})).to.deep.equal([]);
-      chai.expect(mutingUtils.getSubjectIds({ _id: 'a' })).to.deep.equal(['a']);
-      chai.expect(mutingUtils.getSubjectIds({ patient_id: 'b' })).to.deep.equal(['b']);
-      chai.expect(mutingUtils.getSubjectIds({ place_id: 'c' })).to.deep.equal(['c']);
-      chai.expect(mutingUtils.getSubjectIds({ _id: '' })).to.deep.equal(['']);
-      chai.expect(mutingUtils.getSubjectIds({ patient_id: false })).to.deep.equal([false]);
-      chai.expect(mutingUtils.getSubjectIds({ place_id: null })).to.deep.equal([null]);
-      chai.expect(mutingUtils.getSubjectIds({ _id: 'a', patient_id: 'b' })).to.deep.equal(['a', 'b']);
-      chai.expect(mutingUtils.getSubjectIds({ _id: 'b', place_id: 'c' })).to.deep.equal(['b', 'c']);
-      chai.expect(mutingUtils.getSubjectIds({ _id: 'd', place_id: 'f', foo: 'bar' })).to.deep.equal(['d', 'f']);
     });
   });
 

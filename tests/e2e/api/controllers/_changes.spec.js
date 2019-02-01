@@ -4,13 +4,15 @@ const _ = require('underscore'),
       http = require('http'),
       querystring = require('querystring'),
       constants = require('../../../constants'),
-      auth = require('../../../auth')();
+      auth = require('../../../auth')(),
+      semver = require('semver');
 
 const DEFAULT_EXPECTED = [
   'appcache',
   'settings',
   'resources',
   'branding',
+  'partners',
   '_design/medic-client'
 ];
 
@@ -27,7 +29,7 @@ function assertChangeIds(changes) {
   });
 
   var expectedIds = Array.prototype.slice.call(arguments, 1);
-  expect(_.pluck(changes, 'id').sort()).toEqual(expectedIds.sort());
+  expect(_.unique(_.pluck(changes, 'id')).sort()).toEqual(expectedIds.sort());
 }
 
 function requestChanges(username, params = {}) {
@@ -174,6 +176,37 @@ const consumeChanges = (username, results, lastSeq) => {
     }
     results = results.concat(changes.results);
     return consumeChanges(username, results, changes.last_seq);
+  });
+};
+
+const batchedChanges = (username, limit, results = [], lastSeq = 0) => {
+  const opts = { since: lastSeq, limit };
+
+  return requestChanges(username, opts).then(changes => {
+    if (!changes.results.length) {
+      return { results: results, last_seq: changes.last_seq };
+    }
+    results = results.concat(changes.results);
+    return batchedChanges(username, limit, results, changes.last_seq);
+  });
+};
+
+const getChangesForIds = (username, docIds, retry = false, lastSeq = 0, limit = 100, results = []) => {
+  return requestChanges(username, { since: lastSeq, limit }).then(changes => {
+    changes.results.forEach(change => {
+      if (docIds.includes(change.id)) {
+        results.push(change);
+      }
+    });
+
+    // simulate PouchDB 7.0.0 seq selection
+    const last_seq = changes.results.length ? changes.results[changes.results.length - 1].seq : changes.last_seq;
+
+    if (docIds.find(id => !results.find(change => change.id === id)) || (retry && changes.results.length)) {
+      return getChangesForIds(username, docIds, retry, last_seq, limit, results);
+    }
+
+    return results;
   });
 };
 
@@ -423,27 +456,108 @@ describe('changes handler', () => {
   });
 
   describe('Filtered replication', () => {
+    const bobsIds = [...DEFAULT_EXPECTED],
+          stevesIds = [...DEFAULT_EXPECTED],
+          couchVersionForBatching = '2.3.0';
+
+    let shouldBatchChangesRequests;
+
+    beforeAll(done => {
+      const options = {
+        hostname: constants.COUCH_HOST,
+        port: constants.COUCH_PORT,
+        auth: auth.user + ':' + auth.pass,
+        path: '/'
+      };
+
+      const req = http.request(options, res => {
+        let body = '';
+        res.on('data', data => body += data);
+        res.on('end', () => {
+          try {
+            body = JSON.parse(body);
+            shouldBatchChangesRequests = semver.lte(couchVersionForBatching, body.version);
+            done();
+          } catch (e) {
+            done(e);
+          }
+        });
+      });
+
+      req.on('error', e => done(e));
+      req.end();
+    });
+
     beforeEach(done => getCurrentSeq().then(done));
 
-    const bobsIds = [...DEFAULT_EXPECTED],
-          stevesIds = [...DEFAULT_EXPECTED];
-
-    it('returns a full list of allowed changes, regardless of the requested limit', () => {
+    it('should successfully fully replicate (with or without limit)', () => {
       const allowedDocs = createSomeContacts(12, 'fixture:bobville');
       bobsIds.push(..._.pluck(allowedDocs, '_id'));
 
       const deniedDocs = createSomeContacts(10, 'irrelevant-place');
       return Promise.all([
-          utils.saveDocs(allowedDocs),
-          utils.saveDocs(deniedDocs)
-        ])
-        .then(() => requestChanges('bob', { limit: 7 }))
+        utils.saveDocs(allowedDocs),
+        utils.saveDocs(deniedDocs)
+      ])
+        .then(() => batchedChanges('bob', 4))
         .then(changes => {
           assertChangeIds(changes,
             'org.couchdb.user:bob',
             'fixture:user:bob',
             'fixture:bobville',
             ..._.without(bobsIds, ...DEFAULT_EXPECTED));
+        });
+    });
+
+    it('depending on CouchDB version, should limit changes requests or specifically ignore limit', () => {
+      const allowedDocs = createSomeContacts(12, 'fixture:bobville');
+      bobsIds.push(..._.pluck(allowedDocs, '_id'));
+      const deniedDocs = createSomeContacts(10, 'irrelevant-place'),
+            expectedIds = [ 'org.couchdb.user:bob', 'fixture:user:bob', 'fixture:bobville'].concat(bobsIds);
+
+      return Promise
+        .all([
+          utils.saveDocs(allowedDocs),
+          utils.saveDocs(deniedDocs)
+        ])
+        .then(() => requestChanges('bob', { limit: 4 }))
+        .then(changes => {
+          if (shouldBatchChangesRequests) {
+            // requests should be limited
+            expect(changes.results.every(change => expectedIds.indexOf(change.id) !== -1 || change.id.startsWith('messages-'))).toBe(true);
+            // because we still process pending changes, it's not a given we will receive only 4 changes.
+            expect(expectedIds.every(id => changes.results.find(change => change.id === id))).toBe(false);
+          } else {
+            // requests should return full changes list
+            assertChangeIds(changes,
+              'org.couchdb.user:bob',
+              'fixture:user:bob',
+              'fixture:bobville',
+              ..._.without(bobsIds, ...DEFAULT_EXPECTED));
+          }
+        });
+    });
+
+    it('normal feeds should replicate correctly when new changes are pushed', () => {
+      const allowedDocs = createSomeContacts(25, 'fixture:bobville'),
+            allowedDocs2 = createSomeContacts(25, 'fixture:bobville');
+
+      const ids = _.pluck(allowedDocs, '_id');
+      ids.push(..._.pluck(allowedDocs2, '_id'));
+
+      const promise = allowedDocs.reduce((promise, doc) => {
+        return promise.then(() => utils.saveDoc(doc));
+      }, Promise.resolve());
+
+      return utils
+        .saveDocs(allowedDocs2)
+        .then(() => Promise.all([
+          promise,
+          getChangesForIds('bob', ids, true, currentSeq, 4),
+        ]))
+        .then(([ p, changes ]) => {
+          expect(ids.every(id => changes.find(change => change.id === id))).toBe(true);
+          expect(changes.some(change => !change.seq)).toBe(false);
         });
     });
 
@@ -681,8 +795,8 @@ describe('changes handler', () => {
                         utils.saveDocs(allowedSteve),
                       ]))
                       .then(resolve);
-                  });
-                }, 1000)
+                  }, 1000);
+                })
               ]);
             })
             .then(([ changes ]) => {
@@ -852,6 +966,65 @@ describe('changes handler', () => {
         .catch(err => {
           expect(err).toBeTruthy();
           expect(err.message.includes('Error processing your changes')).toEqual(true);
+        });
+    });
+
+    it('should return the tombstone of a deleted doc', () => {
+      const contact = createSomeContacts(1, 'fixture:bobville')[0];
+
+      return utils.saveDoc(contact)
+        .then(result => {
+          contact._rev = result.rev;
+          contact._deleted = true;
+
+          return utils.saveDoc(contact);
+        })
+        .then(result => {
+          contact._rev = result.rev;
+          return getChangesForIds('bob', [contact._id], false, currentSeq);
+        })
+        .then(changes => {
+          expect(changes.length).toEqual(1);
+          expect(changes[0].id).toEqual(contact._id);
+          expect(changes[0].deleted).toEqual(true);
+          expect(changes[0].changes[0].rev).toEqual(contact._rev);
+        });
+    });
+
+    it('should not return tombstone of a deleted doc if doc is re-added', () => {
+      const contact = createSomeContacts(1, 'fixture:bobville')[0];
+
+      return utils.saveDoc(contact)
+        .then(result => {
+          contact._rev = result.rev;
+          contact._deleted = true;
+
+          return utils.saveDoc(contact);
+        })
+        .then(result => {
+          contact._rev = result.rev;
+          return getChangesForIds('bob', [contact._id], false, currentSeq);
+        })
+        .then(changes => {
+          expect(changes.length).toEqual(1);
+          expect(changes[0].id).toEqual(contact._id);
+          expect(changes[0].deleted).toEqual(true);
+          expect(changes[0].changes[0].rev).toEqual(contact._rev);
+
+          delete(contact._rev);
+          delete(contact._deleted);
+          return utils.saveDoc(contact);
+        })
+        .then(result => {
+          contact._rev = result.rev;
+
+          return getChangesForIds('bob', [contact._id], false, currentSeq);
+        })
+        .then(changes => {
+          expect(changes.length).toEqual(1);
+          expect(changes[0].id).toEqual(contact._id);
+          expect(changes[0].deleted).toEqual(undefined);
+          expect(changes[0].changes[0].rev).toEqual(contact._rev);
         });
     });
   });

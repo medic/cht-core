@@ -6,6 +6,8 @@
 
   var translator = require('./translator');
 
+  var purger = require('./purger');
+
   var getUserCtx = function() {
     var userCtx, locale;
     document.cookie.split(';').forEach(function(c) {
@@ -61,7 +63,7 @@
     replicator
       .on('change', function(info) {
         console.log('initialReplication()', 'change', info);
-        setUiStatus('FETCH_INFO', info.docs_read || '?');
+        setUiStatus('FETCH_INFO', { count: info.docs_read || '?' });
       });
 
     return replicator
@@ -107,15 +109,16 @@
            hasRole(userCtx, ONLINE_ROLE);
   };
 
-  var setUiStatus = function(translationKey, arg) {
-    var translated = translator.translate(translationKey, arg);
+  var setUiStatus = function(translationKey, args) {
+    var translated = translator.translate(translationKey, args);
     $('.bootstrap-layer .status').text(translated);
   };
 
   var setUiError = function() {
     var errorMessage = translator.translate('ERROR_MESSAGE');
     var tryAgain = translator.translate('TRY_AGAIN');
-    $('.bootstrap-layer').html('<div><p>' + errorMessage + '</p><a class="btn btn-primary" href="#" onclick="window.location.reload(false);">' + tryAgain + '</a></div>');
+    $('.bootstrap-layer').html('<div><p>' + errorMessage + '</p><a id="btn-reload" class="btn btn-primary" href="#">' + tryAgain + '</a></div>');
+    $('#btn-reload').click(() => window.location.reload(false));
   };
 
   var getDdoc = function(localDb) {
@@ -136,47 +139,59 @@
     }
 
     translator.setLocale(userCtx.locale);
-    
+
     var username = userCtx.name;
     var localDbName = getLocalDbName(dbInfo, username);
+
     var localDb = window.PouchDB(localDbName, POUCHDB_OPTIONS.local);
+    var remoteDb = window.PouchDB(dbInfo.remote, POUCHDB_OPTIONS.remote);
+
+    let initialReplicationNeeded;
 
     getDdoc(localDb)
       .then(function() {
-        // ddoc found - bootstrap immediately
-        localDb.close();
-        callback();
+        // ddoc found - no need for initial replication
       })
       .catch(function() {
         // no ddoc found - do replication
-
-        var remoteDb = window.PouchDB(dbInfo.remote, POUCHDB_OPTIONS.remote);
-        initialReplication(localDb, remoteDb)
+        initialReplicationNeeded = true;
+        return initialReplication(localDb, remoteDb)
           .then(function() {
             return getDdoc(localDb).catch(function() {
               throw new Error('Initial replication failed');
             });
-          })
-          .then(function() {
-            // replication complete - bootstrap angular
-            setUiStatus('STARTING_APP');
-          })
-          .catch(function(err) {
-            return err;
-          })
-          .then(function(err) {
-            localDb.close();
-            remoteDb.close();
-            if (err) {
-              if (err.status === 401) {
-                return redirectToLogin(dbInfo, err, callback);
-              }
-
-              setUiError();
-            }
-
-            callback(err);
           });
+      })
+      .then(() => {
+        return purger(localDb, userCtx, initialReplicationNeeded)
+          .on('start', () => setUiStatus('PURGE_INIT'))
+          .on('progress', function(progress) {
+            setUiStatus('PURGE_INFO', {
+              count: progress.purged,
+              percent: Math.floor((progress.processed / progress.total) * 100)
+            });
+          })
+          .on('optimise', () => setUiStatus('PURGE_AFTER'))
+          .catch(console.error);
+      }).then(function() {
+        // replication complete
+        setUiStatus('STARTING_APP');
+      })
+      .catch(function(err) {
+        return err;
+      })
+      .then(function(err) {
+        localDb.close();
+        remoteDb.close();
+        if (err) {
+          if (err.status === 401) {
+            return redirectToLogin(dbInfo, err, callback);
+          }
+
+          setUiError();
+        }
+
+        callback(err);
       });
 
   };

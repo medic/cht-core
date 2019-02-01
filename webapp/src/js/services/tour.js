@@ -74,7 +74,7 @@ angular.module('inboxServices').service('Tour',
 
     var mmOpenDropdown = function(elem) {
       if (!isMobile()) {
-        window.setTimeout(function() {
+        $timeout(function() {
           $(elem).addClass('open');
         }, 1);
       }

@@ -18,6 +18,7 @@ angular
     'use strict';
 
     var lineage = lineageFactory($q, DB());
+    const patient_fields = ['patient_id', 'patient_uuid', 'patient_name'];
 
     var getRegistrations = function(patientId) {
       var options = {
@@ -93,6 +94,7 @@ angular
             isArray: false,
             value: prettyVal(settings, data, key, def, locale),
             label: label,
+            hasUrl: patient_fields.includes(key)
           });
         }
       });
@@ -270,7 +272,7 @@ angular
       // NB: The 5th parameter must be explicitely null to disable sanitization.
       // The result will be sanitized by angular when it's rendered, so using
       // the default sanitization would result in double encoding.
-      // Issue: medic/medic-webapp#4618
+      // Issue: medic/medic#4618
       return $translate.instant(key, ctx, interpolation, locale, null);
     };
 
@@ -312,6 +314,7 @@ angular
           value: value,
           isArray: false,
           generated: true,
+          hasUrl: patient_fields.includes(field)
         });
 
         doc.fields.headers.unshift({

@@ -1,12 +1,10 @@
-const _ = require('underscore'),
-      db = require('../db-pouch'),
+const db = require('../db-pouch'),
       lineage = require('@medic/lineage')(Promise, db.medic),
       utils = require('./utils'),
       moment = require('moment'),
       infodoc = require('./infodoc');
 
-const SUBJECT_PROPERTIES = ['_id', 'patient_id', 'place_id'],
-      BATCH_SIZE = 50;
+const BATCH_SIZE = 50;
 
 const getContact = doc => {
   const contactId = doc.fields &&
@@ -71,7 +69,7 @@ const updateRegistrations = (subjectIds, muted) => {
   }
 
   return utils
-    .getReportsBySubject({ db: db.medic, ids: subjectIds, registrations: true })
+    .getReportsBySubject({ ids: subjectIds, registrations: true })
     .then(registrations => {
       registrations = registrations.filter(registration => updateRegistration(registration, muted));
       if (!registrations.length) {
@@ -80,8 +78,6 @@ const updateRegistrations = (subjectIds, muted) => {
       return db.medic.bulkDocs(registrations);
     });
 };
-
-const getSubjectIds = contact => _.values(_.pick(contact, SUBJECT_PROPERTIES));
 
 const getContactsAndSubjectIds = (contactIds, muted) => {
   return db.medic
@@ -95,7 +91,7 @@ const getContactsAndSubjectIds = (contactIds, muted) => {
           return;
         }
         contacts.push(row.doc);
-        subjectIds.push(...getSubjectIds(row.doc));
+        subjectIds.push(...utils.getSubjectIds(row.doc));
       });
 
       return { contacts, subjectIds };
@@ -205,7 +201,6 @@ module.exports = {
   updateContact: updateContact,
   getContact: getContact,
   updateRegistrations: updateRegistrations,
-  getSubjectIds: getSubjectIds,
   isMutedInLineage: isMutedInLineage,
   unmuteMessages: unmuteMessages,
   muteUnsentMessages: muteUnsentMessages,

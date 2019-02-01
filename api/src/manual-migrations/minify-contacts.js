@@ -1,4 +1,4 @@
-const db = require('../db-pouch').medic,
+const db = require('../db').medic,
       lineage = require('@medic/lineage')(Promise, db);
 
 module.exports = doc => {

@@ -114,7 +114,7 @@ angular
         // TODO: expose some device information in the medic-android wrapper
         // and pull it in here. Device memory, phone type, stuff like that
         //
-        // https://github.com/medic/medic-webapp/issues/4882
+        // https://github.com/medic/medic/issues/4882
       };
     };
 
@@ -197,7 +197,7 @@ angular
       // stored in the user's meta DB (which replicates up to the main server)
       //
       // TODO: get all telemetry docs aggregate script, document it's existance here
-      //    https://github.com/medic/medic-webapp/issues/4968
+      //    https://github.com/medic/medic/issues/4968
       //
       // NOTE: While this function returns a promise, this is primarily for
       // testing. It is not recommended you hold on to this promise and wait

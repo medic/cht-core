@@ -1,0 +1,8 @@
+{
+	"icon": "on",
+	"context": {
+		"person": false,
+		"place": true,
+		"expression": "!contact || (contact.type === 'district_hospital')"
+	}
+}

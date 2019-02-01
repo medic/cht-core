@@ -27,7 +27,7 @@ require('angular-translate');
 require('angular-translate-interpolation-messageformat');
 require('angular-translate-handler-log');
 require('angular-ui-bootstrap');
-require('@uirouter/angularjs');
+var uiRouter = require('@uirouter/angularjs').default;
 
 require('moment');
 require('moment/locale/bm');
@@ -58,7 +58,7 @@ _.templateSettings = {
     'ipCookie',
     'ngRoute',
     'ui.bootstrap',
-    'ui.router',
+    uiRouter,
     'inboxDirectives',
     'inboxFilters',
     'inboxControllers',
@@ -80,7 +80,7 @@ _.templateSettings = {
     $urlRouterProvider.otherwise('/error/404');
     router($stateProvider);
     $urlRouterProvider.when('', '/home');
-    $urlRouterProvider.when('/messages/{uuid}', '/messages/contact:{uuid}');
+    $urlRouterProvider.when('/messages/{uuid:[^:]*}', '/messages/contact:{uuid}');
     $translateProvider.useLoader('TranslationLoader', {});
     $translateProvider.useSanitizeValueStrategy('escape');
     $translateProvider.addInterpolation('$translateMessageFormatInterpolation');
@@ -129,10 +129,10 @@ _.templateSettings = {
   };
 
   // Detects reloads or route updates (#/something)
-  app.run(function($rootScope, $state, Auth) {
-    $rootScope.$on('$stateChangeStart', function(event, toState) {
-      if (toState.name.indexOf('error') === -1) {
-        var permission = getRequiredPermission(toState.name);
+  app.run(function($rootScope, $state, $transitions, Auth) {
+    $transitions.onStart({}, function(trans) {
+      if (trans.to().name.indexOf('error') === -1) {
+        var permission = getRequiredPermission(trans.to().name);
         if (permission) {
           Auth(permission).catch(function() {
             $state.go('error', { code: 403 });
@@ -147,7 +147,7 @@ _.templateSettings = {
       if (err.redirect) {
         window.location.href = err.redirect;
       } else {
-        console.error('Error fetching ddoc from remote server', err);
+        console.error('Error bootstrapping', err);
         setTimeout(function() {
           // retry initial replication automatically after one minute
           window.location.reload(false);

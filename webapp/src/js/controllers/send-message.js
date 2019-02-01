@@ -11,24 +11,19 @@ angular.module('inboxControllers').controller('SendMessageCtrl',
     ContactSchema,
     Select2Search,
     SendMessage,
-    Settings
+    Settings,
+    Translate
   ) {
     'ngInject';
     'use strict';
 
     $scope.error = {};
 
-    var translateRequiredField = function(fieldKey) {
-      return $translate(fieldKey).then(function(field) {
-        return $translate('field is required', { field: field });
-      });
-    };
-
     var validateMessage = function(message) {
       if (message) {
         $scope.error.message = false;
       } else {
-        return translateRequiredField('tasks.0.messages.0.message')
+        return Translate.fieldIsRequired('tasks.0.messages.0.message')
           .then(function(error) {
             $scope.error.message = error;
           });
@@ -50,7 +45,7 @@ angular.module('inboxControllers').controller('SendMessageCtrl',
 
       // recipients is mandatory
       if (!recipients || recipients.length === 0) {
-        return translateRequiredField('tasks.0.messages.0.to')
+        return Translate.fieldIsRequired('tasks.0.messages.0.to')
           .then(function(error) {
             $scope.error.phone = error;
           });

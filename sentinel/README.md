@@ -33,7 +33,7 @@ export COUCH_URL='http://myAdminUser:myAdminPass@localhost:5984/medic'
 ```
 
 Throughout this document we will be referring to `ddoc`. Here we mean the
-currently deployed `_design/medic` ddoc from medic-webapp.
+currently deployed `_design/medic` ddoc from the medic app.
 
 Default settings values are in `defaults.js`.  On initial start, and when there
 are changes to the ddoc, sentinel reads `ddoc.app_settings` to determine

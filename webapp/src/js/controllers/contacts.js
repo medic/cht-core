@@ -7,13 +7,11 @@ var _ = require('underscore'),
   var inboxControllers = angular.module('inboxControllers');
 
   inboxControllers.controller('ContactsCtrl', function(
-    $element,
     $log,
     $q,
     $scope,
     $state,
     $stateParams,
-    $timeout,
     $translate,
     Auth,
     Changes,
@@ -36,6 +34,8 @@ var _ = require('underscore'),
 
     var liveList = LiveList.contacts;
 
+    LiveList.$init($scope, 'contacts', 'contact-search');
+
     $scope.loading = true;
     $scope.selected = null;
     $scope.filters = {};
@@ -51,7 +51,10 @@ var _ = require('underscore'),
     var _initScroll = function() {
       scrollLoader.init(function() {
         if (!$scope.loading && $scope.moreItems) {
-          _query({ skip: true });
+          _query({
+            paginating: true,
+            reuseExistingDom: true,
+          });
         }
       });
     };
@@ -65,7 +68,7 @@ var _ = require('underscore'),
         $scope.error = false;
       }
 
-      if (options.skip) {
+      if (options.paginating) {
         $scope.appending = true;
         options.skip = liveList.count();
       } else if (!options.silent) {
@@ -146,8 +149,11 @@ var _ = require('underscore'),
           $scope.moreItems = liveList.moreItems =
             contacts.length >= options.limit;
 
-          contacts.forEach(liveList.update);
-          liveList.refresh();
+          const mergedList = options.paginating ?
+            _.uniq(contacts.concat(liveList.getList()), false, _.property('_id'))
+            : contacts;
+          liveList.set(mergedList, !!options.reuseExistingDom);
+
           _initScroll();
           $scope.loading = false;
           $scope.appending = false;
@@ -209,13 +215,12 @@ var _ = require('underscore'),
       } else {
         title = ContactSchema.get(selected.doc.type).label;
       }
+      $scope.loadingSummary = true;
       return $q
         .all([
           $translate(title),
           getActionBarDataForChild(selectedDoc.type),
           getCanEdit(selectedDoc),
-          ContactSummary(selected.doc, selected.reports, selected.lineage),
-          Settings()
         ])
         .then(function(results) {
           $scope.setTitle(results[0]);
@@ -223,38 +228,58 @@ var _ = require('underscore'),
             selectedDoc.child = results[1];
           }
           var canEdit = results[2];
-          var summary = results[3];
-          $scope.selected.summary = summary;
-          var options = { doc: selectedDoc, contactSummary: summary.context };
-          XmlForms('ContactsCtrl', options, function(err, forms) {
-            if (err) {
-              $log.error('Error fetching relevant forms', err);
-            }
-            var showUnmuteModal = function(formId) {
-              return $scope.selected.doc.muted && !isUnmuteForm(results[4], formId);
-            };
-            var formSummaries =
-              forms &&
-              forms.map(function(xForm) {
-                return {
-                  code: xForm.internalId,
-                  title: translateTitle(xForm.translation_key, xForm.title),
-                  icon: xForm.icon,
-                  showUnmuteModal: showUnmuteModal(xForm.internalId)
+
+          $scope.setRightActionBar({
+            relevantForms: [], // this disables the "New Action" button in action bar until full load is complete
+            selected: [selectedDoc],
+            sendTo: selectedDoc.type === 'person' ? selectedDoc : '',
+            canDelete: false, // this disables the "Delete" button in action bar until full load is complete
+            canEdit: canEdit,
+          });
+
+          return selected.reportLoader.then(function() {
+            return $q.all([
+              ContactSummary(selected.doc, selected.reports, selected.lineage),
+              Settings()
+            ])
+            .then(function(results) {
+              $scope.loadingSummary = false;
+              var summary = results[0];
+              $scope.selected.summary = summary;
+              var options = { doc: selectedDoc, contactSummary: summary.context };
+              XmlForms('ContactsCtrl', options, function(err, forms) {
+                if (err) {
+                  $log.error('Error fetching relevant forms', err);
+                }
+                var showUnmuteModal = function(formId) {
+                  return $scope.selected.doc &&
+                         $scope.selected.doc.muted &&
+                         !isUnmuteForm(results[1], formId);
                 };
+                var formSummaries =
+                  forms &&
+                  forms.map(function(xForm) {
+                    return {
+                      code: xForm.internalId,
+                      title: translateTitle(xForm.translation_key, xForm.title),
+                      icon: xForm.icon,
+                      showUnmuteModal: showUnmuteModal(xForm.internalId)
+                    };
+                  });
+                var canDelete =
+                  !selected.children ||
+                  ((!selected.children.places ||
+                    selected.children.places.length === 0) &&
+                    (!selected.children.persons ||
+                      selected.children.persons.length === 0));
+                $scope.setRightActionBar({
+                  selected: [selectedDoc],
+                  relevantForms: formSummaries,
+                  sendTo: selectedDoc.type === 'person' ? selectedDoc : '',
+                  canEdit: canEdit,
+                  canDelete: canDelete,
+                });
               });
-            var canDelete =
-              !selected.children ||
-              ((!selected.children.places ||
-                selected.children.places.length === 0) &&
-                (!selected.children.persons ||
-                  selected.children.persons.length === 0));
-            $scope.setRightActionBar({
-              selected: [selectedDoc],
-              relevantForms: formSummaries,
-              sendTo: selectedDoc.type === 'person' ? selectedDoc : '',
-              canEdit: canEdit,
-              canDelete: canDelete,
             });
           });
         })
@@ -266,20 +291,14 @@ var _ = require('underscore'),
         });
     };
 
-    var clearSelection = function() {
-      $scope.selected = null;
-      LiveList.contacts.clearSelected();
-      LiveList['contact-search'].clearSelected();
-    };
-
     $scope.$on('ClearSelected', function() {
-      clearSelection();
+      $scope.clearSelection();
     });
 
     $scope.search = function() {
       if($scope.filters.search) {
         $state.go('contacts.detail', { id: null }, { notify: false });
-        clearSelection();
+        $scope.clearSelection();
       }
 
       $scope.loading = true;
@@ -408,12 +427,6 @@ var _ = require('underscore'),
       return setupPromise;
     };
 
-    $scope.$on('$stateChangeStart', function(event, toState) {
-      if (toState.name.indexOf('contacts') === -1) {
-        $scope.unsetSelected();
-      }
-    });
-
     var isRelevantVisitReport = function(doc) {
       var isRelevantDelete = doc._deleted && isSortedByLastVisited();
       return (
@@ -430,16 +443,30 @@ var _ = require('underscore'),
     var changeListener = Changes({
       key: 'contacts-list',
       callback: function(change) {
-        var limit = liveList.count();
+        const limit = liveList.count();
         if (change.deleted && change.doc.type !== 'data_record') {
           liveList.remove(change.doc);
         }
 
-        var withIds =
+        if (change.doc) {
+          liveList.invalidateCache(change.doc._id);
+
+          // Invalidate the contact for changing reports with visited_contact_uuid
+          if (change.doc.fields) {
+            liveList.invalidateCache(change.doc.fields.visited_contact_uuid);
+          }
+        }
+
+        const withIds =
           isSortedByLastVisited() &&
           !!isRelevantVisitReport(change.doc) &&
           !change.deleted;
-        return _query({ limit: limit, silent: true, withIds: withIds });
+        return _query({
+          limit,
+          withIds,
+          silent: true,
+          reuseExistingDom: true,
+        });
       },
       filter: function(change) {
         return (
@@ -450,7 +477,12 @@ var _ = require('underscore'),
       },
     });
 
-    $scope.$on('$destroy', changeListener.unsubscribe);
+    $scope.$on('$destroy', function () {
+      changeListener.unsubscribe();
+      if (!$state.includes('contacts')) {
+        LiveList.$reset('contacts', 'contact-search');
+      }
+    });
 
     if ($stateParams.tour) {
       Tour.start($stateParams.tour);
