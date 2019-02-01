@@ -1,6 +1,5 @@
 const moment = require('moment');
 const db = require('../../db');
-const MAX_CHARS = 32767; // libre office limit of chars per cell but it seems reasonable
 
 const formatDate = date => {
   if (!date) {
@@ -11,9 +10,7 @@ const formatDate = date => {
 
 const safeStringify = obj => {
   try {
-    return JSON.stringify(obj)
-      .replace(/,/g, '\\,')
-      .substring(0, MAX_CHARS);
+    return JSON.stringify(obj).replace(/,/g, '\\,');
   } catch (e) {
     return obj;
   }
