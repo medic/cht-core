@@ -35,7 +35,7 @@ describe('ContactViewModelGenerator service', () => {
     }));
   };
 
-  const stubDbQueryChildren = (err, parentId, docs = [], contacts = []) => {
+  const stubDbQueryChildren = (err, parentId, docs = []) => {
     const options = {
       startkey: [parentId],
       endkey: [parentId, {}],
@@ -47,9 +47,6 @@ describe('ContactViewModelGenerator service', () => {
     };
     docs = docs.map(doc => {
       return { doc: doc };
-    });
-    contacts = contacts.map(doc => {
-      return { id: doc._id, doc: { name: doc.name }};
     });
     dbQuery.withArgs('medic-client/contacts_by_parent', options)
       .returns(KarmaUtils.promise(err, { rows: docs }));
@@ -118,12 +115,12 @@ describe('ContactViewModelGenerator service', () => {
   }
 
   describe('Place', () => {
-    const runPlaceTest = (childrenArray, contactsArray) => {
+    const runPlaceTest = (childrenArray) => {
       stubLineageModelGenerator(null, doc);
       stubDbGet(null, childContactPerson);
       stubSearch(null, []);
       stubGetDataRecords(null, []);
-      stubDbQueryChildren(null, doc._id, childrenArray, contactsArray);
+      stubDbQueryChildren(null, doc._id, childrenArray);
       return service(doc._id)
         .then(waitForModelToLoad);
     };
@@ -165,7 +162,7 @@ describe('ContactViewModelGenerator service', () => {
     });
 
     it('contact person loaded from children', () => {
-      return runPlaceTest([childContactPerson], []).then(model => {
+      return runPlaceTest([childContactPerson]).then(model => {
           assert.equal(dbGet.callCount, 0);
           assert.equal(model.children.persons.length, 1);
           const firstPerson = model.children.persons[0];
@@ -450,7 +447,7 @@ describe('ContactViewModelGenerator service', () => {
       stubDbGet(null, {});
       stubSearch(null, []);
       stubGetDataRecords(null, []);
-      stubDbQueryChildren(null, doc._id, [], []);
+      stubDbQueryChildren(null, doc._id, []);
       return service(doc._id);
     };
 

@@ -16,7 +16,7 @@
     "no-console": "off",
     "no-extra-boolean-cast": "off",
     "no-undef": "error",
-    "no-unused-vars": "off",
+    "no-unused-vars": "error",
     "no-useless-escape": "off",
     "semi": [
       "error",

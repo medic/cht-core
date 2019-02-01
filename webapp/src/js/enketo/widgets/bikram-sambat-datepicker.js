@@ -64,9 +64,7 @@ define( function( require, exports, module ) {
             });
     };
 
-    Bikramsambatdatepicker.prototype.destroy = function( element ) {
-        /* jshint unused:false */
-    };
+    Bikramsambatdatepicker.prototype.destroy = function( element ) {};  // eslint-disable-line no-unused-vars
 
     $.fn[ pluginName ] = function( options, event ) {
         return this.each( function() {

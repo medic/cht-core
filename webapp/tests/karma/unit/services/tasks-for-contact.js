@@ -2,7 +2,6 @@ describe('TasksForContact service', function() {
   'use strict';
 
   var childPersonId,
-    childPersonId2,
     docId,
     rulesEngine,
     rulesEngineListen,
@@ -14,7 +13,6 @@ describe('TasksForContact service', function() {
 
     docId = 'dockyMcDocface';
     childPersonId = 'hillary';
-    childPersonId2 = 'donald';
 
     var log = { error: console.error, debug: console.info };
     module(function($provide) {

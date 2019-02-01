@@ -64,9 +64,7 @@ define( function( require, exports, module ) {
         new TimerAnimation(canvas[0], DIM, DIM, parseInt($el.val()) || DEFAULT_TIME);
     };
 
-    Timerwidget.prototype.destroy = function( element ) {
-        /* jshint unused:false */
-    };
+    Timerwidget.prototype.destroy = function( element ) {};  // eslint-disable-line no-unused-vars
 
     $.fn[ pluginName ] = function( options, event ) {
         return this.each( function() {

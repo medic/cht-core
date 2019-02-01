@@ -1,5 +1,4 @@
-var _ = require('underscore'),
-    {promisify} = require('util'),
+var {promisify} = require('util'),
     db = require('../db'),
     environment = require('../environment'),
     logger = require('../logger'),

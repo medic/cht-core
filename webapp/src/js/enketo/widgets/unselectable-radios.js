@@ -52,9 +52,7 @@ define( function( require, exports, module ) {
         $( this.element ).addClass( 'no-unselect' );
     };
 
-    Unselectableradios.prototype.destroy = function( element ) {
-        /* jshint unused:false */
-    };
+    Unselectableradios.prototype.destroy = function( element ) {};  // eslint-disable-line no-unused-vars
 
     $.fn[ pluginName ] = function( options, event ) {
         return this.each( function() {

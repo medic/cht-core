@@ -389,14 +389,6 @@ var feedback = require('../modules/feedback'),
     };
     updateAvailableFacilities();
 
-    var findIdInContactHierarchy = function(id, hierarchy) {
-      return _.find(hierarchy, function(entry) {
-        return (
-          entry.doc._id === id || findIdInContactHierarchy(id, entry.children)
-        );
-      });
-    };
-
     Changes({
       key: 'inbox-facilities',
       filter: function(change) {

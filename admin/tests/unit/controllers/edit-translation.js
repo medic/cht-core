@@ -5,10 +5,7 @@ describe('EditTranslationCtrl controller', function() {
   var createController,
       rootScope,
       scope,
-      translateFilter,
-      Settings,
       uibModalInstance,
-      UpdateSettings,
       bulkDocs,
       model;
 
@@ -17,10 +14,7 @@ describe('EditTranslationCtrl controller', function() {
   beforeEach(inject(function($rootScope, $controller) {
     scope = $rootScope.$new();
     rootScope = $rootScope;
-    translateFilter = sinon.stub();
     uibModalInstance = sinon.stub();
-    Settings = sinon.stub();
-    UpdateSettings = sinon.stub();
     bulkDocs = sinon.stub();
     model = {};
     createController = function() {

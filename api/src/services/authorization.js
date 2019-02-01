@@ -52,7 +52,7 @@ const exclude = (array, ...values) => {
 // @param   {Array}   authorizationContext.subjectIds - allowed subjectIds.
 // @param   {Array}   viewValues.contactsByDepth - results of `medic/contacts_by_depth` view against doc
 // @returns {Boolean} whether new subjectIds were added to authorizationContext
-const updateContext = (allowed, authorizationContext, { replicationKeys, contactsByDepth }) => {
+const updateContext = (allowed, authorizationContext, { contactsByDepth }) => {
   if (contactsByDepth && contactsByDepth.length) {
     //first element of `contactsByDepth` contains both `subjectId` and `docID`
     const [[[ docId ], subjectId ]] = contactsByDepth;

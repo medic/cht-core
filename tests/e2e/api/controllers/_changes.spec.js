@@ -552,10 +552,10 @@ describe('changes handler', () => {
       return utils
         .saveDocs(allowedDocs2)
         .then(() => Promise.all([
-          promise,
           getChangesForIds('bob', ids, true, currentSeq, 4),
+          promise,
         ]))
-        .then(([ p, changes ]) => {
+        .then(([ changes ]) => {
           expect(ids.every(id => changes.find(change => change.id === id))).toBe(true);
           expect(changes.some(change => !change.seq)).toBe(false);
         });
