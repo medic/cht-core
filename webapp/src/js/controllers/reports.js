@@ -489,7 +489,7 @@ angular
             $link.removeClass('mm-icon-disabled');
           }, 2000);
 
-          Export(exportFilters, 'reports');
+          Export('reports', exportFilters);
         },
       });
     };

@@ -8,10 +8,7 @@ angular.module('controllers').controller('ExportMessagesCtrl',
     'ngInject';
 
     $scope.export = function() {
-      $scope.exporting = true;
-      Export({}, 'messages').then(function() {
-        $scope.exporting = false;
-      });
+      Export('messages');
     };
 
   }
