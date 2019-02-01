@@ -4,8 +4,6 @@ var _ = require('underscore'),
   DDOC_PREFIX = ['_design/'],
   META_SYNC_FREQUENCY = 30 * 60 * 1000; // 30 minutes
 
-const LAST_REPLICATED_SEQ_KEY = require('../bootstrapper/purger').LAST_REPLICATED_SEQ_KEY;
-
 angular
   .module('inboxServices')
   .factory('DBSync', function($interval, $log, $q, $window, Auth, DB, Session) {
@@ -133,10 +131,6 @@ angular
       return $q.all([
         replicateFrom(updateListener),
         replicateTo(updateListener),
-      ]).then(() => {
-        return DB().info().then(dbInfo => {
-          $window.localStorage.setItem(LAST_REPLICATED_SEQ_KEY, dbInfo.update_seq);
-        });
-      });
+      ]);
     };
   });
