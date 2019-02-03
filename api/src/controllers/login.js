@@ -143,6 +143,12 @@ const setUserCtxCookie = (res, userCtx) => {
   res.cookie('userCtx', JSON.stringify(userCtx), options);
 };
 
+const setLocaleCookie = (res, locale) => {
+  const options = getCookieOptions();
+  options.maxAge = ONE_YEAR;
+  res.cookie('locale', locale, options);
+};
+
 const setCookies = (req, res, sessionRes) => {
   const sessionCookie = getSessionCookie(sessionRes);
   if (!sessionCookie) {
@@ -155,7 +161,10 @@ const setCookies = (req, res, sessionRes) => {
     .then(userCtx => {
       setSessionCookie(res, sessionCookie);
       setUserCtxCookie(res, userCtx);
-      res.json({ success: true });
+      return auth.getUserSettings(userCtx).then(settings => {
+        setLocaleCookie(res, settings.language);
+        res.json({ success: true });
+      });
     })
     .catch(err => {
       logger.error(`Error getting authCtx ${err}`);
