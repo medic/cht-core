@@ -6,6 +6,7 @@ const fs = require('fs'),
   auth = require('../auth'),
   db = require('../db-nano'),
   config = require('../config'),
+  cookie = require('../services/cookie'),
   SESSION_COOKIE_RE = /AuthSession\=([^;]*);/,
   ONE_YEAR = 31536000000,
   logger = require('../logger'),
@@ -66,7 +67,8 @@ const getLoginTemplate = callback => {
   );
 };
 
-const renderLogin = (redirect, callback) => {
+const renderLogin = (req, redirect, callback) => {
+  const locale = cookie.get(req, 'locale');
   getLoginTemplate((err, template) => {
     if (err) {
       return callback(err);
@@ -78,12 +80,12 @@ const renderLogin = (redirect, callback) => {
         name: 'Medic Mobile',
       },
       translations: {
-        login: config.translate('login'),
-        loginerror: config.translate('login.error'),
-        loginincorrect: config.translate('login.incorrect'),
-        loginoffline: config.translate('online.action.message'),
-        username: config.translate('User Name'),
-        password: config.translate('Password'),
+        login: config.translate('login', locale),
+        loginerror: config.translate('login.error', locale),
+        loginincorrect: config.translate('login.incorrect', locale),
+        loginoffline: config.translate('online.action.message', locale),
+        username: config.translate('User Name', locale),
+        password: config.translate('Password', locale),
       },
     });
     callback(null, body);
@@ -184,7 +186,7 @@ module.exports = {
         res.redirect(redirect);
       })
       .catch(() => {
-        renderLogin(redirect, (err, body) => {
+        renderLogin(req, redirect, (err, body) => {
           if (err) {
             logger.error('Could not find login page');
             return next(err);

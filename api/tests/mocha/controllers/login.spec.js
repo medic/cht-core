@@ -2,6 +2,7 @@ const controller = require('../../../src/controllers/login'),
       chai = require('chai'),
       db = require('../../../src/db-nano'),
       auth = require('../../../src/auth'),
+      cookie = require('../../../src/services/cookie'),
       sinon = require('sinon'),
       config = require('../../../src/config'),
       request = require('request'),
@@ -119,13 +120,17 @@ describe('login controller', () => {
       const getUserCtx = sinon.stub(auth, 'getUserCtx').rejects('not logged in');
       const send = sinon.stub(res, 'send');
       const readFile = sinon.stub(fs, 'readFile').callsArgWith(2, null, 'LOGIN PAGE GOES HERE. {{translations.login}}');
-      sinon.stub(config, 'translate').returns('TRANSLATED VALUE.');
+      const translate = sinon.stub(config, 'translate').returns('TRANSLATED VALUE.');
+      const cookieGet = sinon.stub(cookie, 'get').returns('es');
       controller.get(req, res).then(() => {
         chai.expect(getUserCtx.callCount).to.equal(1);
         chai.expect(getUserCtx.args[0][0]).to.deep.equal(req);
         chai.expect(send.callCount).to.equal(1);
         chai.expect(send.args[0][0]).to.equal('LOGIN PAGE GOES HERE. TRANSLATED VALUE.');
         chai.expect(readFile.callCount).to.equal(1);
+        chai.expect(translate.args[0][1]).to.equal('es');
+        chai.expect(cookieGet.callCount).to.equal(1);
+        chai.expect(cookieGet.args[0][1]).to.equal('locale');
       });
     });
 
