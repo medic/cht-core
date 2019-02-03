@@ -1085,8 +1085,8 @@ module.exports = function(grunt) {
     'build-admin',
     'static-analysis',
     'install-dependencies',
-    'unit',
     'mochaTest:api-integration',
+    'unit',
     'exec:test-standard'
   ]);
 
