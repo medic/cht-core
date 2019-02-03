@@ -46,7 +46,6 @@ class BaseConfig {
         afterEach(() => {
           browser.manage().logs().get('browser').then(logs => {
             const formatted = logs
-              .filter(log => log.level.value_ > 900)
               .map(log => `[${log.level.name_}] ${log.message}\n`)
               .forEach(log => browserLogStream.write(log));
             browserLogStream.write('\n~~~~~~~~~~~~~~~~~~~~~\n\n');
