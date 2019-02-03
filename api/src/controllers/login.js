@@ -7,6 +7,7 @@ const fs = require('fs'),
   auth = require('../auth'),
   environment = require('../environment'),
   config = require('../config'),
+  cookie = require('../services/cookie'),
   SESSION_COOKIE_RE = /AuthSession\=([^;]*);/,
   ONE_YEAR = 31536000000,
   logger = require('../logger'),
@@ -54,19 +55,20 @@ const getLoginTemplate = () => {
     .then(data => _.template(data));
 };
 
-const renderLogin = (redirect, branding) => {
+const renderLogin = (req, redirect, branding) => {
+  const locale = cookie.get(req, 'locale');
   return getLoginTemplate().then(template => {
     return template({
       action: path.join('/', environment.db, 'login'),
       redirect: redirect,
       branding: branding,
       translations: {
-        login: config.translate('login'),
-        loginerror: config.translate('login.error'),
-        loginincorrect: config.translate('login.incorrect'),
-        loginoffline: config.translate('online.action.message'),
-        username: config.translate('User Name'),
-        password: config.translate('Password'),
+        login: config.translate('login', locale),
+        loginerror: config.translate('login.error', locale),
+        loginincorrect: config.translate('login.incorrect', locale),
+        loginoffline: config.translate('online.action.message', locale),
+        username: config.translate('User Name', locale),
+        password: config.translate('Password', locale),
       },
     });
   });
@@ -196,7 +198,7 @@ module.exports = {
       })
       .catch(() => {
         return getBranding()
-          .then(branding => renderLogin(redirect, branding))
+          .then(branding => renderLogin(req, redirect, branding))
           .then(body => res.send(body))
           .catch(next);
       });
