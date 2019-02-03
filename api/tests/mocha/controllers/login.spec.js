@@ -192,6 +192,7 @@ describe('login controller', () => {
       const cookie = sinon.stub(res, 'cookie').returns(res);
       const userCtx = { name: 'shazza', roles: [ 'project-stuff' ] };
       const getUserCtx = sinon.stub(auth, 'getUserCtx').resolves(userCtx);
+      sinon.stub(auth, 'getUserSettings').resolves({ language: 'es' });
       return controller.post(req, res).then(() => {
         chai.expect(post.callCount).to.equal(1);
         chai.expect(post.args[0][0].url).to.equal('http://test.com:1234/_session');
@@ -203,13 +204,16 @@ describe('login controller', () => {
         chai.expect(getUserCtx.args[0][0].headers.Cookie).to.equal('AuthSession=abc;');
         chai.expect(json.callCount).to.equal(1);
         chai.expect(json.args[0][0]).to.deep.equal({ success: true });
-        chai.expect(cookie.callCount).to.equal(2);
+        chai.expect(cookie.callCount).to.equal(3);
         chai.expect(cookie.args[0][0]).to.equal('AuthSession');
         chai.expect(cookie.args[0][1]).to.equal('abc');
         chai.expect(cookie.args[0][2]).to.deep.equal({ sameSite: 'lax', secure: false, httpOnly: true });
         chai.expect(cookie.args[1][0]).to.equal('userCtx');
         chai.expect(cookie.args[1][1]).to.equal(JSON.stringify(userCtx));
         chai.expect(cookie.args[1][2]).to.deep.equal({ sameSite: 'lax', secure: false, maxAge: 31536000000 });
+        chai.expect(cookie.args[2][0]).to.equal('locale');
+        chai.expect(cookie.args[2][1]).to.equal('es');
+        chai.expect(cookie.args[2][2]).to.deep.equal({ sameSite: 'lax', secure: false, maxAge: 31536000000 });
       });
     });
 
