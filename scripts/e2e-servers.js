@@ -1,6 +1,7 @@
 #!/usr/bin/env node
 
 const fs = require('fs');
+const path = require('path');
 const { fork } = require('child_process');
 
 const constants = require('./../tests/constants');
@@ -26,9 +27,10 @@ const startServer = serviceName => new Promise((resolve, reject) => {
   try {
     const logStream = fs.createWriteStream(`tests/logs/${serviceName}.e2e.log`, { flags:'w' });
 
-    const server = fork(`${serviceName}/server.js`, {
+    const server = fork(`server.js`, {
       stdio: 'pipe',
       detached: false,
+      cwd: path.join(process.cwd(), serviceName),
       env: {
         TZ: 'UTC',
         API_PORT: constants.API_PORT,

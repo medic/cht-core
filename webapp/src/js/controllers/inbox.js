@@ -764,12 +764,12 @@ var feedback = require('../modules/feedback'),
         return (
           change.id === '_design/medic' ||
           change.id === '_design/medic-client' ||
-          change.id === 'serviceWorkerMeta' ||
+          change.id === 'service-worker-meta' ||
           change.id === 'settings'
         );
       },
       callback: function(change) {
-        if (change.id === 'serviceWorkerMeta') {
+        if (change.id === 'service-worker-meta') {
           UpdateServiceWorker(showUpdateReady);
         } else {
           showUpdateReady();

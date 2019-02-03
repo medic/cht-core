@@ -155,7 +155,7 @@ const deleteAll = (except = []) => {
       ['translations', 'translations-backup', 'user-settings', 'info'].includes(
         doc.type
       ),
-    'serviceWorkerMeta',
+    'service-worker-meta',
     constants.USER_CONTACT_ID,
     'migration-log',
     'resources',
@@ -506,6 +506,9 @@ module.exports = {
     `http://${auth.user}:${auth.pass}@${constants.COUCH_HOST}:${
       constants.COUCH_PORT
     }/${constants.DB_NAME}`,
+
+  getOrigin: () =>
+    `http://${constants.API_HOST}:${constants.API_PORT}`,
 
   getBaseUrl: () =>
     `http://${constants.API_HOST}:${constants.API_PORT}/${

@@ -6,7 +6,7 @@ const swPrecache = require('sw-precache');
 const path = require('path');
 
 function registerServiceWorkerTasks(grunt) {
-  grunt.registerMultiTask('generateServiceWorker', function() {
+  grunt.registerMultiTask('generate-service-worker', function() {
     const done = this.async();
     const { staticDirectoryPath, rootUrl, scriptOutputPath } = this.data;
     writeServiceWorkerFile(staticDirectoryPath, rootUrl, scriptOutputPath)

@@ -140,7 +140,7 @@
 
     translator.setLocale(userCtx.locale);
 
-    const onServiceWorkerInstalling = () => setUiStatus('LOAD_APP');
+    const onServiceWorkerInstalling = () => setUiStatus('DOWNLOAD_APP');
     const swRegistration = registerServiceWorker(onServiceWorkerInstalling);
 
     const localDbName = getLocalDbName(dbInfo, userCtx.name);
@@ -149,48 +149,6 @@
 
     const testReplicationNeeded = () => getDdoc(localDb).then(() => false).catch(() => true);
 
-<<<<<<< HEAD
-        // no ddoc found - do replication
-        var remoteDb = window.PouchDB(dbInfo.remote, POUCHDB_OPTIONS.remote);
-        initialReplicationNeeded = true;
-        initialReplication(localDb, remoteDb)
-          .then(function() {
-            return getDdoc(localDb).catch(function() {
-              throw new Error('Initial replication failed');
-            });
-<<<<<<< HEAD
-          });
-      })
-      .then(() => {
-        return purger(localDb, userCtx, initialReplicationNeeded)
-          .on('start', () => setUiStatus('PURGE_INIT'))
-          .on('progress', function(progress) {
-            setUiStatus('PURGE_INFO', {
-              count: progress.purged,
-              percent: Math.floor((progress.processed / progress.total) * 100)
-            });
-=======
->>>>>>> Replace appcache with service worker
-          })
-          .then(() => {
-            return purger(localDb, userCtx, initialReplicationNeeded)
-              .on('start', () => setUiStatus('PURGE_INIT'))
-              .on('progress', function(progress) {
-                setUiStatus('PURGE_INFO', progress);
-              })
-              .on('optimise', () => setUiStatus('PURGE_AFTER'))
-              .catch(console.error);
-          })
-          // replication complete
-          .then(() => setUiStatus('STARTING_APP'))
-          .catch(err => err)
-          .then(function(err) {
-            localDb.close();
-            remoteDb.close();
-            if (err) {
-              if (err.status === 401) {
-                return redirectToLogin(dbInfo, err, callback);
-=======
     let isInitialReplicationNeeded;
     Promise.all([swRegistration, testReplicationNeeded()])
       .then(function(resolved) {
@@ -202,7 +160,6 @@
             .then(isReplicationStillNeeded => {
               if (isReplicationStillNeeded) {
                 throw new Error('Initial replication failed');
->>>>>>> Cleanup merge of purge changes
               }
             });
         }

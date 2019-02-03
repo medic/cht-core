@@ -3,7 +3,7 @@ const _ = require('underscore'),
   logger = require('./logger'),
   DDOC_ATTACHMENT_ID = 'ddocs/compiled.json',
   SERVICEWORKER_ATTACHMENT_NAME = 'js/service-worker.js',
-  SWMETA_DOC_ID = 'serviceWorkerMeta',
+  SWMETA_DOC_ID = 'service-worker-meta',
   SERVER_DDOC_ID = '_design/medic',
   CLIENT_DDOC_ID = '_design/medic-client';
 

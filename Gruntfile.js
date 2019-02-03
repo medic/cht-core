@@ -10,18 +10,6 @@ const {
   TRAVIS_BUILD_NUMBER
 } = process.env;
 
-const APPCACHE_OPTIONS = {
-  patterns: [
-    'build/ddocs/medic/_attachments/manifest.json',
-    'build/ddocs/medic/_attachments/audio/**/*',
-    'build/ddocs/medic/_attachments/css/**/*',
-    'build/ddocs/medic/_attachments/fonts/**/*',
-    'build/ddocs/medic/_attachments/img/**/*',
-    'build/ddocs/medic/_attachments/js/**/*',
-    'build/ddocs/medic/_attachments/xslt/**/*',
-  ],
-};
-
 const releaseName = TRAVIS_TAG || TRAVIS_BRANCH || 'local-development';
 
 const couchConfig = (() => {
@@ -55,7 +43,7 @@ module.exports = function(grunt) {
     replace: 'grunt-text-replace',
     uglify: 'grunt-contrib-uglify-es',
   });
-  require('./grunt.service-worker')(grunt);
+  require('./grunt/service-worker')(grunt);
   require('time-grunt')(grunt);
 
   // Project configuration
@@ -225,8 +213,6 @@ module.exports = function(grunt) {
         },
       },
     },
-<<<<<<< HEAD
-=======
     eslint: {
       target: [
         'Gruntfile.js',
@@ -246,7 +232,6 @@ module.exports = function(grunt) {
         '!config/**'
       ]
     },
->>>>>>> Replace appcache with service worker
     less: {
       webapp: {
         files: {
@@ -286,7 +271,7 @@ module.exports = function(grunt) {
         src: 'build/ddocs/medic/_attachments/css/*.css',
       },
     },
-    generateServiceWorker: {
+    'generate-service-worker': {
       config: {
         rootUrl: 'APP_PREFIX',
         staticDirectoryPath: 'build/ddocs/medic/_attachments',
@@ -667,7 +652,7 @@ module.exports = function(grunt) {
         tasks: [
           'sass',
           'less:webapp',
-          'generateServiceWorker',
+          'generate-service-worker',
           'couch-compile:primary',
           'deploy',
         ],
@@ -677,7 +662,7 @@ module.exports = function(grunt) {
         tasks: [
           'browserify:webapp',
           'replace:update-app-constants',
-          'generateServiceWorker',
+          'generate-service-worker',
           'couch-compile:primary',
           'deploy',
         ],
@@ -689,7 +674,7 @@ module.exports = function(grunt) {
         ],
         tasks: [
           'ngtemplates:inboxApp',
-          'generateServiceWorker',
+          'generate-service-worker',
           'couch-compile:primary',
           'deploy',
         ],
@@ -698,7 +683,7 @@ module.exports = function(grunt) {
         files: 'webapp/src/templates/inbox.html',
         tasks: [
           'copy:inbox-file-attachment',
-          'generateServiceWorker',
+          'generate-service-worker',
           'couch-compile:primary',
           'deploy',
         ],
@@ -1004,7 +989,7 @@ module.exports = function(grunt) {
   grunt.registerTask('build-ddoc', 'Build the main ddoc', [
     'couch-compile:secondary',
     'copy:ddoc-attachments',
-    'generateServiceWorker',
+    'generate-service-worker',
     'couch-compile:primary',
   ]);
 

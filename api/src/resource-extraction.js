@@ -7,7 +7,7 @@ Therefore, we extract all cacheable resources into a folder and serve them as pu
 const
   fs = require('fs'),
   path = require('path'),
-  db = require('./db-pouch'),
+  db = require('./db'),
   environment = require('./environment'),
   logger = require('./logger'),
   APP_PREFIX_TOKEN = 'APP_PREFIX',

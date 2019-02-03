@@ -122,6 +122,7 @@ app.use(
           `'self'`,
           BUILDS_DB,
         ],
+        childSrc:  [`'self'`],
         formAction: [`'self'`],
         imgSrc: [
           `'self'`,
@@ -561,7 +562,7 @@ app.get('/service-worker.js', (req, res) => {
   ]);
 
   res.sendFile(path.join(__dirname, 'extracted/js/service-worker.js'));
-}, authorization.setAuthorized);
+});
 
 // To clear the application cache for users upgrading from legacy clients, serve an empty application manifest
 app.get('/empty.manifest', (req, res) => {

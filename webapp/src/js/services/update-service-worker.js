@@ -10,7 +10,7 @@ angular.module('inboxServices').factory('UpdateServiceWorker', function($window,
   function update(onSuccess) {
     // This avoids multiple updates retrying in parallel
     if (existingUpdateLoop) {
-      clearTimeout(existingUpdateLoop);
+      $timeout.cancel(existingUpdateLoop);
       existingUpdateLoop = undefined;
     }
 

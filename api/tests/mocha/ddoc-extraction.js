@@ -39,7 +39,7 @@ describe('DDoc extraction', () => {
     const getNew = get.withArgs('_design/new').rejects({ status: 404 });
     const getUpdated = get.withArgs('_design/updated').resolves({ _id: '_design/updated', _rev: '1', views: { doc_by_valed: { map: 'function() { return true; }' } } });
     const getUnchanged = get.withArgs('_design/unchanged').resolves({ _id: '_design/unchanged', _rev: '1', views: { doc_by_valid: { map: 'function() { return true; }' } } });
-    const getSwMeta = get.withArgs('serviceWorkerMeta').resolves({ digest: 'md5-JRYByZdYixaFg3a4L6X0pw==' });
+    const getSwMeta = get.withArgs('service-worker-meta').resolves({ digest: 'md5-JRYByZdYixaFg3a4L6X0pw==' });
     const getSettings = get.withArgs('settings').resolves({ });
     const bulk = sinon.stub(db.medic, 'bulkDocs').resolves();
 
@@ -154,7 +154,7 @@ describe('DDoc extraction', () => {
         }
       }
     });
-    const getSwMeta = get.withArgs('serviceWorkerMeta').resolves({ digest: 'md5-JRYByZdYixaFg3a4L6X0pw==' });
+    const getSwMeta = get.withArgs('service-worker-meta').resolves({ digest: 'md5-JRYByZdYixaFg3a4L6X0pw==' });
     const getSettings = get.withArgs('settings').resolves({ });
     const bulk = sinon.stub(db.medic, 'bulkDocs').resolves();
 
@@ -191,7 +191,7 @@ describe('DDoc extraction', () => {
     const getDdocAttachment = getAttachment
       .withArgs('_design/medic', 'ddocs/compiled.json')
       .rejects({ status: 404 });
-    const getSwMeta = get.withArgs('serviceWorkerMeta').resolves({ digest: 'md5-JRYByZdYixaFg3a4L6X0pw==' });
+    const getSwMeta = get.withArgs('service-worker-meta').resolves({ digest: 'md5-JRYByZdYixaFg3a4L6X0pw==' });
     const getSettings = get.withArgs('settings').resolves({ });
     return ddocExtraction.run().then(() => {
       getDdoc.callCount.should.equal(1);
@@ -231,7 +231,7 @@ describe('DDoc extraction', () => {
     const getDdocAttachment = getAttachment
       .withArgs('_design/medic', 'ddocs/compiled.json')
       .resolves(Buffer.from(JSON.stringify(attachment)));
-    const getSwMeta = get.withArgs('serviceWorkerMeta').rejects({ status: 404 });
+    const getSwMeta = get.withArgs('service-worker-meta').rejects({ status: 404 });
     const getSettings = get.withArgs('settings').resolves({ });
     const getClient = get.withArgs('_design/medic-client').resolves(existingClient);
     const bulk = sinon.stub(db.medic, 'bulkDocs').resolves();
@@ -245,7 +245,7 @@ describe('DDoc extraction', () => {
       bulk.callCount.should.equal(1);
       const docs = bulk.args[0][0].docs;
       chai.expect(docs.length).to.equal(1);
-      docs[0]._id.should.equal('serviceWorkerMeta');
+      docs[0]._id.should.equal('service-worker-meta');
       chai.expect(docs[0]._rev).to.equal(undefined);
       docs[0].digest.should.equal('md5-JRYByZdYixaFg3a4L6X0pw==');
     });
@@ -286,7 +286,7 @@ describe('DDoc extraction', () => {
     const getDdocAttachment = getAttachment
       .withArgs('_design/medic', 'ddocs/compiled.json')
       .resolves(Buffer.from(JSON.stringify(attachment)));
-    const getSwMeta = get.withArgs('serviceWorkerMeta').resolves(appcache);
+    const getSwMeta = get.withArgs('service-worker-meta').resolves(appcache);
     const getSettings = get.withArgs('settings').resolves({ });
     const getClient = get.withArgs('_design/medic-client').resolves(existingClient);
     const bulk = sinon.stub(db.medic, 'bulkDocs').resolves();
@@ -340,7 +340,7 @@ describe('DDoc extraction', () => {
     const getDdocAttachment = getAttachment
       .withArgs('_design/medic', 'ddocs/compiled.json')
       .resolves(Buffer.from(JSON.stringify(attachment)));
-    const getSwMeta = get.withArgs('serviceWorkerMeta').resolves(appcache);
+    const getSwMeta = get.withArgs('service-worker-meta').resolves(appcache);
     const getSettings = get.withArgs('settings').resolves({ });
     const getClient = get.withArgs('_design/medic-client').resolves(existingClient);
     const bulk = sinon.stub(db.medic, 'bulkDocs').resolves();
@@ -395,7 +395,7 @@ describe('DDoc extraction', () => {
     const getDdocAttachment = getAttachment
       .withArgs('_design/medic', 'ddocs/compiled.json')
       .resolves(Buffer.from(JSON.stringify(attachment)));
-    const getSwMeta = get.withArgs('serviceWorkerMeta').resolves(appcache);
+    const getSwMeta = get.withArgs('service-worker-meta').resolves(appcache);
     const getSettings = get.withArgs('settings').resolves({ });
     const getClient = get.withArgs('_design/medic-client').resolves(existingClient);
     const bulk = sinon.stub(db.medic, 'bulkDocs').resolves();
@@ -450,7 +450,7 @@ describe('DDoc extraction', () => {
     const getDdocAttachment = getAttachment
       .withArgs('_design/medic', 'ddocs/compiled.json')
       .resolves(Buffer.from(JSON.stringify(attachment)));
-    const getSwMeta = get.withArgs('serviceWorkerMeta').resolves(appcache);
+    const getSwMeta = get.withArgs('service-worker-meta').resolves(appcache);
     const getSettings = get.withArgs('settings').resolves({ });
     const getClient = get.withArgs('_design/medic-client').resolves(existingClient);
     const bulk = sinon.stub(db.medic, 'bulkDocs').resolves();
@@ -498,7 +498,7 @@ describe('DDoc extraction', () => {
     const getDdocAttachment = getAttachment
       .withArgs('_design/medic', 'ddocs/compiled.json')
       .resolves(Buffer.from(JSON.stringify(attachment)));
-    const getSwMeta = get.withArgs('serviceWorkerMeta').resolves(appcache);
+    const getSwMeta = get.withArgs('service-worker-meta').resolves(appcache);
     const getSettings = get.withArgs('settings').resolves({ });
     const getClient = get.withArgs('_design/medic-client').resolves(existingClient);
     const bulk = sinon.stub(db.medic, 'bulkDocs').resolves();
@@ -547,7 +547,7 @@ describe('DDoc extraction', () => {
     const getDdocAttachment = getAttachment
       .withArgs('_design/medic', 'ddocs/compiled.json')
       .resolves(Buffer.from(JSON.stringify(attachment)));
-    const getSwMeta = get.withArgs('serviceWorkerMeta').resolves(appcache);
+    const getSwMeta = get.withArgs('service-worker-meta').resolves(appcache);
     const getSettings = get.withArgs('settings').resolves({ });
     const getClient = get.withArgs('_design/medic-client').resolves(existingClient);
     const bulk = sinon.stub(db.medic, 'bulkDocs').resolves();
@@ -601,7 +601,7 @@ describe('DDoc extraction', () => {
     const getDdocAttachment = getAttachment
       .withArgs('_design/medic', 'ddocs/compiled.json')
       .resolves(Buffer.from(JSON.stringify(attachment)));
-    const getSwMeta = get.withArgs('serviceWorkerMeta').resolves(appcache);
+    const getSwMeta = get.withArgs('service-worker-meta').resolves(appcache);
     const getSettings = get.withArgs('settings').resolves({ });
     const getClient = get.withArgs('_design/medic-client').resolves(existingClient);
     const bulk = sinon.stub(db.medic, 'bulkDocs').resolves();
