@@ -40,10 +40,16 @@ var submit = function(e) {
   post(url, payload, handleResponse);
 };
 
+let serviceWorkerRegistrationAttempted = false;
 var focusOnPassword = function(e) {
   if (e.keyCode === 13) {
     e.preventDefault();
     document.getElementById('password').focus();
+  }
+
+  if ('serviceWorker' in navigator && !serviceWorkerRegistrationAttempted) {
+    navigator.serviceWorker.register('/service-worker.js');
+    serviceWorkerRegistrationAttempted = true;
   }
 };
 
