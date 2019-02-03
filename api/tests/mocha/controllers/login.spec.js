@@ -192,7 +192,7 @@ describe('login controller', () => {
       const cookie = sinon.stub(res, 'cookie').returns(res);
       const userCtx = { name: 'shazza', roles: [ 'project-stuff' ] };
       const getUserCtx = sinon.stub(auth, 'getUserCtx').resolves(userCtx);
-      const getUserSettings = sinon.stub(auth, 'getUserSettings').resolves({ language: 'es' });
+      sinon.stub(auth, 'getUserSettings').resolves({ language: 'es' });
       return controller.post(req, res).then(() => {
         chai.expect(post.callCount).to.equal(1);
         chai.expect(post.args[0][0].url).to.equal('http://test.com:1234/_session');
