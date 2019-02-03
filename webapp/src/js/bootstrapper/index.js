@@ -166,8 +166,11 @@
       })
       .then(() => purger(localDb, isInitialReplicationNeeded)
         .on('start', () => setUiStatus('PURGE_INIT'))
-        .on('progress', function(progress) {
-          setUiStatus('PURGE_INFO', progress);
+        .on('progress', function(progress) {	
+          setUiStatus('PURGE_INFO', {
+            count: progress.purged,
+            percent: Math.floor((progress.processed / progress.total) * 100)
+          });
         })
         .on('optimise', () => setUiStatus('PURGE_AFTER'))
         .catch(console.error)

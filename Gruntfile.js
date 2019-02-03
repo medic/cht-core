@@ -213,25 +213,6 @@ module.exports = function(grunt) {
         },
       },
     },
-    eslint: {
-      target: [
-        'Gruntfile.js',
-        'webapp/src/**/*.js',
-        'webapp/tests/**/*.js',
-        'tests/**/*.js',
-        'api/**/*.js',
-        'sentinel/**/*.js',
-        'shared-libs/**/*.js',
-        'admin/**/*.js',
-        '!ddocs/**/*.js',
-        '!webapp/src/js/modules/xpath-element-path.js',
-        '!api/src/extracted/**/*',
-        '!**/node_modules/**',
-        '!sentinel/src/lib/pupil/**',
-        '!build/**',
-        '!config/**'
-      ]
-    },
     less: {
       webapp: {
         files: {
