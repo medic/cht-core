@@ -66,6 +66,7 @@ const processChange = (change, callback) => {
     );
   }
   if (change.deleted) {
+    // don't run transitions on deleted docs, but do clean up
     return Promise
       .all([
         infodoc.delete(change),
