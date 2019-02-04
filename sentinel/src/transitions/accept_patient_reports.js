@@ -113,42 +113,56 @@ const addRegistrationToDoc = (doc, registrations) => {
   }
 };
 
+// This function implements the logic documented in
+// https://github.com/medic/medic/issues/4694#issuecomment-459460521
 const findValidRegistration = (doc, config, registrations) => {
-    const visitReportedDate = doc.reported_date;
+    const visitReportedDate = moment(doc.reported_date);
+
+    const silenceFor = date.getDuration(config.silence_for);
 
     for (var i = 0; i < registrations.length; i++) {
       var registration = registrations[i];
       if (registration.scheduled_tasks) {
         var scheduledTasks = _.sortBy(registration.scheduled_tasks, 'due');
-        if (moment(visitReportedDate) < moment(scheduledTasks[0].due)) {
+        // if the visit was reported prior to the the most recent scheduled task
+        // we move to the next registration because the visit does not get 
+        // associated to anything: no reminder messages have been sent yet OR
+        // visit is not responding to a reminder (in this case, existing functionality 
+        // will set the cleared_by)
+        if (visitReportedDate < moment(scheduledTasks[0].due)) {
           continue;
         }
+        // Then we start with the oldest task (based on due date) and loop through
+        // the scheduled tasks
         for (var j = scheduledTasks.length - 1; j >= 0; j--) {
           var task = scheduledTasks[j];
           var prevTask = scheduledTasks[j - 1];
 
-          var silenceFor = date.getDuration(config.silence_for);
-
-          var silenceStart = moment(task.due).clone();
+          var silenceStart = moment(task.due);
           silenceStart.subtract(silenceFor);
-          if (silenceStart < moment(visitReportedDate) &&
+          // If the visit falls within the silence_for range of a reminder that
+          // has been cleared, we move to the next registration because we assume 
+          // that this visit is not responding to the reminder. This happens only when 
+          // we are transtioning from one group to another one. Note that existing 
+          // functionality will set the cleared_by on the reminders of the task group
+          if (silenceStart < visitReportedDate &&
             task.state === 'cleared' && 
             prevTask &&
             prevTask.group !== task.group) {
             break;
           }
 
-          if (moment(task.due) < moment(visitReportedDate) && 
+          // We loop through until we find a task that has been "deliverd" or "sent" and
+          // that is older than the visit reported date
+          if (moment(task.due) < visitReportedDate && 
               ['delivered', 'sent'].includes(task.state)) {
-            // We loop through tasks. Once we find one that has either the status "delivered" or "sent" with
-            // a future task with a due date that is after the visit reported date then we have found the task
-            // linked to the visit. We always link if this is the last scheduled task delivered or sent.
+            // We update the task in the original registration (and not in the sorted copy)
             var taskIndex = _.findIndex(registration.scheduled_tasks, { due: task.due });
-            if (registration.scheduled_tasks[taskIndex].responded_to_by) {
-              registration.scheduled_tasks[taskIndex].responded_to_by.push(doc._id);
-            } else {
-              registration.scheduled_tasks[taskIndex].responded_to_by = [doc._id];
+            if (!registration.scheduled_tasks[taskIndex].responded_to_by) {
+              registration.scheduled_tasks[taskIndex].responded_to_by = [];
             }
+            registration.scheduled_tasks[taskIndex].responded_to_by.push(doc._id);
+
             return registration;
           }
         }

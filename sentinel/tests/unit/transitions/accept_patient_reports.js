@@ -1,5 +1,6 @@
 require('chai').should();
 const sinon = require('sinon'),
+  should = require('chai').should(),
   moment = require('moment'),
   db = require('../../../src/db-pouch'),
   utils = require('../../../src/lib/utils'),
@@ -247,9 +248,9 @@ describe('accept_patient_reports', () => {
       sinon.stub(utils, 'getReportsBySubject').resolves(registrations);
       transition._handleReport(doc, config, (err, complete) => {
         complete.should.equal(true);
-        (typeof registrations[0].scheduled_tasks[0].responded_to_by).should.equal('undefined');
-        (typeof registrations[0].scheduled_tasks[1].responded_to_by).should.equal('undefined');
-        (typeof registrations[0].scheduled_tasks[2].responded_to_by).should.equal('undefined');
+        should.not.exist(registrations[0].scheduled_tasks[0].responded_to_by);
+        should.not.exist(registrations[0].scheduled_tasks[1].responded_to_by);
+        should.not.exist(registrations[0].scheduled_tasks[2].responded_to_by);
         done();
       });
     });
@@ -303,9 +304,9 @@ describe('accept_patient_reports', () => {
       sinon.stub(utils, 'getReportsBySubject').resolves(registrations);
       transition._handleReport(doc, config, (err, complete) => {
         complete.should.equal(true);
-        (typeof registrations[0].scheduled_tasks[0].responded_to_by).should.equal('undefined');
-        (typeof registrations[0].scheduled_tasks[1].responded_to_by).should.equal('undefined');
-        (typeof registrations[0].scheduled_tasks[2].responded_to_by).should.equal('undefined');
+        should.not.exist(registrations[0].scheduled_tasks[0].responded_to_by);
+        should.not.exist(registrations[0].scheduled_tasks[1].responded_to_by);
+        should.not.exist(registrations[0].scheduled_tasks[2].responded_to_by);
         done();
       });
     });
@@ -363,8 +364,8 @@ describe('accept_patient_reports', () => {
         complete.should.equal(true);
         putRegistration.callCount.should.equal(1);
         registrations[0].scheduled_tasks[0].responded_to_by.should.deep.equal([doc._id]);
-        (typeof registrations[0].scheduled_tasks[1].responded_to_by).should.equal('undefined');
-        (typeof registrations[0].scheduled_tasks[2].responded_to_by).should.equal('undefined');
+        should.not.exist(registrations[0].scheduled_tasks[1].responded_to_by);
+        should.not.exist(registrations[0].scheduled_tasks[2].responded_to_by);
         done();
       });
     });
@@ -426,16 +427,16 @@ describe('accept_patient_reports', () => {
       transition._handleReport(doc1, config, (err, complete) => {
         complete.should.equal(true);
         putRegistration.callCount.should.equal(1);
-        (typeof registrations[0].scheduled_tasks[0].responded_to_by).should.equal('undefined');
+        should.not.exist(registrations[0].scheduled_tasks[0].responded_to_by);
         registrations[0].scheduled_tasks[1].responded_to_by.should.deep.equal([doc1._id]);
-        (typeof registrations[0].scheduled_tasks[2].responded_to_by).should.equal('undefined');
+        should.not.exist(registrations[0].scheduled_tasks[2].responded_to_by);
 
         transition._handleReport(doc2, config, (err, complete) => {
           complete.should.equal(true);
           putRegistration.callCount.should.equal(2);
-          (typeof registrations[0].scheduled_tasks[0].responded_to_by).should.equal('undefined');
+          should.not.exist(registrations[0].scheduled_tasks[0].responded_to_by);
           registrations[0].scheduled_tasks[1].responded_to_by.should.deep.equal([doc1._id, doc2._id]);
-          (typeof registrations[0].scheduled_tasks[2].responded_to_by).should.equal('undefined');
+          should.not.exist(registrations[0].scheduled_tasks[2].responded_to_by);
           done();
         });
       });
@@ -493,9 +494,9 @@ describe('accept_patient_reports', () => {
       transition._handleReport(doc, config, (err, complete) => {
         complete.should.equal(true);
         putRegistration.callCount.should.equal(1);
-        (typeof registrations[0].scheduled_tasks[0].responded_to_by).should.equal('undefined');
+        should.not.exist(registrations[0].scheduled_tasks[0].responded_to_by);
         registrations[0].scheduled_tasks[1].responded_to_by.should.deep.equal([doc._id]);
-        (typeof registrations[0].scheduled_tasks[2].responded_to_by).should.equal('undefined');
+        should.not.exist(registrations[0].scheduled_tasks[2].responded_to_by);
         done();
       });
     });
@@ -562,10 +563,10 @@ describe('accept_patient_reports', () => {
       transition._handleReport(doc, config, (err, complete) => {
         complete.should.equal(true);
         putRegistration.callCount.should.equal(1);
-        (typeof registrations[0].scheduled_tasks[0].responded_to_by).should.equal('undefined');
-        (typeof registrations[0].scheduled_tasks[1].responded_to_by).should.equal('undefined');
+        should.not.exist(registrations[0].scheduled_tasks[0].responded_to_by);
+        should.not.exist(registrations[0].scheduled_tasks[1].responded_to_by);
         registrations[0].scheduled_tasks[2].responded_to_by.should.deep.equal([doc._id]);
-        (typeof registrations[0].scheduled_tasks[3].responded_to_by).should.equal('undefined');
+        should.not.exist(registrations[0].scheduled_tasks[3].responded_to_by);
         done();
       });
     });
@@ -629,10 +630,10 @@ describe('accept_patient_reports', () => {
       sinon.stub(utils, 'getReportsBySubject').resolves(registrations);
       transition._handleReport(doc, config, (err, complete) => {
         complete.should.equal(true);
-        (typeof registrations[0].scheduled_tasks[0].responded_to_by).should.equal('undefined');
-        (typeof registrations[0].scheduled_tasks[1].responded_to_by).should.equal('undefined');
-        (typeof registrations[0].scheduled_tasks[2].responded_to_by).should.equal('undefined');
-        (typeof registrations[0].scheduled_tasks[3].responded_to_by).should.equal('undefined');
+        should.not.exist(registrations[0].scheduled_tasks[0].responded_to_by);
+        should.not.exist(registrations[0].scheduled_tasks[1].responded_to_by);
+        should.not.exist(registrations[0].scheduled_tasks[2].responded_to_by);
+        should.not.exist(registrations[0].scheduled_tasks[3].responded_to_by);
         done();
       });
     });
