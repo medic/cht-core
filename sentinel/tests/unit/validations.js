@@ -6,7 +6,12 @@ var moment = require('moment'),
   clock;
 
 describe('validations', () => {
-  afterEach(() => sinon.restore());
+  afterEach(() => {
+    if (clock) {
+      clock.restore();
+    }
+    sinon.restore();
+  });
 
   it('validate handles pupil parse errors', done => {
     var doc = {

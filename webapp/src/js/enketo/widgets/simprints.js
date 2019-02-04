@@ -56,9 +56,7 @@ define( function( require, exports, module ) {
         } );
     };
 
-    Simprintswidget.prototype.destroy = function( element ) {
-        /* jshint unused:false */
-    };
+    Simprintswidget.prototype.destroy = function( element ) {};  // eslint-disable-line no-unused-vars
 
     $.fn[ pluginName ] = function( options, event ) {
         return this.each( function() {

@@ -183,7 +183,10 @@ describe('infodoc', () => {
     let clock;
 
     beforeEach(() => clock = sinon.useFakeTimers());
-    afterEach(() => sinon.restore());
+    afterEach(() => {
+      clock.restore();
+      sinon.restore();
+    });
 
     it('should do nothing when docs list is empty', () => {
       sinon.stub(db.sentinel, 'bulkDocs');

@@ -12,6 +12,7 @@ describe('controller utils', () => {
 
   afterEach(() => {
     sinon.restore();
+    clock.restore();
   });
 
   describe('invalid', () => {

@@ -1,5 +1,4 @@
-const should = require('chai').should(),
-      { expect } = require('chai'),
+const { expect } = require('chai'),
       sinon = require('sinon'),
       registrationUtils = require('@medic/registration-utils'),
       taskUtils = require('@medic/task-utils'),
