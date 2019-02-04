@@ -110,10 +110,10 @@ describe('validations', () => {
   });
 
   it('pass unique validation when doc has errors', done => {
-    var view = sinon.stub(db.medic, 'query').callsArgWith(2, null, {
+    const view = sinon.stub(db.medic, 'query').callsArgWith(2, null, {
       rows: [{ id: 'different' }],
     });
-    var fetch = sinon.stub(db.medic, 'allDocs').callsArgWith(1, null, {
+    const allDocs = sinon.stub(db.medic, 'allDocs').callsArgWith(1, null, {
       rows: [
         {
           id: 'different',
@@ -135,8 +135,8 @@ describe('validations', () => {
       assert.equal(view.callCount, 1);
       assert.equal(view.args[0][0], 'medic-client/reports_by_freetext');
       assert.deepEqual(view.args[0][1], { key: ['patient_id:111'] });
-      assert.equal(fetch.callCount, 1);
-      assert.deepEqual(fetch.args[0][0], { keys: ['different'] });
+      assert.equal(allDocs.callCount, 1);
+      assert.deepEqual(allDocs.args[0][0], { keys: ['different'], include_docs: true });
       assert.equal(errors.length, 0);
       done();
     });
@@ -182,10 +182,10 @@ describe('validations', () => {
   });
 
   it('fail multiple field unique validation on doc with no errors', done => {
-    var view = sinon.stub(db.medic, 'query').callsArgWith(2, null, {
+    const view = sinon.stub(db.medic, 'query').callsArgWith(2, null, {
       rows: [{ id: 'different' }],
     });
-    var fetch = sinon.stub(db.medic, 'allDocs').callsArgWith(1, null, {
+    const allDocs = sinon.stub(db.medic, 'allDocs').callsArgWith(1, null, {
       rows: [
         {
           id: 'different',
@@ -216,8 +216,8 @@ describe('validations', () => {
       assert.deepEqual(view.args[0][1], { key: ['xyz:444'] });
       assert.equal(view.args[1][0], 'medic-client/reports_by_freetext');
       assert.deepEqual(view.args[1][1], { key: ['abc:cheese'] });
-      assert.equal(fetch.callCount, 1);
-      assert.deepEqual(fetch.args[0][0], { keys: ['different'] });
+      assert.equal(allDocs.callCount, 1);
+      assert.deepEqual(allDocs.args[0][0], { keys: ['different'], include_docs: true });
       assert.deepEqual(errors, [
         {
           code: 'invalid_xyz_unique',

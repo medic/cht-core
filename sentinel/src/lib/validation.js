@@ -52,7 +52,7 @@ const _exists = (doc, fields, options, callback) => {
     if (!ids.length) {
       return callback(null, false);
     }
-    db.medic.allDocs({ keys: ids }, (err, result) => {
+    db.medic.allDocs({ keys: ids, include_docs: true }, (err, result) => {
       if (err) {
         return callback(err);
       }
