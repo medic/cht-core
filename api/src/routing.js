@@ -166,7 +166,7 @@ To facilitate service worker prefetch on Chrome <66, serve a version of the app 
 */
 app.get(appPrefix, (req, res, next) => {
   if ('_sw-precache' in req.query) {
-    return res.sendFile(path.join(__dirname, 'extracted/templates/inbox.html'));
+    return res.sendFile(path.join(__dirname, 'extracted-resources/templates/inbox.html'));
   }
   next();
 });
@@ -189,7 +189,7 @@ app.get('/favicon.ico', (req, res) => {
 });
 
 app.use(express.static(path.join(__dirname, 'public')));
-app.use(express.static(path.join(__dirname, 'extracted')));
+app.use(express.static(path.join(__dirname, 'extracted-resources')));
 app.get(routePrefix + 'login', login.get);
 app.get(routePrefix + 'login/identity', login.getIdentity);
 app.postJson(routePrefix + 'login', login.post);
@@ -561,7 +561,7 @@ app.get('/service-worker.js', (req, res) => {
     ['Content-Type', 'application/javascript'],
   ]);
 
-  res.sendFile(path.join(__dirname, 'extracted/js/service-worker.js'));
+  res.sendFile(path.join(__dirname, 'extracted-resources/js/service-worker.js'));
 });
 
 // To clear the application cache for users upgrading from legacy clients, serve an empty application manifest

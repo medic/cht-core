@@ -38,7 +38,7 @@ describe('Resource Extraction', () => {
       expect(mockFs.writeFile.callCount).to.eq(1);
 
       const [actualOutputPath, actualContent] = mockFs.writeFile.args[0];
-      expect(actualOutputPath).to.include('src/extracted/js/attached.js');
+      expect(actualOutputPath).to.include('src/extracted-resources/js/attached.js');
       expect(actualContent).to.include(expected.content);
       done();
     });
@@ -53,7 +53,7 @@ describe('Resource Extraction', () => {
         expect(mockFs.writeFile.callCount).to.eq(1);
 
         const [actualOutputPath, actualContent] = mockFs.writeFile.args[0];
-        expect(actualOutputPath).to.include('src/extracted/js/attached.js');
+        expect(actualOutputPath).to.include('src/extracted-resources/js/attached.js');
         expect(actualContent).to.include(expected.content);
         done();
       });
@@ -71,7 +71,7 @@ describe('Resource Extraction', () => {
         expect(mockFs.writeFile.callCount).to.eq(2);
 
         const [actualOutputPath, actualContent] = mockFs.writeFile.args[1];
-        expect(actualOutputPath).to.include('src/extracted/js/attached.js');
+        expect(actualOutputPath).to.include('src/extracted-resources/js/attached.js');
         expect(actualContent).to.include(expected.content);
         done();
       });
@@ -90,7 +90,7 @@ describe('Resource Extraction', () => {
         expect(mockFs.writeFile.callCount).to.eq(1);
 
         const [actualOutputPath, actualContent] = mockFs.writeFile.args[0];
-        expect(actualOutputPath).to.include('src/extracted/js/service-worker.js');
+        expect(actualOutputPath).to.include('src/extracted-resources/js/service-worker.js');
         expect(actualContent).to.include('/_design/medic/_rewrite');
         done();
       });
@@ -120,8 +120,8 @@ describe('Resource Extraction', () => {
     mockFs.mkdirSync = sinon.stub().returns(true);
     resourceExtraction.run().then(() => {
       expect(mockFs.mkdirSync.callCount).to.eq(2);
-      expect(mockFs.mkdirSync.args[0][0]).to.include('src/extracted');
-      expect(mockFs.mkdirSync.args[1][0]).to.include('src/extracted/js');
+      expect(mockFs.mkdirSync.args[0][0]).to.include('src/extracted-resources');
+      expect(mockFs.mkdirSync.args[1][0]).to.include('src/extracted-resources/js');
       done();
     });
   });
