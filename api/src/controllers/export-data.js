@@ -108,8 +108,8 @@ module.exports = {
               logger.error('options:', JSON.stringify(options, null, 2));
               logger.error('%o', err);
               res.end(`--ERROR--\nError exporting data: ${err.message}\n`);
-            }))
-            .pipe(res);
+            })
+            .pipe(res));
 
         });
       })
