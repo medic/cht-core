@@ -10,12 +10,12 @@ const getPlace = id => {
   return lineage.fetchHydratedDoc(id)
     .then(doc => {
       if (!isAPlace(doc)) {
-        return Promise.reject({ statusCode: 404 });
+        return Promise.reject({ status: 404 });
       }
       return doc;
     })
     .catch(err => {
-      if (err.statusCode === 404) {
+      if (err.status === 404) {
         err.message  = 'Failed to find place.';
       }
       throw err;

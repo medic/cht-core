@@ -119,7 +119,7 @@ describe('places controller', () => {
   describe('getPlace', () => {
 
     it('returns custom message on 404 errors.', done => {
-      sinon.stub(controller._lineage, 'fetchHydratedDoc').returns(Promise.reject({statusCode: 404}));
+      sinon.stub(controller._lineage, 'fetchHydratedDoc').returns(Promise.reject({status: 404}));
       controller.getPlace('x').catch(err => {
         chai.expect(err.message).to.equal('Failed to find place.');
         done();

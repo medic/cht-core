@@ -7,7 +7,7 @@ const _ = require('underscore'),
 const getPerson = id => {
   return lineage.fetchHydratedDoc(id)
     .catch(err => {
-      if (err.statusCode === 404) {
+      if (err.status === 404) {
         throw { code: 404, message: 'Failed to find person.' };
       }
       throw err;
