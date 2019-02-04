@@ -21,7 +21,7 @@ describe('Export Data controller', () => {
 
   afterEach(() => sinon.restore());
 
-  describe.only('get', () => {
+  describe('get', () => {
     
     it('Throws an error if you try to query for an unsupported export', () => {
       controller.get({req: true, params: {type: 'fake'}}, {res: true});
