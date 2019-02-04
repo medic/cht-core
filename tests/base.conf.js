@@ -45,7 +45,7 @@ class BaseConfig {
 
         afterEach(() => {
           browser.manage().logs().get('browser').then(logs => {
-            const formatted = logs
+            logs
               .map(log => `[${log.level.name_}] ${log.message}\n`)
               .forEach(log => browserLogStream.write(log));
             browserLogStream.write('\n~~~~~~~~~~~~~~~~~~~~~\n\n');
