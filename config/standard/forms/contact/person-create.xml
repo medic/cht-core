@@ -29,6 +29,9 @@
           <text id="/data/inputs/user/name:label">
             <value>Name of the logged in user</value>
           </text>
+          <text id="/data/person/date_of_birth:jr:constraintMsg">
+            <value>Date of birth cannot be in the future</value>
+          </text>
           <text id="/data/person/date_of_birth:label">
             <value>Date of Birth</value>
           </text>
@@ -120,6 +123,9 @@
           </text>
           <text id="/data/inputs/user/name:label">
             <value>Nom</value>
+          </text>
+          <text id="/data/person/date_of_birth:jr:constraintMsg">
+            <value>La date de naissance ne peut pas être dans le futur</value>
           </text>
           <text id="/data/person/date_of_birth:label">
             <value>Date de naissance</value>
@@ -213,6 +219,9 @@
           <text id="/data/inputs/user/name:label">
             <value>लॉग इन यूज़र का नाम</value>
           </text>
+          <text id="/data/person/date_of_birth:jr:constraintMsg">
+            <value>जन्म की तारीख भविष्य में नहीं हो सकती</value>
+          </text>
           <text id="/data/person/date_of_birth:label">
             <value>जन्म की तारीख</value>
           </text>
@@ -304,6 +313,9 @@
           </text>
           <text id="/data/inputs/user/name:label">
             <value>Nama dari login user</value>
+          </text>
+          <text id="/data/person/date_of_birth:jr:constraintMsg">
+            <value>-</value>
           </text>
           <text id="/data/person/date_of_birth:label">
             <value>Tanggal Lahir</value>
@@ -397,6 +409,9 @@
           <text id="/data/inputs/user/name:label">
             <value>लग इन गरेको प्रयोगकर्ताको नाम</value>
           </text>
+          <text id="/data/person/date_of_birth:jr:constraintMsg">
+            <value>-</value>
+          </text>
           <text id="/data/person/date_of_birth:label">
             <value>जन्म मिती</value>
           </text>
@@ -489,6 +504,9 @@
           <text id="/data/inputs/user/name:label">
             <value>Jina ya mtumizi</value>
           </text>
+          <text id="/data/person/date_of_birth:jr:constraintMsg">
+            <value>-</value>
+          </text>
           <text id="/data/person/date_of_birth:label">
             <value>Tarehe ya Kuzaliwa</value>
           </text>
@@ -558,7 +576,7 @@
         </translation>
       </itext>
       <instance>
-        <data delimiter="#" id="contact:person:create" prefix="J1!contact:person:create!" version="2018-09-27_07-24">
+        <data delimiter="#" id="contact:person:create" prefix="J1!contact:person:create!" version="2019-01-22_12-31">
           <inputs>
             <meta>
               <location>
@@ -616,7 +634,7 @@
       <bind nodeset="/data/person/parent" type="string"/>
       <bind nodeset="/data/person/type" type="string"/>
       <bind nodeset="/data/person/name" required="true()" type="string"/>
-      <bind nodeset="/data/person/date_of_birth" type="date"/>
+      <bind constraint=". &lt;= today()" jr:constraintMsg="jr:itext('/data/person/date_of_birth:jr:constraintMsg')" nodeset="/data/person/date_of_birth" type="date"/>
       <bind constraint="true()" jr:constraintMsg="jr:itext('/data/person/phone:jr:constraintMsg')" nodeset="/data/person/phone" type="tel"/>
       <bind constraint="true()" jr:constraintMsg="jr:itext('/data/person/phone_alternate:jr:constraintMsg')" nodeset="/data/person/phone_alternate" type="tel"/>
       <bind nodeset="/data/person/sex" type="select1"/>
