@@ -129,7 +129,7 @@ cards = [
     },
   },
 
-// TODO should also take into account non-active pregnancies with no deliveries 
+// TODO should also take into account non-active pregnancies with no deliveries
   {
     label: 'contact.profile.past_pregnancies',
     appliesToType: 'person',
@@ -137,13 +137,13 @@ cards = [
     fields: function () {
       var fields = [];
       var relevantDelivery, birthdate, relevantVisitsANC, relevantVisitsPNC, visitsANC, visitsPNC, subsequentDeliveries, subsequentPregnancies, nextPregnancy;
-      reports.forEach(function (report) { 
+      reports.forEach(function (report) {
         if (isReportValid(report) && pregnancyForms.indexOf(report.form) >= 0) {
 
           // Ignore pregnancies with no delivery report
-          subsequentDeliveries = getSubsequentDeliveries(report);          
+          subsequentDeliveries = getSubsequentDeliveries(report);
           if (subsequentDeliveries.length === 0) { return; }
-          
+
           relevantDelivery = getOldestReport(subsequentDeliveries);
           birthdate = getBirthDate(relevantDelivery);
 
@@ -192,22 +192,28 @@ cards = [
     fields: function() {
       var i, report;
       var immunizations = initImmunizations();
+      console.log("*****immunizations init***");
+      console.log(immunizations);
       for(i=0; i<reports.length; ++i) {
         report = reports[i];
         if (report.form === 'immunization_visit') {
           if (report && report.fields && report.fields.vaccines_received) {
             addImmunizations(immunizations, report.fields.vaccines_received);
           }
-        } else if (report.form === 'IMM') {
+        } else if (report.form === 'C_IMM') {
           addImmunizations(immunizations, report.fields);
         }  else {
           addImmunizations(immunizations, report.form);
         }
       }
 
+      console.log("###immunizations###");
+      console.log(immunizations);
+
       var fields = [];
 
       IMMUNIZATION_LIST.forEach(function(imm) {
+        console.log(imm, " *in lineage: ", isVaccineInLineage(lineage, imm));
         if (isVaccineInLineage(lineage, imm)) {
           var field = {
             label: 'contact.profile.imm.' + imm,

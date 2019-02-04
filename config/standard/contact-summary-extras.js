@@ -35,6 +35,8 @@ var immunizationForms = [
   'IPV1',
   'IPV2',
   'IPV3',
+  'FIPV1',
+  'FIPV2',
   'PCV1',
   'PCV2',
   'PCV3',
@@ -63,7 +65,9 @@ var immunizationForms = [
   'HPV3',
   'CH1',
   'CH2',
-  'CH3'
+  'CH3',
+  'DPT4',
+  'DPT5'
 ];
 
 var MS_IN_DAY = 24*60*60*1000;  // 1 day in ms
@@ -83,6 +87,8 @@ var IMMUNIZATION_DOSES = [
   ['ipv_1','IPV1'],
   ['ipv_2','IPV2'],
   ['ipv_3','IPV3'],
+  ['fipv_1', 'FIPV1'],
+  ['fipv_2', 'FIPV2'],
   ['flu','FLU'],
   ['jap_enc','JE'],
   ['meningococcal_1','MN1'],
@@ -110,7 +116,9 @@ var IMMUNIZATION_DOSES = [
   ['typhoid_1','TY1'],
   ['typhoid_2','TY2'],
   ['vitamin_a','VITA'],
-  ['yellow_fever','YF']
+  ['yellow_fever','YF'],
+  ['dpt_4', 'DPT4'],
+  ['dpt_5', 'DPT5']
 ];
 
 var IMMUNIZATION_LIST = [
@@ -119,6 +127,7 @@ var IMMUNIZATION_LIST = [
   'hep_a',
   'hpv',
   'ipv',
+  'fipv',
   'flu',
   'jap_enc',
   'meningococcal',
@@ -130,7 +139,8 @@ var IMMUNIZATION_LIST = [
   'rotavirus',
   'typhoid',
   'vitamin_a',
-  'yellow_fever'
+  'yellow_fever',
+  'dpt'
 ];
 
 function count(arr, fn) {
