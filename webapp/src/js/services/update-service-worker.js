@@ -3,6 +3,7 @@ Handles service worker updates
 */
 angular.module('inboxServices').factory('UpdateServiceWorker', function($window, $log, $timeout) {
   'use strict';
+  'ngInject';
 
   const retryFailedUpdateAfterSec = 5 * 60;
   let existingUpdateLoop;

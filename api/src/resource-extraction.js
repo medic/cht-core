@@ -38,14 +38,9 @@ const extractAttachment = attachmentName => db.medic
     createFolderIfDne(path.dirname(outputPath));
 
     /*
-    Note to reviewer: I'd love to find a better way to handle this.
     At build time, we can't know what the COUCH_URL will be when API starts.
-    This means, the path we use for inbox.html is unknown until the app starts.
-    If COUCH_URL changes from build to run time then things break (eg. e2e tests build with medic and run with medic-test)
-  
-    In this approach, I'm hydrating a token from the build with the environment values once they are known.
-    An alternative is serving inbox.html from a predictable url (eg. /inbox) instead of relying on rewrites
-    Another option may be to update the swPrecache template to handle this.
+    This means, some paths (eg. inbox.html) are unknown until the app starts.
+    In this approach, I'm hydrating a token used in the build with environment values once they are known.
     */
     const hydrated = attachmentName === 'js/service-worker.js' ? raw.toString().replace(APP_PREFIX_TOKEN, `/${environment.db}/_design/${environment.ddoc}/_rewrite/`) : raw;
     fs.writeFile(outputPath, hydrated, err => {

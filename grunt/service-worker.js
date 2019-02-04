@@ -1,7 +1,3 @@
-/*
-Note to Reviewer: I'm finding the 1000 line Gruntfile hard to parse. I easily get lost in the file's large indented blocks. 
-I can move this into that file, but what do you think of starting to chop up pieces of gruntfile into separate files?
-*/
 const swPrecache = require('sw-precache');
 const path = require('path');
 
