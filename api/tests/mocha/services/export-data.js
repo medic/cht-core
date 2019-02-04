@@ -14,8 +14,12 @@ describe('Export Data Service', () => {
 
   const mockRequest = (type, filters={}, options={}) => {
     const chunks = [];
-    return new Promise(resolve => {
-      service.export(type, filters, options).pipe({
+    return new Promise((resolve,reject) => {
+      service.export(type, filters, options)
+      .on('error', err => {
+        reject(err);
+      })
+      .pipe({
         write: chunk => chunks.push(chunk.toString()),
         on: () => {},
         once: () => {},
@@ -330,6 +334,18 @@ describe('Export Data Service', () => {
         actual.should.equal(expected);
       });
 
+    });
+
+  });
+
+  describe('Handle error', () => {
+    it('emit error', () => {
+      sinon.stub(db.medic, 'query').rejects({some: 'error'});
+      return mockRequest('feedback')
+      .catch(err => {
+        const expected = {some: 'error'};
+        err.should.deep.equal(expected);
+      });
     });
 
   });
