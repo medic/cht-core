@@ -11,7 +11,7 @@ const
   environment = require('./environment'),
   logger = require('./logger'),
   APP_PREFIX_TOKEN = 'APP_PREFIX',
-  STATIC_RESOURCE_DESTINATION = path.resolve(`./src/extracted-resources/`),
+  STATIC_RESOURCE_DESTINATION = path.join(__dirname, `extracted-resources/`),
   isAttachmentCacheable = name => name === 'manifest.json' || !!name.match(/(?:audio|css|fonts|templates|img|js|xslt)\/.*/);
 
 // Map of attachmentName -> attachmentDigest used to avoid extraction of unchanged documents
