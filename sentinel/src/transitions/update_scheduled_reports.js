@@ -54,10 +54,6 @@ module.exports = {
 
         db.medic.bulkDocs(
           docs,
-          {
-            all_or_nothing: true,
-            docs: docs,
-          },
           function(err) {
             // cancels transition and marks as incomplete
             if (err) {
