@@ -159,7 +159,7 @@ describe('update_scheduled_reports', () => {
       const view = sinon
         .stub(db.medic, 'query')
         .callsArgWith(2, null, { rows: [] });
-      const bulkSave = sinon.stub(db.medic, 'bulkDocs').callsArg(2);
+      const bulkSave = sinon.stub(db.medic, 'bulkDocs').callsArg(1);
       const change = {
         doc: {
           _id: 'abc',
@@ -213,7 +213,7 @@ describe('update_scheduled_reports', () => {
           },
         ],
       });
-      const bulkSave = sinon.stub(db.medic, 'bulkDocs').callsArg(2);
+      const bulkSave = sinon.stub(db.medic, 'bulkDocs').callsArg(1);
       const change = {
         doc: {
           _id: 'xyz',
