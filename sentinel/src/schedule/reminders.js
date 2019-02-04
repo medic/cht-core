@@ -37,7 +37,7 @@ module.exports = {
     isConfigValid: isConfigValid,
     getSchedule: getSchedule,
     // called from schedule/index.js on the hour, for now
-    execute: function(callback) {
+    execute: callback => {
         var reminders = config.get('reminders') || [];
 
         async.eachSeries(reminders, function(reminder, callback) {
