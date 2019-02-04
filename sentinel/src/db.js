@@ -57,11 +57,11 @@ if (UNIT_TEST_ENV) {
   });
 
   module.exports.allDbs = () => new Promise((resolve, reject) => {
-    request({ url: module.exports.serverUrl + '/_all_dbs', json: true }, (err, response, body) => {
+    request({ url: `${module.exports.serverUrl}/_all_dbs`, json: true }, (err, response, body) => {
       return err ? reject(err) : resolve(body);
     });
   });
-  module.exports.metaDb = db => new PouchDB(module.exports.serverUrl + '/' + db);
+  module.exports.metaDb = db => new PouchDB(`${module.exports.serverUrl}/${db}`);
 } else {
   logger.warn(
     'Please define a COUCH_URL in your environment e.g. \n' +
