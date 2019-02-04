@@ -18,7 +18,7 @@ describe('reminders', () => {
   it('config with no reminders calls callback', done => {
     sinon.stub(config, 'get').returns([]);
     sinon.stub(reminders, 'runReminder').throws();
-    reminders.execute({}, function(err) {
+    reminders.execute(err => {
       assert.equal(err, null);
       done();
     });
@@ -31,7 +31,7 @@ describe('reminders', () => {
           {form:'z', cron:'z', message:'z'}
       ]);
       const runReminder = sinon.stub(reminders, 'runReminder').callsArgWith(1, null);
-      reminders.execute({}, function(err) {
+      reminders.execute(err => {
           assert.equal(err, null);
           assert.equal(runReminder.callCount, 3);
           done();
