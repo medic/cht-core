@@ -341,11 +341,7 @@ describe('reminders', () => {
 
   it('getReminderWindow returns a day ago when no results from db', done => {
       const time = moment().startOf('hour').subtract(1, 'day');
-      sinon.stub(db.medic, 'view').callsArgWithAsync(3, null, { rows: [] });
-
-      sinon.stub(db.medic, 'query').callsArgWith(2, null, {
-          rows: []
-      });
+      sinon.stub(db.medic, 'query').callsArgWith(2, null, {rows: []});
 
       reminders.getReminderWindow({}, function(err, start) {
           assert.equal(err, null);
