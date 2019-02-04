@@ -60,6 +60,9 @@ document.addEventListener('DOMContentLoaded', function() {
   user.addEventListener('keydown', focusOnPassword, false);
   user.focus();
 
-  document.getElementById('password')
-      .addEventListener('keydown', focusOnSubmit, false);
+  document.getElementById('password').addEventListener('keydown', focusOnSubmit, false);
+  
+  if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.register('/service-worker.js');
+  }
 });

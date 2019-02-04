@@ -111,7 +111,7 @@ function TimerAnimation(canvas, canvasW, canvasH, duration) {
         }
 
         function loadSound() {
-            return new Audio('./static/audio/alert.mp3');
+            return new Audio('/audio/alert.mp3');
         }
 
         return {

@@ -27,6 +27,9 @@ const medicLogo = element(by.className('logo-full')),
 
 module.exports = {
   calm: () => {
+    const bootstrapperSelector = by.css('.bootstrap-layer');
+    helper.waitElementToPresent(element(bootstrapperSelector));
+    helper.waitElementToDisappear(bootstrapperSelector);
     helper.waitUntilReady(medicLogo);
   },
 

@@ -8,7 +8,7 @@ const _ = require('underscore'),
       semver = require('semver');
 
 const DEFAULT_EXPECTED = [
-  'appcache',
+  'service-worker-meta',
   'settings',
   'resources',
   'branding',

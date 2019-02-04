@@ -2,11 +2,11 @@
 
   'use strict';
 
-  var ONLINE_ROLE = 'mm-online';
+  const purger = require('./purger');
+  const registerServiceWorker = require('./swRegister');
+  const translator = require('./translator');
 
-  var translator = require('./translator');
-
-  var purger = require('./purger');
+  const ONLINE_ROLE = 'mm-online';
 
   var getUserCtx = function() {
     var userCtx, locale;
@@ -140,46 +140,43 @@
 
     translator.setLocale(userCtx.locale);
 
-    var username = userCtx.name;
-    var localDbName = getLocalDbName(dbInfo, username);
+    const onServiceWorkerInstalling = () => setUiStatus('DOWNLOAD_APP');
+    const swRegistration = registerServiceWorker(onServiceWorkerInstalling);
 
-    var localDb = window.PouchDB(localDbName, POUCHDB_OPTIONS.local);
-    var remoteDb = window.PouchDB(dbInfo.remote, POUCHDB_OPTIONS.remote);
+    const localDbName = getLocalDbName(dbInfo, userCtx.name);
+    const localDb = window.PouchDB(localDbName, POUCHDB_OPTIONS.local);
+    const remoteDb = window.PouchDB(dbInfo.remote, POUCHDB_OPTIONS.remote);
 
-    let initialReplicationNeeded;
+    const testReplicationNeeded = () => getDdoc(localDb).then(() => false).catch(() => true);
 
-    getDdoc(localDb)
-      .then(function() {
-        // ddoc found - no need for initial replication
-      })
-      .catch(function() {
-        // no ddoc found - do replication
-        initialReplicationNeeded = true;
-        return initialReplication(localDb, remoteDb)
-          .then(function() {
-            return getDdoc(localDb).catch(function() {
-              throw new Error('Initial replication failed');
+    let isInitialReplicationNeeded;
+    Promise.all([swRegistration, testReplicationNeeded()])
+      .then(function(resolved) {
+        isInitialReplicationNeeded = !!resolved[1];
+
+        if (isInitialReplicationNeeded) {
+          return initialReplication(localDb, remoteDb)
+            .then(testReplicationNeeded)
+            .then(isReplicationStillNeeded => {
+              if (isReplicationStillNeeded) {
+                throw new Error('Initial replication failed');
+              }
             });
+        }
+      })
+      .then(() => purger(localDb, isInitialReplicationNeeded)
+        .on('start', () => setUiStatus('PURGE_INIT'))
+        .on('progress', function(progress) {
+          setUiStatus('PURGE_INFO', {
+            count: progress.purged,
+            percent: Math.floor((progress.processed / progress.total) * 100)
           });
-      })
-      .then(() => {
-        return purger(localDb, userCtx, initialReplicationNeeded)
-          .on('start', () => setUiStatus('PURGE_INIT'))
-          .on('progress', function(progress) {
-            setUiStatus('PURGE_INFO', {
-              count: progress.purged,
-              percent: Math.floor((progress.processed / progress.total) * 100)
-            });
-          })
-          .on('optimise', () => setUiStatus('PURGE_AFTER'))
-          .catch(console.error);
-      }).then(function() {
-        // replication complete
-        setUiStatus('STARTING_APP');
-      })
-      .catch(function(err) {
-        return err;
-      })
+        })
+        .on('optimise', () => setUiStatus('PURGE_AFTER'))
+        .catch(console.error)
+      )
+      .then(() => setUiStatus('STARTING_APP'))
+      .catch(err => err)
       .then(function(err) {
         localDb.close();
         remoteDb.close();

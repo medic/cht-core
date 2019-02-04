@@ -4,7 +4,7 @@ const auth = require('../../auth')(),
       utils = require('../../utils'),
       loginPage = require('../../page-objects/login/login.po.js');
 
-describe('Purging on login', () => {
+xdescribe('Purging on login', () => {
 
   const restrictedUserName = 'e2e_restricted',
         restrictedPass = 'e2e_restricted',
@@ -175,7 +175,7 @@ describe('Purging on login', () => {
   beforeEach(utils.beforeEach);
   afterEach(utils.afterEach);
 
-  it('Logging in as a restricted user with configured purge rules should perform a purge', () => {
+  xit('Logging in as a restricted user with configured purge rules should perform a purge', () => {
     utils.resetBrowser();
     commonElements.goToLoginPage();
     loginPage.login(restrictedUserName, restrictedPass);

@@ -43,6 +43,7 @@ var feedback = require('../modules/feedback'),
     SetLanguage,
     Settings,
     Snackbar,
+    UpdateServiceWorker,
     Telemetry,
     Tour,
     TranslateFrom,
@@ -749,43 +750,24 @@ var feedback = require('../modules/feedback'),
       },
     });
 
-    if ($window.applicationCache) {
-      $window.applicationCache.addEventListener('updateready', showUpdateReady);
-      $window.applicationCache.addEventListener('error', function(err) {
-        // TODO: once we trigger this work out what a 401 looks like and redirect
-        //       to the login page
-        $log.error('Application cache update error', err);
-      });
-      if (
-        $window.applicationCache.status === $window.applicationCache.UPDATEREADY ||
-        $window.applicationCache.status === $window.applicationCache.UNCACHED
-      ) {
-        showUpdateReady();
-      }
-      Changes({
-        key: 'inbox-ddoc',
-        filter: function(change) {
-          return (
-            change.id === '_design/medic' ||
-            change.id === '_design/medic-client' ||
-            change.id === 'appcache' ||
-            change.id === 'settings'
-          );
-        },
-        callback: function() {
-          // if the manifest hasn't changed, prompt user to reload settings
-          $window.applicationCache.addEventListener('noupdate', showUpdateReady);
-          // check if the manifest has changed. if it has, download and prompt
-          try {
-            $window.applicationCache.update();
-          } catch (e) {
-            // chrome incognito mode active
-            $log.error('Error updating the appcache.', e);
-            showUpdateReady();
-          }
-        },
-      });
-    }
+    Changes({
+      key: 'inbox-ddoc',
+      filter: function(change) {
+        return (
+          change.id === '_design/medic' ||
+          change.id === '_design/medic-client' ||
+          change.id === 'service-worker-meta' ||
+          change.id === 'settings'
+        );
+      },
+      callback: function(change) {
+        if (change.id === 'service-worker-meta') {
+          UpdateServiceWorker(showUpdateReady);
+        } else {
+          showUpdateReady();
+        }
+      },
+    });
 
     RecurringProcessManager.startUpdateRelativeDate();
     $scope.$on('$destroy', function() {
