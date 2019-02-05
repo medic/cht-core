@@ -91,27 +91,23 @@ module.exports = {
       })
       .then(() => auth.check(req, getExportPermission(req.params.type)))
       .then(() => {
-        return new Promise(resolve => {
-
-          writeExportHeaders(res, req.params.type, formats.csv);
+        writeExportHeaders(res, req.params.type, formats.csv);
 
           // To respond as quickly to the request as possible
           res.flushHeaders();
 
-          resolve(service
-            .export(type, filters, options)
-            .on('error', err => {
-              // Because we've already flushed the headers above we can't use
-              // serverUtils anymore, we just have to close the connection
-              logger.error('Error exporting v2 data for', type);
-              logger.error('params:', JSON.stringify(filters, null, 2));
-              logger.error('options:', JSON.stringify(options, null, 2));
-              logger.error('%o', err);
-              res.end(`--ERROR--\nError exporting data: ${err.message}\n`);
-            })
-            .pipe(res));
-
-        });
+        service
+          .export(type, filters, options)
+          .on('error', err => {
+            // Because we've already flushed the headers above we can't use
+            // serverUtils anymore, we just have to close the connection
+            logger.error('Error exporting v2 data for', type);
+            logger.error('params:', JSON.stringify(filters, null, 2));
+            logger.error('options:', JSON.stringify(options, null, 2));
+            logger.error('%o', err);
+            res.end(`--ERROR--\nError exporting data: ${err.message}\n`);
+          })
+          .pipe(res);
       })
       .catch(err => serverUtils.error(err, req, res));
   }
