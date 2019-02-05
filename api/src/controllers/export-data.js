@@ -1,4 +1,3 @@
-const domain = require('domain');
 const moment = require('moment');
 const logger = require('../logger');
 
@@ -94,23 +93,22 @@ module.exports = {
       .then(() => {
         writeExportHeaders(res, req.params.type, formats.csv);
 
-        // To respond as quickly to the request as possible
-        res.flushHeaders();
+          // To respond as quickly to the request as possible
+          res.flushHeaders();
 
-        const d = domain.create();
-        d.on('error', err => {
-          // Because we've already flushed the headers above we can't use
-          // serverUtils anymore, we just have to close the connection
-          logger.error('Error exporting v2 data for', type);
-          logger.error('params:', JSON.stringify(filters, null, 2));
-          logger.error('options:', JSON.stringify(options, null, 2));
-          logger.error('%o', err);
-          res.end(`--ERROR--\nError exporting data: ${err.message}\n`);
-        });
-        d.run(() =>
-          service
-            .export(type, filters, options)
-            .pipe(res));
-      }).catch(err => serverUtils.error(err, req, res));
+        service
+          .export(type, filters, options)
+          .on('error', err => {
+            // Because we've already flushed the headers above we can't use
+            // serverUtils anymore, we just have to close the connection
+            logger.error('Error exporting v2 data for', type);
+            logger.error('params:', JSON.stringify(filters, null, 2));
+            logger.error('options:', JSON.stringify(options, null, 2));
+            logger.error('%o', err);
+            res.end(`--ERROR--\nError exporting data: ${err.message}\n`);
+          })
+          .pipe(res);
+      })
+      .catch(err => serverUtils.error(err, req, res));
   }
 };
