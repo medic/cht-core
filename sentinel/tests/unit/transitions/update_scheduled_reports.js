@@ -1,7 +1,9 @@
 const sinon = require('sinon'),
   assert = require('chai').assert,
   db = require('../../../src/db'),
-  transition = require('../../../src/transitions/update_scheduled_reports');
+  transition = require('../../../src/transitions/update_scheduled_reports'),
+  utils = require('../../../src/lib/utils'),
+  transitionUtils = require('../../../src/transitions/utils');
 
 describe('update_scheduled_reports', () => {
   afterEach(() => sinon.restore());
@@ -128,38 +130,78 @@ describe('update_scheduled_reports', () => {
         true
       );
     });
+
+    it('should fail when transition already run', () => {
+      sinon.stub(transitionUtils, 'hasRun').returns(true);
+      assert.equal(
+        transition.filter(
+          {
+            form: 'x',
+            fields: { week: 1, year: 2 },
+            type: 'data_record'
+          },
+          'info'
+        ),
+        false);
+
+      assert.equal(transitionUtils.hasRun.callCount, 1);
+      assert.deepEqual(transitionUtils.hasRun.args[0], ['info', 'update_scheduled_reports']);
+    });
   });
 
   describe('getDuplicates', () => {
+    it('should not query when clinic not found', done => {
+      sinon.stub(utils, 'getClinicID').returns(false);
+      sinon.stub(db.medic, 'query');
+
+      transition._getDuplicates({}, result => {
+        assert.equal(result, undefined);
+        assert.equal(db.medic.query.callCount, 0);
+        done();
+      });
+    });
+
     it('use week view when doc has week property', done => {
       sinon.stub(db.medic, 'query').callsArg(2);
-      transition._getDuplicates({ fields: { week: 9 } }, () => {
+      sinon.stub(utils, 'getClinicID').returns('clinic');
+      transition._getDuplicates({ fields: { week: 9, year: 2018 }, form: 'form' }, () => {
         assert.equal(
           db.medic.query.args[0][0],
           'medic/reports_by_form_year_week_clinic_id_reported_date'
         );
+        assert.deepEqual(db.medic.query.args[0][1], {
+          include_docs: true,
+          startkey: ['form', 2018, 9, 'clinic'],
+          endkey: ['form', 2018, 9, 'clinic', {}],
+        });
         done();
       });
     });
 
     it('use month view when doc has month property', done => {
       sinon.stub(db.medic, 'query').callsArg(2);
-      transition._getDuplicates({ fields: { month: 9 } }, () => {
+      sinon.stub(utils, 'getClinicID').returns('clinic');
+      transition._getDuplicates({ fields: { month: 9, year: 2018 }, form: 'form' }, () => {
         assert.equal(
           db.medic.query.args[0][0],
           'medic/reports_by_form_year_month_clinic_id_reported_date'
         );
+        assert.deepEqual(db.medic.query.args[0][1], {
+          include_docs: true,
+          startkey: ['form', 2018, 9, 'clinic'],
+          endkey: ['form', 2018, 9, 'clinic', {}],
+        });
         done();
       });
     });
   });
 
   describe('onMatch', () => {
-    it('calls bulkDocs with correct arguments', () => {
+    it('does not call bulkDocs when no duplicates', () => {
       const view = sinon
         .stub(db.medic, 'query')
         .callsArgWith(2, null, { rows: [] });
-      const bulkSave = sinon.stub(db.medic, 'bulkDocs').callsArg(1);
+      const bulkSave = sinon.stub(db.medic, 'bulkDocs');
       const change = {
         doc: {
           _id: 'abc',
@@ -170,12 +212,12 @@ describe('update_scheduled_reports', () => {
           },
         },
       };
+      sinon.stub(utils, 'getClinicID').returns('clinic');
 
       return transition.onMatch(change).then(changed => {
-        assert.equal(changed, true);
+        assert.equal(changed, undefined);
         assert.equal(view.callCount, 1);
-        assert.equal(bulkSave.callCount, 1);
-        assert.equal(bulkSave.args[0][0].length, 0);
+        assert.equal(bulkSave.callCount, 0);
       });
     });
 
@@ -227,6 +269,7 @@ describe('update_scheduled_reports', () => {
           reported_date: 200,
         },
       };
+      sinon.stub(utils, 'getClinicID').returns('clinic');
       return transition.onMatch(change).then(changed => {
         assert.equal(changed, true);
         assert.equal(bulkSave.callCount, 1);

@@ -2,15 +2,19 @@ var utils = require('../lib/utils'),
   db = require('../db'),
   logger = require('../lib/logger');
 
+const transitionUtils = require('./utils');
+
+const NAME = 'update_scheduled_reports';
+
 module.exports = {
-  filter: function(doc) {
-    var self = module.exports;
+  filter: (doc, info = {}) => {
     return Boolean(
       doc &&
-        doc.form &&
-        doc.type === 'data_record' &&
-        (doc.errors ? doc.errors.length === 0 : true) &&
-        self._isFormScheduled(doc)
+      doc.form &&
+      doc.type === 'data_record' &&
+      (doc.errors ? doc.errors.length === 0 : true) &&
+      module.exports._isFormScheduled(doc) &&
+      !transitionUtils.hasRun(info, NAME)
     );
   },
   /**
@@ -22,9 +26,17 @@ module.exports = {
    *
    */
   onMatch: change => {
-    return new Promise(resolve => {
+    return new Promise((resolve, reject) => {
       var self = module.exports;
       self._getDuplicates(change.doc, function(err, rows) {
+        if (err) {
+          return reject(err);
+        }
+
+        if (!rows || !rows.length) {
+          return resolve();
+        }
+
         // only one record in duplicates, mark transition complete
         if (rows && rows.length === 1) {
           return resolve(true);
@@ -74,6 +86,10 @@ module.exports = {
     var q = { include_docs: true },
       view,
       clinic_id = utils.getClinicID(doc);
+
+    if (!clinic_id) {
+      return callback();
+    }
 
     if (doc.fields.week || doc.fields.week_number) {
       q.startkey = [
