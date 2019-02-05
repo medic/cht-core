@@ -133,7 +133,7 @@ const deleteReadDocs = change => {
 
         return metaDb.remove(row.id, row.value.rev).catch(err => {
           // ignore 404s or 409s - the doc was probably deleted client side already
-          if (err.status !== 404 && err.status !== 409) {
+          if (err && err.status !== 404 && err.status !== 409) {
             throw err;
           }
         });
