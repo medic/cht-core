@@ -45,7 +45,7 @@ module.exports = {
     db.medic.query('medic-client/contacts_by_reference', {
       key: [ 'shortcode', id ]
     }, (err, results) => {
-      callback(err, !(results && results.rows && results.rows.length));
+      callback(err, !!(results && results.rows && results.rows.length));
     });
   },
   addUniqueId: (doc, callback) => {
