@@ -136,7 +136,7 @@ const findValidRegistration = (doc, config, registrations) => {
         // the scheduled tasks
         for (var j = scheduledTasks.length - 1; j >= 0; j--) {
           var task = scheduledTasks[j];
-          var prevTask = scheduledTasks[j - 1];
+          var prevTask = scheduledTasks[j - 1]; // will be undefined when j === 0
 
           var silenceStart = moment(task.due);
           silenceStart.subtract(silenceFor);
