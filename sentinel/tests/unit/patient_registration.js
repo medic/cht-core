@@ -88,7 +88,7 @@ describe('patient registration', () => {
             },
           ],
         },
-      }
+      },
     ]);
   });
 
