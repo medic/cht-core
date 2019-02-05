@@ -85,6 +85,9 @@ const putIdLengthDoc = (db, idLengthDoc) => {
   return db.medic
     .put(idLengthDoc)
     .catch(err => {
+      // We're OK with a 409, because we're going to presume this is happening
+      // because a human edited it to suite their needs, and their write is more
+      // important than ours.
       if (err.status !== 409) {
         throw err;
       }

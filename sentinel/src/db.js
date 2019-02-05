@@ -39,7 +39,7 @@ if (UNIT_TEST_ENV) {
   };
 
   module.exports.allDbs = stubMe('allDbs');
-  module.exports.metaDb = stubMe('metaDb');
+  module.exports.get = stubMe('get');
 } else if (COUCH_URL) {
   // strip trailing slash from to prevent bugs in path matching
   const couchUrl = COUCH_URL && COUCH_URL.replace(/\/$/, '');
@@ -61,7 +61,7 @@ if (UNIT_TEST_ENV) {
       return err ? reject(err) : resolve(body);
     });
   });
-  module.exports.metaDb = db => new PouchDB(`${module.exports.serverUrl}/${db}`);
+  module.exports.get = db => new PouchDB(`${module.exports.serverUrl}/${db}`);
 } else {
   logger.warn(
     'Please define a COUCH_URL in your environment e.g. \n' +
