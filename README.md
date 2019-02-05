@@ -9,7 +9,7 @@ Medic Mobile combines messaging, data collection, and analytics for health worke
 
 The `medic` repository is the core tool of the Medic Mobile stack. When health workers submit data — using text messages (SMS), our mobile applications, or our SIM applications — the web app confirms data submission, generates unique IDs, and schedules automated reminder messages based on user-defined configurations. All information submitted by mobile users can be viewed, filtered, verified, and exported using the reports tab in the web application.
 
-The web app is fully responsive with a mobile-first design, and supports localization using any written language. It can be installed locally, as part of a virtual machine (see [medic-os](https://github.com/medic/medic-os)), or in the cloud.
+The web app is fully responsive with a mobile-first design, and supports localization using any written language. It can be installed locally or in the cloud by setting up the individual components or as a Docker container.
 
 Currently, we functionally support the latest versions of Chrome, Chrome for Android and Firefox. We do not support Safari (unreliable implementations of web APIs we need) and the generic android browser (unreliable implementations in general). Our webapp code, which includes any code written as configuration, is still ES5. Our exact support matrix (including older app versions) can be found [in our docs](https://github.com/medic/medic-docs/blob/master/installation/supported-software.md).
 
@@ -18,19 +18,19 @@ For more information about Medic Mobile's architecture and how the pieces fit to
 For more information about the format of docs in the database, see [Database Schema](https://github.com/medic/medic-docs/blob/master/development/db-schema.md).
 For more information about the SMS exchange protocol between webapp and gateway, see [Message States](https://github.com/medic/medic-docs/blob/master/user/message-states.md).
 
-## Easy local deployment
+## Easy Deployment
 
 If you want to get up and running with no fuss, [you can use Docker](https://github.com/medic/medic-docs/blob/master/installation/public-docker-image-setup.md).
 
 Once up and running you can [create your own custom application](https://github.com/medic/medic-docs/blob/master/configuration/developing-community-health-applications.md), or set up the standard application by running [the Medic Configurer](https://github.com/medic/medic-conf) on the [./config/standard](https://github.com/medic/medic/tree/master/config/standard) directory.
 
-If you want to develop against the underlying framework of Medic, follow the _Development Setup_ below.
+If you want to develop against the underlying framework of Medic and set up components individually, follow the _Development Setup_ below.
 
 ## Development Setup
 
 Before getting started, read about our [development workflow](https://github.com/medic/medic-docs/blob/master/development/workflow.md) and the [architecture overview](https://github.com/medic/medic-docs/blob/master/development/architecture.md).
 
-The setup described below doesn't use [Medic OS](https://github.com/medic/medic-docs/blob/master/development/architecture.md#medic-os), the tools will be run directly on your machine.
+With the setup instructions below the tools will run directly on your machine, rather than via Docker.
 
 ### Dependencies
 
