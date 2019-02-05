@@ -71,7 +71,7 @@ curl http://localhost:5984 # should fail
 To be able to use Fauxton with authenticated users:
 
 ```shell
-curl -X PUT 'http://myAdminUser:myAdminPass@localhost:5984/_node/$COUCH_NODE_NAME/_config/httpd/WWW-Authenticate' \
+curl -X PUT "http://myAdminUser:myAdminPass@localhost:5984/_node/$COUCH_NODE_NAME/_config/httpd/WWW-Authenticate" \
   -d '"Basic realm=\"administrator\""' -H "Content-Type: application/json"
 ```
 
