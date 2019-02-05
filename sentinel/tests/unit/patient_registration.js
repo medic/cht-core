@@ -88,7 +88,7 @@ describe('patient registration', () => {
             },
           ],
         },
-      },
+      }
     ]);
   });
 
@@ -434,6 +434,222 @@ describe('patient registration', () => {
       assert.equal(doc.errors.length, 1);
       assert.equal(doc.errors[0].code, 'invalid_last_menstrual_period');
       assert.equal(doc.errors[0].message, 'Something something Maria');
+    });
+  });
+
+  describe('when manually selecting patient_id', () => {
+    //const logger = require('../../src/lib/logger');
+    beforeEach(() => {
+      transition.getConfig.returns([
+        {
+          form: 'WITH',
+          events: [
+            {
+              name: 'on_create',
+              trigger: 'add_patient',
+              params: { patient_id_field: 'my_patient_id' },
+              bool_expr: '',
+            },
+          ],
+          validations: [
+            {
+              property: 'patient_name',
+              rule: 'lenMin(1) && lenMax(100)',
+              message: 'Invalid patient name.',
+            },
+            {
+              property: 'my_patient_id',
+              rule: 'lenMin(5) && lenMax(13)',
+              message: 'Invalid patient id.',
+            },
+          ],
+          messages: [
+            {
+              message: [
+                {
+                  content: 'thanks {{contact.name}}',
+                  locale: 'en',
+                },
+                {
+                  content: 'gracias {{contact.name}}',
+                  locale: 'es',
+                },
+              ],
+              recipient: 'reporting_unit',
+            }
+          ],
+        }
+      ]);
+    });
+
+    it('should mark as errored when patient_id_field is missing', () => {
+      const doc = {
+        _id: 'my-form',
+        form: 'WITH',
+        fields: {
+          patient_name: 'Chris'
+        },
+        from: '+1234',
+        reported_date: 1234
+      };
+
+      sinon.stub(utils, 'getRegistrations');
+      sinon.stub(utils, 'getPatientContact');
+      sinon.stub(utils, 'getPatientContactUuid').callsArgWith(1, null, false);
+      sinon.stub(transitionUtils, 'addUniqueId');
+
+      sinon.stub(db.medic, 'query')
+        .withArgs('medic-client/contacts_by_phone')
+        .callsArgWith(2, null, {
+          rows: [{ key: '+1234', doc: { _id: 'julie', name: 'Julie', phone: '+1234', parent: { _id: 'place' } }}]
+        });
+
+      sinon.stub(db.medic, 'post').callsArgWith(1);
+
+      return transition.onMatch({ doc }).then(changed => {
+        assert.equal(changed, true);
+        assert.equal(doc.errors.length, 1);
+        assert.equal(doc.errors[0].code, 'no_provided_patient_id');
+        assert.equal(utils.getRegistrations.callCount, 0);
+        assert.equal(utils.getPatientContact.callCount, 0);
+        assert.equal(utils.getPatientContactUuid.callCount, 1);
+        assert.equal(transitionUtils.addUniqueId.callCount, 0);
+
+        assert.equal(db.medic.query.callCount, 1);
+        assert.deepEqual(db.medic.query.args[0][0], 'medic-client/contacts_by_phone');
+        assert.deepEqual(db.medic.query.args[0][1], { key: '+1234', include_docs: true });
+        assert.equal(db.medic.post.callCount, 1);
+        assert.deepEqual(db.medic.post.args[0][0], {
+          name: 'Chris',
+          created_by: 'julie',
+          parent: { _id: 'place' },
+          reported_date: 1234,
+          type: 'person',
+          patient_id: undefined,
+          source_id: 'my-form',
+        });
+      });
+    });
+
+    it('should add error when provided patient_id is not unique', () => {
+      const doc = {
+        _id: 'my-form',
+        form: 'WITH',
+        fields: {
+          patient_name: 'Chris',
+          my_patient_id: 'not_unique'
+        },
+        from: '+1234',
+        reported_date: 1234
+      };
+
+      sinon.stub(utils, 'getRegistrations');
+      sinon.stub(utils, 'getPatientContact');
+      sinon.stub(utils, 'getPatientContactUuid').callsArgWith(1, null, false);
+      sinon.stub(transitionUtils, 'addUniqueId');
+
+      sinon.stub(db.medic, 'query');
+      db.medic.query
+        .withArgs('medic-client/contacts_by_phone')
+        .callsArgWith(2, null, {
+          rows: [{ key: '+1234', doc: { _id: 'julie', name: 'Julie', phone: '+1234', parent: { _id: 'place' } }}]
+        });
+
+      db.medic.query
+        .withArgs('medic-client/contacts_by_reference')
+        .callsArgWith(2, null, {
+          rows: [{ key: ['shortcode', 'not_unique'], id: 'some_patient' }]
+        });
+
+      sinon.stub(db.medic, 'post').callsArgWith(1);
+
+      return transition.onMatch({ doc }).then(changed => {
+        assert.equal(changed, true);
+        assert.equal(doc.errors.length, 1);
+        assert.equal(doc.errors[0].code, 'provided_patient_id_not_unique');
+        assert.equal(utils.getRegistrations.callCount, 0);
+        assert.equal(utils.getPatientContact.callCount, 0);
+        assert.equal(utils.getPatientContactUuid.callCount, 1);
+        assert.equal(transitionUtils.addUniqueId.callCount, 0);
+
+        assert.equal(db.medic.query.callCount, 2);
+        assert.deepEqual(db.medic.query.args[0][0], 'medic-client/contacts_by_reference');
+        assert.deepEqual(db.medic.query.args[0][1], { key: ['shortcode', 'not_unique'] });
+
+        assert.deepEqual(db.medic.query.args[1][0], 'medic-client/contacts_by_phone');
+        assert.deepEqual(db.medic.query.args[1][1], { key: '+1234', include_docs: true });
+
+        assert.equal(db.medic.post.callCount, 1);
+        assert.deepEqual(db.medic.post.args[0][0], {
+          name: 'Chris',
+          created_by: 'julie',
+          parent: { _id: 'place' },
+          reported_date: 1234,
+          type: 'person',
+          patient_id: undefined,
+          source_id: 'my-form',
+        });
+      });
+    });
+
+    it('should create contact with provided patient_id when unique', () => {
+      const doc = {
+        _id: 'my-form',
+        form: 'WITH',
+        fields: {
+          patient_name: 'Chris',
+          my_patient_id: 'unique'
+        },
+        from: '+1234',
+        reported_date: 1234
+      };
+
+      sinon.stub(utils, 'getRegistrations');
+      sinon.stub(utils, 'getPatientContact');
+      sinon.stub(utils, 'getPatientContactUuid').callsArgWith(1, null, false);
+      sinon.stub(transitionUtils, 'addUniqueId');
+
+      sinon.stub(db.medic, 'query');
+      db.medic.query
+        .withArgs('medic-client/contacts_by_phone')
+        .callsArgWith(2, null, {
+          rows: [{ key: '+1234', doc: { _id: 'julie', name: 'Julie', phone: '+1234', parent: { _id: 'place' } }}]
+        });
+
+      db.medic.query
+        .withArgs('medic-client/contacts_by_reference')
+        .callsArgWith(2, null, {
+          rows: []
+        });
+
+      sinon.stub(db.medic, 'post').callsArgWith(1);
+
+      return transition.onMatch({ doc }).then(changed => {
+        assert.equal(changed, true);
+        assert.equal(doc.errors, undefined);
+        assert.equal(utils.getRegistrations.callCount, 0);
+        assert.equal(utils.getPatientContact.callCount, 0);
+        assert.equal(utils.getPatientContactUuid.callCount, 1);
+        assert.equal(transitionUtils.addUniqueId.callCount, 0);
+
+        assert.equal(db.medic.query.callCount, 2);
+        assert.deepEqual(db.medic.query.args[0][0], 'medic-client/contacts_by_reference');
+        assert.deepEqual(db.medic.query.args[0][1], { key: ['shortcode', 'unique'] });
+
+        assert.deepEqual(db.medic.query.args[1][0], 'medic-client/contacts_by_phone');
+        assert.deepEqual(db.medic.query.args[1][1], { key: '+1234', include_docs: true });
+
+        assert.equal(db.medic.post.callCount, 1);
+        assert.deepEqual(db.medic.post.args[0][0], {
+          name: 'Chris',
+          created_by: 'julie',
+          parent: { _id: 'place' },
+          reported_date: 1234,
+          type: 'person',
+          patient_id: 'unique',
+          source_id: 'my-form',
+        });
+      });
     });
   });
 });
