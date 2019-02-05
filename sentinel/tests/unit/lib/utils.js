@@ -3,12 +3,12 @@ const { expect } = require('chai'),
       registrationUtils = require('@medic/registration-utils'),
       taskUtils = require('@medic/task-utils'),
       config = require('../../../src/config'),
-      db = require('../../../src/db-pouch');
+      db = require('../../../src/db');
 
 describe('utils util', () => {
 
   beforeEach(() => {
-    db.medic.query = sinon.stub();
+    sinon.stub(db.medic, 'query');
   });
   afterEach(() => sinon.restore());
 

@@ -1,5 +1,5 @@
 const _ = require('underscore'),
-  db = require('./db-pouch'),
+  db = require('./db'),
   logger = require('./lib/logger'),
   translationUtils = require('@medic/translation-utils'),
   translations = {};

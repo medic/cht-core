@@ -6,8 +6,8 @@ const async = require('async'),
   utils = require('../lib/utils'),
   date = require('../date'),
   config = require('../config'),
-  dbPouch = require('../db-pouch'),
-  lineage = require('@medic/lineage')(Promise, dbPouch.medic),
+  db = require('../db'),
+  lineage = require('@medic/lineage')(Promise, db.medic),
   messageUtils = require('@medic/message-utils');
 
 const getPatient = (patientShortcodeId, callback) => {
@@ -35,13 +35,12 @@ const getTemplateContext = (doc, callback) => {
 };
 
 module.exports = {
-  execute: function(db, callback) {
+  execute: callback => {
     var now = moment(date.getDate()),
       overdue = now.clone().subtract(7, 'days');
 
-    db.medic.view(
-      'medic',
-      'due_tasks',
+    db.medic.query(
+      'medic/due_tasks',
       {
         include_docs: true,
         endkey: now.toISOString(),
@@ -106,7 +105,7 @@ module.exports = {
                   }
 
                   lineage.minify(doc);
-                  dbPouch.medic.put(doc, cb);
+                  db.medic.put(doc, cb);
                 });
               })
               .catch(cb);

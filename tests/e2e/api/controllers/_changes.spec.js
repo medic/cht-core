@@ -538,29 +538,6 @@ describe('changes handler', () => {
         });
     });
 
-    it('normal feeds should replicate correctly when new changes are pushed', () => {
-      const allowedDocs = createSomeContacts(25, 'fixture:bobville'),
-            allowedDocs2 = createSomeContacts(25, 'fixture:bobville');
-
-      const ids = _.pluck(allowedDocs, '_id');
-      ids.push(..._.pluck(allowedDocs2, '_id'));
-
-      const promise = allowedDocs.reduce((promise, doc) => {
-        return promise.then(() => utils.saveDoc(doc));
-      }, Promise.resolve());
-
-      return utils
-        .saveDocs(allowedDocs2)
-        .then(() => Promise.all([
-          getChangesForIds('bob', ids, true, currentSeq, 4),
-          promise,
-        ]))
-        .then(([ changes ]) => {
-          expect(ids.every(id => changes.find(change => change.id === id))).toBe(true);
-          expect(changes.some(change => !change.seq)).toBe(false);
-        });
-    });
-
     it('filters allowed changes in longpolls', () => {
       const allowedDocs = createSomeContacts(3, 'fixture:bobville');
       const deniedDocs = createSomeContacts(3, 'irrelevant-place');
@@ -1025,6 +1002,29 @@ describe('changes handler', () => {
           expect(changes[0].id).toEqual(contact._id);
           expect(changes[0].deleted).toEqual(undefined);
           expect(changes[0].changes[0].rev).toEqual(contact._rev);
+        });
+    });
+
+    it('normal feeds should replicate correctly when new changes are pushed', () => {
+      const allowedDocs = createSomeContacts(25, 'fixture:bobville'),
+            allowedDocs2 = createSomeContacts(25, 'fixture:bobville');
+
+      const ids = _.pluck(allowedDocs, '_id');
+      ids.push(..._.pluck(allowedDocs2, '_id'));
+
+      const promise = allowedDocs.reduce((promise, doc) => {
+        return promise.then(() => utils.saveDoc(doc));
+      }, Promise.resolve());
+
+      return utils
+        .saveDocs(allowedDocs2)
+        .then(() => Promise.all([
+          getChangesForIds('bob', ids, true, currentSeq, 4),
+          promise
+        ]))
+        .then(([ changes ]) => {
+          expect(ids.every(id => changes.find(change => change.id === id))).toBe(true);
+          expect(changes.some(change => !change.seq)).toBe(false);
         });
     });
   });

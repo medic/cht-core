@@ -1,4 +1,4 @@
-const db = require('../db-pouch'),
+const db = require('../db'),
   logger = require('../lib/logger');
 
 const infoDocId = id => id + '-info';

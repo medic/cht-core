@@ -3,8 +3,8 @@ const _ = require('underscore'),
   utils = require('../lib/utils'),
   transitionUtils = require('./utils'),
   logger = require('../lib/logger'),
-  dbPouch = require('../db-pouch'),
-  lineage = require('@medic/lineage')(Promise, dbPouch.medic),
+  db = require('../db'),
+  lineage = require('@medic/lineage')(Promise, db.medic),
   messages = require('../lib/messages'),
   validation = require('../lib/validation'),
   schedules = require('../lib/schedules'),
@@ -12,7 +12,6 @@ const _ = require('underscore'),
   moment = require('moment'),
   config = require('../config'),
   date = require('../date'),
-  db = require('../db-nano'),
   NAME = 'registration',
   XFORM_CONTENT_TYPE = 'xml';
 
@@ -462,7 +461,7 @@ module.exports = {
         return callback(null, true);
       }
 
-      transitionUtils.isIdUnique(db, providedId, (err, isUnique) => {
+      transitionUtils.isIdUnique(providedId, (err, isUnique) => {
         if (err) {
           return callback(err);
         }
@@ -499,9 +498,8 @@ module.exports = {
           return callback();
         }
 
-        db.medic.view(
-          'medic-client',
-          'contacts_by_phone',
+        db.medic.query(
+          'medic-client/contacts_by_phone',
           {
             key: doc.from,
             include_docs: true,
@@ -526,7 +524,7 @@ module.exports = {
             if (doc.birth_date) {
               patient.date_of_birth = doc.birth_date;
             }
-            dbPouch.medic.post(patient, callback);
+            db.medic.post(patient, callback);
           }
         );
       }

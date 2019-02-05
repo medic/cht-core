@@ -7,7 +7,7 @@ var _ = require('underscore'),
   utils = require('../lib/utils'),
   transitionUtils = require('./utils'),
   date = require('../date'),
-  db = require('../db-pouch'),
+  db = require('../db'),
   NAME = 'accept_patient_reports';
 
 const _hasConfig = doc => {

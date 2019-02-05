@@ -85,7 +85,6 @@
     "moment",
     "morgan",
     "mustache",
-    "nano",
     "object-path",
     "openrosa-formlist",
     "pass-stream",

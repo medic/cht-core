@@ -1,7 +1,7 @@
 const mutingUtils = require('../../../src/lib/muting_utils'),
       sinon = require('sinon'),
       chai = require('chai'),
-      db = require('../../../src/db-pouch'),
+      db = require('../../../src/db'),
       utils = require('../../../src/lib/utils'),
       moment = require('moment'),
       infodoc = require('../../../src/lib/infodoc');

@@ -1,21 +1,22 @@
 const sinon = require('sinon'),
       assert = require('chai').assert,
       jsc = require('jsverify'),
-      ids = require('../../src/lib/ids.js');
+      ids = require('../../src/lib/ids.js'),
+      db = require('../../src/db');
 
 const mockDb = (idFilterLogicFn) => {
-  return { medic: {
-    view: sinon.spy((db, view, options, callback) => {
-      const ids = options.keys.slice(0);
-      const toReturn = {
-        rows: idFilterLogicFn(ids).map(id => {return {key: id};})
-      };
+  sinon.stub(db.medic, 'query').callsFake((view, options) => {
+    const ids = options.keys.slice(0);
+    const toReturn = {
+      rows: idFilterLogicFn(ids).map(id => {return {key: id};})
+    };
 
-      callback(null, toReturn);
-    }),
-    get: sinon.stub().callsArgWith(1, null, {_id: 'shortcode-id-length', current_length: 5}),
-    insert: sinon.stub().callsArgWith(1)
-  }};
+    return Promise.resolve(toReturn);
+  });
+
+  sinon.stub(db.medic, 'get').resolves({_id: 'shortcode-id-length', current_length: 5});
+  sinon.stub(db.medic, 'put').resolves();
+  return db;
 };
 
 describe('ids', () => {
@@ -83,7 +84,7 @@ describe('ids', () => {
   it('id generator uses id length from the database', () => {
     const db = mockDb(() => []),
           LENGTH = 10;
-    db.medic.get = sinon.stub().callsArgWith(1, null, {_id: 'shortcode-id-length', current_length: LENGTH});
+    db.medic.get = sinon.stub().resolves({_id: 'shortcode-id-length', current_length: LENGTH});
 
     return ids.generator(db).next().value.then(patientId => {
       assert(patientId);

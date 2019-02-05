@@ -1,6 +1,5 @@
 var utils = require('../lib/utils'),
-  db = require('../db-nano'),
-  dbPouch = require('../db-pouch'),
+  db = require('../db'),
   logger = require('../lib/logger');
 
 module.exports = {
@@ -53,12 +52,8 @@ module.exports = {
           docs.push(doc);
         });
 
-        dbPouch.medic.bulkDocs(
+        db.medic.bulkDocs(
           docs,
-          {
-            all_or_nothing: true,
-            docs: docs,
-          },
           function(err) {
             // cancels transition and marks as incomplete
             if (err) {
@@ -114,7 +109,7 @@ module.exports = {
       return callback();
     }
 
-    db.medic.view('medic', view, q, function(err, data) {
+    db.medic.query(`medic/${view}`, q, function(err, data) {
       callback(err, data && data.rows);
     });
   },

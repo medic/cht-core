@@ -1,6 +1,6 @@
 const _ = require('underscore'),
   vm = require('vm'),
-  db = require('../db-pouch'),
+  db = require('../db'),
   moment = require('moment'),
   config = require('../config'),
   taskUtils = require('@medic/task-utils'),
