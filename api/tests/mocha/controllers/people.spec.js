@@ -43,7 +43,7 @@ describe('people controller', () => {
   describe('getPerson', () => {
 
     it('returns custom message on 404 errors.', done => {
-      sinon.stub(controller._lineage, 'fetchHydratedDoc').returns(Promise.reject({statusCode: 404}));
+      sinon.stub(controller._lineage, 'fetchHydratedDoc').returns(Promise.reject({status: 404}));
       controller._getPerson('x').catch(err => {
         chai.expect(err.message).to.equal('Failed to find person.');
         done();
