@@ -156,12 +156,10 @@ const findValidRegistration = (doc, config, registrations) => {
           // that is older than the visit reported date
           if (moment(task.due) < visitReportedDate && 
               ['delivered', 'sent'].includes(task.state)) {
-            // We update the task in the original registration (and not in the sorted copy)
-            var taskIndex = _.findIndex(registration.scheduled_tasks, { due: task.due });
-            if (!registration.scheduled_tasks[taskIndex].responded_to_by) {
-              registration.scheduled_tasks[taskIndex].responded_to_by = [];
-            }
-            registration.scheduled_tasks[taskIndex].responded_to_by.push(doc._id);
+            if (!task.responded_to_by) { 
+              task.responded_to_by = []; 
+            } 
+            task.responded_to_by.push(doc._id);
 
             return registration;
           }
