@@ -164,7 +164,7 @@
             });
         }
       })
-      .then(() => purger(localDb, isInitialReplicationNeeded)
+      .then(() => purger(localDb, userCtx, isInitialReplicationNeeded)
         .on('start', () => setUiStatus('PURGE_INIT'))
         .on('progress', function(progress) {
           setUiStatus('PURGE_INFO', {
