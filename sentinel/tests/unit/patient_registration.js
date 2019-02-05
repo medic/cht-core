@@ -438,7 +438,6 @@ describe('patient registration', () => {
   });
 
   describe('when manually selecting patient_id', () => {
-    //const logger = require('../../src/lib/logger');
     beforeEach(() => {
       transition.getConfig.returns([
         {
