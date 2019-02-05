@@ -68,7 +68,7 @@ const getIdLengthDoc = db => {
   return db.medic
     .get(ID_LENGTH_DOC_ID)
     .catch(err => {
-      if (err.status !== 404) {
+      if (err && err.status !== 404) {
         throw err;
       }
 
@@ -88,7 +88,7 @@ const putIdLengthDoc = (db, idLengthDoc) => {
       // We're OK with a 409, because we're going to presume this is happening
       // because a human edited it to suite their needs, and their write is more
       // important than ours.
-      if (err.status !== 409) {
+      if (err && err.status !== 409) {
         throw err;
       }
 
