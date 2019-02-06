@@ -1,0 +1,9 @@
+{
+    "icon": "risk",
+    "title": "Confirm death",
+    "context": {
+        "person": false,
+        "place": false,
+        "expression": ""
+    }
+}

@@ -1,0 +1,162 @@
+<?xml version="1.0"?>
+<h:html xmlns="http://www.w3.org/2002/xforms" xmlns:ev="http://www.w3.org/2001/xml-events" xmlns:h="http://www.w3.org/1999/xhtml" xmlns:jr="http://openrosa.org/javarosa" xmlns:orx="http://openrosa.org/xforms" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+  <h:head>
+    <h:title>Death Confirmation</h:title>
+    <model>
+      <instance>
+        <death_confirmation delimiter="#" id="death_confirmation" prefix="J1!death_confirmation!" version="2019-02-06 14-20">
+          <inputs>
+            <meta>
+              <location>
+                <lat/>
+                <long/>
+                <error/>
+                <message/>
+              </location>
+            </meta>
+            <source>user</source>
+            <source_id/>
+            <contact>
+              <_id/>
+              <name/>
+              <patient_id/>
+              <parent>
+                <contact>
+                  <name/>
+                  <phone/>
+                </contact>
+              </parent>
+            </contact>
+          </inputs>
+          <child_name/>
+          <patient_id/>
+          <chw_name/>
+          <chw_phone/>
+          <death_report>
+            <n_1/>
+            <n_2/>
+            <death/>
+            <date_of_death/>
+            <place/>
+            <other_place/>
+            <n_3/>
+            <n_4/>
+            <notes/>
+          </death_report>
+          <meta tag="hidden">
+            <instanceID/>
+          </meta>
+        </death_confirmation>
+      </instance>
+      <instance id="contact-summary"/>
+      <bind nodeset="/death_confirmation/inputs" relevant="./source = 'user'"/>
+      <bind nodeset="/death_confirmation/inputs/source" type="string"/>
+      <bind nodeset="/death_confirmation/inputs/source_id" type="string"/>
+      <bind nodeset="/death_confirmation/inputs/contact/_id" type="db:person"/>
+      <bind nodeset="/death_confirmation/inputs/contact/name" type="string"/>
+      <bind nodeset="/death_confirmation/inputs/contact/patient_id" type="string"/>
+      <bind nodeset="/death_confirmation/inputs/contact/parent/contact/name" type="string"/>
+      <bind nodeset="/death_confirmation/inputs/contact/parent/contact/phone" type="string"/>
+      <bind calculate="../inputs/contact/name" nodeset="/death_confirmation/child_name" type="string"/>
+      <bind calculate="../inputs/contact/patient_id" nodeset="/death_confirmation/patient_id" type="string"/>
+      <bind calculate="../inputs/contact/parent/contact/name" nodeset="/death_confirmation/chw_name" type="string"/>
+      <bind calculate="../inputs/contact/parent/contact/phone" nodeset="/death_confirmation/chw_phone" type="string"/>
+      <bind nodeset="/death_confirmation/death_report/n_1" readonly="true()" type="string"/>
+      <bind nodeset="/death_confirmation/death_report/n_2" readonly="true()" type="string"/>
+      <bind nodeset="/death_confirmation/death_report/death" required="true()" type="select1"/>
+      <bind constraint=". &lt;= today()" nodeset="/death_confirmation/death_report/date_of_death" relevant=" /death_confirmation/death_report/death  = 'yes'" required="true()" type="date"/>
+      <bind nodeset="/death_confirmation/death_report/place" relevant=" /death_confirmation/death_report/death  = 'yes'" required="true()" type="select1"/>
+      <bind nodeset="/death_confirmation/death_report/other_place" relevant=" /death_confirmation/death_report/place  = 'other'" required="true()" type="string"/>
+      <bind nodeset="/death_confirmation/death_report/n_3" readonly="true()" relevant=" /death_confirmation/death_report/death  = 'no'" type="string"/>
+      <bind nodeset="/death_confirmation/death_report/n_4" readonly="true()" relevant=" /death_confirmation/death_report/death  = 'yes'" type="string"/>
+      <bind nodeset="/death_confirmation/death_report/notes" type="string"/>
+      <bind calculate="concat('uuid:', uuid())" nodeset="/death_confirmation/meta/instanceID" readonly="true()" type="string"/>
+    </model>
+  </h:head>
+  <h:body class="pages">
+    <group appearance="field-list" ref="/death_confirmation/inputs">
+      <label>Patient</label>
+      <input appearance="hidden" ref="/death_confirmation/inputs/source">
+        <label>Source</label>
+      </input>
+      <input appearance="hidden" ref="/death_confirmation/inputs/source_id">
+        <label>Source ID</label>
+      </input>
+      <group ref="/death_confirmation/inputs/contact">
+        <label>Contact</label>
+        <input appearance="db-object" ref="/death_confirmation/inputs/contact/_id">
+          <label>What is the child's name?</label>
+          <hint>Select a person from list</hint>
+        </input>
+        <input appearance="hidden" ref="/death_confirmation/inputs/contact/name">
+          <label>Child Name</label>
+        </input>
+        <input appearance="hidden" ref="/death_confirmation/inputs/contact/patient_id">
+          <label>Child ID</label>
+        </input>
+        <group ref="/death_confirmation/inputs/contact/parent">
+          <label>Parent</label>
+          <group ref="/death_confirmation/inputs/contact/parent/contact">
+            <label>Contact</label>
+            <input ref="/death_confirmation/inputs/contact/parent/contact/name">
+              <label>CHW name</label>
+            </input>
+            <input ref="/death_confirmation/inputs/contact/parent/contact/phone">
+              <label>CHW phone</label>
+            </input>
+          </group>
+        </group>
+      </group>
+    </group>
+    <group appearance="field-list" ref="/death_confirmation/death_report">
+      <label></label>
+      <input ref="/death_confirmation/death_report/n_1">
+        <label>Death report for <output value=" /death_confirmation/child_name "/> has been submitted.</label>
+      </input>
+      <input ref="/death_confirmation/death_report/n_2">
+        <label>Please follow up with <output value=" /death_confirmation/chw_name "/> to see if <output value=" /death_confirmation/child_name "/> died.
+Call: <output value=" /death_confirmation/chw_phone "/></label></input>
+      <select1 ref="/death_confirmation/death_report/death">
+        <label>Did <output value=" /death_confirmation/child_name "/> die</label>
+        <item>
+          <label>Yes</label>
+          <value>yes</value>
+        </item>
+        <item>
+          <label>No</label>
+          <value>no</value>
+        </item>
+      </select1>
+      <input ref="/death_confirmation/death_report/date_of_death">
+        <label>Date of death</label>
+      </input>
+      <select1 ref="/death_confirmation/death_report/place">
+        <label>Place of death</label>
+        <item>
+          <label>Home</label>
+          <value>home</value>
+        </item>
+        <item>
+          <label>Health facility</label>
+          <value>facility</value>
+        </item>
+        <item>
+          <label>Other</label>
+          <value>other</value>
+        </item>
+      </select1>
+      <input ref="/death_confirmation/death_report/other_place">
+        <label>Specify other place of death</label>
+      </input>
+      <input ref="/death_confirmation/death_report/n_3">
+        <label>Notify <output value=" /death_confirmation/chw_name "/> that <output value=" /death_confirmation/child_name "/> did not die and therefore schedules will continue as usual</label>
+      </input>
+      <input ref="/death_confirmation/death_report/n_4">
+        <label>Thank you for confirming death report for <output value=" /death_confirmation/child_name "/></label>
+      </input>
+      <input ref="/death_confirmation/death_report/notes">
+        <label>Additional notes</label>
+      </input>
+    </group>
+  </h:body>
+</h:html>
