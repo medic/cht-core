@@ -150,7 +150,7 @@ describe('update_scheduled_reports', () => {
   });
 
   describe('getDuplicates', () => {
-    it('should not query when clinic not found', done => {
+    it('should not query when clinic not found', () => {
       const doc = {
         type: 'data_record',
         form: 'form',
@@ -162,15 +162,13 @@ describe('update_scheduled_reports', () => {
       sinon.stub(utils, 'getClinicID').returns(false);
       sinon.stub(db.medic, 'query');
 
-      transition._getDuplicates(doc, (err, result) => {
+      return transition._getDuplicates(doc).then(result => {
         assert.equal(result, undefined);
-        assert.equal(err, undefined);
         assert.equal(db.medic.query.callCount, 0);
-        done();
       });
     });
 
-    it('use week view when doc has week property', done => {
+    it('use week view when doc has week property', () => {
       const doc = {
         type: 'data_record',
         form: 'form',
@@ -179,9 +177,9 @@ describe('update_scheduled_reports', () => {
           year: 2018
         }
       };
-      sinon.stub(db.medic, 'query').callsArgWith(2, null, { rows: [{ doc }] });
+      sinon.stub(db.medic, 'query').resolves({ rows: [{ doc }] });
       sinon.stub(utils, 'getClinicID').returns('clinic');
-      transition._getDuplicates(doc, (err, result) => {
+      return transition._getDuplicates(doc).then(result => {
         assert.equal(
           db.medic.query.args[0][0],
           'medic/reports_by_form_year_week_clinic_id_reported_date'
@@ -192,12 +190,10 @@ describe('update_scheduled_reports', () => {
           endkey: ['form', 2018, 9, 'clinic', {}],
         });
         assert.deepEqual(result, [{ doc }]);
-        assert.equal(err, undefined);
-        done();
       });
     });
 
-    it('use month view when doc has month property', done => {
+    it('use month view when doc has month property', () => {
       const doc = {
         type: 'data_record',
         form: 'form',
@@ -206,9 +202,9 @@ describe('update_scheduled_reports', () => {
           year: 2018
         }
       };
-      sinon.stub(db.medic, 'query').callsArgWith(2, null, { rows: [{ doc }] });
+      sinon.stub(db.medic, 'query').resolves({ rows: [{ doc }] });
       sinon.stub(utils, 'getClinicID').returns('clinic');
-      transition._getDuplicates(doc, (err, result) => {
+      return transition._getDuplicates(doc).then(result => {
         assert.equal(
           db.medic.query.args[0][0],
           'medic/reports_by_form_year_month_clinic_id_reported_date'
@@ -219,8 +215,6 @@ describe('update_scheduled_reports', () => {
           endkey: ['form', 2018, 9, 'clinic', {}],
         });
         assert.deepEqual(result, [{ doc }]);
-        assert.equal(err, undefined);
-        done();
       });
     });
   });
@@ -262,7 +256,7 @@ describe('update_scheduled_reports', () => {
       };
       const view = sinon
         .stub(db.medic, 'query')
-        .callsArgWith(2, null, { rows: [{ doc: change.doc }] });
+        .resolves({ rows: [{ doc: change.doc }] });
       sinon.stub(utils, 'getClinicID').returns('clinic');
 
       return transition.onMatch(change).then(changed => {
@@ -272,8 +266,8 @@ describe('update_scheduled_reports', () => {
       });
     });
 
-    it('remove duplicates and replace with latest doc', () => {
-      sinon.stub(db.medic, 'query').callsArgWith(2, null, {
+    it('remove duplicates', () => {
+      sinon.stub(db.medic, 'query').resolves({
         // ascending records
         rows: [
           {
@@ -293,6 +287,20 @@ describe('update_scheduled_reports', () => {
           {
             key: [2013, 4],
             doc: {
+              _id: 'qwe',
+              _rev: '1-qqq',
+              form: 'z',
+              fields: {
+                month: 4,
+                year: 2013,
+                pills: 16,
+              },
+              reported_date: 150,
+            },
+          },
+          {
+            key: [2013, 4],
+            doc: {
               _id: 'xyz',
               _rev: '1-kkkk',
               form: 'z',
@@ -303,10 +311,10 @@ describe('update_scheduled_reports', () => {
               },
               reported_date: 200,
             },
-          },
+          }
         ],
       });
-      const bulkSave = sinon.stub(db.medic, 'bulkDocs').callsArg(1);
+      const bulkSave = sinon.stub(db.medic, 'bulkDocs').resolves();
       const change = {
         doc: {
           _id: 'xyz',
@@ -325,16 +333,101 @@ describe('update_scheduled_reports', () => {
         assert.equal(changed, true);
         assert.equal(bulkSave.callCount, 1);
         assert.equal(bulkSave.args[0][0].length, 2);
-        // new doc inherits id/rev from previous record and is deleted
-        bulkSave.args[0][0].forEach(doc => {
-          if (doc._id === 'abc') {
-            assert.equal(doc._rev, '1-dddd');
-            assert.equal(doc.fields.pills, 22);
-          }
-          if (doc._id === 'xyz') {
-            assert.equal(doc._deleted, true);
-          }
+        assert.deepEqual(bulkSave.args[0][0][0], {
+          _id: 'abc',
+          _rev: '1-dddd',
+          form: 'z',
+          fields: {
+            month: 4,
+            year: 2013,
+            pills: 12,
+          },
+          reported_date: 100,
+          _deleted: true
         });
+
+        assert.deepEqual(bulkSave.args[0][0][1], {
+          _id: 'qwe',
+          _rev: '1-qqq',
+          form: 'z',
+          fields: {
+            month: 4,
+            year: 2013,
+            pills: 16,
+          },
+          reported_date: 150,
+          _deleted: true
+        });
+      });
+    });
+
+    it('should return undefined if bulkDocs fails', () => {
+      sinon.stub(db.medic, 'query').resolves({
+        // ascending records
+        rows: [
+          {
+            key: [2013, 4],
+            doc: {
+              _id: 'abc',
+              _rev: '1-dddd',
+              form: 'z',
+              fields: {
+                month: 4,
+                year: 2013,
+                pills: 12,
+              },
+              reported_date: 100,
+            },
+          },
+          {
+            key: [2013, 4],
+            doc: {
+              _id: 'qwe',
+              _rev: '1-qqq',
+              form: 'z',
+              fields: {
+                month: 4,
+                year: 2013,
+                pills: 16,
+              },
+              reported_date: 150,
+            },
+          },
+          {
+            key: [2013, 4],
+            doc: {
+              _id: 'xyz',
+              _rev: '1-kkkk',
+              form: 'z',
+              fields: {
+                month: 4,
+                year: 2013,
+                pills: 22,
+              },
+              reported_date: 200,
+            },
+          }
+        ],
+      });
+      sinon.stub(db.medic, 'bulkDocs').rejects({ some: 'err' });
+      const change = {
+        doc: {
+          _id: 'xyz',
+          _rev: '1-kkkk',
+          form: 'z',
+          fields: {
+            month: 4,
+            year: 2013,
+            pills: 22,
+          },
+          reported_date: 200,
+        },
+      };
+      sinon.stub(utils, 'getClinicID').returns('clinic');
+      return transition.onMatch(change).then(result => {
+        assert.equal(result, undefined);
+        assert.equal(db.medic.bulkDocs.callCount, 1);
+        assert.equal(db.medic.bulkDocs.args[0][0].length, 2);
       });
     });
   });

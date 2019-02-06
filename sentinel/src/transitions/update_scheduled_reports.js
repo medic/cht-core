@@ -1,10 +1,8 @@
-var utils = require('../lib/utils'),
+const utils = require('../lib/utils'),
   db = require('../db'),
-  logger = require('../lib/logger');
-
-const transitionUtils = require('./utils');
-
-const NAME = 'update_scheduled_reports';
+  logger = require('../lib/logger'),
+  transitionUtils = require('./utils'),
+  NAME = 'update_scheduled_reports';
 
 module.exports = {
   filter: (doc, info = {}) => {
@@ -19,83 +17,53 @@ module.exports = {
   },
   /**
    * If a record has a month/week/week_number, year and clinic then look for
-   * duplicates and update those instead.
-   *
-   * POST creates doc
-   * GET  /scheduled_reports/:form/:year/:week|month/:clinic_id (look for dups)
-   *
+   * duplicates and delete them.
    */
   onMatch: change => {
-    return new Promise((resolve, reject) => {
-      var self = module.exports;
-      self._getDuplicates(change.doc, function(err, rows) {
-        if (err) {
-          return reject(err);
+    return module.exports._getDuplicates(change.doc).then(rows => {
+      if (!rows || !rows.length) {
+        return;
+      }
+
+      if (rows.length === 1) {
+        return true;
+      }
+
+      const duplicates = [];
+      rows.forEach(row => {
+        if (row.doc._id === change.doc._id) {
+          return;
         }
 
-        // the doc was not correctly attached to a clinic
-        if (!rows || !rows.length) {
-          return resolve();
-        }
-
-        // only one record in duplicates, mark transition complete
-        if (rows && rows.length === 1) {
-          return resolve(true);
-        }
-
-        // remove duplicates and replace with latest doc
-        var found_target,
-          docs = [];
-
-        rows.forEach(row => {
-          var doc = row.doc;
-          if (doc._id === change.doc._id) {
-            doc._deleted = true;
-          } else if (!found_target) {
-            var id = doc._id,
-              rev = doc._rev;
-            found_target = true;
-            // overwrite data except _rev and _id fields
-            doc = change.doc;
-            doc._id = id;
-            doc._rev = rev;
-          } else {
-            doc._deleted = true;
-          }
-          docs.push(doc);
-        });
-
-        db.medic.bulkDocs(
-          docs,
-          function(err) {
-            // cancels transition and marks as incomplete
-            if (err) {
-              logger.error('error doing bulk save: %o', err);
-              return resolve();
-            }
-            return resolve(true);
-          }
-        );
+        row.doc._deleted = true;
+        duplicates.push(row.doc);
       });
+
+      return db.medic
+        .bulkDocs(duplicates)
+        .then(() => true)
+        .catch(err => {
+          logger.error('error doing bulk save: %o', err);
+        });
     });
   },
   //
   // look for duplicate from same year, month/week and reporting unit
   // also includes changed doc
   //
-  _getDuplicates: function(doc, callback) {
-    var q = { include_docs: true },
-      view,
-      clinicId = utils.getClinicID(doc);
+  _getDuplicates: doc => {
+    const options = { include_docs: true },
+          clinicId = utils.getClinicID(doc);
+    let view;
 
     if (doc.fields.week || doc.fields.week_number) {
-      q.startkey = [
+      options.startkey = [
         doc.form,
         doc.fields.year,
         doc.fields.week || doc.fields.week_number,
         clinicId,
       ];
-      q.endkey = [
+      options.endkey = [
         doc.form,
         doc.fields.year,
         doc.fields.week || doc.fields.week_number,
@@ -104,13 +72,13 @@ module.exports = {
       ];
       view = 'reports_by_form_year_week_clinic_id_reported_date';
     } else if (doc.fields.month || doc.fields.month_num) {
-      q.startkey = [
+      options.startkey = [
         doc.form,
         doc.fields.year,
         doc.fields.month || doc.fields.month_num,
         clinicId,
       ];
-      q.endkey = [
+      options.endkey = [
         doc.form,
         doc.fields.year,
         doc.fields.month || doc.fields.month_num,
@@ -121,12 +89,10 @@ module.exports = {
     }
 
     if (!view || !clinicId) {
-      return callback();
+      return Promise.resolve();
     }
 
-    db.medic.query(`medic/${view}`, q, function(err, data) {
-      callback(err, data && data.rows);
-    });
+    return db.medic.query(`medic/${view}`, options).then(data => data && data.rows);
   },
   _isFormScheduled: function(doc) {
     return (
@@ -137,5 +103,5 @@ module.exports = {
         doc.fields.week_number) &&
       doc.fields.year
     );
-  },
+  }
 };
