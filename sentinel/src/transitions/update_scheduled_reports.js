@@ -33,6 +33,7 @@ module.exports = {
           return reject(err);
         }
 
+        // the doc was not correctly attached to a clinic
         if (!rows || !rows.length) {
           return resolve();
         }
@@ -85,24 +86,20 @@ module.exports = {
   _getDuplicates: function(doc, callback) {
     var q = { include_docs: true },
       view,
-      clinic_id = utils.getClinicID(doc);
-
-    if (!clinic_id) {
-      return callback();
-    }
+      clinicId = utils.getClinicID(doc);
 
     if (doc.fields.week || doc.fields.week_number) {
       q.startkey = [
         doc.form,
         doc.fields.year,
         doc.fields.week || doc.fields.week_number,
-        clinic_id,
+        clinicId,
       ];
       q.endkey = [
         doc.form,
         doc.fields.year,
         doc.fields.week || doc.fields.week_number,
-        clinic_id,
+        clinicId,
         {},
       ];
       view = 'reports_by_form_year_week_clinic_id_reported_date';
@@ -111,17 +108,19 @@ module.exports = {
         doc.form,
         doc.fields.year,
         doc.fields.month || doc.fields.month_num,
-        clinic_id,
+        clinicId,
       ];
       q.endkey = [
         doc.form,
         doc.fields.year,
         doc.fields.month || doc.fields.month_num,
-        clinic_id,
+        clinicId,
         {},
       ];
       view = 'reports_by_form_year_month_clinic_id_reported_date';
-    } else {
+    }
+
+    if (!view || !clinicId) {
       return callback();
     }
 
