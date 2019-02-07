@@ -345,16 +345,6 @@ module.exports = {
     return request(options, { debug: debug, notJson: notJson });
   },
 
-  requestOnSentinelTestDb: (options) => {
-    if (typeof options === 'string') {
-      options = {
-        path: options,
-      };
-    }
-    options.path = '/' + constants.DB_NAME + '-sentinel' + (options.path || '');
-    return request(options);
-  },
-
   saveDoc: doc => {
     const postData = JSON.stringify(doc);
     return module.exports.requestOnTestDb({

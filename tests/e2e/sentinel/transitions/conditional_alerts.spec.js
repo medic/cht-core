@@ -1,5 +1,5 @@
 const utils = require('../../../utils'),
-      querystring = require('querystring'),
+      sentinelUtils = require('../utils'),
       uuid = require('uuid');
 
 const contacts = [
@@ -41,34 +41,6 @@ const DOCS_TO_KEEP = [
   'person'
 ];
 
-const waitForSentinel = docId => {
-  return utils
-    .requestOnSentinelTestDb('/_local/sentinel-meta-data')
-    .then(metaData => metaData.processed_seq)
-    .then(seq => {
-      const changeOpts = {
-        since: seq,
-        filter: '_doc_ids',
-        doc_ids: JSON.stringify([docId])
-      };
-      return utils.requestOnTestDb('/_changes?' + querystring.stringify(changeOpts));
-    })
-    .then(response => {
-      if (response.results && !response.results.length) {
-        // sentinel has caught up and processed our doc
-        return;
-      }
-
-      return new Promise(resolve => {
-        setTimeout(() => waitForSentinel(docId).then(resolve), 100);
-      });
-    });
-};
-
-const getInfoDoc = docId => {
-  return utils.requestOnSentinelTestDb('/' + docId + '-info');
-};
-
 describe('conditional_alerts', () => {
   beforeAll(done => utils.saveDocs(contacts).then(done));
   afterAll(done => utils.revertDb().then(done));
@@ -98,8 +70,8 @@ describe('conditional_alerts', () => {
     return utils
       .updateSettings(settings, true)
       .then(() => utils.saveDoc(doc))
-      .then(() => waitForSentinel(doc._id))
-      .then(() => getInfoDoc(doc._id))
+      .then(() => sentinelUtils.waitForSentinel(doc._id))
+      .then(() => sentinelUtils.getInfoDoc(doc._id))
       .then(info => {
         expect(info.transitions).toEqual(undefined);
       });
@@ -124,11 +96,13 @@ describe('conditional_alerts', () => {
       from: '+444999'
     };
 
+    console.log('aiiici');
+
     return utils
       .updateSettings(settings, true)
       .then(() => utils.saveDoc(doc))
-      .then(() => waitForSentinel(doc._id))
-      .then(() => getInfoDoc(doc._id))
+      .then(() => sentinelUtils.waitForSentinel(doc._id))
+      .then(() => sentinelUtils.getInfoDoc(doc._id))
       .then(info => {
         expect(info.transitions).toEqual(undefined);
       });
@@ -158,8 +132,8 @@ describe('conditional_alerts', () => {
     return utils
       .updateSettings(settings, true)
       .then(() => utils.saveDoc(doc))
-      .then(() => waitForSentinel(doc._id))
-      .then(() => getInfoDoc(doc._id))
+      .then(() => sentinelUtils.waitForSentinel(doc._id))
+      .then(() => sentinelUtils.getInfoDoc(doc._id))
       .then(info => {
         expect(info.transitions).toEqual(undefined);
       });
@@ -189,8 +163,8 @@ describe('conditional_alerts', () => {
     return utils
       .updateSettings(settings, true)
       .then(() => utils.saveDoc(doc))
-      .then(() => waitForSentinel(doc._id))
-      .then(() => getInfoDoc(doc._id))
+      .then(() => sentinelUtils.waitForSentinel(doc._id))
+      .then(() => sentinelUtils.getInfoDoc(doc._id))
       .then(info => {
         expect(info.transitions).toBeDefined();
         expect(info.transitions.conditional_alerts).toBeDefined();
@@ -244,8 +218,8 @@ describe('conditional_alerts', () => {
     return utils
       .updateSettings(settings, true)
       .then(() => utils.saveDoc(form1))
-      .then(() => waitForSentinel(form1._id))
-      .then(() => getInfoDoc(form1._id))
+      .then(() => sentinelUtils.waitForSentinel(form1._id))
+      .then(() => sentinelUtils.getInfoDoc(form1._id))
       .then(info => {
         expect(info.transitions).toBeDefined();
         expect(info.transitions.conditional_alerts).toBeDefined();
@@ -259,8 +233,8 @@ describe('conditional_alerts', () => {
         expect(updated.tasks[0].messages[0].message).toEqual('Patient has a fever');
       })
       .then(() => utils.saveDoc(form0))
-      .then(() => waitForSentinel(form0._id))
-      .then(() => getInfoDoc(form0._id))
+      .then(() => sentinelUtils.waitForSentinel(form0._id))
+      .then(() => sentinelUtils.getInfoDoc(form0._id))
       .then(info => {
         expect(info.transitions).toBeDefined();
         expect(info.transitions.conditional_alerts).toBeDefined();
