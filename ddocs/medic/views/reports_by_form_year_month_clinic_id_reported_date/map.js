@@ -2,7 +2,6 @@ function (doc) {
   if (doc.type === 'data_record' &&
       doc.contact &&
       doc.contact.parent &&
-      doc.year &&
       doc.fields &&
       doc.fields.year &&
       (doc.fields.month || doc.fields.month_num) &&
