@@ -192,8 +192,6 @@ cards = [
     fields: function() {
       var i, report;
       var immunizations = initImmunizations();
-      console.log("*****immunizations init***");
-      console.log(immunizations);
       for(i=0; i<reports.length; ++i) {
         report = reports[i];
         if (report.form === 'immunization_visit') {
@@ -207,13 +205,9 @@ cards = [
         }
       }
 
-      console.log("###immunizations###");
-      console.log(immunizations);
-
       var fields = [];
 
       IMMUNIZATION_LIST.forEach(function(imm) {
-        console.log(imm, " *in lineage: ", isVaccineInLineage(lineage, imm));
         if (isVaccineInLineage(lineage, imm)) {
           var field = {
             label: 'contact.profile.imm.' + imm,
