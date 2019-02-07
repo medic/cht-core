@@ -1,9 +1,11 @@
+const IS_TRAVIS = !!process.env.TEST_SUITE;
+
 module.exports = {
 
   // connection information for the test api instance which is
   // intentionally different from the dev api instance to avoid
   // port collisions
-  API_PORT: 5988,
+  API_PORT: IS_TRAVIS ? 5988 : 4988,
   API_HOST: 'localhost',
 
   // connection information for the couchdb instance

@@ -291,7 +291,7 @@ function countReportsSubmittedInWindow(form, end) {
   });
 }
 
-// // from nootils.js: https://github.com/medic/medic-webapp/blob/1cc25f2aeab60258065329bd1365ee1d316a1f50/static/js/modules/nootils.js
+// // from nootils.js: https://github.com/medic/medic/blob/1cc25f2aeab60258065329bd1365ee1d316a1f50/static/js/modules/nootils.js
 // // TODO: since this was refactored, before deleting we should consider updating at the source https://github.com/medic/medic-nootils/blob/48e92ed3e9a137dc87ff28c3efde04d59cfce39d/src/web/nootils.js#L49
 // function isFormSubmittedInWindow(form, start, end, count) {
 //   return reports.some(function(r) {
@@ -303,7 +303,7 @@ function countReportsSubmittedInWindow(form, end) {
 //   });
 // }
 
-// from nootils.js: https://github.com/medic/medic-webapp/blob/1cc25f2aeab60258065329bd1365ee1d316a1f50/static/js/modules/nootils.js
+// from nootils.js: https://github.com/medic/medic/blob/1cc25f2aeab60258065329bd1365ee1d316a1f50/static/js/modules/nootils.js
 function addDate(date, days) {
   var result = new Date(date);
   result.setUTCDate(result.getUTCDate() + days);
@@ -311,7 +311,7 @@ function addDate(date, days) {
   return result;
 }
 
-// Opposite of the following, with no form arg: https://github.com/medic/medic-webapp/blob/31762050095dd775941d1db3a2fc6f6b633522f3/static/js/modules/nootils.js#L37-L47
+// Opposite of the following, with no form arg: https://github.com/medic/medic/blob/31762050095dd775941d1db3a2fc6f6b633522f3/static/js/modules/nootils.js#L37-L47
 var getOldestReport = function(reports) {
   var result;
   reports.forEach(function(report) {

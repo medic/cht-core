@@ -28,7 +28,6 @@
   require('./debounce');
   require('./debug');
   require('./delete-docs');
-  require('./download-url');
   require('./edit-group');
   require('./enketo');
   require('./enketo-prepopulation-data');
@@ -88,6 +87,7 @@
   require('./translation-null-interpolation');
   require('./unread-records');
   require('./update-facility');
+  require('./update-service-worker');
   require('./update-settings');
   require('./update-user');
   require('./user');

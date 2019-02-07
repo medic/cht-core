@@ -2,16 +2,23 @@ const environment = require('./src/environment'),
   serverChecks = require('@medic/server-checks'),
   logger = require('./src/logger');
 
-process.on('unhandledRejection', reason => {
-  logger.error('Unhandled Rejection:');
-  logger.error('%o',reason);
-});
+process
+  .on('unhandledRejection', reason => {
+    logger.error('UNHANDLED REJECTION!');
+    logger.error('  Reason: %o', reason);
+  })
+  .on('uncaughtException', err => {
+    logger.error('UNCAUGHT EXCEPTION!');
+    logger.error('  Error: %o', err);
+    process.exit(1);
+  });
 
 serverChecks.check(environment.serverUrl).then(() => {
   const app = require('./src/routing'),
     config = require('./src/config'),
     migrations = require('./src/migrations'),
     ddocExtraction = require('./src/ddoc-extraction'),
+    resourceExtraction = require('./src/resource-extraction'),
     translations = require('./src/translations'),
     serverUtils = require('./src/server-utils'),
     apiPort = process.env.API_PORT || 5988;
@@ -20,6 +27,10 @@ serverChecks.check(environment.serverUrl).then(() => {
     .then(() => logger.info('Extracting ddoc…'))
     .then(ddocExtraction.run)
     .then(() => logger.info('DDoc extraction completed successfully'))
+
+    .then(() => logger.info('Extracting resources…'))
+    .then(resourceExtraction.run)
+    .then(() => logger.info('Extracting resources completed successfully'))
 
     .then(() => logger.info('Loading configuration…'))
     .then(config.load)

@@ -1,5 +1,5 @@
 const _ = require('underscore'),
-      db = require('../db-pouch'),
+      db = require('../db'),
       utils = require('./utils'),
       places = require('./places'),
       lineage = require('@medic/lineage')(Promise, db.medic);
@@ -7,7 +7,7 @@ const _ = require('underscore'),
 const getPerson = id => {
   return lineage.fetchHydratedDoc(id)
     .catch(err => {
-      if (err.statusCode === 404) {
+      if (err.status === 404) {
         throw { code: 404, message: 'Failed to find person.' };
       }
       throw err;
@@ -47,7 +47,7 @@ const validatePerson = obj => {
  * Warning: not doing validation of the data against a form yet.  The form is
  * user defined in settings so being liberal with what gets saved to the
  * database. Ideally CouchDB would validate a given object against a form in
- * validate_doc_update. https://github.com/medic/medic-webapp/issues/2203
+ * validate_doc_update. https://github.com/medic/medic/issues/2203
  */
 const createPerson = data => {
   data.type = 'person';

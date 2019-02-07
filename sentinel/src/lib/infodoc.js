@@ -1,4 +1,4 @@
-const db = require('../db-pouch'),
+const db = require('../db'),
   logger = require('../lib/logger');
 
 const infoDocId = id => id + '-info';
@@ -43,7 +43,6 @@ const getInfoDoc = change => {
       } else {
         return createInfoDoc(change.id, 'unknown');
       }
-      return null;
     })
     .then(doc => updateInfoDoc(doc, rev));
 };

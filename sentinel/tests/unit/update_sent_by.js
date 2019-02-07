@@ -1,6 +1,6 @@
 const sinon = require('sinon'),
       assert = require('chai').assert,
-      db = require('../../src/db-nano'),
+      db = require('../../src/db'),
       transition = require('../../src/transitions/update_sent_by');
 
 describe('update sent by', () => {
@@ -9,7 +9,7 @@ describe('update sent by', () => {
 
   it('updates sent_by to clinic name if contact name', () => {
     var doc = { from: '+34567890123' };
-    var dbView = sinon.stub(db.medic, 'view').callsArgWith(3, null, { rows: [ { doc: { name: 'Clinic' } } ] } );
+    var dbView = sinon.stub(db.medic, 'query').resolves({ rows: [ { doc: { name: 'Clinic' } } ] } );
     return transition.onMatch({ doc: doc }).then(changed => {
       assert(changed);
       assert.equal(doc.sent_by, 'Clinic');
@@ -19,7 +19,7 @@ describe('update sent by', () => {
 
   it('sent_by untouched if nothing available', () => {
     var doc = { from: 'unknown number' };
-    sinon.stub(db.medic, 'view').callsArgWith(3, null, {});
+    sinon.stub(db.medic, 'query').resolves({});
     return transition.onMatch({ doc: doc }).then(changed => {
       assert(!changed);
       assert.strictEqual(doc.sent_by, undefined);

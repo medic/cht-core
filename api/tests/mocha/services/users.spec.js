@@ -4,7 +4,7 @@ const chai = require('chai'),
       people = require('../../../src/controllers/people'),
       places = require('../../../src/controllers/places'),
       config = require('../../../src/config'),
-      db = require('../../../src/db-pouch'),
+      db = require('../../../src/db'),
       COMPLEX_PASSWORD = '23l4ijk3nSDELKSFnwekirh';
 
 const facilitya = { _id: 'a', name: 'aaron' },
@@ -587,7 +587,9 @@ describe('Users service', () => {
         password: 'short'
       }).catch(err => {
         chai.expect(err.code).to.equal(400);
-        chai.expect(err.message).to.equal('The password must be at least 8 characters long.');
+        chai.expect(err.message.message).to.equal('The password must be at least 8 characters long.');
+        chai.expect(err.message.translationKey).to.equal('password.length.minimum');
+        chai.expect(err.message.translationParams).to.have.property('minimum');
         done();
       });
     });
@@ -601,7 +603,8 @@ describe('Users service', () => {
         password: 'password'
       }).catch(err => {
         chai.expect(err.code).to.equal(400);
-        chai.expect(err.message).to.equal('The password is too easy to guess. Include a range of types of characters to increase the score.');
+        chai.expect(err.message.message).to.equal('The password is too easy to guess. Include a range of types of characters to increase the score.');
+        chai.expect(err.message.translationKey).to.equal('password.weak');
         done();
       });
     });
@@ -637,7 +640,8 @@ describe('Users service', () => {
       userData.place = 'georgia';
       service.createUser(userData).catch(err => {
         chai.expect(err.code).to.equal(400);
-        chai.expect(err.message).to.equal('Contact is not within place.');
+        chai.expect(err.message.translationKey).to.equal('configuration.user.place.contact');
+        chai.expect(err.message.message).to.equal('Contact is not within place.');
         done();
       });
     });
@@ -688,10 +692,10 @@ describe('Users service', () => {
       sinon.stub(db.medic, 'get').resolves();
       const insert = sinon.stub(db.medic, 'put');
       service.createUser(userData).catch(err => {
-        chai.expect(err).to.deep.equal({
-          code: 400,
-          message: 'Username "x" already taken.'
-        });
+        chai.expect(err.code).to.equal(400);
+        chai.expect(err.message.message).to.equal('Username "x" already taken.');
+        chai.expect(err.message.translationKey).to.equal('username.taken');
+        chai.expect(err.message.translationParams).to.have.property('username');
         chai.expect(insert.callCount).to.equal(0);
         done();
       });
@@ -702,10 +706,10 @@ describe('Users service', () => {
       sinon.stub(db.medic, 'get').resolves('jane lives here too.');
       const insert = sinon.stub(db.medic, 'put');
       service.createUser(userData).catch(err => {
-        chai.expect(err).to.deep.equal({
-          code: 400,
-          message: 'Username "x" already taken.'
-        });
+        chai.expect(err.code).to.equal(400);
+        chai.expect(err.message.message).to.equal('Username "x" already taken.');
+        chai.expect(err.message.translationKey).to.equal('username.taken');
+        chai.expect(err.message.translationParams).to.have.property('username');
         chai.expect(insert.callCount).to.equal(0);
         done();
       });
@@ -751,7 +755,9 @@ describe('Users service', () => {
         }
       });
       service.createUser(userData).catch(err => {
-        chai.expect(err.message).to.equal('Contact is not within place.');
+        chai.expect(err.code).to.equal(400);
+        chai.expect(err.message.message).to.equal('Contact is not within place.');
+        chai.expect(err.message.translationKey).to.equal('configuration.user.place.contact');
         done();
       });
     });
@@ -967,7 +973,9 @@ describe('Users service', () => {
       sinon.stub(db.users, 'put').resolves({});
       service.updateUser('paul', data, true).catch(err => {
         chai.expect(err.code).to.equal(400);
-        chai.expect(err.message).to.equal('The password must be at least 8 characters long.');
+        chai.expect(err.message.translationKey).to.equal('password.length.minimum');
+        chai.expect(err.message.translationParams).to.have.property('minimum');
+        chai.expect(err.message.message).to.equal('The password must be at least 8 characters long.');
         chai.expect(db.medic.put.callCount).to.equal(0);
         chai.expect(db.users.put.callCount).to.equal(0);
         done();
@@ -982,7 +990,8 @@ describe('Users service', () => {
       sinon.stub(db.users, 'put').resolves({});
       service.updateUser('paul', data, true).catch(err => {
         chai.expect(err.code).to.equal(400);
-        chai.expect(err.message).to.equal('The password is too easy to guess. Include a range of types of characters to increase the score.');
+        chai.expect(err.message.translationKey).to.equal('password.weak');
+        chai.expect(err.message.message).to.equal('The password is too easy to guess. Include a range of types of characters to increase the score.');
         chai.expect(db.medic.put.callCount).to.equal(0);
         chai.expect(db.users.put.callCount).to.equal(0);
         done();
@@ -1133,7 +1142,9 @@ describe('Users service', () => {
         chai.expect(usersGet.callCount).to.equal(1);
         chai.expect(usersGet.args[0][0]).to.equal('org.couchdb.user:georgi');
         chai.expect(err.code).to.equal(400);
-        chai.expect(err.message).to.equal('Username "georgi" already taken.');
+        chai.expect(err.message.message).to.equal('Username "georgi" already taken.');
+        chai.expect(err.message.translationKey).to.equal('username.taken');
+        chai.expect(err.message.translationParams).to.have.property('username');
         done();
       });
     });
@@ -1145,7 +1156,9 @@ describe('Users service', () => {
         chai.expect(medicGet.callCount).to.equal(1);
         chai.expect(medicGet.args[0][0]).to.equal('org.couchdb.user:georgi');
         chai.expect(err.code).to.equal(400);
-        chai.expect(err.message).to.equal('Username "georgi" already taken.');
+        chai.expect(err.message.message).to.equal('Username "georgi" already taken.');
+        chai.expect(err.message.translationKey).to.equal('username.taken');
+        chai.expect(err.message.translationParams).to.have.property('username');
         done();
       });
     });
@@ -1153,7 +1166,8 @@ describe('Users service', () => {
     it('fails if username contains invalid characters', done => {
       service._validateNewUsername('^_^').catch(err => {
         chai.expect(err.code).to.equal(400);
-        chai.expect(err.message, 'Invalid user name. Valid characters are lower case letters, numbers, underscore (_)).to.equal(and hyphen (-).');
+        chai.expect(err.message.message).to.equal('Invalid user name. Valid characters are lower case letters, numbers, underscore (_), and hyphen (-).');
+        chai.expect(err.message.translationKey).to.equal('username.invalid');
         done();
       });
     });
@@ -1167,3 +1181,4 @@ describe('Users service', () => {
   });
 
 });
+

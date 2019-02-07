@@ -1,14 +1,13 @@
-const request = require('request'),
+const request = require('request-promise-native'),
       url = require('url'),
-      {promisify} = require('util'),
       environment = require('../environment');
 
-const addMemberToDb = (callback) => {
+const addMemberToDb = () => {
   const securityObject = {
     admins: { names:[], roles: ['audit-writer'] },
     members: { names: [], roles:['audit-writer'] }
   };
-  request.put({
+  return request.put({
     url: url.format({
       protocol: environment.protocol,
       hostname: environment.host,
@@ -21,19 +20,16 @@ const addMemberToDb = (callback) => {
     },
     json: true,
     body: securityObject
-  }, callback);
+  });
 };
 
 module.exports = {
   name: 'restrict-access-to-audit-db',
   created: new Date(2017, 5, 8),
-  run: promisify(callback => {
-    addMemberToDb((err) => {
-      if (err) {
-        return callback(new Error('Failed to add member to audit db.' +
-          JSON.stringify(err, null, 2)));
-      }
-      callback();
+  run: () => {
+    return addMemberToDb().catch(err => {
+      return Promise.reject(new Error('Failed to add member to audit db.' +
+        JSON.stringify(err, null, 2)));
     });
-  })
+  }
 };

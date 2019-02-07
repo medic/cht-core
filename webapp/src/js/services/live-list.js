@@ -1,6 +1,6 @@
 var _ = require('underscore');
 
-// medic-webapp specific config for LiveList.
+// medic specific config for LiveList.
 // This service should be invoked once at startup.
 angular.module('inboxServices').factory('LiveListConfig',
   function(

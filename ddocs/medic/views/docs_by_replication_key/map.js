@@ -6,7 +6,7 @@ function (doc) {
   if (doc._id === 'resources' ||
       doc._id === 'branding' ||
       doc._id === 'partners' ||
-      doc._id === 'appcache' ||
+      doc._id === 'service-worker-meta' ||
       doc._id === 'zscore-charts' ||
       doc._id === 'settings' ||
       doc.type === 'form' ||

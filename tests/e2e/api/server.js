@@ -42,7 +42,9 @@ describe('server', () => {
           if (res.headers['content-type'] === 'application/json' && typeof body === 'string') {
             try {
               body = JSON.parse(body);
-            } catch (err) {}
+            } catch (err) {
+              // an error occured when trying parse 'body' to Object
+            }
           }
 
           resolve({ res, body });
@@ -118,7 +120,7 @@ describe('server', () => {
 
           return requestWrapper(options);
         })
-        .then(({res, body}) => {
+        .then(({body}) => {
           const options = { uri: '/sample_doc/attach?rev=' + body.rev};
 
           return requestWrapper(options);
@@ -146,7 +148,7 @@ describe('server', () => {
 
           return requestWrapper(options);
         })
-        .then(({res, body}) => {
+        .then(({body}) => {
           const options = { uri: '/sample_doc2/attach?rev=' + body.rev};
 
           return requestWrapper(options);
@@ -174,7 +176,7 @@ describe('server', () => {
 
           return requestWrapper(options);
         })
-        .then(({res, body}) => {
+        .then(({body}) => {
           const options = { uri: '/sample_doc2/attach?rev=' + body.rev};
 
           return requestWrapper(options);

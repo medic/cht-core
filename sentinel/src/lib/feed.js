@@ -1,5 +1,5 @@
 const logger = require('./logger'),
-  db = require('../db-pouch');
+  db = require('../db');
 
 const followFeed = (seq, queue) => {
   return db.medic

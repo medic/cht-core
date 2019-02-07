@@ -1,3 +1,4 @@
+/* eslint-disable no-global-assign */
 context = {
   use_cases: {
     anc: isCoveredByUseCaseInLineage(lineage, 'anc'),

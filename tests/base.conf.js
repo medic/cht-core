@@ -1,10 +1,15 @@
-const utils = require('./utils'),
-      constants = require('./constants'),
-      auth = require('./auth')();
-
+const fs = require('fs');
+const utils = require('./utils');
+const constants = require('./constants');
+const auth = require('./auth')();
+const browserLogStream = fs.createWriteStream(__dirname + '/../tests/logs/browser.console.log');
 
 class BaseConfig {
-  constructor(testSrcDir) {
+  constructor(testSrcDir, { headless=true }={}) {
+    const chromeArgs = [ '--window-size=1024,768' ];
+    if (headless) {
+      chromeArgs.push('--headless', '--disable-gpu');
+    }
     this.config = {
       seleniumAddress: 'http://localhost:4444/wd/hub',
 
@@ -14,7 +19,7 @@ class BaseConfig {
       capabilities: {
         browserName: 'chrome',
         chromeOptions: {
-          args: ['--headless', '--disable-gpu', '--window-size=1024,768']
+          args: chromeArgs
         }
       },
       beforeLaunch: function() {
@@ -26,15 +31,26 @@ class BaseConfig {
           utils.reporter.beforeLaunch(resolve);
         });
       },
+      afterLaunch: function(exitCode) {
+        return new Promise(function(resolve) {
+          utils.reporter.afterLaunch(resolve.bind(this, exitCode));
+        });
+      },
       onPrepare: () => {
         jasmine.getEnv().addReporter(utils.reporter);
         browser.waitForAngularEnabled(false);
 
-        browser.driver.wait(listenForApi, 120 * 1000, 'API took too long to start up');
-        browser.driver.wait(setupSettings, 5 * 1000, 'Settings should be setup within 5 seconds');
-        browser.driver.wait(utils.setUserContactDoc, 5 * 1000, 'User contact should be setup within 5 seconds');
-        browser.driver.wait(setupUser, 5 * 1000, 'User should be setup within 5 seconds');
+        browser.driver.wait(startApi(), 135 * 1000, 'API took too long to start up');
         browser.driver.sleep(10000); // wait for startup to complete
+
+        afterEach(() => {
+          browser.manage().logs().get('browser').then(logs => {
+            logs
+              .map(log => `[${log.level.name_}] ${log.message}\n`)
+              .forEach(log => browserLogStream.write(log));
+            browserLogStream.write('\n~~~~~~~~~~~~~~~~~~~~~\n\n');
+          });
+        });
 
         return login(browser);
       },
@@ -43,6 +59,16 @@ class BaseConfig {
 }
 
 module.exports = BaseConfig;
+
+const runAndLog = (msg, func) => {
+  console.log(`API startup: ${msg}`);
+  return func();
+};
+
+const startApi = () => listenForApi()
+  .then(() => runAndLog('Settings setup', setupSettings))
+  .then(() => runAndLog('User contact doc setup', utils.setUserContactDoc))
+  .then(() => runAndLog('User setup', setupUser));
 
 const listenForApi = () => {
   console.log('Checking API');

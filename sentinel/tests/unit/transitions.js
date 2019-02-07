@@ -2,8 +2,7 @@ const sinon = require('sinon'),
   assert = require('chai').assert,
   _ = require('underscore'),
   config = require('../../src/config'),
-  db = require('../../src/db-nano'),
-  dbPouch = require('../../src/db-pouch'),
+  db = require('../../src/db'),
   infodoc = require('../../src/lib/infodoc'),
   transitions = require('../../src/transitions'),
   metadata = require('../../src/lib/metadata'),
@@ -269,18 +268,18 @@ describe('transitions', () => {
   });
 
   it('attach handles missing meta data doc', done => {
-    sinon.stub(dbPouch.sentinel, 'get').rejects({ status: 404 });
-    sinon.stub(dbPouch.medic, 'get').rejects({ status: 404 });
+    sinon.stub(db.sentinel, 'get').rejects({ status: 404 });
+    sinon.stub(db.medic, 'get').rejects({ status: 404 });
 
     const fetchHydratedDoc = sinon
       .stub(transitions._lineage, 'fetchHydratedDoc')
       .resolves({ type: 'data_record' });
     sinon.stub(infodoc, 'get').resolves({});
-    const insert = sinon.stub(dbPouch.sentinel, 'put').resolves({});
-    sinon.stub(dbPouch.medic, 'put').resolves({});
+    const insert = sinon.stub(db.sentinel, 'put').resolves({});
+    sinon.stub(db.medic, 'put').resolves({});
 
     const on = sinon.stub().returns({ on: () => ({ cancel: () => null }) });
-    const feed = sinon.stub(dbPouch.medic, 'changes').returns({ on: on });
+    const feed = sinon.stub(db.medic, 'changes').returns({ on: on });
 
     const applyTransitions = sinon
       .stub(transitions, 'applyTransitions')
@@ -306,10 +305,10 @@ describe('transitions', () => {
   });
 
   it('attach handles old meta data doc', done => {
-    const sentinelGet = sinon.stub(dbPouch.sentinel, 'get');
+    const sentinelGet = sinon.stub(db.sentinel, 'get');
     sentinelGet.withArgs('_local/sentinel-meta-data').rejects({ status: 404 });
 
-    const medicGet = sinon.stub(dbPouch.medic, 'get');
+    const medicGet = sinon.stub(db.medic, 'get');
     medicGet.withArgs('_local/sentinel-meta-data').rejects({ status: 404 });
     medicGet
       .withArgs('sentinel-meta-data')
@@ -323,10 +322,10 @@ describe('transitions', () => {
       .stub(transitions._lineage, 'fetchHydratedDoc')
       .resolves({ type: 'data_record' });
     sinon.stub(infodoc, 'get').resolves({});
-    const medicPut = sinon.stub(dbPouch.medic, 'put').resolves({});
-    const sentinelPut = sinon.stub(dbPouch.sentinel, 'put').resolves({});
+    const medicPut = sinon.stub(db.medic, 'put').resolves({});
+    const sentinelPut = sinon.stub(db.sentinel, 'put').resolves({});
     const on = sinon.stub().returns({ on: () => ({ cancel: () => null }) });
-    const feed = sinon.stub(dbPouch.medic, 'changes').returns({ on: on });
+    const feed = sinon.stub(db.medic, 'changes').returns({ on: on });
     const applyTransitions = sinon
       .stub(transitions, 'applyTransitions')
       .callsArg(1);
@@ -360,19 +359,19 @@ describe('transitions', () => {
 
   it('attach handles existing meta data doc', done => {
     const get = sinon
-      .stub(dbPouch.sentinel, 'get')
+      .stub(db.sentinel, 'get')
       .resolves({ _id: '_local/sentinel-meta-data', processed_seq: 22 });
     const fetchHydratedDoc = sinon
       .stub(transitions._lineage, 'fetchHydratedDoc')
       .resolves({ type: 'data_record' });
 
     const info = sinon.stub(infodoc, 'get').resolves({});
-    const insert = sinon.stub(dbPouch.sentinel, 'put').resolves({});
+    const insert = sinon.stub(db.sentinel, 'put').resolves({});
 
-    sinon.stub(dbPouch.medic, 'get').rejects({ status: 404 });
+    sinon.stub(db.medic, 'get').rejects({ status: 404 });
 
     const on = sinon.stub().returns({ on: () => ({ cancel: () => null }) });
-    const feed = sinon.stub(dbPouch.medic, 'changes').returns({ on: on });
+    const feed = sinon.stub(db.medic, 'changes').returns({ on: on });
     const applyTransitions = sinon
       .stub(transitions, 'applyTransitions')
       .callsArg(1);
@@ -401,16 +400,16 @@ describe('transitions', () => {
   it('processes deleted changes through TombstoneUtils to create tombstones', done => {
     sinon.stub(tombstoneUtils, 'processChange').resolves();
     sinon.stub(metadata, 'update').resolves();
-    sinon.stub(dbPouch.sentinel, 'put').resolves({});
+    sinon.stub(db.sentinel, 'put').resolves({});
     sinon
-      .stub(dbPouch.sentinel, 'get')
+      .stub(db.sentinel, 'get')
       .resolves({ _id: '_local/sentinel-meta-data', processed_seq: 12 });
     sinon.stub(infodoc, 'delete').resolves();
 
-    sinon.stub(db.db, 'list').callsArgWith(0, null, []);
+    sinon.stub(db, 'allDbs').resolves([]);
 
     const on = sinon.stub().returns({ on: () => ({ cancel: () => null }) });
-    const feed = sinon.stub(dbPouch.medic, 'changes').returns({ on: on });
+    const feed = sinon.stub(db.medic, 'changes').returns({ on: on });
     transitions._attach().then(() => {
       assert.equal(feed.callCount, 1);
       assert.equal(feed.args[0][0].since, 12);
@@ -440,16 +439,16 @@ describe('transitions', () => {
   it('does not advance metadata document if creating tombstone fails', done => {
     sinon.stub(tombstoneUtils, 'processChange').rejects();
     sinon.stub(metadata, 'update').resolves();
-    sinon.stub(dbPouch.sentinel, 'put').resolves({});
+    sinon.stub(db.sentinel, 'put').resolves({});
     sinon
-      .stub(dbPouch.sentinel, 'get')
+      .stub(db.sentinel, 'get')
       .resolves({ _id: '_local/sentinel-meta-data', processed_seq: 12 });
     sinon.stub(infodoc, 'delete').resolves();
 
-    sinon.stub(db.db, 'list').callsArgWith(0, null, []);
+    sinon.stub(db, 'allDbs').resolves([]);
 
     const on = sinon.stub().returns({ on: () => ({ cancel: () => null }) });
-    const feed = sinon.stub(dbPouch.medic, 'changes').returns({ on: on });
+    const feed = sinon.stub(db.medic, 'changes').returns({ on: on });
     transitions._attach().then(() => {
       assert.equal(feed.callCount, 1);
       assert.equal(feed.args[0][0].since, 12);
@@ -496,16 +495,16 @@ describe('transitions', () => {
 
   it('deleteInfo doc handles missing info doc', () => {
     const given = { id: 'abc' };
-    sinon.stub(dbPouch.sentinel, 'get').rejects({ status: 404 });
+    sinon.stub(db.sentinel, 'get').rejects({ status: 404 });
     return infodoc.delete(given);
   });
 
   it('deleteInfoDoc deletes info doc', () => {
     const given = { id: 'abc' };
     const get = sinon
-      .stub(dbPouch.sentinel, 'get')
+      .stub(db.sentinel, 'get')
       .resolves({ _id: 'abc', _rev: '123' });
-    const insert = sinon.stub(dbPouch.sentinel, 'put').resolves({});
+    const insert = sinon.stub(db.sentinel, 'put').resolves({});
     return infodoc.delete(given).then(() => {
       assert.equal(get.callCount, 1);
       assert.equal(get.args[0][0], 'abc-info');
@@ -514,57 +513,63 @@ describe('transitions', () => {
     });
   });
 
-  it('deleteReadDocs handles missing read doc', done => {
+  it('deleteReadDocs handles missing read doc', () => {
     const given = { id: 'abc' };
     const metaDb = {
-      info: function() {},
-      fetch: function() {},
+      remove: sinon.stub(),
+      allDocs: sinon.stub().resolves({
+        rows: [
+          { key: 'read:message:abc', error: 'notfound' },
+          { key: 'read:report:abc', error: 'notfound' }
+        ]
+      }),
     };
-    sinon.stub(db.db, 'list').callsArgWith(0, null, ['medic-user-gareth-meta']);
-    sinon.stub(db, 'use').returns(metaDb);
-    sinon
-      .stub(metaDb, 'fetch')
-      .callsArgWith(1, null, { rows: [{ error: 'notfound' }] });
-    transitions._deleteReadDocs(given, err => {
-      assert.equal(err, undefined);
-      done();
-    });
+    sinon.stub(db, 'allDbs').resolves(['medic-user-gareth-meta']);
+    sinon.stub(db, 'get').returns(metaDb);
+    return transitions
+      ._deleteReadDocs(given)
+      .then(() => {
+        assert.equal(db.allDbs.callCount, 1);
+        assert.equal(db.get.callCount, 1);
+        assert.deepEqual(db.get.args[0], ['medic-user-gareth-meta']);
+        assert.equal(metaDb.allDocs.callCount, 1);
+        assert.deepEqual(metaDb.allDocs.args[0], [{ keys: ['read:report:abc', 'read:message:abc'] }]);
+        assert.equal(metaDb.remove.callCount, 0);
+      });
   });
 
-  it('deleteReadDocs deletes read doc for all admins', done => {
+  it('deleteReadDocs deletes read doc for all admins', () => {
     const given = { id: 'abc' };
     const metaDb = {
-      info: function() {},
-      fetch: function() {},
-      insert: function() {},
+      allDocs: sinon.stub().resolves({
+        rows: [
+          { key: 'read:message:abc', error: 'notfound' },
+          { key: 'read:report:abc', id: 'read:report:abc', value: { rev: '1-rev' } }
+        ]
+      }),
+      remove: sinon.stub().resolves()
     };
-    const list = sinon.stub(db.db, 'list').callsArgWith(0, null, [
+    const list = sinon.stub(db, 'allDbs').resolves([
       'medic-user-gareth-meta',
       'medic-user-jim-meta',
       'medic', // not a user db - must be ignored
     ]);
-    const use = sinon.stub(db, 'use').returns(metaDb);
-    const fetch = sinon.stub(metaDb, 'fetch').callsArgWith(1, null, {
-      rows: [{ error: 'notfound' }, { doc: { id: 'xyz' } }],
-    });
-    const insert = sinon.stub(metaDb, 'insert').callsArg(1);
-    transitions._deleteReadDocs(given, err => {
-      assert.equal(err, undefined);
+    const use = sinon.stub(db, 'get').returns(metaDb);
+    return transitions._deleteReadDocs(given).then(() => {
       assert.equal(list.callCount, 1);
       assert.equal(use.callCount, 2);
       assert.equal(use.args[0][0], 'medic-user-gareth-meta');
       assert.equal(use.args[1][0], 'medic-user-jim-meta');
-      assert.equal(fetch.callCount, 2);
-      assert.equal(fetch.args[0][0].keys.length, 2);
-      assert.equal(fetch.args[0][0].keys[0], 'read:report:abc');
-      assert.equal(fetch.args[0][0].keys[1], 'read:message:abc');
-      assert.equal(fetch.args[1][0].keys.length, 2);
-      assert.equal(fetch.args[1][0].keys[0], 'read:report:abc');
-      assert.equal(fetch.args[1][0].keys[1], 'read:message:abc');
-      assert.equal(insert.callCount, 2);
-      assert.equal(insert.args[0][0]._deleted, true);
-      assert.equal(insert.args[1][0]._deleted, true);
-      done();
+      assert.equal(metaDb.allDocs.callCount, 2);
+      assert.equal(metaDb.allDocs.args[0][0].keys.length, 2);
+      assert.equal(metaDb.allDocs.args[0][0].keys[0], 'read:report:abc');
+      assert.equal(metaDb.allDocs.args[0][0].keys[1], 'read:message:abc');
+      assert.equal(metaDb.allDocs.args[1][0].keys.length, 2);
+      assert.equal(metaDb.allDocs.args[1][0].keys[0], 'read:report:abc');
+      assert.equal(metaDb.allDocs.args[1][0].keys[1], 'read:message:abc');
+      assert.equal(metaDb.remove.callCount, 2);
+      assert.deepEqual(metaDb.remove.args[0], ['read:report:abc', '1-rev']);
+      assert.deepEqual(metaDb.remove.args[1], ['read:report:abc', '1-rev']);
     });
   });
 });

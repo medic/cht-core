@@ -1,6 +1,6 @@
 const _ = require('underscore'),
   vm = require('vm'),
-  db = require('../db-pouch'),
+  db = require('../db'),
   moment = require('moment'),
   config = require('../config'),
   taskUtils = require('@medic/task-utils'),
@@ -312,4 +312,6 @@ module.exports = {
   },
   isNonEmptyString: expr => typeof expr === 'string' && expr.trim() !== '',
   evalExpression: (expr, context) => vm.runInNewContext(expr, context),
+
+  getSubjectIds: contact => registrationUtils.getSubjectIds(contact)
 };

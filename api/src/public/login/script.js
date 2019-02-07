@@ -2,16 +2,6 @@ var setState = function(className) {
   document.getElementById('form').className = className;
 };
 
-var unescape = function(s) {
-  return s
-    .replace(/&amp;/g,  '&')
-    .replace(/&lt;/g,   '<')
-    .replace(/&gt;/g,   '>')
-    .replace(/&quot;/g, '"')
-    .replace(/&#x27;/g, '\'')
-    .replace(/&#x60;/g, '`');
-};
-
 var post = function(url, payload, callback) {
   var xmlhttp = new XMLHttpRequest();
   xmlhttp.onreadystatechange = function() {
@@ -25,10 +15,8 @@ var post = function(url, payload, callback) {
 };
 
 var handleResponse = function(xmlhttp) {
-  if (xmlhttp.status < 200) {
-    setState('loginoffline');
-  } else if (xmlhttp.status === 200) {
-    window.location = unescape(document.getElementById('redirect').value);
+  if (xmlhttp.status === 302) {
+    window.location = xmlhttp.response;
   } else if (xmlhttp.status === 401) {
     setState('loginincorrect');
   } else {
@@ -72,6 +60,9 @@ document.addEventListener('DOMContentLoaded', function() {
   user.addEventListener('keydown', focusOnPassword, false);
   user.focus();
 
-  document.getElementById('password')
-      .addEventListener('keydown', focusOnSubmit, false);
+  document.getElementById('password').addEventListener('keydown', focusOnSubmit, false);
+  
+  if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.register('/service-worker.js');
+  }
 });

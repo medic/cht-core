@@ -1,4 +1,4 @@
-const db = require('../db-pouch');
+const db = require('../db');
 
 const isObject = obj => obj === Object(obj) && !Array.isArray(obj);
 

@@ -1,7 +1,7 @@
 require('chai').should();
 const sinon = require('sinon'),
   moment = require('moment'),
-  db = require('../../../src/db-pouch'),
+  db = require('../../../src/db'),
   utils = require('../../../src/lib/utils'),
   config = require('../../../src/config'),
   transition = require('../../../src/transitions/accept_patient_reports'),
@@ -48,7 +48,7 @@ describe('accept_patient_reports', () => {
 
     it('with no patient id adds error msg and response', done => {
       sinon.stub(config, 'get').returns([{ form: 'x' }, { form: 'z' }]);
-      sinon.stub(utils, 'getRegistrations').callsArgWith(1, null, []);
+      sinon.stub(utils, 'getReportsBySubject').resolves([]);
 
       const doc = {
         form: 'x',
@@ -66,14 +66,16 @@ describe('accept_patient_reports', () => {
   });
 
   describe('handleReport', () => {
-    // Because patients can be created through the UI and not neccessarily have
+    // Because patients can be created through the UI and not necessarily have
     // a registration at all
     it('with no registrations does not error', done => {
       const doc = {
         fields: { patient_id: 'x' },
         from: '+123',
+        patient: { patient_id: 'x' }
       };
-      sinon.stub(utils, 'getRegistrations').callsArgWith(1, null, []);
+      sinon.stub(utils, 'getSubjectIds').returns(['x', 'y']);
+      sinon.stub(utils, 'getReportsBySubject').resolves([]);
 
       const config = {
         messages: [
@@ -93,6 +95,10 @@ describe('accept_patient_reports', () => {
       transition._handleReport(doc, config, () => {
         (typeof doc.errors).should.equal('undefined');
         (typeof doc.tasks).should.equal('undefined');
+        utils.getReportsBySubject.callCount.should.equal(1);
+        utils.getReportsBySubject.args[0].should.deep.equal([{ ids: ['x', 'y'], registrations: true }]);
+        utils.getSubjectIds.callCount.should.equal(1);
+        utils.getSubjectIds.args[0].should.deep.equal([doc.patient]);
         done();
       });
     });
@@ -113,7 +119,7 @@ describe('accept_patient_reports', () => {
         },
         patient: patient,
       };
-      sinon.stub(utils, 'getRegistrations').callsArgWith(1, null, []);
+      sinon.stub(utils, 'getReportsBySubject').resolves([]);
       const config = {
         messages: [
           {
@@ -146,9 +152,7 @@ describe('accept_patient_reports', () => {
         { _id: 'b' }, // should be silenced
         { _id: 'c' }, // should be silenced
       ];
-      sinon
-        .stub(utils, 'getRegistrations')
-        .callsArgWith(1, null, registrations);
+      sinon.stub(utils, 'getReportsBySubject').resolves(registrations);
       transition._handleReport(doc, config, (err, complete) => {
         complete.should.equal(true);
         transition._silenceReminders.callCount.should.equal(2);
@@ -167,9 +171,7 @@ describe('accept_patient_reports', () => {
       const registrations = [
         { _id: 'a', reported_date: '2017-02-05T09:23:07.853Z' },
       ];
-      sinon
-        .stub(utils, 'getRegistrations')
-        .callsArgWith(1, null, registrations);
+      sinon.stub(utils, 'getReportsBySubject').resolves(registrations);
       transition._handleReport(doc, config, (err, complete) => {
         complete.should.equal(true);
         doc.registration_id.should.equal(registrations[0]._id);
@@ -186,9 +188,7 @@ describe('accept_patient_reports', () => {
         { _id: 'c', reported_date: '2018-02-05T09:23:07.853Z' },
         { _id: 'b', reported_date: '2016-02-05T09:23:07.853Z' },
       ];
-      sinon
-        .stub(utils, 'getRegistrations')
-        .callsArgWith(1, null, registrations);
+      sinon.stub(utils, 'getReportsBySubject').resolves(registrations);
       transition._handleReport(doc, config, (err, complete) => {
         complete.should.equal(true);
         doc.registration_id.should.equal(registrations[1]._id);
@@ -196,35 +196,6 @@ describe('accept_patient_reports', () => {
       });
     });
 
-    it('should call utils.getRegistrations with correct DB (#4962)', done => {
-      const doc = {
-        fields: { patient_id: 'x' },
-        from: '+123',
-      };
-      sinon.stub(utils, 'getRegistrations').callsArgWith(1, null, []);
-
-      const config = {
-        messages: [
-          {
-            event_type: 'registration_not_found',
-            message: [
-              {
-                content: 'not found {{patient_id}}',
-                locale: 'en',
-              },
-            ],
-            recipient: 'reporting_unit',
-          },
-        ],
-      };
-
-      transition._handleReport(doc, config, () => {
-        utils.getRegistrations.callCount.should.equal(1);
-        utils.getRegistrations.args[0][0].should.deep.equal({ id: 'x' });
-        done();
-      });
-    });
-    
     it('adds report_uuid property', done => {
       const putRegistration = sinon.stub(db.medic, 'put');
       putRegistration.callsArg(1);
@@ -270,9 +241,7 @@ describe('accept_patient_reports', () => {
           ],
         },
       ];
-      sinon
-        .stub(utils, 'getRegistrations')
-        .callsArgWith(1, null, registrations);
+      sinon.stub(utils, 'getReportsBySubject').resolves(registrations);
       transition._handleReport(doc, config, (err, complete) => {
         complete.should.equal(true);
         putRegistration.callCount.should.equal(1);
@@ -335,9 +304,7 @@ describe('accept_patient_reports', () => {
           ],
         },
       ];
-      sinon
-        .stub(utils, 'getRegistrations')
-        .callsArgWith(1, null, registrations);
+      sinon.stub(utils, 'getReportsBySubject').resolves(registrations);
       transition._handleReport(doc, config, (err, complete) => {
         complete.should.equal(true);
         putRegistration.callCount.should.equal(1);
@@ -346,6 +313,17 @@ describe('accept_patient_reports', () => {
       });
     });
 
+    it('should catch utils.getReportsBySubject errors', done => {
+      sinon.stub(utils, 'getReportsBySubject').rejects({ some: 'error' });
+      sinon.stub(utils, 'getSubjectIds').returns(['a', 'b']);
+
+      transition._handleReport({}, {}, (err, complete) => {
+        (!!complete).should.equal(false);
+        err.should.deep.equal({ some: 'error' });
+        utils.getReportsBySubject.callCount.should.equal(1);
+        done();
+      });
+    });
   });
 
   describe('silenceReminders', () => {

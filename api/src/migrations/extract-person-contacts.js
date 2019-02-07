@@ -1,6 +1,6 @@
 var async = require('async'),
   { promisify } = require('util'),
-  db = require('../db-nano'),
+  db = require('../db'),
   logger = require('../logger'),
   people = require('../controllers/people'),
   places = require('../controllers/places');
@@ -8,7 +8,7 @@ var async = require('async'),
 /**
  * WARNING : THIS MIGRATION IS POTENTIALLY DESTRUCTIVE IF IT MESSES UP HALFWAY, SO GET YOUR SYSTEM
  * OFFLINE BEFORE RUNNING IT!
- * See upgrade checklist : https://github.com/medic/medic-webapp/issues/2400
+ * See upgrade checklist : https://github.com/medic/medic/issues/2400
  *
  * This migration updates old-style contacts (`contact: { name:..., phone: ...}`) to new-style contacts
  * (`contact: {_id:..., name:..., phone: ..., parent: ...}`).
@@ -72,7 +72,7 @@ var createPerson = function(id, callback) {
   // loop (`person.parent.contact = person`!).
   var removeContact = function(facility, callback) {
     delete facility.contact;
-    db.medic.insert(facility, function(err) {
+    db.medic.put(facility, function(err) {
       if (err) {
         return callback(
           new Error(
@@ -150,7 +150,7 @@ var createPerson = function(id, callback) {
 
   db.medic.get(id, function(err, facility) {
     if (err) {
-      if (err.statusCode === 404) {
+      if (err.status === 404) {
         return callback(new Error('facility ' + id + ' not found.'));
       }
       return callback(err);
@@ -243,7 +243,7 @@ var updateParents = function(id, callback) {
     // There have been cases of weird {} parents. Remove these, then skip
     if (Object.keys(facility.parent).length === 0) {
       delete facility.parent;
-      return db.medic.insert(facility, err => {
+      return db.medic.put(facility, err => {
         if (err) {
           callback(err);
         } else {
@@ -269,7 +269,7 @@ var updateParents = function(id, callback) {
   var removeParent = function(facility, callback) {
     var parentId = facility.parent._id;
     delete facility.parent;
-    db.medic.insert(facility, function(err) {
+    db.medic.put(facility, function(err) {
       if (err) {
         return callback(
           new Error(
@@ -287,7 +287,7 @@ var updateParents = function(id, callback) {
   var resetParent = function(facilityId, parentId, callback) {
     db.medic.get(parentId, function(err) {
       if (err) {
-        if (err.statusCode === 404) {
+        if (err.status === 404) {
           // Parent does not exist, so cannot be reset
           return callback();
         }
@@ -311,7 +311,7 @@ var updateParents = function(id, callback) {
 
   db.medic.get(id, function(err, facility) {
     if (err) {
-      if (err.statusCode === 404) {
+      if (err.status === 404) {
         return callback(new Error('facility ' + id + ' not found.'));
       }
       return callback(err);
@@ -346,7 +346,7 @@ var migrateOneType = function(type, callback) {
     });
   };
 
-  db.medic.view('medic-client', 'contacts_by_type', { key: [type] }, function(
+  db.medic.query('medic-client/contacts_by_type', { key: [type] }, function(
     err,
     result
   ) {

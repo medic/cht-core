@@ -1,4 +1,4 @@
-const db = require('../db-pouch'),
+const db = require('../db'),
       fs = require('fs'),
       logger = require('../logger'),
       path = require('path'),

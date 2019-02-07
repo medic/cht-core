@@ -56,9 +56,6 @@ angular
       });
 
     $scope.export = function() {
-      $scope.exporting = true;
-      Export({}, 'feedback').then(function() {
-        $scope.exporting = false;
-      });
+      Export('feedback');
     };
   });

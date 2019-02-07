@@ -10,7 +10,7 @@
 function(newDoc, oldDoc, userCtx, secObj) {
 
   var ADMIN_ONLY_TYPES = [ 'form', 'translations' ],
-      ADMIN_ONLY_IDS = [ 'resources', 'appcache', 'zscore-charts', 'settings', 'branding', 'partners' ];
+      ADMIN_ONLY_IDS = [ 'resources', 'service-worker-meta', 'zscore-charts', 'settings', 'branding', 'partners' ];
 
   var _err = function(msg) {
     throw({ forbidden: msg });

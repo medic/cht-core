@@ -1,26 +1,21 @@
-var _ = require('underscore'),
-    {promisify} = require('util'),
-    db = require('../db-nano'),
-    settingsService = require('../services/settings'),
-    DOC_TYPE = 'translations';
+const _ = require('underscore');
+const db = require('../db');
+const settingsService = require('../services/settings');
+const DOC_TYPE = 'translations';
 
-var getDocs = function(callback) {
-  var options = { key: [ DOC_TYPE, true ], include_docs: true };
-  db.medic.view('medic-client', 'doc_by_type', options, function(err, response) {
-    if (err) {
-      return callback(err);
-    }
-    callback(null, _.pluck(response.rows, 'doc'));
-  });
+const getDocs = () => {
+  const options = { key: [ DOC_TYPE, true ], include_docs: true };
+  return db.medic.query('medic-client/doc_by_type', options)
+    .then(response => _.pluck(response.rows, 'doc'));
 };
 
-var mergeEnabled = function(settings, docs) {
+const mergeEnabled = (settings, docs) => {
   if (!settings) {
     return;
   }
   settings.forEach(function(locale) {
     if (locale.disabled) {
-      var doc = _.findWhere(docs, { code: locale.code });
+      const doc = _.findWhere(docs, { code: locale.code });
       if (doc) {
         doc.enabled = false;
       }
@@ -28,13 +23,13 @@ var mergeEnabled = function(settings, docs) {
   });
 };
 
-var mergeTranslations = function(settings, docs) {
+const mergeTranslations = (settings, docs) => {
   if (!settings) {
     return;
   }
-  settings.forEach(function(setting) {
-    setting.translations.forEach(function(translation) {
-      var doc = _.findWhere(docs, { code: translation.locale });
+  settings.forEach(setting => {
+    setting.translations.forEach(translation => {
+      const doc = _.findWhere(docs, { code: translation.locale });
       if (doc) {
         if (_.has(doc, 'values')) {
           if (!doc.values[setting.key] || translation.content !== translation.default) {
@@ -52,41 +47,28 @@ var mergeTranslations = function(settings, docs) {
   });
 };
 
-var updateDocs = settings => {
-  return new Promise((resolve, reject) => {
-    getDocs(function(err, docs) {
-      if (err) {
-        return reject(err);
-      }
-      if (!docs.length) {
-        return resolve();
-      }
-      mergeEnabled(settings.locales, docs);
-      mergeTranslations(settings.translations, docs);
-      db.medic.bulk({ docs: docs }, err => {
-        if (err) {
-          return reject(err);
-        }
-        resolve();
-      });
-    });
+const updateDocs = settings => {
+  return getDocs().then(docs => {
+    if (!docs.length) {
+      return;
+    }
+    mergeEnabled(settings.locales, docs);
+    mergeTranslations(settings.translations, docs);
+    return db.medic.bulkDocs(docs);
   });
 };
 
 module.exports = {
   name: 'extract-translations',
   created: new Date(2016, 6, 29),
-  run: promisify(function(callback) {
-    settingsService.get()
-      .then(settings => {
-        if (!settings.translations || !settings.translations.length) {
-          return;
-        }
-        return updateDocs(settings).then(() => {
-          return settingsService.update({ translations: null, locales: null });
-        });
-      })
-      .then(() => callback())
-      .catch(callback);
-  })
+  run: () => {
+    return settingsService.get().then(settings => {
+      if (!settings.translations || !settings.translations.length) {
+        return;
+      }
+      return updateDocs(settings).then(() => {
+        return settingsService.update({ translations: null, locales: null });
+      });
+    });
+  }
 };

@@ -1,7 +1,7 @@
 const mutingUtils = require('../../../src/lib/muting_utils'),
       sinon = require('sinon'),
       chai = require('chai'),
-      db = require('../../../src/db-pouch'),
+      db = require('../../../src/db'),
       utils = require('../../../src/lib/utils'),
       moment = require('moment'),
       infodoc = require('../../../src/lib/infodoc');
@@ -1202,21 +1202,6 @@ describe('mutingUtils', () => {
       };
 
       mutingUtils.isMutedInLineage(doc2).should.equal(4);
-    });
-  });
-
-  describe('getSubjectIds', () => {
-    it('should return correct values', () => {
-      chai.expect(mutingUtils.getSubjectIds({})).to.deep.equal([]);
-      chai.expect(mutingUtils.getSubjectIds({ _id: 'a' })).to.deep.equal(['a']);
-      chai.expect(mutingUtils.getSubjectIds({ patient_id: 'b' })).to.deep.equal(['b']);
-      chai.expect(mutingUtils.getSubjectIds({ place_id: 'c' })).to.deep.equal(['c']);
-      chai.expect(mutingUtils.getSubjectIds({ _id: '' })).to.deep.equal(['']);
-      chai.expect(mutingUtils.getSubjectIds({ patient_id: false })).to.deep.equal([false]);
-      chai.expect(mutingUtils.getSubjectIds({ place_id: null })).to.deep.equal([null]);
-      chai.expect(mutingUtils.getSubjectIds({ _id: 'a', patient_id: 'b' })).to.deep.equal(['a', 'b']);
-      chai.expect(mutingUtils.getSubjectIds({ _id: 'b', place_id: 'c' })).to.deep.equal(['b', 'c']);
-      chai.expect(mutingUtils.getSubjectIds({ _id: 'd', place_id: 'f', foo: 'bar' })).to.deep.equal(['d', 'f']);
     });
   });
 

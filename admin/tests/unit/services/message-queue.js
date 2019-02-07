@@ -8,7 +8,6 @@ describe('MessageQueue service', function() {
       utils,
       query,
       translate,
-      rootScope,
       clock;
 
   beforeEach(() => {
@@ -45,8 +44,7 @@ describe('MessageQueue service', function() {
       $provide.factory('DB', KarmaUtils.mockDB({ query: query }));
     });
 
-    inject(($injector, $rootScope) => {
-      rootScope = $rootScope;
+    inject(($injector) => {
       service = $injector.get('MessageQueue');
     });
   });

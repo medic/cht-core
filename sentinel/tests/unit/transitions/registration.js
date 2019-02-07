@@ -1,13 +1,13 @@
 const should = require('chai').should(),
   sinon = require('sinon'),
-  db = require('../../../src/db-nano'),
-  dbPouch = require('../../../src/db-pouch'),
+  db = require('../../../src/db'),
   transition = require('../../../src/transitions/registration'),
   schedules = require('../../../src/lib/schedules'),
   messages = require('../../../src/lib/messages'),
   utils = require('../../../src/lib/utils'),
   config = require('../../../src/config'),
-  transitionUtils = require('../../../src/transitions/utils');
+  transitionUtils = require('../../../src/transitions/utils'),
+  acceptPatientReports = require('../../../src/transitions/accept_patient_reports');
 
 describe('registration', () => {
   afterEach(done => {
@@ -59,7 +59,7 @@ describe('registration', () => {
         .stub(utils, 'getPatientContactUuid')
         .callsArgWith(1);
       // return expected view results when searching for contacts_by_phone
-      const view = sinon.stub(db.medic, 'view').callsArgWith(3, null, {
+      const view = sinon.stub(db.medic, 'query').callsArgWith(2, null, {
         rows: [
           {
             doc: {
@@ -69,7 +69,7 @@ describe('registration', () => {
           },
         ],
       });
-      const saveDoc = sinon.stub(dbPouch.medic, 'post').callsArgWith(1);
+      const saveDoc = sinon.stub(db.medic, 'post').callsArgWith(1);
       const eventConfig = {
         form: 'R',
         events: [{ name: 'on_create', trigger: 'add_patient' }],
@@ -85,10 +85,9 @@ describe('registration', () => {
       transition.onMatch(change).then(() => {
         getPatientContactUuid.callCount.should.equal(1);
         view.callCount.should.equal(1);
-        view.args[0][0].should.equal('medic-client');
-        view.args[0][1].should.equal('contacts_by_phone');
-        view.args[0][2].key.should.equal(senderPhoneNumber);
-        view.args[0][2].include_docs.should.equal(true);
+        view.args[0][0].should.equal('medic-client/contacts_by_phone');
+        view.args[0][1].key.should.equal(senderPhoneNumber);
+        view.args[0][1].include_docs.should.equal(true);
         saveDoc.callCount.should.equal(1);
         saveDoc.args[0][0].name.should.equal(patientName);
         saveDoc.args[0][0].parent._id.should.equal(parentId);
@@ -115,11 +114,11 @@ describe('registration', () => {
         },
       };
       sinon
-        .stub(db.medic, 'view')
-        .callsArgWith(3, null, {
+        .stub(db.medic, 'query')
+        .callsArgWith(2, null, {
           rows: [{ doc: { parent: { _id: 'papa' } } }],
         });
-      const saveDoc = sinon.stub(dbPouch.medic, 'post').callsArgWith(1);
+      const saveDoc = sinon.stub(db.medic, 'post').callsArgWith(1);
       const eventConfig = {
         form: 'R',
         events: [{ name: 'on_create', trigger: 'add_patient_id' }],
@@ -132,7 +131,7 @@ describe('registration', () => {
       });
     });
 
-    it('uses a given id if configured to', done => {
+    it('uses a given id if configured to', () => {
       const patientId = '05648';
       const doc = {
         type: 'data_record',
@@ -146,11 +145,11 @@ describe('registration', () => {
       sinon.stub(utils, 'getPatientContactUuid').callsArgWith(1);
       // return expected view results when searching for contacts_by_phone
       sinon
-        .stub(db.medic, 'view')
-        .callsArgWith(3, null, {
+        .stub(db.medic, 'query')
+        .callsArgWith(2, null, {
           rows: [{ doc: { parent: { _id: 'papa' } } }],
         });
-      const saveDoc = sinon.stub(dbPouch.medic, 'post').callsArgWith(1);
+      const saveDoc = sinon.stub(db.medic, 'post').callsArgWith(1);
       const eventConfig = {
         form: 'R',
         events: [
@@ -163,17 +162,16 @@ describe('registration', () => {
       };
       sinon.stub(config, 'get').returns([eventConfig]);
       sinon.stub(transition, 'validate').callsArgWith(2);
-      sinon.stub(transitionUtils, 'isIdUnique').callsArgWith(2, null, true);
+      sinon.stub(transitionUtils, 'isIdUnique').callsArgWith(1, null, true);
 
-      transition.onMatch(change).then(() => {
+      return transition.onMatch(change).then(() => {
         saveDoc.args[0][0].patient_id.should.equal(patientId);
         doc.patient_id.should.equal(patientId);
         (typeof doc.errors).should.equal('undefined');
-        done();
       });
     });
 
-    it('errors if the configuration doesnt point to an id', done => {
+    it('errors if the configuration doesnt point to an id', () => {
       const patientId = '05648';
       const doc = {
         type: 'data_record',
@@ -187,11 +185,11 @@ describe('registration', () => {
       sinon.stub(utils, 'getPatientContactUuid').callsArgWith(1);
       // return expected view results when searching for contacts_by_phone
       sinon
-        .stub(db.medic, 'view')
-        .callsArgWith(3, null, {
+        .stub(db.medic, 'query')
+        .callsArgWith(2, null, {
           rows: [{ doc: { parent: { _id: 'papa' } } }],
         });
-      sinon.stub(dbPouch.medic, 'post').callsArgWith(1);
+      sinon.stub(db.medic, 'post').callsArgWith(1);
       const eventConfig = {
         form: 'R',
         events: [
@@ -208,7 +206,7 @@ describe('registration', () => {
 
       sinon.stub(transition, 'validate').callsArgWith(2);
 
-      transition.onMatch(change).then(() => {
+      return transition.onMatch(change).then(() => {
         (typeof doc.patient_id).should.equal('undefined');
         doc.errors.should.deep.equal([
           {
@@ -216,11 +214,10 @@ describe('registration', () => {
             code: 'no_provided_patient_id',
           },
         ]);
-        done();
       });
     });
 
-    it('errors if the given id is not unique', done => {
+    it('errors if the given id is not unique', () => {
       const patientId = '05648';
       const doc = {
         type: 'data_record',
@@ -234,11 +231,11 @@ describe('registration', () => {
       sinon.stub(utils, 'getPatientContactUuid').callsArgWith(1);
       // return expected view results when searching for contacts_by_phone
       sinon
-        .stub(db.medic, 'view')
-        .callsArgWith(3, null, {
+        .stub(db.medic, 'query')
+        .callsArgWith(2, null, {
           rows: [{ doc: { parent: { _id: 'papa' } } }],
         });
-      sinon.stub(dbPouch.medic, 'post').callsArgWith(1);
+      sinon.stub(db.medic, 'post').callsArgWith(1);
       const eventConfig = {
         form: 'R',
         events: [
@@ -253,11 +250,11 @@ describe('registration', () => {
       configGet.withArgs('outgoing_deny_list').returns('');
       configGet.returns([eventConfig]);
 
-      sinon.stub(transitionUtils, 'isIdUnique').callsArgWith(2, null, false);
+      sinon.stub(transitionUtils, 'isIdUnique').callsArgWith(1, null, false);
 
       sinon.stub(transition, 'validate').callsArgWith(2);
 
-      transition.onMatch(change).then(() => {
+      return transition.onMatch(change).then(() => {
         (typeof doc.patient_id).should.be.equal('undefined');
         doc.errors.should.deep.equal([
           {
@@ -265,7 +262,6 @@ describe('registration', () => {
             code: 'provided_patient_id_not_unique',
           },
         ]);
-        done();
       });
     });
 
@@ -288,11 +284,11 @@ describe('registration', () => {
       sinon.stub(utils, 'getPatientContactUuid').callsArgWith(1);
       // return expected view results when searching for contacts_by_phone
       sinon
-        .stub(db.medic, 'view')
-        .callsArgWith(3, null, {
+        .stub(db.medic, 'query')
+        .callsArgWith(2, null, {
           rows: [{ doc: { parent: { _id: submitterId } } }],
         });
-      const saveDoc = sinon.stub(dbPouch.medic, 'post').callsArgWith(1);
+      const saveDoc = sinon.stub(db.medic, 'post').callsArgWith(1);
       const eventConfig = {
         form: 'R',
         events: [{ name: 'on_create', trigger: 'add_patient', params: 'name' }],
@@ -332,11 +328,11 @@ describe('registration', () => {
       sinon.stub(utils, 'getPatientContactUuid').callsArgWith(1);
       // return expected view results when searching for contacts_by_phone
       sinon
-        .stub(db.medic, 'view')
-        .callsArgWith(3, null, {
+        .stub(db.medic, 'query')
+        .callsArgWith(2, null, {
           rows: [{ doc: { parent: { _id: submitterId } } }],
         });
-      const saveDoc = sinon.stub(dbPouch.medic, 'post').callsArgWith(1);
+      const saveDoc = sinon.stub(db.medic, 'post').callsArgWith(1);
       const eventConfig = {
         form: 'R',
         events: [
@@ -382,11 +378,11 @@ describe('registration', () => {
       sinon.stub(utils, 'getPatientContactUuid').callsArgWith(1);
       // return expected view results when searching for contacts_by_phone
       sinon
-        .stub(db.medic, 'view')
-        .callsArgWith(3, null, {
+        .stub(db.medic, 'query')
+        .callsArgWith(2, null, {
           rows: [{ doc: { parent: { _id: submitterId } } }],
         });
-      const saveDoc = sinon.stub(dbPouch.medic, 'post').callsArgWith(1);
+      const saveDoc = sinon.stub(db.medic, 'post').callsArgWith(1);
       const eventConfig = {
         form: 'R',
         events: [
@@ -450,11 +446,11 @@ describe('registration', () => {
         },
       };
       sinon
-        .stub(db.medic, 'view')
-        .callsArgWith(3, null, {
+        .stub(db.medic, 'query')
+        .callsArgWith(2, null, {
           rows: [{ doc: { parent: { _id: 'papa' } } }],
         });
-      sinon.stub(dbPouch.medic, 'post').callsArgWith(1);
+      sinon.stub(db.medic, 'post').callsArgWith(1);
       const eventConfig = {
         form: 'R',
         events: [
@@ -895,6 +891,84 @@ describe('registration', () => {
         addMessage.args[0][1].should.equal(testMessage1);
         addMessage.args[0][2].should.equal(testPhone);
         addMessage.args[0][3].should.deep.equal(expectedContext);
+        done();
+      });
+    });
+  });
+
+  describe('clear_schedule', () => {
+    it('should work when doc has no patient', done => {
+      sinon.stub(utils, 'getReportsBySubject').resolves([]);
+
+      transition.triggers.clear_schedule({ doc: {}, params: [] }, err => {
+        (!!err).should.equal(false);
+        done();
+      });
+    });
+
+    it('should query utils.getReportsBySubject with correct params', done => {
+      sinon.stub(utils, 'getReportsBySubject').resolves([]);
+      sinon.stub(utils, 'getSubjectIds').returns(['uuid', 'patient_id']);
+      const doc = { patient: { _id: 'uuid', patient_id: 'patient_id' } };
+      sinon.stub(acceptPatientReports, 'silenceRegistrations').callsArgWith(3, null);
+
+      transition.triggers.clear_schedule({ doc, params: [] }, err => {
+        (!!err).should.equal(false);
+        utils.getSubjectIds.callCount.should.equal(1);
+        utils.getSubjectIds.args[0].should.deep.equal([doc.patient]);
+        utils.getReportsBySubject.callCount.should.equal(1);
+        utils.getReportsBySubject.args[0].should.deep.equal([ {
+          ids: ['uuid', 'patient_id'],
+          registrations: true
+        } ]);
+        done();
+      });
+    });
+
+    it('should call silenceRegistrations with correct params', done => {
+      const doc = { _id: 'uuid', patient_id: 'patient_id' },
+            params = ['1', '2', '3', '4'],
+            registrations = ['a', 'b', 'c'];
+      sinon.stub(utils, 'getReportsBySubject').resolves(registrations);
+      sinon.stub(utils, 'getSubjectIds').returns(['uuid', 'patient_id']);
+      sinon.stub(acceptPatientReports, 'silenceRegistrations').callsArgWith(3, null);
+
+      transition.triggers.clear_schedule({ doc, params }, err => {
+        (!!err).should.equal(false);
+        acceptPatientReports.silenceRegistrations.callCount.should.equal(1);
+        acceptPatientReports.silenceRegistrations.args[0][0].should.deep.equal({
+          silence_type: '1,2,3,4',
+          silence_for: null
+        });
+        acceptPatientReports.silenceRegistrations.args[0][1].should.deep.equal(doc);
+        acceptPatientReports.silenceRegistrations.args[0][2].should.deep.equal(registrations);
+        done();
+      });
+    });
+
+    it('should catch getReportsBySubject errors', done => {
+      sinon.stub(utils, 'getReportsBySubject').rejects({ some: 'error' });
+      sinon.stub(utils, 'getSubjectIds').returns([]);
+      sinon.stub(acceptPatientReports, 'silenceRegistrations');
+
+      transition.triggers.clear_schedule({ doc: {}, params: [] }, err => {
+        err.should.deep.equal({ some: 'error' });
+        utils.getReportsBySubject.callCount.should.equal(1);
+        utils.getSubjectIds.callCount.should.equal(1);
+        acceptPatientReports.silenceRegistrations.callCount.should.equal(0);
+        done();
+      });
+    });
+
+    it('should catch silenceRegistrations errors', done => {
+      sinon.stub(utils, 'getReportsBySubject').resolves([]);
+      sinon.stub(utils, 'getSubjectIds').returns([]);
+      sinon.stub(acceptPatientReports, 'silenceRegistrations').callsArgWith(3, { some: 'err' });
+      transition.triggers.clear_schedule({ doc: {}, params: [] }, err => {
+        err.should.deep.equal({ some: 'err' });
+        utils.getReportsBySubject.callCount.should.equal(1);
+        utils.getSubjectIds.callCount.should.equal(1);
+        acceptPatientReports.silenceRegistrations.callCount.should.equal(1);
         done();
       });
     });

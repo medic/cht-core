@@ -66,7 +66,7 @@ var utilsFactory = require('@medic/bulk-docs-utils');
         // page causes massive performance issues while large deletes are occurring.
         // We need to fix this either by improving performance in this area or by
         // radically change how we follow changes for online users
-        // https://github.com/medic/medic-webapp/issues/4327
+        // https://github.com/medic/medic/issues/4327
         Changes.killWatchers();
 
         var deferred = $q.defer();

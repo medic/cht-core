@@ -1,4 +1,4 @@
-const dbPouch = require('../db-pouch'),
+const db = require('../db'),
   logger = require('../lib/logger');
 
 const METADATA_DOCUMENT = '_local/sentinel-meta-data';
@@ -11,7 +11,7 @@ const migrateOldMetaDoc = doc => {
     _deleted: true,
   };
   logger.info(`Deleting old metadata document: ${doc}`);
-  return dbPouch.medic
+  return db.medic
     .put(stub)
     .then(() => {
       doc._id = METADATA_DOCUMENT;
@@ -24,11 +24,11 @@ const migrateOldMetaDoc = doc => {
 };
 
 const getMetaData = () => {
-  return dbPouch.sentinel.get(METADATA_DOCUMENT).catch(err => {
+  return db.sentinel.get(METADATA_DOCUMENT).catch(err => {
     if (err.status !== 404) {
       throw err;
     }
-    return dbPouch.medic
+    return db.medic
       .get(METADATA_DOCUMENT)
       .then(doc => {
         // Old doc exists, delete it and return the base doc to be saved later
@@ -40,7 +40,7 @@ const getMetaData = () => {
         }
         // Doc doesn't exist.
         // Maybe we have the doc in the old location?
-        return dbPouch.medic
+        return db.medic
           .get(OLD_METADATA_DOCUMENT)
           .then(doc => {
             // Old doc exists, delete it and return the base doc to be saved later
@@ -75,7 +75,7 @@ const updateMetaData = seq => {
   return getMetaData()
     .then(doc => {
       doc.processed_seq = seq;
-      return dbPouch.sentinel.put(doc).catch(err => {
+      return db.sentinel.put(doc).catch(err => {
         if (err) {
           logger.error('Error updating metaData: %o', err);
         }

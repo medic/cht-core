@@ -19,7 +19,7 @@
  * 2016-05-10 : introducing batchSize. Run each function (reports, persons,
  * or clinics) at a time (you don't want orphan contact persons...), by
  * commenting out the other two, until there's no more.
- * Until https://github.com/medic/medic-webapp/issues/2288 is solved, bump
+ * Until https://github.com/medic/medic/issues/2288 is solved, bump
  * the rev on a form in between each batch (see bump_rev.js).
  */
 

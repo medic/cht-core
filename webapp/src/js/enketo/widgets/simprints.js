@@ -52,13 +52,11 @@ define( function( require, exports, module ) {
         } );
 
         $translate( 'simprints.register' ).then( function( label ) {
-            $el.append( '<div><a class="btn btn-default simprints-register"><img src="img/simprints.png" width="20" height="20"/> ' + label + '</a></div>' );
+            $el.append( '<div><a class="btn btn-default simprints-register"><img src="/img/simprints.png" width="20" height="20"/> ' + label + '</a></div>' );
         } );
     };
 
-    Simprintswidget.prototype.destroy = function( element ) {
-        /* jshint unused:false */
-    };
+    Simprintswidget.prototype.destroy = function( element ) {};  // eslint-disable-line no-unused-vars
 
     $.fn[ pluginName ] = function( options, event ) {
         return this.each( function() {

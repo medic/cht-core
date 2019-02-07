@@ -10,7 +10,6 @@ describe('InboxCtrl controller', () => {
     RecurringProcessManager,
     changes,
     changesListener = {},
-    changesSpy,
     session;
 
   beforeEach(() => {
@@ -25,7 +24,6 @@ describe('InboxCtrl controller', () => {
     changes = options => {
       changesListener[options.key] = options;
     };
-    changesSpy = sinon.spy(changes);
 
     session = {
       init: sinon.stub(),

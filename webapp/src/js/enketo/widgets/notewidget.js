@@ -65,9 +65,7 @@ define( function( require, exports, module ) {
         }
     };
 
-    Notewidget.prototype.destroy = function( element ) {
-        /* jshint unused:false */
-    };
+    Notewidget.prototype.destroy = function( element ) {};  // eslint-disable-line no-unused-vars
 
     // Replace any markdown-style links containing HTML with hrefs which are
     // generated when the link is clicked.

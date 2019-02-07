@@ -45,7 +45,7 @@ describe('DB service', () => {
       getService = () => {
         // delay initialisation of the db service
         const service = $injector.get('DB');
-        $timeout.flush();
+        $timeout.flush(1000);
         return service;
       };
     });

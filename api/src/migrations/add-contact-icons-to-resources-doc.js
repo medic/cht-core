@@ -2,7 +2,7 @@ const fs = require('fs'),
       path = require('path'),
       {promisify} = require('util'),
       asyncEach = require('async/each'),
-      db = require('../db-nano');
+      db = require('../db');
 
 const resources = [
   { name: 'medic-person', file: 'medic-person.svg', type: 'image/svg+xml' },
@@ -37,7 +37,7 @@ module.exports = {
             doc.resources[resource.name] = resource.file;
             doc._attachments[resource.file] = {
               content_type: resource.type,
-              data: new Buffer(data).toString('base64')
+              data: Buffer.from(data).toString('base64')
             };
             callback();
           });
@@ -46,7 +46,7 @@ module.exports = {
           if (err) {
             return callback(err);
           }
-          db.medic.insert(doc, callback);
+          db.medic.put(doc, callback);
         }
       );
     });

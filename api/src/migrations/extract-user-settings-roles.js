@@ -1,37 +1,29 @@
-var async = require('async'),
-    {promisify} = require('util'),
-    request = require('request'),
-    url = require('url'),
-    _ = require('underscore'),
-    db = require('../db-nano'),
-    environment = require('../environment'),
-    DB_ADMIN_ROLE = '_admin';
+const request = require('request-promise-native');
+const url = require('url');
+const db = require('../db');
+const environment = require('../environment');
+const DB_ADMIN_ROLE = '_admin';
 
-var updateUser = function(admins, row, callback) {
-  db.medic.get(row.id, function(err, userSettingsDoc) {
-    if (err) {
-      if (err.statusCode === 404) {
-        // no user-settings doc to update
-        return callback();
+const updateUser = (admins, row) => {
+  return db.medic.get(row.id)
+    .then(userSettingsDoc => {
+      userSettingsDoc.roles = row.doc.roles;
+      if (admins[row.doc.name]) {
+        userSettingsDoc.roles.push(DB_ADMIN_ROLE);
       }
-      return callback(err);
-    }
-    userSettingsDoc.roles = row.doc.roles;
-    if (admins[row.doc.name]) {
-      userSettingsDoc.roles.push(DB_ADMIN_ROLE);
-    }
-    db.medic.insert(userSettingsDoc, callback);
-  });
+      return db.medic.put(userSettingsDoc);
+    })
+    .catch(err => {
+      if (err.status === 404) {
+        // no user-settings doc to update
+        return;
+      }
+      throw err;
+    });
 };
 
-var filterResults = function(rows) {
-  return _.filter(rows, function(row) {
-    return row.id.indexOf('org.couchdb.user:') === 0;
-  });
-};
-
-var getAdmins = function(callback) {
-  request.get({
+const getAdmins = function() {
+  return request.get({
     url: url.format({
       protocol: environment.protocol,
       hostname: environment.host,
@@ -43,31 +35,18 @@ var getAdmins = function(callback) {
       pass: environment.password
     },
     json: true
-  }, function(err, res) {
-    callback(err, res && res.body);
   });
 };
 
 module.exports = {
   name: 'extract-user-settings-roles',
   created: new Date(2016, 4, 26, 15, 10, 0, 0),
-  run: promisify(function(callback) {
-    getAdmins(function(err, admins) {
-      if (err) {
-        return callback(err);
-      }
-      db._users.list({ include_docs: true }, function(err, result) {
-        if (err) {
-          return callback(err);
-        }
-        async.eachSeries(
-          filterResults(result.rows),
-          function(row, callback) {
-            updateUser(admins, row, callback);
-          },
-          callback
-        );
+  run: () => {
+    return getAdmins().then(admins => {
+      return db.users.allDocs({ include_docs: true }).then(result => {
+        const userRows = result.rows.filter(row => row.id.indexOf('org.couchdb.user:') === 0);
+        return Promise.all(userRows.map(row => updateUser(admins, row)));
       });
     });
-  })
+  }
 };

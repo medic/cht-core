@@ -4,7 +4,7 @@ Enketo-core uses bootstrap-datepicker@1.6.4 but Hindi localization wasn't availa
 Solution is to use a duplicated copy of the file to avoid a breaking change to enketo-core.
 */
 
-// jshint ignore: start
+/* eslint-disable */
 
 /**
  * Hindi translation for bootstrap-datepicker

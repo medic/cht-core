@@ -64,44 +64,39 @@ const generateId = length => {
   return completedId;
 };
 
-const getIdLengthDoc = db =>
-  new Promise((resolve, reject) =>
-    db.medic.get(ID_LENGTH_DOC_ID, (err, result) => {
-      if (err) {
-        if (err.statusCode !== 404) {
-          return reject(err);
-        } else {
-          result = {
-            _id: ID_LENGTH_DOC_ID,
-          };
-
-          result[ID_LENGTH_PARAM] = INITIAL_ID_LENGTH;
-        }
+const getIdLengthDoc = db => {
+  return db.medic
+    .get(ID_LENGTH_DOC_ID)
+    .catch(err => {
+      if (err && err.status !== 404) {
+        throw err;
       }
 
-      resolve(result);
-    })
-  );
+      const result = {
+        _id: ID_LENGTH_DOC_ID,
+      };
 
-const putIdLengthDoc = (db, idLengthDoc) =>
-  new Promise((resolve, reject) =>
-    db.medic.insert(idLengthDoc, err => {
-      if (err) {
-        // We're OK with a 409, because we're going to presume this is happening
-        // because a human edited it to suite their needs, and their write is more
-        // important than ours.
-        if (err.statusCode === 409) {
-          logger.warn(
-            `409 while trying to store ${idLengthDoc}. If someone edited this document it is expected.`
-          );
-        } else {
-          return reject(err);
-        }
+      result[ID_LENGTH_PARAM] = INITIAL_ID_LENGTH;
+      return result;
+    });
+};
+
+const putIdLengthDoc = (db, idLengthDoc) => {
+  return db.medic
+    .put(idLengthDoc)
+    .catch(err => {
+      // We're OK with a 409, because we're going to presume this is happening
+      // because a human edited it to suite their needs, and their write is more
+      // important than ours.
+      if (err && err.status !== 409) {
+        throw err;
       }
 
-      resolve();
-    })
-  );
+      logger.warn(
+        `409 while trying to store ${idLengthDoc}. If someone edited this document it is expected.`
+      );
+    });
+};
 
 /*
  * Given a collection of ids return an array of those not used already
@@ -111,25 +106,18 @@ const findUnusedIds = (db, freshIds) => {
     keys.push(['shortcode', id], ['tombstone-shortcode', id]);
     return keys;
   }, []);
-  return new Promise((resolve, reject) => {
-    db.medic.view(
-      'medic-client',
-      'contacts_by_reference',
-      { keys: keys },
-      (err, results) => {
-        if (err) {
-          return reject(err);
-        }
 
-        const uniqueIds = new Set(freshIds);
+  return db.medic
+    .query('medic-client/contacts_by_reference', { keys })
+    .then(results => {
+      const uniqueIds = new Set(freshIds);
 
-        results.rows.forEach(row => {
-          uniqueIds.delete(row.key[1]);
-        });
-        resolve(uniqueIds);
-      }
-    );
-  });
+      results.rows.forEach(row => {
+        uniqueIds.delete(row.key[1]);
+      });
+
+      return uniqueIds;
+    });
 };
 
 const generateNewIds = currentIdLength => {

@@ -6,6 +6,7 @@ angular.module('controllers').controller('TranslationLanguagesCtrl',
     $q,
     $scope,
     Blob,
+    Changes,
     DB,
     ExportProperties,
     Modal,
@@ -80,6 +81,14 @@ angular.module('controllers').controller('TranslationLanguagesCtrl',
           $log.error('Error loading settings', err);
         });
     };
+
+    const changeListener = Changes({
+      key: 'update-languages',
+      filter: change => change.doc.type === 'translations',
+      callback: () => getLanguages()
+    });
+    
+    $scope.$on('$destroy', changeListener.unsubscribe);
 
     $scope.editLanguage = function(doc) {
       Modal({

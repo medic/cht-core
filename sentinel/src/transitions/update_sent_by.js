@@ -1,5 +1,5 @@
 const transitionUtils = require('./utils'),
-      db = require('../db-nano'),
+      db = require('../db'),
       NAME = 'update_sent_by';
 
 module.exports = {
@@ -20,25 +20,20 @@ module.exports = {
         );
     },
     onMatch: change => {
-        return new Promise((resolve, reject) => {
-            var doc = change.doc;
-            db.medic.view('medic-client', 'contacts_by_phone', {
-                key: doc.from,
-                include_docs: true
-            }, function(err, result) {
-                if (err) {
-                    return reject(err);
-                }
-                var sentBy = result.rows &&
+        const doc = change.doc;
+
+        return db.medic
+          .query('medic-client/contacts_by_phone', { key: doc.from, include_docs: true })
+          .then(result => {
+              const sentBy = result.rows &&
                              result.rows.length &&
                              result.rows[0].doc &&
                              result.rows[0].doc.name;
-                if (sentBy) {
-                    doc.sent_by = sentBy;
-                    return resolve(true);
-                }
-                resolve();
-            });
-        });
+
+              if (sentBy) {
+                  doc.sent_by = sentBy;
+                  return true;
+              }
+          });
     }
 };

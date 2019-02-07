@@ -187,7 +187,7 @@ exports.parseField = (field, raw) => {
       if (raw === undefined) {
         return;
       }
-      const val = parseNum(raw);
+      var val = parseNum(raw);
       if (val === 1) {
         return true;
       }

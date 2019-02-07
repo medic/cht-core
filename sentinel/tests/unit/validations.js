@@ -1,12 +1,17 @@
 var moment = require('moment'),
   validation = require('../../src/lib/validation'),
-  db = require('../../src/db-nano'),
+  db = require('../../src/db'),
   sinon = require('sinon'),
   assert = require('chai').assert,
   clock;
 
 describe('validations', () => {
-  afterEach(() => sinon.restore());
+  afterEach(() => {
+    if (clock) {
+      clock.restore();
+    }
+    sinon.restore();
+  });
 
   it('validate handles pupil parse errors', done => {
     var doc = {
@@ -54,7 +59,7 @@ describe('validations', () => {
   });
 
   it('pass unique validation when no doc found', done => {
-    var view = sinon.stub(db.medic, 'view').callsArgWith(3, null, {
+    var view = sinon.stub(db.medic, 'query').callsArgWith(2, null, {
       rows: [],
     });
     var validations = [
@@ -69,16 +74,15 @@ describe('validations', () => {
     };
     validation.validate(doc, validations, function(errors) {
       assert.equal(view.callCount, 1);
-      assert.equal(view.args[0][0], 'medic-client');
-      assert.equal(view.args[0][1], 'reports_by_freetext');
-      assert.deepEqual(view.args[0][2], { key: ['patient_id:111'] });
+      assert.equal(view.args[0][0], 'medic-client/reports_by_freetext');
+      assert.deepEqual(view.args[0][1], { key: ['patient_id:111'] });
       assert.equal(errors.length, 0);
       done();
     });
   });
 
   it('pass unique validation when doc is the same', done => {
-    var view = sinon.stub(db.medic, 'view').callsArgWith(3, null, {
+    var view = sinon.stub(db.medic, 'query').callsArgWith(2, null, {
       rows: [
         {
           id: 'same',
@@ -98,19 +102,18 @@ describe('validations', () => {
     };
     validation.validate(doc, validations, function(errors) {
       assert.equal(view.callCount, 1);
-      assert.equal(view.args[0][0], 'medic-client');
-      assert.equal(view.args[0][1], 'reports_by_freetext');
-      assert.deepEqual(view.args[0][2], { key: ['patient_id:111'] });
+      assert.equal(view.args[0][0], 'medic-client/reports_by_freetext');
+      assert.deepEqual(view.args[0][1], { key: ['patient_id:111'] });
       assert.equal(errors.length, 0);
       done();
     });
   });
 
   it('pass unique validation when doc has errors', done => {
-    var view = sinon.stub(db.medic, 'view').callsArgWith(3, null, {
+    const view = sinon.stub(db.medic, 'query').callsArgWith(2, null, {
       rows: [{ id: 'different' }],
     });
-    var fetch = sinon.stub(db.medic, 'fetch').callsArgWith(1, null, {
+    const allDocs = sinon.stub(db.medic, 'allDocs').callsArgWith(1, null, {
       rows: [
         {
           id: 'different',
@@ -130,21 +133,20 @@ describe('validations', () => {
     };
     validation.validate(doc, validations, function(errors) {
       assert.equal(view.callCount, 1);
-      assert.equal(view.args[0][0], 'medic-client');
-      assert.equal(view.args[0][1], 'reports_by_freetext');
-      assert.deepEqual(view.args[0][2], { key: ['patient_id:111'] });
-      assert.equal(fetch.callCount, 1);
-      assert.deepEqual(fetch.args[0][0], { keys: ['different'] });
+      assert.equal(view.args[0][0], 'medic-client/reports_by_freetext');
+      assert.deepEqual(view.args[0][1], { key: ['patient_id:111'] });
+      assert.equal(allDocs.callCount, 1);
+      assert.deepEqual(allDocs.args[0][0], { keys: ['different'], include_docs: true });
       assert.equal(errors.length, 0);
       done();
     });
   });
 
   it('fail unique validation on doc with no errors', done => {
-    sinon.stub(db.medic, 'view').callsArgWith(3, null, {
+    sinon.stub(db.medic, 'query').callsArgWith(2, null, {
       rows: [{ id: 'different' }],
     });
-    sinon.stub(db.medic, 'fetch').callsArgWith(1, null, {
+    sinon.stub(db.medic, 'allDocs').callsArgWith(1, null, {
       rows: [
         {
           id: 'different',
@@ -180,10 +182,10 @@ describe('validations', () => {
   });
 
   it('fail multiple field unique validation on doc with no errors', done => {
-    var view = sinon.stub(db.medic, 'view').callsArgWith(3, null, {
+    const view = sinon.stub(db.medic, 'query').callsArgWith(2, null, {
       rows: [{ id: 'different' }],
     });
-    var fetch = sinon.stub(db.medic, 'fetch').callsArgWith(1, null, {
+    const allDocs = sinon.stub(db.medic, 'allDocs').callsArgWith(1, null, {
       rows: [
         {
           id: 'different',
@@ -210,14 +212,12 @@ describe('validations', () => {
     };
     validation.validate(doc, validations, function(errors) {
       assert.equal(view.callCount, 2);
-      assert.equal(view.args[0][0], 'medic-client');
-      assert.equal(view.args[0][1], 'reports_by_freetext');
-      assert.deepEqual(view.args[0][2], { key: ['xyz:444'] });
-      assert.equal(view.args[1][0], 'medic-client');
-      assert.equal(view.args[1][1], 'reports_by_freetext');
-      assert.deepEqual(view.args[1][2], { key: ['abc:cheese'] });
-      assert.equal(fetch.callCount, 1);
-      assert.deepEqual(fetch.args[0][0], { keys: ['different'] });
+      assert.equal(view.args[0][0], 'medic-client/reports_by_freetext');
+      assert.deepEqual(view.args[0][1], { key: ['xyz:444'] });
+      assert.equal(view.args[1][0], 'medic-client/reports_by_freetext');
+      assert.deepEqual(view.args[1][1], { key: ['abc:cheese'] });
+      assert.equal(allDocs.callCount, 1);
+      assert.deepEqual(allDocs.args[0][0], { keys: ['different'], include_docs: true });
       assert.deepEqual(errors, [
         {
           code: 'invalid_xyz_unique',
@@ -230,10 +230,10 @@ describe('validations', () => {
 
   it('pass uniqueWithin validation on old doc', done => {
     clock = sinon.useFakeTimers();
-    sinon.stub(db.medic, 'view').callsArgWith(3, null, {
+    sinon.stub(db.medic, 'query').callsArgWith(2, null, {
       rows: [{ id: 'different' }],
     });
-    sinon.stub(db.medic, 'fetch').callsArgWith(1, null, {
+    sinon.stub(db.medic, 'allDocs').callsArgWith(1, null, {
       rows: [
         {
           id: 'different',
@@ -271,11 +271,11 @@ describe('validations', () => {
 
   it('fail uniqueWithin validation on new doc', done => {
     clock = sinon.useFakeTimers();
-    sinon.stub(db.medic, 'view').callsArgWith(3, null, {
+    sinon.stub(db.medic, 'query').callsArgWith(2, null, {
       rows: [{ id: 'different1' }, { id: 'different2' }, { id: 'different3' }],
     });
     // rows are sorted based on uuid not on date, so we have to check all docs
-    sinon.stub(db.medic, 'fetch').callsArgWith(1, null, {
+    sinon.stub(db.medic, 'allDocs').callsArgWith(1, null, {
       rows: [
         {
           id: 'different1',
@@ -433,10 +433,10 @@ describe('validations', () => {
   });
 
   it('pass exists validation when matching document', done => {
-    var view = sinon.stub(db.medic, 'view').callsArgWith(3, null, {
+    var view = sinon.stub(db.medic, 'query').callsArgWith(2, null, {
       rows: [{ id: 'different' }],
     });
-    sinon.stub(db.medic, 'fetch').callsArgWith(1, null, {
+    sinon.stub(db.medic, 'allDocs').callsArgWith(1, null, {
       rows: [
         {
           id: 'different',
@@ -462,19 +462,17 @@ describe('validations', () => {
     };
     validation.validate(doc, validations, function(errors) {
       assert.equal(view.callCount, 2);
-      assert.equal(view.args[0][0], 'medic-client');
-      assert.equal(view.args[0][1], 'reports_by_freetext');
-      assert.deepEqual(view.args[0][2], { key: ['patient_id:444'] });
-      assert.equal(view.args[1][0], 'medic-client');
-      assert.equal(view.args[1][1], 'reports_by_freetext');
-      assert.deepEqual(view.args[1][2], { key: ['form:registration'] });
+      assert.equal(view.args[0][0], 'medic-client/reports_by_freetext');
+      assert.deepEqual(view.args[0][1], { key: ['patient_id:444'] });
+      assert.equal(view.args[1][0], 'medic-client/reports_by_freetext');
+      assert.deepEqual(view.args[1][1], { key: ['form:registration'] });
       assert.deepEqual(errors, []);
       done();
     });
   });
 
   it('fail exists validation when no matching document', done => {
-    sinon.stub(db.medic, 'view').callsArgWith(3, null, {
+    sinon.stub(db.medic, 'query').callsArgWith(2, null, {
       rows: [],
     });
     var validations = [
@@ -505,7 +503,7 @@ describe('validations', () => {
   });
 
   it('fail exists validation when matching document is same as this', done => {
-    sinon.stub(db.medic, 'view').callsArgWith(3, null, {
+    sinon.stub(db.medic, 'query').callsArgWith(2, null, {
       rows: [
         {
           id: 'same',

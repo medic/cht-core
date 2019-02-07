@@ -2,9 +2,8 @@ describe('UpdateUser service', function() {
 
   'use strict';
 
-  var scope,
-      service,
-      $http;
+  let service;
+  let $http;
 
   beforeEach(function() {
     $http = sinon.stub();
@@ -14,7 +13,6 @@ describe('UpdateUser service', function() {
       $provide.value('$http', $http);
     });
     inject(function($injector) {
-      scope = $injector.get('$rootScope');
       service = $injector.get('UpdateUser');
     });
   });
@@ -59,9 +57,8 @@ describe('CreateUser service', function() {
 
   'use strict';
 
-  var scope,
-      service,
-      $http;
+  let service;
+  let $http;
 
   beforeEach(function() {
     $http = sinon.stub();
@@ -72,7 +69,6 @@ describe('CreateUser service', function() {
       $provide.value('$Q', Q);
     });
     inject(function($injector) {
-      scope = $injector.get('$rootScope');
       service = $injector.get('CreateUser');
     });
   });
@@ -101,9 +97,8 @@ describe('DeleteUser service', function() {
 
   'use strict';
 
-  var scope,
-      service,
-      $http;
+  let service;
+  let $http;
 
   beforeEach(function() {
     $http = sinon.stub();
@@ -114,7 +109,6 @@ describe('DeleteUser service', function() {
       $provide.value('$Q', Q);
     });
     inject(function($injector) {
-      scope = $injector.get('$rootScope');
       service = $injector.get('DeleteUser');
     });
   });

@@ -3,6 +3,7 @@ angular.module('controllers').controller('MainCtrl',
     $log,
     $translate,
     $window,
+    $state,
     Auth,
     $scope,
     Location,
@@ -20,8 +21,17 @@ angular.module('controllers').controller('MainCtrl',
       $window.location.href = Location.path;
     });
 
+
+    $scope.webAppUrl = Location.path;
     $scope.logout = function() {
       Session.logout();
+    };
+    $scope.checkActive = state => {
+      if (state === 'targets' && $state.is('targets-edit')) {
+        // a special case for a route that doesn't match our usual pattern
+        return true;
+      }
+      return $state.includes(state);
     };
   }
 );

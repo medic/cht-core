@@ -1,12 +1,12 @@
 const request = require('request');
 
-const db = require('./src/db-pouch'),
+const db = require('./src/db'),
   logger = require('./src/lib/logger'),
   serverChecks = require('@medic/server-checks');
 
 if (process.env.TEST_ENV) {
   logger.info('TEST_ENV is set, server does not run in test mode.');
-  return;
+  process.exit(1);
 }
 
 process.on('unhandledRejection', reason => {

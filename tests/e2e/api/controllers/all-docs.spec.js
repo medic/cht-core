@@ -62,7 +62,7 @@ const restrictedKeys = [
 ];
 
 const unrestrictedKeys = [
-  'appcache',
+  'service-worker-meta',
   'fixture:offline',
   'fixture:user:offline',
   'org.couchdb.user:offline',

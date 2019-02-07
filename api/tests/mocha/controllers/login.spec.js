@@ -2,10 +2,11 @@ const controller = require('../../../src/controllers/login'),
       chai = require('chai'),
       environment = require('../../../src/environment'),
       auth = require('../../../src/auth'),
-      db = require('../../../src/db-pouch').medic,
+      cookie = require('../../../src/services/cookie'),
+      db = require('../../../src/db').medic,
       sinon = require('sinon'),
       config = require('../../../src/config'),
-      request = require('request'),
+      request = require('request-promise-native'),
       fs = require('fs'),
       DB_NAME = 'lg',
       DDOC_NAME = 'medic';
@@ -137,7 +138,8 @@ describe('login controller', () => {
       });
       const send = sinon.stub(res, 'send');
       const readFile = sinon.stub(fs, 'readFile').callsArgWith(2, null, 'LOGIN PAGE GOES HERE. {{translations.login}}');
-      sinon.stub(config, 'translate').returns('TRANSLATED VALUE.');
+      const translate = sinon.stub(config, 'translate').returns('TRANSLATED VALUE.');
+      const cookieGet = sinon.stub(cookie, 'get').returns('es');
       return controller.get(req, res).then(() => {
         chai.expect(getUserCtx.callCount).to.equal(1);
         chai.expect(getUserCtx.args[0][0]).to.deep.equal(req);
@@ -145,6 +147,9 @@ describe('login controller', () => {
         chai.expect(send.callCount).to.equal(1);
         chai.expect(send.args[0][0]).to.equal('LOGIN PAGE GOES HERE. TRANSLATED VALUE.');
         chai.expect(readFile.callCount).to.equal(1);
+        chai.expect(translate.args[0][1]).to.equal('es');
+        chai.expect(cookieGet.callCount).to.equal(1);
+        chai.expect(cookieGet.args[0][1]).to.equal('locale');
       });
     });
 
@@ -154,6 +159,7 @@ describe('login controller', () => {
       const send = sinon.stub(res, 'send');
       sinon.stub(fs, 'readFile').callsArgWith(2, null, 'LOGIN PAGE GOES HERE. {{translations.login}}');
       sinon.stub(config, 'translate').returns('TRANSLATED VALUE.');
+      sinon.stub(cookie, 'get').returns('es');
       return controller.get(req, res).then(() => {
         chai.expect(getUserCtx.callCount).to.equal(1);
         chai.expect(getUserCtx.args[0][0]).to.deep.equal(req);
@@ -168,7 +174,7 @@ describe('login controller', () => {
 
     it('returns errors from session create', () => {
       req.body = { user: 'sharon', password: 'p4ss' };
-      const post = sinon.stub(request, 'post').callsArgWith(1, 'boom');
+      const post = sinon.stub(request, 'post').rejects('boom');
       const status = sinon.stub(res, 'status').returns(res);
       const json = sinon.stub(res, 'json').returns(res);
       return controller.post(req, res).then(() => {
@@ -182,7 +188,7 @@ describe('login controller', () => {
 
     it('returns invalid credentials', () => {
       req.body = { user: 'sharon', password: 'p4ss' };
-      const post = sinon.stub(request, 'post').callsArgWith(1, null, { statusCode: 401 });
+      const post = sinon.stub(request, 'post').resolves({ statusCode: 401 });
       const status = sinon.stub(res, 'status').returns(res);
       const json = sinon.stub(res, 'json').returns(res);
       return controller.post(req, res).then(() => {
@@ -200,7 +206,7 @@ describe('login controller', () => {
         statusCode: 200,
         headers: { 'set-cookie': [ 'AuthSession=abc;' ] }
       };
-      const post = sinon.stub(request, 'post').callsArgWith(1, null, postResponse);
+      const post = sinon.stub(request, 'post').resolves(postResponse);
       const status = sinon.stub(res, 'status').returns(res);
       const json = sinon.stub(res, 'json').returns(res);
       const getUserCtx = sinon.stub(auth, 'getUserCtx').rejects('boom');
@@ -220,11 +226,14 @@ describe('login controller', () => {
         statusCode: 200,
         headers: { 'set-cookie': [ 'AuthSession=abc;' ] }
       };
-      const post = sinon.stub(request, 'post').callsArgWith(1, null, postResponse);
-      const json = sinon.stub(res, 'json').returns(res);
+      const post = sinon.stub(request, 'post').resolves(postResponse);
+      const send = sinon.stub(res, 'send');     
+      const status = sinon.stub(res, 'status').returns(res);
       const cookie = sinon.stub(res, 'cookie').returns(res);
       const userCtx = { name: 'shazza', roles: [ 'project-stuff' ] };
       const getUserCtx = sinon.stub(auth, 'getUserCtx').resolves(userCtx);
+      const hasAllPermissions = sinon.stub(auth, 'hasAllPermissions').returns(false);
+      sinon.stub(auth, 'getUserSettings').resolves({ language: 'es' });
       return controller.post(req, res).then(() => {
         chai.expect(post.callCount).to.equal(1);
         chai.expect(post.args[0][0].url).to.equal('http://test.com:1234/_session');
@@ -234,18 +243,46 @@ describe('login controller', () => {
         chai.expect(post.args[0][0].auth.pass).to.equal('p4ss');
         chai.expect(getUserCtx.callCount).to.equal(1);
         chai.expect(getUserCtx.args[0][0].headers.Cookie).to.equal('AuthSession=abc;');
-        chai.expect(json.callCount).to.equal(1);
-        chai.expect(json.args[0][0]).to.deep.equal({ success: true });
-        chai.expect(cookie.callCount).to.equal(2);
+        chai.expect(hasAllPermissions.callCount).to.equal(1);
+        chai.expect(status.callCount).to.equal(1);
+        chai.expect(status.args[0][0]).to.equal(302);
+        chai.expect(send.args[0][0]).to.deep.equal('/lg/_design/medic/_rewrite');
+        chai.expect(cookie.callCount).to.equal(3);
         chai.expect(cookie.args[0][0]).to.equal('AuthSession');
         chai.expect(cookie.args[0][1]).to.equal('abc');
         chai.expect(cookie.args[0][2]).to.deep.equal({ sameSite: 'lax', secure: false, httpOnly: true });
         chai.expect(cookie.args[1][0]).to.equal('userCtx');
         chai.expect(cookie.args[1][1]).to.equal(JSON.stringify(userCtx));
         chai.expect(cookie.args[1][2]).to.deep.equal({ sameSite: 'lax', secure: false, maxAge: 31536000000 });
+        chai.expect(cookie.args[2][0]).to.equal('locale');
+        chai.expect(cookie.args[2][1]).to.equal('es');
+        chai.expect(cookie.args[2][2]).to.deep.equal({ sameSite: 'lax', secure: false, maxAge: 31536000000 });
       });
     });
 
+    it('redict admin users to admin app after successful login', () => {
+      req.body = { user: 'sharon', password: 'p4ss' };
+      const postResponse = {
+        statusCode: 200,
+        headers: { 'set-cookie': [ 'AuthSession=abc;' ] }
+      };
+      const post = sinon.stub(request, 'post').resolves(postResponse);
+      const send = sinon.stub(res, 'send');     
+      const status = sinon.stub(res, 'status').returns(res);
+      const userCtx = { name: 'shazza', roles: [ 'project-stuff' ] };
+      const getUserCtx = sinon.stub(auth, 'getUserCtx').resolves(userCtx);
+      const hasAllPermissions = sinon.stub(auth, 'hasAllPermissions').returns(true);
+      sinon.stub(auth, 'getUserSettings').resolves({ language: 'es' });
+      return controller.post(req, res).then(() => {
+        chai.expect(post.callCount).to.equal(1);
+        chai.expect(getUserCtx.callCount).to.equal(1);
+        chai.expect(getUserCtx.args[0][0].headers.Cookie).to.equal('AuthSession=abc;');
+        chai.expect(hasAllPermissions.callCount).to.equal(1);
+        chai.expect(status.callCount).to.equal(1);
+        chai.expect(status.args[0][0]).to.equal(302);
+        chai.expect(send.args[0][0]).to.deep.equal('/lg/_design/medic-admin/_rewrite');
+      });
+    });
   });
 
   describe('getIdentity', () => {

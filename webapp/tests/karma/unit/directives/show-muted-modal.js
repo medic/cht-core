@@ -4,7 +4,6 @@ describe('showMutedModal directive', () => {
 
   let compile,
       scope,
-      document,
       Modal,
       state;
 
@@ -17,10 +16,9 @@ describe('showMutedModal directive', () => {
       $provide.value('Modal', Modal);
       $provide.value('$state', state);
     });
-    inject(function(_$compile_, _$rootScope_, $document) {
+    inject(function(_$compile_, _$rootScope_) {
       compile = _$compile_;
       scope = _$rootScope_;
-      document = $document;
     });
   });
 

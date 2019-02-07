@@ -4,7 +4,7 @@ const _ = require('underscore'),
   morgan = require('morgan'),
   helmet = require('helmet'),
   environment = require('./environment'),
-  db = require('./db-pouch'),
+  db = require('./db'),
   path = require('path'),
   auth = require('./auth'),
   logger = require('./logger'),
@@ -32,17 +32,15 @@ const _ = require('underscore'),
   bulkDocs = require('./controllers/bulk-docs'),
   authorization = require('./middleware/authorization'),
   createUserDb = require('./controllers/create-user-db'),
-  createDomain = require('domain').create,
   staticResources = /\/(templates|static)\//,
   // CouchDB is very relaxed in matching routes
   routePrefix = '/+' + environment.db + '/+',
   pathPrefix = '/' + environment.db + '/',
   appPrefix = pathPrefix + '_design/' + environment.ddoc + '/_rewrite/',
   serverUtils = require('./server-utils'),
-  appcacheManifest = /\/manifest\.appcache$/,
   uuid = require('uuid'),
   compression = require('compression'),
-  BUILDS_DB = 'https://staging.dev.medicmobile.org/_couch/builds', // jshint ignore:line
+  BUILDS_DB = 'https://staging.dev.medicmobile.org/_couch/builds/', // jshint ignore:line
   app = express();
 
 // requires content-type application/json header
@@ -116,47 +114,34 @@ app.use(
     // runs with a bunch of defaults: https://github.com/helmetjs/helmet
     hpkp: false, // explicitly block dangerous header
     contentSecurityPolicy: {
-      /* jshint ignore:start */
       directives: {
-        defaultSrc: ["'none'"],
-        fontSrc: ["'self'"],
-        manifestSrc: ["'self'"],
+        defaultSrc: [`'none'`],
+        fontSrc: [`'self'`],
+        manifestSrc: [`'self'`],
         connectSrc: [
-          "'self'",
+          `'self'`,
           BUILDS_DB,
         ],
-        formAction: ["'self'"],
+        childSrc:  [`'self'`],
+        formAction: [`'self'`],
         imgSrc: [
-          "'self'",
+          `'self'`,
           'data:' // unsafe
         ],
         scriptSrc: [
-          "'self'",
-          "'sha256-6i0jYw/zxQO6q9fIxqI++wftTrPWB3yxt4tQqy6By6k='", // Explicitly allow the telemetry script setting startupTimes
-          "'unsafe-eval'" // AngularJS and several dependencies require this
+          `'self'`,
+          `'sha256-6i0jYw/zxQO6q9fIxqI++wftTrPWB3yxt4tQqy6By6k='`, // Explicitly allow the telemetry script setting startupTimes
+          `'unsafe-eval'` // AngularJS and several dependencies require this
         ],
         styleSrc: [
-          "'self'",
-          "'unsafe-inline'" // angular-ui-bootstrap
+          `'self'`,
+          `'unsafe-inline'` // angular-ui-bootstrap
         ],
       },
-      /* jshint ignore:end */
       browserSniff: false,
     },
   })
 );
-
-app.use(function(req, res, next) {
-  var domain = createDomain();
-  domain.on('error', function(err) {
-    logger.error('UNCAUGHT EXCEPTION!');
-    serverUtils.serverError(err, req, res);
-    domain.dispose();
-    process.exit(1);
-  });
-  domain.enter();
-  next();
-});
 
 // requires `req` header `Accept-Encoding` to be `gzip` or `deflate`
 // requires `res` `Content-Type` to be compressible (see https://github.com/jshttp/mime-db/blob/master/db.json)
@@ -164,7 +149,7 @@ app.use(function(req, res, next) {
 app.use(compression());
 
 // TODO: investigate blocking writes to _users from the outside. Reads maybe as well, though may be harder
-//       https://github.com/medic/medic-webapp/issues/4089
+//       https://github.com/medic/medic/issues/4089
 
 app.get('/', function(req, res) {
   if (req.headers.accept === 'application/json') {
@@ -176,11 +161,21 @@ app.get('/', function(req, res) {
   }
 });
 
+/*
+To facilitate service worker prefetch on Chrome <66, serve a version of the app which does not require authentication
+*/
+app.get(appPrefix, (req, res, next) => {
+  if ('_sw-precache' in req.query) {
+    return res.sendFile(path.join(__dirname, 'extracted-resources/templates/inbox.html'));
+  }
+  next();
+});
+
 app.get('/favicon.ico', (req, res) => {
   // Cache for a week. Normally we don't interfere with couch headers, but
   // due to Chrome (including Android WebView) aggressively requesting
   // favicons on every page change and window.history update
-  // ( https://github.com/medic/medic-webapp/issues/1913 ), we have to
+  // ( https://github.com/medic/medic/issues/1913 ), we have to
   // stage an intervention
   writeHeaders(req, res, [['Cache-Control', 'public, max-age=604800']]);
   db.medic.get('branding').then(doc => {
@@ -194,6 +189,7 @@ app.get('/favicon.ico', (req, res) => {
 });
 
 app.use(express.static(path.join(__dirname, 'public')));
+app.use(express.static(path.join(__dirname, 'extracted-resources')));
 app.get(routePrefix + 'login', login.get);
 app.get(routePrefix + 'login/identity', login.getIdentity);
 app.postJson(routePrefix + 'login', login.post);
@@ -276,16 +272,17 @@ app.get('/api/info', function(req, res) {
 });
 
 app.get('/api/auth/:path', function(req, res) {
-  auth.checkUrl(req, function(err, output) {
-    if (err) {
-      return serverUtils.serverError(err, req, res);
-    }
-    if (output.status >= 400 && output.status < 500) {
-      res.status(403).send('Forbidden');
-    } else {
-      res.json(output);
-    }
-  });
+  auth.checkUrl(req)
+    .then(status => {
+      if (status && status >= 400 && status < 500) {
+        res.status(403).send('Forbidden');
+      } else {
+        res.json({ status: status });
+      }
+    })
+    .catch(err => {
+      serverUtils.serverError(err, req, res);
+    });
 });
 
 app.post('/api/v1/upgrade', jsonParser, upgrade.upgrade);
@@ -313,10 +310,8 @@ app.postJson('/api/sms', function(req, res) {
     .catch(err => serverUtils.error(err, req, res));
 });
 
-app.all('/api/v1/export/:type/:form?', exportData.routeV1);
-app.all(`/${appPrefix}export/:type/:form?`, exportData.routeV1);
-app.get('/api/v2/export/:type', exportData.routeV2);
-app.postJson('/api/v2/export/:type', exportData.routeV2);
+app.get('/api/v2/export/:type', exportData.get);
+app.postJson('/api/v2/export/:type', exportData.get);
 
 app.post('/api/v1/records', [jsonParser, formParser], records.v1);
 app.post('/api/v2/records', [jsonParser, formParser], records.v2);
@@ -555,20 +550,32 @@ const copyProxyHeaders = (proxyRes, res) => {
   }
 };
 
+/*
+A service worker can't have a scope broader than its own location.
+To give our service worker control of all resources, create an alias at root.
+*/
+app.get('/service-worker.js', (req, res) => {
+  writeHeaders(req, res, [
+    // For users before Chrome 68 https://developers.google.com/web/updates/2018/06/fresher-sw
+    ['Cache-Control', 'max-age=0'],
+    ['Content-Type', 'application/javascript'],
+  ]);
+
+  res.sendFile(path.join(__dirname, 'extracted-resources/js/service-worker.js'));
+});
+
+// To clear the application cache for users upgrading from legacy clients, serve an empty application manifest
+app.get('/empty.manifest', (req, res) => {
+  writeHeaders(req, res, [['Content-Type', 'text/cache-manifest; charset=utf-8']]);
+  res.send('CACHE MANIFEST\n\nNETWORK:\n*\n');
+});
+
 /**
  * Set cache control on static resources. Must be hacked in to
  * ensure we set the value first.
  */
 proxy.on('proxyReq', function(proxyReq, req, res) {
-  if (appcacheManifest.test(req.url)) {
-    // requesting the appcache manifest
-    writeHeaders(req, res, [
-      ['Cache-Control', 'must-revalidate'],
-      ['Content-Type', 'text/cache-manifest; charset=utf-8'],
-      ['Last-Modified', 'Tue, 28 Apr 2015 02:23:40 GMT'],
-      ['Expires', 'Tue, 28 Apr 2015 02:21:40 GMT'],
-    ]);
-  } else if (
+  if (
     !staticResources.test(req.url) &&
     req.url.indexOf(appPrefix) !== -1
   ) {
@@ -658,7 +665,7 @@ proxyForAuth.on('proxyRes', (proxyRes, req, res) => {
   copyProxyHeaders(proxyRes, res);
 
   if (res.interceptResponse) {
-    let body = new Buffer('');
+    let body = Buffer.from('');
     proxyRes.on('data', data => (body = Buffer.concat([body, data])));
     proxyRes.on('end', () => res.interceptResponse(req, res, body.toString()));
   } else {

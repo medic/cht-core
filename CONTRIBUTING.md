@@ -6,11 +6,11 @@ At Medic Mobile we welcome and appreciate community contributions.
 
 ### Communication
 
-If you have an idea or a question we'd love to hear from you! The easiest way to get in touch is by raising issues in the [medic-webapp Github repo](https://github.com/medic/medic-webapp/issues). You can also reach out on our community Slack channel. You can request access via [this _Community Health Toolkit_ page](https://communityhealthtoolkit.org/slack).
+If you have an idea or a question we'd love to hear from you! The easiest way to get in touch is by raising issues in the [medic Github repo](https://github.com/medic/medic/issues). You can also reach out on our community Slack channel. You can request access via [this _Community Health Toolkit_ page](https://communityhealthtoolkit.org/slack).
 
 ### Submitting code
 
-1. Before starting on code we recommend you raise an issue or message our Google Group to start a discussion about the change you want to make. Existing issues that have been identified as good for first time contributors are labeled with ["Help Wanted"](https://github.com/medic/medic-webapp/issues?q=is%3Aopen+is%3Aissue+label%3A%22Help+Wanted%22).
+1. Before starting on code we recommend you raise an issue or message our Google Group to start a discussion about the change you want to make. Existing issues that have been identified as good for first time contributors are labeled with ["Help Wanted"](https://github.com/medic/medic/issues?q=is%3Aopen+is%3Aissue+label%3A%22Help+Wanted%22).
 2. When working on your submission follow our [style guide](https://github.com/medic/medic-docs/blob/master/development/style-guide.md) so the codebase is kept consistent and easy to read.
 3. When you're happy with the code be sure to run tests and precommit checks.
 4. Now submit a PR with a full description of the issue you're solving and if possible including a link to the GitHub issue.

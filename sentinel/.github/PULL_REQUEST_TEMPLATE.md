@@ -2,7 +2,7 @@
 
 [description]
 
-medic/medic-webapp#[number]
+medic/medic#[number]
 
 # Review checklist
 

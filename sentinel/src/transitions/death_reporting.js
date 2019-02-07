@@ -3,7 +3,7 @@ const _ = require('underscore'),
   utils = require('../lib/utils'),
   objectPath = require('object-path'),
   transitionUtils = require('./utils'),
-  db = require('../db-pouch'),
+  db = require('../db'),
   TRANSITION_NAME = 'death_reporting',
   CONFIG_NAME = 'death_reporting',
   MARK_PROPERTY_NAME = 'mark_deceased_forms',
@@ -39,7 +39,7 @@ const updatePatient = (patient, doc, callback) => {
 
 const getPatient = (patientId, callback) => {
   db.medic.get(patientId, (err, patient) => {
-    if (err && err.statusCode !== 404) {
+    if (err && err.status !== 404) {
       return callback(err);
     }
     if (patient) {

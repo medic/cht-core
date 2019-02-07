@@ -2,15 +2,16 @@ const fs = require('fs'),
   { promisify } = require('util'),
   url = require('url'),
   path = require('path'),
-  request = require('request'),
+  request = require('request-promise-native'),
   _ = require('underscore'),
   auth = require('../auth'),
   environment = require('../environment'),
   config = require('../config'),
+  cookie = require('../services/cookie'),
   SESSION_COOKIE_RE = /AuthSession\=([^;]*);/,
   ONE_YEAR = 31536000000,
   logger = require('../logger'),
-  db = require('../db-pouch'),
+  db = require('../db'),
   production = process.env.NODE_ENV === 'production';
 
 let loginTemplate;
@@ -54,19 +55,20 @@ const getLoginTemplate = () => {
     .then(data => _.template(data));
 };
 
-const renderLogin = (redirect, branding) => {
+const renderLogin = (req, redirect, branding) => {
+  const locale = cookie.get(req, 'locale');
   return getLoginTemplate().then(template => {
     return template({
       action: path.join('/', environment.db, 'login'),
       redirect: redirect,
       branding: branding,
       translations: {
-        login: config.translate('login'),
-        loginerror: config.translate('login.error'),
-        loginincorrect: config.translate('login.incorrect'),
-        loginoffline: config.translate('online.action.message'),
-        username: config.translate('User Name'),
-        password: config.translate('Password'),
+        login: config.translate('login', locale),
+        loginerror: config.translate('login.error', locale),
+        loginincorrect: config.translate('login.incorrect', locale),
+        loginoffline: config.translate('online.action.message', locale),
+        username: config.translate('User Name', locale),
+        password: config.translate('Password', locale),
       },
     });
   });
@@ -82,26 +84,17 @@ const getSessionCookie = res => {
 const createSession = req => {
   const user = req.body.user;
   const password = req.body.password;
-  return new Promise((resolve, reject) => {
-    request.post(
-      {
-        url: url.format({
-          protocol: environment.protocol,
-          hostname: environment.host,
-          port: environment.port,
-          pathname: '_session',
-        }),
-        json: true,
-        body: { name: user, password: password },
-        auth: { user: user, pass: password },
-      },
-      (err, sessionRes) => {
-        if (err) {
-          return reject(err);
-        }
-        resolve(sessionRes);
-      }
-    );
+  return request.post({
+    url: url.format({
+      protocol: environment.protocol,
+      hostname: environment.host,
+      port: environment.port,
+      pathname: '_session',
+    }),
+    json: true,
+    resolveWithFullResponse: true,
+    body: { name: user, password: password },
+    auth: { user: user, pass: password },
   });
 };
 
@@ -125,6 +118,22 @@ const setUserCtxCookie = (res, userCtx) => {
   res.cookie('userCtx', JSON.stringify(userCtx), options);
 };
 
+const setLocaleCookie = (res, locale) => {
+  const options = getCookieOptions();
+  options.maxAge = ONE_YEAR;
+  res.cookie('locale', locale, options);
+};
+
+const getRedirectUrl = userCtx => {
+  // https://github.com/medic/medic/issues/5035
+  // For Test DB, temporarily disable `canCongifure` property to avoid redirecting to admin console
+  // One `e2e` is problematic
+  const designDoc  = auth.hasAllPermissions(userCtx, 'can_configure') &&
+    environment.db !== 'medic-test' ? 'medic-admin' : 'medic';
+
+  return path.join('/', environment.db, '_design', designDoc, '_rewrite');
+};
+
 const setCookies = (req, res, sessionRes) => {
   const sessionCookie = getSessionCookie(sessionRes);
   if (!sessionCookie) {
@@ -137,7 +146,10 @@ const setCookies = (req, res, sessionRes) => {
     .then(userCtx => {
       setSessionCookie(res, sessionCookie);
       setUserCtxCookie(res, userCtx);
-      res.json({ success: true });
+      return auth.getUserSettings(userCtx).then(settings => {
+        setLocaleCookie(res, settings.language);
+        res.status(302).send(getRedirectUrl(userCtx));
+      });
     })
     .catch(err => {
       logger.error(`Error getting authCtx ${err}`);
@@ -175,7 +187,7 @@ const getBranding = () => {
 
 module.exports = {
   safePath: safePath,
-  get: (req, res) => {
+  get: (req, res, next) => {
     const redirect = safePath(req.query.redirect);
     return auth
       .getUserCtx(req)
@@ -186,12 +198,9 @@ module.exports = {
       })
       .catch(() => {
         return getBranding()
-          .then(branding => renderLogin(redirect, branding))
+          .then(branding => renderLogin(req, redirect, branding))
           .then(body => res.send(body))
-          .catch(err => {
-            logger.error('Could not find login page');
-            throw err;
-          });
+          .catch(next);
       });
   },
   post: (req, res) => {

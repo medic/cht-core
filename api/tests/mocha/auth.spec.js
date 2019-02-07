@@ -1,10 +1,10 @@
-const request = require('request'),
+const request = require('request-promise-native'),
       url = require('url'),
       chai = require('chai'),
       sinon = require('sinon'),
       auth = require('../../src/auth'),
       config = require('../../src/config'),
-      db = require('../../src/db-pouch'),
+      db = require('../../src/db'),
       environment = require('../../src/environment');
 
 let originalServerUrl;
@@ -24,7 +24,7 @@ describe('Auth', () => {
 
     it('returns error when not logged in', () => {
       environment.serverUrl = 'http://abc.com';
-      const get = sinon.stub(request, 'get').callsArgWith(1, null, null);
+      const get = sinon.stub(request, 'get').resolves();
       return auth.check({ }).catch(err => {
         chai.expect(get.callCount).to.equal(1);
         chai.expect(get.args[0][0].url).to.equal('http://abc.com/_session');
@@ -35,7 +35,7 @@ describe('Auth', () => {
 
     it('returns error when no user context', () => {
       environment.serverUrl = 'http://abc.com';
-      const get = sinon.stub(request, 'get').callsArgWith(1, null, null, { roles: [] });
+      const get = sinon.stub(request, 'get').resolves({ roles: [] });
       return auth.check({ }).catch(err => {
         chai.expect(get.callCount).to.equal(1);
         chai.expect(err.message).to.equal('Not logged in');
@@ -45,7 +45,7 @@ describe('Auth', () => {
 
     it('returns error when request errors', () => {
       environment.serverUrl = 'http://abc.com';
-      const get = sinon.stub(request, 'get').callsArgWith(1, 'boom');
+      const get = sinon.stub(request, 'get').rejects('boom');
       return auth.check({ }).catch(err => {
         chai.expect(get.callCount).to.equal(1);
         chai.expect(get.args[0][0].url).to.equal('http://abc.com/_session');
@@ -58,7 +58,7 @@ describe('Auth', () => {
       environment.serverUrl = 'http://abc.com';
       const district = '123';
       const userCtx = { userCtx: { name: 'steve', roles: [ 'xyz' ] } };
-      const get = sinon.stub(request, 'get').callsArgWith(1, null, null, userCtx);
+      const get = sinon.stub(request, 'get').resolves(userCtx);
       sinon.stub(config, 'get').returns({ can_edit: ['abc'] });
       return auth.check({headers: []}, 'can_edit', district).catch(err => {
         chai.expect(get.callCount).to.equal(1);
@@ -71,7 +71,7 @@ describe('Auth', () => {
       environment.serverUrl = 'http://abc.com';
       const district = '123';
       const userCtx = { userCtx: { name: 'steve', roles: [ '_admin' ] } };
-      const get = sinon.stub(request, 'get').callsArgWith(1, null, null, userCtx);
+      const get = sinon.stub(request, 'get').resolves(userCtx);
       return auth.check({headers: []}, 'can_edit', district).then(ctx => {
         chai.expect(get.callCount).to.equal(1);
         chai.expect(ctx.user).to.equal('steve');
@@ -84,8 +84,8 @@ describe('Auth', () => {
       const district = '123';
       const userCtx = { userCtx: { name: 'steve', roles: [ 'xyz', 'district_admin' ] } };
       const get = sinon.stub(request, 'get');
-      get.onFirstCall().callsArgWith(1, null, null, userCtx);
-      get.onSecondCall().callsArgWith(1, null, null, { facility_id: district });
+      get.onFirstCall().resolves(userCtx);
+      get.onSecondCall().resolves({ facility_id: district });
       sinon.stub(config, 'get').returns({ can_edit: ['district_admin'] });
       return auth.check({headers: []}, 'can_edit', district).then(ctx => {
         chai.expect(get.callCount).to.equal(2);
@@ -99,8 +99,8 @@ describe('Auth', () => {
       const userCtx = { userCtx: { name: 'steve', roles: [ 'xyz', 'district_admin' ] } };
       sinon.stub(url, 'format').returns('http://abc.com');
       const get = sinon.stub(request, 'get');
-      get.onFirstCall().callsArgWith(1, null, null, userCtx);
-      get.onSecondCall().callsArgWith(1, null, null, { facility_id: '123' });
+      get.onFirstCall().resolves(userCtx);
+      get.onSecondCall().resolves({ facility_id: '123' });
       sinon.stub(config, 'get').returns({ can_edit: ['district_admin'] });
       return auth.check({headers: []}, 'can_edit', '789').catch(err => {
         chai.expect(get.callCount).to.equal(2);
@@ -115,8 +115,8 @@ describe('Auth', () => {
       const userCtx = { userCtx: { name: 'steve', roles: [ 'xyz', 'district_admin' ] } };
       sinon.stub(url, 'format').returns('http://abc.com');
       const get = sinon.stub(request, 'get');
-      get.onFirstCall().callsArgWith(1, null, null, userCtx);
-      get.onSecondCall().callsArgWith(1, null, null, { facility_id: district });
+      get.onFirstCall().resolves(userCtx);
+      get.onSecondCall().resolves({ facility_id: district });
       sinon.stub(config, 'get').returns({
         can_export_messages: ['district_admin'],
         can_export_contacts: ['district_admin'],
@@ -133,7 +133,7 @@ describe('Auth', () => {
       const district = '123';
       const userCtx = { userCtx: { name: 'steve', roles: [ 'xyz', 'district_admin' ] } };
       sinon.stub(url, 'format').returns('http://abc.com');
-      const get = sinon.stub(request, 'get').callsArgWith(1, null, null, userCtx);
+      const get = sinon.stub(request, 'get').resolves(userCtx);
       sinon.stub(config, 'get').returns({
         can_export_messages: ['district_admin'],
         can_export_server_logs: ['national_admin'],
@@ -149,18 +149,16 @@ describe('Auth', () => {
 
   describe('checkUrl', () => {
 
-    it('requests the given url and returns status', done => {
+    it('requests the given url and returns status', () => {
       environment.serverUrl = 'http://abc.com';
       const format = sinon.stub(url, 'format').returns('http://abc.com');
-      const head = sinon.stub(request, 'head').callsArgWith(1, null, { statusCode: 444 });
-      auth.checkUrl({ params: { path: '/home/screen' } }, (err, output) => {
-        chai.expect(err).to.equal(null);
+      const head = sinon.stub(request, 'head').resolves({ statusCode: 444 });
+      return auth.checkUrl({ params: { path: '/home/screen' } }).then(actual => {
         chai.expect(format.callCount).to.equal(1);
         chai.expect(format.args[0][0].pathname).to.equal('/home/screen');
         chai.expect(head.callCount).to.equal(1);
         chai.expect(head.args[0][0].url).to.equal('http://abc.com');
-        chai.expect(output.status).to.equal(444);
-        done();
+        chai.expect(actual).to.equal(444);
       });
     });
 

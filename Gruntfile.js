@@ -43,6 +43,7 @@ module.exports = function(grunt) {
     replace: 'grunt-text-replace',
     uglify: 'grunt-contrib-uglify-es',
   });
+  require('./grunt/service-worker')(grunt);
   require('time-grunt')(grunt);
 
   // Project configuration
@@ -212,30 +213,6 @@ module.exports = function(grunt) {
         },
       },
     },
-    jshint: {
-      options: {
-        jshintrc: true,
-        reporter: require('jshint-stylish'),
-        ignores: [
-          'webapp/src/js/modules/xpath-element-path.js',
-          '**/node_modules/**',
-          'sentinel/src/lib/pupil/**',
-          'build/**',
-          'config/**'
-        ],
-      },
-      all: [
-        'Gruntfile.js',
-        'webapp/src/**/*.js',
-        'webapp/tests/**/*.js',
-        'tests/**/*.js',
-        'api/**/*.js',
-        'sentinel/**/*.js',
-        'shared-libs/**/*.js',
-        'admin/**/*.js',
-        'ddocs/**/*.js',
-      ],
-    },
     less: {
       webapp: {
         files: {
@@ -274,6 +251,13 @@ module.exports = function(grunt) {
       dist: {
         src: 'build/ddocs/medic/_attachments/css/*.css',
       },
+    },
+    'generate-service-worker': {
+      config: {
+        rootUrl: 'APP_PREFIX',
+        staticDirectoryPath: 'build/ddocs/medic/_attachments',
+        scriptOutputPath: 'build/ddocs/medic/_attachments/js/service-worker.js',
+      }
     },
     copy: {
       ddocs: {
@@ -364,6 +348,37 @@ module.exports = function(grunt) {
       'clean-build-dir': {
         cmd: 'rm -rf build && mkdir build',
       },
+      // Running this via exec instead of inside the grunt process makes eslint
+      // run ~4x faster. For some reason. Maybe cpu core related.
+      'eslint': {
+        cmd: () => {
+          const cmd = './node_modules/.bin/eslint --color';
+          const paths = [
+            'Gruntfile.js',
+            'admin/**/*.js',
+            'api/**/*.js',
+            'ddocs/**/*.js',
+            'sentinel/**/*.js',
+            'shared-libs/**/*.js',
+            'tests/**/*.js',
+            'webapp/src/**/*.js',
+            'webapp/tests/**/*.js',
+          ];
+          const ignore = [
+            'webapp/src/js/modules/xpath-element-path.js',
+            'api/src/extracted-resources/**/*',
+            '**/node_modules/**',
+            'sentinel/src/lib/pupil/**',
+            'build/**',
+            'config/**'
+          ];
+
+          return [cmd]
+            .concat(ignore.map(glob => `--ignore-pattern "${glob}"`))
+            .concat(paths.map(glob => `"${glob}"`))
+            .join(' ');
+        }
+      },
       'pack-node-modules': {
         cmd: ['api', 'sentinel']
           .map(module =>
@@ -415,7 +430,7 @@ module.exports = function(grunt) {
       },
       'api-dev': {
         cmd:
-          'TZ=UTC ./node_modules/.bin/nodemon --watch api api/server.js -- --allow-cors',
+          'TZ=UTC ./node_modules/.bin/nodemon --ignore "api/src/extracted-resources/**" --watch api api/server.js -- --allow-cors',
       },
       'sentinel-dev': {
         cmd:
@@ -441,11 +456,14 @@ module.exports = function(grunt) {
       },
       'reset-test-databases': {
         stderr: false,
-        cmd: ['medic-test', 'medic-test-audit']
+        cmd: ['medic-test', 'medic-test-audit', 'medic-test-user-admin-meta']
           .map(
             name => `curl -X DELETE ${couchConfig.withPath(name)}`
           )
           .join(' && '),
+      },
+      'e2e-servers': {
+        cmd: 'node ./scripts/e2e-servers.js &'
       },
       bundlesize: {
         cmd: 'node ./node_modules/bundlesize/index.js',
@@ -551,7 +569,7 @@ module.exports = function(grunt) {
             // https://github.com/dangrossman/bootstrap-daterangepicker/pull/437
             'patch webapp/node_modules/bootstrap-daterangepicker/daterangepicker.js < webapp/patches/bootstrap-daterangepicker.patch',
 
-            // patch font-awesome to remove version attributes so appcache works
+            // patch font-awesome to remove version attributes
             // https://github.com/FortAwesome/Font-Awesome/issues/3286
             'patch webapp/node_modules/font-awesome/less/path.less < webapp/patches/font-awesome-remove-version-attribute.patch',
 
@@ -564,6 +582,8 @@ module.exports = function(grunt) {
           return patches.join(' && ');
         },
       },
+      audit: { cmd: 'node ./scripts/audit-all.js' },
+      'audit-whitelist': { cmd: 'git diff $(cat .auditignore | git hash-object -w --stdin) $(node ./scripts/audit-all.js | git hash-object -w --stdin) --word-diff --exit-code' },
     },
     watch: {
       options: {
@@ -616,7 +636,7 @@ module.exports = function(grunt) {
         tasks: [
           'sass',
           'less:webapp',
-          'appcache',
+          'generate-service-worker',
           'couch-compile:primary',
           'deploy',
         ],
@@ -626,7 +646,7 @@ module.exports = function(grunt) {
         tasks: [
           'browserify:webapp',
           'replace:update-app-constants',
-          'appcache',
+          'generate-service-worker',
           'couch-compile:primary',
           'deploy',
         ],
@@ -638,7 +658,7 @@ module.exports = function(grunt) {
         ],
         tasks: [
           'ngtemplates:inboxApp',
-          'appcache',
+          'generate-service-worker',
           'couch-compile:primary',
           'deploy',
         ],
@@ -647,7 +667,7 @@ module.exports = function(grunt) {
         files: 'webapp/src/templates/inbox.html',
         tasks: [
           'copy:inbox-file-attachment',
-          'appcache',
+          'generate-service-worker',
           'couch-compile:primary',
           'deploy',
         ],
@@ -692,14 +712,14 @@ module.exports = function(grunt) {
       },
     },
     protractor: {
-      'e2e-tests-and-services': {
+      'e2e-tests': {
         options: {
-          configFile: 'tests/e2e.tests-and-services.conf.js',
+          configFile: 'tests/e2e.tests.conf.js',
         },
       },
-      'e2e-tests-only': {
+      'e2e-tests-debug': {
         options: {
-          configFile: 'tests/e2e.tests-only.conf.js',
+          configFile: 'tests/e2e.tests.debug.conf.js',
         },
       },
       'performance-tests-and-services': {
@@ -766,26 +786,6 @@ module.exports = function(grunt) {
             removeScriptTypeAttributes: true,
             removeStyleLinkTypeAttributes: true,
           },
-        },
-      },
-    },
-    appcache: {
-      options: {
-        basePath: 'build/ddocs/medic/_attachments',
-      },
-      inbox: {
-        dest: 'build/ddocs/medic/_attachments/manifest.appcache',
-        network: '*',
-        cache: {
-          patterns: [
-            'build/ddocs/medic/_attachments/manifest.json',
-            'build/ddocs/medic/_attachments/audio/**/*',
-            'build/ddocs/medic/_attachments/css/**/*',
-            'build/ddocs/medic/_attachments/fonts/**/*',
-            'build/ddocs/medic/_attachments/img/**/*',
-            'build/ddocs/medic/_attachments/js/**/*',
-            'build/ddocs/medic/_attachments/xslt/**/*',
-          ],
         },
       },
     },
@@ -973,7 +973,7 @@ module.exports = function(grunt) {
   grunt.registerTask('build-ddoc', 'Build the main ddoc', [
     'couch-compile:secondary',
     'copy:ddoc-attachments',
-    'appcache',
+    'generate-service-worker',
     'couch-compile:primary',
   ]);
 
@@ -996,13 +996,21 @@ module.exports = function(grunt) {
   );
 
   // Test tasks
-  grunt.registerTask('e2e', 'Deploy app for testing and run e2e tests', [
+  grunt.registerTask('e2e-deploy', 'Deploy app for testing', [
+    'exec:start-webdriver',
     'exec:reset-test-databases',
-    'build-admin',
-    'build-node-modules',
-    'build-ddoc',
     'couch-push:test',
-    'protractor:e2e-tests-and-services',
+    'exec:e2e-servers',
+  ]);
+
+  grunt.registerTask('e2e', 'Deploy app for testing and run e2e tests', [
+    'e2e-deploy',
+    'protractor:e2e-tests',
+  ]);
+
+  grunt.registerTask('e2e-debug', 'Deploy app for testing and run e2e tests in a visible Chrome window', [
+    'e2e-deploy',
+    'protractor:e2e-tests-debug',
   ]);
 
   grunt.registerTask('test-perf', 'Run performance-specific tests', [
@@ -1016,7 +1024,7 @@ module.exports = function(grunt) {
   grunt.registerTask(
     'unit-continuous',
     'Lint, karma unit tests running on a loop',
-    ['jshint', 'karma:unit-continuous']
+    ['exec:eslint', 'karma:unit-continuous']
   );
 
   grunt.registerTask(
@@ -1029,8 +1037,7 @@ module.exports = function(grunt) {
     ]
   );
 
-  grunt.registerTask('unit', 'Lint and unit tests', [
-    'jshint',
+  grunt.registerTask('unit', 'Unit tests', [
     'karma:unit',
     'karma:admin',
     'exec:shared-lib-unit',
@@ -1059,19 +1066,14 @@ module.exports = function(grunt) {
     'build-admin',
     'static-analysis',
     'install-dependencies',
-    'karma:unit',
-    'karma:admin',
-    'exec:shared-lib-unit',
     'mochaTest:api-integration',
-    'env:unit-test',
-    'mochaTest:unit',
-    'env:general',
+    'unit',
     'exec:test-standard'
   ]);
 
   grunt.registerTask('ci-e2e', 'Run e2e tests for CI', [
     'exec:start-webdriver',
-    'protractor:e2e-tests-and-services',
+    'protractor:e2e-tests',
   ]);
 
   grunt.registerTask('ci-performance', 'Run performance tests on CI', [
@@ -1088,8 +1090,11 @@ module.exports = function(grunt) {
   grunt.registerTask('static-analysis', 'Static analysis checks', [
     'regex-check',
     'exec:blank-link-check',
-    'jshint',
+    'exec:eslint',
+    'exec:audit-whitelist',
   ]);
+
+  grunt.registerTask('eslint', 'Runs eslint', ['exec:eslint']);
 
   grunt.registerTask(
     'dev-webapp-no-dependencies',

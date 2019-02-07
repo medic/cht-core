@@ -2,7 +2,7 @@ const controller = require('../../../src/controllers/people'),
       chai = require('chai'),
       places = require('../../../src/controllers/places'),
       cutils = require('../../../src/controllers/utils'),
-      db = require('../../../src/db-pouch'),
+      db = require('../../../src/db'),
       sinon = require('sinon');
 
 describe('people controller', () => {
@@ -43,7 +43,7 @@ describe('people controller', () => {
   describe('getPerson', () => {
 
     it('returns custom message on 404 errors.', done => {
-      sinon.stub(controller._lineage, 'fetchHydratedDoc').returns(Promise.reject({statusCode: 404}));
+      sinon.stub(controller._lineage, 'fetchHydratedDoc').returns(Promise.reject({status: 404}));
       controller._getPerson('x').catch(err => {
         chai.expect(err.message).to.equal('Failed to find person.');
         done();

@@ -1,6 +1,6 @@
 var doWhilst = require('async/doWhilst'),
     {promisify} = require('util'),
-    db = require('../db-nano'),
+    db = require('../db'),
     BATCH_SIZE = 100;
 
 var update = function(docs, callback) {
@@ -8,7 +8,7 @@ var update = function(docs, callback) {
     delete doc.$promise;
     delete doc.$resolved;
   });
-  db.medic.bulk({ docs: docs }, callback);
+  db.medic.bulkDocs(docs, callback);
 };
 
 var needsUpdate = function(row) {
@@ -23,7 +23,7 @@ var fixUsers = function(skip, callback) {
     skip: skip,
     key: [ 'user-settings' ]
   };
-  db.medic.view('medic-client', 'doc_by_type', options, function(err, result) {
+  db.medic.query('medic-client/doc_by_type', options, function(err, result) {
     if (err) {
       return callback(err);
     }

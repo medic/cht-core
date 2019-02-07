@@ -29,19 +29,15 @@ const basicAuthValid = (credentials, username) => {
   if (!credentials) {
     return;
   }
-  return new Promise(resolve => {
-    auth.validateBasicAuth(credentials, err => {
-      if (err) {
-        logger.error(
-          `Invalid authorization attempt on /api/v1/users/${username}`
-        );
-        logger.error('%o',err);
-        resolve(false); // Incorrect basic auth
-      } else {
-        resolve(true); // Correct basic auth
-      }
+  return auth.validateBasicAuth(credentials)
+    .then(() => true) // Correct basic auth
+    .catch(err => {
+      logger.error(
+        `Invalid authorization attempt on /api/v1/users/${username}`
+      );
+      logger.error('%o', err);
+      return false; // Incorrect basic auth
     });
-  });
 };
 
 const isChangingPassword = req => Object.keys(req.body).includes('password');

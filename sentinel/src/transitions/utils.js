@@ -1,4 +1,4 @@
-const db = require('../db-nano'),
+const db = require('../db'),
       messages = require('../lib/messages'),
       utils = require('../lib/utils'),
       idGenerator = require('../lib/ids').generator(db);
@@ -41,11 +41,11 @@ module.exports = {
   addRegistrationNotFoundError: (doc, reportConfig) => {
     module.exports.addRejectionMessage(doc, reportConfig, 'registration_not_found');
   },
-  isIdUnique: (db, id, callback) => {
-    db.medic.view('medic-client', 'contacts_by_reference', {
+  isIdUnique: (id, callback) => {
+    db.medic.query('medic-client/contacts_by_reference', {
       key: [ 'shortcode', id ]
     }, (err, results) => {
-      callback(err, !!(results && results.rows && results.rows.length));
+      callback(err, !(results && results.rows && results.rows.length));
     });
   },
   addUniqueId: (doc, callback) => {

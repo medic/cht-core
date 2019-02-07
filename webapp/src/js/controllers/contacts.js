@@ -291,20 +291,14 @@ var _ = require('underscore'),
         });
     };
 
-    var clearSelection = function() {
-      $scope.selected = null;
-      LiveList.contacts.clearSelected();
-      LiveList['contact-search'].clearSelected();
-    };
-
     $scope.$on('ClearSelected', function() {
-      clearSelection();
+      $scope.clearSelection();
     });
 
     $scope.search = function() {
       if($scope.filters.search) {
         $state.go('contacts.detail', { id: null }, { notify: false });
-        clearSelection();
+        $scope.clearSelection();
       }
 
       $scope.loading = true;
@@ -349,7 +343,7 @@ var _ = require('underscore'),
         hasResults: $scope.hasContacts,
         userFacilityId: usersHomePlace && usersHomePlace._id,
         exportFn: function() {
-          Export($scope.filters, 'contacts');
+          Export('contacts', $scope.filters);
         },
       };
       var type;
@@ -432,12 +426,6 @@ var _ = require('underscore'),
       }
       return setupPromise;
     };
-
-    $scope.$on('$stateChangeStart', function(event, toState) {
-      if (toState.name.indexOf('contacts') === -1) {
-        $scope.unsetSelected();
-      }
-    });
 
     var isRelevantVisitReport = function(doc) {
       var isRelevantDelete = doc._deleted && isSortedByLastVisited();

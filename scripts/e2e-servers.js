@@ -1,22 +1,64 @@
 #!/usr/bin/env node
-console.log(`
-Before running this script, don't forget to start webdriver:
 
-	npm run webdriver
+const fs = require('fs');
+const path = require('path');
+const { fork } = require('child_process');
 
-If this script is having trouble starting the servers, try running this once first:
+const constants = require('./../tests/constants');
+const utils = require('../tests/utils');
 
-	grunt e2e
+const WRITE_TIMESTAMPS = false;
+const WRITE_TO_CONSOLE = false;
 
-To see log files:
+const writeToStream = (stream, data) => {
+  const formattedData = WRITE_TIMESTAMPS ? `${new Date().toISOString()} ${data}` : data.toString();
+  stream.write(formattedData);
+
+  if (WRITE_TO_CONSOLE) {
+    console.log(formattedData);
+  }
+};
+
+const startServer = serviceName => new Promise((resolve, reject) => {
+  if(!fs.existsSync('tests/logs')) {
+    fs.mkdirSync('tests/logs');
+  }
+  
+  try {
+    const logStream = fs.createWriteStream(`tests/logs/${serviceName}.e2e.log`, { flags:'w' });
+
+    const server = fork(`server.js`, {
+      stdio: 'pipe',
+      detached: false,
+      cwd: path.join(process.cwd(), serviceName),
+      env: {
+        TZ: 'UTC',
+        API_PORT: constants.API_PORT,
+        COUCH_URL: utils.getCouchUrl(),
+        COUCH_NODE_NAME: process.env.COUCH_NODE_NAME,
+        PATH: process.env.PATH,
+      },
+    });
+
+    const writeToLogStream = data => writeToStream(logStream, data);
+    server.stdout.on('data', writeToLogStream);
+    server.stderr.on('data', writeToLogStream);
+    server.on('close', code => writeToLogStream(`${serviceName} process exited with code ${code}`));
+    resolve();
+  } catch (err) {
+    reject(err);
+  }
+});
+
+const startApi = () => startServer('api');
+const startSentinel = () => startServer('sentinel');
+const startAll = () => Promise.all([startApi(), startSentinel()]);
+
+console.log(`To see service log files:
 
 	tail -f logs/api.e2e.log
 	tail -f logs/sentinel.e2e.log
 
-Starting services…`);
+Starting e2e test services…`);
 
-const serviceManager = require('../tests/protractor/service-manager');
-
-serviceManager.startAll()
-  .then(() => console.log('[e2e] ALL SERVICES STARTED.'))
-  .then(() => console.log('[e2e] READY TO RUN TESTS ONCE OUTPUT HAS CALMED DOWN.'));
+startAll().then(() => console.log('[e2e] All services started.'));

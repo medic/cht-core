@@ -1,4 +1,5 @@
-const utils = require('./utils');
+const utils = require('./utils'),
+      registrationUtils = require('@medic/registration-utils');
 
 const LAST_PURGED_DATE_KEY = 'medic-last-purge-date';
 const LAST_REPLICATED_SEQ_KEY = 'medic-last-replicated-seq';
@@ -15,13 +16,13 @@ const hash = str => {
         return hash;
     }
 
-    /* jshint ignore:start */
-    for (let i = 0; i < this.length; i++) {
-        const char = this.charCodeAt(i);
+    for (let i = 0; i < str.length; i++) {
+        const char = str.charCodeAt(i);
+        /* eslint-disable no-bitwise */
         hash = ((hash << 5) - hash) + char;
         hash = hash & hash; // Convert to 32bit integer
+        /* eslint-enable no-bitwise */
     }
-    /* jshint ignore:end */
 
     return hash;
 };
@@ -44,7 +45,7 @@ const hash = str => {
  *   and it may take some time to complete
  * done: fired once everything is complete, callback is passed the total purge count
 */
-module.exports = function(DB, initialReplication) {
+module.exports = function(DB, userCtx, initialReplication) {
   const MAX_ERROR_COUNT = 10;
   let errorCount = 0;
   const feedback = msg => {
@@ -128,10 +129,10 @@ module.exports = function(DB, initialReplication) {
     });
   };
 
-  const purgeContact = (fn, {contact, reports}, purgeCount) => {
+  const purgeContact = (fn, userCtx, {contact, reports}, purgeCount) => {
     let purgeResults;
     try {
-      purgeResults = fn(contact, reports);
+      purgeResults = fn(userCtx, contact, reports);
     } catch (err) {
       console.error('Purge function threw an exception, skipping this set', err);
       console.error({passed: {contact: contact, reports: reports}});
@@ -184,23 +185,12 @@ module.exports = function(DB, initialReplication) {
     }
   };
 
-  // Copied and slightly modified from the rules-service:
-  // https://github.com/medic/medic-webapp/blob/master/webapp/src/js/services/rules-engine.js#L52-L67
-  // We want to be consistent with rules
   var getContactId = function(doc) {
     // get the associated patient or place id to group reports by
-    return doc && (
-      doc.patient_id ||
-      doc.place_id ||
-      (doc.fields && (doc.fields.patient_id || doc.fields.place_id || doc.fields.patient_uuid))
-    );
+    return registrationUtils.getPatientId(doc);
   };
   var contactHasId = function(contact, id) {
-    return contact && (
-      contact._id === id ||
-      contact.patient_id === id ||
-      contact.place_id === id
-    );
+    return registrationUtils.getSubjectIds(contact).includes(id);
   };
 
   const reportsByContact = () => {
@@ -237,7 +227,7 @@ module.exports = function(DB, initialReplication) {
       });
   };
 
-  const purge = (fnStr) => {
+  const purge = (fnStr, userCtx) => {
     return reportsByContact()
       .then(sets => {
         if (!sets.length) {
@@ -251,7 +241,7 @@ module.exports = function(DB, initialReplication) {
         publish('start', {totalContacts: total});
         return sets.reduce(
           (p, set) => p
-            .then(purgeCount => purgeContact(fn, set, purgeCount))
+            .then(purgeCount => purgeContact(fn, userCtx, set, purgeCount))
             .then(purgeCount => {
               publish('progress', {
                 purged: purgeCount,
@@ -264,7 +254,7 @@ module.exports = function(DB, initialReplication) {
       });
   };
 
-  const begin = () => {
+  const begin = (userCtx) => {
     console.log('Initiating purge');
     return getConfig()
       .then(config => {
@@ -276,7 +266,7 @@ module.exports = function(DB, initialReplication) {
         return urgeToPurge(config)
           .then(shouldPurge => {
             if (shouldPurge) {
-              return purge(config.fn)
+              return purge(config.fn, userCtx)
                 .then(purgeCount => {
                   console.log(`Purge complete, purged ${purgeCount} documents`);
 
@@ -302,7 +292,7 @@ module.exports = function(DB, initialReplication) {
   };
 
   const p = Promise.resolve()
-    .then(() => begin())
+    .then(() => begin(userCtx))
     .then(count => {
       if (count) {
         publish('optimise');

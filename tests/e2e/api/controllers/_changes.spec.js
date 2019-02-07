@@ -8,7 +8,7 @@ const _ = require('underscore'),
       semver = require('semver');
 
 const DEFAULT_EXPECTED = [
-  'appcache',
+  'service-worker-meta',
   'settings',
   'resources',
   'branding',
@@ -191,16 +191,19 @@ const batchedChanges = (username, limit, results = [], lastSeq = 0) => {
   });
 };
 
-const getChangesForIds = (username, docIds, lastSeq = 0, results = []) => {
-  return requestChanges(username, { since: lastSeq }).then(changes => {
+const getChangesForIds = (username, docIds, retry = false, lastSeq = 0, limit = 100, results = []) => {
+  return requestChanges(username, { since: lastSeq, limit }).then(changes => {
     changes.results.forEach(change => {
       if (docIds.includes(change.id)) {
         results.push(change);
       }
     });
 
-    if (docIds.find(id => !results.find(change => change.id === id))) {
-      return getChangesForIds(username, docIds, changes.last_seq, results);
+    // simulate PouchDB 7.0.0 seq selection
+    const last_seq = changes.results.length ? changes.results[changes.results.length - 1].seq : changes.last_seq;
+
+    if (docIds.find(id => !results.find(change => change.id === id)) || (retry && changes.results.length)) {
+      return getChangesForIds(username, docIds, retry, last_seq, limit, results);
     }
 
     return results;
@@ -955,7 +958,7 @@ describe('changes handler', () => {
         })
         .then(result => {
           contact._rev = result.rev;
-          return getChangesForIds('bob', [contact._id], currentSeq);
+          return getChangesForIds('bob', [contact._id], false, currentSeq);
         })
         .then(changes => {
           expect(changes.length).toEqual(1);
@@ -977,7 +980,7 @@ describe('changes handler', () => {
         })
         .then(result => {
           contact._rev = result.rev;
-          return getChangesForIds('bob', [contact._id], currentSeq);
+          return getChangesForIds('bob', [contact._id], false, currentSeq);
         })
         .then(changes => {
           expect(changes.length).toEqual(1);
@@ -992,13 +995,36 @@ describe('changes handler', () => {
         .then(result => {
           contact._rev = result.rev;
 
-          return getChangesForIds('bob', [contact._id], currentSeq);
+          return getChangesForIds('bob', [contact._id], false, currentSeq);
         })
         .then(changes => {
           expect(changes.length).toEqual(1);
           expect(changes[0].id).toEqual(contact._id);
           expect(changes[0].deleted).toEqual(undefined);
           expect(changes[0].changes[0].rev).toEqual(contact._rev);
+        });
+    });
+
+    it('normal feeds should replicate correctly when new changes are pushed', () => {
+      const allowedDocs = createSomeContacts(25, 'fixture:bobville'),
+            allowedDocs2 = createSomeContacts(25, 'fixture:bobville');
+
+      const ids = _.pluck(allowedDocs, '_id');
+      ids.push(..._.pluck(allowedDocs2, '_id'));
+
+      const promise = allowedDocs.reduce((promise, doc) => {
+        return promise.then(() => utils.saveDoc(doc));
+      }, Promise.resolve());
+
+      return utils
+        .saveDocs(allowedDocs2)
+        .then(() => Promise.all([
+          getChangesForIds('bob', ids, true, currentSeq, 4),
+          promise
+        ]))
+        .then(([ changes ]) => {
+          expect(ids.every(id => changes.find(change => change.id === id))).toBe(true);
+          expect(changes.some(change => !change.seq)).toBe(false);
         });
     });
   });

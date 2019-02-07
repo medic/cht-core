@@ -72,9 +72,7 @@ define( function( require, exports, module ) {
         } );
     };
 
-    Mrdtwidget.prototype.destroy = function( element ) {
-        /* jshint unused:false */
-    };
+    Mrdtwidget.prototype.destroy = function( element ) {};  // eslint-disable-line no-unused-vars
 
     $.fn[ pluginName ] = function( options, event ) {
         return this.each( function() {
