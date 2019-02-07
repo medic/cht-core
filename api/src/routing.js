@@ -326,6 +326,7 @@ app.get('/api/v1/users', users.get);
 app.postJson('/api/v1/users', users.create);
 app.postJson('/api/v1/users/:username', users.update);
 app.delete('/api/v1/users/:username', users.delete);
+app.get('/api/v1/users/:username/info', users.info);
 
 app.postJson('/api/v1/places', function(req, res) {
   auth

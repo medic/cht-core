@@ -1,5 +1,7 @@
 const _ = require('underscore'),
   auth = require('../auth'),
+  authorization = require('../services/authorization'),
+  db = require('../db-pouch'),
   logger = require('../logger'),
   serverUtils = require('../server-utils'),
   usersService = require('../services/users');
@@ -48,6 +50,29 @@ module.exports = {
       .check(req, 'can_view_users')
       .then(() => usersService.getList())
       .then(body => res.json(body))
+      .catch(err => serverUtils.error(err, req, res));
+  },
+  info: (req, res) => {
+    const username = req.params.username;
+    const userCtx = req.userCtx;
+
+    if (!userCtx || (userCtx.name !== username && !auth.hasAllPermissions(userCtx))) {
+      return serverUtils.error({
+        message: `You do not have permissions to view this person's info`,
+        code: 403,
+      }, req, res);
+    }
+
+    auth.getUserSettings({name: username})
+      .then(settings => {
+        return authorization.getAuthorizationContext(settings)
+          .then(authorization.getAllowedDocIds)
+          .then(ids => {
+            res.json({
+              records: ids.length
+            });
+          });
+      })
       .catch(err => serverUtils.error(err, req, res));
   },
   create: (req, res) => {
