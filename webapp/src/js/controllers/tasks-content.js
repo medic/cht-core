@@ -1,9 +1,11 @@
 angular.module('inboxControllers').controller('TasksContentCtrl',
   function (
     $log,
+    $ngRedux,
     $scope,
     $state,
     $translate,
+    Actions,
     DB,
     Enketo,
     Geolocation,
@@ -19,6 +21,9 @@ angular.module('inboxControllers').controller('TasksContentCtrl',
     const telemetryData = {
       preRender: Date.now()
     };
+
+    var ctrl = this;
+    var unsubscribe = $ngRedux.connect(null, Actions)(ctrl);
 
     var geolocation;
     Geolocation()
@@ -46,7 +51,7 @@ angular.module('inboxControllers').controller('TasksContentCtrl',
     };
 
     $scope.performAction = function(action, skipDetails) {
-      $scope.setCancelTarget(function() {
+      ctrl.setCancelCallback(function() {
         if (skipDetails) {
           $state.go('tasks.detail', { id: null });
         } else {
@@ -54,7 +59,7 @@ angular.module('inboxControllers').controller('TasksContentCtrl',
           $scope.form = null;
           $scope.loadingForm = false;
           $scope.contentError = false;
-          $scope.clearCancelTarget();
+          ctrl.clearCancelCallback();
         }
       });
       $scope.contentError = false;
@@ -116,7 +121,7 @@ angular.module('inboxControllers').controller('TasksContentCtrl',
           $scope.enketoStatus.saving = false;
           Enketo.unload($scope.form);
           $scope.clearSelected();
-          $scope.clearCancelTarget();
+          ctrl.clearCancelCallback();
           $scope.enketoStatus.edited = false;
           $state.go('tasks.detail', { id: null });
         })
@@ -147,5 +152,7 @@ angular.module('inboxControllers').controller('TasksContentCtrl',
     $scope.form = null;
     $scope.formId = null;
     $scope.setSelected($state.params.id);
+
+    $scope.$on('$destroy', unsubscribe);
   }
 );

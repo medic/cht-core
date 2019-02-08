@@ -2,6 +2,7 @@ describe('TasksContentCtrl', function() {
   beforeEach(module('inboxApp'));
 
   var $scope,
+      actions,
       task,
       watchCallback,
       createController,
@@ -11,12 +12,12 @@ describe('TasksContentCtrl', function() {
   beforeEach(function() {
     render = sinon.stub();
     XmlForm = sinon.stub();
+    actions = { setCancelCallback: sinon.stub() };
     $scope = {
       $on: function() {},
       $watch: function(prop, cb) {
         watchCallback = cb;
       },
-      setCancelTarget: function() {},
       setSelected: function() {
         $scope.selected = task;
       },
@@ -28,6 +29,7 @@ describe('TasksContentCtrl', function() {
         $controller('TasksContentCtrl', {
           $scope: $scope,
           $q: Q,
+          Actions: () => actions,
           Enketo: { render: render },
           DB: sinon.stub(),
           XmlForm: XmlForm,

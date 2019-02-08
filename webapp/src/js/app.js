@@ -29,6 +29,9 @@ require('angular-translate-handler-log');
 require('angular-ui-bootstrap');
 var uiRouter = require('@uirouter/angularjs').default;
 
+require('ng-redux');
+var reducers = require('./reducers');
+
 require('moment');
 require('moment/locale/bm');
 require('moment/locale/es');
@@ -39,6 +42,7 @@ require('moment/locale/ne');
 require('moment/locale/sw');
 
 require('./services');
+require('./actions');
 require('./controllers');
 require('./filters');
 require('./directives');
@@ -57,6 +61,7 @@ _.templateSettings = {
   var app = angular.module('inboxApp', [
     'ipCookie',
     'ngRoute',
+    'ngRedux',
     'ui.bootstrap',
     uiRouter,
     'inboxDirectives',
@@ -71,6 +76,7 @@ _.templateSettings = {
   app.config(function(
     $compileProvider,
     $locationProvider,
+    $ngReduxProvider,
     $stateProvider,
     $translateProvider,
     $urlRouterProvider
@@ -91,6 +97,7 @@ _.templateSettings = {
     );
     var isDevelopment = window.location.hostname === 'localhost';
     $compileProvider.debugInfoEnabled(isDevelopment);
+    $ngReduxProvider.createStoreWith(reducers, []);
   });
 
   app.constant('APP_CONFIG', {

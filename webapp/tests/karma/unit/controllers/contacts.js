@@ -1,7 +1,8 @@
 describe('Contacts controller', () => {
   'use strict';
 
-  let assert = chai.assert,
+  let actions,
+    assert = chai.assert,
     buttonLabel,
     contactsLiveList,
     childType,
@@ -77,11 +78,11 @@ describe('Contacts controller', () => {
     icon = 'fa-la-la-la-la';
     buttonLabel = 'ClICK ME!!';
     typeLabel = 'District';
+    actions = { clearCancelCallback: sinon.stub() };
     $rootScope = _$rootScope_;
     scope = $rootScope.$new();
     scope.setTitle = sinon.stub();
     scope.clearSelection = sinon.stub();
-    scope.clearCancelTarget = sinon.stub();
     scope.setRightActionBar = sinon.stub();
     scope.setLeftActionBar = sinon.stub();
     contactSchema = {
@@ -148,6 +149,7 @@ describe('Contacts controller', () => {
         $state: { includes: sinon.stub(), go: sinon.stub() },
         $timeout: work => work(),
         $translate: $translate,
+        Actions: () => actions,
         Auth: auth,
         Changes: changes,
         ContactSchema: contactSchema,
@@ -576,7 +578,7 @@ describe('Contacts controller', () => {
           const lhs = contactsLiveList.getList();
           assert.equal(lhs.length, 50);
           scrollLoaderCallback();
-          assert.deepEqual(searchService.args[1][2], { 
+          assert.deepEqual(searchService.args[1][2], {
             reuseExistingDom: true,
             paginating: true,
             limit: 50,

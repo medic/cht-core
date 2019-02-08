@@ -1,11 +1,13 @@
 angular.module('inboxControllers').controller('ContactsEditCtrl',
   function (
     $log,
+    $ngRedux,
     $q,
     $scope,
     $state,
     $timeout,
     $translate,
+    Actions,
     ContactForm,
     ContactSave,
     ContactSchema,
@@ -17,9 +19,12 @@ angular.module('inboxControllers').controller('ContactsEditCtrl',
     'use strict';
     'ngInject';
 
+    var ctrl = this;
+    var unsubscribe = $ngRedux.connect(null, Actions)(ctrl);
+
     $scope.loadingContent = true;
     $scope.setShowContent(true);
-    $scope.setCancelTarget(function() {
+    ctrl.setCancelCallback(function() {
       if ($state.params.from === 'list') {
         $state.go('contacts.detail', { id: null });
       } else {
@@ -186,7 +191,7 @@ angular.module('inboxControllers').controller('ContactsEditCtrl',
               $scope.enketoStatus.saving = false;
               $log.error('Error submitting form data', err);
               $translate('Error updating contact').then(function(msg) {
-              $scope.enketoStatus.error = msg;
+                $scope.enketoStatus.error = msg;
               });
             });
         })
@@ -199,6 +204,7 @@ angular.module('inboxControllers').controller('ContactsEditCtrl',
     };
 
     $scope.$on('$destroy', function() {
+      unsubscribe();
       if (!$state.includes('contacts.add')) {
         $scope.setTitle();
         if ($scope.enketoContact && $scope.enketoContact.formInstance) {
