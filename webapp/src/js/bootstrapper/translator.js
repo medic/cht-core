@@ -32,6 +32,7 @@ var TRANSLATIONS = {
     PURGE_INFO: ({ count, percent }) => `Imesafisha hati ${count} (Asilimia ${percent} imekamilika)…`,
     PURGE_AFTER: 'Kuboresha…',
     LOAD_RULES: 'Inapakia kanuni…',
+    STARTING_APP: 'Programu yaanza…',
     ERROR_MESSAGE: 'Kuna hitilafu katika kupakia, tafadhali hakikisha uko kwenye mtandao',
     TRY_AGAIN: 'Jaribu tena',
   },
@@ -100,5 +101,8 @@ module.exports = {
 if (process.env.UNIT_TEST_ENV) {
   module.exports._setTranslationData = function(data) {
     translationData = data || TRANSLATIONS;
+  };
+  module.exports._getTranslationData = function() {
+    return TRANSLATIONS;
   };
 }
