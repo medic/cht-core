@@ -77,7 +77,7 @@ describe('conditional_alerts', () => {
       });
   });
 
-  it('should be skipped when enabled but have no matching config', () => {
+  it('should be skipped when no matching config', () => {
     const settings = {
       transitions: { conditional_alerts: true },
       alerts: [{
@@ -95,8 +95,6 @@ describe('conditional_alerts', () => {
       reported_date: new Date().getTime(),
       from: '+444999'
     };
-
-    console.log('aiiici');
 
     return utils
       .updateSettings(settings, true)
