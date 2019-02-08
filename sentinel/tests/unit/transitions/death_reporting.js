@@ -196,4 +196,31 @@ describe('death_reporting', () => {
       });
     });
   });
+
+  describe('filter', () => {
+    it('empty doc returns false', () => {
+      transition.filter({}).should.equal(false);
+    });
+
+    it('no type returns false', () => {
+      sinon.stub(config, 'get').returns({ mark_deceased_forms: ['x', 'y'] });
+      transition.filter({ form: 'x' }).should.equal(false);
+      transition.filter({ from: 'x' }).should.equal(false);
+    });
+
+    it('no patient_id returns false', () => {
+      sinon.stub(config, 'get').returns({ mark_deceased_forms: ['x', 'y'] });
+      transition.filter({ form: 'x', type: 'data_record' }).should.equal(false);
+    });
+
+    it('returns true', () => {
+      sinon.stub(config, 'get').returns({
+        mark_deceased_forms: ['x', 'y'],
+        undo_deceased_forms: ['z', 't']
+      });
+
+      transition.filter({ type: 'data_record', form: 'z', fields: { patient_id: '12' } }).should.equal(true);
+      transition.filter({ type: 'data_record', form: 't', fields: { patient_id: '12' } }).should.equal(true);
+    });
+  });
 });
