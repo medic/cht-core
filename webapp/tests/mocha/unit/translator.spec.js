@@ -56,4 +56,26 @@ describe('Bootstrap Translator', () => {
       expect(translator.translate('LOAD_ASSETS')).to.eq(translationData.en.LOAD_ASSETS);
     });
   });
+
+  it('All translations provided', () => {
+
+    // reset translation data
+    translator._setTranslationData();
+
+    const data = translator._getTranslationData();
+    const locales = Object.keys(data);
+
+    // gather all known translation keys
+    const keys = new Set();
+    locales.forEach(locale => {
+      Object.keys(data[locale]).forEach(key => keys.add(key));
+    });
+
+    // assert all locales have all keys
+    locales.forEach(locale => {
+      keys.forEach(key => {
+        expect(data[locale][key], `Bootstrap translator data: "${locale}" is missing "${key}"`).to.not.be.undefined;
+      });
+    });
+  });
 });
