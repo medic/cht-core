@@ -169,13 +169,13 @@ describe('multi_report_alerts', () => {
         expect(updated.tasks[0].messages[0].to).toEqual('987654321');
         expect(updated.tasks[0].state).toEqual('pending');
 
-        expect(updated.tasks[0].messages[0].message).toEqual('multi_report_message');
+        expect(updated.tasks[1].messages[0].message).toEqual('multi_report_message');
         // this is a bug https://github.com/medic/medic/issues/5369
-        expect(updated.tasks[0].messages[0].to).toEqual('987654321');
-        expect(updated.tasks[0].state).toEqual('duplicate');
+        expect(updated.tasks[1].messages[0].to).toEqual('987654321');
+        expect(updated.tasks[1].state).toEqual('duplicate');
         // these should be the correct values!
-        //expect(updated.tasks[0].messages[0].to).toEqual('0123456789');
-        //expect(updated.tasks[0].state).toEqual('pending');
+        //expect(updated.tasks[1].messages[0].to).toEqual('0123456789');
+        //expect(updated.tasks[1].state).toEqual('pending');
 
       });
   });
@@ -279,7 +279,6 @@ describe('multi_report_alerts', () => {
     };
 
     return utils
-      .updateSettings(settings, true)
       .updateSettings(settings, true)
       .then(() => utils.saveDoc(doc))
       .then(() => sentinelUtils.waitForSentinel(doc._id))
