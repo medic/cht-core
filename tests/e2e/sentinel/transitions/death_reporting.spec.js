@@ -163,7 +163,7 @@ describe('death_reporting', () => {
       });
   });
 
-  it('should add date_of_death field to patient with patient_uuid and custom field and not update on second submission', () => {
+  it('should add dod field with patient_uuid linkage and custom field, not update dod and remove dod', () => {
     const settings = {
       transitions: { death_reporting: true },
       death_reporting: {
@@ -195,6 +195,16 @@ describe('death_reporting', () => {
       }
     };
 
+    const doc3 = {
+      _id: uuid(),
+      form: 'UNDEAD',
+      type: 'data_record',
+      reported_date: new Date().getTime(),
+      fields: {
+        patient_id: 'person',
+      }
+    };
+
     return utils
       .updateSettings(settings, true)
       .then(() => utils.saveDoc(doc))
@@ -219,6 +229,18 @@ describe('death_reporting', () => {
       .then(person => {
         expect(person.date_of_death).toEqual(doc.fields.time_of_death);
       })
+      .then(() => utils.saveDoc(doc3))
+      .then(() => sentinelUtils.waitForSentinel(doc3._id))
+      .then(() => sentinelUtils.getInfoDoc(doc3._id))
+      .then(info => {
+        expect(info.transitions).toBeDefined();
+        expect(info.transitions.death_reporting).toBeDefined();
+        expect(info.transitions.death_reporting.ok).toEqual(true);
+      })
+      .then(() => utils.getDoc('person'))
+      .then(person => {
+        expect(person.date_of_death).toEqual(undefined);
+      });
   });
 
 });
