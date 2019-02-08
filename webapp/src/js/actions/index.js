@@ -1,6 +1,5 @@
 angular.module('inboxServices').factory('Actions',
   function() {
-    'ngInject';
     'use strict';
 
     return function(dispatch) {
@@ -14,6 +13,33 @@ angular.module('inboxServices').factory('Actions',
         };
       }
 
+      function createSetEnketoErrorAction(error) {
+        return {
+          type: 'SET_ENKETO_ERROR',
+          payload: {
+            error: error
+          }
+        };
+      }
+
+      function createSetEnketoEditedStatusAction(edited) {
+        return {
+          type: 'SET_ENKETO_EDITED_STATUS',
+          payload: {
+            edited: edited
+          }
+        };
+      }
+
+      function createSetEnketoSavingStatusAction(saving) {
+        return {
+          type: 'SET_ENKETO_SAVING_STATUS',
+          payload: {
+            saving: saving
+          }
+        };
+      }
+
       return {
         clearCancelCallback: function() {
           dispatch(createSetCancelCallbackAction(null));
@@ -21,6 +47,18 @@ angular.module('inboxServices').factory('Actions',
 
         setCancelCallback: function(cancelCallback) {
           dispatch(createSetCancelCallbackAction(cancelCallback));
+        },
+
+        setEnketoError: function(error) {
+          dispatch(createSetEnketoErrorAction(error));
+        },
+
+        setEnketoEditedStatus: function(edited) {
+          dispatch(createSetEnketoEditedStatusAction(edited));
+        },
+
+        setEnketoSavingStatus: function(saving) {
+          dispatch(createSetEnketoSavingStatusAction(saving));
         }
       };
     };

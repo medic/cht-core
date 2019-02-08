@@ -1,6 +1,11 @@
 (function() {
   var initialState = {
-    cancelCallback: null
+    cancelCallback: null,
+    enketoStatus: {
+      edited: false,
+      saving: false,
+      error: null
+    }
   };
 
   module.exports = function(state, action) {
@@ -11,6 +16,18 @@
     switch (action.type) {
       case 'SET_CANCEL_CALLBACK':
         return Object.assign({}, state, { cancelCallback: action.payload.cancelCallback });
+      case 'SET_ENKETO_ERROR':
+        return Object.assign({}, state, {
+          enketoStatus: Object.assign({}, state.enketoStatus, { error: action.payload.error })
+        });
+      case 'SET_ENKETO_EDITED_STATUS':
+        return Object.assign({}, state, {
+          enketoStatus: Object.assign({}, state.enketoStatus, { edited: action.payload.edited })
+        });
+      case 'SET_ENKETO_SAVING_STATUS':
+        return Object.assign({}, state, {
+          enketoStatus: Object.assign({}, state.enketoStatus, { saving: action.payload.saving })
+        });
       default:
         return state;
     }

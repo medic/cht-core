@@ -20,7 +20,12 @@ angular.module('inboxControllers').controller('ContactsEditCtrl',
     'ngInject';
 
     var ctrl = this;
-    var unsubscribe = $ngRedux.connect(null, Actions)(ctrl);
+    var mapStateToTarget = function(state) {
+      return {
+        enketoStatus: state.enketoStatus
+      };
+    };
+    var unsubscribe = $ngRedux.connect(mapStateToTarget, Actions)(ctrl);
 
     $scope.loadingContent = true;
     $scope.setShowContent(true);
@@ -104,7 +109,7 @@ angular.module('inboxControllers').controller('ContactsEditCtrl',
     };
 
     var markFormEdited = function() {
-      $scope.enketoStatus.edited = true;
+      ctrl.setEnketoEditedStatus(true);
     };
 
     var renderForm = function(form) {
@@ -117,7 +122,7 @@ angular.module('inboxControllers').controller('ContactsEditCtrl',
               .addClass('disabled');
           return;
         }
-        $scope.enketoStatus.edited = false;
+        ctrl.setEnketoEditedStatus(false);
         var instanceData = getFormInstanceData();
         if (form.id) {
           return Enketo.renderContactForm('#contact-form', form.id, instanceData, markFormEdited);
@@ -162,15 +167,15 @@ angular.module('inboxControllers').controller('ContactsEditCtrl',
       });
 
     $scope.save = function() {
-      if ($scope.enketoStatus.saving) {
+      if (ctrl.enketoStatus.saving) {
         $log.debug('Attempted to call contacts-edit:$scope.save more than once');
         return;
       }
 
       var form = $scope.enketoContact.formInstance;
       var docId = $scope.enketoContact.docId;
-      $scope.enketoStatus.saving = true;
-      $scope.enketoStatus.error = null;
+      ctrl.setEnketoSavingStatus(true);
+      ctrl.setEnketoError(null);
 
       return form.validate()
         .then(function(valid) {
@@ -182,23 +187,23 @@ angular.module('inboxControllers').controller('ContactsEditCtrl',
           return ContactSave($scope.unmodifiedSchema[type], form, docId, type)
             .then(function(result) {
               $log.debug('saved report', result);
-              $scope.enketoStatus.saving = false;
+              ctrl.setEnketoSavingStatus(false);
               $translate(docId ? 'contact.updated' : 'contact.created').then(Snackbar);
-              $scope.enketoStatus.edited = false;
+              ctrl.setEnketoEditedStatus(false);
               $state.go('contacts.detail', { id: result.docId });
             })
             .catch(function(err) {
-              $scope.enketoStatus.saving = false;
+              ctrl.setEnketoSavingStatus(false);
               $log.error('Error submitting form data', err);
               $translate('Error updating contact').then(function(msg) {
-                $scope.enketoStatus.error = msg;
+                ctrl.setEnketoError(msg);
               });
             });
         })
         .catch(function() {
           // validation messages will be displayed for individual fields.
           // That's all we want, really.
-          $scope.enketoStatus.saving = false;
+          ctrl.setEnketoSavingStatus(false);
           $scope.$apply();
         });
     };
