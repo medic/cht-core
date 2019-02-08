@@ -64,6 +64,7 @@ describe('default_responses', () => {
         expect(updated.tasks).toBeDefined();
         expect(updated.tasks.length).toEqual(1);
         expect(updated.tasks[0].messages[0].to).toEqual(doc.from);
+        expect(updated.tasks[0].state).toEqual('pending');
       });
   });
 
@@ -101,6 +102,7 @@ describe('default_responses', () => {
         expect(updated.tasks).toBeDefined();
         expect(updated.tasks.length).toEqual(1);
         expect(updated.tasks[0].messages[0].to).toEqual(doc.from);
+        expect(updated.tasks[0].state).toEqual('pending');
       });
   });
 
@@ -138,6 +140,7 @@ describe('default_responses', () => {
         expect(updated.tasks).toBeDefined();
         expect(updated.tasks.length).toEqual(1);
         expect(updated.tasks[0].messages[0].to).toEqual(doc.from);
+        expect(updated.tasks[0].state).toEqual('pending');
       });
   });
 });

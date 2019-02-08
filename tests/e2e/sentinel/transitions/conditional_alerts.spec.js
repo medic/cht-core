@@ -73,7 +73,7 @@ describe('conditional_alerts', () => {
       .then(() => sentinelUtils.waitForSentinel(doc._id))
       .then(() => sentinelUtils.getInfoDoc(doc._id))
       .then(info => {
-        expect(info.transitions).toEqual(undefined);
+        expect(info.transitions).not.toBeDefined();
       });
   });
 
@@ -102,7 +102,7 @@ describe('conditional_alerts', () => {
       .then(() => sentinelUtils.waitForSentinel(doc._id))
       .then(() => sentinelUtils.getInfoDoc(doc._id))
       .then(info => {
-        expect(info.transitions).toEqual(undefined);
+        expect(info.transitions).not.toBeDefined();
       });
   });
 
@@ -133,7 +133,7 @@ describe('conditional_alerts', () => {
       .then(() => sentinelUtils.waitForSentinel(doc._id))
       .then(() => sentinelUtils.getInfoDoc(doc._id))
       .then(info => {
-        expect(info.transitions).toEqual(undefined);
+        expect(info.transitions).not.toBeDefined();
       });
   });
 
@@ -174,6 +174,7 @@ describe('conditional_alerts', () => {
         expect(updated.tasks.length).toEqual(1);
         expect(updated.tasks[0].messages[0].to).toEqual(doc.from);
         expect(updated.tasks[0].messages[0].message).toEqual('This is an alert');
+        expect(updated.tasks[0].state).toEqual('pending');
       });
   });
 
@@ -229,6 +230,7 @@ describe('conditional_alerts', () => {
         expect(updated.tasks.length).toEqual(1);
         expect(updated.tasks[0].messages[0].to).toEqual(form1.from);
         expect(updated.tasks[0].messages[0].message).toEqual('Patient has a fever');
+        expect(updated.tasks[0].state).toEqual('pending');
       })
       .then(() => utils.saveDoc(form0))
       .then(() => sentinelUtils.waitForSentinel(form0._id))
@@ -244,6 +246,7 @@ describe('conditional_alerts', () => {
         expect(updated.tasks.length).toEqual(1);
         expect(updated.tasks[0].messages[0].to).toEqual(form0.from);
         expect(updated.tasks[0].messages[0].message).toEqual('Fever increased since the last measurement');
+        expect(updated.tasks[0].state).toEqual('pending');
       });
   });
 });

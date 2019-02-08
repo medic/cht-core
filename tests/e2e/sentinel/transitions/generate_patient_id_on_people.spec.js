@@ -23,11 +23,11 @@ describe('death_reporting', () => {
       .then(() => sentinelUtils.waitForSentinel(doc._id))
       .then(() => sentinelUtils.getInfoDoc(doc._id))
       .then(info => {
-        expect(info.transitions).toEqual(undefined);
+        expect(info.transitions).not.toBeDefined();
       })
       .then(() => utils.getDoc(doc._id))
       .then(person => {
-        expect(person.patient_id).toEqual(undefined);
+        expect(person.patient_id).not.toBeDefined();
       });
   });
 
@@ -48,11 +48,11 @@ describe('death_reporting', () => {
       .then(() => sentinelUtils.waitForSentinel(doc._id))
       .then(() => sentinelUtils.getInfoDoc(doc._id))
       .then(info => {
-        expect(info.transitions).toEqual(undefined);
+        expect(info.transitions).not.toBeDefined();
       })
       .then(() => utils.getDoc(doc._id))
       .then(person => {
-        expect(person.patient_id).toEqual(undefined);
+        expect(person.patient_id).not.toBeDefined();
       });
   });
 
@@ -74,7 +74,7 @@ describe('death_reporting', () => {
       .then(() => sentinelUtils.waitForSentinel(doc._id))
       .then(() => sentinelUtils.getInfoDoc(doc._id))
       .then(info => {
-        expect(info.transitions).toEqual(undefined);
+        expect(info.transitions).not.toBeDefined();
       })
       .then(() => utils.getDoc(doc._id))
       .then(person => {
@@ -105,7 +105,7 @@ describe('death_reporting', () => {
       })
       .then(() => utils.getDoc(doc._id))
       .then(person => {
-        expect(person.patient_id).not.toEqual(undefined);
+        expect(person.patient_id).toBeDefined();
       });
   });
 });

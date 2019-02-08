@@ -47,11 +47,11 @@ describe('death_reporting', () => {
       .then(() => sentinelUtils.waitForSentinel(doc._id))
       .then(() => sentinelUtils.getInfoDoc(doc._id))
       .then(info => {
-        expect(info.transitions).toEqual(undefined);
+        expect(info.transitions).not.toBeDefined();
       })
       .then(() => utils.getDoc('person'))
       .then(person => {
-        expect(person.date_of_death).toEqual(undefined);
+        expect(person.date_of_death).not.toBeDefined();
       });
   });
 
@@ -81,11 +81,11 @@ describe('death_reporting', () => {
       .then(() => sentinelUtils.waitForSentinel(doc._id))
       .then(() => sentinelUtils.getInfoDoc(doc._id))
       .then(info => {
-        expect(info.transitions).toEqual(undefined);
+        expect(info.transitions).not.toBeDefined();
       })
       .then(() => utils.getDoc('person'))
       .then(person => {
-        expect(person.date_of_death).toEqual(undefined);
+        expect(person.date_of_death).not.toBeDefined();
       });
   });
 
@@ -115,11 +115,11 @@ describe('death_reporting', () => {
       .then(() => sentinelUtils.waitForSentinel(doc._id))
       .then(() => sentinelUtils.getInfoDoc(doc._id))
       .then(info => {
-        expect(info.transitions).toEqual(undefined);
+        expect(info.transitions).not.toBeDefined();
       })
       .then(() => utils.getDoc('person'))
       .then(person => {
-        expect(person.date_of_death).toEqual(undefined);
+        expect(person.date_of_death).not.toBeDefined();
       });
   });
 
@@ -159,7 +159,7 @@ describe('death_reporting', () => {
       })
       .then(() => utils.getDoc('person2'))
       .then(person2 => {
-        expect(person2.date_of_death).toEqual(undefined);
+        expect(person2.date_of_death).not.toBeDefined();
       });
   });
 
@@ -223,7 +223,7 @@ describe('death_reporting', () => {
       .then(() => sentinelUtils.waitForSentinel(doc2._id))
       .then(() => sentinelUtils.getInfoDoc(doc2._id))
       .then(info => {
-        expect(info.transitions).toEqual(undefined);
+        expect(info.transitions).not.toBeDefined();
       })
       .then(() => utils.getDoc('person'))
       .then(person => {
@@ -239,7 +239,7 @@ describe('death_reporting', () => {
       })
       .then(() => utils.getDoc('person'))
       .then(person => {
-        expect(person.date_of_death).toEqual(undefined);
+        expect(person.date_of_death).not.toBeDefined();
       });
   });
 
