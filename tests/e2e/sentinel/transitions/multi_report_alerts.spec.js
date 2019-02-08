@@ -33,7 +33,7 @@ describe('multi_report_alerts', () => {
       .then(() => sentinelUtils.waitForSentinel(doc._id))
       .then(() => sentinelUtils.getInfoDoc(doc._id))
       .then(info => {
-        expect(info.transitions).toEqual(undefined);
+        expect(info.transitions).not.toBeDefined();
       });
   });
 
@@ -64,7 +64,7 @@ describe('multi_report_alerts', () => {
       .then(() => sentinelUtils.waitForSentinel(doc._id))
       .then(() => sentinelUtils.getInfoDoc(doc._id))
       .then(info => {
-        expect(info.transitions).toEqual(undefined);
+        expect(info.transitions).not.toBeDefined();
       });
   });
 

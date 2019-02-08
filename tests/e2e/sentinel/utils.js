@@ -44,7 +44,8 @@ const getInfoDocs = (docIds = []) => {
     keys: JSON.stringify(docIds.map(id => id + '-info')),
     include_docs: true
   };
-  return requestOnSentinelTestDb('/_all_docs?' + querystring.stringify(opts)).then(response => response.rows);
+  return requestOnSentinelTestDb('/_all_docs?' + querystring.stringify(opts))
+    .then(response => response.rows.map(row => row.doc));
 };
 
 module.exports = {

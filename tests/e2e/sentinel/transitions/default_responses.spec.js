@@ -27,7 +27,7 @@ describe('default_responses', () => {
       .then(() => sentinelUtils.waitForSentinel(doc._id))
       .then(() => sentinelUtils.getInfoDoc(doc._id))
       .then(info => {
-        expect(info.transitions).toEqual(undefined);
+        expect(info.transitions).not.toBeDefined();
       });
   });
 
