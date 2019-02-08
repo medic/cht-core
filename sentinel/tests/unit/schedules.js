@@ -410,7 +410,7 @@ describe('schedules', () => {
     assert.equal(config.getAll.callCount, 1);
   });
 
-  it('skips a group when starting mid-group and flag start_mid_group is false', () => {
+  it('skips a group when starting mid-group by default', () => {
       var added;
 
       var doc = {
@@ -445,4 +445,40 @@ describe('schedules', () => {
       assert.equal(added, false);
       assert(!doc.scheduled_tasks);
   });  
+
+  it('does not skip a group when starting mid-group and flag start_mid_group is true', () => {
+      var added;
+
+      var doc = {
+          form: 'x',
+          lmp_date: moment().valueOf()
+      };
+
+      added = schedules.assignSchedule(doc, {
+          name: 'duckland',
+          start_from: 'lmp_date',
+          start_mid_group: true,
+          messages: [
+              {
+                  group: 1,
+                  offset: '-12 weeks',
+                  message: [{
+                      content: 'Past message.',
+                      locale: 'en'
+                  }]
+              },
+              {
+                  group: 1,
+                  offset: '13 weeks',
+                  message: [{
+                      content: 'Future message.',
+                      locale: 'en'
+                  }]
+              }
+          ]
+      });
+
+      assert.equal(added, true);
+      assert.equal(doc.scheduled_tasks.length, 1);
+  }); 
 });

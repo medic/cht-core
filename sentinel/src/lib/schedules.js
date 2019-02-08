@@ -127,7 +127,7 @@ module.exports = {
                 }
                 // don't schedule messages in the past or empty messages
                 if (due < now || !message) {
-                    if (schedule.start_mid_group === false) {
+                    if (!schedule.start_mid_group) {
                         skipGroups.push(msg.group);
                     }
                     return;
