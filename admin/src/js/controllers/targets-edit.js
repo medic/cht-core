@@ -7,6 +7,7 @@ angular.module('controllers').controller('TargetsEditCtrl',
     $scope,
     $state,
     $stateParams,
+    $translate,
     DB,
     Settings,
     UpdateSettings
@@ -28,6 +29,19 @@ angular.module('controllers').controller('TargetsEditCtrl',
         $scope.locales = _.map(settings.locales, _.clone);
         if ($stateParams.id) {
           $scope.target = _.findWhere(settings.tasks.targets.items, { id: $stateParams.id });
+          if (typeof $scope.target.name === 'undefined') {
+            $scope.target.name = [];
+            $scope.locales.map(locale => locale.code).forEach((code) => {
+              const translation = $translate.instant($scope.target.translation_key, null, 'no-interpolation', code, null);
+              const content  = translation === $scope.target.translation_key ? '' : translation;
+
+              const nameObj = {
+                locale: code,
+                content: content
+              };
+              $scope.target.name.push(nameObj);
+            });
+          }
           $scope.target.name.forEach(function(name) {
             var locale = _.findWhere($scope.locales, { code: name.locale });
             if (locale) {
