@@ -331,9 +331,9 @@ angular
                 })
                 .catch(function(err) {
                   if (err && err.data && err.data.error && err.data.error.translationKey) {
-                    Translate(err.data.error.translationKey, err.data.error.translationParams).then(function(value) {
+                    $translate(err.data.error.translationKey, err.data.error.translationParams).then(function(value) {
                       $scope.setError(err, value);
-                    });           
+                    });
                   } else {
                     $scope.setError(err, 'Error updating user');
                   }

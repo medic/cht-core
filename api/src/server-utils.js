@@ -19,7 +19,7 @@ var writeJSON = function(res, code, message, details) {
 };
 
 var respond = function(req, res, code, message, details) {
-  if (wantsJSON(req)) {
+  if (wantsJSON(req) || typeof message === 'object') {
     return writeJSON(res, code, message, details);
   }
   if (!res.headersSent) {
