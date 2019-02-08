@@ -110,12 +110,15 @@ describe('default_responses', () => {
       default_responses: {
         start_date: '2018-01-01'
       },
-      forms_only_mode: true
+      forms_only_mode: false
     };
 
     const doc = {
       _id: uuid(),
       type: 'data_record',
+      errors: [{
+        code: 'sys.form_not_found'
+      }],
       from: '1234567890',
       reported_date: new Date().getTime()
     };
