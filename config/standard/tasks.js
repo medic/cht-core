@@ -322,7 +322,7 @@
     },
   },
 
-  // create malnutrition screening task if degree of severity is moderate/severe
+  // create nutrition screening task if degree of severity is moderate/severe
   {
     icon: 'child',
     title: 'task.nutrition_screening.title',

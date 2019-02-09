@@ -442,7 +442,7 @@ var targets = [
 
   // Nutrition: children under 5 screened for growth monitoring
   {
-    id: 'children-growth-monitoring',
+    id: 'nutrition-children-screened-growth-monitoring',
     translation_key: 'targets.growth_monitoring.title',
     subtitle_translation_key: 'targets.this_month.subtitle',
     type: 'percent',
@@ -456,12 +456,12 @@ var targets = [
         return r.form === 'G';
       });
     },
-    date: 'reported',
+    // date: 'reported',
   },
 
   // Nutrition: children under 5 underweight
   {
-    id: 'children-underweight',
+    id: 'nutrition-children-underweight',
     translation_key: 'targets.underweight.title',
     subtitle_translation_key: 'targets.this_month.subtitle',
     type: 'count',
@@ -475,7 +475,7 @@ var targets = [
         return r.form === 'nutrition_screening' && r.fields.zscore.zscore_wfa < -2;
       });
     },
-    date: 'reported',
+    // date: 'reported',
   },
 
 
@@ -495,7 +495,7 @@ var targets = [
         return r.form === 'nutrition_screening' && r.fields.zscore.zscore_hfa < -2;
       });
     },
-    date: 'reported',
+    // date: 'reported',
   },
 
 
@@ -515,7 +515,7 @@ var targets = [
         return r.form === 'treatment_enrollment' && r.fields.zscore && ( (r.fields.zscore.zscore_wfh >= -3 && r.fields.zscore.zscore_wfh < -2) || (r.fields.zscore.muac >= 11.5 && r.fields.zscore.muac < 12.4) );
       });
     },
-    date: 'reported',
+    // date: 'reported',
   },
 
 
@@ -535,7 +535,7 @@ var targets = [
         return r.form === 'treatment_enrollment' && r.fields.zscore && (r.fields.zscore.zscore_wfh < -3 || r.fields.zscore.muac < 11.5);
       });
     },
-    date: 'reported',
+    // date: 'reported',
   },
 
 
@@ -565,7 +565,7 @@ var targets = [
       });
       return otp && !off && !death;
     },
-    date: 'reported',
+    // date: 'reported',
   },
 
 
@@ -595,6 +595,6 @@ var targets = [
       });
       return sfp && !off && !death;
     },
-    date: 'reported',
+    // date: 'reported',
   },
 ];
