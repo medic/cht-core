@@ -1,17 +1,16 @@
-angular.module('inboxDirectives').directive('mmNavigation', function() {
+angular.module('inboxDirectives').directive('mmDateFilter', function() {
   'use strict';
 
   return {
     restrict: 'E',
-    templateUrl: 'templates/directives/filters/navigation.html',
+    templateUrl: 'templates/directives/filters/date.html',
     controller: function($ngRedux, $scope) {
       'ngInject';
 
       var ctrl = this;
       var mapStateToTarget = function(state) {
         return {
-          cancelCallback: state.cancelCallback,
-          enketoStatus: state.enketoStatus
+          selectMode: state.selectMode
         };
       };
       var unsubscribe = $ngRedux.connect(mapStateToTarget)(ctrl);

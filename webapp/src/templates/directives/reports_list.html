@@ -1,5 +1,5 @@
 <div id="reports-list" class="col-sm-4 inbox-items left-pane">
-  <div class="selection-count" ng-show="selectMode">
+  <div class="selection-count" ng-show="$ctrl.selectMode">
     <span ng-show="selected.length === 1" translate>select.mode.count.singular</span>
     <span ng-show="selected.length !== 1" translate translate-values="{ number: {{selected.length}} }">select.mode.count.plural</span>
   </div>
