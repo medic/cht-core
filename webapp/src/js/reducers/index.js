@@ -5,7 +5,8 @@
       edited: false,
       saving: false,
       error: null
-    }
+    },
+    selectMode: false
   };
 
   module.exports = function(state, action) {
@@ -28,6 +29,8 @@
         return Object.assign({}, state, {
           enketoStatus: Object.assign({}, state.enketoStatus, { saving: action.payload.saving })
         });
+      case 'SET_SELECT_MODE':
+        return Object.assign({}, state, { selectMode: action.payload.selectMode });
       default:
         return state;
     }

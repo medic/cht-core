@@ -40,6 +40,15 @@ angular.module('inboxServices').factory('Actions',
         };
       }
 
+      function createSetSelectModeAction(selectMode) {
+        return {
+          type: 'SET_SELECT_MODE',
+          payload: {
+            selectMode: selectMode
+          }
+        };
+      }
+
       return {
         clearCancelCallback: function() {
           dispatch(createSetCancelCallbackAction(null));
@@ -59,6 +68,10 @@ angular.module('inboxServices').factory('Actions',
 
         setEnketoSavingStatus: function(saving) {
           dispatch(createSetEnketoSavingStatusAction(saving));
+        },
+
+        setSelectMode: function(selectMode) {
+          dispatch(createSetSelectModeAction(selectMode));
         }
       };
     };
