@@ -1,36 +1,36 @@
 {
   "cards": [
     {
-      "label": "Growth Monitoring",
+      "label": "contact.profile.growth_monitoring",
       "fields": [
         {
-          "label": "Weight",
+          "label": "contact.profile.weight",
           "translate": true,
           "width": 6,
           "value": "6"
         },
         {
-          "label": "Height",
+          "label": "contact.profile.height",
           "translate": true,
           "width": 6,
           "value": "47"
         },
         {
-          "label": "WFA",
+          "label": "contact.profile.wfa",
           "translate": true,
           "width": 4,
           "value": "-0.9",
           "icon": ""
         },
         {
-          "label": "HFA",
+          "label": "contact.profile.hfa",
           "translate": true,
           "width": 4,
           "value": "-4",
           "icon": "risk"
         },
         {
-          "label": "WFH",
+          "label": "contact.profile.wfh",
           "translate": true,
           "width": 4,
           "value": "4",
@@ -39,35 +39,35 @@
       ]
     },
     {
-      "label": "IMAM",
+      "label": "contact.profile.imam",
       "fields": [
         {
-          "label": "Weight",
+          "label": "contact.profile.weight",
           "translate": true,
           "width": 6,
           "value": "4"
         },
         {
-          "label": "Height",
+          "label": "contact.profile.height",
           "translate": true,
           "width": 6,
           "value": "45"
         },
         {
-          "label": "WFH",
+          "label": "contact.profile.wfh",
           "translate": true,
           "width": 12,
           "value": "4",
           "icon": ""
         },
         {
-          "label": "Type of Treatment",
+          "label": "contact.profile.nutrition_program",
           "translate": true,
           "width": 6,
           "value": "OTP"
         },
         {
-          "label": "No of Sessions",
+          "label": "contact.profile.sessions",
           "value": "contact.profile.visits.of",
           "translate": true,
           "width": 6,
@@ -79,34 +79,34 @@
       ]
     },
     {
-     "label": "IMAM History",
+     "label": "contact.profile.imam_history",
      "fields": [
        {
-         "label": "Last treatment received",
+         "label": "contact.profile.last_treatment",
          "translate": true,
          "width": 6,
          "value": "OTP"
        },
        {
-         "label": "Exit Date",
+         "label": "contact.profile.exit_date",
          "translate": true,
          "width": 6,
          "value": "2018-11-19"
        },
        {
-         "label": "Weight at exit",
+         "label": "contact.profile.weight_at_exit",
          "translate": true,
          "width": 6,
          "value": "7"
        },
        {
-         "label": "Height at exit",
+         "label": "contact.profile.height_at_exit",
          "translate": true,
          "width": 6,
          "value": "45"
        },
        {
-         "label": "WFH z-score",
+         "label": "contact.profile.wfh",
          "translate": true,
          "width": 12,
          "value": "4"

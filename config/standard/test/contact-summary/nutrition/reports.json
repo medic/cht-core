@@ -2,7 +2,7 @@
   {
     "_id": "b120159f-bfe6-4ad0-85ac-a1cb7908c8e3",
     "_rev": "2-d7e0c6bf4f19bd490338da691ba6b22f",
-    "form": "malnutrition_screening",
+    "form": "nutrition_screening",
     "type": "data_record",
     "content_type": "xml",
     "reported_date": 1542545299873,

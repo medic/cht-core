@@ -1,3 +1,7 @@
+// const chai = require('chai');
+// const chaiExclude = require('chai-exclude');
+// chai.use(chaiExclude);
+// const assert = chai.assert;
 const assert = require('chai').assert;
 const NootilsManager = require('medic-nootils/src/node/test-wrapper');
 
@@ -994,21 +998,15 @@ describe('Standard Configuration Targets', function() {
           // then
           const expectedTargets = [
             {
-              _id: 'child-1-imm-children-registered-this-month',
-              deleted: false,
-              type: 'imm-children-registered-this-month',
-              pass: true,
-            },
-            {
-              _id: 'child-1-imm-children-with-bcg-reported',
-              deleted: false,
-              type: 'imm-children-with-bcg-reported',
-              pass: false,
-            },
-            {
               _id: 'child-1-imm-children-under-5-years',
               deleted: false,
               type: 'imm-children-under-5-years',
+              pass: true,
+            },
+            {
+              _id: 'child-1-imm-children-registered-this-month',
+              deleted: false,
+              type: 'imm-children-registered-this-month',
               pass: true,
             },
             {
@@ -1022,6 +1020,54 @@ describe('Standard Configuration Targets', function() {
               deleted: false,
               type: 'imm-no-vaccine-reported',
               pass: true,
+            },
+            {
+              _id: 'child-1-imm-children-with-bcg-reported',
+              deleted: false,
+              type: 'imm-children-with-bcg-reported',
+              pass: false,
+            },
+            {
+              _id: 'child-1-nutrition-children-screened-growth-monitoring',
+              deleted: false,
+              type: 'nutrition-children-screened-growth-monitoring',
+              pass: false,
+            },
+            {
+              _id: 'child-1-nutrition-children-underweight',
+              deleted: false,
+              type: 'nutrition-children-underweight',
+              pass: false,
+            },
+            {
+              _id: 'child-1-children-stunted',
+              deleted: false,
+              type: 'children-stunted',
+              pass: false,
+            },
+            {
+              _id: 'child-1-children-mam',
+              deleted: false,
+              type: 'children-mam',
+              pass: false,
+            },
+            {
+              _id: 'child-1-children-sam',
+              deleted: false,
+              type: 'children-sam',
+              pass: false,
+            },
+            {
+              _id: 'child-1-children-otp',
+              deleted: false,
+              type: 'children-otp',
+              pass: false,
+            },
+            {
+              _id: 'child-1-children-sfp',
+              deleted: false,
+              type: 'children-sfp',
+              pass: false,
             },
           ];
 
@@ -1038,45 +1084,88 @@ describe('Standard Configuration Targets', function() {
         // when
         return session.emitTargets()
           .then(targets => {
+
             // then
             const expectedTargets = [
               {
-                _id: 'r1-imm-vaccines-given-this-month',
+                _id: 'child-1-imm-children-under-5-years',
                 deleted: false,
-                pass: true,
-                type: 'imm-vaccines-given-this-month',
+                type: 'imm-children-under-5-years',
+                pass: true
               },
               {
                 _id: 'child-1-imm-children-registered-this-month',
                 deleted: false,
-                pass: true,
                 type: 'imm-children-registered-this-month',
+                pass: true
               },
               {
-                _id: 'child-1-imm-children-with-bcg-reported',
+                _id: 'r1-imm-vaccines-given-this-month',
                 deleted: false,
-                pass: false,
-                type: 'imm-children-with-bcg-reported',
-              },
-              {
-                _id: 'child-1-imm-children-under-5-years',
-                deleted: false,
-                pass: true,
-                type: 'imm-children-under-5-years',
+                type: 'imm-vaccines-given-this-month',
+                pass: true
               },
               {
                 _id: 'child-1-imm-children-vaccinated-prev-3-months',
                 deleted: false,
-                pass: false,
                 type: 'imm-children-vaccinated-prev-3-months',
+                pass: false
               },
               {
                 _id: 'child-1-imm-no-vaccine-reported',
                 deleted: false,
-                pass: false,
                 type: 'imm-no-vaccine-reported',
+                pass: false
               },
-            ];
+              {
+                _id: 'child-1-imm-children-with-bcg-reported',
+                deleted: false,
+                type: 'imm-children-with-bcg-reported',
+                pass: false
+              },
+              {
+                _id: 'child-1-nutrition-children-screened-growth-monitoring',
+                deleted: false,
+                type: 'nutrition-children-screened-growth-monitoring',
+                pass: false
+              },
+              {
+                _id: 'child-1-nutrition-children-underweight',
+                deleted: false,
+                type: 'nutrition-children-underweight',
+                pass: false
+              },
+              {
+                _id: 'child-1-children-stunted',
+                deleted: false,
+                type: 'children-stunted',
+                pass: false
+              },
+              {
+                _id: 'child-1-children-mam',
+                deleted: false,
+                type: 'children-mam',
+                pass: false
+              },
+              {
+                _id: 'child-1-children-sam',
+                deleted: false,
+                type: 'children-sam',
+                pass: false
+              },
+              {
+                _id: 'child-1-children-otp',
+                deleted: false,
+                type: 'children-otp',
+                pass: false
+              },
+              {
+                _id: 'child-1-children-sfp',
+                deleted: false,
+                type: 'children-sfp',
+                pass: false
+              },
+          ];
 
             assertTargetsEqual(targets, expectedTargets, 'date');
           });
@@ -1101,42 +1190,85 @@ describe('Standard Configuration Targets', function() {
           .then(targets => {
             const expectedTargets = [
               {
-                _id: 'report-1-imm-vaccines-given-this-month0',
+                _id: 'child-1-imm-children-under-5-years',
                 deleted: false,
-                pass: true,
-                type: 'imm-vaccines-given-this-month',
+                type: 'imm-children-under-5-years',
+                pass: true
               },
               {
                 _id: 'child-1-imm-children-registered-this-month',
                 deleted: false,
                 type: 'imm-children-registered-this-month',
-                pass: true,
+                pass: true
               },
               {
-                _id: 'child-1-imm-children-with-bcg-reported',
+                _id: 'report-1-imm-vaccines-given-this-month0',
                 deleted: false,
-                type: 'imm-children-with-bcg-reported',
+                type: 'imm-vaccines-given-this-month',
                 pass: true,
-              },
-              {
-                _id: 'child-1-imm-children-under-5-years',
-                deleted: false,
-                type: 'imm-children-under-5-years',
-                pass: true,
+                date: undefined
               },
               {
                 _id: 'child-1-imm-children-vaccinated-prev-3-months',
                 deleted: false,
                 type: 'imm-children-vaccinated-prev-3-months',
-                pass: false,
+                pass: false
               },
               {
                 _id: 'child-1-imm-no-vaccine-reported',
                 deleted: false,
                 type: 'imm-no-vaccine-reported',
-                pass: false,
+                pass: false
+              },
+              {
+                _id: 'child-1-imm-children-with-bcg-reported',
+                deleted: false,
+                type: 'imm-children-with-bcg-reported',
+                pass: true
+              },
+              {
+                _id: 'child-1-nutrition-children-screened-growth-monitoring',
+                deleted: false,
+                type: 'nutrition-children-screened-growth-monitoring',
+                pass: false
+              },
+              {
+                _id: 'child-1-nutrition-children-underweight',
+                deleted: false,
+                type: 'nutrition-children-underweight',
+                pass: false
+              },
+              { _id: 'child-1-children-stunted',
+                deleted: false,
+                type: 'children-stunted',
+                pass: false
+              },
+              {
+                _id: 'child-1-children-mam',
+                deleted: false,
+                type: 'children-mam',
+                pass: false
+              },
+              {
+                _id: 'child-1-children-sam',
+                deleted: false,
+                type: 'children-sam',
+                pass: false
+              },
+              {
+                _id: 'child-1-children-otp',
+                deleted: false,
+                type: 'children-otp',
+                pass: false
+              },
+              {
+                _id: 'child-1-children-sfp',
+                deleted: false,
+                type: 'children-sfp',
+                pass: false
               },
             ];
+
 
             assertTargetsEqual(targets, expectedTargets, 'date');
           });
@@ -1253,34 +1385,74 @@ describe('Standard Configuration Targets', function() {
         .then(targets => {
           const expectedTargets = [
             {
-              _id: 'child-1-imm-children-registered-this-month',
-              deleted: false,
-              type: 'imm-children-registered-this-month',
-              pass: true,
-            },
-            {
-              _id: 'child-1-imm-children-with-bcg-reported',
-              deleted: false,
-              type: 'imm-children-with-bcg-reported',
-              pass: false,
-            },
-            {
               _id: 'child-1-imm-children-under-5-years',
               deleted: false,
               type: 'imm-children-under-5-years',
-              pass: true,
+              pass: true
             },
             {
-              _id: 'child-1-imm-children-vaccinated-prev-3-months',
+              _id: 'child-1-imm-children-registered-this-month',
+              deleted: false,
+              type: 'imm-children-registered-this-month',
+              pass: true
+            },
+            { _id: 'child-1-imm-children-vaccinated-prev-3-months',
               deleted: false,
               type: 'imm-children-vaccinated-prev-3-months',
-              pass: false,
+              pass: false
             },
             {
               _id: 'child-1-imm-no-vaccine-reported',
               deleted: false,
               type: 'imm-no-vaccine-reported',
-              pass: true,
+              pass: true
+            },
+            {
+              _id: 'child-1-imm-children-with-bcg-reported',
+              deleted: false,
+              type: 'imm-children-with-bcg-reported',
+              pass: false
+            },
+            {
+              _id: 'child-1-nutrition-children-screened-growth-monitoring',
+              deleted: false,
+              type: 'nutrition-children-screened-growth-monitoring',
+              pass: false
+            },
+            {
+              _id: 'child-1-nutrition-children-underweight',
+              deleted: false,
+              type: 'nutrition-children-underweight',
+              pass: false
+            },
+            {
+              _id: 'child-1-children-stunted',
+              deleted: false,
+              type: 'children-stunted',
+              pass: false
+            },
+            {
+              _id: 'child-1-children-mam',
+              deleted: false,
+              type: 'children-mam',
+              pass: false
+            },
+            { _id: 'child-1-children-sam',
+              deleted: false,
+              type: 'children-sam',
+              pass: false
+            },
+            {
+              _id: 'child-1-children-otp',
+              deleted: false,
+              type: 'children-otp',
+              pass: false
+            },
+            {
+              _id: 'child-1-children-sfp',
+              deleted: false,
+              type: 'children-sfp',
+              pass: false
             },
           ];
 
@@ -1304,15 +1476,82 @@ describe('Standard Configuration Targets', function() {
       return session.emitTargets()
         .then(targets => {
 
-          const expectedTarget = {
-            _id: 'child-1-nutrition-children-screened-growth-monitoring',
-            deleted: false,
-            type: 'nutrition-children-screened-growth-monitoring',
-            pass: true,
-            date: today
-          };
+          const expectedTargets = [
+            {
+              _id: 'child-1-imm-children-under-5-years',
+              deleted: false,
+              type: 'imm-children-under-5-years',
+              pass: true
+            },
+            {
+              _id: 'child-1-imm-children-registered-this-month',
+              deleted: false,
+              type: 'imm-children-registered-this-month',
+              pass: true
+            },
+            {
+              _id: 'child-1-imm-children-vaccinated-prev-3-months',
+              deleted: false,
+              type: 'imm-children-vaccinated-prev-3-months',
+              pass: false
+            },
+            {
+              _id: 'child-1-imm-no-vaccine-reported',
+              deleted: false,
+              type: 'imm-no-vaccine-reported',
+              pass: false
+            },
+            {
+              _id: 'child-1-imm-children-with-bcg-reported',
+              deleted: false,
+              type: 'imm-children-with-bcg-reported',
+              pass: false
+            },
+            {
+              _id: 'child-1-nutrition-children-screened-growth-monitoring',
+              deleted: false,
+              type: 'nutrition-children-screened-growth-monitoring',
+              pass: true
+            },
+            {
+              _id: 'child-1-nutrition-children-underweight',
+              deleted: false,
+              type: 'nutrition-children-underweight',
+              pass: false
+            },
+            {
+              _id: 'child-1-children-stunted',
+              deleted: false,
+              type: 'children-stunted',
+              pass: false
+            },
+            {
+              _id: 'child-1-children-mam',
+              deleted: false,
+              type: 'children-mam',
+              pass: false
+            },
+            {
+              _id: 'child-1-children-sam',
+              deleted: false,
+              type: 'children-sam',
+              pass: false
+            },
+            {
+              _id: 'child-1-children-otp',
+              deleted: false,
+              type: 'children-otp',
+              pass: false
+            },
+            {
+              _id: 'child-1-children-sfp',
+              deleted: false,
+              type: 'children-sfp',
+              pass: false
+            },
+          ];
 
-          assert.deepInclude(targets, expectedTarget);
+          assertTargetsEqual(targets, expectedTargets);
         });
     });
 
@@ -1337,21 +1576,88 @@ describe('Standard Configuration Targets', function() {
       // expect
       return session.emitTargets()
         .then(targets => {
-          const expectedTarget = {
-            _id: 'child-1-nutrition-children-underweight',
-            deleted: false,
-            type: 'nutrition-children-underweight',
-            pass: true,
-            date: today
-          };
 
-          assert.deepInclude(targets, expectedTarget);
+          const expectedTargets = [
+            {
+              _id: 'child-1-imm-children-under-5-years',
+              deleted: false,
+              type: 'imm-children-under-5-years',
+              pass: true
+            },
+            {
+              _id: 'child-1-imm-children-registered-this-month',
+              deleted: false,
+              type: 'imm-children-registered-this-month',
+              pass: true
+            },
+            { _id: 'child-1-imm-children-vaccinated-prev-3-months',
+              deleted: false,
+              type: 'imm-children-vaccinated-prev-3-months',
+              pass: false
+            },
+            {
+              _id: 'child-1-imm-no-vaccine-reported',
+              deleted: false,
+              type: 'imm-no-vaccine-reported',
+              pass: false
+            },
+            {
+              _id: 'child-1-imm-children-with-bcg-reported',
+              deleted: false,
+              type: 'imm-children-with-bcg-reported',
+              pass: false
+            },
+            {
+              _id: 'child-1-nutrition-children-screened-growth-monitoring',
+              deleted: false,
+              type: 'nutrition-children-screened-growth-monitoring',
+              pass: false
+            },
+            {
+              _id: 'child-1-nutrition-children-underweight',
+              deleted: false,
+              type: 'nutrition-children-underweight',
+              pass: true
+            },
+            { _id: 'child-1-children-stunted',
+              deleted: false,
+              type: 'children-stunted',
+              pass: false
+            },
+            {
+              _id: 'child-1-children-mam',
+              deleted: false,
+              type: 'children-mam',
+              pass: false
+            },
+            {
+              _id: 'child-1-children-sam',
+              deleted: false,
+              type: 'children-sam',
+              pass: false
+            },
+            {
+              _id: 'child-1-children-otp',
+              deleted: false,
+              type: 'children-otp',
+              pass: false
+            },
+            {
+              _id: 'child-1-children-sfp',
+              deleted: false,
+              type: 'children-sfp',
+              pass: false
+            },
+          ];
+
+          assertTargetsEqual(targets, expectedTargets);
 
         });
     });
 
 
     it('should create stunted growth target instance', function() {
+
       const r = {
         form: 'nutrition_screening',
         fields: {
@@ -1367,15 +1673,82 @@ describe('Standard Configuration Targets', function() {
       return session.emitTargets()
         .then(targets => {
 
-          const expectedTarget = {
-            _id: 'child-1-children-stunted',
-            deleted: false,
-            type: 'children-stunted',
-            pass: true,
-            date: today
-          };
+          const expectedTargets = [
+            {
+              _id: 'child-1-imm-children-under-5-years',
+              deleted: false,
+              type: 'imm-children-under-5-years',
+              pass: true
+            },
+            {
+              _id: 'child-1-imm-children-registered-this-month',
+              deleted: false,
+              type: 'imm-children-registered-this-month',
+              pass: true
+            },
+            {
+              _id: 'child-1-imm-children-vaccinated-prev-3-months',
+              deleted: false,
+              type: 'imm-children-vaccinated-prev-3-months',
+              pass: false
+            },
+            {
+              _id: 'child-1-imm-no-vaccine-reported',
+              deleted: false,
+              type: 'imm-no-vaccine-reported',
+              pass: false
+            },
+            {
+              _id: 'child-1-imm-children-with-bcg-reported',
+              deleted: false,
+              type: 'imm-children-with-bcg-reported',
+              pass: false
+            },
+            {
+              _id: 'child-1-nutrition-children-screened-growth-monitoring',
+              deleted: false,
+              type: 'nutrition-children-screened-growth-monitoring',
+              pass: false
+            },
+            {
+              _id: 'child-1-nutrition-children-underweight',
+              deleted: false,
+              type: 'nutrition-children-underweight',
+              pass: false
+            },
+            {
+              _id: 'child-1-children-stunted',
+              deleted: false,
+              type: 'children-stunted',
+              pass: true
+            },
+            {
+              _id: 'child-1-children-mam',
+              deleted: false,
+              type: 'children-mam',
+              pass: false
+            },
+            {
+              _id: 'child-1-children-sam',
+              deleted: false,
+              type: 'children-sam',
+              pass: false
+            },
+            {
+              _id: 'child-1-children-otp',
+              deleted: false,
+              type: 'children-otp',
+              pass: false
+            },
+            {
+              _id: 'child-1-children-sfp',
+              deleted: false,
+              type: 'children-sfp',
+              pass: false
+            },
+          ];
 
-          assert.deepInclude(targets, expectedTarget);
+          assertTargetsEqual(targets, expectedTargets);
 
         });
     });
@@ -1399,20 +1772,84 @@ describe('Standard Configuration Targets', function() {
       return session.emitTargets()
         .then(targets => {
 
-          const expectedTarget = {
-            _id: 'child-1-children-mam',
-            deleted: false,
-            type: 'children-mam',
-            pass: true,
-            date: today
-          };
+          const expectedTargets = [
+            {
+              _id: 'child-1-imm-children-under-5-years',
+              deleted: false,
+              type: 'imm-children-under-5-years',
+              pass: true
+            },
+            {
+              _id: 'child-1-imm-children-registered-this-month',
+              deleted: false,
+              type: 'imm-children-registered-this-month',
+              pass: true
+            },
+            { _id: 'child-1-imm-children-vaccinated-prev-3-months',
+              deleted: false,
+              type: 'imm-children-vaccinated-prev-3-months',
+              pass: false
+            },
+            {
+              _id: 'child-1-imm-no-vaccine-reported',
+              deleted: false,
+              type: 'imm-no-vaccine-reported',
+              pass: false
+            },
+            {
+              _id: 'child-1-imm-children-with-bcg-reported',
+              deleted: false,
+              type: 'imm-children-with-bcg-reported',
+              pass: false
+            },
+            {
+              _id: 'child-1-nutrition-children-screened-growth-monitoring',
+              deleted: false,
+              type: 'nutrition-children-screened-growth-monitoring',
+              pass: false
+            },
+            {
+              _id: 'child-1-nutrition-children-underweight',
+              deleted: false,
+              type: 'nutrition-children-underweight',
+              pass: false
+            },
+            {
+              _id: 'child-1-children-stunted',
+              deleted: false,
+              type: 'children-stunted',
+              pass: false
+            },
+            { _id: 'child-1-children-mam',
+              deleted: false,
+              type: 'children-mam',
+              pass: true
+            },
+            { _id: 'child-1-children-sam',
+              deleted: false,
+              type: 'children-sam',
+              pass: false
+            },
+            {
+              _id: 'child-1-children-otp',
+              deleted: false,
+              type: 'children-otp',
+              pass: false
+            },
+            {
+              _id: 'child-1-children-sfp',
+              deleted: false,
+              type: 'children-sfp',
+              pass: false
+            },
+          ];
 
-          assert.deepInclude(targets, expectedTarget);
+          assertTargetsEqual(targets, expectedTargets);
         });
 
     });
 
-    it('should create active MAM trget for MUAC between 11.5 & 12.4 cm', function(){
+    it('should create active MAM target for MUAC between 11.5 & 12.4 cm', function(){
       const r = {
         form: 'treatment_enrollment',
         fields: {
@@ -1428,21 +1865,86 @@ describe('Standard Configuration Targets', function() {
       return session.emitTargets()
         .then(targets => {
 
-          const expectedTarget = {
-            _id: 'child-1-children-mam',
-            deleted: false,
-            type: 'children-mam',
-            pass: true,
-            date: today
-          };
+          const expectedTargets = [
+            {
+              _id: 'child-1-imm-children-under-5-years',
+              deleted: false,
+              type: 'imm-children-under-5-years',
+              pass: true
+            },
+            {
+              _id: 'child-1-imm-children-registered-this-month',
+              deleted: false,
+              type: 'imm-children-registered-this-month',
+              pass: true
+            },
+            { _id: 'child-1-imm-children-vaccinated-prev-3-months',
+              deleted: false,
+              type: 'imm-children-vaccinated-prev-3-months',
+              pass: false
+            },
+            {
+              _id: 'child-1-imm-no-vaccine-reported',
+              deleted: false,
+              type: 'imm-no-vaccine-reported',
+              pass: false
+            },
+            {
+              _id: 'child-1-imm-children-with-bcg-reported',
+              deleted: false,
+              type: 'imm-children-with-bcg-reported',
+              pass: false
+            },
+            {
+              _id: 'child-1-nutrition-children-screened-growth-monitoring',
+              deleted: false,
+              type: 'nutrition-children-screened-growth-monitoring',
+              pass: false
+            },
+            {
+              _id: 'child-1-nutrition-children-underweight',
+              deleted: false,
+              type: 'nutrition-children-underweight',
+              pass: false
+            },
+            {
+              _id: 'child-1-children-stunted',
+              deleted: false,
+              type: 'children-stunted',
+              pass: false
+            },
+            { _id: 'child-1-children-mam',
+              deleted: false,
+              type: 'children-mam',
+              pass: true
+            },
+            { _id: 'child-1-children-sam',
+              deleted: false,
+              type: 'children-sam',
+              pass: false
+            },
+            {
+              _id: 'child-1-children-otp',
+              deleted: false,
+              type: 'children-otp',
+              pass: false
+            },
+            {
+              _id: 'child-1-children-sfp',
+              deleted: false,
+              type: 'children-sfp',
+              pass: false
+            },
+          ];
 
-          assert.deepInclude(targets, expectedTarget);
+          assertTargetsEqual(targets, expectedTargets);
         });
     });
   });
 
   describe('children active SAM', function(){
     it('should create active SAM target for WFH z-score less than -3', function(){
+
       const r = {
         form: 'treatment_enrollment',
         fields: {
@@ -1458,20 +1960,86 @@ describe('Standard Configuration Targets', function() {
       return session.emitTargets()
         .then(targets => {
 
-          const expectedTarget = {
-            _id: 'child-1-children-sam',
-            deleted: false,
-            type: 'children-sam',
-            pass: true,
-            date: today
-          };
+          const expectedTargets = [
+            {
+              _id: 'child-1-imm-children-under-5-years',
+              deleted: false,
+              type: 'imm-children-under-5-years',
+              pass: true
+            },
+            {
+              _id: 'child-1-imm-children-registered-this-month',
+              deleted: false,
+              type: 'imm-children-registered-this-month',
+              pass: true
+            },
+            { _id: 'child-1-imm-children-vaccinated-prev-3-months',
+              deleted: false,
+              type: 'imm-children-vaccinated-prev-3-months',
+              pass: false
+            },
+            {
+              _id: 'child-1-imm-no-vaccine-reported',
+              deleted: false,
+              type: 'imm-no-vaccine-reported',
+              pass: false
+            },
+            {
+              _id: 'child-1-imm-children-with-bcg-reported',
+              deleted: false,
+              type: 'imm-children-with-bcg-reported',
+              pass: false
+            },
+            {
+              _id: 'child-1-nutrition-children-screened-growth-monitoring',
+              deleted: false,
+              type: 'nutrition-children-screened-growth-monitoring',
+              pass: false
+            },
+            {
+              _id: 'child-1-nutrition-children-underweight',
+              deleted: false,
+              type: 'nutrition-children-underweight',
+              pass: false
+            },
+            {
+              _id: 'child-1-children-stunted',
+              deleted: false,
+              type: 'children-stunted',
+              pass: false
+            },
+            { _id: 'child-1-children-mam',
+              deleted: false,
+              type: 'children-mam',
+              pass: false
+            },
+            { _id: 'child-1-children-sam',
+              deleted: false,
+              type: 'children-sam',
+              pass: true
+            },
+            {
+              _id: 'child-1-children-otp',
+              deleted: false,
+              type: 'children-otp',
+              pass: false
+            },
+            {
+              _id: 'child-1-children-sfp',
+              deleted: false,
+              type: 'children-sfp',
+              pass: false
+            },
+          ];
 
-          assert.deepInclude(targets, expectedTarget);
+          assertTargetsEqual(targets, expectedTargets);
+
         });
 
     });
 
-    it('should create active SAM trget for MUAC less than 11.5 cm', function(){
+    it('should create active SAM target for MUAC less than 11.5 cm', function(){
+
       const r = {
         form: 'treatment_enrollment',
         fields: {
@@ -1487,15 +2055,80 @@ describe('Standard Configuration Targets', function() {
       return session.emitTargets()
         .then(targets => {
 
-          const expectedTarget = {
-            _id: 'child-1-children-sam',
-            deleted: false,
-            type: 'children-sam',
-            pass: true,
-            date: today
-          };
+          const expectedTargets = [
+            {
+              _id: 'child-1-imm-children-under-5-years',
+              deleted: false,
+              type: 'imm-children-under-5-years',
+              pass: true
+            },
+            {
+              _id: 'child-1-imm-children-registered-this-month',
+              deleted: false,
+              type: 'imm-children-registered-this-month',
+              pass: true
+            },
+            { _id: 'child-1-imm-children-vaccinated-prev-3-months',
+              deleted: false,
+              type: 'imm-children-vaccinated-prev-3-months',
+              pass: false
+            },
+            {
+              _id: 'child-1-imm-no-vaccine-reported',
+              deleted: false,
+              type: 'imm-no-vaccine-reported',
+              pass: false
+            },
+            {
+              _id: 'child-1-imm-children-with-bcg-reported',
+              deleted: false,
+              type: 'imm-children-with-bcg-reported',
+              pass: false
+            },
+            {
+              _id: 'child-1-nutrition-children-screened-growth-monitoring',
+              deleted: false,
+              type: 'nutrition-children-screened-growth-monitoring',
+              pass: false
+            },
+            {
+              _id: 'child-1-nutrition-children-underweight',
+              deleted: false,
+              type: 'nutrition-children-underweight',
+              pass: false
+            },
+            {
+              _id: 'child-1-children-stunted',
+              deleted: false,
+              type: 'children-stunted',
+              pass: false
+            },
+            { _id: 'child-1-children-mam',
+              deleted: false,
+              type: 'children-mam',
+              pass: false
+            },
+            { _id: 'child-1-children-sam',
+              deleted: false,
+              type: 'children-sam',
+              pass: true
+            },
+            {
+              _id: 'child-1-children-otp',
+              deleted: false,
+              type: 'children-otp',
+              pass: false
+            },
+            {
+              _id: 'child-1-children-sfp',
+              deleted: false,
+              type: 'children-sfp',
+              pass: false
+            },
+          ];
 
-          assert.deepInclude(targets, expectedTarget);
+          assertTargetsEqual(targets, expectedTargets);
+
         });
     });
   });
@@ -1517,15 +2150,80 @@ describe('Standard Configuration Targets', function() {
       return session.emitTargets()
         .then(targets => {
 
-          const expectedTarget = {
-            _id: 'child-1-children-otp',
-            deleted: false,
-            type: 'children-otp',
-            pass: true,
-            date: today
-          };
+          const expectedTargets = [
+            {
+              _id: 'child-1-imm-children-under-5-years',
+              deleted: false,
+              type: 'imm-children-under-5-years',
+              pass: true
+            },
+            {
+              _id: 'child-1-imm-children-registered-this-month',
+              deleted: false,
+              type: 'imm-children-registered-this-month',
+              pass: true
+            },
+            { _id: 'child-1-imm-children-vaccinated-prev-3-months',
+              deleted: false,
+              type: 'imm-children-vaccinated-prev-3-months',
+              pass: false
+            },
+            {
+              _id: 'child-1-imm-no-vaccine-reported',
+              deleted: false,
+              type: 'imm-no-vaccine-reported',
+              pass: false
+            },
+            {
+              _id: 'child-1-imm-children-with-bcg-reported',
+              deleted: false,
+              type: 'imm-children-with-bcg-reported',
+              pass: false
+            },
+            {
+              _id: 'child-1-nutrition-children-screened-growth-monitoring',
+              deleted: false,
+              type: 'nutrition-children-screened-growth-monitoring',
+              pass: false
+            },
+            {
+              _id: 'child-1-nutrition-children-underweight',
+              deleted: false,
+              type: 'nutrition-children-underweight',
+              pass: false
+            },
+            {
+              _id: 'child-1-children-stunted',
+              deleted: false,
+              type: 'children-stunted',
+              pass: false
+            },
+            { _id: 'child-1-children-mam',
+              deleted: false,
+              type: 'children-mam',
+              pass: false
+            },
+            { _id: 'child-1-children-sam',
+              deleted: false,
+              type: 'children-sam',
+              pass: false
+            },
+            {
+              _id: 'child-1-children-otp',
+              deleted: false,
+              type: 'children-otp',
+              pass: true
+            },
+            {
+              _id: 'child-1-children-sfp',
+              deleted: false,
+              type: 'children-sfp',
+              pass: false
+            },
+          ];
 
-          assert.deepInclude(targets, expectedTarget);
+          assertTargetsEqual(targets, expectedTargets);
+
         });
 
     });
@@ -1548,15 +2246,79 @@ describe('Standard Configuration Targets', function() {
       return session.emitTargets()
         .then(targets => {
 
-          const expectedTarget = {
-            _id: 'child-1-children-sfp',
-            deleted: false,
-            type: 'children-sfp',
-            pass: true,
-            date: today
-          };
+          const expectedTargets = [
+            {
+              _id: 'child-1-imm-children-under-5-years',
+              deleted: false,
+              type: 'imm-children-under-5-years',
+              pass: true
+            },
+            {
+              _id: 'child-1-imm-children-registered-this-month',
+              deleted: false,
+              type: 'imm-children-registered-this-month',
+              pass: true
+            },
+            { _id: 'child-1-imm-children-vaccinated-prev-3-months',
+              deleted: false,
+              type: 'imm-children-vaccinated-prev-3-months',
+              pass: false
+            },
+            {
+              _id: 'child-1-imm-no-vaccine-reported',
+              deleted: false,
+              type: 'imm-no-vaccine-reported',
+              pass: false
+            },
+            {
+              _id: 'child-1-imm-children-with-bcg-reported',
+              deleted: false,
+              type: 'imm-children-with-bcg-reported',
+              pass: false
+            },
+            {
+              _id: 'child-1-nutrition-children-screened-growth-monitoring',
+              deleted: false,
+              type: 'nutrition-children-screened-growth-monitoring',
+              pass: false
+            },
+            {
+              _id: 'child-1-nutrition-children-underweight',
+              deleted: false,
+              type: 'nutrition-children-underweight',
+              pass: false
+            },
+            {
+              _id: 'child-1-children-stunted',
+              deleted: false,
+              type: 'children-stunted',
+              pass: false
+            },
+            { _id: 'child-1-children-mam',
+              deleted: false,
+              type: 'children-mam',
+              pass: false
+            },
+            { _id: 'child-1-children-sam',
+              deleted: false,
+              type: 'children-sam',
+              pass: false
+            },
+            {
+              _id: 'child-1-children-otp',
+              deleted: false,
+              type: 'children-otp',
+              pass: false
+            },
+            {
+              _id: 'child-1-children-sfp',
+              deleted: false,
+              type: 'children-sfp',
+              pass: true
+            },
+          ];
 
-          assert.deepInclude(targets, expectedTarget);
+          assertTargetsEqual(targets, expectedTargets);
         });
 
     });
