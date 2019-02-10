@@ -2,7 +2,7 @@
   <div class="row">
     <div class="inner">
 
-      <div class="col-sm-4 general-actions left-pane" ng-show="currentTab === 'reports' && selectMode">
+      <div class="col-sm-4 general-actions left-pane" ng-show="currentTab === 'reports' && $ctrl.selectMode">
         <div class="actions dropup">
           <a class="mm-icon mm-icon-inverse mm-icon-caption select-all" ng-click="emit('SelectAll')">
             <span class="fa fa-check-square-o"></span>
@@ -23,7 +23,7 @@
         </div>
       </div>
 
-      <div class="col-sm-4 general-actions left-pane" ng-show="currentTab === 'reports' && !selectMode">
+      <div class="col-sm-4 general-actions left-pane" ng-show="currentTab === 'reports' && !$ctrl.selectMode">
         <div class="actions dropup">
           <a class="mm-icon mm-icon-inverse mm-icon-caption dropdown-toggle" data-toggle="dropdown" ng-class="{'mm-icon-disabled': !nonContactForms.length}">
             <span class="fa fa-plus"></span>
@@ -78,7 +78,7 @@
       </div>
 
       <div class="col-sm-8 detail-actions right-pane" ng-show="currentTab === 'reports'">
-        <div ng-show="selectMode">
+        <div ng-show="$ctrl.selectMode">
           <div class="actions dropup" ng-show="showActionBar && actionBar.right.selected.length && (!loadingContent) && 'reports.detail' | isState">
             <a class="mm-icon mm-icon-inverse mm-icon-caption delete-all" mm-auth="can_bulk_delete_reports" ng-click="bulkDelete(actionBar.right.selected)">
               <span class="fa fa-trash-o"></span>
@@ -87,7 +87,7 @@
           </div>
         </div>
 
-        <div ng-show="!selectMode">
+        <div ng-show="!$ctrl.selectMode">
           <div class="actions dropup" ng-show="showActionBar && actionBar.right.selected && !loadingContent && ('reports.detail' | isState)">
             <a class="mm-icon mm-icon-inverse mm-icon-caption mobile-only" href="sms:{{actionBar.right.sendTo.phone}}" ng-class="{'mm-icon-disabled': !actionBar.right.sendTo.phone}">
               <span class="fa fa-envelope"></span>
